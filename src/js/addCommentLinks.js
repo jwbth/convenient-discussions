@@ -5,16 +5,12 @@
  */
 
 import Comment from './Comment';
-import Page from './Page';
 import cd from './cd';
+import controller from './controller';
+import init from './init';
+import pageRegistry from './pageRegistry';
+import settings from './settings';
 import subscriptions from './subscriptions';
-import { createApi, initGlobals, initSettings } from './boot';
-import {
-  generateCommentAnchor,
-  initDayjs,
-  initTimestampParsingTools,
-  parseTimestamp,
-} from './timestamp';
 import {
   generatePageNamePattern,
   isCommentEdit,
@@ -23,10 +19,9 @@ import {
   removeDirMarks,
   spacesToUnderlines,
 } from './util';
-import { loadSiteData } from './siteData';
+import { initDayjs, initTimestampParsingTools, parseTimestamp } from './timestamp';
 import { showEditSubscriptionsDialog, showSettingsDialog } from './modal';
 
-let serverName;
 let colon;
 let moveFromBeginning;
 let moveToBeginning;
@@ -40,14 +35,11 @@ let switchRelevantButton;
 /**
  * Prepare variables.
  *
- * @param {Promise[]} [siteDataRequests] Array of requests returned by
- *   {@link module:siteData.loadSiteData}.
  * @private
  */
-async function prepare(siteDataRequests) {
-  createApi();
-  initGlobals();
-  await initSettings();
+async function prepare() {
+  init.globals();
+  await settings.init();
 
   mw.loader.addStyleTag(`:root {
   --cd-parentheses-start: '${cd.mws('parentheses-start')}';
@@ -55,7 +47,7 @@ async function prepare(siteDataRequests) {
 }`);
 
   const requests = [];
-  if (!cd.settings.useTopicSubscription) {
+  if (!settings.get('useTopicSubscription')) {
     // Loading the subscriptions is not critical, as opposed to messages, so we catch the possible
     // error, not letting it be caught by the try/catch block.
     subscriptions.load(true).catch((e) => {
@@ -63,10 +55,7 @@ async function prepare(siteDataRequests) {
     });
     requests.push(subscriptions.loadRequest);
   }
-  if (!siteDataRequests.length) {
-    siteDataRequests = loadSiteData();
-  }
-  requests.push(...siteDataRequests);
+  requests.push(...init.getSiteData());
 
   try {
     await Promise.all(requests);
@@ -74,7 +63,6 @@ async function prepare(siteDataRequests) {
     throw ['Couldn\'t load the messages required for the script.', e];
   }
 
-  serverName = mw.config.get('wgServerName');
   colon = cd.mws('colon-separator', { language: 'content' }).trim();
   [moveFromBeginning] = cd.s('es-move-from').match(/^[^[$]+/) || [];
   [moveToBeginning] = cd.s('es-move-to').match(/^[^[$]+/) || [];
@@ -115,9 +103,9 @@ function switchRelevant() {
   const isEnhanced = !$('.mw-changeslist').find('ul.special').length;
 
   // This is for many watchlist types at once.
-  const $collapsibles = cd.g.$content
+  const $collapsibles = controller.$content
     .find('.mw-changeslist .mw-collapsible:not(.mw-changeslist-legend)');
-  const $lines = cd.g.$content.find('.mw-changeslist-line:not(.mw-collapsible)');
+  const $lines = controller.$content.find('.mw-changeslist-line:not(.mw-collapsible)');
 
   if (switchRelevantButton.hasFlag('progressive')) {
     // Show all
@@ -182,7 +170,7 @@ function addWatchlistMenu() {
     .text(cd.s('script-name-short'))
     .appendTo($menu);
 
-  if (!cd.settings.useTopicSubscription) {
+  if (!settings.get('useTopicSubscription')) {
     switchRelevantButton = new OO.ui.ButtonWidget({
       framed: false,
       icon: 'speechBubble',
@@ -206,12 +194,13 @@ function addWatchlistMenu() {
     title: cd.s('wl-button-editwatchedsections-tooltip', mw.user),
     classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-editSubscriptions'],
   };
-  if (cd.settings.useTopicSubscription) {
-    editSubscriptionsButtonConfig.href = (new Page('Special:TopicSubscriptions')).getUrl();
+  if (settings.get('useTopicSubscription')) {
+    editSubscriptionsButtonConfig.href = pageRegistry.getPage('Special:TopicSubscriptions')
+      .getUrl();
     editSubscriptionsButtonConfig.target = '_blank';
   }
   const editSubscriptionsButton = new OO.ui.ButtonWidget(editSubscriptionsButtonConfig);
-  if (!cd.settings.useTopicSubscription) {
+  if (!settings.get('useTopicSubscription')) {
     editSubscriptionsButton.on('click', () => {
       showEditSubscriptionsDialog();
     });
@@ -233,8 +222,8 @@ function addWatchlistMenu() {
   settingsButton.$element.appendTo($menu);
 
   // New watchlist, old watchlist
-  cd.g.$content.find('.mw-rcfilters-ui-changesLimitAndDateButtonWidget').prepend($menu);
-  cd.g.$content.find('#mw-watchlist-options .mw-changeslist-legend').after($menu);
+  controller.$content.find('.mw-rcfilters-ui-changesLimitAndDateButtonWidget').prepend($menu);
+  controller.$content.find('#mw-watchlist-options .mw-changeslist-legend').after($menu);
 }
 
 /**
@@ -246,7 +235,7 @@ function addWatchlistMenu() {
  */
 function isWikidataItem(linkElement) {
   return (
-    serverName === 'www.wikidata.org' &&
+    mw.config.get('wgServerName') === 'www.wikidata.org' &&
     linkElement.firstElementChild?.classList.contains('wb-itemlink')
   )
 }
@@ -326,7 +315,7 @@ function isInSection(summary, name) {
 function processWatchlist($content) {
   if (
     mw.config.get('wgCanonicalSpecialPageName') === 'Watchlist' &&
-    !cd.g.$content.find('.cd-watchlistMenu').length
+    !controller.$content.find('.cd-watchlistMenu').length
   ) {
     if (mw.user.options.get('wlenhancedfilters-disable')) {
       addWatchlistMenu();
@@ -336,7 +325,7 @@ function processWatchlist($content) {
       });
     }
 
-    if (!cd.settings.useTopicSubscription) {
+    if (!settings.get('useTopicSubscription')) {
       $('.mw-rcfilters-ui-filterWrapperWidget-showNewChanges a').on('click', async () => {
         try {
           await subscriptions.load();
@@ -386,7 +375,7 @@ function processWatchlist($content) {
     const author = extractAuthor(line);
     if (!author) return;
 
-    const anchor = timestamp + '_' + spacesToUnderlines(author);
+    const id = timestamp + '_' + spacesToUnderlines(author);
 
     const link = linkElement.href;
     if (!link) return;
@@ -423,7 +412,7 @@ function processWatchlist($content) {
       }
     }
 
-    wrapper.lastChild.lastChild.href = `${link}#${anchor}`;
+    wrapper.lastChild.lastChild.href = `${link}#${id}`;
 
     const destination = line.querySelector('.comment') || line.querySelector('.mw-usertoollinks');
     if (!destination) return;
@@ -453,7 +442,7 @@ function processContributions($content) {
     if (!linkElement || isWikidataItem(linkElement)) return;
 
     const pageName = linkElement.textContent;
-    const page = new Page(pageName);
+    const page = pageRegistry.getPage(pageName);
     if (!page.isProbablyTalkPage()) return;
 
     const link = linkElement.href;
@@ -480,7 +469,7 @@ function processContributions($content) {
     const { date } = parseTimestamp(dateElement.textContent, cd.g.UI_TIMEZONE) || {};
     if (!date) return;
 
-    const anchor = generateCommentAnchor(date, mw.config.get('wgRelevantUserName'));
+    const id = Comment.generateId(date, mw.config.get('wgRelevantUserName'));
 
     let wrapper;
     if (summary && currentUserRegexp.test(` ${summary} `)) {
@@ -490,8 +479,7 @@ function processContributions($content) {
       // We have no place to extract the article ID from :-(
       wrapper = wrapperRegularPrototype.cloneNode(true);
     }
-
-    wrapper.lastChild.lastChild.href = `${link}#${anchor}`;
+    wrapper.lastChild.lastChild.href = `${link}#${id}`;
 
     let destination = line.querySelector('.comment');
     if (!destination) {
@@ -541,7 +529,7 @@ function processHistory($content) {
     const author = extractAuthor(line);
     if (!author) return;
 
-    const anchor = generateCommentAnchor(date, author);
+    const id = Comment.generateId(date, author);
 
     let wrapper;
     if (summary && currentUserRegexp.test(` ${summary} `)) {
@@ -563,8 +551,7 @@ function processHistory($content) {
         wrapper = wrapperRegularPrototype.cloneNode(true);
       }
     }
-
-    wrapper.lastChild.lastChild.href = `${link}#${anchor}`;
+    wrapper.lastChild.lastChild.href = `${link}#${id}`;
 
     let destination = line.querySelector('.comment');
     if (!destination) {
@@ -585,18 +572,18 @@ function processHistory($content) {
  * @private
  */
 async function processDiff($diff) {
-  // Filter out cases when "wikipage.diff" was fired for the diff at the top of the page that is a
-  // diff page (unless only a diff, and no content, is displayed - if
-  // mw.user.options.get('diffonly') or the diffonly URL parameter is true). We parse that diff on
-  // "convenientDiscussions.pageReady".
-  if (cd.g.isPageProcessed && $diff?.parent().is(cd.g.$content)) return;
+  // Filter out cases when "wikipage.diff" was fired for the native MediaWiki's diff at the top of
+  // the page that is a diff page (unless only a diff, and no content, is displayed - if
+  // mw.user.options.get('diffonly') or the "diffonly" URL parameter is true). We parse that diff on
+  // "convenientDiscussions.pageReady" instead.
+  if (controller.isTalkPage() && $diff?.parent().is(controller.$content)) return;
 
   if (!cd.g.UI_TIMESTAMP_REGEXP) {
     initTimestampParsingTools('user');
   }
   if (cd.g.UI_TIMEZONE === null) return;
 
-  const $root = $diff || cd.g.$content;
+  const $root = $diff || controller.$content;
   const root = $root.get(0);
   [root.querySelector('.diff-otitle'), root.querySelector('.diff-ntitle')]
     .filter((el) => el !== null)
@@ -625,15 +612,15 @@ async function processDiff($diff) {
       const author = extractAuthor(area);
       if (!author) return;
 
-      const anchor = generateCommentAnchor(date, author);
+      const id = Comment.generateId(date, author);
 
       let comment;
       let page;
       if ($diff) {
         const revUrl = new mw.Uri(dateElement.href);
-        page = new Page(revUrl.query.title);
+        page = pageRegistry.getPage(revUrl.query.title);
       } else {
-        comment = Comment.getByAnchor(anchor, true);
+        comment = Comment.getById(id, true);
       }
       if (comment || ($diff && page.isProbablyTalkPage())) {
         let wrapper;
@@ -657,14 +644,14 @@ async function processDiff($diff) {
 
         const linkElement = wrapper.lastChild.lastChild;
         if ($diff) {
-          linkElement.href = page.getUrl() + '#' + anchor;
+          linkElement.href = page.getUrl() + '#' + id;
 
-          // Not diff pages with a diff only
-          if (cd.g.isPageProcessed) {
+          // Non-diff pages that have a diff, like with Serhio Magpie's Instant Diffs.
+          if (controller.isTalkPage()) {
             linkElement.target = '_blank';
           }
         } else {
-          linkElement.href = '#' + anchor;
+          linkElement.href = '#' + id;
           linkElement.onclick = function (e) {
             e.preventDefault();
             comment.scrollTo(false, true);
@@ -702,11 +689,11 @@ async function processRevisionListPage($content) {
   // function).
   if (!$content.parent().length) return;
 
-  if (['Recentchanges', 'Watchlist'].includes(mw.config.get('wgCanonicalSpecialPageName'))) {
+  if (controller.isWatchlistPage()) {
     processWatchlist($content);
-  } else if (mw.config.get('wgCanonicalSpecialPageName') === 'Contributions') {
+  } else if (controller.isContributionsPage()) {
     processContributions($content);
-  } else if (mw.config.get('wgAction') === 'history' && cd.page.isProbablyTalkPage()) {
+  } else if (controller.isHistoryPage()) {
     processHistory($content);
   }
 
@@ -715,19 +702,16 @@ async function processRevisionListPage($content) {
 
 /**
  * _For internal use._ The entry function for the comment links adding mechanism.
- *
- * @param {Promise[]} siteDataRequests Array of requests returned by
- *   {@link module:siteData.loadSiteData}.
  */
-export default async function addCommentLinks(siteDataRequests) {
+export default async function addCommentLinks() {
   try {
-    await prepare(siteDataRequests);
+    await prepare();
   } catch (e) {
     console.warn(...e);
     return;
   }
 
-  if (cd.g.isDiffPage) {
+  if (controller.isDiffPage()) {
     mw.hook('convenientDiscussions.pageReady').add(() => {
       processDiff();
     });
@@ -745,17 +729,17 @@ export default async function addCommentLinks(siteDataRequests) {
  * "Couldn't find the comment" message, add comment links to titles.
  */
 export function addCommentLinksToSpecialSearch() {
-  const [, commentAnchor] = location.search.match(/[?&]cdcomment=([^&]+)(?:&|$)/) || [];
-  if (commentAnchor) {
+  const [, commentId] = location.search.match(/[?&]cdcomment=([^&]+)(?:&|$)/) || [];
+  if (commentId) {
     mw.loader.using('mediawiki.api').then(
       async () => {
-        await Promise.all(loadSiteData());
+        await Promise.all(init.getSiteData());
         $('.mw-search-result-heading').each((i, el) => {
           const originalHref = $(el)
             .find('a')
             .first()
             .attr('href');
-          const href = originalHref + '#' + commentAnchor;
+          const href = originalHref + '#' + commentId;
           const $a = $('<a>')
             .attr('href', href)
             .text(cd.s('deadanchor-search-gotocomment'));

@@ -1,12 +1,12 @@
 /**
- * User class and object `userRegistry` used to obtain its instances while avoiding creating
+ * User class and singleton `userRegistry` used to obtain its instances while avoiding creating
  * duplicates.
  *
  * @module userRegistry
  */
 
 import cd from './cd';
-import { firstCharToUpperCase, underlinesToSpaces } from './util';
+import { ucFirst, underlinesToSpaces } from './util';
 
 export default {
   /**
@@ -17,7 +17,7 @@ export default {
   users: {},
 
   /**
-   * Get the user object for a user with the specified name (either a new one or already existing).
+   * Get a user object for a user with the specified name (either a new one or already existing).
    *
    * @param {string} name
    * @returns {module:userRegistry~User}
@@ -29,7 +29,7 @@ export default {
     if (mw.util.isIPv6Address(name)) {
       name = name.toUpperCase().trim();
     } else {
-      name = underlinesToSpaces(firstCharToUpperCase(name)).trim();
+      name = underlinesToSpaces(ucFirst(name)).trim();
     }
 
     if (!this.users[name]) {
@@ -71,10 +71,10 @@ class User {
     if (this.name === '<unregistered>') {
       return false;
     }
-    if (this.cachedIsRegistered === undefined) {
-      this.cachedIsRegistered = !mw.util.isIPAddress(this.name);
+    if (this.registered === undefined) {
+      this.registered = !mw.util.isIPAddress(this.name);
     }
-    return this.cachedIsRegistered;
+    return this.registered;
   }
 
   /**

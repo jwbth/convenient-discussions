@@ -1,6 +1,5 @@
 import { DomUtils, parseDocument } from 'htmlparser2';
 
-import cd from './cd';
 import { decodeHtmlEntities } from './wikitext';
 
 self.Node = {
@@ -39,7 +38,7 @@ function walkThroughSubtree(base, callback, checkSelf) {
  */
 function getAllTextNodes() {
   let nodes = [];
-  walkThroughSubtree(cd.g.rootElement, (node) => {
+  walkThroughSubtree(self.rootElement, (node) => {
     if (node.nodeType === Node.TEXT_NODE) {
       nodes.push(node);
     }

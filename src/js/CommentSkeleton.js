@@ -1,7 +1,7 @@
 import CdError from './CdError';
 import cd from './cd';
 import { ElementsAndTextTreeWalker, ElementsTreeWalker } from './treeWalker';
-import { isInline, unique } from './util';
+import { isInline, spacesToUnderlines, unique, zeroPad } from './util';
 
 /**
  * Class containing the main properties of a comment. This class is the only one used in the worker
@@ -64,12 +64,12 @@ class CommentSkeleton {
     this.wrapNumberedList();
 
     /**
-     * Comment ID. Same as the comment's index in
+     * Comment index. Same as the comment's index in
      * {@link convenientDiscussions.comments convenientDiscussions.comments}.
      *
      * @type {number}
      */
-    this.id = cd.comments.length;
+    this.index = cd.comments.length;
 
     /**
      * Comment date.
@@ -128,11 +128,11 @@ class CommentSkeleton {
     this.isOwn = this.authorName === cd.g.USER_NAME;
 
     /**
-     * Comment anchor.
+     * Comment ID.
      *
      * @type {?string}
      */
-    this.anchor = signature.anchor;
+    this.id = CommentSkeleton.generateId(this.date, this.authorName, parser.existingCommentIds);
 
     /**
      * Is the comment unsigned or not properly signed (an unsigned template class is present).
@@ -291,7 +291,7 @@ class CommentSkeleton {
       return false;
     }
     let table;
-    for (let n = element; !table && n !== cd.g.rootElement; n = n.parentNode) {
+    for (let n = element; !table && n !== this.parser.context.rootElement; n = n.parentNode) {
       if (n.tagName === 'TABLE') {
         table = n;
       }
@@ -335,7 +335,7 @@ class CommentSkeleton {
       ) ||
 
       (
-        cd.g.pageHasOutdents &&
+        this.parser.context.areThereOutdents &&
         this.parser.context.getElementByClassName(element, cd.config.outdentClass)
       ) ||
 
@@ -494,8 +494,8 @@ class CommentSkeleton {
           (
             stage === 2 ||
             (
-              nextNode.parentNode !== cd.g.rootElement &&
-              nextNode.parentNode.parentNode !== cd.g.rootElement
+              nextNode.parentNode !== this.parser.context.rootElement &&
+              nextNode.parentNode.parentNode !== this.parser.context.rootElement
             )
           )
         )
@@ -661,7 +661,10 @@ class CommentSkeleton {
    * @param {Element|external:Element} precedingHeadingElement
    */
   collectParts(precedingHeadingElement) {
-    const treeWalker = new ElementsAndTextTreeWalker(this.signatureElement);
+    const treeWalker = new ElementsAndTextTreeWalker(
+      this.signatureElement,
+      this.parser.context.rootElement
+    );
     let [parts, firstForeignComponentAfter] = this.getStartNodes(treeWalker);
     parts = this.traverseDom(
       parts,
@@ -1048,7 +1051,7 @@ class CommentSkeleton {
   addAttributes() {
     this.elements.forEach((el) => {
       el.classList.add('cd-comment-part');
-      el.setAttribute('data-cd-comment-id', String(this.id));
+      el.setAttribute('data-cd-comment-index', String(this.index));
     });
     this.highlightables[0].classList.add('cd-comment-part-first');
     this.highlightables[this.highlightables.length - 1].classList.add('cd-comment-part-last');
@@ -1064,7 +1067,7 @@ class CommentSkeleton {
    */
   getListsUpTree(initialElement, includeFirstMatch = false) {
     const listElements = [];
-    const treeWalker = new ElementsTreeWalker(initialElement);
+    const treeWalker = new ElementsTreeWalker(initialElement, this.parser.context.rootElement);
     while (treeWalker.parentNode()) {
       const el = treeWalker.currentNode;
       if (['DL', 'UL', 'OL'].includes(el.tagName)) {
@@ -1302,7 +1305,7 @@ class CommentSkeleton {
       // This can run many times during page load, so we better optimize.
       this.cachedParent[prop] = null;
       if (this[prop] !== 0) {
-        for (let i = this.id - 1; i >= 0; i--) {
+        for (let i = this.index - 1; i >= 0; i--) {
           const comment = cd.comments[i];
           if (comment.section !== this.section) break;
           if (comment[prop] === this[prop] && comment.cachedParent?.[prop]) {
@@ -1329,14 +1332,14 @@ class CommentSkeleton {
    * @returns {CommentSkeleton[]}
    */
   getChildren(indirect = false, visual = false) {
-    if (this.id === cd.comments.length - 1) {
+    if (this.index === cd.comments.length - 1) {
       return [];
     }
 
     const children = [];
     const prop = visual ? 'level' : 'logicalLevel';
     cd.comments
-      .slice(this.id + 1)
+      .slice(this.index + 1)
       .some((comment) => {
         if (comment.section === this.section && comment[prop] > this[prop]) {
           // `comment.getParent() === this` to allow comments mistakenly indented with more than one
@@ -1354,27 +1357,79 @@ class CommentSkeleton {
   }
 
   /**
+   * Check if a string is a comment ID in the CD format.
+   *
+   * @param {string} string
+   * @returns {boolean}
+   */
+  static isId(string) {
+    return /^\d{12}_.+$/.test(string);
+  }
+
+  /**
+   * Generate a comment ID from a date and author.
+   *
+   * @param {Date} date
+   * @param {string} author
+   * @param {Array} [existingIds] IDs that collide with IDs in the array will get a `_<number>`
+   *   postfix. The array will be appended to in that case.
+   * @returns {?string}
+   */
+  static generateId(date, author, existingIds) {
+    if (!author) {
+      return null;
+    }
+
+    let year = date.getUTCFullYear();
+    let month = date.getUTCMonth();
+    let day = date.getUTCDate();
+    let hours = date.getUTCHours();
+    let minutes = date.getUTCMinutes();
+
+    let id = (
+      zeroPad(year, 4) +
+      zeroPad(month + 1, 2) +
+      zeroPad(day, 2) +
+      zeroPad(hours, 2) +
+      zeroPad(minutes, 2) +
+      '_' +
+      spacesToUnderlines(author)
+    );
+    if (existingIds && existingIds.includes(id)) {
+      let index = 2;
+      const base = id;
+      do {
+        id = `${base}_${index}`;
+        index++;
+      } while (existingIds.includes(id));
+    }
+    existingIds?.push(id);
+
+    return id;
+  }
+
+  /**
    * _For internal use._ Set {@link Comment#logicalLevel logical levels} to the comments taking into
    * account `{{outdent}}` templates.
    */
   static processOutdents() {
-    if (cd.g.pageHasOutdents) {
-      [...cd.g.rootElement.getElementsByClassName(cd.config.outdentClass)]
+    if (this.parser.context.areThereOutdents) {
+      [...this.parser.context.rootElement.getElementsByClassName(cd.config.outdentClass)]
         .reverse()
         .forEach((element) => {
-          const treeWalker = new ElementsTreeWalker(element);
+          const treeWalker = new ElementsTreeWalker(element, this.parser.context.rootElement);
           while (treeWalker.nextNode()) {
             // `null` and `0` as the attribute value are both bad.
-            let commentId = Number(treeWalker.currentNode.getAttribute('data-cd-comment-id'));
-            if (commentId !== 0) {
-              const childComment = cd.comments[commentId];
+            let commentIndex = Number(treeWalker.currentNode.getAttribute('data-cd-comment-index'));
+            if (commentIndex !== 0) {
+              const childComment = cd.comments[commentIndex];
 
               // Find an _actual_ parent of the comment in case the previous one is newer than the
               // child. Example:
               // https://en.wikipedia.org/w/index.php?title=Wikipedia:Village_pump_(technical)&oldid=1044759311#202108282226_Cryptic.
               let parentComment;
 
-              for (let i = commentId - 1; i >= 0; i--) {
+              for (let i = commentIndex - 1; i >= 0; i--) {
                 const comment = cd.comments[i];
                 if (comment.section !== childComment.section) break;
                 if (childComment.date >= comment.date) {
@@ -1384,7 +1439,7 @@ class CommentSkeleton {
               }
               if (!parentComment) break;
 
-              if (parentComment.id !== commentId - 1) {
+              if (parentComment.index !== commentIndex - 1) {
                 // Explicitly set the parent.
                 childComment.cachedParent = childComment.cachedParent || {};
                 childComment.cachedParent.logicalLevel = parentComment;
@@ -1415,7 +1470,7 @@ class CommentSkeleton {
               const childLevel = childComment.level;
 
               childComment.isOutdented = true;
-              cd.comments.slice(commentId).some((comment) => {
+              cd.comments.slice(commentIndex).some((comment) => {
                 if (
                   comment.section !== parentComment.section ||
                   comment.logicalLevel < childLevel ||
@@ -1424,7 +1479,7 @@ class CommentSkeleton {
                   // the same level is outdented together with the child comment. If it is 0 or 1,
                   // the next comment is more likely a regular reply.
                   (
-                    comment.id === childComment.id + 1 &&
+                    comment.index === childComment.index + 1 &&
                     childComment.level < 2 &&
                     comment.level === childComment.level
                   ) ||

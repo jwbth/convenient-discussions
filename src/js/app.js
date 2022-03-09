@@ -8,16 +8,15 @@ import CONFIG_URLS from '../../config/urls.json';
 import I18N_LIST from '../../data/i18nList.json';
 import LANGUAGE_FALLBACKS from '../../data/languageFallbacks.json';
 import Page from './Page';
-import addCommentLinks, { addCommentLinksToSpecialSearch } from './addCommentLinks';
 import cd from './cd';
+import controller from './controller';
 import debug from './debug';
 import defaultConfig from '../../config/default';
 import g from './staticGlobals';
-import processPage from './processPage';
+import { addCommentLinksToSpecialSearch } from './addCommentLinks';
 import {
   buildEditSummary,
   isPageOverlayOn,
-  isProbablyTalkPage,
   mergeRegexps,
   skin$,
   underlinesToSpaces,
@@ -25,16 +24,6 @@ import {
   wrap,
   wrapDiffBody,
 } from './util';
-import {
-  finishLoading,
-  isPageLoading,
-  memorizeCssValues,
-  setTalkPageCssVariables,
-  startLoading,
-} from './boot';
-import { generateCommentAnchor, parseCommentAnchor } from './timestamp';
-import { getUserInfo } from './apiWrappers';
-import { loadSiteData } from './siteData';
 
 let config;
 if (IS_SINGLE) {
@@ -112,7 +101,6 @@ function s(name, ...params) {
  * Get a language string in the "parse" format. Wikilinks are replaced with HTML tags, the code is
  * sanitized. Use this for strings that have their raw HTML inserted into the page.
  *
- *
  * @param {string} name String name.
  * @param {...*} [params] String parameters (substituted strings, also
  *   {@link module:userRegistry~User User} objects for use in `{{gender:}}`).
@@ -164,39 +152,7 @@ function mws(name, ...params) {
 }
 
 /**
- * Add a footer link to enable/disable CD on this page once.
- *
- * @param {boolean} enable
- * @private
- */
-function addFooterLink(enable) {
-  const url = new URL(location.href);
-  url.searchParams.set('cdtalkpage', enable ? '1' : '0');
-  const $li = $('<li>').attr('id', 'footer-places-togglecd');
-  const $a = $('<a>')
-    .attr('href', url.toString())
-    .addClass('noprint')
-    .text(cd.s(enable ? 'footer-runcd' : 'footer-dontruncd'))
-    .appendTo($li);
-  if (enable) {
-    $a.on('click', (e) => {
-      if (!e.ctrlKey && !e.shiftKey && !e.metaKey) {
-        e.preventDefault();
-        history.pushState(history.state, '', url.toString());
-        $li.remove();
-        go();
-      }
-    });
-  }
-  skin$({
-    monobook: '#f-list',
-    modern: '#footer-info',
-    default: '#footer-places',
-  }).append($li);
-}
-
-/**
- * Add the script's strings to `mw.messages`;
+ * Add the script's strings to `mw.messages`.
  *
  * @private
  */
@@ -227,6 +183,122 @@ function setStrings() {
   });
 }
 
+function setGlobals() {
+  // Avoid setting the global object properties if go() runs the second time (see addFooterLink()).
+  if (cd.g.SETTINGS_OPTION_NAME) return;
+
+  /**
+   * Script configuration. The default configuration is in {@link module:defaultConfig}.
+   *
+   * @name config
+   * @type {object}
+   * @memberof convenientDiscussions
+   */
+  cd.config = Object.assign(defaultConfig, cd.config);
+
+  setStrings();
+
+  // For historical reasons, ru.wikipedia.org has 'cd'.
+  const localOptionsPrefix = location.hostname === 'ru.wikipedia.org' ?
+    'cd' :
+    'convenientDiscussions';
+  cd.g.SETTINGS_OPTION_NAME = 'userjs-convenientDiscussions-settings';
+  cd.g.LOCAL_SETTINGS_OPTION_NAME = `userjs-${localOptionsPrefix}-localSettings`;
+  cd.g.VISITS_OPTION_NAME = `userjs-${localOptionsPrefix}-visits`;
+
+  // For historical reasons, ru.wikipedia.org has 'watchedTopics'.
+  const subscriptionsOptionNameEnding = location.hostname === 'ru.wikipedia.org' ?
+    'watchedTopics' :
+    'watchedSections';
+  cd.g.SUBSCRIPTIONS_OPTION_NAME = (
+    `userjs-${localOptionsPrefix}-${subscriptionsOptionNameEnding}`
+  );
+
+  const server = mw.config.get('wgServer');
+  cd.g.SERVER = server.startsWith('//') ? location.protocol + server : server;
+
+  // Worker's location object doesn't have the host name set.
+  cd.g.HOSTNAME = location.hostname;
+
+  cd.g.PAGE_NAME = underlinesToSpaces(mw.config.get('wgPageName'));
+  cd.g.PAGE_TITLE = underlinesToSpaces(mw.config.get('wgTitle'));
+  cd.g.NAMESPACE_NUMBER = mw.config.get('wgNamespaceNumber');
+
+  // "<unregistered>" is a workaround for anonymous users (there are such!).
+  cd.g.USER_NAME = mw.config.get('wgUserName') || '<unregistered>';
+
+  const bodyClassList = document.body.classList;
+
+  cd.g.PAGE_WHITELIST_REGEXP = mergeRegexps(cd.config.pageWhitelist);
+  cd.g.PAGE_BLACKLIST_REGEXP = mergeRegexps(cd.config.pageBlacklist);
+  cd.g.CONTENT_DIR = bodyClassList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
+  cd.g.SKIN = mw.config.get('skin');
+  if (cd.g.SKIN === 'vector' && bodyClassList.contains('skin-vector-legacy')) {
+    cd.g.SKIN = 'vector-legacy';
+  }
+  cd.g.IS_QQX_MODE = /[?&]uselang=qqx(?=&|$)/.test(location.search);
+
+  // Quite a rough check for mobile browsers, a mix of what is advised at
+  // https://stackoverflow.com/a/24600597 (sends to
+  // https://developer.mozilla.org/en-US/docs/Browser_detection_using_the_user_agent) and
+  // https://stackoverflow.com/a/14301832.
+  cd.g.IS_MOBILE = (
+    /Mobi|Android/i.test(navigator.userAgent) ||
+    typeof window.orientation !== 'undefined'
+  );
+
+  cd.g.IS_DT_REPLY_TOOL_ENABLED = bodyClassList.contains('ext-discussiontools-replytool-enabled');
+  cd.g.IS_DT_NEW_TOPIC_TOOL_ENABLED = bodyClassList
+    .contains('ext-discussiontools-newtopictool-enabled');
+  cd.g.IS_DT_TOPIC_SUBSCRIPTION_ENABLED = bodyClassList
+    .contains('ext-discussiontools-topicsubscription-enabled');
+}
+
+/**
+ * Add a footer link to enable/disable CD on this page once.
+ *
+ * @private
+ */
+function addFooterLink() {
+  const enable = !controller.isTalkPage();
+  const url = new URL(location.href);
+  url.searchParams.set('cdtalkpage', enable ? '1' : '0');
+  const $li = $('<li>').attr('id', 'footer-places-togglecd');
+  const $a = $('<a>')
+    .attr('href', url.toString())
+    .addClass('noprint')
+    .text(cd.s(enable ? 'footer-runcd' : 'footer-dontruncd'))
+    .appendTo($li);
+  if (enable) {
+    $a.on('click', (e) => {
+      if (!e.ctrlKey && !e.shiftKey && !e.metaKey) {
+        e.preventDefault();
+        history.pushState(history.state, '', url.toString());
+        $li.remove();
+        go();
+      }
+    });
+  }
+  skin$({
+    monobook: '#f-list',
+    modern: '#footer-info',
+    default: '#footer-places',
+  }).append($li);
+}
+
+function tweakAddTopicButton() {
+  // Change the destination of the "Add topic" button.
+  const $addTopicLink = $('#ca-addsection a');
+  const href = $addTopicLink.prop('href');
+  if (href) {
+    const url = new URL(href);
+    url.searchParams.delete('action');
+    url.searchParams.delete('section');
+    url.searchParams.set('cdaddtopic', 1);
+    $addTopicLink.attr('href', url);
+  }
+}
+
 /**
  * Function executed after the config and localization strings are ready.
  *
@@ -236,305 +308,46 @@ function setStrings() {
 async function go() {
   cd.debug.startTimer('start');
 
-  const bodyClassList = document.body.classList;
-
-  // Avoid setting the global object properties if go() runs the second time (see addFooterLink()).
-  if (!cd.g.SETTINGS_OPTION_NAME) {
-    /**
-     * Script configuration. The default configuration is in {@link module:defaultConfig}.
-     *
-     * @name config
-     * @type {object}
-     * @memberof convenientDiscussions
-     */
-    cd.config = Object.assign(defaultConfig, cd.config);
-
-    setStrings();
-
-    // For historical reasons, ru.wikipedia.org has 'cd'.
-    const localOptionsPrefix = location.hostname === 'ru.wikipedia.org' ?
-      'cd' :
-      'convenientDiscussions';
-    cd.g.SETTINGS_OPTION_NAME = 'userjs-convenientDiscussions-settings';
-    cd.g.LOCAL_SETTINGS_OPTION_NAME = `userjs-${localOptionsPrefix}-localSettings`;
-    cd.g.VISITS_OPTION_NAME = `userjs-${localOptionsPrefix}-visits`;
-
-    // For historical reasons, ru.wikipedia.org has 'watchedTopics'.
-    const subscriptionsOptionNameEnding = location.hostname === 'ru.wikipedia.org' ?
-      'watchedTopics' :
-      'watchedSections';
-    cd.g.SUBSCRIPTIONS_OPTION_NAME = (
-      `userjs-${localOptionsPrefix}-${subscriptionsOptionNameEnding}`
-    );
-
-    const server = mw.config.get('wgServer');
-    cd.g.SERVER = server.startsWith('//') ? location.protocol + server : server;
-
-    cd.g.PAGE_NAME = underlinesToSpaces(mw.config.get('wgPageName'));
-    cd.g.PAGE_TITLE = underlinesToSpaces(mw.config.get('wgTitle'));
-    cd.g.NAMESPACE_NUMBER = mw.config.get('wgNamespaceNumber');
-
-    // "<unregistered>" is a workaround for anonymous users (there are such!).
-    cd.g.USER_NAME = mw.config.get('wgUserName') || '<unregistered>';
-
-    cd.g.PAGE_WHITELIST_REGEXP = mergeRegexps(cd.config.pageWhitelist);
-    cd.g.PAGE_BLACKLIST_REGEXP = mergeRegexps(cd.config.pageBlacklist);
-    cd.g.CONTENT_DIR = bodyClassList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
-    cd.g.SKIN = mw.config.get('skin');
-    cd.g.IS_QQX_MODE = /[?&]uselang=qqx(?=&|$)/.test(location.search);
-
-    // Quite a rough check for mobile browsers, a mix of what is advised at
-    // https://stackoverflow.com/a/24600597 (sends to
-    // https://developer.mozilla.org/en-US/docs/Browser_detection_using_the_user_agent) and
-    // https://stackoverflow.com/a/14301832.
-    cd.g.IS_MOBILE = (
-      /Mobi|Android/i.test(navigator.userAgent) ||
-      typeof window.orientation !== 'undefined'
-    );
-
-    cd.g.$content = $('#mw-content-text');
-  }
-
-  // Not a constant: the diff may be removed from the page (and the URL updated, see
-  // boot~cleanUpUrlAndDom) when it's for the last revision and the page is reloaded using the
-  // script. wgIsArticle config value is not taken into account: if the "Do not show page content
-  // below diffs" setting is on, wgIsArticle is off.
-  cd.g.isDiffPage = /[?&]diff=[^&]/.test(location.search);
-
-  // Not a constant: go() may run the second time, see addFooterLink().
-  cd.g.isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);
-  cd.g.isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
-
-  cd.g.isDtReplyToolEnabled = bodyClassList.contains('ext-discussiontools-replytool-enabled');
-  cd.g.isDtNewTopicToolEnabled = bodyClassList.contains('ext-discussiontools-newtopictool-enabled');
-  cd.g.isDtTopicSubscriptionEnabled = bodyClassList
-    .contains('ext-discussiontools-topicsubscription-enabled');
+  setGlobals();
+  controller.setup();
 
   // Process the page as a talk page
-  const isPageEligible = (
-    !mw.config.get('wgIsRedirect') &&
-    !cd.g.$content.find('.cd-notTalkPage').length &&
-    (
-      isProbablyTalkPage(cd.g.PAGE_NAME, cd.g.NAMESPACE_NUMBER) ||
-      $('#ca-addsection').length ||
-
-      // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
-      // the list of supported namespaces and page white/black list in the configuration. With this
-      // method, there won't be "comment" links for edits on pages that list revisions such as the
-      // watchlist.
-      cd.g.$content.find('.cd-talkPage').length
-    ) &&
-    !(typeof cdOnlyRunByFooterLink !== 'undefined' && window.cdOnlyRunByFooterLink)
-  );
-  cd.g.isPageProcessed = (
-    mw.config.get('wgIsArticle') &&
-    !cd.g.isDisabledInQuery &&
-    (cd.g.isEnabledInQuery || isPageEligible)
-  );
-  let siteDataRequests = [];
   if (mw.config.get('wgIsArticle')) {
-    if (cd.g.isPageProcessed) {
-      startLoading();
-
-      cd.debug.stopTimer('start');
-      cd.debug.startTimer('loading data');
-
-      // Make some requests in advance if the API module is ready in order not to make 2 requests
-      // sequentially. We don't make a userinfo request, because if there is more than one tab in
-      // the background, this request is made and the execution stops at mw.loader.using, which
-      // results in overriding the renewed visits setting of one tab by another tab (the visits are
-      // loaded by one tab, then another tab, then written by one tab, then by another tab).
-      if (mw.loader.getState('mediawiki.api') === 'ready') {
-        siteDataRequests = loadSiteData();
-
-        // We are _not_ calling getUserInfo() here to avoid losing visits data updates from some
-        // pages if more than one page is opened simultaneously. In this situation, visits could be
-        // requested for multiple pages; updated and then saved for each of them with losing the
-        // updates from the rest.
-      }
-
-      const modules = [
-        'jquery.client',
-        'jquery.color',
-        'mediawiki.Title',
-        'mediawiki.Uri',
-        'mediawiki.api',
-        'mediawiki.cookie',
-        'mediawiki.interface.helpers.styles',
-        'mediawiki.jqueryMsg',
-        'mediawiki.notification',
-        'mediawiki.storage',
-        'mediawiki.user',
-        'mediawiki.util',
-        'mediawiki.widgets.visibleLengthLimit',
-        'oojs',
-        'oojs-ui',
-        'oojs-ui.styles.icons-alerts',
-        'oojs-ui.styles.icons-content',
-        'oojs-ui.styles.icons-editing-core',
-        'oojs-ui.styles.icons-interactions',
-        'oojs-ui.styles.icons-movement',
-        'user.options',
-      ];
-
-      // mw.loader.using delays execution even if all modules are ready (if CD is used as a gadget
-      // with preloaded dependencies, for example), so we use this trick.
-      let modulesRequest;
-      let cachedScrollY;
-      if (modules.every((module) => mw.loader.getState(module) === 'ready')) {
-        // If there is no data to load and, therefore, no period of time within which a reflow
-        // (layout thrashing) could happen without impeding performance, we cache the value so that
-        // it could be used in util.saveRelativeScrollPosition without causing a reflow.
-        if (siteDataRequests.every((request) => request.state() === 'resolved')) {
-          cachedScrollY = window.scrollY;
-        }
-      } else {
-        modulesRequest = mw.loader.using(modules);
-      }
-
-      Promise.all([modulesRequest, ...siteDataRequests]).then(
-        async () => {
-          try {
-            await processPage(undefined, siteDataRequests, cachedScrollY);
-          } catch (e) {
-            mw.notify(cd.s('error-processpage'), { type: 'error' });
-            console.error(e);
-            finishLoading();
-          }
-        },
-        (e) => {
-          mw.notify(cd.s('error-loaddata'), { type: 'error' });
-          console.error(e);
-          finishLoading();
-        }
-      );
-
-      // https://phabricator.wikimedia.org/T68598 "mw.loader state of module stuck at "loading" if
-      // request was aborted"
-      setTimeout(() => {
-        if (isPageLoading()) {
-          finishLoading(false);
-          console.warn('The loading overlay stays for more than 10 seconds; removing it.');
-        }
-      }, 10000);
-
-      cd.g.$contentColumn = skin$({
-        timeless: '#mw-content',
-        minerva: '#bodyContent',
-        default: '#content',
-      });
-
-      /*
-        Additions of CSS set a stage for a future reflow which delays operations dependent on
-        rendering, so we run them now, not after the requests are fulfilled, to save time. The
-        overall order is like this:
-        1. Make network requests (above).
-        2. Run operations dependent on rendering, such as window.getComputedStyle() and jQuery's
-           .css() (below). Normally they would initiate a reflow, but, as we haven't changed the
-           layout or added CSS yet, there is nothing to update.
-        3. Run operations that create prerequisites for a reflow, such as adding CSS. Thanks to the
-           fact that the network requests, if any, are already pending, we don't lose time.
-       */
-      memorizeCssValues();
-
-      setTalkPageCssVariables();
-
-      require('../less/global.less');
-      require('../less/Comment.less');
-      require('../less/CommentForm.less');
-      require('../less/Section.less');
-      require('../less/commentLayers.less');
-      require('../less/navPanel.less');
-      require('../less/pageNav.less');
-      require('../less/skin.less');
-      require('../less/talkPage.less');
-
-      addFooterLink(false);
-    } else {
-      addFooterLink(true);
+    if (controller.isTalkPage()) {
+      controller.loadToTalkPage();
     }
+    addFooterLink();
   }
 
-  if (isPageEligible && (mw.config.get('wgAction') !== 'view' || cd.g.isDtNewTopicToolEnabled)) {
-    const $addTopicLink = $('#ca-addsection a');
-    const href = $addTopicLink.prop('href');
-    if (href) {
-      const url = new URL(href);
-      url.searchParams.delete('action');
-      url.searchParams.delete('section');
-      url.searchParams.set('cdaddtopic', 1);
-      $addTopicLink.attr('href', url);
-    }
+  if (
+    controller.isArticlePageTalkPage() &&
+    (mw.config.get('wgAction') !== 'view' || cd.g.IS_DT_NEW_TOPIC_TOOL_ENABLED)
+  ) {
+    tweakAddTopicButton();
   }
 
   // Process the page as a log page
-  const isEligibleSpecialPage = ['Watchlist', 'Contributions', 'Recentchanges']
-    .includes(mw.config.get('wgCanonicalSpecialPageName'));
-  const isEligibleHistoryPage = (
-    mw.config.get('wgAction') === 'history' &&
-    isProbablyTalkPage(cd.g.PAGE_NAME, cd.g.NAMESPACE_NUMBER)
-  );
   if (
-    cd.g.isPageProcessed ||
-    (cd.g.isDiffPage && isPageEligible) ||
-    isEligibleSpecialPage ||
-    isEligibleHistoryPage
+    controller.isWatchlistPage() ||
+    controller.isContributionsPage() ||
+    controller.isHistoryPage() ||
+    (controller.isDiffPage() && controller.isArticlePageTalkPage()) ||
+    controller.isTalkPage()
   ) {
-    // Make some requests in advance if the API module is ready in order not to make 2 requests
-    // sequentially.
-    if (mw.loader.getState('mediawiki.api') === 'ready') {
-      if (!siteDataRequests.length) {
-        siteDataRequests = loadSiteData();
-      }
-
-      // Loading user info on diff pages could lead to problems with saving visits when many pages
-      // are opened, but not yet focused, simultaneously.
-      if (!cd.g.isPageProcessed) {
-        getUserInfo(true).catch((e) => {
-          console.warn(e);
-        });
-      }
-    }
-
-    mw.loader.using([
-      'jquery.client',
-      'mediawiki.Title',
-      'mediawiki.api',
-      'mediawiki.jqueryMsg',
-      'mediawiki.user',
-      'mediawiki.util',
-      'oojs',
-      'oojs-ui',
-      'oojs-ui.styles.icons-alerts',
-      'oojs-ui.styles.icons-editing-list',
-      'oojs-ui.styles.icons-interactions',
-      'user.options',
-    ]).then(
-      () => {
-        addCommentLinks(siteDataRequests);
-
-        // See the comment above: "Additions of CSS...".
-        require('../less/global.less');
-        require('../less/logPages.less');
-      },
-      (e) => {
-        mw.notify(cd.s('error-loaddata'), { type: 'error' });
-        console.error(e);
-      }
-    );
+    controller.loadCommentLinks();
   }
 
   if (mw.config.get('wgCanonicalSpecialPageName') === 'Search') {
     addCommentLinksToSpecialSearch();
   }
 
-  if (!isPageLoading()) {
+  if (!controller.isBooting()) {
     cd.debug.stopTimer('start');
   }
 
   /**
    * The page has been preprocessed (not parsed yet, but its type has been checked and some
-   * important properties have been set).
+   * important mechanisms have been initialized).
    *
    * @event preprocessed
    * @param {object} cd {@link convenientDiscussions} object.
@@ -628,6 +441,74 @@ function getStrings() {
   return Promise.all(requests).catch(() => {});
 }
 
+function setupApi() {
+  /**
+   * Script's publicly available API. Here there are some utilities that we believe should be
+   * accessible for external use.
+   *
+   * If you need some internal method to be available publicly, contact the script's maintainer (or
+   * just make a relevant pull request).
+   *
+   * @namespace api
+   * @memberof convenientDiscussions
+   */
+  cd.api = {};
+
+  /**
+   * @name Page
+   * @type {object}
+   * @see Page
+   * @memberof convenientDiscussions.api
+   */
+  cd.api.Page = Page;
+
+  /**
+   * @see module:timestamp.generateCommentId
+   * @function generateCommentId
+   * @memberof convenientDiscussions.api
+   */
+  cd.api.generateCommentId = Comment.generateId;
+
+  /**
+   * @see module:timestamp.parseCommentId
+   * @function parseCommentId
+   * @memberof convenientDiscussions.api
+   */
+  cd.api.parseCommentId = Comment.parseId;
+
+  /**
+   * @see module:util.buildEditSummary
+   * @function buildEditSummary
+   * @memberof convenientDiscussions.api
+   */
+  cd.api.buildEditSummary = buildEditSummary;
+
+  /**
+   * @see module:util.isPageOverlayOn
+   * @function isPageOverlayOn
+   * @memberof convenientDiscussions.api
+   */
+  cd.api.isPageOverlayOn = isPageOverlayOn;
+
+  /**
+   * @see module:util.wrap
+   * @function wrap
+   * @memberof convenientDiscussions.api
+   */
+  cd.api.wrap = wrap;
+
+  /**
+   * @see module:util.wrapDiffBody
+   * @function wrapDiffBody
+   * @memberof convenientDiscussions.api
+   */
+  cd.api.wrapDiffBody = wrapDiffBody;
+
+  // TODO: Delete after all addons are updated.
+  cd.util = cd.api;
+  cd.g.Page = cd.api.Page;
+}
+
 /**
  * The main script function.
  *
@@ -668,79 +549,10 @@ async function app() {
   cd.sPlain = sPlain;
   cd.mws = mws;
 
-  /**
-   * Collection of script state properties.
-   *
-   * @namespace state
-   * @memberof convenientDiscussions
-   */
-  cd.state = {};
+  // Kind of temporary storage of objects of some script's features. Could be removed at any moment.
+  cd.tests = {};
 
-  /**
-   * Script's publicly available API. Here there are some utilities that we believe should be
-   * accessible for external use.
-   *
-   * If you need some internal method to be available publicly, contact the script's maintainer (or
-   * just make a relevant pull request).
-   *
-   * @namespace api
-   * @memberof convenientDiscussions
-   */
-  cd.api = {};
-
-  /**
-   * @name Page
-   * @type {object}
-   * @see Page
-   * @memberof convenientDiscussions.api
-   */
-  cd.api.Page = Page;
-
-  /**
-   * @see module:timestamp.generateCommentAnchor
-   * @function generateCommentAnchor
-   * @memberof convenientDiscussions.api
-   */
-  cd.api.generateCommentAnchor = generateCommentAnchor;
-
-  /**
-   * @see module:timestamp.parseCommentAnchor
-   * @function parseCommentAnchor
-   * @memberof convenientDiscussions.api
-   */
-  cd.api.parseCommentAnchor = parseCommentAnchor;
-
-  /**
-   * @see module:util.buildEditSummary
-   * @function buildEditSummary
-   * @memberof convenientDiscussions.api
-   */
-  cd.api.buildEditSummary = buildEditSummary;
-
-  /**
-   * @see module:util.isPageOverlayOn
-   * @function isPageOverlayOn
-   * @memberof convenientDiscussions.api
-   */
-  cd.api.isPageOverlayOn = isPageOverlayOn;
-
-  /**
-   * @see module:util.wrap
-   * @function wrap
-   * @memberof convenientDiscussions.api
-   */
-  cd.api.wrap = wrap;
-
-  /**
-   * @see module:util.wrapDiffBody
-   * @function wrapDiffBody
-   * @memberof convenientDiscussions.api
-   */
-  cd.api.wrapDiffBody = wrapDiffBody;
-
-  // TODO: Delete after all addons are updated.
-  cd.util = cd.api;
-  cd.g.Page = cd.api.Page;
+  setupApi();
 
   cd.debug.init();
   cd.debug.startTimer('total time');

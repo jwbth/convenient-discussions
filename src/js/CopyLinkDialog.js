@@ -167,10 +167,10 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    * @returns {JQuery}
    */
   createAnchorPanelContent() {
-    // Doesn't apply to DT anchors.
+    // Doesn't apply to DT IDs.
     let helpOnlyCd;
     let helpNotOnlyCd;
-    if (this.isComment && this.content.anchor === this.object.anchor) {
+    if (this.isComment && this.content.id === this.object.id) {
       helpOnlyCd = cd.s('cld-help-onlycd');
       helpNotOnlyCd = wrap(cd.sParse('cld-help-notonlycd'));
     }

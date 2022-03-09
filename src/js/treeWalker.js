@@ -4,8 +4,6 @@
  * @module treeWalker
  */
 
-import cd from './cd';
-
 /**
  * Generalization and simplification of the
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/TreeWalker TreeWalker web API} for the
@@ -168,9 +166,9 @@ export class ElementsTreeWalker extends TreeWalker {
    * Create an elements {@link module:treeWalker.TreeWalker tree walker}.
    *
    * @param {Node|external:Node} [startNode]
-   * @param {Node|external:Node} [root=cd.g.rootElement]
+   * @param {Node|external:Node} [root]
    */
-  constructor(startNode, root = cd.g.rootElement) {
+  constructor(startNode, root) {
     super(root, null, true);
     if (startNode) {
       this.currentNode = startNode;
@@ -189,9 +187,9 @@ export class ElementsAndTextTreeWalker extends TreeWalker {
    * Create an elements and text {@link module:treeWalker.TreeWalker tree walker}.
    *
    * @param {Node|external:Node} [startNode]
-   * @param {Node|external:Node} [root=cd.g.rootElement]
+   * @param {Node|external:Node} [root]
    */
-  constructor(startNode, root = cd.g.rootElement) {
+  constructor(startNode, root) {
     super(root, (node) => node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE);
     if (startNode) {
       this.currentNode = startNode;

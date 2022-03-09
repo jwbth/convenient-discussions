@@ -385,7 +385,7 @@ export default {
       code = code.replace(
         /(\n?\n)$/,
         function (newlines) {
-          return '\n' + (cd.settings.closerTemplate || '{{'.concat('subst:ПИ}}')) + newlines;
+          return '\n' + (cd.settings.get('closerTemplate') || '{{'.concat('subst:ПИ}}')) + newlines;
         }
       );
     }
@@ -480,7 +480,7 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
       if (window.messagesHighlightColor !== undefined) {
         const dummyElement = document.createElement('span');
         dummyElement.style.color = window.messagesHighlightColor;
-        const hlmStyledElements = cd.g.rootElement.querySelectorAll(
+        const hlmStyledElements = cd.api.rootElement.querySelectorAll(
           '.cd-comment-part[style="background-color: ' + dummyElement.style.color + ';"],' +
           '.cd-comment-part[style="background-color: ' + window.messagesHighlightColor + '"]'
         );

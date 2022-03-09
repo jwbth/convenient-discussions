@@ -3,10 +3,11 @@ const getTimezoneOffset = require('date-fns-tz').getTimezoneOffset;
 const Comment = require('../src/js/Comment').default;
 const cd = require('../src/js/cd').default;
 const en = require('../i18n/en.json');
+const settings = require('../src/js/settings').default;
 const g = require('../src/js/staticGlobals').default;
 const { formatDateNative, initDayjs } = require('../src/js/timestamp');
 
-cd.settings = {};
+settings.init();
 cd.g = g;
 cd.g.USER_LANGUAGE = 'en';
 cd.g.UI_DATE_FORMAT = 'H:i, j F Y';
@@ -90,14 +91,14 @@ function testWithSettings(
     cd.g.UI_TIMEZONE_OFFSET = (
       getTimezoneOffset(timezone, dateObj.getTime()) / cd.g.MILLISECONDS_IN_MINUTE
     );
-    cd.settings.timestampFormat = timestampFormat;
-    cd.settings.useUiTime = useUiTime;
-    cd.settings.hideTimezone = hideTimezone;
+    settings.set('timestampFormat', timestampFormat);
+    settings.set('useUiTime', useUiTime);
+    settings.set('hideTimezone', hideTimezone);
     cd.g.ARE_TIMESTAMPS_ALTERED = (
-      (cd.settings.useUiTime && 'UTC' !== cd.g.UI_TIMEZONE) ||
-      cd.settings.timestampFormat !== 'default' ||
+      (settings.get('useUiTime') && 'UTC' !== cd.g.UI_TIMEZONE) ||
+      settings.get('timestampFormat') !== 'default' ||
       mw.config.get('wgContentLanguage') !== cd.g.USER_LANGUAGE ||
-      cd.settings.hideTimezone
+      settings.get('hideTimezone')
     );
 
     if (contentLanguage) {

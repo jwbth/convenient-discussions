@@ -1,6 +1,6 @@
 /**
- * Comment timestamp and also anchor processing utilities. Timestamp formats are set in
- * {@link module:siteData}. Functions related to wikitext parsing go in {@link module:wikitext}.
+ * Comment timestamp processing utilities. Timestamp formats are set in {@link module:siteData}.
+ * Functions related to wikitext parsing go in {@link module:wikitext}.
  *
  * Terminology used here (and in other modules):
  * - "date" is a `Date` object,
@@ -9,6 +9,9 @@
  * @module timestamp
  */
 
+// Note: cd.settings is used in this module instead of imported "settings" to prevent adding that
+// module to the worker build (and a lot of others together with it).
+
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
@@ -16,17 +19,9 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import { getTimezoneOffset } from 'date-fns-tz';
 
 import cd from './cd';
-import {
-  getContentLanguageMessages,
-  removeDirMarks,
-  spacesToUnderlines,
-  underlinesToSpaces,
-} from './util';
+import { getContentLanguageMessages, removeDirMarks, zeroPad } from './util';
 
-let parseTimestampContentRegexp;
-let parseTimestampUiRegexp;
 let utcString;
-let areUiAndLocalTimezoneSame;
 
 export const dateTokenToMessageNames = {
   xg: [
@@ -75,8 +70,6 @@ export const relativeTimeThresholds = [
   // also too complex.
 ];
 
-let commentAnchors = [];
-
 /**
  * _For internal use._ Prepare `dayjs` object for further use (add plugins and a locale).
  */
@@ -90,284 +83,6 @@ export function initDayjs() {
 
   dayjs.extend(utc);
   dayjs.extend(timezone);
-
-  // TODO: remove after testing.
-  cd.g.dayjs = dayjs;
-}
-
-/**
- * Get a regexp that matches timestamps (without timezone at the end) generated using the given date
- * format.
- *
- * This only supports format characters that are used by the default date format in any of
- * MediaWiki's languages, namely: D, d, F, G, H, i, j, l, M, n, Y, xg, xkY (and escape characters),
- * and only dates when MediaWiki existed, let's say 2000 onwards (Thai dates before 1941 are
- * complicated).
- *
- * @param {string} language `'content'` or `'user'`.
- * @returns {string} Pattern to be a part of a regular expression.
- * @private
- * @author Bartosz Dziewoński <matma.rex@gmail.com>
- * @author Jack who built the house
- * @license MIT
- */
-function getTimestampMainPartPattern(language) {
-  const isContentLanguage = language === 'content';
-  const format = isContentLanguage ? cd.g.CONTENT_DATE_FORMAT : cd.g.UI_DATE_FORMAT;
-  const digits = isContentLanguage ? cd.g.CONTENT_DIGITS : cd.g.UI_DIGITS;
-  const digitsPattern = digits ? `[${digits}]` : '\\d';
-
-  const regexpGroup = (regexp) => '(' + regexp + ')';
-  const regexpAlternateGroup = (arr) => '(' + arr.map(mw.util.escapeRegExp).join('|') + ')';
-
-  let s = '\\b';
-
-  for (let p = 0; p < format.length; p++) {
-    let num = false;
-    let code = format[p];
-    if ((code === 'x' && p < format.length - 1) || (code === 'xk' && p < format.length - 1)) {
-      code += format[++p];
-    }
-
-    switch (code) {
-      case 'xx':
-        s += 'x';
-        break;
-      case 'xg':
-      case 'D':
-      case 'l':
-      case 'F':
-      case 'M': {
-        const messages = isContentLanguage ?
-          getContentLanguageMessages(dateTokenToMessageNames[code]) :
-          dateTokenToMessageNames[code].map(mw.msg);
-        s += regexpAlternateGroup(messages);
-        break;
-      }
-      case 'd':
-      case 'H':
-      case 'i':
-        num = '2';
-        break;
-      case 'j':
-      case 'n':
-      case 'G':
-        num = '1,2';
-        break;
-      case 'Y':
-      case 'xkY':
-        num = '4';
-        break;
-      case '\\':
-        // Backslash escaping
-        if (p < format.length - 1) {
-          s += format[++p];
-        } else {
-          s += '\\';
-        }
-        break;
-      case '"':
-        // Quoted literal
-        if (p < format.length - 1) {
-          const endQuote = format.indexOf('"', p + 1)
-          if (endQuote === -1) {
-            // No terminating quote, assume literal "
-            s += '"';
-          } else {
-            s += format.substr(p + 1, endQuote - p - 1);
-            p = endQuote;
-          }
-        } else {
-          // Quote at end of string, assume literal "
-          s += '"';
-        }
-        break;
-      default:
-        s += mw.util.escapeRegExp(format[p]);
-    }
-    if (num !== false) {
-      s += regexpGroup(digitsPattern + '{' + num + '}');
-    }
-  }
-
-  return s;
-}
-
-/**
- * Get codes of date components for the function that parses timestamps in the local date format
- * based on the result of matching the regexp set by `setTimestampRegexps()`.
- *
- * @param {string} format
- * @returns {string[]}
- * @private
- * @author Bartosz Dziewoński <matma.rex@gmail.com>
- * @author Jack who built the house
- * @license MIT
- */
-function getMatchingGroups(format) {
-  const matchingGroups = [];
-  for (let p = 0; p < format.length; p++) {
-    let code = format[p];
-    if ((code === 'x' && p < format.length - 1) || (code === 'xk' && p < format.length - 1)) {
-      code += format[++p];
-    }
-
-    switch (code) {
-      case 'xx':
-        break;
-      case 'xg':
-      case 'd':
-      case 'j':
-      case 'D':
-      case 'l':
-      case 'F':
-      case 'M':
-      case 'n':
-      case 'Y':
-      case 'xkY':
-      case 'G':
-      case 'H':
-      case 'i':
-        matchingGroups.push(code);
-        break;
-      case '\\':
-        // Backslash escaping
-        if (p < format.length - 1) {
-          ++p;
-        }
-        break;
-      case '"':
-        // Quoted literal
-        if (p < format.length - 1) {
-          const endQuote = format.indexOf('"', p + 1)
-          if (endQuote !== -1) {
-            p = endQuote;
-          }
-        }
-        break;
-      default:
-        break;
-    }
-  }
-
-  return matchingGroups;
-}
-
-/**
- * _For internal use._ Set the global object properties related to timestamp parsing.
- *
- * @param {string} language
- */
-export function initTimestampParsingTools(language) {
-  if (language === 'content') {
-    const mainPartPattern = getTimestampMainPartPattern('content');
-    const utcPattern = mw.util.escapeRegExp(mw.message('(content)timezone-utc').parse());
-    const timezonePattern = '\\((?:' + utcPattern + '|[A-Z]{1,5}|[+-]\\d{0,4})\\)';
-
-    /**
-     * Regular expression for matching timestamps in content.
-     *
-     * ` +` to account for RTL and LTR marks replaced with a space.
-     *
-     * @name CONTENT_TIMESTAMP_REGEXP
-     * @type {RegExp}
-     * @memberof convenientDiscussions.g
-     */
-    cd.g.CONTENT_TIMESTAMP_REGEXP = new RegExp(mainPartPattern + ' +' + timezonePattern);
-
-    /**
-     * Regular expression for matching timestamps in content with no timezone at the end.
-     *
-     * @name CONTENT_TIMESTAMP_NO_TZ_REGEXP
-     * @type {RegExp}
-     * @memberof convenientDiscussions.g
-     */
-    cd.g.CONTENT_TIMESTAMP_NO_TZ_REGEXP = new RegExp(mainPartPattern);
-
-    /**
-     * Codes of date (in content language) components for the timestamp parser function.
-     *
-     * @name CONTENT_TIMESTAMP_MATCHING_GROUPS
-     * @type {string[]}
-     * @memberof convenientDiscussions.g
-     */
-    cd.g.CONTENT_TIMESTAMP_MATCHING_GROUPS = getMatchingGroups(cd.g.CONTENT_DATE_FORMAT);
-
-    /**
-     * Regular expression for matching timezone, with the global flag.
-     *
-     * @name TIMEZONE_REGEXP
-     * @type {RegExp}
-     * @memberof convenientDiscussions.g
-     */
-    cd.g.TIMEZONE_REGEXP = new RegExp(timezonePattern, 'g');
-  } else {
-    /**
-     * Regular expression for matching timestamps in the interface with no timezone at the end.
-     *
-     * @name UI_TIMESTAMP_REGEXP
-     * @type {RegExp}
-     * @memberof convenientDiscussions.g
-     */
-    cd.g.UI_TIMESTAMP_REGEXP = new RegExp(getTimestampMainPartPattern('user'));
-
-    /**
-     * Codes of date (in interface language) components for the timestamp parser function.
-     *
-     * @name UI_TIMESTAMP_MATCHING_GROUPS
-     * @type {string[]}
-     * @memberof convenientDiscussions.g
-     */
-    cd.g.UI_TIMESTAMP_MATCHING_GROUPS = getMatchingGroups(cd.g.UI_DATE_FORMAT);
-  }
-
-  const timezoneParts = mw.user.options.get('timecorrection')?.split('|');
-
-  /**
-   * Timezone per user preferences: standard timezone name or offset in minutes. `'UTC'` is always
-   * used instead of `0`.
-   *
-   * @name UI_TIMEZONE
-   * @type {?(string|number)}
-   * @memberof convenientDiscussions.g
-   */
-  cd.g.UI_TIMEZONE = ((timezoneParts && timezoneParts[2]) || Number(timezoneParts[1])) ?? null;
-  if (cd.g.UI_TIMEZONE === 0) {
-    cd.g.UI_TIMEZONE = 'UTC';
-  }
-
-  /**
-   * Timezone _offset_ in minutes per user preferences.
-   *
-   * @name UI_TIMEZONE_OFFSET
-   * @type {?number}
-   * @memberof convenientDiscussions.g
-   */
-  cd.g.UI_TIMEZONE_OFFSET = Number(timezoneParts[1]) ?? null;
-
-  try {
-    areUiAndLocalTimezoneSame = (
-      cd.g.UI_TIMEZONE === Intl.DateTimeFormat().resolvedOptions().timeZone
-    );
-  } catch {
-    // Empty
-  }
-
-  if (language === 'content') {
-    /**
-     * Whether comment timestamps are altered somehow.
-     *
-     * @name ARE_TIMESTAMPS_ALTERED
-     * @type {boolean|undefined}
-     * @memberof convenientDiscussions.g
-     */
-    cd.g.ARE_TIMESTAMPS_ALTERED = (
-      (cd.settings.useUiTime && cd.g.CONTENT_TIMEZONE !== cd.g.UI_TIMEZONE) ||
-      cd.settings.timestampFormat !== 'default' ||
-      mw.config.get('wgContentLanguage') !== cd.g.USER_LANGUAGE ||
-      cd.settings.hideTimezone
-    );
-  }
 }
 
 /**
@@ -466,16 +181,6 @@ export function getDateFromTimestampMatch(match, timezone) {
 }
 
 /**
- * Check if a fragment is a comment anchor in the CD format.
- *
- * @param {string} fragment
- * @returns {boolean}
- */
-export function isCommentAnchor(fragment) {
-  return /^\d{12}_.+$/.test(fragment);
-}
-
-/**
  * @typedef {object} ParseTimestampReturn
  * @property {Date} date
  * @property {object} match
@@ -492,26 +197,12 @@ export function isCommentAnchor(fragment) {
 export function parseTimestamp(timestamp, timezone) {
   // Remove left-to-right and right-to-left marks that are sometimes copied from the edit history to
   // the timestamp (for example, https://meta.wikimedia.org/w/index.php?diff=20418518).
-  timestamp = removeDirMarks(timestamp, true);
+  const adjustedTimestamp = removeDirMarks(timestamp, true);
 
-  // Creating these regexps every time takes too long (say, 5ms for 1000 runs on an average
-  // machine), so we cache them.
-  let regexp;
-  if (timezone === undefined) {
-    parseTimestampContentRegexp = (
-      parseTimestampContentRegexp ||
-      new RegExp(`^([^]*)(${cd.g.CONTENT_TIMESTAMP_REGEXP.source})(?!["»])`)
-    );
-    regexp = parseTimestampContentRegexp;
-  } else {
-    parseTimestampUiRegexp = (
-      parseTimestampUiRegexp ||
-      new RegExp(`^([^]*)(${cd.g.UI_TIMESTAMP_REGEXP.source})`)
-    );
-    regexp = parseTimestampUiRegexp;
-  }
-
-  const match = timestamp.match(regexp);
+  const regexp = timezone === undefined ?
+    cd.g.PARSE_TIMESTAMP_CONTENT_REGEXP :
+    cd.g.PARSE_TIMESTAMP_UI_REGEXP;
+  const match = adjustedTimestamp.match(regexp);
   if (!match) {
     return null;
   }
@@ -555,27 +246,15 @@ function generateTimezonePostfix(offset) {
  */
 export function formatDate(date, addTimezone = false) {
   let timestamp;
-  if (cd.settings.timestampFormat === 'default') {
+  if (cd.settings.get('timestampFormat') === 'default') {
     timestamp = formatDateNative(date, addTimezone);
-  } else if (cd.settings.timestampFormat === 'improved') {
+  } else if (cd.settings.get('timestampFormat') === 'improved') {
     timestamp = formatDateImproved(date, addTimezone);
-  } else if (cd.settings.timestampFormat === 'relative') {
+  } else if (cd.settings.get('timestampFormat') === 'relative') {
     timestamp = formatDateRelative(date);
   }
 
   return timestamp;
-}
-
-/**
- * Pad a number with zeros like this: `4` → `04` or `0004`.
- *
- * @param {number} number Number to pad.
- * @param {number} length Length of the resultant string.
- * @returns {string}
- * @private
- */
-function zeroPad(number, length) {
-  return ('0000' + number).slice(-length);
 }
 
 /**
@@ -594,8 +273,8 @@ export function formatDateNative(date, addTimezone = false, timezone) {
   let hours;
   let minutes;
   let dayOfWeek;
-  if (cd.settings.useUiTime && !['UTC', 0].includes(cd.g.UI_TIMEZONE) && !timezone) {
-    if (areUiAndLocalTimezoneSame) {
+  if (cd.settings.get('useUiTime') && !['UTC', 0].includes(cd.g.UI_TIMEZONE) && !timezone) {
+    if (cd.g.ARE_UI_AND_LOCAL_TIMEZONE_SAME) {
       timezoneOffset = -date.getTimezoneOffset();
     } else {
       timezoneOffset = typeof cd.g.UI_TIMEZONE === 'number' ?
@@ -626,7 +305,7 @@ export function formatDateNative(date, addTimezone = false, timezone) {
     dayOfWeek = date.getUTCDay();
   }
 
-  let s = '';
+  let string = '';
   const format = cd.g.UI_DATE_FORMAT;
   for (let p = 0; p < format.length; p++) {
     let code = format[p];
@@ -636,48 +315,48 @@ export function formatDateNative(date, addTimezone = false, timezone) {
 
     switch (code) {
       case 'xx':
-        s += 'x';
+        string += 'x';
         break;
       case 'xg':
       case 'F':
       case 'M':
-        s += dateTokenToMessageNames[code].map(mw.msg)[monthIdx];
+        string += dateTokenToMessageNames[code].map(mw.msg)[monthIdx];
         break;
       case 'd':
-        s += zeroPad(day, 2);
+        string += zeroPad(day, 2);
         break;
       case 'D':
       case 'l': {
-        s += dateTokenToMessageNames[code].map(mw.msg)[dayOfWeek];
+        string += dateTokenToMessageNames[code].map(mw.msg)[dayOfWeek];
         break;
       }
       case 'j':
-        s += day;
+        string += day;
         break;
       case 'n':
-        s += monthIdx + 1;
+        string += monthIdx + 1;
         break;
       case 'Y':
-        s += year;
+        string += year;
         break;
       case 'xkY':
-        s += year + 543;
+        string += year + 543;
         break;
       case 'G':
-        s += hours;
+        string += hours;
         break;
       case 'H':
-        s += zeroPad(hours, 2);
+        string += zeroPad(hours, 2);
         break;
       case 'i':
-        s += zeroPad(minutes, 2);
+        string += zeroPad(minutes, 2);
         break;
       case '\\':
         // Backslash escaping
         if (p < format.length - 1) {
-          s += format[++p];
+          string += format[++p];
         } else {
-          s += '\\';
+          string += '\\';
         }
         break;
       case '"':
@@ -686,26 +365,26 @@ export function formatDateNative(date, addTimezone = false, timezone) {
           const endQuote = format.indexOf('"', p + 1)
           if (endQuote === -1) {
             // No terminating quote, assume literal "
-            s += '"';
+            string += '"';
           } else {
-            s += format.substr(p + 1, endQuote - p - 1);
+            string += format.substr(p + 1, endQuote - p - 1);
             p = endQuote;
           }
         } else {
           // Quote at end of string, assume literal "
-          s += '"';
+          string += '"';
         }
         break;
       default:
-        s += format[p];
+        string += format[p];
     }
   }
 
   if (addTimezone) {
-    s += generateTimezonePostfix(timezoneOffset);
+    string += generateTimezonePostfix(timezoneOffset);
   }
 
-  return s;
+  return string;
 }
 
 /**
@@ -719,8 +398,8 @@ export function formatDateImproved(date, addTimezone = false) {
   let now = new Date();
   let dayjsDate = dayjs(date);
   let timezoneOffset;
-  if (cd.settings.useUiTime && !['UTC', 0].includes(cd.g.UI_TIMEZONE)) {
-    if (areUiAndLocalTimezoneSame) {
+  if (cd.settings.get('useUiTime') && !['UTC', 0].includes(cd.g.UI_TIMEZONE)) {
+    if (cd.g.ARE_UI_AND_LOCAL_TIMEZONE_SAME) {
       timezoneOffset = -date.getTimezoneOffset();
     } else {
       timezoneOffset = typeof cd.g.UI_TIMEZONE === 'number' ?
@@ -793,171 +472,4 @@ export function formatDateRelative(date) {
     roundingMethod: 'floor',
     locale: cd.i18n[cd.g.USER_LANGUAGE].dateFnsLocale,
   });
-}
-
-/**
- * Format a timestamp and produce its title text.
- *
- * @param {Date} date
- * @param {string} originalTimestamp
- * @returns {object}
- */
-export function formatTimestamp(date, originalTimestamp) {
-  let timestamp;
-  let title = '';
-  if (cd.g.ARE_TIMESTAMPS_ALTERED) {
-    timestamp = formatDate(date, !cd.settings.hideTimezone);
-  }
-
-  if (
-    cd.settings.timestampFormat === 'relative' &&
-    cd.settings.useUiTime &&
-    cd.g.CONTENT_TIMEZONE !== cd.g.UI_TIMEZONE
-  ) {
-    title = formatDateNative(date, true) + '\n';
-  }
-
-  title += originalTimestamp;
-
-  return { timestamp, title };
-}
-
-/**
- * Generate a comment anchor from a date and author.
- *
- * @param {Date} date
- * @param {string} author
- * @param {boolean} [resolveCollisions=false] If set to `true`, anchors that collide with anchors
- *   already registered via {@link module:timestamp.registerCommentAnchor} will get a `_<number>`
- *   postfix.
- * @returns {string}
- */
-export function generateCommentAnchor(date, author, resolveCollisions = false) {
-  let year = date.getUTCFullYear();
-  let month = date.getUTCMonth();
-  let day = date.getUTCDate();
-  let hours = date.getUTCHours();
-  let minutes = date.getUTCMinutes();
-
-  let anchor = (
-    zeroPad(year, 4) +
-    zeroPad(month + 1, 2) +
-    zeroPad(day, 2) +
-    zeroPad(hours, 2) +
-    zeroPad(minutes, 2) +
-    '_' +
-    spacesToUnderlines(author)
-  );
-  if (resolveCollisions && commentAnchors.includes(anchor)) {
-    let index = 2;
-    const base = anchor;
-    do {
-      anchor = `${base}_${index}`;
-      index++;
-    } while (commentAnchors.includes(anchor));
-  }
-  return anchor;
-}
-
-/**
- * Add a comment anchor to the registry to avoid collisions.
- *
- * @param {string} anchor
- */
-export function registerCommentAnchor(anchor) {
-  if (anchor) {
-    commentAnchors.push(anchor);
-  }
-}
-
-/**
- * Empty the comment anchor registry.
- *
- * Meant to be executed any time we start processing a new page. If we forget to run it, the newly
- * registered anchors can get extra `_2` or similar text at the end due to collisions with the
- * existing anchors that were not unloaded.
- */
-export function resetCommentAnchors() {
-  commentAnchors = [];
-}
-
-/**
- * @typedef {object} ParseCommentAnchorReturn
- * @property {Date} date
- * @property {string} author
- */
-
-/**
- * Extract a date and author from a comment anchor. Currently doesn't extract the index (if there
- * are multiple comments with the same timestamp on the page), but it wasn't needed yet in the
- * script.
- *
- * @param {string} anchor
- * @returns {?ParseCommentAnchorReturn}
- */
-export function parseCommentAnchor(anchor) {
-  const match = anchor.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})_(.+)$/);
-  if (!match) {
-    return null;
-  }
-
-  const year = Number(match[1]);
-  const month = Number(match[2]) - 1;
-  const day = Number(match[3]);
-  const hours = Number(match[4]);
-  const minutes = Number(match[5]);
-  const author = underlinesToSpaces(match[6]);
-
-  const date = new Date(Date.UTC(year, month, day, hours, minutes));
-
-  return { date, author };
-}
-
-/**
- * Parse a comment ID in the DiscussionTools format.
- *
- * @param {string} id Comment ID in the DiscussionTools format.
- * @returns {?object}
- */
-export function parseDtCommentId(id) {
-  if (!id.startsWith('c-')) {
-    return null;
-  }
-  const regexp = /^c-(.+?)-(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z)(?:-(.+))?$/;
-  let [, author, timestamp, parent] = id.match(regexp) || [];
-  if (!author) {
-    return null;
-  }
-  author = underlinesToSpaces(author);
-  const date = new Date(timestamp);
-  let parentAuthor;
-  let parentTimestamp;
-  let parentDate;
-  let index;
-  let sectionAnchorBeginning;
-  if (parent) {
-    const regexp = /(.+)-(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z)(?:-(\d+))?$/;
-    [, parentAuthor, parentTimestamp, index] = parent.match(regexp) || [];
-    if (parentAuthor) {
-      parentAuthor = underlinesToSpaces(parentAuthor);
-      parentDate = new Date(parentTimestamp);
-    } else {
-      // Doesn't account for cases when the section headline ends with "-[number]"
-      [, sectionAnchorBeginning, index] = parent.match(/^(.+?)(?:-(\d+))?$/);
-    }
-  }
-  return { author, date, parentAuthor, parentDate, sectionAnchorBeginning, index };
-}
-
-/**
- * Generate a section ID in the DiscussionTools format.
- *
- * @param {string} name
- * @param {string} timestamp
- * @returns {string}
- */
-export function generateDtSubscriptionId(name, timestamp) {
-  const date = new Date(timestamp);
-  date.setSeconds(0);
-  return `h-${spacesToUnderlines(name)}-${date.toISOString()}`;
 }

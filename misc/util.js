@@ -2,8 +2,8 @@ require('json5/lib/register.js');
 
 const config = require('./../config.json5');
 
-function wikiUrlencode(s) {
-  return encodeURIComponent(s)
+function wikiUrlencode(string) {
+  return encodeURIComponent(string)
     .replace(/'/g, '%27')
     .replace(/%20/g, '_')
     .replace(/%3B/g, ';')
@@ -32,8 +32,8 @@ function unique(item, i, arr) {
   return arr.indexOf(item) === i;
 }
 
-function replaceEntitiesInI18n(s) {
-  return s
+function replaceEntitiesInI18n(string) {
+  return string
     .replace(/&nbsp;/g, '\xa0')
     .replace(/&#32;/g, ' ')
     .replace(/&rlm;/g, '\u202b')

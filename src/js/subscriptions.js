@@ -7,20 +7,21 @@
 
 import CdError from './CdError';
 import cd from './cd';
-import { dtSubscribe, getDtSubscriptions } from './apiWrappers';
+import controller from './controller';
+import settings from './settings';
 import {
+  dtSubscribe,
+  getDtSubscriptions,
   getLegacySubscriptions,
-  getSettings,
   setLegacySubscriptions,
-  setSettings,
-} from './options';
+} from './apiWrappers';
 import { showEditSubscriptionsDialog, showSettingsDialog } from './modal';
 import { unique, wrap } from './util';
 
 let subscribeLegacyPromise = Promise.resolve();
 
 export default {
-  async makeLoadRequest(reuse, passedData) {
+  async makeLoadRequest(reuse) {
     if (this.useTopicSubscription) {
       const subscriptionIds = cd.sections
         .map((section) => section.subscribeId)
@@ -37,8 +38,8 @@ export default {
         // Manually add/remove a section that was added/removed at the same moment the page was
         // reloaded last time, so when we requested the watched sections from server, this section
         // wasn't there yet most probably.
-        this.updateRegistry(passedData.justSubscribedToSection, true);
-        this.updateRegistry(passedData.justUnsubscribedFromSection, false);
+        this.updateRegistry(controller.bootProcess.data('justSubscribedToSection'), true);
+        this.updateRegistry(controller.bootProcess.data('justUnsubscribedFromSection'), false);
       }
     }
   },
@@ -48,25 +49,18 @@ export default {
    * `allPagesRegistry` in case of the legacy subscriptions) property.
    *
    * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
-   * @param {object} [passedData={}]
-   * @param {string} [passedData.justSubscribedToSection] Headline of the section that was
-   *   subscribed to within seconds before making this request (it could be not enough time for it
-   *   to appear in the response).
-   * @param {string} [passedData.justUnsubscribedFromSection] Headline of the section that was
-   *   unsubscribed from within seconds before making this request (it could be not enough time for
-   *   it to appear in the response).
    * @returns {Promise.<object>}
    */
-  load(reuse = false, passedData = {}) {
-    this.useTopicSubscription = cd.settings.useTopicSubscription;
-    this.seenNotice = cd.settings.topicSubscriptionSeenNotice;
+  load(reuse = false) {
+    this.useTopicSubscription = settings.get('useTopicSubscription');
+    this.seenNotice = settings.get('topicSubscriptionSeenNotice');
 
     delete this.registry;
     if (this.allPagesRegistry) {
       delete this.allPagesRegistry;
     }
 
-    this.loadRequest = this.makeLoadRequest(reuse, passedData);
+    this.loadRequest = this.makeLoadRequest(reuse);
     return this.loadRequest;
   },
 
@@ -96,9 +90,9 @@ export default {
     }
   },
 
-  async dtSubscribe(subscribeId, anchor, subscribe) {
+  async dtSubscribe(subscribeId, id, subscribe) {
     try {
-      await dtSubscribe(subscribeId, anchor, subscribe);
+      await dtSubscribe(subscribeId, id, subscribe);
       this.updateRegistry(subscribeId, subscribe);
     } catch (e) {
       mw.notify(cd.s('error-settings-save'), { type: 'error' });
@@ -196,7 +190,7 @@ export default {
     return subscribeLegacyPromise;
   },
 
-  subscribe(subscribeId, anchor, unsubscribeHeadline) {
+  subscribe(subscribeId, id, unsubscribeHeadline) {
     if (subscribeId === undefined) return;
 
     return this.useTopicSubscription ?
@@ -282,7 +276,7 @@ export default {
   async maybeShowNotice() {
     if (!this.useTopicSubscription || this.seenNotice) return;
 
-    const settings = await getSettings();
+    const loadedSettings = await settings.load();
     const $body = $('<div>');
     const $img = $('<img>')
       .attr('width', 512)
@@ -300,8 +294,10 @@ export default {
     }).$wrapper.addClass('cd-tsnotice-text');
     $body.append($img, $div);
     OO.ui.alert($body, { size: 'large' });
-    cd.settings.topicSubscriptionSeenNotice = settings.topicSubscriptionSeenNotice = true;
-    setSettings(settings);
+
+    loadedSettings.topicSubscriptionSeenNotice = true;
+    settings.save(loadedSettings);
+    settings.set('topicSubscriptionSeenNotice', true);
     this.seenNotice = true;
   },
 

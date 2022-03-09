@@ -2,6 +2,7 @@ import dayjs from 'dayjs';
 
 import cd from './cd';
 import navPanel from './navPanel';
+import settings from './settings';
 import { formatDate, relativeTimeThresholds } from './timestamp';
 import { removeFromArrayIfPresent } from './util';
 
@@ -57,7 +58,7 @@ class LiveTimestamp {
      */
     this.callback = callback;
 
-    if (cd.settings.timestampFormat === 'improved') {
+    if (settings.get('timestampFormat') === 'improved') {
       if (!improvedTimestampsInitted) {
         // Timestamps of the "improved" format are updated all together, on the border of days. So,
         // we only need to initiate the timeouts once.
@@ -66,7 +67,7 @@ class LiveTimestamp {
       if (date.getTime() > yesterdayStart) {
         improvedTimestamps.push(this);
       }
-    } else if (cd.settings.timestampFormat === 'relative') {
+    } else if (settings.get('timestampFormat') === 'relative') {
       this.setUpdateTimeout();
     }
   }
@@ -126,7 +127,7 @@ class LiveTimestamp {
   static initImproved() {
     improvedTimestampsInitted = true;
     let date = dayjs();
-    if (cd.settings.useUiTime && !['UTC', 0].includes(cd.g.UI_TIMEZONE)) {
+    if (settings.get('useUiTime') && !['UTC', 0].includes(cd.g.UI_TIMEZONE)) {
       date = typeof cd.g.UI_TIMEZONE === 'number' ?
         date.utcOffset(cd.g.UI_TIMEZONE) :
         date.tz(cd.g.UI_TIMEZONE);
@@ -143,7 +144,6 @@ class LiveTimestamp {
     const datsDelay = dayAfterTomorrowStart - Date.now();
     const datsTimeout = setTimeout(LiveTimestamp.updateImproved, datsDelay);
     updateTimeouts.push(tsTimeout, datsTimeout);
-    cd.g.delays = [tsDelay, datsDelay];
   }
 
   /**

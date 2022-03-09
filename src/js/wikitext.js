@@ -1,5 +1,5 @@
 /**
- * Wikitext parsing and processing functions.
+ * Wikitext parsing and processing utilities.
  *
  * @module wikitext
  */
@@ -370,14 +370,14 @@ export function extractSignatures(code) {
  * not
  * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/includes String#includes}.
  *
- * @param {string} s
+ * @param {string} string
  * @returns {string}
  */
-export function decodeHtmlEntities(s) {
-  if (s.indexOf('&') === -1) {
-    return s;
+export function decodeHtmlEntities(string) {
+  if (string.indexOf('&') === -1) {
+    return string;
   } else {
-    let result = s;
+    let result = string;
     if (result.indexOf('&#38;amp;') !== -1) {
       result = result.replace(/&#38;amp;/g, '&amp;amp;')
     }

@@ -1,8 +1,9 @@
 import Comment from './Comment';
 import cd from './cd';
+import controller from './controller';
 import navPanel from './navPanel';
+import settings from './settings';
 import { TreeWalker } from './treeWalker';
-import { generateCommentAnchor, parseCommentAnchor, parseDtCommentId } from './timestamp';
 import {
   getCommonGender,
   getExtendedRect,
@@ -10,26 +11,26 @@ import {
   reorderArray,
   restoreRelativeScrollPosition,
   saveRelativeScrollPosition,
+  underlinesToSpaces,
   unique,
 } from './util';
 import { getPagesExistence } from './apiWrappers';
-import { isPageLoading, reloadPage } from './boot';
 
 /**
  * Add all comment's children, including indirect, into array, if they are in the array of new
  * comments.
  *
- * @param {CommentSkeleton} child
+ * @param {CommentSkeleton} childComment
  * @param {CommentSkeleton[]} arr
- * @param {number[]} newCommentIds
+ * @param {number[]} newCommentIndexes
  * @private
  */
-function searchForNewCommentsInSubtree(child, arr, newCommentIds) {
-  if (newCommentIds.includes(child.id)) {
-    arr.push(child);
+function searchForNewCommentsInSubtree(childComment, arr, newCommentIndexes) {
+  if (newCommentIndexes.includes(childComment.index)) {
+    arr.push(childComment);
   }
-  child.children.forEach((child) => {
-    searchForNewCommentsInSubtree(child, arr, newCommentIds);
+  childComment.children.forEach((childComment) => {
+    searchForNewCommentsInSubtree(childComment, arr, newCommentIndexes);
   });
 }
 
@@ -39,17 +40,17 @@ function searchForNewCommentsInSubtree(child, arr, newCommentIds) {
  * @param {CommentSkeleton[]} comments
  * @param {Comment|Section} parent
  * @param {string} type
- * @param {CommentSkeleton[]} newCommentIds
+ * @param {CommentSkeleton[]} newCommentIndexes
  * @private
  */
-function addNewCommentsNote(comments, parent, type, newCommentIds) {
+function addNewCommentsNote(comments, parent, type, newCommentIndexes) {
   if (!comments.length) return;
 
   let commentsWithChildren;
   if (parent instanceof Comment) {
     commentsWithChildren = [];
     comments.forEach((child) => {
-      searchForNewCommentsInSubtree(child, commentsWithChildren, newCommentIds);
+      searchForNewCommentsInSubtree(child, commentsWithChildren, newCommentIndexes);
     });
   } else {
     commentsWithChildren = comments;
@@ -67,8 +68,8 @@ function addNewCommentsNote(comments, parent, type, newCommentIds) {
     classes: ['cd-button-ooui', 'cd-thread-button'],
   });
   button.on('click', () => {
-    const commentAnchor = commentsWithChildren[0].anchor;
-    reloadPage({ commentAnchor });
+    const commentId = commentsWithChildren[0].id;
+    controller.reload({ commentId });
   });
 
   if (parent instanceof Comment) {
@@ -139,7 +140,7 @@ export default {
   configureAndAddLayers(comments) {
     let floatingRects;
     if (comments.length) {
-      floatingRects = cd.g.floatingElements.map(getExtendedRect);
+      floatingRects = controller.getFloatingElements().map(getExtendedRect);
     }
 
     comments.forEach((comment) => {
@@ -168,14 +169,14 @@ export default {
    * @memberof Comment
    */
   redrawLayersIfNecessary(removeUnhighlighted = false, redrawAll = false, floatingRects) {
-    if (isPageLoading() || (document.hidden && !redrawAll)) return;
+    if (controller.isBooting() || (document.hidden && !redrawAll)) return;
 
     this.layersContainers.forEach((container) => {
       container.cdCouldHaveMoved = true;
     });
 
     const comments = [];
-    const rootBottom = cd.g.$root.get(0).getBoundingClientRect().bottom + window.scrollY;
+    const rootBottom = controller.$root.get(0).getBoundingClientRect().bottom + window.scrollY;
     let notMovedCount = 0;
 
     // We go from the end and stop at the first _three_ comments that have not been misplaced. A
@@ -204,7 +205,7 @@ export default {
       if (comment.underlay && !shouldBeHighlighted && (removeUnhighlighted || isUnderRootBottom)) {
         comment.removeLayers();
       } else if (shouldBeHighlighted && !comment.editForm) {
-        floatingRects = floatingRects || cd.g.floatingElements.map(getExtendedRect);
+        floatingRects = floatingRects || controller.getFloatingElements().map(getExtendedRect);
         const isMoved = comment.configureLayers({
           // If a comment was hidden, then became visible, we need to add the layers.
           add: true,
@@ -277,20 +278,20 @@ export default {
 
     // Back
     cd.comments
-      .slice(0, commentInViewport.id)
+      .slice(0, commentInViewport.index)
       .reverse()
       .some(registerIfInViewport);
 
     // Forward
     cd.comments
-      .slice(commentInViewport.id)
+      .slice(commentInViewport.index)
       .some(registerIfInViewport);
 
     navPanel.updateFirstUnseenButton();
   },
 
   /**
-   * Turn a comment array into an object with sections or their anchors as keys.
+   * Turn a comment array into an object with sections or their IDs as keys.
    *
    * @param {import('./commonTypedefs').CommentSkeletonLike[]|Comment[]} comments
    * @returns {Map}
@@ -299,11 +300,10 @@ export default {
   groupBySection(comments) {
     const commentsBySection = new Map();
     comments.forEach((comment) => {
-      const sectionOrAnchor = comment.section ? comment.section : null;
-      if (!commentsBySection.get(sectionOrAnchor)) {
-        commentsBySection.set(sectionOrAnchor, []);
+      if (!commentsBySection.get(comment.section)) {
+        commentsBySection.set(comment.section, []);
       }
-      commentsBySection.get(sectionOrAnchor).push(comment);
+      commentsBySection.get(comment.section).push(comment);
     });
 
     return commentsBySection;
@@ -337,8 +337,8 @@ export default {
       if (endIndex !== undefined) {
         comments = comments.filter((comment) => (
           direction === 'forward' ?
-          comment.id < endIndex && comment.id >= startIndex :
-          comment.id > endIndex && comment.id <= startIndex
+          comment.index < endIndex && comment.index >= startIndex :
+          comment.index > endIndex && comment.index <= startIndex
         ));
       }
       return comments.find(isVisible) || null;
@@ -360,7 +360,7 @@ export default {
     const findClosest = (direction, searchArea, reverse = false) => {
       if (direction) {
         const isTop = direction === 'forward' ? reverse : !reverse;
-        const startIndex = isTop ? searchArea.top.id : searchArea.bottom.id;
+        const startIndex = isTop ? searchArea.top.index : searchArea.bottom.index;
         return findVisible(direction, startIndex);
       }
       return null;
@@ -378,8 +378,8 @@ export default {
         comment.getOffset({ set: true });
         if (!comment.roughOffset) {
           comment = (
-            findVisible('forward', comment.id, searchArea.bottom.id) ||
-            findVisible('backward', comment.id, searchArea.top.id)
+            findVisible('forward', comment.index, searchArea.bottom.index) ||
+            findVisible('backward', comment.index, searchArea.top.index)
           );
           if (!comment) {
             foundComment = findClosest(findClosestDirection, searchArea);
@@ -424,7 +424,7 @@ export default {
         searchArea[viewportTop > comment.roughOffset.top ? 'top' : 'bottom'] = comment;
 
         // There's not a single comment in the viewport.
-        if (searchArea.bottom.id - searchArea.top.id <= 1) {
+        if (searchArea.bottom.index - searchArea.top.index <= 1) {
           foundComment = findClosest(findClosestDirection, searchArea);
           break;
         }
@@ -444,8 +444,8 @@ export default {
           );
         }
         const index = Math.round(
-          (searchArea.bottom.id - searchArea.top.id - 1) * proportion +
-          searchArea.top.id +
+          (searchArea.bottom.index - searchArea.top.index - 1) * proportion +
+          searchArea.top.index +
           0.5
         );
         comment = cd.comments[index];
@@ -463,11 +463,12 @@ export default {
    * @memberof Comment
    */
   highlightHovered(e) {
+    cd.debug.startTimer('isObstructingElementHovered');
     const isObstructingElementHovered = (
-      [...(cd.g.notificationArea?.querySelectorAll('.mw-notification') || [])]
+      [...(cd.g.NOTIFICATION_AREA?.querySelectorAll('.mw-notification') || [])]
         .some((notification) => notification.matches(':hover')) ||
 
-      cd.g.activeAutocompleteMenu?.matches(':hover') ||
+      controller.getActiveAutocompleteMenu()?.matches(':hover') ||
 
       // In case the user has moved the navigation panel to the other side.
       navPanel.$element?.get(0).matches(':hover') ||
@@ -475,11 +476,12 @@ export default {
       // WikiEditor dialog
       $(document.body).children('.ui-widget-overlay').length ||
 
-      cd.g.$popupsOverlay
+      controller.getPopupOverlay(false)
         ?.get(0)
         .querySelector('.oo-ui-popupWidget:not(.oo-ui-element-hidden)')
         ?.matches(':hover')
     );
+    cd.debug.stopTimer('isObstructingElementHovered');
 
     cd.comments
       .filter((comment) => comment.underlay)
@@ -506,28 +508,28 @@ export default {
   },
 
   /**
-   * Get a comment by anchor.
+   * Get a comment by ID.
    *
-   * @param {string} anchor
+   * @param {string} id
    * @param {boolean} impreciseDate Comment date is inferred from the edit date (but these may be
    *   different). If `true`, we allow the time on the page to be 1-3 minutes less than the edit
    *   time.
    * @returns {?Comment}
    * @memberof Comment
    */
-  getByAnchor(anchor, impreciseDate) {
-    if (!cd.comments || !anchor) {
+  getById(id, impreciseDate) {
+    if (!cd.comments || !id) {
       return null;
     }
 
-    const findByAnchor = (anchor) => cd.comments.find((comment) => comment.anchor === anchor);
+    const findById = (id) => cd.comments.find((comment) => comment.id === id);
 
-    let comment = findByAnchor(anchor);
+    let comment = findById(id);
     if (!comment && impreciseDate) {
-      const { date, author } = parseCommentAnchor(anchor) || {};
+      const { date, id } = Comment.parseId(id) || {};
       for (let gap = 1; !comment && gap <= 3; gap++) {
         const dateToFind = new Date(date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * gap);
-        comment = findByAnchor(generateCommentAnchor(dateToFind, author));
+        comment = findById(Comment.generateId(dateToFind, id));
       }
     }
 
@@ -535,7 +537,7 @@ export default {
   },
 
   getByDtId(id, returnComponents = false) {
-    const data = parseDtCommentId(id);
+    const data = Comment.parseDtId(id);
     if (!data) {
       return null;
     }
@@ -553,10 +555,7 @@ export default {
       comments = comments.filter((comment) => (
         comment.getParent()?.date.getTime() === data.parentDate?.getTime() &&
         comment.getParent()?.author.name === data.parentAuthor &&
-        (
-          !data.sectionAnchorBeginning ||
-          comment.section?.anchor.startsWith(data.sectionAnchorBeginning)
-        )
+        (!data.sectionIdBeginning || comment.section?.id.startsWith(data.sectionIdBeginning))
       ));
       comment = comments.length === 1 ? comments[0] : comments[data.index || 0];
     }
@@ -620,21 +619,21 @@ export default {
       newCommentsByParent.get(key).push(comment);
     });
 
-    const newCommentIds = newComments.map((c) => c.id);
+    const newCommentIndexes = newComments.map((comment) => comment.index);
     newCommentsByParent.forEach((comments, parent) => {
       if (parent instanceof Comment) {
-        addNewCommentsNote(comments, parent, 'thread', newCommentIds);
+        addNewCommentsNote(comments, parent, 'thread', newCommentIndexes);
       } else {
         // Add notes for level 0 comments and their children and the rest of the comments (for
         // example, level 1 comments without a parent and their children) separately.
         const level0Comments = comments.filter((comment) => comment.logicalLevel === 0);
         let sectionComments = [];
         level0Comments.forEach((child) => {
-          searchForNewCommentsInSubtree(child, sectionComments, newCommentIds);
+          searchForNewCommentsInSubtree(child, sectionComments, newCommentIndexes);
         });
         const threadComments = comments.filter((comment) => !sectionComments.includes(comment));
-        addNewCommentsNote(sectionComments, parent, 'section', newCommentIds);
-        addNewCommentsNote(threadComments, parent, 'thread', newCommentIds);
+        addNewCommentsNote(sectionComments, parent, 'section', newCommentIndexes);
+        addNewCommentsNote(threadComments, parent, 'thread', newCommentIndexes);
       }
     });
 
@@ -648,7 +647,7 @@ export default {
    * @memberof Comment
    */
   async reformatComments() {
-    if (cd.settings.reformatComments) {
+    if (settings.get('reformatComments')) {
       const pagesToCheckExistence = [];
       $(document.body).addClass('cd-reformattedComments');
       cd.comments.forEach((comment) => {
@@ -709,13 +708,13 @@ export default {
     let comment;
     if (selectionText) {
       const { higherNode } = getHigherNodeAndOffsetInSelection(selection);
-      const treeWalker = new TreeWalker(cd.g.rootElement, null, false, higherNode);
-      let commentId;
+      const treeWalker = new TreeWalker(controller.rootElement, null, false, higherNode);
+      let commentIndex;
       do {
-        commentId = treeWalker.currentNode.dataset?.cdCommentId;
-      } while (commentId === undefined && treeWalker.parentNode());
-      if (commentId !== undefined) {
-        comment = cd.comments[commentId];
+        commentIndex = treeWalker.currentNode.dataset?.cdCommentIndex;
+      } while (commentIndex === undefined && treeWalker.parentNode());
+      if (commentIndex !== undefined) {
+        comment = cd.comments[commentIndex];
         Comment.resetSelectedComment();
         if (comment && comment.isActionable && !comment.replyForm) {
           comment.isSelected = true;
@@ -729,5 +728,97 @@ export default {
       Comment.resetSelectedComment();
     }
     return comment || null;
-  }
+  },
+
+  /**
+   * Find the previous comment by time by the specified author within a 1-day window.
+   *
+   * @param {Date} date
+   * @param {string} author
+   * @returns {Comment}
+   * @private
+   */
+  findPreviousCommentByTime(date, author) {
+    return cd.comments
+      .filter((comment) => (
+        comment.author.name === author &&
+        comment.date &&
+        comment.date < date &&
+        comment.date.getTime() > date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * 60 * 24
+      ))
+      .sort((c1, c2) => c1.date.getTime() - c2.date.getTime())
+      .slice(-1)[0];
+  },
+
+  isDtId(fragment) {
+    return fragment.startsWith('c-');
+  },
+
+  /**
+   * @typedef {object} ParseIdReturn
+   * @property {Date} date
+   * @property {string} author
+   */
+
+  /**
+   * Extract a date and author from a comment ID. Currently doesn't extract the index (if there are
+   * multiple comments with the same timestamp on the page), but it hasn't been needed yet in the
+   * script.
+   *
+   * @param {string} id
+   * @returns {?ParseIdReturn}
+   */
+  parseId(id) {
+    const match = id.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})_(.+)$/);
+    if (!match) {
+      return null;
+    }
+
+    const year = Number(match[1]);
+    const month = Number(match[2]) - 1;
+    const day = Number(match[3]);
+    const hours = Number(match[4]);
+    const minutes = Number(match[5]);
+    const author = underlinesToSpaces(match[6]);
+
+    const date = new Date(Date.UTC(year, month, day, hours, minutes));
+
+    return { date, author };
+  },
+
+  /**
+   * Parse a comment ID in the DiscussionTools format.
+   *
+   * @param {string} id Comment ID in the DiscussionTools format.
+   * @returns {?object}
+   */
+  parseDtId(id) {
+    if (!Comment.isDtId(id)) {
+      return null;
+    }
+    const regexp = /^c-(.+?)-(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z)(?:-(.+))?$/;
+    let [, author, timestamp, parent] = id.match(regexp) || [];
+    if (!author) {
+      return null;
+    }
+    author = underlinesToSpaces(author);
+    const date = new Date(timestamp);
+    let parentAuthor;
+    let parentTimestamp;
+    let parentDate;
+    let index;
+    let sectionIdBeginning;
+    if (parent) {
+      const regexp = /(.+)-(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z)(?:-(\d+))?$/;
+      [, parentAuthor, parentTimestamp, index] = parent.match(regexp) || [];
+      if (parentAuthor) {
+        parentAuthor = underlinesToSpaces(parentAuthor);
+        parentDate = new Date(parentTimestamp);
+      } else {
+        // Doesn't account for cases when the section headline ends with "-[number]"
+        [, sectionIdBeginning, index] = parent.match(/^(.+?)(?:-(\d+))?$/);
+      }
+    }
+    return { author, date, parentAuthor, parentDate, sectionIdBeginning, index };
+  },
 };

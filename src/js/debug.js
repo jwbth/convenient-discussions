@@ -184,6 +184,10 @@ const debug = {
     }
   },
 
+  getTimerTotal(label) {
+    return this.timerTotal[label];
+  },
+
   /**
    * Log the average time one run of the specified timer takes. All runs of the timer are taken into
    * account unless a {@link convenientDiscussions.debug.fullResetTimer full reset} has been

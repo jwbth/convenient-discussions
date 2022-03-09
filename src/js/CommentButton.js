@@ -1,5 +1,5 @@
 import Button from './Button';
-import cd from './cd';
+import settings from './settings';
 
 /**
  * Stop propagation of the event.
@@ -93,7 +93,7 @@ class CommentButton extends Button {
    */
   setDisabled(disabled) {
     disabled = Boolean(disabled);
-    if (cd.settings.reformatComments) {
+    if (settings.get('reformatComments')) {
       super.setDisabled(disabled);
     } else {
       if (!this.buttonWidget) {
@@ -124,7 +124,7 @@ class CommentButton extends Button {
    * @returns {CommentButton} This button.
    */
   setLabel(label) {
-    if (cd.settings.reformatComments) {
+    if (settings.get('reformatComments')) {
       super.setLabel(label);
     } else {
       if (!this.buttonWidget) {
@@ -143,7 +143,7 @@ class CommentButton extends Button {
    * @returns {CommentButton} This button.
    */
   setTooltip(tooltip) {
-    if (cd.settings.reformatComments) {
+    if (settings.get('reformatComments')) {
       super.setTooltip(tooltip);
     } else {
       if (!this.buttonWidget) {
@@ -183,7 +183,7 @@ class CommentButton extends Button {
    * @returns {boolean}
    */
   isDisabled() {
-    return cd.settings.reformatComments ?
+    return settings.get('reformatComments') ?
       super.isDisabled() :
       Boolean(this.buttonWidget?.isDisabled());
   }
@@ -194,7 +194,7 @@ class CommentButton extends Button {
    * @returns {boolean}
    */
   isPending() {
-    return cd.settings.reformatComments ?
+    return settings.get('reformatComments') ?
       super.isPending() :
       Boolean(this.buttonWidget?.isPending());
   }

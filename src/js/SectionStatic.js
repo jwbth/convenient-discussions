@@ -1,19 +1,19 @@
 import cd from './cd';
-import { areObjectsEqual } from './util';
+import { areObjectsEqual, calculateWordOverlap, spacesToUnderlines } from './util';
 
 export default {
   /**
-   * Get a section by anchor.
+   * Get a section by ID.
    *
-   * @param {string} anchor
+   * @param {string} id
    * @returns {?Section}
    * @memberof Section
    */
-  getByAnchor(anchor) {
-    if (!cd.sections || !anchor) {
+  getById(id) {
+    if (!cd.sections || !id) {
       return null;
     }
-    return cd.sections.find((section) => section.anchor === anchor) || null;
+    return cd.sections.find((section) => section.id === id) || null;
   },
 
   /**
@@ -39,26 +39,44 @@ export default {
   },
 
   /**
-   * Search for a section on the page based on several parameters: id (index), headline, anchor,
-   * ancestor sections' headlines, oldest comment data. At least two parameters must match, not
-   * counting id and anchor. The section that matches best is returned.
+   * Find a section with a similar name on the page (when the section with the exact name was not
+   * found).
+   *
+   * @param {string} sectionName
+   * @returns {?Section}
+   */
+  findByHeadlineParts(sectionName) {
+    const matches = cd.sections
+      .map((section) => {
+        const score = calculateWordOverlap(sectionName, section.headline);
+        return { section, score };
+      })
+      .filter((match) => match.score > 0.66);
+    const bestMatch = matches.sort((m1, m2) => m2.score - m1.score)[0];
+    return bestMatch ? bestMatch.section : null;
+  },
+
+  /**
+   * Search for a section on the page based on several parameters: index, headline, id, ancestor
+   * sections' headlines, oldest comment data. At least two parameters must match, not counting
+   * index and id. The section that matches best is returned.
    *
    * @param {object} options
-   * @param {number} options.id
+   * @param {number} options.index
    * @param {string} options.headline
-   * @param {string} options.anchor
+   * @param {string} options.id
    * @param {string[]} options.ancestors
-   * @param {string} options.oldestCommentAnchor
+   * @param {string} options.oldestCommentId
    * @param {boolean} [returnScore]
    * @returns {?Section}
    * @memberof Section
    */
-  search({ id, headline, anchor, ancestors, oldestCommentAnchor }, returnScore) {
+  search({ index, headline, id, ancestors, oldestCommentId }, returnScore) {
     const matches = [];
     cd.sections.some((section) => {
-      const doesIdMatch = section.id === id;
+      const doesIndexMatch = section.index === index;
       const doesHeadlineMatch = section.headline === headline;
-      const doesAnchorMatch = section.anchor === anchor;
+      const doesIdMatch = section.id === id;
       let doAncestorsMatch;
       if (ancestors) {
         const sectionAncestors = section.getAncestors().map((section) => section.headline);
@@ -66,13 +84,13 @@ export default {
       } else {
         doAncestorsMatch = false;
       }
-      const doesOldestCommentMatch = section.oldestComment?.anchor === oldestCommentAnchor;
+      const doesOldestCommentMatch = section.oldestComment?.id === oldestCommentId;
       const score = (
         doesHeadlineMatch * 1 +
         doAncestorsMatch * 1 +
         doesOldestCommentMatch * 1 +
-        doesAnchorMatch * 0.5 +
-        doesIdMatch * 0.001
+        doesIdMatch * 0.5 +
+        doesIndexMatch * 0.001
       );
       if (score >= 2) {
         matches.push({ section, score });
@@ -187,5 +205,11 @@ export default {
     cd.sections.forEach((section) => {
       section.addSubscribeMenuItem();
     });
-  }
+  },
+
+  generateDtSubscriptionId(name, timestamp) {
+    const date = new Date(timestamp);
+    date.setSeconds(0);
+    return `h-${spacesToUnderlines(name)}-${date.toISOString()}`;
+  },
 };

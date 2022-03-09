@@ -21,20 +21,8 @@ import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
 import debug from './debug';
 import { getAllTextNodes, parseDocument } from './htmlparser2Extended';
-import { resetCommentAnchors } from './timestamp';
 
-let firstRun = true;
-const context = {
-  CommentClass: CommentSkeleton,
-  SectionClass: SectionSkeleton,
-  childElementsProp: 'childElements',
-  follows: (el1, el2) => el1.follows(el2),
-  getAllTextNodes,
-  getElementByClassName: (node, className) => {
-    const elements = node.getElementsByClassName(className, 1);
-    return elements[0] || null;
-  },
-};
+let isFirstRun = true;
 let alarmTimeout;
 
 self.cd = cd;
@@ -152,10 +140,28 @@ function removeDataAttributes(element) {
 function parse() {
   cd.comments = [];
   cd.sections = [];
-  resetCommentAnchors();
 
-  cd.debug.startTimer('worker: parse comments');
-  const parser = new Parser(context);
+  cd.debug.startTimer('worker: process comments');
+  const parser = new Parser({
+    CommentClass: CommentSkeleton,
+    SectionClass: SectionSkeleton,
+    childElementsProp: 'childElements',
+    follows: (el1, el2) => el1.follows(el2),
+    getAllTextNodes,
+    getElementByClassName: (node, className) => {
+      const elements = node.getElementsByClassName(className, 1);
+      return elements[0] || null;
+    },
+    rootElement: self.rootElement,
+    areThereOutdents: Boolean(
+      self.rootElement.getElementsByClassName(cd.config.outdentClass, 1).length
+    ),
+    handleDtMarkup: (elements) => {
+      elements.forEach((el) => {
+        el.remove();
+      });
+    },
+  });
 
   parser.processAndRemoveDtMarkup();
   const headings = parser.findHeadings();
@@ -176,9 +182,9 @@ function parse() {
         }
       }
     });
-  cd.debug.stopTimer('worker: parse comments');
+  cd.debug.stopTimer('worker: process comments');
 
-  cd.debug.startTimer('worker: parse sections');
+  cd.debug.startTimer('worker: process sections');
   targets
     .filter((target) => target.type === 'heading')
     .forEach((heading) => {
@@ -190,7 +196,7 @@ function parse() {
         }
       }
     });
-  cd.debug.stopTimer('worker: parse sections');
+  cd.debug.stopTimer('worker: process sections');
 
   cd.debug.startTimer('worker: prepare comments and sections');
   CommentSkeleton.processOutdents();
@@ -333,7 +339,7 @@ function parse() {
   cd.sections.forEach((section) => {
     section.parent = section.getParent();
     section.ancestors = section.getAncestors().map((section) => section.headline);
-    section.oldestCommentAnchor = section.oldestComment?.anchor;
+    section.oldestCommentId = section.oldestComment?.id;
 
     keepSafeValues(section, sectionDangerousKeys);
   });
@@ -371,9 +377,9 @@ function restoreFunc(code) {
 function onMessageFromWindow(e) {
   const message = e.data;
 
-  if (firstRun) {
+  if (isFirstRun) {
     console.debug('Convenient Discussions\' web worker has been successfully loaded. Click the link with the file name and line number to open the source code in your debug tool.');
-    firstRun = false;
+    isFirstRun = false;
   }
 
   if (message.type === 'setAlarm') {
@@ -400,10 +406,7 @@ function onMessageFromWindow(e) {
       withEndIndices: true,
       decodeEntities: false,
     });
-    cd.g.rootElement = document.childNodes[0];
-    cd.g.pageHasOutdents = Boolean(
-      cd.g.rootElement.getElementsByClassName(cd.config.outdentClass, 1).length
-    );
+    self.rootElement = document.childNodes[0];
 
     parse();
 

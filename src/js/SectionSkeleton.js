@@ -38,11 +38,11 @@ class SectionSkeleton {
     }
 
     /**
-     * Section anchor.
+     * Section id.
      *
      * @type {string}
      */
-    this.anchor = this.headlineElement.getAttribute('id');
+    this.id = this.headlineElement.getAttribute('id');
 
     this.parseHeadline();
 
@@ -100,12 +100,12 @@ class SectionSkeleton {
     this.setContentProperties(heading, targets);
 
     /**
-     * Section ID. Same as the section index in
+     * Section index. Same as the section index in
      * {@link convenientDiscussions.sections convenientDiscussions.sections}.
      *
      * @type {number}
      */
-    this.id = cd.sections.length;
+    this.index = cd.sections.length;
   }
 
   /**
@@ -137,7 +137,7 @@ class SectionSkeleton {
    */
   setContentProperties(heading, targets) {
     const treeWalker = new TreeWalker(
-      cd.g.rootElement,
+      this.parser.context.rootElement,
       (node) => (
         !['STYLE', 'LINK'].includes(node.tagName) &&
 
@@ -255,7 +255,7 @@ class SectionSkeleton {
       }
       lastElement = treeWalker.currentNode;
     } else {
-      lastElement = cd.g.rootElement.lastElementChild;
+      lastElement = this.parser.context.rootElement.lastElementChild;
     }
     while (lastElement.contains(this.headingElement) && lastElement !== this.headingElement) {
       lastElement = lastElement.lastElementChild;
@@ -298,7 +298,7 @@ class SectionSkeleton {
     }
     return (
       cd.sections
-        .slice(0, this.id)
+        .slice(0, this.index)
         .reverse()
         .find((section) => section.level < this.level) ||
       null

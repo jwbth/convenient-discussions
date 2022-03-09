@@ -8,12 +8,10 @@ import CdError from './CdError';
 import Comment from './Comment';
 import LiveTimestamp from './LiveTimestamp';
 import cd from './cd';
+import controller from './controller';
 import navPanel from './navPanel';
+import settings from './settings';
 import { formatDate, formatDateNative } from './timestamp';
-import { reloadPage } from './boot';
-import { restoreRelativeScrollPosition, saveRelativeScrollPosition } from './util';
-
-let tocItems;
 
 /**
  * Generate a string containing new comment count to insert after the section headline in the table
@@ -60,7 +58,7 @@ class TocItem {
     }
 
     const headline = textSpan.textContent;
-    const anchor = a.getAttribute('href').slice(1);
+    const id = a.getAttribute('href').slice(1);
     const li = a.parentNode;
     let [, level] = li.className.match(/\btoclevel-(\d+)/);
     level = Number(level);
@@ -82,7 +80,7 @@ class TocItem {
 
     Object.assign(this, {
       headline,
-      anchor,
+      id,
       level,
       number,
       $element: $(li),
@@ -127,63 +125,64 @@ export default {
    * and exists because we may need to hide the TOC earlier than the native method does it.
    */
   possiblyHide() {
-    if (!cd.g.$toc.length) return;
+    if (!this.isPresent) return;
 
     if (mw.cookie.get('hidetoc') === '1') {
-      cd.g.$toc.find('.toctogglecheckbox').prop('checked', true);
+      this.$element.find('.toctogglecheckbox').prop('checked', true);
     }
   },
 
   /**
-   * _For internal use._ Reset the TOC data (executed at each page reload).
+   * _For internal use._ Init the TOC data (executed at each page reload).
    */
-  reset() {
-    tocItems = null;
-    cd.g.$toc = cd.g.$root.find('.toc');
-    const $closestFloating = cd.g.$toc.closest(
-      '[style*="float: right"], [style*="float:right"], [style*="float: left"], [style*="float:left"]'
-    );
-    cd.g.isTocFloating = Boolean(
+  init() {
+    this.$element = controller.$root.find('.toc');
+    this.isPresent = Boolean(this.$element.length);
+    this.tocItems = null;
+
+    const $closestFloating = this.$element
+      .closest('[style*="float: right"], [style*="float:right"], [style*="float: left"], [style*="float:left"]');
+    this.isFloating = Boolean(
       $closestFloating.length &&
-      cd.g.$root.has($closestFloating).length
+      controller.$root.has($closestFloating).length
     );
   },
 
   /**
-   * Get a TOC item by anchor.
+   * Get a TOC item by ID.
    *
-   * @param {string} anchor
+   * @param {string} id
    * @returns {?object}
    */
-  getItem(anchor) {
-    if (!cd.g.$toc.length) {
+  getItem(id) {
+    if (!this.isPresent) {
       return null;
     }
 
-    if (!tocItems) {
-      const links = [...cd.g.$toc.get(0).querySelectorAll('li > a')];
+    if (!this.tocItems) {
+      const links = [...this.$element.get(0).querySelectorAll('li > a')];
       try {
         // It is executed first time before not rendered (gray) sections are added to the TOC, so we
         // use a simple algorithm to obtain items.
-        tocItems = links.map((a) => new TocItem(a));
+        this.tocItems = links.map((a) => new TocItem(a));
       } catch {
         console.error('Couldn\'t find an element of a table of contents item.');
-        tocItems = [];
+        this.tocItems = [];
 
         // Forcibly switch off the setting - we better not touch the TOC if something is broken
         // there.
-        cd.settings.modifyToc = false;
+        settings.set('modifyToc', false);
       }
     }
 
-    return tocItems.find((item) => item.anchor === anchor) || null;
+    return this.tocItems.find((item) => item.id === id) || null;
   },
 
   /**
    * _For internal use._ Highlight (bold) sections that the user is subscribed to.
    */
   highlightSubscriptions() {
-    if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
+    if (!settings.get('modifyToc') || !this.isPresent) return;
 
     cd.sections
       .filter((section) => section.subscriptionState)
@@ -196,7 +195,7 @@ export default {
    * Add the number of comments to each section link.
    */
   addCommentCount() {
-    if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
+    if (!settings.get('modifyToc') || !this.isPresent) return;
 
     cd.sections.forEach((section, i) => {
       const item = section.getTocItem();
@@ -221,11 +220,11 @@ export default {
    *   new revision of the page.
    */
   addNewSections(sections) {
-    if (!cd.settings.modifyToc || !cd.g.$toc.length) return;
+    if (!settings.get('modifyToc') || !this.isPresent) return;
 
-    saveRelativeScrollPosition({ saveTocHeight: true });
+    controller.saveRelativeScrollPosition({ saveTocHeight: true });
 
-    cd.g.$toc
+    this.$element
       .find('.cd-toc-notRenderedSectionList, .cd-toc-notRenderedSection')
       .remove();
 
@@ -264,7 +263,7 @@ export default {
     });
 
     let currentTree = [];
-    const $topUl = cd.g.$toc.children('ul');
+    const $topUl = this.$element.children('ul');
     sections.forEach((section) => {
       let item = section.match?.getTocItem();
       if (!item) {
@@ -280,11 +279,11 @@ export default {
         li.className = `cd-toc-notRenderedSection toclevel-${level}`;
 
         const a = document.createElement('a')
-        a.href = '#' + section.anchor;
+        a.href = '#' + section.id;
         a.onclick = (e) => {
           e.preventDefault();
-          reloadPage({
-            sectionAnchor: section.anchor,
+          controller.reload({
+            sectionId: section.id,
             pushState: true,
           });
         };
@@ -331,7 +330,7 @@ export default {
       currentTree.splice(section.tocLevel);
     });
 
-    restoreRelativeScrollPosition(true);
+    controller.restoreRelativeScrollPosition(true);
   },
 
   /**
@@ -339,28 +338,26 @@ export default {
    * background) to the table of contents.
    *
    * @param {Map} commentsBySection
-   * @param {object} passedData
    */
-  addNewComments(commentsBySection, passedData) {
+  addNewComments(commentsBySection) {
     const firstComment = commentsBySection.values().next().value?.[0];
-    if (!cd.settings.modifyToc || !cd.g.$toc.length || !firstComment) return;
+    if (!settings.get('modifyToc') || !this.isPresent || !firstComment) return;
 
     const areCommentsRendered = firstComment instanceof Comment;
 
     const saveTocHeight = Boolean(
-      // On first load
-      !cd.state.hasPageBeenReloaded ||
+      controller.bootProcess.isFirstRun() ||
 
       // When unrendered (in gray) comments are added
       !areCommentsRendered ||
 
       // When the comment or section is opened by a link from the TOC
-      passedData.commentAnchor ||
-      passedData.sectionAnchor
+      controller.bootProcess.data('commentId') ||
+      controller.bootProcess.data('sectionId')
     );
-    saveRelativeScrollPosition({ saveTocHeight });
+    controller.saveRelativeScrollPosition({ saveTocHeight });
 
-    cd.g.$toc
+    this.$element
       .find('.cd-toc-notRenderedCommentList')
       .remove();
 
@@ -378,8 +375,8 @@ export default {
         if (section.match) {
           $sectionLink = section.match.getTocItem()?.$link;
         } else {
-          const anchor = $.escapeSelector(section.anchor);
-          $sectionLink = cd.g.$toc.find(`.cd-toc-notRenderedSection a[href="#${anchor}"]`);
+          const id = $.escapeSelector(section.id);
+          $sectionLink = this.$element.find(`.cd-toc-notRenderedSection a[href="#${id}"]`);
         }
       }
 
@@ -395,7 +392,7 @@ export default {
             .length;
           $sectionLink.children('.cd-toc-commentCount').remove();
         }
-        addCommentCountString(count, unseenCount, section.id === 0, $sectionLink);
+        addCommentCountString(count, unseenCount, section.index === 0, $sectionLink);
       }
 
       let $target = $sectionLink;
@@ -425,7 +422,7 @@ export default {
         let nativeDate;
         if (comment.date) {
           nativeDate = formatDateNative(comment.date);
-          date = addAsItem && cd.settings.timestampFormat !== 'default' ?
+          date = addAsItem && settings.get('timestampFormat') !== 'default' ?
             formatDate(comment.date) :
             nativeDate;
         } else {
@@ -449,16 +446,16 @@ export default {
           textSpan.className = 'toctext';
           li.appendChild(textSpan);
 
-          if (cd.settings.timestampFormat === 'default') {
+          if (settings.get('timestampFormat') === 'default') {
             text += date;
           }
 
           const a = document.createElement('a');
-          a.href = `#${comment.anchor}`;
+          a.href = `#${comment.id}`;
           a.textContent = text;
           textSpan.appendChild(a);
 
-          if (cd.settings.timestampFormat !== 'default') {
+          if (settings.get('timestampFormat') !== 'default') {
             const timestampSpan = document.createElement('span');
             timestampSpan.textContent = date;
             timestampSpan.title = nativeDate;
@@ -481,8 +478,8 @@ export default {
           } else {
             a.onclick = (e) => {
               e.preventDefault();
-              reloadPage({
-                commentAnchor: comment.anchor,
+              controller.reload({
+                commentId: comment.id,
                 pushState: true,
               });
             };
@@ -508,6 +505,6 @@ export default {
       target.parentNode.insertBefore(ul, target.nextSibling);
     });
 
-    restoreRelativeScrollPosition(true);
+    controller.restoreRelativeScrollPosition(true);
   },
 };

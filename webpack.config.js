@@ -205,9 +205,10 @@ module.exports = (env) => {
             filename: (filename) => `${filename}.LICENSE.js`,
             banner: (licenseFile) => `
  * For documentation and feedback, see the script's homepage:
- *   https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions
+ * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions
+ *
  * For license information, see
- *   ${getUrl(config.rootPath + '/' + licenseFile)}
+ * ${getUrl(config.rootPath + '/' + licenseFile)}
 `,
           },
           sourceMap: true,

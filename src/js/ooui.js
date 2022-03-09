@@ -6,9 +6,8 @@
 
 import CdError from './CdError';
 import cd from './cd';
+import controller from './controller';
 import { removePreventUnloadCondition } from './eventHandlers';
-
-let windowManager;
 
 /**
  * OOjs namespace.
@@ -131,33 +130,6 @@ let windowManager;
  */
 
 /**
- * OOUI window manager.
- *
- * @class WindowManager
- * @memberof external:OO.ui
- * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.WindowManager
- */
-
-/**
- * Create a OOUI window manager or return an existing one.
- *
- * @returns {external:OO.ui.WindowManager}
- */
-export function getWindowManager() {
-  if (!windowManager) {
-    windowManager = new OO.ui.WindowManager().on('closing', async (win, closed) => {
-      // We don't have windows that can be reused.
-      await closed;
-      windowManager.clearWindows();
-    });
-
-    $(document.body).append(windowManager.$element);
-  }
-
-  return windowManager;
-}
-
-/**
  * Display a OOUI message dialog where user is asked to confirm something. Compared to
  * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui-method-confirm OO.ui.confirm},
  * returns an action string, not a boolean (which helps to differentiate between more than two types
@@ -187,8 +159,8 @@ export async function showConfirmDialog(message, options = {}) {
   };
 
   const dialog = new OO.ui.MessageDialog();
-  cd.g.windowManager.addWindows([dialog]);
-  const windowInstance = cd.g.windowManager.openWindow(
+  controller.getWindowManager().addWindows([dialog]);
+  const windowInstance = controller.getWindowManager().openWindow(
     dialog,
     Object.assign({}, defaultOptions, options)
   );

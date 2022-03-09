@@ -1,14 +1,10 @@
 // Here, we use vanilla JavaScript for recurring operations that together take up a lot of time.
 
+import CommentSkeleton from './CommentSkeleton';
 import cd from './cd';
 import { ElementsAndTextTreeWalker, ElementsTreeWalker } from './treeWalker';
-import { defined, firstCharToUpperCase, flat, isInline, underlinesToSpaces } from './util';
-import {
-  generateCommentAnchor,
-  isCommentAnchor,
-  parseTimestamp,
-  registerCommentAnchor,
-} from './timestamp';
+import { defined, flat, isInline, ucFirst, underlinesToSpaces } from './util';
+import { parseTimestamp } from './timestamp';
 
 /**
  * @typedef {object} GetPageNameFromUrlReturn
@@ -74,6 +70,8 @@ class Parser {
    * @returns {*}
    */
   createComment(signature, targets) {
+    this.existingCommentIds = [];
+
     return new this.context.CommentClass(this, signature, targets);
   }
 
@@ -99,62 +97,15 @@ class Parser {
    * parsing.
    */
   processAndRemoveDtMarkup() {
-    if (!self.cdIsWorker) {
-      cd.g.dtCommentIds = [];
-    }
-
-    // Reply Tool is officially incompatible with CD, so we don't care if it is enabled. New Topic
-    // Tool doesn't seem to make difference for our purposes here.
-    const moveNotRemove = !self.cdIsWorker && (
-      cd.g.isDtTopicSubscriptionEnabled ||
-
-      // DT enabled by default. Don't know how to capture that another way.
-      mw.loader.getState('ext.discussionTools.init') === 'ready'
-    );
-
-    let dtMarkupHavenElement;
-    if (moveNotRemove) {
-      if (cd.state.isPageFirstParsed) {
-        dtMarkupHavenElement = document.createElement('span');
-        dtMarkupHavenElement.className = 'cd-dtMarkupHaven cd-hidden';
-        cd.g.$content.append(dtMarkupHavenElement);
-      } else {
-        dtMarkupHavenElement = cd.g.$content.children('.cd-dtMarkupHaven').get(0);
-      }
-    }
-    let elements = [...cd.g.rootElement.getElementsByTagName('span')]
+    const elements = [...this.context.rootElement.getElementsByTagName('span')]
       .filter((el) => (
         el.hasAttribute('data-mw-comment-start') ||
         el.hasAttribute('data-mw-comment-end')
       ))
       .concat(
-        [...cd.g.rootElement.getElementsByClassName('ext-discussiontools-init-replylink-buttons')]
+        [...this.context.rootElement.getElementsByClassName('ext-discussiontools-init-replylink-buttons')]
       );
-    if (!self.cdIsWorker) {
-      elements = elements.concat(
-        [...cd.g.rootElement.getElementsByClassName('ext-discussiontools-init-highlight')]
-      );
-    }
-    elements.forEach((el, i) => {
-      if (!self.cdIsWorker && el.hasAttribute('data-mw-comment-start') && el.id?.startsWith('c-')) {
-        cd.g.dtCommentIds.push(el.id);
-      }
-      if (moveNotRemove) {
-        // DT gets the offset of all these elements upon initialization which can take a lot of
-        // time if the elements aren't put into containers with less children.
-        if (i % 10 === 0) {
-          dtMarkupHavenElement.appendChild(document.createElement('span'));
-        }
-        dtMarkupHavenElement.lastChild.appendChild(el);
-      } else {
-        el.remove();
-      }
-    });
-    if (!self.cdIsWorker && !moveNotRemove) {
-      [...cd.g.rootElement.getElementsByTagName('span[data-mw-comment]')].forEach((el) => {
-        el.removeAttribute('data-mw-comment');
-      });
-    }
+    this.context.handleDtMarkup(elements);
   }
 
   /**
@@ -170,13 +121,13 @@ class Parser {
       'ombox',
       ...cd.config.closedDiscussionClasses,
     ];
-    if (cd.g.pageHasOutdents) {
+    if (this.context.areThereOutdents) {
       this.foreignComponentClasses.push(cd.config.outdentClass);
     }
 
-    const blockquotes = [...cd.g.rootElement.getElementsByTagName('blockquote')];
+    const blockquotes = [...this.context.rootElement.getElementsByTagName('blockquote')];
     const elementsToExcludeByClass = cd.config.elementsToExcludeClasses
-      .map((className) => [...cd.g.rootElement.getElementsByClassName(className)]);
+      .map((className) => [...this.context.rootElement.getElementsByClassName(className)]);
     this.elementsToExclude = [...blockquotes, ...flat(elementsToExcludeByClass)];
   }
 
@@ -293,145 +244,133 @@ class Parser {
   /**
    * Collect nodes related to signatures starting from timestamp nodes.
    *
-   * @param {object[]} timestamps
-   * @returns {object[]}
+   * @param {object} timestamp
+   * @returns {object}
    * @private
    */
-  timestampsToSignatures(timestamps) {
-    return timestamps
-      .map((timestamp) => {
-        const date = timestamp.date;
-        const timestampElement = timestamp.element;
-        const timestampText = timestamp.element.textContent;
-        let unsignedElement;
-        let isExtraSignature = false;
+  timestampToSignature(timestamp) {
+    const timestampElement = timestamp.element;
+    const timestampText = timestamp.element.textContent;
+    let unsignedElement;
+    let isExtraSignature = false;
 
-        // If the closest block-level timestamp element ancestor has more than one signature, we
-        // choose the first signature to consider it the signature of the comment author while
-        // keeping the last. There is no point for us to parse them as distinct comments as a reply
-        // posted using our script will go below all of them anyway.
-        let closestBlockAncestor;
-        for (let el = timestamp.element; !closestBlockAncestor; el = el.parentNode) {
-          if (isInline(el)) {
-            // Simultaneously check if we are inside an unsigned template.
-            if (el.classList.contains(cd.config.unsignedClass)) {
-              unsignedElement = el;
-            }
-          } else {
-            closestBlockAncestor = el;
-          }
+    // If the closest block-level timestamp element ancestor has more than one signature, we choose
+    // the first signature to consider it the signature of the comment author while keeping the
+    // last. There is no point for us to parse them as distinct comments as a reply posted using our
+    // script will go below all of them anyway.
+    let closestBlockAncestor;
+    for (let el = timestamp.element; !closestBlockAncestor; el = el.parentNode) {
+      if (isInline(el)) {
+        // Simultaneously check if we are inside an unsigned template.
+        if (el.classList.contains(cd.config.unsignedClass)) {
+          unsignedElement = el;
         }
-        const elementsTreeWalker = new ElementsTreeWalker(timestamp.element, closestBlockAncestor);
-        while (elementsTreeWalker.previousNode()) {
-          if (elementsTreeWalker.currentNode.classList.contains('cd-signature')) {
-            isExtraSignature = true;
-            break;
-          }
+      } else {
+        closestBlockAncestor = el;
+      }
+    }
+    const elementsTreeWalker = new ElementsTreeWalker(timestamp.element, closestBlockAncestor);
+    while (elementsTreeWalker.previousNode()) {
+      if (elementsTreeWalker.currentNode.classList.contains('cd-signature')) {
+        isExtraSignature = true;
+        break;
+      }
+    }
+
+    const isUnsigned = Boolean(unsignedElement);
+    const startElement = unsignedElement || timestamp.element;
+    const treeWalker = new ElementsAndTextTreeWalker(startElement, this.parser.context.rootElement);
+    const authorData = {};
+
+    let length = 0;
+    let firstSignatureElement;
+    let signatureNodes = [];
+    if (unsignedElement) {
+      firstSignatureElement = startElement;
+    } else {
+      signatureNodes.push(startElement);
+      treeWalker.previousSibling();
+    }
+
+    // Unsigned template may be of the "undated" kind - containing a timestamp but no author name,
+    // so we need to walk the tree anyway.
+    let newNode;
+    do {
+      const node = treeWalker.currentNode;
+      length += node.textContent.length;
+      if (node.tagName) {
+        if (
+          node.classList.contains('cd-timestamp') ||
+
+          // Workaround for cases like https://en.wikipedia.org/?diff=1042059387 (those should be
+          // extremely rare).
+          (['S', 'STRIKE', 'DEL'].includes(node.tagName) && length >= 30)
+        ) {
+          break;
         }
+        authorData.isLastLinkAuthorLink = false;
 
-        const isUnsigned = Boolean(unsignedElement);
-        const startElement = unsignedElement || timestamp.element;
-        const treeWalker = new ElementsAndTextTreeWalker(startElement);
-        const authorData = {};
-
-        let length = 0;
-        let firstSignatureElement;
-        let signatureNodes = [];
-        if (unsignedElement) {
-          firstSignatureElement = startElement;
+        if (node.tagName === 'A') {
+          if (!this.processLinkData(node, authorData)) break;
         } else {
-          signatureNodes.push(startElement);
-          treeWalker.previousSibling();
+          const links = [...node.getElementsByTagName('a')].reverse();
+          for (const link of links) {
+            // https://en.wikipedia.org/wiki/Template:Talkback and similar cases
+            if (link.classList.contains('external')) continue;
+
+            this.processLinkData(link, authorData);
+          }
         }
 
-        // Unsigned template may be of the "undated" kind - containing a timestamp but no author
-        // name, so we need to walk the tree anyway.
-        let newNode;
-        do {
-          const node = treeWalker.currentNode;
-          length += node.textContent.length;
-          if (node.tagName) {
-            if (
-              node.classList.contains('cd-timestamp') ||
-
-              // Workaround for cases like https://en.wikipedia.org/?diff=1042059387 (those should
-              // be extremely rare).
-              (['S', 'STRIKE', 'DEL'].includes(node.tagName) && length >= 30)
-            ) {
-              break;
-            }
-            authorData.isLastLinkAuthorLink = false;
-
-            if (node.tagName === 'A') {
-              if (!this.processLinkData(node, authorData)) break;
-            } else {
-              const links = [...node.getElementsByTagName('a')].reverse();
-              for (const link of links) {
-                // https://en.wikipedia.org/wiki/Template:Talkback and similar cases
-                if (link.classList.contains('external')) continue;
-
-                this.processLinkData(link, authorData);
-              }
-            }
-
-            if (authorData.isLastLinkAuthorLink) {
-              firstSignatureElement = node;
-            }
-          }
-          signatureNodes.push(node);
-
-          newNode = treeWalker.previousSibling();
-          if (!newNode && !firstSignatureElement) {
-            newNode = treeWalker.parentNode();
-            if (!newNode || !isInline(newNode)) break;
-            length = 0;
-            signatureNodes = [];
-          }
-
-          // Users may cross out text ended with their signature and sign again
-          // (https://ru.wikipedia.org/?diff=114726134). The strike element shouldn't be considered
-          // a part of the signature then.
-          if (
-            authorData.name &&
-            newNode?.tagName &&
-            ['S', 'STRIKE', 'DEL'].includes(newNode.tagName)
-          ) {
-            break;
-          }
-        } while (newNode && length < cd.config.signatureScanLimit);
-
-        if (!authorData.name) return;
-
-        if (!signatureNodes.length) {
-          signatureNodes = [startElement];
+        if (authorData.isLastLinkAuthorLink) {
+          firstSignatureElement = node;
         }
+      }
+      signatureNodes.push(node);
 
-        const fseIndex = signatureNodes.indexOf(firstSignatureElement);
-        signatureNodes.splice(fseIndex === -1 ? 1 : fseIndex + 1);
+      newNode = treeWalker.previousSibling();
+      if (!newNode && !firstSignatureElement) {
+        newNode = treeWalker.parentNode();
+        if (!newNode || !isInline(newNode)) break;
+        length = 0;
+        signatureNodes = [];
+      }
 
-        const anchor = generateCommentAnchor(timestamp.date, authorData.name, true);
-        registerCommentAnchor(anchor);
-        const signatureContainer = signatureNodes[0].parentNode;
-        const startElementNextSibling = signatureNodes[0].nextSibling;
-        const element = document.createElement('span');
-        element.classList.add('cd-signature');
-        signatureNodes.reverse().forEach(element.appendChild.bind(element));
-        signatureContainer.insertBefore(element, startElementNextSibling);
+      // Users may cross out text ended with their signature and sign again
+      // (https://ru.wikipedia.org/?diff=114726134). The strike element shouldn't be considered a
+      // part of the signature then.
+      if (authorData.name && newNode?.tagName && ['S', 'STRIKE', 'DEL'].includes(newNode.tagName)) {
+        break;
+      }
+    } while (newNode && length < cd.config.signatureScanLimit);
 
-        return {
-          element,
-          timestampElement,
-          timestampText,
-          date,
-          authorLink: authorData.link,
-          authorTalkLink: authorData.talkLink,
-          authorName: authorData.name,
-          anchor,
-          isUnsigned,
-          isExtraSignature,
-        };
-      })
-      .filter(defined);
+    if (!authorData.name) return;
+
+    if (!signatureNodes.length) {
+      signatureNodes = [startElement];
+    }
+
+    const fseIndex = signatureNodes.indexOf(firstSignatureElement);
+    signatureNodes.splice(fseIndex === -1 ? 1 : fseIndex + 1);
+
+    const signatureContainer = signatureNodes[0].parentNode;
+    const startElementNextSibling = signatureNodes[0].nextSibling;
+    const element = document.createElement('span');
+    element.classList.add('cd-signature');
+    signatureNodes.reverse().forEach(element.appendChild.bind(element));
+    signatureContainer.insertBefore(element, startElementNextSibling);
+
+    return {
+      element,
+      timestampElement,
+      timestampText,
+      date: timestamp.date,
+      authorLink: authorData.link,
+      authorTalkLink: authorData.talkLink,
+      authorName: authorData.name,
+      isUnsigned,
+      isExtraSignature,
+    };
   }
 
   /**
@@ -442,7 +381,7 @@ class Parser {
   findUnsigneds() {
     const unsigneds = [];
     if (cd.config.unsignedClass) {
-      [...cd.g.rootElement.getElementsByClassName(cd.config.unsignedClass)]
+      [...this.context.rootElement.getElementsByClassName(cd.config.unsignedClass)]
         .filter((element) => {
           // Only templates with no timestamp interest us.
           if (this.context.getElementByClassName(element, 'cd-timestamp')) {
@@ -450,7 +389,7 @@ class Parser {
           }
 
           // Cases like https://ru.wikipedia.org/?diff=84883816
-          for (let el = element; el && el !== cd.g.rootElement; el = el.parentNode) {
+          for (let el = element; el && el !== this.context.rootElement; el = el.parentNode) {
             if (el.classList.contains('cd-signature')) {
               return false;
             }
@@ -496,7 +435,9 @@ class Parser {
    * @returns {object[]}
    */
   findSignatures(timestamps) {
-    let signatures = this.timestampsToSignatures(timestamps);
+    let signatures = timestamps
+      .map(this.timestampToSignature.bind(this))
+      .filter(defined);
     const unsigneds = this.findUnsigneds();
     signatures.push(...unsigneds);
 
@@ -593,12 +534,12 @@ class Parser {
     // The worker context doesn't support .querySelector(), so we have to use
     // .getElementsByTagName().
     return [
-      ...cd.g.rootElement.getElementsByTagName('h1'),
-      ...cd.g.rootElement.getElementsByTagName('h2'),
-      ...cd.g.rootElement.getElementsByTagName('h3'),
-      ...cd.g.rootElement.getElementsByTagName('h4'),
-      ...cd.g.rootElement.getElementsByTagName('h5'),
-      ...cd.g.rootElement.getElementsByTagName('h6'),
+      ...this.context.rootElement.getElementsByTagName('h1'),
+      ...this.context.rootElement.getElementsByTagName('h2'),
+      ...this.context.rootElement.getElementsByTagName('h3'),
+      ...this.context.rootElement.getElementsByTagName('h4'),
+      ...this.context.rootElement.getElementsByTagName('h5'),
+      ...this.context.rootElement.getElementsByTagName('h6'),
     ]
       .filter((el) => el.getAttribute('id') !== 'mw-toc-heading')
       .map((element) => ({
@@ -665,7 +606,7 @@ class Parser {
     let linkType = null;
     if (href) {
       const { pageName, domain, fragment } = getPageNameFromUrl(href) || {};
-      if (!pageName || isCommentAnchor(fragment)) {
+      if (!pageName || CommentSkeleton.isId(fragment)) {
         return null;
       }
       const match = pageName.match(cd.g.USER_NAMESPACES_REGEXP);
@@ -694,7 +635,7 @@ class Parser {
         linkType += 'Foreign';
       }
       if (userName) {
-        userName = firstCharToUpperCase(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();
+        userName = ucFirst(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();
       }
     } else {
       if (

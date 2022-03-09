@@ -8,10 +8,11 @@
 import Button from './Button';
 import Comment from './Comment';
 import cd from './cd';
+import controller from './controller';
+import settings from './settings';
 import updateChecker from './updateChecker';
 import { focusInput, isCmdMofidicatorPressed, reorderArray } from './util';
 import { formatDate } from './timestamp';
-import { reloadPage } from './boot';
 import { removeWikiMarkup } from './wikitext';
 
 let urbtTimeout;
@@ -161,8 +162,8 @@ export default {
 
   /**
    * Check if the navigation panel is mounted. Is equivalent to checking the existence of
-   * {@link module:navPanel.$element}, and for the most of the practical purposes, does the same as
-   * the `convenientDiscussions.state.isPageActive` check.
+   * {@link module:navPanel.$element}, and for most practical purposes, does the same as the
+   * {@link controller.isPageActive} check.
    *
    * @returns {boolean}
    */
@@ -204,8 +205,8 @@ export default {
   refreshClick(markAsRead) {
     // There was reload confirmation here, but after session restore was introduced, the
     // confirmation seems to be no longer needed.
-    reloadPage({
-      commentAnchor: updateChecker.relevantNewCommentAnchor,
+    controller.reload({
+      commentId: updateChecker.relevantNewCommentId,
       markAsRead,
     });
   },
@@ -218,13 +219,13 @@ export default {
    * @private
    */
   goToNewCommentInDirection(direction) {
-    if (cd.state.isAutoScrollInProgress) return;
+    if (controller.isAutoScrolling()) return;
 
     const commentInViewport = Comment.findInViewport(direction);
     if (!commentInViewport) return;
 
     const reverse = direction === 'backward';
-    const reorderedComments = reorderArray(cd.comments, commentInViewport.id, reverse);
+    const reorderedComments = reorderArray(cd.comments, commentInViewport.index, reverse);
     const candidates = reorderedComments
       .filter((comment) => comment.isNew && !comment.isInViewport());
     const comment = candidates.find((comment) => comment.isInViewport() === false) || candidates[0];
@@ -256,7 +257,7 @@ export default {
    * Scroll to the first unseen comment.
    */
   goToFirstUnseenComment() {
-    if (cd.state.isAutoScrollInProgress) return;
+    if (controller.isAutoScrolling()) return;
 
     const candidates = cd.comments.filter((comment) => comment.isSeen === false);
     const comment = candidates.find((comment) => comment.isInViewport() === false) || candidates[0];
@@ -371,7 +372,7 @@ export default {
       // together with the updates of the TOC. When the TOC is not modified, we need to update the
       // tooltip manually every minute. When timestamps are "improved", timestamps are updated in
       // `LiveTimestamp.updateImproved`.
-      if (cd.settings.timestampFormat === 'relative' && !cd.settings.modifyToc) {
+      if (settings.get('timestampFormat') === 'relative' && !settings.get('modifyToc')) {
         urbtTimeout = setTimeout(() => {
           this.updateTimestampsInRefreshButtonTooltip();
         }, cd.g.MILLISECONDS_IN_MINUTE);
@@ -416,10 +417,19 @@ export default {
    * visibility.
    */
   updateCommentFormButton() {
-    if (cd.state.isAutoScrollInProgress || !this.isMounted()) return;
+    if (controller.isAutoScrolling() || !this.isMounted()) return;
 
     const areThereHidden = cd.commentForms
       .some((commentForm) => !commentForm.$element.cdIsInViewport(true));
     this.commentFormButton[areThereHidden ? 'show' : 'hide']();
+  },
+
+  /**
+   * Get the number of new, not yet shown comments on the page.
+   *
+   * @returns {number}
+   */
+  getHiddenNewCommentCount() {
+    return this.hiddenNewCommentCount;
   },
 };

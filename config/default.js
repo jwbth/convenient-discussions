@@ -826,13 +826,13 @@ export default {
    *
    * @type {Function}
    * @kind function
-   * @param {string} anchor
+   * @param {string} id
    * @returns {string}
-   * @default <pre class="prettyprint source"><code>function (anchor) {
-   *   return '&lt;span id="' + anchor + '">&lt;/span>';
+   * @default <pre class="prettyprint source"><code>function (id) {
+   *   return '&lt;span id="' + id + '">&lt;/span>';
    * }</code></pre>
    */
-  getAnchorCode: function (anchor) {
-    return '<span id="' + anchor + '"></span>';
+  getAnchorCode: function (id) {
+    return '<span id="' + id + '"></span>';
   },
 };

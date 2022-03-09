@@ -1,9 +1,52 @@
+/**
+ * Page class and singleton `pageRegistry` used to obtain its instances while avoiding creating
+ * duplicates.
+ *
+ * @module pageRegistry
+ */
+
 import CdError from './CdError';
 import cd from './cd';
+import controller from './controller';
 import { findFirstTimestamp, hideDistractingCode } from './wikitext';
 import { handleApiReject, isProbablyTalkPage } from './util';
 import { makeBackgroundRequest } from './apiWrappers';
 import { parseTimestamp } from './timestamp';
+
+const pageRegistry = {
+  /**
+   * Collection of pages.
+   *
+   * @type {object}
+   */
+  pages: {},
+
+  /**
+   * Get a page object for a page with the specified name (either a new one or already existing).
+   *
+   * @param {string|external:mw.Title} nameOrMwTitle
+   * @param {boolean} [isGendered=true] Used to keep the gendered namespace name (if `nameOrMwTitle`
+   *   is a string).
+   * @returns {module:pageRegistry~Page}
+   */
+  getPage(nameOrMwTitle, isGendered) {
+    const title = nameOrMwTitle instanceof mw.Title ?
+      nameOrMwTitle :
+      new mw.Title(nameOrMwTitle);
+
+    const name = title.getPrefixedText();
+
+    if (!this.pages[name]) {
+      this.pages[name] = new Page(name, isGendered && nameOrMwTitle);
+    } else if (isGendered) {
+      this.pages[name].genderedName = nameOrMwTitle;
+    }
+
+    return this.pages[name];
+  },
+};
+
+export default pageRegistry;
 
 /**
  * Main MediaWiki object.
@@ -28,16 +71,18 @@ class Page {
   /**
    * Create a page instance.
    *
-   * @param {string|external:mw.Title} nameOrMwTitle
-   * @param {boolean} [normalize=true] Whether to normalize the page name for the
-   *   {@link Page#name name} property (usually used to keep the gendered namespace name). Makes
-   *   sense to specify only if `nameOrMwTitle` is a string.
+   * @param {external:mw.Title} mwTitle
+   * @param {string} genderedName
    * @throws {CdError} If the string in the first parameter is not a valid title.
    */
-  constructor(nameOrMwTitle, normalize = true) {
-    const title = nameOrMwTitle instanceof mw.Title ?
-      nameOrMwTitle :
-      new mw.Title(nameOrMwTitle);
+  constructor(mwTitle, genderedName) {
+    /**
+     * Page name, with a namespace name, not necessarily normalized (if a gendered name is
+     * available). The word separator is a space, not an underline.
+     *
+     * @type {string}
+     */
+    this.name = genderedName || mwTitle.getPrefixedText();
 
     /**
      * Page title, with no namespace name, normalized. The word separator is a space, not an
@@ -45,32 +90,14 @@ class Page {
      *
      * @type {string}
      */
-    this.title = title.getMainText();
-
-    /**
-     * Page name, with a namespace name, normalized. The word separator is a space, not an
-     * underline.
-     *
-     * @type {string}
-     */
-    this.canonicalName = title.getPrefixedText();
-
-    /**
-     * Page name, with a namespace name, normalized only if the `normalize` parameter is `true` (a
-     * default). The word separator is a space, not an underline.
-     *
-     * @type {string}
-     */
-    this.name = nameOrMwTitle instanceof mw.Title || normalize ?
-      this.canonicalName :
-      nameOrMwTitle;
+    this.title = mwTitle.getMainText();
 
     /**
      * Namespace number.
      *
      * @type {number}
      */
-    this.namespaceId = title.getNamespaceId();
+    this.namespaceId = mwTitle.getNamespaceId();
   }
 
   /**
@@ -81,6 +108,15 @@ class Page {
    */
   getUrl(parameters) {
     return mw.util.getUrl(this.name, parameters);
+  }
+
+  getArchivingInfoElement() {
+    // For performance reasons, this is not reevaluated after page reloads. The reevaluation is
+    // unlikely to be needed by users.
+    if (!this.$archivingInfo) {
+      this.$archivingInfo = controller.$root.find('.cd-archivingInfo');
+    }
+    return this.$archivingInfo;
   }
 
   /**
@@ -102,7 +138,7 @@ class Page {
   isArchivePage() {
     let result;
     if (this === cd.page) {
-      result = cd.g.$root.find('.cd-archivingInfo').data('isArchivePage');
+      result = this.getArchivingInfoElement().data('isArchivePage');
     }
     if (result === undefined) {
       result = false;
@@ -115,6 +151,7 @@ class Page {
         }
       }
     }
+
     return Boolean(result);
   }
 
@@ -132,7 +169,7 @@ class Page {
     }
     let result;
     if (this === cd.page) {
-      result = cd.g.$root.find('.cd-archivingInfo').data('canHaveArchives');
+      result = this.getArchivingInfoElement().data('canHaveArchives');
     }
     if (result === undefined) {
       const name = this.realName || this.name;
@@ -155,7 +192,7 @@ class Page {
     }
     let result;
     if (this === cd.page) {
-      result = cd.g.$root.find('.cd-archivingInfo').data('archivePrefix');
+      result = this.getArchivingInfoElement().data('archivePrefix');
     }
     const name = this.realName || this.name;
     if (!result) {
@@ -181,7 +218,7 @@ class Page {
   getArchivedPage() {
     let result;
     if (this === cd.page) {
-      result = cd.g.$root.find('.cd-archivingInfo').data('archivedPage');
+      result = this.getArchivingInfoElement().data('archivedPage');
     }
     if (!result) {
       const name = this.realName || this.name;
@@ -193,7 +230,7 @@ class Page {
         }
       }
     }
-    return result ? new Page(String(result)) : this;
+    return result ? pageRegistry.getPage(String(result)) : this;
   }
 
   /**
@@ -208,7 +245,7 @@ class Page {
    * @throws {CdError}
    */
   async getCode(tolerateMissing = true) {
-    const resp = await cd.g.mwApi.post({
+    const resp = await controller.getApi().post({
       action: 'query',
       titles: this.name,
       prop: 'revisions',
@@ -352,7 +389,7 @@ class Page {
       redirects: true,
       prop: ['text', 'revid', 'modules', 'jsconfigvars'],
     };
-    if (cd.g.isDtTopicSubscriptionEnabled) {
+    if (cd.g.IS_DT_TOPIC_SUBSCRIPTION_ENABLED) {
       // HACK: 'useskin' triggers a different code path that runs our OutputPageBeforeHTML hook,
       // adding DT's subscribe links in the HTML if that feature is enabled (T266195). See
       // https://github.com/wikimedia/mediawiki-extensions-DiscussionTools/blob/9c20efcd4deffe0d463e0548e4e8ded41fea48a5/modules/controller.js#L649.
@@ -365,7 +402,9 @@ class Page {
       delete options.page;
     }
 
-    let request = requestInBackground ? makeBackgroundRequest(options) : cd.g.mwApi.post(options);
+    let request = requestInBackground ?
+      makeBackgroundRequest(options) :
+      controller.getApi().post(options);
     request = request.catch(handleApiReject);
 
     const parse = (await request).parse;
@@ -401,7 +440,9 @@ class Page {
     };
     const options = Object.assign({}, defaultOptions, customOptions);
 
-    let request = requestInBackground ? makeBackgroundRequest(options) : cd.g.mwApi.post(options);
+    let request = requestInBackground ?
+      makeBackgroundRequest(options) :
+      controller.getApi().post(options);
     request = request.catch(handleApiReject);
 
     const revisions = (await request).query?.pages?.[0]?.revisions;
@@ -472,11 +513,13 @@ class Page {
       errorlang: cd.g.USER_LANGUAGE,
       errorsuselocal: true,
     };
-    const options = cd.g.mwApi.assertCurrentUser(Object.assign({}, defaultOptions, customOptions));
+    const options = controller.getApi().assertCurrentUser(
+      Object.assign({}, defaultOptions, customOptions)
+    );
 
     let resp;
     try {
-      resp = await cd.g.mwApi.postWithEditToken(options, {
+      resp = await controller.getApi().postWithEditToken(options, {
         // Beneficial when sending long unicode texts, which is what we do here.
         contentType: 'multipart/form-data',
       }).catch(handleApiReject);
@@ -601,7 +644,7 @@ class Page {
    * {@link https://www.mediawiki.org/wiki/Manual:Purge Purge cache} of the page.
    */
   async purge() {
-    await cd.g.mwApi.post({
+    await controller.getApi().post({
       action: 'purge',
       titles: this.name,
     }).catch(() => {
@@ -615,12 +658,10 @@ class Page {
    * @param {number} revisionId Revision to mark as read (setting all newer revisions unread).
    */
   async markAsRead(revisionId) {
-    await cd.g.mwApi.postWithEditToken({
+    await controller.getApi().postWithEditToken({
       action: 'setnotificationtimestamp',
       titles: this.name,
       newerthanrevid: revisionId,
     });
   }
 }
-
-export default Page;

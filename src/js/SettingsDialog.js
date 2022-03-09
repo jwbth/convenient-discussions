@@ -1,4 +1,5 @@
 import cd from './cd';
+import settings from './settings';
 import { addPreventUnloadCondition, removePreventUnloadCondition } from './eventHandlers';
 import { areObjectsEqual, defined } from './util';
 import {
@@ -10,10 +11,8 @@ import {
   tweakUserOoUiClass,
 } from './ooui';
 import { formatDateImproved, formatDateNative, formatDateRelative } from './timestamp';
-import { getSettings, setSettings } from './options';
 import { hideText, unhideText, wrap } from './util';
 import { setGlobalOption, setLocalOption } from './apiWrappers';
-import { settingsScheme } from './boot';
 
 /**
  * Class used to create a settings dialog.
@@ -62,7 +61,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
     super({ classes: ['cd-settingsDialog'] });
     this.initialPageName = initialPageName;
     this.preparatoryRequests = [
-      getSettings({ omitLocal: true }),
+      settings.load({ omitLocal: true }),
       mw.loader.using('mediawiki.widgets.UsersMultiselectWidget'),
     ];
   }
@@ -153,19 +152,19 @@ class SettingsDialog extends OO.ui.ProcessDialog {
    */
   getReadyProcess(data) {
     return super.getReadyProcess(data).next(async () => {
-      let settings;
+      let loadedSettings;
       try {
-        [settings] = await Promise.all(this.preparatoryRequests);
+        [loadedSettings] = await Promise.all(this.preparatoryRequests);
       } catch (e) {
         handleDialogError(this, e, 'error-settings-load', false);
         return;
       }
-      this.settings = Object.assign({}, cd.settings, settings);
+      this.settings = Object.assign({}, cd.settings, loadedSettings);
 
       this.renderControls(this.settings);
 
       this.stackLayout.setItem(this.settingsPanel);
-      this.bookletLayout.setPage(this.initialPageName || 'talkPage');
+      this.bookletLayout.setPage(this.initialPageName || 'isTalkPage');
       this.actions.setAbilities({ close: true });
 
       this.popPending();
@@ -187,10 +186,10 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       return new OO.ui.Process(async () => {
         this.pushPending();
 
-        const settings = this.collectSettings();
+        const collectedSettings = this.collectSettings();
 
         try {
-          await setSettings(settings);
+          await settings.save(collectedSettings);
         } catch (e) {
           handleDialogError(this, e, 'error-settings-save', true);
           return;
@@ -216,7 +215,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       return new OO.ui.Process(() => {
         if (confirm(cd.s('sd-reset-confirm'))) {
           const currentPageName = this.bookletLayout.getCurrentPageName();
-          this.renderControls(settingsScheme.default);
+          this.renderControls(settings.scheme.default);
           this.bookletLayout.setPage(currentPageName);
         }
       });
@@ -592,7 +591,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
    * @returns {object}
    */
   collectSettings() {
-    const settings = {
+    const collectedSettings = {
       allowEditOthersComments: this.allowEditOthersCommentsCheckbox.isSelected(),
       alwaysExpandAdvanced: this.alwaysExpandAdvancedCheckbox.isSelected(),
       autocompleteTypes: this.autocompleteTypesMultiselect.findSelectedItemsData(),
@@ -621,12 +620,12 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       watchOnReply: this.watchOnReplyCheckbox.isSelected(),
       subscribeOnReply: this.subscribeOnReplyCheckbox.isSelected(),
     };
-    settings.haveInsertButtonsBeenAltered = (
-      JSON.stringify(settings.insertButtons) !==
-      JSON.stringify(settingsScheme.default.insertButtons)
+    collectedSettings.haveInsertButtonsBeenAltered = (
+      JSON.stringify(collectedSettings.insertButtons) !==
+      JSON.stringify(settings.scheme.default.insertButtons)
     );
 
-    return settings;
+    return collectedSettings;
   }
 
   /**
@@ -665,9 +664,9 @@ class SettingsDialog extends OO.ui.ProcessDialog {
     );
     this.hideTimezoneCheckbox.setDisabled(hideTimezoneCheckboxDisabled);
 
-    const settings = this.collectSettings();
-    const save = !areObjectsEqual(settings, this.settings, true);
-    const reset = !areObjectsEqual(settings, settingsScheme.default, true);
+    const collectedSettings = this.collectSettings();
+    const save = !areObjectsEqual(collectedSettings, this.settings, true);
+    const reset = !areObjectsEqual(collectedSettings, settings.scheme.default, true);
 
     this.actions.setAbilities({ save, reset });
   }
@@ -734,7 +733,7 @@ class TalkPagePageLayout extends OO.ui.PageLayout {
    * @param {SettingsDialog} dialog Settings dialog that has the booklet page.
    */
   constructor(dialog) {
-    super('talkPage');
+    super('isTalkPage');
     this.$element.append([
       dialog.reformatCommentsField.$element,
       dialog.showContribsLinkField.$element,

@@ -1,5 +1,7 @@
 import Tribute from '../tribute/Tribute';
 import cd from './cd';
+import controller from './controller';
+import settings from './settings';
 import userRegistry from './userRegistry';
 import {
   defined,
@@ -19,14 +21,14 @@ import {
 /**
  * Search for a string in a list of values.
  *
- * @param {string} s
+ * @param {string} string
  * @param {string[]} list
  * @returns {string[]} Matched results.
  * @private
  */
-function search(s, list) {
-  const containsRegexp = new RegExp(mw.util.escapeRegExp(s), 'i');
-  const startsWithRegexp = new RegExp('^' + mw.util.escapeRegExp(s), 'i');
+function search(string, list) {
+  const containsRegexp = new RegExp(mw.util.escapeRegExp(string), 'i');
+  const startsWithRegexp = new RegExp('^' + mw.util.escapeRegExp(string), 'i');
   return list
     .filter((item) => containsRegexp.test(item))
     .sort((item1, item2) => {
@@ -63,7 +65,7 @@ class Autocomplete {
     types = types
       // The "mentions" type is needed in any case, as it can be triggered from the toolbar. When it
       // is not, we will suppress it specifically.
-      .filter((type) => cd.settings.autocompleteTypes.includes(type) || type === 'mentions');
+      .filter((type) => settings.get('autocompleteTypes').includes(type) || type === 'mentions');
 
     const collections = this.getCollections(types, comments, defaultUserNames);
 
@@ -97,10 +99,10 @@ class Autocomplete {
       this.tribute.attach(element);
       element.cdInput = input;
       element.addEventListener('tribute-active-true', () => {
-        cd.g.activeAutocompleteMenu = this.tribute.menu;
+        controller.setActiveAutocompleteMenu(this.tribute.menu);
       });
       element.addEventListener('tribute-active-false', () => {
-        cd.g.activeAutocompleteMenu = null;
+        controller.forgetActiveAutocompleteMenu();
       });
       if (input instanceof OO.ui.MultilineTextInputWidget) {
         input.on('resize', () => {
@@ -169,7 +171,7 @@ class Autocomplete {
         selectTemplate,
         values: async (text, callback) => {
           if (
-            !cd.settings.autocompleteTypes.includes('mentions') &&
+            !settings.get('autocompleteTypes').includes('mentions') &&
             !this.tribute.current.externalTrigger
           ) {
             return;
@@ -248,7 +250,7 @@ class Autocomplete {
           if (!this.commentLinks.default) {
             this.commentLinks.default = [];
             this.commentLinks.comments.forEach((comment) => {
-              let { anchor, dtId, author, timestamp } = comment;
+              let { id, dtId, author, timestamp } = comment;
               let snippet;
               const snippetMaxLength = 80;
               if (comment.getText().length > snippetMaxLength) {
@@ -274,15 +276,15 @@ class Autocomplete {
               const key = authorTimestamp + colon + snippet;
               this.commentLinks.default.push({
                 key,
-                anchor: dtId || anchor,
+                id: dtId || id,
                 author: author.name,
                 timestamp,
               });
             });
             cd.sections.forEach((section) => {
               this.commentLinks.default.push({
-                key: underlinesToSpaces(section.anchor),
-                anchor: underlinesToSpaces(section.anchor),
+                key: underlinesToSpaces(section.id),
+                id: underlinesToSpaces(section.id),
                 headline: section.headline,
               });
             });
@@ -379,14 +381,14 @@ class Autocomplete {
         searchOpts: { skip: true },
         selectTemplate: (item, event) => {
           if (item) {
-            if (cd.settings.useTemplateData && event.shiftKey && !event.altKey) {
+            if (settings.get('useTemplateData') && event.shiftKey && !event.altKey) {
               const input = this.tribute.current.element.cdInput;
 
               setTimeout(() => {
                 input.setDisabled(true);
                 input.pushPending();
 
-                cd.g.mwApi.get({
+                controller.getApi().get({
                   action: 'templatedata',
                   titles: `Template:${item.original.key}`,
                   redirects: true,
@@ -598,8 +600,8 @@ class Autocomplete {
       case 'commentLinks': {
         config = {
           comments: arguments[1] || [],
-          transform: ({ anchor, author, timestamp, headline }) => ({
-            start: `[[#${anchor}|`,
+          transform: ({ id, author, timestamp, headline }) => ({
+            start: `[[#${id}|`,
             end: ']]',
             content: timestamp ?
               cd.s('cf-autocomplete-commentlinks-text', author, timestamp) :

@@ -6,9 +6,9 @@
 
 import Comment from './Comment';
 import cd from './cd';
+import controller from './controller';
 import { copyText, dealWithLoadingBug } from './util';
 import { encodeWikilink } from './wikitext';
-import { getWindowManager } from './ooui';
 import { isPageOverlayOn, underlinesToSpaces } from './util';
 
 /**
@@ -27,11 +27,10 @@ export async function showSettingsDialog(initalPageName) {
   const SettingsDialog = require('./SettingsDialog').default;
 
   const dialog = new SettingsDialog(initalPageName);
-  getWindowManager().addWindows([dialog]);
-  getWindowManager().openWindow(dialog);
+  controller.getWindowManager().addWindows([dialog]);
+  controller.getWindowManager().openWindow(dialog);
 
-  // For testing purposes
-  cd.g.settingsDialog = dialog;
+  cd.tests.settingsDialog = dialog;
 }
 
 /**
@@ -43,8 +42,8 @@ export async function showEditSubscriptionsDialog() {
   const EditSubscriptionsDialog = require('./EditSubscriptionsDialog').default;
 
   const dialog = new EditSubscriptionsDialog();
-  getWindowManager().addWindows([dialog]);
-  getWindowManager().openWindow(dialog);
+  controller.getWindowManager().addWindows([dialog]);
+  controller.getWindowManager().openWindow(dialog);
 }
 
 /**
@@ -76,14 +75,14 @@ export async function showCopyLinkDialog(object, e) {
    */
   object.isLinkBeingCopied = true;
 
-  const anchor = object instanceof Comment ?
-    object.dtId || object.anchor :
-    encodeWikilink(underlinesToSpaces(object.anchor));
+  const id = object instanceof Comment ?
+    object.dtId || object.id :
+    encodeWikilink(underlinesToSpaces(object.id));
 
   const content = {
-    anchor,
-    wikilink: `[[${cd.page.name}#${anchor}]]`,
-    currentPageWikilink: `[[#${anchor}]]`,
+    id,
+    wikilink: `[[${cd.page.name}#${id}]]`,
+    currentPageWikilink: `[[#${id}]]`,
     link: object.getUrl(),
     permanentLink: object.getUrl(true),
     copyMessages: {
@@ -94,8 +93,8 @@ export async function showCopyLinkDialog(object, e) {
 
   // Undocumented feature allowing to copy a link of a default type without opening a dialog.
   const relevantSetting = object instanceof Comment ?
-    cd.settings.defaultCommentLinkType :
-    cd.settings.defaultSectionLinkType;
+    settings.get('defaultCommentLinkType') :
+    settings.get('defaultSectionLinkType');
   if (!e.shiftKey && relevantSetting) {
     switch (relevantSetting) {
       case 'wikilink':
@@ -112,8 +111,8 @@ export async function showCopyLinkDialog(object, e) {
   const CopyLinkDialog = require('./CopyLinkDialog').default;
 
   const dialog = new CopyLinkDialog(object, content);
-  getWindowManager().addWindows([dialog]);
-  const windowInstance = getWindowManager().openWindow(dialog);
+  controller.getWindowManager().addWindows([dialog]);
+  const windowInstance = controller.getWindowManager().openWindow(dialog);
   windowInstance.closed.then(() => {
     object.isLinkBeingCopied = false;
   });
@@ -149,8 +148,8 @@ export function rescueCommentFormsContent(content) {
   });
 
   const dialog = new OO.ui.MessageDialog();
-  getWindowManager().addWindows([dialog]);
-  getWindowManager().openWindow(dialog, {
+  controller.getWindowManager().addWindows([dialog]);
+  controller.getWindowManager().openWindow(dialog, {
     message: field.$element,
     actions: [
       {

@@ -1,7 +1,7 @@
 /**
- * Wrappers for MediaWiki action API requests
- * ({@link https://www.mediawiki.org/wiki/API:Main_page}). See also the {@link Page} class methods
- * for functions regarding concrete page names.
+ * Wrappers for MediaWiki action API requests ({@link https://www.mediawiki.org/wiki/API:Main_page})
+ * together with some user options handling functions. See also the {@link Page} class methods for
+ * functions regarding concrete page names.
  *
  * @module apiWrappers
  */
@@ -10,15 +10,205 @@ import lzString from 'lz-string';
 
 import CdError from './CdError';
 import cd from './cd';
+import controller from './controller';
+import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
-import { createApi } from './boot';
-import { defined, firstCharToUpperCase, handleApiReject, unique } from './util';
-import { unpackSubscriptions, unpackVisits } from './options';
+import { defined, handleApiReject, ucFirst, unique } from './util';
 
 let cachedUserInfoRequest;
 let currentAutocompletePromise;
 
 const autocompleteTimeout = 100;
+
+/**
+ * Pack the visits object into a string for further compression.
+ *
+ * @param {object} visits
+ * @returns {string}
+ */
+export function packVisits(visits) {
+  return Object.keys(visits)
+    .map((key) => `${key},${visits[key].join(',')}\n`)
+    .join('')
+    .trim();
+}
+
+/**
+ * Unpack the visits string into a visits object.
+ *
+ * @param {string} visitsString
+ * @returns {object}
+ */
+export function unpackVisits(visitsString) {
+  const visits = {};
+  // " *" fixes a error previously made. Not needed for new sites.
+  const regexp = /^(\d+), *(.+)$/gm;
+  let match;
+  while ((match = regexp.exec(visitsString))) {
+    visits[match[1]] = match[2].split(',');
+  }
+  return visits;
+}
+
+/**
+ * Pack the legacy subscriptions object into a string for further compression.
+ *
+ * @param {object} registry
+ * @returns {string}
+ */
+export function packLegacySubscriptions(registry) {
+  return Object.keys(registry)
+    .filter((pageId) => Object.keys(registry[pageId]).length)
+    .map((key) => ` ${key} ${Object.keys(registry[key]).join('\n')}\n`)
+    .join('')
+    .trim();
+}
+
+/**
+ * Unpack the legacy subscriptions string into a visits object.
+ *
+ * @param {string} string
+ * @returns {object}
+ */
+export function unpackLegacySubscriptions(string) {
+  const registry = {};
+  const pages = string.split(/(?:^|\n )(\d+) /).slice(1);
+  let pageId;
+  for (
+    let i = 0, isPageId = true;
+    i < pages.length;
+    i++, isPageId = !isPageId
+  ) {
+    if (isPageId) {
+      pageId = pages[i];
+    } else {
+      const pagesArr = pages[i].split('\n');
+      registry[pageId] = subscriptions.itemsToKeys(pagesArr);
+    }
+  }
+  return registry;
+}
+
+/**
+ * @typedef {object} GetVisitsReturn
+ * @property {object} visits
+ * @property {object} currentPageVisits
+ */
+
+/**
+ * Request the pages visits data from the server.
+ *
+ * `mw.user.options` is not used even on the first run because the script may not run immediately
+ * after the page has loaded. In fact, when the page is loaded in a background tab, it can be
+ * throttled until it is focused, so an indefinite amount of time can pass.
+ *
+ * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
+ * @returns {Promise.<GetVisitsReturn>}
+ */
+export async function getVisits(reuse = false) {
+  let visits;
+  let currentPageVisits;
+  if (cd.user.name === '<unregistered>') {
+    visits = [];
+    currentPageVisits = [];
+  } else {
+    const isOptionSet = mw.user.options.get(cd.g.VISITS_OPTION_NAME) !== null;
+    const promise = controller.bootProcess.isPageFirstParsed() && !isOptionSet ?
+      Promise.resolve({}) :
+      getUserInfo(reuse).then((options) => options.visits);
+    visits = await promise;
+    const articleId = mw.config.get('wgArticleId');
+
+    // This should always true; this check should be performed before.
+    if (articleId) {
+      visits[articleId] = visits[articleId] || [];
+      currentPageVisits = visits[articleId];
+    }
+  }
+
+  cd.tests.visits = visits;
+  cd.tests.currentPageVisits = currentPageVisits;
+
+  return { visits, currentPageVisits };
+}
+
+/**
+ * Remove the oldest 10% of visits when the size limit is hit.
+ *
+ * @param {object} originalVisits
+ * @returns {object}
+ * @private
+ */
+function cleanUpVisits(originalVisits) {
+  const visits = Object.assign({}, originalVisits);
+  const timestamps = Object.keys(visits).reduce((acc, key) => acc.concat(visits[key]), []);
+  timestamps.sort();
+  const boundary = timestamps[Math.floor(timestamps.length / 10)];
+  Object.keys(visits).forEach((key) => {
+    visits[key] = visits[key].filter((visit) => visit >= boundary);
+    if (!visits[key].length) {
+      delete visits[key];
+    }
+  });
+  return visits;
+}
+
+/**
+ * Save the pages visits data to the server.
+ *
+ * @param {object} visits
+ */
+export async function setVisits(visits) {
+  if (!visits || !cd.user.isRegistered()) return;
+
+  const string = packVisits(visits);
+  const compressed = lzString.compressToEncodedURIComponent(string);
+  try {
+    await setLocalOption(cd.g.VISITS_OPTION_NAME, compressed);
+  } catch (e) {
+    if (e instanceof CdError) {
+      const { type, code } = e.data;
+      if (type === 'internal' && code === 'sizeLimit') {
+        setVisits(cleanUpVisits(visits));
+      } else {
+        console.error(e);
+      }
+    } else {
+      console.error(e);
+    }
+  }
+}
+
+/**
+ * Request the legacy subscriptions from the server.
+ *
+ * `mw.user.options` is not used even on first run because it appears to be cached sometimes which
+ * can be critical for determining subscriptions.
+ *
+ * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
+ * @returns {Promise.<object>}
+ */
+export async function getLegacySubscriptions(reuse = false) {
+  const isOptionSet = mw.user.options.get(cd.g.SUBSCRIPTIONS_OPTION_NAME) !== null;
+  const promise = controller.bootProcess.isPageFirstParsed() && !isOptionSet ?
+    Promise.resolve({}) :
+    getUserInfo(reuse).then((options) => options.subscriptions);
+  const registry = await promise;
+
+  return registry;
+}
+
+/**
+ * Save the watched sections to the server.
+ *
+ * @param {Promise.<object>} registry
+ */
+export async function setLegacySubscriptions(registry) {
+  const string = packLegacySubscriptions(registry);
+  const compressed = lzString.compressToEncodedURIComponent(string);
+  await setLocalOption(cd.g.SUBSCRIPTIONS_OPTION_NAME, compressed);
+}
+
 
 /**
  * Make a request that won't set the process on hold when the tab is in the background.
@@ -29,7 +219,7 @@ const autocompleteTimeout = 100;
  */
 export function makeBackgroundRequest(params, method = 'post') {
   return new Promise((resolve, reject) => {
-    cd.g.mwApi[method](params, {
+    controller.getApi()[method](params, {
       success: (resp) => {
         if (resp.error) {
           reject(['api', resp]);
@@ -72,7 +262,7 @@ export function parseCode(code, customOptions) {
     disableeditsection: true,
   };
   const options = Object.assign({}, defaultOptions, customOptions);
-  return cd.g.mwApi.post(options).then(
+  return controller.getApi().post(options).then(
     (resp) => {
       const html = resp.parse.text;
       mw.loader.load(resp.parse.modules);
@@ -96,8 +286,7 @@ export function getUserInfo(reuse = false) {
     return cachedUserInfoRequest;
   }
 
-  createApi();
-  cachedUserInfoRequest = cd.g.mwApi.post({
+  cachedUserInfoRequest = controller.getApi().post({
     action: 'query',
     meta: 'userinfo',
     uiprop: ['options', 'rights'],
@@ -117,7 +306,7 @@ export function getUserInfo(reuse = false) {
       const subscriptionsString = subscriptionsCompressed ?
         lzString.decompressFromEncodedURIComponent(subscriptionsCompressed) :
         '';
-      const subscriptions = unpackSubscriptions(subscriptionsString);
+      const subscriptions = unpackLegacySubscriptions(subscriptionsString);
 
       cd.g.USER_RIGHTS = rights;
 
@@ -137,11 +326,12 @@ export function getUserInfo(reuse = false) {
  */
 export async function getPageTitles(pageIds) {
   const pages = [];
+
   const pageIdsToRequest = pageIds.slice();
   const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextPageIds;
   while ((nextPageIds = pageIdsToRequest.splice(0, limit).join('|'))) {
-    const resp = await cd.g.mwApi.post({
+    const resp = await controller.getApi().post({
       action: 'query',
       pageids: nextPageIds,
     }).catch(handleApiReject);
@@ -162,11 +352,12 @@ export async function getPageIds(titles) {
   const normalized = [];
   const redirects = [];
   const pages = [];
+
   const titlesToRequest = titles.slice();
   const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextTitles;
   while ((nextTitles = titlesToRequest.splice(0, limit).join('|'))) {
-    const resp = await cd.g.mwApi.post({
+    const resp = await controller.getApi().post({
       action: 'query',
       titles: nextTitles,
       redirects: true,
@@ -199,7 +390,7 @@ async function setOption(name, value, action) {
     });
   }
 
-  const resp = await makeBackgroundRequest(cd.g.mwApi.assertCurrentUser({
+  const resp = await makeBackgroundRequest(controller.getApi().assertCurrentUser({
     action,
     optionname: name,
 
@@ -278,7 +469,9 @@ export async function getUserGenders(users, requestInBackground = false) {
       ususers: nextUsers,
       usprop: 'gender',
     };
-    const request = requestInBackground ? makeBackgroundRequest(options) : cd.g.mwApi.post(options);
+    const request = requestInBackground ?
+      makeBackgroundRequest(options) :
+      controller.getApi().post(options);
 
     const resp = await request.catch(handleApiReject);
 
@@ -288,6 +481,26 @@ export async function getUserGenders(users, requestInBackground = false) {
         userRegistry.getUser(user.name).setGender(user.gender);
       });
   }
+}
+
+export async function getUsersById(userIds) {
+  const users = [];
+
+  const userIdsToRequest = userIds.slice();
+  const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
+  let nextUserIds;
+  while ((nextUserIds = userIdsToRequest.splice(0, limit).join('|'))) {
+    const resp = await controller.getApi().post({
+      action: 'query',
+      list: 'users',
+      ususerids: nextUserIds,
+    }).catch(handleApiReject);
+
+    const nextUsers = resp.query.users.map((user) => userRegistry.getUser(user.name));
+    users.push(...nextUsers);
+  }
+
+  return users;
 }
 
 /**
@@ -302,7 +515,7 @@ export async function getUserGenders(users, requestInBackground = false) {
  * @throws {CdError}
  */
 export function getRelevantUserNames(text) {
-  text = firstCharToUpperCase(text);
+  text = ucFirst(text);
   const promise = new Promise((resolve, reject) => {
     setTimeout(async () => {
       try {
@@ -312,7 +525,7 @@ export function getRelevantUserNames(text) {
 
         // First, try to use the search to get only users that have talk pages. Most legitimate
         // users do, while spammers don't.
-        const resp = await cd.g.mwApi.get({
+        const resp = await controller.getApi().get({
           action: 'opensearch',
           search: text,
           namespace: 3,
@@ -329,7 +542,7 @@ export function getRelevantUserNames(text) {
           resolve(users);
         } else {
           // If we didn't succeed with search, try the entire users database.
-          const resp = await cd.g.mwApi.get({
+          const resp = await controller.getApi().get({
             action: 'query',
             list: 'allusers',
             auprefix: text,
@@ -373,7 +586,7 @@ export function getRelevantPageNames(text) {
           throw new CdError();
         }
 
-        cd.g.mwApi.get({
+        controller.getApi().get({
           action: 'opensearch',
           search: text,
           redirects: 'return',
@@ -422,7 +635,7 @@ export function getRelevantTemplateNames(text) {
           throw new CdError();
         }
 
-        cd.g.mwApi.get({
+        controller.getApi().get({
           action: 'opensearch',
           search: text.startsWith(':') ? text.slice(1) : 'Template:' + text,
           redirects: 'return',
@@ -461,11 +674,12 @@ export async function getPagesExistence(titles) {
   const results = {};
   const normalized = [];
   const pages = [];
+
   const titlesToRequest = titles.slice();
   const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
   let nextTitles;
   while ((nextTitles = titlesToRequest.splice(0, limit).join('|'))) {
-    const resp = await cd.g.mwApi.post({
+    const resp = await controller.getApi().post({
       action: 'query',
       titles: nextTitles,
     }).catch(handleApiReject);
@@ -501,7 +715,7 @@ export async function getDtSubscriptions(ids) {
   const limit = isHigherApiLimit ? 500 : 50;
   let nextIds;
   while ((nextIds = idsToRequest.splice(0, limit).join('|'))) {
-    const resp = await cd.g.mwApi.post({
+    const resp = await controller.getApi().post({
       action: 'discussiontoolsgetsubscriptions',
       commentname: nextIds,
     }).catch(handleApiReject);
@@ -513,10 +727,10 @@ export async function getDtSubscriptions(ids) {
   return subscriptions;
 }
 
-export async function dtSubscribe(subscribeId, anchor, subscribe) {
-  return await cd.g.mwApi.postWithEditToken({
+export async function dtSubscribe(subscribeId, id, subscribe) {
+  return await controller.getApi().postWithEditToken({
     action: 'discussiontoolssubscribe',
-    page: `${cd.page.name}#${anchor}`,
+    page: `${cd.page.name}#${id}`,
     commentname: subscribeId,
     subscribe,
   }).catch(handleApiReject);

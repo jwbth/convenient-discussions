@@ -6,6 +6,9 @@ import SectionMenuButton from './SectionMenuButton';
 import SectionSkeleton from './SectionSkeleton';
 import SectionStatic from './SectionStatic';
 import cd from './cd';
+import controller from './controller';
+import pageRegistry from './pageRegistry';
+import settings from './settings';
 import subscriptions from './subscriptions';
 import toc from './toc';
 import {
@@ -13,7 +16,7 @@ import {
   dealWithLoadingBug,
   defined,
   focusInput,
-  getUrlWithAnchor,
+  getUrlWithFragment,
   handleApiReject,
   wrap,
 } from './util';
@@ -74,13 +77,13 @@ class Section extends SectionSkeleton {
      *
      * @type {Page}
      */
-    this.sourcePage = this.sourcePageName && this.sourcePageName !== cd.page.name ?
-      new Page(this.sourcePageName) :
-      cd.page;
+    this.sourcePage = pageRegistry.getPage(this.sourcePageName);
+
+    delete this.sourcePageName;
 
     // Transclusions of templates that in turn translude content, like here:
     // https://ru.wikipedia.org/wiki/Project:Выборы_арбитров/Лето_2021/Вопросы/Кандидатские_заявления
-    const isTranscludedFromTemplate = this.sourcePageName && this.sourcePage.namespaceId === 10;
+    const isTranscludedFromTemplate = this.sourcePage?.namespaceId === 10;
 
     /**
      * Is the section actionable (is in a closed discussion or on an old version page).
@@ -88,8 +91,8 @@ class Section extends SectionSkeleton {
      * @type {boolean}
      */
     this.isActionable = (
-      cd.state.isPageActive &&
-      !cd.g.closedDiscussionElements.some((el) => el.contains(this.headingElement)) &&
+      controller.isPageActive() &&
+      !controller.getClosedDiscussions().some((el) => el.contains(this.headingElement)) &&
       !isTranscludedFromTemplate
     );
 
@@ -98,8 +101,6 @@ class Section extends SectionSkeleton {
         comment.isActionable = false;
       });
     }
-
-    delete this.sourcePageName;
 
     this.extendSectionMenu();
     this.extractSubscribeId();
@@ -347,7 +348,7 @@ class Section extends SectionSkeleton {
         this.comments.length &&
         this.comments[0].isOpeningSection &&
         this.comments[0].openingSectionOfLevel === this.level &&
-        (this.comments[0].isOwn || cd.settings.allowEditOthersComments) &&
+        (this.comments[0].isOwn || settings.get('allowEditOthersComments')) &&
         this.comments[0].isActionable
       ) {
         this.addMenuItem({
@@ -392,7 +393,7 @@ class Section extends SectionSkeleton {
         action: this.copyLink.bind(this),
 
         tooltip: cd.s('sm-copylink-tooltip'),
-        href: `${cd.page.getUrl()}#${this.anchor}`,
+        href: `${cd.page.getUrl()}#${this.id}`,
       });
     }
   }
@@ -439,7 +440,7 @@ class Section extends SectionSkeleton {
    * Extract the section {@link Section#subscribeId subscribe ID}.
    */
   extractSubscribeId() {
-    if (!cd.settings.useTopicSubscription) {
+    if (!settings.get('useTopicSubscription')) {
       /**
        * The section subscribe ID in the DiscussionTools format.
        *
@@ -449,7 +450,7 @@ class Section extends SectionSkeleton {
       return;
     }
 
-    if (cd.g.isDtTopicSubscriptionEnabled) {
+    if (cd.g.IS_DT_TOPIC_SUBSCRIPTION_ENABLED) {
       this.subscribeId = this.headingElement
         .getElementsByClassName('ext-discussiontools-init-section-subscribe-link')[0]
         ?.dataset
@@ -541,8 +542,8 @@ class Section extends SectionSkeleton {
 
     const section = this;
     const dialog = new MoveSectionDialog(section);
-    cd.g.windowManager.addWindows([dialog]);
-    cd.g.windowManager.openWindow(dialog);
+    controller.getWindowManager().addWindows([dialog]);
+    controller.getWindowManager().openWindow(dialog);
   }
 
   /**
@@ -586,7 +587,7 @@ class Section extends SectionSkeleton {
       unsubscribeHeadline = renamedFrom;
     }
 
-    subscriptions.subscribe(this.subscribeId, this.anchor, unsubscribeHeadline)
+    subscriptions.subscribe(this.subscribeId, this.id, unsubscribeHeadline)
       .then(() => {
         sections.forEach((section) => {
           section.subscriptionState = true;
@@ -597,7 +598,7 @@ class Section extends SectionSkeleton {
           let title = cd.mws('discussiontools-topicsubscription-notify-subscribed-title');
           let body = cd.mws('discussiontools-topicsubscription-notify-subscribed-body');
           let autoHideSeconds;
-          if (!cd.settings.useTopicSubscription) {
+          if (!settings.get('useTopicSubscription')) {
             body += ' ' + cd.sParse('section-watch-openpages');
 
             if ($('#ca-watch').length) {
@@ -667,7 +668,7 @@ class Section extends SectionSkeleton {
    */
   resubscribeToRenamed(currentCommentData, oldCommentData) {
     if (
-      cd.settings.useTopicSubscription ||
+      settings.get('useTopicSubscription') ||
       this.subscriptionState ||
       !/^H[1-6]$/.test(currentCommentData.elementNames[0]) ||
       oldCommentData.elementNames[0] !== currentCommentData.elementNames[0]
@@ -775,7 +776,7 @@ class Section extends SectionSkeleton {
    * @throws {CdError}
    */
   async requestCode() {
-    const resp = await cd.g.mwApi.post({
+    const resp = await controller.getApi().post({
       action: 'query',
       titles: this.getSourcePage().name,
       prop: 'revisions',
@@ -944,7 +945,7 @@ class Section extends SectionSkeleton {
         .slice(-numberOfPreviousHeadlinesToCheck)
         .reverse();
       const previousHeadlines = cd.sections
-        .slice(Math.max(0, this.id - numberOfPreviousHeadlinesToCheck), this.id)
+        .slice(Math.max(0, this.index - numberOfPreviousHeadlinesToCheck), this.index)
         .reverse()
         .map((section) => section.headline);
       const doPreviousHeadlinesMatch = previousHeadlines
@@ -953,7 +954,7 @@ class Section extends SectionSkeleton {
 
       // Matching section index is one of the most unreliable ways to tell matching sections as
       // sections may be added and removed from the page, so we don't rely on it very much.
-      const doesSectionIndexMatch = this.id === sectionIndex;
+      const doesSectionIndexMatch = this.index === sectionIndex;
       sectionIndex++;
 
       // Get the section content
@@ -1174,7 +1175,7 @@ class Section extends SectionSkeleton {
 
     return (
       cd.sections
-        .slice(0, this.id)
+        .slice(0, this.index)
         .reverse()
         .find((section) => section.level === 2) ||
       this
@@ -1192,7 +1193,7 @@ class Section extends SectionSkeleton {
     const children = [];
     let haveMetDirect = false;
     cd.sections
-      .slice(this.id + 1)
+      .slice(this.index + 1)
       .some((section) => {
         if (section.level > this.level) {
           // If, say, a level 4 section directly follows a level 2 section, it should be considered
@@ -1238,7 +1239,7 @@ class Section extends SectionSkeleton {
    * @returns {?object}
    */
   getTocItem() {
-    return toc.getItem(this.anchor) || null;
+    return toc.getItem(this.id) || null;
   }
 
   /**
@@ -1248,7 +1249,7 @@ class Section extends SectionSkeleton {
    * @private
    */
   updateTocLink() {
-    if (!cd.settings.modifyToc) return;
+    if (!settings.get('modifyToc')) return;
 
     const tocItem = this.getTocItem();
     if (!tocItem) return;
@@ -1271,7 +1272,7 @@ class Section extends SectionSkeleton {
    * @returns {string}
    */
   getUrl(permanent) {
-    return getUrlWithAnchor(this.anchor, permanent);
+    return getUrlWithFragment(this.id, permanent);
   }
 }
 

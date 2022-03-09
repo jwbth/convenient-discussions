@@ -9,12 +9,7 @@ import Button from './Button';
 import CdError from './CdError';
 import Parser from './Parser';
 import cd from './cd';
-import { ElementsTreeWalker } from './treeWalker';
 import { brsToNewlines, hideSensitiveCode } from './wikitext';
-
-const scrollData = { offset: null };
-const postponements = {};
-let notificationsData = [];
 
 /**
  * @typedef {object} WrapCallbacks
@@ -116,23 +111,6 @@ export function buildEditSummary(options) {
 }
 
 /**
- * Is there any kind of a page overlay present, like the OOUI modal overlay or CD loading overlay.
- * This runs very frequently.
- *
- * @returns {boolean}
- */
-export function isPageOverlayOn() {
-  return (
-    document.body.classList.contains('oo-ui-windowManager-modal-active') ||
-
-    // The following code constitutes boot.isPageLoading, but we avoid using that because importing
-    // it here will increase the size of the worker build dramatically.
-    cd.state.isFirstRun ||
-    cd.state.isPageBeingReloaded
-  );
-}
-
-/**
  * Wrap the response to the "compare" API request in a table.
  *
  * @param {string} body
@@ -221,11 +199,11 @@ export function isInline(node, countTextNodesAsInline = false) {
  * case-insensitive for the first character only, and has any number of any type of space (` ` or
  * `_`) in place of spaces. The first character is expected not to be a space.
  *
- * @param {string} s
+ * @param {string} string
  * @returns {string}
  */
-export function generatePageNamePattern(s) {
-  const firstChar = s[0];
+export function generatePageNamePattern(string) {
+  const firstChar = string[0];
   if (!firstChar) {
     return '';
   }
@@ -234,13 +212,13 @@ export function generatePageNamePattern(s) {
   const fcLowerCase = firstChar.toLowerCase();
 
   // Could be issues, probably not very serious, resulting from the difference of PHP's
-  // mb_strtoupper and JavaScript's String#toUpperCase, see firstCharToUpperCase() and
+  // mb_strtoupper and JavaScript's String#toUpperCase, see ucFirst() and
   // https://phabricator.wikimedia.org/T141723#2513800.
   const fcPattern = fcUpperCase !== fcLowerCase ?
     '[' + fcUpperCase + fcLowerCase + ']' :
     mw.util.escapeRegExp(firstChar);
 
-  return fcPattern + mw.util.escapeRegExp(s.slice(1)).replace(/[ _]+/g, '[ _]+');
+  return fcPattern + mw.util.escapeRegExp(string.slice(1)).replace(/[ _]+/g, '[ _]+');
 }
 
 /**
@@ -363,31 +341,50 @@ export function handleApiReject(code, data) {
 /**
  * Transforms underlines to spaces in a string.
  *
- * @param {string} s
+ * @param {string} string
  * @returns {string}
  */
-export function underlinesToSpaces(s) {
-  return s.replace(/_/g, ' ');
+export function underlinesToSpaces(string) {
+  return string.replace(/_/g, ' ');
 }
 
 /**
  * Transforms spaces to underlines in a string.
  *
- * @param {string} s
+ * @param {string} string
  * @returns {string}
  */
-export function spacesToUnderlines(s) {
-  return s.replace(/ /g, '_');
+export function spacesToUnderlines(string) {
+  return string.replace(/ /g, '_');
 }
 
 /**
  * Replaces sequences of spaces with single spaces.
  *
- * @param {string} s
+ * @param {string} string
  * @returns {string}
  */
-export function removeDoubleSpaces(s) {
-  return s.replace(/ {2,}/g, ' ');
+export function removeDoubleSpaces(string) {
+  return string.replace(/ {2,}/g, ' ');
+}
+
+/**
+ * Like String#charAt, but return the pair of UTF-16 surrogates for characters outside of BMP.
+ *
+ * Borrowed from https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.String.js;af9bbfe40f34c187c091230312273808028d990a$61.
+ *
+ * @param {string} string
+ * @param {number} offset
+ * @param {boolean} backwards
+ * @returns {string}
+ * @author Bartosz Dziewoński <matma.rex@gmail.com>
+ * @license MIT
+ */
+function charAt(string, offset, backwards) {
+  const maybePair = backwards ?
+    string.slice(offset - 1, offset + 1) :
+    string.slice(offset, offset + 2);
+  return /^[\uD800-\uDBFF][\uDC00-\uDFFF]$/.test(maybePair) ? maybePair : string.charAt(offset);
 }
 
 /**
@@ -398,10 +395,10 @@ export function removeDoubleSpaces(s) {
  * @private
  */
 function phpCharToUpper(char) {
-  if (cd.g.PHP_CHAR_TO_UPPER_JSON[char] === '') {
+  if (cd.g.PHP_CHAR_TO_UPPER[char] === 0) {
     return char;
   }
-  return cd.g.PHP_CHAR_TO_UPPER_JSON[char] || char.toUpperCase();
+  return cd.g.PHP_CHAR_TO_UPPER[char] || char.toUpperCase();
 }
 
 /**
@@ -409,11 +406,12 @@ function phpCharToUpper(char) {
  * Do it in PHP, not JavaScript, fashion to match the MediaWiki behavior, see
  * {@link https://phabricator.wikimedia.org/T141723#2513800}.
  *
- * @param {string} s
+ * @param {string} string
  * @returns {string}
  */
-export function firstCharToUpperCase(s) {
-  return s.length ? phpCharToUpper(s[0]) + s.slice(1) : '';
+export function ucFirst(string) {
+  let firstChar = charAt(string, 0);
+  return phpCharToUpper(firstChar) + string.slice(firstChar.length);
 }
 
 /**
@@ -423,7 +421,7 @@ export function firstCharToUpperCase(s) {
  * @returns {string[]}
  */
 export function getContentLanguageMessages(messages) {
-  return messages.map((name) => cd.g.contentLanguageMessages[name]);
+  return messages.map((name) => cd.g.CONTENT_LANGUAGE_MESSAGES[name]);
 }
 
 /**
@@ -514,177 +512,6 @@ export function unhideText(text, hidden, type) {
   }
 
   return text;
-}
-
-/**
- * Save the scroll position relative to the first element in the viewport looking from the top of
- * the page.
- *
- * @param {?object} [switchToAbsolute=null] If an object with the `saveTocHeight` property and the
- *   viewport is above the bottom of the table of contents, then use
- *   {@link module:util.saveScrollPosition} (this allows for better precision).
- * @param {number} [scrollY=window.scrollY] Vertical scroll position (cached value to avoid reflow).
- */
-export function saveRelativeScrollPosition(switchToAbsolute = null, scrollY = window.scrollY) {
-  // The viewport has the TOC bottom or is above it.
-  if (switchToAbsolute && cd.g.$toc.length && scrollY < getTocBottomOffset()) {
-    saveScrollPosition(switchToAbsolute.saveTocHeight);
-  } else {
-    scrollData.element = null;
-    scrollData.elementTop = null;
-    scrollData.touchesBottom = false;
-    scrollData.offsetBottom = (
-      document.documentElement.scrollHeight - (scrollY + window.innerHeight)
-    );
-
-    // 100 accounts for various content moves by scripts running on the page (like HotCat that may
-    // add an empty category list).
-    if (scrollData.offsetBottom < 100) {
-      scrollData.touchesBottom = true;
-    } else if (scrollY !== 0 && cd.g.rootElement.getBoundingClientRect().top <= 0) {
-      const treeWalker = new ElementsTreeWalker(cd.g.rootElement.firstElementChild);
-      while (true) {
-        const node = treeWalker.currentNode;
-
-        if (!isInline(node) && !cd.g.floatingElements.includes(node)) {
-          const rect = node.getBoundingClientRect();
-          if (rect.bottom >= 0 && rect.height !== 0) {
-            scrollData.element = node;
-            scrollData.elementTop = rect.top;
-            if (treeWalker.firstChild()) {
-              continue;
-            } else {
-              break;
-            }
-          }
-        }
-        if (!treeWalker.nextSibling()) break;
-      }
-    }
-  }
-}
-
-/**
- * Restore the scroll position saved in {@link module:util.saveRelativeScrollPosition}.
- *
- * @param {boolean} [switchToAbsolute=false] Restore the absolute position using
- *   {@link module:util.restoreScrollPosition} if {@link module:util.saveScrollPosition} was
- *   previously used for saving the position.
- */
-export function restoreRelativeScrollPosition(switchToAbsolute = false) {
-  if (switchToAbsolute && scrollData.offset !== null) {
-    restoreScrollPosition();
-  } else {
-    if (scrollData.touchesBottom && window.scrollY !== 0) {
-      const y = (
-        document.documentElement.scrollHeight - window.innerHeight - scrollData.offsetBottom
-      );
-      window.scrollTo(0, y);
-    } else if (scrollData.element) {
-      const rect = scrollData.element.getBoundingClientRect();
-      if (getVisibilityByRects(rect)) {
-        window.scrollTo(0, window.scrollY + rect.top - scrollData.elementTop);
-      }
-    }
-  }
-}
-
-/**
- * _For internal use._ Replace the "anchor" element used for restoring saved relative scroll
- * position with a new element if it coincides with the provided element.
- *
- * @param {Element} element
- * @param {Element} newElement
- */
-function replaceAnchorElement(element, newElement) {
-  if (scrollData.element && element === scrollData.element) {
-    scrollData.element = newElement;
-  }
-}
-
-/**
- * Replace an element with an identical one but with another tag name, i.e. move all child nodes,
- * attributes, and some bound events to a new node, and also reassign references in some variables
- * and properties to this element. Unfortunately, we can't just change the element's `tagName` to do
- * that.
- *
- * @param {Element} element
- * @param {string} newType
- * @returns {Element}
- * @private
- */
-export function changeElementType(element, newType) {
-  const newElement = document.createElement(newType);
-  while (element.firstChild) {
-    newElement.appendChild(element.firstChild);
-  }
-  [...element.attributes].forEach((attribute) => {
-    newElement.setAttribute(attribute.name, attribute.value);
-  });
-
-  // If this element is a part of a comment, replace it in the Comment object instance.
-  let commentId = element.getAttribute('data-cd-comment-id');
-  if (commentId !== null) {
-    commentId = Number(commentId);
-    cd.comments[commentId].replaceElement(element, newElement);
-  } else {
-    element.parentNode.replaceChild(newElement, element);
-  }
-
-  replaceAnchorElement(element, newElement);
-
-  return newElement;
-}
-
-/**
- * Get the bottom offset of the table of contents.
- *
- * @returns {number}
- * @private
- */
-function getTocBottomOffset() {
-  return cd.g.$toc.offset().top + cd.g.$toc.outerHeight();
-}
-
-/**
- * Save the scroll position to restore it later with {@link module:util.restoreScrollPosition}.
- *
- * @param {boolean} [saveTocHeight=true] `false` is used for more fine control of scroll behavior
- *   when visits are loaded after a page reload.
- */
-export function saveScrollPosition(saveTocHeight = true) {
-  scrollData.offset = window.scrollY;
-  scrollData.tocHeight = (
-    (saveTocHeight || scrollData.tocHeight) &&
-    cd.g.$toc.length &&
-    !cd.g.isTocFloating &&
-    window.scrollY !== 0 &&
-
-    // There is some content below the TOC in the viewport.
-    getTocBottomOffset() < window.scrollY + window.innerHeight
-  ) ?
-    cd.g.$toc.outerHeight() :
-    null;
-}
-
-/**
- * Restore the scroll position saved in {@link module:util.saveScrollPosition}.
- *
- * @param {boolean} [resetTocHeight=true] `false` is used for more fine control of scroll behavior
- *   after page reloads.
- */
-export function restoreScrollPosition(resetTocHeight = true) {
-  if (scrollData.offset === null) return;
-
-  if (scrollData.tocHeight) {
-    scrollData.offset += (cd.g.$toc.outerHeight() || 0) - scrollData.tocHeight;
-  }
-  window.scrollTo(0, scrollData.offset);
-
-  scrollData.offset = null;
-  if (resetTocHeight) {
-    scrollData.tocHeight = null;
-  }
 }
 
 /**
@@ -860,17 +687,11 @@ export function insertText(input, text) {
  * @param {object} obj
  * @param {Array} [allowedFuncNames=[]] Names of the properties that should be passed to the worker
  *   despite their values are functions (they are passed in a stringified form).
- * @param {Array} [disallowedNames=[]] Names of the properties that should be filtered out without
- *   checking (allows to save time on greedy operations).
  * @returns {object}
  */
-export function keepWorkerSafeValues(obj, allowedFuncNames = [], disallowedNames = []) {
+export function keepWorkerSafeValues(obj, allowedFuncNames = []) {
   const newObj = Object.assign({}, obj);
   Object.keys(newObj).forEach((key) => {
-    if (disallowedNames.includes(key)) {
-      delete newObj[key];
-      return;
-    }
     const val = newObj[key];
     if (
       typeof val === 'object' &&
@@ -1009,19 +830,19 @@ export function getVisibilityByRects(...rects) {
 }
 
 /**
- * Get a decoded URL with anchor.
+ * Get a decoded URL with a fragment identifier.
  *
- * @param {string} anchor
+ * @param {string} fragment
  * @param {boolean} permanent Get a permanent URL.
  * @returns {string}
  */
-export function getUrlWithAnchor(anchor, permanent) {
+export function getUrlWithFragment(fragment, permanent) {
   let params = {};
   if (permanent) {
     params.oldid = mw.config.get('wgRevisionId');
   }
   const decodedPageUrl = decodeURI(cd.page.getUrl(params));
-  return `${cd.g.SERVER}${decodedPageUrl}#${anchor}`;
+  return `${cd.g.SERVER}${decodedPageUrl}#${fragment}`;
 }
 
 /**
@@ -1045,53 +866,38 @@ export function getCommonGender(users) {
 }
 
 /**
- * Notification object created by running `mw.notification.notify(...)`.
+ * Replace an element with an identical one but with another tag name, i.e. move all child nodes,
+ * attributes, and some bound events to a new node, and also reassign references in some variables
+ * and properties to this element. Unfortunately, we can't just change the element's `tagName` to
+ * do that.
  *
- * @typedef {object} Notification
- * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Notification_
- * @global
+ * @param {Element} element
+ * @param {string} newType
+ * @returns {Element}
+ * @private
  */
-
-/**
- * Show a notificaition and add it to the registry. This is used to be able to keep track of shown
- * notifications and close them all at once if needed. Most notifications are shown using simple
- * `mw.notify` or `mw.notification.notify`.
- *
- * @param {string|external:Query} message Message text.
- * @param {object} [options]
- * @param {object} [data={}] Additional data related to the notification.
- * @returns {Notification}
- */
-export function addNotification(message, options, data = {}) {
-  const notification = mw.notification.notify(message, options);
-  notificationsData.push(Object.assign(data, { notification }));
-  return notification;
-}
-
-/**
- * Get all notifications added to the registry (including already hidden). The
- * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Notification_ mw.Notification}
- * object will be in the `notification` property.
- *
- * @returns {object[]}
- */
-export function getNotifications() {
-  return notificationsData;
-}
-
-/**
- * Close all notifications added to the registry immediately.
- *
- * @param {boolean} [smooth] Don't use a smooth animation.
- */
-export function closeNotifications(smooth = true) {
-  notificationsData.forEach((data) => {
-    if (!smooth) {
-      data.notification.$notification.hide();
-    }
-    data.notification.close();
+export function changeElementType(element, newType) {
+  const newElement = document.createElement(newType);
+  while (element.firstChild) {
+    newElement.appendChild(element.firstChild);
+  }
+  [...element.attributes].forEach((attribute) => {
+    newElement.setAttribute(attribute.name, attribute.value);
   });
-  notificationsData = [];
+
+  // If this element is a part of a comment, replace it in the Comment object instance.
+  let commentIndex = element.getAttribute('data-cd-comment-index');
+  if (commentIndex !== null) {
+    commentIndex = Number(commentIndex);
+    cd.comments[commentIndex].replaceElement(element, newElement);
+  } else {
+    element.parentNode.replaceChild(newElement, element);
+  }
+
+  // require, not import, to prevent adding controller to the worker build.
+  require('./controller').default.replaceScrollAnchorElement(element, newElement);
+
+  return newElement;
 }
 
 /**
@@ -1106,7 +912,9 @@ async function domToWikitext(div, input) {
   // Get all styles from classes applied. If HTML is retrieved from a paste, this is not needed
   // (styles are added to elements themselves in the text/html format), but won't hurt.
   div.className = 'cd-hidden';
-  cd.g.rootElement.appendChild(div);
+
+  // require, not import, to prevent adding controller to the worker build.
+  require('./controller').default.rootElement.appendChild(div);
 
   const removeElement = (el) => el.remove();
   const replaceWithChildren = (el) => {
@@ -1269,34 +1077,6 @@ export function getHigherNodeAndOffsetInSelection(selection) {
 }
 
 /**
- * Basic throttling implementation. Postpones the execution of some function. If it is already
- * postponed, don't create a second postponement.
- *
- * @param {string} label
- * @param {Function} func
- * @param {number} delay
- */
-export function postpone(label, func, delay) {
-  if (postponements[label]) return;
-
-  postponements[label] = true;
-  setTimeout(() => {
-    postponements[label] = false;
-    func();
-  }, delay);
-}
-
-/**
- * Check whether some task is postponed.
- *
- * @param {string} label
- * @returns {boolean}
- */
-export function isPostponed(label) {
-  return postponements[label];
-}
-
-/**
  * Whether a command modificator is pressed. On Mac, this means the Cmd key. On Windows, this means
  * the Ctrl key.
  *
@@ -1328,4 +1108,30 @@ export function copyText(text, { success, fail }) {
   } else {
     mw.notify(fail, { type: 'error' });
   }
+}
+
+/**
+ * Pad a number with zeros like this: `4` → `04` or `0004`.
+ *
+ * @param {number} number Number to pad.
+ * @param {number} length Length of the resultant string.
+ * @returns {string}
+ * @private
+ */
+export function zeroPad(number, length) {
+  return ('0000' + number).slice(-length);
+}
+
+/**
+ * If the argument is an array, return its last element. Otherwise, return the value. (To process
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Uri-property-query mw.Uri#query}.
+ * If there is no than one parameter with some name, its property becomes an array in
+ * `mw.Uri#query`.)
+ *
+ * @param {string|string[]} value
+ * @returns {string}
+ * @private
+ */
+export function getLastArrayElementOrSelf(value) {
+  return Array.isArray(value) ? value[value.length - 1] : value;
 }

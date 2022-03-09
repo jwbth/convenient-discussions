@@ -1,5 +1,6 @@
 import CdError from './CdError';
 import cd from './cd';
+import settings from './settings';
 import subscriptions from './subscriptions';
 import { addPreventUnloadCondition } from './eventHandlers';
 import { confirmCloseDialog, handleDialogError, isDialogUnsaved, tweakUserOoUiClass } from './ooui';
@@ -36,7 +37,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
    */
   constructor() {
     super();
-    if (cd.settings.useTopicSubscription) return;
+    if (settings.get('useTopicSubscription')) return;
 
     subscriptions.load();
   }

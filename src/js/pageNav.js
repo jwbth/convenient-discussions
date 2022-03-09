@@ -8,6 +8,8 @@
 
 import Button from './Button';
 import cd from './cd';
+import controller from './controller';
+import toc from './toc';
 import { getExtendedRect, getVisibilityByRects } from './util';
 import { scrollToY } from './jqueryExtensions';
 
@@ -42,8 +44,8 @@ export default {
    * Update or set the width of the page nagivation blocks.
    */
   updateWidth() {
-    if (cd.g.$contentColumn.length) {
-      const left = cd.g.$contentColumn.offset().left;
+    if (controller.$contentColumn.length) {
+      const left = controller.$contentColumn.offset().left;
       const padding = 18;
       let width = $(document.body).hasClass('ltr') ?
         left - padding :
@@ -86,8 +88,8 @@ export default {
     let afterLeadPos;
 
     let firstSectionOuterTop;
-    if (cd.g.$toc.length) {
-      const rect = cd.g.$toc.get(0).getBoundingClientRect();
+    if (toc.isPresent) {
+      const rect = toc.$element.get(0).getBoundingClientRect();
       if (getVisibilityByRects(rect)) {
         afterLeadPos = rect.top;
       }
@@ -141,13 +143,13 @@ export default {
     }
 
     if (this.$linksOnTop) {
-      if (cd.g.$toc.length && !this.$tocLink) {
+      if (toc.isPresent && !this.$tocLink) {
         const tocLink = new Button({
           href: '#toc',
           classes: ['cd-pageNav-link'],
           label: cd.s('pagenav-toc'),
           action: () => {
-            this.jump(cd.g.$toc, this.$tocLink);
+            this.jump(toc.$element, this.$tocLink);
           },
         });
         this.$tocLink = $('<li>')
@@ -329,7 +331,7 @@ export default {
       }
     }
 
-    cd.state.isAutoScrollInProgress = true;
+    controller.toggleAutoScrolling(true);
     scrollToY(offset);
   },
 };

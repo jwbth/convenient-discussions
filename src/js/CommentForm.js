@@ -7,11 +7,15 @@ import CommentTextParser from './CommentTextParser';
 import Page from './Page';
 import Section from './Section';
 import cd from './cd';
+import controller from './controller';
 import navPanel from './navPanel';
+import notifications from './notifications';
+import pageRegistry from './pageRegistry';
+import sessions from './sessions';
+import settings from './settings';
 import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
 import {
-  addNotification,
   buildEditSummary,
   defined,
   findLastIndex,
@@ -34,13 +38,6 @@ import {
   wrapDiffBody,
 } from './util';
 import { createCheckboxField } from './ooui';
-import { finishLoading, reloadPage, saveSession } from './boot';
-import {
-  generateCommentAnchor,
-  generateDtSubscriptionId,
-  registerCommentAnchor,
-  resetCommentAnchors,
-} from './timestamp';
 import { generateTagsRegexp, removeWikiMarkup } from './wikitext';
 import { parseCode } from './apiWrappers';
 import { showSettingsDialog } from './modal';
@@ -48,20 +45,20 @@ import { showSettingsDialog } from './modal';
 let commentFormsCounter = 0;
 
 /**
- * Extract anchors from comment links in the code.
+ * Extract IDs from comment links in the code.
  *
  * @param {string} code
  * @returns {string[]}
  * @private
  */
-function extractCommentAnchors(code) {
-  const anchorsRegexp = /\[\[#(\d{12}_[^|\]]+)/g;
-  const anchors = [];
+function extractCommentIds(code) {
+  const idRegexp = /\[\[#(\d{12}_[^|\]]+)/g;
+  const ids = [];
   let match;
-  while ((match = anchorsRegexp.exec(code))) {
-    anchors.push(match[1]);
+  while ((match = idRegexp.exec(code))) {
+    ids.push(match[1]);
   }
-  return anchors;
+  return ids;
 }
 
 /** Class representing a comment form. */
@@ -186,7 +183,7 @@ class CommentForm {
     });
 
     this.createContents(dataToRestore, moduleNames);
-    this.addEvents();
+    this.addEventListeners();
     this.initAutocomplete();
 
     this.addToPage();
@@ -220,7 +217,7 @@ class CommentForm {
         focusInput(this.headlineInput || this.commentInput);
       }
 
-      // Navigation panel's comment form button is updated in the end of boot.restoreCommentForms,
+      // Navigation panel's comment form button is updated in the end of sessions.restore(),
       // so we don't have to do it here.
     } else {
       this.$element.cdScrollIntoView('center', true, () => {
@@ -444,7 +441,7 @@ class CommentForm {
     }
 
     const watchCheckboxSelected = (
-      (cd.settings.watchOnReply && this.mode !== 'edit') ||
+      (settings.get('watchOnReply') && this.mode !== 'edit') ||
       $('#ca-unwatch').length ||
       mw.user.options.get(mw.config.get('wgArticleId') ? 'watchdefault' : 'watchcreations')
     );
@@ -475,12 +472,12 @@ class CommentForm {
 
     if (this.targetSection || this.mode === 'addSection') {
       const selected = (
-        (cd.settings.subscribeOnReply && this.mode !== 'edit') ||
+        (settings.get('subscribeOnReply') && this.mode !== 'edit') ||
         this.targetSection?.subscriptionState
       );
 
       const callItTopic = (
-        cd.settings.useTopicSubscription ||
+        settings.get('useTopicSubscription') ||
         (
           this.mode !== 'addSubsection' &&
           ((this.targetSection && this.targetSection.level <= 2) || this.mode === 'addSection')
@@ -620,12 +617,6 @@ class CommentForm {
       tabIndex: String(this.id) + '30',
     });
 
-    if (!cd.g.$popupsOverlay) {
-      cd.g.$popupsOverlay = $('<div>')
-        .addClass('cd-popupsOverlay')
-        .appendTo(document.body);
-    }
-
     /**
      * Help button.
      *
@@ -648,7 +639,7 @@ class CommentForm {
         align: 'center',
         width: 400,
       },
-      $overlay: cd.g.$popupsOverlay,
+      $overlay: controller.getPopupOverlay(),
       tabIndex: String(this.id) + '31',
     });
 
@@ -704,7 +695,7 @@ class CommentForm {
       classes: ['cd-commentForm-previewButton'],
       tabIndex: String(this.id) + '35',
     });
-    if (cd.settings.autopreview) {
+    if (settings.get('autopreview')) {
       this.previewButton.$element.hide();
     }
 
@@ -832,7 +823,7 @@ class CommentForm {
       this.$buttons,
     ]);
 
-    if (this.mode !== 'edit' && !cd.settings.alwaysExpandAdvanced) {
+    if (this.mode !== 'edit' && !settings.get('alwaysExpandAdvanced')) {
       this.$advanced.hide();
     }
 
@@ -843,7 +834,7 @@ class CommentForm {
      */
     this.$previewArea = $('<div>').addClass('cd-previewArea');
 
-    if (cd.settings.autopreview) {
+    if (settings.get('autopreview')) {
       this.$previewArea
         .addClass('cd-previewArea-below')
         .appendTo(this.$element);
@@ -873,7 +864,7 @@ class CommentForm {
    * @private
    */
   addToolbar(requestedModulesNames) {
-    if (!cd.settings.showToolbar) return;
+    if (!settings.get('showToolbar')) return;
 
     const $toolbarPlaceholder = $('<div>')
       .addClass('cd-toolbarPlaceholder')
@@ -898,8 +889,8 @@ class CommentForm {
         this.commentInput.$element.find('.group-heading').remove();
       }
 
-      // Make the undo/redo functionality work in browsers that support it. Also, by default, for
-      // dialogs, text is inserted into the last opened form, not the current.
+      // Make the undo/redo functionality work in browsers that support it. Also, fix the behavior
+      // of dialog where text is inserted into the last opened form, not the current.
       $input.textSelection('register', {
         encapsulateSelection: (options) => {
           // Seems like the methods are registered for all inputs instead of the one the method is
@@ -1098,7 +1089,7 @@ class CommentForm {
    * @private
    */
   addInsertButtons() {
-    if (!cd.settings.insertButtons.length) return;
+    if (!settings.get('insertButtons').length) return;
 
     /**
      * Text insert buttons.
@@ -1109,7 +1100,7 @@ class CommentForm {
       .addClass('cd-insertButtons')
       .insertAfter(this.commentInput.$element);
 
-    cd.settings.insertButtons.forEach((button) => {
+    settings.get('insertButtons').forEach((button) => {
       let snippet;
       let label;
       if (Array.isArray(button)) {
@@ -1280,7 +1271,7 @@ class CommentForm {
    */
   preloadTemplate() {
     const currentOperation = this.registerOperation('load', { affectHeadline: false });
-    const preloadPage = new Page(this.preloadConfig.commentTemplate);
+    const preloadPage = pageRegistry.getPage(this.preloadConfig.commentTemplate);
     preloadPage.getCode().then(
       () => {
         let code = preloadPage.code;
@@ -1342,13 +1333,13 @@ class CommentForm {
       this.target.replyButton.hide();
     } else if (this.mode === 'addSubsection' && this.target.$addSubsectionButtonContainer) {
       this.target.$addSubsectionButtonContainer.hide();
-    } else if (this.mode === 'addSection' && cd.g.$addSectionButtonContainer) {
-      cd.g.$addSectionButtonContainer.hide();
+    } else if (this.mode === 'addSection' && controller.$addSectionButtonContainer) {
+      controller.$addSectionButtonContainer.hide();
     }
 
     // 'addSection'
     if (!mw.config.get('wgArticleId')) {
-      cd.g.$content.children('.noarticletext, .warningbox').hide();
+      controller.$content.children('.noarticletext, .warningbox').hide();
     }
 
     let $wrappingItem;
@@ -1406,7 +1397,7 @@ class CommentForm {
         if (this.isNewTopicOnTop && cd.sections[0]) {
           this.$element.insertBefore(cd.sections[0].$heading);
         } else {
-          this.$element.appendTo(cd.g.$content);
+          this.$element.appendTo(controller.$content);
         }
         break;
       }
@@ -1443,9 +1434,9 @@ class CommentForm {
    *
    * @private
    */
-  addEvents() {
+  addEventListeners() {
     const saveSessionEventHandler = () => {
-      saveSession();
+      sessions.save();
     };
     const preview = () => {
       this.preview();
@@ -1505,7 +1496,7 @@ class CommentForm {
 
       this.headlineInput.$input.on('keydown', (e) => {
         // Enter
-        if (e.keyCode === 13 && !cd.g.activeAutocompleteMenu) {
+        if (e.keyCode === 13 && !controller.getActiveAutocompleteMenu()) {
           this.submit();
         }
       });
@@ -1573,7 +1564,7 @@ class CommentForm {
 
     this.summaryInput.$input.on('keydown', (e) => {
       // Enter
-      if (e.keyCode === 13 && !cd.g.activeAutocompleteMenu) {
+      if (e.keyCode === 13 && !controller.getActiveAutocompleteMenu()) {
         this.submit();
       }
     });
@@ -1941,7 +1932,7 @@ class CommentForm {
     }
 
     if (cancel) {
-      addNotification(message instanceof $ ? message : wrap(message), {
+      notifications.add(message instanceof $ ? message : wrap(message), {
         type: 'error',
         autoHideSeconds: 'long',
       });
@@ -2034,7 +2025,7 @@ class CommentForm {
             message = cd.sParse('cf-error-delete-repliesinsection');
             break;
           case 'commentLinks-commentNotFound':
-            message = cd.sParse('cf-error-commentlinks-commentnotfound', details.anchor);
+            message = cd.sParse('cf-error-commentlinks-commentnotfound', details.id);
             break;
         }
         const navigateToEditUrl = async (e) => {
@@ -2135,17 +2126,17 @@ class CommentForm {
    * Add anchor code to comments linked from the comment.
    *
    * @param {string} wholeCode Code of the section or page.
-   * @param {string[]} commentAnchors
+   * @param {string[]} commentIds
    * @returns {string} New code of the section or page.
    * @throws {CdError}
    * @private
    */
-  addAnchorsToComments(wholeCode, commentAnchors) {
-    commentAnchors.forEach((anchor) => {
-      const comment = Comment.getByAnchor(anchor);
+  addAnchorsToComments(wholeCode, commentIds) {
+    commentIds.forEach((id) => {
+      const comment = Comment.getById(id);
       if (comment) {
         const commentInCode = comment.locateInCode(wholeCode);
-        const anchorCode = cd.config.getAnchorCode(anchor);
+        const anchorCode = cd.config.getAnchorCode(id);
         if (commentInCode.code.includes(anchorCode)) return;
 
         let commentCodePart = CommentTextParser.prototype.prepareLineStart(
@@ -2165,11 +2156,11 @@ class CommentForm {
           wholeCode,
           thisInCode: commentInCode,
         });
-      } else if (!$('#' + anchor).length) {
+      } else if (!$('#' + id).length) {
         throw new CdError({
           type: 'parse',
           code: 'commentLinks-commentNotFound',
-          details: { anchor },
+          details: { id },
         });
       }
     });
@@ -2185,7 +2176,7 @@ class CommentForm {
    * @private
    */
   async prepareWholeCode(action) {
-    const commentAnchors = extractCommentAnchors(this.commentInput.getValue());
+    const commentIds = extractCommentIds(this.commentInput.getValue());
 
     /**
      * Will we try to submit the section code first instead of the whole page code. (Filled upon
@@ -2202,7 +2193,7 @@ class CommentForm {
       if (
         this.targetSection &&
         this.targetSection.liveSectionNumber !== null &&
-        !commentAnchors.length
+        !commentIds.length
       ) {
         await this.targetSection.getCode(this);
       } else {
@@ -2242,7 +2233,7 @@ class CommentForm {
         doDelete: this.deleteCheckbox?.isSelected(),
         commentForm: this,
       });
-      wholeCode = this.addAnchorsToComments(wholeCode, commentAnchors);
+      wholeCode = this.addAnchorsToComments(wholeCode, commentIds);
     } catch (e) {
       if (e instanceof CdError) {
         this.handleError(e.data);
@@ -2370,7 +2361,7 @@ class CommentForm {
    * @param {boolean} [previewEmpty=true] If `false`, don't preview if the comment and headline
    *   inputs are empty.
    * @param {boolean} [isAuto=true] Preview is initiated automatically (if the user has
-   *   `cd.settings.autopreview` as `true`).
+   *   `settings.get('autopreview')` as `true`).
    * @param {CommentFormOperation} [operation] Operation object when the function is called from
    *   within itself, being delayed.
    * @fires previewReady
@@ -2385,7 +2376,7 @@ class CommentForm {
         (await getNativePromiseState(this.checkCodeRequest)) === 'resolved'
       ) ||
       this.isBeingSubmitted() ||
-      (isAuto && !cd.settings.autopreview)
+      (isAuto && !settings.get('autopreview'))
     ) {
       if (operation) {
         this.closeOperation(operation);
@@ -2511,7 +2502,7 @@ class CommentForm {
       }
     }
 
-    if (cd.settings.autopreview && this.previewButton.$element.is(':visible')) {
+    if (settings.get('autopreview') && this.previewButton.$element.is(':visible')) {
       this.previewButton.$element.hide();
       this.viewChangesButton.$element.show();
       this.adjustLabels();
@@ -2561,7 +2552,7 @@ class CommentForm {
       } else {
         options.fromrev = this.targetPage.revisionId;
       }
-      resp = await cd.g.mwApi.post(options, {
+      resp = await controller.getApi().post(options, {
         // Beneficial when sending long unicode texts, which is what we do here.
         contentType: 'multipart/form-data',
       }).catch(handleApiReject);
@@ -2601,7 +2592,7 @@ class CommentForm {
       }
     }
 
-    if (cd.settings.autopreview) {
+    if (settings.get('autopreview')) {
       this.viewChangesButton.$element.hide();
       this.previewButton.$element.show();
       this.adjustLabels();
@@ -2624,7 +2615,7 @@ class CommentForm {
     this.forget();
 
     try {
-      await reloadPage(passedData);
+      await controller.reload(passedData);
     } catch (e) {
       if (e instanceof CdError) {
         const options = Object.assign({}, e.data, {
@@ -2641,7 +2632,7 @@ class CommentForm {
           currentOperation,
         });
       }
-      finishLoading();
+      controller.bootProcess.finish();
     }
   }
 
@@ -2803,15 +2794,15 @@ class CommentForm {
       if (
         this.mode === 'addSection' ||
         (
-          !cd.settings.useTopicSubscription &&
+          !settings.get('useTopicSubscription') &&
           (this.mode === 'addSubsection' || this.isSectionOpeningCommentEdited)
         )
       ) {
         let subscribeId;
         let originalHeadline;
         let isHeadlineAltered;
-        if (cd.settings.useTopicSubscription) {
-          subscribeId = generateDtSubscriptionId(cd.user.name, editTimestamp);
+        if (settings.get('useTopicSubscription')) {
+          subscribeId = Section.generateDtSubscriptionId(cd.user.name, editTimestamp);
         } else {
           let rawHeadline;
           if (this.headlineInput) {
@@ -2851,13 +2842,13 @@ class CommentForm {
   }
 
   /**
-   * Generate a comment anchor to jump to after the page is reloaded, taking possible collisions
-   * into account.
+   * Generate a comment ID to jump to after the page is reloaded, taking possible collisions into
+   * account.
    *
    * @param {string} editTimestamp
    * @returns {string}
    */
-  generateFutureCommentAnchor(editTimestamp) {
+  generateFutureCommentId(editTimestamp) {
     const date = new Date(editTimestamp);
 
     // Timestamps on the page (and therefore anchors) have no seconds.
@@ -2873,7 +2864,7 @@ class CommentForm {
         this.target
       );
       cd.sections
-        .slice(0, sectionAbove.id + 1)
+        .slice(0, sectionAbove.index + 1)
         .reverse()
         .some((section) => {
           if (section.commentsInFirstChunk.length) {
@@ -2885,19 +2876,15 @@ class CommentForm {
       commentAbove = this.isNewTopicOnTop ? null : cd.comments[cd.comments.length - 1];
     }
 
-    resetCommentAnchors();
-    if (commentAbove) {
-      cd.comments
-        .slice(0, commentAbove.id + 1)
-        .filter((comment) => (
-          comment.author === cd.user &&
-          comment.date?.getTime() === date.getTime()
-        ))
-        .map((comment) => comment.anchor)
-        .forEach(registerCommentAnchor);
-    }
+    const existingIds = cd.comments
+      .slice(0, commentAbove ? commentAbove.index + 1 : 0)
+      .filter((comment) => (
+        comment.author === cd.user &&
+        comment.date?.getTime() === date.getTime()
+      ))
+      .map((comment) => comment.id);
 
-    return generateCommentAnchor(date, cd.user.name, true);
+    return Comment.generateId(date, cd.user.name, existingIds);
   }
 
   /**
@@ -2975,10 +2962,10 @@ class CommentForm {
     }
 
     if (!doDelete) {
-    // Generate an anchor for the comment to jump to.
-      passedData.commentAnchor = this.mode === 'edit' ?
-        this.target.anchor :
-        this.generateFutureCommentAnchor(editTimestamp);
+    // Generate an ID for the comment to jump to.
+      passedData.commentId = this.mode === 'edit' ?
+        this.target.id :
+        this.generateFutureCommentId(editTimestamp);
     }
 
     // When the edit takes place on another page that is transcluded in the current one, we must
@@ -3023,8 +3010,8 @@ class CommentForm {
       this.target.$elements.removeClass('cd-hidden');
       this.target.scrollIntoView('top');
       this.target.configureLayers();
-    } else if (this.mode === 'addSection' && cd.g.$addSectionButtonContainer) {
-      cd.g.$addSectionButtonContainer.show();
+    } else if (this.mode === 'addSection' && controller.$addSectionButtonContainer) {
+      controller.$addSectionButtonContainer.show();
     }
   }
 
@@ -3038,7 +3025,7 @@ class CommentForm {
       this.$outermostElement.remove();
       if (this.mode === 'addSection') {
         if (!mw.config.get('wgArticleId')) {
-          cd.g.$content
+          controller.$content
             // In case DT's new topic tool is enabled. This should be above .show() so that .show()
             // did set correct styles.
             .removeClass('ext-discussiontools-init-replylink-open')
@@ -3070,7 +3057,7 @@ class CommentForm {
    */
   forget() {
     if (this.mode === 'addSection') {
-      delete cd.g.addSectionForm;
+      delete controller.addSectionForm;
 
       $('#ca-addsection').removeClass('selected');
       $('#ca-view').addClass('selected');
@@ -3078,7 +3065,7 @@ class CommentForm {
       delete this.target[CommentForm.modeToProperty(this.mode) + 'Form'];
     }
     removeFromArrayIfPresent(cd.commentForms, this);
-    saveSession(true);
+    sessions.save(true);
     navPanel.updateCommentFormButton();
     this.autocomplete.cleanUp();
   }

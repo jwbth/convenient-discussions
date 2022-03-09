@@ -2,10 +2,11 @@ import Autocomplete from './Autocomplete';
 import CdError from './CdError';
 import Page from './Page';
 import cd from './cd';
+import controller from './controller';
+import pageRegistry from './pageRegistry';
 import { buildEditSummary, focusInput, wrap } from './util';
 import { createCheckboxField, tweakUserOoUiClass } from './ooui';
 import { encodeWikilink, endWithTwoNewlines, findFirstTimestamp } from './wikitext';
-import { reloadPage } from './boot';
 
 /**
  * Class used to create a move section dialog.
@@ -149,8 +150,8 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         showMissing: false,
         validate: () => {
           const title = this.titleInput.getMWTitle();
-          const page = title && new Page(title);
-          return page && page.name !== this.section.getSourcePage().name;
+          const page = title && pageRegistry.getPage(title);
+          return page && page !== this.section.getSourcePage();
         },
       });
       this.titleField = new OO.ui.FieldLayout(this.titleInput, {
@@ -236,10 +237,10 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         this.pushPending();
         this.titleInput.$input.blur();
 
-        let targetPage = new Page(this.titleInput.getMWTitle());
+        let targetPage = pageRegistry.getPage(this.titleInput.getMWTitle());
 
         // Should be ruled out by making the button disabled.
-        if (targetPage.name === this.section.getSourcePage().name) {
+        if (targetPage === this.section.getSourcePage()) {
           this.abort(cd.sParse('msd-error-wrongpage'), false);
           return;
         }
@@ -261,7 +262,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         const $message = wrap(cd.sParse('msd-moved', target.sectionWikilink), { tagName: 'div' });
         this.successPanel.$element.append($message);
 
-        reloadPage({ sectionAnchor: this.section.anchor });
+        controller.reload({ sectionId: this.section.id });
 
         this.stackLayout.setItem(this.successPanel);
         this.actions.setMode('success');
@@ -534,7 +535,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
       callbacks: {
         'cd-message-reloadPage': () => {
           this.close();
-          reloadPage();
+          controller.reload();
         },
       },
     }).$wrapper;

@@ -2,6 +2,8 @@ import Button from './Button';
 import CdError from './CdError';
 import Comment from './Comment';
 import cd from './cd';
+import controller from './controller';
+import settings from './settings';
 import { ElementsTreeWalker } from './treeWalker';
 import {
   defined,
@@ -17,7 +19,6 @@ import {
 } from './util';
 import { getUserGenders } from './apiWrappers';
 import { handleScroll } from './eventHandlers';
-import { isCurrentRevision, isPageLoading } from './boot';
 
 let elementPrototypes;
 let isInited;
@@ -141,7 +142,7 @@ function getRangeContents(start, end) {
   // The start container could contain the end container and be different from it in the case with
   // adjusted end items.
   if (!start.contains(end)) {
-    const treeWalker = new ElementsTreeWalker(start);
+    const treeWalker = new ElementsTreeWalker(start, controller.rootElement);
 
     while (treeWalker.currentNode.parentNode !== commonAncestor) {
       while (treeWalker.nextSibling()) {
@@ -173,11 +174,11 @@ function getRangeContents(start, end) {
  * @private
  */
 function saveCollapsedThreads() {
-  if (!isCurrentRevision()) return;
+  if (!controller.isCurrentRevision()) return;
 
   const collapsedThreads = cd.comments
     .filter((comment) => comment.thread?.isCollapsed)
-    .map((comment) => comment.anchor);
+    .map((comment) => comment.id);
   const saveUnixTime = Date.now();
   const data = collapsedThreads.length ? { collapsedThreads, saveUnixTime } : {};
 
@@ -187,7 +188,7 @@ function saveCollapsedThreads() {
 }
 
 /**
- * Save collapsed threads to the local storage.
+ * Restore collapsed threads from the local storage.
  *
  * @private
  */
@@ -198,13 +199,13 @@ function restoreCollapsedThreads() {
   const comments = [];
 
   // Reverse order is used for threads to be expanded correctly.
-  data.collapsedThreads?.reverse().forEach((anchor) => {
-    const comment = Comment.getByAnchor(anchor);
+  data.collapsedThreads?.reverse().forEach((id) => {
+    const comment = Comment.getById(id);
     if (comment?.thread) {
       comments.push(comment);
     } else {
-      // Remove anchors that have no corresponding comments or threads from data.
-      data.collapsedThreads.splice(data.collapsedThreads.indexOf(anchor), 1);
+      // Remove IDs that have no corresponding comments or threads from data.
+      data.collapsedThreads.splice(data.collapsedThreads.indexOf(id), 1);
     }
   });
   let getUserGendersPromise;
@@ -216,7 +217,7 @@ function restoreCollapsedThreads() {
     comment.thread.collapse(getUserGendersPromise);
   });
 
-  if (isCurrentRevision()) {
+  if (controller.isCurrentRevision()) {
     saveToLocalStorage('collapsedThreads', dataAllPages);
   }
 }
@@ -276,7 +277,7 @@ class Thread {
      * @type {number}
      * @private
      */
-    this.commentCount = this.lastComment.id - this.rootComment.id + 1;
+    this.commentCount = this.lastComment.index - this.rootComment.index + 1;
 
     /**
      * Last comment of the thread _visually_, not logically (differs from {@link Thread#lastComment}
@@ -285,7 +286,7 @@ class Thread {
      * @type {Comment}
      * @private
      */
-    this.visualLastComment = cd.g.pageHasOutdents ?
+    this.visualLastComment = controller.areThereOutdents() ?
       rootComment.getChildren(true, true).slice(-1)[0] || rootComment :
       this.lastComment;
 
@@ -296,7 +297,7 @@ class Thread {
       .find((el) => !/^H[1-6]$/.test(el.tagName));
     const highlightables = this.lastComment.highlightables;
     const visualHighlightables = this.visualLastComment.highlightables;
-    const nextForeignElement = cd.comments[this.lastComment.id + 1]?.elements[0];
+    const nextForeignElement = cd.comments[this.lastComment.index + 1]?.elements[0];
     if (this.rootComment.level === 0) {
       startElement = firstNotHeadingElement;
       visualEndElement = getEndElement(startElement, visualHighlightables, nextForeignElement);
@@ -319,7 +320,7 @@ class Thread {
         visualEndElement = endElement;
       } else {
         const outdentedComment = cd.comments
-          .slice(0, this.lastComment.id + 1)
+          .slice(0, this.lastComment.index + 1)
           .reverse()
           .find((comment) => comment.isOutdented);
         endElement = outdentedComment.level === 0 ?
@@ -408,13 +409,13 @@ class Thread {
 
     if (this.endElement !== this.visualEndElement) {
       let areOutdentedCommentsShown = false;
-      for (let i = this.rootComment.id; i <= this.lastComment.id; i++) {
+      for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
         const comment = cd.comments[i];
         if (comment.isOutdented) {
           areOutdentedCommentsShown = true;
         }
         if (comment.thread?.isCollapsed) {
-          i = comment.thread.lastComment.id;
+          i = comment.thread.lastComment.index;
           continue;
         }
       }
@@ -519,10 +520,10 @@ class Thread {
      */
     this.isCollapsed = true;
 
-    for (let i = this.rootComment.id; i <= this.lastComment.id; i++) {
+    for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
       const comment = cd.comments[i];
       if (comment.thread?.isCollapsed && comment.thread !== this) {
-        i = comment.thread.lastComment.id;
+        i = comment.thread.lastComment.index;
         continue;
       }
       comment.isCollapsed = true;
@@ -663,13 +664,13 @@ class Thread {
 
     this.isCollapsed = false;
     let areOutdentedCommentsShown = false;
-    for (let i = this.rootComment.id; i <= this.lastComment.id; i++) {
+    for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
       const comment = cd.comments[i];
       if (comment.isOutdented) {
         areOutdentedCommentsShown = true;
       }
       if (comment.thread?.isCollapsed) {
-        i = comment.thread.lastComment.id;
+        i = comment.thread.lastComment.index;
         continue;
       }
       comment.isCollapsed = false;
@@ -711,10 +712,10 @@ class Thread {
    * @param {boolean} [restoreCollapsed=true]
    */
   static init(restoreCollapsed = true) {
-    if (!cd.settings.enableThreads) return;
+    if (!settings.get('enableThreads')) return;
 
     isInited = false;
-    treeWalker = new ElementsTreeWalker();
+    treeWalker = new ElementsTreeWalker(undefined, controller.rootElement);
     cd.comments.forEach((rootComment) => {
       try {
         rootComment.thread = new Thread(rootComment);
@@ -723,7 +724,7 @@ class Thread {
       }
     });
 
-    if (cd.state.isPageFirstParsed) {
+    if (controller.bootProcess.isPageFirstParsed()) {
       threadLinesContainer = document.createElement('div');
       threadLinesContainer.className = 'cd-thread-linesContainer';
     } else {
@@ -735,7 +736,7 @@ class Thread {
     // interactions.
     Thread.updateLines();
 
-    if (cd.state.isPageFirstParsed) {
+    if (controller.bootProcess.isPageFirstParsed()) {
       document.body.appendChild(threadLinesContainer);
     }
     if (restoreCollapsed) {
@@ -750,7 +751,12 @@ class Thread {
    * @param {object} [floatingRects]
    */
   static updateLines(floatingRects) {
-    if (!cd.settings.enableThreads || ((isPageLoading() || document.hidden) && isInited)) return;
+    if (
+      !settings.get('enableThreads') ||
+      ((controller.isBooting() || document.hidden) && isInited)
+    ) {
+      return;
+    }
 
     const getLeft = (rectOrOffset, commentMargins, dir) => {
       let offset;
@@ -814,7 +820,7 @@ class Thread {
           const prop = thread.isCollapsed ? 'expandNote' : 'startElement';
           rectTop = thread[prop].getBoundingClientRect();
         }
-        floatingRects = floatingRects || cd.g.floatingElements.map(getExtendedRect);
+        floatingRects = floatingRects || controller.getFloatingElements().map(getExtendedRect);
         const rectOrOffset = rectTop || comment.getOffset({ floatingRects });
         if (needCalculateMargins) {
           // Should be below `comment.getOffset()` as `Comment#isStartStretched` is set inside that

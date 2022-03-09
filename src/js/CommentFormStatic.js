@@ -1,5 +1,6 @@
 import CommentForm from './CommentForm';
 import cd from './cd';
+import controller from './controller';
 import { areObjectsEqual, focusInput } from './util';
 
 /**
@@ -99,19 +100,18 @@ export default {
     isNewTopicOnTop = false,
     dataToRestore
   ) {
-    const addSectionForm = cd.g.addSectionForm;
-    if (addSectionForm) {
+    if (controller.addSectionForm) {
       // Sometimes there is more than one "Add section" button on the page, and they lead to opening
       // forms with different content.
-      if (!areObjectsEqual(preloadConfig, addSectionForm.preloadConfig)) {
+      if (!areObjectsEqual(preloadConfig, controller.addSectionForm.preloadConfig)) {
         mw.notify(cd.s('cf-error-formconflict'), { type: 'error' });
         return;
       }
 
-      addSectionForm.$element.cdScrollIntoView('center');
+      controller.addSectionForm.$element.cdScrollIntoView('center');
 
       // Headline input may be missing if the "nosummary" preload parameter is truthy.
-      focusInput(addSectionForm.headlineInput || addSectionForm.commentInput);
+      focusInput(controller.addSectionForm.headlineInput || controller.addSectionForm.commentInput);
     } else {
       /**
        * Add section form.
@@ -120,13 +120,14 @@ export default {
        * @type {CommentForm|undefined}
        * @memberof convenientDiscussions.g
        */
-      cd.g.addSectionForm = new CommentForm({
+      const commentForm = new CommentForm({
         mode: 'addSection',
         target: cd.page,
         preloadConfig,
         isNewTopicOnTop,
         dataToRestore,
       });
+      controller.setAddSectionForm(commentForm);
     }
   },
 };
