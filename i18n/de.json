@@ -12,6 +12,7 @@
 			"Lorem Ipsum",
 			"Rummskartoffel",
 			"Umherirrender",
+			"Wnme",
 			"Wolfdietmann",
 			"Zabe"
 		]
@@ -53,7 +54,7 @@
 	"comment-diff-error": "Konnte den Unterschied nicht darstellen.",
 	"comment-diff-empty": "Der Versionsunterschied ist leer. Möglicherweise hat sich die Darstellung des Kommentars geändert, ohne dass er bearbeitet wurde.",
 	"comment-diff-title": "Versionsunterschied für Kommentar",
-	"comment-diff-history": "Bearbeitungsgeschichte",
+	"comment-diff-history": "Versionsgeschichte",
 	"comment-changedsince": "Der Kommentar hat sich seit deinem letzten Besuch geändert.",
 	"comment-changedsince-short": "Seit deinem letzten Besuch verändert",
 	"comment-deleted": "Der Kommentar wurde gelöscht oder neu signiert.",
