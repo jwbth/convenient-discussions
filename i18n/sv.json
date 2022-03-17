@@ -213,6 +213,7 @@
 	"rc-suggestion": "<p>Angenäma diskussioner har möjligheten att ändra formatering av kommentarer, flytta upp författare och tidsstämpel och flytta ner svara- och tacka-knapparna. Detta låter en snabbt se författare, kommentar och datum och förenklar kommunikation. Vill du aktivera det? (Du kan alltid inaktivera det i dina inställningar.)</p>\n\n<p>Spana också in inställningarna för diverse nya uppdateringar, som anpassningsbar formatering av tidsstämplar (vilket, nuförtiden, visas som standard i samma tidszon som du angett in i dina inställningar.)</p>",
 	"rc-suggestion-yes": "Aktivera den nya formateringen",
 	"rc-suggestion-no": "Behåll den vanliga formateringen",
+	"topicsubscription-notice": "Angenäma diskussioner använder nu standardaviseringsgränssnittet för avsnittsbevakning (heter nu ämnesprenumerationer). Du får en avisering när någon publicerar en ny kommentar i ett ämne du prenumererar på. Om du har aktiverat stationära aviseringar kommer du fortfarande få dem. Du kan konfigurera aviseringstyperna (webb, e-post, app) i <b>[[Special:Preferences#mw-prefsection-echo|inställningarna]]</b>. Eller så kan du gå tillbaka till den klassiska avsnittsbevakningen. Läs detaljerna i <b><span class=\"cd-notification-notificationSettings\">Angenäma diskussioners inställningar</span></b>.",
 	"navpanel-refresh": "Uppdatera sida",
 	"navpanel-previous": "Gå till föregående nya kommentar",
 	"navpanel-next": "Gå till nästa nya kommentar",
