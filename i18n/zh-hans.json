@@ -12,6 +12,7 @@
 			"Njzjz",
 			"SomeyaMako",
 			"Stang",
+			"StarrySky",
 			"TsuyaMarisa",
 			"Wuqianye",
 			"Zhang8569",
@@ -19,9 +20,13 @@
 			"沈澄心"
 		]
 	},
+	"script-name": "Convenient Discussions",
+	"cm-copylink-tooltip": "复制链接",
 	"cm-thank": "感谢",
 	"cm-thanked": "已感谢",
 	"cm-edit": "编辑",
+	"cm-reply": "回复",
+	"cm-quote": "引用",
 	"thread-expand-label-genderless": "展开讨论串（$1 {{plural:$1|条}}由{{plural:$2|}} $3 发布的评论）",
 	"thread-expand-label": "展开讨论串（$1 {{plural:$1|条}}由{{plural:$2|{{gender:$4|}}}} $3 发布的评论）",
 	"thread-expand-tooltip": "按住 Ctrl 来展开页面上所有的讨论串",
