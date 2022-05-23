@@ -26,6 +26,8 @@ import {
 } from './util';
 
 let config;
+let mwStringsCache = {};
+
 if (IS_SINGLE) {
   try {
     config = require(`../../config/${CONFIG_FILE_NAME}`).default;
@@ -148,7 +150,15 @@ function mws(name, ...params) {
   if (options && options.language === 'content') {
     name = '(content)' + name;
   }
-  return mw.message(name, ...params).parse();
+  if (!params.length && mwStringsCache[name]) {
+    return mwStringsCache[name];
+  }
+  const message = mw.message(name, ...params).parse();
+  if (!params.length) {
+    // Use cache since in some places a message could be requested very frequently.
+    mwStringsCache[name] = message;
+  }
+  return message;
 }
 
 /**
