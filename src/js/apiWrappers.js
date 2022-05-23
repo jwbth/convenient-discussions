@@ -190,7 +190,7 @@ export async function setVisits(visits) {
  */
 export async function getLegacySubscriptions(reuse = false) {
   const isOptionSet = mw.user.options.get(cd.g.SUBSCRIPTIONS_OPTION_NAME) !== null;
-  const promise = controller.bootProcess.isPageFirstParsed() && !isOptionSet ?
+  const promise = controller.bootProcess?.isPageFirstParsed() && !isOptionSet ?
     Promise.resolve({}) :
     getUserInfo(reuse).then((options) => options.subscriptions);
   const registry = await promise;
@@ -199,7 +199,7 @@ export async function getLegacySubscriptions(reuse = false) {
 }
 
 /**
- * Save the watched sections to the server.
+ * Save the legacy subscriptions to the server.
  *
  * @param {Promise.<object>} registry
  */
@@ -278,8 +278,8 @@ export function parseCode(code, customOptions) {
  * Make a userinfo request (see {@link https://www.mediawiki.org/wiki/API:Userinfo}).
  *
  * @param {boolean} [reuse=false] Whether to reuse a cached request.
- * @returns {Promise} Promise for an object containing the full options object, visits, watched
- *   sections, and rights.
+ * @returns {Promise} Promise for an object containing the full options object, visits,
+ *   subscription list, and rights.
  */
 export function getUserInfo(reuse = false) {
   if (reuse && cachedUserInfoRequest) {
@@ -478,11 +478,17 @@ export async function getUserGenders(users, requestInBackground = false) {
     resp.query.users
       .filter((user) => user.gender)
       .forEach((user) => {
-        userRegistry.getUser(user.name).setGender(user.gender);
+        userRegistry.get(user.name).setGender(user.gender);
       });
   }
 }
 
+/**
+ * Given a list of user IDs, return a list of users.
+ *
+ * @param {number[]} userIds List of user IDs.
+ * @returns {User[]}
+ */
 export async function getUsersById(userIds) {
   const users = [];
 
@@ -496,7 +502,7 @@ export async function getUsersById(userIds) {
       ususerids: nextUserIds,
     }).catch(handleApiReject);
 
-    const nextUsers = resp.query.users.map((user) => userRegistry.getUser(user.name));
+    const nextUsers = resp.query.users.map((user) => userRegistry.get(user.name));
     users.push(...nextUsers);
   }
 
@@ -703,6 +709,12 @@ export async function getPagesExistence(titles) {
   return results;
 }
 
+/**
+ * Get a list of DiscussionTools subscriptions for a list of section IDs from the server.
+ *
+ * @param {string[]} ids List of section IDs.
+ * @returns {object}
+ */
 export async function getDtSubscriptions(ids) {
   const subscriptions = {};
 
@@ -727,6 +739,14 @@ export async function getDtSubscriptions(ids) {
   return subscriptions;
 }
 
+/**
+ * Send a request to subscribe to or unsubscribe from a topic in DisussionTools.
+ *
+ * @param {string} subscribeId Section's DiscussionTools ID.
+ * @param {string} id Section's ID.
+ * @param {boolean} subscribe Subscribe or unsubscribe.
+ * @returns {object}
+ */
 export async function dtSubscribe(subscribeId, id, subscribe) {
   return await controller.getApi().postWithEditToken({
     action: 'discussiontoolssubscribe',

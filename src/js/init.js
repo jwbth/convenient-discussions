@@ -236,6 +236,9 @@ function loadSiteData() {
   return requests;
 }
 
+/**
+ * Populate some global object properties related to archive pages.
+ */
 function setArchivePagesGlobals() {
   cd.g.ARCHIVE_PAGES_MAP = new Map();
   cd.g.SOURCE_PAGES_MAP = new Map();
@@ -872,10 +875,10 @@ export default {
     cd.g.CONTENT_LINE_HEIGHT = parseFloat(controller.$content.css('line-height'));
     cd.g.CONTENT_FONT_SIZE = parseFloat(controller.$content.css('font-size'));
 
-    // For the Timeless skin
-    cd.g.BODY_SCROLL_PADDING_TOP = parseFloat($(document.body).css('scroll-padding-top')) || 0;
+    // For Timeless, Vector-2022 skins
+    cd.g.BODY_SCROLL_PADDING_TOP = parseFloat($('html, body').css('scroll-padding-top')) || 0;
 
-    controller.setContentColumnGlobals();
+    controller.setContentColumnState();
   },
 
   /**
@@ -886,7 +889,7 @@ export default {
 
     const $backgrounded = skin$({
       timeless: '#mw-content-container',
-      vector: '.mw-page-container',
+      'vector-2022': '.mw-page-container',
       default: 'body',
     });
     const sidebarColor = $backgrounded.css('background-color');
@@ -908,7 +911,7 @@ export default {
   --cd-comment-fallback-side-margin: ${cd.g.COMMENT_FALLBACK_SIDE_MARGIN}px;
   --cd-thread-line-side-margin: ${cd.g.THREAD_LINE_SIDE_MARGIN}px;
   --cd-content-background-color: ${contentBackgroundColor};
-  --cd-content-start-margin: ${controller.get('contentStartMargin')}px;
+  --cd-content-start-margin: ${controller.contentStartMargin}px;
   --cd-content-font-size: ${cd.g.CONTENT_FONT_SIZE}px;
   --cd-sidebar-color: ${sidebarColor};
   --cd-sidebar-transparent-color: ${transparentize(sidebarColor)};
@@ -929,7 +932,7 @@ export default {
      * @type {Page}
      * @memberof convenientDiscussions
      */
-    cd.page = pageRegistry.getPage(cd.g.PAGE_NAME, true);
+    cd.page = pageRegistry.get(cd.g.PAGE_NAME, true);
 
     // TODO: Delete after all addons are updated.
     cd.g.PAGE = cd.page;
@@ -941,7 +944,7 @@ export default {
      * @type {module:userRegistry~User}
      * @memberof convenientDiscussions
      */
-    cd.user = userRegistry.getUser(cd.g.USER_NAME);
+    cd.user = userRegistry.get(cd.g.USER_NAME);
 
     // {{gender:}} with at least two pipes in a selection of the affected strings.
     cd.g.GENDER_AFFECTS_USER_STRING = /\{\{ *gender *:[^}]+?\|[^}]+?\|/i.test(

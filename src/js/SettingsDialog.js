@@ -1,6 +1,6 @@
 import cd from './cd';
+import controller from './controller';
 import settings from './settings';
-import { addPreventUnloadCondition, removePreventUnloadCondition } from './eventHandlers';
 import { areObjectsEqual, defined } from './util';
 import {
   confirmCloseDialog,
@@ -159,7 +159,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
         handleDialogError(this, e, 'error-settings-load', false);
         return;
       }
-      this.settings = Object.assign({}, cd.settings, loadedSettings);
+      this.settings = Object.assign({}, settings.get(), loadedSettings);
 
       this.renderControls(this.settings);
 
@@ -169,7 +169,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
 
       this.popPending();
 
-      addPreventUnloadCondition('dialog', () => isDialogUnsaved(this));
+      controller.addPreventUnloadCondition('dialog', () => isDialogUnsaved(this));
     });
   }
 
@@ -195,7 +195,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
           return;
         }
 
-        removePreventUnloadCondition('dialog');
+        controller.removePreventUnloadCondition('dialog');
 
         this.stackLayout.setItem(this.reloadPanel);
         this.actions.setMode('reload');

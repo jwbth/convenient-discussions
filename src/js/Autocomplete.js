@@ -570,7 +570,7 @@ class Autocomplete {
           cache: [],
           transform: (item) => {
             const name = item.trim();
-            const user = userRegistry.getUser(name);
+            const user = userRegistry.get(name);
             const userNamespace = (
               cd.config.genderNeutralUserNamespaceAlias ||
               cd.config.userNamespacesByGender?.[user.getGender()] ||

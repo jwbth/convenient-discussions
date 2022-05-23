@@ -19,7 +19,7 @@ import {
   removeDirMarks,
   spacesToUnderlines,
 } from './util';
-import { initDayjs, initTimestampParsingTools, parseTimestamp } from './timestamp';
+import { initDayjs, parseTimestamp } from './timestamp';
 import { showEditSubscriptionsDialog, showSettingsDialog } from './modal';
 
 let colon;
@@ -195,8 +195,7 @@ function addWatchlistMenu() {
     classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-editSubscriptions'],
   };
   if (settings.get('useTopicSubscription')) {
-    editSubscriptionsButtonConfig.href = pageRegistry.getPage('Special:TopicSubscriptions')
-      .getUrl();
+    editSubscriptionsButtonConfig.href = pageRegistry.get('Special:TopicSubscriptions').getUrl();
     editSubscriptionsButtonConfig.target = '_blank';
   }
   const editSubscriptionsButton = new OO.ui.ButtonWidget(editSubscriptionsButtonConfig);
@@ -428,7 +427,7 @@ function processWatchlist($content) {
  * @private
  */
 function processContributions($content) {
-  initTimestampParsingTools('user');
+  init.timestampParsingTools('user');
   if (cd.g.UI_TIMEZONE === null) return;
 
   const list = $content.get(0).querySelector('.mw-contributions-list');
@@ -442,7 +441,7 @@ function processContributions($content) {
     if (!linkElement || isWikidataItem(linkElement)) return;
 
     const pageName = linkElement.textContent;
-    const page = pageRegistry.getPage(pageName);
+    const page = pageRegistry.get(pageName);
     if (!page.isProbablyTalkPage()) return;
 
     const link = linkElement.href;
@@ -497,7 +496,7 @@ function processContributions($content) {
  * @private
  */
 function processHistory($content) {
-  initTimestampParsingTools('user');
+  init.timestampParsingTools('user');
   if (cd.g.UI_TIMEZONE === null) return;
 
   const list = $content.get(0).querySelector('#pagehistory');
@@ -538,7 +537,7 @@ function processHistory($content) {
     } else {
       let isWatched = false;
       if (summary) {
-        const watchedSectionHeadlines = subscriptions.getForCurrentPage();
+        const watchedSectionHeadlines = subscriptions.getForCurrentPage() || [];
         if (watchedSectionHeadlines.length) {
           isWatched = watchedSectionHeadlines.find((headline) => isInSection(summary, headline));
           if (isWatched) {
@@ -579,7 +578,7 @@ async function processDiff($diff) {
   if (controller.isTalkPage() && $diff?.parent().is(controller.$content)) return;
 
   if (!cd.g.UI_TIMESTAMP_REGEXP) {
-    initTimestampParsingTools('user');
+    init.timestampParsingTools('user');
   }
   if (cd.g.UI_TIMEZONE === null) return;
 
@@ -618,7 +617,7 @@ async function processDiff($diff) {
       let page;
       if ($diff) {
         const revUrl = new mw.Uri(dateElement.href);
-        page = pageRegistry.getPage(revUrl.query.title);
+        page = pageRegistry.get(revUrl.query.title);
       } else {
         comment = Comment.getById(id, true);
       }
@@ -629,7 +628,7 @@ async function processDiff($diff) {
           wrapper.lastChild.lastChild.title = goToCommentToYou;
         } else {
           let isWatched = false;
-          const watchedSectionHeadlines = subscriptions.getForCurrentPage();
+          const watchedSectionHeadlines = subscriptions.getForCurrentPage() || [];
           if (!$diff && summary && watchedSectionHeadlines.length) {
             isWatched = watchedSectionHeadlines.find((headline) => isInSection(summary, headline));
             if (isWatched) {

@@ -1,6 +1,15 @@
+/**
+ * A singleton that controls the overall state of the page, initiating boot processes and reacting
+ * to events.
+ *
+ * @module controller
+ */
+
 import BootProcess from './BootProcess';
+import Comment from './Comment';
 import CommentForm from './CommentForm';
 import LiveTimestamp from './LiveTimestamp';
+import Parser from './Parser';
 import Thread from './Thread';
 import Worker from './worker-gate';
 import addCommentLinks from './addCommentLinks';
@@ -15,6 +24,7 @@ import settings from './settings';
 import toc from './toc';
 import updateChecker from './updateChecker';
 import { ElementsTreeWalker } from './treeWalker';
+import { brsToNewlines, hideSensitiveCode } from './wikitext';
 import {
   getExtendedRect,
   getLastArrayElementOrSelf,
@@ -25,6 +35,7 @@ import {
   isProbablyTalkPage,
   keyCombination,
   skin$,
+  unhideText,
 } from './util';
 import { getUserInfo } from './apiWrappers';
 
@@ -51,6 +62,7 @@ export default {
     const isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
     const isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);
 
+    this.$content = this.$content || $('#mw-content-text');
     this.definitelyTalkPage = Boolean(
       isEnabledInQuery ||
       cd.g.PAGE_WHITELIST_REGEXP?.test(cd.g.PAGE_NAME) ||
@@ -87,8 +99,6 @@ export default {
       !isDisabledInQuery &&
       (isEnabledInQuery || this.articlePageTalkPage)
     );
-
-    this.$content = this.$content || $('#mw-content-text');
 
     this.handleMouseMove = this.handleMouseMove.bind(this);
     this.handleWindowResize = this.handleWindowResize.bind(this);
@@ -189,7 +199,7 @@ export default {
   },
 
   isPageCommentable() {
-    return this.talkPage && (this.pageActive || !this.doesPageExist());
+    return this.talkPage && (this.isPageActive() || !this.doesPageExist());
   },
 
   toggleAutoScrolling(value) {
@@ -849,14 +859,7 @@ export default {
    * @private
    */
   isShowLoadingOverlaySettingOff() {
-    return (
-      (cd.settings && cd.settings.showLoadingOverlay === false) ||
-      (
-        !cd.settings &&
-        window.cdShowLoadingOverlay !== undefined &&
-        window.cdShowLoadingOverlay === false
-      )
-    );
+    return window.cdShowLoadingOverlay !== undefined && window.cdShowLoadingOverlay === false;
   },
 
   /**
@@ -914,7 +917,7 @@ export default {
     this.booting = false;
   },
 
-  load() {
+  loadToTalkPage() {
     cd.debug.stopTimer('start');
     cd.debug.startTimer('loading data');
 
@@ -975,7 +978,7 @@ export default {
     this.showLoadingOverlay();
     Promise.all([modulesRequest, ...(init.siteDataRequests || [])]).then(
       () => {
-        this.tryExecuteBootProcess(true);
+        this.tryExecuteBootProcess();
       },
       (e) => {
         mw.notify(cd.s('error-loaddata'), { type: 'error' });
@@ -1124,7 +1127,7 @@ export default {
 
     cd.debug.stopTimer('getting HTML');
 
-    await this.tryExecuteBootProcess();
+    await this.tryExecuteBootProcess(true);
 
     toc.possiblyHide();
 
@@ -1239,5 +1242,194 @@ export default {
         console.error(e);
       }
     );
-  }
+  },
+
+  /**
+   * Convert a fragment of DOM into wikitext.
+   *
+   * @param {Element} div
+   * @param {external:OO.ui.TextInputWidget} input
+   * @returns {Promise.<string>}
+   * @private
+   */
+  async domToWikitext(div, input) {
+    // Get all styles from classes applied. If HTML is retrieved from a paste, this is not needed
+    // (styles are added to elements themselves in the text/html format), but won't hurt.
+    div.className = 'cd-hidden';
+
+    // require, not import, to prevent adding controller to the worker build.
+    this.rootElement.appendChild(div);
+
+    const removeElement = (el) => el.remove();
+    const replaceWithChildren = (el) => {
+      if (['DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(el.tagName)) {
+        el.after('\n');
+      }
+      el.replaceWith(...el.childNodes);
+    };
+
+    [...div.querySelectorAll('*')]
+      .filter((el) => window.getComputedStyle(el).userSelect === 'none')
+      .forEach(removeElement);
+
+    // Should run after removing elements with "user-select: none", to remove their wrappers that now
+    // have not content.
+    [...div.querySelectorAll('*')]
+      // Need to keep non-breaking spaces.
+      .filter((el) => (
+        (!['BR', 'HR'].includes(el.tagName) || el.classList.contains('Apple-interchange-newline')) &&
+        !el.textContent.replace(/[ \n]+/g, ''))
+      )
+
+      .forEach(removeElement);
+
+    [...div.querySelectorAll('style')].forEach(removeElement);
+
+    // <syntaxhighlight>
+    [...div.querySelectorAll('.mw-highlight')].forEach((el) => {
+      const syntaxhighlight = this.changeElementType(el.firstElementChild, 'syntaxhighlight');
+      const [, lang] = el.className.match(/\bmw-highlight-lang-(\w+)\b/) || [];
+      if (lang) {
+        syntaxhighlight.setAttribute('lang', lang);
+      }
+    });
+
+    const topElements = new Parser({ childElementsProp: 'children' })
+      .getTopElementsWithText(div, true).nodes;
+    if (topElements[0] !== div) {
+      div.innerHTML = '';
+      div.append(...topElements);
+    }
+
+    [...div.querySelectorAll('div, span, h1, h2, h3, h4, h5, h6')].forEach(replaceWithChildren);
+
+    const allowedTags = cd.g.ALLOWED_TAGS.concat('a', 'center', 'big', 'strike', 'tt');
+    [...div.querySelectorAll('*')].forEach((el) => {
+      if (!allowedTags.includes(el.tagName.toLowerCase())) {
+        replaceWithChildren(el);
+        return;
+      }
+
+      [...el.attributes]
+        .filter((attr) => attr.name === 'class' || /^data-/.test(attr.name))
+        .forEach((attr) => {
+          el.removeAttribute(attr.name);
+        });
+    });
+
+    [...div.children]
+      // DDs out of DLs are likely comment parts that should not create `:` markup. (Bare LIs don't
+      // create `*` markup in the API.)
+      .filter((el) => el.tagName === 'DD')
+
+      .forEach(replaceWithChildren);
+
+    const allElements = [...div.querySelectorAll('*')];
+    let wikitext;
+    const parseHtml = !(
+      !div.childElementCount ||
+      (allElements.length === 1 && ['P', 'LI', 'DD'].includes(allElements[0].tagName))
+    )
+    if (parseHtml) {
+      input.pushPending();
+      input.setDisabled(true);
+      try {
+        wikitext = await $.post('/api/rest_v1/transform/html/to/wikitext', {
+          html: div.innerHTML,
+          scrub_wikitext: true,
+        });
+        wikitext = wikitext
+          .trim()
+          .replace(/(?:^ .*(?:\n|$))+/gm, (s) => {
+            s = s
+              .replace(/^ /gm, '')
+              .replace(/[^\n]$/, '$0\n');
+            return '<syntaxhighlight>\n' + s + '</syntaxhighlight>';
+          })
+          .replace(
+            /(<syntaxhighlight[^>]*>)\s*<nowiki>(.*?)<\/nowiki>\s*(<\/syntaxhighlight>)/g,
+            '$1$2$3'
+          );
+        let hidden;
+        ({ code: wikitext, hidden } = hideSensitiveCode(wikitext));
+        wikitext = brsToNewlines(wikitext);
+        wikitext = unhideText(wikitext, hidden);
+      } catch {
+        // Empty
+      }
+      input.popPending();
+      input.setDisabled(false);
+    }
+
+    div.remove();
+
+    return wikitext ?? div.innerText;
+  },
+
+  /**
+   * Given a selection, get its content as wikitext.
+   *
+   * @param {external:OO.ui.TextInputWidget} input
+   * @returns {string}
+   */
+  async getWikitextFromSelection(input) {
+    const contents = window.getSelection().getRangeAt(0).cloneContents();
+    const div = document.createElement('div');
+    div.appendChild(contents);
+    return await this.domToWikitext(div, input);
+  },
+
+  /**
+   * Given the HTML of a paste, get its content as wikitext.
+   *
+   * @param {string} originalHtml
+   * @param {external:OO.ui.TextInputWidget} input
+   * @returns {string}
+   */
+  async getWikitextFromPaste(originalHtml, input) {
+    let html = originalHtml
+      .replace(/^[^]*<!-- *StartFragment *-->/, '')
+      .replace(/<!-- *EndFragment *-->[^]*$/, '');
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    [...div.querySelectorAll('[style]')].forEach((el) => {
+      el.removeAttribute('style');
+    });
+    return await this.domToWikitext(div, input);
+  },
+
+  /**
+   * Replace an element with an identical one but with another tag name, i.e. move all child nodes,
+   * attributes, and some bound events to a new node, and also reassign references in some variables
+   * and properties to this element. Unfortunately, we can't just change the element's `tagName` to
+   * do that.
+   *
+   * @param {Element} element
+   * @param {string} newType
+   * @returns {Element}
+   * @private
+   */
+  changeElementType(element, newType) {
+    const newElement = document.createElement(newType);
+    while (element.firstChild) {
+      newElement.appendChild(element.firstChild);
+    }
+    [...element.attributes].forEach((attribute) => {
+      newElement.setAttribute(attribute.name, attribute.value);
+    });
+
+    // If this element is a part of a comment, replace it in the Comment object instance.
+    let commentIndex = element.getAttribute('data-cd-comment-index');
+    if (commentIndex !== null) {
+      commentIndex = Number(commentIndex);
+      cd.comments[commentIndex].replaceElement(element, newElement);
+    } else {
+      element.parentNode.replaceChild(newElement, element);
+    }
+
+    // require, not import, to prevent adding controller to the worker build.
+    this.replaceScrollAnchorElement(element, newElement);
+
+    return newElement;
+  },
 };

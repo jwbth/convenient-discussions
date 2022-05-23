@@ -1,8 +1,8 @@
 import CdError from './CdError';
 import cd from './cd';
+import controller from './controller';
 import settings from './settings';
 import subscriptions from './subscriptions';
-import { addPreventUnloadCondition } from './eventHandlers';
 import { confirmCloseDialog, handleDialogError, isDialogUnsaved, tweakUserOoUiClass } from './ooui';
 import { focusInput, unique } from './util';
 import { getPageIds, getPageTitles } from './apiWrappers';
@@ -50,7 +50,12 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Window-method-getBodyHeight
    */
   getBodyHeight() {
-    return this.$errorItems ? this.$errors.prop('scrollHeight') : this.$body.prop('scrollHeight');
+    return (
+      (this.$errorItems ? this.$errors.prop('scrollHeight') : this.$body.prop('scrollHeight')) +
+
+      // Fixes double scrollbar with some system font settings.
+      1
+    );
   }
 
   /**
@@ -163,7 +168,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
       this.updateSize();
       this.popPending();
 
-      addPreventUnloadCondition('dialog', () => isDialogUnsaved(this));
+      controller.addPreventUnloadCondition('dialog', () => isDialogUnsaved(this));
     });
   }
 

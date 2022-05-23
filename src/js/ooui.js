@@ -7,7 +7,6 @@
 import CdError from './CdError';
 import cd from './cd';
 import controller from './controller';
-import { removePreventUnloadCondition } from './eventHandlers';
 
 /**
  * OOjs namespace.
@@ -189,7 +188,7 @@ export function isDialogUnsaved(dialog) {
 export function confirmCloseDialog(dialog, dialogCode) {
   if (!isDialogUnsaved(dialog) || confirm(cd.s(`${dialogCode}-close-confirm`))) {
     dialog.close({ action: 'close' });
-    removePreventUnloadCondition('dialog');
+    controller.removePreventUnloadCondition('dialog');
   }
 }
 

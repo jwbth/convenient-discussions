@@ -18,7 +18,6 @@ import {
   unique,
 } from './util';
 import { getUserGenders } from './apiWrappers';
-import { handleScroll } from './eventHandlers';
 
 let elementPrototypes;
 let isInited;
@@ -632,7 +631,7 @@ class Thread {
     }
 
     saveCollapsedThreads();
-    handleScroll();
+    controller.handleScroll();
     Thread.updateLines();
   }
 
@@ -685,7 +684,7 @@ class Thread {
     }
 
     saveCollapsedThreads();
-    handleScroll();
+    controller.handleScroll();
     Thread.updateLines();
   }
 
@@ -709,7 +708,7 @@ class Thread {
   /**
    * Create threads.
    *
-   * @param {boolean} [restoreCollapsed=true]
+   * @param {boolean} [restoreCollapsed=true] Restore collapsed threads from the local storage.
    */
   static init(restoreCollapsed = true) {
     if (!settings.get('enableThreads')) return;
@@ -724,7 +723,7 @@ class Thread {
       }
     });
 
-    if (controller.bootProcess.isPageFirstParsed()) {
+    if (!threadLinesContainer) {
       threadLinesContainer = document.createElement('div');
       threadLinesContainer.className = 'cd-thread-linesContainer';
     } else {
@@ -736,7 +735,7 @@ class Thread {
     // interactions.
     Thread.updateLines();
 
-    if (controller.bootProcess.isPageFirstParsed()) {
+    if (!threadLinesContainer.parentNode) {
       document.body.appendChild(threadLinesContainer);
     }
     if (restoreCollapsed) {

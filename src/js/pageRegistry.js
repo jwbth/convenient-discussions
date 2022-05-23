@@ -13,41 +13,6 @@ import { handleApiReject, isProbablyTalkPage } from './util';
 import { makeBackgroundRequest } from './apiWrappers';
 import { parseTimestamp } from './timestamp';
 
-const pageRegistry = {
-  /**
-   * Collection of pages.
-   *
-   * @type {object}
-   */
-  pages: {},
-
-  /**
-   * Get a page object for a page with the specified name (either a new one or already existing).
-   *
-   * @param {string|external:mw.Title} nameOrMwTitle
-   * @param {boolean} [isGendered=true] Used to keep the gendered namespace name (if `nameOrMwTitle`
-   *   is a string).
-   * @returns {module:pageRegistry~Page}
-   */
-  getPage(nameOrMwTitle, isGendered) {
-    const title = nameOrMwTitle instanceof mw.Title ?
-      nameOrMwTitle :
-      new mw.Title(nameOrMwTitle);
-
-    const name = title.getPrefixedText();
-
-    if (!this.pages[name]) {
-      this.pages[name] = new Page(name, isGendered && nameOrMwTitle);
-    } else if (isGendered) {
-      this.pages[name].genderedName = nameOrMwTitle;
-    }
-
-    return this.pages[name];
-  },
-};
-
-export default pageRegistry;
-
 /**
  * Main MediaWiki object.
  *
@@ -76,6 +41,11 @@ class Page {
    * @throws {CdError} If the string in the first parameter is not a valid title.
    */
   constructor(mwTitle, genderedName) {
+    // TODO: remove after uses are replaced.
+    if (!(mwTitle instanceof mw.Title)) {
+      mwTitle = new mw.Title(mwTitle);
+    }
+
     /**
      * Page name, with a namespace name, not necessarily normalized (if a gendered name is
      * available). The word separator is a space, not an underline.
@@ -110,7 +80,12 @@ class Page {
     return mw.util.getUrl(this.name, parameters);
   }
 
-  getArchivingInfoElement() {
+  /**
+   * Find an archiving info element on the page.
+   *
+   * @returns {JQuery}
+   */
+  findArchivingInfoElement() {
     // For performance reasons, this is not reevaluated after page reloads. The reevaluation is
     // unlikely to be needed by users.
     if (!this.$archivingInfo) {
@@ -138,7 +113,7 @@ class Page {
   isArchivePage() {
     let result;
     if (this === cd.page) {
-      result = this.getArchivingInfoElement().data('isArchivePage');
+      result = this.findArchivingInfoElement().data('isArchivePage');
     }
     if (result === undefined) {
       result = false;
@@ -169,7 +144,7 @@ class Page {
     }
     let result;
     if (this === cd.page) {
-      result = this.getArchivingInfoElement().data('canHaveArchives');
+      result = this.findArchivingInfoElement().data('canHaveArchives');
     }
     if (result === undefined) {
       const name = this.realName || this.name;
@@ -192,7 +167,7 @@ class Page {
     }
     let result;
     if (this === cd.page) {
-      result = this.getArchivingInfoElement().data('archivePrefix');
+      result = this.findArchivingInfoElement().data('archivePrefix');
     }
     const name = this.realName || this.name;
     if (!result) {
@@ -218,7 +193,7 @@ class Page {
   getArchivedPage() {
     let result;
     if (this === cd.page) {
-      result = this.getArchivingInfoElement().data('archivedPage');
+      result = this.findArchivingInfoElement().data('archivedPage');
     }
     if (!result) {
       const name = this.realName || this.name;
@@ -230,7 +205,7 @@ class Page {
         }
       }
     }
-    return result ? pageRegistry.getPage(String(result)) : this;
+    return result ? pageRegistry.get(String(result)) : this;
   }
 
   /**
@@ -386,6 +361,7 @@ class Page {
       // If we know that this page is a redirect, use its target. Otherwise, use the regular name.
       page: this.realName || this.name,
 
+      disabletoc: cd.g.SKIN === 'vector-2022',
       redirects: true,
       prop: ['text', 'revid', 'modules', 'jsconfigvars'],
     };
@@ -665,3 +641,40 @@ class Page {
     });
   }
 }
+
+const pageRegistry = {
+  /**
+   * Collection of pages.
+   *
+   * @type {object}
+   */
+  items: {},
+
+  /**
+   * Get a page object for a page with the specified name (either a new one or already existing).
+   *
+   * @param {string|external:mw.Title} nameOrMwTitle
+   * @param {boolean} [isGendered=true] Used to keep the gendered namespace name (if `nameOrMwTitle`
+   *   is a string).
+   * @returns {Page}
+   */
+  get(nameOrMwTitle, isGendered) {
+    const title = nameOrMwTitle instanceof mw.Title ?
+      nameOrMwTitle :
+      new mw.Title(nameOrMwTitle);
+
+    const name = title.getPrefixedText();
+
+    if (!this.items[name]) {
+      this.items[name] = new Page(title, isGendered && nameOrMwTitle);
+    } else if (isGendered) {
+      this.items[name].genderedName = nameOrMwTitle;
+    }
+
+    return this.items[name];
+  },
+
+  Page,
+};
+
+export default pageRegistry;

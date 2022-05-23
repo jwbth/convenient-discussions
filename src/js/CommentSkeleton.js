@@ -1369,14 +1369,14 @@ class CommentSkeleton {
   /**
    * Generate a comment ID from a date and author.
    *
-   * @param {Date} date
-   * @param {string} author
+   * @param {Date} [date]
+   * @param {string} [author]
    * @param {Array} [existingIds] IDs that collide with IDs in the array will get a `_<number>`
    *   postfix. The array will be appended to in that case.
    * @returns {?string}
    */
   static generateId(date, author, existingIds) {
-    if (!author) {
+    if (!date || !author) {
       return null;
     }
 
@@ -1411,13 +1411,15 @@ class CommentSkeleton {
   /**
    * _For internal use._ Set {@link Comment#logicalLevel logical levels} to the comments taking into
    * account `{{outdent}}` templates.
+   *
+   * @param {Parser} parser
    */
-  static processOutdents() {
-    if (this.parser.context.areThereOutdents) {
-      [...this.parser.context.rootElement.getElementsByClassName(cd.config.outdentClass)]
+  static processOutdents(parser) {
+    if (parser.context.areThereOutdents) {
+      [...parser.context.rootElement.getElementsByClassName(cd.config.outdentClass)]
         .reverse()
         .forEach((element) => {
-          const treeWalker = new ElementsTreeWalker(element, this.parser.context.rootElement);
+          const treeWalker = new ElementsTreeWalker(element, parser.context.rootElement);
           while (treeWalker.nextNode()) {
             // `null` and `0` as the attribute value are both bad.
             let commentIndex = Number(treeWalker.currentNode.getAttribute('data-cd-comment-index'));

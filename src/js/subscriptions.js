@@ -21,6 +21,11 @@ import { unique, wrap } from './util';
 let subscribeLegacyPromise = Promise.resolve();
 
 export default {
+  /**
+   * Request the subscription list from the server.
+   *
+   * @param {boolean} reuse For legacy subscriptions: Reuse the existing request.
+   */
   async makeLoadRequest(reuse) {
     if (this.useTopicSubscription) {
       const subscriptionIds = cd.sections
@@ -45,7 +50,7 @@ export default {
   },
 
   /**
-   * Request the subscriptions from the server and assign them to the `registry` (and
+   * Request the subscription list from the server and assign them to the `registry` (and
    * `allPagesRegistry` in case of the legacy subscriptions) property.
    *
    * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
@@ -64,6 +69,11 @@ export default {
     return this.loadRequest;
   },
 
+  /**
+   * Test if the subscription list is loaded.
+   *
+   * @returns {boolean}
+   */
   areLoaded() {
     return Boolean(this.registry || this.allPagesRegistry);
   },
@@ -80,6 +90,13 @@ export default {
     await setLegacySubscriptions(registry || this.allPagesRegistry);
   },
 
+  /**
+   * Update the subscription list by adding or removing a subscription. It's a local operation -
+   * nothing is saved to the server.
+   *
+   * @param {string} subscribeId Section's subscribe ID (modern or legact format).
+   * @param {*} subscribe Subscribe or unsubscribe.
+   */
   updateRegistry(subscribeId, subscribe) {
     if (subscribeId === undefined) return;
 
@@ -90,6 +107,13 @@ export default {
     }
   },
 
+  /**
+   * Subscribe to or unsubscribe from a topic.
+   *
+   * @param {string} subscribeId Section's DiscussionTools ID.
+   * @param {string} id Section's ID.
+   * @param {boolean} subscribe Subscribe or unsubscribe.
+   */
   async dtSubscribe(subscribeId, id, subscribe) {
     try {
       await dtSubscribe(subscribeId, id, subscribe);
@@ -107,7 +131,6 @@ export default {
    *   section is renamed on the fly in {@link Comment#update} or {@link CommentForm#submit}).
    * @returns {Promise}
    * @throws {CdError}
-   * @memberof Section
    */
   subscribeLegacy(headline, unsubscribeHeadline) {
     const subscribe = async () => {
@@ -162,7 +185,6 @@ export default {
    * @param {string} headline
    * @returns {Promise}
    * @throws {CdError}
-   * @memberof Section
    */
   unsubscribeLegacy(headline) {
     const unsubscribe = async () => {
@@ -190,22 +212,43 @@ export default {
     return subscribeLegacyPromise;
   },
 
+  /**
+   * Subscribe to a section.
+   *
+   * @param {string} subscribeId Section's DiscussionTools ID.
+   * @param {string} id Section's ID.
+   * @param {string} unsubscribeHeadline Headline of a section to unsubscribe from (at the same
+   * time).
+   * @returns {Promise}
+   */
   subscribe(subscribeId, id, unsubscribeHeadline) {
     if (subscribeId === undefined) return;
 
     return this.useTopicSubscription ?
-      this.dtSubscribe(subscribeId, anchor, true) :
+      this.dtSubscribe(subscribeId, id, true) :
       this.subscribeLegacy(subscribeId, unsubscribeHeadline);
   },
 
-  unsubscribe(subscribeId) {
+  /**
+   * Unsubscribe from a section.
+   *
+   * @param {string} subscribeId Section's DiscussionTools ID.
+   * @param {string} id Section's ID.
+   * @returns {Promise}
+   */
+  unsubscribe(subscribeId, id) {
     if (subscribeId === undefined) return;
 
     return this.useTopicSubscription ?
-      this.dtSubscribe(subscribeId, false) :
+      this.dtSubscribe(subscribeId, id, false) :
       this.unsubscribeLegacy(subscribeId);
   },
 
+  /**
+   * For legacy subscriptions: Get the IDs of the pages that have subscriptions.
+   *
+   * @returns {number[]}
+   */
   getPageIds() {
     if (this.useTopicSubscription || !this.areLoaded()) {
       return null;
@@ -214,6 +257,12 @@ export default {
     return Object.keys(this.allPagesRegistry);
   },
 
+  /**
+   * For legacy subscriptions: Get the subscription list for a page.
+   *
+   * @param {number} pageId
+   * @returns {?(object[])}
+   */
   getForPageId(pageId) {
     if (this.useTopicSubscription || !this.areLoaded()) {
       return null;
@@ -222,12 +271,17 @@ export default {
     return Object.keys(this.allPagesRegistry[pageId] || {});
   },
 
+  /**
+   * For legacy subscriptions: Get the subscription list for the current page.
+   *
+   * @returns {?(object[])}
+   */
   getForCurrentPage() {
     return this.getForPageId(mw.config.get('wgArticleId'));
   },
 
   /**
-   *
+   * Get the subscription state of a section.
    *
    * @param {string} subscribeId
    * @returns {?boolean}
@@ -247,13 +301,19 @@ export default {
     }
   },
 
+  /**
+   * Check whether the user was subscribed to a section
+   *
+   * @param {string} headline Headline.
+   * @returns {boolean}
+   */
   getOriginalState(headline) {
     return this.originalList?.includes(headline);
   },
 
   /**
-   * _For internal use._ Remove sections that can't be found on the page anymore from the watched
-   * sections list and save them to the server.
+   * _For internal use._ Remove sections that can't be found on the page anymore from the
+   * subscription list and save it to the server.
    */
   cleanUp() {
     if (this.useTopicSubscription) return;
@@ -273,6 +333,9 @@ export default {
     }
   },
 
+  /**
+   * Show a message dialog informing the user about the new topic subscription feature.
+   */
   async maybeShowNotice() {
     if (!this.useTopicSubscription || this.seenNotice) return;
 
@@ -301,6 +364,13 @@ export default {
     this.seenNotice = true;
   },
 
+  /**
+   * _For internal use._ Convert subscription list to the standard format, with section IDs as keys
+   * instead of array elements, to keep it in the registry.
+   *
+   * @param {string[]} arr Array of section IDs.
+   * @returns {object[]}
+   */
   itemsToKeys(arr) {
     return Object.assign({}, ...arr.map((page) => ({ [page]: true })));
   },

@@ -165,6 +165,12 @@ class Button {
     return this;
   }
 
+  /**
+   * Run a pre-defined action if the button is conditions are met.
+   *
+   * @param {Function} action
+   * @param {Event} e
+   */
   maybeRunAction(action, e) {
     if (
       !this.isDisabled() &&

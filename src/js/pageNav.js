@@ -20,10 +20,21 @@ let backLinkLocation;
 
 export default {
   /**
+   * Check whether the page navigation block is mounted.
+   *
+   * @returns {boolean}
+   */
+  isMounted() {
+    return Boolean(this.$topElement);
+  },
+
+  /**
    * _For internal use._ Render the page navigation block. This is done when the page is first
    * loaded.
    */
   mount() {
+    if (cd.g.SKIN === 'vector-2022') return;
+
     this.$topElement = $('<div>')
       .attr('id', 'cd-pageNav-top')
       .addClass('cd-pageNav')
@@ -44,6 +55,8 @@ export default {
    * Update or set the width of the page nagivation blocks.
    */
   updateWidth() {
+    if (!this.isMounted()) return;
+
     if (controller.$contentColumn.length) {
       const left = controller.$contentColumn.offset().left;
       const padding = 18;
@@ -78,6 +91,8 @@ export default {
    * Update the contents of the page navigation blocks.
    */
   update() {
+    if (!this.isMounted()) return;
+
     const htmlElement = document.documentElement;
     if (htmlElement.scrollHeight === htmlElement.clientHeight) {
       this.reset();

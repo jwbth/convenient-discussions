@@ -807,9 +807,9 @@ function isPageStillAtRevision(revisionId) {
  */
 async function processComments(comments, currentComments, currentRevisionId) {
   comments.forEach((comment) => {
-    comment.author = userRegistry.getUser(comment.authorName);
+    comment.author = userRegistry.get(comment.authorName);
     if (comment.parent?.authorName) {
-      comment.parent.author = userRegistry.getUser(comment.parent.authorName);
+      comment.parent.author = userRegistry.get(comment.parent.authorName);
     }
   });
 

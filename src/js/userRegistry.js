@@ -8,44 +8,11 @@
 import cd from './cd';
 import { ucFirst, underlinesToSpaces } from './util';
 
-export default {
-  /**
-   * Collection of users.
-   *
-   * @type {object}
-   */
-  users: {},
-
-  /**
-   * Get a user object for a user with the specified name (either a new one or already existing).
-   *
-   * @param {string} name
-   * @returns {module:userRegistry~User}
-   */
-  getUser(name) {
-    if (name.includes('#')) {
-      name = name.slice(0, name.indexOf('#'));
-    }
-    if (mw.util.isIPv6Address(name)) {
-      name = name.toUpperCase().trim();
-    } else {
-      name = underlinesToSpaces(ucFirst(name)).trim();
-    }
-
-    if (!this.users[name]) {
-      const options = name === cd.g.USER_NAME ? { gender: mw.user.options.get('gender') } : {};
-      this.users[name] = new User(name, options);
-    }
-
-    return this.users[name];
-  },
-}
-
 /**
  * Class representing a user. Is made similar to `mw.user` so that it is possible to pass it to
  * `mw.msg()` and have `{{gender:}}` replaced.
  *
- * The constructor is not accessible by means of import. Use {@link module:userRegistry.getUser}.
+ * The constructor is not accessible by means of import. Use {@link module:userRegistry.get}.
  */
 class User {
   /**
@@ -94,4 +61,37 @@ class User {
   getGender() {
     return this.options.get('gender');
   }
+}
+
+export default {
+  /**
+   * Collection of users.
+   *
+   * @type {object}
+   */
+  items: {},
+
+  /**
+   * Get a user object for a user with the specified name (either a new one or already existing).
+   *
+   * @param {string} name
+   * @returns {module:userRegistry~User}
+   */
+  get(name) {
+    if (name.includes('#')) {
+      name = name.slice(0, name.indexOf('#'));
+    }
+    if (mw.util.isIPv6Address(name)) {
+      name = name.toUpperCase().trim();
+    } else {
+      name = underlinesToSpaces(ucFirst(name)).trim();
+    }
+
+    if (!this.items[name]) {
+      const options = name === cd.g.USER_NAME ? { gender: mw.user.options.get('gender') } : {};
+      this.items[name] = new User(name, options);
+    }
+
+    return this.items[name];
+  },
 }

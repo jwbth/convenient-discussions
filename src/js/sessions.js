@@ -5,7 +5,7 @@ import controller from './controller';
 import navPanel from './navPanel';
 import postponements from './postponements';
 import { getFromLocalStorage, saveToLocalStorage } from './util';
-import { showRescueContentDialog } from './modal';
+import { rescueCommentFormsContent } from './modal';
 
 /**
  * Restore comment forms using the data saved in the local storage.
@@ -77,7 +77,7 @@ function restoreFromStorage(commentFormsData) {
     });
   }
   if (rescue.length) {
-    showRescueContentDialog(rescue);
+    rescueCommentFormsContent(rescue);
   }
 }
 
@@ -147,7 +147,7 @@ function restoreDirectly() {
     }
   });
   if (rescue.length) {
-    showRescueContentDialog(rescue);
+    rescueCommentFormsContent(rescue);
   }
 }
 

@@ -213,7 +213,7 @@ function extractRegularSignatures(adjustedCode, code) {
 
       // Should always match logically.
       const [, lastAuthorLink] = commentEnding.match(lastAuthorLinkRegexp);
-      author = userRegistry.getUser(decodeHtmlEntities(lastAuthorLink));
+      author = userRegistry.get(decodeHtmlEntities(lastAuthorLink));
 
       while ((authorLinkMatch = authorLinkRegexp.exec(commentEnding))) {
         // Slash can be present in authorLinkMatch[2]. It often indicates a link to a page in the
@@ -221,7 +221,7 @@ function extractRegularSignatures(adjustedCode, code) {
         // don't want to eliminate those cases).
         if (authorLinkMatch[2]) continue;
 
-        const testAuthor = userRegistry.getUser(decodeHtmlEntities(authorLinkMatch[1]));
+        const testAuthor = userRegistry.get(decodeHtmlEntities(authorLinkMatch[1]));
         if (testAuthor === author) {
           startIndex = lineStartIndex + commentEndingStartIndex + authorLinkMatch.index;
           dirtyCode = code.slice(startIndex, endIndex);
@@ -271,7 +271,7 @@ function extractUnsigneds(adjustedCode, code, signatures) {
       } else {
         author = match[2];
       }
-      author = author && userRegistry.getUser(decodeHtmlEntities(author));
+      author = author && userRegistry.get(decodeHtmlEntities(author));
 
       // Append "(UTC)" to the `timestamp` of templates that allow to omit the timezone. The
       // timezone could be not UTC, but currently the timezone offset is taken from the wiki

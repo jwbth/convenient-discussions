@@ -78,7 +78,7 @@ export default {
 
     this.setDefaults();
 
-    const values = cd.settings || {};
+    const values = {};
 
     const options = {
       [cd.g.SETTINGS_OPTION_NAME]: mw.user.options.get(cd.g.SETTINGS_OPTION_NAME),
@@ -231,12 +231,13 @@ export default {
   },
 
   set(name, value) {
+    this.values = this.values || {};
     const values = typeof name === 'string' ? { [name]: value } : name;
     Object.assign(this.values, values);
   },
 
   get(name) {
-    return this.values[name];
+    return name ? this.values[name] : this.values;
   },
 
   /**

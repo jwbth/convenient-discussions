@@ -27,7 +27,6 @@ import {
   getVisibilityByRects,
   handleApiReject,
   isInline,
-  isPageOverlayOn,
   saveToLocalStorage,
   unhideText,
   unique,
@@ -133,7 +132,7 @@ class Comment extends CommentSkeleton {
      *
      * @type {module:userRegistry~User}
      */
-    this.author = userRegistry.getUser(this.authorName);
+    this.author = userRegistry.get(this.authorName);
 
     /**
      * Comment signature element.
@@ -1033,15 +1032,15 @@ class Comment extends CommentSkeleton {
 
     if (this.level === 0) {
       // 2 instead of 1 for Timeless
-      const leftStretched = left - controller.get('contentStartMargin') - 2;
-      const rightStretched = right + controller.get('contentStartMargin') + 2;
+      const leftStretched = left - controller.contentStartMargin - 2;
+      const rightStretched = right + controller.contentStartMargin + 2;
 
       this.isStartStretched = this.getDir() === 'ltr' ?
-        leftStretched <= controller.get('contentColumnStart') :
-        rightStretched >= controller.get('contentColumnStart');
+        leftStretched <= controller.contentColumnStart :
+        rightStretched >= controller.contentColumnStart;
       this.isEndStretched = this.getDir() === 'ltr' ?
-        rightStretched >= controller.get('contentColumnEnd') :
-        leftStretched <= controller.get('contentColumnEnd');
+        rightStretched >= controller.contentColumnEnd :
+        leftStretched <= controller.contentColumnEnd;
     }
   }
 
@@ -1205,7 +1204,7 @@ class Comment extends CommentSkeleton {
         cd.g.CONTENT_FONT_SIZE * 3.2 :
         cd.g.CONTENT_FONT_SIZE * 2.2 - 1;
     } else if (this.isStartStretched) {
-      startMargin = controller.get('contentStartMargin');
+      startMargin = controller.contentStartMargin;
     } else {
       const anchorElement = this.isCollapsed ? this.thread.expandNote : this.anchorHighlightable;
       if (
@@ -1218,7 +1217,7 @@ class Comment extends CommentSkeleton {
       }
     }
     const endMargin = this.isEndStretched ?
-      controller.get('contentStartMargin') :
+      controller.contentStartMargin :
       cd.g.COMMENT_FALLBACK_SIDE_MARGIN;
 
     const left = this.getDir() === 'ltr' ? startMargin : endMargin;
@@ -1628,7 +1627,7 @@ class Comment extends CommentSkeleton {
    * @param {Event} e
    */
   highlightHovered(e) {
-    if (this.isHovered || isPageOverlayOn() || settings.get('reformatComments')) return;
+    if (this.isHovered || controller.isPageOverlayOn() || settings.get('reformatComments')) return;
 
     if (e && e.type === 'touchstart') {
       cd.comments
@@ -2584,8 +2583,10 @@ class Comment extends CommentSkeleton {
       tagName: 'div',
       targetBlank: true,
     });
+    $question.find('a').attr('data-instantdiffs-link', 'link');
     const $diff = await this.generateDiffView();
     const $content = $('<div>').append($question, $diff);
+    mw.hook('wikipage.content').fire($content);
     if (await OO.ui.confirm($content, { size: 'larger' })) {
       try {
         await controller.getApi().postWithEditToken(controller.getApi().assertCurrentUser({
@@ -3445,7 +3446,7 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Modify a section or page code string related to the comment in accordance with an action.
+   * Modify a whole section or page code string related to the comment in accordance with an action.
    *
    * @param {object} options
    * @param {string} options.action `'reply'` or `'edit'`.

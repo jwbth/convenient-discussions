@@ -1,7 +1,6 @@
 import Button from './Button';
 import CdError from './CdError';
 import CommentForm from './CommentForm';
-import Page from './Page';
 import SectionMenuButton from './SectionMenuButton';
 import SectionSkeleton from './SectionSkeleton';
 import SectionStatic from './SectionStatic';
@@ -77,7 +76,7 @@ class Section extends SectionSkeleton {
      *
      * @type {Page}
      */
-    this.sourcePage = pageRegistry.getPage(this.sourcePageName);
+    this.sourcePage = this.sourcePageName ? pageRegistry.get(this.sourcePageName) : cd.page;
 
     delete this.sourcePageName;
 
@@ -634,7 +633,7 @@ class Section extends SectionSkeleton {
       };
     }
 
-    subscriptions.unsubscribe(this.subscribeId)
+    subscriptions.unsubscribe(this.subscribeId, this.id)
       .then(() => {
         sections.forEach((section) => {
           section.subscriptionState = false;
@@ -739,7 +738,7 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Modify a section or page code string related to the section in accordance with an action.
+   * Modify a whole section or page code string related to the section in accordance with an action.
    *
    * @param {object} options
    * @param {string} options.action `'replyInSection'` or `'addSubsection'`.

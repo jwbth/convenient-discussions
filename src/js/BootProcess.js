@@ -6,6 +6,7 @@ import Section from './Section';
 import Thread from './Thread';
 import cd from './cd';
 import controller from './controller';
+import debug from './debug';
 import init from './init';
 import navPanel from './navPanel';
 import pageNav from './pageNav';
@@ -15,15 +16,8 @@ import settings from './settings';
 import subscriptions from './subscriptions';
 import toc from './toc';
 import updateChecker from './updateChecker';
-import {
-  changeElementType,
-  getLastArrayElementOrSelf,
-  handleApiReject,
-  underlinesToSpaces,
-  wrap,
-} from './util';
-import { debug } from './debug';
 import { formatDateNative } from './timestamp';
+import { getLastArrayElementOrSelf, handleApiReject, underlinesToSpaces, wrap } from './util';
 import { getVisits, setVisits } from './apiWrappers';
 import { removeWikiMarkup } from './wikitext';
 import { showConfirmDialog } from './ooui';
@@ -44,6 +38,11 @@ function getAllTextNodes() {
   return textNodes;
 }
 
+/**
+ * Deal with (remove or move in the DOM) the markup added to the page by DiscussionTools.
+ *
+ * @param {Element[]|external:Element[]} elements
+ */
 function handleDtMarkup(elements) {
   let dtMarkupHavenElement;
 
@@ -147,18 +146,38 @@ export default class BootProcess {
     return this.data[name];
   }
 
+  /**
+   * Add a comment ID to the registry.
+   *
+   * @param {string} id
+   */
   addDtCommentId(id) {
     this.dtCommentIds.push(id);
   }
 
+  /**
+   * Get comment IDs in the registry.
+   *
+   * @returns {string[]}
+   */
   getDtCommentIds() {
     return this.dtCommentIds;
   }
 
+  /**
+   * Get the visits request.
+   *
+   * @returns {Promise}
+   */
   getVisitsRequest() {
     return this.visitsRequest;
   }
 
+  /**
+   * Get the unix time of the previous visit.
+   *
+   * @returns {number}
+   */
   getPreviousVisitUnixTime() {
     return this.previousVisitUnixTime;
   }
@@ -173,6 +192,11 @@ export default class BootProcess {
     return this.firstRun;
   }
 
+  /**
+   * Check whether the page is parsed for the first time.
+   *
+   * @returns {boolean}
+   */
   isPageFirstParsed() {
     return this.firstRun || this.data('wasPageCreated');
   }
@@ -596,6 +620,9 @@ export default class BootProcess {
     }
   }
 
+  /**
+   * Find comment signatures and section headings on the page.
+   */
   findTargets() {
     this.parser = new Parser({
       CommentClass: Comment,
@@ -676,7 +703,7 @@ export default class BootProcess {
               let child = currentBottomElement.firstChild;
               if (child.tagName) {
                 if (bottomInnerTags[child.tagName]) {
-                  child = changeElementType(child, bottomInnerTags[child.tagName]);
+                  child = controller.changeElementType(child, bottomInnerTags[child.tagName]);
                 }
                 if (firstMoved === undefined) {
                   firstMoved = child;
@@ -883,7 +910,7 @@ export default class BootProcess {
     Section.adjust();
 
     // Dependent on sections being set
-    Comment.processOutdents();
+    Comment.processOutdents(this.parser);
 
     // This runs after extracting sections because Comment#getParent needs sections to be set on
     // comments.
@@ -910,6 +937,9 @@ export default class BootProcess {
     mw.hook('convenientDiscussions.sectionsReady').fire(cd.sections, cd);
   }
 
+  /**
+   * Do the required transformations if the page turned out to be not a talk page after all.
+   */
   retractTalkPageness() {
     debug.stopTimer('main code');
 
@@ -926,6 +956,9 @@ export default class BootProcess {
     this.debugLog();
   }
 
+  /**
+   * Update the page's HTML.
+   */
   layOutHtml() {
     const selector = this.data('wasPageCreated') ?
       '.noarticletext, .warningbox' :
@@ -1103,6 +1136,9 @@ export default class BootProcess {
     }
   }
 
+  /**
+   * Add an "Add section" form if needed.
+   */
   maybeAddAddSectionForm() {
     // May crash if the current URL contains undecodable "%" in the fragment,
     // https://phabricator.wikimedia.org/T207365.
@@ -1124,6 +1160,10 @@ export default class BootProcess {
     }
   }
 
+  /**
+   * Add a condition to show a confirmation when trying to close the page with active comment forms
+   * on it.
+   */
   configureActiveCommentFormsConfirmation() {
     const alwaysConfirmLeavingPage = (
       mw.user.options.get('editondblclick') ||
@@ -1141,6 +1181,9 @@ export default class BootProcess {
     });
   }
 
+  /**
+   * Mount, unmount or reset the {@link navPanel navigation panel}.
+   */
   setupNavPanel() {
     if (controller.isPageActive()) {
       // Can be mounted not only on first parse, if using RevisionSlider, for example.
@@ -1167,7 +1210,7 @@ export default class BootProcess {
     let escapedFragment;
     let escapedDecodedFragment;
     let commentId;
-    let fragmentContainsCommentId;
+    let fragmentHasCommentId;
     if (this.firstRun) {
       fragment = location.hash.slice(1);
       escapedFragment = $.escapeSelector(fragment);
@@ -1176,7 +1219,7 @@ export default class BootProcess {
         escapedDecodedFragment = decodedFragment && $.escapeSelector(decodedFragment);
         if (Comment.isId(fragment)) {
           commentId = decodedFragment;
-          fragmentContainsCommentId = true;
+          fragmentHasCommentId = true;
         }
       } catch (e) {
         console.error(e);
@@ -1194,7 +1237,7 @@ export default class BootProcess {
     } else if (decodedFragment) {
       ({ comment, date, author } = Comment.getByDtId(decodedFragment, true) || {});
       if (comment) {
-        fragmentContainsCommentId = true;
+        fragmentHasCommentId = true;
       }
     }
 
@@ -1203,7 +1246,7 @@ export default class BootProcess {
       // incorrectly.
       setTimeout(() => {
         comment.scrollTo(false, this.data('pushState'));
-        if (fragmentContainsCommentId) {
+        if (fragmentHasCommentId) {
           history.replaceState(Object.assign({}, history.state, { cdJumpedToComment: true }), '');
         }
       });
@@ -1330,7 +1373,7 @@ export default class BootProcess {
 
   /**
    * Remove the `id` attribute from comment links, so that comment links reach their target using
-   * {@link eventHandlers.handleHashChange handling of the hashchange event}, not using direct
+   * {@link controller.handleHashChange handling of the hashchange event}, not using direct
    * scrolling.
    *
    * @param {JQuery} $content
@@ -1379,6 +1422,11 @@ export default class BootProcess {
       });
   }
 
+  /**
+   * Set up
+   * {@link https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver MutationObserver} to
+   * handle page mutations.
+   */
   setupMutationObserver() {
     // Mutation observer doesn't follow all possible comment position changes (for example,
     // initiated with adding new CSS) unfortunately.
@@ -1407,6 +1455,9 @@ export default class BootProcess {
     });
   }
 
+  /**
+   * Add event listeners to `window`, `document`, hooks; set up MutationObserver.
+   */
   addEventListeners() {
     if (!settings.get('reformatComments')) {
       // The "mouseover" event allows to capture the state when the cursor is not moving but
@@ -1460,6 +1511,9 @@ export default class BootProcess {
     debug.logAndResetEverything();
   }
 
+  /**
+   * Show popups to the user if needed.
+   */
   async showPopups() {
     this.maybeSuggestDisableDiscussionTools();
 

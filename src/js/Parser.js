@@ -279,7 +279,7 @@ class Parser {
 
     const isUnsigned = Boolean(unsignedElement);
     const startElement = unsignedElement || timestamp.element;
-    const treeWalker = new ElementsAndTextTreeWalker(startElement, this.parser.context.rootElement);
+    const treeWalker = new ElementsAndTextTreeWalker(startElement, this.context.rootElement);
     const authorData = {};
 
     let length = 0;

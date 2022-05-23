@@ -5,18 +5,18 @@
  */
 
 import CONFIG_URLS from '../../config/urls.json';
+import Comment from './Comment';
 import I18N_LIST from '../../data/i18nList.json';
 import LANGUAGE_FALLBACKS from '../../data/languageFallbacks.json';
-import Page from './Page';
 import cd from './cd';
 import controller from './controller';
 import debug from './debug';
 import defaultConfig from '../../config/default';
 import g from './staticGlobals';
+import pageRegistry from './pageRegistry';
 import { addCommentLinksToSpecialSearch } from './addCommentLinks';
 import {
   buildEditSummary,
-  isPageOverlayOn,
   mergeRegexps,
   skin$,
   underlinesToSpaces,
@@ -183,6 +183,9 @@ function setStrings() {
   });
 }
 
+/**
+ * Set some global object properties.
+ */
 function setGlobals() {
   // Avoid setting the global object properties if go() runs the second time (see addFooterLink()).
   if (cd.g.SETTINGS_OPTION_NAME) return;
@@ -233,9 +236,6 @@ function setGlobals() {
   cd.g.PAGE_BLACKLIST_REGEXP = mergeRegexps(cd.config.pageBlacklist);
   cd.g.CONTENT_DIR = bodyClassList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
   cd.g.SKIN = mw.config.get('skin');
-  if (cd.g.SKIN === 'vector' && bodyClassList.contains('skin-vector-legacy')) {
-    cd.g.SKIN = 'vector-legacy';
-  }
   cd.g.IS_QQX_MODE = /[?&]uselang=qqx(?=&|$)/.test(location.search);
 
   // Quite a rough check for mobile browsers, a mix of what is advised at
@@ -286,8 +286,10 @@ function addFooterLink() {
   }).append($li);
 }
 
+/**
+ * Change the destination of the "Add topic" button.
+ */
 function tweakAddTopicButton() {
-  // Change the destination of the "Add topic" button.
   const $addTopicLink = $('#ca-addsection a');
   const href = $addTopicLink.prop('href');
   if (href) {
@@ -441,6 +443,9 @@ function getStrings() {
   return Promise.all(requests).catch(() => {});
 }
 
+/**
+ * Populate the {@link convenientDiscussions.api} object.
+ */
 function setupApi() {
   /**
    * Script's publicly available API. Here there are some utilities that we believe should be
@@ -455,12 +460,12 @@ function setupApi() {
   cd.api = {};
 
   /**
-   * @name Page
+   * @name pageRegistry
    * @type {object}
-   * @see Page
+   * @see pageRegistry
    * @memberof convenientDiscussions.api
    */
-  cd.api.Page = Page;
+  cd.api.pageRegistry = pageRegistry;
 
   /**
    * @see module:timestamp.generateCommentId
@@ -488,7 +493,7 @@ function setupApi() {
    * @function isPageOverlayOn
    * @memberof convenientDiscussions.api
    */
-  cd.api.isPageOverlayOn = isPageOverlayOn;
+  cd.api.isPageOverlayOn = controller.isPageOverlayOn;
 
   /**
    * @see module:util.wrap
@@ -506,7 +511,8 @@ function setupApi() {
 
   // TODO: Delete after all addons are updated.
   cd.util = cd.api;
-  cd.g.Page = cd.api.Page;
+  cd.api.Page = pageRegistry.Page;
+  cd.api.generateCommentAnchor = cd.api.generateCommentId;
 }
 
 /**

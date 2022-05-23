@@ -9,8 +9,6 @@ import {
   getExtendedRect,
   getHigherNodeAndOffsetInSelection,
   reorderArray,
-  restoreRelativeScrollPosition,
-  saveRelativeScrollPosition,
   underlinesToSpaces,
   unique,
 } from './util';
@@ -526,10 +524,10 @@ export default {
 
     let comment = findById(id);
     if (!comment && impreciseDate) {
-      const { date, id } = Comment.parseId(id) || {};
+      const { date, author } = Comment.parseId(id) || {};
       for (let gap = 1; !comment && gap <= 3; gap++) {
         const dateToFind = new Date(date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * gap);
-        comment = findById(Comment.generateId(dateToFind, id));
+        comment = findById(Comment.generateId(dateToFind, author));
       }
     }
 
@@ -553,7 +551,7 @@ export default {
       comment = comments[0];
     } else if (comments.length > 1) {
       comments = comments.filter((comment) => (
-        comment.getParent()?.date.getTime() === data.parentDate?.getTime() &&
+        comment.getParent()?.date?.getTime() === data.parentDate?.getTime() &&
         comment.getParent()?.author.name === data.parentAuthor &&
         (!data.sectionIdBeginning || comment.section?.id.startsWith(data.sectionIdBeginning))
       ));
@@ -589,7 +587,7 @@ export default {
    * @memberof Comment
    */
   addNewCommentsNotes(newComments) {
-    saveRelativeScrollPosition();
+    controller.saveRelativeScrollPosition();
 
     cd.comments.forEach((comment) => {
       comment.subitemList.remove('newCommentsNote');
@@ -637,7 +635,7 @@ export default {
       }
     });
 
-    restoreRelativeScrollPosition();
+    controller.restoreRelativeScrollPosition();
   },
 
   /**

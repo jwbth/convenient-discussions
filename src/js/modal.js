@@ -7,9 +7,10 @@
 import Comment from './Comment';
 import cd from './cd';
 import controller from './controller';
+import settings from './settings';
 import { copyText, dealWithLoadingBug } from './util';
 import { encodeWikilink } from './wikitext';
-import { isPageOverlayOn, underlinesToSpaces } from './util';
+import { underlinesToSpaces } from './util';
 
 /**
  * Show a settings dialog.
@@ -37,7 +38,7 @@ export async function showSettingsDialog(initalPageName) {
  * Show an edit subscriptions dialog.
  */
 export async function showEditSubscriptionsDialog() {
-  if (isPageOverlayOn()) return;
+  if (controller.isPageOverlayOn()) return;
 
   const EditSubscriptionsDialog = require('./EditSubscriptionsDialog').default;
 

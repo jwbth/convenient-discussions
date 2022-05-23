@@ -1,6 +1,5 @@
 import Autocomplete from './Autocomplete';
 import CdError from './CdError';
-import Page from './Page';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
@@ -150,7 +149,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         showMissing: false,
         validate: () => {
           const title = this.titleInput.getMWTitle();
-          const page = title && pageRegistry.getPage(title);
+          const page = title && pageRegistry.get(title);
           return page && page !== this.section.getSourcePage();
         },
       });
@@ -237,7 +236,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         this.pushPending();
         this.titleInput.$input.blur();
 
-        let targetPage = pageRegistry.getPage(this.titleInput.getMWTitle());
+        let targetPage = pageRegistry.get(this.titleInput.getMWTitle());
 
         // Should be ruled out by making the button disabled.
         if (targetPage === this.section.getSourcePage()) {

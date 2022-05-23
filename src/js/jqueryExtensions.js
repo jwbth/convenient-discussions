@@ -6,7 +6,6 @@
 
 import cd from './cd';
 import controller from './controller';
-import { handleScroll } from './eventHandlers';
 
 /**
  * Scroll to a specified position vertically.
@@ -18,7 +17,7 @@ import { handleScroll } from './eventHandlers';
 export function scrollToY(y, smooth = true, callback) {
   const onComplete = () => {
     controller.toggleAutoScrolling(false);
-    handleScroll();
+    controller.handleScroll();
     if (callback) {
       callback();
     }

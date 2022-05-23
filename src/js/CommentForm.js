@@ -4,7 +4,6 @@ import CdError from './CdError';
 import Comment from './Comment';
 import CommentFormStatic from './CommentFormStatic';
 import CommentTextParser from './CommentTextParser';
-import Page from './Page';
 import Section from './Section';
 import cd from './cd';
 import controller from './controller';
@@ -21,14 +20,11 @@ import {
   findLastIndex,
   focusInput,
   getNativePromiseState,
-  getWikitextFromPaste,
-  getWikitextFromSelection,
   handleApiReject,
   hideText,
   insertText,
   isCmdMofidicatorPressed,
   isInputFocused,
-  isPageOverlayOn,
   keyCombination,
   removeDoubleSpaces,
   removeFromArrayIfPresent,
@@ -244,7 +240,7 @@ class CommentForm {
           this.originalHeadline = this.preloadConfig?.headline || '';
         }
 
-        if (!(this.target instanceof Page)) {
+        if (!(this.target.constructor.name === 'Page')) {
           this.checkCode();
         }
       }
@@ -1271,7 +1267,7 @@ class CommentForm {
    */
   preloadTemplate() {
     const currentOperation = this.registerOperation('load', { affectHeadline: false });
-    const preloadPage = pageRegistry.getPage(this.preloadConfig.commentTemplate);
+    const preloadPage = pageRegistry.get(this.preloadConfig.commentTemplate);
     preloadPage.getCode().then(
       () => {
         let code = preloadPage.code;
@@ -1522,7 +1518,7 @@ class CommentForm {
         const data = e.originalEvent.clipboardData || e.originalEvent.dataTransfer;
         if (data.types.includes('text/html')) {
           e.preventDefault();
-          const text = await getWikitextFromPaste(
+          const text = await controller.getWikitextFromPaste(
             data.getData('text/html'),
             this.commentInput
           );
@@ -1642,7 +1638,7 @@ class CommentForm {
     if (cd.g.NAMESPACE_NUMBER === 3) {
       const userName = (cd.page.title.match(/^([^/]+)/) || [])[0];
       if (userName) {
-        pageOwner = userRegistry.getUser(userName);
+        pageOwner = userRegistry.get(userName);
       }
     }
     let defaultUserNames = commentsInSection
@@ -2216,7 +2212,7 @@ class CommentForm {
     let commentCode;
     try {
       if (
-        !(this.target instanceof Page) &&
+        !(this.target.constructor.name === 'Page') &&
 
         // We already located the section when got its code.
         !(this.target instanceof Section && this.submitSection)
@@ -2370,7 +2366,7 @@ class CommentForm {
     if (
       this.isContentBeingLoaded() ||
       (
-        !(this.target instanceof Page) &&
+        !(this.target.constructor.name === 'Page') &&
         !this.target.inCode &&
         this.checkCodeRequest &&
         (await getNativePromiseState(this.checkCodeRequest)) === 'resolved'
@@ -2416,7 +2412,7 @@ class CommentForm {
       (if the mode is 'edit' and the comment has not been loaded, this method would halt after the
       looking for the unclosed 'load' operation above).
      */
-    if (!(this.target instanceof Page) && !this.target.inCode) {
+    if (!(this.target.constructor.name === 'Page') && !this.target.inCode) {
       await this.checkCode();
       if (!this.target.inCode) {
         this.closeOperation(currentOperation);
@@ -2992,7 +2988,7 @@ class CommentForm {
    * @param {boolean} [confirmClose=true] Whether to confirm form close.
    */
   async cancel(confirmClose = true) {
-    if (isPageOverlayOn() || this.isBeingSubmitted()) return;
+    if (controller.isPageOverlayOn() || this.isBeingSubmitted()) return;
 
     if (confirmClose && !this.confirmClose()) {
       focusInput(this.commentInput);
@@ -3316,7 +3312,7 @@ class CommentForm {
       selectionText = document.activeElement.value
         .substring(document.activeElement.selectionStart, document.activeElement.selectionEnd);
     } else {
-      selectionText = await getWikitextFromSelection(this.commentInput);
+      selectionText = await controller.getWikitextFromSelection(this.commentInput);
     }
     selectionText = selectionText.trim();
 

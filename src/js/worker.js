@@ -9,11 +9,6 @@
  * @module worker
  */
 
-// Workaround to fix the error when trying to import unique() to CommentSkeleton (only in
-// development mode?).
-import { unique } from './util';
-void unique;
-
 import CdError from './CdError';
 import CommentSkeleton from './CommentSkeleton';
 import Parser from './Parser';
@@ -199,7 +194,7 @@ function parse() {
   cd.debug.stopTimer('worker: process sections');
 
   cd.debug.startTimer('worker: prepare comments and sections');
-  CommentSkeleton.processOutdents();
+  CommentSkeleton.processOutdents(parser);
   cd.comments.forEach((comment) => {
     comment.hiddenElementsData = [];
     comment.elementHtmls = comment.elements.map((element) => {
