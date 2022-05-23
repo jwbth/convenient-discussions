@@ -362,15 +362,10 @@ class Page {
       page: this.realName || this.name,
 
       disabletoc: cd.g.SKIN === 'vector-2022',
+      useskin: cd.g.SKIN,
       redirects: true,
       prop: ['text', 'revid', 'modules', 'jsconfigvars'],
     };
-    if (cd.g.IS_DT_TOPIC_SUBSCRIPTION_ENABLED) {
-      // HACK: 'useskin' triggers a different code path that runs our OutputPageBeforeHTML hook,
-      // adding DT's subscribe links in the HTML if that feature is enabled (T266195). See
-      // https://github.com/wikimedia/mediawiki-extensions-DiscussionTools/blob/9c20efcd4deffe0d463e0548e4e8ded41fea48a5/modules/controller.js#L649.
-      defaultOptions.useskin = mw.config.get('skin');
-    }
     const options = Object.assign({}, defaultOptions, customOptions);
 
     // "page" and "oldid" can not be used together.
