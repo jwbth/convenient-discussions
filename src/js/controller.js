@@ -354,7 +354,7 @@ export default {
     const scrollY = this.bootProcess.data('scrollY') || window.scrollY;
 
     // The viewport has the TOC bottom or is above it.
-    if (switchToAbsolute && toc.isPresent && scrollY < getTocBottomOffset()) {
+    if (switchToAbsolute && toc.isPresentClassic && scrollY < getTocBottomOffset()) {
       this.saveScrollPosition(switchToAbsolute.saveTocHeight);
     } else {
       this.scrollData.element = null;
@@ -439,7 +439,7 @@ export default {
     this.scrollData.offset = window.scrollY;
     this.scrollData.tocHeight = (
       (saveTocHeight || this.scrollData.tocHeight) &&
-      toc.isPresent &&
+      toc.isPresentClassic &&
       !toc.isFloating &&
       window.scrollY !== 0 &&
 

@@ -14,34 +14,6 @@ import settings from './settings';
 import { formatDate, formatDateNative } from './timestamp';
 
 /**
- * Generate a string containing new comment count to insert after the section headline in the table
- * of contents.
- *
- * @param {number} count
- * @param {number} unseenCount
- * @param {boolean} full
- * @param {Element} $target
- * @private
- */
-function addCommentCountString(count, unseenCount, full, $target) {
-  const countString = full ? cd.s('toc-commentcount-full', count) : count;
-  let unseenCountString;
-  if (unseenCount) {
-    const messageName = full ? 'toc-commentcount-new-full' : 'toc-commentcount-new';
-    unseenCountString = ' ' + cd.s(messageName, unseenCount);
-  } else {
-    unseenCountString = '';
-  }
-
-  const span = document.createElement('span');
-  span.className = 'cd-toc-commentCount';
-  const bdi = document.createElement('bdi');
-  bdi.textContent = countString + unseenCountString;
-  span.appendChild(bdi);
-  $target.append(span);
-}
-
-/**
  * Class representing a table of contents item.
  */
 class TocItem {
@@ -52,7 +24,7 @@ class TocItem {
    * @throws {CdError}
    */
   constructor(a) {
-    const textSpan = a.querySelector('.toctext');
+    const textSpan = a.querySelector(toc.isInSidebar ? '.sidebar-toc-text' : '.toctext');
     if (!textSpan) {
       throw new CdError();
     }
@@ -60,9 +32,10 @@ class TocItem {
     const headline = textSpan.textContent;
     const id = a.getAttribute('href').slice(1);
     const li = a.parentNode;
-    let [, level] = li.className.match(/\btoclevel-(\d+)/);
+    let [, level] = li.className
+      .match(toc.isInSidebar ? /sidebar-toc-level-(\d+)/ : /\btoclevel-(\d+)/);
     level = Number(level);
-    const numberSpan = a.querySelector('.tocnumber');
+    const numberSpan = a.querySelector(toc.isInSidebar ? '.sidebar-toc-numb' : '.tocnumber');
     if (!numberSpan) {
       throw new CdError();
     }
@@ -118,14 +91,14 @@ class TocItem {
   }
 }
 
-export default {
+const toc = {
   /**
    * _For internal use._ Hide the TOC if the relevant cookie is set. This method duplicates
    * {@link https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.toc/toc.js the native MediaWiki function}
    * and exists because we may need to hide the TOC earlier than the native method does it.
    */
   possiblyHide() {
-    if (!this.isPresent) return;
+    if (!this.isPresentClassic) return;
 
     if (mw.cookie.get('hidetoc') === '1') {
       this.$element.find('.toctogglecheckbox').prop('checked', true);
@@ -133,17 +106,25 @@ export default {
   },
 
   /**
-   * _For internal use._ Init the TOC data (executed at each page reload).
+   * _For internal use._ Init the TOC data (executed at every page reload).
    */
   init() {
-    this.$element = controller.$root.find('.toc');
+    this.isInSidebar = cd.g.SKIN === 'vector-2022';
+    this.$element = this.isInSidebar ? $('.sidebar-toc') : controller.$root.find('.toc');
     this.isPresent = Boolean(this.$element.length);
+    this.isPresentClassic = this.isPresent && !this.isInSidebar;
     this.tocItems = null;
 
-    const $closestFloating = this.$element
-      .closest('[style*="float: right"], [style*="float:right"], [style*="float: left"], [style*="float:left"]');
+    let $closestFloating;
+    if (this.isInSidebar) {
+      this.$element
+        .find('.cd-toc-commentCount, .cd-toc-newCommentList, .cd-toc-notRenderedCommentList')
+        .remove();
+      $closestFloating = this.$element
+        .closest('[style*="float: right"], [style*="float:right"], [style*="float: left"], [style*="float:left"]');
+    }
     this.isFloating = Boolean(
-      $closestFloating.length &&
+      $closestFloating?.length &&
       controller.$root.has($closestFloating).length
     );
   },
@@ -160,7 +141,8 @@ export default {
     }
 
     if (!this.tocItems) {
-      const links = [...this.$element.get(0).querySelectorAll('li > a')];
+      const links = [...this.$element.get(0).querySelectorAll('li > a')]
+        .filter((link) => link.getAttribute('href') !== '#top-page');
       try {
         // It is executed first time before not rendered (gray) sections are added to the TOC, so we
         // use a simple algorithm to obtain items.
@@ -192,6 +174,34 @@ export default {
   },
 
   /**
+   * Generate a string containing new comment count to insert after the section headline in the table
+   * of contents.
+   *
+   * @param {number} count
+   * @param {number} unseenCount
+   * @param {boolean} full
+   * @param {Element} $target
+   * @private
+   */
+   addCommentCountString(count, unseenCount, full, $target) {
+    const countString = full ? cd.s('toc-commentcount-full', count) : count;
+    let unseenCountString;
+    if (unseenCount) {
+      const messageName = full ? 'toc-commentcount-new-full' : 'toc-commentcount-new';
+      unseenCountString = ' ' + cd.s(messageName, unseenCount);
+    } else {
+      unseenCountString = '';
+    }
+
+    const span = document.createElement('span');
+    span.className = 'cd-toc-commentCount';
+    const bdi = document.createElement('bdi');
+    bdi.textContent = countString + unseenCountString;
+    span.appendChild(bdi);
+    $target.append(span);
+  },
+
+  /**
    * Add the number of comments to each section link.
    */
   addCommentCount() {
@@ -205,7 +215,8 @@ export default {
       if (!count) return;
       const unseenCount = section.comments.filter((comment) => comment.isSeen === false).length;
 
-      addCommentCountString(count, unseenCount, i === 0, item.$link);
+      const $target = this.isInSidebar ? item.$text : item.$link;
+      this.addCommentCountString(count, unseenCount, i === 0, $target);
     });
   },
 
@@ -276,10 +287,16 @@ export default {
         }
 
         const li = document.createElement('li');
-        li.className = `cd-toc-notRenderedSection toclevel-${level}`;
+        const levelClass = this.isInSidebar ?
+          `sidebar-toc-list-item sidebar-toc-level-${level}` :
+          `toclevel-${level}`;
+        li.className = `${levelClass} cd-toc-notRenderedSection`;
 
         const a = document.createElement('a')
         a.href = '#' + section.id;
+        if (this.isInSidebar) {
+          a.className = 'sidebar-toc-link';
+        }
         a.onclick = (e) => {
           e.preventDefault();
           controller.reload({
@@ -298,28 +315,34 @@ export default {
           number = '1';
         }
         const numberSpan = document.createElement('span');
-        numberSpan.className = 'tocnumber cd-toc-hiddenTocNumber';
+        const numberClass = this.isInSidebar ? 'sidebar-toc-numb' : 'tocnumber';
+        numberSpan.className = `${numberClass} cd-toc-hiddenTocNumber`;
         numberSpan.textContent = number;
         a.appendChild(numberSpan);
 
         const textSpan = document.createElement('span');
-        textSpan.className = 'toctext';
-        textSpan.textContent = section.headline;
+        textSpan.className = this.isInSidebar ? 'sidebar-toc-text' : 'toctext';
+        textSpan.textContent = headline;
         a.appendChild(textSpan);
 
         if (currentLevelMatch) {
           currentLevelMatch.$element.after(li);
         } else if (upperLevelMatch) {
           const ul = document.createElement('ul');
-          ul.className = `cd-toc-notRenderedSectionList toclevel-${level}`;
           ul.appendChild(li);
           upperLevelMatch.$element.append(ul);
         } else {
-          $topUl.prepend(li);
+          if (this.isInSidebar) {
+            $topUl.children('#toc-mw-content-text').after(li);
+          } else {
+            $topUl.prepend(li);
+          }
         }
 
         item = {
+          // Doesn't seem to be currently used anywhere.
           headline,
+
           level,
           number,
           $element: $(li),
@@ -357,9 +380,7 @@ export default {
     );
     controller.saveRelativeScrollPosition({ saveTocHeight });
 
-    this.$element
-      .find('.cd-toc-notRenderedCommentList')
-      .remove();
+    this.$element.find('.cd-toc-notRenderedCommentList').remove();
 
     const rtlMarkOrNot = cd.g.CONTENT_DIR === 'rtl' ? '\u200f' : '';
     const comma = cd.mws('comma-separator');
@@ -392,7 +413,8 @@ export default {
             .length;
           $sectionLink.children('.cd-toc-commentCount').remove();
         }
-        addCommentCountString(count, unseenCount, section.index === 0, $sectionLink);
+        const $target = this.isInSidebar ? $sectionLink.children('sidebar-toc-text') : $sectionLink;
+        this.addCommentCountString(count, unseenCount, section.index === 0, $target);
       }
 
       let $target = $sectionLink;
@@ -437,13 +459,16 @@ export default {
           const li = document.createElement('li');
           ul.appendChild(li);
 
-          const bulletSpan = document.createElement('span');
-          bulletSpan.className = 'tocnumber cd-toc-bullet';
-          bulletSpan.innerHTML = cd.sParse('bullet');
-          li.appendChild(bulletSpan);
+          if (!this.isInSidebar) {
+            const bulletSpan = document.createElement('span');
+            const numberClass = this.isInSidebar ? 'sidebar-toc-numb' : 'tocnumber';
+            bulletSpan.className = `${numberClass} cd-toc-bullet`;
+            bulletSpan.innerHTML = cd.sParse('bullet');
+            li.appendChild(bulletSpan);
+          }
 
           const textSpan = document.createElement('span');
-          textSpan.className = 'toctext';
+          textSpan.className = this.isInSidebar ? 'sidebar-toc-text' : 'toctext';
           li.appendChild(textSpan);
 
           if (settings.get('timestampFormat') === 'default') {
@@ -452,6 +477,9 @@ export default {
 
           const a = document.createElement('a');
           a.href = `#${comment.id}`;
+          if (this.isInSidebar) {
+            a.className = 'sidebar-toc-link';
+          }
           a.textContent = text;
           textSpan.appendChild(a);
 
@@ -508,3 +536,5 @@ export default {
     controller.restoreRelativeScrollPosition(true);
   },
 };
+
+export default toc;
