@@ -133,17 +133,17 @@ export default class BootProcess {
    */
   passData(name, value) {
     const data = typeof name === 'string' ? { [name]: value } : name;
-    Object.assign(this.data, data);
+    Object.assign(this.passedData, data);
   }
 
   /**
    * Get the value of some parameter related to the boot process.
    *
-   * @param {string} name
+   * @param {string} [name]
    * @returns {*}
    */
   data(name) {
-    return this.data[name];
+    return name ? this.passedData[name] : this.passedData;
   }
 
   /**
