@@ -174,8 +174,8 @@ const toc = {
   },
 
   /**
-   * Generate a string containing new comment count to insert after the section headline in the table
-   * of contents.
+   * Generate a string containing new comment count to insert after the section headline in the
+   * table of contents.
    *
    * @param {number} count
    * @param {number} unseenCount
@@ -213,8 +213,8 @@ const toc = {
 
       const count = section.comments.length;
       if (!count) return;
-      const unseenCount = section.comments.filter((comment) => comment.isSeen === false).length;
 
+      const unseenCount = section.comments.filter((comment) => comment.isSeen === false).length;
       const $target = this.isInSidebar ? item.$text : item.$link;
       this.addCommentCountString(count, unseenCount, i === 0, $target);
     });
@@ -240,28 +240,29 @@ const toc = {
       .remove();
 
     /*
-      Note the case when the page starts with sections of lower levels than the base level, like
+      Note the case when the page starts with sections of levels lower than the base level, like
       this:
 
-      === Section 1 ===
-      ==== Section 2 ====
-      == Section 3 ==
+        === Section 1 ===
+        ==== Section 2 ====
+        == Section 3 ==
 
       In this case, the TOC will look like this:
-      1 Section 1
-        1.1 Section 2
-      2 Section 3
+
+        1 Section 1
+          1.1 Section 2
+        2 Section 3
 
       The other possible case when the level on the page is different from the level in the TOC
       is when there is a gap between the levels on the page. For example:
 
-      == Section ==
-      ==== Subsection ====
+        == Section ==
+        ==== Subsection ====
 
       will be displayed like this in the TOC:
 
-      1 Section
-        1.1 Subsection
+        1 Section
+          1.1 Subsection
      */
     sections.forEach((section, i) => {
       section.parent = sections
@@ -292,8 +293,8 @@ const toc = {
           `toclevel-${level}`;
         li.className = `${levelClass} cd-toc-notRenderedSection`;
 
-        const a = document.createElement('a')
-        a.href = '#' + section.id;
+        const a = document.createElement('a');
+        a.href = `#${section.id}`;
         if (this.isInSidebar) {
           a.className = 'sidebar-toc-link';
         }
@@ -304,7 +305,6 @@ const toc = {
             pushState: true,
           });
         };
-        li.appendChild(a);
 
         let number;
         if (currentLevelMatch) {
@@ -320,10 +320,19 @@ const toc = {
         numberSpan.textContent = number;
         a.appendChild(numberSpan);
 
-        const textSpan = document.createElement('span');
-        textSpan.className = this.isInSidebar ? 'sidebar-toc-text' : 'toctext';
-        textSpan.textContent = headline;
-        a.appendChild(textSpan);
+        if (this.isInSidebar) {
+          const textDiv = document.createElement('div');
+          textDiv.className = 'sidebar-toc-text';
+          textDiv.appendChild(document.createTextNode(headline));
+          a.appendChild(textDiv);
+          li.appendChild(a);
+        } else {
+          const textSpan = document.createElement('span');
+          textSpan.className = 'toctext';
+          textSpan.textContent = headline;
+          a.appendChild(textSpan);
+          li.appendChild(a);
+        }
 
         if (currentLevelMatch) {
           currentLevelMatch.$element.after(li);
@@ -357,6 +366,168 @@ const toc = {
   },
 
   /**
+   * Get some elements of reference (a section link, an element to add a comment list after) in the
+   * table of contents for a section, needed to work with it.
+   *
+   * @param {import('./commonTypedefs').SectionSkeletonLike[]} section Section.
+   * @param {boolean} areCommentsRendered Whether the comments are rendered (visible on the page).
+   * @returns {object}
+   */
+  getElementsForSection(section, areCommentsRendered) {
+    // There could be a collision of hrefs between the existing section and not yet rendered
+    // section, so we compose the selector carefully.
+    let $sectionLink;
+    let $target;
+    if (areCommentsRendered) {
+      $target = $sectionLink = section.getTocItem()?.$link;
+    } else {
+      if (section.match) {
+        $sectionLink = section.match.getTocItem()?.$link;
+      } else {
+        const id = $.escapeSelector(section.id);
+        $sectionLink = this.$element.find(`.cd-toc-notRenderedSection a[href="#${id}"]`);
+      }
+
+      if ($sectionLink?.length) {
+        // We need to place the not-rendered-comment list below the rendered-comment list.
+        $target = $sectionLink;
+        const $next = $sectionLink.next('.cd-toc-newCommentList');
+        if ($next.length) {
+          $target = $next;
+        }
+      }
+    }
+
+    return {
+      target: $target?.get(0),
+      $sectionLink,
+    };
+  },
+
+  /**
+   * Add a comment list (an `ul` element) to a section.
+   *
+   * @param {import('./commonTypedefs').CommentSkeletonLike[]} comments Comment list.
+   * @param {Element} target Target element.
+   * @param {boolean} areCommentsRendered Whether the comments are rendered (visible on the page).
+   */
+  addCommentList(comments, target, areCommentsRendered) {
+    // Was 6 initially, then became 5, now 4.
+    const itemsLimit = 4;
+
+    // jQuery is too expensive here given that very many comments may be added.
+    const ul = document.createElement('ul');
+    ul.className = areCommentsRendered ? 'cd-toc-newCommentList' : 'cd-toc-notRenderedCommentList';
+
+    let moreTooltipText = '';
+    comments.forEach((comment, i) => {
+      const parent = areCommentsRendered ? comment.getParent() : comment.parent;
+      const names = parent?.author && comment.level > 1 ?
+        cd.s('navpanel-newcomments-names', comment.author.name, parent.author.name) :
+        comment.author.name;
+      const addAsItem = i < itemsLimit - 1 || comments.length === itemsLimit;
+
+      let date;
+      let nativeDate;
+      if (comment.date) {
+        nativeDate = formatDateNative(comment.date);
+        date = addAsItem && settings.get('timestampFormat') !== 'default' ?
+          formatDate(comment.date) :
+          nativeDate;
+      } else {
+        date = cd.s('navpanel-newcomments-unknowndate');
+      }
+
+      let text = names + (cd.g.CONTENT_DIR === 'rtl' ? '\u200f' : '') + cd.mws('comma-separator');
+      if (settings.get('timestampFormat') === 'default') {
+        text += date;
+      }
+
+      // If there are `itemsLimit` comments or less, show all of them. If there are more, show
+      // `itemsLimit - 1` and "N more". (Because showing `itemsLimit - 1` and then "1 more" is
+      // stupid.)
+      if (addAsItem) {
+        const li = document.createElement('li');
+        ul.appendChild(li);
+
+        const a = document.createElement('a');
+        a.href = `#${comment.id}`;
+        if (this.isInSidebar) {
+          a.className = 'sidebar-toc-link';
+        }
+        if (comment instanceof Comment) {
+          a.onclick = (e) => {
+            e.preventDefault();
+            comment.scrollTo(false, true);
+          };
+        } else {
+          a.onclick = (e) => {
+            e.preventDefault();
+            controller.reload({
+              commentId: comment.id,
+              pushState: true,
+            });
+          };
+        }
+
+        let timestampSpan;
+        if (settings.get('timestampFormat') !== 'default') {
+          timestampSpan = document.createElement('span');
+          timestampSpan.textContent = date;
+          timestampSpan.title = nativeDate;
+
+          let callback;
+          if (!areCommentsRendered) {
+            callback = () => {
+              navPanel.updateTimestampsInRefreshButtonTooltip();
+            };
+          }
+          new LiveTimestamp(timestampSpan, comment.date, false, callback);
+        }
+
+        if (this.isInSidebar) {
+          const textDiv = document.createElement('div');
+          textDiv.className = 'sidebar-toc-text cd-toc-commentLink';
+          textDiv.textContent = text;
+          textDiv.appendChild(timestampSpan);
+          a.appendChild(textDiv);
+          li.appendChild(a);
+        } else {
+          const bulletSpan = document.createElement('span');
+          const numberClass = this.isInSidebar ? 'sidebar-toc-numb' : 'tocnumber';
+          bulletSpan.className = `${numberClass} cd-toc-bullet`;
+          bulletSpan.innerHTML = cd.sParse('bullet');
+          li.appendChild(bulletSpan);
+
+          const textSpan = document.createElement('span');
+          textSpan.className = 'toctext';
+          a.textContent = text;
+          a.appendChild(timestampSpan);
+          textSpan.appendChild(a);
+          li.appendChild(textSpan);
+        }
+      } else {
+        // In a tooltip, always show the date in the default format — we won't be auto-updating
+        // relative dates there due to low benefit.
+        moreTooltipText += text + nativeDate + '\n';
+      }
+    });
+
+    if (comments.length > itemsLimit) {
+      const span = document.createElement('span');
+      span.className = 'cd-toc-more';
+      span.title = moreTooltipText.trim();
+      span.textContent = cd.s('toc-more', comments.length - (itemsLimit - 1));
+
+      const li = document.createElement('li');
+      li.appendChild(span);
+      ul.appendChild(li);
+    }
+
+    target.parentNode.insertBefore(ul, target.nextSibling);
+  },
+
+  /**
    * _For internal use._ Add links to new comments (either already displayed or loaded in the
    * background) to the table of contents.
    *
@@ -382,27 +553,13 @@ const toc = {
 
     this.$element.find('.cd-toc-notRenderedCommentList').remove();
 
-    const rtlMarkOrNot = cd.g.CONTENT_DIR === 'rtl' ? '\u200f' : '';
-    const comma = cd.mws('comma-separator');
     commentsBySection.forEach((comments, section) => {
       if (!section) return;
 
-      // There could be a collision of hrefs between the existing section and not yet rendered
-      // section, so we compose the selector carefully.
-      let $sectionLink;
-      if (areCommentsRendered) {
-        $sectionLink = section.getTocItem()?.$link;
-      } else {
-        if (section.match) {
-          $sectionLink = section.match.getTocItem()?.$link;
-        } else {
-          const id = $.escapeSelector(section.id);
-          $sectionLink = this.$element.find(`.cd-toc-notRenderedSection a[href="#${id}"]`);
-        }
-      }
+      const { target, $sectionLink } = this.getElementsForSection(section, areCommentsRendered);
 
       // Should never be the case
-      if (!$sectionLink?.length) return;
+      if (!target) return;
 
       if (!areCommentsRendered) {
         const count = section.comments.length;
@@ -417,120 +574,7 @@ const toc = {
         this.addCommentCountString(count, unseenCount, section.index === 0, $target);
       }
 
-      let $target = $sectionLink;
-      const $next = $sectionLink.next('.cd-toc-newCommentList');
-      if ($next.length) {
-        $target = $next;
-      }
-      const target = $target.get(0);
-
-      // jQuery is too expensive here given that very many comments may be added.
-      const ul = document.createElement('ul');
-      ul.className = areCommentsRendered ?
-        'cd-toc-newCommentList' :
-        'cd-toc-notRenderedCommentList';
-
-      // Was 6 initially, then became 5, now 4.
-      const itemsLimit = 4;
-
-      let moreTooltipText = '';
-      comments.forEach((comment, i) => {
-        const parent = areCommentsRendered ? comment.getParent() : comment.parent;
-        const names = parent?.author && comment.level > 1 ?
-          cd.s('navpanel-newcomments-names', comment.author.name, parent.author.name) :
-          comment.author.name;
-        const addAsItem = i < itemsLimit - 1 || comments.length === itemsLimit;
-        let date;
-        let nativeDate;
-        if (comment.date) {
-          nativeDate = formatDateNative(comment.date);
-          date = addAsItem && settings.get('timestampFormat') !== 'default' ?
-            formatDate(comment.date) :
-            nativeDate;
-        } else {
-          date = cd.s('navpanel-newcomments-unknowndate');
-        }
-        let text = names + rtlMarkOrNot + comma;
-
-        // If there are `itemsLimit` comments or less, show all of them. If there are more, show
-        // `itemsLimit - 1` and "N more". (Because showing `itemsLimit - 1` and then "1 more" is
-        // stupid.)
-        if (addAsItem) {
-          const li = document.createElement('li');
-          ul.appendChild(li);
-
-          if (!this.isInSidebar) {
-            const bulletSpan = document.createElement('span');
-            const numberClass = this.isInSidebar ? 'sidebar-toc-numb' : 'tocnumber';
-            bulletSpan.className = `${numberClass} cd-toc-bullet`;
-            bulletSpan.innerHTML = cd.sParse('bullet');
-            li.appendChild(bulletSpan);
-          }
-
-          const textSpan = document.createElement('span');
-          textSpan.className = this.isInSidebar ? 'sidebar-toc-text' : 'toctext';
-          li.appendChild(textSpan);
-
-          if (settings.get('timestampFormat') === 'default') {
-            text += date;
-          }
-
-          const a = document.createElement('a');
-          a.href = `#${comment.id}`;
-          if (this.isInSidebar) {
-            a.className = 'sidebar-toc-link';
-          }
-          a.textContent = text;
-          textSpan.appendChild(a);
-
-          if (settings.get('timestampFormat') !== 'default') {
-            const timestampSpan = document.createElement('span');
-            timestampSpan.textContent = date;
-            timestampSpan.title = nativeDate;
-            a.appendChild(timestampSpan);
-
-            let callback;
-            if (!areCommentsRendered) {
-              callback = () => {
-                navPanel.updateTimestampsInRefreshButtonTooltip();
-              };
-            }
-            new LiveTimestamp(timestampSpan, comment.date, false, callback);
-          }
-
-          if (comment instanceof Comment) {
-            a.onclick = (e) => {
-              e.preventDefault();
-              comment.scrollTo(false, true);
-            };
-          } else {
-            a.onclick = (e) => {
-              e.preventDefault();
-              controller.reload({
-                commentId: comment.id,
-                pushState: true,
-              });
-            };
-          }
-        } else {
-          // In a tooltip, always show the date in the default format — we won't be auto-updating
-          // relative dates there due to low benefit.
-          moreTooltipText += text + nativeDate + '\n';
-        }
-      });
-
-      if (comments.length > itemsLimit) {
-        const span = document.createElement('span');
-        span.className = 'cd-toc-more';
-        span.title = moreTooltipText.trim();
-        span.textContent = cd.s('toc-more', comments.length - (itemsLimit - 1));
-
-        const li = document.createElement('li');
-        li.appendChild(span);
-        ul.appendChild(li);
-      }
-
-      target.parentNode.insertBefore(ul, target.nextSibling);
+      this.addCommentList(comments, target, areCommentsRendered);
     });
 
     controller.restoreRelativeScrollPosition(true);
