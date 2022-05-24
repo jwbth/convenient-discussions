@@ -34,7 +34,7 @@ The script makes the user forget about:
 A limitation of the script is that it works only in modern browsers, i.e., doesn't support Internet Explorer.
 
 ## Credits
-Convenient Discussions has started in 2018 as Russian Wikipedia's user script. It is being developed by Jack who built the house, enriched by the contributions and feedback from the global Wikimedia tech community and users. It also borrows the code for parsing timestamps in different formats from Matma Rex and uses solutions and ideas from the Wikimedia engineering and design teams.
+Convenient Discussions started in 2018 as Russian Wikipedia's user script. It is being developed by Jack who built the house, enriched by the contributions and feedback from the global Wikimedia tech community and users. It also borrows the code for parsing timestamps in different formats from Matma Rex and uses solutions and ideas from the Wikimedia engineering and design teams.
 
 ## See also
 * For documentation, see [the script's homepage](https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions).

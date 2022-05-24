@@ -966,7 +966,7 @@ export default {
     }
 
     cd.g.CLIENT_PROFILE = $.client.profile();
-    cd.g.CMD_MODIFICATOR = cd.g.CLIENT_PROFILE.platform === 'mac' ? 'Cmd' : 'Ctrl';
+    cd.g.CMD_MODIFIER = cd.g.CLIENT_PROFILE.platform === 'mac' ? 'Cmd' : 'Ctrl';
 
     cd.g.isIPv6Address = mw.util.isIPv6Address;
 

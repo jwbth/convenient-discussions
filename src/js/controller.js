@@ -1018,6 +1018,7 @@ export default {
     init.setTalkPageCssVariables();
 
     require('../less/global.less');
+
     require('../less/Comment.less');
     require('../less/CommentForm.less');
     require('../less/Section.less');
@@ -1026,6 +1027,7 @@ export default {
     require('../less/pageNav.less');
     require('../less/skin.less');
     require('../less/talkPage.less');
+    require('../less/toc.less');
   },
 
   /**
@@ -1138,7 +1140,8 @@ export default {
 
   /**
    * _For internal use._ Handle firings of the hook `'wikipage.content'` (by using
-   * `mw.hook('wikipage.content').fire()`).
+   * `mw.hook('wikipage.content').fire()`). This is performed by some user scripts, such as
+   * QuickEdit.
    *
    * @param {external:jQuery} $content
    */
@@ -1235,6 +1238,7 @@ export default {
 
         // See the comment above: "Additions of CSS...".
         require('../less/global.less');
+
         require('../less/logPages.less');
       },
       (e) => {

@@ -25,6 +25,7 @@ export default {
    * Request the subscription list from the server.
    *
    * @param {boolean} reuse For legacy subscriptions: Reuse the existing request.
+   * @private
    */
   async makeLoadRequest(reuse) {
     if (this.useTopicSubscription) {
@@ -96,6 +97,7 @@ export default {
    *
    * @param {string} subscribeId Section's subscribe ID (modern or legact format).
    * @param {*} subscribe Subscribe or unsubscribe.
+   * @private
    */
   updateRegistry(subscribeId, subscribe) {
     if (subscribeId === undefined) return;
@@ -113,6 +115,7 @@ export default {
    * @param {string} subscribeId Section's DiscussionTools ID.
    * @param {string} id Section's ID.
    * @param {boolean} subscribe Subscribe or unsubscribe.
+   * @private
    */
   async dtSubscribe(subscribeId, id, subscribe) {
     try {
@@ -131,6 +134,7 @@ export default {
    *   section is renamed on the fly in {@link Comment#update} or {@link CommentForm#submit}).
    * @returns {Promise}
    * @throws {CdError}
+   * @private
    */
   subscribeLegacy(headline, unsubscribeHeadline) {
     const subscribe = async () => {
@@ -185,6 +189,7 @@ export default {
    * @param {string} headline
    * @returns {Promise}
    * @throws {CdError}
+   * @private
    */
   unsubscribeLegacy(headline) {
     const unsubscribe = async () => {

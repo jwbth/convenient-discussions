@@ -532,7 +532,7 @@ class Thread {
 
     const expandButton = elementPrototypes.expandButton.cloneNode(true);
     const button = new Button({
-      tooltip: cd.s('thread-expand-tooltip', cd.g.CMD_MODIFICATOR),
+      tooltip: cd.s('thread-expand-tooltip', cd.g.CMD_MODIFIER),
       action: (e) => {
         if (isCmdMofidicatorPressed(e)) {
           cd.comments.slice().reverse().forEach((comment) => {

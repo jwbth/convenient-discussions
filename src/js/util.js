@@ -175,7 +175,12 @@ export function isInline(node, countTextNodesAsInline = false) {
     return null;
   }
 
-  if (cd.g.POPULAR_INLINE_ELEMENTS.includes(node.tagName)) {
+  if (
+    cd.g.POPULAR_INLINE_ELEMENTS.includes(node.tagName) ||
+
+    // <mw:tocplace> is currently present in place of the TOC in new Vector.
+    node.tagName.startsWith('MW:')
+  ) {
     return true;
   } else if (cd.g.POPULAR_NOT_INLINE_ELEMENTS.includes(node.tagName)) {
     return false;
@@ -759,13 +764,13 @@ export function calculateWordOverlap(s1, s2) {
  *
  * @param {Event} e
  * @param {number} keyCode
- * @param {Array} [modificators=[]]
+ * @param {Array} [modifiers=[]]
  * @returns {boolean}
  */
-export function keyCombination(e, keyCode, modificators = []) {
+export function keyCombination(e, keyCode, modifiers = []) {
   return (
     e.keyCode === keyCode &&
-    ['ctrl', 'shift', 'alt', 'meta'].every((mod) => modificators.includes(mod) === e[mod + 'Key'])
+    ['ctrl', 'shift', 'alt', 'meta'].every((mod) => modifiers.includes(mod) === e[mod + 'Key'])
   );
 }
 
@@ -886,8 +891,8 @@ export function getHigherNodeAndOffsetInSelection(selection) {
 }
 
 /**
- * Whether a command modificator is pressed. On Mac, this means the Cmd key. On Windows, this means
- * the Ctrl key.
+ * Whether a command modifier is pressed. On Mac, this means the Cmd key. On Windows, this means the
+ * Ctrl key.
  *
  * @param {Event} e
  * @returns {boolean}

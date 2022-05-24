@@ -625,7 +625,7 @@ class CommentForm {
       popup: {
         head: false,
         $content: wrap(
-          cd.sParse('cf-help-content', cd.config.mentionCharacter, cd.g.CMD_MODIFICATOR),
+          cd.sParse('cf-help-content', cd.config.mentionCharacter, cd.g.CMD_MODIFIER),
           {
             tagName: 'div',
             targetBlank: true,
@@ -994,7 +994,7 @@ class CommentForm {
         group: 'insert',
         tools: {
           mention: {
-            label: cd.s('cf-mention-tooltip', cd.g.CMD_MODIFICATOR),
+            label: cd.s('cf-mention-tooltip', cd.g.CMD_MODIFIER),
             type: 'button',
             icon: `/w/load.php?modules=oojs-ui.styles.icons-user&image=userAvatar&lang=${lang}&skin=vector`,
             action: {
