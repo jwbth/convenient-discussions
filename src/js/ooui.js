@@ -157,7 +157,7 @@ export async function showConfirmDialog(message, options = {}) {
     ],
   };
 
-  const dialog = new OO.ui.MessageDialog();
+  const dialog = new OO.ui.MessageDialog({ classes: ['cd-dialog-confirm'] });
   controller.getWindowManager().addWindows([dialog]);
   const windowInstance = controller.getWindowManager().openWindow(
     dialog,

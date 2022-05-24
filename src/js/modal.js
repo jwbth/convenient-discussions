@@ -19,7 +19,7 @@ import { underlinesToSpaces } from './util';
  */
 export async function showSettingsDialog(initalPageName) {
   if (
-    $('.cd-settingsDialog').length ||
+    $('.cd-dialog-settings').length ||
     dealWithLoadingBug('mediawiki.widgets.UsersMultiselectWidget')
   ) {
     return;

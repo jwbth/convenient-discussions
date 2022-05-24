@@ -58,7 +58,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
    * @param {string} [initialPageName]
    */
   constructor(initialPageName) {
-    super({ classes: ['cd-settingsDialog'] });
+    super({ classes: ['cd-dialog-settings'] });
     this.initialPageName = initialPageName;
     this.preparatoryRequests = [
       settings.load({ omitLocal: true }),

@@ -45,6 +45,7 @@ import {
 } from './wikitext';
 import { formatDate, formatDateNative } from './timestamp';
 import { getUserGenders, parseCode } from './apiWrappers';
+import { showConfirmDialog } from './ooui';
 import { showCopyLinkDialog } from './modal.js';
 
 let elementPrototypes;
@@ -2587,7 +2588,7 @@ class Comment extends CommentSkeleton {
     const $diff = await this.generateDiffView();
     const $content = $('<div>').append($question, $diff);
     mw.hook('wikipage.content').fire($content);
-    if (await OO.ui.confirm($content, { size: 'larger' })) {
+    if (await showConfirmDialog($content, { size: 'larger' })) {
       try {
         await controller.getApi().postWithEditToken(controller.getApi().assertCurrentUser({
           action: 'thank',

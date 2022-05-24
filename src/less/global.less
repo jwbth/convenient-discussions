@@ -41,7 +41,13 @@ a:not([href]) {
   z-index: 101;
 }
 
-.cd-settingsDialog {
+.cd-dialog-confirm.cd-dialog-confirm.cd-dialog-confirm,
+.cd-dialog-copyLink.cd-dialog-copyLink.cd-dialog-copyLink {
+  // Avoid obstructing Instant Diffs dialogs.
+  z-index: 100;
+}
+
+.cd-dialog-settings {
   // The standard is 101. It should be bigger than the z-index for alerts, as an alert can link to
   // the settings dialog.
   z-index: 102;

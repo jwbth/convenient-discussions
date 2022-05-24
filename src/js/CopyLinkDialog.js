@@ -26,7 +26,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    */
   constructor(object, content) {
     super({
-      classes: ['cd-copyLinkDialog'],
+      classes: ['cd-dialog-copyLink'],
     });
 
     this.object = object;
@@ -58,11 +58,11 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
         label: cd.s('cld-select-diff'),
         disabled: true,
         title: cd.s('loading-ellipsis'),
-        classes: ['cd-copyLinkDialog-diffButton'],
+        classes: ['cd-dialog-copyLink-diffButton'],
       });
       this.buttonSelectWidget = new OO.ui.ButtonSelectWidget({
         items: [this.anchorOptionWidget, this.diffOptionWidget],
-        classes: ['cd-copyLinkDialog-linkTypeSelect'],
+        classes: ['cd-dialog-copyLink-linkTypeSelect'],
       }).on('choose', (item) => {
         const panel = item === this.anchorOptionWidget ? this.anchorPanel : this.diffPanel;
         this.stackLayout.setItem(panel);

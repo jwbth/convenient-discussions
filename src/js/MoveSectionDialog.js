@@ -178,11 +178,11 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
       const $sectionCodeNote = $('<div>');
       const code = sectionCode.slice(0, 300) + (sectionCode.length >= 300 ? '...' : '');
       $('<pre>')
-        .addClass('cd-moveSectionDialog-code')
+        .addClass('cd-dialog-moveSection-code')
         .text(code)
         .appendTo($sectionCodeNote);
       $('<p>')
-        .addClass('cd-moveSectionDialog-codeNote')
+        .addClass('cd-dialog-moveSection-codeNote')
         .text(cd.s('msd-bottom'))
         .appendTo($sectionCodeNote);
 
