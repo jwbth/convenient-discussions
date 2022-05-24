@@ -477,7 +477,7 @@ class Comment extends CommentSkeleton {
 
       headerElement.appendChild(this.copyLinkButton.element);
       this.timestampElement = this.copyLinkButton.labelElement;
-      new LiveTimestamp(this.timestampElement, this.date, !settings.get('hideTimezone'));
+      (new LiveTimestamp(this.timestampElement, this.date, !settings.get('hideTimezone'))).init();
     }
 
     this.headerElement = headerElement;
@@ -780,12 +780,12 @@ class Comment extends CommentSkeleton {
       if (!settings.get('reformatComments') || this.extraSignatures.length) {
         this.timestampElement.textContent = timestamp;
         this.timestampElement.title = title;
-        new LiveTimestamp(this.timestampElement, this.date, !settings.get('hideTimezone'));
+        (new LiveTimestamp(this.timestampElement, this.date, !settings.get('hideTimezone'))).init();
         this.extraSignatures.forEach((sig) => {
           const { timestamp, title } = this.formatTimestamp(sig.date, sig.timestampText);
           sig.timestampElement.textContent = timestamp;
           sig.timestampElement.title = title;
-          new LiveTimestamp(sig.timestampElement, sig.date, !settings.get('hideTimezone'));
+          (new LiveTimestamp(sig.timestampElement, sig.date, !settings.get('hideTimezone'))).init();
         });
       }
     }

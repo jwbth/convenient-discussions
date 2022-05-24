@@ -482,7 +482,7 @@ const toc = {
               navPanel.updateTimestampsInRefreshButtonTooltip();
             };
           }
-          new LiveTimestamp(timestampSpan, comment.date, false, callback);
+          (new LiveTimestamp(timestampSpan, comment.date, false, callback)).init();
         }
 
         if (this.isInSidebar) {

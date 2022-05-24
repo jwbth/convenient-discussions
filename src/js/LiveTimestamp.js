@@ -57,14 +57,20 @@ class LiveTimestamp {
      * @private
      */
     this.callback = callback;
+  }
 
+  /**
+   * Initialize the timestamp (set the necessary timeouts for the timestamp to be updated when
+   * needed).
+   */
+  init() {
     if (settings.get('timestampFormat') === 'improved') {
       if (!improvedTimestampsInitted) {
-        // Timestamps of the "improved" format are updated all together, on the border of days. So,
-        // we only need to initiate the timeouts once.
+        // Timestamps of the "improved" format are updated all together, at the boundaries of days.
+        // So, we only need to initiate the timeouts once.
         LiveTimestamp.initImproved();
       }
-      if (date.getTime() > yesterdayStart) {
+      if (this.date.getTime() > yesterdayStart) {
         improvedTimestamps.push(this);
       }
     } else if (settings.get('timestampFormat') === 'relative') {
@@ -100,7 +106,6 @@ class LiveTimestamp {
             this.setUpdateTimeout(true);
           }, boundary - difference);
           updateTimeouts.push(this.updateTimeout);
-
           break;
         }
       }
