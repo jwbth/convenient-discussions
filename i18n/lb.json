@@ -140,7 +140,7 @@
 	"msd-error-sourcepagedeleted": "Déi aktuell Säit gouf geläscht.",
 	"move-sourcepagecode": "\"Geréckelt op [[$1]]. $2\"",
 	"move-targetpagecode": "\"Geréckelt vum [[$1]]. $2\"",
-	"error-processpage": "{{int:convenient-discussions-script-name}}: D'Säit konnt net verschafft ginn.",
+	"error-processpage": "{{int:convenient-discussions-script-name}}: D'Säit konnt net verschafft ginn. Kuckt d'Detailer an der JavaScript Konsole (F12 → Console).",
 	"error-settings-load": "D'Astellunge konnten net vum Server geluede ginn.",
 	"error-settings-save": "D'Astellunge konnten net um Server gespäichert ginn.",
 	"error-reloadpage": "D'Säit konnt nei nei geluede ginn",
