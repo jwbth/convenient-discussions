@@ -30,7 +30,7 @@
     "date-fns-tz": "^1.1.4",
     "dayjs": "^1.10.5",
     "htmlparser2": "^6.1.0",
-    "locutus": "^2.0.14",
+    "locutus": "^2.0.15",
     "lz-string": "^1.4.4"
   },
   "devDependencies": {
