@@ -61,7 +61,6 @@
 	"cld-diff-error": "无法找到",
 	"cld-diff-error-network": "无法找到（网络错误）",
 	"cld-diff-error-unknown": "无法找到（未知错误）",
-	"cld-diff-history": "编辑历史",
 	"cld-wikilink": "Wiki链接",
 	"cld-help-onlycd": "该链接仅对安装了 Convenient Discussions 的用户有效。",
 	"cld-help-notonlycd": "锚点将会自动被添加到链接的意见，所以链接<em>将</em>对所有人有效。",

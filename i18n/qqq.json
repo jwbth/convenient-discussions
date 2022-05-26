@@ -75,7 +75,6 @@
 	"cld-diff-error": "Content of the text input in the copy link dialog. It is used when the edit wasn't found. The input is disabled in such cases.",
 	"cld-diff-error-network": "Content of the text input in the copy link dialog. It is used when the edit link wasn't found. The input is disabled in such cases.",
 	"cld-diff-error-unknown": "Content of the text input in the copy link dialog. It is used when the edit link wasn't found. The input is disabled in such cases.",
-	"cld-diff-history": "Label of the link to edit history in the \"Copy comment link\" dialog. It appears only if the diff was not found.",
 	"cld-shortdiff": "Label of the short diff link input in the copy link dialog.",
 	"cld-diffwikilink": "Label of the text input in the copy (comment) link dialog.",
 	"cld-wikilink": "Label of the text input in the copy link dialog.\n\n{{identical|Wikilink}}",

@@ -72,7 +72,6 @@
 	"cld-diff-error": "Konnte nicht gefunden werden",
 	"cld-diff-error-network": "Konnte nicht gefunden werden (Netzwerkfehler)",
 	"cld-diff-error-unknown": "Konnte nicht gefunden werden (unbekannter Fehler)",
-	"cld-diff-history": "Versionsgeschichte",
 	"cld-shortdiff": "Kurzer Diff-Link",
 	"cld-wikilink": "Wikilink",
 	"cld-help-onlycd": "Dieser Link funktioniert nur für Benutzer, die Convenient Discussions installiert haben.",

@@ -44,7 +44,6 @@
 	"cld-diff-error": "ไม่การแก้ไข",
 	"cld-diff-error-network": "ไม่สามารถเข้าถึงการแก้ไข (ข้อผิดพลาดเครือข่าย)",
 	"cld-diff-error-unknown": "ไม่สามารถเข้าถึงการแก้ไข (ข้อผิดพลาดที่ไม่ทราบสาเหตุ)",
-	"cld-diff-history": "ประวัติการแก้ไข",
 	"cld-shortdiff": "ลิงก์ความแตกต่างแบบสั้น",
 	"cld-wikilink": "ลิงก์วิกิ",
 	"cld-help-onlycd": "ลิงก์นี้จะทำงานเฉพาะในผู้ใช้ที่ติดตั้ง Convenient Discussions เท่านั้น",

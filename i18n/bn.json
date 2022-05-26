@@ -49,7 +49,6 @@
 	"cld-diff-error": "খুঁজে পাওয়া যায় নি",
 	"cld-diff-error-network": "খুঁজে পাওয়া যায়নি (নেটওয়ার্ক ত্রুটি)",
 	"cld-diff-error-unknown": "খুঁজে পাওয়া যায়নি (অজানা ত্রুটি)",
-	"cld-diff-history": "সম্পাদনা ইতিহাস",
 	"cld-wikilink": "উইকিসংযোগ",
 	"cld-currentpagewikilink": "একই পাতা থেকে উইকিসংযোগ",
 	"cld-link": "সাধারণ লিঙ্ক",
