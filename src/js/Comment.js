@@ -412,6 +412,12 @@ class Comment extends CommentSkeleton {
     }
 
     if (this.authorLink) {
+      // Move the existing author link to the header.
+
+      if (this.extraSignatures.length) {
+        this.authorLink = this.authorLink.cloneNode(true);
+      }
+
       let beforeAuthorLinkParseReturn;
       if (cd.config.beforeAuthorLinkParse) {
         beforeAuthorLinkParseReturn = cd.config.beforeAuthorLinkParse(this.authorLink);
@@ -441,6 +447,10 @@ class Comment extends CommentSkeleton {
     }
 
     if (this.authorTalkLink) {
+      // Move the existing author talk link to the header.
+      if (this.extraSignatures.length) {
+        this.authorTalkLink = this.authorTalkLink.cloneNode(true);
+      }
       authorTalkLink.parentNode.replaceChild(this.authorTalkLink, authorTalkLink);
       this.authorTalkLink.textContent = cd.s('comment-author-talk');
     } else {
