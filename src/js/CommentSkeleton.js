@@ -1026,7 +1026,7 @@ class CommentSkeleton {
       .filter((el) => (
         cd.g.BAD_HIGHLIGHTABLE_ELEMENTS.includes(el.tagName) ||
 
-        // Such cases: https://en.wikipedia.org/?diff=998431486. TODO: Do something with the
+        // Cases such as https://en.wikipedia.org/?diff=998431486. TODO: Do something with the
         // semantical correctness of the markup.
         (this.highlightables.length > 1 && el.tagName === 'LI' && el.parentNode.tagName === 'OL') ||
 

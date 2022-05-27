@@ -350,6 +350,119 @@ export default class BootProcess {
   }
 
   /**
+   * Make a search request and update the
+   * {@link BootProcess#maybeAddNotFoundMessage not found message}.
+   *
+   * @param {object} data
+   */
+  async searchForNotFoundItem({
+    date,
+    decodedFragment,
+    message,
+    previousCommentByTimeText,
+    searchQuery,
+    sectionName,
+    sectionNameDotDecoded,
+    sectionWithSimilarNameText,
+    token,
+  }) {
+    const resp = await controller.getApi().get({
+      action: 'query',
+      list: 'search',
+      srsearch: searchQuery,
+      srprop: sectionName ? 'sectiontitle' : undefined,
+
+      // List more recent archives first
+      srsort: 'create_timestamp_desc',
+
+      srlimit: '20'
+    });
+
+    const results = resp?.query?.search;
+
+    let searchUrl = mw.util.getUrl('Special:Search', {
+      search: searchQuery,
+      sort: 'create_timestamp_desc',
+      cdcomment: date && decodedFragment,
+    });
+    searchUrl = cd.g.SERVER + searchUrl;
+
+    if (results.length === 0) {
+      let label;
+      if (date) {
+        label = (
+          cd.sParse('deadanchor-comment-lead') +
+          ' ' +
+          cd.sParse('deadanchor-comment-notfound', searchUrl) +
+          previousCommentByTimeText
+        );
+      } else {
+        let notFoundText = '';
+
+        // Possible use of a template in the section title.
+        if (!(sectionWithSimilarNameText && sectionName.includes('{{'))) {
+          notFoundText = ' ' + cd.sParse('deadanchor-section-notfound', searchUrl);
+        }
+
+        label = (
+          cd.sParse('deadanchor-section-lead', sectionName) +
+          notFoundText +
+          sectionWithSimilarNameText
+        );
+      }
+      message.setLabel(wrap(label));
+    } else {
+      let pageTitle;
+
+      // Will either be sectionName or sectionNameDotDecoded.
+      let sectionNameFound = sectionName;
+
+      if (sectionName) {
+        // Obtain the first exact section title match (which would be from the most recent
+        // archive). This loop iterates over just one item in the vast majority of cases.
+        for (const [, result] of Object.entries(results)) {
+          if (
+            result.sectiontitle &&
+            [sectionName, sectionNameDotDecoded].includes(result.sectiontitle)
+          ) {
+            pageTitle = result.title;
+            sectionNameFound = underlinesToSpaces(result.sectiontitle);
+            break;
+          }
+        }
+      } else {
+        const pageTitles = [];
+        for (const [, result] of Object.entries(results)) {
+          const snippetText = removeWikiMarkup(result.snippet);
+          if (snippetText && snippetText.includes(token)) {
+            pageTitles.push(result.title);
+          }
+        }
+        if (pageTitles.length === 1) {
+          pageTitle = pageTitles[0];
+        }
+      }
+
+      let label;
+      if (pageTitle) {
+        const wikilink = pageTitle + '#' + (date ? decodedFragment : sectionNameFound);
+        label = date ?
+          (
+            cd.sParse('deadanchor-comment-exactmatch', wikilink, searchUrl) +
+            previousCommentByTimeText
+          ) :
+          cd.sParse('deadanchor-section-exactmatch', sectionNameFound, wikilink, searchUrl);
+      } else {
+        label = date ?
+          cd.sParse('deadanchor-comment-inexactmatch', searchUrl) + previousCommentByTimeText :
+          cd.sParse('deadanchor-section-inexactmatch', sectionNameFound, searchUrl);
+      }
+
+      message.setLabel(wrap(label));
+    }
+  }
+
+  /**
    * _For internal use._ Show a message at the top of the page that a section/comment was not found,
    * a link to search in the archive, and a link to the section/comment if it was found
    * automatically.
@@ -394,6 +507,10 @@ export default class BootProcess {
         }
       }
     }
+
+    let sectionNameDotDecoded;
+    let token;
+    let searchQuery;
     if (cd.page.canHaveArchives()) {
       label += ' ';
 
@@ -411,10 +528,10 @@ export default class BootProcess {
         }
       }
 
-      const token = date ?
+      token = date ?
         formatDateNative(date, false, cd.g.CONTENT_TIMEZONE) :
         sectionName.replace(/"/g, '');
-      let searchQuery = `"${token}"`
+      searchQuery = `"${token}"`
       if (sectionName && sectionName !== sectionNameDotDecoded) {
         const tokenDotDecoded = sectionNameDotDecoded.replace(/"/g, '');
         searchQuery += ` OR "${tokenDotDecoded}"`;
@@ -430,101 +547,6 @@ export default class BootProcess {
       }
       const archivePrefix = cd.page.getArchivePrefix();
       searchQuery += ` prefix:${archivePrefix}`;
-
-      controller.getApi().get({
-        action: 'query',
-        list: 'search',
-        srsearch: searchQuery,
-        srprop: sectionName ? 'sectiontitle' : undefined,
-
-        // List more recent archives first
-        srsort: 'create_timestamp_desc',
-
-        srlimit: '20'
-      }).then((resp) => {
-        const results = resp?.query?.search;
-
-        let searchUrl = mw.util.getUrl('Special:Search', {
-          search: searchQuery,
-          sort: 'create_timestamp_desc',
-          cdcomment: date && decodedFragment,
-        });
-        searchUrl = cd.g.SERVER + searchUrl;
-
-        if (results.length === 0) {
-          let label;
-          if (date) {
-            label = (
-              cd.sParse('deadanchor-comment-lead') +
-              ' ' +
-              cd.sParse('deadanchor-comment-notfound', searchUrl) +
-              previousCommentByTimeText
-            );
-          } else {
-            let notFoundText = '';
-
-            // Possible use of a template in the section title.
-            if (!(sectionWithSimilarNameText && sectionName.includes('{{'))) {
-              notFoundText = ' ' + cd.sParse('deadanchor-section-notfound', searchUrl);
-            }
-
-            label = (
-              cd.sParse('deadanchor-section-lead', sectionName) +
-              notFoundText +
-              sectionWithSimilarNameText
-            );
-          }
-          message.setLabel(wrap(label));
-        } else {
-          let pageTitle;
-
-          // Will either be sectionName or sectionNameDotDecoded.
-          let sectionNameFound = sectionName;
-
-          if (sectionName) {
-            // Obtain the first exact section title match (which would be from the most recent
-            // archive). This loop iterates over just one item in the vast majority of cases.
-            for (const [, result] of Object.entries(results)) {
-              if (
-                result.sectiontitle &&
-                [sectionName, sectionNameDotDecoded].includes(result.sectiontitle)
-              ) {
-                pageTitle = result.title;
-                sectionNameFound = underlinesToSpaces(result.sectiontitle);
-                break;
-              }
-            }
-          } else {
-            const pageTitles = [];
-            for (const [, result] of Object.entries(results)) {
-              const snippetText = removeWikiMarkup(result.snippet);
-              if (snippetText && snippetText.includes(token)) {
-                pageTitles.push(result.title);
-              }
-            }
-            if (pageTitles.length === 1) {
-              pageTitle = pageTitles[0];
-            }
-          }
-
-          let label;
-          if (pageTitle) {
-            const wikilink = pageTitle + '#' + (date ? decodedFragment : sectionNameFound);
-            label = date ?
-              (
-                cd.sParse('deadanchor-comment-exactmatch', wikilink, searchUrl) +
-                previousCommentByTimeText
-              ) :
-              cd.sParse('deadanchor-section-exactmatch', sectionNameFound, wikilink, searchUrl);
-          } else {
-            label = date ?
-              cd.sParse('deadanchor-comment-inexactmatch', searchUrl) + previousCommentByTimeText :
-              cd.sParse('deadanchor-section-inexactmatch', sectionNameFound, searchUrl);
-          }
-
-          message.setLabel(wrap(label));
-        }
-      });
     }
 
     const message = new OO.ui.MessageWidget({
@@ -534,6 +556,20 @@ export default class BootProcess {
       classes: ['cd-message-notFound'],
     });
     controller.$root.prepend(message.$element);
+
+    if (cd.page.canHaveArchives()) {
+      this.searchForNotFoundItem({
+        date,
+        decodedFragment,
+        message,
+        previousCommentByTimeText,
+        searchQuery,
+        sectionName,
+        sectionNameDotDecoded,
+        sectionWithSimilarNameText,
+        token,
+      });
+    }
   }
 
   /**

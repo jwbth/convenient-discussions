@@ -942,7 +942,7 @@ const updateChecker = {
 
     const bootProcess = controller.bootProcess;
 
-    // It is processed in processPage~processVisits.
+    // It is processed in BootProcess#processVisits.
     await bootProcess.getVisitsRequest();
 
     if (bootProcess.getPreviousVisitUnixTime()) {

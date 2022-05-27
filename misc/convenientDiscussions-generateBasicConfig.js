@@ -23,8 +23,16 @@ mw.loader.using([
     'january-gen', 'february-gen', 'march-gen', 'april-gen', 'may-gen', 'june-gen', 'july-gen',
     'august-gen', 'september-gen', 'october-gen', 'november-gen', 'december-gen',
 
-    'timezone-utc', 'parentheses', 'parentheses-start', 'parentheses-end', 'word-separator',
-    'comma-separator', 'colon-separator', 'nextdiff',
+    'parentheses', 'parentheses-start', 'parentheses-end', 'word-separator', 'comma-separator',
+    'colon-separator', 'nextdiff', 'timezone-utc',
+    'discussiontools-topicsubscription-button-subscribe',
+    'discussiontools-topicsubscription-button-subscribe-tooltip',
+    'discussiontools-topicsubscription-button-unsubscribe',
+    'discussiontools-topicsubscription-button-unsubscribe-tooltip',
+    'discussiontools-topicsubscription-notify-subscribed-title',
+    'discussiontools-topicsubscription-notify-subscribed-body',
+    'discussiontools-topicsubscription-notify-unsubscribed-title',
+    'discussiontools-topicsubscription-notify-unsubscribed-body',
   ];
 
   for (let i = 0; i < messageNames.length; i += 50) {

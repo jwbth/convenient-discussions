@@ -30,6 +30,7 @@ import {
   skin$,
   transparentize,
   unhideText,
+  unique,
 } from './util';
 import { setVisits } from './apiWrappers';
 import { showEditSubscriptionsDialog, showSettingsDialog } from './modal';
@@ -179,7 +180,9 @@ function loadSiteData() {
   // and content language are different).
   const requests = [];
   if (areLanguagesEqual) {
-    const messagesToRequest = contentLanguageMessageNames.concat(userLanguageMessageNames);
+    const messagesToRequest = contentLanguageMessageNames
+      .concat(userLanguageMessageNames)
+      .filter(unique);
     let nextNames;
     while ((nextNames = messagesToRequest.splice(0, 50)).length) {
       const request = controller.getApi().loadMessagesIfMissing(nextNames).then(() => {

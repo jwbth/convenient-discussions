@@ -378,6 +378,32 @@ class Comment extends CommentSkeleton {
   }
 
   /**
+   * Do nearly the same thing as {@link Comment#reviewHighlightables} for the second time: if
+   * {@link Comment#reviewHighlightables} has altered the highlightables, this will save the day.
+   *
+   * @private
+   */
+  rewrapHighlightables() {
+    [this.highlightables[0], this.highlightables[this.highlightables.length - 1]]
+      .filter(unique)
+      .filter((el) => (
+        cd.g.BAD_HIGHLIGHTABLE_ELEMENTS.includes(el.tagName) ||
+        (this.highlightables.length > 1 && el.tagName === 'LI' && el.parentNode.tagName === 'OL') ||
+        Array.from(el.classList).some((name) => !name.startsWith('cd-'))
+      ))
+      .forEach((el) => {
+        const wrapper = document.createElement('div');
+        const origEl = el;
+        this.replaceElement(el, wrapper);
+        wrapper.appendChild(origEl);
+
+        this.addAttributes();
+        origEl.classList.remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last');
+        delete origEl.dataset.cdCommentIndex;
+      });
+  }
+
+  /**
    * @typedef {object[]} ReplaceSignatureWithHeaderReturn
    * @property {string} pageName
    * @property {Element} link
@@ -395,9 +421,8 @@ class Comment extends CommentSkeleton {
   replaceSignatureWithHeader() {
     const pagesToCheckExistence = [];
 
-    const headerElement = elementPrototypes.headerElement.cloneNode(true);
-
-    const authorWrapper = headerElement.firstChild;
+    this.headerElement = elementPrototypes.headerElement.cloneNode(true);
+    const authorWrapper = this.headerElement.firstChild;
     const authorLink = authorWrapper.firstChild;
     const authorLinksWrapper = authorLink.nextElementSibling;
     const bdiElement = authorLink.firstChild;
@@ -422,7 +447,6 @@ class Comment extends CommentSkeleton {
       if (cd.config.beforeAuthorLinkParse) {
         beforeAuthorLinkParseReturn = cd.config.beforeAuthorLinkParse(this.authorLink);
       }
-
       authorLink.parentNode.replaceChild(this.authorLink, authorLink);
       this.authorLink.classList.add('cd-comment-author');
       this.authorLink.innerHTML = '';
@@ -432,18 +456,20 @@ class Comment extends CommentSkeleton {
         cd.config.beforeAuthorLinkParse(this.authorLink, beforeAuthorLinkParseReturn);
       }
     } else {
+      // Use the bootstrap author link.
+      this.authorLink = authorLink;
       let pageName;
       if (this.author.isRegistered()) {
         pageName = 'User:' + this.author.name;
         pagesToCheckExistence.push({
           pageName,
-          link: authorLink,
+          link: this.authorLink,
         });
       } else {
         pageName = `${cd.g.CONTRIBS_PAGE}/${this.author.name}`;
       }
-      authorLink.title = pageName;
-      authorLink.href = mw.util.getUrl(pageName);
+      this.authorLink.title = pageName;
+      this.authorLink.href = mw.util.getUrl(pageName);
     }
 
     if (this.authorTalkLink) {
@@ -454,13 +480,15 @@ class Comment extends CommentSkeleton {
       authorTalkLink.parentNode.replaceChild(this.authorTalkLink, authorTalkLink);
       this.authorTalkLink.textContent = cd.s('comment-author-talk');
     } else {
+      // Use the bootstrap author talk link.
+      this.authorTalkLink = authorTalkLink;
       const pageName = 'User talk:' + this.author.name;
       pagesToCheckExistence.push({
         pageName,
-        link: authorTalkLink,
+        link: this.authorTalkLink,
       });
-      authorTalkLink.title = pageName;
-      authorTalkLink.href = mw.util.getUrl(pageName);
+      this.authorTalkLink.title = pageName;
+      this.authorTalkLink.href = mw.util.getUrl(pageName);
     }
 
     bdiElement.textContent = this.author.name;
@@ -485,12 +513,10 @@ class Comment extends CommentSkeleton {
         href: this.dtId && '#' + this.dtId,
       });
 
-      headerElement.appendChild(this.copyLinkButton.element);
+      this.headerElement.appendChild(this.copyLinkButton.element);
       this.timestampElement = this.copyLinkButton.labelElement;
       (new LiveTimestamp(this.timestampElement, this.date, !settings.get('hideTimezone'))).init();
     }
-
-    this.headerElement = headerElement;
 
     /**
      * Comment header. Used when comment reformatting is enabled.
@@ -499,27 +525,9 @@ class Comment extends CommentSkeleton {
      */
     this.$header = $(this.headerElement);
 
-    // This is usually done in the `CommentSkeleton` constructor, but if
-    // `Comment#reviewHighlightables` has altered the highlightables, this will save the day.
-    [this.highlightables[0], this.highlightables[this.highlightables.length - 1]]
-      .filter(unique)
-      .filter((el) => (
-        cd.g.BAD_HIGHLIGHTABLE_ELEMENTS.includes(el.tagName) ||
-        (this.highlightables.length > 1 && el.tagName === 'LI' && el.parentNode.tagName === 'OL') ||
-        Array.from(el.classList).some((name) => !name.startsWith('cd-'))
-      ))
-      .forEach((el) => {
-        const wrapper = document.createElement('div');
-        const origEl = el;
-        this.replaceElement(el, wrapper);
-        wrapper.appendChild(origEl);
+    this.rewrapHighlightables();
 
-        this.addAttributes();
-        origEl.classList.remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last');
-        delete origEl.dataset.cdCommentIndex;
-      });
-
-    this.highlightables[0].insertBefore(headerElement, this.highlightables[0].firstChild);
+    this.highlightables[0].insertBefore(this.headerElement, this.highlightables[0].firstChild);
 
     if (!this.extraSignatures.length) {
       this.cleanUpSignature();
