@@ -7,6 +7,7 @@
  * @module init
  */
 
+import Comment from './Comment';
 import CommentForm from './CommentForm';
 import DATE_FORMATS from '../../data/dateFormats.json';
 import DIGITS from '../../data/digits.json';

@@ -41,11 +41,6 @@ async function prepare() {
   init.globals();
   await settings.init();
 
-  mw.loader.addStyleTag(`:root {
-  --cd-parentheses-start: '${cd.mws('parentheses-start')}';
-  --cd-parentheses-end: '${cd.mws('parentheses-end')}';
-}`);
-
   const requests = [];
   if (!settings.get('useTopicSubscription')) {
     // Loading the subscriptions is not critical, as opposed to messages, so we catch the possible
@@ -62,6 +57,11 @@ async function prepare() {
   } catch (e) {
     throw ['Couldn\'t load the messages required for the script.', e];
   }
+
+  mw.loader.addStyleTag(`:root {
+    --cd-parentheses-start: '${cd.mws('parentheses-start')}';
+    --cd-parentheses-end: '${cd.mws('parentheses-end')}';
+  }`);
 
   colon = cd.mws('colon-separator', { language: 'content' }).trim();
   [moveFromBeginning] = cd.s('es-move-from').match(/^[^[$]+/) || [];

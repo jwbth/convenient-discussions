@@ -982,7 +982,7 @@ export default class BootProcess {
       !$('#ca-addsection').length ||
 
       // There is a special welcome text in New Topic tool for 404 pages.
-      (cd.g.IS_DT_NEW_TOPIC_TOOL_ENABLED && !this.doesPageExist())
+      (cd.g.IS_DT_NEW_TOPIC_TOOL_ENABLED && !controller.doesPageExist())
     ) {
       return;
     }
