@@ -164,7 +164,7 @@ function extractRegularSignatures(adjustedCode, code) {
   // not arbitrary: it's 255 (maximum allowed signature length) minus '[[u:a'.length plus ' '.length
   // (the space before the timestamp).
   const signatureScanLimit = 251;
-  const signatureRegexp = new RegExp(
+  const firstSignatureRegexp = new RegExp(
     /*
       Captures:
       1 - the whole line with the signature
@@ -177,6 +177,10 @@ function extractRegularSignatures(adjustedCode, code) {
     `^(((.*?)${cd.g.CAPTURE_USER_NAME_PATTERN}.{1,${signatureScanLimit}})(${cd.g.CONTENT_TIMESTAMP_REGEXP.source})${afterTimestamp}.*)${ending}`,
     'im'
   );
+  const lastSignatureRegexp = new RegExp(
+    firstSignatureRegexp.source.replace('(.*?)', '(.*)'),
+    'im'
+  );
   const lastAuthorLinkRegexp = new RegExp(`^.*${cd.g.CAPTURE_USER_NAME_PATTERN}`, 'i');
   const authorLinkRegexp = new RegExp(cd.g.CAPTURE_USER_NAME_PATTERN, 'ig');
 
@@ -185,12 +189,13 @@ function extractRegularSignatures(adjustedCode, code) {
   while ((timestampMatch = timestampRegexp.exec(adjustedCode))) {
     const line = timestampMatch[0];
     const lineStartIndex = timestampMatch.index;
-    const authorTimestampMatch = line.match(signatureRegexp);
+    const authorTimestampMatch = line.match(firstSignatureRegexp);
 
     let author;
     let timestamp;
     let startIndex;
     let endIndex;
+    let commentEndIndex;
     let nextCommentStartIndex;
     let dirtyCode;
     if (authorTimestampMatch) {
@@ -204,11 +209,22 @@ function extractRegularSignatures(adjustedCode, code) {
       endIndex = lineStartIndex + authorTimestampMatch[1].length;
       dirtyCode = code.slice(startIndex, endIndex);
 
+      // Extract the comment data
+      const lastAuthorTimestampMatch = line.match(lastSignatureRegexp);
+      const isSingleSignature = authorTimestampMatch[2] === lastAuthorTimestampMatch[2];
+      commentEndIndex = isSingleSignature ?
+        startIndex :
+        lineStartIndex + lastAuthorTimestampMatch[3].length;
       nextCommentStartIndex = lineStartIndex + authorTimestampMatch[0].length;
 
       // Find the first link to this author in the preceding text.
+
       let authorLinkMatch;
       authorLinkRegexp.lastIndex = 0;
+
+      // This is in fact the ending of the part of the comment before the first signature. (There
+      // can be many; we take the timestamp from the first one, and when a comment is edited, we
+      // take everything until the last signature as the comment's content.)
       let commentEndingStartIndex = timestampStartIndex - lineStartIndex - signatureScanLimit;
       commentEndingStartIndex = Math.max(0, commentEndingStartIndex);
       const commentEnding = authorTimestampMatch[0].slice(commentEndingStartIndex);
@@ -227,12 +243,18 @@ function extractRegularSignatures(adjustedCode, code) {
         const testAuthor = userRegistry.get(decodeHtmlEntities(authorLinkMatch[1]));
         if (testAuthor === author) {
           startIndex = lineStartIndex + commentEndingStartIndex + authorLinkMatch.index;
+
+          // If there is more than one signature, commentEndIndex gets bigger than startIndex.
+          if (isSingleSignature) {
+            commentEndIndex = startIndex;
+          }
+
           dirtyCode = code.slice(startIndex, endIndex);
           break;
         }
       }
     } else {
-      startIndex = lineStartIndex + timestampMatch[2].length;
+      commentEndIndex = startIndex = lineStartIndex + timestampMatch[2].length;
       endIndex = lineStartIndex + timestampMatch[1].length;
       dirtyCode = code.slice(startIndex, endIndex);
 
@@ -242,7 +264,15 @@ function extractRegularSignatures(adjustedCode, code) {
       nextCommentStartIndex = lineStartIndex + timestampMatch[0].length;
     }
 
-    signatures.push({ author, timestamp, startIndex, endIndex, dirtyCode, nextCommentStartIndex });
+    signatures.push({
+      author,
+      timestamp,
+      startIndex,
+      endIndex,
+      dirtyCode,
+      commentEndIndex,
+      nextCommentStartIndex,
+    });
   }
 
   return signatures;
