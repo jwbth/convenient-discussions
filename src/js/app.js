@@ -384,7 +384,7 @@ function setLanguages() {
 
   // Should we use a fallback for the content language? Maybe, but in case of MediaWiki messages
   // used for signature parsing we will have to use the real content language (see
-  // siteData.loadSiteData). As a result, we use cd.g.CONTENT_LANGUAGE only for the script's own
+  // init.loadSiteData). As a result, we use cd.g.CONTENT_LANGUAGE only for the script's own
   // messages, not the native MediaWiki messages.
   cd.g.CONTENT_LANGUAGE = languageOrFallback(mw.config.get('wgContentLanguage'));
 

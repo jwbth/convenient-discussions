@@ -169,7 +169,7 @@ function extractRegularSignatures(adjustedCode, code) {
       Captures:
       1 - the whole line with the signature
       2 - text before the timestamp
-      3 - text before the last user link
+      3 - text before the first user link
       4 - author name (inside cd.g.CAPTURE_USER_NAME_PATTERN)
       5 - sometimes, a slash appears here (inside cd.g.CAPTURE_USER_NAME_PATTERN)
       6 - timestamp
@@ -194,10 +194,12 @@ function extractRegularSignatures(adjustedCode, code) {
     let nextCommentStartIndex;
     let dirtyCode;
     if (authorTimestampMatch) {
+      // Extract the timestamp data
       const timestampStartIndex = lineStartIndex + authorTimestampMatch[2].length;
       const timestampEndIndex = timestampStartIndex + authorTimestampMatch[6].length;
       timestamp = code.slice(timestampStartIndex, timestampEndIndex);
 
+      // Extract the signature data
       startIndex = lineStartIndex + authorTimestampMatch[3].length;
       endIndex = lineStartIndex + authorTimestampMatch[1].length;
       dirtyCode = code.slice(startIndex, endIndex);
@@ -215,6 +217,7 @@ function extractRegularSignatures(adjustedCode, code) {
       const [, lastAuthorLink] = commentEnding.match(lastAuthorLinkRegexp);
       author = userRegistry.get(decodeHtmlEntities(lastAuthorLink));
 
+      // Rectify the author name if needed.
       while ((authorLinkMatch = authorLinkRegexp.exec(commentEnding))) {
         // Slash can be present in authorLinkMatch[2]. It often indicates a link to a page in the
         // author's userspace that is not part of the signature (while some such links are, and we

@@ -3827,7 +3827,7 @@ class Comment extends CommentSkeleton {
     const $anchorFirstChild = $anchor.children().first();
     if ($anchor.is('dd, li') && $anchorFirstChild.hasClass('cd-commentLevel')) {
       // A relatively rare case possible when two adjacent lists are merged with
-      // processPage~mergeAdjacentCommentLevels, for example when replying to
+      // BootProcess#mergeAdjacentCommentLevels, for example when replying to
       // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(policy)#202103271157_Uanfala.
       $anchor = $anchorFirstChild;
     }

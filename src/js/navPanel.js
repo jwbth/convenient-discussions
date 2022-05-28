@@ -417,7 +417,7 @@ export default {
    * visibility.
    */
   updateCommentFormButton() {
-    if (controller.isAutoScrolling() || !this.isMounted()) return;
+    if (!this.isMounted() || controller.isAutoScrolling()) return;
 
     const areThereHidden = cd.commentForms
       .some((commentForm) => !commentForm.$element.cdIsInViewport(true));

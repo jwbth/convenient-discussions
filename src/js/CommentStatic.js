@@ -66,8 +66,7 @@ function addNewCommentsNote(comments, parent, type, newCommentIndexes) {
     classes: ['cd-button-ooui', 'cd-thread-button'],
   });
   button.on('click', () => {
-    const commentId = commentsWithChildren[0].id;
-    controller.reload({ commentId });
+    controller.reload({ commentId: commentsWithChildren[0].id });
   });
 
   if (parent instanceof Comment) {
@@ -461,7 +460,6 @@ export default {
    * @memberof Comment
    */
   highlightHovered(e) {
-    cd.debug.startTimer('isObstructingElementHovered');
     const isObstructingElementHovered = (
       [...(cd.g.NOTIFICATION_AREA?.querySelectorAll('.mw-notification') || [])]
         .some((notification) => notification.matches(':hover')) ||
@@ -479,7 +477,6 @@ export default {
         .querySelector('.oo-ui-popupWidget:not(.oo-ui-element-hidden)')
         ?.matches(':hover')
     );
-    cd.debug.stopTimer('isObstructingElementHovered');
 
     cd.comments
       .filter((comment) => comment.underlay)
