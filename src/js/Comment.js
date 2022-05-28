@@ -3295,7 +3295,7 @@ class Comment extends CommentSkeleton {
       commentId: match.commentId,
       signatureDirtyCode: match.dirtyCode,
       startIndex: match.commentStartIndex,
-      endIndex: match.commentEndIndex,
+      endIndex: match.startIndex,
       signatureEndIndex: match.startIndex + match.dirtyCode.length,
     }));
 
