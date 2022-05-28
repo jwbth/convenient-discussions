@@ -42,7 +42,7 @@ import { showEditSubscriptionsDialog, showSettingsDialog } from './modal';
  */
 function setFormats() {
   const getFallbackLanguage = (lang) => (
-    (LANGUAGE_FALLBACKS[lang] || []).find((fallback) => DATE_FORMATS[fallback])
+    (LANGUAGE_FALLBACKS[lang] || ['en']).find((fallback) => DATE_FORMATS[fallback])
   );
   const languageOrFallback = (lang) => DATE_FORMATS[lang] ? lang : getFallbackLanguage(lang);
 

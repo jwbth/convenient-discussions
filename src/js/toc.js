@@ -338,6 +338,7 @@ const toc = {
           currentLevelMatch.$element.after(li);
         } else if (upperLevelMatch) {
           const ul = document.createElement('ul');
+          ul.className = 'sidebar-toc-list';
           ul.appendChild(li);
           upperLevelMatch.$element.append(ul);
         } else {

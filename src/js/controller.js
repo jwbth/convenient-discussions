@@ -644,7 +644,7 @@ export default {
    * _Method for internal use._ Handles the window `resize` event as well as `orientationchange`.
    */
   handleWindowResize() {
-    // Seems like sometimes it doesn't have time to update.
+    // setTimeout, because it seems like sometimes it doesn't have time to update.
     setTimeout(() => {
       this.setContentColumnState(true);
       Comment.redrawLayersIfNecessary(true);
@@ -769,7 +769,10 @@ export default {
   },
 
   handlePageMutations() {
+    if (this.booting) return;
+
     const floatingRects = this.getFloatingElements().map(getExtendedRect);
+
     Comment.redrawLayersIfNecessary(false, false, floatingRects);
 
     const updateThreadLines = () => {

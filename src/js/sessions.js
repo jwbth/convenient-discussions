@@ -1,3 +1,4 @@
+import Comment from './Comment';
 import CommentForm from './CommentForm';
 import Section from './Section';
 import cd from './cd';
