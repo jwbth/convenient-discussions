@@ -7,10 +7,9 @@ import { formatDate, relativeTimeThresholds } from './timestamp';
 import { removeFromArrayIfPresent } from './util';
 
 let yesterdayStart;
-
-let updateTimeouts = [];
-let improvedTimestampsInitted = false;
-let improvedTimestamps = [];
+let updateTimeouts;
+let improvedTimestampsInitted;
+let improvedTimestamps;
 
 /**
  * Class representing an element that has contains an automatically updated timestamp with relative
@@ -164,10 +163,10 @@ class LiveTimestamp {
   }
 
   /**
-   * Reset all the live timestamps on the page (this is run on page reloads).
+   * Reset all the live timestamps on the page (this is run at every page load).
    */
   static reset() {
-    updateTimeouts.forEach(clearTimeout);
+    updateTimeouts?.forEach(clearTimeout);
     updateTimeouts = [];
     improvedTimestampsInitted = false;
     improvedTimestamps = [];

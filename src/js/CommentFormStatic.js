@@ -100,18 +100,21 @@ export default {
     isNewTopicOnTop = false,
     dataToRestore
   ) {
-    if (controller.addSectionForm) {
+    if (controller.getAddSectionForm()) {
       // Sometimes there is more than one "Add section" button on the page, and they lead to opening
       // forms with different content.
-      if (!areObjectsEqual(preloadConfig, controller.addSectionForm.preloadConfig)) {
+      if (!areObjectsEqual(preloadConfig, controller.getAddSectionForm().preloadConfig)) {
         mw.notify(cd.s('cf-error-formconflict'), { type: 'error' });
         return;
       }
 
-      controller.addSectionForm.$element.cdScrollIntoView('center');
+      controller.getAddSectionForm().$element.cdScrollIntoView('center');
 
       // Headline input may be missing if the "nosummary" preload parameter is truthy.
-      focusInput(controller.addSectionForm.headlineInput || controller.addSectionForm.commentInput);
+      focusInput(
+        controller.getAddSectionForm().headlineInput ||
+        controller.getAddSectionForm().commentInput
+      );
     } else {
       /**
        * Add section form.

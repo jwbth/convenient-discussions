@@ -669,6 +669,9 @@ const pageRegistry = {
     return this.items[name];
   },
 
+  /**
+   * The {@link pageRegistry~Page} class.
+   */
   Page,
 };
 

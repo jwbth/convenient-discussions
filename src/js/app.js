@@ -521,8 +521,9 @@ function setupApi() {
 
   // TODO: Delete after all addons are updated.
   cd.util = cd.api;
-  cd.api.Page = pageRegistry.Page;
   cd.api.generateCommentAnchor = cd.api.generateCommentId;
+
+  cd.api.Page = pageRegistry.Page;
 }
 
 /**

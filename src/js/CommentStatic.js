@@ -531,6 +531,15 @@ export default {
     return comment || null;
   },
 
+  /**
+   * Get a comment by DiscussionTools ID.
+   *
+   * @param {string} id
+   * @param {boolean} returnComponents Whether to return the constituents of the ID (as an object)
+   *   together with a comment.
+   * @returns {?Comment|object}
+   * @memberof Comment
+   */
   getByDtId(id, returnComponents = false) {
     const data = Comment.parseDtId(id);
     if (!data) {
@@ -689,6 +698,11 @@ export default {
     }
   },
 
+  /**
+   * Change the state of all comments to unselected.
+   *
+   * @private
+   */
   resetSelectedComment() {
     const comment = cd.comments.find((comment) => comment.isSelected);
     if (comment) {
@@ -697,6 +711,11 @@ export default {
     }
   },
 
+  /**
+   * Determine which comment on the page is selected.
+   *
+   * @returns {?Comment}
+   */
   getSelectedComment() {
     const selection = window.getSelection();
     const selectionText = selection.toString().trim();
@@ -745,6 +764,12 @@ export default {
       .slice(-1)[0];
   },
 
+  /**
+   * Check whether a string is a DiscussionTools ID.
+   *
+   * @param {string} fragment
+   * @returns {boolean}
+   */
   isDtId(fragment) {
     return fragment.startsWith('c-');
   },

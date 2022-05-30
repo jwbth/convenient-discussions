@@ -207,10 +207,13 @@ function extractRegularSignatures(adjustedCode, code) {
       nextCommentStartIndex = lineStartIndex + authorTimestampMatch[0].length;
 
       // Find the first link to this author in the preceding text.
+
       let authorLinkMatch;
       authorLinkRegexp.lastIndex = 0;
-      let commentEndingStartIndex = timestampStartIndex - lineStartIndex - signatureScanLimit;
-      commentEndingStartIndex = Math.max(0, commentEndingStartIndex);
+      const commentEndingStartIndex = Math.max(
+        0,
+        timestampStartIndex - lineStartIndex - signatureScanLimit
+      );
       const commentEnding = authorTimestampMatch[0].slice(commentEndingStartIndex);
 
       // Should always match logically.

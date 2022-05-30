@@ -65,12 +65,6 @@ export default {
         $(window).width() - (left + cd.g.$contentColumn.outerWidth()) - padding;
       if (cd.g.SKIN === 'minerva') {
         width -= cd.g.CONTENT_START_MARGIN;
-      } else if (cd.g.SKIN === 'vector-2022') {
-        const searchLeft = $('#p-search').offset().left;
-        const searchOffset = $(document.body).hasClass('ltr') ?
-          searchLeft - 24 - padding :
-          $(window).width() - (searchLeft + $('#p-search').outerWidth()) - 24 - padding;
-        width = Math.min(width, searchOffset);
       }
 
       // Some skins when the viewport is narrowed

@@ -201,15 +201,25 @@ export default {
       });
   },
 
+  /**
+   * Add a "subscribe" menu item to each section menu.
+   */
   addSubscribeMenuItems() {
     cd.sections.forEach((section) => {
       section.addSubscribeMenuItem();
     });
   },
 
-  generateDtSubscriptionId(name, timestamp) {
+  /**
+   * Generate an DiscussionTools ID for a section.
+   *
+   * @param {string} author Author name.
+   * @param {Date} timestamp Oldest comment date.
+   * @returns {string}
+   */
+  generateDtSubscriptionId(author, timestamp) {
     const date = new Date(timestamp);
     date.setSeconds(0);
-    return `h-${spacesToUnderlines(name)}-${date.toISOString()}`;
+    return `h-${spacesToUnderlines(author)}-${date.toISOString()}`;
   },
 };

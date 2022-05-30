@@ -184,6 +184,12 @@ const debug = {
     }
   },
 
+  /**
+   * Get the {@link convenientDiscussions.debug.timerTotal total time} for a timer.
+   *
+   * @param {string} label
+   * @returns {number}
+   */
   getTimerTotal(label) {
     return this.timerTotal[label];
   },

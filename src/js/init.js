@@ -1,5 +1,5 @@
 /**
- * Singleton for initializing the script, both on talk pages and on log pages such as watchlist.
+ * Singleton for initializing the script, both on talk pages and on log pages such as the watchlist.
  * Includes setting constants as properties of the {@link convenientDiscussions.g} object, adding
  * CSS, loading and setting site data, such as MediaWiki messages and configuration, and setting
  * date formats based on it.
@@ -264,7 +264,7 @@ function setArchivePagesGlobals() {
   };
   cd.config.archivePaths.forEach((entry) => {
     if (entry instanceof RegExp) {
-      let archiveRegexp = new RegExp(entry.source + '.*');
+      const archiveRegexp = new RegExp(entry.source + '.*');
       cd.g.SOURCE_PAGES_MAP.set(archiveRegexp, '');
     } else {
       const sourceRegexp = pathToRegexp(entry.source, entry.replacements);
@@ -498,20 +498,12 @@ function patterns() {
 }
 
 /**
- * Initialize OOUI and comment layers-related objects.
+ * Add comment header element prototype to the prototype collection.
  *
+ * @param {object} commentElementPrototypes
  * @private
  */
-function oouiAndElementPrototypes() {
-  // OOUI button prototypes. Creating every button using the constructor takes 15 times longer
-  // than cloning which is critical when creating really many of them.
-
-  let commentElementPrototypes = {};
-
-  const separator = document.createElement('span');
-  separator.innerHTML = cd.sParse('dot-separator');
-  commentElementPrototypes.separator = separator;
-
+function addCommentHeaderPrototype(commentElementPrototypes) {
   // true, null
   if (settings.get('reformatComments') !== false) {
     const headerElement = document.createElement('div');
@@ -547,79 +539,97 @@ function oouiAndElementPrototypes() {
 
     commentElementPrototypes.headerElement = headerElement;
   }
+}
 
-  if (settings.get('reformatComments') !== true) {
-    commentElementPrototypes.getReplyButton = () => (
-      new OO.ui.ButtonWidget({
-        label: cd.s('cm-reply'),
-        framed: false,
-        classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
-      })
-    );
-    commentElementPrototypes.replyButton = commentElementPrototypes.getReplyButton().$element
-      .get(0);
+/**
+ * Add OOUI button prototypes to the prototype collection. Creating every button using the
+ * constructor takes 15 times longer than cloning which is critical when creating really many of
+ * them.
+ *
+ * @param {object} commentElementPrototypes
+ * @private
+ */
+function addCommentOouiPrototypes(commentElementPrototypes) {
+  if (settings.get('reformatComments') === true) return;
 
-    commentElementPrototypes.getEditButton = () => (
-      new OO.ui.ButtonWidget({
-        label: cd.s('cm-edit'),
-        framed: false,
-        classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
-      })
-    );
-    commentElementPrototypes.editButton = commentElementPrototypes.getEditButton().$element
-      .get(0);
+  commentElementPrototypes.getReplyButton = () => (
+    new OO.ui.ButtonWidget({
+      label: cd.s('cm-reply'),
+      framed: false,
+      classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
+    })
+  );
+  commentElementPrototypes.replyButton = commentElementPrototypes.getReplyButton().$element
+    .get(0);
 
-    commentElementPrototypes.getThankButton = () => (
-      new OO.ui.ButtonWidget({
-        label: cd.s('cm-thank'),
-        title: cd.s('cm-thank-tooltip'),
-        framed: false,
-        classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
-      })
-    );
-    commentElementPrototypes.thankButton = commentElementPrototypes.getThankButton().$element
-      .get(0);
+  commentElementPrototypes.getEditButton = () => (
+    new OO.ui.ButtonWidget({
+      label: cd.s('cm-edit'),
+      framed: false,
+      classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
+    })
+  );
+  commentElementPrototypes.editButton = commentElementPrototypes.getEditButton().$element
+    .get(0);
 
-    commentElementPrototypes.getCopyLinkButton = () => (
-      new OO.ui.ButtonWidget({
-        label: cd.s('cm-copylink'),
-        icon: 'link',
-        title: cd.s('cm-copylink-tooltip'),
-        framed: false,
-        invisibleLabel: true,
-        classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
-      })
-    );
-    commentElementPrototypes.copyLinkButton = commentElementPrototypes.getCopyLinkButton()
-      .$element.get(0);
+  commentElementPrototypes.getThankButton = () => (
+    new OO.ui.ButtonWidget({
+      label: cd.s('cm-thank'),
+      title: cd.s('cm-thank-tooltip'),
+      framed: false,
+      classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
+    })
+  );
+  commentElementPrototypes.thankButton = commentElementPrototypes.getThankButton().$element
+    .get(0);
 
-    commentElementPrototypes.getGoToParentButton = () => (
-      new OO.ui.ButtonWidget({
-        label: cd.s('cm-gotoparent'),
-        icon: 'upTriangle',
-        title: cd.s('cm-gotoparent-tooltip'),
-        framed: false,
-        invisibleLabel: true,
-        classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
-      })
-    );
-    commentElementPrototypes.goToParentButton = commentElementPrototypes.getGoToParentButton()
-      .$element.get(0);
+  commentElementPrototypes.getCopyLinkButton = () => (
+    new OO.ui.ButtonWidget({
+      label: cd.s('cm-copylink'),
+      icon: 'link',
+      title: cd.s('cm-copylink-tooltip'),
+      framed: false,
+      invisibleLabel: true,
+      classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
+    })
+  );
+  commentElementPrototypes.copyLinkButton = commentElementPrototypes.getCopyLinkButton()
+    .$element.get(0);
 
-    commentElementPrototypes.getGoToChildButton = () => (
-      new OO.ui.ButtonWidget({
-        label: cd.s('cm-gotochild'),
-        icon: 'downTriangle',
-        title: cd.s('cm-gotochild-tooltip'),
-        framed: false,
-        invisibleLabel: true,
-        classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
-      })
-    );
-    commentElementPrototypes.goToChildButton = commentElementPrototypes.getGoToChildButton()
-      .$element.get(0);
-  }
+  commentElementPrototypes.getGoToParentButton = () => (
+    new OO.ui.ButtonWidget({
+      label: cd.s('cm-gotoparent'),
+      icon: 'upTriangle',
+      title: cd.s('cm-gotoparent-tooltip'),
+      framed: false,
+      invisibleLabel: true,
+      classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
+    })
+  );
+  commentElementPrototypes.goToParentButton = commentElementPrototypes.getGoToParentButton()
+    .$element.get(0);
 
+  commentElementPrototypes.getGoToChildButton = () => (
+    new OO.ui.ButtonWidget({
+      label: cd.s('cm-gotochild'),
+      icon: 'downTriangle',
+      title: cd.s('cm-gotochild-tooltip'),
+      framed: false,
+      invisibleLabel: true,
+      classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
+    })
+  );
+  commentElementPrototypes.goToChildButton = commentElementPrototypes.getGoToChildButton()
+    .$element.get(0);
+}
+
+/**
+ * Add comment layer element prototypes to the prototype collection.
+ *
+ * @param {object} commentElementPrototypes
+ * @private
+ */
+function addCommentLayerPrototypes(commentElementPrototypes) {
   const commentUnderlay = document.createElement('div');
   commentUnderlay.className = 'cd-comment-underlay';
   commentElementPrototypes.underlay = commentUnderlay;
@@ -650,9 +660,35 @@ function oouiAndElementPrototypes() {
     overlayContent.className = 'cd-comment-overlay-content';
     overlayInnerWrapper.appendChild(overlayContent);
   }
-  cd.g.COMMENT_ELEMENT_PROTOTYPES = commentElementPrototypes;
+}
 
-  let sectionElementPrototypes = {};
+/**
+ * Create element prototypes for comments.
+ *
+ * @private
+ */
+function createCommentElementPrototypes() {
+  const commentElementPrototypes = {};
+
+  const separator = document.createElement('span');
+  separator.innerHTML = cd.sParse('dot-separator');
+  commentElementPrototypes.separator = separator;
+
+  addCommentHeaderPrototype(commentElementPrototypes);
+  addCommentOouiPrototypes(commentElementPrototypes);
+  addCommentLayerPrototypes(commentElementPrototypes);
+
+  cd.g.COMMENT_ELEMENT_PROTOTYPES = commentElementPrototypes;
+}
+
+/**
+ * Create element prototypes for sections.
+ *
+ * @private
+ */
+function createSectionElementPrototypes() {
+  const sectionElementPrototypes = {};
+
   sectionElementPrototypes.replyButton = new OO.ui.ButtonWidget({
     label: cd.s('section-reply'),
     framed: false,
@@ -669,9 +705,18 @@ function oouiAndElementPrototypes() {
     framed: false,
     classes: ['cd-button-ooui', 'cd-section-button'],
   }).$element.get(0);
-  cd.g.SECTION_ELEMENT_PROTOTYPES = sectionElementPrototypes;
 
+  cd.g.SECTION_ELEMENT_PROTOTYPES = sectionElementPrototypes;
+}
+
+/**
+ * Create element prototypes for threads.
+ *
+ * @private
+ */
+function createThreadElementPrototypes() {
   let threadElementPrototypes = {};
+
   threadElementPrototypes.expandButton = new OO.ui.ButtonWidget({
     // Isn't displayed
     label: 'Expand the thread',
@@ -692,7 +737,19 @@ function oouiAndElementPrototypes() {
   line.className = 'cd-thread-line';
   threadClickArea.appendChild(line);
   threadElementPrototypes.clickArea = threadClickArea;
+
   cd.g.THREAD_ELEMENT_PROTOTYPES = threadElementPrototypes;
+}
+
+/**
+ * Initialize OOUI and comment layers-related objects.
+ *
+ * @private
+ */
+function oouiAndElementPrototypes() {
+  createCommentElementPrototypes();
+  createSectionElementPrototypes();
+  createThreadElementPrototypes();
 }
 
 /**
@@ -885,9 +942,9 @@ export default {
   },
 
   /**
-   * _For internal use._ Set CSS for talk pages.
+   * _For internal use._ Set CSS for talk pages: set CSS variables, add static CSS.
    */
-  setTalkPageCssVariables() {
+  addTalkPageCss() {
     const contentBackgroundColor = $('#content').css('background-color') || '#fff';
 
     const $backgrounded = skin$({
@@ -919,6 +976,18 @@ export default {
   --cd-sidebar-color: ${sidebarColor};
   --cd-sidebar-transparent-color: ${transparentize(sidebarColor)};
 }`);
+
+    require('../less/global.less');
+
+    require('../less/Comment.less');
+    require('../less/CommentForm.less');
+    require('../less/Section.less');
+    require('../less/commentLayers.less');
+    require('../less/navPanel.less');
+    require('../less/pageNav.less');
+    require('../less/skin.less');
+    require('../less/talkPage.less');
+    require('../less/toc.less');
   },
 
   /**

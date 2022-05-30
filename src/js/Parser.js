@@ -127,7 +127,7 @@ class Parser {
 
     const blockquotes = [...this.context.rootElement.getElementsByTagName('blockquote')];
     const elementsToExcludeByClass = cd.config.elementsToExcludeClasses
-      .map((className) => [...this.context.rootElement.getElementsByClassName(className)]);
+      .map((name) => [...this.context.rootElement.getElementsByClassName(name)]);
     this.elementsToExclude = [...blockquotes, ...flat(elementsToExcludeByClass)];
   }
 

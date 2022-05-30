@@ -106,9 +106,9 @@ const toc = {
   },
 
   /**
-   * _For internal use._ Init the TOC data (executed at every page reload).
+   * _For internal use._ Reset the TOC data (executed at every page reload).
    */
-  init() {
+  reset() {
     this.isInSidebar = cd.g.SKIN === 'vector-2022';
     this.$element = this.isInSidebar ? $('.sidebar-toc') : controller.$root.find('.toc');
     this.isPresent = Boolean(this.$element.length);
@@ -183,7 +183,7 @@ const toc = {
    * @param {Element} $target
    * @private
    */
-   addCommentCountString(count, unseenCount, full, $target) {
+  addCommentCountString(count, unseenCount, full, $target) {
     const countString = full ? cd.s('toc-commentcount-full', count) : count;
     let unseenCountString;
     if (unseenCount) {

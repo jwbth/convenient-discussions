@@ -57,12 +57,18 @@ export default {
   autoScrolling: false,
   isUpdateThreadLinesHandlerAttached: false,
 
+  /**
+   * Assign some properties required by the controller - those which are not known from the
+   * beginning.
+   */
   setup() {
     // Not constants: go() may run a second time, see addFooterLink().
     const isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
     const isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);
 
     this.$content = this.$content || $('#mw-content-text');
+
+    // See controller.isDefinitelyTalkPage
     this.definitelyTalkPage = Boolean(
       isEnabledInQuery ||
       cd.g.PAGE_WHITELIST_REGEXP?.test(cd.g.PAGE_NAME) ||
@@ -75,10 +81,7 @@ export default {
       this.$content.find('.cd-talkPage').length
     );
 
-    // This is the eligibility of the _article_ page (the one with wgIsArticle being true). So it
-    // can be true even on edit, history pages etc. Although the assessments may be different on a
-    // history page and on an article page of the same title, since the page can contain elements
-    // with special classes (see the condition) that we can access only on the article page.
+    // See controller.isArticlePageTalkPage
     this.articlePageTalkPage = (
       (!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
       !this.$content.find('.cd-notTalkPage').length &&
@@ -88,10 +91,7 @@ export default {
       !(typeof cdOnlyRunByFooterLink !== 'undefined' && window.cdOnlyRunByFooterLink)
     );
 
-    // Not a constant: the diff may be removed from the page (and the URL updated, see
-    // this.cleanUpUrlAndDom) when it's for the last revision and the page is reloaded using the
-    // script. wgIsArticle config value is not taken into account: if the "Do not show page content
-    // below diffs" setting is on, wgIsArticle is off.
+    // See controller.isDiffPage
     this.diffPage = /[?&]diff=[^&]/.test(location.search);
 
     this.talkPage = Boolean(
@@ -111,6 +111,11 @@ export default {
     this.handleWikipageContentHookFirings = this.handleWikipageContentHookFirings.bind(this);
   },
 
+  /**
+   * Reset the controller data and some page mechanisms (executed at every page reload).
+   *
+   * @param {string} htmlToLayOut HTML to update the page with.
+   */
   reset(htmlToLayOut) {
     this.content = {};
     LiveTimestamp.reset();
@@ -142,22 +147,48 @@ export default {
     this.$root.data('cd-parsed', true);
   },
 
+  /**
+   * Set whether the current page is a talk page.
+   *
+   * @param {boolean} value
+   */
   setTalkPageness(value) {
     this.talkPage = Boolean(value);
   },
 
+  /**
+   * Check whether the current page is likely a talk page. See {@link controller.isTalkPage} for the
+   * most strict criteria.
+   *
+   * @returns {boolean}
+   */
   isTalkPage() {
     return this.talkPage;
   },
 
+  /**
+   * Check whether the current page is a watchlist or recent changes page.
+   *
+   * @returns {boolean}
+   */
   isWatchlistPage() {
     return ['Recentchanges', 'Watchlist'].includes(mw.config.get('wgCanonicalSpecialPageName'));
   },
 
+  /**
+   * Check whether the current page is a contributions page.
+   *
+   * @returns {boolean}
+   */
   isContributionsPage() {
     return mw.config.get('wgCanonicalSpecialPageName') === 'Contributions';
   },
 
+  /**
+   * Check whether the current page is a history page.
+   *
+   * @returns {boolean}
+   */
   isHistoryPage() {
     return (
       mw.config.get('wgAction') === 'history' &&
@@ -165,31 +196,65 @@ export default {
     );
   },
 
+  /**
+   * Check whether the current page is a diff page.
+   *
+   * This is not a constant: the diff may be removed from the page (and the URL updated, see
+   * {@link controller.cleanUpUrlAndDom}) when it's for the last revision and the page is reloaded
+   * using the script. `wgIsArticle` config value is not taken into account: if the "Do not show
+   * page content below diffs" MediaWiki setting is on, `wgIsArticle` is false.
+   *
+   * @returns {boolean}
+   */
   isDiffPage() {
     return this.diffPage;
   },
 
+  /**
+   * Check whether the current page meets strict criteria for classifying as a talk page. See
+   * {@link controller.isTalkPage} for approximate criteria.
+   *
+   * @returns {boolean}
+   */
   isDefinitelyTalkPage() {
     return this.definitelyTalkPage;
   },
 
+  /**
+   * Check if the _article_ page (the one with `wgIsArticle` being true) of the current page is a
+   * talk page eligible for CD. It can be `true` on edit, history pages etc. Although the
+   * assessments may be different on a history page and on an article page of the same title, since
+   * the page can contain elements with special classes that we can access only on the article page.
+   *
+   * @returns {boolean}
+   */
   isArticlePageTalkPage() {
     return this.articlePageTalkPage;
   },
 
+  /**
+   * Check whether the current page exists (is not 404).
+   *
+   * @returns {boolean}
+   */
   doesPageExist() {
     return Boolean(mw.config.get('wgArticleId'));
   },
 
+  /**
+   * Check whether the current page is an active talk page: existing, the current revision, not an
+   * archive page.
+   *
+   * This value isn't static:
+   *   1. A 404 page doesn't have an ID and is considered inactive, but if the user adds a topic to
+   *      it, it will become active and get an ID.
+   *   2. The user may switch to another revision using RevisionSlider.
+   *   3. On a really rare occasion, an active page may become inactive if it becomes identified as
+   *      an archive page. This possibility is currently switched off.
+   *
+   * @returns {boolean}
+   */
   isPageActive() {
-    /*
-      This value isn't static:
-      1. A 404 page doesn't have an ID and is considered inactive, but if the user adds a topic to
-         it, it will become active and get an ID.
-      2. The user may switch to another revision using RevisionSlider.
-      3. On a really rare occasion, an active page may become inactive if it becomes identified as
-         an archive page. This possibility is currently switched off.
-    */
     return (
       this.talkPage &&
       this.doesPageExist() &&
@@ -198,40 +263,90 @@ export default {
     );
   },
 
+  /**
+   * Check whether the current page is eligible for submitting comments to.
+   *
+   * @returns {boolean}
+   */
   isPageCommentable() {
     return this.talkPage && (this.isPageActive() || !this.doesPageExist());
   },
 
+  /**
+   * Set whether the viewport is currently automatically scrolled to some position.
+   *
+   * @param {boolean} value
+   */
   toggleAutoScrolling(value) {
     this.autoScrolling = Boolean(value);
   },
 
+  /**
+   * Check whether the viewport is currently automatically scrolled to some position.
+   *
+   * @returns {boolean}
+   */
   isAutoScrolling() {
     return this.autoScrolling;
   },
 
+  /**
+   * Memorize the section button container element.
+   *
+   * @param {JQuery} $container
+   */
   setAddSectionButtonContainer($container) {
     this.$addSectionButtonContainer = $container;
   },
 
+  /**
+   * Memorize the active autocomplete menu element.
+   *
+   * @param {Element} menuElement
+   */
   setActiveAutocompleteMenu(menuElement) {
     this.activeAutocompleteMenu = menuElement;
   },
 
+  /**
+   * Get the active autocomplete menu element.
+   *
+   * @returns {Element}
+   */
   getActiveAutocompleteMenu() {
     return this.activeAutocompleteMenu;
   },
 
+  /**
+   * Forget the active autocomplete menu element (after it was deactivated).
+   */
   forgetActiveAutocompleteMenu() {
     delete this.activeAutocompleteMenu;
   },
 
+  /**
+   * Memorize the "Add section" form.
+   *
+   * @param {CommentForm} commentForm
+   */
   setAddSectionForm(commentForm) {
     this.addSectionForm = commentForm;
   },
 
+  /**
+   * Get the "Add section" form.
+   *
+   * @returns {CommentForm}
+   */
   getAddSectionForm() {
     return this.addSectionForm;
+  },
+
+  /**
+   * Forget the "Add section" form (after it was torn down).
+   */
+  forgetAddSectionForm() {
+    delete this.addSectionForm;
   },
 
   /**
@@ -291,6 +406,11 @@ export default {
     return this.api;
   },
 
+  /**
+   * Get the worker object.
+   *
+   * @returns {Worker}
+   */
   getWorker() {
     if (!this.worker) {
       this.worker = new Worker();
@@ -499,6 +619,11 @@ export default {
     return this.content.areThereOutdents;
   },
 
+  /**
+   * Extract and memorize the classes mentioned in the TemplateStyles tags on the page.
+   *
+   * @private
+   */
   extractTemplateStylesSelectors() {
     this.content.tsSelectorsFloating = [];
     this.content.tsSelectorsHidden = [];
@@ -525,6 +650,12 @@ export default {
     });
   },
 
+  /**
+   * Get the selectors for floating elements mentioned in the TemplateStyles tags on the page.
+   *
+   * @returns {string[]}
+   * @private
+   */
   getTsFloatingElementSelectors() {
     if (!this.content.tsSelectorsFloating) {
       this.extractTemplateStylesSelectors();
@@ -533,6 +664,12 @@ export default {
     return this.content.tsSelectorsFloating;
   },
 
+  /**
+   * Get the selectors for hidden elements mentioned in the TemplateStyles tags on the page.
+   *
+   * @returns {string[]}
+   * @private
+   */
   getTsHiddenElementSelectors() {
     if (!this.content.tsSelectorsHidden) {
       this.extractTemplateStylesSelectors();
@@ -582,6 +719,11 @@ export default {
     return this.hiddenElements;
   },
 
+  /**
+   * Check whether there are "LTR inside RTL" or "RTL inside LTR" situations on the page.
+   *
+   * @returns {boolean}
+   */
   areThereLtrRtlMixes() {
     if (!this.content.areThereLtrRtlMixes) {
       this.content.areThereLtrRtlMixes = Boolean(
@@ -592,6 +734,12 @@ export default {
     return this.content.areThereLtrRtlMixes;
   },
 
+  /**
+   * Get the popup overlay used for OOUI components.
+   *
+   * @param {boolean} create
+   * @returns {JQuery}
+   */
   getPopupOverlay(create = true) {
     if (!this.$popupOverlay && create) {
       this.$popupOverlay = $('<div>')
@@ -634,6 +782,11 @@ export default {
     }
   },
 
+  /**
+   * _For internal use._ Handle a mouse move event (including `mousemove` and `mouseover`).
+   *
+   * @param {Event} e
+   */
   handleMouseMove(e) {
     if (postponements.is('scroll') || this.isAutoScrolling() || this.isPageOverlayOn()) return;
 
@@ -641,7 +794,7 @@ export default {
   },
 
   /**
-   * _Method for internal use._ Handles the window `resize` event as well as `orientationchange`.
+   * _For internal use._ Handles the window `resize` event as well as `orientationchange`.
    */
   handleWindowResize() {
     // setTimeout, because it seems like sometimes it doesn't have time to update.
@@ -742,7 +895,8 @@ export default {
   },
 
   /**
-   * Handle the `hashchange` event, including clicks on links pointing to comment anchors.
+   * _For internal use._ Handle a `hashchange` event, including clicks on links pointing to comment
+   * anchors.
    */
   handleHashChange() {
     let fragment = location.hash.slice(1);
@@ -764,10 +918,16 @@ export default {
     }
   },
 
+  /**
+   * _For internal use._ Handle a `selectionChange` event.
+   */
   handleSelectionChange() {
     postponements.add('selectionChange', Comment.getSelectedComment, 200);
   },
 
+  /**
+   * _For internal use._ Handle page (content area) mutations.
+   */
   handlePageMutations() {
     if (this.booting) return;
 
@@ -793,6 +953,11 @@ export default {
     // time with rare effect.
   },
 
+  /**
+   * Handle a click on an "Add topic" button.
+   *
+   * @param {Event} e
+   */
   handleAddTopicButtonClick(e) {
     if (e.ctrlKey || e.shiftKey || e.metaKey) return;
 
@@ -901,6 +1066,11 @@ export default {
     this.$loadingPopup.hide();
   },
 
+  /**
+   * Run the {@link BootProcess boot process} and catch errors.
+   *
+   * @param {boolean} isReload Is the page reloaded.
+   */
   async tryExecuteBootProcess(isReload) {
     this.booting = true;
 
@@ -920,6 +1090,10 @@ export default {
     this.booting = false;
   },
 
+  /**
+   * Load the data required for the script to run on a talk page and, respectively, execute
+   * {@link BootProcess the boot process}.
+   */
   loadToTalkPage() {
     cd.debug.stopTimer('start');
     cd.debug.startTimer('loading data');
@@ -1017,27 +1191,14 @@ export default {
          fact that the network requests, if any, are already pending, we don't lose time.
      */
     init.memorizeCssValues();
-
-    init.setTalkPageCssVariables();
-
-    require('../less/global.less');
-
-    require('../less/Comment.less');
-    require('../less/CommentForm.less');
-    require('../less/Section.less');
-    require('../less/commentLayers.less');
-    require('../less/navPanel.less');
-    require('../less/pageNav.less');
-    require('../less/skin.less');
-    require('../less/talkPage.less');
-    require('../less/toc.less');
+    init.addTalkPageCss();
   },
 
   /**
    * Reload the page via Ajax.
    *
    * @param {import('./commonTypedefs').PassedData} [passedData={}] Data passed from the previous
-   *   page state. See {@link module:commonTypedefs~PassedData} for the list of possible properties.
+   *   page state. See {@link module:BootProcess~PassedData} for the list of possible properties.
    *   `html`, `unseenCommentIds` properties are set in this function.
    * @throws {CdError|Error}
    */
@@ -1046,10 +1207,10 @@ export default {
 
     const bootProcess = new BootProcess(passedData);
 
-    // We shouldn't make the current version of the page dysfunctional at least until a correct
-    // response to the parse request is received. Otherwise, if the request fails, the user would be
-    // left with a dysfunctional page. This is why we reset the live timestamps only after the
-    // request.
+    // We reset the live timestamps only during the boot process, because we shouldn't dismount the
+    // components of the current version of the page at least until a correct response to the parse
+    // request is received. Otherwise, if the request fails, the user would be left with a
+    // dysfunctional page.
 
     // Stop all animations, clear all timeouts.
     cd.comments.forEach((comment) => {
@@ -1207,6 +1368,10 @@ export default {
     }
   },
 
+  /**
+   * Load the data required for the script to run on a log page and
+   * {@link commentLinks.addCommentLinks run it}.
+   */
   loadCommentLinks() {
     // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.

@@ -177,13 +177,14 @@ module.exports = {
 DOMPurify.addHook('uponSanitizeElement', (currentNode, data, config) => {
   if (!Object.keys(data.allowedTags).includes(data.tagName) && data.tagName !== 'body') {
     // `< /li>` qualifies as `#comment` and has content available under `currentNode.textContent`.
-    warning(`Disallowed tag found and sanitized in string "${keyword(config.stringName)}" in ${keyword(config.filename)}: ${code(currentNode.outerHTML || currentNode.textContent)}. See https://translatewiki.net/wiki/Wikimedia:Convenient-discussions-${config.stringName}/${config.lang}`);
+    warning(`Disallowed tag found and sanitized in the string "${keyword(config.stringName)}" in ${keyword(config.filename)}: ${code(currentNode.outerHTML || currentNode.textContent)}. See https://translatewiki.net/wiki/Wikimedia:Convenient-discussions-${config.stringName}/${config.lang}.`);
+    console.log(currentNode.outerHTML, currentNode.textContent, currentNode.tagName)
   }
 });
 
 DOMPurify.addHook('uponSanitizeAttribute', (currentNode, hookEvent, config) => {
   if (!Object.keys(hookEvent.allowedAttributes).includes(hookEvent.attrName)) {
-    warning(`Disallowed attribute found and sanitized in string "${keyword(config.stringName)}" in ${keyword(config.filename)}: ${code(hookEvent.attrName)} with value "${hookEvent.attrValue}". See https://translatewiki.net/wiki/Wikimedia:Convenient-discussions-${config.stringName}/${config.lang}`);
+    warning(`Disallowed attribute found and sanitized in the string "${keyword(config.stringName)}" in ${keyword(config.filename)}: ${code(hookEvent.attrName)} with value "${hookEvent.attrValue}". See https://translatewiki.net/wiki/Wikimedia:Convenient-discussions-${config.stringName}/${config.lang}.`);
   }
 });
 

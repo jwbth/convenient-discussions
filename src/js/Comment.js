@@ -317,7 +317,6 @@ class Comment extends CommentSkeleton {
     const processNode = (n) => {
       if (!n) return;
 
-      cd.debug.startTimer('processNode');
       if (n.nodeType === Node.TEXT_NODE || !n.children.length) {
         n.textContent = n.textContent
           .replace(cd.config.signaturePrefixRegexp, '')
@@ -350,7 +349,6 @@ class Comment extends CommentSkeleton {
       ) {
         n.remove();
       }
-      cd.debug.stopTimer('processNode');
     };
 
     let previousNode = this.signatureElement.previousSibling;
@@ -2285,8 +2283,8 @@ class Comment extends CommentSkeleton {
    * Scroll to the comment and (by default) flash it as a target.
    *
    * @param {boolean} [smooth=true] Use a smooth animation.
-   * @param {boolean} [pushState=false] Whether to push a state to the history with the comment
-   *   ID as a fragment.
+   * @param {boolean} [pushState=false] Whether to push a state to the history with the comment ID
+   *   as a fragment.
    * @param {boolean} [flash=true] Whether to flash the comment as target.
    * @param {Function} [callback] Callback to run after the animation has completed.
    */

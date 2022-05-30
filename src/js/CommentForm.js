@@ -859,196 +859,196 @@ class CommentForm {
    * @fires commentFormToolbarReady
    * @private
    */
-  addToolbar(requestedModulesNames) {
+  async addToolbar(requestedModulesNames) {
     if (!settings.get('showToolbar')) return;
 
     const $toolbarPlaceholder = $('<div>')
       .addClass('cd-toolbarPlaceholder')
       .insertBefore(this.commentInput.$element);
 
-    mw.loader.using(['ext.wikiEditor', ...requestedModulesNames]).then(() => {
-      $toolbarPlaceholder.remove();
+    await mw.loader.using(['ext.wikiEditor', ...requestedModulesNames]);
 
-      const $input = this.commentInput.$input;
+    $toolbarPlaceholder.remove();
 
-      const wikiEditorModule = mw.loader.moduleRegistry['ext.wikiEditor'];
-      const toolbarConfig = wikiEditorModule.packageExports['jquery.wikiEditor.toolbar.config.js'];
-      $input.wikiEditor('addModule', toolbarConfig);
-      const dialogsConfig = wikiEditorModule.packageExports['jquery.wikiEditor.dialogs.config.js'];
-      dialogsConfig.replaceIcons($input);
-      $input.wikiEditor('addModule', dialogsConfig.getDefaultConfig());
+    const $input = this.commentInput.$input;
 
-      this.commentInput.$element
-        .find('.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="newline"], .tool[rel="reference"], .option[rel="heading-2"]')
-        .remove();
-      if (!['addSection', 'addSubsection'].includes(this.mode)) {
-        this.commentInput.$element.find('.group-heading').remove();
-      }
+    const wikiEditorModule = mw.loader.moduleRegistry['ext.wikiEditor'];
+    const toolbarConfig = wikiEditorModule.packageExports['jquery.wikiEditor.toolbar.config.js'];
+    $input.wikiEditor('addModule', toolbarConfig);
+    const dialogsConfig = wikiEditorModule.packageExports['jquery.wikiEditor.dialogs.config.js'];
+    dialogsConfig.replaceIcons($input);
+    $input.wikiEditor('addModule', dialogsConfig.getDefaultConfig());
 
-      // Make the undo/redo functionality work in browsers that support it. Also, fix the behavior
-      // of dialog where text is inserted into the last opened form, not the current.
-      $input.textSelection('register', {
-        encapsulateSelection: (options) => {
-          // Seems like the methods are registered for all inputs instead of the one the method is
-          // called for.
-          CommentForm.getLastActive().encapsulateSelection(options);
-        },
-        setContents: (value) => {
-          const commentForm = CommentForm.getLastActive();
-          commentForm.commentInput.select();
-          insertText(commentForm.commentInput, value);
-        },
-      });
+    this.commentInput.$element
+      .find('.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="newline"], .tool[rel="reference"], .option[rel="heading-2"]')
+      .remove();
+    if (!['addSection', 'addSubsection'].includes(this.mode)) {
+      this.commentInput.$element.find('.group-heading').remove();
+    }
 
-      const lang = cd.g.USER_LANGUAGE;
-      $input.wikiEditor('addToToolbar', {
-        section: 'main',
-        group: 'format',
-        tools: {
-          smaller: {
-            label: cd.mws('wikieditor-toolbar-tool-small'),
-            type: 'button',
-            icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-styling&image=smaller&lang=${lang}&skin=vector`,
-            action: {
-              type: 'encapsulate',
-              options: {
-                pre: '<small>',
-                peri: cd.mws('wikieditor-toolbar-tool-small-example'),
-                post: '</small>',
-              },
-            },
-          },
-          quote: {
-            label: `${cd.s('cf-quote-tooltip')} ${cd.mws('parentheses', `Q${cd.mws('comma-separator')}Ctrl+Alt+Q`)}`,
-            type: 'button',
-            icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=quotes&lang=${lang}&skin=vector`,
-            action: {
-              type: 'callback',
-              execute: () => {
-                this.quote();
-              },
-            },
-          },
-        },
-      });
-      $input.wikiEditor('addToToolbar', {
-        section: 'advanced',
-        group: 'format',
-        tools: {
-          code: {
-            label: cd.s('cf-code-tooltip'),
-            type: 'button',
-            icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=code&lang=${lang}&skin=vector`,
-            action: {
-              type: 'encapsulate',
-              options: {
-                pre: '<code><nowiki>',
-                peri: cd.s('cf-code-placeholder'),
-                post: '</'.concat('nowiki></code>'),
-              },
-            },
-          },
-          codeBlock: {
-            label: cd.s('cf-codeblock-tooltip'),
-            type: 'button',
-            icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=markup&lang=${lang}&skin=vector`,
-            action: {
-              type: 'encapsulate',
-              options: {
-                pre: '<syntaxhighlight lang="">\n',
-                peri: cd.s('cf-codeblock-placeholder'),
-                post: '\n</syntaxhighlight>',
-              },
-            },
-          },
-          underline: {
-            label: cd.s('cf-underline-tooltip'),
-            type: 'button',
-            icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-styling&image=underline&lang=${lang}&skin=vector`,
-            action: {
-              type: 'encapsulate',
-              options: {
-                pre: '<u>',
-                peri: cd.s('cf-underline-placeholder'),
-                post: '</u>',
-              },
-            },
-          },
-          strikethrough: {
-            label: cd.s('cf-strikethrough-tooltip'),
-            type: 'button',
-            icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-styling&image=strikethrough&lang=${lang}&skin=vector`,
-            action: {
-              type: 'encapsulate',
-              options: {
-                pre: '<s>',
-                peri: cd.s('cf-strikethrough-placeholder'),
-                post: '</s>',
-              },
-            },
-          },
-        },
-      });
-      $input.wikiEditor('addToToolbar', {
-        section: 'main',
-        group: 'insert',
-        tools: {
-          mention: {
-            label: cd.s('cf-mention-tooltip', cd.g.CMD_MODIFIER),
-            type: 'button',
-            icon: `/w/load.php?modules=oojs-ui.styles.icons-user&image=userAvatar&lang=${lang}&skin=vector`,
-            action: {
-              type: 'callback',
-              execute: () => {},
-            },
-          },
-        },
-      });
-      this.$element
-        .find('.tool-button[rel="mention"]')
-        .off('click')
-        .on('click', (e) => {
-          this.mention(isCmdMofidicatorPressed(e));
-        });
-
-      this.$element
-        .find('.tool[rel="link"] a, .tool[rel="file"] a')
-        .on('click', (e) => {
-          // Fix text being inserted in a wrong textarea.
-          const rel = e.currentTarget.parentNode.getAttribute('rel');
-          const $dialog = $(`#wikieditor-toolbar-${rel}-dialog`);
-          if ($dialog.length) {
-            const context = $dialog.data('context');
-            if (context) {
-              context.$textarea = context.$focusedElem = this.commentInput.$input;
-            }
-
-            // Fix the error when trying to submit the dialog by pressing Enter after doing so by
-            // pressing a button.
-            $dialog.parent().data('dialogaction', false);
-          }
-        });
-
-      // Fix a focus bug in Firefox 56.
-      if ($input.is(':focus')) {
-        $input.blur();
-        focusInput(this.commentInput);
-      }
-
-      // A hack to make the WikiEditor cookies related to active sections and pages saved correctly.
-      $input.data('wikiEditor-context').instance = 5;
-      $.wikiEditor.instances = Array(5);
-
-      /**
-       * The comment form toolbar is ready; all the requested custom comment form modules have been
-       * loaded and executed.
-       *
-       * @event commentFormToolbarReady
-       * @param {CommentForm} commentForm
-       * @param {object} cd {@link convenientDiscussions} object.
-       */
-      mw.hook('convenientDiscussions.commentFormToolbarReady').fire(this, cd);
+    // Make the undo/redo functionality work in browsers that support it. Also, fix the behavior
+    // of dialog where text is inserted into the last opened form, not the current.
+    $input.textSelection('register', {
+      encapsulateSelection: (options) => {
+        // Seems like the methods are registered for all inputs instead of the one the method is
+        // called for.
+        CommentForm.getLastActive().encapsulateSelection(options);
+      },
+      setContents: (value) => {
+        const commentForm = CommentForm.getLastActive();
+        commentForm.commentInput.select();
+        insertText(commentForm.commentInput, value);
+      },
     });
+
+    const lang = cd.g.USER_LANGUAGE;
+    $input.wikiEditor('addToToolbar', {
+      section: 'main',
+      group: 'format',
+      tools: {
+        smaller: {
+          label: cd.mws('wikieditor-toolbar-tool-small'),
+          type: 'button',
+          icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-styling&image=smaller&lang=${lang}&skin=vector`,
+          action: {
+            type: 'encapsulate',
+            options: {
+              pre: '<small>',
+              peri: cd.mws('wikieditor-toolbar-tool-small-example'),
+              post: '</small>',
+            },
+          },
+        },
+        quote: {
+          label: `${cd.s('cf-quote-tooltip')} ${cd.mws('parentheses', `Q${cd.mws('comma-separator')}Ctrl+Alt+Q`)}`,
+          type: 'button',
+          icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=quotes&lang=${lang}&skin=vector`,
+          action: {
+            type: 'callback',
+            execute: () => {
+              this.quote();
+            },
+          },
+        },
+      },
+    });
+    $input.wikiEditor('addToToolbar', {
+      section: 'advanced',
+      group: 'format',
+      tools: {
+        code: {
+          label: cd.s('cf-code-tooltip'),
+          type: 'button',
+          icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=code&lang=${lang}&skin=vector`,
+          action: {
+            type: 'encapsulate',
+            options: {
+              pre: '<code><nowiki>',
+              peri: cd.s('cf-code-placeholder'),
+              post: '</'.concat('nowiki></code>'),
+            },
+          },
+        },
+        codeBlock: {
+          label: cd.s('cf-codeblock-tooltip'),
+          type: 'button',
+          icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=markup&lang=${lang}&skin=vector`,
+          action: {
+            type: 'encapsulate',
+            options: {
+              pre: '<syntaxhighlight lang="">\n',
+              peri: cd.s('cf-codeblock-placeholder'),
+              post: '\n</syntaxhighlight>',
+            },
+          },
+        },
+        underline: {
+          label: cd.s('cf-underline-tooltip'),
+          type: 'button',
+          icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-styling&image=underline&lang=${lang}&skin=vector`,
+          action: {
+            type: 'encapsulate',
+            options: {
+              pre: '<u>',
+              peri: cd.s('cf-underline-placeholder'),
+              post: '</u>',
+            },
+          },
+        },
+        strikethrough: {
+          label: cd.s('cf-strikethrough-tooltip'),
+          type: 'button',
+          icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-styling&image=strikethrough&lang=${lang}&skin=vector`,
+          action: {
+            type: 'encapsulate',
+            options: {
+              pre: '<s>',
+              peri: cd.s('cf-strikethrough-placeholder'),
+              post: '</s>',
+            },
+          },
+        },
+      },
+    });
+    $input.wikiEditor('addToToolbar', {
+      section: 'main',
+      group: 'insert',
+      tools: {
+        mention: {
+          label: cd.s('cf-mention-tooltip', cd.g.CMD_MODIFIER),
+          type: 'button',
+          icon: `/w/load.php?modules=oojs-ui.styles.icons-user&image=userAvatar&lang=${lang}&skin=vector`,
+          action: {
+            type: 'callback',
+            execute: () => {},
+          },
+        },
+      },
+    });
+    this.$element
+      .find('.tool-button[rel="mention"]')
+      .off('click')
+      .on('click', (e) => {
+        this.mention(isCmdMofidicatorPressed(e));
+      });
+
+    this.$element
+      .find('.tool[rel="link"] a, .tool[rel="file"] a')
+      .on('click', (e) => {
+        // Fix text being inserted in a wrong textarea.
+        const rel = e.currentTarget.parentNode.getAttribute('rel');
+        const $dialog = $(`#wikieditor-toolbar-${rel}-dialog`);
+        if ($dialog.length) {
+          const context = $dialog.data('context');
+          if (context) {
+            context.$textarea = context.$focusedElem = this.commentInput.$input;
+          }
+
+          // Fix the error when trying to submit the dialog by pressing Enter after doing so by
+          // pressing a button.
+          $dialog.parent().data('dialogaction', false);
+        }
+      });
+
+    // Fix a focus bug in Firefox 56.
+    if ($input.is(':focus')) {
+      $input.blur();
+      focusInput(this.commentInput);
+    }
+
+    // A hack to make the WikiEditor cookies related to active sections and pages saved correctly.
+    $input.data('wikiEditor-context').instance = 5;
+    $.wikiEditor.instances = Array(5);
+
+    /**
+     * The comment form toolbar is ready; all the requested custom comment form modules have been
+     * loaded and executed.
+     *
+     * @event commentFormToolbarReady
+     * @param {CommentForm} commentForm
+     * @param {object} cd {@link convenientDiscussions} object.
+     */
+    mw.hook('convenientDiscussions.commentFormToolbarReady').fire(this, cd);
   }
 
   /**
@@ -3053,7 +3053,7 @@ class CommentForm {
    */
   forget() {
     if (this.mode === 'addSection') {
-      delete controller.addSectionForm;
+      controller.forgetAddSectionForm();
 
       $('#ca-addsection').removeClass('selected');
       $('#ca-view').addClass('selected');

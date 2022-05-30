@@ -618,13 +618,14 @@ export default class BootProcess {
   }
 
   /**
-   * Initialize or reset various properties. Some DOM preparations are also made here.
+   * Initialize or reset various systems required for the boot process. Some DOM preparations are
+   * also made here.
    *
    * @private
    */
   async setup() {
     controller.reset(this.data('html'));
-    toc.init();
+    toc.reset();
 
     /**
      * Collection of all comments on the page ordered the same way as in the DOM.

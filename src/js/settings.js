@@ -28,6 +28,11 @@ export default {
     },
   },
 
+  /**
+   * Set the default settings to the settings scheme object.
+   *
+   * @private
+   */
   setDefaults() {
     this.scheme.default = {
       allowEditOthersComments: false,
@@ -230,12 +235,24 @@ export default {
     return settings;
   },
 
+  /**
+   * Change the value of a setting or a set of settings at once.
+   *
+   * @param {string|object} name
+   * @param {string} value
+   */
   set(name, value) {
     this.values = this.values || {};
     const values = typeof name === 'string' ? { [name]: value } : name;
     Object.assign(this.values, values);
   },
 
+  /**
+   * Get the value of a setting.
+   *
+   * @param {string} name
+   * @returns {*}
+   */
   get(name) {
     return name ? this.values[name] : this.values;
   },
