@@ -118,7 +118,7 @@ const toc = {
     let $closestFloating;
     if (this.isInSidebar) {
       this.$element
-        .find('.cd-toc-commentCount, .cd-toc-newCommentList, .cd-toc-notRenderedCommentList, .cd-toc-notRenderedSection')
+        .find('.cd-toc-commentCount, .cd-toc-newCommentList, .cd-toc-addedCommentList, .cd-toc-addedSection')
         .remove();
       $closestFloating = this.$element
         .closest('[style*="float: right"], [style*="float:right"], [style*="float: left"], [style*="float:left"]');
@@ -144,8 +144,8 @@ const toc = {
       const links = [...this.$element.get(0).querySelectorAll('li > a')]
         .filter((link) => link.getAttribute('href') !== '#top-page');
       try {
-        // It is executed first time before not rendered (gray) sections are added to the TOC, so we
-        // use a simple algorithm to obtain items.
+        // It is executed first time before added (gray) sections are added to the TOC, so we use a
+        // simple algorithm to obtain items.
         this.tocItems = links.map((a) => new TocItem(a));
       } catch {
         console.error('Couldn\'t find an element of a table of contents item.');
@@ -235,7 +235,7 @@ const toc = {
 
     controller.saveRelativeScrollPosition({ saveTocHeight: true });
 
-    this.$element.find('.cd-toc-notRenderedSection').remove();
+    this.$element.find('.cd-toc-addedSection').remove();
 
     /*
       Note the case when the page starts with sections of levels lower than the base level, like
@@ -289,7 +289,7 @@ const toc = {
         const levelClass = this.isInSidebar ?
           `sidebar-toc-list-item sidebar-toc-level-${level}` :
           `toclevel-${level}`;
-        li.className = `${levelClass} cd-toc-notRenderedSection`;
+        li.className = `${levelClass} cd-toc-addedSection`;
 
         const a = document.createElement('a');
         a.href = `#${section.id}`;
@@ -384,7 +384,7 @@ const toc = {
         $sectionLink = section.match.getTocItem()?.$link;
       } else {
         const id = $.escapeSelector(section.id);
-        $sectionLink = this.$element.find(`.cd-toc-notRenderedSection a[href="#${id}"]`);
+        $sectionLink = this.$element.find(`.cd-toc-addedSection a[href="#${id}"]`);
       }
 
       if ($sectionLink?.length) {
@@ -416,7 +416,7 @@ const toc = {
 
     // jQuery is too expensive here given that very many comments may be added.
     const ul = document.createElement('ul');
-    ul.className = areCommentsRendered ? 'cd-toc-newCommentList' : 'cd-toc-notRenderedCommentList';
+    ul.className = areCommentsRendered ? 'cd-toc-newCommentList' : 'cd-toc-addedCommentList';
 
     let moreTooltipText = '';
     comments.forEach((comment, i) => {
@@ -550,7 +550,7 @@ const toc = {
     );
     controller.saveRelativeScrollPosition({ saveTocHeight });
 
-    this.$element.find('.cd-toc-notRenderedCommentList').remove();
+    this.$element.find('.cd-toc-addedCommentList').remove();
 
     commentsBySection.forEach((comments, section) => {
       if (!section) return;
