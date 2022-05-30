@@ -48,7 +48,10 @@ let commentFormsCounter = 0;
  * @private
  */
 function extractCommentIds(code) {
-  const idRegexp = /\[\[#(\d{12}_[^|\]]+)/g;
+  // Russian Wikipedia's Wikificator might mangle these links, replacing "_" with " ", so we search
+  // for both characters.
+  const idRegexp = /\[\[#(\d{12}[_ ][^|\]]+)/g;
+
   const ids = [];
   let match;
   while ((match = idRegexp.exec(code))) {
