@@ -294,20 +294,10 @@ class Parser {
 
     // Unsigned template may be of the "undated" kind - containing a timestamp but no author name,
     // so we need to walk the tree anyway.
-    let newNode;
+    let node = treeWalker.currentNode;
     do {
-      const node = treeWalker.currentNode;
       length += node.textContent.length;
       if (node.tagName) {
-        if (
-          node.classList.contains('cd-timestamp') ||
-
-          // Workaround for cases like https://en.wikipedia.org/?diff=1042059387 (those should be
-          // extremely rare).
-          (['S', 'STRIKE', 'DEL'].includes(node.tagName) && length >= 30)
-        ) {
-          break;
-        }
         authorData.isLastLinkAuthorLink = false;
 
         if (node.tagName === 'A') {
@@ -328,21 +318,47 @@ class Parser {
       }
       signatureNodes.push(node);
 
-      newNode = treeWalker.previousSibling();
-      if (!newNode && !firstSignatureElement) {
-        newNode = treeWalker.parentNode();
-        if (!newNode || !isInline(newNode)) break;
+      node = treeWalker.previousSibling();
+      if (!node && !firstSignatureElement) {
+        node = treeWalker.parentNode();
+        if (!node || !isInline(node)) break;
         length = 0;
         signatureNodes = [];
       }
+    } while (
+      node &&
+      length < cd.config.signatureScanLimit &&
+      !(
+        (
+          authorData.name &&
+          (
+            // Users may cross out the text ended with their signature and sign again
+            // (https://ru.wikipedia.org/?diff=114726134). The strike element shouldn't be considered
+            // a part of the signature then.
+            (node.tagName && ['S', 'STRIKE', 'DEL'].includes(node.tagName)) ||
 
-      // Users may cross out text ended with their signature and sign again
-      // (https://ru.wikipedia.org/?diff=114726134). The strike element shouldn't be considered a
-      // part of the signature then.
-      if (authorData.name && newNode?.tagName && ['S', 'STRIKE', 'DEL'].includes(newNode.tagName)) {
-        break;
-      }
-    } while (newNode && length < cd.config.signatureScanLimit);
+            // Cases like
+            // https://ru.wikipedia.org/wiki/Википедия:Заявки_на_статус_администратора/Obersachse_3#c-Obersachse-2012-03-11T08:03:00.000Z-Итог
+            // Note that this is currently unsupported by the wikitext parser. When edited, such a
+            // comment will be cut at the first user link. You would need to discern ". " inside
+            // outside of links or even tags, and this is much work for little gain. This is the
+            // cost of us not relying on a DOM -> wikitext correspondence and processing those parts
+            // separately.
+            (!node.tagName && /[.!?…] /.test(node.textContent))
+          )
+        ) ||
+        (
+          node.tagName &&
+          (
+            node.classList.contains('cd-timestamp') ||
+
+            // Workaround for cases like https://en.wikipedia.org/?diff=1042059387 (those should be
+            // extremely rare).
+            (['S', 'STRIKE', 'DEL'].includes(node.tagName) && length >= 30)
+          )
+        )
+      )
+    );
 
     if (!authorData.name) return;
 
