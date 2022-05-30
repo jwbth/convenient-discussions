@@ -384,7 +384,10 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
     let codeBeginning;
     let codeEnding;
     if (cd.config.getMoveTargetPageCode && this.keepLinkCheckbox.isSelected()) {
-      const code = cd.config.getMoveTargetPageCode(source.sectionWikilink, cd.g.USER_SIGNATURE);
+      const code = cd.config.getMoveTargetPageCode(
+        source.sectionWikilink.replace(/=/g, '{{=}}'),
+        cd.g.USER_SIGNATURE.replace(/=/g, '{{=}}')
+      );
       if (Array.isArray(code)) {
         codeBeginning = code[0] + '\n';
         codeEnding = '\n' + code[1];
