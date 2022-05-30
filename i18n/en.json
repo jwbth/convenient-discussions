@@ -16,7 +16,7 @@
   "cm-reply": "Reply",
   "cm-quote": "Quote",
 
-  "thread-tooltip": "Collapse/expand the thread",
+  "thread-tooltip": "Collapse/expand the thread ($1 {{plural:$1|comment|comments}})",
   "thread-expand-label-genderless": "Expand the thread ($1 {{plural:$1|comment|comments}} by {{plural:$2|}} $3)",
   "thread-expand-label": "Expand the thread ($1 {{plural:$1|comment|comments}} by {{plural:$2|{{gender:$4|}}|{{gender:$4|}}}} $3)",
   "thread-expand-tooltip": "Hold $1 to expand all threads on the page",
