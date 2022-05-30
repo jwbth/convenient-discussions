@@ -327,17 +327,26 @@ class Comment extends CommentSkeleton {
       // "noprint" class check is a workaround to avoid removing of templates such as {{citation
       // needed}}, for example https://en.wikipedia.org/?diff=1022999952.
       if (
-        // <b> tags may be the output of templates like
-        // https://meta.wikimedia.org/wiki/Template:Done.
-        (n.tagName && !['B', 'STRONG'].includes(n.tagName)) &&
+        n.tagName &&
 
         (n.getAttribute('style') || ['SUP', 'SUB'].includes(n.tagName)) &&
         n.textContent.length < 30 &&
 
-        // Templates like "citation needed" or https://ru.wikipedia.org/wiki/Template:-:
-        !n.classList.length &&
+        (
+          !(
+            // Templates like "citation needed" or https://ru.wikipedia.org/wiki/Template:-:
+            n.classList.length ||
 
-        !n.querySelector('b, strong')
+            // <b> tags may be the output of templates like
+            // https://meta.wikimedia.org/wiki/Template:Done. Some opinion templates may have <b>,
+            // <strong> inside another tag.
+            ['B', 'STRONG'].includes(n.tagName) ||
+            n.querySelector('b, strong')
+          ) ||
+
+          // Cases like https://ru.wikipedia.org/wiki/Special:Contributions/adamant.pwn
+          n.textContent.toLowerCase() === this.author.name.toLowerCase()
+        )
       ) {
         n.remove();
       }
