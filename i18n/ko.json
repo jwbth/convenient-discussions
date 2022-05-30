@@ -6,6 +6,7 @@
 			"Jack who built the house",
 			"Siwoolee",
 			"Songhee",
+			"Theshinster123",
 			"Ykhwong"
 		]
 	},
@@ -31,6 +32,7 @@
 	"comment-deleted": "댓글이 삭제되었거나 재서명되었습니다.",
 	"section-reply": "문단에 답변",
 	"section-newcomments": "이 문단에 새로운 의견이 있습니다. 페이지를 새로고침하려면 클릭하세요.",
+	"section-watch-openpages": "(이 탭이 열려 있을 때만 알림을 받습니다)",
 	"section-watch-error-maxsize": "설정을 업데이트하지 못했습니다: 구독 목록의 크기가 최대 크기를 초과합니다. 이 문제를 해결하려면 <span class=\"cd-notification-editWatchedSections\">목록의 크기를 줄이십시오</span>.",
 	"cld-title-comment": "의견 링크 복사",
 	"cld-title-section": "문단 링크 복사",

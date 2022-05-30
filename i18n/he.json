@@ -371,7 +371,7 @@
 	"error-elementhidden": "הרכיב מוסתר. אין אפשרות לגלול אליו.",
 	"error-purgecache": "לא ניתן לנקות את המטמון של הדף הזה.",
 	"error-anoneditwatning": "<strong>לא החתברת לחשבון.</strong> כתובת ה־IP שלך תוצג במקרה של עריכות כלשהן.",
-	"discussiontools-incompatible": "דיונים נוחים לא עובדים במקביל לכלי שיחה. נא <b><span class=\"cd-notification-disabledt\">[[Special:Preferences#mw-prefsection-betafeatures|לכבות]] /span></b> את כלי שיחה כדי לאפשר לדיונים נוחים לפעול כראוי.",
+	"discussiontools-incompatible": "דיונים נוחים לא עובדים במקביל לכלי שיחה. נא <b><span class=\"cd-notification-disabledt\">[[Special:Preferences#mw-prefsection-betafeatures|לכבות]] </span></b> את כלי שיחה כדי לאפשר לדיונים נוחים לפעול כראוי.",
 	"discussiontools-disabled": "כלי שיחה כובו בהצלחה. <span class=\"cd-notification-refresh\">נא ללחוץ לרענון הדף</span>.",
 	"wl-button-switchrelevant-tooltip": "להציג רק תגובות בנושאים שביקשתי לעקוב אחריהם ותגובות המיועדות לי. (לתשומת ליבך: הזיהוי מבוסס על תקצירי עריכה, כך שייתכן שחלק מהעריכות יתפספסו)",
 	"wl-button-editwatchedsections-tooltip": "לערוך את רשימת הנושאים שבמעקב",
