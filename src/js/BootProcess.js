@@ -1283,6 +1283,10 @@ export default class BootProcess {
       // incorrectly.
       setTimeout(() => {
         comment.scrollTo(false, this.data('pushState'));
+
+        // When `this.data('pushState')` is true (on page reloads when an added comment or section
+        // is clicked), `fragmentHasCommentId` should be false - fragments are removed on page
+        // reload. So there is no duplication between `pushState` and `replaceState`.
         if (fragmentHasCommentId) {
           history.replaceState(Object.assign({}, history.state, { cdJumpedToComment: true }), '');
         }
@@ -1410,8 +1414,7 @@ export default class BootProcess {
 
   /**
    * Remove the `id` attribute from comment links, so that comment links reach their target using
-   * {@link controller.handleHashChange handling of the hashchange event}, not using direct
-   * scrolling.
+   * {@link controller.handlePopState handling of the popstate event}, not using direct scrolling.
    *
    * @param {JQuery} $content
    * @private
@@ -1513,7 +1516,7 @@ export default class BootProcess {
 
     $(window)
       .on('resize orientationchange', controller.handleWindowResize)
-      .on('hashchange', controller.handleHashChange);
+      .on('popstate', controller.handlePopState);
 
     // Should be above "mw.hook('wikipage.content').fire" so that it runs for the whole page
     // content as opposed to "$('.cd-comment-author-wrapper')".

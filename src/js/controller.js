@@ -104,7 +104,7 @@ export default {
     this.handleWindowResize = this.handleWindowResize.bind(this);
     this.handleGlobalKeyDown = this.handleGlobalKeyDown.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
-    this.handleHashChange = this.handleHashChange.bind(this);
+    this.handlePopState = this.handlePopState.bind(this);
     this.handleSelectionChange = this.handleSelectionChange.bind(this);
     this.handlePageMutations = this.handlePageMutations.bind(this);
     this.handleAddTopicButtonClick = this.handleAddTopicButtonClick.bind(this);
@@ -895,14 +895,15 @@ export default {
   },
 
   /**
-   * _For internal use._ Handle a `hashchange` event, including clicks on links pointing to comment
+   * _For internal use._ Handle a `popstate` event, including clicks on links pointing to comment
    * anchors.
    */
-  handleHashChange() {
+  handlePopState() {
     let fragment = location.hash.slice(1);
     if (Comment.isDtId(fragment) || Comment.isId(fragment)) {
       // Don't jump to the comment if the user pressed Back/Forward in the browser or if
-      // history.pushState() is called from Comment#scrollTo().
+      // history.pushState() is called from Comment#scrollTo() (after clicks on added (gray) items
+      // in the TOC).
       if (history.state?.cdJumpedToComment) return;
 
       try {
