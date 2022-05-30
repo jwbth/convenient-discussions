@@ -2613,7 +2613,7 @@ class Comment extends CommentSkeleton {
     const $diff = await this.generateDiffView();
     const $content = $('<div>').append($question, $diff);
     mw.hook('wikipage.content').fire($content);
-    if (await showConfirmDialog($content, { size: 'larger' })) {
+    if ((await showConfirmDialog($content, { size: 'larger' })) === 'accept') {
       try {
         await controller.getApi().postWithEditToken(controller.getApi().assertCurrentUser({
           action: 'thank',
