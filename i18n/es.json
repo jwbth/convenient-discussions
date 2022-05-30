@@ -50,7 +50,7 @@
 	"comment-deleted-short": "Borrado o refirmado",
 	"section-reply": "Responder a la sección",
 	"section-addsubsection-to": "Añadir sección anidada a \"$1\"",
-	"section-newcomments": "Hay {{PLURAL:$1|un nuevo comentario|$1 nuevos comentarios}} en esta sección (fuera de los hilos) de <!--{{GENDER:$4|usuario{{PLURAL:$2||s}}|usuaria{{PLURAL:$2||s}}|}} -->$3. Haga clic para actualizar la página.",
+	"section-newcomments": "Hay {{PLURAL:$1|un nuevo comentario|$1 nuevos comentarios}} en esta sección (fuera de los hilos) de $3. Haga clic para actualizar la página.",
 	"section-unwatch-stillwatched": "<strong>Aviso:</strong> todavía estás suscrito a esta sección, debido a que se encuentra incluida dentro de la sección \"$1\", a la que también estás suscrito.",
 	"section-watch-pagenotwatched": "<strong>Aviso:</strong> estás suscrito la sección, pero no la página. Para que se resalten los nuevos comentarios en tu lista de seguimiento, añade la página a tu lista de seguimiento.",
 	"section-watch-error-maxsize": "No ha sido posible actualizar las configuraciones: El tamaño de la lista de secciones a las que estás suscrito excede el tamaño máximo. <span class=\"cd-notification-editWatchedSections\">Edita la lista de secciones</span> para corregirlo.",
