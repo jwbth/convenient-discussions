@@ -1,7 +1,7 @@
 import CdError from './CdError';
 import cd from './cd';
 import { ElementsAndTextTreeWalker, ElementsTreeWalker } from './treeWalker';
-import { isInline, spacesToUnderlines, unique, zeroPad } from './util';
+import { isInline, isMetadataTag, spacesToUnderlines, unique, zeroPad } from './util';
 
 /**
  * Class containing the main properties of a comment. This class is the only one used in the worker
@@ -794,8 +794,7 @@ class CommentSkeleton {
           !node.textContent.trim() &&
           [...node.children].every((child) => child.tagName === 'BR')
         ) ||
-        node.tagName === 'STYLE' ||
-        node.tagName === 'LINK' ||
+        isMetadataTag(node) ||
         Array.from(node.classList).some((name => ['references', 'reflist-talk'].includes(name)))
       ) {
         this.parts.splice(i, 1);

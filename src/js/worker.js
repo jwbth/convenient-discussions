@@ -16,6 +16,7 @@ import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
 import debug from './debug';
 import { getAllTextNodes, parseDocument } from './htmlparser2Extended';
+import { isMetadataTag } from './util';
 
 let isFirstRun = true;
 let alarmTimeout;
@@ -225,7 +226,7 @@ function parse() {
           el.remove();
         });
 
-      if (element.classList.contains('references') || ['STYLE', 'LINK'].includes(element.tagName)) {
+      if (element.classList.contains('references') || isMetadataTag(element)) {
         const textNode = hideElement(element, comment);
         return textNode.textContent;
       } else {

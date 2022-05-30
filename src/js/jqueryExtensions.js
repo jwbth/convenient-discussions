@@ -6,6 +6,7 @@
 
 import cd from './cd';
 import controller from './controller';
+import { isMetadataTag } from './util';
 
 /**
  * Scroll to a specified position vertically.
@@ -53,15 +54,14 @@ export function scrollToY(y, smooth = true, callback) {
  */
 export default {
   /**
-   * Remove non-element and also non-displayable (`'STYLE'`, `'LINK'`) nodes from a jQuery
-   * collection.
+   * Remove non-element nodes and metadata elements (`'STYLE'`, `'LINK'`) from a jQuery collection.
    *
    * @returns {external:jQuery}
    * @memberof external:jQuery.fn
    */
   cdRemoveNonElementNodes: function () {
     return this.filter(function () {
-      return this.tagName && !['STYLE', 'LINK'].includes(this.tagName);
+      return this.tagName && !isMetadataTag(this);
     });
   },
 

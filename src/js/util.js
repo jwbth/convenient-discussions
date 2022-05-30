@@ -949,3 +949,13 @@ export function zeroPad(number, length) {
 export function getLastArrayElementOrSelf(value) {
   return Array.isArray(value) ? value[value.length - 1] : value;
 }
+
+/**
+ * Check whether the provided node is a metadata tag (`<style>`, `<link>`).
+ *
+ * @param {Node} node
+ * @returns {boolean}
+ */
+export function isMetadataTag(node) {
+  return ['STYLE', 'LINK'].includes(node.tagName);
+}
