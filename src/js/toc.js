@@ -118,7 +118,7 @@ const toc = {
     let $closestFloating;
     if (this.isInSidebar) {
       this.$element
-        .find('.cd-toc-commentCount, .cd-toc-newCommentList, .cd-toc-notRenderedCommentList')
+        .find('.cd-toc-commentCount, .cd-toc-newCommentList, .cd-toc-notRenderedCommentList, .cd-toc-notRenderedSection')
         .remove();
       $closestFloating = this.$element
         .closest('[style*="float: right"], [style*="float:right"], [style*="float: left"], [style*="float:left"]');
@@ -235,9 +235,7 @@ const toc = {
 
     controller.saveRelativeScrollPosition({ saveTocHeight: true });
 
-    this.$element
-      .find('.cd-toc-notRenderedSectionList, .cd-toc-notRenderedSection')
-      .remove();
+    this.$element.find('.cd-toc-notRenderedSection').remove();
 
     /*
       Note the case when the page starts with sections of levels lower than the base level, like
