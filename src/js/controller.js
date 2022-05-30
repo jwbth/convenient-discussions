@@ -1117,7 +1117,7 @@ export default {
 
     const modules = [
       'jquery.client',
-      'jquery.color',
+      'jquery.ui',
       'mediawiki.Title',
       'mediawiki.Uri',
       'mediawiki.api',
