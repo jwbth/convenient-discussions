@@ -584,7 +584,7 @@ class Autocomplete {
               end: ']]',
               content: name,
               ctrlModify: (data) => {
-                data.end += cd.mws('colon-separator');
+                data.end += cd.mws('colon-separator', { language: 'content' });
                 return data;
               },
             };
