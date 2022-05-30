@@ -2768,8 +2768,9 @@ class Comment extends CommentSkeleton {
       return null;
     }
 
-    const viewportTop = window.scrollY + cd.g.BODY_SCROLL_PADDING_TOP;
-    const viewportBottom = viewportTop + window.innerHeight;
+    const scrollY = window.scrollY;
+    const viewportTop = scrollY + cd.g.BODY_SCROLL_PADDING_TOP;
+    const viewportBottom = scrollY + window.innerHeight;
 
     return partially ?
       offset.downplayedBottom > viewportTop && offset.top < viewportBottom :
