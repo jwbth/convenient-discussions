@@ -32,7 +32,7 @@ import {
   unhideText,
   unique,
 } from './util';
-import { setVisits } from './apiWrappers';
+import { setVisits, splitIntoBatches } from './apiWrappers';
 import { showEditSubscriptionsDialog, showSettingsDialog } from './modal';
 
 /**
@@ -183,18 +183,16 @@ function loadSiteData() {
     const messagesToRequest = contentLanguageMessageNames
       .concat(userLanguageMessageNames)
       .filter(unique);
-    let nextNames;
-    while ((nextNames = messagesToRequest.splice(0, 50)).length) {
+    for (const nextNames of splitIntoBatches(messagesToRequest)) {
       const request = controller.getApi().loadMessagesIfMissing(nextNames).then(() => {
         filterAndSetContentLanguageMessages(mw.messages.get());
       });
       requests.push(request);
     }
   } else {
-    let nextNames;
     const contentLanguageMessagesToRequest = contentLanguageMessageNames
       .filter((name) => !cd.g.CONTENT_LANGUAGE_MESSAGES[name]);
-    while ((nextNames = contentLanguageMessagesToRequest.splice(0, 50)).length) {
+    for (const nextNames of splitIntoBatches(contentLanguageMessagesToRequest)) {
       const request = controller.getApi().getMessages(nextNames, {
         amlang: mw.config.get('wgContentLanguage'),
       }).then(setContentLanguageMessages);

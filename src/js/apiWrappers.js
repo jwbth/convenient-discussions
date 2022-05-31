@@ -21,6 +21,32 @@ let currentAutocompletePromise;
 const autocompleteTimeout = 100;
 
 /**
+ * Split an array into batches of 50 (500 if the user has a `apihighlimits` right) to use in API
+ * requests.
+ *
+ * @param {Array} arr
+ * @returns {Array}
+ */
+export function splitIntoBatches(arr) {
+  // cd.g.USER_RIGHTS is rarely set on first page load (when getDtSubscriptions() runs, for
+  // example).
+  const isHigherApiLimit = cd.g.USER_RIGHTS ?
+    cd.g.USER_RIGHTS.includes('apihighlimits') :
+    mw.config.get('wgUserGroups').includes('sysop');
+
+  const limit = isHigherApiLimit ? 500 : 50;
+  return arr.reduce((result, item, index) => {
+    const chunkIndex = Math.floor(index / limit);
+    if (!result[chunkIndex]) {
+      result[chunkIndex] = [];
+    }
+    result[chunkIndex].push(item);
+    return result;
+  }, []);
+}
+
+
+/**
  * Pack the visits object into a string for further compression.
  *
  * @param {object} visits
@@ -333,10 +359,7 @@ export function getUserInfo(reuse = false) {
 export async function getPageTitles(pageIds) {
   const pages = [];
 
-  const pageIdsToRequest = pageIds.slice();
-  const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
-  let nextPageIds;
-  while ((nextPageIds = pageIdsToRequest.splice(0, limit).join('|'))) {
+  for (const nextPageIds of splitIntoBatches(pageIds)) {
     const resp = await controller.getApi().post({
       action: 'query',
       pageids: nextPageIds,
@@ -358,11 +381,7 @@ export async function getPageIds(titles) {
   const normalized = [];
   const redirects = [];
   const pages = [];
-
-  const titlesToRequest = titles.slice();
-  const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
-  let nextTitles;
-  while ((nextTitles = titlesToRequest.splice(0, limit).join('|'))) {
+  for (const nextTitles of splitIntoBatches(titles)) {
     const resp = await controller.getApi().post({
       action: 'query',
       titles: nextTitles,
@@ -466,9 +485,7 @@ export async function getUserGenders(users, requestInBackground = false) {
     .filter((user) => !user.getGender() && user.isRegistered())
     .filter(unique)
     .map((user) => user.name);
-  const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
-  let nextUsers;
-  while ((nextUsers = usersToRequest.splice(0, limit).join('|'))) {
+  for (const nextUsers of splitIntoBatches(usersToRequest)) {
     const options = {
       action: 'query',
       list: 'users',
@@ -478,10 +495,7 @@ export async function getUserGenders(users, requestInBackground = false) {
     const request = requestInBackground ?
       makeBackgroundRequest(options) :
       controller.getApi().post(options);
-
-    const resp = await request.catch(handleApiReject);
-
-    resp.query.users
+    (await request.catch(handleApiReject)).query.users
       .filter((user) => user.gender)
       .forEach((user) => {
         userRegistry.get(user.name).setGender(user.gender);
@@ -497,19 +511,13 @@ export async function getUserGenders(users, requestInBackground = false) {
  */
 export async function getUsersById(userIds) {
   const users = [];
-
-  const userIdsToRequest = userIds.slice();
-  const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
-  let nextUserIds;
-  while ((nextUserIds = userIdsToRequest.splice(0, limit).join('|'))) {
+  for (const nextUserIds of splitIntoBatches(userIds)) {
     const resp = await controller.getApi().post({
       action: 'query',
       list: 'users',
       ususerids: nextUserIds,
     }).catch(handleApiReject);
-
-    const nextUsers = resp.query.users.map((user) => userRegistry.get(user.name));
-    users.push(...nextUsers);
+    users.push(...resp.query.users.map((user) => userRegistry.get(user.name)));
   }
 
   return users;
@@ -686,11 +694,7 @@ export async function getPagesExistence(titles) {
   const results = {};
   const normalized = [];
   const pages = [];
-
-  const titlesToRequest = titles.slice();
-  const limit = cd.g.USER_RIGHTS?.includes('apihighlimits') ? 500 : 50;
-  let nextTitles;
-  while ((nextTitles = titlesToRequest.splice(0, limit).join('|'))) {
+  for (const nextTitles of splitIntoBatches(titles)) {
     const resp = await controller.getApi().post({
       action: 'query',
       titles: nextTitles,
@@ -723,16 +727,7 @@ export async function getPagesExistence(titles) {
  */
 export async function getDtSubscriptions(ids) {
   const subscriptions = {};
-
-  // cd.g.USER_RIGHTS is rarely set on first page load.
-  const isHigherApiLimit = cd.g.USER_RIGHTS ?
-    cd.g.USER_RIGHTS.includes('apihighlimits') :
-    mw.config.get('wgUserGroups').includes('sysop');
-
-  const idsToRequest = ids.slice();
-  const limit = isHigherApiLimit ? 500 : 50;
-  let nextIds;
-  while ((nextIds = idsToRequest.splice(0, limit).join('|'))) {
+  for (const nextIds of splitIntoBatches(ids)) {
     const resp = await controller.getApi().post({
       action: 'discussiontoolsgetsubscriptions',
       commentname: nextIds,
