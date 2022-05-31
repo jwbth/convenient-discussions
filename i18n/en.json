@@ -82,7 +82,7 @@
   "copylink-copied": "The link has been copied to the clipboard.",
   "copylink-error": "Couldn't copy the link.",
 
-  "thank-confirm": "Thank {{gender:$2|}} $1 for [$3 this edit]?",
+  "thank-confirm": "Do you want to send a public thanks to {{gender:$2|}} $1 for [$3 this edit]?",
   "thank-error": "Couldn't send thanks.",
   "thank-success": "\"Thank you\" notification has been sent.",
 
