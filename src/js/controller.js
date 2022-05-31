@@ -803,7 +803,7 @@ export default {
       Comment.redrawLayersIfNecessary(true);
       Thread.updateLines();
       pageNav.updateWidth();
-    });
+    }, cd.g.SKIN === 'vector-2022' ? 100 : 0);
     CommentForm.adjustLabels();
     this.handleScroll();
   },

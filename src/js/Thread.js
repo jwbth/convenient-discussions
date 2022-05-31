@@ -857,6 +857,7 @@ class Thread {
         if (
           thread.clickAreaOffset &&
           top === thread.clickAreaOffset.top &&
+          left === thread.clickAreaOffset.left &&
           height === thread.clickAreaOffset.height
         ) {
           // Opened/closed "Reply in section" comment form will change a 0-level thread line height,
