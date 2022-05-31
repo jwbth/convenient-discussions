@@ -29,7 +29,7 @@ import {
   getExtendedRect,
   getLastArrayElementOrSelf,
   getVisibilityByRects,
-  isCmdMofidicatorPressed,
+  isCmdModifierPressed,
   isInline,
   isInputFocused,
   isProbablyTalkPage,
@@ -804,11 +804,7 @@ export default {
       Thread.updateLines();
       pageNav.updateWidth();
     });
-
-    navPanel.updateCommentFormButton();
-    cd.commentForms.forEach((commentForm) => {
-      commentForm.adjustLabels();
-    });
+    CommentForm.adjustLabels();
     this.handleScroll();
   },
 
@@ -830,7 +826,7 @@ export default {
       const lastActiveCommentForm = CommentForm.getLastActive();
       if (lastActiveCommentForm) {
         e.preventDefault();
-        lastActiveCommentForm.quote(isCmdMofidicatorPressed(e));
+        lastActiveCommentForm.quote(isCmdModifierPressed(e));
       } else {
         const comment = Comment.getSelectedComment();
         if (comment?.isActionable) {
@@ -903,7 +899,8 @@ export default {
     if (Comment.isDtId(fragment) || Comment.isId(fragment)) {
       // Don't jump to the comment if the user pressed Back/Forward in the browser or if
       // history.pushState() is called from Comment#scrollTo() (after clicks on added (gray) items
-      // in the TOC).
+      // in the TOC). A marginal state of this happening is when a page with a comment ID in the
+      // fragment is opened and then a link with the same fragment is clicked.
       if (history.state?.cdJumpedToComment) return;
 
       try {
@@ -1284,10 +1281,7 @@ export default {
     // current page state.
     this.bootProcess = bootProcess;
 
-    // Detach the comment forms to keep events.
-    cd.commentForms.forEach((commentForm) => {
-      commentForm.$outermostElement.detach();
-    });
+    CommentForm.detach();
 
     this.cleanUpUrlAndDom();
     updateChecker.updatePageTitle(0, false);

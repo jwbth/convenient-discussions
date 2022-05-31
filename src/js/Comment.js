@@ -2341,7 +2341,7 @@ class Comment extends CommentSkeleton {
    * @returns {Promise.<external:jQuery>}
    */
   async generateDiffView() {
-    const edit = await this.findEditThatAdded();
+    const edit = await this.findEdit();
     const diffLink = await this.getDiffLink();
     const $nextDiffLink = $('<a>')
       .addClass('cd-diffView-nextDiffLink')
@@ -2425,6 +2425,7 @@ class Comment extends CommentSkeleton {
       const fullTextWordOverlap = calculateWordOverlap(diffText, commentFullText);
       let wordOverlap = Math.max(fullTextWordOverlap, bestDiffPartWordOverlap);
 
+      // Parse wikitext if there is no full overlap and there are templates inside.
       if (wordOverlap < 1 && diffOriginalText.includes('{{')) {
         try {
           const html = (await parseCode(diffOriginalText, { title: cd.page.name })).html;
@@ -2450,53 +2451,45 @@ class Comment extends CommentSkeleton {
    * @throws {CdError}
    * @private
    */
-  async findEditThatAdded() {
-    if (this.editThatAdded) {
-      return this.editThatAdded;
-    }
-
-    // Search for the edit in the range of 10 minutes before (in case the comment was edited with
-    // timestamp replaced) to 3 minutes later (rare occasion where the diff timestamp is newer than
-    // the comment timestamp).
-    const rvstart = new Date(this.date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * 10).toISOString();
-    const rvend = new Date(this.date.getTime() + cd.g.MILLISECONDS_IN_MINUTE * 3).toISOString();
-    const revisions = await this.getSourcePage().getArchivedPage().getRevisions({
-      rvprop: ['ids', 'comment', 'parsedcomment', 'timestamp'],
-      rvdir: 'newer',
-      rvstart,
-      rvend,
-      rvuser: this.author.name,
-      rvlimit: 500,
-    });
-
-    const compareRequests = revisions.map((revision) => controller.getApi().post({
-      action: 'compare',
-      fromtitle: this.getSourcePage().getArchivedPage().name,
-      fromrev: revision.revid,
-      torelative: 'prev',
-      prop: ['diff'],
-    }).catch(handleApiReject));
-
-    const compareResps = await Promise.all(compareRequests);
-    const compareBodies = compareResps.map((resp) => resp.compare.body);
-
-    const matches = await this.findDiffMatches(compareBodies, revisions);
-
-    const bestMatch = matches.sort((m1, m2) => (
-      m1.wordOverlap === m2.wordOverlap ?
-      m1.dateProximity - m2.dateProximity :
-      m2.wordOverlap - m1.wordOverlap
-    ))[0];
-    if (!bestMatch) {
-      throw new CdError({
-        type: 'parse',
+  async findEdit() {
+    if (!this.addingEdit) {
+      // Search for the edit in the range of 10 minutes before (in case the comment was edited with
+      // timestamp replaced) to 3 minutes after (a rare occasion where the diff timestamp is newer
+      // than the comment timestamp).
+      const revisions = await this.getSourcePage().getArchivedPage().getRevisions({
+        rvprop: ['ids', 'comment', 'parsedcomment', 'timestamp'],
+        rvdir: 'newer',
+        rvstart: new Date(this.date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * 10).toISOString(),
+        rvend: new Date(this.date.getTime() + cd.g.MILLISECONDS_IN_MINUTE * 3).toISOString(),
+        rvuser: this.author.name,
+        rvlimit: 500,
       });
+
+      const compareRequests = revisions.map((revision) => controller.getApi().post({
+        action: 'compare',
+        fromtitle: this.getSourcePage().getArchivedPage().name,
+        fromrev: revision.revid,
+        torelative: 'prev',
+        prop: ['diff'],
+      }).catch(handleApiReject));
+      const compareBodies = (await Promise.all(compareRequests)).map((resp) => resp.compare.body);
+      const matches = await this.findDiffMatches(compareBodies, revisions);
+      const bestMatch = matches.sort((m1, m2) => (
+        m1.wordOverlap === m2.wordOverlap ?
+          m1.dateProximity - m2.dateProximity :
+          m2.wordOverlap - m1.wordOverlap
+      ))[0];
+      if (!bestMatch) {
+        throw new CdError({
+          type: 'parse',
+        });
+      }
+
+      // Cache a successful result.
+      this.addingEdit = bestMatch.revision;
     }
 
-    // Cache a successful result.
-    this.editThatAdded = bestMatch.revision;
-
-    return this.editThatAdded;
+    return this.addingEdit;
   }
 
   /**
@@ -2507,7 +2500,7 @@ class Comment extends CommentSkeleton {
    * @returns {Promise.<string>}
    */
   async getDiffLink(format = 'standard') {
-    const edit = await this.findEditThatAdded();
+    const edit = await this.findEdit();
     if (format === 'standard') {
       const urlEnding = decodeURI(cd.page.getArchivedPage().getUrl({ diff: edit.revid }));
       return `${cd.g.SERVER}${urlEnding}`;
@@ -2594,7 +2587,7 @@ class Comment extends CommentSkeleton {
     let edit;
     try {
       ([edit] = await Promise.all([
-        this.findEditThatAdded(),
+        this.findEdit(),
         genderRequest,
         mw.loader.using(['mediawiki.diff', 'mediawiki.diff.styles']),
       ].filter(defined)));
@@ -2896,8 +2889,8 @@ class Comment extends CommentSkeleton {
           text = text.replace(cd.config.signatureEndingRegexp, '');
         }
 
-        // FIXME: We use the same regexp to clean both wikitext and render. With the current default
-        // config value the side effects seem to be negligable, but who knows...
+        // FIXME: We use the same regexp to clean both the wikitext and the render. With the current
+        // default config value the side effects seem to be negligable, but who knows...
         if (cd.config.signaturePrefixRegexp) {
           text = text.replace(cd.config.signaturePrefixRegexp, '');
         }
@@ -3563,8 +3556,8 @@ class Comment extends CommentSkeleton {
         // (https://ru.wikipedia.org/w/index.php?diff=110482717).
         (
           maxIndentationCharsLength > 0 ?
-          `|[:*#\\x01]{1,${maxIndentationCharsLength}}(?![:*\\n\\x01])` :
-          ''
+            `|[:*#\\x01]{1,${maxIndentationCharsLength}}(?![:*\\n\\x01])` :
+            ''
         ) +
         ')'
       );

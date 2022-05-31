@@ -614,8 +614,8 @@ export function areObjectsEqual(object1, object2, includes = false) {
   );
   const toPrimitiveValue = (val) => (
     val instanceof RegExp || val instanceof Date ?
-    val.toString() :
-    val
+      val.toString() :
+      val
   );
 
   if (!isMultipartObject(object1) || !isMultipartObject(object2)) {
@@ -897,7 +897,7 @@ export function getHigherNodeAndOffsetInSelection(selection) {
  * @param {Event} e
  * @returns {boolean}
  */
-export function isCmdMofidicatorPressed(e) {
+export function isCmdModifierPressed(e) {
   // In Chrome on Windows, e.metaKey corresponds to the Windows key, so we better check for a
   // platform.
   return cd.g.CLIENT_PROFILE.platform === 'mac' ? e.metaKey : e.ctrlKey;

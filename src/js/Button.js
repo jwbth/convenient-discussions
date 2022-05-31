@@ -1,4 +1,4 @@
-import { isCmdMofidicatorPressed } from './util';
+import { isCmdModifierPressed } from './util';
 
 let prototypes = {};
 
@@ -174,7 +174,7 @@ class Button {
   maybeRunAction(action, e) {
     if (
       !this.isDisabled() &&
-      ((!isCmdMofidicatorPressed(e) && !e.shiftKey) || !this.buttonElement.href)
+      ((!isCmdModifierPressed(e) && !e.shiftKey) || !this.buttonElement.href)
     ) {
       e.preventDefault();
       action(e);

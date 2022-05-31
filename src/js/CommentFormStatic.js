@@ -133,4 +133,23 @@ export default {
       controller.setAddSectionForm(commentForm);
     }
   },
+
+  /**
+   * Adjust the button labels of all comment forms according to the form width: if the form is to
+   * narrow, the labels will shrink.
+   */
+  adjustLabels() {
+    cd.commentForms.forEach((commentForm) => {
+      commentForm.adjustLabels();
+    });
+  },
+
+  /**
+   * Detach the comment forms keeping events.
+   */
+  detach() {
+    cd.commentForms.forEach((commentForm) => {
+      commentForm.$outermostElement.detach();
+    });
+  },
 };

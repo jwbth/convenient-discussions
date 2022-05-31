@@ -11,7 +11,7 @@ import cd from './cd';
 import controller from './controller';
 import settings from './settings';
 import updateChecker from './updateChecker';
-import { focusInput, isCmdMofidicatorPressed, reorderArray } from './util';
+import { focusInput, isCmdModifierPressed, reorderArray } from './util';
 import { formatDate } from './timestamp';
 import { removeWikiMarkup } from './wikitext';
 
@@ -65,7 +65,7 @@ export default {
       classes: ['cd-navPanel-button'],
       id: 'cd-navPanel-refreshButton',
       action: (e) => {
-        this.refreshClick(isCmdMofidicatorPressed(e));
+        this.refreshClick(isCmdModifierPressed(e));
       },
     });
 

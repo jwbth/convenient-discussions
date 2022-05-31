@@ -23,7 +23,7 @@ import {
   handleApiReject,
   hideText,
   insertText,
-  isCmdMofidicatorPressed,
+  isCmdModifierPressed,
   isInputFocused,
   keyCombination,
   removeDoubleSpaces,
@@ -541,8 +541,8 @@ class CommentForm {
       this.mode === 'edit' &&
       (
         this.target.isOpeningSection ?
-        this.targetSection.comments.length === 1 :
-        !this.target.getChildren().length
+          this.targetSection.comments.length === 1 :
+          !this.target.getChildren().length
       )
     ) {
       const selected = dataToRestore?.delete ?? false;
@@ -1012,7 +1012,7 @@ class CommentForm {
       .find('.tool-button[rel="mention"]')
       .off('click')
       .on('click', (e) => {
-        this.mention(isCmdMofidicatorPressed(e));
+        this.mention(isCmdModifierPressed(e));
       });
 
     this.$element
@@ -1738,14 +1738,14 @@ class CommentForm {
         this.submitButton.$element.outerWidth(true) +
         (
           this.previewButton.$element.is(':visible') ?
-          this.previewButton.$element.outerWidth(true) :
-          0
+            this.previewButton.$element.outerWidth(true) :
+            0
         ) +
         // Users may hide the view changes button by any kind of a plugin.
         (
           this.viewChangesButton.$element.is(':visible') ?
-          this.viewChangesButton.$element.outerWidth(true) :
-          0
+            this.viewChangesButton.$element.outerWidth(true) :
+            0
         ) +
         this.advancedButton.$element.outerWidth(true) +
         this.helpPopupButton.$element.outerWidth(true) +
@@ -3241,8 +3241,8 @@ class CommentForm {
         .setFlags(['destructive', 'primary'])
         .setLabel(
           this.$element.hasClass('cd-commentForm-short') ?
-          this.submitButtonLabelStandard :
-          this.submitButtonLabelShort
+            this.submitButtonLabelStandard :
+            this.submitButtonLabelShort
         );
     } else {
       this.minorCheckbox.setSelected(this.initialMinorCheckboxSelected);
@@ -3259,8 +3259,8 @@ class CommentForm {
         .setFlags(['progressive', 'primary'])
         .setLabel(
           this.$element.hasClass('cd-commentForm-short') ?
-          this.submitButtonLabelStandard :
-          this.submitButtonLabelShort
+            this.submitButtonLabelStandard :
+            this.submitButtonLabelShort
         );
     }
   }

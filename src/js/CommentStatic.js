@@ -334,8 +334,8 @@ export default {
       if (endIndex !== undefined) {
         comments = comments.filter((comment) => (
           direction === 'forward' ?
-          comment.index < endIndex && comment.index >= startIndex :
-          comment.index > endIndex && comment.index <= startIndex
+            comment.index < endIndex && comment.index >= startIndex :
+            comment.index > endIndex && comment.index <= startIndex
         ));
       }
       return comments.find(isVisible) || null;

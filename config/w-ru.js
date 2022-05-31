@@ -536,8 +536,8 @@ mw.hook('convenientDiscussions.commentFormCreated').add(function (commentForm) {
 mw.hook('convenientDiscussions.commentFormModulesReady').add(function (commentForm) {
   commentForm.$element.on('keydown', function (e) {
     // Ctrl+Alt+W
-    let isCmdMofidicatorPressed = cd.g.CLIENT_PROFILE.platform === 'mac' ? e.metaKey : e.ctrlKey;
-    if (isCmdMofidicatorPressed && !e.shiftKey && e.altKey && e.keyCode === 87) {
+    let isCmdModifierPressed = cd.g.CLIENT_PROFILE.platform === 'mac' ? e.metaKey : e.ctrlKey;
+    if (isCmdModifierPressed && !e.shiftKey && e.altKey && e.keyCode === 87) {
       window.Wikify(commentForm.commentInput.$input.get(0));
     }
   });

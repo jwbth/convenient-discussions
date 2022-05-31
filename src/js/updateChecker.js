@@ -651,8 +651,8 @@ function showOrdinaryNotification(comments) {
         cd.mws('word-separator') +
         (
           section ?
-          cd.s('notification-part-insection', section.headline) :
-          cd.s('notification-part-onthispage')
+            cd.s('notification-part-insection', section.headline) :
+            cd.s('notification-part-onthispage')
         )
       );
       let mayBeRelevantString = cd.s('notification-newcomments-mayberelevant');

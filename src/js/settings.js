@@ -159,7 +159,7 @@ export default {
     omitLocal = false,
     reuse = false,
   } = {}) {
-    if (!options || !options[cd.g.SETTINGS_OPTION_NAME]) {
+    if (!options?.[cd.g.SETTINGS_OPTION_NAME]) {
       ({ options } = await getUserInfo(reuse));
     }
 

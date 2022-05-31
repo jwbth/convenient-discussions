@@ -12,7 +12,7 @@ import {
   getExtendedRect,
   getFromLocalStorage,
   getVisibilityByRects,
-  isCmdMofidicatorPressed,
+  isCmdModifierPressed,
   removeFromArrayIfPresent,
   saveToLocalStorage,
   unique,
@@ -535,7 +535,7 @@ class Thread {
     const button = new Button({
       tooltip: cd.s('thread-expand-tooltip', cd.g.CMD_MODIFIER),
       action: (e) => {
-        if (isCmdMofidicatorPressed(e)) {
+        if (isCmdModifierPressed(e)) {
           cd.comments.slice().reverse().forEach((comment) => {
             if (comment.thread?.isCollapsed) {
               comment.thread.expand();
@@ -778,8 +778,8 @@ class Thread {
     };
     const getTop = (rectOrOffset) => (
       rectOrOffset instanceof DOMRect ?
-      scrollY + rectOrOffset.top :
-      rectOrOffset.top
+        scrollY + rectOrOffset.top :
+        rectOrOffset.top
     );
 
     const elementsToAdd = [];
