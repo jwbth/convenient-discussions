@@ -10,7 +10,6 @@ import controller from './controller';
 import navPanel from './navPanel';
 import notifications from './notifications';
 import pageRegistry from './pageRegistry';
-import sessions from './sessions';
 import settings from './settings';
 import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
@@ -1435,7 +1434,7 @@ class CommentForm {
    */
   addEventListeners() {
     const saveSessionEventHandler = () => {
-      sessions.save();
+      CommentForm.saveSession();
     };
     const preview = () => {
       this.preview();
@@ -3064,7 +3063,7 @@ class CommentForm {
       delete this.target[CommentForm.modeToProperty(this.mode) + 'Form'];
     }
     removeFromArrayIfPresent(cd.commentForms, this);
-    sessions.save(true);
+    CommentForm.saveSession(true);
     navPanel.updateCommentFormButton();
     this.autocomplete.cleanUp();
   }

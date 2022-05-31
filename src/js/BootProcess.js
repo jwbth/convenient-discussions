@@ -11,7 +11,6 @@ import init from './init';
 import navPanel from './navPanel';
 import pageNav from './pageNav';
 import pageRegistry from './pageRegistry';
-import sessions from './sessions';
 import settings from './settings';
 import subscriptions from './subscriptions';
 import toc from './toc';
@@ -1207,7 +1206,7 @@ export default class BootProcess {
       mw.user.options.get('editsectiononrightclick')
     );
     controller.addPreventUnloadCondition('commentForms', () => {
-      sessions.save(true);
+      CommentForm.saveSession(true);
       return (
         mw.user.options.get('useeditwarning') &&
         (
@@ -1684,7 +1683,7 @@ export default class BootProcess {
       // hidden during the comment forms restoration. Should be below the navPanel mount/reset
       // methods as it calls navPanel.updateCommentFormButton() which depends on the navigation
       // panel being mounted.
-      sessions.restore(this.firstRun || this.data('isPageReloadedExternally'));
+      CommentForm.restoreSession(this.firstRun || this.data('isPageReloadedExternally'));
 
       this.hideDtNewTopicForm();
       this.maybeAddAddSectionForm();

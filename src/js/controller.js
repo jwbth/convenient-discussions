@@ -19,7 +19,6 @@ import navPanel from './navPanel';
 import notifications from './notifications';
 import pageNav from './pageNav';
 import postponements from './postponements';
-import sessions from './sessions';
 import settings from './settings';
 import toc from './toc';
 import updateChecker from './updateChecker';
@@ -1225,7 +1224,7 @@ export default {
     // A check in light of the existence of RevisionSlider.
     if (this.isCurrentRevision()) {
       // In case checkboxes were changed programmatically.
-      sessions.save();
+      CommentForm.saveSession();
     }
 
     if (!bootProcess.data('commentId') && !bootProcess.data('sectionId')) {
