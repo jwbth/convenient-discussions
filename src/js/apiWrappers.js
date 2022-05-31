@@ -222,7 +222,13 @@ export function makeBackgroundRequest(params, method = 'post') {
     controller.getApi()[method](params, {
       success: (resp) => {
         if (resp.error) {
-          reject(['api', resp]);
+          // Workaround for cases when an options request is made on an idle page whose tokens
+          // expire. A re-request of such tokens results is generally successful, but _this_
+          // callback is executed after each response, so we don't rejecting to avoid misleading
+          // error messages being shown to the user.
+          if (resp.error.code !== 'badtoken') {
+            reject(['api', resp]);
+          }
         } else {
           resolve(resp);
         }
