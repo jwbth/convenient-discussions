@@ -321,7 +321,7 @@ export default {
     });
 
     const viewportTop = window.scrollY + cd.g.BODY_SCROLL_PADDING_TOP;
-    const viewportBottom = viewportTop + window.innerHeight;
+    const viewportBottom = window.scrollY + window.innerHeight;
 
     // Visibility is checked in the sense that an element is visible on the page, not necessarily in
     // the viewport.

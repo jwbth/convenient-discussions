@@ -136,8 +136,9 @@ export default {
       $elements.hide();
     }
 
-    const viewportTop = $(window).scrollTop() + cd.g.BODY_SCROLL_PADDING_TOP;
-    const viewportBottom = viewportTop + $(window).height();
+    const scrollTop = $(window).scrollTop();
+    const viewportTop = scrollTop + cd.g.BODY_SCROLL_PADDING_TOP;
+    const viewportBottom = scrollTop + $(window).height();
 
     return partially ?
       elementBottom > viewportTop && elementTop < viewportBottom :
