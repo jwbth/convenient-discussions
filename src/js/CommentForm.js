@@ -2942,7 +2942,7 @@ class CommentForm {
       passedData.wasPageCreated = true;
     }
 
-    if (this.subscribeCheckbox && editTimestamp !== 'nochange') {
+    if (this.subscribeCheckbox) {
       this.updateSubscriptionStatus(editTimestamp, commentCode, passedData);
     }
 
