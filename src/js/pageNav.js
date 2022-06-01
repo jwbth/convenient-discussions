@@ -58,13 +58,13 @@ export default {
     if (!this.isMounted()) return;
 
     if (controller.$contentColumn.length) {
-      const left = controller.$contentColumn.offset().left;
+      const left = controller.$contentColumn.offset().left - $(window).scrollLeft();
       const padding = 18;
       let width = $(document.body).hasClass('ltr') ?
         left - padding :
-        $(window).width() - (left + cd.g.$contentColumn.outerWidth()) - padding;
+        $(window).width() - (left + controller.$contentColumn.outerWidth()) - padding;
       if (cd.g.SKIN === 'minerva') {
-        width -= cd.g.CONTENT_START_MARGIN;
+        width -= controller.getContentColumnOffsets().startMargin;
       }
 
       // Some skins when the viewport is narrowed

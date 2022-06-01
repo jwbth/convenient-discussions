@@ -935,8 +935,6 @@ export default {
 
     // For Timeless, Vector-2022 skins
     cd.g.BODY_SCROLL_PADDING_TOP = parseFloat($('html, body').css('scroll-padding-top')) || 0;
-
-    controller.setContentColumnState();
   },
 
   /**
@@ -969,7 +967,7 @@ export default {
   --cd-comment-fallback-side-margin: ${cd.g.COMMENT_FALLBACK_SIDE_MARGIN}px;
   --cd-thread-line-side-margin: ${cd.g.THREAD_LINE_SIDE_MARGIN}px;
   --cd-content-background-color: ${contentBackgroundColor};
-  --cd-content-start-margin: ${controller.contentStartMargin}px;
+  --cd-content-start-margin: ${controller.getContentColumnOffsets().startMargin}px;
   --cd-content-font-size: ${cd.g.CONTENT_FONT_SIZE}px;
   --cd-sidebar-color: ${sidebarColor};
   --cd-sidebar-transparent-color: ${transparentize(sidebarColor)};

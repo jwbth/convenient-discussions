@@ -1511,6 +1511,7 @@ export default class BootProcess {
     // hidden, and the movements are not processed when the document is hidden.
     $(document)
       .on('scroll visibilitychange', controller.handleScroll)
+      .on('horizontalscroll.cd visibilitychange', controller.handleHorizontalScroll)
       .on('selectionchange', controller.handleSelectionChange);
 
     $(window)

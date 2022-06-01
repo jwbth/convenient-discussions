@@ -55,6 +55,7 @@ export default {
   document: document.documentElement,
   autoScrolling: false,
   isUpdateThreadLinesHandlerAttached: false,
+  lastScrollX: 0,
 
   /**
    * Assign some properties required by the controller - those which are not known from the
@@ -419,32 +420,38 @@ export default {
   },
 
   /**
-   * _For internal use._ Memorize the state related to `controller.$contentColumn`.
+   * Get the offset data related to `controller.$contentColumn`.
    *
-   * @param {boolean} setCssVar Whether to set the `--cd-content-start-margin` CSS variable.
+   * @param {boolean} reset Whether to bypass cache.
+   * @returns {object}
    */
-  setContentColumnState(setCssVar) {
-    const prop = cd.g.CONTENT_DIR === 'ltr' ? 'padding-left' : 'padding-right';
-    let contentStartMargin = parseFloat(this.$contentColumn.css(prop));
-    if (contentStartMargin < cd.g.CONTENT_FONT_SIZE) {
-      contentStartMargin = cd.g.CONTENT_FONT_SIZE;
+  getContentColumnOffsets(reset) {
+    if (!this.contentColumnOffsets || reset) {
+      const prop = cd.g.CONTENT_DIR === 'ltr' ? 'padding-left' : 'padding-right';
+      let startMargin = Math.max(parseFloat(this.$contentColumn.css(prop)), cd.g.CONTENT_FONT_SIZE);
+
+      // The content column in Timeless has no _borders_ as such, so it's wrong to penetrate the
+      // surrounding area from the design point of view.
+      if (cd.g.SKIN === 'timeless') {
+        startMargin--;
+      }
+
+      const left = this.$contentColumn.offset().left;
+      const width = this.$contentColumn.outerWidth();
+      this.contentColumnOffsets = {
+        startMargin,
+        start: cd.g.CONTENT_DIR === 'ltr' ? left : left + width,
+        end: cd.g.CONTENT_DIR === 'ltr' ? left + width : left,
+      };
+
+      // This is set only on window resize event. The initial value is set in init.addTalkPageCss()
+      // through a style tag.
+      if (reset) {
+        $(this.document).css('--cd-content-start-margin', startMargin + 'px');
+      }
     }
 
-    // The content column in Timeless has no _borders_ as such, so it's wrong to penetrate the
-    // surrounding area from the design point of view.
-    if (cd.g.SKIN === 'timeless') {
-      contentStartMargin--;
-    }
-
-    this.contentStartMargin = contentStartMargin;
-    if (setCssVar) {
-      $(this.document).css('--cd-content-start-margin', contentStartMargin + 'px');
-    }
-
-    const left = this.$contentColumn.offset().left;
-    const width = this.$contentColumn.outerWidth();
-    this.contentColumnStart = cd.g.CONTENT_DIR === 'ltr' ? left : left + width;
-    this.contentColumnEnd = cd.g.CONTENT_DIR === 'ltr' ? left + width : left;
+    return this.contentColumnOffsets;
   },
 
   /**
@@ -798,7 +805,7 @@ export default {
   handleWindowResize() {
     // setTimeout, because it seems like sometimes it doesn't have time to update.
     setTimeout(() => {
-      this.setContentColumnState(true);
+      this.getContentColumnOffsets(true);
       Comment.redrawLayersIfNecessary(true);
       Thread.updateLines();
       pageNav.updateWidth();
@@ -865,8 +872,9 @@ export default {
   },
 
   /**
-   * _For internal use._ Register seen comments, update the navigation panel's first unseen button,
-   * and update the current section block.
+   * _For internal use._ Handle a document's `scroll` event: Register seen comments, update the
+   * navigation panel's first unseen button, and update the current section block. Trigger the
+   * `horizontalscroll` event.
    */
   handleScroll() {
     // Scroll will be handled when the autoscroll is finished.
@@ -887,6 +895,19 @@ export default {
     // Down/Page Up. One scroll in Chrome, Firefox with Page Up/Page Down takes a little less than
     // 200ms, but 200ms proved to be not enough, so we try 300ms.
     postponements.add('scroll', actuallyHandle, 300);
+
+    if (window.scrollX !== this.lastScrollX) {
+      $(document).trigger('horizontalscroll.cd')
+    }
+    this.lastScrollX = window.scrollX;
+  },
+
+  /**
+   * _For internal use._ Handle a `horizontalscroll` event, triggered from
+   * {@link controller.handleScroll}.
+   */
+  handleHorizontalScroll() {
+    pageNav.updateWidth();
   },
 
   /**

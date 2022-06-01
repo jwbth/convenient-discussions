@@ -1057,16 +1057,18 @@ class Comment extends CommentSkeleton {
     this.isEndStretched = false;
 
     if (this.level === 0) {
+      const offsets = controller.getContentColumnOffsets();
+
       // 2 instead of 1 for Timeless
-      const leftStretched = left - controller.contentStartMargin - 2;
-      const rightStretched = right + controller.contentStartMargin + 2;
+      const leftStretched = left - offsets.startMargin - 2;
+      const rightStretched = right + offsets.startMargin + 2;
 
       this.isStartStretched = this.getDir() === 'ltr' ?
-        leftStretched <= controller.contentColumnStart :
-        rightStretched >= controller.contentColumnStart;
+        leftStretched <= offsets.start :
+        rightStretched >= offsets.start;
       this.isEndStretched = this.getDir() === 'ltr' ?
-        rightStretched >= controller.contentColumnEnd :
-        leftStretched <= controller.contentColumnEnd;
+        rightStretched >= offsets.end :
+        leftStretched <= offsets.end;
     }
   }
 
@@ -1182,7 +1184,7 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get the comment text direction. It can be different from the text direction of the site's
+   * Get the comment's text direction. It can be different from the text direction of the site's
    * content language on pages with text marked with the class `mw-content-ltr` or `mw-content-rtl`
    * inside the content.
    *
@@ -1230,7 +1232,7 @@ class Comment extends CommentSkeleton {
         cd.g.CONTENT_FONT_SIZE * 3.2 :
         cd.g.CONTENT_FONT_SIZE * 2.2 - 1;
     } else if (this.isStartStretched) {
-      startMargin = controller.contentStartMargin;
+      startMargin = controller.getContentColumnOffsets().startMargin;
     } else {
       const anchorElement = this.isCollapsed ? this.thread.expandNote : this.anchorHighlightable;
       if (
@@ -1243,7 +1245,7 @@ class Comment extends CommentSkeleton {
       }
     }
     const endMargin = this.isEndStretched ?
-      controller.contentStartMargin :
+      controller.getContentColumnOffsets().startMargin :
       cd.g.COMMENT_FALLBACK_SIDE_MARGIN;
 
     const left = this.getDir() === 'ltr' ? startMargin : endMargin;
