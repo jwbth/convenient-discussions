@@ -427,7 +427,7 @@ export default {
    */
   getContentColumnOffsets(reset) {
     if (!this.contentColumnOffsets || reset) {
-      const prop = cd.g.CONTENT_DIR === 'ltr' ? 'padding-left' : 'padding-right';
+      const prop = cd.g.CONTENT_TEXT_DIRECTION === 'ltr' ? 'padding-left' : 'padding-right';
       let startMargin = Math.max(parseFloat(this.$contentColumn.css(prop)), cd.g.CONTENT_FONT_SIZE);
 
       // The content column in Timeless has no _borders_ as such, so it's wrong to penetrate the
@@ -440,8 +440,8 @@ export default {
       const width = this.$contentColumn.outerWidth();
       this.contentColumnOffsets = {
         startMargin,
-        start: cd.g.CONTENT_DIR === 'ltr' ? left : left + width,
-        end: cd.g.CONTENT_DIR === 'ltr' ? left + width : left,
+        start: cd.g.CONTENT_TEXT_DIRECTION === 'ltr' ? left : left + width,
+        end: cd.g.CONTENT_TEXT_DIRECTION === 'ltr' ? left + width : left,
       };
 
       // This is set only on window resize event. The initial value is set in init.addTalkPageCss()
@@ -1106,6 +1106,15 @@ export default {
     }
 
     this.booting = false;
+  },
+
+  /**
+   * Get the current (or last available) boot process.
+   *
+   * @returns {BootProcess}
+   */
+  getBootProcess() {
+    return this.bootProcess;
   },
 
   /**

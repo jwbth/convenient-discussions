@@ -44,8 +44,8 @@ export default {
         // Manually add/remove a section that was added/removed at the same moment the page was
         // reloaded last time, so when we requested the watched sections from server, this section
         // wasn't there yet most probably.
-        this.updateRegistry(controller.bootProcess.data('justSubscribedToSection'), true);
-        this.updateRegistry(controller.bootProcess.data('justUnsubscribedFromSection'), false);
+        this.updateRegistry(controller.getBootProcess().data('justSubscribedToSection'), true);
+        this.updateRegistry(controller.getBootProcess().data('justUnsubscribedFromSection'), false);
       }
     }
   },

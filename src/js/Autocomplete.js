@@ -83,7 +83,7 @@ class Autocomplete {
       noMatchTemplate: () => null,
       containerClass: 'tribute-container cd-autocompleteContainer',
       replaceTextSuffix: '',
-      dir: cd.g.CONTENT_DIR,
+      textDirection: cd.g.CONTENT_TEXT_DIRECTION,
     });
 
     /**

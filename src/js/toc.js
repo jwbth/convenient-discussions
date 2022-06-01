@@ -437,7 +437,8 @@ const toc = {
         date = cd.s('navpanel-newcomments-unknowndate');
       }
 
-      let text = names + (cd.g.CONTENT_DIR === 'rtl' ? '\u200f' : '') + cd.mws('comma-separator');
+      const rtlMarkOrNot = cd.g.CONTENT_TEXT_DIRECTION === 'rtl' ? '\u200f' : '';
+      let text = names + rtlMarkOrNot + cd.mws('comma-separator');
       if (settings.get('timestampFormat') === 'default') {
         text += date;
       }
@@ -539,14 +540,14 @@ const toc = {
     const areCommentsRendered = firstComment instanceof Comment;
 
     const saveTocHeight = Boolean(
-      controller.bootProcess.isFirstRun() ||
+      controller.getBootProcess().isFirstRun() ||
 
       // When unrendered (in gray) comments are added
       !areCommentsRendered ||
 
       // When the comment or section is opened by a link from the TOC
-      controller.bootProcess.data('commentId') ||
-      controller.bootProcess.data('sectionId')
+      controller.getBootProcess().data('commentId') ||
+      controller.getBootProcess().data('sectionId')
     );
     controller.saveRelativeScrollPosition({ saveTocHeight });
 

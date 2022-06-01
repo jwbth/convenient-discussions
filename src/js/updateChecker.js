@@ -135,7 +135,7 @@ async function processPage(revisionToParseId) {
 async function processRevisionsIfNeeded() {
   const revisions = await cd.page.getRevisions({
     rvprop: ['ids'],
-    rvstart: new Date(controller.bootProcess.getPreviousVisitUnixTime() * 1000).toISOString(),
+    rvstart: new Date(controller.getBootProcess().getPreviousVisitUnixTime() * 1000).toISOString(),
     rvlimit: 1,
   }, true);
 
@@ -940,7 +940,7 @@ const updateChecker = {
 
     setAlarmViaWorker(cd.g.UPDATE_CHECK_INTERVAL * 1000);
 
-    const bootProcess = controller.bootProcess;
+    const bootProcess = controller.getBootProcess();
 
     // It is processed in BootProcess#processVisits.
     await bootProcess.getVisitsRequest();

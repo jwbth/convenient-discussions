@@ -1,4 +1,4 @@
-const CommentTextParser = require('../src/js/CommentTextParser').default;
+const CommentTextProcessor = require('../src/js/CommentTextProcessor').default;
 const cd = require('../src/js/cd').default;
 
 const defaultConfig = {
@@ -24,14 +24,15 @@ function testWithData(label, code, expected, commentForm, action = 'submit', con
       cd.config = Object.assign({}, cd.config, config);
     }
 
-    const parser = new CommentTextParser(commentForm, action);
+    const processor = new CommentTextProcessor(commentForm, action);
     try {
       if (expected instanceof Error) {
         expect(() => {
-          parser.parse(code);
+          processor.process(code);
         }).toThrow(expected);
       } else {
-        expect(parser.parse(code))[typeof expected === 'string' ? 'toEqual' : 'toMatch'](expected);
+        const method = typeof expected === 'string' ? 'toEqual' : 'toMatch';
+        expect(processor.process(code))[method](expected);
       }
     } finally {
       if (config) {

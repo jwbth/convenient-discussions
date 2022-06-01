@@ -2,8 +2,8 @@ import Autocomplete from './Autocomplete';
 import Button from './Button';
 import CdError from './CdError';
 import Comment from './Comment';
-import CommentFormStatic from './CommentFormStatic';
-import CommentTextParser from './CommentTextParser';
+import CommentFormStatic from './CommentForm.static';
+import CommentTextProcessor from './CommentTextProcessor';
 import Section from './Section';
 import cd from './cd';
 import controller from './controller';
@@ -2096,7 +2096,7 @@ class CommentForm {
     // Are we at a stage where we better introduce a lexical analyzer (or use MediaWiki's / some
     // part of it)?..
 
-    const parser = new CommentTextParser(this, action);
+    const processor = new CommentTextProcessor(this, action);
 
     /**
      * Will the comment be indented (is a reply or an edited reply).
@@ -2106,13 +2106,13 @@ class CommentForm {
      *
      * @type {boolean|undefined}
      */
-    this.willCommentBeIndented = parser.isIndented;
+    this.willCommentBeIndented = processor.isIndented();
 
     let code = this.commentInput.getValue();
     if (cd.config.preTransformCode) {
       code = cd.config.preTransformCode(code, this);
     }
-    code = parser.parse(code);
+    code = processor.process(code);
     if (cd.config.postTransformCode) {
       code = cd.config.postTransformCode(code, this);
     }
@@ -2137,7 +2137,7 @@ class CommentForm {
         const anchorCode = cd.config.getAnchorCode(id);
         if (commentInCode.code.includes(anchorCode)) return;
 
-        let commentCodePart = CommentTextParser.prototype.prepareLineStart(
+        let commentCodePart = CommentTextProcessor.prototype.prepareLineStart(
           commentInCode.indentationChars,
           commentInCode.code
         );
@@ -2630,7 +2630,7 @@ class CommentForm {
           currentOperation,
         });
       }
-      controller.bootProcess.finish();
+      controller.getBootProcess().finish();
     }
   }
 
@@ -2779,11 +2779,12 @@ class CommentForm {
   }
 
   /**
-   * Subscribe and unsubscribe from topics
+   * Subscribe and unsubscribe from topics.
    *
    * @param {string} editTimestamp
    * @param {string} commentCode
    * @param {object} passedData
+   * @private
    */
   updateSubscriptionStatus(editTimestamp, commentCode, passedData) {
     if (this.subscribeCheckbox.isSelected()) {

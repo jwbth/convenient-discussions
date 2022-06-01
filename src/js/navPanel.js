@@ -351,7 +351,7 @@ export default {
         tooltipText += '\n' + cd.s('navpanel-markasread', cd.g.CMD_MODIFIER);
       }
       const bullet = removeWikiMarkup(cd.s('bullet'));
-      const rtlMarkOrNot = cd.g.CONTENT_DIR === 'rtl' ? '\u200f' : '';
+      const rtlMarkOrNot = cd.g.CONTENT_TEXT_DIRECTION === 'rtl' ? '\u200f' : '';
       const comma = cd.mws('comma-separator');
       commentsBySection.forEach((comments, section) => {
         const headline = section?.headline;

@@ -244,7 +244,7 @@ function setGlobals() {
 
   cd.g.PAGE_WHITELIST_REGEXP = mergeRegexps(cd.config.pageWhitelist);
   cd.g.PAGE_BLACKLIST_REGEXP = mergeRegexps(cd.config.pageBlacklist);
-  cd.g.CONTENT_DIR = bodyClassList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
+  cd.g.CONTENT_TEXT_DIRECTION = bodyClassList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
   cd.g.SKIN = mw.config.get('skin');
   cd.g.IS_QQX_MODE = /[?&]uselang=qqx(?=&|$)/.test(location.search);
 
@@ -566,8 +566,9 @@ async function app() {
   cd.sPlain = sPlain;
   cd.mws = mws;
 
-  // Kind of temporary storage of objects of some script's features. Could be removed at any moment.
-  cd.tests = {};
+  // Kind of a temporary storage of objects of some script's features. Could be removed at any
+  // moment.
+  cd.tests = { controller };
 
   setupApi();
 

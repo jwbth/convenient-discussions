@@ -508,8 +508,10 @@ class TributeRange {
             top: top + windowTop + span.offsetTop + parseInt(computed.borderTopWidth) +
                 parseInt(computed.fontSize) - element.scrollTop
         }
-        if (this.tribute.dir === 'rtl') {
-            const offsetRight = doc.dir === 'rtl' ? windowWidth : div.getBoundingClientRect().right
+        if (this.tribute.textDirection === 'rtl') {
+            const offsetRight = doc.textDirection === 'rtl' ?
+                windowWidth :
+                div.getBoundingClientRect().right
             coordinates.right = (windowWidth - right) +
                 (offsetRight - span.getBoundingClientRect().right) + triggerSpan.offsetWidth
         } else {
@@ -519,7 +521,7 @@ class TributeRange {
         let menuDimensions = this.getMenuDimensions()
         let menuIsOffScreen = this.isMenuOffScreen(coordinates, menuDimensions)
 
-        if (this.tribute.dir === 'rtl') {
+        if (this.tribute.textDirection === 'rtl') {
             if (menuIsOffScreen.left) {
                 coordinates.left = 0
                 coordinates.right = 'auto'

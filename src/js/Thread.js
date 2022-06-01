@@ -827,7 +827,7 @@ class Thread {
           // call.
           commentMargins = comment.getMargins();
         }
-        const dir = comment.getDir();
+        const dir = comment.getTextDirection();
         if (rectOrOffset) {
           top = getTop(rectOrOffset);
           left = getLeft(rectOrOffset, commentMargins, dir);

@@ -3,7 +3,7 @@ import CdError from './CdError';
 import CommentButton from './CommentButton';
 import CommentForm from './CommentForm';
 import CommentSkeleton from './CommentSkeleton';
-import CommentStatic from './CommentStatic';
+import CommentStatic from './Comment.static';
 import CommentSubitemList from './CommentSubitemList';
 import LiveTimestamp from './LiveTimestamp';
 import cd from './cd';
@@ -309,48 +309,53 @@ class Comment extends CommentSkeleton {
   }
 
   /**
+   * Process a possible signature node or a node that contains text which is part of a signature.
+   *
+   * @param {Node} n
+   * @private
+   */
+  processPossibleSignatureNode(n) {
+    if (!n) return;
+
+    // Remove text at the end of the element that looks like a part of the signature.
+    if (n.nodeType === Node.TEXT_NODE || !n.children.length) {
+      n.textContent = n.textContent
+        .replace(cd.config.signaturePrefixRegexp, '')
+        .replace(cd.config.signaturePrefixRegexp, '');
+    }
+
+    // Remove the entire element.
+    if (
+      n.tagName &&
+      (n.getAttribute('style') || ['SUP', 'SUB'].includes(n.tagName)) &&
+      n.textContent.length < 30 &&
+
+      (
+        !(
+          // Templates like "citation needed" or https://ru.wikipedia.org/wiki/Template:-:
+          n.classList.length ||
+
+          // <b> tags may be the output of templates like
+          // https://meta.wikimedia.org/wiki/Template:Done. Some opinion templates may have <b>,
+          // <strong> inside another tag.
+          ['B', 'STRONG'].includes(n.tagName) ||
+          n.querySelector('b, strong')
+        ) ||
+
+        // Cases like https://ru.wikipedia.org/?diff=119667594
+        n.textContent.toLowerCase() === this.author.name.toLowerCase()
+      )
+    ) {
+      n.remove();
+    }
+  }
+
+  /**
    * Clean up the signature and elements in front of it.
    *
    * @private
    */
   cleanUpSignature() {
-    const processNode = (n) => {
-      if (!n) return;
-
-      if (n.nodeType === Node.TEXT_NODE || !n.children.length) {
-        n.textContent = n.textContent
-          .replace(cd.config.signaturePrefixRegexp, '')
-          .replace(cd.config.signaturePrefixRegexp, '');
-      }
-
-      // "noprint" class check is a workaround to avoid removing of templates such as {{citation
-      // needed}}, for example https://en.wikipedia.org/?diff=1022999952.
-      if (
-        n.tagName &&
-
-        (n.getAttribute('style') || ['SUP', 'SUB'].includes(n.tagName)) &&
-        n.textContent.length < 30 &&
-
-        (
-          !(
-            // Templates like "citation needed" or https://ru.wikipedia.org/wiki/Template:-:
-            n.classList.length ||
-
-            // <b> tags may be the output of templates like
-            // https://meta.wikimedia.org/wiki/Template:Done. Some opinion templates may have <b>,
-            // <strong> inside another tag.
-            ['B', 'STRONG'].includes(n.tagName) ||
-            n.querySelector('b, strong')
-          ) ||
-
-          // Cases like https://ru.wikipedia.org/wiki/Special:Contributions/adamant.pwn
-          n.textContent.toLowerCase() === this.author.name.toLowerCase()
-        )
-      ) {
-        n.remove();
-      }
-    };
-
     let previousNode = this.signatureElement.previousSibling;
 
     // Cases like https://ru.wikipedia.org/?diff=117350706
@@ -368,18 +373,18 @@ class Comment extends CommentSkeleton {
     }
 
     const previousPreviousNode = previousNode?.previousSibling;
-    processNode(previousNode);
+    this.processPossibleSignatureNode(previousNode);
     if (
       previousNode &&
       previousPreviousNode &&
       (!previousNode.parentNode || !previousNode.textContent.trim())
     ) {
       const previousPreviousPreviousNode = previousPreviousNode.previousSibling;
-      processNode(previousPreviousNode);
+      this.processPossibleSignatureNode(previousPreviousNode);
 
       // Rare cases like https://en.wikipedia.org/?diff=1022471527
       if (!previousPreviousNode.parentNode) {
-        processNode(previousPreviousPreviousNode);
+        this.processPossibleSignatureNode(previousPreviousPreviousNode);
       }
     }
   }
@@ -1063,10 +1068,10 @@ class Comment extends CommentSkeleton {
       const leftStretched = left - offsets.startMargin - 2;
       const rightStretched = right + offsets.startMargin + 2;
 
-      this.isStartStretched = this.getDir() === 'ltr' ?
+      this.isStartStretched = this.getTextDirection() === 'ltr' ?
         leftStretched <= offsets.start :
         rightStretched >= offsets.start;
-      this.isEndStretched = this.getDir() === 'ltr' ?
+      this.isEndStretched = this.getTextDirection() === 'ltr' ?
         rightStretched >= offsets.end :
         leftStretched <= offsets.end;
     }
@@ -1190,8 +1195,8 @@ class Comment extends CommentSkeleton {
    *
    * @returns {string}
    */
-  getDir() {
-    if (!this.dir) {
+  getTextDirection() {
+    if (!this.textDirection) {
       if (controller.areThereLtrRtlMixes()) {
         // Take the last element because the first one may be the section heading which can have
         // another direction.
@@ -1199,13 +1204,13 @@ class Comment extends CommentSkeleton {
           .closest('.mw-content-ltr, .mw-content-rtl')
           .classList
           .contains('mw-content-ltr');
-        this.dir = isLtr ? 'ltr' : 'rtl';
+        this.textDirection = isLtr ? 'ltr' : 'rtl';
       } else {
-        this.dir = cd.g.CONTENT_DIR;
+        this.textDirection = cd.g.CONTENT_TEXT_DIRECTION;
       }
     }
 
-    return this.dir;
+    return this.textDirection;
   }
 
   /**
@@ -1248,8 +1253,8 @@ class Comment extends CommentSkeleton {
       controller.getContentColumnOffsets().startMargin :
       cd.g.COMMENT_FALLBACK_SIDE_MARGIN;
 
-    const left = this.getDir() === 'ltr' ? startMargin : endMargin;
-    const right = this.getDir() === 'ltr' ? endMargin : startMargin;
+    const left = this.getTextDirection() === 'ltr' ? startMargin : endMargin;
+    const right = this.getTextDirection() === 'ltr' ? endMargin : startMargin;
 
     return { left, right };
   }
@@ -1566,7 +1571,7 @@ class Comment extends CommentSkeleton {
     if (this.layersContainer === undefined) {
       let offsetParent;
 
-      // Use the last element, as in Comment#getDir().
+      // Use the last element, as in Comment#getTextDirection().
       const lastElement = this.elements[this.elements.length - 1];
       const treeWalker = new TreeWalker(document.body, null, true, lastElement);
 

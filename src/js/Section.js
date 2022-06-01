@@ -3,7 +3,7 @@ import CdError from './CdError';
 import CommentForm from './CommentForm';
 import SectionMenuButton from './SectionMenuButton';
 import SectionSkeleton from './SectionSkeleton';
-import SectionStatic from './SectionStatic';
+import SectionStatic from './Section.static';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';

@@ -4,12 +4,12 @@ import { generateTagsRegexp, hideSensitiveCode } from './wikitext';
 import { hideText, unhideText } from './util';
 
 /**
- * Class that parses the text in the comment input of the comment form and prepares the wikitext to
- * insert into the page.
+ * Class that processes the text in the comment input of the comment form and prepares the wikitext
+ * to insert into the page.
  */
-export default class CommentTextParser {
+export default class CommentTextProcessor {
   /**
-   * Create a comment text parser.
+   * Create a comment text processor.
    *
    * @param {CommentForm} commentForm
    * @param {string} action
@@ -56,17 +56,12 @@ export default class CommentTextParser {
         this.indentationChars = '';
     }
 
-    /**
-     * Is the comment indented.
-     *
-     * @type {boolean}
-     */
-    this.isIndented = Boolean(
+    this.indented = Boolean(
       ['reply', 'replyInSection'].includes(this.commentForm.mode) ||
       (this.commentForm.mode === 'edit' && this.indentationChars)
     );
 
-    if (this.isIndented) {
+    if (this.indented) {
       // In the preview mode, imitate a list so that the user will see where it would break on a
       // real page. This pseudolist's margin is made invisible by CSS.
       this.restLinesIndentationChars = this.action === 'preview' ?
@@ -76,12 +71,21 @@ export default class CommentTextParser {
   }
 
   /**
+   * Check whether the comment is indented.
+   *
+   * @returns {boolean}
+   */
+  isIndented() {
+    return this.indented;
+  }
+
+  /**
    * The main method that actually processes the code.
    *
    * @param {string} code
    * @returns {string}
    */
-  parse(code) {
+  process(code) {
     this.initialCode = this.code = code.trim();
 
     this.processAndHideSensitiveCode();
@@ -98,7 +102,7 @@ export default class CommentTextParser {
   }
 
   /**
-   * Process (with {@link CommentTextParser#processCode}) and hide sensitive code, setting the
+   * Process (with {@link CommentTextProcessor#processCode}) and hide sensitive code, setting the
    * `hidden` property and updating `code`.
    *
    * @private
@@ -115,7 +119,7 @@ export default class CommentTextParser {
    */
   findWrappers() {
     // Find tags around potential markup.
-    if (this.isIndented) {
+    if (this.indented) {
       const tagMatches = this.code.match(generateTagsRegexp(['[a-z]+'])) || [];
       const quoteMatches = this.code.match(cd.g.QUOTE_REGEXP) || [];
       const matches = tagMatches.concat(quoteMatches);
@@ -294,7 +298,7 @@ export default class CommentTextParser {
    * @private
    */
   handleIndentedComment(code, isWrapped) {
-    if (!this.isIndented) {
+    if (!this.indented) {
       return code;
     }
 
@@ -402,7 +406,7 @@ export default class CommentTextParser {
       'i'
     );
 
-    const newlinesRegexp = this.isIndented ?
+    const newlinesRegexp = this.indented ?
       /^(.+)\n(?![:#])(?=(.*))/gm :
       /^((?![:*#; ]).+)\n(?![\n:*#; \x03])(?=(.*))/gm;
     code = code.replace(newlinesRegexp, (s, currentLine, nextLine) => {
@@ -411,7 +415,7 @@ export default class CommentTextParser {
         entireLineRegexp.test(nextLine) ||
 
         (
-          !this.isIndented &&
+          !this.indented &&
           (entireLineFromStartRegexp.test(currentLine) || entireLineFromStartRegexp.test(nextLine))
         ) ||
         fileRegexp.test(currentLine) ||
@@ -429,7 +433,7 @@ export default class CommentTextParser {
         '<br>';
 
       // Current line can match galleryRegexp only if the comment will not be indented.
-      const newlineOrNot = this.isIndented && !this.galleryRegexp.test(nextLine) ? '' : '\n';
+      const newlineOrNot = this.indented && !this.galleryRegexp.test(nextLine) ? '' : '\n';
 
       return currentLine + lineBreakOrNot + newlineOrNot;
     });
@@ -516,7 +520,7 @@ export default class CommentTextParser {
     }
 
     // A space in the beggining of the last line, creating <pre>, or a heading.
-    if (!this.isIndented && /(^|\n)[ =].*$/.test(this.code)) {
+    if (!this.indented && /(^|\n)[ =].*$/.test(this.code)) {
       this.code += '\n';
     }
 
@@ -529,7 +533,7 @@ export default class CommentTextParser {
     if (this.wrapInSmall) {
       let before;
       if (/^[:*#; ]/.test(this.code)) {
-        before = '\n' + (this.isIndented ? this.restLinesIndentationChars : '');
+        before = '\n' + (this.indented ? this.restLinesIndentationChars : '');
       } else {
         before = '';
       }
@@ -568,7 +572,7 @@ export default class CommentTextParser {
   addIntentationChars() {
     // If the comment starts with a list or table, replace all asterisks in the indentation
     // characters with colons to have the comment HTML generated correctly.
-    if (this.isIndented && this.action !== 'preview' && /^[*#;\x03]/.test(this.code)) {
+    if (this.indented && this.action !== 'preview' && /^[*#;\x03]/.test(this.code)) {
       this.indentationChars = this.restLinesIndentationChars;
     }
 
@@ -578,7 +582,7 @@ export default class CommentTextParser {
       if (this.mode === 'addSubsection') {
         this.code += '\n';
       }
-    } else if (this.action === 'preview' && this.isIndented && this.initialCode) {
+    } else if (this.action === 'preview' && this.indented && this.initialCode) {
       this.code = this.prepareLineStart(':', this.code);
     }
   }

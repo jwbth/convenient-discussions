@@ -300,7 +300,7 @@ function isInSection(summary, name) {
   }
 
   // This can run many thousand times, so we use the cheapest way.
-  return cd.g.CONTENT_DIR === 'ltr' ?
+  return cd.g.CONTENT_TEXT_DIRECTION === 'ltr' ?
     summary.includes(`→${name}${colon}`) || summary.endsWith(`→${name}`) :
     summary.includes(`←${name}${colon}`) || summary.endsWith(`←${name}`);
 }

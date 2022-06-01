@@ -139,7 +139,7 @@ export async function getVisits(reuse = false) {
     currentPageVisits = [];
   } else {
     const isOptionSet = mw.user.options.get(cd.g.VISITS_OPTION_NAME) !== null;
-    const promise = controller.bootProcess.isPageFirstParsed() && !isOptionSet ?
+    const promise = controller.getBootProcess().isPageFirstParsed() && !isOptionSet ?
       Promise.resolve({}) :
       getUserInfo(reuse).then((options) => options.visits);
     visits = await promise;
@@ -216,7 +216,7 @@ export async function setVisits(visits) {
  */
 export async function getLegacySubscriptions(reuse = false) {
   const isOptionSet = mw.user.options.get(cd.g.SUBSCRIPTIONS_OPTION_NAME) !== null;
-  const promise = controller.bootProcess?.isPageFirstParsed() && !isOptionSet ?
+  const promise = controller.getBootProcess()?.isPageFirstParsed() && !isOptionSet ?
     Promise.resolve({}) :
     getUserInfo(reuse).then((options) => options.subscriptions);
   const registry = await promise;

@@ -54,7 +54,7 @@ function handleDtMarkup(elements) {
     mw.loader.getState('ext.discussionTools.init') === 'ready'
   );
   if (moveNotRemove) {
-    if (controller.bootProcess.isPageFirstParsed()) {
+    if (controller.getBootProcess().isPageFirstParsed()) {
       dtMarkupHavenElement = document.createElement('span');
       dtMarkupHavenElement.className = 'cd-dtMarkupHaven cd-hidden';
       controller.$content.append(dtMarkupHavenElement);
@@ -69,7 +69,7 @@ function handleDtMarkup(elements) {
     )
     .forEach((el, i) => {
       if (el.hasAttribute('data-mw-comment-start') && el.id && Comment.isDtId(el.id)) {
-        controller.bootProcess.addDtCommentId(el.id);
+        controller.getBootProcess().addDtCommentId(el.id);
       }
       if (moveNotRemove) {
         // DT gets the offset of all these elements upon initialization which can take a lot of

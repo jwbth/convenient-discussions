@@ -50,7 +50,7 @@ class Tribute {
     searchOpts = {},
     menuItemLimit = null,
     menuShowMinLength = 0,
-    dir = 'ltr'
+    textDirection = 'ltr'
   }) {
     this.menuSelected = 0;
     this.current = {};
@@ -61,7 +61,7 @@ class Tribute {
     this.replaceTextSuffix = replaceTextSuffix;
     this.positionMenu = positionMenu;
     this.hasTrailingSpace = false;
-    this.dir = dir;
+    this.textDirection = textDirection;
 
     if (!collection) {
       throw new Error("[Tribute] No collection specified.");
@@ -192,7 +192,7 @@ class Tribute {
       ul = document.createElement("ul");
     wrapper.className = containerClass;
 
-    if (this.dir === 'rtl') {
+    if (this.textDirection === 'rtl') {
       wrapper.className += ' tribute-rtl';
     }
 
