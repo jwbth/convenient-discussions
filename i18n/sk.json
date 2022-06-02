@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"Jack who built the house",
 			"Yardom78"
 		]
 	},
@@ -304,7 +305,7 @@
 	"sd-useuitime": "Zobraziť časové značky komentárov v časovej zóne, ktorá je nastavená v nastaveniach wiki",
 	"sd-usetemplatedata": "Použiť TemplateData pri automatickom vyplňovaní šablón",
 	"sd-usetemplatedata-help": "Podržte Shift pri výbere šablóny z ponuky automatického doplňovania textu pre vloženie požadovanej šablóny a odporúčaných nastavení.",
-	"sd-usetopicsubscription": "Pre dostávanie oznámení o komentároch k téme, ktorú sleduje použite [[:en:Help:Notifications|štandardné rozhranie oznámení]].",
+	"sd-usetopicsubscription": "Pre dostávanie oznámení o komentároch k téme, ktorú sleduje použite [[mw:Special:MyLanguage/Help:Notifications|štandardné rozhranie oznámení]].",
 	"sd-usetopicsubscription-help": "Typ oznámení (web, email, app) môžete nakonfigurovať v [[Special:Preferences#mw-prefsection-echo|nastaveniach]]. <strong>Poznámka:</strong> Toto funguje len pre sekcie úrovne 2 (<code>==</code>). Ak to zapnete nebudete sa môcť odhlásiť z podsekcií. Nebudete schopní filtrovať úpravy vo vašom zozname sledovaných. Takisto asi budete potrebovať sa znovu prihlásiť na odber tém ak toto zapnete <em>alebo</em> vypnete.",
 	"sd-watchonreply": "Sledovať stránky, ktoré komentujem",
 	"sd-watchsectiononreply": "Sledovať sekcie, ktoré komentujem",

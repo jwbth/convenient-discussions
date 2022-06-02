@@ -305,7 +305,7 @@
 	"sd-useuitime": "Monstrar le datas e horas in le fuso horari definite in mi preferentias wiki",
 	"sd-usetemplatedata": "Usar TemplateData pro auto-completar patronos",
 	"sd-usetemplatedata-help": "Preme tenite Shift durante que tu selige un patrono del menu de autocompletion pro inserer etiam le parametros obligatori e suggerite del patrono.",
-	"sd-usetopicsubscription": "Usar le [[:w:en:Help:Notifications|interfacie standard de notificationes]] pro reciper notificationes sur commentos in topicos al quales io es subscribite",
+	"sd-usetopicsubscription": "Usar le [[mw:Special:MyLanguage/Help:Notifications|interfacie standard de notificationes]] pro reciper notificationes sur commentos in topicos al quales io es subscribite",
 	"sd-usetopicsubscription-help": "Tu pote configurar le typos de notification (web, email, app) in le [[Special:Preferences#mw-prefsection-echo|preferentias]]. <strong>Nota:</strong> Isto functiona solmente pro sectiones del secunde nivello (<code>==</code>). Si tu activa isto, tu non potera subscriber te a subsectiones. Tu etiam non poterea filtrar modificationes in tu observatorio per stato de subscription. Es possibile que tu debera resubscriber te al topicos post que tu activa <em>o</em> disactiva isto.",
 	"sd-watchonreply": "Observar le paginas que io commenta",
 	"sd-watchsectiononreply": "Subscriber me al sectiones que io commenta",

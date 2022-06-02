@@ -308,7 +308,7 @@
 	"sd-useuitime": "意見的時間戳記採用在我的 wiki 偏好設定裡所設定時區來顯示",
 	"sd-usetemplatedata": "在模板自動完成中使用 TemplateData",
 	"sd-usetemplatedata-help": "在挑選來自於自動完成選單的模板時，壓住 Shift 鍵可插入模板的必要參數與建議參數。",
-	"sd-usetopicsubscription": "使用[[w:en:Help:Notifications|標準通知介面]]來接收有關我訂閱主題的意見",
+	"sd-usetopicsubscription": "使用[[mw:Special:MyLanguage/Help:Notifications|標準通知介面]]來接收有關我訂閱主題的意見",
 	"sd-usetopicsubscription-help": "您可以在[[Special:Preferences#mw-prefsection-echo|偏好設定]]裡設定通知類型（網頁、電子郵件、應用程式）。<strong>請注意：</strong>這僅適用於二級標題的段落（採用連續兩個等號 <code>==</code> 建立的標題）。如果您將此啟用，您會無法訂閱小節。您另外會無法透過訂閱狀態來篩選掉在您監視清單裡的編輯。在您啟用<em>或是</em>停用這功能後，您可能需要重新訂閱主題。",
 	"sd-watchonreply": "監視我發表過意見的頁面",
 	"sd-watchsectiononreply": "訂閱我發表過意見的話題",
