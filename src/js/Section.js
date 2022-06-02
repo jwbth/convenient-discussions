@@ -398,10 +398,10 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Add "subscribe"/"unsubscribe" items to the section menu.
+   * Add "subscribe" / "unsubscribe" items to the section menu.
    */
   addSubscribeMenuItem() {
-    if (!this.subscribeId) return;
+    if (!this.subscribeId || cd.page.isArchivePage()) return;
 
     this.subscriptionState = subscriptions.getState(this.subscribeId);
     this.addMenuItem({
