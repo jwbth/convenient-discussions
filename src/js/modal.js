@@ -1,5 +1,5 @@
 /**
- * Modal dialogs. Move section dialog goes in {@link Section#move}.
+ * Simple modal dialogs.
  *
  * @module modal
  */
@@ -9,8 +9,6 @@ import cd from './cd';
 import controller from './controller';
 import settings from './settings';
 import { copyText, dealWithLoadingBug } from './util';
-import { encodeWikilink } from './wikitext';
-import { underlinesToSpaces } from './util';
 
 /**
  * Show a settings dialog.
@@ -76,14 +74,11 @@ export async function showCopyLinkDialog(object, e) {
    */
   object.isLinkBeingCopied = true;
 
-  const id = object instanceof Comment ?
-    object.dtId || object.id :
-    encodeWikilink(underlinesToSpaces(object.id));
-
+  const fragment = object.getLinkFragment();
   const content = {
-    id,
-    wikilink: `[[${cd.page.name}#${id}]]`,
-    currentPageWikilink: `[[#${id}]]`,
+    fragment,
+    wikilink: `[[${cd.page.name}#${fragment}]]`,
+    currentPageWikilink: `[[#${fragment}]]`,
     link: object.getUrl(),
     permanentLink: object.getUrl(true),
     copyMessages: {

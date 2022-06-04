@@ -422,8 +422,8 @@ const toc = {
     comments.forEach((comment, i) => {
       const parent = areCommentsRendered ? comment.getParent() : comment.parent;
       const names = parent?.author && comment.level > 1 ?
-        cd.s('navpanel-newcomments-names', comment.author.name, parent.author.name) :
-        comment.author.name;
+        cd.s('navpanel-newcomments-names', comment.author.getName(), parent.author.getName()) :
+        comment.author.getName();
       const addAsItem = i < itemsLimit - 1 || comments.length === itemsLimit;
 
       let date;
@@ -538,7 +538,6 @@ const toc = {
     if (!settings.get('modifyToc') || !this.isPresent || !firstComment) return;
 
     const areCommentsRendered = firstComment instanceof Comment;
-
     const saveTocHeight = Boolean(
       controller.getBootProcess().isFirstRun() ||
 

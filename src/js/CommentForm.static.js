@@ -81,7 +81,7 @@ function lastFocused(commentForm1, commentForm2) {
           mode: data.mode,
           dataToRestore: data,
           preloadConfig: data.preloadConfig,
-          isNewTopicOnTop: data.isNewTopicOnTop,
+          newTopicOnTop: data.newTopicOnTop,
         });
         controller.setAddSectionForm(commentForm);
         haveRestored = true;
@@ -120,53 +120,7 @@ function restoreDirectly() {
   };
 
   cd.commentForms.forEach((commentForm) => {
-    commentForm.checkCodeRequest = null;
-    const target = commentForm.target;
-    if (target instanceof Comment) {
-      if (target.id) {
-        const comment = Comment.getById(target.id);
-        if (comment?.isActionable) {
-          try {
-            commentForm.setTargets(comment);
-            comment[CommentForm.modeToProperty(commentForm.mode)](commentForm);
-            commentForm.addToPage();
-          } catch (e) {
-            console.warn(e);
-            addToRescue(commentForm);
-          }
-        } else {
-          addToRescue(commentForm);
-        }
-      } else {
-        addToRescue(commentForm);
-      }
-    } else if (target instanceof Section) {
-      const section = Section.search({
-        headline: target.headline,
-        oldestCommentId: target.oldestComment?.id,
-        index: target.index,
-        id: target.id,
-
-        // We cache ancestors when saving the session, so this call will return the right value,
-        // despite cd.sections has already changed.
-        ancestors: target.getAncestors().map((section) => section.headline),
-      });
-      if (section?.isActionable) {
-        try {
-          commentForm.setTargets(section);
-          section[CommentForm.modeToProperty(commentForm.mode)](commentForm);
-          commentForm.addToPage();
-        } catch (e) {
-          console.warn(e);
-          addToRescue(commentForm);
-        }
-      } else {
-        addToRescue(commentForm);
-      }
-    } else if (commentForm.mode === 'addSection') {
-      commentForm.addToPage();
-      controller.setAddSectionForm(commentForm);
-    }
+    commentForm.restore(addToRescue);
   });
   if (rescue.length) {
     rescueCommentFormsContent(rescue);
@@ -258,30 +212,28 @@ export default {
    * Create an add section form if not existent.
    *
    * @param {object} [preloadConfig=CommentForm.getDefaultPreloadConfig()]
-   * @param {boolean} [isNewTopicOnTop=false]
+   * @param {boolean} [newTopicOnTop=false]
    * @param {object} [dataToRestore]
    * @memberof CommentForm
    */
   createAddSectionForm(
     preloadConfig = CommentForm.getDefaultPreloadConfig(),
-    isNewTopicOnTop = false,
+    newTopicOnTop = false,
     dataToRestore
   ) {
-    if (controller.getAddSectionForm()) {
+    const addSectionForm = controller.getAddSectionForm();
+    if (addSectionForm) {
       // Sometimes there is more than one "Add section" button on the page, and they lead to opening
       // forms with different content.
-      if (!areObjectsEqual(preloadConfig, controller.getAddSectionForm().preloadConfig)) {
+      if (!areObjectsEqual(preloadConfig, addSectionForm.getPreloadConfig())) {
         mw.notify(cd.s('cf-error-formconflict'), { type: 'error' });
         return;
       }
 
-      controller.getAddSectionForm().$element.cdScrollIntoView('center');
+      addSectionForm.$element.cdScrollIntoView('center');
 
       // Headline input may be missing if the "nosummary" preload parameter is truthy.
-      focusInput(
-        controller.getAddSectionForm().headlineInput ||
-        controller.getAddSectionForm().commentInput
-      );
+      focusInput(addSectionForm.headlineInput || addSectionForm.commentInput);
     } else {
       /**
        * Add section form.
@@ -294,7 +246,7 @@ export default {
         mode: 'addSection',
         target: cd.page,
         preloadConfig,
-        isNewTopicOnTop,
+        newTopicOnTop,
         dataToRestore,
       });
       controller.setAddSectionForm(commentForm);
@@ -330,39 +282,24 @@ export default {
     const save = () => {
       const commentForms = cd.commentForms
         .filter((commentForm) => commentForm.isAltered())
-        .map((commentForm) => {
-          let targetData;
-          const target = commentForm.target;
-          if (commentForm.target instanceof Comment) {
-            targetData = { id: target.id };
-          } else if (target instanceof Section) {
-            targetData = {
-              headline: target.headline,
-              oldestCommentId: target.oldestComment?.id,
-              index: target.index,
-              id: target.id,
-              ancestors: target.getAncestors().map((section) => section.headline),
-            };
-          }
-          return {
-            mode: commentForm.mode,
-            targetData,
-            preloadConfig: commentForm.preloadConfig,
-            isNewTopicOnTop: commentForm.isNewTopicOnTop,
-            headline: commentForm.headlineInput?.getValue(),
-            comment: commentForm.commentInput.getValue(),
-            summary: commentForm.summaryInput.getValue(),
-            minor: commentForm.minorCheckbox?.isSelected(),
-            watch: commentForm.watchCheckbox?.isSelected(),
-            subscribe: commentForm.subscribeCheckbox?.isSelected(),
-            omitSignature: commentForm.omitSignatureCheckbox?.isSelected(),
-            delete: commentForm.deleteCheckbox?.isSelected(),
-            originalHeadline: commentForm.originalHeadline,
-            originalComment: commentForm.originalComment,
-            isSummaryAltered: commentForm.isSummaryAltered,
-            lastFocused: commentForm.lastFocused,
-          };
-        });
+        .map((commentForm) => ({
+          mode: commentForm.getMode(),
+          targetData: commentForm.getTarget().getIdentifyingData(),
+          preloadConfig: commentForm.getPreloadConfig(),
+          newTopicOnTop: commentForm.isNewTopicOnTop(),
+          headline: commentForm.headlineInput?.getValue(),
+          comment: commentForm.commentInput.getValue(),
+          summary: commentForm.summaryInput.getValue(),
+          minor: commentForm.minorCheckbox?.isSelected(),
+          watch: commentForm.watchCheckbox?.isSelected(),
+          subscribe: commentForm.subscribeCheckbox?.isSelected(),
+          omitSignature: commentForm.omitSignatureCheckbox?.isSelected(),
+          delete: commentForm.deleteCheckbox?.isSelected(),
+          originalHeadline: commentForm.getOriginalHeadline(),
+          originalComment: commentForm.getOriginalComment(),
+          summaryAltered: commentForm.isSummaryAltered(),
+          lastFocused: commentForm.getLastFocused(),
+        }));
       const saveUnixTime = Date.now();
       const data = commentForms.length ? { commentForms, saveUnixTime } : {};
 

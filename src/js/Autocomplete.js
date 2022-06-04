@@ -268,7 +268,7 @@ class Autocomplete {
               } else {
                 snippet = comment.getText();
               }
-              let authorTimestamp = author.name;
+              let authorTimestamp = author.getName();
               if (timestamp) {
                 authorTimestamp += cd.mws('comma-separator', { language: 'content' }) + timestamp;
               }
@@ -277,7 +277,7 @@ class Autocomplete {
               this.commentLinks.default.push({
                 key,
                 id: dtId || id,
-                author: author.name,
+                author: author.getName(),
                 timestamp,
               });
             });
@@ -592,7 +592,7 @@ class Autocomplete {
         };
 
         // Remove self
-        config.default = (arguments[1] || []).filter((item) => item !== cd.user.name);
+        config.default = (arguments[1] || []).filter((item) => item !== cd.user.getName());
 
         break;
       }

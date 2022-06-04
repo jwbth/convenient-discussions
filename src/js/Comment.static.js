@@ -57,7 +57,7 @@ function addNewCommentsNote(comments, parent, type, newCommentIndexes) {
   const authors = commentsWithChildren
     .map((comment) => comment.author)
     .filter(unique);
-  const authorList = authors.map((author) => author.name).join(cd.mws('comma-separator'));
+  const authorList = authors.map((author) => author.getName()).join(cd.mws('comma-separator'));
   const commonGender = getCommonGender(authors);
   const stringName = type === 'thread' ? 'thread-newcomments' : 'section-newcomments';
   const button = new OO.ui.ButtonWidget({
@@ -549,7 +549,7 @@ export default {
     let comments = cd.comments.filter((comment) => (
       comment.date &&
       comment.date.getTime() === data.date.getTime() &&
-      comment.author.name === data.author
+      comment.author.getName() === data.author
     ));
 
     let comment;
@@ -558,7 +558,7 @@ export default {
     } else if (comments.length > 1) {
       comments = comments.filter((comment) => (
         comment.getParent()?.date?.getTime() === data.parentDate?.getTime() &&
-        comment.getParent()?.author.name === data.parentAuthor &&
+        comment.getParent()?.author.getName() === data.parentAuthor &&
         (!data.sectionIdBeginning || comment.section?.id.startsWith(data.sectionIdBeginning))
       ));
       comment = comments.length === 1 ? comments[0] : comments[data.index || 0];
@@ -755,7 +755,7 @@ export default {
   findPreviousCommentByTime(date, author) {
     return cd.comments
       .filter((comment) => (
-        comment.author.name === author &&
+        comment.author.getName() === author &&
         comment.date &&
         comment.date < date &&
         comment.date.getTime() > date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * 60 * 24

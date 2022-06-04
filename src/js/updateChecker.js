@@ -623,7 +623,7 @@ function showOrdinaryNotification(comments) {
           ) :
           cd.mws('word-separator') + cd.s('notification-part-onthispage');
         html = (
-          cd.sParse('notification-toyou', comment.author.name, comment.author, where) +
+          cd.sParse('notification-toyou', comment.author.getName(), comment.author, where) +
           ' ' +
           reloadHtml
         );
@@ -631,7 +631,7 @@ function showOrdinaryNotification(comments) {
         html = (
           cd.sParse(
             'notification-insection',
-            comment.author.name,
+            comment.author.getName(),
             comment.author,
             comment.sectionSubscribedTo.headline
           ) +
@@ -715,7 +715,7 @@ function showDesktopNotification(comments) {
         '';
       body = cd.s(
         'notification-toyou-desktop',
-        comment.author.name,
+        comment.author.getName(),
         comment.author,
         where,
         cd.page.name
@@ -723,7 +723,7 @@ function showDesktopNotification(comments) {
     } else {
       body = cd.s(
         'notification-insection-desktop',
-        comment.author.name,
+        comment.author.getName(),
         comment.author,
         comment.section.headline,
         cd.page.name
@@ -843,7 +843,10 @@ async function processComments(comments, currentComments, currentRevisionId) {
         return false;
       }
     }
-    if (comment.isOwn || settings.get('notificationsBlacklist').includes(comment.author.name)) {
+    if (
+      comment.isOwn ||
+      settings.get('notificationsBlacklist').includes(comment.author.getName())
+    ) {
       return false;
     }
     if (comment.isToMe) {

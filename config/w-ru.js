@@ -469,7 +469,7 @@ mw.hook('convenientDiscussions.beforeParse').add(function () {
 
 mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
   const generateEditCommonJsLink = function () {
-    return mw.util.getUrl('User:' + cd.user.name + '/common.js', { action: 'edit' });
+    return mw.util.getUrl('User:' + cd.user.getName() + '/common.js', { action: 'edit' });
   };
 
   const isHlmEnabled = window.highlightMessagesAfterLastVisit !== undefined;
@@ -528,7 +528,7 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
 mw.hook('convenientDiscussions.commentFormCreated').add(function (commentForm) {
   commentForm.couldBeCloserClosing = (
     /^Википедия:К удалению/.test(cd.page.name) &&
-    commentForm.mode === 'addSubsection' &&
+    commentForm.getMode() === 'addSubsection' &&
     mw.config.get('wgUserGroups').includes('closer')
   );
 });

@@ -134,7 +134,7 @@ export function unpackLegacySubscriptions(string) {
 export async function getVisits(reuse = false) {
   let visits;
   let currentPageVisits;
-  if (cd.user.name === '<unregistered>') {
+  if (cd.user.getName() === '<unregistered>') {
     visits = [];
     currentPageVisits = [];
   } else {
@@ -484,7 +484,7 @@ export async function getUserGenders(users, requestInBackground = false) {
   const usersToRequest = users
     .filter((user) => !user.getGender() && user.isRegistered())
     .filter(unique)
-    .map((user) => user.name);
+    .map((user) => user.getName());
   for (const nextUsers of splitIntoBatches(usersToRequest)) {
     const options = {
       action: 'query',

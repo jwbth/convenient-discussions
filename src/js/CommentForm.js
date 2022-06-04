@@ -85,16 +85,17 @@ class CommentForm {
    *   to.
    * @param {object} [config.dataToRestore] Data saved in the previous session.
    * @param {PreloadConfig} [config.preloadConfig] Configuration to preload data into the form.
-   * @param {boolean} [config.isNewTopicOnTop] When adding a topic, whether it should be on top.
+   * @param {boolean} [config.newTopicOnTop] When adding a topic, whether it should be on top.
    * @throws {CdError}
    * @fires commentFormModulesReady
    * @fires commentFormCreated
    */
-  constructor({ mode, target, dataToRestore, preloadConfig, isNewTopicOnTop }) {
+  constructor({ mode, target, dataToRestore, preloadConfig, newTopicOnTop }) {
     /**
      * Form mode. `'reply'`, `'replyInSection'`, `'edit'`, `'addSubsection'`, or `'addSection'`.
      *
      * @type {string}
+     * @private
      */
     this.mode = mode;
 
@@ -104,6 +105,7 @@ class CommentForm {
      * Configuration to preload data into the form.
      *
      * @type {object|undefined}
+     * @private
      */
     this.preloadConfig = preloadConfig;
 
@@ -111,28 +113,25 @@ class CommentForm {
      * When adding a topic, whether it should be on top.
      *
      * @type {boolean|undefined}
+     * @private
      */
-    this.isNewTopicOnTop = isNewTopicOnTop;
-
-    if (this.target instanceof Comment) {
-      this.sectionHeadline = this.target.section?.headline;
-    } else if (this.target instanceof Section) {
-      this.sectionHeadline = this.target.headline;
-    }
+    this.newTopicOnTop = newTopicOnTop;
 
     /**
-     * Form ID.
+     * Form index.
      *
      * @type {number}
+     * @private
      */
-    this.id = commentFormsCounter++;
+    this.index = commentFormsCounter++;
 
     /**
      * Was the summary altered manually.
      *
      * @type {boolean}
+     * @private
      */
-    this.isSummaryAltered = dataToRestore?.isSummaryAltered ?? false;
+    this.summaryAltered = dataToRestore?.summaryAltered ?? false;
 
     /**
      * Is section opening comment edited.
@@ -141,6 +140,14 @@ class CommentForm {
      * @private
      */
     this.isSectionOpeningCommentEdited = this.mode === 'edit' && this.target.isOpeningSection;
+
+    /**
+     * Whether the wikitext of a section will be submitted to the server instead of a page.
+     *
+     * @type {?boolean}
+     * @private
+     */
+    this.sectionSubmitted = false;
 
     /**
      * @typedef {object} CommentFormOperation
@@ -156,6 +163,7 @@ class CommentForm {
      * A list of current operations.
      *
      * @type {CommentFormOperation[]}
+     * @private
      */
     this.operations = [];
 
@@ -207,6 +215,7 @@ class CommentForm {
          * The date when the comment form was focused last time.
          *
          * @type {Date|undefined}
+         * @private
          */
         this.lastFocused = new Date(dataToRestore.lastFocused);
       }
@@ -242,7 +251,7 @@ class CommentForm {
           this.originalHeadline = this.preloadConfig?.headline || '';
         }
 
-        if (!(this.target.constructor.name === 'Page')) {
+        if (!(this.target instanceof pageRegistry.Page)) {
           this.checkCode();
         }
       }
@@ -269,44 +278,46 @@ class CommentForm {
     /**
      * Target object.
      *
-     * @type {?(Comment|Section)}
+     * @type {Comment|Section|Page}
+     * @private
      */
     this.target = target;
 
-    if (this.target instanceof Comment) {
-      /**
-       * Target section.
-       *
-       * @type {?(Section|undefined)}
-       */
-      this.targetSection = this.target.section;
+    /**
+     * Target section.
+     *
+     * @type {?Section}
+     * @private
+     */
+    this.targetSection = this.target.getRelevantSection();
 
-      /**
-       * Target comment. This may be the comment the user replies to or the comment opening the
-       * section.
-       *
-       * @type {?(Comment|Section|undefined)}
-       */
-      this.targetComment = this.target;
-    } else if (this.target instanceof Section) {
-      this.targetSection = this.target;
-
-      if (this.mode === 'replyInSection' && !this.target.replyButton) {
-        throw new CdError();
-      }
-
-      if (this.target.comments[0]?.isOpeningSection) {
-        this.targetComment = this.target.comments[0];
-      }
-    }
+    /**
+     * Target comment. This may be the comment the user replies to or the comment opening the
+     * section.
+     *
+     * @type {?Comment}
+     * @private
+     */
+    this.targetComment = this.target.getRelevantComment();
 
     /**
      * Wiki page that has the source code of the target object (may be different from the current
      * page if the section is transcluded from another page).
      *
      * @type {string}
+     * @private
      */
     this.targetPage = this.targetSection ? this.targetSection.getSourcePage() : cd.page;
+  }
+
+  /**
+   * Compose a tab index for an element from the form's index and the supplied element index.
+   *
+   * @param {number} elementIndex
+   * @returns {string}
+   */
+  getTabIndex(elementIndex) {
+    return String(this.index) + String(elementIndex);
   }
 
   /**
@@ -338,7 +349,7 @@ class CommentForm {
         value: dataToRestore?.headline ?? '',
         placeholder: this.headlineInputPlaceholder,
         classes: ['cd-commentForm-headlineInput'],
-        tabIndex: String(this.id) + '11',
+        tabIndex: this.getTabIndex(11),
       });
     }
 
@@ -365,7 +376,7 @@ class CommentForm {
           'placeholder',
           removeDoubleSpaces(cd.s(
             'cf-comment-placeholder-replytocomment',
-            this.target.author.name,
+            this.target.author.getName(),
             this.target.author
           ))
         );
@@ -384,7 +395,7 @@ class CommentForm {
       rows: rowNumber,
       maxRows: 30,
       classes: ['cd-commentForm-commentInput'],
-      tabIndex: String(this.id) + '12',
+      tabIndex: this.getTabIndex(12),
     });
     this.commentInput.$input.addClass('ime-position-inside');
 
@@ -398,7 +409,7 @@ class CommentForm {
       maxLength: cd.g.SUMMARY_LENGTH_LIMIT,
       placeholder: cd.s('cf-summary-placeholder'),
       classes: ['cd-commentForm-summaryInput'],
-      tabIndex: String(this.id) + '13',
+      tabIndex: this.getTabIndex(13),
     });
     this.summaryInput.$input.codePointLimit(cd.g.SUMMARY_LENGTH_LIMIT);
     mw.widgets.visibleCodePointLimit(this.summaryInput, cd.g.SUMMARY_LENGTH_LIMIT);
@@ -434,7 +445,7 @@ class CommentForm {
         value: 'minor',
         selected: dataToRestore?.minor ?? true,
         label: cd.s('cf-minor'),
-        tabIndex: String(this.id) + '20',
+        tabIndex: this.getTabIndex(20),
       });
     }
 
@@ -465,7 +476,7 @@ class CommentForm {
       value: 'watch',
       selected: dataToRestore?.watch ?? watchCheckboxSelected,
       label: cd.s('cf-watch'),
-      tabIndex: String(this.id) + '21',
+      tabIndex: this.getTabIndex(21),
     });
 
     if (this.targetSection || this.mode === 'addSection') {
@@ -504,7 +515,7 @@ class CommentForm {
         value: 'subscribe',
         selected: dataToRestore?.subscribe ?? selected,
         label,
-        tabIndex: String(this.id) + '22',
+        tabIndex: this.getTabIndex(22),
         title: cd.s('cf-watchsection-tooltip'),
       });
     }
@@ -532,7 +543,7 @@ class CommentForm {
         value: 'omitSignature',
         selected: dataToRestore?.omitSignature ?? false,
         label: cd.s('cf-omitsignature'),
-        tabIndex: String(this.id) + '25',
+        tabIndex: this.getTabIndex(25),
       });
     }
 
@@ -567,7 +578,7 @@ class CommentForm {
         value: 'delete',
         selected,
         label: cd.s('cf-delete'),
-        tabIndex: String(this.id) + '26',
+        tabIndex: this.getTabIndex(26),
       });
     }
 
@@ -612,7 +623,7 @@ class CommentForm {
       label: cd.s('cf-advanced'),
       framed: false,
       classes: ['cd-button-ooui', 'cd-commentForm-advancedButton'],
-      tabIndex: String(this.id) + '30',
+      tabIndex: this.getTabIndex(30),
     });
 
     /**
@@ -638,7 +649,7 @@ class CommentForm {
         width: 400,
       },
       $overlay: controller.getPopupOverlay(),
-      tabIndex: String(this.id) + '31',
+      tabIndex: this.getTabIndex(31),
     });
 
     /**
@@ -656,7 +667,7 @@ class CommentForm {
       invisibleLabel: true,
       title: cd.s('cf-settings-tooltip'),
       classes: ['cd-button-ooui', 'cd-commentForm-settingsButton'],
-      tabIndex: String(this.id) + '32',
+      tabIndex: this.getTabIndex(32),
     });
 
     /**
@@ -669,7 +680,7 @@ class CommentForm {
       flags: 'destructive',
       framed: false,
       classes: ['cd-button-ooui', 'cd-commentForm-cancelButton'],
-      tabIndex: String(this.id) + '33',
+      tabIndex: this.getTabIndex(33),
     });
 
     /**
@@ -680,7 +691,7 @@ class CommentForm {
     this.viewChangesButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-viewchanges'),
       classes: ['cd-commentForm-viewChangesButton'],
-      tabIndex: String(this.id) + '34',
+      tabIndex: this.getTabIndex(34),
     });
 
     /**
@@ -691,7 +702,7 @@ class CommentForm {
     this.previewButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-preview'),
       classes: ['cd-commentForm-previewButton'],
-      tabIndex: String(this.id) + '35',
+      tabIndex: this.getTabIndex(35),
     });
     if (settings.get('autopreview')) {
       this.previewButton.$element.hide();
@@ -706,7 +717,7 @@ class CommentForm {
       label: this.submitButtonLabelStandard,
       flags: ['progressive', 'primary'],
       classes: ['cd-commentForm-submitButton'],
-      tabIndex: String(this.id) + '36',
+      tabIndex: this.getTabIndex(36),
     });
   }
 
@@ -724,6 +735,7 @@ class CommentForm {
          * or `undefined`.
          *
          * @type {string|undefined}
+         * @private
          */
         this.containerListType = 'dl';
       } else if (this.mode === 'edit') {
@@ -1392,10 +1404,10 @@ class CommentForm {
       }
 
       case 'addSection': {
-        if (this.isNewTopicOnTop && cd.sections[0]) {
+        if (this.newTopicOnTop && cd.sections[0]) {
           this.$element.insertBefore(cd.sections[0].$heading);
         } else {
-          this.$element.appendTo(controller.$content);
+          this.$element.insertAfter(controller.$content.children('.mw-parser-output'));
         }
         break;
       }
@@ -1551,7 +1563,7 @@ class CommentForm {
     this.summaryInput
       .on('change', () => {
         if (this.summaryInput.$input.is(':focus')) {
-          this.isSummaryAltered = true;
+          this.summaryAltered = true;
           this.dontAutopreviewOnSummaryChange = false;
         }
         if (!this.dontAutopreviewOnSummaryChange) {
@@ -1653,7 +1665,7 @@ class CommentForm {
       for (let с = this.targetComment; с; с = с.getParent()) {
         if (с.author !== cd.user) {
           if (!с.author.isRegistered()) break;
-          defaultUserNames.unshift(с.author.name);
+          defaultUserNames.unshift(с.author.getName());
           break;
         }
       }
@@ -2182,9 +2194,9 @@ class CommentForm {
      *
      * @type {boolean|undefined}
      */
-    this.submitSection = Boolean(
+    this.sectionSubmitted = Boolean(
       this.mode === 'addSection' &&
-      !this.isNewTopicOnTop &&
+      !this.newTopicOnTop &&
       this.headlineInput?.getValue().trim()
     );
     try {
@@ -2214,12 +2226,12 @@ class CommentForm {
     let commentCode;
     try {
       if (
-        !(this.target.constructor.name === 'Page') &&
+        !(this.target instanceof pageRegistry.Page) &&
 
         // We already located the section when got its code.
-        !(this.target instanceof Section && this.submitSection)
+        !(this.target instanceof Section && this.sectionSubmitted)
       ) {
-        this.target.locateInCode(this.submitSection);
+        this.target.locateInCode(this.sectionSubmitted);
       }
       if (this.mode === 'replyInSection') {
         this.target.setLastCommentIndentationChars(this);
@@ -2368,7 +2380,7 @@ class CommentForm {
     if (
       this.isContentBeingLoaded() ||
       (
-        !(this.target.constructor.name === 'Page') &&
+        !(this.target instanceof pageRegistry.Page) &&
         !this.target.inCode &&
         this.checkCodeRequest &&
         (await getNativePromiseState(this.checkCodeRequest)) === 'resolved'
@@ -2414,7 +2426,7 @@ class CommentForm {
       (if the mode is 'edit' and the comment has not been loaded, this method would halt after the
       looking for the unclosed 'load' operation above).
      */
-    if (!(this.target.constructor.name === 'Page') && !this.target.inCode) {
+    if (!(this.target instanceof pageRegistry.Page) && !this.target.inCode) {
       await this.checkCode();
       if (!this.target.inCode) {
         this.closeOperation(currentOperation);
@@ -2544,7 +2556,7 @@ class CommentForm {
         errorlang: cd.g.USER_LANGUAGE,
         errorsuselocal: true,
       };
-      if (this.submitSection || !mw.config.get('wgArticleId')) {
+      if (this.sectionSubmitted || !mw.config.get('wgArticleId')) {
         options.fromslots = 'main';
         options['fromtext-main'] = this.mode === 'addSection' ? '' : this.targetSection.code;
       } else {
@@ -2712,7 +2724,7 @@ class CommentForm {
       let sectionParam;
       let sectionOrPage;
       let sectionTitleParam;
-      if (this.submitSection) {
+      if (this.sectionSubmitted) {
         if (this.mode === 'addSection') {
           sectionTitleParam = this.headlineInput.getValue().trim();
           sectionParam = 'new';
@@ -2801,7 +2813,7 @@ class CommentForm {
         let originalHeadline;
         let isHeadlineAltered;
         if (settings.get('useTopicSubscription')) {
-          subscribeId = Section.generateDtSubscriptionId(cd.user.name, editTimestamp);
+          subscribeId = Section.generateDtSubscriptionId(cd.user.getName(), editTimestamp);
         } else {
           let rawHeadline;
           if (this.headlineInput) {
@@ -2846,6 +2858,7 @@ class CommentForm {
    *
    * @param {string} editTimestamp
    * @returns {string}
+   * @private
    */
   generateFutureCommentId(editTimestamp) {
     const date = new Date(editTimestamp);
@@ -2872,7 +2885,7 @@ class CommentForm {
           return commentAbove;
         });
     } else {
-      commentAbove = this.isNewTopicOnTop ? null : cd.comments[cd.comments.length - 1];
+      commentAbove = this.newTopicOnTop ? null : cd.comments[cd.comments.length - 1];
     }
 
     const existingIds = cd.comments
@@ -2883,7 +2896,7 @@ class CommentForm {
       ))
       .map((comment) => comment.id);
 
-    return Comment.generateId(date, cd.user.name, existingIds);
+    return Comment.generateId(date, cd.user.getName(), existingIds);
   }
 
   /**
@@ -3103,14 +3116,14 @@ class CommentForm {
    * @private
    */
   updateAutoSummary(set = true, dontAutopreviewOnSummaryChange = false) {
-    if (this.isSummaryAltered) return;
+    if (this.summaryAltered) return;
 
     this.dontAutopreviewOnSummaryChange = dontAutopreviewOnSummaryChange;
 
     const text = this.autoText();
     const section = this.headlineInput && this.mode !== 'addSubsection' ?
       removeWikiMarkup(this.headlineInput.getValue()) :
-      this.sectionHeadline;
+      this.target.getRelevantSection()?.headline;
 
     let optionalText;
     if (['reply', 'replyInSection'].includes(this.mode)) {
@@ -3159,9 +3172,8 @@ class CommentForm {
           return cd.s('es-reply');
         } else {
           this.target.requestAuthorGenderIfNeeded(this.updateAutoSummaryBound);
-          return this.target.isOwn ?
-            cd.s('es-addition') :
-            removeDoubleSpaces(cd.s('es-reply-to', this.target.author.name, this.target.author));
+          const replyToStr = cd.s('es-reply-to', this.target.author.getName(), this.target.author);
+          return this.target.isOwn ? cd.s('es-addition') : removeDoubleSpaces(replyToStr);
         }
       }
 
@@ -3196,9 +3208,8 @@ class CommentForm {
               subject = 'comment-by';
             }
           }
-          return removeDoubleSpaces(
-            cd.s(`es-${action}-${subject}`, target.author.name, target.author)
-          );
+          const string = cd.s(`es-${action}-${subject}`, target.author.getName(), target.author);
+          return removeDoubleSpaces(string);
         };
 
         return editOrDeleteText(this.deleteCheckbox?.isSelected() ? 'delete' : 'edit');
@@ -3274,7 +3285,7 @@ class CommentForm {
    */
   mention(mentionAddressee) {
     if (mentionAddressee && this.targetComment) {
-      let data = Autocomplete.getConfig('mentions').transform(this.targetComment.author.name);
+      let data = Autocomplete.getConfig('mentions').transform(this.targetComment.author.getName());
       data = data.ctrlModify(data);
       const text = data.start + data.content + data.end;
       const range = this.commentInput.getRange();
@@ -3415,6 +3426,169 @@ class CommentForm {
     insertText(this.commentInput, text);
     if (!selection && !replace) {
       this.commentInput.selectRange(periStartPos, periStartPos + peri.length);
+    }
+  }
+
+  /**
+   * Get the form mode. `'reply'`, `'replyInSection'`, `'edit'`, `'addSubsection'`, or
+   * `'addSection'`.
+   *
+   * @returns {string}
+   */
+  getMode() {
+    return this.mode;
+  }
+
+  /**
+   * Get the configuration to preload data into the form.
+   *
+   * @returns {object}
+   */
+  getPreloadConfig() {
+    return this.preloadConfig;
+  }
+
+  /**
+   * Get whether the form will add a topic on top.
+   *
+   * @returns {boolean}
+   */
+  isNewTopicOnTop() {
+    return this.newTopicOnTop;
+  }
+
+  /**
+   * Get the headline at the time of the form creation.
+   *
+   * @returns {string}
+   */
+  getOriginalHeadline() {
+    return this.originalHeadline;
+  }
+
+  /**
+   * Get the comment text at the time of the form creation.
+   *
+   * @returns {string}
+   */
+  getOriginalComment() {
+    return this.originalComment;
+  }
+
+  /**
+   * Check whether the summary was altered by the user.
+   *
+   * @returns {boolean}
+   */
+  isSummaryAltered() {
+    return this.summaryAltered;
+  }
+
+  /**
+   * Get the date when the form was focused last time.
+   *
+   * @returns {boolean}
+   */
+  getLastFocused() {
+    return this.lastFocused;
+  }
+
+  /**
+   * Reset the request that checks if the target object exists.
+   */
+  resetCheckCodeRequest() {
+    this.checkCodeRequest = null;
+  }
+
+  /**
+   * Get the target object of the form.
+   *
+   * @returns {Comment|Section|Page}
+   */
+  getTarget() {
+    return this.target;
+  }
+
+  /**
+   * Set whether the section code will be sent on submit, not the whole page code.
+   *
+   * @param {boolean} value
+   */
+  setSectionSubmitted(value) {
+    this.sectionSubmitted = Boolean(value);
+  }
+
+  /**
+   * Check whether the section code will be sent on submit, not the whole page code.
+   *
+   * @returns {boolean}
+   */
+  isSectionSubmitted() {
+    return this.sectionSubmitted;
+  }
+
+  /**
+   * Get the name of the tag of the list that this form is an item of. `'dl'`, `'ul'`, `'ol'`, or
+   * `undefined`.
+   *
+   * @returns {string|undefined}
+   */
+  getContainerListType() {
+    return this.containerListType;
+  }
+
+  /**
+   * Restore a form from data.
+   *
+   * @param {Function} addToRescue
+   */
+  restore(addToRescue) {
+    this.resetCheckCodeRequest();
+    const target = this.getTarget();
+    if (target instanceof Comment) {
+      if (target.id) {
+        const comment = Comment.getById(target.id);
+        if (comment?.isActionable) {
+          try {
+            this.setTargets(comment);
+            comment[CommentForm.modeToProperty(this.getMode())](this);
+            this.addToPage();
+          } catch (e) {
+            console.warn(e);
+            addToRescue(this);
+          }
+        } else {
+          addToRescue(this);
+        }
+      } else {
+        addToRescue(this);
+      }
+    } else if (target instanceof Section) {
+      const section = Section.search({
+        headline: target.headline,
+        oldestCommentId: target.oldestComment?.id,
+        index: target.index,
+        id: target.id,
+
+        // We cache ancestors when saving the session, so this call will return the right value,
+        // despite cd.sections has already changed.
+        ancestors: target.getAncestors().map((section) => section.headline),
+      });
+      if (section?.isActionable) {
+        try {
+          this.setTargets(section);
+          section[CommentForm.modeToProperty(this.getMode())](this);
+          this.addToPage();
+        } catch (e) {
+          console.warn(e);
+          addToRescue(this);
+        }
+      } else {
+        addToRescue(this);
+      }
+    } else if (this.getMode() === 'addSection') {
+      this.addToPage();
+      controller.setAddSectionForm(this);
     }
   }
 }

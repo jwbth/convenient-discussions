@@ -981,7 +981,7 @@ export default {
 
     const $button = $(e.currentTarget);
     let preloadConfig;
-    let isNewTopicOnTop = false;
+    let newTopicOnTop = false;
     if ($button.is('a')) {
       const href = $button.attr('href');
       let query;
@@ -1000,7 +1000,7 @@ export default {
         noHeadline: Boolean(getLastArrayElementOrSelf(query.nosummary)),
         omitSignature: Boolean(query.cdomitsignature),
       };
-      isNewTopicOnTop = getLastArrayElementOrSelf(query.section) === '0';
+      newTopicOnTop = getLastArrayElementOrSelf(query.section) === '0';
     } else {
       // <input>
       const $form = $button.closest('form');
@@ -1015,7 +1015,7 @@ export default {
     }
 
     e.preventDefault();
-    CommentForm.createAddSectionForm(preloadConfig, isNewTopicOnTop);
+    CommentForm.createAddSectionForm(preloadConfig, newTopicOnTop);
   },
 
   /**

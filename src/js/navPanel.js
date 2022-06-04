@@ -359,8 +359,12 @@ export default {
         comments.forEach((comment) => {
           tooltipText += `\n`;
           const names = comment.parent?.author && comment.level > 1 ?
-            cd.s('navpanel-newcomments-names', comment.author.name, comment.parent.author.name) :
-            comment.author.name;
+            cd.s(
+              'navpanel-newcomments-names',
+              comment.author.getName(),
+              comment.parent.author.getName()
+            ) :
+            comment.author.getName();
           const date = comment.date ?
             formatDate(comment.date) :
             cd.s('navpanel-newcomments-unknowndate');

@@ -17,9 +17,11 @@ import {
   focusInput,
   getUrlWithFragment,
   handleApiReject,
+  underlinesToSpaces,
   wrap,
 } from './util';
 import {
+  encodeWikilink,
   endWithTwoNewlines,
   extractSignatures,
   hideDistractingCode,
@@ -716,20 +718,20 @@ class Section extends SectionSkeleton {
       const lastComment = this.commentsInFirstChunk[this.commentsInFirstChunk.length - 1];
       if (
         lastComment &&
-        (commentForm.containerListType === 'ol' || cd.config.indentationCharMode === 'mimic')
+        (commentForm.getContainerListType() === 'ol' || cd.config.indentationCharMode === 'mimic')
       ) {
         try {
-          lastComment.locateInCode(commentForm.submitSection);
+          lastComment.locateInCode(commentForm.isSectionSubmitted());
         } catch {
           return;
         }
         if (
           !lastComment.inCode.indentationChars.startsWith('#') ||
 
-          // For now we use the workaround with commentForm.containerListType to make sure "#"
+          // For now we use the workaround with commentForm.getContainerListType() to make sure "#"
           // is a part of comments organized in a numbered list, not of a numbered list _in_
           // the target comment.
-          commentForm.containerListType === 'ol'
+          commentForm.getContainerListType() === 'ol'
         ) {
           this.inCode.lastCommentIndentationChars = lastComment.inCode.indentationChars;
         }
@@ -876,8 +878,8 @@ class Section extends SectionSkeleton {
   /**
    * Load the section code. See also {@link Section#requestCode}.
    *
-   * @param {CommentForm} [commentForm] Comment form, if it is submitted (or code changes are
-   *   viewed).
+   * @param {CommentForm} [commentForm] Comment form, if it is submitted or code changes are
+   *   viewed.
    * @throws {CdError|Error}
    */
   async getCode(commentForm) {
@@ -887,14 +889,7 @@ class Section extends SectionSkeleton {
           await this.requestCode();
           this.locateInCode(true);
           if (commentForm) {
-            /**
-             * Whether the wikitext of a section will be submitted to the server instead of a page.
-             *
-             * @type {?boolean}
-             * @memberof CommentForm
-             * @instance
-             */
-            commentForm.submitSection = true;
+            commentForm.setSectionSubmitted(true);
           }
         } catch (e) {
           if (e instanceof CdError && ['noSuchSection', 'locateSection'].includes(e.data.code)) {
@@ -1272,6 +1267,55 @@ class Section extends SectionSkeleton {
    */
   getUrl(permanent) {
     return getUrlWithFragment(this.id, permanent);
+  }
+
+  /**
+   * Get a section relevant to this section, which means the section itself. (Used for polymorphism
+   * with {@link Comment#getRelevantSection}.)
+   *
+   * @returns {Section}
+   */
+  getRelevantSection() {
+    return this;
+  }
+
+  /**
+   * Get a comment relevant to this section, which means the first comment _if_ it is opening the
+   * section. (Used for polymorphism with {@link Comment#getRelevantComment}.)
+   *
+   * @returns {?Section}
+   */
+  getRelevantComment() {
+    if (this.mode === 'replyInSection' && !this.replyButton) {
+      throw new CdError();
+    }
+
+    return this.comments[0]?.isOpeningSection ? this.comments[0] : null;
+  }
+
+  /**
+   * Get the data identifying the section when restoring a comment form. (Used for polymorphism with
+   * {@link Comment#getRelevantComment}.)
+   *
+   * @returns {object}
+   */
+  getIdentifyingData() {
+    return {
+      headline: this.headline,
+      oldestCommentId: this.oldestComment?.id,
+      index: this.index,
+      id: this.id,
+      ancestors: this.getAncestors().map((section) => section.headline),
+    };
+  }
+
+  /**
+   * Get the fragment for use in a section link.
+   *
+   * @returns {string}
+   */
+  getLinkFragment() {
+    return encodeWikilink(underlinesToSpaces(this.id));
   }
 }
 

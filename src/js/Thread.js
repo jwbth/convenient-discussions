@@ -549,7 +549,9 @@ class Thread {
       labelElement: expandButton.querySelector('.oo-ui-labelElement-label'),
     });
     const usersInThread = this.getUsersInThread();
-    const userList = usersInThread.map((author) => author.name).join(cd.mws('comma-separator'));
+    const userList = usersInThread
+      .map((author) => author.getName())
+      .join(cd.mws('comma-separator'));
     const setLabel = (genderless) => {
       let label;
       if (genderless) {

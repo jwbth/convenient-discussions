@@ -170,7 +170,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
     // Doesn't apply to DT IDs.
     let helpOnlyCd;
     let helpNotOnlyCd;
-    if (this.isComment && this.content.id === this.object.id) {
+    if (this.isComment && this.content.fragment === this.object.id) {
       helpOnlyCd = cd.s('cld-help-onlycd');
       helpNotOnlyCd = wrap(cd.sParse('cld-help-notonlycd'));
     }

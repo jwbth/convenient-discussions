@@ -1439,9 +1439,10 @@ export default class BootProcess {
   highlightMentions($content) {
     if (!$content.is('#mw-content-text, .cd-comment-part')) return;
 
+    const currentUserName = cd.user.getName();
     const selector = $content.hasClass('cd-comment-part') ?
-      `a[title$=":${cd.user.name}"], a[title*=":${cd.user.name} ("]` :
-      `.cd-comment-part a[title$=":${cd.user.name}"], .cd-comment-part a[title*=":${cd.user.name} ("]`;
+      `a[title$=":${currentUserName}"], a[title*=":${currentUserName} ("]` :
+      `.cd-comment-part a[title$=":${currentUserName}"], .cd-comment-part a[title*=":${currentUserName} ("]`;
     const authorClassName = settings.get('reformatComments') ? 'cd-comment-author' : 'cd-signature';
     const excludeSelector = [authorClassName]
       .concat(cd.config.elementsToExcludeClasses)
@@ -1453,7 +1454,7 @@ export default class BootProcess {
         return (
           cd.g.USER_LINK_REGEXP.test(this.title) &&
           !this.closest(excludeSelector) &&
-          Parser.processLink(this)?.userName === cd.user.name
+          Parser.processLink(this)?.userName === cd.user.getName()
         );
       })
       .each((i, link) => {

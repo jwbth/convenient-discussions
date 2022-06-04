@@ -344,7 +344,7 @@ export function extractSignatures(code) {
     const startIndex = signatureIndex;
     const nextCommentOffset = adjustedCode.slice(startIndex).indexOf('\n') + 1;
     signatures.push({
-      author: cd.user.name,
+      author: cd.user.getName(),
       startIndex,
       nextCommentStartIndex: startIndex + nextCommentOffset,
     });

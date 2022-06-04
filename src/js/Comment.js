@@ -343,7 +343,7 @@ class Comment extends CommentSkeleton {
         ) ||
 
         // Cases like https://ru.wikipedia.org/?diff=119667594
-        n.textContent.toLowerCase() === this.author.name.toLowerCase()
+        n.textContent.toLowerCase() === this.author.getName().toLowerCase()
       )
     ) {
       n.remove();
@@ -472,13 +472,13 @@ class Comment extends CommentSkeleton {
       this.authorLink = authorLink;
       let pageName;
       if (this.author.isRegistered()) {
-        pageName = 'User:' + this.author.name;
+        pageName = 'User:' + this.author.getName();
         pagesToCheckExistence.push({
           pageName,
           link: this.authorLink,
         });
       } else {
-        pageName = `${cd.g.CONTRIBS_PAGE}/${this.author.name}`;
+        pageName = `${cd.g.CONTRIBS_PAGE}/${this.author.getName()}`;
       }
       this.authorLink.title = pageName;
       this.authorLink.href = mw.util.getUrl(pageName);
@@ -494,7 +494,7 @@ class Comment extends CommentSkeleton {
     } else {
       // Use the bootstrap author talk link.
       this.authorTalkLink = authorTalkLink;
-      const pageName = 'User talk:' + this.author.name;
+      const pageName = 'User talk:' + this.author.getName();
       pagesToCheckExistence.push({
         pageName,
         link: this.authorTalkLink,
@@ -503,10 +503,10 @@ class Comment extends CommentSkeleton {
       this.authorTalkLink.href = mw.util.getUrl(pageName);
     }
 
-    bdiElement.textContent = this.author.name;
+    bdiElement.textContent = this.author.getName();
 
     if (settings.get('showContribsLink') && this.author.isRegistered()) {
-      const pageName = `${cd.g.CONTRIBS_PAGE}/${this.author.name}`;
+      const pageName = `${cd.g.CONTRIBS_PAGE}/${this.author.getName()}`;
       contribsLink.title = pageName;
       contribsLink.href = mw.util.getUrl(pageName);
     }
@@ -2468,7 +2468,7 @@ class Comment extends CommentSkeleton {
         rvdir: 'newer',
         rvstart: new Date(this.date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * 10).toISOString(),
         rvend: new Date(this.date.getTime() + cd.g.MILLISECONDS_IN_MINUTE * 3).toISOString(),
-        rvuser: this.author.name,
+        rvuser: this.author.getName(),
         rvlimit: 500,
       });
 
@@ -2604,7 +2604,7 @@ class Comment extends CommentSkeleton {
     }
 
     const url = this.getSourcePage().getArchivedPage().getUrl({ diff: edit.revid });
-    const question = cd.sParse('thank-confirm', this.author.name, this.author, url);
+    const question = cd.sParse('thank-confirm', this.author.getName(), this.author, url);
     const $question = wrap(question, {
       tagName: 'div',
       targetBlank: true,
@@ -3352,7 +3352,7 @@ class Comment extends CommentSkeleton {
 
             // Previous comment object may come from the worker, where it has only the authorName
             // property.
-            signature.author.name === previousComments[i].authorName
+            signature.author.getName() === previousComments[i].authorName
           );
 
           // Many consecutive comments with the same author and timestamp.
@@ -3704,7 +3704,7 @@ class Comment extends CommentSkeleton {
       if (!this.genderRequest) {
         this.genderRequest = getUserGenders([this.author]);
         errorCallback = (e) => {
-          console.warn(`Couldn't get the gender of user ${this.author.name}.`, e);
+          console.warn(`Couldn't get the gender of user ${this.author.getName()}.`, e);
         };
       }
       if (!this.genderRequestCallbacks.includes(callback)) {
@@ -3900,6 +3900,45 @@ class Comment extends CommentSkeleton {
     this.subitemList.add(name, $wrappingItem);
 
     return { $wrappingItem, $wrappingList, $outerWrapper };
+  }
+
+  /**
+   * Get a section relevant to this comment which means the same value as
+   * {@link Section#getSection}. (Used for polymorphism with {@link Comment#getRelevantSection}.)
+   *
+   * @returns {?Section}
+   */
+  getRelevantSection() {
+    return this.section || null;
+  }
+
+  /**
+   * Get a comment relevant to this comment which means the comment itself. (Used for polymorphism
+   * with {@link Section#getRelevantComment}.)
+   *
+   * @returns {Comment}
+   */
+  getRelevantComment() {
+    return this;
+  }
+
+  /**
+   * Get the data identifying the comment when restoring a comment form. (Used for polymorphism with
+   * {@link Section#getIdentifyingData}.)
+   *
+   * @returns {object}
+   */
+  getIdentifyingData() {
+    return { id: this.id };
+  }
+
+  /**
+   * Get the fragment for use in a comment link.
+   *
+   * @returns {string}
+   */
+  getLinkFragment() {
+    return this.dtId || this.id;
   }
 }
 

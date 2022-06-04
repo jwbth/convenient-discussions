@@ -55,30 +55,28 @@ export default {
    * Update or set the width of the page nagivation blocks.
    */
   updateWidth() {
-    if (!this.isMounted()) return;
+    if (!this.isMounted() || !controller.$contentColumn.length) return;
 
-    if (controller.$contentColumn.length) {
-      const left = controller.$contentColumn.offset().left - $(window).scrollLeft();
-      const padding = 18;
-      let width = $(document.body).hasClass('ltr') ?
-        left - padding :
-        $(window).width() - (left + controller.$contentColumn.outerWidth()) - padding;
-      if (cd.g.SKIN === 'minerva') {
-        width -= controller.getContentColumnOffsets().startMargin;
-      }
-
-      // Some skins when the viewport is narrowed
-      if (width <= 100) {
-        this.$topElement.hide();
-        this.$bottomElement.hide();
-      } else {
-        this.$topElement.show();
-        this.$bottomElement.show();
-      }
-
-      this.$topElement.css('width', width + 'px');
-      this.$bottomElement.css('width', width + 'px');
+    const left = controller.$contentColumn.offset().left - $(window).scrollLeft();
+    const padding = 18;
+    let width = $(document.body).hasClass('ltr') ?
+      left - padding :
+      $(window).width() - (left + controller.$contentColumn.outerWidth()) - padding;
+    if (cd.g.SKIN === 'minerva') {
+      width -= controller.getContentColumnOffsets().startMargin;
     }
+
+    // Some skins when the viewport is narrowed
+    if (width <= 100) {
+      this.$topElement.hide();
+      this.$bottomElement.hide();
+    } else {
+      this.$topElement.show();
+      this.$bottomElement.show();
+    }
+
+    this.$topElement.css('width', width + 'px');
+    this.$bottomElement.css('width', width + 'px');
   },
 
   /**

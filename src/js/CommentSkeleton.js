@@ -1465,8 +1465,8 @@ class CommentSkeleton {
                 });
               }
 
-              // Since we traverse templates from the last to the first, `childComment.level` at
-              // this stage is always the same as `childComment.logicalLevel`. The same for
+              // Since we traverse templates from the last to the first, `childComment.level`
+              // at this stage is always the same as `childComment.logicalLevel`. The same for
               // `parentComment`.
               const childLevel = childComment.level;
 

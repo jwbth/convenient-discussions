@@ -45,6 +45,15 @@ class User {
   }
 
   /**
+   * Get the user name.
+   *
+   * @returns {string}
+   */
+  getName() {
+    return this.name;
+  }
+
+  /**
    * Set a gender for the user.
    *
    * @param {string} value

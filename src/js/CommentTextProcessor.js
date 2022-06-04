@@ -16,7 +16,7 @@ export default class CommentTextProcessor {
    */
   constructor(commentForm, action) {
     this.commentForm = commentForm;
-    this.target = commentForm.target;
+    this.target = commentForm.getTarget();
     this.action = action;
 
     this.filePatternEnd = `\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]$`;
@@ -31,7 +31,7 @@ export default class CommentTextProcessor {
    * @private
    */
   setIndentationData() {
-    switch (this.commentForm.mode) {
+    switch (this.commentForm.getMode()) {
       case 'reply':
         this.indentationChars = this.target.inCode.replyIndentationChars;
         break;
@@ -57,8 +57,8 @@ export default class CommentTextProcessor {
     }
 
     this.indented = Boolean(
-      ['reply', 'replyInSection'].includes(this.commentForm.mode) ||
-      (this.commentForm.mode === 'edit' && this.indentationChars)
+      ['reply', 'replyInSection'].includes(this.commentForm.getMode()) ||
+      (this.commentForm.getMode() === 'edit' && this.indentationChars)
     );
 
     if (this.indented) {
@@ -147,7 +147,7 @@ export default class CommentTextProcessor {
     if (this.commentForm.omitSignatureCheckbox?.isSelected()) {
       this.signature = '';
     } else {
-      this.signature = this.commentForm.mode === 'edit' ?
+      this.signature = this.commentForm.getMode() === 'edit' ?
         this.target.inCode.signatureCode :
         cd.g.USER_SIGNATURE;
     }
@@ -158,7 +158,7 @@ export default class CommentTextProcessor {
       this.signature &&
 
       // The existing signature doesn't start with a newline.
-      (this.commentForm.mode !== 'edit' || !/^[ \t]*\n/.test(this.signature)) &&
+      (this.commentForm.getMode() !== 'edit' || !/^[ \t]*\n/.test(this.signature)) &&
 
       /(^|\n)[:*#;].*$/.test(this.code)
     ) {
@@ -474,8 +474,8 @@ export default class CommentTextProcessor {
     if (
       !headline ||
       (
-        this.commentForm.mode === 'addSection' &&
-        this.commentForm.submitSection &&
+        this.commentForm.getMode() === 'addSection' &&
+        this.commentForm.isSectionSubmitted() &&
         this.action === 'submit'
       )
     ) {
@@ -483,9 +483,9 @@ export default class CommentTextProcessor {
     }
 
     let level;
-    if (this.commentForm.mode === 'addSection') {
+    if (this.commentForm.getMode() === 'addSection') {
       level = 2;
-    } else if (this.commentForm.mode === 'addSubsection') {
+    } else if (this.commentForm.getMode() === 'addSubsection') {
       level = this.target.level + 1;
     } else {
       // 'edit'
@@ -494,7 +494,7 @@ export default class CommentTextProcessor {
     const equalSigns = '='.repeat(level);
 
     if (
-      this.commentForm.mode === 'addSection' ||
+      this.commentForm.getMode() === 'addSection' ||
 
       // To have pretty diffs.
       (this.commentForm.isSectionOpeningCommentEdited && /^\n/.test(this.target.inCode.code))
@@ -559,7 +559,7 @@ export default class CommentTextProcessor {
    * @private
    */
   addTrailingNewline() {
-    if (this.commentForm.mode !== 'edit') {
+    if (this.commentForm.getMode() !== 'edit') {
       this.code += '\n';
     }
   }

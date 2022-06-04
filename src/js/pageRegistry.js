@@ -439,7 +439,7 @@ class Page {
   modifyWholeCode({ commentCode, commentForm }) {
     const wholeCode = this.code;
     let newWholeCode;
-    if (commentForm.isNewTopicOnTop) {
+    if (commentForm.isNewTopicOnTop()) {
       const adjustedPageCode = hideDistractingCode(wholeCode);
       const firstSectionStartIndex = adjustedPageCode.search(/^(=+).*\1[ \t\x01\x02]*$/m);
       let codeBefore;
@@ -451,7 +451,7 @@ class Page {
       const codeAfter = wholeCode.slice(firstSectionStartIndex);
       newWholeCode = codeBefore + commentCode + '\n' + codeAfter;
     } else {
-      const codeBefore = commentForm.submitSection ? '' : (wholeCode + '\n').trimLeft();
+      const codeBefore = commentForm.isSectionSubmitted() ? '' : (wholeCode + '\n').trimLeft();
       newWholeCode = codeBefore + commentCode;
     }
 
@@ -634,6 +634,36 @@ class Page {
       titles: this.name,
       newerthanrevid: revisionId,
     });
+  }
+
+  /**
+   * Used for polymorphism with {@link Comment#getRelevantSection} and
+   * {@link Section#getRelevantSection}.
+   *
+   * @returns {null}
+   */
+  getRelevantSection() {
+    return null;
+  }
+
+  /**
+   * Used for polymorphism with {@link Comment#getRelevantComment} and
+   * {@link Section#getRelevantComment}.
+   *
+   * @returns {null}
+   */
+  getRelevantComment() {
+    return null;
+  }
+
+  /**
+   * Used for polymorphism with {@link Comment#getIdentifyingData} and
+   * {@link Section#getIdentifyingData}.
+   *
+   * @returns {null}
+   */
+  getIdentifyingData() {
+    return null;
   }
 }
 
