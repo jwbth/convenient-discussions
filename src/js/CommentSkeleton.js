@@ -42,6 +42,13 @@ class CommentSkeleton {
      */
     this.signatureElement = signature.element;
 
+    /**
+     * Comment signature text.
+     *
+     * @type {string}
+     */
+    this.signatureText = signature.element.textContent;
+
     // Identify all comment nodes and save a path to them.
     this.collectParts(precedingHeadingElement);
 

@@ -2393,10 +2393,7 @@ class Comment extends CommentSkeleton {
     // Only analyze added lines except for headings.
     const regexp = /<td [^>]*class="[^"]*\bdiff-empty\b[^"]*"[^>]*>\s*<\/td>\s*<td [^>]*class="[^"]*\bdiff-marker\b[^"]*"[^>]*>\s*<\/td>\s*<td [^>]*class="[^"]*\bdiff-addedline\b[^"]*"[^>]*>\s*<div[^>]*>(?!=)(.+?)<\/div>\s*<\/td>/g;
 
-    const commentEnding = cd.g.ARE_TIMESTAMPS_ALTERED ?
-      this.timestamp :
-      this.$signature.get(0).innerText;
-    const commentFullText = this.getText(false) + ' ' + commentEnding;
+    const commentFullText = this.getText(false) + ' ' + this.signatureText;
     const matches = [];
     for (let i = 0; i < compareBodies.length; i++) {
       const diffBody = compareBodies[i];
@@ -2871,10 +2868,10 @@ class Comment extends CommentSkeleton {
   /**
    * Get the comment's text.
    *
-   * @param {boolean} [cleanUp=true] Whether to clean up the signature.
+   * @param {boolean} [cleanUpSignature=true] Whether to clean up the signature.
    * @returns {string}
    */
-  getText(cleanUp = true) {
+  getText(cleanUpSignature = true) {
     if (this.cachedText === undefined) {
       const $clone = this.$elements
         .not('h1, h2, h3, h4, h5, h6')
@@ -2891,7 +2888,7 @@ class Comment extends CommentSkeleton {
       const selector = selectorParts.join(', ');
       $dummy.find(selector).remove();
       let text = $dummy.cdGetText();
-      if (cleanUp) {
+      if (cleanUpSignature) {
         if (cd.config.signatureEndingRegexp) {
           text = text.replace(cd.config.signatureEndingRegexp, '');
         }
