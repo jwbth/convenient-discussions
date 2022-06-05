@@ -305,7 +305,7 @@
 	"sd-useuitime": "Smon-e j'orari dël coment con la zòna oraria definìa ant ij gust ëd mia wiki",
 	"sd-usetemplatedata": "Dovré TemplateData ant jë stamp ëd completament automàtich",
 	"sd-usetemplatedata-help": "Ten-e Shift sgnacà an sernend në stamp da lë mnu ëd completament automàtich për anserì ëdcò ij paràmeter obligatòri e sugerì ëd lë stamp",
-	"sd-usetopicsubscription": "Dovré l'[[:en:Help:Notifications|antërfassa ëd notìfica stàndard]] për arsèive dle notìfiche an sij coment an sj'argoment ai quaj i son abonà",
+	"sd-usetopicsubscription": "Dovré l'[[mw:Special:MyLanguage/Help:Notifications|antërfassa ëd notìfica stàndard]] për arsèive dle notìfiche an sij coment an sj'argoment ai quaj i son abonà",
 	"sd-usetopicsubscription-help": "A peul configuré le sòrt ëd notìfiche (aragnà, pòsta eletrònica, aplicassion) ant ij sò [[Special:Preferences#mw-prefsection-echo|gust]]. <strong>Nòta:</strong> Sòn a marcia mach për le session ëd livel 2 (<code>==</code>). Si chiel a abìlita sòn, a podrà pa anscriv-se a le sot-session. A podrà gnanca filtré le modìfiche ant la lista dla ròba ch'as ten sot-euj pr'ëstat d'abonaent. A podrìa ëdcò avèj damanca d'abonesse torna a j'argoment apress che chiel a abìlita <em>o</em> disabìlita sòn.",
 	"sd-watchonreply": "Ten-e sot-euj le pàgine an sle quaj i comento",
 	"sd-watchsectiononreply": "Anscriv-se a j'argoment ch'i comento",

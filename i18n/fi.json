@@ -146,7 +146,7 @@
 	"sd-hidetimezone": "Piilota aikavyöhyke",
 	"sd-modifytoc-help": "Näytä kommenttien määrä, uudet kommentit ja osiot ja korosta seuraamani ketjut",
 	"sd-usebackgroundhighlighting": "Käytä taustan korostusta omille ja uusille kommenteille",
-	"sd-usetopicsubscription": "Käytä [[:en:Help:Notifications|ilmoitusrajapintaa]] vastaanottaaksesi ilmoituksia kommenteista seuraamiisi keskusteluketjuihin",
+	"sd-usetopicsubscription": "Käytä [[mw:Special:MyLanguage/Help:Notifications|ilmoitusrajapintaa]] vastaanottaaksesi ilmoituksia kommenteista seuraamiisi keskusteluketjuihin",
 	"sd-watchonreply": "Tarkkaile kommentoimaani sivua",
 	"sd-watchsectiononreply": "Seuraa keskusteluja joihin olen osallistunut",
 	"msd-title": "Siirrä ketju",

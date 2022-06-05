@@ -31,7 +31,7 @@
 	"cld-title-section": "Copia link sezione",
 	"cld-summary": "Oggetto della modifica",
 	"cld-close": "Chiudi",
-	"thank-confirm": "Vuoi ringraziare {{gender:$2|}} $1 per [$3 questa modifica]?",
+	"thank-confirm": "Vuoi inviare un ringraziamento pubblico a {{gender:$2|}} $1 per [$3 questa modifica]?",
 	"es-reply": "rispondi",
 	"es-edit-comment": "modifica commento",
 	"cf-save": "Salva",

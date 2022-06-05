@@ -322,7 +322,7 @@
 	"sd-useuitime": "Afficher les horodatages du commentaire dans le fuseau horaire défini dans mes préférences du wiki",
 	"sd-usetemplatedata": "Utiliser TemplateData dans les modèles de complétion automatique.",
 	"sd-usetemplatedata-help": "Gardez la touche Maj enfoncée en choisissant un modèle du menu de complétion automatique pour insérer le modèle requis avec les paramètres suggérés.",
-	"sd-usetopicsubscription": "Utiliser l’[[w:en:Help:Notifications|interface de notification standard]] pour recevoir les notifications de commentaires sur les sujets auxquels je suis abonné",
+	"sd-usetopicsubscription": "Utiliser l’[[mw:Special:MyLanguage/Help:Notifications|interface de notification standard]] pour recevoir les notifications de commentaires sur les sujets auxquels je suis abonné",
 	"sd-usetopicsubscription-help": "Vous pouvez configurer les types de notification (web, courriel, application) dans les [[Special:Preferences#mw-prefsection-echo|préférences]]. <strong>Note :</strong> cela ne fonctionne que pour les sections de niveau 2 (<code>==</code>). Si vous l’activez, vous ne pourrez pas vous abonner aux sous-sections. Vous ne pourrez pas filtrer les modifications dans votre liste de suivi par état d’abonnement non plus. Vous devrez peut-être aussi vous réabonner aux sujets après l’avoir activé <em>ou</em> désactivé.",
 	"sd-watchonreply": "Suivre les pages que j’ai commentées",
 	"sd-watchsectiononreply": "S’abonner aux sujets que j’ai commentés",

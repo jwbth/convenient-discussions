@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"Jack who built the house",
 			"Minh Nguyen",
 			"Nghiemtrongdai VN",
 			"NguoiDungKhongDinhDanh"
@@ -305,7 +306,7 @@
 	"sd-useuitime": "Hiển thị mốc thời gian bình luận trong múi giờ được đặt trong tùy chọn wiki của tôi",
 	"sd-usetemplatedata": "Sử dụng dữ liệu bản mẫu trong chức năng tự điền bản mẫu",
 	"sd-usetemplatedata-help": "Giữ phím Shift trong khi chọn một bản mẫu từ menu tự động hoàn thành để chèn các tham số được yêu cầu và đề xuất của bản mẫu.",
-	"sd-usetopicsubscription": "Sử dụng [[w:en:Help:Notifications|giao diện thông báo tiêu chuẩn]] để nhận thông báo về bình luận trong các chủ đề tôi đang theo dõi",
+	"sd-usetopicsubscription": "Sử dụng [[mw:Special:MyLanguage/Help:Notifications|giao diện thông báo tiêu chuẩn]] để nhận thông báo về bình luận trong các chủ đề tôi đang theo dõi",
 	"sd-usetopicsubscription-help": "Bạn có thể tùy chỉnh các loại thông báo (web, email, ứng dụng) trong [[Special:Preferences#mw-prefsection-echo|tùy chọn]]. <strong>Lưu ý:</strong> Bạn chỉ có thể theo dõi đề mục ở cấp 2 (<code>==</code>). Nếu bạn bật tính năng này, bạn sẽ theo dõi cả đề mục con cùng với đề mục chính. Tuy nhiên, tính năng lọc các sửa đổi của bình luận trong danh sách theo dõi sẽ không còn nữa. Bạn cũng có thể cần theo dõi lại các chủ đề sau khi bật <em>hoặc</em> tắt tính năng này.",
 	"sd-watchonreply": "Theo dõi trang mà tôi bình luận",
 	"sd-watchsectiononreply": "Theo dõi chủ đề mà tôi bình luận",
