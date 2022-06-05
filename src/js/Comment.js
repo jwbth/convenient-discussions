@@ -2937,7 +2937,7 @@ class Comment extends CommentSkeleton {
         'i'
       );
       const nextLineBeginningRegexp = new RegExp(
-        `^(?:<\\/${cd.g.PNIE_PATTERN}>|<${cd.g.PNIE_PATTERN}|\\|)`,
+        `^(?:<\\/${cd.g.PNIE_PATTERN}>|<${cd.g.PNIE_PATTERN}|\\||!)`,
         'i'
       );
       const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/;

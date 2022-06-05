@@ -476,8 +476,8 @@ export function mergeRegexps(arr) {
  * @param {RegExp} regexp
  * @param {string[]} hidden
  * @param {string} type Should consist only of alphanumeric characters.
- * @param {boolean} [useGroups=false] Use groups in the regexp as the `preText` and `textToHide`
- *   parameters.
+ * @param {boolean} [useGroups=false] Use the first two capturing groups in the regexp as the
+ *   `preText` and `textToHide` parameters. (Used for processing table code.)
  * @returns {string}
  */
 export function hideText(text, regexp, hidden, type, useGroups = false) {

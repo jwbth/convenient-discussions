@@ -480,6 +480,9 @@ export function hideSensitiveCode(code, templateHandler) {
   hideTemplates();
   hide(/^(:* *)(\{\|[^]*?\n\|\})/gm, 'table', true);
 
+  // Tables with a signature inside that are clipped on comment editing.
+  hide(/^(:* *)(\{\|[^]*\n\|)/gm, 'table', true);
+
   return { code, hidden };
 }
 
