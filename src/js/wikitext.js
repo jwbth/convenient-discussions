@@ -210,10 +210,7 @@ function extractRegularSignatures(adjustedCode, code) {
 
       let authorLinkMatch;
       authorLinkRegexp.lastIndex = 0;
-      const commentEndingStartIndex = Math.max(
-        0,
-        timestampStartIndex - lineStartIndex - signatureScanLimit
-      );
+      const commentEndingStartIndex = Math.max(0, timestampStartIndex - lineStartIndex - 255);
       const commentEnding = authorTimestampMatch[0].slice(commentEndingStartIndex);
 
       // Should always match logically.
