@@ -144,7 +144,7 @@ export default {
     // Do it immediately to prevent the issue when any unexpected error prevents this from being
     // executed and then this.handleWikipageContentHookFirings is called with #mw-content-text
     // element for some reason, and the page goes into an infinite reloading loop.
-    this.$root.data('cd-parsed', true);
+    this.$root.addClass('cd-parsed');
   },
 
   /**
@@ -1337,7 +1337,7 @@ export default {
     if (!$content.is('#mw-content-text')) return;
 
     const $root = $content.children('.mw-parser-output');
-    if ($root.length && !$root.data('cd-parsed')) {
+    if ($root.length && !$root.hasClass('cd-parsed')) {
       this.reload({ isPageReloadedExternally: true });
     }
   },

@@ -653,7 +653,7 @@ export default {
   async reformatComments() {
     if (settings.get('reformatComments')) {
       const pagesToCheckExistence = [];
-      $(document.body).addClass('cd-reformattedComments');
+      $(controller.$root).addClass('cd-reformattedComments');
       cd.comments.forEach((comment) => {
         pagesToCheckExistence.push(...comment.replaceSignatureWithHeader());
         comment.addMenu();
