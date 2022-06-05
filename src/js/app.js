@@ -550,7 +550,10 @@ async function app() {
   if (
     /(^|\.)m\./.test(location.hostname) ||
     mw.config.get('wgPageContentModel') !== 'wikitext' ||
-    mw.config.get('wgIsMainPage')
+    mw.config.get('wgIsMainPage') ||
+
+    // Liquid Threads, for example https://en.wiktionary.org/wiki/User_talk:Yair_rand/newentrywiz.js
+    $('.lqt-talkpage').length
   ) {
     return;
   }
