@@ -511,13 +511,13 @@ class SettingsDialog extends OO.ui.ProcessDialog {
     [this.watchOnReplyField, this.watchOnReplyCheckbox] = createCheckboxField({
       value: 'watchOnReply',
       selected: settings.watchOnReply,
-      label: cd.s('sd-watchonreply'),
+      label: cd.s('sd-watchonreply', mw.user),
     });
 
     [this.subscribeOnReplyField, this.subscribeOnReplyCheckbox] = createCheckboxField({
       value: 'subscribeOnReply',
       selected: settings.subscribeOnReply,
-      label: cd.s('sd-watchsectiononreply'),
+      label: cd.s('sd-watchsectiononreply', mw.user),
       help: cd.s('sd-watchsectiononreply-help'),
     });
   }
