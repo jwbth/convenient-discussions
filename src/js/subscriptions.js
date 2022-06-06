@@ -59,7 +59,6 @@ export default {
    */
   load(reuse = false) {
     this.useTopicSubscription = settings.get('useTopicSubscription');
-    this.seenNotice = settings.get('topicSubscriptionSeenNotice');
 
     delete this.registry;
     if (this.allPagesRegistry) {
@@ -342,7 +341,7 @@ export default {
    * Show a message dialog informing the user about the new topic subscription feature.
    */
   async maybeShowNotice() {
-    if (!this.useTopicSubscription || this.seenNotice) return;
+    if (!this.useTopicSubscription || settings.get('topicSubscriptionSeenNotice')) return;
 
     const loadedSettings = await settings.load();
     const $body = $('<div>');
@@ -366,7 +365,6 @@ export default {
     loadedSettings.topicSubscriptionSeenNotice = true;
     settings.save(loadedSettings);
     settings.set('topicSubscriptionSeenNotice', true);
-    this.seenNotice = true;
   },
 
   /**

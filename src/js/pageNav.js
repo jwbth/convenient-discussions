@@ -86,6 +86,8 @@ export default {
     if (!this.isMounted()) return;
 
     const htmlElement = document.documentElement;
+
+    // Vertical scrollbar disappeared
     if (htmlElement.scrollHeight === htmlElement.clientHeight) {
       this.reset();
       return;

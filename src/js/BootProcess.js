@@ -43,8 +43,6 @@ function getAllTextNodes() {
  * @param {Element[]|external:Element[]} elements
  */
 function handleDtMarkup(elements) {
-  let dtMarkupHavenElement;
-
   // Reply Tool is officially incompatible with CD, so we don't care if it is enabled. New Topic
   // Tool doesn't seem to make difference for our purposes here.
   const moveNotRemove = (
@@ -53,6 +51,7 @@ function handleDtMarkup(elements) {
     // DT enabled by default. Don't know how to capture that another way.
     mw.loader.getState('ext.discussionTools.init') === 'ready'
   );
+  let dtMarkupHavenElement;
   if (moveNotRemove) {
     if (controller.getBootProcess().isPageFirstParsed()) {
       dtMarkupHavenElement = document.createElement('span');
@@ -874,10 +873,6 @@ export default class BootProcess {
           potentialElement.tagName === 'DIV'
         ) {
           previousComment.parser.splitParentAfterNode(potentialElement.previousSibling);
-          console.debug(
-            'Separated a list from a part of the previous comment.',
-            comment.elements[0]
-          );
         }
       }
     });

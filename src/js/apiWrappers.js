@@ -517,7 +517,8 @@ export async function getUsersById(userIds) {
       list: 'users',
       ususerids: nextUserIds,
     }).catch(handleApiReject);
-    users.push(...resp.query.users.map((user) => userRegistry.get(user.name)));
+    const nextUsers = resp.query.users.map((user) => userRegistry.get(user.name));
+    users.push(...nextUsers);
   }
 
   return users;

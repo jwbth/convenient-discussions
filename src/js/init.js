@@ -1130,6 +1130,13 @@ export default {
        */
       cd.g.CONTENT_TIMESTAMP_REGEXP = new RegExp(mainPartPattern + ' +' + timezonePattern);
 
+      /**
+       * Regular expression for parsing timestamps in content.
+       *
+       * @name PARSE_TIMESTAMP_CONTENT_REGEXP
+       * @type {RegExp}
+       * @memberof convenientDiscussions.g
+       */
       cd.g.PARSE_TIMESTAMP_CONTENT_REGEXP = new RegExp(
         `^([^]*)(${cd.g.CONTENT_TIMESTAMP_REGEXP.source})(?!["»])`
       );
@@ -1170,6 +1177,13 @@ export default {
        */
       cd.g.UI_TIMESTAMP_REGEXP = new RegExp(getTimestampMainPartPattern('user'));
 
+      /**
+       * Regular expression for parsing timestamps in the interface.
+       *
+       * @name PARSE_TIMESTAMP_UI_REGEXP
+       * @type {RegExp}
+       * @memberof convenientDiscussions.g
+       */
       cd.g.PARSE_TIMESTAMP_UI_REGEXP = new RegExp(
         new RegExp(`^([^]*)(${cd.g.UI_TIMESTAMP_REGEXP.source})`)
       );

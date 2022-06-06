@@ -65,6 +65,9 @@ window.mw = {
       get: () => ({}),
     },
   },
+  loader: {
+    getState: () => {},
+  },
 };
 
 settings.init();
