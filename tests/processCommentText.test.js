@@ -20,6 +20,10 @@ Object.assign(cd, {
 
 function testWithData(label, code, expected, commentForm, action = 'submit', config) {
   test(label, () => {
+    commentForm.getMode = () => commentForm.mode;
+    commentForm.getTarget = () => commentForm.target;
+    commentForm.isSectionSubmitted = () => commentForm.sectionSubmitted;
+
     if (config) {
       cd.config = Object.assign({}, cd.config, config);
     }
@@ -49,7 +53,7 @@ const firstLevelReplyForm = {
   mode: 'reply',
   target: {
     inCode: {
-      originalIndentationChars: ':',
+      indentationChars: ':',
       replyIndentationChars: '::',
     },
   },
@@ -59,7 +63,7 @@ const firstCommentReplyForm = {
   mode: 'reply',
   target: {
     inCode: {
-      originalIndentationChars: '',
+      indentationChars: '',
       replyIndentationChars: ':',
       headingLevel: 2,
     },
@@ -71,7 +75,7 @@ const firstLevelEditForm = {
   mode: 'edit',
   target: {
     inCode: {
-      originalIndentationChars: ':',
+      indentationChars: ':',
       replyIndentationChars: '::',
       code: 'Text.',
       signatureCode: existingSignature,
@@ -87,7 +91,7 @@ const firstCommentEditForm = {
   },
   target: {
     inCode: {
-      originalIndentationChars: '',
+      indentationChars: '',
       replyIndentationChars: ':',
       code: '\nText.',
       signatureCode: existingSignature,

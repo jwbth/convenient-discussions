@@ -7,8 +7,13 @@ const settings = require('../src/js/settings').default;
 const g = require('../src/js/staticGlobals').default;
 const { formatDateNative, initDayjs } = require('../src/js/timestamp');
 
-settings.init();
 cd.g = g;
+cd.config = {
+  defaultInsertButtons: [],
+  defaultSignaturePrefix: ' ',
+};
+cd.g.SETTINGS_OPTION_NAME = 'userjs-convenientDiscussions-settings';
+cd.g.PHP_CHAR_TO_UPPER = {};
 cd.g.USER_LANGUAGE = 'en';
 cd.g.UI_DATE_FORMAT = 'H:i, j F Y';
 cd.mws = (name) => ({
@@ -20,6 +25,8 @@ cd.debug = {
   startTimer: () => {},
   stopTimer: () => {},
 };
+settings.save = async () => {};
+cd.settings = settings;
 
 const messages = {
   en: {
@@ -53,7 +60,14 @@ window.mw = {
     },
   },
   msg: (name) => messages[mw.config.get('wgUserLanguage')][name],
+  user: {
+    options: {
+      get: () => ({}),
+    },
+  },
 };
+
+settings.init();
 
 function spacePad(text, length) {
   return text + ' '.repeat(Math.max(0, length - text.length));
@@ -78,10 +92,12 @@ function testWithSettings(
     const comment = {
       timestampElement: {},
       setDateUpdateTimer: () => {},
+      extraSignatures: [],
     };
 
     const adaptedReformatTimestamp = (date) => {
       comment.date = new Date(date);
+      comment.formatTimestamp = Comment.prototype.formatTimestamp;
       Comment.prototype.reformatTimestamp.call(comment);
       return [comment.reformattedTimestamp, comment.timestampTitle];
     }
@@ -214,13 +230,15 @@ testWithSettings(
   ['03:48, 28 May 2021 (UTC-7)', '10:48, 28 May 2021 (UTC)']
 );
 
+const currentYear = new Date().getFullYear();
+
 testWithSettings(
-  ['2021-05-28T10:48:47.000Z', 'improved', 'America/Los_Angeles', true, false],
-  ['28 May, 3:48 AM (UTC-7)', '10:48, 28 May 2021 (UTC)']
+  [`${currentYear}-05-28T10:48:47.000Z`, 'improved', 'America/Los_Angeles', true, false],
+  ['28 May, 3:48 AM (UTC-7)', `10:48, 28 May ${currentYear} (UTC)`]
 );
 testWithSettings(
-  ['2021-05-28T10:48:47.000Z', 'improved', 'America/Los_Angeles', true, true],
-  ['28 May, 3:48 AM', '10:48, 28 May 2021 (UTC)']
+  [`${currentYear}-05-28T10:48:47.000Z`, 'improved', 'America/Los_Angeles', true, true],
+  ['28 May, 3:48 AM', `10:48, 28 May ${currentYear} (UTC)`]
 );
 testWithSettings(
   ['2021-05-28T10:48:47.000Z', 'improved', 'America/Los_Angeles', true, false, '2021-05-28T10:48:47.000Z'],
