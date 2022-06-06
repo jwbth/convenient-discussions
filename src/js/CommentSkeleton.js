@@ -325,6 +325,7 @@ class CommentSkeleton {
         (step !== 'up' && cd.g.NAMESPACE_NUMBER % 2 === 1 && element.classList.contains('tmbox'))
       ) ||
 
+      element.tagName === 'MW:TOCPLACE' ||
       element.getAttribute('id') === 'toc' ||
 
       // Seems to be the best option given pages like
