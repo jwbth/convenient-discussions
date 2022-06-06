@@ -264,6 +264,7 @@ export default {
     'NavHead',
     'ts-Закрыто-footer',
     'ts-Цитата-container',
+    'raaf',
   ],
 
   templatesToExclude: [
