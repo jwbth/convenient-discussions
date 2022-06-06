@@ -793,7 +793,6 @@ class Comment extends CommentSkeleton {
     return { timestamp, title };
   }
 
-
   /**
    * Change the format of the comment timestamp according to the settings. Do the same with extra
    * timestamps in the comment.
@@ -2969,7 +2968,7 @@ class Comment extends CommentSkeleton {
       .replace(/\x01\n/g, '\n')
 
       // Remove indentation characters
-      .replace(/\n([:*#]*[:*])([ \t]*)/g, (s, chars, spacing) => {
+      .replace(/\n([:*#]*)([ \t]*)/g, (s, chars, spacing) => {
         let newChars;
         if (chars.length >= originalIndentationChars.length) {
           newChars = chars.slice(originalIndentationChars.length);
@@ -3094,7 +3093,11 @@ class Comment extends CommentSkeleton {
         let startIndexShift = s.length;
 
         // We could just throw an error here, but instead will try to fix the markup.
-        if (!before && /\n[:*]#/.test(code) && adjustedChars.endsWith('#')) {
+        if (
+          !before &&
+          (code.match(/(^|\n)[:*#]/g) || []).length >= 2 &&
+          adjustedChars.endsWith('#')
+        ) {
           adjustedChars = adjustedChars.slice(0, -1);
           originalIndentationChars = adjustedChars;
 
@@ -3111,8 +3114,9 @@ class Comment extends CommentSkeleton {
               ::# Item 2.
               :: End of the comment. [signature]
 
-            The first is incorrect, and we need to add additional indentation in that case. Example:
-            https://en.wikipedia.org/wiki/Wikipedia_talk:No_Nazis/Archive_1#202101051013_Hob_Gadling.
+            The first is incorrect, and we need to add additional indentation in that case. Examples:
+            https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2020-05-16T09:10:00.000Z-Example-2020-05-16T09:00:00.000Z
+            https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2020-05-16T09:20:00.000Z-Example-2020-05-16T09:10:00.000Z
             But make sure replying to
             https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#No_intro_text,_empty_line_before_the_first_vote
             works correctly.
@@ -3236,12 +3240,12 @@ class Comment extends CommentSkeleton {
 
     // If the comment contains different indentation character sets for different lines, then use
     // different sets depending on the mode (edit/reply).
-    let replyIndentationChars = data.originalIndentationChars;
+    let replyIndentationChars = data.indentationChars;
     if (!this.isOpeningSection) {
       // If the last line ends with "#", it's probably a numbered list _inside_ the comment, not two
       // comments in one, so we exclude such cases. The signature code is used because it may start
       // with a newline.
-      const match = (data.code + data.signatureDirtyCode).match(/\n([:*#]*[:*]).*$/);
+      const match = (data.code + data.signatureDirtyCode).match(/\n([:*#]*[:*])(?!:*#).*$/);
       if (match) {
         replyIndentationChars = match[1];
 
@@ -3258,7 +3262,7 @@ class Comment extends CommentSkeleton {
             spaceOrNot
           );
           data.code = prefix + data.code;
-          data.originalIndentationChars = data.originalIndentationChars
+          data.indentationChars = data.originalIndentationChars = data.originalIndentationChars
             .slice(0, replyIndentationChars.length);
           data.startIndex -= prefix.length;
         }
