@@ -67,7 +67,7 @@ export default {
       modifyToc: true,
       useBackgroundHighlighting: true,
       useTemplateData: true,
-      useTopicSubscription: false,
+      useTopicSubscription: Boolean(mw.loader.getState('ext.discussionTools.init')),
       useUiTime: true,
       watchOnReply: true,
       subscribeOnReply: true,
