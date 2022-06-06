@@ -87,6 +87,14 @@ function handleDtMarkup(elements) {
       el.removeAttribute('data-mw-comment');
     });
   }
+
+  // Reset some interfering methods
+  if (mw.loader.moduleRegistry['ext.discussionTools.init']?.packageExports['highlighter.js']) {
+    mw.loader.moduleRegistry['ext.discussionTools.init'].packageExports['highlighter.js']
+      .highlightTargetComment = () => {};
+    mw.loader.moduleRegistry['ext.discussionTools.init'].packageExports['highlighter.js']
+      .clearHighlightTargetComment = () => {};
+  }
 }
 
 /**
