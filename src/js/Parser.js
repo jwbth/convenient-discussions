@@ -60,6 +60,7 @@ class Parser {
    */
   constructor(context) {
     this.context = context;
+    this.existingCommentIds = [];
   }
 
   /**
@@ -70,8 +71,6 @@ class Parser {
    * @returns {*}
    */
   createComment(signature, targets) {
-    this.existingCommentIds = [];
-
     return new this.context.CommentClass(this, signature, targets);
   }
 
