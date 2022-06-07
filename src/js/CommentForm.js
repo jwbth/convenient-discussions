@@ -1512,6 +1512,10 @@ class CommentForm {
           !controller.getActiveAutocompleteMenu()
         ) {
           this.submit();
+
+          // Focus may move to the comment input if the checks aren't successful, adding a newline
+          // if we don't prevent the default action.
+          e.preventDefault();
         }
       });
     }
@@ -1584,6 +1588,10 @@ class CommentForm {
         !controller.getActiveAutocompleteMenu()
       ) {
         this.submit();
+
+        // Focus may move to the comment input if the checks aren't successful, adding a newline
+        // if we don't prevent the default action.
+        e.preventDefault();
       }
     });
 
