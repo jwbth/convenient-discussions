@@ -1472,7 +1472,7 @@ class CommentForm {
       // Hotkeys
       .on('keydown', (e) => {
         // Ctrl+Enter
-        if (keyCombination(e, 13, ['ctrl'])) {
+        if (keyCombination(e, 13, ['cmd'])) {
           this.submit();
         }
 
@@ -3283,7 +3283,7 @@ class CommentForm {
   mention(mentionAddressee) {
     if (mentionAddressee && this.targetComment) {
       let data = Autocomplete.getConfig('mentions').transform(this.targetComment.author.getName());
-      data = data.ctrlModify(data);
+      data = data.cmdModify(data);
       const text = data.start + data.content + data.end;
       const range = this.commentInput.getRange();
       this.commentInput.selectRange(0);

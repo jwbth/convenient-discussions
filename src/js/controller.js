@@ -824,7 +824,7 @@ export default {
 
     if (
       // Ctrl+Alt+Q
-      keyCombination(e, 81, ['ctrl', 'alt']) ||
+      keyCombination(e, 81, ['cmd', 'alt']) ||
 
       // Q
       (keyCombination(e, 81) && !isInputFocused())

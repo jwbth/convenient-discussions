@@ -764,10 +764,16 @@ export function calculateWordOverlap(s1, s2) {
  *
  * @param {Event} e
  * @param {number} keyCode
- * @param {Array} [modifiers=[]]
+ * @param {Array} [modifiers=[]] Use `'cmd'` instead of `'ctrl'`.
  * @returns {boolean}
  */
 export function keyCombination(e, keyCode, modifiers = []) {
+  if (modifiers.includes('cmd')) {
+    removeFromArrayIfPresent(modifiers, 'cmd');
+    // In Chrome on Windows, e.metaKey corresponds to the Windows key, so we better check for a
+    // platform.
+    modifiers.push(cd.g.CLIENT_PROFILE.platform === 'mac' ? 'meta' : 'ctrl');
+  }
   return (
     e.keyCode === keyCode &&
     ['ctrl', 'shift', 'alt', 'meta'].every((mod) => modifiers.includes(mod) === e[mod + 'Key'])
