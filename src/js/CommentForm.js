@@ -1506,7 +1506,11 @@ class CommentForm {
 
       this.headlineInput.$input.on('keydown', (e) => {
         // Enter
-        if (e.keyCode === 13 && !controller.getActiveAutocompleteMenu()) {
+        if (
+          e.keyCode === 13 &&
+          !isCmdModifierPressed(e) &&
+          !controller.getActiveAutocompleteMenu()
+        ) {
           this.submit();
         }
       });
@@ -1574,7 +1578,11 @@ class CommentForm {
 
     this.summaryInput.$input.on('keydown', (e) => {
       // Enter
-      if (e.keyCode === 13 && !controller.getActiveAutocompleteMenu()) {
+      if (
+        e.keyCode === 13 &&
+        !isCmdModifierPressed(e) &&
+        !controller.getActiveAutocompleteMenu()
+      ) {
         this.submit();
       }
     });
@@ -2350,10 +2358,7 @@ class CommentForm {
    * @returns {boolean}
    */
   isBeingSubmitted() {
-    return (
-      this.operations.some((op) => op.type === 'submit' && !op.isClosed) ||
-      this.areChecksRunning
-    );
+    return this.operations.some((op) => op.type === 'submit' && !op.isClosed);
   }
 
   /**
@@ -2907,16 +2912,8 @@ class CommentForm {
   async submit(afterEditConflict = false) {
     if (this.isBeingSubmitted() || this.isContentBeingLoaded()) return;
 
-    this.areChecksRunning = true;
     const doDelete = this.deleteCheckbox?.isSelected();
-    if (!this.runChecks({ doDelete })) {
-      setTimeout(() => {
-        // If Ctrl+Enter is pressed when the caret in the headline or summary input, then without
-        // setTimeout, the check would run twice.
-        this.areChecksRunning = false;
-      });
-      return;
-    }
+    if (!this.runChecks({ doDelete })) return;
 
     const currentOperation = this.registerOperation('submit', undefined, !afterEditConflict);
 
