@@ -231,7 +231,7 @@ export default {
       return false;
     });
 
-    // It's faster to update the offset separately in one sequence.
+    // It's faster to update the offsets separately in one sequence.
     comments.forEach((comment) => {
       comment.updateLayersOffset();
     });
@@ -691,11 +691,11 @@ export default {
    * @memberof Comment
    */
   reformatTimestamps() {
-    if (cd.g.ARE_TIMESTAMPS_ALTERED) {
-      cd.comments.forEach((comment) => {
-        comment.reformatTimestamp();
-      });
-    }
+    if (!cd.g.ARE_TIMESTAMPS_ALTERED) return;
+
+    cd.comments.forEach((comment) => {
+      comment.reformatTimestamp();
+    });
   },
 
   /**

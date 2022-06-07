@@ -583,7 +583,7 @@ class Autocomplete {
               start: `@[[${pageName}|`,
               end: ']]',
               content: name,
-              ctrlModify: (data) => {
+              cmdModify: (data) => {
                 data.end += cd.mws('colon-separator', { language: 'content' });
                 return data;
               },

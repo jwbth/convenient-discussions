@@ -113,8 +113,8 @@ class TributeRange {
             let isCmdModifierPressed = navigator.platform.includes('Mac') ?
                 originalEvent.metaKey :
                 originalEvent.ctrlKey
-            if (isCmdModifierPressed && data.ctrlModify) {
-                data = data.ctrlModify(data)
+            if (isCmdModifierPressed && data.cmdModify) {
+                data = data.cmdModify(data)
             }
 
             let myField = this.tribute.current.element

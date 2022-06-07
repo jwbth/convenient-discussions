@@ -139,7 +139,7 @@ class CommentForm {
      * @type {boolean}
      * @private
      */
-    this.isSectionOpeningCommentEdited = this.mode === 'edit' && this.target.isOpeningSection;
+    this.sectionOpeningCommentEdited = this.mode === 'edit' && this.target.isOpeningSection;
 
     /**
      * Whether the wikitext of a section will be submitted to the server instead of a page.
@@ -329,7 +329,7 @@ class CommentForm {
   createInputs(dataToRestore) {
     if (
       (['addSection', 'addSubsection'].includes(this.mode) && !this.preloadConfig?.noHeadline) ||
-      this.isSectionOpeningCommentEdited
+      this.sectionOpeningCommentEdited
     ) {
       const parentSection = this.targetSection?.getParent();
       if (this.mode === 'addSubsection') {
@@ -755,7 +755,7 @@ class CommentForm {
     if (this.containerListType === 'ol') {
       this.$element.addClass('cd-commentForm-inNumberedList');
     }
-    if (this.isSectionOpeningCommentEdited) {
+    if (this.sectionOpeningCommentEdited) {
       this.$element.addClass('cd-commentForm-sectionOpeningComment');
     }
     if (this.mode === 'addSubsection') {
@@ -1885,7 +1885,7 @@ class CommentForm {
    *   need to be wrapped in a widget.
    */
   showMessage(htmlOrJquery, { type = 'notice', name, isRaw = false } = {}) {
-    if (this.isDestroyed || (name && this.$messageArea.children(`.cd-message-${name}`).length)) {
+    if (this.destroyed || (name && this.$messageArea.children(`.cd-message-${name}`).length)) {
       return;
     }
 
@@ -1951,7 +1951,7 @@ class CommentForm {
       this.closeOperation(currentOperation);
     }
 
-    if (this.isDestroyed) return;
+    if (this.destroyed) return;
 
     if (logMessage) {
       console.warn(logMessage);
@@ -2819,7 +2819,7 @@ class CommentForm {
         this.mode === 'addSection' ||
         (
           !settings.get('useTopicSubscription') &&
-          (this.mode === 'addSubsection' || this.isSectionOpeningCommentEdited)
+          (this.mode === 'addSubsection' || this.sectionOpeningCommentEdited)
         )
       ) {
         let subscribeId;
@@ -2832,11 +2832,11 @@ class CommentForm {
           if (this.headlineInput) {
             rawHeadline = this.headlineInput.getValue().trim();
           }
-          if (!this.isSectionOpeningCommentEdited && !rawHeadline) {
+          if (!this.sectionOpeningCommentEdited && !rawHeadline) {
             [, rawHeadline] = commentCode.match(/^==(.*?)==[ \t]*$/m) || [];
           }
           subscribeId = rawHeadline && removeWikiMarkup(rawHeadline);
-          if (this.isSectionOpeningCommentEdited) {
+          if (this.sectionOpeningCommentEdited) {
             originalHeadline = removeWikiMarkup(this.originalHeadline);
             isHeadlineAltered = subscribeId !== originalHeadline;
           }
@@ -3063,7 +3063,7 @@ class CommentForm {
      *
      * @type {boolean}
      */
-    this.isDestroyed = true;
+    this.destroyed = true;
   }
 
   /**
