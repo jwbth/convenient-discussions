@@ -451,7 +451,7 @@ const toc = {
         ul.appendChild(li);
 
         const a = document.createElement('a');
-        a.href = `#${comment.id}`;
+        a.href = `#${comment.dtId || comment.id}`;
         if (this.isInSidebar) {
           a.className = 'sidebar-toc-link';
         }

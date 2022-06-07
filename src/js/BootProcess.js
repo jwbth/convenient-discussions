@@ -1290,7 +1290,13 @@ export default class BootProcess {
         // is clicked), `fragmentHasCommentId` should be false - fragments are removed on page
         // reload. So there is no duplication between `pushState` and `replaceState`.
         if (fragmentHasCommentId) {
-          history.replaceState(Object.assign({}, history.state, { cdJumpedToComment: true }), '');
+          // Replace CD's comment ID in the fragment with DiscussionTools' if available.
+          let newFragment;
+          if (comment.dtId) {
+            newFragment = `#${comment.dtId}`;
+          }
+          const newState = Object.assign({}, history.state, { cdJumpedToComment: true });
+          history.replaceState(newState, '', newFragment);
         }
       });
     }

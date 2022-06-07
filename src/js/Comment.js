@@ -2297,7 +2297,7 @@ class Comment extends CommentSkeleton {
   scrollTo(smooth = true, pushState = false, flash = true, callback) {
     if (pushState) {
       const newState = Object.assign({}, history.state, { cdJumpedToComment: true });
-      history.pushState(newState, '', '#' + this.id);
+      history.pushState(newState, '', '#' + this.dtId || this.id);
     }
 
     if (this.isCollapsed) {
