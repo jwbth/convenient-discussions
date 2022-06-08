@@ -70,6 +70,22 @@ class User {
   getGender() {
     return this.options.get('gender');
   }
+
+  /**
+   * Get the preferred namespace alias, based on:
+   * 1. the `genderNeutralUserNamespaceAlias` CD config value (first choice);
+   * 2. the `userNamespacesByGender` CD config value, if the gender is known (second choice);
+   * 3. the `wgFormattedNamespaces` MediaWiki config value (third choice).
+   *
+   * @returns {string}
+   */
+  getNamespaceAlias() {
+    return (
+      cd.config.genderNeutralUserNamespaceAlias ||
+      cd.config.userNamespacesByGender?.[this.getGender()] ||
+      mw.config.get('wgFormattedNamespaces')[2]
+    );
+  }
 }
 
 export default {

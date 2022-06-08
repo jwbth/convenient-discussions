@@ -571,11 +571,7 @@ class Autocomplete {
           transform: (item) => {
             const name = item.trim();
             const user = userRegistry.get(name);
-            const userNamespace = (
-              cd.config.genderNeutralUserNamespaceAlias ||
-              cd.config.userNamespacesByGender?.[user.getGender()] ||
-              mw.config.get('wgFormattedNamespaces')[2]
-            );
+            const userNamespace = user.getNamespaceAlias();
             const pageName = user.isRegistered() ?
               `${userNamespace}:${name}` :
               `${cd.g.CONTRIBS_PAGE}/${name}`;

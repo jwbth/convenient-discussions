@@ -3213,7 +3213,12 @@ class CommentForm {
               subject = 'comment-by';
             }
           }
-          const string = cd.s(`es-${action}-${subject}`, target.author.getName(), target.author);
+          const string = cd.s(
+            `es-${action}-${subject}`,
+            target.author.getName(),
+            target.author,
+            target.author.getNamespaceAlias()
+          );
           return removeDoubleSpaces(string);
         };
 
