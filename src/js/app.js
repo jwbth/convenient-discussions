@@ -35,7 +35,14 @@ if (IS_SINGLE) {
     // Empty
   }
 
-  const replaceEntities = require('../../misc/util').replaceEntitiesInI18n;
+  // Copy of the function in misc/util.js. If altering it, make sure they are synchronized.
+  const replaceEntities = (string) => (
+    string
+      .replace(/&nbsp;/g, '\xa0')
+      .replace(/&#32;/g, ' ')
+      .replace(/&rlm;/g, '\u202b')
+      .replace(/&lrm;/g, '\u200e')
+  );
 
   cd.i18n = {};
   cd.i18n.en = require('../../i18n/en.json');
