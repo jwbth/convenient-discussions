@@ -438,10 +438,8 @@ const toc = {
       }
 
       const rtlMarkOrNot = cd.g.CONTENT_TEXT_DIRECTION === 'rtl' ? '\u200f' : '';
-      let text = names + rtlMarkOrNot + cd.mws('comma-separator');
-      if (settings.get('timestampFormat') === 'default') {
-        text += date;
-      }
+      const dateOrNot = settings.get('timestampFormat') === 'default' ? date : '';
+      const text = names + rtlMarkOrNot + cd.mws('comma-separator') + dateOrNot;
 
       // If there are `itemsLimit` comments or less, show all of them. If there are more, show
       // `itemsLimit - 1` and "N more". (Because showing `itemsLimit - 1` and then "1 more" is
@@ -489,7 +487,9 @@ const toc = {
           const textDiv = document.createElement('div');
           textDiv.className = 'sidebar-toc-text cd-toc-commentLink';
           textDiv.textContent = text;
-          textDiv.appendChild(timestampSpan);
+          if (timestampSpan) {
+            textDiv.appendChild(timestampSpan);
+          }
           a.appendChild(textDiv);
           li.appendChild(a);
         } else {
@@ -502,14 +502,16 @@ const toc = {
           const textSpan = document.createElement('span');
           textSpan.className = 'toctext';
           a.textContent = text;
-          a.appendChild(timestampSpan);
+          if (timestampSpan) {
+            a.appendChild(timestampSpan);
+          }
           textSpan.appendChild(a);
           li.appendChild(textSpan);
         }
       } else {
         // In a tooltip, always show the date in the default format — we won't be auto-updating
         // relative dates there due to low benefit.
-        moreTooltipText += text + nativeDate + '\n';
+        moreTooltipText += text + (dateOrNot ? '' : nativeDate) + '\n';
       }
     });
 
