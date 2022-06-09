@@ -224,9 +224,6 @@ module.exports = (env) => {
 
       // Fixes "Invalid Host/Origin header".
       disableHostCheck: true,
-
-      // To use in a DevTools snippet.
-      writeToDisk: single,
     },
   };
 };
