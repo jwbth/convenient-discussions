@@ -129,7 +129,7 @@
 	"sd-timestampformat-radio-default": "Standard (\"$1\")",
 	"sd-timestampformat-radio-improved": "Verbessert (\"$1\",\"$2\")",
 	"sd-timestampformat-radio-relative": "Relativ (\"$1\", \"$2\")",
-	"sd-watchsectiononreply": "Theemen abonéieren zu deenen ech Bemierkunge gemaach hunn",
+	"sd-watchsectiononreply": "Theemen abonéieren zu deenen {{gender:$1|ech Bemierkunge gemaach hunn}}",
 	"ewsd-title": "Lëscht vun den Abonnementer änneren",
 	"ewsd-save": "Späicheren",
 	"ewsd-saved": "D'Lëscht vun den Abonnementer gouf gespäichert.",
