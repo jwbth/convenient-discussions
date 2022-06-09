@@ -22,7 +22,7 @@ import {
   saveToLocalStorage,
   wrap,
 } from './util';
-import { getUserGenders } from './apiWrappers';
+import { loadUserGenders } from './apiWrappers';
 
 const revisionData = {};
 const resolvers = {};
@@ -867,7 +867,7 @@ async function processComments(comments, currentComments, currentRevisionId) {
   });
 
   if (cd.g.GENDER_AFFECTS_USER_STRING) {
-    await getUserGenders(newComments.map((comment) => comment.author), true);
+    await loadUserGenders(newComments.map((comment) => comment.author), true);
   }
 
   if (!isPageStillAtRevision(currentRevisionId)) return;

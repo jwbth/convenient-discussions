@@ -74,7 +74,7 @@ export async function showCopyLinkDialog(object, e) {
    */
   object.isLinkBeingCopied = true;
 
-  const fragment = object.getLinkFragment();
+  const fragment = object.getWikilinkFragment();
   const content = {
     fragment,
     wikilink: `[[${cd.page.name}#${fragment}]]`,

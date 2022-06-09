@@ -357,7 +357,7 @@ export function extractSignatures(code) {
   });
   signatures.forEach((sig, i) => {
     const { date } = sig.timestamp && parseTimestamp(sig.timestamp) || {};
-    sig.id = i;
+    sig.index = i;
     sig.date = date;
     delete sig.nextCommentStartIndex;
   });

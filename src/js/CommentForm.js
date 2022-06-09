@@ -3125,7 +3125,7 @@ class CommentForm {
 
     this.dontAutopreviewOnSummaryChange = dontAutopreviewOnSummaryChange;
 
-    const text = this.autoText();
+    const text = this.generateStaticSummaryText();
     const section = this.headlineInput && this.mode !== 'addSubsection' ?
       removeWikiMarkup(this.headlineInput.getValue()) :
       this.target.getRelevantSection()?.headline;
@@ -3168,7 +3168,7 @@ class CommentForm {
    * @returns {string}
    * @private
    */
-  autoText() {
+  generateStaticSummaryText() {
     this.updateAutoSummaryBound = this.updateAutoSummaryBound || this.updateAutoSummary.bind(this);
 
     switch (this.mode) {

@@ -17,7 +17,7 @@ import {
   saveToLocalStorage,
   unique,
 } from './util';
-import { getUserGenders } from './apiWrappers';
+import { loadUserGenders } from './apiWrappers';
 
 let elementPrototypes;
 let isInited;
@@ -207,13 +207,13 @@ function restoreCollapsedThreads() {
       data.collapsedThreads.splice(data.collapsedThreads.indexOf(id), 1);
     }
   });
-  let getUserGendersPromise;
+  let loadUserGendersPromise;
   if (cd.g.GENDER_AFFECTS_USER_STRING) {
     const usersInThreads = flat(comments.map((comment) => comment.thread.getUsersInThread()));
-    getUserGendersPromise = getUserGenders(usersInThreads);
+    loadUserGendersPromise = loadUserGenders(usersInThreads);
   }
   comments.forEach((comment) => {
-    comment.thread.collapse(getUserGendersPromise);
+    comment.thread.collapse(loadUserGendersPromise);
   });
 
   if (controller.isCurrentRevision()) {
@@ -489,9 +489,9 @@ class Thread {
   /**
    * Collapse the thread.
    *
-   * @param {Promise} [getUserGendersPromise]
+   * @param {Promise} [loadUserGendersPromise]
    */
-  collapse(getUserGendersPromise) {
+  collapse(loadUserGendersPromise) {
     /**
      * Nodes that are collapsed. These can change, at least due to comment forms showing up.
      *
@@ -575,7 +575,7 @@ class Thread {
       button.element.classList.remove('cd-thread-button-invisible');
     };
     if (cd.g.GENDER_AFFECTS_USER_STRING) {
-      (getUserGendersPromise || getUserGenders(usersInThread)).then(setLabel, () => {
+      (loadUserGendersPromise || loadUserGenders(usersInThread)).then(setLabel, () => {
         // Couldn't get the gender, use the genderless version.
         setLabel(true);
       });

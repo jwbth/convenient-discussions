@@ -44,7 +44,7 @@ import {
   removeWikiMarkup,
 } from './wikitext';
 import { formatDate, formatDateNative } from './timestamp';
-import { getUserGenders, parseCode } from './apiWrappers';
+import { loadUserGenders, parseCode } from './apiWrappers';
 import { showConfirmDialog } from './ooui';
 import { showCopyLinkDialog } from './modal.js';
 
@@ -259,6 +259,8 @@ class Comment extends CommentSkeleton {
      * @type {CommentSubitemList}
      */
     this.subitemList = new CommentSubitemList();
+
+    this.genderRequestCallbacks = [];
   }
 
   /**
@@ -2584,7 +2586,7 @@ class Comment extends CommentSkeleton {
 
     let genderRequest;
     if (cd.g.GENDER_AFFECTS_USER_STRING && this.author.isRegistered()) {
-      genderRequest = getUserGenders([this.author]);
+      genderRequest = loadUserGenders([this.author]);
     }
 
     let edit;
@@ -3297,11 +3299,10 @@ class Comment extends CommentSkeleton {
 
     // Transform the signature object into a comment match object.
     let matches = signatureMatches.map((match) => ({
-      id: match.id,
+      index: match.index,
       author: match.author,
       timestamp: match.timestamp,
       date: match.date,
-      commentId: match.commentId,
       signatureDirtyCode: match.dirtyCode,
       startIndex: match.commentStartIndex,
       endIndex: match.startIndex,
@@ -3337,14 +3338,14 @@ class Comment extends CommentSkeleton {
     matches.forEach((match) => {
       match.code = pageCode.slice(match.startIndex, match.endIndex);
 
-      match.doesIndexMatch = index === match.id;
+      match.doesIndexMatch = index === match.index;
 
       if (previousComments.length) {
         match.doesPreviousCommentsDataMatch = false;
         match.doesPreviousCommentDataMatch = false;
 
         for (let i = 0; i < previousComments.length; i++) {
-          const signature = signatures[match.id - 1 - i];
+          const signature = signatures[match.index - 1 - i];
           if (!signature) break;
 
           // At least one coincided comment is enough if the second is unavailable.
@@ -3371,8 +3372,8 @@ class Comment extends CommentSkeleton {
         }
       } else {
         // If there is no previous comment both on the page and in the code, it's a match.
-        match.doesPreviousCommentsDataMatch = match.id === 0;
-        match.doesPreviousCommentDataMatch = match.id === 0;
+        match.doesPreviousCommentsDataMatch = match.index === 0;
+        match.doesPreviousCommentDataMatch = match.index === 0;
       }
 
       match.isPreviousCommentsDataEqual = Boolean(match.isPreviousCommentsDataEqual);
@@ -3389,9 +3390,17 @@ class Comment extends CommentSkeleton {
       match.wordOverlap = calculateWordOverlap(commentText, removeWikiMarkup(match.code));
 
       match.score = (
+        // This condition _must_ be true.
         (
           matches.length === 1 ||
           match.wordOverlap > 0.5 ||
+
+          // There are always problems with first comments as there are no previous comments to
+          // compare the signatures of and it's harder to tell the match, so we use a bit ugly
+          // solution here, although it should be quite reliable: the comment's firstness, matching
+          // author, date, and headline. A false negative will take place when the comment is no
+          // longer first. Another option is to look for next comments, not for previous.
+          (index === 0 && match.doesPreviousCommentsDataMatch && match.doesHeadlineMatch) ||
 
           // The reserve method, if for some reason the text is not overlapping: by this and
           // previous two dates and authors. If all dates and authors are the same, that shouldn't
@@ -3400,15 +3409,9 @@ class Comment extends CommentSkeleton {
             index !== 0 &&
             match.doesPreviousCommentsDataMatch &&
             !match.isPreviousCommentsDataEqual
-          ) ||
-
-          // There are always problems with first comments as there are no previous comments to
-          // compare the signatures of and it's harder to tell the match, so we use a bit ugly
-          // solution here, although it should be quite reliable: the comment's firstness, matching
-          // author, date, and headline. A false negative will take place when the comment is no
-          // longer first. Another option is to look for next comments, not for previous.
-          (index === 0 && match.doesPreviousCommentsDataMatch && match.doesHeadlineMatch)
+          )
         ) * 2 +
+
         match.wordOverlap +
         match.doesHeadlineMatch * 1 +
         match.doesPreviousCommentsDataMatch * 0.5 +
@@ -3700,10 +3703,9 @@ class Comment extends CommentSkeleton {
    */
   requestAuthorGenderIfNeeded(callback, runAlways = false) {
     if (cd.g.GENDER_AFFECTS_USER_STRING && this.author.isRegistered() && !this.author.getGender()) {
-      this.genderRequestCallbacks = this.genderRequestCallbacks || [];
       let errorCallback;
       if (!this.genderRequest) {
-        this.genderRequest = getUserGenders([this.author]);
+        this.genderRequest = loadUserGenders([this.author]);
         errorCallback = (e) => {
           console.warn(`Couldn't get the gender of user ${this.author.getName()}.`, e);
         };
@@ -3934,11 +3936,11 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get the fragment for use in a comment link.
+   * Get the fragment for use in a comment wikilink.
    *
    * @returns {string}
    */
-  getLinkFragment() {
+  getWikilinkFragment() {
     return this.dtId || this.id;
   }
 }

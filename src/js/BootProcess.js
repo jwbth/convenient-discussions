@@ -38,7 +38,10 @@ function getAllTextNodes() {
 }
 
 /**
- * Deal with (remove or move in the DOM) the markup added to the page by DiscussionTools.
+ * Deal with (remove or move in the DOM) the markup added to the page by DiscussionTools. This
+ * function can be executed in the worker context (which is why it uses
+ * `controller.getBootProcess()` to get the boot process instead of referencing the instance
+ * directly).
  *
  * @param {Element[]|external:Element[]} elements
  */
@@ -159,15 +162,6 @@ export default class BootProcess {
    */
   addDtCommentId(id) {
     this.dtCommentIds.push(id);
-  }
-
-  /**
-   * Get comment IDs in the registry.
-   *
-   * @returns {string[]}
-   */
-  getDtCommentIds() {
-    return this.dtCommentIds;
   }
 
   /**
@@ -953,7 +947,7 @@ export default class BootProcess {
 
     // This runs after extracting sections because Comment#getParent needs sections to be set on
     // comments.
-    this.getDtCommentIds().forEach((id) => {
+    this.dtCommentIds.forEach((id) => {
       const comment = Comment.getByDtId(id);
       if (comment) {
         comment.dtId = id;

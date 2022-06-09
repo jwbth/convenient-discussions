@@ -1310,11 +1310,11 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Get the fragment for use in a section link.
+   * Get the fragment for use in a section wikilink.
    *
    * @returns {string}
    */
-  getLinkFragment() {
+  getWikilinkFragment() {
     return encodeWikilink(underlinesToSpaces(this.id));
   }
 }

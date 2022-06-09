@@ -474,13 +474,14 @@ export async function setGlobalOption(name, value) {
 }
 
 /**
- * Request genders of a list of users. A gender may be `'male'`, `'female'`, or `'unknown'`.
+ * Request genders of a list of users and assign them as properties. A gender may be `'male'`,
+ * `'female'`, or `'unknown'`.
  *
  * @param {User[]} users
  * @param {boolean} [requestInBackground=false] Make a request that won't set the process on hold
  *   when the tab is in the background.
  */
-export async function getUserGenders(users, requestInBackground = false) {
+export async function loadUserGenders(users, requestInBackground = false) {
   const usersToRequest = users
     .filter((user) => !user.getGender() && user.isRegistered())
     .filter(unique)

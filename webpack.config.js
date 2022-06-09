@@ -81,9 +81,7 @@ module.exports = (env) => {
     }),
   ];
 
-  if (single) {
-    plugins.push(progressPlugin);
-  } else {
+  if (!single) {
     plugins.push(
       new webpack.BannerPlugin({
         banner: '<nowiki>',
@@ -116,9 +114,9 @@ module.exports = (env) => {
         }),
       );
     }
-    if (!process.env.CI) {
-      plugins.push(progressPlugin);
-    }
+  }
+  if (!process.env.CI) {
+    plugins.push(progressPlugin);
   }
 
   return {

@@ -63,7 +63,7 @@ class User {
   }
 
   /**
-   * User's gender (must be obtained using {@link module:apiWrappers.getUserGenders}).
+   * User's gender (must be obtained using {@link module:apiWrappers.loadUserGenders}).
    *
    * @type {string}
    */

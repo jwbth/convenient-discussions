@@ -352,7 +352,6 @@ export default {
       }
       const bullet = removeWikiMarkup(cd.s('bullet'));
       const rtlMarkOrNot = cd.g.CONTENT_TEXT_DIRECTION === 'rtl' ? '\u200f' : '';
-      const comma = cd.mws('comma-separator');
       commentsBySection.forEach((comments, section) => {
         const headline = section?.headline;
         tooltipText += headline ? `\n\n${headline}` : '\n';
@@ -368,7 +367,7 @@ export default {
           const date = comment.date ?
             formatDate(comment.date) :
             cd.s('navpanel-newcomments-unknowndate');
-          tooltipText += bullet + ' ' + names + rtlMarkOrNot + comma + date;
+          tooltipText += bullet + ' ' + names + rtlMarkOrNot + cd.mws('comma-separator') + date;
         });
       });
 
