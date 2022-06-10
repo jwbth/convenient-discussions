@@ -337,7 +337,7 @@
   "sd-useuitime": "Show comment timestamps in the timezone set in my wiki preferences",
   "sd-usetemplatedata": "Use TemplateData in templates autocomplete",
   "sd-usetemplatedata-help": "Hold Shift while choosing a template from the autocomplete menu to insert the template's required and suggested parameters as well.",
-  "sd-usetopicsubscription": "Use the [[mw:Special:MyLanguage/Help:Notifications|standard notifications interface]] to receive notifications about comments in topics I'm subscribed to",
+  "sd-usetopicsubscription": "Use the [[mw:Special:MyLanguage/Help:Notifications|standard notifications interface]] to receive notifications about comments in topics I'm {{gender:$1|subscribed to}}",
   "sd-usetopicsubscription-help": "You can configure the notification types (web, email, app) in the [[Special:Preferences#mw-prefsection-echo|preferences]]. <strong>Note:</strong> This works only for 2-level sections (<code>==</code>). If you enable this, you won't be able to subscribe to subsections. You won't be able to filter edits in your watchlist by subscription status as well. You may also need to resubscribe to topics after you enable <em>or</em> disable this.",
   "sd-watchonreply": "Watch pages that I {{gender:$1|comment on}}",
   "sd-watchsectiononreply": "Subscribe to topics that {{gender:$1|I comment in}}",

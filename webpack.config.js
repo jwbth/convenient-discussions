@@ -224,6 +224,10 @@ module.exports = (env) => {
 
       // Fixes "Invalid Host/Origin header".
       disableHostCheck: true,
+
+      // For easier copypaste to use in a DevTools snippet (if can't load from 127.0.0.1:9000 for
+      // some reason).
+      // writeToDisk: single,
     },
   };
 };
