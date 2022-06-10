@@ -41,11 +41,14 @@ export default {
         this.allPagesRegistry[articleId] = this.allPagesRegistry[articleId] || {};
         this.registry = this.allPagesRegistry[articleId];
 
-        // Manually add/remove a section that was added/removed at the same moment the page was
-        // reloaded last time, so when we requested the watched sections from server, this section
-        // wasn't there yet most probably.
-        this.updateRegistry(controller.getBootProcess().data('justSubscribedToSection'), true);
-        this.updateRegistry(controller.getBootProcess().data('justUnsubscribedFromSection'), false);
+        const bootProcess = controller.getBootProcess();
+        if (bootProcess) {
+          // Manually add/remove a section that was added/removed at the same moment the page was
+          // reloaded last time, so when we requested the watched sections from server, this section
+          // wasn't there yet most probably.
+          this.updateRegistry(bootProcess.data('justSubscribedToSection'), true);
+          this.updateRegistry(bootProcess.data('justUnsubscribedFromSection'), false);
+        }
       }
     }
   },
