@@ -950,6 +950,9 @@ class Comment extends CommentSkeleton {
          * @type {?CommentOffset}
          */
         this.offset = offset;
+
+        // This is to determine if the element is moved in future checks.
+        this.firstHighlightableWidth = this.highlightables[0].offsetWidth;
       } else {
         /**
          * The comment's rough coordinates (without taking into account floating elements around the
@@ -1097,13 +1100,14 @@ class Comment extends CommentSkeleton {
    * @param {boolean} [options.set=false] Whether to set the offset to the `offset` (if
    *   `options.considerFloating` is `true`) or `roughOffset` (if `options.considerFloating` is
    *   `false`) property. If `true`, the function will return a boolean value indicating if the
-   *   comment is moved instead of the offset. Setting the `offset` property implies that the layers
-   *   offset will be updated afterwards - otherwise, the next attempt to call this method to update
-   *   the layers offset will return `false` meaning the comment isn't moved, and the layers offset
-   *   will stay wrong.
-   * @returns {?(CommentOffset|boolean)} Offset object. If the comment is not visible,
-   *   returns `null`. If `options.set` is `true`, returns a boolean value indicating if the comment
-   *   is moved instead of the offset.
+   *   comment is moved instead of the offset. (This value can be used to stop recalculating comment
+   *   offsets if a number of comments in a row have not moved for optimization purposes.) Setting
+   *   the `offset` property implies that the layers offset will be updated afterwards - otherwise,
+   *   the next attempt to call this method to update the layers offset will return `false` meaning
+   *   the comment isn't moved, and the layers offset will stay wrong.
+   * @returns {?(CommentOffset|boolean)} Offset object. If the comment is not visible, returns
+   *   `null`. If `options.set` is `true`, returns a boolean value indicating if the comment is
+   *   moved instead of the offset.
    * @private
    */
   getOffset(options = {}) {
@@ -1157,9 +1161,6 @@ class Comment extends CommentSkeleton {
 
       return options.set ? false : this.offset;
     }
-
-    // This is to determine if the element is moved in future checks.
-    this.firstHighlightableWidth = this.highlightables[0].offsetWidth;
 
     const top = scrollY + rectTop.top;
     const bottom = scrollY + rectBottom.bottom;

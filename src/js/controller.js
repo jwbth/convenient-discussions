@@ -809,9 +809,9 @@ export default {
       Comment.redrawLayersIfNecessary(true);
       Thread.updateLines();
       pageNav.updateWidth();
+      CommentForm.adjustLabels();
+      this.handleScroll();
     }, cd.g.SKIN === 'vector-2022' ? 100 : 0);
-    CommentForm.adjustLabels();
-    this.handleScroll();
   },
 
   /**
