@@ -231,8 +231,8 @@
 	"error-editconflict": "编辑冲突。",
 	"error-pagedeleted": "页面已删除。",
 	"error-anoneditwatning": "<strong>您没有登录。</strong>如果您做出任何编辑，您的IP地址将会公开可见。",
-	"wl-button-switchrelevant-tooltip": "仅显示我订阅的话题和提及我的意见。（注意：检测机制基于编辑摘要，所以可能会丢失部分编辑）",
-	"wl-button-editwatchedsections-tooltip": "编辑我订阅的话题列表",
+	"wl-button-switchrelevant-tooltip": "仅显示我{{gender:$1|订阅}}的话题和提及我的意见。（注意：检测机制基于编辑摘要，所以可能会丢失部分编辑）",
+	"wl-button-editwatchedsections-tooltip": "编辑我{{gender:$1|订阅}}的话题列表",
 	"dot-separator": "&nbsp;<b>·</b>&#32;",
 	"ellipsis": "…"
 }
