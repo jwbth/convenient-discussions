@@ -1103,7 +1103,7 @@ export default class BootProcess {
       .attr('title', cd.s('addtopicbutton-tooltip'));
 
     // In case DT's new topic tool is enabled, remove the handler of the "Add topic" button.
-    const dtHandler = $._data(document.body).events.click
+    const dtHandler = $._data(document.body).events?.click
       ?.find((event) => event.selector?.includes('data-mw-comment'))
       ?.handler;
     if (dtHandler) {
