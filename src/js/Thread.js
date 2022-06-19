@@ -240,29 +240,27 @@ function autocollapseThreads() {
       if (!comment.thread) continue;
 
       if (comment.level >= collapseThreadsLevel) {
-        /**
-         * Should the thread be automatically collapsed on page load if taking only comment level
-         * into account and not remembering the user's previous actions.
-         *
-         * @name isAutocollapseTarget
-         * @type {boolean}
-         * @memberof Thread
-         * @instance
-         * @private
-         */
-        comment.thread.isAutocollapseTarget = true;
+        // Exclude threads where the user participates at any level up and down the tree or that the
+        // user has specifically expanded.
+        if (![...comment.getAncestors(), ...comment.thread.comments].some((c) => c.isOwn)) {
+          /**
+           * Should the thread be automatically collapsed on page load if taking only comment level
+           * into account and not remembering the user's previous actions.
+           *
+           * @name isAutocollapseTarget
+           * @type {boolean}
+           * @memberof Thread
+           * @instance
+           * @private
+           */
+          comment.thread.isAutocollapseTarget = true;
 
-        if (
-          !comment.thread.wasManuallyExpanded &&
-          ![...comment.getAncestors(), ...comment.thread.comments].some((c) => c.isOwn)
-        ) {
-          comments.push(comment);
+          if (!comment.thread.wasManuallyExpanded) {
+            comments.push(comment);
+          }
         }
 
         i = comment.thread.lastComment.index;
-
-        // Exclude threads that the user has specifically expanded or where the user participates at
-        // any level up and down the tree.
       }
     }
   }
@@ -361,6 +359,23 @@ class Thread {
       rootComment.getChildren(true, true).slice(-1)[0] || rootComment :
       this.lastComment;
 
+    this.setMarginalElementProperties();
+
+    /**
+     * Is the thread collapsed.
+     *
+     * @type {boolean}
+     */
+     this.isCollapsed = false;
+  }
+
+  /**
+   * Set {@link Thread#startElement}, {@link Thread#endElement}, and {@link Thread#visualEndElement}
+   * properties.
+   *
+   * @private
+   */
+  setMarginalElementProperties() {
     let startElement;
     let visualEndElement;
     let endElement;
@@ -377,14 +392,14 @@ class Thread {
         getEndElement(startElement, highlightables, nextForeignElement);
     } else {
       startElement = (
-        findItemElement(firstNotHeadingElement, rootComment.level, nextForeignElement) ||
+        findItemElement(firstNotHeadingElement, this.rootComment.level, nextForeignElement) ||
         firstNotHeadingElement
       );
       const lastHighlightable = highlightables[highlightables.length - 1];
 
       if (this.lastComment === this.visualLastComment) {
         endElement = (
-          findItemElement(lastHighlightable, rootComment.level, nextForeignElement) ||
+          findItemElement(lastHighlightable, this.rootComment.level, nextForeignElement) ||
           lastHighlightable
         );
 
@@ -401,7 +416,7 @@ class Thread {
         const lastVisualHighlightable = visualHighlightables[visualHighlightables.length - 1];
         visualEndElement = findItemElement(
           lastVisualHighlightable,
-          rootComment.level,
+          this.rootComment.level,
           nextForeignElement
         );
       }
@@ -585,11 +600,6 @@ class Thread {
       $el.data('cd-collapsed-thread-root-comments', roots);
     });
 
-    /**
-     * Is the thread collapsed.
-     *
-     * @type {boolean}
-     */
     this.isCollapsed = true;
 
     for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
