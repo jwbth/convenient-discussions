@@ -70,7 +70,11 @@ export default {
       useTemplateData: true,
       useTopicSubscription: Boolean(mw.loader.getState('ext.discussionTools.init')),
       useUiTime: true,
-      watchOnReply: true,
+
+      // On wikis where there is no topic subscriptions, watching pages on replying is the
+      // alternative to keep track of discussions.
+      watchOnReply: !mw.loader.getState('ext.discussionTools.init'),
+
       subscribeOnReply: true,
     };
   },
