@@ -45,10 +45,11 @@ async function prepare() {
   if (!settings.get('useTopicSubscription')) {
     // Loading the subscriptions is not critical, as opposed to messages, so we catch the possible
     // error, not letting it be caught by the try/catch block.
-    subscriptions.load(true).catch((e) => {
+    subscriptions.load(true);
+    subscriptions.getLoadRequest().catch((e) => {
       console.warn('Couldn\'t load the settings from the server.', e);
     });
-    requests.push(subscriptions.loadRequest);
+    requests.push(subscriptions.getLoadRequest());
   }
   requests.push(...init.getSiteData());
 

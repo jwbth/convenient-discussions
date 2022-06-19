@@ -121,7 +121,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
     return super.getReadyProcess(data).next(async () => {
       let pages;
       try {
-        await subscriptions.loadRequest;
+        await subscriptions.getLoadRequest();
         pages = await getPageTitles(subscriptions.getPageIds());
       } catch (e) {
         handleDialogError(this, e, 'ewsd-error-processing', false);

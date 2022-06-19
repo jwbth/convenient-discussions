@@ -1174,7 +1174,7 @@ export default {
       // If there is no data to load and, therefore, no period of time within which a reflow
       // (layout thrashing) could happen without impeding performance, we cache the value so that
       // it could be used in controller.saveRelativeScrollPosition without causing a reflow.
-      if ((init.siteDataRequests || []).every((request) => request.state() === 'resolved')) {
+      if (init.getSiteDataRequests().every((request) => request.state() === 'resolved')) {
         this.bootProcess.passData('scrollY', window.scrollY);
       }
     } else {
@@ -1182,7 +1182,7 @@ export default {
     }
 
     this.showLoadingOverlay();
-    Promise.all([modulesRequest, ...(init.siteDataRequests || [])]).then(
+    Promise.all([modulesRequest, ...init.getSiteDataRequests()]).then(
       () => {
         this.tryExecuteBootProcess();
       },

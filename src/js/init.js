@@ -909,8 +909,6 @@ function getMatchingGroups(format) {
 }
 
 export default {
-  siteDataRequests: null,
-
   /**
    * _For internal use._ Load messages needed to parse and generate timestamps as well as some site
    * data.
@@ -923,6 +921,15 @@ export default {
     }
 
     return this.siteDataRequests;
+  },
+
+  /**
+   * Get the site data requests without making them if there are none yet.
+   *
+   * @returns {Promise[]}
+   */
+  getSiteDataRequests() {
+    return this.siteDataRequests || [];
   },
 
   /**

@@ -936,6 +936,7 @@ export default class BootProcess {
         }
       });
 
+    // Can't do it earlier: we don't have section IDs until now.
     if (settings.get('useTopicSubscription')) {
       subscriptions.load();
     }
@@ -954,7 +955,7 @@ export default class BootProcess {
       }
     });
 
-    subscriptions.loadRequest.then(() => {
+    subscriptions.getLoadRequest().then(() => {
       Section.addSubscribeMenuItems();
       subscriptions.cleanUp();
       toc.highlightSubscriptions();

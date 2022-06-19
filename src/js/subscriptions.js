@@ -22,43 +22,10 @@ let subscribeLegacyPromise = Promise.resolve();
 
 export default {
   /**
-   * Request the subscription list from the server.
-   *
-   * @param {boolean} reuse For legacy subscriptions: Reuse the existing request.
-   * @private
-   */
-  async makeLoadRequest(reuse) {
-    if (this.useTopicSubscription) {
-      const subscriptionIds = cd.sections
-        .map((section) => section.subscribeId)
-        .filter(unique);
-      this.registry = await getDtSubscriptions(subscriptionIds);
-    } else {
-      this.allPagesRegistry = await getLegacySubscriptions(reuse);
-
-      const articleId = mw.config.get('wgArticleId');
-      if (articleId) {
-        this.allPagesRegistry[articleId] = this.allPagesRegistry[articleId] || {};
-        this.registry = this.allPagesRegistry[articleId];
-
-        const bootProcess = controller.getBootProcess();
-        if (bootProcess) {
-          // Manually add/remove a section that was added/removed at the same moment the page was
-          // reloaded last time, so when we requested the watched sections from server, this section
-          // wasn't there yet most probably.
-          this.updateRegistry(bootProcess.data('justSubscribedToSection'), true);
-          this.updateRegistry(bootProcess.data('justUnsubscribedFromSection'), false);
-        }
-      }
-    }
-  },
-
-  /**
    * Request the subscription list from the server and assign them to the `registry` (and
    * `allPagesRegistry` in case of the legacy subscriptions) property.
    *
-   * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
-   * @returns {Promise.<object>}
+   * @param {boolean} [reuse=false] For legacy subscriptions: Reuse the existing request.
    */
   load(reuse = false) {
     this.useTopicSubscription = settings.get('useTopicSubscription');
@@ -68,7 +35,39 @@ export default {
       delete this.allPagesRegistry;
     }
 
-    this.loadRequest = this.makeLoadRequest(reuse);
+    this.loadRequest = (async () => {
+      if (this.useTopicSubscription) {
+        const subscriptionIds = cd.sections
+          .map((section) => section.subscribeId)
+          .filter(unique);
+        this.registry = await getDtSubscriptions(subscriptionIds);
+      } else {
+        this.allPagesRegistry = await getLegacySubscriptions(reuse);
+
+        const articleId = mw.config.get('wgArticleId');
+        if (articleId) {
+          this.allPagesRegistry[articleId] = this.allPagesRegistry[articleId] || {};
+          this.registry = this.allPagesRegistry[articleId];
+
+          const bootProcess = controller.getBootProcess();
+          if (bootProcess) {
+            // Manually add/remove a section that was added/removed at the same moment the page was
+            // reloaded last time, so when we requested the watched sections from server, this section
+            // wasn't there yet most probably.
+            this.updateRegistry(bootProcess.data('justSubscribedToSection'), true);
+            this.updateRegistry(bootProcess.data('justUnsubscribedFromSection'), false);
+          }
+        }
+      }
+    })();
+  },
+
+  /**
+   * Get the request made in {@link subscriptions.load}.
+   *
+   * @returns {Promise}
+   */
+  getLoadRequest() {
     return this.loadRequest;
   },
 
@@ -85,7 +84,6 @@ export default {
    * Save the subscription list to the server as a user option.
    *
    * @param {object} registry
-   * @returns {Promise}
    */
   async saveLegacy(registry) {
     if (this.useTopicSubscription) return;
