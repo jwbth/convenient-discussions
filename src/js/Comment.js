@@ -3944,6 +3944,20 @@ class Comment extends CommentSkeleton {
   getWikilinkFragment() {
     return this.dtId || this.id;
   }
+
+  /**
+   * Get the chain of ancestors of the comment as an array, starting with the parent comment.
+   *
+   * @returns {Comment[]}
+   */
+  getAncestors() {
+    const cachedAncestors = [];
+    let comment = this;
+    while ((comment = comment.getParent())) {
+      cachedAncestors.push(comment);
+    }
+    return cachedAncestors;
+  }
 }
 
 Object.assign(Comment, CommentStatic);

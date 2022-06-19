@@ -5,7 +5,9 @@ import { areObjectsEqual, defined } from './util';
 import {
   confirmCloseDialog,
   createCheckboxField,
+  createNumberField,
   createRadioField,
+  createTextField,
   handleDialogError,
   isDialogUnsaved,
   tweakUserOoUiClass,
@@ -296,6 +298,14 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       label: cd.s('sd-autopreview'),
     });
 
+    [this.collapseThreadsLevelField, this.collapseThreadsLevelInput] = createNumberField({
+      value: settings.collapseThreadsLevel,
+      min: 0,
+      max: 999,
+      label: cd.s('sd-collapsethreadslevel'),
+      help: cd.s('sd-collapsethreadslevel-help'),
+    });
+
     [
       this.desktopNotificationsField,
       this.desktopNotificationsSelect,
@@ -433,15 +443,11 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       label: cd.s('sd-showtoolbar'),
     });
 
-    this.signaturePrefixInput = new OO.ui.TextInputWidget({
+    [this.signaturePrefixField, this.signaturePrefixInput] = createTextField({
       value: settings.signaturePrefix,
-      maxlength: 100,
-    });
-    this.signaturePrefixField = new OO.ui.FieldLayout(this.signaturePrefixInput, {
+      maxLength: 100,
       label: cd.s('sd-signatureprefix'),
-      align: 'top',
       help: wrap(cd.sParse('sd-signatureprefix-help') + ' ' + cd.sParse('sd-localsetting')),
-      helpInline: true,
     });
 
     const fortyThreeMinutesAgo = new Date(Date.now() - cd.g.MILLISECONDS_IN_MINUTE * 43);
@@ -531,6 +537,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
     this.alwaysExpandAdvancedCheckbox.connect(this, { change: 'updateStates' });
     this.autocompleteTypesMultiselect.connect(this, { select: 'updateStates' });
     this.autopreviewCheckbox.connect(this, { change: 'updateStates' });
+    this.collapseThreadsLevelInput.connect(this, { change: 'updateStates' });
     this.desktopNotificationsSelect.connect(this, {
       select: 'updateStates',
       choose: 'onDesktopNotificationsSelectChange',
@@ -596,6 +603,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       alwaysExpandAdvanced: this.alwaysExpandAdvancedCheckbox.isSelected(),
       autocompleteTypes: this.autocompleteTypesMultiselect.findSelectedItemsData(),
       autopreview: this.autopreviewCheckbox.isSelected(),
+      collapseThreadsLevel: Number(this.collapseThreadsLevelInput.getValue()),
       desktopNotifications: (
         this.desktopNotificationsSelect.findSelectedItem()?.getData() ||
         'unknown'
@@ -651,7 +659,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
   /**
    * Update the control states.
    */
-  updateStates() {
+  async updateStates() {
     this.showContribsLinkCheckbox.setDisabled(!this.reformatCommentsCheckbox.isSelected());
 
     const useTemplateDataCheckboxDisabled = !this.autocompleteTypesMultiselect
@@ -664,8 +672,15 @@ class SettingsDialog extends OO.ui.ProcessDialog {
     );
     this.hideTimezoneCheckbox.setDisabled(hideTimezoneCheckboxDisabled);
 
+    let areInputsValid = true;
+    try {
+      await this.collapseThreadsLevelInput.getValidity();
+    } catch {
+      areInputsValid = false;
+    }
+
     const collectedSettings = this.collectSettings();
-    const save = !areObjectsEqual(collectedSettings, this.settings, true);
+    const save = !areObjectsEqual(collectedSettings, this.settings, true) && areInputsValid;
     const reset = !areObjectsEqual(collectedSettings, settings.scheme.default, true);
 
     this.actions.setAbilities({ save, reset });
@@ -741,6 +756,7 @@ class TalkPagePageLayout extends OO.ui.PageLayout {
       dialog.enableThreadsField.$element,
       dialog.modifyTocField.$element,
       dialog.useBackgroundHighlightingField.$element,
+      dialog.collapseThreadsLevelField.$element,
     ]);
   }
 

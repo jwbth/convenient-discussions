@@ -303,6 +303,8 @@
   "sd-autocompletetypes-templates": "templates",
   "sd-autocompletetypes-tags": "tags",
   "sd-autopreview": "Preview the comment as I type",
+  "sd-collapsethreadslevel": "Autocollapse threads starting with level",
+  "sd-collapsethreadslevel-help": "0 to never autocollapse.",
   "sd-desktopnotifications": "Desktop notifications",
   "sd-desktopnotifications-radio-all": "Notify me about replies to my comments and comments in topic I'm {{gender:$1|subscribed to}}",
   "sd-desktopnotifications-radio-tome": "Notify me about replies to my comments only",

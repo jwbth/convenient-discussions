@@ -48,6 +48,7 @@ export default {
       autocompleteTypes: ['mentions', 'commentLinks', 'wikilinks', 'templates', 'tags'],
 
       autopreview: true,
+      collapseThreadsLevel: 10,
       desktopNotifications: 'unknown',
       defaultCommentLinkType: null,
       defaultSectionLinkType: null,

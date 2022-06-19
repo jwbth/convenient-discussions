@@ -306,7 +306,9 @@ class SectionSkeleton {
   /**
    * Get the chain of ancestors of the section as an array, starting with the parent section.
    *
-   * The returned value is cached, so don't change the array in-place.
+   * The returned value is cached, so don't change the array in-place. (That's ugly, need to check
+   * if running .slice() on the array slows anything down. To be clear – this method is run very
+   * frequently.)
    *
    * @returns {SectionSkeleton[]}
    */

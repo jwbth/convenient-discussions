@@ -175,11 +175,19 @@ function getRangeContents(start, end) {
 function saveCollapsedThreads() {
   if (!controller.isCurrentRevision()) return;
 
-  const collapsedThreads = cd.comments
-    .filter((comment) => comment.thread?.isCollapsed)
-    .map((comment) => comment.id);
+  const threads = cd.comments
+    .filter((comment) => (
+      comment.thread &&
+
+      // XOR. Is collapsed but is not the target for automatic collapse on page load and vise versa.
+      (comment.thread.isCollapsed ^ comment.thread.isAutocollapseTarget)
+    ))
+    .map((comment) => ({
+      id: comment.id,
+      collapsed: comment.thread.isCollapsed,
+    }));
   const saveUnixTime = Date.now();
-  const data = collapsedThreads.length ? { collapsedThreads, saveUnixTime } : {};
+  const data = threads.length ? { threads, saveUnixTime } : {};
 
   const dataAllPages = getFromLocalStorage('collapsedThreads');
   dataAllPages[mw.config.get('wgArticleId')] = data;
@@ -187,34 +195,90 @@ function saveCollapsedThreads() {
 }
 
 /**
- * Restore collapsed threads from the local storage.
+ * Autocollapse threads starting from some level according to the setting value and restore
+ * collapsed threads from the local storage.
  *
  * @private
  */
-function restoreCollapsedThreads() {
+function autocollapseThreads() {
+  const comments = [];
   const dataAllPages = cleanUpCollapsedThreads(getFromLocalStorage('collapsedThreads'));
   const data = dataAllPages[mw.config.get('wgArticleId')] || {};
 
-  const comments = [];
+  data.threads?.reverse().forEach((thread) => {
+      const comment = Comment.getById(thread.id);
+      if (comment?.thread) {
+        if (thread.collapsed) {
+          comments.push(comment);
+        } else {
+          /**
+           * Whether the thread should have been autocollapsed, but haven't been because the user
+           * expanded it manually in previous sessions.
+           *
+           * @name wasManuallyExpanded
+           * @type {boolean}
+           * @memberof Thread
+           * @instance
+           * @private
+           */
+          comment.thread.wasManuallyExpanded = true;
+        }
+      } else {
+        // Remove IDs that have no corresponding comments or threads from the data.
+        data.threads.splice(data.threads.indexOf(thread.id), 1);
+      }
+    });
 
-  // Reverse order is used for threads to be expanded correctly.
-  data.collapsedThreads?.reverse().forEach((id) => {
-    const comment = Comment.getById(id);
-    if (comment?.thread) {
-      comments.push(comment);
-    } else {
-      // Remove IDs that have no corresponding comments or threads from data.
-      data.collapsedThreads.splice(data.collapsedThreads.indexOf(id), 1);
+  const collapseThreadsLevel = settings.get('collapseThreadsLevel');
+  if (collapseThreadsLevel !== 0) {
+    // Don't precisely target comments of level collapseThreadsLevel in case there is a gap, for
+    // example between the (collapseThreadsLevel - 1) level and the (collapseThreadsLevel + 1) level
+    // (the user should have replied on the (collapseThreadsLevel - 1 level) but inserted two "::"
+    // instead of one).
+    for (let i = 0; i < cd.comments.length; i++) {
+      const comment = cd.comments[i];
+      if (!comment.thread) continue;
+
+      if (comment.level >= collapseThreadsLevel) {
+        /**
+         * Should the thread be automatically collapsed on page load if taking only comment level
+         * into account and not remembering the user's previous actions.
+         *
+         * @name isAutocollapseTarget
+         * @type {boolean}
+         * @memberof Thread
+         * @instance
+         * @private
+         */
+        comment.thread.isAutocollapseTarget = true;
+
+        if (
+          !comment.thread.wasManuallyExpanded &&
+          ![...comment.getAncestors(), ...comment.thread.comments].some((c) => c.isOwn)
+        ) {
+          comments.push(comment);
+        }
+
+        i = comment.thread.lastComment.index;
+
+        // Exclude threads that the user has specifically expanded or where the user participates at
+        // any level up and down the tree.
+      }
     }
-  });
+  }
+
   let loadUserGendersPromise;
   if (cd.g.GENDER_AFFECTS_USER_STRING) {
     const usersInThreads = flat(comments.map((comment) => comment.thread.getUsersInThread()));
     loadUserGendersPromise = loadUserGenders(usersInThreads);
   }
-  comments.forEach((comment) => {
-    comment.thread.collapse(loadUserGendersPromise);
-  });
+
+  // Reverse order is used for threads to be expanded correctly.
+  comments
+    .sort((c1, c2) => c1.index - c2.index)
+    .forEach((comment) => {
+      comment.thread.collapse(loadUserGendersPromise);
+    });
 
   if (controller.isCurrentRevision()) {
     saveToLocalStorage('collapsedThreads', dataAllPages);
@@ -233,7 +297,7 @@ function cleanUpCollapsedThreads(data) {
   const interval = 60 * cd.g.SECONDS_IN_DAY * 1000;
   Object.keys(newData).forEach((key) => {
     const page = newData[key];
-    if (!page.collapsedThreads?.length || page.saveUnixTime < Date.now() - interval) {
+    if (!page.threads?.length || page.saveUnixTime < Date.now() - interval) {
       delete newData[key];
     }
   });
@@ -263,12 +327,20 @@ class Thread {
     this.rootComment = rootComment;
 
     /**
+     * List of comments in the thread (logically, not visually).
+     *
+     * @type {Comment}
+     * @private
+     */
+    this.comments = [rootComment, ...rootComment.getChildren(true)];
+
+    /**
      * Last comment of the thread (logically, not visually).
      *
      * @type {Comment}
      * @private
      */
-    this.lastComment = rootComment.getChildren(true).slice(-1)[0] || rootComment;
+    this.lastComment = this.comments.slice(-1)[0];
 
     /**
      * Number of comments in the thread.
@@ -699,6 +771,128 @@ class Thread {
   }
 
   /**
+   * Calculate the offset of the thread line.
+   *
+   * @param {object} options
+   * @returns {boolean}
+   */
+  updateLine({
+    elementsToAdd,
+    threadsToUpdate,
+    scrollY,
+    scrollX,
+    floatingRects,
+  }) {
+    const getLeft = (rectOrOffset, commentMargins, dir) => {
+      let offset;
+      if (dir === 'ltr') {
+        offset = rectOrOffset.left;
+        if (commentMargins) {
+          offset -= commentMargins.left + 1;
+        }
+      } else {
+        offset = rectOrOffset.right - lineWidth;
+        if (commentMargins) {
+          offset += commentMargins.right + 1;
+        }
+      }
+      if (rectOrOffset instanceof DOMRect) {
+        offset += scrollX;
+      }
+      return offset - lineSideMargin;
+    };
+    const getTop = (rectOrOffset) => (
+      rectOrOffset instanceof DOMRect ?
+        scrollY + rectOrOffset.top :
+        rectOrOffset.top
+    );
+
+    const lineSideMargin = cd.g.THREAD_LINE_SIDE_MARGIN;
+    const lineWidth = 3;
+    const comment = this.rootComment;
+
+    if (comment.isCollapsed && !this.isCollapsed) {
+      this.removeLine();
+      return false;
+    }
+
+    const needCalculateMargins = (
+      comment.level === 0 ||
+      comment.containerListType === 'ol' ||
+
+      // Occurs when a part of a comment that is not in the thread is next to the start
+      // element, for example
+      // https://ru.wikipedia.org/wiki/Project:Запросы_к_администраторам/Архив/2021/04#202104081533_Macuser.
+      this.startElement.tagName === 'DIV'
+    );
+
+    let top;
+    let left;
+    let rectTop;
+    let commentMargins;
+    if (!needCalculateMargins || this.isCollapsed) {
+      const prop = this.isCollapsed ? 'expandNote' : 'startElement';
+      rectTop = this[prop].getBoundingClientRect();
+    }
+    floatingRects = floatingRects || controller.getFloatingElements().map(getExtendedRect);
+    const rectOrOffset = rectTop || comment.getOffset({ floatingRects });
+    if (needCalculateMargins) {
+      // Should be below `comment.getOffset()` as `Comment#isStartStretched` is set inside that
+      // call.
+      commentMargins = comment.getMargins();
+    }
+    const dir = comment.getTextDirection();
+    if (rectOrOffset) {
+      top = getTop(rectOrOffset);
+      left = getLeft(rectOrOffset, commentMargins, dir);
+    }
+
+    const rectBottom = this.isCollapsed ?
+      rectTop :
+      this.getAdjustedEndElement(true)?.getBoundingClientRect();
+
+    const areTopAndBottomMisaligned = () => {
+      const bottomLeft = getLeft(rectBottom, commentMargins, dir);
+      return dir === 'ltr' ? bottomLeft < left : bottomLeft > left;
+    };
+    if (
+      top === undefined ||
+      !rectBottom ||
+      !getVisibilityByRects(...[rectTop, rectBottom].filter(defined)) ||
+      areTopAndBottomMisaligned()
+    ) {
+      this.removeLine();
+      return false;
+    }
+
+    const height = rectBottom.bottom - (top - scrollY);
+
+    // Find the top comment that has its offset changed and stop at it.
+    if (
+      this.clickAreaOffset &&
+      top === this.clickAreaOffset.top &&
+      left === this.clickAreaOffset.left &&
+      height === this.clickAreaOffset.height
+    ) {
+      // Opened/closed "Reply in section" comment form will change a 0-level thread line height,
+      // so we may go a long way until we finally arrive at a 0-level comment (or a comment
+      // without a parent).
+      return !comment.getParent();
+    }
+
+    this.clickAreaOffset = { top, left, height };
+
+    if (!this.line) {
+      this.createLine();
+    }
+
+    threadsToUpdate.push(this);
+    if (!this.clickArea.parentNode) {
+      elementsToAdd.push(this.clickArea);
+    }
+  }
+
+  /**
    * Remove the thread line if present and set the relevant properties to `null`.
    */
   removeLine() {
@@ -711,9 +905,10 @@ class Thread {
   /**
    * Create threads.
    *
-   * @param {boolean} [restoreCollapsed=true] Restore collapsed threads from the local storage.
+   * @param {boolean} [autocollapse=true] Autocollapse threads according to the settings and restore
+   *   collapsed threads from the local storage.
    */
-  static init(restoreCollapsed = true) {
+  static init(autocollapse = true) {
     if (!settings.get('enableThreads')) return;
 
     isInited = false;
@@ -741,8 +936,8 @@ class Thread {
     if (!threadLinesContainer.parentNode) {
       document.body.appendChild(threadLinesContainer);
     }
-    if (restoreCollapsed) {
-      restoreCollapsedThreads();
+    if (autocollapse) {
+      autocollapseThreads();
     }
     isInited = true;
   }
@@ -760,127 +955,24 @@ class Thread {
       return;
     }
 
-    const getLeft = (rectOrOffset, commentMargins, dir) => {
-      let offset;
-      if (dir === 'ltr') {
-        offset = rectOrOffset.left;
-        if (commentMargins) {
-          offset -= commentMargins.left + 1;
-        }
-      } else {
-        offset = rectOrOffset.right - lineWidth;
-        if (commentMargins) {
-          offset += commentMargins.right + 1;
-        }
-      }
-      if (rectOrOffset instanceof DOMRect) {
-        offset += scrollX;
-      }
-      return offset - lineSideMargin;
-    };
-    const getTop = (rectOrOffset) => (
-      rectOrOffset instanceof DOMRect ?
-        scrollY + rectOrOffset.top :
-        rectOrOffset.top
-    );
-
     const elementsToAdd = [];
     const threadsToUpdate = [];
-    const lineSideMargin = cd.g.THREAD_LINE_SIDE_MARGIN;
-    const lineWidth = 3;
     const scrollY = window.scrollY;
     const scrollX = window.scrollX;
 
     cd.comments
       .slice()
       .reverse()
-      .some((comment) => {
-        const thread = comment.thread;
-        if (!thread) {
-          return false;
-        }
-        if (comment.isCollapsed && !thread.isCollapsed) {
-          thread.removeLine();
-          return false;
-        }
-
-        const needCalculateMargins = (
-          comment.level === 0 ||
-          comment.containerListType === 'ol' ||
-
-          // Occurs when a part of a comment that is not in the thread is next to the start
-          // element, for example
-          // https://ru.wikipedia.org/wiki/Project:Запросы_к_администраторам/Архив/2021/04#202104081533_Macuser.
-          thread.startElement.tagName === 'DIV'
-        );
-
-        let top;
-        let left;
-        let rectTop;
-        let commentMargins;
-        if (!needCalculateMargins || thread.isCollapsed) {
-          const prop = thread.isCollapsed ? 'expandNote' : 'startElement';
-          rectTop = thread[prop].getBoundingClientRect();
-        }
-        floatingRects = floatingRects || controller.getFloatingElements().map(getExtendedRect);
-        const rectOrOffset = rectTop || comment.getOffset({ floatingRects });
-        if (needCalculateMargins) {
-          // Should be below `comment.getOffset()` as `Comment#isStartStretched` is set inside that
-          // call.
-          commentMargins = comment.getMargins();
-        }
-        const dir = comment.getTextDirection();
-        if (rectOrOffset) {
-          top = getTop(rectOrOffset);
-          left = getLeft(rectOrOffset, commentMargins, dir);
-        }
-
-        const rectBottom = thread.isCollapsed ?
-          rectTop :
-          thread.getAdjustedEndElement(true)?.getBoundingClientRect();
-
-        const areTopAndBottomMisaligned = () => {
-          const bottomLeft = getLeft(rectBottom, commentMargins, dir);
-          return dir === 'ltr' ? bottomLeft < left : bottomLeft > left;
-        };
-        if (
-          top === undefined ||
-          !rectBottom ||
-          !getVisibilityByRects(...[rectTop, rectBottom].filter(defined)) ||
-          areTopAndBottomMisaligned()
-        ) {
-          thread.removeLine();
-          return false;
-        }
-
-        const height = rectBottom.bottom - (top - scrollY);
-
-        // Find the top comment that has its offset changed and stop at it.
-        if (
-          thread.clickAreaOffset &&
-          top === thread.clickAreaOffset.top &&
-          left === thread.clickAreaOffset.left &&
-          height === thread.clickAreaOffset.height
-        ) {
-          // Opened/closed "Reply in section" comment form will change a 0-level thread line height,
-          // so we may go a long way until we finally arrive at a 0-level comment (or a comment
-          // without a parent).
-          return !comment.getParent();
-        }
-
-        thread.clickAreaOffset = { top, left, height };
-
-        if (!thread.line) {
-          thread.createLine();
-        }
-
-        threadsToUpdate.push(thread);
-        if (!thread.clickArea.parentNode) {
-          elementsToAdd.push(thread.clickArea);
-        }
-
-        return false;
-      });
+      .some((comment) => (
+        comment.thread?.updateLine({
+          elementsToAdd,
+          threadsToUpdate,
+          scrollY,
+          scrollX,
+          floatingRects,
+        }) ||
+        false
+      ));
 
     // Faster to update/add all elements in one batch.
     threadsToUpdate.forEach((thread) => {

@@ -232,6 +232,86 @@ export function handleDialogError(dialog, e, messageName, recoverable) {
 }
 
 /**
+ * @typedef {Array} CreateTextFieldReturn
+ * @property {external:OO.ui.FieldLayout} 0
+ * @property {external:OO.ui.TextInputWidget} 1
+ * @global
+ */
+
+/**
+ * Create a text input field.
+ *
+ * @param {object} options
+ * @param {string} options.value
+ * @param {string} options.label
+ * @param {string} [options.maxLength]
+ * @param {string} [options.help]
+ * @param {string} [options.title]
+ * @returns {CreateTextFieldReturn}
+ */
+ export function createTextField({
+  value,
+  maxLength,
+  label,
+  help,
+  title,
+}) {
+  const input = new OO.ui.TextInputWidget({ value, maxLength });
+  const field = new OO.ui.FieldLayout(input, {
+    label,
+    align: 'top',
+    help,
+    helpInline: true,
+    title,
+  });
+  return [field, input];
+}
+
+/**
+ * @typedef {Array} CreateNumberFieldReturn
+ * @property {external:OO.ui.FieldLayout} 0
+ * @property {external:OO.ui.TextInputWidget} 1
+ * @global
+ */
+
+/**
+ * Create a number input field.
+ *
+ * @param {object} options
+ * @param {string} options.value
+ * @param {string} options.label
+ * @param {string} [options.min]
+ * @param {string} [options.max]
+ * @param {string} [options.help]
+ * @param {string} [options.title]
+ * @returns {CreateNumberFieldReturn}
+ */
+ export function createNumberField({
+  value,
+  label,
+  min,
+  max,
+  help,
+  title,
+}) {
+  const input = new OO.ui.NumberInputWidget({
+    input: { value },
+    step: 1,
+		min,
+    max,
+    classes: [ 'cd-numberInput' ],
+  });
+  const field = new OO.ui.FieldLayout(input, {
+    label,
+    align: 'top',
+    help,
+    helpInline: true,
+    title,
+  });
+  return [field, input];
+}
+
+/**
  * @typedef {Array} CreateCheckboxFieldReturn
  * @property {external:OO.ui.FieldLayout} 0
  * @property {external:OO.ui.CheckboxInputWidget} 1
