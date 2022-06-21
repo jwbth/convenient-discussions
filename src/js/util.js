@@ -5,8 +5,9 @@
  * @module util
  */
 
+import html_entity_decode from 'locutus/php/strings/html_entity_decode';
+
 import Button from './Button';
-import CdError from './CdError';
 import cd from './cd';
 
 /**
@@ -964,4 +965,33 @@ export function getLastArrayElementOrSelf(value) {
  */
 export function isMetadataTag(node) {
   return ['STYLE', 'LINK'].includes(node.tagName);
+}
+
+/**
+ * Decode HTML entities in a string.
+ *
+ * It should work as fast as possible, so we use
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/indexOf String#indexOf},
+ * not
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/includes String#includes}.
+ *
+ * @param {string} string
+ * @returns {string}
+ */
+export function decodeHtmlEntities(string) {
+  if (string.indexOf('&') === -1) {
+    return string;
+  } else {
+    let result = string;
+    if (result.indexOf('&#38;amp;') !== -1) {
+      result = result.replace(/&#38;amp;/g, '&amp;amp;')
+    }
+    if (result.indexOf('&#') !== -1) {
+      result = result.replace(/&#(\d+);/g, (s, code) => String.fromCharCode(code));
+    }
+    if (result.indexOf('&') !== -1) {
+      result = html_entity_decode(result);
+    }
+    return result;
+  }
 }

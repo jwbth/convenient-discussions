@@ -18,6 +18,7 @@ import {
   areObjectsEqual,
   calculateWordOverlap,
   dealWithLoadingBug,
+  decodeHtmlEntities,
   defined,
   generatePageNamePattern,
   getExtendedRect,
@@ -35,7 +36,6 @@ import {
 } from './util';
 import {
   brsToNewlines,
-  decodeHtmlEntities,
   extractSignatures,
   hideDistractingCode,
   hideSensitiveCode,
