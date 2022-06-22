@@ -64,7 +64,6 @@ class SettingsDialog extends OO.ui.ProcessDialog {
     this.initialPageName = initialPageName;
     this.preparatoryRequests = [
       settings.load({ omitLocal: true }),
-      mw.loader.using('mediawiki.widgets.UsersMultiselectWidget'),
     ];
   }
 
@@ -390,20 +389,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       ],
       selected: settings.notifications,
       label: cd.s('sd-notifications'),
-      help: cd.s('sd-notifications-help'),
     });
-
-    this.notificationsBlacklistMultiselect = new mw.widgets.UsersMultiselectWidget({
-      placeholder: cd.s('sd-notificationsblacklist-multiselect-placeholder'),
-      tagLimit: 100,
-      selected: settings.notificationsBlacklist,
-    });
-    this.notificationsBlacklistField = (
-      new OO.ui.FieldLayout(this.notificationsBlacklistMultiselect, {
-        label: cd.s('sd-notificationsblacklist'),
-        align: 'top',
-      })
-    );
 
     [this.notifyCollapsedThreadsField, this.notifyCollapsedThreadsCheckbox] = createCheckboxField({
       value: 'notifyCollapsedThreads',
@@ -546,7 +532,6 @@ class SettingsDialog extends OO.ui.ProcessDialog {
     this.hideTimezoneCheckbox.connect(this, { change: 'updateStates' });
     this.modifyTocCheckbox.connect(this, { change: 'updateStates' });
     this.notificationsSelect.connect(this, { select: 'updateStates' });
-    this.notificationsBlacklistMultiselect.connect(this, { change: 'updateStates' });
     this.notifyCollapsedThreadsCheckbox.connect(this, { change: 'updateStates' });
     this.reformatCommentsCheckbox.connect(this, { change: 'updateStates' });
     this.showContribsLinkCheckbox.connect(this, { change: 'updateStates' });
@@ -613,20 +598,23 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       insertButtons: this.getInsertButtons(),
       modifyToc: this.modifyTocCheckbox.isSelected(),
       notifications: this.notificationsSelect.findSelectedItem()?.getData(),
-      notificationsBlacklist: this.notificationsBlacklistMultiselect.getValue(),
       notifyCollapsedThreads: this.notifyCollapsedThreadsCheckbox.isSelected(),
       reformatComments: this.reformatCommentsCheckbox.isSelected(),
       showContribsLink: this.showContribsLinkCheckbox.isSelected(),
       showToolbar: this.showToolbarCheckbox.isSelected(),
       signaturePrefix: this.signaturePrefixInput.getValue(),
       timestampFormat: this.timestampFormatSelect.findSelectedItem()?.getData(),
-      topicSubscriptionSeenNotice: this.settings.topicSubscriptionSeenNotice,
       useBackgroundHighlighting: this.useBackgroundHighlightingCheckbox.isSelected(),
       useUiTime: this.useUiTimeCheckbox.isSelected(),
       useTemplateData: this.useTemplateDataCheckbox.isSelected(),
       useTopicSubscription: this.useTopicSubscriptionCheckbox.isSelected(),
       watchOnReply: this.watchOnReplyCheckbox.isSelected(),
       subscribeOnReply: this.subscribeOnReplyCheckbox.isSelected(),
+
+      // Settings that are not set by the user / to be removed. In fact, user data, despite that we
+      // don't have much of it.
+      notificationsBlacklist: this.settings.notificationsBlacklist,
+      topicSubscriptionSeenNotice: this.settings.topicSubscriptionSeenNotice,
     };
     collectedSettings.haveInsertButtonsBeenAltered = (
       JSON.stringify(collectedSettings.insertButtons) !==
@@ -851,7 +839,6 @@ class NotificationsPageLayout extends OO.ui.PageLayout {
       dialog.notificationsField.$element,
       dialog.desktopNotificationsField.$element,
       dialog.notifyCollapsedThreadsField.$element,
-      dialog.notificationsBlacklistField.$element,
     ]);
   }
 

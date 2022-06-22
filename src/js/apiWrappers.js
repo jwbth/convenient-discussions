@@ -531,20 +531,24 @@ export async function loadUserGenders(users, requestInBackground = false) {
 /**
  * Given a list of user IDs, return a list of users.
  *
- * @param {number[]} userIds List of user IDs.
+ * @param {number[]|string[]} userIds List of user IDs.
  * @returns {User[]}
  */
-export async function getUsersById(userIds) {
+export async function getUsersByGlobalId(userIds) {
   const users = [];
-  for (const nextUserIds of splitIntoBatches(userIds)) {
-    const resp = await controller.getApi().post({
+  const requests = userIds.map((id) => (
+    controller.getApi().post({
       action: 'query',
-      list: 'users',
-      ususerids: nextUserIds,
-    }).catch(handleApiReject);
-    const nextUsers = resp.query.users.map((user) => userRegistry.get(user.name));
-    users.push(...nextUsers);
-  }
+      meta: 'globaluserinfo',
+      guiid: id,
+    }).catch(handleApiReject)
+  ));
+  (await Promise.all(requests)).forEach((resp) => {
+    const userInfo = resp.query.globaluserinfo;
+    const user = userRegistry.get(userInfo.name);
+    user.setGlobalId(userInfo.id);
+    users.push(user);
+  });
 
   return users;
 }

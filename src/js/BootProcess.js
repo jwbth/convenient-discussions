@@ -15,6 +15,7 @@ import settings from './settings';
 import subscriptions from './subscriptions';
 import toc from './toc';
 import updateChecker from './updateChecker';
+import userRegistry from './userRegistry';
 import { formatDateNative } from './timestamp';
 import { getLastArrayElementOrSelf, underlinesToSpaces, wrap } from './util';
 import { getVisits, handleApiReject, setVisits } from './apiWrappers';
@@ -1593,6 +1594,8 @@ export default class BootProcess {
 
     if (this.firstRun) {
       controller.saveRelativeScrollPosition();
+
+      userRegistry.loadMuted();
     }
 
     /*

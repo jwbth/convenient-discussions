@@ -320,8 +320,6 @@
   "sd-notifications-radio-tome": "Notify me about replies to my comments only",
   "sd-notifications-radio-none": "Don't notify me",
   "sd-notifications-help": "Notifications are small popups in the top right corner of the page.",
-  "sd-notificationsblacklist": "Don't notify about comments of these users",
-  "sd-notificationsblacklist-multiselect-placeholder": "Add a user",
   "sd-notifycollapsedthreads": "Notify about comments in collapsed threads",
   "sd-reformatcomments": "Reformat comments, replacing signatures with standard links above and below",
   "sd-showcontribslink": "Show a contributions link after the user name in comments",

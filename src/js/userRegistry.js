@@ -6,7 +6,8 @@
  */
 
 import cd from './cd';
-import { ucFirst, underlinesToSpaces } from './util';
+import { getFromLocalStorage, saveToLocalStorage, ucFirst, underlinesToSpaces } from './util';
+import { getUsersByGlobalId } from './apiWrappers';
 
 /**
  * Class representing a user. Is made similar to `mw.user` so that it is possible to pass it to
@@ -86,9 +87,45 @@ class User {
       mw.config.get('wgFormattedNamespaces')[2]
     );
   }
+
+  /**
+   * Get the user's global ID according to the database if it was set before.
+   *
+   * @returns {number}
+   */
+  getGlobalId() {
+    return this.globalId;
+  }
+
+  /**
+   * Set the user's global ID according to the database.
+   *
+   * @param {number} value
+   */
+  setGlobalId(value) {
+    this.globalId = Number(value);
+  }
+
+  /**
+   * Check if the user is muted.
+   *
+   * @returns {boolean}
+   */
+  isMuted() {
+    return this.muted;
+  }
+
+  /**
+   * Set if the user is muted.
+   *
+   * @param {boolean} value
+   */
+  setMuted(value) {
+    this.muted = Boolean(value);
+  }
 }
 
-export default {
+const userRegistry = {
   /**
    * Collection of users.
    *
@@ -119,4 +156,55 @@ export default {
 
     return this.items[name];
   },
-}
+
+  /**
+   * Make an API request and assign the muted status to respective user objects.
+   *
+   * @fires mutedUsers
+   */
+  loadMuted() {
+    const userIdList = mw.user.options.get('echo-notifications-blacklist');
+    if (!userIdList) return;
+
+    const userIds = userIdList.split('\n');
+    const mutedUsersData = getFromLocalStorage('mutedUsers');
+    if (
+      !mutedUsersData.users ||
+      userIds.some((id) => !mutedUsersData.users[id]) ||
+
+      // Users can be renamed, so we can cache for a week max.
+      mutedUsersData.saveUnixTime < Date.now() - 7 * cd.g.SECONDS_IN_DAY * 1000
+    ) {
+      getUsersByGlobalId(userIds).then(
+        (users) => {
+          users.forEach((user) => {
+            user.setMuted(true);
+          });
+          saveToLocalStorage('mutedUsers', {
+            users: Object.assign({}, ...users.map((user) => ({
+              [user.getGlobalId()]: user.getName(),
+            }), {})),
+            saveUnixTime: Date.now(),
+          });
+
+          /**
+           * The list of muted users has been obtained from the server or local storage.
+           *
+           * @event mutedUsers
+           * @param {User[]} users {@link User} object.
+           */
+          mw.hook('convenientDiscussions.mutedUsers').fire(users);
+        },
+        (e) => {
+          console.error('Couldn\'t load the names of the muted users.', e);
+        }
+      );
+    } else {
+      const users = Object.entries(mutedUsersData.users).map(([, name]) => userRegistry.get(name));
+      users.forEach((user) => user.setMuted(true))
+      mw.hook('convenientDiscussions.mutedUsers').fire(users);
+    }
+  }
+};
+
+export default userRegistry;

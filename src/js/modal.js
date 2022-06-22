@@ -8,7 +8,7 @@ import Comment from './Comment';
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
-import { copyText, dealWithLoadingBug } from './util';
+import { copyText } from './util';
 
 /**
  * Show a settings dialog.
@@ -16,12 +16,7 @@ import { copyText, dealWithLoadingBug } from './util';
  * @param {string} [initalPageName]
  */
 export async function showSettingsDialog(initalPageName) {
-  if (
-    $('.cd-dialog-settings').length ||
-    dealWithLoadingBug('mediawiki.widgets.UsersMultiselectWidget')
-  ) {
-    return;
-  }
+  if ($('.cd-dialog-settings').length) return;
 
   const SettingsDialog = require('./SettingsDialog').default;
 

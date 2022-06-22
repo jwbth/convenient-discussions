@@ -843,10 +843,7 @@ async function processComments(comments, currentComments, currentRevisionId) {
         return false;
       }
     }
-    if (
-      comment.isOwn ||
-      settings.get('notificationsBlacklist').includes(comment.author.getName())
-    ) {
+    if (comment.isOwn || comment.author.isMuted()) {
       return false;
     }
     if (comment.isToMe) {
