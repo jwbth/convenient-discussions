@@ -45,7 +45,7 @@ import {
 import { formatDate, formatDateNative } from './timestamp';
 import { handleApiReject, loadUserGenders, parseCode } from './apiWrappers';
 import { showConfirmDialog } from './ooui';
-import { showCopyLinkDialog } from './modal.js';
+import { showCopyLinkDialog } from './modal';
 
 let elementPrototypes;
 let thanks;
@@ -59,11 +59,10 @@ let thanks;
  */
 function cleanUpThanks(data) {
   const newData = Object.assign({}, data);
+  const interval = 60 * cd.g.SECONDS_IN_DAY * 1000;
   Object.keys(newData).forEach((key) => {
-    if (
-      !newData[key].thankUnixTime ||
-      newData[key].thankUnixTime < Date.now() - 60 * cd.g.SECONDS_IN_DAY * 1000
-    ) {
+    const thank = newData[key];
+    if (!thank.thankUnixTime || thank.thankUnixTime < Date.now() - interval) {
       delete newData[key];
     }
   });

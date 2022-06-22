@@ -1689,9 +1689,9 @@ export default class BootProcess {
       this.connectToAddTopicButtons();
 
       // Should be below the viewport position restoration as it may rely on elements that are made
-      // hidden during the comment forms restoration. Should be below the navPanel mount/reset
-      // methods as it calls navPanel.updateCommentFormButton() which depends on the navigation
-      // panel being mounted.
+      // hidden during the comment forms restoration. Should be below this.setupNavPanel() as it
+      // calls navPanel.updateCommentFormButton() which depends on the navigation panel being
+      // mounted.
       CommentForm.restoreSession(this.firstRun || this.data('isPageReloadedExternally'));
 
       this.hideDtNewTopicForm();
@@ -1772,20 +1772,17 @@ export default class BootProcess {
       mw.hook('convenientDiscussions.pageReadyFirstTime').fire(cd);
     }
 
-    // Set before the "firstRun" state is set to false.
-    const showPopups = this.firstRun && controller.isPageActive() && cd.user.isRegistered();
-
     controller.hideLoadingOverlay();
 
-    // The next line is needed to calculate the rendering time: it won't run until everything gets
-    // rendered.
+    // The next line is needed to calculate the rendering time: it won't complete until everything
+    // gets rendered.
     controller.rootElement.getBoundingClientRect();
 
     debug.stopTimer('final code and rendering');
 
     this.debugLog();
 
-    if (showPopups) {
+    if (this.firstRun && controller.isPageActive() && cd.user.isRegistered()) {
       this.showPopups();
     }
   }

@@ -35,7 +35,7 @@ function lastFocused(commentForm1, commentForm2) {
  * @param {object} commentFormsData
  * @private
  */
- function restoreFromStorage(commentFormsData) {
+function restoreFromStorage(commentFormsData) {
   let haveRestored = false;
   const rescue = [];
   commentFormsData.commentForms.forEach((data) => {
@@ -138,7 +138,8 @@ function cleanUpSessionRegistry(data) {
   const newData = Object.assign({}, data);
   const interval = 60 * cd.g.SECONDS_IN_DAY * 1000;
   Object.keys(newData).forEach((key) => {
-    if (!newData[key].commentForms?.length || newData[key].saveUnixTime < Date.now() - interval) {
+    const page = newData[key];
+    if (!page.commentForms?.length || page.saveUnixTime < Date.now() - interval) {
       delete newData[key];
     }
   });

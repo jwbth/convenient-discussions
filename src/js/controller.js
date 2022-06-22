@@ -1247,7 +1247,7 @@ export default {
     });
 
     // If the page is reloaded externally, its content is already replaced, so we won't break
-    // anything is we remove the layers containers. And we better do so to avoid comment layers
+    // anything if we remove the layers containers. And we better do so to avoid comment layers
     // hanging around without their owner comments.
     if (bootProcess.data('isPageReloadedExternally')) {
       Comment.resetLayers();
@@ -1398,7 +1398,7 @@ export default {
    * Load the data required for the script to run on a log page and
    * {@link commentLinks.addCommentLinks run it}.
    */
-  loadCommentLinks() {
+  loadToCommentLinksPage() {
     // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
     if (mw.loader.getState('mediawiki.api') === 'ready') {

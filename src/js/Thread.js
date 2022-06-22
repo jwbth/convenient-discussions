@@ -366,7 +366,7 @@ class Thread {
      *
      * @type {boolean}
      */
-     this.isCollapsed = false;
+    this.isCollapsed = false;
   }
 
   /**

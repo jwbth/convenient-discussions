@@ -28,7 +28,7 @@ import {
   removeWikiMarkup,
 } from './wikitext';
 import { handleApiReject } from './apiWrappers';
-import { showCopyLinkDialog } from './modal.js';
+import { showCopyLinkDialog } from './modal';
 
 let elementPrototypes;
 

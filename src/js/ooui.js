@@ -249,7 +249,7 @@ export function handleDialogError(dialog, e, messageName, recoverable) {
  * @param {string} [options.title]
  * @returns {CreateTextFieldReturn}
  */
- export function createTextField({
+export function createTextField({
   value,
   maxLength,
   label,
@@ -286,7 +286,7 @@ export function handleDialogError(dialog, e, messageName, recoverable) {
  * @param {string} [options.title]
  * @returns {CreateNumberFieldReturn}
  */
- export function createNumberField({
+export function createNumberField({
   value,
   label,
   min,

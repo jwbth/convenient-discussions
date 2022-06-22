@@ -1,8 +1,8 @@
 /**
  * Singleton for initializing the script, both on talk pages and on log pages such as the watchlist.
  * Includes setting constants as properties of the {@link convenientDiscussions.g} object, adding
- * CSS, loading and setting site data, such as MediaWiki messages and configuration, and setting
- * date formats based on it.
+ * CSS, loading site data, such as MediaWiki messages and configuration, and setting date formats
+ * based on it.
  *
  * @module init
  */
@@ -1255,8 +1255,8 @@ export default {
   },
 
   /**
-   * _For internal use._ Create various global objects' (`convenientDiscussions`, `$`)
-   * properties and methods that are needed for processing a talk page. Executed on the first run.
+   * _For internal use._ Assign various global objects' (`convenientDiscussions`, `$`) properties
+   * and methods that are needed for processing a talk page. Executed on the first run.
    */
   async talkPage() {
     await Promise.all(this.getSiteData());

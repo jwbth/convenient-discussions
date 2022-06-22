@@ -353,7 +353,7 @@ async function go() {
     (controller.isDiffPage() && controller.isArticlePageTalkPage()) ||
     controller.isTalkPage()
   ) {
-    controller.loadCommentLinks();
+    controller.loadToCommentLinksPage();
   }
 
   if (mw.config.get('wgCanonicalSpecialPageName') === 'Search') {

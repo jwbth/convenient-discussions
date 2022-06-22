@@ -700,7 +700,7 @@ const pageRegistry = {
   },
 
   /**
-   * The {@link pageRegistry~Page} class.
+   * The {@link Page} class.
    */
   Page,
 };
