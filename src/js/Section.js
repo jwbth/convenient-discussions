@@ -16,7 +16,6 @@ import {
   defined,
   focusInput,
   getUrlWithFragment,
-  handleApiReject,
   underlinesToSpaces,
   wrap,
 } from './util';
@@ -28,6 +27,7 @@ import {
   normalizeCode,
   removeWikiMarkup,
 } from './wikitext';
+import { handleApiReject } from './apiWrappers';
 import { showCopyLinkDialog } from './modal.js';
 
 let elementPrototypes;

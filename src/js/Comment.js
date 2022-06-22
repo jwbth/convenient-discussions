@@ -26,7 +26,6 @@ import {
   getHigherNodeAndOffsetInSelection,
   getUrlWithFragment,
   getVisibilityByRects,
-  handleApiReject,
   isInline,
   saveToLocalStorage,
   unhideText,
@@ -44,7 +43,7 @@ import {
   removeWikiMarkup,
 } from './wikitext';
 import { formatDate, formatDateNative } from './timestamp';
-import { loadUserGenders, parseCode } from './apiWrappers';
+import { handleApiReject, loadUserGenders, parseCode } from './apiWrappers';
 import { showConfirmDialog } from './ooui';
 import { showCopyLinkDialog } from './modal.js';
 

@@ -13,12 +13,36 @@ import cd from './cd';
 import controller from './controller';
 import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
-import { defined, handleApiReject, ucFirst, unique } from './util';
+import { defined, ucFirst, unique } from './util';
 
 let cachedUserInfoRequest;
 let currentAutocompletePromise;
 
 const autocompleteTimeout = 100;
+
+/**
+ * Callback used in the `.catch()` parts of API requests.
+ *
+ * @param {string|Array} code
+ * @param {object} data
+ * @throws {CdError}
+ */
+export function handleApiReject(code, data) {
+  // Native promises support only one parameter.
+  if (Array.isArray(code)) {
+    [code, data] = code;
+  }
+
+  // See the parameters with which mw.Api() rejects:
+  // https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.api/index.js;fbfa8f1a61c5ffba664e817701439affb4f6a388$245
+  throw code === 'http' ?
+    new CdError({ type: 'network' }) :
+    new CdError({
+      type: 'api',
+      code: 'error',
+      apiData: data,
+    });
+}
 
 /**
  * Split an array into batches of 50 (500 if the user has a `apihighlimits` right) to use in API

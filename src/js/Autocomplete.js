@@ -6,7 +6,6 @@ import userRegistry from './userRegistry';
 import {
   defined,
   focusInput,
-  handleApiReject,
   insertText,
   removeDoubleSpaces,
   underlinesToSpaces,
@@ -16,6 +15,7 @@ import {
   getRelevantPageNames,
   getRelevantTemplateNames,
   getRelevantUserNames,
+  handleApiReject,
 } from './apiWrappers';
 
 /**

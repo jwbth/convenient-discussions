@@ -9,8 +9,8 @@ import CdError from './CdError';
 import cd from './cd';
 import controller from './controller';
 import { findFirstTimestamp, hideDistractingCode } from './wikitext';
-import { handleApiReject, isProbablyTalkPage } from './util';
-import { makeBackgroundRequest } from './apiWrappers';
+import { handleApiReject, makeBackgroundRequest } from './apiWrappers';
+import { isProbablyTalkPage } from './util';
 import { parseTimestamp } from './timestamp';
 
 /**

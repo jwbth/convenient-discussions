@@ -16,8 +16,8 @@ import subscriptions from './subscriptions';
 import toc from './toc';
 import updateChecker from './updateChecker';
 import { formatDateNative } from './timestamp';
-import { getLastArrayElementOrSelf, handleApiReject, underlinesToSpaces, wrap } from './util';
-import { getVisits, setVisits } from './apiWrappers';
+import { getLastArrayElementOrSelf, underlinesToSpaces, wrap } from './util';
+import { getVisits, handleApiReject, setVisits } from './apiWrappers';
 import { removeWikiMarkup } from './wikitext';
 import { showConfirmDialog } from './ooui';
 

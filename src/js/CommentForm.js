@@ -19,7 +19,6 @@ import {
   findLastIndex,
   focusInput,
   getNativePromiseState,
-  handleApiReject,
   hideText,
   insertText,
   isCmdModifierPressed,
@@ -34,7 +33,7 @@ import {
 } from './util';
 import { createCheckboxField } from './ooui';
 import { generateTagsRegexp, removeWikiMarkup } from './wikitext';
-import { parseCode } from './apiWrappers';
+import { handleApiReject, parseCode } from './apiWrappers';
 import { showSettingsDialog } from './modal';
 
 let commentFormsCounter = 0;
