@@ -24,7 +24,7 @@ class TocItem {
    * @throws {CdError}
    */
   constructor(a) {
-    const textSpan = a.querySelector(toc.isInSidebar ? '.sidebar-toc-text' : '.toctext');
+    const textSpan = a.querySelector(toc.isInSidebar() ? '.sidebar-toc-text' : '.toctext');
     if (!textSpan) {
       throw new CdError();
     }
@@ -33,9 +33,9 @@ class TocItem {
     const id = a.getAttribute('href').slice(1);
     const li = a.parentNode;
     let [, level] = li.className
-      .match(toc.isInSidebar ? /sidebar-toc-level-(\d+)/ : /\btoclevel-(\d+)/);
+      .match(toc.isInSidebar() ? /sidebar-toc-level-(\d+)/ : /\btoclevel-(\d+)/);
     level = Number(level);
-    const numberSpan = a.querySelector(toc.isInSidebar ? '.sidebar-toc-numb' : '.tocnumber');
+    const numberSpan = a.querySelector(toc.isInSidebar() ? '.sidebar-toc-numb' : '.tocnumber');
     if (!numberSpan) {
       throw new CdError();
     }
@@ -98,7 +98,7 @@ const toc = {
    * and exists because we may need to hide the TOC earlier than the native method does it.
    */
   possiblyHide() {
-    if (!this.isPresentClassic) return;
+    if (!this.isPresentClassic()) return;
 
     if (mw.cookie.get('hidetoc') === '1') {
       this.$element.find('.toctogglecheckbox').prop('checked', true);
@@ -109,24 +109,15 @@ const toc = {
    * _For internal use._ Reset the TOC data (executed at every page reload).
    */
   reset() {
-    this.isInSidebar = cd.g.SKIN === 'vector-2022';
-    this.$element = this.isInSidebar ? $('.sidebar-toc') : controller.$root.find('.toc');
-    this.isPresent = Boolean(this.$element.length);
-    this.isPresentClassic = this.isPresent && !this.isInSidebar;
+    this.$element = this.isInSidebar() ? $('.sidebar-toc') : controller.$root.find('.toc');
     this.tocItems = null;
+    this.floating = null;
 
-    let $closestFloating;
-    if (this.isInSidebar) {
+    if (this.isInSidebar()) {
       this.$element
         .find('.cd-toc-commentCount, .cd-toc-newCommentList, .cd-toc-addedCommentList, .cd-toc-addedSection')
         .remove();
-      $closestFloating = this.$element
-        .closest('[style*="float: right"], [style*="float:right"], [style*="float: left"], [style*="float:left"]');
     }
-    this.isFloating = Boolean(
-      $closestFloating?.length &&
-      controller.$root.has($closestFloating).length
-    );
   },
 
   /**
@@ -136,7 +127,7 @@ const toc = {
    * @returns {?object}
    */
   getItem(id) {
-    if (!this.isPresent) {
+    if (!this.isPresent()) {
       return null;
     }
 
@@ -164,7 +155,7 @@ const toc = {
    * _For internal use._ Highlight (bold) sections that the user is subscribed to.
    */
   highlightSubscriptions() {
-    if (!settings.get('modifyToc') || !this.isPresent) return;
+    if (!settings.get('modifyToc') || !this.isPresent()) return;
 
     cd.sections
       .filter((section) => section.subscriptionState)
@@ -205,7 +196,7 @@ const toc = {
    * Add the number of comments to each section link.
    */
   addCommentCount() {
-    if (!settings.get('modifyToc') || !this.isPresent) return;
+    if (!settings.get('modifyToc') || !this.isPresent()) return;
 
     cd.sections.forEach((section, i) => {
       const item = section.getTocItem();
@@ -215,7 +206,7 @@ const toc = {
       if (!count) return;
 
       const unseenCount = section.comments.filter((comment) => comment.isSeen === false).length;
-      const $target = this.isInSidebar ? item.$text : item.$link;
+      const $target = this.isInSidebar() ? item.$text : item.$link;
       this.addCommentCountString(count, unseenCount, i === 0, $target);
     });
   },
@@ -231,7 +222,7 @@ const toc = {
    *   new revision of the page.
    */
   addNewSections(sections) {
-    if (!settings.get('modifyToc') || !this.isPresent) return;
+    if (!settings.get('modifyToc') || !this.isPresent()) return;
 
     controller.saveRelativeScrollPosition({ saveTocHeight: true });
 
@@ -286,14 +277,14 @@ const toc = {
         }
 
         const li = document.createElement('li');
-        const levelClass = this.isInSidebar ?
+        const levelClass = this.isInSidebar() ?
           `sidebar-toc-list-item sidebar-toc-level-${level}` :
           `toclevel-${level}`;
         li.className = `${levelClass} cd-toc-addedSection`;
 
         const a = document.createElement('a');
         a.href = `#${section.id}`;
-        if (this.isInSidebar) {
+        if (this.isInSidebar()) {
           a.className = 'sidebar-toc-link';
         }
         a.onclick = (e) => {
@@ -313,12 +304,12 @@ const toc = {
           number = '1';
         }
         const numberSpan = document.createElement('span');
-        const numberClass = this.isInSidebar ? 'sidebar-toc-numb' : 'tocnumber';
+        const numberClass = this.isInSidebar() ? 'sidebar-toc-numb' : 'tocnumber';
         numberSpan.className = `${numberClass} cd-toc-hiddenTocNumber`;
         numberSpan.textContent = number;
         a.appendChild(numberSpan);
 
-        if (this.isInSidebar) {
+        if (this.isInSidebar()) {
           const textDiv = document.createElement('div');
           textDiv.className = 'sidebar-toc-text';
           textDiv.appendChild(document.createTextNode(headline));
@@ -340,7 +331,7 @@ const toc = {
           ul.appendChild(li);
           upperLevelMatch.$element.append(ul);
         } else {
-          if (this.isInSidebar) {
+          if (this.isInSidebar()) {
             $topUl.children('#toc-mw-content-text').after(li);
           } else {
             $topUl.prepend(li);
@@ -412,7 +403,7 @@ const toc = {
    */
   addCommentList(comments, target, areCommentsRendered) {
     // Was 6 initially, then became 5, now 4.
-    const itemsLimit = 4;
+    const itemLimit = 4;
 
     // jQuery is too expensive here given that very many comments may be added.
     const ul = document.createElement('ul');
@@ -424,7 +415,7 @@ const toc = {
       const names = parent?.author && comment.level > 1 ?
         cd.s('navpanel-newcomments-names', comment.author.getName(), parent.author.getName()) :
         comment.author.getName();
-      const addAsItem = i < itemsLimit - 1 || comments.length === itemsLimit;
+      const addAsItem = i < itemLimit - 1 || comments.length === itemLimit;
 
       let date;
       let nativeDate;
@@ -441,8 +432,8 @@ const toc = {
       const dateOrNot = settings.get('timestampFormat') === 'default' ? date : '';
       const text = names + rtlMarkOrNot + cd.mws('comma-separator') + dateOrNot;
 
-      // If there are `itemsLimit` comments or less, show all of them. If there are more, show
-      // `itemsLimit - 1` and "N more". (Because showing `itemsLimit - 1` and then "1 more" is
+      // If there are `itemLimit` comments or less, show all of them. If there are more, show
+      // `itemLimit - 1` and "N more". (Because showing `itemLimit - 1` and then "1 more" is
       // stupid.)
       if (addAsItem) {
         const li = document.createElement('li');
@@ -450,7 +441,7 @@ const toc = {
 
         const a = document.createElement('a');
         a.href = `#${comment.dtId || comment.id}`;
-        if (this.isInSidebar) {
+        if (this.isInSidebar()) {
           a.className = 'sidebar-toc-link';
         }
         if (comment instanceof Comment) {
@@ -483,7 +474,7 @@ const toc = {
           (new LiveTimestamp(timestampSpan, comment.date, false, callback)).init();
         }
 
-        if (this.isInSidebar) {
+        if (this.isInSidebar()) {
           const textDiv = document.createElement('div');
           textDiv.className = 'sidebar-toc-text cd-toc-commentLink';
           textDiv.textContent = text;
@@ -494,7 +485,7 @@ const toc = {
           li.appendChild(a);
         } else {
           const bulletSpan = document.createElement('span');
-          const numberClass = this.isInSidebar ? 'sidebar-toc-numb' : 'tocnumber';
+          const numberClass = this.isInSidebar() ? 'sidebar-toc-numb' : 'tocnumber';
           bulletSpan.className = `${numberClass} cd-toc-bullet`;
           bulletSpan.innerHTML = cd.sParse('bullet');
           li.appendChild(bulletSpan);
@@ -515,11 +506,11 @@ const toc = {
       }
     });
 
-    if (comments.length > itemsLimit) {
+    if (comments.length > itemLimit) {
       const span = document.createElement('span');
       span.className = 'cd-toc-more';
       span.title = moreTooltipText.trim();
-      span.textContent = cd.s('toc-more', comments.length - (itemsLimit - 1));
+      span.textContent = cd.s('toc-more', comments.length - (itemLimit - 1));
 
       const li = document.createElement('li');
       li.appendChild(span);
@@ -537,7 +528,7 @@ const toc = {
    */
   addNewComments(commentsBySection) {
     const firstComment = commentsBySection.values().next().value?.[0];
-    if (!settings.get('modifyToc') || !this.isPresent || !firstComment) return;
+    if (!settings.get('modifyToc') || !this.isPresent() || !firstComment) return;
 
     const areCommentsRendered = firstComment instanceof Comment;
     const saveTocHeight = Boolean(
@@ -571,7 +562,7 @@ const toc = {
             .length;
           $sectionLink.children('.cd-toc-commentCount').remove();
         }
-        const $target = this.isInSidebar ? $sectionLink.children('sidebar-toc-text') : $sectionLink;
+        const $target = this.isInSidebar() ? $sectionLink.children('sidebar-toc-text') : $sectionLink;
         this.addCommentCountString(count, unseenCount, section.index === 0, $target);
       }
 
@@ -579,6 +570,60 @@ const toc = {
     });
 
     controller.restoreRelativeScrollPosition(true);
+  },
+
+  /**
+   * Is the table of contents located in the sidebar.
+   *
+   * @returns {boolean}
+   */
+  isInSidebar() {
+    return cd.g.SKIN === 'vector-2022';
+  },
+
+  /**
+   * Is the table of contents floating (it or its parent has a `float` CSS).
+   *
+   * This should be called after the HTML content has been laid out.
+   *
+   * @returns {boolean}
+   */
+  isFloating() {
+    if (this.floating === null) {
+      this.floating = Boolean(
+        !this.isInSidebar() &&
+        this.$element.closest($(controller.getFloatingElements())).length
+      );
+    }
+
+    return this.floating;
+  },
+
+  /**
+   * Is the table of contents present on the page.
+   *
+   * @returns {boolean}
+   */
+  isPresent() {
+    return Boolean(this.$element.length);
+  },
+
+  /**
+   * Is the classic table of contents (not the sidebar) present on the page.
+   *
+   * @returns {boolean}
+   */
+  isPresentClassic() {
+    return this.isPresent() && !this.isInSidebar();
+  },
+
+  /**
+   * Get the bottom offset of the table of contents.
+   *
+   * @returns {number}
+   */
+  getBottomOffset() {
+    return this.$element.offset().top + this.$element.outerHeight();
   },
 };
 

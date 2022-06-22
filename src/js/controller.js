@@ -38,16 +38,6 @@ import {
 } from './util';
 import { getUserInfo } from './apiWrappers';
 
-/**
- * Get the bottom offset of the table of contents.
- *
- * @returns {number}
- * @private
- */
-function getTocBottomOffset() {
-  return toc.$element.offset().top + toc.$element.outerHeight();
-}
-
 export default {
   state: {},
   content: {},
@@ -480,7 +470,7 @@ export default {
     const scrollY = this.bootProcess.data('scrollY') || window.scrollY;
 
     // The viewport has the TOC bottom or is above it.
-    if (switchToAbsolute && toc.isPresentClassic && scrollY < getTocBottomOffset()) {
+    if (switchToAbsolute && toc.isPresentClassic() && scrollY < toc.getBottomOffset()) {
       this.saveScrollPosition(switchToAbsolute.saveTocHeight);
     } else {
       this.scrollData.element = null;
@@ -565,12 +555,12 @@ export default {
     this.scrollData.offset = window.scrollY;
     this.scrollData.tocHeight = (
       (saveTocHeight || this.scrollData.tocHeight) &&
-      toc.isPresentClassic &&
-      !toc.isFloating &&
+      toc.isPresentClassic() &&
+      !toc.isFloating() &&
       window.scrollY !== 0 &&
 
       // There is some content below the TOC in the viewport.
-      getTocBottomOffset() < window.scrollY + window.innerHeight
+      toc.getBottomOffset() < window.scrollY + window.innerHeight
     ) ?
       toc.$element.outerHeight() :
       null;

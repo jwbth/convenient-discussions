@@ -97,7 +97,7 @@ export default {
     let afterLeadPos;
 
     let firstSectionOuterTop;
-    if (toc.isPresent) {
+    if (toc.isPresent()) {
       const rect = toc.$element.get(0).getBoundingClientRect();
       if (getVisibilityByRects(rect)) {
         afterLeadPos = rect.top;
@@ -152,7 +152,7 @@ export default {
     }
 
     if (this.$linksOnTop) {
-      if (toc.isPresent && !this.$tocLink) {
+      if (toc.isPresent() && !this.$tocLink) {
         const tocLink = new Button({
           href: '#toc',
           classes: ['cd-pageNav-link'],
