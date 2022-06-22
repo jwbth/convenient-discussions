@@ -836,8 +836,8 @@ class NotificationsPageLayout extends OO.ui.PageLayout {
     super('notifications');
     this.$element.append([
       dialog.useTopicSubscriptionField.$element,
-      dialog.notificationsField.$element,
       dialog.desktopNotificationsField.$element,
+      dialog.notificationsField.$element,
       dialog.notifyCollapsedThreadsField.$element,
     ]);
   }
