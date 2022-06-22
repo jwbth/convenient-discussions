@@ -196,7 +196,8 @@ const toc = {
    * Add the number of comments to each section link.
    */
   addCommentCount() {
-    if (!settings.get('modifyToc') || !this.isPresent()) return;
+    // We add the comment count even if the "Modify TOC" setting is off.
+    if (!this.isPresent()) return;
 
     cd.sections.forEach((section, i) => {
       const item = section.getTocItem();
