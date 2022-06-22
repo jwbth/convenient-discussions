@@ -11,7 +11,7 @@
     "i18n": "node buildI18n",
     "mirror": "git push --mirror https://gerrit.wikimedia.org/r/mediawiki/gadgets/ConvenientDiscussions",
     "webpack": "webpack",
-    "single": "webpack serve --env single",
+    "single": "node buildConfigs && node buildI18n && webpack serve --env single",
     "test": "jest"
   },
   "browser": "src/js/app.js",
