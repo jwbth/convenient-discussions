@@ -123,8 +123,6 @@
 	"sd-insertbuttons-multiselect-placeholder": "E Knäppchen derbäisetzen",
 	"sd-notifications": "Normal Notifikatiounen",
 	"sd-notifications-radio-none": "Mech net informéieren",
-	"sd-notificationsblacklist": "Net iwwer Bemierkunge vun dësem Benotzer informéieren",
-	"sd-notificationsblacklist-multiselect-placeholder": "E Benotzer derbäisetzen",
 	"sd-timestampformat": "Format vum Zäitstempel",
 	"sd-timestampformat-radio-default": "Standard (\"$1\")",
 	"sd-timestampformat-radio-improved": "Verbessert (\"$1\",\"$2\")",
