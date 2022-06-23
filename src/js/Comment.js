@@ -1983,6 +1983,7 @@ class Comment extends CommentSkeleton {
     if (!$cleanDiff.find('.diff-deletedline, .diff-addedline').length) {
       throw new CdError({
         type: 'parse',
+        code: 'emptyDiff',
         message: cd.sParse('comment-diff-empty'),
       });
     }
@@ -2074,7 +2075,7 @@ class Comment extends CommentSkeleton {
                 text += ' ' + cd.sParse('error-network');
               }
             }
-            mw.notify(wrap(text), { type: 'error' });
+            mw.notify(wrap(text), { type: e.data?.code === 'emptyDiff'? 'info' : 'error' });
           }
           diffLink.setPending(false);
         },
