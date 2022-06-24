@@ -352,13 +352,6 @@ class CommentForm {
       });
     }
 
-    let rowNumber = this.headlineInput ? 5 : 3;
-    // Firefox gives a bigger height to a textarea with a specified number of rows than other
-    // browsers.
-    if (cd.g.CLIENT_PROFILE.name === 'firefox') {
-      rowNumber -= 1;
-    }
-
     let commentInputPlaceholder;
     if (this.mode === 'replyInSection' || (this.mode === 'reply' && this.target.isOpeningSection)) {
       commentInputPlaceholder = cd.s(
@@ -391,7 +384,7 @@ class CommentForm {
       value: dataToRestore?.comment ?? '',
       placeholder: commentInputPlaceholder,
       autosize: true,
-      rows: rowNumber,
+      rows: this.headlineInput ? 5 : 3,
       maxRows: 30,
       classes: ['cd-commentForm-commentInput'],
       tabIndex: this.getTabIndex(12),
