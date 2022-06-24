@@ -292,6 +292,13 @@ export default {
         return top1 - top2;
       })[0];
     if (commentForm) {
+      // Recursively expand threads if the form is in a collapsed thread.
+      [commentForm.getParentComment(), ...commentForm.getParentComment().getAncestors()]
+        .filter((comment) => comment.thread?.isCollapsed)
+        .forEach((comment) => {
+          comment.thread.expand();
+        });
+
       commentForm.$element.cdScrollIntoView('center');
       focusInput(commentForm.commentInput);
     }
