@@ -63,6 +63,7 @@ export default {
   specialPageAliases: {
     'Contributions': 'Вклад',
     'Diff': 'Изменения',
+    'Permalink': 'Постоянная ссылка',
   },
 
   substAliases: [

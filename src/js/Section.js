@@ -700,6 +700,8 @@ class Section extends SectionSkeleton {
    * @param {Event} e
    */
   copyLink(e) {
+    if (controller.isPageOverlayOn()) return;
+
     e.preventDefault();
     showCopyLinkDialog(this, e);
   }

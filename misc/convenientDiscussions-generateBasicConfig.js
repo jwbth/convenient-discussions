@@ -50,7 +50,7 @@ mw.loader.using([
   });
 
   const specialPageAliases = siteInfoResp.query.specialpagealiases
-    .filter((obj) => ['Contributions', 'Diff'].includes(obj.realname));
+    .filter((obj) => ['Contributions', 'Diff', 'Permalink'].includes(obj.realname));
   if (specialPageAliases.length) {
     config.specialPageAliases = Object.assign(
       {},

@@ -85,6 +85,7 @@
 	"cld-currentpagewikilink": "Вики-ссылка с этой же страницы",
 	"cld-link": "Обычная ссылка",
 	"cld-permanentlink": "Постоянная ссылка",
+	"cld-permanentwikilink": "Постоянная вики-ссылка",
 	"cld-close": "Закрыть",
 	"copylink-copied": "Ссылка скопирована в буфер обмена.",
 	"copylink-error": "Не удалось скопировать ссылку.",

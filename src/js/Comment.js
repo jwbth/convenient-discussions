@@ -2377,10 +2377,9 @@ class Comment extends CommentSkeleton {
    * @param {Event} e
    */
   async copyLink(e) {
-    if (this.isLinkBeingCopied) return;
-    this.copyLinkButton.setPending(true);
-    await showCopyLinkDialog(this, e);
-    this.copyLinkButton.setPending(false);
+    if (controller.isPageOverlayOn()) return;
+
+    showCopyLinkDialog(this, e);
   }
 
   /**
@@ -2511,7 +2510,7 @@ class Comment extends CommentSkeleton {
       return `${cd.g.SERVER}${urlEnding}`;
     } else if (format === 'short') {
       return `${cd.g.SERVER}/?diff=${edit.revid}`;
-    } else {
+    } else if (format === 'wikilink') {
       const specialPageName = (
         mw.config.get('wgFormattedNamespaces')[-1] +
         ':' +

@@ -204,6 +204,13 @@ function loadSiteData() {
     requests.push(userLanguageMessagesRequest);
   }
 
+  /**
+   * Some special page aliases in the wiki's language.
+   *
+   * @name SPECIAL_PAGE_ALIASES
+   * @type {string[]}
+   * @memberof convenientDiscussions.g
+   */
   cd.g.SPECIAL_PAGE_ALIASES = Object.assign({}, cd.config.specialPageAliases);
 
   /**
@@ -215,18 +222,15 @@ function loadSiteData() {
    */
   cd.g.CONTENT_TIMEZONE = cd.config.timezone;
 
-  if (
-    !cd.g.SPECIAL_PAGE_ALIASES.Contributions ||
-    !cd.g.SPECIAL_PAGE_ALIASES.Diff ||
-    !cd.g.CONTENT_TIMEZONE
-  ) {
+  const specialPages = ['Contributions', 'Diff', 'Permalink'];
+  if (specialPages.some((page) => !cd.g.SPECIAL_PAGE_ALIASES[page]) || !cd.g.CONTENT_TIMEZONE) {
     const request = controller.getApi().get({
       action: 'query',
       meta: 'siteinfo',
       siprop: ['specialpagealiases', 'general'],
     }).then((resp) => {
       resp.query.specialpagealiases
-        .filter((alias) => ['Contributions', 'Diff'].includes(alias.realname))
+        .filter((alias) => specialPages.includes(alias.realname))
         .forEach((alias) => {
           cd.g.SPECIAL_PAGE_ALIASES[alias.realname] = alias.aliases[0];
         });

@@ -190,6 +190,13 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       help: helpNotOnlyCd,
     });
 
+    const permanentWikilinkField = createCopyActionField({
+      value: this.content.permanentWikilink,
+      label: cd.s('cld-permanentwikilink'),
+      copyCallback: this.copyCallback,
+      help: helpOnlyCd,
+    });
+
     const linkField = createCopyActionField({
       value: this.content.link,
       label: cd.s('cld-link'),
@@ -207,6 +214,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
     const $anchorPanelContent = $('<div>').append([
       wikilinkField.$element,
       currentPageWikilinkField.$element,
+      permanentWikilinkField.$element,
       linkField.$element,
       permanentLinkField.$element,
     ]);

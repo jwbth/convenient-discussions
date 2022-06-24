@@ -46,40 +46,26 @@ export async function showEditSubscriptionsDialog() {
  * @param {Comment|Section} object Comment or section to copy a link to.
  * @param {Event} e
  */
-export async function showCopyLinkDialog(object, e) {
-  if (object.isLinkBeingCopied) return;
-
-  /**
-   * Is a link to the comment being copied right now (a copy link dialog is opened or a request is
-   * being made to get the diff).
-   *
-   * @name isLinkBeingCopied
-   * @type {boolean}
-   * @memberof Comment
-   * @instance
-   */
-
-  /**
-   * Is a link to the section being copied right now (a copy link dialog is opened).
-   *
-   * @name isLinkBeingCopied
-   * @type {boolean}
-   * @memberof Section
-   * @instance
-   */
-  object.isLinkBeingCopied = true;
-
+export function showCopyLinkDialog(object, e) {
   const fragment = object.getWikilinkFragment();
+  const permalinkSpecialPageName = (
+    mw.config.get('wgFormattedNamespaces')[-1] +
+    ':' +
+    cd.g.SPECIAL_PAGE_ALIASES.Permalink +
+    '/' +
+    mw.config.get('wgRevisionId')
+  );
   const content = {
     fragment,
     wikilink: `[[${cd.page.name}#${fragment}]]`,
     currentPageWikilink: `[[#${fragment}]]`,
+    permanentWikilink: `[[${permalinkSpecialPageName}#${fragment}]]`,
     link: object.getUrl(),
     permanentLink: object.getUrl(true),
     copyMessages: {
       success: cd.s('copylink-copied'),
       fail: cd.s('copylink-error'),
-    }
+    },
   };
 
   // Undocumented feature allowing to copy a link of a default type without opening a dialog.
@@ -95,7 +81,6 @@ export async function showCopyLinkDialog(object, e) {
         copyText(content.link, content.copyMessages);
         break;
     }
-    object.isLinkBeingCopied = false;
     return;
   }
 
@@ -103,10 +88,7 @@ export async function showCopyLinkDialog(object, e) {
 
   const dialog = new CopyLinkDialog(object, content);
   controller.getWindowManager().addWindows([dialog]);
-  const windowInstance = controller.getWindowManager().openWindow(dialog);
-  windowInstance.closed.then(() => {
-    object.isLinkBeingCopied = false;
-  });
+  controller.getWindowManager().openWindow(dialog);
 }
 
 /**
