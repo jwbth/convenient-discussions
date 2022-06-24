@@ -756,7 +756,7 @@ class Comment extends CommentSkeleton {
         classes: ['cd-comment-button-icon', 'cd-comment-button-goToChild'],
       });
 
-      const referenceNode = this.goToParentButton || this.copyLinkButton || this.authorLink;
+      const referenceNode = this.headerElement.lastChild;
       this.headerElement.insertBefore(this.goToChildButton.element, referenceNode?.nextSibling);
     } else {
       const element = elementPrototypes.goToChildButton;
