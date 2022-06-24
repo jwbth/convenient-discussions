@@ -173,7 +173,6 @@
 	"sd-desktopnotifications-radio-none": "আমাকে অবহিত করবেন না",
 	"sd-insertbuttons-multiselect-placeholder": "বোতাম যোগ করুন",
 	"sd-notifications-radio-none": "আমাকে অবহিত করবেন না",
-	"sd-notificationsblacklist-multiselect-placeholder": "ব্যবহারকারী যোগ করুন",
 	"sd-timestampformat": "সময় তারিখের বিন্যাস",
 	"sd-timestampformat-radio-default": "পূর্বনির্ধারিত (\"$1\")",
 	"sd-timestampformat-radio-improved": "উন্নত (\"$1\", \"$2\")",
