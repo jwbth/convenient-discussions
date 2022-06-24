@@ -38,6 +38,7 @@ export default {
     this.loadRequest = (async () => {
       if (this.useTopicSubscription) {
         const subscriptionIds = cd.sections
+          .filter((section) => section.subscribeId)
           .map((section) => section.subscribeId)
           .filter(unique);
         this.registry = await getDtSubscriptions(subscriptionIds);
