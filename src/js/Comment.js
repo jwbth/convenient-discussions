@@ -2297,9 +2297,10 @@ class Comment extends CommentSkeleton {
    * @param {Function} [callback] Callback to run after the animation has completed.
    */
   scrollTo(smooth = true, pushState = false, flash = true, callback) {
-    if (pushState) {
+    const id = this.dtId || this.id;
+    if (pushState && id) {
       const newState = Object.assign({}, history.state, { cdJumpedToComment: true });
-      history.pushState(newState, '', '#' + this.dtId || this.id);
+      history.pushState(newState, '', `#${id}`);
     }
 
     if (this.isCollapsed) {
@@ -2331,14 +2332,14 @@ class Comment extends CommentSkeleton {
       return;
     }
 
-    parent.scrollTo();
+    parent.scrollTo(true, true);
     parent.configureLayers();
 
     if (!parent.goToChildButton) {
       parent.createGoToChildButton();
     }
     parent.goToChildButton.setAction(() => {
-      this.scrollTo();
+      this.scrollTo(true, true);
     });
   }
 
