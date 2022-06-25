@@ -113,42 +113,46 @@
   padding: 0 0.5em;
   flex-direction: row;
   pointer-events: all;
-}
 
-.cd-comment-overlay-content > .oo-ui-buttonElement {
-  line-height: 1.4285714em;
-}
+  > .oo-ui-buttonElement {
+    line-height: 1.4285714em;
+  }
 
-.sitedir-rtl.ltr .cd-comment-overlay-content
-.sitedir-ltr.ltr .mw-content-rtl .cd-comment-overlay-content {
-  margin-left: 0;
-  margin-right: 0.5em;
-}
+  .sitedir-rtl.ltr &
+  .sitedir-ltr.ltr .mw-content-rtl & {
+    margin-left: 0;
+    margin-right: 0.5em;
+  }
 
-.sitedir-ltr.rtl .cd-comment-overlay-content,
-.sitedir-rtl.rtl .mw-content-ltr .cd-comment-overlay-content {
-  margin-left: 0.5em;
-  margin-right: 0;
-}
+  .sitedir-ltr.rtl &,
+  .sitedir-rtl.rtl .mw-content-ltr & {
+    margin-left: 0.5em;
+    margin-right: 0;
+  }
 
-.sitedir-ltr.ltr .cd-comment-overlay-stretchedEnd .cd-comment-overlay-content,
-.sitedir-rtl.ltr .mw-content-ltr .cd-comment-overlay-stretchedEnd .cd-comment-overlay-content {
-  padding-right: calc(~"var(--cd-content-start-margin) - var(--cd-comment-fallback-side-margin) + 0.5em");
-}
+  .cd-comment-overlay-stretchedStart {
+    .sitedir-rtl.ltr &,
+    .sitedir-ltr.ltr .mw-content-rtl & {
+      margin-right: calc(~"var(--cd-content-start-margin) - var(--cd-comment-fallback-side-margin)");
+    }
 
-.sitedir-rtl.rtl .cd-comment-overlay-stretchedEnd .cd-comment-overlay-content,
-.sitedir-ltr.rtl .mw-content-rtl .cd-comment-overlay-stretchedEnd .cd-comment-overlay-content {
-  padding-left: calc(~"var(--cd-content-start-margin) - var(--cd-comment-fallback-side-margin) + 0.5em");
-}
+    .sitedir-ltr.rtl &,
+    .sitedir-rtl.rtl .mw-content-ltr & {
+      margin-left: calc(~"var(--cd-content-start-margin) - var(--cd-comment-fallback-side-margin)");
+    }
+  }
 
-.sitedir-rtl.ltr .cd-comment-overlay-stretchedStart .cd-comment-overlay-content,
-.sitedir-ltr.ltr .mw-content-rtl .cd-comment-overlay-stretchedStart .cd-comment-overlay-content {
-  margin-right: calc(~"var(--cd-content-start-margin) - var(--cd-comment-fallback-side-margin)");
-}
+  .cd-comment-overlay-stretchedEnd {
+    .sitedir-ltr.ltr &,
+    .sitedir-rtl.ltr .mw-content-ltr & {
+      padding-right: calc(~"var(--cd-content-start-margin) - var(--cd-comment-fallback-side-margin) + 0.5em");
+    }
 
-.sitedir-ltr.rtl .cd-comment-overlay-stretchedStart .cd-comment-overlay-content,
-.sitedir-rtl.rtl .mw-content-ltr .cd-comment-overlay-stretchedStart .cd-comment-overlay-content {
-  margin-left: calc(~"var(--cd-content-start-margin) - var(--cd-comment-fallback-side-margin)");
+    .sitedir-rtl.rtl &,
+    .sitedir-ltr.rtl .mw-content-rtl & {
+      padding-left: calc(~"var(--cd-content-start-margin) - var(--cd-comment-fallback-side-margin) + 0.5em");
+    }
+  }
 }
 
 .sitedir-ltr .cd-comment-overlay-marker,
@@ -231,53 +235,55 @@
   }
 }
 
-body:not(.skin-monobook) .cd-comment-button-ooui-icon.cd-comment-button-ooui-icon > .oo-ui-buttonElement-button {
-  padding-top: 1.4285714em;
-  min-width: unset;
-}
-
-.ltr:not(.skin-monobook) .cd-comment-button-ooui-icon.cd-comment-button-ooui-icon > .oo-ui-buttonElement-button {
-  padding-left: 1.4285714em;
-
-  > .oo-ui-iconElement-icon {
-    left: 0;
+.cd-comment-button-ooui-icon.cd-comment-button-ooui-icon > .oo-ui-buttonElement-button {
+  body:not(.skin-monobook) & {
+    padding-top: 1.4285714em;
+    min-width: unset;
   }
-}
 
-.rtl:not(.skin-monobook) .cd-comment-button-ooui-icon.cd-comment-button-ooui-icon > .oo-ui-buttonElement-button {
-  padding-right: 1.4285714em;
+  .ltr:not(.skin-monobook) & {
+    padding-left: 1.4285714em;
 
-  > .oo-ui-iconElement-icon {
-    right: 0;
+    > .oo-ui-iconElement-icon {
+      left: 0;
+    }
+  }
+
+  .rtl:not(.skin-monobook) & {
+    padding-right: 1.4285714em;
+
+    > .oo-ui-iconElement-icon {
+      right: 0;
+    }
   }
 }
 
 .cd-commentLayersContainer {
   position: relative;
   pointer-events: none;
-}
 
-.sitedir-ltr .cd-commentLayersContainer,
-.sitedir-rtl .mw-content-ltr .cd-commentLayersContainer {
-  direction: ltr;
-}
+  .sitedir-ltr &,
+  .sitedir-rtl .mw-content-ltr & {
+    direction: ltr;
+  }
 
-.sitedir-rtl .cd-commentLayersContainer,
-.sitedir-ltr .mw-content-rtl .cd-commentLayersContainer {
-  direction: rtl;
+  .sitedir-rtl &,
+  .sitedir-ltr .mw-content-rtl & {
+    direction: rtl;
+  }
 }
 
 .cd-commentLayersContainer-parent-relative {
   position: relative;
   z-index: 0;
-}
 
-.mw-parser-output .cd-commentLayersContainer-parent-relative {
-  .flow-root();
+  .mw-parser-output & {
+    .flow-root();
 
-  // "display: flow-root" should do the job of "overflow: hidden" or "overflow: auto" if it's set
-  // for an element. "overflow: auto" (present in
-  // https://en.wikipedia.org/wiki/Template:Discussion_top, for example) can create a scrollbar in
-  // some cases.
-  overflow: unset !important;
+    // "display: flow-root" should do the job of "overflow: hidden" or "overflow: auto" if it's set
+    // for an element. "overflow: auto" (present in
+    // https://en.wikipedia.org/wiki/Template:Discussion_top, for example) can create a scrollbar in
+    // some cases.
+    overflow: unset !important;
+  }
 }

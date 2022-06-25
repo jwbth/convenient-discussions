@@ -17,22 +17,26 @@ a:not([href]) {
   .oo-ui-checkboxMultioptionWidget .oo-ui-checkboxInputWidget {
     width: auto;
   }
+
+  .oo-ui-checkboxMultioptionWidget:not(:last-child) {
+    .ltr & {
+      margin-right: 1em;
+    }
+
+    .rtl & {
+      margin-left: 1em;
+    }
+  }
 }
 
-.ltr .cd-autocompleteTypesMultiselect .oo-ui-checkboxMultioptionWidget:not(:last-child) {
-  margin-right: 1em;
-}
+.cd-setting-indented {
+  .ltr & {
+    margin-left: 2em;
+  }
 
-.rtl .cd-autocompleteTypesMultiselect .oo-ui-checkboxMultioptionWidget:not(:last-child) {
-  margin-left: 1em;
-}
-
-.ltr .cd-setting-indented {
-  margin-left: 2em;
-}
-
-.rtl .cd-setting-indented {
-  margin-right: 2em;
+  .rtl & {
+    margin-right: 2em;
+  }
 }
 
 .oo-ui-windowManager-modal > .oo-ui-dialog {

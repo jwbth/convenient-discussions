@@ -1,22 +1,23 @@
 .cd-toc-commentCount {
   color: #72777d;
   text-decoration: inherit;
-}
+  user-select: none;
 
-.toc .cd-toc-commentCount {
-  display: table-cell;
+  .toc & {
+    display: table-cell;
+  }
+
+  .sitedir-ltr & {
+    padding-left: 0.75em;
+  }
+
+  .sitedir-rtl & {
+    padding-right: 0.75em;
+  }
 }
 
 .sidebar-toc-text {
   text-decoration: inherit;
-}
-
-.sitedir-ltr .cd-toc-commentCount {
-  padding-left: 0.75em;
-}
-
-.sitedir-rtl .cd-toc-commentCount {
-  padding-right: 0.75em;
 }
 
 .cd-toc-subscribedTo {
@@ -40,6 +41,10 @@
   .cd-toc-addedCommentList {
     margin-top: 0;
   }
+
+  .cd-toc-addedCommentList {
+    list-style-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='13'%3E%3Ccircle cx='2.5' cy='9' r='2.5' fill='%2372777d'/%3E%3C/svg%3E");
+  }
 }
 
 .cd-toc-addedCommentList .cd-toc-bullet,
@@ -59,17 +64,19 @@
   visibility: hidden;
 }
 
-// Override ".sidebar-toc .sidebar-toc-numb"
-.cd-toc-bullet.sidebar-toc-numb {
-  display: inline;
-}
+.cd-toc-bullet {
+  // Override ".sidebar-toc .sidebar-toc-numb"
+  &.sidebar-toc-numb {
+    display: inline;
+  }
 
-.ltr .cd-toc-bullet {
-  padding-right: 0.5em;
-}
+  .ltr & {
+    padding-right: 0.5em;
+  }
 
-.rtl .cd-toc-bullet {
-  padding-left: 0.5em;
+  .rtl & {
+    padding-left: 0.5em;
+  }
 }
 
 .cd-toc-commentLink.cd-toc-commentLink {

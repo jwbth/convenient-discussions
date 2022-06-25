@@ -34,6 +34,86 @@
     z-index: 1;
   }
 
+  .oo-ui-textInputWidget .oo-ui-inputWidget-input {
+    border-radius: 0;
+  }
+
+  .tool-button {
+    .sitedir-ltr & {
+      // Otherwise, text may be visible in some combinations of content and interface language (for
+      // example, Russian Wikipedia and uselang=he).
+      direction: ltr;
+    }
+
+    .sitedir-rtl & {
+      direction: rtl;
+    }
+  }
+
+  // Use the .ltr and .rtl classes to detect the text direction of the user interface (not the site
+  // content for which case the .sitedir-ltr/rtl classes are used).
+  .ltr & {
+    // The form may sometimes get inside <div dir="..."> element, so we need to reset the text
+    // direction.
+    direction: ltr;
+
+    &-checkboxes {
+      direction: ltr;
+      text-align: left;
+
+      .oo-ui-fieldLayout {
+        margin-right: 1em;
+        margin-left: 0;
+
+        &:last-child {
+          margin-right: 0;
+        }
+      }
+    }
+
+    &-buttons {
+      direction: ltr;
+
+      &-start {
+        float: left;
+      }
+
+      &-end {
+        float: right;
+      }
+    }
+  }
+
+  .rtl & {
+    direction: rtl;
+
+    &-checkboxes {
+      direction: rtl;
+      text-align: right;
+
+      .oo-ui-fieldLayout {
+        margin-left: 1em;
+        margin-right: 0;
+
+        &:last-child {
+          margin-left: 0;
+        }
+      }
+    }
+
+    &-buttons {
+      direction: rtl;
+
+      &-start {
+        float: right;
+      }
+
+      &-end {
+        float: left;
+      }
+    }
+  }
+
   &-signature {
     opacity: 0.67;
   }
@@ -42,8 +122,55 @@
     height: 0;
   }
 
-  .oo-ui-textInputWidget .oo-ui-inputWidget-input {
-    border-radius: 0;
+  &-summaryInput {
+    margin-top: 0.214286em;
+  }
+
+  &-checkboxes {
+    margin-top: 0.5em;
+  }
+
+  &-buttons {
+    .flow-root();
+    margin-top: 0.5em;
+  }
+
+  &-addSection,
+  &-addSubsection,
+  &-sectionOpeningComment {
+    margin-top: 1em;
+  }
+
+  &-commentInput {
+    // Compensation for "margin: -1px" below
+    margin-top: 1px;
+
+    border: 1px solid #a2a9b1;
+
+    .wikiEditor-ui .wikiEditor-ui-view {
+      border: 0;
+    }
+
+    .oo-ui-inputWidget-input.oo-ui-inputWidget-input {
+      width: calc(~"100% + 2px");
+      margin: -1px;
+      position: relative;
+    }
+
+    &.oo-ui-textInputWidget.oo-ui-widget-disabled {
+      border-color: #c8ccd1;
+
+      .wikiEditor-ui-top,
+      + .cd-insertButtons {
+        pointer-events: none;
+      }
+
+      .oo-ui-inputWidget-input,
+      .wikiEditor-ui-top,
+      + .cd-insertButtons {
+        border-color: #c8ccd1;
+      }
+    }
   }
 }
 
@@ -52,149 +179,8 @@
   margin-bottom: 0.214286em;
 }
 
-.cd-commentForm-summaryInput {
-  margin-top: 0.214286em;
-}
-
-.cd-commentForm-checkboxes {
-  margin-top: 0.5em;
-}
-
-.cd-commentForm-checkboxes .oo-ui-fieldLayout {
-  margin-right: 1em;
-
-  &:last-child {
-    margin-right: 0;
-  }
-}
-
-.cd-commentForm-buttons {
-  .flow-root();
-  margin-top: 0.5em;
-}
-
-.cd-commentForm-buttons-start {
-  float: left;
-}
-
-.cd-commentForm-buttons-end {
-  float: right;
-}
-
-.cd-commentForm-addSection,
-.cd-commentForm-addSubsection,
-.cd-commentForm-sectionOpeningComment {
-  margin-top: 1em;
-}
-
-// Use the .ltr and .rtl classes to detect the text direction of the user interface (not the site
-// content for which case the .sitedir-ltr/rtl classes are used).
-.ltr .cd-commentForm {
-  // The form may sometimes get inside <div dir="..."> element, so we need to reset the text
-  // direction.
-  direction: ltr;
-
-  .cd-commentForm-checkboxes {
-    direction: ltr;
-    text-align: left;
-  }
-
-  .cd-commentForm-checkboxes .oo-ui-fieldLayout {
-    margin-right: 1em;
-    margin-left: 0;
-
-    &:last-child {
-      margin-right: 0;
-    }
-  }
-
-  .cd-commentForm-buttons {
-    direction: ltr;
-  }
-
-  .cd-commentForm-buttons-start {
-    float: left;
-  }
-
-  .cd-commentForm-buttons-end {
-    float: right;
-  }
-}
-
-.rtl .cd-commentForm {
-  direction: rtl;
-
-  .cd-commentForm-checkboxes {
-    direction: rtl;
-    text-align: right;
-  }
-
-  .cd-commentForm-checkboxes .oo-ui-fieldLayout {
-    margin-left: 1em;
-    margin-right: 0;
-
-    &:last-child {
-      margin-left: 0;
-    }
-  }
-
-  .cd-commentForm-buttons {
-    direction: rtl;
-  }
-
-  .cd-commentForm-buttons-start {
-    float: right;
-  }
-
-  .cd-commentForm-buttons-end {
-    float: left;
-  }
-}
-
-.sitedir-ltr .cd-commentForm .tool-button {
-  // Otherwise, text may be visible in some combinations of content and interface language (for
-  // example, Russian Wikipedia and uselang=he).
-  direction: ltr;
-}
-
-.sitedir-rtl .cd-commentForm .tool-button {
-  direction: rtl;
-}
-
 .cd-replyWrapper {
   margin-top: 0.5em;
-}
-
-.cd-commentForm-commentInput {
-  // Compensation for "margin: -1px" below
-  margin-top: 1px;
-
-  border: 1px solid #a2a9b1;
-
-  .wikiEditor-ui .wikiEditor-ui-view {
-    border: 0;
-  }
-
-  .oo-ui-inputWidget-input.oo-ui-inputWidget-input {
-    width: calc(~"100% + 2px");
-    margin: -1px;
-    position: relative;
-  }
-
-  &.oo-ui-textInputWidget.oo-ui-widget-disabled {
-    border-color: #c8ccd1;
-
-    .wikiEditor-ui-top,
-    + .cd-insertButtons {
-      pointer-events: none;
-    }
-
-    .oo-ui-inputWidget-input,
-    .wikiEditor-ui-top,
-    + .cd-insertButtons {
-      border-color: #c8ccd1;
-    }
-  }
 }
 
 .cd-previewArea {
@@ -230,6 +216,30 @@
     background-color: #f8f9fa;
   }
 
+  .sitedir-ltr & {
+    direction: ltr;
+
+    &-indentedComment > .mw-parser-output > dl {
+      margin-left: 0;
+
+      > dd {
+        margin-left: 0;
+      }
+    }
+  }
+
+  .sitedir-rtl & {
+    direction: rtl;
+
+    &-indentedComment > .mw-parser-output > dl {
+      margin-right: 0;
+
+      > dd {
+        margin-right: 0;
+      }
+    }
+  }
+
   &:empty {
     margin: 0;
     padding: 0;
@@ -247,30 +257,6 @@
   }
 }
 
-.sitedir-ltr .cd-previewArea {
-  direction: ltr;
-
-  &-indentedComment > .mw-parser-output > dl {
-    margin-left: 0;
-
-    > dd {
-      margin-left: 0;
-    }
-  }
-}
-
-.sitedir-rtl .cd-previewArea {
-  direction: rtl;
-
-  &-indentedComment > .mw-parser-output > dl {
-    margin-right: 0;
-
-    > dd {
-      margin-right: 0;
-    }
-  }
-}
-
 .cd-messageArea {
   width: 100%;
 }
@@ -281,14 +267,6 @@
   position: relative;
 
   clear: both;
-
-  &:hover .cd-closeButton {
-    opacity: 1;
-  }
-}
-
-.cd-messageArea .cd-closeButton {
-  background-color: var(--cd-content-background-color);
 }
 
 .cd-commentForm-inNumberedList .cd-previewArea-above,
@@ -313,23 +291,32 @@
 
   width: 20px;
   height: 20px;
-  background-image: url(https://upload.wikimedia.org/wikipedia/commons/1/18/OOjs_UI_icon_close-ltr.svg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M4.34 2.93l12.73 12.73-1.41 1.41L2.93 4.35z'/%3E%3Cpath d='M17.07 4.34L4.34 17.07l-1.41-1.41L15.66 2.93z'/%3E%3C/svg%3E");
   background-position: center center;
   background-repeat: no-repeat;
   opacity: 0;
   transition: opacity 0.2s ease-in;
-}
 
-.ltr .cd-closeButton,
-.sitedir-ltr .cd-previewArea .cd-closeButton {
-  right: 1px;
-  left: unset;
-}
+  .cd-messageArea & {
+    background-color: var(--cd-content-background-color);
+  }
 
-.rtl .cd-closeButton,
-.sitedir-rtl .cd-previewArea .cd-closeButton {
-  left: 1px;
-  right: unset;
+  .cd-previewArea:hover &,
+  .cd-messageArea:hover & {
+    opacity: 1;
+  }
+
+  .ltr &,
+  .sitedir-ltr .cd-previewArea & {
+    right: 1px;
+    left: unset;
+  }
+
+  .rtl &,
+  .sitedir-rtl .cd-previewArea & {
+    left: 1px;
+    right: unset;
+  }
 }
 
 .cd-message {
@@ -376,23 +363,23 @@
       // As with toolbar buttons
       background-color: rgba(0, 23, 70, 0.086);
     }
+
+    .ltr & {
+      float: left;
+    }
+
+    .rtl & {
+      float: right;
+    }
   }
-}
 
-.sitedir-ltr .cd-insertButtons {
-  direction: ltr;
-}
+  .sitedir-ltr & {
+    direction: ltr;
+  }
 
-.sitedir-rtl .cd-insertButtons {
-  direction: rtl;
-}
-
-.ltr .cd-insertButtons-button {
-  float: left;
-}
-
-.rtl .cd-insertButtons-button {
-  float: right;
+  .sitedir-rtl & {
+    direction: rtl;
+  }
 }
 
 .cd-toolbarPlaceholder {
@@ -402,11 +389,11 @@
   border-style: solid;
   height: 32px;
   margin: 1px 0 -1px;
-}
 
-.cd-commentForm-pending .cd-toolbarPlaceholder {
-  // To match the color of the rest of the borders while the form is the pending state.
-  border-color: #c8ccd1;
+  .cd-commentForm-pending & {
+    // To match the color of the rest of the borders while the form is the pending state.
+    border-color: #c8ccd1;
+  }
 }
 
 // Reset a global style
