@@ -494,7 +494,11 @@ export default class CommentTextProcessor {
       this.commentForm.getMode() === 'addSection' ||
 
       // To have pretty diffs.
-      (this.commentForm.isSectionOpeningCommentEdited && /^\n/.test(this.target.inCode.code))
+      (
+        this.commentForm.getMode() === 'edit' &&
+        this.commentForm.getTarget().isOpeningSection &&
+        /^\n/.test(this.target.inCode.code)
+      )
     ) {
       this.code = '\n' + this.code;
     }

@@ -506,41 +506,41 @@ function patterns() {
  * @private
  */
 function addCommentHeaderPrototype(commentElementPrototypes) {
-  // true, null
-  if (settings.get('reformatComments') !== false) {
-    const headerElement = document.createElement('div');
-    headerElement.className = 'cd-comment-header';
+  // Not true, null
+  if (settings.get('reformatComments') === false) return;
 
-    const authorWrapper = document.createElement('span');
-    authorWrapper.className = 'cd-comment-author-wrapper';
-    headerElement.append(authorWrapper);
+  const headerElement = document.createElement('div');
+  headerElement.className = 'cd-comment-header';
 
-    const authorLink = document.createElement('a');
-    authorLink.className = 'cd-comment-author mw-userlink';
-    authorWrapper.append(authorLink);
+  const authorWrapper = document.createElement('span');
+  authorWrapper.className = 'cd-comment-author-wrapper';
+  headerElement.append(authorWrapper);
 
-    const bdiElement = document.createElement('bdi');
-    authorLink.append(bdiElement);
+  const authorLink = document.createElement('a');
+  authorLink.className = 'cd-comment-author mw-userlink';
+  authorWrapper.append(authorLink);
 
-    const authorLinksWrapper = document.createElement('span');
-    authorLinksWrapper.className = 'cd-comment-author-links';
+  const bdiElement = document.createElement('bdi');
+  authorLink.append(bdiElement);
 
-    const authorTalkLink = document.createElement('a');
-    authorTalkLink.textContent = cd.s('comment-author-talk');
-    authorLinksWrapper.append(cd.mws('parentheses-start'), authorTalkLink);
+  const authorLinksWrapper = document.createElement('span');
+  authorLinksWrapper.className = 'cd-comment-author-links';
 
-    if (settings.get('showContribsLink')) {
-      const contribsLink = document.createElement('a');
-      contribsLink.textContent = cd.s('comment-author-contribs');
-      const separator = commentElementPrototypes.separator.cloneNode(true);
-      authorLinksWrapper.append(separator, contribsLink);
-    }
+  const authorTalkLink = document.createElement('a');
+  authorTalkLink.textContent = cd.s('comment-author-talk');
+  authorLinksWrapper.append(cd.mws('parentheses-start'), authorTalkLink);
 
-    authorLinksWrapper.append(cd.mws('parentheses-end'));
-    authorWrapper.append(' ', authorLinksWrapper);
-
-    commentElementPrototypes.headerElement = headerElement;
+  if (settings.get('showContribsLink')) {
+    const contribsLink = document.createElement('a');
+    contribsLink.textContent = cd.s('comment-author-contribs');
+    const separator = commentElementPrototypes.separator.cloneNode(true);
+    authorLinksWrapper.append(separator, contribsLink);
   }
+
+  authorLinksWrapper.append(cd.mws('parentheses-end'));
+  authorWrapper.append(' ', authorLinksWrapper);
+
+  commentElementPrototypes.headerElement = headerElement;
 }
 
 /**
@@ -669,7 +669,7 @@ function addCommentLayerPrototypes(commentElementPrototypes) {
  *
  * @private
  */
-function createCommentElementPrototypes() {
+function commentElementPrototypes() {
   const commentElementPrototypes = {};
 
   const separator = document.createElement('span');
@@ -688,7 +688,7 @@ function createCommentElementPrototypes() {
  *
  * @private
  */
-function createSectionElementPrototypes() {
+function sectionElementPrototypes() {
   const sectionElementPrototypes = {};
 
   sectionElementPrototypes.replyButton = new OO.ui.ButtonWidget({
@@ -716,7 +716,7 @@ function createSectionElementPrototypes() {
  *
  * @private
  */
-function createThreadElementPrototypes() {
+function threadElementPrototypes() {
   let threadElementPrototypes = {};
 
   threadElementPrototypes.expandButton = new OO.ui.ButtonWidget({
@@ -749,9 +749,9 @@ function createThreadElementPrototypes() {
  * @private
  */
 function oouiAndElementPrototypes() {
-  createCommentElementPrototypes();
-  createSectionElementPrototypes();
-  createThreadElementPrototypes();
+  commentElementPrototypes();
+  sectionElementPrototypes();
+  threadElementPrototypes();
 }
 
 /**

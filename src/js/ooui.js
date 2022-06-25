@@ -25,6 +25,14 @@ import controller from './controller';
  */
 
 /**
+ * OOUI window manager.
+ *
+ * @class WindowManager
+ * @memberof external:OO.ui
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.WindowManager
+ */
+
+/**
  * OOUI field layout.
  *
  * @class FieldLayout

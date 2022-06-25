@@ -583,27 +583,27 @@ class Comment extends CommentSkeleton {
    * @private
    */
   createReplyButton() {
-    if (this.isActionable) {
-      const action = this.replyButtonClick.bind(this);
-      if (settings.get('reformatComments')) {
-        /**
-         * Reply button.
-         *
-         * @type {CommentButton}
-         */
-        this.replyButton = new CommentButton({
-          label: cd.s('cm-reply'),
-          classes: ['cd-comment-button-label'],
-          action,
-        });
+    if (!this.isActionable) return;
 
-        this.menuElement.appendChild(this.replyButton.element);
-      } else {
-        const element = elementPrototypes.replyButton.cloneNode(true);
-        const widgetConstructor = elementPrototypes.getReplyButton;
-        this.replyButton = new CommentButton({ element, action, widgetConstructor });
-        this.overlayMenu.appendChild(this.replyButton.element);
-      }
+    const action = this.replyButtonClick.bind(this);
+    if (settings.get('reformatComments')) {
+      /**
+       * Reply button.
+       *
+       * @type {CommentButton}
+       */
+      this.replyButton = new CommentButton({
+        label: cd.s('cm-reply'),
+        classes: ['cd-comment-button-label'],
+        action,
+      });
+
+      this.menuElement.appendChild(this.replyButton.element);
+    } else {
+      const element = elementPrototypes.replyButton.cloneNode(true);
+      const widgetConstructor = elementPrototypes.getReplyButton;
+      this.replyButton = new CommentButton({ element, action, widgetConstructor });
+      this.overlayMenu.appendChild(this.replyButton.element);
     }
   }
 
@@ -2054,7 +2054,7 @@ class Comment extends CommentSkeleton {
         action: () => {
           controller.reload(passedData);
         },
-      })
+      });
     }
 
     let diffLink;

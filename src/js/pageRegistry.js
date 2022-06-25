@@ -68,6 +68,13 @@ class Page {
      * @type {number}
      */
     this.namespaceId = mwTitle.getNamespaceId();
+
+    /**
+     * Is the page the one the user is visiting.
+     *
+     * @type {boolean}
+     */
+    this.isCurrent = genderedName === cd.g.PAGE_NAME;
   }
 
   /**
@@ -112,7 +119,7 @@ class Page {
    */
   isArchivePage() {
     let result;
-    if (this === cd.page) {
+    if (this.isCurrent) {
       result = this.findArchivingInfoElement().data('isArchivePage');
     }
     if (result === undefined) {
@@ -143,7 +150,7 @@ class Page {
       return false;
     }
     let result;
-    if (this === cd.page) {
+    if (this.isCurrent) {
       result = this.findArchivingInfoElement().data('canHaveArchives');
     }
     if (result === undefined) {
@@ -166,7 +173,7 @@ class Page {
       return null;
     }
     let result;
-    if (this === cd.page) {
+    if (this.isCurrent) {
       result = this.findArchivingInfoElement().data('archivePrefix');
     }
     const name = this.realName || this.name;
@@ -192,7 +199,7 @@ class Page {
    */
   getArchivedPage() {
     let result;
-    if (this === cd.page) {
+    if (this.isCurrent) {
       result = this.findArchivingInfoElement().data('archivedPage');
     }
     if (!result) {
@@ -226,7 +233,7 @@ class Page {
       prop: 'revisions',
       rvslots: 'main',
       rvprop: ['ids', 'content'],
-      redirects: !(this === cd.page && mw.config.get('wgIsRedirect')),
+      redirects: !(this.isCurrent && mw.config.get('wgIsRedirect')),
       curtimestamp: true,
     }).catch(handleApiReject);
 
@@ -407,7 +414,7 @@ class Page {
       titles: this.name,
       rvslots: 'main',
       prop: 'revisions',
-      redirects: !(this === cd.page && mw.config.get('wgIsRedirect')),
+      redirects: !(this.isCurrent && mw.config.get('wgIsRedirect')),
     };
     const options = Object.assign({}, defaultOptions, customOptions);
 

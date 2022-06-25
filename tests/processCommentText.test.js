@@ -85,7 +85,7 @@ const firstLevelEditForm = {
 
 const firstCommentEditForm = {
   mode: 'edit',
-  isSectionOpeningCommentEdited: true,
+  sectionOpeningCommentEdited: true,
   headlineInput: {
     getValue: () => 'Headline',
   },

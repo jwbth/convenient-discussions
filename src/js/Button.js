@@ -1,6 +1,6 @@
 import { isCmdModifierPressed } from './util';
 
-let prototypes = {};
+const prototypes = {};
 
 /**
  * Get a button prototype (a skeleton with few properties set) without recreating it if it already

@@ -763,8 +763,7 @@ export async function getDtSubscriptions(ids) {
       commentname: nextIds,
     }).catch(handleApiReject);
 
-    const nextSubscriptions = resp.subscriptions;
-    Object.assign(subscriptions, nextSubscriptions);
+    Object.assign(subscriptions, resp.subscriptions);
   }
 
   return subscriptions;

@@ -340,14 +340,6 @@ export default {
   },
 
   /**
-   * OOUI window manager.
-   *
-   * @class WindowManager
-   * @memberof external:OO.ui
-   * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.WindowManager
-   */
-
-  /**
    * Create a OOUI window manager or return an existing one.
    *
    * @returns {external:OO.ui.WindowManager}
