@@ -158,7 +158,7 @@ const toc = {
     if (!settings.get('modifyToc') || !this.isPresent()) return;
 
     cd.sections
-      .filter((section) => section.subscriptionState)
+      .filter((section) => section.subscriptionState || this.isInSidebar())
       .forEach((section) => {
         section.updateTocLink();
       });
