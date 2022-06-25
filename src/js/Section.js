@@ -1,7 +1,7 @@
 import Button from './Button';
 import CdError from './CdError';
 import CommentForm from './CommentForm';
-import SectionMenuButton from './SectionMenuButton';
+import LiveTimestamp from './LiveTimestamp';
 import SectionSkeleton from './SectionSkeleton';
 import SectionStatic from './Section.static';
 import cd from './cd';
@@ -17,6 +17,7 @@ import {
   focusInput,
   getUrlWithFragment,
   underlinesToSpaces,
+  unique,
   wrap,
 } from './util';
 import {
@@ -27,6 +28,7 @@ import {
   normalizeCode,
   removeWikiMarkup,
 } from './wikitext';
+import { formatDate } from './timestamp';
 import { handleApiReject } from './apiWrappers';
 import { showCopyLinkDialog } from './modal';
 
@@ -50,12 +52,6 @@ class Section extends SectionSkeleton {
     super(parser, heading, targets);
 
     elementPrototypes = cd.g.SECTION_ELEMENT_PROTOTYPES;
-
-    this.editSectionElement = this.headingElement.querySelector('.mw-editsection');
-    if (this.editSectionElement) {
-      this.closingBracketElement = this.editSectionElement
-        .getElementsByClassName('mw-editsection-bracket')[1];
-    }
 
     /**
      * Automatically updated sequental number of the section.
@@ -103,7 +99,6 @@ class Section extends SectionSkeleton {
       });
     }
 
-    this.extendSectionMenu();
     this.extractSubscribeId();
 
     /**
@@ -122,52 +117,13 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Add an item to the section menu (to the right from the section headline).
-   *
-   * @param {object} item
-   * @param {string} item.name Link name, reflected in the class name.
-   * @param {string} item.label Item label.
-   * @param {string} [item.href] Value of the item href attribute.
-   * @param {string} [item.tooltip] Tooltip text.
-   * @param {Function} [item.action] Function to execute on click.
-   * @param {boolean} [item.visible=true] Should the item be visible.
-   * @param {Element} [item.target] Element before which the item should be added.
-   */
-  addMenuItem({ name, label, href, tooltip, action, visible = true, target }) {
-    if (!this.closingBracketElement) return;
-
-    this.menu[name] = new SectionMenuButton({
-      name,
-      label,
-      href,
-      tooltip,
-      visible,
-      classes: ['cd-section-menu-button'],
-      action,
-    });
-    this.editSectionElement.insertBefore(
-      this.menu[name].wrapperElement,
-      target || this.closingBracketElement
-    );
-  }
-
-  /**
    * _For internal use._ Add a {@link Section#replyButton "Reply in section" button} to the end of
    * the first chunk of the section.
    */
   addReplyButton() {
-    const element = elementPrototypes.replyButton.cloneNode(true);
-    const button = new Button({
-      element,
-      action: () => {
-        this.reply();
-      },
-    });
+    if (!this.canAddReply()) return;
 
     const lastElement = this.lastElementInFirstChunk;
-
-    // https://ru.wikipedia.org/wiki/Project:Запросы_к_администраторам/Быстрые
-    if (['TR', 'TD', 'TH'].includes(lastElement.tagName)) return;
 
     // Sections may have "#" in the code as a placeholder for a vote. In this case, we must create
     // the comment form in the <ol> tag.
@@ -210,6 +166,13 @@ class Section extends SectionSkeleton {
       }
     }
 
+    const button = new Button({
+      element: elementPrototypes.replyButton.cloneNode(true),
+      action: () => {
+        this.reply();
+      },
+    });
+
     const wrapper = document.createElement(tag);
     wrapper.className = 'cd-replyWrapper';
     wrapper.appendChild(button.element);
@@ -227,7 +190,7 @@ class Section extends SectionSkeleton {
     container.appendChild(wrapper);
 
     /**
-     * Reply button on the bottom of the first chunk of the section.
+     * Reply button at the bottom of the first chunk of the section.
      *
      * @type {Button|undefined}
      */
@@ -255,7 +218,7 @@ class Section extends SectionSkeleton {
    * appears when hovering over a {@link Section#replyButton "Reply in section" button}.
    */
   addAddSubsectionButton() {
-    if (this.level !== 2) return;
+    if (!this.canAddSubsection()) return;
 
     const element = elementPrototypes.addSubsectionButton.cloneNode(true);
     const button = new Button({
@@ -274,6 +237,28 @@ class Section extends SectionSkeleton {
 
     this.lastElement.parentNode.insertBefore(buttonContainer, this.lastElement.nextElementSibling);
 
+    /**
+     * Add subsection button in the end of the section.
+     *
+     * @type {Button|undefined}
+     */
+    this.addSubsectionButton = button;
+
+    /**
+     * Add subsection button container.
+     *
+     * @type {external:jQuery|undefined}
+     */
+    this.$addSubsectionButtonContainer = $(buttonContainer);
+  }
+
+  /**
+   * _For internal use._ Make it so that when the user hovers over a reply button at the end of the
+   * section for a second, an "Add subsection" button shows up under it.
+   */
+  showAddSubsectionButtonOnReplyButtonHover() {
+    if (!this.replyButton || !this.addSubsectionButton) return;
+
     let hideAddSubsectionButtonTimeout;
     const deferButtonHide = () => {
       if (!hideAddSubsectionButtonTimeout) {
@@ -283,11 +268,11 @@ class Section extends SectionSkeleton {
       }
     };
 
-    button.buttonElement.firstChild.onmouseenter = () => {
+    this.addSubsectionButton.buttonElement.firstChild.onmouseenter = () => {
       clearTimeout(hideAddSubsectionButtonTimeout);
       hideAddSubsectionButtonTimeout = null;
     };
-    button.buttonElement.firstChild.onmouseleave = () => {
+    this.addSubsectionButton.buttonElement.firstChild.onmouseleave = () => {
       deferButtonHide();
     };
 
@@ -313,119 +298,42 @@ class Section extends SectionSkeleton {
       deferButtonHide();
     };
 
-    /**
-     * Add subsection button in the end of the section.
-     *
-     * @type {Button|undefined}
-     */
-    this.addSubsectionButton = button;
-
-    /**
-     * Add subsection button container.
-     *
-     * @type {external:jQuery|undefined}
-     */
-    this.$addSubsectionButtonContainer = $(buttonContainer);
+    $(this.replyButton.buttonElement)
+      .on('mouseenter', this.replyButtonHoverHandler)
+      .on('mouseleave', this.replyButtonUnhoverHandler);
   }
 
   /**
-   * Add section menu items.
-   *
-   * @fires sectionMenuExtended
-   * @private
+   * Add a "Subscribe" / "Unsubscribe" button to the actions element.
    */
-  extendSectionMenu() {
-    if (!this.closingBracketElement) return;
-
-    /**
-     * Section menu object.
-     *
-     * @type {object|undefined}
-     */
-    this.menu = {};
-
-    if (this.isActionable) {
-      if (
-        this.comments.length &&
-        this.comments[0].isOpeningSection &&
-        this.comments[0].openingSectionOfLevel === this.level &&
-        (this.comments[0].isOwn || settings.get('allowEditOthersComments')) &&
-        this.comments[0].isActionable
-      ) {
-        this.addMenuItem({
-          name: 'editOpeningComment',
-          label: cd.s('sm-editopeningcomment'),
-          tooltip: cd.s('sm-editopeningcomment-tooltip'),
-          action: () => {
-            this.comments[0].edit();
-          },
-        });
-      }
-
-      if (this.level >= 2 && this.level !== 6) {
-        this.addMenuItem({
-          name: 'addSubsection',
-          label: cd.s('sm-addsubsection'),
-          tooltip: cd.s('sm-addsubsection-tooltip'),
-          action: () => {
-            this.addSubsection();
-          },
-        });
-      }
-
-      if (this.level === 2) {
-        this.addMenuItem({
-          name: 'moveSection',
-          label: cd.s('sm-move'),
-          tooltip: cd.s('sm-move-tooltip'),
-          action: () => {
-            this.move();
-          },
-        });
-      }
-    }
-
-    if (this.headline) {
-      this.addMenuItem({
-        name: 'copyLink',
-        label: cd.s('sm-copylink'),
-
-        // We need the event object to be passed to the function.
-        action: this.copyLink.bind(this),
-
-        tooltip: cd.s('sm-copylink-tooltip'),
-        href: `${cd.page.getUrl()}#${this.id}`,
-      });
-    }
-  }
-
-  /**
-   * Add "subscribe" / "unsubscribe" items to the section menu.
-   */
-  addSubscribeMenuItem() {
+  addSubscribeButton() {
     if (!this.subscribeId || cd.page.isArchivePage()) return;
 
+    /**
+     * The subscription state of the section. Currently, `true` stands for "subscribed", `false` for
+     * "unsubscribed", `null` for n/a.
+     *
+     * @type {?boolean}
+     */
     this.subscriptionState = subscriptions.getState(this.subscribeId);
-    this.addMenuItem({
-      name: 'subscribe',
-      label: cd.mws('discussiontools-topicsubscription-button-subscribe'),
-      tooltip: cd.mws('discussiontools-topicsubscription-button-subscribe-tooltip'),
-      action: () => {
-        this.subscribe();
-      },
-      visible: !this.subscriptionState,
-      target: this.menu.copyLink?.wrapperElement,
+
+    /**
+     * The subscribe button widget in the {@link Section#actionsElement actions element}.
+     *
+     * @type {external:OO.ui.ButtonMenuSelectWidget}
+     */
+    this.actions.subscribeButton = new OO.ui.ButtonWidget({
+      framed: false,
+      flags: ['progressive'],
+      icon: 'bellOutline',
+      label: cd.s('sm-subscribe'),
+      title: cd.mws('discussiontools-topicsubscription-button-subscribe-tooltip'),
+      classes: ['cd-section-bar-button'],
     });
-    this.addMenuItem({
-      name: 'unsubscribe',
-      label: cd.mws('discussiontools-topicsubscription-button-unsubscribe'),
-      tooltip: cd.mws('discussiontools-topicsubscription-button-unsubscribe-tooltip'),
-      action: () => {
-        this.unsubscribe();
-      },
-      visible: this.subscriptionState,
-      target: this.menu.copyLink?.wrapperElement,
-    });
+
+    this.updateSubscribeButtonState();
+
+    this.actionsElement.prepend(this.actions.subscribeButton.$element.get(0));
 
     /**
      * Section menu has been extended.
@@ -438,12 +346,358 @@ class Section extends SectionSkeleton {
   }
 
   /**
+   * Check whether the user should get the affordance to move the section to another page.
+   *
+   * @returns {boolean}
+   */
+  canBeMoved() {
+    return this.isActionable && this.level === 2;
+  }
+
+  /**
+   * Check whether the user should get the affordance to add a reply to the section.
+   *
+   * @returns {boolean}
+   */
+  canAddReply() {
+    cd.debug.startTimer('canAddReply');
+
+    const isFirstChunkClosed = (
+      this.commentsInFirstChunk[0] &&
+      this.commentsInFirstChunk[0].level === 0 &&
+      this.commentsInFirstChunk.every((comment) => !comment.isActionable)
+    );
+    const isFirstChunkEmptyBeforeSubsection = (
+      this.lastElementInFirstChunk !== this.lastElement &&
+      this.lastElementInFirstChunk === this.$heading.get(0)
+    );
+
+    // May mean complex formatting, so we better keep out.
+    const doesNestingLevelMatch = (
+      !cd.sections[this.index + 1] ||
+      cd.sections[this.index + 1].headingNestingLevel === this.headingNestingLevel
+    );
+
+    // https://ru.wikipedia.org/wiki/Project:Запросы_к_администраторам/Быстрые
+    const isBuriedInTable = ['TR', 'TD', 'TH'].includes(this.lastElementInFirstChunk.tagName);
+
+    cd.debug.stopTimer('canAddReply');
+
+    return (
+      this.isActionable &&
+      !isFirstChunkClosed &&
+      !isFirstChunkEmptyBeforeSubsection &&
+      doesNestingLevelMatch &&
+      !isBuriedInTable
+    );
+  }
+
+  /**
+   * Check whether the user should get the affordance to add a subsection to the section.
+   *
+   * @returns {boolean}
+   */
+  canAddSubsection() {
+    cd.debug.startTimer('canAddSubsection');
+
+    const isClosed = (
+      this.comments[0] &&
+      this.comments[0].level === 0 &&
+      this.comments.every((comment) => !comment.isActionable)
+    );
+    const nextSameLevelSection = cd.sections
+      .slice(this.index + 1)
+      .find((otherSection) => otherSection.level === this.level);
+
+    // While the "Reply" button is added to the end of the first chunk, the "Add subsection" button
+    // is added to the end of the whole section, so we look the next section of the same level.
+    const doesNestingLevelMatch = (
+      nextSameLevelSection &&
+      nextSameLevelSection.headingNestingLevel === this.headingNestingLevel
+    );
+
+    cd.debug.stopTimer('canAddSubsection');
+
+    return (
+      this.isActionable &&
+      this.level >= 2 &&
+      this.level <= 5 &&
+      !isClosed &&
+
+      // If the next section of the same level has another nesting level (e.g., is inside a <div>
+      // with a specific style), don't add the "Add subsection" button - it would appear in a wrong
+      // place.
+      doesNestingLevelMatch
+    );
+  }
+
+  /**
+   * Add the bar element, including the metadata and actions elements, below the section heading.
+   */
+  addBar() {
+    cd.debug.startTimer('addBar');
+
+    const authorCount = this.comments.map((comment) => comment.author).filter(unique).length;
+
+    let latestComment;
+    this.comments.forEach((comment) => {
+      if (
+        comment.date &&
+        (!latestComment || !latestComment.date || latestComment.date < comment.date)
+      ) {
+        latestComment = comment;
+      }
+    });
+
+    let commentCountWrapper;
+    let authorCountWrapper;
+    let lastCommentWrapper;
+    let metadataElement;
+    if (this.level === 2 && this.comments.length) {
+      const commentCountIcon = document.createElement('span');
+      commentCountIcon.className = 'cd-section-bar-icon cd-section-bar-icon-commentCount';
+
+      commentCountWrapper = document.createElement('span');
+      commentCountWrapper.className = 'cd-section-bar-item';
+      const commentCountText = cd.s('section-metadata-commentcount', this.comments.length);
+      commentCountWrapper.append(commentCountIcon, commentCountText);
+
+      const authorCountIcon = document.createElement('span');
+      authorCountIcon.className = 'cd-section-bar-icon cd-section-bar-icon-authorCount';
+
+      authorCountWrapper = document.createElement('span');
+      authorCountWrapper.className = 'cd-section-bar-item';
+      const authorCountText = cd.s('section-metadata-authorcount', authorCount)
+      authorCountWrapper.append(authorCountIcon, authorCountText);
+
+      if (latestComment) {
+        const lastCommentIcon = document.createElement('span');
+        lastCommentIcon.className = 'cd-section-bar-icon cd-section-bar-icon-lastComment';
+
+        const lastCommentLink = document.createElement('a');
+        lastCommentLink.href = `#${latestComment.dtId || latestComment.id}`;
+        lastCommentLink.textContent = formatDate(latestComment.date);
+        (new LiveTimestamp(lastCommentLink, latestComment.date, false)).init();
+
+        lastCommentWrapper = document.createElement('span');
+        lastCommentWrapper.className = 'cd-section-bar-item';
+        const lastCommentText = cd.s('section-metadata-lastcomment');
+        lastCommentWrapper.append(lastCommentIcon, lastCommentText, ' ', lastCommentLink);
+      }
+
+      metadataElement = document.createElement('div');
+      metadataElement.className = 'cd-section-metadata';
+      const metadataItemList = [
+        commentCountWrapper,
+        authorCountWrapper,
+        lastCommentWrapper,
+      ].filter(defined);
+      metadataElement.append(...metadataItemList);
+    }
+
+    /**
+     * Section actions object. It contains elements (buttons, menus) triggering the actions of the
+     * section.
+     *
+     * @type {object}
+     */
+    this.actions = {};
+
+    let editOpeningCommentOption;
+    let moveOption;
+    let addSubsectionOption;
+    let moreMenuSelect;
+    if (this.isActionable) {
+      if (
+        this.comments.length &&
+        this.comments[0].isOpeningSection &&
+        this.comments[0].openingSectionOfLevel === this.level &&
+        (this.comments[0].isOwn || settings.get('allowEditOthersComments')) &&
+        this.comments[0].isActionable
+      ) {
+        editOpeningCommentOption = new OO.ui.MenuOptionWidget({
+          data: 'editOpeningComment',
+          label: cd.s('sm-editopeningcomment'),
+          title: cd.s('sm-editopeningcomment-tooltip'),
+          icon: 'edit',
+        });
+      }
+
+      if (this.canBeMoved()) {
+        moveOption = new OO.ui.MenuOptionWidget({
+          data: 'move',
+          label: cd.s('sm-move'),
+          title: cd.s('sm-move-tooltip'),
+          icon: 'arrowNext',
+        });
+      }
+
+      if (this.canAddSubsection()) {
+        addSubsectionOption = new OO.ui.MenuOptionWidget({
+          data: 'addSubsection',
+          label: cd.s('sm-addsubsection'),
+          title: cd.s('sm-addsubsection-tooltip'),
+          icon: 'speechBubbleAdd',
+        });
+      }
+
+      const items = [editOpeningCommentOption, moveOption, addSubsectionOption].filter(defined);
+      if (items.length) {
+        moreMenuSelect = new OO.ui.ButtonMenuSelectWidget({
+          framed: false,
+          icon: 'ellipsis',
+          label: cd.s('sm-more'),
+          invisibleLabel: true,
+          title: cd.s('sm-more'),
+          menu: {
+            items,
+            horizontalPosition: 'end',
+          },
+          classes: ['cd-section-bar-button', 'cd-section-bar-moremenu'],
+        });
+        moreMenuSelect.getMenu().on('choose', (option) => {
+          switch (option.getData()) {
+            case 'editOpeningComment':
+              this.comments[0].edit();
+              break;
+            case 'move':
+              this.move();
+              break;
+            case 'addSubsection':
+              this.addSubsection();
+              break;
+          }
+        });
+      }
+    }
+
+    let copyLinkButton;
+    if (this.headline) {
+      copyLinkButton = new OO.ui.ButtonWidget({
+        framed: false,
+        flags: ['progressive'],
+        icon: 'link',
+        label: cd.s('sm-copylink'),
+        invisibleLabel: true,
+        href: `${cd.page.getUrl()}#${this.id}`,
+        title: cd.s('sm-copylink-tooltip'),
+        classes: ['cd-section-bar-button'],
+      });
+
+      // We need the event object to be passed to the function. We can't do it with OOUI.
+      copyLinkButton.$element.on('click', this.copyLink.bind(this));
+    }
+
+    const actionsElement = document.createElement('div');
+    actionsElement.className = 'cd-section-actions';
+    const actionItemList = [copyLinkButton, moreMenuSelect]
+      .filter(defined)
+      .map((widget) => widget.$element.get(0));
+    actionsElement.append(...actionItemList);
+
+    const barElement = document.createElement('div');
+    barElement.className = 'cd-section-bar';
+    if (!metadataElement) {
+      barElement.classList.add('cd-section-bar-nometadata');
+    }
+    barElement.append(...[metadataElement, actionsElement].filter(defined));
+
+    if (this.level === 2) {
+      this.headingElement.parentNode
+        .insertBefore(barElement, this.headingElement.nextElementSibling);
+    } else {
+      this.headingElement.classList.add('cd-subsection');
+      this.headingElement.append(actionsElement);
+    }
+
+    /**
+     * The bar element under the 2-level section heading.
+     *
+     * @type {Element}
+     */
+    this.barElement = barElement;
+
+    /**
+     * The metadata element under the 2-level section heading.
+     *
+     * @type {Element}
+     */
+    this.metadataElement = metadataElement;
+
+    /**
+     * The actions element under the 2-level section heading _or_ to the right of headings of other
+     * levels.
+     *
+     * @type {Element}
+     */
+    this.actionsElement = actionsElement;
+
+    /**
+     * The comment count wrapper element in the {@link Section#metadataElement metadata element}.
+     *
+     * @type {Element}
+     */
+    this.commentCountWrapper = commentCountWrapper;
+
+    /**
+     * The author count wrapper element in the {@link Section#metadataElement metadata element}.
+     *
+     * @type {Element}
+     */
+    this.authorCountWrapper = authorCountWrapper;
+
+    /**
+     * The last comment date wrapper element in the {@link Section#metadataElement metadata element}.
+     *
+     * @type {Element}
+     */
+    this.lastCommentWrapper = lastCommentWrapper;
+
+    /**
+     * The copy link button widget in the {@link Section#actionsElement actions element}.
+     *
+     * @type {external:OO.ui.ButtonWidget}
+     */
+    this.actions.copyLinkButton = copyLinkButton;
+
+    /**
+     * The button menu select widget in the {@link Section#actionsElement actions element}.
+     *
+     * @type {external:OO.ui.ButtonMenuSelectWidget}
+     */
+    this.actions.moreMenuSelect = moreMenuSelect;
+
+    cd.debug.stopTimer('addBar');
+  }
+
+  /**
+   * Add the new comment count to the metadata element.
+   */
+  addNewCommentCountMetadata() {
+    if (this.level !== 2) return;
+
+    const newComments = this.comments.filter((comment) => comment.isNew);
+    if (!newComments.length) return;
+
+    const newCommentCountLink = document.createElement('a');
+    newCommentCountLink.href = `#${newComments[0].dtId}`;
+    newCommentCountLink.onclick = (e) => {
+      e.preventDefault();
+      newComments[0].scrollTo(true, true);
+      newComments.forEach((comment) => comment.flashTarget());
+    };
+    this.commentCountWrapper.append(' ', newCommentCountLink);
+    newCommentCountLink.textContent = cd.s('section-metadata-commentcount-new', newComments.length);
+  }
+
+  /**
    * Extract the section {@link Section#subscribeId subscribe ID}.
    */
   extractSubscribeId() {
     if (!settings.get('useTopicSubscription')) {
       /**
-       * The section subscribe ID in the DiscussionTools format.
+       * The section subscribe ID, either in the DiscussionTools format or just a headline if legacy
+       * subscriptions are used.
        *
        * @type {string}
        */
@@ -467,7 +721,7 @@ class Section extends SectionSkeleton {
       }
 
       if (subscribeIdNode) {
-        const [, subscribeId] = subscribeIdNode.textContent.match('__DTSUBSCRIBE__(.+)') || [];
+        const [, subscribeId] = subscribeIdNode.textContent.match('__DTSUBSCRIBELINK__(.+)') || [];
         this.subscribeId = subscribeId;
       }
     }
@@ -508,9 +762,10 @@ class Section extends SectionSkeleton {
    * Create an {@link Section#addSubsectionForm add subsection form} form or focus an existing one.
    *
    * @param {object|CommentForm} dataToRestore
+   * @throws {CdError}
    */
   addSubsection(dataToRestore) {
-    if (!this.menu.addSubsection) {
+    if (!this.canAddSubsection()) {
       throw new CdError();
     }
 
@@ -537,7 +792,7 @@ class Section extends SectionSkeleton {
    * Show a move section dialog.
    */
   move() {
-    if (dealWithLoadingBug('mediawiki.widgets')) return;
+    if (controller.isPageOverlayOn() || dealWithLoadingBug('mediawiki.widgets')) return;
 
     const MoveSectionDialog = require('./MoveSectionDialog').default;
 
@@ -548,14 +803,29 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Update the subscribe/unsubscribe section links visibility.
+   * Update the subscribe/unsubscribe section button state.
    *
    * @private
    */
-  updateSubscribeMenuItems() {
-    if (this.menu && this.isActionable) {
-      this.menu.unsubscribe[this.subscriptionState ? 'show' : 'hide']();
-      this.menu.subscribe[this.subscriptionState ? 'hide' : 'show']();
+  updateSubscribeButtonState() {
+    if (this.subscriptionState) {
+      this.actions.subscribeButton
+        .setLabel(cd.s('sm-unsubscribe'))
+        .setTitle(cd.mws('discussiontools-topicsubscription-button-unsubscribe-tooltip'))
+        .setIcon('bell')
+        .off('click')
+        .on('click', () => {
+          this.unsubscribe();
+        });
+    } else {
+      this.actions.subscribeButton
+        .setLabel(cd.s('sm-subscribe'))
+        .setTitle(cd.mws('discussiontools-topicsubscription-button-subscribe-tooltip'))
+        .setIcon('bellOutline')
+        .off('click')
+        .on('click', () => {
+          this.subscribe();
+        });
     }
   }
 
@@ -572,13 +842,13 @@ class Section extends SectionSkeleton {
     const sections = Section.getBySubscribeId(this.subscribeId);
     let finallyCallback;
     if (!silent) {
-      const buttons = sections.map((section) => section.menu?.subscribe).filter(defined);
+      const buttons = sections.map((section) => section.actions.subscribeButton).filter(defined);
       buttons.forEach((button) => {
-        button.setPending(true);
+        button.setDisabled(true);
       });
       finallyCallback = () => {
         buttons.forEach((button) => {
-          button.setPending(false);
+          button.setDisabled(false);
         });
       };
     }
@@ -592,7 +862,7 @@ class Section extends SectionSkeleton {
       .then(() => {
         sections.forEach((section) => {
           section.subscriptionState = true;
-          section.updateSubscribeMenuItems();
+          section.updateSubscribeButtonState();
           section.updateTocLink();
         });
         if (!silent) {
@@ -624,13 +894,13 @@ class Section extends SectionSkeleton {
     const sections = Section.getBySubscribeId(this.subscribeId);
     let finallyCallback;
     if (!silent) {
-      const buttons = sections.map((section) => section.menu?.unsubscribe).filter(defined);
+      const buttons = sections.map((section) => section.actions.subscribeButton).filter(defined);
       buttons.forEach((button) => {
-        button.setPending(true);
+        button.setDisabled(true);
       });
       finallyCallback = () => {
         buttons.forEach((button) => {
-          button.setPending(false);
+          button.setDisabled(false);
         });
       };
     }
@@ -639,7 +909,7 @@ class Section extends SectionSkeleton {
       .then(() => {
         sections.forEach((section) => {
           section.subscriptionState = false;
-          section.updateSubscribeMenuItems();
+          section.updateSubscribeButtonState();
           section.updateTocLink();
         });
 
@@ -1288,10 +1558,6 @@ class Section extends SectionSkeleton {
    * @returns {?Section}
    */
   getRelevantComment() {
-    if (this.mode === 'replyInSection' && !this.replyButton) {
-      throw new CdError();
-    }
-
     return this.comments[0]?.isOpeningSection ? this.comments[0] : null;
   }
 

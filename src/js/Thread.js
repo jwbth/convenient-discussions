@@ -703,10 +703,10 @@ class Thread {
     }
 
     if (this.rootComment.isOpeningSection) {
-      const menu = this.rootComment.section.menu;
-      if (menu) {
-        menu.editOpeningComment?.setDisabled(true);
-      }
+      this.rootComment.section.actions.moreMenuSelect
+        ?.getMenu()
+        .findItemFromData('editOpeningComment')
+        ?.setDisabled(true);
     }
 
     if (this.endElement !== this.visualEndElement) {
@@ -740,10 +740,10 @@ class Thread {
     this.expandNoteContainer = null;
 
     if (this.rootComment.isOpeningSection) {
-      const menu = this.rootComment.section.menu;
-      if (menu) {
-        menu.editOpeningComment?.setDisabled(false);
-      }
+      this.rootComment.section.actions.moreMenuSelect
+        ?.getMenu()
+        .findItemFromData('editOpeningComment')
+        ?.setDisabled(false);
     }
 
     this.isCollapsed = false;

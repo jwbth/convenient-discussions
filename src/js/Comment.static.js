@@ -841,4 +841,18 @@ export default {
     }
     return { author, date, parentAuthor, parentDate, sectionIdBeginning, index };
   },
+
+  /**
+   * _For internal use._ Add available DiscussionTools IDs to respective comments.
+   *
+   * @param {Array} ids
+   */
+  setDtIds(ids) {
+    ids.forEach((id) => {
+      const comment = Comment.getByDtId(id);
+      if (comment) {
+        comment.dtId = id;
+      }
+    });
+  },
 };

@@ -90,6 +90,14 @@ class CommentForm {
    * @fires commentFormCreated
    */
   constructor({ mode, target, dataToRestore, preloadConfig, newTopicOnTop }) {
+    // This is possible when restoring a form.
+    if (
+      !(target instanceof pageRegistry.Page) && !target.isActionable ||
+      (mode === 'replyInSection' && !target.replyButton)
+    ) {
+      throw new CdError();
+    }
+
     /**
      * Form mode. `'reply'`, `'replyInSection'`, `'edit'`, `'addSubsection'`, or `'addSection'`.
      *
@@ -271,7 +279,6 @@ class CommentForm {
    * properties.
    *
    * @param {Comment|Section|Page} target
-   * @throws {CdError}
    */
   setTargets(target) {
     /**
@@ -291,13 +298,21 @@ class CommentForm {
     this.targetSection = this.target.getRelevantSection();
 
     /**
-     * Target comment. This may be the comment the user replies to or the comment opening the
+     * Target comment. This may be the comment the user replies to, or the comment opening the
      * section.
      *
      * @type {?Comment}
      * @private
      */
-    this.targetComment = this.target.getRelevantComment();
+    this.targetComment = this.mode === 'edit' ? null : this.target.getRelevantComment();
+
+    /**
+     * Parent comment. This is the comment the user replies to, if any.
+     *
+     * @type {?Comment}
+     * @private
+     */
+    this.parentComment = this.mode.startsWith('reply') ? this.target : null;
 
     /**
      * Wiki page that has the source code of the target object (may be different from the current
@@ -1669,7 +1684,7 @@ class CommentForm {
       .filter(defined)
       .sort((u1, u2) => u2.isRegistered() - u1.isRegistered() || (u2.name > u1.name ? -1 : 1))
       .map((u) => u.name);
-    if (this.targetComment && this.mode !== 'edit') {
+    if (this.targetComment) {
       for (let с = this.targetComment; с; с = с.getParent()) {
         if (с.author !== cd.user) {
           if (!с.author.isRegistered()) break;
@@ -3017,6 +3032,9 @@ class CommentForm {
       this.target.$replyWrapper.removeClass('cd-replyWrapper-hasCommentForm');
     } else if (this.mode === 'edit') {
       this.target.$elements.removeClass('cd-hidden');
+      if (this.target.isOpeningSection) {
+        $(this.target.section.barElement).removeClass('cd-hidden');
+      }
       this.target.scrollIntoView('top');
       this.target.configureLayers();
     } else if (this.mode === 'addSection' && controller.$addSectionButtonContainer) {
@@ -3503,12 +3521,22 @@ class CommentForm {
   }
 
   /**
-   * Get the target object of the form.
+   * Get the {@link CommentForm#target target} object of the form.
    *
    * @returns {Comment|Section|Page}
    */
   getTarget() {
     return this.target;
+  }
+
+  /**
+   * Get the {@link CommentForm#parentComment parent comment} object of the form. This is the
+   * comment the user replies to, if any.
+   *
+   * @returns {?Comment}
+   */
+  getParentComment() {
+    return this.parentComment;
   }
 
   /**
@@ -3540,7 +3568,7 @@ class CommentForm {
   }
 
   /**
-   * Restore a form from data.
+   * Restore the form from data.
    *
    * @param {Function} addToRescue
    */
@@ -3550,7 +3578,7 @@ class CommentForm {
     if (target instanceof Comment) {
       if (target.id) {
         const comment = Comment.getById(target.id);
-        if (comment?.isActionable) {
+        if (comment) {
           try {
             this.setTargets(comment);
             comment[CommentForm.modeToProperty(this.getMode())](this);
@@ -3576,7 +3604,7 @@ class CommentForm {
         // despite cd.sections has already changed.
         ancestors: target.getAncestors().map((section) => section.headline),
       });
-      if (section?.isActionable) {
+      if (section) {
         try {
           this.setTargets(section);
           section[CommentForm.modeToProperty(this.getMode())](this);

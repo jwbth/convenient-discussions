@@ -63,12 +63,9 @@ class SectionSkeleton {
      */
     this.sectionNumber = null;
 
-    let editSectionElement = this.parser.context
+    const editSectionElement = this.parser.context
       .getElementByClassName(this.headingElement, 'mw-editsection');
-    if (!editSectionElement) {
-      editSectionElement = this.createSectionMenu();
-    }
-    const menuLinks = [...editSectionElement.getElementsByTagName('a')];
+    const menuLinks = editSectionElement ? [...editSectionElement.getElementsByTagName('a')] : [];
 
     // &action=edit, ?action=edit (couldn't figure out where this comes from, but at least one
     // user has such links), &veaction=editsource. We perhaps could catch veaction=edit, but
@@ -106,26 +103,6 @@ class SectionSkeleton {
      * @type {number}
      */
     this.index = cd.sections.length;
-  }
-
-  /**
-   * Create a section menu if it was unexistent (on pages with `__NOEDITSECTION__`).
-   *
-   * @returns {Element|external:Element}
-   */
-  createSectionMenu() {
-    const startBracket = document.createElement('span');
-    startBracket.setAttribute('class', 'mw-editsection-bracket');
-    startBracket.textContent = '[';
-    const endBracket = document.createElement('span');
-    endBracket.setAttribute('class', 'mw-editsection-bracket');
-    endBracket.textContent = ']';
-    const editSectionElement = document.createElement('span');
-    editSectionElement.setAttribute('class', 'mw-editsection');
-    editSectionElement.appendChild(startBracket);
-    editSectionElement.appendChild(endBracket);
-    this.headingElement.appendChild(editSectionElement);
-    return editSectionElement;
   }
 
   /**

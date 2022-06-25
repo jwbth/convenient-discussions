@@ -949,15 +949,12 @@ export default class BootProcess {
 
     // This runs after extracting sections because Comment#getParent needs sections to be set on
     // comments.
-    this.dtCommentIds.forEach((id) => {
-      const comment = Comment.getByDtId(id);
-      if (comment) {
-        comment.dtId = id;
-      }
-    });
+    Comment.setDtIds(this.dtCommentIds);
+
+    Section.addBars();
 
     subscriptions.getLoadRequest().then(() => {
-      Section.addSubscribeMenuItems();
+      Section.addSubscribeButtons();
       subscriptions.cleanUp();
       toc.highlightSubscriptions();
     });
@@ -1405,6 +1402,7 @@ export default class BootProcess {
     setVisits(visits);
 
     Comment.registerSeen();
+    Section.addNewCommentCountMetadata();
     navPanel.fill();
 
     /**

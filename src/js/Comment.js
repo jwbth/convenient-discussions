@@ -2700,6 +2700,9 @@ class Comment extends CommentSkeleton {
     // beginning and should stay so when reshowing the comment.
     this.$elements.addClass('cd-hidden');
     this.removeLayers();
+    if (this.isOpeningSection) {
+      $(this.section.barElement).addClass('cd-hidden');
+    }
 
     // "!this.editForm" check is in case the editing is initiated from a script of some kind (there
     // is no button to call it from CD when the form is displayed).

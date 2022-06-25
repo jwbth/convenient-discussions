@@ -121,7 +121,7 @@ export default {
    * @memberof Section
    */
   adjust() {
-    cd.sections.forEach((section, i) => {
+    cd.sections.forEach((section) => {
       /**
        * Is the section the last section on the page.
        *
@@ -130,83 +130,30 @@ export default {
        * @memberof Section
        * @instance
        */
-      section.isLastSection = i === cd.sections.length - 1;
+      section.isLastSection = section.index === cd.sections.length - 1;
 
-      if (section.isActionable) {
-        // If the next section of the same level has another nesting level (e.g., is inside a <div>
-        // with a specific style), don't add the "Add subsection" button - it would appear in the
-        // wrong place.
-        const nextSameLevelSection = cd.sections
-          .slice(i + 1)
-          .find((otherSection) => otherSection.level === section.level);
-        const isClosed = (
-          section.comments[0] &&
-          section.comments[0].level === 0 &&
-          section.comments.every((comment) => !comment.isActionable)
-        );
-        if (
-          isClosed ||
-          (
-            nextSameLevelSection &&
-            nextSameLevelSection.headingNestingLevel !== section.headingNestingLevel
-          )
-        ) {
-          const menu = section.menu;
-          if (menu) {
-            menu.addSubsection?.wrapperElement.remove();
-            delete menu.addSubsection;
-          }
-        } else {
-          section.addAddSubsectionButton();
-        }
-
-        // The same for the "Reply" button, but as this button is added to the end of the first
-        // chunk, we look at just the next section, not necessarily of the same level.
-        const isFirstChunkClosed = (
-          section.commentsInFirstChunk[0] &&
-          section.commentsInFirstChunk[0].level === 0 &&
-          section.commentsInFirstChunk.every((comment) => !comment.isActionable)
-        );
-        if (
-          !isFirstChunkClosed &&
-
-          // The subsection heading doesn't directly follow the section heading.
-          !(
-            section.lastElement !== section.lastElementInFirstChunk &&
-            section.lastElementInFirstChunk === section.$heading.get(0)
-          ) &&
-
-          // May mean complex formatting, so we better keep out.
-          (
-            !cd.sections[i + 1] ||
-            cd.sections[i + 1].headingNestingLevel === section.headingNestingLevel
-          )
-        ) {
-          section.addReplyButton();
-        }
-      }
+      section.addAddSubsectionButton();
+      section.addReplyButton();
     });
 
+    // Run this after running section.addReplyButton() because reply buttons must be in place for
+    // this.
     cd.sections
       .filter((section) => section.isActionable && section.level === 2)
       .forEach((section) => {
         // Section with the last reply button
         const subsections = section.getChildren(true);
         const targetSection = subsections.length ? subsections[subsections.length - 1] : section;
-        if (targetSection.replyButton) {
-          $(targetSection.replyButton.buttonElement)
-            .on('mouseenter', section.replyButtonHoverHandler)
-            .on('mouseleave', section.replyButtonUnhoverHandler);
-        }
+        targetSection.showAddSubsectionButtonOnReplyButtonHover();
       });
   },
 
   /**
-   * Add a "subscribe" menu item to each section menu.
+   * Add a "Subscribe" / "Unsubscribe" button to each section's actions element.
    */
-  addSubscribeMenuItems() {
+  addSubscribeButtons() {
     cd.sections.forEach((section) => {
-      section.addSubscribeMenuItem();
+      section.addSubscribeButton();
     });
   },
 
@@ -221,5 +168,23 @@ export default {
     const date = new Date(timestamp);
     date.setSeconds(0);
     return `h-${spacesToUnderlines(author)}-${date.toISOString()}`;
+  },
+
+  /**
+   * Add the bar element below each section heading.
+   */
+   addBars() {
+    cd.sections.forEach((section) => {
+      section.addBar();
+    });
+  },
+
+  /**
+   * Add the new comment count to the metadata elements of the sections.
+   */
+  addNewCommentCountMetadata() {
+    cd.sections.forEach((section) => {
+      section.addNewCommentCountMetadata();
+    });
   },
 };

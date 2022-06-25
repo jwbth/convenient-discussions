@@ -129,6 +129,14 @@ import controller from './controller';
  */
 
 /**
+ * OOUI button menu select widget.
+ *
+ * @class ButtonMenuSelectWidget
+ * @memberof external:OO.ui
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ButtonMenuSelectWidget
+ */
+
+/**
  * Display a OOUI message dialog where user is asked to confirm something. Compared to
  * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui-method-confirm OO.ui.confirm},
  * returns an action string, not a boolean (which helps to differentiate between more than two types
