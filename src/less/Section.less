@@ -74,60 +74,34 @@ ol .cd-section-button {
     min-height: 30px;
     border-top: 1px solid transparent;
     border-bottom: 1px solid transparent;
-    padding: 5px 0;
+    padding: 4px 0;
 
     color: #54595d;
     font-size: 13px;
-    margin-right: 1em;
+    margin-right: 16px;
     vertical-align: middle;
-    line-height: 1.42857143em;
+    line-height: 1.53846153em;
     white-space: nowrap;
-  }
-
-  &-icon {
-    display: inline-block;
-    vertical-align: middle;
-    width: 16px;
-    height: 16px;
-    opacity: 0.51;
-    background-size: contain;
-    background-position: center center;
-    background-repeat: no-repeat;
-
-    .mw-content-ltr &,
-    .mw-content-rtl .mw-content-ltr & {
-      margin-right: 6px;
-    }
-
-    .mw-content-rtl &,
-    .mw-content-ltr .mw-content-rtl & {
-      margin-left: 6px;
-    }
-
-    &-commentCount {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M17 4v7a2 2 0 0 1-2 2H4v1a2 2 0 0 0 2 2h10l4 4V6a2 2 0 0 0-2-2zM6 10H0v6z'/%3E%3Crect width='16' height='12' rx='2'/%3E%3C/svg%3E");
-    }
-
-    &-authorCount {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M10 11c-5.92 0-8 3-8 5v3h16v-3c0-2-2.08-5-8-5z'/%3E%3Ccircle cx='10' cy='5.5' r='4.5'/%3E%3C/svg%3E");
-    }
-
-    &-lastComment {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M10 0a10 10 0 1 0 10 10A10 10 0 0 0 10 0zm2.5 14.5L9 11V4h2v6l3 3z'/%3E%3C/svg%3E");
-    }
   }
 
   &-button {
     font-size: 13px;
 
-    > .oo-ui-buttonElement-button > .oo-ui-iconElement-icon {
+    > .oo-ui-buttonElement-button > .oo-ui-iconElement-icon,
+    .oo-ui-optionWidget > .oo-ui-iconElement-icon.oo-ui-iconElement-icon {
       min-width: 16px;
       min-height: 16px;
+    }
+
+    .oo-ui-buttonElement-button > .oo-ui-labelElement-label.oo-ui-labelElement-label  {
+      line-height: 1.53846153em;
     }
 
     &.cd-section-bar-button > .oo-ui-buttonElement-button {
       min-width: 30px;
       min-height: 30px;
+      padding-top: 4px;
+      padding-bottom: 4px;
     }
   }
 

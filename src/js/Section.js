@@ -454,26 +454,17 @@ class Section extends SectionSkeleton {
     let lastCommentWrapper;
     let metadataElement;
     if (this.level === 2 && this.comments.length) {
-      const commentCountIcon = document.createElement('span');
-      commentCountIcon.className = 'cd-section-bar-icon cd-section-bar-icon-commentCount';
-
       commentCountWrapper = document.createElement('span');
       commentCountWrapper.className = 'cd-section-bar-item';
       const commentCountText = cd.s('section-metadata-commentcount', this.comments.length);
-      commentCountWrapper.append(commentCountIcon, commentCountText);
-
-      const authorCountIcon = document.createElement('span');
-      authorCountIcon.className = 'cd-section-bar-icon cd-section-bar-icon-authorCount';
+      commentCountWrapper.append(commentCountText);
 
       authorCountWrapper = document.createElement('span');
       authorCountWrapper.className = 'cd-section-bar-item';
       const authorCountText = cd.s('section-metadata-authorcount', authorCount)
-      authorCountWrapper.append(authorCountIcon, authorCountText);
+      authorCountWrapper.append(authorCountText);
 
       if (latestComment) {
-        const lastCommentIcon = document.createElement('span');
-        lastCommentIcon.className = 'cd-section-bar-icon cd-section-bar-icon-lastComment';
-
         const lastCommentLink = document.createElement('a');
         lastCommentLink.href = `#${latestComment.dtId || latestComment.id}`;
         lastCommentLink.textContent = formatDate(latestComment.date);
@@ -482,7 +473,7 @@ class Section extends SectionSkeleton {
         lastCommentWrapper = document.createElement('span');
         lastCommentWrapper.className = 'cd-section-bar-item';
         const lastCommentText = cd.s('section-metadata-lastcomment');
-        lastCommentWrapper.append(lastCommentIcon, lastCommentText, ' ', lastCommentLink);
+        lastCommentWrapper.append(lastCommentText, ' ', lastCommentLink);
       }
 
       metadataElement = document.createElement('div');
