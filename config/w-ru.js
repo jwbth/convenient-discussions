@@ -427,6 +427,7 @@ export default {
     } else if (/^Википедия:(?:К восстановлению|К объединению|К переименованию|К разделению|К удалению|К улучшению)/.test(title)) {
       return false;
     }
+    return null;
   },
 
   getMoveSourcePageCode: function (targetPageWikilink, signature, timestamp) {

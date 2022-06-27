@@ -565,7 +565,7 @@ class Page {
       throw new CdError('Can\'t analyze the new topics placement: Page#code is undefined.');
     }
 
-    let areNewTopicsOnTop = cd.config.areNewTopicsOnTop?.(this.name, this.code);
+    let areNewTopicsOnTop = cd.config.areNewTopicsOnTop?.(this.name, this.code) || null;
 
     const adjustedCode = hideDistractingCode(this.code);
     const sectionHeadingRegexp = /^==[^=].*?==[ \t\x01\x02]*\n/gm;
@@ -579,7 +579,7 @@ class Page {
       sectionHeadingRegexp.lastIndex = 0;
     }
 
-    if (areNewTopicsOnTop === undefined) {
+    if (areNewTopicsOnTop === null) {
       // Detect the topic order: newest first or newest last.
       let previousDate;
       let difference = 0;

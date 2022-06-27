@@ -767,7 +767,7 @@ export default {
    * @kind function
    * @param {string} title
    * @param {string} code
-   * @returns {boolean}
+   * @returns {?boolean}
    * @default null
    */
   areNewTopicsOnTop: null,
