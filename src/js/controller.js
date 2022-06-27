@@ -1360,7 +1360,18 @@ export default {
     const uri = new mw.Uri();
     const query = uri.query;
     if (
-      (uri.fragment || query.diff || query.oldid) &&
+      (
+        (
+          uri.fragment &&
+
+          // Don't reset the fragment if it will be set in the boot process from a comment ID or a
+          // section ID, to avoid creating a duplicate history entry.
+          !this.bootProcess.data('commentId') &&
+          !this.bootProcess.data('sectionId')
+        ) ||
+        query.diff ||
+        query.oldid
+      ) &&
       !this.bootProcess.data('isPageReloadedExternally')
     ) {
       // Added automatically (after /wiki/ if possible, as a query parameter otherwise).
