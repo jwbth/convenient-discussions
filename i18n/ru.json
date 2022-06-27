@@ -163,6 +163,7 @@
 	"cf-watchsection-subsection": "Подписаться на этот подраздел",
 	"cf-watchsection-tooltip": "Это влияет на уведомления и выделение жирным ссылки в нескольких местах",
 	"cf-omitsignature": "Не добавлять подпись",
+	"cf-omitsignature-tooltip": "Используйте эту опцию, когда подпись уже присутствует в тексте сообщения.",
 	"cf-delete": "Удалить",
 	"cf-block-preview": "Предпросмотр",
 	"cf-block-viewchanges": "Изменения",

@@ -550,6 +550,7 @@ class CommentForm {
         value: 'omitSignature',
         selected: dataToRestore?.omitSignature ?? false,
         label: cd.s('cf-omitsignature'),
+        title: cd.s('cf-omitsignature-tooltip'),
         tabIndex: this.getTabIndex(25),
       });
     }

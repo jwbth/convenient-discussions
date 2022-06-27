@@ -162,6 +162,7 @@
   "cf-watchsection-subsection": "Subscribe to this subsection",
   "cf-watchsection-tooltip": "This affects notifications and bolding in several places",
   "cf-omitsignature": "Omit signature",
+  "cf-omitsignature-tooltip": "Use this option when a signature is already present in the comment text.",
   "cf-delete": "Delete",
 
   "cf-block-preview": "Preview",
