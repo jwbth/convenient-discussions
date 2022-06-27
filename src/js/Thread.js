@@ -201,39 +201,50 @@ function saveCollapsedThreads() {
  * @private
  */
 function autocollapseThreads() {
-  const comments = [];
+  let comments = [];
   const dataAllPages = cleanUpCollapsedThreads(getFromLocalStorage('collapsedThreads'));
   const data = dataAllPages[mw.config.get('wgArticleId')] || {};
 
-  data.threads?.reverse().forEach((thread) => {
-      const comment = Comment.getById(thread.id);
-      if (comment?.thread) {
-        if (thread.collapsed) {
-          comments.push(comment);
-        } else {
-          /**
-           * Whether the thread should have been autocollapsed, but haven't been because the user
-           * expanded it manually in previous sessions.
-           *
-           * @name wasManuallyExpanded
-           * @type {boolean}
-           * @memberof Thread
-           * @instance
-           * @private
-           */
-          comment.thread.wasManuallyExpanded = true;
-        }
-      } else {
-        // Remove IDs that have no corresponding comments or threads from the data.
-        data.threads.splice(data.threads.indexOf(thread.id), 1);
-      }
+  // Don't autocollapse the target comment.
+  const targetCommentId = controller.getBootProcess().data('commentId');
+  if (targetCommentId) {
+    // This entry may be a duplicate for this ID - the collisions will be resolved below (with the
+    // "collapsed: false" state having a priority).
+    data.threads.push({
+      id: targetCommentId,
+      collapsed: false,
     });
+  }
+
+  data.threads?.forEach((thread) => {
+    const comment = Comment.getById(thread.id);
+    if (comment?.thread) {
+      if (thread.collapsed) {
+        comments.push(comment);
+      } else {
+        /**
+         * Whether the thread should have been autocollapsed, but haven't been because the user
+         * expanded it manually in previous sessions.
+         *
+         * @name wasManuallyExpanded
+         * @type {boolean}
+         * @memberof Thread
+         * @instance
+         * @private
+         */
+        comment.thread.wasManuallyExpanded = true;
+      }
+    } else {
+      // Remove IDs that have no corresponding comments or threads from the data.
+      data.threads.splice(data.threads.indexOf(thread.id), 1);
+    }
+  });
 
   const collapseThreadsLevel = settings.get('collapseThreadsLevel');
   if (collapseThreadsLevel !== 0) {
     // Don't precisely target comments of level collapseThreadsLevel in case there is a gap, for
     // example between the (collapseThreadsLevel - 1) level and the (collapseThreadsLevel + 1) level
-    // (the user should have replied on the (collapseThreadsLevel - 1 level) but inserted two "::"
+    // (the user should have replied on the (collapseThreadsLevel - 1) level but inserted two "::"
     // instead of one).
     for (let i = 0; i < cd.comments.length; i++) {
       const comment = cd.comments[i];
@@ -264,6 +275,10 @@ function autocollapseThreads() {
       }
     }
   }
+
+  // Resolve collisions between the three sources of thread collapse data: previously manually
+  // collapsed/uncollapsed, autocollapsed, and the target comment (which shouldn't be collapsed).
+  comments = comments.filter((c, i, arr) => arr.indexOf(c) === i || c.thread.wasManuallyExpanded);
 
   let loadUserGendersPromise;
   if (cd.g.GENDER_AFFECTS_USER_STRING) {
