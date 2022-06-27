@@ -2120,8 +2120,8 @@ class Comment extends CommentSkeleton {
         $tested = $last.children().last();
       } while ($tested.length && !isInline($tested.get(0)));
 
-      if (!$last.find('.cd-beforeChangeMark').length) {
-        const $before = $('<span>').addClass('cd-beforeChangeMark');
+      if (!$last.find('.cd-changeMark-before').length) {
+        const $before = $('<span>').addClass('cd-changeMark-before');
         $last.append(' ', $before);
       }
       $last.append($changeMark);

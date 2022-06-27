@@ -56,120 +56,124 @@
     // The form may sometimes get inside <div dir="..."> element, so we need to reset the text
     // direction.
     direction: ltr;
+  }
 
-    &-checkboxes {
-      direction: ltr;
-      text-align: left;
+  .rtl & {
+    direction: rtl;
+  }
+}
 
-      .oo-ui-fieldLayout {
-        margin-right: 1em;
-        margin-left: 0;
+.cd-commentForm-checkboxes {
+  .ltr & {
+    direction: ltr;
+    text-align: left;
 
-        &:last-child {
-          margin-right: 0;
-        }
-      }
-    }
+    .oo-ui-fieldLayout {
+      margin-right: 1em;
+      margin-left: 0;
 
-    &-buttons {
-      direction: ltr;
-
-      &-start {
-        float: left;
-      }
-
-      &-end {
-        float: right;
+      &:last-child {
+        margin-right: 0;
       }
     }
   }
 
   .rtl & {
     direction: rtl;
+    text-align: right;
 
-    &-checkboxes {
-      direction: rtl;
-      text-align: right;
+    .oo-ui-fieldLayout {
+      margin-left: 1em;
+      margin-right: 0;
 
-      .oo-ui-fieldLayout {
-        margin-left: 1em;
-        margin-right: 0;
-
-        &:last-child {
-          margin-left: 0;
-        }
-      }
-    }
-
-    &-buttons {
-      direction: rtl;
-
-      &-start {
-        float: right;
-      }
-
-      &-end {
-        float: left;
+      &:last-child {
+        margin-left: 0;
       }
     }
   }
+}
 
-  &-signature {
-    opacity: 0.67;
-  }
+.cd-commentForm-buttons {
+  .ltr & {
+    direction: ltr;
 
-  &-dummyElement {
-    height: 0;
-  }
-
-  &-summaryInput {
-    margin-top: 0.214286em;
-  }
-
-  &-checkboxes {
-    margin-top: 0.5em;
-  }
-
-  &-buttons {
-    .flow-root();
-    margin-top: 0.5em;
-  }
-
-  &-addSection,
-  &-addSubsection,
-  &-sectionOpeningComment {
-    margin-top: 1em;
-  }
-
-  &-commentInput {
-    // Compensation for "margin: -1px" below
-    margin-top: 1px;
-
-    border: 1px solid #a2a9b1;
-
-    .wikiEditor-ui .wikiEditor-ui-view {
-      border: 0;
+    &-start {
+      float: left;
     }
 
-    .oo-ui-inputWidget-input.oo-ui-inputWidget-input {
-      width: calc(~"100% + 2px");
-      margin: -1px;
-      position: relative;
+    &-end {
+      float: right;
+    }
+  }
+
+  .rtl & {
+    direction: rtl;
+
+    &-start {
+      float: right;
     }
 
-    &.oo-ui-textInputWidget.oo-ui-widget-disabled {
+    &-end {
+      float: left;
+    }
+  }
+}
+
+.cd-commentForm-signature {
+  opacity: 0.67;
+}
+
+.cd-commentForm-dummyElement {
+  height: 0;
+}
+
+.cd-commentForm-summaryInput {
+  margin-top: 0.214286em;
+}
+
+.cd-commentForm-checkboxes {
+  margin-top: 0.5em;
+}
+
+.cd-commentForm-buttons {
+  .flow-root();
+  margin-top: 0.5em;
+}
+
+.cd-commentForm-addSection,
+.cd-commentForm-addSubsection,
+.cd-commentForm-sectionOpeningComment {
+  margin-top: 1em;
+}
+
+.cd-commentForm-commentInput {
+  // Compensation for "margin: -1px" below
+  margin-top: 1px;
+
+  border: 1px solid #a2a9b1;
+
+  .wikiEditor-ui .wikiEditor-ui-view {
+    border: 0;
+  }
+
+  .oo-ui-inputWidget-input.oo-ui-inputWidget-input {
+    width: calc(~"100% + 2px");
+    margin: -1px;
+    position: relative;
+  }
+
+  &.oo-ui-textInputWidget.oo-ui-widget-disabled {
+    border-color: #c8ccd1;
+
+    .wikiEditor-ui-top,
+    + .cd-insertButtons {
+      pointer-events: none;
+    }
+
+    .oo-ui-inputWidget-input,
+    .wikiEditor-ui-top,
+    + .cd-insertButtons {
       border-color: #c8ccd1;
-
-      .wikiEditor-ui-top,
-      + .cd-insertButtons {
-        pointer-events: none;
-      }
-
-      .oo-ui-inputWidget-input,
-      .wikiEditor-ui-top,
-      + .cd-insertButtons {
-        border-color: #c8ccd1;
-      }
     }
   }
 }
@@ -216,6 +220,22 @@
     background-color: #f8f9fa;
   }
 
+  &:empty {
+    margin: 0;
+    padding: 0;
+  }
+
+  &-above {
+    margin-top: 0;
+    margin-bottom: 0.5em;
+    width: calc(~"100% - 1.5em");
+  }
+
+  &-label {
+    color: #72777d;
+    margin-bottom: 0.5em;
+  }
+
   .sitedir-ltr & {
     direction: ltr;
 
@@ -238,22 +258,6 @@
         margin-right: 0;
       }
     }
-  }
-
-  &:empty {
-    margin: 0;
-    padding: 0;
-  }
-
-  &-above {
-    margin-top: 0;
-    margin-bottom: 0.5em;
-    width: calc(~"100% - 1.5em");
-  }
-
-  &-label {
-    color: #72777d;
-    margin-bottom: 0.5em;
   }
 }
 

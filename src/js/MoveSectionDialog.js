@@ -175,16 +175,16 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         });
       }
 
-      const $sectionCodeNote = $('<div>');
+      const $sectionCode = $('<div>');
       const code = sectionCode.slice(0, 300) + (sectionCode.length >= 300 ? '...' : '');
       $('<pre>')
         .addClass('cd-dialog-moveSection-code')
         .text(code)
-        .appendTo($sectionCodeNote);
+        .appendTo($sectionCode);
       $('<p>')
-        .addClass('cd-dialog-moveSection-codeNote')
+        .addClass('cd-dialog-moveSection-code-note')
         .text(cd.s('msd-bottom'))
-        .appendTo($sectionCodeNote);
+        .appendTo($sectionCode);
 
       this.summaryEndingInput = new OO.ui.TextInputWidget({
         // TODO: Take into account the whole summary length, updating the maximum value dynamically.
@@ -202,7 +202,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
       this.movePanel.$element.append([
         this.titleField.$element,
         this.keepLinkField?.$element,
-        $sectionCodeNote,
+        $sectionCode,
         this.summaryEndingField.$element,
       ]);
 

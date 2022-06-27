@@ -5,6 +5,16 @@
   color: #202122;
   overflow-wrap: break-word;
   background-repeat: no-repeat;
+
+  .ltr & {
+    left: 0;
+    direction: ltr;
+  }
+
+  .rtl & {
+    right: 0;
+    direction: rtl;
+  }
 }
 
 .cd-pageNav,
@@ -44,16 +54,6 @@
   list-style-type: none;
   list-style-image: none;
   margin: 0;
-}
-
-.ltr .cd-pageNav {
-  left: 0;
-  direction: ltr;
-}
-
-.rtl .cd-pageNav {
-  right: 0;
-  direction: rtl;
 }
 
 .cd-pageNav-item.cd-pageNav-item {

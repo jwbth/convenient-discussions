@@ -30,28 +30,6 @@
     color: #72777d;
   }
 
-  .sitedir-ltr &,
-  .sitedir-rtl .mw-content-ltr & {
-    margin-left: 1em;
-    margin-right: 0;
-
-    &:first-child {
-      margin-left: 0;
-      margin-right: 0;
-    }
-  }
-
-  .sitedir-rtl &,
-  .sitedir-ltr .mw-content-rtl & {
-    margin-right: 1em;
-    margin-left: 0;
-
-    &:first-child {
-      margin-right: 0;
-      margin-left: 0;
-    }
-  }
-
   &-label.cd-comment-button-label {
     color: #54595d;
     text-decoration: none;
@@ -73,41 +51,65 @@
     height: 16px;
     background-size: 16px 16px;
   }
+
+  &-goToParent {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%23a2a9b1'%3E%3Cpath d='M10 5l8 10H2z'/%3E%3C/g%3E%3C/svg%3E");
+
+    &:hover {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%230645ad'%3E%3Cpath d='M10 5l8 10H2z'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    &:active {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%23faa700'%3E%3Cpath d='M10 5l8 10H2z'/%3E%3C/g%3E%3C/svg%3E");
+    }
+  }
+
+  &-goToChild {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%23a2a9b1'%3E%3Cpath d='M10 15L2 5h16z'/%3E%3C/g%3E%3C/svg%3E");
+
+    &:hover {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%230645ad'%3E%3Cpath d='M10 15L2 5h16z'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    &:active {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%23faa700'%3E%3Cpath d='M10 15L2 5h16z'/%3E%3C/g%3E%3C/svg%3E");
+    }
+  }
+
+  .sitedir-ltr &,
+  .sitedir-rtl .mw-content-ltr & {
+    margin-left: 1em;
+    margin-right: 0;
+
+    &:first-child {
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+
+  .sitedir-rtl &,
+  .sitedir-ltr .mw-content-rtl & {
+    margin-right: 1em;
+    margin-left: 0;
+
+    &:first-child {
+      margin-right: 0;
+      margin-left: 0;
+    }
+  }
 }
 
 // Comment buttons should inherit the text direction, not matter the interface language. (Don't
 // specify styles for .mw-content-ltr as they could be expensive.) If the "mw-content-rtl" class
 // would be thrown away one day, then use [dir="rtl"]?
-[dir="rtl"] .cd-comment-menu .cd-comment-button,
-[dir="rtl"] .cd-comment-header .cd-comment-author-wrapper a {
-  unicode-bidi: isolate;
-}
-
-[dir="rtl"] .cd-comment-timestamp {
-  unicode-bidi: plaintext;
-}
-
-.cd-comment-button-goToParent {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%23a2a9b1'%3E%3Cpath d='M10 5l8 10H2z'/%3E%3C/g%3E%3C/svg%3E");
-
-  &:hover {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%230645ad'%3E%3Cpath d='M10 5l8 10H2z'/%3E%3C/g%3E%3C/svg%3E");
+[dir="rtl"] {
+  .cd-comment-menu .cd-comment-button,
+  .cd-comment-header .cd-comment-author-wrapper a {
+    unicode-bidi: isolate;
   }
 
-  &:active {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%23faa700'%3E%3Cpath d='M10 5l8 10H2z'/%3E%3C/g%3E%3C/svg%3E");
-  }
-}
-
-.cd-comment-button-goToChild {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%23a2a9b1'%3E%3Cpath d='M10 15L2 5h16z'/%3E%3C/g%3E%3C/svg%3E");
-
-  &:hover {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%230645ad'%3E%3Cpath d='M10 15L2 5h16z'/%3E%3C/g%3E%3C/svg%3E");
-  }
-
-  &:active {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%23faa700'%3E%3Cpath d='M10 15L2 5h16z'/%3E%3C/g%3E%3C/svg%3E");
+  .cd-comment-timestamp {
+    unicode-bidi: plaintext;
   }
 }
 
@@ -253,20 +255,6 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
   }
 }
 
-.cd-beforeChangeMark {
-  .sitedir-ltr &,
-  .sitedir-rtl .mw-content-ltr & {
-    margin-left: auto;
-    margin-right: 0.75em;
-  }
-
-  .sitedir-rtl &,
-  .sitedir-ltr .mw-content-rtl & {
-    margin-left: 0.75em;
-    margin-right: auto;
-  }
-}
-
 .cd-changeMark {
   font-size: 85%;
   color: #54595d;
@@ -285,5 +273,19 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
   .cd-reformattedComments .mw-content-ltr .mw-content-rtl & {
     margin-left: auto;
     margin-right: 1em;
+  }
+
+  &-before {
+    .sitedir-ltr &,
+    .sitedir-rtl .mw-content-ltr & {
+      margin-left: auto;
+      margin-right: 0.75em;
+    }
+
+    .sitedir-rtl &,
+    .sitedir-ltr .mw-content-rtl & {
+      margin-left: 0.75em;
+      margin-right: auto;
+    }
   }
 }

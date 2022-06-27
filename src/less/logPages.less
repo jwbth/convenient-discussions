@@ -1,9 +1,11 @@
-.cd-commentLink-innerWrapper::before {
-  content: var(--cd-parentheses-start);
-}
+.cd-commentLink-innerWrapper {
+  &::before {
+    content: var(--cd-parentheses-start);
+  }
 
-.cd-commentLink-innerWrapper::after {
-  content: var(--cd-parentheses-end);
+  &::after {
+    content: var(--cd-parentheses-end);
+  }
 }
 
 .cd-commentLink-relevant a {
@@ -24,6 +26,10 @@
   .rtl & {
     margin: 0 0.5em 0 1em;
   }
+
+  #mw-watchlist-options & {
+    float: right;
+  }
 }
 
 .cd-watchlistMenu-scriptPageLink {
@@ -31,21 +37,19 @@
   margin: 0 0.25em;
 }
 
-#mw-watchlist-options .cd-watchlistMenu {
-  float: right;
-}
-
 .cd-watchlistMenu-button {
   margin: -1px 0;
 }
 
-.skin-monobook .cd-watchlistMenu-button-switchRelevant .oo-ui-iconElement-icon {
-  margin-top: 4px;
-  margin-bottom: 0px;
-}
+.cd-watchlistMenu-button-switchRelevant .oo-ui-iconElement-icon {
+  .skin-monobook {
+    margin-top: 4px;
+    margin-bottom: 0px;
+  }
 
-body:not(.skin-monobook) .cd-watchlistMenu-button-switchRelevant .oo-ui-iconElement-icon {
-  background-position-y: 7px;
+  body:not(.skin-monobook) & {
+    background-position-y: 7px;
+  }
 }
 
 .cd-editSubscriptions-input {

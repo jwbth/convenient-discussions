@@ -23,10 +23,10 @@
 
 .cd-thread-button-container.cd-thread-button-container {
   margin: 0.5em 0;
-}
 
-.skin-vector ol > li.cd-thread-button-container {
-  margin: 0.14285714em 0;
+  .skin-vector ol > li& {
+    margin: 0.14285714em 0;
+  }
 }
 
 .cd-thread-button.cd-thread-button.cd-thread-button.cd-thread-button {
@@ -77,15 +77,17 @@
   }
 }
 
-.rtl .cd-button-expandNote {
-  direction: rtl;
-}
+.cd-button-expandNote {
+  > .oo-ui-buttonElement-button .oo-ui-iconElement-icon {
+    // More thick icon
+    background-image: url("data:image/svg+xml,%3Csvg width='18' height='11' viewBox='0 0 18 11' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M18 2L16 0L9 7L2 0L0 2L9 11L18 2Z' fill='black'/%3E%3C/svg%3E");
 
-.cd-button-expandNote > .oo-ui-buttonElement-button .oo-ui-iconElement-icon {
-  // More thick icon
-  background-image: url("data:image/svg+xml,%3Csvg width='18' height='11' viewBox='0 0 18 11' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M18 2L16 0L9 7L2 0L0 2L9 11L18 2Z' fill='black'/%3E%3C/svg%3E");
+    background-size: 11px;
+  }
 
-  background-size: 11px;
+  .rtl & {
+    direction: rtl;
+  }
 }
 
 .cd-button-ooui.oo-ui-buttonElement > .oo-ui-buttonElement-button {
@@ -108,13 +110,15 @@ ol > .cd-replyWrapper:not(.cd-replyWrapper-hasCommentForm) {
   display: none !important;
 }
 
-div.cd-show,
-p.cd-show {
-  display: block !important;
-}
+.cd-show {
+  div&,
+  p& {
+    display: block !important;
+  }
 
-span.cd-show {
-  display: inline !important;
+  span& {
+    display: inline !important;
+  }
 }
 
 .cd-destructiveText {
@@ -129,25 +133,6 @@ span.cd-show {
   // z-index of OOUI windows + 10
   z-index: 111;
 
-  &-logo {
-    display: block;
-    margin: 0 auto 2em;
-    width: 55px;
-    position: relative;
-
-    &-partBackground {
-      position: absolute;
-      left: 8px;
-      top: 6px;
-      width: 27px;
-      height: 21px;
-      z-index: -1;
-      background-color: var(--cd-sidebar-color);
-    }
-  }
-}
-
-.cd-loadingPopup {
   .sitedir-ltr.ltr & {
     left: 0;
     direction: ltr;
@@ -169,6 +154,23 @@ span.cd-show {
 
   .sitedir-rtl.skin-vector-2022 & {
     margin-right: 2em;
+  }
+
+  &-logo {
+    display: block;
+    margin: 0 auto 2em;
+    width: 55px;
+    position: relative;
+
+    &-partBackground {
+      position: absolute;
+      left: 8px;
+      top: 6px;
+      width: 27px;
+      height: 21px;
+      z-index: -1;
+      background-color: var(--cd-sidebar-color);
+    }
   }
 }
 
@@ -197,25 +199,35 @@ span.cd-show {
   .oo-ui-textInputWidget input {
     height: 34px;
   }
-}
 
-.cd-diffView-diff {
-  margin: 1em 0;
-
-  .ltr & {
-    float: right;
-    margin-left: 1em;
-  }
-
-  .rtl & {
-    float: left;
-    margin-right: 1em;
+  &-linkTypeSelect {
+    display: flex;
+    justify-content: center;
+    margin: 0.5em 0;
   }
 }
 
-.cd-commentDiffView-below {
-  margin: 0.5em 0 0;
-  text-align: center;
+.cd-diffView {
+  &-diff {
+    margin: 1em 0;
+  }
+
+  &-nextDiffLink {
+    .ltr & {
+      float: right;
+      margin-left: 1em;
+    }
+
+    .rtl & {
+      float: left;
+      margin-right: 1em;
+    }
+  }
+
+  &-below {
+    margin: 0.5em 0 0;
+    text-align: center;
+  }
 }
 
 .cd-currentUserLink {
@@ -242,25 +254,21 @@ span.cd-show {
 }
 
 // Reset the default. There can be navboxes in discussion threads.
-li .mw-collapsible-toggle,
-.mw-content-ltr li .mw-collapsible-toggle,
-.mw-content-rtl .mw-content-ltr li .mw-collapsible-toggle {
-  float: right;
-}
+.mw-collapsible-toggle {
+  li &,
+  .mw-content-ltr li &,
+  .mw-content-rtl .mw-content-ltr li & {
+    float: right;
+  }
 
-.mw-content-rtl li .mw-collapsible-toggle,
-.mw-content-ltr .mw-content-rtl li .mw-collapsible-toggle {
-  float: left;
+  .mw-content-rtl li &,
+  .mw-content-ltr .mw-content-rtl li & {
+    float: left;
+  }
 }
 
 .cd-skip {
   list-style-type: none;
-}
-
-.cd-dialog-copyLink-linkTypeSelect {
-  display: flex;
-  justify-content: center;
-  margin: 0.5em 0;
 }
 
 // T295107

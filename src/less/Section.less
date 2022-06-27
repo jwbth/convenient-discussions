@@ -28,12 +28,14 @@ ol .cd-section-button {
 
 // Override the default styles to make the section menu appear correctly on RTL wikis with LTR
 // interface and vice versa.
-.sitedir-rtl.ltr .mw-editsection::before {
-  content: '\200B\200E';
-}
+.mw-editsection::before {
+  .sitedir-rtl.ltr & {
+    content: '\200B\200E';
+  }
 
-.sitedir-ltr.rtl .mw-editsection::before {
-  content: '\200B\200F';
+  .sitedir-ltr.rtl & {
+    content: '\200B\200F';
+  }
 }
 
 .sitedir-rtl.ltr {
@@ -51,10 +53,10 @@ ol .cd-section-button {
 .cd-dialog-moveSection {
   &-code {
     margin: 1em 0;
-  }
 
-  &-codeNote {
-    font-size: 95%;
+    &-note {
+      font-size: 95%;
+    }
   }
 }
 
