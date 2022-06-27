@@ -916,6 +916,10 @@ export default {
         Comment.getById(fragment, true);
       comment?.scrollTo();
     }
+
+    // Make sure the title has no incorrect new comment count when the user presses the Back button
+    // after a page reload.
+    updateChecker.updatePageTitle();
   },
 
   /**

@@ -32,6 +32,7 @@ let isBackgroundCheckArranged;
 let previousVisitRevisionId;
 let submittedCommentId;
 let resolverCount = 0;
+let newCommentsTitleMark = '';
 
 /**
  * Tell the worker to wake the script up after a given interval.
@@ -955,16 +956,22 @@ const updateChecker = {
 
   /**
    * _For internal use._ Update the page title to show the number of comments added to the page
-   * since it was loaded.
+   * since it was loaded. If used without parameters, restore the previous value (if could be
+   * changed by the browser when the "Back" button is clicked).
    *
-   * @param {number} newCommentsCount
-   * @param {boolean} areThereRelevant
+   * @param {number} [newCommentsCount]
+   * @param {boolean} [areThereRelevant]
    * @memberof module:updateChecker
    */
   updatePageTitle(newCommentsCount, areThereRelevant) {
-    const relevantMark = areThereRelevant ? '*' : '';
-    const s = newCommentsCount ? `(${newCommentsCount}${relevantMark}) ` : '';
-    document.title = document.title.replace(/^(?:\(\d+\*?\) )?/, s);
+    if (newCommentsCount === undefined) {
+      // A hack for Chrome (at least) for cases when the "Back" button of the browser is clicked.
+      document.title = '';
+    } else {
+      const relevantMark = areThereRelevant ? '*' : '';
+      newCommentsTitleMark = newCommentsCount ? `(${newCommentsCount}${relevantMark}) ` : '';
+    }
+    document.title = document.title.replace(/^(?:\(\d+\*?\) )?/, newCommentsTitleMark);
   },
 };
 
