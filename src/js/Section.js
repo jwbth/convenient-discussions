@@ -336,13 +336,13 @@ class Section extends SectionSkeleton {
     this.actionsElement.prepend(this.actions.subscribeButton.$element.get(0));
 
     /**
-     * Section menu has been extended.
+     * The subscribe button has been added to the section actions element.
      *
-     * @event sectionMenuExtended
+     * @event subscribeButtonAdded
      * @param {Section} section
      * @param {object} cd {@link convenientDiscussions} object.
      */
-    mw.hook('convenientDiscussions.sectionMenuExtended').fire(this);
+    mw.hook('convenientDiscussions.subscribeButtonAdded').fire(this);
   }
 
   /**
