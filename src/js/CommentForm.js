@@ -1366,9 +1366,9 @@ class CommentForm {
       ({ $wrappingItem, $wrappingList, $outerWrapper } = this.target
         .addSublevelItem('replyForm', 'top'));
     } else if (this.mode === 'edit') {
-      const $lastOfTarget = this.target.$elements.last();
-      if ($lastOfTarget.is('dd, li')) {
-        const outerWrapperTag = $lastOfTarget.prop('tagName').toLowerCase();
+      const $firstOfTarget = this.target.$elements.first();
+      if ($firstOfTarget.is('dd, li')) {
+        const outerWrapperTag = $firstOfTarget.prop('tagName').toLowerCase();
         $outerWrapper = $(`<${outerWrapperTag}>`);
         this.$element.appendTo($outerWrapper);
       }
