@@ -667,7 +667,7 @@ class Section extends SectionSkeleton {
   addNewCommentCountMetadata() {
     if (this.level !== 2) return;
 
-    const newComments = this.comments.filter((comment) => comment.isNew);
+    const newComments = this.comments.filter((comment) => !comment.isSeen);
     if (!newComments.length) return;
 
     const newCommentCountLink = document.createElement('a');
