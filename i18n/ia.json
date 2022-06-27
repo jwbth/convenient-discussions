@@ -284,7 +284,6 @@
 	"sd-insertbuttons-multiselect-placeholder": "Adder un button",
 	"sd-insertbuttons-help": "Usa <code>+</code> pro specificar un loco ubi mitter le cursor post inserer le texto; per exemplo, <code><nowiki>{{+}}</nowiki></code>. Usa <code>;</code> pro specificar le texto monstrate si tu vole que illo sia differente del inserite; per exemplo, <code><nowiki><code>+</code>;<code /></nowiki></code>. Usa <code><nowiki>\\</nowiki></code> ante le characteres mentionate pro inserer los litteralmente; per exemplo, <code><nowiki>2\\+2</nowiki></code>. Le buttones pote esser trahite e deponite.",
 	"sd-modifytoc": "Modificar le tabula de contento",
-	"sd-modifytoc-help": "Monstrar le numero de commentos e le nove commentos e sectiones, mittente in evidentia le sectiones al quales io es subscribite.",
 	"sd-notifications": "Quadros emergente de notification in le angulo in alto a dextra del pagina",
 	"sd-notifications-radio-all": "Notificar me sur responsas a mi commentos e sur commentos in sectiones al quales io es {{gender:$1|subscribite}}",
 	"sd-notifications-radio-tome": "Notificar me solmente sur responsas a mi commentos",

@@ -282,7 +282,6 @@
 	"sd-insertbuttons-multiselect-placeholder": "Pridať tlačítko",
 	"sd-insertbuttons-help": "Použite <code>+</code> pre špecifikovanie miesta kde by mala byť strieška po pridaní textu; napríklad <code><nowiki>{{+}}</nowiki></code>. Použite <code>;</code> pre špecifikovanie zobrazeného textu, aby bol rozdielny od iného zadaného textu; napríklad <code><nowiki><code>+</code>;<code /></nowiki></code>. Použite code><nowiki>\\</nowiki></code> pred hore uvedenými znakmi pre ich normálne použitie; napríklad <code><nowiki>2\\+2</nowiki></code>. Tlačítka sa dajú presúvať.",
 	"sd-modifytoc": "Upraviť obsah",
-	"sd-modifytoc-help": "Zobraziť nové komentáre a sekcie a zvýrazniť sledované sekcie.",
 	"sd-notifications": "Obyčajné oznámenia",
 	"sd-notifications-radio-all": "Poslať mi oznámenie pri odpovedaní na moje komentáre a komentáre v sledovaných sekciách",
 	"sd-notifications-radio-tome": "Poslať mi oznámenie len pri odpovedaní na moje komentáre",

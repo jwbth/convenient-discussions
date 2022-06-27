@@ -287,7 +287,6 @@
 	"sd-insertbuttons-multiselect-placeholder": "Lägg till en knapp",
 	"sd-insertbuttons-help": "Använd <code>+</code> för att ange en plats där markören borde sättas efter att den lagts efter att du lagt in texten; till exempel, <code><nowiki>{{+}}</nowiki></code>. Använd <code>;</code> för att ange visad text om du vill att den ska skilja sig från den som skrivs; till exempel, <code><nowiki><code>+</code>;<code /></nowiki></code>. Använd <code><nowiki>\\</nowiki></code> innan de redan nämnda tecknen för att skriva in dem som de är; till exempel, <code><nowiki>2\\+2</nowiki></code>. Knapparna kan dras och släppas.",
 	"sd-modifytoc": "Ändra innehållsförteckningen",
-	"sd-modifytoc-help": "Visa antalet kommentarer, nya kommentarer och avsnitt samt markera avsnitt jag prenumererar på.",
 	"sd-notifications": "Vanliga notiser",
 	"sd-notifications-radio-all": "Meddela mig om svar på mina kommentarer och avsnitt som jag prenumererar på",
 	"sd-notifications-radio-tome": "Meddela mig bara om svar på mina kommentarer",

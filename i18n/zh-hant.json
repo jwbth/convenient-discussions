@@ -285,7 +285,6 @@
 	"sd-insertbuttons-multiselect-placeholder": "新增按鈕",
 	"sd-insertbuttons-help": "使用 <code>+</code> 來指定插入文字後應加上的脫字元，例如：<code><nowiki>{{+}}</nowiki></code>。使用 <code>;</code> 來指定顯示出您想與所插入內容不同的文字，例如：<code><nowiki><code>+</code>;<code /></nowiki></code>。在上述文字前方使用 <code><nowiki>\\</nowiki></code> 能以原樣來插入，例如：<code><nowiki>2\\+2</nowiki></code>。按鈕可被拖放。",
 	"sd-modifytoc": "變動目錄",
-	"sd-modifytoc-help": "顯示新意見的計數、意見與段落，並突顯出我所訂閱的話題。",
 	"sd-notifications": "一般通知",
 	"sd-notifications-radio-all": "僅通知對於我的意見、以及我所訂閱段落裡意見的回覆",
 	"sd-notifications-radio-tome": "僅通知對於我的意見的回覆",
