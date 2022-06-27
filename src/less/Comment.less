@@ -143,10 +143,10 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
 }
 
 // Because irregular gaps between list items are annoying, especially between numbered list items
-// that contain comments.
-.skin-vector li,
-.skin-vector dd,
-.skin-vector ol > li.cd-comment-part-last.cd-comment-part-last {
+// that contain comments. But don't add the style while CD hasn't loaded to avoid jumps.
+.skin-vector .cd-parsed li,
+.skin-vector .cd-parsed dd,
+.skin-vector .cd-parsed ol > li.cd-comment-part-last.cd-comment-part-last {
   margin-bottom: 0.14285714em;
 }
 

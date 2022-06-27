@@ -131,10 +131,10 @@ export default {
       this.rootElement = this.$root.get(0);
     }
 
-    // Do it immediately to prevent the issue when any unexpected error prevents this from being
-    // executed and then this.handleWikipageContentHookFirings is called with #mw-content-text
+    // Add the class immediately to prevent the issue when any unexpected error prevents this from
+    // being executed and then this.handleWikipageContentHookFirings is called with #mw-content-text
     // element for some reason, and the page goes into an infinite reloading loop.
-    this.$root.addClass('cd-parsed');
+    this.$root.addClass('cd-parse-started');
   },
 
   /**
@@ -474,7 +474,10 @@ export default {
       // HotCat that may add an empty category list).
       if (this.scrollData.offsetBottom < 100) {
         this.scrollData.touchesBottom = true;
-      } else if (scrollY !== 0 && this.rootElement.getBoundingClientRect().top <= 0) {
+      } else if (
+        scrollY !== 0 &&
+        this.rootElement.getBoundingClientRect().top <= cd.g.BODY_SCROLL_PADDING_TOP
+      ) {
         const treeWalker = new ElementsTreeWalker(
           this.rootElement.firstElementChild,
           this.rootElement
@@ -484,7 +487,25 @@ export default {
 
           if (!isInline(node) && !this.getFloatingElements().includes(node)) {
             const rect = node.getBoundingClientRect();
-            if (rect.bottom >= 0 && rect.height !== 0) {
+
+            // By default, in a conversation between two people, replies are nested and there is no
+            // way to isolate the parent comment from the child, which would be desirable to find a
+            // good reference element. To work around this, we resort to this line, which stops the
+            // search at the first element fully below the viewport top (if there is a reference
+            // element already). Its shortcoming is that if 1) the only element we met with its
+            // bottom below the viewport top is too large to be used as a reference, 2) the first
+            // element small enough has its top below the viewport (i.e., there is a gap between it
+            // and the previous element that has the viewport top right in the middle) - we end up
+            // without a convenient reference element. To compensate for this, we use an offset of
+            // cd.g.CONTENT_FONT_SIZE (we're unlikely to see a bigger gap between elements).
+            if (
+              rect.top > cd.g.BODY_SCROLL_PADDING_TOP + cd.g.CONTENT_FONT_SIZE &&
+              this.scrollData.element
+            ) {
+              break;
+            }
+
+            if (rect.height !== 0 && rect.bottom >= cd.g.BODY_SCROLL_PADDING_TOP) {
               this.scrollData.element = node;
               this.scrollData.elementTop = rect.top;
               if (treeWalker.firstChild()) {
@@ -1325,7 +1346,7 @@ export default {
     if (!$content.is('#mw-content-text')) return;
 
     const $root = $content.children('.mw-parser-output');
-    if ($root.length && !$root.hasClass('cd-parsed')) {
+    if ($root.length && !$root.hasClass('cd-parse-started')) {
       this.reload({ isPageReloadedExternally: true });
     }
   },

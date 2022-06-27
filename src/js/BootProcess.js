@@ -1674,12 +1674,15 @@ export default class BootProcess {
       Comment.reviewHighlightables();
 
       Comment.reformatComments();
+    }
 
-      if (this.firstRun) {
-        // Restore the initial viewport position in terms of visible elements, which is how the user
-        // sees it.
-        controller.restoreRelativeScrollPosition();
-      }
+    // This updates some styles, shifting the offsets.
+    controller.$root.addClass('cd-parsed');
+
+    if (this.firstRun) {
+      // Restore the initial viewport position in terms of visible elements, which is how the user
+      // sees it.
+      controller.restoreRelativeScrollPosition();
     }
 
     if (controller.isPageCommentable()) {
