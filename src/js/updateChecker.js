@@ -964,6 +964,7 @@ const updateChecker = {
    * @memberof module:updateChecker
    */
   updatePageTitle(newCommentsCount, areThereRelevant) {
+    const title = document.title;
     if (newCommentsCount === undefined) {
       // A hack for Chrome (at least) for cases when the "Back" button of the browser is clicked.
       document.title = '';
@@ -971,7 +972,7 @@ const updateChecker = {
       const relevantMark = areThereRelevant ? '*' : '';
       newCommentsTitleMark = newCommentsCount ? `(${newCommentsCount}${relevantMark}) ` : '';
     }
-    document.title = document.title.replace(/^(?:\(\d+\*?\) )?/, newCommentsTitleMark);
+    document.title = title.replace(/^(?:\(\d+\*?\) )?/, newCommentsTitleMark);
   },
 };
 
