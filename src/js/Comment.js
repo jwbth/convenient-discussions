@@ -2882,7 +2882,7 @@ class Comment extends CommentSkeleton {
         .clone()
         .removeClass('cd-hidden');
       const $dummy = $('<div>').append($clone);
-      const selectorParts = ['.cd-signature', '.cd-changeMark'];
+      const selectorParts = ['.cd-signature', '.cd-changeMark', '.noprint'];
       if (settings.get('reformatComments')) {
         selectorParts.push('.cd-comment-header', '.cd-comment-menu');
       }
