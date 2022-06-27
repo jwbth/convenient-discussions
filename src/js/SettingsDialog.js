@@ -363,7 +363,6 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       value: 'modifyToc',
       selected: settings.modifyToc,
       label: cd.s('sd-modifytoc'),
-      help: cd.s('sd-modifytoc-help', mw.user),
     });
 
     [

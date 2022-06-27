@@ -155,7 +155,7 @@ const toc = {
    * _For internal use._ Highlight (bold) sections that the user is subscribed to.
    */
   highlightSubscriptions() {
-    if (!settings.get('modifyToc') || !this.isPresent()) return;
+    if (!this.isPresent()) return;
 
     cd.sections
       .filter((section) => section.subscriptionState || this.isInSidebar())
