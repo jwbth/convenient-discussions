@@ -166,6 +166,7 @@ class Section extends SectionSkeleton {
       }
     }
 
+    // Don't set more DOM properties to help performance. We don't need them in practice.
     const button = new Button({
       element: elementPrototypes.replyButton.cloneNode(true),
       action: () => {
@@ -305,6 +306,8 @@ class Section extends SectionSkeleton {
 
   /**
    * Add a "Subscribe" / "Unsubscribe" button to the actions element.
+   *
+   * @fires subscribeButtonAdded
    */
   addSubscribeButton() {
     if (!this.subscribeId || cd.page.isArchivePage()) return;
@@ -336,13 +339,31 @@ class Section extends SectionSkeleton {
     this.actionsElement.prepend(this.actions.subscribeButton.$element.get(0));
 
     /**
-     * The subscribe button has been added to the section actions element.
+     * A subscribe button has been added to the section actions element.
      *
      * @event subscribeButtonAdded
      * @param {Section} section
      * @param {object} cd {@link convenientDiscussions} object.
      */
     mw.hook('convenientDiscussions.subscribeButtonAdded').fire(this);
+  }
+
+  /**
+   * Check whether the user should get the affordance to edit the first comment from the section
+   * menu.
+   *
+   * @returns {boolean}
+   */
+  canEditFirstComment() {
+    return (
+      this.isActionable &&
+      this.comments.length &&
+      this.comments[0].isOpeningSection &&
+      this.comments[0].openingSectionOfLevel === this.level &&
+      (this.comments[0].isOwn || settings.get('allowEditOthersComments')) &&
+      this.comments[0].isActionable &&
+      !this.comments[0].isCollapsed
+    );
   }
 
   /**
@@ -360,8 +381,6 @@ class Section extends SectionSkeleton {
    * @returns {boolean}
    */
   canAddReply() {
-    cd.debug.startTimer('canAddReply');
-
     const isFirstChunkClosed = (
       this.commentsInFirstChunk[0] &&
       this.commentsInFirstChunk[0].level === 0 &&
@@ -381,8 +400,6 @@ class Section extends SectionSkeleton {
     // https://ru.wikipedia.org/wiki/Project:Запросы_к_администраторам/Быстрые
     const isBuriedInTable = ['TR', 'TD', 'TH'].includes(this.lastElementInFirstChunk.tagName);
 
-    cd.debug.stopTimer('canAddReply');
-
     return (
       this.isActionable &&
       !isFirstChunkClosed &&
@@ -398,8 +415,6 @@ class Section extends SectionSkeleton {
    * @returns {boolean}
    */
   canAddSubsection() {
-    cd.debug.startTimer('canAddSubsection');
-
     const isClosed = (
       this.comments[0] &&
       this.comments[0].level === 0 &&
@@ -416,8 +431,6 @@ class Section extends SectionSkeleton {
       nextSameLevelSection.headingNestingLevel === this.headingNestingLevel
     );
 
-    cd.debug.stopTimer('canAddSubsection');
-
     return (
       this.isActionable &&
       this.level >= 2 &&
@@ -432,11 +445,100 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Add the bar element, including the metadata and actions elements, below the section heading.
+   * Create a real "More options" menu select in place of a dummy one.
+   *
+   * @fires moreMenuSelectCreated
+   * @private
    */
-  addBar() {
-    cd.debug.startTimer('addBar');
+  createMoreMenuSelect() {
+    const moreMenuSelect = elementPrototypes.getMoreMenuSelect();
 
+    let editOpeningCommentOption;
+    let moveOption;
+    let addSubsectionOption;
+    if (this.canEditFirstComment()) {
+      editOpeningCommentOption = new OO.ui.MenuOptionWidget({
+        data: 'editOpeningComment',
+        label: cd.s('sm-editopeningcomment'),
+        title: cd.s('sm-editopeningcomment-tooltip'),
+        icon: 'edit',
+      });
+    }
+
+    if (this.canBeMoved()) {
+      moveOption = new OO.ui.MenuOptionWidget({
+        data: 'move',
+        label: cd.s('sm-move'),
+        title: cd.s('sm-move-tooltip'),
+        icon: 'arrowNext',
+      });
+    }
+
+    if (this.canAddSubsection()) {
+      addSubsectionOption = new OO.ui.MenuOptionWidget({
+        data: 'addSubsection',
+        label: cd.s('sm-addsubsection'),
+        title: cd.s('sm-addsubsection-tooltip'),
+        icon: 'speechBubbleAdd',
+      });
+    }
+
+    this.actions.moreMenuSelectDummy.element.remove();
+    this.actionsElement.append(moreMenuSelect.$element.get(0));
+
+    const items = [editOpeningCommentOption, moveOption, addSubsectionOption].filter(defined);
+    moreMenuSelect.getMenu()
+      .addItems(items)
+      .on('choose', (option) => {
+        switch (option.getData()) {
+          case 'editOpeningComment':
+            this.comments[0].edit();
+            break;
+          case 'move':
+            this.move();
+            break;
+          case 'addSubsection':
+            this.addSubsection();
+            break;
+        }
+      });
+
+    /**
+     * The button menu select widget in the {@link Section#actionsElement actions element}. Note
+     * that it is created only when the user hovers over or clicks a dummy button, which fires a
+     * {@link Section#moreMenuSelectCreated moreMenuSelectCreated hook}.
+     *
+     * @type {external:OO.ui.ButtonMenuSelectWidget|undefined}
+     */
+    this.actions.moreMenuSelect = moreMenuSelect;
+
+    /**
+     * A "More options" menu select button has been created and added to the section actions
+     * element in place of a dummy button.
+     *
+     * @event moreMenuSelectCreated
+     * @param {Section} section
+     * @param {object} cd {@link convenientDiscussions} object.
+     */
+    mw.hook('convenientDiscussions.moreMenuSelectCreated').fire(this);
+  }
+
+  /**
+   * Create a real "More options" menu select in place of a dummy one and click it.
+   *
+   * @private
+   */
+  createAndClickMoreMenuSelect() {
+    this.createMoreMenuSelect();
+    this.actions.moreMenuSelect.focus().emit('click');
+  }
+
+  /**
+   * Create a metadata container.
+   *
+   * @private
+   */
+  createMetadataElement() {
     const authorCount = this.comments.map((comment) => comment.author).filter(unique).length;
 
     let latestComment;
@@ -461,7 +563,7 @@ class Section extends SectionSkeleton {
 
       authorCountWrapper = document.createElement('span');
       authorCountWrapper.className = 'cd-section-bar-item';
-      const authorCountText = cd.s('section-metadata-authorcount', authorCount)
+      const authorCountText = cd.s('section-metadata-authorcount', authorCount);
       authorCountWrapper.append(authorCountText);
 
       if (latestComment) {
@@ -487,133 +589,75 @@ class Section extends SectionSkeleton {
     }
 
     /**
-     * Section actions object. It contains elements (buttons, menus) triggering the actions of the
-     * section.
+     * The metadata element under the 2-level section heading.
      *
-     * @type {object}
+     * @type {Element|undefined}
      */
-    this.actions = {};
+    this.metadataElement = metadataElement;
 
-    let editOpeningCommentOption;
-    let moveOption;
-    let addSubsectionOption;
-    let moreMenuSelect;
-    if (this.isActionable) {
-      if (
-        this.comments.length &&
-        this.comments[0].isOpeningSection &&
-        this.comments[0].openingSectionOfLevel === this.level &&
-        (this.comments[0].isOwn || settings.get('allowEditOthersComments')) &&
-        this.comments[0].isActionable
-      ) {
-        editOpeningCommentOption = new OO.ui.MenuOptionWidget({
-          data: 'editOpeningComment',
-          label: cd.s('sm-editopeningcomment'),
-          title: cd.s('sm-editopeningcomment-tooltip'),
-          icon: 'edit',
-        });
-      }
+    /**
+     * The comment count wrapper element in the {@link Section#metadataElement metadata element}.
+     *
+     * @type {Element|undefined}
+     */
+    this.commentCountWrapper = commentCountWrapper;
 
-      if (this.canBeMoved()) {
-        moveOption = new OO.ui.MenuOptionWidget({
-          data: 'move',
-          label: cd.s('sm-move'),
-          title: cd.s('sm-move-tooltip'),
-          icon: 'arrowNext',
-        });
-      }
+    /**
+     * The author count wrapper element in the {@link Section#metadataElement metadata element}.
+     *
+     * @type {Element|undefined}
+     */
+    this.authorCountWrapper = authorCountWrapper;
 
-      if (this.canAddSubsection()) {
-        addSubsectionOption = new OO.ui.MenuOptionWidget({
-          data: 'addSubsection',
-          label: cd.s('sm-addsubsection'),
-          title: cd.s('sm-addsubsection-tooltip'),
-          icon: 'speechBubbleAdd',
-        });
-      }
+    /**
+     * The last comment date wrapper element in the {@link Section#metadataElement metadata element}.
+     *
+     * @type {Element|undefined}
+     */
+    this.lastCommentWrapper = lastCommentWrapper;
+  }
 
-      const items = [editOpeningCommentOption, moveOption, addSubsectionOption].filter(defined);
-      if (items.length) {
-        moreMenuSelect = new OO.ui.ButtonMenuSelectWidget({
-          framed: false,
-          icon: 'ellipsis',
-          label: cd.s('sm-more'),
-          invisibleLabel: true,
-          title: cd.s('sm-more'),
-          menu: {
-            items,
-            horizontalPosition: 'end',
-          },
-          classes: ['cd-section-bar-button', 'cd-section-bar-moremenu'],
-        });
-        moreMenuSelect.getMenu().on('choose', (option) => {
-          switch (option.getData()) {
-            case 'editOpeningComment':
-              this.comments[0].edit();
-              break;
-            case 'move':
-              this.move();
-              break;
-            case 'addSubsection':
-              this.addSubsection();
-              break;
-          }
-        });
-      }
+  /**
+   * Create action buttons and a container for them.
+   *
+   * @private
+   */
+  createActionsElement() {
+    let moreMenuSelectDummy;
+    if (this.canEditFirstComment() || this.canBeMoved() || this.canAddSubsection()) {
+      const element = elementPrototypes.moreMenuSelect.cloneNode(true);
+      moreMenuSelectDummy = new Button({
+        element,
+        action: () => {
+          this.createAndClickMoreMenuSelect();
+        },
+      });
+      moreMenuSelectDummy.buttonElement.onmouseenter = () => {
+        this.createMoreMenuSelect();
+      };
     }
 
     let copyLinkButton;
     if (this.headline) {
-      copyLinkButton = new OO.ui.ButtonWidget({
-        framed: false,
-        flags: ['progressive'],
-        icon: 'link',
-        label: cd.s('sm-copylink'),
-        invisibleLabel: true,
+      const element = elementPrototypes.copyLinkButton.cloneNode(true);
+      copyLinkButton = new Button({
+        element,
+        buttonElement: element.firstChild,
+        iconElement: element.querySelector('.oo-ui-iconElement-icon'),
         href: `${cd.page.getUrl()}#${this.id}`,
-        title: cd.s('sm-copylink-tooltip'),
-        classes: ['cd-section-bar-button'],
+        action: (e) => {
+          this.copyLink(e);
+        },
+        flags: ['progressive'],
       });
-
-      // We need the event object to be passed to the function. We can't do it with OOUI.
-      copyLinkButton.$element.on('click', this.copyLink.bind(this));
     }
 
     const actionsElement = document.createElement('div');
     actionsElement.className = 'cd-section-actions';
-    const actionItemList = [copyLinkButton, moreMenuSelect]
+    const actionItemList = [copyLinkButton, moreMenuSelectDummy]
       .filter(defined)
-      .map((widget) => widget.$element.get(0));
+      .map((button) => button.element);
     actionsElement.append(...actionItemList);
-
-    const barElement = document.createElement('div');
-    barElement.className = 'cd-section-bar';
-    if (!metadataElement) {
-      barElement.classList.add('cd-section-bar-nometadata');
-    }
-    barElement.append(...[metadataElement, actionsElement].filter(defined));
-
-    if (this.level === 2) {
-      this.headingElement.parentNode
-        .insertBefore(barElement, this.headingElement.nextElementSibling);
-    } else {
-      this.headingElement.classList.add('cd-subsection');
-      this.headingElement.append(actionsElement);
-    }
-
-    /**
-     * The bar element under the 2-level section heading.
-     *
-     * @type {Element}
-     */
-    this.barElement = barElement;
-
-    /**
-     * The metadata element under the 2-level section heading.
-     *
-     * @type {Element}
-     */
-    this.metadataElement = metadataElement;
 
     /**
      * The actions element under the 2-level section heading _or_ to the right of headings of other
@@ -624,41 +668,59 @@ class Section extends SectionSkeleton {
     this.actionsElement = actionsElement;
 
     /**
-     * The comment count wrapper element in the {@link Section#metadataElement metadata element}.
+     * Section actions object. It contains elements (buttons, menus) triggering the actions of the
+     * section.
      *
-     * @type {Element}
+     * @type {object}
      */
-    this.commentCountWrapper = commentCountWrapper;
+    this.actions = {
+      /**
+       * The copy link button widget in the {@link Section#actionsElement actions element}.
+       *
+       * @type {external:OO.ui.ButtonWidget|undefined}
+       */
+      copyLinkButton,
+
+      moreMenuSelectDummy,
+    };
+  }
+
+  /**
+   * Create a bar element.
+   *
+   * @private
+   */
+  createBarElement() {
+    let barElement;
+    if (this.level === 2) {
+      barElement = document.createElement('div');
+      barElement.className = 'cd-section-bar';
+      if (!this.metadataElement) {
+        barElement.classList.add('cd-section-bar-nometadata');
+      }
+      barElement.append(...[this.metadataElement, this.actionsElement].filter(defined));
+      this.headingElement.parentNode
+        .insertBefore(barElement, this.headingElement.nextElementSibling);
+    } else {
+      this.headingElement.classList.add('cd-subsection');
+      this.headingElement.append(this.actionsElement);
+    }
 
     /**
-     * The author count wrapper element in the {@link Section#metadataElement metadata element}.
+     * The bar element under the 2-level section heading.
      *
-     * @type {Element}
+     * @type {Element|undefined}
      */
-    this.authorCountWrapper = authorCountWrapper;
+    this.barElement = barElement;
+  }
 
-    /**
-     * The last comment date wrapper element in the {@link Section#metadataElement metadata element}.
-     *
-     * @type {Element}
-     */
-    this.lastCommentWrapper = lastCommentWrapper;
-
-    /**
-     * The copy link button widget in the {@link Section#actionsElement actions element}.
-     *
-     * @type {external:OO.ui.ButtonWidget}
-     */
-    this.actions.copyLinkButton = copyLinkButton;
-
-    /**
-     * The button menu select widget in the {@link Section#actionsElement actions element}.
-     *
-     * @type {external:OO.ui.ButtonMenuSelectWidget}
-     */
-    this.actions.moreMenuSelect = moreMenuSelect;
-
-    cd.debug.stopTimer('addBar');
+  /**
+   * Add the bar element, including the metadata and actions elements, below the section heading.
+   */
+  addBar() {
+    this.createMetadataElement();
+    this.createActionsElement();
+    this.createBarElement();
   }
 
   /**

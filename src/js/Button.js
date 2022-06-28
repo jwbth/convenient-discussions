@@ -32,23 +32,27 @@ class Button {
    *   instead of config).
    * @param {Element} [config.buttonElement] Pre-created {@link Button#buttonElement link element}.
    * @param {Element} [config.labelElement] Pre-created {@link Button#labelElement label element}.
+   * @param {Element} [config.iconElement] Pre-created {@link Button#iconElement icon element}.
    * @param {string} [config.tagName='a'] Tag name of the button element.
    * @param {string[]} [config.classes=[]] List of classes to add to the button element.
    * @param {string} [config.href] Value of the `href` parameter to add to the link element.
    * @param {string} [config.label] Label of the button.
    * @param {string} [config.tooltip] Tooltip for the button.
+   * @param {string[]} [config.flags] Flags to apply to a OOUI button.
    * @param {Function} [config.action] Function to execute on click or Enter press.
    */
   constructor({
     element,
     buttonElement,
     labelElement,
+    iconElement,
     tagName = 'a',
     classes = [],
     id,
     href,
     label,
     tooltip,
+    flags,
     action,
   } = {}) {
     if (!element) {
@@ -79,12 +83,19 @@ class Button {
     this.buttonElement = buttonElement || element;
 
     /**
-     * Button label element which can be which can be the same as the
-     * {@link Button#buttonElement link element} or its descendant.
+     * Button label element which can be the same as the {@link Button#buttonElement link element}
+     * or its descendant.
      *
      * @type {Element}
      */
     this.labelElement = labelElement || element;
+
+    /**
+     * Button icon element, a descendant of the {@link Button#buttonElement link element}.
+     *
+     * @type {Element|undefined}
+     */
+    this.iconElement = iconElement;
 
     if (href !== undefined) {
       this.setHref(href);
@@ -94,6 +105,9 @@ class Button {
     }
     if (tooltip !== undefined) {
       this.setTooltip(tooltip);
+    }
+    if (flags?.includes('progressive')) {
+      this.setIconProgressive();
     }
     if (action !== undefined) {
       this.setAction(action);
@@ -243,6 +257,14 @@ class Button {
     this.element.style.display = '';
 
     return this;
+  }
+
+  /**
+   * Set the class to a OOUI icon to make it look like icons with the "progressive" flag do. Somehow
+   * OOUI doesn't set it at the building stage.
+   */
+  setIconProgressive() {
+    this.iconElement?.classList.add('oo-ui-image-progressive');
   }
 }
 

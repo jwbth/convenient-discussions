@@ -708,6 +708,32 @@ function sectionElementPrototypes() {
     classes: ['cd-button-ooui', 'cd-section-button'],
   }).$element.get(0);
 
+  sectionElementPrototypes.copyLinkButton = new OO.ui.ButtonWidget({
+    framed: false,
+    flags: ['progressive'],
+    icon: 'link',
+    label: cd.s('sm-copylink'),
+    invisibleLabel: true,
+    title: cd.s('sm-copylink-tooltip'),
+    classes: ['cd-section-bar-button'],
+  }).$element.get(0);
+
+  sectionElementPrototypes.getMoreMenuSelect = () => (
+    new OO.ui.ButtonMenuSelectWidget({
+      framed: false,
+      icon: 'ellipsis',
+      label: cd.s('sm-more'),
+      invisibleLabel: true,
+      title: cd.s('sm-more'),
+      menu: {
+        horizontalPosition: 'end',
+      },
+      classes: ['cd-section-bar-button', 'cd-section-bar-moremenu'],
+    })
+  );
+  sectionElementPrototypes.moreMenuSelect = sectionElementPrototypes.getMoreMenuSelect().$element
+    .get(0);
+
   cd.g.SECTION_ELEMENT_PROTOTYPES = sectionElementPrototypes;
 }
 
