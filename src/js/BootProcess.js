@@ -1298,7 +1298,7 @@ export default class BootProcess {
       const section = Section.getById(this.data('sectionId'));
       if (section) {
         if (this.data('pushState')) {
-          history.pushState(history.state, '', '#' + section.id);
+          history.pushState(history.state, '', `#${section.id}`);
         }
 
         // setTimeout for Firefox, as above

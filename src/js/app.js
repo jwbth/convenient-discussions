@@ -82,16 +82,14 @@ function s(name, ...params) {
   const fullName = `convenient-discussions-${name}`;
   let options = {};
   let lastParam = params[params.length - 1];
-  if (
-    typeof lastParam === 'object' &&
 
-    // `mw.user`-like object to provide to {{gender:}}
-    !lastParam.options
-  ) {
+  // `lastParam.options` is a `mw.user`-like object to provide to {{gender:}}
+  if (typeof lastParam === 'object' && !lastParam.options) {
     options = lastParam;
     params.splice(params.length - 1);
   }
-  if (!cd.g.IS_QQX_MODE && typeof mw.messages.get(fullName) === 'string') {
+
+  if (!cd.g.IS_QQX_MODE && mw.messages.get(fullName) !== null) {
     const message = mw.message(fullName, ...params);
     if (options.plain) {
       return message.plain();

@@ -149,7 +149,9 @@ export default {
   },
 
   /**
-   * Add a "Subscribe" / "Unsubscribe" button to each section's actions element.
+   * _For internal use._ Add a "Subscribe" / "Unsubscribe" button to each section's actions element.
+   *
+   * @memberof Section
    */
   addSubscribeButtons() {
     cd.sections.forEach((section) => {
@@ -171,16 +173,20 @@ export default {
   },
 
   /**
-   * Add the bar element below each section heading.
+   * _For internal use._ Add the bar element below each section heading.
+   *
+   * @memberof Section
    */
-   addBars() {
+  addBars() {
     cd.sections.forEach((section) => {
       section.addBar();
     });
   },
 
   /**
-   * Add the new comment count to the metadata elements of the sections.
+   * _For internal use._ Add the new comment count to the metadata elements of the sections.
+   *
+   * @memberof Section
    */
   addNewCommentCountMetadata() {
     cd.sections.forEach((section) => {

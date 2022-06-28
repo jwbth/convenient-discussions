@@ -100,9 +100,9 @@ function maybeMarkPageAsRead() {
   if (
     !navPanel.getHiddenNewCommentCount() &&
     cd.comments.every((comment) => !comment.willFlashChangedOnSight) &&
-    updateChecker.lastCheckedRevisionId
+    updateChecker.getLastCheckedRevisionId()
   ) {
-    cd.page.markAsRead(updateChecker.lastCheckedRevisionId);
+    cd.page.markAsRead(updateChecker.getLastCheckedRevisionId());
   }
 }
 
@@ -2611,6 +2611,7 @@ class Comment extends CommentSkeleton {
     const $diff = await this.generateDiffView();
     const $content = $('<div>').append($question, $diff);
     mw.hook('wikipage.content').fire($content);
+
     if ((await showConfirmDialog($content, { size: 'larger' })) === 'accept') {
       try {
         await controller.getApi().postWithEditToken(controller.getApi().assertCurrentUser({

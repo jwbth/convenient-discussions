@@ -31,6 +31,8 @@ let commentsNotifiedAbout;
 let isBackgroundCheckArranged;
 let previousVisitRevisionId;
 let submittedCommentId;
+
+let lastCheckedRevisionId = null;
 let resolverCount = 0;
 let newCommentsTitleMark = '';
 
@@ -114,7 +116,7 @@ async function processPage(revisionToParseId) {
     const revisionId = Number(key);
     if (
       revisionId !== message.revisionId &&
-      revisionId !== updateChecker.lastCheckedRevisionId &&
+      revisionId !== lastCheckedRevisionId &&
       revisionId !== previousVisitRevisionId &&
       revisionId !== mw.config.get('wgRevisionId')
     ) {
@@ -203,7 +205,7 @@ function mapSections(otherSections) {
 
   cd.sections.forEach((section) => {
     section.liveSectionNumber = section.match?.sectionNumber ?? null;
-    section.liveSectionNumberRevisionId = updateChecker.lastCheckedRevisionId;
+    section.liveSectionNumberRevisionId = lastCheckedRevisionId;
     delete section.code;
     delete section.revisionId;
     delete section.queryTimestamp;
@@ -361,29 +363,26 @@ async function checkForUpdates() {
     }, true);
 
     const currentRevisionId = mw.config.get('wgRevisionId');
-    if (
-      revisions.length &&
-      revisions[0].revid > (updateChecker.lastCheckedRevisionId || currentRevisionId)
-    ) {
-      const { revisionId, comments, sections } = await processPage();
+    if (revisions.length && revisions[0].revid > (lastCheckedRevisionId || currentRevisionId)) {
+      const { revisionId, comments: newComments, sections } = await processPage();
       if (isPageStillAtRevision(currentRevisionId)) {
         const { comments: currentComments } = await processPage(currentRevisionId);
 
-        // We set the property here, not after the first "await", so that we are sure that
-        // updateChecker.lastCheckedRevisionId corresponds to the versions of comments that are
-        // currently rendered.
-        updateChecker.lastCheckedRevisionId = revisionId;
+        // We set the value here, not after the first "await", so that we are sure that
+        // lastCheckedRevisionId corresponds to the versions of comments that are currently
+        // rendered.
+        lastCheckedRevisionId = revisionId;
 
         if (isPageStillAtRevision(currentRevisionId)) {
           mapSections(sections);
           toc.addNewSections(sections);
-          mapComments(currentComments, comments);
+          mapComments(currentComments, newComments);
 
           // We check for changes before notifying about new comments to notify about changes in a
           // renamed section if it is watched.
           checkForNewChanges(currentComments);
 
-          await processComments(comments, currentComments, currentRevisionId);
+          await processComments(newComments, currentComments, currentRevisionId);
         }
       }
     }
@@ -525,12 +524,7 @@ function checkForNewChanges(currentComments) {
           // called indirectly by Comment#markAsChanged.
           comment.comparedHtml = newComment.comparedHtml;
 
-          comment.markAsChanged(
-            'changed',
-            updateSuccess,
-            updateChecker.lastCheckedRevisionId,
-            commentsData
-          );
+          comment.markAsChanged('changed', updateSuccess, lastCheckedRevisionId, commentsData);
           isChangeMarkUpdated = true;
           events.changed = { updateSuccess };
         }
@@ -912,8 +906,6 @@ async function onMessageFromWorker(e) {
 }
 
 const updateChecker = {
-  lastCheckedRevisionId: null,
-
   /**
    * _For internal use._ Initialize the update checker. Executed on each page reload.
    *
@@ -973,6 +965,10 @@ const updateChecker = {
       newCommentsTitleMark = newCommentsCount ? `(${newCommentsCount}${relevantMark}) ` : '';
     }
     document.title = title.replace(/^(?:\(\d+\*?\) )?/, newCommentsTitleMark);
+  },
+
+  getLastCheckedRevisionId() {
+    return lastCheckedRevisionId;
   },
 };
 

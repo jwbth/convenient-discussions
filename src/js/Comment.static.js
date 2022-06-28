@@ -506,13 +506,13 @@ export default {
    * Get a comment by ID.
    *
    * @param {string} id
-   * @param {boolean} impreciseDate Comment date is inferred from the edit date (but these may be
-   *   different). If `true`, we allow the time on the page to be 1-3 minutes less than the edit
-   *   time.
+   * @param {boolean} [impreciseDate=false] Comment date is inferred from the edit date (but these
+   *   may be different). If `true`, we allow the time on the page to be 1-3 minutes less than the
+   *   edit time.
    * @returns {?Comment}
    * @memberof Comment
    */
-  getById(id, impreciseDate) {
+  getById(id, impreciseDate = false) {
     if (!cd.comments || !id) {
       return null;
     }
@@ -702,6 +702,7 @@ export default {
    * Change the state of all comments to unselected.
    *
    * @private
+   * @memberof Comment
    */
   resetSelectedComment() {
     const comment = cd.comments.find((comment) => comment.isSelected);
@@ -715,6 +716,7 @@ export default {
    * Determine which comment on the page is selected.
    *
    * @returns {?Comment}
+   * @memberof Comment
    */
   getSelectedComment() {
     const selection = window.getSelection();
@@ -751,6 +753,7 @@ export default {
    * @param {string} author
    * @returns {Comment}
    * @private
+   * @memberof Comment
    */
   findPreviousCommentByTime(date, author) {
     return cd.comments
@@ -769,6 +772,7 @@ export default {
    *
    * @param {string} fragment
    * @returns {boolean}
+   * @memberof Comment
    */
   isDtId(fragment) {
     return fragment.startsWith('c-');
@@ -787,6 +791,7 @@ export default {
    *
    * @param {string} id
    * @returns {?ParseIdReturn}
+   * @memberof Comment
    */
   parseId(id) {
     const match = id.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})_(.+)$/);
@@ -811,6 +816,7 @@ export default {
    *
    * @param {string} id Comment ID in the DiscussionTools format.
    * @returns {?object}
+   * @memberof Comment
    */
   parseDtId(id) {
     if (!Comment.isDtId(id)) {
@@ -846,6 +852,7 @@ export default {
    * _For internal use._ Add available DiscussionTools IDs to respective comments.
    *
    * @param {Array} ids
+   * @memberof Comment
    */
   setDtIds(ids) {
     ids.forEach((id) => {

@@ -561,8 +561,7 @@ function addCommentOouiPrototypes(commentElementPrototypes) {
       classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
     })
   );
-  commentElementPrototypes.replyButton = commentElementPrototypes.getReplyButton().$element
-    .get(0);
+  commentElementPrototypes.replyButton = commentElementPrototypes.getReplyButton().$element.get(0);
 
   commentElementPrototypes.getEditButton = () => (
     new OO.ui.ButtonWidget({
@@ -571,8 +570,7 @@ function addCommentOouiPrototypes(commentElementPrototypes) {
       classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
     })
   );
-  commentElementPrototypes.editButton = commentElementPrototypes.getEditButton().$element
-    .get(0);
+  commentElementPrototypes.editButton = commentElementPrototypes.getEditButton().$element.get(0);
 
   commentElementPrototypes.getThankButton = () => (
     new OO.ui.ButtonWidget({
@@ -582,8 +580,7 @@ function addCommentOouiPrototypes(commentElementPrototypes) {
       classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
     })
   );
-  commentElementPrototypes.thankButton = commentElementPrototypes.getThankButton().$element
-    .get(0);
+  commentElementPrototypes.thankButton = commentElementPrototypes.getThankButton().$element.get(0);
 
   commentElementPrototypes.getCopyLinkButton = () => (
     new OO.ui.ButtonWidget({
@@ -595,8 +592,8 @@ function addCommentOouiPrototypes(commentElementPrototypes) {
       classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
     })
   );
-  commentElementPrototypes.copyLinkButton = commentElementPrototypes.getCopyLinkButton()
-    .$element.get(0);
+  commentElementPrototypes.copyLinkButton = commentElementPrototypes.getCopyLinkButton().$element
+    .get(0);
 
   commentElementPrototypes.getGoToParentButton = () => (
     new OO.ui.ButtonWidget({
@@ -621,8 +618,8 @@ function addCommentOouiPrototypes(commentElementPrototypes) {
       classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
     })
   );
-  commentElementPrototypes.goToChildButton = commentElementPrototypes.getGoToChildButton()
-    .$element.get(0);
+  commentElementPrototypes.goToChildButton = commentElementPrototypes.getGoToChildButton().$element
+    .get(0);
 }
 
 /**
@@ -1221,9 +1218,7 @@ export default {
        * @type {RegExp}
        * @memberof convenientDiscussions.g
        */
-      cd.g.PARSE_TIMESTAMP_UI_REGEXP = new RegExp(
-        new RegExp(`^([^]*)(${cd.g.UI_TIMESTAMP_REGEXP.source})`)
-      );
+      cd.g.PARSE_TIMESTAMP_UI_REGEXP = new RegExp(`^([^]*)(${cd.g.UI_TIMESTAMP_REGEXP.source})`);
 
       /**
        * Codes of date (in interface language) components for the timestamp parser function.

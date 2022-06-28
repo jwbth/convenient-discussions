@@ -257,6 +257,8 @@ export default {
   /**
    * Adjust the button labels of all comment forms according to the form width: if the form is to
    * narrow, the labels will shrink.
+   *
+   * @memberof CommentForm
    */
   adjustLabels() {
     cd.commentForms.forEach((commentForm) => {
@@ -266,6 +268,8 @@ export default {
 
   /**
    * Detach the comment forms keeping events.
+   *
+   * @memberof CommentForm
    */
   detach() {
     cd.commentForms.forEach((commentForm) => {
@@ -278,6 +282,7 @@ export default {
    * to restore when the browser has crashed.)
    *
    * @param {boolean} [force=true] Save session immediately, without regard for save frequency.
+   * @memberof CommentForm
    */
   saveSession(force) {
     const save = () => {
@@ -322,6 +327,7 @@ export default {
    *
    * @param {boolean} fromStorage Should the session be restored from the local storage instead of
    * directly from {@link conveneintDiscussions.commentForms}.
+   * @memberof CommentForm
    */
   restoreSession(fromStorage) {
     if (fromStorage) {
