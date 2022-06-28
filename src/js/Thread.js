@@ -201,25 +201,22 @@ function saveCollapsedThreads() {
  * @private
  */
 function autocollapseThreads() {
-  let comments = [];
   const dataAllPages = cleanUpCollapsedThreads(getFromLocalStorage('collapsedThreads'));
   const data = dataAllPages[mw.config.get('wgArticleId')] || {};
 
+  let comments = [];
+
   // Don't autocollapse the target comment.
   const targetCommentId = controller.getBootProcess().data('commentId');
+  let targetComment;
   if (targetCommentId) {
-    // This entry may be a duplicate for this ID - the collisions will be resolved below (with the
-    // "collapsed: false" state having a priority).
-    data.threads.push({
-      id: targetCommentId,
-      collapsed: false,
-    });
+    targetComment = Comment.getById(targetCommentId);
   }
 
   data.threads?.forEach((thread) => {
     const comment = Comment.getById(thread.id);
     if (comment?.thread) {
-      if (thread.collapsed) {
+      if (thread.collapsed && comment !== targetComment) {
         comments.push(comment);
       } else {
         /**
@@ -266,6 +263,10 @@ function autocollapseThreads() {
            */
           comment.thread.isAutocollapseTarget = true;
 
+          if (comment === targetComment) {
+            comment.thread.wasManuallyExpanded = true;
+          }
+
           if (!comment.thread.wasManuallyExpanded) {
             comments.push(comment);
           }
@@ -275,10 +276,6 @@ function autocollapseThreads() {
       }
     }
   }
-
-  // Resolve collisions between the three sources of thread collapse data: previously manually
-  // collapsed/uncollapsed, autocollapsed, and the target comment (which shouldn't be collapsed).
-  comments = comments.filter((c, i, arr) => arr.indexOf(c) === i || c.thread.wasManuallyExpanded);
 
   let loadUserGendersPromise;
   if (cd.g.GENDER_AFFECTS_USER_STRING) {
