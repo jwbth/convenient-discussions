@@ -115,31 +115,24 @@
 
 .cd-comment-part-first {
   margin-top: 0.5em;
+
+  .cd-reformattedComments & {
+    margin-top: 0.75em;
+  }
 }
 
-// Override ".skin-vector dd"
+// Override ".skin-vector .cd-parsed dd"
 .cd-comment-part-last.cd-comment-part-last {
   margin-bottom: 0.5em;
+
+  .cd-reformattedComments & {
+    margin-bottom: 0.75em;
+  }
 }
 
 ol > li.cd-comment-part-first.cd-comment-part-first,
 ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
   margin-top: 0;
-}
-
-.cd-reformattedComments {
-  .cd-comment-part-first {
-    margin-top: 0.75em;
-  }
-
-  .cd-comment-part-last {
-    margin-bottom: 0.75em;
-  }
-
-  .cd-commentForm-signature,
-  .cd-helpPopup-hideForReformattedComments {
-    display: none;
-  }
 }
 
 // Because irregular gaps between list items are annoying, especially between numbered list items
