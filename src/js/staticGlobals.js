@@ -151,15 +151,6 @@ export default {
   THREAD_LINE_SIDE_MARGIN: 3,
 
   /**
-   * How long a comment should be considered new and have a corresponding background on newly loaded
-   * pages. In minutes.
-   *
-   * @type {number}
-   * @memberof convenientDiscussions.g
-   */
-  HIGHLIGHT_NEW_COMMENTS_INTERVAL: 15,
-
-  /**
    * Number of seconds between checks for new comments when the tab is not hidden.
    *
    * @type {number}

@@ -322,6 +322,8 @@
   "sd-desktopnotifications-help": "Desktop notifications inform about events on pages that are open but hidden from view (in inactive tabs or minimized windows). To receive them, you must grant a permission to $1.",
   "sd-enablethreads": "Allow to collapse threads",
   "sd-hidetimezone": "Hide the timezone",
+  "sd-highlightnewinterval": "Minutes to pass between page loads to stop highlighting comments as new",
+  "sd-highlightnewinterval-help": "Set to 0 to only highlight those comments as new that were loaded the first time.",
   "sd-insertbuttons": "Text insert buttons",
   "sd-insertbuttons-multiselect-placeholder": "Add a button",
   "sd-insertbuttons-help": "Use <code>+</code> to specify a place where the caret should be put after inserting the text; for example, <code><nowiki>{{+}}</nowiki></code>. Use <code>;</code> to specify displayed text if you want it to be different from the one inserted; for example, <code><nowiki><code>+</code>;<code /></nowiki></code>. Use <code><nowiki>\\</nowiki></code> before the aforementioned characters to insert them as is; for example, <code><nowiki>2\\+2</nowiki></code>. The buttons can be dragged and dropped.",

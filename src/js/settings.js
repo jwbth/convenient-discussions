@@ -54,6 +54,7 @@ export default {
       defaultSectionLinkType: null,
       enableThreads: true,
       hideTimezone: false,
+      highlightNewInterval: 15,
       insertButtons: cd.config.defaultInsertButtons || [],
       notifications: 'all',
       notifyCollapsedThreads: false,

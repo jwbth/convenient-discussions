@@ -298,6 +298,7 @@ export function createTextField({
  * @param {string} options.label
  * @param {string} [options.min]
  * @param {string} [options.max]
+ * @param {string} [options.step]
  * @param {string} [options.help]
  * @param {string} [options.title]
  * @returns {CreateNumberFieldReturn}
@@ -307,13 +308,15 @@ export function createNumberField({
   label,
   min,
   max,
+  buttonStep = 1,
   help,
   title,
 }) {
   const input = new OO.ui.NumberInputWidget({
     input: { value },
     step: 1,
-		min,
+    buttonStep,
+    min,
     max,
     classes: [ 'cd-numberInput' ],
   });

@@ -1351,7 +1351,8 @@ export default class BootProcess {
     // Cleanup
     for (let i = currentPageVisits.length - 1; i >= 0; i--) {
       if (
-        currentPageVisits[i] < currentUnixTime - 60 * cd.g.HIGHLIGHT_NEW_COMMENTS_INTERVAL ||
+        !settings.get('highlightNewInterval') ||
+        currentPageVisits[i] < currentUnixTime - 60 * settings.get('highlightNewInterval') ||
         this.data('markAsRead')
       ) {
         currentPageVisits.splice(0, i);

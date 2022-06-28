@@ -343,6 +343,15 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       label: cd.s('sd-hidetimezone'),
     });
 
+    [this.highlightNewIntervalField, this.highlightNewIntervalInput] = createNumberField({
+      value: settings.highlightNewInterval,
+      min: 0,
+      max: 99999999,
+      buttonStep: 5,
+      label: cd.s('sd-highlightnewinterval'),
+      help: cd.s('sd-highlightnewinterval-help'),
+    });
+
     const insertButtonsSelected = settings.insertButtons
       .map((button) => Array.isArray(button) ? button.join(';') : button);
     this.insertButtonsMultiselect = new OO.ui.TagMultiselectWidget({
@@ -594,6 +603,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       ),
       enableThreads: this.enableThreadsCheckbox.isSelected(),
       hideTimezone: this.hideTimezoneCheckbox.isSelected(),
+      highlightNewInterval: Number(this.highlightNewIntervalInput.getValue()),
       insertButtons: this.getInsertButtons(),
       modifyToc: this.modifyTocCheckbox.isSelected(),
       notifications: this.notificationsSelect.findSelectedItem()?.getData(),
@@ -662,6 +672,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
     let areInputsValid = true;
     try {
       await this.collapseThreadsLevelInput.getValidity();
+      await this.highlightNewIntervalInput.getValidity();
     } catch {
       areInputsValid = false;
     }
@@ -741,9 +752,10 @@ class TalkPagePageLayout extends OO.ui.PageLayout {
       dialog.showContribsLinkField.$element,
       dialog.allowEditOthersCommentsField.$element,
       dialog.enableThreadsField.$element,
+      dialog.collapseThreadsLevelField.$element,
       dialog.modifyTocField.$element,
       dialog.useBackgroundHighlightingField.$element,
-      dialog.collapseThreadsLevelField.$element,
+      dialog.highlightNewIntervalField.$element,
     ]);
   }
 
