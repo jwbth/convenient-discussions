@@ -480,7 +480,7 @@ class Thread {
      * @private
      */
     this.clickArea = elementPrototypes.clickArea.cloneNode(true);
-    this.clickArea.title = cd.s('thread-tooltip', this.commentCount);
+    this.clickArea.title = cd.s('thread-tooltip');
 
     if (this.rootComment.isStartStretched) {
       this.clickArea.classList.add('cd-thread-clickArea-stretchedStart');
