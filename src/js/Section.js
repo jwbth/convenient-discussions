@@ -400,7 +400,7 @@ class Section extends SectionSkeleton {
     // https://ru.wikipedia.org/wiki/Project:Запросы_к_администраторам/Быстрые
     const isBuriedInTable = ['TR', 'TD', 'TH'].includes(this.lastElementInFirstChunk.tagName);
 
-    return (
+    return Boolean(
       this.isActionable &&
       !isFirstChunkClosed &&
       !isFirstChunkEmptyBeforeSubsection &&
@@ -427,11 +427,11 @@ class Section extends SectionSkeleton {
     // While the "Reply" button is added to the end of the first chunk, the "Add subsection" button
     // is added to the end of the whole section, so we look the next section of the same level.
     const doesNestingLevelMatch = (
-      nextSameLevelSection &&
+      !nextSameLevelSection ||
       nextSameLevelSection.headingNestingLevel === this.headingNestingLevel
     );
 
-    return (
+    return Boolean(
       this.isActionable &&
       this.level >= 2 &&
       this.level <= 5 &&
