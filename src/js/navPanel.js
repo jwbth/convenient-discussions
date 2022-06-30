@@ -207,6 +207,7 @@ export default {
     // confirmation seems to be no longer needed.
     controller.reload({
       commentId: updateChecker.relevantNewCommentId,
+      pushState: Boolean(updateChecker.relevantNewCommentId),
       markAsRead,
     });
   },
