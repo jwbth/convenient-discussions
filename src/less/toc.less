@@ -29,10 +29,6 @@
     font-size: 0.875em;
   }
 
-  .cd-toc-newCommentList {
-    margin-top: 0;
-  }
-
   .cd-toc-addedSection.cd-toc-addedSection.cd-toc-addedSection.cd-toc-addedSection {
     display: list-item;
   }
@@ -79,6 +75,11 @@
   }
 }
 
-.cd-toc-commentLink.cd-toc-commentLink {
+.cd-toc-commentLinkText-sidebar.cd-toc-commentLinkText-sidebar {
   padding: 0;
+}
+
+// "display: list-item" creates a problem in Firefox.
+.cd-toc-link-sidebar {
+  display: block;
 }

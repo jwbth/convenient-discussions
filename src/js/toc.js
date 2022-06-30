@@ -286,7 +286,7 @@ const toc = {
         const a = document.createElement('a');
         a.href = `#${section.id}`;
         if (this.isInSidebar()) {
-          a.className = 'sidebar-toc-link';
+          a.className = 'sidebar-toc-link cd-toc-link-sidebar';
         }
         a.onclick = (e) => {
           e.preventDefault();
@@ -443,7 +443,7 @@ const toc = {
         const a = document.createElement('a');
         a.href = `#${comment.dtId || comment.id}`;
         if (this.isInSidebar()) {
-          a.className = 'sidebar-toc-link';
+          a.className = 'sidebar-toc-link cd-toc-link-sidebar';
         }
         if (comment instanceof Comment) {
           a.onclick = (e) => {
@@ -477,7 +477,7 @@ const toc = {
 
         if (this.isInSidebar()) {
           const textDiv = document.createElement('div');
-          textDiv.className = 'sidebar-toc-text cd-toc-commentLink';
+          textDiv.className = 'sidebar-toc-text cd-toc-commentLinkText-sidebar';
           textDiv.textContent = text;
           if (timestampSpan) {
             textDiv.appendChild(timestampSpan);
@@ -563,7 +563,9 @@ const toc = {
             .length;
           $sectionLink.children('.cd-toc-commentCount').remove();
         }
-        const $target = this.isInSidebar() ? $sectionLink.children('sidebar-toc-text') : $sectionLink;
+        const $target = this.isInSidebar() ?
+          $sectionLink.children('sidebar-toc-text') :
+          $sectionLink;
         this.addCommentCountString(count, unseenCount, section.index === 0, $target);
       }
 
