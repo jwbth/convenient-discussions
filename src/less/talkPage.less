@@ -13,10 +13,11 @@
 
 .cd-section-button.cd-section-button,
 .cd-thread-button.cd-thread-button {
-  vertical-align: baseline;
+  // Gives better marginss than `vertical-align: top`. Top align is needed for multiple line
+  // buttons.
+  display: flex;
 
   > .oo-ui-buttonElement-button {
-    vertical-align: baseline;
     white-space: normal;
   }
 }
