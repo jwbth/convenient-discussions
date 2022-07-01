@@ -586,13 +586,11 @@ export default class BootProcess {
         'cd-notification-disabledt': async () => {
           disableButton.setPending(true);
           try {
-            // On wikis where DT is a beta feature, setting "discussiontools-betaenable" is enough,
-            // but on wikis where it is enabled by default, the rest of the options are needed.
             await controller.getApi().saveOptions({
-              'discussiontools-betaenable': 0,
               'discussiontools-replytool': 0,
               'discussiontools-newtopictool': 0,
               'discussiontools-topicsubscription': 0,
+              'discussiontools-visualenhancements': 0,
             }).catch(handleApiReject);
           } catch (e) {
             mw.notify(wrap(cd.sParse('error-settings-save')));
