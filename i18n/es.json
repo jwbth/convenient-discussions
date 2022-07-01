@@ -269,7 +269,6 @@
 	"sd-insertbuttons-multiselect-placeholder": "Añadir un botón",
 	"sd-insertbuttons-help": "Usa <code>+</code> para especificar un lugar donde colocar el cursor después de insertar el texto; por ejemplo, <code><nowiki>{{+}}</nowiki></code>. Usa <code>;</code> para especificar el texto mostrado si quieres que sea diferente del que debe insertarse; por ejemplo, <code><nowiki><code>+</code>;<code /></nowiki></code>. Usa <code><nowiki>\\</nowiki></code> antes de los caracteres antes mencionados para insertarlos tal cual; por ejemplo, <code><nowiki>2\\+2</nowiki></code>. Los botones pueden arrastrarse y soltarse.",
 	"sd-modifytoc": "Modificar el sumario",
-	"sd-modifytoc-help": "Mostrar el recuento de nuevos comentarios, los nuevos comentarios y secciones, y resaltar las secciones vigiladas.",
 	"sd-notifications": "Notificaciones normales",
 	"sd-notifications-radio-all": "Notificarme de respuestas a mis comentarios y de comentarios en secciones a las que esté suscrito",
 	"sd-notifications-radio-tome": "Notificarme solo de respuestas a mis comentarios",

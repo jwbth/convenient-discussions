@@ -262,7 +262,6 @@
 	"sd-insertbuttons-multiselect-placeholder": "Düğme ekle",
 	"sd-insertbuttons-help": "Metni ekledikten sonra düzeltme işaretinin yerleştirileceği yeri belirtmek için <code>+</code> tuşlarını kullanın; örneğin, <code><nowiki>{{+}}</nowiki></code>. Girilen metinden farklı görüntülenen metni belirtmek için <code>;</code> tuşunu kullanın; örneğin, <code><nowiki><code>+</code>;<code /></nowiki></code>. Yukarıda belirtilen karakterlerden önce olduğu gibi <code><nowiki>\\</nowiki></code> kullanın; Örneğin, <code><nowiki>2\\+2</nowiki></code>. Düğmeler sürüklenip bırakılabilir.",
 	"sd-modifytoc": "İçindekiler tablosunu değiştirin",
-	"sd-modifytoc-help": "Yorum sayısını, yeni yorumları ve bölümleri göster ve abone olduğum konuları öne çıkar.",
 	"sd-notifications": "Sıradan bildirimler",
 	"sd-notifications-radio-all": "Abone olduğum bölümlerdeki yorumlarıma ve yorumlarım hakkındaki yanıtları bana bildir",
 	"sd-notifications-radio-tome": "Yalnızca yorumlarıma verilen yanıtları bana bildir",

@@ -46,6 +46,7 @@
 	"cld-currentpagewikilink": "동일 문서의 위키링크",
 	"cld-link": "정규 링크",
 	"cld-permanentlink": "고유 링크",
+	"cld-permanentwikilink": "고유 위키링크",
 	"cld-close": "닫기",
 	"copylink-copied": "이 링크는 클립보드로 복사되었습니다.",
 	"copylink-error": "링크를 복사하지 못했습니다.",

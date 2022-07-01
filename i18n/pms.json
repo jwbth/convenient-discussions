@@ -282,7 +282,6 @@
 	"sd-insertbuttons-multiselect-placeholder": "Gionté un boton",
 	"sd-insertbuttons-help": "Dovré <code>+</code> pr'ëspessifiché un pòst andoa ël cursor a dovrìa esse butà apress avèj anserì ël test; për esempi, <code><nowiki>{{+}}</nowiki></code>. Dovré <code>;</code> pr'ëspessifiché ël test ësmonù s'a veul ch'a sia diferent da col anserì; për esempi, <code><nowiki><code>+</code>;<code /></nowiki></code>. Dovré <code><nowiki>\\</nowiki></code> prima dij caràter massionà sì-dzora për anserije 'me ch'a son; për esempi, <code><nowiki>2\\+2</nowiki></code>. Ij boton a peulo esse tirà e lassà andé.",
 	"sd-modifytoc": "Modifiché la tàula",
-	"sd-modifytoc-help": "Smon-e ël neuv cont dij coment, ij coment e session neuv e evidensié j'argoment ai quaj i son abonà.",
 	"sd-notifications": "Notìfiche ordinarie",
 	"sd-notifications-radio-all": "Aviseme dle rispòste ai mè coment e dij coment ant le session a le quaj i son abonà",
 	"sd-notifications-radio-tome": "Aviseme mach dle rispòste ai mè coment",

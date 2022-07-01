@@ -265,7 +265,6 @@
 	"sd-insertbuttons-multiselect-placeholder": "Adicionar um botão",
 	"sd-insertbuttons-help": "Use <code>+</code> para especificar um local onde o cursor deve ser colocado após a inserção do texto; por exemplo,<code><nowiki>{{+}}</nowiki></code>. Use <code>;</code> para especificar o texto exibido se você deseja que seja diferente daquele inserido; por exemplo, <code><nowiki><code>+</code>;<code /></nowiki></code>. Use <code><nowiki>\\</nowiki></code> antes dos caracteres mencionados para inseri-los como estão; por exemplo, <code><nowiki>2\\+2</nowiki></code>. Os botões podem ser arrastados e soltos.",
 	"sd-modifytoc": "Modificar a tabela de conteúdos",
-	"sd-modifytoc-help": "Mostre novos comentários e seções e destaque as seções vigiadas.",
 	"sd-notifications": "Notificações comuns",
 	"sd-notifications-radio-all": "Notifique-me sobre respostas aos meus comentários e comentários nas seções que assisto",
 	"sd-notifications-radio-tome": "Notifique-me sobre respostas apenas para meus comentários",
