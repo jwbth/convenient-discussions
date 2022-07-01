@@ -1360,28 +1360,36 @@ export default class BootProcess {
       }
     }
 
-    let haveMatchedTimeWithComment = false;
+    let currentTimeMatchesWithComment = false;
     if (currentPageVisits.length) {
       cd.comments.forEach((comment) => {
-        comment.isNew = false;
-        comment.isSeen = true;
-
-        if (!comment.date) return;
+        if (!comment.date) {
+          comment.isNew = false;
+          comment.isSeen = true;
+          return;
+        }
 
         const commentUnixTime = Math.floor(comment.date.getTime() / 1000);
         if (commentUnixTime <= currentUnixTime && currentUnixTime < commentUnixTime + 60) {
-          haveMatchedTimeWithComment = true;
+          currentTimeMatchesWithComment = true;
         }
-        if (commentUnixTime + 60 > currentPageVisits[0]) {
-          comment.isNew = true;
-          comment.isSeen = (
-            (
-              commentUnixTime + 60 <= currentPageVisits[currentPageVisits.length - 1] ||
-              comment.isOwn
-            ) &&
-            !this.data('unseenCommentIds')?.some((id) => id === comment.id)
-          );
-        }
+        const isUnseenStatePassed = (
+          this.data('unseenCommentIds')?.some((id) => id === comment.id) ||
+          false
+        );
+        const isNewerThanFirstRememberedVisit = commentUnixTime + 60 > currentPageVisits[0];
+        const isOlderThanPreviousVisit = (
+          commentUnixTime + 60 <= currentPageVisits[currentPageVisits.length - 1]
+        );
+        comment.isNew = isNewerThanFirstRememberedVisit || isUnseenStatePassed;
+        comment.isSeen = !(
+          isUnseenStatePassed ||
+          (
+            isNewerThanFirstRememberedVisit &&
+            !(settings.get('highlightNewInterval') && isOlderThanPreviousVisit) &&
+            !comment.isOwn
+          )
+        );
       });
 
       Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.isNew));
@@ -1398,7 +1406,7 @@ export default class BootProcess {
     // minute to the current time if there is a comment with matched time. (Previously, the comment
     // time needed to be less than the current time which could result in missed comments if a
     // comment was sent the same minute when the page was loaded but after that moment.)
-    currentPageVisits.push(String(currentUnixTime + haveMatchedTimeWithComment * 60));
+    currentPageVisits.push(String(currentUnixTime + currentTimeMatchesWithComment * 60));
 
     setVisits(visits);
 
@@ -1478,10 +1486,9 @@ export default class BootProcess {
       controller.handlePageMutations();
     }, 1000);
 
-    // Create the mutation observer in the next event cycle - let most DOM changes by CD and
-    // scripts attached to the hooks to be made first to reduce the number of times it runs in
-    // vain. But if we set a long delay, users will see comment backgrounds mispositioned for
-    // some time.
+    // Create the mutation observer in the next event cycle - let most DOM changes by CD and scripts
+    // attached to the hooks to be made first to reduce the number of times it runs in vain. But if
+    // we set a long delay, users will see comment backgrounds mispositioned for some time.
     setTimeout(() => {
       const observer = new MutationObserver((records) => {
         const layerClassRegexp = /^cd-comment(-underlay|-overlay|Layers)/;
@@ -1504,16 +1511,16 @@ export default class BootProcess {
    */
   addEventListeners() {
     if (!settings.get('reformatComments')) {
-      // The "mouseover" event allows to capture the state when the cursor is not moving but
-      // ends up above a comment but not above any comment parts (for example, as a result of
-      // scrolling). The benefit may be low compared to the performance cost, but it's
-      // unexpected when the user scrolls a comment and it suddenly stops being highlighted
-      // because the cursor is between neighboring <p>'s.
+      // The "mouseover" event allows to capture the state when the cursor is not moving but ends up
+      // above a comment but not above any comment parts (for example, as a result of scrolling).
+      // The benefit may be low compared to the performance cost, but it's unexpected when the user
+      // scrolls a comment and it suddenly stops being highlighted because the cursor is between
+      // neighboring <p>'s.
       $(document).on('mousemove mouseover', controller.handleMouseMove);
     }
 
-    // We need the visibilitychange event because many things may move while the document is
-    // hidden, and the movements are not processed when the document is hidden.
+    // We need the visibilitychange event because many things may move while the document is hidden,
+    // and the movements are not processed when the document is hidden.
     $(document)
       .on('scroll visibilitychange', controller.handleScroll)
       .on('horizontalscroll.cd visibilitychange', controller.handleHorizontalScroll)
@@ -1523,8 +1530,8 @@ export default class BootProcess {
       .on('resize orientationchange', controller.handleWindowResize)
       .on('popstate', controller.handlePopState);
 
-    // Should be above "mw.hook('wikipage.content').fire" so that it runs for the whole page
-    // content as opposed to "$('.cd-comment-author-wrapper')".
+    // Should be above "mw.hook('wikipage.content').fire" so that it runs for the whole page content
+    // as opposed to "$('.cd-comment-author-wrapper')".
     mw.hook('wikipage.content').add(this.inactivateCommentLinks, this.highlightMentions);
 
     this.setupMutationObserver();
