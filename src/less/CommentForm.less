@@ -160,6 +160,10 @@
     width: calc(~"100% + 2px");
     margin: -1px;
     position: relative;
+
+    // Fix for the jumping text until T169335 is resolved.
+    padding-bottom: 20px;
+    overflow-y: hidden;
   }
 
   &.oo-ui-textInputWidget.oo-ui-widget-disabled {

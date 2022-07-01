@@ -400,7 +400,7 @@ class CommentForm {
       placeholder: commentInputPlaceholder,
       autosize: true,
       rows: this.headlineInput ? 5 : 3,
-      maxRows: 30,
+      maxRows: 9999,
       classes: ['cd-commentForm-commentInput'],
       tabIndex: this.getTabIndex(12),
     });
