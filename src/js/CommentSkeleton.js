@@ -620,7 +620,7 @@ class CommentSkeleton {
           .getElementsByClassName('cd-signature', Number(hasCurrentSignature) + 1)
           .length;
 
-        hasForeignComponents = (
+        hasForeignComponents = Boolean(
           signatureCount - Number(hasCurrentSignature) > 0 ||
           (
             firstForeignComponentAfter &&
@@ -866,20 +866,42 @@ class CommentSkeleton {
 
         !this.isGallery(part.node) &&
 
-        // Exclude lists that are parts of the comment, like
-        // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Comments_starting_with_a_list.
+        // Exclude lists that are parts of the comment, like at
+        // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Comments_starting_with_a_list
+        // (this has an effect on 18:20 and 18:30 comments).
         !(
           part.step === 'up' &&
           this.parts[i + 1] &&
-          ['replaced', 'start'].includes(this.parts[i + 1].step) &&
-          this.isPartOfList(lastPartNode, true) &&
 
-          // But don't affect things like
-          // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#201901151200_Example
-          !(
-            this.parts[i + 1].step === 'replaced' &&
-            ['DD', 'LI'].includes(this.parts[i + 1].node.tagName)
-          )
+          // Watch these cases that are similar in DOM but should behave differently ("→" means the
+          // next part):
+          // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-13T18:20:00.000Z-Example-2021-10-13T18:00:00.000Z
+          // ** ol "up" → div "replaced"
+          // ** The condition should be true.
+          // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-13T18:40:00.000Z-Example-2021-10-13T18:00:00.000Z
+          // ** dl "up" → dd "back"
+          // ** The condition should be true.
+          // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2020-09-22T20:10:00.000Z-Example-2020-09-22T20:00:00.000Z
+          // ** ul "up" → ol "back"
+          // ** The condition should be false.
+          // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-14T19:10:00.000Z-Example-2021-10-14T19:00:00.000Z
+          // ** ul "up" → div "replaced"
+          // ** The condition should be false.
+          // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2019-01-15T12:00:00.000Z-Example-2019-01-15T11:50:00.000Z
+          // ** up "up" → dd "replaced"
+          // ** The condition should be false.
+          // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-14T20:10:00.000Z-Example-2021-10-14T20:00:00.000Z
+          // ** ul "up" → dd "back"
+          // ** The condition should be false.
+          // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2019-10-07T08:10:00.000Z-List_inside_a_comment
+          // ** ul "up" → div "replaced"
+          // ** The condition should be true.
+          // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2019-10-07T08:40:00.000Z-List_inside_a_comment
+          // ** ul "up" → dd "start"
+          // ** The condition should be true.
+          (part.node.tagName !== 'UL' || part.node.children.length > 1) &&
+
+          this.isPartOfList(lastPartNode, true)
         ) &&
 
         (
@@ -895,11 +917,12 @@ class CommentSkeleton {
             !(part.step === 'back' && ['LI', 'DD'].includes(part.node.tagName)) &&
 
             // Cases like
-            // https://commons.wikimedia.org/wiki/Commons:Translators%27_noticeboard/Archive/2020#202011151417_Ameisenigel
+            // https://commons.wikimedia.org/wiki/Commons:Translators%27_noticeboard/Archive/2020#202011151417_Ameisenigel,
+            //
             !(
               i !== 0 &&
               ['UL', 'OL'].includes(part.node.tagName) &&
-              part.node.previousElementSibling?.tagName === 'DL'
+              ['DL', 'UL'].includes(part.node.previousElementSibling?.tagName)
             )
           ) ||
 
