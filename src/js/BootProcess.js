@@ -1410,8 +1410,11 @@ export default class BootProcess {
 
     setVisits(visits);
 
-    Comment.registerSeen();
+    // Should be before `Comment.registerSeen()` to include all new comments in the metadata, even
+    // those seen.
     Section.addNewCommentCountMetadata();
+
+    Comment.registerSeen();
     navPanel.fill();
 
     /**
