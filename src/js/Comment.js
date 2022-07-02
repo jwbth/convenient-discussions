@@ -2362,10 +2362,8 @@ class Comment extends CommentSkeleton {
 
       .text(cd.mws('nextdiff'));
     const $above = $('<div>').append($nextDiffLink);
-    if (edit.parsedcomment) {
-      const $summaryText = wrap(edit.parsedcomment, { targetBlank: true }).addClass('comment');
-      $above.append(cd.sParse('cld-summary'), cd.mws('colon-separator'), $summaryText);
-    }
+    const $summaryText = wrap(edit.parsedcomment, { targetBlank: true }).addClass('comment');
+    $above.append(cd.sParse('cld-summary'), cd.mws('colon-separator'), $summaryText);
     const $diffBody = wrapDiffBody(edit.diffBody);
     return $('<div>')
       .addClass('cd-diffView-diff')
