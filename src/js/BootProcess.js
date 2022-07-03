@@ -17,7 +17,7 @@ import toc from './toc';
 import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
 import { formatDateNative } from './timestamp';
-import { getLastArrayElementOrSelf, underlinesToSpaces, wrap } from './util';
+import { getLastArrayElementOrSelf, notNull, underlinesToSpaces, wrap } from './util';
 import { getVisits, handleApiReject, setVisits } from './apiWrappers';
 import { removeWikiMarkup } from './wikitext';
 import { showConfirmDialog } from './ooui';
@@ -1308,7 +1308,7 @@ export default class BootProcess {
     const commentIds = this.data('commentIds');
     let comments;
     if (commentIds) {
-      comments = commentIds.map((id) => Comment.getById(id));
+      comments = commentIds.map((id) => Comment.getById(id)).filter(notNull);
     }
 
     if (comments) {

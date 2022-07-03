@@ -27,6 +27,7 @@ import {
   getUrlWithFragment,
   getVisibilityByRects,
   isInline,
+  notNull,
   saveToLocalStorage,
   unhideText,
   unique,
@@ -3070,7 +3071,7 @@ class Comment extends CommentSkeleton {
 
       // Exclude the text of the previous comment that is ended with 3 or 5 tildes instead of 4.
       [cd.config.signatureEndingRegexp, areThereForeignTimestamps ? null : cd.g.TIMEZONE_REGEXP]
-        .filter((regexp) => regexp !== null)
+        .filter(notNull)
         .forEach((originalRegexp) => {
           const regexp = new RegExp(originalRegexp.source + '$', 'm');
           const linesRegexp = /^(.+)\n/gm;

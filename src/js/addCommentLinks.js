@@ -16,6 +16,7 @@ import {
   isCommentEdit,
   isProbablyTalkPage,
   isUndo,
+  notNull,
   removeDirMarks,
   spacesToUnderlines,
 } from './util';
@@ -586,7 +587,7 @@ async function processDiff($diff) {
   const $root = $diff || controller.$content;
   const root = $root.get(0);
   [root.querySelector('.diff-otitle'), root.querySelector('.diff-ntitle')]
-    .filter((el) => el !== null)
+    .filter(notNull)
     .forEach((area) => {
       if (area.querySelector('.minoredit')) return;
 

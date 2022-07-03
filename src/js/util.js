@@ -286,6 +286,18 @@ export function defined(el) {
 }
 
 /**
+ * Callback for
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter Array#filter}
+ * to keep only defined and not `null` values in an array.
+ *
+ * @param {*} el
+ * @returns {boolean}
+ */
+export function notNull(el) {
+  return el !== undefined && el !== null;
+}
+
+/**
  * Return an array with a changed start index (`[0, 1, 2, 3]` can be transformed into `[2, 3, 0,
  * 1]`) and optionally reversed while keeping the start index (`[0, 1, 2, 3]` can be transformed
  * into `[2, 1, 0, 3]`).
