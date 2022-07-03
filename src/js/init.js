@@ -222,7 +222,7 @@ function loadSiteData() {
    */
   cd.g.CONTENT_TIMEZONE = cd.config.timezone;
 
-  const specialPages = ['Contributions', 'Diff', 'Permalink'];
+  const specialPages = ['Contributions', 'Diff', 'PermanentLink'];
   if (specialPages.some((page) => !cd.g.SPECIAL_PAGE_ALIASES[page]) || !cd.g.CONTENT_TIMEZONE) {
     const request = controller.getApi().get({
       action: 'query',

@@ -51,7 +51,7 @@ export function showCopyLinkDialog(object, e) {
   const permalinkSpecialPageName = (
     mw.config.get('wgFormattedNamespaces')[-1] +
     ':' +
-    cd.g.SPECIAL_PAGE_ALIASES.Permalink +
+    cd.g.SPECIAL_PAGE_ALIASES.PermanentLink +
     '/' +
     mw.config.get('wgRevisionId')
   );
