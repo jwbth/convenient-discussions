@@ -106,17 +106,34 @@ const toc = {
   },
 
   /**
-   * _For internal use._ Reset the TOC data (executed at every page reload).
+   * _For internal use._ Reset the TOC data and, for the sidebar TOC, update its content. (Executed
+   * at every page reload.)
+   *
+   * @param {object[]} [sections] TOC sections object.
+   * @param {boolean} [doHideToc] Whether the TOC should be hidden.
    */
-  reset() {
+  reset(sections, doHideToc) {
     this.$element = this.isInSidebar() ? $('.sidebar-toc') : controller.$root.find('.toc');
     this.tocItems = null;
     this.floating = null;
 
     if (this.isInSidebar()) {
+      if (sections) {
+        // Update the section list of the TOC
+        mw.hook('wikipage.tableOfContents').fire(doHideToc ? [] : sections);
+      }
+
+      // Workaround for new sections until T307251 is resolved. When it is, this block can be
+      // removed altogether.
       this.$element
-        .find('.cd-toc-commentCount, .cd-toc-newCommentList, .cd-toc-addedCommentList, .cd-toc-addedSection')
-        .remove();
+        .find('.cd-toc-commentCount, .cd-toc-newCommentList, .cd-toc-addedCommentList')
+          .remove()
+        .end()
+        .find('.cd-toc-addedSection')
+          .removeClass('cd-toc-addedSection')
+          .each((i, element) => {
+            element.firstChild.onclick = '';
+          });
     }
   },
 

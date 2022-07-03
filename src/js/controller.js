@@ -102,7 +102,7 @@ export default {
   },
 
   /**
-   * Reset the controller data and some page mechanisms (executed at every page reload).
+   * Reset the controller data and some page mechanisms. (Executed at every page reload.)
    *
    * @param {string} htmlToLayOut HTML to update the page with.
    */
@@ -1299,6 +1299,8 @@ export default {
       }
 
       bootProcess.passData('html', parseData.text);
+      bootProcess.passData('toc', parseData.sections);
+      bootProcess.passData('hideToc', parseData.hidetoc);
       mw.config.set({
         wgRevisionId: parseData.revid,
         wgCurRevisionId: parseData.revid,

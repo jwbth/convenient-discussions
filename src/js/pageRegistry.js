@@ -371,7 +371,7 @@ class Page {
       disabletoc: cd.g.SKIN === 'vector-2022',
       useskin: cd.g.SKIN,
       redirects: true,
-      prop: ['text', 'revid', 'modules', 'jsconfigvars'],
+      prop: ['text', 'revid', 'modules', 'jsconfigvars', 'sections'],
     };
     const options = Object.assign({}, defaultOptions, customOptions);
 

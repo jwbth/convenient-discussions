@@ -624,7 +624,7 @@ export default class BootProcess {
    */
   async setup() {
     controller.reset(this.data('html'));
-    toc.reset();
+    toc.reset(this.data('toc'), this.data('hidetoc'));
 
     /**
      * Collection of all comments on the page ordered the same way as in the DOM.
