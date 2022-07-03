@@ -1230,32 +1230,26 @@ export default class BootProcess {
   }
 
   /**
-   * Perform URL fragment-related tasks, as well as comment or section ID-related ones.
+   * Perform URL fragment-related tasks.
    *
    * @private
    */
-  async processTarget() {
-    let fragment;
+  async processFragment() {
+    if (!this.firstRun) return;
+
+    const fragment = location.hash.slice(1);
+    const escapedFragment = $.escapeSelector(fragment);
     let decodedFragment;
-    let escapedFragment;
     let escapedDecodedFragment;
     let commentId;
-    let fragmentHasCommentId;
-    if (this.firstRun) {
-      fragment = location.hash.slice(1);
-      escapedFragment = $.escapeSelector(fragment);
-      try {
-        decodedFragment = decodeURIComponent(fragment);
-        escapedDecodedFragment = decodedFragment && $.escapeSelector(decodedFragment);
-        if (Comment.isId(fragment)) {
-          commentId = decodedFragment;
-          fragmentHasCommentId = true;
-        }
-      } catch (e) {
-        console.error(e);
+    try {
+      decodedFragment = decodeURIComponent(fragment);
+      escapedDecodedFragment = decodedFragment && $.escapeSelector(decodedFragment);
+      if (Comment.isId(fragment)) {
+        commentId = decodedFragment;
       }
-    } else {
-      commentId = this.data('commentId');
+    } catch (e) {
+      console.error(e);
     }
 
     let date;
@@ -1263,31 +1257,73 @@ export default class BootProcess {
     let comment;
     if (commentId) {
       ({ date, author } = Comment.parseId(commentId) || {});
-      comment = Comment.getById(commentId, !this.data('commentId'));
+      comment = Comment.getById(commentId, true);
     } else if (decodedFragment) {
       ({ comment, date, author } = Comment.getByDtId(decodedFragment, true) || {});
-      if (comment) {
-        fragmentHasCommentId = true;
-      }
     }
 
     if (comment) {
       // setTimeout is for Firefox - for some reason, without it Firefox positions the underlay
-      // incorrectly.
+      // incorrectly. (TODO: does it still? Need to check.)
       setTimeout(() => {
-        comment.scrollTo(false, this.data('pushState'));
+        comment.scrollTo({
+          smooth: false,
+          expandThreads: true,
+        });
 
-        // When `this.data('pushState')` is true (on page reloads when an added comment or section
-        // is clicked), `fragmentHasCommentId` should be false - fragments are removed on page
-        // reload. So there is no duplication between `pushState` and `replaceState`.
-        if (fragmentHasCommentId) {
-          // Replace CD's comment ID in the fragment with DiscussionTools' if available.
-          let newFragment;
-          if (comment.dtId) {
-            newFragment = `#${comment.dtId}`;
-          }
-          const newState = Object.assign({}, history.state, { cdJumpedToComment: true });
-          history.replaceState(newState, '', newFragment);
+        // Replace CD's comment ID in the fragment with DiscussionTools' if available.
+        let newFragment;
+        if (comment.dtId) {
+          newFragment = `#${comment.dtId}`;
+        }
+        const newState = Object.assign({}, history.state, { cdJumpedToComment: true });
+        history.replaceState(newState, '', newFragment);
+      });
+    }
+
+    if (decodedFragment && controller.isPageActive()) {
+      const isTargetFound = (
+        comment ||
+        cd.config.idleFragments.includes(decodedFragment) ||
+        decodedFragment.startsWith('/media/') ||
+        $(':target').length ||
+        $(`a[name="${escapedDecodedFragment}"]`).length ||
+        $(`*[id="${escapedDecodedFragment}"]`).length ||
+        $(`a[name="${escapedFragment}"]`).length ||
+        $(`*[id="${escapedFragment}"]`).length
+      );
+      if (!isTargetFound) {
+        await this.maybeAddNotFoundMessage(decodedFragment, date, author);
+      }
+    }
+  }
+
+  /**
+   * Process the data passed to the boot process related to target comments or section and perform
+   * the relevant actions with it.
+   *
+   * @private
+   */
+  async processTargets() {
+    const commentIds = this.data('commentIds');
+    let comments;
+    if (commentIds) {
+      comments = commentIds.map((id) => Comment.getById(id));
+    }
+
+    if (comments) {
+      // setTimeout is for Firefox - for some reason, without it Firefox positions the underlay
+      // incorrectly. (TODO: does it still? Need to check.)
+      setTimeout(() => {
+        comments[0].scrollTo({
+          smooth: false,
+          pushState: this.data('pushState'),
+          flashTarget: !this.data('wasCommentFormSubmitted'),
+          flashPosted: this.data('wasCommentFormSubmitted'),
+        });
+
+        if (!this.data('wasCommentFormSubmitted')) {
+          comments.forEach((c) => c.flashTarget());
         }
       });
     }
@@ -1303,22 +1339,6 @@ export default class BootProcess {
         setTimeout(() => {
           section.$heading.cdScrollTo('top', false);
         });
-      }
-    }
-
-    if (this.firstRun && controller.isPageActive() && decodedFragment) {
-      const isTargetFound = (
-        comment ||
-        cd.config.idleFragments.includes(decodedFragment) ||
-        decodedFragment.startsWith('/media/') ||
-        $(':target').length ||
-        $(`a[name="${escapedDecodedFragment}"]`).length ||
-        $(`*[id="${escapedDecodedFragment}"]`).length ||
-        $(`a[name="${escapedFragment}"]`).length ||
-        $(`*[id="${escapedFragment}"]`).length
-      );
-      if (!isTargetFound) {
-        await this.maybeAddNotFoundMessage(decodedFragment, date, author);
       }
     }
   }
@@ -1733,9 +1753,10 @@ export default class BootProcess {
       // in collapsed threads.
       Thread.init();
 
-      // Should be below Thread.init() as it may want to scroll to a comment in a collapsed
-      // thread.
-      this.processTarget();
+      // Should be below Thread.init() as these methods may want to scroll to a comment in a
+      // collapsed thread.
+      this.processFragment();
+      this.processTargets();
 
       if (controller.isPageActive()) {
         this.processVisits();

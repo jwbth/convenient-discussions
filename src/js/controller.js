@@ -1266,7 +1266,7 @@ export default {
       CommentForm.saveSession();
     }
 
-    if (!bootProcess.data('commentId') && !bootProcess.data('sectionId')) {
+    if (!bootProcess.data('commentIds') && !bootProcess.data('sectionId')) {
       this.saveScrollPosition();
     }
 
@@ -1330,7 +1330,7 @@ export default {
 
     toc.possiblyHide();
 
-    if (!this.bootProcess.data('commentId') && !this.bootProcess.data('sectionId')) {
+    if (!this.bootProcess.data('commentIds') && !this.bootProcess.data('sectionId')) {
       this.restoreScrollPosition(false);
     }
   },
@@ -1361,14 +1361,10 @@ export default {
     const query = uri.query;
     if (
       (
-        (
-          uri.fragment &&
+        // Don't reset the fragment if it will be set in the boot process from a comment ID or a
+        // section ID, to avoid creating a duplicate history entry.
+        (uri.fragment && !this.bootProcess.data('pushState')) ||
 
-          // Don't reset the fragment if it will be set in the boot process from a comment ID or a
-          // section ID, to avoid creating a duplicate history entry.
-          !this.bootProcess.data('commentId') &&
-          !this.bootProcess.data('sectionId')
-        ) ||
         query.diff ||
         query.oldid
       ) &&

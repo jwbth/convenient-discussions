@@ -19,6 +19,15 @@
   background-color: var(--cd-comment-hovered-background-color);
 }
 
+.cd-comment-underlay-deleted.cd-comment-underlay-deleted {
+  background-color: var(--cd-comment-deleted-background-color);
+}
+
+.cd-comment-underlay-deleted.cd-comment-underlay-hovered,
+.cd-comment-overlay-deleted .cd-comment-overlay-content {
+  background-color: var(--cd-comment-deleted-hovered-background-color);
+}
+
 .cd-comment-underlay-changed.cd-comment-underlay-changed {
   background-color: var(--cd-comment-new-background-color);
 }
@@ -28,13 +37,13 @@
   background-color: var(--cd-comment-new-hovered-background-color);
 }
 
-.cd-comment-underlay-deleted.cd-comment-underlay-deleted {
-  background-color: var(--cd-comment-deleted-background-color);
+.cd-comment-underlay-posted.cd-comment-underlay-posted {
+  background-color: var(--cd-comment-posted-background-color);
 }
 
-.cd-comment-underlay-deleted.cd-comment-underlay-hovered,
-.cd-comment-overlay-deleted .cd-comment-overlay-content {
-  background-color: var(--cd-comment-deleted-hovered-background-color);
+.cd-comment-underlay-posted.cd-comment-underlay-posted.cd-comment-underlay-hovered,
+.cd-comment-overlay-posted.cd-comment-overlay-posted .cd-comment-overlay-content {
+  background-color: var(--cd-comment-posted-hovered-background-color);
 }
 
 .cd-comment-underlay-target.cd-comment-underlay-target {
@@ -70,6 +79,10 @@
     background-color: var(--cd-comment-deleted-marker-color);
   }
 
+  .cd-comment-overlay-posted.cd-comment-overlay-posted & {
+    background-color: var(--cd-comment-posted-marker-color);
+  }
+
   .cd-comment-overlay-target.cd-comment-overlay-target & {
     background-color: var(--cd-comment-target-marker-color);
   }
@@ -98,6 +111,20 @@
   .cd-comment-overlay-hovered & {
     display: flex;
   }
+
+  .ltr & {
+    direction: ltr;
+
+    // Fix for Firefox 56
+    right: 0;
+  }
+
+  .rtl & {
+    direction: rtl;
+
+    // Fix for Firefox 56
+    left: 0;
+  }
 }
 
 .cd-comment-overlay-gradient {
@@ -106,6 +133,30 @@
   -moz-user-select: none;
   -webkit-user-select: none;
   user-select: none;
+
+  .ltr & {
+    background-image: linear-gradient(to left, var(--cd-comment-hovered-background-color), rgba(255, 255, 255, 0));
+
+    .cd-comment-overlay-deleted & {
+      background-image: linear-gradient(to left, var(--cd-comment-deleted-hovered-background-color), rgba(255, 255, 255, 0));
+    }
+
+    .cd-comment-overlay-changed.cd-comment-overlay-changed & {
+      background-image: linear-gradient(to left, var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0));
+    }
+  }
+
+  .rtl & {
+    background-image: linear-gradient(to right, var(--cd-comment-hovered-background-color), rgba(255, 255, 255, 0));
+
+    .cd-comment-overlay-deleted & {
+      background-image: linear-gradient(to right, var(--cd-comment-deleted-hovered-background-color), rgba(255, 255, 255, 0));
+    }
+
+    .cd-comment-overlay-changed.cd-comment-overlay-changed & {
+      background-image: linear-gradient(to right, var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0));
+    }
+  }
 }
 
 .cd-comment-overlay-content {
@@ -169,27 +220,8 @@
   right: -1px;
 }
 
-.ltr {
-  .cd-comment-overlay-innerWrapper {
-    direction: ltr;
-
-    // Fix for Firefox 56
-    right: 0;
-  }
-
-  .cd-comment-overlay-gradient {
-    background-image: linear-gradient(to left, var(--cd-comment-hovered-background-color), rgba(255, 255, 255, 0));
-
-    .cd-comment-overlay-deleted & {
-      background-image: linear-gradient(to left, var(--cd-comment-deleted-hovered-background-color), rgba(255, 255, 255, 0));
-    }
-
-    .cd-comment-overlay-changed.cd-comment-overlay-changed & {
-      background-image: linear-gradient(to left, var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0));
-    }
-  }
-
-  .cd-comment-button-ooui.cd-comment-button-ooui {
+.cd-comment-button-ooui.cd-comment-button-ooui {
+  .ltr & {
     margin-right: 0;
 
     &:not(:first-child) {
@@ -200,29 +232,8 @@
       margin-left: 0;
     }
   }
-}
 
-.rtl {
-  .cd-comment-overlay-innerWrapper {
-    direction: rtl;
-
-    // Fix for Firefox 56
-    left: 0;
-  }
-
-  .cd-comment-overlay-gradient {
-    background-image: linear-gradient(to right, var(--cd-comment-hovered-background-color), rgba(255, 255, 255, 0));
-
-    .cd-comment-overlay-deleted & {
-      background-image: linear-gradient(to right, var(--cd-comment-deleted-hovered-background-color), rgba(255, 255, 255, 0));
-    }
-
-    .cd-comment-overlay-changed.cd-comment-overlay-changed & {
-      background-image: linear-gradient(to right, var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0));
-    }
-  }
-
-  .cd-comment-button-ooui.cd-comment-button-ooui {
+  .rtl & {
     margin-left: 0;
 
     &:not(:first-child) {

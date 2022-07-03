@@ -1826,8 +1826,8 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Flash the comment as a target (it is opened by a link, just posted, is the target of the
-   * up/down comment buttons, or is scrolled to after pressing a navigation panel button).
+   * Flash the comment as a target (it is opened by a link, is the target of the up/down comment
+   * buttons, is scrolled to after pressing a navigation panel button, etc.).
    */
   flashTarget() {
     this.isTarget = true;
@@ -1837,6 +1837,15 @@ class Comment extends CommentSkeleton {
     this.flash('target', 1500, () => {
       this.isTarget = false;
     });
+  }
+
+  /**
+   * Flash the comment as just posted.
+   */
+  flashPosted() {
+    // We don't take the color from cd.g.COMMENT_TARGET_COLOR as it may be overriden by the user in
+    // their personal CSS.
+    this.flash('posted', 1500);
   }
 
   /**
@@ -2048,7 +2057,7 @@ class Comment extends CommentSkeleton {
 
     let refreshLink;
     if (!isNewVersionRendered) {
-      const passedData = type === 'deleted' ? {} : { commentId: this.id };
+      const passedData = type === 'deleted' ? {} : { commentIds: [this.id] };
       refreshLink = new Button({
         label: cd.s('comment-changed-refresh'),
         action: () => {
@@ -2290,13 +2299,28 @@ class Comment extends CommentSkeleton {
   /**
    * Scroll to the comment and (by default) flash it as a target.
    *
-   * @param {boolean} [smooth=true] Use a smooth animation.
-   * @param {boolean} [pushState=false] Whether to push a state to the history with the comment ID
-   *   as a fragment.
-   * @param {boolean} [flash=true] Whether to flash the comment as target.
-   * @param {Function} [callback] Callback to run after the animation has completed.
+   * @param {object} [options]
+   * @param {boolean} [options.smooth=true] Use a smooth animation.
+   * @param {boolean} [options.expandThreads=false] Whether to expand the threads down to the
+   *   comment (to avoid the notification "The comment is in a collapsed thread").
+   * @param {boolean} [options.flashTarget=true] Whether to flash the comment as target.
+   * @param {boolean} [options.flashPosted=false] Whether to flash the comment as posted.
+   * @param {boolean} [options.pushState=false] Whether to push a state to the history with the
+   *   comment ID as a fragment.
+   * @param {Function} [options.callback] Callback to run after the animation has completed.
    */
-  scrollTo(smooth = true, pushState = false, flash = true, callback) {
+  scrollTo({
+    smooth = true,
+    expandThreads = false,
+    flashTarget = true,
+    flashPosted = false,
+    pushState = false,
+    callback,
+  } = {}) {
+    if (expandThreads) {
+      this.expandAllThreadsDownTo();
+    }
+
     const id = this.dtId || this.id;
     if (pushState && id) {
       const newState = Object.assign({}, history.state, { cdJumpedToComment: true });
@@ -2315,8 +2339,10 @@ class Comment extends CommentSkeleton {
         callback();
       }
       $elements.cdScrollIntoView(alignment, smooth, callback);
-      if (flash) {
+      if (flashTarget) {
         this.flashTarget();
+      } else if (flashPosted) {
+        this.flashPosted();
       }
     }
   }
@@ -2332,14 +2358,14 @@ class Comment extends CommentSkeleton {
       return;
     }
 
-    parent.scrollTo(true, true);
+    parent.scrollTo({ pushState: true });
     parent.configureLayers();
 
     if (!parent.goToChildButton) {
       parent.createGoToChildButton();
     }
     parent.goToChildButton.setAction(() => {
-      this.scrollTo(true, true);
+      this.scrollTo({ pushState: true });
     });
   }
 
@@ -3958,6 +3984,17 @@ class Comment extends CommentSkeleton {
       cachedAncestors.push(comment);
     }
     return cachedAncestors;
+  }
+
+  /**
+   * Recursively expand threads if the comment is in a collapsed thread.
+   */
+  expandAllThreadsDownTo() {
+    [this, ...this.getAncestors()]
+      .filter((comment) => comment.thread?.isCollapsed)
+      .forEach((comment) => {
+        comment.thread.expand();
+      });
   }
 }
 

@@ -736,7 +736,7 @@ class Section extends SectionSkeleton {
     newCommentCountLink.href = `#${newComments[0].dtId}`;
     newCommentCountLink.onclick = (e) => {
       e.preventDefault();
-      newComments[0].scrollTo(true, true);
+      newComments[0].scrollTo({ pushState: true });
       newComments.forEach((comment) => comment.flashTarget());
     };
     this.commentCountWrapper.append(' ', newCommentCountLink);

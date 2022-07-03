@@ -448,13 +448,16 @@ const toc = {
         if (comment instanceof Comment) {
           a.onclick = (e) => {
             e.preventDefault();
-            comment.scrollTo(false, true);
+            comment.scrollTo({
+              smooth: false,
+              pushState: true,
+            });
           };
         } else {
           a.onclick = (e) => {
             e.preventDefault();
             controller.reload({
-              commentId: comment.id,
+              commentIds: [comment.id],
               pushState: true,
             });
           };
@@ -539,7 +542,7 @@ const toc = {
       !areCommentsRendered ||
 
       // When the comment or section is opened by a link from the TOC
-      controller.getBootProcess().data('commentId') ||
+      controller.getBootProcess().data('commentIds') ||
       controller.getBootProcess().data('sectionId')
     );
     controller.saveRelativeScrollPosition({ saveTocHeight });

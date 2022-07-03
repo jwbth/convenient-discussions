@@ -206,17 +206,10 @@ function autocollapseThreads() {
 
   let comments = [];
 
-  // Don't autocollapse the target comment.
-  const targetCommentId = controller.getBootProcess().data('commentId');
-  let targetComment;
-  if (targetCommentId) {
-    targetComment = Comment.getById(targetCommentId);
-  }
-
   data.threads?.forEach((thread) => {
     const comment = Comment.getById(thread.id);
     if (comment?.thread) {
-      if (thread.collapsed && comment !== targetComment) {
+      if (thread.collapsed) {
         comments.push(comment);
       } else {
         /**
@@ -262,10 +255,6 @@ function autocollapseThreads() {
            * @private
            */
           comment.thread.isAutocollapseTarget = true;
-
-          if (comment === targetComment) {
-            comment.thread.wasManuallyExpanded = true;
-          }
 
           if (!comment.thread.wasManuallyExpanded) {
             comments.push(comment);

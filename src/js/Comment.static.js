@@ -66,7 +66,10 @@ function addNewCommentsNote(comments, parent, type, newCommentIndexes) {
     classes: ['cd-button-ooui', 'cd-thread-button'],
   });
   button.on('click', () => {
-    controller.reload({ commentId: commentsWithChildren[0].id });
+    controller.reload({
+      commentIds: [commentsWithChildren.map((c) => c.id)],
+      pushState: true,
+    });
   });
 
   if (parent instanceof Comment) {

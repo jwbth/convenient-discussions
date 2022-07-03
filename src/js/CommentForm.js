@@ -2988,9 +2988,10 @@ class CommentForm {
 
     if (!doDelete) {
     // Generate an ID for the comment to jump to.
-      passedData.commentId = this.mode === 'edit' ?
+      const commentId = this.mode === 'edit' ?
         this.target.id :
         this.generateFutureCommentId(editTimestamp);
+      passedData.commentIds = [commentId];
     }
 
     // When the edit takes place on another page that is transcluded in the current one, we must

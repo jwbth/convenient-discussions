@@ -33,6 +33,7 @@ let previousVisitRevisionId;
 let submittedCommentId;
 
 let lastCheckedRevisionId = null;
+let relevantNewCommentIds = null;
 let resolverCount = 0;
 let newCommentsTitleMark = '';
 
@@ -673,7 +674,7 @@ function showOrdinaryNotification(comments) {
       { comments: filteredComments }
     );
     notification.$notification.on('click', () => {
-      controller.reload({ commentId: filteredComments[0].id });
+      controller.reload({ commentIds: filteredComments.map((c) => c.id) });
     });
   }
 }
@@ -769,7 +770,7 @@ function showDesktopNotification(comments) {
     Comment.redrawLayersIfNecessary(false, true);
 
     controller.reload({
-      commentId: comment.id,
+      commentIds: [comment.id],
       closeNotificationsSmoothly: false,
     });
   };
@@ -865,9 +866,9 @@ async function processComments(comments, currentComments, currentRevisionId) {
   if (!isPageStillAtRevision(currentRevisionId)) return;
 
   if (relevantNewComments[0]) {
-    updateChecker.relevantNewCommentId = relevantNewComments[0].id;
+    relevantNewCommentIds = relevantNewComments.map((c) => c.id);
   } else if (newComments[0]) {
-    updateChecker.relevantNewCommentId = newComments[0].id;
+    relevantNewCommentIds = newComments.map((c) => c.id);
   }
 
   const newCommentsBySection = Comment.groupBySection(newComments);
@@ -913,15 +914,7 @@ const updateChecker = {
    */
   async init() {
     commentsNotifiedAbout = [];
-
-    /**
-     * ID of the comment that should be jumped to after reloading the page.
-     *
-     * @type {?string}
-     * @memberof module:updateChecker
-     */
-    this.relevantNewCommentId = null;
-
+    relevantNewCommentIds = null;
     isBackgroundCheckArranged = false;
     previousVisitRevisionId = null;
 
@@ -940,8 +933,8 @@ const updateChecker = {
 
     if (bootProcess.getPreviousVisitUnixTime()) {
       processRevisionsIfNeeded();
-      if (bootProcess.data('wasCommentFormSubmitted') && bootProcess.data('commentId')) {
-        submittedCommentId = bootProcess.data('commentId');
+      if (bootProcess.data('wasCommentFormSubmitted') && bootProcess.data('commentIds')) {
+        submittedCommentId = bootProcess.data('commentIds')[0];
       }
     }
   },
@@ -967,9 +960,25 @@ const updateChecker = {
     document.title = title.replace(/^(?:\(\d+\*?\) )?/, newCommentsTitleMark);
   },
 
+  /**
+   * Get the ID of the last revision checked for updates.
+   *
+   * @type {?string}
+   * @memberof module:updateChecker
+   */
   getLastCheckedRevisionId() {
     return lastCheckedRevisionId;
   },
+
+  /**
+   * Get the IDs of the comments that should be jumped to after reloading the page.
+   *
+   * @type {?(string[])}
+   * @memberof module:updateChecker
+   */
+  getRelevantNewCommentIds() {
+    return relevantNewCommentIds;
+  }
 };
 
 // For tests

@@ -206,8 +206,8 @@ export default {
     // There was reload confirmation here, but after session restore was introduced, the
     // confirmation seems to be no longer needed.
     controller.reload({
-      commentId: updateChecker.relevantNewCommentId,
-      pushState: Boolean(updateChecker.relevantNewCommentId),
+      commentIds: updateChecker.getRelevantNewCommentIds(),
+      pushState: Boolean(updateChecker.getRelevantNewCommentIds()),
       markAsRead,
     });
   },
@@ -231,11 +231,14 @@ export default {
       .filter((comment) => comment.isNew && !comment.isInViewport());
     const comment = candidates.find((comment) => comment.isInViewport() === false) || candidates[0];
     if (comment) {
-      comment.scrollTo(true, false, false, () => {
-        // The default handleScroll() callback is executed in $#cdScrollTo, but that happens after
-        // a 300ms timeout, so we have a chance to have our callback executed first.
-        comment.registerSeen(direction, true);
-        this.updateFirstUnseenButton();
+      comment.scrollTo({
+        flashTarget: false,
+        callback: () => {
+          // The default handleScroll() callback is executed in $#cdScrollTo, but that happens after
+          // a 300ms timeout, so we have a chance to have our callback executed first.
+          comment.registerSeen(direction, true);
+          this.updateFirstUnseenButton();
+        },
       });
     }
   },
@@ -263,11 +266,14 @@ export default {
     const candidates = cd.comments.filter((comment) => comment.isSeen === false);
     const comment = candidates.find((comment) => comment.isInViewport() === false) || candidates[0];
     if (comment) {
-      comment.scrollTo(true, false, false, () => {
-        // The default handleScroll() callback is executed in $#cdScrollTo, but that happens after
-        // a 300ms timeout, so we have a chance to have our callback executed first.
-        comment.registerSeen('forward', true);
-        this.updateFirstUnseenButton();
+      comment.scrollTo({
+        flashTarget: false,
+        callback: () => {
+          // The default handleScroll() callback is executed in $#cdScrollTo, but that happens after
+          // a 300ms timeout, so we have a chance to have our callback executed first.
+          comment.registerSeen('forward', true);
+          this.updateFirstUnseenButton();
+        },
       });
     }
   },
@@ -293,13 +299,7 @@ export default {
         return top1 - top2;
       })[0];
     if (commentForm) {
-      // Recursively expand threads if the form is in a collapsed thread.
-      [commentForm.getParentComment(), ...commentForm.getParentComment().getAncestors()]
-        .filter((comment) => comment.thread?.isCollapsed)
-        .forEach((comment) => {
-          comment.thread.expand();
-        });
-
+      commentForm.getParentComment().expandAllThreadsDownTo();
       commentForm.$element.cdScrollIntoView('center');
       focusInput(commentForm.commentInput);
     }
