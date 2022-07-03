@@ -340,7 +340,7 @@ export default {
   },
 
   /**
-   * Create a OOUI window manager or return an existing one.
+   * Create an OOUI window manager or return an existing one.
    *
    * @returns {external:OO.ui.WindowManager}
    */

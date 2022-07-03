@@ -145,7 +145,7 @@ import controller from './controller';
  */
 
 /**
- * Display a OOUI message dialog where user is asked to confirm something. Compared to
+ * Display an OOUI message dialog where user is asked to confirm something. Compared to
  * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui-method-confirm OO.ui.confirm},
  * returns an action string, not a boolean (which helps to differentiate between more than two types
  * of answer and also a window close by pressing Esc).

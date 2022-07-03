@@ -1400,13 +1400,13 @@ export default class BootProcess {
           commentUnixTime + 60 <= currentPageVisits[currentPageVisits.length - 1]
         );
         comment.isNew = isNewerThanFirstRememberedVisit || isUnseenStatePassed;
-        comment.isSeen = !(
-          isUnseenStatePassed ||
+        comment.isSeen = (
           (
-            isNewerThanFirstRememberedVisit &&
-            !(settings.get('highlightNewInterval') && isOlderThanPreviousVisit) &&
-            !comment.isOwn
-          )
+            !isNewerThanFirstRememberedVisit ||
+            (settings.get('highlightNewInterval') && isOlderThanPreviousVisit) ||
+            comment.isOwn
+          ) &&
+          !isUnseenStatePassed
         );
       });
 

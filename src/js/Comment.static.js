@@ -538,9 +538,9 @@ export default {
    * Get a comment by DiscussionTools ID.
    *
    * @param {string} id
-   * @param {boolean} returnComponents Whether to return the constituents of the ID (as an object)
-   *   together with a comment.
-   * @returns {?Comment|object}
+   * @param {boolean} [returnComponents=false] Whether to return the constituents of the ID (as an
+   *   object) together with a comment.
+   * @returns {?(Comment|object)}
    * @memberof Comment
    */
   getByDtId(id, returnComponents = false) {

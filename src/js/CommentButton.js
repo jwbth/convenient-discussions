@@ -12,7 +12,7 @@ function stopPropagation(e) {
 }
 
 /**
- * Class representing a comment button, be it a simple link or a OOUI button depending on user
+ * Class representing a comment button, be it a simple link or an OOUI button depending on user
  * settings.
  *
  * @augments Button
@@ -22,7 +22,7 @@ class CommentButton extends Button {
    * Create a comment button.
    *
    * @param {object} config Button config, see the details at {@link Button}.
-   * @param {Function} [config.widgetConstructor] Function that creates a OOUI widget that is the
+   * @param {Function} [config.widgetConstructor] Function that creates an OOUI widget that is the
    *   original source of this button (for OOUI buttons).
    */
   constructor(config) {
@@ -46,7 +46,7 @@ class CommentButton extends Button {
     this.element.classList.add('cd-comment-button');
 
     /**
-     * Constructor for the button's OOUI widget (if that's a OOUI button).
+     * Constructor for the button's OOUI widget (if that's an OOUI button).
      *
      * @type {Function}
      */
@@ -54,7 +54,7 @@ class CommentButton extends Button {
   }
 
   /**
-   * Create a OOUI widget (for a OOUI button) using {@link CommentButton#widgetConstructor}.
+   * Create an OOUI widget (for an OOUI button) using {@link CommentButton#widgetConstructor}.
    *
    * @private
    */

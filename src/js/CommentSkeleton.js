@@ -433,21 +433,21 @@ class CommentSkeleton {
    * Given a comment part (a node), tell if it is a part of a list.
    *
    * @param {Element|external:Element} node
-   * @param {boolean} definitionList
+   * @param {boolean} isDefinitionListOnly
    * @returns {boolean}
    */
-  isPartOfList(node, definitionList) {
+  isPartOfList(node, isDefinitionListOnly) {
     /*
       * The checks for DD help in cases like
         https://ru.wikipedia.org/wiki/Project:Форум/Архив/Общий/2019/11#201911201924_Vcohen
-        * A complex case where it messes up things:
+      ** A complex case where it messes up things:
         https://commons.wikimedia.org/wiki/Commons:Translators%27_noticeboard/Archive/2020#202011151417_Ameisenigel
       * The check for DL helps in cases like
         https://ru.wikipedia.org/wiki/Project:Форум/Архив/Общий/2020/03#202003090945_Serhio_Magpie
         (see the original HTML source)
      */
     const tagNames = ['DD', 'DL'];
-    if (!definitionList) {
+    if (!isDefinitionListOnly) {
       tagNames.push('LI', 'UL');
     }
     return node && (tagNames.includes(node.tagName) || tagNames.includes(node.parentNode.tagName));
@@ -1195,36 +1195,36 @@ class CommentSkeleton {
    * @private
    */
   fixIndentationHoles() {
-    if (this.level && this.elements.length > 2) {
-      // Get level elements based on this.elements, not this.highlightables.
-      const allLevelElements = this.elements.map((el) => this.getListsUpTree(el, true));
+    if (!this.level || this.elements.length <= 2) return;
 
-      const groups = [];
-      allLevelElements.slice(1, allLevelElements.length - 1).forEach((ancestors, i) => {
-        if (!ancestors.length) {
-          const lastGroup = groups[groups.length - 1];
-          if (!lastGroup || lastGroup[lastGroup.length - 1] !== i) {
-            groups.push([]);
-          }
-          groups[groups.length - 1].push(i + 1);
+    // Get level elements based on this.elements, not this.highlightables.
+    const allLevelElements = this.elements.map((el) => this.getListsUpTree(el, true));
+
+    const groups = [];
+    allLevelElements.slice(1, allLevelElements.length - 1).forEach((ancestors, i) => {
+      if (!ancestors.length) {
+        const lastGroup = groups[groups.length - 1];
+        if (!lastGroup || lastGroup[lastGroup.length - 1] !== i) {
+          groups.push([]);
         }
-      });
-      groups.forEach((indexes) => {
-        const levelElement = allLevelElements
-          .slice(0, indexes[0])
-          .reverse()
-          .find((ancestors) => ancestors.length)
-          ?.slice(-1)[0];
-        if (levelElement) {
-          const tagName = levelElement.tagName === 'DL' ? 'dd' : 'li';
-          const itemElement = document.createElement(tagName);
-          indexes.forEach((index) => {
-            itemElement.appendChild(this.elements[index]);
-          });
-          levelElement.appendChild(itemElement);
-        }
-      });
-    }
+        groups[groups.length - 1].push(i + 1);
+      }
+    });
+    groups.forEach((indexes) => {
+      const levelElement = allLevelElements
+        .slice(0, indexes[0])
+        .reverse()
+        .find((ancestors) => ancestors.length)
+        ?.slice(-1)[0];
+      if (levelElement) {
+        const tagName = levelElement.tagName === 'DL' ? 'dd' : 'li';
+        const itemElement = document.createElement(tagName);
+        indexes.forEach((index) => {
+          itemElement.appendChild(this.elements[index]);
+        });
+        levelElement.appendChild(itemElement);
+      }
+    });
   }
 
   /**

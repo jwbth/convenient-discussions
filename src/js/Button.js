@@ -38,7 +38,7 @@ class Button {
    * @param {string} [config.href] Value of the `href` parameter to add to the link element.
    * @param {string} [config.label] Label of the button.
    * @param {string} [config.tooltip] Tooltip for the button.
-   * @param {string[]} [config.flags] Flags to apply to a OOUI button.
+   * @param {string[]} [config.flags] Flags to apply to an OOUI button.
    * @param {Function} [config.action] Function to execute on click or Enter press.
    */
   constructor({
@@ -260,7 +260,7 @@ class Button {
   }
 
   /**
-   * Set the class to a OOUI icon to make it look like icons with the "progressive" flag do. Somehow
+   * Set the class to an OOUI icon to make it look like icons with the "progressive" flag do. Somehow
    * OOUI doesn't set it at the building stage.
    */
   setIconProgressive() {

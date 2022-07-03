@@ -38,10 +38,6 @@ export default {
       allowEditOthersComments: false,
       alwaysExpandAdvanced: false,
 
-      // If the user has never changed the insert buttons configuration, it should change with the
-      // default configuration change.
-      haveInsertButtonsBeenAltered: false,
-
       // The order should coincide with the order of checkboxes in
       // `SettingsDialog#autocompleteTypesMultiselect` in modal.js - otherwise the "Save" and
       // "Reset" buttons in the settings dialog won't work properly.
@@ -65,7 +61,6 @@ export default {
       showToolbar: true,
       signaturePrefix: cd.config.defaultSignaturePrefix,
       timestampFormat: 'default',
-      topicSubscriptionSeenNotice: false,
       modifyToc: true,
       useBackgroundHighlighting: true,
       useTemplateData: true,
@@ -77,6 +72,15 @@ export default {
       watchOnReply: !mw.loader.getState('ext.discussionTools.init'),
 
       subscribeOnReply: true,
+
+
+      /* The following are not settings but states to be remembered. */
+
+      topicSubscriptionSeenNotice: false,
+
+      // If the user has never changed the insert buttons configuration, it should change with the
+      // default configuration change.
+      haveInsertButtonsBeenAltered: false,
     };
   },
 

@@ -91,7 +91,7 @@ class Parser {
    * is enabled (to avoid errors being thrown in DT). Prior to that, extract data from them.
    *
    * CD already parses comment links from notifications (which seems to be this markup's purpose for
-   * disabled DT) in {@link BootProcess#processTarget}. Unless the elements prove useful to
+   * disabled DT) in {@link BootProcess#processTargets}. Unless the elements prove useful to
    * CD or other scripts, it's better to get rid of them rather than deal with them one by one while
    * parsing.
    */
