@@ -269,11 +269,11 @@ class Section extends SectionSkeleton {
       }
     };
 
-    this.addSubsectionButton.buttonElement.firstChild.onmouseenter = () => {
+    this.addSubsectionButton.buttonElement.onmouseenter = () => {
       clearTimeout(hideAddSubsectionButtonTimeout);
       hideAddSubsectionButtonTimeout = null;
     };
-    this.addSubsectionButton.buttonElement.firstChild.onmouseleave = () => {
+    this.addSubsectionButton.buttonElement.onmouseleave = () => {
       deferButtonHide();
     };
 
