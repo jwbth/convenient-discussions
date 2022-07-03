@@ -538,6 +538,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
     });
     this.enableThreadsCheckbox.connect(this, { change: 'updateStates' });
     this.hideTimezoneCheckbox.connect(this, { change: 'updateStates' });
+    this.highlightNewIntervalInput.connect(this, { change: 'updateStates' });
     this.modifyTocCheckbox.connect(this, { change: 'updateStates' });
     this.notificationsSelect.connect(this, { select: 'updateStates' });
     this.notifyCollapsedThreadsCheckbox.connect(this, { change: 'updateStates' });

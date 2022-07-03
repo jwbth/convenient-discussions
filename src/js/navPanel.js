@@ -355,7 +355,7 @@ export default {
         ' ' +
         cd.mws('parentheses', 'R')
       );
-      if (areThereNew) {
+      if (areThereNew && settings.get('highlightNewInterval')) {
         tooltipText += '\n' + cd.s('navpanel-markasread', cd.g.CMD_MODIFIER);
       }
       const bullet = removeWikiMarkup(cd.s('bullet'));
@@ -390,7 +390,7 @@ export default {
       }
     } else {
       tooltipText = cd.s('navpanel-refresh') + ' ' + cd.mws('parentheses', 'R');
-      if (areThereNew) {
+      if (areThereNew && settings.get('highlightNewInterval')) {
         tooltipText += '\n' + cd.s('navpanel-markasread', cd.g.CMD_MODIFIER);
       }
     }
