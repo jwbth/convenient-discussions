@@ -2858,16 +2858,18 @@ class CommentForm {
           subscriptions.subscribe(subscribeId, originalHeadline);
         }
       } else {
-        const section = this.targetSection;
+        let section = this.targetSection?.getSectionSubscribedTo();
         if (section && !section.subscriptionState) {
-          section.subscribe(true);
+          section.ensureSubscribeIdPresent(section.oldestComment || editTimestamp);
+          section.subscribe('silent');
           passedData.justSubscribedToSection = section.subscribeId;
         }
       }
     } else {
-      const section = this.targetSection;
+      const section = this.targetSection?.getSectionSubscribedTo();
       if (section?.subscriptionState) {
-        section.unsubscribe(true);
+        section.ensureSubscribeIdPresent(section.oldestComment || editTimestamp);
+        section.unsubscribe('silent');
         passedData.justUnsubscribedFromSection = section.subscribeId;
       }
     }

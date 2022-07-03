@@ -116,15 +116,23 @@ export default {
    * @param {string} subscribeId Section's DiscussionTools ID.
    * @param {string} id Section's ID.
    * @param {boolean} subscribe Subscribe or unsubscribe.
+   * @throws {CdError}
    * @private
    */
   async dtSubscribe(subscribeId, id, subscribe) {
+    if (subscribeId === undefined) {
+      throw new CdError();
+    }
+
     try {
       await dtSubscribe(subscribeId, id, subscribe);
       this.updateRegistry(subscribeId, subscribe);
     } catch (e) {
       mw.notify(cd.s('error-settings-save'), { type: 'error' });
+      throw e;
     }
+
+    this.maybeShowNotice();
   },
 
   /**
@@ -143,7 +151,7 @@ export default {
         await this.load();
       } catch (e) {
         mw.notify(cd.s('error-settings-load'), { type: 'error' });
-        return;
+        throw e;
       }
 
       const backupRegistry = Object.assign({}, this.registry);
@@ -175,6 +183,7 @@ export default {
         } else {
           mw.notify(cd.s('error-settings-save'), { type: 'error' });
         }
+        throw e;
       }
     };
 
@@ -198,7 +207,7 @@ export default {
         await this.load();
       } catch (e) {
         mw.notify(cd.s('error-settings-load'), { type: 'error' });
-        return;
+        throw e;
       }
 
       const backupRegistry = Object.assign({}, this.registry);
@@ -209,6 +218,7 @@ export default {
       } catch (e) {
         this.registry = backupRegistry;
         mw.notify(cd.s('error-settings-save'), { type: 'error' });
+        throw e;
       }
     };
 
@@ -228,8 +238,6 @@ export default {
    * @returns {Promise}
    */
   subscribe(subscribeId, id, unsubscribeHeadline) {
-    if (subscribeId === undefined) return;
-
     return this.useTopicSubscription ?
       this.dtSubscribe(subscribeId, id, true) :
       this.subscribeLegacy(subscribeId, unsubscribeHeadline);
@@ -243,8 +251,6 @@ export default {
    * @returns {Promise}
    */
   unsubscribe(subscribeId, id) {
-    if (subscribeId === undefined) return;
-
     return this.useTopicSubscription ?
       this.dtSubscribe(subscribeId, id, false) :
       this.unsubscribeLegacy(subscribeId);
@@ -341,6 +347,8 @@ export default {
 
   /**
    * Show a message dialog informing the user about the new topic subscription feature.
+   *
+   * @private
    */
   async maybeShowNotice() {
     if (!this.useTopicSubscription || settings.get('topicSubscriptionSeenNotice')) return;

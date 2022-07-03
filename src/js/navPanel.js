@@ -299,7 +299,7 @@ export default {
         return top1 - top2;
       })[0];
     if (commentForm) {
-      commentForm.getParentComment().expandAllThreadsDownTo();
+      commentForm.getParentComment()?.expandAllThreadsDownTo();
       commentForm.$element.cdScrollIntoView('center');
       focusInput(commentForm.commentInput);
     }

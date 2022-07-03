@@ -2251,7 +2251,7 @@ class Comment extends CommentSkeleton {
                 section.subscriptionState &&
                 section.headline !== originalHeadline
               ) {
-                section.subscribe(true, originalHeadline);
+                section.subscribe('quiet', originalHeadline);
               }
               if (settings.get('modifyToc')) {
                 section.getTocItem()?.replaceText($html);

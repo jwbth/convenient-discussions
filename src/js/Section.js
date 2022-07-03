@@ -759,10 +759,14 @@ class Section extends SectionSkeleton {
     }
 
     if (cd.g.IS_DT_TOPIC_SUBSCRIPTION_ENABLED) {
-      this.subscribeId = this.headingElement
-        .getElementsByClassName('ext-discussiontools-init-section-subscribe-link')[0]
-        ?.dataset
-        .mwCommentName;
+      if (this.headingElement.querySelector('.ext-discussiontools-init-section-subscribe-link')) {
+        const headlineJson = this.headlineElement.dataset.mwComment;
+        try {
+          this.subscribeId = JSON.parse(headlineJson).name;
+        } catch {
+          // Empty
+        }
+      }
     } else {
       let n = this.headlineElement;
       let subscribeIdNode;
@@ -863,7 +867,7 @@ class Section extends SectionSkeleton {
   updateSubscribeButtonState() {
     if (this.subscriptionState) {
       this.actions.subscribeButton
-        .setLabel(cd.s('sm-unsubscribe'))
+        ?.setLabel(cd.s('sm-unsubscribe'))
         .setTitle(cd.mws('discussiontools-topicsubscription-button-unsubscribe-tooltip'))
         .setIcon('bell')
         .off('click')
@@ -872,7 +876,7 @@ class Section extends SectionSkeleton {
         });
     } else {
       this.actions.subscribeButton
-        .setLabel(cd.s('sm-subscribe'))
+        ?.setLabel(cd.s('sm-subscribe'))
         .setTitle(cd.mws('discussiontools-topicsubscription-button-subscribe-tooltip'))
         .setIcon('bellOutline')
         .off('click')
@@ -885,16 +889,20 @@ class Section extends SectionSkeleton {
   /**
    * Add the section to the subscription list.
    *
-   * @param {boolean} [silent=false] Don't show a notification or change UI unless there is an
-   *   error.
+   * @param {string} [mode] No value: a notification will be shown. `'quiet'`: don't show a
+   *   notification. `'silent'`: don't even change any UI, including the subscribe button
+   *   appearance. If there is an error, it will be displayed though.
    * @param {string} [renamedFrom] If DiscussionTools' topic subscriptions API is not used and the
    *   section was renamed, the previous section headline. It is unwatched together with watching
    *   the current headline if there is no other coinciding headlines on the page.
    */
-  subscribe(silent = false, renamedFrom) {
+  subscribe(mode, renamedFrom) {
+    // That's a mechanism mainly for legacy subscriptions but can be used for DT subscriptions as
+    // well, for which `sections` will have more than one section when there is more than one
+    // section created by a certain user at a certain moment in time.
     const sections = Section.getBySubscribeId(this.subscribeId);
     let finallyCallback;
-    if (!silent) {
+    if (mode !== 'silent') {
       const buttons = sections.map((section) => section.actions.subscribeButton).filter(defined);
       buttons.forEach((button) => {
         button.setDisabled(true);
@@ -913,18 +921,20 @@ class Section extends SectionSkeleton {
 
     subscriptions.subscribe(this.subscribeId, this.id, unsubscribeHeadline)
       .then(() => {
-        sections.forEach((section) => {
-          section.subscriptionState = true;
-          section.updateSubscribeButtonState();
-          section.updateTocLink();
-        });
-        if (!silent) {
+        if (mode !== 'silent') {
+          sections.forEach((section) => {
+            section.subscriptionState = true;
+            section.updateSubscribeButtonState();
+            section.updateTocLink();
+          });
+        }
+
+        if (!mode) {
           let title = cd.mws('discussiontools-topicsubscription-notify-subscribed-title');
           let body = cd.mws('discussiontools-topicsubscription-notify-subscribed-body');
           let autoHideSeconds;
           if (!settings.get('useTopicSubscription')) {
             body += ' ' + cd.sParse('section-watch-openpages');
-
             if ($('#ca-watch').length) {
               body += ' ' + cd.sParse('section-watch-pagenotwatched');
               autoHideSeconds = 'long';
@@ -932,7 +942,6 @@ class Section extends SectionSkeleton {
           }
           mw.notify(wrap(body), { title, autoHideSeconds });
         }
-        subscriptions.maybeShowNotice();
       })
       .then(finallyCallback, finallyCallback);
   }
@@ -940,13 +949,14 @@ class Section extends SectionSkeleton {
   /**
    * Remove the section from the subscription list.
    *
-   * @param {boolean} [silent=false] Don't show a notification or change UI unless there is an
-   *   error.
+   * @param {boolean} [mode] No value: a notification will be shown. `'quiet'`: don't show a
+   *   notification. `'silent'`: don't even change any UI, including the subscribe button
+   *   appearance. If there is an error, it will be displayed though.
    */
-  unsubscribe(silent = false) {
+  unsubscribe(mode) {
     const sections = Section.getBySubscribeId(this.subscribeId);
     let finallyCallback;
-    if (!silent) {
+    if (mode !== 'silent') {
       const buttons = sections.map((section) => section.actions.subscribeButton).filter(defined);
       buttons.forEach((button) => {
         button.setDisabled(true);
@@ -960,14 +970,16 @@ class Section extends SectionSkeleton {
 
     subscriptions.unsubscribe(this.subscribeId, this.id)
       .then(() => {
-        sections.forEach((section) => {
-          section.subscriptionState = false;
-          section.updateSubscribeButtonState();
-          section.updateTocLink();
-        });
+        if (mode !== 'silent') {
+          sections.forEach((section) => {
+            section.subscriptionState = false;
+            section.updateSubscribeButtonState();
+            section.updateTocLink();
+          });
+        }
 
         const ancestorSubscribedTo = this.getClosestSectionSubscribedTo();
-        if (!silent || ancestorSubscribedTo) {
+        if (!mode || ancestorSubscribedTo) {
           let title = cd.mws('discussiontools-topicsubscription-notify-unsubscribed-title');
           let body = cd.mws('discussiontools-topicsubscription-notify-unsubscribed-body');
           let autoHideSeconds;
@@ -1013,7 +1025,7 @@ class Section extends SectionSkeleton {
       oldSection.headline !== newHeadline &&
       subscriptions.getOriginalState(oldSection.headline)
     ) {
-      this.subscribe(true, oldSection.headline);
+      this.subscribe('quiet', oldSection.headline);
     }
   }
 
@@ -1485,11 +1497,14 @@ class Section extends SectionSkeleton {
    * section itself if it is of level 2 (even if there is a level 1 section) or if there is no
    * higher level section (the current section may be of level 3 or 1, for example).
    *
-   * @returns {Section}
+   * @param {boolean} [force2Level=false] Guarantee a 2-level section is returned.
+   * @returns {?Section}
    */
-  getBase() {
+  getBase(force2Level = false) {
+    const defaultValue = force2Level && this.level !== 2 ? null : this;
+
     if (this.level <= 2) {
-      return this;
+      return defaultValue;
     }
 
     return (
@@ -1497,7 +1512,7 @@ class Section extends SectionSkeleton {
         .slice(0, this.index)
         .reverse()
         .find((section) => section.level === 2) ||
-      this
+      defaultValue
     );
   }
 
@@ -1637,6 +1652,26 @@ class Section extends SectionSkeleton {
    */
   getWikilinkFragment() {
     return encodeWikilink(underlinesToSpaces(this.id));
+  }
+
+  /**
+   * Generate a DT subscribe ID from the oldest timestamp in the section if there is no.
+   *
+   * @param {string} timestamp Oldest timestamp in the section.
+   */
+  ensureSubscribeIdPresent(timestamp) {
+    if (!settings.get('useTopicSubscription') || this.subscribeId) return;
+
+    this.subscribeId = Section.generateDtSubscriptionId(cd.user.getName(), timestamp);
+  }
+
+  /**
+   * Get the section used to subscribe to if available.
+   *
+   * @returns {?Section}
+   */
+  getSectionSubscribedTo() {
+    return settings.get('useTopicSubscription') ? this.getBase(true) : this;
   }
 }
 
