@@ -216,7 +216,8 @@ const toc = {
     // We add the comment count even if the "Modify TOC" setting is off.
     if (!this.isPresent()) return;
 
-    cd.sections.forEach((section, i) => {
+    let usedFullForm = false;
+    cd.sections.forEach((section) => {
       const item = section.getTocItem();
       if (!item) return;
 
@@ -225,7 +226,10 @@ const toc = {
 
       const unseenCount = section.comments.filter((comment) => comment.isSeen === false).length;
       const $target = this.isInSidebar() ? item.$text : item.$link;
-      this.addCommentCountString(count, unseenCount, i === 0, $target);
+      this.addCommentCountString(count, unseenCount, !usedFullForm, $target);
+
+      item.usesFullForm = !usedFullForm;
+      usedFullForm = true;
     });
   },
 
@@ -374,20 +378,25 @@ const toc = {
   },
 
   /**
-   * Get some elements of reference (a section link, an element to add a comment list after) in the
-   * table of contents for a section, needed to work with it.
+   * Get some data (a section link, an element to add a comment list after, whether to use a full
+   * text form) for a section, needed to work with it.
    *
    * @param {import('./commonTypedefs').SectionSkeletonLike[]} section Section.
    * @param {boolean} areCommentsRendered Whether the comments are rendered (visible on the page).
    * @returns {object}
    */
-  getElementsForSection(section, areCommentsRendered) {
+  getDataForSection(section, areCommentsRendered) {
     // There could be a collision of hrefs between the existing section and not yet rendered
     // section, so we compose the selector carefully.
     let $sectionLink;
     let $target;
+    let useFullForm = false;
     if (areCommentsRendered) {
-      $target = $sectionLink = section.getTocItem()?.$link;
+      const item = section.getTocItem();
+      if (item) {
+        $target = $sectionLink = item.$link;
+        useFullForm = item.usesFullForm;
+      }
     } else {
       if (section.match) {
         $sectionLink = section.match.getTocItem()?.$link;
@@ -409,6 +418,7 @@ const toc = {
     return {
       target: $target?.get(0),
       $sectionLink,
+      useFullForm,
     };
   },
 
@@ -569,7 +579,10 @@ const toc = {
     commentsBySection.forEach((comments, section) => {
       if (!section) return;
 
-      const { target, $sectionLink } = this.getElementsForSection(section, areCommentsRendered);
+      const { target, $sectionLink, useFullForm } = this.getDataForSection(
+        section,
+        areCommentsRendered
+      );
 
       // Should never be the case
       if (!target) return;
@@ -586,7 +599,7 @@ const toc = {
         const $target = this.isInSidebar() ?
           $sectionLink.children('sidebar-toc-text') :
           $sectionLink;
-        this.addCommentCountString(count, unseenCount, section.index === 0, $target);
+        this.addCommentCountString(count, unseenCount, useFullForm, $target);
       }
 
       this.addCommentList(comments, target, areCommentsRendered);
