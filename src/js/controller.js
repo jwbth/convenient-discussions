@@ -315,6 +315,18 @@ export default {
   },
 
   /**
+   * Get the sticky header element, if present.
+   *
+   * @returns {Element}
+   */
+  getStickyHeader() {
+    if (!this.stickyHeader) {
+      this.stickyHeader = document.getElementById('vector-sticky-header');
+    }
+    return this.stickyHeader;
+  },
+
+  /**
    * Memorize the "Add section" form.
    *
    * @param {CommentForm} commentForm

@@ -478,7 +478,9 @@ export default {
       controller.getPopupOverlay(false)
         ?.get(0)
         .querySelector('.oo-ui-popupWidget:not(.oo-ui-element-hidden)')
-        ?.matches(':hover')
+        ?.matches(':hover') ||
+
+      controller.getStickyHeader()?.matches(':hover')
     );
 
     cd.comments
