@@ -472,15 +472,18 @@ class Thread {
       this.clickArea.classList.add('cd-thread-clickArea-stretchedStart');
     }
 
+    // Add some debouncing so that the user is not annoyed by the cursor changing its form when
+    // moving across thread lines.
     this.clickArea.onmouseenter = () => {
       this.highlightTimeout = setTimeout(() => {
-        this.clickArea.classList.add('cd-thread-clickArea-hovered');
+        this.clickArea?.classList.add('cd-thread-clickArea-hovered');
       }, 75);
     };
     this.clickArea.onmouseleave = () => {
       clearTimeout(this.highlightTimeout);
-      this.clickArea.classList.remove('cd-thread-clickArea-hovered');
+      this.clickArea?.classList.remove('cd-thread-clickArea-hovered');
     };
+
     this.clickArea.onclick = () => {
       if (this.clickArea.classList.contains('cd-thread-clickArea-hovered')) {
         this.toggle();
