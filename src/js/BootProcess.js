@@ -57,12 +57,13 @@ function handleDtMarkup(elements) {
   );
   let dtMarkupHavenElement;
   if (moveNotRemove) {
-    if (controller.getBootProcess().isPageFirstParsed()) {
+    if (!controller.getBootProcess().isPageFirstParsed()) {
+      dtMarkupHavenElement = controller.$content.children('.cd-dtMarkupHaven').get(0);
+    }
+    if (!dtMarkupHavenElement) {
       dtMarkupHavenElement = document.createElement('span');
       dtMarkupHavenElement.className = 'cd-dtMarkupHaven cd-hidden';
       controller.$content.append(dtMarkupHavenElement);
-    } else {
-      dtMarkupHavenElement = controller.$content.children('.cd-dtMarkupHaven').get(0);
     }
   }
 
