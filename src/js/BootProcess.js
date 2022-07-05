@@ -1709,12 +1709,6 @@ export default class BootProcess {
     // This updates some styles, shifting the offsets.
     controller.$root.addClass('cd-parsed');
 
-    if (this.firstRun) {
-      // Restore the initial viewport position in terms of visible elements, which is how the user
-      // sees it.
-      controller.restoreRelativeScrollPosition();
-    }
-
     if (controller.isPageCommentable()) {
       this.addAddTopicButton();
       this.connectToAddTopicButtons();
@@ -1783,6 +1777,12 @@ export default class BootProcess {
         // relatively late.
         mw.hook(cd.config.hookToFireWithAuthorWrappers).fire($('.cd-comment-author-wrapper'));
       }
+    }
+
+    if (this.firstRun) {
+      // Restore the initial viewport position in terms of visible elements, which is how the user
+      // sees it.
+      controller.restoreRelativeScrollPosition();
     }
 
     /**
