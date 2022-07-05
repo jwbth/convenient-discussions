@@ -3069,7 +3069,11 @@ class Comment extends CommentSkeleton {
         return timestamp && !timestamp.closest('.cd-signature');
       });
 
-      // Exclude the text of the previous comment that is ended with 3 or 5 tildes instead of 4.
+      // Exclude the text of the previous comment that is ended with 3 or 5 tildes instead of 4 and
+      // foreign timestamps. The foreign timestamp part can be moved out of the `!headingMatch`
+      // condition together with `cd.g.BAD_COMMENT_BEGINNINGS` check to allow to apply to cases like
+      // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Start_of_section,_comment_with_timestamp_but_without_author,_newline_inside_comment,_HTML_comments_before_reply,
+      // but this can create problems with removing stuff from the opening comment.
       [cd.config.signatureEndingRegexp, areThereForeignTimestamps ? null : cd.g.TIMEZONE_REGEXP]
         .filter(notNull)
         .forEach((originalRegexp) => {
@@ -3102,8 +3106,8 @@ class Comment extends CommentSkeleton {
         if (pattern.source[0] !== '^') {
           console.debug('Regexps in cd.config.customBadCommentBeginnings should have "^" as the first character.');
         }
-        const match = code.match(pattern);
-        if (match) {
+        let match;
+        while ((match = code.match(pattern))) {
           code = code.slice(match[0].length);
           lineStartIndex = startIndex + match[0].lastIndexOf('\n') + 1;
           startIndex += match[0].length;
@@ -3173,8 +3177,8 @@ class Comment extends CommentSkeleton {
         replaceIndentationChars
       );
 
-      // See the comment "Without the following code, the section introduction..." in Parser.js.
-      // Dangerous case: the first section at
+      // See the comment "Without treatment of such cases, the section introduction..." in
+      // CommentSkeleton.js. Dangerous case: the first section at
       // https://ru.wikipedia.org/w/index.php?oldid=105936825&action=edit. This was actually a
       // mistake to put a signature at the first level, but if it was legit, only the last sentence
       // should have been interpreted as the comment.
