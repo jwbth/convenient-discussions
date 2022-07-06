@@ -701,6 +701,13 @@ class Section extends SectionSkeleton {
       barElement.append(...[this.metadataElement, this.actionsElement].filter(defined));
       this.headingElement.parentNode
         .insertBefore(barElement, this.headingElement.nextElementSibling);
+
+      if (this.lastElement === this.headingElement) {
+        this.lastElement = barElement;
+      }
+      if (this.lastElementInFirstChunk === this.headingElement) {
+        this.lastElementInFirstChunk = barElement;
+      }
     } else {
       this.headingElement.classList.add('cd-subsection');
       this.headingElement.append(this.actionsElement);
