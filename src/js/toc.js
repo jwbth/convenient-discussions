@@ -378,24 +378,21 @@ const toc = {
   },
 
   /**
-   * Get some data (a section link, an element to add a comment list after, whether to use a full
-   * text form) for a section, needed to work with it.
+   * Get the element to add a comment list after for a section.
    *
    * @param {import('./commonTypedefs').SectionSkeletonLike[]} section Section.
    * @param {boolean} areCommentsRendered Whether the comments are rendered (visible on the page).
-   * @returns {object}
+   * @returns {?object}
    */
-  getDataForSection(section, areCommentsRendered) {
+  getTargetElementForSection(section, areCommentsRendered) {
     // There could be a collision of hrefs between the existing section and not yet rendered
     // section, so we compose the selector carefully.
     let $sectionLink;
     let $target;
-    let useFullForm = false;
     if (areCommentsRendered) {
       const item = section.getTocItem();
       if (item) {
         $target = $sectionLink = item.$link;
-        useFullForm = item.usesFullForm;
       }
     } else {
       if (section.match) {
@@ -415,11 +412,7 @@ const toc = {
       }
     }
 
-    return {
-      target: $target?.get(0),
-      $sectionLink,
-      useFullForm,
-    };
+    return $target?.get(0) || null;
   },
 
   /**
@@ -579,28 +572,10 @@ const toc = {
     commentsBySection.forEach((comments, section) => {
       if (!section) return;
 
-      const { target, $sectionLink, useFullForm } = this.getDataForSection(
-        section,
-        areCommentsRendered
-      );
+      const target = this.getTargetElementForSection(section, areCommentsRendered);
 
       // Should never be the case
       if (!target) return;
-
-      if (!areCommentsRendered) {
-        const count = section.comments.length;
-        let unseenCount = comments.length;
-        if (section.match) {
-          unseenCount += section.match.comments
-            .filter((comment) => comment.isSeen === false)
-            .length;
-          $sectionLink.children('.cd-toc-commentCount').remove();
-        }
-        const $target = this.isInSidebar() ?
-          $sectionLink.children('sidebar-toc-text') :
-          $sectionLink;
-        this.addCommentCountString(count, unseenCount, useFullForm, $target);
-      }
 
       this.addCommentList(comments, target, areCommentsRendered);
     });
