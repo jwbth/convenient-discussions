@@ -11,8 +11,8 @@ import cd from './cd';
 import controller from './controller';
 import settings from './settings';
 import updateChecker from './updateChecker';
-import { focusInput, isCmdModifierPressed, reorderArray } from './util';
 import { formatDate } from './timestamp';
+import { isCmdModifierPressed, reorderArray } from './util';
 import { removeWikiMarkup } from './wikitext';
 
 let urbtTimeout;
@@ -279,30 +279,24 @@ export default {
   },
 
   /**
-   * Go to the next comment form out of sight, or just the first comment form, if `first` is set to
+   * Go to the next comment form out of sight, or just the next comment form, if `inSight` is set to
    * true.
    *
-   * @param {boolean} [first=false]
+   * @param {boolean} [inSight=false]
    */
-  goToNextCommentForm(first = false) {
-    const commentForm = cd.commentForms
-      .filter((commentForm) => first || !commentForm.$element.cdIsInViewport(true))
-      .sort((commentForm1, commentForm2) => {
-        let top1 = commentForm1.$element.get(0).getBoundingClientRect().top;
-        if (top1 < 0) {
-          top1 += $(document).height() * 2;
+  goToNextCommentForm(inSight) {
+    cd.commentForms
+      .filter((commentForm) => inSight || !commentForm.$element.cdIsInViewport(true))
+      .map((commentForm) => {
+        let top = commentForm.$element.get(0).getBoundingClientRect().top;
+        if (top < 0) {
+          top += $(document).height() * 2;
         }
-        let top2 = commentForm2.$element.get(0).getBoundingClientRect().top;
-        if (top2 < 0) {
-          top2 += $(document).height() * 2;
-        }
-        return top1 - top2;
-      })[0];
-    if (commentForm) {
-      commentForm.getParentComment()?.expandAllThreadsDownTo();
-      commentForm.$element.cdScrollIntoView('center');
-      focusInput(commentForm.commentInput);
-    }
+        return { commentForm, top };
+      })
+      .sort((data1, data2) => data1.top - data2.top)
+      .map((data) => data.commentForm)[0]
+      ?.goTo();
   },
 
   /**

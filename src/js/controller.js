@@ -881,7 +881,7 @@ export default {
       // C
       if (keyCombination(e, 67) && !isInputFocused()) {
         e.preventDefault();
-        navPanel.goToNextCommentForm();
+        navPanel.goToNextCommentForm(true);
       }
     }
   },

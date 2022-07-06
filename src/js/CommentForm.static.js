@@ -95,7 +95,7 @@ function restoreFromStorage(commentFormsData) {
       title: cd.s('restore-restored-title'),
     });
     notification.$notification.on('click', () => {
-      navPanel.goToNextCommentForm(true);
+      cd.commentForms[0].goTo();
     });
   }
   if (rescue.length) {

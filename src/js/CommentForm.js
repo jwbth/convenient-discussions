@@ -312,7 +312,7 @@ class CommentForm {
      * @type {?Comment}
      * @private
      */
-    this.parentComment = this.mode.startsWith('reply') ? this.target : null;
+    this.parentComment = this.mode.startsWith('reply') ? this.targetComment : null;
 
     /**
      * Wiki page that has the source code of the target object (may be different from the current
@@ -3624,6 +3624,16 @@ class CommentForm {
       this.addToPage();
       controller.setAddSectionForm(this);
     }
+  }
+
+  /**
+   * Scroll to the comment form and focus the comment input. Expand all threads that this form is
+   * inside.
+   */
+  goTo() {
+    this.getParentComment()?.expandAllThreadsDownTo();
+    this.$element.cdScrollIntoView('center');
+    focusInput(this.commentInput);
   }
 }
 
