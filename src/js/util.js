@@ -439,7 +439,8 @@ export function findLastIndex(arr, callback) {
  * @returns {boolean}
  */
 export function isInputFocused() {
-  return $(':focus:input').length || $(':focus').prop('isContentEditable');
+  const $active = $(document.activeElement);
+  return $active.is(':input') || $active.prop('isContentEditable');
 }
 
 /**
