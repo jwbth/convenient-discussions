@@ -610,9 +610,9 @@ export default {
    * should contain indentation characters, the second - characters after them (usually spacing).
    *
    * @type {?string}
-   * @default '\\n*([:*#]+)( )*'
+   * @default '\\n*([:*#]+)( *)'
    */
-  indentationCharsPattern: '\\n*([:*#]+)( )*',
+  indentationCharsPattern: '\\n*([:*#]+)( *)',
 
   /**
    * Strings present in edit summaries of undo/revert edits. Used to detect edits that shouldn't be
