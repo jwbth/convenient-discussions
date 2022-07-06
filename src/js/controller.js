@@ -320,8 +320,8 @@ export default {
    * @returns {Element}
    */
   getStickyHeader() {
-    if (!this.stickyHeader) {
-      this.stickyHeader = document.getElementById('vector-sticky-header');
+    if (this.stickyHeader === undefined) {
+      this.stickyHeader = $('#vector-sticky-header').get(0);
     }
     return this.stickyHeader;
   },
@@ -633,7 +633,7 @@ export default {
    * @returns {boolean}
    */
   areThereOutdents() {
-    if (!this.content.areThereOutdents) {
+    if (this.content.areThereOutdents === undefined) {
       this.content.areThereOutdents = Boolean(this.$root.find('.' + cd.config.outdentClass).length);
     }
 
@@ -746,7 +746,7 @@ export default {
    * @returns {boolean}
    */
   areThereLtrRtlMixes() {
-    if (!this.content.areThereLtrRtlMixes) {
+    if (this.content.areThereLtrRtlMixes === undefined) {
       this.content.areThereLtrRtlMixes = Boolean(
         document.querySelector('.sitedir-ltr .mw-content-rtl, .sitedir-rtl .mw-content-ltr')
       );
