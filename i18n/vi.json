@@ -4,7 +4,8 @@
 			"Jack who built the house",
 			"Minh Nguyen",
 			"Nghiemtrongdai VN",
-			"NguoiDungKhongDinhDanh"
+			"NguoiDungKhongDinhDanh",
+			"RiceCracker12"
 		]
 	},
 	"script-name": "Thảo luận tiện lợi",
@@ -19,7 +20,8 @@
 	"cm-edit": "Sửa đổi",
 	"cm-reply": "Trả lời",
 	"cm-quote": "Trích dẫn",
-	"thread-tooltip": "Thu phóng luồng",
+	"thread-tooltip": "Ẩn/hiện luồng",
+	"thread-tooltip-count": "Ẩn/hiện bài viết ($1 {{plural:$1|bình luận}})",
 	"thread-expand-label-genderless": "Mở rộng luồng ($1 {{plural:$1}}bình luận từ {{plural:$2|}} $3)",
 	"thread-expand-label": "Mở rộng luồng ($1 bình luận từ {{plural:$2}}{{gender:$4}}$3)",
 	"thread-expand-tooltip": "Nhấn giữ Ctrl để mở rộng tất cả các luồng trên trang",

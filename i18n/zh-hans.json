@@ -215,7 +215,7 @@
 	"msd-moved": "话题已成功移动。您可以前往[[$1|话题移至的页面]]。",
 	"msd-bottom": "如果在窗口闲置时页面被更新，页面代码与之前可能会有不同。",
 	"error-processpage": "{{int:convenient-discussions-script-name}}：无法处理页面。请在 JavaScript 控制台查看详细信息（F12 → 控制台）。",
-	"error-settings-load": "无法加载来自服务器的设置。",
+	"error-settings-load": "{{int:convenient-discussions-script-name}}：无法加载来自服务器的设置。",
 	"error-reloadpage": "无法重新加载页面。",
 	"error-reloadpage-saved": "页面已保存，但无法重新加载。",
 	"error-network": "检查您的互联网连接。",
