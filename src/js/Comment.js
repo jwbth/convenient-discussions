@@ -3310,6 +3310,90 @@ class Comment extends CommentSkeleton {
   }
 
   /**
+   * Get a score for every match.
+   *
+   * @param {object} match Match object.
+   * @param {object} thisData Data about the current comment.
+   * @param {object[]} signatures List of signatures extracted from wikitext.
+   * @param {object[]} matches List of all matches.
+   * @returns {object}
+   */
+  getMatchScores(match, thisData, signatures, matches) {
+    const doesIndexMatch = thisData.index === match.index;
+    let doesPreviousCommentsDataMatch = false;
+    let isPreviousCommentsDataEqual;
+    let doesHeadlineMatch;
+    if (thisData.previousComments.length) {
+      for (let i = 0; i < thisData.previousComments.length; i++) {
+        const signature = signatures[match.index - 1 - i];
+        if (!signature) break;
+
+        // At least one coincided comment is enough if the second is unavailable.
+        doesPreviousCommentsDataMatch = (
+          signature.timestamp === thisData.previousComments[i].timestamp &&
+
+          // Previous comment object may come from the worker, where it has only the authorName
+          // property.
+          signature.author.getName() === thisData.previousComments[i].authorName
+        );
+
+        // Many consecutive comments with the same author and timestamp.
+        if (isPreviousCommentsDataEqual !== false) {
+          isPreviousCommentsDataEqual = (
+            match.timestamp === signature.timestamp &&
+            match.author === signature.author
+          );
+        }
+        if (!doesPreviousCommentsDataMatch) break;
+      }
+    } else {
+      // If there is no previous comment both on the page and in the code, it's a match.
+      doesPreviousCommentsDataMatch = match.index === 0;
+    }
+
+    isPreviousCommentsDataEqual = Boolean(isPreviousCommentsDataEqual);
+    Object.assign(match, this.adjustCommentBeginning(match));
+    if (thisData.followsHeading) {
+      doesHeadlineMatch = match.headingMatch ?
+        (
+          normalizeCode(removeWikiMarkup(match.headlineCode)) ===
+          normalizeCode(thisData.sectionHeadline)
+        ) :
+        -5;
+    } else {
+      doesHeadlineMatch = !match.headingMatch;
+    }
+
+    const wordOverlap = calculateWordOverlap(thisData.commentText, removeWikiMarkup(match.code));
+    match.score = (
+      // This condition _must_ be true.
+      (
+        matches.length === 1 ||
+        wordOverlap > 0.5 ||
+
+        // There are always problems with first comments as there are no previous comments to
+        // compare the signatures of and it's harder to tell the match, so we use a bit ugly
+        // solution here, although it should be quite reliable: the comment's firstness, matching
+        // author, date, and headline. A false negative will take place when the comment is no
+        // longer first. Another option is to look for next comments, not for previous.
+        (thisData.index === 0 && doesPreviousCommentsDataMatch && doesHeadlineMatch) ||
+
+        // The reserve method, if for some reason the text is not overlapping: by this and
+        // previous two dates and authors. If all dates and authors are the same, that shouldn't
+        // count (see [[Википедия:К удалению/22 сентября 2020#202009221158_Facenapalm_17]]).
+        (thisData.index !== 0 && doesPreviousCommentsDataMatch && !isPreviousCommentsDataEqual)
+      ) * 2 +
+
+      wordOverlap +
+      doesHeadlineMatch * 1 +
+      doesPreviousCommentsDataMatch * 0.5 +
+      doesIndexMatch * 0.0001
+    );
+
+    return match;
+  }
+
+  /**
    * Search for the comment in the source code and return possible matches.
    *
    * @param {string} pageCode
@@ -3319,141 +3403,60 @@ class Comment extends CommentSkeleton {
    * @private
    */
   searchInCode(pageCode, commentData, isSectionCodeUsed) {
-    const signatures = extractSignatures(pageCode);
-    // .startsWith() to account for cases where you can ignore the timezone string in the "unsigned"
-    // templates (it may be present and may be not), but it appears on the page.
-    const signatureMatches = signatures.filter((sig) => (
-      (sig.author === this.author || sig.author === '<undated>') &&
-      (
-        this.timestamp === sig.timestamp ||
-        (this.timestamp && this.timestamp.startsWith(sig.timestamp))
-      )
-    ));
-
-    // Transform the signature object into a comment match object.
-    let matches = signatureMatches.map((match) => ({
-      index: match.index,
-      author: match.author,
-      timestamp: match.timestamp,
-      date: match.date,
-      signatureDirtyCode: match.dirtyCode,
-      startIndex: match.commentStartIndex,
-      endIndex: match.startIndex,
-      signatureEndIndex: match.startIndex + match.dirtyCode.length,
-    }));
-
-    let index;
-    let previousComments;
+    let thisData;
     if (commentData) {
-      index = commentData.index;
+      thisData = {
+        index: commentData.index,
 
-      // For the reserve method; the main method uses one date.
-      previousComments = commentData.previousComments;
+        // For the reserve method; the main method uses one date.
+        previousComments: commentData.previousComments,
+
+        followsHeading: commentData.followsHeading,
+        sectionHeadline: commentData.section?.headline,
+        commentText: commentData.text,
+      };
     } else {
       const comments = isSectionCodeUsed ? this.section.comments : cd.comments;
-      index = comments.indexOf(this);
-      previousComments = comments
-        .slice(Math.max(0, index - 2), index)
-        .reverse();
+      const index = comments.indexOf(this);
+      thisData = {
+        index,
+        previousComments: comments
+          .slice(Math.max(0, index - 2), index)
+          .reverse(),
+        followsHeading: this.followsHeading,
+        sectionHeadline: this.section?.headline,
+        commentText: this.getText(),
+      };
     }
 
-    let followsHeading;
-    let sectionHeadline;
-    if (commentData) {
-      followsHeading = commentData.followsHeading;
-      sectionHeadline = commentData.section?.headline;
-    } else {
-      followsHeading = this.followsHeading;
-      sectionHeadline = this.section?.headline;
-    }
-
-    // Collect data for every match
-    matches.forEach((match) => {
-      match.code = pageCode.slice(match.startIndex, match.endIndex);
-
-      match.doesIndexMatch = index === match.index;
-
-      if (previousComments.length) {
-        match.doesPreviousCommentsDataMatch = false;
-        match.doesPreviousCommentDataMatch = false;
-
-        for (let i = 0; i < previousComments.length; i++) {
-          const signature = signatures[match.index - 1 - i];
-          if (!signature) break;
-
-          // At least one coincided comment is enough if the second is unavailable.
-          match.doesPreviousCommentsDataMatch = (
-            signature.timestamp === previousComments[i].timestamp &&
-
-            // Previous comment object may come from the worker, where it has only the authorName
-            // property.
-            signature.author.getName() === previousComments[i].authorName
-          );
-
-          // Many consecutive comments with the same author and timestamp.
-          if (match.isPreviousCommentsDataEqual !== false) {
-            match.isPreviousCommentsDataEqual = (
-              match.timestamp === signature.timestamp &&
-              match.author === signature.author
-            );
-          }
-
-          if (i === 0) {
-            match.doesPreviousCommentDataMatch = match.doesPreviousCommentsDataMatch;
-          }
-          if (!match.doesPreviousCommentsDataMatch) break;
-        }
-      } else {
-        // If there is no previous comment both on the page and in the code, it's a match.
-        match.doesPreviousCommentsDataMatch = match.index === 0;
-        match.doesPreviousCommentDataMatch = match.index === 0;
-      }
-
-      match.isPreviousCommentsDataEqual = Boolean(match.isPreviousCommentsDataEqual);
-      Object.assign(match, this.adjustCommentBeginning(match));
-      if (followsHeading) {
-        match.doesHeadlineMatch = match.headingMatch ?
-          normalizeCode(removeWikiMarkup(match.headlineCode)) === normalizeCode(sectionHeadline) :
-          -5;
-      } else {
-        match.doesHeadlineMatch = !match.headingMatch;
-      }
-
-      const commentText = commentData ? commentData.text : this.getText();
-      match.wordOverlap = calculateWordOverlap(commentText, removeWikiMarkup(match.code));
-
-      match.score = (
-        // This condition _must_ be true.
+    const signatures = extractSignatures(pageCode);
+    return signatures
+      .filter((sig) => (
+        (sig.author === this.author || sig.author === '<undated>') &&
         (
-          matches.length === 1 ||
-          match.wordOverlap > 0.5 ||
+          this.timestamp === sig.timestamp ||
 
-          // There are always problems with first comments as there are no previous comments to
-          // compare the signatures of and it's harder to tell the match, so we use a bit ugly
-          // solution here, although it should be quite reliable: the comment's firstness, matching
-          // author, date, and headline. A false negative will take place when the comment is no
-          // longer first. Another option is to look for next comments, not for previous.
-          (index === 0 && match.doesPreviousCommentsDataMatch && match.doesHeadlineMatch) ||
+          // .startsWith() to account for cases where you can ignore the timezone string in the
+          // "unsigned" templates (it may be present and may be not), but it appears on the page.
+          (this.timestamp && this.timestamp.startsWith(sig.timestamp))
+        )
+      ))
 
-          // The reserve method, if for some reason the text is not overlapping: by this and
-          // previous two dates and authors. If all dates and authors are the same, that shouldn't
-          // count (see [[Википедия:К удалению/22 сентября 2020#202009221158_Facenapalm_17]]).
-          (
-            index !== 0 &&
-            match.doesPreviousCommentsDataMatch &&
-            !match.isPreviousCommentsDataEqual
-          )
-        ) * 2 +
+      // Transform the signature object into a comment match object.
+      .map((signature) => ({
+        index: signature.index,
+        author: signature.author,
+        timestamp: signature.timestamp,
+        date: signature.date,
+        signatureDirtyCode: signature.dirtyCode,
+        startIndex: signature.commentStartIndex,
+        endIndex: signature.startIndex,
+        signatureEndIndex: signature.startIndex + signature.dirtyCode.length,
+        code: pageCode.slice(signature.commentStartIndex, signature.startIndex),
+      }))
 
-        match.wordOverlap +
-        match.doesHeadlineMatch * 1 +
-        match.doesPreviousCommentsDataMatch * 0.5 +
-        match.doesIndexMatch * 0.0001
-      );
-    });
-    matches = matches.filter((match) => match.score > 2.5);
-
-    return matches;
+      .map((match, i, matches) => this.getMatchScores(match, thisData, signatures, matches))
+      .filter((match) => match.score > 2.5);
   }
 
   /**
