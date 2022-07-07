@@ -3,7 +3,8 @@
 		"authors": [
 			"DDPAT",
 			"Ice bulldog",
-			"Jack who built the house"
+			"Jack who built the house",
+			"Пан Хаунд"
 		]
 	},
 	"script-name": "Зручні Обговорення",
@@ -23,11 +24,11 @@
 	"thread-expand-label": "Розгорнути тему ($1 {{plural:$1|коментаря|коментарів}} від {{plural:$2|{{gender:$4}}|{{gender:$4|}} $3}})",
 	"thread-expand-tooltip": "Утримуйте Ctrl, щоб розгорнути всі теми на сторінці",
 	"thread-newcomments": "У цій темі є {{plural:$1|новий коментар|нові коментарі ($1)}} від {{plural:$2|{{gender:$4|користувача|користувачки}}|{{gender:$4|користувачів}}}} $3. Клацніть, щоб оновити сторінку.",
-	"sm-editopeningcomment": "редагувати відкритий коментар",
+	"sm-editopeningcomment": "Редагувати відкритий коментар",
 	"sm-editopeningcomment-tooltip": "Відредагуйте вступний коментар розділу",
 	"sm-addsubsection": "додати підрозділ",
 	"sm-addsubsection-tooltip": "Додати підрозділ до цього розділу",
-	"sm-move": "перемістити",
+	"sm-move": "Перемістити",
 	"sm-move-tooltip": "Перемістити тему на іншу сторінку",
 	"sm-copylink-tooltip": "Копіювати посилання",
 	"comment-timestamp-today": "[Сьогодні], h:mm A",

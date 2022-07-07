@@ -41,6 +41,7 @@
 	"thank-confirm": "Vuoi inviare un ringraziamento pubblico a {{gender:$2|}} $1 per [$3 questa modifica]?",
 	"es-reply": "rispondi",
 	"es-edit-comment": "modifica commento",
+	"es-delete-topic": "cancella argomento",
 	"cf-save": "Salva",
 	"cf-save-short": "Salva",
 	"cf-delete-button": "Cancella",
