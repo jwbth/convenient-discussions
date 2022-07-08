@@ -14,6 +14,17 @@
   }
 }
 
+/*
+  The hierarchy of layer types (starting with the highest priority):
+  1. Target
+  2. (Just) posted
+  3. Changed (quick flash with green)
+  4. Deleted
+  5. Own
+  6. New
+  7. Hovered (but each hovered subtype has more priority than non-hovered)
+*/
+
 .cd-comment-underlay-hovered,
 .cd-comment-overlay-content {
   background-color: var(--cd-comment-hovered-background-color);
@@ -23,8 +34,8 @@
   background-color: var(--cd-comment-deleted-background-color);
 }
 
-.cd-comment-underlay-deleted.cd-comment-underlay-hovered,
-.cd-comment-overlay-deleted .cd-comment-overlay-content {
+.cd-comment-underlay-deleted.cd-comment-underlay-deleted.cd-comment-underlay-hovered,
+.cd-comment-overlay-deleted.cd-comment-overlay-deleted .cd-comment-overlay-content {
   background-color: var(--cd-comment-deleted-hovered-background-color);
 }
 
@@ -88,10 +99,6 @@
   }
 }
 
-.cd-comment-overlay-target.cd-comment-overlay-target.cd-comment-overlay-target .cd-comment-overlay-gradient {
-  background-image: none;
-}
-
 .cd-comment-overlay-line-closingGap {
   position: absolute;
   top: 0;
@@ -136,24 +143,34 @@
 
   .ltr & {
     background-image: linear-gradient(to left, var(--cd-comment-hovered-background-color), rgba(255, 255, 255, 0));
-
-    .cd-comment-overlay-deleted & {
-      background-image: linear-gradient(to left, var(--cd-comment-deleted-hovered-background-color), rgba(255, 255, 255, 0));
-    }
-
-    .cd-comment-overlay-changed.cd-comment-overlay-changed & {
-      background-image: linear-gradient(to left, var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0));
-    }
   }
 
   .rtl & {
     background-image: linear-gradient(to right, var(--cd-comment-hovered-background-color), rgba(255, 255, 255, 0));
+  }
 
-    .cd-comment-overlay-deleted & {
-      background-image: linear-gradient(to right, var(--cd-comment-deleted-hovered-background-color), rgba(255, 255, 255, 0));
+  .cd-comment-overlay-deleted.cd-comment-overlay-deleted & {
+    .ltr & {
+      background-image: linear-gradient(to left, var(--cd-comment-deleted-hovered-background-color), rgba(255, 255, 255, 0));
     }
 
-    .cd-comment-overlay-changed.cd-comment-overlay-changed & {
+    .rtl & {
+      background-image: linear-gradient(to right, var(--cd-comment-deleted-hovered-background-color), rgba(255, 255, 255, 0));
+    }
+  }
+
+  // Gradient can't be animated. Not with jquery.ui and jquery.color.
+  .cd-comment-overlay-posted.cd-comment-overlay-posted.cd-comment-overlay-posted &,
+  .cd-comment-overlay-target.cd-comment-overlay-target.cd-comment-overlay-target & {
+    background-image: none;
+  }
+
+  .cd-comment-overlay-changed.cd-comment-overlay-changed & {
+    .ltr & {
+      background-image: linear-gradient(to left, var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0));
+    }
+
+    .rtl & {
       background-image: linear-gradient(to right, var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0));
     }
   }
@@ -290,10 +307,10 @@
     .mw-parser-output & {
       .flow-root();
 
-      // "display: flow-root" should do the job of "overflow: hidden" or "overflow: auto" if it's set
-      // for an element. "overflow: auto" (present in
-      // https://en.wikipedia.org/wiki/Template:Discussion_top, for example) can create a scrollbar in
-      // some cases.
+      // "display: flow-root" should do the job of "overflow: hidden" or "overflow: auto" if it's
+      // set for an element. "overflow: auto" (present in
+      // https://en.wikipedia.org/wiki/Template:Discussion_top, for example) can create a scrollbar
+      // in some cases.
       overflow: unset !important;
     }
   }
