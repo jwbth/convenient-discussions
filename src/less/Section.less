@@ -80,10 +80,22 @@ ol .cd-section-button {
 
     color: #54595d;
     font-size: 13px;
-    margin-right: 18px;
     vertical-align: middle;
     line-height: 1.53846153em;
     white-space: nowrap;
+    unicode-bidi: plaintext;
+
+    .sitedir-ltr &,
+    .sitedir-rtl .mw-content-ltr & {
+      margin-left: 0;
+      margin-right: 18px;
+    }
+
+    .sitedir-rtl &,
+    .sitedir-ltr .mw-content-rtl & {
+      margin-left: 18px;
+      margin-right: 0;
+    }
   }
 
   &-button {
@@ -115,20 +127,49 @@ ol .cd-section-button {
     display: block;
 
     .cd-section-actions {
-      float: right;
-      margin-left: 1em;
+      .sitedir-ltr &,
+      .sitedir-rtl .mw-content-ltr & {
+        float: right;
+        margin-left: 1em;
+        margin-right: 0;
+      }
+
+      .sitedir-rtl &,
+      .sitedir-ltr .mw-content-rtl & {
+        float: left;
+        margin-left: 0;
+        margin-right: 1em;
+      }
     }
   }
 }
 
 .cd-section-actions {
-  margin-left: auto;
-  margin-right: -7px;
+  .sitedir-ltr &,
+  .sitedir-rtl .mw-content-ltr & {
+    margin-left: auto;
+    margin-right: -7px;
+  }
+
+  .sitedir-rtl &,
+  .sitedir-ltr .mw-content-rtl & {
+    margin-left: -7px;
+    margin-right: auto;
+  }
 
   .cd-subsection > & {
-    float: right;
     margin-top: -2px;
     font-weight: normal;
+
+    .sitedir-ltr &,
+    .sitedir-rtl .mw-content-ltr & {
+      float: right;
+    }
+
+    .sitedir-rtl &,
+    .sitedir-ltr .mw-content-rtl & {
+      float: left;
+    }
   }
 }
 

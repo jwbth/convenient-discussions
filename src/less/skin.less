@@ -68,29 +68,51 @@
     height: 35px;
   }
 
-  &.sitedir-ltr .cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button,
-  &.sitedir-rtl .mw-content-ltr .cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button {
-    padding-left: 0;
-
-    > .oo-ui-iconElement-icon {
-      background-position: 1px 50%;
+  // No border, no 1px compensation needed.
+  &.sitedir-ltr,
+  &.sitedir-rtl .mw-content-ltr {
+    .cd-section-button.cd-section-button.cd-section-button,
+    .cd-thread-button.cd-thread-button.cd-thread-button.cd-thread-button {
+      margin-left: 0;
     }
   }
 
-  &.sitedir-rtl .cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button,
-  &.sitedir-ltr .mw-content-rtl .cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button {
-    padding-right: 0;
-
-    > .oo-ui-iconElement-icon {
-      background-position: 3px 50%;
+  &.sitedir-rtl,
+  &.sitedir-ltr .mw-content-rtl {
+    .cd-section-button.cd-section-button.cd-section-button,
+    .cd-thread-button.cd-thread-button.cd-thread-button.cd-thread-button {
+      margin-right: 0;
     }
   }
 
-  .cd-button-expandNote.cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button > .oo-ui-iconElement-icon {
-    min-width: unset;
-    min-height: unset;
-    width: 14px;
-    margin: 0;
+  &.sitedir-ltr,
+  &.sitedir-rtl .mw-content-ltr {
+    .cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button > .oo-ui-iconElement-icon {
+      background-position: 0 3px;
+    }
+  }
+
+  &.sitedir-rtl,
+  &.sitedir-ltr .mw-content-rtl {
+    .cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button > .oo-ui-iconElement-icon {
+      background-position: 0 3px;
+    }
+  }
+
+  .cd-button-expandNote.cd-button-expandNote.cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button {
+    padding: 0;
+    text-decoration: none;
+
+    > .oo-ui-iconElement-icon {
+      min-width: unset;
+      min-height: unset;
+      width: 10px;
+      margin: 0;
+    }
+
+    > .oo-ui-labelElement-label {
+      display: inline;
+    }
   }
 
   .cd-pageNav {
@@ -104,6 +126,18 @@
   .cd-thread-clickArea {
     // Above the page navigation (.cd-pageNav)
     z-index: 6;
+  }
+
+  .cd-section-bar {
+    margin-top: -0.5em;
+
+    &-item {
+      font-size: 12px;
+    }
+
+    &-button {
+      font-size: 12px;
+    }
   }
 }
 

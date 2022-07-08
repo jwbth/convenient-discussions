@@ -333,6 +333,11 @@ class Section extends SectionSkeleton {
       title: cd.mws('discussiontools-topicsubscription-button-subscribe-tooltip'),
       classes: ['cd-section-bar-button'],
     });
+    if (cd.g.SKIN === 'monobook') {
+      this.actions.subscribeButton.$element
+        .find('.oo-ui-iconElement-icon')
+        .addClass('oo-ui-image-progressive');
+    }
 
     this.updateSubscribeButtonState();
 
