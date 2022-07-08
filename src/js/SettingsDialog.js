@@ -245,47 +245,36 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       label: cd.s('sd-alwaysexpandadvanced'),
     });
 
-    const autocompleteMentionsOption = new OO.ui.CheckboxMultioptionWidget({
-      data: 'mentions',
-      selected: settings.autocompleteTypes.includes('mentions'),
-      label: cd.s('sd-autocompletetypes-mentions'),
-    });
-
-    const autocompleteCommentLinksOption = new OO.ui.CheckboxMultioptionWidget({
-      data: 'commentLinks',
-      selected: settings.autocompleteTypes.includes('commentLinks'),
-      label: cd.s('sd-autocompletetypes-commentlinks'),
-    });
-
-    const autocompleteWikilinksOption = new OO.ui.CheckboxMultioptionWidget({
-      data: 'wikilinks',
-      selected: settings.autocompleteTypes.includes('wikilinks'),
-      label: cd.s('sd-autocompletetypes-wikilinks'),
-    });
-
-    const autocompleteTemplatesOption = new OO.ui.CheckboxMultioptionWidget({
-      data: 'templates',
-      selected: settings.autocompleteTypes.includes('templates'),
-      label: cd.s('sd-autocompletetypes-templates'),
-    });
-
-    const autocompleteTagsOption = new OO.ui.CheckboxMultioptionWidget({
-      data: 'tags',
-      selected: settings.autocompleteTypes.includes('tags'),
-      label: cd.s('sd-autocompletetypes-tags'),
-    });
-
     this.autocompleteTypesMultiselect = new OO.ui.CheckboxMultiselectWidget({
       items: [
-        autocompleteMentionsOption,
-        autocompleteCommentLinksOption,
-        autocompleteWikilinksOption,
-        autocompleteTemplatesOption,
-        autocompleteTagsOption,
+        new OO.ui.CheckboxMultioptionWidget({
+          data: 'mentions',
+          selected: settings.autocompleteTypes.includes('mentions'),
+          label: cd.s('sd-autocompletetypes-mentions'),
+        }),
+        new OO.ui.CheckboxMultioptionWidget({
+          data: 'commentLinks',
+          selected: settings.autocompleteTypes.includes('commentLinks'),
+          label: cd.s('sd-autocompletetypes-commentlinks'),
+        }),
+        new OO.ui.CheckboxMultioptionWidget({
+          data: 'wikilinks',
+          selected: settings.autocompleteTypes.includes('wikilinks'),
+          label: cd.s('sd-autocompletetypes-wikilinks'),
+        }),
+        new OO.ui.CheckboxMultioptionWidget({
+          data: 'templates',
+          selected: settings.autocompleteTypes.includes('templates'),
+          label: cd.s('sd-autocompletetypes-templates'),
+        }),
+        new OO.ui.CheckboxMultioptionWidget({
+          data: 'tags',
+          selected: settings.autocompleteTypes.includes('tags'),
+          label: cd.s('sd-autocompletetypes-tags'),
+        }),
       ],
       classes: ['cd-autocompleteTypesMultiselect'],
     });
-
     this.autocompleteTypesField = new OO.ui.FieldLayout(this.autocompleteTypesMultiselect, {
       label: cd.s('sd-autocompletetypes'),
       align: 'top',
@@ -314,16 +303,16 @@ class SettingsDialog extends OO.ui.ProcessDialog {
     ] = createRadioField({
       options: [
         {
-          label: cd.s('sd-desktopnotifications-radio-all', mw.user),
           data: 'all',
+          label: cd.s('sd-desktopnotifications-radio-all', mw.user),
         },
         {
-          label: cd.s('sd-desktopnotifications-radio-tome'),
           data: 'toMe',
+          label: cd.s('sd-desktopnotifications-radio-tome'),
         },
         {
-          label: cd.s('sd-desktopnotifications-radio-none'),
           data: 'none',
+          label: cd.s('sd-desktopnotifications-radio-none'),
         },
       ],
       selected: settings.desktopNotifications,
@@ -462,16 +451,16 @@ class SettingsDialog extends OO.ui.ProcessDialog {
     ] = createRadioField({
       options: [
         {
-          label: cd.s('sd-timestampformat-radio-default', exampleDefault),
           data: 'default',
+          label: cd.s('sd-timestampformat-radio-default', exampleDefault),
         },
         {
-          label: cd.s('sd-timestampformat-radio-improved', exampleImproved1, exampleImproved2),
           data: 'improved',
+          label: cd.s('sd-timestampformat-radio-improved', exampleImproved1, exampleImproved2),
         },
         {
-          label: cd.s('sd-timestampformat-radio-relative', exampleRelative1, exampleRelative2),
           data: 'relative',
+          label: cd.s('sd-timestampformat-radio-relative', exampleRelative1, exampleRelative2),
         },
       ],
       selected: settings.timestampFormat,
