@@ -278,10 +278,10 @@ class CommentForm {
   }
 
   /**
-   * _For internal use._ Set the `target`, `targetSection`, `targetComment`, and `targetPage`
-   * properties.
+   * Set the `target`, `targetSection`, `targetComment`, and `targetPage` properties.
    *
    * @param {Comment|Section|Page} target
+   * @private
    */
   setTargets(target) {
     /**
@@ -332,6 +332,7 @@ class CommentForm {
    *
    * @param {number} elementIndex
    * @returns {string}
+   * @private
    */
   getTabIndex(elementIndex) {
     return String(this.index) + String(elementIndex);
@@ -451,14 +452,15 @@ class CommentForm {
        * @memberof CommentForm
        * @instance
        */
-      const minor = createCheckboxField({
+       ({
+        field: this.minorField,
+        input: this.minorCheckbox,
+      } = createCheckboxField({
         value: 'minor',
         selected: dataToRestore?.minor ?? true,
         label: cd.s('cf-minor'),
         tabIndex: this.getTabIndex(20),
-      });
-      this.minorField = minor.field;
-      this.minorCheckbox = minor.input;
+      }));
     }
 
     const watchCheckboxSelected = (
@@ -484,14 +486,15 @@ class CommentForm {
      * @memberof CommentForm
      * @instance
      */
-    const watch = createCheckboxField({
+    ({
+      field: this.watchField,
+      input: this.watchCheckbox,
+    } = createCheckboxField({
       value: 'watch',
       selected: dataToRestore?.watch ?? watchCheckboxSelected,
       label: cd.s('cf-watch'),
       tabIndex: this.getTabIndex(21),
-    });
-    this.watchField = watch.field;
-    this.watchCheckbox = watch.input;
+    }));
 
     if (this.targetSection || this.mode === 'addSection') {
       const selected = (
@@ -525,15 +528,16 @@ class CommentForm {
        * @memberof CommentForm
        * @instance
        */
-      const subscribe = createCheckboxField({
+      ({
+        field: this.subscribeField,
+        input: this.subscribeCheckbox,
+      } = createCheckboxField({
         value: 'subscribe',
         selected: dataToRestore?.subscribe ?? selected,
         label,
         tabIndex: this.getTabIndex(22),
         title: cd.s('cf-watchsection-tooltip'),
-      });
-      this.subscribeField = subscribe.field;
-      this.subscribeCheckbox = subscribe.input;
+      }));
     }
 
     if (['addSection', 'addSubsection'].includes(this.mode)) {
@@ -554,16 +558,16 @@ class CommentForm {
        * @memberof CommentForm
        * @instance
        */
-
-      const omitSignature = createCheckboxField({
+      ({
+        field: this.omitSignatureField,
+        input: this.omitSignatureCheckbox,
+      } = createCheckboxField({
         value: 'omitSignature',
         selected: dataToRestore?.omitSignature ?? false,
         label: cd.s('cf-omitsignature'),
         title: cd.s('cf-omitsignature-tooltip'),
         tabIndex: this.getTabIndex(25),
-      });
-      this.omitSignatureField = omitSignature.field;
-      this.omitSignatureCheckbox = omitSignature.input;
+      }));
     }
 
     if (
@@ -593,14 +597,15 @@ class CommentForm {
        * @memberof CommentForm
        * @instance
        */
-      const delete_ = createCheckboxField({
+      ({
+        field: this.deleteField,
+        input: this.deleteCheckbox,
+      } = createCheckboxField({
         value: 'delete',
         selected,
         label: cd.s('cf-delete'),
         tabIndex: this.getTabIndex(26),
-      });
-      this.deleteField = delete_.field;
-      this.deleteCheckbox = delete_.input;
+      }));
     }
 
     /**
@@ -1357,7 +1362,9 @@ class CommentForm {
   }
 
   /**
-   * _For internal use._ Insert the form into the DOM.
+   * Insert the form into the DOM.
+   *
+   * @private
    */
   addToPage() {
     if (this.mode === 'replyInSection') {

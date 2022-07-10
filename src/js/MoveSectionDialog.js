@@ -283,12 +283,10 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    * Handler of the event of change of the title input.
    */
   async onTitleInputChange() {
-    let move = true;
-    try {
-      await this.controls.title.input.getValidity();
-    } catch {
+    let move;
+    await this.controls.title.input.getValidity().catch(() => {
       move = false;
-    }
+    });
     this.actions.setAbilities({ move });
   }
 

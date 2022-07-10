@@ -391,7 +391,7 @@ export default {
       [cd.g.LOCAL_SETTINGS_OPTION_NAME]: mw.user.options.get(cd.g.LOCAL_SETTINGS_OPTION_NAME),
     };
 
-    // Settings in variables like "cdAlowEditOthersComments" used before server-stored settings
+    // Settings in variables like `cdAlowEditOthersComments` used before server-stored settings
     // were implemented.
     Object.keys(this.scheme.default).forEach((name) => {
       (this.scheme.aliases[name] || []).concat(name).forEach((alias) => {
@@ -439,7 +439,7 @@ export default {
       });
     }
 
-    // Settings in variables like "cdLocal..." override all other and are not saved to the server.
+    // Settings in variables like `cdLocal...` override all other and are not saved to the server.
     this.set(this.getLocalOverrides());
   },
 

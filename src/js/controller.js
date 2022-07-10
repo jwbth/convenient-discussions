@@ -1639,6 +1639,12 @@ export default {
     return newElement;
   },
 
+  /**
+   * Check whether the page qualifies to be considered a long page (which affects attempting
+   * performance improvements).
+   *
+   * @returns {boolean}
+   */
   isLongPage() {
     if (this.longPage === undefined) {
       this.longPage = $(document).height() > 20000;
