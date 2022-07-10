@@ -495,6 +495,8 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       mw.storage.remove('convenientDiscussions-commentForms');
       mw.storage.remove('convenientDiscussions-thanks');
       mw.storage.remove('convenientDiscussions-seenRenderedChanges');
+      mw.storage.remove('convenientDiscussions-collapsedThreads');
+      mw.storage.remove('convenientDiscussions-mutedUsers');
 
       this.stackLayout.setItem(this.dataRemovedPanel);
       this.actions.setMode('dataRemoved');
