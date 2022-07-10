@@ -13,11 +13,21 @@
 
 .cd-section-button.cd-section-button,
 .cd-thread-button.cd-thread-button {
-  // Needed for multiple line buttons.
-  vertical-align: top;
+  vertical-align: baseline;
 
   > .oo-ui-buttonElement-button {
     white-space: normal;
+    vertical-align: baseline;
+  }
+}
+
+// Multiline thread buttons misaligned with the number
+ol > .cd-thread-button-container > .cd-thread-button {
+  vertical-align: top;
+
+  > .oo-ui-buttonElement-button {
+    // Seems to work without this, but to be sure
+    vertical-align: top;
   }
 }
 
