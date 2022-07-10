@@ -143,9 +143,8 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
       }
       const sectionCode = this.section.inCode.code;
 
-      this.controls = {
-        title: {},
-      };
+      this.controls = {};
+      this.controls.title = {},
       this.controls.title.input = new mw.widgets.TitleInputWidget({
         $overlay: this.$overlay,
         excludeCurrentPage: true,
@@ -189,6 +188,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         .text(cd.s('msd-bottom'))
         .appendTo($sectionCode);
 
+      this.controls.summaryEnding = {};
       this.controls.summaryEnding.input = new OO.ui.TextInputWidget({
         // TODO: Take into account the whole summary length, updating the maximum value dynamically.
         maxLength: 250,
