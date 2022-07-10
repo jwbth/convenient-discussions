@@ -110,9 +110,7 @@ function saveCollapsedThreads() {
   const threads = cd.comments
     .filter((comment) => (
       comment.thread &&
-
-      // XOR. Is collapsed but is not the target for automatic collapse on page load and vise versa.
-      (comment.thread.isCollapsed ^ comment.thread.isAutocollapseTarget)
+      comment.thread.isCollapsed !== Boolean(comment.thread.isAutocollapseTarget)
     ))
     .map((comment) => ({
       id: comment.id,
