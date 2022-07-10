@@ -1,5 +1,5 @@
 import cd from './cd';
-import { areObjectsEqual, ucFirst, wrap } from './util';
+import { areObjectsEqual, defined, hideText, ucFirst, unhideText, wrap } from './util';
 import { formatDateImproved, formatDateNative, formatDateRelative } from './timestamp';
 import { getUserInfo, setGlobalOption, setLocalOption } from './apiWrappers';
 
@@ -108,202 +108,271 @@ export default {
     const exampleRelative1 = formatDateRelative(fortyThreeMinutesAgo);
     const exampleRelative2 = formatDateRelative(threeDaysAgo);
 
-    this.scheme.ui = {
-      allowEditOthersComments: {
-        type: 'checkbox',
-        label: cd.s('sd-alloweditotherscomments'),
-      },
-      alwaysExpandAdvanced: {
-        type: 'checkbox',
-        label: cd.s('sd-alwaysexpandadvanced'),
-      },
-      autocompleteTypes: {
-        type: 'multicheckbox',
-        label: cd.s('sd-autocompletetypes'),
-        options: [
+    this.scheme.ui = [
+      {
+        name: 'talkPage',
+        label: cd.s('sd-page-talkpage'),
+        controls: [
           {
-            data: 'mentions',
-            label: cd.s('sd-autocompletetypes-mentions'),
+            name: 'reformatComments',
+            type: 'checkbox',
+            label: cd.s('sd-reformatcomments'),
           },
           {
-            data: 'commentLinks',
-            label: cd.s('sd-autocompletetypes-commentlinks'),
+            name: 'showContribsLink',
+            type: 'checkbox',
+            label: cd.s('sd-showcontribslink'),
+            classes: ['cd-setting-indented'],
           },
           {
-            data: 'wikilinks',
-            label: cd.s('sd-autocompletetypes-wikilinks'),
+            name: 'allowEditOthersComments',
+            type: 'checkbox',
+            label: cd.s('sd-alloweditotherscomments'),
           },
           {
-            data: 'templates',
-            label: cd.s('sd-autocompletetypes-templates'),
+            name: 'enableThreads',
+            type: 'checkbox',
+            label: cd.s('sd-enablethreads'),
           },
           {
-            data: 'tags',
-            label: cd.s('sd-autocompletetypes-tags'),
-          },
-        ],
-        classes: ['cd-autocompleteTypesMultiselect'],
-      },
-      autopreview: {
-        type: 'checkbox',
-        label: cd.s('sd-autopreview'),
-      },
-      collapseThreadsLevel: {
-        type: 'number',
-        min: 0,
-        max: 999,
-        label: cd.s('sd-collapsethreadslevel'),
-        help: cd.s('sd-collapsethreadslevel-help'),
-      },
-      desktopNotifications: {
-        type: 'radio',
-        options: [
-          {
-            data: 'all',
-            label: cd.s('sd-desktopnotifications-radio-all', mw.user),
+            name: 'collapseThreadsLevel',
+            type: 'number',
+            min: 0,
+            max: 999,
+            label: cd.s('sd-collapsethreadslevel'),
+            help: cd.s('sd-collapsethreadslevel-help'),
           },
           {
-            data: 'toMe',
-            label: cd.s('sd-desktopnotifications-radio-tome'),
+            name: 'modifyToc',
+            type: 'checkbox',
+            label: cd.s('sd-modifytoc'),
           },
           {
-            data: 'none',
-            label: cd.s('sd-desktopnotifications-radio-none'),
-          },
-        ],
-        label: cd.s('sd-desktopnotifications'),
-        help: cd.s('sd-desktopnotifications-help', location.hostname),
-      },
-      enableThreads: {
-        type: 'checkbox',
-        label: cd.s('sd-enablethreads'),
-      },
-      hideTimezone: {
-        type: 'checkbox',
-        label: cd.s('sd-hidetimezone'),
-      },
-      highlightNewInterval: {
-        type: 'number',
-        min: 0,
-        max: 99999999,
-        buttonStep: 5,
-        label: cd.s('sd-highlightnewinterval'),
-        help: cd.s('sd-highlightnewinterval-help'),
-      },
-      improvePerformance: {
-        type: 'checkbox',
-        label: cd.s('sd-improveperformance'),
-        help: cd.s('sd-improveperformance-help'),
-      },
-      insertButtons: {
-        type: 'multitag',
-        placeholder: cd.s('sd-insertbuttons-multiselect-placeholder'),
-        tagLimit: 100,
-        label: cd.s('sd-insertbuttons'),
-        help: wrap(cd.sParse('sd-insertbuttons-help') + ' ' + cd.sParse('sd-localsetting')),
-        valueModifier: (value) => (
-          value.map((button) => Array.isArray(button) ? button.join(';') : button)
-        ),
-      },
-      modifyToc: {
-        type: 'checkbox',
-        label: cd.s('sd-modifytoc'),
-      },
-      notifications: {
-        type: 'radio',
-        label: cd.s('sd-notifications'),
-        options: [
-          {
-            data: 'all',
-            label: cd.s('sd-notifications-radio-all', mw.user),
+            name: 'useBackgroundHighlighting',
+            type: 'checkbox',
+            label: cd.s('sd-usebackgroundhighlighting'),
           },
           {
-            data: 'toMe',
-            label: cd.s('sd-notifications-radio-tome'),
+            name: 'highlightNewInterval',
+            type: 'number',
+            min: 0,
+            max: 99999999,
+            buttonStep: 5,
+            label: cd.s('sd-highlightnewinterval'),
+            help: cd.s('sd-highlightnewinterval-help'),
           },
           {
-            data: 'none',
-            label: cd.s('sd-notifications-radio-none'),
+            name: 'improvePerformance',
+            type: 'checkbox',
+            label: cd.s('sd-improveperformance'),
+            help: cd.s('sd-improveperformance-help'),
           },
         ],
       },
-      notifyCollapsedThreads: {
-        type: 'checkbox',
-        label: cd.s('sd-notifycollapsedthreads'),
-      },
-      reformatComments: {
-        type: 'checkbox',
-        label: cd.s('sd-reformatcomments'),
-      },
-      showContribsLink: {
-        type: 'checkbox',
-        label: cd.s('sd-showcontribslink'),
-        classes: ['cd-setting-indented'],
-      },
-      showToolbar: {
-        type: 'checkbox',
-        label: cd.s('sd-showtoolbar'),
-      },
-      signaturePrefix: {
-        type: 'text',
-        maxLength: 100,
-        label: cd.s('sd-signatureprefix'),
-        help: wrap(cd.sParse('sd-signatureprefix-help') + ' ' + cd.sParse('sd-localsetting')),
-      },
-      timestampFormat: {
-        type: 'radio',
-        options: [
+      {
+        name: 'commentForm',
+        label: cd.s('sd-page-commentform'),
+        controls: [
           {
-            data: 'default',
-            label: cd.s('sd-timestampformat-radio-default', exampleDefault),
+            name: 'autopreview',
+            type: 'checkbox',
+            label: cd.s('sd-autopreview'),
           },
           {
-            data: 'improved',
-            label: cd.s('sd-timestampformat-radio-improved', exampleImproved1, exampleImproved2),
+            name: 'watchOnReply',
+            type: 'checkbox',
+            label: cd.s('sd-watchonreply', mw.user),
           },
           {
-            data: 'relative',
-            label: cd.s('sd-timestampformat-radio-relative', exampleRelative1, exampleRelative2),
+            name: 'subscribeOnReply',
+            type: 'checkbox',
+            label: cd.s('sd-watchsectiononreply', mw.user),
+            help: cd.s('sd-watchsectiononreply-help'),
+          },
+          {
+            name: 'showToolbar',
+            type: 'checkbox',
+            label: cd.s('sd-showtoolbar'),
+          },
+          {
+            name: 'alwaysExpandAdvanced',
+            type: 'checkbox',
+            label: cd.s('sd-alwaysexpandadvanced'),
+          },
+          {
+            name: 'autocompleteTypes',
+            type: 'multicheckbox',
+            label: cd.s('sd-autocompletetypes'),
+            options: [
+              {
+                data: 'mentions',
+                label: cd.s('sd-autocompletetypes-mentions'),
+              },
+              {
+                data: 'commentLinks',
+                label: cd.s('sd-autocompletetypes-commentlinks'),
+              },
+              {
+                data: 'wikilinks',
+                label: cd.s('sd-autocompletetypes-wikilinks'),
+              },
+              {
+                data: 'templates',
+                label: cd.s('sd-autocompletetypes-templates'),
+              },
+              {
+                data: 'tags',
+                label: cd.s('sd-autocompletetypes-tags'),
+              },
+            ],
+            classes: ['cd-autocompleteTypesMultiselect'],
+          },
+          {
+            name: 'useTemplateData',
+            type: 'checkbox',
+            label: cd.s('sd-usetemplatedata'),
+            help: cd.s('sd-usetemplatedata-help'),
+          },
+          {
+            name: 'insertButtons',
+            type: 'multitag',
+            placeholder: cd.s('sd-insertbuttons-multiselect-placeholder'),
+            tagLimit: 100,
+            label: cd.s('sd-insertbuttons'),
+            help: wrap(cd.sParse('sd-insertbuttons-help') + ' ' + cd.sParse('sd-localsetting')),
+            dataToUi: (value) => (
+              value.map((button) => Array.isArray(button) ? button.join(';') : button)
+            ),
+            uiToData: (value) => (
+              value
+                .map((value) => {
+                  const hidden = [];
+                  value = hideText(value, /\\[+;\\]/g, hidden);
+                  let [, snippet, label] = value.match(/^(.*?)(?:;(.+))?$/) || [];
+                  if (!snippet?.replace(/^ +$/, '')) return;
+                  snippet = unhideText(snippet, hidden);
+                  label = label && unhideText(label, hidden);
+                  return [snippet, label].filter(defined);
+                })
+                .filter(defined)
+            ),
+          },
+          {
+            name: 'signaturePrefix',
+            type: 'text',
+            maxLength: 100,
+            label: cd.s('sd-signatureprefix'),
+            help: wrap(cd.sParse('sd-signatureprefix-help') + ' ' + cd.sParse('sd-localsetting')),
           },
         ],
-        label: cd.s('sd-timestampformat'),
-        help: cd.s('sd-timestampformat-help'),
       },
-      useBackgroundHighlighting: {
-        type: 'checkbox',
-        label: cd.s('sd-usebackgroundhighlighting'),
+      {
+        name: 'timestamps',
+        label: cd.s('sd-page-timestamps'),
+        controls: [
+          {
+            name: 'useUiTime',
+            type: 'checkbox',
+            label: cd.s('sd-useuitime'),
+          },
+          {
+            name: 'hideTimezone',
+            type: 'checkbox',
+            label: cd.s('sd-hidetimezone'),
+          },
+          {
+            name: 'timestampFormat',
+            type: 'radio',
+            options: [
+              {
+                data: 'default',
+                label: cd.s('sd-timestampformat-radio-default', exampleDefault),
+              },
+              {
+                data: 'improved',
+                label: cd.s('sd-timestampformat-radio-improved', exampleImproved1, exampleImproved2),
+              },
+              {
+                data: 'relative',
+                label: cd.s('sd-timestampformat-radio-relative', exampleRelative1, exampleRelative2),
+              },
+            ],
+            label: cd.s('sd-timestampformat'),
+            help: cd.s('sd-timestampformat-help'),
+          },
+        ],
       },
-      useUiTime: {
-        type: 'checkbox',
-        label: cd.s('sd-useuitime'),
+      {
+        name: 'notifications',
+        label: cd.s('sd-page-notifications'),
+        controls: [
+          {
+            name: 'useTopicSubscription',
+            type: 'checkbox',
+            label: wrap(cd.sParse('sd-usetopicsubscription', mw.user), { targetBlank: true }),
+            help: wrap(cd.sParse('sd-usetopicsubscription-help'), { targetBlank: true }),
+          },
+          {
+            name: 'desktopNotifications',
+            type: 'radio',
+            options: [
+              {
+                data: 'all',
+                label: cd.s('sd-desktopnotifications-radio-all', mw.user),
+              },
+              {
+                data: 'toMe',
+                label: cd.s('sd-desktopnotifications-radio-tome'),
+              },
+              {
+                data: 'none',
+                label: cd.s('sd-desktopnotifications-radio-none'),
+              },
+            ],
+            label: cd.s('sd-desktopnotifications'),
+            help: cd.s('sd-desktopnotifications-help', location.hostname),
+          },
+          {
+            name: 'notifications',
+            type: 'radio',
+            label: cd.s('sd-notifications'),
+            options: [
+              {
+                data: 'all',
+                label: cd.s('sd-notifications-radio-all', mw.user),
+              },
+              {
+                data: 'toMe',
+                label: cd.s('sd-notifications-radio-tome'),
+              },
+              {
+                data: 'none',
+                label: cd.s('sd-notifications-radio-none'),
+              },
+            ],
+          },
+          {
+            name: 'notifyCollapsedThreads',
+            type: 'checkbox',
+            label: cd.s('sd-notifycollapsedthreads'),
+          },
+        ],
       },
-      useTemplateData: {
-        type: 'checkbox',
-        label: cd.s('sd-usetemplatedata'),
-        help: cd.s('sd-usetemplatedata-help'),
+      {
+        name: 'dataRemoval',
+        label: cd.s('sd-page-dataremoval'),
+        controls: [
+          {
+            name: 'removeData',
+            type: 'button',
+            label: cd.s('sd-removedata'),
+            flags: ['destructive'],
+            fieldLabel: cd.s('sd-removedata-description'),
+            help: wrap(cd.sParse('sd-removedata-help'), { targetBlank: true }),
+          },
+        ],
       },
-      useTopicSubscription: {
-        type: 'checkbox',
-        label: wrap(cd.sParse('sd-usetopicsubscription', mw.user), { targetBlank: true }),
-        help: wrap(cd.sParse('sd-usetopicsubscription-help'), { targetBlank: true }),
-      },
-      watchOnReply: {
-        type: 'checkbox',
-        label: cd.s('sd-watchonreply', mw.user),
-      },
-      removeData: {
-        type: 'button',
-        label: cd.s('sd-removedata'),
-        flags: ['destructive'],
-        fieldLabel: cd.s('sd-removedata-description'),
-        help: wrap(cd.sParse('sd-removedata-help'), { targetBlank: true }),
-      },
-      subscribeOnReply: {
-        type: 'checkbox',
-        label: cd.s('sd-watchsectiononreply', mw.user),
-        help: cd.s('sd-watchsectiononreply-help'),
-      },
-    };
+    ];
   },
 
   /**

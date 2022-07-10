@@ -1,7 +1,7 @@
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
-import { areObjectsEqual, defined } from './util';
+import { areObjectsEqual } from './util';
 import {
   confirmCloseDialog,
   createCheckboxField,
@@ -12,7 +12,6 @@ import {
   isDialogUnsaved,
   tweakUserOoUiClass,
 } from './ooui';
-import { hideText, unhideText } from './util';
 import { setGlobalOption, setLocalOption } from './apiWrappers';
 
 /**
@@ -164,7 +163,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       this.renderControls(this.settings);
 
       this.stackLayout.setItem(this.settingsPanel);
-      this.bookletLayout.setPage(this.initialPageName || 'isTalkPage');
+      this.bookletLayout.setPage(this.initialPageName || settings.scheme.ui[0].name);
       this.actions.setAbilities({ close: true });
 
       this.popPending();
@@ -228,111 +227,136 @@ class SettingsDialog extends OO.ui.ProcessDialog {
    *
    * @param {object} settingValues Values of settings according to which to set the states of
    *   controls.
+   * @returns {object}
    */
-  createFields(settingValues) {
+  createPages(settingValues) {
     this.controls = {};
-    Object.entries(settings.scheme.ui).forEach(([key, data]) => {
-      switch (data.type) {
-        case 'checkbox':
-          this.controls[key] = createCheckboxField({
-            value: key,
-            selected: settingValues[key],
-            label: data.label,
-            help: data.help,
-            classes: data.classes,
-          });
-          this.controls[key].input.connect(this, { change: 'updateStates' });
-          break;
+    const pages = settings.scheme.ui.map((pageData) => {
+      const $fields = pageData.controls.map((data) => {
+        const name = data.name;
+        switch (data.type) {
+          case 'checkbox':
+            this.controls[name] = createCheckboxField({
+              value: name,
+              selected: settingValues[name],
+              label: data.label,
+              help: data.help,
+              classes: data.classes,
+            });
+            this.controls[name].input.connect(this, { change: 'updateStates' });
+            break;
 
-        case 'radio':
-          this.controls[key] = createRadioField({
-            options: data.options,
-            selected: settingValues[key],
-            label: data.label,
-            help: data.help,
-          });
-          this.controls[key].select.connect(this, { select: 'updateStates' });
-          break;
+          case 'radio':
+            this.controls[name] = createRadioField({
+              options: data.options,
+              selected: settingValues[name],
+              label: data.label,
+              help: data.help,
+            });
+            this.controls[name].select.connect(this, { select: 'updateStates' });
+            break;
 
-        case 'text':
-          this.controls[key] = createTextField({
-            value: settingValues[key],
-            maxLength: 100,
-            label: data.label,
-            help: data.help,
-          });
-          this.controls[key].input.connect(this, { change: 'updateStates' });
-          break;
+          case 'text':
+            this.controls[name] = createTextField({
+              value: settingValues[name],
+              maxLength: 100,
+              label: data.label,
+              help: data.help,
+            });
+            this.controls[name].input.connect(this, { change: 'updateStates' });
+            break;
 
-        case 'number':
-          this.controls[key] = createNumberField({
-            value: settingValues[key],
-            min: data.min,
-            max: data.max,
-            buttonStep: data.buttonStep,
-            label: data.label,
-            help: data.help,
-          });
-          this.controls[key].input.connect(this, { change: 'updateStates' });
-          break;
+          case 'number':
+            this.controls[name] = createNumberField({
+              value: settingValues[name],
+              min: data.min,
+              max: data.max,
+              buttonStep: data.buttonStep,
+              label: data.label,
+              help: data.help,
+            });
+            this.controls[name].input.connect(this, { change: 'updateStates' });
+            break;
 
-        case 'multicheckbox':
-          this.controls[key] = {};
-          this.controls[key].multiselect = new OO.ui.CheckboxMultiselectWidget({
-            items: data.options.map((option) => (
-              new OO.ui.CheckboxMultioptionWidget({
-                data: option.data,
-                selected: settingValues[key].includes(option.data),
-                label: option.label,
-              })
-            )),
-            classes: data.classes,
-          });
-          this.controls[key].multiselect.connect(this, { select: 'updateStates' });
-          this.controls[key].field = new OO.ui.FieldLayout(this.controls[key].multiselect, {
-            label: data.label,
-            align: 'top',
-          });
-          break;
+          case 'multicheckbox':
+            this.controls[name] = {};
+            this.controls[name].multiselect = new OO.ui.CheckboxMultiselectWidget({
+              items: data.options.map((option) => (
+                new OO.ui.CheckboxMultioptionWidget({
+                  data: option.data,
+                  selected: settingValues[name].includes(option.data),
+                  label: option.label,
+                })
+              )),
+              classes: data.classes,
+            });
+            this.controls[name].multiselect.connect(this, { select: 'updateStates' });
+            this.controls[name].field = new OO.ui.FieldLayout(this.controls[name].multiselect, {
+              label: data.label,
+              align: 'top',
+            });
+            break;
 
-        case 'multitag':
-          this.controls[key] = {};
-          this.controls[key].multiselect = new OO.ui.TagMultiselectWidget({
-            placeholder: data.placeholder,
-            allowArbitrary: true,
-            inputPosition: 'outline',
-            tagLimit: data.tagLimit,
-            selected: (data.valueModifier || ((val) => val)).call(null, settingValues[key]),
-          });
-          this.controls[key].multiselect.connect(this, { change: 'updateStates' });
-          this.controls[key].field = new OO.ui.FieldLayout(this.controls[key].multiselect, {
-            label: data.label,
-            align: 'top',
-            help: data.help,
-            helpInline: true,
-          });
-          break;
+          case 'multitag':
+            this.controls[name] = {};
+            this.controls[name].multiselect = new OO.ui.TagMultiselectWidget({
+              placeholder: data.placeholder,
+              allowArbitrary: true,
+              inputPosition: 'outline',
+              tagLimit: data.tagLimit,
+              selected: (data.dataToUi || ((val) => val)).call(null, settingValues[name]),
+            });
+            this.controls[name].multiselect.connect(this, { change: 'updateStates' });
+            this.controls[name].field = new OO.ui.FieldLayout(this.controls[name].multiselect, {
+              label: data.label,
+              align: 'top',
+              help: data.help,
+              helpInline: true,
+            });
+            break;
 
-        case 'button':
-          this.controls[key] = {};
-          this.controls[key].button = new OO.ui.ButtonWidget({
-            label: data.label,
-            flags: data.flags,
-          });
-          this.controls[key].field = new OO.ui.FieldLayout(this.controls[key].button, {
-            label: data.fieldLabel,
-            align: 'top',
-            help: data.help,
-            helpInline: true,
-          });
-          break;
-      }
+          case 'button':
+            this.controls[name] = {};
+            this.controls[name].button = new OO.ui.ButtonWidget({
+              label: data.label,
+              flags: data.flags,
+            });
+            this.controls[name].field = new OO.ui.FieldLayout(this.controls[name].button, {
+              label: data.fieldLabel,
+              align: 'top',
+              help: data.help,
+              helpInline: true,
+            });
+            break;
+        }
+
+        return this.controls[name].field.$element;
+      });
+
+      // eslint-disable-next-line jsdoc/require-jsdoc
+      const PageLayout = class extends OO.ui.PageLayout {
+        // eslint-disable-next-line jsdoc/require-jsdoc
+        constructor() {
+          super(pageData.name);
+          this.$element.append($fields);
+        }
+
+        // eslint-disable-next-line jsdoc/require-jsdoc
+        setupOutlineItem() {
+          this.outlineItem.setLabel(pageData.label);
+        }
+      };
+      tweakUserOoUiClass(PageLayout, OO.ui.PageLayout);
+      const page = new PageLayout(this);
+      return page;
     });
 
     this.controls.removeData.button.connect(this, { click: 'removeData' });
     this.controls.desktopNotifications.select.connect(this, {
       choose: 'onDesktopNotificationsSelectChange',
     });
+
+    return pages;
   }
 
   /**
@@ -343,25 +367,11 @@ class SettingsDialog extends OO.ui.ProcessDialog {
    */
   renderControls(settingValues) {
     settings.initUi();
-    this.createFields(settingValues);
-
-    const talkPagePage = new TalkPagePageLayout(this);
-    const commentFormPage = new CommentFormPageLayout(this);
-    const timestampsPage = new TimestampsPageLayout(this);
-    const notificationsPage = new NotificationsPageLayout(this);
-    const removeDataPage = new RemoveDataPageLayout(this);
 
     this.bookletLayout = new OO.ui.BookletLayout({
       outlined: true,
     });
-    this.bookletLayout.addPages([
-      talkPagePage,
-      commentFormPage,
-      timestampsPage,
-      notificationsPage,
-      removeDataPage,
-    ]);
-
+    this.bookletLayout.addPages(this.createPages(settingValues));
     this.settingsPanel.$element.empty().append(this.bookletLayout.$element);
 
     this.updateStates();
@@ -374,43 +384,38 @@ class SettingsDialog extends OO.ui.ProcessDialog {
    */
   collectSettings() {
     const collectedSettings = {};
-    Object.entries(settings.scheme.ui).forEach(([key, data]) => {
-      switch (data.type) {
-        case 'checkbox':
-          collectedSettings[key] = this.controls[key].input.isSelected();
-          break;
-        case 'radio':
-          collectedSettings[key] = (
-            this.controls[key].select.findSelectedItem()?.getData() ||
-            settings.scheme.default[key]
-          );
-          break;
-        case 'text':
-          collectedSettings[key] = this.controls[key].input.getValue();
-          break;
-        case 'number':
-          collectedSettings[key] = Number(this.controls[key].input.getValue());
-          break;
-        case 'multicheckbox':
-          collectedSettings[key] = this.controls[key].multiselect.findSelectedItemsData();
-          break;
-        case 'multitag':
-          collectedSettings[key] = this.controls[key].multiselect.getValue();
-          break;
-      }
+    settings.scheme.ui.forEach((pageData) => {
+      pageData.controls.forEach((data) => {
+        const name = data.name;
+        switch (data.type) {
+          case 'checkbox':
+            collectedSettings[name] = this.controls[name].input.isSelected();
+            break;
+          case 'radio':
+            collectedSettings[name] = (
+              this.controls[name].select.findSelectedItem()?.getData() ||
+              settings.scheme.default[name]
+            );
+            break;
+          case 'text':
+            collectedSettings[name] = this.controls[name].input.getValue();
+            break;
+          case 'number':
+            collectedSettings[name] = Number(this.controls[name].input.getValue());
+            break;
+          case 'multicheckbox':
+            collectedSettings[name] = this.controls[name].multiselect.findSelectedItemsData();
+            break;
+          case 'multitag':
+            collectedSettings[name] = (data.uiToData || ((val) => val)).call(
+              null,
+              this.controls[name].multiselect.getValue()
+            );
+            break;
+        }
+      });
     });
 
-    collectedSettings.insertButtons = collectedSettings.insertButtons
-      .map((value) => {
-        const hidden = [];
-        value = hideText(value, /\\[+;\\]/g, hidden);
-        let [, snippet, label] = value.match(/^(.*?)(?:;(.+))?$/) || [];
-        if (!snippet?.replace(/^ +$/, '')) return;
-        snippet = unhideText(snippet, hidden);
-        label = label && unhideText(label, hidden);
-        return [snippet, label].filter(defined);
-      })
-      .filter(defined);
     settings.scheme.states.forEach((state) => {
       collectedSettings[state] = this.settings[state];
     });
@@ -429,24 +434,25 @@ class SettingsDialog extends OO.ui.ProcessDialog {
     this.controls.showContribsLink.input.setDisabled(
       !this.controls.reformatComments.input.isSelected()
     );
-
-    const useTemplateDataCheckboxDisabled = !this.controls.autocompleteTypes.multiselect
-      .findItemFromData('templates')
-      .isSelected();
-    this.controls.useTemplateData.input.setDisabled(useTemplateDataCheckboxDisabled);
-
-    const hideTimezoneCheckboxDisabled = (
+    this.controls.useTemplateData.input.setDisabled(
+      !this.controls.autocompleteTypes.multiselect
+        .findItemFromData('templates')
+        .isSelected()
+    );
+    this.controls.hideTimezone.input.setDisabled(
       this.controls.timestampFormat.select.findSelectedItem()?.getData() === 'relative'
     );
-    this.controls.hideTimezone.input.setDisabled(hideTimezoneCheckboxDisabled);
 
     let areInputsValid = true;
-    try {
-      await this.controls.collapseThreadsLevel.input.getValidity();
-      await this.controls.highlightNewInterval.input.getValidity();
-    } catch {
-      areInputsValid = false;
-    }
+    const numberSettingNames = [].concat(...settings.scheme.ui.map((pageData) => (
+      pageData.controls
+        .filter((data) => data.type === 'number')
+        .map((data) => data.name)
+    )));
+    await Promise.all(numberSettingNames.map((name) => this.controls[name].input.getValidity()))
+      .catch(() => {
+        areInputsValid = false;
+      });
 
     const collectedSettings = this.collectSettings();
     const save = !areObjectsEqual(collectedSettings, this.settings, true) && areInputsValid;
@@ -506,165 +512,6 @@ class SettingsDialog extends OO.ui.ProcessDialog {
   }
 }
 
-/**
- * Class used to create the "Talk page" booklet page.
- *
- * @augments external:OO.ui.PageLayout
- * @private
- */
-class TalkPagePageLayout extends OO.ui.PageLayout {
-  /**
-   * Create the "Talk page" booklet page.
-   *
-   * @param {SettingsDialog} dialog Settings dialog that has the booklet page.
-   */
-  constructor(dialog) {
-    super('isTalkPage');
-    this.$element.append([
-      'reformatComments',
-      'showContribsLink',
-      'allowEditOthersComments',
-      'enableThreads',
-      'collapseThreadsLevel',
-      'modifyToc',
-      'useBackgroundHighlighting',
-      'highlightNewInterval',
-      'improvePerformance',
-    ].map((key) => dialog.controls[key].field.$element));
-  }
-
-  /**
-   * OOUI native widget used to set up the outline item.
-   */
-  setupOutlineItem() {
-    this.outlineItem.setLabel(cd.s('sd-page-talkpage'));
-  }
-}
-
-/**
- * Class used to create the "Comment form" booklet page.
- *
- * @augments external:OO.ui.PageLayout
- * @private
- */
-class CommentFormPageLayout extends OO.ui.PageLayout {
-  /**
-   * Create the "Comment form" booklet page.
-   *
-   * @param {SettingsDialog} dialog Settings dialog that has the booklet page.
-   */
-  constructor(dialog) {
-    super('commentForm');
-    this.$element.append([
-      'autopreview',
-      'watchOnReply',
-      'subscribeOnReply',
-      'showToolbar',
-      'alwaysExpandAdvanced',
-      'autocompleteTypes',
-      'useTemplateData',
-      'insertButtons',
-      'signaturePrefix',
-    ].map((key) => dialog.controls[key].field.$element));
-  }
-
-  /**
-   * OOUI native widget used to set up the outline item.
-   */
-  setupOutlineItem() {
-    this.outlineItem.setLabel(cd.s('sd-page-commentform'));
-  }
-}
-
-/**
- * Class used to create the "Timestamps" booklet page.
- *
- * @augments external:OO.ui.PageLayout
- * @private
- */
-class TimestampsPageLayout extends OO.ui.PageLayout {
-  /**
-   * Create the "Timestamps" booklet page.
-   *
-   * @param {SettingsDialog} dialog Settings dialog that has the booklet page.
-   */
-  constructor(dialog) {
-    super('timestamps');
-    this.$element.append([
-      'useUiTime',
-      'hideTimezone',
-      'timestampFormat',
-    ].map((key) => dialog.controls[key].field.$element));
-  }
-
-  /**
-   * OOUI native widget used to set up the outline item.
-   */
-  setupOutlineItem() {
-    this.outlineItem.setLabel(cd.s('sd-page-timestamps'));
-  }
-}
-
-/**
- * Class used to create the "Notifications" booklet page.
- *
- * @augments external:OO.ui.PageLayout
- * @private
- */
-class NotificationsPageLayout extends OO.ui.PageLayout {
-  /**
-   * Create the "Notifications" booklet page.
-   *
-   * @param {SettingsDialog} dialog Settings dialog that has the booklet page.
-   */
-  constructor(dialog) {
-    super('notifications');
-    this.$element.append([
-      'useTopicSubscription',
-      'desktopNotifications',
-      'notifications',
-      'notifyCollapsedThreads',
-    ].map((key) => dialog.controls[key].field.$element));
-  }
-
-  /**
-   * OOUI native widget used to set up the outline item.
-   */
-  setupOutlineItem() {
-    this.outlineItem.setLabel(cd.s('sd-page-notifications'));
-  }
-}
-
-/**
- * Class used to create the "Remove data" booklet page.
- *
- * @augments external:OO.ui.PageLayout
- * @private
- */
-class RemoveDataPageLayout extends OO.ui.PageLayout {
-  /**
-   * Create the "Remove data" booklet page.
-   *
-   * @param {SettingsDialog} dialog Settings dialog that has the booklet page.
-   */
-  constructor(dialog) {
-    super('removeData');
-    this.$element.append(dialog.controls.removeData.field.$element);
-  }
-
-  /**
-   * OOUI native widget used to set up the outline item.
-   */
-  setupOutlineItem() {
-    this.outlineItem.setLabel(cd.s('sd-page-dataremoval'));
-  }
-}
-
 tweakUserOoUiClass(SettingsDialog, OO.ui.ProcessDialog);
-tweakUserOoUiClass(TalkPagePageLayout, OO.ui.PageLayout);
-tweakUserOoUiClass(CommentFormPageLayout, OO.ui.PageLayout);
-tweakUserOoUiClass(TimestampsPageLayout, OO.ui.PageLayout);
-tweakUserOoUiClass(NotificationsPageLayout, OO.ui.PageLayout);
-tweakUserOoUiClass(RemoveDataPageLayout, OO.ui.PageLayout);
 
 export default SettingsDialog;
