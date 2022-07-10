@@ -350,10 +350,9 @@ export default {
    *
    * @private
    */
-  async maybeShowNotice() {
+  maybeShowNotice() {
     if (!this.useTopicSubscription || settings.get('topicSubscriptionSeenNotice')) return;
 
-    const loadedSettings = await settings.load();
     const $body = $('<div>');
     const $img = $('<img>')
       .attr('width', 512)
@@ -372,9 +371,7 @@ export default {
     $body.append($img, $div);
     OO.ui.alert($body, { size: 'large' });
 
-    loadedSettings.topicSubscriptionSeenNotice = true;
-    settings.save(loadedSettings);
-    settings.set('topicSubscriptionSeenNotice', true);
+    settings.saveSettingOnTheFly(null, 'topicSubscriptionSeenNotice', true);
   },
 
   /**

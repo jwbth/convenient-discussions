@@ -18,6 +18,7 @@ import {
   defined,
   findLastIndex,
   focusInput,
+  getDayTimestamp,
   getNativePromiseState,
   hideText,
   insertText,
@@ -167,12 +168,20 @@ class CommentForm {
      */
 
     /**
-     * A list of current operations.
+     * List of current operations.
      *
      * @type {CommentFormOperation[]}
      * @private
      */
     this.operations = [];
+
+    /**
+     * List of timestamps of last keypresses.
+     *
+     * @type {number[]}
+     * @private
+     */
+    this.lastKeyPresses = [];
 
     if (this.mode === 'addSection') {
       // This is above `this.createContents()` as that function is time-costly and would delay the
@@ -335,12 +344,12 @@ class CommentForm {
   }
 
   /**
-   * Create the inputs from OOUI widgets.
+   * Create the text inputs based on OOUI widgets.
    *
    * @param {object} dataToRestore
    * @private
    */
-  createInputs(dataToRestore) {
+  createTextInputs(dataToRestore) {
     if (
       (['addSection', 'addSubsection'].includes(this.mode) && !this.preloadConfig?.noHeadline) ||
       this.sectionOpeningCommentEdited
@@ -424,7 +433,7 @@ class CommentForm {
   }
 
   /**
-   * Create the checkboxes and the horizontal layout containing them from OOUI widgets.
+   * Create the checkboxes and the horizontal layout containing them based on OOUI widgets.
    *
    * @param {object} dataToRestore
    * @private
@@ -618,7 +627,7 @@ class CommentForm {
   }
 
   /**
-   * Create the buttons from OOUI widgets.
+   * Create the buttons based on OOUI widgets.
    *
    * @private
    */
@@ -1149,7 +1158,7 @@ class CommentForm {
    * @private
    */
   createContents(dataToRestore, requestedModulesNames) {
-    this.createInputs(dataToRestore);
+    this.createTextInputs(dataToRestore);
     this.createCheckboxes(dataToRestore);
     this.createButtons();
 
@@ -1458,53 +1467,57 @@ class CommentForm {
   }
 
   /**
-   * Add events to form elements.
+   * Check whether we recently suggested the user to enable the "Improve performance" setting via a
+   * warn notification.
    *
+   * @returns {boolean}
+   */
+  haveSuggestedToImprovePerformanceRecently() {
+    return getDayTimestamp() - settings.get('improvePerformanceLastSuggested') < 14;
+  }
+
+  /**
+   * Used as a callback for `keydown` events - check whether there are performance issues based on
+   * the rate of the last `keypressCount` keypresses. If there are such, show a notification.
+   *
+   * @param {Event} e
+   * @param {number} keypressCount
+   * @param {number} rateLimit
    * @private
    */
-  addEventListeners() {
-    const saveSessionEventHandler = () => {
-      CommentForm.saveSession();
-    };
-    const preview = () => {
-      this.preview();
-    };
+  checkForPerformanceIssues(e, keypressCount, rateLimit) {
+    if (this.haveSuggestedToImprovePerformanceRecently()) return;
 
-    const textReactions = [
-      {
-        pattern: new RegExp(cd.g.SIGN_CODE + '\\s*$'),
-        message: cd.sParse('cf-reaction-signature', cd.g.SIGN_CODE),
-        name: 'signatureNotNeeded',
-        type: 'notice',
-        checkFunc: () => !this.omitSignatureCheckbox?.isSelected(),
-      },
-      {
-        pattern: /<pre/,
-        message: cd.sParse('cf-reaction-pre'),
-        name: 'dontUsePre',
-        type: 'warning',
-      },
-    ].concat(cd.config.customTextReactions);
-
-    this.$element
-      // Hotkeys
-      .on('keydown', (e) => {
-        // Ctrl+Enter
-        if (keyCombination(e, 13, ['cmd'])) {
-          this.submit();
-        }
-
-        // Esc
-        if (keyCombination(e, 27)) {
-          this.cancel();
-        }
-      })
-
-      // "focusin" is "focus" that bubbles, i.e. propagates up the node tree.
-      .on('focusin', () => {
-        this.lastFocused = new Date();
+    this.lastKeyPresses.push(e.timeStamp);
+    this.lastKeyPresses.splice(0, this.lastKeyPresses.length - keypressCount);
+    if (
+      this.lastKeyPresses[keypressCount - 1] - this.lastKeyPresses[0] <
+      keypressCount * rateLimit
+    ) {
+      const $body = wrap(cd.sParse('warning-performance'), {
+        callbacks: {
+          'cd-notification-talkPageSettings': () => {
+            showSettingsDialog('talkPage');
+          },
+        },
+      }).$wrapper;
+      mw.notify($body, {
+        title: cd.s('warning-performance-title'),
+        type: 'warn',
+        autoHideSeconds: 'long',
       });
+      settings.saveSettingOnTheFly(null, 'improvePerformanceLastSuggested', getDayTimestamp());
+    }
+  }
 
+  /**
+   * Add event listeners to the text inputs.
+   *
+   * @param {Function} saveSessionEventHandler
+   * @param {Function} preview
+   * @private
+   */
+  addEventListenersToTextInputs(saveSessionEventHandler, preview) {
     if (this.headlineInput) {
       this.headlineInput
         .on('change', (headline) => {
@@ -1538,6 +1551,21 @@ class CommentForm {
       });
     }
 
+    const textReactions = [
+      {
+        pattern: new RegExp(cd.g.SIGN_CODE + '\\s*$'),
+        message: cd.sParse('cf-reaction-signature', cd.g.SIGN_CODE),
+        name: 'signatureNotNeeded',
+        type: 'notice',
+        checkFunc: () => !this.omitSignatureCheckbox?.isSelected(),
+      },
+      {
+        pattern: /<pre/,
+        message: cd.sParse('cf-reaction-pre'),
+        name: 'dontUsePre',
+        type: 'warning',
+      },
+    ].concat(cd.config.customTextReactions);
     this.commentInput
       .on('change', (text) => {
         this.updateAutoSummary(true, true);
@@ -1586,6 +1614,22 @@ class CommentForm {
         }
       });
 
+    // "Performance issues?" hint
+    if (
+      controller.isLongPage() &&
+      cd.g.CLIENT_PROFILE.layout === 'webkit' &&
+      !settings.get('improvePerformance') &&
+      !this.haveSuggestedToImprovePerformanceRecently()
+    ) {
+      const keypressCount = 10;
+      const rateLimit = 10;
+      const checkForPerformanceIssues = (e) => {
+        this.checkForPerformanceIssues(e, keypressCount, rateLimit);
+      };
+      this.commentInput.$input.on('keydown', checkForPerformanceIssues);
+      this.headlineInput?.$input.on('keydown', checkForPerformanceIssues);
+    }
+
     this.summaryInput
       .on('change', () => {
         if (this.summaryInput.$input.is(':focus')) {
@@ -1598,21 +1642,31 @@ class CommentForm {
       })
       .on('change', saveSessionEventHandler);
 
-    this.summaryInput.$input.on('keydown', (e) => {
-      // Enter
-      if (
-        e.keyCode === 13 &&
-        !isCmdModifierPressed(e) &&
-        !controller.getActiveAutocompleteMenu()
-      ) {
-        this.submit();
+    this.summaryInput.$input
+      .on('keydown', (e) => {
+        // Enter
+        if (
+          e.keyCode === 13 &&
+          !isCmdModifierPressed(e) &&
+          !controller.getActiveAutocompleteMenu()
+        ) {
+          this.submit();
 
-        // Focus may move to the comment input if the checks aren't successful, adding a newline
-        // if we don't prevent the default action.
-        e.preventDefault();
-      }
-    });
+          // Focus may move to the comment input if the checks aren't successful, adding a newline
+          // if we don't prevent the default action.
+          e.preventDefault();
+        }
+      });
+  }
 
+  /**
+   * Add event listeners to the checkboxes.
+   *
+   * @param {Function} saveSessionEventHandler
+   * @param {Function} preview
+   * @private
+   */
+  addEventListenersToCheckboxes(saveSessionEventHandler, preview) {
     this.minorCheckbox
       ?.on('change', saveSessionEventHandler);
     this.watchCheckbox
@@ -1631,31 +1685,69 @@ class CommentForm {
       })
       .on('change', preview)
       .on('change', saveSessionEventHandler);
+  }
 
-    this.advancedButton
-      .on('click', () => {
-        this.toggleAdvanced();
+  /**
+   * Add event listeners to the buttons.
+   *
+   * @private
+   */
+  addEventListenersToButtons() {
+    this.advancedButton.on('click', () => {
+      this.toggleAdvanced();
+    });
+    this.settingsButton.on('click', () => {
+      showSettingsDialog();
+    });
+    this.cancelButton.on('click', () => {
+      this.cancel();
+    });
+    this.viewChangesButton.on('click', () => {
+      this.viewChanges();
+    });
+    this.previewButton.on('click', () => {
+      this.preview(true, false);
+    });
+    this.submitButton.on('click', () => {
+      this.submit();
+    });
+  }
+
+  /**
+   * Add event listeners to form elements.
+   *
+   * @private
+   */
+  addEventListeners() {
+    const saveSessionEventHandler = () => {
+      CommentForm.saveSession();
+    };
+    const preview = () => {
+      this.preview();
+    };
+
+    this.$element
+      // Hotkeys
+      .on('keydown', (e) => {
+        // Ctrl+Enter
+        if (keyCombination(e, 13, ['cmd'])) {
+          this.submit();
+        }
+
+        // Esc
+        if (keyCombination(e, 27)) {
+          this.cancel();
+        }
+      })
+
+      // "focusin" is "focus" that bubbles, i.e. propagates up the node tree.
+      .on('focusin', () => {
+        this.lastFocused = new Date();
       });
-    this.settingsButton
-      .on('click', () => {
-        showSettingsDialog();
-      });
-    this.cancelButton
-      .on('click', () => {
-        this.cancel();
-      });
-    this.viewChangesButton
-      .on('click', () => {
-        this.viewChanges();
-      });
-    this.previewButton
-      .on('click', () => {
-        this.preview(true, false);
-      });
-    this.submitButton
-      .on('click', () => {
-        this.submit();
-      });
+
+    this.addEventListenersToTextInputs(saveSessionEventHandler, preview);
+    this.addEventListenersToCheckboxes(saveSessionEventHandler, preview);
+    this.addEventListenersToButtons();
   }
 
   /**

@@ -7,11 +7,14 @@
  */
 
 import Button from './Button';
+import Section from './Section';
 import cd from './cd';
 import controller from './controller';
 import toc from './toc';
-import { getExtendedRect, getVisibilityByRects } from './util';
+import { getVisibilityByRects } from './util';
 import { scrollToY } from './jqueryExtensions';
+
+const htmlElement = document.documentElement;
 
 let currentSection;
 let $sectionWithBackLink;
@@ -80,52 +83,36 @@ export default {
   },
 
   /**
-   * Update the contents of the page navigation blocks.
+   * Get offsets of some important elements relative to the viewport.
+   *
+   * @param {number} scrollY
+   * @returns {object}
    */
-  update() {
-    if (!this.isMounted()) return;
-
-    const htmlElement = document.documentElement;
-
-    // Vertical scrollbar disappeared
-    if (htmlElement.scrollHeight === htmlElement.clientHeight) {
-      this.reset();
-      return;
-    }
-
-    // The top position of the TOC or the first section
-    let afterLeadPos;
-
-    let firstSectionOuterTop;
+  getRelativeOffsets(scrollY) {
+    let afterLeadOffset;
     if (toc.isPresent()) {
       const rect = toc.$element.get(0).getBoundingClientRect();
       if (getVisibilityByRects(rect)) {
-        afterLeadPos = rect.top;
+        afterLeadOffset = rect.top;
       }
     }
-    const scrollY = window.scrollY;
-    if (scrollY > cd.g.BODY_SCROLL_PADDING_TOP) {
-      cd.sections.some((section) => {
-        const rect = getExtendedRect(section.$heading.get(0));
-        if (!getVisibilityByRects(rect)) {
-          return false;
 
-        // The second check to exclude the possibility that the first section is above the TOC, like
-        // at https://commons.wikimedia.org/wiki/Project:Graphic_Lab/Illustration_workshop.
-        } else if (!afterLeadPos || rect.outerTop > afterLeadPos) {
-          firstSectionOuterTop = rect.outerTop;
-
-          if (!afterLeadPos) {
-            afterLeadPos = rect.outerTop;
-          }
-          return true;
-        } else {
-          return false;
-        }
-      });
+    const firstSectionTop = Section.getFirstSectionRelativeTopOffset(scrollY, afterLeadOffset);
+    if (!afterLeadOffset) {
+      afterLeadOffset = firstSectionTop;
     }
 
-    if (afterLeadPos < cd.g.BODY_SCROLL_PADDING_TOP + 1 || backLinkLocation === 'top') {
+    return { afterLeadOffset, firstSectionTop };
+  },
+
+  /**
+   * Create of update the basic DOM structure of the page navigation.
+   *
+   * @param {number} afterLeadOffset
+   * @param {number} scrollY
+   */
+  createOrUpdateSkeleton(afterLeadOffset, scrollY) {
+    if (afterLeadOffset < cd.g.BODY_SCROLL_PADDING_TOP + 1 || backLinkLocation === 'top') {
       if (!this.$linksOnTop) {
         this.$linksOnTop = $('<ul>')
           .attr('id', 'cd-pageNav-linksOnTop')
@@ -199,64 +186,76 @@ export default {
         this.reset('bottom');
       }
     }
+  },
 
-    // 1 as a threshold (also below, in "extendedRect.outerTop < BODY_SCROLL_PADDING_TOP + 1") works
-    // better for Monobook for some reason (scroll to the first section using the page navigation to
-    // see the difference).
-    if (
-      firstSectionOuterTop === undefined ||
-      firstSectionOuterTop >= cd.g.BODY_SCROLL_PADDING_TOP + 1
-    ) {
+  /**
+   * Update the name of the current section and its ancestors.
+   *
+   * @param {number} firstSectionTop
+   */
+  updateCurrentSection(firstSectionTop) {
+    // `1` as a threshold (also below, in `extendedRect.outerTop < BODY_SCROLL_PADDING_TOP + 1`)
+    // works better for Monobook for some reason (scroll to the first section using the page
+    // navigation to see the difference).
+    if (firstSectionTop === undefined || firstSectionTop >= cd.g.BODY_SCROLL_PADDING_TOP + 1) {
       if (currentSection) {
         this.resetSections();
       }
       return;
     }
 
-    cd.sections
-      .slice()
+    const updatedCurrentSection = Section.getCurrentSection();
+    if (!updatedCurrentSection || updatedCurrentSection === currentSection) return;
+
+    currentSection = updatedCurrentSection;
+
+    // Keep the data
+    $sectionWithBackLink?.detach();
+
+    this.$currentSection.empty();
+    [currentSection, ...currentSection.getAncestors()]
       .reverse()
-      .some((section) => {
-        const extendedRect = getExtendedRect(section.$heading.get(0));
-        if (!getVisibilityByRects(extendedRect)) {
-          return false;
-        }
-
-        if (extendedRect.outerTop < cd.g.BODY_SCROLL_PADDING_TOP + 1) {
-          if (currentSection === section) {
-            return true;
-          }
-          currentSection = section;
-
-          // Keep the data
-          $sectionWithBackLink?.detach();
-
-          this.$currentSection.empty();
-          const ancestors = [section, ...section.getAncestors()].reverse();
-          ancestors.forEach((sectionInTree, level) => {
-            let $item;
-            if ($sectionWithBackLink && $sectionWithBackLink.data('section') === sectionInTree) {
-              $item = $sectionWithBackLink;
-            } else {
-              const button = new Button({
-                href: sectionInTree.getUrl(),
-                classes: ['cd-pageNav-link'],
-                label: sectionInTree.headline,
-                action: () => {
-                  this.jump(sectionInTree.$heading, $item);
-                },
-              });
-              $item = $('<li>')
-                .addClass(`cd-pageNav-item cd-pageNav-item-level-${level}`)
-                .data('section', sectionInTree)
-                .append(button.element);
-            }
-            $item.appendTo(this.$currentSection);
+      .forEach((sectionInTree, level) => {
+        let $item;
+        if ($sectionWithBackLink && $sectionWithBackLink.data('section') === sectionInTree) {
+          $item = $sectionWithBackLink;
+        } else {
+          const button = new Button({
+            href: sectionInTree.getUrl(),
+            classes: ['cd-pageNav-link'],
+            label: sectionInTree.headline,
+            action: () => {
+              this.jump(sectionInTree.$heading, $item);
+            },
           });
-          return true;
+          $item = $('<li>')
+            .addClass(`cd-pageNav-item cd-pageNav-item-level-${level}`)
+            .data('section', sectionInTree)
+            .append(button.element);
         }
-        return false;
+        $item.appendTo(this.$currentSection);
       });
+  },
+
+  /**
+   * Update the contents of the page navigation blocks.
+   */
+  update() {
+    if (!this.isMounted()) return;
+
+    // Vertical scrollbar disappeared
+    if (htmlElement.scrollHeight === htmlElement.clientHeight) {
+      this.reset();
+      return;
+    }
+
+    const scrollY = window.scrollY;
+
+    // afterLeadOffset is the top position of the TOC or the first section.
+    const { afterLeadOffset, firstSectionTop } = this.getRelativeOffsets(scrollY);
+
+    this.createOrUpdateSkeleton(afterLeadOffset, scrollY);
+    this.updateCurrentSection(firstSectionTop);
   },
 
   /**

@@ -1,5 +1,12 @@
 import cd from './cd';
-import { areObjectsEqual, calculateWordOverlap, spacesToUnderlines } from './util';
+import controller from './controller';
+import {
+  areObjectsEqual,
+  calculateWordOverlap,
+  getExtendedRect,
+  getVisibilityByRects,
+  spacesToUnderlines,
+} from './util';
 
 export default {
   /**
@@ -192,5 +199,95 @@ export default {
     cd.sections.forEach((section) => {
       section.addNewCommentCountMetadata();
     });
+  },
+
+  getFirstSectionRelativeTopOffset(scrollY = window.scrollY, tocOffset) {
+    if (scrollY <= cd.g.BODY_SCROLL_PADDING_TOP) return;
+
+    let top;
+    cd.sections.some((section) => {
+      const rect = getExtendedRect(section.$heading.get(0));
+
+      // The third check to exclude the possibility that the first section is above the TOC, like
+      // at https://commons.wikimedia.org/wiki/Project:Graphic_Lab/Illustration_workshop.
+      if (getVisibilityByRects(rect) && (!tocOffset || rect.outerTop > tocOffset)) {
+        top = rect.outerTop;
+      }
+
+      return top !== undefined;
+    });
+
+    return top;
+  },
+
+  getCurrentSection() {
+    const firstSectionTop = this.getFirstSectionRelativeTopOffset();
+    return (
+      firstSectionTop !== undefined &&
+      firstSectionTop < cd.g.BODY_SCROLL_PADDING_TOP + 1 &&
+      cd.sections
+        .slice()
+        .reverse()
+        .find((section) => {
+          const extendedRect = getExtendedRect(section.$heading.get(0));
+          return (
+            getVisibilityByRects(extendedRect) &&
+            extendedRect.outerTop < cd.g.BODY_SCROLL_PADDING_TOP + 1
+          );
+        }) ||
+      null
+    );
+  },
+
+  updateVisibility() {
+    if (!cd.sections.length) return;
+
+    // Don't care about top scroll padding (the sticky header's height) here.
+    const viewportTop = window.scrollY;
+
+    const pageHeight = document.documentElement.scrollHeight;
+    const threeScreens = window.innerHeight * 3;
+
+    let firstSectionToHide;
+    if (pageHeight - viewportTop > 20000) {
+      const currentSection = this.getCurrentSection()?.getBase(true);
+      firstSectionToHide = cd.sections
+        .filter((section) => (
+          section.level === 2 &&
+          (!currentSection || section.index >= currentSection.index)
+        ))
+        .find((section) => {
+          const rect = section.$heading.get(0).getBoundingClientRect();
+          return (
+            getVisibilityByRects(rect) &&
+            rect.top >= threeScreens &&
+
+            // Is in a different 12500px block than the viewport top. (`threeScreens` is subtracted
+            // from its position to reduce the frequency of CSS manipulations.)
+            (
+              Math.floor(viewportTop / 12500) !==
+              Math.floor((viewportTop + rect.top - threeScreens) / 12500)
+            )
+          );
+        });
+    }
+
+    cd.sections
+      .filter((section) => section.level === 2)
+      .forEach((section) => {
+        const shouldHide = Boolean(firstSectionToHide && section.index >= firstSectionToHide.index);
+        if (shouldHide === section.isHidden) return;
+
+        if (!section.elements) {
+          section.elements = controller.getRangeContents(
+            section.$heading.get(0),
+            section.lastElement
+          );
+        }
+        section.isHidden = shouldHide;
+        section.elements.forEach((el) => {
+          el.classList.toggle('cd-section-hidden', shouldHide);
+        });
+      });
   },
 };

@@ -984,3 +984,12 @@ export function decodeHtmlEntities(string) {
     return result;
   }
 }
+
+/**
+ * Get a timestamp of the current day.
+ *
+ * @returns {number}
+ */
+export function getDayTimestamp() {
+  return Math.floor(Date.now() / (cd.g.SECONDS_IN_DAY * 1000));
+}

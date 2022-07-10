@@ -32,6 +32,7 @@ export default {
     // fact, user data, despite that we don't have much of it.
     states: [
       'haveInsertButtonsBeenAltered',
+      'improvePerformanceLastSuggested',
       'notificationsBlacklist',
       'topicSubscriptionSeenNotice',
     ],
@@ -65,6 +66,8 @@ export default {
 
       hideTimezone: false,
       highlightNewInterval: 15,
+      improvePerformance: false,
+      improvePerformanceLastSuggested: null,
       insertButtons: cd.config.defaultInsertButtons || [],
       notifications: 'all',
       notifyCollapsedThreads: false,
@@ -186,6 +189,11 @@ export default {
         buttonStep: 5,
         label: cd.s('sd-highlightnewinterval'),
         help: cd.s('sd-highlightnewinterval-help'),
+      },
+      improvePerformance: {
+        type: 'checkbox',
+        label: cd.s('sd-improveperformance'),
+        help: cd.s('sd-improveperformance-help'),
       },
       insertButtons: {
         type: 'multitag',
@@ -508,5 +516,27 @@ export default {
     } else {
       await setLocalOption(cd.g.LOCAL_SETTINGS_OPTION_NAME, JSON.stringify(settings));
     }
+  },
+
+  /**
+   * Update a setting value, saving it to the server and chainging it for the current session as
+   * well.
+   *
+   * @param {?object} loadedSettings The values of the settings. If `null`, they will be loaded.
+   * @param {string} key The key of the settings to save.
+   * @param {*} value The value to set.
+   * @returns {Promise}
+   */
+  async saveSettingOnTheFly(loadedSettings, key, value) {
+    // Set the setting locally before loading the setting in case some part of the code needs the
+    // updated setting.
+    this.set(key, value);
+
+    if (!loadedSettings) {
+      loadedSettings = await this.load();
+    }
+    loadedSettings[key] = value;
+    const promise = this.save(loadedSettings);
+    return promise;
   },
 };

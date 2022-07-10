@@ -312,24 +312,24 @@ export default class BootProcess {
             OO.ui.alert(cd.s('dn-grantpermission'));
             Notification.requestPermission((permission) => {
               if (permission === 'granted') {
-                loadedSettings.desktopNotifications = 'all';
-                promise = settings.save(loadedSettings);
-                settings.set('desktopNotifications', 'all');
+                promise = settings.saveSettingOnTheFly(
+                  loadedSettings,
+                  'desktopNotifications',
+                  'all'
+                );
               } else if (permission === 'denied') {
-                loadedSettings.desktopNotifications = 'none';
-                promise = settings.save(loadedSettings);
-                settings.set('desktopNotifications', 'none');
+                promise = settings.saveSettingOnTheFly(
+                  loadedSettings,
+                  'desktopNotifications',
+                  'none'
+                );
               }
             });
           } else if (Notification.permission === 'granted') {
-            loadedSettings.desktopNotifications = 'all';
-            promise = settings.save(loadedSettings);
-            settings.set('desktopNotifications', 'all');
+            promise = settings.saveSettingOnTheFly(loadedSettings, 'desktopNotifications', 'all');
           }
         } else if (action === 'reject') {
-          loadedSettings.desktopNotifications = 'none';
-          promise = settings.save(loadedSettings);
-          settings.set('desktopNotifications', 'none');
+          promise = settings.saveSettingOnTheFly(loadedSettings, 'desktopNotifications', 'none');
         }
         if (promise) {
           try {

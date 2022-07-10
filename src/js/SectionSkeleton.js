@@ -130,6 +130,7 @@ class SectionSkeleton {
       this.headingNestingLevel++;
     }
 
+    // Find the next heading element
     const headingIndex = targets.indexOf(heading);
     let nextHeadingIndex = targets
       .findIndex((target, i) => i > headingIndex && target.type === 'heading');
@@ -138,16 +139,13 @@ class SectionSkeleton {
     }
     const nextHeadingElement = targets[nextHeadingIndex]?.element;
 
+    // Find the next heading element whose section is not a descendant of this section
     const levelRegexp = new RegExp(`^H[1-${this.level}]$`);
-
-    // Next not descendant heading element index
-    let nndheIndex = targets
-      .findIndex((target, i) => (
-        i > headingIndex &&
-        target.type === 'heading' &&
-        levelRegexp.test(target.element.tagName)
-      ));
-
+    let nndheIndex = targets.findIndex((target, i) => (
+      i > headingIndex &&
+      target.type === 'heading' &&
+      levelRegexp.test(target.element.tagName)
+    ));
     if (nndheIndex === -1) {
       nndheIndex = undefined;
     }
@@ -215,16 +213,34 @@ class SectionSkeleton {
   }
 
   /**
-   * Get the last element in the section based on the next section's heading element.
+   * Get the last element in the section based on a following (directly or not) section's heading
+   * element.
    *
-   * @param {Element|external:Element|undefined} nextHeadingElement
+   * Sometimes sections are nested trickily in some kind of container elements, so a following
+   * structure may take place:
+   * ```
+   * == Heading 1 ==
+   * <p>Paragraph 1.</p>
+   * <div>
+   *   <p>Paragraph 2.</p>
+   *   == Heading 2 ==
+   *   <p>Paragraph 3.</p>
+   * </div>
+   * <p>Paragraph 4.</p>
+   * == Heading 3 ==
+   * ```
+   *
+   * In this case, section 1 has paragraphs 1 and 2 as the first and last, and section 2 has
+   * paragraphs 3 and 4 as such. Our code must capture that.
+   *
+   * @param {Element|external:Element|undefined} followingHeadingElement
    * @param {TreeWalker} treeWalker
    * @returns {Element|external:Element}
    */
-  getLastElement(nextHeadingElement, treeWalker) {
+  getLastElement(followingHeadingElement, treeWalker) {
     let lastElement;
-    if (nextHeadingElement) {
-      treeWalker.currentNode = nextHeadingElement;
+    if (followingHeadingElement) {
+      treeWalker.currentNode = followingHeadingElement;
       while (!treeWalker.previousSibling()) {
         if (!treeWalker.parentNode()) break;
       }
