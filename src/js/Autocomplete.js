@@ -69,8 +69,6 @@ class Autocomplete {
 
     const collections = this.getCollections(types, comments, defaultUserNames);
 
-    require('../tribute/tribute.less');
-
     /**
      * {@link https://github.com/zurb/tribute Tribute} object.
      *
@@ -93,6 +91,13 @@ class Autocomplete {
      * @private
      */
     this.inputs = inputs;
+  }
+
+  /**
+   * Initialize autocomplete for the inputs.
+   */
+  init() {
+    require('../tribute/tribute.less');
 
     this.inputs.forEach((input) => {
       const element = input.$input.get(0);

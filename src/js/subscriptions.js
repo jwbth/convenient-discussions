@@ -167,7 +167,7 @@ export default {
           if (type === 'internal' && code === 'sizeLimit') {
             const $body = wrap(cd.sParse('section-watch-error-maxsize'), {
               callbacks: {
-                // Class name is kept for compatibility with strings.
+                // An old class name is kept for compatibility with strings.
                 'cd-notification-editWatchedSections': () => {
                   showEditSubscriptionsDialog();
                 },

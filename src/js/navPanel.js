@@ -15,7 +15,7 @@ import { formatDate } from './timestamp';
 import { isCmdModifierPressed, reorderArray } from './util';
 import { removeWikiMarkup } from './wikitext';
 
-let urbtTimeout;
+let utirbtTimeout;
 let cachedCommentCount;
 let cachedCommentsBySection;
 
@@ -182,7 +182,7 @@ export default {
     this.nextButton.hide();
     this.firstUnseenButton.hide();
     this.commentFormButton.hide();
-    clearTimeout(urbtTimeout);
+    clearTimeout(utirbtTimeout);
   },
 
   /**
@@ -334,7 +334,7 @@ export default {
    */
   updateRefreshButtonTooltip(commentCount, commentsBySection) {
     // If the method was not called after a timeout and the timeout exists, clear it.
-    clearTimeout(urbtTimeout);
+    clearTimeout(utirbtTimeout);
 
     cachedCommentCount = commentCount;
     cachedCommentsBySection = commentsBySection;
@@ -378,7 +378,7 @@ export default {
       // tooltip manually every minute. When timestamps are "improved", timestamps are updated in
       // `LiveTimestamp.updateImproved`.
       if (settings.get('timestampFormat') === 'relative' && !settings.get('modifyToc')) {
-        urbtTimeout = setTimeout(() => {
+        utirbtTimeout = setTimeout(() => {
           this.updateTimestampsInRefreshButtonTooltip();
         }, cd.g.MS_IN_MIN);
       }

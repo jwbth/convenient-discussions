@@ -411,7 +411,7 @@
   "warning-performance": "Convenient Discussions can try to resolve them with the \"{{int:convenient-discussions-sd-improveperformance}}\" setting. <span class=\"cd-notification-talkPageSettings\">Open the settings dialog</span>.",
 
   "discussiontools-incompatible": "Convenient Discussions is incompatible with DiscussionTools. Please <b><span class=\"cd-notification-disabledt\">[[Special:Preferences#mw-prefsection-betafeatures|disable]]</span></b> DiscussionTools to make Convenient Discussions work correctly.",
-  "discussiontools-disabled": "DiscussionTools has been successfully disabled. <span class=\"cd-notification-refresh\">Click to refresh the page</span>.",
+  "discussiontools-disabled": "DiscussionTools has been successfully disabled. <span class=\"cd-notification-refresh\">Refresh the page</span>.",
 
   "wl-button-switchrelevant-tooltip": "Show only comments in topics that I'm {{gender:$1|subscribed to}} and comments addressed to me. (Note: detection is based on edit summaries, so some edits may be missing)",
   "wl-button-editwatchedsections-tooltip": "Edit the list of topics that I'm {{gender:$1|subscribed to}}",

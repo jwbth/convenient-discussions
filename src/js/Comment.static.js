@@ -8,6 +8,7 @@ import {
   getCommonGender,
   getExtendedRect,
   getHigherNodeAndOffsetInSelection,
+  notNull,
   reorderArray,
   underlinesToSpaces,
   unique,
@@ -124,7 +125,7 @@ export default {
   underlays: [],
 
   /**
-   * List of the containers of the underlays.
+   * List of the containers of layers.
    *
    * @type {Element[]}
    * @memberof Comment
@@ -262,7 +263,7 @@ export default {
   registerSeen() {
     if (document.hidden) return;
 
-    const commentInViewport = Comment.findInViewport();
+    const commentInViewport = this.findInViewport();
     if (!commentInViewport) return;
 
     const registerIfInViewport = (comment) => {
@@ -464,23 +465,24 @@ export default {
    */
   highlightHovered(e) {
     const isObstructingElementHovered = (
-      [...(cd.g.NOTIFICATION_AREA?.querySelectorAll('.mw-notification') || [])]
-        .some((notification) => notification.matches(':hover')) ||
-
-      controller.getActiveAutocompleteMenu()?.matches(':hover') ||
-
-      // In case the user has moved the navigation panel to the other side.
-      navPanel.$element?.get(0).matches(':hover') ||
+      [
+        ...(cd.g.NOTIFICATION_AREA?.querySelectorAll('.mw-notification') || []),
+        controller.getActiveAutocompleteMenu(),
+        navPanel.$element?.get(0),
+        controller.getPopupOverlay(false)
+          ?.get(0)
+          .querySelector('.oo-ui-popupWidget:not(.oo-ui-element-hidden)'),
+        controller.getStickyHeader(),
+        cd.sections
+          .map((section) => section.actions.moreMenuSelect?.getMenu())
+          .find((menu) => menu?.isVisible())
+          ?.$element.get(0),
+      ]
+        .filter(notNull)
+        .some((el) => el.matches(':hover')) ||
 
       // WikiEditor dialog
-      $(document.body).children('.ui-widget-overlay').length ||
-
-      controller.getPopupOverlay(false)
-        ?.get(0)
-        .querySelector('.oo-ui-popupWidget:not(.oo-ui-element-hidden)')
-        ?.matches(':hover') ||
-
-      controller.getStickyHeader()?.matches(':hover')
+      $(document.body).children('.ui-widget-overlay').length
     );
 
     cd.comments
@@ -526,10 +528,10 @@ export default {
 
     let comment = findById(id);
     if (!comment && impreciseDate) {
-      const { date, author } = Comment.parseId(id) || {};
+      const { date, author } = this.parseId(id) || {};
       for (let gap = 1; !comment && gap <= 3; gap++) {
-        comment = findById(Comment.generateId(dateToFind, author));
         const dateToFind = new Date(date.getTime() - cd.g.MS_IN_MIN * gap);
+        comment = findById(this.generateId(dateToFind, author));
       }
     }
 
@@ -546,7 +548,7 @@ export default {
    * @memberof Comment
    */
   getByDtId(id, returnComponents = false) {
-    const data = Comment.parseDtId(id);
+    const data = this.parseDtId(id);
     if (!data) {
       return null;
     }
@@ -736,17 +738,17 @@ export default {
       } while (commentIndex === undefined && treeWalker.parentNode());
       if (commentIndex !== undefined) {
         comment = cd.comments[commentIndex];
-        Comment.resetSelectedComment();
+        this.resetSelectedComment();
         if (comment && comment.isActionable && !comment.replyForm) {
           comment.isSelected = true;
           comment.configureLayers();
           comment.replyButton.setLabel(cd.s('cm-quote'));
         }
       } else {
-        Comment.resetSelectedComment();
+        this.resetSelectedComment();
       }
     } else {
-      Comment.resetSelectedComment();
+      this.resetSelectedComment();
     }
     return comment || null;
   },
@@ -824,7 +826,7 @@ export default {
    * @memberof Comment
    */
   parseDtId(id) {
-    if (!Comment.isDtId(id)) {
+    if (!this.isDtId(id)) {
       return null;
     }
     const regexp = /^c-(.+?)-(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z)(?:-(.+))?$/;
@@ -861,7 +863,7 @@ export default {
    */
   setDtIds(ids) {
     ids.forEach((id) => {
-      const comment = Comment.getByDtId(id);
+      const comment = this.getByDtId(id);
       if (comment) {
         comment.dtId = id;
       }

@@ -1421,16 +1421,16 @@ class Comment extends CommentSkeleton {
    */
   updateClassesForType(type, add) {
     add = Boolean(add);
-    if (this.underlay.classList.contains(`cd-comment-underlay-${type}`) !== add) {
-      this.underlay.classList.toggle(`cd-comment-underlay-${type}`, add);
-      this.overlay.classList.toggle(`cd-comment-overlay-${type}`, add);
+    if (this.underlay.classList.contains(`cd-comment-underlay-${type}`) === add) return;
 
-      if (type === 'deleted') {
-        this.replyButton?.setDisabled(add);
-        this.editButton?.setDisabled(add);
-      } else if (type === 'hovered' && !add) {
-        this.overlayInnerWrapper.style.display = '';
-      }
+    this.underlay.classList.toggle(`cd-comment-underlay-${type}`, add);
+    this.overlay.classList.toggle(`cd-comment-overlay-${type}`, add);
+
+    if (type === 'deleted') {
+      this.replyButton?.setDisabled(add);
+      this.editButton?.setDisabled(add);
+    } else if (type === 'hovered' && !add) {
+      this.overlayInnerWrapper.style.display = '';
     }
   }
 

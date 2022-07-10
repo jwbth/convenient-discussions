@@ -76,8 +76,8 @@ function handleDtMarkup(elements) {
         controller.getBootProcess().addDtCommentId(el.id);
       }
       if (moveNotRemove) {
-        // DT gets the offset of all these elements upon initialization which can take a lot of
-        // time if the elements aren't put into containers with less children.
+        // DT gets the DOM offset of each of these elements upon initialization which can take a lot
+        // of time if the elements aren't put into containers with less children.
         if (i % 10 === 0) {
           dtMarkupHavenElement.appendChild(document.createElement('span'));
         }
@@ -950,6 +950,7 @@ export default class BootProcess {
     // comments.
     Comment.setDtIds(this.dtCommentIds);
 
+    // Depends on DT ID being set
     Section.addBars();
 
     subscriptions.getLoadRequest().then(() => {

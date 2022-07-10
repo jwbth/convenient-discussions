@@ -189,22 +189,22 @@ class CommentForm {
       this.addEditNotices();
     }
 
-    const moduleNames = cd.config.customCommentFormModules
+    const customModulesNames = cd.config.customCommentFormModules
       .filter((module) => !module.checkFunc || module.checkFunc())
       .map((module) => module.name);
-    mw.loader.using(moduleNames).then(() => {
+    mw.loader.using(customModulesNames).then(() => {
       /**
        * All the requested custom comment form modules have been loaded and executed. (The comment
        * form may not be ready yet, use {@link event:commentFormToolbarReady} for that.)
        *
-       * @event commentFormModulesReady
+       * @event commentFormCustomModulesReady
        * @param {CommentForm} commentForm
        * @param {object} cd {@link convenientDiscussions} object.
        */
-      mw.hook('convenientDiscussions.commentFormModulesReady').fire(this, cd);
+      mw.hook('convenientDiscussions.commentFormCustomModulesReady').fire(this, cd);
     });
 
-    this.createContents(dataToRestore, moduleNames);
+    this.createContents(dataToRestore, customModulesNames);
     this.addEventListeners();
     this.initAutocomplete();
     this.addToPage();
@@ -1803,6 +1803,7 @@ class CommentForm {
       comments: commentsInSection,
       defaultUserNames,
     });
+    this.autocomplete.init();
 
     if (this.headlineInput) {
       /**
@@ -1816,6 +1817,7 @@ class CommentForm {
         comments: commentsInSection,
         defaultUserNames,
       });
+      this.headlineAutocomplete.init();
     }
 
     /**
@@ -1829,6 +1831,7 @@ class CommentForm {
       comments: commentsInSection,
       defaultUserNames,
     });
+    this.summaryAutocomplete.init();
   }
 
   /**

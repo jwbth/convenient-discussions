@@ -888,7 +888,7 @@ export default {
     postponements.add('scroll', actuallyHandle, 300);
 
     if (window.scrollX !== this.lastScrollX) {
-      $(document).trigger('horizontalscroll.cd')
+      $(document).trigger('horizontalscroll.cd');
     }
     this.lastScrollX = window.scrollX;
 
@@ -939,7 +939,7 @@ export default {
    * _For internal use._ Handle a `selectionChange` event.
    */
   handleSelectionChange() {
-    postponements.add('selectionChange', Comment.getSelectedComment, 200);
+    postponements.add('selectionChange', Comment.getSelectedComment.bind(Comment), 200);
   },
 
   /**
