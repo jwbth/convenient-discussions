@@ -89,7 +89,7 @@ const debug = {
     if (this.timerTotal[label] === undefined) {
       this.timerTotal[label] = 0;
     }
-    this.timerStartTimestamps[label] = Date.now();
+    this.timerStartTimestamps[label] = performance.now();
   },
 
   /**
@@ -100,7 +100,7 @@ const debug = {
   stopTimer(label) {
     if (this.timerStartTimestamps[label] === undefined) return;
 
-    const interval = Date.now() - this.timerStartTimestamps[label];
+    const interval = performance.now() - this.timerStartTimestamps[label];
     this.timerTotal[label] += interval;
     delete this.timerStartTimestamps[label];
 
@@ -145,7 +145,7 @@ const debug = {
       this.stopTimer(label);
     }
     if (this.timerTotal[label] !== undefined) {
-      console.debug(`${label}: ${this.timerTotal[label]}`);
+      console.debug(`${label}: ${this.timerTotal[label].toFixed(1)}`);
       this.resetTimer(label);
     }
   },
