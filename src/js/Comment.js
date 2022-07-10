@@ -3032,36 +3032,26 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * When searching for the comment in the code, adjust the index of the comment start point and
-   * some related properties.
+   * While {@link Comment#adjustCommentBeginning adjusting the comment code data}, exclude the
+   * heading code and/or some known "bad beginnings" (such as badly signed comments and code
+   * captured by {@link convenientDiscussions.g.BAD_COMMENT_BEGINNINGS}).
    *
-   * @param {object} originalData
+   * @param {object} data
    * @returns {object}
-   * @private
    */
-  adjustCommentBeginning({ code, startIndex }) {
-    // Identifying indentation characters
-    let originalIndentationChars = '';
-    let indentationChars = '';
-    let lineStartIndex = startIndex;
-
-    const headingMatch = code.match(/(^[^]*(?:^|\n))((=+)(.*?)\3[ \t\x01\x02]*\n)/);
-    let headingCode;
-    let headingStartIndex;
-    let headingLevel;
-    let headlineCode;
-    if (headingMatch) {
-      headingCode = headingMatch[2];
-      headingStartIndex = startIndex + headingMatch[1].length;
-      headingLevel = headingMatch[3].length;
-      headlineCode = headingMatch[4].trim();
-      startIndex += headingMatch[0].length;
-      code = code.slice(headingMatch[0].length);
+  excludeBadBeginnings(data) {
+    if (data.headingMatch) {
+      data.headingCode = data.headingMatch[2];
+      data.headingStartIndex = data.startIndex + data.headingMatch[1].length;
+      data.headingLevel = data.headingMatch[3].length;
+      data.headlineCode = data.headingMatch[4].trim();
+      data.startIndex += data.headingMatch[0].length;
+      data.code = data.code.slice(data.headingMatch[0].length);
 
       // Try to edit the first comment at
       // https://ru.wikipedia.org/wiki/Википедия:Голосования/Отметки_статусных_статей_в_навигационных_шаблонах#Да
       // to see the bug happening if we don't check for `this.isOpeningSection`.
-      lineStartIndex = this.isOpeningSection ? headingStartIndex : startIndex;
+      data.lineStartIndex = this.isOpeningSection ? data.headingStartIndex : data.startIndex;
     } else {
       // Dirty workaround to tell if there are foreign timestamps inside the comment.
       const areThereForeignTimestamps = this.elements.some((el) => {
@@ -3081,11 +3071,11 @@ class Comment extends CommentSkeleton {
           const linesRegexp = /^(.+)\n/gm;
           let lineMatch;
           let indent;
-          while ((lineMatch = linesRegexp.exec(code))) {
+          while ((lineMatch = linesRegexp.exec(data.code))) {
             const line = lineMatch[1].replace(/\[\[:?(?:[^|[\]<>\n]+\|)?(.+?)\]\]/g, '$1');
             if (regexp.test(line)) {
               const testIndent = lineMatch.index + lineMatch[0].length;
-              if (testIndent === code.length) {
+              if (testIndent === data.code.length) {
                 break;
               } else {
                 indent = testIndent;
@@ -3093,9 +3083,9 @@ class Comment extends CommentSkeleton {
             }
           }
           if (indent) {
-            code = code.slice(indent);
-            startIndex += indent;
-            lineStartIndex += indent;
+            data.code = data.code.slice(indent);
+            data.startIndex += indent;
+            data.lineStartIndex += indent;
           }
         });
 
@@ -3107,101 +3097,127 @@ class Comment extends CommentSkeleton {
           console.debug('Regexps in cd.config.customBadCommentBeginnings should have "^" as the first character.');
         }
         let match;
-        while ((match = code.match(pattern))) {
-          code = code.slice(match[0].length);
-          lineStartIndex = startIndex + match[0].lastIndexOf('\n') + 1;
-          startIndex += match[0].length;
+        while ((match = data.code.match(pattern))) {
+          data.code = data.code.slice(match[0].length);
+          data.lineStartIndex = data.startIndex + match[0].lastIndexOf('\n') + 1;
+          data.startIndex += match[0].length;
         }
       });
     }
 
-    // Exclude the indentation characters and any foreign code before them from the comment code.
-    // Comments at the zero level sometimes start with ":" that is used to indent some side note.
-    // It shouldn't be considered an indentation character.
-    if (this.level > 0) {
-      const replaceIndentationChars = (s, before, chars, after = '') => {
-        if (typeof after === 'number') {
-          after = '';
-        }
-        let remainder = '';
-        let adjustedChars = chars;
-        let startIndexShift = s.length;
+    return data;
+  }
 
-        // We could just throw an error here, but instead will try to fix the markup.
-        if (
-          !before &&
-          (code.match(/(^|\n)[:*#]/g) || []).length >= 2 &&
-          adjustedChars.endsWith('#')
-        ) {
-          adjustedChars = adjustedChars.slice(0, -1);
-          originalIndentationChars = adjustedChars;
-
-          /*
-            We can have this structure:
-              : Comment. [signature]
-              :# Item 1.
-              :# Item 2.
-              :: End of the comment. [signature]
-
-            And we can have this:
-              : Comment. [signature]
-              ::# Item 1.
-              ::# Item 2.
-              :: End of the comment. [signature]
-
-            The first is incorrect, and we need to add additional indentation in that case. Examples:
-            https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2020-05-16T09:10:00.000Z-Example-2020-05-16T09:00:00.000Z
-            https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2020-05-16T09:20:00.000Z-Example-2020-05-16T09:10:00.000Z
-            But make sure replying to
-            https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#No_intro_text,_empty_line_before_the_first_vote
-            works correctly.
-           */
-          if (adjustedChars.length < this.level) {
-            adjustedChars += ':';
-          }
-          startIndexShift -= 1 + after.length;
-
-          remainder = '#' + after;
-        } else {
-          originalIndentationChars = chars;
-        }
-
-        indentationChars = adjustedChars;
-        lineStartIndex = startIndex + before.length;
-        startIndex += startIndexShift;
-        return remainder;
-      };
-
-      code = code.replace(
-        new RegExp(`^()${cd.config.indentationCharsPattern}`),
-        replaceIndentationChars
-      );
-
-      // See the comment "Without treatment of such cases, the section introduction..." in
-      // CommentSkeleton.js. Dangerous case: the first section at
-      // https://ru.wikipedia.org/w/index.php?oldid=105936825&action=edit. This was actually a
-      // mistake to put a signature at the first level, but if it was legit, only the last sentence
-      // should have been interpreted as the comment.
-      if (indentationChars === '') {
-        code = code.replace(
-          new RegExp(`(^[^]*?\\n)${cd.config.indentationCharsPattern}(?![^]*\\n[^:*#])`),
-          replaceIndentationChars
-        );
-      }
+  /**
+   * While {@link Comment#adjustCommentBeginning adjusting the comment code data}, exclude the
+   * indentation characters and any foreign code (such as section intro) before them from the
+   * comment code. Comments at the zero level sometimes start with `:` that is used to indent some
+   * side note. It shouldn't be considered an indentation character.
+   *
+   * @param {object} data
+   * @returns {object}
+   * @private
+   */
+  excludeIndentationAndIntro(data) {
+    if (this.level === 0) {
+      return data;
     }
 
-    return {
+    const replaceIndentationChars = (s, before, chars, after = '') => {
+      if (typeof after === 'number') {
+        after = '';
+      }
+      let remainder = '';
+      let adjustedChars = chars;
+      let startIndexShift = s.length;
+
+      // We could just throw an error here, but instead will try to fix the markup.
+      if (
+        !before &&
+        (data.code.match(/(^|\n)[:*#]/g) || []).length >= 2 &&
+        adjustedChars.endsWith('#')
+      ) {
+        adjustedChars = adjustedChars.slice(0, -1);
+        data.originalIndentationChars = adjustedChars;
+
+        /*
+          We can have this structure:
+            : Comment. [signature]
+            :# Item 1.
+            :# Item 2.
+            :: End of the comment. [signature]
+
+          And we can have this:
+            : Comment. [signature]
+            ::# Item 1.
+            ::# Item 2.
+            :: End of the comment. [signature]
+
+          The first is incorrect, and we need to add additional indentation in that case. Examples:
+          https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2020-05-16T09:10:00.000Z-Example-2020-05-16T09:00:00.000Z
+          https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2020-05-16T09:20:00.000Z-Example-2020-05-16T09:10:00.000Z
+          But make sure replying to
+          https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#No_intro_text,_empty_line_before_the_first_vote
+          works correctly.
+          */
+        if (adjustedChars.length < this.level) {
+          adjustedChars += ':';
+        }
+        startIndexShift -= 1 + after.length;
+
+        remainder = '#' + after;
+      } else {
+        data.originalIndentationChars = chars;
+      }
+
+      data.indentationChars = adjustedChars;
+      data.lineStartIndex = data.startIndex + before.length;
+      data.startIndex += startIndexShift;
+      return remainder;
+    };
+
+    data.code = data.code.replace(
+      new RegExp(`^()${cd.config.indentationCharsPattern}`),
+      replaceIndentationChars
+    );
+
+    // See the comment "Without treatment of such cases, the section introduction..." in
+    // CommentSkeleton.js. Dangerous case: the first section at
+    // https://ru.wikipedia.org/w/index.php?oldid=105936825&action=edit. This was actually a
+    // mistake to put a signature at the first level, but if it was legit, only the last sentence
+    // should have been interpreted as the comment.
+    if (data.indentationChars === '') {
+      data.code = data.code.replace(
+        new RegExp(`(^[^]*?\\n)${cd.config.indentationCharsPattern}(?![^]*\\n[^:*#])`),
+        replaceIndentationChars
+      );
+    }
+
+    return data;
+  }
+
+  /**
+   * When searching for the comment in the code, adjust the index of the comment start point and
+   * some related properties.
+   *
+   * @param {object} originalData
+   * @returns {object}
+   * @private
+   */
+  adjustCommentBeginning({ code, startIndex }) {
+    let data = {
       code,
       startIndex,
-      lineStartIndex,
-      headingMatch,
-      headingCode,
-      headingStartIndex,
-      headingLevel,
-      headlineCode,
-      originalIndentationChars,
-      indentationChars,
+      lineStartIndex: startIndex,
+      headingMatch: code.match(/(^[^]*(?:^|\n))((=+)(.*?)\3[ \t\x01\x02]*\n)/),
+      originalIndentationChars: '',
+      indentationChars: '',
     };
+
+    data = this.excludeBadBeginnings(data);
+    data = this.excludeIndentationAndIntro(data);
+
+    return data;
   }
 
   /**
@@ -3317,6 +3333,7 @@ class Comment extends CommentSkeleton {
    * @param {object[]} signatures List of signatures extracted from wikitext.
    * @param {object[]} matches List of all matches.
    * @returns {object}
+   * @private
    */
   getMatchScores(match, thisData, signatures, matches) {
     const doesIndexMatch = thisData.index === match.index;

@@ -1264,6 +1264,192 @@ class Section extends SectionSkeleton {
   }
 
   /**
+   * Collect data for a match, including section text, first chunk text, indexes, etc.
+   *
+   * @param {object} sectionHeadingMatch
+   * @param {string} pageCode
+   * @param {string} adjustedPageCode
+   * @returns {object}
+   * @private
+   */
+  collectMatchData(sectionHeadingMatch, pageCode, adjustedPageCode) {
+    const headline = normalizeCode(removeWikiMarkup(sectionHeadingMatch[3]));
+
+    const fullHeadingMatch = sectionHeadingMatch[1];
+    const equalSigns = sectionHeadingMatch[2];
+    const equalSignsPattern = `={1,${equalSigns.length}}`;
+    const codeFromSection = pageCode.slice(sectionHeadingMatch.index);
+    const adjustedCodeFromSection = adjustedPageCode.slice(sectionHeadingMatch.index);
+    const sectionMatch = (
+      adjustedCodeFromSection.match(new RegExp(
+        // Will fail at "===" or the like.
+        '(' +
+        mw.util.escapeRegExp(fullHeadingMatch) +
+        '[^]*?\\n)' +
+        equalSignsPattern +
+        '[^=].*=+[ \\t\\x01\\x02]*\\n'
+      )) ||
+      codeFromSection.match(new RegExp(
+        '(' +
+        mw.util.escapeRegExp(fullHeadingMatch) +
+        '[^]*$)'
+      ))
+    );
+
+    // To simplify the workings of the "replyInSection" mode we don't consider terminating line
+    // breaks to be a part of the first chunk of the section (i.e., the section subdivision before
+    // the first heading).
+    const firstChunkMatch = (
+      adjustedCodeFromSection.match(new RegExp(
+        // Will fail at "===" or the like.
+        '(' +
+        mw.util.escapeRegExp(fullHeadingMatch) +
+        '[^]*?\\n)\\n*' +
+
+        // Any next heading.
+        '={1,6}' +
+
+        '[^=].*=+[ \\t\\x01\\x02]*\n'
+      )) ||
+      codeFromSection.match(new RegExp(
+        '(' +
+        mw.util.escapeRegExp(fullHeadingMatch) +
+        '[^]*$)'
+      ))
+    );
+
+    const code = sectionMatch && codeFromSection.substr(sectionMatch.index, sectionMatch[1].length);
+    const firstChunkCode = (
+      firstChunkMatch &&
+      codeFromSection.substr(firstChunkMatch.index, firstChunkMatch[1].length)
+    );
+
+    const startIndex = sectionHeadingMatch.index;
+    const endIndex = startIndex + code.length;
+    const contentStartIndex = sectionHeadingMatch.index + sectionHeadingMatch[0].length;
+    const firstChunkEndIndex = startIndex + firstChunkCode.length;
+    const relativeContentStartIndex = contentStartIndex - startIndex;
+
+    let firstChunkContentEndIndex = firstChunkEndIndex;
+    let contentEndIndex = endIndex;
+    cd.g.KEEP_IN_SECTION_ENDING.forEach((regexp) => {
+      const firstChunkMatch = firstChunkCode.match(regexp);
+      if (firstChunkMatch) {
+        // `1` accounts for the first line break.
+        firstChunkContentEndIndex -= firstChunkMatch[0].length - 1;
+      }
+
+      const match = code.match(regexp);
+      if (match) {
+        // `1` accounts for the first line break.
+        contentEndIndex -= match[0].length - 1;
+      }
+    });
+
+    /*
+      Sections may have `#` or `*` as a placeholder for a vote or bulleted reply. In this case,
+      we must use that `#` or `*` in the reply. As for the placeholder, perhaps we should remove
+      it, but as for now, we keep it because if:
+
+        * the placeholder character is `*`,
+        * `cd.config.indentationCharMode` is `'unify'`,
+        * `cd.config.defaultIndentationChar` is `':'`, and
+        * there is more than one reply,
+
+      the next reply would go back to `:`, not `*` as should be.
+    */
+    const placeholderMatch = firstChunkCode.match(/\n([#*] *\n+)$/);
+    if (placeholderMatch) {
+      firstChunkContentEndIndex -= placeholderMatch[1].length;
+    }
+
+    return {
+      startIndex,
+      endIndex,
+      code,
+      contentStartIndex,
+      contentEndIndex,
+      relativeContentStartIndex,
+      firstChunkEndIndex,
+      firstChunkContentEndIndex,
+      firstChunkCode,
+      headline,
+    };
+  }
+
+  /**
+   * Get the score for a match.
+   *
+   * @param {object} match
+   * @param {number} sectionIndex
+   * @param {string} thisHeadline
+   * @param {string[]} headlines
+   * @returns {number}
+   * @private
+   */
+  getMatchScore(match, sectionIndex, thisHeadline, headlines) {
+    // Matching section index is one of the most unreliable ways to tell matching sections as
+    // sections may be added and removed from the page, so we don't rely on it very much.
+    const doesSectionIndexMatch = this.index === sectionIndex;
+
+    const doesHeadlineMatch = match.headline === thisHeadline;
+
+    const previousHeadlinesToCheckCount = 3;
+    const previousHeadlinesInCode = headlines
+      .slice(-previousHeadlinesToCheckCount)
+      .reverse();
+    const previousHeadlines = cd.sections
+      .slice(Math.max(0, this.index - previousHeadlinesToCheckCount), this.index)
+      .reverse()
+      .map((section) => section.headline);
+    const doPreviousHeadlinesMatch = previousHeadlines
+      .every((headline, i) => normalizeCode(headline) === previousHeadlinesInCode[i]);
+    headlines.push(match.headline);
+
+    const sigs = extractSignatures(match.code);
+    let oldestSig;
+    sigs.forEach((sig) => {
+      if (!oldestSig || (!oldestSig.date && sig.date) || oldestSig.date > sig.date) {
+        oldestSig = sig;
+      }
+    });
+    const doesOldestCommentMatch = oldestSig ?
+      Boolean(
+        this.oldestComment &&
+        (
+          oldestSig.timestamp === this.oldestComment.timestamp ||
+          oldestSig.author === this.oldestComment.author
+        )
+      ) :
+
+      // There's no comments neither in the code nor on the page.
+      !this.oldestComment;
+
+    let oldestCommentWordOverlap = Number(!this.oldestComment && !oldestSig);
+    if (this.oldestComment && oldestSig) {
+      // Use the comment text overlap factor due to this error
+      // https://www.wikidata.org/w/index.php?diff=1410718962. The comment code is extracted only
+      // superficially, without exluding the headline code and other operations performed in
+      // Comment#adjustCommentBeginning.
+      const oldestCommentCode = match.code.slice(oldestSig.commentStartIndex, oldestSig.startIndex);
+      oldestCommentWordOverlap = calculateWordOverlap(
+        this.oldestComment.getText(),
+        removeWikiMarkup(oldestCommentCode)
+      );
+    }
+
+    return (
+      doesOldestCommentMatch * 1 +
+      oldestCommentWordOverlap +
+      doesHeadlineMatch * 1 +
+      doesSectionIndexMatch * 0.5 +
+
+      // Shouldn't give too high a weight to this factor as it is true for every first section.
+      doPreviousHeadlinesMatch * 0.25
+    );
+  }
+
+  /**
    * Search for the section in the source code and return possible matches.
    *
    * @param {string} pageCode
@@ -1271,189 +1457,30 @@ class Section extends SectionSkeleton {
    * @private
    */
   searchInCode(pageCode) {
-    const headline = normalizeCode(this.headline);
+    const thisHeadline = normalizeCode(this.headline);
     const adjustedPageCode = hideDistractingCode(pageCode);
     const sectionHeadingRegexp = /^((=+)(.*)\2[ \t\x01\x02]*)\n/gm;
 
     const matches = [];
     const headlines = [];
-    let sectionIndex = 0;
+    let sectionIndex = -1;
     let sectionHeadingMatch;
     while ((sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedPageCode))) {
-      const currentHeadline = normalizeCode(removeWikiMarkup(sectionHeadingMatch[3]));
-      const doesHeadlineMatch = currentHeadline === headline;
-
-      let numberOfPreviousHeadlinesToCheck = 3;
-      const previousHeadlinesInCode = headlines
-        .slice(-numberOfPreviousHeadlinesToCheck)
-        .reverse();
-      const previousHeadlines = cd.sections
-        .slice(Math.max(0, this.index - numberOfPreviousHeadlinesToCheck), this.index)
-        .reverse()
-        .map((section) => section.headline);
-      const doPreviousHeadlinesMatch = previousHeadlines
-        .every((headline, i) => normalizeCode(headline) === previousHeadlinesInCode[i]);
-      headlines.push(currentHeadline);
-
-      // Matching section index is one of the most unreliable ways to tell matching sections as
-      // sections may be added and removed from the page, so we don't rely on it very much.
-      const doesSectionIndexMatch = this.index === sectionIndex;
       sectionIndex++;
 
-      // Get the section content
-      const fullHeadingMatch = sectionHeadingMatch[1];
-      const equalSigns = sectionHeadingMatch[2];
-      const equalSignsPattern = `={1,${equalSigns.length}}`;
-      const codeFromSection = pageCode.slice(sectionHeadingMatch.index);
-      const adjustedCodeFromSection = adjustedPageCode.slice(sectionHeadingMatch.index);
-      const sectionMatch = (
-        adjustedCodeFromSection.match(new RegExp(
-          // Will fail at "===" or the like.
-          '(' +
-          mw.util.escapeRegExp(fullHeadingMatch) +
-          '[^]*?\\n)' +
-          equalSignsPattern +
-          '[^=].*=+[ \\t\\x01\\x02]*\\n'
-        )) ||
-        codeFromSection.match(new RegExp(
-          '(' +
-          mw.util.escapeRegExp(fullHeadingMatch) +
-          '[^]*$)'
-        ))
-      );
-
-      // To simplify the workings of the "replyInSection" mode we don't consider terminating line
-      // breaks to be a part of the first chunk of the section (i.e., the section subdivision before
-      // the first heading).
-      const firstChunkMatch = (
-        adjustedCodeFromSection.match(new RegExp(
-          // Will fail at "===" or the like.
-          '(' +
-          mw.util.escapeRegExp(fullHeadingMatch) +
-          '[^]*?\\n)\\n*' +
-
-          // Any next heading.
-          '={1,6}' +
-
-          '[^=].*=+[ \\t\\x01\\x02]*\n'
-        )) ||
-        codeFromSection.match(new RegExp(
-          '(' +
-          mw.util.escapeRegExp(fullHeadingMatch) +
-          '[^]*$)'
-        ))
-      );
-      const code = (
-        sectionMatch &&
-        codeFromSection.substr(sectionMatch.index, sectionMatch[1].length)
-      );
-      const firstChunkCode = (
-        firstChunkMatch &&
-        codeFromSection.substr(firstChunkMatch.index, firstChunkMatch[1].length)
-      );
-
-      if (!code || !firstChunkCode) {
-        console.log(`Couldn't read the "${currentHeadline}" section contents.`);
+      const match = this.collectMatchData(sectionHeadingMatch, pageCode, adjustedPageCode);
+      if (!match.code || !match.firstChunkCode) {
+        console.log(`Couldn't read the "${match.headline}" section contents.`);
         continue;
       }
 
-      const sigs = extractSignatures(code);
-      let oldestSig;
-      sigs.forEach((sig) => {
-        if (!oldestSig || (!oldestSig.date && sig.date) || oldestSig.date > sig.date) {
-          oldestSig = sig;
-        }
-      });
-      const doesOldestCommentMatch = oldestSig ?
-        Boolean(
-          this.oldestComment &&
-          (
-            oldestSig.timestamp === this.oldestComment.timestamp ||
-            oldestSig.author === this.oldestComment.author
-          )
-        ) :
+      match.score = this.getMatchScore(match, sectionIndex, thisHeadline, headlines);
+      if (match.score <= 1) continue;
 
-        // There's no comments neither in the code nor on the page.
-        !this.oldestComment;
-
-      let oldestCommentWordOverlap = Number(!this.oldestComment && !oldestSig);
-      if (this.oldestComment && oldestSig) {
-        // Use the comment text overlap factor due to this error
-        // https://www.wikidata.org/w/index.php?diff=1410718962. The comment code is extracted only
-        // superficially, without exluding the headline code and other operations performed in
-        // Comment#adjustCommentBeginning.
-        const oldestCommentCode = code.slice(oldestSig.commentStartIndex, oldestSig.startIndex);
-        oldestCommentWordOverlap = calculateWordOverlap(
-          this.oldestComment.getText(),
-          removeWikiMarkup(oldestCommentCode)
-        );
-      }
-
-      const score = (
-        doesOldestCommentMatch * 1 +
-        oldestCommentWordOverlap +
-        doesHeadlineMatch * 1 +
-        doesSectionIndexMatch * 0.5 +
-
-        // Shouldn't give too high a weight to this factor as it is true for every first section.
-        doPreviousHeadlinesMatch * 0.25
-      );
-      if (score <= 1) continue;
-
-      const startIndex = sectionHeadingMatch.index;
-      const endIndex = startIndex + code.length;
-      const contentStartIndex = sectionHeadingMatch.index + sectionHeadingMatch[0].length;
-      const firstChunkEndIndex = startIndex + firstChunkCode.length;
-      const relativeContentStartIndex = contentStartIndex - startIndex;
-
-      let firstChunkContentEndIndex = firstChunkEndIndex;
-      let contentEndIndex = endIndex;
-      cd.g.KEEP_IN_SECTION_ENDING.forEach((regexp) => {
-        const firstChunkMatch = firstChunkCode.match(regexp);
-        if (firstChunkMatch) {
-          // "1" accounts for the first line break.
-          firstChunkContentEndIndex -= firstChunkMatch[0].length - 1;
-        }
-
-        const codeMatch = code.match(regexp);
-        if (codeMatch) {
-          // "1" accounts for the first line break.
-          contentEndIndex -= codeMatch[0].length - 1;
-        }
-      });
-
-      // Sections may have "#" or "*" as a placeholder for a vote or bulleted reply. In this case,
-      // we must use that "#" or "*" in the reply. As for the placeholder, perhaps we should remove
-      // it, but as for now, we keep it because if:
-      // * the placeholder character is "*",
-      // * cd.config.indentationCharMode is 'unify',
-      // * cd.config.defaultIndentationChar is ':', and
-      // * there is more than one reply,
-      // the next reply would go back to ":", not "*" as should be.
-      const match = firstChunkCode.match(/\n([#*] *\n+)$/);
-      if (match) {
-        firstChunkContentEndIndex -= match[1].length;
-      }
-
-      matches.push({
-        doesHeadlineMatch,
-        doesOldestCommentMatch,
-        doesSectionIndexMatch,
-        doPreviousHeadlinesMatch,
-        score,
-        startIndex,
-        endIndex,
-        code,
-        contentStartIndex,
-        contentEndIndex,
-        relativeContentStartIndex,
-        firstChunkEndIndex,
-        firstChunkContentEndIndex,
-        firstChunkCode,
-      });
+      matches.push(match);
 
       // Maximal possible score
-      if (score === 2.75) break;
+      if (match.score === 2.75) break;
     }
 
     return matches;
