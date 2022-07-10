@@ -248,9 +248,9 @@ export function handleDialogError(dialog, e, messageName, recoverable) {
 }
 
 /**
- * @typedef {Array} CreateTextFieldReturn
- * @property {external:OO.ui.FieldLayout} 0
- * @property {external:OO.ui.TextInputWidget} 1
+ * @typedef {object} CreateTextFieldReturn
+ * @property {external:OO.ui.FieldLayout} field
+ * @property {external:OO.ui.TextInputWidget} input
  * @global
  */
 
@@ -280,13 +280,13 @@ export function createTextField({
     helpInline: true,
     title,
   });
-  return [field, input];
+  return { field, input };
 }
 
 /**
- * @typedef {Array} CreateNumberFieldReturn
- * @property {external:OO.ui.FieldLayout} 0
- * @property {external:OO.ui.TextInputWidget} 1
+ * @typedef {object} CreateNumberFieldReturn
+ * @property {external:OO.ui.FieldLayout} field
+ * @property {external:OO.ui.TextInputWidget} input
  * @global
  */
 
@@ -327,13 +327,13 @@ export function createNumberField({
     helpInline: true,
     title,
   });
-  return [field, input];
+  return { field, input };
 }
 
 /**
- * @typedef {Array} CreateCheckboxFieldReturn
- * @property {external:OO.ui.FieldLayout} 0
- * @property {external:OO.ui.CheckboxInputWidget} 1
+ * @typedef {object} CreateCheckboxFieldReturn
+ * @property {external:OO.ui.FieldLayout} field
+ * @property {external:OO.ui.CheckboxInputWidget} input
  * @global
  */
 
@@ -360,8 +360,8 @@ export function createCheckboxField({
   title,
   classes,
 }) {
-  const checkbox = new OO.ui.CheckboxInputWidget({ value, selected, disabled, tabIndex });
-  const field = new OO.ui.FieldLayout(checkbox, {
+  const input = new OO.ui.CheckboxInputWidget({ value, selected, disabled, tabIndex });
+  const field = new OO.ui.FieldLayout(input, {
     label,
     align: 'inline',
     help,
@@ -369,14 +369,14 @@ export function createCheckboxField({
     title,
     classes,
   });
-  return [field, checkbox];
+  return { field, input };
 }
 
 /**
- * @typedef {Array} CreateRadioFieldReturn
- * @property {external:OO.ui.FieldLayout} 0
- * @property {external:OO.ui.RadioSelectWidget} 1
- * @property {external:OO.ui.RadioOptionWidget} 2
+ * @typedef {object} CreateRadioFieldReturn
+ * @property {external:OO.ui.FieldLayout} field
+ * @property {external:OO.ui.RadioSelectWidget} select
+ * @property {external:OO.ui.RadioOptionWidget[]} items
  * @global
  */
 
@@ -400,7 +400,7 @@ export function createRadioField({ label, selected, help, options }) {
     helpInline: true,
   });
   select.selectItemByData(selected);
-  return [field, select, ...items];
+  return { field, select, items };
 }
 
 /**

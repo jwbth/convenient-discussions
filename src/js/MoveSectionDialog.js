@@ -143,24 +143,27 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
       }
       const sectionCode = this.section.inCode.code;
 
-      this.titleInput = new mw.widgets.TitleInputWidget({
+      this.controls = {
+        title: {},
+      };
+      this.controls.title.input = new mw.widgets.TitleInputWidget({
         $overlay: this.$overlay,
         excludeCurrentPage: true,
         showMissing: false,
         validate: () => {
-          const title = this.titleInput.getMWTitle();
+          const title = this.controls.title.input.getMWTitle();
           const page = title && pageRegistry.get(title);
           return page && page !== this.section.getSourcePage();
         },
       });
-      this.titleField = new OO.ui.FieldLayout(this.titleInput, {
+      this.controls.title.field = new OO.ui.FieldLayout(this.controls.title.input, {
         label: cd.s('msd-targetpage'),
         align: 'top',
       });
 
-      this.titleInput.connect(this, { 'change': 'onTitleInputChange' });
-      this.titleInput.connect(this, {
-        'enter': () => {
+      this.controls.title.input.connect(this, {
+        change: 'onTitleInputChange',
+        enter: () => {
           if (!this.actions.get({ actions: 'move' })[0].isDisabled()) {
             this.executeAction('move');
           }
@@ -168,7 +171,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
       });
 
       if (cd.config.getMoveSourcePageCode || cd.config.getMoveTargetPageCode) {
-        [this.keepLinkField, this.keepLinkCheckbox] = createCheckboxField({
+        this.controls.keepLink = createCheckboxField({
           value: 'keepLink',
           selected: true,
           label: cd.s('msd-keeplink'),
@@ -186,28 +189,29 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         .text(cd.s('msd-bottom'))
         .appendTo($sectionCode);
 
-      this.summaryEndingInput = new OO.ui.TextInputWidget({
+      this.controls.summaryEnding.input = new OO.ui.TextInputWidget({
         // TODO: Take into account the whole summary length, updating the maximum value dynamically.
         maxLength: 250,
       });
       this.summaryEndingAutocomplete = new Autocomplete({
         types: ['mentions', 'wikilinks'],
-        inputs: [this.summaryEndingInput],
+        inputs: [this.controls.summaryEnding.input],
       });
-      this.summaryEndingField = new OO.ui.FieldLayout(this.summaryEndingInput, {
+      this.summaryEndingAutocomplete.init();
+      this.controls.summaryEnding.field = new OO.ui.FieldLayout(this.controls.summaryEnding.input, {
         label: cd.s('msd-summaryending'),
         align: 'top',
       });
 
       this.movePanel.$element.append([
-        this.titleField.$element,
-        this.keepLinkField?.$element,
+        this.controls.title.field.$element,
+        this.controls.keepLink.field?.$element,
         $sectionCode,
-        this.summaryEndingField.$element,
+        this.controls.summaryEnding.field.$element,
       ]);
 
       this.stackLayout.setItem(this.movePanel);
-      focusInput(this.titleInput);
+      focusInput(this.controls.title.input);
       this.actions.setAbilities({ close: true });
 
       // A dirty workaround to avoid a scrollbar appearing when the window is loading. Couldn't
@@ -234,9 +238,9 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
     if (action === 'move') {
       return new OO.ui.Process(async () => {
         this.pushPending();
-        this.titleInput.$input.blur();
+        this.controls.title.input.$input.blur();
 
-        let targetPage = pageRegistry.get(this.titleInput.getMWTitle());
+        let targetPage = pageRegistry.get(this.controls.title.input.getMWTitle());
 
         // Should be ruled out by making the button disabled.
         if (targetPage === this.section.getSourcePage()) {
@@ -281,7 +285,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
   async onTitleInputChange() {
     let move = true;
     try {
-      await this.titleInput.getValidity();
+      await this.controls.title.input.getValidity();
     } catch {
       move = false;
     }
@@ -383,7 +387,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
   async editTargetPage(source, target) {
     let codeBeginning;
     let codeEnding;
-    if (cd.config.getMoveTargetPageCode && this.keepLinkCheckbox.isSelected()) {
+    if (cd.config.getMoveTargetPageCode && this.controls.keepLink.checkbox.isSelected()) {
       const code = cd.config.getMoveTargetPageCode(
         source.sectionWikilink.replace(/=/g, '{{=}}'),
         cd.g.USER_SIGNATURE.replace(/=/g, '{{=}}')
@@ -424,7 +428,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
       newCode = pageCode + (pageCode ? '\n' : '') + newSectionCode;
     }
 
-    let summaryEnding = this.summaryEndingInput.getValue();
+    let summaryEnding = this.controls.summaryEnding.input.getValue();
     const colon = cd.mws('colon-separator', { language: 'content' });
     summaryEnding = summaryEnding && colon + summaryEnding;
     const summary = cd.s('es-move-from', source.sectionWikilink) + summaryEnding;
@@ -472,7 +476,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
     const timestamp = findFirstTimestamp(sectionCode) || cd.g.SIGN_CODE + '~';
 
     let newSectionCode;
-    if (cd.config.getMoveSourcePageCode && this.keepLinkCheckbox.isSelected()) {
+    if (cd.config.getMoveSourcePageCode && this.controls.keepLink.checkbox.isSelected()) {
       const code = cd.config.getMoveSourcePageCode(
         target.sectionWikilink,
         cd.g.USER_SIGNATURE,
@@ -488,7 +492,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
     const codeAfter = source.page.code.slice(source.sectionInCode.endIndex);
     const newCode = codeBefore + newSectionCode + codeAfter;
 
-    let summaryEnding = this.summaryEndingInput.getValue();
+    let summaryEnding = this.controls.summaryEnding.input.getValue();
     const colon = cd.mws('colon-separator', { language: 'content' });
     summaryEnding = summaryEnding && colon + summaryEnding;
     const summary = cd.s('es-move-to', target.sectionWikilink) + summaryEnding;

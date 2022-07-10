@@ -1,5 +1,6 @@
 import cd from './cd';
-import { areObjectsEqual, ucFirst } from './util';
+import { areObjectsEqual, ucFirst, wrap } from './util';
+import { formatDateImproved, formatDateNative, formatDateRelative } from './timestamp';
 import { getUserInfo, setGlobalOption, setLocalOption } from './apiWrappers';
 
 export default {
@@ -26,6 +27,14 @@ export default {
       signaturePrefix: ['mySig', 'mySignature'],
       subscribeOnReply: ['watchSectionOnReply'],
     },
+
+    // Not settings but states to be remembered, or settings to be removed if the time comes. In
+    // fact, user data, despite that we don't have much of it.
+    states: [
+      'haveInsertButtonsBeenAltered',
+      'notificationsBlacklist',
+      'topicSubscriptionSeenNotice',
+    ],
   },
 
   /**
@@ -49,6 +58,11 @@ export default {
       defaultCommentLinkType: null,
       defaultSectionLinkType: null,
       enableThreads: true,
+
+      // If the user has never changed the insert buttons configuration, it should change with the
+      // default configuration change.
+      haveInsertButtonsBeenAltered: false,
+
       hideTimezone: false,
       highlightNewInterval: 15,
       insertButtons: cd.config.defaultInsertButtons || [],
@@ -61,6 +75,7 @@ export default {
       showToolbar: true,
       signaturePrefix: cd.config.defaultSignaturePrefix,
       timestampFormat: 'default',
+      topicSubscriptionSeenNotice: false,
       modifyToc: true,
       useBackgroundHighlighting: true,
       useTemplateData: true,
@@ -72,15 +87,214 @@ export default {
       watchOnReply: !mw.loader.getState('ext.discussionTools.init'),
 
       subscribeOnReply: true,
+    };
+  },
 
+  /**
+   * _For internal use._ Initialize the configuration of the UI for the
+   * {@link SettingsDialog settings dialog}}. This is better called each time the UI is rendered
+   * because some content is date-dependent.
+   */
+  initUi() {
+    const fortyThreeMinutesAgo = new Date(Date.now() - cd.g.MILLISECONDS_IN_MINUTE * 43);
+    const threeDaysAgo = new Date(Date.now() - cd.g.MILLISECONDS_IN_MINUTE * 60 * 24 * 3.3);
 
-      /* The following are not settings but states to be remembered. */
+    const exampleDefault = formatDateNative(fortyThreeMinutesAgo);
+    const exampleImproved1 = formatDateImproved(fortyThreeMinutesAgo);
+    const exampleImproved2 = formatDateImproved(threeDaysAgo);
+    const exampleRelative1 = formatDateRelative(fortyThreeMinutesAgo);
+    const exampleRelative2 = formatDateRelative(threeDaysAgo);
 
-      topicSubscriptionSeenNotice: false,
-
-      // If the user has never changed the insert buttons configuration, it should change with the
-      // default configuration change.
-      haveInsertButtonsBeenAltered: false,
+    this.scheme.ui = {
+      allowEditOthersComments: {
+        type: 'checkbox',
+        label: cd.s('sd-alloweditotherscomments'),
+      },
+      alwaysExpandAdvanced: {
+        type: 'checkbox',
+        label: cd.s('sd-alwaysexpandadvanced'),
+      },
+      autocompleteTypes: {
+        type: 'multicheckbox',
+        label: cd.s('sd-autocompletetypes'),
+        options: [
+          {
+            data: 'mentions',
+            label: cd.s('sd-autocompletetypes-mentions'),
+          },
+          {
+            data: 'commentLinks',
+            label: cd.s('sd-autocompletetypes-commentlinks'),
+          },
+          {
+            data: 'wikilinks',
+            label: cd.s('sd-autocompletetypes-wikilinks'),
+          },
+          {
+            data: 'templates',
+            label: cd.s('sd-autocompletetypes-templates'),
+          },
+          {
+            data: 'tags',
+            label: cd.s('sd-autocompletetypes-tags'),
+          },
+        ],
+        classes: ['cd-autocompleteTypesMultiselect'],
+      },
+      autopreview: {
+        type: 'checkbox',
+        label: cd.s('sd-autopreview'),
+      },
+      collapseThreadsLevel: {
+        type: 'number',
+        min: 0,
+        max: 999,
+        label: cd.s('sd-collapsethreadslevel'),
+        help: cd.s('sd-collapsethreadslevel-help'),
+      },
+      desktopNotifications: {
+        type: 'radio',
+        options: [
+          {
+            data: 'all',
+            label: cd.s('sd-desktopnotifications-radio-all', mw.user),
+          },
+          {
+            data: 'toMe',
+            label: cd.s('sd-desktopnotifications-radio-tome'),
+          },
+          {
+            data: 'none',
+            label: cd.s('sd-desktopnotifications-radio-none'),
+          },
+        ],
+        label: cd.s('sd-desktopnotifications'),
+        help: cd.s('sd-desktopnotifications-help', location.hostname),
+      },
+      enableThreads: {
+        type: 'checkbox',
+        label: cd.s('sd-enablethreads'),
+      },
+      hideTimezone: {
+        type: 'checkbox',
+        label: cd.s('sd-hidetimezone'),
+      },
+      highlightNewInterval: {
+        type: 'number',
+        min: 0,
+        max: 99999999,
+        buttonStep: 5,
+        label: cd.s('sd-highlightnewinterval'),
+        help: cd.s('sd-highlightnewinterval-help'),
+      },
+      insertButtons: {
+        type: 'multitag',
+        placeholder: cd.s('sd-insertbuttons-multiselect-placeholder'),
+        tagLimit: 100,
+        label: cd.s('sd-insertbuttons'),
+        help: wrap(cd.sParse('sd-insertbuttons-help') + ' ' + cd.sParse('sd-localsetting')),
+        valueModifier: (value) => (
+          value.map((button) => Array.isArray(button) ? button.join(';') : button)
+        ),
+      },
+      modifyToc: {
+        type: 'checkbox',
+        label: cd.s('sd-modifytoc'),
+      },
+      notifications: {
+        type: 'radio',
+        label: cd.s('sd-notifications'),
+        options: [
+          {
+            data: 'all',
+            label: cd.s('sd-notifications-radio-all', mw.user),
+          },
+          {
+            data: 'toMe',
+            label: cd.s('sd-notifications-radio-tome'),
+          },
+          {
+            data: 'none',
+            label: cd.s('sd-notifications-radio-none'),
+          },
+        ],
+      },
+      notifyCollapsedThreads: {
+        type: 'checkbox',
+        label: cd.s('sd-notifycollapsedthreads'),
+      },
+      reformatComments: {
+        type: 'checkbox',
+        label: cd.s('sd-reformatcomments'),
+      },
+      showContribsLink: {
+        type: 'checkbox',
+        label: cd.s('sd-showcontribslink'),
+        classes: ['cd-setting-indented'],
+      },
+      showToolbar: {
+        type: 'checkbox',
+        label: cd.s('sd-showtoolbar'),
+      },
+      signaturePrefix: {
+        type: 'text',
+        maxLength: 100,
+        label: cd.s('sd-signatureprefix'),
+        help: wrap(cd.sParse('sd-signatureprefix-help') + ' ' + cd.sParse('sd-localsetting')),
+      },
+      timestampFormat: {
+        type: 'radio',
+        options: [
+          {
+            data: 'default',
+            label: cd.s('sd-timestampformat-radio-default', exampleDefault),
+          },
+          {
+            data: 'improved',
+            label: cd.s('sd-timestampformat-radio-improved', exampleImproved1, exampleImproved2),
+          },
+          {
+            data: 'relative',
+            label: cd.s('sd-timestampformat-radio-relative', exampleRelative1, exampleRelative2),
+          },
+        ],
+        label: cd.s('sd-timestampformat'),
+        help: cd.s('sd-timestampformat-help'),
+      },
+      useBackgroundHighlighting: {
+        type: 'checkbox',
+        label: cd.s('sd-usebackgroundhighlighting'),
+      },
+      useUiTime: {
+        type: 'checkbox',
+        label: cd.s('sd-useuitime'),
+      },
+      useTemplateData: {
+        type: 'checkbox',
+        label: cd.s('sd-usetemplatedata'),
+        help: cd.s('sd-usetemplatedata-help'),
+      },
+      useTopicSubscription: {
+        type: 'checkbox',
+        label: wrap(cd.sParse('sd-usetopicsubscription', mw.user), { targetBlank: true }),
+        help: wrap(cd.sParse('sd-usetopicsubscription-help'), { targetBlank: true }),
+      },
+      watchOnReply: {
+        type: 'checkbox',
+        label: cd.s('sd-watchonreply', mw.user),
+      },
+      removeData: {
+        type: 'button',
+        label: cd.s('sd-removedata'),
+        flags: ['destructive'],
+        fieldLabel: cd.s('sd-removedata-description'),
+        help: wrap(cd.sParse('sd-removedata-help'), { targetBlank: true }),
+      },
+      subscribeOnReply: {
+        type: 'checkbox',
+        label: cd.s('sd-watchsectiononreply', mw.user),
+        help: cd.s('sd-watchsectiononreply-help'),
+      },
     };
   },
 

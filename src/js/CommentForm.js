@@ -448,12 +448,14 @@ class CommentForm {
        * @memberof CommentForm
        * @instance
        */
-      [this.minorField, this.minorCheckbox] = createCheckboxField({
+      const minor = createCheckboxField({
         value: 'minor',
         selected: dataToRestore?.minor ?? true,
         label: cd.s('cf-minor'),
         tabIndex: this.getTabIndex(20),
       });
+      this.minorField = minor.field;
+      this.minorCheckbox = minor.input;
     }
 
     const watchCheckboxSelected = (
@@ -479,12 +481,14 @@ class CommentForm {
      * @memberof CommentForm
      * @instance
      */
-    [this.watchField, this.watchCheckbox] = createCheckboxField({
+    const watch = createCheckboxField({
       value: 'watch',
       selected: dataToRestore?.watch ?? watchCheckboxSelected,
       label: cd.s('cf-watch'),
       tabIndex: this.getTabIndex(21),
     });
+    this.watchField = watch.field;
+    this.watchCheckbox = watch.input;
 
     if (this.targetSection || this.mode === 'addSection') {
       const selected = (
@@ -518,13 +522,15 @@ class CommentForm {
        * @memberof CommentForm
        * @instance
        */
-      [this.subscribeField, this.subscribeCheckbox] = createCheckboxField({
+      const subscribe = createCheckboxField({
         value: 'subscribe',
         selected: dataToRestore?.subscribe ?? selected,
         label,
         tabIndex: this.getTabIndex(22),
         title: cd.s('cf-watchsection-tooltip'),
       });
+      this.subscribeField = subscribe.field;
+      this.subscribeCheckbox = subscribe.input;
     }
 
     if (['addSection', 'addSubsection'].includes(this.mode)) {
@@ -546,13 +552,15 @@ class CommentForm {
        * @instance
        */
 
-      [this.omitSignatureField, this.omitSignatureCheckbox] = createCheckboxField({
+      const omitSignature = createCheckboxField({
         value: 'omitSignature',
         selected: dataToRestore?.omitSignature ?? false,
         label: cd.s('cf-omitsignature'),
         title: cd.s('cf-omitsignature-tooltip'),
         tabIndex: this.getTabIndex(25),
       });
+      this.omitSignatureField = omitSignature.field;
+      this.omitSignatureCheckbox = omitSignature.input;
     }
 
     if (
@@ -582,12 +590,14 @@ class CommentForm {
        * @memberof CommentForm
        * @instance
        */
-      [this.deleteField, this.deleteCheckbox] = createCheckboxField({
+      const delete_ = createCheckboxField({
         value: 'delete',
         selected,
         label: cd.s('cf-delete'),
         tabIndex: this.getTabIndex(26),
       });
+      this.deleteField = delete_.field;
+      this.deleteCheckbox = delete_.input;
     }
 
     /**

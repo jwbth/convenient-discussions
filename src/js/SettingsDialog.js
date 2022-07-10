@@ -12,8 +12,7 @@ import {
   isDialogUnsaved,
   tweakUserOoUiClass,
 } from './ooui';
-import { formatDateImproved, formatDateNative, formatDateRelative } from './timestamp';
-import { hideText, unhideText, wrap } from './util';
+import { hideText, unhideText } from './util';
 import { setGlobalOption, setLocalOption } from './apiWrappers';
 
 /**
@@ -225,333 +224,126 @@ class SettingsDialog extends OO.ui.ProcessDialog {
   }
 
   /**
-   * Create widget fields with states of controls set according to settings.
+   * Create widget fields with states of controls set according to setting values.
    *
-   * @param {object} settings Settings according to which to set the control states.
+   * @param {object} settingValues Values of settings according to which to set the states of
+   *   controls.
    */
-  createFields(settings) {
-    [
-      this.allowEditOthersCommentsField,
-      this.allowEditOthersCommentsCheckbox,
-    ] = createCheckboxField({
-      value: 'allowEditOthersComments',
-      selected: settings.allowEditOthersComments,
-      label: cd.s('sd-alloweditotherscomments'),
+  createFields(settingValues) {
+    this.controls = {};
+    Object.entries(settings.scheme.ui).forEach(([key, data]) => {
+      switch (data.type) {
+        case 'checkbox':
+          this.controls[key] = createCheckboxField({
+            value: key,
+            selected: settingValues[key],
+            label: data.label,
+            help: data.help,
+            classes: data.classes,
+          });
+          this.controls[key].input.connect(this, { change: 'updateStates' });
+          break;
+
+        case 'radio':
+          this.controls[key] = createRadioField({
+            options: data.options,
+            selected: settingValues[key],
+            label: data.label,
+            help: data.help,
+          });
+          this.controls[key].select.connect(this, { select: 'updateStates' });
+          break;
+
+        case 'text':
+          this.controls[key] = createTextField({
+            value: settingValues[key],
+            maxLength: 100,
+            label: data.label,
+            help: data.help,
+          });
+          this.controls[key].input.connect(this, { change: 'updateStates' });
+          break;
+
+        case 'number':
+          this.controls[key] = createNumberField({
+            value: settingValues[key],
+            min: data.min,
+            max: data.max,
+            buttonStep: data.buttonStep,
+            label: data.label,
+            help: data.help,
+          });
+          this.controls[key].input.connect(this, { change: 'updateStates' });
+          break;
+
+        case 'multicheckbox':
+          this.controls[key] = {};
+          this.controls[key].multiselect = new OO.ui.CheckboxMultiselectWidget({
+            items: data.options.map((option) => (
+              new OO.ui.CheckboxMultioptionWidget({
+                data: option.data,
+                selected: settingValues[key].includes(option.data),
+                label: option.label,
+              })
+            )),
+            classes: data.classes,
+          });
+          this.controls[key].multiselect.connect(this, { select: 'updateStates' });
+          this.controls[key].field = new OO.ui.FieldLayout(this.controls[key].multiselect, {
+            label: data.label,
+            align: 'top',
+          });
+          break;
+
+        case 'multitag':
+          this.controls[key] = {};
+          this.controls[key].multiselect = new OO.ui.TagMultiselectWidget({
+            placeholder: data.placeholder,
+            allowArbitrary: true,
+            inputPosition: 'outline',
+            tagLimit: data.tagLimit,
+            selected: (data.valueModifier || ((val) => val)).call(null, settingValues[key]),
+          });
+          this.controls[key].multiselect.connect(this, { change: 'updateStates' });
+          this.controls[key].field = new OO.ui.FieldLayout(this.controls[key].multiselect, {
+            label: data.label,
+            align: 'top',
+            help: data.help,
+            helpInline: true,
+          });
+          break;
+
+        case 'button':
+          this.controls[key] = {};
+          this.controls[key].button = new OO.ui.ButtonWidget({
+            label: data.label,
+            flags: data.flags,
+          });
+          this.controls[key].field = new OO.ui.FieldLayout(this.controls[key].button, {
+            label: data.fieldLabel,
+            align: 'top',
+            help: data.help,
+            helpInline: true,
+          });
+          break;
+      }
     });
 
-    [this.alwaysExpandAdvancedField, this.alwaysExpandAdvancedCheckbox] = createCheckboxField({
-      value: 'alwaysExpandAdvanced',
-      selected: settings.alwaysExpandAdvanced,
-      label: cd.s('sd-alwaysexpandadvanced'),
-    });
-
-    this.autocompleteTypesMultiselect = new OO.ui.CheckboxMultiselectWidget({
-      items: [
-        new OO.ui.CheckboxMultioptionWidget({
-          data: 'mentions',
-          selected: settings.autocompleteTypes.includes('mentions'),
-          label: cd.s('sd-autocompletetypes-mentions'),
-        }),
-        new OO.ui.CheckboxMultioptionWidget({
-          data: 'commentLinks',
-          selected: settings.autocompleteTypes.includes('commentLinks'),
-          label: cd.s('sd-autocompletetypes-commentlinks'),
-        }),
-        new OO.ui.CheckboxMultioptionWidget({
-          data: 'wikilinks',
-          selected: settings.autocompleteTypes.includes('wikilinks'),
-          label: cd.s('sd-autocompletetypes-wikilinks'),
-        }),
-        new OO.ui.CheckboxMultioptionWidget({
-          data: 'templates',
-          selected: settings.autocompleteTypes.includes('templates'),
-          label: cd.s('sd-autocompletetypes-templates'),
-        }),
-        new OO.ui.CheckboxMultioptionWidget({
-          data: 'tags',
-          selected: settings.autocompleteTypes.includes('tags'),
-          label: cd.s('sd-autocompletetypes-tags'),
-        }),
-      ],
-      classes: ['cd-autocompleteTypesMultiselect'],
-    });
-    this.autocompleteTypesField = new OO.ui.FieldLayout(this.autocompleteTypesMultiselect, {
-      label: cd.s('sd-autocompletetypes'),
-      align: 'top',
-    });
-
-    [this.autopreviewField, this.autopreviewCheckbox] = createCheckboxField({
-      value: 'autopreview',
-      selected: settings.autopreview,
-      label: cd.s('sd-autopreview'),
-    });
-
-    [this.collapseThreadsLevelField, this.collapseThreadsLevelInput] = createNumberField({
-      value: settings.collapseThreadsLevel,
-      min: 0,
-      max: 999,
-      label: cd.s('sd-collapsethreadslevel'),
-      help: cd.s('sd-collapsethreadslevel-help'),
-    });
-
-    [
-      this.desktopNotificationsField,
-      this.desktopNotificationsSelect,
-      this.desktopNotificationsRadioAll,
-      this.desktopNotificationsRadioNone,
-      this.desktopNotificationsRadioToMe,
-    ] = createRadioField({
-      options: [
-        {
-          data: 'all',
-          label: cd.s('sd-desktopnotifications-radio-all', mw.user),
-        },
-        {
-          data: 'toMe',
-          label: cd.s('sd-desktopnotifications-radio-tome'),
-        },
-        {
-          data: 'none',
-          label: cd.s('sd-desktopnotifications-radio-none'),
-        },
-      ],
-      selected: settings.desktopNotifications,
-      label: cd.s('sd-desktopnotifications'),
-      help: cd.s('sd-desktopnotifications-help', location.hostname),
-    });
-
-    [this.enableThreadsField, this.enableThreadsCheckbox] = createCheckboxField({
-      value: 'enableThreads',
-      selected: settings.enableThreads,
-      label: cd.s('sd-enablethreads'),
-    });
-
-    [this.hideTimezoneField, this.hideTimezoneCheckbox] = createCheckboxField({
-      value: 'hideTimezone',
-      selected: settings.hideTimezone,
-      label: cd.s('sd-hidetimezone'),
-    });
-
-    [this.highlightNewIntervalField, this.highlightNewIntervalInput] = createNumberField({
-      value: settings.highlightNewInterval,
-      min: 0,
-      max: 99999999,
-      buttonStep: 5,
-      label: cd.s('sd-highlightnewinterval'),
-      help: cd.s('sd-highlightnewinterval-help'),
-    });
-
-    const insertButtonsSelected = settings.insertButtons
-      .map((button) => Array.isArray(button) ? button.join(';') : button);
-    this.insertButtonsMultiselect = new OO.ui.TagMultiselectWidget({
-      placeholder: cd.s('sd-insertbuttons-multiselect-placeholder'),
-      allowArbitrary: true,
-      inputPosition: 'outline',
-      tagLimit: 100,
-      selected: insertButtonsSelected,
-    });
-    this.insertButtonsField = new OO.ui.FieldLayout(this.insertButtonsMultiselect, {
-      label: cd.s('sd-insertbuttons'),
-      align: 'top',
-      help: wrap(cd.sParse('sd-insertbuttons-help') + ' ' + cd.sParse('sd-localsetting')),
-      helpInline: true,
-    });
-
-    [this.modifyTocField, this.modifyTocCheckbox] = createCheckboxField({
-      value: 'modifyToc',
-      selected: settings.modifyToc,
-      label: cd.s('sd-modifytoc'),
-    });
-
-    [
-      this.notificationsField,
-      this.notificationsSelect,
-      this.notificationsRadioAll,
-      this.notificationsRadioNone,
-      this.notificationsRadioToMe,
-    ] = createRadioField({
-      options: [
-        {
-          label: cd.s('sd-notifications-radio-all', mw.user),
-          data: 'all',
-        },
-        {
-          label: cd.s('sd-notifications-radio-tome'),
-          data: 'toMe',
-        },
-        {
-          label: cd.s('sd-notifications-radio-none'),
-          data: 'none',
-        },
-      ],
-      selected: settings.notifications,
-      label: cd.s('sd-notifications'),
-    });
-
-    [this.notifyCollapsedThreadsField, this.notifyCollapsedThreadsCheckbox] = createCheckboxField({
-      value: 'notifyCollapsedThreads',
-      selected: settings.notifyCollapsedThreads,
-      label: cd.s('sd-notifycollapsedthreads'),
-    });
-
-    [this.reformatCommentsField, this.reformatCommentsCheckbox] = createCheckboxField({
-      value: 'reformatComments',
-      selected: settings.reformatComments,
-      label: cd.s('sd-reformatcomments'),
-    });
-
-    this.removeDataButton = new OO.ui.ButtonWidget({
-      label: cd.s('sd-removedata'),
-      flags: ['destructive'],
-    });
-    this.removeDataButton.connect(this, { click: 'removeData' });
-
-    this.removeDataField = new OO.ui.FieldLayout(this.removeDataButton, {
-      label: cd.s('sd-removedata-description'),
-      align: 'top',
-      help: wrap(cd.sParse('sd-removedata-help'), { targetBlank: true }),
-      helpInline: true,
-    });
-
-    [this.showContribsLinkField, this.showContribsLinkCheckbox] = createCheckboxField({
-      value: 'showContribsLink',
-      selected: settings.showContribsLink,
-      label: cd.s('sd-showcontribslink'),
-      classes: ['cd-setting-indented'],
-    });
-
-    [this.showToolbarField, this.showToolbarCheckbox] = createCheckboxField({
-      value: 'showToolbar',
-      selected: settings.showToolbar,
-      label: cd.s('sd-showtoolbar'),
-    });
-
-    [this.signaturePrefixField, this.signaturePrefixInput] = createTextField({
-      value: settings.signaturePrefix,
-      maxLength: 100,
-      label: cd.s('sd-signatureprefix'),
-      help: wrap(cd.sParse('sd-signatureprefix-help') + ' ' + cd.sParse('sd-localsetting')),
-    });
-
-    const fortyThreeMinutesAgo = new Date(Date.now() - cd.g.MILLISECONDS_IN_MINUTE * 43);
-    const threeDaysAgo = new Date(Date.now() - cd.g.MILLISECONDS_IN_MINUTE * 60 * 24 * 3.3);
-
-    const exampleDefault = formatDateNative(fortyThreeMinutesAgo);
-    const exampleImproved1 = formatDateImproved(fortyThreeMinutesAgo);
-    const exampleImproved2 = formatDateImproved(threeDaysAgo);
-    const exampleRelative1 = formatDateRelative(fortyThreeMinutesAgo);
-    const exampleRelative2 = formatDateRelative(threeDaysAgo);
-
-    [
-      this.timestampFormatField,
-      this.timestampFormatSelect,
-      this.timestampFormatRadioDefault,
-      this.timestampFormatRadioImproved,
-      this.timestampFormatRadioRelative,
-    ] = createRadioField({
-      options: [
-        {
-          data: 'default',
-          label: cd.s('sd-timestampformat-radio-default', exampleDefault),
-        },
-        {
-          data: 'improved',
-          label: cd.s('sd-timestampformat-radio-improved', exampleImproved1, exampleImproved2),
-        },
-        {
-          data: 'relative',
-          label: cd.s('sd-timestampformat-radio-relative', exampleRelative1, exampleRelative2),
-        },
-      ],
-      selected: settings.timestampFormat,
-      label: cd.s('sd-timestampformat'),
-      help: cd.s('sd-timestampformat-help'),
-    });
-
-    [
-      this.useBackgroundHighlightingField,
-      this.useBackgroundHighlightingCheckbox,
-    ] = createCheckboxField({
-      value: 'useBackgroundHighlighting',
-      selected: settings.useBackgroundHighlighting,
-      label: cd.s('sd-usebackgroundhighlighting'),
-    });
-
-    [this.useUiTimeField, this.useUiTimeCheckbox] = createCheckboxField({
-      value: 'useUiTime',
-      selected: settings.useUiTime,
-      label: cd.s('sd-useuitime'),
-    });
-
-    [this.useTemplateDataField, this.useTemplateDataCheckbox] = createCheckboxField({
-      value: 'useTemplateData',
-      selected: settings.useTemplateData,
-      label: cd.s('sd-usetemplatedata'),
-      help: cd.s('sd-usetemplatedata-help'),
-    });
-
-    [this.useTopicSubscriptionField, this.useTopicSubscriptionCheckbox] = createCheckboxField({
-      value: 'useTopicSubscription',
-      selected: settings.useTopicSubscription,
-      label: wrap(cd.sParse('sd-usetopicsubscription', mw.user), { targetBlank: true }),
-      help: wrap(cd.sParse('sd-usetopicsubscription-help'), { targetBlank: true }),
-    });
-
-    [this.watchOnReplyField, this.watchOnReplyCheckbox] = createCheckboxField({
-      value: 'watchOnReply',
-      selected: settings.watchOnReply,
-      label: cd.s('sd-watchonreply', mw.user),
-    });
-
-    [this.subscribeOnReplyField, this.subscribeOnReplyCheckbox] = createCheckboxField({
-      value: 'subscribeOnReply',
-      selected: settings.subscribeOnReply,
-      label: cd.s('sd-watchsectiononreply', mw.user),
-      help: cd.s('sd-watchsectiononreply-help'),
-    });
-  }
-
-  /**
-   * Connect event handlers to controls.
-   */
-  connectHandlers() {
-    this.insertButtonsMultiselect.connect(this, { change: 'updateStates' });
-    this.allowEditOthersCommentsCheckbox.connect(this, { change: 'updateStates' });
-    this.alwaysExpandAdvancedCheckbox.connect(this, { change: 'updateStates' });
-    this.autocompleteTypesMultiselect.connect(this, { select: 'updateStates' });
-    this.autopreviewCheckbox.connect(this, { change: 'updateStates' });
-    this.collapseThreadsLevelInput.connect(this, { change: 'updateStates' });
-    this.desktopNotificationsSelect.connect(this, {
-      select: 'updateStates',
+    this.controls.removeData.button.connect(this, { click: 'removeData' });
+    this.controls.desktopNotifications.select.connect(this, {
       choose: 'onDesktopNotificationsSelectChange',
     });
-    this.enableThreadsCheckbox.connect(this, { change: 'updateStates' });
-    this.hideTimezoneCheckbox.connect(this, { change: 'updateStates' });
-    this.highlightNewIntervalInput.connect(this, { change: 'updateStates' });
-    this.modifyTocCheckbox.connect(this, { change: 'updateStates' });
-    this.notificationsSelect.connect(this, { select: 'updateStates' });
-    this.notifyCollapsedThreadsCheckbox.connect(this, { change: 'updateStates' });
-    this.reformatCommentsCheckbox.connect(this, { change: 'updateStates' });
-    this.showContribsLinkCheckbox.connect(this, { change: 'updateStates' });
-    this.showToolbarCheckbox.connect(this, { change: 'updateStates' });
-    this.signaturePrefixInput.connect(this, { change: 'updateStates' });
-    this.timestampFormatSelect.connect(this, { select: 'updateStates' });
-    this.useBackgroundHighlightingCheckbox.connect(this, { change: 'updateStates' });
-    this.useUiTimeCheckbox.connect(this, { change: 'updateStates' });
-    this.useTemplateDataCheckbox.connect(this, { change: 'updateStates' });
-    this.useTopicSubscriptionCheckbox.connect(this, { change: 'updateStates' });
-    this.subscribeOnReplyCheckbox.connect(this, { change: 'updateStates' });
-    this.watchOnReplyCheckbox.connect(this, { change: 'updateStates' });
   }
 
   /**
    * Render control widgets.
    *
-   * @param {object} settings Settings according to which to set the control states.
+   * @param {object} settingValues Values of settings according to which to set the states of
+   *   controls.
    */
-  renderControls(settings) {
-    this.createFields(settings);
-    this.connectHandlers();
+  renderControls(settingValues) {
+    settings.initUi();
+    this.createFields(settingValues);
 
     const talkPagePage = new TalkPagePageLayout(this);
     const commentFormPage = new CommentFormPageLayout(this);
@@ -581,56 +373,34 @@ class SettingsDialog extends OO.ui.ProcessDialog {
    * @returns {object}
    */
   collectSettings() {
-    const collectedSettings = {
-      allowEditOthersComments: this.allowEditOthersCommentsCheckbox.isSelected(),
-      alwaysExpandAdvanced: this.alwaysExpandAdvancedCheckbox.isSelected(),
-      autocompleteTypes: this.autocompleteTypesMultiselect.findSelectedItemsData(),
-      autopreview: this.autopreviewCheckbox.isSelected(),
-      collapseThreadsLevel: Number(this.collapseThreadsLevelInput.getValue()),
-      desktopNotifications: (
-        this.desktopNotificationsSelect.findSelectedItem()?.getData() ||
-        'unknown'
-      ),
-      enableThreads: this.enableThreadsCheckbox.isSelected(),
-      hideTimezone: this.hideTimezoneCheckbox.isSelected(),
-      highlightNewInterval: Number(this.highlightNewIntervalInput.getValue()),
-      insertButtons: this.getInsertButtons(),
-      modifyToc: this.modifyTocCheckbox.isSelected(),
-      notifications: this.notificationsSelect.findSelectedItem()?.getData(),
-      notifyCollapsedThreads: this.notifyCollapsedThreadsCheckbox.isSelected(),
-      reformatComments: this.reformatCommentsCheckbox.isSelected(),
-      showContribsLink: this.showContribsLinkCheckbox.isSelected(),
-      showToolbar: this.showToolbarCheckbox.isSelected(),
-      signaturePrefix: this.signaturePrefixInput.getValue(),
-      timestampFormat: this.timestampFormatSelect.findSelectedItem()?.getData(),
-      useBackgroundHighlighting: this.useBackgroundHighlightingCheckbox.isSelected(),
-      useUiTime: this.useUiTimeCheckbox.isSelected(),
-      useTemplateData: this.useTemplateDataCheckbox.isSelected(),
-      useTopicSubscription: this.useTopicSubscriptionCheckbox.isSelected(),
-      watchOnReply: this.watchOnReplyCheckbox.isSelected(),
-      subscribeOnReply: this.subscribeOnReplyCheckbox.isSelected(),
+    const collectedSettings = {};
+    Object.entries(settings.scheme.ui).forEach(([key, data]) => {
+      switch (data.type) {
+        case 'checkbox':
+          collectedSettings[key] = this.controls[key].input.isSelected();
+          break;
+        case 'radio':
+          collectedSettings[key] = (
+            this.controls[key].select.findSelectedItem()?.getData() ||
+            settings.scheme.default[key]
+          );
+          break;
+        case 'text':
+          collectedSettings[key] = this.controls[key].input.getValue();
+          break;
+        case 'number':
+          collectedSettings[key] = Number(this.controls[key].input.getValue());
+          break;
+        case 'multicheckbox':
+          collectedSettings[key] = this.controls[key].multiselect.findSelectedItemsData();
+          break;
+        case 'multitag':
+          collectedSettings[key] = this.controls[key].multiselect.getValue();
+          break;
+      }
+    });
 
-      // Settings that are not set by the user / to be removed. In fact, user data, despite that we
-      // don't have much of it.
-      notificationsBlacklist: this.settings.notificationsBlacklist,
-      topicSubscriptionSeenNotice: this.settings.topicSubscriptionSeenNotice,
-    };
-    collectedSettings.haveInsertButtonsBeenAltered = (
-      JSON.stringify(collectedSettings.insertButtons) !==
-      JSON.stringify(settings.scheme.default.insertButtons)
-    );
-
-    return collectedSettings;
-  }
-
-  /**
-   * Process the insert buttons multiselect data to get the insert buttons.
-   *
-   * @returns {string[]}
-   */
-  getInsertButtons() {
-    return this.insertButtonsMultiselect
-      .getValue()
+    collectedSettings.insertButtons = collectedSettings.insertButtons
       .map((value) => {
         const hidden = [];
         value = hideText(value, /\\[+;\\]/g, hidden);
@@ -641,28 +411,39 @@ class SettingsDialog extends OO.ui.ProcessDialog {
         return [snippet, label].filter(defined);
       })
       .filter(defined);
+    settings.scheme.states.forEach((state) => {
+      collectedSettings[state] = this.settings[state];
+    });
+    collectedSettings.haveInsertButtonsBeenAltered = (
+      JSON.stringify(collectedSettings.insertButtons) !==
+      JSON.stringify(settings.scheme.default.insertButtons)
+    );
+
+    return collectedSettings;
   }
 
   /**
    * Update the control states.
    */
   async updateStates() {
-    this.showContribsLinkCheckbox.setDisabled(!this.reformatCommentsCheckbox.isSelected());
+    this.controls.showContribsLink.input.setDisabled(
+      !this.controls.reformatComments.input.isSelected()
+    );
 
-    const useTemplateDataCheckboxDisabled = !this.autocompleteTypesMultiselect
+    const useTemplateDataCheckboxDisabled = !this.controls.autocompleteTypes.multiselect
       .findItemFromData('templates')
       .isSelected();
-    this.useTemplateDataCheckbox.setDisabled(useTemplateDataCheckboxDisabled);
+    this.controls.useTemplateData.input.setDisabled(useTemplateDataCheckboxDisabled);
 
     const hideTimezoneCheckboxDisabled = (
-      this.timestampFormatSelect.findSelectedItem()?.getData() === 'relative'
+      this.controls.timestampFormat.select.findSelectedItem()?.getData() === 'relative'
     );
-    this.hideTimezoneCheckbox.setDisabled(hideTimezoneCheckboxDisabled);
+    this.controls.hideTimezone.input.setDisabled(hideTimezoneCheckboxDisabled);
 
     let areInputsValid = true;
     try {
-      await this.collapseThreadsLevelInput.getValidity();
-      await this.highlightNewIntervalInput.getValidity();
+      await this.controls.collapseThreadsLevel.input.getValidity();
+      await this.controls.highlightNewInterval.input.getValidity();
     } catch {
       areInputsValid = false;
     }
@@ -686,7 +467,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       OO.ui.alert(cd.s('dn-grantpermission'));
       Notification.requestPermission((permission) => {
         if (permission !== 'granted') {
-          this.desktopNotificationsSelect.selectItemByData('none');
+          this.controls.desktopNotifications.select.selectItemByData('none');
         }
       });
     }
@@ -738,15 +519,16 @@ class TalkPagePageLayout extends OO.ui.PageLayout {
   constructor(dialog) {
     super('isTalkPage');
     this.$element.append([
-      dialog.reformatCommentsField.$element,
-      dialog.showContribsLinkField.$element,
-      dialog.allowEditOthersCommentsField.$element,
-      dialog.enableThreadsField.$element,
-      dialog.collapseThreadsLevelField.$element,
-      dialog.modifyTocField.$element,
-      dialog.useBackgroundHighlightingField.$element,
-      dialog.highlightNewIntervalField.$element,
-    ]);
+      'reformatComments',
+      'showContribsLink',
+      'allowEditOthersComments',
+      'enableThreads',
+      'collapseThreadsLevel',
+      'modifyToc',
+      'useBackgroundHighlighting',
+      'highlightNewInterval',
+      'improvePerformance',
+    ].map((key) => dialog.controls[key].field.$element));
   }
 
   /**
@@ -772,16 +554,16 @@ class CommentFormPageLayout extends OO.ui.PageLayout {
   constructor(dialog) {
     super('commentForm');
     this.$element.append([
-      dialog.autopreviewField.$element,
-      dialog.watchOnReplyField.$element,
-      dialog.subscribeOnReplyField.$element,
-      dialog.showToolbarField.$element,
-      dialog.alwaysExpandAdvancedField.$element,
-      dialog.autocompleteTypesField.$element,
-      dialog.useTemplateDataField.$element,
-      dialog.insertButtonsField.$element,
-      dialog.signaturePrefixField.$element,
-    ]);
+      'autopreview',
+      'watchOnReply',
+      'subscribeOnReply',
+      'showToolbar',
+      'alwaysExpandAdvanced',
+      'autocompleteTypes',
+      'useTemplateData',
+      'insertButtons',
+      'signaturePrefix',
+    ].map((key) => dialog.controls[key].field.$element));
   }
 
   /**
@@ -807,10 +589,10 @@ class TimestampsPageLayout extends OO.ui.PageLayout {
   constructor(dialog) {
     super('timestamps');
     this.$element.append([
-      dialog.useUiTimeField.$element,
-      dialog.hideTimezoneField.$element,
-      dialog.timestampFormatField.$element,
-    ]);
+      'useUiTime',
+      'hideTimezone',
+      'timestampFormat',
+    ].map((key) => dialog.controls[key].field.$element));
   }
 
   /**
@@ -836,11 +618,11 @@ class NotificationsPageLayout extends OO.ui.PageLayout {
   constructor(dialog) {
     super('notifications');
     this.$element.append([
-      dialog.useTopicSubscriptionField.$element,
-      dialog.desktopNotificationsField.$element,
-      dialog.notificationsField.$element,
-      dialog.notifyCollapsedThreadsField.$element,
-    ]);
+      'useTopicSubscription',
+      'desktopNotifications',
+      'notifications',
+      'notifyCollapsedThreads',
+    ].map((key) => dialog.controls[key].field.$element));
   }
 
   /**
@@ -865,7 +647,7 @@ class RemoveDataPageLayout extends OO.ui.PageLayout {
    */
   constructor(dialog) {
     super('removeData');
-    this.$element.append(dialog.removeDataField.$element);
+    this.$element.append(dialog.controls.removeData.field.$element);
   }
 
   /**
