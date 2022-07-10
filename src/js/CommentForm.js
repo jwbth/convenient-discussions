@@ -207,12 +207,7 @@ class CommentForm {
     this.createContents(dataToRestore, moduleNames);
     this.addEventListeners();
     this.initAutocomplete();
-
     this.addToPage();
-    if (this.mode === 'addSection') {
-      $('#ca-addsection').addClass('selected');
-      $('#ca-view').removeClass('selected');
-    }
 
     if (!cd.user.isRegistered()) {
       this.showMessage(cd.sParse('error-anoneditwatning'), {
@@ -220,8 +215,6 @@ class CommentForm {
         name: 'anonEditWarning',
       });
     }
-
-    cd.commentForms.push(this);
 
     if (dataToRestore) {
       this.originalComment = dataToRestore.originalComment;
@@ -240,8 +233,7 @@ class CommentForm {
         focusInput(this.headlineInput || this.commentInput);
       }
 
-      // Navigation panel's comment form button is updated in the end of sessions.restore(),
-      // so we don't have to do it here.
+      navPanel.updateCommentFormButton();
     } else {
       this.$element.cdScrollIntoView('center', true, () => {
         if (this.mode !== 'edit') {
@@ -272,6 +264,8 @@ class CommentForm {
         }
       }
     }
+
+    cd.commentForms.push(this);
 
     /**
      * A comment form has been created and added to the page.
@@ -3190,10 +3184,7 @@ class CommentForm {
    */
   forget() {
     if (this.mode === 'addSection') {
-      controller.forgetAddSectionForm();
-
-      $('#ca-addsection').removeClass('selected');
-      $('#ca-view').addClass('selected');
+      CommentForm.forgetAddSectionForm();
     } else {
       delete this.target[CommentForm.modeToProperty(this.mode) + 'Form'];
     }
@@ -3724,7 +3715,7 @@ class CommentForm {
       }
     } else if (this.getMode() === 'addSection') {
       this.addToPage();
-      controller.setAddSectionForm(this);
+      CommentForm.setAddSectionForm(this);
     }
   }
 

@@ -328,31 +328,6 @@ export default {
   },
 
   /**
-   * Memorize the "Add section" form.
-   *
-   * @param {CommentForm} commentForm
-   */
-  setAddSectionForm(commentForm) {
-    this.addSectionForm = commentForm;
-  },
-
-  /**
-   * Get the "Add section" form.
-   *
-   * @returns {CommentForm}
-   */
-  getAddSectionForm() {
-    return this.addSectionForm;
-  },
-
-  /**
-   * Forget the "Add section" form (after it was torn down).
-   */
-  forgetAddSectionForm() {
-    delete this.addSectionForm;
-  },
-
-  /**
    * Create an OOUI window manager or return an existing one.
    *
    * @returns {external:OO.ui.WindowManager}

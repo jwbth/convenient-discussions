@@ -2,8 +2,6 @@ import Comment from './Comment';
 import CommentForm from './CommentForm';
 import Section from './Section';
 import cd from './cd';
-import controller from './controller';
-import navPanel from './navPanel';
 import postponements from './postponements';
 import { areObjectsEqual, focusInput, getFromLocalStorage, saveToLocalStorage } from './util';
 import { rescueCommentFormsContent } from './modal';
@@ -75,7 +73,7 @@ function restoreFromStorage(commentFormsData) {
         rescue.push(data);
       }
     } else if (data.mode === 'addSection') {
-      if (!controller.getAddSectionForm()) {
+      if (!CommentForm.getAddSectionForm()) {
         const commentForm = new CommentForm({
           target: cd.page,
           mode: data.mode,
@@ -83,7 +81,7 @@ function restoreFromStorage(commentFormsData) {
           preloadConfig: data.preloadConfig,
           newTopicOnTop: data.newTopicOnTop,
         });
-        controller.setAddSectionForm(commentForm);
+        CommentForm.setAddSectionForm(commentForm);
         haveRestored = true;
       } else {
         rescue.push(data);
@@ -217,11 +215,11 @@ export default {
    * @memberof CommentForm
    */
   createAddSectionForm(
-    preloadConfig = CommentForm.getDefaultPreloadConfig(),
+    preloadConfig = this.getDefaultPreloadConfig(),
     newTopicOnTop = false,
     dataToRestore
   ) {
-    const addSectionForm = controller.getAddSectionForm();
+    const addSectionForm = this.getAddSectionForm();
     if (addSectionForm) {
       // Sometimes there is more than one "Add section" button on the page, and they lead to opening
       // forms with different content.
@@ -249,8 +247,37 @@ export default {
         newTopicOnTop,
         dataToRestore,
       });
-      controller.setAddSectionForm(commentForm);
+      this.setAddSectionForm(commentForm);
     }
+  },
+
+  /**
+   * Memorize the "Add section" form.
+   *
+   * @param {CommentForm} commentForm
+   */
+  setAddSectionForm(commentForm) {
+    this.addSectionForm = commentForm;
+    $('#ca-addsection').addClass('selected');
+    $('#ca-view').removeClass('selected');
+  },
+
+  /**
+   * Get the "Add section" form.
+   *
+   * @returns {CommentForm}
+   */
+  getAddSectionForm() {
+    return this.addSectionForm;
+  },
+
+  /**
+   * Forget the "Add section" form (after it was torn down).
+   */
+  forgetAddSectionForm() {
+    delete this.addSectionForm;
+    $('#ca-addsection').removeClass('selected');
+    $('#ca-view').addClass('selected');
   },
 
   /**
@@ -342,7 +369,6 @@ export default {
     } else {
       restoreDirectly();
     }
-    CommentForm.saveSession();
-    navPanel.updateCommentFormButton();
+    this.saveSession();
   },
 };
