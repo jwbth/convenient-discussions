@@ -136,10 +136,9 @@ function restoreDirectly() {
  */
 function cleanUpSessionRegistry(data) {
   const newData = Object.assign({}, data);
-  const interval = 60 * cd.g.SECONDS_IN_DAY * 1000;
   Object.keys(newData).forEach((key) => {
     const page = newData[key];
-    if (!page.commentForms?.length || page.saveUnixTime < Date.now() - interval) {
+    if (!page.commentForms?.length || page.saveUnixTime < Date.now() - 60 * cd.g.MS_IN_DAY) {
       delete newData[key];
     }
   });

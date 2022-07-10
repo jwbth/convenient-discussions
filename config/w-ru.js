@@ -502,7 +502,7 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
       });
       mw.cookie.set('cd-hlmConflict', '1', {
         path: '/',
-        expires: cd.g.SECONDS_IN_DAY * 30,
+        expires: 60 * 60 * 24 * 30,
       });
     }
   }
@@ -515,7 +515,7 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
     });
     mw.cookie.set('cd-ptaConflict', '1', {
       path: '/',
-      expires: cd.g.SECONDS_IN_DAY * 30,
+      expires: 60 * 60 * 24 * 30,
     });
   }
 

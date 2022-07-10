@@ -991,5 +991,5 @@ export function decodeHtmlEntities(string) {
  * @returns {number}
  */
 export function getDayTimestamp() {
-  return Math.floor(Date.now() / (cd.g.SECONDS_IN_DAY * 1000));
+  return Math.floor(Date.now() / cd.g.MS_IN_DAY);
 }

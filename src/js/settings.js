@@ -99,8 +99,8 @@ export default {
    * because some content is date-dependent.
    */
   initUi() {
-    const fortyThreeMinutesAgo = new Date(Date.now() - cd.g.MILLISECONDS_IN_MINUTE * 43);
-    const threeDaysAgo = new Date(Date.now() - cd.g.MILLISECONDS_IN_MINUTE * 60 * 24 * 3.3);
+    const fortyThreeMinutesAgo = new Date(Date.now() - cd.g.MS_IN_MIN * 43);
+    const threeDaysAgo = new Date(Date.now() - cd.g.MS_IN_DAY * 3.3);
 
     const exampleDefault = formatDateNative(fortyThreeMinutesAgo);
     const exampleImproved1 = formatDateImproved(fortyThreeMinutesAgo);

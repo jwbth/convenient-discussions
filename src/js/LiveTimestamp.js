@@ -90,15 +90,14 @@ class LiveTimestamp {
     }
 
     const difference = Date.now() - this.date.getTime();
-    const msInMin = cd.g.MILLISECONDS_IN_MINUTE;
     const threshold = relativeTimeThresholds
-      .find((threshold) => difference < threshold.interval * msInMin);
+      .find((threshold) => difference < threshold.interval * cd.g.MS_IN_MIN);
     if (threshold) {
-      const minSteps = Math.floor((difference / msInMin) / threshold.step);
+      const minSteps = Math.floor((difference / cd.g.MS_IN_MIN) / threshold.step);
       for (
-        let boundary = (threshold.start + (minSteps * threshold.step)) * msInMin;
-        boundary <= threshold.interval * msInMin;
-        boundary += threshold.step * msInMin
+        let boundary = (threshold.start + (minSteps * threshold.step)) * cd.g.MS_IN_MIN;
+        boundary <= threshold.interval * cd.g.MS_IN_MIN;
+        boundary += threshold.step * cd.g.MS_IN_MIN
       ) {
         if (difference < boundary) {
           removeFromArrayIfPresent(updateTimeouts, this.updateTimeout);

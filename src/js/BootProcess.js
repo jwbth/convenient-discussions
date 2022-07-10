@@ -542,7 +542,7 @@ export default class BootProcess {
         // There can be a time difference between the time we know (taken from the history) and the
         // time on the page. We take it to be not more than 3 minutes for the time on the page.
         for (let gap = 1; gap <= 3; gap++) {
-          const adjustedDate = new Date(date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * gap);
+          const adjustedDate = new Date(date.getTime() - cd.g.MS_IN_MIN * gap);
           const adjustedToken = formatDateNative(adjustedDate, false, cd.g.CONTENT_TIMEZONE);
           searchQuery += ` OR "${adjustedToken}"`;
         }

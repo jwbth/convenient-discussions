@@ -60,10 +60,9 @@ let thanks;
  */
 function cleanUpThanks(data) {
   const newData = Object.assign({}, data);
-  const interval = 60 * cd.g.SECONDS_IN_DAY * 1000;
   Object.keys(newData).forEach((key) => {
     const thank = newData[key];
-    if (!thank.thankUnixTime || thank.thankUnixTime < Date.now() - interval) {
+    if (!thank.thankUnixTime || thank.thankUnixTime < Date.now() - 60 * cd.g.MS_IN_DAY) {
       delete newData[key];
     }
   });
@@ -2489,8 +2488,8 @@ class Comment extends CommentSkeleton {
       const revisions = await this.getSourcePage().getArchivedPage().getRevisions({
         rvprop: ['ids', 'comment', 'parsedcomment', 'timestamp'],
         rvdir: 'newer',
-        rvstart: new Date(this.date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * 10).toISOString(),
-        rvend: new Date(this.date.getTime() + cd.g.MILLISECONDS_IN_MINUTE * 3).toISOString(),
+        rvstart: new Date(this.date.getTime() - cd.g.MS_IN_MIN * 10).toISOString(),
+        rvend: new Date(this.date.getTime() + cd.g.MS_IN_MIN * 3).toISOString(),
         rvuser: this.author.getName(),
         rvlimit: 500,
       });

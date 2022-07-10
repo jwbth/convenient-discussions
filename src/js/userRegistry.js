@@ -173,7 +173,7 @@ const userRegistry = {
       userIds.some((id) => !mutedUsersData.users[id]) ||
 
       // Users can be renamed, so we can cache for a week max.
-      mutedUsersData.saveUnixTime < Date.now() - 7 * cd.g.SECONDS_IN_DAY * 1000
+      mutedUsersData.saveUnixTime < Date.now() - 7 * cd.g.MS_IN_DAY
     ) {
       getUsersByGlobalId(userIds).then(
         (users) => {

@@ -107,9 +107,7 @@ function testWithSettings(
 
     const dateObj = new Date(date);
     cd.g.UI_TIMEZONE = timezone || 'UTC';
-    cd.g.UI_TIMEZONE_OFFSET = (
-      getTimezoneOffset(timezone, dateObj.getTime()) / cd.g.MILLISECONDS_IN_MINUTE
-    );
+    cd.g.UI_TIMEZONE_OFFSET = getTimezoneOffset(timezone, dateObj.getTime()) / cd.g.MS_IN_MIN;
     settings.set('timestampFormat', timestampFormat);
     settings.set('useUiTime', useUiTime);
     settings.set('hideTimezone', hideTimezone);

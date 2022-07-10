@@ -191,20 +191,20 @@ export default {
   BACKGROUND_UPDATE_CHECK_INTERVAL: 60,
 
   /**
-   * Number of seconds in a day.
-   *
-   * @type {number}
-   * @memberof convenientDiscussions.g
-   */
-  SECONDS_IN_DAY: 60 * 60 * 24,
-
-  /**
    * Number of milliseconds in a minute.
    *
    * @type {number}
    * @memberof convenientDiscussions.g
    */
-  MILLISECONDS_IN_MINUTE: 1000 * 60,
+  MS_IN_MIN: 1000 * 60,
+
+  /**
+   * Number of milliseconds in a day.
+   *
+   * @type {number}
+   * @memberof convenientDiscussions.g
+   */
+  MS_IN_DAY: 1000 * 60 * 60 * 24,
 
   /**
    * Popular elements that don't have the `display: inline` property in the default browser styles.

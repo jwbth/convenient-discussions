@@ -380,7 +380,7 @@ export default {
       if (settings.get('timestampFormat') === 'relative' && !settings.get('modifyToc')) {
         urbtTimeout = setTimeout(() => {
           this.updateTimestampsInRefreshButtonTooltip();
-        }, cd.g.MILLISECONDS_IN_MINUTE);
+        }, cd.g.MS_IN_MIN);
       }
     } else {
       tooltipText = cd.s('navpanel-refresh') + ' ' + cd.mws('parentheses', 'R');

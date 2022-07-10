@@ -528,8 +528,8 @@ export default {
     if (!comment && impreciseDate) {
       const { date, author } = Comment.parseId(id) || {};
       for (let gap = 1; !comment && gap <= 3; gap++) {
-        const dateToFind = new Date(date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * gap);
         comment = findById(Comment.generateId(dateToFind, author));
+        const dateToFind = new Date(date.getTime() - cd.g.MS_IN_MIN * gap);
       }
     }
 
@@ -766,7 +766,7 @@ export default {
         comment.author.getName() === author &&
         comment.date &&
         comment.date < date &&
-        comment.date.getTime() > date.getTime() - cd.g.MILLISECONDS_IN_MINUTE * 60 * 24
+        comment.date.getTime() > date.getTime() - cd.g.MS_IN_DAY
       ))
       .sort((c1, c2) => c1.date.getTime() - c2.date.getTime())
       .slice(-1)[0];

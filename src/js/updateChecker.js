@@ -165,11 +165,10 @@ async function processRevisionsIfNeeded() {
  */
 function cleanUpSeenRenderedChanges(data) {
   const newData = Object.assign({}, data);
-  const interval = 60 * cd.g.SECONDS_IN_DAY * 1000;
   Object.keys(newData).forEach((key) => {
     const page = newData[key];
     const oldestUnixTime = Math.min(...Object.entries(page).map(([, data]) => data.seenUnixTime));
-    if (!oldestUnixTime || oldestUnixTime < Date.now() - interval) {
+    if (!oldestUnixTime || oldestUnixTime < Date.now() - 60 * cd.g.MS_IN_DAY) {
       delete newData[key];
     }
   });
