@@ -1729,25 +1729,26 @@ export default class BootProcess {
     }
 
     if (controller.doesPageExist()) {
+      // Should be below the comment form restoration for threads to be expanded correctly and also
+      // to avoid repositioning threads after the addition of comment forms. Should be above the
+      // viewport position restoration as it may shift the layout (if the viewport position
+      // restoration relies on elements that are made hidden when threads are collapsed, the
+      // algorithm finds the expand note). Should better be above comment highlighting
+      // (`Comment.configureAndAddLayers()`, `processVisits()`) to avoid spending time on comments
+      // in collapsed threads.
+      Thread.init();
+
       // Should better be below the comment form restoration to avoid repositioning of layers
       // after the addition of comment forms.
       const commentsToAddLayersFor = cd.comments.filter((comment) => (
         comment.isOwn ||
 
-        // Need to generate a gray line to close the gaps between adjacent list item elements. Do
-        // it here, not after the comments parsing, to group all operations requiring reflow
+        // Need to generate a gray line to close the gaps between adjacent list item elements. Do it
+        // here, not after processing comments, to group all operations requiring reflow
         // together for performance reasons.
         comment.isLineGapped
       ));
       Comment.configureAndAddLayers(commentsToAddLayersFor);
-
-      // Should be below the comment form restoration for threads to be expanded correctly and
-      // also to avoid repositioning threads after the addition of comment forms. Should be below
-      // the viewport position restoration as it may rely on elements that are made hidden during
-      // the thread initialization. Should better be above comment highlighting
-      // (`processVisits()`, `Comment.configureAndAddLayers()`) to avoid spending time on comments
-      // in collapsed threads.
-      Thread.init();
 
       // Should be below Thread.init() as these methods may want to scroll to a comment in a
       // collapsed thread.

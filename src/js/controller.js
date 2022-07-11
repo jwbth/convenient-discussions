@@ -26,6 +26,7 @@ import updateChecker from './updateChecker';
 import { ElementsTreeWalker } from './treeWalker';
 import { brsToNewlines, hideSensitiveCode } from './wikitext';
 import {
+  defined,
   getExtendedRect,
   getLastArrayElementOrSelf,
   getVisibilityByRects,
@@ -527,6 +528,18 @@ export default {
         const rect = this.scrollData.element.getBoundingClientRect();
         if (getVisibilityByRects(rect)) {
           window.scrollTo(0, window.scrollY + rect.top - this.scrollData.elementTop);
+        } else {
+          // In a collapsed thread?
+          const closestHidden = this.scrollData.element.closest('.cd-hidden');
+          if (closestHidden) {
+            cd.comments
+              .map((comment) => comment.thread)
+              .filter(defined)
+              .filter((thread) => thread.isCollapsed)
+              .find((thread) => thread.collapsedRange.includes(closestHidden))
+              ?.$expandNote
+              .cdScrollTo('top', false);
+          }
         }
       }
     }
