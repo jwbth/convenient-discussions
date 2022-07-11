@@ -959,6 +959,19 @@ class CommentForm {
             },
           },
         },
+      },
+    });
+
+    $input.wikiEditor('addToToolbar', {
+      section: 'main',
+      groups: {
+        'convenient-discussions': {},
+      },
+    });
+    $input.wikiEditor('addToToolbar', {
+      section: 'main',
+      group: 'convenient-discussions',
+      tools: {
         quote: {
           label: `${cd.s('cf-quote-tooltip')} ${cd.mws('parentheses', `Q${cd.mws('comma-separator')}Ctrl+Alt+Q`)}`,
           type: 'button',
@@ -970,8 +983,24 @@ class CommentForm {
             },
           },
         },
+        mention: {
+          label: cd.s('cf-mention-tooltip', cd.g.CMD_MODIFIER),
+          type: 'button',
+          icon: `/w/load.php?modules=oojs-ui.styles.icons-user&image=userAvatar&lang=${lang}&skin=vector`,
+          action: {
+            type: 'callback',
+            execute: () => {},
+          },
+        },
       },
     });
+    this.$element
+      .find('.tool-button[rel="mention"]')
+      .off('click')
+      .on('click', (e) => {
+        this.mention(isCmdModifierPressed(e));
+      });
+
     $input.wikiEditor('addToToolbar', {
       section: 'advanced',
       group: 'format',
@@ -1030,27 +1059,6 @@ class CommentForm {
         },
       },
     });
-    $input.wikiEditor('addToToolbar', {
-      section: 'main',
-      group: 'insert',
-      tools: {
-        mention: {
-          label: cd.s('cf-mention-tooltip', cd.g.CMD_MODIFIER),
-          type: 'button',
-          icon: `/w/load.php?modules=oojs-ui.styles.icons-user&image=userAvatar&lang=${lang}&skin=vector`,
-          action: {
-            type: 'callback',
-            execute: () => {},
-          },
-        },
-      },
-    });
-    this.$element
-      .find('.tool-button[rel="mention"]')
-      .off('click')
-      .on('click', (e) => {
-        this.mention(isCmdModifierPressed(e));
-      });
 
     this.$element
       .find('.tool[rel="link"] a, .tool[rel="file"] a')
