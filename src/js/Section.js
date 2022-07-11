@@ -393,7 +393,7 @@ class Section extends SectionSkeleton {
     );
     const isFirstChunkEmptyBeforeSubsection = (
       this.lastElementInFirstChunk !== this.lastElement &&
-      this.lastElementInFirstChunk === this.$heading.get(0)
+      this.lastElementInFirstChunk === this.firstElement
     );
 
     // May mean complex formatting, so we better keep out.
@@ -691,31 +691,25 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Create a bar element.
+   * Create a bar element (for 2-level sections).
    *
    * @private
    */
-  createBarElement() {
-    let barElement;
-    if (this.level === 2) {
-      barElement = document.createElement('div');
-      barElement.className = 'cd-section-bar';
-      if (!this.metadataElement) {
-        barElement.classList.add('cd-section-bar-nometadata');
-      }
-      barElement.append(...[this.metadataElement, this.actionsElement].filter(defined));
-      this.headingElement.parentNode
-        .insertBefore(barElement, this.headingElement.nextElementSibling);
+   createBarElement() {
+    const barElement = document.createElement('div');
+    barElement.className = 'cd-section-bar';
+    if (!this.metadataElement) {
+      barElement.classList.add('cd-section-bar-nometadata');
+    }
+    barElement.append(...[this.metadataElement, this.actionsElement].filter(defined));
+    this.headingElement.parentNode
+      .insertBefore(barElement, this.headingElement.nextElementSibling);
 
-      if (this.lastElement === this.headingElement) {
-        this.lastElement = barElement;
-      }
-      if (this.lastElementInFirstChunk === this.headingElement) {
-        this.lastElementInFirstChunk = barElement;
-      }
-    } else {
-      this.headingElement.classList.add('cd-subsection');
-      this.headingElement.append(this.actionsElement);
+    if (this.lastElement === this.headingElement) {
+      this.lastElement = barElement;
+    }
+    if (this.lastElementInFirstChunk === this.headingElement) {
+      this.lastElementInFirstChunk = barElement;
     }
 
     /**
@@ -724,15 +718,55 @@ class Section extends SectionSkeleton {
      * @type {Element|undefined}
      */
     this.barElement = barElement;
+
+    /**
+     * The first section element which is either the bar element (for 2-level sections, or topics)
+     * or the section heading (for other sections).
+     *
+     * @type {Element}
+     */
+    this.firstElement = this.headingElement;
   }
 
   /**
-   * Add the bar element, including the metadata and actions elements, below the section heading.
+   * Create an element wrapping a heading element of non-2-level sections.
+   *
+   * @private
    */
-  addBar() {
+  createHeadingWrapperElement() {
+    const headingWrapper = document.createElement('div');
+    headingWrapper.classList.add('cd-heading-wrapper');
+    this.headingElement.parentNode.insertBefore(headingWrapper, this.headingElement);
+    headingWrapper.append(this.headingElement, this.actionsElement);
+
+    if (this.lastElement === this.headingElement) {
+      this.lastElement = headingWrapper;
+    }
+    if (this.lastElementInFirstChunk === this.headingElement) {
+      this.lastElementInFirstChunk = headingWrapper;
+    }
+
+    /**
+     * The element wrapping the heading element of a non-2-level section.
+     *
+     * @type {Element|undefined}
+     */
+    this.headingWrapper = headingWrapper;
+
+    this.firstElement = headingWrapper;
+  }
+
+  /**
+   * Add the metadata and actions elements below or to the right of the section heading.
+   */
+  addMetadataAndActions() {
     this.createMetadataElement();
     this.createActionsElement();
-    this.createBarElement();
+    if (this.level === 2) {
+      this.createBarElement();
+    } else {
+      this.createHeadingWrapperElement();
+    }
   }
 
   /**

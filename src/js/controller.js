@@ -1662,6 +1662,9 @@ export default {
    * @private
    */
   getRangeContents(start, end) {
+    // Fight infinite loops
+    if (start.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_PRECEDING) return;
+
     let commonAncestor;
     for (let el = start; el; el = el.parentNode) {
       if (el.contains(end)) {

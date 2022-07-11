@@ -180,13 +180,14 @@ export default {
   },
 
   /**
-   * _For internal use._ Add the bar element below each section heading.
+   * _For internal use._ Add the metadata and actions elements below or to the right of each section
+   * heading.
    *
    * @memberof Section
    */
-  addBars() {
+  addMetadataAndActions() {
     cd.sections.forEach((section) => {
-      section.addBar();
+      section.addMetadataAndActions();
     });
   },
 
@@ -206,7 +207,7 @@ export default {
 
     let top;
     cd.sections.some((section) => {
-      const rect = getExtendedRect(section.$heading.get(0));
+      const rect = getExtendedRect(section.firstElement);
 
       // The third check to exclude the possibility that the first section is above the TOC, like
       // at https://commons.wikimedia.org/wiki/Project:Graphic_Lab/Illustration_workshop.
@@ -229,7 +230,7 @@ export default {
         .slice()
         .reverse()
         .find((section) => {
-          const extendedRect = getExtendedRect(section.$heading.get(0));
+          const extendedRect = getExtendedRect(section.headingElement);
           return (
             getVisibilityByRects(extendedRect) &&
             extendedRect.outerTop < cd.g.BODY_SCROLL_PADDING_TOP + 1
@@ -257,7 +258,7 @@ export default {
           (!currentSection || section.index >= currentSection.index)
         ))
         .find((section) => {
-          const rect = section.$heading.get(0).getBoundingClientRect();
+          const rect = section.firstElement.getBoundingClientRect();
           return (
             getVisibilityByRects(rect) &&
             rect.top >= threeScreens &&
@@ -279,10 +280,7 @@ export default {
         if (shouldHide === section.isHidden) return;
 
         if (!section.elements) {
-          section.elements = controller.getRangeContents(
-            section.$heading.get(0),
-            section.lastElement
-          );
+          section.elements = controller.getRangeContents(section.firstElement, section.lastElement);
         }
         section.isHidden = shouldHide;
         section.elements.forEach((el) => {

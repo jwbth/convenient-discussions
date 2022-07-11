@@ -951,7 +951,7 @@ export default class BootProcess {
     Comment.setDtIds(this.dtCommentIds);
 
     // Depends on DT ID being set
-    Section.addBars();
+    Section.addMetadataAndActions();
 
     subscriptions.getLoadRequest().then(() => {
       Section.addSubscribeButtons();
