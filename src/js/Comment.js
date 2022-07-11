@@ -2334,10 +2334,14 @@ class Comment extends CommentSkeleton {
       });
     } else {
       const $elements = this.editForm ? this.editForm.$element : this.$elements;
-      const alignment = this.isOpeningSection || this.editForm ? 'top' : 'center';
-      if (callback) {
-        callback();
-      }
+      const offset = this.getOffset({ considerFloating: true });
+      const alignment = (
+        this.isOpeningSection ||
+        this.editForm ||
+        offset.bottom !== offset.downplayedBottom
+      ) ?
+        'top' :
+        'center';
       $elements.cdScrollIntoView(alignment, smooth, callback);
       if (flashTarget) {
         this.flashTarget();
