@@ -77,9 +77,25 @@ export default {
    */
   cdScrollTo(alignment = 'top', smooth = true, callback) {
     let $elements = this.cdRemoveNonElementNodes();
-    const offsetFirst = $elements.first().offset();
-    const offsetLast = $elements.last().offset();
-    if ((offsetFirst.top === 0 || offsetLast.top === 0) && offsetFirst.left === 0) {
+
+    // Filter out elements like those having `class="mw-empty-elt"`.
+    const findFirstVisibleElementOffset = (direction) => {
+      const elements = $elements.get();
+      if (direction === 'backward') {
+        elements.reverse();
+      }
+      for (const el of elements) {
+        const offset = $(el).offset();
+        if (!(offset.top === 0 && offset.left === 0)) {
+          return offset;
+        }
+      }
+      return null;
+    }
+
+    const offsetFirst = findFirstVisibleElementOffset('forward');
+    const offsetLast = findFirstVisibleElementOffset('backward');
+    if (!offsetFirst || !offsetLast) {
       mw.notify(cd.s('error-elementhidden'), { type: 'error' })
       return this;
     }
