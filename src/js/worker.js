@@ -24,7 +24,7 @@ let alarmTimeout;
 self.cd = cd;
 self.cdIsWorker = true;
 cd.debug = debug;
-cd.debug.init();
+debug.init();
 
 /**
  * Send a "wake up" message to the window after the specified interval.
@@ -137,7 +137,7 @@ function parse() {
   cd.comments = [];
   cd.sections = [];
 
-  cd.debug.startTimer('worker: process comments');
+  debug.startTimer('worker: process comments');
   const parser = new Parser({
     CommentClass: CommentSkeleton,
     SectionClass: SectionSkeleton,
@@ -178,9 +178,9 @@ function parse() {
         }
       }
     });
-  cd.debug.stopTimer('worker: process comments');
+  debug.stopTimer('worker: process comments');
 
-  cd.debug.startTimer('worker: process sections');
+  debug.startTimer('worker: process sections');
   targets
     .filter((target) => target.type === 'heading')
     .forEach((heading) => {
@@ -192,9 +192,9 @@ function parse() {
         }
       }
     });
-  cd.debug.stopTimer('worker: process sections');
+  debug.stopTimer('worker: process sections');
 
-  cd.debug.startTimer('worker: prepare comments and sections');
+  debug.startTimer('worker: prepare comments and sections');
   CommentSkeleton.processOutdents(parser);
   cd.comments.forEach((comment) => {
     comment.hiddenElementsData = [];
@@ -340,7 +340,7 @@ function parse() {
     keepSafeValues(section, sectionDangerousKeys);
   });
 
-  cd.debug.stopTimer('worker: prepare comments and sections');
+  debug.stopTimer('worker: prepare comments and sections');
 }
 
 /**
@@ -387,7 +387,7 @@ function onMessageFromWindow(e) {
   }
 
   if (message.type === 'parse') {
-    cd.debug.startTimer('worker');
+    debug.startTimer('worker');
 
     cd.g = message.g;
     cd.config = message.config;
@@ -414,8 +414,8 @@ function onMessageFromWindow(e) {
       sections: cd.sections,
     });
 
-    cd.debug.stopTimer('worker');
-    cd.debug.logAndResetEverything();
+    debug.stopTimer('worker');
+    debug.logAndResetEverything();
   }
 }
 

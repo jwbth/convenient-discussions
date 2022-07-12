@@ -15,6 +15,7 @@ import Thread from './Thread';
 import Worker from './worker-gate';
 import addCommentLinks from './addCommentLinks';
 import cd from './cd';
+import debug from './debug';
 import init from './init';
 import navPanel from './navPanel';
 import notifications from './notifications';
@@ -1135,8 +1136,8 @@ export default {
    * {@link BootProcess the boot process}.
    */
   loadToTalkPage() {
-    cd.debug.stopTimer('start');
-    cd.debug.startTimer('loading data');
+    debug.stopTimer('start');
+    debug.startTimer('loading data');
 
     this.bootProcess = new BootProcess();
 
@@ -1278,9 +1279,9 @@ export default {
 
     notifications.close(bootProcess.data('closeNotificationsSmoothly') ?? true);
 
-    cd.debug.init();
-    cd.debug.startTimer('total time');
-    cd.debug.startTimer('getting HTML');
+    debug.init();
+    debug.startTimer('total time');
+    debug.startTimer('getting HTML');
 
     this.showLoadingOverlay();
 
@@ -1332,7 +1333,7 @@ export default {
     this.cleanUpUrlAndDom();
     updateChecker.updatePageTitle(0, false);
 
-    cd.debug.stopTimer('getting HTML');
+    debug.stopTimer('getting HTML');
 
     await this.tryExecuteBootProcess(true);
 

@@ -323,7 +323,7 @@ function tweakAddTopicButton() {
  * @private
  */
 async function go() {
-  cd.debug.startTimer('start');
+  debug.startTimer('start');
 
   setGlobals();
   controller.setup();
@@ -359,7 +359,7 @@ async function go() {
   }
 
   if (!controller.isBooting()) {
-    cd.debug.stopTimer('start');
+    debug.stopTimer('start');
   }
 
   /**
@@ -580,9 +580,9 @@ async function app() {
 
   setupApi();
 
-  cd.debug.init();
-  cd.debug.startTimer('total time');
-  cd.debug.startTimer('loading config and strings');
+  debug.init();
+  debug.startTimer('total time');
+  debug.startTimer('loading config and strings');
 
   /**
    * The script has launched.
@@ -606,7 +606,7 @@ async function app() {
     return;
   }
 
-  cd.debug.stopTimer('loading config and strings');
+  debug.stopTimer('loading config and strings');
 
   $(go);
 }
