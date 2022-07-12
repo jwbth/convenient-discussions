@@ -197,6 +197,7 @@
 	"error-pagedeleted": "문서가 삭제되었습니다.",
 	"error-pagenotedited": "문서는 편집되지 않았습니다.",
 	"error-purgecache": "이 문서의 캐시를 새로 고치지 못했습니다.",
+	"warning-performance-title": "성능 문제가 있습니까?",
 	"discussiontools-disabled": "토론 도구는 성공적으로 비활성화되었습니다. <span class=\"cd-notification-refresh\">페이지를 새로 고치려면 클릭하십시오</span>.",
 	"wl-button-editwatchedsections-tooltip": "내가 구독한 주제 목록을 편집합니다",
 	"lp-comment-watchedsection": "이 문단을 구독합니다",
