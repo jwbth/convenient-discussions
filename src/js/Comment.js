@@ -1844,9 +1844,13 @@ class Comment extends CommentSkeleton {
    * Flash the comment as just posted.
    */
   flashPosted() {
+    this.isTarget = true;
+
     // We don't take the color from cd.g.COMMENT_TARGET_COLOR as it may be overriden by the user in
     // their personal CSS.
-    this.flash('posted', 1500);
+    this.flash('posted', 1500, () => {
+      this.isTarget = false;
+    });
   }
 
   /**
