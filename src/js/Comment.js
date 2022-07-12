@@ -29,6 +29,7 @@ import {
   isInline,
   notNull,
   saveToLocalStorage,
+  ucFirst,
   unhideText,
   unique,
   wrap,
@@ -2303,8 +2304,8 @@ class Comment extends CommentSkeleton {
    * @param {boolean} [options.smooth=true] Use a smooth animation.
    * @param {boolean} [options.expandThreads=false] Whether to expand the threads down to the
    *   comment (to avoid the notification "The comment is in a collapsed thread").
-   * @param {boolean} [options.flashTarget=true] Whether to flash the comment as target.
-   * @param {boolean} [options.flashPosted=false] Whether to flash the comment as posted.
+   * @param {?string} [options.flash='target'] Whether to flash the comment as target (`'target'`),
+   *   posted (`'posted'`), or not to flash (`null`).
    * @param {boolean} [options.pushState=false] Whether to push a state to the history with the
    *   comment ID as a fragment.
    * @param {Function} [options.callback] Callback to run after the animation has completed.
@@ -2312,8 +2313,7 @@ class Comment extends CommentSkeleton {
   scrollTo({
     smooth = true,
     expandThreads = false,
-    flashTarget = true,
-    flashPosted = false,
+    flash = 'target',
     pushState = false,
     callback,
   } = {}) {
@@ -2343,10 +2343,8 @@ class Comment extends CommentSkeleton {
         'top' :
         'center';
       $elements.cdScrollIntoView(alignment, smooth, callback);
-      if (flashTarget) {
-        this.flashTarget();
-      } else if (flashPosted) {
-        this.flashPosted();
+      if (flash) {
+        this[`flash${ucFirst(flash)}`]();
       }
     }
   }
