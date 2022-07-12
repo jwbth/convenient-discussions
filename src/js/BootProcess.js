@@ -1324,7 +1324,7 @@ export default class BootProcess {
         });
 
         if (!this.data('wasCommentFormSubmitted')) {
-          comments.forEach((c) => c.flashTarget());
+          comments.forEach((comment) => comment.flashTarget());
         }
       });
     }

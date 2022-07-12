@@ -673,7 +673,7 @@ function showOrdinaryNotification(comments) {
       { comments: filteredComments }
     );
     notification.$notification.on('click', () => {
-      controller.reload({ commentIds: filteredComments.map((c) => c.id) });
+      controller.reload({ commentIds: filteredComments.map((comment) => comment.id) });
     });
   }
 }
@@ -865,9 +865,9 @@ async function processComments(comments, currentComments, currentRevisionId) {
   if (!isPageStillAtRevision(currentRevisionId)) return;
 
   if (relevantNewComments[0]) {
-    relevantNewCommentIds = relevantNewComments.map((c) => c.id);
+    relevantNewCommentIds = relevantNewComments.map((comment) => comment.id);
   } else if (newComments[0]) {
-    relevantNewCommentIds = newComments.map((c) => c.id);
+    relevantNewCommentIds = newComments.map((comment) => comment.id);
   }
 
   const newCommentsBySection = Comment.groupBySection(newComments);

@@ -68,7 +68,7 @@ function addNewCommentsNote(comments, parent, type, newCommentIndexes) {
   });
   button.on('click', () => {
     controller.reload({
-      commentIds: commentsWithChildren.map((c) => c.id),
+      commentIds: commentsWithChildren.map((comment) => comment.id),
       pushState: true,
     });
   });

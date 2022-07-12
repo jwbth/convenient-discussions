@@ -183,6 +183,8 @@ class CommentForm {
      */
     this.lastKeyPresses = [];
 
+    this.updateAutoSummaryBound = this.updateAutoSummary.bind(this);
+
     if (this.mode === 'addSection') {
       // This is above `this.createContents()` as that function is time-costly and would delay the
       // requests made in `this.addEditNotices()`.
@@ -3294,8 +3296,6 @@ class CommentForm {
    * @private
    */
   generateStaticSummaryText() {
-    this.updateAutoSummaryBound = this.updateAutoSummaryBound || this.updateAutoSummary.bind(this);
-
     switch (this.mode) {
       case 'reply': {
         if (this.target.isOpeningSection) {
