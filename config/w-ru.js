@@ -486,7 +486,7 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
       if (window.messagesHighlightColor !== undefined) {
         const dummyElement = document.createElement('span');
         dummyElement.style.color = window.messagesHighlightColor;
-        const hlmStyledElements = cd.api.rootElement.querySelectorAll(
+        const hlmStyledElements = cd.api.getRootElement().querySelectorAll(
           '.cd-comment-part[style="background-color: ' + dummyElement.style.color + ';"],' +
           '.cd-comment-part[style="background-color: ' + window.messagesHighlightColor + '"]'
         );

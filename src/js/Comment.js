@@ -47,7 +47,6 @@ import {
 import { formatDate, formatDateNative } from './timestamp';
 import { handleApiReject, loadUserGenders, parseCode } from './apiWrappers';
 import { showConfirmDialog } from './ooui';
-import { showCopyLinkDialog } from './modal';
 
 let elementPrototypes;
 let thanks;
@@ -2410,7 +2409,7 @@ class Comment extends CommentSkeleton {
   async copyLink(e) {
     if (controller.isPageOverlayOn()) return;
 
-    showCopyLinkDialog(this, e);
+    controller.showCopyLinkDialog(this, e);
   }
 
   /**

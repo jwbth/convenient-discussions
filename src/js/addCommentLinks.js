@@ -21,7 +21,6 @@ import {
   spacesToUnderlines,
 } from './util';
 import { initDayjs, parseTimestamp } from './timestamp';
-import { showEditSubscriptionsDialog, showSettingsDialog } from './modal';
 
 let colon;
 let moveFromBeginning;
@@ -203,7 +202,7 @@ function addWatchlistMenu() {
   const editSubscriptionsButton = new OO.ui.ButtonWidget(editSubscriptionsButtonConfig);
   if (!settings.get('useTopicSubscription')) {
     editSubscriptionsButton.on('click', () => {
-      showEditSubscriptionsDialog();
+      controller.showEditSubscriptionsDialog();
     });
   }
   editSubscriptionsButton.$element.appendTo($menu);
@@ -218,7 +217,7 @@ function addWatchlistMenu() {
   });
   settingsButton.on('click', () => {
     initDayjs();
-    showSettingsDialog();
+    controller.showSettingsDialog();
   });
   settingsButton.$element.appendTo($menu);
 

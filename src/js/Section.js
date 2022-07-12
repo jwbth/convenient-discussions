@@ -30,7 +30,6 @@ import {
 } from './wikitext';
 import { formatDate } from './timestamp';
 import { handleApiReject } from './apiWrappers';
-import { showCopyLinkDialog } from './modal';
 
 let elementPrototypes;
 
@@ -1084,7 +1083,7 @@ class Section extends SectionSkeleton {
     if (controller.isPageOverlayOn()) return;
 
     e.preventDefault();
-    showCopyLinkDialog(this, e);
+    controller.showCopyLinkDialog(this, e);
   }
 
   /**

@@ -1111,6 +1111,49 @@ export default class BootProcess {
   }
 
   /**
+   * _For internal use._ Show a modal with content of comment forms that we were unable to restore
+   * to the page (because their target comments/sections disappeared, for example).
+   *
+   * @param {object[]} content
+   * @param {string} [content[].headline]
+   * @param {string} content[].comment
+   * @param {string} content[].summary
+   */
+  rescueCommentFormsContent(content) {
+    const text = content
+      .map((data) => {
+        let text = data.headline !== undefined ?
+          `${cd.s('rd-headline')}: ${data.headline}\n\n` :
+          '';
+        text += `${cd.s('rd-comment')}: ${data.comment}\n\n${cd.s('rd-summary')}: ${data.summary}`;
+        return text;
+      })
+      .join('\n\n----\n');
+
+    const input = new OO.ui.MultilineTextInputWidget({
+      value: text,
+      rows: 20,
+    });
+    const field = new OO.ui.FieldLayout(input, {
+      align: 'top',
+      label: cd.s('rd-intro'),
+    });
+
+    const dialog = new OO.ui.MessageDialog();
+    controller.getWindowManager().addWindows([dialog]);
+    controller.getWindowManager().openWindow(dialog, {
+      message: field.$element,
+      actions: [
+        {
+          label: cd.s('rd-close'),
+          action: 'close',
+        },
+      ],
+      size: 'large',
+    });
+  }
+
+  /**
    * If a DT's comment form is present (for example, on `&action=edit&section=new` pages), remove it
    * and later replace it with ours, keeping the input.
    */

@@ -15,7 +15,6 @@ import {
   getLegacySubscriptions,
   setLegacySubscriptions,
 } from './apiWrappers';
-import { showEditSubscriptionsDialog, showSettingsDialog } from './modal';
 import { unique, wrap } from './util';
 
 let subscribeLegacyPromise = Promise.resolve();
@@ -169,7 +168,7 @@ export default {
               callbacks: {
                 // An old class name is kept for compatibility with strings.
                 'cd-notification-editWatchedSections': () => {
-                  showEditSubscriptionsDialog();
+                  controller.showEditSubscriptionsDialog();
                 },
               },
             }).$wrapper;
@@ -362,7 +361,7 @@ export default {
     const $div = wrap(cd.sParse('topicsubscription-notice'), {
       callbacks: {
         'cd-notification-notificationSettings': () => {
-          showSettingsDialog('notifications');
+          controller.showSettingsDialog('notifications');
         },
       },
       targetBlank: true,

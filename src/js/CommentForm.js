@@ -35,7 +35,6 @@ import {
 import { createCheckboxField } from './ooui';
 import { generateTagsRegexp, removeWikiMarkup } from './wikitext';
 import { handleApiReject, parseCode } from './apiWrappers';
-import { showSettingsDialog } from './modal';
 
 let commentFormsCounter = 0;
 
@@ -1508,7 +1507,7 @@ class CommentForm {
       const $body = wrap(cd.sParse('warning-performance'), {
         callbacks: {
           'cd-notification-talkPageSettings': () => {
-            showSettingsDialog('talkPage');
+            controller.showSettingsDialog('talkPage');
           },
         },
       }).$wrapper;
@@ -1708,7 +1707,7 @@ class CommentForm {
       this.toggleAdvanced();
     });
     this.settingsButton.on('click', () => {
-      showSettingsDialog();
+      controller.showSettingsDialog();
     });
     this.cancelButton.on('click', () => {
       this.cancel();

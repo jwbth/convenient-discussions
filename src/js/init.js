@@ -33,7 +33,6 @@ import {
   unique,
 } from './util';
 import { setVisits, splitIntoBatches } from './apiWrappers';
-import { showEditSubscriptionsDialog, showSettingsDialog } from './modal';
 
 /**
  * Set the global variables related to date format.
@@ -1079,11 +1078,11 @@ export default {
 
     cd.settings = settings;
 
-    cd.tests.processPageInBackground = updateChecker.processPage;
-    cd.tests.editSubscriptions = showEditSubscriptionsDialog;
-    cd.tests.subscriptions = subscriptions;
-    cd.tests.showSettingsDialog = showSettingsDialog;
+    cd.tests.processPageInBackground = updateChecker.processPage.bind(updateChecker);
+    cd.tests.showSettingsDialog = controller.showSettingsDialog.bind(controller);
+    cd.tests.editSubscriptions = controller.showEditSubscriptionsDialog.bind(controller);
     cd.tests.setVisits = setVisits;
+    cd.tests.subscriptions = subscriptions;
 
 
     /* Some static methods for external use */
@@ -1093,56 +1092,56 @@ export default {
      * @function getCommentById
      * @memberof convenientDiscussions.api
      */
-    cd.api.getCommentById = Comment.getById;
+    cd.api.getCommentById = Comment.getById.bind(Comment);
 
     /**
      * @see Comment.getByDtId
      * @function getCommentByDtId
      * @memberof convenientDiscussions.api
      */
-    cd.api.getCommentByDtId = Comment.getByDtId;
+    cd.api.getCommentByDtId = Comment.getByDtId.bind(Comment);
 
     /**
      * @see Section.getById
      * @function getSectionById
      * @memberof convenientDiscussions.api
      */
-    cd.api.getSectionById = Section.getById;
+    cd.api.getSectionById = Section.getById.bind(Section);
 
     /**
      * @see Section.getByHeadline
      * @function getSectionsByHeadline
      * @memberof convenientDiscussions.api
      */
-    cd.api.getSectionsByHeadline = Section.getByHeadline;
+    cd.api.getSectionsByHeadline = Section.getByHeadline.bind(Section);
 
     /**
      * @see CommentForm.getLastActive
      * @function getLastActiveCommentForm
      * @memberof convenientDiscussions.api
      */
-    cd.api.getLastActiveCommentForm = CommentForm.getLastActive;
+    cd.api.getLastActiveCommentForm = CommentForm.getLastActive.bind(CommentForm);
 
     /**
      * @see CommentForm.getLastActiveAltered
      * @function getLastActiveAlteredCommentForm
      * @memberof convenientDiscussions.api
      */
-    cd.api.getLastActiveAlteredCommentForm = CommentForm.getLastActiveAltered;
+    cd.api.getLastActiveAlteredCommentForm = CommentForm.getLastActiveAltered.bind(CommentForm);
 
     /**
      * @see module:controller.reloadPage
      * @function reloadPage
      * @memberof convenientDiscussions.api
      */
-    cd.api.reloadPage = controller.reload;
+    cd.api.reloadPage = controller.reload.bind(controller);
 
     /**
      * @see module:controller.rootElement
-     * @type {Element}
+     * @function getRootElement
      * @memberof convenientDiscussions.api
      */
-    cd.api.rootElement = controller.rootElement;
+    cd.api.getRootElement = controller.getRootElement.bind(controller);
   },
 
   /**

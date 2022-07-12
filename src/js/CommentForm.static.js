@@ -2,9 +2,9 @@ import Comment from './Comment';
 import CommentForm from './CommentForm';
 import Section from './Section';
 import cd from './cd';
+import controller from './controller';
 import postponements from './postponements';
 import { areObjectsEqual, focusInput, getFromLocalStorage, saveToLocalStorage } from './util';
-import { rescueCommentFormsContent } from './modal';
 
 /**
  * Callback to be used in Array#sort() for comment forms.
@@ -97,7 +97,7 @@ function restoreFromStorage(commentFormsData) {
     });
   }
   if (rescue.length) {
-    rescueCommentFormsContent(rescue);
+    controller.getBootProcess().rescueCommentFormsContent(rescue);
   }
 }
 
@@ -121,7 +121,7 @@ function restoreDirectly() {
     commentForm.restore(addToRescue);
   });
   if (rescue.length) {
-    rescueCommentFormsContent(rescue);
+    controller.getBootProcess().rescueCommentFormsContent(rescue);
   }
 }
 

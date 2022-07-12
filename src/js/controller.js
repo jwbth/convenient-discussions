@@ -26,6 +26,7 @@ import updateChecker from './updateChecker';
 import { ElementsTreeWalker } from './treeWalker';
 import { brsToNewlines, hideSensitiveCode } from './wikitext';
 import {
+  copyText,
   defined,
   getExtendedRect,
   getLastArrayElementOrSelf,
@@ -1734,5 +1735,97 @@ export default {
     }
 
     return rangeContents;
+  },
+
+  /**
+   * Get the content root element (`.mw-parser-output` or `#mw-content-text`). Supposed to be used
+   * via {@link convenientDiscussions.api.getRootElement}; inside the script, a direct reference to
+   * `controller.rootElement` is practiced.
+   *
+   * @returns {Element}
+   */
+  getRootElement() {
+    return this.rootElement;
+  },
+
+  /**
+   * Show a settings dialog.
+   *
+   * @param {string} [initalPageName]
+   */
+  showSettingsDialog(initalPageName) {
+    if ($('.cd-dialog-settings').length) return;
+
+    const SettingsDialog = require('./SettingsDialog').default;
+
+    const dialog = new SettingsDialog(initalPageName);
+    this.getWindowManager().addWindows([dialog]);
+    this.getWindowManager().openWindow(dialog);
+
+    cd.tests.settingsDialog = dialog;
+  },
+
+  /**
+   * Show an edit subscriptions dialog.
+   */
+  showEditSubscriptionsDialog() {
+    if (this.isPageOverlayOn()) return;
+
+    const EditSubscriptionsDialog = require('./EditSubscriptionsDialog').default;
+
+    const dialog = new EditSubscriptionsDialog();
+    this.getWindowManager().addWindows([dialog]);
+    this.getWindowManager().openWindow(dialog);
+  },
+
+  /**
+   * Show a copy link dialog.
+   *
+   * @param {Comment|Section} object Comment or section to copy a link to.
+   * @param {Event} e
+   */
+  showCopyLinkDialog(object, e) {
+    const fragment = object.getWikilinkFragment();
+    const permalinkSpecialPageName = (
+      mw.config.get('wgFormattedNamespaces')[-1] +
+      ':' +
+      cd.g.SPECIAL_PAGE_ALIASES.PermanentLink +
+      '/' +
+      mw.config.get('wgRevisionId')
+    );
+    const content = {
+      fragment,
+      wikilink: `[[${cd.page.name}#${fragment}]]`,
+      currentPageWikilink: `[[#${fragment}]]`,
+      permanentWikilink: `[[${permalinkSpecialPageName}#${fragment}]]`,
+      link: object.getUrl(),
+      permanentLink: object.getUrl(true),
+      copyMessages: {
+        success: cd.s('copylink-copied'),
+        fail: cd.s('copylink-error'),
+      },
+    };
+
+    // Undocumented feature allowing to copy a link of a default type without opening a dialog.
+    const relevantSetting = object instanceof Comment ?
+      settings.get('defaultCommentLinkType') :
+      settings.get('defaultSectionLinkType');
+    if (!e.shiftKey && relevantSetting) {
+      switch (relevantSetting) {
+        case 'wikilink':
+          copyText(content.wikilink, content.copyMessages);
+          break;
+        case 'link':
+          copyText(content.link, content.copyMessages);
+          break;
+      }
+      return;
+    }
+
+    const CopyLinkDialog = require('./CopyLinkDialog').default;
+
+    const dialog = new CopyLinkDialog(object, content);
+    this.getWindowManager().addWindows([dialog]);
+    this.getWindowManager().openWindow(dialog);
   },
 };
