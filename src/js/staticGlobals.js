@@ -42,7 +42,7 @@ export default {
    * @type {string}
    * @memberof convenientDiscussions.g
    */
-  COMMENT_TARGET_MARKER_COLOR: '#36c',
+  COMMENT_TARGET_MARKER_COLOR: '#fc3',
 
   /**
    * Background color for target comments.
@@ -50,7 +50,7 @@ export default {
    * @type {string}
    * @memberof convenientDiscussions.g
    */
-  COMMENT_TARGET_BACKGROUND_COLOR: '#eaf3ff',
+  COMMENT_TARGET_BACKGROUND_COLOR: '#fef6e7',
 
   /**
    * Background color for target comments when they are hovered.
@@ -58,31 +58,7 @@ export default {
    * @type {string}
    * @memberof convenientDiscussions.g
    */
-  COMMENT_TARGET_HOVERED_BACKGROUND_COLOR: '#dfedff',
-
-  /**
-   * Marker color for comments that were just posted.
-   *
-   * @type {string}
-   * @memberof convenientDiscussions.g
-   */
-  COMMENT_POSTED_MARKER_COLOR: '#fc3',
-
-  /**
-   * Background color for comments that were just posted.
-   *
-   * @type {string}
-   * @memberof convenientDiscussions.g
-   */
-  COMMENT_POSTED_BACKGROUND_COLOR: '#fef6e7',
-
-  /**
-   * Background color for comments that were just posted when they are hovered.
-   *
-   * @type {string}
-   * @memberof convenientDiscussions.g
-   */
-  COMMENT_POSTED_HOVERED_BACKGROUND_COLOR: '#fef2db',
+  COMMENT_TARGET_HOVERED_BACKGROUND_COLOR: '#fef2db',
 
   /**
    * Marker color for new comments.

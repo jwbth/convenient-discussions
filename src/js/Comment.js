@@ -1840,19 +1840,6 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Flash the comment as just posted.
-   */
-  flashPosted() {
-    this.isTarget = true;
-
-    // We don't take the color from cd.g.COMMENT_TARGET_COLOR as it may be overriden by the user in
-    // their personal CSS.
-    this.flash('posted', 1500, () => {
-      this.isTarget = false;
-    });
-  }
-
-  /**
    * Flash the comment as changed and add it to the seen rendered edits list kept in the local
    * storage.
    */
@@ -2307,8 +2294,7 @@ class Comment extends CommentSkeleton {
    * @param {boolean} [options.smooth=true] Use a smooth animation.
    * @param {boolean} [options.expandThreads=false] Whether to expand the threads down to the
    *   comment (to avoid the notification "The comment is in a collapsed thread").
-   * @param {?string} [options.flash='target'] Whether to flash the comment as target (`'target'`),
-   *   posted (`'posted'`), or not to flash (`null`).
+   * @param {boolean} [options.flash] Whether to flash the comment as target.
    * @param {boolean} [options.pushState=false] Whether to push a state to the history with the
    *   comment ID as a fragment.
    * @param {Function} [options.callback] Callback to run after the animation has completed.
@@ -2316,7 +2302,7 @@ class Comment extends CommentSkeleton {
   scrollTo({
     smooth = true,
     expandThreads = false,
-    flash = 'target',
+    flash = true,
     pushState = false,
     callback,
   } = {}) {
@@ -2347,7 +2333,7 @@ class Comment extends CommentSkeleton {
         'center';
       $elements.cdScrollIntoView(alignment, smooth, callback);
       if (flash) {
-        this[`flash${ucFirst(flash)}`]();
+        this.flashTarget();
       }
     }
   }

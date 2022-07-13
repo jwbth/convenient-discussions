@@ -1363,7 +1363,7 @@ export default class BootProcess {
         comments[0].scrollTo({
           smooth: false,
           pushState: this.data('pushState'),
-          flash: this.data('wasCommentFormSubmitted') ? 'posted' : 'target',
+          flash: this.data('wasCommentFormSubmitted'),
         });
 
         if (!this.data('wasCommentFormSubmitted')) {

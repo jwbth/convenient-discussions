@@ -988,9 +988,6 @@ export default {
   --cd-comment-target-marker-color: ${cd.g.COMMENT_TARGET_MARKER_COLOR};
   --cd-comment-target-background-color: ${cd.g.COMMENT_TARGET_BACKGROUND_COLOR};
   --cd-comment-target-hovered-background-color: ${cd.g.COMMENT_TARGET_HOVERED_BACKGROUND_COLOR};
-  --cd-comment-posted-marker-color: ${cd.g.COMMENT_POSTED_MARKER_COLOR};
-  --cd-comment-posted-background-color: ${cd.g.COMMENT_POSTED_BACKGROUND_COLOR};
-  --cd-comment-posted-hovered-background-color: ${cd.g.COMMENT_POSTED_HOVERED_BACKGROUND_COLOR};
   --cd-comment-new-marker-color: ${cd.g.COMMENT_NEW_MARKER_COLOR};
   --cd-comment-new-background-color: ${cd.g.COMMENT_NEW_BACKGROUND_COLOR};
   --cd-comment-new-hovered-background-color: ${cd.g.COMMENT_NEW_HOVERED_BACKGROUND_COLOR};

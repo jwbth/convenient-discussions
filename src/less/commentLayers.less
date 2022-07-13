@@ -17,12 +17,11 @@
 /*
   The hierarchy of layer types (starting with the highest priority):
   1. Target
-  2. (Just) posted
-  3. Changed (quick flash with green)
-  4. Deleted
-  5. Own
-  6. New
-  7. Hovered (but each hovered subtype has more priority than non-hovered)
+  2. Changed (quick flash with green)
+  3. Deleted
+  4. Own
+  5. New
+  6. Hovered (but each hovered subtype has more priority than non-hovered)
 */
 
 .cd-comment-underlay-hovered,
@@ -46,15 +45,6 @@
 .cd-comment-underlay-changed.cd-comment-underlay-changed.cd-comment-underlay-hovered,
 .cd-comment-overlay-changed.cd-comment-overlay-changed .cd-comment-overlay-content {
   background-color: var(--cd-comment-new-hovered-background-color);
-}
-
-.cd-comment-underlay-posted.cd-comment-underlay-posted {
-  background-color: var(--cd-comment-posted-background-color);
-}
-
-.cd-comment-underlay-posted.cd-comment-underlay-posted.cd-comment-underlay-hovered,
-.cd-comment-overlay-posted.cd-comment-overlay-posted .cd-comment-overlay-content {
-  background-color: var(--cd-comment-posted-hovered-background-color);
 }
 
 .cd-comment-underlay-target.cd-comment-underlay-target {
@@ -88,10 +78,6 @@
 
   .cd-comment-overlay-deleted & {
     background-color: var(--cd-comment-deleted-marker-color);
-  }
-
-  .cd-comment-overlay-posted.cd-comment-overlay-posted & {
-    background-color: var(--cd-comment-posted-marker-color);
   }
 
   .cd-comment-overlay-target.cd-comment-overlay-target & {
@@ -160,7 +146,6 @@
   }
 
   // Gradient can't be animated. Not with jquery.ui and jquery.color.
-  .cd-comment-overlay-posted.cd-comment-overlay-posted.cd-comment-overlay-posted &,
   .cd-comment-overlay-target.cd-comment-overlay-target.cd-comment-overlay-target & {
     background-image: none;
   }
