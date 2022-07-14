@@ -38,6 +38,7 @@ let switchRelevantButton;
  * @private
  */
 async function prepare() {
+  // This can have been executed from `init.talkPage()` already.
   init.globals();
   await settings.init();
 

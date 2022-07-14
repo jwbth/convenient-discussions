@@ -1023,6 +1023,8 @@ export default {
    * Set a number of global object and controller properties.
    */
   globals() {
+    if (cd.page) return;
+
     cd.g.PHP_CHAR_TO_UPPER = mw.loader.moduleRegistry['mediawiki.Title'].script
       .files['phpCharToUpper.json'];
 
@@ -1284,8 +1286,11 @@ export default {
    */
   async talkPage() {
     await Promise.all(this.getSiteData());
+
+    // This can have been executed from `addCommentLinks.prepare()`.
     this.globals();
     await settings.init();
+
     this.timestampParsingTools('content');
     patterns();
     oouiAndElementPrototypes();

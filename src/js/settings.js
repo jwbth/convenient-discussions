@@ -379,6 +379,8 @@ export default {
    * _For internal use._ Initiate user settings.
    */
   async init() {
+    if (this.scheme.default) return;
+
     // We fill the settings after the modules are loaded so that the settings set via common.js had
     // less chance not to load.
 
