@@ -4,7 +4,8 @@
 			"Dark Loon",
 			"Mainframe98",
 			"McDutchie",
-			"Robin van der Vliet"
+			"Robin van der Vliet",
+			"Siebrand"
 		]
 	},
 	"script-name": "Handige discussies",
@@ -128,9 +129,12 @@
 	"sd-autocompletetypes-templates": "sjablonen",
 	"sd-autocompletetypes-tags": "elementen",
 	"sd-hidetimezone": "Tijdzone verbergen",
+	"sd-improveperformance": "Verbeter de weergavesnelheid van lange pagina's",
+	"sd-improveperformance-help": "Schakel dit in als u vertragingen hebt bij het reageren op lange pagina's. Het is bekend dat dit gebeurt in Chromium-browsers. Het script vertraagt de weergave van het onderste deel van de pagina totdat u ernaartoe scrolt. Dit versnelt de gebruikersinterface, maar belemmert uw mogelijkheden om naar tekst in deze gebieden te zoeken.",
 	"sd-insertbuttons-multiselect-placeholder": "Een knop toevoegen",
 	"sd-modifytoc": "De nieuwe commentaren en secties in de inhoudsopgave tonen",
-	"sd-notifications": "Pop-ups met meldingen in de rechterbovenhoek van de pagina",
+	"sd-outdentlevel": "Mijn antwoorden [$1 uitspringen] beginnend met niveau",
+	"sd-notifications": "Meldingen in de rechterbovenhoek van de pagina",
 	"sd-signatureprefix": "Handtekeningsvoorvoegsel",
 	"sd-signatureprefix-help": "Tekst die vóór de handtekening wordt toegevoegd, <em>met</em> een spatie aan het begin indien nodig.",
 	"sd-timestampformat-radio-default": "Standaard (\"$1\")",
@@ -149,6 +153,9 @@
 	"error-unknown": "Onbekende fout.",
 	"error-editconflict": "Bewerkingsconflict.",
 	"error-pagenotedited": "De pagina is niet bewerkt.",
+	"warning-performance-title": "Prestatieproblemen?",
+	"warning-performance": "Handige discussies kunnen proberen de problemen op te lossen met de instelling \"{{int:convenient-discussions-sd-improveperformance}}\". <span class=\"cd-notification-talkPageSettings\">Open het instellingendialoogvenster</span> .",
+	"discussiontools-disabled": "DiscussionTools is uitgeschakeld. <span class=\"cd-notification-refresh\">Vernieuw de pagina</span> .",
 	"loading-ellipsis": "Bezig met laden...",
 	"addtopic": "Onderwerp toevoegen",
 	"copy": "Kopiëren"

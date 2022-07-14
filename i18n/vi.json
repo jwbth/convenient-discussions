@@ -151,7 +151,7 @@
 	"cf-block-close": "Đóng",
 	"cf-reaction-templateinheadline": "Đừng sử dụng bản mẫu trong phần tiêu đề: nó sẽ phá vỡ các liên kết của đề mục.",
 	"cf-reaction-signature": "Không cần gõ <kbd>$1</kbd>: chữ ký sẽ được thêm tự động.",
-	"cf-reaction-pre": "thẻ <code><nowiki><pre></nowiki></code> có thể làm phá vỡ bố cục—nên dùng thẻ <code><nowiki><syntaxhighlight></nowiki></code>.",
+	"cf-reaction-pre": "thẻ <code><nowiki><pre></nowiki></code> có thể làm phá vỡ bố cục—nên dùng thẻ <code><nowiki><syntaxhighlight lang=\"text\"></nowiki></code>.",
 	"cf-reaction-mention-edit": "Vì bạn <em>đang sửa đổi</em> một bình luận, nên một [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|thông báo nhắc đến]] sẽ không được gửi. Để gửi một thông báo, bạn cần liên kết đến thành viên trên tóm lược sửa đổi.",
 	"cf-reaction-mention-nosignature": "Vì bạn đã lựa chọn không đưa chữ ký vào bình luận của mình, nên [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|thông báo nhắc đến]] sẽ không được gửi. Để gửi một thông báo, bạn cần liên kết đến thành viên trên tóm lược sửa đổi, hoặc ký tên vào bình luận theo cách thủ công.",
 	"cf-notice-nochanges": "Không có thay đổi.",
