@@ -333,20 +333,24 @@ export default {
   /**
    * Create an OOUI window manager or return an existing one.
    *
+   * @param {string} [name='default'] Name of the window manager. We may need more than one if we,
+   *   for some reason, want to have more than one window open at any moment.
    * @returns {external:OO.ui.WindowManager}
    */
-  getWindowManager() {
-    if (!this.windowManager) {
-      this.windowManager = new OO.ui.WindowManager().on('closing', async (win, closed) => {
+  getWindowManager(name = 'default') {
+    this.windowManagers = this.windowManagers || {};
+
+    if (!this.windowManagers[name]) {
+      this.windowManagers[name] = new OO.ui.WindowManager().on('closing', async (win, closed) => {
         // We don't have windows that can be reused.
         await closed;
-        this.windowManager.clearWindows();
+        this.windowManagers[name].clearWindows();
       });
 
-      $(document.body).append(this.windowManager.$element);
+      $(document.body).append(this.windowManagers[name].$element);
     }
 
-    return this.windowManager;
+    return this.windowManagers[name];
   },
 
   /**
@@ -1760,8 +1764,8 @@ export default {
     const SettingsDialog = require('./SettingsDialog').default;
 
     const dialog = new SettingsDialog(initalPageName);
-    this.getWindowManager().addWindows([dialog]);
-    this.getWindowManager().openWindow(dialog);
+    this.getWindowManager('settings').addWindows([dialog]);
+    this.getWindowManager('settings').openWindow(dialog);
 
     cd.tests.settingsDialog = dialog;
   },

@@ -239,7 +239,7 @@
   "rd-summary": "Edit summary",
   "rd-close": "Close",
 
-  "rc-suggestion": "<p>Convenient Discussions has an option to change the formatting of comments, moving the author and timestamp up and the reply and thank buttons down. This allows to quickly see the author and date of comments and interact with them easier. Do you want to enable it? (You can always disable it in the settings.)</p>\n\n<p>Also, see the settings for various new features, such as customizable formatting of timestamps (which, by the way, are now displayed in the timezone set in your wiki preferences by default).</p>",
+  "rc-suggestion": "<p>Convenient Discussions has an option to change the formatting of comments, moving the author and timestamp up and the reply and thank buttons down. This allows to quickly see the author and date of comments and interact with them easier. Do you want to enable it? (You can always disable it in the settings.)</p>\n\n<p>Also, see <span class=\"cd-notification-settings\">the settings</span> for various new features, such as customizable formatting of timestamps (which, by the way, are displayed in the timezone set in your wiki preferences by default).</p>",
   "rc-suggestion-yes": "Enable the new formatting",
   "rc-suggestion-no": "Keep the usual formatting",
 
