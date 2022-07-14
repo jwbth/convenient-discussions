@@ -623,7 +623,7 @@ class Parser {
     let linkType = null;
     if (href) {
       const { pageName, domain, fragment } = getPageNameFromUrl(href) || {};
-      if (!pageName || CommentSkeleton.isId(fragment)) {
+      if (!pageName || CommentSkeleton.isAnyId(fragment)) {
         return null;
       }
       const match = pageName.match(cd.g.USER_NAMESPACES_REGEXP);

@@ -933,7 +933,7 @@ export default {
    */
   handlePopState() {
     let fragment = location.hash.slice(1);
-    if (Comment.isDtId(fragment) || Comment.isId(fragment)) {
+    if (Comment.isAnyId(fragment)) {
       // Don't jump to the comment if the user pressed Back/Forward in the browser or if
       // history.pushState() is called from Comment#scrollTo() (after clicks on added (gray) items
       // in the TOC). A marginal state of this happening is when a page with a comment ID in the
@@ -946,10 +946,7 @@ export default {
         console.error(e);
         return;
       }
-      const comment = Comment.isDtId(fragment) ?
-        Comment.getByDtId(fragment) :
-        Comment.getById(fragment, true);
-      comment?.scrollTo();
+      Comment.getByAnyId(fragment, true)?.scrollTo();
     }
 
     // Make sure the title has no incorrect new comment count when the user presses the Back button

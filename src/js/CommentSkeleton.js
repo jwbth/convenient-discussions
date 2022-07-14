@@ -1389,11 +1389,31 @@ class CommentSkeleton {
   /**
    * Check if a string is a comment ID in the CD format.
    *
-   * @param {string} string
+   * @param {string} [string]
    * @returns {boolean}
    */
   static isId(string) {
     return /^\d{12}_.+$/.test(string);
+  }
+
+  /**
+   * Check whether a string is a comment ID in the DiscussionTools format.
+   *
+   * @param {string} [string]
+   * @returns {boolean}
+   */
+  static isDtId(string) {
+    return string?.startsWith('c-');
+  }
+
+  /**
+   * Check whether a string is a comment ID in the CD or DiscussionTools format.
+   *
+   * @param {string} [string]
+   * @returns {boolean}
+   */
+  static isAnyId(string) {
+    return this.isId(string) || this.isDtId(string);
   }
 
   /**

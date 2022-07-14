@@ -72,7 +72,7 @@ function handleDtMarkup(elements) {
       [...controller.rootElement.getElementsByClassName('ext-discussiontools-init-highlight')]
     )
     .forEach((el, i) => {
-      if (el.hasAttribute('data-mw-comment-start') && el.id && Comment.isDtId(el.id)) {
+      if (el.hasAttribute('data-mw-comment-start') && Comment.isDtId(el.id)) {
         controller.getBootProcess().addDtCommentId(el.id);
       }
       if (moveNotRemove) {

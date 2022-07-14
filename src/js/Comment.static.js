@@ -510,7 +510,7 @@ export default {
   },
 
   /**
-   * Get a comment by ID.
+   * Get a comment by ID in the CD format.
    *
    * @param {string} id
    * @param {boolean} [impreciseDate=false] Comment date is inferred from the edit date (but these
@@ -539,7 +539,7 @@ export default {
   },
 
   /**
-   * Get a comment by DiscussionTools ID.
+   * Get a comment by a comment ID in the DiscussionTools format.
    *
    * @param {string} id
    * @param {boolean} [returnComponents=false] Whether to return the constituents of the ID (as an
@@ -577,6 +577,20 @@ export default {
     } else {
       return comment;
     }
+  },
+
+  /**
+   * Get a comment by a comment ID in the CD or DiscussionTools format.
+   *
+   * @param {string} id
+   * @param {boolean} [impreciseDate=false] (For CD IDs.) Comment date is inferred from the edit
+   *   date (but these may be different). If `true`, we allow the time on the page to be 1-3 minutes
+   *   less than the edit time.
+   * @returns {?Comment}
+   * @memberof Comment
+   */
+  getByAnyId(id, impreciseDate = false) {
+    return Comment.isId(id) ? Comment.getById(id, impreciseDate) : Comment.getByDtId(id);
   },
 
   /**
@@ -772,17 +786,6 @@ export default {
       ))
       .sort((c1, c2) => c1.date.getTime() - c2.date.getTime())
       .slice(-1)[0];
-  },
-
-  /**
-   * Check whether a string is a DiscussionTools ID.
-   *
-   * @param {string} fragment
-   * @returns {boolean}
-   * @memberof Comment
-   */
-  isDtId(fragment) {
-    return fragment.startsWith('c-');
   },
 
   /**
