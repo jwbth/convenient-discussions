@@ -895,7 +895,7 @@ export default class BootProcess {
 
       // Faster than doing it for every individual comment.
       controller.rootElement
-        .querySelectorAll('table.cd-comment-part .cd-signature')
+        .querySelectorAll('table.cd-comment-part .cd-signature, .cd-comment-part > table .cd-signature')
         .forEach((signature) => {
           const commentIndex = signature.closest('.cd-comment-part').dataset.cdCommentIndex;
           cd.comments[commentIndex].isInSingleCommentTable = true;
