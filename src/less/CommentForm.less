@@ -38,6 +38,11 @@
   }
 
   .tool-button {
+    // Until T312933 is fixed
+    width: 2.14285714em;
+    height: 2.14285714em;
+    border: 1px solid transparent;
+
     .sitedir-ltr & {
       // Otherwise, text may be visible in some combinations of content and interface language (for
       // example, Russian Wikipedia and uselang=he).
@@ -47,6 +52,17 @@
     .sitedir-rtl & {
       direction: rtl;
     }
+  }
+
+  // Until T312970 is fixed
+  .wikiEditor-ui-toolbar .tabs span.tab a {
+    height: 2.14285714em;
+    border: 1px solid transparent;
+  }
+
+  .wikiEditor-ui-toolbar .group .label {
+    height: 2em;
+    line-height: 2em;
   }
 
   // Use the .ltr and .rtl classes to detect the text direction of the user interface (not the site
