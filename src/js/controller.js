@@ -56,6 +56,19 @@ export default {
    * beginning.
    */
   setup() {
+    this.isPageOverlayOn = this.isPageOverlayOn.bind(this);
+    this.reload = this.reload.bind(this);
+    this.getRootElement = this.getRootElement.bind(this);
+    this.handleMouseMove = this.handleMouseMove.bind(this);
+    this.handleWindowResize = this.handleWindowResize.bind(this);
+    this.handleGlobalKeyDown = this.handleGlobalKeyDown.bind(this);
+    this.handleScroll = this.handleScroll.bind(this);
+    this.handlePopState = this.handlePopState.bind(this);
+    this.handleSelectionChange = this.handleSelectionChange.bind(this);
+    this.handlePageMutations = this.handlePageMutations.bind(this);
+    this.handleAddTopicButtonClick = this.handleAddTopicButtonClick.bind(this);
+    this.handleWikipageContentHookFirings = this.handleWikipageContentHookFirings.bind(this);
+
     // Not constants: go() may run a second time, see addFooterLink().
     const isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
     const isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);
@@ -93,16 +106,6 @@ export default {
       !isDisabledInQuery &&
       (isEnabledInQuery || this.articlePageTalkPage)
     );
-
-    this.handleMouseMove = this.handleMouseMove.bind(this);
-    this.handleWindowResize = this.handleWindowResize.bind(this);
-    this.handleGlobalKeyDown = this.handleGlobalKeyDown.bind(this);
-    this.handleScroll = this.handleScroll.bind(this);
-    this.handlePopState = this.handlePopState.bind(this);
-    this.handleSelectionChange = this.handleSelectionChange.bind(this);
-    this.handlePageMutations = this.handlePageMutations.bind(this);
-    this.handleAddTopicButtonClick = this.handleAddTopicButtonClick.bind(this);
-    this.handleWikipageContentHookFirings = this.handleWikipageContentHookFirings.bind(this);
   },
 
   /**

@@ -39,6 +39,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
     super();
     if (settings.get('useTopicSubscription')) return;
 
+    this.save = this.save.bind(this);
   }
 
   /**
@@ -183,7 +184,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
    */
   getActionProcess(action) {
     if (action === 'save') {
-      return new OO.ui.Process(this.save.bind(this));
+      return new OO.ui.Process(this.save);
     } else if (action === 'close') {
       return new OO.ui.Process(async () => {
         await confirmCloseDialog(this, 'ewsd');

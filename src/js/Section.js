@@ -573,6 +573,10 @@ class Section extends SectionSkeleton {
       if (latestComment) {
         const lastCommentLink = document.createElement('a');
         lastCommentLink.href = `#${latestComment.dtId || latestComment.id}`;
+        lastCommentLink.onclick = (e) => {
+          e.preventDefault();
+          latestComment.scrollTo({ pushState: true });
+        };
         lastCommentLink.textContent = formatDate(latestComment.date);
         (new LiveTimestamp(lastCommentLink, latestComment.date, false)).init();
 
@@ -781,7 +785,10 @@ class Section extends SectionSkeleton {
     newCommentCountLink.href = `#${newComments[0].dtId}`;
     newCommentCountLink.onclick = (e) => {
       e.preventDefault();
-      newComments[0].scrollTo({ pushState: true });
+      newComments[0].scrollTo({
+        flash: false,
+        pushState: true,
+      });
       newComments.forEach((comment) => comment.flashTarget());
     };
     this.commentCountWrapper.append(' ', newCommentCountLink);

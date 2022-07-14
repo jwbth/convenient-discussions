@@ -59,6 +59,8 @@ class Parser {
    *   tasks we need in the current context (window or worker).
    */
   constructor(context) {
+    this.timestampToSignature = this.timestampToSignature.bind(this);
+
     this.context = context;
     this.existingCommentIds = [];
   }
@@ -451,7 +453,7 @@ class Parser {
    */
   findSignatures(timestamps) {
     let signatures = timestamps
-      .map(this.timestampToSignature.bind(this))
+      .map(this.timestampToSignature)
       .filter(defined);
     const unsigneds = this.findUnsigneds();
     signatures.push(...unsigneds);

@@ -98,6 +98,9 @@ class CommentForm {
       throw new CdError();
     }
 
+    this.updateAutoSummary = this.updateAutoSummary.bind(this);
+    this.closeOperation = this.closeOperation.bind(this);
+
     /**
      * Form mode. `'reply'`, `'replyInSection'`, `'edit'`, `'addSubsection'`, or `'addSection'`.
      *
@@ -181,8 +184,6 @@ class CommentForm {
      * @private
      */
     this.lastKeyPresses = [];
-
-    this.updateAutoSummaryBound = this.updateAutoSummary.bind(this);
 
     if (this.mode === 'addSection') {
       // This is above `this.createContents()` as that function is time-costly and would delay the
@@ -3184,7 +3185,7 @@ class CommentForm {
 
     this.operations
       .filter((op) => !op.isClosed)
-      .forEach(this.closeOperation.bind(this));
+      .forEach(this.closeOperation);
     this.forget();
 
     /**
@@ -3300,7 +3301,7 @@ class CommentForm {
         if (this.target.isOpeningSection) {
           return cd.s('es-reply');
         } else {
-          this.target.requestAuthorGenderIfNeeded(this.updateAutoSummaryBound);
+          this.target.requestAuthorGenderIfNeeded(this.updateAutoSummary);
           const replyToStr = cd.s('es-reply-to', this.target.author.getName(), this.target.author);
           return this.target.isOwn ? cd.s('es-addition') : removeDoubleSpaces(replyToStr);
         }
@@ -3318,7 +3319,7 @@ class CommentForm {
               if (targetParent.level === 0) {
                 subject = 'reply';
               } else {
-                targetParent.requestAuthorGenderIfNeeded(this.updateAutoSummaryBound);
+                targetParent.requestAuthorGenderIfNeeded(this.updateAutoSummary);
                 subject = targetParent.isOwn ? 'addition' : 'reply-to';
                 target = targetParent;
               }
@@ -3333,7 +3334,7 @@ class CommentForm {
             if (this.target.isOpeningSection) {
               subject = this.targetSection.getParent() ? 'subsection' : 'topic';
             } else {
-              this.target.requestAuthorGenderIfNeeded(this.updateAutoSummaryBound);
+              this.target.requestAuthorGenderIfNeeded(this.updateAutoSummary);
               subject = 'comment-by';
             }
           }

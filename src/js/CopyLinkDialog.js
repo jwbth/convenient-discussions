@@ -29,11 +29,11 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       classes: ['cd-dialog-copyLink'],
     });
 
+    this.copyCallback = this.copyCallback.bind(this);
+
     this.object = object;
     this.content = content;
     this.isComment = this.object instanceof Comment;
-
-    this.copyCallback = this.copyCallback.bind(this);
   }
 
   /**

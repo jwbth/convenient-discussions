@@ -122,6 +122,17 @@ class Comment extends CommentSkeleton {
   constructor(parser, signature, targets) {
     super(parser, signature, targets);
 
+    this.bindEvents = this.bindEvents.bind(this);
+    this.replyButtonClick = this.replyButtonClick.bind(this);
+    this.editButtonClick = this.editButtonClick.bind(this);
+    this.thankButtonClick = this.thankButtonClick.bind(this);
+    this.copyLink = this.copyLink.bind(this);
+    this.goToParentButtonClick = this.goToParentButtonClick.bind(this);
+    this.highlightHovered = this.highlightHovered.bind(this);
+    this.unhighlightHovered = this.unhighlightHovered.bind(this);
+    this.hideMenu = this.hideMenu.bind(this);
+    this.dontHideMenu = this.dontHideMenu.bind(this);
+
     if (!elementPrototypes) {
       elementPrototypes = cd.g.COMMENT_ELEMENT_PROTOTYPES;
     }
@@ -152,7 +163,7 @@ class Comment extends CommentSkeleton {
       !controller.getClosedDiscussions().some((el) => el.contains(this.elements[0]))
     );
 
-    this.highlightables.forEach(this.bindEvents.bind(this));
+    this.highlightables.forEach(this.bindEvents);
 
     this.setAnchorHighlightable();
 
@@ -521,7 +532,7 @@ class Comment extends CommentSkeleton {
         label: this.reformattedTimestamp || this.timestamp,
         tooltip: this.timestampTitle,
         classes: ['cd-comment-button-label', 'cd-comment-timestamp'],
-        action: this.copyLink.bind(this),
+        action: this.copyLink,
         href: this.dtId && '#' + this.dtId,
       });
 
@@ -585,7 +596,7 @@ class Comment extends CommentSkeleton {
   createReplyButton() {
     if (!this.isActionable) return;
 
-    const action = this.replyButtonClick.bind(this);
+    const action = this.replyButtonClick;
     if (settings.get('reformatComments')) {
       /**
        * Reply button.
@@ -615,7 +626,7 @@ class Comment extends CommentSkeleton {
    */
   createEditButton() {
     if (this.isActionable && (this.isOwn || settings.get('allowEditOthersComments'))) {
-      const action = this.editButtonClick.bind(this);
+      const action = this.editButtonClick;
       if (settings.get('reformatComments')) {
         /**
          * Edit button.
@@ -655,7 +666,7 @@ class Comment extends CommentSkeleton {
         calculateWordOverlap(this.getText(), thanks[key].text) > 0.66
       ));
 
-      const action = this.thankButtonClick.bind(this);
+      const action = this.thankButtonClick;
       if (settings.get('reformatComments')) {
         /**
          * Edit button.
@@ -699,7 +710,7 @@ class Comment extends CommentSkeleton {
       }
       this.copyLinkButton = new CommentButton({
         element,
-        action: this.copyLink.bind(this),
+        action: this.copyLink,
         widgetConstructor,
         href,
       });
@@ -715,7 +726,7 @@ class Comment extends CommentSkeleton {
    */
   createGoToParentButton() {
     if (this.getParent()) {
-      const action = this.goToParentButtonClick.bind(this);
+      const action = this.goToParentButtonClick;
       if (settings.get('reformatComments')) {
         /**
          * "Go to the parent comment" button.
@@ -830,9 +841,9 @@ class Comment extends CommentSkeleton {
   bindEvents(element) {
     if (settings.get('reformatComments')) return;
 
-    element.onmouseenter = this.highlightHovered.bind(this);
-    element.onmouseleave = this.unhighlightHovered.bind(this);
-    element.ontouchstart = this.highlightHovered.bind(this);
+    element.onmouseenter = this.highlightHovered;
+    element.onmouseleave = this.unhighlightHovered;
+    element.ontouchstart = this.highlightHovered;
   }
 
   /**
@@ -1316,7 +1327,7 @@ class Comment extends CommentSkeleton {
     // Ignore other than left button clicks.
     if (e.which !== 1) return;
 
-    this.hideMenuTimeout = setTimeout(this.hideMenu.bind(this), 1500);
+    this.hideMenuTimeout = setTimeout(this.hideMenu, 1500);
   }
 
   /**
@@ -1348,13 +1359,13 @@ class Comment extends CommentSkeleton {
       this.overlayMenu = this.overlayInnerWrapper.lastChild;
 
       // Hide the overlay on right click. It can block clicking the author page link.
-      this.overlayInnerWrapper.oncontextmenu = this.hideMenu.bind(this);
+      this.overlayInnerWrapper.oncontextmenu = this.hideMenu;
 
       // Hide the overlay on long click/tap.
       this.overlayInnerWrapper.onmousedown = (e) => {
         this.deferHideMenu(e);
       };
-      this.overlayInnerWrapper.onmouseup = this.dontHideMenu.bind(this);
+      this.overlayInnerWrapper.onmouseup = this.dontHideMenu;
 
       this.createGoToParentButton();
       this.createCopyLinkButton();

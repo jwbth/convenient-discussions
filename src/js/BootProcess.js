@@ -132,6 +132,9 @@ export default class BootProcess {
    * @param {PassedData} passedData
    */
   constructor(passedData) {
+    this.connectToCommentLinks = this.connectToCommentLinks.bind(this);
+    this.highlightMentions = this.highlightMentions.bind(this);
+
     this.passedData = passedData || {};
     this.dtCommentIds = [];
   }
@@ -1489,23 +1492,32 @@ export default class BootProcess {
   }
 
   /**
-   * Remove the `id` attribute from comment links, so that comment links reach their target using
-   * {@link controller.handlePopState handling of the popstate event}, not using direct scrolling.
+   * Bind a click handler to comment links to make them work as in-script comment links.
+   *
+   * This method exists in addition to {@link controller.handlePopState}. It's preferrable to have
+   * click events handled by this method instead of `controller.handlePopState` because that method,
+   * if encounters `cdJumpedToComment` in the history state, doesn't scroll to the comment which is
+   * a wrong behavior when the user clicks a link.
    *
    * @param {JQuery} $content
    * @private
    */
-  inactivateCommentLinks($content) {
-    if (!$content.is('#mw-content-text')) return;
+  connectToCommentLinks($content) {
+    if (!$content.is('#mw-content-text, .cd-previewArea')) return;
 
     $content
-      .find('span[id]')
+      .find(`a[href^="#"]`)
       .filter(function () {
-        return /^\d{12}_.+$/.test($(this).attr('id'));
+        return Comment.isAnyId($(this).attr('href').slice(1));
       })
-      .removeAttr('id');
+      .on('click', function (e) {
+        e.preventDefault();
+        Comment.getByAnyId($(this).attr('href').slice(1), true)?.scrollTo({
+          expandThreads: true,
+          pushState: true,
+        });
+      });
   }
-
 
   /**
    * Highlight mentions of the current user.
@@ -1597,7 +1609,8 @@ export default class BootProcess {
 
     // Should be above "mw.hook('wikipage.content').fire" so that it runs for the whole page content
     // as opposed to "$('.cd-comment-author-wrapper')".
-    mw.hook('wikipage.content').add(this.inactivateCommentLinks, this.highlightMentions);
+    mw.hook('wikipage.content').add(this.connectToCommentLinks, this.highlightMentions);
+    mw.hook('convenientDiscussions.previewReady').add(this.connectToCommentLinks);
 
     this.setupMutationObserver();
 

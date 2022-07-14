@@ -1133,14 +1133,14 @@ export default {
      * @function reloadPage
      * @memberof convenientDiscussions.api
      */
-    cd.api.reloadPage = controller.reload.bind(controller);
+    cd.api.reloadPage = controller.reload;
 
     /**
      * @see module:controller.rootElement
      * @function getRootElement
      * @memberof convenientDiscussions.api
      */
-    cd.api.getRootElement = controller.getRootElement.bind(controller);
+    cd.api.getRootElement = controller.getRootElement;
   },
 
   /**
