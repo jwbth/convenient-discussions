@@ -2,7 +2,7 @@
   position: fixed;
   top: 41.5%;
   z-index: 3;
-  width: 34px;
+  width: 2.1875rem;
   background-color: #fff;
   border: 1px solid #a2a9b1;
 
@@ -10,7 +10,7 @@
   // .cd-navPanel-refreshButton-relevant (#7d00cc).
   opacity: 0.695;
 
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.2;
   color: #000;
   -moz-user-select: none;
@@ -22,11 +22,14 @@
   }
 
   &-refreshButton {
-    padding: 4px;
-    width: 26px;
-    height: 26px;
+    padding: 0.25rem 0.25rem;
+
+    // Better don't set the width (that should be equal to height) explicitly and let it fit the
+    // area (otherwise there can be a gap when the default font size is changed).
+    height: 1.625rem;
+
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M15.65 4.35A8 8 0 1 0 17.4 13h-2.22a6 6 0 1 1-1-7.22L11 9h7V2z'/%3E%3C/svg%3E");
-    background-size: 20px 20px;
+    background-size: 1.25rem 1.25rem;
 
     &:not(:empty) {
       background-image: none;
@@ -39,21 +42,21 @@
 
   &-previousButton {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M1 13.75l1.5 1.5 7.5-7.5 7.5 7.5 1.5-1.5-9-9-9 9z'/%3E%3C/svg%3E");
-    background-size: 16px 16px;
+    background-size: 1rem 1rem;
   }
 
   &-nextButton {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M19 6.25l-1.5-1.5-7.5 7.5-7.5-7.5L1 6.25l9 9 9-9z'/%3E%3C/svg%3E");
-    background-size: 16px 16px;
+    background-size: 1rem 1rem;
   }
 
   &-firstUnseenButton {
-    height: 17px;
-    padding: 7px 0;
+    height: 1.0625rem;
+    padding: 0.4375rem 0;
   }
 
   &-commentFormButton {
-    background-size: 16px 16px;
+    background-size: 1rem 1rem;
 
     // ~1px lower
     background-position-y: 54%;
@@ -84,7 +87,7 @@
   background-position: center center;
   background-repeat: no-repeat;
   cursor: pointer;
-  height: 31px;
+  height: 1.9375rem;
 
   &:hover {
     background-color: #eaecf0;
@@ -97,9 +100,9 @@
     &::before {
       position: absolute;
       top: -1px;
-      left: 4px;
+      left: 0.25rem;
       margin: 0 auto 1px;
-      width: 26px;
+      width: 1.625rem;
       height: 0;
       border-top: 1px solid #a2a9b1;
       content: "";
