@@ -2318,7 +2318,19 @@ class Comment extends CommentSkeleton {
 
     if (this.isCollapsed) {
       this.getVisibleExpandNote().cdScrollTo('top', smooth, callback);
-      mw.notify(cd.s('navpanel-firstunseen-hidden'), {
+      mw.notify(wrap(cd.s('navpanel-firstunseen-hidden'), {
+        callbacks: {
+          'cd-notification-expandThread': () => {
+            this.scrollTo({
+              smooth,
+              expandThreads: true,
+              flash,
+              pushState,
+              callback,
+            });
+          },
+        },
+      }).$wrapper, {
         title: cd.s('navpanel-firstunseen-hidden-title'),
       });
     } else {

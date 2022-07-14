@@ -250,7 +250,7 @@
   "navpanel-next": "Go to the next new comment",
   "navpanel-firstunseen": "Go to the first unseen comment",
   "navpanel-firstunseen-hidden-title": "The comment is in a collapsed thread",
-  "navpanel-firstunseen-hidden": "Can't scroll to it. Scrolled to the thread instead.",
+  "navpanel-firstunseen-hidden": "Scrolled to the thread. <span class=\"cd-notification-expandThread\">Expand the thread and scroll to the comment</span>.",
   "navpanel-commentform": "Go to the next comment form out of sight",
   "navpanel-newcomments-count": "$1 new {{plural:$1|comment|comments}}.",
   "navpanel-newcomments-names": "$1 → $2",
