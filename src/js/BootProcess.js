@@ -1637,7 +1637,7 @@ export default class BootProcess {
     const didEnableCommentReformatting = await this.maybeSuggestEnableCommentReformatting();
     await this.maybeConfirmDesktopNotifications();
     if (didEnableCommentReformatting) {
-      this.reload();
+      controller.reload();
     }
   }
 
