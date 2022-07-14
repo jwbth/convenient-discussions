@@ -39,7 +39,6 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
     super();
     if (settings.get('useTopicSubscription')) return;
 
-    subscriptions.load();
   }
 
   /**
@@ -70,6 +69,8 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
     super.initialize(...args);
 
     this.pushPending();
+
+    subscriptions.load();
 
     const $loading = $('<div>').text(cd.s('loading-ellipsis'));
     this.loadingPanel = new OO.ui.PanelLayout({

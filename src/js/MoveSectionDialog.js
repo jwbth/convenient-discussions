@@ -39,10 +39,6 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
   constructor(section) {
     super();
     this.section = section;
-    this.preparatoryRequests = [
-      section.getSourcePage().getCode(),
-      mw.loader.using('mediawiki.widgets'),
-    ];
   }
 
   /**
@@ -68,6 +64,11 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
     super.initialize(...args);
 
     this.pushPending();
+
+    this.preparatoryRequests = [
+      this.section.getSourcePage().getCode(),
+      mw.loader.using('mediawiki.widgets'),
+    ];
 
     const $loading = $('<div>').text(cd.s('loading-ellipsis'));
     this.loadingPanel = new OO.ui.PanelLayout({

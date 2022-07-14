@@ -60,9 +60,6 @@ class SettingsDialog extends OO.ui.ProcessDialog {
   constructor(initialPageName) {
     super({ classes: ['cd-dialog-settings'] });
     this.initialPageName = initialPageName;
-    this.preparatoryRequests = [
-      settings.load({ omitLocal: true }),
-    ];
   }
 
   /**
@@ -88,6 +85,10 @@ class SettingsDialog extends OO.ui.ProcessDialog {
     super.initialize(...args);
 
     this.pushPending();
+
+    this.preparatoryRequests = [
+      settings.load({ omitLocal: true }),
+    ];
 
     const $loading = $('<div>').text(cd.s('loading-ellipsis'));
     this.loadingPanel = new OO.ui.PanelLayout({
