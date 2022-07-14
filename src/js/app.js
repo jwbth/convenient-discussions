@@ -487,14 +487,14 @@ function setupApi() {
    * @function generateCommentId
    * @memberof convenientDiscussions.api
    */
-  cd.api.generateCommentId = Comment.generateId;
+  cd.api.generateCommentId = Comment.generateId.bind(Comment);
 
   /**
    * @see module:timestamp.parseCommentId
    * @function parseCommentId
    * @memberof convenientDiscussions.api
    */
-  cd.api.parseCommentId = Comment.parseId;
+  cd.api.parseCommentId = Comment.parseId.bind(Comment);
 
   /**
    * @see module:util.buildEditSummary

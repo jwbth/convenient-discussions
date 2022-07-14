@@ -29,7 +29,6 @@ import {
   isInline,
   notNull,
   saveToLocalStorage,
-  ucFirst,
   unhideText,
   unique,
   wrap,

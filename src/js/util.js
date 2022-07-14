@@ -31,9 +31,8 @@ import cd from './cd';
  * @param {WrapCallbacks} [options.callbacks]
  * @param {string} [options.tagName='span']
  * @param {boolean} [options.targetBlank]
- * @returns {external:jQuery|WrapComplexReturn} If `options.callbacks` is supplied,
- *   returns an array containing a wrapper and an array of buttons. Otherwise, returns a wrapper
- *   alone.
+ * @returns {external:jQuery|WrapComplexReturn} If `options.callbacks` is supplied, returns an array
+ *   containing a wrapper and an array of buttons. Otherwise, returns a wrapper alone.
  */
 export function wrap(htmlOrJquery, options = {}) {
   const $wrapper = (htmlOrJquery instanceof $ ? htmlOrJquery : $($.parseHTML(htmlOrJquery)))
@@ -986,7 +985,7 @@ export function decodeHtmlEntities(string) {
 }
 
 /**
- * Get a timestamp of the current day.
+ * Get the timestamp of the current day.
  *
  * @returns {number}
  */

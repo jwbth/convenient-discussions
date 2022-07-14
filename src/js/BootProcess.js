@@ -213,67 +213,70 @@ export default class BootProcess {
    * @returns {Promise.<boolean>} Did the user enable comment reformatting.
    */
   async maybeSuggestEnableCommentReformatting() {
-    if (settings.get('reformatComments') === null) {
-      const loadedSettings = await settings.load({ reuse: true });
-      if ([null, undefined].includes(loadedSettings.reformatComments)) {
-        const actions = [
-          {
-            label: cd.s('rc-suggestion-yes'),
-            action: 'accept',
-            flags: 'primary',
-          },
-          {
-            label: cd.s('rc-suggestion-no'),
-            action: 'reject',
-          },
-        ];
-        const $body = $('<div>');
-        const $imgOld = $('<img>')
-          .attr('width', 626)
-          .attr('height', 67)
-          .attr('src', '//upload.wikimedia.org/wikipedia/commons/0/08/Convenient_Discussions_comment_-_old_format.png')
-          .addClass('cd-rcnotice-img');
-        const $arrow = $('<img>')
-          .attr('width', 30)
-          .attr('height', 30)
-          .attr('src', "data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.58 8.59L11 14.17L11 2L9 2L9 14.17L3.41 8.59L2 10L10 18L18 10L16.58 8.59Z' fill='black'/%3E%3C/svg%3E")
-          .addClass('cd-rcnotice-img cd-rcnotice-arrow');
-        const $imgNew = $('<img>')
-          .attr('width', 626)
-          .attr('height', 118)
-          .attr('src', '//upload.wikimedia.org/wikipedia/commons/d/da/Convenient_Discussions_comment_-_new_format.png')
-          .addClass('cd-rcnotice-img');
-        const $div = $('<div>')
-          .addClass('cd-rcnotice-text')
-          .html(cd.sParse('rc-suggestion'));
-        $body.append($imgOld, $arrow, $imgNew, $div);
-        const action = await showConfirmDialog($body, {
-          size: 'large',
-          actions,
-        });
-        let promise;
-        if (action === 'accept') {
-          loadedSettings.reformatComments = true;
-          promise = settings.save(loadedSettings);
-          settings.set('reformatComments', true);
-        } else if (action === 'reject') {
-          loadedSettings.reformatComments = false;
-          promise = settings.save(loadedSettings);
-          settings.set('reformatComments', false);
-        }
-        if (promise) {
-          try {
-            await promise;
-            return loadedSettings.reformatComments;
-          } catch (e) {
-            mw.notify(cd.s('error-settings-save'), { type: 'error' })
-            console.warn(e);
-          }
-        }
-      }
+    if (settings.get('reformatComments') !== null) {
+      return false;
     }
 
-    return false;
+    const loadedSettings = await settings.load({ reuse: true });
+    if (![null, undefined].includes(loadedSettings.reformatComments)) {
+      return false;
+    }
+
+    const actions = [
+      {
+        label: cd.s('rc-suggestion-yes'),
+        action: 'accept',
+        flags: 'primary',
+      },
+      {
+        label: cd.s('rc-suggestion-no'),
+        action: 'reject',
+      },
+    ];
+    const $body = $('<div>');
+    const $imgOld = $('<img>')
+      .attr('width', 626)
+      .attr('height', 67)
+      .attr('src', '//upload.wikimedia.org/wikipedia/commons/0/08/Convenient_Discussions_comment_-_old_format.png')
+      .addClass('cd-rcnotice-img');
+    const $arrow = $('<img>')
+      .attr('width', 30)
+      .attr('height', 30)
+      .attr('src', "data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.58 8.59L11 14.17L11 2L9 2L9 14.17L3.41 8.59L2 10L10 18L18 10L16.58 8.59Z' fill='black'/%3E%3C/svg%3E")
+      .addClass('cd-rcnotice-img cd-rcnotice-arrow');
+    const $imgNew = $('<img>')
+      .attr('width', 626)
+      .attr('height', 118)
+      .attr('src', '//upload.wikimedia.org/wikipedia/commons/d/da/Convenient_Discussions_comment_-_new_format.png')
+      .addClass('cd-rcnotice-img');
+    const $div = $('<div>')
+      .addClass('cd-rcnotice-text')
+      .html(wrap(cd.sParse('rc-suggestion'), {
+        callbacks: {
+          'cd-notification-settings': () => {
+            controller.showSettingsDialog();
+          },
+        },
+      }).$wrapper);
+    $body.append($imgOld, $arrow, $imgNew, $div);
+    const action = await showConfirmDialog($body, {
+      size: 'large',
+      actions,
+    });
+    if (action) {
+      const promise = settings.saveSettingOnTheFly(
+        loadedSettings,
+        'reformatComments',
+        action === 'accept'
+      );
+      try {
+        await promise;
+        return loadedSettings.reformatComments;
+      } catch (e) {
+        mw.notify(cd.s('error-settings-save'), { type: 'error' });
+        console.warn(e);
+      }
+    }
   }
 
   /**

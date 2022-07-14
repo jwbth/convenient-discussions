@@ -202,6 +202,14 @@ export default {
     });
   },
 
+  /**
+   * _For internal use._ Get the top offset of the first section relative to the viewport.
+   *
+   * @param {number} [scrollY=window.scrollY]
+   * @param {number} [tocOffset]
+   * @returns {number}
+   * @memberof Section
+   */
   getFirstSectionRelativeTopOffset(scrollY = window.scrollY, tocOffset) {
     if (scrollY <= cd.g.BODY_SCROLL_PADDING_TOP) return;
 
@@ -221,6 +229,12 @@ export default {
     return top;
   },
 
+  /**
+   * Get the section currently positioned at the top of the viewport.
+   *
+   * @returns {?Section}
+   * @memberof Section
+   */
   getCurrentSection() {
     const firstSectionTop = this.getFirstSectionRelativeTopOffset();
     return (
@@ -240,6 +254,10 @@ export default {
     );
   },
 
+  /**
+   * _For internal use._ Make sections visible or invisible to improve performance if the relevant
+   * setting is enabled.
+   */
   updateVisibility() {
     if (!cd.sections.length) return;
 
