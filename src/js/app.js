@@ -311,7 +311,10 @@ function maybeAddFooterLink() {
 function maybeTweakAddTopicButton() {
   if (
     !controller.isArticlePageTalkPage() ||
-    (mw.config.get('wgAction') === 'view' && !cd.g.IS_DT_NEW_TOPIC_TOOL_ENABLED)
+    (
+      mw.config.get('wgAction') === 'view' &&
+      !mw.user.options.get('discussiontools-newtopictool-createpage')
+    )
   ) {
     return;
   }
