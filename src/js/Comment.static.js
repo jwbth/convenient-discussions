@@ -15,6 +15,17 @@ import {
 } from './util';
 import { getPagesExistence } from './apiWrappers';
 
+const newDtTimestampPattern = '(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})\\d{2}';
+const oldDtTimestampPattern = '(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{3}Z)';
+
+// Doesn't account for cases when the section headline ends with `-[number]`.
+const dtIdRegexp = new RegExp(
+  `^c-` +
+  `(?:(.+?)-(?:${newDtTimestampPattern}|${oldDtTimestampPattern}))` +
+  `(?:-(?:(.+?)-(?:${newDtTimestampPattern}|${oldDtTimestampPattern})|(.+?))` +
+  `(?:-(\\d+))?)?$`
+);
+
 /**
  * Add all comment's children, including indirect, into array, if they are in the array of new
  * comments.
@@ -829,32 +840,32 @@ export default {
    * @memberof Comment
    */
   parseDtId(id) {
-    if (!this.isDtId(id)) {
+    const match = id.match(dtIdRegexp);
+    if (!match) {
       return null;
     }
-    const regexp = /^c-(.+?)-(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z)(?:-(.+))?$/;
-    let [, author, timestamp, parent] = id.match(regexp) || [];
-    if (!author) {
-      return null;
-    }
-    author = underlinesToSpaces(author);
-    const date = new Date(timestamp);
-    let parentAuthor;
-    let parentTimestamp;
-    let parentDate;
-    let index;
-    let sectionIdBeginning;
-    if (parent) {
-      const regexp = /(.+)-(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z)(?:-(\d+))?$/;
-      [, parentAuthor, parentTimestamp, index] = parent.match(regexp) || [];
-      if (parentAuthor) {
-        parentAuthor = underlinesToSpaces(parentAuthor);
-        parentDate = new Date(parentTimestamp);
+
+    const parseTimestamp = (startIndex) => {
+      const author = underlinesToSpaces(match[startIndex]);
+      let date;
+      if (match[startIndex + 1]) {
+        const year = Number(match[startIndex + 1]);
+        const month = Number(match[startIndex + 2]) - 1;
+        const day = Number(match[startIndex + 3]);
+        const hours = Number(match[startIndex + 4]);
+        const minutes = Number(match[startIndex + 5]);
+        date = new Date(Date.UTC(year, month, day, hours, minutes));
       } else {
-        // Doesn't account for cases when the section headline ends with "-[number]"
-        [, sectionIdBeginning, index] = parent.match(/^(.+?)(?:-(\d+))?$/);
+        date = new Date(match[startIndex + 6]);
       }
-    }
+      return [author, date];
+    };
+
+    const [author, date] = parseTimestamp(1);
+    const [parentAuthor, parentDate] = match[8] ? parseTimestamp(8) : [];
+    const sectionIdBeginning = match[15];
+    const index = match[16] ? Number(match[16]) : undefined;
+
     return { author, date, parentAuthor, parentDate, sectionIdBeginning, index };
   },
 
