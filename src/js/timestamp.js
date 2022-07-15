@@ -170,7 +170,7 @@ export function getDateFromTimestampMatch(match, timezone) {
   const unixTime = Date.UTC(year, monthIdx, day, hours, minutes);
   let timezoneOffset;
   if (typeof timezone === 'number') {
-    timezoneOffset = timezone * cd.g.MILLISECONDS_IN_MINUTE;
+    timezoneOffset = timezone * cd.g.MS_IN_MIN;
   } else {
     // Using date-fns-tz's getTimezoneOffset is way faster than using day.js's methods.
     timezoneOffset = timezone === 'UTC' ? 0 : getTimezoneOffset(timezone, unixTime);
@@ -281,9 +281,9 @@ export function formatDateNative(date, addTimezone = false, timezone) {
         cd.g.UI_TIMEZONE :
 
         // Using date-fns-tz's getTimezoneOffset is way faster than using day.js's methods.
-        getTimezoneOffset(cd.g.UI_TIMEZONE, date.getTime()) / cd.g.MILLISECONDS_IN_MINUTE;
+        getTimezoneOffset(cd.g.UI_TIMEZONE, date.getTime()) / cd.g.MS_IN_MIN;
     }
-    date = new Date(date.getTime() + timezoneOffset * cd.g.MILLISECONDS_IN_MINUTE);
+    date = new Date(date.getTime() + timezoneOffset * cd.g.MS_IN_MIN);
   } else if (!timezone || timezone === 'UTC') {
     timezoneOffset = 0;
   } else {
@@ -406,11 +406,11 @@ export function formatDateImproved(date, addTimezone = false) {
         cd.g.UI_TIMEZONE :
 
         // Using date-fns-tz's getTimezoneOffset is way faster than using day.js's methods.
-        getTimezoneOffset(cd.g.UI_TIMEZONE, now.getTime()) / cd.g.MILLISECONDS_IN_MINUTE;
+        getTimezoneOffset(cd.g.UI_TIMEZONE, now.getTime()) / cd.g.MS_IN_MIN;
 
       dayjsDate = dayjsDate.utcOffset(timezoneOffset);
     }
-    now = new Date(now.getTime() + timezoneOffset * cd.g.MILLISECONDS_IN_MINUTE);
+    now = new Date(now.getTime() + timezoneOffset * cd.g.MS_IN_MIN);
   } else {
     timezoneOffset = 0;
     dayjsDate = dayjsDate.utc();
@@ -457,7 +457,7 @@ export function formatDateImproved(date, addTimezone = false) {
 export function formatDateRelative(date) {
   const now = Date.now();
   const ms = date.getTime();
-  if (ms < now && ms > now - cd.g.MILLISECONDS_IN_MINUTE) {
+  if (ms < now && ms > now - cd.g.MS_IN_MIN) {
     return cd.s('comment-timestamp-lessthanminute');
   }
 
