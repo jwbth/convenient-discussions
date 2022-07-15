@@ -1168,7 +1168,9 @@ export default class BootProcess {
 
     let headline;
     let comment;
-    const $dtNewTopicForm = $('.ext-discussiontools-ui-newTopic');
+
+    // `:visible` to exclude the form hidden in BootProcess#hideDtNewTopicForm.
+    const $dtNewTopicForm = $('.ext-discussiontools-ui-newTopic:visible');
     if ($dtNewTopicForm.length) {
       const $headline = $dtNewTopicForm
         .find('.ext-discussiontools-ui-newTopic-sectionTitle input[type="text"]');
