@@ -1426,6 +1426,17 @@ export default {
    * {@link commentLinks.addCommentLinks run it}.
    */
   loadToCommentLinksPage() {
+    // Process the page as a log page
+    if (
+      !this.isWatchlistPage() &&
+      !this.isContributionsPage() &&
+      !this.isHistoryPage() &&
+      !(this.diffPage && this.articlePageTalkPage) &&
+      !this.talkPage
+    ) {
+      return;
+    }
+
     // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
     if (mw.loader.getState('mediawiki.api') === 'ready') {

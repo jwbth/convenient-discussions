@@ -730,6 +730,8 @@ export default async function addCommentLinks() {
  * "Couldn't find the comment" message, add comment links to titles.
  */
 export function addCommentLinksToSpecialSearch() {
+  if (mw.config.get('wgCanonicalSpecialPageName') !== 'Search') return;
+
   const [, commentId] = location.search.match(/[?&]cdcomment=([^&]+)(?:&|$)/) || [];
   if (commentId) {
     mw.loader.using('mediawiki.api').then(

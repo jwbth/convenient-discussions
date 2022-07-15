@@ -202,7 +202,7 @@ function setStrings() {
  * Set some global object properties.
  */
 function setGlobals() {
-  // Avoid setting the global object properties if go() runs the second time (see addFooterLink()).
+  // Avoid setting the global object properties if go() runs the second time (see maybeAddFooterLink()).
   if (cd.g.SETTINGS_OPTION_NAME) return;
 
   /**
@@ -274,7 +274,9 @@ function setGlobals() {
  *
  * @private
  */
-function addFooterLink() {
+function maybeAddFooterLink() {
+  if (!mw.config.get('wgIsArticle')) return;
+
   const enable = !controller.isTalkPage();
   const url = new URL(location.href);
   url.searchParams.set('cdtalkpage', enable ? '1' : '0');
@@ -302,9 +304,18 @@ function addFooterLink() {
 }
 
 /**
- * Change the destination of the "Add topic" button.
+ * Change the destination of the "Add topic" button to redirect topic creation to the script's form.
+ * This is not done on `action=view` pages to make sure the user can open the classic form. The
+ * exception is when the new topic tool is enabled:
  */
-function tweakAddTopicButton() {
+function maybeTweakAddTopicButton() {
+  if (
+    !controller.isArticlePageTalkPage() ||
+    (mw.config.get('wgAction') === 'view' && !cd.g.IS_DT_NEW_TOPIC_TOOL_ENABLED)
+  ) {
+    return;
+  }
+
   const $addTopicLink = $('#ca-addsection a');
   const href = $addTopicLink.prop('href');
   if (href) {
@@ -327,36 +338,11 @@ async function go() {
 
   setGlobals();
   controller.setup();
-
-  // Process the page as a talk page
-  if (mw.config.get('wgIsArticle')) {
-    if (controller.isTalkPage()) {
-      controller.loadToTalkPage();
-    }
-    addFooterLink();
-  }
-
-  if (
-    controller.isArticlePageTalkPage() &&
-    (mw.config.get('wgAction') !== 'view' || cd.g.IS_DT_NEW_TOPIC_TOOL_ENABLED)
-  ) {
-    tweakAddTopicButton();
-  }
-
-  // Process the page as a log page
-  if (
-    controller.isWatchlistPage() ||
-    controller.isContributionsPage() ||
-    controller.isHistoryPage() ||
-    (controller.isDiffPage() && controller.isArticlePageTalkPage()) ||
-    controller.isTalkPage()
-  ) {
-    controller.loadToCommentLinksPage();
-  }
-
-  if (mw.config.get('wgCanonicalSpecialPageName') === 'Search') {
-    addCommentLinksToSpecialSearch();
-  }
+  controller.loadToTalkPage();
+  maybeAddFooterLink();
+  maybeTweakAddTopicButton();
+  controller.loadToCommentLinksPage();
+  addCommentLinksToSpecialSearch();
 
   if (!controller.isBooting()) {
     debug.stopTimer('start');
