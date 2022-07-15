@@ -1224,17 +1224,11 @@ export default class BootProcess {
     // May crash if the current URL contains undecodable "%" in the fragment,
     // https://phabricator.wikimedia.org/T207365.
     try {
-      const uri = new mw.Uri();
-      const query = uri.query;
+      const query = (new mw.Uri()).query;
 
       // &action=edit&section=new when DT's New Topic Tool is enabled.
       if (query.section === 'new' || Number(query.cdaddtopic) || this.dtNewTopicFormData) {
         CommentForm.createAddSectionForm(undefined, undefined, this.dtNewTopicFormData);
-
-        delete query.action;
-        delete query.section;
-        delete query.cdaddtopic;
-        history.replaceState(history.state, '', uri.toString());
       }
     } catch {
       // Empty

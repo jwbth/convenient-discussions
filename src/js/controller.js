@@ -1140,6 +1140,8 @@ export default {
    * {@link BootProcess the boot process}.
    */
   loadToTalkPage() {
+    if (!this.talkPage) return;
+
     debug.stopTimer('start');
     debug.startTimer('loading data');
 
@@ -1370,55 +1372,53 @@ export default {
    * @private
    */
   cleanUpUrlAndDom() {
-    const uri = new mw.Uri();
-    const query = uri.query;
-    if (
-      (
-        // Don't reset the fragment if it will be set in the boot process from a comment ID or a
-        // section ID, to avoid creating a duplicate history entry.
-        (uri.fragment && !this.bootProcess.data('pushState')) ||
+    const query = (new mw.Uri()).query;
 
-        query.diff ||
-        query.oldid
-      ) &&
-      !this.bootProcess.data('isPageReloadedExternally')
-    ) {
-      // Added automatically (after /wiki/ if possible, as a query parameter otherwise).
-      delete query.title;
-
-      delete query.curid;
-      let methodName;
-      if (query.diff || query.oldid) {
-        methodName = 'pushState';
-
-        delete query.diff;
-        delete query.oldid;
-        delete query.diffmode;
-        delete query.type;
-
-        // Diff pages
-        this.$content
-          .children('.mw-revslider-container, .ve-init-mw-diffPage-diffMode, .diff, .oo-ui-element-hidden, .diff-hr, .diff-currentversion-title')
-          .remove();
-
-        // Revision navigation
-        $('.mw-revision').remove();
-
-        $('#firstHeading').text(cd.page.name);
-
-        // Make the "Back" browser button work.
-        $(window).on('popstate', () => {
-          if (mw.util.getParamValue('diff') || mw.util.getParamValue('oldid')) {
-            location.reload();
-          }
-        });
-
-        this.diffPage = false;
-      } else {
-        methodName = 'replaceState';
-      }
-      history[methodName](history.state, '', cd.page.getUrl(query));
+    // Don't reset the fragment if it will be set in the boot process from a comment ID or a section
+    // ID, to avoid creating an extra history entry.
+    if (this.bootProcess.data('pushState') || this.bootProcess.data('isPageReloadedExternally')) {
+      return;
     }
+
+    // Added automatically (after /wiki/ if possible, as a query parameter otherwise).
+    delete query.title;
+
+    delete query.curid;
+    delete query.action;
+    delete query.section;
+    delete query.cdaddtopic;
+
+    let methodName;
+    if (query.diff || query.oldid) {
+      methodName = 'pushState';
+
+      delete query.diff;
+      delete query.oldid;
+      delete query.diffmode;
+      delete query.type;
+
+      // Diff pages
+      this.$content
+        .children('.mw-revslider-container, .ve-init-mw-diffPage-diffMode, .diff, .oo-ui-element-hidden, .diff-hr, .diff-currentversion-title')
+        .remove();
+
+      // Revision navigation
+      $('.mw-revision').remove();
+
+      $('#firstHeading').text(cd.page.name);
+
+      // Make the "Back" browser button work.
+      $(window).on('popstate', () => {
+        if (mw.util.getParamValue('diff') || mw.util.getParamValue('oldid')) {
+          location.reload();
+        }
+      });
+
+      this.diffPage = false;
+    } else {
+      methodName = 'replaceState';
+    }
+    history[methodName](history.state, '', cd.page.getUrl(query));
   },
 
   /**
