@@ -570,7 +570,7 @@ class Section extends SectionSkeleton {
       authorCountWrapper = document.createElement('span');
       authorCountWrapper.className = 'cd-section-bar-item';
       const authorCountText = cd.s('section-metadata-authorcount', authorCount);
-      authorCountWrapper.append('\xa0', authorCountText);
+      authorCountWrapper.append(authorCountText);
 
       if (latestComment) {
         const lastCommentLink = document.createElement('a');
@@ -585,7 +585,7 @@ class Section extends SectionSkeleton {
         lastCommentWrapper = document.createElement('span');
         lastCommentWrapper.className = 'cd-section-bar-item';
         const lastCommentText = cd.s('section-metadata-lastcomment');
-        lastCommentWrapper.append('\xa0', lastCommentText, ' ', lastCommentLink);
+        lastCommentWrapper.append(lastCommentText, ' ', lastCommentLink);
       }
 
       metadataElement = document.createElement('div');
