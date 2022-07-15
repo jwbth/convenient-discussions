@@ -1511,7 +1511,7 @@ export default class BootProcess {
     $content
       .find(`a[href^="#"]`)
       .filter(function () {
-        return Comment.isAnyId($(this).attr('href').slice(1));
+        return !this.onclick && Comment.isAnyId($(this).attr('href').slice(1));
       })
       .on('click', function (e) {
         e.preventDefault();
