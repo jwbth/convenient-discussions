@@ -543,11 +543,13 @@ async function app() {
 
   if (
     /(^|\.)m\./.test(location.hostname) ||
+    /[?&]cdenable=(0|false|no|n)(?=&|$)/.test(location.search) ||
     mw.config.get('wgPageContentModel') !== 'wikitext' ||
-    mw.config.get('wgIsMainPage') ||
 
     // Liquid Threads, for example https://en.wiktionary.org/wiki/User_talk:Yair_rand/newentrywiz.js
-    $('.lqt-talkpage').length
+    $('.lqt-talkpage').length ||
+
+    mw.config.get('wgIsMainPage')
   ) {
     return;
   }
