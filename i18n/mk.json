@@ -121,7 +121,7 @@
 	"cf-block-close": "Затвори",
 	"cf-reaction-templateinheadline": "Не користете предлошки во заглавијата: тие ги расипуваат врските до одделите.",
 	"cf-reaction-signature": "Нема потреба да внесувате <kbd>$1</kbd>: потписот се појавува автоматски.",
-	"cf-reaction-pre": "Ознаките <code><nowiki><pre></nowiki></code> го расипуваат распоредот на страницата. Користете <code><nowiki><syntaxhighlight></nowiki></code>.",
+	"cf-reaction-pre": "Ознаките <code><nowiki><pre></nowiki></code> го расипуваат распоредот на страницата. Користете <code><nowiki><syntaxhighlight lang=\"text\"></nowiki></code>.",
 	"cf-reaction-mention-edit": "Бидејќи <em>уредувате</em> коментар, нема да биде испратено [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|известување за спомнување]]. За да испратите известување, ставете врска до корисникот во описот на уредувањето.",
 	"cf-reaction-mention-nosignature": "Бидејќи избравте да не се потпишете во коментарот, нема да биде испратено [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|известување за спомнување]]. За да испратите известување, ставете врска до корисникот во описот на уредувањето.",
 	"cf-notice-nochanges": "Нема промени.",

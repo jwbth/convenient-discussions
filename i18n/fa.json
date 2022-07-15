@@ -4,6 +4,7 @@
 			"Ajam",
 			"Beginneruser",
 			"Darafsh",
+			"Jack who built the house",
 			"Jeeputer",
 			"Mohammad ebz",
 			"Reza koulivand"
@@ -147,7 +148,7 @@
 	"cf-block-close": "بستن",
 	"cf-reaction-templateinheadline": "در سرآیندها از الگو استفاده نکنید: آن‌ها باعث شکستن پیوند‌های بخش می‌شوند.",
 	"cf-reaction-signature": "نیازی به وارد کردن <kbd>$1</kbd> نیست: امضا به‌طور خودکار افزوده خواهد شد.",
-	"cf-reaction-pre": "برچسب‌های <code><nowiki><pre></nowiki></code> می‌توانند باعث شکستن قابل‌بندی شوند—بهتر است از <code><nowiki><syntaxhighlight></nowiki></code> استفاده کنید.",
+	"cf-reaction-pre": "برچسب‌های <code><nowiki><pre></nowiki></code> می‌توانند باعث شکستن قابل‌بندی شوند—بهتر است از <code><nowiki><syntaxhighlight lang=\"text\"></nowiki></code> استفاده کنید.",
 	"cf-reaction-mention-edit": "از آنجا که شما در حال <em>ویرایش</em> یک نظر هستید، [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|اعلان برای اشاره]] ارسال نخواهد شد. برای این که اعلان ارسال شود، باید پیوند به صفحهٔ کاربر را در خلاصهٔ ویرایش قرار دهید.",
 	"cf-reaction-mention-nosignature": "از آنجا که شما تصمیم گرفته‌اید امضا را در نظر خود وارد نکنید، [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|اعلان برای اشاره]] ارسال نخواهد شد. برای این که اعلان ارسال شود، باید پیوند به صفحهٔ کاربر را در خلاصهٔ ویرایش قرار دهید.",
 	"cf-notice-nochanges": "بدون تغییر.",

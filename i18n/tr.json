@@ -142,7 +142,7 @@
 	"cf-block-close": "Kapat",
 	"cf-reaction-templateinheadline": "Başlıklarda şablon kullanmayın: bölüm bağlantılarını koparırlar.",
 	"cf-reaction-signature": "<kbd>$1</kbd> girmenize gerek yok: imza otomatik olarak eklenecektir.",
-	"cf-reaction-pre": "<code><nowiki><pre></nowiki></code> etiketler düzeni bozabilir, <code><nowiki><syntaxhighlight></nowiki></code> kullanmak daha iyisidir.",
+	"cf-reaction-pre": "<code><nowiki><pre></nowiki></code> etiketler düzeni bozabilir, <code><nowiki><syntaxhighlight lang=\"text\"></nowiki></code> kullanmak daha iyisidir.",
 	"cf-reaction-mention-edit": "Bir yorumu <em>düzenlediğiniz</em> için, [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|bahsetme bildirimi]] gönderilmeyecek. Bir bildirim gönderilmesini sağlamak için, kullanıcıyı düzenleme özetinde bağlayabilirsiniz.",
 	"cf-reaction-mention-nosignature": "Yorumunuza bir imza eklememeyi tercih ettiğiniz için, bir [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|bahsetme bildirimi]] gönderilmeyecektir. Bir bildirim göndermek için, kullanıcıyı düzenleme özetinde bağlayabilirsiniz.",
 	"cf-notice-nochanges": "Değişiklik yok.",

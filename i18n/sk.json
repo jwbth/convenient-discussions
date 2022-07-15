@@ -148,7 +148,7 @@
 	"cf-block-close": "Zavrieť",
 	"cf-reaction-templateinheadline": "Nepoužívajte šablóny ako názvy článkov: znefunkčňujú odkazy v sekciách.",
 	"cf-reaction-signature": "Nie je potrebné zadať <kbd>$1</kbd>: podpis bude pridaný automaticky.",
-	"cf-reaction-pre": "<code><nowiki><pre></nowiki></code> značky môžu rozhádzať rozloženie—radšej použite <code><nowiki><syntaxhighlight></nowiki></code>.",
+	"cf-reaction-pre": "<code><nowiki><pre></nowiki></code> značky môžu rozhádzať rozloženie—radšej použite <code><nowiki><syntaxhighlight lang=\"text\"></nowiki></code>.",
 	"cf-reaction-mention-edit": "Pretože práve <em>upravujete</em> komentár, [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|oznámenie o spomenutí]] nebude zaslané. Pre odoslanie oznámenia môžete do zhrnutia úprav pridať odkaz na používateľa.",
 	"cf-reaction-mention-nosignature": "Pretože ste si vybrali nepridať podpis k Vášmu komentáru [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|oznámenie o spomenutí]] nebude odoslané. Pre odoslanie oznámenia môžete do zhrnutia úprav pridať odkaz na používateľa.",
 	"cf-notice-nochanges": "Žiadne zmeny.",
