@@ -563,12 +563,14 @@ class Section extends SectionSkeleton {
       commentCountWrapper = document.createElement('span');
       commentCountWrapper.className = 'cd-section-bar-item';
       const commentCountText = cd.s('section-metadata-commentcount', this.comments.length);
+
+      // Add a no-break space to ensure the text is copied correctly.
       commentCountWrapper.append(commentCountText);
 
       authorCountWrapper = document.createElement('span');
       authorCountWrapper.className = 'cd-section-bar-item';
       const authorCountText = cd.s('section-metadata-authorcount', authorCount);
-      authorCountWrapper.append(authorCountText);
+      authorCountWrapper.append('\xa0', authorCountText);
 
       if (latestComment) {
         const lastCommentLink = document.createElement('a');
@@ -583,7 +585,7 @@ class Section extends SectionSkeleton {
         lastCommentWrapper = document.createElement('span');
         lastCommentWrapper.className = 'cd-section-bar-item';
         const lastCommentText = cd.s('section-metadata-lastcomment');
-        lastCommentWrapper.append(lastCommentText, ' ', lastCommentLink);
+        lastCommentWrapper.append('\xa0', lastCommentText, ' ', lastCommentLink);
       }
 
       metadataElement = document.createElement('div');
