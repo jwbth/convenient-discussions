@@ -992,3 +992,21 @@ export function decodeHtmlEntities(string) {
 export function getDayTimestamp() {
   return Math.floor(Date.now() / cd.g.MS_IN_DAY);
 }
+
+/**
+ * Generate a timestamp for a date, where string positions for the year, month, etc. are fixed.
+ *
+ * @param {Date} date
+ * @param {boolean} isDt
+ * @returns {string}
+ */
+export function generateFixedPosTimestamp(date, isDt) {
+  return (
+    zeroPad(date.getUTCFullYear(), 4) +
+    zeroPad(date.getUTCMonth() + 1, 2) +
+    zeroPad(date.getUTCDate(), 2) +
+    zeroPad(date.getUTCHours(), 2) +
+    zeroPad(date.getUTCMinutes(), 2) +
+    (isDt ? '00' : '')
+  );
+}

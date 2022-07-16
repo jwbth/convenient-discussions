@@ -1,7 +1,13 @@
 import CdError from './CdError';
 import cd from './cd';
 import { ElementsAndTextTreeWalker, ElementsTreeWalker } from './treeWalker';
-import { isInline, isMetadataTag, spacesToUnderlines, unique, zeroPad } from './util';
+import {
+  generateFixedPosTimestamp,
+  isInline,
+  isMetadataTag,
+  spacesToUnderlines,
+  unique,
+} from './util';
 
 /**
  * Class containing the main properties of a comment. This class is the only one used in the worker
@@ -1430,21 +1436,7 @@ class CommentSkeleton {
       return null;
     }
 
-    let year = date.getUTCFullYear();
-    let month = date.getUTCMonth();
-    let day = date.getUTCDate();
-    let hours = date.getUTCHours();
-    let minutes = date.getUTCMinutes();
-
-    let id = (
-      zeroPad(year, 4) +
-      zeroPad(month + 1, 2) +
-      zeroPad(day, 2) +
-      zeroPad(hours, 2) +
-      zeroPad(minutes, 2) +
-      '_' +
-      spacesToUnderlines(author)
-    );
+    let id = generateFixedPosTimestamp(date) + '_' + spacesToUnderlines(author);
     if (existingIds && existingIds.includes(id)) {
       let index = 2;
       const base = id;

@@ -3,6 +3,7 @@ import controller from './controller';
 import {
   areObjectsEqual,
   calculateWordOverlap,
+  generateFixedPosTimestamp,
   getExtendedRect,
   getVisibilityByRects,
   spacesToUnderlines,
@@ -176,7 +177,7 @@ export default {
   generateDtSubscriptionId(author, timestamp) {
     const date = new Date(timestamp);
     date.setSeconds(0);
-    return `h-${spacesToUnderlines(author)}-${date.toISOString()}`;
+    return `h-${spacesToUnderlines(author)}-${generateFixedPosTimestamp(date, true)}`;
   },
 
   /**
