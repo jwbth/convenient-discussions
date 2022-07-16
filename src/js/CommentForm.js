@@ -2947,19 +2947,23 @@ class CommentForm {
         )
       ) {
         let subscribeId;
+        let rawHeadline;
+        let headline;
         let originalHeadline;
         let isHeadlineAltered;
+
+        if (this.headlineInput) {
+          rawHeadline = this.headlineInput.getValue().trim();
+        }
+        if (!this.sectionOpeningCommentEdited && !rawHeadline) {
+          [, rawHeadline] = commentCode.match(/^==(.*?)==[ \t]*$/m) || [];
+        }
+        headline = rawHeadline && removeWikiMarkup(rawHeadline);
+
         if (settings.get('useTopicSubscription')) {
           subscribeId = Section.generateDtSubscriptionId(cd.user.getName(), editTimestamp);
         } else {
-          let rawHeadline;
-          if (this.headlineInput) {
-            rawHeadline = this.headlineInput.getValue().trim();
-          }
-          if (!this.sectionOpeningCommentEdited && !rawHeadline) {
-            [, rawHeadline] = commentCode.match(/^==(.*?)==[ \t]*$/m) || [];
-          }
-          subscribeId = rawHeadline && removeWikiMarkup(rawHeadline);
+          subscribeId = headline;
           if (this.sectionOpeningCommentEdited) {
             originalHeadline = removeWikiMarkup(this.originalHeadline);
             isHeadlineAltered = subscribeId !== originalHeadline;
@@ -2971,7 +2975,7 @@ class CommentForm {
           if (isHeadlineAltered) {
             passedData.justUnsubscribedFromSection = originalHeadline;
           }
-          subscriptions.subscribe(subscribeId, originalHeadline);
+          subscriptions.subscribe(subscribeId, headline, originalHeadline);
         }
       } else {
         let section = this.targetSection?.getSectionSubscribedTo();

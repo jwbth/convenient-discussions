@@ -27,15 +27,13 @@ export default {
    * @param {boolean} [reuse=false] For legacy subscriptions: Reuse the existing request.
    */
   load(reuse = false) {
-    this.useTopicSubscription = settings.get('useTopicSubscription');
-
     delete this.registry;
     if (this.allPagesRegistry) {
       delete this.allPagesRegistry;
     }
 
     this.loadRequest = (async () => {
-      if (this.useTopicSubscription) {
+      if (settings.get('useTopicSubscription')) {
         const subscriptionIds = cd.sections
           .filter((section) => section.subscribeId)
           .map((section) => section.subscribeId)
@@ -86,7 +84,7 @@ export default {
    * @param {object} registry
    */
   async saveLegacy(registry) {
-    if (this.useTopicSubscription) return;
+    if (settings.get('useTopicSubscription')) return;
 
     await setLegacySubscriptions(registry || this.allPagesRegistry);
   },
@@ -102,9 +100,12 @@ export default {
   updateRegistry(subscribeId, subscribe) {
     if (subscribeId === undefined) return;
 
+    // `this.registry` can be not set on just created pages with DT subscriptions enabled.
+    this.registry = this.registry || {};
+
     this.registry[subscribeId] = subscribe;
 
-    if (!subscribe && !this.useTopicSubscription) {
+    if (!subscribe && !settings.get('useTopicSubscription')) {
       delete this.registry[subscribeId];
     }
   },
@@ -125,12 +126,12 @@ export default {
 
     try {
       await dtSubscribe(subscribeId, id, subscribe);
-      this.updateRegistry(subscribeId, subscribe);
     } catch (e) {
       mw.notify(cd.s('error-settings-save'), { type: 'error' });
       throw e;
     }
 
+    this.updateRegistry(subscribeId, subscribe);
     this.maybeShowNotice();
   },
 
@@ -153,6 +154,7 @@ export default {
         throw e;
       }
 
+      // We save the full subscription list, so we need to update the registry first.
       const backupRegistry = Object.assign({}, this.registry);
       this.updateRegistry(headline, true);
       this.updateRegistry(unsubscribeHeadline, false);
@@ -237,7 +239,7 @@ export default {
    * @returns {Promise}
    */
   subscribe(subscribeId, id, unsubscribeHeadline) {
-    return this.useTopicSubscription ?
+    return settings.get('useTopicSubscription') ?
       this.dtSubscribe(subscribeId, id, true) :
       this.subscribeLegacy(subscribeId, unsubscribeHeadline);
   },
@@ -250,7 +252,7 @@ export default {
    * @returns {Promise}
    */
   unsubscribe(subscribeId, id) {
-    return this.useTopicSubscription ?
+    return settings.get('useTopicSubscription') ?
       this.dtSubscribe(subscribeId, id, false) :
       this.unsubscribeLegacy(subscribeId);
   },
@@ -261,7 +263,7 @@ export default {
    * @returns {number[]}
    */
   getPageIds() {
-    if (this.useTopicSubscription || !this.areLoaded()) {
+    if (settings.get('useTopicSubscription') || !this.areLoaded()) {
       return null;
     }
 
@@ -275,7 +277,7 @@ export default {
    * @returns {?(object[])}
    */
   getForPageId(pageId) {
-    if (this.useTopicSubscription || !this.areLoaded()) {
+    if (settings.get('useTopicSubscription') || !this.areLoaded()) {
       return null;
     }
 
@@ -327,7 +329,7 @@ export default {
    * subscription list and save it to the server.
    */
   cleanUp() {
-    if (this.useTopicSubscription) return;
+    if (settings.get('useTopicSubscription')) return;
 
     this.originalList = Object.keys(this.registry);
 
@@ -350,7 +352,7 @@ export default {
    * @private
    */
   maybeShowNotice() {
-    if (!this.useTopicSubscription || settings.get('topicSubscriptionSeenNotice')) return;
+    if (!settings.get('useTopicSubscription') || settings.get('topicSubscriptionSeenNotice')) return;
 
     const $body = $('<div>');
     const $img = $('<img>')
