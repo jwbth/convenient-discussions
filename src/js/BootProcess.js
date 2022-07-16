@@ -1171,52 +1171,52 @@ export default class BootProcess {
 
     // `:visible` to exclude the form hidden in BootProcess#hideDtNewTopicForm.
     const $dtNewTopicForm = $('.ext-discussiontools-ui-newTopic:visible');
-    if ($dtNewTopicForm.length) {
-      const $headline = $dtNewTopicForm
-        .find('.ext-discussiontools-ui-newTopic-sectionTitle input[type="text"]');
-      headline = $headline.val();
-      $headline.val('');
+    if (!$dtNewTopicForm.length) return;
 
-      const $comment = $dtNewTopicForm.find('textarea');
-      comment = $comment.textSelection('getContents');
-      $comment.textSelection('setContents', '');
+    const $headline = $dtNewTopicForm
+      .find('.ext-discussiontools-ui-newTopic-sectionTitle input[type="text"]');
+    headline = $headline.val();
+    $headline.val('');
 
-      // DT's comment form produces errors after opening a CD's comment form because of hard code in
-      // WikiEditor that relies on $('#wpTextbox1'). We can't simply delete DT's dummy textarea
-      // because it can show up unexpectedly right before WikiEditor's code is executed where it's
-      // hard for us to wedge in.
-      if ($('#wpTextbox1').length) {
-        $('#wpTextbox1').remove();
-      } else {
-        const observer = new MutationObserver((records) => {
-          const isReplyWidgetAdded = (record) => (
-            [...record.addedNodes]
-              .some((node) => node.classList?.contains('ext-discussiontools-ui-replyWidget'))
-          );
-          if (records.some(isReplyWidgetAdded)) {
-            $('#wpTextbox1').remove();
-            observer.disconnect();
-          }
-        });
-        observer.observe(controller.$content.get(0), {
-          childList: true,
-          subtree: true,
-        });
-      }
+    const $comment = $dtNewTopicForm.find('textarea');
+    comment = $comment.textSelection('getContents');
+    $comment.textSelection('setContents', '');
 
-      // Don't outright remove the element so that DT has time to save the draft as empty.
-      $dtNewTopicForm.hide();
-
-      // This looks like it regulates adding a new topic form on DT init. This is for future page
-      // refreshes.
-      mw.config.set('wgDiscussionToolsStartNewTopicTool', false);
-
-      this.dtNewTopicFormData = {
-        headline,
-        comment,
-        focus: true,
-      };
+    // DT's comment form produces errors after opening a CD's comment form because of hard code in
+    // WikiEditor that relies on $('#wpTextbox1'). We can't simply delete DT's dummy textarea
+    // because it can show up unexpectedly right before WikiEditor's code is executed where it's
+    // hard for us to wedge in.
+    if ($('#wpTextbox1').length) {
+      $('#wpTextbox1').remove();
+    } else {
+      const observer = new MutationObserver((records) => {
+        const isReplyWidgetAdded = (record) => (
+          [...record.addedNodes]
+            .some((node) => node.classList?.contains('ext-discussiontools-ui-replyWidget'))
+        );
+        if (records.some(isReplyWidgetAdded)) {
+          $('#wpTextbox1').remove();
+          observer.disconnect();
+        }
+      });
+      observer.observe(controller.$content.get(0), {
+        childList: true,
+        subtree: true,
+      });
     }
+
+    // Don't outright remove the element so that DT has time to save the draft as empty.
+    $dtNewTopicForm.hide();
+
+    // This looks like it regulates adding a new topic form on DT init. This is for future page
+    // refreshes.
+    mw.config.set('wgDiscussionToolsStartNewTopicTool', false);
+
+    this.dtNewTopicFormData = {
+      headline,
+      comment,
+      focus: true,
+    };
   }
 
   /**

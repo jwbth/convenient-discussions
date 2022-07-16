@@ -485,7 +485,7 @@ class Page {
       notminor: !customOptions.minor,
 
       // Should be `undefined` instead of `null`, otherwise will be interepreted as a string.
-      tags: cd.user.isRegistered() ? (cd.config.tagName || undefined) : undefined,
+      tags: cd.user.isRegistered() && cd.config.tagName || undefined,
 
       errorformat: 'html',
       errorlang: cd.g.USER_LANGUAGE,

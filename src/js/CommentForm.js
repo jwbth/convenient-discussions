@@ -1184,45 +1184,43 @@ class CommentForm {
    *
    * @private
    */
-  loadComment() {
+  async loadComment() {
     const currentOperation = this.registerOperation('load');
-    this.target.getCode(true).then(
-      () => {
-        let commentText = this.target.codeToText();
-        if (this.target.inCode.inSmallFont) {
-          commentText = `<small>${commentText}</small>`;
-        }
-        const headline = this.target.inCode.headlineCode;
-
-        this.commentInput.setValue(commentText);
-        this.originalComment = commentText;
-        if (this.headlineInput) {
-          this.headlineInput.setValue(headline);
-          this.originalHeadline = headline;
-        }
-
-        this.closeOperation(currentOperation);
-
-        focusInput(this.commentInput);
-        this.preview();
-      },
-      (e) => {
-        if (e instanceof CdError) {
-          const options = Object.assign({}, e.data, {
-            cancel: true,
-            currentOperation,
-          });
-          this.handleError(options);
-        } else {
-          this.handleError({
-            type: 'javascript',
-            logMessage: e,
-            cancel: true,
-            currentOperation,
-          });
-        }
+    try {
+      await this.target.getCode(true);
+      let commentText = this.target.codeToText();
+      if (this.target.inCode.inSmallFont) {
+        commentText = `<small>${commentText}</small>`;
       }
-    );
+      const headline = this.target.inCode.headlineCode;
+
+      this.commentInput.setValue(commentText);
+      this.originalComment = commentText;
+      if (this.headlineInput) {
+        this.headlineInput.setValue(headline);
+        this.originalHeadline = headline;
+      }
+
+      this.closeOperation(currentOperation);
+
+      focusInput(this.commentInput);
+      this.preview();
+    } catch (e) {
+      if (e instanceof CdError) {
+        const options = Object.assign({}, e.data, {
+          cancel: true,
+          currentOperation,
+        });
+        this.handleError(options);
+      } else {
+        this.handleError({
+          type: 'javascript',
+          logMessage: e,
+          cancel: true,
+          currentOperation,
+        });
+      }
+    }
   }
 
   /**
@@ -1310,60 +1308,58 @@ class CommentForm {
    *
    * @private
    */
-  preloadTemplate() {
+  async preloadTemplate() {
     const currentOperation = this.registerOperation('load', { affectHeadline: false });
     const preloadPage = pageRegistry.get(this.preloadConfig.commentTemplate);
-    preloadPage.getCode().then(
-      () => {
-        let code = preloadPage.code;
+    try {
+      await preloadPage.getCode();
+      let code = preloadPage.code;
 
-        const regexp = generateTagsRegexp(['onlyinclude']);
-        let match;
-        let onlyInclude;
-        while ((match = regexp.exec(code))) {
-          if (onlyInclude === undefined) {
-            onlyInclude = '';
-          }
-          onlyInclude += match[2];
+      const regexp = generateTagsRegexp(['onlyinclude']);
+      let match;
+      let onlyInclude;
+      while ((match = regexp.exec(code))) {
+        if (onlyInclude === undefined) {
+          onlyInclude = '';
         }
-        if (onlyInclude !== undefined) {
-          code = onlyInclude;
-        }
-
-        code = code
-          .replace(generateTagsRegexp(['includeonly']), '$2')
-          .replace(generateTagsRegexp(['noinclude']), '');
-        code = code.trim();
-
-        if (code.includes(cd.g.SIGN_CODE) || this.preloadConfig.omitSignature) {
-          this.omitSignatureCheckbox.setSelected(true);
-        }
-
-        this.commentInput.setValue(code);
-        this.originalComment = code;
-
-        this.closeOperation(currentOperation);
-
-        focusInput(this.headlineInput || this.commentInput);
-        this.preview();
-      },
-      (e) => {
-        if (e instanceof CdError) {
-          const options = Object.assign({}, e.data, {
-            cancel: true,
-            currentOperation,
-          });
-          this.handleError(options);
-        } else {
-          this.handleError({
-            type: 'javascript',
-            logMessage: e,
-            cancel: true,
-            currentOperation,
-          });
-        }
+        onlyInclude += match[2];
       }
-    );
+      if (onlyInclude !== undefined) {
+        code = onlyInclude;
+      }
+
+      code = code
+        .replace(generateTagsRegexp(['includeonly']), '$2')
+        .replace(generateTagsRegexp(['noinclude']), '');
+      code = code.trim();
+
+      if (code.includes(cd.g.SIGN_CODE) || this.preloadConfig.omitSignature) {
+        this.omitSignatureCheckbox.setSelected(true);
+      }
+
+      this.commentInput.setValue(code);
+      this.originalComment = code;
+
+      this.closeOperation(currentOperation);
+
+      focusInput(this.headlineInput || this.commentInput);
+      this.preview();
+    } catch (e) {
+      if (e instanceof CdError) {
+        const options = Object.assign({}, e.data, {
+          cancel: true,
+          currentOperation,
+        });
+        this.handleError(options);
+      } else {
+        this.handleError({
+          type: 'javascript',
+          logMessage: e,
+          cancel: true,
+          currentOperation,
+        });
+      }
+    }
   }
 
   /**
