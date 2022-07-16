@@ -783,18 +783,23 @@ class Section extends SectionSkeleton {
     const newComments = this.comments.filter((comment) => comment.isSeen === false);
     if (!newComments.length) return;
 
-    const newCommentCountLink = document.createElement('a');
-    newCommentCountLink.href = `#${newComments[0].dtId}`;
-    newCommentCountLink.onclick = (e) => {
-      e.preventDefault();
-      newComments[0].scrollTo({
-        flash: false,
-        pushState: true,
-      });
-      newComments.forEach((comment) => comment.flashTarget());
-    };
-    this.commentCountWrapper.append(' ', newCommentCountLink);
+    let newCommentCountLink;
+    if (newComments.length === this.comments.length) {
+      newCommentCountLink = document.createElement('span');
+    } else {
+      newCommentCountLink = document.createElement('a');
+      newCommentCountLink.href = `#${newComments[0].dtId}`;
+      newCommentCountLink.onclick = (e) => {
+        e.preventDefault();
+        newComments[0].scrollTo({
+          flash: false,
+          pushState: true,
+        });
+        newComments.forEach((comment) => comment.flashTarget());
+      };
+    }
     newCommentCountLink.textContent = cd.s('section-metadata-commentcount-new', newComments.length);
+    this.commentCountWrapper.append(' ', newCommentCountLink);
   }
 
   /**
