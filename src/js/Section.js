@@ -846,9 +846,9 @@ class Section extends SectionSkeleton {
   /**
    * Create an {@link Section#replyForm add reply form}.
    *
-   * @param {object|CommentForm} dataToRestore
+   * @param {object|CommentForm} initialState
    */
-  reply(dataToRestore) {
+  reply(initialState) {
     // Check for existence in case replying is called from a script of some kind (there is no button
     // to call it from CD).
     if (!this.replyForm) {
@@ -857,12 +857,12 @@ class Section extends SectionSkeleton {
        *
        * @type {CommentForm|undefined}
        */
-      this.replyForm = dataToRestore instanceof CommentForm ?
-        dataToRestore :
+      this.replyForm = initialState instanceof CommentForm ?
+        initialState :
         new CommentForm({
           mode: 'replyInSection',
           target: this,
-          dataToRestore,
+          initialState,
         });
     }
 
@@ -877,10 +877,10 @@ class Section extends SectionSkeleton {
   /**
    * Create an {@link Section#addSubsectionForm add subsection form} form or focus an existing one.
    *
-   * @param {object|CommentForm} dataToRestore
+   * @param {object|CommentForm} initialState
    * @throws {CdError}
    */
-  addSubsection(dataToRestore) {
+  addSubsection(initialState) {
     if (!this.canAddSubsection()) {
       throw new CdError();
     }
@@ -894,12 +894,12 @@ class Section extends SectionSkeleton {
        *
        * @type {CommentForm|undefined}
        */
-      this.addSubsectionForm = dataToRestore instanceof CommentForm ?
-        dataToRestore :
+      this.addSubsectionForm = initialState instanceof CommentForm ?
+        initialState :
         new CommentForm({
           mode: 'addSubsection',
           target: this,
-          dataToRestore,
+          initialState,
         });
     }
   }

@@ -82,14 +82,15 @@ class CommentForm {
    *   `'addSection'`.
    * @param {Comment|Section|Page} config.target Comment, section, or page that the form is related
    *   to.
-   * @param {object} [config.dataToRestore] Data saved in the previous session.
+   * @param {object} [config.initialState] Initial state of the form (data saved in the previous
+   *   session, quoted text, or data transferred from DT's new topic form).
    * @param {PreloadConfig} [config.preloadConfig] Configuration to preload data into the form.
    * @param {boolean} [config.newTopicOnTop] When adding a topic, whether it should be on top.
    * @throws {CdError}
    * @fires commentFormModulesReady
    * @fires commentFormCreated
    */
-  constructor({ mode, target, dataToRestore, preloadConfig, newTopicOnTop }) {
+  constructor({ mode, target, initialState, preloadConfig, newTopicOnTop }) {
     // This is possible when restoring a form.
     if (
       !(target instanceof pageRegistry.Page) && !target.isActionable ||
@@ -141,7 +142,7 @@ class CommentForm {
      * @type {boolean}
      * @private
      */
-    this.summaryAltered = dataToRestore?.summaryAltered ?? false;
+    this.summaryAltered = initialState?.summaryAltered ?? false;
 
     /**
      * Is section opening comment edited.
@@ -206,7 +207,7 @@ class CommentForm {
       mw.hook('convenientDiscussions.commentFormCustomModulesReady').fire(this, cd);
     });
 
-    this.createContents(dataToRestore, customModulesNames);
+    this.createContents(initialState, customModulesNames);
     this.addEventListeners();
     this.initAutocomplete();
     this.addToPage();
@@ -218,35 +219,19 @@ class CommentForm {
       });
     }
 
-    if (dataToRestore) {
-      this.originalComment = dataToRestore.originalComment;
-      this.originalHeadline = dataToRestore.originalHeadline;
-      if (dataToRestore.lastFocused) {
+    if (initialState) {
+      this.originalComment = initialState.originalComment;
+      this.originalHeadline = initialState.originalHeadline;
+      if (initialState.lastFocused) {
         /**
          * The date when the comment form was focused last time.
          *
          * @type {Date|undefined}
          * @private
          */
-        this.lastFocused = new Date(dataToRestore.lastFocused);
+        this.lastFocused = new Date(initialState.lastFocused);
       }
-
-      if (dataToRestore.focus) {
-        focusInput(this.headlineInput || this.commentInput);
-      }
-
-      navPanel.updateCommentFormButton();
     } else {
-      this.$element.cdScrollIntoView('center', true, () => {
-        if (this.mode !== 'edit') {
-          focusInput(this.headlineInput || this.commentInput);
-        }
-
-        // This is for the case when scrolling isn't performed (when it is, callback at the end of
-        // $#cdScrollIntoView executes this line itself).
-        navPanel.updateCommentFormButton();
-      });
-
       if (this.mode === 'edit') {
         this.loadComment();
       } else {
@@ -260,11 +245,25 @@ class CommentForm {
           this.headlineInput.setValue(this.preloadConfig?.headline || '');
           this.originalHeadline = this.preloadConfig?.headline || '';
         }
-
-        if (!(this.target instanceof pageRegistry.Page)) {
-          this.checkCode();
-        }
       }
+    }
+
+    if (!(this.target instanceof pageRegistry.Page) && this.mode !== 'edit') {
+      this.checkCode();
+    }
+
+    if (initialState && !initialState.focus) {
+      navPanel.updateCommentFormButton();
+    } else {
+      this.$element.cdScrollIntoView('center', true, () => {
+        if (this.mode !== 'edit') {
+          focusInput(this.headlineInput || this.commentInput);
+        }
+
+        // This is for the case when scrolling isn't performed (when it is, callback at the end of
+        // $#cdScrollIntoView executes this line itself).
+        navPanel.updateCommentFormButton();
+      });
     }
 
     cd.commentForms.push(this);
@@ -343,10 +342,10 @@ class CommentForm {
   /**
    * Create the text inputs based on OOUI widgets.
    *
-   * @param {object} dataToRestore
+   * @param {object} initialState
    * @private
    */
-  createTextInputs(dataToRestore) {
+  createTextInputs(initialState) {
     if (
       (['addSection', 'addSubsection'].includes(this.mode) && !this.preloadConfig?.noHeadline) ||
       this.sectionOpeningCommentEdited
@@ -366,7 +365,7 @@ class CommentForm {
        * @type {external:OO.ui.TextInputWidget|undefined}
        */
       this.headlineInput = new OO.ui.TextInputWidget({
-        value: dataToRestore?.headline ?? '',
+        value: initialState?.headline ?? '',
         placeholder: this.headlineInputPlaceholder,
         classes: ['cd-commentForm-headlineInput'],
         tabIndex: this.getTabIndex(11),
@@ -402,7 +401,7 @@ class CommentForm {
      * @type {external:OO.ui.MultilineTextInputWidget}
      */
     this.commentInput = new OO.ui.MultilineTextInputWidget({
-      value: dataToRestore?.comment ?? '',
+      value: initialState?.comment ?? '',
       placeholder: commentInputPlaceholder,
       autosize: true,
       rows: this.headlineInput ? 5 : 3,
@@ -418,7 +417,7 @@ class CommentForm {
      * @type {external:OO.ui.TextInputWidget}
      */
     this.summaryInput = new OO.ui.TextInputWidget({
-      value: dataToRestore?.summary ?? '',
+      value: initialState?.summary ?? '',
       maxLength: cd.g.SUMMARY_LENGTH_LIMIT,
       placeholder: cd.s('cf-summary-placeholder'),
       classes: ['cd-commentForm-summaryInput'],
@@ -426,16 +425,16 @@ class CommentForm {
     });
     this.summaryInput.$input.codePointLimit(cd.g.SUMMARY_LENGTH_LIMIT);
     mw.widgets.visibleCodePointLimit(this.summaryInput, cd.g.SUMMARY_LENGTH_LIMIT);
-    this.updateAutoSummary(!dataToRestore?.summary);
+    this.updateAutoSummary(!initialState?.summary);
   }
 
   /**
    * Create the checkboxes and the horizontal layout containing them based on OOUI widgets.
    *
-   * @param {object} dataToRestore
+   * @param {object} initialState
    * @private
    */
-  createCheckboxes(dataToRestore) {
+  createCheckboxes(initialState) {
     if (this.mode === 'edit') {
       /**
        * Minor change checkbox field.
@@ -459,7 +458,7 @@ class CommentForm {
         input: this.minorCheckbox,
       } = createCheckboxField({
         value: 'minor',
-        selected: dataToRestore?.minor ?? true,
+        selected: initialState?.minor ?? true,
         label: cd.s('cf-minor'),
         tabIndex: this.getTabIndex(20),
       }));
@@ -493,7 +492,7 @@ class CommentForm {
       input: this.watchCheckbox,
     } = createCheckboxField({
       value: 'watch',
-      selected: dataToRestore?.watch ?? watchCheckboxSelected,
+      selected: initialState?.watch ?? watchCheckboxSelected,
       label: cd.s('cf-watch'),
       tabIndex: this.getTabIndex(21),
     }));
@@ -535,7 +534,7 @@ class CommentForm {
         input: this.subscribeCheckbox,
       } = createCheckboxField({
         value: 'subscribe',
-        selected: dataToRestore?.subscribe ?? selected,
+        selected: initialState?.subscribe ?? selected,
         label,
         tabIndex: this.getTabIndex(22),
         title: cd.s('cf-watchsection-tooltip'),
@@ -565,7 +564,7 @@ class CommentForm {
         input: this.omitSignatureCheckbox,
       } = createCheckboxField({
         value: 'omitSignature',
-        selected: dataToRestore?.omitSignature ?? false,
+        selected: initialState?.omitSignature ?? false,
         label: cd.s('cf-omitsignature'),
         title: cd.s('cf-omitsignature-tooltip'),
         tabIndex: this.getTabIndex(25),
@@ -580,7 +579,7 @@ class CommentForm {
           !this.target.getChildren().length
       )
     ) {
-      const selected = dataToRestore?.delete ?? false;
+      const selected = initialState?.delete ?? false;
 
       /**
        * Delete checkbox field.
@@ -1162,13 +1161,13 @@ class CommentForm {
   /**
    * Create the contents of the form.
    *
-   * @param {object} dataToRestore
+   * @param {object} initialState
    * @param {string[]} requestedModulesNames
    * @private
    */
-  createContents(dataToRestore, requestedModulesNames) {
-    this.createTextInputs(dataToRestore);
-    this.createCheckboxes(dataToRestore);
+  createContents(initialState, requestedModulesNames) {
+    this.createTextInputs(initialState);
+    this.createCheckboxes(initialState);
     this.createButtons();
 
     if (this.deleteCheckbox?.isSelected()) {
@@ -1263,12 +1262,8 @@ class CommentForm {
   async addEditNotices() {
     const title = cd.page.title.replace(/\//g, '-');
     let code = (
-      '<div class="cd-editnotice">' +
-      `{{MediaWiki:Editnotice-${cd.g.NAMESPACE_NUMBER}}}` +
-      '</div>\n' +
-      '<div class="cd-editnotice">' +
-      `{{MediaWiki:Editnotice-${cd.g.NAMESPACE_NUMBER}-${title}}}` +
-      '</div>\n'
+`<div class="cd-editnotice">{{MediaWiki:Editnotice-${cd.g.NAMESPACE_NUMBER}}}</div>
+<div class="cd-editnotice">{{MediaWiki:Editnotice-${cd.g.NAMESPACE_NUMBER}-${title}}}</div>`
     );
     if (this.preloadConfig?.editIntro) {
       code = `<div class="cd-editintro">{{${this.preloadConfig.editIntro}}}</div>\n` + code;
@@ -1285,7 +1280,7 @@ class CommentForm {
 
     const mediaWikiNamespace = mw.config.get('wgFormattedNamespaces')[8];
     this.$messageArea
-      .append(result.html)
+      .append(result.html.replace(/<div class="cd-editnotice"><\/div>/g, ''))
       .cdAddCloseButton()
       .find(`.cd-editnotice > a.new[title^="${mediaWikiNamespace}:Editnotice-"]`)
       .parent()

@@ -77,7 +77,7 @@ function restoreFromStorage(commentFormsData) {
         const commentForm = new CommentForm({
           target: cd.page,
           mode: data.mode,
-          dataToRestore: data,
+          initialState: data,
           preloadConfig: data.preloadConfig,
           newTopicOnTop: data.newTopicOnTop,
         });
@@ -211,13 +211,13 @@ export default {
    *
    * @param {object} [preloadConfig=CommentForm.getDefaultPreloadConfig()]
    * @param {boolean} [newTopicOnTop=false]
-   * @param {object} [dataToRestore]
+   * @param {object} [initialState]
    * @memberof CommentForm
    */
   createAddSectionForm(
     preloadConfig = this.getDefaultPreloadConfig(),
     newTopicOnTop = false,
-    dataToRestore
+    initialState
   ) {
     const addSectionForm = this.getAddSectionForm();
     if (addSectionForm) {
@@ -245,7 +245,7 @@ export default {
         target: cd.page,
         preloadConfig,
         newTopicOnTop,
-        dataToRestore,
+        initialState,
       });
       this.setAddSectionForm(commentForm);
     }

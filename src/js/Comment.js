@@ -2678,16 +2678,16 @@ class Comment extends CommentSkeleton {
   /**
    * Create a {@link Comment#replyForm reply form} for the comment.
    *
-   * @param {object|CommentForm} dataToRestore
+   * @param {object|CommentForm} initialState
    */
-  reply(dataToRestore) {
+  reply(initialState) {
     if (!this.replyForm) {
       let isSelectionRelevant = false;
-      if (!dataToRestore) {
+      if (!initialState) {
         const comment = Comment.getSelectedComment();
         isSelectionRelevant = comment === this;
         if (isSelectionRelevant) {
-          dataToRestore = { focus: false };
+          initialState = { focus: false };
 
           let endBoundary;
           if (settings.get('reformatComments')) {
@@ -2714,12 +2714,12 @@ class Comment extends CommentSkeleton {
        *
        * @type {CommentForm|undefined}
        */
-      this.replyForm = dataToRestore instanceof CommentForm ?
-        dataToRestore :
+      this.replyForm = initialState instanceof CommentForm ?
+        initialState :
         new CommentForm({
           mode: 'reply',
           target: this,
-          dataToRestore,
+          initialState,
         });
 
       if (isSelectionRelevant) {
@@ -2731,9 +2731,9 @@ class Comment extends CommentSkeleton {
   /**
    * Create an {@link Comment#editForm edit form} for the comment.
    *
-   * @param {object|CommentForm} dataToRestore
+   * @param {object|CommentForm} initialState
    */
-  edit(dataToRestore) {
+  edit(initialState) {
     // We use a class here because there can be elements in the comment that are hidden from the
     // beginning and should stay so when reshowing the comment.
     this.$elements.addClass('cd-hidden');
@@ -2750,12 +2750,12 @@ class Comment extends CommentSkeleton {
        *
        * @type {CommentForm|undefined}
        */
-      this.editForm = dataToRestore instanceof CommentForm ?
-        dataToRestore :
+      this.editForm = initialState instanceof CommentForm ?
+        initialState :
         new CommentForm({
           mode: 'edit',
           target: this,
-          dataToRestore,
+          initialState,
         });
     }
   }
