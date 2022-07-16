@@ -2779,7 +2779,7 @@ class CommentForm {
           currentOperation,
         });
       }
-      controller.getBootProcess().finish();
+      controller.hideLoadingOverlay();
     }
   }
 
