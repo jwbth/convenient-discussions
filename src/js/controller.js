@@ -1217,7 +1217,7 @@ export default {
     // request was aborted"
     setTimeout(() => {
       if (this.booting) {
-        this.bootProcess.hideLoadingOverlay();
+        this.hideLoadingOverlay();
         console.warn('The loading overlay stays for more than 15 seconds; removing it.');
       }
     }, 15000);
