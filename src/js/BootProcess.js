@@ -1038,7 +1038,7 @@ export default class BootProcess {
 
       // If appending to controller.rootElement, it can land on a wrong place, like on 404 pages
       // with New Topic Tool enabled.
-      .appendTo(controller.$content);
+      .insertAfter(controller.$root);
     controller.setAddSectionButtonContainer($container);
   }
 

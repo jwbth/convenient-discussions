@@ -1445,7 +1445,7 @@ class CommentForm {
         if (this.newTopicOnTop && cd.sections[0]) {
           this.$element.insertBefore(cd.sections[0].$heading);
         } else {
-          this.$element.insertAfter(controller.$content.children('.mw-parser-output'));
+          this.$element.insertAfter(controller.$root);
         }
         break;
       }
