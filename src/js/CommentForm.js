@@ -1329,7 +1329,7 @@ class CommentForm {
       }
 
       code = code
-        .replace(generateTagsRegexp(['includeonly']), '$2')
+        .replace(generateTagsRegexp(['includeonly']), '$3')
         .replace(generateTagsRegexp(['noinclude']), '');
       code = code.trim();
 
