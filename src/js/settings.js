@@ -571,7 +571,7 @@ export default {
    * @returns {*}
    */
   get(name) {
-    return name ? this.values[name] : this.values;
+    return name ? this.values[name] || null : this.values;
   },
 
   /**

@@ -359,7 +359,7 @@ class Section extends SectionSkeleton {
    * @returns {boolean}
    */
   canEditFirstComment() {
-    return (
+    return Boolean(
       this.isActionable &&
       this.comments.length &&
       this.comments[0].isOpeningSection &&

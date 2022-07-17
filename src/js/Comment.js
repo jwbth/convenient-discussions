@@ -69,7 +69,7 @@ function cleanUpThanks(data) {
 }
 
 /**
- * Get bounding client rectangle for a comment part.
+ * Get the bounding client rectangle for a comment part.
  *
  * @param {Element} el
  * @returns {object}

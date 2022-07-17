@@ -166,7 +166,7 @@ export default class BootProcess {
    * @returns {*}
    */
   data(name) {
-    return name ? this.passedData[name] : this.passedData;
+    return name ? this.passedData[name] || null : this.passedData;
   }
 
   /**

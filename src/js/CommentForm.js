@@ -1869,9 +1869,10 @@ class CommentForm {
    */
   adjustLabels() {
     let formWidth = this.$element.width();
+    const additive = 7;
 
     if (this.$element.hasClass('cd-commentForm-short')) {
-      if (formWidth >= this.buttonsTotalWidthStandard + 7) {
+      if (formWidth >= this.buttonsTotalWidthStandard + additive) {
         this.$element.removeClass('cd-commentForm-short');
         this.submitButton.setLabel(this.submitButtonLabelStandard);
         this.previewButton.setLabel(cd.s('cf-preview'));
@@ -1879,24 +1880,19 @@ class CommentForm {
         this.cancelButton.setLabel(cd.s('cf-cancel'));
       }
     } else {
-      this.buttonsTotalWidthStandard = (
-        this.submitButton.$element.outerWidth(true) +
-        (
-          this.previewButton.$element.is(':visible') ?
-            this.previewButton.$element.outerWidth(true) :
-            0
-        ) +
-        // Users may hide the view changes button by any kind of a plugin.
-        (
-          this.viewChangesButton.$element.is(':visible') ?
-            this.viewChangesButton.$element.outerWidth(true) :
-            0
-        ) +
-        this.advancedButton.$element.outerWidth(true) +
-        this.helpPopupButton.$element.outerWidth(true) +
-        this.cancelButton.$element.outerWidth(true)
-      );
-      if (formWidth < this.buttonsTotalWidthStandard + 7) {
+      this.buttonsTotalWidthStandard = [
+        'submitButton',
+        'previewButton',
+        'viewChangesButton',
+        'cancelButton',
+        'advancedButton',
+        'helpPopupButton',
+        'settingsButton',
+      ]
+        .map((name) => this[name].$element)
+        .filter(($el) => $el.is(':visible'))
+        .reduce((width, $el) => width + $el.outerWidth(true), 0);
+      if (formWidth < this.buttonsTotalWidthStandard + additive) {
         this.$element.addClass('cd-commentForm-short');
         this.submitButton.setLabel(this.submitButtonLabelShort);
         this.previewButton.setLabel(cd.s('cf-preview-short'));

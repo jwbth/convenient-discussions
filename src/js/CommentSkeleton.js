@@ -1409,7 +1409,7 @@ class CommentSkeleton {
    * @returns {boolean}
    */
   static isDtId(string) {
-    return string?.startsWith('c-');
+    return Boolean(string?.startsWith('c-'));
   }
 
   /**

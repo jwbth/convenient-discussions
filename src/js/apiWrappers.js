@@ -238,14 +238,12 @@ export async function setVisits(visits) {
  * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
  * @returns {Promise.<object>}
  */
-export async function getLegacySubscriptions(reuse = false) {
+export function getLegacySubscriptions(reuse = false) {
   const isOptionSet = mw.user.options.get(cd.g.SUBSCRIPTIONS_OPTION_NAME) !== null;
   const promise = controller.getBootProcess()?.isPageFirstParsed() && !isOptionSet ?
     Promise.resolve({}) :
     getUserInfo(reuse).then((options) => options.subscriptions);
-  const registry = await promise;
-
-  return registry;
+  return promise;
 }
 
 /**
@@ -762,10 +760,8 @@ export async function getDtSubscriptions(ids) {
       action: 'discussiontoolsgetsubscriptions',
       commentname: nextIds,
     }).catch(handleApiReject);
-
     Object.assign(subscriptions, resp.subscriptions);
   }
-
   return subscriptions;
 }
 
