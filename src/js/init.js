@@ -1074,6 +1074,7 @@ export default {
     cd.g.isIPv6Address = mw.util.isIPv6Address;
 
     cd.g.NOTIFICATION_AREA = document.querySelector('.mw-notification-area');
+    cd.g.TOC_BUTTON = $('#vector-toc-collapsed-button').get(0);
 
     cd.settings = settings;
 

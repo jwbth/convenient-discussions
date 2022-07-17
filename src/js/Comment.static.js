@@ -488,6 +488,7 @@ export default {
           .map((section) => section.actions.moreMenuSelect?.getMenu())
           .find((menu) => menu?.isVisible())
           ?.$element.get(0),
+        cd.g.TOC_BUTTON,
       ]
         .filter(notNull)
         .some((el) => el.matches(':hover')) ||
