@@ -25,13 +25,9 @@ export default {
    * `allPagesRegistry` in case of the legacy subscriptions) property.
    *
    * @param {boolean} [reuse=false] For legacy subscriptions: Reuse the existing request.
+   * @returns {Promise.<object>}
    */
   load(reuse = false) {
-    delete this.registry;
-    if (this.allPagesRegistry) {
-      delete this.allPagesRegistry;
-    }
-
     this.loadRequest = (async () => {
       if (settings.get('useTopicSubscription')) {
         const subscriptionIds = cd.sections
@@ -50,14 +46,18 @@ export default {
           const bootProcess = controller.getBootProcess();
           if (bootProcess) {
             // Manually add/remove a section that was added/removed at the same moment the page was
-            // reloaded last time, so when we requested the watched sections from server, this section
-            // wasn't there yet most probably.
+            // reloaded last time, so when we requested the watched sections from server, this
+            // section wasn't there yet most probably.
             this.updateRegistry(bootProcess.data('justSubscribedToSection'), true);
             this.updateRegistry(bootProcess.data('justUnsubscribedFromSection'), false);
+            bootProcess.deleteData('justSubscribedToSection');
+            bootProcess.deleteData('justUnsubscribedFromSection');
           }
         }
       }
     })();
+
+    return this.loadRequest;
   },
 
   /**
@@ -189,7 +189,7 @@ export default {
     };
 
     // Don't run in parallel
-    subscribeLegacyPromise = subscribeLegacyPromise.then(subscribe);
+    subscribeLegacyPromise = subscribeLegacyPromise.then(subscribe, subscribe);
 
     return subscribeLegacyPromise;
   },
@@ -224,7 +224,7 @@ export default {
     };
 
     // Don't run in parallel
-    subscribeLegacyPromise = subscribeLegacyPromise.then(unsubscribe);
+    subscribeLegacyPromise = subscribeLegacyPromise.then(unsubscribe, unsubscribe);
 
     return subscribeLegacyPromise;
   },

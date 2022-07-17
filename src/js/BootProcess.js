@@ -151,6 +151,15 @@ export default class BootProcess {
   }
 
   /**
+   * Remove a piece of data associated with the boot process with the specified name.
+   *
+   * @param {string} name
+   */
+  deleteData(name) {
+    delete this.passedData[name];
+  }
+
+  /**
    * Get the value of some parameter related to the boot process.
    *
    * @param {string} [name]
