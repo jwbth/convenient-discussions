@@ -278,15 +278,18 @@ export default {
         ))
         .find((section) => {
           const rect = section.firstElement.getBoundingClientRect();
+          let blockSize = 10000;
           return (
             getVisibilityByRects(rect) &&
             rect.top >= threeScreens &&
 
-            // Is in a different 12500px block than the viewport top. (`threeScreens` is subtracted
-            // from its position to reduce the frequency of CSS manipulations.)
+            // Is in a different `blockSize`-pixel block than the viewport top. (`threeScreens` is
+            // subtracted from its position to reduce the frequency of CSS manipulations, so in
+            // practice the blocks are positioned somewhat like this: 0 - 12500, 12500 - 22500,
+            // 22500 - 32500, etc.)
             (
-              Math.floor(viewportTop / 12500) !==
-              Math.floor((viewportTop + rect.top - threeScreens) / 12500)
+              Math.floor(viewportTop / blockSize) !==
+              Math.floor((viewportTop + rect.top - threeScreens) / blockSize)
             )
           );
         });

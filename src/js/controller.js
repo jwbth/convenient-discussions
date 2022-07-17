@@ -1677,7 +1677,7 @@ export default {
    */
   isLongPage() {
     if (this.longPage === undefined) {
-      this.longPage = $(document).height() > 20000;
+      this.longPage = $(document).height() > 15000;
     }
     return this.longPage;
   },
