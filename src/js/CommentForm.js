@@ -500,7 +500,10 @@ class CommentForm {
     if (this.targetSection || this.mode === 'addSection') {
       const selected = (
         (settings.get('subscribeOnReply') && this.mode !== 'edit') ||
-        this.targetSection?.subscriptionState
+        (
+          this.targetSection?.subscriptionState &&
+          (settings.get('useTopicSubscription') || this.mode !== 'addSubsection')
+        )
       );
 
       const callItTopic = (
