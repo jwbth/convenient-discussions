@@ -134,6 +134,17 @@ ol .cd-section-button {
         margin-right: 1em;
       }
     }
+
+    // Prevent "float: right" from affecting the right offset of the actions block of the next
+    // subsection.
+    + .cd-heading-wrapper {
+      margin-top: 3em;
+
+      > :first-child {
+        margin-top: 0;
+        padding-top: 0;
+      }
+    }
   }
 }
 
@@ -147,6 +158,8 @@ ol .cd-section-button {
 }
 
 .cd-section-actions {
+  white-space: nowrap;
+
   .sitedir-ltr &,
   .sitedir-rtl .mw-content-ltr & {
     margin-left: auto;
@@ -163,6 +176,11 @@ ol .cd-section-button {
 .cd-heading-wrapper {
   display: flex;
   align-items: baseline;
+
+  // Fix for vertical alignment in Firefox
+  > :first-child {
+    overflow: unset;
+  }
 }
 
 .cd-section-hidden {
