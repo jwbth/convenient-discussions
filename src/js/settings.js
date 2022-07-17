@@ -141,6 +141,7 @@ export default {
             max: 999,
             label: cd.s('sd-collapsethreadslevel'),
             help: cd.s('sd-collapsethreadslevel-help'),
+            classes: ['cd-setting-indented'],
           },
           {
             name: 'modifyToc',

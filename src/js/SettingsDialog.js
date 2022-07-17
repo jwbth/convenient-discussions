@@ -231,57 +231,58 @@ class SettingsDialog extends OO.ui.ProcessDialog {
    * @returns {object}
    */
   createPages(settingValues) {
-    this.controls = {};
+    const controls = {};
     const pages = settings.scheme.ui.map((pageData) => {
       const $fields = pageData.controls.map((data) => {
         const name = data.name;
         switch (data.type) {
           case 'checkbox':
-            this.controls[name] = createCheckboxField({
+            controls[name] = createCheckboxField({
               value: name,
               selected: settingValues[name],
               label: data.label,
               help: data.help,
               classes: data.classes,
             });
-            this.controls[name].input.connect(this, { change: 'updateStates' });
+            controls[name].input.connect(this, { change: 'updateStates' });
             break;
 
           case 'radio':
-            this.controls[name] = createRadioField({
+            controls[name] = createRadioField({
               options: data.options,
               selected: settingValues[name],
               label: data.label,
               help: data.help,
             });
-            this.controls[name].select.connect(this, { select: 'updateStates' });
+            controls[name].select.connect(this, { select: 'updateStates' });
             break;
 
           case 'text':
-            this.controls[name] = createTextField({
+            controls[name] = createTextField({
               value: settingValues[name],
               maxLength: 100,
               label: data.label,
               help: data.help,
             });
-            this.controls[name].input.connect(this, { change: 'updateStates' });
+            controls[name].input.connect(this, { change: 'updateStates' });
             break;
 
           case 'number':
-            this.controls[name] = createNumberField({
+            controls[name] = createNumberField({
               value: settingValues[name],
               min: data.min,
               max: data.max,
               buttonStep: data.buttonStep,
               label: data.label,
               help: data.help,
+              classes: data.classes,
             });
-            this.controls[name].input.connect(this, { change: 'updateStates' });
+            controls[name].input.connect(this, { change: 'updateStates' });
             break;
 
           case 'multicheckbox':
-            this.controls[name] = {};
-            this.controls[name].multiselect = new OO.ui.CheckboxMultiselectWidget({
+            controls[name] = {};
+            controls[name].multiselect = new OO.ui.CheckboxMultiselectWidget({
               items: data.options.map((option) => (
                 new OO.ui.CheckboxMultioptionWidget({
                   data: option.data,
@@ -291,24 +292,24 @@ class SettingsDialog extends OO.ui.ProcessDialog {
               )),
               classes: data.classes,
             });
-            this.controls[name].multiselect.connect(this, { select: 'updateStates' });
-            this.controls[name].field = new OO.ui.FieldLayout(this.controls[name].multiselect, {
+            controls[name].multiselect.connect(this, { select: 'updateStates' });
+            controls[name].field = new OO.ui.FieldLayout(controls[name].multiselect, {
               label: data.label,
               align: 'top',
             });
             break;
 
           case 'multitag':
-            this.controls[name] = {};
-            this.controls[name].multiselect = new OO.ui.TagMultiselectWidget({
+            controls[name] = {};
+            controls[name].multiselect = new OO.ui.TagMultiselectWidget({
               placeholder: data.placeholder,
               allowArbitrary: true,
               inputPosition: 'outline',
               tagLimit: data.tagLimit,
               selected: (data.dataToUi || ((val) => val)).call(null, settingValues[name]),
             });
-            this.controls[name].multiselect.connect(this, { change: 'updateStates' });
-            this.controls[name].field = new OO.ui.FieldLayout(this.controls[name].multiselect, {
+            controls[name].multiselect.connect(this, { change: 'updateStates' });
+            controls[name].field = new OO.ui.FieldLayout(controls[name].multiselect, {
               label: data.label,
               align: 'top',
               help: data.help,
@@ -317,12 +318,12 @@ class SettingsDialog extends OO.ui.ProcessDialog {
             break;
 
           case 'button':
-            this.controls[name] = {};
-            this.controls[name].button = new OO.ui.ButtonWidget({
+            controls[name] = {};
+            controls[name].button = new OO.ui.ButtonWidget({
               label: data.label,
               flags: data.flags,
             });
-            this.controls[name].field = new OO.ui.FieldLayout(this.controls[name].button, {
+            controls[name].field = new OO.ui.FieldLayout(controls[name].button, {
               label: data.fieldLabel,
               align: 'top',
               help: data.help,
@@ -331,7 +332,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
             break;
         }
 
-        return this.controls[name].field.$element;
+        return controls[name].field.$element;
       });
 
       // eslint-disable-next-line jsdoc/require-jsdoc
@@ -352,10 +353,12 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       return page;
     });
 
-    this.controls.removeData.button.connect(this, { click: 'removeData' });
-    this.controls.desktopNotifications.select.connect(this, {
+    controls.removeData.button.connect(this, { click: 'removeData' });
+    controls.desktopNotifications.select.connect(this, {
       choose: 'onDesktopNotificationsSelectChange',
     });
+
+    this.controls = controls;
 
     return pages;
   }
@@ -432,16 +435,19 @@ class SettingsDialog extends OO.ui.ProcessDialog {
    * Update the control states.
    */
   async updateStates() {
-    this.controls.showContribsLink.input.setDisabled(
-      !this.controls.reformatComments.input.isSelected()
+    const controls = this.controls;
+
+    controls.collapseThreadsLevel.input.setDisabled(!controls.enableThreads.input.isSelected());
+    controls.hideTimezone.input.setDisabled(
+      controls.timestampFormat.select.findSelectedItem()?.getData() === 'relative'
     );
-    this.controls.useTemplateData.input.setDisabled(
-      !this.controls.autocompleteTypes.multiselect
-        .findItemFromData('templates')
-        .isSelected()
+    controls.notifyCollapsedThreads.input.setDisabled(
+      controls.desktopNotifications.select.findSelectedItem()?.getData() === 'none' &&
+      controls.notifications.select.findSelectedItem()?.getData() === 'none'
     );
-    this.controls.hideTimezone.input.setDisabled(
-      this.controls.timestampFormat.select.findSelectedItem()?.getData() === 'relative'
+    controls.showContribsLink.input.setDisabled(!controls.reformatComments.input.isSelected());
+    controls.useTemplateData.input.setDisabled(
+      !controls.autocompleteTypes.multiselect.findItemFromData('templates').isSelected()
     );
 
     let areInputsValid = true;
@@ -450,7 +456,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
         .filter((data) => data.type === 'number')
         .map((data) => data.name)
     )));
-    await Promise.all(numberSettingNames.map((name) => this.controls[name].input.getValidity()))
+    await Promise.all(numberSettingNames.map((name) => controls[name].input.getValidity()))
       .catch(() => {
         areInputsValid = false;
       });

@@ -301,6 +301,7 @@ export function createTextField({
  * @param {string} [options.step]
  * @param {string} [options.help]
  * @param {string} [options.title]
+ * @param {string[]} [options.classes]
  * @returns {CreateNumberFieldReturn}
  */
 export function createNumberField({
@@ -311,6 +312,7 @@ export function createNumberField({
   buttonStep = 1,
   help,
   title,
+  classes,
 }) {
   const input = new OO.ui.NumberInputWidget({
     input: { value },
@@ -326,6 +328,7 @@ export function createNumberField({
     help,
     helpInline: true,
     title,
+    classes,
   });
   return { field, input };
 }
