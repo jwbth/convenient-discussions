@@ -392,7 +392,12 @@ class Section extends SectionSkeleton {
     );
     const isFirstChunkEmptyBeforeSubsection = (
       this.lastElementInFirstChunk !== this.lastElement &&
-      this.lastElementInFirstChunk === this.firstElement
+      (
+        this.lastElementInFirstChunk === this.firstElement ||
+
+        // Can be run before the first element is wrapped in a subsection wrapper.
+        this.lastElementInFirstChunk === this.headingElement
+      )
     );
 
     // May mean complex formatting, so we better keep out.
