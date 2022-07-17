@@ -79,6 +79,22 @@
     right: 0;
     border-right-width: 0;
   }
+
+  @media screen and (max-width: 999px) {
+    .skin-vector-2022.ltr & {
+      left: auto;
+      right: 0;
+      border-left-width: 1px;
+      border-right-width: 0;
+    }
+
+    .skin-vector-2022.rtl & {
+      left: 0;
+      right: auto;
+      border-left-width: 0;
+      border-right-width: 1px;
+    }
+  }
 }
 
 .cd-navPanel-button {
