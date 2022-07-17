@@ -377,12 +377,12 @@ export default {
   },
 
   /**
-   * _For internal use._ Initiate user settings.
+   * Perform the actual procedure to initialize user settings.
+   *
+   * @private
    */
-  async init() {
-    if (this.scheme.default) return;
-
-    // We fill the settings after the modules are loaded so that the settings set via common.js had
+  async actuallyInit() {
+    // We fill the settings after the modules are loaded so that the settings set via common.js have
     // less chance not to load.
 
     this.setDefaults();
@@ -444,6 +444,19 @@ export default {
 
     // Settings in variables like `cdLocal...` override all other and are not saved to the server.
     this.set(this.getLocalOverrides());
+  },
+
+  /**
+   * _For internal use._ Initialize user settings, returning a promise, or return an existing one.
+   *
+   * @returns {Promise}
+   */
+  init() {
+    if (!this.initPromise) {
+      this.initPromise = this.actuallyInit();
+    }
+
+    return this.initPromise;
   },
 
   /**
