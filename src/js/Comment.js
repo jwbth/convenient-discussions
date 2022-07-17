@@ -1126,11 +1126,6 @@ class Comment extends CommentSkeleton {
       options.set = false;
     }
 
-    if (this.editForm) {
-      this.setOffsetProperty(null, options);
-      return null;
-    }
-
     let rectTop = getCommentPartRect(this.highlightables[0]);
     let rectBottom = this.elements.length === 1 ?
       rectTop :
