@@ -1385,6 +1385,7 @@ export default {
 
     delete query.curid;
     delete query.action;
+    delete query.redlink;
     delete query.section;
     delete query.cdaddtopic;
 
