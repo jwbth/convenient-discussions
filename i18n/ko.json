@@ -161,6 +161,7 @@
 	"sd-improveperformance": "긴 페이지의 성능 개선 시도",
 	"sd-insertbuttons-multiselect-placeholder": "버튼 추가",
 	"sd-modifytoc": "목차 수정",
+	"sd-notifications": "페이지 오른쪽 상단 모서리의 알림 팝업",
 	"sd-notifications-radio-all": "내 의견과 내가 구독한 문단의 의견의 답변에 관해 내게 알립니다",
 	"sd-notifications-radio-none": "내게 알리지 않습니다",
 	"sd-showtoolbar": "편집 도구 모음 표시",
