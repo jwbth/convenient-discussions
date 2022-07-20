@@ -911,8 +911,14 @@ class CommentSkeleton {
         // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2020-09-22T20:05:00.000Z-Example-2020-09-22T20:04:00.000Z
         // ** dl "up" → blockquote "back"
         // ** The condition should be false.
+        // * https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)/Archive_191#c-Snævar-2021-07-15T16:19:00.000Z-Klein_Muçi-2021-07-15T12:15:00.000Z
+        // ** dl "up" → li "replaced"
+        // ** The condition should be false.
         (
-          (part.node.tagName !== 'UL' && this.isPartOfList(this.parts[i + 1].node)) ||
+          (
+            part.node.tagName !== 'UL' &&
+            (this.isPartOfList(this.parts[i + 1].node) && this.parts[i + 1].step !== 'replaced')
+          ) ||
           part.node.children.length > 1
         ) &&
 
