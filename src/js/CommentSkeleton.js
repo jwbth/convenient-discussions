@@ -859,89 +859,107 @@ class CommentSkeleton {
   }
 
   /**
+   * Check whether a node is a comment level node.
+   *
+   * @param {number} i Current part index.
+   * @param {Node|external:Node} lastPartNode Node of the last part.
+   * @returns {boolean}
+   * @private
+   */
+  isCommentLevel(i, lastPartNode) {
+    const part = this.parts[i];
+    return (
+      // 'DD', 'LI' are in this list too for this kind of structures:
+      // https://ru.wikipedia.org/w/index.php?diff=103584477.
+      ['DL', 'UL', 'OL', 'DD', 'LI'].includes(part.node.tagName) &&
+
+      !this.isGallery(part.node) &&
+
+      // Exclude lists that are parts of the comment, like at
+      // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Comments_starting_with_a_list
+      // (this has an effect on 18:20 and 18:30 comments).
+      !(
+        part.step === 'up' &&
+        this.parts[i + 1] &&
+
+        // Watch these cases that are similar in DOM but should behave differently ("→" means the
+        // next part):
+        // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-13T18:20:00.000Z-Example-2021-10-13T18:00:00.000Z
+        // ** ol "up" → div "replaced"
+        // ** The condition should be true.
+        // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-13T18:40:00.000Z-Example-2021-10-13T18:00:00.000Z
+        // ** dl "up" → dd "back"
+        // ** The condition should be true.
+        // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2020-09-22T20:10:00.000Z-Example-2020-09-22T20:00:00.000Z
+        // ** ul "up" → ol "back"
+        // ** The condition should be false.
+        // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-14T19:10:00.000Z-Example-2021-10-14T19:00:00.000Z
+        // ** ul "up" → div "replaced"
+        // ** The condition should be false.
+        // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2019-01-15T12:00:00.000Z-Example-2019-01-15T11:50:00.000Z
+        // ** ul "up" → dd "replaced"
+        // ** The condition should be false.
+        // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-14T20:10:00.000Z-Example-2021-10-14T20:00:00.000Z
+        // ** ul "up" → dd "back"
+        // ** The condition should be false.
+        // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2019-10-07T08:10:00.000Z-List_inside_a_comment
+        // ** ul "up" → div "replaced"
+        // ** The condition should be true.
+        // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2019-10-07T08:40:00.000Z-List_inside_a_comment
+        // ** ul "up" → dd "start"
+        // ** The condition should be true.
+        // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2020-09-22T20:05:00.000Z-Example-2020-09-22T20:04:00.000Z
+        // ** dl "up" → blockquote "back"
+        // ** The condition should be false.
+        (
+          (part.node.tagName !== 'UL' && this.isPartOfList(this.parts[i + 1].node)) ||
+          part.node.children.length > 1
+        ) &&
+
+        this.isPartOfList(lastPartNode, true)
+      ) &&
+
+      (
+        // Exclude lists that are parts of the comment.
+        (part.step === 'up' && (!this.parts[i - 1] || this.parts[i - 1].step !== 'back')) ||
+
+        (
+          this.isPartOfList(lastPartNode, true) &&
+
+          // Cases like
+          // https://ru.wikipedia.org/wiki/Обсуждение_шаблона:Графема#Навигация_со_стрелочками
+          // (the whole thread).
+          !(part.step === 'back' && ['LI', 'DD'].includes(part.node.tagName)) &&
+
+          // Cases like
+          // https://commons.wikimedia.org/wiki/Commons:Translators%27_noticeboard/Archive/2020#202011151417_Ameisenigel,
+          //
+          !(
+            i !== 0 &&
+            ['UL', 'OL'].includes(part.node.tagName) &&
+            ['DL', 'UL'].includes(part.node.previousElementSibling?.tagName)
+          )
+        ) ||
+
+        // Cases like
+        // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202110061830_Example
+        (
+          part.node.tagName === 'UL' &&
+          part.node[this.parser.context.childElementsProp].length === 1 &&
+          this.isPartOfList(lastPartNode, false)
+        )
+      )
+    );
+  }
+
+  /**
    * _For internal use._ Replace list elements with collections of their items if appropriate.
    */
   replaceListsWithItems() {
     const lastPartNode = this.parts[this.parts.length - 1].node;
     for (let i = this.parts.length - 1; i >= 0; i--) {
       const part = this.parts[i];
-      const isCommentLevel = (
-        // 'DD', 'LI' are in this list too for this kind of structures:
-        // https://ru.wikipedia.org/w/index.php?diff=103584477.
-        ['DL', 'UL', 'OL', 'DD', 'LI'].includes(part.node.tagName) &&
-
-        !this.isGallery(part.node) &&
-
-        // Exclude lists that are parts of the comment, like at
-        // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Comments_starting_with_a_list
-        // (this has an effect on 18:20 and 18:30 comments).
-        !(
-          part.step === 'up' &&
-          this.parts[i + 1] &&
-
-          // Watch these cases that are similar in DOM but should behave differently ("→" means the
-          // next part):
-          // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-13T18:20:00.000Z-Example-2021-10-13T18:00:00.000Z
-          // ** ol "up" → div "replaced"
-          // ** The condition should be true.
-          // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-13T18:40:00.000Z-Example-2021-10-13T18:00:00.000Z
-          // ** dl "up" → dd "back"
-          // ** The condition should be true.
-          // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2020-09-22T20:10:00.000Z-Example-2020-09-22T20:00:00.000Z
-          // ** ul "up" → ol "back"
-          // ** The condition should be false.
-          // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-14T19:10:00.000Z-Example-2021-10-14T19:00:00.000Z
-          // ** ul "up" → div "replaced"
-          // ** The condition should be false.
-          // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2019-01-15T12:00:00.000Z-Example-2019-01-15T11:50:00.000Z
-          // ** up "up" → dd "replaced"
-          // ** The condition should be false.
-          // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-10-14T20:10:00.000Z-Example-2021-10-14T20:00:00.000Z
-          // ** ul "up" → dd "back"
-          // ** The condition should be false.
-          // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2019-10-07T08:10:00.000Z-List_inside_a_comment
-          // ** ul "up" → div "replaced"
-          // ** The condition should be true.
-          // * https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2019-10-07T08:40:00.000Z-List_inside_a_comment
-          // ** ul "up" → dd "start"
-          // ** The condition should be true.
-          (part.node.tagName !== 'UL' || part.node.children.length > 1) &&
-
-          this.isPartOfList(lastPartNode, true)
-        ) &&
-
-        (
-          // Exclude lists that are parts of the comment.
-          (part.step === 'up' && (!this.parts[i - 1] || this.parts[i - 1].step !== 'back')) ||
-
-          (
-            this.isPartOfList(lastPartNode, true) &&
-
-            // Cases like
-            // https://ru.wikipedia.org/wiki/Обсуждение_шаблона:Графема#Навигация_со_стрелочками
-            // (the whole thread).
-            !(part.step === 'back' && ['LI', 'DD'].includes(part.node.tagName)) &&
-
-            // Cases like
-            // https://commons.wikimedia.org/wiki/Commons:Translators%27_noticeboard/Archive/2020#202011151417_Ameisenigel,
-            //
-            !(
-              i !== 0 &&
-              ['UL', 'OL'].includes(part.node.tagName) &&
-              ['DL', 'UL'].includes(part.node.previousElementSibling?.tagName)
-            )
-          ) ||
-
-          // Cases like
-          // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202110061830_Example
-          (
-            part.node.tagName === 'UL' &&
-            part.node[this.parser.context.childElementsProp].length === 1 &&
-            this.isPartOfList(lastPartNode, false)
-          )
-        )
-      );
-      if (isCommentLevel) {
+      if (this.isCommentLevel(i, lastPartNode)) {
         const commentElements = this.parser.getTopElementsWithText(part.node).nodes;
         if (commentElements.length > 1) {
           const newParts = commentElements.map((el) => ({
