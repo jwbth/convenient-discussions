@@ -130,6 +130,7 @@ class Comment extends CommentSkeleton {
     this.highlightHovered = this.highlightHovered.bind(this);
     this.unhighlightHovered = this.unhighlightHovered.bind(this);
     this.hideMenu = this.hideMenu.bind(this);
+    this.deferHideMenu = this.deferHideMenu.bind(this);
     this.dontHideMenu = this.dontHideMenu.bind(this);
 
     if (!elementPrototypes) {
@@ -1356,9 +1357,7 @@ class Comment extends CommentSkeleton {
       this.overlayInnerWrapper.oncontextmenu = this.hideMenu;
 
       // Hide the overlay on long click/tap.
-      this.overlayInnerWrapper.onmousedown = (e) => {
-        this.deferHideMenu(e);
-      };
+      this.overlayInnerWrapper.onmousedown = this.deferHideMenu;
       this.overlayInnerWrapper.onmouseup = this.dontHideMenu;
 
       this.createGoToParentButton();

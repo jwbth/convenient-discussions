@@ -234,6 +234,20 @@ const toc = {
   },
 
   /**
+   * Handle a click on an added section link.
+   *
+   * @param {Event} e
+   * @private
+   */
+  handleSectionClick(e) {
+    e.preventDefault();
+    controller.reload({
+      sectionId: e.currentTarget.getAttribute('href').slice(1),
+      pushState: true,
+    });
+  },
+
+  /**
    * _For internal use._ Add links to new, not yet rendered sections (loaded in the background) to
    * the table of contents.
    *
@@ -309,13 +323,7 @@ const toc = {
         if (this.isInSidebar()) {
           a.className = 'sidebar-toc-link cd-toc-link-sidebar';
         }
-        a.onclick = (e) => {
-          e.preventDefault();
-          controller.reload({
-            sectionId: section.id,
-            pushState: true,
-          });
-        };
+        a.onclick = this.handleSectionClick.bind(this);
 
         let number;
         if (currentLevelMatch) {
@@ -416,6 +424,29 @@ const toc = {
   },
 
   /**
+   * Handle a click on a comment link.
+   *
+   * @param {Event} e
+   * @private
+   */
+  handleCommentClick(e) {
+    e.preventDefault();
+    const id = e.currentTarget.getAttribute('href').slice(1);
+    const comment = Comment.getByAnyId(id);
+    if (comment) {
+      comment.scrollTo({
+        smooth: false,
+        pushState: true,
+      });
+    } else {
+      controller.reload({
+        commentIds: [id],
+        pushState: true,
+      });
+    }
+  },
+
+  /**
    * Add a comment list (an `ul` element) to a section.
    *
    * @param {import('./commonTypedefs').CommentSkeletonLike[]} comments Comment list.
@@ -465,23 +496,7 @@ const toc = {
         if (this.isInSidebar()) {
           a.className = 'sidebar-toc-link cd-toc-link-sidebar';
         }
-        if (comment instanceof Comment) {
-          a.onclick = (e) => {
-            e.preventDefault();
-            comment.scrollTo({
-              smooth: false,
-              pushState: true,
-            });
-          };
-        } else {
-          a.onclick = (e) => {
-            e.preventDefault();
-            controller.reload({
-              commentIds: [comment.id],
-              pushState: true,
-            });
-          };
-        }
+        a.onclick = this.handleCommentClick.bind(this);
 
         let timestampSpan;
         if (settings.get('timestampFormat') !== 'default') {

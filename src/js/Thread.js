@@ -242,6 +242,10 @@ class Thread {
    * @param {Comment} rootComment Root comment of the thread.
    */
   constructor(rootComment) {
+    this.handleClickAreaHover = this.handleClickAreaHover.bind(this);
+    this.handleClickAreaUnhover = this.handleClickAreaUnhover.bind(this);
+    this.handleToggleClick = this.handleToggleClick.bind(this);
+
     if (!elementPrototypes) {
       elementPrototypes = cd.g.THREAD_ELEMENT_PROTOTYPES;
     }
@@ -383,6 +387,38 @@ class Thread {
   }
 
   /**
+   * Handle the `mouseenter` event on the click area.
+   *
+   * @private
+   */
+  handleClickAreaHover() {
+    this.highlightTimeout = setTimeout(() => {
+      this.clickArea?.classList.add('cd-thread-clickArea-hovered');
+    }, 75);
+  }
+
+  /**
+   * Handle the `mouseleave` event on the click area.
+   *
+   * @private
+   */
+  handleClickAreaUnhover() {
+    clearTimeout(this.highlightTimeout);
+    this.clickArea?.classList.remove('cd-thread-clickArea-hovered');
+  }
+
+  /**
+   * Handle the `click` event on the click area.
+   *
+   * @private
+   */
+  handleToggleClick() {
+    if (!this.clickArea.classList.contains('cd-thread-clickArea-hovered')) return;
+
+    this.toggle();
+  }
+
+  /**
    * Create a thread line with a click area around.
    *
    * @private
@@ -403,21 +439,10 @@ class Thread {
 
     // Add some debouncing so that the user is not annoyed by the cursor changing its form when
     // moving across thread lines.
-    this.clickArea.onmouseenter = () => {
-      this.highlightTimeout = setTimeout(() => {
-        this.clickArea?.classList.add('cd-thread-clickArea-hovered');
-      }, 75);
-    };
-    this.clickArea.onmouseleave = () => {
-      clearTimeout(this.highlightTimeout);
-      this.clickArea?.classList.remove('cd-thread-clickArea-hovered');
-    };
+    this.clickArea.onmouseenter = this.handleClickAreaHover;
+    this.clickArea.onmouseleave = this.handleClickAreaUnhover;
 
-    this.clickArea.onclick = () => {
-      if (this.clickArea.classList.contains('cd-thread-clickArea-hovered')) {
-        this.toggle();
-      }
-    };
+    this.clickArea.onclick = this.handleToggleClick;
 
     /**
      * Thread line.

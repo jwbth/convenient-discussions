@@ -50,6 +50,15 @@ class Section extends SectionSkeleton {
   constructor(parser, heading, targets) {
     super(parser, heading, targets);
 
+    this.scrollToLatestComment = this.scrollToLatestComment.bind(this);
+    this.scrollToNewComments = this.scrollToNewComments.bind(this);
+    this.handleReplyButtonHover = this.handleReplyButtonHover.bind(this);
+    this.handleReplyButtonUnhover = this.handleReplyButtonUnhover.bind(this);
+    this.resetShowAddSubsectionButtonTimeout = this.resetShowAddSubsectionButtonTimeout.bind(this);
+    this.resetHideAddSubsectionButtonTimeout = this.resetHideAddSubsectionButtonTimeout.bind(this);
+    this.deferAddSubsectionButtonHide = this.deferAddSubsectionButtonHide.bind(this);
+    this.createMoreMenuSelect = this.createMoreMenuSelect.bind(this);
+
     elementPrototypes = cd.g.SECTION_ELEMENT_PROTOTYPES;
 
     /**
@@ -253,54 +262,78 @@ class Section extends SectionSkeleton {
   }
 
   /**
+   * Reset the timeout for showing the "Add subsection" button.
+   *
+   * @private
+   */
+  resetShowAddSubsectionButtonTimeout() {
+    clearTimeout(this.showAddSubsectionButtonTimeout);
+    this.showAddSubsectionButtonTimeout = null;
+  }
+
+  /**
+   * Reset the timeout for hiding the "Add subsection" button.
+   *
+   * @private
+   */
+  resetHideAddSubsectionButtonTimeout() {
+    clearTimeout(this.hideAddSubsectionButtonTimeout);
+    this.hideAddSubsectionButtonTimeout = null;
+  }
+
+  /**
+   * Defer hiding the "Add subsection" button.
+   *
+   * @private
+   */
+  deferAddSubsectionButtonHide() {
+    if (this.hideAddSubsectionButtonTimeout) return;
+
+    this.hideAddSubsectionButtonTimeout = setTimeout(() => {
+      this.$addSubsectionButtonContainer.hide();
+    }, 1000);
+  }
+
+  /**
+   * Handle a `mouseenter` event on the reply button.
+   *
+   * @private
+   */
+  handleReplyButtonHover() {
+    if (this.addSubsectionForm) return;
+
+    this.resetHideAddSubsectionButtonTimeout();
+    if (this.showAddSubsectionButtonTimeout) return;
+
+    this.showAddSubsectionButtonTimeout = setTimeout(() => {
+      this.$addSubsectionButtonContainer.show();
+    }, 1000);
+  }
+
+  /**
+   * Handle a `mouseleave` event on the reply button.
+   *
+   * @private
+   */
+  handleReplyButtonUnhover() {
+    if (this.addSubsectionForm) return;
+
+    this.resetShowAddSubsectionButtonTimeout();
+    this.deferAddSubsectionButtonHide();
+  }
+
+  /**
    * _For internal use._ Make it so that when the user hovers over a reply button at the end of the
    * section for a second, an "Add subsection" button shows up under it.
    */
   showAddSubsectionButtonOnReplyButtonHover() {
     if (!this.replyButton || !this.addSubsectionButton) return;
 
-    let hideAddSubsectionButtonTimeout;
-    const deferButtonHide = () => {
-      if (!hideAddSubsectionButtonTimeout) {
-        hideAddSubsectionButtonTimeout = setTimeout(() => {
-          this.$addSubsectionButtonContainer.hide();
-        }, 1000);
-      }
-    };
+    this.addSubsectionButton.buttonElement.onmouseenter = this.resetHideAddSubsectionButtonTimeout;
+    this.addSubsectionButton.buttonElement.onmouseleave = this.deferAddSubsectionButtonHide;
 
-    this.addSubsectionButton.buttonElement.onmouseenter = () => {
-      clearTimeout(hideAddSubsectionButtonTimeout);
-      hideAddSubsectionButtonTimeout = null;
-    };
-    this.addSubsectionButton.buttonElement.onmouseleave = () => {
-      deferButtonHide();
-    };
-
-    this.replyButtonHoverHandler = () => {
-      if (this.addSubsectionForm) return;
-
-      clearTimeout(hideAddSubsectionButtonTimeout);
-      hideAddSubsectionButtonTimeout = null;
-
-      if (!this.showAddSubsectionButtonTimeout) {
-        this.showAddSubsectionButtonTimeout = setTimeout(() => {
-          this.$addSubsectionButtonContainer.show();
-        }, 1000);
-      }
-    };
-
-    this.replyButtonUnhoverHandler = () => {
-      if (this.addSubsectionForm) return;
-
-      clearTimeout(this.showAddSubsectionButtonTimeout);
-      this.showAddSubsectionButtonTimeout = null;
-
-      deferButtonHide();
-    };
-
-    $(this.replyButton.buttonElement)
-      .on('mouseenter', this.replyButtonHoverHandler)
-      .on('mouseleave', this.replyButtonUnhoverHandler);
+    this.replyButton.buttonElement.onmouseenter = this.handleReplyButtonHover;
+    this.replyButton.buttonElement.onmouseleave = this.handleReplyButtonUnhover;
   }
 
   /**
@@ -543,22 +576,31 @@ class Section extends SectionSkeleton {
   }
 
   /**
+   * Scroll to the latest comment in the section.
+   *
+   * @param {Event} e
+   * @private
+   */
+  scrollToLatestComment(e) {
+    e.preventDefault();
+    this.latestComment.scrollTo({ pushState: true });
+  }
+
+  /**
    * Create a metadata container.
    *
    * @private
    */
   createMetadataElement() {
     const authorCount = this.comments.map((comment) => comment.author).filter(unique).length;
-
-    let latestComment;
-    this.comments.forEach((comment) => {
-      if (
+    const latestComment = this.comments.reduce((latestComment, comment) => (
+      (
         comment.date &&
         (!latestComment || !latestComment.date || latestComment.date < comment.date)
-      ) {
-        latestComment = comment;
-      }
-    });
+      ) ?
+        comment :
+        latestComment
+    ), undefined);
 
     let commentCountWrapper;
     let authorCountWrapper;
@@ -580,10 +622,7 @@ class Section extends SectionSkeleton {
       if (latestComment) {
         const lastCommentLink = document.createElement('a');
         lastCommentLink.href = `#${latestComment.dtId || latestComment.id}`;
-        lastCommentLink.onclick = (e) => {
-          e.preventDefault();
-          latestComment.scrollTo({ pushState: true });
-        };
+        lastCommentLink.onclick = this.scrollToLatestComment;
         lastCommentLink.textContent = formatDate(latestComment.date);
         (new LiveTimestamp(lastCommentLink, latestComment.date, false)).init();
 
@@ -602,6 +641,13 @@ class Section extends SectionSkeleton {
       ].filter(defined);
       metadataElement.append(...metadataItemList);
     }
+
+    /**
+     * The latest comment in the section.
+     *
+     * @type {Comment|undefined}
+     */
+    this.latestComment = latestComment;
 
     /**
      * The metadata element under the 2-level section heading.
@@ -647,9 +693,7 @@ class Section extends SectionSkeleton {
           this.createAndClickMoreMenuSelect();
         },
       });
-      moreMenuSelectDummy.buttonElement.onmouseenter = () => {
-        this.createMoreMenuSelect();
-      };
+      moreMenuSelectDummy.buttonElement.onmouseenter = this.createMoreMenuSelect;
     }
 
     let copyLinkButton;
@@ -780,30 +824,50 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Add the new comment count to the metadata element.
+   * Highlight the unseen comments in the section and scroll to the first one of them.
+   *
+   * @param {Event} e
+   * @private
+   */
+  scrollToNewComments(e) {
+    e.preventDefault();
+    this.newComments[0].scrollTo({
+      flash: false,
+      pushState: true,
+      callback: () => {
+        this.newComments.forEach((comment) => comment.flashTarget());
+      },
+    });
+  }
+
+  /**
+   * Add the new comment count to the metadata element. ("New" actually means "unseen at the moment
+   * of load".)
    */
   addNewCommentCountMetadata() {
     if (this.level !== 2) return;
 
-    const newComments = this.comments.filter((comment) => comment.isSeen === false);
-    if (!newComments.length) return;
+    /**
+     * List of new comments in the section. ("New" actually means "unseen at the moment of load".)
+     *
+     * @type {Comment[]}
+     */
+    this.newComments = this.comments.filter((comment) => comment.isSeen === false);
+
+    if (!this.newComments.length) return;
 
     let newCommentCountLink;
-    if (newComments.length === this.comments.length) {
+    if (this.newComments.length === this.comments.length) {
       newCommentCountLink = document.createElement('span');
     } else {
       newCommentCountLink = document.createElement('a');
-      newCommentCountLink.href = `#${newComments[0].dtId}`;
-      newCommentCountLink.onclick = (e) => {
-        e.preventDefault();
-        newComments[0].scrollTo({
-          flash: false,
-          pushState: true,
-        });
-        newComments.forEach((comment) => comment.flashTarget());
-      };
+      newCommentCountLink.href = `#${this.newComments[0].dtId}`;
+      newCommentCountLink.onclick = this.scrollToNewComments;
     }
-    newCommentCountLink.textContent = cd.s('section-metadata-commentcount-new', newComments.length);
+    newCommentCountLink.textContent = cd.s(
+      'section-metadata-commentcount-new',
+      this.newComments.length
+    );
     this.commentCountWrapper.append(' ', newCommentCountLink);
   }
 
