@@ -335,7 +335,9 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
     return {
       page: this.section.getSourcePage(),
       sectionInCode: this.section.inCode,
-      sectionWikilink: `${pageName}#${headlineEncoded}`,
+      sectionWikilink: this.controls.keepLink.input.isSelected() ?
+        `${pageName}#${headlineEncoded}` :
+        pageName,
     };
   }
 
