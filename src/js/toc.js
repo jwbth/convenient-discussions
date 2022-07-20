@@ -133,7 +133,10 @@ const toc = {
           .removeClass('cd-toc-addedSection')
           .each((i, element) => {
             element.firstChild.onclick = '';
-          });
+          })
+          .parent()
+          .parent()
+          .addClass('sidebar-toc-list-item-expanded');
     }
   },
 
@@ -248,6 +251,119 @@ const toc = {
   },
 
   /**
+   * Add a section to the TOC.
+   *
+   * @param {import('./commonTypedefs').SectionSkeletonLike} section
+   * @param {object[]} currentTree
+   * @param {JQuery} $topUl
+   * @param {string[]} newSectionTocIds
+   * @private
+   */
+  addSection(section, currentTree, $topUl, newSectionTocIds) {
+    let item = section.match?.getTocItem();
+    if (!item) {
+      const headline = section.headline;
+      const level = section.tocLevel;
+      const currentLevelMatch = currentTree[level - 1];
+      let upperLevelMatch;
+      if (!currentLevelMatch) {
+        upperLevelMatch = currentTree[currentTree.length - 1];
+      }
+
+      const li = document.createElement('li');
+      li.id = `toc-${section.id}`;
+      const levelClass = this.isInSidebar() ?
+        `sidebar-toc-list-item sidebar-toc-level-${level}` :
+        `toclevel-${level}`;
+      li.className = `${levelClass} cd-toc-addedSection`;
+
+      const a = document.createElement('a');
+      a.href = `#${section.id}`;
+      if (this.isInSidebar()) {
+        a.className = 'sidebar-toc-link cd-toc-link-sidebar';
+      }
+      a.onclick = this.handleSectionClick.bind(this);
+
+      let number;
+      if (currentLevelMatch) {
+        number = currentLevelMatch.number;
+      } else if (upperLevelMatch) {
+        number = upperLevelMatch.number + '.1';
+      } else {
+        number = '1';
+      }
+      const numberSpan = document.createElement('span');
+      const numberClass = this.isInSidebar() ? 'sidebar-toc-numb' : 'tocnumber';
+      numberSpan.className = `${numberClass} cd-toc-hiddenTocNumber`;
+      numberSpan.textContent = number;
+      a.appendChild(numberSpan);
+
+      if (this.isInSidebar()) {
+        const textDiv = document.createElement('div');
+        textDiv.className = 'sidebar-toc-text';
+        textDiv.appendChild(document.createTextNode(headline));
+        a.appendChild(textDiv);
+        li.appendChild(a);
+      } else {
+        const textSpan = document.createElement('span');
+        textSpan.className = 'toctext';
+        textSpan.textContent = headline;
+        a.appendChild(textSpan);
+        li.appendChild(a);
+      }
+
+      if (currentLevelMatch) {
+        currentLevelMatch.$element.after(li);
+      } else if (upperLevelMatch) {
+        const ul = document.createElement('ul');
+        ul.id = `toc-${section.id}-sublist`;
+        ul.className = 'sidebar-toc-list';
+        ul.appendChild(li);
+
+        if (this.isInSidebar() && level === 2) {
+          // Don't bother with ARIA attributes since chances that somebody will interact with
+          // collapsed subsections with their help tend to zero, I believe, although this may change.
+          const button = document.createElement('button');
+          button.className = 'mw-ui-icon mw-ui-icon-wikimedia-expand mw-ui-icon-small sidebar-toc-toggle';
+          button.setAttribute('ariaExpanded', 'true');
+          button.setAttribute('ariaControls', ul.id);
+
+          upperLevelMatch.$element.append(button);
+
+          // Expand the section.
+          button.click();
+
+          // If this section was previously added by us, the TOC will remember its state and try to
+          // switch it, so we need to click again to get it back.
+          if (newSectionTocIds.includes(upperLevelMatch.$element.attr('id'))) {
+            button.click();
+          }
+        }
+
+        upperLevelMatch.$element.append(ul);
+      } else {
+        if (this.isInSidebar()) {
+          $topUl.children('#toc-mw-content-text').after(li);
+        } else {
+          $topUl.prepend(li);
+        }
+      }
+
+      item = {
+        // Doesn't seem to be currently used anywhere.
+        headline,
+
+        level,
+        number,
+        $element: $(li),
+      };
+    }
+
+    currentTree[section.tocLevel - 1] = item;
+    currentTree.splice(section.tocLevel);
+  },
+
+  /**
    * _For internal use._ Add links to new, not yet rendered sections (loaded in the background) to
    * the table of contents.
    *
@@ -262,7 +378,15 @@ const toc = {
 
     controller.saveRelativeScrollPosition({ saveTocHeight: true });
 
-    this.$element.find('.cd-toc-addedSection').remove();
+    const $addedSections = this.$element.find('.cd-toc-addedSection');
+    let newSectionTocIds;
+    if (this.isInSidebar()) {
+      newSectionTocIds = $addedSections
+        .filter('.sidebar-toc-level-1')
+        .get()
+        .map((sectionElement) => sectionElement.id);
+    }
+    $addedSections.remove();
 
     /*
       Note the case when the page starts with sections of levels lower than the base level, like
@@ -299,87 +423,10 @@ const toc = {
       section.tocLevel = section.parent ? section.parent.tocLevel + 1 : 1;
     });
 
-    let currentTree = [];
+    const currentTree = [];
     const $topUl = this.$element.children('ul');
     sections.forEach((section) => {
-      let item = section.match?.getTocItem();
-      if (!item) {
-        const headline = section.headline;
-        const level = section.tocLevel;
-        const currentLevelMatch = currentTree[level - 1];
-        let upperLevelMatch;
-        if (!currentLevelMatch) {
-          upperLevelMatch = currentTree[currentTree.length - 1];
-        }
-
-        const li = document.createElement('li');
-        const levelClass = this.isInSidebar() ?
-          `sidebar-toc-list-item sidebar-toc-level-${level}` :
-          `toclevel-${level}`;
-        li.className = `${levelClass} cd-toc-addedSection`;
-
-        const a = document.createElement('a');
-        a.href = `#${section.id}`;
-        if (this.isInSidebar()) {
-          a.className = 'sidebar-toc-link cd-toc-link-sidebar';
-        }
-        a.onclick = this.handleSectionClick.bind(this);
-
-        let number;
-        if (currentLevelMatch) {
-          number = currentLevelMatch.number;
-        } else if (upperLevelMatch) {
-          number = upperLevelMatch.number + '.1';
-        } else {
-          number = '1';
-        }
-        const numberSpan = document.createElement('span');
-        const numberClass = this.isInSidebar() ? 'sidebar-toc-numb' : 'tocnumber';
-        numberSpan.className = `${numberClass} cd-toc-hiddenTocNumber`;
-        numberSpan.textContent = number;
-        a.appendChild(numberSpan);
-
-        if (this.isInSidebar()) {
-          const textDiv = document.createElement('div');
-          textDiv.className = 'sidebar-toc-text';
-          textDiv.appendChild(document.createTextNode(headline));
-          a.appendChild(textDiv);
-          li.appendChild(a);
-        } else {
-          const textSpan = document.createElement('span');
-          textSpan.className = 'toctext';
-          textSpan.textContent = headline;
-          a.appendChild(textSpan);
-          li.appendChild(a);
-        }
-
-        if (currentLevelMatch) {
-          currentLevelMatch.$element.after(li);
-        } else if (upperLevelMatch) {
-          const ul = document.createElement('ul');
-          ul.className = 'sidebar-toc-list';
-          ul.appendChild(li);
-          upperLevelMatch.$element.append(ul);
-        } else {
-          if (this.isInSidebar()) {
-            $topUl.children('#toc-mw-content-text').after(li);
-          } else {
-            $topUl.prepend(li);
-          }
-        }
-
-        item = {
-          // Doesn't seem to be currently used anywhere.
-          headline,
-
-          level,
-          number,
-          $element: $(li),
-        };
-      }
-
-      currentTree[section.tocLevel - 1] = item;
-      currentTree.splice(section.tocLevel);
+      this.addSection(section, currentTree, $topUl, newSectionTocIds);
     });
 
     controller.restoreRelativeScrollPosition(true);
