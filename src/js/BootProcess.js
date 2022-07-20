@@ -1399,6 +1399,28 @@ export default class BootProcess {
   }
 
   /**
+   * Remove visit timestamps from the array that we don't need to keep anymore.
+   *
+   * @param {number[]} currentPageVisits
+   * @param {number} currentUnixTime
+   * @private
+   */
+  cleanUpVisits(currentPageVisits, currentUnixTime) {
+    for (let i = currentPageVisits.length - 1; i >= 0; i--) {
+      if (
+        !settings.get('highlightNewInterval') ||
+        currentPageVisits[i] < currentUnixTime - 60 * settings.get('highlightNewInterval') ||
+        this.data('markAsRead')
+      ) {
+        // Remove visits _before_ the found one.
+        currentPageVisits.splice(0, i);
+
+        break;
+      }
+    }
+  }
+
+  /**
    * Highlight new comments and update the navigation panel. A promise obtained from
    * {@link module:options.getVisits} should be provided.
    *
@@ -1421,47 +1443,15 @@ export default class BootProcess {
 
     const currentUnixTime = Math.floor(Date.now() / 1000);
 
-    // Cleanup
-    for (let i = currentPageVisits.length - 1; i >= 0; i--) {
-      if (
-        !settings.get('highlightNewInterval') ||
-        currentPageVisits[i] < currentUnixTime - 60 * settings.get('highlightNewInterval') ||
-        this.data('markAsRead')
-      ) {
-        currentPageVisits.splice(0, i);
-        break;
-      }
-    }
+    this.cleanUpVisits(currentPageVisits, currentUnixTime);
 
-    let currentTimeMatchesWithComment = false;
+    let timeConflict = false;
     if (currentPageVisits.length) {
       cd.comments.forEach((comment) => {
-        if (!comment.date) {
-          comment.isNew = false;
-          comment.isSeen = true;
-          return;
-        }
-
-        const commentUnixTime = Math.floor(comment.date.getTime() / 1000);
-        if (commentUnixTime <= currentUnixTime && currentUnixTime < commentUnixTime + 60) {
-          currentTimeMatchesWithComment = true;
-        }
-        const isUnseenStatePassed = (
-          this.data('unseenCommentIds')?.some((id) => id === comment.id) ||
-          false
-        );
-        const isNewerThanFirstRememberedVisit = commentUnixTime + 60 > currentPageVisits[0];
-        const isOlderThanPreviousVisit = (
-          commentUnixTime + 60 <= currentPageVisits[currentPageVisits.length - 1]
-        );
-        comment.isNew = isNewerThanFirstRememberedVisit || isUnseenStatePassed;
-        comment.isSeen = (
-          (
-            !isNewerThanFirstRememberedVisit ||
-            (settings.get('highlightNewInterval') && isOlderThanPreviousVisit) ||
-            comment.isOwn
-          ) &&
-          !isUnseenStatePassed
+        timeConflict = timeConflict || comment.setNewAndSeenProperties(
+          currentPageVisits,
+          currentUnixTime,
+          this.data('unseenCommentIds')?.some((id) => id === comment.id) || false
         );
       });
 
@@ -1479,7 +1469,7 @@ export default class BootProcess {
     // minute to the current time if there is a comment with matched time. (Previously, the comment
     // time needed to be less than the current time which could result in missed comments if a
     // comment was sent the same minute when the page was loaded but after that moment.)
-    currentPageVisits.push(String(currentUnixTime + currentTimeMatchesWithComment * 60));
+    currentPageVisits.push(String(currentUnixTime + timeConflict * 60));
 
     setVisits(visits);
 

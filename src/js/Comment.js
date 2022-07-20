@@ -4028,6 +4028,50 @@ class Comment extends CommentSkeleton {
         comment.thread.expand();
       });
   }
+
+  /**
+   * Set the {@link Comment#isNew} and {@link Comment#isSeen} properties for the comment given the
+   * list of the current page visits.
+   *
+   * @param {number[]} currentPageVisits
+   * @param {number} currentUnixTime
+   * @param {boolean} isUnseenStatePassed
+   * @returns {boolean} Whether there is a time conflict.
+   */
+  setNewAndSeenProperties(currentPageVisits, currentUnixTime, isUnseenStatePassed) {
+    if (!this.date) {
+      this.isNew = false;
+      this.isSeen = true;
+      return false;
+    }
+
+    const commentUnixTime = Math.floor(this.date.getTime() / 1000);
+
+    // Let's take 3 minutes as tolerable time discrepancy.
+    const isDateInFuture = this.date.getTime() > Date.now() + cd.g.MS_IN_MIN * 3;
+
+    const isNewerThanFirstRememberedVisit = commentUnixTime + 60 > currentPageVisits[0];
+    const isOlderThanPreviousVisit = (
+      commentUnixTime + 60 <= currentPageVisits[currentPageVisits.length - 1]
+    );
+    this.isNew = Boolean(
+      (isNewerThanFirstRememberedVisit || isUnseenStatePassed) &&
+      !isDateInFuture
+    );
+    this.isSeen = Boolean(
+      (
+        (
+          !isNewerThanFirstRememberedVisit ||
+          (settings.get('highlightNewInterval') && isOlderThanPreviousVisit) ||
+          this.isOwn
+        ) &&
+        !isUnseenStatePassed
+      ) ||
+      isDateInFuture
+    );
+
+    return commentUnixTime <= currentUnixTime && currentUnixTime < commentUnixTime + 60;
+  }
 }
 
 Object.assign(Comment, CommentStatic);
