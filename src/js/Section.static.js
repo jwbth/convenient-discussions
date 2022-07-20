@@ -270,12 +270,9 @@ export default {
 
     let firstSectionToHide;
     if (pageHeight - viewportTop > 20000) {
-      const currentSection = this.getCurrentSection()?.getBase(true);
+      const currentSection = this.getCurrentSection();
       firstSectionToHide = cd.sections
-        .filter((section) => (
-          section.level === 2 &&
-          (!currentSection || section.index >= currentSection.index)
-        ))
+        .filter((section) => !currentSection || section.index > currentSection.index)
         .find((section) => {
           const rect = section.firstElement.getBoundingClientRect();
           let blockSize = 10000;
@@ -295,8 +292,17 @@ export default {
         });
     }
 
+    const subsectionsToHide = (
+      !firstSectionToHide || firstSectionToHide.level === 2 ?
+        [] :
+        firstSectionToHide.getBase(true).getChildren(true)
+    );
     cd.sections
-      .filter((section) => section.level === 2)
+      .filter((section) => (
+        section.level === 2 ||
+        section.isHidden ||
+        subsectionsToHide.includes(section)
+      ))
       .forEach((section) => {
         const shouldHide = Boolean(firstSectionToHide && section.index >= firstSectionToHide.index);
         if (shouldHide === section.isHidden) return;
