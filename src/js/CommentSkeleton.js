@@ -1469,6 +1469,32 @@ class CommentSkeleton {
   }
 
   /**
+   * Update the width of the outdent template to match our thread style changes. Doesn't run in the
+   * worker.
+   *
+   * @param {Element|external:Element} element
+   * @param {CommentSkeleton} parentComment
+   */
+  static updateOutdentWidth(element, parentComment) {
+    if (self.cdIsWorker) return;
+
+    [...element.childNodes].forEach((child) => {
+      const width = child.style?.width;
+      if (width) {
+        const [, number, unit] = width.match(/^([\d.]+)(.+)$/);
+        if (number) {
+          // 1.25 = 2em / 1.6em, where 2em is our margin and 1.6em is the default margin.
+          const ems = number * 1.25 + unit;
+          child.style.width = `calc(${ems} + ${parentComment.level}px)`;
+        }
+      } else if (!child.children?.length && child.textContent.includes('─')) {
+        child.textContent = child.textContent
+          .replace(/─+/, (s) => '─'.repeat(Math.round(s.length * 1.25)));
+      }
+    });
+  }
+
+  /**
    * _For internal use._ Set {@link Comment#logicalLevel logical levels} to the comments taking into
    * account `{{outdent}}` templates.
    *
@@ -1479,85 +1505,75 @@ class CommentSkeleton {
       [...parser.context.rootElement.getElementsByClassName(cd.config.outdentClass)]
         .reverse()
         .forEach((element) => {
+          // Temporary fix for https://commons.wikimedia.org/wiki/Template:Outdent where child
+          // elements have the "outdent-template" class.
+          if (element.parentNode.classList.contains('outdent-template')) return;
+
+          let childComment;
+          let parentComment;
           const treeWalker = new ElementsTreeWalker(element, parser.context.rootElement);
-          while (treeWalker.nextNode()) {
-            // `null` and `0` as the attribute value are both bad.
-            let commentIndex = Number(treeWalker.currentNode.getAttribute('data-cd-comment-index'));
-            if (commentIndex !== 0) {
-              const childComment = cd.comments[commentIndex];
+          while (treeWalker.nextNode() && !childComment) {
+            let commentIndex = treeWalker.currentNode.getAttribute('data-cd-comment-index');
+            if (commentIndex === '0') break;
+            if (commentIndex === null) continue;
 
-              // Find an _actual_ parent of the comment in case the previous one is newer than the
-              // child. Example:
-              // https://en.wikipedia.org/w/index.php?title=Wikipedia:Village_pump_(technical)&oldid=1044759311#202108282226_Cryptic.
-              let parentComment;
+            commentIndex = Number(commentIndex);
+            childComment = cd.comments[commentIndex];
 
-              for (let i = commentIndex - 1; i >= 0; i--) {
-                const comment = cd.comments[i];
-                if (comment.section !== childComment.section) break;
-                if (childComment.date >= comment.date) {
-                  parentComment = comment;
-                  break;
-                }
+            // Find an _actual_ parent of the comment in case the previous one is newer than the
+            // child. Example:
+            // https://en.wikipedia.org/w/index.php?title=Wikipedia:Village_pump_(technical)&oldid=1044759311#202108282226_Cryptic.
+            for (let i = commentIndex - 1; i >= 0; i--) {
+              const comment = cd.comments[i];
+              if (comment.section !== childComment.section) break;
+              if (childComment.date >= comment.date) {
+                parentComment = comment;
+                break;
               }
-              if (!parentComment) break;
-
-              if (parentComment.index !== commentIndex - 1) {
-                // Explicitly set the parent.
-                childComment.cachedParent = childComment.cachedParent || {};
-                childComment.cachedParent.logicalLevel = parentComment;
-              }
-
-              // Update the width to match our thread style changes. Don't run in the worker.
-              if (!self.cdIsWorker) {
-                [...element.childNodes].forEach((child) => {
-                  const width = child.style?.width;
-                  if (width) {
-                    const [, number, unit] = width.match(/^([\d.]+)(.+)$/);
-                    if (number) {
-                      // 1.25 = 2em / 1.6em, where 2em is our margin and 1.6em is the default
-                      // margin.
-                      const ems = number * 1.25 + unit;
-                      child.style.width = `calc(${ems} + ${parentComment.level}px)`;
-                    }
-                  } else if (!child.children?.length && child.textContent.includes('─')) {
-                    child.textContent = child.textContent
-                      .replace(/─+/, (s) => '─'.repeat(Math.round(s.length * 1.25)));
-                  }
-                });
-              }
-
-              // Since we traverse templates from the last to the first, `childComment.level`
-              // at this stage is always the same as `childComment.logicalLevel`. The same for
-              // `parentComment`.
-              const childLevel = childComment.level;
-
-              childComment.isOutdented = true;
-              cd.comments.slice(commentIndex).some((comment) => {
-                if (
-                  comment.section !== parentComment.section ||
-                  comment.logicalLevel < childLevel ||
-
-                  // If the child comment level is at least 2, we infer that the next comment on
-                  // the same level is outdented together with the child comment. If it is 0 or 1,
-                  // the next comment is more likely a regular reply.
-                  (
-                    comment.index === childComment.index + 1 &&
-                    childComment.level < 2 &&
-                    comment.level === childComment.level
-                  ) ||
-
-                  comment.date < childComment.date
-                ) {
-                  return true;
-                }
-                comment.logicalLevel = (
-                  (parentComment.level + 1) +
-                  (comment.logicalLevel - childLevel)
-                );
-                return false;
-              });
-              break;
             }
+            if (!parentComment) break;
+
+            if (parentComment.index !== commentIndex - 1) {
+              // Explicitly set the parent.
+              childComment.cachedParent = childComment.cachedParent || {};
+              childComment.cachedParent.logicalLevel = parentComment;
+            }
+
+            this.updateOutdentWidth(element, parentComment);
+
+            childComment.isOutdented = true;
+
+            // Update levels for following comments.
+            cd.comments.slice(commentIndex).some((comment) => {
+              // Since we traverse templates from the last to the first, `childComment.level` at
+              // this stage is the same as `childComment.logicalLevel` before we traverse the child
+              // comments. The same for `parentComment`.
+              if (
+                comment.section !== parentComment.section ||
+                comment.logicalLevel < childComment.level ||
+
+                // If the child comment level is at least 2, we infer that the next comment at the
+                // same level is outdented together with the child comment. If it is 0 or 1, the
+                // next comment is more likely to be a regular reply.
+                (
+                  comment !== childComment &&
+                  childComment.level < 2 &&
+                  comment.logicalLevel === childComment.level
+                ) ||
+
+                comment.date < childComment.date
+              ) {
+                return true;
+              }
+              comment.logicalLevel = (
+                (parentComment.level + 1) +
+                (comment.logicalLevel - childComment.level)
+              );
+              if (comment.level === childComment.level) {
+                comment.isOutdented = true;
+              }
+              return false;
+            });
           }
         });
     }
