@@ -284,7 +284,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    * Handler of the event of change of the title input.
    */
   async onTitleInputChange() {
-    let move;
+    let move = true;
     await this.controls.title.input.getValidity().catch(() => {
       move = false;
     });
@@ -386,7 +386,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
   async editTargetPage(source, target) {
     let codeBeginning;
     let codeEnding;
-    if (cd.config.getMoveTargetPageCode && this.controls.keepLink.checkbox.isSelected()) {
+    if (cd.config.getMoveTargetPageCode && this.controls.keepLink.input.isSelected()) {
       const code = cd.config.getMoveTargetPageCode(
         source.sectionWikilink.replace(/=/g, '{{=}}'),
         cd.g.USER_SIGNATURE.replace(/=/g, '{{=}}')
@@ -475,7 +475,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
     const timestamp = findFirstTimestamp(sectionCode) || cd.g.SIGN_CODE + '~';
 
     let newSectionCode;
-    if (cd.config.getMoveSourcePageCode && this.controls.keepLink.checkbox.isSelected()) {
+    if (cd.config.getMoveSourcePageCode && this.controls.keepLink.input.isSelected()) {
       const code = cd.config.getMoveSourcePageCode(
         target.sectionWikilink,
         cd.g.USER_SIGNATURE,
