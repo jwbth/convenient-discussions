@@ -500,11 +500,9 @@ function processHistory($content) {
   init.timestampParsingTools('user');
   if (cd.g.UI_TIMEZONE === null) return;
 
-  const list = $content.get(0).querySelector('#pagehistory');
-  const lines = [...list.children];
+  const selector = '#pagehistory > li, #pagehistory > .mw-contributions-list > li';
   const link = cd.page.getUrl();
-
-  lines.forEach((line) => {
+  [...$content.get(0).querySelectorAll(selector)].forEach((line) => {
     if (line.querySelector('.minoredit')) return;
 
     let summary = line.querySelector('.comment')?.textContent;
