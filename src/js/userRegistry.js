@@ -143,11 +143,9 @@ const userRegistry = {
     if (name.includes('#')) {
       name = name.slice(0, name.indexOf('#'));
     }
-    if (mw.util.isIPv6Address(name)) {
-      name = name.toUpperCase().trim();
-    } else {
-      name = underlinesToSpaces(ucFirst(name)).trim();
-    }
+    name = mw.util.isIPv6Address(name) ?
+      name.toUpperCase().trim() :
+      underlinesToSpaces(ucFirst(name)).trim();
 
     if (!this.items[name]) {
       const options = name === cd.g.USER_NAME ? { gender: mw.user.options.get('gender') } : {};

@@ -85,13 +85,9 @@ export default {
       const doesIndexMatch = section.index === index;
       const doesHeadlineMatch = section.headline === headline;
       const doesIdMatch = section.id === id;
-      let doAncestorsMatch;
-      if (ancestors) {
-        const sectionAncestors = section.getAncestors().map((section) => section.headline);
-        doAncestorsMatch = areObjectsEqual(sectionAncestors, ancestors);
-      } else {
-        doAncestorsMatch = false;
-      }
+      const doAncestorsMatch = ancestors ?
+        areObjectsEqual(section.getAncestors().map((section) => section.headline), ancestors) :
+        false;
       const doesOldestCommentMatch = section.oldestComment?.id === oldestCommentId;
       const score = (
         doesHeadlineMatch * 1 +

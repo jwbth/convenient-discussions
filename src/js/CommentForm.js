@@ -2000,24 +2000,14 @@ class CommentForm {
       return;
     }
 
-    let appendable;
-    if (isRaw) {
-      appendable = htmlOrJquery;
-    } else {
-      const $label = htmlOrJquery instanceof $ ? htmlOrJquery : wrap(htmlOrJquery);
-      const classes = ['cd-message'];
-      if (name) {
-        classes.push(`cd-message-${name}`);
-      }
-      const message = new OO.ui.MessageWidget({
+    const appendable = isRaw ?
+      htmlOrJquery :
+      (new OO.ui.MessageWidget({
         type,
         inline: true,
-        label: $label,
-        classes,
-      });
-      appendable = message.$element;
-    }
-
+        label: htmlOrJquery instanceof $ ? htmlOrJquery : wrap(htmlOrJquery),
+        classes: ['cd-message'].concat(name ? `cd-message-${name}` : []),
+      })).$element;
     this.$messageArea
       .append(appendable)
       .cdAddCloseButton()
@@ -2495,7 +2485,7 @@ class CommentForm {
    * @param {boolean} [previewEmpty=true] If `false`, don't preview if the comment and headline
    *   inputs are empty.
    * @param {boolean} [isAuto=true] Preview is initiated automatically (if the user has
-   *   `settings.get('autopreview')` as `true`).
+   *   the `autopreview` setting set to `true`).
    * @param {CommentFormOperation} [operation] Operation object when the function is called from
    *   within itself, being delayed.
    * @fires previewReady
@@ -3447,13 +3437,10 @@ class CommentForm {
    *   selection is empty.
    */
   async quote(allowEmptySelection = true) {
-    let selectionText;
-    if (isInputFocused()) {
-      selectionText = document.activeElement.value
-        .substring(document.activeElement.selectionStart, document.activeElement.selectionEnd);
-    } else {
-      selectionText = await controller.getWikitextFromSelection(this.commentInput);
-    }
+    const activeElement = document.activeElement;
+    let selectionText = isInputFocused() ?
+      activeElement.value.substring(activeElement.selectionStart, activeElement.selectionEnd) :
+      await controller.getWikitextFromSelection(this.commentInput);
     selectionText = selectionText.trim();
 
     // With just "Q" pressed, empty selection doesn't count.
@@ -3707,7 +3694,7 @@ class CommentForm {
         id: target.id,
 
         // We cache ancestors when saving the session, so this call will return the right value,
-        // despite cd.sections has already changed.
+        // despite the fact that cd.sections has already changed.
         ancestors: target.getAncestors().map((section) => section.headline),
       });
       if (section) {

@@ -237,7 +237,6 @@ export default {
           // The default handleScroll() callback is executed in $#cdScrollTo, but that happens after
           // a 300ms timeout, so we have a chance to have our callback executed first.
           comment.registerSeen(direction, true);
-          this.updateFirstUnseenButton();
         },
       });
     }
@@ -272,7 +271,6 @@ export default {
           // The default handleScroll() callback is executed in $#cdScrollTo, but that happens after
           // a 300ms timeout, so we have a chance to have our callback executed first.
           comment.registerSeen('forward', true);
-          this.updateFirstUnseenButton();
         },
       });
     }

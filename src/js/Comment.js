@@ -466,10 +466,9 @@ class Comment extends CommentSkeleton {
         this.authorLink = this.authorLink.cloneNode(true);
       }
 
-      let beforeAuthorLinkParseReturn;
-      if (cd.config.beforeAuthorLinkParse) {
-        beforeAuthorLinkParseReturn = cd.config.beforeAuthorLinkParse(this.authorLink);
-      }
+      const beforeAuthorLinkParseReturn = cd.config.beforeAuthorLinkParse ?
+        cd.config.beforeAuthorLinkParse(this.authorLink) :
+        undefined;
       authorLink.parentNode.replaceChild(this.authorLink, authorLink);
       this.authorLink.classList.add('cd-comment-author');
       this.authorLink.innerHTML = '';
@@ -579,10 +578,10 @@ class Comment extends CommentSkeleton {
      */
     this.$menu = $(this.menuElement);
 
-    this.createReplyButton();
-    this.createEditButton();
-    this.createThankButton();
-    this.createGoToParentButton();
+    this.addReplyButton();
+    this.addEditButton();
+    this.addThankButton();
+    this.addGoToParentButton();
 
     this.highlightables[this.highlightables.length - 1].appendChild(this.menuElement);
   }
@@ -593,7 +592,7 @@ class Comment extends CommentSkeleton {
    *
    * @private
    */
-  createReplyButton() {
+  addReplyButton() {
     if (!this.isActionable) return;
 
     const action = this.replyButtonClick;
@@ -624,7 +623,7 @@ class Comment extends CommentSkeleton {
    *
    * @private
    */
-  createEditButton() {
+  addEditButton() {
     if (this.isActionable && (this.isOwn || settings.get('allowEditOthersComments'))) {
       const action = this.editButtonClick;
       if (settings.get('reformatComments')) {
@@ -655,7 +654,7 @@ class Comment extends CommentSkeleton {
    *
    * @private
    */
-  createThankButton() {
+  addThankButton() {
     if (this.author.isRegistered() && this.date && !this.isOwn) {
       if (!thanks) {
         thanks = cleanUpThanks(getFromLocalStorage('thanks'));
@@ -700,14 +699,11 @@ class Comment extends CommentSkeleton {
    *
    * @private
    */
-  createCopyLinkButton() {
+  addCopyLinkButton() {
     if (this.id && !settings.get('reformatComments')) {
       const element = elementPrototypes.copyLinkButton.cloneNode(true);
       const widgetConstructor = elementPrototypes.getCopyLinkButton;
-      let href;
-      if (this.dtId) {
-        href = '#' + this.dtId;
-      }
+      const href = this.dtId ? '#' + this.dtId : undefined;
       this.copyLinkButton = new CommentButton({
         element,
         action: this.copyLink,
@@ -724,7 +720,7 @@ class Comment extends CommentSkeleton {
    *
    * @private
    */
-  createGoToParentButton() {
+  addGoToParentButton() {
     if (this.getParent()) {
       const action = this.goToParentButtonClick;
       if (settings.get('reformatComments')) {
@@ -1360,11 +1356,11 @@ class Comment extends CommentSkeleton {
       this.overlayInnerWrapper.onmousedown = this.deferHideMenu;
       this.overlayInnerWrapper.onmouseup = this.dontHideMenu;
 
-      this.createGoToParentButton();
-      this.createCopyLinkButton();
-      this.createThankButton();
-      this.createEditButton();
-      this.createReplyButton();
+      this.addGoToParentButton();
+      this.addCopyLinkButton();
+      this.addThankButton();
+      this.addEditButton();
+      this.addReplyButton();
     }
 
     this.updateLayersStyles(true);
@@ -2050,20 +2046,18 @@ class Comment extends CommentSkeleton {
         break;
     }
 
-    let refreshLink;
-    if (!isNewVersionRendered) {
-      const passedData = type === 'deleted' ? {} : { commentIds: [this.id] };
-      refreshLink = new Button({
+    const refreshLink = isNewVersionRendered ?
+      undefined :
+      new Button({
         label: cd.s('comment-changed-refresh'),
         action: () => {
-          controller.reload(passedData);
+          controller.reload(type === 'deleted' ? {} : { commentIds: [this.id] });
         },
       });
-    }
 
-    let diffLink;
-    if (type !== 'deleted' && this.getSourcePage() === cd.page) {
-      diffLink = new Button({
+    const diffLink = type === 'deleted' || this.getSourcePage() !== cd.page ?
+      undefined :
+      new Button({
         label: cd.s('comment-diff'),
         action: async () => {
           diffLink.setPending(true);
@@ -2084,7 +2078,6 @@ class Comment extends CommentSkeleton {
           diffLink.setPending(false);
         },
       });
-    }
 
     let refreshLinkSeparator;
     let diffLinkSeparator;
@@ -2615,10 +2608,9 @@ class Comment extends CommentSkeleton {
 
     this.thankButton.setPending(true);
 
-    let genderRequest;
-    if (cd.g.GENDER_AFFECTS_USER_STRING && this.author.isRegistered()) {
-      genderRequest = loadUserGenders([this.author]);
-    }
+    const genderRequest = cd.g.GENDER_AFFECTS_USER_STRING && this.author.isRegistered() ?
+      loadUserGenders([this.author]) :
+      undefined;
 
     let edit;
     try {
@@ -2678,8 +2670,7 @@ class Comment extends CommentSkeleton {
     if (!this.replyForm) {
       let isSelectionRelevant = false;
       if (!initialState) {
-        const comment = Comment.getSelectedComment();
-        isSelectionRelevant = comment === this;
+        isSelectionRelevant = Comment.getSelectedComment() === this;
         if (isSelectionRelevant) {
           initialState = { focus: false };
 
@@ -4038,7 +4029,10 @@ class Comment extends CommentSkeleton {
    * @returns {boolean} Whether there is a time conflict.
    */
   setNewAndSeenProperties(currentPageVisits, currentUnixTime, isUnseenStatePassed) {
-    if (!this.date) {
+    // Let's take 3 minutes as tolerable time discrepancy.
+    const isDateInFuture = this.date && this.date.getTime() > Date.now() + cd.g.MS_IN_MIN * 3;
+
+    if (!this.date || isDateInFuture) {
       this.isNew = false;
       this.isSeen = true;
       return false;
@@ -4046,27 +4040,18 @@ class Comment extends CommentSkeleton {
 
     const commentUnixTime = Math.floor(this.date.getTime() / 1000);
 
-    // Let's take 3 minutes as tolerable time discrepancy.
-    const isDateInFuture = this.date.getTime() > Date.now() + cd.g.MS_IN_MIN * 3;
-
     const isNewerThanFirstRememberedVisit = commentUnixTime + 60 > currentPageVisits[0];
     const isOlderThanPreviousVisit = (
       commentUnixTime + 60 <= currentPageVisits[currentPageVisits.length - 1]
     );
-    this.isNew = Boolean(
-      (isNewerThanFirstRememberedVisit || isUnseenStatePassed) &&
-      !isDateInFuture
-    );
+    this.isNew = Boolean(isNewerThanFirstRememberedVisit || isUnseenStatePassed);
     this.isSeen = Boolean(
       (
-        (
-          !isNewerThanFirstRememberedVisit ||
-          (settings.get('highlightNewInterval') && isOlderThanPreviousVisit) ||
-          this.isOwn
-        ) &&
-        !isUnseenStatePassed
-      ) ||
-      isDateInFuture
+        !isNewerThanFirstRememberedVisit ||
+        (settings.get('highlightNewInterval') && isOlderThanPreviousVisit) ||
+        this.isOwn
+      ) &&
+      !isUnseenStatePassed
     );
 
     return commentUnixTime <= currentUnixTime && currentUnixTime < commentUnixTime + 60;

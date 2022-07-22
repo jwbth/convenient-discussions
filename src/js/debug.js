@@ -201,13 +201,13 @@ const debug = {
    *
    * @param {string} label
    */
-  averageTimerTime(label) {
+  getAverageTimerTime(label) {
     if (this.timerAllRunsTotal[label] === undefined) {
       console.error(`No data for timer ${label}`);
       return;
     }
     const average = this.timerAllRunsTotal[label] / this.timerRunCount[label];
-    console.debug(`${label}: ${average.toFixed(1)} average for ${this.timerRunCount[label]} runs`);
+    console.debug(`${label}: ${average.toFixed(3)} average for ${this.timerRunCount[label]} runs`);
   },
 
   /**

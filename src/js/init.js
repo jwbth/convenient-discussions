@@ -340,10 +340,9 @@ function patterns() {
     cd.g.UNSIGNED_TEMPLATES_REGEXP = new RegExp(cd.g.UNSIGNED_TEMPLATES_PATTERN + '.*\\n', 'g');
   }
 
-  let clearTemplatesPattern;
-  if (cd.config.clearTemplates.length) {
-    clearTemplatesPattern = cd.config.clearTemplates.map(generatePageNamePattern).join('|');
-  }
+  const clearTemplatesPattern = cd.config.clearTemplates.length ?
+    cd.config.clearTemplates.map(generatePageNamePattern).join('|') :
+    undefined;
 
   cd.g.KEEP_IN_SECTION_ENDING = cd.config.keepInSectionEnding.slice();
   if (clearTemplatesPattern) {

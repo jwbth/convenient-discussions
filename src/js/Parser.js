@@ -161,10 +161,7 @@ class Parser {
         element.classList.add('cd-timestamp');
         element.appendChild(document.createTextNode(match[2]));
         const remainedText = node.textContent.slice(match.index + match[0].length);
-        let afterNode;
-        if (remainedText) {
-          afterNode = document.createTextNode(remainedText);
-        }
+        const afterNode = remainedText ? document.createTextNode(remainedText) : undefined;
         node.textContent = match[1];
         node.parentNode.insertBefore(element, node.nextSibling);
         if (afterNode) {

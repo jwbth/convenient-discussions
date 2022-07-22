@@ -596,25 +596,13 @@ class Thread {
       .map((author) => author.getName())
       .join(cd.mws('comma-separator'));
     const setLabel = (genderless) => {
-      let label;
-      if (genderless) {
-        label = cd.s(
-          'thread-expand-label-genderless',
-          this.commentCount,
-          usersInThread.length,
-          userList
-        );
-      } else {
-        const commonGender = getCommonGender(usersInThread);
-        label = cd.s(
-          'thread-expand-label',
-          this.commentCount,
-          usersInThread.length,
-          userList,
-          commonGender
-        );
-      }
-      button.setLabel(label);
+      button.setLabel(cd.s(
+        genderless ? 'thread-expand-label-genderless' : 'thread-expand-label',
+        this.commentCount,
+        usersInThread.length,
+        userList,
+        getCommonGender(usersInThread)
+      ));
       button.element.classList.remove('cd-thread-button-invisible');
     };
     if (cd.g.GENDER_AFFECTS_USER_STRING) {
@@ -627,10 +615,7 @@ class Thread {
     }
 
     const firstElement = this.collapsedRange[0];
-    let tagName = firstElement.tagName;
-    if (!['LI', 'DD'].includes(tagName)) {
-      tagName = 'DIV';
-    }
+    const tagName = ['LI', 'DD'].includes(firstElement.tagName) ? firstElement.tagName : 'DIV';
     const expandNote = document.createElement(tagName);
     expandNote.className = 'cd-thread-button-container cd-thread-expandNote';
     expandNote.appendChild(button.element);
@@ -797,21 +782,18 @@ class Thread {
       this.startElement.tagName === 'DIV'
     );
 
-    let top;
-    let left;
-    let rectTop;
-    let commentMargins;
-    if (!needCalculateMargins || this.isCollapsed) {
-      const prop = this.isCollapsed ? 'expandNote' : 'startElement';
-      rectTop = this[prop].getBoundingClientRect();
-    }
+    const rectTop = needCalculateMargins && !this.isCollapsed ?
+      undefined :
+      this[this.isCollapsed ? 'expandNote' : 'startElement'].getBoundingClientRect();
+
     floatingRects = floatingRects || controller.getFloatingElements().map(getExtendedRect);
     const rectOrOffset = rectTop || comment.getOffset({ floatingRects });
-    if (needCalculateMargins) {
-      // Should be below `comment.getOffset()` as `Comment#isStartStretched` is set inside that
-      // call.
-      commentMargins = comment.getMargins();
-    }
+
+    // Should be below `comment.getOffset()` as `Comment#isStartStretched` is set inside that call.
+    const commentMargins = needCalculateMargins ? comment.getMargins() : undefined;
+
+    let top;
+    let left;
     const dir = comment.getTextDirection();
     if (rectOrOffset) {
       top = getTop(rectOrOffset);

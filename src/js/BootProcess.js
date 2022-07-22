@@ -414,12 +414,10 @@ export default class BootProcess {
           previousCommentByTimeText
         );
       } else {
-        let notFoundText = '';
-
         // Possible use of a template in the section title.
-        if (!(sectionWithSimilarNameText && sectionName.includes('{{'))) {
-          notFoundText = ' ' + cd.sParse('deadanchor-section-notfound', searchUrl);
-        }
+        const notFoundText = sectionWithSimilarNameText && sectionName.includes('{{') ?
+          '' :
+          ' ' + cd.sParse('deadanchor-section-notfound', searchUrl);
 
         label = (
           cd.sParse('deadanchor-section-lead', sectionName) +
@@ -620,7 +618,7 @@ export default class BootProcess {
               'cd-notification-refresh': () => {
                 location.reload();
               },
-            }
+            },
           }).$wrapper;
           mw.notify(message);
         },
@@ -1328,10 +1326,7 @@ export default class BootProcess {
         });
 
         // Replace CD's comment ID in the fragment with DiscussionTools' if available.
-        let newFragment;
-        if (comment.dtId) {
-          newFragment = `#${comment.dtId}`;
-        }
+        const newFragment = comment.dtId ? `#${comment.dtId}` : undefined;
         const newState = Object.assign({}, history.state, { cdJumpedToComment: true });
         history.replaceState(newState, '', newFragment);
       });
@@ -1361,12 +1356,7 @@ export default class BootProcess {
    * @private
    */
   async processTargets() {
-    const commentIds = this.data('commentIds');
-    let comments;
-    if (commentIds) {
-      comments = commentIds.map((id) => Comment.getById(id)).filter(notNull);
-    }
-
+    const comments = this.data('commentIds')?.map((id) => Comment.getById(id)).filter(notNull);
     if (comments) {
       // setTimeout is for Firefox - for some reason, without it Firefox positions the underlay
       // incorrectly. (TODO: does it still? Need to check.)
@@ -1474,7 +1464,7 @@ export default class BootProcess {
     setVisits(visits);
 
     // Should be before `Comment.registerSeen()` to include all new comments in the metadata, even
-    // those seen.
+    // those currently inside the viewport.
     Section.addNewCommentCountMetadata();
 
     Comment.registerSeen();

@@ -388,32 +388,33 @@ class SettingsDialog extends OO.ui.ProcessDialog {
    */
   collectSettings() {
     const collectedSettings = {};
+    const controls = this.controls;
     settings.scheme.ui.forEach((pageData) => {
       pageData.controls.forEach((data) => {
         const name = data.name;
         switch (data.type) {
           case 'checkbox':
-            collectedSettings[name] = this.controls[name].input.isSelected();
+            collectedSettings[name] = controls[name].input.isSelected();
             break;
           case 'radio':
             collectedSettings[name] = (
-              this.controls[name].select.findSelectedItem()?.getData() ||
+              controls[name].select.findSelectedItem()?.getData() ||
               settings.scheme.default[name]
             );
             break;
           case 'text':
-            collectedSettings[name] = this.controls[name].input.getValue();
+            collectedSettings[name] = controls[name].input.getValue();
             break;
           case 'number':
-            collectedSettings[name] = Number(this.controls[name].input.getValue());
+            collectedSettings[name] = Number(controls[name].input.getValue());
             break;
           case 'multicheckbox':
-            collectedSettings[name] = this.controls[name].multiselect.findSelectedItemsData();
+            collectedSettings[name] = controls[name].multiselect.findSelectedItemsData();
             break;
           case 'multitag':
             collectedSettings[name] = (data.uiToData || ((val) => val)).call(
               null,
-              this.controls[name].multiselect.getValue()
+              controls[name].multiselect.getValue()
             );
             break;
         }

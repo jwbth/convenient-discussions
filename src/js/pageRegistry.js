@@ -118,10 +118,7 @@ class Page {
    * @returns {boolean}
    */
   isArchivePage() {
-    let result;
-    if (this.isCurrent) {
-      result = this.findArchivingInfoElement().data('isArchivePage');
-    }
+    let result = this.isCurrent ? this.findArchivingInfoElement().data('isArchivePage') : undefined;
     if (result === undefined) {
       result = false;
       const name = this.realName || this.name;
@@ -149,10 +146,9 @@ class Page {
     if (this.isArchivePage()) {
       return false;
     }
-    let result;
-    if (this.isCurrent) {
-      result = this.findArchivingInfoElement().data('canHaveArchives');
-    }
+    let result = this.isCurrent ?
+      this.findArchivingInfoElement().data('canHaveArchives') :
+      undefined;
     if (result === undefined) {
       const name = this.realName || this.name;
       result = !cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP?.test(name);
@@ -172,10 +168,7 @@ class Page {
     if (!this.canHaveArchives()) {
       return null;
     }
-    let result;
-    if (this.isCurrent) {
-      result = this.findArchivingInfoElement().data('archivePrefix');
-    }
+    let result = this.isCurrent ? this.findArchivingInfoElement().data('archivePrefix') : undefined;
     const name = this.realName || this.name;
     if (!result) {
       const iterator = cd.g.ARCHIVE_PAGES_MAP.entries();
@@ -198,10 +191,7 @@ class Page {
    * @returns {Page}
    */
   getArchivedPage() {
-    let result;
-    if (this.isCurrent) {
-      result = this.findArchivingInfoElement().data('archivedPage');
-    }
+    let result = this.isCurrent ? this.findArchivingInfoElement().data('archivedPage') : undefined;
     if (!result) {
       const name = this.realName || this.name;
       const iterator = cd.g.SOURCE_PAGES_MAP.entries();

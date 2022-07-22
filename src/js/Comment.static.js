@@ -150,11 +150,9 @@ export default {
    * @memberof Comment
    */
   configureAndAddLayers(comments) {
-    let floatingRects;
-    if (comments.length) {
-      floatingRects = controller.getFloatingElements().map(getExtendedRect);
-    }
-
+    const floatingRects = comments.length ?
+      controller.getFloatingElements().map(getExtendedRect) :
+      undefined;
     comments.forEach((comment) => {
       comment.configureLayers({
         add: false,

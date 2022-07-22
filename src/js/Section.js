@@ -495,35 +495,30 @@ class Section extends SectionSkeleton {
   createMoreMenuSelect() {
     const moreMenuSelect = elementPrototypes.getMoreMenuSelect();
 
-    let editOpeningCommentOption;
-    let moveOption;
-    let addSubsectionOption;
-    if (this.canEditFirstComment()) {
-      editOpeningCommentOption = new OO.ui.MenuOptionWidget({
+    const editOpeningCommentOption = this.canEditFirstComment() ?
+      new OO.ui.MenuOptionWidget({
         data: 'editOpeningComment',
         label: cd.s('sm-editopeningcomment'),
         title: cd.s('sm-editopeningcomment-tooltip'),
         icon: 'edit',
-      });
-    }
-
-    if (this.canBeMoved()) {
-      moveOption = new OO.ui.MenuOptionWidget({
+      }) :
+      undefined;
+    const moveOption = this.canBeMoved() ?
+      new OO.ui.MenuOptionWidget({
         data: 'move',
         label: cd.s('sm-move'),
         title: cd.s('sm-move-tooltip'),
         icon: 'arrowNext',
-      });
-    }
-
-    if (this.canAddSubsection()) {
-      addSubsectionOption = new OO.ui.MenuOptionWidget({
+      }) :
+      undefined;
+    const addSubsectionOption = this.canAddSubsection() ?
+      new OO.ui.MenuOptionWidget({
         data: 'addSubsection',
         label: cd.s('sm-addsubsection'),
         title: cd.s('sm-addsubsection-tooltip'),
         icon: 'speechBubbleAdd',
-      });
-    }
+      }) :
+      undefined;
 
     this.actions.moreMenuSelectDummy.element.remove();
     this.actionsElement.append(moreMenuSelect.$element.get(0));
@@ -749,7 +744,7 @@ class Section extends SectionSkeleton {
    *
    * @private
    */
-   createBarElement() {
+  createBarElement() {
     const barElement = document.createElement('div');
     barElement.className = 'cd-section-bar';
     if (!this.metadataElement) {
@@ -1042,11 +1037,9 @@ class Section extends SectionSkeleton {
       };
     }
 
-    let unsubscribeHeadline;
-    if (renamedFrom && !Section.getBySubscribeId(renamedFrom).length) {
-      unsubscribeHeadline = renamedFrom;
-    }
-
+    const unsubscribeHeadline = renamedFrom && !Section.getBySubscribeId(renamedFrom).length ?
+      renamedFrom :
+      undefined;
     subscriptions.subscribe(this.subscribeId, this.id, unsubscribeHeadline)
       .then(() => {
         if (mode !== 'silent') {
@@ -1112,10 +1105,7 @@ class Section extends SectionSkeleton {
           let body = cd.mws('discussiontools-topicsubscription-notify-unsubscribed-body');
           let autoHideSeconds;
           if (ancestorSubscribedTo) {
-            body += (
-              ' ' +
-              cd.sParse('section-unwatch-stillwatched', ancestorSubscribedTo.headline)
-            );
+            body += ' ' + cd.sParse('section-unwatch-stillwatched', ancestorSubscribedTo.headline);
             autoHideSeconds = 'long';
           }
           mw.notify(wrap(body), { title, autoHideSeconds });
@@ -1547,10 +1537,9 @@ class Section extends SectionSkeleton {
       // https://www.wikidata.org/w/index.php?diff=1410718962. The comment code is extracted only
       // superficially, without exluding the headline code and other operations performed in
       // Comment#adjustCommentBeginning.
-      const oldestCommentCode = match.code.slice(oldestSig.commentStartIndex, oldestSig.startIndex);
       oldestCommentWordOverlap = calculateWordOverlap(
         this.oldestComment.getText(),
-        removeWikiMarkup(oldestCommentCode)
+        removeWikiMarkup(match.code.slice(oldestSig.commentStartIndex, oldestSig.startIndex))
       );
     }
 

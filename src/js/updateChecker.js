@@ -638,10 +638,7 @@ function showOrdinaryNotification(comments) {
       const isCommonSection = filteredComments.every((comment) => (
         comment.sectionSubscribedTo === filteredComments[0].sectionSubscribedTo
       ));
-      let section;
-      if (isCommonSection) {
-        section = filteredComments[0].sectionSubscribedTo;
-      }
+      const section = isCommonSection ? filteredComments[0].sectionSubscribedTo : undefined;
       const where = (
         cd.mws('word-separator') +
         (

@@ -36,10 +36,9 @@ class CommentSkeleton {
      */
     this.followsHeading = targets[signatureIndex - 1]?.type === 'heading';
 
-    let precedingHeadingElement;
-    if (this.followsHeading) {
-      precedingHeadingElement = targets[signatureIndex - 1].element;
-    }
+    const precedingHeadingElement = this.followsHeading ?
+      targets[signatureIndex - 1].element :
+      undefined;
 
     /**
      * _For internal use._ Comment signature element.
@@ -436,7 +435,8 @@ class CommentSkeleton {
   }
 
   /**
-   * Given a comment part (a node), tell if it is a part of a list.
+   * Given a comment part (a node), tell if it is a part of a bulleted or unbulleted (but not
+   * numbered) list.
    *
    * @param {Element|external:Element} node
    * @param {boolean} isDefinitionListOnly
@@ -1111,7 +1111,7 @@ class CommentSkeleton {
   addAttributes() {
     this.elements.forEach((el) => {
       el.classList.add('cd-comment-part');
-      el.setAttribute('data-cd-comment-index', String(this.index));
+      el.setAttribute('data-cd-comment-index', this.index);
     });
     this.highlightables[0].classList.add('cd-comment-part-first');
     this.highlightables[this.highlightables.length - 1].classList.add('cd-comment-part-last');

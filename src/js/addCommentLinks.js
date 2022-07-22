@@ -435,6 +435,7 @@ function processContributions($content) {
 
   // Empty contributions list
   if (!list) return;
+
   const lines = [...list.children];
 
   lines.forEach((line) => {
@@ -615,8 +616,7 @@ async function processDiff($diff) {
       let comment;
       let page;
       if ($diff) {
-        const revUrl = new mw.Uri(dateElement.href);
-        page = pageRegistry.get(revUrl.query.title);
+        page = pageRegistry.get((new mw.Uri(dateElement.href)).query.title);
       } else {
         comment = Comment.getById(id, true);
       }
@@ -650,7 +650,7 @@ async function processDiff($diff) {
           }
         } else {
           linkElement.href = '#' + id;
-          linkElement.onclick = function (e) {
+          linkElement.onclick = (e) => {
             e.preventDefault();
             comment.scrollTo({ smooth: false });
           };

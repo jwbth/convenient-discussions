@@ -218,17 +218,13 @@ export function parseTimestamp(timestamp, timezone) {
  * @returns {string}
  */
 function generateTimezonePostfix(offset) {
-  let postfix = '';
-
-  if (!utcString) {
-    utcString = cd.mws('timezone-utc');
-  }
+  utcString = utcString || cd.mws('timezone-utc');
+  let postfix = ` (${utcString}`;
 
   // Not necessarily an integer
   offset /= 60;
 
   const sign = offset > 0 ? '+' : '-';
-  postfix = ` (${utcString}`;
   if (offset !== 0) {
     postfix += sign + Math.abs(offset);
   }

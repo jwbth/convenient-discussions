@@ -23,7 +23,7 @@ class LiveTimestamp {
    * @param {Element} element Element that has the timestamp.
    * @param {Date} date Timestamp's date.
    * @param {boolean} addTimezone Whether to add timezone to the timestamp.
-   * @param {Function} callback Function to run after the timestamp updates.
+   * @param {Function} [callback] Function to run after the timestamp updates.
    */
   constructor(element, date, addTimezone, callback) {
     /**
@@ -53,7 +53,7 @@ class LiveTimestamp {
     /**
      * Function to run after the timestamp updates.
      *
-     * @type {Function}
+     * @type {Function|undefined}
      * @private
      */
     this.callback = callback;

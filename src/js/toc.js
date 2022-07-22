@@ -196,13 +196,9 @@ const toc = {
    */
   addCommentCountString(count, unseenCount, full, $target) {
     const countString = full ? cd.s('toc-commentcount-full', count) : count;
-    let unseenCountString;
-    if (unseenCount) {
-      const messageName = full ? 'toc-commentcount-new-full' : 'toc-commentcount-new';
-      unseenCountString = ' ' + cd.s(messageName, unseenCount);
-    } else {
-      unseenCountString = '';
-    }
+    const unseenCountString = unseenCount ?
+      ' ' + cd.s(full ? 'toc-commentcount-new-full' : 'toc-commentcount-new', unseenCount) :
+      '';
 
     const span = document.createElement('span');
     span.className = 'cd-toc-commentCount';
@@ -265,10 +261,7 @@ const toc = {
       const headline = section.headline;
       const level = section.tocLevel;
       const currentLevelMatch = currentTree[level - 1];
-      let upperLevelMatch;
-      if (!currentLevelMatch) {
-        upperLevelMatch = currentTree[currentTree.length - 1];
-      }
+      const upperLevelMatch = currentLevelMatch ? undefined : currentTree[currentTree.length - 1];
 
       const li = document.createElement('li');
       li.id = `toc-${section.id}`;
@@ -550,13 +543,11 @@ const toc = {
           timestampSpan = document.createElement('span');
           timestampSpan.textContent = date;
           timestampSpan.title = nativeDate;
-
-          let callback;
-          if (!areCommentsRendered) {
-            callback = () => {
+          const callback = areCommentsRendered ?
+            undefined :
+            () => {
               navPanel.updateTimestampsInRefreshButtonTooltip();
             };
-          }
           (new LiveTimestamp(timestampSpan, comment.date, false, callback)).init();
         }
 
