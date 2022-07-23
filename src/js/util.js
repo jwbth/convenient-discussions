@@ -946,12 +946,22 @@ export function getLastArrayElementOrSelf(value) {
 }
 
 /**
- * Check whether the provided node is a metadata tag (`<style>`, `<link>`).
+ * Check whether the provided node is a heading node (`<h1>` - `<h6>`).
  *
  * @param {Node} node
  * @returns {boolean}
  */
-export function isMetadataTag(node) {
+export function isHeadingNode(node) {
+  return ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(node.tagName);
+}
+
+/**
+ * Check whether the provided node is a metadata node (`<style>`, `<link>`).
+ *
+ * @param {Node} node
+ * @returns {boolean}
+ */
+export function isMetadataNode(node) {
   return ['STYLE', 'LINK'].includes(node.tagName);
 }
 

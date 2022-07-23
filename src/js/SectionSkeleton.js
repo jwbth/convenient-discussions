@@ -1,7 +1,7 @@
 import CdError from './CdError';
 import cd from './cd';
 import { TreeWalker } from './treeWalker';
-import { defined, isMetadataTag } from './util';
+import { defined, isMetadataNode } from './util';
 
 /**
  * Class containing the main properties of a section. This class is the only one used in the worker
@@ -119,7 +119,7 @@ class SectionSkeleton {
       // .cd-section-button-container elements are added to level 2 sections, which means these
       // sections won't have them as elements but their last subsections can if they are included.
       // So we better don't include them at all.
-      (node) => !isMetadataTag(node) && !node.classList.contains('cd-section-button-container'),
+      (node) => !isMetadataNode(node) && !node.classList.contains('cd-section-button-container'),
 
       true,
       this.headingElement
@@ -262,7 +262,7 @@ class SectionSkeleton {
     const classesToFilter = ['mw-headline-number', ...cd.config.foreignElementInHeadlineClasses];
     const nodes = [...this.headlineElement.childNodes].filter((node) => (
       node.nodeType === Node.TEXT_NODE ||
-      !(isMetadataTag(node) || classesToFilter.some((name) => node.classList.contains(name)))
+      !(isMetadataNode(node) || classesToFilter.some((name) => node.classList.contains(name)))
     ));
 
     /**

@@ -16,7 +16,7 @@ import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
 import debug from './debug';
 import { getAllTextNodes, parseDocument } from './htmlparser2Extended';
-import { isMetadataTag } from './util';
+import { isHeadingNode, isMetadataNode } from './util';
 
 let isFirstRun = true;
 let alarmTimeout;
@@ -199,7 +199,7 @@ function parse() {
   cd.comments.forEach((comment) => {
     comment.hiddenElementsData = [];
     comment.elementHtmls = comment.elements.map((element) => {
-      if (/^H[1-6]$/.test(element.tagName)) {
+      if (isHeadingNode(element)) {
         // Keep only the headline, as other elements contain dynamic identificators.
         const headlineElement = element.getElementsByClassName('mw-headline')[0];
         if (headlineElement) {
@@ -226,7 +226,7 @@ function parse() {
           el.remove();
         });
 
-      if (element.classList.contains('references') || isMetadataTag(element)) {
+      if (element.classList.contains('references') || isMetadataNode(element)) {
         const textNode = hideElement(element, comment);
         return textNode.textContent;
       } else {
@@ -281,7 +281,7 @@ function parse() {
       }
 
       comment.comparedHtml += comparedHtml + '\n';
-      if (/^H[1-6]$/.test(el.tagName)) {
+      if (isHeadingNode(el)) {
         comment.headingComparedHtml += comparedHtml;
       } else {
         comment.textComparedHtml += comparedHtml + '\n';

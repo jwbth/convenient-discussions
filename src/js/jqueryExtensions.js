@@ -6,7 +6,7 @@
 
 import cd from './cd';
 import controller from './controller';
-import { isMetadataTag } from './util';
+import { isMetadataNode } from './util';
 
 /**
  * Scroll to a specified position vertically.
@@ -61,7 +61,7 @@ export default {
    */
   cdRemoveNonElementNodes: function () {
     return this.filter(function () {
-      return this.tagName && !isMetadataTag(this);
+      return this.tagName && !isMetadataNode(this);
     });
   },
 

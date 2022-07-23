@@ -3,8 +3,9 @@ import cd from './cd';
 import { ElementsAndTextTreeWalker, ElementsTreeWalker } from './treeWalker';
 import {
   generateFixedPosTimestamp,
+  isHeadingNode,
   isInline,
-  isMetadataTag,
+  isMetadataNode,
   spacesToUnderlines,
   unique,
 } from './util';
@@ -394,7 +395,7 @@ class CommentSkeleton {
       (
         ['DL', 'UL'].includes(tagName) &&
         previousElement &&
-        /^H[1-6]$/.test(previousElement.tagName) &&
+        isHeadingNode(previousElement) &&
         nextElement &&
         !['DL', 'OL'].includes(nextElement.tagName) &&
 
@@ -617,7 +618,7 @@ class CommentSkeleton {
       if (!isTextNode) {
         if (!this.isElementEligible(node, treeWalker, step)) break;
 
-        isHeading = /^H[1-6]$/.test(node.tagName);
+        isHeading = isHeadingNode(node);
         hasCurrentSignature = node.contains(this.signatureElement);
 
         // The second parameter of getElementsByClassName() is an optimization for the worker
@@ -808,7 +809,7 @@ class CommentSkeleton {
           !node.textContent.trim() &&
           [...node.children].every((child) => child.tagName === 'BR')
         ) ||
-        isMetadataTag(node) ||
+        isMetadataNode(node) ||
         Array.from(node.classList).some((name => ['references', 'reflist-talk'].includes(name)))
       ) {
         this.parts.splice(i, 1);
@@ -1046,7 +1047,8 @@ class CommentSkeleton {
    */
   setHighlightables() {
     const isHighlightable = (el) => (
-      !/^(H[1-6]|STYLE|LINK)$/.test(el.tagName) &&
+      !isHeadingNode(el) &&
+      !isMetadataNode(el) &&
       !cd.g.UNHIGHLIGHTABLE_ELEMENT_CLASSES.some((name) => el.classList.contains(name)) &&
 
       // Can't access stylesheets from the worker context, so we do it only in

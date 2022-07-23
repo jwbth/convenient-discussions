@@ -13,6 +13,7 @@ import {
   getFromLocalStorage,
   getVisibilityByRects,
   isCmdModifierPressed,
+  isHeadingNode,
   removeFromArrayIfPresent,
   saveToLocalStorage,
   unique,
@@ -313,8 +314,7 @@ class Thread {
     let startElement;
     let visualEndElement;
     let endElement;
-    const firstNotHeadingElement = this.rootComment.elements
-      .find((el) => !/^H[1-6]$/.test(el.tagName));
+    const firstNotHeadingElement = this.rootComment.elements.find((el) => !isHeadingNode(el));
     const highlightables = this.lastComment.highlightables;
     const visualHighlightables = this.visualLastComment.highlightables;
     const nextForeignElement = cd.comments[this.lastComment.index + 1]?.elements[0];
