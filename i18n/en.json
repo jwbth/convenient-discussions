@@ -172,7 +172,7 @@
 
   "cf-reaction-templateinheadline": "Don't use templates in headlines: they break section links.",
   "cf-reaction-signature": "No need to enter <kbd>$1</kbd>: the signature will be added automatically.",
-  "cf-reaction-pre": "<code><nowiki><pre></nowiki></code> tags can break the layout—better use <code><nowiki><syntaxhighlight lang=\"text\"></nowiki></code>.",
+  "cf-reaction-pre": "$1 tags can break the layout—better use $2.",
   "cf-reaction-mention-edit": "Since you are <em>editing</em> a comment, a [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|mention notification]] will not be sent. To have a notification sent, you may link the user in the edit summary.",
   "cf-reaction-mention-nosignature": "Since you've opted not to include a signature in your comment, a [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|mention notification]] will not be sent. To send a notification, you may link the user in the edit summary.",
 

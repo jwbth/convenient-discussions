@@ -171,7 +171,7 @@
 	"cf-block-close": "{{identical|Close}}",
 	"cf-reaction-templateinheadline": "Message outputted above the comment form when the user has entered the template code in the headline input.",
 	"cf-reaction-signature": "Message outputted above the comment form when the user enters <nowiki>~~~~</nowiki> in the comment input. There will be <nowiki>~~~~</nowiki> instead of $1.",
-	"cf-reaction-pre": "Message outputted above the comment form when the user has entered <nowiki><pre></nowiki>.",
+	"cf-reaction-pre": "Message outputted above the comment form when the user has entered <nowiki><pre></nowiki>.\n\n* $1: <code><nowiki><pre></nowiki></code>\n* $2: <code><nowiki><syntaxhighlight lang=\"text\"></nowiki></code>",
 	"cf-reaction-mention-edit": "Message outputted above the comment form when editing a comment and the user inserts a mention into the comment input using the autocomplete function.",
 	"cf-reaction-mention-nosignature": "Message outputted above the comment form when he user inserts a mention into the comment input using the autocomplete function and the \"No signature\" checkbox is set.",
 	"cf-notice-nochanges": "Message outputted above the comment form when viewing changes in the source code and there is no.",
