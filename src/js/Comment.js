@@ -3579,7 +3579,7 @@ class Comment extends CommentSkeleton {
       cd.g.KEEP_IN_SECTION_ENDING.forEach((regexp) => {
         const match = chunkCodeAfter.match(regexp);
         if (match) {
-          // "1" accounts for the first line break.
+          // `1` accounts for the first line break.
           chunkCodeAfterEndIndex -= match[0].length - 1;
         }
       });
@@ -3593,7 +3593,9 @@ class Comment extends CommentSkeleton {
       }
 
       const anySignaturePattern = (
-        '^([^]*?(?:' +
+        '^(' +
+        (this.isInSingleCommentTable ? '[^]*?(?:(?:\\s*\\n\\|\\})+|</table>).*\\n' : '') +
+        '[^]*?(?:' +
         mw.util.escapeRegExp(thisInCode.signatureCode) +
         '|' +
         cd.g.CONTENT_TIMESTAMP_REGEXP.source +
@@ -3657,14 +3659,6 @@ class Comment extends CommentSkeleton {
             }
           }
         }
-      }
-
-      // Hotfix for comments inside a table (barnstars, for example).
-      if (
-        this.isInSingleCommentTable &&
-        adjustedChunkCodeAfter.slice(adjustedCodeBetween.length).startsWith('|}\n')
-      ) {
-        adjustedCodeBetween += '|}\n';
       }
 
       // If the comment is to be put after a comment with different indentation characters, use
