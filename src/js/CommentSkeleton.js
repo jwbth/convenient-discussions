@@ -1391,9 +1391,11 @@ class CommentSkeleton {
    * @param {boolean} [indirect=false] Whether to include children of children and so on (return
    *   descendants, in a word).
    * @param {boolean} [visual=false] Whether to use visual levels instead of logical.
+   * @param {boolean} [allowSiblings=true] When `visual` is `true`, allow comments of the same
+   *   level to be considered children (if they are outdented).
    * @returns {CommentSkeleton[]}
    */
-  getChildren(indirect = false, visual = false) {
+  getChildren(indirect = false, visual = false, allowSiblings = true) {
     if (this.index === cd.comments.length - 1) {
       return [];
     }
@@ -1403,7 +1405,21 @@ class CommentSkeleton {
     cd.comments
       .slice(this.index + 1)
       .some((comment) => {
-        if (comment.section === this.section && comment[prop] > this[prop]) {
+        if (
+          comment.section === this.section &&
+          (
+            comment[prop] > this[prop] ||
+
+            // This comment is visually a child, although it's of the same level as the parent:
+            // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-04-25T12:40:00.000Z-Example-2021-04-25T12:00:00.000Z
+            (
+              prop === 'level' &&
+              allowSiblings &&
+              comment[prop] === this[prop] &&
+              comment.isOutdented
+            )
+          )
+        ) {
           // `comment.getParent() === this` to allow comments mistakenly indented with more than one
           // level.
           if (comment[prop] === this[prop] + 1 || comment.getParent() === this || indirect) {
@@ -1513,10 +1529,6 @@ class CommentSkeleton {
       [...parser.context.rootElement.getElementsByClassName(cd.config.outdentClass)]
         .reverse()
         .forEach((element) => {
-          // Temporary fix for https://commons.wikimedia.org/wiki/Template:Outdent where child
-          // elements have the "outdent-template" class.
-          if (element.parentNode.classList.contains('outdent-template')) return;
-
           let childComment;
           let parentComment;
           const treeWalker = new ElementsTreeWalker(element, parser.context.rootElement);
@@ -1579,6 +1591,7 @@ class CommentSkeleton {
               );
               if (comment.level === childComment.level) {
                 comment.isOutdented = true;
+                comment.elements[0].classList.add('cd-comment-outdented');
               }
               return false;
             });

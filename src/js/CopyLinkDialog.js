@@ -164,7 +164,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   /**
    * Create the content of the "Anchor" panel in the dialog.
    *
-   * @returns {JQuery}
+   * @returns {external:jQuery}
    */
   createAnchorPanelContent() {
     // Doesn't apply to DT IDs.
@@ -231,7 +231,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   /**
    * Create the content of the "Diff" panel in the dialog.
    *
-   * @returns {JQuery}
+   * @returns {external:jQuery}
    */
   createDiffPanelContent() {
     const standardField = createCopyActionField({

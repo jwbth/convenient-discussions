@@ -1004,6 +1004,15 @@ export default {
   --cd-sidebar-color: ${sidebarColor};
   --cd-sidebar-transparent-color: ${transparentize(sidebarColor)};
 }`);
+    if (cd.config.outdentClass) {
+      mw.loader.addStyleTag(`.${cd.config.outdentClass} {
+  margin-top: 0.5em;
+}
+
+.cd-reformattedComments .${cd.config.outdentClass} {
+  margin-top: 0.75em;
+}`);
+    }
 
     require('../less/global.less');
 

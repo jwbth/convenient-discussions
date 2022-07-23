@@ -629,7 +629,8 @@ export default {
   },
 
   /**
-   * Find outdent templates on the page.
+   * Check whether there is at least one outdent template on the page. (If there is no, we don't
+   * need to run many expensive operations.)
    *
    * @returns {boolean}
    */
@@ -1696,6 +1697,9 @@ export default {
    * @private
    */
   getRangeContents(start, end) {
+    // It makes more sense to place this function in the util module, but we can't import controller
+    // there because of issues with the worker build and a cyclic dependency that emerges.
+
     // Fight infinite loops
     if (start.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_PRECEDING) return;
 

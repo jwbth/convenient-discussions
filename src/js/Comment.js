@@ -263,6 +263,14 @@ class Comment extends CommentSkeleton {
     this.isCollapsed = false;
 
     /**
+     * If the comment is collapsed, that's the closest collapsed thread that this comment related
+     * to.
+     *
+     * @type {import('./Thread').Thread}
+     */
+    this.collapsedThread = null;
+
+    /**
      * List of the comment's {@link CommentSubitemList subitems}.
      *
      * @type {CommentSubitemList}
@@ -4050,6 +4058,50 @@ class Comment extends CommentSkeleton {
     );
 
     return commentUnixTime <= currentUnixTime && currentUnixTime < commentUnixTime + 60;
+  }
+
+  /**
+   * _For internal use._ Apply a very specific fix for cases when an indented comment starts with a
+   * list like this:
+   *
+   * ```
+   * : Comment. [signature]
+   * :* Item
+   * :* Item
+   * : Comment end. [signature]
+   * ```
+   *
+   * which gives the following DOM:
+   *
+   * ```
+   * <dd>
+   *   <div>Comment. [signature]</div>
+   *   <ul>
+   *     <li>Item</li>
+   *     <li>Item</li>
+   *   </ul>
+   * </dd>
+   * <dd>Comment end. [signature]</dd>
+   * ```
+   *
+   * The code splits the parent item element (`dd` in this case) into two and puts the list in the
+   * second one. This fixes the thread feature behavior among other things.
+   */
+  maybeSplitParent() {
+    const previousComment = cd.comments[this.index - 1];
+    if (this.level !== previousComment.level) return;
+
+    const previousCommentLastElement = previousComment
+      .elements[previousComment.elements.length - 1];
+    const potentialElement = previousCommentLastElement.nextElementSibling;
+    if (
+      ['DD', 'LI'].includes(previousCommentLastElement.parentNode.tagName) &&
+      previousCommentLastElement.tagName === 'DIV' &&
+      potentialElement === this.elements[0] &&
+      potentialElement.tagName === 'DIV'
+    ) {
+      previousComment.parser.splitParentAfterNode(potentialElement.previousSibling);
+    }
   }
 }
 

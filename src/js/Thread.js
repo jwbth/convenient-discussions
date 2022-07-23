@@ -284,14 +284,39 @@ class Thread {
     this.commentCount = this.lastComment.index - this.rootComment.index + 1;
 
     /**
+     * Whether the thread has outdented comments.
+     *
+     * @type {boolean}
+     */
+    this.hasOutdents = (
+      controller.areThereOutdents() &&
+      this.comments.slice(1).some((comment) => comment.isOutdented)
+    );
+
+    /**
      * Last comment of the thread _visually_, not logically (differs from {@link Thread#lastComment}
      * if there are `{{outdent}}` templates in the thread).
      *
      * @type {Comment}
      * @private
      */
-    this.visualLastComment = controller.areThereOutdents() ?
+    this.visualLastComment = this.hasOutdents ?
       rootComment.getChildren(true, true).slice(-1)[0] || rootComment :
+      this.lastComment;
+
+    /**
+     * Fallback visual last comment. Used when `Thread#visualEndElement` may be hidden without
+     * collapsing the thread. That usually means `Thread#visualEndElement` has the
+     * `cd-connectToPreviousItem` class.
+     *
+     * @type {Comment}
+     * @private
+     */
+    this.visualLastCommentFallback = this.hasOutdents ?
+      // `|| rootComment` part for a very weird case when an outdented comment is at the same level
+      // as its parent.
+      rootComment.getChildren(true, true, false).slice(-1)[0] || rootComment :
+
       this.lastComment;
 
     this.setMarginalElementProperties();
@@ -312,51 +337,72 @@ class Thread {
    */
   setMarginalElementProperties() {
     let startElement;
-    let visualEndElement;
     let endElement;
+    let visualEndElement;
+    let visualEndElementFallback;
     const firstNotHeadingElement = this.rootComment.elements.find((el) => !isHeadingNode(el));
     const highlightables = this.lastComment.highlightables;
     const visualHighlightables = this.visualLastComment.highlightables;
+    const visualHighlightablesFallback = this.visualLastCommentFallback.highlightables;
     const nextForeignElement = cd.comments[this.lastComment.index + 1]?.elements[0];
+
     if (this.rootComment.level === 0) {
       startElement = firstNotHeadingElement;
       visualEndElement = getEndElement(startElement, visualHighlightables, nextForeignElement);
-      endElement = this.lastComment === this.visualLastComment ?
+      visualEndElementFallback = this.visualLastComment === this.visualLastCommentFallback ?
         visualEndElement :
-        getEndElement(startElement, highlightables, nextForeignElement);
+        getEndElement(startElement, visualHighlightablesFallback, nextForeignElement);
+      endElement = this.hasOutdents ?
+        getEndElement(startElement, highlightables, nextForeignElement) :
+        visualEndElement;
     } else {
+      // We could improve the positioning of the thread line to exclude the vertical space next to
+      // an outdent template placed at a non-0 level by taking the first element as the start
+      // element. But then we need to fix areTopAndBottomAligned() (calculate the last comment's
+      // margins instead of using the first comment's) and controller.getRangeContents() (come up
+      // with a treatment for the situation when the end element includes the start element).
       startElement = (
         findItemElement(firstNotHeadingElement, this.rootComment.level, nextForeignElement) ||
         firstNotHeadingElement
       );
       const lastHighlightable = highlightables[highlightables.length - 1];
 
-      if (this.lastComment === this.visualLastComment) {
+      if (this.hasOutdents) {
+        const lastOutdentedComment = cd.comments
+          .slice(0, this.lastComment.index + 1)
+          .reverse()
+          .find((comment) => comment.isOutdented);
+        endElement = lastOutdentedComment.level === 0 ?
+          getEndElement(startElement, highlightables, nextForeignElement) :
+          findItemElement(
+            lastHighlightable,
+            Math.min(lastOutdentedComment.level, this.rootComment.level),
+            nextForeignElement
+          );
+
+        visualEndElement = findItemElement(
+          visualHighlightables[visualHighlightables.length - 1],
+          this.rootComment.level,
+          nextForeignElement
+        );
+        visualEndElementFallback = this.visualLastComment === this.visualLastCommentFallback ?
+          visualEndElement :
+          findItemElement(
+            visualHighlightablesFallback[visualHighlightablesFallback.length - 1],
+            this.rootComment.level,
+            nextForeignElement
+          );
+      } else {
         endElement = (
           findItemElement(lastHighlightable, this.rootComment.level, nextForeignElement) ||
           lastHighlightable
         );
 
-        visualEndElement = endElement;
-      } else {
-        const outdentedComment = cd.comments
-          .slice(0, this.lastComment.index + 1)
-          .reverse()
-          .find((comment) => comment.isOutdented);
-        endElement = outdentedComment.level === 0 ?
-          getEndElement(startElement, highlightables, nextForeignElement) :
-          findItemElement(lastHighlightable, outdentedComment.level, nextForeignElement);
-
-        const lastVisualHighlightable = visualHighlightables[visualHighlightables.length - 1];
-        visualEndElement = findItemElement(
-          lastVisualHighlightable,
-          this.rootComment.level,
-          nextForeignElement
-        );
+        visualEndElementFallback = visualEndElement = endElement;
       }
     }
 
-    if (!startElement || !endElement || !visualEndElement) {
+    if (!startElement || !endElement || !visualEndElement || !visualEndElementFallback) {
       throw new CdError();
     }
 
@@ -384,6 +430,16 @@ class Thread {
      * @private
      */
     this.visualEndElement = visualEndElement;
+
+    /**
+     * Fallback visual end element. Used when `Thread#visualEndElement` may be hidden without
+     * collapsing the thread. That usually means `Thread#visualEndElement` has the
+     * `cd-connectToPreviousItem` class.
+     *
+     * @type {Element}
+     * @private
+     */
+    this.visualEndElementFallback = visualEndElementFallback;
   }
 
   /**
@@ -495,8 +551,24 @@ class Thread {
       despite the fact that it is not a subitem of the last comment. (Subitems of 0-level comments
       are handled by a different mechanism, see `getEndElement()`.)
     */
-    const lastComment = visual ? this.visualLastComment : this.lastComment;
-    const endElement = visual ? this.visualEndElement : this.endElement;
+    let lastComment;
+    let endElement;
+    if (visual) {
+      lastComment = this.visualLastComment;
+      endElement = this.visualEndElement;
+      if (
+        endElement.classList.contains('cd-hidden') &&
+        endElement.previousElementSibling?.classList.contains('cd-thread-expandNote')
+      ) {
+        endElement = endElement.previousElementSibling;
+      }
+      if (!getVisibilityByRects(endElement.getBoundingClientRect())) {
+        endElement = this.visualEndElementFallback;
+      }
+    } else {
+      lastComment = this.lastComment;
+      endElement =  this.endElement;
+    }
 
     // Catch special cases when a section has no "Reply in section" or "There are new comments in
     // this thread" button or the thread isn't the last thread starting with a 0-level comment in
@@ -532,48 +604,11 @@ class Thread {
   }
 
   /**
-   * Collapse the thread.
+   * Add an expand note when collapsing a thread.
    *
-   * @param {Promise} [loadUserGendersPromise]
+   * @param {Promise} loadUserGendersPromise
    */
-  collapse(loadUserGendersPromise) {
-    /**
-     * Nodes that are collapsed. These can change, at least due to comment forms showing up.
-     *
-     * @type {Node[]|undefined}
-     * @private
-     */
-    this.collapsedRange = controller.getRangeContents(
-      this.startElement,
-      this.getAdjustedEndElement()
-    );
-
-    this.collapsedRange.forEach((el) => {
-      // We use a class here because there can be elements in the comment that are hidden from the
-      // beginning and should stay so when reshowing the comment.
-      el.classList.add('cd-hidden')
-
-      // An element can be in more than one collapsed range. So, we need to show it when expanding
-      // a range only if no active collapsed ranges are left.
-      const $el = $(el);
-      const roots = $el.data('cd-collapsed-thread-root-comments') || [];
-      roots.push(this.rootComment);
-      $el.data('cd-collapsed-thread-root-comments', roots);
-    });
-
-    this.isCollapsed = true;
-
-    for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
-      const comment = cd.comments[i];
-      if (comment.thread?.isCollapsed && comment.thread !== this) {
-        i = comment.thread.lastComment.index;
-        continue;
-      }
-      comment.isCollapsed = true;
-      comment.collapsedThread = this;
-      comment.removeLayers();
-    }
-
+  addExpandNode(loadUserGendersPromise) {
     const expandButton = elementPrototypes.expandButton.cloneNode(true);
     const button = new Button({
       tooltip: cd.s('thread-expand-tooltip', cd.g.CMD_MODIFIER),
@@ -618,6 +653,9 @@ class Thread {
     const tagName = ['LI', 'DD'].includes(firstElement.tagName) ? firstElement.tagName : 'DIV';
     const expandNote = document.createElement(tagName);
     expandNote.className = 'cd-thread-button-container cd-thread-expandNote';
+    if (firstElement.classList.contains('cd-connectToPreviousItem')) {
+      expandNote.className += ' cd-connectToPreviousItem';
+    }
     expandNote.appendChild(button.element);
     if (firstElement.parentNode.tagName === 'OL' && this.rootComment.ahContainerListType !== 'ol') {
       const container = document.createElement('ul');
@@ -643,6 +681,52 @@ class Thread {
      * @type {external:jQuery|undefined}
      */
     this.$expandNote = $(this.expandNote);
+  }
+
+  /**
+   * Collapse the thread.
+   *
+   * @param {Promise} [loadUserGendersPromise]
+   */
+  collapse(loadUserGendersPromise) {
+    /**
+     * Nodes that are collapsed. These can change, at least due to comment forms showing up.
+     *
+     * @type {Node[]|undefined}
+     * @private
+     */
+    this.collapsedRange = controller.getRangeContents(
+      this.startElement,
+      this.getAdjustedEndElement()
+    );
+
+    this.collapsedRange.forEach((el) => {
+      // We use a class here because there can be elements in the comment that are hidden from the
+      // beginning and should stay so when reshowing the comment.
+      el.classList.add('cd-hidden');
+
+      // An element can be in more than one collapsed range. So, we need to show it when expanding
+      // a range only if no active collapsed ranges are left.
+      const $el = $(el);
+      const roots = $el.data('cd-collapsed-thread-root-comments') || [];
+      roots.push(this.rootComment);
+      $el.data('cd-collapsed-thread-root-comments', roots);
+    });
+
+    this.isCollapsed = true;
+
+    for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
+      const comment = cd.comments[i];
+      if (comment.thread?.isCollapsed && comment.thread !== this) {
+        i = comment.thread.lastComment.index;
+        continue;
+      }
+      comment.isCollapsed = true;
+      comment.collapsedThread = this;
+      comment.removeLayers();
+    }
+
+    this.addExpandNode(loadUserGendersPromise);
 
     if (isInited) {
       this.$expandNote.cdScrollIntoView();
@@ -657,7 +741,10 @@ class Thread {
 
     if (this.endElement !== this.visualEndElement) {
       for (let c = this.rootComment; c; c = c.getParent(true)) {
-        c.thread?.line.classList.remove('cd-thread-line-extended');
+        const thread = c.thread;
+        if (thread && thread.endElement !== thread.visualEndElement) {
+          thread.line.classList.remove('cd-thread-line-extended');
+        }
       }
     }
 
@@ -704,13 +791,16 @@ class Thread {
         continue;
       }
       comment.isCollapsed = false;
-      delete comment.collapsedThread;
+      comment.collapsedThread = null;
       comment.configureLayers();
     }
 
     if (this.endElement !== this.visualEndElement && areOutdentedCommentsShown) {
       for (let c = this.rootComment; c; c = c.getParent()) {
-        c.thread?.line.classList.add('cd-thread-line-extended');
+        const thread = c.thread;
+        if (thread && thread.endElement !== thread.visualEndElement) {
+          thread.line.classList.add('cd-thread-line-extended');
+        }
       }
     }
 
@@ -804,15 +894,18 @@ class Thread {
       rectTop :
       this.getAdjustedEndElement(true)?.getBoundingClientRect();
 
-    const areTopAndBottomMisaligned = () => {
+    const areTopAndBottomAligned = () => {
+      // FIXME: We use the first comment's margins for the bottom rectangle which can lead to errors
+      // (need to check).
       const bottomLeft = getLeft(rectBottom, commentMargins, dir);
-      return dir === 'ltr' ? bottomLeft < left : bottomLeft > left;
+
+      return dir === 'ltr' ? bottomLeft >= left : bottomLeft <= left;
     };
     if (
       top === undefined ||
       !rectBottom ||
       !getVisibilityByRects(...[rectTop, rectBottom].filter(defined)) ||
-      areTopAndBottomMisaligned()
+      !areTopAndBottomAligned()
     ) {
       this.removeLine();
       return false;
@@ -849,10 +942,10 @@ class Thread {
    * Remove the thread line if present and set the relevant properties to `null`.
    */
   removeLine() {
-    if (this.line) {
-      this.clickArea.remove();
-      this.clickArea = this.clickAreaOffset = this.line = null;
-    }
+    if (!this.line) return;
+
+    this.clickArea.remove();
+    this.clickArea = this.clickAreaOffset = this.line = null;
   }
 
   /**

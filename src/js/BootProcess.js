@@ -699,193 +699,6 @@ export default class BootProcess {
   }
 
   /**
-   * Combine two adjacent `.cd-commentLevel` elements into one, recursively going deeper in terms of
-   * the nesting level.
-   *
-   * @private
-   */
-  mergeAdjacentCommentLevels() {
-    const levels = controller.rootElement
-      .querySelectorAll('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)');
-    if (!levels.length) return;
-
-    const isOrHasCommentLevel = (el) => (
-      (el.classList.contains('cd-commentLevel') && el.tagName !== 'OL') ||
-      el.querySelector('.cd-commentLevel:not(ol)')
-    );
-
-    [...levels].forEach((bottomElement) => {
-      const topElement = bottomElement.previousElementSibling;
-
-      // If the previous element was removed in this cycle. (Or it could be absent for some other
-      // reason? I can confirm that I witnessed a case where the element was absent, but didn't pay
-      // attention why unfortunately.)
-      if (!topElement) return;
-
-      let currentTopElement = topElement;
-      let currentBottomElement = bottomElement;
-      do {
-        const topTag = currentTopElement.tagName;
-        const bottomInnerTags = {};
-        if (topTag === 'UL') {
-          bottomInnerTags.DD = 'LI';
-        } else if (topTag === 'DL') {
-          bottomInnerTags.LI = 'DD';
-        }
-
-        let firstMoved;
-        if (isOrHasCommentLevel(currentTopElement)) {
-          const firstElementChild = currentBottomElement.firstElementChild;
-
-          /*
-            Avoid collapsing adjacent LIs and DDs if we deal with a structure like this:
-            <li>
-              <div>Comment</div>
-              <ul>Replies</ul>
-            </li>
-            <li>
-              <div>Comment</div>
-              <ul>Replies</ul>
-            </li>
-          */
-          if (['DL', 'DD', 'UL', 'LI'].includes(firstElementChild.tagName)) {
-            while (currentBottomElement.childNodes.length) {
-              let child = currentBottomElement.firstChild;
-              if (child.tagName) {
-                if (bottomInnerTags[child.tagName]) {
-                  child = controller.changeElementType(child, bottomInnerTags[child.tagName]);
-                }
-                if (firstMoved === undefined) {
-                  firstMoved = child;
-                }
-              } else {
-                if (firstMoved === undefined && child.textContent.trim()) {
-                  // Don't fill the "firstMoved" variable which is used further to merge elements if
-                  // there is a non-empty text node between. (An example that is now fixed:
-                  // https://ru.wikipedia.org/wiki/Википедия:Форум/Архив/Викиданные/2018/1_полугодие#201805032155_NBS,
-                  // but other can be on the loose.) Instead, wrap the text node into an element to
-                  // prevent it from being ignored when searching next time for adjacent
-                  // .commentLevel elements. This could be seen only as an additional precaution,
-                  // since it doesn't fix the source of the problem: the fact that a bare text node
-                  // is (probably) a part of the reply. It shouldn't be happening.
-                  firstMoved = null;
-                  const newChild = document.createElement('span');
-                  newChild.appendChild(child);
-                  child = newChild;
-                }
-              }
-              currentTopElement.appendChild(child);
-            }
-            currentBottomElement.remove();
-          }
-        }
-
-        currentBottomElement = firstMoved;
-        currentTopElement = firstMoved?.previousElementSibling;
-      } while (
-        currentTopElement &&
-        currentBottomElement &&
-        isOrHasCommentLevel(currentBottomElement)
-      );
-    });
-  }
-
-  /**
-   * Add the `'cd-connectToPreviousItem'` class to some item elements to visually connect threads
-   * broken by some intervention.
-   *
-   * @private
-   */
-  connectBrokenThreads() {
-    const items = [];
-
-    controller.rootElement
-      .querySelectorAll('dd.cd-comment-part-last + dd, li.cd-comment-part-last + li')
-      .forEach((el) => {
-        if (el.firstElementChild?.classList.contains('cd-commentLevel')) {
-          items.push(el);
-        }
-      });
-
-    // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202009202110_Example
-    controller.rootElement
-      .querySelectorAll('.cd-comment-replacedPart.cd-comment-part-last')
-      .forEach((el) => {
-        const possibleItem = el.parentNode.nextElementSibling;
-        if (possibleItem?.firstElementChild?.classList.contains('cd-commentLevel')) {
-          items.push(possibleItem);
-        }
-      });
-
-    // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Image_breaking_a_thread
-    controller.rootElement
-      .querySelectorAll('.cd-commentLevel + .thumb + .cd-commentLevel > li')
-      .forEach((el) => {
-        items.push(el);
-      });
-
-    items.forEach((item) => {
-      item.classList.add('cd-connectToPreviousItem');
-    });
-  }
-
-  /**
-   * Perform some DOM-related tasks after parsing comments.
-   *
-   * @private
-   */
-  adjustDom() {
-    this.mergeAdjacentCommentLevels();
-    this.mergeAdjacentCommentLevels();
-    if (
-      controller.rootElement.querySelector('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')
-    ) {
-      console.warn('.cd-commentLevel adjacencies have left.');
-    }
-
-    this.connectBrokenThreads();
-
-    /*
-      A very specific fix for cases when an indented comment starts with a list like this:
-
-        : Comment. [signature]
-        :* Item
-        :* Item
-        : Comment end. [signature]
-
-      which gives the following DOM:
-
-        <dd>
-          <div>Comment. [signature]</div>
-          <ul>
-            <li>Item</li>
-            <li>Item</li>
-          </ul>
-        </dd>
-        <dd>Comment end. [signature]</dd>
-
-      The code splits the parent item element ("dd" in this case) into two and puts the list in the
-      second one. This fixes the thread feature behavior among other things.
-    */
-    cd.comments.slice(1).forEach((comment, i) => {
-      const previousComment = cd.comments[i];
-      if (comment.level === previousComment.level) {
-        const previousCommentLastElement = previousComment
-          .elements[previousComment.elements.length - 1];
-        const potentialElement = previousCommentLastElement.nextElementSibling;
-        if (
-          ['DD', 'LI'].includes(previousCommentLastElement.parentNode.tagName) &&
-          previousCommentLastElement.tagName === 'DIV' &&
-          potentialElement === comment.elements[0] &&
-          potentialElement.tagName === 'DIV'
-        ) {
-          previousComment.parser.splitParentAfterNode(potentialElement.previousSibling);
-        }
-      }
-    });
-  }
-
-  /**
    * Parse the comments and modify the related parts of the DOM.
    *
    * @private
@@ -905,16 +718,8 @@ export default class BootProcess {
         });
 
       Comment.reformatTimestamps();
-
-      // Faster than doing it for every individual comment.
-      controller.rootElement
-        .querySelectorAll('table.cd-comment-part .cd-signature, .cd-comment-part > table .cd-signature')
-        .forEach((signature) => {
-          const commentIndex = signature.closest('.cd-comment-part').dataset.cdCommentIndex;
-          cd.comments[commentIndex].isInSingleCommentTable = true;
-        });
-
-      this.adjustDom();
+      Comment.setInSingleCommentTableProperty();
+      Comment.adjustDom();
     } catch (e) {
       console.error(e);
     }
@@ -958,6 +763,9 @@ export default class BootProcess {
 
     // Dependent on sections being set
     Comment.processOutdents(this.parser);
+
+    // Dependent on outdents processed
+    Comment.connectBrokenThreads();
 
     // This runs after extracting sections because Comment#getParent needs sections to be set on
     // comments.
