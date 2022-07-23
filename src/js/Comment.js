@@ -2315,7 +2315,7 @@ class Comment extends CommentSkeleton {
 
     if (this.isCollapsed) {
       this.getVisibleExpandNote().cdScrollTo('top', smooth, callback);
-      mw.notify(wrap(cd.s('navpanel-firstunseen-hidden'), {
+      const notification = mw.notification.notify(wrap(cd.s('navpanel-firstunseen-hidden'), {
         callbacks: {
           'cd-notification-expandThread': () => {
             this.scrollTo({
@@ -2325,6 +2325,7 @@ class Comment extends CommentSkeleton {
               pushState,
               callback,
             });
+            notification.close();
           },
         },
       }).$wrapper, {
