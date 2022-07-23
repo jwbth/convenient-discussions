@@ -4,7 +4,7 @@
   "scripts": {
     "build": "node buildConfigs && node buildI18n && webpack",
     "start": "node buildConfigs && node buildI18n && webpack serve --env dev",
-    "serve": "webpack serve --env dev",
+    "serve": "cross-env NODE_OPTIONS=--max-old-space-size=4096 webpack serve --env dev",
     "configs": "node buildConfigs",
     "deploy": "node --unhandled-rejections=strict deploy",
     "docs": "rimraf dist/docs && jsdoc -c jsdoc.config.js -a ['undefined']",
@@ -48,6 +48,7 @@
     "babel-loader": "^8.2.2",
     "banner-webpack-plugin": "^0.2.3",
     "chalk": "^2.4.2",
+    "cross-env": "^7.0.3",
     "css-loader": "^3.6.0",
     "cssnano": "^4.1.11",
     "docdash": "^1.2.0",
