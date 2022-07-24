@@ -1092,7 +1092,7 @@ class BootProcess {
   }
 
   /**
-   * Mount, unmount or reset the {@link navPanel navigation panel}.
+   * Mount, unmount or reset the {@link module:navPanel navigation panel}.
    *
    * @private
    */
@@ -1310,10 +1310,10 @@ class BootProcess {
   /**
    * Bind a click handler to comment links to make them work as in-script comment links.
    *
-   * This method exists in addition to {@link controller.handlePopState}. It's preferrable to have
-   * click events handled by this method instead of `controller.handlePopState` because that method,
-   * if encounters `cdJumpedToComment` in the history state, doesn't scroll to the comment which is
-   * a wrong behavior when the user clicks a link.
+   * This method exists in addition to {@link module:controller.handlePopState}. It's preferrable to
+   * have click events handled by this method instead of `controller.handlePopState` because that
+   * method, if encounters `cdJumpedToComment` in the history state, doesn't scroll to the comment
+   * which is a wrong behavior when the user clicks a link.
    *
    * @param {external:jQuery} $content
    * @private

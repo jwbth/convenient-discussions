@@ -79,8 +79,8 @@ class CommentForm {
    * @param {object} config
    * @param {string} config.mode `'reply'`, `'replyInSection'`, `'edit'`, `'addSubsection'`, or
    *   `'addSection'`.
-   * @param {Comment|Section|module:pageRegistry~Page} config.target Comment, section, or page that the form is related
-   *   to.
+   * @param {Comment|Section|module:pageRegistry~Page} config.target Comment, section, or page that
+   *   the form is related to.
    * @param {object} [config.initialState] Initial state of the form (data saved in the previous
    *   session, quoted text, or data transferred from DT's new topic form).
    * @param {PreloadConfig} [config.preloadConfig] Configuration to preload data into the form.

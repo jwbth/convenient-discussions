@@ -157,8 +157,8 @@ export default {
   },
 
   /**
-   * Check whether the current page is likely a talk page. See {@link controller.isTalkPage} for the
-   * most strict criteria.
+   * Check whether the current page is likely a talk page. See
+   * {@link module:controller.isDefinitelyTalkPage} for the most strict criteria.
    *
    * @returns {boolean}
    */
@@ -200,7 +200,7 @@ export default {
    * Check whether the current page is a diff page.
    *
    * This is not a constant: the diff may be removed from the page (and the URL updated, see
-   * {@link controller.cleanUpUrlAndDom}) when it's for the last revision and the page is reloaded
+   * `controller.cleanUpUrlAndDom`) when it's for the last revision and the page is reloaded
    * using the script. `wgIsArticle` config value is not taken into account: if the "Do not show
    * page content below diffs" MediaWiki setting is on, `wgIsArticle` is false.
    *
@@ -212,7 +212,7 @@ export default {
 
   /**
    * Check whether the current page meets strict criteria for classifying as a talk page. See
-   * {@link controller.isTalkPage} for approximate criteria.
+   * {@link module:controller.isTalkPage} for approximate criteria.
    *
    * @returns {boolean}
    */
@@ -926,7 +926,7 @@ export default {
 
   /**
    * _For internal use._ Handle a `horizontalscroll` event, triggered from
-   * {@link controller.handleScroll}.
+   * {@link module:controller.handleScroll}.
    */
   handleHorizontalScroll() {
     pageNav.updateWidth();
@@ -1252,9 +1252,9 @@ export default {
   /**
    * Reload the page via Ajax.
    *
-   * @param {PassedData} [passedData={}] Data passed from the previous
-   *   page state. See {@link module:BootProcess~PassedData} for the list of possible properties.
-   *   `html`, `unseenCommentIds` properties are set in this function.
+   * @param {PassedData} [passedData={}] Data passed from the previous page state. See
+   *   {@link PassedData} for the list of possible properties. `html`, `unseenCommentIds` properties
+   *   are set in this function.
    * @throws {CdError|Error}
    */
   async reload(passedData = {}) {
@@ -1429,11 +1429,10 @@ export default {
   },
 
   /**
-   * Load the data required for the script to run on a log page and
-   * {@link commentLinks.addCommentLinks run it}.
+   * Load the data required for the script to process the page as a log page and
+   * {@link module:commentLinks process it}.
    */
   loadToCommentLinksPage() {
-    // Process the page as a log page
     if (
       !this.isWatchlistPage() &&
       !this.isContributionsPage() &&
