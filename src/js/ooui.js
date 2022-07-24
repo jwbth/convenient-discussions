@@ -251,7 +251,6 @@ export function handleDialogError(dialog, e, messageName, recoverable) {
  * @typedef {object} CreateTextFieldReturn
  * @property {external:OO.ui.FieldLayout} field
  * @property {external:OO.ui.TextInputWidget} input
- * @global
  */
 
 /**
@@ -287,7 +286,6 @@ export function createTextField({
  * @typedef {object} CreateNumberFieldReturn
  * @property {external:OO.ui.FieldLayout} field
  * @property {external:OO.ui.TextInputWidget} input
- * @global
  */
 
 /**
@@ -337,7 +335,6 @@ export function createNumberField({
  * @typedef {object} CreateCheckboxFieldReturn
  * @property {external:OO.ui.FieldLayout} field
  * @property {external:OO.ui.CheckboxInputWidget} input
- * @global
  */
 
 /**
@@ -380,7 +377,6 @@ export function createCheckboxField({
  * @property {external:OO.ui.FieldLayout} field
  * @property {external:OO.ui.RadioSelectWidget} select
  * @property {external:OO.ui.RadioOptionWidget[]} items
- * @global
  */
 
 /**

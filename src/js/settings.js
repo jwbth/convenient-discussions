@@ -449,7 +449,7 @@ export default {
   /**
    * _For internal use._ Initialize user settings, returning a promise, or return an existing one.
    *
-   * @returns {Promise}
+   * @returns {Promise.<undefined>}
    */
   init() {
     if (!this.initPromise) {
@@ -610,7 +610,7 @@ export default {
    * @param {?object} loadedSettings The values of the settings. If `null`, they will be loaded.
    * @param {string} key The key of the settings to save.
    * @param {*} value The value to set.
-   * @returns {Promise}
+   * @returns {Promise.<undefined>}
    */
   async saveSettingOnTheFly(loadedSettings, key, value) {
     // Set the setting locally before loading the setting in case some part of the code needs the

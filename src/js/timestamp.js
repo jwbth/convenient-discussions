@@ -88,7 +88,7 @@ export function initDayjs() {
 /**
  * Parse a timestamp, accepting a regexp match and returning a date.
  *
- * @param {Array} match Regexp match data.
+ * @param {string[]} match Regexp match data.
  * @param {string|number} [timezone] Timezone standard name or offset in minutes. If set, it is
  *   implied that the timestamp is in the user (interface) language, not in the content language.
  * @returns {Date}
@@ -216,6 +216,7 @@ export function parseTimestamp(timestamp, timezone) {
  *
  * @param {number} offset Offset in minutes.
  * @returns {string}
+ * @private
  */
 function generateTimezonePostfix(offset) {
   utcString = utcString || cd.mws('timezone-utc');

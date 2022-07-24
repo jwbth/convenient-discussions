@@ -47,6 +47,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    * @returns {number}
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Window-method-getBodyHeight
+   * @private
    */
   getBodyHeight() {
     return this.$errorItems ? this.$errors.prop('scrollHeight') : this.$body.prop('scrollHeight');
@@ -59,6 +60,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.ProcessDialog-method-initialize
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
+   * @private
    */
   initialize(...args) {
     super.initialize(...args);
@@ -102,6 +104,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Dialog-method-getSetupProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
+   * @private
    */
   getSetupProcess(data) {
     return super.getSetupProcess(data).next(() => {
@@ -119,6 +122,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Window-method-getReadyProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
+   * @private
    */
   getReadyProcess(data) {
     return super.getReadyProcess(data).next(async () => {
@@ -234,6 +238,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    * @returns {external:OO.ui.Process}
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Dialog-method-getActionProcess
+   * @private
    */
   getActionProcess(action) {
     if (action === 'move') {
@@ -282,6 +287,8 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
 
   /**
    * Handler of the event of change of the title input.
+   *
+   * @private
    */
   async onTitleInputChange() {
     let move = true;
@@ -295,7 +302,8 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    * Load the source page code.
    *
    * @returns {object}
-   * @throws {Array}
+   * @throws {Array.<string, boolean>}
+   * @private
    */
   async loadSourcePage() {
     try {
@@ -344,9 +352,10 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
   /**
    * Load the target page code.
    *
-   * @param {Page} targetPage
+   * @param {module:pageRegistry~Page} targetPage
    * @returns {object}
-   * @throws {Array}
+   * @throws {Array.<string, boolean>}
+   * @private
    */
   async loadTargetPage(targetPage) {
     try {
@@ -383,7 +392,8 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    * @param {object} source
    * @param {object} target
    * @returns {object}
-   * @throws {Array}
+   * @throws {Array.<string, boolean>}
+   * @private
    */
   async editTargetPage(source, target) {
     let codeBeginning;
@@ -470,7 +480,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    * @param {object} source
    * @param {object} target
    * @returns {object}
-   * @throws {Array}
+   * @throws {Array.<string, boolean, (boolean|undefined)>}
    */
   async editSourcePage(source, target) {
     const sectionCode = source.sectionInCode.code;
@@ -536,6 +546,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    * @param {boolean} recoverable Is the error recoverable.
    * @param {boolean} [closeDialog=false] Close the dialog after pressing "Close" under the error
    *   message.
+   * @private
    */
   abort(html, recoverable, closeDialog = false) {
     const $body = wrap(html, {

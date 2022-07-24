@@ -50,7 +50,7 @@ const debug = {
     /**
      * An array to keep any values sequentially.
      *
-     * @type {Array}
+     * @type {Array.<*>}
      * @memberof convenientDiscussions.debug
      */
     this.array = [];
@@ -58,7 +58,7 @@ const debug = {
     /**
      * An object to keep any values by key.
      *
-     * @type {Array}
+     * @type {object}
      * @memberof convenientDiscussions.debug
      */
     this.object = {};

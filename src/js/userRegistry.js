@@ -1,6 +1,5 @@
 /**
- * User class and singleton `userRegistry` used to obtain its instances while avoiding creating
- * duplicates.
+ * A singleton used to obtain instances of the `User` class while avoiding creating duplicates.
  *
  * @module userRegistry
  */
@@ -125,11 +124,12 @@ class User {
   }
 }
 
-const userRegistry = {
+export default {
   /**
    * Collection of users.
    *
    * @type {object}
+   * @private
    */
   items: {},
 
@@ -189,7 +189,7 @@ const userRegistry = {
            * The list of muted users has been obtained from the server or local storage.
            *
            * @event mutedUsers
-           * @param {User[]} users {@link User} object.
+           * @param {module:userRegistry~User[]} users
            */
           mw.hook('convenientDiscussions.mutedUsers').fire(users);
         },
@@ -198,11 +198,9 @@ const userRegistry = {
         }
       );
     } else {
-      const users = Object.entries(mutedUsersData.users).map(([, name]) => userRegistry.get(name));
+      const users = Object.entries(mutedUsersData.users).map(([, name]) => this.get(name));
       users.forEach((user) => user.setMuted(true))
       mw.hook('convenientDiscussions.mutedUsers').fire(users);
     }
-  }
+  },
 };
-
-export default userRegistry;

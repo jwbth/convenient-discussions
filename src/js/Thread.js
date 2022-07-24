@@ -197,11 +197,9 @@ function autocollapseThreads() {
     }
   }
 
-  let loadUserGendersPromise;
-  if (cd.g.GENDER_AFFECTS_USER_STRING) {
-    const usersInThreads = flat(comments.map((comment) => comment.thread.getUsersInThread()));
-    loadUserGendersPromise = loadUserGenders(usersInThreads);
-  }
+  const loadUserGendersPromise = cd.g.GENDER_AFFECTS_USER_STRING ?
+    loadUserGenders(flat(comments.map((comment) => comment.thread.getUsersInThread()))) :
+    undefined;
 
   // Reverse order is used for threads to be expanded correctly.
   comments
@@ -287,6 +285,7 @@ class Thread {
      * Whether the thread has outdented comments.
      *
      * @type {boolean}
+     * @private
      */
     this.hasOutdents = (
       controller.areThereOutdents() &&
@@ -333,6 +332,7 @@ class Thread {
    * Set {@link Thread#startElement}, {@link Thread#endElement}, and {@link Thread#visualEndElement}
    * properties.
    *
+   * @throws {CdError}
    * @private
    */
   setMarginalElementProperties() {
@@ -596,6 +596,7 @@ class Thread {
    * Get a list of users in the thread.
    *
    * @returns {module:userRegistry~User[]}
+   * @private
    */
   getUsersInThread() {
     return [this.rootComment, ...this.rootComment.getChildren(true)]
@@ -606,7 +607,8 @@ class Thread {
   /**
    * Add an expand note when collapsing a thread.
    *
-   * @param {Promise} loadUserGendersPromise
+   * @param {Promise.<undefined>} [loadUserGendersPromise]
+   * @private
    */
   addExpandNode(loadUserGendersPromise) {
     const expandButton = elementPrototypes.expandButton.cloneNode(true);
@@ -686,7 +688,7 @@ class Thread {
   /**
    * Collapse the thread.
    *
-   * @param {Promise} [loadUserGendersPromise]
+   * @param {Promise.<undefined>} [loadUserGendersPromise]
    */
   collapse(loadUserGendersPromise) {
     /**
@@ -811,6 +813,8 @@ class Thread {
 
   /**
    * Expand the thread if it's collapsed and collapse if it's expanded.
+   *
+   * @private
    */
   toggle() {
     this[this.isCollapsed ? 'expand' : 'collapse']();
@@ -821,6 +825,7 @@ class Thread {
    *
    * @param {object} options
    * @returns {boolean}
+   * @private
    */
   updateLine({
     elementsToAdd,
@@ -940,6 +945,8 @@ class Thread {
 
   /**
    * Remove the thread line if present and set the relevant properties to `null`.
+   *
+   * @private
    */
   removeLine() {
     if (!this.line) return;

@@ -26,7 +26,7 @@ import cd from './cd';
  * HTML. Optionally, attach callback functions and `target="_blank"` attribute to links with the
  * provided class names.
  *
- * @param {string|JQuery} htmlOrJquery
+ * @param {string|external:jQuery} htmlOrJquery
  * @param {object} [options={}]
  * @param {WrapCallbacks} [options.callbacks]
  * @param {string} [options.tagName='span']
@@ -134,7 +134,7 @@ export function wrapDiffBody(body) {
  *
  * @param {*} item
  * @param {number} i
- * @param {Array} arr
+ * @param {Array.<*>} arr
  * @returns {boolean}
  */
 export function unique(item, i, arr) {
@@ -301,10 +301,10 @@ export function notNull(el) {
  * 1]`) and optionally reversed while keeping the start index (`[0, 1, 2, 3]` can be transformed
  * into `[2, 1, 0, 3]`).
  *
- * @param {Array} arr
+ * @param {Array.<*>} arr
  * @param {number} startIndex
  * @param {boolean} [reverse=false]
- * @returns {Array}
+ * @returns {Array.<*>}
  */
 export function reorderArray(arr, startIndex, reverse = false) {
   return reverse ?
@@ -322,8 +322,8 @@ export function reorderArray(arr, startIndex, reverse = false) {
  * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat Array#flat(1)}.
  * That method is not yet supported by major browsers.
  *
- * @param {Array} arr
- * @returns {Array}
+ * @param {Array.<*>} arr
+ * @returns {Array.<*>}
  */
 export function flat(arr) {
   return [].concat(...arr);
@@ -370,6 +370,7 @@ export function removeDoubleSpaces(string) {
  * @returns {string}
  * @author Bartosz Dziewoński <matma.rex@gmail.com>
  * @license MIT
+ * @private
  */
 function charAt(string, offset, backwards) {
   const maybePair = backwards ?
@@ -419,7 +420,7 @@ export function getContentLanguageMessages(messages) {
  * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex Array#findIndex}
  * analog that looks for the _last_ index.
  *
- * @param {Array} arr
+ * @param {Array.<*>} arr
  * @param {Function} callback
  * @returns {?number}
  */
@@ -512,7 +513,7 @@ export function unhideText(text, hidden, type) {
  * workaround to get the state of a native promise. Note that it works _only_ with native promises:
  * it doesn't work with jQuery promises (for example, ones that `new mw.Api()` returns).
  *
- * @param {Promise} promise
+ * @param {Promise.<*>} promise
  * @returns {Promise.<string>}
  */
 export async function getNativePromiseState(promise) {
@@ -677,8 +678,8 @@ export function insertText(input, text) {
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm}).
  *
  * @param {object} obj
- * @param {Array} [allowedFuncNames=[]] Names of the properties that should be passed to the worker
- *   despite their values are functions (they are passed in a stringified form).
+ * @param {string[]} [allowedFuncNames=[]] Names of the properties that should be passed to the
+ *   worker despite their values are functions (they are passed in a stringified form).
  * @returns {object}
  */
 export function keepWorkerSafeValues(obj, allowedFuncNames = []) {
@@ -711,9 +712,10 @@ export function keepWorkerSafeValues(obj, allowedFuncNames = []) {
 /**
  * Calculate the share of elements of the first array that are included in the second array.
  *
- * @param {Array} arr1
- * @param {Array} arr2
+ * @param {Array.<*>} arr1
+ * @param {Array.<*>} arr2
  * @returns {number}
+ * @private
  */
 function calculateArrayOverlap(arr1, arr2) {
   let total = arr2.length;
@@ -753,7 +755,7 @@ export function calculateWordOverlap(s1, s2) {
  *
  * @param {Event} e
  * @param {number} keyCode
- * @param {Array} [modifiers=[]] Use `'cmd'` instead of `'ctrl'`.
+ * @param {string[]} [modifiers=[]] Use `'cmd'` instead of `'ctrl'`.
  * @returns {boolean}
  */
 export function keyCombination(e, keyCode, modifiers = []) {
@@ -794,7 +796,7 @@ export function skin$(selectors) {
  * Helper to add an element to the array if the array doesn't already include the element. Doesn't
  * add `undefined` elements.
  *
- * @param {Array} arr
+ * @param {Array.<*>} arr
  * @param {*} el
  */
 export function addToArrayIfAbsent(arr, el) {
@@ -807,7 +809,7 @@ export function addToArrayIfAbsent(arr, el) {
  * Helper to remove an element from the array if the array includes the element. Doesn't remove
  * `undefined` elements.
  *
- * @param {Array} arr
+ * @param {Array.<*>} arr
  * @param {*} el
  */
 export function removeFromArrayIfPresent(arr, el) {
@@ -847,7 +849,7 @@ export function getUrlWithFragment(fragment, permanent) {
  * Get the gender that is common for a list of users (`'unknown'` is treated as `'male'`) or
  * `'unknown'` if there is no such.
  *
- * @param {User[]} users
+ * @param {module:userRegistry~User[]} users
  * @returns {string}
  */
 export function getCommonGender(users) {

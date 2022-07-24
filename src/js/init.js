@@ -114,10 +114,10 @@ function getUsedDateTokens(format) {
 }
 
 /**
- * _For internal use._ Load messages needed to parse and generate timestamps as well as some site
- * data.
+ * Load messages needed to parse and generate timestamps as well as some site data.
  *
  * @returns {Promise[]} There should be at least one promise in the array.
+ * @private
  */
 function loadSiteData() {
   setFormats();
@@ -243,6 +243,8 @@ function loadSiteData() {
 
 /**
  * Populate some global object properties related to archive pages.
+ *
+ * @private
  */
 function setArchivePagesGlobals() {
   cd.g.ARCHIVE_PAGES_MAP = new Map();
@@ -1040,7 +1042,7 @@ export default {
      * Current page's object.
      *
      * @name page
-     * @type {Page}
+     * @type {module:pageRegistry~Page}
      * @memberof convenientDiscussions
      */
     cd.page = pageRegistry.get(cd.g.PAGE_NAME, true);
@@ -1138,14 +1140,14 @@ export default {
     cd.api.getLastActiveAlteredCommentForm = CommentForm.getLastActiveAltered.bind(CommentForm);
 
     /**
-     * @see module:controller.reloadPage
+     * @see module:controller.reload
      * @function reloadPage
      * @memberof convenientDiscussions.api
      */
     cd.api.reloadPage = controller.reload;
 
     /**
-     * @see module:controller.rootElement
+     * @see module:controller.getRootElement
      * @function getRootElement
      * @memberof convenientDiscussions.api
      */

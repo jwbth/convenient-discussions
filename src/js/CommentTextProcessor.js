@@ -7,7 +7,7 @@ import { hideText, unhideText } from './util';
  * Class that processes the text in the comment input of the comment form and prepares the wikitext
  * to insert into the page.
  */
-export default class CommentTextProcessor {
+class CommentTextProcessor {
   /**
    * Create a comment text processor.
    *
@@ -597,3 +597,5 @@ export default class CommentTextProcessor {
     this.code = unhideText(this.code, this.hidden);
   }
 }
+
+export default CommentTextProcessor;

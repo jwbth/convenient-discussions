@@ -266,7 +266,7 @@ class Comment extends CommentSkeleton {
      * If the comment is collapsed, that's the closest collapsed thread that this comment related
      * to.
      *
-     * @type {import('./Thread').Thread}
+     * @type {Thread}
      */
     this.collapsedThread = null;
 
@@ -438,7 +438,6 @@ class Comment extends CommentSkeleton {
    * @typedef {object[]} ReplaceSignatureWithHeaderReturn
    * @property {string} pageName
    * @property {Element} link
-   * @global
    * @private
    */
 
@@ -938,12 +937,11 @@ class Comment extends CommentSkeleton {
 
   /**
    * @typedef {object} CommentOffset
-   * @param {number} top
-   * @param {number} bottom
-   * @param {number} left
-   * @param {number} right
-   * @param {number} downplayedBottom
-   * @global
+   * @property {number} top
+   * @property {number} bottom
+   * @property {number} left
+   * @property {number} right
+   * @property {number} downplayedBottom
    */
 
   /**
@@ -1227,8 +1225,6 @@ class Comment extends CommentSkeleton {
    * @typedef {object} CommentMargins
    * @property {number} left Left margin.
    * @property {number} right Right margin.
-   * @global
-   * @private
    */
 
   /**
@@ -1634,7 +1630,6 @@ class Comment extends CommentSkeleton {
    * @typedef {object} LayersContainerOffset
    * @property {number} top Top offset.
    * @property {number} left Left offset.
-   * @global
    * @private
    */
 
@@ -2866,7 +2861,7 @@ class Comment extends CommentSkeleton {
   /**
    * Replace an element that is one of the comment's elements with another element or HTML string.
    *
-   * @param {Element|JQuery} element Element to replace. Provide a native element only if we're in
+   * @param {Element|external:jQuery} element Element to replace. Provide a native element only if we're in
    *   the page processing phase (and {@link Comment#$elements} has not been requested, hence cached
    *   yet).
    * @param {Element|string} newElementOrHtml Element or HTML string to replace with.
@@ -3778,7 +3773,7 @@ class Comment extends CommentSkeleton {
    * Get the wiki page that has the source code of the comment (may be different from the current
    * page if the comment is transcluded from another page).
    *
-   * @type {Page}
+   * @type {module:pageRegistry~Page}
    */
   getSourcePage() {
     return this.section ? this.section.getSourcePage() : cd.page;
@@ -3789,7 +3784,7 @@ class Comment extends CommentSkeleton {
    * nested, so there can be a number of invisible collapsed notes for a comment.) If the visible
    * collapsed note is unavailable, return the top invisible collapsed note.
    *
-   * @returns {?JQuery}
+   * @returns {?external:jQuery}
    * @private
    */
   getVisibleExpandNote() {
@@ -3816,11 +3811,10 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * @typedef {external:jQuery[]} AddSublevelItemReturn
+   * @typedef {object} AddSublevelItemReturn
    * @property {external:jQuery} $wrappingItem
    * @property {external:jQuery} [$wrappingList]
    * @property {external:jQuery} [$outerWrapper]
-   * @global
    */
 
   /**
@@ -4064,7 +4058,7 @@ class Comment extends CommentSkeleton {
    * _For internal use._ Apply a very specific fix for cases when an indented comment starts with a
    * list like this:
    *
-   * ```
+   * ```html
    * : Comment. [signature]
    * :* Item
    * :* Item
@@ -4073,7 +4067,7 @@ class Comment extends CommentSkeleton {
    *
    * which gives the following DOM:
    *
-   * ```
+   * ```html
    * <dd>
    *   <div>Comment. [signature]</div>
    *   <ul>

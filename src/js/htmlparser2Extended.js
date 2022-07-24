@@ -33,7 +33,7 @@ function walkThroughSubtree(base, callback, checkSelf) {
 /**
  * Get all text nodes under the root element.
  *
- * @returns {Array}
+ * @returns {external:Node[]}
  * @private
  */
 function getAllTextNodes() {

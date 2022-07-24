@@ -1,9 +1,3 @@
-/**
- * Table of contents-related functions.
- *
- * @module toc
- */
-
 import CdError from './CdError';
 import Comment from './Comment';
 import LiveTimestamp from './LiveTimestamp';
@@ -15,6 +9,9 @@ import { formatDate, formatDateNative } from './timestamp';
 
 /**
  * Class representing a table of contents item.
+ *
+ * @memberof module:toc
+ * @inner
  */
 class TocItem {
   /**
@@ -91,6 +88,11 @@ class TocItem {
   }
 }
 
+/**
+ * Table of contents singleton.
+ *
+ * @exports toc
+ */
 const toc = {
   /**
    * _For internal use._ Hide the TOC if the relevant cookie is set. This method duplicates
@@ -249,9 +251,9 @@ const toc = {
   /**
    * Add a section to the TOC.
    *
-   * @param {import('./commonTypedefs').SectionSkeletonLike} section
+   * @param {SectionSkeletonLike} section
    * @param {object[]} currentTree
-   * @param {JQuery} $topUl
+   * @param {external:jQuery} $topUl
    * @param {string[]} newSectionTocIds
    * @private
    */
@@ -363,8 +365,7 @@ const toc = {
    * Note that this method may also add the `match` property to the section elements containing a
    * matched `Section` object.
    *
-   * @param {import('./commonTypedefs').SectionSkeletonLike[]} sections All sections present on the
-   *   new revision of the page.
+   * @param {SectionSkeletonLike[]} sections All sections present on the new revision of the page.
    */
   addNewSections(sections) {
     if (!settings.get('modifyToc') || !this.isPresent()) return;
@@ -428,9 +429,10 @@ const toc = {
   /**
    * Get the element to add a comment list after for a section.
    *
-   * @param {import('./commonTypedefs').SectionSkeletonLike[]} section Section.
+   * @param {SectionSkeletonLike[]} section Section.
    * @param {boolean} areCommentsRendered Whether the comments are rendered (visible on the page).
    * @returns {?object}
+   * @private
    */
   getTargetElementForSection(section, areCommentsRendered) {
     // There could be a collision of hrefs between the existing section and not yet rendered
@@ -489,9 +491,10 @@ const toc = {
   /**
    * Add a comment list (an `ul` element) to a section.
    *
-   * @param {import('./commonTypedefs').CommentSkeletonLike[]} comments Comment list.
+   * @param {CommentSkeletonLike[]} comments Comment list.
    * @param {Element} target Target element.
    * @param {boolean} areCommentsRendered Whether the comments are rendered (visible on the page).
+   * @private
    */
   addCommentList(comments, target, areCommentsRendered) {
     // Was 6 initially, then became 5, now 4.
@@ -640,6 +643,7 @@ const toc = {
    * Is the table of contents located in the sidebar.
    *
    * @returns {boolean}
+   * @private
    */
   isInSidebar() {
     return cd.g.SKIN === 'vector-2022';

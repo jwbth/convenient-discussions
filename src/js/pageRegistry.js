@@ -1,10 +1,3 @@
-/**
- * Page class and singleton `pageRegistry` used to obtain its instances while avoiding creating
- * duplicates.
- *
- * @module pageRegistry
- */
-
 import CdError from './CdError';
 import cd from './cd';
 import controller from './controller';
@@ -31,6 +24,9 @@ import { parseTimestamp } from './timestamp';
  * Class representing a wiki page (a page for which the
  * {@link https://www.mediawiki.org/wiki/Manual:Interface/JavaScript#All_pages_(user/page-specific) wgIsArticle}
  * config value is `true`).
+ *
+ * @memberof module:pageRegistry
+ * @inner
  */
 class Page {
   /**
@@ -73,6 +69,7 @@ class Page {
      * Is the page the one the user is visiting.
      *
      * @type {boolean}
+     * @private
      */
     this.isCurrent = genderedName === cd.g.PAGE_NAME;
   }
@@ -90,7 +87,8 @@ class Page {
   /**
    * Find an archiving info element on the page.
    *
-   * @returns {JQuery}
+   * @returns {external:jQuery}
+   * @private
    */
   findArchivingInfoElement() {
     // For performance reasons, this is not reevaluated after page reloads. The reevaluation is
@@ -188,7 +186,7 @@ class Page {
    * and/or, for the current page, elements with the class `cd-archivingInfo` and attribute
    * `data-archived-page`.
    *
-   * @returns {Page}
+   * @returns {module:pageRegistry~Page}
    */
   getArchivedPage() {
     let result = this.isCurrent ? this.findArchivingInfoElement().data('archivedPage') : undefined;
@@ -664,11 +662,17 @@ class Page {
   }
 }
 
+/**
+ * A singleton used to obtain instances of the `Page` class while avoiding creating duplicates.
+ *
+ * @exports pageRegistry
+ */
 const pageRegistry = {
   /**
    * Collection of pages.
    *
    * @type {object}
+   * @private
    */
   items: {},
 
@@ -678,7 +682,7 @@ const pageRegistry = {
    * @param {string|external:mw.Title} nameOrMwTitle
    * @param {boolean} [isGendered=true] Used to keep the gendered namespace name (if `nameOrMwTitle`
    *   is a string).
-   * @returns {Page}
+   * @returns {module:pageRegistry~Page}
    */
   get(nameOrMwTitle, isGendered) {
     const title = nameOrMwTitle instanceof mw.Title ?
@@ -697,7 +701,7 @@ const pageRegistry = {
   },
 
   /**
-   * The {@link Page} class.
+   * The {@link module:pageRegistry~Page} class.
    */
   Page,
 };

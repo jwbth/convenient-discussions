@@ -2,7 +2,7 @@
  * Singleton related to the subscriptions feature, including the DisussionTools' topic subscription
  * and CD's legacy section watching.
  *
- * @module subscriptions
+ * @class subscriptions
  */
 
 import CdError from './CdError';
@@ -63,7 +63,7 @@ export default {
   /**
    * Get the request made in {@link subscriptions.load}.
    *
-   * @returns {Promise}
+   * @returns {Promise.<undefined>}
    */
   getLoadRequest() {
     return this.loadRequest;
@@ -141,7 +141,7 @@ export default {
    * @param {string} headline
    * @param {string} [unsubscribeHeadline] Headline of section to unsubscribe from (used when a
    *   section is renamed on the fly in {@link Comment#update} or {@link CommentForm#submit}).
-   * @returns {Promise}
+   * @returns {Promise.<undefined>}
    * @throws {CdError}
    * @private
    */
@@ -198,7 +198,7 @@ export default {
    * Remove a section present on the current page from the legacy subscription list.
    *
    * @param {string} headline
-   * @returns {Promise}
+   * @returns {Promise.<undefined>}
    * @throws {CdError}
    * @private
    */
@@ -236,7 +236,7 @@ export default {
    * @param {string} id Section's ID.
    * @param {string} unsubscribeHeadline Headline of a section to unsubscribe from (at the same
    * time).
-   * @returns {Promise}
+   * @returns {Promise.<undefined>}
    */
   subscribe(subscribeId, id, unsubscribeHeadline) {
     return settings.get('useTopicSubscription') ?
@@ -249,7 +249,7 @@ export default {
    *
    * @param {string} subscribeId Section's DiscussionTools ID.
    * @param {string} id Section's ID.
-   * @returns {Promise}
+   * @returns {Promise.<undefined>}
    */
   unsubscribe(subscribeId, id) {
     return settings.get('useTopicSubscription') ?

@@ -80,7 +80,7 @@ class Section extends SectionSkeleton {
      * the section is transcluded from another page). This property may be wrong on old version
      * pages where there are no edit section links.
      *
-     * @type {Page}
+     * @type {module:pageRegistry~Page}
      */
     this.sourcePage = this.sourcePageName ? pageRegistry.get(this.sourcePageName) : cd.page;
 
@@ -1630,7 +1630,7 @@ class Section extends SectionSkeleton {
    * Get the wiki page that has the source code of the section (may be different from the current
    * page if the section is transcluded from another page).
    *
-   * @returns {Page}
+   * @returns {module:pageRegistry~Page}
    */
   getSourcePage() {
     return this.sourcePage;

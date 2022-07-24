@@ -536,7 +536,7 @@ mw.hook('convenientDiscussions.commentFormCreated').add(function (commentForm) {
   );
 });
 
-mw.hook('convenientDiscussions.commentFormModulesReady').add(function (commentForm) {
+mw.hook('convenientDiscussions.commentFormCustomModulesReady').add(function (commentForm) {
   commentForm.$element.on('keydown', function (e) {
     // Ctrl+Alt+W
     let isCmdModifierPressed = cd.g.CLIENT_PROFILE.platform === 'mac' ? e.metaKey : e.ctrlKey;

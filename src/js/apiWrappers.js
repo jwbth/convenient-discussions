@@ -45,11 +45,11 @@ export function handleApiReject(code, data) {
 }
 
 /**
- * Split an array into batches of 50 (500 if the user has a `apihighlimits` right) to use in API
+ * Split an array into batches of 50 (500 if the user has the `apihighlimits` right) to use in API
  * requests.
  *
- * @param {Array} arr
- * @returns {Array}
+ * @param {Array.<*>} arr
+ * @returns {Array.<Array.<*>>}
  */
 export function splitIntoBatches(arr) {
   // cd.g.USER_RIGHTS is rarely set on first page load (when getDtSubscriptions() runs, for
@@ -263,7 +263,7 @@ export async function setLegacySubscriptions(registry) {
  *
  * @param {object} params
  * @param {string} [method='post']
- * @returns {Promise}
+ * @returns {Promise.<object>}
  */
 export function makeBackgroundRequest(params, method = 'post') {
   return new Promise((resolve, reject) => {
@@ -332,8 +332,8 @@ export function parseCode(code, customOptions) {
  * Make a userinfo request (see {@link https://www.mediawiki.org/wiki/API:Userinfo}).
  *
  * @param {boolean} [reuse=false] Whether to reuse a cached request.
- * @returns {Promise} Promise for an object containing the full options object, visits,
- *   subscription list, and rights.
+ * @returns {Promise.<object>} Promise for an object containing the full options object, visits, subscription
+ *   list, and rights.
  */
 export function getUserInfo(reuse = false) {
   if (reuse && cachedUserInfoRequest) {
@@ -499,7 +499,7 @@ export async function setGlobalOption(name, value) {
  * Request genders of a list of users and assign them as properties. A gender may be `'male'`,
  * `'female'`, or `'unknown'`.
  *
- * @param {User[]} users
+ * @param {module:userRegistry~User[]} users
  * @param {boolean} [requestInBackground=false] Make a request that won't set the process on hold
  *   when the tab is in the background.
  */
@@ -530,7 +530,7 @@ export async function loadUserGenders(users, requestInBackground = false) {
  * Given a list of user IDs, return a list of users.
  *
  * @param {number[]|string[]} userIds List of user IDs.
- * @returns {User[]}
+ * @returns {module:userRegistry~User[]}
  */
 export async function getUsersByGlobalId(userIds) {
   const users = [];
@@ -559,7 +559,7 @@ export async function getUsersByGlobalId(userIds) {
  * Reuses the existing request if available.
  *
  * @param {string} text
- * @returns {Promise} Promise for a string array.
+ * @returns {Promise.<string[]>}
  * @throws {CdError}
  */
 export function getRelevantUserNames(text) {
@@ -617,7 +617,7 @@ export function getRelevantUserNames(text) {
  * Reuses the existing request if available.
  *
  * @param {string} text
- * @returns {Promise} Promise for a string array.
+ * @returns {Promise.<string[]>}
  * @throws {CdError}
  */
 export function getRelevantPageNames(text) {
@@ -672,7 +672,7 @@ export function getRelevantPageNames(text) {
  * Reuses the existing request if available.
  *
  * @param {string} text
- * @returns {Promise} Promise for a string array.
+ * @returns {Promise.<string[]>}
  * @throws {CdError}
  */
 export function getRelevantTemplateNames(text) {

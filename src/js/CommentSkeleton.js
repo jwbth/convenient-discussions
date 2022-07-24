@@ -463,7 +463,7 @@ class CommentSkeleton {
   /**
    * Identify cases like:
    *
-   * ```
+   * ```html
    * === Section title ===
    * Section introduction. Not a comment.
    * # Vote. [signature]
@@ -1218,7 +1218,7 @@ class CommentSkeleton {
    * "Holes" here mean comment parts that are placed outside of list elements while the beginning
    * and ending of the comment are inside list elements. For example:
    *
-   * ```
+   * ```html
    * ::: Comment start.
    * <blockquote>Some quote.</blockquote>
    * ::: Comment end. ~~~~
@@ -1263,7 +1263,7 @@ class CommentSkeleton {
    * Fix the situation where a comment signature is placed inside the last item of the comment, like
    * this:
    *
-   * ```
+   * ```html
    * List:
    * * Item 1.
    * * Item 2.
@@ -1469,7 +1469,7 @@ class CommentSkeleton {
    *
    * @param {Date} [date]
    * @param {string} [author]
-   * @param {Array} [existingIds] IDs that collide with IDs in the array will get a `_<number>`
+   * @param {string[]} [existingIds] IDs that collide with IDs in the array will get a `_<number>`
    *   postfix. The array will be appended to in that case.
    * @returns {?string}
    */
@@ -1600,5 +1600,12 @@ class CommentSkeleton {
     }
   }
 }
+
+/**
+ * Object with the same basic structure as {@link CommentSkeleton} has. (It comes from a web
+ * worker so its constructor is lost.)
+ *
+ * @typedef {object} CommentSkeletonLike
+ */
 
 export default CommentSkeleton;

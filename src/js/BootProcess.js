@@ -45,6 +45,7 @@ function getAllTextNodes() {
  * directly).
  *
  * @param {Element[]|external:Element[]} elements
+ * @private
  */
 function handleDtMarkup(elements) {
   // Reply Tool is officially incompatible with CD, so we don't care if it is enabled. New Topic
@@ -119,13 +120,12 @@ function handleDtMarkup(elements) {
  * @property {string} [justUnwatchedSection] Section just unwatched so that there could be not
  *   enough time for it to be saved to the server.
  * @property {boolean} [wasCommentFormSubmitted] Did the user just submit a comment form.
- * @global
  */
 
 /**
  * Class representing the process of loading or reloading CD onto an article page.
  */
-export default class BootProcess {
+class BootProcess {
   /**
    * Create a boot process.
    *
@@ -173,6 +173,7 @@ export default class BootProcess {
    * Add a comment ID to the registry.
    *
    * @param {string} id
+   * @private
    */
   addDtCommentId(id) {
     this.dtCommentIds.push(id);
@@ -181,7 +182,7 @@ export default class BootProcess {
   /**
    * Get the visits request.
    *
-   * @returns {Promise}
+   * @returns {Promise.<module:apiWrappers~GetVisitsReturn>}
    */
   getVisitsRequest() {
     return this.visitsRequest;
@@ -216,10 +217,11 @@ export default class BootProcess {
   }
 
   /**
-   * _For internal use._ Show a popup asking the user if they want to enable the new comment
-   * formatting. Save the settings after they make the choice.
+   * Show a popup asking the user if they want to enable the new comment formatting. Save the
+   * settings after they make the choice.
    *
    * @returns {Promise.<boolean>} Did the user enable comment reformatting.
+   * @private
    */
   async maybeSuggestEnableCommentReformatting() {
     if (settings.get('reformatComments') !== null) {
@@ -289,10 +291,12 @@ export default class BootProcess {
   }
 
   /**
-   * _For internal use._ Show a popup asking the user if they want to receive desktop notifications,
-   * or ask for a permission if it has not been granted but the user has desktop notifications
-   * enabled (for example, if they are using a browser different from where they have previously
-   * used). Save the settings after they make the choice.
+   * Show a popup asking the user if they want to receive desktop notifications, or ask for a
+   * permission if it has not been granted but the user has desktop notifications enabled (for
+   * example, if they are using a browser different from where they have previously used). Save the
+   * settings after they make the choice.
+   *
+   * @private
    */
   async maybeConfirmDesktopNotifications() {
     if (typeof Notification === 'undefined') return;
@@ -367,10 +371,10 @@ export default class BootProcess {
   }
 
   /**
-   * Make a search request and update the
-   * {@link BootProcess#maybeAddNotFoundMessage not found message}.
+   * Make a search request and update the "Not found" message.
    *
    * @param {object} data
+   * @private
    */
   async searchForNotFoundItem({
     date,
@@ -478,13 +482,13 @@ export default class BootProcess {
   }
 
   /**
-   * _For internal use._ Show a message at the top of the page that a section/comment was not found,
-   * a link to search in the archive, and a link to the section/comment if it was found
-   * automatically.
+   * Show a message at the top of the page that a section/comment was not found, a link to search in
+   * the archive, and a link to the section/comment if it was found automatically.
    *
    * @param {string} decodedFragment Decoded fragment.
    * @param {Date} [date] Comment date, if there is a comment ID in the fragment.
    * @param {string} [author] Comment author, if there is a comment ID in the fragment.
+   * @private
    */
   async maybeAddNotFoundMessage(decodedFragment, date, author) {
     let label;
@@ -590,6 +594,8 @@ export default class BootProcess {
   /**
    * Show a notification informing the user that CD is incompatible with DiscussionTools and
    * suggesting to disable DiscussionTools.
+   *
+   * @private
    */
   maybeSuggestDisableDiscussionTools() {
     if (!cd.g.IS_DT_REPLY_TOOL_ENABLED) return;
@@ -672,6 +678,8 @@ export default class BootProcess {
 
   /**
    * Find comment signatures and section headings on the page.
+   *
+   * @private
    */
   findTargets() {
     this.parser = new Parser({
@@ -792,6 +800,8 @@ export default class BootProcess {
 
   /**
    * Do the required transformations if the page turned out to be not a talk page after all.
+   *
+   * @private
    */
   retractTalkPageness() {
     debug.stopTimer('main code');
@@ -811,6 +821,8 @@ export default class BootProcess {
 
   /**
    * Update the page's HTML.
+   *
+   * @private
    */
   layOutHtml() {
     const selector = this.data('wasPageCreated') ?
@@ -977,6 +989,8 @@ export default class BootProcess {
   /**
    * If a DT's comment form is present (for example, on `&action=edit&section=new` pages), remove it
    * and later replace it with ours, keeping the input.
+   *
+   * @private
    */
   hideDtNewTopicForm() {
     if (!cd.g.IS_DT_NEW_TOPIC_TOOL_ENABLED) return;
@@ -1036,6 +1050,8 @@ export default class BootProcess {
 
   /**
    * Add an "Add section" form if needed.
+   *
+   * @private
    */
   maybeAddAddSectionForm() {
     // May crash if the current URL contains undecodable "%" in the fragment,
@@ -1055,6 +1071,8 @@ export default class BootProcess {
   /**
    * Add a condition to show a confirmation when trying to close the page with active comment forms
    * on it.
+   *
+   * @private
    */
   configureActiveCommentFormsConfirmation() {
     const alwaysConfirmLeavingPage = (
@@ -1075,6 +1093,8 @@ export default class BootProcess {
 
   /**
    * Mount, unmount or reset the {@link navPanel navigation panel}.
+   *
+   * @private
    */
   setupNavPanel() {
     if (controller.isPageActive()) {
@@ -1295,7 +1315,7 @@ export default class BootProcess {
    * if encounters `cdJumpedToComment` in the history state, doesn't scroll to the comment which is
    * a wrong behavior when the user clicks a link.
    *
-   * @param {JQuery} $content
+   * @param {external:jQuery} $content
    * @private
    */
   connectToCommentLinks($content) {
@@ -1351,6 +1371,8 @@ export default class BootProcess {
    * Set up
    * {@link https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver MutationObserver} to
    * handle page mutations.
+   *
+   * @private
    */
   setupMutationObserver() {
     // Mutation observer doesn't follow all possible comment position changes (for example,
@@ -1380,7 +1402,9 @@ export default class BootProcess {
   }
 
   /**
-   * Add event listeners to `window`, `document`, hooks; set up MutationObserver.
+   * Add event listeners to `window`, `document`, hooks; set up `MutationObserver`.
+   *
+   * @private
    */
   addEventListeners() {
     if (!settings.get('reformatComments')) {
@@ -1439,6 +1463,8 @@ export default class BootProcess {
 
   /**
    * Show popups to the user if needed.
+   *
+   * @private
    */
   async showPopups() {
     this.maybeSuggestDisableDiscussionTools();
@@ -1453,7 +1479,7 @@ export default class BootProcess {
   /**
    * _For internal use._ Execute the process.
    *
-   * @param {boolean} isReload
+   * @param {boolean} isReload Is the page reloaded.
    * @fires beforeParse
    * @fires commentsReady
    * @fires sectionsReady
@@ -1672,3 +1698,5 @@ export default class BootProcess {
     }
   }
 }
+
+export default BootProcess;

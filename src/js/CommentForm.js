@@ -71,7 +71,6 @@ class CommentForm {
    * @property {string} [summary] Edit summary.
    * @property {string} [noHeadline] Whether to include a headline.
    * @property {string} [omitSignature] Whether to add the user's signature.
-   * @global
    */
 
   /**
@@ -80,14 +79,14 @@ class CommentForm {
    * @param {object} config
    * @param {string} config.mode `'reply'`, `'replyInSection'`, `'edit'`, `'addSubsection'`, or
    *   `'addSection'`.
-   * @param {Comment|Section|Page} config.target Comment, section, or page that the form is related
+   * @param {Comment|Section|module:pageRegistry~Page} config.target Comment, section, or page that the form is related
    *   to.
    * @param {object} [config.initialState] Initial state of the form (data saved in the previous
    *   session, quoted text, or data transferred from DT's new topic form).
    * @param {PreloadConfig} [config.preloadConfig] Configuration to preload data into the form.
    * @param {boolean} [config.newTopicOnTop] When adding a topic, whether it should be on top.
    * @throws {CdError}
-   * @fires commentFormModulesReady
+   * @fires commentFormCustomModulesReady
    * @fires commentFormCreated
    */
   constructor({ mode, target, initialState, preloadConfig, newTopicOnTop }) {
@@ -153,12 +152,13 @@ class CommentForm {
     this.sectionOpeningCommentEdited = this.mode === 'edit' && this.target.isOpeningSection;
 
     /**
-     * Whether the wikitext of a section will be submitted to the server instead of a page.
+     * Whether the wikitext of a section will be submitted to the server instead of a page. (Filled
+     * upon submitting or viewing changes.)
      *
      * @type {?boolean}
      * @private
      */
-    this.sectionSubmitted = false;
+    this.sectionSubmitted = null;
 
     /**
      * @typedef {object} CommentFormOperation
@@ -167,7 +167,6 @@ class CommentForm {
      * @property {boolean} [affectHeadline=false] Should the headline input be displayed as pending.
      * @property {boolean} [isClosed] Is the operation closed (settled).
      * @property {boolean} [isDelayed] Is the operation delayed.
-     * @global
      */
 
     /**
@@ -281,14 +280,14 @@ class CommentForm {
   /**
    * Set the `target`, `targetSection`, `targetComment`, and `targetPage` properties.
    *
-   * @param {Comment|Section|Page} target
+   * @param {Comment|Section|module:pageRegistry~Page} target
    * @private
    */
   setTargets(target) {
     /**
      * Target object.
      *
-     * @type {Comment|Section|Page}
+     * @type {Comment|Section|module:pageRegistry~Page}
      * @private
      */
     this.target = target;
@@ -682,10 +681,7 @@ class CommentForm {
     /**
      * Script settings button.
      *
-     * @name settingsButton
-     * @type {Promise}
-     * @memberof CommentForm
-     * @instance
+     * @type {external:OO.ui.ButtonWidget}
      */
     this.settingsButton = new OO.ui.ButtonWidget({
       framed: false,
@@ -1991,7 +1987,7 @@ class CommentForm {
   /**
    * Show a service message above the form.
    *
-   * @param {string|JQuery} htmlOrJquery
+   * @param {string|external:jQuery} htmlOrJquery
    * @param {object} [options]
    * @param {string} [options.type='notice'] `'notice'`, `'error'`, `'warning'`, or `'success'`. See
    *   {@link https://doc.wikimedia.org/oojs-ui/master/demos/?page=widgets&theme=wikimediaui&direction=ltr&platform=desktop#MessageWidget-type-notice-inline-true the OOUI Demos}.
@@ -2034,7 +2030,7 @@ class CommentForm {
    * Abort the operation the form is undergoing and show an error message.
    *
    * @param {object} options
-   * @param {string|JQuery} options.message Message visible to the user.
+   * @param {string|external:jQuery} options.message Message visible to the user.
    * @param {string} [options.messageType='error'] Message type if not `'error'` (`'notice'` or
    *   `'warning'`).
    * @param {boolean} [options.isRawMessage=false] Show the message as it is, without icons and
@@ -2309,12 +2305,6 @@ class CommentForm {
   async prepareWholeCode(action) {
     const commentIds = extractCommentIds(this.commentInput.getValue());
 
-    /**
-     * Will we try to submit the section code first instead of the whole page code. (Filled upon
-     * submitting or viewing changes.)
-     *
-     * @type {boolean|undefined}
-     */
     this.sectionSubmitted = Boolean(
       this.mode === 'addSection' &&
       !this.newTopicOnTop &&
@@ -3620,7 +3610,7 @@ class CommentForm {
   /**
    * Get the {@link CommentForm#target target} object of the form.
    *
-   * @returns {Comment|Section|Page}
+   * @returns {Comment|Section|module:pageRegistry~Page}
    */
   getTarget() {
     return this.target;

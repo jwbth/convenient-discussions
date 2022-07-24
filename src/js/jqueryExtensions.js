@@ -1,5 +1,5 @@
 /**
- * jQuery extensions. See {@link $.fn}.
+ * jQuery extensions. See {@link external:jQuery.fn}.
  *
  * @module jqueryExtensions
  */
@@ -7,35 +7,6 @@
 import cd from './cd';
 import controller from './controller';
 import { isMetadataNode } from './util';
-
-/**
- * Scroll to a specified position vertically.
- *
- * @param {number} y
- * @param {boolean} [smooth=true]
- * @param {Function} [callback]
- */
-export function scrollToY(y, smooth = true, callback) {
-  const onComplete = () => {
-    controller.toggleAutoScrolling(false);
-    controller.handleScroll();
-    if (callback) {
-      callback();
-    }
-  };
-
-  if (smooth) {
-    $('body, html').animate({ scrollTop: y }, {
-      complete: function () {
-        if (this !== document.documentElement) return;
-        onComplete();
-      },
-    });
-  } else {
-    window.scrollTo(window.scrollX, y);
-    onComplete();
-  }
-}
 
 /**
  * jQuery. See {@link external:jQuery.fn} for extensions.
@@ -114,7 +85,7 @@ export default {
     }
 
     controller.toggleAutoScrolling(true);
-    scrollToY(top, smooth, callback);
+    controller.scrollToY(top, smooth, callback);
 
     return this;
   },

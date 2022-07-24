@@ -293,7 +293,7 @@ export default {
   /**
    * Memorize the section button container element.
    *
-   * @param {JQuery} $container
+   * @param {external:jQuery} $container
    */
   setAddSectionButtonContainer($container) {
     this.$addSectionButtonContainer = $container;
@@ -563,6 +563,7 @@ export default {
    *
    * @param {Element} element
    * @param {Element} newElement
+   * @private
    */
   replaceScrollAnchorElement(element, newElement) {
     if (this.scrollData.element && element === this.scrollData.element) {
@@ -761,7 +762,7 @@ export default {
    * Get the popup overlay used for OOUI components.
    *
    * @param {boolean} create
-   * @returns {JQuery}
+   * @returns {external:jQuery}
    */
   getPopupOverlay(create = true) {
     if (!this.$popupOverlay && create) {
@@ -1110,6 +1111,7 @@ export default {
    * Run the {@link BootProcess boot process} and catch errors.
    *
    * @param {boolean} isReload Is the page reloaded.
+   * @private
    */
   async tryExecuteBootProcess(isReload) {
     this.booting = true;
@@ -1140,8 +1142,8 @@ export default {
   },
 
   /**
-   * Load the data required for the script to run on a talk page and, respectively, execute
-   * {@link BootProcess the boot process}.
+   * Load the data required for the script to run on a talk page and, respectively, execute the
+   * {@link BootProcess boot process}.
    */
   loadToTalkPage() {
     if (!this.talkPage) return;
@@ -1250,7 +1252,7 @@ export default {
   /**
    * Reload the page via Ajax.
    *
-   * @param {import('./commonTypedefs').PassedData} [passedData={}] Data passed from the previous
+   * @param {PassedData} [passedData={}] Data passed from the previous
    *   page state. See {@link module:BootProcess~PassedData} for the list of possible properties.
    *   `html`, `unseenCommentIds` properties are set in this function.
    * @throws {CdError|Error}
@@ -1668,7 +1670,6 @@ export default {
       element.parentNode.replaceChild(newElement, element);
     }
 
-    // require, not import, to prevent adding controller to the worker build.
     this.replaceScrollAnchorElement(element, newElement);
 
     return newElement;
@@ -1763,7 +1764,7 @@ export default {
 
   /**
    * Get the content root element (`.mw-parser-output` or `#mw-content-text`). Supposed to be used
-   * via {@link convenientDiscussions.api.getRootElement}; inside the script, a direct reference to
+   * via {@link convenientDiscussions.api.getRootElement}; inside the script, direct reference to
    * `controller.rootElement` is practiced.
    *
    * @returns {Element}
@@ -1851,5 +1852,34 @@ export default {
     const dialog = new CopyLinkDialog(object, content);
     this.getWindowManager().addWindows([dialog]);
     this.getWindowManager().openWindow(dialog);
+  },
+
+  /**
+   * Scroll to a specified position vertically.
+   *
+   * @param {number} y
+   * @param {boolean} [smooth=true]
+   * @param {Function} [callback]
+   */
+  scrollToY(y, smooth = true, callback) {
+    const onComplete = () => {
+      this.toggleAutoScrolling(false);
+      this.handleScroll();
+      if (callback) {
+        callback();
+      }
+    };
+
+    if (smooth) {
+      $('body, html').animate({ scrollTop: y }, {
+        complete: function () {
+          if (this !== document.documentElement) return;
+          onComplete();
+        },
+      });
+    } else {
+      window.scrollTo(window.scrollX, y);
+      onComplete();
+    }
   },
 };

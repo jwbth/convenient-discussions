@@ -9,7 +9,6 @@ module.exports = {
   },
   "plugins": [
     "plugins/markdown",
-    "node_modules/jsdoc-tsimport-plugin/index.js",
   ],
   "templates": {
     "default": {

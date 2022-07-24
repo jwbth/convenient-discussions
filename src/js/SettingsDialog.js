@@ -68,6 +68,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
    * @returns {number}
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Window-method-getBodyHeight
+   * @private
    */
   getBodyHeight() {
     return 600;
@@ -80,6 +81,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.ProcessDialog-method-initialize
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
+   * @private
    */
   initialize(...args) {
     super.initialize(...args);
@@ -132,6 +134,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Dialog-method-getSetupProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
+   * @private
    */
   getSetupProcess(data) {
     return super.getSetupProcess(data).next(() => {
@@ -149,6 +152,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Window-method-getReadyProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
+   * @private
    */
   getReadyProcess(data) {
     return super.getReadyProcess(data).next(async () => {
@@ -180,6 +184,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
    * @returns {external:OO.ui.Process}
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Dialog-method-getActionProcess
+   * @private
    */
   getActionProcess(action) {
     if (action === 'save') {
@@ -229,6 +234,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
    * @param {object} settingValues Values of settings according to which to set the states of
    *   controls.
    * @returns {object}
+   * @private
    */
   createPages(settingValues) {
     const controls = {};
@@ -368,6 +374,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
    *
    * @param {object} settingValues Values of settings according to which to set the states of
    *   controls.
+   * @private
    */
   renderControls(settingValues) {
     settings.initUi();
@@ -385,6 +392,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
    * Get setting values from controls.
    *
    * @returns {object}
+   * @private
    */
   collectSettings() {
     const collectedSettings = {};
@@ -434,6 +442,8 @@ class SettingsDialog extends OO.ui.ProcessDialog {
 
   /**
    * Update the control states.
+   *
+   * @private
    */
   async updateStates() {
     const controls = this.controls;
@@ -473,6 +483,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
    * Handler of the event of change of the desktop notifications radio select.
    *
    * @param {external:OO.ui.RadioOptionWidget} option
+   * @private
    */
   onDesktopNotificationsSelectChange(option) {
     if (typeof Notification === 'undefined') return;
@@ -489,6 +500,8 @@ class SettingsDialog extends OO.ui.ProcessDialog {
 
   /**
    * Remove script data as requested by the user after confirmation.
+   *
+   * @private
    */
   async removeData() {
     if (confirm(cd.s('sd-removedata-confirm'))) {

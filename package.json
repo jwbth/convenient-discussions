@@ -59,7 +59,6 @@
     "http-proxy-to-socks": "^1.1.2",
     "jest": "^27.0.3",
     "jsdoc": "^3.6.6",
-    "jsdoc-tsimport-plugin": "^1.0.5",
     "jsdom": "^16.5.2",
     "json5": "^2.2.0",
     "less": "^3.13.1",

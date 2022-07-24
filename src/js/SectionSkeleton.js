@@ -218,7 +218,7 @@ class SectionSkeleton {
    *
    * Sometimes sections are nested trickily in some kind of container elements, so a following
    * structure may take place:
-   * ```
+   * ```html
    * == Heading 1 ==
    * <p>Paragraph 1.</p>
    * <div>
@@ -316,5 +316,12 @@ class SectionSkeleton {
     return this.cachedAncestors;
   }
 }
+
+/**
+ * Object with the same basic structure as {@link SectionSkeleton} has. (It comes from a web
+ * worker so its constructor is lost.)
+ *
+ * @typedef {object} SectionSkeletonLike
+ */
 
 export default SectionSkeleton;

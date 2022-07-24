@@ -102,7 +102,7 @@ function hideElement(el, comment) {
  * Keep only those values of an object whose names are not in the "dangerous" names list.
  *
  * @param {object} obj
- * @param {Array} dangerousKeys
+ * @param {string[]} dangerousKeys
  * @private
  */
 function keepSafeValues(obj, dangerousKeys) {

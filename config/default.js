@@ -243,7 +243,7 @@ export default {
    *
    * `'` is removed independently in the script so that normal markup at the end of comments doesn't
    * get removed - like this:
-   * ```
+   * ```html
    * ''Reply in italics.'' [signature]
    * ```
    * Here, `''` is not a part of the signature.

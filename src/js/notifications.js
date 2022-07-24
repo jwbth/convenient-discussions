@@ -10,7 +10,6 @@
  *
  * @typedef {object} Notification
  * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Notification_
- * @global
  */
 
 export default {

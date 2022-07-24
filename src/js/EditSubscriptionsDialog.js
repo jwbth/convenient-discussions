@@ -118,6 +118,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Window-method-getReadyProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
+   * @private
    */
   getReadyProcess(data) {
     return super.getReadyProcess(data).next(async () => {
@@ -181,6 +182,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
    * @returns {external:OO.ui.Process}
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Dialog-method-getActionProcess
+   * @private
    */
   getActionProcess(action) {
     if (action === 'save') {
@@ -195,6 +197,8 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
 
   /**
    * Save the subscriptions list.
+   *
+   * @private
    */
   async save() {
     this.updateSize();

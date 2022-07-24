@@ -200,6 +200,8 @@ function setStrings() {
 
 /**
  * Set some global object properties.
+ *
+ * @private
  */
 function setGlobals() {
   // Avoid setting the global object properties if go() runs the second time (see maybeAddFooterLink()).
@@ -306,7 +308,10 @@ function maybeAddFooterLink() {
 /**
  * Change the destination of the "Add topic" button to redirect topic creation to the script's form.
  * This is not done on `action=view` pages to make sure the user can open the classic form. The
- * exception is when the new topic tool is enabled:
+ * exception is when the new topic tool is enabled with the "Offer to add a new topic" setting: in
+ * that case, the classic form doesn't open anyway.
+ *
+ * @private
  */
 function maybeTweakAddTopicButton() {
   if (
@@ -391,7 +396,7 @@ function setLanguages() {
 /**
  * Load and execute the configuration script if available.
  *
- * @returns {Promise}
+ * @returns {Promise.<undefined>}
  * @private
  */
 function getConfig() {
@@ -431,7 +436,7 @@ function getConfig() {
  * Load and add localization strings to the `cd.i18n` object. Use fallback languages if default
  * languages are unavailable.
  *
- * @returns {Promise}
+ * @returns {Promise.<undefined>}
  * @private
  */
 function getStrings() {
@@ -449,6 +454,8 @@ function getStrings() {
 
 /**
  * Populate the {@link convenientDiscussions.api} object.
+ *
+ * @private
  */
 function setupApi() {
   /**
@@ -466,20 +473,20 @@ function setupApi() {
   /**
    * @name pageRegistry
    * @type {object}
-   * @see pageRegistry
+   * @see module:pageRegistry
    * @memberof convenientDiscussions.api
    */
   cd.api.pageRegistry = pageRegistry;
 
   /**
-   * @see module:timestamp.generateCommentId
+   * @see CommentSkeleton.generateId
    * @function generateCommentId
    * @memberof convenientDiscussions.api
    */
   cd.api.generateCommentId = Comment.generateId.bind(Comment);
 
   /**
-   * @see module:timestamp.parseCommentId
+   * @see Comment.parseId
    * @function parseCommentId
    * @memberof convenientDiscussions.api
    */
@@ -493,7 +500,7 @@ function setupApi() {
   cd.api.buildEditSummary = buildEditSummary;
 
   /**
-   * @see module:util.isPageOverlayOn
+   * @see module:controller.isPageOverlayOn
    * @function isPageOverlayOn
    * @memberof convenientDiscussions.api
    */
@@ -516,7 +523,6 @@ function setupApi() {
   // TODO: Delete after all addons are updated.
   cd.util = cd.api;
   cd.api.generateCommentAnchor = cd.api.generateCommentId;
-
   cd.api.Page = pageRegistry.Page;
 }
 

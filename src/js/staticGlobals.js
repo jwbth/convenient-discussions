@@ -210,7 +210,7 @@ export default {
    * wrapped into `'div'` containers. It allows for comment headers to be displayed correctly when
    * `conveneintDiscussions.settings.reformatComments` is turned on.
    *
-   * @type {Array}
+   * @type {string[]}
    * @memberof convenientDiscussions.g
    */
   BAD_HIGHLIGHTABLE_ELEMENTS: ['BLOCKQUOTE', 'DL', 'FORM', 'HR', 'OL', 'PRE', 'TABLE', 'UL'],
@@ -274,9 +274,12 @@ export default {
 
   /**
    * List of tags allowed in user input. See
-   * https://meta.wikimedia.org/wiki/Help:HTML_in_wikitext#Permitted_HTML,
-   * https://en.wikipedia.org/wiki/Help:HTML_in_wikitext#Parser_and_extension_tags. Deprecated tags
-   * are not included.
+   * {@link https://meta.wikimedia.org/wiki/Help:HTML_in_wikitext#Permitted_HTML},
+   * {@link https://en.wikipedia.org/wiki/Help:HTML_in_wikitext#Parser_and_extension_tags}.
+   * Deprecated tags are not included.
+   *
+   * @type {string[]}
+   * @memberof convenientDiscussions.g
    */
   ALLOWED_TAGS: [
     'abbr',

@@ -303,7 +303,7 @@ export default {
   /**
    * Turn a comment array into an object with sections or their IDs as keys.
    *
-   * @param {import('./commonTypedefs').CommentSkeletonLike[]|Comment[]} comments
+   * @param {CommentSkeletonLike[]|Comment[]} comments
    * @returns {Map}
    * @memberof Comment
    */
@@ -871,7 +871,7 @@ export default {
   /**
    * _For internal use._ Add available DiscussionTools IDs to respective comments.
    *
-   * @param {Array} ids
+   * @param {string[]} ids
    * @memberof Comment
    */
   setDtIds(ids) {

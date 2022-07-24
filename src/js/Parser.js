@@ -8,10 +8,9 @@ import { parseTimestamp } from './timestamp';
 
 /**
  * @typedef {object} GetPageNameFromUrlReturn
- * @param {string} pageName
- * @param {string} domain
- * @param {string} fragment
- * @global
+ * @property {string} pageName
+ * @property {string} domain
+ * @property {string} fragment
  * @private
  */
 
@@ -93,7 +92,7 @@ class Parser {
    * is enabled (to avoid errors being thrown in DT). Prior to that, extract data from them.
    *
    * CD already parses comment links from notifications (which seems to be this markup's purpose for
-   * disabled DT) in {@link BootProcess#processTargets}. Unless the elements prove useful to
+   * disabled DT) in `BootProcess#processTargets`. Unless the elements prove useful to
    * CD or other scripts, it's better to get rid of them rather than deal with them one by one while
    * parsing.
    */
@@ -136,7 +135,7 @@ class Parser {
    * @typedef {object} Timestamp
    * @property {Element|external:Element} element
    * @property {Date} date
-   * @global
+   * @property {object} [match]
    */
 
   /**
@@ -476,7 +475,7 @@ class Parser {
   /**
    * With code like this:
    *
-   * ```
+   * ```html
    *   * Smth. [signature]
    *   :: Smth. [signature]
    * ```
@@ -486,14 +485,14 @@ class Parser {
    * we can to get the top nodes with comment content (and therefore draw comment layers more
    * accurately). One of the most complex tree structures is this:
    *
-   * ```
+   * ```html
    *    * Smth. [signature]
    *    :* Smth.
    *    :: Smth. [signature]
    * ```
    *
    * (seen here:
-   * https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Общий&oldid=103760740#201912010211_Mikhail_Ryazanov)
+   * {@link https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Общий&oldid=103760740#201912010211_Mikhail_Ryazanov})
    * It has a branchy structure that requires a tricky algorithm to be parsed correctly.
    *
    * @param {Element|external:Element} element
@@ -564,14 +563,14 @@ class Parser {
 
   /**
    * Turn a structure like this
-   * ```
+   * ```html
    * <dd>
    *   <div>Comment. [signature]</div>
    *   <ul>...</ul>
    * </dd>
    * ```
    * into a structure like this
-   * ```
+   * ```html
    * <dd>
    *   <div>Comment. [signature]</div>
    * </dd>
@@ -601,10 +600,9 @@ class Parser {
 
   /**
    * @typedef {string[]} ProcessLinkReturn
-   * @param {string} userName User name.
-   * @param {?string} linkType Link type (`user`, `userTalk`, `contribs`, `userSubpage`,
+   * @property {string} userName User name.
+   * @property {?string} linkType Link type (`user`, `userTalk`, `contribs`, `userSubpage`,
    *   `userTalkSubpage`, or any of this `Foreign` at the end).
-   * @global
    * @private
    */
 

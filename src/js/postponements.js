@@ -1,7 +1,7 @@
 /**
  * Singleton related to the postpone functionality which is a basic throttling implementation.
  *
- * @module notifications
+ * @module postponements
  */
 
 export default {

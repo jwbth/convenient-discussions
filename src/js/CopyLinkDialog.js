@@ -43,6 +43,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.MessageDialog-method-initialize
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
+   * @private
    */
   initialize(...args) {
     super.initialize(...args);
@@ -95,6 +96,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Dialog-method-getSetupProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
+   * @private
    */
   getSetupProcess(data) {
     return super.getSetupProcess(data).next(() => {
@@ -113,6 +115,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    * Callback for clicking of the "Copy" button next to an input field.
    *
    * @param {string} value Input value.
+   * @private
    */
   copyCallback(value) {
     copyText(value, this.content.copyMessages);
@@ -121,6 +124,8 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 
   /**
    * Create the "Diff" panel in the dialog.
+   *
+   * @private
    */
   async createDiffPanel() {
     let errorText;
@@ -165,6 +170,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    * Create the content of the "Anchor" panel in the dialog.
    *
    * @returns {external:jQuery}
+   * @private
    */
   createAnchorPanelContent() {
     // Doesn't apply to DT IDs.
@@ -175,39 +181,41 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       helpNotOnlyCd = wrap(cd.sParse('cld-help-notonlycd'));
     }
 
+    const copyCallback = this.copyCallback;
+
     const wikilinkField = createCopyActionField({
       value: this.content.wikilink,
       disabled: !this.content.wikilink,
       label: cd.s('cld-wikilink'),
-      copyCallback: this.copyCallback,
+      copyCallback,
       help: helpOnlyCd,
     });
 
     const currentPageWikilinkField = createCopyActionField({
       value: this.content.currentPageWikilink,
       label: cd.s('cld-currentpagewikilink'),
-      copyCallback: this.copyCallback,
+      copyCallback,
       help: helpNotOnlyCd,
     });
 
     const permanentWikilinkField = createCopyActionField({
       value: this.content.permanentWikilink,
       label: cd.s('cld-permanentwikilink'),
-      copyCallback: this.copyCallback,
+      copyCallback,
       help: helpOnlyCd,
     });
 
     const linkField = createCopyActionField({
       value: this.content.link,
       label: cd.s('cld-link'),
-      copyCallback: this.copyCallback,
+      copyCallback,
       help: helpOnlyCd,
     });
 
     const permanentLinkField = createCopyActionField({
       value: this.content.permanentLink,
       label: cd.s('cld-permanentlink'),
-      copyCallback: this.copyCallback,
+      copyCallback,
       help: helpOnlyCd,
     });
 
@@ -232,27 +240,30 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    * Create the content of the "Diff" panel in the dialog.
    *
    * @returns {external:jQuery}
+   * @private
    */
   createDiffPanelContent() {
+    const copyCallback = this.copyCallback;
+
     const standardField = createCopyActionField({
       value: this.content.diffStandard,
       disabled: !this.content.diffStandard,
       label: cd.s('cld-diff'),
-      copyCallback: this.copyCallback,
+      copyCallback,
     });
 
     const shortField = createCopyActionField({
       value: this.content.diffShort,
       disabled: !this.content.diffShort,
       label: cd.s('cld-shortdiff'),
-      copyCallback: this.copyCallback,
+      copyCallback,
     });
 
     const wikilinkField = createCopyActionField({
       value: this.content.diffWikilink,
       disabled: !this.content.diffWikilink,
       label: cd.s('cld-diffwikilink'),
-      copyCallback: this.copyCallback,
+      copyCallback,
     });
 
     return $('<div>').append([

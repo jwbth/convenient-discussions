@@ -12,7 +12,6 @@ import cd from './cd';
 import controller from './controller';
 import toc from './toc';
 import { getVisibilityByRects } from './util';
-import { scrollToY } from './jqueryExtensions';
 
 const htmlElement = document.documentElement;
 
@@ -340,6 +339,6 @@ export default {
     }
 
     controller.toggleAutoScrolling(true);
-    scrollToY(offset);
+    controller.scrollToY(offset);
   },
 };
