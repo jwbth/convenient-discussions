@@ -151,7 +151,7 @@
 	"rd-comment": "意见",
 	"rd-summary": "编辑摘要",
 	"rd-close": "关闭",
-	"rc-suggestion": "<p>Convenient Discussions 有一个选项可以改变意见的格式，将作者和时间戳移至上方，并且将回复和感谢按钮移至下方。这允许您快速查看意见的作者和日期并更方便地与之互动。您想启用这个选项吗？（您可以随时在设置中关闭该选项。）</p>\n\n<p>此外，请参阅各种新功能的设置，比如可自定义的时间戳格式（现在默认显示为您 wiki 参数设置中的时区）。</p>",
+	"rc-suggestion": "<p>Convenient Discussions 有一个选项可以改变意见的格式，将作者和时间戳移至上方，并且将回复和感谢按钮移至下方。这允许您快速查看意见的作者和日期并更方便地与之互动。您想启用这个选项吗？（您可以随时在设置中关闭该选项。）</p>\n\n<p>此外，请参阅各种新功能的<span class=\"cd-notification-settings\">设置</span>，比如可自定义的时间戳格式（现在默认显示为您 wiki 参数设置中的时区）。</p>",
 	"rc-suggestion-yes": "启用新格式",
 	"rc-suggestion-no": "保留常用格式",
 	"navpanel-refresh": "刷新页面",
