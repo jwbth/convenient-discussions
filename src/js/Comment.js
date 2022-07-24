@@ -2728,7 +2728,7 @@ class Comment extends CommentSkeleton {
     this.$elements.addClass('cd-hidden');
     this.removeLayers();
     if (this.isOpeningSection) {
-      $(this.section.barElement).addClass('cd-hidden');
+      $(this.section.barElement).add(this.section.headingWrapper).addClass('cd-hidden');
     }
 
     // "!this.editForm" check is in case the editing is initiated from a script of some kind (there
