@@ -296,7 +296,7 @@
 	"sd-improveperformance-help": "Povoľte toto, ak máte oneskorenia pri komentovaní dlhých stránok. Je známe, že sa to deje v prehliadačoch Chromium. Skript oneskorí vykreslenie spodnej časti stránky, kým na ňu neprejdete. To zrýchli používateľské rozhranie, ale obmedzí vašu schopnosť vyhľadávať text v týchto oblastiach.",
 	"sd-insertbuttons": "Tlačítko na pridanie textu",
 	"sd-insertbuttons-multiselect-placeholder": "Pridať tlačítko",
-	"sd-insertbuttons-help": "Použite <code>+</code> pre špecifikovanie miesta kde by mala byť strieška po pridaní textu; napríklad <code><nowiki>{{+}}</nowiki></code>. Použite <code>;</code> pre špecifikovanie zobrazeného textu, aby bol rozdielny od iného zadaného textu; napríklad <code><nowiki><code>+</code>;<code /></nowiki></code>. Použite code><nowiki>\\</nowiki></code> pred hore uvedenými znakmi pre ich normálne použitie; napríklad <code><nowiki>2\\+2</nowiki></code>. Tlačítka sa dajú presúvať.",
+	"sd-insertbuttons-help": "Použite <code>+</code> pre špecifikovanie miesta kde by mala byť strieška po pridaní textu; napríklad <code><nowiki>{{+}}</nowiki></code>. Použite <code>;</code> pre špecifikovanie zobrazeného textu, aby bol rozdielny od iného zadaného textu; napríklad <code><nowiki><code>+</code>;<code /></nowiki></code>. Použite <code><nowiki>\\</nowiki></code> pred hore uvedenými znakmi pre ich normálne použitie; napríklad <code><nowiki>2\\+2</nowiki></code>. Tlačítka sa dajú presúvať.",
 	"sd-modifytoc": "Zobrazte nové komentáre a sekcie v obsahu",
 	"sd-outdentlevel": "[ $1 Outdent] moje odpovede začínajúce úrovňou",
 	"sd-notifications": "Vyskakovacie okná s upozornením v pravom hornom rohu stránky",

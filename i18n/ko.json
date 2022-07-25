@@ -59,6 +59,7 @@
 	"thank-success": "감사 표현 알림을 보냈습니다.",
 	"es-delete-reply": "답변 삭제",
 	"es-delete-topic": "주제 삭제",
+	"es-delete-subsection": "하위 문단 삭제",
 	"es-delete-comment": "댓글 지우기",
 	"es-new-topic": "새 주제",
 	"cf-headline-topic": "제목",
