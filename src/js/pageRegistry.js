@@ -429,7 +429,7 @@ class Page {
    * @param {string} options.commentCode Comment code, including trailing newlines and the
    *   signature.
    * @param {CommentForm} options.commentForm Comment form that has the code.
-   * @returns {string}
+   * @returns {object}
    */
   modifyWholeCode({ commentCode, commentForm }) {
     const wholeCode = this.code;
@@ -450,7 +450,10 @@ class Page {
       newWholeCode = codeBefore + commentCode;
     }
 
-    return newWholeCode;
+    return {
+      wholeCode: newWholeCode,
+      commentCode,
+    };
   }
 
   /**

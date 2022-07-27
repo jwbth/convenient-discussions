@@ -1,4 +1,5 @@
 import cd from './cd';
+import pageRegistry from './pageRegistry';
 import { areObjectsEqual, defined, hideText, ucFirst, unhideText, wrap } from './util';
 import { formatDateImproved, formatDateNative, formatDateRelative } from './timestamp';
 import { getUserInfo, setGlobalOption, setLocalOption } from './apiWrappers';
@@ -72,6 +73,7 @@ export default {
       notifications: 'all',
       notifyCollapsedThreads: false,
       notificationsBlacklist: [],
+      outdentLevel: 15,
       reformatComments: null,
       showContribsLink: false,
       showLoadingOverlay: true,
@@ -99,6 +101,13 @@ export default {
    * because some content is date-dependent.
    */
   initUi() {
+    const outdentTemplateUrl = cd.config.outdentTemplates.length ?
+      pageRegistry.get(`Template:${cd.config.outdentTemplates[0]}`).getUrl() :
+      'https://en.wikipedia.org/wiki/Template:Outdent';
+    const noOutdentTemplateNote = cd.config.outdentTemplates.length ?
+      '' :
+      ' ' + cd.sParse('sd-outdentlevel-help-notemplate');
+
     const fortyThreeMinutesAgo = new Date(Date.now() - cd.g.MS_IN_MIN * 43);
     const threeDaysAgo = new Date(Date.now() - cd.g.MS_IN_DAY * 3.3);
 
@@ -199,6 +208,14 @@ export default {
             name: 'alwaysExpandAdvanced',
             type: 'checkbox',
             label: cd.s('sd-alwaysexpandadvanced'),
+          },
+          {
+            name: 'outdentLevel',
+            type: 'number',
+            min: 0,
+            max: 999,
+            label: wrap(cd.sParse('sd-outdentlevel', outdentTemplateUrl), { targetBlank: true }),
+            help: wrap(cd.sParse('sd-outdentlevel-help') + noOutdentTemplateNote),
           },
           {
             name: 'autocompleteTypes',

@@ -106,6 +106,49 @@ function maybeMarkPageAsRead() {
 }
 
 /**
+ * Get the code of the section chunk after the specified index with concealed irrelevant parts.
+ *
+ * @param {number} currentIndex
+ * @param {string} wholeCode
+ * @returns {string}
+ */
+function getAdjustedChunkCodeAfter(currentIndex, wholeCode) {
+  let adjustedCode = hideDistractingCode(wholeCode);
+
+  if (cd.g.CLOSED_DISCUSSION_PAIR_REGEXP) {
+    adjustedCode = adjustedCode
+      .replace(cd.g.CLOSED_DISCUSSION_PAIR_REGEXP, (s, indentationChars) => (
+        '\x01'.repeat(indentationChars.length) +
+        ' '.repeat(s.length - indentationChars.length - 1) +
+        '\x02'
+      ));
+  }
+  if (cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP) {
+    let match;
+    while ((match = cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP.exec(adjustedCode))) {
+      const codeBeforeMatch = adjustedCode.slice(0, match.index);
+      const codeAfterMatch = adjustedCode.slice(match.index);
+      const adjustedCam = hideTemplatesRecursively(codeAfterMatch, null, match[1].length).code;
+      adjustedCode = codeBeforeMatch + adjustedCam;
+    }
+  }
+
+  const adjustedCodeAfter = adjustedCode.slice(currentIndex);
+  const nextSectionHeadingMatch = adjustedCodeAfter.match(/\n+(=+).*\1[ \t\x01\x02]*\n|$/);
+  let chunkCodeAfterEndIndex = currentIndex + nextSectionHeadingMatch.index + 1;
+  let chunkCodeAfter = wholeCode.slice(currentIndex, chunkCodeAfterEndIndex);
+  cd.g.KEEP_IN_SECTION_ENDING.forEach((regexp) => {
+    const match = chunkCodeAfter.match(regexp);
+    if (match) {
+      // `1` accounts for the first line break.
+      chunkCodeAfterEndIndex -= match[0].length - 1;
+    }
+  });
+
+  return adjustedCode.slice(currentIndex, chunkCodeAfterEndIndex);
+}
+
+/**
  * Class representing a comment (any signed, and in some cases unsigned, text on a wiki talk page).
  *
  * @augments CommentSkeleton
@@ -3210,7 +3253,7 @@ class Comment extends CommentSkeleton {
       code,
       startIndex,
       lineStartIndex: startIndex,
-      headingMatch: code.match(/(^[^]*(?:^|\n))((=+)(.*?)\3[ \t\x01\x02]*\n)/),
+      headingMatch: code.match(/(^[^]*(?:^|\n))((=+)(.*)\3[ \t\x01\x02]*\n)/),
       originalIndentationChars: '',
       indentationChars: '',
     };
@@ -3531,12 +3574,216 @@ class Comment extends CommentSkeleton {
   }
 
   /**
+   * Get regular expressions to find a proper place in the code for a comment.
+   *
+   * @param {object} thisInCode
+   * @returns {object}
+   * @private
+   */
+  getProperPlaceRegexps(thisInCode) {
+    const anySignaturePattern = (
+      '^(' +
+      (this.isInSingleCommentTable ? '[^]*?(?:(?:\\s*\\n\\|\\})+|</table>).*\\n' : '') +
+      '[^]*?(?:' +
+      mw.util.escapeRegExp(thisInCode.signatureCode) +
+      '|' +
+      cd.g.CONTENT_TIMESTAMP_REGEXP.source +
+      '.*' +
+      (cd.g.UNSIGNED_TEMPLATES_PATTERN ? `|${cd.g.UNSIGNED_TEMPLATES_PATTERN}.*` : '') +
+
+      // `\x01` is from hiding closed discussions and HTML comments. TODO: Line can start with a
+      // HTML comment in a <pre> tag, that doesn't mean we can put a comment after it. We perhaps
+      // need to change `wikitext.hideDistractingCode`.
+      '|(?:^|\\n)\\x01.+)\\n)\\n*'
+    );
+    const maxIndentationCharsLength = thisInCode.replyIndentationChars.length - 1;
+    const endOfThreadPattern = (
+      '(' +
+
+      // `\n` is here to avoid putting the reply on a casual empty line. `\x01` is from hiding
+      // closed discussions.
+      `[:*#\\x01]{0,${maxIndentationCharsLength}}(?![:*#\\n\\x01])` +
+
+      // This excludes the case where `#` is starting a numbered list inside a comment
+      // (https://ru.wikipedia.org/w/index.php?diff=110482717).
+      (
+        maxIndentationCharsLength > 0 ?
+          `|[:*#\\x01]{1,${maxIndentationCharsLength}}(?![:*\\n\\x01])` :
+          ''
+      ) +
+      ')'
+    );
+
+    return {
+      properPlaceRegexp: new RegExp(anySignaturePattern + endOfThreadPattern),
+      anySignatureRegexp: new RegExp(anySignaturePattern),
+    };
+  }
+
+  /**
+   * Apply regular expressions to determine a proper place in the code to insert a reply to the
+   * comment into while taking outdent templates into account.
+   *
+   * @param {object} thisInCode
+   * @param {string} adjustedChunkCodeAfter
+   * @param {number} [isOutdentConflict=false]
+   * @returns {object}
+   */
+  matchProperPlaceRegexps(thisInCode, adjustedChunkCodeAfter, isOutdentConflict = false) {
+    const { properPlaceRegexp, anySignatureRegexp } = this.getProperPlaceRegexps(thisInCode);
+    const match = adjustedChunkCodeAfter.match(properPlaceRegexp) || [];
+    let adjustedCodeBetween = match[1] ?? adjustedChunkCodeAfter;
+    let indentationCharsAfter = match[match.length - 1];
+    let isNextLine = (adjustedCodeBetween.match(/\n/g) || []).length === 1;
+
+    if (cd.g.OUTDENT_TEMPLATES_REGEXP) {
+      /*
+        If there is an "outdent" template next to the insertion place:
+        * If the outdent template is right next to the comment replied to, we try to put the reply
+          after the outdented comment (if it is of 2+ level).
+        * If not, we insert the reply on the next line after the target comment.
+       */
+      cd.g.OUTDENT_TEMPLATES_REGEXP.lastIndex = 0;
+      const outdentMatch = (
+        cd.g.OUTDENT_TEMPLATES_REGEXP.exec(
+          adjustedChunkCodeAfter.slice(adjustedCodeBetween.length)
+        ) ||
+        []
+      );
+      const outdentIndentationChars = outdentMatch[1];
+      if (outdentMatch.index === 0) {
+        if (isNextLine) {
+          // Try to insert the reply after an outdented comment - so that the reply is outdented
+          // together with it. `isOutdentConflict` can't be `true` here logically (`isNextLine`
+          // should be false in that case).
+          if (outdentIndentationChars.length < 2) {
+            // Can't insert a reply before an "outdent" template.
+            throw new CdError({
+              type: 'parse',
+              code: 'findPlace',
+            });
+          } else {
+            thisInCode.replyIndentationChars = thisInCode.replyIndentationChars
+              .slice(0, outdentIndentationChars.length)
+              .replace(/:$/, cd.config.defaultIndentationChar);
+            ({
+              adjustedCodeBetween,
+              indentationCharsAfter,
+              isNextLine,
+            } = this.matchProperPlaceRegexps(thisInCode, adjustedChunkCodeAfter, true));
+          }
+        } else if (
+          // We could allow adding a 1-level reply after a 1-level outdent (which CD interprets as a
+          // reply to a 0-level comment, not the comment before the outdent), but that's suboptimal.
+          (outdentIndentationChars || '').length <= thisInCode.replyIndentationChars.length
+        ) {
+          if (isOutdentConflict) {
+            // We wanted to put the reply after an outdented comment, but stumbled upon another
+            // outdent template.
+            throw new CdError({
+              type: 'parse',
+              code: 'findPlace',
+            });
+          } else {
+            // `anySignatureRegexp` effectively matches the next line. If `adjustedChunkCodeAfter`
+            // matched `properPlaceRegexp`, it should match `anySignatureRegexp` too.
+            [, adjustedCodeBetween] = adjustedChunkCodeAfter.match(anySignatureRegexp) || [];
+          }
+        }
+      } else if (isOutdentConflict) {
+        cd.g.OUTDENT_TEMPLATES_REGEXP.lastIndex = 0;
+        cd.g.OUTDENT_TEMPLATES_REGEXP.exec(adjustedCodeBetween);
+        let match;
+        while ((match = cd.g.OUTDENT_TEMPLATES_REGEXP.exec(adjustedCodeBetween))) {
+          if (match[1].length === thisInCode.replyIndentationChars.length) {
+            /*
+              :::: Comment 1.
+                 ┌─┘
+              :: Reply.
+              ::: Reply.
+              :::: Reply.
+                 ┌─┘
+              :: Reply.
+              :: [Can't put a reply to Comment 1 here because of the second outdent.]
+            */
+            throw new CdError({
+              type: 'parse',
+              code: 'findPlace',
+            });
+          }
+        }
+      }
+    }
+
+    return { adjustedCodeBetween, indentationCharsAfter, isNextLine };
+  }
+
+  /**
+   * Determine an offset in the code to insert a reply to the comment into.
+   *
+   * @param {object} thisInCode
+   * @param {string} wholeCode
+   * @returns {string}
+   * @private
+   */
+  findProperPlaceForReply(thisInCode, wholeCode) {
+    let currentIndex = thisInCode.endIndex;
+
+    const adjustedChunkCodeAfter = getAdjustedChunkCodeAfter(currentIndex, wholeCode);
+    if (/^ +\x02/.test(adjustedChunkCodeAfter)) {
+      throw new CdError({
+        type: 'parse',
+        code: 'closed',
+      });
+    }
+
+    const {
+      adjustedCodeBetween,
+      indentationCharsAfter,
+      isNextLine,
+    } = this.matchProperPlaceRegexps(thisInCode, adjustedChunkCodeAfter);
+
+    if (
+      cd.config.outdentTemplates.length &&
+      settings.get('outdentLevel') &&
+      thisInCode.replyIndentationChars.length >= settings.get('outdentLevel') &&
+      isNextLine
+    ) {
+      thisInCode.isReplyOutdented = true;
+      thisInCode.replyIndentationChars = (
+        thisInCode.replyIndentationChars.slice(0, indentationCharsAfter.length) +
+        cd.config.defaultIndentationChar
+      );
+    }
+
+    // If the comment is to be put after a comment with different indentation characters, use these.
+    const [, changedIndentationChars] = (
+      adjustedCodeBetween.match(/\n([:*#]{2,}|#[:*#]*).*\n$/) ||
+      []
+    );
+    if (changedIndentationChars) {
+      // Note the bug https://ru.wikipedia.org/w/index.php?diff=next&oldid=105529545 that was
+      // possible here when we used `.slice(0, thisInCode.indentationChars.length + 1)` (due to `**`
+      // as indentation characters in Bsivko's comment).
+      thisInCode.replyIndentationChars = changedIndentationChars
+        .slice(0, thisInCode.replyIndentationChars.length)
+        .replace(/:$/, cd.config.defaultIndentationChar);
+    }
+
+    currentIndex += adjustedCodeBetween.length;
+
+    return currentIndex;
+  }
+
+  /**
    * Modify a whole section or page code string related to the comment in accordance with an action.
    *
    * @param {object} options
    * @param {string} options.action `'reply'` or `'edit'`.
+   * @param {string} options.formAction `'submit'`, `'viewChanges'`, or `'preview'`.
    * @param {string} [options.commentCode] Comment code, including trailing newlines, indentation
-   *   characters, and the signature. Can be not set if `doDelete` is `true`.
+   *   characters, and the signature. Can be not set if `commentForm` is set or `doDelete` is
+   *   `true`.
    * @param {boolean} [options.doDelete] Whether to delete the comment.
    * @param {string} [options.wholeCode] Code that has the comment. Usually not needed; provide it
    *   together with `thisInCode` only if you need to perform operations on some code that is not
@@ -3544,149 +3791,33 @@ class Comment extends CommentSkeleton {
    * @param {string} [options.thisInCode] Result of {@link Comment#locateInCode} called with code in
    *   the first parameter. Usually not needed; provide it together with `wholeCode` only if you
    *   need to perform operations on some code that is not the code of a section or page.
-   * @returns {string} New code.
+   * @param {CommentForm} [options.commentForm] Comment form that has the code. Can be not set if
+   *   `commentCode` is set or `action` is `'edit'`.
+   * @returns {object}
    * @throws {CdError}
    */
-  modifyWholeCode({ action, commentCode, wholeCode, doDelete, thisInCode }) {
-    thisInCode = thisInCode || this.inCode;
-    if (!wholeCode) {
-      wholeCode = thisInCode.isSectionCodeUsed ? this.section.code : this.getSourcePage().code;
-    }
-
-    let currentIndex;
-    if (action === 'reply') {
-      currentIndex = thisInCode.endIndex;
-
-      let adjustedCode = hideDistractingCode(wholeCode);
-      if (cd.g.CLOSED_DISCUSSION_PAIR_REGEXP) {
-        adjustedCode = adjustedCode
-          .replace(cd.g.CLOSED_DISCUSSION_PAIR_REGEXP, (s, indentationChars) => (
-            '\x01'.repeat(indentationChars.length) +
-            ' '.repeat(s.length - indentationChars.length - 1) +
-            '\x02'
-          ));
-      }
-      if (cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP) {
-        let match;
-        while ((match = cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP.exec(adjustedCode))) {
-          const codeBeforeMatch = adjustedCode.slice(0, match.index);
-          const codeAfterMatch = adjustedCode.slice(match.index);
-          const adjustedCam = hideTemplatesRecursively(codeAfterMatch, null, match[1].length).code;
-          adjustedCode = codeBeforeMatch + adjustedCam;
-        }
-      }
-
-      const adjustedCodeAfter = adjustedCode.slice(currentIndex);
-      const nextSectionHeadingMatch = adjustedCodeAfter.match(/\n+(=+).*?\1[ \t\x01\x02]*\n|$/);
-      let chunkCodeAfterEndIndex = currentIndex + nextSectionHeadingMatch.index + 1;
-      let chunkCodeAfter = wholeCode.slice(currentIndex, chunkCodeAfterEndIndex);
-      cd.g.KEEP_IN_SECTION_ENDING.forEach((regexp) => {
-        const match = chunkCodeAfter.match(regexp);
-        if (match) {
-          // `1` accounts for the first line break.
-          chunkCodeAfterEndIndex -= match[0].length - 1;
-        }
-      });
-      const adjustedChunkCodeAfter = adjustedCode.slice(currentIndex, chunkCodeAfterEndIndex);
-
-      if (/^ +\x02/.test(adjustedChunkCodeAfter)) {
-        throw new CdError({
-          type: 'parse',
-          code: 'closed',
-        });
-      }
-
-      const anySignaturePattern = (
-        '^(' +
-        (this.isInSingleCommentTable ? '[^]*?(?:(?:\\s*\\n\\|\\})+|</table>).*\\n' : '') +
-        '[^]*?(?:' +
-        mw.util.escapeRegExp(thisInCode.signatureCode) +
-        '|' +
-        cd.g.CONTENT_TIMESTAMP_REGEXP.source +
-        '.*' +
-        (cd.g.UNSIGNED_TEMPLATES_PATTERN ? `|${cd.g.UNSIGNED_TEMPLATES_PATTERN}.*` : '') +
-
-        // "\x01" is from hiding closed discussions and HTML comments. TODO: Line can start with a
-        // HTML comment in a <pre> tag, that doesn't mean we can put a comment after it. We perhaps
-        // need to change `wikitext.hideDistractingCode`.
-        '|(?:^|\\n)\\x01.+)\\n)\\n*'
-      );
-      const maxIndentationCharsLength = thisInCode.replyIndentationChars.length - 1;
-      const endOfThreadPattern = (
-        '(?:' +
-
-        // "\n" is here to avoid putting the reply on a casual empty line. "\x01" is from hiding
-        // closed discussions.
-        `[:*#\\x01]{0,${maxIndentationCharsLength}}(?![:*#\\n\\x01])` +
-
-        // This excludes the case where "#" is starting a numbered list inside a comment
-        // (https://ru.wikipedia.org/w/index.php?diff=110482717).
-        (
-          maxIndentationCharsLength > 0 ?
-            `|[:*#\\x01]{1,${maxIndentationCharsLength}}(?![:*\\n\\x01])` :
-            ''
-        ) +
-        ')'
-      );
-      const properPlaceRegexp = new RegExp(anySignaturePattern + endOfThreadPattern);
-      let [, adjustedCodeBetween] = adjustedChunkCodeAfter.match(properPlaceRegexp) || [];
-
-      if (adjustedCodeBetween === undefined) {
-        adjustedCodeBetween = adjustedChunkCodeAfter;
-      }
-
-      if (cd.g.OUTDENT_TEMPLATES_REGEXP) {
-        // If we met an "outdent" template, we insert our comment on the next line after the target
-        // comment. That's the current logic; there could be a better one.
-        const outdentMatch = adjustedChunkCodeAfter
-          .slice(adjustedCodeBetween.length)
-          .match(cd.g.OUTDENT_TEMPLATES_REGEXP);
-        if (outdentMatch) {
-          const [, outdentIndentationChars] = outdentMatch;
-          if (
-            !outdentIndentationChars ||
-            outdentIndentationChars.length <= thisInCode.replyIndentationChars.length
-          ) {
-            const nextLineRegexp = new RegExp(anySignaturePattern);
-
-            // If adjustedChunkCodeAfter matched properPlaceRegexp, should match nextLineRegexp too.
-            const [, newAdjustedCodeBetween] = adjustedChunkCodeAfter.match(nextLineRegexp) || [];
-
-            if (newAdjustedCodeBetween === adjustedCodeBetween) {
-              // Can't insert a reply before an "outdent" template.
-              throw new CdError({
-                type: 'parse',
-                code: 'findPlace',
-              });
-            } else {
-              adjustedCodeBetween = newAdjustedCodeBetween;
-            }
-          }
-        }
-      }
-
-      // If the comment is to be put after a comment with different indentation characters, use
-      // these.
-      const changedIndentationCharsMatch = adjustedCodeBetween.match(/\n([:*#]{2,}|#[:*#]*).*\n$/);
-      const [, changedIndentationChars] = changedIndentationCharsMatch || [];
-      if (changedIndentationChars) {
-        // Note the bug https://ru.wikipedia.org/w/index.php?diff=next&oldid=105529545 that was
-        // possible here when we used `.slice(0, thisInCode.indentationChars.length + 1)` (due to
-        // `**` as indentation characters in Bsivko's comment).
-        thisInCode.replyIndentationChars = changedIndentationChars
-          .slice(0, thisInCode.replyIndentationChars.length)
-          .replace(/:$/, cd.config.defaultIndentationChar);
-      }
-
-      currentIndex += adjustedCodeBetween.length;
-    }
+  modifyWholeCode({
+    action,
+    formAction,
+    commentCode,
+    wholeCode,
+    doDelete,
+    thisInCode,
+    commentForm,
+  }) {
+    thisInCode ||= this.inCode;
+    wholeCode ||= thisInCode.isSectionCodeUsed ? this.section.code : this.getSourcePage().code;
 
     let newWholeCode;
     switch (action) {
       case 'reply': {
-        const codeBefore = wholeCode.slice(0, currentIndex);
-        const codeAfter = wholeCode.slice(currentIndex);
-        newWholeCode = codeBefore + commentCode + codeAfter;
+        const currentIndex = this.findProperPlaceForReply(thisInCode, wholeCode);
+        commentCode ??= commentForm.commentTextToCode(formAction);
+        newWholeCode = (
+          wholeCode.slice(0, currentIndex) +
+          commentCode +
+          wholeCode.slice(currentIndex)
+        );
         break;
       }
 
@@ -3729,16 +3860,21 @@ class Comment extends CommentSkeleton {
 
           newWholeCode = wholeCode.slice(0, startIndex) + wholeCode.slice(endIndex);
         } else {
-          const startIndex = thisInCode.lineStartIndex;
-          const codeBefore = wholeCode.slice(0, startIndex);
-          const codeAfter = wholeCode.slice(thisInCode.signatureEndIndex);
-          newWholeCode = codeBefore + commentCode + codeAfter;
+          commentCode ??= commentForm.commentTextToCode(formAction);
+          newWholeCode = (
+            wholeCode.slice(0, thisInCode.lineStartIndex) +
+            commentCode +
+            wholeCode.slice(thisInCode.signatureEndIndex)
+          );
         }
         break;
       }
     }
 
-    return newWholeCode;
+    return {
+      wholeCode: newWholeCode,
+      commentCode,
+    };
   }
 
   /**

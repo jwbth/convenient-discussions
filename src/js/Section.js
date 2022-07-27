@@ -1222,7 +1222,10 @@ class Section extends SectionSkeleton {
       }
     }
 
-    return newWholeCode;
+    return {
+      wholeCode: newWholeCode,
+      commentCode,
+    };
   }
 
   /**

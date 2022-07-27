@@ -2112,21 +2112,17 @@ class CommentForm {
   }) {
     switch (type) {
       case 'parse': {
-        let editUrl;
+        const editUrl = ['locateComment', 'findPlace', 'locateSection'].includes(code) ?
+          cd.page.getUrl({
+            action: 'edit',
+            ...(this.targetSection ? {} : { section: 0 }),
+          }) :
+          undefined;
         switch (code) {
           case 'locateComment':
-            if (this.targetSection) {
-              editUrl = this.targetSection.editUrl || cd.page.getUrl({ action: 'edit' });
-            } else {
-              editUrl = cd.page.getUrl({
-                action: 'edit',
-                section: 0,
-              });
-            }
             message = cd.sParse('error-locatecomment', editUrl);
             break;
           case 'locateSection':
-            editUrl = cd.page.getUrl({ action: 'edit' });
             message = cd.sParse('error-locatesection', editUrl);
             break;
           case 'numberedList':
@@ -2143,7 +2139,7 @@ class CommentForm {
             message = cd.sParse('cf-error-closed');
             break;
           case 'findPlace':
-            message = cd.sParse('cf-error-findplace');
+            message = cd.sParse('cf-error-findplace', editUrl);
             break;
           case 'delete-repliesToComment':
             message = cd.sParse('cf-error-delete-repliestocomment');
@@ -2155,14 +2151,6 @@ class CommentForm {
             message = cd.sParse('cf-error-commentlinks-commentnotfound', details.id);
             break;
         }
-        const navigateToEditUrl = async (e) => {
-          if (e.ctrlKey || e.shiftKey || e.metaKey) return;
-          e.preventDefault();
-          if (this.confirmClose()){
-            this.forget();
-            location.assign(editUrl);
-          }
-        };
         message = wrap(message, {
           callbacks: {
             'cd-message-reloadPage': async () => {
@@ -2170,8 +2158,6 @@ class CommentForm {
                 this.reloadPage();
               }
             },
-            'cd-message-editSection': navigateToEditUrl,
-            'cd-message-editPage': navigateToEditUrl,
           },
         }).$wrapper;
         break;
@@ -2266,23 +2252,23 @@ class CommentForm {
         const anchorCode = cd.config.getAnchorCode(id);
         if (commentInCode.code.includes(anchorCode)) return;
 
-        let commentCodePart = CommentTextProcessor.prototype.prepareLineStart(
+        const commentCodePart = CommentTextProcessor.prototype.prepareLineStart(
           commentInCode.indentationChars,
           commentInCode.code
         );
         const commentTextIndex = commentCodePart.match(/^[:*#]* */)[0].length;
-        const codeBefore = commentCodePart.slice(0, commentTextIndex);
-        const codeAfter = commentCodePart.slice(commentTextIndex);
-        commentCodePart = codeBefore + anchorCode + codeAfter;
-        const headingCode = commentInCode.headingCode || '';
-        const commentCode = headingCode + commentCodePart + commentInCode.signatureDirtyCode;
-
-        wholeCode = comment.modifyWholeCode({
+        ({ wholeCode } = comment.modifyWholeCode({
           action: 'edit',
-          commentCode,
+          commentCode: (
+            (commentInCode.headingCode || '') +
+            commentCodePart.slice(0, commentTextIndex) +
+            anchorCode +
+            commentCodePart.slice(commentTextIndex) +
+            commentInCode.signatureDirtyCode
+          ),
           wholeCode,
           thisInCode: commentInCode,
-        });
+        }));
       } else if (!$('#' + id).length) {
         throw new CdError({
           type: 'parse',
@@ -2347,13 +2333,13 @@ class CommentForm {
       if (this.mode === 'replyInSection') {
         this.target.setLastCommentIndentationChars(this);
       }
-      commentCode = this.commentTextToCode(action);
-      wholeCode = this.target.modifyWholeCode({
-        commentCode,
+      ({ wholeCode, commentCode } = this.target.modifyWholeCode({
+        commentCode: this.target instanceof Comment ? undefined : this.commentTextToCode(action),
         action: this.mode,
+        formAction: action,
         doDelete: this.deleteCheckbox?.isSelected(),
         commentForm: this,
-      });
+      }));
       wholeCode = this.addAnchorsToComments(wholeCode, commentIds);
     } catch (e) {
       if (e instanceof CdError) {

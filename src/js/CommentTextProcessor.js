@@ -91,6 +91,7 @@ class CommentTextProcessor {
     this.processAllCode();
     this.addHeadline();
     this.addSignature();
+    this.addOutdent();
     this.addTrailingNewline();
     this.addIntentationChars();
     this.unhideSensitiveCode();
@@ -552,6 +553,20 @@ class CommentTextProcessor {
     } else {
       this.code += this.signature;
     }
+  }
+
+  /**
+   * Add an outdent template to the beginning of the comment.
+   */
+  addOutdent() {
+    if (!this.target.inCode?.isReplyOutdented) return;
+
+    const outdentDifference = this.target.level - this.target.inCode.replyIndentationChars.length;
+    this.code = (
+      `{{${cd.config.outdentTemplates[0]}|${outdentDifference}}}` +
+      (/^[:*#]+/.test(this.code) ? '\n' : ' ') +
+      this.code
+    );
   }
 
   /**

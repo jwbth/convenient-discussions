@@ -1049,6 +1049,11 @@ export default {
         .forEach((el) => {
           items.push(el.parentNode);
         });
+      controller.rootElement
+        .querySelectorAll(`.cd-commentLevel > li + .cd-comment-outdented, .cd-commentLevel > dd + .cd-comment-outdented`)
+        .forEach((el) => {
+          items.push(el);
+        });
     }
 
     items.forEach((item) => {

@@ -434,8 +434,10 @@ function patterns() {
     .map(generatePageNamePattern)
     .join('|');
   if (outdentTemplatesPattern) {
-    const pattern = `^([:*]*) *\\{\\{ *(?:${outdentTemplatesPattern}) *(?:\\||\\}\\})`;
-    cd.g.OUTDENT_TEMPLATES_REGEXP = new RegExp(pattern, 'g');
+    cd.g.OUTDENT_TEMPLATES_REGEXP = new RegExp(
+      `^\\s*([:*#]*)[ \t]*\\{\\{ *(?:${outdentTemplatesPattern}) *(?:\\||\\}\\})`,
+      'gm'
+    );
   }
 
   const closedDiscussionBeginningsPattern = (cd.config.closedDiscussionTemplates?.[0] || [])
@@ -1007,11 +1009,11 @@ export default {
   --cd-sidebar-transparent-color: ${transparentize(sidebarColor)};
 }`);
     if (cd.config.outdentClass) {
-      mw.loader.addStyleTag(`.${cd.config.outdentClass} {
+      mw.loader.addStyleTag(`.cd-parsed .${cd.config.outdentClass} {
   margin-top: 0.5em;
 }
 
-.cd-reformattedComments .${cd.config.outdentClass} {
+.cd-reformattedComments .cd-parsed .${cd.config.outdentClass} {
   margin-top: 0.75em;
 }`);
     }
