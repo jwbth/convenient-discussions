@@ -60,42 +60,39 @@ ol > .cd-thread-button-container > .cd-thread-button {
   visibility: hidden;
 }
 
-.cd-button-expandNote.cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button {
-  > .oo-ui-iconElement-icon {
-    background-position: 0 42%;
-  }
-
-  .sitedir-ltr &,
-  .sitedir-rtl .mw-content-ltr & {
-    padding-left: 1em;
-    padding-right: 0;
-
+.cd-button-expandNote.cd-button-expandNote.cd-button-expandNote {
+  > .oo-ui-buttonElement-button {
     > .oo-ui-iconElement-icon {
-      transform: none;
-      left: 0;
-      right: auto;
+      // More thick icon
+      background-image: url("data:image/svg+xml,%3Csvg width='7' height='12' viewBox='0 0 7 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1.27273 -4.13261e-07L-4.66255e-07 1.33333L4.45455 6L-5.82819e-08 10.6667L1.27273 12L7 6L1.27273 -4.13261e-07Z' fill='black'/%3E%3C/svg%3E");
+
+      background-size: 7px;
+      background-position: 0 50%;
     }
-  }
 
-  .sitedir-rtl &,
-  .sitedir-ltr .mw-content-rtl & {
-    padding-left: 0;
-    padding-right: 1em;
+    .sitedir-ltr &,
+    .sitedir-rtl .mw-content-ltr & {
+      padding-left: 1em;
+      padding-right: 0;
 
-    > .oo-ui-iconElement-icon {
-      transform: scaleX(-1);
-      left: auto;
-      right: 0;
+      > .oo-ui-iconElement-icon {
+        transform: none;
+        left: 0;
+        right: auto;
+      }
     }
-  }
-}
 
-.cd-button-expandNote {
-  > .oo-ui-buttonElement-button .oo-ui-iconElement-icon {
-    // More thick icon
-    background-image: url("data:image/svg+xml,%3Csvg width='11' height='18' viewBox='0 0 11 18' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 -8.74228e-08L-6.99382e-07 2L7 9L-8.74228e-08 16L2 18L11 9L2 -8.74228e-08Z' fill='black'/%3E%3C/svg%3E");
+    .sitedir-rtl &,
+    .sitedir-ltr .mw-content-rtl & {
+      padding-left: 0;
+      padding-right: 1em;
 
-    background-size: 7px;
+      > .oo-ui-iconElement-icon {
+        transform: scaleX(-1);
+        left: auto;
+        right: 0;
+      }
+    }
   }
 
   .rtl & {
