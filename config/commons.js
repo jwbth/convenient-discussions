@@ -58,6 +58,7 @@ export default {
     'comma-separator': ', ',
     'colon-separator': ': ',
     'nextdiff': 'Newer edit →',
+    'pagetitle': '$1 - Wikimedia Commons',
   },
   specialPageAliases: {
     'Contributions': 'Contributions',

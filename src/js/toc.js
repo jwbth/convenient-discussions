@@ -100,7 +100,7 @@ const toc = {
    * and exists because we may need to hide the TOC earlier than the native method does it.
    */
   possiblyHide() {
-    if (!this.isPresentClassic()) return;
+    if (toc.isInSidebar() || !toc.isPresent()) return;
 
     if (mw.cookie.get('hidetoc') === '1') {
       this.$element.find('.toctogglecheckbox').prop('checked', true);
@@ -674,15 +674,6 @@ const toc = {
    */
   isPresent() {
     return Boolean(this.$element.length);
-  },
-
-  /**
-   * Is the classic table of contents (not the sidebar) present on the page.
-   *
-   * @returns {boolean}
-   */
-  isPresentClassic() {
-    return this.isPresent() && !this.isInSidebar();
   },
 
   /**

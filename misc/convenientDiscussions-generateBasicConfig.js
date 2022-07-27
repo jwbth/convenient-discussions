@@ -24,7 +24,7 @@ mw.loader.using([
     'august-gen', 'september-gen', 'october-gen', 'november-gen', 'december-gen',
 
     'parentheses', 'parentheses-start', 'parentheses-end', 'word-separator', 'comma-separator',
-    'colon-separator', 'nextdiff', 'timezone-utc',
+    'colon-separator', 'nextdiff', 'timezone-utc', 'pagetitle',
     'discussiontools-topicsubscription-button-subscribe',
     'discussiontools-topicsubscription-button-subscribe-tooltip',
     'discussiontools-topicsubscription-button-unsubscribe',

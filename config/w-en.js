@@ -58,6 +58,7 @@ export default {
     'comma-separator': ', ',
     'colon-separator': ': ',
     'nextdiff': 'Next edit →',
+    'pagetitle': '$1 - Wikipedia',
   },
 
   specialPageAliases: {

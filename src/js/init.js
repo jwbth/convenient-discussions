@@ -132,7 +132,7 @@ function loadSiteData() {
     .map((pattern) => dateTokenToMessageNames[pattern]);
   const userLanguageMessageNames = [
     'parentheses', 'parentheses-start', 'parentheses-end', 'word-separator', 'comma-separator',
-    'colon-separator', 'nextdiff', 'timezone-utc',
+    'colon-separator', 'nextdiff', 'timezone-utc', 'pagetitle',
     'discussiontools-topicsubscription-button-subscribe',
     'discussiontools-topicsubscription-button-subscribe-tooltip',
     'discussiontools-topicsubscription-button-unsubscribe',

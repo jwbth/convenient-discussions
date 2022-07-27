@@ -58,6 +58,7 @@ export default {
     'comma-separator': ', ',
     'colon-separator': ': ',
     'nextdiff': 'Следующая правка →',
+    'pagetitle': '$1 — Википедия',
   },
 
   specialPageAliases: {

@@ -1341,9 +1341,7 @@ export default {
     this.bootProcess = bootProcess;
 
     CommentForm.detach();
-
     this.cleanUpUrlAndDom();
-    updateChecker.updatePageTitle(0, false);
 
     debug.stopTimer('getting HTML');
 
@@ -1373,37 +1371,13 @@ export default {
   },
 
   /**
-   * Remove fragment and revision parameters from the URL, remove DOM elements related to the diff.
+   * Remove diff-related DOM elements and the added comment count from the title.
    *
+   * @param {object} query
    * @private
    */
-  cleanUpUrlAndDom() {
-    const query = (new mw.Uri()).query;
-
-    // Don't reset the fragment if it will be set in the boot process from a comment ID or a section
-    // ID, to avoid creating an extra history entry.
-    if (this.bootProcess.data('pushState') || this.bootProcess.data('isPageReloadedExternally')) {
-      return;
-    }
-
-    // Added automatically (after /wiki/ if possible, as a query parameter otherwise).
-    delete query.title;
-
-    delete query.curid;
-    delete query.action;
-    delete query.redlink;
-    delete query.section;
-    delete query.cdaddtopic;
-
-    let methodName;
+  cleanUpDom(query) {
     if (query.diff || query.oldid) {
-      methodName = 'pushState';
-
-      delete query.diff;
-      delete query.oldid;
-      delete query.diffmode;
-      delete query.type;
-
       // Diff pages
       this.$content
         .children('.mw-revslider-container, .ve-init-mw-diffPage-diffMode, .diff, .oo-ui-element-hidden, .diff-hr, .diff-currentversion-title')
@@ -1413,19 +1387,68 @@ export default {
       $('.mw-revision').remove();
 
       $('#firstHeading').text(cd.page.name);
+      document.title = cd.mws('pagetitle', cd.page.name);
+    } else {
+      updateChecker.updatePageTitle(0, false);
+    }
+  },
+
+  /**
+   * Remove fragment and revision parameters from the URL.
+   *
+   * @param {object} query
+   * @private
+   */
+  cleanUpUrl(query) {
+    const newQuery = Object.assign({}, query);
+
+    // Added automatically (after /wiki/ if possible, as a query parameter otherwise).
+    delete newQuery.title;
+
+    delete newQuery.curid;
+    delete newQuery.action;
+    delete newQuery.redlink;
+    delete newQuery.section;
+    delete newQuery.cdaddtopic;
+
+    let methodName;
+    if (newQuery.diff || newQuery.oldid) {
+      methodName = 'pushState';
+
+      delete newQuery.diff;
+      delete newQuery.oldid;
+      delete newQuery.diffmode;
+      delete newQuery.type;
 
       // Make the "Back" browser button work.
       $(window).on('popstate', () => {
-        if (mw.util.getParamValue('diff') || mw.util.getParamValue('oldid')) {
+        const { query } = new mw.Uri();
+        if (query.diff || query.oldid) {
           location.reload();
         }
       });
 
       this.diffPage = false;
-    } else {
+    } else if (!this.bootProcess.data('pushState')) {
+      // Don't reset the fragment if it will be set in the boot process from a comment ID or a
+      // section ID, to avoid creating an extra history entry.
       methodName = 'replaceState';
     }
-    history[methodName](history.state, '', cd.page.getUrl(query));
+
+    if (methodName) {
+      history[methodName](history.state, '', cd.page.getUrl(newQuery));
+    }
+  },
+
+  /**
+   * Remove fragment and revision parameters from the URL, remove DOM elements related to the diff.
+   */
+  cleanUpUrlAndDom() {
+    if (this.bootProcess.data('isPageReloadedExternally')) return;
+
+    const { query } = new mw.Uri();
+    this.cleanUpDom(query);
+    this.cleanUpUrl(query);
   },
 
   /**
