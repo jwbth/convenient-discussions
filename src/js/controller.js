@@ -331,11 +331,11 @@ export default {
   /**
    * Get the sticky header element, if present.
    *
-   * @returns {Element}
+   * @returns {?Element}
    */
   getStickyHeader() {
     if (this.stickyHeader === undefined) {
-      this.stickyHeader = $('#vector-sticky-header').get(0);
+      this.stickyHeader = $('#vector-sticky-header').get(0) || null;
     }
     return this.stickyHeader;
   },
