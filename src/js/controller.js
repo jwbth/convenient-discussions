@@ -1342,6 +1342,7 @@ export default {
 
     CommentForm.detach();
     this.cleanUpUrlAndDom();
+    this.mutationObserver?.disconnect();
 
     debug.stopTimer('getting HTML');
 
@@ -1903,5 +1904,29 @@ export default {
       window.scrollTo(window.scrollX, y);
       onComplete();
     }
+  },
+
+  /**
+   * Set up a
+   * {@link https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver MutationObserver}
+   * instance to handle page mutations.
+   */
+  setupMutationObserver() {
+    // Create the mutation observer in the next event cycle - let most DOM changes by CD and scripts
+    // attached to the hooks to be made first to reduce the number of times it runs in vain. But if
+    // we set a long delay, users will see comment backgrounds mispositioned for some time.
+    setTimeout(() => {
+      this.mutationObserver = new MutationObserver((records) => {
+        const layerClassRegexp = /^cd-comment(-underlay|-overlay|Layers)/;
+        if (records.every((record) => layerClassRegexp.test(record.target.className))) return;
+
+        this.handlePageMutations();
+      });
+      this.mutationObserver.observe(this.$content.get(0), {
+        attributes: true,
+        childList: true,
+        subtree: true,
+      });
+    });
   },
 };

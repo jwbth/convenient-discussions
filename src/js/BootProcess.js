@@ -1368,41 +1368,7 @@ class BootProcess {
   }
 
   /**
-   * Set up
-   * {@link https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver MutationObserver} to
-   * handle page mutations.
-   *
-   * @private
-   */
-  setupMutationObserver() {
-    // Mutation observer doesn't follow all possible comment position changes (for example,
-    // initiated with adding new CSS) unfortunately.
-    setInterval(() => {
-      controller.handlePageMutations();
-    }, 1000);
-
-    // Create the mutation observer in the next event cycle - let most DOM changes by CD and scripts
-    // attached to the hooks to be made first to reduce the number of times it runs in vain. But if
-    // we set a long delay, users will see comment backgrounds mispositioned for some time.
-    setTimeout(() => {
-      const observer = new MutationObserver((records) => {
-        const layerClassRegexp = /^cd-comment(-underlay|-overlay|Layers)/;
-        const areLayersOnly = records
-          .every((record) => layerClassRegexp.test(record.target.className));
-        if (areLayersOnly) return;
-
-        controller.handlePageMutations();
-      });
-      observer.observe(controller.$content.get(0), {
-        attributes: true,
-        childList: true,
-        subtree: true,
-      });
-    });
-  }
-
-  /**
-   * Add event listeners to `window`, `document`, hooks; set up `MutationObserver`.
+   * Add event listeners to `window`, `document`, hooks.
    *
    * @private
    */
@@ -1432,7 +1398,11 @@ class BootProcess {
     mw.hook('wikipage.content').add(this.connectToCommentLinks, this.highlightMentions);
     mw.hook('convenientDiscussions.previewReady').add(this.connectToCommentLinks);
 
-    this.setupMutationObserver();
+    // Mutation observer doesn't follow all possible comment position changes (for example,
+    // initiated with adding new CSS) unfortunately.
+    setInterval(() => {
+      controller.handlePageMutations();
+    }, 1000);
 
     if (controller.isPageCommentable()) {
       $(document).on('keydown', controller.handleGlobalKeyDown);
@@ -1649,6 +1619,9 @@ class BootProcess {
       } else {
         pageNav.update();
       }
+
+      // We set the setup observer at every reload because controller.$content may change.
+      controller.setupMutationObserver();
 
       if (settings.get('reformatComments') && cd.comments.length) {
         // Using the "wikipage.content" hook could theoretically disrupt code that needs to
