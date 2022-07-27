@@ -533,7 +533,6 @@ export async function loadUserGenders(users, requestInBackground = false) {
  * @returns {module:userRegistry~User[]}
  */
 export async function getUsersByGlobalId(userIds) {
-  const users = [];
   const requests = userIds.map((id) => (
     controller.getApi().post({
       action: 'query',
@@ -541,14 +540,12 @@ export async function getUsersByGlobalId(userIds) {
       guiid: id,
     }).catch(handleApiReject)
   ));
-  (await Promise.all(requests)).forEach((resp) => {
+  return (await Promise.all(requests)).map((resp) => {
     const userInfo = resp.query.globaluserinfo;
     const user = userRegistry.get(userInfo.name);
     user.setGlobalId(userInfo.id);
-    users.push(user);
+    return user;
   });
-
-  return users;
 }
 
 /**

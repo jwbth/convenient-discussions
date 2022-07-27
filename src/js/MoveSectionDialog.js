@@ -416,8 +416,9 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
     }
 
     const sectionCode = source.sectionInCode.code;
-    const codeBefore = sectionCode.slice(0, source.sectionInCode.relativeContentStartIndex);
-    const sectionContentCode = sectionCode.slice(source.sectionInCode.relativeContentStartIndex);
+    const relativeContentStartIndex = source.sectionInCode.relativeContentStartIndex;
+    const codeBefore = sectionCode.slice(0, relativeContentStartIndex);
+    const sectionContentCode = sectionCode.slice(relativeContentStartIndex);
     const newSectionCode = endWithTwoNewlines(
       codeBefore +
       codeBeginning +
@@ -428,12 +429,11 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
     let newCode;
     const pageCode = target.page.code;
     if (target.page.areNewTopicsOnTop) {
-      // The page has no sections, so we add to the bottom.
-      if (target.page.firstSectionStartIndex === undefined) {
-        target.page.firstSectionStartIndex = pageCode.length;
-      }
-      const codeBefore = endWithTwoNewlines(pageCode.slice(0, target.page.firstSectionStartIndex));
-      const codeAfter = pageCode.slice(target.page.firstSectionStartIndex);
+      // If the page has no sections, we add to the bottom.
+      const firstSectionStartIndex = target.page.firstSectionStartIndex ?? pageCode.length;
+
+      const codeBefore = endWithTwoNewlines(pageCode.slice(0, firstSectionStartIndex));
+      const codeAfter = pageCode.slice(firstSectionStartIndex);
       newCode = codeBefore + newSectionCode + codeAfter;
     } else {
       newCode = pageCode + (pageCode ? '\n' : '') + newSectionCode;
@@ -441,7 +441,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
 
     let summaryEnding = this.controls.summaryEnding.input.getValue();
     const colon = cd.mws('colon-separator', { language: 'content' });
-    summaryEnding = summaryEnding && colon + summaryEnding;
+    summaryEnding &&= colon + summaryEnding;
     const summary = cd.s('es-move-from', source.sectionWikilink) + summaryEnding;
     try {
       await target.page.edit({
@@ -505,7 +505,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
 
     let summaryEnding = this.controls.summaryEnding.input.getValue();
     const colon = cd.mws('colon-separator', { language: 'content' });
-    summaryEnding = summaryEnding && colon + summaryEnding;
+    summaryEnding &&= colon + summaryEnding;
     const summary = cd.s('es-move-to', target.sectionWikilink) + summaryEnding;
 
     try {

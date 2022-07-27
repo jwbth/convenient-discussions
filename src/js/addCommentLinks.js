@@ -357,7 +357,7 @@ function processWatchlist($content) {
     if (line.querySelector('.minoredit')) return;
 
     let summary = line.querySelector('.comment')?.textContent;
-    summary = summary && removeDirMarks(summary);
+    summary &&= removeDirMarks(summary);
     if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
 
     const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
@@ -452,7 +452,7 @@ function processContributions($content) {
     if (line.querySelector('.minoredit')) return;
 
     let summary = line.querySelector('.comment')?.textContent;
-    summary = summary && removeDirMarks(summary);
+    summary &&= removeDirMarks(summary);
     if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
 
     const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
@@ -507,7 +507,7 @@ function processHistory($content) {
     if (line.querySelector('.minoredit')) return;
 
     let summary = line.querySelector('.comment')?.textContent;
-    summary = summary && removeDirMarks(summary);
+    summary &&= removeDirMarks(summary);
     if (summary && (isCommentEdit(summary) || isUndo(summary) || isMoved(summary))) return;
 
     const bytesAddedElement = line.querySelector('.mw-plusminus-pos');
@@ -592,7 +592,7 @@ async function processDiff($diff) {
       area.querySelector('.cd-commentLink')?.remove();
 
       let summary = area.querySelector('.comment')?.textContent;
-      summary = summary && removeDirMarks(summary);
+      summary &&= removeDirMarks(summary);
 
       // In diffs, archivation can't be captured by looking at bytes added.
       if (

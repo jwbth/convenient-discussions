@@ -14,7 +14,7 @@ const context = typeof window === 'undefined' ? self : window;
  * @namespace convenientDiscussions
  * @global
  */
-context.convenientDiscussions = context.convenientDiscussions || {};
+context.convenientDiscussions ||= {};
 if (typeof context.convenientDiscussions !== 'object') {
   context.convenientDiscussions = {};
 }

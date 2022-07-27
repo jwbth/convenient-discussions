@@ -285,7 +285,7 @@ function setArchivePagesGlobals() {
  */
 function patterns() {
   // Fix configuration values in wrong format
-  cd.config.customTalkNamespaces = cd.config.customTalkNamespaces || [];
+  cd.config.customTalkNamespaces ||= [];
 
   const signatureEndingRegexpLastChar = cd.config.signatureEndingRegexp?.source?.slice(-1);
   if (signatureEndingRegexpLastChar && signatureEndingRegexpLastChar !== '$') {
@@ -348,8 +348,9 @@ function patterns() {
 
   cd.g.KEEP_IN_SECTION_ENDING = cd.config.keepInSectionEnding.slice();
   if (clearTemplatesPattern) {
-    const pattern = new RegExp(`\\n+\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\}\\s*$`);
-    cd.g.KEEP_IN_SECTION_ENDING.push(pattern);
+    cd.g.KEEP_IN_SECTION_ENDING.push(
+      new RegExp(`\\n+\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\}\\s*$`)
+    );
   }
 
   cd.g.USER_SIGNATURE = settings.get('signaturePrefix') + cd.g.SIGN_CODE;
@@ -397,8 +398,9 @@ function patterns() {
       commentAntipatternsPatternParts.push(`\\{\\{ *(?:${pattern}) *(?:\\||\\}\\})`);
     }
     if (cd.config.commentAntipatterns) {
-      const sources = cd.config.commentAntipatterns.map((pattern) => pattern.source);
-      commentAntipatternsPatternParts.push(...sources);
+      commentAntipatternsPatternParts.push(
+        ...cd.config.commentAntipatterns.map((pattern) => pattern.source)
+      );
     }
     const pattern = commentAntipatternsPatternParts.join('|');
     cd.g.COMMENT_ANTIPATTERNS_REGEXP = new RegExp(`^.*(?:${pattern}).*$`, 'mg');
@@ -483,8 +485,9 @@ function patterns() {
     .concat(new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\n*(?=[*:#])`, 'i'))
     .concat(cd.config.customBadCommentBeginnings);
   if (clearTemplatesPattern) {
-    const pattern = new RegExp(`^\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\} *\\n+`, 'i');
-    cd.g.BAD_COMMENT_BEGINNINGS.push(pattern);
+    cd.g.BAD_COMMENT_BEGINNINGS.push(
+      new RegExp(`^\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\} *\\n+`, 'i')
+    );
   }
 
   cd.g.ADD_TOPIC_SELECTOR = [

@@ -1108,7 +1108,7 @@ class CommentForm {
     snippet = hideText(snippet, /\\[+;\\]/g, hidden);
     let [, pre, post] = snippet.match(/^(.*?)(?:\+(.*))?$/) || [];
     if (!pre) return;
-    post = post || '';
+    post ||= '';
     const unescape = (snippet) => snippet.replace(/\\([+;\\])/g, '$1');
     pre = unescape(unhideText(pre, hidden));
     post = unescape(unhideText(post, hidden));
@@ -1315,9 +1315,7 @@ class CommentForm {
       let match;
       let onlyInclude;
       while ((match = regexp.exec(code))) {
-        if (onlyInclude === undefined) {
-          onlyInclude = '';
-        }
+        onlyInclude ??= '';
         onlyInclude += match[2];
       }
       if (onlyInclude !== undefined) {
@@ -2186,7 +2184,7 @@ class CommentForm {
 
         message = wrap(message);
         message.find('.mw-parser-output').css('display', 'inline');
-        logMessage = logMessage || [code, apiData];
+        logMessage ||= [code, apiData];
         break;
       }
 
@@ -2253,7 +2251,7 @@ class CommentForm {
         if (commentInCode.code.includes(anchorCode)) return;
 
         const commentCodePart = CommentTextProcessor.prototype.prepareLineStart(
-          commentInCode.indentationChars,
+          commentInCode.indentation,
           commentInCode.code
         );
         const commentTextIndex = commentCodePart.match(/^[:*#]* */)[0].length;
@@ -2331,7 +2329,7 @@ class CommentForm {
         this.target.locateInCode(this.sectionSubmitted);
       }
       if (this.mode === 'replyInSection') {
-        this.target.setLastCommentIndentationChars(this);
+        this.target.setLastCommentIndentation(this);
       }
       ({ wholeCode, commentCode } = this.target.modifyWholeCode({
         commentCode: this.target instanceof Comment ? undefined : this.commentTextToCode(action),
@@ -2477,7 +2475,7 @@ class CommentForm {
         !(this.target instanceof pageRegistry.Page) &&
         !this.target.inCode &&
         this.checkCodeRequest &&
-        (await getNativePromiseState(this.checkCodeRequest)) === 'resolved'
+        await getNativePromiseState(this.checkCodeRequest) === 'resolved'
       ) ||
       this.isBeingSubmitted() ||
       (isAuto && !settings.get('autopreview'))
@@ -3501,7 +3499,7 @@ class CommentForm {
       periStartPos = selectionStartPos + leadingNewline.length + pre.length;
       selection = value.substring(range.from, range.to);
     } else {
-      selection = selection || '';
+      selection ||= '';
     }
 
     // Wrap the text moving the leading and trailing spaces to the sides of the resulting text.

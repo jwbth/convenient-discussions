@@ -1362,7 +1362,7 @@ class CommentSkeleton {
    */
   getParent(visual = false) {
     const prop = visual ? 'level' : 'logicalLevel';
-    this.cachedParent = this.cachedParent || {};
+    this.cachedParent ||= {};
     if (this.cachedParent[prop] === undefined) {
       // This can run many times during page load, so we better optimize.
       this.cachedParent[prop] = null;
@@ -1555,7 +1555,7 @@ class CommentSkeleton {
 
             if (parentComment.index !== commentIndex - 1) {
               // Explicitly set the parent.
-              childComment.cachedParent = childComment.cachedParent || {};
+              childComment.cachedParent ||= {};
               childComment.cachedParent.logicalLevel = parentComment;
             }
 

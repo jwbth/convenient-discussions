@@ -129,8 +129,8 @@ export function getDateFromTimestampMatch(match, timezone) {
       case 'xg':
       case 'F':
       case 'M': {
-        // The worker context doesn't have `mw.msg`, but `isContentLanguage` should be always
-        // `true` there.
+        // The worker context doesn't have `mw.msg`, but `isContentLanguage` should be always `true`
+        // there.
         const messages = isContentLanguage ?
           getContentLanguageMessages(dateTokenToMessageNames[code]) :
           dateTokenToMessageNames[code].map(mw.msg);
@@ -219,7 +219,7 @@ export function parseTimestamp(timestamp, timezone) {
  * @private
  */
 function generateTimezonePostfix(offset) {
-  utcString = utcString || cd.mws('timezone-utc');
+  utcString ||= cd.mws('timezone-utc');
   let postfix = ` (${utcString}`;
 
   // Not necessarily an integer

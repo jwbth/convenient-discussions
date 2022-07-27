@@ -38,9 +38,7 @@ class User {
     if (this.name === '<unregistered>') {
       return false;
     }
-    if (this.registered === undefined) {
-      this.registered = !mw.util.isIPAddress(this.name);
-    }
+    this.registered ??= !mw.util.isIPAddress(this.name);
     return this.registered;
   }
 

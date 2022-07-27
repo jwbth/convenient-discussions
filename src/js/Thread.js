@@ -881,7 +881,7 @@ class Thread {
       undefined :
       this[this.isCollapsed ? 'expandNote' : 'startElement'].getBoundingClientRect();
 
-    floatingRects = floatingRects || controller.getFloatingElements().map(getExtendedRect);
+    floatingRects ||= controller.getFloatingElements().map(getExtendedRect);
     const rectOrOffset = rectTop || comment.getOffset({ floatingRects });
 
     // Should be below `comment.getOffset()` as `Comment#isStartStretched` is set inside that call.

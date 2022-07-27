@@ -99,10 +99,10 @@
   }
 }
 
-// Comment buttons should inherit the text direction, not matter the interface language. (Don't
-// specify styles for [dir="ltr"] as they could be expensive.) If the "mw-content-rtl" class would
-// be thrown away one day, then use [dir="rtl"]?
-[dir="rtl"] {
+// Comment buttons should inherit the text direction, not matter the interface language. If the
+// "mw-content-rtl" class would be thrown away one day, then use [dir="rtl"]? (Don't specify styles
+// for [dir="ltr"] as they could be expensive.)
+.mw-content-rtl {
   .cd-comment-menu .cd-comment-button,
   .cd-comment-header .cd-comment-author-wrapper a {
     unicode-bidi: isolate;

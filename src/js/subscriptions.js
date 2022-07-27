@@ -94,16 +94,16 @@ export default {
    * nothing is saved to the server.
    *
    * @param {string} subscribeId Section's subscribe ID (modern or legact format).
-   * @param {*} subscribe Subscribe or unsubscribe.
+   * @param {boolean} subscribe Subscribe or unsubscribe.
    * @private
    */
   updateRegistry(subscribeId, subscribe) {
     if (subscribeId === undefined) return;
 
     // `this.registry` can be not set on just created pages with DT subscriptions enabled.
-    this.registry = this.registry || {};
+    this.registry ||= {};
 
-    this.registry[subscribeId] = subscribe;
+    this.registry[subscribeId] = Boolean(subscribe);
 
     if (!subscribe && !settings.get('useTopicSubscription')) {
       delete this.registry[subscribeId];
@@ -305,13 +305,11 @@ export default {
       throw new CdError();
     }
 
-    if (this.registry[subscribeId]) {
-      return true;
-    } else if (this.registry[subscribeId] === undefined) {
+    if (this.registry[subscribeId] === undefined) {
       return null;
-    } else {
-      return false;
     }
+
+    return this.registry[subscribeId];
   },
 
   /**

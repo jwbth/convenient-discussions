@@ -272,7 +272,7 @@ function extractUnsigneds(adjustedCode, code, signatures) {
       } else {
         author = match[2];
       }
-      author = author && userRegistry.get(decodeHtmlEntities(author));
+      author &&= userRegistry.get(decodeHtmlEntities(author));
 
       // Append "(UTC)" to the `timestamp` of templates that allow to omit the timezone. The
       // timezone could be not UTC, but currently the timezone offset is taken from the wiki

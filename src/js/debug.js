@@ -86,9 +86,7 @@ const debug = {
    * @param {string} label
    */
   startTimer(label) {
-    if (this.timerTotal[label] === undefined) {
-      this.timerTotal[label] = 0;
-    }
+    this.timerTotal[label] ??= 0;
     this.timerStartTimestamps[label] = performance.now();
   },
 
@@ -104,11 +102,10 @@ const debug = {
     this.timerTotal[label] += interval;
     delete this.timerStartTimestamps[label];
 
-    if (this.timerAllRunsTotal[label] === undefined) {
-      this.timerAllRunsTotal[label] = 0;
-      this.timerRunCount[label] = 0;
-    }
+    this.timerAllRunsTotal[label] ??= 0;
     this.timerAllRunsTotal[label] += interval;
+
+    this.timerRunCount[label] ??= 0;
     this.timerRunCount[label]++;
   },
 

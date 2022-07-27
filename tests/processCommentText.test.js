@@ -53,8 +53,8 @@ const firstLevelReplyForm = {
   mode: 'reply',
   target: {
     inCode: {
-      indentationChars: ':',
-      replyIndentationChars: '::',
+      indentation: ':',
+      replyIndentation: '::',
     },
   },
 };
@@ -63,8 +63,8 @@ const firstCommentReplyForm = {
   mode: 'reply',
   target: {
     inCode: {
-      indentationChars: '',
-      replyIndentationChars: ':',
+      indentation: '',
+      replyIndentation: ':',
       headingLevel: 2,
     },
   },
@@ -76,8 +76,8 @@ const firstLevelEditForm = {
   mode: 'edit',
   target: {
     inCode: {
-      indentationChars: ':',
-      replyIndentationChars: '::',
+      indentation: ':',
+      replyIndentation: '::',
       code: 'Text.',
       signatureCode: existingSignature,
     },
@@ -92,8 +92,8 @@ const firstCommentEditForm = {
   },
   target: {
     inCode: {
-      indentationChars: '',
-      replyIndentationChars: ':',
+      indentation: '',
+      replyIndentation: ':',
       code: '\nText.',
       signatureCode: existingSignature,
       headingLevel: 2,
@@ -106,7 +106,7 @@ const replyInSectionForm = {
   mode: 'replyInSection',
   target: {
     inCode: {
-      lastCommentIndentationChars: ':',
+      lastCommentIndentation: ':',
     },
   },
 };
@@ -115,7 +115,7 @@ const voteForm = {
   mode: 'replyInSection',
   target: {
     inCode: {
-      lastCommentIndentationChars: '#',
+      lastCommentIndentation: '#',
     },
   },
 };

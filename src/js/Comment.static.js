@@ -215,7 +215,7 @@ export default {
       if (comment.underlay && !shouldBeHighlighted && (removeUnhighlighted || isUnderRootBottom)) {
         comment.removeLayers();
       } else if (shouldBeHighlighted && !comment.editForm) {
-        floatingRects = floatingRects || controller.getFloatingElements().map(getExtendedRect);
+        floatingRects ||= controller.getFloatingElements().map(getExtendedRect);
         const isMoved = comment.configureLayers({
           // If a comment was hidden, then became visible, we need to add the layers.
           add: true,
@@ -478,7 +478,7 @@ export default {
         ...(cd.g.NOTIFICATION_AREA?.querySelectorAll('.mw-notification') || []),
         controller.getActiveAutocompleteMenu(),
         navPanel.$element?.get(0),
-        controller.getPopupOverlay(false)
+        controller.getPopupOverlay()
           ?.get(0)
           .querySelector('.oo-ui-popupWidget:not(.oo-ui-element-hidden)'),
         controller.getStickyHeader(),
@@ -955,24 +955,20 @@ export default {
                 if (bottomInnerTags[child.tagName]) {
                   child = controller.changeElementType(child, bottomInnerTags[child.tagName]);
                 }
-                if (firstMoved === undefined) {
-                  firstMoved = child;
-                }
-              } else {
-                if (firstMoved === undefined && child.textContent.trim()) {
-                  // Don't fill the "firstMoved" variable which is used further to merge elements if
-                  // there is a non-empty text node between. (An example that is now fixed:
-                  // https://ru.wikipedia.org/wiki/Википедия:Форум/Архив/Викиданные/2018/1_полугодие#201805032155_NBS,
-                  // but other can be on the loose.) Instead, wrap the text node into an element to
-                  // prevent it from being ignored when searching next time for adjacent
-                  // .commentLevel elements. This could be seen only as an additional precaution,
-                  // since it doesn't fix the source of the problem: the fact that a bare text node
-                  // is (probably) a part of the reply. It shouldn't be happening.
-                  firstMoved = null;
-                  const newChild = document.createElement('span');
-                  newChild.appendChild(child);
-                  child = newChild;
-                }
+                firstMoved ??= child;
+              } else if (firstMoved === undefined && child.textContent.trim()) {
+                // Don't fill the "firstMoved" variable which is used further to merge elements if
+                // there is a non-empty text node between. (An example that is now fixed:
+                // https://ru.wikipedia.org/wiki/Википедия:Форум/Архив/Викиданные/2018/1_полугодие#201805032155_NBS,
+                // but other can be on the loose.) Instead, wrap the text node into an element to
+                // prevent it from being ignored when searching next time for adjacent .commentLevel
+                // elements. This could be seen only as an additional precaution, since it doesn't
+                // fix the source of the problem: the fact that a bare text node is (probably) a
+                // part of the reply. It shouldn't be happening.
+                firstMoved = null;
+                const newChild = document.createElement('span');
+                newChild.appendChild(child);
+                child = newChild;
               }
               currentTopElement.appendChild(child);
             }

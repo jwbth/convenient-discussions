@@ -31,39 +31,40 @@ class CommentTextProcessor {
    * @private
    */
   setIndentationData() {
+    const targetInCode = this.target.inCode;
     switch (this.commentForm.getMode()) {
       case 'reply':
-        this.indentationChars = this.target.inCode.replyIndentationChars;
+        this.indentation = targetInCode.replyIndentation;
         break;
       case 'edit':
-        this.indentationChars = this.target.inCode.indentationChars;
+        this.indentation = targetInCode.indentation;
         break;
       case 'replyInSection':
-        this.indentationChars = (
-          this.target.inCode.lastCommentIndentationChars &&
+        this.indentation = (
+          targetInCode.lastCommentIndentation &&
           (
-            this.target.inCode.lastCommentIndentationChars[0] === '#' ||
+            targetInCode.lastCommentIndentation[0] === '#' ||
             cd.config.indentationCharMode === 'mimic'
           )
         ) ?
-          this.target.inCode.lastCommentIndentationChars[0] :
+          targetInCode.lastCommentIndentation[0] :
           cd.config.defaultIndentationChar;
         break;
       default:
-        this.indentationChars = '';
+        this.indentation = '';
     }
 
     this.indented = Boolean(
       ['reply', 'replyInSection'].includes(this.commentForm.getMode()) ||
-      (this.commentForm.getMode() === 'edit' && this.indentationChars)
+      (this.commentForm.getMode() === 'edit' && this.indentation)
     );
 
     if (this.indented) {
       // In the preview mode, imitate a list so that the user will see where it would break on a
       // real page. This pseudolist's margin is made invisible by CSS.
-      this.restLinesIndentationChars = this.action === 'preview' ?
+      this.restLinesIndentation = this.action === 'preview' ?
         ':' :
-        this.indentationChars.replace(/\*/g, ':');
+        this.indentation.replace(/\*/g, ':');
     }
   }
 
@@ -87,7 +88,7 @@ class CommentTextProcessor {
 
     this.processAndHideSensitiveCode();
     this.findWrappers();
-    this.setSignature();
+    this.setSignatureAndFixCode();
     this.processAllCode();
     this.addHeadline();
     this.addSignature();
@@ -141,7 +142,7 @@ class CommentTextProcessor {
    *
    * @private
    */
-  setSignature() {
+  setSignatureAndFixCode() {
     if (this.commentForm.omitSignatureCheckbox?.isSelected()) {
       this.signature = '';
     } else {
@@ -228,13 +229,13 @@ class CommentTextProcessor {
       lines.forEach((line, i) => {
         if (line.text === undefined) {
           const itemsText = line.items
-          .map((item) => {
-            const itemText = item.text === undefined ?
-              listToTags(item.items, true) :
-              item.text.trim();
-            return item.type ? `<${item.type}>${itemText}</${item.type}>` : itemText;
-          })
-          .join('');
+            .map((item) => {
+              const itemText = item.text === undefined ?
+                listToTags(item.items, true) :
+                item.text.trim();
+              return item.type ? `<${item.type}>${itemText}</${item.type}>` : itemText;
+            })
+            .join('');
           text += `<${line.type}>${itemsText}</${line.type}>`;
         } else {
           text += isNested ? line.text.trim() : line.text;
@@ -272,19 +273,15 @@ class CommentTextProcessor {
   /**
    * Add indentation chars to the start of the line.
    *
-   * @param {string} indentationChars
+   * @param {string} indentation
    * @param {string} line
    * @param {boolean} [addLine=true] Add the line itself.
    * @returns {string}
    * @private
    */
-  prepareLineStart(indentationChars, line, addLine = true) {
-    const addSpace = (
-      indentationChars &&
-      cd.config.spaceAfterIndentationChars &&
-      !/^[:*#;]/.test(line)
-    );
-    return indentationChars + (addSpace ? ' ' : '') + (addLine ? line : '');
+  prepareLineStart(indentation, line, addLine = true) {
+    const addSpace = indentation && cd.config.spaceAfterIndentationChars && !/^[:*#;]/.test(line);
+    return indentation + (addSpace ? ' ' : '') + (addLine ? line : '');
   }
 
   /**
@@ -309,7 +306,7 @@ class CommentTextProcessor {
     }
 
     // Replace list markup (`:*#;`) with respective tags if otherwise layout will be broken.
-    if (/^[:*#;]/m.test(code) && (isWrapped || this.restLinesIndentationChars === '#')) {
+    if (/^[:*#;]/m.test(code) && (isWrapped || this.restLinesIndentation === '#')) {
       code = this.listMarkupToTags(code);
     }
 
@@ -323,7 +320,7 @@ class CommentTextProcessor {
       // formatting. If there is no paragraph template, there won't be multiple newlines, as they
       // will have been removed above.
       const newlinesToAdd = newlines.length > 1 ? '\n\n\n' : '\n';
-      const line = this.prepareLineStart(this.restLinesIndentationChars, nextLine);
+      const line = this.prepareLineStart(this.restLinesIndentation, nextLine);
 
       return newlinesToAdd + line;
     });
@@ -334,14 +331,14 @@ class CommentTextProcessor {
       .replace(/\x01\d+_gallery\x02(?=(?:$|[^\n]))/g, (s) => s + '\n');
 
     // Table markup is OK only with colons as indentation characters.
-    if (this.restLinesIndentationChars.includes('#') && code.includes('\x03')) {
+    if (this.restLinesIndentation.includes('#') && code.includes('\x03')) {
       throw new CdError({
         type: 'parse',
         code: 'numberedList-table',
       });
     }
 
-    if (this.restLinesIndentationChars === '#') {
+    if (this.restLinesIndentation === '#') {
       if (this.galleryRegexp.test(code)) {
         throw new CdError({
           type: 'parse',
@@ -359,11 +356,7 @@ class CommentTextProcessor {
       // above.
       const newlinesToAdd = newlines.length > 1 ? '\n\n' : '';
 
-      return (
-        previousLine +
-        '\n' +
-        this.prepareLineStart(this.restLinesIndentationChars, newlinesToAdd)
-      );
+      return previousLine + '\n' + this.prepareLineStart(this.restLinesIndentation, newlinesToAdd);
     });
 
     const paragraphCode = cd.config.paragraphTemplates.length ?
@@ -533,12 +526,9 @@ class CommentTextProcessor {
 
     // Process the small font wrappers, add the signature.
     if (this.wrapInSmall) {
-      let before;
-      if (/^[:*#; ]/.test(this.code)) {
-        before = '\n' + (this.indented ? this.restLinesIndentationChars : '');
-      } else {
-        before = '';
-      }
+      const before = /^[:*#; ]/.test(this.code) ?
+        '\n' + (this.indented ? this.restLinesIndentation : '') :
+        '';
       if (cd.config.smallDivTemplates.length && !/^[:*#;]/m.test(this.code)) {
         // Hide links that have "|", then replace "|" with "{{!}}", then wrap in a small div
         // template.
@@ -561,7 +551,7 @@ class CommentTextProcessor {
   addOutdent() {
     if (!this.target.inCode?.isReplyOutdented) return;
 
-    const outdentDifference = this.target.level - this.target.inCode.replyIndentationChars.length;
+    const outdentDifference = this.target.level - this.target.inCode.replyIndentation.length;
     this.code = (
       `{{${cd.config.outdentTemplates[0]}|${outdentDifference}}}` +
       (/^[:*#]+/.test(this.code) ? '\n' : ' ') +
@@ -589,11 +579,11 @@ class CommentTextProcessor {
     // If the comment starts with a list or table, replace all asterisks in the indentation
     // characters with colons to have the comment HTML generated correctly.
     if (this.indented && this.action !== 'preview' && /^[*#;\x03]/.test(this.code)) {
-      this.indentationChars = this.restLinesIndentationChars;
+      this.indentation = this.restLinesIndentation;
     }
 
     if (this.action !== 'preview') {
-      this.code = this.prepareLineStart(this.indentationChars, this.code);
+      this.code = this.prepareLineStart(this.indentation, this.code);
 
       if (this.mode === 'addSubsection') {
         this.code += '\n';

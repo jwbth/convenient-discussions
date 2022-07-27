@@ -117,10 +117,8 @@ function getAdjustedChunkCodeAfter(currentIndex, wholeCode) {
 
   if (cd.g.CLOSED_DISCUSSION_PAIR_REGEXP) {
     adjustedCode = adjustedCode
-      .replace(cd.g.CLOSED_DISCUSSION_PAIR_REGEXP, (s, indentationChars) => (
-        '\x01'.repeat(indentationChars.length) +
-        ' '.repeat(s.length - indentationChars.length - 1) +
-        '\x02'
+      .replace(cd.g.CLOSED_DISCUSSION_PAIR_REGEXP, (s, indentation) => (
+        '\x01'.repeat(indentation.length) + ' '.repeat(s.length - indentation.length - 1) + '\x02'
       ));
   }
   if (cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP) {
@@ -1165,12 +1163,8 @@ class Comment extends CommentSkeleton {
    * @private
    */
   getOffset(options = {}) {
-    if (options.considerFloating === undefined) {
-      options.considerFloating = Boolean(options.floatingRects);
-    }
-    if (options.set === undefined) {
-      options.set = false;
-    }
+    options.considerFloating ??= Boolean(options.floatingRects);
+    options.set ??= false;
 
     let rectTop = getCommentPartRect(this.highlightables[0]);
     let rectBottom = this.elements.length === 1 ?
@@ -1528,12 +1522,8 @@ class Comment extends CommentSkeleton {
    *   example, if the element is invisible).
    */
   configureLayers(options = {}) {
-    if (options.add === undefined) {
-      options.add = true;
-    }
-    if (options.update === undefined) {
-      options.update = true;
-    }
+    options.add ??= true;
+    options.update ??= true;
 
     const isMoved = this.setLayersOffsetProperty(options);
     if (isMoved === null) {
@@ -2682,7 +2672,7 @@ class Comment extends CommentSkeleton {
     const $content = $('<div>').append($question, $diff);
     mw.hook('wikipage.content').fire($content);
 
-    if ((await showConfirmDialog($content, { size: 'larger' })) === 'accept') {
+    if (await showConfirmDialog($content, { size: 'larger' }) === 'accept') {
       try {
         await controller.getApi().postWithEditToken(controller.getApi().assertCurrentUser({
           action: 'thank',
@@ -2889,9 +2879,7 @@ class Comment extends CommentSkeleton {
    * @type {external:jQuery}
    */
   get $elements() {
-    if (this.cached$elements === undefined) {
-      this.cached$elements = $(this.elements);
-    }
+    this.cached$elements ??= $(this.elements);
     return this.cached$elements;
   }
 
@@ -2991,7 +2979,7 @@ class Comment extends CommentSkeleton {
       console.error('The Comment#inCode property should contain an object with the comment code data.');
       return;
     }
-    let { code, originalIndentationChars } = this.inCode;
+    let { code, originalIndentation } = this.inCode;
 
     let hidden;
     ({ code, hidden } = hideSensitiveCode(code));
@@ -3045,9 +3033,9 @@ class Comment extends CommentSkeleton {
       // Remove indentation characters
       .replace(/\n([:*#]*)([ \t]*)/g, (s, chars, spacing) => {
         let newChars;
-        if (chars.length >= originalIndentationChars.length) {
-          newChars = chars.slice(originalIndentationChars.length);
-          if (chars.length > originalIndentationChars.length) {
+        if (chars.length >= originalIndentation.length) {
+          newChars = chars.slice(originalIndentation.length);
+          if (chars.length > originalIndentation.length) {
             newChars += spacing;
           }
         } else {
@@ -3167,7 +3155,7 @@ class Comment extends CommentSkeleton {
       return data;
     }
 
-    const replaceIndentationChars = (s, before, chars, after = '') => {
+    const replaceIndentation = (s, before, chars, after = '') => {
       if (typeof after === 'number') {
         after = '';
       }
@@ -3182,7 +3170,7 @@ class Comment extends CommentSkeleton {
         adjustedChars.endsWith('#')
       ) {
         adjustedChars = adjustedChars.slice(0, -1);
-        data.originalIndentationChars = adjustedChars;
+        data.originalIndentation = adjustedChars;
 
         /*
           We can have this structure:
@@ -3211,10 +3199,10 @@ class Comment extends CommentSkeleton {
 
         remainder = '#' + after;
       } else {
-        data.originalIndentationChars = chars;
+        data.originalIndentation = chars;
       }
 
-      data.indentationChars = adjustedChars;
+      data.indentation = adjustedChars;
       data.lineStartIndex = data.startIndex + before.length;
       data.startIndex += startIndexShift;
       return remainder;
@@ -3222,7 +3210,7 @@ class Comment extends CommentSkeleton {
 
     data.code = data.code.replace(
       new RegExp(`^()${cd.config.indentationCharsPattern}`),
-      replaceIndentationChars
+      replaceIndentation
     );
 
     // See the comment "Without treatment of such cases, the section introduction..." in
@@ -3230,10 +3218,10 @@ class Comment extends CommentSkeleton {
     // https://ru.wikipedia.org/w/index.php?oldid=105936825&action=edit. This was actually a
     // mistake to put a signature at the first level, but if it was legit, only the last sentence
     // should have been interpreted as the comment.
-    if (data.indentationChars === '') {
+    if (data.indentation === '') {
       data.code = data.code.replace(
         new RegExp(`(^[^]*?\\n)${cd.config.indentationCharsPattern}(?![^]*\\n[^:*#])`),
-        replaceIndentationChars
+        replaceIndentation
       );
     }
 
@@ -3254,8 +3242,8 @@ class Comment extends CommentSkeleton {
       startIndex,
       lineStartIndex: startIndex,
       headingMatch: code.match(/(^[^]*(?:^|\n))((=+)(.*)\3[ \t\x01\x02]*\n)/),
-      originalIndentationChars: '',
-      indentationChars: '',
+      originalIndentation: '',
+      indentation: '',
     };
 
     data = this.excludeBadBeginnings(data);
@@ -3335,36 +3323,33 @@ class Comment extends CommentSkeleton {
 
     // If the comment contains different indentation character sets for different lines, then use
     // different sets depending on the mode (edit/reply).
-    let replyIndentationChars = data.indentationChars;
+    let replyIndentation = data.indentation;
     if (!this.isOpeningSection) {
       // If the last line ends with "#", it's probably a numbered list _inside_ the comment, not two
       // comments in one, so we exclude such cases. The signature code is used because it may start
       // with a newline.
       const match = (data.code + data.signatureDirtyCode).match(/\n([:*#]*[:*])(?!:*#).*$/);
       if (match) {
-        replyIndentationChars = match[1];
+        replyIndentation = match[1];
 
         // Cases where indentation characters on the first line don't denote a comment level but
         // serve some other purposes. Examples: https://en.wikipedia.org/?diff=998431486,
         // https://ru.wikipedia.org/w/index.php?diff=105978713 (this one is actually handled by
-        // `replaceIndentationChars()` in Comment#adjustCommentBeginning).
-        if (replyIndentationChars.length < data.originalIndentationChars.length) {
+        // `replaceIndentation()` in Comment#adjustCommentBeginning).
+        if (replyIndentation.length < data.originalIndentation.length) {
           // We better restore the original space or its absence here.
           const spaceOrNot = cd.config.spaceAfterIndentationChars ? ' ' : '';
 
-          const prefix = (
-            data.originalIndentationChars.slice(replyIndentationChars.length) +
-            spaceOrNot
-          );
+          const prefix = data.originalIndentation.slice(replyIndentation.length) + spaceOrNot;
           data.code = prefix + data.code;
-          data.indentationChars = data.originalIndentationChars = data.originalIndentationChars
-            .slice(0, replyIndentationChars.length);
+          data.indentation = data.originalIndentation = data.originalIndentation
+            .slice(0, replyIndentation.length);
           data.startIndex -= prefix.length;
         }
       }
     }
-    replyIndentationChars += cd.config.defaultIndentationChar;
-    data.replyIndentationChars = replyIndentationChars;
+    replyIndentation += cd.config.defaultIndentationChar;
+    data.replyIndentation = replyIndentation;
 
     return data;
   }
@@ -3596,21 +3581,17 @@ class Comment extends CommentSkeleton {
       // need to change `wikitext.hideDistractingCode`.
       '|(?:^|\\n)\\x01.+)\\n)\\n*'
     );
-    const maxIndentationCharsLength = thisInCode.replyIndentationChars.length - 1;
+    const maxIndentationLength = thisInCode.replyIndentation.length - 1;
     const endOfThreadPattern = (
       '(' +
 
       // `\n` is here to avoid putting the reply on a casual empty line. `\x01` is from hiding
       // closed discussions.
-      `[:*#\\x01]{0,${maxIndentationCharsLength}}(?![:*#\\n\\x01])` +
+      `[:*#\\x01]{0,${maxIndentationLength}}(?![:*#\\n\\x01])` +
 
       // This excludes the case where `#` is starting a numbered list inside a comment
       // (https://ru.wikipedia.org/w/index.php?diff=110482717).
-      (
-        maxIndentationCharsLength > 0 ?
-          `|[:*#\\x01]{1,${maxIndentationCharsLength}}(?![:*\\n\\x01])` :
-          ''
-      ) +
+      (maxIndentationLength > 0 ? `|[:*#\\x01]{1,${maxIndentationLength}}(?![:*\\n\\x01])` : '') +
       ')'
     );
 
@@ -3633,7 +3614,7 @@ class Comment extends CommentSkeleton {
     const { properPlaceRegexp, anySignatureRegexp } = this.getProperPlaceRegexps(thisInCode);
     const match = adjustedChunkCodeAfter.match(properPlaceRegexp) || [];
     let adjustedCodeBetween = match[1] ?? adjustedChunkCodeAfter;
-    let indentationCharsAfter = match[match.length - 1];
+    let indentationAfter = match[match.length - 1];
     let isNextLine = (adjustedCodeBetween.match(/\n/g) || []).length === 1;
 
     if (cd.g.OUTDENT_TEMPLATES_REGEXP) {
@@ -3650,33 +3631,31 @@ class Comment extends CommentSkeleton {
         ) ||
         []
       );
-      const outdentIndentationChars = outdentMatch[1];
+      const outdentIndentation = outdentMatch[1];
       if (outdentMatch.index === 0) {
         if (isNextLine) {
           // Try to insert the reply after an outdented comment - so that the reply is outdented
           // together with it. `isOutdentConflict` can't be `true` here logically (`isNextLine`
           // should be false in that case).
-          if (outdentIndentationChars.length < 2) {
+          if (outdentIndentation.length < 2) {
             // Can't insert a reply before an "outdent" template.
             throw new CdError({
               type: 'parse',
               code: 'findPlace',
             });
           } else {
-            thisInCode.replyIndentationChars = thisInCode.replyIndentationChars
-              .slice(0, outdentIndentationChars.length)
+            thisInCode.replyIndentation = thisInCode.replyIndentation
+              .slice(0, outdentIndentation.length)
               .replace(/:$/, cd.config.defaultIndentationChar);
             ({
               adjustedCodeBetween,
-              indentationCharsAfter,
+              indentationAfter,
               isNextLine,
             } = this.matchProperPlaceRegexps(thisInCode, adjustedChunkCodeAfter, true));
           }
-        } else if (
+        } else if ((outdentIndentation || '').length <= thisInCode.replyIndentation.length) {
           // We could allow adding a 1-level reply after a 1-level outdent (which CD interprets as a
           // reply to a 0-level comment, not the comment before the outdent), but that's suboptimal.
-          (outdentIndentationChars || '').length <= thisInCode.replyIndentationChars.length
-        ) {
           if (isOutdentConflict) {
             // We wanted to put the reply after an outdented comment, but stumbled upon another
             // outdent template.
@@ -3695,7 +3674,7 @@ class Comment extends CommentSkeleton {
         cd.g.OUTDENT_TEMPLATES_REGEXP.exec(adjustedCodeBetween);
         let match;
         while ((match = cd.g.OUTDENT_TEMPLATES_REGEXP.exec(adjustedCodeBetween))) {
-          if (match[1].length === thisInCode.replyIndentationChars.length) {
+          if (match[1].length === thisInCode.replyIndentation.length) {
             /*
               :::: Comment 1.
                  ┌─┘
@@ -3715,7 +3694,7 @@ class Comment extends CommentSkeleton {
       }
     }
 
-    return { adjustedCodeBetween, indentationCharsAfter, isNextLine };
+    return { adjustedCodeBetween, indentationAfter, isNextLine };
   }
 
   /**
@@ -3739,34 +3718,31 @@ class Comment extends CommentSkeleton {
 
     const {
       adjustedCodeBetween,
-      indentationCharsAfter,
+      indentationAfter,
       isNextLine,
     } = this.matchProperPlaceRegexps(thisInCode, adjustedChunkCodeAfter);
 
     if (
       cd.config.outdentTemplates.length &&
       settings.get('outdentLevel') &&
-      thisInCode.replyIndentationChars.length >= settings.get('outdentLevel') &&
+      thisInCode.replyIndentation.length >= settings.get('outdentLevel') &&
       isNextLine
     ) {
       thisInCode.isReplyOutdented = true;
-      thisInCode.replyIndentationChars = (
-        thisInCode.replyIndentationChars.slice(0, indentationCharsAfter.length) +
+      thisInCode.replyIndentation = (
+        thisInCode.replyIndentation.slice(0, indentationAfter.length) +
         cd.config.defaultIndentationChar
       );
     }
 
     // If the comment is to be put after a comment with different indentation characters, use these.
-    const [, changedIndentationChars] = (
-      adjustedCodeBetween.match(/\n([:*#]{2,}|#[:*#]*).*\n$/) ||
-      []
-    );
-    if (changedIndentationChars) {
+    const [, changedIndentation] = adjustedCodeBetween.match(/\n([:*#]{2,}|#[:*#]*).*\n$/) || [];
+    if (changedIndentation) {
       // Note the bug https://ru.wikipedia.org/w/index.php?diff=next&oldid=105529545 that was
-      // possible here when we used `.slice(0, thisInCode.indentationChars.length + 1)` (due to `**`
-      // as indentation characters in Bsivko's comment).
-      thisInCode.replyIndentationChars = changedIndentationChars
-        .slice(0, thisInCode.replyIndentationChars.length)
+      // possible here when we used `.slice(0, thisInCode.indentation.length + 1)` (due to `**` as
+      // indentation characters in Bsivko's comment).
+      thisInCode.replyIndentation = changedIndentation
+        .slice(0, thisInCode.replyIndentation.length)
         .replace(/:$/, cd.config.defaultIndentationChar);
     }
 
@@ -3841,13 +3817,9 @@ class Comment extends CommentSkeleton {
             }
           } else {
             endIndex = thisInCode.signatureEndIndex + 1;
-            const succeedingText = wholeCode.slice(thisInCode.endIndex);
-
-            const repliesRegexp = new RegExp(
-              `^.+\\n+[:*#]{${thisInCode.indentationChars.length + 1},}`
-            );
-            const repliesMatch = repliesRegexp.exec(succeedingText);
-
+            const repliesMatch = wholeCode
+              .slice(thisInCode.endIndex)
+              .match(new RegExp(`^.+\\n+[:*#]{${thisInCode.indentation.length + 1},}`));
             if (repliesMatch) {
               throw new CdError({
                 type: 'parse',

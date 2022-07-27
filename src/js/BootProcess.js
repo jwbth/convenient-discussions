@@ -135,7 +135,7 @@ class BootProcess {
     this.connectToCommentLinks = this.connectToCommentLinks.bind(this);
     this.highlightMentions = this.highlightMentions.bind(this);
 
-    this.passedData = passedData || {};
+    this.passedData ||= {};
     this.dtCommentIds = [];
   }
 
@@ -772,7 +772,7 @@ class BootProcess {
     // Dependent on sections being set
     Comment.processOutdents(this.parser);
 
-    // Dependent on outdents processed
+    // Dependent on outdents being processed
     Comment.connectBrokenThreads();
 
     // This runs after extracting sections because Comment#getParent needs sections to be set on
@@ -809,11 +809,9 @@ class BootProcess {
     controller.setTalkPageness(false);
 
     const $disableLink = $('#footer-places-togglecd a');
-    if ($disableLink.length) {
-      $disableLink
-        .attr('href', $disableLink.attr('href').replace(/0$/, '1'))
-        .text(cd.s('footer-runcd'));
-    }
+    $disableLink
+      .attr('href', $disableLink.attr('href').replace(/0$/, '1'))
+      .text(cd.s('footer-runcd'));
 
     controller.hideLoadingOverlay();
     this.debugLog();
@@ -1266,7 +1264,7 @@ class BootProcess {
     let timeConflict = false;
     if (currentPageVisits.length) {
       cd.comments.forEach((comment) => {
-        timeConflict = timeConflict || comment.setNewAndSeenProperties(
+        timeConflict ||= comment.setNewAndSeenProperties(
           currentPageVisits,
           currentUnixTime,
           this.data('unseenCommentIds')?.some((id) => id === comment.id) || false

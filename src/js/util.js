@@ -70,42 +70,38 @@ export function wrap(htmlOrJquery, options = {}) {
  * @param {boolean} [options.addPostfix=true] Whether to add `cd.g.SUMMARY_POSTFIX` to the summary.
  * @returns {string}
  */
-export function buildEditSummary(options) {
-  if (options.addPostfix === undefined) {
-    options.addPostfix = true;
-  }
-
-  let text = (options.section ? `/* ${options.section} */ ` : '') + options.text.trim();
+export function buildEditSummary({ text, optionalText, section, addPostfix = true }) {
+  let fullText = (section ? `/* ${section} */ ` : '') + text.trim();
 
   let wasOptionalTextAdded;
-  if (options.optionalText) {
-    let projectedText = text + options.optionalText;
+  if (optionalText) {
+    let projectedText = fullText + optionalText;
 
     if (cd.config.transformSummary) {
       projectedText = cd.config.transformSummary(projectedText);
     }
 
     if (projectedText.length <= cd.g.SUMMARY_LENGTH_LIMIT) {
-      text = projectedText;
+      fullText = projectedText;
       wasOptionalTextAdded = true;
     }
   }
 
   if (!wasOptionalTextAdded) {
     if (cd.config.transformSummary) {
-      text = cd.config.transformSummary(text);
+      fullText = cd.config.transformSummary(fullText);
     }
 
-    if (text.length > cd.g.SUMMARY_LENGTH_LIMIT) {
-      text = text.slice(0, cd.g.SUMMARY_LENGTH_LIMIT - 1) + '…';
+    if (fullText.length > cd.g.SUMMARY_LENGTH_LIMIT) {
+      fullText = fullText.slice(0, cd.g.SUMMARY_LENGTH_LIMIT - 1) + '…';
     }
   }
 
-  if (options.addPostfix) {
-    text += cd.g.SUMMARY_POSTFIX;
+  if (addPostfix) {
+    fullText += cd.g.SUMMARY_POSTFIX;
   }
 
-  return text;
+  return fullText;
 }
 
 /**
@@ -904,6 +900,9 @@ export function isCmdModifierPressed(e) {
  * Copy text and notify whether the operation was successful.
  *
  * @param {string} text Text to copy.
+ * @param {object} messages
+ * @param {string|external:jQuery} messages.success Success message.
+ * @param {string|external:jQuery} messages.fail Fail message.
  * @private
  */
 export function copyText(text, { success, fail }) {

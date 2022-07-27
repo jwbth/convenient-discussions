@@ -197,7 +197,7 @@ class SectionSkeleton {
      *
      * @type {Comment[]}
      */
-    this.comments = this.comments || [];
+    this.comments ||= [];
 
     /**
      * Comments contained in the first chunk of the section, i.e. all elements up to the first
@@ -205,7 +205,7 @@ class SectionSkeleton {
      *
      * @type {Comment[]}
      */
-    this.commentsInFirstChunk = this.commentsInFirstChunk || this.comments;
+    this.commentsInFirstChunk ||= this.comments;
 
     this.commentsInFirstChunk.forEach((comment) => {
       comment.section = this;

@@ -1165,10 +1165,10 @@ class Section extends SectionSkeleton {
    *
    * @param {CommentForm} commentForm
    */
-  setLastCommentIndentationChars(commentForm) {
+  setLastCommentIndentation(commentForm) {
     const [, replyPlaceholder] = this.inCode.firstChunkCode.match(/\n([#*]) *\n+$/) || [];
     if (replyPlaceholder) {
-      this.inCode.lastCommentIndentationChars = replyPlaceholder;
+      this.inCode.lastCommentIndentation = replyPlaceholder;
     } else {
       const lastComment = this.commentsInFirstChunk[this.commentsInFirstChunk.length - 1];
       if (
@@ -1181,14 +1181,14 @@ class Section extends SectionSkeleton {
           return;
         }
         if (
-          !lastComment.inCode.indentationChars.startsWith('#') ||
+          !lastComment.inCode.indentation.startsWith('#') ||
 
           // For now we use the workaround with commentForm.getContainerListType() to make sure "#"
           // is a part of comments organized in a numbered list, not of a numbered list _in_
           // the target comment.
           commentForm.getContainerListType() === 'ol'
         ) {
-          this.inCode.lastCommentIndentationChars = lastComment.inCode.indentationChars;
+          this.inCode.lastCommentIndentation = lastComment.inCode.indentation;
         }
       }
     }

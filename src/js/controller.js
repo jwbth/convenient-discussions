@@ -69,6 +69,8 @@ export default {
     this.handleAddTopicButtonClick = this.handleAddTopicButtonClick.bind(this);
     this.handleWikipageContentHookFirings = this.handleWikipageContentHookFirings.bind(this);
 
+    this.$content ||= $('#mw-content-text');
+
     if (cd.g.IS_MOBILE) {
       $(document.body).addClass('cd-mobile');
     }
@@ -76,8 +78,6 @@ export default {
     // Not constants: go() may run a second time, see addFooterLink().
     const isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
     const isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);
-
-    this.$content = this.$content || $('#mw-content-text');
 
     // See controller.isDefinitelyTalkPage
     this.definitelyTalkPage = Boolean(
@@ -122,7 +122,6 @@ export default {
    */
   reset(htmlToLayOut) {
     this.content = {};
-    LiveTimestamp.reset();
 
     // RevisionSlider replaces the #mw-content-text element.
     if (!this.$content.get(0).parentNode) {
@@ -348,7 +347,7 @@ export default {
    * @returns {external:OO.ui.WindowManager}
    */
   getWindowManager(name = 'default') {
-    this.windowManagers = this.windowManagers || {};
+    this.windowManagers ||= {};
 
     if (!this.windowManagers[name]) {
       this.windowManagers[name] = new OO.ui.WindowManager().on('closing', async (win, closed) => {
@@ -467,7 +466,12 @@ export default {
     const scrollY = this.bootProcess.data('scrollY') || window.scrollY;
 
     // The viewport has the TOC bottom or is above it.
-    if (switchToAbsolute && toc.isPresentClassic() && scrollY < toc.getBottomOffset()) {
+    if (
+      switchToAbsolute &&
+      !toc.isInSidebar() &&
+      toc.isPresent() &&
+      scrollY < toc.getBottomOffset()
+    ) {
       this.saveScrollPosition(switchToAbsolute.saveTocHeight);
     } else {
       this.scrollData.element = null;
@@ -586,7 +590,8 @@ export default {
     this.scrollData.offset = window.scrollY;
     this.scrollData.tocHeight = (
       (saveTocHeight || this.scrollData.tocHeight) &&
-      toc.isPresentClassic() &&
+      !toc.isInSidebar() &&
+      toc.isPresent() &&
       !toc.isFloating() &&
       window.scrollY !== 0 &&
 
@@ -640,10 +645,7 @@ export default {
    * @returns {boolean}
    */
   areThereOutdents() {
-    if (this.content.areThereOutdents === undefined) {
-      this.content.areThereOutdents = Boolean(this.$root.find('.' + cd.config.outdentClass).length);
-    }
-
+    this.content.areThereOutdents ??= Boolean(this.$root.find('.' + cd.config.outdentClass).length);
     return this.content.areThereOutdents;
   },
 
@@ -753,28 +755,21 @@ export default {
    * @returns {boolean}
    */
   areThereLtrRtlMixes() {
-    if (this.content.areThereLtrRtlMixes === undefined) {
-      this.content.areThereLtrRtlMixes = Boolean(
-        document.querySelector('.sitedir-ltr .mw-content-rtl, .sitedir-rtl .mw-content-ltr')
-      );
-    }
-
+    this.content.areThereLtrRtlMixes ??= Boolean(
+      document.querySelector('.sitedir-ltr .mw-content-rtl, .sitedir-rtl .mw-content-ltr')
+    );
     return this.content.areThereLtrRtlMixes;
   },
 
   /**
    * Get the popup overlay used for OOUI components.
    *
-   * @param {boolean} create
    * @returns {external:jQuery}
    */
-  getPopupOverlay(create = true) {
-    if (!this.$popupOverlay && create) {
-      this.$popupOverlay = $('<div>')
-        .addClass('cd-popupOverlay')
-        .appendTo(document.body);
-    }
-
+  getPopupOverlay() {
+    this.$popupOverlay ??= $('<div>')
+      .addClass('cd-popupOverlay')
+      .appendTo(document.body);
     return this.$popupOverlay;
   },
 
@@ -1346,6 +1341,7 @@ export default {
 
     CommentForm.detach();
     this.cleanUpUrlAndDom();
+    LiveTimestamp.reset();
     this.mutationObserver?.disconnect();
 
     debug.stopTimer('getting HTML');
@@ -1709,9 +1705,7 @@ export default {
    * @returns {boolean}
    */
   isLongPage() {
-    if (this.longPage === undefined) {
-      this.longPage = $(document).height() > 15000;
-    }
+    this.longPage ??= $(document).height() > 15000;
     return this.longPage;
   },
 

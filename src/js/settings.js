@@ -269,7 +269,7 @@ export default {
                   let [, snippet, label] = value.match(/^(.*?)(?:;(.+))?$/) || [];
                   if (!snippet?.replace(/^ +$/, '')) return;
                   snippet = unhideText(snippet, hidden);
-                  label = label && unhideText(label, hidden);
+                  label &&= unhideText(label, hidden);
                   return [snippet, label].filter(defined);
                 })
                 .filter(defined)
@@ -576,7 +576,7 @@ export default {
    * @param {string} value
    */
   set(name, value) {
-    this.values = this.values || {};
+    this.values ||= {};
     const values = typeof name === 'string' ? { [name]: value } : name;
     Object.assign(this.values, values);
   },
