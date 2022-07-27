@@ -69,6 +69,10 @@ export default {
     this.handleAddTopicButtonClick = this.handleAddTopicButtonClick.bind(this);
     this.handleWikipageContentHookFirings = this.handleWikipageContentHookFirings.bind(this);
 
+    if (cd.g.IS_MOBILE) {
+      $(document.body).addClass('cd-mobile');
+    }
+
     // Not constants: go() may run a second time, see addFooterLink().
     const isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
     const isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);

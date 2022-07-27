@@ -338,16 +338,29 @@
     opacity: 1;
   }
 
+  .cd-mobile & {
+    top: 0.5em;
+  }
+
+  // Preview area always has text in content language.
   .ltr &,
   .sitedir-ltr .cd-previewArea & {
     right: 1px;
     left: unset;
+
+    .cd-mobile& {
+      right: 0.5em;
+    }
   }
 
   .rtl &,
   .sitedir-rtl .cd-previewArea & {
     left: 1px;
     right: unset;
+
+    .cd-mobile& {
+      left: 0.5em;
+    }
   }
 }
 
