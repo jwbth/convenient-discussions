@@ -437,8 +437,7 @@ function patterns() {
     .join('|');
   if (outdentTemplatesPattern) {
     cd.g.OUTDENT_TEMPLATES_REGEXP = new RegExp(
-      `^\\s*([:*#]*)[ \t]*\\{\\{ *(?:${outdentTemplatesPattern}) *(?:\\||\\}\\})`,
-      'gm'
+      `^\\s*([:*#]*)[ \t]*\\{\\{ *(?:${outdentTemplatesPattern}) *(?:\\||\\}\\})`
     );
   }
 
@@ -1016,7 +1015,7 @@ export default {
   margin-top: 0.5em;
 }
 
-.cd-reformattedComments .cd-parsed .${cd.config.outdentClass} {
+.cd-reformattedComments .${cd.config.outdentClass} {
   margin-top: 0.75em;
 }`);
     }

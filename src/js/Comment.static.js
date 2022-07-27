@@ -1041,7 +1041,7 @@ export default {
       // Outdent templates. We could instead merge adjacent LI's, but if there is a {{outdent|0}}
       // template and the whole LI of the parent is considered a comment part, then we can't do that.
       controller.rootElement
-        .querySelectorAll(`.cd-commentLevel > li + li > .cd-comment-outdented, .cd-commentLevel > dd + dd > .cd-comment-outdented`)
+        .querySelectorAll(`.cd-commentLevel > li + li > .${cd.config.outdentClass}, .cd-commentLevel > dd + dd > .${cd.config.outdentClass}`)
         .forEach((el) => {
           items.push(el.parentNode);
         });

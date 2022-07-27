@@ -1562,6 +1562,7 @@ class CommentSkeleton {
             this.updateOutdentWidth(element, parentComment);
 
             childComment.isOutdented = true;
+            childComment.elements[0].classList.add('cd-comment-outdented');
 
             // Update levels for following comments.
             cd.comments.slice(commentIndex).some((comment) => {
@@ -1571,16 +1572,7 @@ class CommentSkeleton {
               if (
                 comment.section !== parentComment.section ||
                 comment.logicalLevel < childComment.level ||
-
-                // If the child comment level is at least 2, we infer that the next comment at the
-                // same level is outdented together with the child comment. If it is 0 or 1, the
-                // next comment is more likely to be a regular reply.
-                (
-                  comment !== childComment &&
-                  childComment.level < 2 &&
-                  comment.logicalLevel === childComment.level
-                ) ||
-
+                (comment !== childComment && comment.logicalLevel === childComment.level) ||
                 comment.date < childComment.date
               ) {
                 return true;
@@ -1589,10 +1581,6 @@ class CommentSkeleton {
                 (parentComment.level + 1) +
                 (comment.logicalLevel - childComment.level)
               );
-              if (comment.level === childComment.level) {
-                comment.isOutdented = true;
-                comment.elements[0].classList.add('cd-comment-outdented');
-              }
               return false;
             });
           }

@@ -663,6 +663,11 @@ class Comment extends CommentSkeleton {
       this.replyButton = new CommentButton({ element, action, widgetConstructor });
       this.overlayMenu.appendChild(this.replyButton.element);
     }
+
+    if (cd.comments[this.index + 1]?.isOutdented) {
+      this.replyButton.setDisabled(true);
+      this.replyButton.setTooltip(cd.s('cm-reply-outdented-tooltip'));
+    }
   }
 
   /**
@@ -3559,13 +3564,14 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get regular expressions to find a proper place in the code for a comment.
+   * Apply regular expressions to determine a proper place in the code to insert a reply to the
+   * comment into while taking outdent templates into account.
    *
    * @param {object} thisInCode
+   * @param {string} adjustedChunkCodeAfter
    * @returns {object}
-   * @private
    */
-  getProperPlaceRegexps(thisInCode) {
+  matchProperPlaceRegexps(thisInCode, adjustedChunkCodeAfter) {
     const anySignaturePattern = (
       '^(' +
       (this.isInSingleCommentTable ? '[^]*?(?:(?:\\s*\\n\\|\\})+|</table>).*\\n' : '') +
@@ -3595,23 +3601,7 @@ class Comment extends CommentSkeleton {
       ')'
     );
 
-    return {
-      properPlaceRegexp: new RegExp(anySignaturePattern + endOfThreadPattern),
-      anySignatureRegexp: new RegExp(anySignaturePattern),
-    };
-  }
-
-  /**
-   * Apply regular expressions to determine a proper place in the code to insert a reply to the
-   * comment into while taking outdent templates into account.
-   *
-   * @param {object} thisInCode
-   * @param {string} adjustedChunkCodeAfter
-   * @param {number} [isOutdentConflict=false]
-   * @returns {object}
-   */
-  matchProperPlaceRegexps(thisInCode, adjustedChunkCodeAfter, isOutdentConflict = false) {
-    const { properPlaceRegexp, anySignatureRegexp } = this.getProperPlaceRegexps(thisInCode);
+    const properPlaceRegexp = new RegExp(anySignaturePattern + endOfThreadPattern);
     const match = adjustedChunkCodeAfter.match(properPlaceRegexp) || [];
     let adjustedCodeBetween = match[1] ?? adjustedChunkCodeAfter;
     let indentationAfter = match[match.length - 1];
@@ -3620,76 +3610,28 @@ class Comment extends CommentSkeleton {
     if (cd.g.OUTDENT_TEMPLATES_REGEXP) {
       /*
         If there is an "outdent" template next to the insertion place:
-        * If the outdent template is right next to the comment replied to, we try to put the reply
-          after the outdented comment (if it is of 2+ level).
+        * If the outdent template is right next to the comment replied to, we throw an error.
         * If not, we insert the reply on the next line after the target comment.
        */
-      cd.g.OUTDENT_TEMPLATES_REGEXP.lastIndex = 0;
-      const outdentMatch = (
-        cd.g.OUTDENT_TEMPLATES_REGEXP.exec(
-          adjustedChunkCodeAfter.slice(adjustedCodeBetween.length)
-        ) ||
+      const [, outdentIndentation] = (
+        adjustedChunkCodeAfter
+          .slice(adjustedCodeBetween.length)
+          .match(cd.g.OUTDENT_TEMPLATES_REGEXP) ||
         []
       );
-      const outdentIndentation = outdentMatch[1];
-      if (outdentMatch.index === 0) {
+      if (outdentIndentation !== undefined) {
         if (isNextLine) {
-          // Try to insert the reply after an outdented comment - so that the reply is outdented
-          // together with it. `isOutdentConflict` can't be `true` here logically (`isNextLine`
-          // should be false in that case).
-          if (outdentIndentation.length < 2) {
-            // Can't insert a reply before an "outdent" template.
-            throw new CdError({
-              type: 'parse',
-              code: 'findPlace',
-            });
-          } else {
-            thisInCode.replyIndentation = thisInCode.replyIndentation
-              .slice(0, outdentIndentation.length)
-              .replace(/:$/, cd.config.defaultIndentationChar);
-            ({
-              adjustedCodeBetween,
-              indentationAfter,
-              isNextLine,
-            } = this.matchProperPlaceRegexps(thisInCode, adjustedChunkCodeAfter, true));
-          }
+          // Can't insert a reply before an "outdent" template.
+          throw new CdError({
+            type: 'parse',
+            code: 'findPlace',
+          });
         } else if ((outdentIndentation || '').length <= thisInCode.replyIndentation.length) {
-          // We could allow adding a 1-level reply after a 1-level outdent (which CD interprets as a
-          // reply to a 0-level comment, not the comment before the outdent), but that's suboptimal.
-          if (isOutdentConflict) {
-            // We wanted to put the reply after an outdented comment, but stumbled upon another
-            // outdent template.
-            throw new CdError({
-              type: 'parse',
-              code: 'findPlace',
-            });
-          } else {
-            // `anySignatureRegexp` effectively matches the next line. If `adjustedChunkCodeAfter`
-            // matched `properPlaceRegexp`, it should match `anySignatureRegexp` too.
-            [, adjustedCodeBetween] = adjustedChunkCodeAfter.match(anySignatureRegexp) || [];
-          }
-        }
-      } else if (isOutdentConflict) {
-        cd.g.OUTDENT_TEMPLATES_REGEXP.lastIndex = 0;
-        cd.g.OUTDENT_TEMPLATES_REGEXP.exec(adjustedCodeBetween);
-        let match;
-        while ((match = cd.g.OUTDENT_TEMPLATES_REGEXP.exec(adjustedCodeBetween))) {
-          if (match[1].length === thisInCode.replyIndentation.length) {
-            /*
-              :::: Comment 1.
-                 ┌─┘
-              :: Reply.
-              ::: Reply.
-              :::: Reply.
-                 ┌─┘
-              :: Reply.
-              :: [Can't put a reply to Comment 1 here because of the second outdent.]
-            */
-            throw new CdError({
-              type: 'parse',
-              code: 'findPlace',
-            });
-          }
+          const nextLineRegexp = new RegExp(anySignaturePattern);
+
+          // If `adjustedChunkCodeAfter` matched `properPlaceRegexp`, it should match
+          // `nextLineRegexp` too.
+          [, adjustedCodeBetween] = adjustedChunkCodeAfter.match(nextLineRegexp) || [];
         }
       }
     }
