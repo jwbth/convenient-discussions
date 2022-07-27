@@ -122,6 +122,7 @@ const voteForm = {
 
 const addSectionForm = {
   mode: 'addSection',
+  target: {},
   sectionSubmitted: true,
   headlineInput: {
     getValue: () => 'Headline',
@@ -130,6 +131,7 @@ const addSectionForm = {
 
 const addSectionFormNoHeadline = {
   mode: 'addSection',
+  target: {},
   sectionSubmitted: false,
   headlineInput: {
     getValue: () => '',
@@ -138,6 +140,7 @@ const addSectionFormNoHeadline = {
 
 const addSectionFormOmitSignature = {
   mode: 'addSection',
+  target: {},
   sectionSubmitted: true,
   headlineInput: {
     getValue: () => 'Headline',
