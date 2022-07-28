@@ -141,7 +141,7 @@
 	"cf-block-close": "Fechar",
 	"cf-reaction-templateinheadline": "Não use predefinições nos títulos: isso quebra os links da seção.",
 	"cf-reaction-signature": "Não é necessário escrever <kbd>$1</kbd>: a assinatura será adicionada automaticamente.",
-	"cf-reaction-pre": "<code><nowiki><pre></nowiki></code> etiquetas podem quebrar o layout - melhor usar <code><nowiki><syntaxhighlight lang=\"text\"></nowiki></code>.",
+	"cf-reaction-pre": "$1 etiquetas podem quebrar o layout - melhor usar $2.",
 	"cf-reaction-mention-edit": "Já que você está <em>editando</em> um comentário, uma [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|notificação de menção]] não será enviado. Para enviar uma notificação, você pode vincular o usuário no resumo de edição.",
 	"cf-reaction-mention-nosignature": "Como você optou por não incluir uma assinatura em seu comentário, uma [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|notificação de menção]] não será enviada. Para enviar uma notificação, você pode vincular o usuário no resumo de edição.",
 	"cf-notice-nochanges": "Sem alterações.",

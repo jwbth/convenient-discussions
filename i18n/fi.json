@@ -130,7 +130,7 @@
 	"cf-block-close": "Sulje",
 	"cf-reaction-templateinheadline": "Älä käytä mallineita otsikoissa: ne rikkovat osioihin linkittämisen",
 	"cf-reaction-signature": "Ei tarvitse kirjoittaa <kbd>$1</kbd>: allekirjoitus lisätään automaattisesti.",
-	"cf-reaction-pre": "<code><nowiki><pre></nowiki></code>-tägit voivat rikkoa sivun asettelun—parempi ratkaisu on <code><nowiki><syntaxhighlight lang=\"text\"></nowiki></code>.",
+	"cf-reaction-pre": "$1-tägit voivat rikkoa sivun asettelun—parempi ratkaisu on $2.",
 	"cf-notice-editconflict-retrying": "Yritetään uudelleen...",
 	"cf-error-closed": "Keskustelu on suljettu.",
 	"cf-error-formconflict": "Toisen tyyppinen \"Uusi keskutelu\" -lomake on jo auki tällä sivulla. Sulje se ja avaa sen jälkeen tämä.",

@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"Abijeet Patro",
+			"Jack who built the house",
 			"Saurmandal"
 		]
 	},
@@ -158,7 +159,7 @@
 	"cf-block-close": "बंद करें",
 	"cf-reaction-templateinheadline": "हैडलाइन्स में साँचों का इस्तेमाल न करें: इनसे अनुभागों की कड़ियाँ टूट जाती हैं।",
 	"cf-reaction-signature": "<kbd>$1</kbd> जोड़ने की ज़रूरत नहीं: हस्ताक्षर अपने आप जोड़ दी जाएगी।",
-	"cf-reaction-pre": "<code><nowiki><pre></nowiki></code> टैग्स की मदद से लेआउट टूट सकती है — इससे अच्छा <code><nowiki><syntaxhighlight lang=\"text\"></nowiki></code> का इस्तेमाल करें।",
+	"cf-reaction-pre": "$1 टैग्स की मदद से लेआउट टूट सकती है — इससे अच्छा $2 का इस्तेमाल करें।",
 	"cf-reaction-mention-edit": "क्योंकि आप एक टिप्पणी को <em>संपादित</em> कर रहे हैं, एक [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|उल्लेख की सूचना]] नहीं भेजी जाएगी। सूचना भेजने के लिए आप संपादन सारांश में सदस्य की कड़ी जोड़ सकते हैं।",
 	"cf-reaction-mention-nosignature": "क्योंकि आपने टिप्पणी में हस्ताक्षर न जोड़ने का विकल्प चुना है, एक [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|उल्लेख की सूचना]] नहीं भेजी जाएगी। सूचना भेजने के लिए आप संपादन सारांश में सदस्य की कड़ी जोड़ सकते हैं।",
 	"cf-notice-nochanges": "कोई बदलाव नहीं।",

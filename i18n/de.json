@@ -160,7 +160,7 @@
 	"cf-block-close": "Schließen",
 	"cf-reaction-templateinheadline": "Verwenden Sie keine Vorlagen in Überschriften: Diese stören Abschnittsverknüpfungen.",
 	"cf-reaction-signature": "Es ist nicht nötig, <kbd>$1</kbd> einzugeben – der Kommentar wird automatisch signiert.",
-	"cf-reaction-pre": "<code><nowiki><pre></nowiki></code>-Elemente können zu Anzeigefehlern führen – benutze lieber <code><nowiki><syntaxhighlight lang=\"text\"></nowiki></code>.",
+	"cf-reaction-pre": "$1-Elemente können zu Anzeigefehlern führen – benutze lieber $2.",
 	"cf-reaction-mention-edit": "Weil du einen bestehenden Kommentar bearbeitest, werden Nutzer/innen, die du erwähnst, nicht [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|benachrichtigt]] werden. Um jemanden zu benachrichtigen, kannst du stattdessen einen Link zu seiner/ihrer Benutzerseite in der Bearbeitungszusammenfassung einfügen.",
 	"cf-reaction-mention-nosignature": "Weil du deinen Kommentar unsigniert lässt, werden Nutzer/innen, die du erwähnst, nicht [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|benachrichtigt]] werden. Um jemanden zu benachrichtigen, kannst du stattdessen einen Link zu seiner/ihrer Benutzerseite in der Bearbeitungszusammenfassung einfügen.",
 	"cf-notice-nochanges": "Keine Änderungen",

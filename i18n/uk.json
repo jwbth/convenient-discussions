@@ -150,7 +150,7 @@
 	"cf-block-close": "Закрити",
 	"cf-reaction-templateinheadline": "Не використовуйте шаблони у заголовках: вони порушують посилання на розділи.",
 	"cf-reaction-signature": "Необхідно ввести <kbd>$1</kbd>: підпис буде додано автоматично.",
-	"cf-reaction-pre": "Теги <code><nowiki><pre></nowiki></code> можуть порушити макет — краще використовувати <code><nowiki><syntaxhighlight lang=\"text\"></nowiki></code>.",
+	"cf-reaction-pre": "Теги $1 можуть порушити макет — краще використовувати $2.",
 	"cf-reaction-mention-edit": "Оскільки ви <em>редагуєте</em> коментар, [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|сповіщення про згадку]] не надсилатиметься. Щоб отримати сповіщення, ви можете зв’язати користувача в підсумку редагування.",
 	"cf-reaction-mention-nosignature": "Оскільки ви вирішили не включати підпис у свій коментар, [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|сповіщення про згадку]] не надсилатиметься. Щоб надіслати сповіщення, ви можете зв’язати користувача в описі редагування.",
 	"cf-notice-nochanges": "Без змін.",

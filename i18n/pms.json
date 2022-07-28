@@ -147,7 +147,7 @@
 	"cf-block-close": "Saré",
 	"cf-reaction-templateinheadline": "Nen dovré djë stamp ant ij tìtoj gròss: a s-ciapo le liure ëd session.",
 	"cf-reaction-signature": "Inùtil buté <kbd>$1</kbd>: la signadura a sarà giontà an automàtich.",
-	"cf-reaction-pre": "le tichëtte <code><nowiki><pre></nowiki></code> a peulo rompe la formatassion—a l'é mej dovré <code><nowiki><syntaxhighlight lang=\"text\"></nowiki></code>.",
+	"cf-reaction-pre": "Le tichëtte $1 a peulo rompe la formatassion—a l'é mej dovré $2.",
 	"cf-reaction-mention-edit": "Dagià ch'a l'é an camin ch'a <em>modìfica</em> un coment, na [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|notìfica ëd massion]] a sarà nen mandà. Për mandé na notìfica, a peul buteje na liura a l'utent ant ël resumé dla modìfica.",
 	"cf-reaction-mention-nosignature": "Dagià ch'a l'ha nen optà për anclude na signadura an sò coment, gnun-e [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|notìfiche ëd massion]] a saran mandà. Për mandé na notìfica, a peul buteje na liura a l'utent ant ël resumé ëd modìfica.",
 	"cf-notice-nochanges": "Gnun-e modìfiche.",

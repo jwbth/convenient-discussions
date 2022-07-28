@@ -162,7 +162,7 @@
 	"cf-block-close": "Stäng",
 	"cf-reaction-templateinheadline": "Använd inte mallar i rubriker: De förstör avsnittslänkar.",
 	"cf-reaction-signature": "Du behöver inte skriva <kbd>$1</kbd>: signaturen läggs till automatiskt.",
-	"cf-reaction-pre": "<code><nowiki><pre></nowiki></code>-taggar kan förstöra utformningen—det är bättre att använda <code><nowiki><syntaxhighlight lang=\"text\"></nowiki></code>.",
+	"cf-reaction-pre": "$1-taggar kan förstöra utformningen—det är bättre att använda $2.",
 	"cf-reaction-mention-edit": "Då du <em>redigerar</em> en kommentar, kommer inte [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|omnämnanden]] skickas. För att skicka ett omnämnande kan du länka användaren i redigeringssammanfattningen.",
 	"cf-reaction-mention-nosignature": "Då du valt att inte inkludera en signatur i din kommentar, kommer inte ett [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|omnämnande]] skickas. För att skicka ett omnämnande kan du länka användaren i redigeringssammanfattningen.",
 	"cf-notice-nochanges": "Inga ändringar.",
