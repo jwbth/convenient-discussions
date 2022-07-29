@@ -135,7 +135,7 @@ class BootProcess {
     this.connectToCommentLinks = this.connectToCommentLinks.bind(this);
     this.highlightMentions = this.highlightMentions.bind(this);
 
-    this.passedData ||= {};
+    this.passedData = passedData || {};
     this.dtCommentIds = [];
   }
 
