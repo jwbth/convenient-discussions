@@ -1301,32 +1301,30 @@ export default {
       console.warn(e);
     });
 
-    if (!bootProcess.data('isPageReloadedExternally')) {
-      let parseData;
-      try {
-        parseData = await cd.page.parse(null, false, true);
-      } catch (e) {
-        this.hideLoadingOverlay();
-        if (bootProcess.data('wasCommentFormSubmitted')) {
-          throw e;
-        } else {
-          mw.notify(cd.s('error-reloadpage'), { type: 'error' });
-          console.warn(e);
-          return;
-        }
+    let parseData;
+    try {
+      parseData = await cd.page.parse(null, false, true);
+    } catch (e) {
+      this.hideLoadingOverlay();
+      if (bootProcess.data('wasCommentFormSubmitted')) {
+        throw e;
+      } else {
+        mw.notify(cd.s('error-reloadpage'), { type: 'error' });
+        console.warn(e);
+        return;
       }
-
-      bootProcess.passData('html', parseData.text);
-      bootProcess.passData('toc', parseData.sections);
-      bootProcess.passData('hideToc', parseData.hidetoc);
-      mw.config.set({
-        wgRevisionId: parseData.revid,
-        wgCurRevisionId: parseData.revid,
-      });
-      mw.loader.load(parseData.modules);
-      mw.loader.load(parseData.modulestyles);
-      mw.config.set(parseData.jsconfigvars);
     }
+
+    bootProcess.passData('html', parseData.text);
+    bootProcess.passData('toc', parseData.sections);
+    bootProcess.passData('hideToc', parseData.hidetoc);
+    mw.config.set({
+      wgRevisionId: parseData.revid,
+      wgCurRevisionId: parseData.revid,
+    });
+    mw.loader.load(parseData.modules);
+    mw.loader.load(parseData.modulestyles);
+    mw.config.set(parseData.jsconfigvars);
 
     // Get IDs of unseen comments. This is used to arrange that they will still be there after
     // replying on or refreshing the page.
@@ -1445,8 +1443,6 @@ export default {
    * Remove fragment and revision parameters from the URL, remove DOM elements related to the diff.
    */
   cleanUpUrlAndDom() {
-    if (this.bootProcess.data('isPageReloadedExternally')) return;
-
     const { query } = new mw.Uri();
     this.cleanUpDom(query);
     this.cleanUpUrl(query);
