@@ -227,7 +227,7 @@ class Section extends SectionSkeleton {
    * appears when hovering over a {@link Section#replyButton "Reply in section" button}.
    */
   addAddSubsectionButton() {
-    if (!this.canAddSubsection()) return;
+    if (this.level !== 2 || !this.canAddSubsection()) return;
 
     const element = elementPrototypes.addSubsectionButton.cloneNode(true);
     const button = new Button({
