@@ -115,12 +115,7 @@ class SectionSkeleton {
   setContentProperties(heading, targets) {
     const treeWalker = new TreeWalker(
       this.parser.context.rootElement,
-
-      // .cd-section-button-container elements are added to level 2 sections, which means these
-      // sections won't have them as elements but their last subsections can if they are included.
-      // So we better don't include them at all.
       (node) => !isMetadataNode(node) && !node.classList.contains('cd-section-button-container'),
-
       true,
       this.headingElement
     );

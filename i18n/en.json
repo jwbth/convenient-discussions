@@ -182,7 +182,7 @@
 
   "cf-error-getpagecode": "Couldn't get the page code.",
   "cf-error-closed": "The discussion is closed.",
-  "cf-error-findplace": "Couldn't find a proper place in the code to insert the comment into. You can try to do it yourself by <span class=\"cd-message-editSection\">[$1 editing the source]</span>.",
+  "cf-error-findplace": "Couldn't find a proper place in the code to insert the comment into. You can try to do it yourself by copying your drafted comment and <span class=\"cd-message-editSection\">[$1 editing the source]</span>.",
   "cf-error-commentlinks-commentnotfound": "Couldn't find the comment with ID $1, linked from your comment, on the page.",
   "cf-error-numberedlist": "It's impossible to form the comment correctly without distorting the numbered list markup.",
   "cf-error-numberedlist-table": "Remove tables from the comment.",

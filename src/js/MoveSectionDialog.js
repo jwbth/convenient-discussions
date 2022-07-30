@@ -268,10 +268,13 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
           return;
         }
 
-        const $message = wrap(cd.sParse('msd-moved', target.sectionWikilink), { tagName: 'div' });
-        this.successPanel.$element.append($message);
+        this.successPanel.$element.append(
+          wrap(cd.sParse('msd-moved', target.sectionWikilink), { tagName: 'div' })
+        );
 
-        controller.reload({ sectionId: this.section.id });
+        controller.reload({
+          sectionId: this.controls.keepLink.input.isSelected() ? this.section.id : undefined,
+        });
 
         this.stackLayout.setItem(this.successPanel);
         this.actions.setMode('success');

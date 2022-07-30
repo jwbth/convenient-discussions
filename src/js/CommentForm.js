@@ -764,7 +764,7 @@ class CommentForm {
       } else if (this.mode === 'edit') {
         this.containerListType = this.target.containerListType;
       } else if (this.mode === 'replyInSection') {
-        this.containerListType = this.target.$replyContainer.prop('tagName').toLowerCase();
+        this.containerListType = this.target.$replyButtonContainer.prop('tagName').toLowerCase();
       }
     }
 
@@ -1421,8 +1421,8 @@ class CommentForm {
       }
 
       case 'replyInSection': {
-        this.$element.appendTo(this.target.$replyWrapper);
-        this.target.$replyWrapper.addClass('cd-replyWrapper-hasCommentForm');
+        this.$element.appendTo(this.target.$replyButtonWrapper);
+        this.target.$replyButtonWrapper.addClass('cd-replyButtonWrapper-hasCommentForm');
         break;
       }
 
@@ -3108,7 +3108,7 @@ class CommentForm {
       this.target.scrollIntoView('top');
     } else if (this.mode === 'replyInSection') {
       this.target.replyButton.show();
-      this.target.$replyWrapper.removeClass('cd-replyWrapper-hasCommentForm');
+      this.target.$replyButtonWrapper.removeClass('cd-replyButtonWrapper-hasCommentForm');
     } else if (this.mode === 'edit') {
       this.target.$elements.removeClass('cd-hidden');
       if (this.target.isOpeningSection) {

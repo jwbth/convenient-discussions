@@ -3983,7 +3983,7 @@ class Comment extends CommentSkeleton {
         $outerWrapper.addClass('cd-skip');
         const $next = $outerWrapper.next();
 
-        // Layout bug where not all children are LIs:
+        // Layout bug where not all children are `li`s:
         // https://ru.wikipedia.org/wiki/Википедия:Заявки_на_статус_администратора/Евгений_Юрьев#Против
         const index = [...$outerWrapper.parent().children('li:not(.cd-skip)')]
           .indexOf($next.get(0));
@@ -3999,7 +3999,11 @@ class Comment extends CommentSkeleton {
         const $last = $anchor.children().last();
 
         // "Reply to section" button should always be the last.
-        $wrappingItem[$last.hasClass('cd-replyWrapper') ? 'insertBefore' : 'insertAfter']($last);
+        if ($last.hasClass('cd-replyButtonWrapper')) {
+          $wrappingItem.insertBefore($last);
+        } else {
+          $wrappingItem.insertAfter($last);
+        }
       }
     }
 

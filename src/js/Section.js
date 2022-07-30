@@ -183,10 +183,10 @@ class Section extends SectionSkeleton {
     });
 
     const wrapper = document.createElement(tag);
-    wrapper.className = 'cd-replyWrapper';
+    wrapper.className = 'cd-replyButtonWrapper';
     wrapper.appendChild(button.element);
 
-    // The container contains the wrapper that contains the element ^_^
+    // The container contains the wrapper that wraps the element ^_^
     let container;
     if (createList) {
       container = document.createElement('dl');
@@ -206,20 +206,21 @@ class Section extends SectionSkeleton {
     this.replyButton = button;
 
     /**
-     * Reply (button) wrapper, an item element.
+     * Reply button wrapper and part-time reply comment form wrapper, an item element.
      *
      * @type {external:jQuery|undefined}
      */
-    this.$replyWrapper = $(wrapper);
+    this.$replyButtonWrapper = $(wrapper);
 
     /**
-     * Reply (button) container, a list element. It is wrapped around the
-     * {@link Section#$replyWrapper reply button wrapper}, but can have other elements (and
-     * comments) too.
+     * Reply button container and part-time reply comment form container, a list element. It is
+     * wrapped around the {@link Section#$replyButtonWrapper reply button wrapper}, but it is
+     * created by the script only when there is no suitable element that already exists. If there
+     * is, it can contain other elements (and comments) too.
      *
      * @type {external:jQuery|undefined}
      */
-    this.$replyContainer = $(container);
+    this.$replyButtonContainer = $(container);
   }
 
   /**
@@ -239,26 +240,26 @@ class Section extends SectionSkeleton {
       },
     });
 
-    const buttonContainer = document.createElement('div');
-    buttonContainer.className = 'cd-section-button-container cd-addSubsectionButton-container';
-    buttonContainer.style.display = 'none';
-    buttonContainer.appendChild(button.element);
+    const container = document.createElement('div');
+    container.className = 'cd-section-button-container cd-addSubsectionButton-container';
+    container.style.display = 'none';
+    container.appendChild(button.element);
 
-    this.lastElement.parentNode.insertBefore(buttonContainer, this.lastElement.nextElementSibling);
+    this.lastElement.parentNode.insertBefore(container, this.lastElement.nextElementSibling);
 
     /**
-     * Add subsection button in the end of the section.
+     * "Add subsection" button at the end of the section.
      *
      * @type {Button|undefined}
      */
     this.addSubsectionButton = button;
 
     /**
-     * Add subsection button container.
+     * "Add subsection" button container.
      *
      * @type {external:jQuery|undefined}
      */
-    this.$addSubsectionButtonContainer = $(buttonContainer);
+    this.$addSubsectionButtonContainer = $(container);
   }
 
   /**

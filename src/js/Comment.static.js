@@ -69,13 +69,16 @@ function addNewCommentsNote(comments, parent, type, newCommentIndexes) {
   const authors = commentsWithChildren
     .map((comment) => comment.author)
     .filter(unique);
-  const authorList = authors.map((author) => author.getName()).join(cd.mws('comma-separator'));
-  const commonGender = getCommonGender(authors);
-  const stringName = type === 'thread' ? 'thread-newcomments' : 'section-newcomments';
   const button = new OO.ui.ButtonWidget({
-    label: cd.s(stringName, commentsWithChildren.length, authors.length, authorList, commonGender),
+    label: cd.s(
+      type === 'thread' ? 'thread-newcomments' : 'section-newcomments',
+      commentsWithChildren.length,
+      authors.length,
+      authors.map((author) => author.getName()).join(cd.mws('comma-separator')),
+      getCommonGender(authors)
+    ),
     framed: false,
-    classes: ['cd-button-ooui', 'cd-thread-button'],
+    classes: ['cd-button-ooui'],
   });
   button.on('click', () => {
     controller.reload({
@@ -85,41 +88,32 @@ function addNewCommentsNote(comments, parent, type, newCommentIndexes) {
   });
 
   if (parent instanceof Comment) {
+    button.$element.addClass('cd-thread-button');
     const { $wrappingItem } = parent.addSublevelItem('newCommentsNote', 'bottom');
     $wrappingItem
       .addClass('cd-thread-button-container cd-thread-newCommentsNote')
       .append(button.$element);
 
-    // Update collapsed range for the thread.
+    // Update the collapsed range for the thread.
     if (parent.thread?.isCollapsed) {
       parent.thread.expand();
       parent.thread.collapse();
     }
-  } else if (type === 'thread' && parent.$replyWrapper) {
-    const tagName = parent.$replyContainer.prop('tagName') === 'DL' ? 'dd' : 'li';
+  } else if (type === 'thread' && parent.$replyButtonWrapper) {
+    button.$element.addClass('cd-thread-button');
+    const tagName = parent.$replyButtonContainer.prop('tagName') === 'DL' ? 'dd' : 'li';
     $(`<${tagName}>`)
       .addClass('cd-thread-button-container cd-thread-newCommentsNote')
       .append(button.$element)
-      .insertBefore(parent.$replyWrapper);
+      .insertBefore(parent.$replyButtonWrapper);
   } else {
-    let $last;
-    if (parent.$addSubsectionButtonContainer && !parent.getChildren().length) {
-      $last = parent.$addSubsectionButtonContainer;
-    } else if (parent.$replyContainer) {
-      $last = parent.$replyContainer;
-    } else {
-      $last = $(parent.lastElementInFirstChunk);
-    }
-    button.$element
-      .removeClass('cd-thread-button')
-      .addClass('cd-section-button');
-    let $container;
-    if (type === 'section') {
-      $container = $('<div>').append(button.$element);
-    } else {
-      const $item = $('<dd>').append(button.$element);
-      $container = $('<dl>').append($item);
-    }
+    button.$element.addClass('cd-section-button');
+    const $last = parent.$addSubsectionButtonContainer && !parent.getChildren().length ?
+      parent.$addSubsectionButtonContainer :
+      parent.$replyButtonContainer || $(parent.lastElementInFirstChunk);
+    const $container = type === 'section' ?
+      $('<div>').append(button.$element) :
+      $('<dl>').append($('<dd>').append(button.$element));
     $container
       .addClass('cd-section-button-container cd-thread-newCommentsNote')
       .insertAfter($last);

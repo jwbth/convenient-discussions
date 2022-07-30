@@ -570,22 +570,21 @@ class Thread {
       endElement =  this.endElement;
     }
 
-    // Catch special cases when a section has no "Reply in section" or "There are new comments in
-    // this thread" button or the thread isn't the last thread starting with a 0-level comment in
-    // the section.
-    let threadHasSectionButton = endElement.classList.contains('cd-section-button-container');
+    const $lastSubitem = (
+      (
+        this.rootComment.level >= 1 ||
 
-    let $lastSubitem;
-    if (this.rootComment.level >= 1 || !threadHasSectionButton) {
-      const subitemList = this.rootComment.subitemList;
-      const $newCommentsNote = (
-        subitemList.get('newCommentsNote') ||
-        (this.rootComment === lastComment && subitemList.get('replyForm'))
-      );
-      if ($newCommentsNote) {
-        $lastSubitem = $newCommentsNote;
-      }
-    }
+        // Catch special cases when a section has no "Reply in section" and "There are new comments
+        // in this thread" button or the thread isn't the last thread starting with a 0-level
+        // comment in the section.
+        !endElement.classList.contains('cd-section-button-container')
+      ) &&
+      (
+        this.rootComment.subitemList.get('newCommentsNote') ||
+        (this.rootComment === lastComment && this.rootComment.subitemList.get('replyForm'))
+      ) ||
+      undefined
+    );
 
     return $lastSubitem?.is(':visible') ?
       findItemElement($lastSubitem.get(0), this.rootComment.level) :
