@@ -17,6 +17,7 @@ import {
   addToArrayIfAbsent,
   areObjectsEqual,
   calculateWordOverlap,
+  countOccurrences,
   dealWithLoadingBug,
   decodeHtmlEntities,
   defined,
@@ -1928,13 +1929,11 @@ class Comment extends CommentSkeleton {
     revisions.forEach((revision, i) => {
       const pageCode = revision.slots.main.content;
       const inCode = this.locateInCode(pageCode, commentsData[i]);
-      const newlinesBeforeComment = pageCode.slice(0, inCode.lineStartIndex).match(/\n/g) || [];
-      const newlinesInComment = (
-        pageCode.slice(inCode.lineStartIndex, inCode.signatureEndIndex).match(/\n/g) ||
-        []
+      const startLineNumber = countOccurrences(pageCode.slice(0, inCode.lineStartIndex), /\n/g) + 1;
+      const endLineNumber = (
+        startLineNumber +
+        countOccurrences(pageCode.slice(inCode.lineStartIndex, inCode.signatureEndIndex), /\n/g)
       );
-      const startLineNumber = newlinesBeforeComment.length + 1;
-      const endLineNumber = startLineNumber + newlinesInComment.length;
       for (let j = startLineNumber; j <= endLineNumber; j++) {
         lineNumbers[i].push(j);
       }
@@ -3126,9 +3125,9 @@ class Comment extends CommentSkeleton {
           }
         });
 
-      // This should be before the "this.level > 0" block to account for cases like
+      // This should be before the `this.level > 0` block to account for cases like
       // https://ru.wikipedia.org/w/index.php?oldid=110033693&section=6&action=edit (the regexp
-      // doesn't catch the comment because of a newline inside the "syntaxhighlight" element).
+      // doesn't catch the comment because of a newline inside the `syntaxhighlight` element).
       cd.g.BAD_COMMENT_BEGINNINGS.forEach((pattern) => {
         if (pattern.source[0] !== '^') {
           console.debug('Regexps in cd.config.customBadCommentBeginnings should have "^" as the first character.');
@@ -3171,7 +3170,7 @@ class Comment extends CommentSkeleton {
       // We could just throw an error here, but instead will try to fix the markup.
       if (
         !before &&
-        (data.code.match(/(^|\n)[:*#]/g) || []).length >= 2 &&
+        countOccurrences(data.code, /(^|\n)[:*#]/g) >= 2 &&
         adjustedChars.endsWith('#')
       ) {
         adjustedChars = adjustedChars.slice(0, -1);
@@ -3213,19 +3212,26 @@ class Comment extends CommentSkeleton {
       return remainder;
     };
 
-    data.code = data.code.replace(
-      new RegExp(`^()${cd.config.indentationCharsPattern}`),
-      replaceIndentation
-    );
+    const indentationPattern = `\\n*${cd.config.indentationCharsPattern}`;
+
+    data.code = data.code.replace(new RegExp(`^()${indentationPattern}`), replaceIndentation);
 
     // See the comment "Without treatment of such cases, the section introduction..." in
     // CommentSkeleton.js. Dangerous case: the first section at
-    // https://ru.wikipedia.org/w/index.php?oldid=105936825&action=edit. This was actually a
-    // mistake to put a signature at the first level, but if it was legit, only the last sentence
-    // should have been interpreted as the comment.
+    // https://ru.wikipedia.org/w/index.php?oldid=105936825&action=edit. This was actually a mistake
+    // to put a signature at the first level, but if it was legit, only the last sentence should
+    // have been interpreted as the comment.
     if (data.indentation === '') {
       data.code = data.code.replace(
-        new RegExp(`(^[^]*?\\n)${cd.config.indentationCharsPattern}(?![^]*\\n[^:*#])`),
+        new RegExp(`(^[^]*?\\n)${indentationPattern}(?![^]*\\n[^:*#])`),
+        replaceIndentation
+      );
+    }
+
+    // Workaround to remove code of a preceding comment or intro with no proper signature
+    if (data.indentation.length < this.level && countOccurrences(data.code, /\n/g)) {
+      data.code = data.code.replace(
+        new RegExp(`^([^]+?\\n)([:*#]{${this.level}})( *)`),
         replaceIndentation
       );
     }
@@ -3605,7 +3611,7 @@ class Comment extends CommentSkeleton {
     const match = adjustedChunkCodeAfter.match(properPlaceRegexp) || [];
     let adjustedCodeBetween = match[1] ?? adjustedChunkCodeAfter;
     let indentationAfter = match[match.length - 1];
-    let isNextLine = (adjustedCodeBetween.match(/\n/g) || []).length === 1;
+    let isNextLine = countOccurrences(adjustedCodeBetween, /\n/g) === 1;
 
     if (cd.g.OUTDENT_TEMPLATES_REGEXP) {
       /*

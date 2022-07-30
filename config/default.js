@@ -606,13 +606,15 @@ export default {
   noConfirmPostEmptyCommentPageRegexp: null,
 
   /**
-   * String to be put into a regular expression for matching indentation characters. The first group
-   * should contain indentation characters, the second - characters after them (usually spacing).
+   * String to be put into a regular expression for matching indentation characters. The start of
+   * the pattern will match the beginning of a line (but `^` will be prepended automatically). The
+   * first group should contain indentation characters, the second - characters after them (usually
+   * spacing).
    *
    * @type {?string}
-   * @default '\\n*([:*#]+)( *)'
+   * @default '([:*#]+)( *)'
    */
-  indentationCharsPattern: '\\n*([:*#]+)( *)',
+  indentationCharsPattern: '([:*#]+)( *)',
 
   /**
    * Strings present in edit summaries of undo/revert edits. Used to detect edits that shouldn't be

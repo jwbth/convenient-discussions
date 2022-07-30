@@ -8,6 +8,7 @@
 import html_entity_decode from 'locutus/php/strings/html_entity_decode';
 
 import Button from './Button';
+import CdError from './CdError';
 import cd from './cd';
 
 /**
@@ -1020,4 +1021,19 @@ export function generateFixedPosTimestamp(date, isDt) {
     zeroPad(date.getUTCMinutes(), 2) +
     (isDt ? '00' : '')
   );
+}
+
+/**
+ * Count occurences of a regexp in a string.
+ *
+ * @param {string} string
+ * @param {RegExp} regexp Regexp. Must have the `g` flag.
+ * @returns {number}
+ * @throws {CdError}
+ */
+export function countOccurrences(string, regexp) {
+  if (!regexp.global) {
+    throw new CdError('The regexp supplied to countOccurrences() must have the "g" flag.');
+  }
+  return (string.match(regexp) || []).length;
 }
