@@ -228,6 +228,7 @@ export default {
     'tright',
     'floatleft',
     'floatright',
+    'cd-moveMark',
   ],
 
   /**
