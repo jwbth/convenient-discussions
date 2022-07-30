@@ -1621,7 +1621,7 @@ class Comment extends CommentSkeleton {
         const node = treeWalker.currentNode;
 
         // These elements have "position: relative" for the purpose we know.
-        if (node.classList.contains('cd-connectToPreviousItem')) continue;
+        if (node.classList.contains('cd-connectorAbove')) continue;
 
         let style = node.conveneintDiscussionsStyle;
         if (!style) {
@@ -3961,10 +3961,10 @@ class Comment extends CommentSkeleton {
     if (outerWrapperTag) {
       $outerWrapper = $(`<${outerWrapperTag}>`);
 
-      // Why ".cd-commentLevel >": reply to a pseudo-comment added with this diff with a mistake:
+      // Why `.cd-commentLevel >`: reply to a pseudo-comment added with this diff with a mistake:
       // https://ru.wikipedia.org/?diff=113073013.
       if ($lastOfTarget.is('.cd-commentLevel:not(ol) > li, .cd-commentLevel > dd')) {
-        $outerWrapper.addClass('cd-connectToPreviousItem');
+        $outerWrapper.addClass('cd-connectorAbove');
       }
 
       $wrappingList.appendTo($outerWrapper);

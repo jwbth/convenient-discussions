@@ -180,7 +180,7 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
 // Workaround for close a visual gap to the previous item. The unfortunate reason for it is that we
 // need to avoid wrapping the contents of almost every comment in a <div> (so that its reply comment
 // form is not included in the comment) which would increase the parsing time significantly.
-.cd-connectToPreviousItem::before {
+.cd-connectorAbove::before {
   content: "";
   position: relative;
   display: block;
