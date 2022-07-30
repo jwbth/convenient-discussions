@@ -1445,16 +1445,12 @@ class CommentForm {
           subsection" forms for a level 4 and then a level 2 section and the user clicks "Add
           subsection" for a level 3 section, we need to put our form between them.
          */
-        const level = this.target.level;
-        const headingLevelRegexp = new RegExp(`\\bcd-commentForm-addSubsection-[${level}-6]\\b`);
-        let $target;
-        let $tested = $(this.target.lastElement);
-        const selector = '.cd-section-button-container, .cd-commentForm-reply';
-        do {
-          $target = $tested;
-          $tested = $tested.next();
-        } while ($tested.is(selector) || $tested.get(0)?.className.match(headingLevelRegexp));
-        this.$element.insertAfter($target);
+        const targetElement = this.target.findRealLastElement((el) => (
+          el.className.match(
+            new RegExp(`\\bcd-commentForm-addSubsection-[${this.target.level}-6]\\b`)
+          )
+        ));
+        this.$element.insertAfter(targetElement);
         break;
       }
     }

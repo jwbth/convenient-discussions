@@ -254,6 +254,8 @@ export default {
   /**
    * _For internal use._ Make sections visible or invisible to improve performance if the relevant
    * setting is enabled.
+   *
+   * @memberof Section
    */
   updateVisibility() {
     if (!cd.sections.length) return;
@@ -304,7 +306,10 @@ export default {
         if (shouldHide === section.isHidden) return;
 
         if (!section.elements) {
-          section.elements = controller.getRangeContents(section.firstElement, section.lastElement);
+          section.elements = controller.getRangeContents(
+            section.firstElement,
+            section.findRealLastElement()
+          );
         }
         section.isHidden = shouldHide;
         section.elements.forEach((el) => {

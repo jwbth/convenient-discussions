@@ -1821,6 +1821,28 @@ class Section extends SectionSkeleton {
   getSectionSubscribedTo() {
     return settings.get('useTopicSubscription') ? this.getBase(true) : this;
   }
+
+  /**
+   * Find the last element of the section including
+   *
+   * @param {Function} [additionalCondition]
+   * @returns {Element}
+   */
+  findRealLastElement(additionalCondition) {
+    let realLastElement;
+    let lastElement = this.lastElement;
+    do {
+      realLastElement = lastElement;
+      lastElement = lastElement.nextElementSibling;
+    } while (
+      lastElement &&
+      (
+        lastElement.matches('.cd-section-button-container') ||
+        (!additionalCondition || additionalCondition(lastElement))
+      )
+    );
+    return realLastElement;
+  }
 }
 
 Object.assign(Section, SectionStatic);
