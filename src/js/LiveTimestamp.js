@@ -112,9 +112,7 @@ class LiveTimestamp {
   }
 
   /**
-   * Update the timestamp.
-   *
-   * @private
+   * _For internal use._ Update the timestamp.
    */
   update() {
     this.element.textContent = formatDate(this.date, this.addTimezone);
@@ -124,9 +122,8 @@ class LiveTimestamp {
   }
 
   /**
-   * Initialize improved timestamps (when the timestamp format is set to "improved").
-   *
-   * @private
+   * _For internal use._ Initialize improved timestamps (when the timestamp format is set to
+   * "improved").
    */
   static initImproved() {
     improvedTimestampsInitted = true;

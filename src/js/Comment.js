@@ -480,15 +480,13 @@ class Comment extends CommentSkeleton {
    * @typedef {object[]} ReplaceSignatureWithHeaderReturn
    * @property {string} pageName
    * @property {Element} link
-   * @private
    */
 
   /**
-   * Add a comment header to the top highlightable element. Remove the comment signature unless
-   * there is more than one of them.
+   * _For internal use._ Add a comment header to the top highlightable element. Remove the comment
+   * signature unless there is more than one of them.
    *
    * @returns {ReplaceSignatureWithHeaderReturn} Pages to check existence of.
-   * @private
    */
   replaceSignatureWithHeader() {
     const pagesToCheckExistence = [];
@@ -609,10 +607,9 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Add a menu to the bottom highlightable element of the comment and fill it with buttons. Used
-   * when comment reformatting is enabled; otherwise {@link Comment#createLayers} is used.
-   *
-   * @private
+   * _For internal use._ Add a menu to the bottom highlightable element of the comment and fill it
+   * with buttons. Used when comment reformatting is enabled; otherwise `Comment#createLayers` is
+   * used.
    */
   addMenu() {
     const menuElement = document.createElement('div');
@@ -805,7 +802,7 @@ class Comment extends CommentSkeleton {
    *
    * @private
    */
-  createGoToChildButton() {
+  addGoToChildButton() {
     if (settings.get('reformatComments')) {
       /**
        * "Go to the child comment" button.
@@ -855,10 +852,8 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Change the format of the comment timestamp according to the settings. Do the same with extra
-   * timestamps in the comment.
-   *
-   * @private
+   * _For internal use._ Change the format of the comment timestamp according to the settings. Do
+   * the same with extra timestamps in the comment.
    */
   reformatTimestamp() {
     if (!this.date) return;
@@ -897,11 +892,9 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Filter out floating and hidden elements from the comment's
+   * _For internal use._ Filter out floating and hidden elements from the comment's
    * {@link CommentSkeleton#highlightables}, change their attributes, and update the comment's level
    * and parent elements' level classes.
-   *
-   * @private
    */
   reviewHighlightables() {
     for (let i = 0; i < this.highlightables.length; i++) {
@@ -1166,7 +1159,6 @@ class Comment extends CommentSkeleton {
    * @returns {?(CommentOffset|boolean)} Offset object. If the comment is not visible, returns
    *   `null`. If `options.set` is `true`, returns a boolean value indicating if the comment is
    *   moved instead of the offset.
-   * @private
    */
   getOffset(options = {}) {
     options.considerFloating ??= Boolean(options.floatingRects);
@@ -1554,9 +1546,7 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Add the (already existent) comment's layers to the DOM.
-   *
-   * @private
+   * _For internal use._ Add the (already existent) comment's layers to the DOM.
    */
   addLayers() {
     if (!this.underlay) return;
@@ -1567,9 +1557,8 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Transfer the `layers(Top|Left|Width|Height)` values to the style of the layers.
-   *
-   * @private
+   * _For internal use._ Transfer the `layers(Top|Left|Width|Height)` values to the style of the
+   * layers.
    */
   updateLayersOffset() {
     // The underlay can be absent if called from Comment.redrawLayersIfNecessary with redrawAll set
@@ -1605,10 +1594,9 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get and sometimes create the container for the comment's layers.
+   * _For internal use._ Get and sometimes create the container for the comment's layers.
    *
    * @returns {Element}
-   * @private
    */
   getLayersContainer() {
     if (this.layersContainer === undefined) {
@@ -1669,14 +1657,12 @@ class Comment extends CommentSkeleton {
    * @typedef {object} LayersContainerOffset
    * @property {number} top Top offset.
    * @property {number} left Left offset.
-   * @private
    */
 
   /**
-   * Get the top and left offset of the layers container.
+   * _For internal use._ Get the top and left offset of the layers container.
    *
    * @returns {?LayersContainerOffset}
-   * @private
    */
   getLayersContainerOffset() {
     const container = this.getLayersContainer();
@@ -2403,7 +2389,7 @@ class Comment extends CommentSkeleton {
     parent.configureLayers();
 
     if (!parent.goToChildButton) {
-      parent.createGoToChildButton();
+      parent.addGoToChildButton();
     }
     parent.goToChildButton.setAction(() => {
       this.scrollTo({ pushState: true });
@@ -3365,7 +3351,7 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get a score for every match.
+   * Get the score for a match.
    *
    * @param {object} match Match object.
    * @param {object} thisData Data about the current comment.
@@ -3374,7 +3360,7 @@ class Comment extends CommentSkeleton {
    * @returns {object}
    * @private
    */
-  getMatchScores(match, thisData, signatures, matches) {
+  getMatchScore(match, thisData, signatures, matches) {
     const doesIndexMatch = thisData.index === match.index;
     let doesPreviousCommentsDataMatch = false;
     let isPreviousCommentsDataEqual;
@@ -3511,7 +3497,7 @@ class Comment extends CommentSkeleton {
         code: pageCode.slice(signature.commentStartIndex, signature.startIndex),
       }))
 
-      .map((match, i, matches) => this.getMatchScores(match, thisData, signatures, matches))
+      .map((match, i, matches) => this.getMatchScore(match, thisData, signatures, matches))
       .filter((match) => match.score > 2.5);
   }
 

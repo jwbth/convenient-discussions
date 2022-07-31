@@ -487,6 +487,7 @@ class Thread {
      * @private
      */
     this.clickArea = elementPrototypes.clickArea.cloneNode(true);
+
     this.clickArea.title = cd.s('thread-tooltip');
 
     if (this.rootComment.isStartStretched) {
@@ -943,6 +944,15 @@ class Thread {
   }
 
   /**
+   * Set the click area offset based on the `clickAreaOffset` property.
+   */
+  setClickAreaOffset() {
+    this.clickArea.style.left = this.clickAreaOffset.left + 'px';
+    this.clickArea.style.top = this.clickAreaOffset.top + 'px';
+    this.clickArea.style.height = this.clickAreaOffset.height + 'px';
+  }
+
+  /**
    * Remove the thread line if present and set the relevant properties to `null`.
    *
    * @private
@@ -1028,9 +1038,7 @@ class Thread {
 
     // Faster to update/add all elements in one batch.
     threadsToUpdate.forEach((thread) => {
-      thread.clickArea.style.left = thread.clickAreaOffset.left + 'px';
-      thread.clickArea.style.top = thread.clickAreaOffset.top + 'px';
-      thread.clickArea.style.height = thread.clickAreaOffset.height + 'px';
+      thread.setClickAreaOffset();
     });
 
     if (elementsToAdd.length) {

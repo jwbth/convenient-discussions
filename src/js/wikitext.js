@@ -313,8 +313,8 @@ function extractUnsigneds(adjustedCode, code, signatures) {
  * Extract signatures from wikitext.
  *
  * Only basic signature parsing is performed here; more precise signature text identification is
- * performed in {@link Comment#adjustCommentCodeData}. See also
- * {@link Comment#adjustCommentBeginning}, called before that.
+ * performed in `Comment#adjustCommentCodeData`. See also `Comment#adjustCommentBeginning`, called
+ * before that.
  *
  * @param {string} code Code to extract signatures from.
  * @returns {object[]}
