@@ -223,7 +223,7 @@ export default {
    * the last comment of the section uses `#` as the first indentation character, the script will
    * use it for the comment independent of this value.
    *
-   * @type {string}
+   * @type {'mimic'|'unify'}
    */
   indentationCharMode: 'mimic',
 
@@ -633,9 +633,9 @@ export default {
    * @property {RegExp} pattern Pattern to match.
    * @property {string} message Message displayed to the user.
    * @property {string} name Latin letters, digits, `-`.
-   * @property {string} [type='notice'] One of
+   * @property {'notice'|'error'|'warning'|'success'} [type='notice'] The value is one of
    *   {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.MessageWidget-cfg-type OO.ui.MessageWidget}'s
-   *   types: '`'notice'`, `'error'`, `'warning'`, `'success'`.
+   *   types.
    * @property {Function} [checkFunc] If this function returns `false`, no message is displayed.
    */
 
@@ -681,7 +681,7 @@ export default {
    * @type {?Function}
    * @kind function
    * @param {string} code
-   * @param {CommentForm} commentForm
+   * @param {import('./CommentForm').default} commentForm
    * @returns {string}
    * @default null
    */
@@ -696,7 +696,7 @@ export default {
    * @type {?Function}
    * @kind function
    * @param {string} code
-   * @param {CommentForm} commentForm
+   * @param {import('./CommentForm').default} commentForm
    * @returns {string}
    * @default null
    */

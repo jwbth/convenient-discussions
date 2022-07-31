@@ -53,8 +53,8 @@ class Autocomplete {
    * settings apply.
    *
    * @param {object} options
-   * @param {string[]} options.types Which values should be autocompleted. Can contain `'mentions'`,
-   *   `'commentLinks'`, `'wikilinks'`, `'templates'`, `'tags'`.
+   * @param {Array.<'mentions'|'commentLinks'|'wikilinks'|'templates'|'tags'>} options.types Which
+   *   values should be autocompleted.
    * @param {external:OO.ui.TextInputWidget[]} options.inputs Inputs to attach the autocomplete to.
    * @param {string[]} [options.comments] List of comments in the section for the mentions and
    *   comment links autocomplete.
@@ -63,7 +63,7 @@ class Autocomplete {
    */
   constructor({ types, inputs, comments, defaultUserNames }) {
     types = types
-      // The "mentions" type is needed in any case, as it can be triggered from the toolbar. When it
+      // The "mentions" type is needed in any case as it can be triggered from the toolbar. When it
       // is not, we will suppress it specifically.
       .filter((type) => settings.get('autocompleteTypes').includes(type) || type === 'mentions');
 

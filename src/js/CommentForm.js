@@ -77,8 +77,7 @@ class CommentForm {
    * Create a comment form.
    *
    * @param {object} config
-   * @param {string} config.mode `'reply'`, `'replyInSection'`, `'edit'`, `'addSubsection'`, or
-   *   `'addSection'`.
+   * @param {'reply'|'replyInSection'|'edit'|'addSubsection'|'addSection'} config.mode
    * @param {Comment|Section|module:pageRegistry~Page} config.target Comment, section, or page that
    *   the form is related to.
    * @param {object} [config.initialState] Initial state of the form (data saved in the previous
@@ -102,9 +101,9 @@ class CommentForm {
     this.closeOperation = this.closeOperation.bind(this);
 
     /**
-     * Form mode. `'reply'`, `'replyInSection'`, `'edit'`, `'addSubsection'`, or `'addSection'`.
+     * Form mode.
      *
-     * @type {string}
+     * @type {'reply'|'replyInSection'|'edit'|'addSubsection'|'addSection'}
      * @private
      */
     this.mode = mode;
@@ -162,8 +161,7 @@ class CommentForm {
 
     /**
      * @typedef {object} CommentFormOperation
-     * @property {string} type Operation type. One of `'load'`, `'preview'`, `'viewChanges'`, and
-     *   `'submit'`.
+     * @property {'load'|'preview'|'viewChanges'|'submit'} type Operation type.
      * @property {boolean} [affectHeadline=false] Should the headline input be displayed as pending.
      * @property {boolean} [isClosed] Is the operation closed (settled).
      * @property {boolean} [isDelayed] Is the operation delayed.
@@ -754,10 +752,9 @@ class CommentForm {
     if (!['addSection', 'addSubsection'].includes(this.mode)) {
       if (this.mode === 'reply') {
         /**
-         * Name of the tag of the list that this comment form is an item of. `'dl'`, `'ul'`, `'ol'`,
-         * or `undefined`.
+         * Name of the tag of the list that this comment form is an item of.
          *
-         * @type {string|undefined}
+         * @type {'dl'|'ul'|'ol'|undefined}
          * @private
          */
         this.containerListType = 'dl';
@@ -1983,8 +1980,8 @@ class CommentForm {
    *
    * @param {string|external:jQuery} htmlOrJquery
    * @param {object} [options]
-   * @param {string} [options.type='notice'] `'notice'`, `'error'`, `'warning'`, or `'success'`. See
-   *   {@link https://doc.wikimedia.org/oojs-ui/master/demos/?page=widgets&theme=wikimediaui&direction=ltr&platform=desktop#MessageWidget-type-notice-inline-true the OOUI Demos}.
+   * @param {'notice'|'error'|'warning'|'success'} [options.type='notice'] See the
+   *   {@link https://doc.wikimedia.org/oojs-ui/master/demos/?page=widgets&theme=wikimediaui&direction=ltr&platform=desktop#MessageWidget-type-notice-inline-true OOUI Demos}.
    * @param {string} [options.name] Name added to the class name of the message element.
    * @param {boolean} [options.isRaw=false] Message HTML contains the whole message code. It doesn't
    *   need to be wrapped in a widget.
@@ -2025,8 +2022,8 @@ class CommentForm {
    *
    * @param {object} options
    * @param {string|external:jQuery} options.message Message visible to the user.
-   * @param {string} [options.messageType='error'] Message type if not `'error'` (`'notice'` or
-   *   `'warning'`).
+   * @param {'error'|'notice'|'warning'} [options.messageType='error'] Message type if not
+   *   `'error'`.
    * @param {boolean} [options.isRawMessage=false] Show the message as it is, without icons and
    *   framing.
    * @param {string} [options.logMessage] Message for the browser console.
@@ -2074,9 +2071,12 @@ class CommentForm {
    * wrapper around {@link CommentForm#abort}.
    *
    * @param {object} options
-   * @param {string} options.type Type of the error: `'parse'` for parse errors defined in the
-   *   script, `'api'` for MediaWiki API errors, `'network'` for network errors defined in the
-   *   script, `'javascript'` for JavaScript errors, `'ui'` for UI errors.
+   * @param {'parse'|'api'|'network'|'javascript'|'ui'} options.type Type of the error:
+   *   * `'parse'` for parse errors defined in the script,
+   *   * `'api'` for MediaWiki API errors,
+   *   * `'network'` for network errors defined in the script,
+   *   * `'javascript'` for JavaScript errors,
+   *   * `'ui'` for UI errors.
    * @param {string} [options.code] Code of the error. (Either `code`, `apiData`, or `message`
    *   should be specified.)
    * @param {object} [options.details] Additional details about the error.
@@ -2084,11 +2084,10 @@ class CommentForm {
    *   `code`, `apiData`, or `message` should be specified.)
    * @param {string} [options.message] Text of the error. (Either `code`, `apiData`, or `message`
    *   should be specified.)
-   * @param {string} [options.messageType='error'] Message type if not `'error'` (`'notice'` or
-   *   `'warning'`).
+   * @param {'error'|'notice'|'warning'} [options.messageType='error'] Message type if not
+   *   `'error'`.
    * @param {string} [options.logMessage] Data or text to display in the browser console.
-   * @param {boolean} [options.cancel=false] Cancel the form and show the message as a
-   *   notification.
+   * @param {boolean} [options.cancel=false] Cancel the form and show the message as a notification.
    * @param {boolean} [options.isRawMessage=false] Show the message as it is, without OOUI framing.
    * @param {CommentFormOperation} [options.currentOperation] Operation the form is undergoing.
    */
@@ -2197,7 +2196,7 @@ class CommentForm {
   /**
    * Convert the text of the comment in the form to wikitext.
    *
-   * @param {string} action `'submit'`, `'viewChanges'`, or `'preview'`.
+   * @param {'submit'|'viewChanges'|'preview'} action
    * @returns {string}
    * @throws {CdError}
    */
@@ -2278,7 +2277,7 @@ class CommentForm {
   /**
    * Prepare the new section or page code based on the comment form input and handle errors.
    *
-   * @param {string} action `'submit'` or `'viewChanges'`.
+   * @param {'submit'|'viewChanges'} action
    * @returns {Promise.<object|undefined>}
    * @private
    */
@@ -3519,10 +3518,9 @@ class CommentForm {
   }
 
   /**
-   * Get the form mode. `'reply'`, `'replyInSection'`, `'edit'`, `'addSubsection'`, or
-   * `'addSection'`.
+   * Get the form mode.
    *
-   * @returns {string}
+   * @returns {'reply'|'replyInSection'|'edit'|'addSubsection'|'addSection'}
    */
   getMode() {
     return this.mode;
@@ -3627,10 +3625,9 @@ class CommentForm {
   }
 
   /**
-   * Get the name of the tag of the list that this form is an item of. `'dl'`, `'ul'`, `'ol'`, or
-   * `undefined`.
+   * Get the name of the tag of the list that this form is an item of.
    *
-   * @returns {string|undefined}
+   * @returns {'dl'|'ul'|'ol'|undefined}
    */
   getContainerListType() {
     return this.containerListType;

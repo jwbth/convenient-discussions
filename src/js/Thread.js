@@ -677,7 +677,7 @@ class Thread {
     this.expandNote = expandNote;
 
     /**
-     * Note in place of a collapsed thread as a jQuery object.
+     * Note in place of a collapsed thread that has a button to expand the thread.
      *
      * @type {external:jQuery|undefined}
      */

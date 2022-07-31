@@ -14,7 +14,7 @@ export default {
    * Get a section by ID.
    *
    * @param {string} id
-   * @returns {?Section}
+   * @returns {?import('./Section').default}
    * @memberof Section
    */
   getById(id) {
@@ -28,7 +28,7 @@ export default {
    * Get sections by headline.
    *
    * @param {string} headline
-   * @returns {Section[]}
+   * @returns {import('./Section').default[]}
    * @memberof Section
    */
   getByHeadline(headline) {
@@ -39,7 +39,7 @@ export default {
    * Get sections by {@link Section#subscribeId subscribe ID}.
    *
    * @param {string} subscribeId
-   * @returns {Section[]}
+   * @returns {import('./Section').default[]}
    * @memberof Section
    */
   getBySubscribeId(subscribeId) {
@@ -51,7 +51,7 @@ export default {
    * found).
    *
    * @param {string} sectionName
-   * @returns {?Section}
+   * @returns {?import('./Section').default}
    */
   findByHeadlineParts(sectionName) {
     const matches = cd.sections
@@ -76,7 +76,7 @@ export default {
    * @param {string[]} options.ancestors
    * @param {string} options.oldestCommentId
    * @param {boolean} [returnScore]
-   * @returns {?Section}
+   * @returns {?import('./Section').default}
    * @memberof Section
    */
   search({ index, headline, id, ancestors, oldestCommentId }, returnScore) {
@@ -229,7 +229,7 @@ export default {
   /**
    * Get the section currently positioned at the top of the viewport.
    *
-   * @returns {?Section}
+   * @returns {?import('./Section').default}
    * @memberof Section
    */
   getCurrentSection() {

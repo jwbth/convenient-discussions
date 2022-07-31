@@ -34,7 +34,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
   /**
    * Create a move section dialog.
    *
-   * @param {Section} section
+   * @param {import('./Section').default} section
    */
   constructor(section) {
     super();

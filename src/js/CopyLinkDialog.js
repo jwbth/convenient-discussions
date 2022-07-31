@@ -21,7 +21,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   /**
    * Create an "Copy link" dialog.
    *
-   * @param {Comment|Section} object
+   * @param {Comment|import('./Section').default} object
    * @param {object} content
    */
   constructor(object, content) {

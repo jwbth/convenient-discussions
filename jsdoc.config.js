@@ -8,6 +8,7 @@ module.exports = {
     "recurse": true,
   },
   "plugins": [
+    "misc/jsdoc-tsimport-plugin-tweaked.js",
     "plugins/markdown",
   ],
   "templates": {

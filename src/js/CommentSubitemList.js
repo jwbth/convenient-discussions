@@ -52,7 +52,7 @@ class CommentSubitemList {
    * Get a subitem with the provided name.
    *
    * @param {string} name
-   * @returns {?JQuery}
+   * @returns {?external:jQuery}
    */
   get(name) {
     return this.content[name] || null;

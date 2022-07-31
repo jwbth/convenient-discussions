@@ -790,7 +790,7 @@ function oouiAndElementPrototypes() {
  * and only dates when MediaWiki existed, let's say 2000 onwards (Thai dates before 1941 are
  * complicated).
  *
- * @param {string} language `'content'` or `'user'`.
+ * @param {'content'|'user'} language
  * @returns {string} Pattern to be a part of a regular expression.
  * @private
  * @author Bartosz Dziewoński <matma.rex@gmail.com>

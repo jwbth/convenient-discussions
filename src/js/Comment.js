@@ -156,7 +156,7 @@ class Comment extends CommentSkeleton {
   /**
    * Create a comment object.
    *
-   * @param {Parser} parser
+   * @param {import('./Parser').default} parser
    * @param {object} signature Signature object returned by {@link Parser#findSignatures}.
    * @param {object[]} targets
    */
@@ -308,7 +308,7 @@ class Comment extends CommentSkeleton {
      * If the comment is collapsed, that's the closest collapsed thread that this comment related
      * to.
      *
-     * @type {Thread}
+     * @type {import('./Thread').default}
      */
     this.collapsedThread = null;
 
@@ -2059,7 +2059,7 @@ class Comment extends CommentSkeleton {
    * Update the comment's properties, add a small text next to the signature saying the comment has
    * been changed or deleted, and change the comment's styling if it has been.
    *
-   * @param {string} type Type of the mark: `'changed'`, `'changedSince'`, or `'deleted'`.
+   * @param {'changed'|'changedSince'|'deleted'} type Type of the mark.
    * @param {boolean} [isNewVersionRendered] Has the new version of the comment been rendered.
    * @param {number} [comparedRevisionId] ID of the revision to compare with when the user clicks to
    *   see the diff.
@@ -2177,7 +2177,7 @@ class Comment extends CommentSkeleton {
    * and flash the comment as changed if it has been (reset to the original version, or unchanged,
    * in this case).
    *
-   * @param {string} type Type of the mark: `'changed'` or `'deleted'`.
+   * @param {'changed'|'deleted'} type Type of the mark.
    */
   unmarkAsChanged(type) {
     switch (type) {
@@ -2316,8 +2316,8 @@ class Comment extends CommentSkeleton {
   /**
    * Scroll to the comment if it is not in the viewport.
    *
-   * @param {string} alignment One of the values that {@link $.fn.cdScrollTo} accepts: `'top'`,
-   *   `'center'`, or `'bottom'`.
+   * @param {'top'|'center'|'bottom'} alignment Where should the element be positioned relative to
+   *   the viewport.
    */
   scrollIntoView(alignment) {
     const $target = this.editForm ? this.editForm.$element : this.$elements;
@@ -2565,8 +2565,7 @@ class Comment extends CommentSkeleton {
   /**
    * Get a diff link for the comment.
    *
-   * @param {string} [format='standard'] Format to get the link in: `'standard'`, `'short'`, or
-   *   `'wikilink'`.
+   * @param {'standard'|'short'|'wikilink'} [format='standard'] Format to get the link in.
    * @returns {Promise.<string>}
    */
   async getDiffLink(format = 'standard') {
@@ -2845,8 +2844,8 @@ class Comment extends CommentSkeleton {
   /**
    * Mark the comment as seen, and also {@link Comment#flash flash} comments that are set to flash.
    *
-   * @param {string} [registerAllInDirection] Mark all comments in the forward (`'forward'`) or
-   *   backward (`'backward'`) direction from this comment as seen.
+   * @param {'forward'|'backward'} [registerAllInDirection] Mark all comments in the forward or
+   *   backward direction from this comment as seen.
    * @param {boolean} [flash=false] Whether to flash the comment as a target.
    */
   registerSeen(registerAllInDirection, flash = false) {
@@ -3703,8 +3702,8 @@ class Comment extends CommentSkeleton {
    * Modify a whole section or page code string related to the comment in accordance with an action.
    *
    * @param {object} options
-   * @param {string} options.action `'reply'` or `'edit'`.
-   * @param {string} options.formAction `'submit'`, `'viewChanges'`, or `'preview'`.
+   * @param {'reply'|'edit'} options.action
+   * @param {'submit'|'viewChanged'|'preview'} options.formAction
    * @param {string} [options.commentCode] Comment code, including trailing newlines, indentation
    *   characters, and the signature. Can be not set if `commentForm` is set or `doDelete` is
    *   `true`.
@@ -4016,7 +4015,7 @@ class Comment extends CommentSkeleton {
    * Get a section relevant to this comment which means the same value as
    * {@link Section#getSection}. (Used for polymorphism with {@link Comment#getRelevantSection}.)
    *
-   * @returns {?Section}
+   * @returns {?import('./Section').default}
    */
   getRelevantSection() {
     return this.section || null;

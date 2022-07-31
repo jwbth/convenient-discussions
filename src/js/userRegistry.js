@@ -54,7 +54,7 @@ class User {
   /**
    * Set a gender for the user.
    *
-   * @param {string} value
+   * @param {'male'|'female'|'unknown'} value
    */
   setGender(value) {
     this.options.set('gender', value);
@@ -63,7 +63,7 @@ class User {
   /**
    * User's gender (must be obtained using {@link module:apiWrappers.loadUserGenders}).
    *
-   * @type {string}
+   * @type {'male'|'female'|'unknown'}
    */
   getGender() {
     return this.options.get('gender');

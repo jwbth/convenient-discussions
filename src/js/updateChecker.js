@@ -178,7 +178,7 @@ function cleanUpSeenRenderedChanges(data) {
 /**
  * Map sections obtained from a revision to the sections present on the page.
  *
- * @param {SectionSkeletonLike[]} otherSections
+ * @param {import('./SectionSkeleton').SectionSkeletonLike[]} otherSections
  * @private
  */
 function mapSections(otherSections) {
@@ -215,10 +215,10 @@ function mapSections(otherSections) {
 /**
  * Sort comments by match score, removing comments with score of 1.66 or less.
  *
- * @param {CommentSkeletonLike[]} candidates
- * @param {CommentSkeletonLike} target
+ * @param {import('./CommentSkeleton').CommentSkeletonLike[]} candidates
+ * @param {import('./CommentSkeleton').CommentSkeletonLike} target
  * @param {boolean} isTotalCountEqual
- * @returns {CommentSkeletonLike[]}
+ * @returns {import('./CommentSkeleton').CommentSkeletonLike[]}
  * @private
  */
 function sortCommentsByMatchScore(candidates, target, isTotalCountEqual) {
@@ -270,8 +270,8 @@ function sortCommentsByMatchScore(candidates, target, isTotalCountEqual) {
  * `hasPoorMatch` property to comments that have possible matches that are not good enough to
  * confidently state a match.
  *
- * @param {CommentSkeletonLike[]} currentComments
- * @param {CommentSkeletonLike[]} otherComments
+ * @param {import('./CommentSkeleton').CommentSkeletonLike[]} currentComments
+ * @param {import('./CommentSkeleton').CommentSkeletonLike[]} otherComments
  * @private
  */
 function mapComments(currentComments, otherComments) {
@@ -405,8 +405,8 @@ async function checkForUpdates() {
  * `headingComparedHtml` properties (the comment may lose its heading because technical comment is
  * added between it and the heading).
  *
- * @param {CommentSkeletonLike[]} olderComment
- * @param {CommentSkeletonLike[]} newerComment
+ * @param {import('./CommentSkeleton').CommentSkeletonLike[]} olderComment
+ * @param {import('./CommentSkeleton').CommentSkeletonLike[]} newerComment
  * @returns {boolean}
  * @private
  */
@@ -423,7 +423,7 @@ function hasCommentChanged(olderComment, newerComment) {
 /**
  * Check if there are changes made to the currently displayed comments since the previous visit.
  *
- * @param {CommentSkeletonLike[]} currentComments
+ * @param {import('./CommentSkeleton').CommentSkeletonLike[]} currentComments
  * @private
  */
 function checkForChangesSincePreviousVisit(currentComments) {
@@ -487,7 +487,7 @@ function checkForChangesSincePreviousVisit(currentComments) {
 /**
  * Check if there are changes made to the currently displayed comments since they were rendered.
  *
- * @param {CommentSkeletonLike[]} currentComments
+ * @param {import('./CommentSkeleton').CommentSkeletonLike[]} currentComments
  * @private
  */
 function checkForNewChanges(currentComments) {
@@ -580,7 +580,7 @@ function checkForNewChanges(currentComments) {
 /**
  * Show an ordinary notification (`mediawiki.notification`) to the user.
  *
- * @param {CommentSkeletonLike[]} comments
+ * @param {import('./CommentSkeleton').CommentSkeletonLike[]} comments
  * @private
  */
 function showOrdinaryNotification(comments) {
@@ -678,7 +678,7 @@ function showOrdinaryNotification(comments) {
 /**
  * Show a desktop notification to the user.
  *
- * @param {CommentSkeletonLike[]} comments
+ * @param {import('./CommentSkeleton').CommentSkeletonLike[]} comments
  * @private
  */
 function showDesktopNotification(comments) {
@@ -790,9 +790,10 @@ function isPageStillAtRevision(revisionId) {
 /**
  * Process the comments retrieved by a web worker.
  *
- * @param {CommentSkeletonLike[]} comments Comments in the recent revision.
- * @param {CommentSkeletonLike[]} currentComments Comments in the currently shown revision mapped to
- *   the comments in the recent revision.
+ * @param {import('./CommentSkeleton').CommentSkeletonLike[]} comments Comments in the recent
+ *   revision.
+ * @param {import('./CommentSkeleton').CommentSkeletonLike[]} currentComments Comments in the
+ *   currently shown revision mapped to the comments in the recent revision.
  * @param {number} currentRevisionId
  * @private
  */

@@ -428,7 +428,7 @@ class Page {
    * @param {object} options
    * @param {string} options.commentCode Comment code, including trailing newlines and the
    *   signature.
-   * @param {CommentForm} options.commentForm Comment form that has the code.
+   * @param {import('./CommentForm').default} options.commentForm Comment form that has the code.
    * @returns {object}
    */
   modifyWholeCode({ commentCode, commentForm }) {

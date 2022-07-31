@@ -11,7 +11,7 @@ class SectionSkeleton {
   /**
    * Create a section skeleton instance.
    *
-   * @param {Parser} parser
+   * @param {import('./Parser').default} parser
    * @param {object} heading
    * @param {object[]} targets
    */
@@ -181,7 +181,7 @@ class SectionSkeleton {
         /**
          * Oldest comment in the section.
          *
-         * @type {CommentSkeleton}
+         * @type {import('./CommentSkeleton').default}
          */
         this.oldestComment = comment;
       }
@@ -190,7 +190,7 @@ class SectionSkeleton {
     /**
      * Comments contained in the section.
      *
-     * @type {Comment[]}
+     * @type {import('./Comment').default[]}
      */
     this.comments ||= [];
 
@@ -198,7 +198,7 @@ class SectionSkeleton {
      * Comments contained in the first chunk of the section, i.e. all elements up to the first
      * subheading if it is present, or all elements if it is not.
      *
-     * @type {Comment[]}
+     * @type {import('./Comment').default[]}
      */
     this.commentsInFirstChunk ||= this.comments;
 

@@ -42,7 +42,7 @@ class Section extends SectionSkeleton {
   /**
    * Create a section object.
    *
-   * @param {Parser} parser
+   * @param {import('./Parser').default} parser
    * @param {Element} heading
    * @param {object[]} targets
    * @throws {CdError}
@@ -110,14 +110,14 @@ class Section extends SectionSkeleton {
     this.extractSubscribeId();
 
     /**
-     * Section headline element as a jQuery object.
+     * Headline element as a jQuery object.
      *
      * @type {external:jQuery}
      */
     this.$headline = $(this.headlineElement);
 
     /**
-     * Section heading as a jQuery element.
+     * Heading element as a jQuery element.
      *
      * @type {external:jQuery}
      */
@@ -641,7 +641,7 @@ class Section extends SectionSkeleton {
     /**
      * The latest comment in the section.
      *
-     * @type {Comment|undefined}
+     * @type {import('./Comment').default|undefined}
      */
     this.latestComment = latestComment;
 
@@ -846,7 +846,7 @@ class Section extends SectionSkeleton {
     /**
      * List of new comments in the section. ("New" actually means "unseen at the moment of load".)
      *
-     * @type {Comment[]}
+     * @type {import('./Comment').default[]}
      */
     this.newComments = this.comments.filter((comment) => comment.isSeen === false);
 
@@ -1013,9 +1013,10 @@ class Section extends SectionSkeleton {
   /**
    * Add the section to the subscription list.
    *
-   * @param {string} [mode] No value: a notification will be shown. `'quiet'`: don't show a
-   *   notification. `'silent'`: don't even change any UI, including the subscribe button
-   *   appearance. If there is an error, it will be displayed though.
+   * @param {'quiet'|'silent'} [mode] No value: a notification will be shown.
+   *   * `'quiet'`: don't show a notification.
+   *   * `'silent'`: don't even change any UI, including the subscribe button appearance. If there
+   *     is an error, it will be displayed though.
    * @param {string} [renamedFrom] If DiscussionTools' topic subscriptions API is not used and the
    *   section was renamed, the previous section headline. It is unwatched together with watching
    *   the current headline if there is no other coinciding headlines on the page.
@@ -1071,9 +1072,10 @@ class Section extends SectionSkeleton {
   /**
    * Remove the section from the subscription list.
    *
-   * @param {boolean} [mode] No value: a notification will be shown. `'quiet'`: don't show a
-   *   notification. `'silent'`: don't even change any UI, including the subscribe button
-   *   appearance. If there is an error, it will be displayed though.
+   * @param {'quiet'|'silent'} [mode] No value: a notification will be shown.
+   *   * `'quiet'`: don't show a notification.
+   *   * `'silent'`: don't even change any UI, including the subscribe button appearance. If there
+   *     is an error, it will be displayed though.
    */
   unsubscribe(mode) {
     const sections = Section.getBySubscribeId(this.subscribeId);
@@ -1199,7 +1201,7 @@ class Section extends SectionSkeleton {
    * Modify a whole section or page code string related to the section in accordance with an action.
    *
    * @param {object} options
-   * @param {string} options.action `'replyInSection'` or `'addSubsection'`.
+   * @param {'replyInSection'|'addSubsection'} options.action
    * @param {string} options.commentCode Comment code, including trailing newlines and the
    *   signature.
    * @returns {object}
@@ -1803,7 +1805,8 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Generate a DT subscribe ID from the oldest timestamp in the section if there is no.
+   * Generate a DT subscribe ID from the oldest timestamp in the section and the current user's name
+   * if there is no.
    *
    * @param {string} timestamp Oldest timestamp in the section.
    */

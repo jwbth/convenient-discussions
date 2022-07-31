@@ -11,7 +11,7 @@ class CommentTextProcessor {
   /**
    * Create a comment text processor.
    *
-   * @param {CommentForm} commentForm
+   * @param {import('./CommentForm').default} commentForm
    * @param {string} action
    */
   constructor(commentForm, action) {

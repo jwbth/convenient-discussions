@@ -752,7 +752,7 @@ export function calculateWordOverlap(s1, s2) {
  *
  * @param {Event} e
  * @param {number} keyCode
- * @param {string[]} [modifiers=[]] Use `'cmd'` instead of `'ctrl'`.
+ * @param {Array.<'cmd'|'shift'|'alt'|'meta'>} [modifiers=[]] Use `'cmd'` instead of `'ctrl'`.
  * @returns {boolean}
  */
 export function keyCombination(e, keyCode, modifiers = []) {

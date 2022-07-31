@@ -20,7 +20,7 @@ class CommentSkeleton {
   /**
    * Create a comment skeleton instance.
    *
-   * @param {Parser} parser
+   * @param {import('./Parser').default} parser
    * @param {object} signature Signature object returned by {@link Parser#findSignatures}.
    * @param {object[]} targets
    * @throws {CdError}
@@ -157,7 +157,7 @@ class CommentSkeleton {
     this.isUnsigned = signature.isUnsigned;
 
     /**
-     * Comment's elements.
+     * Elements containing all parts of the comment.
      *
      * @type {Element[]|external:Element[]}
      */
@@ -192,7 +192,7 @@ class CommentSkeleton {
      * Section that the comment is directly in (the section with lowest level / the biggest level
      * number).
      *
-     * @type {?Section}
+     * @type {?import('./Section').default}
      */
     this.section = null;
 
@@ -1522,7 +1522,7 @@ class CommentSkeleton {
    * _For internal use._ Set {@link Comment#logicalLevel logical levels} to the comments taking into
    * account `{{outdent}}` templates.
    *
-   * @param {Parser} parser
+   * @param {import('./Parser').default} parser
    */
   static processOutdents(parser) {
     if (parser.context.areThereOutdents) {

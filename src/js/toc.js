@@ -251,7 +251,7 @@ const toc = {
   /**
    * Add a section to the TOC.
    *
-   * @param {SectionSkeletonLike} section
+   * @param {import('./SectionSkeleton').SectionSkeletonLike} section
    * @param {object[]} currentTree
    * @param {external:jQuery} $topUl
    * @param {string[]} newSectionTocIds
@@ -365,7 +365,8 @@ const toc = {
    * Note that this method may also add the `match` property to the section elements containing a
    * matched `Section` object.
    *
-   * @param {SectionSkeletonLike[]} sections All sections present on the new revision of the page.
+   * @param {import('./SectionSkeleton').SectionSkeletonLike[]} sections All sections present on the
+   *   new revision of the page.
    */
   addNewSections(sections) {
     if (!settings.get('modifyToc') || !this.isPresent()) return;
@@ -429,7 +430,7 @@ const toc = {
   /**
    * Get the element to add a comment list after for a section.
    *
-   * @param {SectionSkeletonLike[]} section Section.
+   * @param {import('./SectionSkeleton').SectionSkeletonLike[]} section Section.
    * @param {boolean} areCommentsRendered Whether the comments are rendered (visible on the page).
    * @returns {?object}
    * @private
@@ -491,7 +492,7 @@ const toc = {
   /**
    * Add a comment list (an `ul` element) to a section.
    *
-   * @param {CommentSkeletonLike[]} comments Comment list.
+   * @param {import('./CommentSkeleton').CommentSkeletonLike[]} comments Comment list.
    * @param {Element} target Target element.
    * @param {boolean} areCommentsRendered Whether the comments are rendered (visible on the page).
    * @private

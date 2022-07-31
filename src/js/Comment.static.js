@@ -30,8 +30,8 @@ const dtIdRegexp = new RegExp(
  * Add all comment's children, including indirect, into array, if they are in the array of new
  * comments.
  *
- * @param {CommentSkeleton} childComment
- * @param {CommentSkeleton[]} arr
+ * @param {import('./CommentSkeleton').default} childComment
+ * @param {import('./CommentSkeleton').default[]} arr
  * @param {number[]} newCommentIndexes
  * @private
  */
@@ -47,10 +47,10 @@ function searchForNewCommentsInSubtree(childComment, arr, newCommentIndexes) {
 /**
  * Add an individual new comments notification to a thread or section.
  *
- * @param {CommentSkeleton[]} comments
- * @param {Comment|Section} parent
- * @param {string} type
- * @param {CommentSkeleton[]} newCommentIndexes
+ * @param {import('./CommentSkeleton').default[]} comments
+ * @param {Comment|import('./Section').default} parent
+ * @param {'thread'|'section'} type
+ * @param {import('./CommentSkeleton').default[]} newCommentIndexes
  * @private
  */
 function addNewCommentsNote(comments, parent, type, newCommentIndexes) {
@@ -297,7 +297,7 @@ export default {
   /**
    * Turn a comment array into an object with sections or their IDs as keys.
    *
-   * @param {CommentSkeletonLike[]|Comment[]} comments
+   * @param {import('./CommentSkeleton').CommentSkeletonLike[]|Comment[]} comments
    * @returns {Map}
    * @memberof Comment
    */

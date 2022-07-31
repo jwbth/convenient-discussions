@@ -1251,10 +1251,10 @@ export default {
   /**
    * Reload the page via Ajax.
    *
-   * @param {PassedData} [passedData={}] Data passed from the previous page state. See
-   *   {@link PassedData} for the list of possible properties. `html`, `unseenCommentIds` properties
-   *   are set in this function.
-   * @throws {CdError|Error}
+   * @param {import('./BootProcess').PassedData} [passedData={}] Data passed from the previous page
+   *   state. See {@link PassedData} for the list of possible properties. `html`, `unseenCommentIds`
+   *   properties are set in this function.
+   * @throws {import('./CdError').default|Error}
    */
   async reload(passedData = {}) {
     if (this.booting) return;

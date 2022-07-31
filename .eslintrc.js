@@ -72,21 +72,4 @@ module.exports = {
       "memberSyntaxSortOrder": ["none", "all", "single", "multiple"],
     }],
   },
-  "settings": {
-    "jsdoc": {
-      "preferredTypes": [
-        "CdError",
-        "Comment",
-        "CommentForm",
-        "CommentSkeleton",
-        "CommentSkeletonLike",
-        "Section",
-        "SectionSkeleton",
-        "SectionSkeletonLike",
-        "Parser",
-        "PassedData",
-        "Thread",
-      ],
-    },
-  },
 };
