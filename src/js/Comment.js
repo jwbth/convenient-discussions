@@ -3677,7 +3677,7 @@ class Comment extends CommentSkeleton {
     ) {
       thisInCode.isReplyOutdented = true;
       thisInCode.replyIndentation = (
-        thisInCode.replyIndentation.slice(0, indentationAfter.length) +
+        thisInCode.replyIndentation.slice(0, Math.max(indentationAfter.length, 1)) +
         cd.config.defaultIndentationChar
       );
     }
