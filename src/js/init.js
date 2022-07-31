@@ -1013,10 +1013,12 @@ export default {
     if (cd.config.outdentClass) {
       mw.loader.addStyleTag(`.cd-parsed .${cd.config.outdentClass} {
   margin-top: 0.5em;
+  margin-bottom: 0.5em;
 }
 
 .cd-reformattedComments .${cd.config.outdentClass} {
   margin-top: 0.75em;
+  margin-bottom: 0.75em;
 }`);
     }
 
