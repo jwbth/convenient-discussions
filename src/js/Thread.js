@@ -306,7 +306,7 @@ class Thread {
     /**
      * Fallback visual last comment. Used when `Thread#visualEndElement` may be hidden without
      * collapsing the thread. That usually means `Thread#visualEndElement` has the
-     * `cd-connectorAbove` class.
+     * `cd-connectorToPreviousItem` class.
      *
      * @type {Comment}
      * @private
@@ -434,7 +434,7 @@ class Thread {
     /**
      * Fallback visual end element. Used when `Thread#visualEndElement` may be hidden without
      * collapsing the thread. That usually means `Thread#visualEndElement` has the
-     * `cd-connectorAbove` class.
+     * `cd-connectorToPreviousItem` class.
      *
      * @type {Element}
      * @private
@@ -654,8 +654,8 @@ class Thread {
     const tagName = ['LI', 'DD'].includes(firstElement.tagName) ? firstElement.tagName : 'DIV';
     const expandNote = document.createElement(tagName);
     expandNote.className = 'cd-thread-button-container cd-thread-expandNote';
-    if (firstElement.classList.contains('cd-connectorAbove')) {
-      expandNote.className += ' cd-connectorAbove';
+    if (firstElement.classList.contains('cd-connectorToPreviousItem')) {
+      expandNote.className += ' cd-connectorToPreviousItem';
     }
     expandNote.appendChild(button.element);
     if (firstElement.parentNode.tagName === 'OL' && this.rootComment.ahContainerListType !== 'ol') {

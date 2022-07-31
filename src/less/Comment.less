@@ -180,48 +180,25 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
 // Workaround for close a visual gap to the previous item. The unfortunate reason for it is that we
 // need to avoid wrapping the contents of almost every comment in a <div> (so that its reply comment
 // form is not included in the comment) which would increase the parsing time significantly.
-.cd-connectorAbove::before {
-  content: "";
-  position: relative;
-  display: block;
-  top: -0.5em;
-  height: 0.5em;
-  margin-bottom: -1em;
-  width: 1px;
-  background-color: #c8ccd1;
+.cd-connectorToPreviousItem {
+  margin-top: -0.5em;
+  padding-top: 0.5em;
 
   .cd-reformattedComments & {
-    top: -0.75em;
-    height: 0.75em;
-    margin-bottom: -1.5em;
+    margin-top: -0.75em;
+    padding-top: 0.75em;
   }
 
-  .cd-thread-expandNote& {
-    margin-bottom: -0.5em;
+  > :first-child {
+    margin-top: 0;
 
-    .cd-reformattedComments & {
-      margin-bottom: -0.75em;
+    > :first-child {
+      margin-top: 0;
+
+      > :first-child {
+        margin-top: 0;
+      }
     }
-  }
-
-  .cd-comment-outdented& {
-    margin-bottom: -0.5em;
-
-    .cd-reformattedComments & {
-      margin-bottom: -0.75em;
-    }
-  }
-
-  .sitedir-ltr &,
-  .sitedir-rtl .mw-content-ltr & {
-    left: calc(-1em - 1px);
-    right: auto;
-  }
-
-  .sitedir-rtl &,
-  .sitedir-ltr .mw-content-rtl & {
-    left: auto;
-    right: calc(-1em - 1px);
   }
 }
 

@@ -162,23 +162,26 @@
 }
 
 .cd-commentForm-commentInput {
-  // Compensation for "margin: -1px" below
-  margin-top: 1px;
-
-  border: 1px solid #a2a9b1;
-
   .wikiEditor-ui .wikiEditor-ui-view {
     border: 0;
   }
 
-  .oo-ui-inputWidget-input.oo-ui-inputWidget-input {
-    width: calc(~"100% + 2px");
-    margin: -1px;
+  .oo-ui-inputWidget-input.oo-ui-inputWidget-input.oo-ui-inputWidget-input {
     position: relative;
 
-    // Fix for the jumping text until T169335 is resolved.
+    // Fix for jumping text until T169335 is resolved.
     padding-bottom: 1.4285714em;
     overflow-y: hidden;
+
+    // Safer for the case with page scaling according to the system font.
+    &:focus {
+      outline: 0;
+    }
+  }
+
+  .wikiEditor-ui-top {
+    border: 1px solid #a2a9b1;
+    border-bottom: 0;
   }
 
   &.oo-ui-textInputWidget.oo-ui-widget-disabled {
