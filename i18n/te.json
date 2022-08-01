@@ -146,7 +146,7 @@
 	"cf-block-close": "మూసివేయి",
 	"cf-reaction-templateinheadline": "శీర్షికల్లో మూసలను వాడవద్దు: అవి విభాగం లింకులను విరగ్గొడతాయి.",
 	"cf-reaction-signature": "<kbd>$1</kbd> ఇవ్వాల్సిన అవసరం లేదు: సంతకం ఆటోమాటిగ్గా చేరుతుంది.",
-	"cf-reaction-pre": "<code><nowiki><pre></nowiki></code> ట్యాగులు లేఅయుటును విరగ్గొడతాయి—<code><nowiki><syntaxhighlight lang=\"text\"></nowiki></code> వాడితే మంచిది.",
+	"cf-reaction-pre": "$1 ట్యాగులు లేఅయుటును విరగ్గొడతాయి—$2 వాడితే మంచిది.",
 	"cf-reaction-mention-edit": "మీరొక వ్యాఖ్యను <em>దిద్దుతున్నారు</em> కాబట్టి, [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|ఓ ప్రస్తావన గమనింపును]] పంపిస్తాం. ఈ గమనింపును పంపేందుకు, మీ దిద్దుబాటు సారాంశంలో వాడుకరికి లింకు ఇవ్వండి.",
 	"cf-reaction-mention-nosignature": "వ్యాఖ్యలో సంతకం పెట్టకూడదని ఎంచుకున్నారు కాబట్టి, [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|ప్రస్తావన గమనింపును]] పంపించం. గమనింపును పంపించాలంటే, దిద్దుబాటు సారాంశంలో వాడుకరికి లింకు ఇవ్వండి.",
 	"cf-notice-nochanges": "మార్పులు లేవు.",

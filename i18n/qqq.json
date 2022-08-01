@@ -204,7 +204,7 @@
 	"cf-autocomplete-templates-label": "Text of the title of the autocomplete list for templates.",
 	"cf-autocomplete-tags-label": "Text of the title of the autocomplete list for tags.",
 	"cf-autocomplete-commentlinks-label": "Text of the title of the autocomplete list for comment and section links.",
-	"cf-autocomplete-commentlinks-text": "Text inserted into the comment input as a visible text of a link when linking other comment in the section using the autocomplete function.\n* $1 — author\n* $2 — date",
+	"cf-autocomplete-commentlinks-text": "Text inserted into the comment input as a visible text of a link when linking other comment in the section using the autocomplete function.\n* $1: author\n* $2: date",
 	"dn-confirm": "Text of the confirmation message that pop ups on the first launch of the script.",
 	"dn-confirm-yes": "Label of the button in the dialog that suggests the user to enable desktop notifications.\n\n{{identical|Yes}}",
 	"dn-confirm-no": "Label of the button in the dialog that suggests the user to enable desktop notifications.\n\n{{identical|No}}",
