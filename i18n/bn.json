@@ -6,6 +6,7 @@
 			"R4356th",
 			"Titodutta",
 			"Yahya",
+			"আজিজ",
 			"আফতাবুজ্জামান"
 		]
 	},
@@ -40,6 +41,8 @@
 	"comment-diff-history": "সম্পাদনা ইতিহাস",
 	"comment-changedsince": "আপনার শেষ পরিদর্শনের পর থেকে মন্তব্যটিতে পরিবর্তন হয়েছে।",
 	"comment-changedsince-short": "আপনার শেষ পরিদর্শনের পর থেকে পরিবর্তন হয়েছে",
+	"comment-deleted": "মন্তব্য মুছে ফেলা হয়েছে।",
+	"comment-deleted-short": "মোছা হয়েছে",
 	"section-reply": "অনুচ্ছেদে উত্তর দিন",
 	"section-addsubsection-to": "\"$1\"-এ একটি উপ-অনুচ্ছেদ যোগ করুন",
 	"cld-title-comment": "মন্তব্যের লিঙ্ক অনুলিপি করুন",
@@ -171,6 +174,7 @@
 	"sd-autopreview": "আমি টাইপ করার সাথে সাথে মন্তব্যটির প্রাকদর্শন দেখান",
 	"sd-desktopnotifications": "ডেস্কটপ বিজ্ঞপ্তি",
 	"sd-desktopnotifications-radio-none": "আমাকে অবহিত করবেন না",
+	"sd-improveperformance": "দীর্ঘ পৃষ্ঠাগুলির কর্মক্ষমতা উন্নত করার চেষ্টা করুন",
 	"sd-insertbuttons-multiselect-placeholder": "বোতাম যোগ করুন",
 	"sd-notifications-radio-none": "আমাকে অবহিত করবেন না",
 	"sd-timestampformat": "সময় তারিখের বিন্যাস",
@@ -197,6 +201,7 @@
 	"error-network": "আপনার ইন্টারনেট সংযোগ যাচাই করুন।",
 	"error-unknown": "অজানা ত্রুটি।",
 	"error-editconflict": "সম্পাদনা দ্বন্দ্ব।",
+	"warning-performance-title": "কর্মক্ষমতাজনিত সমস্যা?",
 	"lp-comment": "মন্তব্য",
 	"lp-comment-tooltip": "মন্তব্যে চলুন",
 	"dot-separator": "&nbsp;<b>·</b>&#32;",
