@@ -71,6 +71,18 @@ class CommentForm {
    * @property {string} [summary] Edit summary.
    * @property {string} [noHeadline] Whether to include a headline.
    * @property {string} [omitSignature] Whether to add the user's signature.
+   * @memberof CommentForm
+   * @inner
+   */
+
+  /**
+   * @typedef {object} Operation
+   * @property {'load'|'preview'|'viewChanges'|'submit'} type Operation type.
+   * @property {boolean} [affectsHeadline=false] Should the headline input be displayed as pending.
+   * @property {boolean} [isClosed] Is the operation closed (settled).
+   * @property {boolean} [isDelayed] Is the operation delayed.
+   * @memberof CommentForm
+   * @inner
    */
 
   /**
@@ -160,17 +172,9 @@ class CommentForm {
     this.sectionSubmitted = null;
 
     /**
-     * @typedef {object} CommentFormOperation
-     * @property {'load'|'preview'|'viewChanges'|'submit'} type Operation type.
-     * @property {boolean} [affectHeadline=false] Should the headline input be displayed as pending.
-     * @property {boolean} [isClosed] Is the operation closed (settled).
-     * @property {boolean} [isDelayed] Is the operation delayed.
-     */
-
-    /**
      * List of current operations.
      *
-     * @type {CommentFormOperation[]}
+     * @type {Operation[]}
      * @private
      */
     this.operations = [];
@@ -2089,7 +2093,7 @@ class CommentForm {
    * @param {string} [options.logMessage] Data or text to display in the browser console.
    * @param {boolean} [options.cancel=false] Cancel the form and show the message as a notification.
    * @param {boolean} [options.isRawMessage=false] Show the message as it is, without OOUI framing.
-   * @param {CommentFormOperation} [options.currentOperation] Operation the form is undergoing.
+   * @param {Operation} [options.currentOperation] Operation the form is undergoing.
    */
   handleError({
     type,
@@ -2355,7 +2359,7 @@ class CommentForm {
    * @param {string} type
    * @param {object} [options={}]
    * @param {boolean} [clearMessages=true] Whether to clear messages above the comment form.
-   * @returns {CommentFormOperation}
+   * @returns {Operation}
    * @private
    */
   registerOperation(type, options = {}, clearMessages = true) {
@@ -2375,7 +2379,7 @@ class CommentForm {
    * Mark an operation as closed if it is not. Should be done when an operation has finished (either
    * successfully or not).
    *
-   * @param {CommentFormOperation} operation
+   * @param {Operation} operation
    * @private
    */
   closeOperation(operation) {
@@ -2399,7 +2403,7 @@ class CommentForm {
    * For convenience, can also check for an arbitrary condition and close the operation if it is
    * `true`.
    *
-   * @param {CommentFormOperation} operation
+   * @param {Operation} operation
    * @returns {boolean}
    * @private
    */
@@ -2422,7 +2426,7 @@ class CommentForm {
   /**
    * Remove the operation from the registry of operations.
    *
-   * @param {CommentFormOperation} operation
+   * @param {Operation} operation
    * @private
    */
   unregisterOperation(operation) {
@@ -2457,10 +2461,10 @@ class CommentForm {
    *
    * @param {boolean} [previewEmpty=true] If `false`, don't preview if the comment and headline
    *   inputs are empty.
-   * @param {boolean} [isAuto=true] Preview is initiated automatically (if the user has
-   *   the `autopreview` setting set to `true`).
-   * @param {CommentFormOperation} [operation] Operation object when the function is called from
-   *   within itself, being delayed.
+   * @param {boolean} [isAuto=true] Preview is initiated automatically (if the user has the
+   *   `autopreview` setting set to `true`).
+   * @param {Operation} [operation] Operation object when the function is called from within itself,
+   *   being delayed.
    * @fires previewReady
    */
   async preview(previewEmpty = true, isAuto = true, operation) {
@@ -2706,7 +2710,7 @@ class CommentForm {
    * Forget the form and reload the page.
    *
    * @param {object} [passedData] Data passed from the previous page state.
-   * @param {CommentFormOperation} [currentOperation] Current operation.
+   * @param {Operation} [currentOperation] Current operation.
    */
   async reloadPage(passedData, currentOperation) {
     this.forget();
@@ -2801,7 +2805,7 @@ class CommentForm {
    * Send a post request to edit the page and handle errors.
    *
    * @param {string} code
-   * @param {CommentFormOperation} currentOperation
+   * @param {Operation} currentOperation
    * @returns {Promise.<object|null>}
    * @private
    */

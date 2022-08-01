@@ -76,6 +76,13 @@ const fileInfos = new Map();
 const moduleToTypeDefs = new Map();
 
 /**
+ * A map of classId to type definition ids.
+ *
+ * @type {Map<string, Set<object>>}
+ */
+const classToTypeDefs = new Map();
+
+/**
  * Retrieves and caches file information for this plugin.
  *
  * @param {string} filename
@@ -110,6 +117,17 @@ function getFileInfo(filename, source = null) {
     // Add all typedefs within the file.
     comment.replace(typedefRegex, (_substr, defName) => {
       fileInfo.typedefs.push(defName);
+
+      // jwbth: Tweak to add to classToTypeDefs
+      const [, memberOf] = comment.match(/@memberof\s*([\w-\$]*)/) || [];
+      const isInner = Boolean(comment.match(/@inner\s*/));
+      if (memberOf) {
+        if (!classToTypeDefs.has(memberOf)) {
+          classToTypeDefs.set(memberOf, new Set());
+        }
+        classToTypeDefs.get(memberOf).add({ defName, isInner });
+      }
+
       return '';
     });
     return '';
@@ -148,7 +166,9 @@ function beforeParse(e) {
         (_substring2, relImportPath, symbolName) => {
         const moduleId = getModuleId(e.filename, relImportPath);
         if (symbolName === 'default') {
-          return path.basename(relImportPath, path.extname(relImportPath));
+          return (moduleId) ?
+            `module:${moduleId}` :
+            path.basename(relImportPath, path.extname(relImportPath));
         }
         return (moduleId) ? `module:${moduleId}${symbolName?"~"+symbolName:""}` : symbolName;
       });
@@ -221,6 +241,24 @@ function noExtension(filename) {
 }
 
 /**
+ * Find a type definition for an identifier in the file of the class with a specified name.
+ *
+ * @param {string} identifier
+ * @param {string} className
+ * @returns {object}
+ */
+function findTypeDefInClassFile(identifier, className) {
+  const currentClassTypeDefs = classToTypeDefs.get(className);
+  if (currentClassTypeDefs) {
+    for (const typeDef of currentClassTypeDefs) {
+      if (typeDef.defName === identifier) {
+        return typeDef;
+      }
+    }
+  }
+}
+
+/**
  * The jsdocCommentFound event is fired whenever a JSDoc comment is found.
  * All file infos are now populated; replace typedef symbols with their
  * module counterparts.
@@ -234,6 +272,14 @@ function jsdocCommentFound(e) {
 
   e.comment = e.comment.replace(typeRegex, (typeExpr) => {
     return typeExpr.replace(identifiers, (identifier) => {
+      const basename = path.basename(e.filename);
+      const className = basename
+        .slice(0, basename.includes('.') ? basename.indexOf('.') : undefined);
+      const foundDef = findTypeDefInClassFile(identifier, className);
+      if (foundDef) {
+        return `${className}${foundDef.isInner ? '~' : '.'}${identifier}`;
+      }
+
       return (fileInfo.moduleId && typeDefsSet.has(identifier)) ?
         `module:${fileInfo.moduleId}~${identifier}` :
         identifier;

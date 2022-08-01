@@ -473,6 +473,7 @@ function checkForChangesSincePreviousVisit(currentComments) {
      * @param {object[]} changeList
      * @param {Comment} changeList.comment
      * @param {object} changeList.commentsData
+     * @global
      */
     mw.hook('convenientDiscussions.changesSincePreviousVisit').fire(changeList);
   }
@@ -572,6 +573,7 @@ function checkForNewChanges(currentComments) {
      * @param {boolean} [changeList.events.deleted]
      * @param {boolean} [changeList.events.undeleted]
      * @param {object} changeList.commentsData
+     * @global
      */
     mw.hook('convenientDiscussions.newChanges').fire(changeList);
   }

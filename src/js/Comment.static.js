@@ -796,6 +796,8 @@ export default {
    * @typedef {object} ParseIdReturn
    * @property {Date} date
    * @property {string} author
+   * @memberof Comment
+   * @inner
    */
 
   /**

@@ -11,6 +11,8 @@ import { parseTimestamp } from './timestamp';
  * @property {string} pageName
  * @property {string} domain
  * @property {string} fragment
+ * @memberof Parser
+ * @inner
  * @private
  */
 
@@ -136,6 +138,8 @@ class Parser {
    * @property {Element|external:Element} element
    * @property {Date} date
    * @property {object} [match]
+   * @memberof Parser
+   * @inner
    */
 
   /**
@@ -603,6 +607,8 @@ class Parser {
    * @property {string} userName User name.
    * @property {?string} linkType Link type (`user`, `userTalk`, `contribs`, `userSubpage`,
    *   `userTalkSubpage`, or any of this `Foreign` at the end).
+   * @memberof Parser
+   * @inner
    * @private
    */
 

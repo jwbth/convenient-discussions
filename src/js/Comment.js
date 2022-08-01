@@ -112,6 +112,7 @@ function maybeMarkPageAsRead() {
  * @param {number} currentIndex
  * @param {string} wholeCode
  * @returns {string}
+ * @private
  */
 function getAdjustedChunkCodeAfter(currentIndex, wholeCode) {
   let adjustedCode = hideDistractingCode(wholeCode);
@@ -480,6 +481,8 @@ class Comment extends CommentSkeleton {
    * @typedef {object[]} ReplaceSignatureWithHeaderReturn
    * @property {string} pageName
    * @property {Element} link
+   * @memberof Comment
+   * @inner
    */
 
   /**
@@ -982,6 +985,8 @@ class Comment extends CommentSkeleton {
    * @property {number} left
    * @property {number} right
    * @property {number} downplayedBottom
+   * @memberof Comment
+   * @inner
    */
 
   /**
@@ -1260,6 +1265,8 @@ class Comment extends CommentSkeleton {
    * @typedef {object} CommentMargins
    * @property {number} left Left margin.
    * @property {number} right Right margin.
+   * @memberof Comment
+   * @inner
    */
 
   /**
@@ -1657,6 +1664,8 @@ class Comment extends CommentSkeleton {
    * @typedef {object} LayersContainerOffset
    * @property {number} top Top offset.
    * @property {number} left Left offset.
+   * @memberof Comment
+   * @inner
    */
 
   /**
@@ -1666,18 +1675,18 @@ class Comment extends CommentSkeleton {
    */
   getLayersContainerOffset() {
     const container = this.getLayersContainer();
-    let top = container.cdCachedLayersContainerTop;
-    let left = container.cdCachedLayersContainerLeft;
-    if (top === undefined || container.cdCouldHaveMoved) {
+    let top = container.convenientDiscussionsCachedLayersContainerTop;
+    let left = container.convenientDiscussionsCachedLayersContainerLeft;
+    if (top === undefined || container.convenientDiscussionsCouldHaveMoved) {
       const rect = container.getBoundingClientRect();
       if (!getVisibilityByRects(rect)) {
         return null;
       }
       top = rect.top + window.scrollY;
       left = rect.left + window.scrollX;
-      container.cdCouldHaveMoved = false;
-      container.cdCachedLayersContainerTop = top;
-      container.cdCachedLayersContainerLeft = left;
+      container.convenientDiscussionsCouldHaveMoved = false;
+      container.convenientDiscussionsCachedLayersContainerTop = top;
+      container.convenientDiscussionsCachedLayersContainerLeft = left;
     }
     return { top, left };
   }
@@ -2810,7 +2819,7 @@ class Comment extends CommentSkeleton {
    * offset.
    *
    * @param {boolean} partially Return `true` even if only a part of the comment is in the viewport.
-   * @param {object} [offset=this.getOffset()] Prefetched offset.
+   * @param {object} [offset={@link Comment#getOffset this.getOffset()}] Prefetched offset.
    * @returns {?boolean}
    */
   isInViewport(partially = false, offset = this.getOffset()) {
@@ -3852,20 +3861,22 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * @typedef {object} AddSublevelItemReturn
+   * @typedef {object} AddSubitemReturn
    * @property {external:jQuery} $wrappingItem
    * @property {external:jQuery} [$wrappingList]
    * @property {external:jQuery} [$outerWrapper]
+   * @memberof Comment
+   * @inner
    */
 
   /**
    * Add an item to the comment's {@link CommentSubitemList subitem list}.
    *
    * @param {string} name
-   * @param {string} position
-   * @returns {AddSublevelItemReturn}
+   * @param {'top' | 'bottom'} position
+   * @returns {AddSubitemReturn}
    */
-  addSublevelItem(name, position) {
+  addSubitem(name, position) {
     /*
       There are 3 basic cases that we account for:
       1.
@@ -3941,12 +3952,11 @@ class Comment extends CommentSkeleton {
     }
 
     const $wrappingItem = $(`<${wrappingItemTag}>`);
-    let $wrappingList;
-    if (createList) {
-      $wrappingList = $('<dl>')
+    const $wrappingList = createList ?
+      $('<dl>')
         .append($wrappingItem)
-        .addClass(`cd-commentLevel cd-commentLevel-${this.level + 1}`);
-    }
+        .addClass(`cd-commentLevel cd-commentLevel-${this.level + 1}`) :
+      undefined;
 
     let $outerWrapper;
     if (outerWrapperTag) {

@@ -1,7 +1,7 @@
 /**
  * Module loaded on pages where we add comment links to history entries (sometimes more).
  *
- * @module commentLinks
+ * @module addCommentLinks
  */
 
 import Comment from './Comment';
@@ -669,6 +669,7 @@ async function processDiff($diff) {
    * @event commentLinksAdded
    * @param {external:jQuery} $root Root element of content to which the comment links were added.
    * @param {object} cd {@link convenientDiscussions} object.
+   * @global
    */
   mw.hook('convenientDiscussions.commentLinksAdded').fire($root, cd);
 }

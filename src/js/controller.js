@@ -1450,7 +1450,7 @@ export default {
 
   /**
    * Load the data required for the script to process the page as a log page and
-   * {@link module:commentLinks process it}.
+   * {@link module:addCommentLinks process it}.
    */
   loadToCommentLinksPage() {
     if (

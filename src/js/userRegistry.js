@@ -188,6 +188,7 @@ export default {
            *
            * @event mutedUsers
            * @param {module:userRegistry~User[]} users
+           * @global
            */
           mw.hook('convenientDiscussions.mutedUsers').fire(users);
         },

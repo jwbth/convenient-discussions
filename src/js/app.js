@@ -362,6 +362,7 @@ async function go() {
    *
    * @event preprocessed
    * @param {object} cd {@link convenientDiscussions} object.
+   * @global
    */
   mw.hook('convenientDiscussions.preprocessed').fire(cd);
 }
@@ -586,6 +587,7 @@ async function app() {
    *
    * @event launched
    * @param {object} cd {@link convenientDiscussions} object.
+   * @global
    */
   mw.hook('convenientDiscussions.launched').fire(cd);
 
