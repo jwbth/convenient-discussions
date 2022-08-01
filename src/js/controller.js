@@ -750,7 +750,7 @@ export default {
   },
 
   /**
-   * Check whether there are "LTR inside RTL" or "RTL inside LTR" situations on the page.
+   * Check whether there is "LTR inside RTL" or "RTL inside LTR" nesting on the page.
    *
    * @returns {boolean}
    */
@@ -813,6 +813,9 @@ export default {
   handleMouseMove(e) {
     if (postponements.is('scroll') || this.isAutoScrolling() || this.isPageOverlayOn()) return;
 
+    // Don't throttle. Without throttling performance is generally OK, while the "frame rate" is
+    // about 50 (so, the reaction time is about 20ms). Lower values which should be less
+    // comfortable.
     Comment.highlightHovered(e);
   },
 

@@ -209,7 +209,7 @@ export default {
   /**
    * Create an add section form if not existent.
    *
-   * @param {object} [preloadConfig=CommentForm.getDefaultPreloadConfig()]
+   * @param {object} [preloadConfig={@link CommentForm.getDefaultPreloadConfig CommentForm.getDefaultPreloadConfig()}]
    * @param {boolean} [newTopicOnTop=false]
    * @param {object} [initialState]
    * @memberof CommentForm

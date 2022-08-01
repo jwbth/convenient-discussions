@@ -89,7 +89,7 @@ function addNewCommentsNote(comments, parent, type, newCommentIndexes) {
 
   if (parent instanceof Comment) {
     button.$element.addClass('cd-thread-button');
-    const { $wrappingItem } = parent.addSublevelItem('newCommentsNote', 'bottom');
+    const { $wrappingItem } = parent.addSubitem('newCommentsNote', 'bottom');
     $wrappingItem
       .addClass('cd-thread-button-container cd-thread-newCommentsNote')
       .append(button.$element);
@@ -176,7 +176,7 @@ export default {
     if (controller.isBooting() || (document.hidden && !redrawAll)) return;
 
     this.layersContainers.forEach((container) => {
-      container.cdCouldHaveMoved = true;
+      container.convenientDiscussionsCouldHaveMoved = true;
     });
 
     const comments = [];
@@ -190,6 +190,7 @@ export default {
     cd.comments.slice().reverse().some((comment) => {
       const shouldBeHighlighted = (
         !comment.isCollapsed &&
+        !comment.editForm &&
         (
           comment.isNew ||
           comment.isOwn ||
@@ -208,7 +209,7 @@ export default {
 
       if (comment.underlay && !shouldBeHighlighted && (removeUnhighlighted || isUnderRootBottom)) {
         comment.removeLayers();
-      } else if (shouldBeHighlighted && !comment.editForm) {
+      } else if (shouldBeHighlighted) {
         floatingRects ||= controller.getFloatingElements().map(getExtendedRect);
         const isMoved = comment.configureLayers({
           // If a comment was hidden, then became visible, we need to add the layers.

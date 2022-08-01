@@ -336,12 +336,10 @@ export function extractSignatures(code) {
   // CommentForm#prepareNewPageCode.
   const signatureIndex = adjustedCode.indexOf(cd.g.SIGN_CODE);
   if (signatureIndex !== -1) {
-    const startIndex = signatureIndex;
-    const nextCommentOffset = adjustedCode.slice(startIndex).indexOf('\n') + 1;
     signatures.push({
       author: cd.user.getName(),
-      startIndex,
-      nextCommentStartIndex: startIndex + nextCommentOffset,
+      startIndex: signatureIndex,
+      nextCommentStartIndex: signatureIndex + adjustedCode.slice(signatureIndex).indexOf('\n') + 1,
     });
   }
 

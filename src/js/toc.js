@@ -374,13 +374,12 @@ const toc = {
     controller.saveRelativeScrollPosition({ saveTocHeight: true });
 
     const $addedSections = this.$element.find('.cd-toc-addedSection');
-    let newSectionTocIds;
-    if (this.isInSidebar()) {
-      newSectionTocIds = $addedSections
+    const newSectionTocIds = this.isInSidebar() ?
+      $addedSections
         .filter('.sidebar-toc-level-1')
         .get()
-        .map((sectionElement) => sectionElement.id);
-    }
+        .map((sectionElement) => sectionElement.id) :
+      undefined;
     $addedSections.remove();
 
     /*

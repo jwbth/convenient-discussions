@@ -752,8 +752,7 @@ class Section extends SectionSkeleton {
       barElement.classList.add('cd-section-bar-nometadata');
     }
     barElement.append(...[this.metadataElement, this.actionsElement].filter(defined));
-    this.headingElement.parentNode
-      .insertBefore(barElement, this.headingElement.nextElementSibling);
+    this.headingElement.parentNode.insertBefore(barElement, this.headingElement.nextElementSibling);
 
     if (this.lastElement === this.headingElement) {
       this.lastElement = barElement;

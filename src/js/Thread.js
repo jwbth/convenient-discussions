@@ -568,7 +568,7 @@ class Thread {
       }
     } else {
       lastComment = this.lastComment;
-      endElement =  this.endElement;
+      endElement = this.endElement;
     }
 
     const $lastSubitem = (
@@ -830,8 +830,8 @@ class Thread {
   updateLine({
     elementsToAdd,
     threadsToUpdate,
-    scrollY,
     scrollX,
+    scrollY,
     floatingRects,
   }) {
     const getLeft = (rectOrOffset, commentMargins, dir) => {
@@ -858,8 +858,8 @@ class Thread {
         rectOrOffset.top
     );
 
-    const lineSideMargin = cd.g.THREAD_LINE_SIDE_MARGIN;
     const lineWidth = 3;
+    const lineSideMargin = cd.g.THREAD_LINE_SIDE_MARGIN;
     const comment = this.rootComment;
 
     if (comment.isCollapsed && !this.isCollapsed) {
@@ -900,8 +900,8 @@ class Thread {
       this.getAdjustedEndElement(true)?.getBoundingClientRect();
 
     const areTopAndBottomAligned = () => {
-      // FIXME: We use the first comment's margins for the bottom rectangle which can lead to errors
-      // (need to check).
+      // FIXME: We use the first comment part's margins for the bottom rectangle which can lead to
+      // errors (need to check).
       const bottomLeft = getLeft(rectBottom, commentMargins, dir);
 
       return dir === 'ltr' ? bottomLeft >= left : bottomLeft <= left;
@@ -985,7 +985,7 @@ class Thread {
 
     if (!threadLinesContainer) {
       threadLinesContainer = document.createElement('div');
-      threadLinesContainer.className = 'cd-thread-linesContainer';
+      threadLinesContainer.className = 'cd-threadLinesContainer';
     } else {
       threadLinesContainer.innerHTML = '';
     }
@@ -1019,8 +1019,8 @@ class Thread {
 
     const elementsToAdd = [];
     const threadsToUpdate = [];
-    const scrollY = window.scrollY;
     const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
 
     cd.comments
       .slice()
@@ -1029,8 +1029,8 @@ class Thread {
         comment.thread?.updateLine({
           elementsToAdd,
           threadsToUpdate,
-          scrollY,
           scrollX,
+          scrollY,
           floatingRects,
         }) ||
         false

@@ -1280,7 +1280,7 @@ class CommentSkeleton {
 
     const lastAncestors = levelElements[levelElements.length - 1];
     if (levelElements[0].length === lastAncestors.length - 1) {
-      const closestLevelElement = lastAncestors[lastAncestors.length  - 1];
+      const closestLevelElement = lastAncestors[lastAncestors.length - 1];
 
       // Split parent elements until we reach the level element.
       let parent = this.highlightables[this.highlightables.length - 1];

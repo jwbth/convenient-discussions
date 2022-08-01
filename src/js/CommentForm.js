@@ -1306,7 +1306,7 @@ class CommentForm {
    * @private
    */
   async preloadTemplate() {
-    const currentOperation = this.registerOperation('load', { affectHeadline: false });
+    const currentOperation = this.registerOperation('load', { affectsHeadline: false });
     const preloadPage = pageRegistry.get(this.preloadConfig.commentTemplate);
     try {
       await preloadPage.getCode();
@@ -1381,7 +1381,7 @@ class CommentForm {
     let $outerWrapper;
     if (this.mode === 'reply') {
       ({ $wrappingItem, $wrappingList, $outerWrapper } = this.target
-        .addSublevelItem('replyForm', 'top'));
+        .addSubitem('replyForm', 'top'));
     } else if (this.mode === 'edit') {
       const $firstOfTarget = this.target.$elements.first();
       if ($firstOfTarget.is('dd, li')) {
@@ -1898,22 +1898,22 @@ class CommentForm {
    * Push the pending status of the form inputs.
    *
    * @param {boolean} setDisabled Whether to set the buttons and inputs disabled.
-   * @param {boolean} affectHeadline Should the `pushPending` method be applied to the headline
+   * @param {boolean} affectsHeadline Should the `pushPending` method be applied to the headline
    *   input.
    * @see
    *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.mixin.PendingElement-method-pushPending
    */
-  pushPending(setDisabled = false, affectHeadline = true) {
+  pushPending(setDisabled = false, affectsHeadline = true) {
     this.commentInput.pushPending();
     this.summaryInput.pushPending();
-    if (affectHeadline) {
+    if (affectsHeadline) {
       this.headlineInput?.pushPending();
     }
 
     if (setDisabled) {
       this.commentInput.setDisabled(true);
       this.summaryInput.setDisabled(true);
-      if (affectHeadline) {
+      if (affectsHeadline) {
         this.headlineInput?.setDisabled(true);
       }
 
@@ -1938,22 +1938,22 @@ class CommentForm {
    * Pop the pending status of the form inputs.
    *
    * @param {boolean} [setEnabled=false] Whether to set buttons and inputs enabled.
-   * @param {boolean} [affectHeadline=true] Should the `popPending` method be applied to the
+   * @param {boolean} [affectsHeadline=true] Should the `popPending` method be applied to the
    *   headline input.
    * @see
    *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.mixin.PendingElement-method-popPending
    */
-  popPending(setEnabled = false, affectHeadline = true) {
+  popPending(setEnabled = false, affectsHeadline = true) {
     this.commentInput.popPending();
     this.summaryInput.popPending();
-    if (affectHeadline) {
+    if (affectsHeadline) {
       this.headlineInput?.popPending();
     }
 
     if (setEnabled) {
       this.commentInput.setDisabled(false);
       this.summaryInput.setDisabled(false);
-      if (affectHeadline) {
+      if (affectsHeadline) {
         this.headlineInput?.setDisabled(false);
       }
 
@@ -2072,7 +2072,7 @@ class CommentForm {
 
   /**
    * Abort the operation the form is undergoing and show an appropriate error message. This is a
-   * wrapper around {@link CommentForm#abort}.
+   * wrapper around `CommentForm#abort`.
    *
    * @param {object} options
    * @param {'parse'|'api'|'network'|'javascript'|'ui'} options.type Type of the error:
@@ -2370,7 +2370,7 @@ class CommentForm {
       if (clearMessages) {
         this.$messageArea.empty();
       }
-      this.pushPending(['load', 'submit'].includes(operation.type), operation.affectHeadline);
+      this.pushPending(['load', 'submit'].includes(operation.type), operation.affectsHeadline);
     }
     return operation;
   }
@@ -2386,7 +2386,7 @@ class CommentForm {
     if (operation.isClosed) return;
     operation.isClosed = true;
     if (operation.type !== 'preview' || !operation.isAuto) {
-      this.popPending(['load', 'submit'].includes(operation.type), operation.affectHeadline);
+      this.popPending(['load', 'submit'].includes(operation.type), operation.affectsHeadline);
     }
   }
 
@@ -2434,7 +2434,7 @@ class CommentForm {
 
     // This was excessive at the time when it was written as the only use case is autopreview.
     if (operation.type !== 'preview' || !operation.isAuto) {
-      this.popPending(operation.type === 'submit', operation.affectHeadline);
+      this.popPending(operation.type === 'submit', operation.affectsHeadline);
     }
   }
 
@@ -3693,8 +3693,8 @@ class CommentForm {
   }
 
   /**
-   * Scroll to the comment form and focus the comment input. Expand all threads that this form is
-   * inside.
+   * Scroll to the comment form and focus the comment input.
+   * {@link Comment#expandAllThreadsDownTo Expand all threads} that this form is inside.
    */
   goTo() {
     this.getParentComment()?.expandAllThreadsDownTo();
