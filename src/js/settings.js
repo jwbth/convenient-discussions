@@ -1,3 +1,9 @@
+/**
+ * Settings-related functions and data.
+ *
+ * @module settings
+ */
+
 import cd from './cd';
 import pageRegistry from './pageRegistry';
 import { areObjectsEqual, defined, hideText, ucFirst, unhideText, wrap } from './util';
@@ -6,20 +12,29 @@ import { getUserInfo, setGlobalOption, setLocalOption } from './apiWrappers';
 
 export default {
   /**
-   * Settings scheme: default, undocumented, local settings, aliases.
+   * Settings scheme.
+   *
+   * @property {object} default Default value for each property.
+   * @property {string[]} local List of local setting names. Local settings are settings set for the
+   *   current wiki only.
+   * @property {string[]} undocumented List of undocumented setting names. Undocumented settings are
+   *   settings not shown in the settings dialog.
+   * @property {object} aliases List of aliases for each property for seamless transition when
+   *   changing a setting name.
+   * @property {string[]} states List of state setting names. States are values to be remembered, or
+   *   settings to be removed if the time comes. It is, in fact, user data, despite that we don't
+   *   have much of it.
+   * @property {object[]} ui List of pages of the settings dialog, each with its control objects.
    */
   scheme: {
-    // Settings set for the current wiki only.
     local: ['haveInsertButtonsBeenAltered', 'insertButtons', 'signaturePrefix'],
 
-    // Settings not shown in the settings dialog.
     undocumented: [
       'defaultCommentLinkType',
       'defaultSectionLinkType',
       'showLoadingOverlay',
     ],
 
-    // Aliases for seamless transition when changing a setting name.
     aliases: {
       allowEditOthersComments: ['allowEditOthersMsgs'],
       alwaysExpandAdvanced: ['alwaysExpandSettings'],
@@ -29,8 +44,6 @@ export default {
       subscribeOnReply: ['watchSectionOnReply'],
     },
 
-    // Not settings but states to be remembered, or settings to be removed if the time comes. In
-    // fact, user data, despite that we don't have much of it.
     states: [
       'haveInsertButtonsBeenAltered',
       'improvePerformanceLastSuggested',
@@ -570,7 +583,7 @@ export default {
   },
 
   /**
-   * Change the value of a setting or a set of settings at once.
+   * Change the value of a setting or a set of settings at once without saving to the server.
    *
    * @param {string|object} name
    * @param {string} value
@@ -582,7 +595,7 @@ export default {
   },
 
   /**
-   * Get the value of a setting.
+   * Get the value of a setting without loading from the server.
    *
    * @param {string} name
    * @returns {*}
