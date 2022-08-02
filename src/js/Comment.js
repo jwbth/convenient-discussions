@@ -1186,9 +1186,14 @@ class Comment extends CommentSkeleton {
 
     let isMoved;
     if (this.offset) {
-      const isTopSame = scrollY + rectTop.top === this.offset.top;
-      const isHeightSame = rectBottom.bottom - rectTop.top === this.offset.bottom - this.offset.top;
-      const isFhWidthSame = this.highlightables[0].offsetWidth === this.firstHighlightableWidth;
+      // With scale other than 100% values of less than 0.001 appear in Chrome and Firefox.
+      const isTopSame = Math.abs(scrollY + rectTop.top - this.offset.top) < 0.01;
+      const isHeightSame = (
+        Math.abs((rectBottom.bottom - rectTop.top) - (this.offset.bottom - this.offset.top)) < 0.01
+      );
+      const isFhWidthSame = (
+        Math.abs(this.highlightables[0].offsetWidth - this.firstHighlightableWidth) < 0.01
+      );
 
       // This value will be `true` wrongly if the comment is around floating elements. But that
       // doesn't hurt much.
@@ -1288,13 +1293,22 @@ class Comment extends CommentSkeleton {
       startMargin = controller.getContentColumnOffsets().startMargin;
     } else {
       const anchorElement = this.isCollapsed ? this.thread.expandNote : this.anchorHighlightable;
-      if (
-        ['DD', 'LI'].includes(anchorElement.tagName) &&
-        anchorElement.parentNode.classList.contains('cd-commentLevel')
-      ) {
+      if (anchorElement.parentNode.classList.contains('cd-commentLevel')) {
         startMargin = -1;
       } else {
-        startMargin = this.level === 0 ? cd.g.COMMENT_FALLBACK_SIDE_MARGIN : cd.g.CONTENT_FONT_SIZE;
+        if (
+          this.offset &&
+          anchorElement.parentNode.parentNode.classList.contains('cd-commentLevel')
+        ) {
+          const prop = this.getTextDirection() === 'ltr' ? 'left' : 'right';
+          startMargin = (
+            Math.abs(this.offset[prop] - anchorElement.parentNode.getBoundingClientRect()[prop]) - 1
+          );
+        } else {
+          startMargin = this.level === 0 ?
+            cd.g.COMMENT_FALLBACK_SIDE_MARGIN :
+            cd.g.CONTENT_FONT_SIZE;
+        }
       }
     }
     const endMargin = this.isEndStretched ?
