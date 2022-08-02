@@ -40,7 +40,7 @@ if (IS_SINGLE) {
     string
       .replace(/&nbsp;/g, '\xa0')
       .replace(/&#32;/g, ' ')
-      .replace(/&rlm;/g, '\u202b')
+      .replace(/&rlm;/g, '\u200f')
       .replace(/&lrm;/g, '\u200e')
   );
 
