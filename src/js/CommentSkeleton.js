@@ -91,12 +91,13 @@ class CommentSkeleton {
      */
     this.date = signature.date || null;
 
+    // Double spaces are from removed dir marks.
     /**
      * Comment timestamp as originally present on the page.
      *
      * @type {string}
      */
-    this.timestamp = signature.timestampText;
+    this.timestamp = signature.timestampText.replace(/ {2,}/g, ' ');
 
     /**
      * _For internal use._ Comment author name.

@@ -3501,7 +3501,7 @@ class Comment extends CommentSkeleton {
         (
           this.timestamp === sig.timestamp ||
 
-          // .startsWith() to account for cases where you can ignore the timezone string in the
+          // .startsWith() to account for cases where you can ignore the timezone string in
           // "unsigned" templates (it may be present and may be not), but it appears on the page.
           (this.timestamp && this.timestamp.startsWith(sig.timestamp))
         )

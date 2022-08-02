@@ -6,7 +6,7 @@
 
 import cd from './cd';
 import userRegistry from './userRegistry';
-import { decodeHtmlEntities, hideText } from './util';
+import { decodeHtmlEntities, hideText, removeDirMarks } from './util';
 import { parseTimestamp } from './timestamp';
 
 /**
@@ -39,7 +39,7 @@ export function hideDistractingCode(code) {
       (s, before, tagName, content, after) => before + ' '.repeat(content.length) + after
     )
     .replace(/<!--([^]*?)-->/g, (s, content) => '\x01' + ' '.repeat(content.length + 5) + '\x02')
-    .replace(/[\u200e\u200f]/g, (s) => ' '.repeat(s.length))
+    .replace(/[\u200e\u200f]/g, () => ' ')
     .replace(
       /(<\/?(?:br|p)\b.*)(\n+)(>)/g,
       (s, before, newline, after) => before + ' '.repeat(newline.length) + after
@@ -195,7 +195,7 @@ function extractRegularSignatures(adjustedCode, code) {
       // Extract the timestamp data
       const timestampStartIndex = lineStartIndex + authorTimestampMatch[2].length;
       const timestampEndIndex = timestampStartIndex + authorTimestampMatch[6].length;
-      timestamp = code.slice(timestampStartIndex, timestampEndIndex);
+      timestamp = removeDirMarks(code.slice(timestampStartIndex, timestampEndIndex));
 
       // Extract the signature data
       startIndex = lineStartIndex + authorTimestampMatch[3].length;
@@ -235,7 +235,7 @@ function extractRegularSignatures(adjustedCode, code) {
       dirtyCode = code.slice(startIndex, endIndex);
 
       const timestampEndIndex = startIndex + timestampMatch[3].length;
-      timestamp = code.slice(startIndex, timestampEndIndex);
+      timestamp = removeDirMarks(code.slice(startIndex, timestampEndIndex));
 
       nextCommentStartIndex = lineStartIndex + timestampMatch[0].length;
     }

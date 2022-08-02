@@ -195,8 +195,9 @@ export function getDateFromTimestampMatch(match, timezone) {
  * @returns {?ParseTimestampReturn}
  */
 export function parseTimestamp(timestamp, timezone) {
-  // Remove left-to-right and right-to-left marks that are sometimes copied from the edit history to
-  // the timestamp (for example, https://meta.wikimedia.org/w/index.php?diff=20418518).
+  // Remove left-to-right and right-to-left marks that are sometimes copied from edit history to the
+  // timestamp (for example, https://meta.wikimedia.org/w/index.php?diff=20418518). Replace with a
+  // space to keep offsets.
   const adjustedTimestamp = removeDirMarks(timestamp, true);
 
   const regexp = timezone === undefined ?
