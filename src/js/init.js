@@ -498,6 +498,8 @@ function patterns() {
     .concat(cd.config.customAddTopicLinkSelectors)
     .join(', ');
 
+  cd.g.PIPE_TRICK_REGEXP = /(\[\[:?(?:[^|[\]<>\n:]+:)?([^|[\]<>\n]+)\|)(\]\])/g;
+
   cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP = mergeRegexps(cd.config.pagesWithoutArchives);
 
   setArchivePagesGlobals();

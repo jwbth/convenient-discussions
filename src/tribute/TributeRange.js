@@ -108,11 +108,19 @@ class TributeRange {
             if (typeof data !== 'object') {
                 data = { start: data }
             }
-            data.content = data.content || ''
             data.end = data.end || ''
             let isCmdModifierPressed = navigator.platform.includes('Mac') ?
                 originalEvent.metaKey :
                 originalEvent.ctrlKey
+                data.content = (
+                    (
+                        data.skipContentByDefault &&
+                        !(originalEvent.shiftKey || originalEvent.altKey) ?
+                            '' :
+                            data.content
+                    ) ||
+                    ''
+                )
             if (isCmdModifierPressed && data.cmdModify) {
                 data = data.cmdModify(data)
             }

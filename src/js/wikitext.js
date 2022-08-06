@@ -75,7 +75,7 @@ export function removeWikiMarkup(code) {
     .replace(/\x01 *\x02/g, '')
 
     // Pipe trick
-    .replace(/(\[\[:?(?:[^|[\]<>\n:]+:)?([^|[\]<>\n]+)\|)(\]\])/g, '$1$2$3')
+    .replace(cd.g.PIPE_TRICK_REGEXP, '$1$2$3')
 
     // Extract displayed text from file embeddings
     .replace(cd.g.FILE_EMBED_REGEXP, '$1')

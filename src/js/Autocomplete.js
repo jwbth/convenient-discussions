@@ -584,6 +584,7 @@ class Autocomplete {
               start: `@[[${pageName}|`,
               end: ']]',
               content: name,
+              skipContentByDefault: true,
               cmdModify: (data) => {
                 data.end += cd.mws('colon-separator', { language: 'content' });
                 return data;

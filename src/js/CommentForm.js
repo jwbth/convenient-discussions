@@ -3223,6 +3223,9 @@ class CommentForm {
         .trim()
         .replace(/\s+/g, ' ')
 
+        // Pipe trick
+        .replace(cd.g.PIPE_TRICK_REGEXP, '$1$2$3')
+
         // Remove user links to prevent sending a double notification.
         .replace(/\[\[:?(?:([^|[\]<>\n]+)\|)?(.+?)\]\]/g, (s, wikilink, text) => (
           cd.g.USER_LINK_REGEXP.test(wikilink) ? text : s
