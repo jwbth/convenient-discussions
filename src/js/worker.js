@@ -214,6 +214,12 @@ function parse() {
           el.remove();
         });
 
+      element
+        .filterRecursively((node) => node.nodeType === Node.COMMENT_NODE)
+        .forEach((node) => {
+          node.remove();
+        });
+
       if (element.classList.contains('references') || ['STYLE', 'LINK'].includes(element.tagName)) {
         const textNode = hideElement(element, comment);
         return textNode.textContent;

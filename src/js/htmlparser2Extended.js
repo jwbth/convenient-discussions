@@ -6,6 +6,7 @@ import { decodeHtmlEntities } from './wikitext';
 self.Node = {
   ELEMENT_NODE: 1,
   TEXT_NODE: 3,
+  COMMENT_NODE: 8,
 };
 
 /**
@@ -323,6 +324,16 @@ Object.defineProperty(Element.prototype, 'classList', {
     }
   },
 });
+
+Element.prototype.filterRecursively = function (func) {
+  let nodes = [];
+  walkThroughSubtree(this, (node) => {
+    if (func(node)) {
+      nodes.push(node);
+    }
+  });
+  return nodes;
+};
 
 Element.prototype.getElementsByClassName = function (name, limit) {
   let nodes = [];
