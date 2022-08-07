@@ -465,40 +465,42 @@ class CommentForm {
       }));
     }
 
-    const watchCheckboxSelected = (
-      (settings.get('watchOnReply') && this.mode !== 'edit') ||
-      $('#ca-unwatch').length ||
-      mw.user.options.get(mw.config.get('wgArticleId') ? 'watchdefault' : 'watchcreations')
-    );
+    if (cd.user.isRegistered()) {
+      const watchCheckboxSelected = (
+        (settings.get('watchOnReply') && this.mode !== 'edit') ||
+        $('#ca-unwatch').length ||
+        mw.user.options.get(mw.config.get('wgArticleId') ? 'watchdefault' : 'watchcreations')
+      );
 
-    /**
-     * Watch page checkbox field.
-     *
-     * @name watchField
-     * @type {external:OO.ui.FieldLayout}
-     * @memberof CommentForm
-     * @instance
-     */
+      /**
+       * Watch page checkbox field.
+       *
+       * @name watchField
+       * @type {external:OO.ui.FieldLayout}
+       * @memberof CommentForm
+       * @instance
+       */
 
-    /**
-     * Watch page checkbox.
-     *
-     * @name watchCheckbox
-     * @type {external:OO.ui.CheckboxInputWidget}
-     * @memberof CommentForm
-     * @instance
-     */
-    ({
-      field: this.watchField,
-      input: this.watchCheckbox,
-    } = createCheckboxField({
-      value: 'watch',
-      selected: initialState?.watch ?? watchCheckboxSelected,
-      label: cd.s('cf-watch'),
-      tabIndex: this.getTabIndex(21),
-    }));
+      /**
+       * Watch page checkbox.
+       *
+       * @name watchCheckbox
+       * @type {external:OO.ui.CheckboxInputWidget}
+       * @memberof CommentForm
+       * @instance
+       */
+      ({
+        field: this.watchField,
+        input: this.watchCheckbox,
+      } = createCheckboxField({
+        value: 'watch',
+        selected: initialState?.watch ?? watchCheckboxSelected,
+        label: cd.s('cf-watch'),
+        tabIndex: this.getTabIndex(21),
+      }));
+    }
 
-    if (this.targetSection || this.mode === 'addSection') {
+    if ((this.targetSection || this.mode === 'addSection') && cd.user.isRegistered()) {
       const selected = (
         (settings.get('subscribeOnReply') && this.mode !== 'edit') ||
         this.targetSection?.subscriptionState
@@ -680,20 +682,22 @@ class CommentForm {
       tabIndex: this.getTabIndex(31),
     });
 
-    /**
-     * Script settings button.
-     *
-     * @type {external:OO.ui.ButtonWidget}
-     */
-    this.settingsButton = new OO.ui.ButtonWidget({
-      framed: false,
-      icon: 'settings',
-      label: cd.s('cf-settings-tooltip'),
-      invisibleLabel: true,
-      title: cd.s('cf-settings-tooltip'),
-      classes: ['cd-button-ooui', 'cd-commentForm-settingsButton'],
-      tabIndex: this.getTabIndex(32),
-    });
+    if (cd.user.isRegistered()) {
+      /**
+       * Script settings button.
+       *
+       * @type {external:OO.ui.ButtonWidget}
+       */
+      this.settingsButton = new OO.ui.ButtonWidget({
+        framed: false,
+        icon: 'settings',
+        label: cd.s('cf-settings-tooltip'),
+        invisibleLabel: true,
+        title: cd.s('cf-settings-tooltip'),
+        classes: ['cd-button-ooui', 'cd-commentForm-settingsButton'],
+        tabIndex: this.getTabIndex(32),
+      });
+    }
 
     /**
      * Cancel button.
@@ -823,8 +827,8 @@ class CommentForm {
       .append([
         this.advancedButton.$element,
         this.helpPopupButton.$element,
-        this.settingsButton.$element,
-      ]);
+        this.settingsButton?.$element,
+      ].filter(defined));
 
     /**
      * End (right on LTR wikis, left on RTL wikis) form buttons container.
@@ -1667,7 +1671,7 @@ class CommentForm {
     this.minorCheckbox
       ?.on('change', saveSessionEventHandler);
     this.watchCheckbox
-      .on('change', saveSessionEventHandler);
+      ?.on('change', saveSessionEventHandler);
     this.subscribeCheckbox
       ?.on('change', saveSessionEventHandler);
     this.omitSignatureCheckbox
@@ -1693,7 +1697,7 @@ class CommentForm {
     this.advancedButton.on('click', () => {
       this.toggleAdvanced();
     });
-    this.settingsButton.on('click', () => {
+    this.settingsButton?.on('click', () => {
       controller.showSettingsDialog();
     });
     this.cancelButton.on('click', () => {
@@ -1881,7 +1885,8 @@ class CommentForm {
         'helpPopupButton',
         'settingsButton',
       ]
-        .map((name) => this[name].$element)
+        .map((name) => this[name]?.$element)
+        .filter(defined)
         .filter(($el) => $el.is(':visible'))
         .reduce((width, $el) => width + $el.outerWidth(true), 0);
       if (formWidth < this.buttonsTotalWidthStandard + additive) {
@@ -1923,7 +1928,7 @@ class CommentForm {
       this.cancelButton.setDisabled(true);
 
       this.minorCheckbox?.setDisabled(true);
-      this.watchCheckbox.setDisabled(true);
+      this.watchCheckbox?.setDisabled(true);
       this.subscribeCheckbox?.setDisabled(true);
       this.omitSignatureCheckbox?.setDisabled(true);
       this.deleteCheckbox?.setDisabled(true);
@@ -1963,7 +1968,7 @@ class CommentForm {
       this.cancelButton.setDisabled(false);
 
       this.minorCheckbox?.setDisabled(false);
-      this.watchCheckbox.setDisabled(false);
+      this.watchCheckbox?.setDisabled(false);
       this.subscribeCheckbox?.setDisabled(false);
       this.omitSignatureCheckbox?.setDisabled(false);
       this.deleteCheckbox?.setDisabled(false);
@@ -3049,13 +3054,13 @@ class CommentForm {
       this.updateSubscriptionStatus(editTimestamp, commentCode, passedData);
     }
 
-    if (this.watchCheckbox.isSelected() && $('#ca-watch').length) {
+    if (this.watchCheckbox?.isSelected() && $('#ca-watch').length) {
       $('#ca-watch')
         .attr('id', 'ca-unwatch')
         .find('a')
         .attr('href', cd.page.getUrl({ action: 'unwatch' }));
     }
-    if (!this.watchCheckbox.isSelected() && $('#ca-unwatch').length) {
+    if (!this.watchCheckbox?.isSelected() && $('#ca-unwatch').length) {
       $('#ca-unwatch')
         .attr('id', 'ca-watch')
         .find('a')
