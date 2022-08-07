@@ -1,3 +1,9 @@
+/**
+ * A singleton used to obtain instances of the `Page` class while avoiding creating duplicates.
+ *
+ * @module pageRegistry
+ */
+
 import CdError from './CdError';
 import cd from './cd';
 import controller from './controller';
@@ -27,8 +33,6 @@ import { parseTimestamp } from './timestamp';
  * {@link https://www.mediawiki.org/wiki/Manual:Interface/JavaScript#All_pages_(user/page-specific) wgIsArticle}
  * config value is `true`).
  *
- * @memberof module:pageRegistry
- * @inner
  * To access the constructor, use {@link module:pageRegistry.get} (it is only exported for means of
  * code completion).
  */
@@ -670,8 +674,6 @@ export class Page {
 }
 
 /**
- * A singleton used to obtain instances of the `Page` class while avoiding creating duplicates.
- *
  * @exports pageRegistry
  */
 const pageRegistry = {

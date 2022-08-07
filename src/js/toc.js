@@ -1,3 +1,9 @@
+/**
+ * Table of contents singleton.
+ *
+ * @module toc
+ */
+
 import CdError from './CdError';
 import Comment from './Comment';
 import LiveTimestamp from './LiveTimestamp';
@@ -9,9 +15,6 @@ import { formatDate, formatDateNative } from './timestamp';
 
 /**
  * Class representing a table of contents item.
- *
- * @memberof module:toc
- * @inner
  */
 class TocItem {
   /**
@@ -89,8 +92,6 @@ class TocItem {
 }
 
 /**
- * Table of contents singleton.
- *
  * @exports toc
  */
 const toc = {
