@@ -314,12 +314,10 @@ function maybeAddFooterLink() {
  * @private
  */
 function maybeTweakAddTopicButton() {
+  const dtCreatePage = mw.user.options.get('discussiontools-newtopictool-createpage');
   if (
     !controller.isArticlePageTalkPage() ||
-    (
-      mw.config.get('wgAction') === 'view' &&
-      !mw.user.options.get('discussiontools-newtopictool-createpage')
-    )
+    (mw.config.get('wgAction') === 'view' && !dtCreatePage)
   ) {
     return;
   }
@@ -328,9 +326,13 @@ function maybeTweakAddTopicButton() {
   const href = $addTopicLink.prop('href');
   if (href) {
     const url = new URL(href);
-    url.searchParams.delete('action');
-    url.searchParams.delete('section');
-    url.searchParams.set('cdaddtopic', 1);
+    if (dtCreatePage) {
+      url.searchParams.set('dtenable', 0);
+    } else {
+      url.searchParams.delete('action');
+      url.searchParams.delete('section');
+      url.searchParams.set('cdaddtopic', 1);
+    }
     $addTopicLink.attr('href', url);
   }
 }
