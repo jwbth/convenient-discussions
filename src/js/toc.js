@@ -26,7 +26,7 @@ class TocItem {
   constructor(a) {
     const textSpan = a.querySelector(toc.isInSidebar() ? '.sidebar-toc-text' : '.toctext');
     if (!textSpan) {
-      throw new CdError();
+      throw new CdError(['Couldn\'t find text for a link', a]);
     }
 
     const headline = textSpan.textContent;
@@ -37,7 +37,7 @@ class TocItem {
     level = Number(level);
     const numberSpan = a.querySelector(toc.isInSidebar() ? '.sidebar-toc-numb' : '.tocnumber');
     if (!numberSpan) {
-      throw new CdError();
+      throw new CdError(['Couldn\'t find a number for a link', a]);
     }
 
     const number = numberSpan.textContent;
@@ -161,8 +161,8 @@ const toc = {
         // It is executed first time before added (gray) sections are added to the TOC, so we use a
         // simple algorithm to obtain items.
         this.tocItems = links.map((a) => new TocItem(a));
-      } catch {
-        console.error('Couldn\'t find an element of a table of contents item.');
+      } catch (e) {
+        console.error('Couldn\'t find an element of a table of contents item.', ...e);
         this.tocItems = [];
 
         // Forcibly switch off the setting - we better not touch the TOC if something is broken
