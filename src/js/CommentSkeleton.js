@@ -97,7 +97,7 @@ class CommentSkeleton {
      *
      * @type {string}
      */
-    this.timestamp = signature.timestampText.replace(/ {2,}/g, ' ');
+    this.timestamp = signature.timestampText?.replace(/ {2,}/g, ' ');
 
     /**
      * _For internal use._ Comment author name.
