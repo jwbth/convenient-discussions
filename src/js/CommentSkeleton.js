@@ -70,10 +70,10 @@ class CommentSkeleton {
 
     this.parts.reverse();
 
-    // dd, li instead of dl, ul, ol where appropriate.
+    // <dd>, <li> instead of <dl>, <ul>, <ol> where appropriate.
     this.replaceListsWithItems();
 
-    // Wrap ol into div or dl & dd if the comment starts with numbered list items.
+    // Wrap <ol> into <div> or <dl> & <dd> if the comment starts with numbered list items.
     this.wrapNumberedList();
 
     /**

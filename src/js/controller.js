@@ -1011,9 +1011,9 @@ export default {
       const href = $button.attr('href');
       let query;
 
-      // May crash if the current URL contains undecodable "%" in the fragment.
+      // May crash if the URL contains undecodable "%" in the fragment.
       try {
-        query = new mw.Uri(href).query;
+        ({ query } = new mw.Uri(href));
       } catch {
         return;
       }
@@ -1770,7 +1770,7 @@ export default {
         treeWalker.nextSibling();
       }
 
-      // This step fixes some issues with `.cd-connectorToPreviousItem` like wrong margins below the
+      // This step fixes some issues with `.cd-connectToPreviousItem` like wrong margins below the
       // expand note of the comment
       // https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house/CD_test_page&oldid=678031044#c-Example-2021-10-02T05:14:00.000Z-Example-2021-10-02T05:13:00.000Z
       // if you collapse its thread.

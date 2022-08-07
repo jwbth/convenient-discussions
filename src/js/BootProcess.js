@@ -844,7 +844,7 @@ class BootProcess {
     if (
       !$('#ca-addsection').length ||
 
-      // There is a special welcome text in New Topic tool for 404 pages.
+      // There is a special welcome text in New Topic Tool for 404 pages.
       (cd.g.IS_DT_NEW_TOPIC_TOOL_ENABLED && !controller.doesPageExist())
     ) {
       return;

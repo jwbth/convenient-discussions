@@ -537,10 +537,13 @@ function addCommentHeaderPrototype(commentElementPrototypes) {
   authorLinksWrapper.append(cd.mws('parentheses-start'), authorTalkLink);
 
   if (settings.get('showContribsLink')) {
+    const separator = document.createElement('span');
+    separator.innerHTML = cd.sParse('dot-separator');
+
     const contribsLink = document.createElement('a');
     contribsLink.textContent = cd.s('comment-author-contribs');
-    const separator = commentElementPrototypes.separator.cloneNode(true);
-    authorLinksWrapper.append(separator, contribsLink);
+
+    authorLinksWrapper.append(...separator.childNodes, contribsLink);
   }
 
   authorLinksWrapper.append(cd.mws('parentheses-end'));
@@ -674,10 +677,6 @@ function addCommentLayerPrototypes(commentElementPrototypes) {
  */
 function commentElementPrototypes() {
   const commentElementPrototypes = {};
-
-  const separator = document.createElement('span');
-  separator.innerHTML = cd.sParse('dot-separator');
-  commentElementPrototypes.separator = separator;
 
   addCommentHeaderPrototype(commentElementPrototypes);
   addCommentOouiPrototypes(commentElementPrototypes);

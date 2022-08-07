@@ -600,7 +600,7 @@ class Section extends SectionSkeleton {
 
     let commentCountWrapper;
     let authorCountWrapper;
-    let lastCommentWrapper;
+    let latestCommentWrapper;
     let metadataElement;
     if (this.level === 2 && this.comments.length) {
       commentCountWrapper = document.createElement('span');
@@ -616,16 +616,16 @@ class Section extends SectionSkeleton {
       authorCountWrapper.append(authorCountText);
 
       if (latestComment) {
-        const lastCommentLink = document.createElement('a');
-        lastCommentLink.href = `#${latestComment.dtId || latestComment.id}`;
-        lastCommentLink.onclick = this.scrollToLatestComment;
-        lastCommentLink.textContent = formatDate(latestComment.date);
-        (new LiveTimestamp(lastCommentLink, latestComment.date, false)).init();
+        const latestCommentLink = document.createElement('a');
+        latestCommentLink.href = `#${latestComment.dtId || latestComment.id}`;
+        latestCommentLink.onclick = this.scrollToLatestComment;
+        latestCommentLink.textContent = formatDate(latestComment.date);
+        (new LiveTimestamp(latestCommentLink, latestComment.date, false)).init();
 
-        lastCommentWrapper = document.createElement('span');
-        lastCommentWrapper.className = 'cd-section-bar-item';
-        const lastCommentText = cd.s('section-metadata-lastcomment');
-        lastCommentWrapper.append(lastCommentText, ' ', lastCommentLink);
+        latestCommentWrapper = document.createElement('span');
+        latestCommentWrapper.className = 'cd-section-bar-item';
+        const latestCommentText = cd.s('section-metadata-lastcomment');
+        latestCommentWrapper.append(latestCommentText, ' ', latestCommentLink);
       }
 
       metadataElement = document.createElement('div');
@@ -633,7 +633,7 @@ class Section extends SectionSkeleton {
       const metadataItemList = [
         commentCountWrapper,
         authorCountWrapper,
-        lastCommentWrapper,
+        latestCommentWrapper,
       ].filter(defined);
       metadataElement.append(...metadataItemList);
     }
@@ -671,7 +671,7 @@ class Section extends SectionSkeleton {
      *
      * @type {Element|undefined}
      */
-    this.lastCommentWrapper = lastCommentWrapper;
+    this.latestCommentWrapper = latestCommentWrapper;
   }
 
   /**
@@ -1580,7 +1580,7 @@ class Section extends SectionSkeleton {
 
       const match = this.collectMatchData(sectionHeadingMatch, pageCode, adjustedPageCode);
       if (!match.code || !match.firstChunkCode) {
-        console.log(`Couldn't read the "${match.headline}" section contents.`);
+        console.warn(`Couldn't read the "${match.headline}" section contents.`);
         continue;
       }
 

@@ -1631,7 +1631,7 @@ class Comment extends CommentSkeleton {
         const node = treeWalker.currentNode;
 
         // These elements have "position: relative" for the purpose we know.
-        if (node.classList.contains('cd-connectorToPreviousItem')) continue;
+        if (node.classList.contains('cd-connectToPreviousItem')) continue;
 
         let style = node.conveneintDiscussionsStyle;
         if (!style) {
@@ -3915,9 +3915,9 @@ class Comment extends CommentSkeleton {
       The lists can be of other type, not necessarily ":".
 
       The resulting structure is:
-        Outer wrapper item element (dd, li, rarely div) - in case 1.
-          Wrapping list element (ul) - in cases 1 and 2.
-            Wrapping item element (li) - in cases 1, 2, and 3.
+        Outer wrapper item element (<dd>, <li>, rarely <div>) - in case 1.
+          Wrapping list element (<ul>) - in cases 1 and 2.
+            Wrapping item element (<li>) - in cases 1, 2, and 3.
      */
 
     let wrappingItemTag = 'dd';
@@ -3979,7 +3979,7 @@ class Comment extends CommentSkeleton {
       // Why `.cd-commentLevel >`: reply to a pseudo-comment added with this diff with a mistake:
       // https://ru.wikipedia.org/?diff=113073013.
       if ($lastOfTarget.is('.cd-commentLevel:not(ol) > li, .cd-commentLevel > dd')) {
-        $outerWrapper.addClass('cd-connectorToPreviousItem');
+        $outerWrapper.addClass('cd-connectToPreviousItem');
       }
 
       $wrappingList.appendTo($outerWrapper);

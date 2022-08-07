@@ -373,7 +373,7 @@ export class Page {
     };
     const options = Object.assign({}, defaultOptions, customOptions);
 
-    // "page" and "oldid" can not be used together.
+    // `page` and `oldid` can not be used together.
     if (customOptions?.oldid) {
       delete options.page;
     }

@@ -22,9 +22,9 @@ export function generateTagsRegexp(tags) {
 }
 
 /**
- * Conceal HTML comments (`<!-- -->`), `<nowiki>`, `<syntaxhighlight>`,
- * `<source>`, and `<pre>` tags content, left-to-right and right-to-left marks, and also
- * newlines inside some tags (`<br\n>`) in the code.
+ * Replace HTML comments (`<!-- -->`), `<nowiki>`, `<syntaxhighlight>`, `<source>`, and `<pre>` tags
+ * content, left-to-right and right-to-left marks, and also newlines inside some tags (`<br\n>`) in
+ * the code with spaces.
  *
  * This is used to ignore comment contents (there could be section code examples for novices there
  * that could confuse search results) but get right positions and code in the result.

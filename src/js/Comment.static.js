@@ -1003,7 +1003,7 @@ export default {
   },
 
   /**
-   * _For internal use._ Add the `'cd-connectorToPreviousItem'` class to some item elements to
+   * _For internal use._ Add the `'cd-connectToPreviousItem'` class to some item elements to
    * visually connect threads broken by some intervention.
    */
   connectBrokenThreads() {
@@ -1050,7 +1050,7 @@ export default {
     }
 
     items.forEach((item) => {
-      item.classList.add('cd-connectorToPreviousItem');
+      item.classList.add('cd-connectToPreviousItem');
     });
   },
 };
