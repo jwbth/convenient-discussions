@@ -887,17 +887,17 @@ class BootProcess {
         }
 
         let pageName;
+        let url;
         if ($button.is('a')) {
           const href = $button.attr('href');
-          let query;
 
-          // May crash if the current URL contains undecodable "%" in the fragment.
+          // May crash if the URL contains undecodable "%" in the fragment.
           try {
-            query = new mw.Uri(href).query;
+            url = new mw.Uri(href);
           } catch {
             return;
           }
-          pageName = getLastArrayElementOrSelf(query.title);
+          pageName = getLastArrayElementOrSelf(url.query.title);
         } else if ($button.is('input')) {
           pageName = $button
             .closest('form')
@@ -914,6 +914,10 @@ class BootProcess {
         }
         if (page !== cd.page) {
           return false;
+        }
+        if ($button.is('a')) {
+          url.query.dtenable = 0;
+          $button.attr('href', url.toString());
         }
         return true;
       })
