@@ -229,7 +229,7 @@ class SectionSkeleton {
    * paragraphs 3 and 4 as such. Our code must capture that.
    *
    * @param {Element|external:Element|undefined} followingHeadingElement
-   * @param {TreeWalker} treeWalker
+   * @param {import('./treeWalker').TreeWalker} treeWalker
    * @returns {Element|external:Element}
    */
   getLastElement(followingHeadingElement, treeWalker) {

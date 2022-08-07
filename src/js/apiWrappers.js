@@ -499,7 +499,7 @@ export async function setGlobalOption(name, value) {
  * Request genders of a list of users and assign them as properties. A gender may be `'male'`,
  * `'female'`, or `'unknown'`.
  *
- * @param {module:userRegistry~User[]} users
+ * @param {import('./userRegistry').User[]} users
  * @param {boolean} [requestInBackground=false] Make a request that won't set the process on hold
  *   when the tab is in the background.
  */
@@ -530,7 +530,7 @@ export async function loadUserGenders(users, requestInBackground = false) {
  * Given a list of user IDs, return a list of users.
  *
  * @param {number[]|string[]} userIds List of user IDs.
- * @returns {module:userRegistry~User[]}
+ * @returns {import('./userRegistry').User[]}
  */
 export async function getUsersByGlobalId(userIds) {
   const requests = userIds.map((id) => (

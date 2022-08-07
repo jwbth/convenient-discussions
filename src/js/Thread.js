@@ -595,7 +595,7 @@ class Thread {
   /**
    * Get a list of users in the thread.
    *
-   * @returns {module:userRegistry~User[]}
+   * @returns {import('./userRegistry').User[]}
    * @private
    */
   getUsersInThread() {

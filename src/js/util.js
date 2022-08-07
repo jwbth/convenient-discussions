@@ -846,7 +846,7 @@ export function getUrlWithFragment(fragment, permanent) {
  * Get the gender that is common for a list of users (`'unknown'` is treated as `'male'`) or
  * `'unknown'` if there is no such.
  *
- * @param {module:userRegistry~User[]} users
+ * @param {import('./userRegistry').User[]} users
  * @returns {string}
  */
 export function getCommonGender(users) {

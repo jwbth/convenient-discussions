@@ -1,8 +1,8 @@
 /**
  * @file Tweaked version of
  * {@link https://github.com/polyforest/jsdoc-tsimport-plugin jsdoc-tsimport-plugin}. The changes
- * are: to handle "default" imports correctly. See jsdoc-tsimport-plugin-tweaked.js.LICENSE.txt for
- * the full text of the license.
+ * are: to handle "default" imports correctly; to understand class exports. See
+ * jsdoc-tsimport-plugin-tweaked.js.LICENSE.txt for the full text of the license.
  * @author https://github.com/nbilyk
  * @author https://github.com/bombitmanbomb
  * @author https://github.com/jwbth
@@ -32,7 +32,7 @@ const absSrcDirs = env.opts._.map((iSrcDir) => path.join(env.pwd, iSrcDir));
 /**
  * A regex to capture all doc comments.
  */
-const docCommentsRegex = /\/\*\*\s*(?:[^\*]|(?:\*(?!\/)))*\*\//g;
+const docCommentsRegex = /\/\*\*\s*(?:[^\*]|(?:\*(?!\/)))*\*\/([^\n]*\n(.+))?/g;
 
 /**
  * Find the module name.
@@ -98,7 +98,7 @@ function getFileInfo(filename, source = null) {
 
   const s = source || ((fs.existsSync(filenameNor)) ?
   fs.readFileSync(filenameNor).toString() : '');
-  s.replace(docCommentsRegex, (comment) => {
+  s.replace(docCommentsRegex, (comment, nextLine) => {
     if (!fileInfo.moduleId) {
       // Searches for @module doc comment
       const moduleNameMatch = comment.match(moduleNameRegex);
@@ -116,7 +116,10 @@ function getFileInfo(filename, source = null) {
     }
     // Add all typedefs within the file.
     comment.replace(typedefRegex, (_substr, defName) => {
-      fileInfo.typedefs.push(defName);
+      fileInfo.typedefs.push({
+        defName,
+        isInner: true,
+      });
 
       // jwbth: Tweak to add to classToTypeDefs
       const [, memberOf] = comment.match(/@memberof\s*([\w-\$]*)/) || [];
@@ -130,6 +133,15 @@ function getFileInfo(filename, source = null) {
 
       return '';
     });
+
+    // jwbth: Sneak classes as typedefs as well to have correct links to them formed.
+    nextLine?.replace(/\bexport class ([\w-\$]+)/, (_substr, defName) => {
+      fileInfo.typedefs.push({
+        defName,
+        isInner: false,
+      });
+    });
+
     return '';
   });
   if (!fileInfo.moduleId) {
@@ -170,6 +182,20 @@ function beforeParse(e) {
             `module:${moduleId}` :
             path.basename(relImportPath, path.extname(relImportPath));
         }
+
+        // jwbth: Added nearly the same fragment as in jsdocCommentFound()
+        if (moduleId) {
+          if (symbolName) {
+            const moduleTypeDefsSet = moduleToTypeDefs.get(moduleId);
+            const foundDefInModule = findTypeDef(symbolName, moduleTypeDefsSet);
+            return `module:${moduleId}${!foundDefInModule || foundDefInModule.isInner ? '~' : '.'}${symbolName}`;
+          } else {
+            return `module:${moduleId}`;
+          }
+        } else {
+          return symbolName;
+        }
+
         return (moduleId) ? `module:${moduleId}${symbolName?"~"+symbolName:""}` : symbolName;
       });
     });
@@ -241,19 +267,18 @@ function noExtension(filename) {
 }
 
 /**
- * Find a type definition for an identifier in the file of the class with a specified name.
+ * Find a type definition for an identifier in the list of type definitions for current file.
  *
  * @param {string} identifier
- * @param {string} className
+ * @param {string} typeDefs
  * @returns {object}
  */
-function findTypeDefInClassFile(identifier, className) {
-  const currentClassTypeDefs = classToTypeDefs.get(className);
-  if (currentClassTypeDefs) {
-    for (const typeDef of currentClassTypeDefs) {
-      if (typeDef.defName === identifier) {
-        return typeDef;
-      }
+function findTypeDef(identifier, typeDefs) {
+  if (!typeDefs) return;
+
+  for (const typeDef of typeDefs) {
+    if (typeDef.defName === identifier) {
+      return typeDef;
     }
   }
 }
@@ -267,22 +292,30 @@ function findTypeDefInClassFile(identifier, className) {
  */
 function jsdocCommentFound(e) {
   const fileInfo = getFileInfo(e.filename);
-  const typeDefsSet = moduleToTypeDefs.get(fileInfo.moduleId);
-  if (!typeDefsSet) return;
+  const moduleTypeDefsSet = moduleToTypeDefs.get(fileInfo.moduleId);
+
+  const basename = path.basename(e.filename);
+  const className = basename.slice(0, basename.includes('.') ? basename.indexOf('.') : undefined);
+  const classTypeSetDefs = classToTypeDefs.get(className);
+
+  if (!moduleTypeDefsSet && !classTypeSetDefs) return;
 
   e.comment = e.comment.replace(typeRegex, (typeExpr) => {
     return typeExpr.replace(identifiers, (identifier) => {
-      const basename = path.basename(e.filename);
-      const className = basename
-        .slice(0, basename.includes('.') ? basename.indexOf('.') : undefined);
-      const foundDef = findTypeDefInClassFile(identifier, className);
-      if (foundDef) {
-        return `${className}${foundDef.isInner ? '~' : '.'}${identifier}`;
+      // jwbth: Reworked this function to capture more situations.
+      const foundDefInClassFile = findTypeDef(identifier, classTypeSetDefs);
+      if (foundDefInClassFile) {
+        return `${className}${foundDefInClassFile.isInner ? '~' : '.'}${identifier}`;
       }
 
-      return (fileInfo.moduleId && typeDefsSet.has(identifier)) ?
-        `module:${fileInfo.moduleId}~${identifier}` :
-        identifier;
+      if (fileInfo.moduleId) {
+        const foundDefInModule = findTypeDef(identifier, moduleTypeDefsSet);
+        return foundDefInModule ?
+          `module:${fileInfo.moduleId}${foundDefInModule.isInner ? '~' : '.'}${identifier}` :
+          identifier;
+      } else {
+        return identifier;
+      }
     });
   });
 }

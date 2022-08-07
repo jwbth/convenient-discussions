@@ -13,7 +13,7 @@ import controller from './controller';
 import debug from './debug';
 import defaultConfig from '../../config/default';
 import g from './staticGlobals';
-import pageRegistry from './pageRegistry';
+import pageRegistry, { Page } from './pageRegistry';
 import { addCommentLinksToSpecialSearch } from './addCommentLinks';
 import {
   buildEditSummary,
@@ -526,7 +526,7 @@ function setupApi() {
   // TODO: Delete after all addons are updated.
   cd.util = cd.api;
   cd.api.generateCommentAnchor = cd.api.generateCommentId;
-  cd.api.Page = pageRegistry.Page;
+  cd.api.Page = Page;
 }
 
 /**

@@ -1050,7 +1050,7 @@ export default {
      * Current page's object.
      *
      * @name page
-     * @type {module:pageRegistry~Page}
+     * @type {import('./pageRegistry').Page}
      * @memberof convenientDiscussions
      */
     cd.page = pageRegistry.get(cd.g.PAGE_NAME, true);
@@ -1062,7 +1062,7 @@ export default {
      * Current user's object.
      *
      * @name user
-     * @type {module:userRegistry~User}
+     * @type {import('./userRegistry').User}
      * @memberof convenientDiscussions
      */
     cd.user = userRegistry.get(cd.g.USER_NAME);

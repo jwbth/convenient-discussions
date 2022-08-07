@@ -355,7 +355,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
   /**
    * Load the target page code.
    *
-   * @param {module:pageRegistry~Page} targetPage
+   * @param {import('./pageRegistry').Page} targetPage
    * @returns {object}
    * @throws {Array.<string, boolean>}
    * @private

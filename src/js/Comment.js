@@ -183,7 +183,7 @@ class Comment extends CommentSkeleton {
     /**
      * Comment author user object.
      *
-     * @type {module:userRegistry~User}
+     * @type {import('./userRegistry').User}
      */
     this.author = userRegistry.get(this.authorName);
 
@@ -3837,7 +3837,7 @@ class Comment extends CommentSkeleton {
    * Get the wiki page that has the source code of the comment (may be different from the current
    * page if the comment is transcluded from another page).
    *
-   * @type {module:pageRegistry~Page}
+   * @returns {import('./pageRegistry').Page}
    */
   getSourcePage() {
     return this.section ? this.section.getSourcePage() : cd.page;

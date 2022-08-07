@@ -9,10 +9,10 @@ import cd from './cd';
 import controller from './controller';
 import navPanel from './navPanel';
 import notifications from './notifications';
-import pageRegistry from './pageRegistry';
 import settings from './settings';
 import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
+import { Page } from './pageRegistry';
 import {
   buildEditSummary,
   defined,
@@ -90,8 +90,8 @@ class CommentForm {
    *
    * @param {object} config
    * @param {'reply'|'replyInSection'|'edit'|'addSubsection'|'addSection'} config.mode
-   * @param {Comment|Section|module:pageRegistry~Page} config.target Comment, section, or page that
-   *   the form is related to.
+   * @param {Comment|Section|import('./pageRegistry').Page} config.target Comment, section, or page
+   *   that the form is related to.
    * @param {object} [config.initialState] Initial state of the form (data saved in the previous
    *   session, quoted text, or data transferred from DT's new topic form).
    * @param {PreloadConfig} [config.preloadConfig] Configuration to preload data into the form.
@@ -103,7 +103,7 @@ class CommentForm {
   constructor({ mode, target, initialState, preloadConfig, newTopicOnTop }) {
     // This is possible when restoring a form.
     if (
-      !(target instanceof pageRegistry.Page) && !target.isActionable ||
+      !(target instanceof Page) && !target.isActionable ||
       (mode === 'replyInSection' && !target.replyButton)
     ) {
       throw new CdError();
@@ -249,7 +249,7 @@ class CommentForm {
       }
     }
 
-    if (!(this.target instanceof pageRegistry.Page) && this.mode !== 'edit') {
+    if (!(this.target instanceof Page) && this.mode !== 'edit') {
       this.checkCode();
     }
 
@@ -282,14 +282,14 @@ class CommentForm {
   /**
    * Set the `target`, `targetSection`, `targetComment`, and `targetPage` properties.
    *
-   * @param {Comment|Section|module:pageRegistry~Page} target
+   * @param {Comment|Section|import('./pageRegistry').Page} target
    * @private
    */
   setTargets(target) {
     /**
      * Target object.
      *
-     * @type {Comment|Section|module:pageRegistry~Page}
+     * @type {Comment|Section|import('./pageRegistry').Page}
      * @private
      */
     this.target = target;
@@ -2325,7 +2325,7 @@ class CommentForm {
     let commentCode;
     try {
       if (
-        !(this.target instanceof pageRegistry.Page) &&
+        !(this.target instanceof Page) &&
 
         // We already located the section when got its code.
         !(this.target instanceof Section && this.sectionSubmitted)
@@ -2476,7 +2476,7 @@ class CommentForm {
     if (
       this.isContentBeingLoaded() ||
       (
-        !(this.target instanceof pageRegistry.Page) &&
+        !(this.target instanceof Page) &&
         !this.target.inCode &&
         this.checkCodeRequest &&
         await getNativePromiseState(this.checkCodeRequest) === 'resolved'
@@ -2522,7 +2522,7 @@ class CommentForm {
       (if the mode is 'edit' and the comment has not been loaded, this method would halt after the
       looking for the unclosed 'load' operation above).
      */
-    if (!(this.target instanceof pageRegistry.Page) && !this.target.inCode) {
+    if (!(this.target instanceof Page) && !this.target.inCode) {
       await this.checkCode();
       if (!this.target.inCode) {
         this.closeOperation(currentOperation);
@@ -3602,7 +3602,7 @@ class CommentForm {
   /**
    * Get the {@link CommentForm#target target} object of the form.
    *
-   * @returns {Comment|Section|module:pageRegistry~Page}
+   * @returns {Comment|Section|import('./pageRegistry').Page}
    */
   getTarget() {
     return this.target;

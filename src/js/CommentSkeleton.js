@@ -989,8 +989,8 @@ class CommentSkeleton {
   }
 
   /**
-   * _For internal use._ Wrap numbered list into a div or dl & dd if the comment starts with
-   * numbered list items.
+   * _For internal use._ Wrap numbered list into a `<div>` or `<dl>` & `<dd>` if the comment starts
+   * with numbered list items.
    */
   wrapNumberedList() {
     if (this.parts.length > 1) {

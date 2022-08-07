@@ -12,9 +12,10 @@ import { getUsersByGlobalId } from './apiWrappers';
  * Class representing a user. Is made similar to `mw.user` so that it is possible to pass it to
  * `mw.msg()` and have `{{gender:}}` replaced.
  *
- * The constructor is not accessible by means of import. Use {@link module:userRegistry.get}.
+ * To create an instance, use {@link module:userRegistry.get} (the constructor is only exported for
+ * means of code completion).
  */
-class User {
+export class User {
   /**
    * Create a user object.
    *
@@ -135,7 +136,7 @@ export default {
    * Get a user object for a user with the specified name (either a new one or already existing).
    *
    * @param {string} name
-   * @returns {module:userRegistry~User}
+   * @returns {User}
    */
   get(name) {
     if (name.includes('#')) {
@@ -187,7 +188,7 @@ export default {
            * The list of muted users has been obtained from the server or local storage.
            *
            * @event mutedUsers
-           * @param {module:userRegistry~User[]} users
+           * @param {User[]} users
            * @global
            */
           mw.hook('convenientDiscussions.mutedUsers').fire(users);

@@ -20,6 +20,8 @@ import { parseTimestamp } from './timestamp';
  * @memberof external:mw
  */
 
+// Export for the sake of VS Code IntelliSense
+
 /**
  * Class representing a wiki page (a page for which the
  * {@link https://www.mediawiki.org/wiki/Manual:Interface/JavaScript#All_pages_(user/page-specific) wgIsArticle}
@@ -27,8 +29,10 @@ import { parseTimestamp } from './timestamp';
  *
  * @memberof module:pageRegistry
  * @inner
+ * To access the constructor, use {@link module:pageRegistry.get} (it is only exported for means of
+ * code completion).
  */
-class Page {
+export class Page {
   /**
    * Create a page instance.
    *
@@ -186,7 +190,7 @@ class Page {
    * and/or, for the current page, elements with the class `cd-archivingInfo` and attribute
    * `data-archived-page`.
    *
-   * @returns {module:pageRegistry~Page}
+   * @returns {import('./pageRegistry').Page}
    */
   getArchivedPage() {
     let result = this.isCurrent ? this.findArchivingInfoElement().data('archivedPage') : undefined;
@@ -685,7 +689,7 @@ const pageRegistry = {
    * @param {string|external:mw.Title} nameOrMwTitle
    * @param {boolean} [isGendered=true] Used to keep the gendered namespace name (if `nameOrMwTitle`
    *   is a string).
-   * @returns {module:pageRegistry~Page}
+   * @returns {Page}
    */
   get(nameOrMwTitle, isGendered) {
     const title = nameOrMwTitle instanceof mw.Title ?
@@ -702,11 +706,6 @@ const pageRegistry = {
 
     return this.items[name];
   },
-
-  /**
-   * The {@link module:pageRegistry~Page} class.
-   */
-  Page,
 };
 
 export default pageRegistry;
