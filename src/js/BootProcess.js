@@ -1186,21 +1186,24 @@ class BootProcess {
    * @private
    */
   async processTargets() {
-    const comments = this.data('commentIds')?.map((id) => Comment.getById(id)).filter(notNull);
-    if (comments) {
-      // setTimeout is for Firefox - for some reason, without it Firefox positions the underlay
-      // incorrectly. (TODO: does it still? Need to check.)
-      setTimeout(() => {
-        comments[0].scrollTo({
-          smooth: false,
-          pushState: this.data('pushState'),
-          flash: this.data('wasCommentFormSubmitted'),
-        });
+    const commentIds = this.data('commentIds');
+    if (commentIds) {
+      const comments = commentIds.map((id) => Comment.getById(id)).filter(notNull);
+      if (comments.length) {
+        // setTimeout is for Firefox - for some reason, without it Firefox positions the underlay
+        // incorrectly. (TODO: does it still? Need to check.)
+        setTimeout(() => {
+          comments[0].scrollTo({
+            smooth: false,
+            pushState: this.data('pushState'),
+            flash: this.data('wasCommentFormSubmitted'),
+          });
 
-        if (!this.data('wasCommentFormSubmitted')) {
-          comments.forEach((comment) => comment.flashTarget());
-        }
-      });
+          if (!this.data('wasCommentFormSubmitted')) {
+            comments.forEach((comment) => comment.flashTarget());
+          }
+        });
+      }
     }
 
     if (this.data('sectionId')) {
