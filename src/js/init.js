@@ -1094,6 +1094,12 @@ export default {
     cd.g.NOTIFICATION_AREA = document.querySelector('.mw-notification-area');
     cd.g.TOC_BUTTON = $('#vector-toc-collapsed-button').get(0);
 
+    cd.g.API_ERRORS_FORMAT_HTML = {
+      errorformat: 'html',
+      errorlang: cd.g.USER_LANGUAGE,
+      errorsuselocal: true,
+    };
+
     cd.settings = settings;
 
     cd.tests.processPageInBackground = updateChecker.processPage.bind(updateChecker);

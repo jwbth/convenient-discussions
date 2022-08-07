@@ -368,6 +368,8 @@ export class Page {
       useskin: cd.g.SKIN,
       redirects: true,
       prop: ['text', 'revid', 'modules', 'jsconfigvars', 'sections'],
+
+      ...cd.g.API_ERRORS_FORMAT_HTML,
     };
     const options = Object.assign({}, defaultOptions, customOptions);
 
@@ -486,9 +488,7 @@ export class Page {
       // Should be `undefined` instead of `null`, otherwise will be interepreted as a string.
       tags: cd.user.isRegistered() && cd.config.tagName || undefined,
 
-      errorformat: 'html',
-      errorlang: cd.g.USER_LANGUAGE,
-      errorsuselocal: true,
+      ...cd.g.API_ERRORS_FORMAT_HTML,
     };
     const options = controller.getApi().assertCurrentUser(
       Object.assign({}, defaultOptions, customOptions)

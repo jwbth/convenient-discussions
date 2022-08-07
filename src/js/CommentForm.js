@@ -2648,9 +2648,7 @@ class CommentForm {
         'totext-main': code,
         topst: true,
         prop: 'diff',
-        errorformat: 'html',
-        errorlang: cd.g.USER_LANGUAGE,
-        errorsuselocal: true,
+        ...cd.g.API_ERRORS_FORMAT_HTML,
       };
       if (this.sectionSubmitted || !mw.config.get('wgArticleId')) {
         options.fromslots = 'main';
@@ -2858,8 +2856,8 @@ class CommentForm {
             messageType = 'notice';
           }
 
-          // FIXME: We don't pass apiData to prevent the message for "missingtitle" to be overriden,
-          // which is hacky.
+          // FIXME: We don't pass `apiData` to prevent the message for `missingtitle` to be
+          // overriden, which is hacky.
           this.handleError({
             type,
             message,
