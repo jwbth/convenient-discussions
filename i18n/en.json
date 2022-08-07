@@ -67,7 +67,7 @@
   "section-metadata-commentcount": "$1 {{plural:$1|comment|comments}}",
   "section-metadata-commentcount-new": "+$1 {{plural:$1|new}}",
   "section-metadata-authorcount": "$1 {{plural:$1|person|people}}",
-  "section-metadata-lastcomment": "Last comment:",
+  "section-metadata-lastcomment": "Latest comment:",
 
   "cld-title-comment": "Copy comment link",
   "cld-title-section": "Copy section link",
