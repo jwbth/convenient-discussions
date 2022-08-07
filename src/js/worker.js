@@ -64,6 +64,79 @@ function setAlarm(interval) {
  */
 
 /**
+ * Find comment signatures and section headings on the page.
+ *
+ * @param {Parser} parser
+ * @returns {object[]}
+ * @private
+ */
+function findTargets(parser) {
+  parser.processAndRemoveDtMarkup();
+  const headings = parser.findHeadings();
+  const timestamps = parser.findTimestamps();
+  const signatures = parser.findSignatures(timestamps);
+  return headings
+    .concat(signatures)
+    .sort((t1, t2) => parser.context.follows(t1.element, t2.element) ? 1 : -1);
+}
+
+/**
+ * Parse the comments and modify the related parts of the DOM.
+ *
+ * @param {Parser} parser
+ * @param {object[]} targets
+ * @private
+ */
+function processComments(parser, targets) {
+  targets
+    .filter((target) => target.type === 'signature')
+    .forEach((signature) => {
+      try {
+        cd.comments.push(parser.createComment(signature, targets));
+      } catch (e) {
+        if (!(e instanceof CdError)) {
+          console.error(e);
+        }
+      }
+    });
+}
+
+/**
+ * Parse the sections and modify some parts of them.
+ *
+ * @param {Parser} parser
+ * @param {object[]} targets
+ * @private
+ */
+function processSections(parser, targets) {
+  targets
+    .filter((target) => target.type === 'heading')
+    .forEach((heading) => {
+      try {
+        cd.sections.push(parser.createSection(heading, targets));
+      } catch (e) {
+        if (!(e instanceof CdError)) {
+          console.error(e);
+        }
+      }
+    });
+}
+
+/**
+ * Remove the element's attributes whose names start with "data-".
+ *
+ * @param {external:Element} element
+ * @private
+ */
+function removeDataAttributes(element) {
+  Object.keys(element.attribs).forEach((name) => {
+    if (/^data-/.test(name)) {
+      element.removeAttribute(name);
+    }
+  });
+}
+
+/**
  * Replace a comment element with a marker.
  *
  * @param {external:Element} el
@@ -99,6 +172,129 @@ function hideElement(el, comment) {
 }
 
 /**
+ * Remove unnecessary content, hide dynamic content in a comment.
+ *
+ * @param {CommentSkeleton} comment
+ * @private
+ */
+function filterCommentContent(comment) {
+  comment.hiddenElementsData = [];
+  comment.elementHtmls = comment.elements.map((element) => {
+    if (isHeadingNode(element)) {
+      // Keep only the headline, as other elements contain dynamic identifiers.
+      const headlineElement = element.getElementsByClassName('mw-headline', 1)[0];
+      if (headlineElement) {
+        headlineElement.getElementsByClassName('mw-headline-number', 1)[0]?.remove();
+
+        // Use Array.from, as childNodes is a live collection, and when element is removed or
+        // moved, indexes will change.
+        [...element.childNodes].forEach((el) => {
+          el.remove();
+        });
+        [...headlineElement.childNodes].forEach(element.appendChild.bind(element));
+      }
+    }
+
+    // Data attributes may include dynamic components, for example
+    // https://ru.wikipedia.org/wiki/Проект:Знаете_ли_вы/Подготовка_следующего_выпуска.
+    removeDataAttributes(element);
+    element.getElementsByAttribute(/^data-/).forEach(removeDataAttributes);
+
+    // Empty comment anchors, in most cases added by the script.
+    element.getElementsByTagName('span')
+      .filter((el) => el.attribs.id && Object.keys(el.attribs).length === 1 && !el.textContent)
+      .forEach((el) => {
+        el.remove();
+      });
+
+    element
+      .filterRecursively((node) => node.nodeType === Node.COMMENT_NODE)
+      .forEach((node) => {
+        node.remove();
+      });
+
+    if (element.classList.contains('references') || isMetadataNode(element)) {
+      return hideElement(element, comment).textContent;
+    } else {
+      element
+        .filterRecursively((node) => (
+          node.tagName &&
+          (
+            ['autonumber', 'reference', 'references']
+              .some((name) => node.classList.contains(name)) ||
+
+            // Note that filterRecursively's range includes the root element.
+            isMetadataNode(node)
+          )
+        ))
+        .forEach((el) => {
+          hideElement(el, comment);
+        });
+      return element.outerHTML;
+    }
+  });
+}
+
+/**
+ * Add properties to a comment that will be used to compare its content to the content of a comment
+ * in another revision.
+ *
+ * @param {CommentSkeleton} comment
+ * @private
+ */
+function addCompareHelperProperties(comment) {
+  /*
+    One of the reasons for the existing of this function is that we can't use `outerHTML` for
+    comparing comment revisions as the difference may be in <div> vs. <dd> (<li>) tags in this case:
+
+    This creates a <dd> tag:
+
+      : Comment. [signature]
+
+    This creates a <div> tag for the first comment:
+
+      : Comment. [signature] :: Reply. [signature]
+
+    So the HTML is `<dd><div>...</div><dl>...</dl></dd>`. A newline also appears before `</div>`, so
+    we need to trim.
+  */
+  comment.htmlToCompare = '';
+  comment.textHtmlToCompare = '';
+  comment.headingHtmlToCompare = '';
+  comment.elements.forEach((el) => {
+    let htmlToCompare;
+    if (el.tagName === 'DIV') {
+      // Workaround the bug where the {{smalldiv}} output (or any <div> wrapper around the
+      // comment) is treated differently depending on whether there are replies to that comment.
+      // When there are no, a <li>/<dd> element containing the <div> wrapper is the only comment
+      // part; when there are, the <div> wrapper is.
+      el.classList.remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last');
+      if (!el.getAttribute('class')) {
+        el.removeAttribute('class');
+      }
+      htmlToCompare = Object.keys(el.attribs).length ? el.outerHTML : el.innerHTML;
+    } else {
+      htmlToCompare = el.innerHTML || el.textContent;
+    }
+
+    comment.htmlToCompare += htmlToCompare + '\n';
+    if (isHeadingNode(el)) {
+      comment.headingHtmlToCompare += htmlToCompare;
+    } else {
+      comment.textHtmlToCompare += htmlToCompare + '\n';
+    }
+  });
+  comment.htmlToCompare = comment.htmlToCompare.trim();
+  comment.textHtmlToCompare = comment.textHtmlToCompare.trim();
+  comment.headingHtmlToCompare = comment.headingHtmlToCompare.trim();
+
+  comment.signatureElement.remove();
+  comment.text = comment.elements.map((el) => el.textContent).join('\n').trim();
+
+  comment.elementNames = comment.elements.map((el) => el.tagName);
+}
+
+/**
  * Keep only those values of an object whose names are not in the "dangerous" names list.
  *
  * @param {object} obj
@@ -115,16 +311,62 @@ function keepSafeValues(obj, dangerousKeys) {
 }
 
 /**
- * Remove the element's attributes whose names start with "data-".
+ * Prepare comments and sections for transferring to the main process. Remove unnecessary content
+ * and properties, hide dynamic content, add properties.
  *
- * @param {external:Element} element
+ * @param {Parser} parser
  * @private
  */
-function removeDataAttributes(element) {
-  Object.keys(element.attribs).forEach((name) => {
-    if (/^data-/.test(name)) {
-      element.removeAttribute(name);
-    }
+function prepareCommentsAndSections(parser) {
+  CommentSkeleton.processOutdents(parser);
+
+  cd.comments.forEach((comment) => {
+    filterCommentContent(comment);
+    addCompareHelperProperties(comment);
+  });
+
+  let commentDangerousKeys = [
+    'authorLink',
+    'authorTalkLink',
+    'cachedParent',
+    'elements',
+    'extraSignatures',
+    'highlightables',
+    'parser',
+    'parts',
+    'signatureElement',
+    'timestampElement',
+  ];
+
+  cd.comments.forEach((comment, i) => {
+    comment.children = comment.getChildren();
+    comment.children.forEach((reply) => {
+      reply.parent = comment;
+      reply.isToMe = comment.isOwn;
+    });
+
+    comment.previousComments = cd.comments
+      .slice(Math.max(0, i - 2), i)
+      .reverse();
+
+    keepSafeValues(comment, commentDangerousKeys);
+  });
+
+  let sectionDangerousKeys = [
+    'cachedAncestors',
+    'headingElement',
+    'headlineElement',
+    'lastElement',
+    'lastElementInFirstChunk',
+    'parser',
+  ];
+
+  cd.sections.forEach((section) => {
+    section.parent = section.getParent();
+    section.ancestors = section.getAncestors().map((section) => section.headline);
+    section.oldestCommentId = section.oldestComment?.id;
+
+    keepSafeValues(section, sectionDangerousKeys);
   });
 }
 
@@ -137,7 +379,6 @@ function parse() {
   cd.comments = [];
   cd.sections = [];
 
-  debug.startTimer('worker: process comments');
   const parser = new Parser({
     CommentClass: CommentSkeleton,
     SectionClass: SectionSkeleton,
@@ -159,187 +400,18 @@ function parse() {
     },
   });
 
-  parser.processAndRemoveDtMarkup();
-  const headings = parser.findHeadings();
-  const timestamps = parser.findTimestamps();
-  const signatures = parser.findSignatures(timestamps);
-  const targets = headings
-    .concat(signatures)
-    .sort((t1, t2) => parser.context.follows(t1.element, t2.element) ? 1 : -1);
+  const targets = findTargets(parser);
 
-  targets
-    .filter((target) => target.type === 'signature')
-    .forEach((signature) => {
-      try {
-        cd.comments.push(parser.createComment(signature, targets));
-      } catch (e) {
-        if (!(e instanceof CdError)) {
-          console.error(e);
-        }
-      }
-    });
+  debug.startTimer('worker: process comments');
+  processComments(parser, targets);
   debug.stopTimer('worker: process comments');
 
   debug.startTimer('worker: process sections');
-  targets
-    .filter((target) => target.type === 'heading')
-    .forEach((heading) => {
-      try {
-        cd.sections.push(parser.createSection(heading, targets));
-      } catch (e) {
-        if (!(e instanceof CdError)) {
-          console.error(e);
-        }
-      }
-    });
+  processSections(parser, targets);
   debug.stopTimer('worker: process sections');
 
   debug.startTimer('worker: prepare comments and sections');
-  CommentSkeleton.processOutdents(parser);
-  cd.comments.forEach((comment) => {
-    comment.hiddenElementsData = [];
-    comment.elementHtmls = comment.elements.map((element) => {
-      if (isHeadingNode(element)) {
-        // Keep only the headline, as other elements contain dynamic identificators.
-        const headlineElement = element.getElementsByClassName('mw-headline')[0];
-        if (headlineElement) {
-          headlineElement.getElementsByClassName('mw-headline-number')[0]?.remove();
-
-          // Use Array.from, as childNodes is a live collection, and when element is removed or
-          // moved, indexes will change.
-          [...element.childNodes].forEach((el) => {
-            el.remove();
-          });
-          [...headlineElement.childNodes].forEach(element.appendChild.bind(element));
-        }
-      }
-
-      // Data attributes may include dynamic components, for example
-      // https://ru.wikipedia.org/wiki/Проект:Знаете_ли_вы/Подготовка_следующего_выпуска.
-      removeDataAttributes(element);
-      element.getElementsByAttribute(/^data-/).forEach(removeDataAttributes);
-
-      // Empty comment anchors, in most cases added by the script.
-      element.getElementsByTagName('span')
-        .filter((el) => el.attribs.id && Object.keys(el.attribs).length === 1 && !el.textContent)
-        .forEach((el) => {
-          el.remove();
-        });
-
-      if (element.classList.contains('references') || isMetadataNode(element)) {
-        const textNode = hideElement(element, comment);
-        return textNode.textContent;
-      } else {
-        const elementsToHide = [
-          ...element.getElementsByClassName('autonumber'),
-          ...element.getElementsByClassName('reference'),
-          ...element.getElementsByClassName('references'),
-
-          // Note that getElementsByTagName's range in this implementation of DOM includes the root
-          // element.
-          ...element.getElementsByTagName('style'),
-          ...element.getElementsByTagName('link'),
-        ];
-        elementsToHide.forEach((el) => {
-          hideElement(el, comment);
-        });
-        return element.outerHTML;
-      }
-    });
-
-    /*
-      We can't use outerHTML for comparing comment revisions as the difference may be in div vs. dd
-      (li) tags in this case: This creates a dd tag.
-
-        : Comment. [signature]
-
-      This creates a div tag for the first comment.
-
-        : Comment. [signature]
-        :: Reply. [signature]
-
-      So the HTML is "<dd><div>...</div><dl>...</dl></dd>". A newline also appears before </div>, so
-      we need to trim.
-     */
-    comment.comparedHtml = '';
-    comment.textComparedHtml = '';
-    comment.headingComparedHtml = '';
-    comment.elements.forEach((el) => {
-      let comparedHtml;
-      if (el.tagName === 'DIV') {
-        // Workaround the bug where the {{smalldiv}} output (or any <div> wrapper around the
-        // comment) is treated differently depending on whether there are replies to that comment.
-        // When there are no, a <li>/<dd> element containing the <div> wrapper is the only comment
-        // part; when there are, the <div> wrapper is.
-        el.classList.remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last');
-        if (!el.getAttribute('class')) {
-          el.removeAttribute('class');
-        }
-        comparedHtml = Object.keys(el.attribs).length ? el.outerHTML : el.innerHTML;
-      } else {
-        comparedHtml = el.innerHTML || el.textContent;
-      }
-
-      comment.comparedHtml += comparedHtml + '\n';
-      if (isHeadingNode(el)) {
-        comment.headingComparedHtml += comparedHtml;
-      } else {
-        comment.textComparedHtml += comparedHtml + '\n';
-      }
-    });
-    comment.comparedHtml = comment.comparedHtml.trim();
-    comment.textComparedHtml = comment.textComparedHtml.trim();
-    comment.headingComparedHtml = comment.headingComparedHtml.trim();
-
-    comment.signatureElement.remove();
-    comment.text = comment.elements.map((el) => el.textContent).join('\n').trim();
-
-    comment.elementNames = comment.elements.map((el) => el.tagName);
-  });
-
-  let commentDangerousKeys = [
-    'authorLink',
-    'authorTalkLink',
-    'cachedParent',
-    'elements',
-    'extraSignatures',
-    'highlightables',
-    'parser',
-    'parts',
-    'signatureElement',
-    'timestampElement',
-  ];
-  let sectionDangerousKeys = [
-    'cachedAncestors',
-    'headingElement',
-    'headlineElement',
-    'lastElement',
-    'lastElementInFirstChunk',
-    'parser',
-  ];
-
-  cd.comments.forEach((comment, i) => {
-    comment.children = comment.getChildren();
-    comment.children.forEach((reply) => {
-      reply.parent = comment;
-      reply.isToMe = comment.isOwn;
-    });
-
-    comment.previousComments = cd.comments
-      .slice(Math.max(0, i - 2), i)
-      .reverse();
-
-    keepSafeValues(comment, commentDangerousKeys);
-  });
-
-  cd.sections.forEach((section) => {
-    section.parent = section.getParent();
-    section.ancestors = section.getAncestors().map((section) => section.headline);
-    section.oldestCommentId = section.oldestComment?.id;
-
-    keepSafeValues(section, sectionDangerousKeys);
-  });
-
+  prepareCommentsAndSections(parser);
   debug.stopTimer('worker: prepare comments and sections');
 }
 

@@ -5,6 +5,7 @@ import { decodeHtmlEntities } from './util';
 self.Node = {
   ELEMENT_NODE: 1,
   TEXT_NODE: 3,
+  COMMENT_NODE: 8,
 };
 
 /**
@@ -336,11 +337,20 @@ Element.prototype.getElementsByClassName = function (name, limit) {
   return nodes;
 };
 
+Element.prototype.filterRecursively = function (func) {
+  let nodes = [];
+  walkThroughSubtree(this, (node) => {
+    if (func(node)) {
+      nodes.push(node);
+    }
+  });
+  return nodes;
+};
+
 Element.prototype.getElementsByAttribute = function (regexp) {
   let nodes = [];
   walkThroughSubtree(this, (node) => {
-    if (node.tagName) {
-      Object.keys(node.attribs).some((name) => regexp.test(name))
+    if (node.tagName && Object.keys(node.attribs).some((name) => regexp.test(name))) {
       nodes.push(node);
     }
   });

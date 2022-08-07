@@ -401,8 +401,8 @@ async function checkForUpdates() {
 }
 
 /**
- * Determine if the comment has changed (probably edited) based on the `textComparedHtml` and
- * `headingComparedHtml` properties (the comment may lose its heading because technical comment is
+ * Determine if the comment has changed (probably edited) based on the `textHtmlToCompare` and
+ * `headingHtmlToCompare` properties (the comment may lose its heading because technical comment is
  * added between it and the heading).
  *
  * @param {import('./CommentSkeleton').CommentSkeletonLike[]} olderComment
@@ -412,10 +412,10 @@ async function checkForUpdates() {
  */
 function hasCommentChanged(olderComment, newerComment) {
   return (
-    newerComment.textComparedHtml !== olderComment.textComparedHtml ||
+    newerComment.textHtmlToCompare !== olderComment.textHtmlToCompare ||
     (
-      newerComment.headingComparedHtml &&
-      newerComment.headingComparedHtml !== olderComment.headingComparedHtml
+      newerComment.headingHtmlToCompare &&
+      newerComment.headingHtmlToCompare !== olderComment.headingHtmlToCompare
     )
   );
 }
@@ -438,10 +438,10 @@ function checkForChangesSincePreviousVisit(currentComments) {
 
     const oldComment = currentComment.match;
     if (oldComment) {
-      const seenComparedHtml = seenRenderedChanges[articleId]?.[currentComment.id]?.comparedHtml;
+      const seenHtmlToCompare = seenRenderedChanges[articleId]?.[currentComment.id]?.htmlToCompare;
       if (
         hasCommentChanged(oldComment, currentComment) &&
-        seenComparedHtml !== currentComment.comparedHtml
+        seenHtmlToCompare !== currentComment.htmlToCompare
       ) {
         const comment = Comment.getById(currentComment.id);
         if (!comment) return;
@@ -518,12 +518,12 @@ function checkForNewChanges(currentComments) {
       }
       if (hasCommentChanged(currentComment, newComment)) {
         // The comment may have already been updated previously.
-        if (!comment.comparedHtml || comment.comparedHtml !== newComment.comparedHtml) {
+        if (!comment.htmlToCompare || comment.htmlToCompare !== newComment.htmlToCompare) {
           const updateSuccess = comment.update(currentComment, newComment);
 
           // It is above the Comment#markAsChanged call, because it's used in Comment#flashChanged
           // called indirectly by Comment#markAsChanged.
-          comment.comparedHtml = newComment.comparedHtml;
+          comment.htmlToCompare = newComment.htmlToCompare;
 
           comment.markAsChanged('changed', updateSuccess, lastCheckedRevisionId, commentsData);
           isChangeMarkUpdated = true;

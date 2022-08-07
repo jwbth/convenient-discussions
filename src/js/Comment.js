@@ -1906,7 +1906,7 @@ class Comment extends CommentSkeleton {
       const articleId = mw.config.get('wgArticleId');
       seenRenderedChanges[articleId] = seenRenderedChanges[articleId] || {};
       seenRenderedChanges[articleId][this.id] = {
-        comparedHtml: this.comparedHtml,
+        htmlToCompare: this.htmlToCompare,
         seenUnixTime: Date.now(),
       };
       saveToLocalStorage('seenRenderedChanges', seenRenderedChanges);
