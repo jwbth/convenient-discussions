@@ -863,18 +863,12 @@ class Section extends SectionSkeleton {
         }
       }
     } else {
-      let n = this.headlineElement;
-      let subscribeIdNode;
+      let n = this.headingElement.firstChild;
       while ((n = n.nextSibling)) {
-        if (n.nodeType === Node.COMMENT_NODE) {
-          subscribeIdNode = n;
+        if (n.nodeType === Node.COMMENT_NODE && n.textContent.includes('__DTSUBSCRIBELINK__')) {
+          [, this.subscribeId] = n.textContent.match('__DTSUBSCRIBELINK__(.+)') || [];
           break;
         }
-      }
-
-      if (subscribeIdNode) {
-        const [, subscribeId] = subscribeIdNode.textContent.match('__DTSUBSCRIBELINK__(.+)') || [];
-        this.subscribeId = subscribeId;
       }
     }
   }
