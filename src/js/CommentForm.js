@@ -3114,9 +3114,7 @@ class CommentForm {
     } else if (this.mode === 'edit') {
       this.target.$elements.removeClass('cd-hidden');
       if (this.target.isOpeningSection) {
-        $(this.target.section.barElement)
-          .add(this.target.section.headingWrapper)
-          .removeClass('cd-hidden');
+        $(this.target.section.barElement).removeClass('cd-hidden');
       }
       this.target.scrollIntoView('top');
       this.target.configureLayers();

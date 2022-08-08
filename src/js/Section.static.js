@@ -212,7 +212,7 @@ export default {
 
     let top;
     cd.sections.some((section) => {
-      const rect = getExtendedRect(section.firstElement);
+      const rect = getExtendedRect(section.headingElement);
 
       // The third check to exclude the possibility that the first section is above the TOC, like
       // at https://commons.wikimedia.org/wiki/Project:Graphic_Lab/Illustration_workshop.
@@ -272,7 +272,7 @@ export default {
       firstSectionToHide = cd.sections
         .filter((section) => !currentSection || section.index > currentSection.index)
         .find((section) => {
-          const rect = section.firstElement.getBoundingClientRect();
+          const rect = section.headingElement.getBoundingClientRect();
           let blockSize = 10000;
           return (
             getVisibilityByRects(rect) &&
@@ -307,7 +307,7 @@ export default {
 
         if (!section.elements) {
           section.elements = controller.getRangeContents(
-            section.firstElement,
+            section.headingElement,
             section.findRealLastElement()
           );
         }

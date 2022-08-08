@@ -137,13 +137,8 @@ ol .cd-section-button {
 
     // Prevent "float: right" from affecting the right offset of the actions block of the next
     // subsection.
-    + .cd-heading-wrapper {
-      margin-top: 3em;
-
-      > :first-child {
-        margin-top: 0;
-        padding-top: 0;
-      }
+    + .cd-subsection-heading {
+      margin-top: 2.25rem;
     }
   }
 }
@@ -154,35 +149,32 @@ ol .cd-section-button {
 
 .cd-section-metadata,
 .cd-section-actions {
-  font-size: 0.9285714em;
+  font-size: 0.8125rem;
 }
 
 .cd-section-actions {
+  font-weight: normal;
   white-space: nowrap;
 
   .sitedir-ltr &,
   .sitedir-rtl .mw-content-ltr & {
     margin-left: auto;
-    margin-right: -0.5384615em;
+    margin-right: -0.4615385em;
     padding-left: 1em;
   }
 
   .sitedir-rtl &,
   .sitedir-ltr .mw-content-rtl & {
-    margin-left: -0.5384615em;
+    margin-left: -0.4615385em;
     margin-right: auto;
     padding-right: 1em;
   }
 }
 
-.cd-heading-wrapper {
+.cd-subsection-heading {
   display: flex;
   align-items: baseline;
-
-  // Fix for vertical alignment in Firefox
-  > :first-child {
-    overflow: unset;
-  }
+  overflow: unset;
 }
 
 .cd-section-hidden {
