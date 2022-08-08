@@ -5,7 +5,7 @@
  */
 
 import CONFIG_URLS from '../../config/urls.json';
-import Comment from './Comment';
+import CommentStatic from './CommentStatic';
 import I18N_LIST from '../../data/i18nList.json';
 import LANGUAGE_FALLBACKS from '../../data/languageFallbacks.json';
 import cd from './cd';
@@ -486,14 +486,14 @@ function setupApi() {
    * @function generateCommentId
    * @memberof convenientDiscussions.api
    */
-  cd.api.generateCommentId = Comment.generateId.bind(Comment);
+  cd.api.generateCommentId = CommentStatic.generateId.bind(CommentStatic);
 
   /**
-   * @see Comment.parseId
+   * @see module:CommentStatic.parseId
    * @function parseCommentId
    * @memberof convenientDiscussions.api
    */
-  cd.api.parseCommentId = Comment.parseId.bind(Comment);
+  cd.api.parseCommentId = CommentStatic.parseId.bind(CommentStatic);
 
   /**
    * @see module:util.buildEditSummary

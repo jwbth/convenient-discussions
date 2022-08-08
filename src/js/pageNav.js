@@ -7,7 +7,7 @@
  */
 
 import Button from './Button';
-import Section from './Section';
+import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
 import toc from './toc';
@@ -96,7 +96,10 @@ export default {
       }
     }
 
-    const firstSectionTop = Section.getFirstSectionRelativeTopOffset(scrollY, afterLeadOffset);
+    const firstSectionTop = SectionStatic.getFirstSectionRelativeTopOffset(
+      scrollY,
+      afterLeadOffset
+    );
     if (!afterLeadOffset) {
       afterLeadOffset = firstSectionTop;
     }
@@ -203,7 +206,7 @@ export default {
       return;
     }
 
-    const updatedCurrentSection = Section.getCurrentSection();
+    const updatedCurrentSection = SectionStatic.getCurrentSection();
     if (!updatedCurrentSection || updatedCurrentSection === currentSection) return;
 
     currentSection = updatedCurrentSection;

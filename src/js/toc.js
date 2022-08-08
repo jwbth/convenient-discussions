@@ -6,6 +6,7 @@
 
 import CdError from './CdError';
 import Comment from './Comment';
+import CommentStatic from './CommentStatic';
 import LiveTimestamp from './LiveTimestamp';
 import cd from './cd';
 import controller from './controller';
@@ -430,7 +431,7 @@ const toc = {
   /**
    * Get the element to add a comment list after for a section.
    *
-   * @param {import('./SectionSkeleton').SectionSkeletonLike[]} section Section.
+   * @param {import('./SectionSkeleton').SectionSkeletonLike[]} section SectionStatic.
    * @param {boolean} areCommentsRendered Whether the comments are rendered (visible on the page).
    * @returns {?object}
    * @private
@@ -475,7 +476,7 @@ const toc = {
   handleCommentClick(e) {
     e.preventDefault();
     const id = e.currentTarget.getAttribute('href').slice(1);
-    const comment = Comment.getByAnyId(id);
+    const comment = CommentStatic.getByAnyId(id);
     if (comment) {
       comment.scrollTo({
         smooth: false,

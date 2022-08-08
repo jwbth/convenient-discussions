@@ -3,7 +3,7 @@ import CdError from './CdError';
 import CommentForm from './CommentForm';
 import LiveTimestamp from './LiveTimestamp';
 import SectionSkeleton from './SectionSkeleton';
-import SectionStatic from './Section.static';
+import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
@@ -996,7 +996,7 @@ class Section extends SectionSkeleton {
     // That's a mechanism mainly for legacy subscriptions but can be used for DT subscriptions as
     // well, for which `sections` will have more than one section when there is more than one
     // section created by a certain user at a certain moment in time.
-    const sections = Section.getBySubscribeId(this.subscribeId);
+    const sections = SectionStatic.getBySubscribeId(this.subscribeId);
     let finallyCallback;
     if (mode !== 'silent') {
       const buttons = sections.map((section) => section.actions.subscribeButton).filter(defined);
@@ -1010,7 +1010,7 @@ class Section extends SectionSkeleton {
       };
     }
 
-    const unsubscribeHeadline = renamedFrom && !Section.getBySubscribeId(renamedFrom).length ?
+    const unsubscribeHeadline = renamedFrom && !SectionStatic.getBySubscribeId(renamedFrom).length ?
       renamedFrom :
       undefined;
     subscriptions.subscribe(this.subscribeId, this.id, unsubscribeHeadline)
@@ -1049,7 +1049,7 @@ class Section extends SectionSkeleton {
    *     is an error, it will be displayed though.
    */
   unsubscribe(mode) {
-    const sections = Section.getBySubscribeId(this.subscribeId);
+    const sections = SectionStatic.getBySubscribeId(this.subscribeId);
     let finallyCallback;
     if (mode !== 'silent') {
       const buttons = sections.map((section) => section.actions.subscribeButton).filter(defined);
@@ -1110,7 +1110,7 @@ class Section extends SectionSkeleton {
     );
     const $dummy = $('<span>').html($(html).html());
     const oldSection = { headlineElement: $dummy.get(0) };
-    Section.prototype.parseHeadline.call(oldSection);
+    SectionStatic.prototype.parseHeadline.call(oldSection);
     const newHeadline = this.headline;
     if (
       newHeadline &&
@@ -1784,7 +1784,7 @@ class Section extends SectionSkeleton {
   ensureSubscribeIdPresent(timestamp) {
     if (!settings.get('useTopicSubscription') || this.subscribeId) return;
 
-    this.subscribeId = Section.generateDtSubscriptionId(cd.user.getName(), timestamp);
+    this.subscribeId = SectionStatic.generateDtSubscriptionId(cd.user.getName(), timestamp);
   }
 
   /**
@@ -1818,7 +1818,5 @@ class Section extends SectionSkeleton {
     return realLastElement;
   }
 }
-
-Object.assign(Section, SectionStatic);
 
 export default Section;

@@ -1,4 +1,11 @@
+/**
+ * Static {@link Comment comment} methods and properties.
+ *
+ * @module CommentStatic
+ */
+
 import Comment from './Comment';
+import CommentSkeleton from './CommentSkeleton';
 import cd from './cd';
 import controller from './controller';
 import navPanel from './navPanel';
@@ -30,8 +37,8 @@ const dtIdRegexp = new RegExp(
  * Add all comment's children, including indirect, into array, if they are in the array of new
  * comments.
  *
- * @param {import('./CommentSkeleton').default} childComment
- * @param {import('./CommentSkeleton').default[]} arr
+ * @param {CommentSkeleton} childComment
+ * @param {CommentSkeleton[]} arr
  * @param {number[]} newCommentIndexes
  * @private
  */
@@ -47,10 +54,10 @@ function searchForNewCommentsInSubtree(childComment, arr, newCommentIndexes) {
 /**
  * Add an individual new comments notification to a thread or section.
  *
- * @param {import('./CommentSkeleton').default[]} comments
+ * @param {CommentSkeleton[]} comments
  * @param {Comment|import('./Section').default} parent
  * @param {'thread'|'section'} type
- * @param {import('./CommentSkeleton').default[]} newCommentIndexes
+ * @param {CommentSkeleton[]} newCommentIndexes
  * @private
  */
 function addNewCommentsNote(comments, parent, type, newCommentIndexes) {
@@ -120,12 +127,14 @@ function addNewCommentsNote(comments, parent, type, newCommentIndexes) {
   }
 }
 
-export default {
+/**
+ * @exports CommentStatic
+ */
+const CommentStatic = {
   /**
    * List of the underlays.
    *
    * @type {Element[]}
-   * @memberof Comment
    */
   underlays: [],
 
@@ -133,7 +142,6 @@ export default {
    * List of the containers of layers.
    *
    * @type {Element[]}
-   * @memberof Comment
    */
   layersContainers: [],
 
@@ -141,7 +149,6 @@ export default {
    * Configure and add layers for a group of comments.
    *
    * @param {Comment[]} comments
-   * @memberof Comment
    */
   configureAndAddLayers(comments) {
     const floatingRects = comments.length ?
@@ -170,7 +177,6 @@ export default {
    *   bottom of the page extending it to the bottom.
    * @param {boolean} [redrawAll] Whether to redraw all layers and not stop at first three unmoved.
    * @param {object} [floatingRects]
-   * @memberof Comment
    */
   redrawLayersIfNecessary(removeUnhighlighted = false, redrawAll = false, floatingRects) {
     if (controller.isBooting() || (document.hidden && !redrawAll)) return;
@@ -248,8 +254,6 @@ export default {
   /**
    * _For internal use._ Empty the underlay registry and the layers container elements. Done on page
    * reload.
-   *
-   * @memberof Comment
    */
   resetLayers() {
     this.underlays = [];
@@ -261,8 +265,6 @@ export default {
   /**
    * _For internal use._ Mark comments that are currently in the viewport as read, and also
    * {@link Comment#flash flash} comments that are prescribed to flash.
-   *
-   * @memberof Comment
    */
   registerSeen() {
     if (document.hidden) return;
@@ -300,7 +302,6 @@ export default {
    *
    * @param {import('./CommentSkeleton').CommentSkeletonLike[]|Comment[]} comments
    * @returns {Map}
-   * @memberof Comment
    */
   groupBySection(comments) {
     const commentsBySection = new Map();
@@ -320,7 +321,6 @@ export default {
    * @param {string} [findClosestDirection] If there is no comment in the viewport, find the closest
    *   comment in the specified direction.
    * @returns {?Comment}
-   * @memberof Comment
    */
   findInViewport(findClosestDirection) {
     // Reset the `roughOffset` property. It is used only within this method.
@@ -465,7 +465,6 @@ export default {
    * cursor is between comment parts, not over them.
    *
    * @param {Event} e
-   * @memberof Comment
    */
   highlightHovered(e) {
     const isObstructingElementHovered = (
@@ -522,7 +521,6 @@ export default {
    *   may be different). If `true`, we allow the time on the page to be 1-3 minutes less than the
    *   edit time.
    * @returns {?Comment}
-   * @memberof Comment
    */
   getById(id, impreciseDate = false) {
     if (!cd.comments || !id) {
@@ -550,7 +548,6 @@ export default {
    * @param {boolean} [returnComponents=false] Whether to return the constituents of the ID (as an
    *   object) together with a comment.
    * @returns {?(Comment|object)}
-   * @memberof Comment
    */
   getByDtId(id, returnComponents = false) {
     const data = this.parseDtId(id);
@@ -592,18 +589,17 @@ export default {
    *   date (but these may be different). If `true`, we allow the time on the page to be 1-3 minutes
    *   less than the edit time.
    * @returns {?Comment}
-   * @memberof Comment
    */
   getByAnyId(id, impreciseDate = false) {
-    return Comment.isId(id) ? Comment.getById(id, impreciseDate) : Comment.getByDtId(id);
+    return this.isId(id) ?
+      this.getById(id, impreciseDate) :
+      this.getByDtId(id);
   },
 
   /**
    * _For internal use._ Filter out floating and hidden elements from all the comments'
    * {@link CommentSkeleton#highlightables highlightables}, change their attributes, and update the
    * comments' level and parent elements' level classes.
-   *
-   * @memberof Comment
    */
   reviewHighlightables() {
     cd.comments.forEach((comment) => {
@@ -616,7 +612,6 @@ export default {
    * _For internal use._ Add new comments notifications to threads and sections.
    *
    * @param {Map} newComments
-   * @memberof Comment
    */
   addNewCommentsNotes(newComments) {
     controller.saveRelativeScrollPosition();
@@ -673,8 +668,6 @@ export default {
   /**
    * _For internal use._ Reformat the comments (moving the author and date up and links down) if the
    * relevant setting is enabled.
-   *
-   * @memberof Comment
    */
   async reformatComments() {
     if (settings.get('reformatComments')) {
@@ -713,8 +706,6 @@ export default {
 
   /**
    * _For internal use._ Change the format of the comment timestamps according to the settings.
-   *
-   * @memberof Comment
    */
   reformatTimestamps() {
     if (!cd.g.ARE_TIMESTAMPS_ALTERED) return;
@@ -728,7 +719,6 @@ export default {
    * Change the state of all comments to unselected.
    *
    * @private
-   * @memberof Comment
    */
   resetSelectedComment() {
     const comment = cd.comments.find((comment) => comment.isSelected);
@@ -742,7 +732,6 @@ export default {
    * Determine which comment on the page is selected.
    *
    * @returns {?Comment}
-   * @memberof Comment
    */
   getSelectedComment() {
     const selection = window.getSelection();
@@ -779,7 +768,6 @@ export default {
    * @param {string} author
    * @returns {Comment}
    * @private
-   * @memberof Comment
    */
   findPreviousCommentByTime(date, author) {
     return cd.comments
@@ -797,7 +785,6 @@ export default {
    * @typedef {object} ParseIdReturn
    * @property {Date} date
    * @property {string} author
-   * @memberof Comment
    * @inner
    */
 
@@ -808,7 +795,6 @@ export default {
    *
    * @param {string} id
    * @returns {?ParseIdReturn}
-   * @memberof Comment
    */
   parseId(id) {
     const match = id.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})_(.+)$/);
@@ -833,7 +819,6 @@ export default {
    *
    * @param {string} id Comment ID in the DiscussionTools format.
    * @returns {?object}
-   * @memberof Comment
    */
   parseDtId(id) {
     const match = id.match(dtIdRegexp);
@@ -869,7 +854,6 @@ export default {
    * _For internal use._ Add available DiscussionTools IDs to respective comments.
    *
    * @param {string[]} ids
-   * @memberof Comment
    */
   setDtIds(ids) {
     ids.forEach((id) => {
@@ -882,8 +866,6 @@ export default {
 
   /**
    * _For internal use._ Set the {@link Comment#isInSingleCommentTable} property for each comment.
-   *
-   * @memberof Comment
    */
   setInSingleCommentTableProperty() {
     // Faster than doing it for every individual comment.
@@ -985,8 +967,6 @@ export default {
 
   /**
    * _For internal use._ Perform some DOM-related tasks after parsing comments.
-   *
-   * @memberof Comment
    */
   adjustDom() {
     this.mergeAdjacentCommentLevels();
@@ -1054,3 +1034,15 @@ export default {
     });
   },
 };
+
+// Move static properties from `CommentSkeleton` to `CommentStatic` so that it acts like real
+// inheritor.
+const CommentSkeletonStatic = Object.entries(Object.getOwnPropertyDescriptors(CommentSkeleton))
+  .filter(([, descriptor]) => descriptor.writable)
+  .reduce((obj, [name, descriptor]) => {
+    obj[name] = descriptor.value;
+    return obj;
+  }, {});
+Object.assign(CommentStatic, CommentSkeletonStatic);
+
+export default CommentStatic;

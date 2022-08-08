@@ -7,10 +7,11 @@
 
 import BootProcess from './BootProcess';
 import Comment from './Comment';
-import CommentForm from './CommentForm';
+import CommentFormStatic from './CommentFormStatic';
+import CommentStatic from './CommentStatic';
 import LiveTimestamp from './LiveTimestamp';
 import Parser from './Parser';
-import Section from './Section';
+import SectionStatic from './SectionStatic';
 import Thread from './Thread';
 import Worker from './worker-gate';
 import addCommentLinks from './addCommentLinks';
@@ -816,7 +817,7 @@ export default {
     // Don't throttle. Without throttling performance is generally OK, while the "frame rate" is
     // about 50 (so, the reaction time is about 20ms). Lower values which should be less
     // comfortable.
-    Comment.highlightHovered(e);
+    CommentStatic.highlightHovered(e);
   },
 
   /**
@@ -826,10 +827,10 @@ export default {
     // setTimeout, because it seems like sometimes it doesn't have time to update.
     setTimeout(() => {
       this.getContentColumnOffsets(true);
-      Comment.redrawLayersIfNecessary(true);
+      CommentStatic.redrawLayersIfNecessary(true);
       Thread.updateLines();
       pageNav.updateWidth();
-      CommentForm.adjustLabels();
+      CommentFormStatic.adjustLabels();
       this.handleScroll();
     }, cd.g.SKIN === 'vector-2022' ? 100 : 0);
   },
@@ -849,12 +850,12 @@ export default {
       // Q
       (keyCombination(e, 81) && !isInputFocused())
     ) {
-      const lastActiveCommentForm = CommentForm.getLastActive();
+      const lastActiveCommentForm = CommentFormStatic.getLastActive();
       if (lastActiveCommentForm) {
         e.preventDefault();
         lastActiveCommentForm.quote(isCmdModifierPressed(e));
       } else {
-        const comment = Comment.getSelectedComment();
+        const comment = CommentStatic.getSelectedComment();
         if (comment?.isActionable) {
           e.preventDefault();
           comment.reply();
@@ -904,7 +905,7 @@ export default {
       if (this.isAutoScrolling()) return;
 
       if (this.isPageActive()) {
-        Comment.registerSeen();
+        CommentStatic.registerSeen();
         navPanel.updateCommentFormButton();
       }
       pageNav.update();
@@ -921,7 +922,7 @@ export default {
     }
     this.lastScrollX = window.scrollX;
 
-    Section.maybeUpdateVisibility();
+    SectionStatic.maybeUpdateVisibility();
   },
 
   /**
@@ -938,7 +939,7 @@ export default {
    */
   handlePopState() {
     let fragment = location.hash.slice(1);
-    if (Comment.isAnyId(fragment)) {
+    if (CommentStatic.isAnyId(fragment)) {
       // Don't jump to the comment if the user pressed Back/Forward in the browser or if
       // history.pushState() is called from Comment#scrollTo() (after clicks on added (gray) items
       // in the TOC). A marginal state of this happening is when a page with a comment ID in the
@@ -951,7 +952,7 @@ export default {
         console.error(e);
         return;
       }
-      Comment.getByAnyId(fragment, true)?.scrollTo();
+      CommentStatic.getByAnyId(fragment, true)?.scrollTo();
     }
 
     // Make sure the title has no incorrect new comment count when the user presses the Back button
@@ -963,7 +964,7 @@ export default {
    * _For internal use._ Handle a `selectionChange` event.
    */
   handleSelectionChange() {
-    postponements.add('selectionChange', Comment.getSelectedComment.bind(Comment), 200);
+    postponements.add('selectionChange', CommentStatic.getSelectedComment.bind(CommentStatic), 200);
   },
 
   /**
@@ -974,7 +975,7 @@ export default {
 
     const floatingRects = this.getFloatingElements().map(getExtendedRect);
 
-    Comment.redrawLayersIfNecessary(false, false, floatingRects);
+    CommentStatic.redrawLayersIfNecessary(false, false, floatingRects);
 
     const updateThreadLines = () => {
       Thread.updateLines(floatingRects);
@@ -1038,7 +1039,7 @@ export default {
     }
 
     e.preventDefault();
-    CommentForm.createAddSectionForm(preloadConfig, newTopicOnTop);
+    CommentFormStatic.createAddSectionForm(preloadConfig, newTopicOnTop);
   },
 
   /**
@@ -1276,13 +1277,13 @@ export default {
     // anything if we remove the layers containers. And we better do so to avoid comment layers
     // hanging around without their owner comments.
     if (bootProcess.data('isPageReloadedExternally')) {
-      Comment.resetLayers();
+      CommentStatic.resetLayers();
     }
 
     // A check in light of the existence of RevisionSlider.
     if (this.isCurrentRevision()) {
       // In case checkboxes were changed programmatically.
-      CommentForm.saveSession();
+      CommentFormStatic.saveSession();
     }
 
     if (!bootProcess.data('commentIds') && !bootProcess.data('sectionId')) {
@@ -1338,7 +1339,7 @@ export default {
     // current page state.
     this.bootProcess = bootProcess;
 
-    CommentForm.detach();
+    CommentFormStatic.detach();
     this.cleanUpUrlAndDom();
     LiveTimestamp.reset();
     this.mutationObserver?.disconnect();
@@ -1833,7 +1834,7 @@ export default {
   /**
    * Show a copy link dialog.
    *
-   * @param {Comment|Section} object Comment or section to copy a link to.
+   * @param {Comment|import('./Section').default} object Comment or section to copy a link to.
    * @param {Event} e
    */
   showCopyLinkDialog(object, e) {

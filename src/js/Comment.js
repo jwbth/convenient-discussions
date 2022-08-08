@@ -3,7 +3,7 @@ import CdError from './CdError';
 import CommentButton from './CommentButton';
 import CommentForm from './CommentForm';
 import CommentSkeleton from './CommentSkeleton';
-import CommentStatic from './Comment.static';
+import CommentStatic from './CommentStatic';
 import CommentSubitemList from './CommentSubitemList';
 import LiveTimestamp from './LiveTimestamp';
 import cd from './cd';
@@ -1398,7 +1398,7 @@ class Comment extends CommentSkeleton {
    */
   createLayers() {
     this.underlay = elementPrototypes.underlay.cloneNode(true);
-    Comment.underlays.push(this.underlay);
+    CommentStatic.underlays.push(this.underlay);
 
     this.overlay = elementPrototypes.overlay.cloneNode(true);
     this.line = this.overlay.firstChild;
@@ -1582,8 +1582,8 @@ class Comment extends CommentSkeleton {
    * layers.
    */
   updateLayersOffset() {
-    // The underlay can be absent if called from Comment.redrawLayersIfNecessary with redrawAll set
-    // to true.
+    // The underlay can be absent if called from `CommentStatic.redrawLayersIfNecessary` with
+    // `redrawAll` set to `true`.
     if (!this.underlay) return;
 
     this.underlay.style.top = this.overlay.style.top = this.layersOffset.top + 'px';
@@ -1599,7 +1599,7 @@ class Comment extends CommentSkeleton {
     if (!this.underlay) return;
 
     this.$animatedBackground?.add(this.$marker).stop(true, true);
-    Comment.underlays.splice(Comment.underlays.indexOf(this.underlay), 1);
+    CommentStatic.underlays.splice(CommentStatic.underlays.indexOf(this.underlay), 1);
 
     this.dontHideMenu();
 
@@ -1668,7 +1668,7 @@ class Comment extends CommentSkeleton {
       }
       this.layersContainer = container;
 
-      addToArrayIfAbsent(Comment.layersContainers, container);
+      addToArrayIfAbsent(CommentStatic.layersContainers, container);
     }
 
     return this.layersContainer;
@@ -2197,9 +2197,9 @@ class Comment extends CommentSkeleton {
       case 'deleted':
         this.isDeleted = false;
 
-        // `Comment.redrawLayersIfNecessary()`, that is called on DOM updates, could circumvent this
-        // comment if it has no property signalling that it should be highlighted, so we update its
-        // styles manually.
+        // `Comments.redrawLayersIfNecessary()`, that is called on DOM updates, could circumvent
+        // this comment if it has no property signalling that it should be highlighted, so we update
+        // its styles manually.
         this.updateLayersStyles();
 
         break;
@@ -2719,7 +2719,7 @@ class Comment extends CommentSkeleton {
     if (!this.replyForm) {
       let isSelectionRelevant = false;
       if (!initialState) {
-        isSelectionRelevant = Comment.getSelectedComment() === this;
+        isSelectionRelevant = CommentStatic.getSelectedComment() === this;
         if (isSelectionRelevant) {
           initialState = { focus: false };
 
@@ -4167,7 +4167,5 @@ class Comment extends CommentSkeleton {
     }
   }
 }
-
-Object.assign(Comment, CommentStatic);
 
 export default Comment;

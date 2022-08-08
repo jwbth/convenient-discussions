@@ -11,8 +11,8 @@ import {
 } from './util';
 
 /**
- * Class containing the main properties of a comment. This class is the only one used in the worker
- * context for comments.
+ * Class containing the main properties of a comment. It is extended by {@link Comment}. This class
+ * is the only one used in the worker context for comments.
  *
  * @class
  */

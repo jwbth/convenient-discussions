@@ -7,12 +7,12 @@
  * @module init
  */
 
-import Comment from './Comment';
-import CommentForm from './CommentForm';
+import CommentFormStatic from './CommentFormStatic';
+import CommentStatic from './CommentStatic';
 import DATE_FORMATS from '../../data/dateFormats.json';
 import DIGITS from '../../data/digits.json';
 import LANGUAGE_FALLBACKS from '../../data/languageFallbacks.json';
-import Section from './Section';
+import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
 import jqueryExtensions from './jqueryExtensions';
@@ -1111,46 +1111,47 @@ export default {
     /* Some static methods for external use */
 
     /**
-     * @see Comment.getById
+     * @see module:CommentStatic.getById
      * @function getCommentById
      * @memberof convenientDiscussions.api
      */
-    cd.api.getCommentById = Comment.getById.bind(Comment);
+    cd.api.getCommentById = CommentStatic.getById.bind(CommentStatic);
 
     /**
-     * @see Comment.getByDtId
+     * @see module:CommentStatic.getByDtId
      * @function getCommentByDtId
      * @memberof convenientDiscussions.api
      */
-    cd.api.getCommentByDtId = Comment.getByDtId.bind(Comment);
+    cd.api.getCommentByDtId = CommentStatic.getByDtId.bind(CommentStatic);
 
     /**
-     * @see Section.getById
+     * @see module:SectionStatic.getById
      * @function getSectionById
      * @memberof convenientDiscussions.api
      */
-    cd.api.getSectionById = Section.getById.bind(Section);
+    cd.api.getSectionById = SectionStatic.getById.bind(SectionStatic);
 
     /**
-     * @see Section.getByHeadline
+     * @see module:SectionStatic.getByHeadline
      * @function getSectionsByHeadline
      * @memberof convenientDiscussions.api
      */
-    cd.api.getSectionsByHeadline = Section.getByHeadline.bind(Section);
+    cd.api.getSectionsByHeadline = SectionStatic.getByHeadline.bind(SectionStatic);
 
     /**
-     * @see CommentForm.getLastActive
+     * @see module:CommentFormStatic.getLastActive
      * @function getLastActiveCommentForm
      * @memberof convenientDiscussions.api
      */
-    cd.api.getLastActiveCommentForm = CommentForm.getLastActive.bind(CommentForm);
+    cd.api.getLastActiveCommentForm = CommentFormStatic.getLastActive.bind(CommentFormStatic);
 
     /**
-     * @see CommentForm.getLastActiveAltered
+     * @see module:CommentFormStatic.getLastActiveAltered
      * @function getLastActiveAlteredCommentForm
      * @memberof convenientDiscussions.api
      */
-    cd.api.getLastActiveAlteredCommentForm = CommentForm.getLastActiveAltered.bind(CommentForm);
+    cd.api.getLastActiveAlteredCommentForm = CommentFormStatic.getLastActiveAltered
+      .bind(CommentFormStatic);
 
     /**
      * @see module:controller.reload
@@ -1328,7 +1329,7 @@ export default {
      * Collection of all comment forms on the page in the order of their creation.
      *
      * @name commentForms
-     * @type {CommentForm[]}
+     * @type {import('./CommentForm').default[]}
      * @memberof convenientDiscussions
      */
     cd.commentForms = [];

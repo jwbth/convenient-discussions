@@ -1,6 +1,12 @@
-import Comment from './Comment';
+/**
+ * Static {@link CommentForm comment form} methods and properties.
+ *
+ * @module CommentFormStatic
+ */
+
 import CommentForm from './CommentForm';
-import Section from './Section';
+import CommentStatic from './CommentStatic';
+import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
 import postponements from './postponements';
@@ -37,9 +43,9 @@ function restoreFromStorage(commentFormsData) {
   let haveRestored = false;
   const rescue = [];
   commentFormsData.commentForms.forEach((data) => {
-    const prop = CommentForm.modeToProperty(data.mode);
+    const prop = CommentFormStatic.modeToProperty(data.mode);
     if (data.targetData?.headline) {
-      const section = Section.search({
+      const section = SectionStatic.search({
         headline: data.targetData.headline,
         oldestCommentId: data.targetData.oldestCommentId,
         index: data.targetData.index,
@@ -60,7 +66,7 @@ function restoreFromStorage(commentFormsData) {
 
       // TODO: remove the "data.targetData.anchor" part 2 months after the release.
     } else if (data.targetData?.id || data.targetData?.anchor) {
-      const comment = Comment.getById(data.targetData.id || data.targetData.anchor);
+      const comment = CommentStatic.getById(data.targetData.id || data.targetData.anchor);
       if (comment?.isActionable && !comment[`${prop}Form`]) {
         try {
           comment[prop](data);
@@ -73,7 +79,7 @@ function restoreFromStorage(commentFormsData) {
         rescue.push(data);
       }
     } else if (data.mode === 'addSection') {
-      if (!CommentForm.getAddSectionForm()) {
+      if (!CommentFormStatic.getAddSectionForm()) {
         const commentForm = new CommentForm({
           target: cd.page,
           mode: data.mode,
@@ -81,7 +87,7 @@ function restoreFromStorage(commentFormsData) {
           preloadConfig: data.preloadConfig,
           newTopicOnTop: data.newTopicOnTop,
         });
-        CommentForm.setAddSectionForm(commentForm);
+        CommentFormStatic.setAddSectionForm(commentForm);
         haveRestored = true;
       } else {
         rescue.push(data);
@@ -143,12 +149,14 @@ function cleanUpSessionRegistry(data) {
   return newData;
 }
 
-export default {
+/**
+ * @exports CommentFormStatic
+ */
+const CommentFormStatic = {
   /**
    * Get default preload configuration for the `addSection` mode.
    *
    * @returns {object}
-   * @memberof CommentForm
    */
   getDefaultPreloadConfig() {
     return {
@@ -168,7 +176,6 @@ export default {
    * @param {string} mode
    * @returns {string}
    * @private
-   * @memberof CommentForm
    */
   modeToProperty(mode) {
     return mode === 'replyInSection' ? 'reply' : mode;
@@ -178,7 +185,6 @@ export default {
    * Get the last active comment form.
    *
    * @returns {?CommentForm}
-   * @memberof CommentForm
    */
   getLastActive() {
     return (
@@ -194,7 +200,6 @@ export default {
    * fields, not checkboxes.
    *
    * @returns {?CommentForm}
-   * @memberof CommentForm
    */
   getLastActiveAltered() {
     return (
@@ -209,10 +214,9 @@ export default {
   /**
    * Create an add section form if not existent.
    *
-   * @param {object} [preloadConfig={@link CommentForm.getDefaultPreloadConfig CommentForm.getDefaultPreloadConfig()}]
+   * @param {object} [preloadConfig={@link CommentFormStatic.getDefaultPreloadConfig CommentFormStatic.getDefaultPreloadConfig()}]
    * @param {boolean} [newTopicOnTop=false]
    * @param {object} [initialState]
-   * @memberof CommentForm
    */
   createAddSectionForm(
     preloadConfig = this.getDefaultPreloadConfig(),
@@ -283,8 +287,6 @@ export default {
   /**
    * Adjust the button labels of all comment forms according to the form width: if the form is to
    * narrow, the labels will shrink.
-   *
-   * @memberof CommentForm
    */
   adjustLabels() {
     cd.commentForms.forEach((commentForm) => {
@@ -294,8 +296,6 @@ export default {
 
   /**
    * Detach the comment forms keeping events.
-   *
-   * @memberof CommentForm
    */
   detach() {
     cd.commentForms.forEach((commentForm) => {
@@ -308,7 +308,6 @@ export default {
    * to restore when the browser has crashed.)
    *
    * @param {boolean} [force=true] Save session immediately, without regard for save frequency.
-   * @memberof CommentForm
    */
   saveSession(force) {
     const save = () => {
@@ -353,7 +352,6 @@ export default {
    *
    * @param {boolean} fromStorage Should the session be restored from the local storage instead of
    * directly from {@link conveneintDiscussions.commentForms}.
-   * @memberof CommentForm
    */
   restoreSession(fromStorage) {
     if (fromStorage) {
@@ -372,3 +370,5 @@ export default {
     this.saveSession();
   },
 };
+
+export default CommentFormStatic;

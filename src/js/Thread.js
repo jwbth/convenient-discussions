@@ -1,6 +1,6 @@
 import Button from './Button';
 import CdError from './CdError';
-import Comment from './Comment';
+import CommentStatic from './CommentStatic';
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
@@ -138,7 +138,7 @@ function autocollapseThreads() {
   let comments = [];
 
   data.threads?.forEach((thread) => {
-    const comment = Comment.getById(thread.id);
+    const comment = CommentStatic.getById(thread.id);
     if (comment?.thread) {
       if (thread.collapsed) {
         comments.push(comment);
@@ -238,7 +238,7 @@ class Thread {
   /**
    * Create a comment thread object.
    *
-   * @param {Comment} rootComment Root comment of the thread.
+   * @param {import('./Comment').default} rootComment Root comment of the thread.
    */
   constructor(rootComment) {
     this.handleClickAreaHover = this.handleClickAreaHover.bind(this);
@@ -252,7 +252,7 @@ class Thread {
     /**
      * Root comment of the thread.
      *
-     * @type {Comment}
+     * @type {import('./Comment').default}
      * @private
      */
     this.rootComment = rootComment;
@@ -260,7 +260,7 @@ class Thread {
     /**
      * List of comments in the thread (logically, not visually).
      *
-     * @type {Comment}
+     * @type {import('./Comment').default}
      * @private
      */
     this.comments = [rootComment, ...rootComment.getChildren(true)];
@@ -268,7 +268,7 @@ class Thread {
     /**
      * Last comment of the thread (logically, not visually).
      *
-     * @type {Comment}
+     * @type {import('./Comment').default}
      * @private
      */
     this.lastComment = this.comments.slice(-1)[0];
@@ -296,7 +296,7 @@ class Thread {
      * Last comment of the thread _visually_, not logically (differs from {@link Thread#lastComment}
      * if there are `{{outdent}}` templates in the thread).
      *
-     * @type {Comment}
+     * @type {import('./Comment').default}
      * @private
      */
     this.visualLastComment = this.hasOutdents ?
@@ -308,7 +308,7 @@ class Thread {
      * collapsing the thread. That usually means `Thread#visualEndElement` has the
      * `cd-connectToPreviousItem` class.
      *
-     * @type {Comment}
+     * @type {import('./Comment').default}
      * @private
      */
     this.visualLastCommentFallback = this.hasOutdents ?

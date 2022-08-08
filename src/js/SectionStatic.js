@@ -1,3 +1,9 @@
+/**
+ * Static {@link Section section} methods and properties.
+ *
+ * @module SectionStatic
+ */
+
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
@@ -16,7 +22,6 @@ export default {
    *
    * @param {string} id
    * @returns {?import('./Section').default}
-   * @memberof Section
    */
   getById(id) {
     if (!cd.sections || !id) {
@@ -30,7 +35,6 @@ export default {
    *
    * @param {string} headline
    * @returns {import('./Section').default[]}
-   * @memberof Section
    */
   getByHeadline(headline) {
     return cd.sections.filter((section) => section.headline === headline);
@@ -41,7 +45,6 @@ export default {
    *
    * @param {string} subscribeId
    * @returns {import('./Section').default[]}
-   * @memberof Section
    */
   getBySubscribeId(subscribeId) {
     return cd.sections.filter((section) => section.subscribeId === subscribeId);
@@ -78,7 +81,6 @@ export default {
    * @param {string} options.oldestCommentId
    * @param {boolean} [returnScore]
    * @returns {?import('./Section').default}
-   * @memberof Section
    */
   search({ index, headline, id, ancestors, oldestCommentId }, returnScore) {
     const matches = [];
@@ -122,8 +124,6 @@ export default {
   /**
    * _For internal use._ Perform extra section-related tasks, including adding the
    * {@link Section#isLastSection isLastSection} property, adding buttons, and binding events.
-   *
-   * @memberof Section
    */
   adjust() {
     cd.sections.forEach((section) => {
@@ -155,8 +155,6 @@ export default {
 
   /**
    * _For internal use._ Add a "Subscribe" / "Unsubscribe" button to each section's actions element.
-   *
-   * @memberof Section
    */
   addSubscribeButtons() {
     cd.sections.forEach((section) => {
@@ -180,8 +178,6 @@ export default {
   /**
    * _For internal use._ Add the metadata and actions elements below or to the right of each section
    * heading.
-   *
-   * @memberof Section
    */
   addMetadataAndActions() {
     cd.sections.forEach((section) => {
@@ -191,8 +187,6 @@ export default {
 
   /**
    * _For internal use._ Add the new comment count to the metadata elements of the sections.
-   *
-   * @memberof Section
    */
   addNewCommentCountMetadata() {
     cd.sections.forEach((section) => {
@@ -206,7 +200,6 @@ export default {
    * @param {number} [scrollY=window.scrollY]
    * @param {number} [tocOffset]
    * @returns {number}
-   * @memberof Section
    */
   getFirstSectionRelativeTopOffset(scrollY = window.scrollY, tocOffset) {
     if (scrollY <= cd.g.BODY_SCROLL_PADDING_TOP) return;
@@ -231,7 +224,6 @@ export default {
    * Get the section currently positioned at the top of the viewport.
    *
    * @returns {?import('./Section').default}
-   * @memberof Section
    */
   getCurrentSection() {
     const firstSectionTop = this.getFirstSectionRelativeTopOffset();
@@ -255,8 +247,6 @@ export default {
   /**
    * _For internal use._ Make sections visible or invisible to improve performance if the relevant
    * setting is enabled.
-   *
-   * @memberof Section
    */
    maybeUpdateVisibility() {
     if (!cd.sections.length || !settings.get('improvePerformance') || !controller.isLongPage()) {

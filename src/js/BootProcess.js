@@ -1,8 +1,10 @@
 import CdError from './CdError';
 import Comment from './Comment';
-import CommentForm from './CommentForm';
+import CommentFormStatic from './CommentFormStatic';
+import CommentStatic from './CommentStatic';
 import Parser from './Parser';
 import Section from './Section';
+import SectionStatic from './SectionStatic';
 import Thread from './Thread';
 import cd from './cd';
 import controller from './controller';
@@ -73,7 +75,7 @@ function handleDtMarkup(elements) {
       [...controller.rootElement.getElementsByClassName('ext-discussiontools-init-highlight')]
     )
     .forEach((el, i) => {
-      if (el.hasAttribute('data-mw-comment-start') && Comment.isDtId(el.id)) {
+      if (el.hasAttribute('data-mw-comment-start') && CommentStatic.isDtId(el.id)) {
         controller.getBootProcess().addDtCommentId(el.id);
       }
       if (moveNotRemove) {
@@ -497,7 +499,7 @@ class BootProcess {
     let sectionWithSimilarNameText = '';
     if (date) {
       label = cd.sParse('deadanchor-comment-lead');
-      const previousCommentByTime = Comment.findPreviousCommentByTime(date, author);
+      const previousCommentByTime = CommentStatic.findPreviousCommentByTime(date, author);
       if (previousCommentByTime) {
         previousCommentByTimeText = (
           ' ' +
@@ -510,7 +512,7 @@ class BootProcess {
     } else {
       sectionName = underlinesToSpaces(decodedFragment);
       label = cd.sParse('deadanchor-section-lead', sectionName);
-      const sectionMatch = Section.findByHeadlineParts(sectionName);
+      const sectionMatch = SectionStatic.findByHeadlineParts(sectionName);
       if (sectionMatch) {
         sectionWithSimilarNameText = (
           ' ' +
@@ -672,7 +674,7 @@ class BootProcess {
       // Just submitted form. Forms that should stay are detached in controller.reload().
       $('.cd-commentForm-addSection').remove();
 
-      Comment.resetLayers();
+      CommentStatic.resetLayers();
     }
   }
 
@@ -725,16 +727,16 @@ class BootProcess {
           }
         });
 
-      Comment.reformatTimestamps();
-      Comment.setInSingleCommentTableProperty();
-      Comment.adjustDom();
+      CommentStatic.reformatTimestamps();
+      CommentStatic.setInSingleCommentTableProperty();
+      CommentStatic.adjustDom();
     } catch (e) {
       console.error(e);
     }
 
     /**
      * The script has processed the comments, except for reformatting them in
-     * {@link Comment.reformatComments} if the user opted in for that.
+     * {@link CommentStatic.reformatComments} if the user opted in for that.
      *
      * @event commentsReady
      * @param {object} comments {@link convenientDiscussions.comments} object.
@@ -767,23 +769,23 @@ class BootProcess {
       subscriptions.load();
     }
 
-    Section.adjust();
+    SectionStatic.adjust();
 
     // Dependent on sections being set
-    Comment.processOutdents(this.parser);
+    CommentStatic.processOutdents(this.parser);
 
     // Dependent on outdents being processed
-    Comment.connectBrokenThreads();
+    CommentStatic.connectBrokenThreads();
 
     // This runs after extracting sections because Comment#getParent needs sections to be set on
     // comments.
-    Comment.setDtIds(this.dtCommentIds);
+    CommentStatic.setDtIds(this.dtCommentIds);
 
     // Depends on DT ID being set
-    Section.addMetadataAndActions();
+    SectionStatic.addMetadataAndActions();
 
     subscriptions.getLoadRequest().then(() => {
-      Section.addSubscribeButtons();
+      SectionStatic.addSubscribeButtons();
       subscriptions.cleanUp();
       toc.highlightSubscriptions();
     });
@@ -855,7 +857,7 @@ class BootProcess {
       framed: false,
       classes: ['cd-button-ooui', 'cd-section-button'],
     }).on('click', () => {
-      CommentForm.createAddSectionForm();
+      CommentFormStatic.createAddSectionForm();
     });
     const $container = $('<div>')
       .addClass('cd-section-button-container cd-addTopicButton-container')
@@ -1063,7 +1065,7 @@ class BootProcess {
 
       // &action=edit&section=new when DT's New Topic Tool is enabled.
       if (query.section === 'new' || Number(query.cdaddtopic) || this.dtNewTopicFormData) {
-        CommentForm.createAddSectionForm(undefined, undefined, this.dtNewTopicFormData);
+        CommentFormStatic.createAddSectionForm(undefined, undefined, this.dtNewTopicFormData);
       }
     } catch {
       // Empty
@@ -1082,11 +1084,11 @@ class BootProcess {
       mw.user.options.get('editsectiononrightclick')
     );
     controller.addPreventUnloadCondition('commentForms', () => {
-      CommentForm.saveSession(true);
+      CommentFormStatic.saveSession(true);
       return (
         mw.user.options.get('useeditwarning') &&
         (
-          CommentForm.getLastActiveAltered() ||
+          CommentFormStatic.getLastActiveAltered() ||
           (alwaysConfirmLeavingPage && cd.commentForms.length)
         )
       );
@@ -1129,7 +1131,7 @@ class BootProcess {
     try {
       decodedFragment = decodeURIComponent(fragment);
       escapedDecodedFragment = decodedFragment && $.escapeSelector(decodedFragment);
-      if (Comment.isId(fragment)) {
+      if (CommentStatic.isId(fragment)) {
         commentId = decodedFragment;
       }
     } catch (e) {
@@ -1140,10 +1142,10 @@ class BootProcess {
     let author;
     let comment;
     if (commentId) {
-      ({ date, author } = Comment.parseId(commentId) || {});
-      comment = Comment.getById(commentId, true);
+      ({ date, author } = CommentStatic.parseId(commentId) || {});
+      comment = CommentStatic.getById(commentId, true);
     } else if (decodedFragment) {
-      ({ comment, date, author } = Comment.getByDtId(decodedFragment, true) || {});
+      ({ comment, date, author } = CommentStatic.getByDtId(decodedFragment, true) || {});
     }
 
     if (comment) {
@@ -1188,7 +1190,7 @@ class BootProcess {
   async processTargets() {
     const commentIds = this.data('commentIds');
     if (commentIds) {
-      const comments = commentIds.map((id) => Comment.getById(id)).filter(notNull);
+      const comments = commentIds.map((id) => CommentStatic.getById(id)).filter(notNull);
       if (comments.length) {
         // setTimeout is for Firefox - for some reason, without it Firefox positions the underlay
         // incorrectly. (TODO: does it still? Need to check.)
@@ -1207,7 +1209,7 @@ class BootProcess {
     }
 
     if (this.data('sectionId')) {
-      const section = Section.getById(this.data('sectionId'));
+      const section = SectionStatic.getById(this.data('sectionId'));
       if (section) {
         if (this.data('pushState')) {
           history.pushState(history.state, '', `#${section.id}`);
@@ -1278,10 +1280,10 @@ class BootProcess {
         );
       });
 
-      Comment.configureAndAddLayers(cd.comments.filter((comment) => comment.isNew));
+      CommentStatic.configureAndAddLayers(cd.comments.filter((comment) => comment.isNew));
 
       const unseenComments = cd.comments.filter((comment) => comment.isSeen === false);
-      toc.addNewComments(Comment.groupBySection(unseenComments));
+      toc.addNewComments(CommentStatic.groupBySection(unseenComments));
     }
 
     // TODO: keep the scrolling position even if adding the comment count moves the content.
@@ -1296,11 +1298,11 @@ class BootProcess {
 
     setVisits(visits);
 
-    // Should be before `Comment.registerSeen()` to include all new comments in the metadata, even
-    // those currently inside the viewport.
-    Section.addNewCommentCountMetadata();
+    // Should be before `CommentStatic.registerSeen()` to include all new comments in the metadata,
+    // even those currently inside the viewport.
+    SectionStatic.addNewCommentCountMetadata();
 
-    Comment.registerSeen();
+    CommentStatic.registerSeen();
     navPanel.fill();
 
     /**
@@ -1329,11 +1331,11 @@ class BootProcess {
     $content
       .find(`a[href^="#"]`)
       .filter(function () {
-        return !this.onclick && Comment.isAnyId($(this).attr('href').slice(1));
+        return !this.onclick && CommentStatic.isAnyId($(this).attr('href').slice(1));
       })
       .on('click', function (e) {
         e.preventDefault();
-        Comment.getByAnyId($(this).attr('href').slice(1), true)?.scrollTo({
+        CommentStatic.getByAnyId($(this).attr('href').slice(1), true)?.scrollTo({
           expandThreads: true,
           pushState: true,
         });
@@ -1554,9 +1556,9 @@ class BootProcess {
     if (controller.doesPageExist()) {
       // Should be above all code that deals with comment highlightable elements and comment levels
       // as this may alter that.
-      Comment.reviewHighlightables();
+      CommentStatic.reviewHighlightables();
 
-      Comment.reformatComments();
+      CommentStatic.reformatComments();
     }
 
     // This updates some styles, shifting the offsets.
@@ -1570,7 +1572,7 @@ class BootProcess {
       // hidden during the comment forms restoration. Should be below this.setupNavPanel() as it
       // calls navPanel.updateCommentFormButton() which depends on the navigation panel being
       // mounted.
-      CommentForm.restoreSession(this.firstRun || this.data('isPageReloadedExternally'));
+      CommentFormStatic.restoreSession(this.firstRun || this.data('isPageReloadedExternally'));
 
       this.hideDtNewTopicForm();
       this.maybeAddAddSectionForm();
@@ -1586,8 +1588,8 @@ class BootProcess {
       // viewport position restoration as it may shift the layout (if the viewport position
       // restoration relies on elements that are made hidden when threads are collapsed, the
       // algorithm finds the expand note). Should better be above comment highlighting
-      // (`Comment.configureAndAddLayers()`, `processVisits()`) to avoid spending time on comments
-      // in collapsed threads.
+      // (`CommentStatic.configureAndAddLayers()`, `processVisits()`) to avoid spending time on
+      // comments in collapsed threads.
       Thread.init();
 
       // Should better be below the comment form restoration to avoid repositioning of layers
@@ -1600,7 +1602,7 @@ class BootProcess {
         // together for performance reasons.
         comment.isLineGapped
       ));
-      Comment.configureAndAddLayers(commentsToAddLayersFor);
+      CommentStatic.configureAndAddLayers(commentsToAddLayersFor);
 
       // Should be below Thread.init() as these methods may want to scroll to a comment in a
       // collapsed thread.

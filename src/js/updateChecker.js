@@ -5,8 +5,8 @@
  */
 
 import CdError from './CdError';
-import Comment from './Comment';
-import Section from './Section';
+import CommentStatic from './CommentStatic';
+import SectionStatic from './SectionStatic';
 import Thread from './Thread';
 import cd from './cd';
 import controller from './controller';
@@ -192,7 +192,7 @@ function mapSections(otherSections) {
   });
 
   otherSections.forEach((otherSection) => {
-    const { section, score } = Section.search(otherSection, true) || {};
+    const { section, score } = SectionStatic.search(otherSection, true) || {};
     if (section && (!section.match || score > section.matchScore)) {
       if (section.match) {
         delete section.match.match;
@@ -443,7 +443,7 @@ function checkForChangesSincePreviousVisit(currentComments) {
         hasCommentChanged(oldComment, currentComment) &&
         seenHtmlToCompare !== currentComment.htmlToCompare
       ) {
-        const comment = Comment.getById(currentComment.id);
+        const comment = CommentStatic.getById(currentComment.id);
         if (!comment) return;
 
         // Different indexes to supply one object both to the event and Comment#markAsChanged.
@@ -471,7 +471,7 @@ function checkForChangesSincePreviousVisit(currentComments) {
      *
      * @event changesSincePreviousVisit
      * @param {object[]} changeList
-     * @param {Comment} changeList.comment
+     * @param {import('./Comment').default} changeList.comment
      * @param {object} changeList.commentsData
      * @global
      */
@@ -508,7 +508,7 @@ function checkForNewChanges(currentComments) {
     };
 
     if (newComment) {
-      comment = Comment.getById(currentComment.id);
+      comment = CommentStatic.getById(currentComment.id);
       if (!comment) return;
 
       if (comment.isDeleted) {
@@ -536,7 +536,7 @@ function checkForNewChanges(currentComments) {
         events.unchanged = true;
       }
     } else if (!currentComment.hasPoorMatch) {
-      comment = Comment.getById(currentComment.id);
+      comment = CommentStatic.getById(currentComment.id);
       if (!comment || comment.isDeleted) return;
 
       comment.markAsChanged('deleted');
@@ -550,10 +550,11 @@ function checkForNewChanges(currentComments) {
   });
 
   if (isChangeMarkUpdated) {
-    // If the layers of deleted comments have been configured in Comment#unmarkAsChanged, they will
-    // prevent layers before them from being updated due to the "stop at the first three unmoved
-    // comments" optimization in Comment.redrawLayersIfNecessary. So we just do the whole job here.
-    Comment.redrawLayersIfNecessary(false, true);
+    // If the layers of deleted comments have been configured in `Comment#unmarkAsChanged`, they
+    // will prevent layers before them from being updated due to the "stop at the first three
+    // unmoved comments" optimization in `CommentStatic.redrawLayersIfNecessary`. So we just do the
+    // whole job here.
+    CommentStatic.redrawLayersIfNecessary(false, true);
 
     // Thread start and end elements may be replaced, so we need to restart threads.
     Thread.init(false);
@@ -565,7 +566,7 @@ function checkForNewChanges(currentComments) {
      *
      * @event newChanges
      * @param {object[]} changeList
-     * @param {Comment} changeList.comment
+     * @param {import('./Comment').default} changeList.comment
      * @param {object} changeList.events
      * @param {object} [changeList.events.changed]
      * @param {boolean} [changeList.events.changed.updateSuccess] Were the changes rendered.
@@ -765,7 +766,7 @@ function showDesktopNotification(comments) {
     // Just in case, old browsers. TODO: delete?
     window.focus();
 
-    Comment.redrawLayersIfNecessary(false, true);
+    CommentStatic.redrawLayersIfNecessary(false, true);
 
     controller.reload({
       commentIds: [comment.id],
@@ -817,7 +818,7 @@ async function processComments(comments, currentComments, currentRevisionId) {
       if (comment.parent) {
         const parentMatch = currentComments.find((mcc) => mcc.match === comment.parent);
         if (parentMatch?.id) {
-          newComment.parentMatch = Comment.getById(parentMatch.id);
+          newComment.parentMatch = CommentStatic.getById(parentMatch.id);
         }
       }
       return newComment;
@@ -869,13 +870,13 @@ async function processComments(comments, currentComments, currentRevisionId) {
     relevantNewCommentIds = newComments.map((comment) => comment.id);
   }
 
-  const newCommentsBySection = Comment.groupBySection(newComments);
+  const newCommentsBySection = CommentStatic.groupBySection(newComments);
   const areThereRelevant = Boolean(relevantNewComments.length);
   navPanel.updateRefreshButton(newComments.length, newCommentsBySection, areThereRelevant);
   updateChecker.updatePageTitle(newComments.length, areThereRelevant);
   toc.addNewComments(newCommentsBySection);
 
-  Comment.addNewCommentsNotes(newComments);
+  CommentStatic.addNewCommentsNotes(newComments);
 
   const commentsToNotifyAbout = relevantNewComments
     .filter((comment) => !commentsNotifiedAbout.some((cna) => cna.id === comment.id));

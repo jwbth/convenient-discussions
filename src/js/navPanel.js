@@ -6,7 +6,7 @@
  */
 
 import Button from './Button';
-import Comment from './Comment';
+import CommentStatic from './CommentStatic';
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
@@ -222,7 +222,7 @@ export default {
   goToNewCommentInDirection(direction) {
     if (controller.isAutoScrolling()) return;
 
-    const commentInViewport = Comment.findInViewport(direction);
+    const commentInViewport = CommentStatic.findInViewport(direction);
     if (!commentInViewport) return;
 
     const reverse = direction === 'backward';

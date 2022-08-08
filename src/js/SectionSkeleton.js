@@ -4,8 +4,8 @@ import { TreeWalker } from './treeWalker';
 import { defined, isMetadataNode } from './util';
 
 /**
- * Class containing the main properties of a section. This class is the only one used in the worker
- * context for sections.
+ * Class containing the main properties of a section. It is extended by {@link Section}. This class
+ * is the only one used in the worker context for sections.
  */
 class SectionSkeleton {
   /**

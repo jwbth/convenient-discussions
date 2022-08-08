@@ -2,9 +2,11 @@ import Autocomplete from './Autocomplete';
 import Button from './Button';
 import CdError from './CdError';
 import Comment from './Comment';
-import CommentFormStatic from './CommentForm.static';
+import CommentFormStatic from './CommentFormStatic';
+import CommentStatic from './CommentStatic';
 import CommentTextProcessor from './CommentTextProcessor';
 import Section from './Section';
+import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
 import navPanel from './navPanel';
@@ -90,8 +92,8 @@ class CommentForm {
    *
    * @param {object} config
    * @param {'reply'|'replyInSection'|'edit'|'addSubsection'|'addSection'} config.mode
-   * @param {Comment|Section|import('./pageRegistry').Page} config.target Comment, section, or page
-   *   that the form is related to.
+   * @param {import('./Comment').default|import('./Section').default|import('./pageRegistry').Page} config.target
+   *   Comment, section, or page that the form is related to.
    * @param {object} [config.initialState] Initial state of the form (data saved in the previous
    *   session, quoted text, or data transferred from DT's new topic form).
    * @param {PreloadConfig} [config.preloadConfig] Configuration to preload data into the form.
@@ -282,14 +284,14 @@ class CommentForm {
   /**
    * Set the `target`, `targetSection`, `targetComment`, and `targetPage` properties.
    *
-   * @param {Comment|Section|import('./pageRegistry').Page} target
+   * @param {import('./Comment').default|import('./Section').default|import('./pageRegistry').Page} target
    * @private
    */
   setTargets(target) {
     /**
      * Target object.
      *
-     * @type {Comment|Section|import('./pageRegistry').Page}
+     * @type {import('./Comment').default|import('./Section').default|import('./pageRegistry').Page}
      * @private
      */
     this.target = target;
@@ -297,7 +299,7 @@ class CommentForm {
     /**
      * Target section.
      *
-     * @type {?Section}
+     * @type {?import('./Section').default}
      * @private
      */
     this.targetSection = this.target.getRelevantSection();
@@ -306,7 +308,7 @@ class CommentForm {
      * Target comment. This may be the comment the user replies to, or the comment opening the
      * section.
      *
-     * @type {?Comment}
+     * @type {?import('./Comment').default}
      * @private
      */
     this.targetComment = this.mode === 'edit' ? null : this.target.getRelevantComment();
@@ -314,7 +316,7 @@ class CommentForm {
     /**
      * Parent comment. This is the comment the user replies to, if any.
      *
-     * @type {?Comment}
+     * @type {?import('./Comment').default}
      * @private
      */
     this.parentComment = this.mode.startsWith('reply') ? this.targetComment : null;
@@ -934,10 +936,10 @@ class CommentForm {
       encapsulateSelection: (options) => {
         // Seems like the methods are registered for all inputs instead of the one the method is
         // called for.
-        CommentForm.getLastActive().encapsulateSelection(options);
+        CommentFormStatic.getLastActive().encapsulateSelection(options);
       },
       setContents: (value) => {
-        const commentForm = CommentForm.getLastActive();
+        const commentForm = CommentFormStatic.getLastActive();
         commentForm.commentInput.select();
         insertText(commentForm.commentInput, value);
       },
@@ -1721,7 +1723,7 @@ class CommentForm {
    */
   addEventListeners() {
     const saveSessionEventHandler = () => {
-      CommentForm.saveSession();
+      CommentFormStatic.saveSession();
     };
     const preview = () => {
       this.preview();
@@ -2248,7 +2250,7 @@ class CommentForm {
    */
   addAnchorsToComments(wholeCode, commentIds) {
     commentIds.forEach((id) => {
-      const comment = Comment.getById(id);
+      const comment = CommentStatic.getById(id);
       if (comment) {
         const commentInCode = comment.locateInCode(wholeCode);
         const anchorCode = cd.config.getAnchorCode(id);
@@ -2918,7 +2920,7 @@ class CommentForm {
         headline = rawHeadline && removeWikiMarkup(rawHeadline);
 
         if (settings.get('useTopicSubscription')) {
-          subscribeId = Section.generateDtSubscriptionId(cd.user.getName(), editTimestamp);
+          subscribeId = SectionStatic.generateDtSubscriptionId(cd.user.getName(), editTimestamp);
         } else {
           subscribeId = headline;
           if (this.sectionOpeningCommentEdited) {
@@ -2996,7 +2998,7 @@ class CommentForm {
       ))
       .map((comment) => comment.id);
 
-    return Comment.generateId(date, cd.user.getName(), existingIds);
+    return CommentStatic.generateId(date, cd.user.getName(), existingIds);
   }
 
   /**
@@ -3165,12 +3167,12 @@ class CommentForm {
    */
   forget() {
     if (this.mode === 'addSection') {
-      CommentForm.forgetAddSectionForm();
+      CommentFormStatic.forgetAddSectionForm();
     } else {
-      delete this.target[CommentForm.modeToProperty(this.mode) + 'Form'];
+      delete this.target[CommentFormStatic.modeToProperty(this.mode) + 'Form'];
     }
     removeFromArrayIfPresent(cd.commentForms, this);
-    CommentForm.saveSession(true);
+    CommentFormStatic.saveSession(true);
     navPanel.updateCommentFormButton();
     this.autocomplete.cleanUp();
   }
@@ -3598,7 +3600,7 @@ class CommentForm {
   /**
    * Get the {@link CommentForm#target target} object of the form.
    *
-   * @returns {Comment|Section|import('./pageRegistry').Page}
+   * @returns {import('./Comment').default|import('./Section').default|import('./pageRegistry').Page}
    */
   getTarget() {
     return this.target;
@@ -3608,7 +3610,7 @@ class CommentForm {
    * Get the {@link CommentForm#parentComment parent comment} object of the form. This is the
    * comment the user replies to, if any.
    *
-   * @returns {?Comment}
+   * @returns {?import('./Comment').default}
    */
   getParentComment() {
     return this.parentComment;
@@ -3651,11 +3653,11 @@ class CommentForm {
     const target = this.getTarget();
     if (target instanceof Comment) {
       if (target.id) {
-        const comment = Comment.getById(target.id);
+        const comment = CommentStatic.getById(target.id);
         if (comment) {
           try {
             this.setTargets(comment);
-            comment[CommentForm.modeToProperty(this.getMode())](this);
+            comment[CommentFormStatic.modeToProperty(this.getMode())](this);
             this.addToPage();
           } catch (e) {
             console.warn(e);
@@ -3668,7 +3670,7 @@ class CommentForm {
         addToRescue(this);
       }
     } else if (target instanceof Section) {
-      const section = Section.search({
+      const section = SectionStatic.search({
         headline: target.headline,
         oldestCommentId: target.oldestComment?.id,
         index: target.index,
@@ -3681,7 +3683,7 @@ class CommentForm {
       if (section) {
         try {
           this.setTargets(section);
-          section[CommentForm.modeToProperty(this.getMode())](this);
+          section[CommentFormStatic.modeToProperty(this.getMode())](this);
           this.addToPage();
         } catch (e) {
           console.warn(e);
@@ -3692,7 +3694,7 @@ class CommentForm {
       }
     } else if (this.getMode() === 'addSection') {
       this.addToPage();
-      CommentForm.setAddSectionForm(this);
+      CommentFormStatic.setAddSectionForm(this);
     }
   }
 
@@ -3706,7 +3708,5 @@ class CommentForm {
     focusInput(this.commentInput);
   }
 }
-
-Object.assign(CommentForm, CommentFormStatic);
 
 export default CommentForm;
