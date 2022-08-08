@@ -1,5 +1,6 @@
 import cd from './cd';
 import controller from './controller';
+import settings from './settings';
 import {
   areObjectsEqual,
   calculateWordOverlap,
@@ -257,8 +258,10 @@ export default {
    *
    * @memberof Section
    */
-  updateVisibility() {
-    if (!cd.sections.length) return;
+   maybeUpdateVisibility() {
+    if (!cd.sections.length || !settings.get('improvePerformance') || !controller.isLongPage()) {
+      return;
+    }
 
     // Don't care about top scroll padding (the sticky header's height) here.
     const viewportTop = window.scrollY;

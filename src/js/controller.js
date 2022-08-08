@@ -921,9 +921,7 @@ export default {
     }
     this.lastScrollX = window.scrollX;
 
-    if (settings.get('improvePerformance') && this.isLongPage()) {
-      Section.updateVisibility();
-    }
+    Section.maybeUpdateVisibility();
   },
 
   /**
