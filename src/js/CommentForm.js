@@ -9,10 +9,10 @@ import cd from './cd';
 import controller from './controller';
 import navPanel from './navPanel';
 import notifications from './notifications';
+import pageRegistry, { Page } from './pageRegistry';
 import settings from './settings';
 import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
-import { Page } from './pageRegistry';
 import {
   buildEditSummary,
   defined,
