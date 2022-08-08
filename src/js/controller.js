@@ -1704,8 +1704,8 @@ export default {
    * @returns {boolean}
    */
   isLongPage() {
-    this.longPage ??= $(document).height() > 15000;
-    return this.longPage;
+    this.content.longPage ??= $(document).height() > 15000;
+    return this.content.longPage;
   },
 
   /**
