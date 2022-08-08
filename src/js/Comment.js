@@ -1105,6 +1105,9 @@ class Comment extends CommentSkeleton {
    * @private
    */
   setStretchedProperties(left, right) {
+    const isTopLayersContainer = this.getLayersContainer()
+      .convenientDiscussionsIsTopLayersContainer;
+
     /**
      * Is the start (left on LTR wikis, right on RTL wikis) side of the comment stretched to the
      * start of the content area.
@@ -1120,6 +1123,8 @@ class Comment extends CommentSkeleton {
       * @type {boolean|undefined}
       */
     this.isEndStretched = false;
+
+    if (!isTopLayersContainer) return;
 
     if (this.level === 0) {
       const offsets = controller.getContentColumnOffsets();
@@ -1649,8 +1654,11 @@ class Comment extends CommentSkeleton {
         ) {
           offsetParent = node;
         }
-        const backgroundColor = style.backgroundColor;
-        if (backgroundColor.includes('rgb(') || style.backgroundImage !== 'none' && !offsetParent) {
+        if (
+          style.backgroundColor.includes('rgb(') ||
+          style.backgroundImage !== 'none' &&
+          !offsetParent
+        ) {
           offsetParent = node;
           offsetParent.classList.add('cd-commentLayersContainer-parent-relative');
         }
@@ -1665,6 +1673,9 @@ class Comment extends CommentSkeleton {
         container = document.createElement('div');
         container.classList.add('cd-commentLayersContainer');
         offsetParent.insertBefore(container, offsetParent.firstChild);
+
+        container.convenientDiscussionsIsTopLayersContainer = !container.parentNode.parentNode
+          .closest('.cd-commentLayersContainer-parent');
       }
       this.layersContainer = container;
 

@@ -229,12 +229,10 @@ const CommentStatic = {
           comments.push(comment);
         } else if (isMoved === null) {
           comment.removeLayers();
-        } else if (
-          // Nested containers shouldn't count, the offset of the layers inside them may be OK,
-          // unlike the layers preceding them.
-          !comment.getLayersContainer().parentNode.parentNode
-            .closest('.cd-commentLayersContainer-parent')
-        ) {
+
+        // Nested containers shouldn't count, the offset of the layers inside them may be OK,
+        // unlike the layers preceding them.
+        } else if (!comment.getLayersContainer().convenientDiscussionsIsTopLayersContainer) {
           // isMoved === false
           notMovedCount++;
           if (notMovedCount === 3) {
