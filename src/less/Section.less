@@ -82,6 +82,10 @@ ol .cd-section-button {
     white-space: nowrap;
     unicode-bidi: plaintext;
 
+    &-authorCount {
+      cursor: default;
+    }
+
     .sitedir-ltr &,
     .sitedir-rtl .mw-content-ltr & {
       margin-left: 0;
@@ -145,6 +149,33 @@ ol .cd-section-button {
 
 .cd-section-metadata {
   display: flex;
+
+  &-authorsPopup {
+    font-size: 0.8125rem;
+
+    > .oo-ui-popupWidget-popup > .oo-ui-popupWidget-body {
+      width: max-content !important;
+      max-width: 30em !important;
+    }
+
+    &.oo-ui-popupWidget-anchored-top {
+      padding-top: 24px;
+      margin-top: -15px;
+
+      > .oo-ui-popupWidget-anchor {
+        top: 15px;
+      }
+    }
+
+    &.oo-ui-popupWidget-anchored-bottom {
+      padding-bottom: 24px;
+      margin-bottom: -15px;
+
+      > .oo-ui-popupWidget-anchor {
+        bottom: 15px;
+      }
+    }
+  }
 }
 
 .cd-section-metadata,

@@ -171,7 +171,19 @@ class SectionSkeleton {
         .filter(defined)
     );
 
+    /**
+     * Comments contained in the section.
+     *
+     * @type {import('./Comment').default[]}
+     */
     this.comments = targetsToComments(targets.slice(headingIndex, nndheIndex));
+
+    /**
+     * Comments contained in the first chunk of the section, i.e. all elements up to the first
+     * subheading if it is present, or all elements if it is not.
+     *
+     * @type {import('./Comment').default[]}
+     */
     this.commentsInFirstChunk = targetsToComments(targets.slice(headingIndex, nextHeadingIndex));
 
     this.comments.forEach((comment) => {
@@ -188,21 +200,9 @@ class SectionSkeleton {
       }
     });
 
-    /**
-     * Comments contained in the section.
-     *
-     * @type {import('./Comment').default[]}
-     */
     this.comments ||= [];
 
-    /**
-     * Comments contained in the first chunk of the section, i.e. all elements up to the first
-     * subheading if it is present, or all elements if it is not.
-     *
-     * @type {import('./Comment').default[]}
-     */
     this.commentsInFirstChunk ||= this.comments;
-
     this.commentsInFirstChunk.forEach((comment) => {
       comment.section = this;
     });

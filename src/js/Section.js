@@ -1,6 +1,7 @@
 import Button from './Button';
 import CdError from './CdError';
 import CommentForm from './CommentForm';
+import CommentStatic from './CommentStatic';
 import LiveTimestamp from './LiveTimestamp';
 import SectionSkeleton from './SectionSkeleton';
 import SectionStatic from './SectionStatic';
@@ -14,6 +15,7 @@ import {
   calculateWordOverlap,
   dealWithLoadingBug,
   defined,
+  flat,
   focusInput,
   getUrlWithFragment,
   underlinesToSpaces,
@@ -57,6 +59,8 @@ class Section extends SectionSkeleton {
     this.resetShowAddSubsectionButtonTimeout = this.resetShowAddSubsectionButtonTimeout.bind(this);
     this.resetHideAddSubsectionButtonTimeout = this.resetHideAddSubsectionButtonTimeout.bind(this);
     this.deferAddSubsectionButtonHide = this.deferAddSubsectionButtonHide.bind(this);
+    this.showAuthors = this.showAuthors.bind(this);
+    this.maybeHideAuthors = this.maybeHideAuthors.bind(this);
     this.createMoreMenuSelect = this.createMoreMenuSelect.bind(this);
 
     elementPrototypes = cd.g.SECTION_ELEMENT_PROTOTYPES;
@@ -567,6 +571,60 @@ class Section extends SectionSkeleton {
   }
 
   /**
+   * Show a popup with the list of users who have posted in the section.
+   *
+   * @private
+   */
+  showAuthors() {
+    if (!this.authorsPopup) {
+      this.authorsPopup = new OO.ui.PopupWidget({
+        $content: $(flat(
+          this.comments
+            .map((comment) => comment.author)
+            .filter(unique)
+            .sort((author1, author2) => author2.getName() > author1.getName() ? -1 : 1)
+            .map((author) => [author, this.comments.filter((comment) => comment.author === author)])
+            .map(([author, comments], i, arr) => ([
+              $('<a>')
+                .text(author.getName())
+                .attr('href', `#${comments[0].dtId || comments[0].id}`)
+                .on('click', () => {
+                  CommentStatic.scrollToFirstHighlightAll(comments);
+                })
+                .get(0),
+              i === arr.length - 1 ? undefined : document.createTextNode(cd.mws('comma-separator')),
+            ]))
+        )),
+        head: false,
+        padded: true,
+        autoClose: true,
+        position: 'above',
+        align: 'forwards',
+        $floatableContainer: $(this.authorCountWrapper.firstChild),
+        classes: ['cd-section-metadata-authorsPopup'],
+      });
+      this.authorsPopup.$element.on('mouseleave', this.maybeHideAuthors);
+      $(controller.getPopupOverlay()).append(this.authorsPopup.$element);
+    }
+
+    this.authorsPopup.toggle(true);
+  }
+
+  /**
+   * Hide the popup with the list of users who have posted in the section.
+   *
+   * @private
+   */
+  maybeHideAuthors() {
+    if (
+      !this.authorCountWrapper.firstChild.matches(':hover') &&
+      !this.authorsPopup.$element.is(':hover')
+    ) {
+      this.authorsPopup.toggle(false);
+    }
+  }
+
+  /**
    * Scroll to the latest comment in the section.
    *
    * @param {Event} e
@@ -600,15 +658,15 @@ class Section extends SectionSkeleton {
     if (this.level === 2 && this.comments.length) {
       commentCountWrapper = document.createElement('span');
       commentCountWrapper.className = 'cd-section-bar-item';
-      const commentCountText = cd.s('section-metadata-commentcount', this.comments.length);
-
-      // Add a no-break space to ensure the text is copied correctly.
-      commentCountWrapper.append(commentCountText);
+      commentCountWrapper.append(cd.s('section-metadata-commentcount', this.comments.length));
 
       authorCountWrapper = document.createElement('span');
-      authorCountWrapper.className = 'cd-section-bar-item';
-      const authorCountText = cd.s('section-metadata-authorcount', authorCount);
-      authorCountWrapper.append(authorCountText);
+      authorCountWrapper.className = 'cd-section-bar-item cd-section-bar-item-authorCount';
+      const innerWrapper = document.createElement('span');
+      innerWrapper.append(cd.s('section-metadata-authorcount', authorCount));
+      authorCountWrapper.append(innerWrapper);
+      innerWrapper.onmouseenter = this.showAuthors;
+      innerWrapper.onmouseleave = this.maybeHideAuthors;
 
       if (latestComment) {
         const latestCommentLink = document.createElement('a');
@@ -619,8 +677,7 @@ class Section extends SectionSkeleton {
 
         latestCommentWrapper = document.createElement('span');
         latestCommentWrapper.className = 'cd-section-bar-item';
-        const latestCommentText = cd.s('section-metadata-lastcomment');
-        latestCommentWrapper.append(latestCommentText, ' ', latestCommentLink);
+        latestCommentWrapper.append(cd.s('section-metadata-lastcomment'), ' ', latestCommentLink);
       }
 
       metadataElement = document.createElement('div');
@@ -798,13 +855,7 @@ class Section extends SectionSkeleton {
    */
   scrollToNewComments(e) {
     e.preventDefault();
-    this.newComments[0].scrollTo({
-      flash: false,
-      pushState: true,
-      callback: () => {
-        this.newComments.forEach((comment) => comment.flashTarget());
-      },
-    });
+    CommentStatic.scrollToFirstHighlightAll(this.newComments);
   }
 
   /**
