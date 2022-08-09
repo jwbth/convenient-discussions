@@ -287,7 +287,7 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Defer hiding the "Add subsection" button.
+   * Hide the "Add subsection" button after a second.
    *
    * @private
    */
@@ -576,6 +576,7 @@ class Section extends SectionSkeleton {
    * @private
    */
   showAuthors() {
+    clearTimeout(this.maybeHideAuthorsTimeout);
     if (!this.authorsPopup) {
       this.authorsPopup = new OO.ui.PopupWidget({
         $content: $(flat(
@@ -611,17 +612,21 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Hide the popup with the list of users who have posted in the section.
+   * Hide the popup with the list of users who have posted in the section after some period of time.
+   * The time period is needed first of all so that the user has the time to move the cursor from
+   * the author count to the popup without the popup being closed.
    *
    * @private
    */
   maybeHideAuthors() {
-    if (
-      !this.authorCountWrapper.firstChild.matches(':hover') &&
-      !this.authorsPopup.$element.is(':hover')
-    ) {
-      this.authorsPopup.toggle(false);
-    }
+    this.maybeHideAuthorsTimeout = setTimeout(() => {
+      if (
+        !this.authorCountWrapper.firstChild.matches(':hover') &&
+        !this.authorsPopup.$element.is(':hover')
+      ) {
+        this.authorsPopup.toggle(false);
+      }
+    }, 100);
   }
 
   /**
