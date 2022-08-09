@@ -114,8 +114,11 @@ class TributeRange {
                 originalEvent.ctrlKey
                 data.content = (
                     (
-                        data.skipContentByDefault &&
-                        !(originalEvent.shiftKey || originalEvent.altKey) ?
+                        (
+                            data.skipContentByDefault &&
+                            !data.start.includes('/') &&
+                            !(originalEvent.shiftKey || originalEvent.altKey)
+                        ) ?
                             '' :
                             data.content
                     ) ||
