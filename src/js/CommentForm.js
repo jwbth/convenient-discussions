@@ -675,7 +675,7 @@ class CommentForm {
             tagName: 'div',
             targetBlank: true,
           }
-        ),
+        ).contents(),
         padded: true,
         align: 'center',
         width: 400,
@@ -813,11 +813,11 @@ class CommentForm {
      */
     this.$advanced = $('<div>')
       .addClass('cd-commentForm-advanced')
-      .append([
+      .append(
         this.summaryInput.$element,
         this.$summaryPreview,
         this.checkboxesLayout.$element,
-      ]);
+      );
 
     /**
      * Start (left on LTR wikis, right on RTL wikis) form buttons container.
@@ -826,11 +826,11 @@ class CommentForm {
      */
     this.$buttonsStart = $('<div>')
       .addClass('cd-commentForm-buttons-start')
-      .append([
+      .append(
         this.advancedButton.$element,
         this.helpPopupButton.$element,
         this.settingsButton?.$element,
-      ].filter(defined));
+      );
 
     /**
      * End (right on LTR wikis, left on RTL wikis) form buttons container.
@@ -839,12 +839,12 @@ class CommentForm {
      */
     this.$buttonsEnd = $('<div>')
       .addClass('cd-commentForm-buttons-end')
-      .append([
+      .append(
         this.cancelButton.$element,
         this.viewChangesButton.$element,
         this.previewButton.$element,
         this.submitButton.$element,
-      ]);
+      );
 
     /**
      * Form buttons container.
@@ -855,13 +855,13 @@ class CommentForm {
       .addClass('cd-commentForm-buttons')
       .append(this.$buttonsStart, this.$buttonsEnd);
 
-    this.$element.append([
+    this.$element.append(
       this.$messageArea,
       this.headlineInput?.$element,
       this.commentInput.$element,
       this.$advanced,
       this.$buttons,
-    ]);
+    );
 
     if (this.mode !== 'edit' && !settings.get('alwaysExpandAdvanced')) {
       this.$advanced.hide();
@@ -1764,14 +1764,7 @@ class CommentForm {
       commentsInSection = this.targetSection.getBase().comments;
     } else if (this.mode !== 'addSection') {
       // Comments in the lead section
-      cd.comments.some((comment) => {
-        if (comment.section) {
-          return true;
-        } else {
-          commentsInSection.push(comment);
-          return false;
-        }
-      });
+      commentsInSection = cd.comments.filter((comment) => !comment.section);
     }
     if (this.mode === 'edit') {
       commentsInSection = commentsInSection.filter((comment) => comment !== this.target);
@@ -1790,6 +1783,8 @@ class CommentForm {
       .filter(defined)
       .sort((u1, u2) => u2.isRegistered() - u1.isRegistered() || (u2.name > u1.name ? -1 : 1))
       .map((u) => u.name);
+
+    // Move the addressee to the beginning of the user list
     if (this.targetComment) {
       for (let с = this.targetComment; с; с = с.getParent()) {
         if (с.author !== cd.user) {
@@ -1799,6 +1794,7 @@ class CommentForm {
         }
       }
     }
+
     defaultUserNames = defaultUserNames.filter(unique);
 
     /**

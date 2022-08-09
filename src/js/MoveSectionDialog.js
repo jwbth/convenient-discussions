@@ -208,12 +208,12 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         align: 'top',
       });
 
-      this.movePanel.$element.append([
+      this.movePanel.$element.append(
         this.controls.title.field.$element,
         this.controls.keepLink.field?.$element,
         $sectionCode,
         this.controls.summaryEnding.field.$element,
-      ]);
+      );
 
       this.stackLayout.setItem(this.movePanel);
       focusInput(this.controls.title.input);

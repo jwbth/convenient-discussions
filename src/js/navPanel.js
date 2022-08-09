@@ -143,13 +143,13 @@ export default {
       },
     }).hide();
 
-    this.$element.append([
+    this.$element.append(
       this.refreshButton.element,
       this.previousButton.element,
       this.nextButton.element,
       this.firstUnseenButton.element,
       this.commentFormButton.element,
-    ]);
+    );
   },
 
   /**
