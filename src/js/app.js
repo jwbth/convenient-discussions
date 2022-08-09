@@ -115,6 +115,11 @@ function s(name, ...params) {
  * @memberof convenientDiscussions
  */
 function sParse(name, ...params) {
+  if (params.some((param) => /[<>]/.test(param))) {
+    // mw.message().parse() escapes tags in parameters - work around that.
+    mw.messages.set('convenient-discussions-parsehack', s(name, ...params));
+    return mw.message('convenient-discussions-parsehack').parse();
+  }
   return s(name, ...params, { parse: true });
 }
 
