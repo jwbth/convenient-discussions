@@ -1383,7 +1383,7 @@ class Comment extends CommentSkeleton {
     // Ignore other than left button clicks.
     if (e.which !== 1) return;
 
-    this.hideMenuTimeout = setTimeout(this.hideMenu, 1500);
+    this.hideMenuTimeout = setTimeout(this.hideMenu, 1200);
   }
 
   /**
