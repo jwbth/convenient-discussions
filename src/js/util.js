@@ -44,11 +44,16 @@ export function wrap(htmlOrJquery, options = {}) {
   if (options.callbacks) {
     Object.keys(options.callbacks).forEach((className) => {
       const $linkWrapper = $wrapper.find(`.${className}`);
-      if (!$linkWrapper.find('a').length) {
-        $linkWrapper.wrapInner('<a>');
+      let $link = $linkWrapper.find('a');
+      if (/\$\d$/.test($link.attr('href'))) {
+        // Dummy links we put into strings for translation so that translators understand this will
+        // be a link.
+        $link.removeAttr('href').removeAttr('title');
+      } else if (!$link.length) {
+        $link = $linkWrapper.wrapInner('<a>').children().first();
       }
       const button = new Button({
-        element: $linkWrapper.find('a').get(0),
+        element: $link.get(0),
         action: options.callbacks[className],
       });
       buttons.push(button);

@@ -63,7 +63,7 @@
   "section-unwatch-stillwatched": "<strong>Note:</strong> you are still subscribed to this section as it is included in the section \"$1\" that you are subscribed to.",
   "section-watch-openpages": "(You will only get notifications while this tab is open.)",
   "section-watch-pagenotwatched": "<strong>Note:</strong> you subscribed to the section but you don't watch the page. In order for new comments to be highlighted on your watchlist page, add the page to the watchlist.",
-  "section-watch-error-maxsize": "Couldn't update the settings: the size of the subscription list exceeds the maximum size. <span class=\"cd-notification-editWatchedSections\">Edit the subscription list</span> to fix this.",
+  "section-watch-error-maxsize": "Couldn't update the settings: the size of the subscription list exceeds the maximum size. <span class=\"cd-notification-editWatchedSections\">[[$1|Edit the subscription list]]</span> to fix this.",
   "section-metadata-commentcount": "$1 {{plural:$1|comment|comments}}",
   "section-metadata-commentcount-new": "+$1 {{plural:$1|new}}",
   "section-metadata-authorcount": "$1 {{plural:$1|person|people}}",
@@ -240,18 +240,18 @@
   "rd-summary": "Edit summary",
   "rd-close": "Close",
 
-  "rc-suggestion": "<p>Convenient Discussions has an option to change the formatting of comments, moving the author and timestamp up and the reply and thank buttons down. This allows to quickly see the author and date of comments and interact with them easier. Do you want to enable it? (You can always disable it in the settings.)</p>\n\n<p>Also, see <span class=\"cd-notification-settings\">the settings</span> for various new features, such as customizable formatting of timestamps (which, by the way, are displayed in the timezone set in your wiki preferences by default).</p>",
+  "rc-suggestion": "<p>Convenient Discussions has an option to change the formatting of comments, moving the author and timestamp up and the reply and thank buttons down. This allows to quickly see the author and date of comments and interact with them easier. Do you want to enable it? (You can always disable it in the settings.)</p>\n\n<p>Also, see <span class=\"cd-notification-settings\">[[$1|the settings]]</span> for various new features, such as customizable formatting of timestamps (which, by the way, are displayed in the timezone set in your wiki preferences by default).</p>",
   "rc-suggestion-yes": "Enable the new formatting",
   "rc-suggestion-no": "Keep the usual formatting",
 
-  "topicsubscription-notice": "Convenient Discussions now uses the standard notifications interface for section watching (now it is called topic subscriptions). You will get a notification when someone posts a new comment in the topic you subscribed to. If you had desktop notifications enabled, you will still receive them. You can configure the notification types (web, email, app) in the <b>[[Special:Preferences#mw-prefsection-echo|preferences]]</b>. Or you can go back to the classic section watching. See the details in the <b><span class=\"cd-notification-notificationSettings\">Convenient Discussions settings</span></b>.",
+  "topicsubscription-notice": "Convenient Discussions now uses the standard notifications interface for section watching (now it is called topic subscriptions). You will get a notification when someone posts a new comment in the topic you subscribed to. If you had desktop notifications enabled, you will still receive them. You can configure the notification types (web, email, app) in the <b>[[Special:Preferences#mw-prefsection-echo|preferences]]</b>. Or you can go back to the classic section watching. See the details in the <b><span class=\"cd-notification-notificationSettings\">[[$1|Convenient Discussions settings]]</span></b>.",
 
   "navpanel-refresh": "Refresh page",
   "navpanel-previous": "Go to the previous new comment",
   "navpanel-next": "Go to the next new comment",
   "navpanel-firstunseen": "Go to the first unseen comment",
   "navpanel-firstunseen-hidden-title": "The comment is in a collapsed thread",
-  "navpanel-firstunseen-hidden": "Scrolled to the thread. <span class=\"cd-notification-expandThread\">Expand the thread and scroll to the comment</span>.",
+  "navpanel-firstunseen-hidden": "Scrolled to the thread. <span class=\"cd-notification-expandThread\">[[$1|Expand the thread and scroll to the comment]]</span>.",
   "navpanel-commentform": "Go to the next comment form out of sight",
   "navpanel-newcomments-count": "$1 new {{plural:$1|comment|comments}}.",
   "navpanel-newcomments-names": "$1 → $2",
@@ -384,7 +384,7 @@
   "move-targetpagecode": "''Moved from [[$1]]. $2''",
 
   "error-loaddata": "{{int:convenient-discussions-script-name}}: Couldn't load the data required by the script.",
-  "error-needreloadpage": "API error. Please <span class=\"cd-notification-reloadPage\">reload the page</span> and try again.",
+  "error-needreloadpage": "API error. Please <span class=\"cd-notification-reloadPage\">[[$1|reload the page]]</span> and try again.",
   "error-processpage": "{{int:convenient-discussions-script-name}}: Couldn't process the page. See the details in the JavaScript console (F12 → Console).",
   "error-settings-load": "{{int:convenient-discussions-script-name}}: Couldn't load the settings from the server.",
   "error-settings-save": "{{int:convenient-discussions-script-name}}: Couldn't save the settings to the server.",
@@ -395,8 +395,8 @@
   "error-nodata": "The server response lacks the requested data.",
   "error-unknown": "Unknown error.",
   "error-javascript": "A JavaScript error occurred. See the details in the JavaScript console (F12 → Console).",
-  "error-locatecomment": "Couldn't find the comment in the code. This may be caused by the complexity of the comment code, the script flaw, or the fact that the comment was deleted or heavily edited. You can try to <span class=\"cd-message-editSection\">[$1 edit the source the standard way]</span> or <span class=\"cd-message-reloadPage\">reload the page</span>.",
-  "error-locatesection": "Couldn't find the section in the code. This may be caused by the complexity of the section's first comment code, the script flaw, or the fact that the section was deleted. You can try to <span class=\"cd-message-editPage\">[$1 edit the page source the standard way]</span> or <span class=\"cd-message-reloadPage\">reload the page</span>.",
+  "error-locatecomment": "Couldn't find the comment in the code. This may be caused by the complexity of the comment code, the script flaw, or the fact that the comment was deleted or heavily edited. You can try to <span class=\"cd-message-editSection\">[$1 edit the source the standard way]</span> or <span class=\"cd-message-reloadPage\">[[$1|reload the page]]</span>.",
+  "error-locatesection": "Couldn't find the section in the code. This may be caused by the complexity of the section's first comment code, the script flaw, or the fact that the section was deleted. You can try to <span class=\"cd-message-editPage\">[$1 edit the page source the standard way]</span> or <span class=\"cd-message-reloadPage\">[[$1|reload the page]]</span>.",
   "error-spamblacklist": "You are trying to add a URL with the domain name $1 that is blacklisted. The page was not edited.",
   "error-titleblacklist": "The page name is blacklisted. The page was not edited.",
   "error-abusefilter": "Your edit was automatically rejected by abuse filter \"$1\".",
@@ -411,10 +411,10 @@
   "error-anoneditwatning": "<strong>You are not logged in.</strong> Your IP address will be publicly visible if you make any edits.",
 
   "warning-performance-title": "Performance issues?",
-  "warning-performance": "Convenient Discussions can try to resolve them with the \"{{int:convenient-discussions-sd-improveperformance}}\" setting. <span class=\"cd-notification-talkPageSettings\">Open the settings dialog</span>.",
+  "warning-performance": "Convenient Discussions can try to resolve them with the \"{{int:convenient-discussions-sd-improveperformance}}\" setting. <span class=\"cd-notification-talkPageSettings\">[[$1|Open the settings dialog]]</span>.",
 
   "discussiontools-incompatible": "Convenient Discussions is incompatible with DiscussionTools. Please <b><span class=\"cd-notification-disabledt\">[[Special:Preferences#mw-prefsection-betafeatures|disable]]</span></b> DiscussionTools to make Convenient Discussions work correctly.",
-  "discussiontools-disabled": "DiscussionTools has been successfully disabled. <span class=\"cd-notification-refresh\">Refresh the page</span>.",
+  "discussiontools-disabled": "DiscussionTools has been successfully disabled. <span class=\"cd-notification-refresh\">[[$1|Refresh the page]]</span>.",
 
   "wl-button-switchrelevant-tooltip": "Show only comments in topics that I'm {{gender:$1|subscribed to}} and comments addressed to me. (Note: detection is based on edit summaries, so some edits may be missing)",
   "wl-button-editwatchedsections-tooltip": "Edit the list of topics that I'm {{gender:$1|subscribed to}}",
