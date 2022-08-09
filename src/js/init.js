@@ -1068,10 +1068,10 @@ export default {
 
     // {{gender:}} with at least two pipes in a selection of the affected strings.
     cd.g.GENDER_AFFECTS_USER_STRING = /\{\{ *gender *:[^}]+?\|[^}]+?\|/i.test(
-      cd.sPlain('es-reply-to') +
-      cd.sPlain('es-edit-comment-by') +
-      cd.sPlain('thank-confirm') +
-      cd.sPlain('thread-expand')
+      Object.entries(mw.messages.get())
+        .filter(([key]) => key.startsWith('convenient-discussions'))
+        .map(([, value]) => value)
+        .join()
     );
 
     if (cd.config.tagName && cd.user.isRegistered()) {
