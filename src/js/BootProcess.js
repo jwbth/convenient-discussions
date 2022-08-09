@@ -270,7 +270,7 @@ class BootProcess {
             controller.showSettingsDialog();
           },
         },
-      }).$wrapper);
+      }));
     $body.append($imgOld, $arrow, $imgNew, $div);
     const action = await showConfirmDialog($body, {
       size: 'large',
@@ -627,10 +627,11 @@ class BootProcess {
                 location.reload();
               },
             },
-          }).$wrapper;
+          });
           mw.notify(message);
         },
       },
+      returnButtons: true,
     });
     const notification = mw.notification.notify($message, {
       type: 'warn',

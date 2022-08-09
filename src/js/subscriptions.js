@@ -173,7 +173,7 @@ export default {
                   controller.showEditSubscriptionsDialog();
                 },
               },
-            }).$wrapper;
+            });
             mw.notify($body, {
               type: 'error',
               autoHideSeconds: 'long',
@@ -366,7 +366,7 @@ export default {
       },
       targetBlank: true,
       tagName: 'div',
-    }).$wrapper.addClass('cd-tsnotice-text');
+    }).addClass('cd-tsnotice-text');
     $body.append($img, $div);
     OO.ui.alert($body, { size: 'large' });
 

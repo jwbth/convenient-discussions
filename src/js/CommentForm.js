@@ -1499,7 +1499,7 @@ class CommentForm {
             controller.showSettingsDialog('talkPage');
           },
         },
-      }).$wrapper;
+      });
       mw.notify($body, {
         title: cd.s('warning-performance-title'),
         type: 'warn',
@@ -2163,7 +2163,7 @@ class CommentForm {
               }
             },
           },
-        }).$wrapper;
+        });
         break;
       }
 

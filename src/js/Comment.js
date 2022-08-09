@@ -2388,7 +2388,7 @@ class Comment extends CommentSkeleton {
             notification.close();
           },
         },
-      }).$wrapper, {
+      }), {
         title: cd.s('navpanel-firstunseen-hidden-title'),
       });
     } else {

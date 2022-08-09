@@ -32,6 +32,7 @@ import cd from './cd';
  * @param {WrapCallbacks} [options.callbacks]
  * @param {string} [options.tagName='span']
  * @param {boolean} [options.targetBlank]
+ * @param {boolean} [options.returnButtons=false]
  * @returns {external:jQuery|WrapComplexReturn} If `options.callbacks` is supplied, returns an array
  *   containing a wrapper and an array of buttons. Otherwise, returns a wrapper alone.
  */
@@ -56,7 +57,7 @@ export function wrap(htmlOrJquery, options = {}) {
   if (options.targetBlank) {
     $wrapper.find('a[href]').attr('target', '_blank');
   }
-  return buttons.length ? { $wrapper, buttons } : $wrapper;
+  return options.returnButtons ? { $wrapper, buttons } : $wrapper;
 }
 
 /**
@@ -537,7 +538,7 @@ export function dealWithLoadingBug(moduleName) {
           location.reload();
         },
       },
-    }).$wrapper;
+    });
     mw.notify($body, { type: 'error' });
     return true;
   }

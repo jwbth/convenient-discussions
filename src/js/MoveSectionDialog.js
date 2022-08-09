@@ -559,7 +559,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
           controller.reload();
         },
       },
-    }).$wrapper;
+    });
     this.showErrors(new OO.ui.Error($body, { recoverable }));
     this.$errors
       .find('.oo-ui-buttonElement-button')
