@@ -108,6 +108,7 @@ class Parser {
         [...this.context.rootElement.getElementsByClassName('ext-discussiontools-init-replylink-buttons')]
       );
     this.context.handleDtMarkup(elements);
+    this.context.removeDtButtonHtmlComments();
   }
 
   /**

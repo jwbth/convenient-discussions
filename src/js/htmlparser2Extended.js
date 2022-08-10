@@ -31,22 +31,6 @@ function walkThroughSubtree(base, callback, checkSelf) {
   }
 }
 
-/**
- * Get all text nodes under the root element.
- *
- * @returns {external:Node[]}
- * @private
- */
-function getAllTextNodes() {
-  let nodes = [];
-  walkThroughSubtree(self.rootElement, (node) => {
-    if (node.nodeType === Node.TEXT_NODE) {
-      nodes.push(node);
-    }
-  });
-  return nodes;
-}
-
 const dummyDocument = parseDocument('<a>a</a>');
 const Document = dummyDocument.constructor;
 const firstElement = dummyDocument.childNodes[0];
@@ -394,4 +378,4 @@ Document.prototype.getElementsByClassName = Element.prototype.getElementsByClass
 
 self.Document = Document;
 
-export { getAllTextNodes, parseDocument };
+export { walkThroughSubtree, parseDocument };

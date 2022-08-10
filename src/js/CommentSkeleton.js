@@ -237,7 +237,13 @@ class CommentSkeleton {
       accurately (inline elements in most cases are continuations of the same comment).
     */
     while (!firstForeignComponentAfter) {
-      while (!treeWalker.currentNode.nextSibling && treeWalker.parentNode());
+      while (
+        (
+          !treeWalker.currentNode.nextSibling ||
+          ![Node.ELEMENT_NODE, Node.TEXT_NODE].includes(treeWalker.currentNode.nextSibling.nodeType)
+        ) &&
+        treeWalker.parentNode()
+      );
       if (!treeWalker.nextSibling()) break;
       if (!isInline(treeWalker.currentNode, true)) {
         firstForeignComponentAfter = treeWalker.currentNode;

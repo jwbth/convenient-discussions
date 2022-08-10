@@ -15,8 +15,9 @@ import Parser from './Parser';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
 import debug from './debug';
-import { getAllTextNodes, parseDocument } from './htmlparser2Extended';
 import { isHeadingNode, isMetadataNode } from './util';
+import { parseDocument, walkThroughSubtree } from './htmlparser2Extended';
+
 
 let isFirstRun = true;
 let alarmTimeout;
@@ -37,6 +38,36 @@ function setAlarm(interval) {
   alarmTimeout = setTimeout(() => {
     postMessage({ type: 'wakeUp' });
   }, interval);
+}
+
+/**
+ * Get all text nodes under the root element.
+ *
+ * @returns {external:Node[]}
+ * @private
+ */
+function getAllTextNodes() {
+  let nodes = [];
+  walkThroughSubtree(self.rootElement, (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      nodes.push(node);
+    }
+
+    // Remove comments DT reply button html comments as well to optimize.
+    if (node.nodeType === Node.COMMENT_NODE && node.data.startsWith('__DTREPLYBUTTONS__')) {
+      node.remove();
+    }
+  });
+  return nodes;
+}
+
+/**
+ * Remove all html comments added by DiscussionTools related to reply buttons.
+ *
+ * @private
+ */
+function removeDtButtonHtmlComments() {
+  // See getAllTextNodes()
 }
 
 /**
@@ -398,6 +429,7 @@ function parse() {
         el.remove();
       });
     },
+    removeDtButtonHtmlComments,
   });
 
   const targets = findTargets(parser);

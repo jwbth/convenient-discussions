@@ -31,13 +31,28 @@ import { showConfirmDialog } from './ooui';
  * @private
  */
 function getAllTextNodes() {
-  const treeWalker = document.createTreeWalker(controller.rootElement, NodeFilter.SHOW_TEXT);
+  const treeWalker = document.createNodeIterator(controller.rootElement, NodeFilter.SHOW_TEXT);
+  const nodes = [];
   let node;
-  const textNodes = [];
   while ((node = treeWalker.nextNode())) {
-    textNodes.push(node);
+    nodes.push(node);
   }
-  return textNodes;
+  return nodes;
+}
+
+/**
+ * Remove all html comments added by DiscussionTools related to reply buttons.
+ *
+ * @private
+ */
+function removeDtButtonHtmlComments() {
+  const treeWalker = document.createNodeIterator(controller.rootElement, NodeFilter.SHOW_COMMENT);
+  let node;
+  while ((node = treeWalker.nextNode())) {
+    if (node.textContent.startsWith('__DTREPLYBUTTONS__')) {
+      node.remove();
+    }
+  }
 }
 
 /**
@@ -693,6 +708,7 @@ class BootProcess {
         el2.compareDocumentPosition(el1) & Node.DOCUMENT_POSITION_FOLLOWING
       ),
       getAllTextNodes,
+      removeDtButtonHtmlComments,
       getElementByClassName: (node, className) => node.querySelector(`.${className}`),
       cloneNode: (node) => node.cloneNode(),
       rootElement: controller.rootElement,
