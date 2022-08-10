@@ -115,7 +115,7 @@
             const inputs = ['INPUT', 'SELECT', 'BUTTON', 'TEXTAREA'];
             if (inputs.includes(activeElement.tagName) || activeElement.isContentEditable) return;
 
-            if (e.key === '/') {
+            if (e.code === 'Slash') {
                 e.preventDefault();
                 document.getElementById('nav-search').focus();
             }
