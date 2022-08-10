@@ -600,7 +600,6 @@ class Section extends SectionSkeleton {
         padded: true,
         autoClose: true,
         position: 'above',
-        align: 'forwards',
         $floatableContainer: $(this.authorCountWrapper.firstChild),
         classes: ['cd-section-metadata-authorsPopup'],
       });
