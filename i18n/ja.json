@@ -10,6 +10,7 @@
 			"Omotecho",
 			"RYOUMA1117",
 			"RYU N",
+			"Sou0012",
 			"Yamagata Yusuke",
 			"つぶあん派"
 		]
@@ -59,6 +60,7 @@
 	"section-unwatch-stillwatched": "<strong>注記：</strong>この節はウォッチ指定をした「$1」に含まれるため、ウォッチ状態が続いています。",
 	"section-watch-pagenotwatched": "<strong>注：</strong>節はウォッチリストに登録しましたが、ページは対象にしてありません。ウォッチリストのページで新規のコメントを強調表示するには、ページそのものをウォッチリストに登録してください。",
 	"section-watch-error-maxsize": "設定の更新ができませんでした：ウォッチ指定した節が上限サイズよりも大きすぎます。<span class=\"cd-notification-editWatchedSections\">指定した節のリスト</span>を修正してください。",
+	"section-metadata-lastcomment": "最新のコメント:",
 	"cld-select-anchor": "固定リンク",
 	"cld-select-diff": "差分のリンク",
 	"cld-summary": "編集の要約",
@@ -163,7 +165,7 @@
 	"dn-confirm": "表示中のページであなた宛てもしくはウォッチリストに登録した節に新しいコメントが投稿されたとき、Convenient Discussions からデスクトップ通知を受け取りますか？ 後で設定を無効にすることができます。",
 	"dn-confirm-yes": "はい",
 	"dn-confirm-no": "いいえ",
-	"dn-grantpermission-again": "デスクトップ版の通知は有効に設定してありますが、このサイトからの通知は認めていません。受信するにはサイトに対して権限を承認するか、このメッセージを再表示しないなら受信拒否してしてください。",
+	"dn-grantpermission-again": "便利なディスカッションの設定でデスクトップ通知を有効にしていますが、サイトが通知を送信することを許可されていません。このメッセージが再び表示されないようにするには、サイトに通知の受信を許可するか、拒否してください。",
 	"deadanchor-section-finding": "アーカイブされたセクションを探しています…",
 	"deadanchor-section-notfound": "[$1 アーカイブも検索しました]が結果は見つかりませんでした。削除されたか、名前が変更されたか、またはリンクの形式が正しくない可能性があります。",
 	"deadanchor-comment-finding": "アーカイブ化されたコメントを探しています…",
