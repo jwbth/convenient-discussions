@@ -1042,8 +1042,10 @@ export default {
   globals() {
     if (cd.page) return;
 
-    cd.g.PHP_CHAR_TO_UPPER = mw.loader.moduleRegistry['mediawiki.Title'].script
-      .files['phpCharToUpper.json'];
+    cd.g.PHP_CHAR_TO_UPPER = (
+      mw.loader.moduleRegistry['mediawiki.Title'].script.files['phpCharToUpper.json'] ||
+      {}
+    );
 
     /**
      * Current page's object.
