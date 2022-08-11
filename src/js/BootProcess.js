@@ -655,14 +655,14 @@ class BootProcess {
   }
 
   /**
-   * Initialize or reset various systems required for the boot process. Some DOM preparations are
-   * also made here.
+   * Setup various components required for the boot process. Some DOM preparations are also made
+   * here.
    *
    * @private
    */
   async setup() {
-    controller.reset(this.data('html'));
-    toc.reset(this.data('toc'), this.data('hidetoc'));
+    controller.setup(this.data('html'));
+    toc.setup(this.data('toc'), this.data('hidetoc'));
 
     /**
      * Collection of all comments on the page ordered the same way as in the DOM.

@@ -10,7 +10,6 @@ import CommentStatic from './CommentStatic';
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
-import updateChecker from './updateChecker';
 import { formatDate } from './timestamp';
 import { isCmdModifierPressed, reorderArray } from './util';
 import { removeWikiMarkup } from './wikitext';
@@ -206,8 +205,8 @@ export default {
     // There was reload confirmation here, but after session restore was introduced, the
     // confirmation seems to be no longer needed.
     controller.reload({
-      commentIds: updateChecker.getRelevantNewCommentIds(),
-      pushState: Boolean(updateChecker.getRelevantNewCommentIds()),
+      commentIds: controller.getRelevantAddedCommentIds(),
+      pushState: Boolean(controller.getRelevantAddedCommentIds()),
       markAsRead,
     });
   },

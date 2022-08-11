@@ -2,6 +2,11 @@
   "script-name": "Convenient Discussions",
   "script-name-short": "CD",
 
+  "page-title-reply": "Replying on $1",
+  "page-title-edit": "Editing on $1",
+  "page-title-addsection": "Starting new topic on $1",
+  "page-title-addsubsection": "Starting new subsection on $1",
+
   "cm-gotoparent": "Go to parent",
   "cm-gotoparent-tooltip": "Go to the parent comment",
   "cm-gotochild": "Go back to child",

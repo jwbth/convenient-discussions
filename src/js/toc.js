@@ -110,13 +110,13 @@ const toc = {
   },
 
   /**
-   * _For internal use._ Reset the TOC data and, for the sidebar TOC, update its content. (Executed
-   * at every page reload.)
+   * _For internal use._ Setup the TOC data and, for sidebar TOC, update its content. (Executed at
+   * every page reload.)
    *
    * @param {object[]} [sections] TOC sections object.
    * @param {boolean} [doHideToc] Whether the TOC should be hidden.
    */
-  reset(sections, doHideToc) {
+  setup(sections, doHideToc) {
     this.$element = this.isInSidebar() ? $('.sidebar-toc') : controller.$root.find('.toc');
     this.tocItems = null;
     this.floating = null;

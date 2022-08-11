@@ -352,7 +352,7 @@ async function go() {
   debug.startTimer('start');
 
   setGlobals();
-  controller.setup();
+  controller.init();
   controller.loadToTalkPage();
   maybeAddFooterLink();
   maybeTweakAddTopicButton();

@@ -255,6 +255,8 @@ class CommentForm {
       this.checkCode();
     }
 
+    cd.commentForms.push(this);
+
     if (initialState && !initialState.focus) {
       navPanel.updateCommentFormButton();
     } else {
@@ -269,7 +271,7 @@ class CommentForm {
       });
     }
 
-    cd.commentForms.push(this);
+    controller.updatePageTitle();
 
     /**
      * A comment form has been created and added to the page.
@@ -1746,6 +1748,7 @@ class CommentForm {
       // "focusin" is "focus" that bubbles, i.e. propagates up the node tree.
       .on('focusin', () => {
         this.lastFocused = new Date();
+        controller.updatePageTitle();
       });
 
     this.addEventListenersToTextInputs(saveSessionEventHandler, preview);
@@ -3170,6 +3173,7 @@ class CommentForm {
     removeFromArrayIfPresent(cd.commentForms, this);
     CommentFormStatic.saveSession(true);
     navPanel.updateCommentFormButton();
+    controller.updatePageTitle();
     this.autocomplete.cleanUp();
   }
 

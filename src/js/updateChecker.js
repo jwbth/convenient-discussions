@@ -10,8 +10,6 @@ import SectionStatic from './SectionStatic';
 import Thread from './Thread';
 import cd from './cd';
 import controller from './controller';
-import navPanel from './navPanel';
-import notifications from './notifications';
 import settings from './settings';
 import toc from './toc';
 import userRegistry from './userRegistry';
@@ -20,22 +18,17 @@ import {
   getFromLocalStorage,
   keepWorkerSafeValues,
   saveToLocalStorage,
-  wrap,
 } from './util';
 import { loadUserGenders } from './apiWrappers';
 
 const revisionData = {};
 const resolvers = {};
 
-let commentsNotifiedAbout;
 let isBackgroundCheckArranged;
 let previousVisitRevisionId;
 let submittedCommentId;
-
 let lastCheckedRevisionId = null;
-let relevantNewCommentIds = null;
 let resolverCount = 0;
-let newCommentsTitleMark = '';
 
 /**
  * Tell the worker to wake the script up after a given interval.
@@ -581,201 +574,6 @@ function checkForNewChanges(currentComments) {
 }
 
 /**
- * Show an ordinary notification (`mediawiki.notification`) to the user.
- *
- * @param {import('./CommentSkeleton').CommentSkeletonLike[]} comments
- * @private
- */
-function showOrdinaryNotification(comments) {
-  let filteredComments = [];
-  if (settings.get('notifications') === 'all') {
-    filteredComments = comments;
-  } else if (settings.get('notifications') === 'toMe') {
-    filteredComments = comments.filter((comment) => comment.isToMe);
-  }
-
-  if (settings.get('notifications') !== 'none' && filteredComments.length) {
-    // Combine with content of notifications that were displayed but are still open (i.e., the user
-    // most likely didn't see them because the tab is in the background). In the past there could be
-    // more than one notification, now there can be only one.
-    const openNotification = notifications.get()
-      .find((data) => data.comments && data.notification.isOpen);
-    if (openNotification) {
-      filteredComments.push(...openNotification.comments);
-    }
-  }
-
-  if (filteredComments.length) {
-    let html;
-    const formsDataWillNotBeLost = cd.commentForms.some((commentForm) => commentForm.isAltered()) ?
-      ' ' + cd.mws('parentheses', cd.s('notification-formdata')) :
-      '';
-    const reloadHtml = cd.sParse('notification-reload', formsDataWillNotBeLost);
-    if (filteredComments.length === 1) {
-      const comment = filteredComments[0];
-      if (comment.isToMe) {
-        const where = comment.sectionSubscribedTo ?
-          (
-            cd.mws('word-separator') +
-            cd.s('notification-part-insection', comment.sectionSubscribedTo.headline)
-          ) :
-          cd.mws('word-separator') + cd.s('notification-part-onthispage');
-        html = (
-          cd.sParse('notification-toyou', comment.author.getName(), comment.author, where) +
-          ' ' +
-          reloadHtml
-        );
-      } else {
-        html = (
-          cd.sParse(
-            'notification-insection',
-            comment.author.getName(),
-            comment.author,
-            comment.sectionSubscribedTo.headline
-          ) +
-          ' ' +
-          reloadHtml
-        );
-      }
-    } else {
-      const isCommonSection = filteredComments.every((comment) => (
-        comment.sectionSubscribedTo === filteredComments[0].sectionSubscribedTo
-      ));
-      const section = isCommonSection ? filteredComments[0].sectionSubscribedTo : undefined;
-      const where = (
-        cd.mws('word-separator') +
-        (
-          section ?
-            cd.s('notification-part-insection', section.headline) :
-            cd.s('notification-part-onthispage')
-        )
-      );
-      let mayBeRelevantString = cd.s('notification-newcomments-mayberelevant');
-      if (!mayBeRelevantString.startsWith(',')) {
-        mayBeRelevantString = cd.mws('word-separator') + mayBeRelevantString;
-      }
-
-      // "that may be relevant to you" text is not needed when the section is watched and the user
-      // can clearly understand why they are notified.
-      const mayBeRelevant = section ? '' : mayBeRelevantString;
-
-      html = (
-        cd.sParse('notification-newcomments', filteredComments.length, where, mayBeRelevant) +
-        ' ' +
-        reloadHtml
-      );
-    }
-
-    const $body = wrap(html);
-    const notification = notifications.add(
-      $body,
-      { tag: 'convenient-discussions-new-comments' },
-      { comments: filteredComments }
-    );
-    notification.$notification.on('click', () => {
-      controller.reload({ commentIds: filteredComments.map((comment) => comment.id) });
-    });
-  }
-}
-
-/**
- * Show a desktop notification to the user.
- *
- * @param {import('./CommentSkeleton').CommentSkeletonLike[]} comments
- * @private
- */
-function showDesktopNotification(comments) {
-  let filteredComments = [];
-  if (settings.get('desktopNotifications') === 'all') {
-    filteredComments = comments;
-  } else if (settings.get('desktopNotifications') === 'toMe') {
-    filteredComments = comments.filter((comment) => comment.isToMe);
-  }
-
-  if (
-    typeof Notification === 'undefined' ||
-    Notification.permission !== 'granted' ||
-    !filteredComments.length ||
-    document.hasFocus()
-  ) {
-    return;
-  }
-
-  let body;
-  const comment = filteredComments[0];
-  if (filteredComments.length === 1) {
-    if (comment.isToMe) {
-      const where = comment.section?.headline ?
-        cd.mws('word-separator') + cd.s('notification-part-insection', comment.section.headline) :
-        '';
-      body = cd.s(
-        'notification-toyou-desktop',
-        comment.author.getName(),
-        comment.author,
-        where,
-        cd.page.name
-      );
-    } else {
-      body = cd.s(
-        'notification-insection-desktop',
-        comment.author.getName(),
-        comment.author,
-        comment.section.headline,
-        cd.page.name
-      );
-    }
-  } else {
-    let section;
-    const isCommonSection = filteredComments.every((comment) => (
-      comment.sectionSubscribedTo === filteredComments[0].sectionSubscribedTo
-    ));
-    if (isCommonSection) {
-      section = filteredComments[0].sectionSubscribedTo;
-    }
-    const where = section ?
-      cd.mws('word-separator') + cd.s('notification-part-insection', section.headline) :
-      '';
-    let mayBeRelevantString = cd.s('notification-newcomments-mayberelevant');
-    if (!mayBeRelevantString.startsWith(cd.mws('comma-separator'))) {
-      mayBeRelevantString = cd.mws('word-separator') + mayBeRelevantString;
-    }
-
-    // "that may be relevant to you" text is not needed when the section is watched and the user can
-    // clearly understand why they are notified.
-    const mayBeRelevant = section ? '' : mayBeRelevantString;
-
-    body = cd.s(
-      'notification-newcomments-desktop',
-      filteredComments.length,
-      where,
-      cd.page.name,
-      mayBeRelevant
-    );
-  }
-
-  const notification = new Notification(mw.config.get('wgSiteName'), {
-    body,
-
-    // We use a tag so that there aren't duplicate notifications when the same page is opened in
-    // two tabs. (Seems it doesn't work? :-/)
-    tag: 'convenient-discussions-' + filteredComments[filteredComments.length - 1].id,
-  });
-  notification.onclick = () => {
-    parent.focus();
-
-    // Just in case, old browsers. TODO: delete?
-    window.focus();
-
-    CommentStatic.redrawLayersIfNecessary(false, true);
-
-    controller.reload({
-      commentIds: [comment.id],
-      closeNotificationsSmoothly: false,
-    });
-  };
-}
-
-/**
  * Check if the page is still at the specified revision and nothing is loading.
  *
  * @param {number} revisionId
@@ -797,7 +595,7 @@ function isPageStillAtRevision(revisionId) {
  *   revision.
  * @param {import('./CommentSkeleton').CommentSkeletonLike[]} currentComments Comments in the
  *   currently shown revision mapped to the comments in the recent revision.
- * @param {number} currentRevisionId
+ * @param {number} currentRevisionId ID of the revision that can be seen on the page.
  * @private
  */
 async function processComments(comments, currentComments, currentRevisionId) {
@@ -864,25 +662,7 @@ async function processComments(comments, currentComments, currentRevisionId) {
 
   if (!isPageStillAtRevision(currentRevisionId)) return;
 
-  if (relevantNewComments[0]) {
-    relevantNewCommentIds = relevantNewComments.map((comment) => comment.id);
-  } else if (newComments[0]) {
-    relevantNewCommentIds = newComments.map((comment) => comment.id);
-  }
-
-  const newCommentsBySection = CommentStatic.groupBySection(newComments);
-  const areThereRelevant = Boolean(relevantNewComments.length);
-  navPanel.updateRefreshButton(newComments.length, newCommentsBySection, areThereRelevant);
-  updateChecker.updatePageTitle(newComments.length, areThereRelevant);
-  toc.addNewComments(newCommentsBySection);
-
-  CommentStatic.addNewCommentsNotes(newComments);
-
-  const commentsToNotifyAbout = relevantNewComments
-    .filter((comment) => !commentsNotifiedAbout.some((cna) => cna.id === comment.id));
-  showOrdinaryNotification(commentsToNotifyAbout);
-  showDesktopNotification(commentsToNotifyAbout);
-  commentsNotifiedAbout.push(...commentsToNotifyAbout);
+  controller.updateAddedComments(newComments, relevantNewComments);
 }
 
 /**
@@ -912,8 +692,6 @@ const updateChecker = {
    * @memberof module:updateChecker
    */
   async init() {
-    commentsNotifiedAbout = [];
-    relevantNewCommentIds = null;
     isBackgroundCheckArranged = false;
     previousVisitRevisionId = null;
 
@@ -939,27 +717,6 @@ const updateChecker = {
   },
 
   /**
-   * _For internal use._ Update the page title to show the number of comments added to the page
-   * since it was loaded. If used without parameters, restore the previous value (if could be
-   * changed by the browser when the "Back" button is clicked).
-   *
-   * @param {number} [newCommentsCount]
-   * @param {boolean} [areThereRelevant]
-   * @memberof module:updateChecker
-   */
-  updatePageTitle(newCommentsCount, areThereRelevant) {
-    const title = document.title;
-    if (newCommentsCount === undefined) {
-      // A hack for Chrome (at least) for cases when the "Back" button of the browser is clicked.
-      document.title = '';
-    } else {
-      const relevantMark = areThereRelevant ? '*' : '';
-      newCommentsTitleMark = newCommentsCount ? `(${newCommentsCount}${relevantMark}) ` : '';
-    }
-    document.title = title.replace(/^(?:\(\d+\*?\) )?/, newCommentsTitleMark);
-  },
-
-  /**
    * Get the ID of the last revision checked for updates.
    *
    * @type {?string}
@@ -968,16 +725,6 @@ const updateChecker = {
   getLastCheckedRevisionId() {
     return lastCheckedRevisionId;
   },
-
-  /**
-   * Get the IDs of the comments that should be jumped to after reloading the page.
-   *
-   * @type {?(string[])}
-   * @memberof module:updateChecker
-   */
-  getRelevantNewCommentIds() {
-    return relevantNewCommentIds;
-  }
 };
 
 // For tests

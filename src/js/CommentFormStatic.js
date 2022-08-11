@@ -175,7 +175,6 @@ const CommentFormStatic = {
    *
    * @param {string} mode
    * @returns {string}
-   * @private
    */
   modeToProperty(mode) {
     return mode === 'replyInSection' ? 'reply' : mode;

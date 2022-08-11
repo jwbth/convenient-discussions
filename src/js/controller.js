@@ -1,6 +1,6 @@
 /**
- * A singleton that controls the overall state of the page, initiating boot processes and reacting
- * to events.
+ * A singleton that keeps and changes the overall state of the page, initiating boot processes and
+ * reacting to events.
  *
  * @module controller
  */
@@ -24,7 +24,6 @@ import pageNav from './pageNav';
 import postponements from './postponements';
 import settings from './settings';
 import toc from './toc';
-import updateChecker from './updateChecker';
 import { ElementsTreeWalker } from './treeWalker';
 import { brsToNewlines, hideSensitiveCode } from './wikitext';
 import {
@@ -40,23 +39,29 @@ import {
   keyCombination,
   skin$,
   unhideText,
+  wrap,
 } from './util';
 import { getUserInfo } from './apiWrappers';
 
 export default {
-  state: {},
   content: {},
   scrollData: { offset: null },
   document: document.documentElement,
   autoScrolling: false,
   isUpdateThreadLinesHandlerAttached: false,
   lastScrollX: 0,
+  originalPageTitle: document.title,
+  addedCommentCount: 0,
+  areRelevantCommentsAdded: 0,
+  relevantAddedCommentIds: null,
+  newCommentsTitleMark: '',
+  commentsNotifiedAbout: [],
 
   /**
-   * Assign some properties required by the controller - those which are not known from the
-   * beginning.
+   * _For internal use._ Assign some properties required by the controller - those which are not
+   * known from the beginning.
    */
-  setup() {
+  init() {
     this.isPageOverlayOn = this.isPageOverlayOn.bind(this);
     this.reload = this.reload.bind(this);
     this.getRootElement = this.getRootElement.bind(this);
@@ -117,13 +122,11 @@ export default {
   },
 
   /**
-   * Reset the controller data and some page mechanisms. (Executed at every page reload.)
+   * Setup the controller for use in the current boot process. (Executed at every page reload.)
    *
    * @param {string} htmlToLayOut HTML to update the page with.
    */
-  reset(htmlToLayOut) {
-    this.content = {};
-
+  setup(htmlToLayOut) {
     // RevisionSlider replaces the #mw-content-text element.
     if (!this.$content.get(0).parentNode) {
       this.$content = $('#mw-content-text');
@@ -149,6 +152,21 @@ export default {
     // being executed and then this.handleWikipageContentHookFirings is called with #mw-content-text
     // element for some reason, and the page goes into an infinite reloading loop.
     this.$root.addClass('cd-parse-started');
+  },
+
+  /**
+   * Reset the controller data and state. (Executed between page loads.)
+   */
+  reset() {
+    this.cleanUpUrlAndDom();
+    this.mutationObserver?.disconnect();
+
+    this.content = {};
+
+    this.addedCommentCount = 0;
+    this.areRelevantCommentsAdded = false;
+    this.relevantAddedCommentIds = null;
+    this.updatePageTitle();
   },
 
   /**
@@ -957,7 +975,7 @@ export default {
 
     // Make sure the title has no incorrect new comment count when the user presses the Back button
     // after a page reload.
-    updateChecker.updatePageTitle();
+    this.updatePageTitle();
   },
 
   /**
@@ -1340,9 +1358,8 @@ export default {
     this.bootProcess = bootProcess;
 
     CommentFormStatic.detach();
-    this.cleanUpUrlAndDom();
     LiveTimestamp.reset();
-    this.mutationObserver?.disconnect();
+    this.reset();
 
     debug.stopTimer('getting HTML');
 
@@ -1372,26 +1389,25 @@ export default {
   },
 
   /**
-   * Remove diff-related DOM elements and the added comment count from the title.
+   * Remove diff-related DOM elements.
    *
    * @param {object} query
    * @private
    */
   cleanUpDom(query) {
-    if (query.diff || query.oldid) {
-      // Diff pages
-      this.$content
-        .children('.mw-revslider-container, .ve-init-mw-diffPage-diffMode, .diff, .oo-ui-element-hidden, .diff-hr, .diff-currentversion-title')
-        .remove();
+    if (!(query.diff || query.oldid)) return;
 
-      // Revision navigation
-      $('.mw-revision').remove();
+    // Diff pages
+    this.$content
+      .children('.mw-revslider-container, .ve-init-mw-diffPage-diffMode, .diff, .oo-ui-element-hidden, .diff-hr, .diff-currentversion-title')
+      .remove();
 
-      $('#firstHeading').text(cd.page.name);
-      document.title = cd.mws('pagetitle', cd.page.name);
-    } else {
-      updateChecker.updatePageTitle(0, false);
-    }
+    // Revision navigation
+    $('.mw-revision').remove();
+
+    $('#firstHeading').text(cd.page.name);
+    document.title = cd.mws('pagetitle', cd.page.name);
+    this.originalPageTitle = document.title;
   },
 
   /**
@@ -1934,4 +1950,273 @@ export default {
       });
     });
   },
+
+  /**
+   * Show a regular notification (`mw.notification`) to the user.
+   *
+   * @param {import('./CommentSkeleton').CommentSkeletonLike[]} comments
+   * @private
+   */
+  showRegularNotification(comments) {
+    let filteredComments = [];
+    if (settings.get('notifications') === 'all') {
+      filteredComments = comments;
+    } else if (settings.get('notifications') === 'toMe') {
+      filteredComments = comments.filter((comment) => comment.isToMe);
+    }
+
+    if (settings.get('notifications') !== 'none' && filteredComments.length) {
+      // Combine with content of notifications that were displayed but are still open (i.e., the user
+      // most likely didn't see them because the tab is in the background). In the past there could be
+      // more than one notification, now there can be only one.
+      const openNotification = notifications.get()
+        .find((data) => data.comments && data.notification.isOpen);
+      if (openNotification) {
+        filteredComments.push(...openNotification.comments);
+      }
+    }
+
+    if (filteredComments.length) {
+      let html;
+      const formDataNote = cd.commentForms.some((commentForm) => commentForm.isAltered()) ?
+        ' ' + cd.mws('parentheses', cd.s('notification-formdata')) :
+        '';
+      const reloadHtml = cd.sParse('notification-reload', formDataNote);
+      if (filteredComments.length === 1) {
+        const comment = filteredComments[0];
+        if (comment.isToMe) {
+          const where = comment.sectionSubscribedTo ?
+            (
+              cd.mws('word-separator') +
+              cd.s('notification-part-insection', comment.sectionSubscribedTo.headline)
+            ) :
+            cd.mws('word-separator') + cd.s('notification-part-onthispage');
+          html = (
+            cd.sParse('notification-toyou', comment.author.getName(), comment.author, where) +
+            ' ' +
+            reloadHtml
+          );
+        } else {
+          html = (
+            cd.sParse(
+              'notification-insection',
+              comment.author.getName(),
+              comment.author,
+              comment.sectionSubscribedTo.headline
+            ) +
+            ' ' +
+            reloadHtml
+          );
+        }
+      } else {
+        const isCommonSection = filteredComments.every((comment) => (
+          comment.sectionSubscribedTo === filteredComments[0].sectionSubscribedTo
+        ));
+        const section = isCommonSection ? filteredComments[0].sectionSubscribedTo : undefined;
+        const where = (
+          cd.mws('word-separator') +
+          (
+            section ?
+              cd.s('notification-part-insection', section.headline) :
+              cd.s('notification-part-onthispage')
+          )
+        );
+        let mayBeRelevantString = cd.s('notification-newcomments-mayberelevant');
+        if (!mayBeRelevantString.startsWith(',')) {
+          mayBeRelevantString = cd.mws('word-separator') + mayBeRelevantString;
+        }
+
+        // "that may be relevant to you" text is not needed when the section is watched and the user
+        // can clearly understand why they are notified.
+        const mayBeRelevant = section ? '' : mayBeRelevantString;
+
+        html = (
+          cd.sParse('notification-newcomments', filteredComments.length, where, mayBeRelevant) +
+          ' ' +
+          reloadHtml
+        );
+      }
+
+      const $body = wrap(html);
+      const notification = notifications.add(
+        $body,
+        { tag: 'convenient-discussions-new-comments' },
+        { comments: filteredComments }
+      );
+      notification.$notification.on('click', () => {
+        this.reload({ commentIds: filteredComments.map((comment) => comment.id) });
+      });
+    }
+  },
+
+  /**
+   * Show a desktop notification to the user.
+   *
+   * @param {import('./CommentSkeleton').CommentSkeletonLike[]} comments
+   * @private
+   */
+  showDesktopNotification(comments) {
+    let filteredComments = [];
+    if (settings.get('desktopNotifications') === 'all') {
+      filteredComments = comments;
+    } else if (settings.get('desktopNotifications') === 'toMe') {
+      filteredComments = comments.filter((comment) => comment.isToMe);
+    }
+
+    if (
+      typeof Notification === 'undefined' ||
+      Notification.permission !== 'granted' ||
+      !filteredComments.length ||
+      document.hasFocus()
+    ) {
+      return;
+    }
+
+    let body;
+    const comment = filteredComments[0];
+    if (filteredComments.length === 1) {
+      if (comment.isToMe) {
+        const where = comment.section?.headline ?
+          cd.mws('word-separator') + cd.s('notification-part-insection', comment.section.headline) :
+          '';
+        body = cd.s(
+          'notification-toyou-desktop',
+          comment.author.getName(),
+          comment.author,
+          where,
+          cd.page.name
+        );
+      } else {
+        body = cd.s(
+          'notification-insection-desktop',
+          comment.author.getName(),
+          comment.author,
+          comment.section.headline,
+          cd.page.name
+        );
+      }
+    } else {
+      let section;
+      const isCommonSection = filteredComments.every((comment) => (
+        comment.sectionSubscribedTo === filteredComments[0].sectionSubscribedTo
+      ));
+      if (isCommonSection) {
+        section = filteredComments[0].sectionSubscribedTo;
+      }
+      const where = section ?
+        cd.mws('word-separator') + cd.s('notification-part-insection', section.headline) :
+        '';
+      let mayBeRelevantString = cd.s('notification-newcomments-mayberelevant');
+      if (!mayBeRelevantString.startsWith(cd.mws('comma-separator'))) {
+        mayBeRelevantString = cd.mws('word-separator') + mayBeRelevantString;
+      }
+
+      // "that may be relevant to you" text is not needed when the section is watched and the user
+      // can clearly understand why they are notified.
+      const mayBeRelevant = section ? '' : mayBeRelevantString;
+
+      body = cd.s(
+        'notification-newcomments-desktop',
+        filteredComments.length,
+        where,
+        cd.page.name,
+        mayBeRelevant
+      );
+    }
+
+    const notification = new Notification(mw.config.get('wgSiteName'), {
+      body,
+
+      // We use a tag so that there aren't duplicate notifications when the same page is opened in
+      // two tabs. (Seems it doesn't work? :-/)
+      tag: 'convenient-discussions-' + filteredComments[filteredComments.length - 1].id,
+    });
+    notification.onclick = () => {
+      parent.focus();
+
+      // Just in case, old browsers. TODO: delete?
+      window.focus();
+
+      CommentStatic.maybeRedrawLayers(false, true);
+
+      this.reload({
+        commentIds: [comment.id],
+        closeNotificationsSmoothly: false,
+      });
+    };
+  },
+
+  /**
+   * Update the data about added comments (new comments added while the page was idle), update page
+   * components accordingly, show notifications.
+   *
+   * @param {import('./CommentSkeleton').CommentSkeletonLike[]} comments
+   * @param {import('./CommentSkeleton').CommentSkeletonLike[]} relevantComments
+   */
+  updateAddedComments(comments, relevantComments) {
+    this.addedCommentCount = comments.length;
+    this.areRelevantCommentsAdded = Boolean(relevantComments.length);
+    if (relevantComments.length) {
+      this.relevantAddedCommentIds = relevantComments.map((comment) => comment.id);
+    } else if (comments.length) {
+      this.relevantAddedCommentIds = comments.map((comment) => comment.id);
+    }
+
+    const commentsBySection = CommentStatic.groupBySection(comments);
+    navPanel.updateRefreshButton(
+      this.addedCommentCount,
+      commentsBySection,
+      this.areRelevantCommentsAdded
+    );
+    this.updatePageTitle();
+    toc.addNewComments(commentsBySection);
+
+    CommentStatic.addNewCommentsNotes(comments);
+
+    const commentsToNotifyAbout = relevantComments
+      .filter((comment) => !this.commentsNotifiedAbout.some((cna) => cna.id === comment.id));
+    this.showRegularNotification(commentsToNotifyAbout);
+    this.showDesktopNotification(commentsToNotifyAbout);
+    this.commentsNotifiedAbout.push(...commentsToNotifyAbout);
+  },
+
+  /**
+   * Update the page title to show:
+   * * What state the page is in according to the user's action (replying, editing, starting a
+   *   section or subsection, or none).
+   * * The number of comments added to the page since it was loaded. If used without parameters,
+   *   restore the previous value (if could be changed by the browser when the "Back" button is
+   *   clicked).
+   *
+   * @private
+   */
+  updatePageTitle() {
+    let title = this.originalPageTitle;
+    const lastActiveCommentForm = CommentFormStatic.getLastActive();
+    if (lastActiveCommentForm) {
+      let ending = CommentFormStatic.modeToProperty(lastActiveCommentForm.getMode()).toLowerCase();
+      title = cd.s(`page-title-${ending}`, title);
+    }
+
+    if (this.addedCommentCount === 0) {
+      // A hack for Chrome (at least) for cases when the "Back" button of the browser is clicked.
+      document.title = '';
+    } else {
+      const relevantMark = this.areRelevantCommentsAdded ? '*' : '';
+      this.newCommentsTitleMark = this.addedCommentCount ?
+        `(${this.addedCommentCount}${relevantMark}) ` :
+        '';
+    }
+
+    document.title = title.replace(/^(?:\(\d+\*?\) )?/, this.newCommentsTitleMark);
+  },
+
+  /**
+   * Get the IDs of the comments that should be jumped to after reloading the page.
+   *
+   * @type {?(string[])}
+   */
+  getRelevantAddedCommentIds() {
+    return this.relevantAddedCommentIds;
+  }
 };
