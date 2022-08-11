@@ -948,9 +948,7 @@ export default {
    * @returns {Promise[]} There should be at least one promise in the array.
    */
   getSiteData() {
-    if (!this.siteDataRequests) {
-      this.siteDataRequests = loadSiteData();
-    }
+    this.siteDataRequests ||= loadSiteData();
 
     return this.siteDataRequests;
   },

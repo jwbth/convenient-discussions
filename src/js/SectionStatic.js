@@ -248,7 +248,7 @@ export default {
    * _For internal use._ Make sections visible or invisible to improve performance if the relevant
    * setting is enabled.
    */
-   maybeUpdateVisibility() {
+  maybeUpdateVisibility() {
     if (!cd.sections.length || !settings.get('improvePerformance') || !controller.isLongPage()) {
       return;
     }
@@ -298,12 +298,10 @@ export default {
         const shouldHide = Boolean(firstSectionToHide && section.index >= firstSectionToHide.index);
         if (shouldHide === section.isHidden) return;
 
-        if (!section.elements) {
-          section.elements = controller.getRangeContents(
-            section.headingElement,
-            section.findRealLastElement()
-          );
-        }
+        section.elements ||= controller.getRangeContents(
+          section.headingElement,
+          section.findRealLastElement()
+        );
         section.isHidden = shouldHide;
         section.elements.forEach((el) => {
           el.classList.toggle('cd-section-hidden', shouldHide);

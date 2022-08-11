@@ -432,9 +432,7 @@ class Autocomplete {
                                 paramsString += `|`;
                               }
                             }
-                            if (!firstValueIndex) {
-                              firstValueIndex = paramsString.length;
-                            }
+                            firstValueIndex ||= paramsString.length;
                           });
                         if (template.format === 'block' && paramsString) {
                           paramsString += '\n';

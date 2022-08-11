@@ -26,7 +26,6 @@ const resolvers = {};
 
 let isBackgroundCheckArranged;
 let previousVisitRevisionId;
-let submittedCommentId;
 let lastCheckedRevisionId = null;
 let resolverCount = 0;
 
@@ -127,9 +126,10 @@ async function processPage(revisionToParseId) {
  * any elements that may be added by scripts.) The revisions' data will be finally processed by
  * `checkForChangesSincePreviousVisit()`.
  *
+ * @param {number} submittedCommentId
  * @private
  */
-async function processRevisionsIfNeeded() {
+async function maybeProcessRevisionsAtLoad(submittedCommentId) {
   const revisions = await cd.page.getRevisions({
     rvprop: ['ids'],
     rvstart: new Date(controller.getBootProcess().getPreviousVisitUnixTime() * 1000).toISOString(),
@@ -144,7 +144,7 @@ async function processRevisionsIfNeeded() {
     const { comments: currentComments } = await processPage(currentRevisionId);
     if (isPageStillAtRevision(currentRevisionId)) {
       mapComments(currentComments, oldComments);
-      checkForChangesSincePreviousVisit(currentComments);
+      checkForChangesSincePreviousVisit(currentComments, submittedCommentId);
     }
   }
 }
@@ -417,9 +417,10 @@ function hasCommentChanged(olderComment, newerComment) {
  * Check if there are changes made to the currently displayed comments since the previous visit.
  *
  * @param {import('./CommentSkeleton').CommentSkeletonLike[]} currentComments
+ * @param {number} submittedCommentId
  * @private
  */
-function checkForChangesSincePreviousVisit(currentComments) {
+function checkForChangesSincePreviousVisit(currentComments, submittedCommentId) {
   const seenRenderedChanges = cleanUpSeenRenderedChanges(
     getFromLocalStorage('seenRenderedChanges')
   );
@@ -545,9 +546,9 @@ function checkForNewChanges(currentComments) {
   if (isChangeMarkUpdated) {
     // If the layers of deleted comments have been configured in `Comment#unmarkAsChanged`, they
     // will prevent layers before them from being updated due to the "stop at the first three
-    // unmoved comments" optimization in `CommentStatic.redrawLayersIfNecessary`. So we just do the
-    // whole job here.
-    CommentStatic.redrawLayersIfNecessary(false, true);
+    // unmoved comments" optimization in `CommentStatic.maybeRedrawLayers`. So we just do the whole
+    // job here.
+    CommentStatic.maybeRedrawLayers(false, true);
 
     // Thread start and end elements may be replaced, so we need to restart threads.
     Thread.init(false);
@@ -709,10 +710,11 @@ const updateChecker = {
     await bootProcess.getVisitsRequest();
 
     if (bootProcess.getPreviousVisitUnixTime()) {
-      processRevisionsIfNeeded();
-      if (bootProcess.data('wasCommentFormSubmitted') && bootProcess.data('commentIds')) {
-        submittedCommentId = bootProcess.data('commentIds')[0];
-      }
+      const submittedCommentId = (
+        (bootProcess.data('wasCommentFormSubmitted') && bootProcess.data('commentIds')?.[0]) ||
+        undefined
+      );
+      maybeProcessRevisionsAtLoad(submittedCommentId);
     }
   },
 

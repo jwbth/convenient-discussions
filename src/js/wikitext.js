@@ -281,9 +281,7 @@ function extractUnsigneds(adjustedCode, code, signatures) {
         timestamp += ' (UTC)';
 
         // Workaround for "undated" templates
-        if (!author) {
-          author = '<undated>';
-        }
+        author ||= '<undated>';
       }
 
       let startIndex = match.index;

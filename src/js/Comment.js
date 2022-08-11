@@ -176,9 +176,7 @@ class Comment extends CommentSkeleton {
     this.deferHideMenu = this.deferHideMenu.bind(this);
     this.dontHideMenu = this.dontHideMenu.bind(this);
 
-    if (!elementPrototypes) {
-      elementPrototypes = cd.g.COMMENT_ELEMENT_PROTOTYPES;
-    }
+    elementPrototypes = cd.g.COMMENT_ELEMENT_PROTOTYPES;
 
     /**
      * Comment author user object.
@@ -1587,8 +1585,8 @@ class Comment extends CommentSkeleton {
    * layers.
    */
   updateLayersOffset() {
-    // The underlay can be absent if called from `CommentStatic.redrawLayersIfNecessary` with
-    // `redrawAll` set to `true`.
+    // The underlay can be absent if called from `CommentStatic.maybeRedrawLayers` with `redrawAll`
+    // set to `true`.
     if (!this.underlay) return;
 
     this.underlay.style.top = this.overlay.style.top = this.layersOffset.top + 'px';
@@ -1664,9 +1662,7 @@ class Comment extends CommentSkeleton {
         }
         if (offsetParent) break;
       }
-      if (!offsetParent) {
-        offsetParent = document.body;
-      }
+      offsetParent ||= document.body;
       offsetParent.classList.add('cd-commentLayersContainer-parent');
       let container = offsetParent.firstElementChild;
       if (!container.classList.contains('cd-commentLayersContainer')) {
@@ -2208,9 +2204,9 @@ class Comment extends CommentSkeleton {
       case 'deleted':
         this.isDeleted = false;
 
-        // `Comments.redrawLayersIfNecessary()`, that is called on DOM updates, could circumvent
-        // this comment if it has no property signalling that it should be highlighted, so we update
-        // its styles manually.
+        // `Comments.maybeRedrawLayers()`, that is called on DOM updates, could circumvent this
+        // comment if it has no property signalling that it should be highlighted, so we update its
+        // styles manually.
         this.updateLayersStyles();
 
         break;
@@ -3824,7 +3820,7 @@ class Comment extends CommentSkeleton {
    * @param {boolean} [runAlways=false] Whether to execute the callback even if the gender request
    *   is not needed.
    */
-  requestAuthorGenderIfNeeded(callback, runAlways = false) {
+  maybeRequestAuthorGender(callback, runAlways = false) {
     if (cd.g.GENDER_AFFECTS_USER_STRING && this.author.isRegistered() && !this.author.getGender()) {
       let errorCallback;
       if (!this.genderRequest) {

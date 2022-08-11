@@ -482,9 +482,7 @@ export default {
    * @returns {Promise.<undefined>}
    */
   init() {
-    if (!this.initPromise) {
-      this.initPromise = this.actuallyInit();
-    }
+    this.initPromise ||= this.actuallyInit();
 
     return this.initPromise;
   },
@@ -647,9 +645,7 @@ export default {
     // updated setting.
     this.set(key, value);
 
-    if (!loadedSettings) {
-      loadedSettings = await this.load();
-    }
+    loadedSettings ||= await this.load();
     loadedSettings[key] = value;
     const promise = this.save(loadedSettings);
     return promise;

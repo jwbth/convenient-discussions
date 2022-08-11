@@ -388,7 +388,7 @@ class CommentForm {
       // placeholder text at the beginning to avoid drawing the user's attention to the changing
       // of the text. (But it could be a better idea to set the `showCommentInputPlaceholder`
       // config variable to `false` to avoid showing any text whatsoever.)
-      this.target.requestAuthorGenderIfNeeded(() => {
+      this.target.maybeRequestAuthorGender(() => {
         this.commentInput.$input.attr(
           'placeholder',
           removeDoubleSpaces(cd.s(
@@ -2399,12 +2399,12 @@ class CommentForm {
   /**
    * Check for conflicts of the operation with other pending operations, and if there are such,
    * close the operation and return `true` to abort it. The rules are the following:
-   * - `preview` and `viewChanges` operations may be overriden with other of one of these types
-   * (every new request replaces the old, although a new autopreview request cannot be made while
-   * the old is pending).
-   * - `submit` operations may not be overriden (and are not checked by this function), but also
-   * don't override existing `preview` and `viewChanges` operations (so that the user gets the last
-   * autopreview even after they have sent the comment).
+   * * `preview` and `viewChanges` operations may be overriden with other of one of these types
+   *   (every new request replaces the old, although a new autopreview request cannot be made while
+   *   the old is pending).
+   * * `submit` operations may not be overriden (and are not checked by this function), but also
+   *   don't override existing `preview` and `viewChanges` operations (so that the user gets the last
+   *   autopreview even after they have sent the comment).
    *
    * For convenience, can also check for an arbitrary condition and close the operation if it is
    * `true`.
@@ -2413,7 +2413,7 @@ class CommentForm {
    * @returns {boolean}
    * @private
    */
-  closeOperationIfNecessary(operation) {
+  maybeCloseOperation(operation) {
     if (operation.isClosed) {
       return true;
     }
@@ -2514,7 +2514,7 @@ class CommentForm {
       this.lastPreviewTimestamp = Date.now();
     }
 
-    if (this.closeOperationIfNecessary(currentOperation)) return;
+    if (this.maybeCloseOperation(currentOperation)) return;
 
     /*
       This happens:
@@ -2569,7 +2569,7 @@ class CommentForm {
       return;
     }
 
-    if (this.closeOperationIfNecessary(currentOperation)) return;
+    if (this.maybeCloseOperation(currentOperation)) return;
 
     if (html) {
       if ((isAuto && areInputsEmpty) || this.deleteCheckbox?.isSelected()) {
@@ -2678,7 +2678,7 @@ class CommentForm {
       return;
     }
 
-    if (this.closeOperationIfNecessary(currentOperation)) return;
+    if (this.maybeCloseOperation(currentOperation)) return;
 
     let html = resp.compare?.body;
     if (html) {
@@ -3267,7 +3267,7 @@ class CommentForm {
         if (this.target.isOpeningSection) {
           return cd.s('es-reply');
         } else {
-          this.target.requestAuthorGenderIfNeeded(this.updateAutoSummary);
+          this.target.maybeRequestAuthorGender(this.updateAutoSummary);
           const replyToStr = cd.s('es-reply-to', this.target.author.getName(), this.target.author);
           return this.target.isOwn ? cd.s('es-addition') : removeDoubleSpaces(replyToStr);
         }
@@ -3285,7 +3285,7 @@ class CommentForm {
               if (targetParent.level === 0) {
                 subject = 'reply';
               } else {
-                targetParent.requestAuthorGenderIfNeeded(this.updateAutoSummary);
+                targetParent.maybeRequestAuthorGender(this.updateAutoSummary);
                 subject = targetParent.isOwn ? 'addition' : 'reply-to';
                 target = targetParent;
               }
@@ -3300,7 +3300,7 @@ class CommentForm {
             if (this.target.isOpeningSection) {
               subject = this.targetSection.getParent() ? 'subsection' : 'topic';
             } else {
-              this.target.requestAuthorGenderIfNeeded(this.updateAutoSummary);
+              this.target.maybeRequestAuthorGender(this.updateAutoSummary);
               subject = 'comment-by';
             }
           }

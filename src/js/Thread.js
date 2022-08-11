@@ -26,7 +26,7 @@ let threadLinesContainer;
 let treeWalker;
 
 /**
- * Find the closest item element (`li`, `dd`) for an element.
+ * Find the closest item element (`<li>`, `<dd>`) for an element.
  *
  * @param {Element} element
  * @param {number} level
@@ -245,9 +245,7 @@ class Thread {
     this.handleClickAreaUnhover = this.handleClickAreaUnhover.bind(this);
     this.handleToggleClick = this.handleToggleClick.bind(this);
 
-    if (!elementPrototypes) {
-      elementPrototypes = cd.g.THREAD_ELEMENT_PROTOTYPES;
-    }
+    elementPrototypes = cd.g.THREAD_ELEMENT_PROTOTYPES;
 
     /**
      * Root comment of the thread.

@@ -724,8 +724,8 @@ export default async function addCommentLinks() {
 }
 
 /**
- * When on the Special:Search page, searching for a comment after choosing that option from the
- * "Couldn't find the comment" message, add comment links to titles.
+ * _For internal use._ When on the Special:Search page, searching for a comment after choosing that
+ * option from the "Couldn't find the comment" message, add comment links to titles.
  */
 export function addCommentLinksToSpecialSearch() {
   if (mw.config.get('wgCanonicalSpecialPageName') !== 'Search') return;

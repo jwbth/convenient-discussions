@@ -487,90 +487,6 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Create a real "More options" menu select in place of a dummy one.
-   *
-   * @fires moreMenuSelectCreated
-   * @private
-   */
-  createMoreMenuSelect() {
-    const moreMenuSelect = elementPrototypes.getMoreMenuSelect();
-
-    const editOpeningCommentOption = this.canEditFirstComment() ?
-      new OO.ui.MenuOptionWidget({
-        data: 'editOpeningComment',
-        label: cd.s('sm-editopeningcomment'),
-        title: cd.s('sm-editopeningcomment-tooltip'),
-        icon: 'edit',
-      }) :
-      undefined;
-    const moveOption = this.canBeMoved() ?
-      new OO.ui.MenuOptionWidget({
-        data: 'move',
-        label: cd.s('sm-move'),
-        title: cd.s('sm-move-tooltip'),
-        icon: 'arrowNext',
-      }) :
-      undefined;
-    const addSubsectionOption = this.canAddSubsection() ?
-      new OO.ui.MenuOptionWidget({
-        data: 'addSubsection',
-        label: cd.s('sm-addsubsection'),
-        title: cd.s('sm-addsubsection-tooltip'),
-        icon: 'speechBubbleAdd',
-      }) :
-      undefined;
-
-    this.actions.moreMenuSelectDummy.element.remove();
-    this.actionsElement.append(moreMenuSelect.$element.get(0));
-
-    const items = [editOpeningCommentOption, moveOption, addSubsectionOption].filter(defined);
-    moreMenuSelect.getMenu()
-      .addItems(items)
-      .on('choose', (option) => {
-        switch (option.getData()) {
-          case 'editOpeningComment':
-            this.comments[0].edit();
-            break;
-          case 'move':
-            this.move();
-            break;
-          case 'addSubsection':
-            this.addSubsection();
-            break;
-        }
-      });
-
-    /**
-     * The button menu select widget in the {@link Section#actionsElement actions element}. Note
-     * that it is created only when the user hovers over or clicks a dummy button, which fires a
-     * {@link Section#moreMenuSelectCreated moreMenuSelectCreated hook}.
-     *
-     * @type {external:OO.ui.ButtonMenuSelectWidget|undefined}
-     */
-    this.actions.moreMenuSelect = moreMenuSelect;
-
-    /**
-     * A "More options" menu select button has been created and added to the section actions
-     * element in place of a dummy button.
-     *
-     * @event moreMenuSelectCreated
-     * @param {Section} section
-     * @param {object} cd {@link convenientDiscussions} object.
-     */
-    mw.hook('convenientDiscussions.moreMenuSelectCreated').fire(this);
-  }
-
-  /**
-   * Create a real "More options" menu select in place of a dummy one and click it.
-   *
-   * @private
-   */
-  createAndClickMoreMenuSelect() {
-    this.createMoreMenuSelect();
-    this.actions.moreMenuSelect.focus().emit('click');
-  }
-
-  /**
    * Show a popup with the list of users who have posted in the section.
    *
    * @private
@@ -728,6 +644,90 @@ class Section extends SectionSkeleton {
      * @type {Element|undefined}
      */
     this.latestCommentWrapper = latestCommentWrapper;
+  }
+
+  /**
+   * Create a real "More options" menu select in place of a dummy one.
+   *
+   * @fires moreMenuSelectCreated
+   * @private
+   */
+  createMoreMenuSelect() {
+    const moreMenuSelect = elementPrototypes.getMoreMenuSelect();
+
+    const editOpeningCommentOption = this.canEditFirstComment() ?
+      new OO.ui.MenuOptionWidget({
+        data: 'editOpeningComment',
+        label: cd.s('sm-editopeningcomment'),
+        title: cd.s('sm-editopeningcomment-tooltip'),
+        icon: 'edit',
+      }) :
+      undefined;
+    const moveOption = this.canBeMoved() ?
+      new OO.ui.MenuOptionWidget({
+        data: 'move',
+        label: cd.s('sm-move'),
+        title: cd.s('sm-move-tooltip'),
+        icon: 'arrowNext',
+      }) :
+      undefined;
+    const addSubsectionOption = this.canAddSubsection() ?
+      new OO.ui.MenuOptionWidget({
+        data: 'addSubsection',
+        label: cd.s('sm-addsubsection'),
+        title: cd.s('sm-addsubsection-tooltip'),
+        icon: 'speechBubbleAdd',
+      }) :
+      undefined;
+
+    this.actions.moreMenuSelectDummy.element.remove();
+    this.actionsElement.append(moreMenuSelect.$element.get(0));
+
+    const items = [editOpeningCommentOption, moveOption, addSubsectionOption].filter(defined);
+    moreMenuSelect.getMenu()
+      .addItems(items)
+      .on('choose', (option) => {
+        switch (option.getData()) {
+          case 'editOpeningComment':
+            this.comments[0].edit();
+            break;
+          case 'move':
+            this.move();
+            break;
+          case 'addSubsection':
+            this.addSubsection();
+            break;
+        }
+      });
+
+    /**
+     * The button menu select widget in the {@link Section#actionsElement actions element}. Note
+     * that it is created only when the user hovers over or clicks a dummy button, which fires a
+     * {@link Section#moreMenuSelectCreated moreMenuSelectCreated hook}.
+     *
+     * @type {external:OO.ui.ButtonMenuSelectWidget|undefined}
+     */
+    this.actions.moreMenuSelect = moreMenuSelect;
+
+    /**
+     * A "More options" menu select button has been created and added to the section actions
+     * element in place of a dummy button.
+     *
+     * @event moreMenuSelectCreated
+     * @param {Section} section
+     * @param {object} cd {@link convenientDiscussions} object.
+     */
+    mw.hook('convenientDiscussions.moreMenuSelectCreated').fire(this);
+  }
+
+  /**
+   * Create a real "More options" menu select in place of a dummy one and click it.
+   *
+   * @private
+   */
+  createAndClickMoreMenuSelect() {
+    this.createMoreMenuSelect();
+    this.actions.moreMenuSelect.focus().emit('click');
   }
 
   /**

@@ -48,6 +48,20 @@ function getPageNameFromUrl(url) {
 }
 
 /**
+ * @typedef {object} Context
+ * @property {Function} CommentClass
+ * @property {Function} SectionClass
+ * @property {string} childElementsProp
+ * @property {Function} follows
+ * @property {Function} getAllTextNodes
+ * @property {Function} getElementByClassName
+ * @property {Element|external:Element} rootElement
+ * @property {boolean} areThereOutdents
+ * @property {Function} handleDtMarkup
+ * @property {Function} removeDtButtonHtmlComments
+ */
+
+/**
  * Generalization of a web page (not wikitext) parser for the window and worker contexts. Parsing
  * here means "extracting meaningful parts from the page". Functions related to wikitext parsing go
  * in {@link module:wikitext}.
@@ -56,8 +70,8 @@ class Parser {
   /**
    * Create a page parser in the provided context.
    *
-   * @param {object} context Collection of classes, functions, and other properties that perform the
-   *   tasks we need in the current context (window or worker).
+   * @param {Context} context Collection of classes, functions, and other properties that perform
+   *   the tasks we need in the current context (window or worker).
    */
   constructor(context) {
     this.timestampToSignature = this.timestampToSignature.bind(this);
@@ -186,9 +200,7 @@ class Parser {
   processLinkData(link, authorData) {
     const { userName, linkType } = Parser.processLink(link) || {};
     if (userName) {
-      if (!authorData.name) {
-        authorData.name = userName;
-      }
+      authorData.name ||= userName;
       if (authorData.name === userName) {
         if (['user', 'userForeign'].includes(linkType)) {
           // Don't just break on the second user link because of cases like this:

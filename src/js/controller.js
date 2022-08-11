@@ -222,9 +222,9 @@ export default {
    * Check whether the current page is a diff page.
    *
    * This is not a constant: the diff may be removed from the page (and the URL updated, see
-   * `controller.cleanUpUrlAndDom`) when it's for the last revision and the page is reloaded
-   * using the script. `wgIsArticle` config value is not taken into account: if the "Do not show
-   * page content below diffs" MediaWiki setting is on, `wgIsArticle` is false.
+   * `controller.cleanUpUrlAndDom`) when it's for the last revision and the page is reloaded using
+   * the script. `wgIsArticle` config value is not taken into account: if the "Do not show page
+   * content below diffs" MediaWiki setting is on, `wgIsArticle` is false.
    *
    * @returns {boolean}
    */
@@ -394,19 +394,17 @@ export default {
    * @returns {external:mw.Api}
    */
   getApi() {
-    if (!this.api) {
-      this.api = new mw.Api({
-        parameters: {
-          formatversion: 2,
-          uselang: cd.g.USER_LANGUAGE,
+    this.api ||= new mw.Api({
+      parameters: {
+        formatversion: 2,
+        uselang: cd.g.USER_LANGUAGE,
+      },
+      ajax: {
+        headers: {
+          'Api-User-Agent': 'c:User:Jack who built the house/Convenient Discussions',
         },
-        ajax: {
-          headers: {
-            'Api-User-Agent': 'c:User:Jack who built the house/Convenient Discussions',
-          },
-        },
-      });
-    }
+      },
+    });
 
     return this.api;
   },
@@ -417,9 +415,7 @@ export default {
    * @returns {Worker}
    */
   getWorker() {
-    if (!this.worker) {
-      this.worker = new Worker();
-    }
+    this.worker ||= new Worker();
 
     return this.worker;
   },
@@ -799,9 +795,7 @@ export default {
    * @param {Function} condition
    */
   addPreventUnloadCondition(name, condition) {
-    if (!this.beforeUnloadHandlers) {
-      this.beforeUnloadHandlers = {};
-    }
+    this.beforeUnloadHandlers ||= {};
     this.beforeUnloadHandlers[name] = (e) => {
       if (condition()) {
         e.preventDefault();
@@ -845,7 +839,7 @@ export default {
     // setTimeout, because it seems like sometimes it doesn't have time to update.
     setTimeout(() => {
       this.getContentColumnOffsets(true);
-      CommentStatic.redrawLayersIfNecessary(true);
+      CommentStatic.maybeRedrawLayers(true);
       Thread.updateLines();
       pageNav.updateWidth();
       CommentFormStatic.adjustLabels();
@@ -993,7 +987,7 @@ export default {
 
     const floatingRects = this.getFloatingElements().map(getExtendedRect);
 
-    CommentStatic.redrawLayersIfNecessary(false, false, floatingRects);
+    CommentStatic.maybeRedrawLayers(false, false, floatingRects);
 
     const updateThreadLines = () => {
       Thread.updateLines(floatingRects);
@@ -1161,8 +1155,8 @@ export default {
   },
 
   /**
-   * Load the data required for the script to run on a talk page and, respectively, execute the
-   * {@link BootProcess boot process}.
+   * _For internal use._ Load the data required for the script to run on a talk page and,
+   * respectively, execute the {@link BootProcess boot process}.
    */
   loadToTalkPage() {
     if (!this.talkPage) return;
@@ -1170,6 +1164,12 @@ export default {
     debug.stopTimer('start');
     debug.startTimer('loading data');
 
+    /**
+     * Last boot process.
+     *
+     * @type {BootProcess}
+     * @private
+     */
     this.bootProcess = new BootProcess();
 
     // Make some requests in advance if the API module is ready in order not to make 2 requests
@@ -1365,7 +1365,7 @@ export default {
 
     await this.tryExecuteBootProcess(true);
 
-    toc.possiblyHide();
+    toc.maybeHide();
 
     if (!this.bootProcess.data('commentIds') && !this.bootProcess.data('sectionId')) {
       this.restoreScrollPosition(false);
@@ -1467,7 +1467,7 @@ export default {
   },
 
   /**
-   * Load the data required for the script to process the page as a log page and
+   * _For internal use._ Load the data required for the script to process the page as a log page and
    * {@link module:addCommentLinks process it}.
    */
   loadToCommentLinksPage() {
@@ -2218,5 +2218,5 @@ export default {
    */
   getRelevantAddedCommentIds() {
     return this.relevantAddedCommentIds;
-  }
+  },
 };

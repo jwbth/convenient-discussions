@@ -22,15 +22,6 @@ let backLinkLocation;
 
 export default {
   /**
-   * Check whether the page navigation block is mounted.
-   *
-   * @returns {boolean}
-   */
-  isMounted() {
-    return Boolean(this.$topElement);
-  },
-
-  /**
    * _For internal use._ Render the page navigation block. This is done when the page is first
    * loaded.
    */
@@ -51,6 +42,15 @@ export default {
 
     this.updateWidth();
     this.update();
+  },
+
+  /**
+   * Check whether the page navigation block is mounted.
+   *
+   * @returns {boolean}
+   */
+  isMounted() {
+    return Boolean(this.$topElement);
   },
 
   /**
@@ -156,12 +156,10 @@ export default {
           .append(tocLink.element)
           .appendTo(this.$linksOnTop);
       }
-      if (!this.$currentSection) {
-        this.$currentSection = $('<ul>')
-          .attr('id', 'cd-pageNav-currentSection')
-          .addClass('cd-pageNav-list')
-          .appendTo(this.$topElement);
-      }
+      this.$currentSection ||= $('<ul>')
+        .attr('id', 'cd-pageNav-currentSection')
+        .addClass('cd-pageNav-list')
+        .appendTo(this.$topElement);
     }
 
     if (

@@ -178,7 +178,7 @@ const CommentStatic = {
    * @param {boolean} [redrawAll] Whether to redraw all layers and not stop at first three unmoved.
    * @param {object} [floatingRects]
    */
-  redrawLayersIfNecessary(removeUnhighlighted = false, redrawAll = false, floatingRects) {
+  maybeRedrawLayers(removeUnhighlighted = false, redrawAll = false, floatingRects) {
     if (controller.isBooting() || (document.hidden && !redrawAll)) return;
 
     this.layersContainers.forEach((container) => {

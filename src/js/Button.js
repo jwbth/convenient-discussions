@@ -55,9 +55,7 @@ class Button {
     flags,
     action,
   } = {}) {
-    if (!element) {
-      element = getButtonPrototype(tagName).cloneNode(true);
-    }
+    element ||= getButtonPrototype(tagName).cloneNode(true);
 
     if (id) {
       element.id = id;

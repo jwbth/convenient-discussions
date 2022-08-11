@@ -101,7 +101,7 @@ const toc = {
    * {@link https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.toc/toc.js the native MediaWiki function}
    * and exists because we may need to hide the TOC earlier than the native method does it.
    */
-  possiblyHide() {
+  maybeHide() {
     if (toc.isInSidebar() || !toc.isPresent()) return;
 
     if (mw.cookie.get('hidetoc') === '1') {

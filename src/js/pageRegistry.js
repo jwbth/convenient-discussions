@@ -101,9 +101,8 @@ export class Page {
   findArchivingInfoElement() {
     // For performance reasons, this is not reevaluated after page reloads. The reevaluation is
     // unlikely to be needed by users.
-    if (!this.$archivingInfo) {
-      this.$archivingInfo = controller.$root.find('.cd-archivingInfo');
-    }
+    this.$archivingInfo ||= controller.$root.find('.cd-archivingInfo');
+
     return this.$archivingInfo;
   }
 
