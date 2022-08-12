@@ -45,8 +45,8 @@ export default {
   timezone: null,
 
   /**
-   * Whether to store some of the preferences globally. Requires
-   * {@link https://www.mediawiki.org/wiki/Extension:GlobalPreferences the GlobalPreferences extension}
+   * Whether to store some of the preferences globally. Requires the
+   * {@link https://www.mediawiki.org/wiki/Extension:GlobalPreferences GlobalPreferences extension}
    * to be enabled.
    *
    * @type {?boolean}
@@ -316,12 +316,12 @@ export default {
    * {@link https://en.wikipedia.org/wiki/Template:Unsigned_IP}. Please include aliases.
    *
    * @type {string[]}
-   * @default <pre class="prettyprint source"><code>[
+   * @default [
    *   'unsigned',
    *   'unsignedIP',
    *   'unsigned2',
    *   'unsignedIP2',
-   * ]</code></pre>
+   * ]
    */
   unsignedTemplates: [
     'unsigned',
@@ -343,10 +343,10 @@ export default {
    * for beginning templates, the second one for ending templates.
    *
    * @type {Array.<Array.<string>>}
-   * @default <pre class="prettyprint source"><code>[
+   * @default [
    *   [],
    *   [],
-   * ]</code></pre>
+   * ]
    */
   pairQuoteTemplates: [
     [],
@@ -490,12 +490,11 @@ export default {
    * least one `\n` and allow a newline character at the end (for example, by using `\s*`).
    *
    * @type {RegExp[]}
-   * @default <pre class="prettyprint source"><code>[
+   * @default [
    *   /\n{2,}(?:&lt;!--[^]*?--&gt;\s*)+$/,
-   *   /\n+(?:&lt;!--[^]*?--&gt;\s*)*&lt;\/?(?:section|onlyinclude)(?: [\w ]+(?:=[^&lt;&gt;]+?)?)?
-   * *\/?&gt;\s*(?:&lt;!--[^]*?--&gt;\s*)*$/i,
+   *   /\n+(?:&lt;!--[^]*?--&gt;\s*)*&lt;\/?(?:section|onlyinclude)(?: [\w ]+(?:=[^&lt;&gt;]+?)?)? *\/?&gt;\s*(?:&lt;!--[^]*?--&gt;\s*)*$/i,
    *   /\n+&lt;noinclude&gt;([^]*?)&lt;\/noinclude&gt;\s*$/i,
-   * ]</code></pre>
+   * ]
    */
   keepInSectionEnding: [
     /\n{2,}(?:<!--[^]*?-->\s*)+$/,
@@ -529,10 +528,10 @@ export default {
    * These templates are ignored when searching for a place to insert a comment in the wikitext.
    *
    * @type {Array.<Array.<string>>}
-   * @default <pre class="prettyprint source"><code>[
+   * @default [
    *   [],
    *   [],
-   * ]</code></pre>
+   * ]
    */
   closedDiscussionTemplates: [
     [],
@@ -784,14 +783,12 @@ export default {
    * @param {string} signature
    * @param {string} [timestamp]
    * @returns {string}
-   * @default <pre class="prettyprint source">
-   * <code>function (targetPageWikilink, signature, timestamp) {
+   * @default function (targetPageWikilink, signature, timestamp) {
    *   return (
    *     convenientDiscussions.s('move-sourcepagecode', targetPageWikilink, signature, timestamp) +
    *     '\n'
    *   );
    * }
-   * </code></pre>
    */
   getMoveSourcePageCode: function (targetPageWikilink, signature, timestamp) {
     return (
@@ -811,9 +808,9 @@ export default {
    * @param {string} targetPageWikilink
    * @param {string} signature
    * @returns {string|Array.<string, string>}
-   * @default <pre class="prettyprint source"><code>function (targetPageWikilink, signature) {
+   * @default function (targetPageWikilink, signature) {
    *   return convenientDiscussions.s('move-targetpagecode', targetPageWikilink, signature) + '\n';
-   * }</code></pre>
+   * }
    */
   getMoveTargetPageCode: function (targetPageWikilink, signature) {
     return (
@@ -830,9 +827,9 @@ export default {
    * @kind function
    * @param {string} id
    * @returns {string}
-   * @default <pre class="prettyprint source"><code>function (id) {
-   *   return '&lt;span id="' + id + '">&lt;/span>';
-   * }</code></pre>
+   * @default function (id) {
+   *   return '&lt;span id="' + id + '"&gt;&lt;/span&gt;';
+   * }
    */
   getAnchorCode: function (id) {
     return '<span id="' + id + '"></span>';
