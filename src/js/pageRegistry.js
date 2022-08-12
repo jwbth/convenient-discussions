@@ -8,7 +8,7 @@ import CdError from './CdError';
 import cd from './cd';
 import controller from './controller';
 import { findFirstTimestamp, hideDistractingCode } from './wikitext';
-import { handleApiReject, makeBackgroundRequest } from './apiWrappers';
+import { handleApiReject, requestInBackground } from './apiWrappers';
 import { isProbablyTalkPage } from './util';
 import { parseTimestamp } from './timestamp';
 
@@ -350,13 +350,13 @@ export class Page {
    * Make a parse request (see {@link https://www.mediawiki.org/wiki/API:Parsing_wikitext}).
    *
    * @param {boolean} [customOptions]
-   * @param {boolean} [requestInBackground=false] Make a request that won't set the process on hold
-   *   when the tab is in the background.
+   * @param {boolean} [doRequestInBackground=false] Make a request that won't set the process on
+   *   hold when the tab is in the background.
    * @param {boolean} [markAsRead=false] Mark the current page as read in the watchlist.
    * @returns {Promise.<object>}
    * @throws {CdError}
    */
-  async parse(customOptions, requestInBackground = false, markAsRead = false) {
+  async parse(customOptions, doRequestInBackground = false, markAsRead = false) {
     const defaultOptions = {
       action: 'parse',
 
@@ -377,8 +377,8 @@ export class Page {
       delete options.page;
     }
 
-    let request = requestInBackground ?
-      makeBackgroundRequest(options) :
+    let request = doRequestInBackground ?
+      requestInBackground(options) :
       controller.getApi().post(options);
     request = request.catch(handleApiReject);
 
@@ -401,11 +401,11 @@ export class Page {
    * Get a list of revisions of the page (the `redirects` parameter is set to `true` by default).
    *
    * @param {object} [customOptions={}]
-   * @param {boolean} [requestInBackground=false] Make a request that won't set the process on hold
+   * @param {boolean} [doRequestInBackground=false] Make a request that won't set the process on hold
    *   when the tab is in the background.
    * @returns {Promise.<Array>}
    */
-  async getRevisions(customOptions = {}, requestInBackground = false) {
+  async getRevisions(customOptions = {}, doRequestInBackground = false) {
     const defaultOptions = {
       action: 'query',
       titles: this.name,
@@ -415,8 +415,8 @@ export class Page {
     };
     const options = Object.assign({}, defaultOptions, customOptions);
 
-    let request = requestInBackground ?
-      makeBackgroundRequest(options) :
+    let request = doRequestInBackground ?
+      requestInBackground(options) :
       controller.getApi().post(options);
     request = request.catch(handleApiReject);
 
@@ -501,11 +501,11 @@ export class Page {
       }).catch(handleApiReject);
     } catch (e) {
       if (e instanceof CdError) {
-        const { type, apiData } = e.data;
+        const { type, apiResp } = e.data;
         if (type === 'network') {
           throw e;
         } else {
-          const error = apiData?.errors[0];
+          const error = apiResp?.errors[0];
           let message;
           let isRawMessage = false;
           let logMessage;
@@ -529,15 +529,15 @@ export class Page {
               }
             }
 
-            logMessage = [code, apiData];
+            logMessage = [code, apiResp];
           } else {
-            logMessage = apiData;
+            logMessage = apiResp;
           }
 
           throw new CdError({
             type: 'api',
             code: 'error',
-            apiData: resp,
+            apiResp: resp,
             details: { code, message, isRawMessage, logMessage },
           });
         }

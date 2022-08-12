@@ -8,6 +8,7 @@ import CdError from './CdError';
 import Comment from './Comment';
 import CommentStatic from './CommentStatic';
 import LiveTimestamp from './LiveTimestamp';
+import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
 import navPanel from './navPanel';
@@ -181,7 +182,7 @@ const toc = {
   highlightSubscriptions() {
     if (!this.isPresent()) return;
 
-    cd.sections
+    SectionStatic.getAll()
       .filter((section) => section.subscriptionState || this.isInSidebar())
       .forEach((section) => {
         section.updateTocLink();
@@ -220,7 +221,7 @@ const toc = {
     if (!this.isPresent()) return;
 
     let usedFullForm = false;
-    cd.sections.forEach((section) => {
+    SectionStatic.getAll().forEach((section) => {
       const item = section.getTocItem();
       if (!item) return;
 

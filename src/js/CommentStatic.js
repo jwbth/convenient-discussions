@@ -6,6 +6,7 @@
 
 import Comment from './Comment';
 import CommentSkeleton from './CommentSkeleton';
+import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
 import navPanel from './navPanel';
@@ -132,18 +133,73 @@ function addNewCommentsNote(comments, parent, type, newCommentIndexes) {
  */
 const CommentStatic = {
   /**
-   * List of the underlays.
+   * List of comments.
+   *
+   * @type {Comment[]}
+   * @private
+   */
+  items: [],
+
+  /**
+   * List of underlays.
    *
    * @type {Element[]}
    */
   underlays: [],
 
   /**
-   * List of the containers of layers.
+   * List of containers of layers.
    *
    * @type {Element[]}
    */
   layersContainers: [],
+
+  /**
+   * Add a comment to the list.
+   *
+   * @param {Comment} item
+   */
+  add(item) {
+    this.items.push(item);
+  },
+
+  /**
+   * Get all comments.
+   *
+   * @returns {Comment[]}
+   */
+  getAll() {
+    return this.items;
+  },
+
+  /**
+   * Get a comment by index.
+   *
+   * @param {number} index Use a negative index to count from the end.
+   * @returns {?Comment}
+   */
+  getByIndex(index) {
+    if (index < 0) {
+      index = this.items.length + index;
+    }
+    return this.items[index] || null;
+  },
+
+  /**
+   * Get the number of comments.
+   *
+   * @returns {number}
+   */
+  getCount() {
+    return this.items.length;
+  },
+
+  /**
+   * Reset the comment list.
+   */
+  reset() {
+    this.items = [];
+  },
 
   /**
    * Configure and add layers for a group of comments.
@@ -193,7 +249,7 @@ const CommentStatic = {
     // quirky reason for this is that the mouse could be over some comment making its underlay to be
     // repositioned immediately and therefore not appearing as misplaced to this procedure. Three
     // comments threshold should be more reliable.
-    cd.comments.slice().reverse().some((comment) => {
+    this.items.slice().reverse().some((comment) => {
       const shouldBeHighlighted = (
         !comment.isCollapsed &&
         !comment.editForm &&
@@ -282,13 +338,13 @@ const CommentStatic = {
     };
 
     // Back
-    cd.comments
+    this.items
       .slice(0, commentInViewport.index)
       .reverse()
       .some(registerIfInViewport);
 
     // Forward
-    cd.comments
+    this.items
       .slice(commentInViewport.index)
       .some(registerIfInViewport);
 
@@ -322,7 +378,7 @@ const CommentStatic = {
    */
   findInViewport(findClosestDirection) {
     // Reset the `roughOffset` property. It is used only within this method.
-    cd.comments.forEach((comment) => {
+    this.items.forEach((comment) => {
       delete comment.roughOffset;
     });
 
@@ -336,7 +392,7 @@ const CommentStatic = {
       return Boolean(comment.roughOffset);
     };
     const findVisible = (direction, startIndex = 0, endIndex) => {
-      let comments = reorderArray(cd.comments, startIndex, direction === 'backward');
+      let comments = reorderArray(this.getAll(), startIndex, direction === 'backward');
       if (endIndex !== undefined) {
         comments = comments.filter((comment) => (
           direction === 'forward' ?
@@ -348,7 +404,7 @@ const CommentStatic = {
     };
 
     const firstVisibleComment = findVisible('forward');
-    const lastVisibleComment = findVisible('backward', cd.comments.length - 1);
+    const lastVisibleComment = findVisible('backward', this.items.length - 1);
     if (!firstVisibleComment) {
       return null;
     }
@@ -369,14 +425,14 @@ const CommentStatic = {
       return null;
     };
 
-    // Here, we don't iterate over cd.comments as it may look like. We narrow the search region by
+    // Here, we don't iterate over this.items as it may look like. We narrow the search region by
     // getting a proportion of the distance between far away comments and the viewport and
     // calculating the ID of the next comment based on it; then, the position of that next comment
-    // is checked, and so on. cd.comments.length value is used as an upper boundary for the number
-    // of cycle steps. It's more of a protection against an infinite loop: the value is with a large
+    // is checked, and so on. this.items.length value is used as an upper boundary for the number of
+    // cycle steps. It's more of a protection against an infinite loop: the value is with a large
     // margin and not practically reachable, unless when there is only few comments. Usually the
     // cycle finishes after a few steps.
-    for (let i = 0; i < cd.comments.length; i++) {
+    for (let i = 0; i < this.items.length; i++) {
       if (!comment.roughOffset) {
         comment.getOffset({ set: true });
         if (!comment.roughOffset) {
@@ -451,7 +507,7 @@ const CommentStatic = {
           searchArea.top.index +
           0.5
         );
-        comment = cd.comments[index];
+        comment = this.items[index];
       }
     }
 
@@ -474,7 +530,7 @@ const CommentStatic = {
           ?.get(0)
           .querySelector('.oo-ui-popupWidget:not(.oo-ui-element-hidden)'),
         controller.getStickyHeader(),
-        cd.sections
+        SectionStatic.getAll()
           .map((section) => section.actions.moreMenuSelect?.getMenu())
           .find((menu) => menu?.isVisible())
           ?.$element.get(0),
@@ -487,7 +543,7 @@ const CommentStatic = {
       $(document.body).children('.ui-widget-overlay').length
     );
 
-    cd.comments
+    this.items
       .filter((comment) => comment.underlay)
       .forEach((comment) => {
         const layersOffset = comment.layersOffset;
@@ -521,11 +577,11 @@ const CommentStatic = {
    * @returns {?Comment}
    */
   getById(id, impreciseDate = false) {
-    if (!cd.comments || !id) {
+    if (!this.items.length || !id) {
       return null;
     }
 
-    const findById = (id) => cd.comments.find((comment) => comment.id === id);
+    const findById = (id) => this.items.find((comment) => comment.id === id);
 
     let comment = findById(id);
     if (!comment && impreciseDate) {
@@ -553,7 +609,7 @@ const CommentStatic = {
       return null;
     }
 
-    let comments = cd.comments.filter((comment) => (
+    let comments = this.items.filter((comment) => (
       comment.date &&
       comment.date.getTime() === data.date.getTime() &&
       comment.author.getName() === data.author
@@ -600,7 +656,7 @@ const CommentStatic = {
    * comments' level and parent elements' level classes.
    */
   reviewHighlightables() {
-    cd.comments.forEach((comment) => {
+    this.items.forEach((comment) => {
       comment.reviewHighlightables();
       comment.isLineGapped = comment.highlightables.length > 1 && comment.level > 0;
     });
@@ -614,7 +670,7 @@ const CommentStatic = {
   addNewCommentsNotes(newComments) {
     controller.saveRelativeScrollPosition();
 
-    cd.comments.forEach((comment) => {
+    this.items.forEach((comment) => {
       comment.subitemList.remove('newCommentsNote');
     });
 
@@ -671,7 +727,7 @@ const CommentStatic = {
     if (settings.get('reformatComments')) {
       const pagesToCheckExistence = [];
       $(document.body).addClass('cd-reformattedComments');
-      cd.comments.forEach((comment) => {
+      this.items.forEach((comment) => {
         pagesToCheckExistence.push(...comment.replaceSignatureWithHeader());
         comment.addMenu();
       });
@@ -708,7 +764,7 @@ const CommentStatic = {
   reformatTimestamps() {
     if (!cd.g.ARE_TIMESTAMPS_ALTERED) return;
 
-    cd.comments.forEach((comment) => {
+    this.items.forEach((comment) => {
       comment.reformatTimestamp();
     });
   },
@@ -719,7 +775,7 @@ const CommentStatic = {
    * @private
    */
   resetSelectedComment() {
-    const comment = cd.comments.find((comment) => comment.isSelected);
+    const comment = this.items.find((comment) => comment.isSelected);
     if (comment) {
       comment.isSelected = false;
       comment.replyButton.setLabel(cd.s('cm-reply'));
@@ -743,7 +799,7 @@ const CommentStatic = {
         commentIndex = treeWalker.currentNode.dataset?.cdCommentIndex;
       } while (commentIndex === undefined && treeWalker.parentNode());
       if (commentIndex !== undefined) {
-        comment = cd.comments[commentIndex];
+        comment = this.items[commentIndex];
         this.resetSelectedComment();
         if (comment && comment.isActionable && !comment.replyForm) {
           comment.isSelected = true;
@@ -768,7 +824,7 @@ const CommentStatic = {
    * @private
    */
   findPreviousCommentByTime(date, author) {
-    return cd.comments
+    return this.items
       .filter((comment) => (
         comment.author.getName() === author &&
         comment.date &&
@@ -870,8 +926,9 @@ const CommentStatic = {
     controller.rootElement
       .querySelectorAll('table.cd-comment-part .cd-signature, .cd-comment-part > table .cd-signature')
       .forEach((signature) => {
-        const commentIndex = signature.closest('.cd-comment-part').dataset.cdCommentIndex;
-        cd.comments[commentIndex].isInSingleCommentTable = true;
+        this.items[
+          signature.closest('.cd-comment-part').dataset.cdCommentIndex
+        ].isInSingleCommentTable = true;
       });
   },
 
@@ -975,7 +1032,7 @@ const CommentStatic = {
       console.warn('.cd-commentLevel adjacencies have left.');
     }
 
-    cd.comments.slice(1).forEach((comment) => {
+    this.items.slice(1).forEach((comment) => {
       comment.maybeSplitParent();
     });
   },

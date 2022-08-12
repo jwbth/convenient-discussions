@@ -6,6 +6,7 @@
  */
 
 import CdError from './CdError';
+import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
@@ -30,7 +31,7 @@ export default {
   load(reuse = false) {
     this.loadRequest = (async () => {
       if (settings.get('useTopicSubscription')) {
-        const subscriptionIds = cd.sections
+        const subscriptionIds = SectionStatic.getAll()
           .filter((section) => section.subscribeId)
           .map((section) => section.subscribeId)
           .filter(unique);
@@ -333,7 +334,9 @@ export default {
 
     let updated = false;
     Object.keys(this.registry)
-      .filter((headline) => cd.sections.every((section) => section.headline !== headline))
+      .filter((headline) => (
+        SectionStatic.getAll().every((section) => section.headline !== headline)
+      ))
       .forEach((headline) => {
         delete this.registry[headline];
         updated = true;

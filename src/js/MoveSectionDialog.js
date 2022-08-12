@@ -531,7 +531,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         if (type === 'network') {
           throw [genericMessage + ' ' + cd.sParse('error-network'), false, true];
         } else {
-          let { message, logMessage } = details;
+          const { message, logMessage } = details;
           console.warn(logMessage);
           throw [genericMessage + ' ' + message, false, true];
         }

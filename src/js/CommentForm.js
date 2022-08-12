@@ -255,7 +255,7 @@ class CommentForm {
       this.checkCode();
     }
 
-    cd.commentForms.push(this);
+    CommentFormStatic.add(this);
 
     if (initialState && !initialState.focus) {
       navPanel.updateCommentFormButton();
@@ -1436,8 +1436,8 @@ class CommentForm {
       }
 
       case 'addSection': {
-        if (this.newTopicOnTop && cd.sections[0]) {
-          this.$element.insertBefore(cd.sections[0].$heading);
+        if (this.newTopicOnTop && SectionStatic.getByIndex(0)) {
+          this.$element.insertBefore(SectionStatic.getByIndex(0).$heading);
         } else {
           this.$element.insertAfter(controller.$root);
         }
@@ -1767,7 +1767,7 @@ class CommentForm {
       commentsInSection = this.targetSection.getBase().comments;
     } else if (this.mode !== 'addSection') {
       // Comments in the lead section
-      commentsInSection = cd.comments.filter((comment) => !comment.section);
+      commentsInSection = CommentStatic.getAll().filter((comment) => !comment.section);
     }
     if (this.mode === 'edit') {
       commentsInSection = commentsInSection.filter((comment) => comment !== this.target);
@@ -2087,12 +2087,12 @@ class CommentForm {
    *   * `'network'` for network errors defined in the script,
    *   * `'javascript'` for JavaScript errors,
    *   * `'ui'` for UI errors.
-   * @param {string} [options.code] Code of the error. (Either `code`, `apiData`, or `message`
+   * @param {string} [options.code] Code of the error. (Either `code`, `apiResp`, or `message`
    *   should be specified.)
    * @param {object} [options.details] Additional details about the error.
-   * @param {object} [options.apiData] Data object received from the MediaWiki server. (Either
-   *   `code`, `apiData`, or `message` should be specified.)
-   * @param {string} [options.message] Text of the error. (Either `code`, `apiData`, or `message`
+   * @param {object} [options.apiResp] Data object received from the MediaWiki server. (Either
+   *   `code`, `apiResp`, or `message` should be specified.)
+   * @param {string} [options.message] Text of the error. (Either `code`, `apiResp`, or `message`
    *   should be specified.)
    * @param {'error'|'notice'|'warning'} [options.messageType='error'] Message type if not
    *   `'error'`.
@@ -2105,7 +2105,7 @@ class CommentForm {
     type,
     code,
     details,
-    apiData,
+    apiResp,
     message,
     messageType = 'error',
     logMessage,
@@ -2175,7 +2175,7 @@ class CommentForm {
           }
 
           case 'error': {
-            const error = apiData.errors[0];
+            const error = apiResp.errors[0];
             switch (error.code) {
               case 'missingtitle':
                 message = cd.sParse('cf-error-pagedoesntexist');
@@ -2189,7 +2189,7 @@ class CommentForm {
 
         message = wrap(message);
         message.find('.mw-parser-output').css('display', 'inline');
-        logMessage ||= [code, apiData];
+        logMessage ||= [code, apiResp];
         break;
       }
 
@@ -2399,10 +2399,10 @@ class CommentForm {
   /**
    * Check for conflicts of the operation with other pending operations, and if there are such,
    * close the operation and return `true` to abort it. The rules are the following:
-   * * `preview` and `viewChanges` operations may be overriden with other of one of these types
+   * - `preview` and `viewChanges` operations may be overriden with other of one of these types
    *   (every new request replaces the old, although a new autopreview request cannot be made while
    *   the old is pending).
-   * * `submit` operations may not be overriden (and are not checked by this function), but also
+   * - `submit` operations may not be overriden (and are not checked by this function), but also
    *   don't override existing `preview` and `viewChanges` operations (so that the user gets the last
    *   autopreview even after they have sent the comment).
    *
@@ -2857,7 +2857,7 @@ class CommentForm {
             messageType = 'notice';
           }
 
-          // FIXME: We don't pass `apiData` to prevent the message for `missingtitle` to be
+          // FIXME: We don't pass `apiResp` to prevent the message for `missingtitle` to be
           // overriden, which is hacky.
           this.handleError({
             type,
@@ -2976,7 +2976,7 @@ class CommentForm {
         (this.mode === 'addSubsection' && this.target.getChildren(true).slice(-1)[0]) ||
         this.target
       );
-      cd.sections
+      SectionStatic.getAll()
         .slice(0, sectionAbove.index + 1)
         .reverse()
         .some((section) => {
@@ -2986,10 +2986,10 @@ class CommentForm {
           return commentAbove;
         });
     } else {
-      commentAbove = this.newTopicOnTop ? null : cd.comments[cd.comments.length - 1];
+      commentAbove = this.newTopicOnTop ? null : CommentStatic.getByIndex(-1);
     }
 
-    const existingIds = cd.comments
+    const existingIds = CommentStatic.getAll()
       .slice(0, commentAbove ? commentAbove.index + 1 : 0)
       .filter((comment) => (
         comment.author === cd.user &&
@@ -3013,7 +3013,7 @@ class CommentForm {
 
     const currentOperation = this.registerOperation('submit', undefined, !afterEditConflict);
 
-    const otherFormsSubmitted = cd.commentForms
+    const otherFormsSubmitted = CommentFormStatic.getAll()
       .some((commentForm) => commentForm !== this && commentForm.isBeingSubmitted());
     if (otherFormsSubmitted) {
       this.handleError({
@@ -3170,7 +3170,7 @@ class CommentForm {
     } else {
       delete this.target[CommentFormStatic.modeToProperty(this.mode) + 'Form'];
     }
-    removeFromArrayIfPresent(cd.commentForms, this);
+    CommentFormStatic.remove(this);
     CommentFormStatic.saveSession(true);
     navPanel.updateCommentFormButton();
     controller.updatePageTitle();
@@ -3677,7 +3677,7 @@ class CommentForm {
         id: target.id,
 
         // We cache ancestors when saving the session, so this call will return the right value,
-        // despite the fact that cd.sections has already changed.
+        // despite the fact that SectionStatic.items has already changed.
         ancestors: target.getAncestors().map((section) => section.headline),
       });
       if (section) {

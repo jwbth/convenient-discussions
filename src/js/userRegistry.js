@@ -9,8 +9,11 @@ import { getFromLocalStorage, saveToLocalStorage, ucFirst, underlinesToSpaces } 
 import { getUsersByGlobalId } from './apiWrappers';
 
 /**
- * Class representing a user. Is made similar to `mw.user` so that it is possible to pass it to
- * `mw.msg()` and have `{{gender:}}` replaced.
+ * Class representing a user. Is made similar to
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.user mw.user} so that it is
+ * possible to pass it to
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw-method-msg mw.msg()} and have
+ * `{{gender:}}` replaced.
  *
  * To create an instance, use {@link module:userRegistry.get} (the constructor is only exported for
  * means of code completion).

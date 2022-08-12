@@ -99,7 +99,7 @@ function getCommentPartRect(el) {
 function maybeMarkPageAsRead() {
   if (
     !navPanel.getHiddenNewCommentCount() &&
-    cd.comments.every((comment) => !comment.willFlashChangedOnSight) &&
+    CommentStatic.getAll().every((comment) => !comment.willFlashChangedOnSight) &&
     updateChecker.getLastCheckedRevisionId()
   ) {
     cd.page.markAsRead(updateChecker.getLastCheckedRevisionId());
@@ -663,7 +663,7 @@ class Comment extends CommentSkeleton {
       this.overlayMenu.appendChild(this.replyButton.element);
     }
 
-    if (cd.comments[this.index + 1]?.isOutdented) {
+    if (CommentStatic.getByIndex(this.index + 1)?.isOutdented) {
       this.replyButton.setDisabled(true);
       this.replyButton.setTooltip(cd.s('cm-reply-outdented-tooltip'));
     }
@@ -1721,7 +1721,7 @@ class Comment extends CommentSkeleton {
     if (this.isHovered || controller.isPageOverlayOn() || settings.get('reformatComments')) return;
 
     if (e && e.type === 'touchstart') {
-      cd.comments
+      CommentStatic.getAll()
         .filter((comment) => comment.isHovered)
         .forEach((comment) => {
           comment.unhighlightHovered();
@@ -2877,11 +2877,11 @@ class Comment extends CommentSkeleton {
       this.flashChanged();
     }
 
-    const makesSenseToRegisterFurther = cd.comments
+    const makesSenseToRegisterFurther = CommentStatic.getAll()
       .some((comment) => comment.isSeen || comment.willFlashChangedOnSight);
     if (registerAllInDirection && makesSenseToRegisterFurther) {
       const change = registerAllInDirection === 'backward' ? -1 : 1;
-      const nextComment = cd.comments[this.index + change];
+      const nextComment = CommentStatic.getByIndex(this.index + change);
       if (nextComment && nextComment.isInViewport() !== false) {
         nextComment.registerSeen(registerAllInDirection, flash);
       }
@@ -3488,7 +3488,7 @@ class Comment extends CommentSkeleton {
         commentText: commentData.text,
       };
     } else {
-      const comments = isSectionCodeUsed ? this.section.comments : cd.comments;
+      const comments = isSectionCodeUsed ? this.section.comments : CommentStatic.getAll();
       const index = comments.indexOf(this);
       thisData = {
         index,
@@ -4158,7 +4158,7 @@ class Comment extends CommentSkeleton {
    * second one. This fixes the thread feature behavior among other things.
    */
   maybeSplitParent() {
-    const previousComment = cd.comments[this.index - 1];
+    const previousComment = CommentStatic.getByIndex(this.index - 1);
     if (this.level !== previousComment.level) return;
 
     const previousCommentLastElement = previousComment

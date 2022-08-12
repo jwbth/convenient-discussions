@@ -24,13 +24,13 @@ const autocompleteTimeout = 100;
  * Callback used in the `.catch()` parts of API requests.
  *
  * @param {string|Array} code
- * @param {object} data
+ * @param {object} resp
  * @throws {CdError}
  */
-export function handleApiReject(code, data) {
+export function handleApiReject(code, resp) {
   // Native promises support only one parameter.
   if (Array.isArray(code)) {
-    [code, data] = code;
+    [code, resp] = code;
   }
 
   // See the parameters with which mw.Api() rejects:
@@ -40,7 +40,7 @@ export function handleApiReject(code, data) {
     new CdError({
       type: 'api',
       code: 'error',
-      apiData: data,
+      apiResp: resp,
     });
 }
 
@@ -148,9 +148,10 @@ export function unpackLegacySubscriptions(string) {
 /**
  * Request the pages visits data from the server.
  *
- * `mw.user.options` is not used even on the first run because the script may not run immediately
- * after the page has loaded. In fact, when the page is loaded in a background tab, it can be
- * throttled until it is focused, so an indefinite amount of time can pass.
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.user-property-options mw.user.options}
+ * is not used even on the first run because the script may not run immediately after the page has
+ * loaded. In fact, when the page is loaded in a background tab, it can be throttled until it is
+ * focused, so an indefinite amount of time can pass.
  *
  * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
  * @returns {Promise.<GetVisitsReturn>}
@@ -265,7 +266,7 @@ export async function setLegacySubscriptions(registry) {
  * @param {string} [method='post']
  * @returns {Promise.<object>}
  */
-export function makeBackgroundRequest(params, method = 'post') {
+export function requestInBackground(params, method = 'post') {
   return new Promise((resolve, reject) => {
     controller.getApi()[method](params, {
       success: (resp) => {
@@ -437,7 +438,7 @@ async function setOption(name, value, action) {
     });
   }
 
-  const resp = await makeBackgroundRequest(controller.getApi().assertCurrentUser({
+  const resp = await requestInBackground(controller.getApi().assertCurrentUser({
     action,
     optionname: name,
 
@@ -487,7 +488,7 @@ export async function setGlobalOption(name, value) {
     await setOption(name, value, 'globalpreferences');
   } catch (e) {
     // The site doesn't support global preferences.
-    if (e instanceof CdError && e.data.apiData?.error.code === 'badvalue') {
+    if (e instanceof CdError && e.data.apiResp?.error.code === 'badvalue') {
       await setLocalOption(name, value);
     } else {
       throw e;
@@ -500,10 +501,10 @@ export async function setGlobalOption(name, value) {
  * `'female'`, or `'unknown'`.
  *
  * @param {import('./userRegistry').User[]} users
- * @param {boolean} [requestInBackground=false] Make a request that won't set the process on hold
+ * @param {boolean} [doRequestInBackground=false] Make a request that won't set the process on hold
  *   when the tab is in the background.
  */
-export async function loadUserGenders(users, requestInBackground = false) {
+export async function loadUserGenders(users, doRequestInBackground = false) {
   const usersToRequest = users
     .filter((user) => !user.getGender() && user.isRegistered())
     .filter(unique)
@@ -515,8 +516,8 @@ export async function loadUserGenders(users, requestInBackground = false) {
       ususers: nextUsers,
       usprop: 'gender',
     };
-    const request = requestInBackground ?
-      makeBackgroundRequest(options) :
+    const request = doRequestInBackground ?
+      requestInBackground(options) :
       controller.getApi().post(options);
     (await request.catch(handleApiReject)).query.users
       .filter((user) => user.gender)

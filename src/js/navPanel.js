@@ -6,6 +6,7 @@
  */
 
 import Button from './Button';
+import CommentFormStatic from './CommentFormStatic';
 import CommentStatic from './CommentStatic';
 import cd from './cd';
 import controller from './controller';
@@ -188,7 +189,7 @@ export default {
    * Count the new and unseen comments on the page, and update the navigation panel to reflect that.
    */
   fill() {
-    if (cd.comments.some((comment) => comment.isNew)) {
+    if (CommentStatic.getAll().some((comment) => comment.isNew)) {
       this.updateRefreshButtonTooltip(0);
       this.previousButton.show();
       this.nextButton.show();
@@ -224,8 +225,11 @@ export default {
     const commentInViewport = CommentStatic.findInViewport(direction);
     if (!commentInViewport) return;
 
-    const reverse = direction === 'backward';
-    const reorderedComments = reorderArray(cd.comments, commentInViewport.index, reverse);
+    const reorderedComments = reorderArray(
+      CommentStatic.getAll(),
+      commentInViewport.index,
+      direction === 'backward'
+    );
     const candidates = reorderedComments
       .filter((comment) => comment.isNew && !comment.isInViewport());
     const comment = candidates.find((comment) => comment.isInViewport() === false) || candidates[0];
@@ -261,7 +265,7 @@ export default {
   goToFirstUnseenComment() {
     if (controller.isAutoScrolling()) return;
 
-    const candidates = cd.comments.filter((comment) => comment.isSeen === false);
+    const candidates = CommentStatic.getAll().filter((comment) => comment.isSeen === false);
     const comment = candidates.find((comment) => comment.isInViewport() === false) || candidates[0];
     if (comment) {
       comment.scrollTo({
@@ -282,7 +286,7 @@ export default {
    * @param {boolean} [inSight=false]
    */
   goToNextCommentForm(inSight) {
-    cd.commentForms
+    CommentFormStatic.getAll()
       .filter((commentForm) => inSight || !commentForm.$element.cdIsInViewport(true))
       .map((commentForm) => {
         let top = commentForm.$element.get(0).getBoundingClientRect().top;
@@ -337,7 +341,7 @@ export default {
     cachedCommentsBySection = commentsBySection;
 
     let tooltipText = null;
-    const areThereNew = cd.comments.some((comment) => comment.isNew);
+    const areThereNew = CommentStatic.getAll().some((comment) => comment.isNew);
     if (commentCount) {
       tooltipText = (
         cd.s('navpanel-newcomments-count', commentCount) +
@@ -405,7 +409,9 @@ export default {
   updateFirstUnseenButton() {
     if (!this.isMounted()) return;
 
-    this.unseenCommentCount = cd.comments.filter((comment) => comment.isSeen === false).length;
+    this.unseenCommentCount = CommentStatic.getAll()
+      .filter((comment) => comment.isSeen === false)
+      .length;
     if (this.unseenCommentCount) {
       this.firstUnseenButton.show().setLabel(this.unseenCommentCount);
     } else {
@@ -421,7 +427,7 @@ export default {
   updateCommentFormButton() {
     if (!this.isMounted() || controller.isAutoScrolling()) return;
 
-    const areThereHidden = cd.commentForms
+    const areThereHidden = CommentFormStatic.getAll()
       .some((commentForm) => !commentForm.$element.cdIsInViewport(true));
     this.commentFormButton[areThereHidden ? 'show' : 'hide']();
   },

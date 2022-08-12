@@ -435,8 +435,8 @@ class Section extends SectionSkeleton {
 
     // May mean complex formatting, so we better keep out.
     const doesNestingLevelMatch = (
-      !cd.sections[this.index + 1] ||
-      cd.sections[this.index + 1].headingNestingLevel === this.headingNestingLevel
+      !SectionStatic.getByIndex(this.index + 1) ||
+      SectionStatic.getByIndex(this.index + 1).headingNestingLevel === this.headingNestingLevel
     );
 
     // https://ru.wikipedia.org/wiki/Project:Запросы_к_администраторам/Быстрые
@@ -462,7 +462,7 @@ class Section extends SectionSkeleton {
       this.comments[0].level === 0 &&
       this.comments.every((comment) => !comment.isActionable)
     );
-    const nextSameLevelSection = cd.sections
+    const nextSameLevelSection = SectionStatic.getAll()
       .slice(this.index + 1)
       .find((otherSection) => otherSection.level === this.level);
 
@@ -1034,10 +1034,10 @@ class Section extends SectionSkeleton {
    * Add the section to the subscription list.
    *
    * @param {'quiet'|'silent'} [mode]
-   * * No value: a notification will be shown.
-   * * `'quiet'`: don't show a notification.
-   * * `'silent'`: don't even change any UI, including the subscribe button appearance. If there
-   *   is an error, it will be displayed though.
+   * - No value: a notification will be shown.
+   * - `'quiet'`: don't show a notification.
+   * - `'silent'`: don't even change any UI, including the subscribe button appearance. If there is
+   *   an error, it will be displayed though.
    * @param {string} [renamedFrom] If DiscussionTools' topic subscriptions API is not used and the
    *   section was renamed, the previous section headline. It is unwatched together with watching
    *   the current headline if there is no other coinciding headlines on the page.
@@ -1094,10 +1094,10 @@ class Section extends SectionSkeleton {
    * Remove the section from the subscription list.
    *
    * @param {'quiet'|'silent'} [mode]
-   * * No value: a notification will be shown.
-   * * `'quiet'`: don't show a notification.
-   * * `'silent'`: don't even change any UI, including the subscribe button appearance. If there
-   *   is an error, it will be displayed though.
+   * - No value: a notification will be shown.
+   * - `'quiet'`: don't show a notification.
+   * - `'silent'`: don't even change any UI, including the subscribe button appearance. If there is
+   *   an error, it will be displayed though.
    */
   unsubscribe(mode) {
     const sections = SectionStatic.getBySubscribeId(this.subscribeId);
@@ -1532,7 +1532,7 @@ class Section extends SectionSkeleton {
     const previousHeadlinesInCode = headlines
       .slice(-previousHeadlinesToCheckCount)
       .reverse();
-    const previousHeadlines = cd.sections
+    const previousHeadlines = SectionStatic.getAll()
       .slice(Math.max(0, this.index - previousHeadlinesToCheckCount), this.index)
       .reverse()
       .map((section) => section.headline);
@@ -1680,7 +1680,7 @@ class Section extends SectionSkeleton {
     }
 
     return (
-      cd.sections
+      SectionStatic.getAll()
         .slice(0, this.index)
         .reverse()
         .find((section) => section.level === 2) ||
@@ -1698,7 +1698,7 @@ class Section extends SectionSkeleton {
   getChildren(indirect = false) {
     const children = [];
     let haveMetDirect = false;
-    cd.sections
+    SectionStatic.getAll()
       .slice(this.index + 1)
       .some((section) => {
         if (section.level > this.level) {

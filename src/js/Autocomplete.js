@@ -1,3 +1,4 @@
+import SectionStatic from './SectionStatic';
 import Tribute from '../tribute/Tribute';
 import cd from './cd';
 import controller from './controller';
@@ -286,7 +287,7 @@ class Autocomplete {
                 timestamp,
               });
             });
-            cd.sections.forEach((section) => {
+            SectionStatic.getAll().forEach((section) => {
               this.commentLinks.default.push({
                 key: underlinesToSpaces(section.id),
                 id: underlinesToSpaces(section.id),

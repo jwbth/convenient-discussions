@@ -10,10 +10,18 @@ import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
 import postponements from './postponements';
-import { areObjectsEqual, focusInput, getFromLocalStorage, saveToLocalStorage } from './util';
+import {
+  areObjectsEqual,
+  focusInput,
+  getFromLocalStorage,
+  removeFromArrayIfPresent,
+  saveToLocalStorage,
+} from './util';
 
 /**
- * Callback to be used in Array#sort() for comment forms.
+ * Callback to be used in
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort Array#sort()}
+ * for comment forms.
  *
  * @param {CommentForm} commentForm1
  * @param {CommentForm} commentForm2
@@ -30,104 +38,6 @@ function lastFocused(commentForm1, commentForm2) {
     return -1;
   } else {
     return 0;
-  }
-}
-
-/**
- * Restore comment forms using the data saved in the local storage.
- *
- * @param {object} commentFormsData
- * @private
- */
-function restoreFromStorage(commentFormsData) {
-  let haveRestored = false;
-  const rescue = [];
-  commentFormsData.commentForms.forEach((data) => {
-    const prop = CommentFormStatic.modeToProperty(data.mode);
-    if (data.targetData?.headline) {
-      const section = SectionStatic.search({
-        headline: data.targetData.headline,
-        oldestCommentId: data.targetData.oldestCommentId,
-        index: data.targetData.index,
-        id: data.targetData.id,
-        ancestors: data.targetData.ancestors,
-      });
-      if (section?.isActionable && !section[`${prop}Form`]) {
-        try {
-          section[prop](data);
-          haveRestored = true;
-        } catch (e) {
-          console.warn(e);
-          rescue.push(data);
-        }
-      } else {
-        rescue.push(data);
-      }
-
-      // TODO: remove the "data.targetData.anchor" part 2 months after the release.
-    } else if (data.targetData?.id || data.targetData?.anchor) {
-      const comment = CommentStatic.getById(data.targetData.id || data.targetData.anchor);
-      if (comment?.isActionable && !comment[`${prop}Form`]) {
-        try {
-          comment[prop](data);
-          haveRestored = true;
-        } catch (e) {
-          console.warn(e);
-          rescue.push(data);
-        }
-      } else {
-        rescue.push(data);
-      }
-    } else if (data.mode === 'addSection') {
-      if (!CommentFormStatic.getAddSectionForm()) {
-        const commentForm = new CommentForm({
-          target: cd.page,
-          mode: data.mode,
-          initialState: data,
-          preloadConfig: data.preloadConfig,
-          newTopicOnTop: data.newTopicOnTop,
-        });
-        CommentFormStatic.setAddSectionForm(commentForm);
-        haveRestored = true;
-      } else {
-        rescue.push(data);
-      }
-    }
-  });
-  if (haveRestored) {
-    const notification = mw.notification.notify(cd.s('restore-restored-text'), {
-      title: cd.s('restore-restored-title'),
-    });
-    notification.$notification.on('click', () => {
-      cd.commentForms[0].goTo();
-    });
-  }
-  if (rescue.length) {
-    controller.getBootProcess().rescueCommentFormsContent(rescue);
-  }
-}
-
-/**
- * Restore comment forms using the data in {@link convenientDiscussions.commentForms}.
- *
- * @private
- */
-function restoreDirectly() {
-  const rescue = [];
-  const addToRescue = (commentForm) => {
-    rescue.push({
-      headline: commentForm.headlineInput?.getValue(),
-      comment: commentForm.commentInput.getValue(),
-      summary: commentForm.summaryInput.getValue(),
-    });
-    cd.commentForms.splice(cd.commentForms.indexOf(commentForm), 1);
-  };
-
-  cd.commentForms.forEach((commentForm) => {
-    commentForm.restore(addToRescue);
-  });
-  if (rescue.length) {
-    controller.getBootProcess().rescueCommentFormsContent(rescue);
   }
 }
 
@@ -153,6 +63,70 @@ function cleanUpSessionRegistry(data) {
  * @exports CommentFormStatic
  */
 const CommentFormStatic = {
+  /**
+   * List of comment forms.
+   *
+   * @type {CommentForm[]}
+   * @private
+   */
+  items: [],
+
+  /**
+   * Add a comment form to the list.
+   *
+   * @param {CommentForm} item
+   */
+  add(item) {
+    this.items.push(item);
+  },
+
+  /**
+   * Remove a comment form from the list.
+   *
+   * @param {CommentForm} item
+   */
+  remove(item) {
+    removeFromArrayIfPresent(this.items, item);
+  },
+
+  /**
+   * Get all comment forms.
+   *
+   * @returns {CommentForm[]}
+   */
+  getAll() {
+    return this.items;
+  },
+
+  /**
+   * Get a comment form by index.
+   *
+   * @param {number} index Use a negative index to count from the end.
+   * @returns {?CommentForm}
+   */
+  getByIndex(index) {
+    if (index < 0) {
+      index = this.items.length + index;
+    }
+    return this.items[index] || null;
+  },
+
+  /**
+   * Get the number of comment forms.
+   *
+   * @returns {number}
+   */
+  getCount() {
+    return this.items.length;
+  },
+
+  /**
+   * Reset the comment form list.
+   */
+  reset() {
+    this.items = [];
+  },
+
   /**
    * Get default preload configuration for the `addSection` mode.
    *
@@ -187,7 +161,7 @@ const CommentFormStatic = {
    */
   getLastActive() {
     return (
-      cd.commentForms
+      this.items
         .slice()
         .sort(lastFocused)[0] ||
       null
@@ -202,7 +176,7 @@ const CommentFormStatic = {
    */
   getLastActiveAltered() {
     return (
-      cd.commentForms
+      this.items
         .slice()
         .sort(lastFocused)
         .find((commentForm) => commentForm.isAltered()) ||
@@ -288,7 +262,7 @@ const CommentFormStatic = {
    * narrow, the labels will shrink.
    */
   adjustLabels() {
-    cd.commentForms.forEach((commentForm) => {
+    this.items.forEach((commentForm) => {
       commentForm.adjustLabels();
     });
   },
@@ -297,7 +271,7 @@ const CommentFormStatic = {
    * Detach the comment forms keeping events.
    */
   detach() {
-    cd.commentForms.forEach((commentForm) => {
+    this.items.forEach((commentForm) => {
       commentForm.$outermostElement.detach();
     });
   },
@@ -310,7 +284,7 @@ const CommentFormStatic = {
    */
   saveSession(force) {
     const save = () => {
-      const commentForms = cd.commentForms
+      const commentForms = this.items
         .filter((commentForm) => commentForm.isAltered())
         .map((commentForm) => ({
           mode: commentForm.getMode(),
@@ -347,6 +321,104 @@ const CommentFormStatic = {
   },
 
   /**
+   * Restore comment forms using the data saved in the local storage.
+   *
+   * @param {object} commentFormsData
+   * @private
+   */
+  restoreFromStorage(commentFormsData) {
+    let haveRestored = false;
+    const rescue = [];
+    commentFormsData.commentForms.forEach((data) => {
+      const prop = CommentFormStatic.modeToProperty(data.mode);
+      if (data.targetData?.headline) {
+        const section = SectionStatic.search({
+          headline: data.targetData.headline,
+          oldestCommentId: data.targetData.oldestCommentId,
+          index: data.targetData.index,
+          id: data.targetData.id,
+          ancestors: data.targetData.ancestors,
+        });
+        if (section?.isActionable && !section[`${prop}Form`]) {
+          try {
+            section[prop](data);
+            haveRestored = true;
+          } catch (e) {
+            console.warn(e);
+            rescue.push(data);
+          }
+        } else {
+          rescue.push(data);
+        }
+
+        // TODO: remove the "data.targetData.anchor" part 2 months after the release.
+      } else if (data.targetData?.id || data.targetData?.anchor) {
+        const comment = CommentStatic.getById(data.targetData.id || data.targetData.anchor);
+        if (comment?.isActionable && !comment[`${prop}Form`]) {
+          try {
+            comment[prop](data);
+            haveRestored = true;
+          } catch (e) {
+            console.warn(e);
+            rescue.push(data);
+          }
+        } else {
+          rescue.push(data);
+        }
+      } else if (data.mode === 'addSection') {
+        if (!CommentFormStatic.getAddSectionForm()) {
+          const commentForm = new CommentForm({
+            target: cd.page,
+            mode: data.mode,
+            initialState: data,
+            preloadConfig: data.preloadConfig,
+            newTopicOnTop: data.newTopicOnTop,
+          });
+          CommentFormStatic.setAddSectionForm(commentForm);
+          haveRestored = true;
+        } else {
+          rescue.push(data);
+        }
+      }
+    });
+    if (haveRestored) {
+      const notification = mw.notification.notify(cd.s('restore-restored-text'), {
+        title: cd.s('restore-restored-title'),
+      });
+      notification.$notification.on('click', () => {
+        this.items[0].goTo();
+      });
+    }
+    if (rescue.length) {
+      controller.getBootProcess().rescueCommentFormsContent(rescue);
+    }
+  },
+
+  /**
+   * Restore comment forms using the data in {@link convenientDiscussions.commentForms}.
+   *
+   * @private
+   */
+  restoreDirectly() {
+    const rescue = [];
+    const addToRescue = (commentForm) => {
+      rescue.push({
+        headline: commentForm.headlineInput?.getValue(),
+        comment: commentForm.commentInput.getValue(),
+        summary: commentForm.summaryInput.getValue(),
+      });
+      this.items.splice(this.items.indexOf(commentForm), 1);
+    };
+
+    this.items.forEach((commentForm) => {
+      commentForm.restore(addToRescue);
+    });
+    if (rescue.length) {
+      controller.getBootProcess().rescueCommentFormsContent(rescue);
+    }
+  },
+
+  /**
    * _For internal use._ Return saved comment forms to their places.
    *
    * @param {boolean} fromStorage Should the session be restored from the local storage instead of
@@ -355,16 +427,16 @@ const CommentFormStatic = {
   restoreSession(fromStorage) {
     if (fromStorage) {
       // This is needed when the page is reloaded externally.
-      cd.commentForms = [];
+      this.reset();
 
       const dataAllPages = cleanUpSessionRegistry(getFromLocalStorage('commentForms'));
       saveToLocalStorage('commentForms', dataAllPages);
       const data = dataAllPages[mw.config.get('wgPageName')] || {};
       if (data.commentForms) {
-        restoreFromStorage(data);
+        this.restoreFromStorage(data);
       }
     } else {
-      restoreDirectly();
+      this.restoreDirectly();
     }
     this.saveSession();
   },

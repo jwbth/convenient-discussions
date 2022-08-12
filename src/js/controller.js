@@ -58,6 +58,14 @@ export default {
   commentsNotifiedAbout: [],
 
   /**
+   * Last boot process.
+   *
+   * @type {BootProcess|undefined}
+   * @private
+   */
+  bootProcess: undefined,
+
+  /**
    * _For internal use._ Assign some properties required by the controller - those which are not
    * known from the beginning.
    */
@@ -160,6 +168,9 @@ export default {
   reset() {
     this.cleanUpUrlAndDom();
     this.mutationObserver?.disconnect();
+
+    CommentStatic.reset();
+    SectionStatic.reset();
 
     this.content = {};
 
@@ -567,7 +578,7 @@ export default {
           // In a collapsed thread?
           const closestHidden = this.scrollData.element.closest('.cd-hidden');
           if (closestHidden) {
-            cd.comments
+            CommentStatic.getAll()
               .map((comment) => comment.thread)
               .filter(defined)
               .filter((thread) => thread.isCollapsed)
@@ -1164,12 +1175,6 @@ export default {
     debug.stopTimer('start');
     debug.startTimer('loading data');
 
-    /**
-     * Last boot process.
-     *
-     * @type {BootProcess}
-     * @private
-     */
     this.bootProcess = new BootProcess();
 
     // Make some requests in advance if the API module is ready in order not to make 2 requests
@@ -1287,7 +1292,7 @@ export default {
     // dysfunctional page.
 
     // Stop all animations, clear all timeouts.
-    cd.comments.forEach((comment) => {
+    CommentStatic.getAll().forEach((comment) => {
       comment.$animatedBackground?.add(comment.$marker).stop(true, true);
     });
 
@@ -1348,7 +1353,7 @@ export default {
 
     // Get IDs of unseen comments. This is used to arrange that they will still be there after
     // replying on or refreshing the page.
-    const unseenCommentIds = cd.comments
+    const unseenCommentIds = CommentStatic.getAll()
       .filter((comment) => comment.isSeen === false)
       .map((comment) => comment.id);
     bootProcess.passData('unseenCommentIds', unseenCommentIds);
@@ -1358,8 +1363,14 @@ export default {
     this.bootProcess = bootProcess;
 
     CommentFormStatic.detach();
+
+    // Just submitted form. Forms that should stay are detached above.
+    $('.cd-commentForm-addSection').remove();
+
     LiveTimestamp.reset();
     this.reset();
+    this.$addSectionButtonContainer?.remove();
+    CommentStatic.resetLayers();
 
     debug.stopTimer('getting HTML');
 
@@ -1701,8 +1712,7 @@ export default {
     // If this element is a part of a comment, replace it in the Comment object instance.
     let commentIndex = element.getAttribute('data-cd-comment-index');
     if (commentIndex !== null) {
-      commentIndex = Number(commentIndex);
-      cd.comments[commentIndex].replaceElement(element, newElement);
+      CommentStatic.getAll()[Number(commentIndex)].replaceElement(element, newElement);
     } else {
       element.parentNode.replaceChild(newElement, element);
     }
@@ -1978,7 +1988,7 @@ export default {
 
     if (filteredComments.length) {
       let html;
-      const formDataNote = cd.commentForms.some((commentForm) => commentForm.isAltered()) ?
+      const formDataNote = CommentFormStatic.getAll().some((cf) => cf.isAltered()) ?
         ' ' + cd.mws('parentheses', cd.s('notification-formdata')) :
         '';
       const reloadHtml = cd.sParse('notification-reload', formDataNote);
@@ -2182,9 +2192,9 @@ export default {
 
   /**
    * Update the page title to show:
-   * * What state the page is in according to the user's action (replying, editing, starting a
+   * - What state the page is in according to the user's action (replying, editing, starting a
    *   section or subsection, or none).
-   * * The number of comments added to the page since it was loaded. If used without parameters,
+   * - The number of comments added to the page since it was loaded. If used without parameters,
    *   restore the previous value (if could be changed by the browser when the "Back" button is
    *   clicked).
    *

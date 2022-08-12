@@ -954,7 +954,7 @@ export default {
   },
 
   /**
-   * Get the site data requests without making them if there are none yet.
+   * _For internal use._ Get the site data requests without making them if there are none yet.
    *
    * @returns {Promise[]}
    */
@@ -1035,7 +1035,7 @@ export default {
   },
 
   /**
-   * Set a number of global object and controller properties.
+   * _For internal use._ Set a number of {@link convenientDiscussions global object} properties.
    */
   globals() {
     if (cd.page) return;
@@ -1306,8 +1306,9 @@ export default {
   },
 
   /**
-   * _For internal use._ Assign various global objects' (`convenientDiscussions`, `$`) properties
-   * and methods that are needed for processing a talk page. Executed on the first run.
+   * _For internal use._ Assign various global objects' ({@link convenientDiscussions},
+   * {@link external:jQuery.fn}) properties and methods that are needed for processing a talk page.
+   * Executed on the first run.
    */
   async talkPage() {
     await Promise.all(this.getSiteData());
@@ -1330,8 +1331,9 @@ export default {
      *
      * @name commentForms
      * @type {import('./CommentForm').default[]}
+     * @see module:CommentFormStatic.getAll
      * @memberof convenientDiscussions
      */
-    cd.commentForms = [];
+    cd.commentForms = CommentFormStatic.getAll();
   },
 };

@@ -108,7 +108,7 @@ function getEndElement(startElement, highlightables, nextForeignElement) {
 function saveCollapsedThreads() {
   if (!controller.isCurrentRevision()) return;
 
-  const threads = cd.comments
+  const threads = CommentStatic.getAll()
     .filter((comment) => (
       comment.thread &&
       comment.thread.isCollapsed !== Boolean(comment.thread.isAutocollapseTarget)
@@ -167,8 +167,8 @@ function autocollapseThreads() {
     // example between the (collapseThreadsLevel - 1) level and the (collapseThreadsLevel + 1) level
     // (the user should have replied on the (collapseThreadsLevel - 1) level but inserted two "::"
     // instead of one).
-    for (let i = 0; i < cd.comments.length; i++) {
-      const comment = cd.comments[i];
+    for (let i = 0; i < CommentStatic.getCount(); i++) {
+      const comment = CommentStatic.getByIndex(i);
       if (!comment.thread) continue;
 
       if (comment.level >= collapseThreadsLevel) {
@@ -342,7 +342,7 @@ class Thread {
     const highlightables = this.lastComment.highlightables;
     const visualHighlightables = this.visualLastComment.highlightables;
     const visualHighlightablesFallback = this.visualLastCommentFallback.highlightables;
-    const nextForeignElement = cd.comments[this.lastComment.index + 1]?.elements[0];
+    const nextForeignElement = CommentStatic.getByIndex(this.lastComment.index + 1)?.elements[0];
 
     if (this.rootComment.level === 0) {
       startElement = firstNotHeadingElement;
@@ -366,7 +366,7 @@ class Thread {
       const lastHighlightable = highlightables[highlightables.length - 1];
 
       if (this.hasOutdents) {
-        const lastOutdentedComment = cd.comments
+        const lastOutdentedComment = CommentStatic.getAll()
           .slice(0, this.lastComment.index + 1)
           .reverse()
           .find((comment) => comment.isOutdented);
@@ -510,7 +510,7 @@ class Thread {
     if (this.endElement !== this.visualEndElement) {
       let areOutdentedCommentsShown = false;
       for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
-        const comment = cd.comments[i];
+        const comment = CommentStatic.getByIndex(i);
         if (comment.isOutdented) {
           areOutdentedCommentsShown = true;
         }
@@ -614,7 +614,7 @@ class Thread {
       tooltip: cd.s('thread-expand-tooltip', cd.g.CMD_MODIFIER),
       action: (e) => {
         if (isCmdModifierPressed(e)) {
-          cd.comments.slice().reverse().forEach((comment) => {
+          CommentStatic.getAll().slice().reverse().forEach((comment) => {
             if (comment.thread?.isCollapsed) {
               comment.thread.expand();
             }
@@ -716,7 +716,7 @@ class Thread {
     this.isCollapsed = true;
 
     for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
-      const comment = cd.comments[i];
+      const comment = CommentStatic.getByIndex(i);
       if (comment.thread?.isCollapsed && comment.thread !== this) {
         i = comment.thread.lastComment.index;
         continue;
@@ -782,7 +782,7 @@ class Thread {
     this.isCollapsed = false;
     let areOutdentedCommentsShown = false;
     for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
-      const comment = cd.comments[i];
+      const comment = CommentStatic.getByIndex(i);
       if (comment.isOutdented) {
         areOutdentedCommentsShown = true;
       }
@@ -973,7 +973,7 @@ class Thread {
 
     isInited = false;
     treeWalker = new ElementsTreeWalker(undefined, controller.rootElement);
-    cd.comments.forEach((rootComment) => {
+    CommentStatic.getAll().forEach((rootComment) => {
       try {
         rootComment.thread = new Thread(rootComment);
       } catch {
@@ -1020,7 +1020,7 @@ class Thread {
     const scrollX = window.scrollX;
     const scrollY = window.scrollY;
 
-    cd.comments
+    CommentStatic.getAll()
       .slice()
       .reverse()
       .some((comment) => (

@@ -5,6 +5,7 @@
  */
 
 import CdError from './CdError';
+import CommentFormStatic from './CommentFormStatic';
 import CommentStatic from './CommentStatic';
 import SectionStatic from './SectionStatic';
 import Thread from './Thread';
@@ -176,7 +177,7 @@ function cleanUpSeenRenderedChanges(data) {
  */
 function mapSections(otherSections) {
   // Reset values set in the previous run.
-  cd.sections.forEach((section) => {
+  SectionStatic.getAll().forEach((section) => {
     delete section.match;
     delete section.matchScore;
   });
@@ -196,7 +197,7 @@ function mapSections(otherSections) {
     }
   });
 
-  cd.sections.forEach((section) => {
+  SectionStatic.getAll().forEach((section) => {
     section.liveSectionNumber = section.match?.sectionNumber ?? null;
     section.liveSectionNumberRevisionId = lastCheckedRevisionId;
     delete section.code;
@@ -585,7 +586,7 @@ function isPageStillAtRevision(revisionId) {
   return (
     revisionId === mw.config.get('wgRevisionId') &&
     !controller.isBooting() &&
-    !cd.commentForms.some((commentForm) => commentForm.isBeingSubmitted())
+    !CommentFormStatic.getAll().some((commentForm) => commentForm.isBeingSubmitted())
   );
 }
 

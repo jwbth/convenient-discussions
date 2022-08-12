@@ -146,13 +146,13 @@ class BootProcess {
   /**
    * Create a boot process.
    *
-   * @param {PassedData} passedData
+   * @param {PassedData} [passedData={}]
    */
-  constructor(passedData) {
+  constructor(passedData = {}) {
     this.connectToCommentLinks = this.connectToCommentLinks.bind(this);
     this.highlightMentions = this.highlightMentions.bind(this);
 
-    this.passedData = passedData || {};
+    this.passedData = passedData;
     this.dtCommentIds = [];
   }
 
@@ -324,7 +324,7 @@ class BootProcess {
     ) {
       // Avoid using the setting kept in `mw.user.options`, as it may be outdated. Also don't reuse
       // the previous settings request, as the settings might be changed in
-      // suggestEnableCommentReformatting().
+      // `suggestEnableCommentReformatting()`.
       const loadedSettings = await settings.load();
       if (['unknown', undefined].includes(loadedSettings.desktopNotifications)) {
         const actions = [
@@ -669,28 +669,23 @@ class BootProcess {
      *
      * @name comments
      * @type {Comment[]}
+     * @see module:CommentStatic.getAll
      * @memberof convenientDiscussions
      */
-    cd.comments = [];
+    cd.comments = CommentStatic.getAll();
 
     /**
      * Collection of all sections on the page ordered the same way as in the DOM.
      *
      * @name sections
      * @type {Section[]}
+     * @see module:SectionStatic.getAll
      * @memberof convenientDiscussions
      */
-    cd.sections = [];
+    cd.sections = SectionStatic.getAll();
 
     if (this.firstRun) {
       await init.talkPage();
-    } else {
-      controller.$addSectionButtonContainer?.remove();
-
-      // Just submitted form. Forms that should stay are detached in controller.reload().
-      $('.cd-commentForm-addSection').remove();
-
-      CommentStatic.resetLayers();
     }
   }
 
@@ -736,7 +731,7 @@ class BootProcess {
         .filter((target) => target.type === 'signature')
         .forEach((signature) => {
           try {
-            cd.comments.push(this.parser.createComment(signature, this.targets));
+            CommentStatic.add(this.parser.createComment(signature, this.targets));
           } catch (e) {
             if (!(e instanceof CdError)) {
               console.error(e);
@@ -759,7 +754,7 @@ class BootProcess {
      * @param {object} comments {@link convenientDiscussions.comments} object.
      * @param {object} cd {@link convenientDiscussions} object.
      */
-    mw.hook('convenientDiscussions.commentsReady').fire(cd.comments, cd);
+    mw.hook('convenientDiscussions.commentsReady').fire(CommentStatic.getAll(), cd);
   }
 
   /**
@@ -772,8 +767,7 @@ class BootProcess {
       .filter((target) => target.type === 'heading')
       .forEach((heading) => {
         try {
-          const section = this.parser.createSection(heading, this.targets);
-          cd.sections.push(section);
+          SectionStatic.add(this.parser.createSection(heading, this.targets));
         } catch (e) {
           if (!(e instanceof CdError)) {
             console.error(e);
@@ -814,7 +808,7 @@ class BootProcess {
      * @param {object} sections {@link convenientDiscussions.sections} object.
      * @param {object} cd {@link convenientDiscussions} object.
      */
-    mw.hook('convenientDiscussions.sectionsReady').fire(cd.sections, cd);
+    mw.hook('convenientDiscussions.sectionsReady').fire(SectionStatic.getAll(), cd);
   }
 
   /**
@@ -1106,7 +1100,7 @@ class BootProcess {
         mw.user.options.get('useeditwarning') &&
         (
           CommentFormStatic.getLastActiveAltered() ||
-          (alwaysConfirmLeavingPage && cd.commentForms.length)
+          (alwaysConfirmLeavingPage && CommentFormStatic.getCount())
         )
       );
     });
@@ -1289,7 +1283,7 @@ class BootProcess {
 
     let timeConflict = false;
     if (currentPageVisits.length) {
-      cd.comments.forEach((comment) => {
+      CommentStatic.getAll().forEach((comment) => {
         timeConflict ||= comment.setNewAndSeenProperties(
           currentPageVisits,
           currentUnixTime,
@@ -1297,9 +1291,9 @@ class BootProcess {
         );
       });
 
-      CommentStatic.configureAndAddLayers(cd.comments.filter((comment) => comment.isNew));
+      CommentStatic.configureAndAddLayers(CommentStatic.getAll().filter((comment) => comment.isNew));
 
-      const unseenComments = cd.comments.filter((comment) => comment.isSeen === false);
+      const unseenComments = CommentStatic.getAll().filter((comment) => comment.isSeen === false);
       toc.addNewComments(CommentStatic.groupBySection(unseenComments));
     }
 
@@ -1447,10 +1441,10 @@ class BootProcess {
       debug.getTimerTotal('main code') +
       debug.getTimerTotal('final code and rendering')
     );
-    const timePerComment = baseTime / cd.comments.length;
+    const timePerComment = baseTime / CommentStatic.getCount();
 
     debug.logAndResetTimer('total time');
-    console.debug(`number of comments: ${cd.comments.length}`);
+    console.debug(`number of comments: ${CommentStatic.getCount()}`);
     console.debug(`per comment: ${timePerComment.toFixed(2)}`);
     debug.logAndResetEverything();
   }
@@ -1545,7 +1539,7 @@ class BootProcess {
       debug.stopTimer('process comments');
     }
 
-    if (this.firstRun && !controller.isDefinitelyTalkPage() && !cd.comments.length) {
+    if (this.firstRun && !controller.isDefinitelyTalkPage() && !CommentStatic.getCount()) {
       this.retractTalkPageness();
       return;
     }
@@ -1611,7 +1605,7 @@ class BootProcess {
 
       // Should better be below the comment form restoration to avoid repositioning of layers
       // after the addition of comment forms.
-      const commentsToAddLayersFor = cd.comments.filter((comment) => (
+      const commentsToAddLayersFor = CommentStatic.getAll().filter((comment) => (
         comment.isOwn ||
 
         // Need to generate a gray line to close the gaps between adjacent list item elements. Do it
@@ -1647,7 +1641,7 @@ class BootProcess {
       // We set the setup observer at every reload because controller.$content may change.
       controller.setupMutationObserver();
 
-      if (settings.get('reformatComments') && cd.comments.length) {
+      if (settings.get('reformatComments') && CommentStatic.getCount()) {
         // Using the "wikipage.content" hook could theoretically disrupt code that needs to
         // process the whole page content, if it runs later than CD. But typically CD runs
         // relatively late.

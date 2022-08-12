@@ -163,7 +163,7 @@ export default {
     }
 
     if (
-      (cd.sections.length && scrollY + window.innerHeight < htmlElement.scrollHeight) ||
+      (SectionStatic.getCount() && scrollY + window.innerHeight < htmlElement.scrollHeight) ||
       backLinkLocation === 'bottom'
     ) {
       if (!this.$bottomLink) {

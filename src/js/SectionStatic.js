@@ -18,16 +18,68 @@ import {
 
 export default {
   /**
+   * List of sections.
+   *
+   * @type {import('./Section').default[]}
+   * @private
+   */
+  items: [],
+
+  /**
+   * Add a section to the list.
+   *
+   * @param {import('./Section').default} item
+   */
+  add(item) {
+    this.items.push(item);
+  },
+
+  /**
+   * Get all sections.
+   *
+   * @returns {import('./Section').default[]}
+   */
+  getAll() {
+    return this.items;
+  },
+
+  /**
+   * Get a section by index.
+   *
+   * @param {number} index Use a negative index to count from the end.
+   * @returns {?import('./Section').default}
+   */
+  getByIndex(index) {
+    if (index < 0) {
+      index = this.items.length + index;
+    }
+    return this.items[index] || null;
+  },
+
+  /**
+   * Get the number of sections.
+   *
+   * @returns {number}
+   */
+  getCount() {
+    return this.items.length;
+  },
+
+  /**
+   * Reset the section list.
+   */
+  reset() {
+    this.items = [];
+  },
+
+  /**
    * Get a section by ID.
    *
    * @param {string} id
    * @returns {?import('./Section').default}
    */
   getById(id) {
-    if (!cd.sections || !id) {
-      return null;
-    }
-    return cd.sections.find((section) => section.id === id) || null;
+    return id && this.items.find((section) => section.id === id) || null;
   },
 
   /**
@@ -37,7 +89,7 @@ export default {
    * @returns {import('./Section').default[]}
    */
   getByHeadline(headline) {
-    return cd.sections.filter((section) => section.headline === headline);
+    return this.items.filter((section) => section.headline === headline);
   },
 
   /**
@@ -47,7 +99,7 @@ export default {
    * @returns {import('./Section').default[]}
    */
   getBySubscribeId(subscribeId) {
-    return cd.sections.filter((section) => section.subscribeId === subscribeId);
+    return this.items.filter((section) => section.subscribeId === subscribeId);
   },
 
   /**
@@ -58,7 +110,7 @@ export default {
    * @returns {?import('./Section').default}
    */
   findByHeadlineParts(sectionName) {
-    const matches = cd.sections
+    const matches = this.items
       .map((section) => {
         const score = calculateWordOverlap(sectionName, section.headline);
         return { section, score };
@@ -84,7 +136,7 @@ export default {
    */
   search({ index, headline, id, ancestors, oldestCommentId }, returnScore) {
     const matches = [];
-    cd.sections.some((section) => {
+    this.items.some((section) => {
       const doesIndexMatch = section.index === index;
       const doesHeadlineMatch = section.headline === headline;
       const doesIdMatch = section.id === id;
@@ -126,7 +178,7 @@ export default {
    * {@link Section#isLastSection isLastSection} property, adding buttons, and binding events.
    */
   adjust() {
-    cd.sections.forEach((section) => {
+    this.items.forEach((section) => {
       /**
        * Is the section the last section on the page.
        *
@@ -135,7 +187,7 @@ export default {
        * @memberof Section
        * @instance
        */
-      section.isLastSection = section.index === cd.sections.length - 1;
+      section.isLastSection = section.index === this.items.length - 1;
 
       section.addAddSubsectionButton();
       section.addReplyButton();
@@ -143,7 +195,7 @@ export default {
 
     // Run this after running section.addReplyButton() because reply buttons must be in place for
     // this.
-    cd.sections
+    this.items
       .filter((section) => section.isActionable && section.level === 2)
       .forEach((section) => {
         // Section with the last reply button
@@ -157,7 +209,7 @@ export default {
    * _For internal use._ Add a "Subscribe" / "Unsubscribe" button to each section's actions element.
    */
   addSubscribeButtons() {
-    cd.sections.forEach((section) => {
+    this.items.forEach((section) => {
       section.addSubscribeButton();
     });
   },
@@ -180,7 +232,7 @@ export default {
    * heading.
    */
   addMetadataAndActions() {
-    cd.sections.forEach((section) => {
+    this.items.forEach((section) => {
       section.addMetadataAndActions();
     });
   },
@@ -189,7 +241,7 @@ export default {
    * _For internal use._ Add the new comment count to the metadata elements of the sections.
    */
   addNewCommentCountMetadata() {
-    cd.sections.forEach((section) => {
+    this.items.forEach((section) => {
       section.addNewCommentCountMetadata();
     });
   },
@@ -205,7 +257,7 @@ export default {
     if (scrollY <= cd.g.BODY_SCROLL_PADDING_TOP) return;
 
     let top;
-    cd.sections.some((section) => {
+    this.items.some((section) => {
       const rect = getExtendedRect(section.headingElement);
 
       // The third check to exclude the possibility that the first section is above the TOC, like
@@ -230,7 +282,7 @@ export default {
     return (
       firstSectionTop !== undefined &&
       firstSectionTop < cd.g.BODY_SCROLL_PADDING_TOP + 1 &&
-      cd.sections
+      this.items
         .slice()
         .reverse()
         .find((section) => {
@@ -249,7 +301,7 @@ export default {
    * setting is enabled.
    */
   maybeUpdateVisibility() {
-    if (!cd.sections.length || !settings.get('improvePerformance') || !controller.isLongPage()) {
+    if (!this.items.length || !settings.get('improvePerformance') || !controller.isLongPage()) {
       return;
     }
 
@@ -262,7 +314,7 @@ export default {
     let firstSectionToHide;
     if (pageHeight - viewportTop > 20000) {
       const currentSection = this.getCurrentSection();
-      firstSectionToHide = cd.sections
+      firstSectionToHide = this.items
         .filter((section) => !currentSection || section.index > currentSection.index)
         .find((section) => {
           const rect = section.headingElement.getBoundingClientRect();
@@ -288,7 +340,7 @@ export default {
         [] :
         firstSectionToHide.getBase(true).getChildren(true)
     );
-    cd.sections
+    this.items
       .filter((section) => (
         section.level === 2 ||
         section.isHidden ||

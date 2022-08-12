@@ -1,8 +1,7 @@
 /**
  * To-be-properties of the {@link convenientDiscussions.g} object. These are those of them that are
- * known from the beginning and can be safely imported in a web worker (which doesn't have access to
- * the window scope). We assume that there is no point to make these properties subject to change by
- * site administrators although that may be disputable. Some of them are extensible in the
+ * known from the beginning. We assume that there is no point to make these properties subject to
+ * change by site administrators although this may be disputable. Some of them are extensible in the
  * configuration file (such as `UNHIGHLIGHTABLE_ELEMENT_CLASSES`).
  *
  * @module staticGlobals

@@ -8,10 +8,10 @@ class CdError extends Error {
    * Create a custom error.
    *
    * @param {object} [data]
-   * @param {string} data.type
-   * @param {string} [data.code]
-   * @param {object} [data.apiData]
-   * @param {object} [data.details]
+   * @param {'network'|'api'|'parse'|'internal'} data.type Grouping of the error.
+   * @param {string} [data.code] Error code.
+   * @param {object} [data.apiResp] API response.
+   * @param {object} [data.details] Additional details.
    */
   constructor(data) {
     let message;
@@ -20,8 +20,8 @@ class CdError extends Error {
       if (data.code) {
         message += `/${data.code}`;
       }
-      if (data?.apiData?.error?.code) {
-        message += `/${data.apiData.error.code}`;
+      if (data?.apiResp?.error?.code) {
+        message += `/${data.apiResp.error.code}`;
       }
     } else {
       message = '';

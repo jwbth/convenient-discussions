@@ -67,7 +67,7 @@ if (IS_SINGLE) {
  *
  * @param {string} name String name.
  * @param {...*} [params] String parameters (substituted strings, also
- *   {@link module:userRegistry~User User} objects for use in `{{gender:}}`). The last parameter can
+ *   {@link module:userRegistry.User User} objects for use in `{{gender:}}`). The last parameter can
  *   be an object that can have a boolean property `plain` (should the message be returned in a
  *   plain, not substituted, form) or `parse` (should the message be returned in a parsed form). In
  *   the `parse` form, wikilinks are replaced with HTML tags, the code is sanitized. Use this for
@@ -83,7 +83,7 @@ function s(name, ...params) {
   let options = {};
   let lastParam = params[params.length - 1];
 
-  // `lastParam.options` is a `mw.user`-like object to provide to {{gender:}}
+  // `lastParam.options` is a `mw.user`-like object to provide to `{{gender:}}`
   if (typeof lastParam === 'object' && !lastParam.options) {
     options = lastParam;
     params.splice(params.length - 1);
@@ -110,7 +110,7 @@ function s(name, ...params) {
  *
  * @param {string} name String name.
  * @param {...*} [params] String parameters (substituted strings, also
- *   {@link module:userRegistry~User User} objects for use in `{{gender:}}`).
+ *   {@link module:userRegistry.User User} objects for use in `{{gender:}}`).
  * @returns {?string}
  * @memberof convenientDiscussions
  */
@@ -124,19 +124,9 @@ function sParse(name, ...params) {
 }
 
 /**
- * Get a language string in the "plain" format, with no substitutions.
- *
- * @param {string} name String name.
- * @returns {?string}
- * @memberof convenientDiscussions
- */
-function sPlain(name) {
-  return s(name, { plain: true });
-}
-
-/**
- * A foolproof method to access MediaWiki messages intended to be used instead of `mw.msg` to
- * eliminate any possibility of an XSS injection. By a programmer's mistake some `mw.msg` value
+ * A foolproof method to access MediaWiki messages intended to be used instead of
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw-method-msg mw.msg()} to
+ * eliminate any possibility of an XSS injection. By a programmer's mistake some `mw.msg()` value
  * could be inserted into a page in a raw HTML form. To prevent this, this function should be used,
  * so if the message contains an injection (for example, brought from Translatewiki or inserted by a
  * user who doesn't have the `editsitejs` right but does have the `editinterface` right), the
@@ -144,7 +134,7 @@ function sPlain(name) {
  *
  * @param {string} name String name.
  * @param {...*} [params] String parameters (substituted strings, also
- *   {@link module:userRegistry~User User} objects for use in {{gender:}}). The last parameter can
+ *   {@link module:userRegistry.User User} objects for use in {{gender:}}). The last parameter can
  *   be an object that can have a string property `language`. If `language` is `'content'`, the
  *   returned message will be in the content langage (not the interface language).
  * @returns {string}
@@ -576,7 +566,6 @@ async function app() {
   cd.g = g;
   cd.s = s;
   cd.sParse = sParse;
-  cd.sPlain = sPlain;
   cd.mws = mws;
 
   // Kind of a temporary storage of objects of some script's features. Could be removed at any
