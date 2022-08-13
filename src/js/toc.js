@@ -4,7 +4,6 @@
  * @module toc
  */
 
-import CdError from './CdError';
 import Comment from './Comment';
 import CommentStatic from './CommentStatic';
 import LiveTimestamp from './LiveTimestamp';
@@ -23,12 +22,12 @@ class TocItem {
    * Create a table of contents item object.
    *
    * @param {object} a
-   * @throws {CdError}
+   * @throws {Array.<string, Element>}
    */
   constructor(a) {
     const textSpan = a.querySelector(toc.isInSidebar() ? '.sidebar-toc-text' : '.toctext');
     if (!textSpan) {
-      throw new CdError(['Couldn\'t find text for a link', a]);
+      throw ['Couldn\'t find text for a link', a];
     }
 
     const headline = textSpan.textContent;
@@ -38,11 +37,13 @@ class TocItem {
       .match(toc.isInSidebar() ? /sidebar-toc-level-(\d+)/ : /\btoclevel-(\d+)/);
     level = Number(level);
     const numberSpan = a.querySelector(toc.isInSidebar() ? '.sidebar-toc-numb' : '.tocnumber');
-    if (!numberSpan) {
-      throw new CdError(['Couldn\'t find a number for a link', a]);
+    let number;
+    if (numberSpan) {
+      number = numberSpan.textContent;
+    } else {
+      console.error(['Couldn\'t find a number for a link', a]);
+      number = '?';
     }
-
-    const number = numberSpan.textContent;
 
     /**
      * Link jQuery element.
