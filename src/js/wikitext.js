@@ -335,7 +335,7 @@ export function extractSignatures(code) {
   const signatureIndex = adjustedCode.indexOf(cd.g.SIGN_CODE);
   if (signatureIndex !== -1) {
     signatures.push({
-      author: cd.user.getName(),
+      author: userRegistry.getCurrent().getName(),
       startIndex: signatureIndex,
       nextCommentStartIndex: signatureIndex + adjustedCode.slice(signatureIndex).indexOf('\n') + 1,
     });

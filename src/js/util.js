@@ -363,9 +363,12 @@ export function removeDoubleSpaces(string) {
 }
 
 /**
- * Like String#charAt, but return the pair of UTF-16 surrogates for characters outside of BMP.
+ * Like
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/charAt String#charAt},
+ * but returns the pair of UTF-16 surrogates for characters outside of BMP.
  *
- * Borrowed from https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.String.js;af9bbfe40f34c187c091230312273808028d990a$61.
+ * Borrowed from
+ * https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.String.js;af9bbfe40f34c187c091230312273808028d990a$61.
  *
  * @param {string} string
  * @param {number} offset
@@ -830,22 +833,6 @@ export function removeFromArrayIfPresent(arr, el) {
 export function getVisibilityByRects(...rects) {
   // If the element has 0 as the left position and height, it's probably invisible for some reason.
   return !rects.some((rect) => rect.left === 0 && rect.height === 0);
-}
-
-/**
- * Get a decoded URL with a fragment identifier.
- *
- * @param {string} fragment
- * @param {boolean} permanent Get a permanent URL.
- * @returns {string}
- */
-export function getUrlWithFragment(fragment, permanent) {
-  let params = {};
-  if (permanent) {
-    params.oldid = mw.config.get('wgRevisionId');
-  }
-  const decodedPageUrl = decodeURI(cd.page.getUrl(params));
-  return `${cd.g.SERVER}${decodedPageUrl}#${fragment}`;
 }
 
 /**

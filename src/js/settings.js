@@ -6,6 +6,7 @@
 
 import cd from './cd';
 import pageRegistry from './pageRegistry';
+import userRegistry from './userRegistry';
 import { areObjectsEqual, defined, hideText, ucFirst, unhideText, wrap } from './util';
 import { formatDateImproved, formatDateNative, formatDateRelative } from './timestamp';
 import { getUserInfo, setGlobalOption, setLocalOption } from './apiWrappers';
@@ -609,7 +610,7 @@ export default {
    * @param {object} [settings=this.values] Settings to save.
    */
   async save(settings = this.values) {
-    if (!cd.user.isRegistered()) return;
+    if (!userRegistry.getCurrent().isRegistered()) return;
 
     if (cd.config.useGlobalPreferences) {
       const globalSettings = {};

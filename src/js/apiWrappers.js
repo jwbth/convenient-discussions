@@ -11,6 +11,7 @@ import lzString from 'lz-string';
 import CdError from './CdError';
 import cd from './cd';
 import controller from './controller';
+import pageRegistry from './pageRegistry';
 import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
 import { defined, ucFirst, unique } from './util';
@@ -159,7 +160,7 @@ export function unpackLegacySubscriptions(string) {
 export async function getVisits(reuse = false) {
   let visits;
   let currentPageVisits;
-  if (cd.user.getName() === '<unregistered>') {
+  if (userRegistry.getCurrent().getName() === '<unregistered>') {
     visits = [];
     currentPageVisits = [];
   } else {
@@ -210,7 +211,7 @@ function cleanUpVisits(originalVisits) {
  * @param {object} visits
  */
 export async function setVisits(visits) {
-  if (!visits || !cd.user.isRegistered()) return;
+  if (!visits || !userRegistry.getCurrent().isRegistered()) return;
 
   const string = packVisits(visits);
   const compressed = lzString.compressToEncodedURIComponent(string);
@@ -333,8 +334,8 @@ export function parseCode(code, customOptions) {
  * Make a userinfo request (see {@link https://www.mediawiki.org/wiki/API:Userinfo}).
  *
  * @param {boolean} [reuse=false] Whether to reuse a cached request.
- * @returns {Promise.<object>} Promise for an object containing the full options object, visits, subscription
- *   list, and rights.
+ * @returns {Promise.<object>} Promise for an object containing the full options object, visits,
+ *   subscription list, and rights.
  */
 export function getUserInfo(reuse = false) {
   if (reuse && cachedUserInfoRequest) {
@@ -774,7 +775,7 @@ export async function getDtSubscriptions(ids) {
 export async function dtSubscribe(subscribeId, id, subscribe) {
   return await controller.getApi().postWithEditToken({
     action: 'discussiontoolssubscribe',
-    page: `${cd.page.name}#${id}`,
+    page: `${pageRegistry.getCurrent().name}#${id}`,
     commentname: subscribeId,
     subscribe,
   }).catch(handleApiReject);

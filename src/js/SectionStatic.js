@@ -35,7 +35,7 @@ export default {
   },
 
   /**
-   * Get all sections.
+   * Get all sections on the page ordered the same way as in the DOM.
    *
    * @returns {import('./Section').default[]}
    */

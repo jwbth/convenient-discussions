@@ -11,13 +11,13 @@ import pageRegistry from './pageRegistry';
 import settings from './settings';
 import subscriptions from './subscriptions';
 import toc from './toc';
+import userRegistry from './userRegistry';
 import {
   calculateWordOverlap,
   dealWithLoadingBug,
   defined,
   flat,
   focusInput,
-  getUrlWithFragment,
   underlinesToSpaces,
   unique,
   wrap,
@@ -86,7 +86,9 @@ class Section extends SectionSkeleton {
      *
      * @type {import('./pageRegistry').Page}
      */
-    this.sourcePage = this.sourcePageName ? pageRegistry.get(this.sourcePageName) : cd.page;
+    this.sourcePage = this.sourcePageName ?
+      pageRegistry.get(this.sourcePageName) :
+      pageRegistry.getCurrent();
 
     delete this.sourcePageName;
 
@@ -347,7 +349,7 @@ class Section extends SectionSkeleton {
    * @fires subscribeButtonAdded
    */
   addSubscribeButton() {
-    if (!this.subscribeId || cd.page.isArchivePage()) return;
+    if (!this.subscribeId || pageRegistry.getCurrent().isArchivePage()) return;
 
     /**
      * The subscription state of the section. Currently, `true` stands for "subscribed", `false` for
@@ -755,7 +757,7 @@ class Section extends SectionSkeleton {
         element,
         buttonElement: element.firstChild,
         iconElement: element.querySelector('.oo-ui-iconElement-icon'),
-        href: `${cd.page.getUrl()}#${this.id}`,
+        href: `${pageRegistry.getCurrent().getUrl()}#${this.id}`,
         action: (e) => {
           this.copyLink(e);
         },
@@ -1351,7 +1353,7 @@ class Section extends SectionSkeleton {
       queryTimestamp: resp.curtimestamp,
     });
 
-    Object.assign(cd.page, {
+    Object.assign(pageRegistry.getCurrent(), {
       pageId: page.pageid,
       redirectTarget,
       realName: redirectTarget || this.name,
@@ -1778,7 +1780,7 @@ class Section extends SectionSkeleton {
    * @returns {string}
    */
   getUrl(permanent) {
-    return getUrlWithFragment(this.id, permanent);
+    return pageRegistry.getCurrent().getDecodedUrlWithFragment(this.id, permanent);
   }
 
   /**
@@ -1835,7 +1837,10 @@ class Section extends SectionSkeleton {
   ensureSubscribeIdPresent(timestamp) {
     if (!settings.get('useTopicSubscription') || this.subscribeId) return;
 
-    this.subscribeId = SectionStatic.generateDtSubscriptionId(cd.user.getName(), timestamp);
+    this.subscribeId = SectionStatic.generateDtSubscriptionId(
+      userRegistry.getCurrent().getName(),
+      timestamp
+    );
   }
 
   /**

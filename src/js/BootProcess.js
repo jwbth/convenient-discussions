@@ -547,7 +547,7 @@ class BootProcess {
     let sectionNameDotDecoded;
     let token;
     let searchQuery;
-    if (cd.page.canHaveArchives()) {
+    if (pageRegistry.getCurrent().canHaveArchives()) {
       label += ' ';
 
       let sectionNameDotDecoded;
@@ -581,7 +581,7 @@ class BootProcess {
           searchQuery += ` OR "${adjustedToken}"`;
         }
       }
-      const archivePrefix = cd.page.getArchivePrefix();
+      const archivePrefix = pageRegistry.getCurrent().getArchivePrefix();
       searchQuery += ` prefix:${archivePrefix}`;
     }
 
@@ -593,7 +593,7 @@ class BootProcess {
     });
     controller.$root.prepend(message.$element);
 
-    if (cd.page.canHaveArchives()) {
+    if (pageRegistry.getCurrent().canHaveArchives()) {
       this.searchForNotFoundItem({
         date,
         decodedFragment,
@@ -667,9 +667,9 @@ class BootProcess {
     /**
      * Collection of all comments on the page ordered the same way as in the DOM.
      *
+     * @see module:CommentStatic.getAll
      * @name comments
      * @type {Comment[]}
-     * @see module:CommentStatic.getAll
      * @memberof convenientDiscussions
      */
     cd.comments = CommentStatic.getAll();
@@ -677,9 +677,9 @@ class BootProcess {
     /**
      * Collection of all sections on the page ordered the same way as in the DOM.
      *
+     * @see module:SectionStatic.getAll
      * @name sections
      * @type {Section[]}
-     * @see module:SectionStatic.getAll
      * @memberof convenientDiscussions
      */
     cd.sections = SectionStatic.getAll();
@@ -925,7 +925,7 @@ class BootProcess {
         } catch (e) {
           return false;
         }
-        if (page !== cd.page) {
+        if (page !== pageRegistry.getCurrent()) {
           return false;
         }
         if ($button.is('a')) {
@@ -1362,7 +1362,7 @@ class BootProcess {
   highlightMentions($content) {
     if (!$content.is('#mw-content-text, .cd-comment-part')) return;
 
-    const currentUserName = cd.user.getName();
+    const currentUserName = userRegistry.getCurrent().getName();
     const selector = $content.hasClass('cd-comment-part') ?
       `a[title$=":${currentUserName}"], a[title*=":${currentUserName} ("]` :
       `.cd-comment-part a[title$=":${currentUserName}"], .cd-comment-part a[title*=":${currentUserName} ("]`;
@@ -1377,7 +1377,7 @@ class BootProcess {
         return (
           cd.g.USER_LINK_REGEXP.test(this.title) &&
           !this.closest(excludeSelector) &&
-          Parser.processLink(this)?.userName === cd.user.getName()
+          Parser.processLink(this)?.userName === userRegistry.getCurrent().getName()
         );
       })
       .each((i, link) => {
@@ -1684,7 +1684,7 @@ class BootProcess {
 
     this.debugLog();
 
-    if (this.firstRun && controller.isPageActive() && cd.user.isRegistered()) {
+    if (this.firstRun && controller.isPageActive() && userRegistry.getCurrent().isRegistered()) {
       this.showPopups();
     }
   }

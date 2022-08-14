@@ -502,7 +502,7 @@ function processHistory($content) {
   if (cd.g.UI_TIMEZONE === null) return;
 
   const selector = '#pagehistory > li, #pagehistory > .mw-contributions-list > li';
-  const link = cd.page.getUrl();
+  const link = pageRegistry.getCurrent().getUrl();
   [...$content.get(0).querySelectorAll(selector)].forEach((line) => {
     if (line.querySelector('.minoredit')) return;
 

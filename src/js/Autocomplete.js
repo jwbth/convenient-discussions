@@ -593,7 +593,8 @@ class Autocomplete {
         };
 
         // Remove self
-        config.default = (arguments[1] || []).filter((item) => item !== cd.user.getName());
+        config.default = (arguments[1] || [])
+          .filter((item) => item !== userRegistry.getCurrent().getName());
 
         break;
       }

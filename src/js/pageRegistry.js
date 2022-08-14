@@ -7,6 +7,7 @@
 import CdError from './CdError';
 import cd from './cd';
 import controller from './controller';
+import userRegistry from './userRegistry';
 import { findFirstTimestamp, hideDistractingCode } from './wikitext';
 import { handleApiReject, requestInBackground } from './apiWrappers';
 import { isProbablyTalkPage } from './util';
@@ -16,14 +17,14 @@ import { parseTimestamp } from './timestamp';
  * Main MediaWiki object.
  *
  * @external mw
- * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw
  * @global
+ * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw
  */
 
 /**
  * @class Title
- * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Title
  * @memberof external:mw
+ * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Title
  */
 
 // Export for the sake of VS Code IntelliSense
@@ -41,18 +42,18 @@ export class Page {
    * Create a page instance.
    *
    * @param {external:mw.Title} mwTitle
-   * @param {string} genderedName
+   * @param {string} [genderedName]
    * @throws {CdError} If the string in the first parameter is not a valid title.
    */
   constructor(mwTitle, genderedName) {
-    // TODO: remove after uses are replaced.
+    // TODO: remove after outside uses are replaced.
     if (!(mwTitle instanceof mw.Title)) {
       mwTitle = new mw.Title(mwTitle);
     }
 
     /**
-     * Page name, with a namespace name, not necessarily normalized (if a gendered name is
-     * available). The word separator is a space, not an underline.
+     * Page name, with a namespace name, not necessarily normalized (not normalized if a gendered
+     * name is available). The word separator is a space, not an underline.
      *
      * @type {string}
      */
@@ -72,14 +73,16 @@ export class Page {
      * @type {number}
      */
     this.namespaceId = mwTitle.getNamespaceId();
+  }
 
-    /**
-     * Is the page the one the user is visiting.
-     *
-     * @type {boolean}
-     * @private
-     */
-    this.isCurrent = genderedName === cd.g.PAGE_NAME;
+  /**
+   * Check is the page the one the user is visiting.
+   *
+   * @returns {boolean}
+   * @private
+   */
+  isCurrent() {
+    return this.name === cd.g.PAGE_NAME;
   }
 
   /**
@@ -90,6 +93,22 @@ export class Page {
    */
   getUrl(parameters) {
     return mw.util.getUrl(this.name, parameters);
+  }
+
+  /**
+   * Get a decoded URL with a fragment identifier.
+   *
+   * @param {string} fragment
+   * @param {boolean} permanent Get a permanent URL.
+   * @returns {string}
+   */
+  getDecodedUrlWithFragment(fragment, permanent) {
+    let params = {};
+    if (permanent) {
+      params.oldid = mw.config.get('wgRevisionId');
+    }
+    const decodedPageUrl = decodeURI(this.getUrl(params));
+    return `${cd.g.SERVER}${decodedPageUrl}#${fragment}`;
   }
 
   /**
@@ -123,7 +142,9 @@ export class Page {
    * @returns {boolean}
    */
   isArchivePage() {
-    let result = this.isCurrent ? this.findArchivingInfoElement().data('isArchivePage') : undefined;
+    let result = this.isCurrent() ?
+      this.findArchivingInfoElement().data('isArchivePage') :
+      undefined;
     if (result === undefined) {
       result = false;
       const name = this.realName || this.name;
@@ -151,7 +172,7 @@ export class Page {
     if (this.isArchivePage()) {
       return false;
     }
-    let result = this.isCurrent ?
+    let result = this.isCurrent() ?
       this.findArchivingInfoElement().data('canHaveArchives') :
       undefined;
     if (result === undefined) {
@@ -173,7 +194,9 @@ export class Page {
     if (!this.canHaveArchives()) {
       return null;
     }
-    let result = this.isCurrent ? this.findArchivingInfoElement().data('archivePrefix') : undefined;
+    let result = this.isCurrent() ?
+      this.findArchivingInfoElement().data('archivePrefix') :
+      undefined;
     const name = this.realName || this.name;
     if (!result) {
       const iterator = cd.g.ARCHIVE_PAGES_MAP.entries();
@@ -196,7 +219,9 @@ export class Page {
    * @returns {import('./pageRegistry').Page}
    */
   getArchivedPage() {
-    let result = this.isCurrent ? this.findArchivingInfoElement().data('archivedPage') : undefined;
+    let result = this.isCurrent() ?
+      this.findArchivingInfoElement().data('archivedPage') :
+      undefined;
     if (!result) {
       const name = this.realName || this.name;
       const iterator = cd.g.SOURCE_PAGES_MAP.entries();
@@ -228,7 +253,7 @@ export class Page {
       prop: 'revisions',
       rvslots: 'main',
       rvprop: ['ids', 'content'],
-      redirects: !(this.isCurrent && mw.config.get('wgIsRedirect')),
+      redirects: !(this.isCurrent() && mw.config.get('wgIsRedirect')),
       curtimestamp: true,
     }).catch(handleApiReject);
 
@@ -411,7 +436,7 @@ export class Page {
       titles: this.name,
       rvslots: 'main',
       prop: 'revisions',
-      redirects: !(this.isCurrent && mw.config.get('wgIsRedirect')),
+      redirects: !(this.isCurrent() && mw.config.get('wgIsRedirect')),
     };
     const options = Object.assign({}, defaultOptions, customOptions);
 
@@ -485,7 +510,7 @@ export class Page {
       notminor: !customOptions.minor,
 
       // Should be `undefined` instead of `null`, otherwise will be interepreted as a string.
-      tags: cd.user.isRegistered() && cd.config.tagName || undefined,
+      tags: userRegistry.getCurrent().isRegistered() && cd.config.tagName || undefined,
 
       ...cd.g.API_ERRORS_FORMAT_HTML,
     };
@@ -696,16 +721,23 @@ const pageRegistry = {
     const title = nameOrMwTitle instanceof mw.Title ?
       nameOrMwTitle :
       new mw.Title(nameOrMwTitle);
-
     const name = title.getPrefixedText();
-
     if (!this.items[name]) {
-      this.items[name] = new Page(title, isGendered && nameOrMwTitle);
+      this.items[name] = new Page(title, isGendered ? nameOrMwTitle : undefined);
     } else if (isGendered) {
-      this.items[name].genderedName = nameOrMwTitle;
+      this.items[name].name = nameOrMwTitle;
     }
 
     return this.items[name];
+  },
+
+  /**
+   * Get the page the user is visiting.
+   *
+   * @returns {Page}
+   */
+  getCurrent() {
+    return this.get(cd.g.PAGE_NAME, true);
   },
 };
 

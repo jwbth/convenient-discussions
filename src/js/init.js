@@ -1038,7 +1038,7 @@ export default {
    * _For internal use._ Set a number of {@link convenientDiscussions global object} properties.
    */
   globals() {
-    if (cd.page) return;
+    if (cd.g.PHP_CHAR_TO_UPPER) return;
 
     cd.g.PHP_CHAR_TO_UPPER = (
       mw.loader.moduleRegistry['mediawiki.Title'].script.files['phpCharToUpper.json'] ||
@@ -1048,11 +1048,12 @@ export default {
     /**
      * Current page's object.
      *
+     * @see module:pageRegistry.getCurrent
      * @name page
      * @type {import('./pageRegistry').Page}
      * @memberof convenientDiscussions
      */
-    cd.page = pageRegistry.get(cd.g.PAGE_NAME, true);
+    cd.page = pageRegistry.getCurrent();
 
     // TODO: Delete after all addons are updated.
     cd.g.PAGE = cd.page;
@@ -1060,11 +1061,12 @@ export default {
     /**
      * Current user's object.
      *
+     * @see module:userRegistry.getCurrent
      * @name user
      * @type {import('./userRegistry').User}
      * @memberof convenientDiscussions
      */
-    cd.user = userRegistry.get(cd.g.USER_NAME);
+    cd.user = userRegistry.getCurrent();
 
     // {{gender:}} with at least two pipes in a selection of the affected strings.
     cd.g.GENDER_AFFECTS_USER_STRING = /\{\{ *gender *:[^}]+?\|[^}]+?\|/i.test(
@@ -1074,7 +1076,7 @@ export default {
         .join()
     );
 
-    if (cd.config.tagName && cd.user.isRegistered()) {
+    if (cd.config.tagName && userRegistry.getCurrent().isRegistered()) {
       cd.g.SUMMARY_POSTFIX = '';
       cd.g.SUMMARY_LENGTH_LIMIT = mw.config.get('wgCommentCodePointLimit');
     } else {
@@ -1158,14 +1160,14 @@ export default {
      * @function reloadPage
      * @memberof convenientDiscussions.api
      */
-    cd.api.reloadPage = controller.reload;
+    cd.api.reloadPage = controller.reload.bind(controller);
 
     /**
      * @see module:controller.getRootElement
      * @function getRootElement
      * @memberof convenientDiscussions.api
      */
-    cd.api.getRootElement = controller.getRootElement;
+    cd.api.getRootElement = controller.getRootElement.bind(controller);
   },
 
   /**

@@ -480,13 +480,17 @@ Object.assign(cd, {
     ],
   },
 
+  /**
+   * Reference to the {@link module:debug debug} module.
+   *
+   * @memberof convenientDiscussions
+   * @see module:debug
+   */
   debug,
 
   // Kind of a temporary storage of objects of some script's features. Could be removed at any
   // moment.
-  tests: {
-    controller,
-  },
+  tests: { controller },
 
   /**
    * Script's publicly available API. Here there are some utilities that we believe should be
@@ -500,9 +504,13 @@ Object.assign(cd, {
    */
   api: {
     /**
+     * If CD isn't loaded (on pages where CD clearly doesn't need to run), only
+     * {@link module:pageRegistry.get} and {@link module:pageRegistry.Page#isProbablyTalkPage} are
+     * guaranteed to run.
+     *
+     * @see module:pageRegistry
      * @name pageRegistry
      * @type {object}
-     * @see module:pageRegistry
      * @memberof convenientDiscussions.api
      */
     pageRegistry,
@@ -533,7 +541,7 @@ Object.assign(cd, {
      * @function isPageOverlayOn
      * @memberof convenientDiscussions.api
      */
-    isPageOverlayOn: controller.isPageOverlayOn,
+    isPageOverlayOn: controller.isPageOverlayOn.bind(controller),
 
     /**
      * @see module:util.wrap
@@ -549,6 +557,15 @@ Object.assign(cd, {
      */
     wrapDiffBody,
   },
+
+  /**
+   * Is the code running in the worker context.
+   *
+   * @name isWorker
+   * @type {boolean}
+   * @memberof convenientDiscussions
+   */
+  isWorker: false,
 });
 
 // TODO: Delete after all addons are updated.

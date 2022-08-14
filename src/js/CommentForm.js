@@ -215,7 +215,7 @@ class CommentForm {
     this.initAutocomplete();
     this.addToPage();
 
-    if (!cd.user.isRegistered()) {
+    if (!userRegistry.getCurrent().isRegistered()) {
       this.showMessage(cd.sParse('error-anoneditwatning'), {
         type: 'warning',
         name: 'anonEditWarning',
@@ -330,7 +330,9 @@ class CommentForm {
      * @type {string}
      * @private
      */
-    this.targetPage = this.targetSection ? this.targetSection.getSourcePage() : cd.page;
+    this.targetPage = this.targetSection ?
+      this.targetSection.getSourcePage() :
+      pageRegistry.getCurrent();
   }
 
   /**
@@ -469,7 +471,7 @@ class CommentForm {
       }));
     }
 
-    if (cd.user.isRegistered()) {
+    if (userRegistry.getCurrent().isRegistered()) {
       const watchCheckboxSelected = (
         (settings.get('watchOnReply') && this.mode !== 'edit') ||
         $('#ca-unwatch').length ||
@@ -504,7 +506,10 @@ class CommentForm {
       }));
     }
 
-    if ((this.targetSection || this.mode === 'addSection') && cd.user.isRegistered()) {
+    if (
+      (this.targetSection || this.mode === 'addSection') &&
+      userRegistry.getCurrent().isRegistered()
+    ) {
       const selected = (
         (settings.get('subscribeOnReply') && this.mode !== 'edit') ||
         this.targetSection?.subscriptionState
@@ -686,7 +691,7 @@ class CommentForm {
       tabIndex: this.getTabIndex(31),
     });
 
-    if (cd.user.isRegistered()) {
+    if (userRegistry.getCurrent().isRegistered()) {
       /**
        * Script settings button.
        *
@@ -1263,7 +1268,7 @@ class CommentForm {
    * @private
    */
   async addEditNotices() {
-    const title = cd.page.title.replace(/\//g, '-');
+    const title = pageRegistry.getCurrent().title.replace(/\//g, '-');
     let code = (
 `<div class="cd-editnotice">{{MediaWiki:Editnotice-${cd.g.NAMESPACE_NUMBER}}}</div>
 <div class="cd-editnotice">{{MediaWiki:Editnotice-${cd.g.NAMESPACE_NUMBER}-${title}}}</div>`
@@ -1274,7 +1279,7 @@ class CommentForm {
 
     let result;
     try {
-      result = await parseCode(code, { title: cd.page.name });
+      result = await parseCode(code, { title: pageRegistry.getCurrent().name });
     } catch {
       // TODO: Some error message? (But in most cases there are no edit notices anyway, and if the
       // user is knowingly offline they would be annoying.)
@@ -1775,7 +1780,7 @@ class CommentForm {
 
     let pageOwner;
     if (cd.g.NAMESPACE_NUMBER === 3) {
-      const userName = (cd.page.title.match(/^([^/]+)/) || [])[0];
+      const userName = (pageRegistry.getCurrent().title.match(/^([^/]+)/) || [])[0];
       if (userName) {
         pageOwner = userRegistry.get(userName);
       }
@@ -1790,7 +1795,7 @@ class CommentForm {
     // Move the addressee to the beginning of the user list
     if (this.targetComment) {
       for (let с = this.targetComment; с; с = с.getParent()) {
-        if (с.author !== cd.user) {
+        if (с.author !== userRegistry.getCurrent()) {
           if (!с.author.isRegistered()) break;
           defaultUserNames.unshift(с.author.getName());
           break;
@@ -2116,7 +2121,7 @@ class CommentForm {
     switch (type) {
       case 'parse': {
         const editUrl = ['locateComment', 'findPlace', 'locateSection'].includes(code) ?
-          cd.page.getUrl({
+          pageRegistry.getCurrent().getUrl({
             action: 'edit',
             ...(this.targetSection ? {} : { section: 0 }),
           }) :
@@ -2769,7 +2774,7 @@ class CommentForm {
         condition: (
           !doDelete &&
           !this.commentInput.getValue().trim() &&
-          !cd.config.noConfirmPostEmptyCommentPageRegexp?.test(cd.page.name)
+          !cd.config.noConfirmPostEmptyCommentPageRegexp?.test(pageRegistry.getCurrent().name)
         ),
         confirmation: () => confirm(cd.s('cf-confirm-empty')),
       },
@@ -2919,7 +2924,10 @@ class CommentForm {
         headline = rawHeadline && removeWikiMarkup(rawHeadline);
 
         if (settings.get('useTopicSubscription')) {
-          subscribeId = SectionStatic.generateDtSubscriptionId(cd.user.getName(), editTimestamp);
+          subscribeId = SectionStatic.generateDtSubscriptionId(
+            userRegistry.getCurrent().getName(),
+            editTimestamp
+          );
         } else {
           subscribeId = headline;
           if (this.sectionOpeningCommentEdited) {
@@ -2992,12 +3000,12 @@ class CommentForm {
     const existingIds = CommentStatic.getAll()
       .slice(0, commentAbove ? commentAbove.index + 1 : 0)
       .filter((comment) => (
-        comment.author === cd.user &&
+        comment.author === userRegistry.getCurrent() &&
         comment.date?.getTime() === date.getTime()
       ))
       .map((comment) => comment.id);
 
-    return CommentStatic.generateId(date, cd.user.getName(), existingIds);
+    return CommentStatic.generateId(date, userRegistry.getCurrent().getName(), existingIds);
   }
 
   /**
@@ -3057,13 +3065,13 @@ class CommentForm {
       $('#ca-watch')
         .attr('id', 'ca-unwatch')
         .find('a')
-        .attr('href', cd.page.getUrl({ action: 'unwatch' }));
+        .attr('href', pageRegistry.getCurrent().getUrl({ action: 'unwatch' }));
     }
     if (!this.watchCheckbox?.isSelected() && $('#ca-unwatch').length) {
       $('#ca-unwatch')
         .attr('id', 'ca-watch')
         .find('a')
-        .attr('href', cd.page.getUrl({ action: 'watch' }));
+        .attr('href', pageRegistry.getCurrent().getUrl({ action: 'watch' }));
     }
 
     if (!doDelete) {
@@ -3076,8 +3084,8 @@ class CommentForm {
 
     // When the edit takes place on another page that is transcluded in the current one, we must
     // purge the current page, otherwise we may get an old version without the submitted comment.
-    if (this.targetPage !== cd.page) {
-      await cd.page.purge();
+    if (this.targetPage !== pageRegistry.getCurrent()) {
+      await pageRegistry.getCurrent().purge();
     }
 
     this.reloadPage(passedData, currentOperation);

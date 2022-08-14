@@ -9,6 +9,7 @@ import LiveTimestamp from './LiveTimestamp';
 import cd from './cd';
 import controller from './controller';
 import navPanel from './navPanel';
+import pageRegistry from './pageRegistry';
 import settings from './settings';
 import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
@@ -25,7 +26,6 @@ import {
   getExtendedRect,
   getFromLocalStorage,
   getHigherNodeAndOffsetInSelection,
-  getUrlWithFragment,
   getVisibilityByRects,
   isInline,
   notNull,
@@ -102,7 +102,7 @@ function maybeMarkPageAsRead() {
     CommentStatic.getAll().every((comment) => !comment.willFlashChangedOnSight) &&
     updateChecker.getLastCheckedRevisionId()
   ) {
-    cd.page.markAsRead(updateChecker.getLastCheckedRevisionId());
+    pageRegistry.getCurrent().markAsRead(updateChecker.getLastCheckedRevisionId());
   }
 }
 
@@ -2111,7 +2111,7 @@ class Comment extends CommentSkeleton {
         },
       });
 
-    const diffLink = type === 'deleted' || this.getSourcePage() !== cd.page ?
+    const diffLink = type === 'deleted' || this.getSourcePage() !== pageRegistry.getCurrent() ?
       undefined :
       new Button({
         label: cd.s('comment-diff'),
@@ -2514,7 +2514,9 @@ class Comment extends CommentSkeleton {
       // Parse wikitext if there is no full overlap and there are templates inside.
       if (wordOverlap < 1 && diffOriginalText.includes('{{')) {
         try {
-          const html = (await parseCode(diffOriginalText, { title: cd.page.name })).html;
+          const html = (await parseCode(diffOriginalText, {
+            title: pageRegistry.getCurrent().name
+          })).html;
           diffOriginalText = $('<div>').append(html).cdGetText();
         } catch {
           throw new CdError({
@@ -2587,7 +2589,9 @@ class Comment extends CommentSkeleton {
   async getDiffLink(format = 'standard') {
     const edit = await this.findEdit();
     if (format === 'standard') {
-      const urlEnding = decodeURI(cd.page.getArchivedPage().getUrl({ diff: edit.revid }));
+      const urlEnding = decodeURI(
+        pageRegistry.getCurrent().getArchivedPage().getUrl({ diff: edit.revid })
+      );
       return `${cd.g.SERVER}${urlEnding}`;
     } else if (format === 'short') {
       return `${cd.g.SERVER}/?diff=${edit.revid}`;
@@ -3847,7 +3851,7 @@ class Comment extends CommentSkeleton {
    * @returns {import('./pageRegistry').Page}
    */
   getSourcePage() {
-    return this.section ? this.section.getSourcePage() : cd.page;
+    return this.section ? this.section.getSourcePage() : pageRegistry.getCurrent();
   }
 
   /**
@@ -3878,7 +3882,7 @@ class Comment extends CommentSkeleton {
    * @returns {string}
    */
   getUrl(permanent) {
-    return getUrlWithFragment(this.dtId || this.id, permanent);
+    return pageRegistry.getCurrent().getDecodedUrlWithFragment(this.dtId || this.id, permanent);
   }
 
   /**

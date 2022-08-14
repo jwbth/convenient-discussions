@@ -11,6 +11,7 @@ import SectionStatic from './SectionStatic';
 import Thread from './Thread';
 import cd from './cd';
 import controller from './controller';
+import pageRegistry from './pageRegistry';
 import settings from './settings';
 import toc from './toc';
 import userRegistry from './userRegistry';
@@ -89,7 +90,7 @@ async function processPage(revisionToParseId) {
   const {
     text,
     revid: revisionId,
-  } = await cd.page.parse({ oldid: revisionToParseId }, true) || {};
+  } = await pageRegistry.getCurrent().parse({ oldid: revisionToParseId }, true) || {};
 
   const message = await runWorkerTask({
     type: 'parse',
@@ -131,7 +132,7 @@ async function processPage(revisionToParseId) {
  * @private
  */
 async function maybeProcessRevisionsAtLoad(submittedCommentId) {
-  const revisions = await cd.page.getRevisions({
+  const revisions = await pageRegistry.getCurrent().getRevisions({
     rvprop: ['ids'],
     rvstart: new Date(controller.getBootProcess().getPreviousVisitUnixTime() * 1000).toISOString(),
     rvlimit: 1,
@@ -351,7 +352,7 @@ async function checkForUpdates() {
   }
 
   try {
-    const revisions = await cd.page.getRevisions({
+    const revisions = await pageRegistry.getCurrent().getRevisions({
       rvprop: ['ids'],
       rvlimit: 1,
     }, true);

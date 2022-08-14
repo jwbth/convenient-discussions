@@ -2,10 +2,9 @@
  * A number of methods to simplify measuring time that it takes to run certain routines as well as
  * counting the number of times certain instructions run.
  *
- * @namespace
- * @memberof convenientDiscussions
+ * @module debug
  */
-const debug = {
+export default {
   /**
    * Init/reset all properties of the debug object.
    */
@@ -14,7 +13,6 @@ const debug = {
      * Total time for every timer.
      *
      * @type {object}
-     * @memberof convenientDiscussions.debug
      */
     this.timerTotal = {};
 
@@ -22,7 +20,6 @@ const debug = {
      * Timer start timestamps for every timer.
      *
      * @type {object}
-     * @memberof convenientDiscussions.debug
      * @private
      */
     this.timerStartTimestamps = {};
@@ -31,17 +28,14 @@ const debug = {
      * The number of times a timer has run.
      *
      * @type {object}
-     * @memberof convenientDiscussions.debug
      */
     this.timerRunCount = {};
 
     /**
-     * Total time for all timer runs, ignoring
-     * {@link convenientDiscussions.debug.resetTimer timer resets} (but not
-     * {@link convenientDiscussions.debug.fullResetTimer full resets}).
+     * Total time for all timer runs, ignoring {@link module:debug.resetTimer timer resets} (but not
+     * {@link module:debug.fullResetTimer full resets}).
      *
      * @type {object}
-     * @memberof convenientDiscussions.debug
      */
     this.timerAllRunsTotal = {};
 
@@ -51,7 +45,6 @@ const debug = {
      * An array to keep any values sequentially.
      *
      * @type {Array.<*>}
-     * @memberof convenientDiscussions.debug
      */
     this.array = [];
 
@@ -59,7 +52,6 @@ const debug = {
      * An object to keep any values by key.
      *
      * @type {object}
-     * @memberof convenientDiscussions.debug
      */
     this.object = {};
   },
@@ -73,7 +65,6 @@ const debug = {
      * An object to keep values of counters.
      *
      * @type {Proxy|object}
-     * @memberof convenientDiscussions.debug
      */
     this.counters = typeof Proxy === 'undefined' ?
       {} :
@@ -182,7 +173,7 @@ const debug = {
   },
 
   /**
-   * Get the {@link convenientDiscussions.debug.timerTotal total time} for a timer.
+   * Get the {@link module:debug.timerTotal total time} for a timer.
    *
    * @param {string} label
    * @returns {number}
@@ -193,8 +184,7 @@ const debug = {
 
   /**
    * Log the average time one run of the specified timer takes. All runs of the timer are taken into
-   * account unless a {@link convenientDiscussions.debug.fullResetTimer full reset} has been
-   * performed.
+   * account unless a {@link module:debug.fullResetTimer full reset} has been performed.
    *
    * @param {string} label
    */
@@ -216,5 +206,3 @@ const debug = {
     this.counters[label]++;
   },
 };
-
-export default debug;

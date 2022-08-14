@@ -164,7 +164,7 @@ const CommentStatic = {
   },
 
   /**
-   * Get all comments.
+   * Get all comments on the page ordered the same way as in the DOM.
    *
    * @returns {Comment[]}
    */

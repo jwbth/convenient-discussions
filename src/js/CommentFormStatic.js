@@ -9,6 +9,7 @@ import CommentStatic from './CommentStatic';
 import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
+import pageRegistry from './pageRegistry';
 import postponements from './postponements';
 import {
   areObjectsEqual,
@@ -219,7 +220,7 @@ const CommentFormStatic = {
        */
       const commentForm = new CommentForm({
         mode: 'addSection',
-        target: cd.page,
+        target: pageRegistry.getCurrent(),
         preloadConfig,
         newTopicOnTop,
         initialState,
@@ -368,7 +369,7 @@ const CommentFormStatic = {
       } else if (data.mode === 'addSection') {
         if (!CommentFormStatic.getAddSectionForm()) {
           const commentForm = new CommentForm({
-            target: cd.page,
+            target: pageRegistry.getCurrent(),
             mode: data.mode,
             initialState: data,
             preloadConfig: data.preloadConfig,

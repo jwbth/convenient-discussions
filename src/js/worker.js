@@ -23,6 +23,7 @@ let alarmTimeout;
 let rootElement;
 
 cd.isWorker = true;
+
 cd.debug = debug;
 debug.init();
 

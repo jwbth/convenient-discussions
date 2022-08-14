@@ -158,6 +158,15 @@ export default {
   },
 
   /**
+   * Get a user object for the current user.
+   *
+   * @returns {User}
+   */
+  getCurrent() {
+    return this.get(cd.g.USER_NAME);
+  },
+
+  /**
    * Make an API request and assign the muted status to respective user objects.
    *
    * @fires mutedUsers

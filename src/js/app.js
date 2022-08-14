@@ -260,11 +260,11 @@ async function go() {
  * @private
  */
 function setLanguages() {
-  const getFallbackLanguage = (lang) => (
-    (LANGUAGE_FALLBACKS[lang] || []).find((fallback) => I18N_LIST.includes(fallback)) ||
-    'en'
+  const languageOrFallback = (lang) => (
+    I18N_LIST.includes(lang) ?
+      lang :
+      (LANGUAGE_FALLBACKS[lang] || []).find((fallback) => I18N_LIST.includes(fallback)) || 'en'
   );
-  const languageOrFallback = (lang) => I18N_LIST.includes(lang) ? lang : getFallbackLanguage(lang);
 
   cd.g.USER_LANGUAGE = languageOrFallback(mw.config.get('wgUserLanguage'));
 

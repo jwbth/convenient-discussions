@@ -21,6 +21,7 @@ import init from './init';
 import navPanel from './navPanel';
 import notifications from './notifications';
 import pageNav from './pageNav';
+import pageRegistry from './pageRegistry';
 import postponements from './postponements';
 import settings from './settings';
 import toc from './toc';
@@ -70,9 +71,6 @@ export default {
    * known from the beginning.
    */
   init() {
-    this.isPageOverlayOn = this.isPageOverlayOn.bind(this);
-    this.reload = this.reload.bind(this);
-    this.getRootElement = this.getRootElement.bind(this);
     this.handleMouseMove = this.handleMouseMove.bind(this);
     this.handleWindowResize = this.handleWindowResize.bind(this);
     this.handleGlobalKeyDown = this.handleGlobalKeyDown.bind(this);
@@ -291,7 +289,7 @@ export default {
     return (
       this.talkPage &&
       this.doesPageExist() &&
-      !cd.page.isArchivePage() &&
+      !pageRegistry.getCurrent().isArchivePage() &&
       this.isCurrentRevision()
     );
   },
@@ -306,7 +304,8 @@ export default {
   },
 
   /**
-   * Set whether the viewport is currently automatically scrolled to some position.
+   * Set whether the viewport is currently automatically scrolled to some position. To get that
+   * state, use {@link module:controller.isAutoScrolling}.
    *
    * @param {boolean} value
    */
@@ -315,7 +314,8 @@ export default {
   },
 
   /**
-   * Check whether the viewport is currently automatically scrolled to some position.
+   * Check whether the viewport is currently automatically scrolled to some position. To set that
+   * state, use {@link module:controller.toggleAutoScrolling}.
    *
    * @returns {boolean}
    */
@@ -394,8 +394,8 @@ export default {
 
   /**
    * @class Api
-   * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Api
    * @memberof external:mw
+   * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Api
    */
 
   /**
@@ -421,13 +421,12 @@ export default {
   },
 
   /**
-   * Get the worker object.
+   * _For internal use._ Get the worker object.
    *
    * @returns {Worker}
    */
   getWorker() {
     this.worker ||= new Worker();
-
     return this.worker;
   },
 
@@ -1328,7 +1327,7 @@ export default {
 
     let parseData;
     try {
-      parseData = await cd.page.parse(null, false, true);
+      parseData = await pageRegistry.getCurrent().parse(null, false, true);
     } catch (e) {
       this.hideLoadingOverlay();
       if (bootProcess.data('wasCommentFormSubmitted')) {
@@ -1416,8 +1415,8 @@ export default {
     // Revision navigation
     $('.mw-revision').remove();
 
-    $('#firstHeading').text(cd.page.name);
-    document.title = cd.mws('pagetitle', cd.page.name);
+    $('#firstHeading').text(pageRegistry.getCurrent().name);
+    document.title = cd.mws('pagetitle', pageRegistry.getCurrent().name);
     this.originalPageTitle = document.title;
   },
 
@@ -1464,7 +1463,7 @@ export default {
     }
 
     if (methodName) {
-      history[methodName](history.state, '', cd.page.getUrl(newQuery));
+      history[methodName](history.state, '', pageRegistry.getCurrent().getUrl(newQuery));
     }
   },
 
@@ -1723,8 +1722,8 @@ export default {
   },
 
   /**
-   * Check whether the page qualifies to be considered a long page (which affects attempting
-   * performance improvements).
+   * _For internal use._ Check whether the page qualifies to be considered a long page (which
+   * affects attempting performance improvements).
    *
    * @returns {boolean}
    */
@@ -1874,7 +1873,7 @@ export default {
     );
     const content = {
       fragment,
-      wikilink: `[[${cd.page.name}#${fragment}]]`,
+      wikilink: `[[${pageRegistry.getCurrent().name}#${fragment}]]`,
       currentPageWikilink: `[[#${fragment}]]`,
       permanentWikilink: `[[${permalinkSpecialPageName}#${fragment}]]`,
       link: object.getUrl(),
@@ -2084,6 +2083,7 @@ export default {
 
     let body;
     const comment = filteredComments[0];
+    const currentPageName = pageRegistry.getCurrent().name;
     if (filteredComments.length === 1) {
       if (comment.isToMe) {
         const where = comment.section?.headline ?
@@ -2094,7 +2094,7 @@ export default {
           comment.author.getName(),
           comment.author,
           where,
-          cd.page.name
+          currentPageName
         );
       } else {
         body = cd.s(
@@ -2102,7 +2102,7 @@ export default {
           comment.author.getName(),
           comment.author,
           comment.section.headline,
-          cd.page.name
+          currentPageName
         );
       }
     } else {
@@ -2129,7 +2129,7 @@ export default {
         'notification-newcomments-desktop',
         filteredComments.length,
         where,
-        cd.page.name,
+        currentPageName,
         mayBeRelevant
       );
     }
