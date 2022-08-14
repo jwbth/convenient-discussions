@@ -1507,7 +1507,7 @@ class CommentSkeleton {
    * @param {CommentSkeleton} parentComment
    */
   static updateOutdentWidth(element, parentComment) {
-    if (self.cdIsWorker) return;
+    if (cd.isWorker) return;
 
     [...element.childNodes].forEach((child) => {
       const width = child.style?.width;

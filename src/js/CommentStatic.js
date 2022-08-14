@@ -358,15 +358,13 @@ const CommentStatic = {
    * @returns {Map}
    */
   groupBySection(comments) {
-    const commentsBySection = new Map();
-    comments.forEach((comment) => {
-      if (!commentsBySection.get(comment.section)) {
-        commentsBySection.set(comment.section, []);
+    return comments.reduce((map, comment) => {
+      if (!map.get(comment.section)) {
+        map.set(comment.section, []);
       }
-      commentsBySection.get(comment.section).push(comment);
-    });
-
-    return commentsBySection;
+      map.get(comment.section).push(comment);
+      return map;
+    }, new Map());
   },
 
   /**

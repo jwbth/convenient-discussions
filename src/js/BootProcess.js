@@ -1291,7 +1291,7 @@ class BootProcess {
         );
       });
 
-      CommentStatic.configureAndAddLayers(CommentStatic.getAll().filter((comment) => comment.isNew));
+      CommentStatic.configureAndAddLayers(CommentStatic.getAll().filter((c) => c.isNew));
 
       const unseenComments = CommentStatic.getAll().filter((comment) => comment.isSeen === false);
       toc.addNewComments(CommentStatic.groupBySection(unseenComments));

@@ -18,12 +18,11 @@ import debug from './debug';
 import { isHeadingNode, isMetadataNode } from './util';
 import { parseDocument, walkThroughSubtree } from './htmlparser2Extended';
 
-
 let isFirstRun = true;
 let alarmTimeout;
+let rootElement;
 
-self.cd = cd;
-self.cdIsWorker = true;
+cd.isWorker = true;
 cd.debug = debug;
 debug.init();
 
@@ -48,7 +47,7 @@ function setAlarm(interval) {
  */
 function getAllTextNodes() {
   let nodes = [];
-  walkThroughSubtree(self.rootElement, (node) => {
+  walkThroughSubtree(rootElement, (node) => {
     if (node.nodeType === Node.TEXT_NODE) {
       nodes.push(node);
     }
@@ -420,10 +419,8 @@ function parse() {
       const elements = node.getElementsByClassName(className, 1);
       return elements[0] || null;
     },
-    rootElement: self.rootElement,
-    areThereOutdents: Boolean(
-      self.rootElement.getElementsByClassName(cd.config.outdentClass, 1).length
-    ),
+    rootElement,
+    areThereOutdents: Boolean(rootElement.getElementsByClassName(cd.config.outdentClass, 1).length),
     handleDtMarkup: (elements) => {
       elements.forEach((el) => {
         el.remove();
@@ -506,7 +503,7 @@ function onMessageFromWindow(e) {
       withEndIndices: true,
       decodeEntities: false,
     });
-    self.rootElement = document.childNodes[0];
+    rootElement = document.childNodes[0];
 
     parse();
 

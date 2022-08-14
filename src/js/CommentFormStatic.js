@@ -422,7 +422,7 @@ const CommentFormStatic = {
    * _For internal use._ Return saved comment forms to their places.
    *
    * @param {boolean} fromStorage Should the session be restored from the local storage instead of
-   * directly from {@link conveneintDiscussions.commentForms}.
+   *   directly from {@link convenientDiscussions.commentForms}.
    */
   restoreSession(fromStorage) {
     if (fromStorage) {

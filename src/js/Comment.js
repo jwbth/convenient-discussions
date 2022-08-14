@@ -1636,11 +1636,11 @@ class Comment extends CommentSkeleton {
         // These elements have "position: relative" for the purpose we know.
         if (node.classList.contains('cd-connectToPreviousItem')) continue;
 
-        let style = node.conveneintDiscussionsStyle;
+        let style = node.convenientDiscussionsStyle;
         if (!style) {
           // window.getComputedStyle is expensive, so we save the result to the node's property.
           style = window.getComputedStyle(node);
-          node.conveneintDiscussionsStyle = style;
+          node.convenientDiscussionsStyle = style;
         }
         const classList = Array.from(node.classList);
         if (

@@ -4,27 +4,24 @@ const Comment = require('../src/js/Comment').default;
 const cd = require('../src/js/cd').default;
 const en = require('../i18n/en.json');
 const settings = require('../src/js/settings').default;
-const g = require('../src/js/staticGlobals').default;
 const { formatDateNative, initDayjs } = require('../src/js/timestamp');
 
-cd.g = g;
 cd.config = {
   defaultInsertButtons: [],
   defaultSignaturePrefix: ' ',
 };
-cd.g.SETTINGS_OPTION_NAME = 'userjs-convenientDiscussions-settings';
-cd.g.PHP_CHAR_TO_UPPER = {};
-cd.g.USER_LANGUAGE = 'en';
-cd.g.UI_DATE_FORMAT = 'H:i, j F Y';
+cd.g = {
+  SETTINGS_OPTION_NAME: 'userjs-convenientDiscussions-settings',
+  PHP_CHAR_TO_UPPER: {},
+  USER_LANGUAGE: 'en',
+  UI_DATE_FORMAT: 'H:i, j F Y',
+  MS_IN_MIN: 1000 * 60,
+};
 cd.mws = (name) => ({
   'timezone-utc': 'UTC',
 }[name]);
 cd.i18n = { en };
 cd.s = (name) => cd.i18n.en[name];
-cd.debug = {
-  startTimer: () => {},
-  stopTimer: () => {},
-};
 settings.save = async () => {};
 cd.settings = settings;
 

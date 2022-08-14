@@ -242,7 +242,7 @@ function loadSiteData() {
 }
 
 /**
- * Populate some global object properties related to archive pages.
+ * Populate some {@link convenientDiscussions} properties related to archive pages.
  *
  * @private
  */
@@ -1169,7 +1169,8 @@ export default {
   },
 
   /**
-   * _For internal use._ Set the global object properties related to timestamp parsing.
+   * _For internal use._ Set the {@link convenientDiscussions} properties related to timestamp
+   * parsing.
    *
    * @param {string} language
    */
