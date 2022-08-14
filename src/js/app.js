@@ -12,7 +12,7 @@ import controller from './controller';
 import debug from './debug';
 import defaultConfig from '../../config/default';
 import { addCommentLinksToSpecialSearch } from './addCommentLinks';
-import { mergeRegexps, skin$, unique } from './util';
+import { mergeRegexps, skin$, underlinesToSpaces, unique } from './util';
 
 let config;
 
@@ -149,6 +149,79 @@ function maybeTweakAddTopicButton() {
 }
 
 /**
+ * Set some {@link convenientDiscussions} properties.
+ *
+ * @private
+ */
+function setGlobals() {
+  // Don't run again if go() runs the second time (see maybeAddFooterLink()).
+  if (cd.g.SETTINGS_OPTION_NAME) return;
+
+  /**
+   * Script configuration. The default configuration is in {@link module:defaultConfig}.
+   *
+   * @name config
+   * @type {object}
+   * @memberof convenientDiscussions
+   */
+  cd.config = Object.assign(defaultConfig, cd.config);
+
+  setStrings();
+
+  // For historical reasons, ru.wikipedia.org has 'cd'.
+  const localOptionsPrefix = location.hostname === 'ru.wikipedia.org' ?
+    'cd' :
+    'convenientDiscussions';
+
+  cd.g.SETTINGS_OPTION_NAME = 'userjs-convenientDiscussions-settings';
+  cd.g.LOCAL_SETTINGS_OPTION_NAME = `userjs-${localOptionsPrefix}-localSettings`;
+  cd.g.VISITS_OPTION_NAME = `userjs-${localOptionsPrefix}-visits`;
+
+  // For historical reasons, ru.wikipedia.org has 'watchedTopics'.
+  const subscriptionsOptionNameEnding = location.hostname === 'ru.wikipedia.org' ?
+    'watchedTopics' :
+    'watchedSections';
+
+  cd.g.SUBSCRIPTIONS_OPTION_NAME = `userjs-${localOptionsPrefix}-${subscriptionsOptionNameEnding}`;
+
+  const server = mw.config.get('wgServer');
+  cd.g.SERVER = server.startsWith('//') ? location.protocol + server : server;
+
+  // Worker's location object doesn't have the host name set.
+  cd.g.HOSTNAME = location.hostname;
+
+  cd.g.PAGE_NAME = underlinesToSpaces(mw.config.get('wgPageName'));
+  cd.g.PAGE_TITLE = underlinesToSpaces(mw.config.get('wgTitle'));
+  cd.g.NAMESPACE_NUMBER = mw.config.get('wgNamespaceNumber');
+
+  // "<unregistered>" is a workaround for anonymous users (there are such!).
+  cd.g.USER_NAME = mw.config.get('wgUserName') || '<unregistered>';
+
+  const bodyClassList = document.body.classList;
+
+  cd.g.PAGE_WHITELIST_REGEXP = mergeRegexps(cd.config.pageWhitelist);
+  cd.g.PAGE_BLACKLIST_REGEXP = mergeRegexps(cd.config.pageBlacklist);
+  cd.g.CONTENT_TEXT_DIRECTION = bodyClassList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
+  cd.g.SKIN = mw.config.get('skin');
+  cd.g.IS_QQX_MODE = /[?&]uselang=qqx(?=&|$)/.test(location.search);
+
+  // Quite a rough check for mobile browsers, a mix of what is advised at
+  // https://stackoverflow.com/a/24600597 (sends to
+  // https://developer.mozilla.org/en-US/docs/Browser_detection_using_the_user_agent) and
+  // https://stackoverflow.com/a/14301832.
+  cd.g.IS_MOBILE = (
+    /Mobi|Android/i.test(navigator.userAgent) ||
+    typeof window.orientation !== 'undefined'
+  );
+
+  cd.g.IS_DT_REPLY_TOOL_ENABLED = bodyClassList.contains('ext-discussiontools-replytool-enabled');
+  cd.g.IS_DT_NEW_TOPIC_TOOL_ENABLED = bodyClassList
+    .contains('ext-discussiontools-newtopictool-enabled');
+  cd.g.IS_DT_TOPIC_SUBSCRIPTION_ENABLED = bodyClassList
+    .contains('ext-discussiontools-topicsubscription-enabled');
+}
+
+/**
  * Function executed after the config and localization strings are ready.
  *
  * @fires preprocessed
@@ -157,23 +230,7 @@ function maybeTweakAddTopicButton() {
 async function go() {
   debug.startTimer('start');
 
-  // Don't run again if go() runs the second time (see maybeAddFooterLink()).
-  if (cd.g.PAGE_WHITELIST_REGEXP === undefined) {
-    /**
-     * Script configuration. The default configuration is in {@link module:defaultConfig}.
-     *
-     * @name config
-     * @type {object}
-     * @memberof convenientDiscussions
-     */
-    cd.config = Object.assign(defaultConfig, cd.config);
-
-    cd.g.PAGE_WHITELIST_REGEXP = mergeRegexps(cd.config.pageWhitelist);
-    cd.g.PAGE_BLACKLIST_REGEXP = mergeRegexps(cd.config.pageBlacklist);
-
-    setStrings();
-  }
-
+  setGlobals();
   controller.init();
   controller.loadToTalkPage();
   maybeAddFooterLink();

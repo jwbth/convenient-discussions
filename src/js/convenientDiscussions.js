@@ -9,22 +9,9 @@ import cd from './cd';
 import controller from './controller';
 import debug from './debug';
 import pageRegistry, { Page } from './pageRegistry';
-import { buildEditSummary, underlinesToSpaces, wrap, wrapDiffBody } from './util';
+import { buildEditSummary, wrap, wrapDiffBody } from './util';
 
 const mwStringsCache = {};
-
-// For historical reasons, ru.wikipedia.org has 'cd'.
-const localOptionsPrefix = location.hostname === 'ru.wikipedia.org' ?
-  'cd' :
-  'convenientDiscussions';
-
-// For historical reasons, ru.wikipedia.org has 'watchedTopics'.
-const subscriptionsOptionNameEnding = location.hostname === 'ru.wikipedia.org' ?
-  'watchedTopics' :
-  'watchedSections';
-
-const server = mw.config.get('wgServer');
-const bodyClassList = document.body.classList;
 
 Object.assign(cd, {
   /**
@@ -491,43 +478,6 @@ Object.assign(cd, {
       'templatestyles',
       'timeline',
     ],
-
-    SETTINGS_OPTION_NAME: 'userjs-convenientDiscussions-settings',
-    LOCAL_SETTINGS_OPTION_NAME: `userjs-${localOptionsPrefix}-localSettings`,
-    VISITS_OPTION_NAME: `userjs-${localOptionsPrefix}-visits`,
-
-    SUBSCRIPTIONS_OPTION_NAME: `userjs-${localOptionsPrefix}-${subscriptionsOptionNameEnding}`,
-
-    SERVER: server.startsWith('//') ? location.protocol + server : server,
-
-    // Worker's location object doesn't have the host name set.
-    HOSTNAME: location.hostname,
-
-    PAGE_NAME: underlinesToSpaces(mw.config.get('wgPageName')),
-    PAGE_TITLE: underlinesToSpaces(mw.config.get('wgTitle')),
-    NAMESPACE_NUMBER: mw.config.get('wgNamespaceNumber'),
-
-    // "<unregistered>" is a workaround for anonymous users (there are such!).
-    USER_NAME: mw.config.get('wgUserName') || '<unregistered>',
-
-    CONTENT_TEXT_DIRECTION: bodyClassList.contains('sitedir-rtl') ? 'rtl' : 'ltr',
-    SKIN: mw.config.get('skin'),
-    IS_QQX_MODE: /[?&]uselang=qqx(?=&|$)/.test(location.search),
-
-    // Quite a rough check for mobile browsers, a mix of what is advised at
-    // https://stackoverflow.com/a/24600597 (sends to
-    // https://developer.mozilla.org/en-US/docs/Browser_detection_using_the_user_agent) and
-    // https://stackoverflow.com/a/14301832.
-    IS_MOBILE: (
-      /Mobi|Android/i.test(navigator.userAgent) ||
-      typeof window.orientation !== 'undefined'
-    ),
-
-    IS_DT_REPLY_TOOL_ENABLED: bodyClassList.contains('ext-discussiontools-replytool-enabled'),
-    IS_DT_NEW_TOPIC_TOOL_ENABLED: bodyClassList
-      .contains('ext-discussiontools-newtopictool-enabled'),
-    IS_DT_TOPIC_SUBSCRIPTION_ENABLED: bodyClassList
-      .contains('ext-discussiontools-topicsubscription-enabled'),
   },
 
   debug,
