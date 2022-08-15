@@ -81,7 +81,7 @@
 	"section-metadata-commentcount": "$1 {{plural:$1|сообщение|сообщения|сообщений}}",
 	"section-metadata-commentcount-new": "+$1 {{plural:$1|новое|новых}}",
 	"section-metadata-authorcount": "$1 {{plural:$1|человек|человека|человек}}",
-	"section-metadata-lastcomment": "Последний комментарий:",
+	"section-metadata-lastcomment": "Последнее сообщение:",
 	"cld-title-comment": "Скопировать ссылку на сообщение",
 	"cld-title-section": "Скопировать ссылку на раздел",
 	"cld-select-anchor": "Якорная ссылка",
