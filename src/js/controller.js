@@ -2223,13 +2223,12 @@ export default {
     if (this.addedCommentCount === 0) {
       // A hack for Chrome (at least) for cases when the "Back" button of the browser is clicked.
       document.title = '';
-    } else {
-      const relevantMark = this.areRelevantCommentsAdded ? '*' : '';
-      this.newCommentsTitleMark = this.addedCommentCount ?
-        `(${this.addedCommentCount}${relevantMark}) ` :
-        '';
     }
 
+    const relevantMark = this.areRelevantCommentsAdded ? '*' : '';
+    this.newCommentsTitleMark = this.addedCommentCount ?
+      `(${this.addedCommentCount}${relevantMark}) ` :
+      '';
     document.title = title.replace(/^(?:\(\d+\*?\) )?/, this.newCommentsTitleMark);
   },
 
