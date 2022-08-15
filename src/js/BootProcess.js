@@ -19,10 +19,13 @@ import toc from './toc';
 import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
 import { formatDateNative } from './timestamp';
-import { getLastArrayElementOrSelf, notNull, underlinesToSpaces, wrap } from './util';
+import { getLastArrayElementOrSelf, notNull, underlinesToSpaces, wrap } from './utils';
 import { getVisits, handleApiReject, setVisits } from './apiWrappers';
 import { removeWikiMarkup } from './wikitext';
 import { showConfirmDialog } from './ooui';
+
+let articlePathRegexp;
+let addTopicSelector;
 
 /**
  * Get all text nodes under the root element in the window (not worker) context.
@@ -68,7 +71,7 @@ function handleDtMarkup(elements) {
   // Reply Tool is officially incompatible with CD, so we don't care if it is enabled. New Topic
   // Tool doesn't seem to make difference for our purposes here.
   const moveNotRemove = (
-    cd.g.IS_DT_TOPIC_SUBSCRIPTION_ENABLED ||
+    cd.g.isDtTopicSubscriptionEnabled ||
 
     // DT enabled by default. Don't know how to capture that another way.
     mw.loader.getState('ext.discussionTools.init') === 'ready'
@@ -423,7 +426,7 @@ class BootProcess {
       sort: 'create_timestamp_desc',
       cdcomment: date && decodedFragment,
     });
-    searchUrl = cd.g.SERVER + searchUrl;
+    searchUrl = cd.g.server + searchUrl;
 
     if (results.length === 0) {
       let label;
@@ -512,6 +515,9 @@ class BootProcess {
     let previousCommentByTimeText = '';
     let sectionName;
     let sectionWithSimilarNameText = '';
+    articlePathRegexp ||= new RegExp(
+      mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace('\\$1', '(.*)')
+    );
     if (date) {
       label = cd.sParse('deadanchor-comment-lead');
       const previousCommentByTime = CommentStatic.findPreviousCommentByTime(date, author);
@@ -521,7 +527,7 @@ class BootProcess {
           cd.sParse('deadanchor-comment-previous', '#' + previousCommentByTime.id)
         )
           // Until https://phabricator.wikimedia.org/T288415 is resolved and online on most wikis.
-          .replace(cd.g.ARTICLE_PATH_REGEXP, '$1');
+          .replace(articlePathRegexp, '$1');
         label += previousCommentByTimeText;
       }
     } else {
@@ -534,7 +540,7 @@ class BootProcess {
           cd.sParse('deadanchor-section-similar', '#' + sectionMatch.id, sectionMatch.headline)
         )
           // Until https://phabricator.wikimedia.org/T288415 is resolved and online on most wikis.
-          .replace(cd.g.ARTICLE_PATH_REGEXP, '$1');
+          .replace(articlePathRegexp, '$1');
 
         // Possible use of a template in the section title. In such a case, it's almost always the
         // real match, so we show it immediately.
@@ -565,7 +571,7 @@ class BootProcess {
       }
 
       token = date ?
-        formatDateNative(date, false, cd.g.CONTENT_TIMEZONE) :
+        formatDateNative(date, false, cd.g.contentTimezone) :
         sectionName.replace(/"/g, '');
       searchQuery = `"${token}"`
       if (sectionName && sectionName !== sectionNameDotDecoded) {
@@ -576,8 +582,8 @@ class BootProcess {
         // There can be a time difference between the time we know (taken from the history) and the
         // time on the page. We take it to be not more than 3 minutes for the time on the page.
         for (let gap = 1; gap <= 3; gap++) {
-          const adjustedDate = new Date(date.getTime() - cd.g.MS_IN_MIN * gap);
-          const adjustedToken = formatDateNative(adjustedDate, false, cd.g.CONTENT_TIMEZONE);
+          const adjustedDate = new Date(date.getTime() - cd.g.msInMin * gap);
+          const adjustedToken = formatDateNative(adjustedDate, false, cd.g.contentTimezone);
           searchQuery += ` OR "${adjustedToken}"`;
         }
       }
@@ -615,7 +621,7 @@ class BootProcess {
    * @private
    */
   maybeSuggestDisableDiscussionTools() {
-    if (!cd.g.IS_DT_REPLY_TOOL_ENABLED) return;
+    if (!cd.g.isDtReplyToolEnabled) return;
 
     const message = cd.sParse('discussiontools-incompatible');
     const { $wrapper: $message, buttons: [disableButton] } = wrap(message, {
@@ -858,7 +864,7 @@ class BootProcess {
       !$('#ca-addsection').length ||
 
       // There is a special welcome text in New Topic Tool for 404 pages.
-      (cd.g.IS_DT_NEW_TOPIC_TOOL_ENABLED && !controller.doesPageExist())
+      (cd.g.isDtNewTopicToolEnabled && !controller.doesPageExist())
     ) {
       return;
     }
@@ -886,7 +892,15 @@ class BootProcess {
    * @private
    */
   connectToAddTopicButtons() {
-    $(cd.g.ADD_TOPIC_SELECTOR)
+    addTopicSelector ||= [
+      '#ca-addsection a',
+      'a[href*="section=new"]',
+      '.commentbox input[type="submit"]',
+      '.createbox input[type="submit"]',
+    ]
+      .concat(cd.config.customAddTopicLinkSelectors)
+      .join(', ');
+    $(addTopicSelector)
       .filter(function () {
         const $button = $(this);
 
@@ -943,7 +957,7 @@ class BootProcess {
       .filter(function () {
         const $button = $(this);
         return (
-          !cd.g.IS_DT_NEW_TOPIC_TOOL_ENABLED &&
+          !cd.g.isDtNewTopicToolEnabled &&
           !($button.is('a') && Number(mw.util.getParamValue('cdaddtopic', $button.attr('href'))))
         );
       })
@@ -1008,7 +1022,7 @@ class BootProcess {
    * @private
    */
   hideDtNewTopicForm() {
-    if (!cd.g.IS_DT_NEW_TOPIC_TOOL_ENABLED) return;
+    if (!cd.g.isDtNewTopicToolEnabled) return;
 
     let headline;
     let comment;
@@ -1375,7 +1389,7 @@ class BootProcess {
       .find(selector)
       .filter(function () {
         return (
-          cd.g.USER_LINK_REGEXP.test(this.title) &&
+          cd.g.userLinkRegexp.test(this.title) &&
           !this.closest(excludeSelector) &&
           Parser.processLink(this)?.userName === userRegistry.getCurrent().getName()
         );

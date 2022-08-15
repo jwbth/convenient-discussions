@@ -1,7 +1,7 @@
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
-import { areObjectsEqual } from './util';
+import { areObjectsEqual } from './utils';
 import {
   confirmCloseDialog,
   createCheckboxField,
@@ -509,10 +509,10 @@ class SettingsDialog extends OO.ui.ProcessDialog {
 
       try {
         await Promise.all([
-          setLocalOption(cd.g.LOCAL_SETTINGS_OPTION_NAME, undefined),
-          setLocalOption(cd.g.VISITS_OPTION_NAME, undefined),
-          setLocalOption(cd.g.SUBSCRIPTIONS_OPTION_NAME, undefined),
-          setGlobalOption(cd.g.SETTINGS_OPTION_NAME, undefined),
+          setLocalOption(cd.g.localSettingsOptionName, undefined),
+          setLocalOption(cd.g.visitsOptionName, undefined),
+          setLocalOption(cd.g.subscriptionsOptionName, undefined),
+          setGlobalOption(cd.g.settingsOptionName, undefined),
         ]);
       } catch (e) {
         handleDialogError(this, e, 'sd-error-removedata', false);

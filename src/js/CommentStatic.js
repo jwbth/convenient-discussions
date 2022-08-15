@@ -20,7 +20,7 @@ import {
   reorderArray,
   underlinesToSpaces,
   unique,
-} from './util';
+} from './utils';
 import { getPagesExistence } from './apiWrappers';
 
 const newDtTimestampPattern = '(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})\\d{2}';
@@ -33,6 +33,9 @@ const dtIdRegexp = new RegExp(
   `(?:-(?:(.+?)-(?:${newDtTimestampPattern}|${oldDtTimestampPattern})|(.+?))` +
   `(?:-(\\d+))?)?$`
 );
+
+let notificationArea;
+let tocButton;
 
 /**
  * Add all comment's children, including indirect, into array, if they are in the array of new
@@ -380,7 +383,7 @@ const CommentStatic = {
       delete comment.roughOffset;
     });
 
-    const viewportTop = window.scrollY + cd.g.BODY_SCROLL_PADDING_TOP;
+    const viewportTop = window.scrollY + cd.g.bodyScrollPaddingTop;
     const viewportBottom = window.scrollY + window.innerHeight;
 
     // Visibility is checked in the sense that an element is visible on the page, not necessarily in
@@ -519,9 +522,14 @@ const CommentStatic = {
    * @param {Event} e
    */
   highlightHovered(e) {
+    if (notificationArea === undefined) {
+      notificationArea = document.querySelector('.mw-notification-area');
+      tocButton = document.getElementById('vector-toc-collapsed-button');
+    }
+
     const isObstructingElementHovered = (
       [
-        ...(cd.g.NOTIFICATION_AREA?.querySelectorAll('.mw-notification') || []),
+        ...(notificationArea?.querySelectorAll('.mw-notification') || []),
         controller.getActiveAutocompleteMenu(),
         navPanel.$element?.get(0),
         controller.getPopupOverlay()
@@ -532,7 +540,7 @@ const CommentStatic = {
           .map((section) => section.actions.moreMenuSelect?.getMenu())
           .find((menu) => menu?.isVisible())
           ?.$element.get(0),
-        cd.g.TOC_BUTTON,
+        tocButton,
       ]
         .filter(notNull)
         .some((el) => el.matches(':hover')) ||
@@ -585,8 +593,7 @@ const CommentStatic = {
     if (!comment && impreciseDate) {
       const { date, author } = this.parseId(id) || {};
       for (let gap = 1; !comment && gap <= 3; gap++) {
-        const dateToFind = new Date(date.getTime() - cd.g.MS_IN_MIN * gap);
-        comment = findById(this.generateId(dateToFind, author));
+        comment = findById(this.generateId(new Date(date.getTime() - cd.g.msInMin * gap), author));
       }
     }
 
@@ -760,7 +767,7 @@ const CommentStatic = {
    * _For internal use._ Change the format of the comment timestamps according to the settings.
    */
   reformatTimestamps() {
-    if (!cd.g.ARE_TIMESTAMPS_ALTERED) return;
+    if (!cd.g.areTimestampsAltered) return;
 
     this.items.forEach((comment) => {
       comment.reformatTimestamp();
@@ -827,7 +834,7 @@ const CommentStatic = {
         comment.author.getName() === author &&
         comment.date &&
         comment.date < date &&
-        comment.date.getTime() > date.getTime() - cd.g.MS_IN_DAY
+        comment.date.getTime() > date.getTime() - cd.g.msInDay
       ))
       .sort((c1, c2) => c1.date.getTime() - c2.date.getTime())
       .slice(-1)[0];

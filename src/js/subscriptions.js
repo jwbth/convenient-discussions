@@ -16,7 +16,7 @@ import {
   getLegacySubscriptions,
   setLegacySubscriptions,
 } from './apiWrappers';
-import { unique, wrap } from './util';
+import { unique, wrap } from './utils';
 
 let subscribeLegacyPromise = Promise.resolve();
 

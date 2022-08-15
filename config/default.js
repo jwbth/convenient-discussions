@@ -470,7 +470,7 @@ export default {
   /**
    * Regexps for strings that should be cut out of comment beginnings (not considered parts of them)
    * when editing comments. This is in addition to
-   * {@link convenientDiscussions.g.BAD_COMMENT_BEGINNINGS}. They begin with `^` and usually end
+   * {@link convenientDiscussions.g.badCommentBeginnings}. They begin with `^` and usually end
    * with ` *\n+` or ` *\n+(?=[*:#])`. They _should_ match a newline character at the end for the
    * script to work properly.
    *
@@ -807,7 +807,7 @@ export default {
    * @kind function
    * @param {string} targetPageWikilink
    * @param {string} signature
-   * @returns {string|Array.<string, string>}
+   * @returns {string|Array.<string>}
    * @default function (targetPageWikilink, signature) {
    *   return convenientDiscussions.s('move-targetpagecode', targetPageWikilink, signature) + '\n';
    * }

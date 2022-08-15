@@ -14,12 +14,13 @@ import controller from './controller';
 import pageRegistry from './pageRegistry';
 import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
-import { defined, ucFirst, unique } from './util';
+import { defined, ucFirst, unique } from './utils';
+
+const autocompleteTimeout = 100;
 
 let cachedUserInfoRequest;
 let currentAutocompletePromise;
-
-const autocompleteTimeout = 100;
+let currentUserRights;
 
 /**
  * Callback used in the `.catch()` parts of API requests.
@@ -53,10 +54,10 @@ export function handleApiReject(code, resp) {
  * @returns {Array.<Array.<*>>}
  */
 export function splitIntoBatches(arr) {
-  // cd.g.USER_RIGHTS is rarely set on first page load (when getDtSubscriptions() runs, for
+  // `currentUserRights` is rarely set on first page load (when `getDtSubscriptions()` runs, for
   // example).
-  const isHigherApiLimit = cd.g.USER_RIGHTS ?
-    cd.g.USER_RIGHTS.includes('apihighlimits') :
+  const isHigherApiLimit = currentUserRights ?
+    currentUserRights.includes('apihighlimits') :
     mw.config.get('wgUserGroups').includes('sysop');
 
   const limit = isHigherApiLimit ? 500 : 50;
@@ -160,26 +161,24 @@ export function unpackLegacySubscriptions(string) {
 export async function getVisits(reuse = false) {
   let visits;
   let currentPageVisits;
-  if (userRegistry.getCurrent().getName() === '<unregistered>') {
+  if (userRegistry.getCurrent().isRegistered()) {
+    visits = await (
+      (
+        controller.getBootProcess().isPageFirstParsed() &&
+        mw.user.options.get(cd.g.visitsOptionName) === null
+      ) ?
+        Promise.resolve({}) :
+        getUserInfo(reuse).then((options) => options.visits)
+    );
+    const articleId = mw.config.get('wgArticleId');
+    visits[articleId] = visits[articleId] || [];
+    currentPageVisits = visits[articleId];
+  } else {
     visits = [];
     currentPageVisits = [];
-  } else {
-    const isOptionSet = mw.user.options.get(cd.g.VISITS_OPTION_NAME) !== null;
-    const promise = controller.getBootProcess().isPageFirstParsed() && !isOptionSet ?
-      Promise.resolve({}) :
-      getUserInfo(reuse).then((options) => options.visits);
-    visits = await promise;
-    const articleId = mw.config.get('wgArticleId');
-
-    // This should always true; this check should be performed before.
-    if (articleId) {
-      visits[articleId] = visits[articleId] || [];
-      currentPageVisits = visits[articleId];
-    }
   }
 
-  cd.tests.visits = visits;
-  cd.tests.currentPageVisits = currentPageVisits;
+  Object.assign(cd.tests, { visits, currentPageVisits });
 
   return { visits, currentPageVisits };
 }
@@ -216,7 +215,7 @@ export async function setVisits(visits) {
   const string = packVisits(visits);
   const compressed = lzString.compressToEncodedURIComponent(string);
   try {
-    await setLocalOption(cd.g.VISITS_OPTION_NAME, compressed);
+    await setLocalOption(cd.g.visitsOptionName, compressed);
   } catch (e) {
     if (e instanceof CdError) {
       const { type, code } = e.data;
@@ -234,18 +233,20 @@ export async function setVisits(visits) {
 /**
  * Request the legacy subscriptions from the server.
  *
- * `mw.user.options` is not used even on first run because it appears to be cached sometimes which
- * can be critical for determining subscriptions.
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.user-property-options mw.user.options}
+ * is not used even on first run because it appears to be cached sometimes which can be critical for
+ * determining subscriptions.
  *
  * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
  * @returns {Promise.<object>}
  */
 export function getLegacySubscriptions(reuse = false) {
-  const isOptionSet = mw.user.options.get(cd.g.SUBSCRIPTIONS_OPTION_NAME) !== null;
-  const promise = controller.getBootProcess()?.isPageFirstParsed() && !isOptionSet ?
+  return (
+    controller.getBootProcess()?.isPageFirstParsed() &&
+    mw.user.options.get(cd.g.subscriptionsOptionName) === null
+  ) ?
     Promise.resolve({}) :
     getUserInfo(reuse).then((options) => options.subscriptions);
-  return promise;
 }
 
 /**
@@ -254,9 +255,10 @@ export function getLegacySubscriptions(reuse = false) {
  * @param {Promise.<object>} registry
  */
 export async function setLegacySubscriptions(registry) {
-  const string = packLegacySubscriptions(registry);
-  const compressed = lzString.compressToEncodedURIComponent(string);
-  await setLocalOption(cd.g.SUBSCRIPTIONS_OPTION_NAME, compressed);
+  await setLocalOption(
+    cd.g.subscriptionsOptionName,
+    lzString.compressToEncodedURIComponent(packLegacySubscriptions(registry))
+  );
 }
 
 
@@ -352,19 +354,15 @@ export function getUserInfo(reuse = false) {
       const options = userinfo.options;
       const rights = userinfo.rights;
 
-      const visitsCompressed = options[cd.g.VISITS_OPTION_NAME];
-      const visitsString = visitsCompressed ?
-        lzString.decompressFromEncodedURIComponent(visitsCompressed) :
-        '';
-      const visits = unpackVisits(visitsString);
-
-      const subscriptionsCompressed = options[cd.g.SUBSCRIPTIONS_OPTION_NAME];
-      const subscriptionsString = subscriptionsCompressed ?
-        lzString.decompressFromEncodedURIComponent(subscriptionsCompressed) :
-        '';
-      const subscriptions = unpackLegacySubscriptions(subscriptionsString);
-
-      cd.g.USER_RIGHTS = rights;
+      const visits = unpackVisits(
+        lzString.decompressFromEncodedURIComponent(options[cd.g.visitsOptionName]) ||
+        ''
+      );
+      const subscriptions = unpackLegacySubscriptions(
+        lzString.decompressFromEncodedURIComponent(options[cd.g.subscriptionsOptionName]) ||
+        ''
+      );
+      currentUserRights = rights;
 
       return { options, visits, subscriptions, rights };
     },
@@ -479,7 +477,7 @@ export async function setGlobalOption(name, value) {
     // Normally, this won't run if cd.config.useGlobalPreferences is false. But it will run as part
     // of SettingsDialog#removeData in controller.showSettingsDialog, removing the option if it
     // existed, which may have a benificial effect if cd.config.useGlobalPreferences was true at
-    // some stage and a local setting with cd.g.SETTINGS_OPTION_NAME name was created instead of a
+    // some stage and a local setting with cd.g.settingsOptionName name was created instead of a
     // global one, thus inviting the need to remove it upon removing all data.
     await setLocalOption(name, value);
 
@@ -581,7 +579,7 @@ export function getRelevantUserNames(text) {
         }).catch(handleApiReject);
 
         const users = resp[1]
-          ?.map((name) => (name.match(cd.g.USER_NAMESPACES_REGEXP) || [])[1])
+          ?.map((name) => (name.match(cd.g.userNamespacesRegexp) || [])[1])
           .filter(defined)
           .filter((name) => !name.includes('/'));
 
@@ -621,7 +619,7 @@ export function getRelevantUserNames(text) {
  */
 export function getRelevantPageNames(text) {
   let colonPrefix = false;
-  if (cd.g.COLON_NAMESPACES_PREFIX_REGEXP.test(text)) {
+  if (cd.g.colonNamespacesPrefixRegexp.test(text)) {
     text = text.slice(1);
     colonPrefix = true;
   }

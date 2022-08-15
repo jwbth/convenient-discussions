@@ -9,13 +9,13 @@
 
 import CommentFormStatic from './CommentFormStatic';
 import CommentStatic from './CommentStatic';
-import DATE_FORMATS from '../../data/dateFormats.json';
-import DIGITS from '../../data/digits.json';
-import LANGUAGE_FALLBACKS from '../../data/languageFallbacks.json';
 import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
+import dateFormatsData from '../../data/dateFormats.json';
+import digitsData from '../../data/digits.json';
 import jqueryExtensions from './jqueryExtensions';
+import languageFallbacksData from '../../data/languageFallbacks.json';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
 import subscriptions from './subscriptions';
@@ -25,13 +25,10 @@ import { dateTokenToMessageNames, initDayjs } from './timestamp';
 import {
   generatePageNamePattern,
   getContentLanguageMessages,
-  hideText,
-  mergeRegexps,
   skin$,
   transparentize,
-  unhideText,
   unique,
-} from './util';
+} from './utils';
 import { setVisits, splitIntoBatches } from './apiWrappers';
 
 /**
@@ -41,9 +38,9 @@ import { setVisits, splitIntoBatches } from './apiWrappers';
  */
 function setFormats() {
   const getFallbackLanguage = (lang) => (
-    (LANGUAGE_FALLBACKS[lang] || ['en']).find((fallback) => DATE_FORMATS[fallback])
+    (languageFallbacksData[lang] || ['en']).find((fallback) => dateFormatsData[fallback])
   );
-  const languageOrFallback = (lang) => DATE_FORMATS[lang] ? lang : getFallbackLanguage(lang);
+  const languageOrFallback = (lang) => dateFormatsData[lang] ? lang : getFallbackLanguage(lang);
 
   const contentLanguage = languageOrFallback(mw.config.get('wgContentLanguage'));
   const userLanguage = languageOrFallback(mw.config.get('wgUserLanguage'));
@@ -51,38 +48,38 @@ function setFormats() {
   /**
    * Format of date in content language, as used by MediaWiki.
    *
-   * @name CONTENT_DATE_FORMAT
+   * @name contentDateFormat
    * @type {string}
    * @memberof convenientDiscussions.g
    */
-  cd.g.CONTENT_DATE_FORMAT = DATE_FORMATS[contentLanguage];
+  cd.g.contentDateFormat = dateFormatsData[contentLanguage];
 
   /**
    * Format of date in user (interface) language, as used by MediaWiki.
    *
-   * @name UI_DATE_FORMAT
+   * @name uiDateFormat
    * @type {string}
    * @memberof convenientDiscussions.g
    */
-  cd.g.UI_DATE_FORMAT = DATE_FORMATS[userLanguage];
+  cd.g.uiDateFormat = dateFormatsData[userLanguage];
 
   /**
    * Regular expression matching a single digit in content language, e.g. `[0-9]`.
    *
-   * @name CONTENT_DIGITS
+   * @name contentDigits
    * @type {string}
    * @memberof convenientDiscussions.g
    */
-  cd.g.CONTENT_DIGITS = mw.config.get('wgTranslateNumerals') ? DIGITS[contentLanguage] : null;
+  cd.g.contentDigits = mw.config.get('wgTranslateNumerals') ? digitsData[contentLanguage] : null;
 
   /**
    * Regular expression matching a single digit in user (interface) language, e.g. `[0-9]`.
    *
-   * @name UI_DIGITS
+   * @name uiDigits
    * @type {string}
    * @memberof convenientDiscussions.g
    */
-  cd.g.UI_DIGITS = mw.config.get('wgTranslateNumerals') ? DIGITS[userLanguage] : null;
+  cd.g.uiDigits = mw.config.get('wgTranslateNumerals') ? digitsData[userLanguage] : null;
 }
 
 /**
@@ -122,13 +119,13 @@ function getUsedDateTokens(format) {
 function loadSiteData() {
   setFormats();
 
-  const contentDateTokensMessageNames = getUsedDateTokens(cd.g.CONTENT_DATE_FORMAT)
+  const contentDateTokensMessageNames = getUsedDateTokens(cd.g.contentDateFormat)
     .map((pattern) => dateTokenToMessageNames[pattern]);
   const contentLanguageMessageNames = [
     'word-separator', 'comma-separator', 'colon-separator', 'timezone-utc'
   ].concat(...contentDateTokensMessageNames);
 
-  const uiDateTokensMessageNames = getUsedDateTokens(cd.g.UI_DATE_FORMAT)
+  const uiDateTokensMessageNames = getUsedDateTokens(cd.g.uiDateFormat)
     .map((pattern) => dateTokenToMessageNames[pattern]);
   const userLanguageMessageNames = [
     'parentheses', 'parentheses-start', 'parentheses-end', 'word-separator', 'comma-separator',
@@ -155,12 +152,12 @@ function loadSiteData() {
   }
 
   // We need this object to pass it to the web worker.
-  cd.g.CONTENT_LANGUAGE_MESSAGES = {};
+  cd.g.contentLanguageMessages = {};
 
   const setContentLanguageMessages = (messages) => {
     Object.keys(messages).forEach((name) => {
       mw.messages.set('(content)' + name, messages[name]);
-      cd.g.CONTENT_LANGUAGE_MESSAGES[name] = messages[name];
+      cd.g.contentLanguageMessages[name] = messages[name];
     });
   };
 
@@ -190,7 +187,7 @@ function loadSiteData() {
     }
   } else {
     const contentLanguageMessagesToRequest = contentLanguageMessageNames
-      .filter((name) => !cd.g.CONTENT_LANGUAGE_MESSAGES[name]);
+      .filter((name) => !cd.g.contentLanguageMessages[name]);
     for (const nextNames of splitIntoBatches(contentLanguageMessagesToRequest)) {
       const request = controller.getApi().getMessages(nextNames, {
         amlang: mw.config.get('wgContentLanguage'),
@@ -210,19 +207,19 @@ function loadSiteData() {
    * @type {string[]}
    * @memberof convenientDiscussions.g
    */
-  cd.g.SPECIAL_PAGE_ALIASES = Object.assign({}, cd.config.specialPageAliases);
+  cd.g.specialPageAliases = Object.assign({}, cd.config.specialPageAliases);
 
   /**
    * Timezone of the wiki.
    *
-   * @name CONTENT_TIMEZONE
+   * @name contentTimezone
    * @type {?string}
    * @memberof convenientDiscussions.g
    */
-  cd.g.CONTENT_TIMEZONE = cd.config.timezone;
+  cd.g.contentTimezone = cd.config.timezone;
 
   const specialPages = ['Contributions', 'Diff', 'PermanentLink'];
-  if (specialPages.some((page) => !cd.g.SPECIAL_PAGE_ALIASES[page]) || !cd.g.CONTENT_TIMEZONE) {
+  if (specialPages.some((page) => !cd.g.specialPageAliases[page]) || !cd.g.contentTimezone) {
     const request = controller.getApi().get({
       action: 'query',
       meta: 'siteinfo',
@@ -231,51 +228,14 @@ function loadSiteData() {
       resp.query.specialpagealiases
         .filter((alias) => specialPages.includes(alias.realname))
         .forEach((alias) => {
-          cd.g.SPECIAL_PAGE_ALIASES[alias.realname] = alias.aliases[0];
+          cd.g.specialPageAliases[alias.realname] = alias.aliases[0];
         });
-      cd.g.CONTENT_TIMEZONE = resp.query.general.timezone;
+      cd.g.contentTimezone = resp.query.general.timezone;
     });
     requests.push(request);
   }
 
   return requests;
-}
-
-/**
- * Populate some {@link convenientDiscussions} properties related to archive pages.
- *
- * @private
- */
-function setArchivePagesGlobals() {
-  cd.g.ARCHIVE_PAGES_MAP = new Map();
-  cd.g.SOURCE_PAGES_MAP = new Map();
-  const pathToRegexp = (s, replacements, isArchivePath) => {
-    let hidden = [];
-    let pattern = hideText(s, /\\[$\\]/g, hidden);
-    pattern = mw.util.escapeRegExp(pattern);
-    if (replacements) {
-      pattern = pattern
-        .replace(/\\\$/, '$')
-        .replace(/\$(\d+)/, (s, n) => {
-          const replacement = replacements[n - 1];
-          return replacement ? `(${replacement.source})` : s;
-        });
-    }
-    pattern = '^' + pattern + (isArchivePath ? '.*' : '') + '$';
-    pattern = unhideText(pattern, hidden);
-    return new RegExp(pattern);
-  };
-  cd.config.archivePaths.forEach((entry) => {
-    if (entry instanceof RegExp) {
-      const archiveRegexp = new RegExp(entry.source + '.*');
-      cd.g.SOURCE_PAGES_MAP.set(archiveRegexp, '');
-    } else {
-      const sourceRegexp = pathToRegexp(entry.source, entry.replacements);
-      const archiveRegexp = pathToRegexp(entry.archive, entry.replacements, true);
-      cd.g.ARCHIVE_PAGES_MAP.set(sourceRegexp, entry.archive);
-      cd.g.SOURCE_PAGES_MAP.set(archiveRegexp, entry.source);
-    }
-  });
 }
 
 /**
@@ -295,69 +255,71 @@ function patterns() {
   /**
    * Contributions page local name.
    *
-   * @name CONTRIBS_PAGE
+   * @name contribsPage
    * @type {string}
    * @memberof convenientDiscussions.g
    */
-  cd.g.CONTRIBS_PAGE = (
+  cd.g.contribsPage = (
     mw.config.get('wgFormattedNamespaces')[-1] +
     ':' +
-    cd.g.SPECIAL_PAGE_ALIASES.Contributions
+    cd.g.specialPageAliases.Contributions
   );
-
-  cd.g.CONTRIBS_PAGE_LINK_REGEXP = new RegExp(`^${cd.g.CONTRIBS_PAGE}/`);
 
   const anySpace = (s) => s.replace(/[ _]/g, '[ _]+').replace(/:/g, '[ _]*:[ _]*');
 
   const nsIds = mw.config.get('wgNamespaceIds');
   const userNssAliases = Object.keys(nsIds).filter((key) => nsIds[key] === 2 || nsIds[key] === 3);
   const userNssAliasesPattern = userNssAliases.map(anySpace).join('|');
-  cd.g.USER_NAMESPACES_REGEXP = new RegExp(`(?:^|:)(?:${userNssAliasesPattern}):(.+)`, 'i');
+  cd.g.userNamespacesRegexp = new RegExp(`(?:^|:)(?:${userNssAliasesPattern}):(.+)`, 'i');
 
   const userNsAliases = Object.keys(nsIds).filter((key) => nsIds[key] === 2);
   const userNsAliasesPattern = userNsAliases.map(anySpace).join('|');
-  cd.g.USER_LINK_REGEXP = new RegExp(`^:?(?:${userNsAliasesPattern}):([^/]+)$`, 'i');
-  cd.g.USER_SUBPAGE_LINK_REGEXP = new RegExp(`^:?(?:${userNsAliasesPattern}):.+?/`, 'i');
+  cd.g.userLinkRegexp = new RegExp(`^:?(?:${userNsAliasesPattern}):([^/]+)$`, 'i');
+  cd.g.userSubpageLinkRegexp = new RegExp(`^:?(?:${userNsAliasesPattern}):.+?/`, 'i');
 
   const userTalkNsAliases = Object.keys(nsIds).filter((key) => nsIds[key] === 3);
   const userTalkNsAliasesPattern = userTalkNsAliases.map(anySpace).join('|');
-  cd.g.USER_TALK_LINK_REGEXP = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):([^/]+)$`, 'i');
-  cd.g.USER_TALK_SUBPAGE_LINK_REGEXP = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):.+?/`, 'i');
+  cd.g.userTalkLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):([^/]+)$`, 'i');
+  cd.g.userTalkSubpageLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):.+?/`, 'i');
 
-  const allNss = Object.keys(nsIds).filter((ns) => ns);
-  const allNssPattern = allNss.join('|');
-  cd.g.ALL_NAMESPACES_REGEXP = new RegExp(`^:?(?:${allNssPattern}):`, 'i');
+  cd.g.contribsPageLinkRegexp = new RegExp(`^${cd.g.contribsPage}/`);
 
-  const contribsPagePattern = anySpace(cd.g.CONTRIBS_PAGE);
-  cd.g.CAPTURE_USER_NAME_PATTERN = (
+  const allNssPattern = Object.keys(nsIds)
+    .filter((ns) => ns)
+    .join('|');
+  cd.g.allNamespacesRegexp = new RegExp(`^:?(?:${allNssPattern}):`, 'i');
+
+  const contribsPagePattern = anySpace(cd.g.contribsPage);
+  cd.g.captureUserNamePattern = (
     `\\[\\[[ _]*:?(?:\\w*:){0,2}(?:(?:${userNssAliasesPattern})[ _]*:[ _]*|` +
     `(?:Special[ _]*:[ _]*Contributions|${contribsPagePattern})\\/[ _]*)([^|\\]/]+)(/)?`
   );
 
   if (cd.config.unsignedTemplates.length) {
     const pattern = cd.config.unsignedTemplates.map(generatePageNamePattern).join('|');
-    cd.g.UNSIGNED_TEMPLATES_PATTERN = (
+    cd.g.unsignedTemplatesPattern = (
       `(\\{\\{ *(?:${pattern}) *\\| *([^}|]+?) *(?:\\| *([^}]+?) *)?\\}\\})`
     );
-    cd.g.UNSIGNED_TEMPLATES_REGEXP = new RegExp(cd.g.UNSIGNED_TEMPLATES_PATTERN + '.*\\n', 'g');
   }
 
   const clearTemplatesPattern = cd.config.clearTemplates.length ?
     cd.config.clearTemplates.map(generatePageNamePattern).join('|') :
     undefined;
 
-  cd.g.KEEP_IN_SECTION_ENDING = cd.config.keepInSectionEnding.slice();
-  if (clearTemplatesPattern) {
-    cd.g.KEEP_IN_SECTION_ENDING.push(
-      new RegExp(`\\n+\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\}\\s*$`)
+  cd.g.keepInSectionEnding = cd.config.keepInSectionEnding
+    .slice()
+    .concat(
+      clearTemplatesPattern ?
+        new RegExp(`\\n+\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\}\\s*$`) :
+        []
     );
-  }
 
-  cd.g.USER_SIGNATURE = settings.get('signaturePrefix') + cd.g.SIGN_CODE;
+  cd.g.userSignature = settings.get('signaturePrefix') + cd.g.signCode;
 
   const signatureContent = mw.user.options.get('nickname');
-  const captureUserNameRegexp = new RegExp(cd.g.CAPTURE_USER_NAME_PATTERN, 'i');
-  const authorInSignatureMatch = signatureContent.match(captureUserNameRegexp);
+  const authorInSignatureMatch = signatureContent.match(
+    new RegExp(cd.g.captureUserNamePattern, 'i')
+  );
   if (authorInSignatureMatch) {
     // Extract signature contents before the user name - in order to cut it out from comment
     // endings when editing.
@@ -367,57 +329,21 @@ function patterns() {
     const signatureBeginning = mw.util.escapeRegExp(
       signatureContent.slice(0, authorInSignatureMatch.index)
     );
-    cd.g.USER_SIGNATURE_PREFIX_REGEXP = new RegExp(
-      signaturePrefixPattern +
-      signatureBeginning +
-      '$'
-    );
+    cd.g.userSignaturePrefixRegexp = new RegExp(signaturePrefixPattern + signatureBeginning + '$');
   }
 
-  const pieJoined = cd.g.POPULAR_INLINE_ELEMENTS.join('|');
-  cd.g.PIE_PATTERN = `(?:${pieJoined})`;
+  const pieJoined = cd.g.popularInlineElements.join('|');
+  cd.g.piePattern = `(?:${pieJoined})`;
 
-  const pnieJoined = cd.g.POPULAR_NOT_INLINE_ELEMENTS.join('|');
-  cd.g.PNIE_PATTERN = `(?:${pnieJoined})`;
+  const pnieJoined = cd.g.popularNotInlineElements.join('|');
+  cd.g.pniePattern = `(?:${pnieJoined})`;
 
-  // TODO: Instead of removing only lines containing antipatterns from wikitext, hide entire
-  // templates (see the "markerLength" parameter in wikitext.hideTemplatesRecursively) and tags?
-  // But keep in mind that this code may still be part of comments.
-  const commentAntipatternsPatternParts = [];
-  if (
-    cd.config.elementsToExcludeClasses.length ||
-    cd.config.templatesToExclude.length ||
-    cd.config.commentAntipatterns.length
-  ) {
-    if (cd.config.elementsToExcludeClasses) {
-      const pattern = cd.config.elementsToExcludeClasses.join('\\b|\\b');
-      commentAntipatternsPatternParts.push(`class=(['"])[^'"\\n]*(?:\\b${pattern}\\b)[^'"\\n]*\\1`);
-    }
-    if (cd.config.templatesToExclude.length) {
-      const pattern = cd.config.templatesToExclude.map(generatePageNamePattern).join('|');
-      commentAntipatternsPatternParts.push(`\\{\\{ *(?:${pattern}) *(?:\\||\\}\\})`);
-    }
-    if (cd.config.commentAntipatterns) {
-      commentAntipatternsPatternParts.push(
-        ...cd.config.commentAntipatterns.map((pattern) => pattern.source)
-      );
-    }
-    const pattern = commentAntipatternsPatternParts.join('|');
-    cd.g.COMMENT_ANTIPATTERNS_REGEXP = new RegExp(`^.*(?:${pattern}).*$`, 'mg');
-  }
-
-  const articlePathPattern = mw.util.escapeRegExp(mw.config.get('wgArticlePath'))
-    .replace('\\$1', '(.*)');
-  cd.g.ARTICLE_PATH_REGEXP = new RegExp(articlePathPattern);
-
-  const startsWithArticlePathPattern = (
-    '^' +
-    mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace('\\$1', '')
+  cd.g.startsWithArticlePathRegexp = new RegExp(
+    '^' + mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace('\\$1', '')
   );
-  cd.g.STARTS_WITH_ARTICLE_PATH_REGEXP = new RegExp(startsWithArticlePathPattern);
-
-  const scriptTitlePattern = '^' + mw.util.escapeRegExp(mw.config.get('wgScript') + '?title=');
-  cd.g.STARTS_WITH_SCRIPT_TITLE = new RegExp(scriptTitlePattern);
+  cd.g.startsWithScriptTitleRegexp = new RegExp(
+    '^' + mw.util.escapeRegExp(mw.config.get('wgScript') + '?title=')
+  );
 
   // Template names are not case-sensitive here for code simplicity.
   const quoteTemplateToPattern = (tpl) => '\\{\\{ *' + anySpace(mw.util.escapeRegExp(tpl));
@@ -427,91 +353,42 @@ function patterns() {
   const quoteEndingsPattern = ['</blockquote>', '</q>']
     .concat(cd.config.pairQuoteTemplates?.[1].map(quoteTemplateToPattern) || [])
     .join('|');
-  cd.g.QUOTE_REGEXP = new RegExp(
-    `(${quoteBeginningsPattern})([^]*?)(${quoteEndingsPattern})`,
-    'ig'
-  );
+  cd.g.quoteRegexp = new RegExp(`(${quoteBeginningsPattern})([^]*?)(${quoteEndingsPattern})`, 'ig');
 
-  const outdentTemplatesPattern = cd.config.outdentTemplates
-    .map(generatePageNamePattern)
-    .join('|');
-  if (outdentTemplatesPattern) {
-    cd.g.OUTDENT_TEMPLATES_REGEXP = new RegExp(
-      `^\\s*([:*#]*)[ \t]*\\{\\{ *(?:${outdentTemplatesPattern}) *(?:\\||\\}\\})`
-    );
-  }
-
-  const closedDiscussionBeginningsPattern = (cd.config.closedDiscussionTemplates?.[0] || [])
-    .map(generatePageNamePattern)
-    .join('|');
-  const closedDiscussionEndingsPattern = (cd.config.closedDiscussionTemplates?.[1] || [])
-    .map(generatePageNamePattern)
-    .join('|');
-  if (closedDiscussionBeginningsPattern) {
-    if (closedDiscussionEndingsPattern) {
-      cd.g.CLOSED_DISCUSSION_PAIR_REGEXP = new RegExp(
-        `\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *(?=[|}])[^}]*\\}\\}\\s*([:*#]*)[^]*?\\{\\{ *(?:${closedDiscussionEndingsPattern}) *(?=[|}])[^}]*\\}\\}`,
-        'g'
-      );
-    }
-    cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP = new RegExp(
-      `\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *\\|[^}]{0,50}?=\\s*([:*#]*)`,
-      'g'
-    );
-  }
-
-  cd.g.UNHIGHLIGHTABLE_ELEMENT_CLASSES = cd.g.UNHIGHLIGHTABLE_ELEMENT_CLASSES
+  cd.g.unhighlightableElementClasses = cd.g.unhighlightableElementClasses
     .concat(cd.config.customUnhighlightableElementClasses);
 
-  const fileNss = Object.keys(nsIds).filter((key) => nsIds[key] === 6);
-  const fileNssPattern = fileNss.map(anySpace).join('|');
-  cd.g.FILE_PREFIX_PATTERN = `(?:${fileNssPattern}):`;
+  const fileNssPattern = Object.keys(nsIds)
+    .filter((key) => nsIds[key] === 6)
+    .map(anySpace)
+    .join('|');
+  cd.g.filePrefixPattern = `(?:${fileNssPattern}):`;
 
-  // Actually, only text from "mini" format images should be captured, because in the standard
-  // format the text is not displayed. See "img_thumbnail" in
-  // https://ru.wikipedia.org/w/api.php?action=query&meta=siteinfo&siprop=magicwords&formatversion=2.
-  // Unfortunately, that would add like 100ms to the server's response time.
-  cd.g.FILE_EMBED_REGEXP = new RegExp(
-    `\\[\\[${cd.g.FILE_PREFIX_PATTERN}[^\\]]+?(?:\\|[^\\]]+?\\|((?:\\[\\[[^\\]]+?\\]\\]|[^|\\]])+))?\\]\\]`,
-    'ig'
-  );
+  const colonNssPattern = Object.keys(nsIds)
+    .filter((key) => nsIds[key] === 6 || nsIds[key] === 14)
+    .map(anySpace)
+    .join('|');
+  cd.g.colonNamespacesPrefixRegexp = new RegExp(`^:(?:${colonNssPattern}):`, 'i');
 
-  const colonNss = Object.keys(nsIds).filter((key) => nsIds[key] === 6 || nsIds[key] === 14);
-  const colonNssPattern = colonNss.map(anySpace).join('|');
-  cd.g.COLON_NAMESPACES_PREFIX_REGEXP = new RegExp(`^:(?:${colonNssPattern}):`, 'i');
-
-  cd.g.BAD_COMMENT_BEGINNINGS = cd.g.BAD_COMMENT_BEGINNINGS
-    .concat(new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\n*(?=[*:#])`, 'i'))
-    .concat(cd.config.customBadCommentBeginnings);
-  if (clearTemplatesPattern) {
-    cd.g.BAD_COMMENT_BEGINNINGS.push(
-      new RegExp(`^\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\} *\\n+`, 'i')
+  cd.g.badCommentBeginnings = cd.g.badCommentBeginnings
+    .concat(new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\n*(?=[*:#])`, 'i'))
+    .concat(cd.config.customBadCommentBeginnings)
+    .concat(
+      clearTemplatesPattern ?
+        new RegExp(`^\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\} *\\n+`, 'i') :
+        []
     );
-  }
 
-  cd.g.ADD_TOPIC_SELECTOR = [
-    '#ca-addsection a',
-    'a[href*="section=new"]',
-    '.commentbox input[type="submit"]',
-    '.createbox input[type="submit"]',
-  ]
-    .concat(cd.config.customAddTopicLinkSelectors)
-    .join(', ');
-
-  cd.g.PIPE_TRICK_REGEXP = /(\[\[:?(?:[^|[\]<>\n:]+:)?([^|[\]<>\n]+)\|)(\]\])/g;
-
-  cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP = mergeRegexps(cd.config.pagesWithoutArchives);
-
-  setArchivePagesGlobals();
+  cd.g.pipeTrickRegexp = /(\[\[:?(?:[^|[\]<>\n:]+:)?([^|[\]<>\n]+)\|)(\]\])/g;
 }
 
 /**
  * Add comment header element prototype to the prototype collection.
  *
- * @param {object} commentElementPrototypes
+ * @param {object} prototypes
  * @private
  */
-function addCommentHeaderPrototype(commentElementPrototypes) {
+function addCommentHeaderPrototype(prototypes) {
   // Not true, null
   if (settings.get('reformatComments') === false) return;
 
@@ -549,7 +426,7 @@ function addCommentHeaderPrototype(commentElementPrototypes) {
   authorLinksWrapper.append(cd.mws('parentheses-end'));
   authorWrapper.append(' ', authorLinksWrapper);
 
-  commentElementPrototypes.headerElement = headerElement;
+  prototypes.headerElement = headerElement;
 }
 
 /**
@@ -557,31 +434,31 @@ function addCommentHeaderPrototype(commentElementPrototypes) {
  * constructor takes 15 times longer than cloning which is critical when creating really many of
  * them.
  *
- * @param {object} commentElementPrototypes
+ * @param {object} prototypes
  * @private
  */
-function addCommentOouiPrototypes(commentElementPrototypes) {
+function addCommentOouiPrototypes(prototypes) {
   if (settings.get('reformatComments') === true) return;
 
-  commentElementPrototypes.getReplyButton = () => (
+  prototypes.getReplyButton = () => (
     new OO.ui.ButtonWidget({
       label: cd.s('cm-reply'),
       framed: false,
       classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
     })
   );
-  commentElementPrototypes.replyButton = commentElementPrototypes.getReplyButton().$element.get(0);
+  prototypes.replyButton = prototypes.getReplyButton().$element.get(0);
 
-  commentElementPrototypes.getEditButton = () => (
+  prototypes.getEditButton = () => (
     new OO.ui.ButtonWidget({
       label: cd.s('cm-edit'),
       framed: false,
       classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
     })
   );
-  commentElementPrototypes.editButton = commentElementPrototypes.getEditButton().$element.get(0);
+  prototypes.editButton = prototypes.getEditButton().$element.get(0);
 
-  commentElementPrototypes.getThankButton = () => (
+  prototypes.getThankButton = () => (
     new OO.ui.ButtonWidget({
       label: cd.s('cm-thank'),
       title: cd.s('cm-thank-tooltip'),
@@ -589,9 +466,9 @@ function addCommentOouiPrototypes(commentElementPrototypes) {
       classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
     })
   );
-  commentElementPrototypes.thankButton = commentElementPrototypes.getThankButton().$element.get(0);
+  prototypes.thankButton = prototypes.getThankButton().$element.get(0);
 
-  commentElementPrototypes.getCopyLinkButton = () => (
+  prototypes.getCopyLinkButton = () => (
     new OO.ui.ButtonWidget({
       label: cd.s('cm-copylink'),
       icon: 'link',
@@ -601,10 +478,9 @@ function addCommentOouiPrototypes(commentElementPrototypes) {
       classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
     })
   );
-  commentElementPrototypes.copyLinkButton = commentElementPrototypes.getCopyLinkButton().$element
-    .get(0);
+  prototypes.copyLinkButton = prototypes.getCopyLinkButton().$element.get(0);
 
-  commentElementPrototypes.getGoToParentButton = () => (
+  prototypes.getGoToParentButton = () => (
     new OO.ui.ButtonWidget({
       label: cd.s('cm-gotoparent'),
       icon: 'upTriangle',
@@ -614,10 +490,9 @@ function addCommentOouiPrototypes(commentElementPrototypes) {
       classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
     })
   );
-  commentElementPrototypes.goToParentButton = commentElementPrototypes.getGoToParentButton()
-    .$element.get(0);
+  prototypes.goToParentButton = prototypes.getGoToParentButton().$element.get(0);
 
-  commentElementPrototypes.getGoToChildButton = () => (
+  prototypes.getGoToChildButton = () => (
     new OO.ui.ButtonWidget({
       label: cd.s('cm-gotochild'),
       icon: 'downTriangle',
@@ -627,24 +502,23 @@ function addCommentOouiPrototypes(commentElementPrototypes) {
       classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
     })
   );
-  commentElementPrototypes.goToChildButton = commentElementPrototypes.getGoToChildButton().$element
-    .get(0);
+  prototypes.goToChildButton = prototypes.getGoToChildButton().$element.get(0);
 }
 
 /**
  * Add comment layer element prototypes to the prototype collection.
  *
- * @param {object} commentElementPrototypes
+ * @param {object} prototypes
  * @private
  */
-function addCommentLayerPrototypes(commentElementPrototypes) {
+function addCommentLayerPrototypes(prototypes) {
   const commentUnderlay = document.createElement('div');
   commentUnderlay.className = 'cd-comment-underlay';
-  commentElementPrototypes.underlay = commentUnderlay;
+  prototypes.underlay = commentUnderlay;
 
   const commentOverlay = document.createElement('div');
   commentOverlay.className = 'cd-comment-overlay';
-  commentElementPrototypes.overlay = commentOverlay;
+  prototypes.overlay = commentOverlay;
 
   const overlayLine = document.createElement('div');
   overlayLine.className = 'cd-comment-overlay-line';
@@ -676,13 +550,13 @@ function addCommentLayerPrototypes(commentElementPrototypes) {
  * @private
  */
 function commentElementPrototypes() {
-  const commentElementPrototypes = {};
+  const prototypes = {};
 
-  addCommentHeaderPrototype(commentElementPrototypes);
-  addCommentOouiPrototypes(commentElementPrototypes);
-  addCommentLayerPrototypes(commentElementPrototypes);
+  addCommentHeaderPrototype(prototypes);
+  addCommentOouiPrototypes(prototypes);
+  addCommentLayerPrototypes(prototypes);
 
-  cd.g.COMMENT_ELEMENT_PROTOTYPES = commentElementPrototypes;
+  cd.g.commentElementPrototypes = prototypes;
 }
 
 /**
@@ -691,9 +565,9 @@ function commentElementPrototypes() {
  * @private
  */
 function sectionElementPrototypes() {
-  const sectionElementPrototypes = {};
+  const prototypes = {};
 
-  sectionElementPrototypes.replyButton = new OO.ui.ButtonWidget({
+  prototypes.replyButton = new OO.ui.ButtonWidget({
     label: cd.s('section-reply'),
     framed: false,
 
@@ -702,7 +576,7 @@ function sectionElementPrototypes() {
     classes: ['cd-button-ooui', 'cd-section-button', 'cd-thread-button'],
   }).$element.get(0);
 
-  sectionElementPrototypes.addSubsectionButton = new OO.ui.ButtonWidget({
+  prototypes.addSubsectionButton = new OO.ui.ButtonWidget({
     // Will be replaced
     label: ' ',
 
@@ -710,7 +584,7 @@ function sectionElementPrototypes() {
     classes: ['cd-button-ooui', 'cd-section-button'],
   }).$element.get(0);
 
-  sectionElementPrototypes.copyLinkButton = new OO.ui.ButtonWidget({
+  prototypes.copyLinkButton = new OO.ui.ButtonWidget({
     framed: false,
     flags: ['progressive'],
     icon: 'link',
@@ -720,7 +594,7 @@ function sectionElementPrototypes() {
     classes: ['cd-section-bar-button'],
   }).$element.get(0);
 
-  sectionElementPrototypes.getMoreMenuSelect = () => (
+  prototypes.getMoreMenuSelect = () => (
     new OO.ui.ButtonMenuSelectWidget({
       framed: false,
       icon: 'ellipsis',
@@ -733,10 +607,9 @@ function sectionElementPrototypes() {
       classes: ['cd-section-bar-button', 'cd-section-bar-moremenu'],
     })
   );
-  sectionElementPrototypes.moreMenuSelect = sectionElementPrototypes.getMoreMenuSelect().$element
-    .get(0);
+  prototypes.moreMenuSelect = prototypes.getMoreMenuSelect().$element.get(0);
 
-  cd.g.SECTION_ELEMENT_PROTOTYPES = sectionElementPrototypes;
+  cd.g.sectionElementPrototypes = prototypes;
 }
 
 /**
@@ -745,9 +618,9 @@ function sectionElementPrototypes() {
  * @private
  */
 function threadElementPrototypes() {
-  let threadElementPrototypes = {};
+  let prototypes = {};
 
-  threadElementPrototypes.expandButton = new OO.ui.ButtonWidget({
+  prototypes.expandButton = new OO.ui.ButtonWidget({
     // Isn't displayed
     label: 'Expand the thread',
     icon: 'expand',
@@ -766,9 +639,9 @@ function threadElementPrototypes() {
   const line = document.createElement('div');
   line.className = 'cd-thread-line';
   threadClickArea.appendChild(line);
-  threadElementPrototypes.clickArea = threadClickArea;
+  prototypes.clickArea = threadClickArea;
 
-  cd.g.THREAD_ELEMENT_PROTOTYPES = threadElementPrototypes;
+  cd.g.threadElementPrototypes = prototypes;
 }
 
 /**
@@ -800,8 +673,8 @@ function oouiAndElementPrototypes() {
  */
 function getTimestampMainPartPattern(language) {
   const isContentLanguage = language === 'content';
-  const format = isContentLanguage ? cd.g.CONTENT_DATE_FORMAT : cd.g.UI_DATE_FORMAT;
-  const digits = isContentLanguage ? cd.g.CONTENT_DIGITS : cd.g.UI_DIGITS;
+  const format = isContentLanguage ? cd.g.contentDateFormat : cd.g.uiDateFormat;
+  const digits = isContentLanguage ? cd.g.contentDigits : cd.g.uiDigits;
   const digitsPattern = digits ? `[${digits}]` : '\\d';
 
   const regexpGroup = (regexp) => '(' + regexp + ')';
@@ -967,11 +840,11 @@ export default {
    * object.
    */
   memorizeCssValues() {
-    cd.g.CONTENT_LINE_HEIGHT = parseFloat(controller.$content.css('line-height'));
-    cd.g.CONTENT_FONT_SIZE = parseFloat(controller.$content.css('font-size'));
+    cd.g.contentLineHeight = parseFloat(controller.$content.css('line-height'));
+    cd.g.contentFontSize = parseFloat(controller.$content.css('font-size'));
 
     // For Timeless, Vector-2022 skins
-    cd.g.BODY_SCROLL_PADDING_TOP = parseFloat($('html, body').css('scroll-padding-top')) || 0;
+    cd.g.bodyScrollPaddingTop = parseFloat($('html, body').css('scroll-padding-top')) || 0;
   },
 
   /**
@@ -988,24 +861,24 @@ export default {
     const sidebarColor = $backgrounded.css('background-color');
 
     mw.loader.addStyleTag(`:root {
-  --cd-comment-hovered-background-color: ${cd.g.COMMENT_HOVERED_BACKGROUND_COLOR};
-  --cd-comment-target-marker-color: ${cd.g.COMMENT_TARGET_MARKER_COLOR};
-  --cd-comment-target-background-color: ${cd.g.COMMENT_TARGET_BACKGROUND_COLOR};
-  --cd-comment-target-hovered-background-color: ${cd.g.COMMENT_TARGET_HOVERED_BACKGROUND_COLOR};
-  --cd-comment-new-marker-color: ${cd.g.COMMENT_NEW_MARKER_COLOR};
-  --cd-comment-new-background-color: ${cd.g.COMMENT_NEW_BACKGROUND_COLOR};
-  --cd-comment-new-hovered-background-color: ${cd.g.COMMENT_NEW_HOVERED_BACKGROUND_COLOR};
-  --cd-comment-own-marker-color: ${cd.g.COMMENT_OWN_MARKER_COLOR};
-  --cd-comment-own-background-color: ${cd.g.COMMENT_OWN_BACKGROUND_COLOR};
-  --cd-comment-own-hovered-background-color: ${cd.g.COMMENT_OWN_HOVERED_BACKGROUND_COLOR};
-  --cd-comment-deleted-marker-color: ${cd.g.COMMENT_DELETED_MARKER_COLOR};
-  --cd-comment-deleted-background-color: ${cd.g.COMMENT_DELETED_BACKGROUND_COLOR};
-  --cd-comment-deleted-hovered-background-color: ${cd.g.COMMENT_DELETED_HOVERED_BACKGROUND_COLOR};
-  --cd-comment-fallback-side-margin: ${cd.g.COMMENT_FALLBACK_SIDE_MARGIN}px;
-  --cd-thread-line-side-margin: ${cd.g.THREAD_LINE_SIDE_MARGIN}px;
+  --cd-comment-hovered-background-color: ${cd.g.commentHoveredBackgroundColor};
+  --cd-comment-target-marker-color: ${cd.g.commentTargetMarkerColor};
+  --cd-comment-target-background-color: ${cd.g.commentTargetBackgroundColor};
+  --cd-comment-target-hovered-background-color: ${cd.g.commentTargetHoverBackgroundColor};
+  --cd-comment-new-marker-color: ${cd.g.commentNewMarkerColor};
+  --cd-comment-new-background-color: ${cd.g.commentNewBackgroundColor};
+  --cd-comment-new-hovered-background-color: ${cd.g.commentNewHoveredBackgroundColor};
+  --cd-comment-own-marker-color: ${cd.g.commentOwnMarkerColor};
+  --cd-comment-own-background-color: ${cd.g.commentOwnBackgroundColor};
+  --cd-comment-own-hovered-background-color: ${cd.g.commentOwnHoveredBackgroundColor};
+  --cd-comment-deleted-marker-color: ${cd.g.commentDeletedMarkerColor};
+  --cd-comment-deleted-background-color: ${cd.g.commentDeletedBackgroundColor};
+  --cd-comment-deleted-hovered-background-color: ${cd.g.commentDeletedHoveredBackgroundColor};
+  --cd-comment-fallback-side-margin: ${cd.g.commentFallbackSideMargin}px;
+  --cd-thread-line-side-margin: ${cd.g.threadLineSideMargin}px;
   --cd-content-background-color: ${contentBackgroundColor};
   --cd-content-start-margin: ${controller.getContentColumnOffsets().startMargin}px;
-  --cd-content-font-size: ${cd.g.CONTENT_FONT_SIZE}px;
+  --cd-content-font-size: ${cd.g.contentFontSize}px;
   --cd-sidebar-color: ${sidebarColor};
   --cd-sidebar-transparent-color: ${transparentize(sidebarColor)};
 }`);
@@ -1038,9 +911,9 @@ export default {
    * _For internal use._ Set a number of {@link convenientDiscussions global object} properties.
    */
   globals() {
-    if (cd.g.PHP_CHAR_TO_UPPER) return;
+    if (cd.g.phpCharToUpper) return;
 
-    cd.g.PHP_CHAR_TO_UPPER = (
+    cd.g.phpCharToUpper = (
       mw.loader.moduleRegistry['mediawiki.Title'].script.files['phpCharToUpper.json'] ||
       {}
     );
@@ -1069,7 +942,7 @@ export default {
     cd.user = userRegistry.getCurrent();
 
     // {{gender:}} with at least two pipes in a selection of the affected strings.
-    cd.g.GENDER_AFFECTS_USER_STRING = /\{\{ *gender *:[^}]+?\|[^}]+?\|/i.test(
+    cd.g.genderAffectsUserString = /\{\{ *gender *:[^}]+?\|[^}]+?\|/i.test(
       Object.entries(mw.messages.get())
         .filter(([key]) => key.startsWith('convenient-discussions'))
         .map(([, value]) => value)
@@ -1077,27 +950,24 @@ export default {
     );
 
     if (cd.config.tagName && userRegistry.getCurrent().isRegistered()) {
-      cd.g.SUMMARY_POSTFIX = '';
-      cd.g.SUMMARY_LENGTH_LIMIT = mw.config.get('wgCommentCodePointLimit');
+      cd.g.summaryPostfix = '';
+      cd.g.summaryLengthLimit = mw.config.get('wgCommentCodePointLimit');
     } else {
-      cd.g.SUMMARY_POSTFIX = ` ([[${cd.config.scriptPageWikilink}|${cd.s('script-name-short')}]])`;
-      cd.g.SUMMARY_LENGTH_LIMIT = (
+      cd.g.summaryPostfix = ` ([[${cd.config.scriptPageWikilink}|${cd.s('script-name-short')}]])`;
+      cd.g.summaryLengthLimit = (
         mw.config.get('wgCommentCodePointLimit') -
-        cd.g.SUMMARY_POSTFIX.length
+        cd.g.summaryPostfix.length
       );
     }
 
-    cd.g.CLIENT_PROFILE = $.client.profile();
-    cd.g.CMD_MODIFIER = cd.g.CLIENT_PROFILE.platform === 'mac' ? 'Cmd' : 'Ctrl';
+    cd.g.clientProfile = $.client.profile();
+    cd.g.cmdModifier = cd.g.clientProfile.platform === 'mac' ? 'Cmd' : 'Ctrl';
 
     cd.g.isIPv6Address = mw.util.isIPv6Address;
 
-    cd.g.NOTIFICATION_AREA = document.querySelector('.mw-notification-area');
-    cd.g.TOC_BUTTON = $('#vector-toc-collapsed-button').get(0);
-
-    cd.g.API_ERRORS_FORMAT_HTML = {
+    cd.g.apiErrorsFormatHtml = {
       errorformat: 'html',
-      errorlang: cd.g.USER_LANGUAGE,
+      errorlang: cd.g.userLanguage,
       errorsuselocal: true,
     };
 
@@ -1187,76 +1057,76 @@ export default {
        *
        * ` +` to account for RTL and LTR marks replaced with a space.
        *
-       * @name CONTENT_TIMESTAMP_REGEXP
+       * @name contentTimestampRegexp
        * @type {RegExp}
        * @memberof convenientDiscussions.g
        */
-      cd.g.CONTENT_TIMESTAMP_REGEXP = new RegExp(mainPartPattern + ' +' + timezonePattern);
+      cd.g.contentTimestampRegexp = new RegExp(mainPartPattern + ' +' + timezonePattern);
 
       /**
        * Regular expression for parsing timestamps in content.
        *
-       * @name PARSE_TIMESTAMP_CONTENT_REGEXP
+       * @name parseTimestampContentRegexp
        * @type {RegExp}
        * @memberof convenientDiscussions.g
        */
-      cd.g.PARSE_TIMESTAMP_CONTENT_REGEXP = new RegExp(
-        `^([^]*)(${cd.g.CONTENT_TIMESTAMP_REGEXP.source})(?!["»])`
+      cd.g.parseTimestampContentRegexp = new RegExp(
+        `^([^]*)(${cd.g.contentTimestampRegexp.source})(?!["»])`
       );
 
       /**
        * Regular expression for matching timestamps in content with no timezone at the end.
        *
-       * @name CONTENT_TIMESTAMP_NO_TZ_REGEXP
+       * @name contentTimestampNoTzRegexp
        * @type {RegExp}
        * @memberof convenientDiscussions.g
        */
-      cd.g.CONTENT_TIMESTAMP_NO_TZ_REGEXP = new RegExp(mainPartPattern);
+      cd.g.contentTimestampNoTzRegexp = new RegExp(mainPartPattern);
 
       /**
        * Codes of date (in content language) components for the timestamp parser function.
        *
-       * @name CONTENT_TIMESTAMP_MATCHING_GROUPS
+       * @name contentTimestampMatchingGroups
        * @type {string[]}
        * @memberof convenientDiscussions.g
        */
-      cd.g.CONTENT_TIMESTAMP_MATCHING_GROUPS = getMatchingGroups(cd.g.CONTENT_DATE_FORMAT);
+      cd.g.contentTimestampMatchingGroups = getMatchingGroups(cd.g.contentDateFormat);
 
       /**
        * Regular expression for matching timezone, with the global flag.
        *
-       * @name TIMEZONE_REGEXP
+       * @name timezoneRegexp
        * @type {RegExp}
        * @memberof convenientDiscussions.g
        */
-      cd.g.TIMEZONE_REGEXP = new RegExp(timezonePattern, 'g');
+      cd.g.timezoneRegexp = new RegExp(timezonePattern, 'g');
     } else {
       /**
        * Regular expression for matching timestamps in the interface with no timezone at the end.
        *
-       * @name UI_TIMESTAMP_REGEXP
+       * @name uiTimestampRegexp
        * @type {RegExp}
        * @memberof convenientDiscussions.g
        */
-      cd.g.UI_TIMESTAMP_REGEXP = new RegExp(getTimestampMainPartPattern('user'));
+      cd.g.uiTimestampRegexp = new RegExp(getTimestampMainPartPattern('user'));
 
       /**
        * Regular expression for parsing timestamps in the interface.
        *
-       * @name PARSE_TIMESTAMP_UI_REGEXP
+       * @name parseTimestampUiRegexp
        * @type {RegExp}
        * @memberof convenientDiscussions.g
        */
-      cd.g.PARSE_TIMESTAMP_UI_REGEXP = new RegExp(`^([^]*)(${cd.g.UI_TIMESTAMP_REGEXP.source})`);
+      cd.g.parseTimestampUiRegexp = new RegExp(`^([^]*)(${cd.g.uiTimestampRegexp.source})`);
 
       /**
        * Codes of date (in interface language) components for the timestamp parser function.
        *
-       * @name UI_TIMESTAMP_MATCHING_GROUPS
+       * @name uiTimestampMatchingGroups
        * @type {string[]}
        * @memberof convenientDiscussions.g
        */
-      cd.g.UI_TIMESTAMP_MATCHING_GROUPS = getMatchingGroups(cd.g.UI_DATE_FORMAT);
+      cd.g.uiTimestampMatchingGroups = getMatchingGroups(cd.g.uiDateFormat);
     }
 
     const timezoneParts = mw.user.options.get('timecorrection')?.split('|');
@@ -1265,27 +1135,18 @@ export default {
      * Timezone per user preferences: standard timezone name or offset in minutes. `'UTC'` is always
      * used instead of `0`.
      *
-     * @name UI_TIMEZONE
+     * @name uiTimezone
      * @type {?(string|number)}
      * @memberof convenientDiscussions.g
      */
-    cd.g.UI_TIMEZONE = ((timezoneParts && timezoneParts[2]) || Number(timezoneParts[1])) ?? null;
-    if (cd.g.UI_TIMEZONE === 0) {
-      cd.g.UI_TIMEZONE = 'UTC';
+    cd.g.uiTimezone = ((timezoneParts && timezoneParts[2]) || Number(timezoneParts[1])) ?? null;
+    if (cd.g.uiTimezone === 0) {
+      cd.g.uiTimezone = 'UTC';
     }
 
-    /**
-     * Timezone _offset_ in minutes per user preferences.
-     *
-     * @name UI_TIMEZONE_OFFSET
-     * @type {?number}
-     * @memberof convenientDiscussions.g
-     */
-    cd.g.UI_TIMEZONE_OFFSET = Number(timezoneParts[1]) ?? null;
-
     try {
-      cd.g.ARE_UI_AND_LOCAL_TIMEZONE_SAME = (
-        cd.g.UI_TIMEZONE === Intl.DateTimeFormat().resolvedOptions().timeZone
+      cd.g.areUiAndLocalTimezoneSame = (
+        cd.g.uiTimezone === Intl.DateTimeFormat().resolvedOptions().timeZone
       );
     } catch {
       // Empty
@@ -1295,14 +1156,14 @@ export default {
       /**
        * Whether comment timestamps are altered somehow.
        *
-       * @name ARE_TIMESTAMPS_ALTERED
+       * @name areTimestampsAltered
        * @type {boolean|undefined}
        * @memberof convenientDiscussions.g
        */
-      cd.g.ARE_TIMESTAMPS_ALTERED = (
-        (settings.get('useUiTime') && cd.g.CONTENT_TIMEZONE !== cd.g.UI_TIMEZONE) ||
+      cd.g.areTimestampsAltered = (
+        (settings.get('useUiTime') && cd.g.contentTimezone !== cd.g.uiTimezone) ||
         settings.get('timestampFormat') !== 'default' ||
-        mw.config.get('wgContentLanguage') !== cd.g.USER_LANGUAGE ||
+        mw.config.get('wgContentLanguage') !== cd.g.userLanguage ||
         settings.get('hideTimezone')
       );
     }

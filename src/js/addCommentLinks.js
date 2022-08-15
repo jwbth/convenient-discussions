@@ -19,7 +19,7 @@ import {
   notNull,
   removeDirMarks,
   spacesToUnderlines,
-} from './util';
+} from './utils';
 import { initDayjs, parseTimestamp } from './timestamp';
 
 let colon;
@@ -88,9 +88,9 @@ async function prepare() {
     .addClass('cd-commentLink-relevant')
     .get(0);
 
-  const currentUserNamePattern = generatePageNamePattern(cd.g.USER_NAME);
+  const currentUserNamePattern = generatePageNamePattern(cd.g.userName);
   currentUserRegexp = new RegExp(
-    `(?:^|[^${cd.g.LETTER_PATTERN}])${currentUserNamePattern}(?![${cd.g.LETTER_PATTERN}])`
+    `(?:^|[^${cd.g.letterPattern}])${currentUserNamePattern}(?![${cd.g.letterPattern}])`
   );
 }
 
@@ -301,7 +301,7 @@ function isInSection(summary, name) {
   }
 
   // This can run many thousand times, so we use the cheapest way.
-  return cd.g.CONTENT_TEXT_DIRECTION === 'ltr' ?
+  return cd.g.contentTextDirection === 'ltr' ?
     summary.includes(`→${name}${colon}`) || summary.endsWith(`→${name}`) :
     summary.includes(`←${name}${colon}`) || summary.endsWith(`←${name}`);
 }
@@ -429,7 +429,7 @@ function processWatchlist($content) {
  */
 function processContributions($content) {
   init.timestampParsingTools('user');
-  if (cd.g.UI_TIMEZONE === null) return;
+  if (cd.g.uiTimezone === null) return;
 
   const list = $content.get(0).querySelector('.mw-contributions-list');
 
@@ -467,7 +467,7 @@ function processContributions($content) {
     const dateElement = line.querySelector('.mw-changeslist-date');
     if (!dateElement) return;
 
-    const { date } = parseTimestamp(dateElement.textContent, cd.g.UI_TIMEZONE) || {};
+    const { date } = parseTimestamp(dateElement.textContent, cd.g.uiTimezone) || {};
     if (!date) return;
 
     const id = CommentStatic.generateId(date, mw.config.get('wgRelevantUserName'));
@@ -499,7 +499,7 @@ function processContributions($content) {
  */
 function processHistory($content) {
   init.timestampParsingTools('user');
-  if (cd.g.UI_TIMEZONE === null) return;
+  if (cd.g.uiTimezone === null) return;
 
   const selector = '#pagehistory > li, #pagehistory > .mw-contributions-list > li';
   const link = pageRegistry.getCurrent().getUrl();
@@ -522,7 +522,7 @@ function processHistory($content) {
     const dateElement = line.querySelector('.mw-changeslist-date');
     if (!dateElement) return;
 
-    const { date } = parseTimestamp(dateElement.textContent, cd.g.UI_TIMEZONE) || {};
+    const { date } = parseTimestamp(dateElement.textContent, cd.g.uiTimezone) || {};
     if (!date) return;
 
     const author = extractAuthor(line);
@@ -577,10 +577,10 @@ async function processDiff($diff) {
   // "convenientDiscussions.pageReady" instead.
   if (controller.isTalkPage() && $diff?.parent().is(controller.$content)) return;
 
-  if (!cd.g.UI_TIMESTAMP_REGEXP) {
+  if (!cd.g.uiTimestampRegexp) {
     init.timestampParsingTools('user');
   }
-  if (cd.g.UI_TIMEZONE === null) return;
+  if (cd.g.uiTimezone === null) return;
 
   const $root = $diff || controller.$content;
   const root = $root.get(0);
@@ -605,7 +605,7 @@ async function processDiff($diff) {
       const dateElement = area.querySelector('#mw-diff-otitle1 a, #mw-diff-ntitle1 a');
       if (!dateElement) return;
 
-      const { date } = parseTimestamp(dateElement.textContent, cd.g.UI_TIMEZONE) || {};
+      const { date } = parseTimestamp(dateElement.textContent, cd.g.uiTimezone) || {};
       if (!date) return;
 
       const author = extractAuthor(area);

@@ -6,7 +6,7 @@
 
 import cd from './cd';
 import controller from './controller';
-import { isMetadataNode } from './util';
+import { isMetadataNode } from './utils';
 
 /**
  * jQuery. See {@link external:jQuery.fn} for extensions.
@@ -81,7 +81,7 @@ export default {
     } else if (alignment === 'bottom') {
       top = offsetBottom - $(window).height();
     } else {
-      top = offsetFirst.top - cd.g.BODY_SCROLL_PADDING_TOP;
+      top = offsetFirst.top - cd.g.bodyScrollPaddingTop;
     }
 
     controller.toggleAutoScrolling(true);
@@ -124,7 +124,7 @@ export default {
     }
 
     const scrollTop = $(window).scrollTop();
-    const viewportTop = scrollTop + cd.g.BODY_SCROLL_PADDING_TOP;
+    const viewportTop = scrollTop + cd.g.bodyScrollPaddingTop;
     const viewportBottom = scrollTop + $(window).height();
 
     return partially ?

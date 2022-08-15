@@ -17,7 +17,7 @@ import {
   removeFromArrayIfPresent,
   saveToLocalStorage,
   unique,
-} from './util';
+} from './utils';
 import { loadUserGenders } from './apiWrappers';
 
 let elementPrototypes;
@@ -197,7 +197,7 @@ function autocollapseThreads() {
     }
   }
 
-  const loadUserGendersPromise = cd.g.GENDER_AFFECTS_USER_STRING ?
+  const loadUserGendersPromise = cd.g.genderAffectsUserString ?
     loadUserGenders(flat(comments.map((comment) => comment.thread.getUsersInThread()))) :
     undefined;
 
@@ -224,7 +224,7 @@ function cleanUpCollapsedThreads(data) {
   const newData = Object.assign({}, data);
   Object.keys(newData).forEach((key) => {
     const page = newData[key];
-    if (!page.threads?.length || page.saveUnixTime < Date.now() - 60 * cd.g.MS_IN_DAY) {
+    if (!page.threads?.length || page.saveUnixTime < Date.now() - 60 * cd.g.msInDay) {
       delete newData[key];
     }
   });
@@ -245,7 +245,7 @@ class Thread {
     this.handleClickAreaUnhover = this.handleClickAreaUnhover.bind(this);
     this.handleToggleClick = this.handleToggleClick.bind(this);
 
-    elementPrototypes = cd.g.THREAD_ELEMENT_PROTOTYPES;
+    elementPrototypes = cd.g.threadElementPrototypes;
 
     /**
      * Root comment of the thread.
@@ -611,7 +611,7 @@ class Thread {
   addExpandNode(loadUserGendersPromise) {
     const expandButton = elementPrototypes.expandButton.cloneNode(true);
     const button = new Button({
-      tooltip: cd.s('thread-expand-tooltip', cd.g.CMD_MODIFIER),
+      tooltip: cd.s('thread-expand-tooltip', cd.g.cmdModifier),
       action: (e) => {
         if (isCmdModifierPressed(e)) {
           CommentStatic.getAll().slice().reverse().forEach((comment) => {
@@ -640,7 +640,7 @@ class Thread {
       ));
       button.element.classList.remove('cd-thread-button-invisible');
     };
-    if (cd.g.GENDER_AFFECTS_USER_STRING) {
+    if (cd.g.genderAffectsUserString) {
       (loadUserGendersPromise || loadUserGenders(usersInThread)).then(setLabel, () => {
         // Couldn't get the gender, use the genderless version.
         setLabel(true);
@@ -857,7 +857,7 @@ class Thread {
     );
 
     const lineWidth = 3;
-    const lineSideMargin = cd.g.THREAD_LINE_SIDE_MARGIN;
+    const lineSideMargin = cd.g.threadLineSideMargin;
     const comment = this.rootComment;
 
     if (comment.isCollapsed && !this.isCollapsed) {

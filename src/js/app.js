@@ -12,7 +12,7 @@ import controller from './controller';
 import debug from './debug';
 import defaultConfig from '../../config/default';
 import { addCommentLinksToSpecialSearch } from './addCommentLinks';
-import { mergeRegexps, skin$, underlinesToSpaces, unique } from './util';
+import { mergeRegexps, skin$, underlinesToSpaces, unique } from './utils';
 
 let config;
 
@@ -23,7 +23,7 @@ if (IS_SINGLE) {
     // Empty
   }
 
-  // Copy of the function in misc/util.js. If altering it, make sure they are synchronized.
+  // Copy of the function in misc/utils.js. If altering it, make sure they are synchronized.
   const replaceEntities = (string) => (
     string
       .replace(/&nbsp;/g, '\xa0')
@@ -72,8 +72,8 @@ function setStrings() {
       name === contentStringName ||
       (contentStringName.endsWith('-') && name.startsWith(contentStringName))
     )) ?
-      cd.g.CONTENT_LANGUAGE :
-      cd.g.USER_LANGUAGE;
+      cd.g.contentLanguage :
+      cd.g.userLanguage;
     strings[name] = cd.i18n[relevantLang]?.[name] || cd.i18n.en[name];
   });
 
@@ -155,7 +155,7 @@ function maybeTweakAddTopicButton() {
  */
 function setGlobals() {
   // Don't run again if go() runs the second time (see maybeAddFooterLink()).
-  if (cd.g.SETTINGS_OPTION_NAME) return;
+  if (cd.g.settingsOptionName) return;
 
   /**
    * Script configuration. The default configuration is in {@link module:defaultConfig}.
@@ -173,51 +173,50 @@ function setGlobals() {
     'cd' :
     'convenientDiscussions';
 
-  cd.g.SETTINGS_OPTION_NAME = 'userjs-convenientDiscussions-settings';
-  cd.g.LOCAL_SETTINGS_OPTION_NAME = `userjs-${localOptionsPrefix}-localSettings`;
-  cd.g.VISITS_OPTION_NAME = `userjs-${localOptionsPrefix}-visits`;
+  cd.g.settingsOptionName = 'userjs-convenientDiscussions-settings';
+  cd.g.localSettingsOptionName = `userjs-${localOptionsPrefix}-localSettings`;
+  cd.g.visitsOptionName = `userjs-${localOptionsPrefix}-visits`;
 
   // For historical reasons, ru.wikipedia.org has 'watchedTopics'.
   const subscriptionsOptionNameEnding = location.hostname === 'ru.wikipedia.org' ?
     'watchedTopics' :
     'watchedSections';
 
-  cd.g.SUBSCRIPTIONS_OPTION_NAME = `userjs-${localOptionsPrefix}-${subscriptionsOptionNameEnding}`;
+  cd.g.subscriptionsOptionName = `userjs-${localOptionsPrefix}-${subscriptionsOptionNameEnding}`;
 
   const server = mw.config.get('wgServer');
-  cd.g.SERVER = server.startsWith('//') ? location.protocol + server : server;
+  cd.g.server = server.startsWith('//') ? location.protocol + server : server;
 
   // Worker's location object doesn't have the host name set.
-  cd.g.HOSTNAME = location.hostname;
+  cd.g.hostname = location.hostname;
 
-  cd.g.PAGE_NAME = underlinesToSpaces(mw.config.get('wgPageName'));
-  cd.g.PAGE_TITLE = underlinesToSpaces(mw.config.get('wgTitle'));
-  cd.g.NAMESPACE_NUMBER = mw.config.get('wgNamespaceNumber');
+  cd.g.pageName = underlinesToSpaces(mw.config.get('wgPageName'));
+  cd.g.pageTitle = underlinesToSpaces(mw.config.get('wgTitle'));
+  cd.g.namespaceNumber = mw.config.get('wgNamespaceNumber');
 
   // "<unregistered>" is a workaround for anonymous users (there are such!).
-  cd.g.USER_NAME = mw.config.get('wgUserName') || '<unregistered>';
+  cd.g.userName = mw.config.get('wgUserName') || '<unregistered>';
 
   const bodyClassList = document.body.classList;
 
-  cd.g.PAGE_WHITELIST_REGEXP = mergeRegexps(cd.config.pageWhitelist);
-  cd.g.PAGE_BLACKLIST_REGEXP = mergeRegexps(cd.config.pageBlacklist);
-  cd.g.CONTENT_TEXT_DIRECTION = bodyClassList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
-  cd.g.SKIN = mw.config.get('skin');
-  cd.g.IS_QQX_MODE = /[?&]uselang=qqx(?=&|$)/.test(location.search);
+  cd.g.pageWhitelistRegexp = mergeRegexps(cd.config.pageWhitelist);
+  cd.g.pageBlacklistRegexp = mergeRegexps(cd.config.pageBlacklist);
+  cd.g.contentTextDirection = bodyClassList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
+  cd.g.skin = mw.config.get('skin');
 
   // Quite a rough check for mobile browsers, a mix of what is advised at
   // https://stackoverflow.com/a/24600597 (sends to
   // https://developer.mozilla.org/en-US/docs/Browser_detection_using_the_user_agent) and
   // https://stackoverflow.com/a/14301832.
-  cd.g.IS_MOBILE = (
+  cd.g.isMobile = (
     /Mobi|Android/i.test(navigator.userAgent) ||
     typeof window.orientation !== 'undefined'
   );
 
-  cd.g.IS_DT_REPLY_TOOL_ENABLED = bodyClassList.contains('ext-discussiontools-replytool-enabled');
-  cd.g.IS_DT_NEW_TOPIC_TOOL_ENABLED = bodyClassList
+  cd.g.isDtReplyToolEnabled = bodyClassList.contains('ext-discussiontools-replytool-enabled');
+  cd.g.isDtNewTopicToolEnabled = bodyClassList
     .contains('ext-discussiontools-newtopictool-enabled');
-  cd.g.IS_DT_TOPIC_SUBSCRIPTION_ENABLED = bodyClassList
+  cd.g.isDtTopicSubscriptionEnabled = bodyClassList
     .contains('ext-discussiontools-topicsubscription-enabled');
 }
 
@@ -266,17 +265,17 @@ function setLanguages() {
       (LANGUAGE_FALLBACKS[lang] || []).find((fallback) => I18N_LIST.includes(fallback)) || 'en'
   );
 
-  cd.g.USER_LANGUAGE = languageOrFallback(mw.config.get('wgUserLanguage'));
+  cd.g.userLanguage = languageOrFallback(mw.config.get('wgUserLanguage'));
 
   // Should we use a fallback for the content language? Maybe, but in case of MediaWiki messages
   // used for signature parsing we will have to use the real content language (see
-  // init.loadSiteData()). As a result, we use cd.g.CONTENT_LANGUAGE only for the script's own
+  // init.loadSiteData()). As a result, we use cd.g.contentLanguage only for the script's own
   // messages, not the native MediaWiki messages.
-  cd.g.CONTENT_LANGUAGE = languageOrFallback(mw.config.get('wgContentLanguage'));
+  cd.g.contentLanguage = languageOrFallback(mw.config.get('wgContentLanguage'));
 
   return !(
-    cd.g.USER_LANGUAGE === mw.config.get('wgUserLanguage') &&
-    cd.g.CONTENT_LANGUAGE === mw.config.get('wgContentLanguage')
+    cd.g.userLanguage === mw.config.get('wgUserLanguage') &&
+    cd.g.contentLanguage === mw.config.get('wgContentLanguage')
   );
 }
 
@@ -327,7 +326,7 @@ function getConfig() {
  * @private
  */
 function getStrings() {
-  const requests = [cd.g.USER_LANGUAGE, cd.g.CONTENT_LANGUAGE]
+  const requests = [cd.g.userLanguage, cd.g.contentLanguage]
     .filter(unique)
     .filter((lang) => lang !== 'en' && !cd.i18n?.[lang])
     .map((lang) => {

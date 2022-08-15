@@ -21,7 +21,7 @@ import {
   underlinesToSpaces,
   unique,
   wrap,
-} from './util';
+} from './utils';
 import {
   encodeWikilink,
   endWithTwoNewlines,
@@ -63,7 +63,7 @@ class Section extends SectionSkeleton {
     this.maybeHideAuthors = this.maybeHideAuthors.bind(this);
     this.createMoreMenuSelect = this.createMoreMenuSelect.bind(this);
 
-    elementPrototypes = cd.g.SECTION_ELEMENT_PROTOTYPES;
+    elementPrototypes = cd.g.sectionElementPrototypes;
 
     /**
      * Automatically updated sequental number of the section.
@@ -372,7 +372,7 @@ class Section extends SectionSkeleton {
       title: cd.mws('discussiontools-topicsubscription-button-subscribe-tooltip'),
       classes: ['cd-section-bar-button'],
     });
-    if (cd.g.SKIN === 'monobook') {
+    if (cd.g.skin === 'monobook') {
       this.actions.subscribeButton.$element
         .find('.oo-ui-iconElement-icon')
         .addClass('oo-ui-image-progressive');
@@ -910,7 +910,7 @@ class Section extends SectionSkeleton {
       return;
     }
 
-    if (cd.g.IS_DT_TOPIC_SUBSCRIPTION_ENABLED) {
+    if (cd.g.isDtTopicSubscriptionEnabled) {
       if (this.headingElement.querySelector('.ext-discussiontools-init-section-subscribe-link')) {
         const headlineJson = this.headlineElement.dataset.mwComment;
         try {
@@ -1468,7 +1468,7 @@ class Section extends SectionSkeleton {
 
     let firstChunkContentEndIndex = firstChunkEndIndex;
     let contentEndIndex = endIndex;
-    cd.g.KEEP_IN_SECTION_ENDING.forEach((regexp) => {
+    cd.g.keepInSectionEnding.forEach((regexp) => {
       const firstChunkMatch = firstChunkCode.match(regexp);
       if (firstChunkMatch) {
         // `1` accounts for the first line break.

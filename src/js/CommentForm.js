@@ -33,7 +33,7 @@ import {
   unique,
   wrap,
   wrapDiffBody,
-} from './util';
+} from './utils';
 import { createCheckboxField } from './ooui';
 import { generateTagsRegexp, removeWikiMarkup } from './wikitext';
 import { handleApiReject, parseCode } from './apiWrappers';
@@ -425,13 +425,13 @@ class CommentForm {
      */
     this.summaryInput = new OO.ui.TextInputWidget({
       value: initialState?.summary ?? '',
-      maxLength: cd.g.SUMMARY_LENGTH_LIMIT,
+      maxLength: cd.g.summaryLengthLimit,
       placeholder: cd.s('cf-summary-placeholder'),
       classes: ['cd-commentForm-summaryInput'],
       tabIndex: this.getTabIndex(13),
     });
-    this.summaryInput.$input.codePointLimit(cd.g.SUMMARY_LENGTH_LIMIT);
-    mw.widgets.visibleCodePointLimit(this.summaryInput, cd.g.SUMMARY_LENGTH_LIMIT);
+    this.summaryInput.$input.codePointLimit(cd.g.summaryLengthLimit);
+    mw.widgets.visibleCodePointLimit(this.summaryInput, cd.g.summaryLengthLimit);
     this.updateAutoSummary(!initialState?.summary);
   }
 
@@ -677,7 +677,7 @@ class CommentForm {
       popup: {
         head: false,
         $content: wrap(
-          cd.sParse('cf-help-content', cd.config.mentionCharacter, cd.g.CMD_MODIFIER),
+          cd.sParse('cf-help-content', cd.config.mentionCharacter, cd.g.cmdModifier),
           {
             tagName: 'div',
             targetBlank: true,
@@ -891,7 +891,7 @@ class CommentForm {
         .prependTo(this.$element);
     }
 
-    if (this.containerListType === 'ol' && cd.g.CLIENT_PROFILE.layout !== 'webkit') {
+    if (this.containerListType === 'ol' && cd.g.clientProfile.layout !== 'webkit') {
       // Dummy element for forms inside a numbered list so that the number is placed in front of
       // that area, not in some silly place. Note that in Chrome, the number is placed in front of
       // the textarea, so we don't need this in that browser.
@@ -952,7 +952,7 @@ class CommentForm {
       },
     });
 
-    const lang = cd.g.USER_LANGUAGE;
+    const lang = cd.g.userLanguage;
     $input.wikiEditor('addToToolbar', {
       section: 'main',
       group: 'format',
@@ -995,7 +995,7 @@ class CommentForm {
           },
         },
         mention: {
-          label: cd.s('cf-mention-tooltip', cd.g.CMD_MODIFIER),
+          label: cd.s('cf-mention-tooltip', cd.g.cmdModifier),
           type: 'button',
           icon: `/w/load.php?modules=oojs-ui.styles.icons-user&image=userAvatar&lang=${lang}&skin=vector`,
           action: {
@@ -1270,8 +1270,8 @@ class CommentForm {
   async addEditNotices() {
     const title = pageRegistry.getCurrent().title.replace(/\//g, '-');
     let code = (
-`<div class="cd-editnotice">{{MediaWiki:Editnotice-${cd.g.NAMESPACE_NUMBER}}}</div>
-<div class="cd-editnotice">{{MediaWiki:Editnotice-${cd.g.NAMESPACE_NUMBER}-${title}}}</div>`
+`<div class="cd-editnotice">{{MediaWiki:Editnotice-${cd.g.namespaceNumber}}}</div>
+<div class="cd-editnotice">{{MediaWiki:Editnotice-${cd.g.namespaceNumber}-${title}}}</div>`
     );
     if (this.preloadConfig?.editIntro) {
       code = `<div class="cd-editintro">{{${this.preloadConfig.editIntro}}}</div>\n` + code;
@@ -1341,7 +1341,7 @@ class CommentForm {
         .replace(generateTagsRegexp(['noinclude']), '');
       code = code.trim();
 
-      if (code.includes(cd.g.SIGN_CODE) || this.preloadConfig.omitSignature) {
+      if (code.includes(cd.g.signCode) || this.preloadConfig.omitSignature) {
         this.omitSignatureCheckbox.setSelected(true);
       }
 
@@ -1559,8 +1559,8 @@ class CommentForm {
 
     const textReactions = [
       {
-        pattern: new RegExp(cd.g.SIGN_CODE + '\\s*$'),
-        message: cd.sParse('cf-reaction-signature', cd.g.SIGN_CODE),
+        pattern: new RegExp(cd.g.signCode + '\\s*$'),
+        message: cd.sParse('cf-reaction-signature', cd.g.signCode),
         name: 'signatureNotNeeded',
         type: 'notice',
         checkFunc: () => !this.omitSignatureCheckbox?.isSelected(),
@@ -1627,7 +1627,7 @@ class CommentForm {
     // "Performance issues?" hint
     if (
       controller.isLongPage() &&
-      cd.g.CLIENT_PROFILE.layout === 'webkit' &&
+      cd.g.clientProfile.layout === 'webkit' &&
       !settings.get('improvePerformance') &&
       !this.haveSuggestedToImprovePerformanceRecently()
     ) {
@@ -1779,7 +1779,7 @@ class CommentForm {
     }
 
     let pageOwner;
-    if (cd.g.NAMESPACE_NUMBER === 3) {
+    if (cd.g.namespaceNumber === 3) {
       const userName = (pageRegistry.getCurrent().title.match(/^([^/]+)/) || [])[0];
       if (userName) {
         pageOwner = userRegistry.get(userName);
@@ -2654,7 +2654,7 @@ class CommentForm {
         'totext-main': code,
         topst: true,
         prop: 'diff',
-        ...cd.g.API_ERRORS_FORMAT_HTML,
+        ...cd.g.apiErrorsFormatHtml,
       };
       if (this.sectionSubmitted || !mw.config.get('wgArticleId')) {
         options.fromslots = 'main';
@@ -3235,11 +3235,11 @@ class CommentForm {
         .replace(/\s+/g, ' ')
 
         // Pipe trick
-        .replace(cd.g.PIPE_TRICK_REGEXP, '$1$2$3')
+        .replace(cd.g.pipeTrickRegexp, '$1$2$3')
 
         // Remove user links to prevent sending a double notification.
         .replace(/\[\[:?(?:([^|[\]<>\n]+)\|)?(.+?)\]\]/g, (s, wikilink, text) => (
-          cd.g.USER_LINK_REGEXP.test(wikilink) ? text : s
+          cd.g.userLinkRegexp.test(wikilink) ? text : s
         ));
       if (commentText && commentText.length <= cd.config.summaryCommentTextLengthLimit) {
         optionalText = `: ${commentText} (-)`;

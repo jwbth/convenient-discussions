@@ -41,7 +41,7 @@ import {
   skin$,
   unhideText,
   wrap,
-} from './util';
+} from './utils';
 import { getUserInfo } from './apiWrappers';
 
 export default {
@@ -83,7 +83,7 @@ export default {
 
     this.$content ||= $('#mw-content-text');
 
-    if (cd.g.IS_MOBILE) {
+    if (cd.g.isMobile) {
       $(document.body).addClass('cd-mobile');
     }
 
@@ -102,8 +102,8 @@ export default {
       this.$content.find('.cd-talkPage').length ||
 
       (
-        ($('#ca-addsection').length || cd.g.PAGE_WHITELIST_REGEXP?.test(cd.g.PAGE_NAME)) &&
-        !cd.g.PAGE_BLACKLIST_REGEXP?.test(cd.g.PAGE_NAME)
+        ($('#ca-addsection').length || cd.g.pageWhitelistRegexp?.test(cd.g.pageName)) &&
+        !cd.g.pageBlacklistRegexp?.test(cd.g.pageName)
       )
     );
 
@@ -111,7 +111,7 @@ export default {
     this.articlePageTalkPage = (
       (!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
       !this.$content.find('.cd-notTalkPage').length &&
-      (isProbablyTalkPage(cd.g.PAGE_NAME, cd.g.NAMESPACE_NUMBER) || this.definitelyTalkPage) &&
+      (isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber) || this.definitelyTalkPage) &&
 
       // Undocumented setting
       !(typeof cdOnlyRunByFooterLink !== 'undefined' && window.cdOnlyRunByFooterLink)
@@ -223,7 +223,7 @@ export default {
   isHistoryPage() {
     return (
       mw.config.get('wgAction') === 'history' &&
-      isProbablyTalkPage(cd.g.PAGE_NAME, cd.g.NAMESPACE_NUMBER)
+      isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber)
     );
   },
 
@@ -408,7 +408,7 @@ export default {
     this.api ||= new mw.Api({
       parameters: {
         formatversion: 2,
-        uselang: cd.g.USER_LANGUAGE,
+        uselang: cd.g.userLanguage,
       },
       ajax: {
         headers: {
@@ -438,12 +438,12 @@ export default {
    */
   getContentColumnOffsets(reset) {
     if (!this.contentColumnOffsets || reset) {
-      const prop = cd.g.CONTENT_TEXT_DIRECTION === 'ltr' ? 'padding-left' : 'padding-right';
-      let startMargin = Math.max(parseFloat(this.$contentColumn.css(prop)), cd.g.CONTENT_FONT_SIZE);
+      const prop = cd.g.contentTextDirection === 'ltr' ? 'padding-left' : 'padding-right';
+      let startMargin = Math.max(parseFloat(this.$contentColumn.css(prop)), cd.g.contentFontSize);
 
       // The content column in Timeless has no _borders_ as such, so it's wrong to penetrate the
       // surrounding area from the design point of view.
-      if (cd.g.SKIN === 'timeless') {
+      if (cd.g.skin === 'timeless') {
         startMargin--;
       }
 
@@ -451,8 +451,8 @@ export default {
       const width = this.$contentColumn.outerWidth();
       this.contentColumnOffsets = {
         startMargin,
-        start: cd.g.CONTENT_TEXT_DIRECTION === 'ltr' ? left : left + width,
-        end: cd.g.CONTENT_TEXT_DIRECTION === 'ltr' ? left + width : left,
+        start: cd.g.contentTextDirection === 'ltr' ? left : left + width,
+        end: cd.g.contentTextDirection === 'ltr' ? left + width : left,
       };
 
       // This is set only on window resize event. The initial value is set in init.addTalkPageCss()
@@ -510,7 +510,7 @@ export default {
         this.scrollData.touchesBottom = true;
       } else if (
         scrollY !== 0 &&
-        this.rootElement.getBoundingClientRect().top <= cd.g.BODY_SCROLL_PADDING_TOP
+        this.rootElement.getBoundingClientRect().top <= cd.g.bodyScrollPaddingTop
       ) {
         const treeWalker = new ElementsTreeWalker(
           this.rootElement.firstElementChild,
@@ -531,15 +531,15 @@ export default {
             // element small enough has its top below the viewport (i.e., there is a gap between it
             // and the previous element that has the viewport top right in the middle) - we end up
             // without a convenient reference element. To compensate for this, we use an offset of
-            // cd.g.CONTENT_FONT_SIZE (we're unlikely to see a bigger gap between elements).
+            // cd.g.contentFontSize (we're unlikely to see a bigger gap between elements).
             if (
-              rect.top > cd.g.BODY_SCROLL_PADDING_TOP + cd.g.CONTENT_FONT_SIZE &&
+              rect.top > cd.g.bodyScrollPaddingTop + cd.g.contentFontSize &&
               this.scrollData.element
             ) {
               break;
             }
 
-            if (rect.height !== 0 && rect.bottom >= cd.g.BODY_SCROLL_PADDING_TOP) {
+            if (rect.height !== 0 && rect.bottom >= cd.g.bodyScrollPaddingTop) {
               this.scrollData.element = node;
               this.scrollData.elementTop = rect.top;
               if (treeWalker.firstChild()) {
@@ -743,7 +743,15 @@ export default {
       // Describe all floating elements on the page in order to calculate the correct border
       // (temporarily setting "overflow: hidden") for all comments that they intersect with.
       const floatingElementSelector = [
-        ...cd.g.FLOATING_ELEMENT_SELECTORS,
+        '.cd-floating',
+        '.tright',
+        '.floatright',
+        '.tleft',
+        '.floatleft',
+        '*[style*="float:right"]',
+        '*[style*="float: right"]',
+        '*[style*="float:left"]',
+        '*[style*="float: left"]',
         ...this.getTsFloatingElementSelectors(),
       ].join(', ');
 
@@ -854,7 +862,7 @@ export default {
       pageNav.updateWidth();
       CommentFormStatic.adjustLabels();
       this.handleScroll();
-    }, cd.g.SKIN === 'vector-2022' ? 100 : 0);
+    }, cd.g.skin === 'vector-2022' ? 100 : 0);
   },
 
   /**
@@ -962,7 +970,7 @@ export default {
   handlePopState() {
     let fragment = location.hash.slice(1);
     if (CommentStatic.isAnyId(fragment)) {
-      // Don't jump to the comment if the user pressed Back/Forward in the browser or if
+      // Don't jump to the comment if the user pressed "Back"/"Forward" in the browser or if
       // history.pushState() is called from Comment#scrollTo() (after clicks on added (gray) items
       // in the TOC). A marginal state of this happening is when a page with a comment ID in the
       // fragment is opened and then a link with the same fragment is clicked.
@@ -977,7 +985,8 @@ export default {
       CommentStatic.getByAnyId(fragment, true)?.scrollTo();
     }
 
-    // Make sure the title has no incorrect new comment count when the user presses the Back button
+    // Make sure the title has no incorrect new comment count when the user presses the "Back"
+    // button
     // after a page reload.
     this.updatePageTitle();
   },
@@ -1177,15 +1186,15 @@ export default {
     this.bootProcess = new BootProcess();
 
     // Make some requests in advance if the API module is ready in order not to make 2 requests
-    // sequentially. We don't make a userinfo request, because if there is more than one tab in
-    // the background, this request is made and the execution stops at mw.loader.using, which
-    // results in overriding the renewed visits setting of one tab by another tab (the visits are
-    // loaded by one tab, then another tab, then written by one tab, then by another tab).
+    // sequentially. We don't make a userinfo request, because if there is more than one tab in the
+    // background, this request is made and the execution stops at mw.loader.using, which results in
+    // overriding the renewed visits setting of one tab by another tab (the visits are loaded by one
+    // tab, then another tab, then written by one tab, then by another tab).
     if (mw.loader.getState('mediawiki.api') === 'ready') {
       init.getSiteData();
 
-      // We are _not_ calling getUserInfo() here to avoid losing visits data updates from some
-      // pages if more than one page is opened simultaneously. In this situation, visits could be
+      // We are _not_ calling getUserInfo() here to avoid losing visits data updates from some pages
+      // if more than one page is opened simultaneously. In this situation, visits could be
       // requested for multiple pages; updated and then saved for each of them with losing the
       // updates from the rest.
     }
@@ -1220,9 +1229,9 @@ export default {
     // with preloaded dependencies, for example), so we use this trick.
     let modulesRequest;
     if (modules.every((module) => mw.loader.getState(module) === 'ready')) {
-      // If there is no data to load and, therefore, no period of time within which a reflow
-      // (layout thrashing) could happen without impeding performance, we cache the value so that
-      // it could be used in controller.saveRelativeScrollPosition without causing a reflow.
+      // If there is no data to load and, therefore, no period of time within which a reflow (layout
+      // thrashing) could happen without impeding performance, we cache the value so that it could
+      // be used in controller.saveRelativeScrollPosition without causing a reflow.
       if (init.getSiteDataRequests().every((request) => request.state() === 'resolved')) {
         this.bootProcess.passData('scrollY', window.scrollY);
       }
@@ -1567,7 +1576,10 @@ export default {
     [...div.querySelectorAll('*')]
       // Need to keep non-breaking spaces.
       .filter((el) => (
-        (!['BR', 'HR'].includes(el.tagName) || el.classList.contains('Apple-interchange-newline')) &&
+        (
+          !['BR', 'HR'].includes(el.tagName) ||
+          el.classList.contains('Apple-interchange-newline')
+        ) &&
         !el.textContent.replace(/[ \n]+/g, ''))
       )
 
@@ -1593,7 +1605,7 @@ export default {
 
     [...div.querySelectorAll('div, span, h1, h2, h3, h4, h5, h6')].forEach(replaceWithChildren);
 
-    const allowedTags = cd.g.ALLOWED_TAGS.concat('a', 'center', 'big', 'strike', 'tt');
+    const allowedTags = cd.g.allowedTags.concat('a', 'center', 'big', 'strike', 'tt');
     [...div.querySelectorAll('*')].forEach((el) => {
       if (!allowedTags.includes(el.tagName.toLowerCase())) {
         replaceWithChildren(el);
@@ -1867,7 +1879,7 @@ export default {
     const permalinkSpecialPageName = (
       mw.config.get('wgFormattedNamespaces')[-1] +
       ':' +
-      cd.g.SPECIAL_PAGE_ALIASES.PermanentLink +
+      cd.g.specialPageAliases.PermanentLink +
       '/' +
       mw.config.get('wgRevisionId')
     );
@@ -1975,9 +1987,9 @@ export default {
     }
 
     if (settings.get('notifications') !== 'none' && filteredComments.length) {
-      // Combine with content of notifications that were displayed but are still open (i.e., the user
-      // most likely didn't see them because the tab is in the background). In the past there could be
-      // more than one notification, now there can be only one.
+      // Combine with content of notifications that were displayed but are still open (i.e., the
+      // user most likely didn't see them because the tab is in the background). In the past there
+      // could be more than one notification, now there can be only one.
       const openNotification = notifications.get()
         .find((data) => data.comments && data.notification.isOpen);
       if (openNotification) {

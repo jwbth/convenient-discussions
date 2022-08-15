@@ -10,8 +10,78 @@ import controller from './controller';
 import userRegistry from './userRegistry';
 import { findFirstTimestamp, hideDistractingCode } from './wikitext';
 import { handleApiReject, requestInBackground } from './apiWrappers';
-import { isProbablyTalkPage } from './util';
+import { hideText, isProbablyTalkPage, mergeRegexps, unhideText } from './utils';
 import { parseTimestamp } from './timestamp';
+
+let pagesWithoutArchivesRegexp;
+let $archivingInfo;
+let archivePagesMap;
+let sourcePagesMap;
+
+/**
+ * Set some map objects related to archive pages.
+ *
+ * @private
+ */
+function setArchivePagesMaps() {
+  archivePagesMap = new Map();
+  sourcePagesMap = new Map();
+  const pathToRegexp = (s, replacements, isArchivePath) => {
+    let hidden = [];
+    let pattern = hideText(s, /\\[$\\]/g, hidden);
+    pattern = mw.util.escapeRegExp(pattern);
+    if (replacements) {
+      pattern = pattern
+        .replace(/\\\$/, '$')
+        .replace(/\$(\d+)/, (s, n) => {
+          const replacement = replacements[n - 1];
+          return replacement ? `(${replacement.source})` : s;
+        });
+    }
+    pattern = '^' + pattern + (isArchivePath ? '.*' : '') + '$';
+    pattern = unhideText(pattern, hidden);
+    return new RegExp(pattern);
+  };
+  cd.config.archivePaths.forEach((entry) => {
+    if (entry instanceof RegExp) {
+      const archiveRegexp = new RegExp(entry.source + '.*');
+      sourcePagesMap.set(archiveRegexp, '');
+    } else {
+      const sourceRegexp = pathToRegexp(entry.source, entry.replacements);
+      const archiveRegexp = pathToRegexp(entry.archive, entry.replacements, true);
+      archivePagesMap.set(sourceRegexp, entry.archive);
+      sourcePagesMap.set(archiveRegexp, entry.source);
+    }
+  });
+}
+
+/**
+ * Lazy initialization for archive pages map.
+ *
+ * @returns {Map}
+ * @private
+ */
+function getArchivePagesMap() {
+  if (!archivePagesMap) {
+    setArchivePagesMaps();
+  }
+
+  return archivePagesMap;
+}
+
+/**
+ * Lazy initialization for source pages map.
+ *
+ * @returns {Map}
+ * @private
+ */
+function getSourcePagesMap() {
+  if (!sourcePagesMap) {
+    setArchivePagesMaps();
+  }
+
+  return sourcePagesMap;
+}
 
 /**
  * Main MediaWiki object.
@@ -82,7 +152,7 @@ export class Page {
    * @private
    */
   isCurrent() {
-    return this.name === cd.g.PAGE_NAME;
+    return this.name === cd.g.pageName;
   }
 
   /**
@@ -108,21 +178,25 @@ export class Page {
       params.oldid = mw.config.get('wgRevisionId');
     }
     const decodedPageUrl = decodeURI(this.getUrl(params));
-    return `${cd.g.SERVER}${decodedPageUrl}#${fragment}`;
+    return `${cd.g.server}${decodedPageUrl}#${fragment}`;
   }
 
   /**
    * Find an archiving info element on the page.
    *
-   * @returns {external:jQuery}
+   * @returns {?external:jQuery}
    * @private
    */
   findArchivingInfoElement() {
-    // For performance reasons, this is not reevaluated after page reloads. The reevaluation is
-    // unlikely to be needed by users.
-    this.$archivingInfo ||= controller.$root.find('.cd-archivingInfo');
+    if (!this.isCurrent()) {
+      return null;
+    }
 
-    return this.$archivingInfo;
+    // For performance reasons, this is not reevaluated after page reloads. The reevaluation is
+    // unlikely make any difference.
+    $archivingInfo ||= controller.$root.find('.cd-archivingInfo');
+
+    return $archivingInfo;
   }
 
   /**
@@ -142,13 +216,11 @@ export class Page {
    * @returns {boolean}
    */
   isArchivePage() {
-    let result = this.isCurrent() ?
-      this.findArchivingInfoElement().data('isArchivePage') :
-      undefined;
-    if (result === undefined) {
+    let result = this.findArchivingInfoElement()?.data('isArchivePage');
+    if (result === undefined || result === null) {
       result = false;
       const name = this.realName || this.name;
-      const iterator = cd.g.SOURCE_PAGES_MAP.keys();
+      const iterator = getSourcePagesMap().keys();
       for (const sourceRegexp of iterator) {
         if (sourceRegexp.test(name)) {
           result = true;
@@ -172,12 +244,13 @@ export class Page {
     if (this.isArchivePage()) {
       return false;
     }
-    let result = this.isCurrent() ?
-      this.findArchivingInfoElement().data('canHaveArchives') :
-      undefined;
-    if (result === undefined) {
+    let result = this.findArchivingInfoElement()?.data('canHaveArchives');
+    if (result === undefined || result === null) {
       const name = this.realName || this.name;
-      result = !cd.g.PAGES_WITHOUT_ARCHIVES_REGEXP?.test(name);
+      if (pagesWithoutArchivesRegexp === undefined) {
+        pagesWithoutArchivesRegexp = mergeRegexps(cd.config.pagesWithoutArchives);
+      }
+      result = !pagesWithoutArchivesRegexp?.test(name);
     }
     return Boolean(result);
   }
@@ -194,12 +267,10 @@ export class Page {
     if (!this.canHaveArchives()) {
       return null;
     }
-    let result = this.isCurrent() ?
-      this.findArchivingInfoElement().data('archivePrefix') :
-      undefined;
+    let result = this.findArchivingInfoElement()?.data('archivePrefix');
     const name = this.realName || this.name;
     if (!result) {
-      const iterator = cd.g.ARCHIVE_PAGES_MAP.entries();
+      const iterator = getArchivePagesMap().entries();
       for (const [sourceRegexp, replacement] of iterator) {
         if (sourceRegexp.test(name)) {
           result = name.replace(sourceRegexp, replacement);
@@ -219,12 +290,10 @@ export class Page {
    * @returns {import('./pageRegistry').Page}
    */
   getArchivedPage() {
-    let result = this.isCurrent() ?
-      this.findArchivingInfoElement().data('archivedPage') :
-      undefined;
+    let result = this.findArchivingInfoElement()?.data('archivedPage');
     if (!result) {
       const name = this.realName || this.name;
-      const iterator = cd.g.SOURCE_PAGES_MAP.entries();
+      const iterator = getSourcePagesMap().entries();
       for (const [archiveRegexp, replacement] of iterator) {
         if (archiveRegexp.test(name)) {
           result = name.replace(archiveRegexp, replacement);
@@ -388,12 +457,12 @@ export class Page {
       // If we know that this page is a redirect, use its target. Otherwise, use the regular name.
       page: this.realName || this.name,
 
-      disabletoc: cd.g.SKIN === 'vector-2022',
-      useskin: cd.g.SKIN,
+      disabletoc: cd.g.skin === 'vector-2022',
+      useskin: cd.g.skin,
       redirects: true,
       prop: ['text', 'revid', 'modules', 'jsconfigvars', 'sections'],
 
-      ...cd.g.API_ERRORS_FORMAT_HTML,
+      ...cd.g.apiErrorsFormatHtml,
     };
     const options = Object.assign({}, defaultOptions, customOptions);
 
@@ -512,7 +581,7 @@ export class Page {
       // Should be `undefined` instead of `null`, otherwise will be interepreted as a string.
       tags: userRegistry.getCurrent().isRegistered() && cd.config.tagName || undefined,
 
-      ...cd.g.API_ERRORS_FORMAT_HTML,
+      ...cd.g.apiErrorsFormatHtml,
     };
     const options = controller.getApi().assertCurrentUser(
       Object.assign({}, defaultOptions, customOptions)
@@ -737,7 +806,7 @@ const pageRegistry = {
    * @returns {Page}
    */
   getCurrent() {
-    return this.get(cd.g.PAGE_NAME, true);
+    return this.get(cd.g.pageName, true);
   },
 };
 

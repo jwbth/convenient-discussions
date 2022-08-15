@@ -14,7 +14,7 @@ import {
   getExtendedRect,
   getVisibilityByRects,
   spacesToUnderlines,
-} from './util';
+} from './utils';
 
 export default {
   /**
@@ -254,7 +254,7 @@ export default {
    * @returns {number}
    */
   getFirstSectionRelativeTopOffset(scrollY = window.scrollY, tocOffset) {
-    if (scrollY <= cd.g.BODY_SCROLL_PADDING_TOP) return;
+    if (scrollY <= cd.g.bodyScrollPaddingTop) return;
 
     let top;
     this.items.some((section) => {
@@ -281,7 +281,7 @@ export default {
     const firstSectionTop = this.getFirstSectionRelativeTopOffset();
     return (
       firstSectionTop !== undefined &&
-      firstSectionTop < cd.g.BODY_SCROLL_PADDING_TOP + 1 &&
+      firstSectionTop < cd.g.bodyScrollPaddingTop + 1 &&
       this.items
         .slice()
         .reverse()
@@ -289,7 +289,7 @@ export default {
           const extendedRect = getExtendedRect(section.headingElement);
           return (
             getVisibilityByRects(extendedRect) &&
-            extendedRect.outerTop < cd.g.BODY_SCROLL_PADDING_TOP + 1
+            extendedRect.outerTop < cd.g.bodyScrollPaddingTop + 1
           );
         }) ||
       null

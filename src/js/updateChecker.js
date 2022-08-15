@@ -20,7 +20,7 @@ import {
   getFromLocalStorage,
   keepWorkerSafeValues,
   saveToLocalStorage,
-} from './util';
+} from './utils';
 import { loadUserGenders } from './apiWrappers';
 
 const revisionData = {};
@@ -163,7 +163,7 @@ function cleanUpSeenRenderedChanges(data) {
   Object.keys(newData).forEach((key) => {
     const page = newData[key];
     const oldestUnixTime = Math.min(...Object.entries(page).map(([, data]) => data.seenUnixTime));
-    if (!oldestUnixTime || oldestUnixTime < Date.now() - 60 * cd.g.MS_IN_DAY) {
+    if (!oldestUnixTime || oldestUnixTime < Date.now() - 60 * cd.g.msInDay) {
       delete newData[key];
     }
   });
@@ -345,7 +345,7 @@ async function checkForUpdates() {
     };
     $(document).on('visibilitychange', onDocumentVisible);
 
-    const interval = Math.abs(cd.g.BACKGROUND_UPDATE_CHECK_INTERVAL - cd.g.UPDATE_CHECK_INTERVAL);
+    const interval = Math.abs(cd.g.backgroundUpdateCheckInterval - cd.g.updateCheckInterval);
     setAlarmViaWorker(interval * 1000);
     isBackgroundCheckArranged = true;
     return;
@@ -388,10 +388,10 @@ async function checkForUpdates() {
   }
 
   if (documentHidden) {
-    setAlarmViaWorker(cd.g.BACKGROUND_UPDATE_CHECK_INTERVAL * 1000);
+    setAlarmViaWorker(cd.g.backgroundUpdateCheckInterval * 1000);
     isBackgroundCheckArranged = true;
   } else {
-    setAlarmViaWorker(cd.g.UPDATE_CHECK_INTERVAL * 1000);
+    setAlarmViaWorker(cd.g.updateCheckInterval * 1000);
   }
 }
 
@@ -659,7 +659,7 @@ async function processComments(comments, currentComments, currentRevisionId) {
     return false;
   });
 
-  if (cd.g.GENDER_AFFECTS_USER_STRING) {
+  if (cd.g.genderAffectsUserString) {
     await loadUserGenders(newComments.map((comment) => comment.author), true);
   }
 
@@ -704,7 +704,7 @@ const updateChecker = {
       controller.getWorker().onmessage = onMessageFromWorker;
     }
 
-    setAlarmViaWorker(cd.g.UPDATE_CHECK_INTERVAL * 1000);
+    setAlarmViaWorker(cd.g.updateCheckInterval * 1000);
 
     const bootProcess = controller.getBootProcess();
 

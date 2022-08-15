@@ -7,7 +7,7 @@ const fs = require('fs');
 
 const fetch = require('node-fetch');
 const JSON5 = require('json5');
-const { unique } = require('./util');
+const { unique } = require('./utils');
 
 async function getZoneToAbbr() {
   const res = await fetch('https://raw.githubusercontent.com/moment/moment-timezone/develop/data/packed/latest.json');

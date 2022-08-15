@@ -22,7 +22,7 @@ class TocItem {
    * Create a table of contents item object.
    *
    * @param {object} a
-   * @throws {Array.<string, Element>}
+   * @throws {Array.<string|Element>}
    */
   constructor(a) {
     const textSpan = a.querySelector(toc.isInSidebar() ? '.sidebar-toc-text' : '.toctext');
@@ -527,7 +527,7 @@ const toc = {
         date = cd.s('navpanel-newcomments-unknowndate');
       }
 
-      const rtlMarkOrNot = cd.g.CONTENT_TEXT_DIRECTION === 'rtl' ? '\u200f' : '';
+      const rtlMarkOrNot = cd.g.contentTextDirection === 'rtl' ? '\u200f' : '';
       const dateOrNot = settings.get('timestampFormat') === 'default' ? date : '';
       const text = names + rtlMarkOrNot + cd.mws('comma-separator') + dateOrNot;
 
@@ -650,7 +650,7 @@ const toc = {
    * @private
    */
   isInSidebar() {
-    return cd.g.SKIN === 'vector-2022';
+    return cd.g.skin === 'vector-2022';
   },
 
   /**

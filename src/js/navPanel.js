@@ -12,7 +12,7 @@ import cd from './cd';
 import controller from './controller';
 import settings from './settings';
 import { formatDate } from './timestamp';
-import { isCmdModifierPressed, reorderArray } from './util';
+import { isCmdModifierPressed, reorderArray } from './utils';
 import { removeWikiMarkup } from './wikitext';
 
 let utirbtTimeout;
@@ -351,10 +351,10 @@ export default {
         cd.mws('parentheses', 'R')
       );
       if (areThereNew && settings.get('highlightNewInterval')) {
-        tooltipText += '\n' + cd.s('navpanel-markasread', cd.g.CMD_MODIFIER);
+        tooltipText += '\n' + cd.s('navpanel-markasread', cd.g.cmdModifier);
       }
       const bullet = removeWikiMarkup(cd.s('bullet'));
-      const rtlMarkOrNot = cd.g.CONTENT_TEXT_DIRECTION === 'rtl' ? '\u200f' : '';
+      const rtlMarkOrNot = cd.g.contentTextDirection === 'rtl' ? '\u200f' : '';
       commentsBySection.forEach((comments, section) => {
         const headline = section?.headline;
         tooltipText += headline ? `\n\n${headline}` : '\n';
@@ -381,12 +381,12 @@ export default {
       if (settings.get('timestampFormat') === 'relative' && !settings.get('modifyToc')) {
         utirbtTimeout = setTimeout(() => {
           this.updateTimestampsInRefreshButtonTooltip();
-        }, cd.g.MS_IN_MIN);
+        }, cd.g.msInMin);
       }
     } else {
       tooltipText = cd.s('navpanel-refresh') + ' ' + cd.mws('parentheses', 'R');
       if (areThereNew && settings.get('highlightNewInterval')) {
-        tooltipText += '\n' + cd.s('navpanel-markasread', cd.g.CMD_MODIFIER);
+        tooltipText += '\n' + cd.s('navpanel-markasread', cd.g.cmdModifier);
       }
     }
 

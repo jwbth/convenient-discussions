@@ -3,7 +3,7 @@
 import CommentSkeleton from './CommentSkeleton';
 import cd from './cd';
 import { ElementsAndTextTreeWalker, ElementsTreeWalker } from './treeWalker';
-import { defined, flat, isInline, ucFirst, underlinesToSpaces } from './util';
+import { defined, flat, isInline, ucFirst, underlinesToSpaces } from './utils';
 import { parseTimestamp } from './timestamp';
 
 /**
@@ -24,15 +24,15 @@ import { parseTimestamp } from './timestamp';
  * @private
  */
 function getPageNameFromUrl(url) {
-  let domain = cd.g.HOSTNAME;
+  let domain = cd.g.hostname;
   let fragment;
   let pageName = url
     .replace(/^(?:https?:)?\/\/([^/]+)/, (s, m1) => {
       domain = m1;
       return '';
     })
-    .replace(cd.g.STARTS_WITH_ARTICLE_PATH_REGEXP, '')
-    .replace(cd.g.STARTS_WITH_SCRIPT_TITLE, '')
+    .replace(cd.g.startsWithArticlePathRegexp, '')
+    .replace(cd.g.startsWithScriptTitleRegexp, '')
     .replace(/&action=edit.*/, '')
     .replace(/#(.*)/, (s, m1) => {
       fragment = m1;
@@ -599,8 +599,8 @@ class Parser {
    * node resulting from the split. If there is no following nodes, don't perform the split.
    *
    * @param {Element|external:Element} node Reference node.
-   * @returns {Array.<Element|external:Element, (Element|external:Element|undefined)>} The parent
-   *   nodes resultant from the split (at least one).
+   * @returns {Array.<Element|external:Element>} The parent nodes resultant from the split (at least
+   *   one).
    */
   splitParentAfterNode(node) {
     const parent = node.parentNode;
@@ -640,29 +640,29 @@ class Parser {
       if (!pageName || CommentSkeleton.isAnyId(fragment)) {
         return null;
       }
-      const match = pageName.match(cd.g.USER_NAMESPACES_REGEXP);
+      const match = pageName.match(cd.g.userNamespacesRegexp);
       if (match) {
         userName = match[1];
-        if (cd.g.USER_LINK_REGEXP.test(pageName)) {
+        if (cd.g.userLinkRegexp.test(pageName)) {
           linkType = 'user';
-        } else if (cd.g.USER_TALK_LINK_REGEXP.test(pageName)) {
+        } else if (cd.g.userTalkLinkRegexp.test(pageName)) {
           linkType = 'userTalk';
-        } else if (cd.g.USER_SUBPAGE_LINK_REGEXP.test(pageName)) {
+        } else if (cd.g.userSubpageLinkRegexp.test(pageName)) {
           linkType = 'userSubpage';
-        } else if (cd.g.USER_TALK_SUBPAGE_LINK_REGEXP.test(pageName)) {
+        } else if (cd.g.userTalkSubpageLinkRegexp.test(pageName)) {
           linkType = 'userTalkSubpage';
         }
 
         // Another alternative is a user link to another site where a prefix is specified before a
         // namespace. Enough to capture a user name from, not enough to make any inferences.
-      } else if (pageName.startsWith(cd.g.CONTRIBS_PAGE + '/')) {
-        userName = pageName.replace(cd.g.CONTRIBS_PAGE_LINK_REGEXP, '');
+      } else if (pageName.startsWith(cd.g.contribsPage + '/')) {
+        userName = pageName.replace(cd.g.contribsPageLinkRegexp, '');
         if (cd.g.isIPv6Address(userName)) {
           userName = userName.toUpperCase();
         }
         linkType = 'contribs';
       }
-      if (domain !== cd.g.HOSTNAME) {
+      if (domain !== cd.g.hostname) {
         linkType += 'Foreign';
       }
       if (userName) {
@@ -671,12 +671,12 @@ class Parser {
     } else {
       if (
         element.classList.contains('mw-selflink') &&
-        cd.g.NAMESPACE_NUMBER === 3 &&
-        !cd.g.PAGE_NAME.includes('/')
+        cd.g.namespaceNumber === 3 &&
+        !cd.g.pageName.includes('/')
       ) {
         // Comments of users that have only the user talk page link in their signature on their talk
         // page.
-        userName = cd.g.PAGE_TITLE;
+        userName = cd.g.pageTitle;
       } else {
         return null;
       }

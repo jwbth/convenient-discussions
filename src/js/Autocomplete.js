@@ -11,7 +11,7 @@ import {
   removeDoubleSpaces,
   underlinesToSpaces,
   unique,
-} from './util';
+} from './utils';
 import {
   getRelevantPageNames,
   getRelevantTemplateNames,
@@ -82,7 +82,7 @@ class Autocomplete {
       noMatchTemplate: () => null,
       containerClass: 'tribute-container cd-autocompleteContainer',
       replaceTextSuffix: '',
-      textDirection: cd.g.CONTENT_TEXT_DIRECTION,
+      textDirection: cd.g.contentTextDirection,
     });
 
     /**
@@ -340,7 +340,7 @@ class Autocomplete {
               // Interwikis
               !(
                 (/^:/.test(text) || /^[a-z]\w*:/.test(text)) &&
-                !cd.g.ALL_NAMESPACES_REGEXP.test(text)
+                !cd.g.allNamespacesRegexp.test(text)
               )
             );
             if (valid) {
@@ -578,7 +578,7 @@ class Autocomplete {
             const userNamespace = user.getNamespaceAlias();
             const pageName = user.isRegistered() ?
               `${userNamespace}:${name}` :
-              `${cd.g.CONTRIBS_PAGE}/${name}`;
+              `${cd.g.contribsPage}/${name}`;
             return {
               start: `@[[${pageName}|`,
               end: ']]',
@@ -673,7 +673,7 @@ class Autocomplete {
           ['syntaxhighlight lang=""', '<syntaxhighlight lang="', '">\n\n</syntaxhighlight>'],
           ['templatestyles', '<templatestyles src="', '" />'],
         ];
-        const defaultTags = cd.g.ALLOWED_TAGS.filter((tagString) => !(
+        const defaultTags = cd.g.allowedTags.filter((tagString) => !(
           tagAdditions.find((tagArray) => tagArray[0] === tagString)
         ));
 

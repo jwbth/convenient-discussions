@@ -8,7 +8,7 @@ import {
   isMetadataNode,
   spacesToUnderlines,
   unique,
-} from './util';
+} from './utils';
 
 /**
  * Class containing the main properties of a comment. It is extended by {@link Comment}. This class
@@ -139,7 +139,7 @@ class CommentSkeleton {
      *
      * @type {boolean}
      */
-    this.isOwn = this.authorName === cd.g.USER_NAME;
+    this.isOwn = this.authorName === cd.g.userName;
 
     /**
      * Comment ID.
@@ -211,7 +211,7 @@ class CommentSkeleton {
    * Get nodes to start the traversal from.
    *
    * @param {ElementsAndTextTreeWalker} treeWalker
-   * @returns {Array.<object[], Element>}
+   * @returns {Array.<object[]|Element>}
    * @private
    */
   getStartNodes(treeWalker) {
@@ -335,7 +335,7 @@ class CommentSkeleton {
         this.parser.foreignComponentClasses.some((name) => element.classList.contains(name)) ||
 
         // Talk page message box
-        (step !== 'up' && cd.g.NAMESPACE_NUMBER % 2 === 1 && element.classList.contains('tmbox'))
+        (step !== 'up' && cd.g.namespaceNumber % 2 === 1 && element.classList.contains('tmbox'))
       ) ||
 
       element.tagName === 'MW:TOCPLACE' ||
@@ -1056,7 +1056,7 @@ class CommentSkeleton {
     const isHighlightable = (el) => (
       !isHeadingNode(el) &&
       !isMetadataNode(el) &&
-      !cd.g.UNHIGHLIGHTABLE_ELEMENT_CLASSES.some((name) => el.classList.contains(name)) &&
+      !cd.g.unhighlightableElementClasses.some((name) => el.classList.contains(name)) &&
 
       // Can't access stylesheets from the worker context, so we do it only in
       // Comment#reviewHighlightables, and here we look at the style attribute only.
@@ -1093,7 +1093,7 @@ class CommentSkeleton {
     [this.highlightables[0], this.highlightables[this.highlightables.length - 1]]
       .filter(unique)
       .filter((el) => (
-        cd.g.BAD_HIGHLIGHTABLE_ELEMENTS.includes(el.tagName) ||
+        cd.g.badHighlightableElements.includes(el.tagName) ||
 
         // Cases such as https://en.wikipedia.org/?diff=998431486. TODO: Do something with the
         // semantical correctness of the markup.

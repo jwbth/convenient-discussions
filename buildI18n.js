@@ -7,7 +7,7 @@ const createDOMPurify = require('dompurify');
 const { JSDOM } = require('jsdom');
 const rimraf = require('rimraf');
 
-const replaceEntities = require('./misc/util').replaceEntitiesInI18n;
+const replaceEntities = require('./misc/utils').replaceEntitiesInI18n;
 
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);

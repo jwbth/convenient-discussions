@@ -1,7 +1,7 @@
 import CdError from './CdError';
 import cd from './cd';
 import { generateTagsRegexp, hideSensitiveCode } from './wikitext';
-import { hideText, unhideText } from './util';
+import { hideText, unhideText } from './utils';
 
 /**
  * Class that processes the text in the comment input of the comment form and prepares the wikitext
@@ -19,7 +19,7 @@ class CommentTextProcessor {
     this.target = commentForm.getTarget();
     this.action = action;
 
-    this.filePatternEnd = `\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]$`;
+    this.filePatternEnd = `\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$`;
     this.galleryRegexp = /^\x01\d+_gallery\x02$/m;
 
     this.setIndentationData();
@@ -120,7 +120,7 @@ class CommentTextProcessor {
     // Find tags around potential markup.
     if (this.indented) {
       const tagMatches = this.code.match(generateTagsRegexp(['[a-z]+'])) || [];
-      const quoteMatches = this.code.match(cd.g.QUOTE_REGEXP) || [];
+      const quoteMatches = this.code.match(cd.g.quoteRegexp) || [];
       const matches = tagMatches.concat(quoteMatches);
       this.areThereTagsAroundListMarkup = matches.some((match) => /\n[:*#;]/.test(match));
     }
@@ -148,7 +148,7 @@ class CommentTextProcessor {
     } else {
       this.signature = this.commentForm.getMode() === 'edit' ?
         this.target.inCode.signatureCode :
-        cd.g.USER_SIGNATURE;
+        cd.g.userSignature;
     }
 
     // Make so that the signature doesn't turn out to be at the end of the last item of the list if
@@ -389,11 +389,11 @@ class CommentTextProcessor {
       nextLineInTemplates = '|\\||}}';
     }
     const currentLineEndingRegexp = new RegExp(
-      `(?:<${cd.g.PNIE_PATTERN}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.PNIE_PATTERN}>|\\x04|<br[ \\n]*\\/?>${currentLineInTemplates}) *$`,
+      `(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x04|<br[ \\n]*\\/?>${currentLineInTemplates}) *$`,
       'i'
     );
     const nextLineBeginningRegexp = new RegExp(
-      `^(?:<\\/${cd.g.PNIE_PATTERN}>|<${cd.g.PNIE_PATTERN}${nextLineInTemplates})`,
+      `^(?:<\\/${cd.g.pniePattern}>|<${cd.g.pniePattern}${nextLineInTemplates})`,
       'i'
     );
 

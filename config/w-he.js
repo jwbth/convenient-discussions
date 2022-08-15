@@ -181,7 +181,7 @@ export default {
 
   /**
    * Regexps for strings that should be cut out of comment beginnings (not considered parts of
-   * them). This is in addition to {@link convenientDiscussions.g.BAD_COMMENT_BEGINNINGS}. They
+   * them). This is in addition to {@link convenientDiscussions.g.badCommentBeginnings}. They
    * begin with `^` and usually end with ` *\n*` or ` *\n*(?=[*:#])`.
    *
    * @type {RegExp[]}

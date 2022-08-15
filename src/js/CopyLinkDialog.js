@@ -1,7 +1,7 @@
 import CdError from './CdError';
 import Comment from './Comment';
 import cd from './cd';
-import { copyText, dealWithLoadingBug, wrap } from './util';
+import { copyText, dealWithLoadingBug, wrap } from './utils';
 import { createCopyActionField, tweakUserOoUiClass } from './ooui';
 
 /**

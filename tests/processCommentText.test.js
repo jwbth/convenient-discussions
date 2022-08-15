@@ -10,10 +10,10 @@ const defaultConfig = {
 };
 Object.assign(cd, {
   g: {
-    FILE_PREFIX_PATTERN: '(?:file|image):',
-    QUOTE_REGEXP: /(<blockquote|<q)([^]*?)(<\/blockquote>|<\/q>)/gi,
-    PNIE_PATTERN: '(?:BLOCKQUOTE|DD|DIV|DL|DT|FORM|H1|H2|H3|H4|H5|H6|HR|INPUT|LI|LINK|OL|P|PRE|STYLE|TABLE|TBODY|TR|TH|TD|UL)',
-    USER_SIGNATURE: ' ~~~~',
+    filePrefixPattern: '(?:file|image):',
+    quoteRegexp: /(<blockquote|<q)([^]*?)(<\/blockquote>|<\/q>)/gi,
+    pniePattern: '(?:BLOCKQUOTE|DD|DIV|DL|DT|FORM|H1|H2|H3|H4|H5|H6|HR|INPUT|LI|LINK|OL|P|PRE|STYLE|TABLE|TBODY|TR|TH|TD|UL)',
+    userSignature: ' ~~~~',
   },
   config: defaultConfig,
 });

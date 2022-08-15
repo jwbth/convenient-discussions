@@ -4,7 +4,7 @@ import controller from './controller';
 import settings from './settings';
 import subscriptions from './subscriptions';
 import { confirmCloseDialog, handleDialogError, isDialogUnsaved, tweakUserOoUiClass } from './ooui';
-import { focusInput, unique } from './util';
+import { focusInput, unique } from './utils';
 import { getPageIds, getPageTitles } from './apiWrappers';
 
 /**

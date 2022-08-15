@@ -7,7 +7,7 @@
 import cd from './cd';
 import pageRegistry from './pageRegistry';
 import userRegistry from './userRegistry';
-import { areObjectsEqual, defined, hideText, ucFirst, unhideText, wrap } from './util';
+import { areObjectsEqual, defined, hideText, ucFirst, unhideText, wrap } from './utils';
 import { formatDateImproved, formatDateNative, formatDateRelative } from './timestamp';
 import { getUserInfo, setGlobalOption, setLocalOption } from './apiWrappers';
 
@@ -122,8 +122,8 @@ export default {
       '' :
       ' ' + cd.sParse('sd-outdentlevel-help-notemplate');
 
-    const fortyThreeMinutesAgo = new Date(Date.now() - cd.g.MS_IN_MIN * 43);
-    const threeDaysAgo = new Date(Date.now() - cd.g.MS_IN_DAY * 3.3);
+    const fortyThreeMinutesAgo = new Date(Date.now() - cd.g.msInMin * 43);
+    const threeDaysAgo = new Date(Date.now() - cd.g.msInDay * 3.3);
 
     const exampleDefault = formatDateNative(fortyThreeMinutesAgo);
     const exampleImproved1 = formatDateImproved(fortyThreeMinutesAgo);
@@ -421,8 +421,8 @@ export default {
     const values = {};
 
     const options = {
-      [cd.g.SETTINGS_OPTION_NAME]: mw.user.options.get(cd.g.SETTINGS_OPTION_NAME),
-      [cd.g.LOCAL_SETTINGS_OPTION_NAME]: mw.user.options.get(cd.g.LOCAL_SETTINGS_OPTION_NAME),
+      [cd.g.settingsOptionName]: mw.user.options.get(cd.g.settingsOptionName),
+      [cd.g.localSettingsOptionName]: mw.user.options.get(cd.g.localSettingsOptionName),
     };
 
     // Settings in variables like `cdAlowEditOthersComments` used before server-stored settings
@@ -455,7 +455,7 @@ export default {
     // Seamless transition from "mySignature". TODO: Remove at some point (this was introduced in
     // November 2020).
     if (values.signaturePrefix !== undefined) {
-      values.signaturePrefix = values.signaturePrefix.replace(cd.g.SIGN_CODE, '');
+      values.signaturePrefix = values.signaturePrefix.replace(cd.g.signCode, '');
     }
 
     if (
@@ -505,20 +505,20 @@ export default {
     omitLocal = false,
     reuse = false,
   } = {}) {
-    if (!options?.[cd.g.SETTINGS_OPTION_NAME]) {
+    if (!options?.[cd.g.settingsOptionName]) {
       ({ options } = await getUserInfo(reuse));
     }
 
     let globalSettings;
     try {
-      globalSettings = JSON.parse(options[cd.g.SETTINGS_OPTION_NAME]) || {};
+      globalSettings = JSON.parse(options[cd.g.settingsOptionName]) || {};
     } catch {
       globalSettings = {};
     }
 
     let localSettings;
     try {
-      localSettings = JSON.parse(options[cd.g.LOCAL_SETTINGS_OPTION_NAME]) || {};
+      localSettings = JSON.parse(options[cd.g.localSettingsOptionName]) || {};
     } catch (e) {
       localSettings = {};
     }
@@ -624,11 +624,11 @@ export default {
       });
 
       await Promise.all([
-        setLocalOption(cd.g.LOCAL_SETTINGS_OPTION_NAME, JSON.stringify(localSettings)),
-        setGlobalOption(cd.g.SETTINGS_OPTION_NAME, JSON.stringify(globalSettings))
+        setLocalOption(cd.g.localSettingsOptionName, JSON.stringify(localSettings)),
+        setGlobalOption(cd.g.settingsOptionName, JSON.stringify(globalSettings))
       ]);
     } else {
-      await setLocalOption(cd.g.LOCAL_SETTINGS_OPTION_NAME, JSON.stringify(settings));
+      await setLocalOption(cd.g.localSettingsOptionName, JSON.stringify(settings));
     }
   },
 

@@ -17,7 +17,7 @@ import {
   getFromLocalStorage,
   removeFromArrayIfPresent,
   saveToLocalStorage,
-} from './util';
+} from './utils';
 
 /**
  * Callback to be used in
@@ -53,7 +53,7 @@ function cleanUpSessionRegistry(data) {
   const newData = Object.assign({}, data);
   Object.keys(newData).forEach((key) => {
     const page = newData[key];
-    if (!page.commentForms?.length || page.saveUnixTime < Date.now() - 60 * cd.g.MS_IN_DAY) {
+    if (!page.commentForms?.length || page.saveUnixTime < Date.now() - 60 * cd.g.msInDay) {
       delete newData[key];
     }
   });

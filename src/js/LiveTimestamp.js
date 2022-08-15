@@ -4,7 +4,7 @@ import cd from './cd';
 import navPanel from './navPanel';
 import settings from './settings';
 import { formatDate, relativeTimeThresholds } from './timestamp';
-import { removeFromArrayIfPresent } from './util';
+import { removeFromArrayIfPresent } from './utils';
 
 let yesterdayStart;
 
@@ -91,13 +91,13 @@ class LiveTimestamp {
 
     const difference = Date.now() - this.date.getTime();
     const threshold = relativeTimeThresholds
-      .find((threshold) => difference < threshold.interval * cd.g.MS_IN_MIN);
+      .find((threshold) => difference < threshold.interval * cd.g.msInMin);
     if (threshold) {
-      const minSteps = Math.floor((difference / cd.g.MS_IN_MIN) / threshold.step);
+      const minSteps = Math.floor((difference / cd.g.msInMin) / threshold.step);
       for (
-        let boundary = (threshold.start + (minSteps * threshold.step)) * cd.g.MS_IN_MIN;
-        boundary <= threshold.interval * cd.g.MS_IN_MIN;
-        boundary += threshold.step * cd.g.MS_IN_MIN
+        let boundary = (threshold.start + (minSteps * threshold.step)) * cd.g.msInMin;
+        boundary <= threshold.interval * cd.g.msInMin;
+        boundary += threshold.step * cd.g.msInMin
       ) {
         if (difference < boundary) {
           removeFromArrayIfPresent(updateTimeouts, this.updateTimeout);
@@ -128,10 +128,10 @@ class LiveTimestamp {
   static initImproved() {
     improvedTimestampsInitted = true;
     let date = dayjs();
-    if (settings.get('useUiTime') && !['UTC', 0].includes(cd.g.UI_TIMEZONE)) {
-      date = typeof cd.g.UI_TIMEZONE === 'number' ?
-        date.utcOffset(cd.g.UI_TIMEZONE) :
-        date.tz(cd.g.UI_TIMEZONE);
+    if (settings.get('useUiTime') && !['UTC', 0].includes(cd.g.uiTimezone)) {
+      date = typeof cd.g.uiTimezone === 'number' ?
+        date.utcOffset(cd.g.uiTimezone) :
+        date.tz(cd.g.uiTimezone);
     } else {
       date = date.utc();
     }

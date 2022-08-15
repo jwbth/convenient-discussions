@@ -34,7 +34,7 @@ import {
   unique,
   wrap,
   wrapDiffBody,
-} from './util';
+} from './utils';
 import {
   brsToNewlines,
   extractSignatures,
@@ -50,6 +50,9 @@ import { showConfirmDialog } from './ooui';
 
 let elementPrototypes;
 let thanks;
+let closedDiscussionPairRegexp;
+let closedDiscussionSingleRegexp;
+let outdentTemplatesRegexp;
 
 /**
  * Remove thanks older than 60 days.
@@ -62,7 +65,7 @@ function cleanUpThanks(data) {
   const newData = Object.assign({}, data);
   Object.keys(newData).forEach((key) => {
     const thank = newData[key];
-    if (!thank.thankUnixTime || thank.thankUnixTime < Date.now() - 60 * cd.g.MS_IN_DAY) {
+    if (!thank.thankUnixTime || thank.thankUnixTime < Date.now() - 60 * cd.g.msInDay) {
       delete newData[key];
     }
   });
@@ -117,15 +120,37 @@ function maybeMarkPageAsRead() {
 function getAdjustedChunkCodeAfter(currentIndex, wholeCode) {
   let adjustedCode = hideDistractingCode(wholeCode);
 
-  if (cd.g.CLOSED_DISCUSSION_PAIR_REGEXP) {
-    adjustedCode = adjustedCode
-      .replace(cd.g.CLOSED_DISCUSSION_PAIR_REGEXP, (s, indentation) => (
+  if (cd.config.closedDiscussionTemplates[0][0]) {
+    if (!closedDiscussionSingleRegexp) {
+      const closedDiscussionBeginningsPattern = cd.config.closedDiscussionTemplates[0]
+        .map(generatePageNamePattern)
+        .join('|');
+      const closedDiscussionEndingsPattern = cd.config.closedDiscussionTemplates[1]
+        .map(generatePageNamePattern)
+        .join('|');
+      if (closedDiscussionEndingsPattern) {
+        closedDiscussionPairRegexp = new RegExp(
+          (
+            `\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *(?=[|}])[^}]*\\}\\}\\s*([:*#]*)[^]*?` +
+            `\\{\\{ *(?:${closedDiscussionEndingsPattern}) *(?=[|}])[^}]*\\}\\}`
+          ),
+          'g'
+        );
+      }
+      closedDiscussionSingleRegexp = new RegExp(
+        `\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *\\|[^}]{0,50}?=\\s*([:*#]*)`,
+        'g'
+      );
+    }
+
+    if (closedDiscussionPairRegexp) {
+      adjustedCode = adjustedCode.replace(closedDiscussionPairRegexp, (s, indentation) => (
         '\x01'.repeat(indentation.length) + ' '.repeat(s.length - indentation.length - 1) + '\x02'
       ));
-  }
-  if (cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP) {
+    }
+
     let match;
-    while ((match = cd.g.CLOSED_DISCUSSION_SINGLE_REGEXP.exec(adjustedCode))) {
+    while ((match = closedDiscussionSingleRegexp.exec(adjustedCode))) {
       const codeBeforeMatch = adjustedCode.slice(0, match.index);
       const codeAfterMatch = adjustedCode.slice(match.index);
       const adjustedCam = hideTemplatesRecursively(codeAfterMatch, null, match[1].length).code;
@@ -137,7 +162,7 @@ function getAdjustedChunkCodeAfter(currentIndex, wholeCode) {
   const nextSectionHeadingMatch = adjustedCodeAfter.match(/\n+(=+).*\1[ \t\x01\x02]*\n|$/);
   let chunkCodeAfterEndIndex = currentIndex + nextSectionHeadingMatch.index + 1;
   let chunkCodeAfter = wholeCode.slice(currentIndex, chunkCodeAfterEndIndex);
-  cd.g.KEEP_IN_SECTION_ENDING.forEach((regexp) => {
+  cd.g.keepInSectionEnding.forEach((regexp) => {
     const match = chunkCodeAfter.match(regexp);
     if (match) {
       // `1` accounts for the first line break.
@@ -176,7 +201,7 @@ class Comment extends CommentSkeleton {
     this.deferHideMenu = this.deferHideMenu.bind(this);
     this.dontHideMenu = this.dontHideMenu.bind(this);
 
-    elementPrototypes = cd.g.COMMENT_ELEMENT_PROTOTYPES;
+    elementPrototypes = cd.g.commentElementPrototypes;
 
     /**
      * Comment author user object.
@@ -459,7 +484,7 @@ class Comment extends CommentSkeleton {
     [this.highlightables[0], this.highlightables[this.highlightables.length - 1]]
       .filter(unique)
       .filter((el) => (
-        cd.g.BAD_HIGHLIGHTABLE_ELEMENTS.includes(el.tagName) ||
+        cd.g.badHighlightableElements.includes(el.tagName) ||
         (this.highlightables.length > 1 && el.tagName === 'LI' && el.parentNode.tagName === 'OL') ||
         Array.from(el.classList).some((name) => !name.startsWith('cd-'))
       ))
@@ -536,7 +561,7 @@ class Comment extends CommentSkeleton {
           link: this.authorLink,
         });
       } else {
-        pageName = `${cd.g.CONTRIBS_PAGE}/${this.author.getName()}`;
+        pageName = `${cd.g.contribsPage}/${this.author.getName()}`;
       }
       this.authorLink.title = pageName;
       this.authorLink.href = mw.util.getUrl(pageName);
@@ -564,7 +589,7 @@ class Comment extends CommentSkeleton {
     bdiElement.textContent = this.author.getName();
 
     if (settings.get('showContribsLink') && this.author.isRegistered()) {
-      const pageName = `${cd.g.CONTRIBS_PAGE}/${this.author.getName()}`;
+      const pageName = `${cd.g.contribsPage}/${this.author.getName()}`;
       contribsLink.title = pageName;
       contribsLink.href = mw.util.getUrl(pageName);
     }
@@ -835,14 +860,14 @@ class Comment extends CommentSkeleton {
   formatTimestamp(date, originalTimestamp) {
     let timestamp;
     let title = '';
-    if (cd.g.ARE_TIMESTAMPS_ALTERED) {
+    if (cd.g.areTimestampsAltered) {
       timestamp = formatDate(date, !settings.get('hideTimezone'));
     }
 
     if (
       settings.get('timestampFormat') === 'relative' &&
       settings.get('useUiTime') &&
-      cd.g.CONTENT_TIMEZONE !== cd.g.UI_TIMEZONE
+      cd.g.contentTimezone !== cd.g.uiTimezone
     ) {
       title = formatDateNative(date, true) + '\n';
     }
@@ -1050,10 +1075,10 @@ class Comment extends CommentSkeleton {
     floatingRects.forEach((rect) => {
       const floatingTop = scrollY + rect.outerTop;
       const floatingBottom = scrollY + rect.outerBottom;
-      if (bottom > floatingTop && bottom < floatingBottom + cd.g.CONTENT_LINE_HEIGHT) {
+      if (bottom > floatingTop && bottom < floatingBottom + cd.g.contentLineHeight) {
         bottomIntersectsFloating = true;
       }
-      if (bottom > floatingTop && top < floatingBottom + cd.g.CONTENT_LINE_HEIGHT) {
+      if (bottom > floatingTop && top < floatingBottom + cd.g.contentLineHeight) {
         intersectsFloatingCount++;
       }
     });
@@ -1262,7 +1287,7 @@ class Comment extends CommentSkeleton {
           .contains('mw-content-ltr');
         this.textDirection = isLtr ? 'ltr' : 'rtl';
       } else {
-        this.textDirection = cd.g.CONTENT_TEXT_DIRECTION;
+        this.textDirection = cd.g.contentTextDirection;
       }
     }
 
@@ -1290,8 +1315,8 @@ class Comment extends CommentSkeleton {
       // "this.highlightables.length === 1" is a workaround for cases such as
       // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202005160930_Example.
       startMargin = this.highlightables.length === 1 ?
-        cd.g.CONTENT_FONT_SIZE * 3.2 :
-        cd.g.CONTENT_FONT_SIZE * 2.2 - 1;
+        cd.g.contentFontSize * 3.2 :
+        cd.g.contentFontSize * 2.2 - 1;
     } else if (this.isStartStretched) {
       startMargin = controller.getContentColumnOffsets().startMargin;
     } else {
@@ -1308,15 +1333,13 @@ class Comment extends CommentSkeleton {
             Math.abs(this.offset[prop] - anchorElement.parentNode.getBoundingClientRect()[prop]) - 1
           );
         } else {
-          startMargin = this.level === 0 ?
-            cd.g.COMMENT_FALLBACK_SIDE_MARGIN :
-            cd.g.CONTENT_FONT_SIZE;
+          startMargin = this.level === 0 ? cd.g.commentFallbackSideMargin : cd.g.contentFontSize;
         }
       }
     }
     const endMargin = this.isEndStretched ?
       controller.getContentColumnOffsets().startMargin :
-      cd.g.COMMENT_FALLBACK_SIDE_MARGIN;
+      cd.g.commentFallbackSideMargin;
 
     const left = this.getTextDirection() === 'ltr' ? startMargin : endMargin;
     const right = this.getTextDirection() === 'ltr' ? endMargin : startMargin;
@@ -1890,8 +1913,6 @@ class Comment extends CommentSkeleton {
   flashTarget() {
     this.isTarget = true;
 
-    // We don't take the color from cd.g.COMMENT_TARGET_COLOR as it may be overriden by the user in
-    // their personal CSS.
     this.flash('target', 1500, () => {
       this.isTarget = false;
     });
@@ -2547,8 +2568,8 @@ class Comment extends CommentSkeleton {
       const revisions = await this.getSourcePage().getArchivedPage().getRevisions({
         rvprop: ['ids', 'comment', 'parsedcomment', 'timestamp'],
         rvdir: 'newer',
-        rvstart: new Date(this.date.getTime() - cd.g.MS_IN_MIN * 10).toISOString(),
-        rvend: new Date(this.date.getTime() + cd.g.MS_IN_MIN * 3).toISOString(),
+        rvstart: new Date(this.date.getTime() - cd.g.msInMin * 10).toISOString(),
+        rvend: new Date(this.date.getTime() + cd.g.msInMin * 3).toISOString(),
         rvuser: this.author.getName(),
         rvlimit: 500,
       });
@@ -2592,14 +2613,14 @@ class Comment extends CommentSkeleton {
       const urlEnding = decodeURI(
         pageRegistry.getCurrent().getArchivedPage().getUrl({ diff: edit.revid })
       );
-      return `${cd.g.SERVER}${urlEnding}`;
+      return `${cd.g.server}${urlEnding}`;
     } else if (format === 'short') {
-      return `${cd.g.SERVER}/?diff=${edit.revid}`;
+      return `${cd.g.server}/?diff=${edit.revid}`;
     } else if (format === 'wikilink') {
       const specialPageName = (
         mw.config.get('wgFormattedNamespaces')[-1] +
         ':' +
-        cd.g.SPECIAL_PAGE_ALIASES.Diff
+        cd.g.specialPageAliases.Diff
       );
       return `[[${specialPageName}/${edit.revid}]]`;
     }
@@ -2668,7 +2689,7 @@ class Comment extends CommentSkeleton {
 
     this.thankButton.setPending(true);
 
-    const genderRequest = cd.g.GENDER_AFFECTS_USER_STRING && this.author.isRegistered() ?
+    const genderRequest = cd.g.genderAffectsUserString && this.author.isRegistered() ?
       loadUserGenders([this.author]) :
       undefined;
 
@@ -2853,7 +2874,7 @@ class Comment extends CommentSkeleton {
     }
 
     const scrollY = window.scrollY;
-    const viewportTop = scrollY + cd.g.BODY_SCROLL_PADDING_TOP;
+    const viewportTop = scrollY + cd.g.bodyScrollPaddingTop;
     const viewportBottom = scrollY + window.innerHeight;
 
     return partially ?
@@ -3016,13 +3037,13 @@ class Comment extends CommentSkeleton {
       // coordinated with the reverse transformation code in CommentForm#commentTextToCode. Some
       // more comments are there.
       const entireLineRegexp = new RegExp(/^(?:\x01\d+_(block|template)\x02) *$/);
-      const fileRegexp = new RegExp(`^\\[\\[${cd.g.FILE_PREFIX_PATTERN}.+\\]\\]$`, 'i');
+      const fileRegexp = new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$`, 'i');
       const currentLineEndingRegexp = new RegExp(
-        `(?:<${cd.g.PNIE_PATTERN}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.PNIE_PATTERN}>|\\x04|<br[ \\n]*\\/?>) *$`,
+        `(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x04|<br[ \\n]*\\/?>) *$`,
         'i'
       );
       const nextLineBeginningRegexp = new RegExp(
-        `^(?:<\\/${cd.g.PNIE_PATTERN}>|<${cd.g.PNIE_PATTERN}|\\||!)`,
+        `^(?:<\\/${cd.g.pniePattern}>|<${cd.g.pniePattern}|\\||!)`,
         'i'
       );
       const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/;
@@ -3089,7 +3110,7 @@ class Comment extends CommentSkeleton {
   /**
    * While {@link Comment#adjustCommentBeginning adjusting the comment code data}, exclude the
    * heading code and/or some known "bad beginnings" (such as badly signed comments and code
-   * captured by {@link convenientDiscussions.g.BAD_COMMENT_BEGINNINGS}).
+   * captured by {@link convenientDiscussions.g.badCommentBeginnings}).
    *
    * @param {object} data
    * @returns {object}
@@ -3116,10 +3137,10 @@ class Comment extends CommentSkeleton {
 
       // Exclude the text of the previous comment that is ended with 3 or 5 tildes instead of 4 and
       // foreign timestamps. The foreign timestamp part can be moved out of the `!headingMatch`
-      // condition together with `cd.g.BAD_COMMENT_BEGINNINGS` check to allow to apply to cases like
+      // condition together with `cd.g.badCommentBeginnings` check to allow to apply to cases like
       // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Start_of_section,_comment_with_timestamp_but_without_author,_newline_inside_comment,_HTML_comments_before_reply,
       // but this can create problems with removing stuff from the opening comment.
-      [cd.config.signatureEndingRegexp, areThereForeignTimestamps ? null : cd.g.TIMEZONE_REGEXP]
+      [cd.config.signatureEndingRegexp, areThereForeignTimestamps ? null : cd.g.timezoneRegexp]
         .filter(notNull)
         .forEach((originalRegexp) => {
           const regexp = new RegExp(originalRegexp.source + '$', 'm');
@@ -3147,7 +3168,7 @@ class Comment extends CommentSkeleton {
       // This should be before the `this.level > 0` block to account for cases like
       // https://ru.wikipedia.org/w/index.php?oldid=110033693&section=6&action=edit (the regexp
       // doesn't catch the comment because of a newline inside the `syntaxhighlight` element).
-      cd.g.BAD_COMMENT_BEGINNINGS.forEach((pattern) => {
+      cd.g.badCommentBeginnings.forEach((pattern) => {
         if (pattern.source[0] !== '^') {
           console.debug('Regexps in cd.config.customBadCommentBeginnings should have "^" as the first character.');
         }
@@ -3299,8 +3320,8 @@ class Comment extends CommentSkeleton {
       return '';
     }
 
-    if (this.isOwn && cd.g.USER_SIGNATURE_PREFIX_REGEXP) {
-      data.code = data.code.replace(cd.g.USER_SIGNATURE_PREFIX_REGEXP, movePartToSignature);
+    if (this.isOwn && cd.g.userSignaturePrefixRegexp) {
+      data.code = data.code.replace(cd.g.userSignaturePrefixRegexp, movePartToSignature);
     }
 
     const movePartsToSignature = (code, regexps) => {
@@ -3310,7 +3331,7 @@ class Comment extends CommentSkeleton {
       return code;
     };
 
-    const tagRegexp = new RegExp(`(<${cd.g.PIE_PATTERN}(?: [\\w ]+?=[^<>]+?)?> *)+$`, 'i');
+    const tagRegexp = new RegExp(`(<${cd.g.piePattern}(?: [\\w ]+?=[^<>]+?)?> *)+$`, 'i');
 
     // Why signaturePrefixRegexp three times? Well, the test case here is the MusikAnimal's
     // signature here: https://en.wikipedia.org/w/index.php?diff=next&oldid=946899148.
@@ -3603,9 +3624,9 @@ class Comment extends CommentSkeleton {
       '[^]*?(?:' +
       mw.util.escapeRegExp(thisInCode.signatureCode) +
       '|' +
-      cd.g.CONTENT_TIMESTAMP_REGEXP.source +
+      cd.g.contentTimestampRegexp.source +
       '.*' +
-      (cd.g.UNSIGNED_TEMPLATES_PATTERN ? `|${cd.g.UNSIGNED_TEMPLATES_PATTERN}.*` : '') +
+      (cd.g.unsignedTemplatesPattern ? `|${cd.g.unsignedTemplatesPattern}.*` : '') +
 
       // `\x01` is from hiding closed discussions and HTML comments. TODO: Line can start with a
       // HTML comment in a <pre> tag, that doesn't mean we can put a comment after it. We perhaps
@@ -3632,7 +3653,16 @@ class Comment extends CommentSkeleton {
     let indentationAfter = match[match.length - 1];
     let isNextLine = countOccurrences(adjustedCodeBetween, /\n/g) === 1;
 
-    if (cd.g.OUTDENT_TEMPLATES_REGEXP) {
+    if (cd.config.outdentTemplates.length) {
+      if (!outdentTemplatesRegexp) {
+        const pattern = cd.config.outdentTemplates
+          .map(generatePageNamePattern)
+          .join('|');
+        outdentTemplatesRegexp = new RegExp(
+          `^\\s*([:*#]*)[ \t]*\\{\\{ *(?:${pattern}) *(?:\\||\\}\\})`
+        );
+      }
+
       /*
         If there is an "outdent" template next to the insertion place:
         * If the outdent template is right next to the comment replied to, we throw an error.
@@ -3641,7 +3671,7 @@ class Comment extends CommentSkeleton {
       const [, outdentIndentation] = (
         adjustedChunkCodeAfter
           .slice(adjustedCodeBetween.length)
-          .match(cd.g.OUTDENT_TEMPLATES_REGEXP) ||
+          .match(outdentTemplatesRegexp) ||
         []
       );
       if (outdentIndentation !== undefined) {
@@ -3825,7 +3855,7 @@ class Comment extends CommentSkeleton {
    *   is not needed.
    */
   maybeRequestAuthorGender(callback, runAlways = false) {
-    if (cd.g.GENDER_AFFECTS_USER_STRING && this.author.isRegistered() && !this.author.getGender()) {
+    if (cd.g.genderAffectsUserString && this.author.isRegistered() && !this.author.getGender()) {
       let errorCallback;
       if (!this.genderRequest) {
         this.genderRequest = loadUserGenders([this.author]);
@@ -4107,7 +4137,7 @@ class Comment extends CommentSkeleton {
    */
   setNewAndSeenProperties(currentPageVisits, currentUnixTime, isUnseenStatePassed) {
     // Let's take 3 minutes as tolerable time discrepancy.
-    const isDateInFuture = this.date && this.date.getTime() > Date.now() + cd.g.MS_IN_MIN * 3;
+    const isDateInFuture = this.date && this.date.getTime() > Date.now() + cd.g.msInMin * 3;
 
     if (!this.date || isDateInFuture) {
       this.isNew = false;

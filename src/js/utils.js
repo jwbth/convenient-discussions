@@ -74,7 +74,7 @@ export function wrap(htmlOrJquery, options = {}) {
  * @param {string} [options.optionalText] Optional text added to the end of the summary if there is
  *   enough space. Ignored if there is not.
  * @param {string} [options.section] Section name.
- * @param {boolean} [options.addPostfix=true] Whether to add `cd.g.SUMMARY_POSTFIX` to the summary.
+ * @param {boolean} [options.addPostfix=true] Whether to add `cd.g.summaryPostfix` to the summary.
  * @returns {string}
  */
 export function buildEditSummary({ text, optionalText, section, addPostfix = true }) {
@@ -88,7 +88,7 @@ export function buildEditSummary({ text, optionalText, section, addPostfix = tru
       projectedText = cd.config.transformSummary(projectedText);
     }
 
-    if (projectedText.length <= cd.g.SUMMARY_LENGTH_LIMIT) {
+    if (projectedText.length <= cd.g.summaryLengthLimit) {
       fullText = projectedText;
       wasOptionalTextAdded = true;
     }
@@ -99,13 +99,13 @@ export function buildEditSummary({ text, optionalText, section, addPostfix = tru
       fullText = cd.config.transformSummary(fullText);
     }
 
-    if (fullText.length > cd.g.SUMMARY_LENGTH_LIMIT) {
-      fullText = fullText.slice(0, cd.g.SUMMARY_LENGTH_LIMIT - 1) + '…';
+    if (fullText.length > cd.g.summaryLengthLimit) {
+      fullText = fullText.slice(0, cd.g.summaryLengthLimit - 1) + '…';
     }
   }
 
   if (addPostfix) {
-    fullText += cd.g.SUMMARY_POSTFIX;
+    fullText += cd.g.summaryPostfix;
   }
 
   return fullText;
@@ -179,13 +179,13 @@ export function isInline(node, countTextNodesAsInline = false) {
   }
 
   if (
-    cd.g.POPULAR_INLINE_ELEMENTS.includes(node.tagName) ||
+    cd.g.popularInlineElements.includes(node.tagName) ||
 
     // <mw:tocplace> is currently present in place of the TOC in new Vector.
     node.tagName.startsWith('MW:')
   ) {
     return true;
-  } else if (cd.g.POPULAR_NOT_INLINE_ELEMENTS.includes(node.tagName)) {
+  } else if (cd.g.popularNotInlineElements.includes(node.tagName)) {
     return false;
   } else {
     // This can be called from a worker.
@@ -214,14 +214,14 @@ export function generatePageNamePattern(string) {
     return '';
   }
 
-  const fcUpperCase = firstChar.toUpperCase();
-  const fcLowerCase = firstChar.toLowerCase();
+  const firstCharUpperCase = firstChar.toUpperCase();
+  const firstCharLowerCase = firstChar.toLowerCase();
 
   // Could be issues, probably not very serious, resulting from the difference of PHP's
   // mb_strtoupper and JavaScript's String#toUpperCase, see ucFirst() and
   // https://phabricator.wikimedia.org/T141723#2513800.
-  const fcPattern = fcUpperCase !== fcLowerCase ?
-    '[' + fcUpperCase + fcLowerCase + ']' :
+  const fcPattern = firstCharUpperCase !== firstCharLowerCase ?
+    '[' + firstCharUpperCase + firstCharLowerCase + ']' :
     mw.util.escapeRegExp(firstChar);
 
   return fcPattern + mw.util.escapeRegExp(string.slice(1)).replace(/[ _]+/g, '[ _]+');
@@ -242,10 +242,10 @@ export function isProbablyTalkPage(pageName, namespaceNumber) {
   return (
     (
       namespaceNumber % 2 === 1 ||
-      cd.g.PAGE_WHITELIST_REGEXP?.test(pageName) ||
-      (!cd.g.PAGE_WHITELIST_REGEXP && cd.config.customTalkNamespaces.includes(namespaceNumber))
+      cd.g.pageWhitelistRegexp?.test(pageName) ||
+      (!cd.g.pageWhitelistRegexp && cd.config.customTalkNamespaces.includes(namespaceNumber))
     ) &&
-    !cd.g.PAGE_BLACKLIST_REGEXP?.test(pageName)
+    !cd.g.pageBlacklistRegexp?.test(pageName)
   );
 }
 
@@ -386,17 +386,19 @@ function charAt(string, offset, backwards) {
 }
 
 /**
- * Provide the `mw.Title.phpCharToUpper` functionality in the web worker context.
+ * Provide the
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Title-method-phpCharToUpper mw.Title.phpCharToUpper}
+ * functionality in the web worker context.
  *
  * @param {string} char
  * @returns {string}
  * @private
  */
 function phpCharToUpper(char) {
-  if (cd.g.PHP_CHAR_TO_UPPER[char] === 0) {
+  if (cd.g.phpCharToUpper[char] === 0) {
     return char;
   }
-  return cd.g.PHP_CHAR_TO_UPPER[char] || char.toUpperCase();
+  return cd.g.phpCharToUpper[char] || char.toUpperCase();
 }
 
 /**
@@ -419,7 +421,7 @@ export function ucFirst(string) {
  * @returns {string[]}
  */
 export function getContentLanguageMessages(messages) {
-  return messages.map((name) => cd.g.CONTENT_LANGUAGE_MESSAGES[name]);
+  return messages.map((name) => cd.g.contentLanguageMessages[name]);
 }
 
 /**
@@ -746,7 +748,7 @@ function calculateArrayOverlap(arr1, arr2) {
  * @returns {number}
  */
 export function calculateWordOverlap(s1, s2) {
-  const regexp = new RegExp(`[${cd.g.LETTER_PATTERN}]{2,}`, 'g');
+  const regexp = new RegExp(`[${cd.g.letterPattern}]{2,}`, 'g');
   const words1 = (s1.match(regexp) || []).filter(unique);
   const words2 = (s2.match(regexp) || []).filter(unique);
   if (!words1.length || !words2.length) {
@@ -769,7 +771,7 @@ export function keyCombination(e, keyCode, modifiers = []) {
     removeFromArrayIfPresent(modifiers, 'cmd');
     // In Chrome on Windows, e.metaKey corresponds to the Windows key, so we better check for a
     // platform.
-    modifiers.push(cd.g.CLIENT_PROFILE.platform === 'mac' ? 'meta' : 'ctrl');
+    modifiers.push(cd.g.clientProfile.platform === 'mac' ? 'meta' : 'ctrl');
   }
   return (
     e.keyCode === keyCode &&
@@ -795,7 +797,7 @@ export function focusInput(input) {
  * @returns {external:jQuery}
  */
 export function skin$(selectors) {
-  return $(selectors[cd.g.SKIN] || selectors.default || selectors.vector);
+  return $(selectors[cd.g.skin] || selectors.default || selectors.vector);
 }
 
 /**
@@ -887,7 +889,7 @@ export function getHigherNodeAndOffsetInSelection(selection) {
 export function isCmdModifierPressed(e) {
   // In Chrome on Windows, e.metaKey corresponds to the Windows key, so we better check for a
   // platform.
-  return cd.g.CLIENT_PROFILE.platform === 'mac' ? e.metaKey : e.ctrlKey;
+  return cd.g.clientProfile.platform === 'mac' ? e.metaKey : e.ctrlKey;
 }
 
 /**
@@ -997,7 +999,7 @@ export function decodeHtmlEntities(string) {
  * @returns {number}
  */
 export function getDayTimestamp() {
-  return Math.floor(Date.now() / cd.g.MS_IN_DAY);
+  return Math.floor(Date.now() / cd.g.msInDay);
 }
 
 /**

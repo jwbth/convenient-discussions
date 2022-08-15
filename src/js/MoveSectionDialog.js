@@ -3,7 +3,7 @@ import CdError from './CdError';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
-import { buildEditSummary, focusInput, wrap } from './util';
+import { buildEditSummary, focusInput, wrap } from './utils';
 import { createCheckboxField, tweakUserOoUiClass } from './ooui';
 import { encodeWikilink, endWithTwoNewlines, findFirstTimestamp } from './wikitext';
 
@@ -305,7 +305,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    * Load the source page code.
    *
    * @returns {object}
-   * @throws {Array.<string, boolean>}
+   * @throws {Array.<string|boolean>}
    * @private
    */
   async loadSourcePage() {
@@ -357,7 +357,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    *
    * @param {import('./pageRegistry').Page} targetPage
    * @returns {object}
-   * @throws {Array.<string, boolean>}
+   * @throws {Array.<string|boolean>}
    * @private
    */
   async loadTargetPage(targetPage) {
@@ -395,7 +395,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    * @param {object} source
    * @param {object} target
    * @returns {object}
-   * @throws {Array.<string, boolean>}
+   * @throws {Array.<string|boolean>}
    * @private
    */
   async editTargetPage(source, target) {
@@ -404,7 +404,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
     if (cd.config.getMoveTargetPageCode && this.controls.keepLink.input.isSelected()) {
       const code = cd.config.getMoveTargetPageCode(
         source.sectionWikilink.replace(/=/g, '{{=}}'),
-        cd.g.USER_SIGNATURE.replace(/=/g, '{{=}}')
+        cd.g.userSignature.replace(/=/g, '{{=}}')
       );
       if (Array.isArray(code)) {
         codeBeginning = code[0] + '\n';
@@ -483,17 +483,17 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    * @param {object} source
    * @param {object} target
    * @returns {object}
-   * @throws {Array.<string, boolean, (boolean|undefined)>}
+   * @throws {Array.<string|boolean>}
    */
   async editSourcePage(source, target) {
     const sectionCode = source.sectionInCode.code;
-    const timestamp = findFirstTimestamp(sectionCode) || cd.g.SIGN_CODE + '~';
+    const timestamp = findFirstTimestamp(sectionCode) || cd.g.signCode + '~';
 
     let newSectionCode;
     if (cd.config.getMoveSourcePageCode && this.controls.keepLink.input.isSelected()) {
       const code = cd.config.getMoveSourcePageCode(
         target.sectionWikilink,
-        cd.g.USER_SIGNATURE,
+        cd.g.userSignature,
         timestamp
       );
       const codeBefore = sectionCode.slice(0, source.sectionInCode.relativeContentStartIndex);

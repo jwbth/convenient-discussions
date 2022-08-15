@@ -19,7 +19,7 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import { getTimezoneOffset } from 'date-fns-tz';
 
 import cd from './cd';
-import { getContentLanguageMessages, removeDirMarks, zeroPad } from './util';
+import { getContentLanguageMessages, removeDirMarks, zeroPad } from './utils';
 
 let utcString;
 
@@ -76,7 +76,7 @@ export const relativeTimeThresholds = [
 export function initDayjs() {
   if (dayjs.utc) return;
 
-  const locale = cd.i18n[cd.g.USER_LANGUAGE]?.dayjsLocale;
+  const locale = cd.i18n[cd.g.userLanguage]?.dayjsLocale;
   if (locale) {
     dayjs.locale(locale);
   }
@@ -99,13 +99,13 @@ export function initDayjs() {
 export function getDateFromTimestampMatch(match, timezone) {
   let isContentLanguage = timezone === undefined;
   if (isContentLanguage) {
-    timezone = cd.g.CONTENT_TIMEZONE;
+    timezone = cd.g.contentTimezone;
   }
 
-  const digits = isContentLanguage ? cd.g.CONTENT_DIGITS : cd.g.UI_DIGITS;
+  const digits = isContentLanguage ? cd.g.contentDigits : cd.g.uiDigits;
   const matchingGroups = isContentLanguage ?
-    cd.g.CONTENT_TIMESTAMP_MATCHING_GROUPS :
-    cd.g.UI_TIMESTAMP_MATCHING_GROUPS;
+    cd.g.contentTimestampMatchingGroups :
+    cd.g.uiTimestampMatchingGroups;
 
   const untransformDigits = (text) => {
     if (!digits) {
@@ -170,7 +170,7 @@ export function getDateFromTimestampMatch(match, timezone) {
   const unixTime = Date.UTC(year, monthIdx, day, hours, minutes);
   let timezoneOffset;
   if (typeof timezone === 'number') {
-    timezoneOffset = timezone * cd.g.MS_IN_MIN;
+    timezoneOffset = timezone * cd.g.msInMin;
   } else {
     // Using date-fns-tz's getTimezoneOffset is way faster than using day.js's methods.
     timezoneOffset = timezone === 'UTC' ? 0 : getTimezoneOffset(timezone, unixTime);
@@ -201,8 +201,8 @@ export function parseTimestamp(timestamp, timezone) {
   const adjustedTimestamp = removeDirMarks(timestamp, true);
 
   const regexp = timezone === undefined ?
-    cd.g.PARSE_TIMESTAMP_CONTENT_REGEXP :
-    cd.g.PARSE_TIMESTAMP_UI_REGEXP;
+    cd.g.parseTimestampContentRegexp :
+    cd.g.parseTimestampUiRegexp;
   const match = adjustedTimestamp.match(regexp);
   if (!match) {
     return null;
@@ -271,17 +271,17 @@ export function formatDateNative(date, addTimezone = false, timezone) {
   let hours;
   let minutes;
   let dayOfWeek;
-  if (cd.settings.get('useUiTime') && !['UTC', 0].includes(cd.g.UI_TIMEZONE) && !timezone) {
-    if (cd.g.ARE_UI_AND_LOCAL_TIMEZONE_SAME) {
+  if (cd.settings.get('useUiTime') && !['UTC', 0].includes(cd.g.uiTimezone) && !timezone) {
+    if (cd.g.areUiAndLocalTimezoneSame) {
       timezoneOffset = -date.getTimezoneOffset();
     } else {
-      timezoneOffset = typeof cd.g.UI_TIMEZONE === 'number' ?
-        cd.g.UI_TIMEZONE :
+      timezoneOffset = typeof cd.g.uiTimezone === 'number' ?
+        cd.g.uiTimezone :
 
         // Using date-fns-tz's getTimezoneOffset is way faster than using day.js's methods.
-        getTimezoneOffset(cd.g.UI_TIMEZONE, date.getTime()) / cd.g.MS_IN_MIN;
+        getTimezoneOffset(cd.g.uiTimezone, date.getTime()) / cd.g.msInMin;
     }
-    date = new Date(date.getTime() + timezoneOffset * cd.g.MS_IN_MIN);
+    date = new Date(date.getTime() + timezoneOffset * cd.g.msInMin);
   } else if (!timezone || timezone === 'UTC') {
     timezoneOffset = 0;
   } else {
@@ -304,7 +304,7 @@ export function formatDateNative(date, addTimezone = false, timezone) {
   }
 
   let string = '';
-  const format = cd.g.UI_DATE_FORMAT;
+  const format = cd.g.uiDateFormat;
   for (let p = 0; p < format.length; p++) {
     let code = format[p];
     if ((code === 'x' && p < format.length - 1) || (code === 'xk' && p < format.length - 1)) {
@@ -396,19 +396,19 @@ export function formatDateImproved(date, addTimezone = false) {
   let now = new Date();
   let dayjsDate = dayjs(date);
   let timezoneOffset;
-  if (cd.settings.get('useUiTime') && !['UTC', 0].includes(cd.g.UI_TIMEZONE)) {
-    if (cd.g.ARE_UI_AND_LOCAL_TIMEZONE_SAME) {
+  if (cd.settings.get('useUiTime') && !['UTC', 0].includes(cd.g.uiTimezone)) {
+    if (cd.g.areUiAndLocalTimezoneSame) {
       timezoneOffset = -date.getTimezoneOffset();
     } else {
-      timezoneOffset = typeof cd.g.UI_TIMEZONE === 'number' ?
-        cd.g.UI_TIMEZONE :
+      timezoneOffset = typeof cd.g.uiTimezone === 'number' ?
+        cd.g.uiTimezone :
 
         // Using date-fns-tz's getTimezoneOffset is way faster than using day.js's methods.
-        getTimezoneOffset(cd.g.UI_TIMEZONE, now.getTime()) / cd.g.MS_IN_MIN;
+        getTimezoneOffset(cd.g.uiTimezone, now.getTime()) / cd.g.msInMin;
 
       dayjsDate = dayjsDate.utcOffset(timezoneOffset);
     }
-    now = new Date(now.getTime() + timezoneOffset * cd.g.MS_IN_MIN);
+    now = new Date(now.getTime() + timezoneOffset * cd.g.msInMin);
   } else {
     timezoneOffset = 0;
     dayjsDate = dayjsDate.utc();
@@ -455,7 +455,7 @@ export function formatDateImproved(date, addTimezone = false) {
 export function formatDateRelative(date) {
   const now = Date.now();
   const ms = date.getTime();
-  if (ms < now && ms > now - cd.g.MS_IN_MIN) {
+  if (ms < now && ms > now - cd.g.msInMin) {
     return cd.s('comment-timestamp-lessthanminute');
   }
 
@@ -468,6 +468,6 @@ export function formatDateRelative(date) {
   return formatDistanceToNowStrict(date, {
     addSuffix: true,
     roundingMethod: 'floor',
-    locale: cd.i18n[cd.g.USER_LANGUAGE].dateFnsLocale,
+    locale: cd.i18n[cd.g.userLanguage].dateFnsLocale,
   });
 }

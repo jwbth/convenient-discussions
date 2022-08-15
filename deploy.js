@@ -8,7 +8,7 @@ const prompts = require('prompts');
 require('json5/lib/register.js');
 
 const config = require('./config.json5');
-const getUrl = require('./misc/util.js').getUrl;
+const getUrl = require('./misc/utils.js').getUrl;
 
 /*
   node deploy --test

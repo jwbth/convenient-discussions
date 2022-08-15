@@ -1,7 +1,7 @@
 import CdError from './CdError';
 import cd from './cd';
 import { TreeWalker } from './treeWalker';
-import { defined, isMetadataNode } from './util';
+import { defined, isMetadataNode } from './utils';
 
 /**
  * Class containing the main properties of a section. It is extended by {@link Section}. This class
@@ -74,7 +74,7 @@ class SectionSkeleton {
 
     if (editLink) {
       // `href` property with the full URL is not available in the worker context.
-      const href = cd.g.SERVER + editLink.getAttribute('href');
+      const href = cd.g.server + editLink.getAttribute('href');
 
       /**
        * URL to edit the section.

@@ -11,11 +11,11 @@ cd.config = {
   defaultSignaturePrefix: ' ',
 };
 cd.g = {
-  SETTINGS_OPTION_NAME: 'userjs-convenientDiscussions-settings',
-  PHP_CHAR_TO_UPPER: {},
-  USER_LANGUAGE: 'en',
-  UI_DATE_FORMAT: 'H:i, j F Y',
-  MS_IN_MIN: 1000 * 60,
+  settingsOptionName: 'userjs-convenientDiscussions-settings',
+  phpCharToUpper: {},
+  userLanguage: 'en',
+  uiDateFormat: 'H:i, j F Y',
+  msInMin: 1000 * 60,
 };
 cd.mws = (name) => ({
   'timezone-utc': 'UTC',
@@ -103,15 +103,15 @@ function testWithSettings(
     }
 
     const dateObj = new Date(date);
-    cd.g.UI_TIMEZONE = timezone || 'UTC';
-    cd.g.UI_TIMEZONE_OFFSET = getTimezoneOffset(timezone, dateObj.getTime()) / cd.g.MS_IN_MIN;
+    cd.g.uiTimezone = timezone || 'UTC';
+    cd.g.uiTimezoneOffset = getTimezoneOffset(timezone, dateObj.getTime()) / cd.g.msInMin;
     settings.set('timestampFormat', timestampFormat);
     settings.set('useUiTime', useUiTime);
     settings.set('hideTimezone', hideTimezone);
-    cd.g.ARE_TIMESTAMPS_ALTERED = (
-      (settings.get('useUiTime') && 'UTC' !== cd.g.UI_TIMEZONE) ||
+    cd.g.areTimestampsAltered = (
+      (settings.get('useUiTime') && 'UTC' !== cd.g.uiTimezone) ||
       settings.get('timestampFormat') !== 'default' ||
-      mw.config.get('wgContentLanguage') !== cd.g.USER_LANGUAGE ||
+      mw.config.get('wgContentLanguage') !== cd.g.userLanguage ||
       settings.get('hideTimezone')
     );
 

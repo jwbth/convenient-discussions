@@ -6,8 +6,12 @@
 
 import cd from './cd';
 import userRegistry from './userRegistry';
-import { decodeHtmlEntities, hideText, removeDirMarks } from './util';
+import { decodeHtmlEntities, generatePageNamePattern, hideText, removeDirMarks } from './utils';
 import { parseTimestamp } from './timestamp';
+
+let fileEmbedRegexp;
+let unsignedTemplatesRegexp;
+let commentAntipatternsRegexp;
 
 /**
  * Generate a regular expression that searches for specified tags in the text (opening, closing, and
@@ -67,6 +71,15 @@ export function findFirstTimestamp(code) {
  * @returns {string}
  */
 export function removeWikiMarkup(code) {
+  // Actually, only text from "mini" format images should be captured, because in the standard
+  // format the text is not displayed. See "img_thumbnail" in
+  // https://ru.wikipedia.org/w/api.php?action=query&meta=siteinfo&siprop=magicwords&formatversion=2.
+  // Unfortunately, that would add like 100ms to the server's response time.
+  fileEmbedRegexp ||= new RegExp(
+    `\\[\\[${cd.g.filePrefixPattern}[^\\]]+?(?:\\|[^\\]]+?\\|((?:\\[\\[[^\\]]+?\\]\\]|[^|\\]])+))?\\]\\]`,
+    'ig'
+  );
+
   return code
     // Remove comments
     .replace(/<!--[^]*?-->/g, '')
@@ -75,10 +88,10 @@ export function removeWikiMarkup(code) {
     .replace(/\x01 *\x02/g, '')
 
     // Pipe trick
-    .replace(cd.g.PIPE_TRICK_REGEXP, '$1$2$3')
+    .replace(cd.g.pipeTrickRegexp, '$1$2$3')
 
     // Extract displayed text from file embeddings
-    .replace(cd.g.FILE_EMBED_REGEXP, '$1')
+    .replace(fileEmbedRegexp, '$1')
 
     // Extract displayed text from [[wikilinks]]
     .replace(/\[\[:?(?:[^|[\]<>\n]+\|)?(.+?)\]\]/g, '$1')
@@ -153,7 +166,7 @@ function extractRegularSignatures(adjustedCode, code) {
   const ending = `(?:\\n*|$)`;
   const afterTimestamp = `(?!["»])(?:\\}\\}|</small>)?`;
   const timestampRegexp = new RegExp(
-    `^((.*?)(${cd.g.CONTENT_TIMESTAMP_REGEXP.source})${afterTimestamp}).*${ending}`,
+    `^((.*?)(${cd.g.contentTimestampRegexp.source})${afterTimestamp}).*${ending}`,
     'igm'
   );
 
@@ -168,15 +181,18 @@ function extractRegularSignatures(adjustedCode, code) {
       1 - the whole line with the signature
       2 - text before the timestamp
       3 - text before the first user link
-      4 - author name (inside cd.g.CAPTURE_USER_NAME_PATTERN)
-      5 - sometimes, a slash appears here (inside cd.g.CAPTURE_USER_NAME_PATTERN)
+      4 - author name (inside cd.g.captureUserNamePattern)
+      5 - sometimes, a slash appears here (inside cd.g.captureUserNamePattern)
       6 - timestamp
      */
-    `^(((.*?)${cd.g.CAPTURE_USER_NAME_PATTERN}.{1,${signatureScanLimit}})(${cd.g.CONTENT_TIMESTAMP_REGEXP.source})${afterTimestamp}.*)${ending}`,
+    (
+      `^(((.*?)${cd.g.captureUserNamePattern}.{1,${signatureScanLimit}})` +
+      `(${cd.g.contentTimestampRegexp.source})${afterTimestamp}.*)${ending}`
+    ),
     'im'
   );
-  const lastAuthorLinkRegexp = new RegExp(`^.*${cd.g.CAPTURE_USER_NAME_PATTERN}`, 'i');
-  const authorLinkRegexp = new RegExp(cd.g.CAPTURE_USER_NAME_PATTERN, 'ig');
+  const lastAuthorLinkRegexp = new RegExp(`^.*${cd.g.captureUserNamePattern}`, 'i');
+  const authorLinkRegexp = new RegExp(cd.g.captureUserNamePattern, 'ig');
 
   let signatures = [];
   let timestampMatch;
@@ -256,52 +272,54 @@ function extractRegularSignatures(adjustedCode, code) {
  * @private
  */
 function extractUnsigneds(adjustedCode, code, signatures) {
+  if (!cd.config.unsignedTemplates.length) {
+    return [];
+  }
+
   const unsigneds = [];
-
-  if (cd.g.UNSIGNED_TEMPLATES_REGEXP) {
-    let match;
-    while ((match = cd.g.UNSIGNED_TEMPLATES_REGEXP.exec(adjustedCode))) {
-      let author;
-      let timestamp;
-      if (cd.g.CONTENT_TIMESTAMP_NO_TZ_REGEXP.test(match[2])) {
-        timestamp = match[2];
-        author = match[3];
-      } else if (cd.g.CONTENT_TIMESTAMP_NO_TZ_REGEXP.test(match[3])) {
-        timestamp = match[3];
-        author = match[2];
-      } else {
-        author = match[2];
-      }
-      author &&= userRegistry.get(decodeHtmlEntities(author));
-
-      // Append "(UTC)" to the `timestamp` of templates that allow to omit the timezone. The
-      // timezone could be not UTC, but currently the timezone offset is taken from the wiki
-      // configuration, so doesn't have effect.
-      if (timestamp && !cd.g.CONTENT_TIMESTAMP_REGEXP.test(timestamp)) {
-        timestamp += ' (UTC)';
-
-        // Workaround for "undated" templates
-        author ||= '<undated>';
-      }
-
-      let startIndex = match.index;
-      const endIndex = match.index + match[1].length;
-      let dirtyCode = code.slice(startIndex, endIndex);
-      const nextCommentStartIndex = match.index + match[0].length;
-
-      // "[5 tildes] {{unsigned|...}}" cases. In these cases, both the signature and
-      // {{unsigned|...}} are considered signatures and added to the array. We could combine them
-      // but that would need corresponding code in Parser.js which could be tricky, so for now we
-      // just remove the duplicate. That still allows to reply to the comment.
-      const relevantSignatureIndex = (
-        signatures.findIndex((sig) => sig.nextCommentStartIndex === nextCommentStartIndex)
-      );
-      if (relevantSignatureIndex !== -1) {
-        signatures.splice(relevantSignatureIndex, 1);
-      }
-
-      unsigneds.push({ author, timestamp, startIndex, endIndex, dirtyCode, nextCommentStartIndex });
+  unsignedTemplatesRegexp ||= new RegExp(cd.g.unsignedTemplatesPattern + '.*\\n', 'g');
+  let match;
+  while ((match = unsignedTemplatesRegexp.exec(adjustedCode))) {
+    let author;
+    let timestamp;
+    if (cd.g.contentTimestampNoTzRegexp.test(match[2])) {
+      timestamp = match[2];
+      author = match[3];
+    } else if (cd.g.contentTimestampNoTzRegexp.test(match[3])) {
+      timestamp = match[3];
+      author = match[2];
+    } else {
+      author = match[2];
     }
+    author &&= userRegistry.get(decodeHtmlEntities(author));
+
+    // Append "(UTC)" to the `timestamp` of templates that allow to omit the timezone. The timezone
+    // could be not UTC, but currently the timezone offset is taken from the wiki configuration, so
+    // doesn't have effect.
+    if (timestamp && !cd.g.contentTimestampRegexp.test(timestamp)) {
+      timestamp += ' (UTC)';
+
+      // Workaround for "undated" templates
+      author ||= '<undated>';
+    }
+
+    let startIndex = match.index;
+    const endIndex = match.index + match[1].length;
+    let dirtyCode = code.slice(startIndex, endIndex);
+    const nextCommentStartIndex = match.index + match[0].length;
+
+    // `[5 tildes] {{unsigned|...}}` cases. In these cases, both the signature and
+    // `{{unsigned|...}}` are considered signatures and added to the array. We could combine them
+    // but that would need corresponding code in Parser.js which could be tricky, so for now we just
+    // remove the duplicate. That still allows to reply to the comment.
+    const relevantSignatureIndex = (
+      signatures.findIndex((sig) => sig.nextCommentStartIndex === nextCommentStartIndex)
+    );
+    if (relevantSignatureIndex !== -1) {
+      signatures.splice(relevantSignatureIndex, 1);
+    }
+
+    unsigneds.push({ author, timestamp, startIndex, endIndex, dirtyCode, nextCommentStartIndex });
   }
 
   return unsigneds;
@@ -318,13 +336,42 @@ function extractUnsigneds(adjustedCode, code, signatures) {
  * @returns {object[]}
  */
 export function extractSignatures(code) {
+  // TODO: Instead of removing only lines containing antipatterns from wikitext, hide entire
+  // templates (see the "markerLength" parameter in wikitext.hideTemplatesRecursively) and tags?
+  // But keep in mind that this code may still be part of comments.
+  if (
+    !commentAntipatternsRegexp &&
+    (
+      cd.config.elementsToExcludeClasses.length ||
+      cd.config.templatesToExclude.length ||
+      cd.config.commentAntipatterns.length
+    )
+  ) {
+    const commentAntipatternsPatternParts = [];
+    if (cd.config.elementsToExcludeClasses) {
+      const pattern = cd.config.elementsToExcludeClasses.join('\\b|\\b');
+      commentAntipatternsPatternParts.push(`class=(['"])[^'"\\n]*(?:\\b${pattern}\\b)[^'"\\n]*\\1`);
+    }
+    if (cd.config.templatesToExclude.length) {
+      const pattern = cd.config.templatesToExclude.map(generatePageNamePattern).join('|');
+      commentAntipatternsPatternParts.push(`\\{\\{ *(?:${pattern}) *(?:\\||\\}\\})`);
+    }
+    if (cd.config.commentAntipatterns) {
+      commentAntipatternsPatternParts.push(
+        ...cd.config.commentAntipatterns.map((pattern) => pattern.source)
+      );
+    }
+    const pattern = commentAntipatternsPatternParts.join('|');
+    commentAntipatternsRegexp = new RegExp(`^.*(?:${pattern}).*$`, 'mg');
+  }
+
   // Hide HTML comments, quotes and lines containing antipatterns.
   const adjustedCode = hideDistractingCode(code)
     .replace(
-      cd.g.QUOTE_REGEXP,
+      cd.g.quoteRegexp,
       (s, beginning, content, ending) => beginning + ' '.repeat(content.length) + ending
     )
-    .replace(cd.g.COMMENT_ANTIPATTERNS_REGEXP, (s) => ' '.repeat(s.length));
+    .replace(commentAntipatternsRegexp, (s) => ' '.repeat(s.length));
 
   let signatures = extractRegularSignatures(adjustedCode, code);
   const unsigneds = extractUnsigneds(adjustedCode, code, signatures);
@@ -332,7 +379,7 @@ export function extractSignatures(code) {
 
   // This is for the procedure adding anchors to comments linked from the comment, see
   // CommentForm#prepareNewPageCode.
-  const signatureIndex = adjustedCode.indexOf(cd.g.SIGN_CODE);
+  const signatureIndex = adjustedCode.indexOf(cd.g.signCode);
   if (signatureIndex !== -1) {
     signatures.push({
       author: userRegistry.getCurrent().getName(),

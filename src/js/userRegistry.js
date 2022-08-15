@@ -5,7 +5,7 @@
  */
 
 import cd from './cd';
-import { getFromLocalStorage, saveToLocalStorage, ucFirst, underlinesToSpaces } from './util';
+import { getFromLocalStorage, saveToLocalStorage, ucFirst, underlinesToSpaces } from './utils';
 import { getUsersByGlobalId } from './apiWrappers';
 
 /**
@@ -150,7 +150,7 @@ export default {
       underlinesToSpaces(ucFirst(name)).trim();
 
     if (!this.items[name]) {
-      const options = name === cd.g.USER_NAME ? { gender: mw.user.options.get('gender') } : {};
+      const options = name === cd.g.userName ? { gender: mw.user.options.get('gender') } : {};
       this.items[name] = new User(name, options);
     }
 
@@ -163,7 +163,7 @@ export default {
    * @returns {User}
    */
   getCurrent() {
-    return this.get(cd.g.USER_NAME);
+    return this.get(cd.g.userName);
   },
 
   /**
@@ -182,7 +182,7 @@ export default {
       userIds.some((id) => !mutedUsersData.users[id]) ||
 
       // Users can be renamed, so we can cache for a week max.
-      mutedUsersData.saveUnixTime < Date.now() - 7 * cd.g.MS_IN_DAY
+      mutedUsersData.saveUnixTime < Date.now() - 7 * cd.g.msInDay
     ) {
       getUsersByGlobalId(userIds).then(
         (users) => {

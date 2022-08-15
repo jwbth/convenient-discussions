@@ -11,7 +11,7 @@ import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
 import toc from './toc';
-import { getVisibilityByRects } from './util';
+import { getVisibilityByRects } from './utils';
 
 const htmlElement = document.documentElement;
 
@@ -26,14 +26,14 @@ export default {
    * loaded.
    */
   mount() {
-    if (cd.g.SKIN === 'vector-2022') return;
+    if (cd.g.skin === 'vector-2022') return;
 
     this.$topElement = $('<div>')
       .attr('id', 'cd-pageNav-top')
       .addClass('cd-pageNav')
       .appendTo(document.body);
-    if (cd.g.BODY_SCROLL_PADDING_TOP) {
-      this.$topElement.css('margin-top', `${cd.g.BODY_SCROLL_PADDING_TOP}px`);
+    if (cd.g.bodyScrollPaddingTop) {
+      this.$topElement.css('margin-top', `${cd.g.bodyScrollPaddingTop}px`);
     }
     this.$bottomElement = $('<ul>')
       .attr('id', 'cd-pageNav-bottom')
@@ -64,7 +64,7 @@ export default {
     let width = $(document.body).hasClass('ltr') ?
       left - padding :
       $(window).width() - (left + controller.$contentColumn.outerWidth()) - padding;
-    if (cd.g.SKIN === 'minerva') {
+    if (cd.g.skin === 'minerva') {
       width -= controller.getContentColumnOffsets().startMargin;
     }
 
@@ -114,7 +114,7 @@ export default {
    * @param {number} scrollY
    */
   createOrUpdateSkeleton(afterLeadOffset, scrollY) {
-    if (afterLeadOffset < cd.g.BODY_SCROLL_PADDING_TOP + 1 || backLinkLocation === 'top') {
+    if (afterLeadOffset < cd.g.bodyScrollPaddingTop + 1 || backLinkLocation === 'top') {
       if (!this.$linksOnTop) {
         this.$linksOnTop = $('<ul>')
           .attr('id', 'cd-pageNav-linksOnTop')
@@ -197,7 +197,7 @@ export default {
     // `1` as a threshold (also below, in `extendedRect.outerTop < BODY_SCROLL_PADDING_TOP + 1`)
     // works better for Monobook for some reason (scroll to the first section using the page
     // navigation to see the difference).
-    if (firstSectionTop === undefined || firstSectionTop >= cd.g.BODY_SCROLL_PADDING_TOP + 1) {
+    if (firstSectionTop === undefined || firstSectionTop >= cd.g.bodyScrollPaddingTop + 1) {
       if (currentSection) {
         this.resetSections();
       }
@@ -300,7 +300,7 @@ export default {
    */
   jump($elementOrOffset, $item, isBackLink) {
     const offset = $elementOrOffset instanceof $ ?
-      $elementOrOffset.offset().top - cd.g.BODY_SCROLL_PADDING_TOP :
+      $elementOrOffset.offset().top - cd.g.bodyScrollPaddingTop :
       $elementOrOffset;
     if (!isBackLink && Math.abs(offset - window.scrollY) < 1) return;
 
