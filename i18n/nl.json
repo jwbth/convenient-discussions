@@ -107,7 +107,7 @@
 	"navpanel-next": "Ga naar de volgende nieuwe reactie",
 	"navpanel-firstunseen": "Ga naar de eerste ongelezen reactie",
 	"navpanel-firstunseen-hidden-title": "De opmerking staat in een samengevouwen draad",
-	"navpanel-firstunseen-hidden": "Kan er niet naar toe scrollen. In plaats daarvan is er naar de discussie gescrold.",
+	"navpanel-firstunseen-hidden": "Er is naar de discussie gescrold. <span class=\"cd-notification-expandThread\">De discussie uitvouwen en naar de reactie scrollen</span>.",
 	"navpanel-newcomments-count": "$1 nieuwe {{plural:$1|reactie|reacties}}.",
 	"navpanel-newcomments-unknowndate": "onbekende datum",
 	"navpanel-newcomments-refresh": "Klik om de pagina te vernieuwen",
