@@ -355,7 +355,7 @@ class Section extends SectionSkeleton {
     if (!this.subscribeId || pageRegistry.getCurrent().isArchivePage()) return;
 
     /**
-     * The subscription state of the section. Currently, `true` stands for "subscribed", `false` for
+     * Subscription state of the section. Currently, `true` stands for "subscribed", `false` for
      * "unsubscribed", `null` for n/a.
      *
      * @type {?boolean}
@@ -363,7 +363,7 @@ class Section extends SectionSkeleton {
     this.subscriptionState = subscriptions.getState(this.subscribeId);
 
     /**
-     * The subscribe button widget in the {@link Section#actionsElement actions element}.
+     * Subscribe button widget in the {@link Section#actionsElement actions element}.
      *
      * @type {external:OO.ui.ButtonMenuSelectWidget}
      */
@@ -658,6 +658,7 @@ class Section extends SectionSkeleton {
      * Metadata element in the {@link Section#barElement bar element}.
      *
      * @type {Element|undefined}
+     * @private
      */
     this.metadataElement = metadataElement;
 
@@ -665,6 +666,7 @@ class Section extends SectionSkeleton {
      * Comment count wrapper element in the {@link Section#metadataElement metadata element}.
      *
      * @type {Element|undefined}
+     * @private
      */
     this.commentCountWrapper = commentCountWrapper;
 
@@ -672,6 +674,7 @@ class Section extends SectionSkeleton {
      * Author count wrapper element in the {@link Section#metadataElement metadata element}.
      *
      * @type {Element|undefined}
+     * @private
      */
     this.authorCountWrapper = authorCountWrapper;
 
@@ -679,8 +682,38 @@ class Section extends SectionSkeleton {
      * Latest comment date wrapper element in the {@link Section#metadataElement metadata element}.
      *
      * @type {Element|undefined}
+     * @private
      */
     this.latestCommentWrapper = latestCommentWrapper;
+
+    /**
+     * Metadata element in the {@link Section#$bar bar element}.
+     *
+     * @type {external:jQuery|undefined}
+     */
+    this.$metadata = $(metadataElement);
+
+    /**
+     * Comment count wrapper element in the {@link Section#$metadata metadata element}.
+     *
+     * @type {external:jQuery|undefined}
+     * @private
+     */
+    this.$commentCountWrapper = $(commentCountWrapper);
+
+    /**
+     * Author count wrapper element in the {@link Section#$metadata metadata element}.
+     *
+     * @type {external:jQuery|undefined}
+     */
+    this.$authorCountWrapper = $(authorCountWrapper);
+
+    /**
+     * Latest comment date wrapper element in the {@link Section#$metadata metadata element}.
+     *
+     * @type {external:jQuery|undefined}
+     */
+    this.$latestCommentWrapper = $(latestCommentWrapper);
   }
 
   /**
@@ -808,22 +841,31 @@ class Section extends SectionSkeleton {
     actionsElement.append(...actionItemList);
 
     /**
-     * The actions element under the 2-level section heading _or_ to the right of headings of other
+     * Actions element under the 2-level section heading _or_ to the right of headings of other
      * levels.
      *
      * @type {Element}
+     * @private
      */
     this.actionsElement = actionsElement;
 
     /**
-     * Section actions object. It contains elements (buttons, menus) triggering the actions of the
+     * Actions element under the 2-level section heading _or_ to the right of headings of other
+     * levels.
+     *
+     * @type {external:jQuery}
+     */
+    this.$actions = $(actionsElement);
+
+    /**
+     * Section actions object. It contains widgets (buttons, menus) triggering the actions of the
      * section.
      *
      * @type {object}
      */
     this.actions = {
       /**
-       * The copy link button widget in the {@link Section#actionsElement actions element}.
+       * Copy link button widget in the {@link Section#actionsElement actions element}.
        *
        * @type {external:OO.ui.ButtonWidget|undefined}
        */
@@ -855,11 +897,19 @@ class Section extends SectionSkeleton {
     }
 
     /**
-     * The bar element under a 2-level section heading.
+     * Bar element under a 2-level section heading.
      *
      * @type {Element|undefined}
+     * @private
      */
     this.barElement = barElement;
+
+    /**
+     * Bar element under a 2-level section heading.
+     *
+     * @type {external:jQuery|undefined}
+     */
+    this.$bar = $(barElement);
   }
 
   /**

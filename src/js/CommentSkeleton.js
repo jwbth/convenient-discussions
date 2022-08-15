@@ -158,7 +158,7 @@ class CommentSkeleton {
     this.isUnsigned = signature.isUnsigned;
 
     /**
-     * Elements containing all parts of the comment.
+     * _For internal use._ Elements containing all parts of the comment.
      *
      * @type {Element[]|external:Element[]}
      */

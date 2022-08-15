@@ -680,7 +680,7 @@ class Thread {
      *
      * @type {external:jQuery|undefined}
      */
-    this.$expandNote = $(this.expandNote);
+    this.$expandNote = $(expandNote);
   }
 
   /**
@@ -943,6 +943,8 @@ class Thread {
 
   /**
    * Set the click area offset based on the `clickAreaOffset` property.
+   *
+   * @private
    */
   setClickAreaOffset() {
     this.clickArea.style.left = this.clickAreaOffset.left + 'px';

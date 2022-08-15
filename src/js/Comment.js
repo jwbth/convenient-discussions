@@ -919,8 +919,8 @@ class Comment extends CommentSkeleton {
 
   /**
    * _For internal use._ Filter out floating and hidden elements from the comment's
-   * {@link CommentSkeleton#highlightables}, change their attributes, and update the comment's level
-   * and parent elements' level classes.
+   * {@link CommentSkeleton#highlightables highlightables}, change their attributes, and update the
+   * comment's level and parent elements' level classes.
    */
   reviewHighlightables() {
     for (let i = 0; i < this.highlightables.length; i++) {
@@ -1423,16 +1423,62 @@ class Comment extends CommentSkeleton {
    * @private
    */
   createLayers() {
+    /**
+     * _For internal use._ Comment's underlay as a native (non-jQuery) element.
+     *
+     * @type {?(Element|undefined)}
+     */
     this.underlay = elementPrototypes.underlay.cloneNode(true);
+
     CommentStatic.underlays.push(this.underlay);
 
+    /**
+     * Comment's overlay.
+     *
+     * @type {?(Element|undefined)}
+     * @private
+     */
     this.overlay = elementPrototypes.overlay.cloneNode(true);
+
+    /**
+     * Line element in comment's overlay.
+     *
+     * @type {Element|undefined}
+     * @private
+     */
     this.line = this.overlay.firstChild;
+
+    /**
+     * Comment's side marker.
+     *
+     * @type {Element|undefined}
+     * @private
+     */
     this.marker = this.overlay.firstChild.nextSibling;
 
     if (!settings.get('reformatComments')) {
+      /**
+       * Inner wrapper in comment's overlay.
+       *
+       * @type {Element|undefined}
+       * @private
+       */
       this.overlayInnerWrapper = this.overlay.lastChild;
+
+      /**
+       * Gradient element in comment's overlay.
+       *
+       * @type {Element|undefined}
+       * @private
+       */
       this.overlayGradient = this.overlayInnerWrapper.firstChild;
+
+      /**
+       * Menu element in comment's overlay.
+       *
+       * @type {Element|undefined}
+       * @private
+       */
       this.overlayMenu = this.overlayInnerWrapper.lastChild;
 
       // Hide the overlay on right click. It can block clicking the author page link.
@@ -1489,7 +1535,7 @@ class Comment extends CommentSkeleton {
     }
 
     /**
-     * Comment layers have been created for a comment.
+     * An underlay and overlay have been created for a comment.
      *
      * @event commentLayersCreated
      * @param {Comment} comment
@@ -1619,7 +1665,7 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Remove the comment's layers.
+   * Remove the comment's underlay and overlay.
    */
   removeLayers() {
     if (!this.underlay) return;
@@ -1641,7 +1687,8 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * _For internal use._ Get and sometimes create the container for the comment's layers.
+   * _For internal use._ Get and sometimes create the container for the comment's underlay and
+   * overlay.
    *
    * @returns {Element}
    */
@@ -2936,9 +2983,9 @@ class Comment extends CommentSkeleton {
   /**
    * Replace an element that is one of the comment's elements with another element or HTML string.
    *
-   * @param {Element|external:jQuery} element Element to replace. Provide a native element only if we're in
-   *   the page processing phase (and {@link Comment#$elements} has not been requested, hence cached
-   *   yet).
+   * @param {Element|external:jQuery} element Element to replace. Provide a native element only if
+   *   we're in the page processing phase (and {@link Comment#$elements} has not been requested,
+   *   hence cached yet).
    * @param {Element|string} newElementOrHtml Element or HTML string to replace with.
    */
   replaceElement(element, newElementOrHtml) {
