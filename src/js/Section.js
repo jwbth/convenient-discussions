@@ -59,6 +59,8 @@ class Section extends SectionSkeleton {
     this.resetShowAddSubsectionButtonTimeout = this.resetShowAddSubsectionButtonTimeout.bind(this);
     this.resetHideAddSubsectionButtonTimeout = this.resetHideAddSubsectionButtonTimeout.bind(this);
     this.deferAddSubsectionButtonHide = this.deferAddSubsectionButtonHide.bind(this);
+    this.handleAuthorCountHover = this.handleAuthorCountHover.bind(this);
+    this.handleAuthorCountUnhover = this.handleAuthorCountUnhover.bind(this);
     this.showAuthors = this.showAuthors.bind(this);
     this.maybeHideAuthors = this.maybeHideAuthors.bind(this);
     this.createMoreMenuSelect = this.createMoreMenuSelect.bind(this);
@@ -310,6 +312,7 @@ class Section extends SectionSkeleton {
     if (this.addSubsectionForm) return;
 
     this.resetHideAddSubsectionButtonTimeout();
+
     if (this.showAddSubsectionButtonTimeout) return;
 
     this.showAddSubsectionButtonTimeout = setTimeout(() => {
@@ -494,8 +497,13 @@ class Section extends SectionSkeleton {
    * @private
    */
   showAuthors() {
-    clearTimeout(this.maybeHideAuthorsTimeout);
+    clearTimeout(this.showAuthorsTimeout);
     if (!this.authorsPopup) {
+      /**
+       * Popup with the list of users who have posted in the section.
+       *
+       * @type {external:OO.ui.PopupWidget|undefined}
+       */
       this.authorsPopup = new OO.ui.PopupWidget({
         $content: $(flat(
           this.comments
@@ -521,7 +529,8 @@ class Section extends SectionSkeleton {
         $floatableContainer: $(this.authorCountWrapper.firstChild),
         classes: ['cd-section-metadata-authorsPopup'],
       });
-      this.authorsPopup.$element.on('mouseleave', this.maybeHideAuthors);
+
+      this.authorsPopup.$element.on('mouseleave', this.handleAuthorCountUnhover);
       $(controller.getPopupOverlay()).append(this.authorsPopup.$element);
     }
 
@@ -529,21 +538,46 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Hide the popup with the list of users who have posted in the section after some period of time.
-   * The time period is needed first of all so that the user has the time to move the cursor from
-   * the author count to the popup without the popup being closed.
+   * Hide the popup with the list of users who have posted in the section.
    *
    * @private
    */
   maybeHideAuthors() {
-    this.maybeHideAuthorsTimeout = setTimeout(() => {
-      if (
-        !this.authorCountWrapper.firstChild.matches(':hover') &&
-        !this.authorsPopup.$element.is(':hover')
-      ) {
-        this.authorsPopup.toggle(false);
-      }
-    }, 100);
+    if (
+      this.authorsPopup &&
+      !this.authorCountWrapper.firstChild.matches(':hover') &&
+      !this.authorsPopup.$element.is(':hover')
+    ) {
+      this.authorsPopup.toggle(false);
+    }
+  }
+
+  /**
+   * Handle a `mouseenter` event on the author count inner wrapper button.
+   *
+   * {@link Section#showAuthors Show a popup} with the list of users who have posted in the
+   * section after some period of time.
+   *
+   * @private
+   */
+  handleAuthorCountHover() {
+    clearTimeout(this.maybeHideAuthorsTimeout);
+    this.showAuthorsTimeout = setTimeout(this.showAuthors, 100);
+  }
+
+  /**
+   * Handle a `mouseleave` event on the author count inner wrapper button and also the {$link
+   * Section#authorsPopup authors popup} element.
+   *
+   * {@link Section#maybeHideAuthors Hide the popup} with the list of users who have posted in the
+   * section after some period of time. The time period is needed first of all so that the user has
+   * the time to move the cursor from the author count to the popup without the popup being closed.
+   *
+   * @private
+   */
+  handleAuthorCountUnhover() {
+    clearTimeout(this.showAuthorsTimeout);
+    this.maybeHideAuthorsTimeout = setTimeout(this.maybeHideAuthors, 100);
   }
 
   /**
@@ -571,7 +605,7 @@ class Section extends SectionSkeleton {
       ) ?
         comment :
         latestComment
-    ), undefined);
+    ), null);
 
     let commentCountWrapper;
     let authorCountWrapper;
@@ -585,10 +619,11 @@ class Section extends SectionSkeleton {
       authorCountWrapper = document.createElement('span');
       authorCountWrapper.className = 'cd-section-bar-item cd-section-bar-item-authorCount';
       const innerWrapper = document.createElement('span');
+      innerWrapper.className = 'cd-section-bar-item-authorCount-innerWrapper';
       innerWrapper.append(cd.s('section-metadata-authorcount', authorCount));
       authorCountWrapper.append(innerWrapper);
-      innerWrapper.onmouseenter = this.showAuthors;
-      innerWrapper.onmouseleave = this.maybeHideAuthors;
+      innerWrapper.onmouseenter = this.handleAuthorCountHover;
+      innerWrapper.onmouseleave = this.handleAuthorCountUnhover;
 
       if (latestComment) {
         const latestCommentLink = document.createElement('a');
@@ -613,35 +648,35 @@ class Section extends SectionSkeleton {
     }
 
     /**
-     * The latest comment in the section.
+     * Latest comment in a 2-level section.
      *
-     * @type {import('./Comment').default|undefined}
+     * @type {?(import('./Comment').default|undefined)}
      */
     this.latestComment = latestComment;
 
     /**
-     * The metadata element in the {@link Section#barElement bar element}.
+     * Metadata element in the {@link Section#barElement bar element}.
      *
      * @type {Element|undefined}
      */
     this.metadataElement = metadataElement;
 
     /**
-     * The comment count wrapper element in the {@link Section#metadataElement metadata element}.
+     * Comment count wrapper element in the {@link Section#metadataElement metadata element}.
      *
      * @type {Element|undefined}
      */
     this.commentCountWrapper = commentCountWrapper;
 
     /**
-     * The author count wrapper element in the {@link Section#metadataElement metadata element}.
+     * Author count wrapper element in the {@link Section#metadataElement metadata element}.
      *
      * @type {Element|undefined}
      */
     this.authorCountWrapper = authorCountWrapper;
 
     /**
-     * The last comment date wrapper element in the {@link Section#metadataElement metadata element}.
+     * Latest comment date wrapper element in the {@link Section#metadataElement metadata element}.
      *
      * @type {Element|undefined}
      */

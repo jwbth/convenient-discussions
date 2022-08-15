@@ -137,6 +137,14 @@ import controller from './controller';
  */
 
 /**
+ * OOUI popup widget.
+ *
+ * @class PopupWidget
+ * @memberof external:OO.ui
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PopupWidget
+ */
+
+/**
  * OOUI button menu select widget.
  *
  * @class ButtonMenuSelectWidget

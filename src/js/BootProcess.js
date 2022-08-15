@@ -892,7 +892,7 @@ class BootProcess {
    * @private
    */
   connectToAddTopicButtons() {
-    addTopicSelector ||= [
+    addTopicSelector ??= [
       '#ca-addsection a',
       'a[href*="section=new"]',
       '.commentbox input[type="submit"]',
