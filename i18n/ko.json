@@ -11,6 +11,10 @@
 		]
 	},
 	"script-name-short": "CD",
+	"page-title-reply": "$1에 답변",
+	"page-title-edit": "$1에서 편집",
+	"page-title-addsection": "$1에서 새 주제 시작",
+	"page-title-addsubsection": "$1에서 새 하위 문단 시작",
 	"cm-copylink-tooltip": "링크 복사",
 	"cm-thank": "감사 표현",
 	"cm-edit": "편집",
