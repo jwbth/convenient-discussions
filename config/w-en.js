@@ -88,6 +88,10 @@ export default {
 
   spaceAfterIndentationChars: false,
 
+  pageBlacklist: [
+    'Wikipedia:Wikipedia Signpost',
+  ],
+
   signatureEndingRegexp: / \(talk\)$/,
 
   smallDivTemplates: [
