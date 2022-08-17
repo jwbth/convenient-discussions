@@ -1569,8 +1569,8 @@ class CommentForm {
         pattern: /<pre/,
         message: cd.sParse(
           'cf-reaction-pre',
-          '<code><nowiki><pre></nowiki></code>',
-          '<code><nowiki><syntaxhighlight lang="text"></nowiki></code>'
+          '<code><nowiki><pre></'.concat('nowiki></code>'),
+          '<code><nowiki><syntaxhighlight lang="text"></'.concat('nowiki></code>')
         ),
         name: 'dontUsePre',
         type: 'warning',

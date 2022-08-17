@@ -1228,7 +1228,7 @@ class CommentSkeleton {
    * ```html
    * ::: Comment start.
    * <blockquote>Some quote.</blockquote>
-   * ::: Comment end. ~~~~
+   * ::: Comment end. [signature]
    * ```
    *
    * @private
@@ -1274,7 +1274,7 @@ class CommentSkeleton {
    * List:
    * * Item 1.
    * * Item 2.
-   * * Item 3. ~~~~
+   * * Item 3. [signature]
    * ```
    *
    * @param {Array.<Element>|Array.<external:Element>} levelElements
