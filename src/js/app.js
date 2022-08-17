@@ -289,7 +289,7 @@ function getConfig() {
   return new Promise((resolve, reject) => {
     let key = location.hostname;
     if (IS_TEST) {
-      key += '-test';
+      key += '.test';
     }
     const configUrl = CONFIG_URLS[key] || CONFIG_URLS[location.hostname];
     if (configUrl) {

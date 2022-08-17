@@ -23,7 +23,7 @@ module.exports = (env) => {
 
   /*
     Test builds are for creating the production build with files (main file and configuration file)
-    having the "-test" postfix. They are created by running
+    having the ".test" postfix. They are created by running
       npm run build --test
    */
   const test = Boolean(env.test || process.env.npm_config_test);
@@ -40,19 +40,19 @@ module.exports = (env) => {
   let wiki;
   if (single) {
     const project = env.project || 'w';
-    const interlanguageProjects = ['w', 'b', 'n', 'q', 's', 'v', 'voy', 'wikt'];
     lang = env.lang || 'en';
-    wiki = interlanguageProjects.includes(project) ? `${project}-${lang}` : project;
-    filenamePostfix = `-single-${wiki}`;
+    wiki = ['w', 'b', 'n', 'q', 's', 'v', 'voy', 'wikt'].includes(project) ?
+      `${project}-${lang}` :
+      project;
+    filenamePostfix = `.single.${wiki}`;
   } else if (dev) {
-    filenamePostfix = '-dev';
+    filenamePostfix = '.dev';
   } else if (test) {
-    filenamePostfix = '-test';
+    filenamePostfix = '.test';
   }
   const filename = `convenientDiscussions${filenamePostfix}.js`;
-  const sourceMapExt = '.map.json';
 
-  if (!config.protocol || !config.server || !config.rootPath || !config.articlePath) {
+  if (!config.protocol || !config.main?.rootPath || !config.articlePath) {
     throw new Error('No protocol/server/root path/article path found in config.json5.');
   }
 
@@ -64,59 +64,6 @@ module.exports = (env) => {
   } else {
     // SourceMapDevToolPlugin is used.
     devtool = false;
-  }
-
-  const progressPlugin = new webpack.ProgressPlugin();
-
-  const plugins = [
-    new webpack.DefinePlugin({
-      IS_TEST: test,
-      IS_SINGLE: single,
-      CONFIG_FILE_NAME: single ? JSON.stringify(wiki) : null,
-      LANG_CODE: single ? JSON.stringify(lang) : null,
-    }),
-    new WebpackBuildNotifierPlugin({
-      suppressSuccess: true,
-      suppressWarning: true,
-    }),
-  ];
-
-  if (!single) {
-    plugins.push(
-      new webpack.BannerPlugin({
-        banner: '<nowiki>',
-
-        // Don't add the banner to the inline worker.
-        test: filename,
-      }),
-
-      // We can't use BannerWebpackPlugin for both the code to prepend and append, because if we add
-      // the code to prepend with BannerWebpackPlugin, the source maps would break.
-      // `webpack.BannerPlugin`, on the other hand, handles this, but doesn't have an option for the
-      // code to append to the build (this code doesn't break the source maps).
-      new BannerWebpackPlugin({
-        chunks: {
-          main: {
-            afterContent: '\n/*! </nowiki> */',
-          },
-        },
-      }),
-    );
-    if (!dev) {
-      const sourceMapUrl = getUrl(`${config.rootPath}/[url]`, {
-        action: 'raw',
-        ctype: 'application/json',
-      }).replace(/%5Burl%5D/, '[url]');
-      plugins.push(
-        new webpack.SourceMapDevToolPlugin({
-          filename: `[file]${sourceMapExt}`,
-          append: `\n//# sourceMappingURL=${sourceMapUrl}`,
-        }),
-      );
-    }
-  }
-  if (!process.env.CI) {
-    plugins.push(progressPlugin);
   }
 
   return {
@@ -160,7 +107,7 @@ module.exports = (env) => {
           use: {
             loader: 'worker-loader',
             options: {
-              filename: `convenientDiscussions-worker${filenamePostfix}.js`,
+              filename: `convenientDiscussions.worker${filenamePostfix}.js`,
               inline: 'no-fallback',
             },
           },
@@ -168,7 +115,7 @@ module.exports = (env) => {
       ],
     },
     optimization: {
-      // Less function calls when debugging, but one scope for all modules. To change this, "!dev"
+      // Less function calls when debugging, but one scope for all modules. To change this, `!dev`
       // could be used.
       concatenateModules: true,
 
@@ -201,19 +148,70 @@ module.exports = (env) => {
             condition: /@preserve|@license|@cc_on/i,
 
             filename: (filename) => `${filename}.LICENSE.js`,
-            banner: (licenseFile) => `
+
+            banner: (licenseFile) => licenseFile.includes('worker') ?
+              // A really messed up hack to include source maps for a web worker (works with
+              // ".map.json" extension for webpack.SourceMapDevToolPlugin's "filename" property,
+              // doesn't work with ".map" for some reason).
+              `//# sourceMappingURL=${config.sourceMapsBaseUrl}convenientDiscussions.worker.js.map.json` :
+
+              `
  * For documentation and feedback, see the script's homepage:
  * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions
  *
  * For license information, see
- * ${getUrl(config.rootPath + '/' + licenseFile)}
+ * ${getUrl(config.main.server, config.main.rootPath + '/' + licenseFile)}
 `,
           },
           sourceMap: true,
         }),
       ],
     },
-    plugins,
+    plugins: [
+      new webpack.DefinePlugin({
+        IS_TEST: test,
+        IS_SINGLE: single,
+        CONFIG_FILE_NAME: single ? JSON.stringify(wiki) : null,
+        LANG_CODE: single ? JSON.stringify(lang) : null,
+      }),
+      new WebpackBuildNotifierPlugin({
+        suppressSuccess: true,
+        suppressWarning: true,
+      }),
+    ].concat(
+      single ?
+        [] :
+        [
+          new webpack.BannerPlugin({
+            banner: '<nowiki>',
+
+            // Don't add the banner to the inline worker, otherwise the source maps for it won't
+            // work (I think).
+            test: filename,
+          }),
+
+          // We can't use BannerWebpackPlugin for both the code to prepend and append, because if we
+          // add the code to prepend with BannerWebpackPlugin, the source maps would break.
+          // `webpack.BannerPlugin`, on the other hand, handles this, but doesn't have an option for
+          // the code to append to the build (this code doesn't break the source maps).
+          new BannerWebpackPlugin({
+            chunks: {
+              main: {
+                afterContent: '\n/*! </nowiki> */',
+              },
+            },
+          }),
+        ],
+      dev ?
+        [] :
+        new webpack.SourceMapDevToolPlugin({
+          filename: '[file].map.json',
+          append: `\n//# sourceMappingURL=${config.sourceMapsBaseUrl}[url]`,
+        }),
+      process.env.CI ?
+        [] :
+        new webpack.ProgressPlugin()
+    ),
     devServer: {
       contentBase: path.join(__dirname, 'dist'),
       port: 9000,

@@ -1,6 +1,9 @@
-name: Deploy test build
+name: Deploy production build
 
 on:
+  release:
+    types:
+      - published
   workflow_dispatch:
 
 jobs:
@@ -14,7 +17,7 @@ jobs:
         with:
           node-version: 14
       - run: npm ci
-      - run: npm run build --test
+      - run: npm run build
       - name: Create a SSH tunnel and deploy
         env:
           SSH_USER: ${{ secrets.TOOLFORGE_USER }}
@@ -45,4 +48,22 @@ jobs:
           rm ~/.ssh/id_rsa
 
           # Run own script to login and publish the build results to pages.
-          npm run deploy --test --noi18n
+          npm run deploy --noi18n
+      - name: Create source maps folder
+        run: cd dist && mkdir source-maps && cp *.map.json source-maps
+      - name: Deploy source maps
+        uses: easingthemes/ssh-deploy@v2.1.1
+        env:
+            REMOTE_HOST: "tools-login.wmflabs.org"
+            REMOTE_USER: ${{ secrets.TOOLFORGE_USER }}
+            SSH_PRIVATE_KEY: ${{ secrets.TOOLFORGE_KEY }}
+            ARGS: "-rltgoDzvO --delete"
+            SOURCE: "source-maps/"
+            TARGET: "/data/project/convenient-discussions/www/static"
+      - name: Take file ownership to the tool
+        uses: appleboy/ssh-action@v0.1.2
+        with:
+          host: "tools-login.wmflabs.org"
+          username: ${{ secrets.TOOLFORGE_USER }}
+          key: ${{ secrets.TOOLFORGE_KEY }}
+          script: become convenient-discussions bash -c 'cd www/static && take source-maps && chmod -R g+w source-maps'

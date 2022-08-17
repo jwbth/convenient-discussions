@@ -1,6 +1,5 @@
 {
   protocol: 'https',
-  server: 'commons.wikimedia.org',
 
   // No ending slash, as in `mw.config.get('wgScriptPath')`
   scriptPath: '/w',
@@ -8,24 +7,87 @@
   // With a placeholder, as in `mw.config.get('wgArticlePath')`
   articlePath: '/wiki/$1',
 
-  // Root path for wiki page names for the script files. "/" is placed between it and filenames.
-  rootPath: 'User:Jack who built the house',
+  main: {
+    server: 'commons.wikimedia.org',
 
-  // First file in the arrays is considered the main file. Commit subjects are added to the edit
-  // summary only for this file.
-  assets: {
-    default: [
-      'convenientDiscussions.js',
-      'convenientDiscussions.js.LICENSE.js',
-      'convenientDiscussions.js.map.json',
-      'convenientDiscussions-worker.js.map.json',
-      'convenientDiscussions-i18n/',
-    ],
-    test: [
-      'convenientDiscussions-test.js',
-      'convenientDiscussions-test.js.LICENSE.js',
-      'convenientDiscussions-test.js.map.json',
-      'convenientDiscussions-worker-test.js.map.json',
-    ],
+    // Root path for wiki pages of the script files. "/" is placed between it and the filenames.
+    rootPath: 'User:Jack who built the house',
+
+    // First file in the arrays is considered the main file. Commit subjects are added to the edit
+    // summary only for this file.
+    assets: {
+      default: [
+        'convenientDiscussions.js',
+        'convenientDiscussions.js.LICENSE.js',
+        'convenientDiscussions-i18n/',
+      ],
+      test: [
+        'convenientDiscussions.test.js',
+        'convenientDiscussions.test.js.LICENSE.js',
+      ],
+    },
   },
+
+  configs: [
+    {
+      server: 'ru.wikipedia.org',
+      default: {
+        source: 'w-ru.js',
+        target: 'MediaWiki:Gadget-convenientDiscussions.js',
+        editGadgetsDefinition: true,
+        modules: [
+          'jquery.client',
+          'jquery.ui',
+          'mediawiki.Title',
+          'mediawiki.Uri',
+          'mediawiki.api',
+          'mediawiki.cookie',
+          'mediawiki.interface.helpers.styles',
+          'mediawiki.jqueryMsg',
+          'mediawiki.notification',
+          'mediawiki.storage',
+          'mediawiki.user',
+          'mediawiki.util',
+          'mediawiki.widgets.visibleLengthLimit',
+          'oojs',
+          'oojs-ui-core',
+          'oojs-ui-widgets',
+          'oojs-ui-windows',
+          'oojs-ui.styles.icons-alerts',
+          'oojs-ui.styles.icons-content',
+          'oojs-ui.styles.icons-editing-core',
+          'oojs-ui.styles.icons-interactions',
+          'oojs-ui.styles.icons-movement',
+          'user.options',
+        ],
+      },
+      test: {
+        source: 'w-ru.test.js',
+        target: 'User:Jack_who_built_the_house/convenientDiscussions.test.js',
+      },
+    },
+    {
+      server: 'en.wikipedia.org',
+      default: {
+        source: 'w-en.js',
+        target: 'User:Jack_who_built_the_house/convenientDiscussions.js',
+      },
+    },
+    {
+      server: 'commons.wikimedia.org',
+      default: {
+        source: 'commons.js',
+        target: 'User:Jack_who_built_the_house/convenientDiscussions-commonsConfig.js',
+      },
+    },
+    {
+      server: 'meta.wikimedia.org',
+      default: {
+        source: 'meta.js',
+        target: 'User:Jack_who_built_the_house/convenientDiscussions.js',
+      },
+    },
+  ],
+
+  sourceMapsBaseUrl: 'http://tools-static.wmflabs.org/convenient-discussions/source-maps/',
 }

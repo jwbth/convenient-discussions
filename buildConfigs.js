@@ -4,7 +4,7 @@ const argv = require('yargs').argv;
 
 // node buildConfigs --test
 // npm run <command running this script> --test
-const testSuffix = (argv.test || process.env.npm_config_test) ? '-test' : '';
+const testSuffix = (argv.test || process.env.npm_config_test) ? '.test' : '';
 
 fs.readdirSync('./config/').forEach((filename) => {
   const [, name] = filename.match(/^(\w+(?:-\w+)?)\.js$/) || [];

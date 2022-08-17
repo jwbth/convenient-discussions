@@ -14,8 +14,8 @@ function wikiUrlencode(string) {
     .replace(/%3A/g, ':');
 }
 
-function getUrl(page, params = {}) {
-  const base = `${config.protocol}://${config.server}`;
+function getUrl(server, page, params = {}) {
+  const base = `${config.protocol}://${server}`;
   if (Object.keys(params).length) {
     params = Object.assign({}, { title: page }, params);
     const url = new URL(base + config.scriptPath + '/index.php');
