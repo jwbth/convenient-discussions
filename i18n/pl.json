@@ -85,6 +85,8 @@
 	"cf-confirm-close": "Czy chcesz zamknąć okno edycji? Zmiany zostaną utracone.",
 	"dn-confirm-yes": "Tak",
 	"dn-confirm-no": "Nie",
+	"deadanchor-section-lead": "Nie znaleziono sekcji \"$1\".",
+	"deadanchor-section-similar": "Na stronie jest jednak podobna do niej: \"[[$1|$2]]\".",
 	"rd-close": "Zamknij",
 	"navpanel-refresh": "Odśwież stronę",
 	"navpanel-previous": "Przejdź do poprzedniego nowego komentarza",
