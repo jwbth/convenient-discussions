@@ -623,7 +623,7 @@ class BootProcess {
   maybeSuggestDisableDiscussionTools() {
     if (!cd.g.isDtReplyToolEnabled) return;
 
-    const message = cd.sParse('discussiontools-incompatible');
+    const message = cd.sParse('discussiontools-incompatible', 'Special:Preferences#mw-prefsection-editing-discussion');
     const { $wrapper: $message, buttons: [disableButton] } = wrap(message, {
       callbacks: {
         'cd-notification-disabledt': async () => {
