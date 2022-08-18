@@ -8,6 +8,7 @@
 	},
 	"script-name": "„Згодни разговори“",
 	"script-name-short": "CD",
+	"page-title-edit": "Уредување на $1",
 	"cm-gotoparent-tooltip": "Оди на првичниот коментар",
 	"cm-gotochild-tooltip": "Назад на одговорниот коментар",
 	"cm-copylink-tooltip": "Копирај врска",
