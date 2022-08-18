@@ -31,6 +31,8 @@ import {
 } from './utils';
 import { setVisits, splitIntoBatches } from './apiWrappers';
 
+let defaultFontSize;
+
 /**
  * Set the global variables related to date format.
  *
@@ -842,6 +844,7 @@ export default {
   memorizeCssValues() {
     cd.g.contentLineHeight = parseFloat(controller.$content.css('line-height'));
     cd.g.contentFontSize = parseFloat(controller.$content.css('font-size'));
+    defaultFontSize = parseFloat($(document.documentElement).css('font-size'));
 
     // For Timeless, Vector-2022 skins
     cd.g.bodyScrollPaddingTop = parseFloat($('html, body').css('scroll-padding-top')) || 0;
@@ -859,6 +862,7 @@ export default {
       default: 'body',
     });
     const sidebarColor = $backgrounded.css('background-color');
+    const metadataFontSize = parseFloat(((cd.g.contentFontSize - 1) / defaultFontSize).toFixed(7));
 
     mw.loader.addStyleTag(`:root {
   --cd-comment-hovered-background-color: ${cd.g.commentHoveredBackgroundColor};
@@ -879,6 +883,7 @@ export default {
   --cd-content-background-color: ${contentBackgroundColor};
   --cd-content-start-margin: ${controller.getContentColumnOffsets().startMargin}px;
   --cd-content-font-size: ${cd.g.contentFontSize}px;
+  --cd-content-metadata-font-size: ${metadataFontSize}rem;
   --cd-sidebar-color: ${sidebarColor};
   --cd-sidebar-transparent-color: ${transparentize(sidebarColor)};
 }`);
