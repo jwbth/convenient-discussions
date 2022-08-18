@@ -28,7 +28,7 @@ export default {
    * @property {object[]} ui List of pages of the settings dialog, each with its control objects.
    */
   scheme: {
-    local: ['haveInsertButtonsBeenAltered', 'insertButtons', 'signaturePrefix'],
+    local: ['insertButtons-altered', 'insertButtons', 'signaturePrefix'],
 
     undocumented: [
       'defaultCommentLinkType',
@@ -39,17 +39,23 @@ export default {
     aliases: {
       allowEditOthersComments: ['allowEditOthersMsgs'],
       alwaysExpandAdvanced: ['alwaysExpandSettings'],
-      haveInsertButtonsBeenAltered: ['areInsertButtonsAltered', 'insertButtonsChanged'],
+      'insertButtons-altered': [
+        'areInsertButtonsAltered',
+        'haveInsertButtonsBeenAltered',
+        'insertButtonsChanged',
+      ],
       desktopNotifications: ['browserNotifications'],
+      'improvePerformance-lastSuggested': ['improvePerformanceLastSuggested'],
       signaturePrefix: ['mySig', 'mySignature'],
       subscribeOnReply: ['watchSectionOnReply'],
+      'useTopicSubscription-seenNotice': ['topicSubscriptionSeenNotice'],
     },
 
     states: [
-      'haveInsertButtonsBeenAltered',
-      'improvePerformanceLastSuggested',
+      'insertButtons-altered',
+      'improvePerformance-lastSuggested',
       'notificationsBlacklist',
-      'topicSubscriptionSeenNotice',
+      'useTopicSubscription-seenNotice',
     ],
   },
 
@@ -77,12 +83,12 @@ export default {
 
       // If the user has never changed the insert buttons configuration, it should change with the
       // default configuration change.
-      haveInsertButtonsBeenAltered: false,
+      'insertButtons-altered': false,
 
       hideTimezone: false,
       highlightNewInterval: 15,
       improvePerformance: false,
-      improvePerformanceLastSuggested: null,
+      'improvePerformance-lastSuggested': null,
       insertButtons: cd.config.defaultInsertButtons || [],
       notifications: 'all',
       notifyCollapsedThreads: false,
@@ -94,7 +100,7 @@ export default {
       showToolbar: true,
       signaturePrefix: cd.config.defaultSignaturePrefix,
       timestampFormat: 'default',
-      topicSubscriptionSeenNotice: false,
+      'useTopicSubscription-seenNotice': false,
       modifyToc: true,
       useBackgroundHighlighting: true,
       useTemplateData: true,
@@ -459,7 +465,7 @@ export default {
     }
 
     if (
-      !values.haveInsertButtonsBeenAltered &&
+      !values['insertButtons-altered'] &&
       JSON.stringify(values.insertButtons) !== JSON.stringify(cd.config.defaultInsertButtons)
     ) {
       values.insertButtons = cd.config.defaultInsertButtons;

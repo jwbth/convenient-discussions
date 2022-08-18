@@ -432,7 +432,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
     settings.scheme.states.forEach((state) => {
       collectedSettings[state] = this.settings[state];
     });
-    collectedSettings.haveInsertButtonsBeenAltered = (
+    collectedSettings['insertButtons-altered'] = (
       JSON.stringify(collectedSettings.insertButtons) !==
       JSON.stringify(settings.scheme.default.insertButtons)
     );

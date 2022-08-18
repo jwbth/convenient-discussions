@@ -1479,7 +1479,7 @@ class CommentForm {
    * @returns {boolean}
    */
   haveSuggestedToImprovePerformanceRecently() {
-    return getDayTimestamp() - settings.get('improvePerformanceLastSuggested') < 14;
+    return getDayTimestamp() - settings.get('improvePerformance-lastSuggested') < 14;
   }
 
   /**
@@ -1512,7 +1512,7 @@ class CommentForm {
         type: 'warn',
         autoHideSeconds: 'long',
       });
-      settings.saveSettingOnTheFly(null, 'improvePerformanceLastSuggested', getDayTimestamp());
+      settings.saveSettingOnTheFly(null, 'improvePerformance-lastSuggested', getDayTimestamp());
     }
   }
 

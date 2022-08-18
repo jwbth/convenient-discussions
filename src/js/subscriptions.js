@@ -353,7 +353,9 @@ export default {
    * @private
    */
   maybeShowNotice() {
-    if (!settings.get('useTopicSubscription') || settings.get('topicSubscriptionSeenNotice')) return;
+    if (!settings.get('useTopicSubscription') || settings.get('useTopicSubscription-seenNotice')) {
+      return;
+    }
 
     const $body = $('<div>');
     const $img = $('<img>')
@@ -373,7 +375,7 @@ export default {
     $body.append($img, $div);
     OO.ui.alert($body, { size: 'large' });
 
-    settings.saveSettingOnTheFly(null, 'topicSubscriptionSeenNotice', true);
+    settings.saveSettingOnTheFly(null, 'useTopicSubscription-seenNotice', true);
   },
 
   /**
