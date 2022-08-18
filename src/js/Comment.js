@@ -3684,13 +3684,19 @@ class Comment extends CommentSkeleton {
     const endOfThreadPattern = (
       '(' +
 
-      // `\n` is here to avoid putting the reply on a casual empty line. `\x01` is from hiding
+      // `\n` is here to prevent putting the reply on a casual empty line. `\x01` is from hiding
       // closed discussions.
-      `[:*#\\x01]{0,${maxIndentationLength}}(?![:*#\\n\\x01])` +
+      '(?![:*#\\x01\\n])' +
 
-      // This excludes the case where `#` is starting a numbered list inside a comment
-      // (https://ru.wikipedia.org/w/index.php?diff=110482717).
-      (maxIndentationLength > 0 ? `|[:*#\\x01]{1,${maxIndentationLength}}(?![:*\\n\\x01])` : '') +
+      /*
+        This excludes cases where:
+        1) `#` is starting a numbered list inside a comment (reply put in a wrong place:
+           https://ru.wikipedia.org/w/index.php?diff=110482717). Can't do that to `*` as well since
+           `*` can be an indentation character at a position other than 0 whereas `#` at such
+           position can't be an indentation character; it can only start a line.
+        2) An indentation character is followed by a newline (`\\n` removed).
+       */
+      (maxIndentationLength > 0 ? `|[:*#\\x01]{1,${maxIndentationLength}}(?![:*\\x01])` : '') +
       ')'
     );
 
@@ -3780,6 +3786,8 @@ class Comment extends CommentSkeleton {
     }
 
     // If the comment is to be put after a comment with different indentation characters, use these.
+    // `#[:*#]*` is to use `#` as an indentation character when, say, replying to a comment and the
+    // last reply uses `#`.
     const [, changedIndentation] = adjustedCodeBetween.match(/\n([:*#]{2,}|#[:*#]*).*\n$/) || [];
     if (changedIndentation) {
       // Note the bug https://ru.wikipedia.org/w/index.php?diff=next&oldid=105529545 that was
