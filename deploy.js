@@ -180,8 +180,6 @@ function getLastDeployedCommit(revisions) {
     [, lastDeployedVersion] = revision.comment.match(/[uU]pdate to (v\d+\.\d+\.\d+\b)/) || [];
     return lastDeployedCommit || lastDeployedVersion;
   });
-  let newCommitsCount;
-  let newCommitsSubjects;
   if (lastDeployedCommit || lastDeployedVersion) {
     newCommitsCount = commits.findIndex((commit) => (
       commit.hash === lastDeployedCommit ||
