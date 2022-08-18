@@ -38,22 +38,22 @@ const keyword = chalk.cyan;
 const important = chalk.greenBright;
 
 if (!config) {
-  error(`Config is missing in ${keyword(config.json5)}.`);
+  error(`Config is missing in ${keyword(config.json5)}`);
 }
 
 if (!config.main) {
-  error(`Data related to the main build (in the "main" property) is missing in ${keyword(config.json5)}.`);
+  error(`Data related to the main build (in the "main" property) is missing in ${keyword(config.json5)}`);
 }
 
 if (!config.main.rootPath) {
-  error(`${keyword('rootPath')} is missing in ${keyword(config.json5)}.`);
+  error(`${keyword('rootPath')} is missing in ${keyword(config.json5)}`);
 }
 
 const pathPrefix = config.main.rootPath + '/';
 
 const assets = config.main.assets?.[test ? 'test' : 'default'];
 if (!assets || !Array.isArray(assets) || !assets.length) {
-  error(`File list not found in ${keyword('config.json5')}.`);
+  error(`File list is not found in ${keyword('config.json5')}`);
 }
 
 const configAssets = config.configs.flatMap((configForConfig) => {
@@ -128,7 +128,7 @@ if (configsOnly) {
 
 function parseCmdOutput(err, stdout, stderr) {
   if (stdout === '') {
-    error('parseCmdOutput(): This does not look like a git repo.');
+    error('parseCmdOutput(): This does not look like a git repo');
   }
 
   if (stderr) {
@@ -166,7 +166,7 @@ function requestComments() {
       if (revisions.length || info?.pages?.[0]?.missing) {
         getLastDeployedCommit(revisions);
       } else {
-        console.log('Couldn\'t load the revisions data.');
+        console.log('Couldn\'t load the revisions data');
       }
     }
   );
@@ -224,7 +224,7 @@ function getMainEdits() {
         try {
           content = fs.readFileSync(`./dist/${file}`, 'utf8');
         } catch (e) {
-          error(`Asset not found: ${keyword(file)}.`);
+          error(`Asset is not found: ${keyword(file)}`);
         }
 
         if (!file.includes('i18n/')) {
@@ -297,7 +297,7 @@ async function getConfigsEdits() {
     const illegalMatch = modulesString.match(/[^a-z.,-]/ig);
     if (illegalMatch) {
       const matchesString = illegalMatch.map((char) => code(char)).join(' ');
-      error(`Modules string for ${keyword(asset.target)} contains illegal characters: ${matchesString}.`);
+      error(`Modules string for ${keyword(asset.target)} contains illegal characters: ${matchesString}`);
     }
 
     asset.content = content.replace(
@@ -361,7 +361,7 @@ function loginToNextServer() {
   if (server) {
     logIn(server);
   } else {
-    success('The files have been successfully deployed.');
+    success('The files have been successfully deployed');
   }
 }
 
@@ -381,7 +381,7 @@ async function logIn(server) {
       clients[server].logIn(credentials.username, credentials.password, callback);
     } else {
       if (!credentialsResponse) {
-        console.log(`User name and/or password were not found in ${keyword('credentials.json5')}.`);
+        console.log(`User name and/or password were not found in ${keyword('credentials.json5')}`);
         credentialsResponse = await prompts([
           {
             type: 'text',
@@ -419,9 +419,9 @@ function editNext(serverEdits) {
       }
       if (info && info.result === 'Success') {
         if (info.nochange === undefined) {
-          success(`Successfully edited ${edit.url}. Edit timestamp: ${new Date(info.newtimestamp).toUTCString()}.`);
+          success(`Successfully edited ${edit.url} (edit timestamp: ${new Date(info.newtimestamp).toUTCString()})`);
         } else {
-          success(`No changes in ${edit.url}.`);
+          success(`No changes in ${edit.url}`);
         }
         editNext(serverEdits);
       } else {
