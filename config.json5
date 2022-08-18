@@ -34,6 +34,7 @@
       default: {
         source: 'w-ru.js',
         target: 'MediaWiki:Gadget-convenientDiscussions.js',
+        target2: 'User:Jack who built the house/convenientDiscussions.js',
         editGadgetsDefinition: true,
         modules: [
           'jquery.client',

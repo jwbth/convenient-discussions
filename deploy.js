@@ -66,6 +66,13 @@ const configAssets = config.configs.flatMap((configForConfig) => {
     source: `convenientDiscussions-config/${configForMode.source}`,
     target: configForMode.target,
   }].concat(
+    configForMode.target2 ?
+      {
+        server: configForConfig.server,
+        source: `convenientDiscussions-config/${configForMode.source}`,
+        target: configForMode.target2,
+      } :
+      [],
     configForMode.editGadgetsDefinition ?
       {
         server: configForConfig.server,
