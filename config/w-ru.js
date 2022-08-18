@@ -406,7 +406,7 @@ export default {
 
   beforeAuthorLinkParse: function (authorLink) {
     // https://ru.wikipedia.org/wiki/MediaWiki:Gadget-markadmins.js
-    const nextElement = authorLink.nextElementSibling;
+    var nextElement = authorLink.nextElementSibling;
     if (nextElement && nextElement.classList.contains('userflags-wrapper')) {
       authorLink.parentNode.insertBefore(nextElement, authorLink.nextSibling);
     }
@@ -432,7 +432,7 @@ export default {
   },
 };
 
-const cd = convenientDiscussions;
+var cd = convenientDiscussions;
 
 mw.hook('convenientDiscussions.beforeParse').add(function () {
   // Handle {{-vote}} by actually putting pseudo-minus-1-level comments on the upper level. We split
@@ -440,11 +440,11 @@ mw.hook('convenientDiscussions.beforeParse').add(function () {
 
   // Commented for now, as it can confuse votes for the criteria check script on voting pages.
   /*$('.ruwiki-commentIndentation-minus1level').each(function (i, el) {
-    const $current = $(el).css('margin', 0);
-    const $list = $current.parent('dd, li').parent('dl, ul, ol');
+    var $current = $(el).css('margin', 0);
+    var $list = $current.parent('dd, li').parent('dl, ul, ol');
     while ($list.get(0).contains($current.get(0))) {
-      const $parent = $current.parent();
-      const $elementsAfter = $current.nextAll();
+      var $parent = $current.parent();
+      var $elementsAfter = $current.nextAll();
       if ($elementsAfter.length) {
         $parent
           .clone()
@@ -464,11 +464,11 @@ mw.hook('convenientDiscussions.beforeParse').add(function () {
 });
 
 mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
-  const generateEditCommonJsLink = function () {
+  var generateEditCommonJsLink = function () {
     return mw.util.getUrl('User:' + cd.user.getName() + '/common.js', { action: 'edit' });
   };
 
-  const isHlmEnabled = window.highlightMessagesAfterLastVisit !== undefined;
+  var isHlmEnabled = window.highlightMessagesAfterLastVisit !== undefined;
   if (isHlmEnabled) {
     // Suppress the work of [[Участник:Кикан/highlightLastMessages.js]] in possible ways.
     window.highlightMessagesAfterLastVisit = false;
@@ -477,9 +477,9 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
     if (!mw.cookie.get('cd-hlmConflict')) {
       // Remove the results of work of [[Участник:Кикан/highlightLastMessages.js]]
       if (window.messagesHighlightColor !== undefined) {
-        const dummyElement = document.createElement('span');
+        var dummyElement = document.createElement('span');
         dummyElement.style.color = window.messagesHighlightColor;
-        const hlmStyledElements = cd.api.getRootElement().querySelectorAll(
+        var hlmStyledElements = cd.api.getRootElement().querySelectorAll(
           '.cd-comment-part[style="background-color: ' + dummyElement.style.color + ';"],' +
           '.cd-comment-part[style="background-color: ' + window.messagesHighlightColor + '"]'
         );
@@ -488,7 +488,7 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
         });
       }
 
-      const $text = cd.api.wrap('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Кикан/highlightLastMessages.js">highlightLastMessages.js</a>, конфликтующий с функциональностью подсветки скрипта «Удобные обсуждения». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
+      var $text = cd.api.wrap('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Кикан/highlightLastMessages.js">highlightLastMessages.js</a>, конфликтующий с функциональностью подсветки скрипта «Удобные обсуждения». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
       mw.notify($text, {
         type: 'warn',
         autoHide: false,
@@ -501,7 +501,7 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
   }
 
   if (typeof proceedToArchiveRunned !== 'undefined' && !mw.cookie.get('cd-ptaConflict')) {
-    const $text = cd.api.wrap('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Jack_who_built_the_house/proceedToArchive.js">proceedToArchive.js</a>, функциональность которого включена в скрипт «Удобные обсуждения». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
+    var $text = cd.api.wrap('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Jack_who_built_the_house/proceedToArchive.js">proceedToArchive.js</a>, функциональность которого включена в скрипт «Удобные обсуждения». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
     mw.notify($text, {
       type: 'warn',
       autoHide: false,
@@ -513,7 +513,7 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
   }
 
   if ($('.localcomments[style="font-size: 95%; white-space: nowrap;"]').length) {
-    const $text = cd.api.wrap('Скрипт <a href="//ru.wikipedia.org/wiki/Участник:Александр_Дмитриев/comments_in_local_time_ru.js">comments in local time ru.js</a> выполняется раньше скрипта «Удобные обсуждения», что мешает работе последнего. Проследуйте инструкциям <a href="' + mw.util.getUrl(cd.config.scriptPageWikilink) + '#Совместимость">здесь</a>, чтобы обеспечить их совместимость.');
+    var $text = cd.api.wrap('Скрипт <a href="//ru.wikipedia.org/wiki/Участник:Александр_Дмитриев/comments_in_local_time_ru.js">comments in local time ru.js</a> выполняется раньше скрипта «Удобные обсуждения», что мешает работе последнего. Проследуйте инструкциям <a href="' + mw.util.getUrl(cd.config.scriptPageWikilink) + '#Совместимость">здесь</a>, чтобы обеспечить их совместимость.');
     mw.notify($text, {
       type: 'warn',
       autoHide: false,
