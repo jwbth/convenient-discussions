@@ -652,7 +652,10 @@ async function processDiff($diff) {
           linkElement.href = '#' + id;
           linkElement.onclick = (e) => {
             e.preventDefault();
-            comment.scrollTo({ smooth: false });
+            comment.scrollTo({
+              smooth: false,
+              pushState: true,
+            });
           };
         }
 
