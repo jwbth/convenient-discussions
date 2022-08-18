@@ -58,8 +58,8 @@ jobs:
             REMOTE_USER: ${{ secrets.TOOLFORGE_USER }}
             SSH_PRIVATE_KEY: ${{ secrets.TOOLFORGE_KEY }}
             ARGS: "-rltgoDzvO --delete"
-            SOURCE: "source-maps/"
-            TARGET: "/data/project/convenient-discussions/www/static"
+            SOURCE: "dist/source-maps/"
+            TARGET: "/data/project/convenient-discussions/www/static/source-maps"
       - name: Take file ownership to the tool
         uses: appleboy/ssh-action@v0.1.2
         with:

@@ -89,5 +89,5 @@
     },
   ],
 
-  sourceMapsBaseUrl: 'http://tools-static.wmflabs.org/convenient-discussions/source-maps/',
+  sourceMapsBaseUrl: 'https://tools-static.wmflabs.org/convenient-discussions/source-maps/',
 }
