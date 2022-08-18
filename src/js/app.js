@@ -7,12 +7,12 @@
 import CONFIG_URLS from '../../config/urls.json';
 import I18N_LIST from '../../data/i18nList.json';
 import LANGUAGE_FALLBACKS from '../../data/languageFallbacks.json';
-import cd from './convenientDiscussions';
+import cd from './cd';
 import controller from './controller';
 import debug from './debug';
 import defaultConfig from '../../config/default';
 import { addCommentLinksToSpecialSearch } from './addCommentLinks';
-import { mergeRegexps, skin$, underlinesToSpaces, unique } from './utils';
+import { mergeRegexps, skin$, unique } from './utils';
 
 let config;
 
@@ -149,78 +149,6 @@ function maybeTweakAddTopicButton() {
 }
 
 /**
- * Set some {@link convenientDiscussions} properties.
- *
- * @private
- */
-function setGlobals() {
-  // Don't run again if go() runs the second time (see maybeAddFooterLink()).
-  if (cd.g.settingsOptionName) return;
-
-  /**
-   * Script configuration. The default configuration is in {@link module:defaultConfig}.
-   *
-   * @name config
-   * @type {object}
-   * @memberof convenientDiscussions
-   */
-  cd.config = Object.assign(defaultConfig, cd.config);
-
-  setStrings();
-
-  // For historical reasons, ru.wikipedia.org has 'cd'.
-  const localOptionsPrefix = location.hostname === 'ru.wikipedia.org' ?
-    'cd' :
-    'convenientDiscussions';
-
-  cd.g.settingsOptionName = 'userjs-convenientDiscussions-settings';
-  cd.g.localSettingsOptionName = `userjs-${localOptionsPrefix}-localSettings`;
-  cd.g.visitsOptionName = `userjs-${localOptionsPrefix}-visits`;
-
-  // For historical reasons, ru.wikipedia.org has 'watchedTopics'.
-  const subscriptionsOptionNameEnding = location.hostname === 'ru.wikipedia.org' ?
-    'watchedTopics' :
-    'watchedSections';
-
-  cd.g.subscriptionsOptionName = `userjs-${localOptionsPrefix}-${subscriptionsOptionNameEnding}`;
-
-  const server = mw.config.get('wgServer');
-  cd.g.server = server.startsWith('//') ? location.protocol + server : server;
-
-  // Worker's location object doesn't have the host name set.
-  cd.g.hostname = location.hostname;
-
-  cd.g.pageName = underlinesToSpaces(mw.config.get('wgPageName'));
-  cd.g.pageTitle = underlinesToSpaces(mw.config.get('wgTitle'));
-  cd.g.namespaceNumber = mw.config.get('wgNamespaceNumber');
-
-  // "<unregistered>" is a workaround for anonymous users (there are such!).
-  cd.g.userName = mw.config.get('wgUserName') || '<unregistered>';
-
-  const bodyClassList = document.body.classList;
-
-  cd.g.pageWhitelistRegexp = mergeRegexps(cd.config.pageWhitelist);
-  cd.g.pageBlacklistRegexp = mergeRegexps(cd.config.pageBlacklist);
-  cd.g.contentTextDirection = bodyClassList.contains('sitedir-rtl') ? 'rtl' : 'ltr';
-  cd.g.skin = mw.config.get('skin');
-
-  // Quite a rough check for mobile browsers, a mix of what is advised at
-  // https://stackoverflow.com/a/24600597 (sends to
-  // https://developer.mozilla.org/en-US/docs/Browser_detection_using_the_user_agent) and
-  // https://stackoverflow.com/a/14301832.
-  cd.g.isMobile = (
-    /Mobi|Android/i.test(navigator.userAgent) ||
-    typeof window.orientation !== 'undefined'
-  );
-
-  cd.g.isDtReplyToolEnabled = bodyClassList.contains('ext-discussiontools-replytool-enabled');
-  cd.g.isDtNewTopicToolEnabled = bodyClassList
-    .contains('ext-discussiontools-newtopictool-enabled');
-  cd.g.isDtTopicSubscriptionEnabled = bodyClassList
-    .contains('ext-discussiontools-topicsubscription-enabled');
-}
-
-/**
  * Function executed after the config and localization strings are ready.
  *
  * @fires preprocessed
@@ -229,7 +157,25 @@ function setGlobals() {
 async function go() {
   debug.startTimer('start');
 
-  setGlobals();
+  require('./convenientDiscussions');
+
+  // Don't run again if go() runs the second time (see maybeAddFooterLink()).
+  if (cd.g.pageWhitelistRegexp === undefined) {
+    /**
+     * Script configuration. The default configuration is in {@link module:defaultConfig}.
+     *
+     * @name config
+     * @type {object}
+     * @memberof convenientDiscussions
+     */
+    cd.config = Object.assign(defaultConfig, cd.config);
+
+    cd.g.pageWhitelistRegexp = mergeRegexps(cd.config.pageWhitelist);
+    cd.g.pageBlacklistRegexp = mergeRegexps(cd.config.pageBlacklist);
+
+    setStrings();
+  }
+
   controller.init();
   controller.loadToTalkPage();
   maybeAddFooterLink();
@@ -375,6 +321,8 @@ async function app() {
   if (IS_SINGLE) {
     cd.config = config;
   }
+
+  cd.g = {};
 
   debug.init();
   debug.startTimer('total time');
