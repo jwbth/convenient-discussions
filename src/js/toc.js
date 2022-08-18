@@ -116,9 +116,9 @@ const toc = {
    * every page reload.)
    *
    * @param {object[]} [sections] TOC sections object.
-   * @param {boolean} [doHideToc] Whether the TOC should be hidden.
+   * @param {boolean} [hideToc] Whether the TOC should be hidden.
    */
-  setup(sections, doHideToc) {
+  setup(sections, hideToc) {
     this.$element = this.isInSidebar() ? $('.sidebar-toc') : controller.$root.find('.toc');
     this.tocItems = null;
     this.floating = null;
@@ -126,7 +126,7 @@ const toc = {
     if (this.isInSidebar()) {
       if (sections) {
         // Update the section list of the TOC
-        mw.hook('wikipage.tableOfContents').fire(doHideToc ? [] : sections);
+        mw.hook('wikipage.tableOfContents').fire(hideToc ? [] : sections);
       }
 
       // Workaround for new sections until T307251 is resolved. When it is, this block can be
