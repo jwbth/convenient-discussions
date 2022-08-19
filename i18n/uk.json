@@ -355,7 +355,7 @@
 	"error-elementhidden": "Елемент прихований. Неможливо прокрутити до нього.",
 	"error-purgecache": "Не вдалося очистити кеш цієї сторінки.",
 	"error-anoneditwatning": "<strong>Ви не авторизовані.</strong> Ваша IP-адреса буде загальнодоступною, якщо ви внесете будь-які зміни.",
-	"discussiontools-incompatible": "Зручні Обговорення несумісні з інструментами обговорення. <b><span class=\"cd-notification-disabledt\">[[Special:Preferences#mw-prefsection-betafeatures|Вимкніть]]</span></b> DiscussionTools, щоб зручні обговорення працювали належним чином",
+	"discussiontools-incompatible": "Зручні Обговорення несумісні з інструментами обговорення. <b><span class=\"cd-notification-disabledt\">[[$1|Вимкніть]]</span></b> DiscussionTools, щоб зручні обговорення працювали належним чином",
 	"discussiontools-disabled": "DiscussionTools успішно вимкнено. <span class=\"cd-notification-refresh\">Натисніть, щоб оновити сторінку</span>.",
 	"wl-button-switchrelevant-tooltip": "Показувати лише коментарі в темах, на які я підписаний, і коментарі, адресовані мені. (''Примітка'': виявлення базується на описі редагування, тому деякі зміни можуть бути відсутні)",
 	"wl-button-editwatchedsections-tooltip": "Редагувати список тем, на які я підписаний",

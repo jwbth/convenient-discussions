@@ -327,7 +327,7 @@
 	"error-purgecache": "Bu sayfanın önbelleği temizlenemedi.",
 	"error-anoneditwatning": "<strong>Giriş yapmadınız.</strong> Herhangi bir değişiklik yapmanız durumunda IP adresiniz herkese görünecektir.",
 	"warning-performance-title": "Performans sorunları?",
-	"discussiontools-incompatible": "Uygun Tartışmalar, Tartışma Araçları ile uyumsuzdur. Uygun Tartışmaların doğru şekilde çalışması için lütfen DiscussionTools'u <b><span class=\"cd-notification-disabledt\">[[Special:Preferences#mw-prefsection-betafeatures|devre dışı bırakın]]</span></b>.",
+	"discussiontools-incompatible": "Uygun Tartışmalar, Tartışma Araçları ile uyumsuzdur. Uygun Tartışmaların doğru şekilde çalışması için lütfen DiscussionTools'u <b><span class=\"cd-notification-disabledt\">[[$1|devre dışı bırakın]]</span></b>.",
 	"wl-button-switchrelevant-tooltip": "Yalnızca abone olduğum konulardaki yorumları ve bana gönderilen yorumları göster. (Not: algılama, düzenleme özetlerine dayanmaktadır, bu nedenle bazı düzenlemeler eksik olabilir)",
 	"wl-button-editwatchedsections-tooltip": "Abone olduğum konuların listesini düzenle",
 	"wl-button-settings-tooltip": "Kullanışlı Tartışmalar ayarları",

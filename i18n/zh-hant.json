@@ -359,7 +359,7 @@
 	"error-elementhidden": "元素被隱藏。無法滾動。",
 	"error-purgecache": "無法清除此頁面的快取。",
 	"error-anoneditwatning": "<strong>您還沒有登入。</strong>若您有做出任何編輯，您的 IP 位址會公開顯示。",
-	"discussiontools-incompatible": "Convenient Discussions 與 DiscussionTools 不相容。請<b><span class=\"cd-notification-disabledt\">[[Special:Preferences#mw-prefsection-betafeatures|停用]]</span></b> DiscussionTools 以讓 Convenient Discussions 能正常運作。",
+	"discussiontools-incompatible": "Convenient Discussions 與 DiscussionTools 不相容。請<b><span class=\"cd-notification-disabledt\">[[$1|停用]]</span></b> DiscussionTools 以讓 Convenient Discussions 能正常運作。",
 	"discussiontools-disabled": "已成功停用 DiscussionTools。<span class=\"cd-notification-refresh\">按此來重新整理頁面</span>。",
 	"wl-button-switchrelevant-tooltip": "僅顯示我所訂閱的話題、以及有提及我的意見。（註：檢測是基於編輯摘要，因此可能會缺失一些編輯內容）",
 	"wl-button-editwatchedsections-tooltip": "編輯我訂閱的話題清單",

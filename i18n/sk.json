@@ -372,7 +372,7 @@
 	"error-anoneditwatning": "<strong>Nie ste prihlásený/á.</strong> Vaša IP adresa bude verejne viditeľná ak vykonáte nejakú úpravu.",
 	"warning-performance-title": "Problémy s výkonom?",
 	"warning-performance": "Pohodlné diskusie sa ich môžu pokúsiť vyriešiť pomocou nastavenia „{{int:convenient-discussions-sd-improveperformance}}“. <span class=\"cd-notification-talkPageSettings\">Otvorte dialógové okno nastavení</span> .",
-	"discussiontools-incompatible": "Pohodlné diskusie nie sú kompatibilné s Diskusnými nástrojmi. Prosím vypnite Diskusné nástroje na [[Special:Preferences#mw-prefsection-betafeatures|stránke s beta funkciami]], aby Pohodlné diskusie pracovali správne.",
+	"discussiontools-incompatible": "Pohodlné diskusie nie sú kompatibilné s Diskusnými nástrojmi. Prosím vypnite Diskusné nástroje na [[$1|stránke s beta funkciami]], aby Pohodlné diskusie pracovali správne.",
 	"discussiontools-disabled": "Diskusné nástroje boli úspešne deaktivované. <span class=\"cd-notification-refresh\">Obnovte stránku</span> .",
 	"wl-button-switchrelevant-tooltip": "Zobraziť iba komentáre v témach,v ktorých som {{GENDER:$1|prihlásený na odber}}, a komentáre adresované mne. (Poznámka: detekcia je založená na súhrnoch úprav, takže niektoré úpravy môžu chýbať)",
 	"wl-button-editwatchedsections-tooltip": "Upraviť zoznam tém, na ktoré som {{GENDER:$1|prihlásený na odber}}",

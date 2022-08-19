@@ -369,7 +369,7 @@
 	"error-elementhidden": "Le elemento es celate. Impossibile rolar verso illo.",
 	"error-purgecache": "Non poteva purgar le cache de iste pagina.",
 	"error-anoneditwatning": "<strong>Tu non ha aperite session.</strong> Tu essera IP essera publicamente visibile si tu face modificationes.",
-	"discussiontools-incompatible": "\"Discussiones practic\" es incompatibile con \"DiscussionTools\". Per favor <b><span class=\"cd-notification-disabledt\">[[Special:Preferences#mw-prefsection-betafeatures|disactiva]]</span></b> \"DiscussionTools\" pro facer \"Discussiones practic\" functionar correctemente.",
+	"discussiontools-incompatible": "\"Discussiones practic\" es incompatibile con \"DiscussionTools\". Per favor <b><span class=\"cd-notification-disabledt\">[[$1|disactiva]]</span></b> \"DiscussionTools\" pro facer \"Discussiones practic\" functionar correctemente.",
 	"discussiontools-disabled": "DiscussionTools ha essite disactivate. <span class=\"cd-notification-refresh\">Refresca le pagina</span>.",
 	"wl-button-switchrelevant-tooltip": "Monstrar solmente commentos in topicos al quales io es {{gender:$1|subscribite}} e commentos adressate a me. (Nota: le detection se basa sur le summarios de modification, dunque, alcun modificationes pote mancar.)",
 	"wl-button-editwatchedsections-tooltip": "Modificar le lista de topicos al quales io es {{gender:$1|subscribite}}",

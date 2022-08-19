@@ -376,7 +376,7 @@
 	"error-anoneditwatning": "<strong>आपने लॉग-इन नहीं किया है।</strong> अगर आप कोई संपादन करते हैं तो आपका IP पता सार्वजनिक रूप से दृश्य होगा।",
 	"warning-performance-title": "प्रदर्शन में समस्याएँ हैं?",
 	"warning-performance": "सुविधाजनक चर्चा \"{{int:convenient-discussions-sd-improveperformance}}\" सेटिंग की मदद से इन्हें सुलझाने की कोशिश कर सकती है। <span class=\"cd-notification-talkPageSettings\">[[$1|सेटिंग्स डायलॉग खोलें]]</span>।",
-	"discussiontools-incompatible": "सुविधाजनक चर्चा DiscussionTools के साथ काम नहीं करती। सुविधाजनक चर्चा को ठीक से चलाने के लिए कृपया DiscussionTools को <b><span class=\"cd-notification-disabledt\">[[Special:Preferences#mw-prefsection-betafeatures|अक्षम करें]]</span></b>।",
+	"discussiontools-incompatible": "सुविधाजनक चर्चा DiscussionTools के साथ काम नहीं करती। सुविधाजनक चर्चा को ठीक से चलाने के लिए कृपया DiscussionTools को <b><span class=\"cd-notification-disabledt\">[[$1|अक्षम करें]]</span></b>।",
 	"discussiontools-disabled": "DiscussionTools को सफलतापूर्वक अक्षम कर दिया गया है। <span class=\"cd-notification-refresh\">[[$1|पृष्ठ को ताज़ा करें]]</span>।",
 	"wl-button-switchrelevant-tooltip": "सिर्फ उन्हीं विषयों में टिप्पणियाँ दिखाएँ जिनपर मैंने {{gender:$1|सदस्यता ली हुई}} है और जिनमें मेरा उल्लेख किया गया हो। (ध्यान रखें: इनका पता संपादन सारांश की मदद से लगाया जाता तो कुछ संपादन गायब हो सकते हैं)",
 	"wl-button-editwatchedsections-tooltip": "मेरे {{gender:$1|सदस्यता लिए हुए}} विषयों की सूची को संपादित करें",

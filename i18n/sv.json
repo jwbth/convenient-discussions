@@ -380,7 +380,7 @@
 	"error-anoneditwatning": "<strong>Du är inte inloggad.</strong> Din IP-adress kommer att visas offentligt om du gör några redigeringar.",
 	"warning-performance-title": "Prestandaproblem?",
 	"warning-performance": "Angenäma diskussioner kan försöka lösa dem med \"{{int:convenient-discussions-sd-improveperformance}}\"-inställningen.<span class=\"cd-notification-talkPageSettings\">[[$1|Öppna inställningsdialogen]]</span>.",
-	"discussiontools-incompatible": "Angenäma diskussioner är inte kompatibelt med DiscussionTools. Var god <b><span class=\"cd-notification-disabledt\">[[Special:Preferences#mw-prefsection-betafeatures|inaktivera]]</span></b> DiscussionTools för att se till att Angenäma diskussioner fungerar som det ska.",
+	"discussiontools-incompatible": "Angenäma diskussioner är inte kompatibelt med DiscussionTools. Var god <b><span class=\"cd-notification-disabledt\">[[$1|inaktivera]]</span></b> DiscussionTools för att se till att Angenäma diskussioner fungerar som det ska.",
 	"discussiontools-disabled": "DiscussionTools har inaktiverats. <span class=\"cd-notification-refresh\">[[$1|Ladda om sidan]]</span>.",
 	"wl-button-switchrelevant-tooltip": "Visa endast kommentarer i ämnen som {{gender:$1|jag prenumererar}} och kommentarer på som adresserats till mig. (OBS: De identifieras baserat på redigeringssammanfattningar, så vissa redigeringar kanske hoppas över)",
 	"wl-button-editwatchedsections-tooltip": "Redigera listan över ämnen som jag {{gender:$1|prenumererar på}}",

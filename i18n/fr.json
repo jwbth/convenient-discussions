@@ -396,7 +396,7 @@
 	"error-anoneditwatning": "<strong>Vous n’êtes pas connecté.</strong> Votre adresse IP sera visible publiquement si vous effectuez des modifications.",
 	"warning-performance-title": "Des problèmes de performance ?",
 	"warning-performance": "Les Discussions pratiques peuvent essayer de les résoudre avec le paramètre « {{int:convenient-discussions-sd-improveperformance}} ». <span class=\"cd-notification-talkPageSettings\">[[$1|Ouvrez la boîte de dialogue des paramètres]]</span>.",
-	"discussiontools-incompatible": "''Discussions pratiques'' est incompatible avec ''DiscussionTools''. Veuillez désactiver <b><span class=\"cd-notification-disabledt\">[[Special:Preferences#mw-prefsection-betafeatures|désactiver]]</span></b> ''DiscussionTools'' pour faire correctement fonctionner ''Discussions pratiques''.",
+	"discussiontools-incompatible": "''Discussions pratiques'' est incompatible avec ''DiscussionTools''. Veuillez désactiver <b><span class=\"cd-notification-disabledt\">[[$1|désactiver]]</span></b> ''DiscussionTools'' pour faire correctement fonctionner ''Discussions pratiques''.",
 	"discussiontools-disabled": "Les Discussions pratiques ont bien été désactivées. <span class=\"cd-notification-refresh\">[[$1|Rafraîchir la page]]</span>.",
 	"wl-button-switchrelevant-tooltip": "Afficher seulement les commentaires sur des sujets auxquels je suis abonné{{GENDER:$1||e}} et ceux qui me sont adressés (Note : la détection est basée sur les résumés de modification, donc certaines modifications peuvent être absentes).",
 	"wl-button-editwatchedsections-tooltip": "Modifier la liste des sujets auxquels je suis abonné{{GENDER:$1||e}}",

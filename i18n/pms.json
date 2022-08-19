@@ -353,7 +353,7 @@
 	"error-elementhidden": "L'element a l'é stërmà. Impossìbil ëscore fin-a a chiel.",
 	"error-purgecache": "Impossìbil polidé la memòria local ëd sa pàgina.",
 	"error-anoneditwatning": "<strong>A l'é nen intrà ant ël sistema.</strong> Soa adrëssa IP a sarà visìbil a tuti s'a fà dle modìfiche.",
-	"discussiontools-incompatible": "Convenient Discussions a l'é incompatìbil con DiscussionTools. Për piasì, <b><span class=\"cd-notification-disabledt\">[[Special:Preferences#mw-prefsection-betafeatures|ch'a disabìlita]]</span></b> DiscussionTools për fé marcé Convenient Discussions bin.",
+	"discussiontools-incompatible": "Convenient Discussions a l'é incompatìbil con DiscussionTools. Për piasì, <b><span class=\"cd-notification-disabledt\">[[$1|ch'a disabìlita]]</span></b> DiscussionTools për fé marcé Convenient Discussions bin.",
 	"discussiontools-disabled": "DiscussionTools a l'é stàit disabilità për da bin. <span class=\"cd-notification-refresh\">Ch'a sgnaca për rinfrësché la pàgina</span>.",
 	"wl-button-switchrelevant-tooltip": "Smon-e mach ij coment an sj'argoment ai quaj ij son anscrit e ij coment adrëssà a mi. (Nòta: l'arserca a l'é basà an sij resumé dle modìfiche, donca chèiche modìfiche a podrìo manché)",
 	"wl-button-editwatchedsections-tooltip": "Mofiché la lista dj'argoment ai quaj i son abonà",
