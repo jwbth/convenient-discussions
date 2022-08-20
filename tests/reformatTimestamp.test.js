@@ -18,7 +18,7 @@ cd.g = {
   msInMin: 1000 * 60,
 };
 cd.mws = (name) => ({
-  'timezone-utc': 'UTC',
+  'timezone-utc': 'UTCs',
 }[name]);
 cd.i18n = { en };
 cd.s = (name) => cd.i18n.en[name];
