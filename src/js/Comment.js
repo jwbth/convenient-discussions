@@ -1312,7 +1312,7 @@ class Comment extends CommentSkeleton {
   getMargins() {
     let startMargin;
     if (this.ahContainerListType === 'ol') {
-      // "this.highlightables.length === 1" is a workaround for cases such as
+      // `this.highlightables.length === 1` is a workaround for cases such as
       // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202005160930_Example.
       startMargin = this.highlightables.length === 1 ?
         cd.g.contentFontSize * 3.2 :
