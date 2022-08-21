@@ -191,30 +191,6 @@ const toc = {
   },
 
   /**
-   * Generate a string containing new comment count to insert after the section headline in the
-   * table of contents.
-   *
-   * @param {number} count
-   * @param {number} unseenCount
-   * @param {boolean} full
-   * @param {Element} $target
-   * @private
-   */
-  addCommentCountString(count, unseenCount, full, $target) {
-    const countString = full ? cd.s('toc-commentcount-full', count) : count;
-    const unseenCountString = unseenCount ?
-      ' ' + cd.s(full ? 'toc-commentcount-new-full' : 'toc-commentcount-new', unseenCount) :
-      '';
-
-    const span = document.createElement('span');
-    span.className = 'cd-toc-commentCount';
-    const bdi = document.createElement('bdi');
-    bdi.textContent = countString + unseenCountString;
-    span.appendChild(bdi);
-    $target.append(span);
-  },
-
-  /**
    * Add the number of comments to each section link.
    */
   addCommentCount() {
@@ -229,11 +205,22 @@ const toc = {
       const count = section.comments.length;
       if (!count) return;
 
+      const countString = usedFullForm ? count : cd.s('toc-commentcount-full', count);
       const unseenCount = section.comments.filter((comment) => comment.isSeen === false).length;
-      const $target = this.isInSidebar() ? item.$text : item.$link;
-      this.addCommentCountString(count, unseenCount, !usedFullForm, $target);
+      const unseenCountString = unseenCount ?
+        (
+          ' ' +
+          cd.s(usedFullForm ? 'toc-commentcount-new' : 'toc-commentcount-new-full', unseenCount)
+        ) :
+        '';
 
-      item.usesFullForm = !usedFullForm;
+      const span = document.createElement('span');
+      span.className = 'cd-toc-commentCount';
+      const bdi = document.createElement('bdi');
+      bdi.textContent = countString + unseenCountString;
+      span.appendChild(bdi);
+      item.$text.append(span);
+
       usedFullForm = true;
     });
   },
