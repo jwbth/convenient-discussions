@@ -199,9 +199,7 @@ function getLastDeployedCommit(revisions) {
       .slice(0, newCommitsCount)
       .map((commit) => commit.subject)
       .filter((commit) => (
-        !commit.startsWith('Merge branch') &&
-        !commit.startsWith('Merge pull request') &&
-        !commit.startsWith('Localisation updates')
+        !/^(Merge branch|Merge pull request|Localisation updates|deploy:|build:|config:|tests:)/.test(commit)
       ));
     newCommitsCount = newCommitsSubjects.length;
   }
