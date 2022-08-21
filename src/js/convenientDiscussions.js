@@ -8,7 +8,7 @@ import CommentStatic from './CommentStatic';
 import cd from './cd';
 import controller from './controller';
 import debug from './debug';
-import pageRegistry, { Page } from './pageRegistry';
+import pageRegistry from './pageRegistry';
 import { buildEditSummary, underlinesToSpaces, wrap, wrapDiffBody } from './utils';
 
 const mwStringsCache = {};
@@ -596,8 +596,3 @@ Object.assign(cd.g, {
   isDtTopicSubscriptionEnabled: bodyClassList
     .contains('ext-discussiontools-topicsubscription-enabled'),
 });
-
-// TODO: Delete after all addons are updated.
-cd.util = cd.api;
-cd.api.generateCommentAnchor = cd.api.generateCommentId;
-cd.api.Page = Page;

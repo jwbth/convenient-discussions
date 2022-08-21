@@ -933,9 +933,6 @@ export default {
      */
     cd.page = pageRegistry.getCurrent();
 
-    // TODO: Delete after all addons are updated.
-    cd.g.PAGE = cd.page;
-
     /**
      * Current user's object.
      *
