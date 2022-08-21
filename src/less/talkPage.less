@@ -212,10 +212,6 @@ ol > .cd-replyButtonWrapper:not(.cd-replyButtonWrapper-hasCommentForm) {
     max-width: 60em;
   }
 
-  .oo-ui-textInputWidget input {
-    height: 34px;
-  }
-
   &-linkTypeSelect {
     display: flex;
     justify-content: center;
@@ -296,4 +292,9 @@ ol > .cd-replyButtonWrapper:not(.cd-replyButtonWrapper-hasCommentForm) {
 .cd-popupOverlay .oo-ui-popupWidget-body  {
   margin-top: 7px;
   margin-bottom: 7px;
+}
+
+// T313332. Manifests in copy link dialog.
+.oo-ui-textInputWidget input {
+  height: auto;
 }
