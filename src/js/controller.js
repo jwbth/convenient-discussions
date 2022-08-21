@@ -1438,7 +1438,8 @@ export default {
   cleanUpUrl(query) {
     const newQuery = Object.assign({}, query);
 
-    // Added automatically (after /wiki/ if possible, as a query parameter otherwise).
+    // `title` will be added automatically (after /wiki/ if possible, as a query parameter
+    // otherwise).
     delete newQuery.title;
 
     delete newQuery.curid;
@@ -1446,6 +1447,8 @@ export default {
     delete newQuery.redlink;
     delete newQuery.section;
     delete newQuery.cdaddtopic;
+    delete newQuery.dtnewcommentssince;
+    delete newQuery.dtinthread;
 
     let methodName;
     if (newQuery.diff || newQuery.oldid) {
