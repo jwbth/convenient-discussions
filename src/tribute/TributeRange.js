@@ -103,8 +103,8 @@ class TributeRange {
                 }
             })
 
-            // jwbth: We use the `data` object instead of a string, to store the start/end/content
-            // data. The code processing these properties is added below.
+            // jwbth: We use a `data` object instead of a string, to store the start/end/content
+            // parts. The code processing these properties is added below.
             if (typeof data !== 'object') {
                 data = { start: data }
             }
@@ -112,20 +112,18 @@ class TributeRange {
             let isCmdModifierPressed = navigator.platform.includes('Mac') ?
                 originalEvent.metaKey :
                 originalEvent.ctrlKey
-                data.content = (
-                    (
-                        (
-                            data.skipContentByDefault &&
-                            !data.start.includes('/') &&
-                            !(originalEvent.shiftKey || originalEvent.altKey)
-                        ) ?
-                            '' :
-                            data.content
-                    ) ||
-                    ''
-                )
+            data.content = (
+                (
+                    !(
+                        data.skipContentCheck?.(data) &&
+                        !(originalEvent.shiftKey || originalEvent.altKey)
+                    ) &&
+                    data.content
+                ) ||
+                ''
+            )
             if (isCmdModifierPressed && data.cmdModify) {
-                data = data.cmdModify(data)
+                data.cmdModify()
             }
 
             let myField = this.tribute.current.element
@@ -137,7 +135,7 @@ class TributeRange {
             let ending = myField.value.substring(endPos, myField.value.length)
 
             if ((originalEvent.shiftKey || originalEvent.altKey) && data.shiftModify) {
-                data = data.shiftModify(data)
+                data.shiftModify()
             }
 
             if (originalEvent.altKey) {

@@ -585,10 +585,9 @@ class Autocomplete {
               start: `@[[${pageName}|`,
               end: ']]',
               content: name,
-              skipContentByDefault: true,
-              cmdModify: (data) => {
-                data.end += cd.mws('colon-separator', { language: 'content' });
-                return data;
+              skipContentCheck: (data) => !data.start.includes('/'),
+              cmdModify: function () {
+                this.end += cd.mws('colon-separator', { language: 'content' });
               },
             };
           },
@@ -620,10 +619,9 @@ class Autocomplete {
               start: '[[' + name,
               end: ']]',
               name,
-              shiftModify: (data) => {
-                data.start += '|';
-                data.content = data.name;
-                return data;
+              shiftModify: function () {
+                this.start += '|';
+                this.content = this.name;
               },
             };
           },
@@ -641,9 +639,8 @@ class Autocomplete {
               start: '{{' + name,
               end: '}}',
               name,
-              shiftModify: (data) => {
-                data.start += '|';
-                return data;
+              shiftModify: function () {
+                this.start += '|';
               },
             };
           },

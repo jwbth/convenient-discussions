@@ -3391,8 +3391,13 @@ class CommentForm {
    */
   mention(mentionAddressee) {
     if (mentionAddressee && this.targetComment) {
-      let data = Autocomplete.getConfig('mentions').transform(this.targetComment.author.getName());
-      data = data.cmdModify(data);
+      const data = Autocomplete.getConfig('mentions').transform(
+        this.targetComment.author.getName()
+      );
+      if (data.skipContentCheck(data)) {
+        data.content = '';
+      }
+      data.cmdModify();
       const text = data.start + data.content + data.end;
       const range = this.commentInput.getRange();
       this.commentInput.selectRange(0);
