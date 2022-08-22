@@ -10,14 +10,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
       - run: npm ci
       - run: npm run docs
       - name: Deploy
-        uses: easingthemes/ssh-deploy@v2.1.1
+        uses: easingthemes/ssh-deploy@v2.2.11
         env:
             REMOTE_HOST: "tools-login.wmflabs.org"
             REMOTE_USER: ${{ secrets.TOOLFORGE_USER }}
@@ -26,7 +26,7 @@ jobs:
             SOURCE: "dist/docs/"
             TARGET: "/data/project/convenient-discussions/www/static/docs"
       - name: Take file ownership to the tool
-        uses: appleboy/ssh-action@v0.1.2
+        uses: appleboy/ssh-action@v0.1.5
         with:
           host: "tools-login.wmflabs.org"
           username: ${{ secrets.TOOLFORGE_USER }}

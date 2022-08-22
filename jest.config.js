@@ -4,6 +4,6 @@
  */
 
 module.exports = {
-  // The test environment that will be used for testing
   testEnvironment: 'jsdom',
+  testMatch: ['**/tests/*.test.js'],
 };

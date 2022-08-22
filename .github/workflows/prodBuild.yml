@@ -1,20 +1,22 @@
-name: Deploy test build and configs
+name: Deploy production build and configs
 
 on:
+  release:
+    types:
+      - published
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 16
       - run: npm ci
-      - run: npm run build --test
+      - run: npm run build
+      - run: npm test
       - name: Create a SSH tunnel and deploy
         env:
           SSH_USER: ${{ secrets.TOOLFORGE_USER }}
@@ -45,11 +47,11 @@ jobs:
           rm ~/.ssh/id_rsa
 
           # Run own script to login and publish the build results to pages.
-          npm run deploy --test --noi18n
+          npm run deploy --noi18n
       - name: Create source maps folder
         run: cd dist && mkdir source-maps && cp *.map.json source-maps
       - name: Deploy source maps
-        uses: easingthemes/ssh-deploy@v2.1.1
+        uses: easingthemes/ssh-deploy@v2.2.11
         env:
             REMOTE_HOST: "tools-login.wmflabs.org"
             REMOTE_USER: ${{ secrets.TOOLFORGE_USER }}
@@ -58,7 +60,7 @@ jobs:
             SOURCE: "dist/source-maps/"
             TARGET: "/data/project/convenient-discussions/www/static/source-maps"
       - name: Take file ownership to the tool
-        uses: appleboy/ssh-action@v0.1.2
+        uses: appleboy/ssh-action@v0.1.5
         with:
           host: "tools-login.wmflabs.org"
           username: ${{ secrets.TOOLFORGE_USER }}
