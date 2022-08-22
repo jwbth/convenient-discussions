@@ -1175,14 +1175,13 @@ class CommentForm {
     this.createTextInputs(initialState);
     this.createCheckboxes(initialState);
     this.createButtons();
+    this.createElements();
+    this.addToolbar(requestedModulesNames);
+    this.addInsertButtons();
 
     if (this.deleteCheckbox?.isSelected()) {
       this.updateFormOnDeleteCheckboxChange(true);
     }
-
-    this.createElements();
-    this.addToolbar(requestedModulesNames);
-    this.addInsertButtons();
   }
 
   /**
