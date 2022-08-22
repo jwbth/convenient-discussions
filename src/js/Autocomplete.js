@@ -563,15 +563,17 @@ class Autocomplete {
    * _For internal use._ Get an autocomplete configuration for the specified type.
    *
    * @param {string} type
+   * @param {...*} args
    * @returns {object}
    */
-  static getConfig(type) {
+  static getConfig(type, ...args) {
     let config;
     switch (type) {
       case 'mentions': {
         config = {
           byText: {},
           cache: [],
+          default: args[0],
           transform: (item) => {
             const name = item.trim();
             const user = userRegistry.get(name);
@@ -591,17 +593,12 @@ class Autocomplete {
             };
           },
         };
-
-        // Remove self
-        config.default = (arguments[1] || [])
-          .filter((item) => item !== userRegistry.getCurrent().getName());
-
         break;
       }
 
       case 'commentLinks': {
         config = {
-          comments: arguments[1] || [],
+          comments: args[0] || [],
           transform: ({ id, author, timestamp, headline }) => ({
             start: `[[#${id}|`,
             end: ']]',

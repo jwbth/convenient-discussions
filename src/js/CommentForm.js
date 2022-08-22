@@ -1786,6 +1786,7 @@ class CommentForm {
       .concat(pageOwner)
       .filter(defined)
       .sort((u1, u2) => u2.isRegistered() - u1.isRegistered() || (u2.name > u1.name ? -1 : 1))
+      .filter((u) => u !== userRegistry.getCurrent())
       .map((u) => u.name);
 
     // Move the addressee to the beginning of the user list
