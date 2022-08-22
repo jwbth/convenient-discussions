@@ -137,14 +137,7 @@ class Autocomplete {
    * @private
    */
   getCollections(types, comments, defaultUserNames) {
-    const selectTemplate = (item) => {
-      if (item) {
-        return item.original.transform(item.original.item);
-      } else {
-        return '';
-      }
-    };
-
+    const selectTemplate = (item) => item ? item.original.transform(item.original.item) : '';
     const prepareValues = (arr, config) => (
       arr
         .filter(defined)
@@ -508,7 +501,7 @@ class Autocomplete {
                 return;
               }
 
-              // Type "[[Text", then delete and type "<s" quickly.
+              // Type "{{Text", then delete and type "<s" quickly.
               if (!this.tribute.current || this.tribute.current.trigger !== '{{') return;
 
               this.templates.cache = values.slice();
@@ -550,10 +543,9 @@ class Autocomplete {
       mentions: defaultUserNames,
       commentLinks: comments,
     };
-    const collections = [];
-    types.forEach((type) => {
+    const collections = types.map((type) => {
       this[type] = Autocomplete.getConfig(type, params[type]);
-      collections.push(collectionsByType[type]);
+      return collectionsByType[type];
     });
 
     return collections;

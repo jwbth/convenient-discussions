@@ -91,7 +91,7 @@ if (process.env.CI) {
 
   const eventJson = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
 
-  // Will be undefined if the event is workflow_dispatch.
+  // Will be undefined if the event is `workflow_dispatch`.
   version = eventJson.release?.tag_name;
 }
 

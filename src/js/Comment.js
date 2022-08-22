@@ -1312,7 +1312,7 @@ class Comment extends CommentSkeleton {
   getMargins() {
     let startMargin;
     if (this.ahContainerListType === 'ol') {
-      // "this.highlightables.length === 1" is a workaround for cases such as
+      // `this.highlightables.length === 1` is a workaround for cases such as
       // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202005160930_Example.
       startMargin = this.highlightables.length === 1 ?
         cd.g.contentFontSize * 3.2 :
@@ -3060,8 +3060,8 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Convert the comment code as present in the `inCode` property to text to set as a value of the
-   * form's comment input.
+   * Convert the comment code as present in the {@link Comment#inCode} property to text to set as a
+   * value of the form's comment input.
    *
    * @returns {string}
    */
@@ -3605,7 +3605,7 @@ class Comment extends CommentSkeleton {
 
   /**
    * Locate the comment in the section or page source code and, if no `codeOrUseSectionCode` is
-   * passed, set the results to the `inCode` property. Otherwise, return the result.
+   * passed, set the results to the {@link Comment#inCode} property. Otherwise, return the result.
    *
    * It is expected that the section or page code is loaded (using {@link Page#getCode}) before this
    * method is called. Otherwise, the method will throw an error.
@@ -3652,6 +3652,9 @@ class Comment extends CommentSkeleton {
     if (typeof codeOrUseSectionCode === 'string') {
       return inCode;
     } else {
+      /**
+       * @type {?(object|undefined)}
+       */
       this.inCode = inCode;
     }
   }
@@ -4162,12 +4165,12 @@ class Comment extends CommentSkeleton {
    * @returns {Comment[]}
    */
   getAncestors() {
-    const cachedAncestors = [];
+    const ancestors = [];
     let comment = this;
     while ((comment = comment.getParent())) {
-      cachedAncestors.push(comment);
+      ancestors.push(comment);
     }
-    return cachedAncestors;
+    return ancestors;
   }
 
   /**

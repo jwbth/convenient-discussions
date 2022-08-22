@@ -308,7 +308,8 @@ const toc = {
 
         if (this.isInSidebar() && level === 2) {
           // Don't bother with ARIA attributes since chances that somebody will interact with
-          // collapsed subsections with their help tend to zero, I believe, although this may change.
+          // collapsed subsections with their help tend to zero, I believe, although this may
+          // change.
           const button = document.createElement('button');
           button.className = 'mw-ui-icon mw-ui-icon-wikimedia-expand mw-ui-icon-small sidebar-toc-toggle';
           button.setAttribute('ariaExpanded', 'true');

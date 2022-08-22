@@ -175,21 +175,14 @@
 
   .wikiEditor-ui-top {
     border: 1px solid #a2a9b1;
-    border-bottom: 0;
+    border-bottom-width: 0;
   }
 
   &.oo-ui-textInputWidget.oo-ui-widget-disabled {
-    border-color: #c8ccd1;
-
-    .wikiEditor-ui-top,
-    + .cd-insertButtons {
-      pointer-events: none;
-    }
-
-    .oo-ui-inputWidget-input,
     .wikiEditor-ui-top,
     + .cd-insertButtons {
       border-color: #c8ccd1;
+      pointer-events: none;
     }
   }
 }

@@ -421,12 +421,14 @@ class BootProcess {
 
     const results = resp?.query?.search;
 
-    let searchUrl = mw.util.getUrl('Special:Search', {
-      search: searchQuery,
-      sort: 'create_timestamp_desc',
-      cdcomment: date && decodedFragment,
-    });
-    searchUrl = cd.g.server + searchUrl;
+    const searchUrl = (
+      cd.g.server +
+      mw.util.getUrl('Special:Search', {
+        search: searchQuery,
+        sort: 'create_timestamp_desc',
+        cdcomment: date && decodedFragment,
+      })
+    );
 
     if (results.length === 0) {
       let label;
@@ -623,8 +625,23 @@ class BootProcess {
   maybeSuggestDisableDiscussionTools() {
     if (!cd.g.isDtReplyToolEnabled) return;
 
-    const message = cd.sParse('discussiontools-incompatible', 'Special:Preferences#mw-prefsection-editing-discussion');
-    const { $wrapper: $message, buttons: [disableButton] } = wrap(message, {
+    const message = cd.sParse(
+      'discussiontools-incompatible',
+      'Special:Preferences#mw-prefsection-editing-discussion',
+      'Special:GlobalPreferences#mw-prefsection-editing-discussion',
+    );
+    const disabledMessage = wrap(cd.sParse('discussiontools-disabled'), {
+      callbacks: {
+        'cd-notification-refresh': () => {
+          location.reload();
+        },
+      },
+    });
+
+    const {
+      $wrapper: $message,
+      buttons: [disableButton, globallyDisableButton],
+    } = wrap(message, {
       callbacks: {
         'cd-notification-disabledt': async () => {
           disableButton.setPending(true);
@@ -642,14 +659,25 @@ class BootProcess {
             disableButton.setPending(false);
           }
           notification.$notification.hide();
-          const message = wrap(cd.sParse('discussiontools-disabled'), {
-            callbacks: {
-              'cd-notification-refresh': () => {
-                location.reload();
-              },
-            },
-          });
-          mw.notify(message);
+          mw.notify(disabledMessage);
+        },
+        'cd-notification-disableDtGlobally': async () => {
+          globallyDisableButton.setPending(true);
+          try {
+            await controller.getApi()({
+              'discussiontools-replytool': 0,
+              'discussiontools-newtopictool': 0,
+              'discussiontools-topicsubscription': 0,
+              'discussiontools-visualenhancements': 0,
+            }).catch(handleApiReject);
+          } catch (e) {
+            mw.notify(wrap(cd.sParse('error-settings-save')));
+            return;
+          } finally {
+            disableButton.setPending(false);
+          }
+          notification.$notification.hide();
+          mw.notify(disabledMessage);
         },
       },
       returnButtons: true,
@@ -1637,8 +1665,9 @@ class BootProcess {
       if (controller.isPageActive()) {
         this.processVisits();
 
-        // This should be below this.processVisits() because updateChecker.processRevisionsIfNeeded
-        // needs the "previousVisitUnixTime" state to be set.
+        // This should be below `this.processVisits()` because
+        // `updateChecker.maybeProcessRevisionsAtLoad()` needs `this.previousVisitUnixTime` to be
+        // set.
         updateChecker.init();
       } else {
         toc.addCommentCount();

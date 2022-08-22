@@ -64,28 +64,28 @@
       },
       test: {
         source: 'w-ru.test.js',
-        target: 'User:Jack_who_built_the_house/convenientDiscussions.test.js',
+        target: 'User:Jack who built the house/convenientDiscussions.test.js',
       },
     },
     {
       server: 'en.wikipedia.org',
       default: {
         source: 'w-en.js',
-        target: 'User:Jack_who_built_the_house/convenientDiscussions.js',
+        target: 'User:Jack who built the house/convenientDiscussions.js',
       },
     },
     {
       server: 'commons.wikimedia.org',
       default: {
         source: 'commons.js',
-        target: 'User:Jack_who_built_the_house/convenientDiscussions-commonsConfig.js',
+        target: 'User:Jack who built the house/convenientDiscussions-commonsConfig.js',
       },
     },
     {
       server: 'meta.wikimedia.org',
       default: {
         source: 'meta.js',
-        target: 'User:Jack_who_built_the_house/convenientDiscussions.js',
+        target: 'User:Jack who built the house/convenientDiscussions.js',
       },
     },
   ],

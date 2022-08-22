@@ -373,7 +373,7 @@ class Section extends SectionSkeleton {
       icon: 'bellOutline',
       label: cd.s('sm-subscribe'),
       title: cd.mws('discussiontools-topicsubscription-button-subscribe-tooltip'),
-      classes: ['cd-section-bar-button'],
+      classes: ['cd-section-bar-button', 'cd-section-bar-button-subscribe'],
     });
     if (cd.g.skin === 'monobook') {
       this.actions.subscribeButton.$element
@@ -1707,7 +1707,8 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Locate the section in the source code and set the result to the `inCode` property.
+   * Locate the section in the source code and set the result to the {@link Section#inCode}
+   * property.
    *
    * It is expected that the section or page code is loaded (using {@link Page#getCode}) before this
    * method is called. Otherwise, the method will throw an error.
@@ -1738,6 +1739,9 @@ class Section extends SectionSkeleton {
 
     bestMatch.isSectionCodeUsed = useSectionCode;
 
+    /**
+     * @type {?(object|undefined)}
+     */
     this.inCode = bestMatch;
   }
 

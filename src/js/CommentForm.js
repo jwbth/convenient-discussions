@@ -92,8 +92,8 @@ class CommentForm {
    *
    * @param {object} config
    * @param {'reply'|'replyInSection'|'edit'|'addSubsection'|'addSection'} config.mode
-   * @param {import('./Comment').default|import('./Section').default|import('./pageRegistry').Page} config.target
-   *   Comment, section, or page that the form is related to.
+   * @param {Comment|Section|import('./pageRegistry').Page} config.target Comment, section, or page
+   *   that the form is related to.
    * @param {object} [config.initialState] Initial state of the form (data saved in the previous
    *   session, quoted text, or data transferred from DT's new topic form).
    * @param {PreloadConfig} [config.preloadConfig] Configuration to preload data into the form.
@@ -286,14 +286,14 @@ class CommentForm {
   /**
    * Set the `target`, `targetSection`, `targetComment`, and `targetPage` properties.
    *
-   * @param {import('./Comment').default|import('./Section').default|import('./pageRegistry').Page} target
+   * @param {Comment|Section|import('./pageRegistry').Page} target
    * @private
    */
   setTargets(target) {
     /**
      * Target object.
      *
-     * @type {import('./Comment').default|import('./Section').default|import('./pageRegistry').Page}
+     * @type {Comment|Section|Page}
      * @private
      */
     this.target = target;
@@ -301,7 +301,7 @@ class CommentForm {
     /**
      * Target section.
      *
-     * @type {?import('./Section').default}
+     * @type {?Section}
      * @private
      */
     this.targetSection = this.target.getRelevantSection();
@@ -310,7 +310,7 @@ class CommentForm {
      * Target comment. This may be the comment the user replies to, or the comment opening the
      * section.
      *
-     * @type {?import('./Comment').default}
+     * @type {?Comment}
      * @private
      */
     this.targetComment = this.mode === 'edit' ? null : this.target.getRelevantComment();
@@ -318,7 +318,7 @@ class CommentForm {
     /**
      * Parent comment. This is the comment the user replies to, if any.
      *
-     * @type {?import('./Comment').default}
+     * @type {?Comment}
      * @private
      */
     this.parentComment = this.mode.startsWith('reply') ? this.targetComment : null;
@@ -3609,7 +3609,7 @@ class CommentForm {
   /**
    * Get the {@link CommentForm#target target} object of the form.
    *
-   * @returns {import('./Comment').default|import('./Section').default|import('./pageRegistry').Page}
+   * @returns {Comment|Section|import('./pageRegistry').Page}
    */
   getTarget() {
     return this.target;
@@ -3619,7 +3619,7 @@ class CommentForm {
    * Get the {@link CommentForm#parentComment parent comment} object of the form. This is the
    * comment the user replies to, if any.
    *
-   * @returns {?import('./Comment').default}
+   * @returns {?Comment}
    */
   getParentComment() {
     return this.parentComment;

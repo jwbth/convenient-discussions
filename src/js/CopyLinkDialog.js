@@ -104,7 +104,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       const $message = $('<div>').append(
         this.buttonSelectWidget?.$element,
         this.stackLayout.$element,
-      );
+      ).children();
       this.message.setLabel($message);
       this.size = this.isComment ? 'larger' : 'large';
       this.stackLayout.setItem(this.anchorPanel);
@@ -219,19 +219,19 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       help: helpOnlyCd,
     });
 
-    const $anchorPanelContent = $('<div>').append([
+    const $anchorPanelContent = $('<div>').append(
       wikilinkField.$element,
       currentPageWikilinkField.$element,
       permanentWikilinkField.$element,
       linkField.$element,
       permanentLinkField.$element,
-    ]);
+    ).children();
 
     // Workaround, because we don't want the first input to be focused on click almost anywhere in
     // the dialog, which happens because the whole message is wrapped in the <label> element.
     $('<input>')
       .addClass('cd-hidden')
-      .prependTo($anchorPanelContent.children().first());
+      .prependTo($anchorPanelContent.first());
 
     return $anchorPanelContent;
   }
@@ -266,12 +266,12 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       copyCallback,
     });
 
-    return $('<div>').append([
+    return $('<div>').append(
       standardField.$element,
       shortField.$element,
       wikilinkField.$element,
       this.content.$diffView,
-    ]);
+    ).children();
   }
 }
 

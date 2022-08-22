@@ -862,7 +862,9 @@ export default {
       default: 'body',
     });
     const sidebarColor = $backgrounded.css('background-color');
-    const metadataFontSize = parseFloat(((cd.g.contentFontSize - 1) / defaultFontSize).toFixed(7));
+    const metadataFontSize = parseFloat(
+      ((13 / 14) * cd.g.contentFontSize / defaultFontSize).toFixed(7)
+    );
 
     mw.loader.addStyleTag(`:root {
   --cd-comment-hovered-background-color: ${cd.g.commentHoveredBackgroundColor};
