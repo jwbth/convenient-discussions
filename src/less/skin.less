@@ -38,21 +38,29 @@
   }
 
   .cd-commentForm-commentInput {
-    border: 1px solid #ccc;
+    .wikiEditor-ui-top {
+      border: 1px solid #ccc;
+    }
 
     .wikiEditor-ui-toolbar {
       z-index: auto;
     }
 
     &.oo-ui-textInputWidget.oo-ui-widget-disabled {
-      border-color: #ddd;
-
-      .oo-ui-inputWidget-input,
       .wikiEditor-ui-top,
       + .cd-insertButtons {
         border-color: #ddd;
       }
     }
+  }
+
+  .cd-commentForm .tool-button {
+    width: 24px;
+    height: 24px;
+  }
+
+  .cd-toolbarPlaceholder {
+    height: 33px;
   }
 
   .cd-insertButtons,
@@ -62,10 +70,6 @@
 
   .cd-loadingPopup {
     width: 15.5em;
-  }
-
-  .cd-dialog-copyLink .oo-ui-textInputWidget input {
-    height: 35px;
   }
 
   // No border, no 1px compensation needed.
@@ -130,14 +134,20 @@
 
   .cd-section-bar {
     margin-top: -0.5em;
+  }
 
-    &-item {
-      font-size: 12px;
+  .cd-section-metadata-authorsPopup {
+    &.oo-ui-popupWidget-anchored-top > .oo-ui-popupWidget-anchor {
+      top: 3px;
     }
 
-    &-button {
-      font-size: 12px;
+    &.oo-ui-popupWidget-anchored-bottom > .oo-ui-popupWidget-anchor {
+      bottom: 3px;
     }
+  }
+
+  .cd-section-bar-nometadata + .cd-subsection-heading {
+    margin-top: 2.65rem;
   }
 }
 
@@ -154,7 +164,11 @@
   }
 
   .cd-pageNav {
-    font-size: 13px;
+    font-size: 0.8125rem;
+  }
+
+  .mw-body h2 {
+    margin-bottom: 0.25em;
   }
 }
 
