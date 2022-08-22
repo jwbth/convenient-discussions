@@ -442,41 +442,35 @@ class CommentForm {
    * @private
    */
   createCheckboxes(initialState) {
-    if (this.mode === 'edit') {
-      /**
-       * Minor change checkbox field.
-       *
-       * @name minorField
-       * @type {external:OO.ui.FieldLayout|undefined}
-       * @memberof CommentForm
-       * @instance
-       */
-
-      /**
-       * Minor change checkbox.
-       *
-       * @name minorCheckbox
-       * @type {external:OO.ui.CheckboxInputWidget|undefined}
-       * @memberof CommentForm
-       * @instance
-       */
-       ({
-        field: this.minorField,
-        input: this.minorCheckbox,
-      } = createCheckboxField({
-        value: 'minor',
-        selected: initialState?.minor ?? true,
-        label: cd.s('cf-minor'),
-        tabIndex: this.getTabIndex(20),
-      }));
-    }
-
     if (userRegistry.getCurrent().isRegistered()) {
-      const watchCheckboxSelected = (
-        (settings.get('watchOnReply') && this.mode !== 'edit') ||
-        $('#ca-unwatch').length ||
-        mw.user.options.get(mw.config.get('wgArticleId') ? 'watchdefault' : 'watchcreations')
-      );
+      if (this.mode === 'edit') {
+        /**
+         * Minor change checkbox field.
+         *
+         * @name minorField
+         * @type {external:OO.ui.FieldLayout|undefined}
+         * @memberof CommentForm
+         * @instance
+         */
+
+        /**
+         * Minor change checkbox.
+         *
+         * @name minorCheckbox
+         * @type {external:OO.ui.CheckboxInputWidget|undefined}
+         * @memberof CommentForm
+         * @instance
+         */
+         ({
+          field: this.minorField,
+          input: this.minorCheckbox,
+        } = createCheckboxField({
+          value: 'minor',
+          selected: initialState?.minor ?? true,
+          label: cd.s('cf-minor'),
+          tabIndex: this.getTabIndex(20),
+        }));
+      }
 
       /**
        * Watch page checkbox field.
@@ -500,57 +494,61 @@ class CommentForm {
         input: this.watchCheckbox,
       } = createCheckboxField({
         value: 'watch',
-        selected: initialState?.watch ?? watchCheckboxSelected,
+        selected: (
+          initialState?.watch ??
+          (
+            (settings.get('watchOnReply') && this.mode !== 'edit') ||
+            $('#ca-unwatch').length ||
+            mw.user.options.get(mw.config.get('wgArticleId') ? 'watchdefault' : 'watchcreations')
+          )
+        ),
         label: cd.s('cf-watch'),
         tabIndex: this.getTabIndex(21),
       }));
-    }
 
-    if (
-      (this.targetSection || this.mode === 'addSection') &&
-      userRegistry.getCurrent().isRegistered()
-    ) {
-      const selected = (
-        (settings.get('subscribeOnReply') && this.mode !== 'edit') ||
-        this.targetSection?.subscriptionState
-      );
+      if (this.targetSection || this.mode === 'addSection') {
+        /**
+         * Subscribe checkbox field.
+         *
+         * @name subscribeField
+         * @type {external:OO.ui.FieldLayout|undefined}
+         * @memberof CommentForm
+         * @instance
+         */
 
-      const callItTopic = (
-        settings.get('useTopicSubscription') ||
-        (
-          this.mode !== 'addSubsection' &&
-          ((this.targetSection && this.targetSection.level <= 2) || this.mode === 'addSection')
-        )
-      );
-      const label = cd.s('cf-watchsection-' + (callItTopic ? 'topic' : 'subsection'));
-
-      /**
-       * Subscribe checkbox field.
-       *
-       * @name subscribeField
-       * @type {external:OO.ui.FieldLayout|undefined}
-       * @memberof CommentForm
-       * @instance
-       */
-
-      /**
-       * Subscribe checkbox.
-       *
-       * @name subscribeCheckbox
-       * @type {external:OO.ui.CheckboxInputWidget|undefined}
-       * @memberof CommentForm
-       * @instance
-       */
-      ({
-        field: this.subscribeField,
-        input: this.subscribeCheckbox,
-      } = createCheckboxField({
-        value: 'subscribe',
-        selected: initialState?.subscribe ?? selected,
-        label,
-        tabIndex: this.getTabIndex(22),
-        title: cd.s('cf-watchsection-tooltip'),
-      }));
+        /**
+         * Subscribe checkbox.
+         *
+         * @name subscribeCheckbox
+         * @type {external:OO.ui.CheckboxInputWidget|undefined}
+         * @memberof CommentForm
+         * @instance
+         */
+        ({
+          field: this.subscribeField,
+          input: this.subscribeCheckbox,
+        } = createCheckboxField({
+          value: 'subscribe',
+          selected: (
+            initialState?.subscribe ??
+            (
+              (settings.get('subscribeOnReply') && this.mode !== 'edit') ||
+              this.targetSection?.subscriptionState
+            )
+          ),
+          label: (
+            settings.get('useTopicSubscription') ||
+            (
+              this.mode !== 'addSubsection' &&
+              ((this.targetSection && this.targetSection.level <= 2) || this.mode === 'addSection')
+            )
+          ) ?
+            cd.s('cf-watchsection-topic') :
+            cd.s('cf-watchsection-subsection'),
+          tabIndex: this.getTabIndex(22),
+          title: cd.s('cf-watchsection-tooltip'),
+        }));
+      }
     }
 
     if (['addSection', 'addSubsection'].includes(this.mode)) {
@@ -591,8 +589,6 @@ class CommentForm {
           !this.target.getChildren().length
       )
     ) {
-      const selected = initialState?.delete ?? false;
-
       /**
        * Delete checkbox field.
        *
@@ -615,7 +611,7 @@ class CommentForm {
         input: this.deleteCheckbox,
       } = createCheckboxField({
         value: 'delete',
-        selected,
+        selected: initialState?.delete ?? false,
         label: cd.s('cf-delete'),
         tabIndex: this.getTabIndex(26),
       }));
@@ -3346,12 +3342,12 @@ class CommentForm {
    */
   updateFormOnDeleteCheckboxChange(selected) {
     if (selected) {
-      this.initialMinorCheckboxSelected = this.minorCheckbox.isSelected();
-      this.minorCheckbox.setSelected(false);
+      this.initialMinorCheckboxSelected = this.minorCheckbox?.isSelected();
+      this.minorCheckbox?.setSelected(false);
 
       this.commentInput.setDisabled(true);
       this.headlineInput?.setDisabled(true);
-      this.minorCheckbox.setDisabled(true);
+      this.minorCheckbox?.setDisabled(true);
       this.omitSignatureCheckbox?.setDisabled(true);
 
       this.submitButtonLabelStandard = cd.s('cf-delete-button');
@@ -3365,11 +3361,11 @@ class CommentForm {
             this.submitButtonLabelShort
         );
     } else {
-      this.minorCheckbox.setSelected(this.initialMinorCheckboxSelected);
+      this.minorCheckbox?.setSelected(this.initialMinorCheckboxSelected);
 
       this.commentInput.setDisabled(false);
       this.headlineInput?.setDisabled(false);
-      this.minorCheckbox.setDisabled(false);
+      this.minorCheckbox?.setDisabled(false);
       this.omitSignatureCheckbox?.setDisabled(false);
 
       this.submitButtonLabelStandard = cd.s('cf-save');
