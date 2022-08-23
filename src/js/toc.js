@@ -123,26 +123,16 @@ const toc = {
     this.tocItems = null;
     this.floating = null;
 
-    if (this.isInSidebar()) {
-      if (sections) {
-        // Update the section list of the TOC
-        mw.hook('wikipage.tableOfContents').fire(hideToc ? [] : sections);
-      }
+    if (this.isInSidebar() && sections) {
+      // Update the section list of the TOC
+      mw.hook('wikipage.tableOfContents').fire(hideToc ? [] : sections);
 
-      // Workaround for new sections until T307251 is resolved. When it is, this block can be
-      // removed altogether.
-      this.$element
-        .find('.cd-toc-commentCount, .cd-toc-newCommentList, .cd-toc-addedCommentList')
-          .remove()
-        .end()
-        .find('.cd-toc-addedSection')
-          .removeClass('cd-toc-addedSection')
-          .each((i, element) => {
-            element.firstChild.onclick = '';
-          })
-          .parent()
-          .parent()
-          .addClass('sidebar-toc-list-item-expanded');
+      // The hook above initiates an asynchronous process:
+      // https://phabricator.wikimedia.org/source/Vector/browse/master/resources/skins.vector.es6/tableOfContents.js;2450fdeb99a00cba769b6f2e3b43d3fcf2eca863$411?as=source.
+      // If we await the execution of the module requested by the link, our handler will run after
+      // the native one, so we need a respective promise. If/when a hook is added in T316025, this
+      // should be implemented based on it.
+      this.updateTocSectionsPromise = mw.loader.using('mediawiki.template.mustache');
     }
   },
 
@@ -180,8 +170,10 @@ const toc = {
   /**
    * _For internal use._ Highlight (bold) sections that the user is subscribed to.
    */
-  highlightSubscriptions() {
+  async highlightSubscriptions() {
     if (!this.isPresent()) return;
+
+    await this.updateTocSectionsPromise;
 
     SectionStatic.getAll()
       .filter((section) => section.subscriptionState || this.isInSidebar())
@@ -193,9 +185,11 @@ const toc = {
   /**
    * Add the number of comments to each section link.
    */
-  addCommentCount() {
+  async addCommentCount() {
     // We add the comment count even if the "Modify TOC" setting is off.
     if (!this.isPresent()) return;
+
+    await this.updateTocSectionsPromise;
 
     let usedFullForm = false;
     SectionStatic.getAll().forEach((section) => {
@@ -598,7 +592,9 @@ const toc = {
    *
    * @param {Map} commentsBySection
    */
-  addNewComments(commentsBySection) {
+  async addNewComments(commentsBySection) {
+    await this.updateTocSectionsPromise;
+
     const firstComment = commentsBySection.values().next().value?.[0];
     if (!settings.get('modifyToc') || !this.isPresent() || !firstComment) return;
 
