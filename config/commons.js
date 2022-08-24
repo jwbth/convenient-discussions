@@ -140,8 +140,8 @@ export default {
     return authorLink.lastElementChild;
   },
   afterAuthorLinkParse: function (authorLink, adminMarkCandidate) {
-    if (adminMarkCandidate?.classList.contains('adminMark')) {
+    if (adminMarkCandidate && adminMarkCandidate.classList.contains('adminMark')) {
       authorLink.appendChild(adminMarkCandidate);
     }
-  }
+  },
 };

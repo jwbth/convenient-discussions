@@ -404,11 +404,11 @@ export default {
     );
   },
 
-  beforeAuthorLinkParse: function (authorLink) {
+  beforeAuthorLinkParse: function (authorLink, authorLinkPrototype) {
     // https://ru.wikipedia.org/wiki/MediaWiki:Gadget-markadmins.js
     const nextElement = authorLink.nextElementSibling;
     if (nextElement && nextElement.classList.contains('userflags-wrapper')) {
-      authorLink.parentNode.insertBefore(nextElement, authorLink.nextSibling);
+      authorLinkPrototype.parentNode.insertBefore(nextElement, authorLinkPrototype.nextSibling);
     }
   },
 

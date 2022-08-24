@@ -539,17 +539,16 @@ class Comment extends CommentSkeleton {
         this.authorLink = this.authorLink.cloneNode(true);
       }
 
-      const beforeAuthorLinkParseReturn = cd.config.beforeAuthorLinkParse ?
-        cd.config.beforeAuthorLinkParse(this.authorLink) :
-        undefined;
+      const beforeAuthorLinkParseReturn = cd.config.beforeAuthorLinkParse?.(
+        this.authorLink,
+        authorLink
+      );
       authorLink.parentNode.replaceChild(this.authorLink, authorLink);
       this.authorLink.classList.add('cd-comment-author');
       this.authorLink.innerHTML = '';
       this.authorLink.appendChild(bdiElement);
 
-      if (cd.config.afterAuthorLinkParse) {
-        cd.config.beforeAuthorLinkParse(this.authorLink, beforeAuthorLinkParseReturn);
-      }
+      cd.config.afterAuthorLinkParse?.(this.authorLink, beforeAuthorLinkParseReturn);
     } else {
       // Use the bootstrap author link.
       this.authorLink = authorLink;
