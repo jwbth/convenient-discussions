@@ -234,6 +234,35 @@ const toc = {
   },
 
   /**
+   * Add a collapse/expand toggle to a 2-level section.
+   *
+   * @param {Element} ul
+   * @param {object} upperLevelMatch
+   * @param {string[]} newSectionTocIds
+   * @private
+   */
+  addToggleToSidebarToc(ul, upperLevelMatch, newSectionTocIds) {
+    // Don't bother with ARIA attributes since chances that somebody will interact with
+    // collapsed subsections with their help tend to zero, I believe, although this may
+    // change.
+    const button = document.createElement('button');
+    button.className = 'mw-ui-icon mw-ui-icon-wikimedia-expand mw-ui-icon-small sidebar-toc-toggle';
+    button.setAttribute('ariaExpanded', 'true');
+    button.setAttribute('ariaControls', ul.id);
+
+    upperLevelMatch.$element.append(button);
+
+    // Expand the section.
+    button.click();
+
+    // If this section was previously added by us, the TOC will remember its state and try to
+    // switch it on click, so we need to click again to get it back.
+    if (newSectionTocIds.includes(upperLevelMatch.$element.attr('id'))) {
+      button.click();
+    }
+  },
+
+  /**
    * Add a section to the TOC.
    *
    * @param {import('./SectionSkeleton').SectionSkeletonLike} section
@@ -300,25 +329,14 @@ const toc = {
         ul.className = 'sidebar-toc-list';
         ul.appendChild(li);
 
-        if (this.isInSidebar() && level === 2) {
-          // Don't bother with ARIA attributes since chances that somebody will interact with
-          // collapsed subsections with their help tend to zero, I believe, although this may
-          // change.
-          const button = document.createElement('button');
-          button.className = 'mw-ui-icon mw-ui-icon-wikimedia-expand mw-ui-icon-small sidebar-toc-toggle';
-          button.setAttribute('ariaExpanded', 'true');
-          button.setAttribute('ariaControls', ul.id);
-
-          upperLevelMatch.$element.append(button);
-
-          // Expand the section.
-          button.click();
-
-          // If this section was previously added by us, the TOC will remember its state and try to
-          // switch it, so we need to click again to get it back.
-          if (newSectionTocIds.includes(upperLevelMatch.$element.attr('id'))) {
-            button.click();
-          }
+        if (
+          this.isInSidebar() &&
+          level === 2 &&
+          !upperLevelMatch.$element.find('.sidebar-toc-toggle').length
+        ) {
+          // Ideally, it should also be removed when an added subsection is removed, but really not
+          // important.
+          this.addToggleToSidebarToc(ul, upperLevelMatch, newSectionTocIds);
         }
 
         upperLevelMatch.$element.append(ul);
