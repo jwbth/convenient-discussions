@@ -2438,33 +2438,36 @@ class Comment extends CommentSkeleton {
 
     if (this.isCollapsed) {
       this.getVisibleExpandNote().cdScrollTo('top', smooth, callback);
-      const notification = mw.notification.notify(wrap(cd.sParse('navpanel-firstunseen-hidden'), {
-        callbacks: {
-          'cd-notification-expandThread': () => {
-            this.scrollTo({
-              smooth,
-              expandThreads: true,
-              flash,
-              pushState,
-              callback,
-            });
-            notification.close();
+      const notification = mw.notification.notify(
+        wrap(cd.sParse('navpanel-firstunseen-hidden'), {
+          callbacks: {
+            'cd-notification-expandThread': () => {
+              this.scrollTo({
+                smooth,
+                expandThreads: true,
+                flash,
+                pushState,
+                callback,
+              });
+              notification.close();
+            },
           },
-        },
-      }), {
-        title: cd.s('navpanel-firstunseen-hidden-title'),
-      });
+        }),
+        { title: cd.s('navpanel-firstunseen-hidden-title') }
+      );
     } else {
-      const $elements = this.editForm ? this.editForm.$element : this.$elements;
       const offset = this.getOffset({ considerFloating: true });
-      const alignment = (
-        this.isOpeningSection ||
-        this.editForm ||
-        offset.bottom !== offset.downplayedBottom
-      ) ?
-        'top' :
-        'center';
-      $elements.cdScrollIntoView(alignment, smooth, callback);
+      (this.editForm ? this.editForm.$element : this.$elements).cdScrollIntoView(
+        (
+          this.isOpeningSection ||
+          this.editForm ||
+          (offset && offset.bottom !== offset.downplayedBottom)
+        ) ?
+          'top' :
+          'center',
+        smooth,
+        callback
+      );
       if (flash) {
         this.flashTarget();
       }
