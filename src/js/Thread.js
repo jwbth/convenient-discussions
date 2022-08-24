@@ -743,7 +743,7 @@ class Thread {
       for (let c = this.rootComment; c; c = c.getParent(true)) {
         const thread = c.thread;
         if (thread && thread.endElement !== thread.visualEndElement) {
-          thread.line.classList.remove('cd-thread-line-extended');
+          thread.line?.classList.remove('cd-thread-line-extended');
         }
       }
     }
@@ -799,7 +799,7 @@ class Thread {
       for (let c = this.rootComment; c; c = c.getParent()) {
         const thread = c.thread;
         if (thread && thread.endElement !== thread.visualEndElement) {
-          thread.line.classList.add('cd-thread-line-extended');
+          thread.line?.classList.add('cd-thread-line-extended');
         }
       }
     }
