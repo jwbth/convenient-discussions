@@ -37,16 +37,8 @@ export default {
     ],
 
     aliases: {
-      allowEditOthersComments: ['allowEditOthersMsgs'],
-      alwaysExpandAdvanced: ['alwaysExpandSettings'],
-      'insertButtons-altered': [
-        'areInsertButtonsAltered',
-        'haveInsertButtonsBeenAltered',
-        'insertButtonsChanged',
-      ],
-      desktopNotifications: ['browserNotifications'],
+      'insertButtons-altered': ['haveInsertButtonsBeenAltered'],
       'improvePerformance-lastSuggested': ['improvePerformanceLastSuggested'],
-      signaturePrefix: ['mySig', 'mySignature'],
       subscribeOnReply: ['watchSectionOnReply'],
       'useTopicSubscription-seenNotice': ['topicSubscriptionSeenNotice'],
     },
@@ -457,12 +449,6 @@ export default {
         values[name] = remoteSettings[name];
       }
     });
-
-    // Seamless transition from "mySignature". TODO: Remove at some point (this was introduced in
-    // November 2020).
-    if (values.signaturePrefix !== undefined) {
-      values.signaturePrefix = values.signaturePrefix.replace(cd.g.signCode, '');
-    }
 
     if (
       !values['insertButtons-altered'] &&
