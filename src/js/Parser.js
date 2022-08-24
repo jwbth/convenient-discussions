@@ -6,6 +6,8 @@ import { ElementsAndTextTreeWalker, ElementsTreeWalker } from './treeWalker';
 import { defined, flat, isInline, ucFirst, underlinesToSpaces } from './utils';
 import { parseTimestamp } from './timestamp';
 
+let punctuationRegexp;
+
 /**
  * @typedef {object} GetPageNameFromUrlReturn
  * @property {string} pageName
@@ -263,6 +265,8 @@ class Parser {
    * @private
    */
   timestampToSignature(timestamp) {
+    punctuationRegexp ||= new RegExp(`(?:^|${cd.g.letterPattern})[.!?…] `);
+
     const timestampElement = timestamp.element;
     const timestampText = timestamp.element.textContent;
     let unsignedElement;
@@ -358,7 +362,7 @@ class Parser {
             // outside of links or even tags, and this is much work for little gain. This is the
             // cost of us not relying on a DOM -> wikitext correspondence and processing those parts
             // separately.
-            (!node.tagName && /[.!?…] /.test(node.textContent))
+            (!node.tagName && punctuationRegexp.test(node.textContent))
           )
         ) ||
         (
