@@ -1093,23 +1093,12 @@ export default {
   },
 
   /**
-   * Check if the `showLoadingOverlay` setting is off. We create a separate function for this
-   * because this check has to be performed before the settings object is filled.
-   *
-   * @returns {boolean}
-   * @private
-   */
-  isShowLoadingOverlaySettingOff() {
-    return window.cdShowLoadingOverlay !== undefined && window.cdShowLoadingOverlay === false;
-  },
-
-  /**
    * Show the loading overlay (a logo in the corner of the page).
    *
    * @private
    */
   showLoadingOverlay() {
-    if (this.isShowLoadingOverlaySettingOff()) return;
+    if (window.cdShowLoadingOverlay === false) return;
 
     if (!this.$loadingPopup) {
       this.$loadingPopup = $('<div>').addClass('cd-loadingPopup');
@@ -1134,7 +1123,7 @@ export default {
    * @private
    */
   hideLoadingOverlay() {
-    if (!this.$loadingPopup || this.isShowLoadingOverlaySettingOff()) return;
+    if (!this.$loadingPopup || window.cdShowLoadingOverlay === false) return;
 
     this.$loadingPopup.hide();
   },
