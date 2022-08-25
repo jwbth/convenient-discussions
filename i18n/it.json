@@ -84,7 +84,7 @@
 	"rd-comment": "Commento",
 	"rd-summary": "Oggetto della modifica",
 	"rd-close": "Chiudi",
-	"rc-suggestion": "<p>Convenient Discussions ha un'opzione per cambiare la formattazione dei commenti, spostando l'autore e il timestamp verso l'alto e i pulsanti di risposta e di ringraziamento verso il basso. Ciò consente di vedere rapidamente l'autore e la data dei commenti e interagire con essi più facilmente. Vuoi abilitarlo? (Puoi sempre disabilitarlo nelle impostazioni.) </p>\n\n<p>Inoltre, guarda <span class=\"cd-notification-settings\">le impostazioni</span> per varie nuove funzionalità, come la formattazione personalizzabile dei timestamp (che, tra l'altro, ora vengono visualizzati nel fuso orario impostato nelle preferenze wiki per impostazione predefinita). </p>",
+	"rc-suggestion": "<p>Convenient Discussions ha un'opzione per cambiare la formattazione dei commenti, spostando l'autore e il timestamp verso l'alto e i pulsanti di risposta e di ringraziamento verso il basso. Ciò consente di vedere rapidamente l'autore e la data dei commenti e interagire con essi più facilmente. Vuoi abilitarlo? (Puoi sempre disabilitarlo nelle impostazioni.) </p>\n\n<p>Inoltre, guarda <span class=\"cd-notification-settings\">[[$1|le impostazioni]]</span> per varie nuove funzionalità, come la formattazione personalizzabile dei timestamp (che, tra l'altro, ora vengono visualizzati nel fuso orario impostato nelle preferenze wiki per impostazione predefinita). </p>",
 	"rc-suggestion-no": "Mantieni la solita formattazione",
 	"navpanel-firstunseen": "Vai al primo commento inedito.",
 	"navpanel-newcomments-count": "$1 {{plural:$1|nuovo commento|nuovi commenti}}.",
