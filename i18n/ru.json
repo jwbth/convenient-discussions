@@ -395,7 +395,7 @@
 	"error-anoneditwatning": "<strong>Вы не вошли в систему.</strong> Ваш IP-адрес будет общедоступен, если вы запишете какие-либо изменения.",
 	"warning-performance-title": "Страница тормозит?",
 	"warning-performance": "«Удобные обсуждения» могут попытаться решить проблемы с быстродействием с помощью настройки «{{int:convenient-discussions-sd-improveperformance}}». <span class=\"cd-notification-talkPageSettings\">[[$1|Открыть диалог настроек]]</span>.",
-	"discussiontools-incompatible": "«Удобные обсуждения» несовместимы с «Инструментами обсуждения». Пожалуйста, <b><span class=\"cd-notification-disabledt\">[[$1|отключите]]</span></b> «Инструменты обсуждения», чтобы «Удобные обсуждения» работали корректно.",
+	"discussiontools-incompatible": "«Удобные обсуждения» несовместимы с «Инструментами обсуждения». Пожалуйста, <b><span class=\"cd-notification-disabledt\">[[$1|отключите]]</span></b> (или <b><span class=\"cd-notification-disableDtGlobally\">[[$2|глобально отключите]]</span></b>) «Инструменты обсуждения», чтобы «Удобные обсуждения» работали корректно.",
 	"discussiontools-disabled": "«Инструменты обсуждения» были успешно отключены. <span class=\"cd-notification-refresh\">[[$1|Обновить страницу]]</span>.",
 	"wl-button-switchrelevant-tooltip": "Показать только сообщения в темах, на которые я {{gender:$1|подписан|подписана}}, и сообщения, адресованные мне. (Обратите внимание: определение основано на описаниях правок, так что некоторые правки могут отсутствовать)",
 	"wl-button-editwatchedsections-tooltip": "Редактировать список тем, на которые я {{gender:$1|подписан|подписана}}",

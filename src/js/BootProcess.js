@@ -20,7 +20,7 @@ import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
 import { formatDateNative } from './timestamp';
 import { getLastArrayElementOrSelf, notNull, underlinesToSpaces, wrap } from './utils';
-import { getVisits, handleApiReject, setVisits } from './apiWrappers';
+import { getVisits, handleApiReject, setOptions, setVisits } from './apiWrappers';
 import { removeWikiMarkup } from './wikitext';
 import { showConfirmDialog } from './ooui';
 
@@ -617,6 +617,34 @@ class BootProcess {
   }
 
   /**
+   * Disable DT with an method supplied in a parameter.
+   *
+   * @param {Function} saveFunc
+   * @param {import('./Button').default} button
+   * @param {import('./notifications').Notification} notification
+   * @private
+   */
+  async disableDt(saveFunc, button, notification) {
+    button.setPending(true);
+    try {
+      await saveFunc();
+    } catch (e) {
+      mw.notify(wrap(cd.sParse('error-settings-save')));
+      return;
+    } finally {
+      button.setPending(false);
+    }
+    notification.$notification.hide();
+    mw.notify(wrap(cd.sParse('discussiontools-disabled'), {
+      callbacks: {
+        'cd-notification-refresh': () => {
+          location.reload();
+        },
+      },
+    }));
+  }
+
+  /**
    * Show a notification informing the user that CD is incompatible with DiscussionTools and
    * suggesting to disable DiscussionTools.
    *
@@ -625,63 +653,41 @@ class BootProcess {
   maybeSuggestDisableDiscussionTools() {
     if (!cd.g.isDtReplyToolEnabled) return;
 
-    const message = cd.sParse(
-      'discussiontools-incompatible',
-      'Special:Preferences#mw-prefsection-editing-discussion',
-      'Special:GlobalPreferences#mw-prefsection-editing-discussion',
-    );
-    const disabledMessage = wrap(cd.sParse('discussiontools-disabled'), {
-      callbacks: {
-        'cd-notification-refresh': () => {
-          location.reload();
-        },
-      },
-    });
-
     const {
       $wrapper: $message,
       buttons: [disableButton, globallyDisableButton],
-    } = wrap(message, {
-      callbacks: {
-        'cd-notification-disabledt': async () => {
-          disableButton.setPending(true);
-          try {
-            await controller.getApi().saveOptions({
-              'discussiontools-replytool': 0,
-              'discussiontools-newtopictool': 0,
-              'discussiontools-topicsubscription': 0,
-              'discussiontools-visualenhancements': 0,
-            }).catch(handleApiReject);
-          } catch (e) {
-            mw.notify(wrap(cd.sParse('error-settings-save')));
-            return;
-          } finally {
-            disableButton.setPending(false);
-          }
-          notification.$notification.hide();
-          mw.notify(disabledMessage);
+    } = wrap(
+      cd.sParse(
+        'discussiontools-incompatible',
+        'Special:Preferences#mw-prefsection-editing-discussion',
+        'Special:GlobalPreferences#mw-prefsection-editing-discussion',
+      ),
+      {
+        callbacks: {
+          'cd-notification-disabledt': () => {
+            this.disableDt(() => (
+              controller.getApi().saveOptions({
+                'discussiontools-replytool': 0,
+                'discussiontools-newtopictool': 0,
+                'discussiontools-topicsubscription': 0,
+                'discussiontools-visualenhancements': 0,
+              }).catch(handleApiReject)
+            ), disableButton, notification);
+          },
+          'cd-notification-disableDtGlobally': () => {
+            this.disableDt(() => (
+              setOptions({
+                'discussiontools-replytool': 0,
+                'discussiontools-newtopictool': 0,
+                'discussiontools-topicsubscription': 0,
+                'discussiontools-visualenhancements': 0,
+              }, true).catch(handleApiReject)
+            ), globallyDisableButton, notification);
+          },
         },
-        'cd-notification-disableDtGlobally': async () => {
-          globallyDisableButton.setPending(true);
-          try {
-            await controller.getApi()({
-              'discussiontools-replytool': 0,
-              'discussiontools-newtopictool': 0,
-              'discussiontools-topicsubscription': 0,
-              'discussiontools-visualenhancements': 0,
-            }).catch(handleApiReject);
-          } catch (e) {
-            mw.notify(wrap(cd.sParse('error-settings-save')));
-            return;
-          } finally {
-            disableButton.setPending(false);
-          }
-          notification.$notification.hide();
-          mw.notify(disabledMessage);
-        },
-      },
-      returnButtons: true,
-    });
+        returnButtons: true,
+      }
+    );
     const notification = mw.notification.notify($message, {
       type: 'warn',
       autoHide: false,

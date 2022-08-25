@@ -420,16 +420,16 @@ export async function getPageIds(titles) {
 }
 
 /**
- * Generic function for setting an option.
+ * Generic function for setting user options.
  *
- * @param {string} name
- * @param {string} value
- * @param {string} action
+ * @param {object} options Name-value pairs.
+ * @param {boolean} [isGlobal=false] Whether to save the options globally (using
+ *   {@link https://www.mediawiki.org/wiki/Extension:GlobalPreferences Extension:GlobalPreferences}).
  * @throws {CdError}
- * @private
  */
-async function setOption(name, value, action) {
-  if (value && value.length > 65535) {
+export async function setOptions(options, isGlobal = false) {
+  const action = isGlobal ? 'globalpreferences' : 'options';
+  if (Object.entries(options).some(([ , value]) => value && value.length > 65535)) {
     throw new CdError({
       type: 'internal',
       code: 'sizeLimit',
@@ -437,15 +437,23 @@ async function setOption(name, value, action) {
     });
   }
 
-  const resp = await requestInBackground(controller.getApi().assertCurrentUser({
-    action,
-    optionname: name,
+  const resp = await requestInBackground(
+    controller.getApi().assertCurrentUser({
+      action,
+      change: (
+        '\x1f' +
+        Object.entries(options)
+          // Global options can't be deleted because of a bug
+          // https://phabricator.wikimedia.org/T207448.
+          .map(([name, value]) => name + (value === null && !isGlobal ? '' : '=') + (value ?? ''))
 
-    // Global options can't be deleted because of the bug https://phabricator.wikimedia.org/T207448.
-    optionvalue: value === undefined && action === 'globalpreferences' ? '' : value,
-  }), 'postWithEditToken').catch(handleApiReject);
+          .join('\x1f')
+      ),
+    }),
+    'postWithEditToken'
+  ).catch(handleApiReject);
 
-  if (!resp || resp[action] !== 'success') {
+  if (resp?.[action] !== 'success') {
     throw new CdError({
       type: 'api',
       code: 'noSuccess',
@@ -461,7 +469,7 @@ async function setOption(name, value, action) {
  * @param {string} value
  */
 export async function setLocalOption(name, value) {
-  await setOption(name, value, 'options');
+  await setOptions({ [name]: value });
 }
 
 /**
@@ -484,7 +492,7 @@ export async function setGlobalOption(name, value) {
     return;
   }
   try {
-    await setOption(name, value, 'globalpreferences');
+    await setOptions({ [name]: value }, true);
   } catch (e) {
     // The site doesn't support global preferences.
     if (e instanceof CdError && e.data.apiResp?.error.code === 'badvalue') {

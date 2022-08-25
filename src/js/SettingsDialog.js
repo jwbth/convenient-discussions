@@ -529,10 +529,10 @@ class SettingsDialog extends OO.ui.ProcessDialog {
 
       try {
         await Promise.all([
-          setLocalOption(cd.g.localSettingsOptionName, undefined),
-          setLocalOption(cd.g.visitsOptionName, undefined),
-          setLocalOption(cd.g.subscriptionsOptionName, undefined),
-          setGlobalOption(cd.g.settingsOptionName, undefined),
+          setLocalOption(cd.g.localSettingsOptionName, null),
+          setLocalOption(cd.g.visitsOptionName, null),
+          setLocalOption(cd.g.subscriptionsOptionName, null),
+          setGlobalOption(cd.g.settingsOptionName, null),
         ]);
       } catch (e) {
         handleDialogError(this, e, 'sd-error-removedata', false);
