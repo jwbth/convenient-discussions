@@ -156,14 +156,12 @@ class SettingsDialog extends OO.ui.ProcessDialog {
    */
   getReadyProcess(data) {
     return super.getReadyProcess(data).next(async () => {
-      let loadedSettings;
       try {
-        [loadedSettings] = await Promise.all(this.preparatoryRequests);
+        [this.settings] = await Promise.all(this.preparatoryRequests);
       } catch (e) {
         handleDialogError(this, e, 'error-settings-load', false);
         return;
       }
-      this.settings = Object.assign({}, settings.get(), loadedSettings);
 
       this.renderControls(this.settings);
 
