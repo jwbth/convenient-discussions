@@ -18,8 +18,8 @@ export default {
    * @property {object} default Default value for each property.
    * @property {string[]} local List of local setting names. Local settings are settings set for the
    *   current wiki only.
-   * @property {string[]} undocumented List of undocumented setting names. Undocumented settings are
-   *   settings not shown in the settings dialog.
+   * @property {object} undocumented Undocumented settings with their defaults. Undocumented
+   *   settings are settings not shown in the settings dialog and not saved to the server.
    * @property {object} aliases List of aliases for each property for seamless transition when
    *   changing a setting name.
    * @property {string[]} states List of state setting names. States are values to be remembered, or
@@ -33,11 +33,11 @@ export default {
   scheme: {
     local: ['insertButtons-altered', 'insertButtons', 'signaturePrefix'],
 
-    undocumented: [
-      'defaultCommentLinkType',
-      'defaultSectionLinkType',
-      'showLoadingOverlay',
-    ],
+    undocumented: {
+      defaultCommentLinkType: null,
+      defaultSectionLinkType: null,
+      showLoadingOverlay: true,
+    },
 
     aliases: {
       'insertButtons-altered': ['haveInsertButtonsBeenAltered'],
@@ -423,48 +423,35 @@ export default {
 
     this.setDefaults();
 
-    const values = {};
-
     const options = {
       [cd.g.settingsOptionName]: mw.user.options.get(cd.g.settingsOptionName),
       [cd.g.localSettingsOptionName]: mw.user.options.get(cd.g.localSettingsOptionName),
     };
 
-    // Settings in variables like `cdAlowEditOthersComments` used before server-stored settings
-    // were implemented.
-    Object.keys(this.scheme.default).forEach((name) => {
-      (this.scheme.aliases[name] || []).concat(name).forEach((alias) => {
-        const varAlias = 'cd' + ucFirst(alias);
-        if (
-          varAlias in window &&
-          (
-            typeof window[varAlias] === typeof this.scheme.default[name] ||
-            this.scheme.default[name] === null
-          )
-        ) {
-          values[name] = window[varAlias];
-        }
-      });
-    });
-
     const remoteSettings = await this.load({
       options,
       omitLocal: true,
     });
-    Object.keys(remoteSettings).forEach((name) => {
-      if (!this.scheme.undocumented.includes(name)) {
-        values[name] = remoteSettings[name];
-      }
-    });
 
+    this.set(Object.assign(
+      {},
+      this.scheme.default,
+
+      // Settings in global variables like `cdAllowEditOthersComments` used before server-stored
+      // settings were implemented and used for undocumented settings now.
+      this.getPrefixedProperties(window, 'cd'),
+
+      remoteSettings,
+    ));
+
+    // If the user has never changed the insert buttons configuration, it should change with the
+    // default configuration change.
     if (
-      !values['insertButtons-altered'] &&
-      JSON.stringify(values.insertButtons) !== JSON.stringify(cd.config.defaultInsertButtons)
+      !this.values['insertButtons-altered'] &&
+      JSON.stringify(this.values.insertButtons) !== JSON.stringify(cd.config.defaultInsertButtons)
     ) {
-      values.insertButtons = cd.config.defaultInsertButtons;
+      this.values.insertButtons = cd.config.defaultInsertButtons;
     }
-
-    this.set(Object.assign({}, this.scheme.default, values));
 
     if (!areObjectsEqual(this.values, remoteSettings)) {
       this.save().catch((e) => {
@@ -472,8 +459,14 @@ export default {
       });
     }
 
-    // Settings in variables like `cdLocal...` override all other and are not saved to the server.
-    this.set(this.getLocalOverrides());
+    // Undocumented settings and settings in variables `cd...` and `cdLocal...` override all other
+    // and are not saved to the server.
+    this.set(Object.assign(
+      {},
+      this.scheme.undocumented,
+      this.getPrefixedProperties(window, 'cd', this.scheme.undocumented),
+      this.getLocalOverrides(),
+    ));
   },
 
   /**
@@ -522,62 +515,46 @@ export default {
       localSettings = {};
     }
 
-    let settings = {};
-    Object.keys(this.scheme.default).forEach((name) => {
-      (this.scheme.aliases[name] || []).concat(name).forEach((alias) => {
-        // Global settings override those set via personal JS.
-        if (
-          globalSettings[alias] !== undefined &&
-          (
-            typeof globalSettings[alias] === typeof this.scheme.default[name] ||
-            this.scheme.default[name] === null
-          )
-        ) {
-          settings[name] = globalSettings[alias];
-        }
-
-        // Local settings override global.
-        if (
-          localSettings[alias] !== undefined &&
-          (
-            typeof localSettings[alias] === typeof this.scheme.default[name] ||
-            this.scheme.default[name] === null
-          )
-        ) {
-          settings[name] = localSettings[alias];
-        }
-      });
-    });
-
-    if (!omitLocal) {
-      Object.assign(settings, this.getLocalOverrides());
-    }
-
-    return settings;
+    return Object.assign(
+      {},
+      this.getPrefixedProperties(globalSettings),
+      this.getPrefixedProperties(localSettings),
+      omitLocal ? this.getLocalOverrides() : {},
+    );
   },
 
   /**
-   * _For internal use._ Get settings set in common.js that are meant to override native settings.
+   * Get the properties of an object corresponding to settings with an optional prefix.
+   *
+   * @param {object} source
+   * @param {string} [prefix]
+   * @param {object} [defaults=this.scheme.default]
+   * @returns {object}
+   * @private
+   */
+  getPrefixedProperties(source, prefix, defaults = this.scheme.default) {
+    return Object.keys(defaults).reduce((target, name) => {
+      (this.scheme.aliases[name] || []).concat(name)
+        .map((alias) => prefix ? prefix + ucFirst(alias) : alias)
+        .filter((prop) => (
+          source[prop] !== undefined &&
+          (typeof source[prop] === typeof defaults[name] || defaults[name] === null)
+        ))
+        .forEach((prop) => {
+          target[name] = source[prop];
+        });
+      return target;
+    }, {});
+  },
+
+  /**
+   * Get settings set in common.js that are meant to override native settings.
    *
    * @returns {object}
+   * @private
    */
   getLocalOverrides() {
-    const settings = {};
-    Object.keys(this.scheme.default).forEach((name) => {
-      (this.scheme.aliases[name] || []).concat(name).forEach((alias) => {
-        const varLocalAlias = 'cdLocal' + ucFirst(alias);
-        if (
-          varLocalAlias in window &&
-          (
-            typeof window[varLocalAlias] === typeof this.scheme.default[name] ||
-            this.scheme.default[name] === null
-          )
-        ) {
-          settings[name] = window[varLocalAlias];
-        }
-      });
-    });
-    return settings;
+    return this.getPrefixedProperties(window, 'cdLocal');
   },
 
   /**
