@@ -68,49 +68,40 @@ export default {
       allowEditOthersComments: false,
       alwaysExpandAdvanced: false,
 
-      // The order should coincide with the order of checkboxes in
-      // `SettingsDialog#autocompleteTypesMultiselect` in modal.js - otherwise the "Save" and
-      // "Reset" buttons in the settings dialog won't work properly.
+      // The order should coincide with the order of checkboxes in the `autocompleteTypes` setting -
+      // otherwise the "Save" and "Reset" buttons in the settings dialog won't work properly.
       autocompleteTypes: ['mentions', 'commentLinks', 'wikilinks', 'templates', 'tags'],
 
       autopreview: true,
       collapseThreadsLevel: 10,
       desktopNotifications: 'unknown',
-      defaultCommentLinkType: null,
-      defaultSectionLinkType: null,
       enableThreads: true,
-
-      // If the user has never changed the insert buttons configuration, it should change with the
-      // default configuration change.
-      'insertButtons-altered': false,
-
       hideTimezone: false,
       highlightNewInterval: 15,
       improvePerformance: false,
       'improvePerformance-lastSuggested': null,
       insertButtons: cd.config.defaultInsertButtons || [],
+      'insertButtons-altered': false,
+      modifyToc: true,
       notifications: 'all',
       notifyCollapsedThreads: false,
       notificationsBlacklist: [],
       outdentLevel: 15,
       reformatComments: null,
       showContribsLink: false,
-      showLoadingOverlay: true,
       showToolbar: true,
       signaturePrefix: cd.config.defaultSignaturePrefix,
+      subscribeOnReply: true,
       timestampFormat: 'default',
-      'useTopicSubscription-seenNotice': false,
-      modifyToc: true,
       useBackgroundHighlighting: true,
       useTemplateData: true,
       useTopicSubscription: Boolean(mw.loader.getState('ext.discussionTools.init')),
+      'useTopicSubscription-seenNotice': false,
       useUiTime: true,
 
       // On wikis where there is no topic subscriptions, watching pages on replying is the
       // alternative to keep track of discussions.
       watchOnReply: !mw.loader.getState('ext.discussionTools.init'),
-
-      subscribeOnReply: true,
     };
   },
 
@@ -601,7 +592,7 @@ export default {
 
       await Promise.all([
         setLocalOption(cd.g.localSettingsOptionName, JSON.stringify(localSettings)),
-        setGlobalOption(cd.g.settingsOptionName, JSON.stringify(globalSettings))
+        setGlobalOption(cd.g.settingsOptionName, JSON.stringify(globalSettings)),
       ]);
     } else {
       await setLocalOption(cd.g.localSettingsOptionName, JSON.stringify(settings));

@@ -538,7 +538,7 @@ export async function loadUserGenders(users, doRequestInBackground = false) {
  * Given a list of user IDs, return a list of users.
  *
  * @param {number[]|string[]} userIds List of user IDs.
- * @returns {import('./userRegistry').User[]}
+ * @returns {Promise.<import('./userRegistry').User[]>}
  */
 export async function getUsersByGlobalId(userIds) {
   const requests = userIds.map((id) => (
@@ -756,7 +756,7 @@ export async function getPagesExistence(titles) {
  * Get a list of DiscussionTools subscriptions for a list of section IDs from the server.
  *
  * @param {string[]} ids List of section IDs.
- * @returns {object}
+ * @returns {Promise.<object>}
  */
 export async function getDtSubscriptions(ids) {
   const subscriptions = {};
@@ -776,7 +776,7 @@ export async function getDtSubscriptions(ids) {
  * @param {string} subscribeId Section's DiscussionTools ID.
  * @param {string} id Section's ID.
  * @param {boolean} subscribe Subscribe or unsubscribe.
- * @returns {object}
+ * @returns {Promise.<object>}
  */
 export async function dtSubscribe(subscribeId, id, subscribe) {
   return await controller.getApi().postWithEditToken({

@@ -327,7 +327,7 @@ class BootProcess {
     ) {
       // Avoid using the setting kept in `mw.user.options`, as it may be outdated. Also don't reuse
       // the previous settings request, as the settings might be changed in
-      // `suggestEnableCommentReformatting()`.
+      // `this.maybeSuggestEnableCommentReformatting()`.
       const loadedSettings = await settings.load();
       if (['unknown', undefined].includes(loadedSettings.desktopNotifications)) {
         const actions = [
