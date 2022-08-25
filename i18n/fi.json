@@ -3,6 +3,7 @@
 		"authors": [
 			"Jack who built the house",
 			"Joquliina",
+			"Kyykaarme",
 			"MITO",
 			"Moj",
 			"Nike",
@@ -157,6 +158,7 @@
 	"msd-moved": "Ketju siirretty onnistueesti. Voit [[$1|mennä sivulle jolle ketju siirrettiin]].",
 	"error-network": "Tarkista internetyhteytesi.",
 	"error-unknown": "Tuntematon virhe.",
+	"discussiontools-incompatible": "Convenient Discussions ei ole yhteensopiva DiscussionTools-toiminnon kanssa. <b><span class=\"cd-notification-disabledt\">[[$1|Poista]]</span></b> DiscussionTools käytöstä, jotta Convenient Discussions toimisi oikein.",
 	"wl-button-switchrelevant-tooltip": "Näytä ainoastaan kommentit seuraamissani ketjuissa ja minulle suunnatut kommentit. (Huom.: tunnistus perustuu muokkausyhteenvetoihin, joten joitain muokkauksia saattaa puuttua)",
 	"addtopic": "Uusi keskustelu",
 	"addtopicbutton-tooltip": "Avaa uudessa välilehdessä luodaksesi keskusteluketjun tavaliselle sivulle Kätevät Keskustelut -sivun sijasta",
