@@ -191,10 +191,8 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       return new OO.ui.Process(async () => {
         this.pushPending();
 
-        const collectedSettings = this.collectSettings();
-
         try {
-          await settings.save(collectedSettings);
+          await settings.save(this.collectSettings());
         } catch (e) {
           handleDialogError(this, e, 'error-settings-save', true);
           return;
@@ -389,6 +387,19 @@ class SettingsDialog extends OO.ui.ProcessDialog {
   }
 
   /**
+   * Get an object with settings related to states (see {@link module:settings.scheme}).
+   *
+   * @returns {object}
+   * @private
+   */
+  getStatesSettings() {
+    return settings.scheme.states.reduce((obj, state) => {
+      obj[state] = this.settings[state];
+      return obj;
+    }, {});
+  }
+
+  /**
    * Get setting values from controls.
    *
    * @returns {object}
@@ -429,15 +440,18 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       });
     });
 
-    settings.scheme.states.forEach((state) => {
-      collectedSettings[state] = this.settings[state];
-    });
-    collectedSettings['insertButtons-altered'] = (
-      JSON.stringify(collectedSettings.insertButtons) !==
-      JSON.stringify(settings.scheme.default.insertButtons)
+    return Object.assign(
+      {},
+      settings.scheme.default,
+      collectedSettings,
+      this.getStatesSettings(),
+      {
+        'insertButtons-altered': (
+          JSON.stringify(collectedSettings.insertButtons) !==
+          JSON.stringify(settings.scheme.default.insertButtons)
+        ),
+      },
     );
-
-    return collectedSettings;
   }
 
   /**
@@ -473,10 +487,18 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       });
 
     const collectedSettings = this.collectSettings();
-    const save = !areObjectsEqual(collectedSettings, this.settings, true) && areInputsValid;
-    const reset = !areObjectsEqual(collectedSettings, settings.scheme.default, true);
-
-    this.actions.setAbilities({ save, reset });
+    this.actions.setAbilities({
+      save: !areObjectsEqual(collectedSettings, this.settings) && areInputsValid,
+      reset: !areObjectsEqual(
+        Object.assign({}, collectedSettings),
+        Object.assign(
+          {},
+          settings.scheme.default,
+          settings.scheme.resetsTo,
+          this.getStatesSettings(),
+        )
+      ),
+    });
   }
 
   /**

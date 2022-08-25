@@ -25,6 +25,9 @@ export default {
    * @property {string[]} states List of state setting names. States are values to be remembered, or
    *   settings to be removed if the time comes. It is, in fact, user data, despite that we don't
    *   have much of it.
+   * @property {object} resetsTo For settings that are resetted not to their default values, those
+   *   non-default values are specified here (used to determine whether the "Reset" button should be
+   *   enabled).
    * @property {object[]} ui List of pages of the settings dialog, each with its control objects.
    */
   scheme: {
@@ -49,6 +52,10 @@ export default {
       'notificationsBlacklist',
       'useTopicSubscription-seenNotice',
     ],
+
+    resetsTo: {
+      reformatComments: false,
+    },
   },
 
   /**

@@ -593,11 +593,9 @@ export function getExtendedRect(el) {
  *
  * @param {object} object1 First object.
  * @param {object} object2 Second object.
- * @param {boolean} [includes=false] Test if all the keys of the first object are contained in
- *   the second object instead of checking that all the keys are the same.
  * @returns {boolean}
  */
-export function areObjectsEqual(object1, object2, includes = false) {
+export function areObjectsEqual(object1, object2) {
   const isMultipartObject = (val) => (
     val !== null &&
     typeof val === 'object' &&
@@ -624,7 +622,7 @@ export function areObjectsEqual(object1, object2, includes = false) {
   const keys2 = Object.keys(object2).filter((key) => object2[key] !== undefined);
 
   return (
-    (keys1.length === keys2.length || includes) &&
+    keys1.length === keys2.length &&
     keys1.every((key) => areObjectsEqual(object1[key], object2[key]))
   );
 }
