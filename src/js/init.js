@@ -920,7 +920,7 @@ export default {
     require('../less/commentLayers.less');
     require('../less/navPanel.less');
     require('../less/pageNav.less');
-    require('../less/skin.less');
+    require('../less/skins.less');
     require('../less/talkPage.less');
     require('../less/toc.less');
   },
