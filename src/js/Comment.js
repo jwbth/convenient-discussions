@@ -4056,14 +4056,12 @@ class Comment extends CommentSkeleton {
       // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(policy)#202103271157_Uanfala.
       $anchor = $anchorFirstChild;
     }
-    if ($anchor.is('dl, ul')) {
+    if ($anchor.is('dl, ul, ol')) {
       createList = false;
-      wrappingItemTag = $anchor.is('ul') ? 'li' : 'dd';
+      wrappingItemTag = $anchor.is('dl') ? 'dd' : 'li';
       $anchor.addClass(`cd-commentLevel cd-commentLevel-${this.level + 1}`);
-    } else if ($lastOfTarget.is('li')) {
-      outerWrapperTag = 'li';
-    } else if ($lastOfTarget.is('dd')) {
-      outerWrapperTag = 'dd';
+    } else if ($lastOfTarget.is('li, dd')) {
+      outerWrapperTag = $lastOfTarget.prop('tagName').toLowerCase();
     }
 
     const $wrappingItem = $(`<${wrappingItemTag}>`);
