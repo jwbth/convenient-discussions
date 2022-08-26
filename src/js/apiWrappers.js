@@ -318,6 +318,7 @@ export function parseCode(code, customOptions) {
     disabletoc: true,
     disablelimitreport: true,
     disableeditsection: true,
+    preview: true,
   };
   const options = Object.assign({}, defaultOptions, customOptions);
   return controller.getApi().post(options).then(
