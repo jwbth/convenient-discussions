@@ -323,15 +323,26 @@ function patterns() {
     new RegExp(cd.g.captureUserNamePattern, 'i')
   );
   if (authorInSignatureMatch) {
-    // Extract signature contents before the user name - in order to cut it out from comment
-    // endings when editing.
-    const signaturePrefixPattern = settings.get('signaturePrefix') === ' ' ?
-      '[ \n]' :
-      mw.util.escapeRegExp(settings.get('signaturePrefix'));
-    const signatureBeginning = mw.util.escapeRegExp(
-      signatureContent.slice(0, authorInSignatureMatch.index)
+    /*
+      Extract signature contents before the user name - in order to cut it out from comment
+      endings when editing.
+
+      Use the signature prefix only if it is other than `' '` (the default value).
+      * If it is `' '`, the prefix in real life may as well be `\n` or `--` if the user created some
+        specific comment using the native editor instead of CD. So we would want to remove the
+        signature from such comments correctly. The space would be included in the signature anyway
+        using `cd.config.signaturePrefixRegexp`.
+      * If it is other than `' '`, it is unpredictable, so it is safer to include it in the pattern.
+    */
+    cd.g.userSignaturePrefixRegexp = new RegExp(
+      (
+        settings.get('signaturePrefix') === ' ' ?
+          '' :
+          mw.util.escapeRegExp(settings.get('signaturePrefix'))
+      ) +
+      mw.util.escapeRegExp(signatureContent.slice(0, authorInSignatureMatch.index)) +
+      '$'
     );
-    cd.g.userSignaturePrefixRegexp = new RegExp(signaturePrefixPattern + signatureBeginning + '$');
   }
 
   const pieJoined = cd.g.popularInlineElements.join('|');
