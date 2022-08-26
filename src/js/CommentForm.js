@@ -533,7 +533,11 @@ class CommentForm {
             initialState?.subscribe ??
             (
               (settings.get('subscribeOnReply') && this.mode !== 'edit') ||
-              this.targetSection?.subscriptionState
+              (
+                settings.get('useTopicSubscription') ?
+                  this.targetSection?.getBase(true)?.subscriptionState :
+                  this.targetSection?.subscriptionState
+              )
             )
           ),
           label: (
