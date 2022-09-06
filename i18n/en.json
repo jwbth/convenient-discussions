@@ -334,7 +334,7 @@
   "sd-insertbuttons": "Text insert buttons",
   "sd-insertbuttons-multiselect-placeholder": "Add a button",
   "sd-insertbuttons-help": "Use <code>+</code> to specify a place where the caret should be put after inserting the text; for example, <code><nowiki>{{+}}</nowiki></code>. Use <code>;</code> to specify displayed text if you want it to be different from the one inserted; for example, <code><nowiki><code>+</code>;<code /></nowiki></code>. Use <code><nowiki>\\</nowiki></code> before the aforementioned characters to insert them as is; for example, <code><nowiki>2\\+2</nowiki></code>. The buttons can be dragged and dropped.",
-  "sd-modifytoc": "Show the new comments and sections in the table of contents",
+  "sd-modifytoc": "Show new comments and sections in the table of contents",
   "sd-outdentlevel": "[$1 Outdent] my replies starting with level",
   "sd-outdentlevel-help": "0 to never outdent.",
   "sd-outdentlevel-help-notemplate": "<strong>Note:</strong> The current wiki doesn't have an outdent template specified. The setting will be idle.",
