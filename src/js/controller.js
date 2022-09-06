@@ -1581,15 +1581,6 @@ export default {
 
     [...div.querySelectorAll('style')].forEach(removeElement);
 
-    // <syntaxhighlight>
-    [...div.querySelectorAll('.mw-highlight')].forEach((el) => {
-      const syntaxhighlight = this.changeElementType(el.firstElementChild, 'syntaxhighlight');
-      const [, lang] = el.className.match(/\bmw-highlight-lang-(\w+)\b/) || [];
-      if (lang) {
-        syntaxhighlight.setAttribute('lang', lang);
-      }
-    });
-
     const topElements = new Parser({ childElementsProp: 'children' })
       .getTopElementsWithText(div, true).nodes;
     if (topElements[0] !== div) {
@@ -1636,16 +1627,15 @@ export default {
         });
         wikitext = wikitext
           .trim()
-          .replace(/(?:^ .*(?:\n|$))+/gm, (s) => {
-            s = s
+          .replace(/(?:^ .*(?:\n|$))+/gm, (s) => (
+            '<syntaxhighlight lang="">\n' +
+            s
               .replace(/^ /gm, '')
-              .replace(/[^\n]$/, '$0\n');
-            return '<syntaxhighlight>\n' + s + '</syntaxhighlight>';
-          })
-          .replace(
-            /(<syntaxhighlight[^>]*>)\s*<nowiki>(.*?)<\/nowiki>\s*(<\/syntaxhighlight>)/g,
-            '$1$2$3'
-          );
+              .replace(/[^\n]$/, '$0\n')
+              .replace(/<nowiki>(.*?)<\/nowiki>/g, '$1') +
+            '</syntaxhighlight>'
+          ))
+          .replace(/<br \/>/g, '<br>');
         let hidden;
         ({ code: wikitext, hidden } = hideSensitiveCode(wikitext));
         wikitext = brsToNewlines(wikitext);
