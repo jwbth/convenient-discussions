@@ -26,7 +26,7 @@
 	"thread-expand-label-genderless": "گسترش موضوع ($1 {{plural:$1|نظر|نظرات}} توسط {{plural:$2|}} $3)",
 	"thread-expand-label": "گسترش بحث ($1 {{plural:$1|نظر|نظرات}} توسط {{plural:$2|{{gender:$4|}}}} $3)",
 	"thread-expand-tooltip": "برای گسترش تمام مبحث‌ها در صفحه، کلید Ctrl را نگه‌دارید",
-	"thread-newcomments": "{{plural:$1|یک پیام جدید|$1 پیام جدید}} در این ریسه از {{plural:$2|{{gender:$4|}}|{{gender:$4|}}}} $3. برای تازه‌سازی صفحه کلیک کنید.",
+	"thread-newcomments": "{{plural:$1|یک پیام جدید|$1 پیام جدید}} در این ریسه از {{plural:$2|{{gender:$4|}}}} $3. برای تازه‌سازی صفحه کلیک کنید.",
 	"sm-editopeningcomment": "ویرایش نخستین نظر",
 	"sm-editopeningcomment-tooltip": "ویرایش نخستین نظر بخش",
 	"sm-addsubsection": "افزودن زیربخش",
