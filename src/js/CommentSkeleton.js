@@ -1486,7 +1486,7 @@ class CommentSkeleton {
     }
 
     let id = generateFixedPosTimestamp(date) + '_' + spacesToUnderlines(author);
-    if (existingIds && existingIds.includes(id)) {
+    if (existingIds?.includes(id)) {
       let index = 2;
       const base = id;
       do {

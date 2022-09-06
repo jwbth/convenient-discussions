@@ -200,7 +200,7 @@ export async function showConfirmDialog(message, options = {}) {
  */
 export function isDialogUnsaved(dialog) {
   const saveButton = dialog.actions.get({ actions: 'save' })[0];
-  return saveButton && saveButton.isVisible() && !saveButton.isDisabled();
+  return saveButton?.isVisible() && !saveButton.isDisabled();
 }
 
 /**

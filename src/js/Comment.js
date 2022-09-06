@@ -2241,8 +2241,7 @@ class Comment extends CommentSkeleton {
       } while ($tested.length && !isInline($tested.get(0)));
 
       if (!$last.find('.cd-changeMark-before').length) {
-        const $before = $('<span>').addClass('cd-changeMark-before');
-        $last.append(' ', $before);
+        $last.append(' ', $('<span>').addClass('cd-changeMark-before'));
       }
       $last.append($changeMark);
     }
@@ -2584,10 +2583,11 @@ class Comment extends CommentSkeleton {
       // Parse wikitext if there is no full overlap and there are templates inside.
       if (wordOverlap < 1 && diffOriginalText.includes('{{')) {
         try {
-          const html = (await parseCode(diffOriginalText, {
-            title: pageRegistry.getCurrent().name
-          })).html;
-          diffOriginalText = $('<div>').append(html).cdGetText();
+          diffOriginalText = $('<div>')
+            .append(
+              (await parseCode(diffOriginalText, { title: pageRegistry.getCurrent().name })).html
+            )
+            .cdGetText();
         } catch {
           throw new CdError({
             type: 'parse',
@@ -3367,24 +3367,18 @@ class Comment extends CommentSkeleton {
       data.signatureDirtyCode = s + data.signatureDirtyCode;
       data.endIndex -= s.length;
       return '';
-    }
-
-    if (this.isOwn && cd.g.userSignaturePrefixRegexp) {
-      data.code = data.code.replace(cd.g.userSignaturePrefixRegexp, movePartToSignature);
-    }
-
-    const movePartsToSignature = (code, regexps) => {
-      regexps.forEach((regexp) => {
-        code = code.replace(regexp, movePartToSignature);
-      });
-      return code;
     };
-
+    const movePartsToSignature = (regexps) => {
+      regexps.forEach((regexp) => {
+        data.code = data.code.replace(regexp, movePartToSignature);
+      });
+    };
     const tagRegexp = new RegExp(`(<${cd.g.piePattern}(?: [\\w ]+?=[^<>]+?)?> *)+$`, 'i');
 
     // Why signaturePrefixRegexp three times? Well, the test case here is the MusikAnimal's
     // signature here: https://en.wikipedia.org/w/index.php?diff=next&oldid=946899148.
-    data.code = movePartsToSignature(data.code, [
+    movePartsToSignature([
+      this.isOwn ? cd.g.userSignaturePrefixRegexp : undefined,
       /'+$/,
       cd.config.signaturePrefixRegexp,
       tagRegexp,
@@ -3393,7 +3387,7 @@ class Comment extends CommentSkeleton {
       new RegExp(`<small class="${cd.config.unsignedClass}">.*$`),
       /<!-- *Template:Unsigned.*$/,
       cd.config.signaturePrefixRegexp,
-    ]);
+    ].filter(defined));
 
     // Exclude <small></small> and template wrappers from the strings
     const smallWrappers = [{
@@ -3988,7 +3982,7 @@ class Comment extends CommentSkeleton {
    * Add an item to the comment's {@link CommentSubitemList subitem list}.
    *
    * @param {string} name
-   * @param {'top' | 'bottom'} position
+   * @param {'top'|'bottom'} position
    * @returns {AddSubitemReturn}
    */
   addSubitem(name, position) {

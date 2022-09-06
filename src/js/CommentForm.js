@@ -804,7 +804,7 @@ class CommentForm {
      *
      * @type {external:jQuery}
      */
-    this.$messageArea = $('<div>').addClass('cd-messageArea');
+    this.$messageArea = $('<div>').addClass('cd-commentForm-messageArea');
 
     /**
      * The area where edit summary preview is displayed.
@@ -879,15 +879,15 @@ class CommentForm {
      *
      * @type {external:jQuery}
      */
-    this.$previewArea = $('<div>').addClass('cd-previewArea');
+    this.$previewArea = $('<div>').addClass('cd-commentForm-previewArea');
 
     if (settings.get('autopreview')) {
       this.$previewArea
-        .addClass('cd-previewArea-below')
+        .addClass('cd-commentForm-previewArea-below')
         .appendTo(this.$element);
     } else {
       this.$previewArea
-        .addClass('cd-previewArea-above')
+        .addClass('cd-commentForm-previewArea-above')
         .prependTo(this.$element);
     }
 
@@ -1605,20 +1605,24 @@ class CommentForm {
       .on('tribute-replaced', (e) => {
         if (e.originalEvent.detail.instance.trigger === cd.config.mentionCharacter) {
           if (this.mode === 'edit') {
-            const $message = wrap(cd.sParse('cf-reaction-mention-edit'), { targetBlank: true });
-            this.showMessage($message, {
-              type: 'notice',
-              name: 'mentionEdit',
-            });
+            this.showMessage(
+              wrap(cd.sParse('cf-reaction-mention-edit'), { targetBlank: true }),
+              {
+                type: 'notice',
+                name: 'mentionEdit',
+              }
+            );
           }
           if (this.omitSignatureCheckbox?.isSelected()) {
-            const $message = wrap(cd.sParse('cf-reaction-mention-nosignature'), {
-              targetBlank: true,
-            });
-            this.showMessage($message, {
-              type: 'notice',
-              name: 'mentionNoSignature',
-            });
+            this.showMessage(
+              wrap(cd.sParse('cf-reaction-mention-nosignature'), {
+                targetBlank: true,
+              }),
+              {
+                type: 'notice',
+                name: 'mentionNoSignature',
+              }
+            );
           }
         }
       });
@@ -2580,14 +2584,18 @@ class CommentForm {
       if ((isAuto && areInputsEmpty) || this.deleteCheckbox?.isSelected()) {
         this.$previewArea.empty();
       } else {
-        const $label = $('<div>')
-          .addClass('cd-previewArea-label')
-          .text(cd.s('cf-block-preview'));
         this.$previewArea
           .html(html)
-          .prepend($label)
-          .cdAddCloseButton();
-        this.$previewArea.toggleClass('cd-previewArea-indentedComment', this.willCommentBeIndented);
+          .prepend(
+            $('<div>')
+              .addClass('cd-commentForm-previewArea-label')
+              .text(cd.s('cf-block-preview'))
+          )
+          .cdAddCloseButton()
+          .toggleClass(
+            'cd-commentForm-previewArea-indentedComment',
+            this.willCommentBeIndented
+          );
 
         /**
          * A comment preview has been rendered.
@@ -2603,14 +2611,15 @@ class CommentForm {
         }
       }
 
-      const $comment = $('<span>')
-        .addClass('comment')
-        .append(parsedSummary);
       this.$summaryPreview.empty();
       if (parsedSummary) {
-        const $colon = $('<span>').text(cd.mws('colon-separator'));
-        const $previewLabel = $('<span>').text(cd.s('cf-summary-preview'));
-        this.$summaryPreview.append($previewLabel, $colon, $comment);
+        this.$summaryPreview.append(
+          document.createTextNode(cd.sParse('cf-summary-preview')),
+          document.createTextNode(cd.mws('colon-separator')),
+          $('<span>')
+            .addClass('comment')
+            .append(parsedSummary),
+        );
       }
     }
 
@@ -2623,8 +2632,11 @@ class CommentForm {
     this.closeOperation(currentOperation);
 
     if (!isAuto) {
-      const position = this.$previewArea.hasClass('cd-previewArea-above') ? 'top' : 'bottom';
-      this.$previewArea.cdScrollIntoView(position);
+      this.$previewArea.cdScrollIntoView(
+        this.$previewArea.hasClass('cd-commentForm-previewArea-above') ?
+          'top' :
+          'bottom'
+      );
       focusInput(this.commentInput);
     }
   }
@@ -2689,7 +2701,7 @@ class CommentForm {
     if (html) {
       html = wrapDiffBody(html);
       const $label = $('<div>')
-        .addClass('cd-previewArea-label')
+        .addClass('cd-commentForm-previewArea-label')
         .text(cd.s('cf-block-viewchanges'));
       this.$previewArea
         .html(html)
@@ -2710,8 +2722,11 @@ class CommentForm {
 
     this.closeOperation(currentOperation);
 
-    const position = this.$previewArea.hasClass('cd-previewArea-above') ? 'top' : 'bottom';
-    this.$previewArea.cdScrollIntoView(position);
+    this.$previewArea.cdScrollIntoView(
+      this.$previewArea.hasClass('cd-commentForm-previewArea-above') ?
+        'top' :
+        'bottom'
+    );
     focusInput(this.commentInput);
   }
 

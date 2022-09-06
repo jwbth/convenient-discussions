@@ -101,11 +101,12 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   getSetupProcess(data) {
     return super.getSetupProcess(data).next(() => {
       this.title.setLabel(this.isComment ? cd.s('cld-title-comment') : cd.s('cld-title-section'));
-      const $message = $('<div>').append(
-        this.buttonSelectWidget?.$element,
-        this.stackLayout.$element,
-      ).children();
-      this.message.setLabel($message);
+      this.message.setLabel(
+        $('<div>').append(
+          this.buttonSelectWidget?.$element,
+          this.stackLayout.$element,
+        ).children()
+      );
       this.size = this.isComment ? 'larger' : 'large';
       this.stackLayout.setItem(this.anchorPanel);
     });

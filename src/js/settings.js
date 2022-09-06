@@ -430,7 +430,7 @@ export default {
 
       // Settings in global variables like `cdAllowEditOthersComments` used before server-stored
       // settings were implemented and used for undocumented settings now.
-      this.getPrefixedProperties(window, 'cd'),
+      this.getSettingPropertiesOfObject(window, 'cd'),
 
       remoteSettings,
     ));
@@ -455,7 +455,7 @@ export default {
     this.set(Object.assign(
       {},
       this.scheme.undocumented,
-      this.getPrefixedProperties(window, 'cd', this.scheme.undocumented),
+      this.getSettingPropertiesOfObject(window, 'cd', this.scheme.undocumented),
       this.getLocalOverrides(),
     ));
   },
@@ -508,8 +508,8 @@ export default {
 
     return Object.assign(
       {},
-      this.getPrefixedProperties(globalSettings),
-      this.getPrefixedProperties(localSettings),
+      this.getSettingPropertiesOfObject(globalSettings),
+      this.getSettingPropertiesOfObject(localSettings),
       omitLocal ? this.getLocalOverrides() : {},
     );
   },
@@ -523,7 +523,7 @@ export default {
    * @returns {object}
    * @private
    */
-  getPrefixedProperties(source, prefix, defaults = this.scheme.default) {
+  getSettingPropertiesOfObject(source, prefix, defaults = this.scheme.default) {
     return Object.keys(defaults).reduce((target, name) => {
       (this.scheme.aliases[name] || []).concat(name)
         .map((alias) => prefix ? prefix + ucFirst(alias) : alias)
@@ -545,7 +545,7 @@ export default {
    * @private
    */
   getLocalOverrides() {
-    return this.getPrefixedProperties(window, 'cdLocal');
+    return this.getSettingPropertiesOfObject(window, 'cdLocal');
   },
 
   /**

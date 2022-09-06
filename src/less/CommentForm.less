@@ -201,7 +201,7 @@
   margin-top: 0.5em;
 }
 
-.cd-previewArea {
+.cd-commentForm-previewArea {
   display: flow-root;
   margin-top: 0.5em;
   padding: 0.5em 0.75em;
@@ -275,20 +275,20 @@
   }
 }
 
-.cd-messageArea {
+.cd-commentForm-messageArea {
   width: 100%;
 }
 
-.cd-previewArea,
-.cd-messageArea {
+.cd-commentForm-previewArea,
+.cd-commentForm-messageArea {
   // To position .cd-closeButton absolutely
   position: relative;
 
   clear: both;
 }
 
-.cd-commentForm-inNumberedList .cd-previewArea-above,
-.cd-commentForm-inNumberedList .cd-messageArea {
+.cd-commentForm-inNumberedList .cd-commentForm-previewArea-above,
+.cd-commentForm-inNumberedList .cd-commentForm-messageArea {
   // In Chrome, if the form is in a numbered list, this and "+ *" rule make the number to appear
   // before the textarea (which is better), not before the message.
   float: left;
@@ -315,12 +315,12 @@
   opacity: 0;
   transition: opacity 0.2s ease-in;
 
-  .cd-messageArea & {
+  .cd-commentForm-messageArea & {
     background-color: var(--cd-content-background-color);
   }
 
-  .cd-previewArea:hover &,
-  .cd-messageArea:hover & {
+  .cd-commentForm-previewArea:hover &,
+  .cd-commentForm-messageArea:hover & {
     opacity: 1;
   }
 
@@ -330,7 +330,7 @@
 
   // Preview area always has text in content language.
   .ltr &,
-  .sitedir-ltr .cd-previewArea & {
+  .sitedir-ltr .cd-commentForm-previewArea & {
     right: 1px;
     left: unset;
 
@@ -340,7 +340,7 @@
   }
 
   .rtl &,
-  .sitedir-rtl .cd-previewArea & {
+  .sitedir-rtl .cd-commentForm-previewArea & {
     left: 1px;
     right: unset;
 

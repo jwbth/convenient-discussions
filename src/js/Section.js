@@ -347,7 +347,7 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Add a "Subscribe" / "Unsubscribe" button to the actions element.
+   * _For internal use._ Add a "Subscribe" / "Unsubscribe" button to the actions element.
    *
    * @fires subscribeButtonAdded
    */
@@ -1242,20 +1242,22 @@ class Section extends SectionSkeleton {
       return;
     }
 
-    const html = oldCommentData.elementHtmls[0].replace(
+    const oldHeadingHtml = oldCommentData.elementHtmls[0].replace(
       /\x01(\d+)_\w+\x02/g,
       (s, num) => currentCommentData.hiddenElementsData[num - 1].html
     );
-    const $dummy = $('<span>').html($(html).html());
-    const oldSection = { headlineElement: $dummy.get(0) };
-    SectionStatic.prototype.parseHeadline.call(oldSection);
-    const newHeadline = this.headline;
+    const oldSectionDummy = {
+      headlineElement: $('<span>')
+        .html($(oldHeadingHtml).html())
+        .get(0),
+    };
+    SectionStatic.prototype.parseHeadline.call(oldSectionDummy);
     if (
-      newHeadline &&
-      oldSection.headline !== newHeadline &&
-      subscriptions.getOriginalState(oldSection.headline)
+      this.headline &&
+      oldSectionDummy.headline !== this.headline &&
+      subscriptions.getOriginalState(oldSectionDummy.headline)
     ) {
-      this.subscribe('quiet', oldSection.headline);
+      this.subscribe('quiet', oldSectionDummy.headline);
     }
   }
 
@@ -1765,18 +1767,15 @@ class Section extends SectionSkeleton {
    */
   getBase(force2Level = false) {
     const defaultValue = force2Level && this.level !== 2 ? null : this;
-
-    if (this.level <= 2) {
-      return defaultValue;
-    }
-
-    return (
-      SectionStatic.getAll()
-        .slice(0, this.index)
-        .reverse()
-        .find((section) => section.level === 2) ||
-      defaultValue
-    );
+    return this.level <= 2 ?
+      defaultValue :
+      (
+        SectionStatic.getAll()
+          .slice(0, this.index)
+          .reverse()
+          .find((section) => section.level === 2) ||
+        defaultValue
+      );
   }
 
   /**

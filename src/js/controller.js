@@ -1669,9 +1669,8 @@ export default {
    * @returns {string}
    */
   async getWikitextFromSelection(input) {
-    const contents = window.getSelection().getRangeAt(0).cloneContents();
     const div = document.createElement('div');
-    div.appendChild(contents);
+    div.appendChild(window.getSelection().getRangeAt(0).cloneContents());
     return await this.domToWikitext(div, input);
   },
 
@@ -1683,11 +1682,10 @@ export default {
    * @returns {string}
    */
   async getWikitextFromPaste(originalHtml, input) {
-    let html = originalHtml
+    const div = document.createElement('div');
+    div.innerHTML = originalHtml
       .replace(/^[^]*<!-- *StartFragment *-->/, '')
       .replace(/<!-- *EndFragment *-->[^]*$/, '');
-    const div = document.createElement('div');
-    div.innerHTML = html;
     [...div.querySelectorAll('[style]')].forEach((el) => {
       el.removeAttribute('style');
     });

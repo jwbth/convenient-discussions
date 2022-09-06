@@ -18,8 +18,8 @@ import subscriptions from './subscriptions';
 import toc from './toc';
 import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
+import { defined, getLastArrayElementOrSelf, notNull, underlinesToSpaces, wrap } from './utils';
 import { formatDateNative } from './timestamp';
-import { getLastArrayElementOrSelf, notNull, underlinesToSpaces, wrap } from './utils';
 import { getVisits, handleApiReject, setOptions, setVisits } from './apiWrappers';
 import { removeWikiMarkup } from './wikitext';
 import { showConfirmDialog } from './ooui';
@@ -249,7 +249,7 @@ class BootProcess {
     }
 
     const loadedSettings = await settings.load({ reuse: true });
-    if (![null, undefined].includes(loadedSettings.reformatComments)) {
+    if (notNull(loadedSettings.reformatComments)) {
       return false;
     }
 
@@ -1374,7 +1374,7 @@ class BootProcess {
    * @private
    */
   connectToCommentLinks($content) {
-    if (!$content.is('#mw-content-text, .cd-previewArea')) return;
+    if (!$content.is('#mw-content-text, .cd-commentForm-preview')) return;
 
     $content
       .find(`a[href^="#"]`)

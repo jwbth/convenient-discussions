@@ -252,14 +252,10 @@ class SectionSkeleton {
 
   /**
    * _For internal use._ Parse the headline of the section and fill the
-   * {@link Section#headline headline} property that contains no HTML tags.
+   * {@link SectionSkeleton#headline headline} property that contains no HTML tags.
    */
   parseHeadline() {
     const classesToFilter = ['mw-headline-number', ...cd.config.foreignElementInHeadlineClasses];
-    const nodes = [...this.headlineElement.childNodes].filter((node) => (
-      node.nodeType === Node.TEXT_NODE ||
-      !(isMetadataNode(node) || classesToFilter.some((name) => node.classList.contains(name)))
-    ));
 
     /**
      * Section headline as it appears on the page.
@@ -269,7 +265,14 @@ class SectionSkeleton {
      *
      * @type {string}
      */
-    this.headline = nodes.map((node) => node.textContent).join('').trim();
+    this.headline = [...this.headlineElement.childNodes]
+      .filter((node) => (
+        node.nodeType === Node.TEXT_NODE ||
+        !(isMetadataNode(node) || classesToFilter.some((name) => node.classList.contains(name)))
+      ))
+      .map((node) => node.textContent)
+      .join('')
+      .trim();
   }
 
   /**

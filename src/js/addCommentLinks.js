@@ -743,16 +743,18 @@ export function addCommentLinksToSpecialSearch() {
             .find('a')
             .first()
             .attr('href');
-          const href = originalHref + '#' + commentId;
-          const $a = $('<a>')
-            .attr('href', href)
-            .text(cd.s('deadanchor-search-gotocomment'));
-          const $start = $('<span>').text(cd.mws('parentheses-start'));
-          const $end = $('<span>').text(cd.mws('parentheses-end'));
-          const $span = $('<span>')
-            .addClass('cd-searchCommentLink')
-            .append($start, $a, $end);
-          $(el).append(' ', $span.clone());
+          $(el).append(
+            ' ',
+            $('<span>')
+              .addClass('cd-searchCommentLink')
+              .append(
+                document.createTextNode(cd.mws('parentheses-start')),
+                $('<a>')
+                  .attr('href', `${originalHref}#${commentId}`)
+                  .text(cd.s('deadanchor-search-gotocomment')),
+                document.createTextNode(cd.mws('parentheses-end')),
+              )
+          );
         });
       },
       console.error
