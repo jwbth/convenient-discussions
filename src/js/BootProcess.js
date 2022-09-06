@@ -391,7 +391,7 @@ class BootProcess {
   }
 
   /**
-   * Make a search request and update the "Not found" message.
+   * Make a search request and show a "Not found" notification.
    *
    * @param {object} data
    * @private
@@ -399,26 +399,56 @@ class BootProcess {
   async searchForNotFoundItem({
     date,
     decodedFragment,
-    message,
-    previousCommentByTimeText,
-    searchQuery,
+    guessedCommentText,
     sectionName,
-    sectionNameDotDecoded,
-    sectionWithSimilarNameText,
-    token,
+    guessedSectionText,
   }) {
+    const token = date ?
+      formatDateNative(date, false, cd.g.contentTimezone) :
+      sectionName.replace(/"/g, '');
+    let searchQuery = `"${token}"`;
+
+    let sectionNameDotDecoded;
+    if (!date) {
+      try {
+        sectionNameDotDecoded = decodeURIComponent(
+          sectionName.replace(/\.([0-9A-F]{2})/g, '%$1')
+        );
+      } catch {
+        // Empty
+      }
+    }
+    if (sectionName && sectionName !== sectionNameDotDecoded) {
+      const tokenDotDecoded = sectionNameDotDecoded.replace(/"/g, '');
+      searchQuery += ` OR "${tokenDotDecoded}"`;
+    }
+
+    if (date) {
+      // There can be a time difference between the time we know (taken from the history) and the
+      // time on the page. We take it to be not more than 3 minutes for the time on the page.
+      for (let gap = 1; gap <= 3; gap++) {
+        const adjustedToken = formatDateNative(
+          new Date(date.getTime() - cd.g.msInMin * gap),
+          false,
+          cd.g.contentTimezone
+        );
+        searchQuery += ` OR "${adjustedToken}"`;
+      }
+    }
+    const archivePrefix = pageRegistry.getCurrent().getArchivePrefix();
+    searchQuery += ` prefix:${archivePrefix}`;
+
     const resp = await controller.getApi().get({
       action: 'query',
       list: 'search',
       srsearch: searchQuery,
-      srprop: sectionName ? 'sectiontitle' : undefined,
+      srprop: date ? undefined : 'sectiontitle',
 
       // List more recent archives first
       srsort: 'create_timestamp_desc',
 
       srlimit: '20'
     });
-
     const results = resp?.query?.search;
 
     const searchUrl = (
@@ -437,181 +467,140 @@ class BootProcess {
           cd.sParse('deadanchor-comment-lead') +
           ' ' +
           cd.sParse('deadanchor-comment-notfound', searchUrl) +
-          previousCommentByTimeText
+          guessedCommentText
         );
       } else {
-        // Possible use of a template in the section title.
-        const notFoundText = sectionWithSimilarNameText && sectionName.includes('{{') ?
-          '' :
-          ' ' + cd.sParse('deadanchor-section-notfound', searchUrl);
-
         label = (
           cd.sParse('deadanchor-section-lead', sectionName) +
-          notFoundText +
-          sectionWithSimilarNameText
+          (
+            guessedSectionText && sectionName.includes('{{') ?
+              // Use of a template in the section title. In such a case, it's almost always the real
+              // match, so we don't show any fail messages.
+              '' :
+
+              (
+                ' ' +
+                cd.sParse('deadanchor-section-notfound', searchUrl) +
+                ' ' +
+                cd.sParse('deadanchor-section-reason', searchUrl)
+              )
+          ) +
+          guessedSectionText
         );
       }
-      message.setLabel(wrap(label));
+      mw.notify(wrap(label), {
+        type: 'warn',
+        autoHideSeconds: 'long',
+      });
     } else {
-      let pageTitle;
+      let exactMatchPageTitle;
 
-      // Will either be sectionName or sectionNameDotDecoded.
+      // Will be either sectionName or sectionNameDotDecoded.
       let sectionNameFound = sectionName;
 
-      if (sectionName) {
-        // Obtain the first exact section title match (which would be from the most recent
-        // archive). This loop iterates over just one item in the vast majority of cases.
-        for (const [, result] of Object.entries(results)) {
-          if (
-            result.sectiontitle &&
-            [sectionName, sectionNameDotDecoded].includes(result.sectiontitle)
-          ) {
-            pageTitle = result.title;
-            sectionNameFound = underlinesToSpaces(result.sectiontitle);
-            break;
-          }
+      if (date) {
+        const matches = Object.entries(results).filter(([, result]) => (
+          removeWikiMarkup(result.snippet)?.includes(token)
+        ));
+        if (matches.length === 1) {
+          exactMatchPageTitle = matches[0].title;
         }
       } else {
-        const pageTitles = [];
-        for (const [, result] of Object.entries(results)) {
-          const snippetText = removeWikiMarkup(result.snippet);
-          if (snippetText && snippetText.includes(token)) {
-            pageTitles.push(result.title);
-          }
-        }
-        if (pageTitles.length === 1) {
-          pageTitle = pageTitles[0];
+        // Obtain the first exact section title match (which would be from the most recent archive).
+        // This loop iterates over just one item in the vast majority of cases.
+        const exactMatch = Object.entries(results).find(([, result]) => (
+          result.sectiontitle &&
+          [sectionName, sectionNameDotDecoded].filter(defined).includes(result.sectiontitle)
+        ));
+        if (exactMatch) {
+          exactMatchPageTitle = exactMatch.title;
+          sectionNameFound = underlinesToSpaces(exactMatch.sectiontitle);
         }
       }
 
       let label;
-      if (pageTitle) {
-        const wikilink = pageTitle + '#' + (date ? decodedFragment : sectionNameFound);
+      if (exactMatchPageTitle) {
+        const fragment = date ? decodedFragment : sectionNameFound;
+        const wikilink = `${exactMatchPageTitle}#${fragment}`;
         label = date ?
-          (
-            cd.sParse('deadanchor-comment-exactmatch', wikilink, searchUrl) +
-            previousCommentByTimeText
-          ) :
+          cd.sParse('deadanchor-comment-exactmatch', wikilink, searchUrl) + guessedCommentText :
           cd.sParse('deadanchor-section-exactmatch', sectionNameFound, wikilink, searchUrl);
       } else {
         label = date ?
-          cd.sParse('deadanchor-comment-inexactmatch', searchUrl) + previousCommentByTimeText :
+          cd.sParse('deadanchor-comment-inexactmatch', searchUrl) + guessedCommentText :
           cd.sParse('deadanchor-section-inexactmatch', sectionNameFound, searchUrl);
       }
 
-      message.setLabel(wrap(label));
+      mw.notify(wrap(label), {
+        type: 'warn',
+        autoHideSeconds: 'long',
+      });
     }
   }
 
   /**
-   * Show a message at the top of the page that a section/comment was not found, a link to search in
-   * the archive, and a link to the section/comment if it was found automatically.
+   * Show a notification that a section/comment was not found, a link to search in the archive, a
+   * link to the section/comment if it was found automatically, and/or a link to a section found
+   * with a similar name or a comment found with the closest date in the past.
    *
    * @param {string} decodedFragment Decoded fragment.
    * @param {Date} [date] Comment date, if there is a comment ID in the fragment.
    * @param {string} [author] Comment author, if there is a comment ID in the fragment.
    * @private
    */
-  async maybeAddNotFoundMessage(decodedFragment, date, author) {
+  async maybeNotifyNotFound(decodedFragment, date, author) {
     let label;
-    let previousCommentByTimeText = '';
+    let guessedCommentText = '';
     let sectionName;
-    let sectionWithSimilarNameText = '';
+    let guessedSectionText = '';
     articlePathRegexp ||= new RegExp(
       mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace('\\$1', '(.*)')
     );
+
     if (date) {
       label = cd.sParse('deadanchor-comment-lead');
       const previousCommentByTime = CommentStatic.findPreviousCommentByTime(date, author);
       if (previousCommentByTime) {
-        previousCommentByTimeText = (
+        guessedCommentText = (
           ' ' +
           cd.sParse('deadanchor-comment-previous', '#' + previousCommentByTime.id)
         )
-          // Until https://phabricator.wikimedia.org/T288415 is resolved and online on most wikis.
+          // Until https://phabricator.wikimedia.org/T288415 is online on most wikis.
           .replace(articlePathRegexp, '$1');
-        label += previousCommentByTimeText;
+        label += guessedCommentText;
       }
     } else {
       sectionName = underlinesToSpaces(decodedFragment);
-      label = cd.sParse('deadanchor-section-lead', sectionName);
+      label = (
+        cd.sParse('deadanchor-section-lead', sectionName) +
+        ' ' +
+        cd.sParse('deadanchor-section-reason')
+      );
       const sectionMatch = SectionStatic.findByHeadlineParts(sectionName);
       if (sectionMatch) {
-        sectionWithSimilarNameText = (
+        guessedSectionText = (
           ' ' +
           cd.sParse('deadanchor-section-similar', '#' + sectionMatch.id, sectionMatch.headline)
         )
-          // Until https://phabricator.wikimedia.org/T288415 is resolved and online on most wikis.
+          // Until https://phabricator.wikimedia.org/T288415 is online on most wikis.
           .replace(articlePathRegexp, '$1');
 
-        // Possible use of a template in the section title. In such a case, it's almost always the
-        // real match, so we show it immediately.
-        if (sectionName.includes('{{')) {
-          label += sectionWithSimilarNameText;
-        }
+        label += guessedSectionText;
       }
     }
-
-    let sectionNameDotDecoded;
-    let token;
-    let searchQuery;
-    if (pageRegistry.getCurrent().canHaveArchives()) {
-      label += ' ';
-
-      let sectionNameDotDecoded;
-      if (date) {
-        label += cd.sParse('deadanchor-comment-finding');
-      } else {
-        label += cd.sParse('deadanchor-section-finding');
-        try {
-          sectionNameDotDecoded = decodeURIComponent(
-            sectionName.replace(/\.([0-9A-F]{2})/g, '%$1')
-          );
-        } catch {
-          sectionNameDotDecoded = sectionName;
-        }
-      }
-
-      token = date ?
-        formatDateNative(date, false, cd.g.contentTimezone) :
-        sectionName.replace(/"/g, '');
-      searchQuery = `"${token}"`
-      if (sectionName && sectionName !== sectionNameDotDecoded) {
-        const tokenDotDecoded = sectionNameDotDecoded.replace(/"/g, '');
-        searchQuery += ` OR "${tokenDotDecoded}"`;
-      }
-      if (date) {
-        // There can be a time difference between the time we know (taken from the history) and the
-        // time on the page. We take it to be not more than 3 minutes for the time on the page.
-        for (let gap = 1; gap <= 3; gap++) {
-          const adjustedDate = new Date(date.getTime() - cd.g.msInMin * gap);
-          const adjustedToken = formatDateNative(adjustedDate, false, cd.g.contentTimezone);
-          searchQuery += ` OR "${adjustedToken}"`;
-        }
-      }
-      const archivePrefix = pageRegistry.getCurrent().getArchivePrefix();
-      searchQuery += ` prefix:${archivePrefix}`;
-    }
-
-    const message = new OO.ui.MessageWidget({
-      type: 'warning',
-      inline: true,
-      label: wrap(label),
-      classes: ['cd-message-notFound'],
-    });
-    controller.$root.prepend(message.$element);
 
     if (pageRegistry.getCurrent().canHaveArchives()) {
       this.searchForNotFoundItem({
         date,
         decodedFragment,
-        message,
-        previousCommentByTimeText,
-        searchQuery,
+        guessedCommentText,
         sectionName,
-        sectionNameDotDecoded,
-        sectionWithSimilarNameText,
-        token,
+        guessedSectionText,
+      });
+    } else {
+      mw.notify(wrap(label), {
+        type: 'warn',
+        autoHideSeconds: 'long',
       });
     }
   }
@@ -1235,7 +1224,7 @@ class BootProcess {
         $(`*[id="${escapedFragment}"]`).length
       );
       if (!isTargetFound) {
-        await this.maybeAddNotFoundMessage(decodedFragment, date, author);
+        await this.maybeNotifyNotFound(decodedFragment, date, author);
       }
     }
   }

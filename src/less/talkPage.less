@@ -261,10 +261,6 @@ ol > .cd-replyButtonWrapper:not(.cd-replyButtonWrapper-hasCommentForm) {
   margin: 0.5em auto;
 }
 
-.cd-message-notFound {
-  margin: 0.5em 0;
-}
-
 // Reset the default. There can be navboxes in discussion threads.
 .mw-collapsible-toggle {
   li &,
@@ -297,4 +293,10 @@ ol > .cd-replyButtonWrapper:not(.cd-replyButtonWrapper-hasCommentForm) {
 // T313332. Manifests in copy link dialog.
 .oo-ui-textInputWidget input {
   height: auto;
+}
+
+// Make the area between lines of a link clickable.
+.mw-notification a {
+  padding: 0.125rem 0;
+  position: relative;
 }
