@@ -957,7 +957,7 @@ export default {
     cd.user = userRegistry.getCurrent();
 
     // {{gender:}} with at least two pipes in a selection of the affected strings.
-    cd.g.genderAffectsUserString = /\{\{ *gender *:[^}]+?\|[^}]+?\|/i.test(
+    cd.g.genderAffectsUserString = /\{\{ *gender *:[^}]+?\|[^} ]+?\|/i.test(
       Object.entries(mw.messages.get())
         .filter(([key]) => key.startsWith('convenient-discussions'))
         .map(([, value]) => value)

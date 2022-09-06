@@ -2035,7 +2035,7 @@ export default {
           )
         );
         let mayBeRelevantString = cd.s('notification-newcomments-mayberelevant');
-        if (!mayBeRelevantString.startsWith(',')) {
+        if (!mayBeRelevantString.startsWith(cd.mws('comma-separator'))) {
           mayBeRelevantString = cd.mws('word-separator') + mayBeRelevantString;
         }
 
