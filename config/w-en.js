@@ -188,6 +188,10 @@ export default {
     'unresolved',
     'resolved',
     'ambox',
+
+    // {{GA nominee|timestamp}}
+    'tmbox',
+
     'NavFrame',
   ],
 
