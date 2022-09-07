@@ -59,10 +59,7 @@ class Section extends SectionSkeleton {
     this.resetShowAddSubsectionButtonTimeout = this.resetShowAddSubsectionButtonTimeout.bind(this);
     this.resetHideAddSubsectionButtonTimeout = this.resetHideAddSubsectionButtonTimeout.bind(this);
     this.deferAddSubsectionButtonHide = this.deferAddSubsectionButtonHide.bind(this);
-    this.handleAuthorCountHover = this.handleAuthorCountHover.bind(this);
-    this.handleAuthorCountUnhover = this.handleAuthorCountUnhover.bind(this);
-    this.showAuthors = this.showAuthors.bind(this);
-    this.maybeHideAuthors = this.maybeHideAuthors.bind(this);
+    this.toggleAuthors = this.toggleAuthors.bind(this);
     this.createMoreMenuSelect = this.createMoreMenuSelect.bind(this);
 
     elementPrototypes = cd.g.sectionElementPrototypes;
@@ -492,12 +489,13 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Show a popup with the list of users who have posted in the section.
+   * Show or hide a popup with the list of users who have posted in the section.
    *
+   * @param {Event} e
    * @private
    */
-  showAuthors() {
-    clearTimeout(this.showAuthorsTimeout);
+  toggleAuthors(e) {
+    e.preventDefault();
     if (!this.authorsPopup) {
       /**
        * Popup with the list of users who have posted in the section.
@@ -525,59 +523,14 @@ class Section extends SectionSkeleton {
         head: false,
         padded: true,
         autoClose: true,
+        $autoCloseIgnore: $(this.authorCountWrapper.firstChild),
         position: 'above',
         $floatableContainer: $(this.authorCountWrapper.firstChild),
-        classes: ['cd-section-metadata-authorsPopup'],
       });
-
-      this.authorsPopup.$element.on('mouseleave', this.handleAuthorCountUnhover);
       $(controller.getPopupOverlay()).append(this.authorsPopup.$element);
     }
 
-    this.authorsPopup.toggle(true);
-  }
-
-  /**
-   * Hide the popup with the list of users who have posted in the section.
-   *
-   * @private
-   */
-  maybeHideAuthors() {
-    if (
-      this.authorsPopup &&
-      !this.authorCountWrapper.firstChild.matches(':hover') &&
-      !this.authorsPopup.$element.is(':hover')
-    ) {
-      this.authorsPopup.toggle(false);
-    }
-  }
-
-  /**
-   * Handle a `mouseenter` event on the author count inner wrapper button.
-   *
-   * {@link Section#showAuthors Show a popup} with the list of users who have posted in the
-   * section after some period of time.
-   *
-   * @private
-   */
-  handleAuthorCountHover() {
-    clearTimeout(this.maybeHideAuthorsTimeout);
-    this.showAuthorsTimeout = setTimeout(this.showAuthors, 100);
-  }
-
-  /**
-   * Handle a `mouseleave` event on the author count inner wrapper button and also the {$link
-   * Section#authorsPopup authors popup} element.
-   *
-   * {@link Section#maybeHideAuthors Hide the popup} with the list of users who have posted in the
-   * section after some period of time. The time period is needed first of all so that the user has
-   * the time to move the cursor from the author count to the popup without the popup being closed.
-   *
-   * @private
-   */
-  handleAuthorCountUnhover() {
-    clearTimeout(this.showAuthorsTimeout);
-    this.maybeHideAuthorsTimeout = setTimeout(this.maybeHideAuthors, 100);
+    this.authorsPopup.toggle();
   }
 
   /**
@@ -616,14 +569,13 @@ class Section extends SectionSkeleton {
       commentCountWrapper.className = 'cd-section-bar-item';
       commentCountWrapper.append(cd.s('section-metadata-commentcount', this.comments.length));
 
+      const authorsLink = document.createElement('a');
+      authorsLink.onclick = this.toggleAuthors;
+      authorsLink.append(cd.s('section-metadata-authorcount', authorCount));
+
       authorCountWrapper = document.createElement('span');
       authorCountWrapper.className = 'cd-section-bar-item cd-section-bar-item-authorCount';
-      const innerWrapper = document.createElement('span');
-      innerWrapper.className = 'cd-section-bar-item-authorCount-innerWrapper';
-      innerWrapper.append(cd.s('section-metadata-authorcount', authorCount));
-      authorCountWrapper.append(innerWrapper);
-      innerWrapper.onmouseenter = this.handleAuthorCountHover;
-      innerWrapper.onmouseleave = this.handleAuthorCountUnhover;
+      authorCountWrapper.append(authorsLink);
 
       if (latestComment) {
         const latestCommentLink = document.createElement('a');
