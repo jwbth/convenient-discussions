@@ -499,19 +499,23 @@ class BootProcess {
       let sectionNameFound = sectionName;
 
       if (date) {
-        const matches = Object.entries(results).filter(([, result]) => (
-          removeWikiMarkup(result.snippet)?.includes(token)
-        ));
+        const matches = Object.entries(results)
+          .map(([, result]) => result)
+          .filter((result) => (
+            removeWikiMarkup(result.snippet)?.includes(token)
+          ));
         if (matches.length === 1) {
           exactMatchPageTitle = matches[0].title;
         }
       } else {
         // Obtain the first exact section title match (which would be from the most recent archive).
         // This loop iterates over just one item in the vast majority of cases.
-        const exactMatch = Object.entries(results).find(([, result]) => (
-          result.sectiontitle &&
-          [sectionName, sectionNameDotDecoded].filter(defined).includes(result.sectiontitle)
-        ));
+        const exactMatch = Object.entries(results)
+          .map(([, result]) => result)
+          .find((result) => (
+            result.sectiontitle &&
+            [sectionName, sectionNameDotDecoded].filter(defined).includes(result.sectiontitle)
+          ));
         if (exactMatch) {
           exactMatchPageTitle = exactMatch.title;
           sectionNameFound = underlinesToSpaces(exactMatch.sectiontitle);
