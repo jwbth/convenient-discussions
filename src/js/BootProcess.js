@@ -1247,13 +1247,16 @@ class BootProcess {
         // setTimeout is for Firefox - for some reason, without it Firefox positions the underlay
         // incorrectly. (TODO: does it still? Need to check.)
         setTimeout(() => {
+          // A tricky case with flashing is when a comment is in a collapsed thread. In this case,
+          // we must use Comment#scrollTo to make sure it is flashed when the thread is uncollapsed
+          // by clicking a link in the notification.
+          const flashOne = this.data('wasCommentFormSubmitted') || this.data('pushState');
           comments[0].scrollTo({
             smooth: false,
             pushState: this.data('pushState'),
-            flash: this.data('wasCommentFormSubmitted'),
+            flash: flashOne,
           });
-
-          if (!this.data('wasCommentFormSubmitted')) {
+          if (!flashOne) {
             comments.forEach((comment) => comment.flashTarget());
           }
         });
