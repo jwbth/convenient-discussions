@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"Andriy.v",
 			"DDPAT",
 			"Ice bulldog",
 			"Jack who built the house",
@@ -9,6 +10,8 @@
 	},
 	"script-name": "Зручні Обговорення",
 	"script-name-short": "CD",
+	"page-title-reply": "Відповідаючи на $1",
+	"page-title-addsection": "Розпочато нову тему на $1",
 	"cm-gotoparent-tooltip": "Перейти до поточного коментару",
 	"cm-gotochild-tooltip": "Повернутися до дитячого коментарю",
 	"cm-copylink-tooltip": "Копіювати посилання",
