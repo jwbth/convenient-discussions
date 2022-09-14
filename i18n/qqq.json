@@ -30,7 +30,7 @@
 	"cm-thanked": "Label of the comment menu item that replaces {{msg-wm|Convenient-discussions-cm-thank}} if the comment has already been thanked for.",
 	"cm-thanked-tooltip": "Text of the tooltip for the {{msg-wm|Convenient-discussions-cm-thank}} comment menu item in the disabled form.\n\nSee also:\n* {{msg-wm|Convenient-discussions-cm-thank-tooltip}}",
 	"cm-edit": "Label of the comment menu item that opens an edit form the comment.",
-	"cm-reply": "Label of the comment menu item that opens a reply form for the comment.",
+	"cm-reply": "Label of the comment menu item that opens a reply form for the comment and inserts the selected text into the form as a quote.",
 	"cm-reply-outdented-tooltip": "Text of the tooltip for the comment reply button when it is disabled for the reason that it is followed by an \"Outdent\" template like [[w:Template:Outdent]]. \"To outdent\" is \"to negatively indent\".",
 	"cm-quote": "{{identical|Quote}}",
 	"thread-tooltip": "Text of the tooltip for thread line. Clicking it collapses or expands the thread. See also the same message with the comment count: {{msg-wm|Convenient-discussions-thread-tooltip-count}}.",

@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"Jack who built the house",
+			"JohanahoJ",
 			"Sabelöga",
 			"WikiPhoenix"
 		]
@@ -306,7 +307,7 @@
 	"sd-modifytoc": "Visa nya kommentarer och avsnitt i innehållsförteckningen",
 	"sd-outdentlevel": "[$1 Avindentera] mina svar som börjar med nivå",
 	"sd-outdentlevel-help": "0 för att aldrig avindentera.",
-	"sd-outdentlevel-help-notemplate": "<strong>Obs:</strong> Den nuvarande wikin har inte angett någon avindenteringsmall. Inställningen förblir inaktiv.",
+	"sd-outdentlevel-help-notemplate": "<strong>Obs:</strong> Den aktuella wikin har inte angett någon avindenteringsmall. Inställningen förblir inaktiv.",
 	"sd-notifications": "Aviseringsmeddelanden i sidans högra övre hörn",
 	"sd-notifications-radio-all": "Meddela mig om svar på mina kommentarer och avsnitt som {{gender:$1|jag prenumererar på}}",
 	"sd-notifications-radio-tome": "Meddela mig bara om svar på mina kommentarer",
