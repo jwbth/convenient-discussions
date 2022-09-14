@@ -831,7 +831,7 @@ class BootProcess {
     subscriptions.getLoadRequest().then(() => {
       SectionStatic.addSubscribeButtons();
       subscriptions.cleanUp();
-      toc.highlightSubscriptions();
+      toc.markSubscriptions();
     });
 
     /**

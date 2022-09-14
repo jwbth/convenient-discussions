@@ -186,11 +186,16 @@ const toc = {
   },
 
   /**
-   * _For internal use._ Highlight (bold) sections that the user is subscribed to.
+   * _For internal use._ Mark sections that the user is subscribed to.
    */
-  async highlightSubscriptions() {
+  async markSubscriptions() {
     if (!this.isPresent()) return;
 
+    // Ensure the bell icons are added after comment count in `BootProcess#processVisits`.
+    await controller.bootProcess.getVisitsRequest();
+
+    // Should be below awaiting `getVisitsRequest()` so that this runs after `this.addNewComments()`
+    // that awaits this too.
     await this.updateTocSectionsPromise;
 
     SectionStatic.getAll()

@@ -1804,12 +1804,17 @@ class Section extends SectionSkeleton {
 
     if (this.subscriptionState) {
       tocItem.$link
-        .addClass('cd-toc-subscribedTo')
-        .attr('title', cd.s('toc-watched'));
+        .find(toc.isInSidebar() ? '.sidebar-toc-text' : '.toctext')
+        .append(
+          $('<span>')
+            .addClass('cd-toc-subscriptionIcon')
+            .attr('title', cd.s('toc-watched'))
+        );
     } else {
       tocItem.$link
-        .removeClass('cd-toc-subscribedTo')
-        .removeAttr('title');
+        .removeAttr('title')
+        .find('.cd-toc-subscriptionIcon')
+        .remove();
     }
   }
 
