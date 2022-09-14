@@ -1682,7 +1682,6 @@ export default {
    * @param {Element} element
    * @param {string} newType
    * @returns {Element}
-   * @private
    */
   changeElementType(element, newType) {
     const newElement = document.createElement(newType);
@@ -1724,7 +1723,6 @@ export default {
    * @param {Element} start
    * @param {Element} end
    * @returns {Element[]}
-   * @private
    */
   getRangeContents(start, end) {
     // It makes more sense to place this function in the util module, but we can't import controller
@@ -2176,14 +2174,12 @@ export default {
   },
 
   /**
-   * Update the page title to show:
+   * _For internal use._ Update the page title to show:
    * - What state the page is in according to the user's action (replying, editing, starting a
    *   section or subsection, or none).
    * - The number of comments added to the page since it was loaded. If used without parameters,
    *   restore the previous value (if could be changed by the browser when the "Back" button is
    *   clicked).
-   *
-   * @private
    */
   updatePageTitle() {
     let title = this.originalPageTitle;

@@ -193,7 +193,11 @@
 }
 
 .cd-reformattedComments .cd-commentForm-signature,
-.cd-reformattedComments .cd-helpPopup-hideForReformattedComments {
+.cd-reformattedComments .cd-helpPopup-hideForReformattedComments,
+
+// In case the user didn't turn it off. `preview=true` in the API request doesn't remove the tag -
+// empty space can be visible because of `display: inline-flex;`.
+.ext-discussiontools-init-replylink-buttons.ext-discussiontools-init-replylink-buttons {
   display: none;
 }
 
@@ -315,8 +319,6 @@
   width: 20px;
   height: 20px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M4.34 2.93l12.73 12.73-1.41 1.41L2.93 4.35z'/%3E%3Cpath d='M17.07 4.34L4.34 17.07l-1.41-1.41L15.66 2.93z'/%3E%3C/svg%3E");
-  background-position: center center;
-  background-repeat: no-repeat;
   opacity: 0;
   transition: opacity 0.2s ease-in;
 

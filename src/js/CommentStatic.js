@@ -426,13 +426,13 @@ const CommentStatic = {
       return null;
     };
 
-    // Here, we don't iterate over this.items as it may look like. We narrow the search region by
-    // getting a proportion of the distance between far away comments and the viewport and
-    // calculating the ID of the next comment based on it; then, the position of that next comment
-    // is checked, and so on. this.items.length value is used as an upper boundary for the number of
-    // cycle steps. It's more of a protection against an infinite loop: the value is with a large
-    // margin and not practically reachable, unless when there is only few comments. Usually the
-    // cycle finishes after a few steps.
+    // Here, we don't iterate over this.items as it may look like. We perform a so-called
+    // interpolation search: narrow the search region by getting a proportion of the distance
+    // between far away comments and the viewport and calculating the ID of the next comment based
+    // on it; then, the position of that next comment is checked, and so on. this.items.length value
+    // is used as an upper boundary for the number of cycle steps. It's more of a protection against
+    // an infinite loop: the value is with a large margin and not practically reachable, unless when
+    // there is only few comments. Usually the cycle finishes after a few steps.
     for (let i = 0; i < this.items.length; i++) {
       if (!comment.roughOffset) {
         comment.getOffset({ set: true });

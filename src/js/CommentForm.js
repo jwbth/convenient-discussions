@@ -327,7 +327,7 @@ class CommentForm {
      * Wiki page that has the source code of the target object (may be different from the current
      * page if the section is transcluded from another page).
      *
-     * @type {string}
+     * @type {import('./pageRegistry').Page}
      * @private
      */
     this.targetPage = this.targetSection ?
@@ -499,7 +499,7 @@ class CommentForm {
           (
             (settings.get('watchOnReply') && this.mode !== 'edit') ||
             $('#ca-unwatch').length ||
-            mw.user.options.get(mw.config.get('wgArticleId') ? 'watchdefault' : 'watchcreations')
+            mw.user.options.get(controller.doesPageExist() ? 'watchdefault' : 'watchcreations')
           )
         ),
         label: cd.s('cf-watch'),
@@ -1384,7 +1384,7 @@ class CommentForm {
     }
 
     // 'addSection'
-    if (!mw.config.get('wgArticleId')) {
+    if (!controller.doesPageExist()) {
       controller.$content.children('.noarticletext, .warningbox').hide();
     }
 
@@ -2426,7 +2426,7 @@ class CommentForm {
       ) {
         await this.targetSection.getCode(this);
       } else {
-        await this.targetPage.getCode(mw.config.get('wgArticleId') === 0);
+        await this.targetPage.getCode(!controller.doesPageExist());
       }
     } catch (e) {
       if (e instanceof CdError) {
@@ -2778,7 +2778,7 @@ class CommentForm {
         prop: 'diff',
         ...cd.g.apiErrorsFormatHtml,
       };
-      if (this.sectionSubmitted || !mw.config.get('wgArticleId')) {
+      if (this.sectionSubmitted || !controller.doesPageExist()) {
         options.fromslots = 'main';
         options['fromtext-main'] = this.mode === 'addSection' ? '' : this.targetSection.code;
       } else {
@@ -3177,7 +3177,7 @@ class CommentForm {
     const passedData = { wasCommentFormSubmitted: true };
 
     // When creating a page
-    if (!mw.config.get('wgArticleId')) {
+    if (!controller.doesPageExist()) {
       mw.config.set('wgArticleId', this.targetPage.pageId);
       passedData.wasPageCreated = true;
     }
@@ -3266,7 +3266,7 @@ class CommentForm {
     } else {
       this.$outermostElement.remove();
       if (this.mode === 'addSection') {
-        if (!mw.config.get('wgArticleId')) {
+        if (!controller.doesPageExist()) {
           controller.$content
             // In case DT's new topic tool is enabled. This should be above .show() so that .show()
             // did set correct styles.

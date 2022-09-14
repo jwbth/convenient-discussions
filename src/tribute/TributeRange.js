@@ -410,8 +410,6 @@ class TributeRange {
         // jwbth: Reuse the global object property.
         let properties = convenientDiscussions.g.inputPropsAffectingCoords;
 
-        let isFirefox = (window.mozInnerScreenX !== null)
-
         let div = document.createElement('div')
         div.id = 'input-textarea-caret-position-mirror-div'
         document.body.appendChild(div)
@@ -433,16 +431,14 @@ class TributeRange {
             style[prop] = computed[prop]
         })
 
-        if (isFirefox) {
-            // jwbth: replaced parseInt with parseFloat: can result in wrongly positioned menu (have
-            // seen an example when edited [[:en:Wikipedia:Village pump (proposals)#Allow fair use
-            // non-freely licensed photos of politicians]]).
-            style.width = `${parseFloat(computed.width)}px`
-            if (element.scrollHeight > parseFloat(computed.height))
-                style.overflowY = 'scroll'
-        } else {
-            style.overflow = 'hidden'
-        }
+        // jwbth: replaced `parseInt` with `parseFloat`: `parseInt` can result in a wrongly
+        // positioned menu due to a line break (have seen an example when edited
+        // [[:en:Wikipedia:Village pump (proposals)#Allow fair use non-freely licensed photos of
+        // politicians]]). Removed `isFirefox` condition as it was calculated incorrectly and was
+        // always `true`.
+        style.width = `${parseFloat(computed.width)}px`
+        if (element.scrollHeight > parseFloat(computed.height))
+            style.overflowY = 'scroll'
 
         div.textContent = element.value.substring(0, position)
 

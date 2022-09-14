@@ -526,6 +526,7 @@ class Section extends SectionSkeleton {
         $autoCloseIgnore: $(this.authorCountWrapper.firstChild),
         position: 'above',
         $floatableContainer: $(this.authorCountWrapper.firstChild),
+        classes: ['cd-section-metadata-authorsPopup'],
       });
       $(controller.getPopupOverlay()).append(this.authorsPopup.$element);
     }
