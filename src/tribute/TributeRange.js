@@ -456,7 +456,7 @@ class TributeRange {
         let span = document.createElement('span')
         span.append(
             triggerSpan,
-            element.value.substring(position + this.tribute.current.trigger.length) || '.'
+            element.value.substring(position + this.tribute.current.trigger.length) || ''
         )
         div.appendChild(span)
 
