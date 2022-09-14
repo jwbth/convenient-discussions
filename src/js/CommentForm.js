@@ -1516,6 +1516,114 @@ class CommentForm {
   }
 
   /**
+   * Get a dummy "floatable container" to attach a popup to so that the popup is at the caret
+   * position.
+   *
+   * @returns {external:jQuery}
+   * @private
+   */
+  getCommentInputDummyFloatableContainer() {
+    const element = this.commentInput.$input.get(0);
+    const position = this.commentInput.getRange().to;
+    const computedStyle = window.getComputedStyle(element);
+    const $div = $('<div>')
+      .text(element.value.substring(0, position))
+      .css({
+        whiteSpace: 'pre-wrap',
+        wordWrap: 'break-word',
+
+        // Position off-screen
+        position: 'absolute',
+        visibility: 'hidden',
+
+        width: `${parseFloat(computedStyle.width)}px`,
+
+        // Transfer the element's properties to the div.
+        ...convenientDiscussions.g.inputPropsAffectingCoords.reduce((props, propName) => {
+          props[propName] = computedStyle[propName];
+          return props;
+        }, {}),
+      })
+      .appendTo(document.body);
+    const $span = $('<span>').appendTo($div);
+    return $span
+      .css({
+        top: $span.get(0).offsetTop,
+        left: $span.get(0).offsetLeft,
+        width: 0,
+        height: parseFloat($span.css('line-height')) - 3,
+      })
+      .addClass('cd-dummyFloatableContainer');
+  }
+
+  /**
+   * Tear down all popups that could be attached to the caret position.
+   *
+   * @private
+   */
+  destroyInputPopups() {
+    this.richFormattingPopup?.toggle(false).$element.remove();
+    this.$commentInputPopupFloatableContainer?.remove();
+  }
+
+  /**
+   * When the user inserted text that was copied with rich formatting, suggest to convert it to
+   * wikitext.
+   *
+   * @param {string} html
+   * @param {string} insertedText
+   * @private
+   */
+  suggestConvertToWikitext(html, insertedText) {
+    setTimeout(() => {
+      const button = new OO.ui.ButtonWidget({
+        label: cd.s('cf-popup-richformatting-convert'),
+        flags: ['progressive'],
+      });
+      button.on('click', async () => {
+        const position = this.commentInput.getRange().to;
+
+        // The input is made disabled, so the content can't be changed by the user during the
+        // loading stage.
+        const text = await controller.getWikitextFromPaste(html, this.commentInput);
+
+        this.commentInput.selectRange(position - insertedText.length, position);
+        insertText(this.commentInput, text);
+        this.destroyInputPopups();
+      });
+      this.destroyInputPopups();
+
+      const $textareaWrapper = settings.get('showToolbar') ?
+        this.$element.find('.wikiEditor-ui-text') :
+        this.commentInput.$element;
+      this.$commentInputPopupFloatableContainer = this.getCommentInputDummyFloatableContainer();
+      $textareaWrapper.append(this.$commentInputPopupFloatableContainer);
+
+      /**
+       * Popup that appears when pasting text that has rich formatting available.
+       *
+       * @type {external:OO.ui.PopupWidget|undefined}
+       */
+      this.richFormattingPopup = new OO.ui.PopupWidget({
+        icon: 'wikiText',
+        label: wrap(cd.sParse('cf-popup-richformatting')),
+        $content: button.$element,
+        head: true,
+        autoClose: true,
+        $autoCloseIgnore: this.commentInput.$input,
+        hideCloseButton: true,
+        $floatableContainer: this.$commentInputPopupFloatableContainer,
+        $container: $textareaWrapper,
+        containerPadding: -10,
+        padded: true,
+        classes: ['cd-popup-richFormatting'],
+      });
+      $textareaWrapper.append(this.richFormattingPopup.$element);
+      this.richFormattingPopup.toggle(true);
+    });
+  }
+
+  /**
    * Add event listeners to the text inputs.
    *
    * @param {Function} saveSessionEventHandler
@@ -1577,6 +1685,10 @@ class CommentForm {
     ].concat(cd.config.customTextReactions);
     this.commentInput
       .on('change', (text) => {
+        if (this.richFormattingPopup) {
+          this.destroyInputPopups();
+        }
+
         this.updateAutoSummary(true, true);
 
         textReactions.forEach(({ pattern, checkFunc, message, type, name }) => {
@@ -1591,16 +1703,14 @@ class CommentForm {
       .on('change', saveSessionEventHandler);
 
     this.commentInput.$input
-      .on('paste drop', async (e) => {
+      .on('paste drop', (e) => {
         const data = e.originalEvent.clipboardData || e.originalEvent.dataTransfer;
-        if (data.types.includes('text/html')) {
-          e.preventDefault();
-          const text = await controller.getWikitextFromPaste(
-            data.getData('text/html'),
-            this.commentInput
-          );
-          insertText(this.commentInput, text);
-        }
+        if (!data.types.includes('text/html')) return;
+
+        const html = data.getData('text/html');
+        if (!controller.isConvertableToWikitext(html)) return;
+
+        this.suggestConvertToWikitext(html, data.getData('text/plain')?.replace(/\r/g, ''));
       })
       .on('tribute-replaced', (e) => {
         if (e.originalEvent.detail.instance.trigger === cd.config.mentionCharacter) {
@@ -3198,6 +3308,7 @@ class CommentForm {
     navPanel.updateCommentFormButton();
     controller.updatePageTitle();
     this.autocomplete.cleanUp();
+    this.destroyInputPopups();
   }
 
   /**

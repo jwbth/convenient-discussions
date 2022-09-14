@@ -26,7 +26,6 @@ import postponements from './postponements';
 import settings from './settings';
 import toc from './toc';
 import { ElementsTreeWalker } from './treeWalker';
-import { brsToNewlines, hideSensitiveCode } from './wikitext';
 import {
   copyText,
   defined,
@@ -39,10 +38,9 @@ import {
   isProbablyTalkPage,
   keyCombination,
   skin$,
-  unhideText,
   wrap,
 } from './utils';
-import { getUserInfo } from './apiWrappers';
+import { getUserInfo, htmlToWikitext } from './apiWrappers';
 
 export default {
   content: {},
@@ -1208,6 +1206,7 @@ export default {
       'oojs-ui-windows',
       'oojs-ui.styles.icons-alerts',
       'oojs-ui.styles.icons-content',
+      'oojs-ui.styles.icons-editing-advanced',
       'oojs-ui.styles.icons-editing-core',
       'oojs-ui.styles.icons-interactions',
       'oojs-ui.styles.icons-movement',
@@ -1537,25 +1536,23 @@ export default {
     );
   },
 
-  /**
-   * Convert a fragment of DOM into wikitext.
-   *
-   * @param {Element} div
-   * @param {external:OO.ui.TextInputWidget} input
-   * @returns {Promise.<string>}
-   * @private
-   */
-  async domToWikitext(div, input) {
-    // Get all styles from classes applied. If HTML is retrieved from a paste, this is not needed
-    // (styles are added to elements themselves in the text/html format), but won't hurt.
+  cleanUpPasteDom(div) {
+    // Get all styles (such as `user-select: none`) from classes applied when the element is added
+    // to the DOM. If HTML is retrieved from a paste, this is not needed (styles are added to
+    // elements themselves in the text/html format), but won't hurt.
     div.className = 'cd-hidden';
-
-    // require, not import, to prevent adding controller to the worker build.
     this.rootElement.appendChild(div);
+
+    [...div.querySelectorAll('[style]')].forEach((el) => {
+      el.removeAttribute('style');
+    });
 
     const removeElement = (el) => el.remove();
     const replaceWithChildren = (el) => {
-      if (['DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(el.tagName)) {
+      if (
+        ['DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'DD'].includes(el.tagName) &&
+        el.nextElementSibling
+      ) {
         el.after('\n');
       }
       el.replaceWith(...el.childNodes);
@@ -1565,8 +1562,8 @@ export default {
       .filter((el) => window.getComputedStyle(el).userSelect === 'none')
       .forEach(removeElement);
 
-    // Should run after removing elements with "user-select: none", to remove their wrappers that now
-    // have not content.
+    // Should run after removing elements with `user-select: none`, to remove their wrappers that
+    // now have no content.
     [...div.querySelectorAll('*')]
       // Need to keep non-breaking spaces.
       .filter((el) => (
@@ -1589,6 +1586,10 @@ export default {
     }
 
     [...div.querySelectorAll('div, span, h1, h2, h3, h4, h5, h6')].forEach(replaceWithChildren);
+    [...div.querySelectorAll('p > br')].forEach((el) => {
+      el.after('\n');
+      el.remove();
+    });
 
     const allowedTags = cd.g.allowedTags.concat('a', 'center', 'big', 'strike', 'tt');
     [...div.querySelectorAll('*')].forEach((el) => {
@@ -1612,44 +1613,21 @@ export default {
       .forEach(replaceWithChildren);
 
     const allElements = [...div.querySelectorAll('*')];
-    let wikitext;
-    const parseHtml = !(
-      !div.childElementCount ||
-      (allElements.length === 1 && ['P', 'LI', 'DD'].includes(allElements[0].tagName))
-    )
-    if (parseHtml) {
-      input.pushPending();
-      input.setDisabled(true);
-      try {
-        wikitext = await $.post('/api/rest_v1/transform/html/to/wikitext', {
-          html: div.innerHTML,
-          scrub_wikitext: true,
-        });
-        wikitext = wikitext
-          .trim()
-          .replace(/(?:^ .*(?:\n|$))+/gm, (s) => (
-            '<syntaxhighlight lang="">\n' +
-            s
-              .replace(/^ /gm, '')
-              .replace(/[^\n]$/, '$0\n')
-              .replace(/<nowiki>(.*?)<\/nowiki>/g, '$1') +
-            '</syntaxhighlight>'
-          ))
-          .replace(/<br \/>/g, '<br>');
-        let hidden;
-        ({ code: wikitext, hidden } = hideSensitiveCode(wikitext));
-        wikitext = brsToNewlines(wikitext);
-        wikitext = unhideText(wikitext, hidden);
-      } catch {
-        // Empty
-      }
-      input.popPending();
-      input.setDisabled(false);
-    }
+    const needParse = Boolean(
+      div.childElementCount &&
+      !(
+        allElements.length === 1 &&
+        div.childNodes.length === 1 &&
+        ['P', 'LI', 'DD'].includes(div.childNodes[0].tagName)
+      )
+    );
 
     div.remove();
 
-    return wikitext ?? div.innerText;
+    return {
+      needParse,
+      text: needParse ? div.innerHTML : div.innerText,
+    };
   },
 
   /**
@@ -1661,25 +1639,38 @@ export default {
   async getWikitextFromSelection(input) {
     const div = document.createElement('div');
     div.appendChild(window.getSelection().getRangeAt(0).cloneContents());
-    return await this.domToWikitext(div, input);
+    const { text, needParse } = this.cleanUpPasteDom(div);
+    return needParse ? await htmlToWikitext(text, input) : text;
   },
 
   /**
-   * Given the HTML of a paste, get its content as wikitext.
+   * Check whether there is something in the HTML to convert to wikitext.
    *
-   * @param {string} originalHtml
-   * @param {external:OO.ui.TextInputWidget} input
-   * @returns {string}
+   * @param {string} html
+   * @returns {boolean}
    */
-  async getWikitextFromPaste(originalHtml, input) {
+  isConvertableToWikitext(html) {
+    return this.cleanUpPasteDom(this.pasteHtmlToElement(html)).needParse;
+  },
+
+  pasteHtmlToElement(html) {
     const div = document.createElement('div');
-    div.innerHTML = originalHtml
+    div.innerHTML = html
       .replace(/^[^]*<!-- *StartFragment *-->/, '')
       .replace(/<!-- *EndFragment *-->[^]*$/, '');
-    [...div.querySelectorAll('[style]')].forEach((el) => {
-      el.removeAttribute('style');
-    });
-    return await this.domToWikitext(div, input);
+    return div;
+  },
+
+  /**
+   * Convert HTML code of a paste into wikitext.
+   *
+   * @param {string} html Pasted HTML.
+   * @param {external:OO.ui.TextInputWidget} input Input that HTML is pasted to.
+   * @returns {string}
+   */
+  async getWikitextFromPaste(html, input) {
+    const { text, needParse } = this.cleanUpPasteDom(this.pasteHtmlToElement(html));
+    return needParse ? await htmlToWikitext(text, input) : text;
   },
 
   /**

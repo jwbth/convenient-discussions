@@ -407,41 +407,8 @@ class TributeRange {
 
     // jwbth: Added RTL support.
     getTextAreaOrInputUnderlinePosition(element, position) {
-        let properties = [
-            'borderBottomStyle',
-            'borderBottomWidth',
-            'borderLeftStyle',
-            'borderLeftWidth',
-            'borderRightStyle',
-            'borderRightWidth',
-            'borderTopStyle',
-            'borderTopWidth',
-            'boxSizing',
-            'direction',
-            'fontFamily',
-            'fontSize',
-            'fontSizeAdjust',
-            'fontStretch',
-            'fontStyle',
-            'fontVariant',
-            'fontWeight',
-            'height',
-            'letterSpacing',
-            'lineHeight',
-            'overflowX',
-            'overflowY',
-            'paddingBottom',
-            'paddingLeft',
-            'paddingRight',
-            'paddingTop',
-            'tabSize',
-            'textAlign',
-            'textDecoration',
-            'textIndent',
-            'textTransform',
-            'width',
-            'wordSpacing'
-        ]
+        // jwbth: Reuse the global object property.
+        let properties = convenientDiscussions.g.inputPropsAffectingCoords;
 
         let isFirefox = (window.mozInnerScreenX !== null)
 

@@ -14,7 +14,8 @@ import controller from './controller';
 import pageRegistry from './pageRegistry';
 import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
-import { defined, ucFirst, unique } from './utils';
+import { brsToNewlines, hideSensitiveCode } from './wikitext';
+import { defined, ucFirst, unhideText, unique } from './utils';
 
 const autocompleteTimeout = 100;
 
@@ -786,4 +787,44 @@ export async function dtSubscribe(subscribeId, id, subscribe) {
     commentname: subscribeId,
     subscribe,
   }).catch(handleApiReject);
+}
+
+/**
+ * Convert HTML into wikitext.
+ *
+ * @param {string} html
+ * @param {external:OO.ui.TextInputWidget} input
+ * @returns {Promise.<string>}
+ */
+export async function htmlToWikitext(html, input) {
+  let wikitext;
+  input.pushPending();
+  input.setDisabled(true);
+  try {
+    wikitext = await $.post('/api/rest_v1/transform/html/to/wikitext', {
+      html,
+      scrub_wikitext: true,
+    });
+    wikitext = wikitext
+      .replace(/(?:^ .*(?:\n|$))+/gm, (s) => (
+        '<syntaxhighlight lang="">\n' +
+        s
+          .replace(/^ /gm, '')
+          .replace(/[^\n]$/, '$0\n')
+          .replace(/<nowiki>(.*?)<\/nowiki>/g, '$1') +
+        '</syntaxhighlight>'
+      ))
+      .replace(/<br \/>/g, '<br>')
+      .trim();
+    let hidden;
+    ({ code: wikitext, hidden } = hideSensitiveCode(wikitext));
+    wikitext = brsToNewlines(wikitext);
+    wikitext = unhideText(wikitext, hidden);
+  } catch {
+    // Empty
+  }
+  input.popPending();
+  input.setDisabled(false);
+
+  return wikitext;
 }

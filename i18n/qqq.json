@@ -210,6 +210,8 @@
 	"cf-autocomplete-tags-label": "Text of the title of the autocomplete list for tags.",
 	"cf-autocomplete-commentlinks-label": "Text of the title of the autocomplete list for comment and section links.",
 	"cf-autocomplete-commentlinks-text": "Text inserted into the comment input as a visible text of the link to another comment in the section when using the autocomplete function.\n* $1: author\n* $2: date as in a comment timestamp\n\nFor example: «User @ 22:01, 31 July 2022 (UTC)».",
+	"cf-popup-richformatting": "Text of the popup that appears when text with rich formatting is inserted into the comment input. See also the button label: {{msg-wm|Convenient-discussions-cf-popup-richformatting-convert}}.",
+	"cf-popup-richformatting-convert": "Label of the button in the popup that appears when text with rich formatting is inserted into the comment input. See also the popup text: {{msg-wm|Convenient-discussions-cf-popup-richformatting}}.",
 	"dn-confirm": "Text of the confirmation message that pop ups on the first launch of the script.",
 	"dn-confirm-yes": "Label of the button in the dialog that suggests the user to enable desktop notifications.\n\n{{identical|Yes}}",
 	"dn-confirm-no": "Label of the button in the dialog that suggests the user to enable desktop notifications.\n\n{{identical|No}}",

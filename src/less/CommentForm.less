@@ -58,6 +58,11 @@
     line-height: 2em;
   }
 
+  // For absolutely positioned popups
+  .wikiEditor-ui-text {
+    position: relative;
+  }
+
   // Use the .ltr and .rtl classes to detect the text direction of the user interface (not the site
   // content for which case the .sitedir-ltr/rtl classes are used).
   .ltr & {
@@ -430,4 +435,21 @@
 // Reset a global style
 .cd-autocompleteContainer .highlight {
   font-weight: normal;
+}
+
+.cd-popup-richFormatting {
+  width: 25rem;
+
+  .oo-ui-popupWidget-popup {
+    padding-bottom: 0.5em;
+  }
+
+  .oo-ui-popupWidget-body {
+    width: auto !important;
+  }
+}
+
+.cd-dummyFloatableContainer {
+  position: absolute;
+  z-index: -1;
 }
