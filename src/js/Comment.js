@@ -3775,6 +3775,7 @@ class Comment extends CommentSkeleton {
       cd.config.outdentTemplates.length &&
       settings.get('outdentLevel') &&
       thisInCode.replyIndentation.length >= settings.get('outdentLevel') &&
+      thisInCode.indentation.length > indentationAfter.length &&
       isNextLine
     ) {
       thisInCode.isReplyOutdented = true;
