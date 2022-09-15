@@ -431,14 +431,9 @@ function processContributions($content) {
   init.timestampParsingTools('user');
   if (cd.g.uiTimezone === null) return;
 
-  const list = $content.get(0).querySelector('.mw-contributions-list');
-
-  // Empty contributions list
-  if (!list) return;
-
-  const lines = [...list.children];
-
-  lines.forEach((line) => {
+  [
+    ...$content.get(0).querySelectorAll('.mw-contributions-list > li:not(.mw-tag-mw-new-redirect)')
+  ].forEach((line) => {
     const linkElement = line.querySelector('.mw-contributions-title');
     if (!linkElement || isWikidataItem(linkElement)) return;
 
@@ -501,9 +496,11 @@ function processHistory($content) {
   init.timestampParsingTools('user');
   if (cd.g.uiTimezone === null) return;
 
-  const selector = '#pagehistory > li, #pagehistory > .mw-contributions-list > li';
   const link = pageRegistry.getCurrent().getUrl();
-  [...$content.get(0).querySelectorAll(selector)].forEach((line) => {
+  [
+    ...$content.get(0)
+      .querySelectorAll('#pagehistory > li, #pagehistory > .mw-contributions-list > li:not(.mw-tag-mw-new-redirect)')
+  ].forEach((line) => {
     if (line.querySelector('.minoredit')) return;
 
     let summary = line.querySelector('.comment')?.textContent;
