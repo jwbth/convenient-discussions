@@ -193,15 +193,14 @@ export default {
       section.addReplyButton();
     });
 
-    // Run this after running section.addReplyButton() because reply buttons must be in place for
-    // this.
+    // Run this after running `section.addReplyButton()` for each section because reply buttons must
+    // be in place for this.
     this.items
-      .filter((section) => section.isActionable && section.level === 2)
+      .filter((section) => section.addSubsectionButton)
       .forEach((section) => {
         // Section with the last reply button
-        const subsections = section.getChildren(true);
-        const targetSection = subsections.length ? subsections[subsections.length - 1] : section;
-        targetSection.showAddSubsectionButtonOnReplyButtonHover();
+        (section.getChildren(true).slice(-1)[0] || section)
+          .showAddSubsectionButtonOnReplyButtonHover(section);
       });
   },
 

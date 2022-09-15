@@ -244,6 +244,8 @@ class Section extends SectionSkeleton {
         this.addSubsection();
       },
     });
+    button.buttonElement.onmouseenter = this.resetHideAddSubsectionButtonTimeout;
+    button.buttonElement.onmouseleave = this.deferAddSubsectionButtonHide;
 
     const container = document.createElement('div');
     container.className = 'cd-section-button-container cd-addSubsectionButton-container';
@@ -332,15 +334,14 @@ class Section extends SectionSkeleton {
   /**
    * _For internal use._ Make it so that when the user hovers over a reply button at the end of the
    * section for a second, an "Add subsection" button shows up under it.
+   *
+   * @param {Section} baseSection
    */
-  showAddSubsectionButtonOnReplyButtonHover() {
-    if (!this.replyButton || !this.addSubsectionButton) return;
+  showAddSubsectionButtonOnReplyButtonHover(baseSection) {
+    if (!this.replyButton) return;
 
-    this.addSubsectionButton.buttonElement.onmouseenter = this.resetHideAddSubsectionButtonTimeout;
-    this.addSubsectionButton.buttonElement.onmouseleave = this.deferAddSubsectionButtonHide;
-
-    this.replyButton.buttonElement.onmouseenter = this.handleReplyButtonHover;
-    this.replyButton.buttonElement.onmouseleave = this.handleReplyButtonUnhover;
+    this.replyButton.buttonElement.onmouseenter = baseSection.handleReplyButtonHover;
+    this.replyButton.buttonElement.onmouseleave = baseSection.handleReplyButtonUnhover;
   }
 
   /**
