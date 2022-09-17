@@ -208,9 +208,11 @@ export default {
    * _For internal use._ Add a "Subscribe" / "Unsubscribe" button to each section's actions element.
    */
   addSubscribeButtons() {
+    controller.saveRelativeScrollPosition();
     this.items.forEach((section) => {
       section.addSubscribeButton();
     });
+    controller.restoreRelativeScrollPosition();
   },
 
   /**
