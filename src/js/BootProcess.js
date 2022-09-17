@@ -536,7 +536,6 @@ class BootProcess {
       }
 
       mw.notify(wrap(label), {
-        type: 'warn',
         autoHideSeconds: 'long',
       });
     }
