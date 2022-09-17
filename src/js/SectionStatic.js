@@ -336,11 +336,18 @@ export default {
         });
     }
 
-    const subsectionsToHide = (
-      !firstSectionToHide || firstSectionToHide.level === 2 ?
-        [] :
-        firstSectionToHide.getBase(true).getChildren(true)
-    );
+    const subsectionsToHide = [];
+    if (firstSectionToHide) {
+      this.items
+        .slice(firstSectionToHide.index)
+        .some((section) => {
+          if (section.level === 2) {
+            return true;
+          }
+          subsectionsToHide.push(section);
+          return false;
+        });
+    }
     this.items
       .filter((section) => (
         section.level === 2 ||
