@@ -356,6 +356,7 @@ class CommentSkeleton {
       ) ||
 
       (
+        step !== 'up' &&
         this.parser.context.areThereOutdents &&
         this.parser.context.getElementByClassName(element, cd.config.outdentClass)
       ) ||
@@ -635,21 +636,28 @@ class CommentSkeleton {
           .length;
 
         hasForeignComponents = Boolean(
-          signatureCount - Number(hasCurrentSignature) > 0 ||
-          (
-            firstForeignComponentAfter &&
-            node.contains(firstForeignComponentAfter) &&
+          // Without checking for blockness, the beginning of the comment at
+          // https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Новости&oldid=125481598#c-Oleg_Yunakov-20220830173400-Iniquity-20220830171400
+          // will be left out of the comment.
+          !isInline(node) &&
 
-            // Cases like the table added at https://ru.wikipedia.org/?diff=115822931
-            node.tagName !== 'TABLE'
-          ) ||
-
-          // A heading can be wrapped into an element, like at
-          // https://meta.wikimedia.org/wiki/Community_Wishlist_Survey_2015/Editing/chy.
           (
-            precedingHeadingElement &&
-            node !== precedingHeadingElement &&
-            node.contains(precedingHeadingElement)
+            signatureCount - Number(hasCurrentSignature) > 0 ||
+            (
+              firstForeignComponentAfter &&
+              node.contains(firstForeignComponentAfter) &&
+
+              // Cases like the table added at https://ru.wikipedia.org/?diff=115822931
+              node.tagName !== 'TABLE'
+            ) ||
+
+            // A heading can be wrapped into an element, like at
+            // https://meta.wikimedia.org/wiki/Community_Wishlist_Survey_2015/Editing/chy.
+            (
+              precedingHeadingElement &&
+              node !== precedingHeadingElement &&
+              node.contains(precedingHeadingElement)
+            )
           )
         );
 
