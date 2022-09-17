@@ -1808,6 +1808,7 @@ class Section extends SectionSkeleton {
       tocItem.$link
         .find(toc.isInSidebar() ? '.sidebar-toc-text' : '.toctext')
         .append(
+          $('<span>').addClass('cd-toc-subscriptionIcon-before'),
           $('<span>')
             .addClass('cd-toc-subscriptionIcon')
             .attr('title', cd.s('toc-watched'))
@@ -1815,7 +1816,7 @@ class Section extends SectionSkeleton {
     } else {
       tocItem.$link
         .removeAttr('title')
-        .find('.cd-toc-subscriptionIcon')
+        .find('.cd-toc-subscriptionIcon, .cd-toc-subscriptionIcon-before')
         .remove();
     }
   }
