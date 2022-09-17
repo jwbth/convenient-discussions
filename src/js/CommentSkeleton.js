@@ -1512,9 +1512,8 @@ class CommentSkeleton {
    * worker.
    *
    * @param {Element|external:Element} element
-   * @param {CommentSkeleton} parentComment
    */
-  static updateOutdentWidth(element, parentComment) {
+  static updateOutdentWidth(element) {
     if (cd.isWorker) return;
 
     [...element.childNodes].forEach((child) => {
@@ -1523,8 +1522,7 @@ class CommentSkeleton {
         const [, number, unit] = width.match(/^([\d.]+)(.+)$/);
         if (number) {
           // 1.25 = 2em / 1.6em, where 2em is our margin and 1.6em is the default margin.
-          const ems = number * 1.25 + unit;
-          child.style.width = `calc(${ems} + ${parentComment.level}px)`;
+          child.style.width = `calc(${number * 1.25}${unit} + ${number * 1.25 / 2}px)`;
         }
       } else if (!child.children?.length && child.textContent.includes('─')) {
         child.textContent = child.textContent
@@ -1574,7 +1572,7 @@ class CommentSkeleton {
               childComment.cachedParent.logicalLevel = parentComment;
             }
 
-            this.updateOutdentWidth(element, parentComment);
+            this.updateOutdentWidth(element);
 
             childComment.isOutdented = true;
             childComment.elements[0].classList.add('cd-comment-outdented');
