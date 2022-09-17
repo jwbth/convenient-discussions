@@ -338,7 +338,7 @@ class CommentSkeleton {
         (step !== 'up' && cd.g.namespaceNumber % 2 === 1 && element.classList.contains('tmbox'))
       ) ||
 
-      element.tagName === 'MW:TOCPLACE' ||
+      element.tagName === 'META' && element.getAttribute('property') === 'mw:PageProp/toc' ||
       element.getAttribute('id') === 'toc' ||
 
       // Seems to be the best option given pages like

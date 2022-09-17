@@ -181,8 +181,8 @@ export function isInline(node, countTextNodesAsInline = false) {
   if (
     cd.g.popularInlineElements.includes(node.tagName) ||
 
-    // <mw:tocplace> is currently present in place of the TOC in new Vector.
-    node.tagName.startsWith('MW:')
+    // `<meta property="mw:PageProp/toc">` is currently present in place of the TOC in new Vector.
+    (node.tagName === 'META' && node.getAttribute('property') === 'mw:PageProp/toc')
   ) {
     return true;
   } else if (cd.g.popularNotInlineElements.includes(node.tagName)) {
