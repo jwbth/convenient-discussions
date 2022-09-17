@@ -104,7 +104,7 @@
 	"es-delete-topic": "odstrániť tému",
 	"es-delete-subsection": "vymazať podsekciu",
 	"es-delete-comment": "vymazať komentár",
-	"es-delete-comment-by": "vymazať komentár od {{gender:$2|používateľa|používateľky}} [[$3:$1|$1]]",
+	"es-delete-comment-by": "vymazať komentár od {{gender:$2|používateľa|používateľky}} $1",
 	"es-new-topic": "nová téma",
 	"es-new-subsection": "nová podsekcia",
 	"es-move-from": "presunúť z [[$1]]",

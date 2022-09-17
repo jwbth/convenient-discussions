@@ -3412,7 +3412,7 @@ class CommentForm {
         // an umbrella function.
         const editOrDeleteText = (action) => {
           let subject;
-          let target = this.target;
+          let realTarget = this.target;
           if (this.target.isOwn) {
             const targetParent = this.target.getParent();
             if (targetParent) {
@@ -3421,7 +3421,7 @@ class CommentForm {
               } else {
                 targetParent.maybeRequestAuthorGender(this.updateAutoSummary);
                 subject = targetParent.isOwn ? 'addition' : 'reply-to';
-                target = targetParent;
+                realTarget = targetParent;
               }
             } else {
               if (this.target.isOpeningSection) {
@@ -3438,13 +3438,16 @@ class CommentForm {
               subject = 'comment-by';
             }
           }
-          const string = cd.s(
-            `es-${action}-${subject}`,
-            target.author.getName(),
-            target.author,
-            target.author.getNamespaceAlias()
+          const authorName = realTarget.author.getName();
+          return removeDoubleSpaces(
+            cd.s(
+              `es-${action}-${subject}`,
+              subject === 'comment-by' && realTarget.author.isRegistered() ?
+                `[[${realTarget.author.getNamespaceAlias()}:${authorName}|${authorName}]]` :
+                authorName,
+              realTarget.author
+            )
           );
-          return removeDoubleSpaces(string);
         };
 
         return editOrDeleteText(this.deleteCheckbox?.isSelected() ? 'delete' : 'edit');
