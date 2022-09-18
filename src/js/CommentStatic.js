@@ -108,7 +108,7 @@ function addNewCommentsNote(comments, parent, type, newCommentIndexes) {
     // Update the collapsed range for the thread.
     if (parent.thread?.isCollapsed) {
       parent.thread.expand();
-      parent.thread.collapse();
+      parent.thread.collapse(null, true);
     }
   } else if (type === 'thread' && parent.$replyButtonWrapper) {
     button.$element.addClass('cd-thread-button');

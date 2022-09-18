@@ -687,8 +687,9 @@ class Thread {
    * Collapse the thread.
    *
    * @param {Promise.<undefined>} [loadUserGendersPromise]
+   * @param {boolean} [inBackground=false]
    */
-  collapse(loadUserGendersPromise) {
+  collapse(loadUserGendersPromise, inBackground = false) {
     /**
      * Nodes that are collapsed. These can change, at least due to comment forms showing up.
      *
@@ -728,7 +729,7 @@ class Thread {
 
     this.addExpandNode(loadUserGendersPromise);
 
-    if (isInited) {
+    if (isInited && !inBackground) {
       this.$expandNote.cdScrollIntoView();
     }
 
