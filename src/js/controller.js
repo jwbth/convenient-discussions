@@ -487,6 +487,7 @@ export default {
   saveRelativeScrollPosition(switchToAbsolute = null) {
     // Look for a cached value to avoid reflow.
     const scrollY = this.bootProcess.data('scrollY') || window.scrollY;
+    this.bootProcess.deleteData('scrollY');
 
     // The viewport has the TOC bottom or is above it.
     if (
