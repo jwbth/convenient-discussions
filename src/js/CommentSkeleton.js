@@ -332,10 +332,13 @@ class CommentSkeleton {
     return !(
       element === treeWalker.root ||
       (
-        this.parser.foreignComponentClasses.some((name) => element.classList.contains(name)) ||
+        step !== 'up' &&
+        (
+          this.parser.foreignComponentClasses.some((name) => element.classList.contains(name)) ||
 
-        // Talk page message box
-        (step !== 'up' && cd.g.namespaceNumber % 2 === 1 && element.classList.contains('tmbox'))
+          // Talk page message box
+          (cd.g.namespaceNumber % 2 === 1 && element.classList.contains('tmbox'))
+        )
       ) ||
 
       element.tagName === 'META' && element.getAttribute('property') === 'mw:PageProp/toc' ||
