@@ -413,9 +413,8 @@ Object.assign(cd.g, {
    * @memberof convenientDiscussions.g
    */
   popularInlineElements: [
-    'A', 'ABBR', 'B', 'BIG', 'BR', 'CENTER', 'CITE', 'CODE', 'DEL', 'EM', 'FONT', 'I', 'IMG',
-    'INS', 'KBD', 'Q', 'S', 'SAMP', 'SMALL', 'SPAN', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TT', 'U',
-    'VAR'
+    'A', 'ABBR', 'B', 'BIG', 'BR', 'CENTER', 'CITE', 'CODE', 'DEL', 'EM', 'FONT', 'I', 'IMG', 'INS',
+    'KBD', 'Q', 'S', 'SAMP', 'SMALL', 'SPAN', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TT', 'U', 'VAR'
   ],
 
   /**

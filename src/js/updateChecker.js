@@ -612,7 +612,7 @@ async function processComments(comments, currentComments, currentRevisionId) {
   const newComments = comments
     .filter((comment) => comment.id && !currentComments.some((mcc) => mcc.match === comment))
 
-    // Detach comments in the "newComments" object from those in the "comments" object (so that the
+    // Detach comments in the `newComments` object from those in the `comments` object (so that the
     // last isn't polluted when it is reused).
     .map((comment) => {
       const newComment = Object.assign({}, comment);

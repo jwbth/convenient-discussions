@@ -18,7 +18,13 @@ import subscriptions from './subscriptions';
 import toc from './toc';
 import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
-import { defined, getLastArrayElementOrSelf, notNull, underlinesToSpaces, wrap } from './utils';
+import {
+  defined,
+  definedAndNotNull,
+  getLastArrayElementOrSelf,
+  underlinesToSpaces,
+  wrap,
+} from './utils';
 import { formatDateNative } from './timestamp';
 import { getVisits, handleApiReject, setOptions, setVisits } from './apiWrappers';
 import { removeWikiMarkup } from './wikitext';
@@ -249,7 +255,7 @@ class BootProcess {
     }
 
     const loadedSettings = await settings.load({ reuse: true });
-    if (notNull(loadedSettings.reformatComments)) {
+    if (definedAndNotNull(loadedSettings.reformatComments)) {
       return false;
     }
 
@@ -1241,7 +1247,7 @@ class BootProcess {
   async processTargets() {
     const commentIds = this.data('commentIds');
     if (commentIds) {
-      const comments = commentIds.map((id) => CommentStatic.getById(id)).filter(notNull);
+      const comments = commentIds.map((id) => CommentStatic.getById(id)).filter(definedAndNotNull);
       if (comments.length) {
         // setTimeout is for Firefox - for some reason, without it Firefox positions the underlay
         // incorrectly. (TODO: does it still? Need to check.)

@@ -22,13 +22,13 @@ import {
   dealWithLoadingBug,
   decodeHtmlEntities,
   defined,
+  definedAndNotNull,
   generatePageNamePattern,
   getExtendedRect,
   getFromLocalStorage,
   getHigherNodeAndOffsetInSelection,
   getVisibilityByRects,
   isInline,
-  notNull,
   saveToLocalStorage,
   unhideText,
   unique,
@@ -3190,7 +3190,7 @@ class Comment extends CommentSkeleton {
       // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Start_of_section,_comment_with_timestamp_but_without_author,_newline_inside_comment,_HTML_comments_before_reply,
       // but this can create problems with removing stuff from the opening comment.
       [cd.config.signatureEndingRegexp, areThereForeignTimestamps ? null : cd.g.timezoneRegexp]
-        .filter(notNull)
+        .filter(definedAndNotNull)
         .forEach((originalRegexp) => {
           const regexp = new RegExp(originalRegexp.source + '$', 'm');
           const linesRegexp = /^(.+)\n/gm;

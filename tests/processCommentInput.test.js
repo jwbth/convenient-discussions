@@ -1,4 +1,4 @@
-const CommentTextProcessor = require('../src/js/CommentTextProcessor').default;
+const CommentInputProcessor = require('../src/js/CommentInputProcessor').default;
 const cd = require('../src/js/cd').default;
 
 const defaultConfig = {
@@ -34,7 +34,7 @@ function testWithData(label, code, expected, commentForm, action = 'submit', con
       cd.config = Object.assign({}, cd.config, config);
     }
 
-    const processor = new CommentTextProcessor(commentForm, action);
+    const processor = new CommentInputProcessor(commentForm, action);
     try {
       if (expected instanceof Error) {
         expect(() => {

@@ -566,8 +566,10 @@ export default {
       this.restoreScrollPosition();
     } else {
       if (this.scrollData.touchesBottom && window.scrollY !== 0) {
-        const y = this.document.scrollHeight - window.innerHeight - this.scrollData.offsetBottom;
-        window.scrollTo(0, y);
+        window.scrollTo(
+          0,
+          this.document.scrollHeight - window.innerHeight - this.scrollData.offsetBottom
+        );
       } else if (this.scrollData.element) {
         const rect = this.scrollData.element.getBoundingClientRect();
         if (getVisibilityByRects(rect)) {
@@ -940,10 +942,10 @@ export default {
       pageNav.update();
     };
 
-    // Don't run this more than once in some period, otherwise scrolling may be slowed down. Also,
-    // wait before running, otherwise comments may be registered as seen after a press of Page
-    // Down/Page Up. One scroll in Chrome, Firefox with Page Up/Page Down takes a little less than
-    // 200ms, but 200ms proved to be not enough, so we try 300ms.
+    // Throttle handling scroll to run not more than once in 300ms. Wait before running, otherwise
+    // comments may be registered as seen after a press of Page Down/Page Up. One scroll in Chrome,
+    // Firefox with Page Up/Page Down takes a little less than 200ms, but 200ms proved to be not
+    // enough, so we try 300ms.
     postponements.add('scroll', actuallyHandle, 300);
 
     if (window.scrollX !== this.lastScrollX) {

@@ -295,7 +295,7 @@ export function defined(el) {
  * @param {*} el
  * @returns {boolean}
  */
-export function notNull(el) {
+export function definedAndNotNull(el) {
   return el !== undefined && el !== null;
 }
 

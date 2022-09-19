@@ -13,10 +13,10 @@ import navPanel from './navPanel';
 import settings from './settings';
 import { TreeWalker } from './treeWalker';
 import {
+  definedAndNotNull,
   getCommonGender,
   getExtendedRect,
   getHigherNodeAndOffsetInSelection,
-  notNull,
   reorderArray,
   underlinesToSpaces,
   unique,
@@ -38,52 +38,52 @@ let notificationArea;
 let tocButton;
 
 /**
- * Add all comment's children, including indirect, into array, if they are in the array of new
+ * Add comment's children, including indirect, into an array, if they are in the array of all new
  * comments.
  *
  * @param {CommentSkeleton} childComment
- * @param {CommentSkeleton[]} arr
+ * @param {CommentSkeleton[]} newCommentsInSubtree
  * @param {number[]} newCommentIndexes
  * @private
  */
-function searchForNewCommentsInSubtree(childComment, arr, newCommentIndexes) {
+function searchForNewCommentsInSubtree(childComment, newCommentsInSubtree, newCommentIndexes) {
   if (newCommentIndexes.includes(childComment.index)) {
-    arr.push(childComment);
+    newCommentsInSubtree.push(childComment);
   }
   childComment.children.forEach((childComment) => {
-    searchForNewCommentsInSubtree(childComment, arr, newCommentIndexes);
+    searchForNewCommentsInSubtree(childComment, newCommentsInSubtree, newCommentIndexes);
   });
 }
 
 /**
  * Add an individual new comments notification to a thread or section.
  *
- * @param {CommentSkeleton[]} comments
  * @param {Comment|import('./Section').default} parent
+ * @param {CommentSkeleton[]} childComments
  * @param {'thread'|'section'} type
  * @param {CommentSkeleton[]} newCommentIndexes
  * @private
  */
-function addNewCommentsNote(comments, parent, type, newCommentIndexes) {
-  if (!comments.length) return;
+function addNewCommentsNote(parent, childComments, type, newCommentIndexes) {
+  if (!childComments.length) return;
 
-  let commentsWithChildren;
+  let descendantComments;
   if (parent instanceof Comment) {
-    commentsWithChildren = [];
-    comments.forEach((child) => {
-      searchForNewCommentsInSubtree(child, commentsWithChildren, newCommentIndexes);
+    descendantComments = [];
+    childComments.forEach((child) => {
+      searchForNewCommentsInSubtree(child, descendantComments, newCommentIndexes);
     });
   } else {
-    commentsWithChildren = comments;
+    descendantComments = childComments;
   }
 
-  const authors = commentsWithChildren
+  const authors = descendantComments
     .map((comment) => comment.author)
     .filter(unique);
   const button = new OO.ui.ButtonWidget({
     label: cd.s(
       type === 'thread' ? 'thread-newcomments' : 'section-newcomments',
-      commentsWithChildren.length,
+      descendantComments.length,
       authors.length,
       authors.map((author) => author.getName()).join(cd.mws('comma-separator')),
       getCommonGender(authors)
@@ -93,7 +93,7 @@ function addNewCommentsNote(comments, parent, type, newCommentIndexes) {
   });
   button.on('click', () => {
     controller.reload({
-      commentIds: commentsWithChildren.map((comment) => comment.id),
+      commentIds: descendantComments.map((comment) => comment.id),
       pushState: true,
     });
   });
@@ -119,15 +119,17 @@ function addNewCommentsNote(comments, parent, type, newCommentIndexes) {
       .insertBefore(parent.$replyButtonWrapper);
   } else {
     button.$element.addClass('cd-section-button');
-    const $last = parent.$addSubsectionButtonContainer && !parent.getChildren().length ?
-      parent.$addSubsectionButtonContainer :
-      parent.$replyButtonContainer || $(parent.lastElementInFirstChunk);
-    const $container = type === 'section' ?
-      $('<div>').append(button.$element) :
-      $('<dl>').append($('<dd>').append(button.$element));
-    $container
+    (
+      type === 'section' ?
+        $('<div>').append(button.$element) :
+        $('<dl>').append($('<dd>').append(button.$element))
+    )
       .addClass('cd-section-button-container cd-thread-newCommentsNote')
-      .insertAfter($last);
+      .insertAfter(
+        parent.$addSubsectionButtonContainer && !parent.getChildren().length ?
+          parent.$addSubsectionButtonContainer :
+          parent.$replyButtonContainer || parent.lastElementInFirstChunk
+      );
   }
 }
 
@@ -542,7 +544,7 @@ const CommentStatic = {
           ?.$element.get(0),
         tocButton,
       ]
-        .filter(notNull)
+        .filter(definedAndNotNull)
         .some((el) => el.matches(':hover')) ||
 
       // WikiEditor dialog
@@ -706,7 +708,7 @@ const CommentStatic = {
     const newCommentIndexes = newComments.map((comment) => comment.index);
     newCommentsByParent.forEach((comments, parent) => {
       if (parent instanceof Comment) {
-        addNewCommentsNote(comments, parent, 'thread', newCommentIndexes);
+        addNewCommentsNote(parent, comments, 'thread', newCommentIndexes);
       } else {
         // Add notes for level 0 comments and their children and the rest of the comments (for
         // example, level 1 comments without a parent and their children) separately.
@@ -716,8 +718,8 @@ const CommentStatic = {
           searchForNewCommentsInSubtree(child, sectionComments, newCommentIndexes);
         });
         const threadComments = comments.filter((comment) => !sectionComments.includes(comment));
-        addNewCommentsNote(sectionComments, parent, 'section', newCommentIndexes);
-        addNewCommentsNote(threadComments, parent, 'thread', newCommentIndexes);
+        addNewCommentsNote(parent, sectionComments, 'section', newCommentIndexes);
+        addNewCommentsNote(parent, threadComments, 'thread', newCommentIndexes);
       }
     });
 

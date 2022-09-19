@@ -3,8 +3,8 @@ import Button from './Button';
 import CdError from './CdError';
 import Comment from './Comment';
 import CommentFormStatic from './CommentFormStatic';
+import CommentInputProcessor from './CommentInputProcessor';
 import CommentStatic from './CommentStatic';
-import CommentTextProcessor from './CommentTextProcessor';
 import Section from './Section';
 import SectionStatic from './SectionStatic';
 import cd from './cd';
@@ -2333,7 +2333,7 @@ class CommentForm {
     // Are we at a stage where we better introduce a lexical analyzer (or use MediaWiki's / some
     // part of it)?..
 
-    const processor = new CommentTextProcessor(this, action);
+    const processor = new CommentInputProcessor(this, action);
 
     /**
      * Will the comment be indented (is a reply or an edited reply).
@@ -2374,7 +2374,7 @@ class CommentForm {
         const anchorCode = cd.config.getAnchorCode(id);
         if (commentInCode.code.includes(anchorCode)) return;
 
-        const commentCodePart = CommentTextProcessor.prototype.prepareLineStart(
+        const commentCodePart = CommentInputProcessor.prototype.prepareLineStart(
           commentInCode.indentation,
           commentInCode.code
         );
@@ -3402,8 +3402,11 @@ class CommentForm {
           return cd.s('es-reply');
         } else {
           this.target.maybeRequestAuthorGender(this.updateAutoSummary);
-          const replyToStr = cd.s('es-reply-to', this.target.author.getName(), this.target.author);
-          return this.target.isOwn ? cd.s('es-addition') : removeDoubleSpaces(replyToStr);
+          return this.target.isOwn ?
+            cd.s('es-addition') :
+            removeDoubleSpaces(
+              cd.s('es-reply-to', this.target.author.getName(), this.target.author)
+            );
         }
       }
 

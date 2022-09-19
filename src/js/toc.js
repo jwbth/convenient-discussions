@@ -398,7 +398,9 @@ const toc = {
   addNewSections(sections) {
     if (!settings.get('modifyToc') || !this.isPresent()) return;
 
-    controller.saveRelativeScrollPosition({ saveTocHeight: true });
+    if (!this.isInSidebar()) {
+      controller.saveRelativeScrollPosition({ saveTocHeight: true });
+    }
 
     const $addedSections = this.$element.find('.cd-toc-addedSection');
     const newSectionTocIds = this.isInSidebar() ?
@@ -450,7 +452,9 @@ const toc = {
       this.addSection(section, currentTree, $topUl, newSectionTocIds);
     });
 
-    controller.restoreRelativeScrollPosition(true);
+    if (!this.isInSidebar()) {
+      controller.restoreRelativeScrollPosition(true);
+    }
   },
 
   /**
@@ -643,17 +647,19 @@ const toc = {
     if (!firstComment) return;
 
     const areCommentsRendered = firstComment instanceof Comment;
-    const saveTocHeight = Boolean(
-      controller.getBootProcess().isFirstRun() ||
+    if (!this.isInSidebar()) {
+      const saveTocHeight = Boolean(
+        controller.getBootProcess().isFirstRun() ||
 
-      // When unrendered (in gray) comments are added
-      !areCommentsRendered ||
+        // When unrendered (in gray) comments are added
+        !areCommentsRendered ||
 
-      // When the comment or section is opened by a link from the TOC
-      controller.getBootProcess().data('commentIds') ||
-      controller.getBootProcess().data('sectionId')
-    );
-    controller.saveRelativeScrollPosition({ saveTocHeight });
+        // When the comment or section is opened by a link from the TOC
+        controller.getBootProcess().data('commentIds') ||
+        controller.getBootProcess().data('sectionId')
+      );
+      controller.saveRelativeScrollPosition({ saveTocHeight });
+    }
 
     commentsBySection.forEach((comments, section) => {
       if (!section) return;
@@ -666,7 +672,9 @@ const toc = {
       this.addCommentList(comments, target, areCommentsRendered);
     });
 
-    controller.restoreRelativeScrollPosition(true);
+    if (!this.isInSidebar()) {
+      controller.restoreRelativeScrollPosition(true);
+    }
   },
 
   /**

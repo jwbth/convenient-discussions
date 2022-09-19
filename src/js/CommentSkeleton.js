@@ -584,8 +584,8 @@ class CommentSkeleton {
           that may be present. This happens with code like this:
 
             :* Smth. [signature]
-            :* Smth. <!-- The comment part that we need to grab while it's in the same element as the
-                          signature above. -->
+            :* Smth. <!-- The comment part that we need to grab while it's in the same element as
+                          the signature above. -->
             :: Smth. [signature] <!-- The comment part we are at. -->
         */
 
@@ -613,14 +613,15 @@ class CommentSkeleton {
 
       const node = treeWalker.currentNode;
 
-      const isIntro = this.isIntro({
+      if (this.isIntro({
         step,
         stage: 1,
         node,
         nextNode: previousPart.node,
         previousPart,
-      });
-      if (isIntro) break;
+      })) {
+        break;
+      }
 
       const isTextNode = node.nodeType === Node.TEXT_NODE;
       let isHeading = null;
@@ -665,17 +666,15 @@ class CommentSkeleton {
         );
 
         // This is a pretty weak mechanism, effective in a very narrow range of cases, so we might
-        // drop it.
-        if (!hasCurrentSignature) {
-          // A trace from `~~~` at the end of the line most likely means an incorrectly signed
-          // comment.
-          if (
-            !isInline(node) &&
-            cd.config.signatureEndingRegexp?.test(node.textContent) &&
-            !this.parser.elementsToExclude.some((el) => el.contains(node))
-          ) {
-            break;
-          }
+        // drop it. A trace from `~~~` at the end of the line most likely means an incorrectly
+        // signed comment.
+        if (
+          !hasCurrentSignature &&
+          !isInline(node) &&
+          cd.config.signatureEndingRegexp?.test(node.textContent) &&
+          !this.parser.elementsToExclude.some((el) => el.contains(node))
+        ) {
+          break;
         }
       }
 
@@ -863,14 +862,13 @@ class CommentSkeleton {
         const nextElement = part.node.nextElementSibling;
         if (!nextElement) continue;
 
-        const isIntro = this.isIntro({
+        if (this.isIntro({
           step: part.step,
           stage: 2,
           node: part.node,
           nextNode: nextElement,
           lastPartNode: this.parts[0].node,
-        });
-        if (isIntro) {
+        })) {
           this.parts.splice(i);
         }
       }
@@ -1379,6 +1377,8 @@ class CommentSkeleton {
    * @returns {?CommentSkeleton}
    */
   getParent(visual = false) {
+    // Note: `this.cachedParent.logicalLevel` can be overriden in `this.processOutdents()`.
+
     const prop = visual ? 'level' : 'logicalLevel';
     this.cachedParent ||= {};
     if (this.cachedParent[prop] === undefined) {
@@ -1414,10 +1414,6 @@ class CommentSkeleton {
    * @returns {CommentSkeleton[]}
    */
   getChildren(indirect = false, visual = false, allowSiblings = true) {
-    if (this.index === cd.comments.length - 1) {
-      return [];
-    }
-
     const children = [];
     const prop = visual ? 'level' : 'logicalLevel';
     cd.comments
@@ -1428,8 +1424,7 @@ class CommentSkeleton {
           (
             comment[prop] > this[prop] ||
 
-            // This comment is visually a child, although it's of the same level as the parent:
-            // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2021-04-25T12:40:00.000Z-Example-2021-04-25T12:00:00.000Z
+            // This comment is visually a child, although it's of the same level as the parent.
             (
               prop === 'level' &&
               allowSiblings &&
@@ -1440,7 +1435,7 @@ class CommentSkeleton {
         ) {
           // `comment.getParent() === this` to allow comments mistakenly indented with more than one
           // level.
-          if (comment[prop] === this[prop] + 1 || comment.getParent() === this || indirect) {
+          if (comment[prop] === this[prop] + 1 || indirect || comment.getParent() === this) {
             children.push(comment);
           }
           return false;
@@ -1554,67 +1549,67 @@ class CommentSkeleton {
    * @param {import('./Parser').default} parser
    */
   static processOutdents(parser) {
-    if (parser.context.areThereOutdents) {
-      [...parser.context.rootElement.getElementsByClassName(cd.config.outdentClass)]
-        .reverse()
-        .forEach((element) => {
-          let childComment;
-          let parentComment;
-          const treeWalker = new ElementsTreeWalker(element, parser.context.rootElement);
-          while (treeWalker.nextNode() && !childComment) {
-            let commentIndex = treeWalker.currentNode.getAttribute('data-cd-comment-index');
-            if (commentIndex === '0') break;
-            if (commentIndex === null) continue;
+    if (!parser.context.areThereOutdents) return;
 
-            commentIndex = Number(commentIndex);
-            childComment = cd.comments[commentIndex];
+    [...parser.context.rootElement.getElementsByClassName(cd.config.outdentClass)]
+      .reverse()
+      .forEach((element) => {
+        let childComment;
+        let parentComment;
+        const treeWalker = new ElementsTreeWalker(element, parser.context.rootElement);
+        while (treeWalker.nextNode() && !childComment) {
+          let commentIndex = treeWalker.currentNode.getAttribute('data-cd-comment-index');
+          if (commentIndex === '0') break;
+          if (commentIndex === null) continue;
 
-            // Find an _actual_ parent of the comment in case the previous one is newer than the
-            // child. Example:
-            // https://en.wikipedia.org/w/index.php?title=Wikipedia:Village_pump_(technical)&oldid=1044759311#202108282226_Cryptic.
-            for (let i = commentIndex - 1; i >= 0; i--) {
-              const comment = cd.comments[i];
-              if (comment.section !== childComment.section) break;
-              if (childComment.date >= comment.date) {
-                parentComment = comment;
-                break;
-              }
+          commentIndex = Number(commentIndex);
+          childComment = cd.comments[commentIndex];
+
+          // Find an _actual_ parent of the comment in case the previous one is newer than the
+          // child. Example:
+          // https://en.wikipedia.org/w/index.php?title=Wikipedia:Village_pump_(technical)&oldid=1044759311#202108282226_Cryptic.
+          for (let i = commentIndex - 1; i >= 0; i--) {
+            const comment = cd.comments[i];
+            if (comment.section !== childComment.section) break;
+            if (childComment.date >= comment.date) {
+              parentComment = comment;
+              break;
             }
-            if (!parentComment) break;
-
-            if (parentComment.index !== commentIndex - 1) {
-              // Explicitly set the parent.
-              childComment.cachedParent ||= {};
-              childComment.cachedParent.logicalLevel = parentComment;
-            }
-
-            this.updateOutdentWidth(element);
-
-            childComment.isOutdented = true;
-            childComment.elements[0].classList.add('cd-comment-outdented');
-
-            // Update levels for following comments.
-            cd.comments.slice(commentIndex).some((comment) => {
-              // Since we traverse templates from the last to the first, `childComment.level` at
-              // this stage is the same as `childComment.logicalLevel` before we traverse the child
-              // comments. The same for `parentComment`.
-              if (
-                comment.section !== parentComment.section ||
-                comment.logicalLevel < childComment.level ||
-                (comment !== childComment && comment.logicalLevel === childComment.level) ||
-                comment.date < childComment.date
-              ) {
-                return true;
-              }
-              comment.logicalLevel = (
-                (parentComment.level + 1) +
-                (comment.logicalLevel - childComment.level)
-              );
-              return false;
-            });
           }
-        });
-    }
+          if (!parentComment) break;
+
+          if (parentComment.index !== commentIndex - 1) {
+            // Explicitly set the parent.
+            childComment.cachedParent ||= {};
+            childComment.cachedParent.logicalLevel = parentComment;
+          }
+
+          this.updateOutdentWidth(element);
+
+          childComment.isOutdented = true;
+          childComment.elements[0].classList.add('cd-comment-outdented');
+
+          // Update levels for following comments.
+          cd.comments.slice(commentIndex).some((comment) => {
+            // Since we traverse templates from the last to the first, `childComment.level` at
+            // this stage is the same as `childComment.logicalLevel` before we traverse the child
+            // comments. The same for `parentComment`.
+            if (
+              comment.section !== parentComment.section ||
+              comment.logicalLevel < childComment.level ||
+              (comment !== childComment && comment.logicalLevel === childComment.level) ||
+              comment.date < childComment.date
+            ) {
+              return true;
+            }
+            comment.logicalLevel = (
+              (parentComment.level + 1) +
+              (comment.logicalLevel - childComment.level)
+            );
+            return false;
+          });
+        }
+      });
   }
 }
 
