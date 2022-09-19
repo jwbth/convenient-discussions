@@ -360,8 +360,10 @@ class CommentTextProcessor {
     });
 
     const paragraphCode = cd.config.paragraphTemplates.length ?
-      `$1{{${cd.config.paragraphTemplates[0]}}}` :
-      `$1<br>`;
+      `$1{{${cd.config.paragraphTemplates[0]}}}\n` :
+
+      // Should be unreachable.
+      `$1<br>\n`;
     code = code.replace(/^(.*)\n\n+(?!:)/gm, paragraphCode);
 
     return code;
@@ -388,8 +390,9 @@ class CommentTextProcessor {
       currentLineInTemplates = '|=';
       nextLineInTemplates = '|\\||}}';
     }
+    const paragraphTemplatePattern = mw.util.escapeRegExp(`{{${cd.config.paragraphTemplates[0]}}}`);
     const currentLineEndingRegexp = new RegExp(
-      `(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x04|<br[ \\n]*\\/?>${currentLineInTemplates}) *$`,
+      `(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x04|<br[ \\n]*\\/?>|${paragraphTemplatePattern}${currentLineInTemplates}) *$`,
       'i'
     );
     const nextLineBeginningRegexp = new RegExp(

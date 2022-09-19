@@ -18,6 +18,12 @@ Object.assign(cd, {
   config: defaultConfig,
 });
 
+window.mw = {
+  util: {
+    escapeRegExp: (str) => str.replace(/([\\{}()|.?*+\-^$[\]])/g, '\\$1'),
+  },
+};
+
 function testWithData(label, code, expected, commentForm, action = 'submit', config) {
   test(label, () => {
     commentForm.getMode = () => commentForm.mode;
@@ -208,6 +214,8 @@ describe('Tags and templates', () => {
   testWithData('Whole comment in <small>, horizontal lines', '<small>[[Link|Label]]\n|\n<nowiki>|</nowiki>\nEnd.</small>', ': {{smalldiv|1=[[Link|Label]]<br>{{!}}<br><nowiki>|</nowiki><br>End. ~~~~}}\n', firstCommentReplyForm);
   testWithData('Whole comment in <small>, add section', '<small>Text.</small>', '<small>Text.</small> ~~~~\n', addSectionForm);
   testWithData('Template', 'Quote:\n{{quote|Text.}}\nEnd.', ': Quote:{{quote|Text.}}End. ~~~~\n', firstCommentReplyForm);
+  testWithData('Two quotes with comments separated by a newline', 'Quote:\n{{quote|Text.}}\nComment.\n{{quote|Text.}}\nComment.', ': Quote:{{quote|Text.}}Comment.{{quote|Text.}}Comment. ~~~~\n', firstCommentReplyForm);
+  testWithData('Two quotes with comments separated by a paragraph', 'Quote:\n{{quote|Text.}}\nComment.\n\n{{quote|Text.}}\nComment.', ': Quote:{{quote|Text.}}Comment.{{pb}}{{quote|Text.}}Comment. ~~~~\n', firstCommentReplyForm);
   testWithData('Template, add section', '{{Template 1}}\n{{Template 2}}\nEnd.', '{{Template 1}}\n{{Template 2}}\nEnd. ~~~~\n', addSectionForm);
   testWithData('Newlines in a template', '{{tq|1=\nLine 1.\n\nLine 2.\nLine 3.\n}}<br>Text.', ': {{tq|1=Line 1.{{pb}}Line 2.<br>Line 3.}}<br>Text. ~~~~\n', firstCommentReplyForm);
   testWithData('Newlines in a template, add section', '{{tq|1=\n\nLine 1.\n\nLine 2.\nLine 3.\n}}<br>Text.', '{{tq|1=\n\nLine 1.\n\nLine 2.<br>\nLine 3.\n}}<br>Text. ~~~~\n', addSectionForm);
