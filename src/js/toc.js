@@ -140,7 +140,7 @@ const toc = {
     // can be removed altogether.
     if (this.isInSidebar()) {
       this.$element
-        .find('.cd-toc-commentCount, .cd-toc-newCommentList, .cd-toc-addedCommentList')
+        .find('.cd-toc-commentCount, .cd-toc-newCommentList, .cd-toc-addedCommentList, .cd-toc-subscriptionIcon, .cd-toc-subscriptionIcon-before')
           .remove()
         .end()
         .find('.cd-toc-addedSection')
