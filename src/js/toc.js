@@ -637,7 +637,10 @@ const toc = {
     await this.updateTocSectionsPromise;
 
     const firstComment = commentsBySection.values().next().value?.[0];
-    if (!settings.get('modifyToc') || !this.isPresent() || !firstComment) return;
+    if (!settings.get('modifyToc') || !this.isPresent()) return;
+
+    this.$element.find('.cd-toc-addedCommentList').remove();
+    if (!firstComment) return;
 
     const areCommentsRendered = firstComment instanceof Comment;
     const saveTocHeight = Boolean(
@@ -651,8 +654,6 @@ const toc = {
       controller.getBootProcess().data('sectionId')
     );
     controller.saveRelativeScrollPosition({ saveTocHeight });
-
-    this.$element.find('.cd-toc-addedCommentList').remove();
 
     commentsBySection.forEach((comments, section) => {
       if (!section) return;
