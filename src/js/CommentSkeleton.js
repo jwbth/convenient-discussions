@@ -1445,6 +1445,19 @@ class CommentSkeleton {
           }
           return false;
         } else {
+          if (prop === 'logicalLevel' && this.parser.context.areThereOutdents) {
+            // Outdented comments that are separated from their parents by interjected comments of
+            // higher level than the parent.
+            cd.comments
+              .slice(comment.index + 1)
+              .some((comment) => {
+                if (comment.cachedParent?.logicalLevel === this) {
+                  children.push(comment);
+                  return true;
+                }
+                return comment.section !== this.section;
+              });
+          }
           return true;
         }
       });
