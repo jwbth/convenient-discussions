@@ -24,10 +24,10 @@
 
   "thread-tooltip": "Collapse/expand the thread",
   "thread-tooltip-count": "Collapse/expand the thread ($1 {{plural:$1|comment|comments}})",
-  "thread-expand-label-genderless": "Expand the thread ($1 {{plural:$1|comment|comments}} by {{plural:$2|}} $3)",
-  "thread-expand-label": "Expand the thread ($1 {{plural:$1|comment|comments}} by {{plural:$2|{{gender:$4|}}}} $3)",
+  "thread-expand-label-genderless": "Expand the thread ($1 {{plural:$1|comment|comments}} by {{plural:$2|1=|}} $3)",
+  "thread-expand-label": "Expand the thread ($1 {{plural:$1|comment|comments}} by {{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}} $3)",
   "thread-expand-tooltip": "Hold $1 to expand all threads on the page",
-  "thread-newcomments": "{{plural:$1|There is a new comment|There are $1 new comments}} in this thread from {{plural:$2|{{gender:$4|}}}} $3. Click to refresh the page.",
+  "thread-newcomments": "{{plural:$1|There is a new comment|There are $1 new comments}} in this thread from {{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}} $3. Click to refresh the page.",
 
   "sm-editopeningcomment": "Edit opening comment",
   "sm-editopeningcomment-tooltip": "Edit the opening comment of the section",
@@ -64,7 +64,7 @@
 
   "section-reply": "Reply to section",
   "section-addsubsection-to": "Add subsection to \"$1\"",
-  "section-newcomments": "{{plural:$1|There is a new comment|There are $1 new comments}} in this section (outside of threads) from {{plural:$2|{{gender:$4|}}}} $3. Click to refresh the page.",
+  "section-newcomments": "{{plural:$1|There is a new comment|There are $1 new comments}} in this section (outside of threads) from {{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}} $3. Click to refresh the page.",
   "section-unwatch-stillwatched": "<strong>Note:</strong> you are still subscribed to this section as it is included in the section \"$1\" that you are subscribed to.",
   "section-watch-openpages": "(You will only get notifications while this tab is open.)",
   "section-watch-pagenotwatched": "<strong>Note:</strong> you subscribed to the section but you don't watch the page. In order for new comments to be highlighted on your watchlist page, add the page to the watchlist.",

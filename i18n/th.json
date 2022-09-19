@@ -16,7 +16,7 @@
 	"cm-reply": "ตอบกลับ",
 	"cm-quote": "อ้างอิง",
 	"thread-tooltip": "ยุบ/ขยายเธรด",
-	"thread-expand-label-genderless": "ขยายเธรด ($1 {{plural:$1|ความเห็น}} จากทั้งหมด{{plural:$2|}} $3 )",
+	"thread-expand-label-genderless": "ขยายเธรด ($1 {{plural:$1|ความเห็น}} จากทั้งหมด{{plural:$2|1=|}} $3 )",
 	"sm-editopeningcomment": "แก้ไขความเห็นเปิดเรื่อง",
 	"sm-editopeningcomment-tooltip": "แก้ไขความเห็นที่เปิดส่วนอภิปรายนี้",
 	"sm-addsubsection": "เพิ่มส่วนย่อย",

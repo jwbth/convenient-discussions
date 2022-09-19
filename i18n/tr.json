@@ -28,7 +28,7 @@
 	"cm-reply": "Yanıtla",
 	"cm-quote": "Alıntı",
 	"thread-tooltip": "İleti dizisini daralt/genişlet ($1 {{plural:$1|yorum}})",
-	"thread-newcomments": "Bu konuda {{plural:$2|{{gender:$4|}}}} $3 kullanıcısından {{plural:$1|$1 yeni yorum}} geldi. Sayfayı yenilemek için tıklayın.",
+	"thread-newcomments": "Bu konuda {{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}} $3 kullanıcısından {{plural:$1|$1 yeni yorum}} geldi. Sayfayı yenilemek için tıklayın.",
 	"sm-editopeningcomment": "açılış yorumunu düzenle",
 	"sm-editopeningcomment-tooltip": "Bölümün açılış açıklamasını düzenle",
 	"sm-addsubsection": "alt bölüm ekle",

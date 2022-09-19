@@ -25,7 +25,7 @@
 	"cm-reply": "Vastaa",
 	"cm-quote": "Lainaa",
 	"thread-tooltip": "Pienennä/laajenna tämä viestiketju",
-	"thread-expand-label-genderless": "Laajenna viestiketju ($1 {{plural:$1|kommentti|kommenttia}} {{plural:$2|}} käyttäjältä $3)",
+	"thread-expand-label-genderless": "Laajenna viestiketju ($1 {{plural:$1|kommentti|kommenttia}} {{plural:$2|1=|}} käyttäjältä $3)",
 	"thread-expand-tooltip": "Paina Ctrl-näppäintä pohjassa laajentaaksesi kaikki sivun viestiketjut",
 	"sm-editopeningcomment": "muokkaa avausviestiä",
 	"sm-editopeningcomment-tooltip": "Muokkaa osion avausviestiä",

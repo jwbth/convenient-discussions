@@ -22,7 +22,7 @@
 	"cm-quote": "Trích dẫn",
 	"thread-tooltip": "Ẩn/hiện luồng",
 	"thread-tooltip-count": "Ẩn/hiện bài viết ($1 {{plural:$1|bình luận}})",
-	"thread-expand-label-genderless": "Mở rộng luồng ($1 {{plural:$1}}bình luận từ {{plural:$2|}} $3)",
+	"thread-expand-label-genderless": "Mở rộng luồng ($1 {{plural:$1}}bình luận từ {{plural:$2|1=|}} $3)",
 	"thread-expand-label": "Mở rộng luồng ($1 bình luận từ {{plural:$2}}{{gender:$4}}$3)",
 	"thread-expand-tooltip": "Nhấn giữ Ctrl để mở rộng tất cả các luồng trên trang",
 	"thread-newcomments": "Có {{plural:$1|một bình luận|$1 bình luận}} mới trên chủ đề này từ {{plural:$2}}{{gender:$4}}$3. Nhấp để tải lại trang.",
