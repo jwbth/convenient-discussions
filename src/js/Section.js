@@ -919,19 +919,24 @@ class Section extends SectionSkeleton {
 
     if (!this.newComments.length) return;
 
-    let newCommentCountLink;
-    if (this.newComments.length === this.comments.length) {
-      newCommentCountLink = document.createElement('span');
-    } else {
-      newCommentCountLink = document.createElement('a');
-      newCommentCountLink.href = `#${this.newComments[0].dtId}`;
-      newCommentCountLink.onclick = this.scrollToNewComments;
-    }
-    newCommentCountLink.textContent = cd.s(
+    const html = cd.sParse(
       'section-metadata-commentcount-new',
+      this.comments.length,
       this.newComments.length
     );
-    this.commentCountWrapper.append(' ', newCommentCountLink);
+    this.commentCountWrapper.innerHTML = html;
+    if (this.newComments.length !== this.comments.length) {
+      const span = this.commentCountWrapper.querySelector('.cd-section-metadata-commentcount-new');
+      if (span) {
+        const link = document.createElement('a');
+        link.textContent = span.textContent;
+        link.href = `#${this.newComments[0].dtId}`;
+        link.onclick = this.scrollToNewComments;
+
+        span.innerHTML = '';
+        span.append(link);
+      }
+    }
   }
 
   /**

@@ -39,7 +39,7 @@
 	"section-reply": "Odpowiedz do sekcji",
 	"section-addsubsection-to": "Dodaj podsekcję do \"$1\"",
 	"section-metadata-commentcount": "$1 {{plural:$1|komentarz|komentarze|komentarzy}}",
-	"section-metadata-commentcount-new": "+$1 {{plural:$1|nowy|nowe|nowych}}",
+	"section-metadata-commentcount-new": "$1 {{plural:$1|komentarz|komentarze|komentarzy}} <span class=\"cd-section-metadata-commentcount-new\">+$2 {{plural:$2|nowy|nowe|nowych}}</span>",
 	"section-metadata-authorcount": "$1 {{plural:$1|osoba|osoby|osób}}",
 	"section-metadata-lastcomment": "Ostatni komentarz:",
 	"cld-summary": "Opis zmian",

@@ -208,7 +208,7 @@
 	"navpanel-newcomments-unknowndate": "fecha desconocida",
 	"navpanel-newcomments-refresh": "Pulsa para actualizar la página",
 	"navpanel-markasread": "Mantenga presionada la tecla Ctrl para marcar todos los comentarios como leídos",
-	"toc-commentcount-new": "+$1",
+	"toc-commentcount-new": "$1 +$2",
 	"toc-more": "…$1 más",
 	"toc-watched": "Estás suscrito a esta sección",
 	"pagenav-pagetop": "Inicio de página",

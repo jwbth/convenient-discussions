@@ -151,7 +151,7 @@
 	"navpanel-newcomments-unknowndate": "অজানা তারিখ",
 	"navpanel-newcomments-refresh": "পাতাটি পুনঃসতেজ করতে ক্লিক করুন",
 	"toc-commentcount-full": "$1টি {{plural:$1|মন্তব্য}}",
-	"toc-commentcount-new-full": "+$1টি {{plural:$1|নতুন}}",
+	"toc-commentcount-new-full": "$1টি {{plural:$1|মন্তব্য}} +$2টি {{plural:$2|নতুন}}",
 	"toc-more": "আরও $1টি",
 	"toc-watched": "আপনি এই অনুচ্ছেদটি নজরে রেখেছেন",
 	"pagenav-pagetop": "পাতার শীর্ষ",

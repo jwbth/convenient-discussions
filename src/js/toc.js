@@ -222,19 +222,21 @@ const toc = {
       const count = section.comments.length;
       if (!count) return;
 
-      const countString = usedFullForm ? count : cd.s('toc-commentcount-full', count);
-      const unseenCount = section.comments.filter((comment) => comment.isSeen === false).length;
-      const unseenCountString = unseenCount ?
-        (
-          ' ' +
-          cd.s(usedFullForm ? 'toc-commentcount-new' : 'toc-commentcount-new-full', unseenCount)
-        ) :
-        '';
-
       const span = document.createElement('span');
       span.className = 'cd-toc-commentCount';
+
       const bdi = document.createElement('bdi');
-      bdi.textContent = countString + unseenCountString;
+      const unseenCount = section.newComments?.length;
+      if (unseenCount) {
+        bdi.textContent = cd.s(
+          usedFullForm ? 'toc-commentcount-new' : 'toc-commentcount-new-full',
+          count,
+          unseenCount
+        );
+      } else {
+        bdi.textContent = usedFullForm ? count : cd.s('toc-commentcount-full', count);
+      }
+
       span.appendChild(bdi);
       item.$text.append(span);
 

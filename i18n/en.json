@@ -70,7 +70,7 @@
   "section-watch-pagenotwatched": "<strong>Note:</strong> you subscribed to the section but you don't watch the page. In order for new comments to be highlighted on your watchlist page, add the page to the watchlist.",
   "section-watch-error-maxsize": "Couldn't update the settings: the size of the subscription list exceeds the maximum size. <span class=\"cd-notification-editWatchedSections\">[[$1|Edit the subscription list]]</span> to fix this.",
   "section-metadata-commentcount": "$1 {{plural:$1|comment|comments}}",
-  "section-metadata-commentcount-new": "+$1 {{plural:$1|new}}",
+  "section-metadata-commentcount-new": "$1 {{plural:$1|comment|comments}} <span class=\"cd-section-metadata-commentcount-new\">+$2 {{plural:$2|new}}</span>",
   "section-metadata-authorcount": "$1 {{plural:$1|person|people}}",
   "section-metadata-lastcomment": "Latest comment:",
 
@@ -266,9 +266,9 @@
   "navpanel-newcomments-refresh": "Click to refresh the page",
   "navpanel-markasread": "Hold $1 to mark all shown comments as read",
 
-  "toc-commentcount-new": "+$1",
+  "toc-commentcount-new": "$1 +$2",
   "toc-commentcount-full": "$1 {{plural:$1|comment|comments}}",
-  "toc-commentcount-new-full": "+$1 {{plural:$1|new}}",
+  "toc-commentcount-new-full": "$1 {{plural:$1|comment|comments}} +$2 {{plural:$2|new}}",
   "toc-more": "…$1 more",
   "toc-watched": "You are subscribed to this topic",
 

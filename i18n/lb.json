@@ -106,7 +106,7 @@
 	"navpanel-refresh": "Säit aktualiséieren",
 	"navpanel-next": "Op déi nächst Bemierkung goen",
 	"navpanel-newcomments-unknowndate": "onbekannten Datum",
-	"toc-commentcount-new": "+$1",
+	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 {{plural:$1|Bemierkung|Bemierkungen}}",
 	"toc-more": "...$1 méi",
 	"toc-watched": "Dir sidd op dëst Thema abonnéiert",
