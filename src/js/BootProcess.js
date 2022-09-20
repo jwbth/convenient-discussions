@@ -1726,9 +1726,9 @@ class BootProcess {
       // Restore the initial viewport position in terms of visible elements, which is how the user
       // sees it.
       controller.restoreRelativeScrollPosition();
-    }
 
-    this.addSettingsLinkToFooter();
+      this.addSettingsLinkToFooter();
+    }
 
     /**
      * The script has processed the page.
