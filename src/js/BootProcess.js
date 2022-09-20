@@ -1362,10 +1362,6 @@ class BootProcess {
       toc.addNewComments(CommentStatic.groupBySection(unseenComments));
     }
 
-    // TODO: keep the scrolling position even if adding the comment count moves the content.
-    // (Currently this is done in toc.addNewComments().)
-    toc.addCommentCount();
-
     // Reduce the probability that we will wrongfully mark a seen comment as unseen/new by adding a
     // minute to the current time if there is a comment with matched time. (Previously, the comment
     // time needed to be less than the current time which could result in missed comments if a
@@ -1377,6 +1373,11 @@ class BootProcess {
     // Should be before `CommentStatic.registerSeen()` to include all new comments in the metadata,
     // even those currently inside the viewport.
     SectionStatic.addNewCommentCountMetadata();
+
+    // Should be below `SectionStatic.addNewCommentCountMetadata()` - `Section#newComments` is set
+    // there. TODO: keep the scrolling position even if adding the comment count moves the content.
+    // (Currently this is done in `toc.addNewComments()`.)
+    toc.addCommentCount();
 
     CommentStatic.registerSeen();
     navPanel.fill();
