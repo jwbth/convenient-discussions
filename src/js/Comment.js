@@ -3499,7 +3499,7 @@ class Comment extends CommentSkeleton {
           normalizeCode(removeWikiMarkup(match.headlineCode)) ===
           normalizeCode(thisData.sectionHeadline)
         ) :
-        -5;
+        -0.75;
     } else {
       doesHeadlineMatch = !match.headingMatch;
     }
