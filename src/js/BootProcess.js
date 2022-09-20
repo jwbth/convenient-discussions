@@ -303,9 +303,9 @@ class BootProcess {
     });
     if (action) {
       const promise = settings.saveSettingOnTheFly(
-        loadedSettings,
         'reformatComments',
-        action === 'accept'
+        action === 'accept',
+        loadedSettings
       );
       try {
         await promise;
@@ -359,23 +359,23 @@ class BootProcess {
             Notification.requestPermission((permission) => {
               if (permission === 'granted') {
                 promise = settings.saveSettingOnTheFly(
-                  loadedSettings,
                   'desktopNotifications',
-                  'all'
+                  'all',
+                  loadedSettings
                 );
               } else if (permission === 'denied') {
                 promise = settings.saveSettingOnTheFly(
-                  loadedSettings,
                   'desktopNotifications',
-                  'none'
+                  'none',
+                  loadedSettings
                 );
               }
             });
           } else if (Notification.permission === 'granted') {
-            promise = settings.saveSettingOnTheFly(loadedSettings, 'desktopNotifications', 'all');
+            promise = settings.saveSettingOnTheFly('desktopNotifications', 'all', loadedSettings);
           }
         } else if (action === 'reject') {
-          promise = settings.saveSettingOnTheFly(loadedSettings, 'desktopNotifications', 'none');
+          promise = settings.saveSettingOnTheFly('desktopNotifications', 'none', loadedSettings);
         }
         if (promise) {
           try {

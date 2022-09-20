@@ -1511,7 +1511,7 @@ class CommentForm {
         type: 'warn',
         autoHideSeconds: 'long',
       });
-      settings.saveSettingOnTheFly(null, 'improvePerformance-lastSuggested', getDayTimestamp());
+      settings.saveSettingOnTheFly('improvePerformance-lastSuggested', getDayTimestamp());
     }
   }
 

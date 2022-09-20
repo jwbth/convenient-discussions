@@ -375,7 +375,7 @@ export default {
     $body.append($img, $div);
     OO.ui.alert($body, { size: 'large' });
 
-    settings.saveSettingOnTheFly(null, 'useTopicSubscription-seenNotice', true);
+    settings.saveSettingOnTheFly('useTopicSubscription-seenNotice', true);
   },
 
   /**

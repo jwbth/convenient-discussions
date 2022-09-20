@@ -603,12 +603,12 @@ export default {
    * Update a setting value, saving it to the server and chainging it for the current session as
    * well.
    *
-   * @param {?object} loadedSettings The values of the settings. If `null`, they will be loaded.
    * @param {string} key The key of the settings to save.
    * @param {*} value The value to set.
+   * @param {object} [loadedSettings] The values of the settings. If `null`, they will be loaded.
    * @returns {Promise.<undefined>}
    */
-  async saveSettingOnTheFly(loadedSettings, key, value) {
+  async saveSettingOnTheFly(key, value, loadedSettings) {
     // Set the setting locally before loading the setting in case some part of the code needs the
     // updated setting.
     this.set(key, value);
