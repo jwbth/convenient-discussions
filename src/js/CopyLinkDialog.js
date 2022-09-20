@@ -61,10 +61,10 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
         title: cd.s('loading-ellipsis'),
         classes: ['cd-dialog-copyLink-diffButton'],
       });
-      this.buttonSelectWidget = new OO.ui.ButtonSelectWidget({
+      this.buttonSelectWidget = (new OO.ui.ButtonSelectWidget({
         items: [this.anchorOptionWidget, this.diffOptionWidget],
         classes: ['cd-dialog-copyLink-linkTypeSelect'],
-      }).on('choose', (item) => {
+      })).on('choose', (item) => {
         const panel = item === this.anchorOptionWidget ? this.anchorPanel : this.diffPanel;
         this.stackLayout.setItem(panel);
         this.updateSize();

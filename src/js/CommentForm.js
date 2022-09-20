@@ -1524,10 +1524,10 @@ class CommentForm {
    */
   getCommentInputDummyFloatableContainer() {
     const element = this.commentInput.$input.get(0);
-    const position = this.commentInput.getRange().to;
     const computedStyle = window.getComputedStyle(element);
-    const $div = $('<div>')
-      .text(element.value.substring(0, position))
+    const $span = $('<span>');
+    $('<div>')
+      .text(element.value.substring(0, this.commentInput.getRange().to))
       .css({
         whiteSpace: 'pre-wrap',
         wordWrap: 'break-word',
@@ -1544,8 +1544,8 @@ class CommentForm {
           return props;
         }, {}),
       })
+      .append($span)
       .appendTo(document.body);
-    const $span = $('<span>').appendTo($div);
     return $span
       .css({
         top: $span.get(0).offsetTop,
@@ -2810,12 +2810,13 @@ class CommentForm {
     let html = resp.compare?.body;
     if (html) {
       html = wrapDiffBody(html);
-      const $label = $('<div>')
-        .addClass('cd-commentForm-previewArea-label')
-        .text(cd.s('cf-block-viewchanges'));
       this.$previewArea
         .html(html)
-        .prepend($label)
+        .prepend(
+          $('<div>')
+            .addClass('cd-commentForm-previewArea-label')
+            .text(cd.s('cf-block-viewchanges'))
+        )
         .cdAddCloseButton();
     } else {
       this.$previewArea.empty();

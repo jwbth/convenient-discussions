@@ -73,12 +73,11 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
 
     subscriptions.load();
 
-    const $loading = $('<div>').text(cd.s('loading-ellipsis'));
     this.loadingPanel = new OO.ui.PanelLayout({
       padded: true,
       expanded: false,
     });
-    this.loadingPanel.$element.append($loading);
+    this.loadingPanel.$element.append($('<div>').text(cd.s('loading-ellipsis')));
 
     this.sectionsPanel = new OO.ui.PanelLayout({
       padded: false,

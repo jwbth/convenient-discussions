@@ -357,23 +357,27 @@ export default {
       return;
     }
 
-    const $body = $('<div>');
-    const $img = $('<img>')
-      .attr('width', 512)
-      .attr('height', 253)
-      .attr('src', '//upload.wikimedia.org/wikipedia/commons/thumb/0/01/Screenshot_of_topic_subscription_prototype.png/512px-Screenshot_of_topic_subscription_prototype.png')
-      .addClass('cd-tsnotice-img');
-    const $div = wrap(cd.sParse('topicsubscription-notice'), {
-      callbacks: {
-        'cd-notification-notificationSettings': () => {
-          controller.showSettingsDialog('notifications');
-        },
-      },
-      targetBlank: true,
-      tagName: 'div',
-    }).addClass('cd-tsnotice-text');
-    $body.append($img, $div);
-    OO.ui.alert($body, { size: 'large' });
+    OO.ui.alert(
+      $('<div>')
+        .append(
+          $('<img>')
+            .attr('width', 512)
+            .attr('height', 253)
+            .attr('src', '//upload.wikimedia.org/wikipedia/commons/thumb/0/01/Screenshot_of_topic_subscription_prototype.png/512px-Screenshot_of_topic_subscription_prototype.png')
+            .addClass('cd-tsnotice-img'),
+          wrap(cd.sParse('topicsubscription-notice'), {
+            callbacks: {
+              'cd-notification-notificationSettings': () => {
+                controller.showSettingsDialog('notifications');
+              },
+            },
+            targetBlank: true,
+            tagName: 'div',
+          }).addClass('cd-tsnotice-text'),
+        )
+        .children(),
+      { size: 'large' }
+    );
 
     settings.saveSettingOnTheFly('useTopicSubscription-seenNotice', true);
   },

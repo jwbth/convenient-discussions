@@ -867,12 +867,11 @@ export default {
   addTalkPageCss() {
     const contentBackgroundColor = $('#content').css('background-color') || '#fff';
 
-    const $backgrounded = skin$({
+    const sidebarColor = skin$({
       timeless: '#mw-content-container',
       'vector-2022': '.mw-page-container',
       default: 'body',
-    });
-    const sidebarColor = $backgrounded.css('background-color');
+    }).css('background-color');
     const metadataFontSize = parseFloat(
       ((13 / 14) * cd.g.contentFontSize / defaultFontSize).toFixed(7)
     );

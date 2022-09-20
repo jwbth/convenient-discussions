@@ -87,7 +87,7 @@ function setStrings() {
  *
  * @private
  */
-function maybeAddFooterLink() {
+function maybeAddFooterSwitcher() {
   if (!mw.config.get('wgIsArticle')) return;
 
   const enable = !controller.isTalkPage();
@@ -101,12 +101,12 @@ function maybeAddFooterLink() {
     .appendTo($li);
   if (enable) {
     $a.on('click', (e) => {
-      if (!e.ctrlKey && !e.shiftKey && !e.metaKey) {
-        e.preventDefault();
-        history.pushState(history.state, '', url.toString());
-        $li.remove();
-        go();
-      }
+      if (e.ctrlKey || e.shiftKey || e.metaKey) return;
+
+      e.preventDefault();
+      history.pushState(history.state, '', url.toString());
+      $li.remove();
+      go();
     });
   }
   getFooter().append($li);
@@ -155,7 +155,7 @@ async function go() {
 
   require('./convenientDiscussions');
 
-  // Don't run again if go() runs the second time (see maybeAddFooterLink()).
+  // Don't run again if `go()` runs the second time (see `maybeAddFooterSwitcher()`).
   if (cd.g.pageWhitelistRegexp === undefined) {
     /**
      * Script configuration. The default configuration is in {@link module:defaultConfig}.
@@ -174,7 +174,7 @@ async function go() {
 
   controller.init();
   controller.loadToTalkPage();
-  maybeAddFooterLink();
+  maybeAddFooterSwitcher();
   maybeTweakAddTopicButton();
   controller.loadToCommentLinksPage();
   addCommentLinksToSpecialSearch();

@@ -615,7 +615,6 @@ export default {
 
     loadedSettings ||= await this.load();
     loadedSettings[key] = value;
-    const promise = this.save(loadedSettings);
-    return promise;
+    return this.save(loadedSettings);
   },
 };

@@ -92,12 +92,11 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       settings.load({ omitLocal: true }),
     ];
 
-    const $loading = $('<div>').text(cd.s('loading-ellipsis'));
     this.loadingPanel = new OO.ui.PanelLayout({
       padded: true,
       expanded: false,
     });
-    this.loadingPanel.$element.append($loading);
+    this.loadingPanel.$element.append($('<div>').text(cd.s('loading-ellipsis')));
 
     this.settingsPanel = new OO.ui.PanelLayout({
       padded: false,

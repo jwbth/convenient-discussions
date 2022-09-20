@@ -189,7 +189,7 @@ class Section extends SectionSkeleton {
 
     const wrapper = document.createElement(tag);
     wrapper.className = 'cd-replyButtonWrapper';
-    wrapper.appendChild(button.element);
+    wrapper.append(button.element);
 
     // The container contains the wrapper that wraps the element ^_^
     let container;
@@ -201,7 +201,7 @@ class Section extends SectionSkeleton {
       container = lastElement;
       container.classList.add('cd-section-button-container');
     }
-    container.appendChild(wrapper);
+    container.append(wrapper);
 
     /**
      * Reply button at the bottom of the first chunk of the section.
@@ -250,7 +250,7 @@ class Section extends SectionSkeleton {
     const container = document.createElement('div');
     container.className = 'cd-section-button-container cd-addSubsectionButton-container';
     container.style.display = 'none';
-    container.appendChild(button.element);
+    container.append(button.element);
 
     this.lastElement.parentNode.insertBefore(container, this.lastElement.nextElementSibling);
 

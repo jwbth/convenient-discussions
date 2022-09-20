@@ -34,10 +34,9 @@ Object.assign(cd, {
    * @param {string} name String name.
    * @param {...*} [params] String parameters (substituted strings, also
    *   {@link module:userRegistry.User User} objects for use in `{{gender:}}`). The last parameter
-   *   can be an object that can have a boolean property `plain` (should the message be returned in
-   *   a plain, not substituted, form) or `parse` (should the message be returned in a parsed form).
-   *   In the `parse` form, wikilinks are replaced with HTML tags, the code is sanitized. Use this
-   *   for strings that have their raw HTML inserted into the page.
+   *   can be an object that can have a boolean property `parse` (should the message be returned in
+   *   a parsed form). In the `parse` form, wikilinks are replaced with HTML tags, the code is
+   *   sanitized. Use this for strings that have their raw HTML inserted into the page.
    * @returns {?string}
    * @memberof convenientDiscussions
    */
@@ -57,14 +56,7 @@ Object.assign(cd, {
 
     isQqxMode ??= /[?&]uselang=qqx(?=&|$)/.test(location.search);
     if (!isQqxMode && mw.messages.get(fullName) !== null) {
-      const message = mw.message(fullName, ...params);
-      if (options.plain) {
-        return message.plain();
-      } else if (options.parse) {
-        return message.parse();
-      } else {
-        return message.text();
-      }
+      return mw.message(fullName, ...params)[options.parse ? 'parse' : 'text']();
     } else {
       const paramsString = params.length ? `: ${params.join(', ')}` : '';
       return `(${fullName}${paramsString})`;

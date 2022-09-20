@@ -72,12 +72,11 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
       mw.loader.using('mediawiki.widgets'),
     ];
 
-    const $loading = $('<div>').text(cd.s('loading-ellipsis'));
     this.loadingPanel = new OO.ui.PanelLayout({
       padded: true,
       expanded: false,
     });
-    this.loadingPanel.$element.append($loading);
+    this.loadingPanel.$element.append($('<div>').text(cd.s('loading-ellipsis')));
 
     this.movePanel = new OO.ui.PanelLayout({
       padded: true,
@@ -182,17 +181,6 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         });
       }
 
-      const $sectionCode = $('<div>');
-      const code = sectionCode.slice(0, 300) + (sectionCode.length >= 300 ? '...' : '');
-      $('<pre>')
-        .addClass('cd-dialog-moveSection-code')
-        .text(code)
-        .appendTo($sectionCode);
-      $('<p>')
-        .addClass('cd-dialog-moveSection-code-note')
-        .text(cd.s('msd-bottom'))
-        .appendTo($sectionCode);
-
       this.controls.summaryEnding = {};
       this.controls.summaryEnding.input = new OO.ui.TextInputWidget({
         // TODO: Take into account the whole summary length, updating the maximum value dynamically.
@@ -211,7 +199,12 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
       this.movePanel.$element.append(
         this.controls.title.field.$element,
         this.controls.keepLink.field?.$element,
-        $sectionCode,
+        $('<pre>')
+          .addClass('cd-dialog-moveSection-code')
+          .text(sectionCode.slice(0, 300) + (sectionCode.length >= 300 ? '...' : '')),
+        $('<p>')
+          .addClass('cd-dialog-moveSection-code-note')
+          .text(cd.s('msd-bottom')),
         this.controls.summaryEnding.field.$element,
       );
 

@@ -2111,26 +2111,31 @@ class Comment extends CommentSkeleton {
       });
     }
 
-    const $fullDiffLink = $('<a>')
-      .attr('href', this.getSourcePage().getUrl({
-        oldid: revisionIdLesser,
-        diff: revisionIdGreater,
-      }))
-      .attr('target', '_blank')
+    const $message = $('<div>')
+      .append(
+        $cleanDiff,
+        $('<div>')
+          .addClass('cd-commentDiffView-below')
+          .append(
+            $('<a>')
+              .attr('href', this.getSourcePage().getUrl({
+                oldid: revisionIdLesser,
+                diff: revisionIdGreater,
+              }))
+              .attr('target', '_blank')
 
-      // Make it work in https://ru.wikipedia.org/wiki/User:Serhio_Magpie/instantDiffs.js
-      .attr('data-instantdiffs-link', 'link')
+              // Make it work in https://ru.wikipedia.org/wiki/User:Serhio_Magpie/instantDiffs.js
+              .attr('data-instantdiffs-link', 'link')
 
-      .text(cd.s('comment-diff-full'));
-    const $historyLink = $('<a>')
-      .attr('href', this.getSourcePage().getUrl({ action: 'history' }))
-      .attr('target', '_blank')
-      .text(cd.s('comment-diff-history'));
-    const $below = $('<div>')
-      .addClass('cd-commentDiffView-below')
-      .append($fullDiffLink, cd.sParse('dot-separator'), $historyLink);
-
-    const $message = $('<div>').append($cleanDiff, $below);
+              .text(cd.s('comment-diff-full')),
+            cd.sParse('dot-separator'),
+            $('<a>')
+              .attr('href', this.getSourcePage().getUrl({ action: 'history' }))
+              .attr('target', '_blank')
+              .text(cd.s('comment-diff-history'))
+          )
+      )
+      .children();
     mw.hook('wikipage.content').fire($message);
     OO.ui.alert($message, {
       title: cd.s('comment-diff-title'),
@@ -2504,22 +2509,28 @@ class Comment extends CommentSkeleton {
   async generateDiffView() {
     const edit = await this.findEdit();
     const diffLink = await this.getDiffLink();
-    const $nextDiffLink = $('<a>')
-      .addClass('cd-diffView-nextDiffLink')
-      .attr('href', diffLink.replace(/&diff=(\d+)/, '&oldid=$1&diff=next'))
-      .attr('target', '_blank')
-
-      // Make it work in https://ru.wikipedia.org/wiki/User:Serhio_Magpie/instantDiffs.js
-      .attr('data-instantdiffs-link', 'link')
-
-      .text(cd.mws('nextdiff'));
-    const $above = $('<div>').append($nextDiffLink);
-    const $summaryText = wrap(edit.parsedcomment, { targetBlank: true }).addClass('comment');
-    $above.append(cd.sParse('cld-summary'), cd.mws('colon-separator'), $summaryText);
-    const $diffBody = wrapDiffBody(edit.diffBody);
     return $('<div>')
       .addClass('cd-diffView-diff')
-      .append($above, $diffBody);
+      .append(
+        $('<div>')
+          .append(
+            $('<a>')
+              .addClass('cd-diffView-nextDiffLink')
+              .attr('href', diffLink.replace(/&diff=(\d+)/, '&oldid=$1&diff=next'))
+              .attr('target', '_blank')
+
+              // Make it work in https://ru.wikipedia.org/wiki/User:Serhio_Magpie/instantDiffs.js
+              .attr('data-instantdiffs-link', 'link')
+
+              .text(cd.mws('nextdiff'))
+          )
+          .append(
+            cd.sParse('cld-summary'),
+            cd.mws('colon-separator'),
+            wrap(edit.parsedcomment, { targetBlank: true }).addClass('comment'),
+          ),
+        wrapDiffBody(edit.diffBody),
+      );
   }
 
   /**
@@ -2762,7 +2773,7 @@ class Comment extends CommentSkeleton {
     });
     $question.find('a').attr('data-instantdiffs-link', 'link');
     const $diff = await this.generateDiffView();
-    const $content = $('<div>').append($question, $diff);
+    const $content = $('<div>').append($question, $diff).children();
     mw.hook('wikipage.content').fire($content);
 
     if (await showConfirmDialog($content, { size: 'larger' }) === 'accept') {
@@ -3989,31 +4000,28 @@ class Comment extends CommentSkeleton {
   addSubitem(name, position) {
     /*
       There are 3 basic cases that we account for:
-      1.
-          : Comment.
+      1.  : Comment.
           [End of the thread.]
         We create a list and an item in it. We also create an item next to the existent item and
         wrap the list into it. We don't add the list to the existent item because that item can be
         entirely a comment part, so at least highlighting would be broken if we do.
-      2.
-          Comment.
+      2.  Comment.
           [No replies, no "Reply to section" button.]
         We create a list and an item in it.
-      3.
-          Comment.
+      3.  Comment.
           : Reply or "Reply to section" button.
         or
           : Comment.
           :: Reply.
-        (this means <dl> next to <div> which is a similar case to the previous one)
+        (this means `<dl>` next to `<div>` which is a similar case to the previous one).
         We create an item in the existent list.
 
-      The lists can be of other type, not necessarily ":".
+      The lists can be of other type, not necessarily `:`.
 
       The resulting structure is:
-        Outer wrapper item element (<dd>, <li>, rarely <div>) - in case 1.
-          Wrapping list element (<ul>) - in cases 1 and 2.
-            Wrapping item element (<li>) - in cases 1, 2, and 3.
+        Outer wrapper item element (`<dd>`, `<li>`, rarely `<div>`) - in case 1.
+          Wrapping list element (`<ul>`) - in cases 1 and 2.
+            Wrapping item element (`<li>`) - in cases 1, 2, and 3.
      */
 
     let wrappingItemTag = 'dd';

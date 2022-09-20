@@ -271,36 +271,40 @@ class BootProcess {
         action: 'reject',
       },
     ];
-    const $body = $('<div>');
-    const $imgOld = $('<img>')
-      .attr('width', 626)
-      .attr('height', 67)
-      .attr('src', '//upload.wikimedia.org/wikipedia/commons/0/08/Convenient_Discussions_comment_-_old_format.png')
-      .addClass('cd-rcnotice-img');
-    const $arrow = $('<img>')
-      .attr('width', 30)
-      .attr('height', 30)
-      .attr('src', "data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.58 8.59L11 14.17L11 2L9 2L9 14.17L3.41 8.59L2 10L10 18L18 10L16.58 8.59Z' fill='black'/%3E%3C/svg%3E")
-      .addClass('cd-rcnotice-img cd-rcnotice-arrow');
-    const $imgNew = $('<img>')
-      .attr('width', 626)
-      .attr('height', 118)
-      .attr('src', '//upload.wikimedia.org/wikipedia/commons/d/da/Convenient_Discussions_comment_-_new_format.png')
-      .addClass('cd-rcnotice-img');
-    const $div = $('<div>')
-      .addClass('cd-rcnotice-text')
-      .html(wrap(cd.sParse('rc-suggestion'), {
-        callbacks: {
-          'cd-notification-settings': () => {
-            controller.showSettingsDialog();
-          },
-        },
-      }));
-    $body.append($imgOld, $arrow, $imgNew, $div);
-    const action = await showConfirmDialog($body, {
-      size: 'large',
-      actions,
-    });
+    const action = await showConfirmDialog(
+      $('<div>')
+        .append(
+          $('<img>')
+            .attr('width', 626)
+            .attr('height', 67)
+            .attr('src', '//upload.wikimedia.org/wikipedia/commons/0/08/Convenient_Discussions_comment_-_old_format.png')
+            .addClass('cd-rcnotice-img'),
+          $('<img>')
+            .attr('width', 30)
+            .attr('height', 30)
+            .attr('src', "data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.58 8.59L11 14.17L11 2L9 2L9 14.17L3.41 8.59L2 10L10 18L18 10L16.58 8.59Z' fill='black'/%3E%3C/svg%3E")
+            .addClass('cd-rcnotice-img cd-rcnotice-arrow'),
+          $('<img>')
+            .attr('width', 626)
+            .attr('height', 118)
+            .attr('src', '//upload.wikimedia.org/wikipedia/commons/d/da/Convenient_Discussions_comment_-_new_format.png')
+            .addClass('cd-rcnotice-img'),
+          $('<div>')
+            .addClass('cd-rcnotice-text')
+            .append(wrap(cd.sParse('rc-suggestion'), {
+              callbacks: {
+                'cd-notification-settings': () => {
+                  controller.showSettingsDialog();
+                },
+              },
+            }).children()),
+        )
+        .children(),
+      {
+        size: 'large',
+        actions,
+      }
+    );
     if (action) {
       const promise = settings.saveSettingOnTheFly(
         'reformatComments',
@@ -917,21 +921,23 @@ class BootProcess {
       return;
     }
 
-    const addSectionButton = new OO.ui.ButtonWidget({
-      label: cd.s('addtopic'),
-      framed: false,
-      classes: ['cd-button-ooui', 'cd-section-button'],
-    }).on('click', () => {
-      CommentFormStatic.createAddSectionForm();
-    });
-    const $container = $('<div>')
-      .addClass('cd-section-button-container cd-addTopicButton-container')
-      .append(addSectionButton.$element)
+    controller.setAddSectionButtonContainer(
+      $('<div>')
+        .addClass('cd-section-button-container cd-addTopicButton-container')
+        .append(
+          (new OO.ui.ButtonWidget({
+            label: cd.s('addtopic'),
+            framed: false,
+            classes: ['cd-button-ooui', 'cd-section-button'],
+          })).on('click', () => {
+            CommentFormStatic.createAddSectionForm();
+          }).$element
+        )
 
-      // If appending to controller.rootElement, it can land on a wrong place, like on 404 pages
-      // with New Topic Tool enabled.
-      .insertAfter(controller.$root);
-    controller.setAddSectionButtonContainer($container);
+        // If appending to `controller.rootElement`, it can land on a wrong place, like on 404 pages
+        // with New Topic Tool enabled.
+        .insertAfter(controller.$root)
+    );
   }
 
   /**
