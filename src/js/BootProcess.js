@@ -21,6 +21,7 @@ import userRegistry from './userRegistry';
 import {
   defined,
   definedAndNotNull,
+  getFooter,
   getLastArrayElementOrSelf,
   underlinesToSpaces,
   wrap,
@@ -690,6 +691,21 @@ class BootProcess {
       type: 'warn',
       autoHide: false,
     });
+  }
+
+  /**
+   * Add a settings link to the page footer.
+   */
+  addSettingsLinkToFooter() {
+    getFooter().append(
+      $('<li>').append(
+        $('<a>')
+          .text(cd.s('footer-settings'))
+          .on('click', () => {
+            controller.showSettingsDialog();
+          })
+      )
+    );
   }
 
   /**
@@ -1704,6 +1720,8 @@ class BootProcess {
       // sees it.
       controller.restoreRelativeScrollPosition();
     }
+
+    this.addSettingsLinkToFooter();
 
     /**
      * The script has processed the page.

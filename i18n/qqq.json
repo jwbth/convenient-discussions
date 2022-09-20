@@ -273,6 +273,7 @@
 	"notification-part-onthispage": "Piece of the text of the notifications informing the user about new comments on the page (for example, {{msg-wm|Convenient-discussions-notification-toyou}}.",
 	"footer-runcd": "Text of the link in the page footer allowing the user to enable the script on the current page.",
 	"footer-dontruncd": "Text of the link in the page footer allowing the user to disable the script on the current page.",
+	"footer-settings": "Text of the link in the page footer opening the settings dialog.",
 	"sd-title": "Title of the script settings dialog.",
 	"sd-save": "Label of the button in the script settings dialog.\n\n{{identical|Save}}",
 	"sd-reload": "Label of the button in the settings dialog.\n\n{{identical|Reload}}",

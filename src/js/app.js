@@ -12,7 +12,7 @@ import controller from './controller';
 import debug from './debug';
 import defaultConfig from '../../config/default';
 import { addCommentLinksToSpecialSearch } from './addCommentLinks';
-import { mergeRegexps, skin$, unique } from './utils';
+import { getFooter, mergeRegexps, unique } from './utils';
 
 let config;
 
@@ -109,11 +109,7 @@ function maybeAddFooterLink() {
       }
     });
   }
-  skin$({
-    monobook: '#f-list',
-    modern: '#footer-info',
-    default: '#footer-places',
-  }).append($li);
+  getFooter().append($li);
 }
 
 /**

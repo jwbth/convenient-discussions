@@ -799,6 +799,19 @@ export function skin$(selectors) {
 }
 
 /**
+ * Get the footer element.
+ *
+ * @returns {external:jQuery}
+ */
+export function getFooter() {
+  return skin$({
+    monobook: '#f-list',
+    modern: '#footer-info',
+    default: '#footer-places',
+  });
+}
+
+/**
  * Helper to add an element to the array if the array doesn't already include the element. Doesn't
  * add `undefined` elements.
  *
