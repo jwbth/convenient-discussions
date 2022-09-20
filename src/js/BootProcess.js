@@ -765,7 +765,7 @@ class BootProcess {
       getElementByClassName: (node, className) => node.querySelector(`.${className}`),
       cloneNode: (node) => node.cloneNode(),
       rootElement: controller.rootElement,
-      areThereOutdents: controller.areThereOutdents(),
+      areThereOutdents: controller.areThereOutdents.bind(controller),
       handleDtMarkup,
     });
 

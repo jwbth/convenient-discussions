@@ -360,7 +360,7 @@ class CommentSkeleton {
 
       (
         step !== 'up' &&
-        this.parser.context.areThereOutdents &&
+        this.parser.context.areThereOutdents() &&
         this.parser.context.getElementByClassName(element, cd.config.outdentClass)
       ) ||
 
@@ -1440,7 +1440,7 @@ class CommentSkeleton {
           }
           return false;
         } else {
-          if (prop === 'logicalLevel' && this.parser.context.areThereOutdents) {
+          if (prop === 'logicalLevel' && this.parser.context.areThereOutdents()) {
             // Outdented comments that are separated from their parents by interjected comments of
             // higher level than the parent.
             cd.comments
@@ -1549,7 +1549,7 @@ class CommentSkeleton {
    * @param {import('./Parser').default} parser
    */
   static processOutdents(parser) {
-    if (!parser.context.areThereOutdents) return;
+    if (!parser.context.areThereOutdents()) return;
 
     [...parser.context.rootElement.getElementsByClassName(cd.config.outdentClass)]
       .reverse()

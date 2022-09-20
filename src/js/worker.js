@@ -410,6 +410,7 @@ function parse() {
   cd.comments = [];
   cd.sections = [];
 
+  let areThereOutdents;
   const parser = new Parser({
     CommentClass: CommentSkeleton,
     SectionClass: SectionSkeleton,
@@ -421,7 +422,12 @@ function parse() {
       return elements[0] || null;
     },
     rootElement,
-    areThereOutdents: Boolean(rootElement.getElementsByClassName(cd.config.outdentClass, 1).length),
+    areThereOutdents: () => {
+      areThereOutdents ??= Boolean(
+        rootElement.getElementsByClassName(cd.config.outdentClass, 1).length
+      );
+      return areThereOutdents;
+    },
     handleDtMarkup: (elements) => {
       elements.forEach((el) => {
         el.remove();

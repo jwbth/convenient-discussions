@@ -139,15 +139,40 @@ class Parser {
       'cd-comment-part',
       'ombox',
       ...cd.config.closedDiscussionClasses,
+      cd.config.outdentClass,
     ];
-    if (this.context.areThereOutdents) {
-      this.foreignComponentClasses.push(cd.config.outdentClass);
+
+    this.elementsToExclude = [
+      ...this.context.rootElement.getElementsByTagName('blockquote'),
+      ...flat(
+        cd.config.elementsToExcludeClasses
+          .map((name) => [...this.context.rootElement.getElementsByClassName(name)])
+      ),
+    ];
+  }
+
+  /**
+   * Handle outdent character sequences added by
+   * {@link https://en.wikipedia.org/wiki/User:Alexis_Jazz/Bawl Bawl}.
+   *
+   * @param {string} text
+   * @param {Node|external:Node} node
+   * @private
+   */
+  handleBawlOutdents(text, node) {
+    // While we're here, wrap outdents inserted by Bawl into a span.
+    if (!/^┌─*┘$/.test(text)) return;
+
+    const span = document.createElement('span');
+    span.className = cd.config.outdentClass;
+    span.textContent = text;
+    if (node.nextSibling?.tagName === 'BR') {
+      node.nextSibling.remove();
     }
 
-    const blockquotes = [...this.context.rootElement.getElementsByTagName('blockquote')];
-    const elementsToExcludeByClass = cd.config.elementsToExcludeClasses
-      .map((name) => [...this.context.rootElement.getElementsByClassName(name)]);
-    this.elementsToExclude = [...blockquotes, ...flat(elementsToExcludeByClass)];
+    // Don't have `Node#replaceChild` in the worker.
+    node.parentNode.insertBefore(span, node);
+    node.remove();
   }
 
   /**
@@ -169,7 +194,9 @@ class Parser {
 
     return this.context.getAllTextNodes()
       .map((node) => {
-        const { date, match } = parseTimestamp(node.textContent) || {};
+        const text = node.textContent;
+        this.handleBawlOutdents(text, node);
+        const { date, match } = parseTimestamp(text) || {};
         if (date && !this.elementsToExclude.some((el) => el.contains(node))) {
           return { node, date, match };
         }
