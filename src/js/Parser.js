@@ -153,16 +153,13 @@ class Parser {
 
   /**
    * Handle outdent character sequences added by
-   * {@link https://en.wikipedia.org/wiki/User:Alexis_Jazz/Bawl Bawl}.
+   * {@link https://en.wikipedia.org/wiki/User:Alexis_Jazz/Factotum Factotum}.
    *
    * @param {string} text
    * @param {Node|external:Node} node
    * @private
    */
-  handleBawlOutdents(text, node) {
-    // While we're here, wrap outdents inserted by Bawl into a span.
-    if (!/^┌─*┘$/.test(text)) return;
-
+  handleFactotumOutdents(text, node) {
     const span = document.createElement('span');
     span.className = cd.config.outdentClass;
     span.textContent = text;
@@ -195,7 +192,16 @@ class Parser {
     return this.context.getAllTextNodes()
       .map((node) => {
         const text = node.textContent;
-        this.handleBawlOutdents(text, node);
+
+        // While we're here, wrap outdents inserted by Factotum into a span.
+        if (
+          /^┌─*┘$/.test(text) &&
+          !node.parentNode.classList.contains(cd.config.outdentClass) &&
+          !node.parentNode.parentNode.classList.contains(cd.config.outdentClass)
+        ) {
+          this.handleFactotumOutdents(text, node);
+        }
+
         const { date, match } = parseTimestamp(text) || {};
         if (date && !this.elementsToExclude.some((el) => el.contains(node))) {
           return { node, date, match };
