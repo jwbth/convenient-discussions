@@ -6,11 +6,13 @@
 ## Features
 * Posting and editing comments without switching to a separate page
   * @mentions, [[#comment links]], [[wikilinks]], {{templates}}, and \<tags> autocomplete
+  * Quoting comments with formatting preserved
   * Autofilling the edit summary with indication of the addressee of the comment
   * Saving comment drafts to restore the forms' content after unexpected events such as browser crashes
 * Creating topics and subsections
 * Redesigned talk pages, with author and date displayed on top of comments (opt-in) and thin lines denoting threads
-* Collapsible threads
+* Handling "outdent" templates
+* Collapsible (and autocollapsible) threads
 * Comment timestamps in local time and arbitrary format, including relative
 * Highlighting and navigating new comments (via the navigation panel or the table of contents)
 * Highlighting own comments
