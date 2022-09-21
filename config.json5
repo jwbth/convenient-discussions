@@ -76,6 +76,13 @@
       },
     },
     {
+      server: 'fr.wikipedia.org',
+      default: {
+        source: 'w-fr.js',
+        target: 'User:Jack who built the house/convenientDiscussions.js',
+      },
+    },
+    {
       server: 'commons.wikimedia.org',
       default: {
         source: 'commons.js',
