@@ -33,6 +33,7 @@ import {
   getLastArrayElementOrSelf,
   getVisibilityByRects,
   isCmdModifierPressed,
+  isHeadingNode,
   isInline,
   isInputFocused,
   isProbablyTalkPage,
@@ -533,7 +534,8 @@ export default {
             // cd.g.contentFontSize (we're unlikely to see a bigger gap between elements).
             if (
               rect.top > cd.g.bodyScrollPaddingTop + cd.g.contentFontSize &&
-              this.scrollData.element
+              this.scrollData.element &&
+              !isHeadingNode(node)
             ) {
               break;
             }
