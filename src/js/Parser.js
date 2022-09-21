@@ -219,8 +219,8 @@ class Parser {
   }
 
   /**
-   * Given a link node, enrich the author data and return a boolean denoting whether the node is a part of the
-   * signature.
+   * Given a link node, enrich the author data and return a boolean denoting whether the node is a
+   * part of the signature.
    *
    * @param {Element|external:Element} link
    * @param {object} authorData
@@ -232,9 +232,9 @@ class Parser {
       authorData.name ||= userName;
       if (authorData.name === userName) {
         if (['user', 'userForeign'].includes(linkType)) {
-          // Don't just break on the second user link because of cases like this:
-          // https://en.wikipedia.org/?diff=1012665097
-          if (authorData.notForeignLink) {
+          // Break only when the second user link is a link to another wiki (but not the other way
+          // around, see an example: https://en.wikipedia.org/?diff=1012665097).
+          if (authorData.notForeignLink && linkType === 'userForeign') {
             return false;
           }
           if (linkType !== 'userForeign') {
@@ -250,8 +250,8 @@ class Parser {
           }
           authorData.talkLink = link;
         } else if (['contribs', 'contribsForeign'].includes(linkType)) {
-          // authorData.contribsNotForeignLink is used only to make sure there are no two contribs
-          // links on the current domain in a signature.
+          // `authorData.contribsNotForeignLink` is used only to make sure there are no two contribs
+          // links to the current domain in a signature.
           if (authorData.contribsNotForeignLink && (authorData.link || authorData.talkLink)) {
             return false;
           }
