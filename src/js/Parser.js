@@ -488,19 +488,17 @@ class Parser {
   }
 
   /**
-   * _For internal use._ Find signatures under the root element given timestamps.
+   * _For internal use._ Find signatures under the root element.
    *
    * Characters before the author link, like "—", aren't considered a part of the signature.
    *
-   * @param {object[]} timestamps
    * @returns {object[]}
    */
-  findSignatures(timestamps) {
-    let signatures = timestamps
+  findSignatures() {
+    let signatures = this.findTimestamps()
       .map(this.timestampToSignature)
       .filter(defined);
-    const unsigneds = this.findUnsigneds();
-    signatures.push(...unsigneds);
+    signatures.push(...this.findUnsigneds());
 
     // Move extra signatures (additional signatures for a comment, if there is more than one) to an
     // array which then assign to a relevant signature (the one which goes first).

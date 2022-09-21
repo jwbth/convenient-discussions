@@ -104,8 +104,7 @@ function removeDtButtonHtmlComments() {
 function findTargets(parser) {
   parser.processAndRemoveDtMarkup();
   const headings = parser.findHeadings();
-  const timestamps = parser.findTimestamps();
-  const signatures = parser.findSignatures(timestamps);
+  const signatures = parser.findSignatures();
   return headings
     .concat(signatures)
     .sort((t1, t2) => parser.context.follows(t1.element, t2.element) ? 1 : -1);

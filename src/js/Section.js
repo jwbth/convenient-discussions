@@ -932,9 +932,7 @@ class Section extends SectionSkeleton {
         link.textContent = span.textContent;
         link.href = `#${this.newComments[0].dtId}`;
         link.onclick = this.scrollToNewComments;
-
-        span.innerHTML = '';
-        span.append(link);
+        span.firstChild.replaceWith(link);
       }
     }
   }

@@ -771,8 +771,7 @@ class BootProcess {
 
     this.parser.processAndRemoveDtMarkup();
     const headings = this.parser.findHeadings();
-    const timestamps = this.parser.findTimestamps();
-    const signatures = this.parser.findSignatures(timestamps);
+    const signatures = this.parser.findSignatures();
     this.targets = headings
       .concat(signatures)
       .sort((t1, t2) => this.parser.context.follows(t1.element, t2.element) ? 1 : -1);
