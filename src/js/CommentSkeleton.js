@@ -500,6 +500,7 @@ class CommentSkeleton {
     return (
       step === 'back' &&
       (!previousPart || previousPart.step === 'up') &&
+      !['DD', 'LI'].includes(node.parentNode.tagName) &&
       (
         ['UL', 'OL'].includes(nextNode.tagName) ||
 
