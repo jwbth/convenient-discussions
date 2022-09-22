@@ -125,7 +125,7 @@ const CommentFormStatic = {
    * Reset the comment form list.
    */
   reset() {
-    this.items = [];
+    this.items.length = 0;
   },
 
   /**
