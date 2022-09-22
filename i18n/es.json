@@ -13,6 +13,7 @@
 			"Jackiezelaya",
 			"Jakeukalane",
 			"Juan t2905",
+			"McDutchie",
 			"Rodney Araujo"
 		]
 	},
@@ -149,7 +150,7 @@
 	"cf-error-getpagecode": "No se pudo obtener el código de la página.",
 	"cf-error-closed": "La discusión está cerrada.",
 	"cf-error-findplace": "No se pudo encontrar un lugar adecuado en el código donde insertar el comentario.",
-	"cf-error-commentlinks-commentnotfound": "No se pudo encontrar el comentario con $1, enlazado en tu comentario, en la página.",
+	"cf-error-commentlinks-commentnotfound": "No se pudo encontrar el comentario con el ID $1, enlazado en tu comentario, en la página.",
 	"cf-error-numberedlist": "No se puede formatear el comentario correctamente sin deformar el marcado de la lista numerada.",
 	"cf-error-numberedlist-table": "Elimina las tablas del comentario.",
 	"cf-error-delete-repliestocomment": "No se puede eliminar el comentario porque contiene respuestas.",

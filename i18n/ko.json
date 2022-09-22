@@ -119,6 +119,7 @@
 	"cf-autocomplete-templates-label": "틀 삽입",
 	"cf-autocomplete-tags-label": "태그 삽입",
 	"cf-autocomplete-commentlinks-text": "$1 @ $2",
+	"cf-popup-richformatting-convert": "위키텍스트로 변환",
 	"dn-confirm-yes": "예",
 	"dn-confirm-no": "아니오",
 	"dn-grantpermission": "사이트에 권한을 부여하십시오.",

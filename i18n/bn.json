@@ -3,6 +3,7 @@
 		"authors": [
 			"Al Riaz Uddin Ripon",
 			"Ankan",
+			"MdsShakil",
 			"R4356th",
 			"Titodutta",
 			"Yahya",
@@ -12,6 +13,10 @@
 	},
 	"script-name": "সুবিধাজনক আলোচনা",
 	"script-name-short": "সুআ",
+	"page-title-reply": "$1-এ উত্তর দেওয়া হচ্ছে",
+	"page-title-edit": "$1-এ সম্পাদনা করা হচ্ছে",
+	"page-title-addsection": "$1-এ নতুন আলোচনা শুরু করা হচ্ছে",
+	"page-title-addsubsection": "$1-এ নতুন উপ-অনুচ্ছেদ শুরু করা হচ্ছে",
 	"cm-gotoparent-tooltip": "মূল মন্তব্যে যান",
 	"cm-copylink": "লিঙ্কটি অনুলিপি করুন",
 	"cm-copylink-tooltip": "লিঙ্কটি অনুলিপি করুন",
