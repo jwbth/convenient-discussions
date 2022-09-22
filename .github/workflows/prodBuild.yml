@@ -56,7 +56,7 @@ jobs:
             REMOTE_HOST: "tools-login.wmflabs.org"
             REMOTE_USER: ${{ secrets.TOOLFORGE_USER }}
             SSH_PRIVATE_KEY: ${{ secrets.TOOLFORGE_KEY }}
-            ARGS: "-rltgoDzvO --delete"
+            ARGS: "-rltgoDzvO"
             SOURCE: "dist/source-maps/"
             TARGET: "/data/project/convenient-discussions/www/static/source-maps"
       - name: Take file ownership to the tool
