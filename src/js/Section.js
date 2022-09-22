@@ -127,6 +127,14 @@ class Section extends SectionSkeleton {
      * @type {external:jQuery}
      */
     this.$heading = $(this.headingElement);
+
+    /**
+     * Is the section visible (`visibility: visible` as opposed to `visibility: hidden`). Can be
+     * `true` when the `improvePerformance` setting is enabled.
+     *
+     * @type {boolean}
+     */
+    this.isHidden = false;
   }
 
   /**
@@ -1923,6 +1931,21 @@ class Section extends SectionSkeleton {
       )
     );
     return realLastElement;
+  }
+
+  /**
+   * _For internal use._ Set the `visibility` CSS value of the section.
+   *
+   * @param {boolean} show Show or hide.
+   */
+  updateVisibility(show) {
+    if (Boolean(show) !== this.isHidden) return;
+
+    this.elements ||= controller.getRangeContents(this.headingElement, this.findRealLastElement());
+    this.isHidden = !show;
+    this.elements.forEach((el) => {
+      el.classList.toggle('cd-section-hidden', !show);
+    });
   }
 }
 

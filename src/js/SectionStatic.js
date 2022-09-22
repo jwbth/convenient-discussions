@@ -302,7 +302,8 @@ export default {
    * setting is enabled.
    */
   maybeUpdateVisibility() {
-    if (!this.items.length || !settings.get('improvePerformance') || !controller.isLongPage()) {
+    clearTimeout(this.maybeUnhideTimeout);
+    if (!settings.get('improvePerformance') || !this.items.length || !controller.isLongPage()) {
       return;
     }
 
@@ -355,17 +356,23 @@ export default {
         subsectionsToHide.includes(section)
       ))
       .forEach((section) => {
-        const shouldHide = Boolean(firstSectionToHide && section.index >= firstSectionToHide.index);
-        if (shouldHide === section.isHidden) return;
-
-        section.elements ||= controller.getRangeContents(
-          section.headingElement,
-          section.findRealLastElement()
+        section.updateVisibility(
+          !(firstSectionToHide && section.index >= firstSectionToHide.index)
         );
-        section.isHidden = shouldHide;
-        section.elements.forEach((el) => {
-          el.classList.toggle('cd-section-hidden', shouldHide);
-        });
       });
+  },
+
+  /**
+   * _For internal use._ Unhide the sections. This is called
+   */
+  maybeUnhideAll() {
+    // Wait until `document.hidden` updates.
+    this.maybeUnhideTimeout = setTimeout(() => {
+      if (!controller.isLongPage() || document.hidden) return;
+
+      this.items.forEach((section) => {
+        section.updateVisibility(true);
+      });
+    }, 500);
   },
 };

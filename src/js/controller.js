@@ -943,7 +943,11 @@ export default {
       }
       pageNav.update();
 
-      SectionStatic.maybeUpdateVisibility();
+      // When the document has no focus, all sections are visible (see
+      // `SectionStatic.maybeUnhideAll()`).
+      if (document.hasFocus()) {
+        SectionStatic.maybeUpdateVisibility();
+      }
     };
 
     // Throttle handling scroll to run not more than once in 300ms. Wait before running, otherwise

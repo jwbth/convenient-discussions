@@ -1478,6 +1478,13 @@ class BootProcess {
       .on('horizontalscroll.cd visibilitychange', controller.handleHorizontalScroll)
       .on('selectionchange', controller.handleSelectionChange);
 
+    if (settings.get('improvePerformance')) {
+      // Unhide when the user opens a search box to allow searching the full page.
+      $(window)
+        .on('focus', SectionStatic.maybeUpdateVisibility.bind(SectionStatic))
+        .on('blur', SectionStatic.maybeUnhideAll.bind(SectionStatic));
+    }
+
     $(window)
       .on('resize orientationchange', controller.handleWindowResize)
       .on('popstate', controller.handlePopState);
