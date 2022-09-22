@@ -935,7 +935,11 @@ export default {
     // Scroll will be handled when the autoscroll is finished.
     if (this.isAutoScrolling()) return;
 
-    const actuallyHandle = () => {
+    // Throttle handling scroll to run not more than once in 300ms. Wait before running, otherwise
+    // comments may be registered as seen after a press of Page Down/Page Up. One scroll in Chrome,
+    // Firefox with Page Up/Page Down takes a little less than 200ms, but 200ms proved to be not
+    // enough, so we try 300ms.
+    postponements.add('scroll', () => {
       if (this.isAutoScrolling()) return;
 
       if (this.isPageActive()) {
@@ -949,13 +953,7 @@ export default {
       if (document.hasFocus()) {
         SectionStatic.maybeUpdateVisibility();
       }
-    };
-
-    // Throttle handling scroll to run not more than once in 300ms. Wait before running, otherwise
-    // comments may be registered as seen after a press of Page Down/Page Up. One scroll in Chrome,
-    // Firefox with Page Up/Page Down takes a little less than 200ms, but 200ms proved to be not
-    // enough, so we try 300ms.
-    postponements.add('scroll', actuallyHandle, 300);
+    }, 300);
 
     if (window.scrollX !== this.lastScrollX) {
       $(document).trigger('horizontalscroll.cd');

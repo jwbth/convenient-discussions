@@ -1363,8 +1363,11 @@ class BootProcess {
 
       CommentStatic.configureAndAddLayers(CommentStatic.getAll().filter((c) => c.isNew));
 
-      const unseenComments = CommentStatic.getAll().filter((comment) => comment.isSeen === false);
-      toc.addNewComments(CommentStatic.groupBySection(unseenComments));
+      toc.addNewComments(
+        CommentStatic.groupBySection(
+          CommentStatic.getAll().filter((comment) => comment.isSeen === false)
+        )
+      );
     }
 
     // Reduce the probability that we will wrongfully mark a seen comment as unseen/new by adding a
@@ -1379,8 +1382,8 @@ class BootProcess {
     // even those currently inside the viewport.
     SectionStatic.updateNewCommentsData();
 
-    // Should be below `SectionStatic.addNewCommentCountMetadata()` - `Section#newComments` is set
-    // there. TODO: keep the scrolling position even if adding the comment count moves the content.
+    // Should be below `SectionStatic.updateNewCommentsData()` - `Section#newComments` is set there.
+    // TODO: keep the scrolling position even if adding the comment count moves the content.
     // (Currently this is done in `toc.addNewComments()`.)
     toc.addCommentCount();
 
@@ -1463,16 +1466,16 @@ class BootProcess {
    */
   addEventListeners() {
     if (!settings.get('reformatComments')) {
-      // The "mouseover" event allows to capture the state when the cursor is not moving but ends up
+      // The `mouseover` event allows to capture the state when the cursor is not moving but ends up
       // above a comment but not above any comment parts (for example, as a result of scrolling).
       // The benefit may be low compared to the performance cost, but it's unexpected when the user
       // scrolls a comment and it suddenly stops being highlighted because the cursor is between
-      // neighboring <p>'s.
+      // neighboring `<p>`'s.
       $(document).on('mousemove mouseover', controller.handleMouseMove);
     }
 
-    // We need the visibilitychange event because many things may move while the document is hidden,
-    // and the movements are not processed when the document is hidden.
+    // We need the `visibilitychange` event because many things may move while the document is
+    // hidden, and the movements are not processed when the document is hidden.
     $(document)
       .on('scroll visibilitychange', controller.handleScroll)
       .on('horizontalscroll.cd visibilitychange', controller.handleHorizontalScroll)
@@ -1489,8 +1492,8 @@ class BootProcess {
       .on('resize orientationchange', controller.handleWindowResize)
       .on('popstate', controller.handlePopState);
 
-    // Should be above "mw.hook('wikipage.content').fire" so that it runs for the whole page content
-    // as opposed to "$('.cd-comment-author-wrapper')".
+    // Should be above `mw.hook('wikipage.content').fire` so that it runs for the whole page content
+    // as opposed to `$('.cd-comment-author-wrapper')`.
     mw.hook('wikipage.content').add(this.connectToCommentLinks, this.highlightMentions);
     mw.hook('convenientDiscussions.previewReady').add(this.connectToCommentLinks);
 

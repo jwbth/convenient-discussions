@@ -333,7 +333,7 @@ function mapComments(currentComments, otherComments) {
 async function checkForUpdates() {
   if (!controller.isPageActive() || controller.isBooting()) return;
 
-  // We need a value that wouldn't change during awaits.
+  // We need a value that wouldn't change during `await`s.
   const documentHidden = document.hidden;
 
   if (documentHidden && !isBackgroundCheckArranged) {

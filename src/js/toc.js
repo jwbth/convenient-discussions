@@ -530,6 +530,9 @@ const toc = {
    * @private
    */
   addCommentList(comments, target, areCommentsRendered) {
+    // Should never be the case
+    if (!target) return;
+
     // Was 6 initially, then became 5, now 4.
     const itemLimit = 4;
 
@@ -666,12 +669,11 @@ const toc = {
     commentsBySection.forEach((comments, section) => {
       if (!section) return;
 
-      const target = this.getTargetElementForSection(section, areCommentsRendered);
-
-      // Should never be the case
-      if (!target) return;
-
-      this.addCommentList(comments, target, areCommentsRendered);
+      this.addCommentList(
+        comments,
+        this.getTargetElementForSection(section, areCommentsRendered),
+        areCommentsRendered
+      );
     });
 
     if (!this.isInSidebar()) {
