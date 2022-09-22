@@ -302,7 +302,6 @@ export default {
    * setting is enabled.
    */
   maybeUpdateVisibility() {
-    clearTimeout(this.maybeUnhideTimeout);
     if (!settings.get('improvePerformance') || !this.items.length || !controller.isLongPage()) {
       return;
     }
@@ -366,13 +365,10 @@ export default {
    * _For internal use._ Unhide the sections. This is called
    */
   maybeUnhideAll() {
-    // Wait until `document.hidden` updates.
-    this.maybeUnhideTimeout = setTimeout(() => {
-      if (!controller.isLongPage() || document.hidden) return;
+    if (!controller.isLongPage()) return;
 
-      this.items.forEach((section) => {
-        section.updateVisibility(true);
-      });
-    }, 500);
+    this.items.forEach((section) => {
+      section.updateVisibility(true);
+    });
   },
 };
