@@ -239,11 +239,11 @@ export default {
   },
 
   /**
-   * _For internal use._ Add the new comment count to the metadata elements of the sections.
+   * _For internal use._ Update the new comments data for sections and render the updates.
    */
-  addNewCommentCountMetadata() {
+  updateNewCommentsData() {
     this.items.forEach((section) => {
-      section.addNewCommentCountMetadata();
+      section.updateNewCommentsData();
     });
   },
 

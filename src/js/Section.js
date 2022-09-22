@@ -916,16 +916,7 @@ class Section extends SectionSkeleton {
    * of load".)
    */
   addNewCommentCountMetadata() {
-    if (this.level !== 2) return;
-
-    /**
-     * List of new comments in the section. ("New" actually means "unseen at the moment of load".)
-     *
-     * @type {import('./Comment').default[]}
-     */
-    this.newComments = this.comments.filter((comment) => comment.isSeen === false);
-
-    if (!this.newComments.length) return;
+    if (this.level !== 2 || !this.newComments.length) return;
 
     const html = cd.sParse(
       'section-metadata-commentcount-new',
@@ -943,6 +934,20 @@ class Section extends SectionSkeleton {
         span.firstChild.replaceWith(link);
       }
     }
+  }
+
+  /**
+   * _For internal use._ Update the new comments data for the section and render the updates.
+   */
+  updateNewCommentsData() {
+    /**
+     * List of new comments in the section. ("New" actually means "unseen at the moment of load".)
+     *
+     * @type {import('./Comment').default[]}
+     */
+    this.newComments = this.comments.filter((comment) => comment.isSeen === false);
+
+    this.addNewCommentCountMetadata();
   }
 
   /**

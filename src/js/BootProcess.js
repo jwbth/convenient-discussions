@@ -1377,7 +1377,7 @@ class BootProcess {
 
     // Should be before `CommentStatic.registerSeen()` to include all new comments in the metadata,
     // even those currently inside the viewport.
-    SectionStatic.addNewCommentCountMetadata();
+    SectionStatic.updateNewCommentsData();
 
     // Should be below `SectionStatic.addNewCommentCountMetadata()` - `Section#newComments` is set
     // there. TODO: keep the scrolling position even if adding the comment count moves the content.
