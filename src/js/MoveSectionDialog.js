@@ -3,7 +3,7 @@ import CdError from './CdError';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
-import { buildEditSummary, focusInput, wrap } from './utils';
+import { buildEditSummary, focusInput, sleep, wrap } from './utils';
 import { createCheckboxField, tweakUserOoUiClass } from './ooui';
 import { encodeWikilink, endWithTwoNewlines, findFirstTimestamp } from './wikitext';
 
@@ -215,9 +215,9 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
       // A dirty workaround to avoid a scrollbar appearing when the window is loading. Couldn't
       // figure out a way to do this out of the box.
       this.$body.css('overflow', 'hidden');
-      setTimeout(() => {
+      sleep(500).then(() => {
         this.$body.css('overflow', '');
-      }, 500);
+      });
 
       this.updateSize();
       this.popPending();

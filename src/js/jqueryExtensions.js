@@ -6,7 +6,7 @@
 
 import cd from './cd';
 import controller from './controller';
-import { isMetadataNode } from './utils';
+import { isMetadataNode, sleep } from './utils';
 
 /**
  * jQuery. See {@link external:jQuery.fn} for extensions.
@@ -149,9 +149,8 @@ export default {
       }
     } else {
       if (callback) {
-        // Wrap in setTimeout() for a more smooth animation in case there is .focus() in the
-        // callback.
-        setTimeout(() => {
+        // Add `sleep()` for a more smooth animation in case there is `.focus()` in the callback.
+        sleep().then(() => {
           this.cdScrollTo(alignment, smooth, callback);
         });
       } else {

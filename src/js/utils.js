@@ -1045,3 +1045,14 @@ export function countOccurrences(string, regexp) {
   }
   return (string.match(regexp) || []).length;
 }
+
+/**
+ * Wait for a specified number of milliseconds (a wrapper around
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/setTimeout setTimeout()}).
+ *
+ * @param {number} [ms] Nubmer of milliseconds to sleep.
+ * @returns {Promise}
+ */
+export function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

@@ -66,8 +66,8 @@ export const relativeTimeThresholds = [
     step: 60 * 24,
   },
 
-  // We don't update months and years. Additional setTimeouts are costly, and algorithm for them is
-  // also too complex.
+  // We don't update months and years. Additional `setTimeout`s are costly, and algorithm for them
+  // is also too complex.
 ];
 
 /**

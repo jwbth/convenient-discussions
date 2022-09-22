@@ -4,7 +4,7 @@ import controller from './controller';
 import settings from './settings';
 import subscriptions from './subscriptions';
 import { confirmCloseDialog, handleDialogError, isDialogUnsaved, tweakUserOoUiClass } from './ooui';
-import { focusInput, unique } from './utils';
+import { focusInput, sleep, unique } from './utils';
 import { getPageIds, getPageTitles } from './apiWrappers';
 
 /**
@@ -163,9 +163,9 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
       // A dirty workaround to avoid a scrollbar appearing when the window is loading. Couldn't
       // figure out a way to do this out of the box.
       this.$body.css('overflow', 'hidden');
-      setTimeout(() => {
+      sleep(500).then(() => {
         this.$body.css('overflow', '');
-      }, 500);
+      });
 
       this.updateSize();
       this.popPending();

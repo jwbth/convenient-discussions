@@ -15,7 +15,7 @@ import pageRegistry from './pageRegistry';
 import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
 import { brsToNewlines, hideSensitiveCode } from './wikitext';
-import { defined, ucFirst, unhideText, unique } from './utils';
+import { defined, sleep, ucFirst, unhideText, unique } from './utils';
 
 const autocompleteTimeout = 100;
 
@@ -571,45 +571,45 @@ export async function getUsersByGlobalId(userIds) {
  */
 export function getRelevantUserNames(text) {
   text = ucFirst(text);
-  const promise = new Promise((resolve, reject) => {
-    setTimeout(async () => {
-      try {
-        if (promise !== currentAutocompletePromise) {
-          throw new CdError();
-        }
+  // eslint-disable-next-line no-async-promise-executor
+  const promise = new Promise(async (resolve, reject) => {
+    await sleep(autocompleteTimeout);
+    try {
+      if (promise !== currentAutocompletePromise) {
+        throw new CdError();
+      }
 
-        // First, try to use the search to get only users that have talk pages. Most legitimate
-        // users do, while spammers don't.
+      // First, try to use the search to get only users that have talk pages. Most legitimate
+      // users do, while spammers don't.
+      const resp = await controller.getApi().get({
+        action: 'opensearch',
+        search: text,
+        namespace: 3,
+        redirects: 'resolve',
+        limit: 10,
+      }).catch(handleApiReject);
+
+      const users = resp[1]
+        ?.map((name) => (name.match(cd.g.userNamespacesRegexp) || [])[1])
+        .filter(defined)
+        .filter((name) => !name.includes('/'));
+
+      if (users.length) {
+        resolve(users);
+      } else {
+        // If we didn't succeed with search, try the entire users database.
         const resp = await controller.getApi().get({
-          action: 'opensearch',
-          search: text,
-          namespace: 3,
-          redirects: 'resolve',
-          limit: 10,
+          action: 'query',
+          list: 'allusers',
+          auprefix: text,
         }).catch(handleApiReject);
 
-        const users = resp[1]
-          ?.map((name) => (name.match(cd.g.userNamespacesRegexp) || [])[1])
-          .filter(defined)
-          .filter((name) => !name.includes('/'));
-
-        if (users.length) {
-          resolve(users);
-        } else {
-          // If we didn't succeed with search, try the entire users database.
-          const resp = await controller.getApi().get({
-            action: 'query',
-            list: 'allusers',
-            auprefix: text,
-          }).catch(handleApiReject);
-
-          const users = resp.query.allusers.map((user) => user.name);
-          resolve(users);
-        }
-      } catch (e) {
-        reject(e);
+        const users = resp.query.allusers.map((user) => user.name);
+        resolve(users);
       }
-    }, autocompleteTimeout);
+    } catch (e) {
+      reject(e);
+    }
   });
   currentAutocompletePromise = promise;
 
@@ -634,37 +634,37 @@ export function getRelevantPageNames(text) {
     colonPrefix = true;
   }
 
-  const promise = new Promise((resolve, reject) => {
-    setTimeout(() => {
-      try {
-        if (promise !== currentAutocompletePromise) {
-          throw new CdError();
-        }
-
-        controller.getApi().get({
-          action: 'opensearch',
-          search: text,
-          redirects: 'return',
-          limit: 10,
-        }).then(
-          (resp) => {
-            const regexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
-            const pages = resp[1]?.map((name) => (
-              name
-                .replace(regexp, () => text[0])
-                .replace(/^/, colonPrefix ? ':' : '')
-            ));
-
-            resolve(pages);
-          },
-          (e) => {
-            handleApiReject(e);
-          }
-        );
-      } catch (e) {
-        reject(e);
+  // eslint-disable-next-line no-async-promise-executor
+  const promise = new Promise(async (resolve, reject) => {
+    await sleep(autocompleteTimeout);
+    try {
+      if (promise !== currentAutocompletePromise) {
+        throw new CdError();
       }
-    }, autocompleteTimeout);
+
+      controller.getApi().get({
+        action: 'opensearch',
+        search: text,
+        redirects: 'return',
+        limit: 10,
+      }).then(
+        (resp) => {
+          const regexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
+          const pages = resp[1]?.map((name) => (
+            name
+              .replace(regexp, () => text[0])
+              .replace(/^/, colonPrefix ? ':' : '')
+          ));
+
+          resolve(pages);
+        },
+        (e) => {
+          handleApiReject(e);
+        }
+      );
+    } catch (e) {
+      reject(e);
+    }
   });
   currentAutocompletePromise = promise;
 
@@ -683,36 +683,36 @@ export function getRelevantPageNames(text) {
  * @throws {CdError}
  */
 export function getRelevantTemplateNames(text) {
-  const promise = new Promise((resolve, reject) => {
-    setTimeout(() => {
-      try {
-        if (promise !== currentAutocompletePromise) {
-          throw new CdError();
-        }
-
-        controller.getApi().get({
-          action: 'opensearch',
-          search: text.startsWith(':') ? text.slice(1) : 'Template:' + text,
-          redirects: 'return',
-          limit: 10,
-        }).then(
-          (resp) => {
-            const regexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
-            const templates = resp[1]
-              ?.filter((name) => !/(\/doc|\.css)$/.test(name))
-              .map((name) => text.startsWith(':') ? name : name.slice(name.indexOf(':') + 1))
-              .map((name) => name.replace(regexp, () => text[0]));
-
-            resolve(templates);
-          },
-          (e) => {
-            handleApiReject(e);
-          }
-        );
-      } catch (e) {
-        reject(e);
+  // eslint-disable-next-line no-async-promise-executor
+  const promise = new Promise(async (resolve, reject) => {
+    await sleep(autocompleteTimeout);
+    try {
+      if (promise !== currentAutocompletePromise) {
+        throw new CdError();
       }
-    }, autocompleteTimeout);
+
+      controller.getApi().get({
+        action: 'opensearch',
+        search: text.startsWith(':') ? text.slice(1) : 'Template:' + text,
+        redirects: 'return',
+        limit: 10,
+      }).then(
+        (resp) => {
+          const regexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
+          const templates = resp[1]
+            ?.filter((name) => !/(\/doc|\.css)$/.test(name))
+            .map((name) => text.startsWith(':') ? name : name.slice(name.indexOf(':') + 1))
+            .map((name) => name.replace(regexp, () => text[0]));
+
+          resolve(templates);
+        },
+        (e) => {
+          handleApiReject(e);
+        }
+      );
+    } catch (e) {
+      reject(e);
+    }
   });
   currentAutocompletePromise = promise;
 

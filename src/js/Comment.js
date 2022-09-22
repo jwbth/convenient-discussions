@@ -30,6 +30,7 @@ import {
   getVisibilityByRects,
   isInline,
   saveToLocalStorage,
+  sleep,
   unhideText,
   unique,
   wrap,
@@ -3920,7 +3921,7 @@ class Comment extends CommentSkeleton {
    * @param {boolean} [runAlways=false] Whether to execute the callback even if the gender request
    *   is not needed.
    */
-  maybeRequestAuthorGender(callback, runAlways = false) {
+  async maybeRequestAuthorGender(callback, runAlways = false) {
     if (cd.g.genderAffectsUserString && this.author.isRegistered() && !this.author.getGender()) {
       let errorCallback;
       if (!this.genderRequest) {
@@ -3935,7 +3936,8 @@ class Comment extends CommentSkeleton {
       }
     } else {
       if (runAlways) {
-        setTimeout(callback);
+        await sleep();
+        callback();
       }
     }
   }

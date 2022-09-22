@@ -4,6 +4,8 @@
  * @module postponements
  */
 
+import { sleep } from './utils';
+
 export default {
   list: {},
 
@@ -15,14 +17,13 @@ export default {
    * @param {Function} func
    * @param {number} delay
    */
-  add(label, func, delay) {
+  async add(label, func, delay) {
     if (this.list[label]) return;
 
     this.list[label] = true;
-    setTimeout(() => {
-      this.list[label] = false;
-      func();
-    }, delay);
+    await sleep(delay);
+    this.list[label] = false;
+    func();
   },
 
   /**

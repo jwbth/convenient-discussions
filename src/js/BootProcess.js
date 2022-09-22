@@ -23,6 +23,7 @@ import {
   definedAndNotNull,
   getFooter,
   getLastArrayElementOrSelf,
+  sleep,
   underlinesToSpaces,
   wrap,
 } from './utils';
@@ -1227,9 +1228,9 @@ class BootProcess {
     }
 
     if (comment) {
-      // setTimeout is for Firefox - for some reason, without it Firefox positions the underlay
+      // `sleep()` is for Firefox - for some reason, without it Firefox positions the underlay
       // incorrectly. (TODO: does it still? Need to check.)
-      setTimeout(() => {
+      sleep().then(() => {
         comment.scrollTo({
           smooth: false,
           expandThreads: true,
@@ -1270,9 +1271,8 @@ class BootProcess {
     if (commentIds) {
       const comments = commentIds.map((id) => CommentStatic.getById(id)).filter(definedAndNotNull);
       if (comments.length) {
-        // setTimeout is for Firefox - for some reason, without it Firefox positions the underlay
-        // incorrectly. (TODO: does it still? Need to check.)
-        setTimeout(() => {
+        // `sleep()` for Firefox, as above
+        sleep().then(() => {
           // A tricky case with flashing is when a comment is in a collapsed thread. In this case,
           // we must use Comment#scrollTo to make sure it is flashed when the thread is uncollapsed
           // by clicking a link in the notification.
@@ -1296,8 +1296,8 @@ class BootProcess {
           history.pushState(history.state, '', `#${section.id}`);
         }
 
-        // setTimeout for Firefox, as above
-        setTimeout(() => {
+        // `sleep()` for Firefox, as above
+        sleep().then(() => {
           section.$heading.cdScrollTo('top', false);
         });
       }

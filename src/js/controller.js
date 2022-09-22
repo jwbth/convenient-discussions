@@ -39,6 +39,7 @@ import {
   isProbablyTalkPage,
   keyCombination,
   skin$,
+  sleep,
   wrap,
 } from './utils';
 import { getUserInfo, htmlToWikitext } from './apiWrappers';
@@ -856,16 +857,16 @@ export default {
   /**
    * _For internal use._ Handles the window `resize` event as well as `orientationchange`.
    */
-  handleWindowResize() {
-    // setTimeout, because it seems like sometimes it doesn't have time to update.
-    setTimeout(() => {
-      this.getContentColumnOffsets(true);
-      CommentStatic.maybeRedrawLayers(true);
-      Thread.updateLines();
-      pageNav.updateWidth();
-      CommentFormStatic.adjustLabels();
-      this.handleScroll();
-    }, cd.g.skin === 'vector-2022' ? 100 : 0);
+  async handleWindowResize() {
+    // `sleep()`, because it seems like sometimes it doesn't have time to update.
+    await sleep(cd.g.skin === 'vector-2022' ? 100 : 0);
+
+    this.getContentColumnOffsets(true);
+    CommentStatic.maybeRedrawLayers(true);
+    Thread.updateLines();
+    pageNav.updateWidth();
+    CommentFormStatic.adjustLabels();
+    this.handleScroll();
   },
 
   /**
@@ -1250,12 +1251,12 @@ export default {
 
     // https://phabricator.wikimedia.org/T68598 "mw.loader state of module stuck at "loading" if
     // request was aborted"
-    setTimeout(() => {
+    sleep(15000).then(() => {
       if (this.booting) {
         this.hideLoadingOverlay();
         console.warn('The loading overlay stays for more than 15 seconds; removing it.');
       }
-    }, 15000);
+    });
 
     this.$contentColumn = skin$({
       timeless: '#mw-content',
@@ -1933,22 +1934,22 @@ export default {
    * {@link https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver MutationObserver}
    * instance to handle page mutations.
    */
-  setupMutationObserver() {
+  async setupMutationObserver() {
     // Create the mutation observer in the next event cycle - let most DOM changes by CD and scripts
     // attached to the hooks to be made first to reduce the number of times it runs in vain. But if
     // we set a long delay, users will see comment backgrounds mispositioned for some time.
-    setTimeout(() => {
-      this.mutationObserver = new MutationObserver((records) => {
-        const layerClassRegexp = /^cd-comment(-underlay|-overlay|Layers)/;
-        if (records.every((record) => layerClassRegexp.test(record.target.className))) return;
+    await sleep();
 
-        this.handlePageMutations();
-      });
-      this.mutationObserver.observe(this.$content.get(0), {
-        attributes: true,
-        childList: true,
-        subtree: true,
-      });
+    this.mutationObserver = new MutationObserver((records) => {
+      const layerClassRegexp = /^cd-comment(-underlay|-overlay|Layers)/;
+      if (records.every((record) => layerClassRegexp.test(record.target.className))) return;
+
+      this.handlePageMutations();
+    });
+    this.mutationObserver.observe(this.$content.get(0), {
+      attributes: true,
+      childList: true,
+      subtree: true,
     });
   },
 

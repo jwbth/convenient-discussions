@@ -29,6 +29,7 @@ import {
   keyCombination,
   removeDoubleSpaces,
   removeFromArrayIfPresent,
+  sleep,
   unhideText,
   unique,
   wrap,
@@ -1574,53 +1575,52 @@ class CommentForm {
    * @param {string} insertedText
    * @private
    */
-  suggestConvertToWikitext(html, insertedText) {
-    setTimeout(() => {
-      const button = new OO.ui.ButtonWidget({
-        label: cd.s('cf-popup-richformatting-convert'),
-        flags: ['progressive'],
-      });
-      button.on('click', async () => {
-        const position = this.commentInput.getRange().to;
-
-        // The input is made disabled, so the content can't be changed by the user during the
-        // loading stage.
-        const text = await controller.getWikitextFromPaste(html, this.commentInput);
-
-        this.commentInput.selectRange(position - insertedText.length, position);
-        insertText(this.commentInput, text);
-        this.destroyInputPopups();
-      });
-      this.destroyInputPopups();
-
-      const $textareaWrapper = settings.get('showToolbar') ?
-        this.$element.find('.wikiEditor-ui-text') :
-        this.commentInput.$element;
-      this.$commentInputPopupFloatableContainer = this.getCommentInputDummyFloatableContainer();
-      $textareaWrapper.append(this.$commentInputPopupFloatableContainer);
-
-      /**
-       * Popup that appears when pasting text that has rich formatting available.
-       *
-       * @type {external:OO.ui.PopupWidget|undefined}
-       */
-      this.richFormattingPopup = new OO.ui.PopupWidget({
-        icon: 'wikiText',
-        label: wrap(cd.sParse('cf-popup-richformatting')),
-        $content: button.$element,
-        head: true,
-        autoClose: true,
-        $autoCloseIgnore: this.commentInput.$input,
-        hideCloseButton: true,
-        $floatableContainer: this.$commentInputPopupFloatableContainer,
-        $container: $textareaWrapper,
-        containerPadding: -10,
-        padded: true,
-        classes: ['cd-popup-richFormatting'],
-      });
-      $textareaWrapper.append(this.richFormattingPopup.$element);
-      this.richFormattingPopup.toggle(true);
+  async suggestConvertToWikitext(html, insertedText) {
+    await sleep();
+    const button = new OO.ui.ButtonWidget({
+      label: cd.s('cf-popup-richformatting-convert'),
+      flags: ['progressive'],
     });
+    button.on('click', async () => {
+      const position = this.commentInput.getRange().to;
+
+      // The input is made disabled, so the content can't be changed by the user during the
+      // loading stage.
+      const text = await controller.getWikitextFromPaste(html, this.commentInput);
+
+      this.commentInput.selectRange(position - insertedText.length, position);
+      insertText(this.commentInput, text);
+      this.destroyInputPopups();
+    });
+    this.destroyInputPopups();
+
+    const $textareaWrapper = settings.get('showToolbar') ?
+      this.$element.find('.wikiEditor-ui-text') :
+      this.commentInput.$element;
+    this.$commentInputPopupFloatableContainer = this.getCommentInputDummyFloatableContainer();
+    $textareaWrapper.append(this.$commentInputPopupFloatableContainer);
+
+    /**
+     * Popup that appears when pasting text that has rich formatting available.
+     *
+     * @type {external:OO.ui.PopupWidget|undefined}
+     */
+    this.richFormattingPopup = new OO.ui.PopupWidget({
+      icon: 'wikiText',
+      label: wrap(cd.sParse('cf-popup-richformatting')),
+      $content: button.$element,
+      head: true,
+      autoClose: true,
+      $autoCloseIgnore: this.commentInput.$input,
+      hideCloseButton: true,
+      $floatableContainer: this.$commentInputPopupFloatableContainer,
+      $container: $textareaWrapper,
+      containerPadding: -10,
+      padded: true,
+      classes: ['cd-popup-richFormatting'],
+    });
+    $textareaWrapper.append(this.richFormattingPopup.$element);
+    this.richFormattingPopup.toggle(true);
   }
 
   /**
