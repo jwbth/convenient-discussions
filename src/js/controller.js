@@ -942,6 +942,8 @@ export default {
         navPanel.updateCommentFormButton();
       }
       pageNav.update();
+
+      SectionStatic.maybeUpdateVisibility();
     };
 
     // Throttle handling scroll to run not more than once in 300ms. Wait before running, otherwise
@@ -954,8 +956,6 @@ export default {
       $(document).trigger('horizontalscroll.cd');
     }
     this.lastScrollX = window.scrollX;
-
-    SectionStatic.maybeUpdateVisibility();
   },
 
   /**
