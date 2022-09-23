@@ -102,7 +102,10 @@ export default {
 	'signatureEndingRegexp': / \(discuter\)/
 };
 
-mw.util.addCSS('\
+let styles;
+mw.hook('convenientDiscussions.beforeParse').add(function () {
+  if (!styles) {
+    styles = mw.util.addCSS('\
 .sitedir-ltr #mw-content-text .cd-commentLevel:not(ol) > dd,\
 .sitedir-ltr #mw-content-text .cd-commentLevel:not(ol) > li,\
 .sitedir-rtl #mw-content-text .mw-content-ltr .cd-commentLevel:not(ol) > dd,\
@@ -140,3 +143,5 @@ mw.util.addCSS('\
   margin-top: 0.5em;\
 }\
 ');
+  }
+});
