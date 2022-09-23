@@ -69,6 +69,7 @@ export default {
   archivePaths: [/\/Archive/],
   signatureEndingRegexp: / \(talk\)$/,
   tagName: 'convenient-discussions',
+  hookToFireWithAuthorWrappers: 'global.userlinks',
   unsignedTemplates: [
     'Unsigned',
     'Non firmato',
