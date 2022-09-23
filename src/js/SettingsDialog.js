@@ -162,6 +162,12 @@ class SettingsDialog extends OO.ui.ProcessDialog {
         return;
       }
 
+      // `this.settings` can be empty after removing the data using the relevant functionality in
+      // UI.
+      if (!Object.keys(this.settings).length) {
+        this.settings = settings.get();
+      }
+
       this.renderControls(this.settings);
 
       this.stackLayout.setItem(this.settingsPanel);

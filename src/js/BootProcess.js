@@ -256,8 +256,8 @@ class BootProcess {
       return false;
     }
 
-    const loadedSettings = await settings.load({ reuse: true });
-    if (definedAndNotNull(loadedSettings.reformatComments)) {
+    const { reformatComments } = await settings.load({ reuse: true });
+    if (definedAndNotNull(reformatComments)) {
       return false;
     }
 
@@ -307,14 +307,10 @@ class BootProcess {
       }
     );
     if (action) {
-      const promise = settings.saveSettingOnTheFly(
-        'reformatComments',
-        action === 'accept',
-        loadedSettings
-      );
       try {
-        await promise;
-        return loadedSettings.reformatComments;
+        const reformatComments = action === 'accept';
+        await settings.saveSettingOnTheFly('reformatComments', reformatComments);
+        return reformatComments;
       } catch (e) {
         mw.notify(cd.s('error-settings-save'), { type: 'error' });
         console.warn(e);
@@ -340,8 +336,8 @@ class BootProcess {
       // Avoid using the setting kept in `mw.user.options`, as it may be outdated. Also don't reuse
       // the previous settings request, as the settings might be changed in
       // `this.maybeSuggestEnableCommentReformatting()`.
-      const loadedSettings = await settings.load();
-      if (['unknown', undefined].includes(loadedSettings.desktopNotifications)) {
+      const { desktopNotifications } = await settings.load();
+      if (['unknown', undefined].includes(desktopNotifications)) {
         const actions = [
           {
             label: cd.s('dn-confirm-yes'),
@@ -363,24 +359,16 @@ class BootProcess {
             OO.ui.alert(cd.s('dn-grantpermission'));
             Notification.requestPermission((permission) => {
               if (permission === 'granted') {
-                promise = settings.saveSettingOnTheFly(
-                  'desktopNotifications',
-                  'all',
-                  loadedSettings
-                );
+                promise = settings.saveSettingOnTheFly('desktopNotifications', 'all');
               } else if (permission === 'denied') {
-                promise = settings.saveSettingOnTheFly(
-                  'desktopNotifications',
-                  'none',
-                  loadedSettings
-                );
+                promise = settings.saveSettingOnTheFly('desktopNotifications', 'none');
               }
             });
           } else if (Notification.permission === 'granted') {
-            promise = settings.saveSettingOnTheFly('desktopNotifications', 'all', loadedSettings);
+            promise = settings.saveSettingOnTheFly('desktopNotifications', 'all');
           }
         } else if (action === 'reject') {
-          promise = settings.saveSettingOnTheFly('desktopNotifications', 'none', loadedSettings);
+          promise = settings.saveSettingOnTheFly('desktopNotifications', 'none');
         }
         if (promise) {
           try {
