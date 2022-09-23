@@ -99,6 +99,10 @@ export default {
 	'clearTemplates': [
 		'Clear'
 	],
+  elementsToExcludeClasses: [
+    'cd-moveMark',
+    'NavFrame',
+  ],
 	'signatureEndingRegexp': / \(discuter\)/
 };
 
