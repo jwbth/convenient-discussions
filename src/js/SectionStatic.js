@@ -362,7 +362,10 @@ export default {
   },
 
   /**
-   * _For internal use._ Unhide the sections. This is called
+   * _For internal use._ Unhide the sections.
+   *
+   * This is called when the "Try to improve performance" setting is enabled and the window is
+   * blurred.
    */
   maybeUnhideAll() {
     if (!controller.isLongPage()) return;

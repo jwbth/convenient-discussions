@@ -1712,9 +1712,8 @@ class BootProcess {
       controller.setupMutationObserver();
 
       if (settings.get('reformatComments') && CommentStatic.getCount()) {
-        // Using the "wikipage.content" hook could theoretically disrupt code that needs to
-        // process the whole page content, if it runs later than CD. But typically CD runs
-        // relatively late.
+        // Using the `wikipage.content` hook could theoretically disrupt code that needs to process
+        // the whole page content, if it runs later than CD. But typically CD runs relatively late.
         mw.hook(cd.config.hookToFireWithAuthorWrappers).fire($('.cd-comment-author-wrapper'));
       }
     }

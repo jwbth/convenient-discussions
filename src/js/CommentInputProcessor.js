@@ -7,7 +7,7 @@ import { hideText, unhideText } from './utils';
  * Class that processes the text in the comment input of the comment form and prepares the wikitext
  * to insert into the page.
  */
-class CommentFormInputProcessor {
+class CommentInputProcessor {
   /**
    * Create a comment text processor.
    *
@@ -101,7 +101,7 @@ class CommentFormInputProcessor {
   }
 
   /**
-   * Process (with {@link CommentFormInputProcessor#processCode}) and hide sensitive code, setting the
+   * Process (with {@link CommentInputProcessor#processCode}) and hide sensitive code, setting the
    * `hidden` property and updating `code`.
    *
    * @private
@@ -606,4 +606,4 @@ class CommentFormInputProcessor {
   }
 }
 
-export default CommentFormInputProcessor;
+export default CommentInputProcessor;
