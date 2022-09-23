@@ -8,14 +8,14 @@ module.exports = {
     "recurse": true,
   },
   "plugins": [
-    "misc/jsdoc-tsimport-plugin-tweaked.js",
+    "jsdoc/tsimport-plugin-tweaked.js",
     "plugins/markdown",
   ],
   "templates": {
     "default": {
       // Template with a changed generation date format compared to the docdash (and JSDoc) standard
       // and several style tweaks. Needs to be updated if the docdash's template gets updated.
-      "layoutFile": "misc/jsdoc-layout.tmpl",
+      "layoutFile": "jsdoc/layout.tmpl",
 
       "useLongnameInNav": true,
     },

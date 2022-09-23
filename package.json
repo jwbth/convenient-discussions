@@ -7,7 +7,7 @@
     "serve": "cross-env NODE_OPTIONS=--max-old-space-size=2048 webpack serve --env dev",
     "configs": "node buildConfigs",
     "deploy": "node --unhandled-rejections=strict deploy",
-    "docs": "rimraf dist/docs && jsdoc -c jsdoc.config.js -a ['undefined']",
+    "docs": "rimraf dist/docs && jsdoc --configure jsdoc/config.js --access ['undefined'] --readme jsdoc/home.md",
     "i18n": "node buildI18n",
     "mirror": "git push --mirror https://gerrit.wikimedia.org/r/mediawiki/gadgets/ConvenientDiscussions",
     "webpack": "webpack",

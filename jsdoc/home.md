@@ -1,0 +1,1 @@
+See "[Development](https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions#Development)" and "[Configuring for a wiki](https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions#Configuring_for_a_wiki)" sections of the script's home page for some guidelines about developing for Convenient Discussions.
