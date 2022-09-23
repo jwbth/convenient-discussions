@@ -643,7 +643,7 @@ class BootProcess {
    * @private
    */
   maybeSuggestDisableDiscussionTools() {
-    if (!cd.g.isDtReplyToolEnabled) return;
+    if (!cd.g.isDtReplyToolEnabled && !cd.g.isDtVisualEnhancementsEnabled) return;
 
     const {
       $wrapper: $message,

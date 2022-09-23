@@ -623,4 +623,6 @@ Object.assign(cd.g, {
   isDtNewTopicToolEnabled: bodyClassList.contains('ext-discussiontools-newtopictool-enabled'),
   isDtTopicSubscriptionEnabled: bodyClassList
     .contains('ext-discussiontools-topicsubscription-enabled'),
+  isDtVisualEnhancementsEnabled: bodyClassList
+    .contains('ext-discussiontools-visualenhancements-enabled'),
 });
