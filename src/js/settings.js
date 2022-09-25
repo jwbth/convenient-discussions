@@ -311,6 +311,7 @@ export default {
           {
             name: 'timestampFormat',
             type: 'radio',
+            label: cd.s('sd-timestampformat'),
             options: [
               {
                 data: 'default',
@@ -318,14 +319,21 @@ export default {
               },
               {
                 data: 'improved',
-                label: cd.s('sd-timestampformat-radio-improved', exampleImproved1, exampleImproved2),
+                label: cd.s(
+                  'sd-timestampformat-radio-improved',
+                  exampleImproved1,
+                  exampleImproved2
+                ),
               },
               {
                 data: 'relative',
-                label: cd.s('sd-timestampformat-radio-relative', exampleRelative1, exampleRelative2),
+                label: cd.s(
+                  'sd-timestampformat-radio-relative',
+                  exampleRelative1,
+                  exampleRelative2
+                ),
               },
             ],
-            label: cd.s('sd-timestampformat'),
             help: cd.s('sd-timestampformat-help'),
           },
         ],
@@ -339,26 +347,6 @@ export default {
             type: 'checkbox',
             label: wrap(cd.sParse('sd-usetopicsubscription', mw.user), { targetBlank: true }),
             help: wrap(cd.sParse('sd-usetopicsubscription-help'), { targetBlank: true }),
-          },
-          {
-            name: 'desktopNotifications',
-            type: 'radio',
-            options: [
-              {
-                data: 'all',
-                label: cd.s('sd-desktopnotifications-radio-all', mw.user),
-              },
-              {
-                data: 'toMe',
-                label: cd.s('sd-desktopnotifications-radio-tome'),
-              },
-              {
-                data: 'none',
-                label: cd.s('sd-desktopnotifications-radio-none'),
-              },
-            ],
-            label: cd.s('sd-desktopnotifications'),
-            help: cd.s('sd-desktopnotifications-help', location.hostname),
           },
           {
             name: 'notifications',
@@ -378,6 +366,27 @@ export default {
                 label: cd.s('sd-notifications-radio-none'),
               },
             ],
+            help: cd.s('sd-notifications-help'),
+          },
+          {
+            name: 'desktopNotifications',
+            type: 'radio',
+            label: cd.s('sd-desktopnotifications'),
+            options: [
+              {
+                data: 'all',
+                label: cd.s('sd-desktopnotifications-radio-all', mw.user),
+              },
+              {
+                data: 'toMe',
+                label: cd.s('sd-desktopnotifications-radio-tome'),
+              },
+              {
+                data: 'none',
+                label: cd.s('sd-desktopnotifications-radio-none'),
+              },
+            ],
+            help: cd.s('sd-desktopnotifications-help', location.hostname),
           },
           {
             name: 'notifyCollapsedThreads',

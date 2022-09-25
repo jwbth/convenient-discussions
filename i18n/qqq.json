@@ -326,6 +326,7 @@
 	"sd-notifications-radio-all": "Label of the item of the radio select labeled with the {{msg-wm|Convenient-discussions-sd-notifications}} message in the settings dialog.\n\n* $1 (optional): [[mw:Manual:Messages API#GENDER in JavaScript|the user object]], for use with <nowiki>{{gender:}}</nowiki> (<code><nowiki>{{gender:</nowiki>$2|''male text''|''female text''|''text for unspecified''}}</code>).",
 	"sd-notifications-radio-tome": "Label of the item of the radio select labeled with the {{msg-wm|Convenient-discussions-sd-notifications}} message in the settings dialog.",
 	"sd-notifications-radio-none": "Label of the item of the radio select labeled with the {{msg-wm|Convenient-discussions-sd-notifications}} message in the settings dialog.",
+	"sd-notifications-help": "Help text for the input labeled with the {{msg-wm|Convenient-discussions-sd-notifications}} message in the settings dialog.",
 	"sd-notifycollapsedthreads": "Label of the checkbox in the settings dialog.",
 	"sd-reformatcomments": "Label of the checkbox in the settings dialog.",
 	"sd-showcontribslink": "Label of the checkbox in the settings dialog.",
