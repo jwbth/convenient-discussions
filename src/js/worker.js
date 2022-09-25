@@ -302,7 +302,16 @@ function addCompareHelperProperties(comment) {
       if (!el.getAttribute('class')) {
         el.removeAttribute('class');
       }
-      htmlToCompare = Object.keys(el.attribs).length ? el.outerHTML : el.innerHTML;
+      if (Object.keys(el.attribs).length) {
+        // https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Правила&oldid=125661313#c-Vladimir_Solovjev-20220921144700-D6194c-1cc-20220919200300
+        // without children has no trailing newline, while with children it has.
+        if (el.lastChild?.data === '\n') {
+          el.lastChild.remove();
+        }
+        htmlToCompare = el.outerHTML;
+      } else {
+        htmlToCompare = el.innerHTML;
+      }
     } else {
       htmlToCompare = el.innerHTML || el.textContent;
     }
