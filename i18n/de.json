@@ -234,7 +234,7 @@
 	"sd-close-confirm": "Die Einstellungen wurden nicht gespeichert. Bist du sicher, dass du das Fenster schließen willst?",
 	"sd-saved": "Die Einstellungen wurden erfolgreich geändert. Lade die Seite neu, um sie anzuwenden.",
 	"sd-reset": "Einstellungen zurücksetzen (in allen Abschnitten)",
-	"sd-dataremoved": "Deine Daten wurden erfolgreich entfernt.",
+	"sd-dataremoved": "Deine Daten wurden erfolgreich entfernt. Um zu verhindern, dass neue Daten erstellt werden, stelle sicher, dass du keine Gesprächsseiten besuchst, bevor du Convenient Discussions deaktivierst.",
 	"sd-error-removedata": "Die Daten auf dem Server konnten nicht gelöscht werden.",
 	"sd-localsetting": "<i>Diese Einstellung unterscheidet sich von Wiki zu Wiki.</i>",
 	"sd-autocompletetypes-mentions": "Erwähnungen",
