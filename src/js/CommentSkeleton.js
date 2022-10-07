@@ -825,7 +825,7 @@ class CommentSkeleton {
         (
           node.tagName === 'P' &&
           !node.textContent.trim() &&
-          [...node.children].every((child) => child.tagName === 'BR')
+          [...node[this.parser.context.childElementsProp]].every((child) => child.tagName === 'BR')
         ) ||
         isMetadataNode(node) ||
         Array.from(node.classList).some((name => ['references', 'reflist-talk'].includes(name)))
@@ -937,7 +937,7 @@ class CommentSkeleton {
             part.node.tagName !== 'UL' &&
             (this.isPartOfList(this.parts[i + 1].node) && this.parts[i + 1].step !== 'replaced')
           ) ||
-          part.node.children.length > 1
+          part.node[this.parser.context.childElementsProp].length > 1
         ) &&
 
         this.isPartOfList(lastPartNode, true)
@@ -1524,8 +1524,9 @@ class CommentSkeleton {
    * worker.
    *
    * @param {Element|external:Element} element
+   * @param {import('./Parser').default} parser
    */
-  static updateOutdentWidth(element) {
+  static updateOutdentWidth(element, parser) {
     if (cd.isWorker) return;
 
     [...element.childNodes].forEach((child) => {
@@ -1536,7 +1537,10 @@ class CommentSkeleton {
           // 1.25 = 2em / 1.6em, where 2em is our margin and 1.6em is the default margin.
           child.style.width = `calc(${number * 1.25}${unit} + ${number * 1.25 / 2}px)`;
         }
-      } else if (!child.children?.length && child.textContent.includes('─')) {
+      } else if (
+        !child[parser.context.childElementsProp]?.length &&
+        child.textContent.includes('─')
+      ) {
         child.textContent = child.textContent
           .replace(/─+/, (s) => '─'.repeat(Math.round(s.length * 1.25)));
       }
@@ -1585,7 +1589,7 @@ class CommentSkeleton {
             childComment.cachedParent.logicalLevel = parentComment;
           }
 
-          this.updateOutdentWidth(element);
+          this.updateOutdentWidth(element, parser);
 
           childComment.isOutdented = true;
           childComment.elements[0].classList.add('cd-comment-outdented');
