@@ -2583,14 +2583,12 @@ class Comment extends CommentSkeleton {
       if (!diffOriginalText.trim()) continue;
 
       revision.diffBody = diffBody;
-      const timestamp = new Date(revision.timestamp).getTime();
-
-      // Add 30 seconds to get better date proximity results since we don't see the seconds number.
-      const thisCommentTimestamp = this.date.getTime() + (30 * 1000);
-
-      const dateProximity = Math.abs(thisCommentTimestamp - timestamp);
-      const fullTextWordOverlap = calculateWordOverlap(diffText, commentFullText);
-      let wordOverlap = Math.max(fullTextWordOverlap, bestDiffPartWordOverlap);
+      const timestamp = new Date(revision.timestamp).setSeconds(0);
+      const dateProximity = Math.abs(this.date.getTime() - timestamp);
+      let wordOverlap = Math.max(
+        calculateWordOverlap(diffText, commentFullText),
+        bestDiffPartWordOverlap
+      );
 
       // Parse wikitext if there is no full overlap and there are templates inside.
       if (wordOverlap < 1 && diffOriginalText.includes('{{')) {
@@ -2643,20 +2641,26 @@ class Comment extends CommentSkeleton {
         prop: ['diff'],
       }).catch(handleApiReject));
       const compareBodies = (await Promise.all(compareRequests)).map((resp) => resp.compare.body);
-      const matches = await this.findDiffMatches(compareBodies, revisions);
-      const bestMatch = matches.sort((m1, m2) => (
+      const matches = (await this.findDiffMatches(compareBodies, revisions)).sort((m1, m2) => (
         m1.wordOverlap === m2.wordOverlap ?
           m1.dateProximity - m2.dateProximity :
           m2.wordOverlap - m1.wordOverlap
-      ))[0];
-      if (!bestMatch) {
+      ));
+      if (
+        !matches.length ||
+        (
+          matches[1] &&
+          matches[0].wordOverlap === matches[1].wordOverlap &&
+          matches[0].dateProximity === matches[1].dateProximity
+        )
+      ) {
         throw new CdError({
           type: 'parse',
         });
       }
 
       // Cache a successful result.
-      this.addingEdit = bestMatch.revision;
+      this.addingEdit = matches[0].revision;
     }
 
     return this.addingEdit;
