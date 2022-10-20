@@ -162,7 +162,7 @@
 	"cf-codeblock-tooltip": "Блок кода",
 	"cf-codeblock-placeholder": "Блок кода",
 	"cf-quote-tooltip": "Цитировать выделенный текст",
-	"cf-quote-placeholder": "Процитированный текст",
+	"cf-quote-placeholder": "Цитируемый текст",
 	"cf-mention-tooltip": "Упомянуть участника(-цу). Удерживайте $1, чтобы упомянуть адресата сообщения, если доступно",
 	"cf-underline-tooltip": "Подчеркнуть",
 	"cf-underline-placeholder": "Подчёркнутый текст",
