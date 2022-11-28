@@ -93,6 +93,7 @@
 	"cf-block-close": "Zamknij",
 	"cf-reaction-templateinheadline": "Nie używaj szablonów w tytule - psują linki do sekcji",
 	"cf-notice-nochanges": "Brak zmian.",
+	"cf-error-getpagecode": "Nie udało się pobrać kodu strony.",
 	"cf-error-pagedoesntexist": "Strona nie istnieje",
 	"cf-confirm-close": "Czy chcesz zamknąć okno edycji? Zmiany zostaną utracone.",
 	"dn-confirm-yes": "Tak",
