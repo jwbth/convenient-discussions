@@ -285,6 +285,7 @@
 	"sd-autocompletetypes-templates": "шаблони",
 	"sd-autocompletetypes-tags": "теги",
 	"sd-autopreview": "Попередній перегляд коментаря під час набору тексту",
+	"sd-collapsethreadslevel-help": "0, щоб ніколи не згортатися автоматично.",
 	"sd-desktopnotifications": "Сповіщення на робочому столі",
 	"sd-desktopnotifications-radio-all": "Повідомляти мене про відповіді на мої коментарі та коментарі в темі, на яку я підписаний",
 	"sd-desktopnotifications-radio-tome": "Повідомляти мене лише про відповіді на мої коментарі",
