@@ -4,7 +4,8 @@
 			"Impartial just",
 			"Jack who built the house",
 			"Kly",
-			"Winston Sung"
+			"Winston Sung",
+			"捍粵者"
 		]
 	},
 	"script-name": "Convenient Discussions",
@@ -354,8 +355,8 @@
 	"error-abusefilter": "您的編輯被防濫用過濾器「$1」給自動拒絕。",
 	"error-editconflict": "編輯衝突。",
 	"error-blocked": "您的帳號或您的 IP 位置被封鎖所以不能做出編輯操作。無法編輯頁面。",
-	"error-pagedeleted": "頁面已被刪除。",
-	"error-pagenotedited": "頁面沒被編輯。",
+	"error-pagedeleted": "頁面已刪除。",
+	"error-pagenotedited": "此頁沒有編輯。",
 	"error-diffnotfound": "無法找出添加到此意見的編輯",
 	"error-diffnotfound-history": "您可以自行在[$1 修訂歷史]查找。",
 	"error-elementhidden": "元素被隱藏。無法滾動。",
