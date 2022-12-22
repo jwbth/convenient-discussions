@@ -263,7 +263,7 @@
 	"pagenav-toc": "Table des matières",
 	"pagenav-pagebottom": "Bas de la page",
 	"pagenav-back": "Retour",
-	"notification-toyou": "$1 {{GENDER:$2|a répondu}} à votre commentaire$3.",
+	"notification-toyou": "$1{{GENDER:$2|}} a répondu à votre commentaire$3.",
 	"notification-toyou-desktop": "$1{{GENDER:$2|}} a répondu à votre commentaire$3 sur la page « $4 ».",
 	"notification-insection": "$1{{GENDER:$2|}} a répondu dans la section « $3 ».",
 	"notification-insection-desktop": "$1{{GENDER:$2|}} a répondu dans la section « $3 » sur la page « $4 ».",

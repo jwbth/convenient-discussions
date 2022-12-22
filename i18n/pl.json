@@ -8,7 +8,7 @@
 			"WaldiSt"
 		]
 	},
-	"script-name": "Wygodne dyskusje",
+	"script-name": "Convenient Discussions",
 	"cm-gotoparent-tooltip": "Przejdź do komentarza nadrzędnego",
 	"cm-gotochild-tooltip": "Wróć do komentarza podrzędnego",
 	"cm-copylink": "Skopiuj link",
@@ -43,6 +43,7 @@
 	"section-metadata-authorcount": "$1 {{plural:$1|osoba|osoby|osób}}",
 	"section-metadata-lastcomment": "Ostatni komentarz:",
 	"cld-summary": "Opis zmian",
+	"cld-help-onlycd": "To łącze będzie działać tylko dla użytkowników, którzy mają zainstalowane Convenient Discussions.",
 	"cld-close": "Zamknij",
 	"thank-confirm": "Podziękuj {{gender:$2|}} $1 za [$3 tą edycję]?",
 	"thank-success": "Powiadomienie o podziękowaniu zostało wysłane.",
@@ -104,6 +105,8 @@
 	"deadanchor-section-reason": "Być może została usunięta lub zmieniono jej nazwę, albo link był nieprawidłowy.",
 	"deadanchor-section-similar": "Na stronie jest jednak podobna do niej: \"[[$1|$2]]\".",
 	"deadanchor-comment-notfound": "[$1 Wyszukiwanie w archiwum] również nie zwróciło żadnych wyników. Sekcja mogła zostać usunięta lub przeniesiona.",
+	"restore-restored-title": "Przywrócono sesję",
+	"restore-restored-text": "Niewysłane formularze komentarzy zostały automatycznie odzyskane.",
 	"rd-headline": "Temat",
 	"rd-close": "Zamknij",
 	"topicsubscription-notice": "Convenient Discussion używa teraz standardowego interfejsu powiadomień do obserwowania sekcji (subskrypcji tematów). Otrzymasz powiadomienie, gdy ktoś opublikuje nowy komentarz w subskrybowanym przez Ciebie temacie. Jeśli masz włączone powiadomienia na pulpicie, nadal będziesz je otrzymywać. Możesz skonfigurować typy powiadomień (strona internetowa, e-mail, aplikacja) w <b>[[Special:Preferences#mw-prefsection-echo|Preferencjach]]</b>. Możesz też wrócić do klasycznego obserwowania sekcji. Zobacz szczegóły w <b><span class=\"cd-notification-notificationSettings\">[[$1|ustawieniach Convenient Discussion]]</span></b>.",
