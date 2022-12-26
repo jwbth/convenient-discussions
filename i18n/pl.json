@@ -94,6 +94,7 @@
 	"cf-block-viewchanges": "Zmiany",
 	"cf-block-close": "Zamknij",
 	"cf-reaction-templateinheadline": "Nie używaj szablonów w tytule - psują linki do sekcji",
+	"cf-reaction-mention-edit": "Ponieważ <em>edytujesz</em> komentarz, [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|powiadomienie o wzmiance]] nie zostanie wysłane. Aby je wysłać, możesz zalinkować użytkownika w podsumowaniu edycji.",
 	"cf-notice-nochanges": "Brak zmian.",
 	"cf-error-getpagecode": "Nie udało się pobrać kodu strony.",
 	"cf-error-pagedoesntexist": "Strona nie istnieje",
