@@ -116,6 +116,7 @@
 	"dn-confirm-no": "Nie",
 	"deadanchor-section-lead": "Nie znaleziono sekcji \"$1\".",
 	"deadanchor-section-exactmatch": "Wygląda na to, że sekcja „$1” została zarchiwizowana. [[$2|Zobacz zarchiwizowaną sekcję]] (lub [$3 wyszukaj ją w archiwum]).",
+	"deadanchor-section-inexactmatch": "Wygląda na to, że sekcja „$1” została zarchiwizowana. [$2 Szukaj w archiwum].",
 	"deadanchor-section-notfound": "[$1 Wyszukiwanie w archiwum] również nie zwróciło żadnych wyników.",
 	"deadanchor-section-reason": "Być może została usunięta lub zmieniono jej nazwę, albo link był nieprawidłowy.",
 	"deadanchor-section-similar": "Na stronie jest jednak podobna do niej: \"[[$1|$2]]\".",
