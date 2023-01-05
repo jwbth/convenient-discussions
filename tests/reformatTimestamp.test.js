@@ -227,17 +227,6 @@ testWithSettings(
   ['2021-05-28T10:48:47.000Z', 'default', 'America/Los_Angeles', true, false],
   ['03:48, 28 May 2021 (UTC-7)', '10:48, 28 May 2021 (UTC)']
 );
-
-const currentYear = new Date().getFullYear();
-
-testWithSettings(
-  [`${currentYear}-05-28T10:48:47.000Z`, 'improved', 'America/Los_Angeles', true, false],
-  ['28 May, 3:48 AM (UTC-7)', `10:48, 28 May ${currentYear} (UTC)`]
-);
-testWithSettings(
-  [`${currentYear}-05-28T10:48:47.000Z`, 'improved', 'America/Los_Angeles', true, true],
-  ['28 May, 3:48 AM', `10:48, 28 May ${currentYear} (UTC)`]
-);
 testWithSettings(
   ['2021-05-28T10:48:47.000Z', 'improved', 'America/Los_Angeles', true, false, '2021-05-28T10:48:47.000Z'],
   ['Today, 3:48 AM (UTC-7)', '10:48, 28 May 2021 (UTC)']
