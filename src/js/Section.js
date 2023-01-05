@@ -1482,7 +1482,7 @@ class Section extends SectionSkeleton {
         equalSignsPattern +
         '[^=].*=+[ \\t\\x01\\x02]*\\n'
       )) ||
-      codeFromSection.match(new RegExp(
+      adjustedCodeFromSection.match(new RegExp(
         '(' +
         mw.util.escapeRegExp(fullHeadingMatch) +
         '[^]*$)'
@@ -1504,7 +1504,7 @@ class Section extends SectionSkeleton {
 
         '[^=].*=+[ \\t\\x01\\x02]*\n'
       )) ||
-      codeFromSection.match(new RegExp(
+      adjustedCodeFromSection.match(new RegExp(
         '(' +
         mw.util.escapeRegExp(fullHeadingMatch) +
         '[^]*$)'
