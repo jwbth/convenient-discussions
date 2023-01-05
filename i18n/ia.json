@@ -276,7 +276,7 @@
 	"sd-removedata-description": "Deler le datos que \"Discussiones practic\" ha colligite: le parametros, le ultime visitas a paginas de discussion, le subscriptiones, e le versiones provisori de commentos non inviate",
 	"sd-removedata-help": "Nota que toto, excepte le parametros global, es delite solmente pro iste wiki. Si tu ha usate \"Discussiones practic\" sur altere wikis e vole deler le datos concernente illos, tu debe deler los sur ille wikis. Vide [[mw:c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions#Data|le pagina principal del script]] pro le detalios sur qual datos le script immagazina e proque e como, e pro le instructiones pro deler cata pecia de datos individualmente. <strong>Nota:</strong> Si tu usa le interfacie standard pro le subscriptiones a topicos, tu subscriptiones non essera removite perque illos face parte de tu conto wiki.",
 	"sd-removedata-confirm": "Isto delera permanentemente le parametros, le ultime visitas a paginas de discussion, le subscriptiones, e le versiones provisori de commentos non inviate. Vole tu continuar?",
-	"sd-dataremoved": "Le datos ha essite delite.",
+	"sd-dataremoved": "Le datos ha essite delite. Pro evitar le creation de nove datos, assecura te de non visitar alcun pagina de discussion ante de disactivar \"Discussiones practic\".",
 	"sd-error-removedata": "Impossibile deler le datos sur le servitor.",
 	"sd-localsetting": "<i>Iste parametro es individual pro cata wiki.</i>",
 	"sd-alloweditotherscomments": "Monstrar un ligamine pro modificar le commentos de altere usatores",
