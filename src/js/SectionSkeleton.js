@@ -123,7 +123,10 @@ class SectionSkeleton {
 
     this.headingNestingLevel = 0;
     while (treeWalker.parentNode()) {
-      this.headingNestingLevel++;
+      // New heading markup after implementing T314714
+      if (!treeWalker.currentNode.classList.contains('mw-heading')) {
+        this.headingNestingLevel++;
+      }
     }
 
     // Find the next heading element
