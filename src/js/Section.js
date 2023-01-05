@@ -975,8 +975,7 @@ class Section extends SectionSkeleton {
         }
       }
     } else {
-      let n = this.headingElement.firstChild;
-      while ((n = n.nextSibling)) {
+      for (let n = this.headingElement.firstChild; n; n = n.nextSibling) {
         if (n.nodeType === Node.COMMENT_NODE && n.textContent.includes('__DTSUBSCRIBELINK__')) {
           [, this.subscribeId] = n.textContent.match('__DTSUBSCRIBELINK__(.+)') || [];
           break;
