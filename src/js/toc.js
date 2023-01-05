@@ -167,7 +167,7 @@ const toc = {
 
     if (!this.tocItems) {
       const links = [...this.$element.get(0).querySelectorAll('li > a')]
-        .filter((link) => link.getAttribute('href') !== '#top-page');
+        .filter((link) => link.getAttribute('href') !== '#');
       try {
         // It is executed first time before added (gray) sections are added to the TOC, so we use a
         // simple algorithm to obtain items.
