@@ -65,3 +65,12 @@ a:not([href]) {
 .cd-dialog-settings .oo-ui-fieldLayout-header > .oo-ui-labelElement-label:first-child {
   display: inline-block;
 }
+
+// T198652
+.mw-selflink {
+  &.cd-comment-timestamp.cd-comment-timestamp,
+  &.oo-ui-buttonElement-button.oo-ui-buttonElement-button {
+    font-weight: normal;
+    cursor: pointer;
+  }
+}
