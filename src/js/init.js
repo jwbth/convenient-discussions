@@ -433,7 +433,7 @@ function addCommentHeaderPrototype(prototypes) {
     const contribsLink = document.createElement('a');
     contribsLink.textContent = cd.s('comment-author-contribs');
 
-    authorLinksWrapper.append(...separator.childNodes, contribsLink);
+    authorLinksWrapper.append(separator, contribsLink);
   }
 
   authorLinksWrapper.append(cd.mws('parentheses-end'));
