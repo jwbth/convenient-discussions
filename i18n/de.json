@@ -82,7 +82,7 @@
 	"section-unwatch-stillwatched": "<strong>Hinweis:</strong> Du siehst diesen Abschnitt immer noch, da er im Abschnitt „$1“ enthalten ist, den du beobachtest.",
 	"section-watch-openpages": "(Benachrichtigungen werden nur angezeigt, solange dieser Tab geöffnet ist.)",
 	"section-watch-pagenotwatched": "<strong>Hinweis:</strong> Du beobachtest den Abschnitt, aber nicht die Seite. Damit neue Kommentare auf deiner Beobachtungsliste hervorgehoben werden, füge die Seite zur Beobachtungsliste hinzu.",
-	"section-watch-error-maxsize": "Die Einstellungen konnten nicht übernommen werden: Die maximale Größe der Beobachtungsliste wird überschritten. <span class=\"cd-notification-editWatchedSections\">Bearbeite die Liste</span>, um das Problem zu beheben.",
+	"section-watch-error-maxsize": "Die Einstellungen konnten nicht aktualisiert werden: Die Größe der Abonnentenliste überschreitet die maximale Größe. <span class=\"cd-notification-editWatchedSections\">[[$1|Bearbeite die Abo-Liste]]</span> um dies zu beheben.",
 	"section-metadata-commentcount": "$1 {{plural:$1|Kommentar|Kommentare}}",
 	"cld-title-comment": "Link zu Kommentar kopieren",
 	"cld-title-section": "Link zu Abschnitt kopieren",
