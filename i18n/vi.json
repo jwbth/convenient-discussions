@@ -5,7 +5,8 @@
 			"Minh Nguyen",
 			"Nghiemtrongdai VN",
 			"NguoiDungKhongDinhDanh",
-			"RiceCracker12"
+			"RiceCracker12",
+			"Tryvix1509"
 		]
 	},
 	"script-name": "Thảo luận tiện lợi",
@@ -59,14 +60,14 @@
 	"comment-diff-history": "Lịch sử sửa đổi",
 	"comment-changedsince": "Bình luận đã thay đổi kể từ lần xem cuối.",
 	"comment-changedsince-short": "Đã thay đổi kể từ lần xem cuối",
-	"comment-deleted": "Bình luận đã bị xóa hoặc ký lại.",
-	"comment-deleted-short": "Đã bị xóa hoặc ký lại",
+	"comment-deleted": "Bình luận đã bị xóa.",
+	"comment-deleted-short": "Đã bị xóa",
 	"section-reply": "Trả lời mục này",
 	"section-addsubsection-to": "Thêm mục con vào “$1”",
 	"section-newcomments": "Có {{plural:$1|một bình luận|$1 bình luận}} mới trong đề mục này (bên ngoài luồng) từ {{plural:$2}}{{gender:$4}}$3. Nhấn để tải lại trang.",
 	"section-unwatch-stillwatched": "<strong>Lưu ý:</strong> bạn vẫn đang theo dõi đề mục này vì nó nằm trong đề mục “$1” mà bạn theo dõi.",
 	"section-watch-openpages": "(Bạn sẽ chỉ nhận được thông báo khi thẻ này đang mở.)",
-	"section-watch-pagenotwatched": "<strong>Lưu ý:</strong> bạn đã theo dõi mục nhưng chưa theo dõi trang. Để các bình luận mới được đánh dấu trên trang danh sách theo dõi của bạn, hãy thêm trang vào danh sách theo dõi.",
+	"section-watch-pagenotwatched": "<strong>Lưu ý:</strong> bạn đã theo dõi mục nhưng không theo dõi trang. Để các bình luận mới được đánh dấu trên trang danh sách theo dõi của bạn, hãy thêm trang vào danh sách theo dõi.",
 	"section-watch-error-maxsize": "Không thể cập nhật tùy chọn: kích thước của danh sách theo dõi vượt quá kích thước tối đa. <span class=\"cd-notification-editWatchedSections\">[[$1|Sửa danh sách theo dõi]]</span> để sửa lỗi.",
 	"section-metadata-commentcount": "$1 {{PLURAL:$1|}}bình luận",
 	"section-metadata-commentcount-new": "$1 {{plural:$1|}}bình luận <span class=\"cd-section-metadata-commentcount-new\">+$2 {{plural:$2|}}mới</span>",
