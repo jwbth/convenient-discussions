@@ -160,6 +160,8 @@
 	"pagenav-toc": "Spis treści",
 	"pagenav-pagebottom": "Dół strony",
 	"pagenav-back": "Powrót",
+	"footer-runcd": "Uruchom jednorazowo Convenient Discussions na tej stronie",
+	"footer-dontruncd": "Nie uruchamiaj (jednorazowo) Convenient Discussions na tej stronie",
 	"footer-settings": "Ustawienia Convenient Discussions",
 	"sd-title": "Ustawienia Convenient Discussions",
 	"sd-save": "Zapisz",
