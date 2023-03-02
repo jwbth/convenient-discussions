@@ -109,7 +109,7 @@
 	"cf-error-couldntedit": "D'Säit gouf eventuell net geännert.",
 	"cf-error-pagedoesntexist": "D'Säit gëtt et net.",
 	"cf-confirm-empty": "Sidd Dir sécher datt Dir eng eidel Bemierkung publizéiere wëllt?",
-	"cf-confirm-delete": "Sidd Dir sécher datt Dir d'Bemierkung läsche wëllt?",
+	"cf-confirm-delete": "Sidd Dir sécher, datt Dir d'Bemierkung läsche wëllt?",
 	"cf-autocomplete-mentions-label": "E Benotzer ernimmen",
 	"cf-autocomplete-wikilinks-label": "Eng Wiki-Säit verlinken",
 	"cf-autocomplete-templates-label": "Eng Schabloun drasetzen",
