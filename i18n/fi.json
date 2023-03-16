@@ -73,7 +73,7 @@
 	"cld-close": "Sulje",
 	"copylink-copied": "Linkki on kopioitu leikepöydälle.",
 	"copylink-error": "Linkkiä ei voitu kopioida.",
-	"thank-confirm": "Kiitä {{gender:$2|}} käyttäjää $1 [[Special:Diff/$3|tästä muokkauksesta]]?",
+	"thank-confirm": "Haluatko lähettää julkiset kiitokset käyttäjälle $1 [[$3|tästä muokkauksesta]]?",
 	"thank-error": "Kiitoksen lähettäminen epäonnistui.",
 	"es-reply": "vastaus",
 	"es-reply-to": "vastaus käyttäjän $1 viestiin",
