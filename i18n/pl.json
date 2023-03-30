@@ -140,6 +140,7 @@
 	"deadanchor-comment-lead": "Nie udało się znaleźć komentarza na stronie.",
 	"deadanchor-comment-exactmatch": "Wygląda na to, że komentarz został zarchiwizowany. [[$1|Zobacz zarchiwizowany komentarz]] (lub [$2 wyszukaj go w archiwum]).",
 	"deadanchor-comment-notfound": "[$1 Wyszukiwanie w archiwum] również nie zwróciło żadnych wyników. Sekcja mogła zostać usunięta lub przeniesiona.",
+	"deadanchor-comment-previous": "[[$1|Poprzedni komentarz tego użytkownika według czasu]].",
 	"restore-restored-title": "Przywrócono sesję",
 	"restore-restored-text": "Niewysłane formularze komentarzy zostały automatycznie odzyskane.",
 	"rd-headline": "Temat",
