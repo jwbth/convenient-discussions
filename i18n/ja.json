@@ -105,7 +105,7 @@
 	"es-delete-comment": "コメントを削除",
 	"es-delete-comment-by": "{{gender:$2|}} $1さんが書いたコメントを削除する",
 	"es-new-topic": "新規トピック",
-	"es-new-subsection": "新規購読",
+	"es-new-subsection": "新しい小見出し",
 	"es-move-from": "[[$1]]から移動",
 	"es-move-to": "[[$1]]へ移動",
 	"cf-headline-topic": "題名",
