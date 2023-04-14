@@ -123,8 +123,7 @@ const toc = {
     this.tocItems = null;
     this.floating = null;
 
-    // Uncomment when T316033 and T316037 are resolved.
-    /* if (this.isInSidebar() && sections) {
+    if (this.isInSidebar() && sections) {
       // Update the section list of the TOC
       mw.hook('wikipage.tableOfContents').fire(hideToc ? [] : sections);
 
@@ -134,23 +133,6 @@ const toc = {
       // the native one, so we need a respective promise. If/when a hook is added in T316025, this
       // should be implemented based on it.
       this.updateTocSectionsPromise = mw.loader.using('mediawiki.template.mustache');
-    } */
-
-    // Workaround for new sections until T316033 and T316037 are resolved. When they are, this block
-    // can be removed altogether.
-    if (this.isInSidebar()) {
-      this.$element
-        .find('.cd-toc-commentCount, .cd-toc-newCommentList, .cd-toc-addedCommentList, .cd-toc-subscriptionIcon, .cd-toc-subscriptionIcon-before')
-          .remove()
-        .end()
-        .find('.cd-toc-addedSection')
-          .removeClass('cd-toc-addedSection')
-          .each((i, element) => {
-            element.firstChild.onclick = '';
-          })
-          .parent()
-          .parent()
-          .addClass('vector-toc-list-item-expanded');
     }
   },
 
