@@ -966,23 +966,9 @@ class Section extends SectionSkeleton {
       return;
     }
 
-    if (cd.g.isDtTopicSubscriptionEnabled) {
-      if (this.headingElement.querySelector('.ext-discussiontools-init-section-subscribe-link')) {
-        const headlineJson = this.headlineElement.dataset.mwComment;
-        try {
-          this.subscribeId = JSON.parse(headlineJson).name;
-        } catch {
-          // Empty
-        }
-      }
-    } else {
-      for (let n = this.headingElement.firstChild; n; n = n.nextSibling) {
-        if (n.nodeType === Node.COMMENT_NODE && n.textContent.includes('__DTSUBSCRIBELINK__')) {
-          [, this.subscribeId] = n.textContent.match('__DTSUBSCRIBELINK__(.+)') || [];
-          break;
-        }
-      }
-    }
+    if (this.level !== 2) return;
+
+    this.subscribeId = this.headlineElement.dataset.mwThreadId;
   }
 
   /**
