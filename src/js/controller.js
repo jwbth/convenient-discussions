@@ -134,7 +134,7 @@ export default {
    */
   setup(htmlToLayOut) {
     // RevisionSlider replaces the #mw-content-text element.
-    if (!this.$content.get(0).parentNode) {
+    if (!this.$content.get(0)?.parentNode) {
       this.$content = $('#mw-content-text');
     }
 
