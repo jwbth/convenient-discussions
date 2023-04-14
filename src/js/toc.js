@@ -25,7 +25,7 @@ class TocItem {
    * @throws {Array.<string|Element>}
    */
   constructor(a) {
-    const textSpan = a.querySelector(toc.isInSidebar() ? '.sidebar-toc-text' : '.toctext');
+    const textSpan = a.querySelector(toc.isInSidebar() ? '.vector-toc-text' : '.toctext');
     if (!textSpan) {
       throw ['Couldn\'t find text for a link', a];
     }
@@ -34,9 +34,9 @@ class TocItem {
     const id = a.getAttribute('href').slice(1);
     const li = a.parentNode;
     let [, level] = li.className
-      .match(toc.isInSidebar() ? /sidebar-toc-level-(\d+)/ : /\btoclevel-(\d+)/);
+      .match(toc.isInSidebar() ? /vector-toc-level-(\d+)/ : /\btoclevel-(\d+)/);
     level = Number(level);
-    const numberSpan = a.querySelector(toc.isInSidebar() ? '.sidebar-toc-numb' : '.tocnumber');
+    const numberSpan = a.querySelector(toc.isInSidebar() ? '.vector-toc-numb' : '.tocnumber');
     let number;
     if (numberSpan) {
       number = numberSpan.textContent;
@@ -119,7 +119,7 @@ const toc = {
    * @param {boolean} [hideToc] Whether the TOC should be hidden.
    */
   setup(sections, hideToc) {
-    this.$element = this.isInSidebar() ? $('.sidebar-toc') : controller.$root.find('.toc');
+    this.$element = this.isInSidebar() ? $('.vector-toc') : controller.$root.find('.toc');
     this.tocItems = null;
     this.floating = null;
 
@@ -150,7 +150,7 @@ const toc = {
           })
           .parent()
           .parent()
-          .addClass('sidebar-toc-list-item-expanded');
+          .addClass('vector-toc-list-item-expanded');
     }
   },
 
@@ -271,7 +271,7 @@ const toc = {
     // collapsed subsections with their help tend to zero, I believe, although this may
     // change.
     const button = document.createElement('button');
-    button.className = 'mw-ui-icon mw-ui-icon-wikimedia-expand mw-ui-icon-small sidebar-toc-toggle';
+    button.className = 'mw-ui-icon mw-ui-icon-wikimedia-expand mw-ui-icon-small vector-toc-toggle';
     button.setAttribute('ariaExpanded', 'true');
     button.setAttribute('ariaControls', ul.id);
 
@@ -307,14 +307,14 @@ const toc = {
       const li = document.createElement('li');
       li.id = `toc-${section.id}`;
       const levelClass = this.isInSidebar() ?
-        `sidebar-toc-list-item sidebar-toc-level-${level}` :
+        `vector-toc-list-item vector-toc-level-${level}` :
         `toclevel-${level}`;
       li.className = `${levelClass} cd-toc-addedSection`;
 
       const a = document.createElement('a');
       a.href = `#${section.id}`;
       if (this.isInSidebar()) {
-        a.className = 'sidebar-toc-link cd-toc-link-sidebar';
+        a.className = 'vector-toc-link cd-toc-link-sidebar';
       }
       a.onclick = this.handleSectionClick.bind(this);
 
@@ -327,14 +327,14 @@ const toc = {
         number = '1';
       }
       const numberSpan = document.createElement('span');
-      const numberClass = this.isInSidebar() ? 'sidebar-toc-numb' : 'tocnumber';
+      const numberClass = this.isInSidebar() ? 'vector-toc-numb' : 'tocnumber';
       numberSpan.className = `${numberClass} cd-toc-hiddenTocNumber`;
       numberSpan.textContent = number;
       a.appendChild(numberSpan);
 
       if (this.isInSidebar()) {
         const textDiv = document.createElement('div');
-        textDiv.className = 'sidebar-toc-text';
+        textDiv.className = 'vector-toc-text';
         textDiv.appendChild(document.createTextNode(headline));
         a.appendChild(textDiv);
         li.appendChild(a);
@@ -351,13 +351,13 @@ const toc = {
       } else if (upperLevelMatch) {
         const ul = document.createElement('ul');
         ul.id = `toc-${section.id}-sublist`;
-        ul.className = 'sidebar-toc-list';
+        ul.className = 'vector-toc-list';
         ul.appendChild(li);
 
         if (
           this.isInSidebar() &&
           level === 2 &&
-          !upperLevelMatch.$element.find('.sidebar-toc-toggle').length
+          !upperLevelMatch.$element.find('.vector-toc-toggle').length
         ) {
           // Ideally, it should also be removed when an added subsection is removed, but really not
           // important.
@@ -407,7 +407,7 @@ const toc = {
     const $addedSections = this.$element.find('.cd-toc-addedSection');
     const newSectionTocIds = this.isInSidebar() ?
       $addedSections
-        .filter('.sidebar-toc-level-1')
+        .filter('.vector-toc-level-1')
         .get()
         .map((sectionElement) => sectionElement.id) :
       undefined;
@@ -573,7 +573,7 @@ const toc = {
         const a = document.createElement('a');
         a.href = `#${comment.dtId || comment.id}`;
         if (this.isInSidebar()) {
-          a.className = 'sidebar-toc-link cd-toc-link-sidebar';
+          a.className = 'vector-toc-link cd-toc-link-sidebar';
         }
         a.onclick = this.handleCommentClick.bind(this);
 
@@ -592,7 +592,7 @@ const toc = {
 
         if (this.isInSidebar()) {
           const textDiv = document.createElement('div');
-          textDiv.className = 'sidebar-toc-text cd-toc-commentLinkText-sidebar';
+          textDiv.className = 'vector-toc-text cd-toc-commentLinkText-sidebar';
           textDiv.textContent = text;
           if (timestampSpan) {
             textDiv.appendChild(timestampSpan);
@@ -601,7 +601,7 @@ const toc = {
           li.appendChild(a);
         } else {
           const bulletSpan = document.createElement('span');
-          const numberClass = this.isInSidebar() ? 'sidebar-toc-numb' : 'tocnumber';
+          const numberClass = this.isInSidebar() ? 'vector-toc-numb' : 'tocnumber';
           bulletSpan.className = `${numberClass} cd-toc-bullet`;
           bulletSpan.innerHTML = cd.sParse('bullet');
           li.appendChild(bulletSpan);

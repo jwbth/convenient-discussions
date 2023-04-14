@@ -1808,7 +1808,7 @@ class Section extends SectionSkeleton {
 
     if (this.subscriptionState) {
       tocItem.$link
-        .find(toc.isInSidebar() ? '.sidebar-toc-text' : '.toctext')
+        .find(toc.isInSidebar() ? '.vector-toc-text' : '.toctext')
         .append(
           $('<span>').addClass('cd-toc-subscriptionIcon-before'),
           $('<span>')

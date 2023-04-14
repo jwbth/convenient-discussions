@@ -1708,7 +1708,7 @@ class BootProcess {
         pageNav.update();
       }
 
-      // We set the setup observer at every reload because controller.$content may change.
+      // We set the setup observer at every reload because `controller.$content` may change.
       controller.setupMutationObserver();
 
       if (settings.get('reformatComments') && CommentStatic.getCount()) {
