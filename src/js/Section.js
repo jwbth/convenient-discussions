@@ -960,7 +960,7 @@ class Section extends SectionSkeleton {
        * The section subscribe ID, either in the DiscussionTools format or just a headline if legacy
        * subscriptions are used.
        *
-       * @type {string}
+       * @type {string|undefined}
        */
       this.subscribeId = this.headline;
       return;
@@ -968,9 +968,10 @@ class Section extends SectionSkeleton {
 
     if (this.level !== 2) return;
 
-    this.subscribeId = mw.config.get('wgDiscussionToolsPageThreads')
-      .find((thread) => thread.id === this.headlineElement.dataset.mwThreadId)
-      .name;
+    const subscribeId = mw.config.get('wgDiscussionToolsPageThreads')
+      ?.find((thread) => thread.id === this.headlineElement.dataset.mwThreadId)
+      ?.name;
+    this.subscribeId = subscribeId === 'h-' ? undefined : subscribeId;
   }
 
   /**
