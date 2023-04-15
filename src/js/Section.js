@@ -968,7 +968,9 @@ class Section extends SectionSkeleton {
 
     if (this.level !== 2) return;
 
-    this.subscribeId = this.headlineElement.dataset.mwThreadId;
+    this.subscribeId = mw.config.get('wgDiscussionToolsPageThreads')
+      .find((thread) => thread.id === this.headlineElement.dataset.mwThreadId)
+      .name;
   }
 
   /**
