@@ -780,8 +780,8 @@ export async function getDtSubscriptions(ids) {
  * @param {boolean} subscribe Subscribe or unsubscribe.
  * @returns {Promise.<object>}
  */
-export async function dtSubscribe(subscribeId, id, subscribe) {
-  return await controller.getApi().postWithEditToken({
+export function dtSubscribe(subscribeId, id, subscribe) {
+  return controller.getApi().postWithEditToken({
     action: 'discussiontoolssubscribe',
     page: `${pageRegistry.getCurrent().name}#${id}`,
     commentname: subscribeId,

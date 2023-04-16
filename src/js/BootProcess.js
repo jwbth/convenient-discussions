@@ -609,17 +609,29 @@ class BootProcess {
   }
 
   /**
-   * Disable DT with an method supplied in a parameter.
+   * Disable DT with a method supplied in a parameter.
    *
-   * @param {Function} saveFunc
+   * @param {boolean} globally
    * @param {import('./Button').default} button
    * @param {import('./notifications').Notification} notification
    * @private
    */
-  async disableDt(saveFunc, button, notification) {
+  async disableDt(globally, button, notification) {
     button.setPending(true);
     try {
-      await saveFunc();
+      const options = {
+        'discussiontools-replytool': 0,
+        'discussiontools-newtopictool': 0,
+        'discussiontools-topicsubscription': 0,
+        'discussiontools-visualenhancements': 0,
+      };
+      if (globally) {
+        await setOptions(options, true).catch(handleApiReject);
+      } else {
+        await controller.getApi().saveOptions({
+          'discussiontools-topicsubscription': 1,
+        }).catch(handleApiReject);
+      }
     } catch (e) {
       mw.notify(wrap(cd.sParse('error-settings-save')));
       return;
@@ -657,24 +669,10 @@ class BootProcess {
       {
         callbacks: {
           'cd-notification-disabledt': () => {
-            this.disableDt(() => (
-              controller.getApi().saveOptions({
-                'discussiontools-replytool': 0,
-                'discussiontools-newtopictool': 0,
-                'discussiontools-topicsubscription': 0,
-                'discussiontools-visualenhancements': 0,
-              }).catch(handleApiReject)
-            ), disableButton, notification);
+            this.disableDt(false, disableButton, notification);
           },
           'cd-notification-disableDtGlobally': () => {
-            this.disableDt(() => (
-              setOptions({
-                'discussiontools-replytool': 0,
-                'discussiontools-newtopictool': 0,
-                'discussiontools-topicsubscription': 0,
-                'discussiontools-visualenhancements': 0,
-              }, true).catch(handleApiReject)
-            ), globallyDisableButton, notification);
+            this.disableDt(true, globallyDisableButton, notification);
           },
         },
         returnButtons: true,
@@ -1747,8 +1745,8 @@ class BootProcess {
 
     controller.hideLoadingOverlay();
 
-    // The next line is needed to calculate the rendering time: it won't complete until everything
-    // gets rendered.
+    // This is needed to calculate the rendering time: it won't complete until everything gets
+    // rendered.
     controller.rootElement.getBoundingClientRect();
 
     debug.stopTimer('final code and rendering');

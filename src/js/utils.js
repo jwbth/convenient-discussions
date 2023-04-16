@@ -52,11 +52,12 @@ export function wrap(htmlOrJquery, options = {}) {
       } else if (!$link.length) {
         $link = $linkWrapper.wrapInner('<a>').children().first();
       }
-      const button = new Button({
-        element: $link.get(0),
-        action: options.callbacks[className],
-      });
-      buttons.push(button);
+      buttons.push(
+        new Button({
+          element: $link.get(0),
+          action: options.callbacks[className],
+        })
+      );
     });
   }
   if (options.targetBlank) {
