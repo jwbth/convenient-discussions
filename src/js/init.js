@@ -865,8 +865,7 @@ export default {
    * _For internal use._ Set CSS for talk pages: set CSS variables, add static CSS.
    */
   addTalkPageCss() {
-    const contentBackgroundColor = $('#content').css('background-color') || '#fff';
-
+    const contentBackgroundColor = $('#content').css('background-color') || 'rgba(0, 0, 0, 0)';
     const sidebarColor = skin$({
       timeless: '#mw-content-container',
       'vector-2022': '.mw-page-container',
