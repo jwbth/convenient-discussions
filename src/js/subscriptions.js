@@ -483,7 +483,15 @@ export default {
    * @private
    */
   onboardOntoPageSubscription() {
-    if (!this.pageSubscribeButton || settings.get('newTopicsSubscription-onboarded')) return;
+    if (
+      !this.pageSubscribeButton ||
+      settings.get('newTopicsSubscription-onboarded') ||
+
+      // Buggy
+      (cd.g.skin === 'vector-2022' && window.scrollY > 70)
+    ) {
+      return;
+    }
 
     const button = new OO.ui.ButtonWidget({
       label: cd.mws('visualeditor-educationpopup-dismiss'),
