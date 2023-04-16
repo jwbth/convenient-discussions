@@ -1725,7 +1725,10 @@ class CommentForm {
               }
             );
           }
-          if (this.omitSignatureCheckbox?.isSelected()) {
+          if (
+            this.omitSignatureCheckbox?.isSelected() &&
+            !this.commentInput.getValue().includes(cd.g.signCode)
+          ) {
             this.showMessage(
               wrap(cd.sParse('cf-reaction-mention-nosignature'), {
                 targetBlank: true,
