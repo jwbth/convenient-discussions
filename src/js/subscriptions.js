@@ -500,6 +500,15 @@ export default {
     button.on('click', () => {
       popup.toggle(false);
     });
+    let $floatableContainer;
+    const $vectorToolsDropdown = $('.vector-page-tools-dropdown');
+    if (cd.g.skin === 'vector') {
+      $floatableContainer = $('#p-cactions');
+    } else if ($vectorToolsDropdown.is(':visible')) {
+      $floatableContainer = $vectorToolsDropdown;
+    } else {
+      $floatableContainer = $(this.pageSubscribeButton.element);
+    }
     const popup = new OO.ui.PopupWidget({
       icon: 'newspaper',
       label: cd.s('newTopicsSubscription-popup-title'),
@@ -508,9 +517,7 @@ export default {
         $('<p>').append(button.$element),
       ).children(),
       head: true,
-      $floatableContainer: cd.g.skin === 'vector' ?
-        $('#p-cactions') :
-        $(this.pageSubscribeButton.element),
+      $floatableContainer,
       $container: $(document.body),
       position: cd.g.skin === 'vector-2022' ? 'before' : 'below',
       padded: true,
