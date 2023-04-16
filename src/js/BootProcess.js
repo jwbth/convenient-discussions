@@ -821,6 +821,9 @@ class BootProcess {
 
     // Can't do it earlier: we don't have section IDs until now.
     if (settings.get('useTopicSubscription')) {
+      if (this.firstRun) {
+        subscriptions.setupTopicSubscription();
+      }
       subscriptions.load();
     }
 
@@ -843,6 +846,9 @@ class BootProcess {
       SectionStatic.addSubscribeButtons();
       subscriptions.cleanUp();
       toc.markSubscriptions();
+      if (this.firstRun) {
+        subscriptions.addPageSubscribeButton();
+      }
     });
 
     /**

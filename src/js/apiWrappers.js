@@ -783,7 +783,7 @@ export async function getDtSubscriptions(ids) {
 export function dtSubscribe(subscribeId, id, subscribe) {
   return controller.getApi().postWithEditToken({
     action: 'discussiontoolssubscribe',
-    page: `${pageRegistry.getCurrent().name}#${id}`,
+    page: pageRegistry.getCurrent().name + (id ? `#${id}` : ''),
     commentname: subscribeId,
     subscribe,
   }).catch(handleApiReject);

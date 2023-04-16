@@ -83,6 +83,7 @@ export default {
       insertButtons: cd.config.defaultInsertButtons || [],
       'insertButtons-altered': false,
       modifyToc: true,
+      'newTopicsSubscription-onboarded': false,
       notifications: 'all',
       notifyCollapsedThreads: false,
       notificationsBlacklist: [],

@@ -253,6 +253,9 @@
 
   "topicsubscription-notice": "<p>Convenient Discussions now uses the standard notifications interface for section watching (now it is called topic subscriptions). You will get a notification when someone posts a new comment in the topic you subscribed to. If you had desktop notifications enabled, you will still receive them.</p>\n\n<p>You can configure the notification types (web, email, app) in the <b>[[Special:Preferences#mw-prefsection-echo|wiki preferences]]</b>. Or you can go back to the classic section watching. See the details in the <b><span class=\"cd-notification-notificationSettings\">[[$1|Convenient Discussions settings]]</span></b>.</p>",
 
+  "newTopicsSubscription-popup-title": "New feature",
+  "newTopicsSubscription-popup-text": "You can now subscribe to talk pages. If you subscribe to a page, you will receive notifications when new topics are started on the page.",
+
   "navpanel-refresh": "Refresh page",
   "navpanel-previous": "Go to the previous new comment",
   "navpanel-next": "Go to the next new comment",

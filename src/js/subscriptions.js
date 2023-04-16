@@ -5,6 +5,7 @@
  * @class subscriptions
  */
 
+import Button from './Button';
 import CdError from './CdError';
 import SectionStatic from './SectionStatic';
 import cd from './cd';
@@ -16,11 +17,19 @@ import {
   getLegacySubscriptions,
   setLegacySubscriptions,
 } from './apiWrappers';
-import { unique, wrap } from './utils';
+import { spacesToUnderlines, unique, wrap } from './utils';
 
 let subscribeLegacyPromise = Promise.resolve();
 
 export default {
+  /**
+   * _For internal use._ Setup the data for the native topic subscription feature (not the CD's
+   * legacy section watching).
+   */
+  setupTopicSubscription() {
+    this.pageSubscribeId = `p-topics-${cd.g.namespaceNumber}:${spacesToUnderlines(mw.config.get('wgTitle'))}`;
+  },
+
   /**
    * Request the subscription list from the server and assign them to the `registry` (and
    * `allPagesRegistry` in case of the legacy subscriptions) property.
@@ -31,11 +40,13 @@ export default {
   load(reuse = false) {
     this.loadRequest = (async () => {
       if (settings.get('useTopicSubscription')) {
-        const subscriptionIds = SectionStatic.getAll()
-          .filter((section) => section.subscribeId)
-          .map((section) => section.subscribeId)
-          .filter(unique);
-        this.registry = await getDtSubscriptions(subscriptionIds);
+        this.registry = await getDtSubscriptions(
+          SectionStatic.getAll()
+            .filter((section) => section.subscribeId)
+            .map((section) => section.subscribeId)
+            .filter(unique)
+            .concat(this.pageSubscribeId || [])
+        );
       } else {
         this.allPagesRegistry = await getLegacySubscriptions(reuse);
 
@@ -235,14 +246,34 @@ export default {
    *
    * @param {string} subscribeId Section's DiscussionTools ID.
    * @param {string} id Section's ID.
-   * @param {string} unsubscribeHeadline Headline of a section to unsubscribe from (at the same
+   * @param {string} [unsubscribeHeadline] Headline of a section to unsubscribe from (at the same
    * time).
-   * @returns {Promise.<undefined>}
+   * @param {boolean} [quiet=false] Don't show a success notification.
    */
-  subscribe(subscribeId, id, unsubscribeHeadline) {
-    return settings.get('useTopicSubscription') ?
-      this.dtSubscribe(subscribeId, id, true) :
-      this.subscribeLegacy(subscribeId, unsubscribeHeadline);
+  async subscribe(subscribeId, id, unsubscribeHeadline, quiet = false) {
+    await (
+      settings.get('useTopicSubscription') ?
+        this.dtSubscribe(subscribeId, id, true) :
+        this.subscribeLegacy(subscribeId, unsubscribeHeadline)
+    );
+
+    if (!quiet) {
+      const title = subscribeId.startsWith('p-') ?
+        cd.mws('discussiontools-newtopicssubscription-notify-subscribed-title') :
+        cd.mws('discussiontools-topicsubscription-notify-subscribed-title');
+      let body = subscribeId.startsWith('p-') ?
+        cd.mws('discussiontools-newtopicssubscription-notify-subscribed-body') :
+        cd.mws('discussiontools-topicsubscription-notify-subscribed-body');
+      let autoHideSeconds;
+      if (!settings.get('useTopicSubscription')) {
+        body += ' ' + cd.sParse('section-watch-openpages');
+        if ($('#ca-watch').length) {
+          body += ' ' + cd.sParse('section-watch-pagenotwatched');
+          autoHideSeconds = 'long';
+        }
+      }
+      mw.notify(wrap(body), { title, autoHideSeconds });
+    }
   },
 
   /**
@@ -250,12 +281,32 @@ export default {
    *
    * @param {string} subscribeId Section's DiscussionTools ID.
    * @param {string} id Section's ID.
-   * @returns {Promise.<undefined>}
+   * @param {boolean} [quiet=false] Don't show a success notification.
+   * @param {import('./Section').default} [section] Section being unsubscribed from, if any, for
+   *   legacy subscriptions.
    */
-  unsubscribe(subscribeId, id) {
-    return settings.get('useTopicSubscription') ?
-      this.dtSubscribe(subscribeId, id, false) :
-      this.unsubscribeLegacy(subscribeId);
+  async unsubscribe(subscribeId, id, quiet = false, section) {
+    await (
+      settings.get('useTopicSubscription') ?
+        this.dtSubscribe(subscribeId, id, false) :
+        this.unsubscribeLegacy(subscribeId)
+    );
+
+    const ancestorSubscribedTo = section?.getClosestSectionSubscribedTo();
+    if (!quiet || ancestorSubscribedTo) {
+      const title = subscribeId.startsWith('p-') ?
+        cd.mws('discussiontools-newtopicssubscription-notify-unsubscribed-title') :
+        cd.mws('discussiontools-topicsubscription-notify-unsubscribed-title');
+      let body = subscribeId.startsWith('p-') ?
+        cd.mws('discussiontools-newtopicssubscription-notify-unsubscribed-body') :
+        cd.mws('discussiontools-topicsubscription-notify-unsubscribed-body');
+      let autoHideSeconds;
+      if (ancestorSubscribedTo) {
+        body += ' ' + cd.sParse('section-unwatch-stillwatched', ancestorSubscribedTo.headline);
+        autoHideSeconds = 'long';
+      }
+      mw.notify(wrap(body), { title, autoHideSeconds });
+    }
   },
 
   /**
@@ -295,7 +346,7 @@ export default {
   },
 
   /**
-   * Get the subscription state of a section.
+   * Get the subscription state of a section or the page.
    *
    * @param {string} subscribeId
    * @returns {?boolean}
@@ -391,5 +442,95 @@ export default {
    */
   itemsToKeys(arr) {
     return Object.assign({}, ...arr.map((page) => ({ [page]: true })));
+  },
+
+  /**
+   * _For internal use._ Add a page subscribe button (link) to the page actions menu.
+   */
+  async addPageSubscribeButton() {
+    if (!settings.get('useTopicSubscription')) return;
+
+    this.pageSubscribeButton = new Button({
+      element: mw.util.addPortletLink(
+        'p-cactions',
+        mw.util.getUrl(cd.g.pageName, {
+          action: this.getState(this.pageSubscribeId) ? 'dtunsubscribe' : 'dtsubscribe',
+          commentname: this.pageSubscribeId,
+        }),
+        '',
+        'ca-cd-page-subscribe'
+      )?.firstElementChild,
+      action: async () => {
+        this.pageSubscribeButton.setPending(true);
+        try {
+          await this[this.getState(this.pageSubscribeId) ? 'unsubscribe' : 'subscribe'](
+            this.pageSubscribeId,
+            null
+          );
+          this.updatePageSubscribeButton();
+        } finally {
+          this.pageSubscribeButton.setPending(false);
+        }
+      },
+    });
+    this.updatePageSubscribeButton();
+    this.onboardOntoPageSubscription();
+  },
+
+  /**
+   * Show an popup onboarding onto the new topics subscription feature.
+   *
+   * @private
+   */
+  onboardOntoPageSubscription() {
+    if (!this.pageSubscribeButton || settings.get('newTopicsSubscription-onboarded')) return;
+
+    const button = new OO.ui.ButtonWidget({
+      label: cd.mws('visualeditor-educationpopup-dismiss'),
+      flags: ['progressive', 'primary'],
+    });
+    button.on('click', () => {
+      popup.toggle(false);
+    });
+    const popup = new OO.ui.PopupWidget({
+      icon: 'newspaper',
+      label: cd.s('newTopicsSubscription-popup-title'),
+      $content: $('<div>').append(
+        $('<p>').text(cd.s('newTopicsSubscription-popup-text')),
+        $('<p>').append(button.$element),
+      ).children(),
+      head: true,
+      $floatableContainer: cd.g.skin === 'vector' ?
+        $('#p-cactions') :
+        $(this.pageSubscribeButton.element),
+      $container: $(document.body),
+      position: cd.g.skin === 'vector-2022' ? 'before' : 'below',
+      padded: true,
+      classes: ['cd-popup-newTopicsSubscription'],
+    });
+    $(document.body).append(popup.$element);
+    popup.toggle(true);
+    popup.on('closing', () => {
+      settings.saveSettingOnTheFly('newTopicsSubscription-onboarded', true);
+    });
+  },
+
+  /**
+   * Update the page subscription button label and tooltip.
+   *
+   * @private
+   */
+  updatePageSubscribeButton() {
+    this.pageSubscribeButton
+      .setLabel(
+        this.getState(this.pageSubscribeId) ?
+          cd.mws('discussiontools-newtopicssubscription-button-unsubscribe-label') :
+          cd.mws('discussiontools-newtopicssubscription-button-subscribe-label')
+      )
+      .setTooltip(
+        this.getState(this.pageSubscribeId) ?
+          cd.mws('discussiontools-newtopicssubscription-button-unsubscribe-tooltip') :
+          cd.mws('discussiontools-newtopicssubscription-button-subscribe-tooltip')
+      );
   },
 };

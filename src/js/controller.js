@@ -1215,6 +1215,7 @@ export default {
       'oojs-ui.styles.icons-alerts',
       'oojs-ui.styles.icons-content',
       'oojs-ui.styles.icons-editing-advanced',
+      'oojs-ui.styles.icons-editing-citation',
       'oojs-ui.styles.icons-editing-core',
       'oojs-ui.styles.icons-interactions',
       'oojs-ui.styles.icons-movement',
