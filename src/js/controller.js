@@ -659,6 +659,7 @@ export default {
   getClosedDiscussions() {
     if (!this.content.closedDiscussions) {
       const closedDiscussionsSelector = cd.config.closedDiscussionClasses
+        .concat('mw-archivedtalk')
         .map((name) => `.${name}`)
         .join(', ');
       this.content.closedDiscussions = this.$root.find(closedDiscussionsSelector).get();
