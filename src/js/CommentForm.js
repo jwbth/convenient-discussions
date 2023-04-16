@@ -1129,14 +1129,16 @@ class CommentForm {
     post = unescape(unhideText(post, hidden));
     label = label ? unescape(label) : pre + post;
 
-    const button = new Button({
-      label: label,
-      classes: ['cd-insertButtons-button'],
-      action: () => {
-        this.encapsulateSelection({ pre, post });
-      },
-    })
-    this.$insertButtons.append(button.element, ' ');
+    this.$insertButtons.append(
+      new Button({
+        label: label,
+        classes: ['cd-insertButtons-button'],
+        action: () => {
+          this.encapsulateSelection({ pre, post });
+        },
+      }).element,
+      ' ',
+    );
   }
 
   /**

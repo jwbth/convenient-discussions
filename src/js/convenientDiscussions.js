@@ -601,7 +601,7 @@ Object.assign(cd.g, {
   hostname: location.hostname,
 
   pageName: underlinesToSpaces(mw.config.get('wgPageName')),
-  pageTitle: underlinesToSpaces(mw.config.get('wgTitle')),
+  pageTitle: mw.config.get('wgTitle'),
   namespaceNumber: mw.config.get('wgNamespaceNumber'),
 
   // "<unregistered>" is a workaround for anonymous users (there are such!).
