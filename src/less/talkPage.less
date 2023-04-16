@@ -198,6 +198,10 @@ ol > .cd-replyButtonWrapper:not(.cd-replyButtonWrapper-hasCommentForm) {
 
 .cd-button-disabled.cd-button-disabled {
   cursor: default;
+
+  &.cd-button-disabled.cd-button-disabled.cd-button-disabled {
+    color: #72777d;
+  }
 }
 
 .cd-button-pending.cd-button-pending,
@@ -288,6 +292,22 @@ ol > .cd-replyButtonWrapper:not(.cd-replyButtonWrapper-hasCommentForm) {
 .cd-popupOverlay .oo-ui-popupWidget-body  {
   margin-top: 7px;
   margin-bottom: 7px;
+}
+
+.cd-popup-newTopicsSubscription {
+  font-size: 0.875rem;
+
+  .oo-ui-labelElement-label {
+    font-weight: bold;
+  }
+
+  .skin-vector-2022.ltr & {
+    margin-right: 12px;
+  }
+
+  .skin-vector-2022.rtl & {
+    margin-left: 12px;
+  }
 }
 
 // T313332. Manifests in copy link dialog.

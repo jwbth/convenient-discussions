@@ -20,7 +20,6 @@ import {
   focusInput,
   underlinesToSpaces,
   unique,
-  wrap,
 } from './utils';
 import {
   encodeWikilink,
@@ -1109,28 +1108,17 @@ class Section extends SectionSkeleton {
     const unsubscribeHeadline = renamedFrom && !SectionStatic.getBySubscribeId(renamedFrom).length ?
       renamedFrom :
       undefined;
-    subscriptions.subscribe(this.subscribeId, this.id, unsubscribeHeadline)
+    subscriptions.subscribe(this.subscribeId, this.id, unsubscribeHeadline, !!mode)
       .then(() => {
+        // TODO: this condition seems a bad idea because when we could update the subscriptions but
+        // couldn't reload the page, the UI becomes unsynchronized. But there is also no UI
+        // flickering when posting. Maybe update the UI in case the page reload was unsuccessful?
         if (mode !== 'silent') {
           sections.forEach((section) => {
             section.subscriptionState = true;
             section.updateSubscribeButtonState();
             section.updateTocLink();
           });
-        }
-
-        if (!mode) {
-          let title = cd.mws('discussiontools-topicsubscription-notify-subscribed-title');
-          let body = cd.mws('discussiontools-topicsubscription-notify-subscribed-body');
-          let autoHideSeconds;
-          if (!settings.get('useTopicSubscription')) {
-            body += ' ' + cd.sParse('section-watch-openpages');
-            if ($('#ca-watch').length) {
-              body += ' ' + cd.sParse('section-watch-pagenotwatched');
-              autoHideSeconds = 'long';
-            }
-          }
-          mw.notify(wrap(body), { title, autoHideSeconds });
         }
       })
       .then(finallyCallback, finallyCallback);
@@ -1160,7 +1148,7 @@ class Section extends SectionSkeleton {
       };
     }
 
-    subscriptions.unsubscribe(this.subscribeId, this.id)
+    subscriptions.unsubscribe(this.subscribeId, this.id, !!mode)
       .then(() => {
         if (mode !== 'silent') {
           sections.forEach((section) => {
@@ -1168,18 +1156,6 @@ class Section extends SectionSkeleton {
             section.updateSubscribeButtonState();
             section.updateTocLink();
           });
-        }
-
-        const ancestorSubscribedTo = this.getClosestSectionSubscribedTo();
-        if (!mode || ancestorSubscribedTo) {
-          let title = cd.mws('discussiontools-topicsubscription-notify-unsubscribed-title');
-          let body = cd.mws('discussiontools-topicsubscription-notify-unsubscribed-body');
-          let autoHideSeconds;
-          if (ancestorSubscribedTo) {
-            body += ' ' + cd.sParse('section-unwatch-stillwatched', ancestorSubscribedTo.headline);
-            autoHideSeconds = 'long';
-          }
-          mw.notify(wrap(body), { title, autoHideSeconds });
         }
       })
       .then(finallyCallback, finallyCallback);
