@@ -816,7 +816,7 @@ class CommentSkeleton {
   filterParts() {
     this.parts = this.parts.filter((part) => !part.hasForeignComponents && !part.isTextNode);
 
-    // "style" and "link" tags at the beginning. Also "references" tags and {{reflist-talk}}
+    // <style> and <link> tags at the beginning. Also <references> tags and {{reflist-talk}}
     // templates (will need to generalize this, possibly via wiki configuration, if other wikis
     // employ a differently named class).
     for (let i = this.parts.length - 1; i > 0; i--) {
@@ -828,7 +828,15 @@ class CommentSkeleton {
           [...node[this.parser.context.childElementsProp]].every((child) => child.tagName === 'BR')
         ) ||
         isMetadataNode(node) ||
-        Array.from(node.classList).some((name => ['references', 'reflist-talk'].includes(name)))
+        Array.from(node.classList).some((name => ['references', 'reflist-talk'].includes(name))) ||
+
+        // Ad hoc for cases like
+        // https://ru.wikipedia.org/w/index.php?title=Википедия:Форум_администраторов&oldid=129874608#c-Lesless-20230416204100-Pessimist2006-20230416203500
+        (
+          node.tagName === 'DL' &&
+          this.parts[i - 1] &&
+          node.nextElementSibling?.firstElementChild?.firstElementChild === this.parts[i - 1].node
+        )
       ) {
         this.parts.splice(i, 1);
       } else {
