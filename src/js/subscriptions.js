@@ -484,7 +484,7 @@ export default {
    */
   onboardOntoPageSubscription() {
     if (
-      !this.pageSubscribeButton ||
+      !this.pageSubscribeButton.element ||
       settings.get('newTopicsSubscription-onboarded') ||
 
       // Buggy
