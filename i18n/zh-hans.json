@@ -408,7 +408,7 @@
 	"warning-performance": "快速讨论可以尝试通过“{{int:convenient-discussions-sd-improveperformance}}”设置来解决。 <span class=\"cd-notification-talkPageSettings\">[[ $1 |打开设置对话框]]</span> .",
 	"discussiontools-incompatible": "此工具与快速回复工具不兼容。请<b><span class=\"cd-notification-disabledt\">[[ $1 |关闭]]</span></b> （或<b><span class=\"cd-notification-disableDtGlobally\">[[ $2 |关闭全域]]</span></b> ）的快速回复工具使之正常工作。",
 	"discussiontools-disabled": "讨论工具已成功禁用。 <span class=\"cd-notification-refresh\">[[$1|刷新页面]]</span>",
-	"wl-button-switchrelevant-tooltip": "仅显示我{{gender:$1|订阅}}的话题和提及我的意见。（注意：检测机制基于编辑摘要，所以可能会丢失部分编辑）",
+	"wl-button-switchrelevant-tooltip": "仅显示我{{gender:$1|订阅}}的话题和提及我的意见。",
 	"wl-button-editwatchedsections-tooltip": "编辑我{{gender:$1|订阅}}的话题列表",
 	"wl-button-settings-tooltip": "快速讨论设置",
 	"lp-comment": "意见",
