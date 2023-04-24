@@ -330,7 +330,7 @@
 	"sd-insertbuttons-multiselect-placeholder": "添加按钮",
 	"sd-insertbuttons-help": "使用<code>+</code>来指定插入文本后光标应放置的位置，例如：<code><nowiki>{{+}}</nowiki></code>。如果您想让显示的文本与插入的文本不同，请使用<code>;</code>，例如：<code><nowiki><code>+</code>;<code/></nowiki></code>。在上述字符之前使用<code><nowiki>\\</nowiki></code>来按原样插入它们；例如，<code><nowiki>2\\+2</nowiki></code>。同时此按钮可被拖放。",
 	"sd-modifytoc": "在目录中显示新评论和章节",
-	"sd-outdentlevel": "让我的回复以[$1 Outdent]开头",
+	"sd-outdentlevel": "以[$1 Outdent]开头的缩进",
 	"sd-outdentlevel-help": "0 代表不缩进。",
 	"sd-outdentlevel-help-notemplate": "<strong>注意：</strong>当前 wiki 没有指定 outdent 模板。该设置将处于空闲状态。",
 	"sd-notifications": "页面右上角的通知弹窗",
