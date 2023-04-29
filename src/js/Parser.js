@@ -3,7 +3,7 @@
 import CommentSkeleton from './CommentSkeleton';
 import cd from './cd';
 import { ElementsAndTextTreeWalker, ElementsTreeWalker } from './treeWalker';
-import { defined, flat, isInline, ucFirst, underlinesToSpaces } from './utils';
+import { defined, flat, isInline, isMetadataNode, ucFirst, underlinesToSpaces } from './utils';
 import { parseTimestamp } from './timestamp';
 
 let punctuationRegexp;
@@ -301,35 +301,30 @@ class Parser {
   timestampToSignature(timestamp) {
     punctuationRegexp ||= new RegExp(`(?:^|${cd.g.letterPattern})[.!?…] `);
 
-    const timestampElement = timestamp.element;
-    const timestampText = timestamp.element.textContent;
     let unsignedElement;
-    let isExtraSignature = false;
+    let el = timestamp.element;
+    while (!unsignedElement && (el = el.parentNode) && isInline(el)) {
+      if (el.classList.contains(cd.config.unsignedClass)) {
+        unsignedElement = el;
+      }
+    }
 
     // If the closest block-level timestamp element ancestor has more than one signature, we choose
     // the first signature to consider it the signature of the comment author while keeping the
     // last. There is no point for us to parse them as distinct comments as a reply posted using our
     // script will go below all of them anyway.
-    let closestBlockAncestor;
-    for (let el = timestamp.element; !closestBlockAncestor; el = el.parentNode) {
-      if (isInline(el)) {
-        // Simultaneously check if we are inside an unsigned template.
-        if (el.classList.contains(cd.config.unsignedClass)) {
-          unsignedElement = el;
-        }
-      } else {
-        closestBlockAncestor = el;
-      }
-    }
-    const elementsTreeWalker = new ElementsTreeWalker(timestamp.element, closestBlockAncestor);
-    while (elementsTreeWalker.previousNode()) {
+    let isExtraSignature = false;
+    const elementsTreeWalker = new ElementsTreeWalker(timestamp.element);
+    while (
+      elementsTreeWalker.previousNode() &&
+      (isInline(elementsTreeWalker.currentNode) || isMetadataNode(elementsTreeWalker.currentNode))
+    ) {
       if (elementsTreeWalker.currentNode.classList.contains('cd-signature')) {
         isExtraSignature = true;
         break;
       }
     }
 
-    const isUnsigned = Boolean(unsignedElement);
     const startElement = unsignedElement || timestamp.element;
     const treeWalker = new ElementsAndTextTreeWalker(startElement, this.context.rootElement);
     const authorData = {};
@@ -430,13 +425,13 @@ class Parser {
 
     return {
       element,
-      timestampElement,
-      timestampText,
+      timestampElement: timestamp.element,
+      timestampText: timestamp.element.textContent,
       date: timestamp.date,
       authorLink: authorData.link,
       authorTalkLink: authorData.talkLink,
       authorName: authorData.name,
-      isUnsigned,
+      isUnsigned: Boolean(unsignedElement),
       isExtraSignature,
     };
   }

@@ -215,6 +215,11 @@ class CommentSkeleton {
    * @private
    */
   getStartNodes(treeWalker) {
+    while (isInline(treeWalker.currentNode.parentNode)) {
+      treeWalker.parentNode();
+    }
+    const farthestInlineAncestor = treeWalker.currentNode;
+
     const parts = [];
     let firstForeignComponentAfter;
 
@@ -245,7 +250,7 @@ class CommentSkeleton {
         treeWalker.parentNode()
       );
       if (!treeWalker.nextSibling()) break;
-      if (!isInline(treeWalker.currentNode, true)) {
+      if (!isInline(treeWalker.currentNode, true) && !isMetadataNode(treeWalker.currentNode)) {
         firstForeignComponentAfter = treeWalker.currentNode;
       }
     }
@@ -255,20 +260,20 @@ class CommentSkeleton {
     if (
       (
         firstForeignComponentAfter &&
-        this.signatureElement.parentNode.contains(firstForeignComponentAfter)
+        farthestInlineAncestor.parentNode.contains(firstForeignComponentAfter)
       ) ||
 
       // Cases when the comment has no wrapper that contains only that comment (for example,
       // https://ru.wikipedia.org/wiki/Project:Форум/Архив/Технический/2020/10#202010140847_AndreiK).
       // The second parameter of getElementsByClassName() is an optimization for the worker context.
-      this.signatureElement.parentNode.getElementsByClassName('cd-signature', 2).length > 1 ||
+      farthestInlineAncestor.parentNode.getElementsByClassName('cd-signature', 2).length > 1 ||
 
-      !this.isElementEligible(this.signatureElement.parentNode, treeWalker, 'start')
+      !this.isElementEligible(farthestInlineAncestor.parentNode, treeWalker, 'start')
     ) {
       // Collect inline parts after the signature
-      treeWalker.currentNode = this.signatureElement;
+      treeWalker.currentNode = farthestInlineAncestor;
       while (treeWalker.nextSibling()) {
-        if (isInline(treeWalker.currentNode, true)) {
+        if (isInline(treeWalker.currentNode, true) || isMetadataNode(treeWalker.currentNode)) {
           parts.push({
             node: treeWalker.currentNode,
             isTextNode: treeWalker.currentNode.nodeType === Node.TEXT_NODE,
@@ -283,9 +288,9 @@ class CommentSkeleton {
       }
       parts.reverse();
 
-      treeWalker.currentNode = this.signatureElement;
+      treeWalker.currentNode = farthestInlineAncestor;
     } else {
-      treeWalker.currentNode = this.signatureElement.parentNode;
+      treeWalker.currentNode = farthestInlineAncestor.parentNode;
     }
     parts.push({
       node: treeWalker.currentNode,
