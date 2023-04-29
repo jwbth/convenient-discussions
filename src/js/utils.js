@@ -455,14 +455,11 @@ export function isInputFocused() {
 /**
  * Turn many regexps into one, putting it in `()` and separating individual expressions by `|`.
  *
- * @param {RegExp[]|string[]} arr
+ * @param {?(RegExp[]|string[])} arr
  * @returns {?RegExp}
  */
 export function mergeRegexps(arr) {
-  if (!arr) {
-    return null;
-  }
-  const pattern = arr
+  const pattern = (arr || [])
     .map((regexpOrString) => regexpOrString.source || regexpOrString)
     .join('|');
   return pattern ? new RegExp(`(${pattern})`) : null;
