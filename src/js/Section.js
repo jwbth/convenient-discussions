@@ -967,7 +967,7 @@ class Section extends SectionSkeleton {
 
     if (this.level !== 2) return;
 
-    const subscribeId = mw.config.get('wgDiscussionToolsPageThreads')
+    const subscribeId = SectionStatic.subscribableThreads
       ?.find((thread) => thread.id === this.headlineElement.dataset.mwThreadId)
       ?.name;
     this.subscribeId = subscribeId === 'h-' ? undefined : subscribeId;
