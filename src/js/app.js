@@ -114,20 +114,19 @@ function maybeAddFooterSwitcher() {
 
 /**
  * Change the destination of the "Add topic" button to redirect topic creation to the script's form.
- * This is not done on `action=view` pages to make sure the user can open the classic form. The
- * exception is when the new topic tool is enabled with the "Offer to add a new topic" setting: in
- * that case, the classic form doesn't open anyway.
+ * This is not done on `action=view` pages to make sure the user can open the classic form in a new
+ * tab. The exception is when the new topic tool is enabled with the "Offer to add a new topic"
+ * setting: in that case, the classic form doesn't open anyway. So we add `dtenable=0` to the
+ * button.
  *
  * @private
  */
 function maybeTweakAddTopicButton() {
-  const dtCreatePage = mw.user.options.get('discussiontools-newtopictool-createpage');
-  if (
-    !controller.isArticlePageTalkPage() ||
-    (mw.config.get('wgAction') === 'view' && !dtCreatePage)
-  ) {
-    return;
-  }
+  const dtCreatePage = (
+    cd.g.isDtNewTopicToolEnabled &&
+    mw.user.options.get('discussiontools-newtopictool-createpage')
+  );
+  if (!controller.isArticlePageTalkPage() || cd.g.pageAction === 'view' && !dtCreatePage) return;
 
   const $addTopicLink = $('#ca-addsection a');
   const href = $addTopicLink.prop('href');
@@ -135,7 +134,8 @@ function maybeTweakAddTopicButton() {
     const url = new URL(href);
     if (dtCreatePage) {
       url.searchParams.set('dtenable', 0);
-    } else {
+    }
+    if (!dtCreatePage || cd.g.pageAction !== 'view') {
       url.searchParams.delete('action');
       url.searchParams.delete('section');
       url.searchParams.set('cdaddtopic', 1);
