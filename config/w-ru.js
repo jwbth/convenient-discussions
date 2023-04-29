@@ -259,6 +259,7 @@ export default {
     'ts-Закрыто-footer',
     'ts-Цитата-container',
     'raaf',
+    'ts-Скрытие_текста_реплик',
   ],
 
   templatesToExclude: [
