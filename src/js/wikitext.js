@@ -339,19 +339,11 @@ export function extractSignatures(code) {
   // TODO: Instead of removing only lines containing antipatterns from wikitext, hide entire
   // templates (see the "markerLength" parameter in wikitext.hideTemplatesRecursively) and tags?
   // But keep in mind that this code may still be part of comments.
-  if (
-    !commentAntipatternsRegexp &&
-    (
-      cd.config.elementsToExcludeClasses.length ||
-      cd.config.templatesToExclude.length ||
-      cd.config.commentAntipatterns.length
-    )
-  ) {
-    const commentAntipatternsPatternParts = [];
-    if (cd.config.elementsToExcludeClasses) {
-      const pattern = cd.config.elementsToExcludeClasses.join('\\b|\\b');
-      commentAntipatternsPatternParts.push(`class=(['"])[^'"\\n]*(?:\\b${pattern}\\b)[^'"\\n]*\\1`);
-    }
+  if (!commentAntipatternsRegexp) {
+    const elementsToExcludeClassesPattern = cd.config.elementsToExcludeClasses
+      .concat('mw-notalk')
+      .join('\\b|\\b');
+    const commentAntipatternsPatternParts = [`class=(['"])[^'"\\n]*(?:\\b${elementsToExcludeClassesPattern}\\b)[^'"\\n]*\\1`];
     if (cd.config.templatesToExclude.length) {
       const pattern = cd.config.templatesToExclude.map(generatePageNamePattern).join('|');
       commentAntipatternsPatternParts.push(`\\{\\{ *(?:${pattern}) *(?:\\||\\}\\})`);

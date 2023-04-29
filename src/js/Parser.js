@@ -139,7 +139,7 @@ class Parser {
       'cd-comment-part',
       'ombox',
       ...cd.config.closedDiscussionClasses,
-      'mw-archivedtalk',
+      'mw-notalk',
       cd.config.outdentClass,
     ];
 
