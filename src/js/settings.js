@@ -49,6 +49,7 @@ export default {
     states: [
       'insertButtons-altered',
       'improvePerformance-lastSuggested',
+      'newTopicsSubscription-onboarded',
       'notificationsBlacklist',
       'useTopicSubscription-seenNotice',
     ],
