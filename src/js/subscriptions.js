@@ -484,11 +484,14 @@ export default {
    */
   onboardOntoPageSubscription() {
     if (
-      !this.pageSubscribeButton.element ||
       settings.get('newTopicsSubscription-onboarded') ||
+      !this.pageSubscribeButton.element ||
 
       // Buggy
-      (cd.g.skin === 'vector-2022' && window.scrollY > 70)
+      (cd.g.skin.startsWith('vector') && window.scrollY > 70) ||
+
+      // Left column hidden in Timeless
+      (cd.g.skin === 'timeless' && window.innerWidth < 1100)
     ) {
       return;
     }
