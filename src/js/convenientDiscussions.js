@@ -603,6 +603,7 @@ Object.assign(cd.g, {
   pageName: underlinesToSpaces(mw.config.get('wgPageName')),
   pageTitle: mw.config.get('wgTitle'),
   namespaceNumber: mw.config.get('wgNamespaceNumber'),
+  pageAction: mw.config.get('wgAction'),
 
   // "<unregistered>" is a workaround for anonymous users (there are such!).
   userName: mw.config.get('wgUserName') || '<unregistered>',

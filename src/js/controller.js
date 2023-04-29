@@ -221,10 +221,7 @@ export default {
    * @returns {boolean}
    */
   isHistoryPage() {
-    return (
-      mw.config.get('wgAction') === 'history' &&
-      isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber)
-    );
+    return cd.g.pageAction === 'history' && isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber);
   },
 
   /**
