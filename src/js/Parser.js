@@ -186,6 +186,7 @@ class Parser {
    * _For internal use._ Find timestamps under the root element.
    *
    * @returns {Timestamp[]}
+   * @private
    */
   findTimestamps() {
     this.setPropertiesForCommentParsing();
@@ -232,6 +233,7 @@ class Parser {
    * @param {Element|external:Element} link
    * @param {object} authorData
    * @returns {boolean}
+   * @private
    */
   processLinkData(link, authorData) {
     const { userName, linkType } = Parser.processLink(link) || {};
@@ -442,49 +444,51 @@ class Parser {
    * @returns {object[]}
    */
   findUnsigneds() {
+    if (!cd.config.unsignedClass) {
+      return [];
+    }
+
     const unsigneds = [];
-    if (cd.config.unsignedClass) {
-      [...this.context.rootElement.getElementsByClassName(cd.config.unsignedClass)]
-        .filter((element) => {
-          // Only templates with no timestamp interest us.
-          if (this.context.getElementByClassName(element, 'cd-timestamp')) {
+    [...this.context.rootElement.getElementsByClassName(cd.config.unsignedClass)]
+      .filter((element) => {
+        // Only templates with no timestamp interest us.
+        if (this.context.getElementByClassName(element, 'cd-timestamp')) {
+          return false;
+        }
+
+        // Cases like https://ru.wikipedia.org/?diff=84883816
+        for (let el = element; el && el !== this.context.rootElement; el = el.parentNode) {
+          if (el.classList.contains('cd-signature')) {
             return false;
           }
+        }
 
-          // Cases like https://ru.wikipedia.org/?diff=84883816
-          for (let el = element; el && el !== this.context.rootElement; el = el.parentNode) {
-            if (el.classList.contains('cd-signature')) {
-              return false;
+        return true;
+      })
+      .forEach((element) => {
+        [...element.getElementsByTagName('a')].some((link) => {
+          const { userName: authorName, linkType } = Parser.processLink(link) || {};
+          if (authorName) {
+            let authorLink;
+            let authorTalkLink;
+            if (linkType === 'user') {
+              authorLink = link;
+            } else if (linkType === 'userTalk') {
+              authorTalkLink = link;
             }
+            element.classList.add('cd-signature');
+            const isUnsigned = true;
+            unsigneds.push({
+              element,
+              authorName,
+              isUnsigned,
+              authorLink,
+              authorTalkLink,
+            });
+            return true;
           }
-
-          return true;
-        })
-        .forEach((element) => {
-          [...element.getElementsByTagName('a')].some((link) => {
-            const { userName: authorName, linkType } = Parser.processLink(link) || {};
-            if (authorName) {
-              let authorLink;
-              let authorTalkLink;
-              if (linkType === 'user') {
-                authorLink = link;
-              } else if (linkType === 'userTalk') {
-                authorTalkLink = link;
-              }
-              element.classList.add('cd-signature');
-              const isUnsigned = true;
-              unsigneds.push({
-                element,
-                authorName,
-                isUnsigned,
-                authorLink,
-                authorTalkLink,
-              });
-              return true;
-            }
-          });
         });
-    }
+      });
 
     return unsigneds;
   }

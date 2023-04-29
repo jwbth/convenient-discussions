@@ -1429,16 +1429,20 @@ class BootProcess {
     if (!$content.is('#mw-content-text, .cd-comment-part')) return;
 
     const currentUserName = userRegistry.getCurrent().getName();
-    const selector = $content.hasClass('cd-comment-part') ?
-      `a[title$=":${currentUserName}"], a[title*=":${currentUserName} ("]` :
-      `.cd-comment-part a[title$=":${currentUserName}"], .cd-comment-part a[title*=":${currentUserName} ("]`;
-    const authorClassName = settings.get('reformatComments') ? 'cd-comment-author' : 'cd-signature';
-    const excludeSelector = [authorClassName]
+    const excludeSelector = [
+      settings.get('reformatComments') ?
+        'cd-comment-author' :
+        'cd-signature'
+    ]
       .concat(cd.config.elementsToExcludeClasses)
       .map((name) => `.${name}`)
       .join(', ');
     $content
-      .find(selector)
+      .find(
+        $content.hasClass('cd-comment-part') ?
+          `a[title$=":${currentUserName}"], a[title*=":${currentUserName} ("]` :
+          `.cd-comment-part a[title$=":${currentUserName}"], .cd-comment-part a[title*=":${currentUserName} ("]`
+      )
       .filter(function () {
         return (
           cd.g.userLinkRegexp.test(this.title) &&
