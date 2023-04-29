@@ -49,6 +49,7 @@ export default {
     states: [
       'insertButtons-altered',
       'improvePerformance-lastSuggested',
+      'manyForms-onboarded',
       'newTopicsSubscription-onboarded',
       'notificationsBlacklist',
       'useTopicSubscription-seenNotice',
@@ -83,6 +84,7 @@ export default {
       'improvePerformance-lastSuggested': null,
       insertButtons: cd.config.defaultInsertButtons || [],
       'insertButtons-altered': false,
+      'manyForms-onboarded': false,
       modifyToc: true,
       'newTopicsSubscription-onboarded': false,
       notifications: 'all',

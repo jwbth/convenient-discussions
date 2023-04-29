@@ -256,6 +256,9 @@
   "newTopicsSubscription-popup-title": "New feature",
   "newTopicsSubscription-popup-text": "You can now subscribe to talk pages. If you subscribe to a page, you will receive notifications when new topics are started on the page. To subscribe to a page, click \"{{int:discussiontools-newtopicssubscription-button-subscribe-label}}\" in the page actions menu.",
 
+  "popup-manyForms-title": "Did you know?",
+  "popup-manyForms-text": "In Convenient Discussions, you can type many comments simultaneously in separate forms and then send them one by one. The text in other forms won't be lost when you submit one of the forms. Give it a try!",
+
   "navpanel-refresh": "Refresh page",
   "navpanel-previous": "Go to the previous new comment",
   "navpanel-next": "Go to the next new comment",
