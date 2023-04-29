@@ -33,6 +33,15 @@ mw.loader.using([
     'discussiontools-topicsubscription-notify-subscribed-body',
     'discussiontools-topicsubscription-notify-unsubscribed-title',
     'discussiontools-topicsubscription-notify-unsubscribed-body',
+    'discussiontools-newtopicssubscription-button-subscribe-label',
+    'discussiontools-newtopicssubscription-button-subscribe-tooltip',
+    'discussiontools-newtopicssubscription-button-unsubscribe-label',
+    'discussiontools-newtopicssubscription-button-unsubscribe-tooltip',
+    'discussiontools-newtopicssubscription-notify-subscribed-title',
+    'discussiontools-newtopicssubscription-notify-subscribed-body',
+    'discussiontools-newtopicssubscription-notify-unsubscribed-title',
+    'discussiontools-newtopicssubscription-notify-unsubscribed-body',
+    'visualeditor-educationpopup-dismiss',
   ];
 
   for (let i = 0; i < messageNames.length; i += 50) {
