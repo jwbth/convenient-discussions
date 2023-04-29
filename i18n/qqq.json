@@ -242,6 +242,8 @@
 	"topicsubscription-notice": "Text of the alert message that pop ups when the user subscribes to a topic for the first time.",
 	"newTopicsSubscription-popup-title": "Title of the onboarding popup that introduces a feature of new topics subscription to the user.",
 	"newTopicsSubscription-popup-text": "Text of the onboarding popup that introduces a feature of new topics subscription to the user.",
+	"popup-manyForms-title": "Title of the onboarding popup that informs the user they can open multiple comment forms at once.",
+	"popup-manyForms-text": "Text of the onboarding popup that informs the user they can open multiple comment forms at once.",
 	"navpanel-refresh": "Text of the tooltip for the \"Refresh\" button in the navigation panel.",
 	"navpanel-previous": "Text of the tooltip for the button in the navigation panel that scrolls the page to the previous new comment.",
 	"navpanel-next": "Text of the tooltip for the button in the navigation panel that scrolls the page to the next new comment.",

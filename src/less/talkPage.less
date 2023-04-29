@@ -294,19 +294,22 @@ ol > .cd-replyButtonWrapper:not(.cd-replyButtonWrapper-hasCommentForm) {
   margin-bottom: 7px;
 }
 
-.cd-popup-newTopicsSubscription {
+.cd-popup-onboarding {
   font-size: 0.875rem;
+  z-index: 10;
 
   .oo-ui-labelElement-label {
     font-weight: bold;
   }
 
-  .skin-vector-2022.ltr & {
-    margin-right: 12px;
-  }
+  &-newTopicsSubscription {
+    .skin-vector-2022.ltr & {
+      margin-right: 12px;
+    }
 
-  .skin-vector-2022.rtl & {
-    margin-left: 12px;
+    .skin-vector-2022.rtl & {
+      margin-left: 12px;
+    }
   }
 }
 

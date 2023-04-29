@@ -274,6 +274,8 @@ class CommentForm {
 
     controller.updatePageTitle();
 
+    this.onboardOntoMultipleForms();
+
     /**
      * A comment form has been created and added to the page.
      *
@@ -3855,6 +3857,52 @@ class CommentForm {
     this.getParentComment()?.expandAllThreadsDownTo();
     this.$element.cdScrollIntoView('center');
     focusInput(this.commentInput);
+  }
+
+  /**
+   * Show an onboarding popup that informs the user they can open multiple comment forms at once.
+   *
+   * @private
+   */
+  onboardOntoMultipleForms() {
+    if (
+      settings.get('manyForms-onboarded') ||
+      CommentFormStatic.getCount() !== 2 ||
+
+      // Left column hidden in Timeless
+      (cd.g.skin === 'timeless' && window.innerWidth < 1100) ||
+
+      (cd.g.skin === 'vector-2022' && window.innerWidth < 1000)
+    ) {
+      return;
+    }
+
+    const button = new OO.ui.ButtonWidget({
+      label: cd.mws('visualeditor-educationpopup-dismiss'),
+      flags: ['progressive', 'primary'],
+    });
+    button.on('click', () => {
+      popup.toggle(false);
+    });
+    const popup = new OO.ui.PopupWidget({
+      icon: 'lightbulb',
+      label: cd.s('popup-manyForms-title'),
+      $content: $('<div>').append(
+        $('<p>').text(cd.s('popup-manyForms-text')),
+        $('<p>').append(button.$element),
+      ).children(),
+      head: true,
+      $floatableContainer: this.$element,
+      $container: controller.$root,
+      position: 'before',
+      padded: true,
+      classes: ['cd-popup-onboarding'],
+    });
+    $(document.body).append(popup.$element);
+    popup.toggle(true);
+    popup.on('closing', () => {
+      settings.saveSettingOnTheFly('manyForms-onboarded', true);
+    });
   }
 }
 

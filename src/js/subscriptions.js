@@ -524,7 +524,7 @@ export default {
       $container: $(document.body),
       position: cd.g.skin === 'vector-2022' ? 'before' : 'below',
       padded: true,
-      classes: ['cd-popup-newTopicsSubscription'],
+      classes: ['cd-popup-onboarding', 'cd-popup-onboarding-newTopicsSubscription'],
     });
     $(document.body).append(popup.$element);
     popup.toggle(true);
