@@ -2721,9 +2721,7 @@ class CommentForm {
          */
         mw.hook('convenientDiscussions.previewReady').fire(this.$previewArea, cd);
 
-        if (!isAuto) {
-          mw.hook('wikipage.content').fire(this.$previewArea);
-        }
+        mw.hook('wikipage.content').fire(this.$previewArea);
       }
 
       this.$summaryPreview.empty();
