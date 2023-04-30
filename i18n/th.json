@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"Ekminarin",
 			"Patsagorn Y.",
 			"Thas Tayapongsak"
 		]
@@ -23,14 +24,17 @@
 	"sm-addsubsection-tooltip": "เพิ่มส่วนย่อยของส่วนนี้",
 	"sm-move": "ย้าย",
 	"sm-move-tooltip": "ย้ายหัวข้อไปที่หน้าอื่น",
+	"sm-subscribe": "ติดตาม",
 	"sm-copylink-tooltip": "คัดลอกลิงก์",
+	"comment-timestamp-today": "[วันนี้] h:mm A",
+	"comment-timestamp-yesterday": "[เมื่อวานนี้] h:mm A",
 	"comment-changed": "ถูกแก้ไข",
 	"comment-changed-refresh": "รีเฟรช",
 	"comment-diff": "แตกต่าง",
 	"comment-diff-error": "ไม่สามารถแสดงผลความแตกต่างได้",
 	"comment-diff-history": "ประวัติการแก้ไข",
 	"comment-changedsince": "ความเห็นถูกเปลี่ยนแปลงตั้งแต่การเข้าชมล่าสุดของคุณ",
-	"comment-deleted": "ความเห็นนี้ถูกลบหรือลงชื่อซ้ำ",
+	"comment-deleted": "ความเห็นนี้ถูกลบแล้ว",
 	"section-reply": "ตอบกลับส่วน",
 	"section-addsubsection-to": "เพิ่มส่วนย่อย \"$1\"",
 	"section-newcomments": "{{plural:$1|}}มีความเห็นใหม่ในส่วนนี้จาก{{plural:$2|{{plural:$4|}}|{{plural:$4|}}}} $3 กดเพื่อรีเฟรชหน้า",
@@ -106,5 +110,6 @@
 	"cf-watch": "เฝ้าดูหน้านี้",
 	"cf-watchsection-topic": "เฝ้าดูหัวข้อนี้",
 	"cf-watchsection-subsection": "เฝ้าดูส่วนย่อยนี้",
+	"msd-move": "ย้าย",
 	"error-anoneditwatning": "<strong>คุณไม่ได้อยู่ในระบบ</strong> เลขที่อยู่ IP ของคุณจะเป็นสาธารณะหากทำการแก้ไขใด ๆ"
 }
