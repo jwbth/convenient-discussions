@@ -1,3 +1,25 @@
+window.mw = {
+  config: {
+    values: {
+      wgContentLanguage: 'en',
+      wgUserLanguage: 'en',
+    },
+    get: (name) => mw.config.values[name],
+    set: (name, value) => {
+      mw.config.values[name] = value;
+    },
+  },
+  msg: (name) => messages[mw.config.get('wgUserLanguage')][name],
+  user: {
+    options: {
+      get: () => ({}),
+    },
+  },
+  loader: {
+    getState: () => {},
+  },
+};
+
 const getTimezoneOffset = require('date-fns-tz').getTimezoneOffset;
 
 const Comment = require('../src/js/Comment').default;
@@ -42,28 +64,6 @@ const messages = {
   },
   de: {
     may_long: 'Mai',
-  },
-};
-
-window.mw = {
-  config: {
-    values: {
-      wgContentLanguage: 'en',
-      wgUserLanguage: 'en',
-    },
-    get: (name) => mw.config.values[name],
-    set: (name, value) => {
-      mw.config.values[name] = value;
-    },
-  },
-  msg: (name) => messages[mw.config.get('wgUserLanguage')][name],
-  user: {
-    options: {
-      get: () => ({}),
-    },
-  },
-  loader: {
-    getState: () => {},
   },
 };
 
