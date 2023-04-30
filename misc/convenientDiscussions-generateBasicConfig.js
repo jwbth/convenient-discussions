@@ -171,15 +171,7 @@ mw.loader.using([
 
   config.paragraphTemplates = titles.paragraph
     ?.map(getTitleText)
-    .sort((title1, title2) => {
-      if (title1 === 'Pb') {
-        return -1;
-      } else if (title2 === 'Pb') {
-        return 1;
-      } else {
-        return 0;
-      }
-    });
+    .sort((title1, title2) => (title2 === 'Pb') - (title1 === 'Pb'));
   if (config.paragraphTemplates) {
     config.paragraphTemplates[0] = toLowerCaseFirst(config.paragraphTemplates[0]);
   }
