@@ -1,3 +1,15 @@
+window.mw = {
+  util: {
+    escapeRegExp: (str) => str.replace(/([\\{}()|.?*+\-^$[\]])/g, '\\$1'),
+  },
+  config: {
+    values: {
+      wgDiscussionToolsPageThreads: [],
+    },
+    get: (name) => mw.config.values[name],
+  },
+};
+
 const CommentInputProcessor = require('../src/js/CommentInputProcessor').default;
 const cd = require('../src/js/cd').default;
 
@@ -17,12 +29,6 @@ Object.assign(cd, {
   },
   config: defaultConfig,
 });
-
-window.mw = {
-  util: {
-    escapeRegExp: (str) => str.replace(/([\\{}()|.?*+\-^$[\]])/g, '\\$1'),
-  },
-};
 
 function testWithData(label, code, expected, commentForm, action = 'submit', config) {
   test(label, () => {
