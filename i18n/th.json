@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"Ekminarin",
 			"Patsagorn Y.",
 			"Thas Tayapongsak"
 		]
@@ -109,5 +110,6 @@
 	"cf-watch": "เฝ้าดูหน้านี้",
 	"cf-watchsection-topic": "เฝ้าดูหัวข้อนี้",
 	"cf-watchsection-subsection": "เฝ้าดูส่วนย่อยนี้",
+	"msd-move": "ย้าย",
 	"error-anoneditwatning": "<strong>คุณไม่ได้อยู่ในระบบ</strong> เลขที่อยู่ IP ของคุณจะเป็นสาธารณะหากทำการแก้ไขใด ๆ"
 }
