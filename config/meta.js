@@ -76,7 +76,6 @@ export default {
     'discussiontools-newtopicssubscription-notify-unsubscribed-title': '{{GENDER:|You}} have unsubscribed.',
     'discussiontools-newtopicssubscription-notify-unsubscribed-body': '{{GENDER:|You}} will no longer receive notifications when new topics are started on this page.',
     'visualeditor-educationpopup-dismiss': 'Okay, got it',
-    'PermanentLink': 'PermanentLink',
   },
   specialPageAliases: {
     'Contributions': 'Contributions',

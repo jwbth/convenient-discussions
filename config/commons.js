@@ -80,7 +80,7 @@ export default {
   specialPageAliases: {
     'Contributions': 'Contributions',
     'Diff': 'Diff',
-    'PermanentLink': 'PermanentLink'
+    'PermanentLink': 'PermanentLink',
   },
   timezone: 'UTC',
   useGlobalPreferences: true,
@@ -100,11 +100,11 @@ export default {
     'Unsigned IP',
     'Unsigned-ip',
     'UnsignedIP2',
-    'Unsignedip2'
+    'Unsignedip2',
   ],
   smallDivTemplates: [
     'smalldiv',
-    'Small div'
+    'Small div',
   ],
   paragraphTemplates: [
     'pb',
