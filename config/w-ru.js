@@ -270,13 +270,9 @@ export default {
   ],
 
   elementsToExcludeClasses: [
-    'ruwiki-movedTemplate',
     'ambox',
     'NavHead',
-    'ts-Закрыто-footer',
-    'ts-Цитата-container',
     'raaf',
-    'ts-Скрытие_текста_реплик',
   ],
 
   templatesToExclude: [
@@ -337,7 +333,6 @@ export default {
   ],
 
   closedDiscussionClasses: [
-    'ruwiki-closedDiscussion',
     'NavContent',
   ],
 
