@@ -338,12 +338,6 @@ export default {
 
   customUnhighlightableElementClasses: [
     'infobox',
-    'ruwiki-movedTemplate',
-  ],
-
-  customAddTopicLinkSelectors: [
-    '.ruwiki-addTopicLink a',
-    '.ruwiki-addSectionBottom',
   ],
 
   noConfirmPostEmptyCommentPageRegexp: /^(?:Википедия:Заявки на статус |Википедия:Голосования\/)/,
