@@ -315,12 +315,6 @@ export default {
 
 const cd = convenientDiscussions;
 
-mw.hook('convenientDiscussions.beforeParse').add(function () {
-	mw.loader.using('mediawiki.util').then(function () {
-		mw.util.addCSS('.ruwiki-msgIndentation-minus1level { margin-left: 0 !important; }');
-	});
-});
-
 mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
 	const generateEditCommonJsLink = function () {
 		return mw.util.getUrl('User:' + cd.user.getName() + '/common.js', { action: 'edit' });
