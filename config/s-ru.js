@@ -171,8 +171,11 @@ export default {
   ],
 
   elementsToExcludeClasses: [
+    'ruwiki-movedTemplate',
     'ambox',
     'NavHead',
+    'ts-Закрыто-footer',
+    'ts-Цитата-container',
   ],
 
   templatesToExclude: [
@@ -225,11 +228,18 @@ export default {
   ],
 
   closedDiscussionClasses: [
+    'ruwiki-closedDiscussion',
     'NavContent',
   ],
 
   customUnhighlightableElementClasses: [
     'infobox',
+    'ruwiki-movedTemplate',
+  ],
+
+  customAddTopicLinkSelectors: [
+    '.ruwiki-addTopicLink a',
+    '.ruwiki-addSectionBottom',
   ],
 
   noConfirmPostEmptyCommentPageRegexp: /^(?:Викитека:Заявки на статус |Викитека:Голосования\/)/,
