@@ -2814,9 +2814,8 @@ class CommentForm {
 
     let html = resp.compare?.body;
     if (html) {
-      html = wrapDiffBody(html);
       this.$previewArea
-        .html(html)
+        .html(wrapDiffBody(html))
         .prepend(
           $('<div>')
             .addClass('cd-commentForm-previewArea-label')

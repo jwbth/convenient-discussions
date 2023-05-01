@@ -324,11 +324,12 @@ export function parseCode(code, customOptions) {
   const options = Object.assign({}, defaultOptions, customOptions);
   return controller.getApi().post(options).then(
     (resp) => {
-      const html = resp.parse.text;
       mw.loader.load(resp.parse.modules);
       mw.loader.load(resp.parse.modulestyles);
-      const parsedSummary = resp.parse.parsedsummary;
-      return { html, parsedSummary };
+      return {
+        html: resp.parse.text,
+        parsedSummary: resp.parse.parsedsummary,
+      };
     },
     handleApiReject
   );

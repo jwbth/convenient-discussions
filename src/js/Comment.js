@@ -1311,9 +1311,7 @@ class Comment extends CommentSkeleton {
    * @private
    */
   hideMenu(e) {
-    if (e) {
-      e.preventDefault();
-    }
+    e?.preventDefault();
     this.overlayInnerWrapper.style.display = 'none';
   }
 
@@ -1785,9 +1783,7 @@ class Comment extends CommentSkeleton {
     this.$animatedBackground.animate(finalBackgroundProperties, 400, 'swing', function () {
       if (this !== comment.$animatedBackground.get(-1)) return;
 
-      if (callback) {
-        callback();
-      }
+      callback?.();
       comment.$animatedBackground.add(comment.$overlayGradient).css(propertyDefaults);
     });
   }
@@ -1803,9 +1799,7 @@ class Comment extends CommentSkeleton {
     this.animateBackBound = null;
 
     if (!this.$underlay?.parent().length) {
-      if (callback) {
-        callback();
-      }
+      callback?.();
       return;
     }
 
@@ -1849,9 +1843,7 @@ class Comment extends CommentSkeleton {
   flash(type, delay, callback) {
     this.configureLayers();
     if (!this.$underlay) {
-      if (callback) {
-        callback();
-      }
+      callback?.();
       return;
     }
 
@@ -2797,22 +2789,20 @@ class Comment extends CommentSkeleton {
       $(this.section.barElement).addClass('cd-hidden');
     }
 
-    // "!this.editForm" check is in case the editing is initiated from a script of some kind (there
-    // is no button to call it from CD when the form is displayed).
-    if (!this.editForm) {
-      /**
-       * Edit form related to the comment.
-       *
-       * @type {CommentForm|undefined}
-       */
-      this.editForm = initialState instanceof CommentForm ?
-        initialState :
-        new CommentForm({
-          mode: 'edit',
-          target: this,
-          initialState,
-        });
-    }
+    // The implicit `!this.editForm` check is in case the editing is initiated from a script of some
+    // kind (there is no button to call it from CD when the form is displayed).
+    /**
+     * Edit form related to the comment.
+     *
+     * @type {CommentForm|undefined}
+     */
+    this.editForm ||= initialState instanceof CommentForm ?
+      initialState :
+      new CommentForm({
+        mode: 'edit',
+        target: this,
+        initialState,
+      });
   }
 
   /**

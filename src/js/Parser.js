@@ -700,9 +700,7 @@ class Parser {
       if (domain !== cd.g.hostname) {
         linkType += 'Foreign';
       }
-      if (userName) {
-        userName = ucFirst(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();
-      }
+      userName &&= ucFirst(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();
     } else {
       if (
         element.classList.contains('mw-selflink') &&

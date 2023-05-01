@@ -32,27 +32,27 @@ const absSrcDirs = env.opts._.map((iSrcDir) => path.join(env.pwd, iSrcDir));
 /**
  * A regex to capture all doc comments.
  */
-const docCommentsRegex = /\/\*\*\s*(?:[^\*]|(?:\*(?!\/)))*\*\/([^\n]*\n(.+))?/g;
+const docCommentsRegex = /\/\*\*\s*(?:[^*]|(?:\*(?!\/)))*\*\/([^\n]*\n(.+))?/g;
 
 /**
  * Find the module name.
  */
-const moduleNameRegex = /@module\s+([\w\/]+)?/;
+const moduleNameRegex = /@module\s+([\w/]+)?/;
 
 /**
  * Finds typedefs
  */
-const typedefRegex = /@typedef\s*(?:\{[^}]*\})\s*([\w-\$]*)/g;
+const typedefRegex = /@typedef\s*(?:\{[^}]*\})\s*([\w-$]*)/g;
 
 
 /**
  * Finds a ts import.
  */
-const importRegex = /import\(['"](\@?[\.\/_a-zA-Z0-9-\$]*)(?:\.js)?['"]\)\.?([_a-zA-Z0-9-\$]*)?/g;
+const importRegex = /import\(['"](@?[./_a-zA-Z0-9-$]*)(?:\.js)?['"]\)\.?([_a-zA-Z0-9-$]*)?/g;
 
 const typeRegex = /\{[^}]*\}/g;
 
-const identifiers = /([\w-\$\.]+)/g;
+const identifiers = /([\w-$.]+)/g;
 
 /**
  * @typedef {object} FileInfo
@@ -122,7 +122,7 @@ function getFileInfo(filename, source = null) {
       });
 
       // jwbth: Tweak to add to classToTypeDefs
-      const [, memberOf] = comment.match(/@memberof\s*([\w-\$]*)/) || [];
+      const [, memberOf] = comment.match(/@memberof\s*([\w-$]*)/) || [];
       const isInner = Boolean(comment.match(/@inner\s*/));
       if (memberOf) {
         if (!classToTypeDefs.has(memberOf)) {
@@ -135,7 +135,7 @@ function getFileInfo(filename, source = null) {
     });
 
     // jwbth: Sneak classes as typedefs as well to have correct links to them formed.
-    nextLine?.replace(/\bexport class ([\w-\$]+)/, (_substr, defName) => {
+    nextLine?.replace(/\bexport class ([\w-$]+)/, (_substr, defName) => {
       fileInfo.typedefs.push({
         defName,
         isInner: false,
@@ -189,17 +189,14 @@ function beforeParse(e) {
             const moduleTypeDefsSet = moduleToTypeDefs.get(moduleId);
             const foundDefInModule = findTypeDef(symbolName, moduleTypeDefsSet);
             return `module:${moduleId}${!foundDefInModule || foundDefInModule.isInner ? '~' : '.'}${symbolName}`;
-          } else {
-            return `module:${moduleId}`;
           }
+          return `module:${moduleId}`;
         } else {
           return symbolName;
         }
-
-        return (moduleId) ? `module:${moduleId}${symbolName?"~"+symbolName:""}` : symbolName;
       });
     });
-};
+}
 
 /**
  * Converts a relative path to a module identifier.

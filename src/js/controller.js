@@ -1,5 +1,5 @@
 /**
- * A singleton that keeps and changes the overall state of the page, initiating boot processes and
+ * A singleton that stores and changes the overall state of the page, initiating boot processes and
  * reacting to events.
  *
  * @module controller
@@ -53,7 +53,7 @@ export default {
   lastScrollX: 0,
   originalPageTitle: document.title,
   addedCommentCount: 0,
-  areRelevantCommentsAdded: 0,
+  areRelevantCommentsAdded: false,
   relevantAddedCommentIds: null,
   newCommentsTitleMark: '',
   commentsNotifiedAbout: [],
@@ -133,7 +133,7 @@ export default {
    * @param {string} htmlToLayOut HTML to update the page with.
    */
   setup(htmlToLayOut) {
-    // RevisionSlider replaces the #mw-content-text element.
+    // RevisionSlider replaces the `#mw-content-text` element.
     if (!this.$content.get(0)?.parentNode) {
       this.$content = $('#mw-content-text');
     }
@@ -155,13 +155,16 @@ export default {
     }
 
     // Add the class immediately to prevent the issue when any unexpected error prevents this from
-    // being executed and then this.handleWikipageContentHookFirings is called with #mw-content-text
-    // element for some reason, and the page goes into an infinite reloading loop.
+    // being executed and then `this.handleWikipageContentHookFirings()` is called with
+    // ``#mw-content-text`` element for some reason, and the page goes into an infinite reloading
+    // loop.
     this.$root.addClass('cd-parse-started');
   },
 
   /**
    * Reset the controller data and state. (Executed between page loads.)
+   *
+   * @private
    */
   reset() {
     this.cleanUpUrlAndDom();
@@ -975,9 +978,9 @@ export default {
     let fragment = location.hash.slice(1);
     if (CommentStatic.isAnyId(fragment)) {
       // Don't jump to the comment if the user pressed "Back"/"Forward" in the browser or if
-      // history.pushState() is called from Comment#scrollTo() (after clicks on added (gray) items
-      // in the TOC). A marginal state of this happening is when a page with a comment ID in the
-      // fragment is opened and then a link with the same fragment is clicked.
+      // `history.pushState()` is called from `Comment#scrollTo()` (after clicks on added (gray)
+      // items in the TOC). A marginal state of this happening is when a page with a comment ID in
+      // the fragment is opened and then a link with the same fragment is clicked.
       if (history.state?.cdJumpedToComment) return;
 
       try {
@@ -1475,7 +1478,7 @@ export default {
   },
 
   /**
-   * Remove fragment and revision parameters from the URL, remove DOM elements related to the diff.
+   * Remove fragment and revision parameters from the URL; remove DOM elements related to the diff.
    */
   cleanUpUrlAndDom() {
     const { query } = new mw.Uri();
@@ -1699,7 +1702,7 @@ export default {
       newElement.setAttribute(attribute.name, attribute.value);
     });
 
-    // If this element is a part of a comment, replace it in the Comment object instance.
+    // If this element is a part of a comment, replace it in the `Comment` object instance.
     let commentIndex = element.getAttribute('data-cd-comment-index');
     if (commentIndex !== null) {
       CommentStatic.getAll()[Number(commentIndex)].replaceElement(element, newElement);
@@ -1908,9 +1911,7 @@ export default {
     const onComplete = () => {
       this.toggleAutoScrolling(false);
       this.handleScroll();
-      if (callback) {
-        callback();
-      }
+      callback?.();
     };
 
     if (smooth) {

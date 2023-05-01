@@ -32,17 +32,7 @@ function search(string, list) {
   const startsWithRegexp = new RegExp('^' + mw.util.escapeRegExp(string), 'i');
   return list
     .filter((item) => containsRegexp.test(item))
-    .sort((item1, item2) => {
-      const item1StartsWith = startsWithRegexp.test(item1);
-      const item2StartsWith = startsWithRegexp.test(item2);
-      if (item1StartsWith && !item2StartsWith) {
-        return -1;
-      } else if (item2StartsWith && !item1StartsWith) {
-        return 1;
-      } else {
-        return 0;
-      }
-    });
+    .sort((item1, item2) => startsWithRegexp.test(item2) - startsWithRegexp.test(item1));
 }
 
 /**

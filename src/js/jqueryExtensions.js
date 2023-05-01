@@ -144,9 +144,7 @@ export default {
    */
   cdScrollIntoView(alignment = 'top', smooth = true, callback) {
     if (this.cdIsInViewport()) {
-      if (callback) {
-        callback();
-      }
+      callback?.();
     } else {
       if (callback) {
         // Add `sleep()` for a more smooth animation in case there is `.focus()` in the callback.

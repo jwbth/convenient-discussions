@@ -266,16 +266,14 @@ export default {
 
     const candidates = CommentStatic.getAll().filter((comment) => comment.isSeen === false);
     const comment = candidates.find((comment) => comment.isInViewport() === false) || candidates[0];
-    if (comment) {
-      comment.scrollTo({
-        flash: null,
-        callback: () => {
-          // The default handleScroll() callback is executed in $#cdScrollTo, but that happens after
-          // a 300ms timeout, so we have a chance to have our callback executed first.
-          comment.registerSeen('forward', true);
-        },
-      });
-    }
+    comment?.scrollTo({
+      flash: null,
+      callback: () => {
+        // The default handleScroll() callback is executed in $#cdScrollTo, but that happens after
+        // a 300ms timeout, so we have a chance to have our callback executed first.
+        comment.registerSeen('forward', true);
+      },
+    });
   },
 
   /**

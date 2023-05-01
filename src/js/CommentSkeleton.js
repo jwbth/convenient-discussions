@@ -713,7 +713,7 @@ class CommentSkeleton {
 
     /**
      * Comment parts. They are not guaranteed to match the elements after some point (due to
-     * {@link CommentSkeleton#wrapHighlightables}, {@link CommentSkeleton#fixEndLevel}) calls.
+     * `CommentSkeleton#wrapHighlightables`, `CommentSkeleton#fixEndLevel`) calls.
      *
      * @type {object[]}
      */

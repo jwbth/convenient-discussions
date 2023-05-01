@@ -30,16 +30,7 @@ import {
  * @private
  */
 function lastFocused(commentForm1, commentForm2) {
-  const lastFocused1 = commentForm1.lastFocused || new Date(0);
-  const lastFocused2 = commentForm2.lastFocused || new Date(0);
-
-  if (lastFocused2 > lastFocused1) {
-    return 1;
-  } else if (lastFocused2 < lastFocused1) {
-    return -1;
-  } else {
-    return 0;
-  }
+  return (commentForm1.lastFocused || new Date(0)) - (commentForm2.lastFocused || new Date(0));
 }
 
 /**

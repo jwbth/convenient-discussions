@@ -158,9 +158,7 @@ function switchRelevant() {
 function addWatchlistMenu() {
   // For auto-updating watchlists
   mw.hook('wikipage.content').add(() => {
-    if (switchRelevantButton) {
-      switchRelevantButton.setFlags({ progressive: false });
-    }
+    switchRelevantButton?.setFlags({ progressive: false });
   });
 
   const $menu = $('<div>').addClass('cd-watchlistMenu');

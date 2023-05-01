@@ -248,15 +248,7 @@ function sortCommentsByMatchScore(candidates, target, isTotalCountEqual) {
       };
     })
     .filter((match) => match.score > 1.66)
-    .sort((match1, match2) => {
-      if (match2.score > match1.score) {
-        return 1;
-      } else if (match2.score < match1.score) {
-        return -1;
-      } else {
-        return 0;
-      }
-    });
+    .sort((match1, match2) => match2.score - match1.score);
 }
 
 /**

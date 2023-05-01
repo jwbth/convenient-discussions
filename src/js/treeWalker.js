@@ -119,9 +119,7 @@ export class TreeWalker {
         while (node && !node[this.nextSiblingProp] && node.parentNode !== this.root) {
           node = node.parentNode;
         }
-        if (node) {
-          node = node[this.nextSiblingProp];
-        }
+        node &&= node[this.nextSiblingProp];
       }
     } while (node && this.acceptNode && !this.acceptNode(node));
     if (node) {
