@@ -145,7 +145,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         }
         return;
       }
-      const sectionCode = this.section.inCode.code;
+      const sectionCode = this.section.source.code;
 
       this.controls = {};
       this.controls.title = {},
@@ -338,7 +338,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
     const headlineEncoded = encodeWikilink(this.section.headline);
     return {
       page: this.section.getSourcePage(),
-      sectionInCode: this.section.inCode,
+      sectionSource: this.section.source,
       sectionWikilink: this.controls.keepLink.input.isSelected() ?
         `${pageName}#${headlineEncoded}` :
         pageName,
@@ -411,8 +411,8 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
       codeEnding = '';
     }
 
-    const sectionCode = source.sectionInCode.code;
-    const relativeContentStartIndex = source.sectionInCode.relativeContentStartIndex;
+    const sectionCode = source.sectionSource.code;
+    const relativeContentStartIndex = source.sectionSource.relativeContentStartIndex;
     const codeBefore = sectionCode.slice(0, relativeContentStartIndex);
     const sectionContentCode = sectionCode.slice(relativeContentStartIndex);
     const newSectionCode = endWithTwoNewlines(
@@ -479,7 +479,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    * @throws {Array.<string|boolean>}
    */
   async editSourcePage(source, target) {
-    const sectionCode = source.sectionInCode.code;
+    const sectionCode = source.sectionSource.code;
     const timestamp = findFirstTimestamp(sectionCode) || cd.g.signCode + '~';
 
     let newSectionCode;
@@ -489,14 +489,14 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         cd.g.userSignature,
         timestamp
       );
-      const codeBefore = sectionCode.slice(0, source.sectionInCode.relativeContentStartIndex);
+      const codeBefore = sectionCode.slice(0, source.sectionSource.relativeContentStartIndex);
       newSectionCode = codeBefore + code + '\n';
     } else {
       newSectionCode = '';
     }
 
-    const codeBefore = source.page.code.slice(0, source.sectionInCode.startIndex);
-    const codeAfter = source.page.code.slice(source.sectionInCode.endIndex);
+    const codeBefore = source.page.code.slice(0, source.sectionSource.startIndex);
+    const codeAfter = source.page.code.slice(source.sectionSource.endIndex);
     const newCode = codeBefore + newSectionCode + codeAfter;
 
     let summaryEnding = this.controls.summaryEnding.input.getValue();

@@ -3,6 +3,7 @@ import CdError from './CdError';
 import CommentButton from './CommentButton';
 import CommentForm from './CommentForm';
 import CommentSkeleton from './CommentSkeleton';
+import CommentSource from './CommentSource';
 import CommentStatic from './CommentStatic';
 import CommentSubitemList from './CommentSubitemList';
 import LiveTimestamp from './LiveTimestamp';
@@ -22,8 +23,6 @@ import {
   dealWithLoadingBug,
   decodeHtmlEntities,
   defined,
-  definedAndNotNull,
-  generatePageNamePattern,
   getExtendedRect,
   getFromLocalStorage,
   getHigherNodeAndOffsetInSelection,
@@ -31,29 +30,17 @@ import {
   isInline,
   saveToLocalStorage,
   sleep,
-  unhideText,
   unique,
   wrap,
   wrapDiffBody,
 } from './utils';
-import {
-  brsToNewlines,
-  extractSignatures,
-  hideDistractingCode,
-  hideSensitiveCode,
-  hideTemplatesRecursively,
-  normalizeCode,
-  removeWikiMarkup,
-} from './wikitext';
+import { extractSignatures, removeWikiMarkup } from './wikitext';
 import { formatDate, formatDateNative } from './timestamp';
 import { handleApiReject, loadUserGenders, parseCode } from './apiWrappers';
 import { showConfirmDialog } from './ooui';
 
 let elementPrototypes;
 let thanks;
-let closedDiscussionPairRegexp;
-let closedDiscussionSingleRegexp;
-let outdentTemplatesRegexp;
 
 /**
  * Remove thanks older than 60 days.
@@ -108,70 +95,6 @@ function maybeMarkPageAsRead() {
   ) {
     pageRegistry.getCurrent().markAsRead(updateChecker.getLastCheckedRevisionId());
   }
-}
-
-/**
- * Get the code of the section chunk after the specified index with concealed irrelevant parts.
- *
- * @param {number} currentIndex
- * @param {string} wholeCode
- * @returns {string}
- * @private
- */
-function getAdjustedChunkCodeAfter(currentIndex, wholeCode) {
-  let adjustedCode = hideDistractingCode(wholeCode);
-
-  if (cd.config.closedDiscussionTemplates[0][0]) {
-    if (!closedDiscussionSingleRegexp) {
-      const closedDiscussionBeginningsPattern = cd.config.closedDiscussionTemplates[0]
-        .map(generatePageNamePattern)
-        .join('|');
-      const closedDiscussionEndingsPattern = cd.config.closedDiscussionTemplates[1]
-        .map(generatePageNamePattern)
-        .join('|');
-      if (closedDiscussionEndingsPattern) {
-        closedDiscussionPairRegexp = new RegExp(
-          (
-            `\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *(?=[|}])[^}]*\\}\\}\\s*([:*#]*)[^]*?` +
-            `\\{\\{ *(?:${closedDiscussionEndingsPattern}) *(?=[|}])[^}]*\\}\\}`
-          ),
-          'g'
-        );
-      }
-      closedDiscussionSingleRegexp = new RegExp(
-        `\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *\\|[^}]{0,50}?=\\s*([:*#]*)`,
-        'g'
-      );
-    }
-
-    if (closedDiscussionPairRegexp) {
-      adjustedCode = adjustedCode.replace(closedDiscussionPairRegexp, (s, indentation) => (
-        '\x01'.repeat(indentation.length) + ' '.repeat(s.length - indentation.length - 1) + '\x02'
-      ));
-    }
-
-    let match;
-    while ((match = closedDiscussionSingleRegexp.exec(adjustedCode))) {
-      const codeBeforeMatch = adjustedCode.slice(0, match.index);
-      const codeAfterMatch = adjustedCode.slice(match.index);
-      const adjustedCam = hideTemplatesRecursively(codeAfterMatch, null, match[1].length).code;
-      adjustedCode = codeBeforeMatch + adjustedCam;
-    }
-  }
-
-  const adjustedCodeAfter = adjustedCode.slice(currentIndex);
-  const nextSectionHeadingMatch = adjustedCodeAfter.match(/\n+(=+).*\1[ \t\x01\x02]*\n|$/);
-  let chunkCodeAfterEndIndex = currentIndex + nextSectionHeadingMatch.index + 1;
-  let chunkCodeAfter = wholeCode.slice(currentIndex, chunkCodeAfterEndIndex);
-  cd.g.keepInSectionEnding.forEach((regexp) => {
-    const match = chunkCodeAfter.match(regexp);
-    if (match) {
-      // `1` accounts for the first line break.
-      chunkCodeAfterEndIndex -= match[0].length - 1;
-    }
-  });
-
-  return adjustedCode.slice(currentIndex, chunkCodeAfterEndIndex);
 }
 
 /**
@@ -2012,11 +1935,11 @@ class Comment extends CommentSkeleton {
     const lineNumbers = [[], []];
     revisions.forEach((revision, i) => {
       const pageCode = revision.slots.main.content;
-      const inCode = this.locateInCode(pageCode, commentsData[i]);
-      const startLineNumber = countOccurrences(pageCode.slice(0, inCode.lineStartIndex), /\n/g) + 1;
+      const source = this.locateInCode(pageCode, commentsData[i]);
+      const startLineNumber = countOccurrences(pageCode.slice(0, source.lineStartIndex), /\n/g) + 1;
       const endLineNumber = (
         startLineNumber +
-        countOccurrences(pageCode.slice(inCode.lineStartIndex, inCode.signatureEndIndex), /\n/g)
+        countOccurrences(pageCode.slice(source.lineStartIndex, source.signatureEndIndex), /\n/g)
       );
       for (let j = startLineNumber; j <= endLineNumber; j++) {
         lineNumbers[i].push(j);
@@ -2595,7 +2518,8 @@ class Comment extends CommentSkeleton {
         try {
           diffOriginalText = $('<div>')
             .append(
-              (await parseCode(diffOriginalText, { title: pageRegistry.getCurrent().name })).html
+              (await parseCode(diffOriginalText, { title: pageRegistry.getCurrent().name }))
+                .html
             )
             .cdGetText();
         } catch {
@@ -2892,7 +2816,7 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Load the comment code.
+   * Load the comment's source code.
    *
    * @throws {CdError|Error}
    */
@@ -3078,487 +3002,15 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Convert the comment code as present in the {@link Comment#inCode} property to text to set as a
-   * value of the form's comment input.
-   *
-   * @returns {string}
-   */
-  codeToText() {
-    if (!this.inCode) {
-      console.error('The Comment#inCode property should contain an object with the comment code data.');
-      return;
-    }
-    let { code, originalIndentation } = this.inCode;
-
-    let hidden;
-    ({ code, hidden } = hideSensitiveCode(code));
-
-    let text = code;
-
-    if (this.level === 0) {
-      // Collapse random line breaks that do not affect text rendering but will transform into <br>
-      // on posting. \x01 and \x02 mean the beginning and ending of sensitive code except for
-      // tables. \x03 and \x04 mean the beginning and ending of a table. Note: This should be kept
-      // coordinated with the reverse transformation code in CommentForm#commentTextToCode. Some
-      // more comments are there.
-      const entireLineRegexp = new RegExp(/^(?:\x01\d+_(block|template)\x02) *$/);
-      const fileRegexp = new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$`, 'i');
-      const currentLineEndingRegexp = new RegExp(
-        `(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x04|<br[ \\n]*\\/?>) *$`,
-        'i'
-      );
-      const nextLineBeginningRegexp = new RegExp(
-        `^(?:<\\/${cd.g.pniePattern}>|<${cd.g.pniePattern}|\\||!)`,
-        'i'
-      );
-      const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/;
-      text = text.replace(
-        /^((?![:*#; ]).+)\n(?![\n:*#; \x03])(?=(.*))/gm,
-        (s, currentLine, nextLine) => {
-          const newlineOrSpace = (
-            entireLineRegexp.test(currentLine) ||
-            entireLineRegexp.test(nextLine) ||
-            fileRegexp.test(currentLine) ||
-            fileRegexp.test(nextLine) ||
-            entireLineFromStartRegexp.test(currentLine) ||
-            entireLineFromStartRegexp.test(nextLine) ||
-            currentLineEndingRegexp.test(currentLine) ||
-            nextLineBeginningRegexp.test(nextLine)
-          ) ?
-            '\n' :
-            ' ';
-          return currentLine + newlineOrSpace;
-        }
-      );
-    }
-
-    text = brsToNewlines(text, '\x01\n')
-      // Templates occupying a whole line with <br> at the end get a special treatment too.
-      .replace(/^((?:\x01\d+_template.*\x02) *)\x01$/gm, (s, m1) => m1 + '<br>')
-
-      // Replace a temporary marker.
-      .replace(/\x01\n/g, '\n')
-
-      // Remove indentation characters
-      .replace(/\n([:*#]*)([ \t]*)/g, (s, chars, spacing) => {
-        let newChars;
-        if (chars.length >= originalIndentation.length) {
-          newChars = chars.slice(originalIndentation.length);
-          if (chars.length > originalIndentation.length) {
-            newChars += spacing;
-          }
-        } else {
-          newChars = chars + spacing;
-        }
-        return '\n' + newChars;
-      });
-
-    text = unhideText(text, hidden);
-
-    if (cd.config.paragraphTemplates.length) {
-      const paragraphTemplatesPattern = cd.config.paragraphTemplates
-        .map(generatePageNamePattern)
-        .join('|');
-      const pattern = `\\{\\{(?:${paragraphTemplatesPattern})\\}\\}`;
-      const regexp = new RegExp(pattern, 'g');
-      const lineRegexp = new RegExp(`^(?![:*#]).*${pattern}`, 'gm');
-      text = text.replace(lineRegexp, (s) => s.replace(regexp, '\n\n'));
-    }
-
-    if (this.level !== 0) {
-      text = text.replace(/\n\n+/g, '\n\n');
-    }
-
-    return text.trim();
-  }
-
-  /**
-   * While {@link Comment#adjustCommentBeginning adjusting the comment code data}, exclude the
-   * heading code and/or some known "bad beginnings" (such as badly signed comments and code
-   * captured by {@link convenientDiscussions.g.badCommentBeginnings}).
-   *
-   * @param {object} data
-   * @returns {object}
-   */
-  excludeBadBeginnings(data) {
-    if (data.headingMatch) {
-      data.headingCode = data.headingMatch[2];
-      data.headingStartIndex = data.startIndex + data.headingMatch[1].length;
-      data.headingLevel = data.headingMatch[3].length;
-      data.headlineCode = data.headingMatch[4].trim();
-      data.startIndex += data.headingMatch[0].length;
-      data.code = data.code.slice(data.headingMatch[0].length);
-
-      // Try to edit the first comment at
-      // https://ru.wikipedia.org/wiki/Википедия:Голосования/Отметки_статусных_статей_в_навигационных_шаблонах#Да
-      // to see the bug happening if we don't check for `this.isOpeningSection`.
-      data.lineStartIndex = this.isOpeningSection ? data.headingStartIndex : data.startIndex;
-    } else {
-      // Dirty workaround to tell if there are foreign timestamps inside the comment.
-      const areThereForeignTimestamps = this.elements.some((el) => {
-        const timestamp = el.querySelector('.cd-timestamp');
-        return timestamp && !timestamp.closest('.cd-signature');
-      });
-
-      // Exclude the text of the previous comment that is ended with 3 or 5 tildes instead of 4 and
-      // foreign timestamps. The foreign timestamp part can be moved out of the `!headingMatch`
-      // condition together with `cd.g.badCommentBeginnings` check to allow to apply to cases like
-      // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Start_of_section,_comment_with_timestamp_but_without_author,_newline_inside_comment,_HTML_comments_before_reply,
-      // but this can create problems with removing stuff from the opening comment.
-      [cd.config.signatureEndingRegexp, areThereForeignTimestamps ? null : cd.g.timezoneRegexp]
-        .filter(definedAndNotNull)
-        .forEach((originalRegexp) => {
-          const regexp = new RegExp(originalRegexp.source + '$', 'm');
-          const linesRegexp = /^(.+)\n/gm;
-          let lineMatch;
-          let indent;
-          while ((lineMatch = linesRegexp.exec(data.code))) {
-            const line = lineMatch[1].replace(/\[\[:?(?:[^|[\]<>\n]+\|)?(.+?)\]\]/g, '$1');
-            if (regexp.test(line)) {
-              const testIndent = lineMatch.index + lineMatch[0].length;
-              if (testIndent === data.code.length) {
-                break;
-              } else {
-                indent = testIndent;
-              }
-            }
-          }
-          if (indent) {
-            data.code = data.code.slice(indent);
-            data.startIndex += indent;
-            data.lineStartIndex += indent;
-          }
-        });
-
-      // This should be before the `this.level > 0` block to account for cases like
-      // https://ru.wikipedia.org/w/index.php?oldid=110033693&section=6&action=edit (the regexp
-      // doesn't catch the comment because of a newline inside the `syntaxhighlight` element).
-      cd.g.badCommentBeginnings.forEach((pattern) => {
-        if (pattern.source[0] !== '^') {
-          console.debug('Regexps in cd.config.customBadCommentBeginnings should have "^" as the first character.');
-        }
-        let match;
-        while ((match = data.code.match(pattern))) {
-          data.code = data.code.slice(match[0].length);
-          data.lineStartIndex = data.startIndex + match[0].lastIndexOf('\n') + 1;
-          data.startIndex += match[0].length;
-        }
-      });
-    }
-
-    return data;
-  }
-
-  /**
-   * While {@link Comment#adjustCommentBeginning adjusting the comment code data}, exclude the
-   * indentation characters and any foreign code (such as section intro) before them from the
-   * comment code. Comments at the zero level sometimes start with `:` that is used to indent some
-   * side note. It shouldn't be considered an indentation character.
-   *
-   * @param {object} data
-   * @returns {object}
-   * @private
-   */
-  excludeIndentationAndIntro(data) {
-    if (this.level === 0) {
-      return data;
-    }
-
-    const replaceIndentation = (s, before, chars, after = '') => {
-      if (typeof after === 'number') {
-        after = '';
-      }
-      let remainder = '';
-      let adjustedChars = chars;
-      let startIndexShift = s.length;
-
-      // We could just throw an error here, but instead will try to fix the markup.
-      if (
-        !before &&
-        countOccurrences(data.code, /(^|\n)[:*#]/g) >= 2 &&
-        adjustedChars.endsWith('#')
-      ) {
-        adjustedChars = adjustedChars.slice(0, -1);
-        data.originalIndentation = adjustedChars;
-
-        /*
-          We can have this structure:
-            : Comment. [signature]
-            :# Item 1.
-            :# Item 2.
-            :: End of the comment. [signature]
-
-          And we can have this:
-            : Comment. [signature]
-            ::# Item 1.
-            ::# Item 2.
-            :: End of the comment. [signature]
-
-          The first is incorrect, and we need to add additional indentation in that case. Examples:
-          https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2020-05-16T09:10:00.000Z-Example-2020-05-16T09:00:00.000Z
-          https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#c-Example-2020-05-16T09:20:00.000Z-Example-2020-05-16T09:10:00.000Z
-          But make sure replying to
-          https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#No_intro_text,_empty_line_before_the_first_vote
-          works correctly.
-          */
-        if (adjustedChars.length < this.level) {
-          adjustedChars += ':';
-        }
-        startIndexShift -= 1 + after.length;
-
-        remainder = '#' + after;
-      } else {
-        data.originalIndentation = chars;
-      }
-
-      data.indentation = adjustedChars;
-      data.lineStartIndex = data.startIndex + before.length;
-      data.startIndex += startIndexShift;
-      return remainder;
-    };
-
-    const indentationPattern = `\\n*${cd.config.indentationCharsPattern}`;
-
-    data.code = data.code.replace(new RegExp(`^()${indentationPattern}`), replaceIndentation);
-
-    // See the comment "Without treatment of such cases, the section introduction..." in
-    // CommentSkeleton.js. Dangerous case: the first section at
-    // https://ru.wikipedia.org/w/index.php?oldid=105936825&action=edit. This was actually a mistake
-    // to put a signature at the first level, but if it was legit, only the last sentence should
-    // have been interpreted as the comment.
-    if (data.indentation === '') {
-      data.code = data.code.replace(
-        new RegExp(`(^[^]*?\\n)${indentationPattern}(?![^]*\\n[^:*#])`),
-        replaceIndentation
-      );
-    }
-
-    // Workaround to remove code of a preceding comment or intro with no proper signature
-    if (data.indentation.length < this.level && countOccurrences(data.code, /\n/g)) {
-      data.code = data.code.replace(
-        new RegExp(`^([^]+?\\n)([:*#]{${this.level}})( *)`),
-        replaceIndentation
-      );
-    }
-
-    return data;
-  }
-
-  /**
-   * When searching for the comment in the code, adjust the index of the comment start point and
-   * some related properties.
-   *
-   * @param {object} originalData
-   * @returns {object}
-   * @private
-   */
-  adjustCommentBeginning({ code, startIndex }) {
-    let data = {
-      code,
-      startIndex,
-      lineStartIndex: startIndex,
-      headingMatch: code.match(/(^[^]*(?:^|\n))((=+)(.*)\3[ \t\x01\x02]*\n)/),
-      originalIndentation: '',
-      indentation: '',
-    };
-
-    data = this.excludeBadBeginnings(data);
-    data = this.excludeIndentationAndIntro(data);
-
-    return data;
-  }
-
-  /**
-   * While locating the comment in the source code, adjust the data related to the comment code.
-   * This is mostly related to the signature code and indentation characters.
-   *
-   * @param {object} originalData
-   * @returns {object}
-   * @private
-   */
-  adjustCommentCodeData(originalData) {
-    const data = Object.assign({}, originalData);
-
-    const movePartToSignature = (s) => {
-      data.signatureDirtyCode = s + data.signatureDirtyCode;
-      data.endIndex -= s.length;
-      return '';
-    };
-    const movePartsToSignature = (regexps) => {
-      regexps.forEach((regexp) => {
-        data.code = data.code.replace(regexp, movePartToSignature);
-      });
-    };
-    const tagRegexp = new RegExp(`(<${cd.g.piePattern}(?: [\\w ]+?=[^<>]+?)?> *)+$`, 'i');
-
-    // Why signaturePrefixRegexp three times? Well, the test case here is the MusikAnimal's
-    // signature here: https://en.wikipedia.org/w/index.php?diff=next&oldid=946899148.
-    movePartsToSignature([
-      this.isOwn ? cd.g.userSignaturePrefixRegexp : undefined,
-      /'+$/,
-      cd.config.signaturePrefixRegexp,
-      tagRegexp,
-      cd.config.signaturePrefixRegexp,
-      tagRegexp,
-      new RegExp(`<small class="${cd.config.unsignedClass}">.*$`),
-      /<!-- *Template:Unsigned.*$/,
-      cd.config.signaturePrefixRegexp,
-    ].filter(defined));
-
-    // Exclude <small></small> and template wrappers from the strings
-    const smallWrappers = [{
-      start: /^<small>/,
-      end: /<\/small>[ \xa0\t]*$/,
-    }];
-    if (cd.config.smallDivTemplates.length) {
-      smallWrappers.push({
-        start: new RegExp(
-          `^(?:\\{\\{(${cd.config.smallDivTemplates.join('|')})\\|(?: *1 *= *|(?![^{]*=)))`,
-          'i'
-        ),
-        end: /\}\}[ \xa0\t]*$/,
-      });
-    }
-
-    data.signatureCode = data.signatureDirtyCode;
-    data.inSmallFont = false;
-    smallWrappers.some((wrapper) => {
-      if (wrapper.start.test(data.code) && wrapper.end.test(data.signatureCode)) {
-        data.inSmallFont = true;
-        data.code = data.code.replace(wrapper.start, '');
-        data.signatureCode = data.signatureCode.replace(wrapper.end, '');
-        return true;
-      }
-    });
-
-    // If the comment contains different indentation character sets for different lines, then use
-    // different sets depending on the mode (edit/reply).
-    let replyIndentation = data.indentation;
-    if (!this.isOpeningSection) {
-      // If the last line ends with "#", it's probably a numbered list _inside_ the comment, not two
-      // comments in one, so we exclude such cases. The signature code is used because it may start
-      // with a newline.
-      const match = (data.code + data.signatureDirtyCode).match(/\n([:*#]*[:*])(?!:*#).*$/);
-      if (match) {
-        replyIndentation = match[1];
-
-        // Cases where indentation characters on the first line don't denote a comment level but
-        // serve some other purposes. Examples: https://en.wikipedia.org/?diff=998431486,
-        // https://ru.wikipedia.org/w/index.php?diff=105978713 (this one is actually handled by
-        // `replaceIndentation()` in Comment#adjustCommentBeginning).
-        if (replyIndentation.length < data.originalIndentation.length) {
-          // We better restore the original space or its absence here.
-          const spaceOrNot = cd.config.spaceAfterIndentationChars ? ' ' : '';
-
-          const prefix = data.originalIndentation.slice(replyIndentation.length) + spaceOrNot;
-          data.code = prefix + data.code;
-          data.indentation = data.originalIndentation = data.originalIndentation
-            .slice(0, replyIndentation.length);
-          data.startIndex -= prefix.length;
-        }
-      }
-    }
-    replyIndentation += cd.config.defaultIndentationChar;
-    data.replyIndentation = replyIndentation;
-
-    return data;
-  }
-
-  /**
-   * Get the score for a match.
-   *
-   * @param {object} match Match object.
-   * @param {object} thisData Data about the current comment.
-   * @param {object[]} signatures List of signatures extracted from wikitext.
-   * @param {object[]} matches List of all matches.
-   * @returns {object}
-   * @private
-   */
-  getMatchScore(match, thisData, signatures, matches) {
-    const doesIndexMatch = thisData.index === match.index;
-    let doesPreviousCommentsDataMatch = false;
-    let isPreviousCommentsDataEqual;
-    let doesHeadlineMatch;
-    if (thisData.previousComments.length) {
-      for (let i = 0; i < thisData.previousComments.length; i++) {
-        const signature = signatures[match.index - 1 - i];
-        if (!signature) break;
-
-        // At least one coincided comment is enough if the second is unavailable.
-        doesPreviousCommentsDataMatch = (
-          signature.timestamp === thisData.previousComments[i].timestamp &&
-
-          // Previous comment object may come from the worker, where it has only the authorName
-          // property.
-          signature.author.getName() === thisData.previousComments[i].authorName
-        );
-
-        // Many consecutive comments with the same author and timestamp.
-        if (isPreviousCommentsDataEqual !== false) {
-          isPreviousCommentsDataEqual = (
-            match.timestamp === signature.timestamp &&
-            match.author === signature.author
-          );
-        }
-        if (!doesPreviousCommentsDataMatch) break;
-      }
-    } else {
-      // If there is no previous comment both on the page and in the code, it's a match.
-      doesPreviousCommentsDataMatch = match.index === 0;
-    }
-
-    isPreviousCommentsDataEqual = Boolean(isPreviousCommentsDataEqual);
-    Object.assign(match, this.adjustCommentBeginning(match));
-    if (thisData.followsHeading) {
-      doesHeadlineMatch = match.headingMatch ?
-        (
-          normalizeCode(removeWikiMarkup(match.headlineCode)) ===
-          normalizeCode(thisData.sectionHeadline)
-        ) :
-        -0.75;
-    } else {
-      doesHeadlineMatch = !match.headingMatch;
-    }
-
-    const wordOverlap = calculateWordOverlap(thisData.commentText, removeWikiMarkup(match.code));
-    match.score = (
-      // This condition _must_ be true.
-      (
-        matches.length === 1 ||
-        wordOverlap > 0.5 ||
-
-        // There are always problems with first comments as there are no previous comments to
-        // compare the signatures of and it's harder to tell the match, so we use a bit ugly
-        // solution here, although it should be quite reliable: the comment's firstness, matching
-        // author, date, and headline. A false negative will take place when the comment is no
-        // longer first. Another option is to look for next comments, not for previous.
-        (thisData.index === 0 && doesPreviousCommentsDataMatch && doesHeadlineMatch) ||
-
-        // The reserve method, if for some reason the text is not overlapping: by this and
-        // previous two dates and authors. If all dates and authors are the same, that shouldn't
-        // count (see [[Википедия:К удалению/22 сентября 2020#202009221158_Facenapalm_17]]).
-        (thisData.index !== 0 && doesPreviousCommentsDataMatch && !isPreviousCommentsDataEqual)
-      ) * 2 +
-
-      wordOverlap +
-      doesHeadlineMatch * 1 +
-      doesPreviousCommentsDataMatch * 0.5 +
-      doesIndexMatch * 0.0001
-    );
-
-    return match;
-  }
-
-  /**
    * Search for the comment in the source code and return possible matches.
    *
-   * @param {string} pageCode
+   * @param {string} contextCode
    * @param {string} commentData
-   * @param {boolean} isSectionCodeUsed
-   * @returns {object}
+   * @param {boolean} isInSectionContext
+   * @returns {CommentSource}
    * @private
    */
-  searchInCode(pageCode, commentData, isSectionCodeUsed) {
+  searchInCode(contextCode, commentData, isInSectionContext) {
     let thisData;
     if (commentData) {
       thisData = {
@@ -3572,7 +3024,7 @@ class Comment extends CommentSkeleton {
         commentText: commentData.text,
       };
     } else {
-      const comments = isSectionCodeUsed ? this.section.comments : CommentStatic.getAll();
+      const comments = isInSectionContext ? this.section.comments : CommentStatic.getAll();
       const index = comments.indexOf(this);
       thisData = {
         index,
@@ -3585,60 +3037,50 @@ class Comment extends CommentSkeleton {
       };
     }
 
-    const signatures = extractSignatures(pageCode);
+    const signatures = extractSignatures(contextCode);
     return signatures
       .filter((sig) => (
         (sig.author === this.author || sig.author === '<undated>') &&
         (
           this.timestamp === sig.timestamp ||
 
-          // .startsWith() to account for cases where you can ignore the timezone string in
+          // `.startsWith()` to account for cases where you can ignore the timezone string in
           // "unsigned" templates (it may be present and may be not), but it appears on the page.
           (this.timestamp && this.timestamp.startsWith(sig.timestamp))
         )
       ))
-
-      // Transform the signature object into a comment match object.
-      .map((signature) => ({
-        index: signature.index,
-        author: signature.author,
-        timestamp: signature.timestamp,
-        date: signature.date,
-        signatureDirtyCode: signature.dirtyCode,
-        startIndex: signature.commentStartIndex,
-        endIndex: signature.startIndex,
-        signatureEndIndex: signature.startIndex + signature.dirtyCode.length,
-        code: pageCode.slice(signature.commentStartIndex, signature.startIndex),
-      }))
-
-      .map((match, i, matches) => this.getMatchScore(match, thisData, signatures, matches))
-      .filter((match) => match.score > 2.5);
+      .map((signature) => new CommentSource(this, signature, contextCode, isInSectionContext))
+      .map((source, i, sources) => {
+        source.calculateMatchScore(thisData, sources);
+        return source;
+      })
+      .filter((source) => source.score > 2.5)
+      .sort((s1, s2) => s2.score - s1.score)[0];
   }
 
   /**
    * Locate the comment in the section or page source code and, if no `codeOrUseSectionCode` is
-   * passed, set the results to the {@link Comment#inCode} property. Otherwise, return the result.
+   * passed, set the resultant {@link CommentSource} object to the {@link Comment#source} property.
+   * Otherwise, return the result.
    *
    * It is expected that the section or page code is loaded (using {@link Page#getCode}) before this
    * method is called. Otherwise, the method will throw an error.
    *
-   * @param {string|boolean} [codeOrUseSectionCode] Code that should have the comment (provided only
-   *   if we need to perform operations on some code that is not the code of a section or page).
-   *   Boolean `true` means to use the (prefetched) section code to locate the comment in.
+   * @param {string|boolean} [codeOrUseSectionCode] Wikitext that should have the comment (provided
+   *   only if we need to perform operations on some code that is not the code of a section or
+   *   page). Boolean `true` means to use the (prefetched) section code to locate the comment in.
    * @param {string} [commentData] Comment data for comparison (can be set together with `code`).
-   * @returns {string|undefined}
+   * @returns {CommentSource|undefined}
    * @throws {CdError}
    */
   locateInCode(codeOrUseSectionCode, commentData) {
+    const isInSectionContext = codeOrUseSectionCode === true;
     let code;
     if (typeof codeOrUseSectionCode === 'string') {
       code = codeOrUseSectionCode;
-    } else if (codeOrUseSectionCode === true) {
-      code = this.section.code;
-      this.inCode = null;
     } else {
-      code = this.getSourcePage().code;
-      this.inCode = null;
+      code = isInSectionContext ? this.section.code : this.getSourcePage().code;
+      this.source = null;
     }
 
     if (code === undefined) {
@@ -3648,273 +3090,22 @@ class Comment extends CommentSkeleton {
       });
     }
 
-    const isSectionCodeUsed = codeOrUseSectionCode === true;
-    const matches = this.searchInCode(code, commentData, isSectionCodeUsed);
-    const bestMatch = matches.sort((m1, m2) => m2.score - m1.score)[0];
-    if (!bestMatch) {
+    const source = this.searchInCode(code, commentData, isInSectionContext);
+    if (!source) {
       throw new CdError({
         type: 'parse',
         code: 'locateComment',
       });
     }
 
-    bestMatch.isSectionCodeUsed = isSectionCodeUsed;
-
-    const inCode = this.adjustCommentCodeData(bestMatch);
     if (typeof codeOrUseSectionCode === 'string') {
-      return inCode;
+      return source;
     } else {
       /**
        * @type {?(object|undefined)}
        */
-      this.inCode = inCode;
+      this.source = source;
     }
-  }
-
-  /**
-   * Apply regular expressions to determine a proper place in the code to insert a reply to the
-   * comment into while taking outdent templates into account.
-   *
-   * @param {object} thisInCode
-   * @param {string} adjustedChunkCodeAfter
-   * @returns {object}
-   */
-  matchProperPlaceRegexps(thisInCode, adjustedChunkCodeAfter) {
-    const anySignaturePattern = (
-      '^(' +
-      (this.isInSingleCommentTable ? '[^]*?(?:(?:\\s*\\n\\|\\})+|</table>).*\\n' : '') +
-      '[^]*?(?:' +
-      mw.util.escapeRegExp(thisInCode.signatureCode) +
-      '|' +
-      cd.g.contentTimestampRegexp.source +
-      '.*' +
-      (cd.g.unsignedTemplatesPattern ? `|${cd.g.unsignedTemplatesPattern}.*` : '') +
-
-      // `\x01` is from hiding closed discussions and HTML comments. TODO: Line can start with a
-      // HTML comment in a <pre> tag, that doesn't mean we can put a comment after it. We perhaps
-      // need to change `wikitext.hideDistractingCode`.
-      '|(?:^|\\n)\\x01.+)\\n)\\n*'
-    );
-    const maxIndentationLength = thisInCode.replyIndentation.length - 1;
-    const endOfThreadPattern = (
-      '(' +
-
-      // `\n` is here to prevent putting the reply on a casual empty line. `\x01` is from hiding
-      // closed discussions.
-      '(?![:*#\\x01\\n])' +
-
-      /*
-        This excludes cases where:
-        1) `#` is starting a numbered list inside a comment (reply put in a wrong place:
-           https://ru.wikipedia.org/w/index.php?diff=110482717). Can't do that to `*` as well since
-           `*` can be an indentation character at a position other than 0 whereas `#` at such
-           position can't be an indentation character; it can only start a line.
-        2) An indentation character is followed by a newline (`\\n` removed).
-       */
-      (maxIndentationLength > 0 ? `|[:*#\\x01]{1,${maxIndentationLength}}(?![:*\\x01])` : '') +
-      ')'
-    );
-
-    const properPlaceRegexp = new RegExp(anySignaturePattern + endOfThreadPattern);
-    const match = adjustedChunkCodeAfter.match(properPlaceRegexp) || [];
-    let adjustedCodeBetween = match[1] ?? adjustedChunkCodeAfter;
-    let indentationAfter = match[match.length - 1];
-    let isNextLine = countOccurrences(adjustedCodeBetween, /\n/g) === 1;
-
-    if (cd.config.outdentTemplates.length) {
-      if (!outdentTemplatesRegexp) {
-        const pattern = cd.config.outdentTemplates
-          .map(generatePageNamePattern)
-          .join('|');
-        outdentTemplatesRegexp = new RegExp(
-          `^\\s*([:*#]*)[ \t]*\\{\\{ *(?:${pattern}) *(?:\\||\\}\\})`
-        );
-      }
-
-      /*
-        If there is an "outdent" template next to the insertion place:
-        * If the outdent template is right next to the comment replied to, we throw an error.
-        * If not, we insert the reply on the next line after the target comment.
-       */
-      const [, outdentIndentation] = (
-        adjustedChunkCodeAfter
-          .slice(adjustedCodeBetween.length)
-          .match(outdentTemplatesRegexp) ||
-        []
-      );
-      if (outdentIndentation !== undefined) {
-        if (isNextLine) {
-          // Can't insert a reply before an "outdent" template.
-          throw new CdError({
-            type: 'parse',
-            code: 'findPlace',
-          });
-        } else if ((outdentIndentation || '').length <= thisInCode.replyIndentation.length) {
-          const nextLineRegexp = new RegExp(anySignaturePattern);
-
-          // If `adjustedChunkCodeAfter` matched `properPlaceRegexp`, it should match
-          // `nextLineRegexp` too.
-          [, adjustedCodeBetween] = adjustedChunkCodeAfter.match(nextLineRegexp) || [];
-        }
-      }
-    }
-
-    return { adjustedCodeBetween, indentationAfter, isNextLine };
-  }
-
-  /**
-   * Determine an offset in the code to insert a reply to the comment into.
-   *
-   * @param {object} thisInCode
-   * @param {string} wholeCode
-   * @returns {string}
-   * @private
-   */
-  findProperPlaceForReply(thisInCode, wholeCode) {
-    let currentIndex = thisInCode.endIndex;
-
-    const adjustedChunkCodeAfter = getAdjustedChunkCodeAfter(currentIndex, wholeCode);
-    if (/^ +\x02/.test(adjustedChunkCodeAfter)) {
-      throw new CdError({
-        type: 'parse',
-        code: 'closed',
-      });
-    }
-
-    const {
-      adjustedCodeBetween,
-      indentationAfter,
-      isNextLine,
-    } = this.matchProperPlaceRegexps(thisInCode, adjustedChunkCodeAfter);
-
-    if (
-      cd.config.outdentTemplates.length &&
-      settings.get('outdentLevel') &&
-      thisInCode.replyIndentation.length >= settings.get('outdentLevel') &&
-      thisInCode.indentation.length > indentationAfter.length &&
-      isNextLine
-    ) {
-      thisInCode.isReplyOutdented = true;
-      thisInCode.replyIndentation = (
-        thisInCode.replyIndentation.slice(0, Math.max(indentationAfter.length, 1)) +
-        cd.config.defaultIndentationChar
-      );
-    }
-
-    // If the comment is to be put after a comment with different indentation characters, use these.
-    // `#[:*#]*` is to use `#` as an indentation character when, say, replying to a comment and the
-    // last reply uses `#`.
-    const [, changedIndentation] = adjustedCodeBetween.match(/\n([:*#]{2,}|#[:*#]*).*\n$/) || [];
-    if (changedIndentation) {
-      // Note the bug https://ru.wikipedia.org/w/index.php?diff=next&oldid=105529545 that was
-      // possible here when we used `.slice(0, thisInCode.indentation.length + 1)` (due to `**` as
-      // indentation characters in Bsivko's comment).
-      thisInCode.replyIndentation = changedIndentation
-        .slice(0, thisInCode.replyIndentation.length)
-        .replace(/:$/, cd.config.defaultIndentationChar);
-    }
-
-    currentIndex += adjustedCodeBetween.length;
-
-    return currentIndex;
-  }
-
-  /**
-   * Modify a whole section or page code string related to the comment in accordance with an action.
-   *
-   * @param {object} options
-   * @param {'reply'|'edit'} options.action
-   * @param {'submit'|'viewChanged'|'preview'} options.formAction
-   * @param {string} [options.commentCode] Comment code, including trailing newlines, indentation
-   *   characters, and the signature. Can be not set if `commentForm` is set or `doDelete` is
-   *   `true`.
-   * @param {boolean} [options.doDelete] Whether to delete the comment.
-   * @param {string} [options.wholeCode] Code that has the comment. Usually not needed; provide it
-   *   together with `thisInCode` only if you need to perform operations on some code that is not
-   *   the code of a section or page).
-   * @param {string} [options.thisInCode] Result of {@link Comment#locateInCode} called with code in
-   *   the first parameter. Usually not needed; provide it together with `wholeCode` only if you
-   *   need to perform operations on some code that is not the code of a section or page.
-   * @param {CommentForm} [options.commentForm] Comment form that has the code. Can be not set if
-   *   `commentCode` is set or `action` is `'edit'`.
-   * @returns {object}
-   * @throws {CdError}
-   */
-  modifyWholeCode({
-    action,
-    formAction,
-    commentCode,
-    wholeCode,
-    doDelete,
-    thisInCode,
-    commentForm,
-  }) {
-    thisInCode ||= this.inCode;
-    wholeCode ||= thisInCode.isSectionCodeUsed ? this.section.code : this.getSourcePage().code;
-
-    let newWholeCode;
-    switch (action) {
-      case 'reply': {
-        const currentIndex = this.findProperPlaceForReply(thisInCode, wholeCode);
-        commentCode ??= commentForm.commentTextToCode(formAction);
-        newWholeCode = (
-          wholeCode.slice(0, currentIndex) +
-          commentCode +
-          wholeCode.slice(currentIndex)
-        );
-        break;
-      }
-
-      case 'edit': {
-        if (doDelete) {
-          let startIndex;
-          let endIndex;
-          if (this.isOpeningSection && thisInCode.headingStartIndex !== undefined) {
-            if (!this.section.inCode) {
-              this.section.locateInCode();
-            }
-            if (extractSignatures(this.section.inCode.code).length > 1) {
-              throw new CdError({
-                type: 'parse',
-                code: 'delete-repliesInSection',
-              });
-            } else {
-              // Deleting the whole section is safer as we don't want to leave any content in the
-              // end anyway.
-              ({ startIndex, contentEndIndex: endIndex } = this.section.inCode);
-            }
-          } else {
-            endIndex = thisInCode.signatureEndIndex + 1;
-            const repliesMatch = wholeCode
-              .slice(thisInCode.endIndex)
-              .match(new RegExp(`^.+\\n+[:*#]{${thisInCode.indentation.length + 1},}`));
-            if (repliesMatch) {
-              throw new CdError({
-                type: 'parse',
-                code: 'delete-repliesToComment',
-              });
-            } else {
-              startIndex = thisInCode.lineStartIndex;
-            }
-          }
-
-          newWholeCode = wholeCode.slice(0, startIndex) + wholeCode.slice(endIndex);
-        } else {
-          commentCode ??= commentForm.commentTextToCode(formAction);
-          newWholeCode = (
-            wholeCode.slice(0, thisInCode.lineStartIndex) +
-            commentCode +
-            wholeCode.slice(thisInCode.signatureEndIndex)
-          );
-        }
-        break;
-      }
-    }
-
-    return {
-      wholeCode: newWholeCode,
-      commentCode,
-    };
   }
 
   /**

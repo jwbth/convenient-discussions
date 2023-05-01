@@ -31,23 +31,23 @@ class CommentInputProcessor {
    * @private
    */
   setIndentationData() {
-    const targetInCode = this.target.inCode;
+    const targetSource = this.target.source;
     switch (this.commentForm.getMode()) {
       case 'reply':
-        this.indentation = targetInCode.replyIndentation;
+        this.indentation = targetSource.replyIndentation;
         break;
       case 'edit':
-        this.indentation = targetInCode.indentation;
+        this.indentation = targetSource.indentation;
         break;
       case 'replyInSection':
         this.indentation = (
-          targetInCode.lastCommentIndentation &&
+          targetSource.lastCommentIndentation &&
           (
-            targetInCode.lastCommentIndentation[0] === '#' ||
+            targetSource.lastCommentIndentation[0] === '#' ||
             cd.config.indentationCharMode === 'mimic'
           )
         ) ?
-          targetInCode.lastCommentIndentation[0] :
+          targetSource.lastCommentIndentation[0] :
           cd.config.defaultIndentationChar;
         break;
       default:
@@ -147,7 +147,7 @@ class CommentInputProcessor {
       this.signature = '';
     } else {
       this.signature = this.commentForm.getMode() === 'edit' ?
-        this.target.inCode.signatureCode :
+        this.target.source.signatureCode :
         cd.g.userSignature;
     }
 
@@ -373,7 +373,7 @@ class CommentInputProcessor {
    * Process newlines by adding or not adding `<br>` and keeping or not keeping the newline. `\x01`
    * and `\x02` mean the beginning and ending of sensitive code except for tables. `\x03` and `\x04`
    * mean the beginning and ending of a table. Note: This should be kept coordinated with the
-   * reverse transformation code in {@link Comment#codeToText}.
+   * reverse transformation code in {@link CommentSource#toInput}.
    *
    * @param {string} code
    * @param {boolean} isInTemplate
@@ -483,7 +483,7 @@ class CommentInputProcessor {
       level = this.target.level + 1;
     } else {
       // 'edit'
-      level = this.target.inCode.headingLevel;
+      level = this.target.source.headingLevel;
     }
     const equalSigns = '='.repeat(level);
 
@@ -494,7 +494,7 @@ class CommentInputProcessor {
       (
         this.commentForm.getMode() === 'edit' &&
         this.commentForm.getTarget().isOpeningSection &&
-        /^\n/.test(this.target.inCode.code)
+        /^\n/.test(this.target.source.code)
       )
     ) {
       this.code = '\n' + this.code;
@@ -552,9 +552,9 @@ class CommentInputProcessor {
    * Add an outdent template to the beginning of the comment.
    */
   addOutdent() {
-    if (!this.target.inCode?.isReplyOutdented) return;
+    if (!this.target.source?.isReplyOutdented) return;
 
-    const outdentDifference = this.target.level - this.target.inCode.replyIndentation.length;
+    const outdentDifference = this.target.level - this.target.source.replyIndentation.length;
     this.code = (
       `{{${cd.config.outdentTemplates[0]}|${outdentDifference}}}` +
       (/^[:*#]+/.test(this.code) ? '\n' : ' ') +

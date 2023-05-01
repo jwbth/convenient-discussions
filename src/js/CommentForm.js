@@ -1202,14 +1202,14 @@ class CommentForm {
     const currentOperation = this.registerOperation('load');
     try {
       await this.target.getCode(true);
-      let commentText = this.target.codeToText();
-      if (this.target.inCode.inSmallFont) {
-        commentText = `<small>${commentText}</small>`;
+      let commentInputValue = this.target.source.toInput();
+      if (this.target.source.inSmallFont) {
+        commentInputValue = `<small>${commentInputValue}</small>`;
       }
-      const headline = this.target.inCode.headlineCode;
+      const headline = this.target.source.headlineCode;
 
-      this.commentInput.setValue(commentText);
-      this.originalComment = commentText;
+      this.commentInput.setValue(commentInputValue);
+      this.originalComment = commentInputValue;
       if (this.headlineInput) {
         this.headlineInput.setValue(headline);
         this.originalHeadline = headline;
@@ -2330,13 +2330,13 @@ class CommentForm {
   }
 
   /**
-   * Convert the text of the comment in the form to wikitext.
+   * Convert the value of the comment input to wikitext.
    *
    * @param {'submit'|'viewChanges'|'preview'} action
    * @returns {string}
    * @throws {CdError}
    */
-  commentTextToCode(action) {
+  inputToCode(action) {
     // Are we at a stage where we better introduce a lexical analyzer (or use MediaWiki's / some
     // part of it)?..
 
@@ -2367,36 +2367,36 @@ class CommentForm {
   /**
    * Add anchor code to comments linked from the comment.
    *
-   * @param {string} wholeCode Code of the section or page.
+   * @param {string} originalContextCode Code of the section or page.
    * @param {string[]} commentIds
    * @returns {string} New code of the section or page.
    * @throws {CdError}
    * @private
    */
-  addAnchorsToComments(wholeCode, commentIds) {
+  addAnchorsToComments(originalContextCode, commentIds) {
+    let contextCode = originalContextCode;
     commentIds.forEach((id) => {
       const comment = CommentStatic.getById(id);
       if (comment) {
-        const commentInCode = comment.locateInCode(wholeCode);
+        const commentSource = comment.locateInCode(contextCode);
         const anchorCode = cd.config.getAnchorCode(id);
-        if (commentInCode.code.includes(anchorCode)) return;
+        if (commentSource.code.includes(anchorCode)) return;
 
         const commentCodePart = CommentInputProcessor.prototype.prepareLineStart(
-          commentInCode.indentation,
-          commentInCode.code
+          commentSource.indentation,
+          commentSource.code
         );
         const commentTextIndex = commentCodePart.match(/^[:*#]* */)[0].length;
-        ({ wholeCode } = comment.modifyWholeCode({
+        ({ contextCode } = commentSource.modifyContext({
           action: 'edit',
           commentCode: (
-            (commentInCode.headingCode || '') +
+            (commentSource.headingCode || '') +
             commentCodePart.slice(0, commentTextIndex) +
             anchorCode +
             commentCodePart.slice(commentTextIndex) +
-            commentInCode.signatureDirtyCode
+            commentSource.signatureDirtyCode
           ),
-          wholeCode,
-          thisInCode: commentInCode,
+          contextCode,
         }));
       } else if (!$('#' + id).length) {
         throw new CdError({
@@ -2407,17 +2407,18 @@ class CommentForm {
       }
     });
 
-    return wholeCode;
+    return contextCode;
   }
 
   /**
-   * Prepare the new section or page code based on the comment form input and handle errors.
+   * Prepare the new wikitext of a section or page based on the comment form input and handle
+   * errors.
    *
    * @param {'submit'|'viewChanges'} action
    * @returns {Promise.<object|undefined>}
    * @private
    */
-  async prepareWholeCode(action) {
+  async prepareSource(action) {
     const commentIds = extractCommentIds(this.commentInput.getValue());
 
     this.sectionSubmitted = Boolean(
@@ -2448,7 +2449,7 @@ class CommentForm {
       return;
     }
 
-    let wholeCode;
+    let contextCode;
     let commentCode;
     try {
       if (
@@ -2460,16 +2461,16 @@ class CommentForm {
         this.target.locateInCode(this.sectionSubmitted);
       }
       if (this.mode === 'replyInSection') {
-        this.target.setLastCommentIndentation(this);
+        this.target.source.setLastCommentIndentation(this);
       }
-      ({ wholeCode, commentCode } = this.target.modifyWholeCode({
-        commentCode: this.target instanceof Comment ? undefined : this.commentTextToCode(action),
+      ({ contextCode, commentCode } = this.target.source.modifyContext({
+        commentCode: this.target instanceof Comment ? undefined : this.inputToCode(action),
         action: this.mode,
         formAction: action,
         doDelete: this.deleteCheckbox?.isSelected(),
         commentForm: this,
       }));
-      wholeCode = this.addAnchorsToComments(wholeCode, commentIds);
+      contextCode = this.addAnchorsToComments(contextCode, commentIds);
     } catch (e) {
       if (e instanceof CdError) {
         this.handleError(e.data);
@@ -2482,7 +2483,7 @@ class CommentForm {
       return;
     }
 
-    return { wholeCode, commentCode };
+    return { contextCode, commentCode };
   }
 
   /**
@@ -2604,7 +2605,7 @@ class CommentForm {
       this.isContentBeingLoaded() ||
       (
         !(this.target instanceof Page) &&
-        !this.target.inCode &&
+        !this.target.source &&
         this.checkCodeRequest &&
         await getNativePromiseState(this.checkCodeRequest) === 'resolved'
       ) ||
@@ -2649,9 +2650,9 @@ class CommentForm {
       (if the mode is 'edit' and the comment has not been loaded, this method would halt after the
       looking for the unclosed 'load' operation above).
      */
-    if (!(this.target instanceof Page) && !this.target.inCode) {
+    if (!(this.target instanceof Page) && !this.target.source) {
       await this.checkCode();
-      if (!this.target.inCode) {
+      if (!this.target.source) {
         this.closeOperation(currentOperation);
       }
       if (currentOperation.isClosed) return;
@@ -2670,11 +2671,10 @@ class CommentForm {
       return;
     }
 
-    const commentCode = this.commentTextToCode('preview');
     let html;
     let parsedSummary;
     try {
-      ({ html, parsedSummary } = await parseCode(commentCode, {
+      ({ html, parsedSummary } = await parseCode(this.inputToCode('preview'), {
         title: this.targetPage.name,
         summary: buildEditSummary({ text: this.summaryInput.getValue() }),
       }));
@@ -2764,8 +2764,8 @@ class CommentForm {
 
     const currentOperation = this.registerOperation('viewChanges');
 
-    const { wholeCode: code } = await this.prepareWholeCode('viewChanges') || {};
-    if (code === undefined) {
+    const { contextCode } = await this.prepareSource('viewChanges') || {};
+    if (contextCode === undefined) {
       this.closeOperation(currentOperation);
     }
     if (currentOperation.isClosed) return;
@@ -2778,7 +2778,7 @@ class CommentForm {
         action: 'compare',
         totitle: this.targetPage.name,
         toslots: 'main',
-        'totext-main': code,
+        'totext-main': contextCode,
         topst: true,
         prop: 'diff',
         ...cd.g.apiErrorsFormatHtml,
@@ -3163,16 +3163,13 @@ class CommentForm {
       return;
     }
 
-    const {
-      wholeCode: code,
-      commentCode,
-    } = await this.prepareWholeCode('submit') || {};
-    if (code === undefined) {
+    const { contextCode, commentCode } = await this.prepareSource('submit') || {};
+    if (contextCode === undefined) {
       this.closeOperation(currentOperation);
       return;
     }
 
-    const editTimestamp = await this.editPage(code, currentOperation);
+    const editTimestamp = await this.editPage(contextCode, currentOperation);
 
     // The operation is closed inside CommentForm#editPage.
     if (!editTimestamp) return;

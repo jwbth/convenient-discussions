@@ -674,7 +674,7 @@ export default {
   transformSummary: null,
 
   /**
-   * Function that makes custom alterations to the comment code before it is processed and
+   * Function that makes custom alterations to the comment's source code before it is processed and
    * submitted. See also {@link module:defaultConfig.postTransformCode}.
    *
    * @type {?Function}
@@ -687,9 +687,9 @@ export default {
   preTransformCode: null,
 
   /**
-   * Function that makes custom alterations to the comment code after it is processed and before it
-   * is submitted. (An example would be adding a closer template to all the closures by a user with
-   * the closer flag which is a requirement in Russian Wikipedia.) See also
+   * Function that makes custom alterations to the comment's source code after it is processed and
+   * before it is submitted. (An example would be adding a closer template to all the closures by a
+   * user with the closer flag which is a requirement in Russian Wikipedia.) See also
    * {@link module:defaultConfig.preTransformCode}.
    *
    * @type {?Function}

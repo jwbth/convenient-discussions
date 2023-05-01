@@ -306,9 +306,10 @@ export class Page {
 
   /**
    * Make a revision request (see {@link https://www.mediawiki.org/wiki/API:Revisions}) to load the
-   * code of the page, together with a few revision properties: the timestamp, redirect target, and
-   * query timestamp (curtimestamp). Enrich the Page instance with those properties. Also set the
-   * `realName` property that indicates either the redirect target if it's present or the page name.
+   * wikitext of the page, together with a few revision properties: the timestamp, redirect target,
+   * and query timestamp (curtimestamp). Enrich the Page instance with those properties. Also set
+   * the `realName` property that indicates either the redirect target if it's present or the page
+   * name.
    *
    * @param {boolean} [tolerateMissing=true] Assign `''` to the `code` property if the page is
    *   missing instead of throwing an error.
@@ -438,6 +439,8 @@ export class Page {
       realName: redirectTarget || this.name,
       queryTimestamp: resp.curtimestamp,
     });
+
+    this.source = new PageSource(this);
   }
 
   /**
@@ -523,40 +526,6 @@ export class Page {
     }
 
     return revisions;
-  }
-
-  /**
-   * Modify a page code string in accordance with an action. The `'addSection'` action is presumed.
-   *
-   * @param {object} options
-   * @param {string} options.commentCode Comment code, including trailing newlines and the
-   *   signature.
-   * @param {import('./CommentForm').default} options.commentForm Comment form that has the code.
-   * @returns {object}
-   */
-  modifyWholeCode({ commentCode, commentForm }) {
-    const wholeCode = this.code;
-    let newWholeCode;
-    if (commentForm.isNewTopicOnTop()) {
-      const adjustedPageCode = hideDistractingCode(wholeCode);
-      const firstSectionStartIndex = adjustedPageCode.search(/^(=+).*\1[ \t\x01\x02]*$/m);
-      let codeBefore;
-      if (firstSectionStartIndex === -1) {
-        codeBefore = wholeCode ? wholeCode + '\n' : '';
-      } else {
-        codeBefore = wholeCode.slice(0, firstSectionStartIndex);
-      }
-      const codeAfter = wholeCode.slice(firstSectionStartIndex);
-      newWholeCode = codeBefore + commentCode + '\n' + codeAfter;
-    } else {
-      const codeBefore = commentForm.isSectionSubmitted() ? '' : (wholeCode + '\n').trimLeft();
-      newWholeCode = codeBefore + commentCode;
-    }
-
-    return {
-      wholeCode: newWholeCode,
-      commentCode,
-    };
   }
 
   /**
@@ -763,6 +732,53 @@ export class Page {
    */
   getIdentifyingData() {
     return null;
+  }
+}
+
+/**
+ * Class that keeps the methods and data related to the page's source code.
+ */
+class PageSource {
+  /**
+   * Create a comment's source object.
+   *
+   * @param {Page} page Page.
+   */
+  constructor(page) {
+    this.page = page;
+  }
+
+  /**
+   * Modify a page code string in accordance with an action. The `'addSection'` action is presumed.
+   *
+   * @param {object} options
+   * @param {string} options.commentCode Comment code, including trailing newlines and the
+   *   signature.
+   * @param {import('./CommentForm').default} options.commentForm Comment form that has the code.
+   * @returns {object}
+   */
+  modifyContext({ commentCode, commentForm }) {
+    const originalContextCode = this.page.code;
+    let contextCode;
+    if (commentForm.isNewTopicOnTop()) {
+      const adjustedPageCode = hideDistractingCode(originalContextCode);
+      const firstSectionStartIndex = adjustedPageCode.search(/^(=+).*\1[ \t\x01\x02]*$/m);
+      let codeBefore;
+      if (firstSectionStartIndex === -1) {
+        codeBefore = originalContextCode ? originalContextCode + '\n' : '';
+      } else {
+        codeBefore = originalContextCode.slice(0, firstSectionStartIndex);
+      }
+      const codeAfter = originalContextCode.slice(firstSectionStartIndex);
+      contextCode = codeBefore + commentCode + '\n' + codeAfter;
+    } else {
+      const codeBefore = commentForm.isSectionSubmitted() ?
+        '' :
+        (originalContextCode + '\n').trimLeft();
+      contextCode = codeBefore + commentCode;
+    }
+
+    return { contextCode, commentCode };
   }
 }
 

@@ -64,7 +64,7 @@ function testWithData(label, code, expected, commentForm, action = 'submit', con
 const firstLevelReplyForm = {
   mode: 'reply',
   target: {
-    inCode: {
+    source: {
       indentation: ':',
       replyIndentation: '::',
     },
@@ -74,7 +74,7 @@ const firstLevelReplyForm = {
 const firstCommentReplyForm = {
   mode: 'reply',
   target: {
-    inCode: {
+    source: {
       indentation: '',
       replyIndentation: ':',
       headingLevel: 2,
@@ -87,7 +87,7 @@ const existingSignature = ' [[User:Example|Example]] 00:00, 1 October 2021 (UTC)
 const firstLevelEditForm = {
   mode: 'edit',
   target: {
-    inCode: {
+    source: {
       indentation: ':',
       replyIndentation: '::',
       code: 'Text.',
@@ -103,7 +103,7 @@ const firstCommentEditForm = {
     getValue: () => 'Headline',
   },
   target: {
-    inCode: {
+    source: {
       indentation: '',
       replyIndentation: ':',
       code: '\nText.',
@@ -117,7 +117,7 @@ const firstCommentEditForm = {
 const replyInSectionForm = {
   mode: 'replyInSection',
   target: {
-    inCode: {
+    source: {
       lastCommentIndentation: ':',
     },
   },
@@ -126,7 +126,7 @@ const replyInSectionForm = {
 const voteForm = {
   mode: 'replyInSection',
   target: {
-    inCode: {
+    source: {
       lastCommentIndentation: '#',
     },
   },

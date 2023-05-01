@@ -4,6 +4,7 @@ import CommentForm from './CommentForm';
 import CommentStatic from './CommentStatic';
 import LiveTimestamp from './LiveTimestamp';
 import SectionSkeleton from './SectionSkeleton';
+import SectionSource from './SectionSource';
 import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
@@ -13,7 +14,6 @@ import subscriptions from './subscriptions';
 import toc from './toc';
 import userRegistry from './userRegistry';
 import {
-  calculateWordOverlap,
   dealWithLoadingBug,
   defined,
   flat,
@@ -21,14 +21,7 @@ import {
   underlinesToSpaces,
   unique,
 } from './utils';
-import {
-  encodeWikilink,
-  endWithTwoNewlines,
-  extractSignatures,
-  hideDistractingCode,
-  normalizeCode,
-  removeWikiMarkup,
-} from './wikitext';
+import { encodeWikilink, hideDistractingCode, normalizeCode } from './wikitext';
 import { formatDate } from './timestamp';
 import { handleApiReject } from './apiWrappers';
 
@@ -1209,76 +1202,7 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * _For internal use._ Detect the last section comment's indentation characters if needed or a
-   * vote / bulleted reply placeholder.
-   *
-   * @param {CommentForm} commentForm
-   */
-  setLastCommentIndentation(commentForm) {
-    const [, replyPlaceholder] = this.inCode.firstChunkCode.match(/\n([#*]) *\n+$/) || [];
-    if (replyPlaceholder) {
-      this.inCode.lastCommentIndentation = replyPlaceholder;
-    } else {
-      const lastComment = this.commentsInFirstChunk[this.commentsInFirstChunk.length - 1];
-      if (
-        lastComment &&
-        (commentForm.getContainerListType() === 'ol' || cd.config.indentationCharMode === 'mimic')
-      ) {
-        try {
-          lastComment.locateInCode(commentForm.isSectionSubmitted());
-        } catch {
-          return;
-        }
-        if (
-          !lastComment.inCode.indentation.startsWith('#') ||
-
-          // For now we use the workaround with commentForm.getContainerListType() to make sure "#"
-          // is a part of comments organized in a numbered list, not of a numbered list _in_
-          // the target comment.
-          commentForm.getContainerListType() === 'ol'
-        ) {
-          this.inCode.lastCommentIndentation = lastComment.inCode.indentation;
-        }
-      }
-    }
-  }
-
-  /**
-   * Modify a whole section or page code string related to the section in accordance with an action.
-   *
-   * @param {object} options
-   * @param {'replyInSection'|'addSubsection'} options.action
-   * @param {string} options.commentCode Comment code, including trailing newlines and the
-   *   signature.
-   * @returns {object}
-   */
-  modifyWholeCode({ action, commentCode }) {
-    const wholeCode = this.inCode.isSectionCodeUsed ? this.code : this.getSourcePage().code;
-    let newWholeCode;
-    switch (action) {
-      case 'replyInSection': {
-        const codeBefore = wholeCode.slice(0, this.inCode.firstChunkContentEndIndex);
-        const codeAfter = wholeCode.slice(this.inCode.firstChunkContentEndIndex);
-        newWholeCode = codeBefore + commentCode + codeAfter;
-        break;
-      }
-
-      case 'addSubsection': {
-        const codeBefore = endWithTwoNewlines(wholeCode.slice(0, this.inCode.contentEndIndex));
-        const codeAfter = wholeCode.slice(this.inCode.contentEndIndex).trim();
-        newWholeCode = codeBefore + commentCode + codeAfter;
-        break;
-      }
-    }
-
-    return {
-      wholeCode: newWholeCode,
-      commentCode,
-    };
-  }
-
-  /**
-   * Request the code of the section by its number using the API and set some properties of the
+   * Request the wikitext of the section by its number using the API and set some properties of the
    * section (and also the page). {@link Section#getCode} is a more general method.
    *
    * @throws {CdError}
@@ -1383,10 +1307,10 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Load the section code. See also {@link Section#requestCode}.
+   * Load the section wikitext. See also {@link Section#requestCode}.
    *
-   * @param {CommentForm} [commentForm] Comment form, if it is submitted or code changes are
-   *   viewed.
+   * @param {import('./CommentForm').default} [commentForm] Comment form, if it is submitted or code
+   * changes are viewed.
    * @throws {CdError|Error}
    */
   async getCode(commentForm) {
@@ -1395,9 +1319,7 @@ class Section extends SectionSkeleton {
         try {
           await this.requestCode();
           this.locateInCode(true);
-          if (commentForm) {
-            commentForm.setSectionSubmitted(true);
-          }
+          commentForm?.setSectionSubmitted(true);
         } catch (e) {
           if (e instanceof CdError && ['noSuchSection', 'locateSection'].includes(e.data.code)) {
             await this.getSourcePage().getCode();
@@ -1422,240 +1344,59 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Collect data for a match, including section text, first chunk text, indexes, etc.
-   *
-   * @param {object} sectionHeadingMatch
-   * @param {string} pageCode
-   * @param {string} adjustedPageCode
-   * @returns {object}
-   * @private
-   */
-  collectMatchData(sectionHeadingMatch, pageCode, adjustedPageCode) {
-    const headline = normalizeCode(removeWikiMarkup(sectionHeadingMatch[3]));
-
-    const fullHeadingMatch = sectionHeadingMatch[1];
-    const equalSigns = sectionHeadingMatch[2];
-    const equalSignsPattern = `={1,${equalSigns.length}}`;
-    const codeFromSection = pageCode.slice(sectionHeadingMatch.index);
-    const adjustedCodeFromSection = adjustedPageCode.slice(sectionHeadingMatch.index);
-    const sectionMatch = (
-      adjustedCodeFromSection.match(new RegExp(
-        // Will fail at "===" or the like.
-        '(' +
-        mw.util.escapeRegExp(fullHeadingMatch) +
-        '[^]*?\\n)' +
-        equalSignsPattern +
-        '[^=].*=+[ \\t\\x01\\x02]*\\n'
-      )) ||
-      adjustedCodeFromSection.match(new RegExp(
-        '(' +
-        mw.util.escapeRegExp(fullHeadingMatch) +
-        '[^]*$)'
-      ))
-    );
-
-    // To simplify the workings of the "replyInSection" mode we don't consider terminating line
-    // breaks to be a part of the first chunk of the section (i.e., the section subdivision before
-    // the first heading).
-    const firstChunkMatch = (
-      adjustedCodeFromSection.match(new RegExp(
-        // Will fail at "===" or the like.
-        '(' +
-        mw.util.escapeRegExp(fullHeadingMatch) +
-        '[^]*?\\n)\\n*' +
-
-        // Any next heading.
-        '={1,6}' +
-
-        '[^=].*=+[ \\t\\x01\\x02]*\n'
-      )) ||
-      adjustedCodeFromSection.match(new RegExp(
-        '(' +
-        mw.util.escapeRegExp(fullHeadingMatch) +
-        '[^]*$)'
-      ))
-    );
-
-    const code = sectionMatch && codeFromSection.substr(sectionMatch.index, sectionMatch[1].length);
-    const firstChunkCode = (
-      firstChunkMatch &&
-      codeFromSection.substr(firstChunkMatch.index, firstChunkMatch[1].length)
-    );
-
-    const startIndex = sectionHeadingMatch.index;
-    const endIndex = startIndex + code.length;
-    const contentStartIndex = sectionHeadingMatch.index + sectionHeadingMatch[0].length;
-    const firstChunkEndIndex = startIndex + firstChunkCode.length;
-    const relativeContentStartIndex = contentStartIndex - startIndex;
-
-    let firstChunkContentEndIndex = firstChunkEndIndex;
-    let contentEndIndex = endIndex;
-    cd.g.keepInSectionEnding.forEach((regexp) => {
-      const firstChunkMatch = firstChunkCode.match(regexp);
-      if (firstChunkMatch) {
-        // `1` accounts for the first line break.
-        firstChunkContentEndIndex -= firstChunkMatch[0].length - 1;
-      }
-
-      const match = code.match(regexp);
-      if (match) {
-        // `1` accounts for the first line break.
-        contentEndIndex -= match[0].length - 1;
-      }
-    });
-
-    /*
-      Sections may have `#` or `*` as a placeholder for a vote or bulleted reply. In this case,
-      we must use that `#` or `*` in the reply. As for the placeholder, perhaps we should remove
-      it, but as for now, we keep it because if:
-
-        * the placeholder character is `*`,
-        * `cd.config.indentationCharMode` is `'unify'`,
-        * `cd.config.defaultIndentationChar` is `':'`, and
-        * there is more than one reply,
-
-      the next reply would go back to `:`, not `*` as should be.
-    */
-    const placeholderMatch = firstChunkCode.match(/\n([#*] *\n+)$/);
-    if (placeholderMatch) {
-      firstChunkContentEndIndex -= placeholderMatch[1].length;
-    }
-
-    return {
-      startIndex,
-      endIndex,
-      code,
-      contentStartIndex,
-      contentEndIndex,
-      relativeContentStartIndex,
-      firstChunkEndIndex,
-      firstChunkContentEndIndex,
-      firstChunkCode,
-      headline,
-    };
-  }
-
-  /**
-   * Get the score for a match.
-   *
-   * @param {object} match
-   * @param {number} sectionIndex
-   * @param {string} thisHeadline
-   * @param {string[]} headlines
-   * @returns {number}
-   * @private
-   */
-  getMatchScore(match, sectionIndex, thisHeadline, headlines) {
-    // Matching section index is one of the most unreliable ways to tell matching sections as
-    // sections may be added and removed from the page, so we don't rely on it very much.
-    const doesSectionIndexMatch = this.index === sectionIndex;
-
-    const doesHeadlineMatch = match.headline === thisHeadline;
-
-    const previousHeadlinesToCheckCount = 3;
-    const previousHeadlinesInCode = headlines
-      .slice(-previousHeadlinesToCheckCount)
-      .reverse();
-    const previousHeadlines = SectionStatic.getAll()
-      .slice(Math.max(0, this.index - previousHeadlinesToCheckCount), this.index)
-      .reverse()
-      .map((section) => section.headline);
-    const doPreviousHeadlinesMatch = previousHeadlines
-      .every((headline, i) => normalizeCode(headline) === previousHeadlinesInCode[i]);
-    headlines.push(match.headline);
-
-    const sigs = extractSignatures(match.code);
-    let oldestSig;
-    sigs.forEach((sig) => {
-      if (!oldestSig || (!oldestSig.date && sig.date) || oldestSig.date > sig.date) {
-        oldestSig = sig;
-      }
-    });
-    const doesOldestCommentMatch = oldestSig ?
-      Boolean(
-        this.oldestComment &&
-        (
-          oldestSig.timestamp === this.oldestComment.timestamp ||
-          oldestSig.author === this.oldestComment.author
-        )
-      ) :
-
-      // There's no comments neither in the code nor on the page.
-      !this.oldestComment;
-
-    let oldestCommentWordOverlap = Number(!this.oldestComment && !oldestSig);
-    if (this.oldestComment && oldestSig) {
-      // Use the comment text overlap factor due to this error
-      // https://www.wikidata.org/w/index.php?diff=1410718962. The comment code is extracted only
-      // superficially, without exluding the headline code and other operations performed in
-      // Comment#adjustCommentBeginning.
-      oldestCommentWordOverlap = calculateWordOverlap(
-        this.oldestComment.getText(),
-        removeWikiMarkup(match.code.slice(oldestSig.commentStartIndex, oldestSig.startIndex))
-      );
-    }
-
-    return (
-      doesOldestCommentMatch * 1 +
-      oldestCommentWordOverlap +
-      doesHeadlineMatch * 1 +
-      doesSectionIndexMatch * 0.5 +
-
-      // Shouldn't give too high a weight to this factor as it is true for every first section.
-      doPreviousHeadlinesMatch * 0.25
-    );
-  }
-
-  /**
    * Search for the section in the source code and return possible matches.
    *
-   * @param {string} pageCode
-   * @returns {object}
+   * @param {string} contextCode
+   * @param {boolean} isInSectionContext
+   * @returns {SectionSource}
    * @private
    */
-  searchInCode(pageCode) {
+  searchInCode(contextCode, isInSectionContext) {
     const thisHeadline = normalizeCode(this.headline);
-    const adjustedPageCode = hideDistractingCode(pageCode);
+    const adjustedContextCode = hideDistractingCode(contextCode);
     const sectionHeadingRegexp = /^((=+)(.*)\2[ \t\x01\x02]*)\n/gm;
 
-    const matches = [];
+    const sources = [];
     const headlines = [];
     let sectionIndex = -1;
     let sectionHeadingMatch;
-    while ((sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedPageCode))) {
+    while ((sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedContextCode))) {
       sectionIndex++;
+      const source = new SectionSource({
+        section: this,
+        sectionHeadingMatch,
+        contextCode,
+        adjustedContextCode,
+        thisHeadline,
+        sectionIndex,
+        headlines,
+        isInSectionContext,
+      });
 
-      const match = this.collectMatchData(sectionHeadingMatch, pageCode, adjustedPageCode);
-      if (!match.code || !match.firstChunkCode) {
-        console.warn(`Couldn't read the "${match.headline}" section contents.`);
-        continue;
-      }
+      if (!source.code || !source.firstChunkCode || source.score <= 1) continue;
 
-      match.score = this.getMatchScore(match, sectionIndex, thisHeadline, headlines);
-      if (match.score <= 1) continue;
-
-      matches.push(match);
+      sources.push(source);
 
       // Maximal possible score
-      if (match.score === 2.75) break;
+      if (source.score === 2.75) break;
     }
 
-    return matches;
+    return sources.sort((m1, m2) => m2.score - m1.score)[0];
   }
 
   /**
-   * Locate the section in the source code and set the result to the {@link Section#inCode}
+   * Locate the section in the source code and set the result to the {@link Section#source}
    * property.
    *
-   * It is expected that the section or page code is loaded (using {@link Page#getCode}) before this
-   * method is called. Otherwise, the method will throw an error.
+   * It is expected that the section or page code is loaded (using {@link Page#getCode}) before
+   * this method is called. Otherwise, the method will throw an error.
    *
    * @param {boolean} useSectionCode Is the section code available to locate the section in instead
    *   of the page code.
    * @throws {CdError}
    */
   locateInCode(useSectionCode) {
-    this.inCode = null;
+    this.source = null;
 
     const code = useSectionCode ? this.code : this.getSourcePage().code;
     if (code === undefined) {
@@ -1665,21 +1406,18 @@ class Section extends SectionSkeleton {
       });
     }
 
-    const matches = this.searchInCode(code);
-    const bestMatch = matches.sort((m1, m2) => m2.score - m1.score)[0];
-    if (!bestMatch) {
+    const source = this.searchInCode(code, useSectionCode);
+    if (!source) {
       throw new CdError({
         type: 'parse',
         code: 'locateSection',
       });
     }
 
-    bestMatch.isSectionCodeUsed = useSectionCode;
-
     /**
      * @type {?(object|undefined)}
      */
-    this.inCode = bestMatch;
+    this.source = source;
   }
 
   /**

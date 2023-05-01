@@ -50,7 +50,6 @@ export default {
 		'october-gen': 'octobre',
 		'november-gen': 'novembre',
 		'december-gen': 'décembre',
-		'timezone-utc': 'UTC',
 		'parentheses': '($1)',
 		'parentheses-start': '(',
 		'parentheses-end': ')',
