@@ -230,7 +230,7 @@ function filterCommentContent(comment) {
     // classes may include dynamic components, for example instances of collapsible elements:
     // https://www.mediawiki.org/wiki/Manual:Collapsible_elements.
     removeSomeAttributes(element);
-    element.getElementsByAttribute(/^data-/).forEach(removeSomeAttributes);
+    element.getElementsByAttribute(/^(id$|class$|data-)/).forEach(removeSomeAttributes);
 
     // Empty comment anchors, in most cases added by the script.
     element.getElementsByTagName('span')
