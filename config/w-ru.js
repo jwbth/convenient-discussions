@@ -270,13 +270,9 @@ export default {
   ],
 
   elementsToExcludeClasses: [
-    'ruwiki-movedTemplate',
     'ambox',
     'NavHead',
-    'ts-Закрыто-footer',
-    'ts-Цитата-container',
     'raaf',
-    'ts-Скрытие_текста_реплик',
   ],
 
   templatesToExclude: [
@@ -337,18 +333,11 @@ export default {
   ],
 
   closedDiscussionClasses: [
-    'ruwiki-closedDiscussion',
     'NavContent',
   ],
 
   customUnhighlightableElementClasses: [
     'infobox',
-    'ruwiki-movedTemplate',
-  ],
-
-  customAddTopicLinkSelectors: [
-    '.ruwiki-addTopicLink a',
-    '.ruwiki-addSectionBottom',
   ],
 
   noConfirmPostEmptyCommentPageRegexp: /^(?:Википедия:Заявки на статус |Википедия:Голосования\/)/,
