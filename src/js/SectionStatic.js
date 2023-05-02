@@ -27,19 +27,25 @@ export default {
   items: [],
 
   /**
-   * List of DiscussionTools threads that are related to subscribable (2-level) threads.
+   * Get the list of DiscussionTools threads that are related to subscribable (2-level) threads.
+   * This is updated on page reload.
    *
-   * @type {object[]}
+   * @returns {object[]}
    */
-  subscribableThreads: mw.config.get('wgDiscussionToolsPageThreads')
-    ?.concat(
-      flat(
-        mw.config.get('wgDiscussionToolsPageThreads')
-          .filter((thread) => thread.headingLevel === 1)
-          .map((thread) => thread.replies)
-      )
-    )
-    .filter((thread) => thread.headingLevel === 2),
+  getDtSubscribableThreads() {
+    if (!this.dtSubscribableThreads) {
+      this.dtSubscribableThreads = mw.config.get('wgDiscussionToolsPageThreads')
+        ?.concat(
+          flat(
+            mw.config.get('wgDiscussionToolsPageThreads')
+              .filter((thread) => thread.headingLevel === 1)
+              .map((thread) => thread.replies)
+          )
+        )
+        .filter((thread) => thread.headingLevel === 2);
+    }
+    return this.dtSubscribableThreads;
+  },
 
   /**
    * Add a section to the list.
@@ -86,6 +92,7 @@ export default {
    */
   reset() {
     this.items = [];
+    delete this.dtSubscribableThreads;
   },
 
   /**
