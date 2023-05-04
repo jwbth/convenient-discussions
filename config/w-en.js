@@ -111,6 +111,8 @@ export default {
   ],
 
   signatureEndingRegexp: / \(talk\)$/,
+	
+  tagName: 'convenient-discussions',
 
   smallDivTemplates: [
     'smalldiv',
