@@ -97,7 +97,7 @@ async function processPage(revisionToParseId) {
     revisionId,
     text,
     g: keepWorkerSafeValues(cd.g, ['isIPv6Address']),
-    config: keepWorkerSafeValues(cd.config, ['checkForCustomForeignComponents']),
+    config: keepWorkerSafeValues(cd.config, ['rejectNode']),
   });
 
   if (!revisionData[message.revisionId]) {

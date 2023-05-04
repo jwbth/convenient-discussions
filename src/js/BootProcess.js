@@ -940,11 +940,13 @@ class BootProcess {
   connectToAddTopicButtons() {
     addTopicSelector ??= [
       '#ca-addsection a',
+      '.cd-addTopicButton a',
+      'a.cd-addTopicButton',
       'a[href*="section=new"]',
       '.commentbox input[type="submit"]',
       '.createbox input[type="submit"]',
     ]
-      .concat(cd.config.customAddTopicLinkSelectors)
+      .concat(cd.config.addTopicButtonSelectors)
       .join(', ');
     $(addTopicSelector)
       .filter(function () {
@@ -1238,7 +1240,7 @@ class BootProcess {
     if (decodedFragment && controller.isPageActive()) {
       const isTargetFound = (
         comment ||
-        cd.config.idleFragments.includes(decodedFragment) ||
+        cd.config.idleFragments.some((regexp) => decodedFragment.match(regexp)) ||
         decodedFragment.startsWith('/media/') ||
         $(':target').length ||
         $(`a[name="${escapedDecodedFragment}"]`).length ||
@@ -1394,7 +1396,7 @@ class BootProcess {
   /**
    * Bind a click handler to comment links to make them work as in-script comment links.
    *
-   * This method exists in addition to {@link module:controller.handlePopState}. It's preferrable to
+   * This method exists in addition to {@link module:controller.handlePopState}. It's preferable to
    * have click events handled by this method instead of `controller.handlePopState` because that
    * method, if encounters `cdJumpedToComment` in the history state, doesn't scroll to the comment
    * which is a wrong behavior when the user clicks a link.
@@ -1434,7 +1436,7 @@ class BootProcess {
         'cd-comment-author' :
         'cd-signature'
     ]
-      .concat(cd.config.elementsToExcludeClasses)
+      .concat(cd.config.noSignatureClasses)
       .map((name) => `.${name}`)
       .join(', ');
     $content

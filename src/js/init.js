@@ -258,6 +258,12 @@ function patterns() {
   // Fix configuration values in wrong format
   cd.config.customTalkNamespaces ||= [];
 
+  // Renamed configuration properties
+  cd.config.rejectNode ??= cd.config.checkForCustomForeignComponents;
+  cd.config.noSignatureClasses ??= cd.config.elementsToExcludeClasses;
+  cd.config.noSignatureTemplates ??= cd.config.templatesToExcludeClasses;
+  cd.config.noHighlightClasses ??= cd.config.customUnhighlightableElementClasses;
+
   const signatureEndingRegexpLastChar = cd.config.signatureEndingRegexp?.source?.slice(-1);
   if (signatureEndingRegexpLastChar && signatureEndingRegexpLastChar !== '$') {
     cd.config.signatureEndingRegexp = new RegExp(cd.config.signatureEndingRegexp.source + '$');
@@ -377,8 +383,8 @@ function patterns() {
     .join('|');
   cd.g.quoteRegexp = new RegExp(`(${quoteBeginningsPattern})([^]*?)(${quoteEndingsPattern})`, 'ig');
 
-  cd.g.unhighlightableElementClasses = cd.g.unhighlightableElementClasses
-    .concat(cd.config.customUnhighlightableElementClasses);
+  cd.g.noSignatureClasses = cd.g.noSignatureClasses.concat(cd.config.noSignatureClasses);
+  cd.g.noHighlightClasses = cd.g.noHighlightClasses.concat(cd.config.noHighlightClasses);
 
   const fileNssPattern = Object.keys(nsIds)
     .filter((key) => nsIds[key] === 6)
@@ -394,7 +400,7 @@ function patterns() {
 
   cd.g.badCommentBeginnings = cd.g.badCommentBeginnings
     .concat(new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\n*(?=[*:#])`, 'i'))
-    .concat(cd.config.customBadCommentBeginnings)
+    .concat(cd.config.badCommentBeginnings)
     .concat(
       clearTemplatesPattern ?
         new RegExp(`^\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\} *\\n+`, 'i') :

@@ -64,8 +64,8 @@ export default {
    * Note that this value is used in the script as a "soft" value. I.e., the script can decide
    * (based on the presence of the "Add section" button, existence of comments on the page and
    * possibly other factors) that the page is not a talk page after all. Use
-   * {@link module:defaultConfig.pageWhitelist} to indicate pages where the script should work in any
-   * circumstances. (For example, you can specify the entire namespace, e.g., `/^Wikipedia:/`).
+   * {@link module:defaultConfig.pageWhitelist} to indicate pages where the script should work in
+   * any circumstances. (For example, you can specify the entire namespace, e.g., `/^Wikipedia:/`).
    *
    * @type {number[]}
    * @default mw.config.get('wgExtraSignatureNamespaces')
@@ -109,7 +109,7 @@ export default {
    *
    * @type {?UserNamespacesByGender}
    * @example
-   * // If only the female form differs from the standard name)
+   * // If only the female form differs from the standard name
    * {
    *   female: 'Участница',
    * }
@@ -192,9 +192,9 @@ export default {
   pagesWithoutArchives: [],
 
   /**
-   * Fragments that shouldn't trigger the "Section not found" dialog.
+   * Regexps for fragments that shouldn't trigger the "Section not found" notification.
    *
-   * @type {string[]}
+   * @type {RegExp[]}
    * @default []
    */
   idleFragments: [],
@@ -217,7 +217,7 @@ export default {
   spaceAfterIndentationChars: true,
 
   /**
-   * Should a new comment at the first level repeat the previous comment's indentation style
+   * Should a new comment at the first level (`:`) repeat the previous comment's indentation style
    * (`'mimic'` mode), or should the script use the default indentation character in
    * {@link module:defaultConfig.defaultIndentationChar} in all cases (`'unify'` mode). Note that if
    * the last comment of the section uses `#` as the first indentation character, the script will
@@ -253,7 +253,7 @@ export default {
    *
    * @type {RegExp}
    * @default
-   * /(?:\s[-–−—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─~⁓/→⇒\s\u200e\u200f]|&amp;\w+;|&amp;#\d+;)*$/
+   * /(?:\s[-–−—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─~⁓/→⇒\s\u200e\u200f]|&amp;\w+;|&amp;#\d+;)*(?:\s+\()?$/
    */
   signaturePrefixRegexp: /(?:\s[-–−—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─~⁓/→⇒\s\u200e\u200f]|&\w+;|&#\d+;)*(?:\s+\()?$/,
 
@@ -423,9 +423,11 @@ export default {
 
   /**
    * Array of two strings to insert before and after the selection when quote function is activated
-   * (by the toolbar button or Ctrl+Alt+Q / Q). If you add template markup, you might want to use
-   * `1=` before the parameter content to allow the `=` character inside a quotation, for example
-   * `['{{tq|1=', '}}']`.
+   * (by the toolbar button or Ctrl+Alt+Q / Q). You may also specify an object with two separate
+   * arrays for single line quotations and multi line quotations.
+   *
+   * If you add template markup, you might want to use `1=` before the parameter content to allow
+   * the `=` character inside a quotation, for example `['{{tq|1=', '}}']`.
    *
    * @type {string[]|QuoteFormatting}
    * @default ["> ''", "''\n"]
@@ -433,30 +435,31 @@ export default {
   quoteFormatting: ["> ''", "''"],
 
   /**
-   * Blocks with classes listed here wont't be considered legit comment timestamp containers. They
+   * Elements with classes listed here won't be considered legit comment timestamp containers. They
    * can still be parts of comments; for the way to prevent certain elements from becoming comment
-   * parts, see {@link module:defaultConfig.checkForCustomForeignComponents}. This value can have a
-   * wikitext counterpart (although it may not be necessary),
-   * {@link module:defaultConfig.templatesToExclude}, for classes that are specified inside
-   * templates.
+   * parts, see {@link module:defaultConfig.filterNode}. This value can have a wikitext counterpart
+   * (though not necessarily), {@link module:defaultConfig.noSignatureTemplates}, for classes that
+   * are specified inside templates.
+   *
+   * It is preferable to add the `mw-notalk` class to these elements instead of using this value.
    *
    * When it comes to the wikitext, all lines containing these classes are ignored.
    *
    * @type {string[]}
-   * @default ['cd-moveMark']
+   * @default []
    */
-  elementsToExcludeClasses: ['cd-moveMark'],
+  noSignatureClasses: [],
 
   /**
-   * Blocks with templates listed here won't be considered legit comment timestamp containers. All
-   * lines containing these templates are ignored when searching for timestamps in the wikitext.
-   * This value can have a web page counterpart,
-   * {@link module:defaultConfig.elementsToExcludeClasses}.
+   * Templates listed here (for example, "moved discussion" templates) won't be considered legit
+   * comment timestamp containers. All lines containing these templates are ignored when searching
+   * for timestamps in the wikitext. This value can have a web page counterpart,
+   * {@link module:defaultConfig.noSignatureClasses}.
    *
    * @type {string[]}
    * @default []
    */
-  templatesToExclude: [],
+  noSignatureTemplates: [],
 
   /**
    * All lines containing these patterns will be ignored when searching for comments in the
@@ -468,21 +471,23 @@ export default {
   commentAntipatterns: [],
 
   /**
-   * Regexps for strings that should be cut out of comment beginnings (not considered parts of them)
-   * when editing comments. This is in addition to
-   * {@link convenientDiscussions.g.badCommentBeginnings}. They begin with `^` and usually end
-   * with ` *\n+` or ` *\n+(?=[*:#])`. They _should_ match a newline character at the end for the
-   * script to work properly.
+   * Regexps for strings that should be cut out of comment beginnings (not considered parts of
+   * comments) when editing comments. This is in addition to
+   * {@link convenientDiscussions.g.badCommentBeginnings}, file markup and "clear" templates (see
+   * {@link module:defaultConfig.clearTemplates}). They begin with `^` and usually end with ` *\n+`
+   * or ` *\n+(?=[*:#])`. They _should_ match a newline character at the end for the script to work
+   * properly.
    *
    * @type {RegExp[]}
    * @default []
    * @example
    * [
-   *   // But comments are cut out of comment beginnings by default, so you won't need to specify it.
    *   /^<!--[^]*?--> *\n+/,
+   *   // ...But comments are cut out of comment beginnings by default, so you don't need to specify
+   *   // it.
    * ]
    */
-  customBadCommentBeginnings: [],
+  badCommentBeginnings: [],
 
   /**
    * Regexps for strings that should be kept in section endings when adding a reply or subsection
@@ -512,12 +517,13 @@ export default {
   signatureScanLimit: 100,
 
   /**
-   * Classes of elements that should be ignored when extracting headline text.
+   * Classes of elements that should be ignored when extracting headline text. For example, elements
+   * added by gadgets.
    *
    * @type {string[]}
    * @default []
    */
-  foreignElementInHeadlineClasses: [],
+  excludeFromHeadlineClasses: [],
 
   /**
    * Names of the closed discussion templates. They can be single templates like
@@ -547,20 +553,24 @@ export default {
   closedDiscussionClasses: [],
 
   /**
-   * Classes of elements that shouldn't be highlighted.
+   * Classes of elements that shouldn't be highlighted. It is preferable to add the `cd-noHighlight`
+   * class to these elements instead of using this value. Some elements are not highlighted by default
+   * (images, "move topic" marks, empty list elements).
    *
    * @type {string[]}
    * @default []
    */
-  customUnhighlightableElementClasses: [],
+  noHighlightClasses: [],
 
   /**
-   * Selectors of links (buttons) that are used to add topics on this wiki.
+   * Selectors of buttons (to be precise, `<a>` elements to function as buttons) that are used to
+   * add topics. It's preferable to add the `cd-addTopicButton` class to these buttons instead of
+   * using this value.
    *
    * @type {string[]}
    * @default []
    */
-  customAddTopicLinkSelectors: [],
+  addTopicButtonSelectors: [],
 
   /**
    * Default collection of insert buttons displayed under the comment input in comment forms.
@@ -580,7 +590,9 @@ export default {
   longCommentThreshold: 10000,
 
   /**
-   * Lower limit of the number of bytes to be added to the page to deem an edit a new comment.
+   * Lower limit of the number of bytes to be added to the page to deem an edit a new comment. Used
+   * to determine whether to create a comment link on pages that list revisions (watchlist, history,
+   * etc.).
    *
    * @type {number}
    * @default 50
@@ -617,8 +629,8 @@ export default {
 
   /**
    * Strings present in edit summaries of undo/revert edits. Used to detect edits that shouldn't be
-   * considered comments on log pages (watchlist, contributions, history). Displayed text, not
-   * wikitext. Take from MediaWiki:Undo-summary, MediaWiki:Revertpage.
+   * considered comments on pages that list revisions (watchlist, contributions, history). Displayed
+   * text, not wikitext. Take from MediaWiki:Undo-summary, MediaWiki:Revertpage.
    *
    * @type {string[]}
    * @default []
@@ -626,10 +638,11 @@ export default {
   undoTexts: [],
 
   /**
-   * Object specifying messages to be displayed when the user enters text that matches a pattern.
+   * Object specifying messages to be displayed when the user enters text that matches a regular
+   * expression.
    *
    * @typedef {object} Reaction
-   * @property {RegExp} pattern Pattern to match.
+   * @property {RegExp} regexp Regular expression to match.
    * @property {string} message Message displayed to the user.
    * @property {string} name Latin letters, digits, `-`.
    * @property {'notice'|'error'|'warning'|'success'} [type='notice'] The value is one of
@@ -644,7 +657,7 @@ export default {
    * @type {Reaction[]}
    * @default []
    */
-  customTextReactions: [],
+  textReactions: [],
 
   /**
    * @typedef {object} Module
@@ -656,6 +669,9 @@ export default {
   /**
    * Load these modules on comment form creation. See {@link Module} for the object structure. If
    * `checkFunc` is set, the module will be loaded if the condition is met.
+   *
+   * See also the {@link event:commentFormCustomModulesReady commentFormCustomModulesReady} hook
+   * which allows to specify actions after the modules listed in this value are loaded.
    *
    * @type {Module[]}
    * @default []
@@ -704,13 +720,16 @@ export default {
   /**
    * Function that returns `true` for nodes that are not parts of comments and should terminate the
    * comment part collecting. These rules often need correspoding rules in
-   * {@link module:defaultConfig.customBadCommentBeginnings}.
+   * {@link module:defaultConfig.badCommentBeginnings}.
    *
-   * The second parameter is a "context", i.e., a collection of classes, functions, and other
-   * properties that perform the tasks we need in the current context (window or worker). Examples
-   * are the name of the child elements property (the worker context uses `childElements` instead of
-   * `children`) and the document element. Contexts are predefined in the script like
-   * {@link https://github.com/jwbth/convenient-discussions/blob/c6b177bce7588949b46e0e8d52c5e0f4e76cb3ee/src/js/processPage.js#L885
+   * The second parameter is a "context", i.e., a collection of classes, functions, elements, and
+   * names that help perform the tasks we need in the current context (window or worker). Examples
+   * are the document element and the name of the child elements property (the worker context uses
+   * `childElements` instead of `children` due to relying on the
+   * {@link https://github.com/fb55/htmlparser2 htmlparser2 module}, therefore you should use
+   * `element[context.childElementsProp]` to access element children instead of `element.children`).
+   * Contexts are predefined in the script like {@link
+   * https://github.com/jwbth/convenient-discussions/blob/6281b9ede22149beb47ba0da37549d13600cb1c9/src/js/BootProcess.js#L745
    * this}.
    *
    * @type {?Function}
@@ -720,7 +739,7 @@ export default {
    * @returns {boolean}
    * @default null
    */
-  checkForCustomForeignComponents: null,
+  rejectNode: null,
 
   /**
    * Function that runs when the "Reformat comments" setting is enabled before parsing the author

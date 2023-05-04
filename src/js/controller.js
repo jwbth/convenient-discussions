@@ -1390,9 +1390,10 @@ export default {
   },
 
   /**
-   * _For internal use._ Handle firings of the hook `'wikipage.content'` (by using
-   * `mw.hook('wikipage.content').fire()`). This is performed by some user scripts, such as
-   * QuickEdit.
+   * _For internal use._ Handle firings of the hook
+   * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.hook-event-wikipage_content wikipage.content}
+   * (by using `mw.hook('wikipage.content').fire()`). This is performed by some user scripts, such
+   * as QuickEdit.
    *
    * @param {external:jQuery} $content
    */

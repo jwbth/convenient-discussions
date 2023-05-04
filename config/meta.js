@@ -111,13 +111,13 @@ export default {
     'Br',
   ],
   quoteFormatting: ["{{tq|1=", "}}<br>"],
-  elementsToExcludeClasses: [
+  noSignatureClasses: [
     'NavHead',
   ],
-  templatesToExclude: [
+  noSignatureTemplates: [
     'Moved',
   ],
-  foreignElementInHeadlineClasses: [
+  excludeFromHeadlineClasses: [
     'adminMark',
   ],
   closedDiscussionTemplates: [

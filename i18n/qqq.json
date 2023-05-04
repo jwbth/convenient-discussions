@@ -236,7 +236,7 @@
 	"rd-comment": "Label for the text of the comment input in the comment form. This message is displayed in the \"rescue comment forms\" dialog when outputting the raw content of the comment forms that have no target comments or sections anymore.",
 	"rd-summary": "Label for the text of the summary input in the comment form. This message is displayed in the \"rescue comment forms\" dialog when outputting the raw content of the comment forms that have no target comments or sections anymore.",
 	"rd-close": "Label of the button in the \"rescue comment forms\" dialog.\n\n{{identical|Close}}",
-	"rc-suggestion": "Text of the confirmation message that pop ups when the user hasn't chosen their preferrable formatting yet.",
+	"rc-suggestion": "Text of the confirmation message that pop ups when the user hasn't chosen their preferable formatting yet.",
 	"rc-suggestion-yes": "Label of the button in the dialog that suggests the user to enable the new comment formatting ({{msg-wm|Convenient-discussions-rc-suggestion|notext=1}}).",
 	"rc-suggestion-no": "Label of the button in the dialog that suggests the user to enable the new comment formatting ({{msg-wm|Convenient-discussions-rc-suggestion|notext=1}}).",
 	"topicsubscription-notice": "Text of the alert message that pop ups when the user subscribes to a topic for the first time.",

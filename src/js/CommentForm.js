@@ -201,8 +201,10 @@ class CommentForm {
       .map((module) => module.name);
     mw.loader.using(customModulesNames).then(() => {
       /**
-       * All the requested custom comment form modules have been loaded and executed. (The comment
-       * form may not be ready yet, use {@link event:commentFormToolbarReady} for that.)
+       * All the requested
+       * {@link module:defaultConfig.customCommentFormModules custom comment form modules} have been
+       * loaded and executed. (The toolbar may not be ready yet if it's enabled; use
+       * {@link event:commentFormToolbarReady} for that.)
        *
        * @event commentFormCustomModulesReady
        * @param {CommentForm} commentForm
@@ -1670,14 +1672,14 @@ class CommentForm {
 
     const textReactions = [
       {
-        pattern: new RegExp(cd.g.signCode + '\\s*$'),
+        regexp: new RegExp(cd.g.signCode + '\\s*$'),
         message: cd.sParse('cf-reaction-signature', cd.g.signCode),
         name: 'signatureNotNeeded',
         type: 'notice',
         checkFunc: () => !this.omitSignatureCheckbox?.isSelected(),
       },
       {
-        pattern: /<pre/,
+        regexp: /<pre/,
         message: cd.sParse(
           'cf-reaction-pre',
           '<code><nowiki><pre></'.concat('nowiki></code>'),
@@ -1686,7 +1688,7 @@ class CommentForm {
         name: 'dontUsePre',
         type: 'warning',
       },
-    ].concat(cd.config.customTextReactions);
+    ].concat(cd.config.textReactions);
     this.commentInput
       .on('change', (text) => {
         if (this.richFormattingPopup) {
@@ -1695,8 +1697,8 @@ class CommentForm {
 
         this.updateAutoSummary(true, true);
 
-        textReactions.forEach(({ pattern, checkFunc, message, type, name }) => {
-          if (pattern.test(text) && (typeof checkFunc !== 'function' || checkFunc(this))) {
+        textReactions.forEach(({ regexp, checkFunc, message, type, name }) => {
+          if (regexp.test(text) && (typeof checkFunc !== 'function' || checkFunc(this))) {
             this.showMessage(message, { type, name });
           } else {
             this.hideMessage(name);

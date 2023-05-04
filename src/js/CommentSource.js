@@ -266,7 +266,7 @@ export default class CommentSource {
       // doesn't catch the comment because of a newline inside the `syntaxhighlight` element).
       cd.g.badCommentBeginnings.forEach((pattern) => {
         if (pattern.source[0] !== '^') {
-          console.debug('Regexps in cd.config.customBadCommentBeginnings should have "^" as the first character.');
+          console.debug('Regexps in cd.config.badCommentBeginnings should have "^" as the first character.');
         }
         let match;
         while ((match = this.code.match(pattern))) {

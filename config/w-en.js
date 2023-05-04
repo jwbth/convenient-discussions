@@ -210,7 +210,7 @@ export default {
     multiline: ["{{tqb|1=", "}}<br>"],
   },
 
-  elementsToExcludeClasses: [
+  noSignatureClasses: [
     'unresolved',
     'resolved',
     'ambox',
@@ -221,7 +221,7 @@ export default {
     'NavFrame',
   ],
 
-  templatesToExclude: [
+  noSignatureTemplates: [
     'Moved discussion from',
     'Discussion moved from',
     'Dmf',
@@ -367,7 +367,7 @@ export default {
     'boilerplate',
   ],
 
-  customUnhighlightableElementClasses: [
+  noHighlightClasses: [
     'infobox',
     'unresolved',
     'resolved',
@@ -378,7 +378,7 @@ export default {
     'Reverted edits',
   ],
 
-  checkForCustomForeignComponents: function (node) {
+  rejectNode: function (node) {
     return node.classList.contains('boilerplate-header');
   },
 

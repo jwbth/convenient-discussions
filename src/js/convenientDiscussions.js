@@ -218,7 +218,7 @@ Object.assign(cd, {
 Object.assign(cd.g, {
   // These are properties known from the beginning. We assume that there is no point to make them
   // subject to change by site administrators although this may be disputable. Some of them are
-  // extensible in the configuration file (such as `unhighlightableElementClasses`).
+  // extensible in the configuration file (such as `noHighlightClasses`).
 
   /**
    * A replacement for
@@ -402,9 +402,23 @@ Object.assign(cd.g, {
   popularInlineElements: ['A', 'ABBR', 'B', 'BIG', 'BR', 'CITE', 'CODE', 'DEL', 'EM', 'FONT', 'I', 'IMG', 'INS', 'KBD', 'Q', 'S', 'SAMP', 'SMALL', 'SPAN', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TIME', 'TT', 'U', 'VAR'],
 
   /**
-   * Names of elements that shouldn't be the first or last highlightable element. These elements
-   * are wrapped into `'div'` containers. It allows for comment headers to be displayed correctly
-   * when `convenientDiscussions.settings.reformatComments` is turned on.
+   * Elements with classes listed here won't be considered legit comment timestamp containers. They
+   * can still be parts of comments; for the way to prevent certain elements from becoming comment
+   * parts, see {@link module:defaultConfig.rejectNode}. This value can have a wikitext counterpart
+   * (though not necessarily), {@link module:defaultConfig.noSignatureTemplates}, for classes that
+   * are specified inside templates.
+   *
+   * When it comes to the wikitext, all lines containing these classes are ignored.
+   *
+   * @type {string[]}
+   * @default []
+   */
+  noSignatureClasses: ['cd-moveMark'],
+
+  /**
+   * Names of elements that shouldn't be the first or last highlightable element. CD wraps these
+   * elements into `<div>` containers. It allows for comment headers to be displayed correctly when
+   * the `reformatComments` setting is enabled.
    *
    * @type {string[]}
    * @memberof convenientDiscussions.g
@@ -412,24 +426,25 @@ Object.assign(cd.g, {
   badHighlightableElements: ['BLOCKQUOTE', 'DL', 'FORM', 'HR', 'OL', 'PRE', 'TABLE', 'UL'],
 
   /**
-   * Classes of elements that shouldn't be highlighted. Only MediaWiki-assigned classes go here.
-   * Wiki-specific classes go in the configuration.
+   * Classes of elements that shouldn't be highlighted. Only MediaWiki-assigned and native CD
+   * classes go here. Wiki-specific classes go in the configuration.
    *
    * @type {string[]}
    * @memberof convenientDiscussions.g
    */
-  unhighlightableElementClasses: [
+  noHighlightClasses: [
     'mw-empty-elt',
     'tleft',
     'tright',
     'floatleft',
     'floatright',
     'cd-moveMark',
+    'cd-noHighlight',
   ],
 
   /**
-   * Regexps for strings that should be cut out of comment beginnings (not considered parts of the
-   * comment).
+   * Regexps for strings that should be cut out of comment beginnings (not considered parts of
+   * comments) when editing comments.
    *
    * @type {RegExp[]}
    * @memberof convenientDiscussions.g

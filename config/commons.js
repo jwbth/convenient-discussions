@@ -125,10 +125,10 @@ export default {
     '-',
   ],
   quoteFormatting: ["{{tq|1=", "}}<br>"],
-  elementsToExcludeClasses: [
+  noSignatureClasses: [
     'collapsibleheader',
   ],
-  foreignElementInHeadlineClasses: [
+  excludeFromHeadlineClasses: [
     'adminMark',
   ],
   closedDiscussionTemplates: [

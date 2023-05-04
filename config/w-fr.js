@@ -121,8 +121,8 @@ export default {
 	'clearTemplates': [
 		'Clear'
 	],
-  elementsToExcludeClasses: [
-    'NavFrame',
+	'noSignatureClasses': [
+		'NavFrame',
   ],
 	'signatureEndingRegexp': / \(discuter\)/
 };

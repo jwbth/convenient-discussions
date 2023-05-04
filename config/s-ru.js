@@ -123,7 +123,7 @@ export default {
 		'Clear'
 	],
 
-	templatesToExclude: [
+	noSignatureTemplates: [
 		'Перенесено с',
 		'Перенесено на'
 	],
@@ -138,11 +138,11 @@ export default {
 	signatureEndingRegexp: / \(обсуждение\)/,
 
 	pageWhitelist: [
-    	/^Викитека:К удалению$/,
-    	/^Викитека:Форум/,
-    	/^Викитека:Администрирование$/,
-    	/^Викитека:Заявки на изменение прав$/,
-    	/^Викитека:Трибуна читателя/,
+			/^Викитека:К удалению$/,
+			/^Викитека:Форум/,
+			/^Викитека:Администрирование$/,
+			/^Викитека:Заявки на изменение прав$/,
+			/^Викитека:Трибуна читателя/,
 	],
 
 	pageBlacklist: [
@@ -153,7 +153,7 @@ export default {
 	},
 
 	genderNeutralUserNamespaceAlias: 'У',
-	
+
 	archivePaths: [
 		{
 			source: 'Викитека:Форум',
@@ -166,11 +166,11 @@ export default {
 		{
 			source: 'Викитека:Администрирование',
 			archive: 'Викитека:Форум/Администрирование/Архив-',
-		},    
+		},
 		{
 			source: 'Викитека:К удалению',
 			archive: 'Викитека:К удалению/Архив',
-		},    
+		},
 		{
 			source: 'Викитека:Заявки на изменение прав',
 			archive: 'Викитека:Заявки на изменение прав/Архив',
@@ -178,12 +178,12 @@ export default {
 		/\/Архив/,
 		/\/Архив-/,
 	],
-	
+
 	pagesWithoutArchives: [
 		/^Викитека:К удалению\//,
 	],
-	
-	idleFragments: ['Преамбула'],
+
+	idleFragments: [/^Преамбула$/],
 
 	defaultIndentationChar: '*',
 
@@ -194,26 +194,26 @@ export default {
 	tagName: 'convenient-discussions',
 
 	hookToFireWithAuthorWrappers: 'global.userlinks',
-	
-	elementsToExcludeClasses: [
+
+	noSignatureClasses: [
 		'ambox',
 		'NavHead',
 	],
-	
+
 	commentAntipatterns: [
 		/--\xa0?\[\[Участник:DimaBot\|DimaBot\]\]/,
 	],
 
-	foreignElementInHeadlineClasses: [
+	excludeFromHeadlineClasses: [
 		'ch-helperText',
 		'userflags-wrapper',
 		'dclink-wrapper',
 	],
-	
-	customUnhighlightableElementClasses: [
-    	'infobox',
+
+	noHighlightClasses: [
+		'infobox',
 	],
-	
+
 	noConfirmPostEmptyCommentPageRegexp: /^(?:Викитека:Заявки на статус |Викитека:Голосования\/)/,
 
 	indentationCharsPattern: '(?:\\{\\{(?:-vote|[зЗ]ачёркнутый голос|-голос)\\|)?([:*#]+)( *)',
@@ -221,18 +221,6 @@ export default {
 	undoTexts: [
 		'отмена правки',
 		'откат правок',
-	],
-
-	customTextReactions: [
-		{
-			pattern: /\{\{(?:(?:subst|подст):)?ПИ2?\}\}/,
-			message: 'Шаблон указания на статус подводящего итоги добавлять не нужно — он будет добавлен автоматически.',
-			name: 'closerTemplateNotNeeded',
-			type: 'notice',
-			checkFunc: function (commentForm) {
-				return commentForm.couldBeCloserClosing && commentForm.headlineInput.getValue().trim() === 'Итог';
-			},
-		},
 	],
 
 	customCommentFormModules: [
@@ -254,25 +242,7 @@ export default {
 			.replace(cd.s('es-new-subsection') + ': /* Предытог */', 'предытог');
 	},
 
-	postTransformCode: function (code, commentForm) {
-    	// Add a closer template
-    	if (
-			commentForm.couldBeCloserClosing &&
-			commentForm.headlineInput.getValue().trim() === 'Итог' &&
-				!/\{\{(?:(?:subst|подст):)?ПИ2?\}\}|правах подводящего итоги/.test(code)
-		) {
-			code = code.replace(
-				/(\n?\n)$/,
-				function (newlines) {
-					return '\n' + (cd.settings.get('closerTemplate') || '{{'.concat('subst:ПИ}}')) + newlines;
-				}
-			);
-		}
-
-		return code;
-	},
-
-	checkForCustomForeignComponents: function (node) {
+	rejectNode: function (node) {
 		return (
 			node.classList.contains('ts-Закрыто-header') ||
 
@@ -339,7 +309,7 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
 					el.style.backgroundColor = null;
 				});
 			}
-	
+
 			const $text = cd.api.wrap('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Кикан/highlightLastMessages.js">highlightLastMessages.js</a>, конфликтующий с функциональностью подсветки скрипта «Удобные обсуждения». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
 			mw.notify($text, {
 				type: 'warn',
@@ -373,18 +343,10 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(function () {
 	}
 });
 
-mw.hook('convenientDiscussions.commentFormCreated').add(function (commentForm) {
-	commentForm.couldBeCloserClosing = (
-		/^Викитека:К удалению/.test(cd.page.name) &&
-		commentForm.getMode() === 'addSubsection' &&
-		mw.config.get('wgUserGroups').includes('closer')
-	);
-});
-
 mw.hook('convenientDiscussions.commentFormCustomModulesReady').add(function (commentForm) {
 	commentForm.$element.on('keydown', function (e) {
 		// Ctrl+Alt+W
-    	const isCmdModifierPressed = cd.g.clientProfile.platform === 'mac' ? e.metaKey : e.ctrlKey;
+		const isCmdModifierPressed = cd.g.clientProfile.platform === 'mac' ? e.metaKey : e.ctrlKey;
 		if (isCmdModifierPressed && !e.shiftKey && e.altKey && e.keyCode === 87) {
 			window.Wikify(commentForm.commentInput.$input.get(0));
 		}
@@ -392,47 +354,47 @@ mw.hook('convenientDiscussions.commentFormCustomModulesReady').add(function (com
 });
 
 mw.hook('convenientDiscussions.commentFormToolbarReady').add(function (commentForm) {
-  commentForm.commentInput.$input.wikiEditor('addToToolbar', {
-    section: 'main',
-    groups: {
-      gadgets: {
-        tools: {
-          wikificator: {
-            label: 'Викификатор — автоматический обработчик текста (Ctrl+Alt+W)',
-            type: 'button',
-            icon: 'https://upload.wikimedia.org/wikipedia/commons/0/06/Wikify-toolbutton.png',
-            action: {
-              type: 'callback',
-              execute: function () {
-                window.Wikify(commentForm.commentInput.$input.get(0));
-              },
-            },
-          },
-        },
-      }
-    },
-  });
-  commentForm.$element
-    .find('.group-gadgets')
-    .insertBefore(commentForm.$element.find('.section-main .group-format'));
+	commentForm.commentInput.$input.wikiEditor('addToToolbar', {
+		section: 'main',
+		groups: {
+			gadgets: {
+				tools: {
+					wikificator: {
+						label: 'Викификатор — автоматический обработчик текста (Ctrl+Alt+W)',
+						type: 'button',
+						icon: 'https://upload.wikimedia.org/wikipedia/commons/0/06/Wikify-toolbutton.png',
+						action: {
+							type: 'callback',
+							execute: function () {
+								window.Wikify(commentForm.commentInput.$input.get(0));
+							},
+						},
+					},
+				},
+			}
+		},
+	});
+	commentForm.$element
+		.find('.group-gadgets')
+		.insertBefore(commentForm.$element.find('.section-main .group-format'));
 
-  if (mw.user.options.get('gadget-urldecoder')) {
-    commentForm.commentInput.$input.wikiEditor('addToToolbar', {
-      section: 'main',
-      group: 'gadgets',
-      tools: {
-        urlDecoder: {
-          label: 'Раскодировать URL перед курсором или все URL в выделенном тексте',
-          type: 'button',
-          icon: 'https://upload.wikimedia.org/wikipedia/commons/0/01/Link_go_remake.png',
-          action: {
-            type: 'callback',
-            execute: function () {
-              window.urlDecoderRun(commentForm.commentInput.$input.get(0));
-            },
-          },
-        },
-      },
-    });
-  }
+	if (mw.user.options.get('gadget-urldecoder')) {
+		commentForm.commentInput.$input.wikiEditor('addToToolbar', {
+			section: 'main',
+			group: 'gadgets',
+			tools: {
+				urlDecoder: {
+					label: 'Раскодировать URL перед курсором или все URL в выделенном тексте',
+					type: 'button',
+					icon: 'https://upload.wikimedia.org/wikipedia/commons/0/01/Link_go_remake.png',
+					action: {
+						type: 'callback',
+						execute: function () {
+							window.urlDecoderRun(commentForm.commentInput.$input.get(0));
+						},
+					},
+				},
+			},
+		});
+	}
 });

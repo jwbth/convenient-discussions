@@ -369,7 +369,7 @@ class CommentSkeleton {
         this.parser.context.getElementByClassName(element, cd.config.outdentClass)
       ) ||
 
-      cd.config.checkForCustomForeignComponents?.(element, this.context)
+      cd.config.rejectNode?.(element, this.context)
     );
   }
 
@@ -678,7 +678,7 @@ class CommentSkeleton {
           !hasCurrentSignature &&
           !isInline(node) &&
           cd.config.signatureEndingRegexp?.test(node.textContent) &&
-          !this.parser.elementsToExclude.some((el) => el.contains(node))
+          !this.parser.noSignatureElements.some((el) => el.contains(node))
         ) {
           break;
         }
@@ -1079,7 +1079,7 @@ class CommentSkeleton {
     const isHighlightable = (el) => (
       !isHeadingNode(el) &&
       !isMetadataNode(el) &&
-      !cd.g.unhighlightableElementClasses.some((name) => el.classList.contains(name)) &&
+      !cd.g.noHighlightClasses.some((name) => el.classList.contains(name)) &&
 
       // Can't access stylesheets from the worker context, so we do it only in
       // Comment#reviewHighlightables, and here we look at the style attribute only.

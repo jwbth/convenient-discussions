@@ -2,9 +2,9 @@
  * Web worker entry point.
  *
  * Note that currently there may be difficulties in testing the web worker in the "single" mode with
- * custom config functions such as {@link module:defaultConfig.checkForCustomForeignComponents} due
- * to the (unfortunate) use of `eval()` here and the fact that webpack renames some objects in some
- * contexts resulting in a lost tie between them.
+ * custom config functions such as {@link module:defaultConfig.rejectNode} due to the (unfortunate)
+ * use of `eval()` here and the fact that webpack renames some objects in some contexts resulting in
+ * a lost tie between them.
  *
  * @module worker
  */
@@ -510,9 +510,7 @@ function onMessageFromWindow(e) {
     cd.g = message.g;
     cd.config = message.config;
 
-    cd.config.checkForCustomForeignComponents = restoreFunc(
-      cd.config.checkForCustomForeignComponents
-    );
+    cd.config.rejectNode = restoreFunc(cd.config.rejectNode);
     cd.g.isIPv6Address = restoreFunc(cd.g.isIPv6Address);
 
     self.document = parseDocument(message.text, {

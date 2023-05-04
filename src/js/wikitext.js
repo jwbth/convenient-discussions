@@ -339,12 +339,12 @@ export function extractSignatures(code) {
   // templates (see the "markerLength" parameter in wikitext.hideTemplatesRecursively) and tags?
   // But keep in mind that this code may still be part of comments.
   if (!commentAntipatternsRegexp) {
-    const elementsToExcludeClassesPattern = cd.config.elementsToExcludeClasses
+    const noSignatureClassesPattern = cd.g.noSignatureClasses
       .concat('mw-notalk')
       .join('\\b|\\b');
-    const commentAntipatternsPatternParts = [`class=(['"])[^'"\\n]*(?:\\b${elementsToExcludeClassesPattern}\\b)[^'"\\n]*\\1`];
-    if (cd.config.templatesToExclude.length) {
-      const pattern = cd.config.templatesToExclude.map(generatePageNamePattern).join('|');
+    const commentAntipatternsPatternParts = [`class=(['"])[^'"\\n]*(?:\\b${noSignatureClassesPattern}\\b)[^'"\\n]*\\1`];
+    if (cd.config.noSignatureTemplates.length) {
+      const pattern = cd.config.noSignatureTemplates.map(generatePageNamePattern).join('|');
       commentAntipatternsPatternParts.push(`\\{\\{ *(?:${pattern}) *(?:\\||\\}\\})`);
     }
     if (cd.config.commentAntipatterns) {

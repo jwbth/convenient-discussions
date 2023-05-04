@@ -143,10 +143,10 @@ class Parser {
       cd.config.outdentClass,
     ];
 
-    this.elementsToExclude = [
+    this.noSignatureElements = [
       ...this.context.rootElement.getElementsByTagName('blockquote'),
       ...flat(
-        cd.config.elementsToExcludeClasses
+        cd.g.noSignatureClasses
           .map((name) => [...this.context.rootElement.getElementsByClassName(name)])
       ),
     ];
@@ -205,7 +205,7 @@ class Parser {
         }
 
         const { date, match } = parseTimestamp(text) || {};
-        if (date && !this.elementsToExclude.some((el) => el.contains(node))) {
+        if (date && !this.noSignatureElements.some((el) => el.contains(node))) {
           return { node, date, match };
         }
       })

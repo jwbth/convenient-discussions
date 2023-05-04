@@ -159,16 +159,16 @@ export default {
   /**
    * Blocks with classes listed here wont't be considered legit comment timestamp containers. They
    * can still be parts of comments; for the way to prevent certain elements from becoming comment
-   * parts, see {@link module:defaultConfig.checkForCustomForeignComponents}.
+   * parts, see {@link module:defaultConfig.rejectNode}.
    *
    * When it comes to the wikitext, all lines containing these classes are ignored.
    *
    * @type {string[]}
    * @default []
    */
-  // elementsToExcludeClasses: [],
+  // noSignatureClasses: [],
 
-  templatesToExclude: [],
+  noSignatureTemplates: [],
 
   /**
    * All lines containing these patterns will be ignored when searching for comments in the
@@ -187,7 +187,7 @@ export default {
    * @type {RegExp[]}
    * @default []
    */
-  // customBadCommentBeginnings: [],
+  // badCommentBeginnings: [],
 
    /**
    * Regexps for strings that should be kept in the section endings when adding a reply or
@@ -212,7 +212,7 @@ export default {
    * @type {string[]}
    * @default []
    */
-  // foreignElementInHeadlineClasses: [],
+  // excludeFromHeadlineClasses: [],
 
   /**
    * Names of the closed discussion templates. They can be single templates like {@link
@@ -247,7 +247,7 @@ export default {
    * @type {string[]}
    * @default []
    */
-  // customUnhighlightableElementClasses: [],
+  // noHighlightClasses: [],
 
   /**
    * Selectors of links (buttons) that are used to add topics on this wiki.
@@ -255,7 +255,7 @@ export default {
    * @type {string[]}
    * @default []
    */
-  // customAddTopicLinkSelectors: [],
+  // addTopicButtonSelectors: [],
 
   defaultInsertButtons: [
     ['{{א|' + '+}}'],
@@ -355,7 +355,7 @@ export default {
    * @type {Reaction[]}
    * @default []
    */
-  // customTextReactions: [],
+  // textReactions: [],
 
   /**
    * @typedef {object} Module
@@ -415,7 +415,7 @@ export default {
   /**
    * Function that returns `true` for nodes that are not parts of comments and should terminate the
    * comment part collecting. These rules often need correspoding rules in {@link
-   * module:defaultConfig.customBadCommentBeginnings}.
+   * module:defaultConfig.badCommentBeginnings}.
    *
    * The second parameter is a "context", i.e., a collection of classes, functions, and other
    * properties that perform the tasks we need in the current context (window or worker).
@@ -427,7 +427,7 @@ export default {
    * @returns {boolean}
    * @default null
    */
-  // checkForCustomForeignComponents: null,
+  // rejectNode: null,
 
   /**
    * Function that returns `true` if new topics are placed on top of the page.

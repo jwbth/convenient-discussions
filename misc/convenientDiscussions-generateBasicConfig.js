@@ -80,6 +80,32 @@ mw.loader.using([
 
   config.useGlobalPreferences = siteInfoResp.query.extensions
     .some((ext) => ext.name === 'GlobalPreferences');
+  if (config.useGlobalPreferences) {
+    delete config.useGlobalPreferences;
+  }
+
+  config.pageWhitelist = [];
+  config.pageBlacklist = [];
+  config.userNamespacesByGender = null;
+  config.genderNeutralUserNamespaceAlias = null;
+  config.archivePaths = [];
+  config.pagesWithoutArchives = [];
+  config.defaultIndentationChar = ':';
+  config.spaceAfterIndentationChars = true;
+  config.indentationCharMode = 'mimic';
+
+  const signatureMessage = (await api.getMessages('Signature', {
+    amlang: mw.config.get('wgContentLanguage'),
+    amincludelocal: 1
+  })).Signature;
+  const parsedSignature = await api.parse(signatureMessage, { disablelimitreport: true });
+  if (!parsedSignature.includes('{{')) {
+    const $signature = $(parsedSignature);
+    const [, signatureEnding] = $signature.text().trim().match(/.*\$\d+(.{2,})$/) || [];
+    if (signatureEnding) {
+      config.signatureEndingRegexp = new RegExp(mw.util.escapeRegExp(signatureEnding));
+    }
+  }
 
   const idsToProps = {
     Q5573785: 'unsigned',
@@ -183,12 +209,17 @@ mw.loader.using([
 
   config.clearTemplates = titles.clear?.map(getTitleText);
 
-  config.templatesToExclude = (
+  config.noSignatureClasses = [];
+
+  config.noSignatureTemplates = (
     (titles.movedFrom || titles.movedTo) &&
     (titles.movedFrom || [])
       .concat(titles.movedTo || [])
       .map(getTitleText)
   );
+
+  config.commentAntipatterns = [];
+  config.excludeFromHeadlineClasses = [];
 
   const closedTitles = [].concat(
     titles.closed || [],
@@ -209,26 +240,16 @@ mw.loader.using([
     [closedTitles.map(getTitleText), closedEndTitles.map(getTitleText),]
   );
 
-  const signatureMessage = (await api.getMessages('Signature', {
-    amlang: mw.config.get('wgContentLanguage'),
-    amincludelocal: 1
-  })).Signature;
-  const parsedSignature = await api.parse(signatureMessage, { disablelimitreport: true });
-  if (!parsedSignature.includes('{{')) {
-    const $signature = $(parsedSignature);
-    const [, signatureEnding] = $signature.text().trim().match(/.*\$\d+(.{2,})$/) || [];
-    if (signatureEnding) {
-      config.signatureEndingRegexp = new RegExp(mw.util.escapeRegExp(signatureEnding));
-    }
-  }
+  config.closedDiscussionClasses = [];
 
-  let output = JSON.stringify(config, null, '\t');
-  output = output
+  let output = JSON.stringify(config, null, '\t')
+    .replace(/\n\t"([a-zA-Z]+)":/g, '\n\t$1:')
+    .replace(/("|\])\n(\t|\})/g, '$1,\n$2')
     .replace(/'/g, "\\'")
     .replace(/"/g, "'")
     .replace(
-      /'signatureEndingRegexp': \{\}/,
-      `'signatureEndingRegexp': ${config.signatureEndingRegexp}`
+      /signatureEndingRegexp: \{\}/,
+      `signatureEndingRegexp: ${config.signatureEndingRegexp}`
     );
 
   // When updating this code, update the code in buildConfigs.js as well.

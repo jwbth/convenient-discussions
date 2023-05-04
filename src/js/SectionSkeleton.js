@@ -258,13 +258,13 @@ class SectionSkeleton {
    * {@link SectionSkeleton#headline headline} property that contains no HTML tags.
    */
   parseHeadline() {
-    const classesToFilter = ['mw-headline-number', ...cd.config.foreignElementInHeadlineClasses];
+    const classesToFilter = ['mw-headline-number', ...cd.config.excludeFromHeadlineClasses];
 
     /**
      * Section headline as it appears on the page.
      *
      * Foreign elements can get there, add the classes of these elements to
-     * {@link module:defaultConfig.foreignElementInHeadlineClasses} to filter them out.
+     * {@link module:defaultConfig.excludeFromHeadlineClasses} to filter them out.
      *
      * @type {string}
      */

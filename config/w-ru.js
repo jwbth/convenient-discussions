@@ -179,7 +179,7 @@ export default {
     /^Википедия:Кандидаты в добротные статьи\//,
   ],
 
-  idleFragments: ['Преамбула'],
+  idleFragments: [/^Преамбула$/],
 
   defaultIndentationChar: '*',
 
@@ -269,13 +269,13 @@ export default {
     '-',
   ],
 
-  elementsToExcludeClasses: [
+  noSignatureClasses: [
     'ambox',
     'NavHead',
     'raaf',
   ],
 
-  templatesToExclude: [
+  noSignatureTemplates: [
     'Перенесено с',
     'Moved from',
     'Перенесено из',
@@ -294,7 +294,7 @@ export default {
     /--\xa0?\[\[Участник:DimaBot\|DimaBot\]\]/,
   ],
 
-  foreignElementInHeadlineClasses: [
+  excludeFromHeadlineClasses: [
     'ch-helperText',
     'userflags-wrapper',
     'dclink-wrapper',
@@ -336,7 +336,7 @@ export default {
     'NavContent',
   ],
 
-  customUnhighlightableElementClasses: [
+  noHighlightClasses: [
     'infobox',
   ],
 
@@ -349,7 +349,7 @@ export default {
     'откат правок',
   ],
 
-  customTextReactions: [
+  textReactions: [
     {
       pattern: /\{\{(?:(?:subst|подст):)?ПИ2?\}\}/,
       message: 'Шаблон указания на статус подводящего итоги добавлять не нужно — он будет добавлен автоматически.',
@@ -398,7 +398,7 @@ export default {
     return code;
   },
 
-  checkForCustomForeignComponents: function (node) {
+  rejectNode: function (node) {
     return (
       node.classList.contains('ts-Закрыто-header') ||
 

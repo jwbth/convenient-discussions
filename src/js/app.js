@@ -128,8 +128,8 @@ function maybeTweakAddTopicButton() {
   );
   if (!controller.isArticlePageTalkPage() || cd.g.pageAction === 'view' && !dtCreatePage) return;
 
-  const $addTopicLink = $('#ca-addsection a');
-  const href = $addTopicLink.prop('href');
+  const $button = $('#ca-addsection a');
+  const href = $button.prop('href');
   if (href) {
     const url = new URL(href);
     if (dtCreatePage) {
@@ -140,7 +140,7 @@ function maybeTweakAddTopicButton() {
       url.searchParams.delete('section');
       url.searchParams.set('cdaddtopic', 1);
     }
-    $addTopicLink.attr('href', url);
+    $button.attr('href', url);
   }
 }
 
