@@ -143,12 +143,9 @@ class Parser {
       cd.config.outdentClass,
     ];
 
+    const classSelector = cd.g.noSignatureClasses.map((name) => `, .${name}`);
     this.noSignatureElements = [
-      ...this.context.rootElement.getElementsByTagName('blockquote'),
-      ...flat(
-        cd.g.noSignatureClasses
-          .map((name) => [...this.context.rootElement.getElementsByClassName(name)])
-      ),
+      ...this.context.rootElement.querySelectorAll(`blockquote, q, cite${classSelector}`),
     ];
   }
 

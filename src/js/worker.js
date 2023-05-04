@@ -427,8 +427,8 @@ function parse() {
     childElementsProp: 'childElements',
     follows: (el1, el2) => el1.follows(el2),
     getAllTextNodes,
-    getElementByClassName: (node, className) => {
-      const elements = node.getElementsByClassName(className, 1);
+    getElementByClassName: (el, className) => {
+      const elements = el.getElementsByClassName(className, 1);
       return elements[0] || null;
     },
     rootElement,

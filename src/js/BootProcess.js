@@ -749,7 +749,7 @@ class BootProcess {
       ),
       getAllTextNodes,
       removeDtButtonHtmlComments,
-      getElementByClassName: (node, className) => node.querySelector(`.${className}`),
+      getElementByClassName: (el, className) => el.querySelector(`.${className}`),
       cloneNode: (node) => node.cloneNode(),
       rootElement: controller.rootElement,
       areThereOutdents: controller.areThereOutdents.bind(controller),

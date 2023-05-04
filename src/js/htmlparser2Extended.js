@@ -308,10 +308,10 @@ Object.defineProperty(Element.prototype, 'classList', {
   },
 });
 
-Element.prototype.getElementsByClassName = function (name, limit) {
-  let nodes = [];
+Element.prototype.filterRecursively = function (func, limit) {
+  const nodes = [];
   walkThroughSubtree(this, (node) => {
-    if (node.tagName && node.classList.contains(name)) {
+    if (func(node)) {
       nodes.push(node);
       if (limit && nodes.length === limit) {
         return true;
@@ -321,24 +321,33 @@ Element.prototype.getElementsByClassName = function (name, limit) {
   return nodes;
 };
 
-Element.prototype.filterRecursively = function (func) {
-  let nodes = [];
-  walkThroughSubtree(this, (node) => {
-    if (func(node)) {
-      nodes.push(node);
-    }
-  });
-  return nodes;
+Element.prototype.getElementsByClassName = function (name, limit) {
+  return this.filterRecursively((node) => node.tagName && node.classList.contains(name), limit);
 };
 
 Element.prototype.getElementsByAttribute = function (regexp) {
-  let nodes = [];
-  walkThroughSubtree(this, (node) => {
-    if (node.tagName && Object.keys(node.attribs).some((name) => regexp.test(name))) {
-      nodes.push(node);
-    }
-  });
-  return nodes;
+  return this.filterRecursively((node) => (
+    node.tagName &&
+    Object.keys(node.attribs).some((name) => regexp.test(name))
+  ));
+};
+
+// Supports only classes and tags
+Element.prototype.querySelectorAll = function (selector) {
+  const tokens = selector.split(/ *, */);
+  const tagNames = tokens
+    .filter((token) => !token.startsWith('.'))
+    .map((name) => name.toUpperCase());
+  const classNames = tokens
+    .filter((token) => token.startsWith('.'))
+    .map((name) => name.slice(1));
+  return this.filterRecursively((node) => (
+    node.tagName &&
+    (
+      tagNames.includes(node.tagName) ||
+      classNames.some((name) => node.classList.contains(name))
+    )
+  ));
 };
 
 Element.prototype.getElementsByTagName = function (name) {
@@ -375,6 +384,7 @@ Document.prototype.createTextNode = (content) => {
 };
 
 Document.prototype.getElementsByClassName = Element.prototype.getElementsByClassName;
+Document.prototype.querySelectorAll = Element.prototype.querySelectorAll;
 
 self.Document = Document;
 
