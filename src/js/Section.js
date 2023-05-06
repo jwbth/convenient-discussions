@@ -1380,7 +1380,7 @@ class Section extends SectionSkeleton {
       sources.push(source);
 
       // Maximal possible score
-      if (source.score === 2.75) break;
+      if (source.score === 3.75) break;
     }
 
     return sources.sort((m1, m2) => m2.score - m1.score)[0];

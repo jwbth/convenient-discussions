@@ -24,6 +24,8 @@ export default class SectionSource {
     isInSectionContext,
   }) {
     this.section = section;
+    this.isInSectionContext = isInSectionContext;
+
     this.collectMatchData(sectionHeadingMatch, contextCode, adjustedContextCode);
     if (!this.code || !this.firstChunkCode) {
       console.warn(`Couldn't read the "${this.headline}" section contents.`);
@@ -31,7 +33,6 @@ export default class SectionSource {
     }
 
     this.calculateMatchScore(sectionIndex, thisHeadline, headlines);
-    this.isInSectionContext = isInSectionContext;
   }
 
   /**
@@ -223,26 +224,32 @@ export default class SectionSource {
    * @param {number} sectionIndex
    * @param {string} thisHeadline
    * @param {string[]} headlines
-   * @returns {number}
    * @private
    */
   calculateMatchScore(sectionIndex, thisHeadline, headlines) {
-    // Matching section index is one of the most unreliable ways to tell matching sections as
-    // sections may be added and removed from the page, so we don't rely on it very much.
-    const doesSectionIndexMatch = this.section.index === sectionIndex;
+    const doesHeadlineMatch = thisHeadline.includes('{{') ? 0.5 : this.headline === thisHeadline;
 
-    const doesHeadlineMatch = this.headline === thisHeadline;
+    let doesSectionIndexMatch;
+    let doPreviousHeadlinesMatch;
+    if (this.isInSectionContext) {
+      doesSectionIndexMatch = 0;
+      doPreviousHeadlinesMatch = 0;
+    } else {
+      // Matching section index is one of the most unreliable ways to tell matching sections as
+      // sections may be added and removed from the page, so we don't rely on it very much.
+      doesSectionIndexMatch = this.section.index === sectionIndex;
 
-    const previousHeadlinesToCheckCount = 3;
-    const previousHeadlinesInCode = headlines
-      .slice(-previousHeadlinesToCheckCount)
-      .reverse();
-    const previousHeadlines = SectionStatic.getAll()
-      .slice(Math.max(0, this.section.index - previousHeadlinesToCheckCount), this.section.index)
-      .reverse()
-      .map((section) => section.headline);
-    const doPreviousHeadlinesMatch = previousHeadlines
-      .every((headline, i) => normalizeCode(headline) === previousHeadlinesInCode[i]);
+      const previousHeadlinesToCheckCount = 3;
+      const previousHeadlinesInCode = headlines
+        .slice(-previousHeadlinesToCheckCount)
+        .reverse();
+      doPreviousHeadlinesMatch = SectionStatic.getAll()
+        .slice(Math.max(0, this.section.index - previousHeadlinesToCheckCount), this.section.index)
+        .reverse()
+        .map((section) => section.headline)
+        .every((headline, i) => normalizeCode(headline) === previousHeadlinesInCode[i]);
+    }
+
     headlines.push(this.headline);
 
     let oldestSig;
@@ -276,7 +283,8 @@ export default class SectionSource {
       );
     }
 
-    return (
+    // If changing this, change the maximal possible score in Section#searchInCode
+    this.score = (
       doesOldestCommentMatch * 1 +
       oldestCommentWordOverlap +
       doesHeadlineMatch * 1 +
