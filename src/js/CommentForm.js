@@ -2,8 +2,8 @@ import Autocomplete from './Autocomplete';
 import Button from './Button';
 import CdError from './CdError';
 import Comment from './Comment';
+import CommentFormInputProcessor from './CommentFormInputProcessor';
 import CommentFormStatic from './CommentFormStatic';
-import CommentInputProcessor from './CommentInputProcessor';
 import CommentStatic from './CommentStatic';
 import Section from './Section';
 import SectionStatic from './SectionStatic';
@@ -2345,7 +2345,7 @@ class CommentForm {
     // Are we at a stage where we better introduce a lexical analyzer (or use MediaWiki's / some
     // part of it)?..
 
-    const processor = new CommentInputProcessor(this, action);
+    const processor = new CommentFormInputProcessor(this, action);
 
     /**
      * Will the comment be indented (is a reply or an edited reply).
@@ -2387,7 +2387,7 @@ class CommentForm {
         const anchorCode = cd.config.getAnchorCode(id);
         if (commentSource.code.includes(anchorCode)) return;
 
-        const commentCodePart = CommentInputProcessor.prototype.prepareLineStart(
+        const commentCodePart = CommentFormInputProcessor.prototype.prepareLineStart(
           commentSource.indentation,
           commentSource.code
         );

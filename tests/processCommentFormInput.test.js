@@ -10,7 +10,7 @@ window.mw = {
   },
 };
 
-const CommentInputProcessor = require('../src/js/CommentInputProcessor').default;
+const CommentFormInputProcessor = require('../src/js/CommentFormInputProcessor').default;
 const cd = require('../src/js/cd').default;
 
 const defaultConfig = {
@@ -40,7 +40,7 @@ function testWithData(label, code, expected, commentForm, action = 'submit', con
       cd.config = Object.assign({}, cd.config, config);
     }
 
-    const processor = new CommentInputProcessor(commentForm, action);
+    const processor = new CommentFormInputProcessor(commentForm, action);
     try {
       if (expected instanceof Error) {
         expect(() => {

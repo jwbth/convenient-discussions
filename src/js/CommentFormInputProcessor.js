@@ -3,13 +3,16 @@ import cd from './cd';
 import { generateTagsRegexp, hideSensitiveCode } from './wikitext';
 import { hideText, unhideText } from './utils';
 
+const galleryRegexp = /^\x01\d+_gallery\x02$/m;
+
+let filePatternEnd;
+
 /**
- * Class that processes the text in the comment input of the comment form and prepares the wikitext
- * to insert into the page.
+ * Class that processes the comment form input and prepares the wikitext to insert into the page.
  */
-class CommentInputProcessor {
+class CommentFormInputProcessor {
   /**
-   * Create a comment text processor.
+   * Create a comment form input processor.
    *
    * @param {import('./CommentForm').default} commentForm
    * @param {string} action
@@ -19,8 +22,7 @@ class CommentInputProcessor {
     this.target = commentForm.getTarget();
     this.action = action;
 
-    this.filePatternEnd = `\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$`;
-    this.galleryRegexp = /^\x01\d+_gallery\x02$/m;
+    filePatternEnd ||= `\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$`;
 
     this.initIndentationData();
   }
@@ -56,12 +58,7 @@ class CommentInputProcessor {
       }
     }
 
-    this.indented = Boolean(
-      ['reply', 'replyInSection'].includes(this.commentForm.getMode()) ||
-      (this.commentForm.getMode() === 'edit' && this.indentation)
-    );
-
-    if (this.indented) {
+    if (this.indentation) {
       // In the preview mode, imitate a list so that the user will see where it would break on a
       // real page. This pseudolist's margin is made invisible by CSS.
       this.restLinesIndentation = this.action === 'preview' ?
@@ -71,12 +68,12 @@ class CommentInputProcessor {
   }
 
   /**
-   * Check whether the comment is indented.
+   * Check whether the comment will be indented.
    *
    * @returns {boolean}
    */
   isIndented() {
-    return this.indented;
+    return Boolean(this.indentation);
   }
 
   /**
@@ -103,7 +100,7 @@ class CommentInputProcessor {
   }
 
   /**
-   * Process (with {@link CommentInputProcessor#processCode}) and hide sensitive code, setting the
+   * Process (with {@link CommentFormInputProcessor#processCode}) and hide sensitive code, setting the
    * `hidden` property and updating `code`.
    *
    * @private
@@ -120,7 +117,7 @@ class CommentInputProcessor {
    */
   findWrappers() {
     // Find tags around potential markup.
-    if (this.indented) {
+    if (this.indentation) {
       const tagMatches = this.code.match(generateTagsRegexp(['[a-z]+'])) || [];
       const quoteMatches = this.code.match(cd.g.quoteRegexp) || [];
       const matches = tagMatches.concat(quoteMatches);
@@ -295,7 +292,7 @@ class CommentInputProcessor {
    * @private
    */
   handleIndentedComment(code, isWrapped) {
-    if (!this.indented) {
+    if (!this.indentation) {
       return code;
     }
 
@@ -316,7 +313,7 @@ class CommentInputProcessor {
     // occupied by the file markup. File markup is tricky because, depending on the alignment and
     // line breaks, the result can be very different. The safest way to fight that is to use
     // indentation.
-    const lineStartMarkupRegexp = new RegExp(`(\\n+)([:*#;\\x03]|${this.filePatternEnd})`, 'gmi');
+    const lineStartMarkupRegexp = new RegExp(`(\\n+)([:*#;\\x03]|${filePatternEnd})`, 'gmi');
     code = code.replace(lineStartMarkupRegexp, (s, newlines, nextLine) => {
       // Many newlines will be replaced with a paragraph template below. It could help visual
       // formatting. If there is no paragraph template, there won't be multiple newlines, as they
@@ -341,7 +338,7 @@ class CommentInputProcessor {
     }
 
     if (this.restLinesIndentation === '#') {
-      if (this.galleryRegexp.test(code)) {
+      if (galleryRegexp.test(code)) {
         throw new CdError({
           type: 'parse',
           code: 'numberedList',
@@ -384,7 +381,7 @@ class CommentInputProcessor {
   processNewlines(code, isInTemplate = false) {
     const entireLineRegexp = new RegExp(/^(?:\x01\d+_(block|template)\x02) *$/);
     const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/;
-    const fileRegexp = new RegExp('^' + this.filePatternEnd, 'i');
+    const fileRegexp = new RegExp('^' + filePatternEnd, 'i');
 
     let currentLineInTemplates = '';
     let nextLineInTemplates = '';
@@ -402,7 +399,7 @@ class CommentInputProcessor {
       'i'
     );
 
-    const newlinesRegexp = this.indented ?
+    const newlinesRegexp = this.indentation ?
       /^(.+)\n(?![:#])(?=(.*))/gm :
       /^((?![:*#; ]).+)\n(?![\n:*#; \x03])(?=(.*))/gm;
     code = code.replace(newlinesRegexp, (s, currentLine, nextLine) => {
@@ -411,13 +408,13 @@ class CommentInputProcessor {
         entireLineRegexp.test(nextLine) ||
 
         (
-          !this.indented &&
+          !this.indentation &&
           (entireLineFromStartRegexp.test(currentLine) || entireLineFromStartRegexp.test(nextLine))
         ) ||
         fileRegexp.test(currentLine) ||
         fileRegexp.test(nextLine) ||
-        this.galleryRegexp.test(currentLine) ||
-        this.galleryRegexp.test(nextLine) ||
+        galleryRegexp.test(currentLine) ||
+        galleryRegexp.test(nextLine) ||
 
         // Removing <br>s after block elements is not a perfect solution as there would be no
         // newlines when editing such a comment, but this way we would avoid empty lines in cases
@@ -429,7 +426,7 @@ class CommentInputProcessor {
         '<br>';
 
       // Current line can match galleryRegexp only if the comment will not be indented.
-      const newlineOrNot = this.indented && !this.galleryRegexp.test(nextLine) ? '' : '\n';
+      const newlineOrNot = this.indentation && !galleryRegexp.test(nextLine) ? '' : '\n';
 
       return currentLine + lineBreakOrNot + newlineOrNot;
     });
@@ -520,7 +517,7 @@ class CommentInputProcessor {
     }
 
     // A space in the beggining of the last line, creating <pre>, or a heading.
-    if (!this.indented && /(^|\n)[ =].*$/.test(this.code)) {
+    if (!this.indentation && /(^|\n)[ =].*$/.test(this.code)) {
       this.code += '\n';
     }
 
@@ -532,7 +529,7 @@ class CommentInputProcessor {
     // Process the small font wrappers, add the signature.
     if (this.wrapInSmall) {
       const before = /^[:*#; ]/.test(this.code) ?
-        '\n' + (this.indented ? this.restLinesIndentation : '') :
+        '\n' + (this.indentation ? this.restLinesIndentation : '') :
         '';
       if (cd.config.smallDivTemplates.length && !/^[:*#;]/m.test(this.code)) {
         // Hide links that have "|", then replace "|" with "{{!}}", then wrap in a small div
@@ -583,7 +580,7 @@ class CommentInputProcessor {
   addIntentationChars() {
     // If the comment starts with a list or table, replace all asterisks in the indentation
     // characters with colons to have the comment HTML generated correctly.
-    if (this.indented && this.action !== 'preview' && /^[*#;\x03]/.test(this.code)) {
+    if (this.indentation && this.action !== 'preview' && /^[*#;\x03]/.test(this.code)) {
       this.indentation = this.restLinesIndentation;
     }
 
@@ -593,7 +590,7 @@ class CommentInputProcessor {
       if (this.mode === 'addSubsection') {
         this.code += '\n';
       }
-    } else if (this.action === 'preview' && this.indented && this.initialCode) {
+    } else if (this.action === 'preview' && this.indentation && this.initialCode) {
       this.code = this.prepareLineStart(':', this.code);
     }
   }
@@ -608,4 +605,4 @@ class CommentInputProcessor {
   }
 }
 
-export default CommentInputProcessor;
+export default CommentFormInputProcessor;
