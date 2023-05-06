@@ -21,7 +21,6 @@ import {
   findLastIndex,
   focusInput,
   getDayTimestamp,
-  getNativePromiseState,
   hideText,
   insertText,
   isCmdModifierPressed,
@@ -1243,9 +1242,10 @@ class CommentForm {
   }
 
   /**
-   * Test if a comment or section exists in the wikitext.
+   * Test if a target comment or section exists in the wikitext.
    *
    * @returns {external:jQueryPromise}
+   * @private
    */
   checkCode() {
     if (!this.checkCodeRequest) {
@@ -1255,7 +1255,9 @@ class CommentForm {
        *
        * @type {external:jQueryPromise|undefined}
        */
-      this.checkCodeRequest = this.target.getCode(this).catch((e) => {
+      this.checkCodeRequest = this.target.loadCode(this).catch((e) => {
+        this.$messageArea.empty();
+        this.checkCodeRequest = null;
         if (e instanceof CdError) {
           this.handleError(Object.assign({}, e.data));
         } else {
@@ -2606,12 +2608,6 @@ class CommentForm {
   async preview(previewEmpty = true, isAuto = true, operation) {
     if (
       this.isContentBeingLoaded() ||
-      (
-        !(this.target instanceof Page) &&
-        !this.target.source &&
-        this.checkCodeRequest &&
-        await getNativePromiseState(this.checkCodeRequest) === 'resolved'
-      ) ||
       this.isBeingSubmitted() ||
       (isAuto && !settings.get('autopreview'))
     ) {
@@ -2647,11 +2643,11 @@ class CommentForm {
     if (this.maybeCloseOperation(currentOperation)) return;
 
     /*
-      This happens:
-      - when restoring the form from a session,
+      This condition can be met:
+      - when restoring the form from a session backup;
       - when the target comment has not been loaded yet, possibly because of an error when tried to
-      (if the mode is 'edit' and the comment has not been loaded, this method would halt after the
-      looking for the unclosed 'load' operation above).
+        (if the mode is 'edit' and the comment has not been loaded, this method would halt after
+        looking for an unclosed 'load' operation above).
      */
     if (!(this.target instanceof Page) && !this.target.source) {
       await this.checkCode();
@@ -3744,13 +3740,6 @@ class CommentForm {
   }
 
   /**
-   * Reset the request that checks if the target object exists.
-   */
-  resetCheckCodeRequest() {
-    this.checkCodeRequest = null;
-  }
-
-  /**
    * Get the {@link CommentForm#target target} object of the form.
    *
    * @returns {Comment|Section|import('./pageRegistry').Page}
@@ -3802,7 +3791,7 @@ class CommentForm {
    * @param {Function} addToRescue
    */
   restore(addToRescue) {
-    this.resetCheckCodeRequest();
+    this.checkCodeRequest = null;
     const target = this.getTarget();
     if (target instanceof Comment) {
       if (target.id) {
