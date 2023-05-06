@@ -155,7 +155,7 @@ class Comment extends CommentSkeleton {
 
     this.highlightables.forEach(this.bindEvents);
 
-    this.setAnchorHighlightable();
+    this.deriveAnchorHighlightable();
 
     const getContainerListType = (el) => {
       const treeWalker = new ElementsTreeWalker(el, controller.rootElement);
@@ -243,7 +243,7 @@ class Comment extends CommentSkeleton {
      *
      * @type {boolean}
      */
-    this.isInSingleCommentTable = false;
+    this.isTableComment = false;
 
     /**
      * Is the comment a part of a collapsed thread.
@@ -275,7 +275,7 @@ class Comment extends CommentSkeleton {
    *
    * @private
    */
-  setAnchorHighlightable() {
+  deriveAnchorHighlightable() {
     if (this.highlightables.length > 1) {
       const nestingLevels = [];
       const closestListTypes = [];
@@ -875,8 +875,8 @@ class Comment extends CommentSkeleton {
           delete el.dataset.commentIndex;
           this.highlightables.splice(i, 1);
           i--;
-          this.setLevels(false);
-          this.setAnchorHighlightable();
+          this.deriveLevels(false);
+          this.deriveAnchorHighlightable();
 
           // Update this.ahContainerListType here as well?
         }
@@ -943,27 +943,27 @@ class Comment extends CommentSkeleton {
    * @param {object} options
    * @private
    */
-  setOffsetProperty(offset, options) {
-    if (options.set) {
-      if (options.considerFloating) {
-        /**
-         * The comment's coordinates.
-         *
-         * @type {?CommentOffset}
-         */
-        this.offset = offset;
+  maybeAssignOffset(offset, options) {
+    if (!options.set) return;
 
-        // This is to determine if the element is moved in future checks.
-        this.firstHighlightableWidth = this.highlightables[0].offsetWidth;
-      } else {
-        /**
-         * The comment's rough coordinates (without taking into account floating elements around the
-         * comment).
-         *
-         * @type {?CommentOffset}
-         */
-        this.roughOffset = offset;
-      }
+    if (options.considerFloating) {
+      /**
+       * The comment's coordinates.
+       *
+       * @type {?CommentOffset}
+       */
+      this.offset = offset;
+
+      // This is to determine if the element is moved in future checks.
+      this.firstHighlightableWidth = this.highlightables[0].offsetWidth;
+    } else {
+      /**
+       * The comment's rough coordinates (without taking into account floating elements around the
+       * comment).
+       *
+       * @type {?CommentOffset}
+       */
+      this.roughOffset = offset;
     }
   }
 
@@ -1050,7 +1050,7 @@ class Comment extends CommentSkeleton {
    * @param {number} right Right offset.
    * @private
    */
-  setStretchedProperties(left, right) {
+  deriveStretched(left, right) {
     const isTopLayersContainer = this.getLayersContainer()
       .convenientDiscussionsIsTopLayersContainer;
 
@@ -1126,7 +1126,7 @@ class Comment extends CommentSkeleton {
       getCommentPartRect(this.highlightables[this.highlightables.length - 1]);
 
     if (!getVisibilityByRects(rectTop, rectBottom)) {
-      this.setOffsetProperty(null, options);
+      this.maybeAssignOffset(null, options);
       return null;
     }
 
@@ -1177,7 +1177,7 @@ class Comment extends CommentSkeleton {
     const right = scrollX + Math.max(rectTop.right, rectBottom.right);
 
     if (options.considerFloating) {
-      this.setStretchedProperties(left, right);
+      this.deriveStretched(left, right);
     }
 
     // A solution for comments that have the height bigger than the viewport height. In Chrome, the
@@ -1187,7 +1187,7 @@ class Comment extends CommentSkeleton {
       bottom;
 
     const offset = { top, bottom, left, right, downplayedBottom };
-    this.setOffsetProperty(offset, options);
+    this.maybeAssignOffset(offset, options);
 
     return options.set ? true : offset;
   }
@@ -1271,23 +1271,24 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Calculate the underlay and overlay offset and set it to the instance as the `layersOffset`
-   * property.
+   * Calculate the underlay and overlay offset and set it to the `layersOffset` property.
    *
    * @param {object} [options={}]
    * @returns {?boolean} Is the comment moved. `null` if it is invisible.
    * @private
    */
-  setLayersOffsetProperty(options = {}) {
+  calculateAndAssignLayersOffset(options = {}) {
     const layersContainerOffset = this.getLayersContainerOffset();
     if (!layersContainerOffset) {
       return null;
     }
 
-    const isMoved = this.getOffset(Object.assign({}, options, {
-      considerFloating: true,
-      set: true,
-    }));
+    const isMoved = this.getOffset(
+      Object.assign({}, options, {
+        considerFloating: true,
+        set: true,
+      })
+    );
 
     if (this.offset) {
       const margins = this.getMargins();
@@ -1537,7 +1538,7 @@ class Comment extends CommentSkeleton {
     options.add ??= true;
     options.update ??= true;
 
-    const isMoved = this.setLayersOffsetProperty(options);
+    const isMoved = this.calculateAndAssignLayersOffset(options);
     if (isMoved === null) {
       return null;
     }
@@ -2810,7 +2811,7 @@ class Comment extends CommentSkeleton {
    *
    * @throws {CdError|Error}
    */
-  async getCode() {
+  async loadCode() {
     try {
       let useSectionCode = false;
       if (this.section && this.section.liveSectionNumber !== null) {
@@ -2819,13 +2820,13 @@ class Comment extends CommentSkeleton {
           useSectionCode = true;
         } catch (e) {
           if (e instanceof CdError && e.data.code === 'noSuchSection') {
-            await this.getSourcePage().getCode();
+            await this.getSourcePage().loadCode();
           } else {
             throw e;
           }
         }
       } else {
-        await this.getSourcePage().getCode();
+        await this.getSourcePage().loadCode();
       }
       this.locateInCode(useSectionCode);
     } catch (e) {
@@ -3053,8 +3054,8 @@ class Comment extends CommentSkeleton {
    * passed, set the resultant {@link CommentSource} object to the {@link Comment#source} property.
    * Otherwise, return the result.
    *
-   * It is expected that the section or page code is loaded (using {@link Page#getCode}) before this
-   * method is called. Otherwise, the method will throw an error.
+   * It is expected that the section or page code is loaded (using {@link Page#loadCode}) before
+   * this method is called. Otherwise, the method will throw an error.
    *
    * @param {string|boolean} [codeOrUseSectionCode] Wikitext that should have the comment (provided
    *   only if we need to perform operations on some code that is not the code of a section or
@@ -3312,7 +3313,8 @@ class Comment extends CommentSkeleton {
 
   /**
    * Get a section relevant to this comment which means the same value as
-   * {@link Section#getSection}. (Used for polymorphism with {@link Comment#getRelevantSection}.)
+   * {@link Section#getSection}. (Used for polymorphism with {@link Comment#getRelevantSection} and
+   * {@link Page#getRelevantSection}.)
    *
    * @returns {?import('./Section').default}
    */
@@ -3322,7 +3324,7 @@ class Comment extends CommentSkeleton {
 
   /**
    * Get a comment relevant to this comment which means the comment itself. (Used for polymorphism
-   * with {@link Section#getRelevantComment}.)
+   * with {@link Section#getRelevantComment} and {@link Page#getRelevantComment}.)
    *
    * @returns {Comment}
    */
@@ -3332,7 +3334,7 @@ class Comment extends CommentSkeleton {
 
   /**
    * Get the data identifying the comment when restoring a comment form. (Used for polymorphism with
-   * {@link Section#getIdentifyingData}.)
+   * {@link Section#getIdentifyingData} and {@link Page#getIdentifyingData}.)
    *
    * @returns {object}
    */
@@ -3383,7 +3385,7 @@ class Comment extends CommentSkeleton {
    * @param {boolean} isUnseenStatePassed
    * @returns {boolean} Whether there is a time conflict.
    */
-  setNewAndSeenProperties(currentPageVisits, currentUnixTime, isUnseenStatePassed) {
+  initNewAndSeen(currentPageVisits, currentUnixTime, isUnseenStatePassed) {
     // Let's take 3 minutes as tolerable time discrepancy.
     const isDateInFuture = this.date && this.date.getTime() > Date.now() + cd.g.msInMin * 3;
 

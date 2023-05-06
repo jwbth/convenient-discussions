@@ -68,7 +68,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
     this.pushPending();
 
     this.preparatoryRequests = [
-      this.section.getSourcePage().getCode(),
+      this.section.getSourcePage().loadCode(),
       mw.loader.using('mediawiki.widgets'),
     ];
 
@@ -303,7 +303,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    */
   async loadSourcePage() {
     try {
-      await this.section.getSourcePage().getCode(false);
+      await this.section.getSourcePage().loadCode(false);
     } catch (e) {
       if (e instanceof CdError) {
         const { type, code } = e.data;
@@ -355,7 +355,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    */
   async loadTargetPage(targetPage) {
     try {
-      await targetPage.getCode();
+      await targetPage.loadCode();
     } catch (e) {
       if (e instanceof CdError) {
         const { type, code } = e.data;

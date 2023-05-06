@@ -19,11 +19,11 @@ let archivePagesMap;
 let sourcePagesMap;
 
 /**
- * Set some map objects related to archive pages.
+ * Set some map object variables related to archive pages.
  *
  * @private
  */
-function setArchivePagesMaps() {
+function initArchivePagesMaps() {
   archivePagesMap = new Map();
   sourcePagesMap = new Map();
   const pathToRegexp = (s, replacements, isArchivePath) => {
@@ -63,7 +63,7 @@ function setArchivePagesMaps() {
  */
 function getArchivePagesMap() {
   if (!archivePagesMap) {
-    setArchivePagesMaps();
+    initArchivePagesMaps();
   }
 
   return archivePagesMap;
@@ -77,7 +77,7 @@ function getArchivePagesMap() {
  */
 function getSourcePagesMap() {
   if (!sourcePagesMap) {
-    setArchivePagesMaps();
+    initArchivePagesMaps();
   }
 
   return sourcePagesMap;
@@ -307,7 +307,7 @@ export class Page {
   /**
    * Make a revision request (see {@link https://www.mediawiki.org/wiki/API:Revisions}) to load the
    * wikitext of the page, together with a few revision properties: the timestamp, redirect target,
-   * and query timestamp (curtimestamp). Enrich the Page instance with those properties. Also set
+   * and query timestamp (curtimestamp). Enrich the page instance with those properties. Also set
    * the `realName` property that indicates either the redirect target if it's present or the page
    * name.
    *
@@ -316,7 +316,7 @@ export class Page {
    *
    * @throws {CdError}
    */
-  async getCode(tolerateMissing = true) {
+  async loadCode(tolerateMissing = true) {
     const resp = await controller.getApi().post({
       action: 'query',
       titles: this.name,
@@ -371,7 +371,7 @@ export class Page {
     const redirectTarget = query.redirects?.[0]?.to || null;
 
     /**
-     * Page ID on the wiki. Filled upon running {@link Page#getCode} or {@link Page#edit}. In the
+     * Page ID on the wiki. Filled upon running {@link Page#loadCode} or {@link Page#edit}. In the
      * latter case, it is useful for newly created pages.
      *
      * @name pageId
@@ -381,7 +381,7 @@ export class Page {
      */
 
     /**
-     * Page code. Filled upon running {@link Page#getCode}.
+     * Page code. Filled upon running {@link Page#loadCode}.
      *
      * @name code
      * @type {string|undefined}
@@ -390,7 +390,7 @@ export class Page {
      */
 
     /**
-     * ID of the revision that has {@link Page#code}. Filled upon running {@link Page#getCode}.
+     * ID of the revision that has {@link Page#code}. Filled upon running {@link Page#loadCode}.
      *
      * @name revisionId
      * @type {number|undefined}
@@ -399,7 +399,7 @@ export class Page {
      */
 
     /**
-     * Page where {@link Page#name} redirects. Filled upon running {@link Page#getCode}.
+     * Page where {@link Page#name} redirects. Filled upon running {@link Page#loadCode}.
      *
      * @name redirectTarget
      * @type {?(string|undefined)}
@@ -409,7 +409,7 @@ export class Page {
 
     /**
      * If {@link Page#name} redirects to some other page, the value is that page. If not, the value
-     * is the same as {@link Page#name}. Filled upon running {@link Page#getCode}.
+     * is the same as {@link Page#name}. Filled upon running {@link Page#loadCode}.
      *
      * @name realName
      * @type {string|undefined}
@@ -419,7 +419,7 @@ export class Page {
 
     /**
      * Time when {@link Page#code} was queried (as the server reports it). Filled upon running
-     * {@link Page#getCode}.
+     * {@link Page#loadCode}.
      *
      * @name queryTimestamp
      * @type {string|undefined}

@@ -316,7 +316,7 @@ class Thread {
 
       this.lastComment;
 
-    this.setMarginalElementProperties();
+    this.deriveBoundingElements();
 
     /**
      * Is the thread collapsed.
@@ -327,13 +327,13 @@ class Thread {
   }
 
   /**
-   * Set {@link Thread#startElement}, {@link Thread#endElement}, and {@link Thread#visualEndElement}
+   * Set the `startElement`, `endElement`, `visualEndElement`, and `visualEndElementFallback`
    * properties.
    *
    * @throws {CdError}
    * @private
    */
-  setMarginalElementProperties() {
+  deriveBoundingElements() {
     let startElement;
     let endElement;
     let visualEndElement;
@@ -947,7 +947,7 @@ class Thread {
    *
    * @private
    */
-  setClickAreaOffset() {
+  updateClickAreaOffset() {
     this.clickArea.style.left = this.clickAreaOffset.left + 'px';
     this.clickArea.style.top = this.clickAreaOffset.top + 'px';
     this.clickArea.style.height = this.clickAreaOffset.height + 'px';
@@ -1039,7 +1039,7 @@ class Thread {
 
     // Faster to update/add all elements in one batch.
     threadsToUpdate.forEach((thread) => {
-      thread.setClickAreaOffset();
+      thread.updateClickAreaOffset();
     });
 
     if (elementsToAdd.length) {

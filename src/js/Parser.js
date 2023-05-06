@@ -132,7 +132,7 @@ class Parser {
    *
    * @private
    */
-  setPropertiesForCommentParsing() {
+  initCommentParsing() {
     // "Ombox" for templates like https://ru.wikipedia.org/wiki/Template:Сложное_обсуждение
     // (perhaps they need to be "tmbox" too?).
     this.foreignComponentClasses = [
@@ -186,7 +186,7 @@ class Parser {
    * @private
    */
   findTimestamps() {
-    this.setPropertiesForCommentParsing();
+    this.initCommentParsing();
 
     return this.context.getAllTextNodes()
       .map((node) => {

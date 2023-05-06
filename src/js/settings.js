@@ -9,7 +9,7 @@ import pageRegistry from './pageRegistry';
 import userRegistry from './userRegistry';
 import { areObjectsEqual, defined, hideText, ucFirst, unhideText, wrap } from './utils';
 import { formatDateImproved, formatDateNative, formatDateRelative } from './timestamp';
-import { getUserInfo, setGlobalOption, setLocalOption } from './apiWrappers';
+import { getUserInfo, saveGlobalOption, saveLocalOption } from './apiWrappers';
 
 export default {
   /**
@@ -604,11 +604,11 @@ export default {
       });
 
       await Promise.all([
-        setLocalOption(cd.g.localSettingsOptionName, JSON.stringify(localSettings)),
-        setGlobalOption(cd.g.settingsOptionName, JSON.stringify(globalSettings)),
+        saveLocalOption(cd.g.localSettingsOptionName, JSON.stringify(localSettings)),
+        saveGlobalOption(cd.g.settingsOptionName, JSON.stringify(globalSettings)),
       ]);
     } else {
-      await setLocalOption(cd.g.localSettingsOptionName, JSON.stringify(settings));
+      await saveLocalOption(cd.g.localSettingsOptionName, JSON.stringify(settings));
     }
   },
 

@@ -12,7 +12,7 @@ import {
   isDialogUnsaved,
   tweakUserOoUiClass,
 } from './ooui';
-import { setGlobalOption, setLocalOption } from './apiWrappers';
+import { saveGlobalOption, saveLocalOption } from './apiWrappers';
 
 /**
  * Class used to create a settings dialog.
@@ -534,10 +534,10 @@ class SettingsDialog extends OO.ui.ProcessDialog {
 
       try {
         await Promise.all([
-          setLocalOption(cd.g.localSettingsOptionName, null),
-          setLocalOption(cd.g.visitsOptionName, null),
-          setLocalOption(cd.g.subscriptionsOptionName, null),
-          setGlobalOption(cd.g.settingsOptionName, null),
+          saveLocalOption(cd.g.localSettingsOptionName, null),
+          saveLocalOption(cd.g.visitsOptionName, null),
+          saveLocalOption(cd.g.subscriptionsOptionName, null),
+          saveGlobalOption(cd.g.settingsOptionName, null),
         ]);
       } catch (e) {
         handleDialogError(this, e, 'sd-error-removedata', false);

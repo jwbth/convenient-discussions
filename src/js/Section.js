@@ -1205,7 +1205,7 @@ class Section extends SectionSkeleton {
 
   /**
    * Request the wikitext of the section by its number using the API and set some properties of the
-   * section (and also the page). {@link Section#getCode} is a more general method.
+   * section (and also the page). {@link Section#loadCode} is a more general method.
    *
    * @throws {CdError}
    */
@@ -1265,7 +1265,7 @@ class Section extends SectionSkeleton {
     const redirectTarget = query.redirects?.[0]?.to || null;
 
     /**
-     * Section code. Filled upon running {@link Section#getCode}.
+     * Section code. Filled upon running {@link Section#loadCode}.
      *
      * @name code
      * @type {string|undefined}
@@ -1275,7 +1275,7 @@ class Section extends SectionSkeleton {
 
     /**
      * ID of the revision that has {@link Section#code}. Filled upon running
-     * {@link Section#getCode}.
+     * {@link Section#loadCode}.
      *
      * @name revisionId
      * @type {number|undefined}
@@ -1285,7 +1285,7 @@ class Section extends SectionSkeleton {
 
     /**
      * Time when {@link Section#code} was queried (as the server reports it). Filled upon running
-     * {@link Section#getCode}.
+     * {@link Section#loadCode}.
      *
      * @name queryTimestamp
      * @type {string|undefined}
@@ -1315,7 +1315,7 @@ class Section extends SectionSkeleton {
    * changes are viewed.
    * @throws {CdError|Error}
    */
-  async getCode(commentForm) {
+  async loadCode(commentForm) {
     try {
       if (this.liveSectionNumber !== null) {
         try {
@@ -1324,14 +1324,14 @@ class Section extends SectionSkeleton {
           commentForm?.setSectionSubmitted(true);
         } catch (e) {
           if (e instanceof CdError && ['noSuchSection', 'locateSection'].includes(e.data.code)) {
-            await this.getSourcePage().getCode();
+            await this.getSourcePage().loadCode();
             this.locateInCode(false);
           } else {
             throw e;
           }
         }
       } else {
-        await this.getSourcePage().getCode();
+        await this.getSourcePage().loadCode();
         this.locateInCode(false);
       }
     } catch (e) {
@@ -1390,7 +1390,7 @@ class Section extends SectionSkeleton {
    * Locate the section in the source code and set the result to the {@link Section#source}
    * property.
    *
-   * It is expected that the section or page code is loaded (using {@link Page#getCode}) before
+   * It is expected that the section or page code is loaded (using {@link Page#loadCode}) before
    * this method is called. Otherwise, the method will throw an error.
    *
    * @param {boolean} useSectionCode Is the section code available to locate the section in instead

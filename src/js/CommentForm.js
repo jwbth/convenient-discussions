@@ -1203,7 +1203,7 @@ class CommentForm {
   async loadComment() {
     const currentOperation = this.registerOperation('load');
     try {
-      await this.target.getCode(true);
+      await this.target.loadCode(true);
       let commentInputValue = this.target.source.toInput();
       if (this.target.source.inSmallFont) {
         commentInputValue = `<small>${commentInputValue}</small>`;
@@ -1328,7 +1328,7 @@ class CommentForm {
     const currentOperation = this.registerOperation('load', { affectsHeadline: false });
     const preloadPage = pageRegistry.get(this.preloadConfig.commentTemplate);
     try {
-      await preloadPage.getCode();
+      await preloadPage.loadCode();
       let code = preloadPage.code;
 
       const regexp = generateTagsRegexp(['onlyinclude']);
@@ -2434,9 +2434,9 @@ class CommentForm {
         this.targetSection.liveSectionNumber !== null &&
         !commentIds.length
       ) {
-        await this.targetSection.getCode(this);
+        await this.targetSection.loadCode(this);
       } else {
-        await this.targetPage.getCode(!controller.doesPageExist());
+        await this.targetPage.loadCode(!controller.doesPageExist());
       }
     } catch (e) {
       if (e instanceof CdError) {
@@ -2461,9 +2461,6 @@ class CommentForm {
         !(this.target instanceof Section && this.sectionSubmitted)
       ) {
         this.target.locateInCode(this.sectionSubmitted);
-      }
-      if (this.mode === 'replyInSection') {
-        this.target.source.setLastCommentIndentation(this);
       }
       ({ contextCode, commentCode } = this.target.source.modifyContext({
         commentCode: this.target instanceof Comment ? undefined : this.inputToCode(action),

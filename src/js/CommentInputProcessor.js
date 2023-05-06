@@ -22,7 +22,7 @@ class CommentInputProcessor {
     this.filePatternEnd = `\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$`;
     this.galleryRegexp = /^\x01\d+_gallery\x02$/m;
 
-    this.setIndentationData();
+    this.initIndentationData();
   }
 
   /**
@@ -30,28 +30,30 @@ class CommentInputProcessor {
    *
    * @private
    */
-  setIndentationData() {
+  initIndentationData() {
     const targetSource = this.target.source;
     switch (this.commentForm.getMode()) {
-      case 'reply':
+      case 'reply': {
         this.indentation = targetSource.replyIndentation;
         break;
-      case 'edit':
+      }
+      case 'edit': {
         this.indentation = targetSource.indentation;
         break;
-      case 'replyInSection':
+      }
+      case 'replyInSection': {
+        const lastCommentIndentation = targetSource.extractLastCommentIndentation(this.commentForm);
         this.indentation = (
-          targetSource.lastCommentIndentation &&
-          (
-            targetSource.lastCommentIndentation[0] === '#' ||
-            cd.config.indentationCharMode === 'mimic'
-          )
+          lastCommentIndentation &&
+          (lastCommentIndentation[0] === '#' || cd.config.indentationCharMode === 'mimic')
         ) ?
-          targetSource.lastCommentIndentation[0] :
+          lastCommentIndentation[0] :
           cd.config.defaultIndentationChar;
         break;
-      default:
+      }
+      default: {
         this.indentation = '';
+      }
     }
 
     this.indented = Boolean(
@@ -88,7 +90,7 @@ class CommentInputProcessor {
 
     this.processAndHideSensitiveCode();
     this.findWrappers();
-    this.setSignatureAndFixCode();
+    this.initSignatureAndFixCode();
     this.processAllCode();
     this.addHeadline();
     this.addSignature();
@@ -142,7 +144,7 @@ class CommentInputProcessor {
    *
    * @private
    */
-  setSignatureAndFixCode() {
+  initSignatureAndFixCode() {
     if (this.commentForm.omitSignatureCheckbox?.isSelected()) {
       this.signature = '';
     } else {

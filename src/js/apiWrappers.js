@@ -210,18 +210,18 @@ function cleanUpVisits(originalVisits) {
  *
  * @param {object} visits
  */
-export async function setVisits(visits) {
+export async function saveVisits(visits) {
   if (!visits || !userRegistry.getCurrent().isRegistered()) return;
 
   const string = packVisits(visits);
   const compressed = lzString.compressToEncodedURIComponent(string);
   try {
-    await setLocalOption(cd.g.visitsOptionName, compressed);
+    await saveLocalOption(cd.g.visitsOptionName, compressed);
   } catch (e) {
     if (e instanceof CdError) {
       const { type, code } = e.data;
       if (type === 'internal' && code === 'sizeLimit') {
-        setVisits(cleanUpVisits(visits));
+        saveVisits(cleanUpVisits(visits));
       } else {
         console.error(e);
       }
@@ -255,8 +255,8 @@ export function getLegacySubscriptions(reuse = false) {
  *
  * @param {Promise.<object>} registry
  */
-export async function setLegacySubscriptions(registry) {
-  await setLocalOption(
+export async function saveLegacySubscriptions(registry) {
+  await saveLocalOption(
     cd.g.subscriptionsOptionName,
     lzString.compressToEncodedURIComponent(packLegacySubscriptions(registry))
   );
@@ -423,14 +423,14 @@ export async function getPageIds(titles) {
 }
 
 /**
- * Generic function for setting user options.
+ * Generic function for saving user options to the server.
  *
  * @param {object} options Name-value pairs.
  * @param {boolean} [isGlobal=false] Whether to save the options globally (using
  *   {@link https://www.mediawiki.org/wiki/Extension:GlobalPreferences Extension:GlobalPreferences}).
  * @throws {CdError}
  */
-export async function setOptions(options, isGlobal = false) {
+export async function saveOptions(options, isGlobal = false) {
   const action = isGlobal ? 'globalpreferences' : 'options';
   if (Object.entries(options).some(([ , value]) => value && value.length > 65535)) {
     throw new CdError({
@@ -466,40 +466,40 @@ export async function setOptions(options, isGlobal = false) {
 }
 
 /**
- * Set an option value. See {@link https://www.mediawiki.org/wiki/API:Options}.
+ * Save an option value to the server. See {@link https://www.mediawiki.org/wiki/API:Options}.
  *
  * @param {string} name
  * @param {string} value
  */
-export async function setLocalOption(name, value) {
-  await setOptions({ [name]: value });
+export async function saveLocalOption(name, value) {
+  await saveOptions({ [name]: value });
 }
 
 /**
- * Set a global preferences' option value. See
+ * Save a global preferences' option value to the server. See
  * {@link https://www.mediawiki.org/wiki/Extension:GlobalPreferences/API}.
  *
  * @param {string} name
  * @param {string} value
  * @throws {CdError}
  */
-export async function setGlobalOption(name, value) {
+export async function saveGlobalOption(name, value) {
   if (!cd.config.useGlobalPreferences) {
     // Normally, this won't run if cd.config.useGlobalPreferences is false. But it will run as part
     // of SettingsDialog#removeData in controller.showSettingsDialog, removing the option if it
     // existed, which may have a benificial effect if cd.config.useGlobalPreferences was true at
     // some stage and a local setting with cd.g.settingsOptionName name was created instead of a
     // global one, thus inviting the need to remove it upon removing all data.
-    await setLocalOption(name, value);
+    await saveLocalOption(name, value);
 
     return;
   }
   try {
-    await setOptions({ [name]: value }, true);
+    await saveOptions({ [name]: value }, true);
   } catch (e) {
     // The site doesn't support global preferences.
     if (e instanceof CdError && e.data.apiResp?.error.code === 'badvalue') {
-      await setLocalOption(name, value);
+      await saveLocalOption(name, value);
     } else {
       throw e;
     }

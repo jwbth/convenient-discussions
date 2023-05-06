@@ -35,36 +35,37 @@ export default class SectionSource {
   }
 
   /**
-   * _For internal use._ Detect the last section comment's indentation characters if needed or a
+   * _For internal use._ Extract the section's last comment's indentation characters if needed or a
    * vote / bulleted reply placeholder.
    *
    * @param {import('./CommentForm').default} commentForm
+   * @returns {string}
    */
-  setLastCommentIndentation(commentForm) {
+  extractLastCommentIndentation(commentForm) {
     const [, replyPlaceholder] = this.firstChunkCode.match(/\n([#*]) *\n+$/) || [];
     if (replyPlaceholder) {
-      this.lastCommentIndentation = replyPlaceholder;
-    } else {
-      const lastComment = this.section.commentsInFirstChunk.slice(-1)[0];
-      if (
-        lastComment &&
-        (commentForm.getContainerListType() === 'ol' || cd.config.indentationCharMode === 'mimic')
-      ) {
-        try {
-          lastComment.locateInCode(commentForm.isSectionSubmitted());
-        } catch {
-          return;
-        }
-        if (
-          !lastComment.source.indentation.startsWith('#') ||
+      return replyPlaceholder;
+    }
 
-          // For now we use the workaround with `commentForm.getContainerListType()` to make sure
-          // `#` is a part of comments organized in a numbered list, not of a numbered list _in_ the
-          // target comment.
-          commentForm.getContainerListType() === 'ol'
-        ) {
-          this.lastCommentIndentation = lastComment.source.indentation;
-        }
+    const lastComment = this.section.commentsInFirstChunk.slice(-1)[0];
+    if (
+      lastComment &&
+      (commentForm.getContainerListType() === 'ol' || cd.config.indentationCharMode === 'mimic')
+    ) {
+      try {
+        lastComment.locateInCode(commentForm.isSectionSubmitted());
+      } catch {
+        return;
+      }
+      if (
+        !lastComment.source.indentation.startsWith('#') ||
+
+        // For now we use the workaround with `commentForm.getContainerListType()` to make sure
+        // `#` is a part of comments organized in a numbered list, not of a numbered list _in_ the
+        // target comment.
+        commentForm.getContainerListType() === 'ol'
+      ) {
+        return lastComment.source.indentation;
       }
     }
   }

@@ -95,7 +95,7 @@ class SectionSkeleton {
       }
     }
 
-    this.setContentProperties(heading, targets);
+    this.initContent(heading, targets);
 
     /**
      * Section index. Same as the section index in
@@ -113,7 +113,7 @@ class SectionSkeleton {
    * @param {object[]} targets
    * @private
    */
-  setContentProperties(heading, targets) {
+  initContent(heading, targets) {
     const treeWalker = new TreeWalker(
       this.parser.context.rootElement,
       (node) => !isMetadataNode(node) && !node.classList.contains('cd-section-button-container'),

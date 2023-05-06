@@ -29,7 +29,7 @@ import {
   transparentize,
   unique,
 } from './utils';
-import { setVisits, splitIntoBatches } from './apiWrappers';
+import { saveVisits, splitIntoBatches } from './apiWrappers';
 
 let defaultFontSize;
 
@@ -1004,7 +1004,7 @@ export default {
     cd.tests.processPageInBackground = updateChecker.processPage.bind(updateChecker);
     cd.tests.showSettingsDialog = controller.showSettingsDialog.bind(controller);
     cd.tests.editSubscriptions = controller.showEditSubscriptionsDialog.bind(controller);
-    cd.tests.setVisits = setVisits;
+    cd.tests.saveVisits = saveVisits;
     cd.tests.subscriptions = subscriptions;
 
 

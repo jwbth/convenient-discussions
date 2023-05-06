@@ -164,8 +164,8 @@ class CommentSkeleton {
      */
     this.elements = this.parts.map((part) => part.node);
 
-    this.setHighlightables();
-    this.setLevels();
+    this.deriveHighlightables();
+    this.deriveLevels();
 
     if (this.parts[0].isHeading && this.level !== 0) {
       this.parts.shift();
@@ -1075,7 +1075,7 @@ class CommentSkeleton {
    *
    * @private
    */
-  setHighlightables() {
+  deriveHighlightables() {
     const isHighlightable = (el) => (
       !isHeadingNode(el) &&
       !isMetadataNode(el) &&
@@ -1233,7 +1233,7 @@ class CommentSkeleton {
           lastLowerLevelElement.lastElementChild?.classList.contains('cd-timestamp')
         ) {
           this.elements.splice(0, firstWrongElementIndex + 1);
-          this.setHighlightables();
+          this.deriveHighlightables();
           areElementsChanged = true;
         }
       }
@@ -1331,7 +1331,7 @@ class CommentSkeleton {
         this.elements.length - firstItemIndex,
         closestLevelElement
       );
-      this.setHighlightables();
+      this.deriveHighlightables();
     }
   }
 
@@ -1342,7 +1342,7 @@ class CommentSkeleton {
    * @param {boolean} [fixMarkup=true]
    * @protected
    */
-  setLevels(fixMarkup = true) {
+  deriveLevels(fixMarkup = true) {
     // Make sure the level on the top and on the bottom of the comment are the same and add
     // appropriate classes.
     let levelElements = this.highlightables.map(this.getListsUpTree.bind(this));

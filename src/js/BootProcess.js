@@ -28,7 +28,7 @@ import {
   wrap,
 } from './utils';
 import { formatDateNative } from './timestamp';
-import { getVisits, handleApiReject, setOptions, setVisits } from './apiWrappers';
+import { getVisits, handleApiReject, saveOptions, saveVisits } from './apiWrappers';
 import { removeWikiMarkup } from './wikitext';
 import { showConfirmDialog } from './ooui';
 
@@ -626,7 +626,7 @@ class BootProcess {
         'discussiontools-visualenhancements': 0,
       };
       if (globally) {
-        await setOptions(options, true).catch(handleApiReject);
+        await saveOptions(options, true).catch(handleApiReject);
       } else {
         await controller.getApi().saveOptions({
           'discussiontools-topicsubscription': 1,
@@ -784,7 +784,7 @@ class BootProcess {
         });
 
       CommentStatic.reformatTimestamps();
-      CommentStatic.setInSingleCommentTableProperty();
+      CommentStatic.findAndUpdateTableComments();
       CommentStatic.adjustDom();
     } catch (e) {
       console.error(e);
@@ -1348,7 +1348,7 @@ class BootProcess {
     let timeConflict = false;
     if (currentPageVisits.length) {
       CommentStatic.getAll().forEach((comment) => {
-        timeConflict ||= comment.setNewAndSeenProperties(
+        timeConflict ||= comment.initNewAndSeen(
           currentPageVisits,
           currentUnixTime,
           this.data('unseenCommentIds')?.some((id) => id === comment.id) || false
@@ -1370,7 +1370,7 @@ class BootProcess {
     // comment was sent the same minute when the page was loaded but after that moment.)
     currentPageVisits.push(String(currentUnixTime + timeConflict * 60));
 
-    setVisits(visits);
+    saveVisits(visits);
 
     // Should be before `CommentStatic.registerSeen()` to include all new comments in the metadata,
     // even those currently inside the viewport.

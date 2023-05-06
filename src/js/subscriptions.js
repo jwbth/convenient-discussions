@@ -15,7 +15,7 @@ import {
   dtSubscribe,
   getDtSubscriptions,
   getLegacySubscriptions,
-  setLegacySubscriptions,
+  saveLegacySubscriptions,
 } from './apiWrappers';
 import { spacesToUnderlines, unique, wrap } from './utils';
 
@@ -98,7 +98,7 @@ export default {
   async saveLegacy(registry) {
     if (settings.get('useTopicSubscription')) return;
 
-    await setLegacySubscriptions(registry || this.allPagesRegistry);
+    await saveLegacySubscriptions(registry || this.allPagesRegistry);
   },
 
   /**

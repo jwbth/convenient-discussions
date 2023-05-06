@@ -926,16 +926,18 @@ const CommentStatic = {
   },
 
   /**
-   * _For internal use._ Set the {@link Comment#isInSingleCommentTable} property for each comment.
+   * _For internal use._ Set the {@link Comment#isTableComment} property for each "table comment",
+   * i.e. a comment that is (or its signature is) inside a table containing only that comment.
    */
-  setInSingleCommentTableProperty() {
+  findAndUpdateTableComments() {
     // Faster than doing it for every individual comment.
     controller.rootElement
       .querySelectorAll('table.cd-comment-part .cd-signature, .cd-comment-part > table .cd-signature')
       .forEach((signature) => {
-        this.items[
-          signature.closest('.cd-comment-part').dataset.cdCommentIndex
-        ].isInSingleCommentTable = true;
+        const index = signature.closest('.cd-comment-part').dataset.cdCommentIndex;
+        if (index !== undefined) {
+          this.items[index].isTableComment = true;
+        }
       });
   },
 

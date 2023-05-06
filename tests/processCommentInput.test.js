@@ -118,7 +118,7 @@ const replyInSectionForm = {
   mode: 'replyInSection',
   target: {
     source: {
-      lastCommentIndentation: ':',
+      extractLastCommentIndentation: () => ':',
     },
   },
 };
@@ -127,7 +127,7 @@ const voteForm = {
   mode: 'replyInSection',
   target: {
     source: {
-      lastCommentIndentation: '#',
+      extractLastCommentIndentation: () => '#',
     },
   },
 };
