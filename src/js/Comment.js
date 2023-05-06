@@ -3293,7 +3293,10 @@ class Comment extends CommentSkeleton {
       $wrappingList.insertAfter($lastOfTarget);
     } else {
       if (position === 'top') {
-        $wrappingItem.prependTo($anchor);
+        $wrappingItem
+          .addClass('cd-skip')
+          .attr('value', 0)
+          .prependTo($anchor);
       } else {
         const $last = $anchor.children().last();
 
