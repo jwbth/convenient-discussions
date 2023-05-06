@@ -399,7 +399,7 @@ Object.assign(cd.g, {
    * @type {string[]}
    * @memberof convenientDiscussions.g
    */
-  popularInlineElements: ['A', 'ABBR', 'B', 'BIG', 'BR', 'CITE', 'CODE', 'DEL', 'EM', 'FONT', 'I', 'IMG', 'INS', 'KBD', 'Q', 'S', 'SAMP', 'SMALL', 'SPAN', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TIME', 'TT', 'U', 'VAR'],
+  popularInlineElements: ['A', 'ABBR', 'B', 'BDI', 'BIG', 'BR', 'CITE', 'CODE', 'DEL', 'EM', 'FONT', 'I', 'IMG', 'INS', 'KBD', 'Q', 'S', 'SAMP', 'SMALL', 'SPAN', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TIME', 'TT', 'U', 'VAR'],
 
   /**
    * Elements with classes listed here won't be considered legit comment timestamp containers. They
