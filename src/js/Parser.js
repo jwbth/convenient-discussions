@@ -3,7 +3,7 @@
 import CommentSkeleton from './CommentSkeleton';
 import cd from './cd';
 import { ElementsAndTextTreeWalker, ElementsTreeWalker } from './treeWalker';
-import { defined, flat, isInline, isMetadataNode, ucFirst, underlinesToSpaces } from './utils';
+import { defined, isInline, isMetadataNode, ucFirst, underlinesToSpaces } from './utils';
 import { parseTimestamp } from './timestamp';
 
 let punctuationRegexp;
@@ -65,8 +65,8 @@ function getPageNameFromUrl(url) {
 
 /**
  * Generalization of a web page (not wikitext) parser for the window and worker contexts. Parsing
- * here means "extracting meaningful parts from the page". Functions related to wikitext parsing go
- * in {@link module:wikitext}.
+ * here means "extracting meaningful parts from the page" such as comments, sections, etc. Functions
+ * related to wikitext parsing go in {@link module:wikitext}.
  */
 class Parser {
   /**
@@ -135,7 +135,7 @@ class Parser {
   initCommentParsing() {
     // "Ombox" for templates like https://ru.wikipedia.org/wiki/Template:Сложное_обсуждение
     // (perhaps they need to be "tmbox" too?).
-    this.foreignComponentClasses = [
+    this.rejectClasses = [
       'cd-comment-part',
       'ombox',
       ...cd.config.closedDiscussionClasses,

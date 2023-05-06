@@ -285,17 +285,24 @@ function patterns() {
   const anySpace = (s) => s.replace(/[ _]/g, '[ _]+').replace(/:/g, '[ _]*:[ _]*');
 
   const nsIds = mw.config.get('wgNamespaceIds');
-  const userNssAliases = Object.keys(nsIds).filter((key) => nsIds[key] === 2 || nsIds[key] === 3);
-  const userNssAliasesPattern = userNssAliases.map(anySpace).join('|');
+
+  const userNssAliasesPattern = Object.keys(nsIds)
+    .filter((key) => nsIds[key] === 2 || nsIds[key] === 3)
+    .map(anySpace)
+    .join('|');
   cd.g.userNamespacesRegexp = new RegExp(`(?:^|:)(?:${userNssAliasesPattern}):(.+)`, 'i');
 
-  const userNsAliases = Object.keys(nsIds).filter((key) => nsIds[key] === 2);
-  const userNsAliasesPattern = userNsAliases.map(anySpace).join('|');
+  const userNsAliasesPattern = Object.keys(nsIds)
+    .filter((key) => nsIds[key] === 2)
+    .map(anySpace)
+    .join('|');
   cd.g.userLinkRegexp = new RegExp(`^:?(?:${userNsAliasesPattern}):([^/]+)$`, 'i');
   cd.g.userSubpageLinkRegexp = new RegExp(`^:?(?:${userNsAliasesPattern}):.+?/`, 'i');
 
-  const userTalkNsAliases = Object.keys(nsIds).filter((key) => nsIds[key] === 3);
-  const userTalkNsAliasesPattern = userTalkNsAliases.map(anySpace).join('|');
+  const userTalkNsAliasesPattern = Object.keys(nsIds)
+    .filter((key) => nsIds[key] === 3)
+    .map(anySpace)
+    .join('|');
   cd.g.userTalkLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):([^/]+)$`, 'i');
   cd.g.userTalkSubpageLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):.+?/`, 'i');
 

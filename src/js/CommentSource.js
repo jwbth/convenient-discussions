@@ -264,12 +264,12 @@ export default class CommentSource {
       // This should be before the `this.comment.level > 0` block to account for cases like
       // https://ru.wikipedia.org/w/index.php?oldid=110033693&section=6&action=edit (the regexp
       // doesn't catch the comment because of a newline inside the `syntaxhighlight` element).
-      cd.g.badCommentBeginnings.forEach((pattern) => {
-        if (pattern.source[0] !== '^') {
+      cd.g.badCommentBeginnings.forEach((regexp) => {
+        if (regexp.source[0] !== '^') {
           console.debug('Regexps in cd.config.badCommentBeginnings should have "^" as the first character.');
         }
         let match;
-        while ((match = this.code.match(pattern))) {
+        while ((match = this.code.match(regexp))) {
           this.code = this.code.slice(match[0].length);
           this.lineStartIndex = this.startIndex + match[0].lastIndexOf('\n') + 1;
           this.startIndex += match[0].length;
@@ -456,11 +456,10 @@ export default class CommentSource {
     // different sets depending on the mode (edit/reply).
     let replyIndentation = this.indentation;
     if (!this.comment.isOpeningSection) {
-      // If the last line ends with "#", it's probably a numbered list _inside_ the comment, not two
+      // If the last line ends with `#`, it's probably a numbered list _inside_ the comment, not two
       // comments in one, so we exclude such cases. The signature code is used because it may start
       // with a newline.
-      const match = (this.code + this.signatureDirtyCode)
-        .match(/\n([:*#]*[:*])(?!:*#).*$/);
+      const match = (this.code + this.signatureDirtyCode).match(/\n([:*#]*[:*])(?!:*#).*$/);
       if (match) {
         replyIndentation = match[1];
 
@@ -757,9 +756,11 @@ export default class CommentSource {
           let startIndex;
           let endIndex;
           if (this.comment.isOpeningSection && this.headingStartIndex !== undefined) {
+            // Usually, `source` is set in CommentForm#prepareSource.
             if (!this.comment.section.source) {
               this.comment.section.locateInCode();
             }
+
             if (extractSignatures(this.comment.section.source.code).length > 1) {
               throw new CdError({
                 type: 'parse',

@@ -339,7 +339,7 @@ class CommentSkeleton {
       (
         step !== 'up' &&
         (
-          this.parser.foreignComponentClasses.some((name) => element.classList.contains(name)) ||
+          this.parser.rejectClasses.some((name) => element.classList.contains(name)) ||
 
           // Talk page message box
           (cd.g.namespaceNumber % 2 === 1 && element.classList.contains('tmbox'))
@@ -1182,8 +1182,8 @@ class CommentSkeleton {
   }
 
   /**
-   * Finally review comment parts to make sure all "dives" (when the tree walker goes as deep as
-   * possible through a tree after going back) are for actual comment parts and not for parts of
+   * Finally review comment parts to make sure all "dives" (cases when the tree walker goes as deep
+   * as possible down a tree after going back) are for actual comment parts and not for parts of
    * other comments.
    *
    * @returns {boolean} Are elements changed.

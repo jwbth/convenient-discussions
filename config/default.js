@@ -451,7 +451,7 @@ export default {
   noSignatureClasses: [],
 
   /**
-   * Templates listed here (for example, "moved discussion" templates) won't be considered legit
+   * Templates listed here (for example, "Moved discussion" templates) won't be considered legit
    * comment timestamp containers. All lines containing these templates are ignored when searching
    * for timestamps in the wikitext. This value can have a web page counterpart,
    * {@link module:defaultConfig.noSignatureClasses}.

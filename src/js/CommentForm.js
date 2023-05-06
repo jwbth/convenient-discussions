@@ -326,7 +326,9 @@ class CommentForm {
      * @type {?Comment}
      * @private
      */
-    this.parentComment = this.mode.startsWith('reply') ? this.targetComment : null;
+    this.parentComment = ['reply', 'replyInSection'].includes(this.mode) ?
+      this.targetComment :
+      null;
 
     /**
      * Wiki page that has the source code of the target object (may be different from the current
@@ -1223,11 +1225,12 @@ class CommentForm {
       this.preview();
     } catch (e) {
       if (e instanceof CdError) {
-        const options = Object.assign({}, e.data, {
-          cancel: true,
-          currentOperation,
-        });
-        this.handleError(options);
+        this.handleError(
+          Object.assign({}, e.data, {
+            cancel: true,
+            currentOperation,
+          })
+        );
       } else {
         this.handleError({
           type: 'javascript',
@@ -1254,8 +1257,7 @@ class CommentForm {
        */
       this.checkCodeRequest = this.target.getCode(this).catch((e) => {
         if (e instanceof CdError) {
-          const options = Object.assign({}, e.data);
-          this.handleError(options);
+          this.handleError(Object.assign({}, e.data));
         } else {
           this.handleError({
             type: 'javascript',
@@ -1360,11 +1362,12 @@ class CommentForm {
       this.preview();
     } catch (e) {
       if (e instanceof CdError) {
-        const options = Object.assign({}, e.data, {
-          cancel: true,
-          currentOperation,
-        });
-        this.handleError(options);
+        this.handleError(
+          Object.assign({}, e.data, {
+            cancel: true,
+            currentOperation,
+          })
+        );
       } else {
         this.handleError({
           type: 'javascript',
@@ -2332,7 +2335,7 @@ class CommentForm {
   }
 
   /**
-   * Convert the value of the comment input to wikitext.
+   * Convert the comment form input to wikitext.
    *
    * @param {'submit'|'viewChanges'|'preview'} action
    * @returns {string}
@@ -2413,7 +2416,7 @@ class CommentForm {
   }
 
   /**
-   * Prepare the new wikitext of a section or page based on the comment form input and handle
+   * Prepare the new wikitext of the section or page based on the comment form input and handle
    * errors.
    *
    * @param {'submit'|'viewChanges'} action
@@ -2440,8 +2443,9 @@ class CommentForm {
       }
     } catch (e) {
       if (e instanceof CdError) {
-        const options = Object.assign({}, { message: cd.sParse('cf-error-getpagecode') }, e.data);
-        this.handleError(options);
+        this.handleError(
+          Object.assign({}, { message: cd.sParse('cf-error-getpagecode') }, e.data)
+        );
       } else {
         this.handleError({
           type: 'javascript',
@@ -2679,11 +2683,12 @@ class CommentForm {
       }));
     } catch (e) {
       if (e instanceof CdError) {
-        const options = Object.assign({}, e.data, {
-          message: cd.sParse('cf-error-preview'),
-          currentOperation,
-        });
-        this.handleError(options);
+        this.handleError(
+          Object.assign({}, e.data, {
+            message: cd.sParse('cf-error-preview'),
+            currentOperation,
+          })
+        );
       } else {
         this.handleError({
           type: 'javascript',
@@ -2794,11 +2799,12 @@ class CommentForm {
       }).catch(handleApiReject);
     } catch (e) {
       if (e instanceof CdError) {
-        const options = Object.assign({}, e.data, {
-          message: cd.sParse('cf-error-viewchanges'),
-          currentOperation,
-        });
-        this.handleError(options);
+        this.handleError(
+          Object.assign({}, e.data, {
+            message: cd.sParse('cf-error-viewchanges'),
+            currentOperation,
+          })
+        );
       } else {
         this.handleError({
           type: 'javascript',
@@ -2857,12 +2863,13 @@ class CommentForm {
       await controller.reload(passedData);
     } catch (e) {
       if (e instanceof CdError) {
-        const options = Object.assign({}, e.data, {
-          message: cd.sParse('error-reloadpage-saved'),
-          cancel: true,
-          currentOperation,
-        });
-        this.handleError(options);
+        this.handleError(
+          Object.assign({}, e.data, {
+            message: cd.sParse('error-reloadpage-saved'),
+            cancel: true,
+            currentOperation,
+          })
+        );
       } else {
         this.handleError({
           type: 'javascript',

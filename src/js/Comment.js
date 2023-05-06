@@ -1294,7 +1294,7 @@ class Comment extends CommentSkeleton {
       const margins = this.getMargins();
       this.layersOffset = {
         top: this.offset.top - layersContainerOffset.top,
-        left: this.offset.left - margins.left - layersContainerOffset.left,
+        left: (this.offset.left - margins.left) - layersContainerOffset.left,
         width: (this.offset.right + margins.right) - (this.offset.left - margins.left),
         height: this.offset.bottom - this.offset.top,
       };

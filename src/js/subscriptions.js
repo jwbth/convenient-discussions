@@ -376,7 +376,7 @@ export default {
 
   /**
    * _For internal use._ Remove sections that can't be found on the page anymore from the
-   * subscription list and save it to the server.
+   * legacy subscription list and save it to the server.
    */
   cleanUp() {
     if (settings.get('useTopicSubscription')) return;

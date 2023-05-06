@@ -72,7 +72,7 @@ export function findFirstTimestamp(code) {
  */
 export function removeWikiMarkup(code) {
   // Actually, only text from "mini" format images should be captured, because in the standard
-  // format the text is not displayed. See "img_thumbnail" in
+  // format the text is not displayed. See `img_thumbnail` in
   // https://ru.wikipedia.org/w/api.php?action=query&meta=siteinfo&siprop=magicwords&formatversion=2.
   // Unfortunately, that would add like 100ms to the server's response time.
   fileEmbedRegexp ||= new RegExp(
@@ -342,17 +342,13 @@ export function extractSignatures(code) {
     const noSignatureClassesPattern = cd.g.noSignatureClasses
       .concat('mw-notalk')
       .join('\\b|\\b');
-    const commentAntipatternsPatternParts = [`class=(['"])[^'"\\n]*(?:\\b${noSignatureClassesPattern}\\b)[^'"\\n]*\\1`];
+    const patternParts = [`class=(['"])[^'"\\n]*(?:\\b${noSignatureClassesPattern}\\b)[^'"\\n]*\\1`];
     if (cd.config.noSignatureTemplates.length) {
       const pattern = cd.config.noSignatureTemplates.map(generatePageNamePattern).join('|');
-      commentAntipatternsPatternParts.push(`\\{\\{ *(?:${pattern}) *(?:\\||\\}\\})`);
+      patternParts.push(`\\{\\{ *(?:${pattern}) *(?:\\||\\}\\})`);
     }
-    if (cd.config.commentAntipatterns) {
-      commentAntipatternsPatternParts.push(
-        ...cd.config.commentAntipatterns.map((pattern) => pattern.source)
-      );
-    }
-    const pattern = commentAntipatternsPatternParts.join('|');
+    patternParts.push(...cd.config.commentAntipatterns.map((regexp) => regexp.source));
+    const pattern = patternParts.join('|');
     commentAntipatternsRegexp = new RegExp(`^.*(?:${pattern}).*$`, 'mg');
   }
 

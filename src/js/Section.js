@@ -944,7 +944,7 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Extract the section {@link Section#subscribeId subscribe ID}.
+   * Extract the section's {@link Section#subscribeId subscribe ID}.
    */
   extractSubscribeId() {
     if (!settings.get('useTopicSubscription')) {
@@ -1554,7 +1554,7 @@ class Section extends SectionSkeleton {
 
   /**
    * Get a section relevant to this section, which means the section itself. (Used for polymorphism
-   * with {@link Comment#getRelevantSection}.)
+   * with {@link Comment#getRelevantSection} and {@link Page#getRelevantSection}.)
    *
    * @returns {Section}
    */
@@ -1564,7 +1564,8 @@ class Section extends SectionSkeleton {
 
   /**
    * Get a comment relevant to this section, which means the first comment _if_ it is opening the
-   * section. (Used for polymorphism with {@link Comment#getRelevantComment}.)
+   * section. (Used for polymorphism with {@link Comment#getRelevantComment} and
+   * {@link Page#getRelevantComment}.)
    *
    * @returns {?Section}
    */
@@ -1574,7 +1575,7 @@ class Section extends SectionSkeleton {
 
   /**
    * Get the data identifying the section when restoring a comment form. (Used for polymorphism with
-   * {@link Comment#getRelevantComment}.)
+   * {@link Comment#getRelevantComment} and {@link Page#getIdentifyingData}.)
    *
    * @returns {object}
    */

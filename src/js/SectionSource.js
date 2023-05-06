@@ -169,7 +169,6 @@ export default class SectionSource {
     const endIndex = startIndex + code.length;
     const contentStartIndex = sectionHeadingMatch.index + sectionHeadingMatch[0].length;
     const firstChunkEndIndex = startIndex + firstChunkCode.length;
-    const relativeContentStartIndex = contentStartIndex - startIndex;
 
     let firstChunkContentEndIndex = firstChunkEndIndex;
     let contentEndIndex = endIndex;
@@ -210,7 +209,7 @@ export default class SectionSource {
       code,
       contentStartIndex,
       contentEndIndex,
-      relativeContentStartIndex,
+      relativeContentStartIndex: contentStartIndex - startIndex,
       firstChunkEndIndex,
       firstChunkContentEndIndex,
       firstChunkCode,

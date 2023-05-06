@@ -166,8 +166,9 @@ mw.loader.using([
 
       // Should always be the case, logically
       if (prop) {
-        const titlesToAdd = page.redirects.map((redirect) => mw.Title.newFromText(redirect.title));
-        titles[prop].push(...titlesToAdd);
+        titles[prop].push(
+          ...page.redirects.map((redirect) => mw.Title.newFromText(redirect.title))
+        );
       }
     });
   }
