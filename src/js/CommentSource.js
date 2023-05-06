@@ -692,16 +692,28 @@ export default class CommentSource {
       );
     }
 
-    // If the comment is to be put after a comment with different indentation characters, use these.
-    // `#[:*#]*` is to use `#` as an indentation character when, say, replying to a comment and the
-    // last reply uses `#`.
-    const [, changedIndentation] = adjustedCodeBetween.match(/\n([:*#]{2,}|#[:*#]*).*\n$/) || [];
+    // If the comment is to be put after a comment with different indentation characters, use these,
+    // unless it's a 1-level comment; then, there are options if `indentationCharMode` is `unify`.
+    const manyCharsPart = (
+      this.replyIndentation.length === 1 &&
+      cd.config.indentationCharMode === 'unify'
+    ) ?
+      '' :
+      '[:*#]{2,}|';
+    const firstChar = cd.config.indentationCharMode === 'mimic' ? '[#*:]' : '#';
+    const [, changedIndentation] = (
+      adjustedCodeBetween.match(new RegExp(`\\n(${manyCharsPart}${firstChar}[:*#]*).*\\n$`)) ||
+      []
+    );
     if (changedIndentation) {
       // Note the bug https://ru.wikipedia.org/w/index.php?diff=next&oldid=105529545 that was
       // possible here when we used `.slice(0, this.indentation.length + 1)` (due to `**` as
       // indentation characters in Bsivko's comment).
       this.replyIndentation = changedIndentation
         .slice(0, this.replyIndentation.length)
+
+        // Don't replace `*` with `:`, as a comment indented with `:` after one indented with `*`
+        // may misleadingly look like a continuation of the previous comment.
         .replace(/:$/, cd.config.defaultIndentationChar);
     }
 
