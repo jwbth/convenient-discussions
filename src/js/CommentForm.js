@@ -3,6 +3,7 @@ import Button from './Button';
 import CdError from './CdError';
 import Comment from './Comment';
 import CommentFormInputProcessor from './CommentFormInputProcessor';
+import CommentFormOperationRegistry from './CommentFormOperationRegistry';
 import CommentFormStatic from './CommentFormStatic';
 import CommentStatic from './CommentStatic';
 import Section from './Section';
@@ -18,7 +19,6 @@ import userRegistry from './userRegistry';
 import {
   buildEditSummary,
   defined,
-  findLastIndex,
   focusInput,
   getDayTimestamp,
   hideText,
@@ -27,7 +27,6 @@ import {
   isInputFocused,
   keyCombination,
   removeDoubleSpaces,
-  removeFromArrayIfPresent,
   sleep,
   unhideText,
   unique,
@@ -60,7 +59,9 @@ function extractCommentIds(code) {
   return ids;
 }
 
-/** Class representing a comment form. */
+/**
+ * Class representing a comment form.
+ */
 class CommentForm {
   /**
    * Object specifying configuration to preload data into the comment form. It is extracted from the
@@ -73,16 +74,6 @@ class CommentForm {
    * @property {string} [summary] Edit summary.
    * @property {string} [noHeadline] Whether to include a headline.
    * @property {string} [omitSignature] Whether to add the user's signature.
-   * @memberof CommentForm
-   * @inner
-   */
-
-  /**
-   * @typedef {object} Operation
-   * @property {'load'|'preview'|'viewChanges'|'submit'} type Operation type.
-   * @property {boolean} [affectsHeadline=false] Should the headline input be displayed as pending.
-   * @property {boolean} [isClosed] Is the operation closed (settled).
-   * @property {boolean} [isDelayed] Is the operation delayed.
    * @memberof CommentForm
    * @inner
    */
@@ -112,7 +103,6 @@ class CommentForm {
     }
 
     this.updateAutoSummary = this.updateAutoSummary.bind(this);
-    this.closeOperation = this.closeOperation.bind(this);
 
     /**
      * Form mode.
@@ -174,12 +164,12 @@ class CommentForm {
     this.sectionSubmitted = null;
 
     /**
-     * List of current operations.
+     * Operations registry.
      *
-     * @type {Operation[]}
+     * @type {CommentFormOperationRegistry}
      * @private
      */
-    this.operations = [];
+    this.operations = new CommentFormOperationRegistry(this);
 
     /**
      * List of timestamps of last keypresses.
@@ -1202,7 +1192,7 @@ class CommentForm {
    * @private
    */
   async loadComment() {
-    const currentOperation = this.registerOperation('load');
+    const operation = this.operations.register('load');
     try {
       await this.target.loadCode(true);
       let commentInputValue = this.target.source.toInput();
@@ -1218,7 +1208,7 @@ class CommentForm {
         this.originalHeadline = headline;
       }
 
-      this.closeOperation(currentOperation);
+      operation.close();
 
       focusInput(this.commentInput);
       this.preview();
@@ -1227,7 +1217,7 @@ class CommentForm {
         this.handleError(
           Object.assign({}, e.data, {
             cancel: true,
-            currentOperation,
+            operation,
           })
         );
       } else {
@@ -1235,7 +1225,7 @@ class CommentForm {
           type: 'javascript',
           logMessage: e,
           cancel: true,
-          currentOperation,
+          operation,
         });
       }
     }
@@ -1329,7 +1319,7 @@ class CommentForm {
    * @private
    */
   async preloadTemplate() {
-    const currentOperation = this.registerOperation('load', { affectsHeadline: false });
+    const operation = this.operations.register('load', { affectsHeadline: false });
     const preloadPage = pageRegistry.get(this.preloadConfig.commentTemplate);
     try {
       await preloadPage.loadCode();
@@ -1358,7 +1348,7 @@ class CommentForm {
       this.commentInput.setValue(code);
       this.originalComment = code;
 
-      this.closeOperation(currentOperation);
+      operation.close();
 
       focusInput(this.headlineInput || this.commentInput);
       this.preview();
@@ -1367,7 +1357,7 @@ class CommentForm {
         this.handleError(
           Object.assign({}, e.data, {
             cancel: true,
-            currentOperation,
+            operation,
           })
         );
       } else {
@@ -1375,7 +1365,7 @@ class CommentForm {
           type: 'javascript',
           logMessage: e,
           cancel: true,
-          currentOperation,
+          operation,
         });
       }
     }
@@ -2171,7 +2161,7 @@ class CommentForm {
    *   framing.
    * @param {string} [options.logMessage] Message for the browser console.
    * @param {boolean} [options.cancel=false] Cancel the form and show the message as a notification.
-   * @param {object} [options.currentOperation] Operation the form is undergoing.
+   * @param {object} [options.operation] Operation the form is undergoing.
    * @private
    */
   abort({
@@ -2180,11 +2170,9 @@ class CommentForm {
     isRawMessage = false,
     logMessage,
     cancel = false,
-    currentOperation,
+    operation,
   }) {
-    if (currentOperation) {
-      this.closeOperation(currentOperation);
-    }
+    operation?.close();
 
     if (this.destroyed) return;
 
@@ -2199,7 +2187,7 @@ class CommentForm {
       });
       this.cancel(false);
     } else {
-      if (!(currentOperation && currentOperation.type === 'preview' && currentOperation.isAuto)) {
+      if (!(operation && operation.getType() === 'preview' && operation.getOption('isAuto'))) {
         this.showMessage(message, {
           type: messageType,
           isRaw: isRawMessage,
@@ -2232,7 +2220,8 @@ class CommentForm {
    * @param {string} [options.logMessage] Data or text to display in the browser console.
    * @param {boolean} [options.cancel=false] Cancel the form and show the message as a notification.
    * @param {boolean} [options.isRawMessage=false] Show the message as it is, without OOUI framing.
-   * @param {Operation} [options.currentOperation] Operation the form is undergoing.
+   * @param {import('./CommentFormOperation').CommentFormOperation} [options.operation] Operation
+   *   the form is undergoing.
    */
   handleError({
     type,
@@ -2244,7 +2233,7 @@ class CommentForm {
     logMessage,
     cancel = false,
     isRawMessage = false,
-    currentOperation,
+    operation,
   }) {
     switch (type) {
       case 'parse': {
@@ -2333,7 +2322,7 @@ class CommentForm {
       }
     }
 
-    this.abort({ message, messageType, isRawMessage, logMessage, cancel, currentOperation });
+    this.abort({ message, messageType, isRawMessage, logMessage, cancel, operation });
   }
 
   /**
@@ -2492,97 +2481,12 @@ class CommentForm {
   }
 
   /**
-   * Add an operation to the registry of operations.
-   *
-   * @param {string} type
-   * @param {object} [options={}]
-   * @param {boolean} [clearMessages=true] Whether to clear messages above the comment form.
-   * @returns {Operation}
-   * @private
-   */
-  registerOperation(type, options = {}, clearMessages = true) {
-    const operation = Object.assign(options, { type });
-    this.operations.push(operation);
-    operation.isClosed = false;
-    if (operation.type !== 'preview' || !operation.isAuto) {
-      if (clearMessages) {
-        this.$messageArea.empty();
-      }
-      this.pushPending(['load', 'submit'].includes(operation.type), operation.affectsHeadline);
-    }
-    return operation;
-  }
-
-  /**
-   * Mark an operation as closed if it is not. Should be done when an operation has finished (either
-   * successfully or not).
-   *
-   * @param {Operation} operation
-   * @private
-   */
-  closeOperation(operation) {
-    if (operation.isClosed) return;
-    operation.isClosed = true;
-    if (operation.type !== 'preview' || !operation.isAuto) {
-      this.popPending(['load', 'submit'].includes(operation.type), operation.affectsHeadline);
-    }
-  }
-
-  /**
-   * Check for conflicts of the operation with other pending operations, and if there are such,
-   * close the operation and return `true` to abort it. The rules are the following:
-   * - `preview` and `viewChanges` operations may be overriden with other of one of these types
-   *   (every new request replaces the old, although a new autopreview request cannot be made while
-   *   the old is pending).
-   * - `submit` operations may not be overriden (and are not checked by this function), but also
-   *   don't override existing `preview` and `viewChanges` operations (so that the user gets the last
-   *   autopreview even after they have sent the comment).
-   *
-   * For convenience, can also check for an arbitrary condition and close the operation if it is
-   * `true`.
-   *
-   * @param {Operation} operation
-   * @returns {boolean}
-   * @private
-   */
-  maybeCloseOperation(operation) {
-    if (operation.isClosed) {
-      return true;
-    }
-    const otherOperationIndex = findLastIndex(
-      this.operations,
-      (op) => operation !== op && ['preview', 'viewChanges'].includes(op.type) && !op.isDelayed
-    );
-    if (otherOperationIndex !== null && otherOperationIndex > this.operations.indexOf(operation)) {
-      this.closeOperation(operation);
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  /**
-   * Remove the operation from the registry of operations.
-   *
-   * @param {Operation} operation
-   * @private
-   */
-  unregisterOperation(operation) {
-    removeFromArrayIfPresent(this.operations, operation);
-
-    // This was excessive at the time when it was written as the only use case is autopreview.
-    if (operation.type !== 'preview' || !operation.isAuto) {
-      this.popPending(operation.type === 'submit', operation.affectsHeadline);
-    }
-  }
-
-  /**
    * Check if the form is being submitted right now.
    *
    * @returns {boolean}
    */
   isBeingSubmitted() {
-    return this.operations.some((op) => op.type === 'submit' && !op.isClosed);
+    return this.operations.areThere('submit');
   }
 
   /**
@@ -2591,7 +2495,7 @@ class CommentForm {
    * @returns {boolean}
    */
   isContentBeingLoaded() {
-    return this.operations.some((op) => op.type === 'load' && !op.isClosed);
+    return this.operations.areThere('load');
   }
 
   /**
@@ -2601,46 +2505,44 @@ class CommentForm {
    *   inputs are empty.
    * @param {boolean} [isAuto=true] Preview is initiated automatically (if the user has the
    *   `autopreview` setting set to `true`).
-   * @param {Operation} [operation] Operation object when the function is called from within itself,
-   *   being delayed.
+   * @param {import('./CommentFormOperation').CommentFormOperation} [operation] Operation object
+   *   when the function is called from within itself, being delayed.
    * @fires previewReady
    */
   async preview(previewEmpty = true, isAuto = true, operation) {
     if (
       this.isContentBeingLoaded() ||
-      this.isBeingSubmitted() ||
-      (isAuto && !settings.get('autopreview'))
+      (isAuto && !settings.get('autopreview')) ||
+      (!settings.get('autopreview') && this.isBeingSubmitted())
     ) {
-      if (operation) {
-        this.closeOperation(operation);
-      }
+      operation?.close();
       return;
     }
 
-    const currentOperation = operation || this.registerOperation('preview', { isAuto });
+    operation ||= this.operations.register('preview', { isAuto });
 
     if (isAuto) {
       const isTooEarly = Date.now() - this.lastPreviewTimestamp < 1000;
       if (
         isTooEarly ||
-        this.operations
-          .some((op) => !op.isClosed && op.type === 'preview' && op !== currentOperation)
+        this.operations.filterByType('preview').some((op) => op !== operation)
       ) {
         if (this.previewTimeout) {
-          this.unregisterOperation(currentOperation);
+          operation.close();
         } else {
-          currentOperation.isDelayed = true;
+          operation.delay();
           this.previewTimeout = setTimeout(() => {
             this.previewTimeout = null;
-            this.preview(previewEmpty, true, currentOperation);
+            this.preview(previewEmpty, true, operation);
           }, isTooEarly ? 1000 - (Date.now() - this.lastPreviewTimestamp) : 100);
         }
         return;
       }
+      operation.undelay();
       this.lastPreviewTimestamp = Date.now();
     }
 
-    if (this.maybeCloseOperation(currentOperation)) return;
+    if (operation.maybeClose()) return;
 
     /*
       This condition can be met:
@@ -2652,9 +2554,9 @@ class CommentForm {
     if (!(this.target instanceof Page) && !this.target.source) {
       await this.checkCode();
       if (!this.target.source) {
-        this.closeOperation(currentOperation);
+        operation.close();
       }
-      if (currentOperation.isClosed) return;
+      if (operation.isClosed()) return;
     }
 
     // In case of an empty comment input, we in fact make this request for the sake of parsing the
@@ -2666,7 +2568,7 @@ class CommentForm {
     );
 
     if (areInputsEmpty && !previewEmpty) {
-      this.closeOperation(currentOperation);
+      operation.close();
       return;
     }
 
@@ -2682,20 +2584,20 @@ class CommentForm {
         this.handleError(
           Object.assign({}, e.data, {
             message: cd.sParse('cf-error-preview'),
-            currentOperation,
+            operation,
           })
         );
       } else {
         this.handleError({
           type: 'javascript',
           logMessage: e,
-          currentOperation,
+          operation,
         });
       }
       return;
     }
 
-    if (this.maybeCloseOperation(currentOperation)) return;
+    if (operation.maybeClose()) return;
 
     if (html) {
       if ((isAuto && areInputsEmpty) || this.deleteCheckbox?.isSelected()) {
@@ -2744,7 +2646,7 @@ class CommentForm {
       this.adjustLabels();
     }
 
-    this.closeOperation(currentOperation);
+    operation.close();
 
     if (!isAuto) {
       this.$previewArea.cdScrollIntoView(
@@ -2762,13 +2664,13 @@ class CommentForm {
   async viewChanges() {
     if (this.isBeingSubmitted()) return;
 
-    const currentOperation = this.registerOperation('viewChanges');
+    const operation = this.operations.register('viewChanges');
 
     const { contextCode } = await this.prepareSource('viewChanges') || {};
     if (contextCode === undefined) {
-      this.closeOperation(currentOperation);
+      operation.close();
     }
-    if (currentOperation.isClosed) return;
+    if (operation.isClosed()) return;
 
     mw.loader.load('mediawiki.diff.styles');
 
@@ -2798,20 +2700,20 @@ class CommentForm {
         this.handleError(
           Object.assign({}, e.data, {
             message: cd.sParse('cf-error-viewchanges'),
-            currentOperation,
+            operation,
           })
         );
       } else {
         this.handleError({
           type: 'javascript',
           logMessage: e,
-          currentOperation,
+          operation,
         });
       }
       return;
     }
 
-    if (this.maybeCloseOperation(currentOperation)) return;
+    if (operation.maybeClose()) return;
 
     let html = resp.compare?.body;
     if (html) {
@@ -2836,7 +2738,7 @@ class CommentForm {
       this.adjustLabels();
     }
 
-    this.closeOperation(currentOperation);
+    operation.close();
 
     this.$previewArea.cdScrollIntoView(
       this.$previewArea.hasClass('cd-commentForm-previewArea-above') ?
@@ -2850,9 +2752,9 @@ class CommentForm {
    * Forget the form and reload the page.
    *
    * @param {object} [passedData] Data passed from the previous page state.
-   * @param {Operation} [currentOperation] Current operation.
+   * @param {import('./CommentFormOperation').CommentFormOperation} [operation] Current operation.
    */
-  async reloadPage(passedData, currentOperation) {
+  async reloadPage(passedData, operation) {
     this.forget();
 
     try {
@@ -2863,7 +2765,7 @@ class CommentForm {
           Object.assign({}, e.data, {
             message: cd.sParse('error-reloadpage-saved'),
             cancel: true,
-            currentOperation,
+            operation,
           })
         );
       } else {
@@ -2871,7 +2773,7 @@ class CommentForm {
           type: 'javascript',
           logMessage: e,
           cancel: true,
-          currentOperation,
+          operation,
         });
       }
       controller.hideLoadingOverlay();
@@ -2946,11 +2848,11 @@ class CommentForm {
    * Send a post request to edit the page and handle errors.
    *
    * @param {string} code
-   * @param {Operation} currentOperation
+   * @param {import('./CommentFormOperation').CommentFormOperation} operation
    * @returns {Promise.<object|null>}
    * @private
    */
-  async editPage(code, currentOperation) {
+  async editPage(code, operation) {
     let result;
     try {
       let sectionParam;
@@ -2984,7 +2886,7 @@ class CommentForm {
           this.handleError({
             type,
             message: cd.sParse('cf-error-couldntedit'),
-            currentOperation,
+            operation,
           });
         } else {
           let messageType;
@@ -3002,7 +2904,7 @@ class CommentForm {
             messageType,
             isRawMessage,
             logMessage,
-            currentOperation,
+            operation,
           });
 
           if (code === 'editconflict') {
@@ -3013,7 +2915,7 @@ class CommentForm {
         this.handleError({
           type: 'javascript',
           logMessage: e,
-          currentOperation,
+          operation,
         });
       }
       return null;
@@ -3151,7 +3053,7 @@ class CommentForm {
     const doDelete = this.deleteCheckbox?.isSelected();
     if (!this.runChecks({ doDelete })) return;
 
-    const currentOperation = this.registerOperation('submit', undefined, !afterEditConflict);
+    const operation = this.operations.register('submit', undefined, !afterEditConflict);
 
     const otherFormsSubmitted = CommentFormStatic.getAll()
       .some((commentForm) => commentForm !== this && commentForm.isBeingSubmitted());
@@ -3159,18 +3061,18 @@ class CommentForm {
       this.handleError({
         type: 'ui',
         message: cd.sParse('cf-error-othersubmitted'),
-        currentOperation,
+        operation,
       });
       return;
     }
 
     const { contextCode, commentCode } = await this.prepareSource('submit') || {};
     if (contextCode === undefined) {
-      this.closeOperation(currentOperation);
+      operation.close();
       return;
     }
 
-    const editTimestamp = await this.editPage(contextCode, currentOperation);
+    const editTimestamp = await this.editPage(contextCode, operation);
 
     // The operation is closed inside CommentForm#editPage.
     if (!editTimestamp) return;
@@ -3217,7 +3119,7 @@ class CommentForm {
       await pageRegistry.getCurrent().purge();
     }
 
-    this.reloadPage(passedData, currentOperation);
+    this.reloadPage(passedData, operation);
   }
 
   /**
@@ -3282,9 +3184,7 @@ class CommentForm {
       }
     }
 
-    this.operations
-      .filter((op) => !op.isClosed)
-      .forEach(this.closeOperation);
+    this.operations.closeAll();
     this.forget();
 
     /**

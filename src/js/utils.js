@@ -426,23 +426,6 @@ export function getContentLanguageMessages(messages) {
 }
 
 /**
- * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex Array#findIndex}
- * analog that looks for the _last_ index.
- *
- * @param {Array.<*>} arr
- * @param {Function} callback
- * @returns {?number}
- */
-export function findLastIndex(arr, callback) {
-  for (let i = arr.length - 1; i >= 0; i--) {
-    if (callback(arr[i])) {
-      return i;
-    }
-  }
-  return null;
-}
-
-/**
  * Check if an input or editable element is focused.
  *
  * @returns {boolean}
