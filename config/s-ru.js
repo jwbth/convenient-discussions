@@ -214,7 +214,10 @@ export default {
 		'infobox',
 	],
 
-	noConfirmPostEmptyCommentPageRegexp: /^(?:Викитека:Заявки на статус |Викитека:Голосования\/)/,
+	dontConfirmEmptyCommentPages: [
+		/^Викитека:Заявки на статус /,
+		/^Викитека:Голосования\//,
+	],
 
 	indentationCharsPattern: '(?:\\{\\{(?:-vote|[зЗ]ачёркнутый голос|-голос)\\|)?([:*#]+)( *)',
 

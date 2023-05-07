@@ -2808,7 +2808,8 @@ class CommentForm {
         condition: (
           !doDelete &&
           !this.commentInput.getValue().trim() &&
-          !cd.config.noConfirmPostEmptyCommentPageRegexp?.test(pageRegistry.getCurrent().name)
+          !cd.config.dontConfirmEmptyCommentPages
+            .some((regexp) => pageRegistry.getCurrent().name.match(regexp))
         ),
         confirmation: () => confirm(cd.s('cf-confirm-empty')),
       },

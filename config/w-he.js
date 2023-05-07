@@ -326,7 +326,7 @@ export default {
    * @type {?RegExp}
    * @default null
    */
-  // noConfirmPostEmptyCommentPageRegexp: null,
+  // dontConfirmEmptyCommentPages: null,
 
   /**
    * String to be put into a regular expression for matching indentation characters.

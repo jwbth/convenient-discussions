@@ -611,10 +611,10 @@ export default {
    * Regular expression matching the names of the pages where an sending empty comment shouldn't be
    * confirmed (e.g., voting pages).
    *
-   * @type {?RegExp}
-   * @default null
+   * @type {RegExp[]}
+   * @default []
    */
-  noConfirmPostEmptyCommentPageRegexp: null,
+  dontConfirmEmptyCommentPages: [],
 
   /**
    * String to be put into a regular expression for matching indentation characters. The start of

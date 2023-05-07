@@ -340,7 +340,10 @@ export default {
     'infobox',
   ],
 
-  noConfirmPostEmptyCommentPageRegexp: /^(?:Википедия:Заявки на статус |Википедия:Голосования\/)/,
+  dontConfirmEmptyCommentPages: [
+    /^Википедия:Заявки на статус /,
+    /^Википедия:Голосования\//,
+  ],
 
   indentationCharsPattern: '(?:\\{\\{(?:-vote|[зЗ]ачёркнутый голос|-голос)\\|)?([:*#]+)( *)',
 
