@@ -1,6 +1,6 @@
 /**
- * Class representing an operation registry (a list of current operations that a comment form
- * undergoes).
+ * Class representing an operation registry (a storage of operations that a comment form currently
+ * undergoes, such as `'load'` or `'submit'`).
  */
 class CommentFormOperationRegistry {
   /**
@@ -21,7 +21,7 @@ class CommentFormOperationRegistry {
    * @param {boolean} [clearMessages=true] Whether to clear messages above the comment form.
    * @returns {CommentFormOperation}
    */
-  register(type, options = {}, clearMessages = true) {
+  add(type, options = {}, clearMessages = true) {
     const operation = new CommentFormOperation(this, type, options);
     this.items.push(operation);
     operation.open(clearMessages);
@@ -33,7 +33,7 @@ class CommentFormOperationRegistry {
    *
    * @param {CommentFormOperation} operation
    */
-  unregister(operation) {
+  remove(operation) {
     this.items.splice(this.items.indexOf(operation), 1);
   }
 
@@ -117,8 +117,8 @@ class CommentFormOperation {
 
   /**
    * Mark the operation as closed if it is not;
-   * {@link CommentFormOperationRegistry#unregister unregister} it. Should be done when an operation
-   * has finished (either successfully or not).
+   * {@link CommentFormOperationRegistry#remove unregister} it. Should be done when an operation has
+   * finished (either successfully or not).
    */
   close() {
     if (this.closed) return;
@@ -131,7 +131,7 @@ class CommentFormOperation {
       );
     }
 
-    this.registry.unregister(this);
+    this.registry.remove(this);
   }
 
   /**

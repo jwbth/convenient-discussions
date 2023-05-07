@@ -172,7 +172,7 @@ class CommentForm {
     this.sectionSubmitted = null;
 
     /**
-     * Operations registry.
+     * Operation registry.
      *
      * @type {CommentFormOperationRegistry}
      * @private
@@ -1197,7 +1197,7 @@ class CommentForm {
    * @private
    */
   async loadComment() {
-    const operation = this.operations.register('load');
+    const operation = this.operations.add('load');
     try {
       await this.target.loadCode(this);
       let commentInputValue = this.target.source.toInput();
@@ -1325,7 +1325,7 @@ class CommentForm {
    * @private
    */
   async preloadTemplate() {
-    const operation = this.operations.register('load', { affectsHeadline: false });
+    const operation = this.operations.add('load', { affectsHeadline: false });
     const preloadPage = pageRegistry.get(this.preloadConfig.commentTemplate);
     try {
       await preloadPage.loadCode();
@@ -2640,7 +2640,7 @@ class CommentForm {
       return;
     }
 
-    operation ||= this.operations.register('preview', { isAuto });
+    operation ||= this.operations.add('preview', { isAuto });
 
     if (isAuto) {
       const isTooEarly = Date.now() - this.lastPreviewTimestamp < 1000;
@@ -2775,7 +2775,7 @@ class CommentForm {
   async viewChanges() {
     if (this.isBeingSubmitted()) return;
 
-    const operation = this.operations.register('viewChanges');
+    const operation = this.operations.add('viewChanges');
 
     const { contextCode } = await this.prepareSource('viewChanges') || {};
     if (contextCode === undefined) {
@@ -3177,7 +3177,7 @@ class CommentForm {
     const doDelete = this.deleteCheckbox?.isSelected();
     if (!this.runChecks({ doDelete })) return;
 
-    const operation = this.operations.register('submit', undefined, !afterEditConflict);
+    const operation = this.operations.add('submit', undefined, !afterEditConflict);
 
     const otherFormsSubmitted = CommentFormStatic.getAll()
       .some((commentForm) => commentForm !== this && commentForm.isBeingSubmitted());
