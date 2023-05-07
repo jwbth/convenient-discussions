@@ -255,14 +255,12 @@ function loadSiteData() {
  * @private
  */
 function patterns() {
-  // Fix configuration values in wrong format
-  cd.config.customTalkNamespaces ||= [];
-
-  // Renamed configuration properties
-  cd.config.rejectNode ??= cd.config.checkForCustomForeignComponents;
-  cd.config.noSignatureClasses ??= cd.config.elementsToExcludeClasses;
+  // Renamed configuration properties. May be removed after s-ru configuration is updated.
   cd.config.noSignatureTemplates ??= cd.config.templatesToExcludeClasses;
+  cd.config.noSignatureClasses ??= cd.config.elementsToExcludeClasses;
+  cd.config.excludeFromHeadlineClasses ??= cd.config.foreignElementInHeadlineClasses;
   cd.config.noHighlightClasses ??= cd.config.customUnhighlightableElementClasses;
+  cd.config.rejectNode ??= cd.config.checkForCustomForeignComponents;
 
   const signatureEndingRegexpLastChar = cd.config.signatureEndingRegexp?.source?.slice(-1);
   if (signatureEndingRegexpLastChar && signatureEndingRegexpLastChar !== '$') {
