@@ -318,6 +318,7 @@
 	"sd-notifications-radio-all": "Meddela mig om svar på mina kommentarer och avsnitt som {{gender:$1|jag prenumererar på}}",
 	"sd-notifications-radio-tome": "Meddela mig bara om svar på mina kommentarer",
 	"sd-notifications-radio-none": "Meddela mig inte",
+	"sd-notifications-help": "Notiser är små popupmeddelanden längst upp till höger på sidan.",
 	"sd-notifycollapsedthreads": "Avisera om kommentarer i hopfällda trådar",
 	"sd-reformatcomments": "Återformatera kommentarer, ersätt signaturer med standardlänkar ovanför och nedanför",
 	"sd-showcontribslink": "Visa en bidragsgivares länk efter användaren i kommentarer",

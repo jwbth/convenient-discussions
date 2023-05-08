@@ -301,6 +301,7 @@
 	"sd-notifications-radio-all": "Upozorniť ma na odpovede na moje komentáre a komentáre v sekciách {{GENDER:$1|prihlásených na odber}}",
 	"sd-notifications-radio-tome": "Poslať mi oznámenie len pri odpovedaní na moje komentáre",
 	"sd-notifications-radio-none": "Neposielať mi oznámenia",
+	"sd-notifications-help": "Oznámenia sú malé okienka, ktoré vyskakujú v pravom hornom rohu.",
 	"sd-notifycollapsedthreads": "Poslať mi oznámenia o komentároch v zrolovaných vláknach",
 	"sd-reformatcomments": "Preformátujte komentáre a podpisy nahraďte štandardnými odkazmi hore a dole",
 	"sd-showcontribslink": "V komentároch zobraziť odkaz na príspevok za menom používateľa",

@@ -273,6 +273,7 @@
 	"sd-notifications-radio-all": "Notificarme de respuestas a mis comentarios y de comentarios en secciones a las que esté suscrito",
 	"sd-notifications-radio-tome": "Notificarme solo de respuestas a mis comentarios",
 	"sd-notifications-radio-none": "No notificarme",
+	"sd-notifications-help": "Las notificaciones son pequeños mensajes emergentes que aparecerán en la esquina superior derecha dela página.",
 	"sd-notifycollapsedthreads": "Notificar sobre comentarios en hilos colapsados",
 	"sd-showtoolbar": "Mostrar la barra de herramientas de edición",
 	"sd-signatureprefix": "Prefijo de firma",
