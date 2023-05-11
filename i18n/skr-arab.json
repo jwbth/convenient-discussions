@@ -83,6 +83,8 @@
 	"rd-comment": "تبصرہ",
 	"rd-summary": "تبدیلی دا خلاصہ",
 	"rd-close": "بند کرو",
+	"newTopicsSubscription-popup-title": "نویں خصوصیت",
+	"popup-manyForms-title": "بھلا تساں ڄاݨدے ہو؟",
 	"navpanel-newcomments-unknowndate": "نامعلوم تریخ",
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 {{plural:$1|تبصرہ|تبصرے}}",
