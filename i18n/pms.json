@@ -7,6 +7,8 @@
 	},
 	"script-name": "Discussion Pràtiche",
 	"script-name-short": "CD",
+	"page-title-reply": "Rispòsta su $1",
+	"page-title-edit": "Modìfica su $1",
 	"cm-gotoparent-tooltip": "Andé al coment predecessor",
 	"cm-gotochild-tooltip": "Torné andré al coment sucessor",
 	"cm-copylink-tooltip": "Copié na liura",
