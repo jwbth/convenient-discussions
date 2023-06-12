@@ -317,7 +317,7 @@
 	"sd-notifications-radio-all": "Obveščaj me o odgovorih na moje komentarje in komentarje v razdelkih, na katere sem {{gender:$1|naročen|naročena|naročen_a}}",
 	"sd-notifications-radio-tome": "Obveščaj me samo o odgovorih na moje komentarje",
 	"sd-notifications-radio-none": "Ne obveščaj me",
-	"sd-notifications-help": "To vpliva tudi na to, kateri komentarji se štejejo za relevantne, tako da je število novih komentarjev na navigacijskem panelu označeno z vijoličasto barvo.",
+	"sd-notifications-help": "To vpliva tudi na to, kateri komentarji se štejejo za relevantne, tako da je število novih komentarjev v navigacijskem panelu označeno z vijoličasto barvo.",
 	"sd-notifycollapsedthreads": "Obveščaj me o komentarjih v strnjenih nitih",
 	"sd-reformatcomments": "Preoblikuj komentarje, pri čemer zamenjaj podpise s standardnimi povezavami zgoraj in spodaj",
 	"sd-showcontribslink": "Za uporabniškim imenom v komentarjih prikaži povezavo na prispevke",
