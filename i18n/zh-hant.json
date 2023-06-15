@@ -6,6 +6,7 @@
 			"Impartial just",
 			"Jack who built the house",
 			"Kly",
+			"Lakejason0",
 			"Winston Sung",
 			"列维劳德",
 			"捍粵者"
@@ -215,7 +216,7 @@
 	"dn-grantpermission-again": "您在方便的討論設置中啟用了桌面通知，但不允許站點發送它們。授予站點接收通知的權限或拒絕以防止此消息再次出現。",
 	"deadanchor-section-lead": "在頁面上找不到“ $1 ”部分。",
 	"deadanchor-section-exactmatch": "段落「$1」看起來已被存檔。[[$2|查看已存檔段落]]（或是[$3 在存檔中搜尋]）。",
-	"deadanchor-section-inexactmatch": "段落「$1」好像已封存。[$2 請搜尋封存]。",
+	"deadanchor-section-inexactmatch": "段落「$1」看起來已被存檔。[$2 在存檔中搜尋]。",
 	"deadanchor-section-notfound": "[ $1在存檔中搜索它] 也沒有返回任何結果。",
 	"deadanchor-section-reason": "它可能已被刪除或重命名，或者您可能點擊了格式錯誤的鏈接。",
 	"deadanchor-section-similar": "但是，在頁面上發現了一個名稱相似的部分“[[ $1 | $2 ]]”。",
