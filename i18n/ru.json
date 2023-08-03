@@ -415,7 +415,7 @@
 	"lp-comment-toyou": "сообщение адресовано вам",
 	"lp-comment-watchedsection": "вы подписаны на этот раздел",
 	"bullet": "<b>•</b>",
-	"dot-separator": "&nbsp;•&#32;",
+	"dot-separator": "&nbsp;<b>·</b>&#32;",
 	"ellipsis": "…",
 	"loading-ellipsis": "Загружается…",
 	"addtopic": "Добавить тему",
