@@ -870,12 +870,13 @@ class CommentForm {
       this.$advanced.hide();
     }
 
+    // `.mw-body-content` for 404 pages
     /**
      * The area where comment previews and changes are displayed.
      *
      * @type {external:jQuery}
      */
-    this.$previewArea = $('<div>').addClass('cd-commentForm-previewArea');
+    this.$previewArea = $('<div>').addClass('cd-commentForm-previewArea mw-body-content');
 
     if (settings.get('autopreview')) {
       this.$previewArea
