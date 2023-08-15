@@ -32,10 +32,6 @@
 }
 
 .vector-toc {
-  .cd-toc-more {
-    font-size: 0.875em;
-  }
-
   .cd-toc-newCommentList,
   .cd-toc-addedCommentList {
     margin-top: 0;
@@ -51,8 +47,8 @@
 .cd-toc-addedCommentList .cd-toc-more,
 
 // Need to override `.vector-toc .vector-toc-link`
-.cd-toc-addedCommentList.cd-toc-addedCommentList a,
-.cd-toc-addedSection.cd-toc-addedSection a {
+.cd-toc-addedCommentList.cd-toc-addedCommentList.cd-toc-addedCommentList a,
+.cd-toc-addedSection.cd-toc-addedSection.cd-toc-addedSection a {
   color: #72777d;
 }
 
@@ -79,11 +75,6 @@
   }
 }
 
-.cd-toc-commentLinkText-sidebar.cd-toc-commentLinkText-sidebar {
-  padding: 0;
-}
-
-// `display: list-item` creates a problem in Firefox.
-.cd-toc-link-sidebar {
-  display: block;
+.cd-toc-commentLinkText-sidebar.cd-toc-commentLinkText-sidebar.cd-toc-commentLinkText-sidebar {
+  padding: 1px 0;
 }
