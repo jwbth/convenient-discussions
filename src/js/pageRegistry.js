@@ -346,6 +346,9 @@ export class Page {
           realName: this.name,
           queryTimestamp: resp.curtimestamp,
         });
+
+        this.source = new PageSource(this);
+
         return;
       } else {
         throw new CdError({
