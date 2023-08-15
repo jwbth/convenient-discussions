@@ -30,7 +30,7 @@ import {
  * @private
  */
 function lastFocused(commentForm1, commentForm2) {
-  return (commentForm1.lastFocused || new Date(0)) - (commentForm2.lastFocused || new Date(0));
+  return (commentForm2.lastFocused || new Date(0)) - (commentForm1.lastFocused || new Date(0));
 }
 
 /**
