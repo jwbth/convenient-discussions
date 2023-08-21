@@ -266,6 +266,7 @@
 	"sd-notifications-radio-all": "Abone olduğum bölümlerdeki yorumlarıma ve yorumlarım hakkındaki yanıtları bana bildir",
 	"sd-notifications-radio-tome": "Yalnızca yorumlarıma verilen yanıtları bana bildir",
 	"sd-notifications-radio-none": "Bana bildirme",
+	"sd-notifications-help": "Bildirimler, sayfanın sağ üst köşesindeki küçük açılır pencerelerdir.",
 	"sd-notifycollapsedthreads": "Daraltılmış başlıklardaki yorumları bildir",
 	"sd-showtoolbar": "Düzenleme araç çubuğunu göster",
 	"sd-signatureprefix": "İmza öneki",

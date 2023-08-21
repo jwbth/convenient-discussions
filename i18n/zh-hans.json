@@ -337,6 +337,7 @@
 	"sd-notifications-radio-all": "通知我评论的回复和我{{gender:$1|订阅主题}}的回复",
 	"sd-notifications-radio-tome": "仅通知我评论的回复",
 	"sd-notifications-radio-none": "不要通知我",
+	"sd-notifications-help": "通知位于页面右上角的弹出框。",
 	"sd-notifycollapsedthreads": "通知被折叠的讨论串中的评论",
 	"sd-reformatcomments": "重新格式化意见，在上方与下方同时使用标准链接来替换签名。",
 	"sd-showcontribslink": "在意见中的用户名后显示贡献链接",

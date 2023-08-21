@@ -270,6 +270,7 @@
 	"sd-notifications-radio-all": "Notifique-me sobre respostas aos meus comentários e comentários nas seções que assisto",
 	"sd-notifications-radio-tome": "Notifique-me sobre respostas apenas para meus comentários",
 	"sd-notifications-radio-none": "Não me notificar",
+	"sd-notifications-help": "As notificações são pequenos pop-ups no canto superior direito da página.",
 	"sd-notifycollapsedthreads": "Notificar sobre comentários em tópicos recolhidos",
 	"sd-reformatcomments": "Reformatar comentários, substituindo assinaturas com links padrão acima e abaixo",
 	"sd-showcontribslink": "Mostrar um link de contribuições após o nome de usuário nos comentários",

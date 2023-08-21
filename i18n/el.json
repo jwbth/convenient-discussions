@@ -98,6 +98,7 @@
 	"sd-page-talkpage": "Σελίδα συζήτησης",
 	"sd-page-notifications": "Ειδοποιήσεις",
 	"sd-dataremoved": "Τα δεδομένα σας αφαιρέθηκαν επιτυχώς.",
+	"sd-notifications-help": "Οι ειδοποιήσεις είναι μικρά αναδυόμενα παράθυρα πάνω δεξιά στην σελίδα.",
 	"sd-signatureprefix-help": "Κείμενο που προστίθεται πριν την υπογραφή.",
 	"sd-timestampformat-radio-default": "Προεπιλογή (\"$1\")",
 	"sd-timestampformat-radio-improved": "Βελτιώθηκε (\"$1\", \"$2\")",
