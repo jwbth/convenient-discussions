@@ -3042,7 +3042,7 @@ class Comment extends CommentSkeleton {
       ))
       .map((signature) => new CommentSource(this, signature, contextCode, isInSectionContext))
       .map((source, i, sources) => {
-        source.calculateMatchScore(thisData, sources);
+        source.calculateMatchScore(thisData, sources, signatures);
         return source;
       })
       .filter((source) => source.score > 2.5)

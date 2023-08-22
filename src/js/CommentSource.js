@@ -488,32 +488,33 @@ export default class CommentSource {
    *
    * @param {object} commentData Data about the comment.
    * @param {object[]} sources List of all matches.
+   * @param {object[]} signatures List of signatures extracted from wikitext.
    * @private
    */
-  calculateMatchScore(commentData, sources) {
+  calculateMatchScore(commentData, sources, signatures) {
     const doesIndexMatch = commentData.index === this.index;
     let doesPreviousCommentsDataMatch = false;
     let isPreviousCommentsDataEqual;
     let doesHeadlineMatch;
     if (commentData.previousComments.length) {
       for (let i = 0; i < commentData.previousComments.length; i++) {
-        const source = sources[this.index - 1 - i];
-        if (!source) break;
+        const signature = signatures[this.index - 1 - i];
+        if (!signature) break;
 
         // At least one coincided comment is enough if the second is unavailable.
         doesPreviousCommentsDataMatch = (
-          source.timestamp === commentData.previousComments[i].timestamp &&
+          signature.timestamp === commentData.previousComments[i].timestamp &&
 
           // Previous comment object may come from the worker, where it has only the authorName
           // property.
-          source.author.getName() === commentData.previousComments[i].authorName
+          signature.author.getName() === commentData.previousComments[i].authorName
         );
 
         // Many consecutive comments with the same author and timestamp.
         if (isPreviousCommentsDataEqual !== false) {
           isPreviousCommentsDataEqual = (
-            this.timestamp === source.timestamp &&
-            this.author === source.author
+            this.timestamp === signature.timestamp &&
+            this.author === signature.author
           );
         }
         if (!doesPreviousCommentsDataMatch) break;
