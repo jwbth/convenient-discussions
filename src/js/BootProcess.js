@@ -1348,11 +1348,12 @@ class BootProcess {
     let timeConflict = false;
     if (currentPageVisits.length) {
       CommentStatic.getAll().forEach((comment) => {
-        timeConflict ||= comment.initNewAndSeen(
+        const commentTimeConflict = comment.initNewAndSeen(
           currentPageVisits,
           currentUnixTime,
           this.data('unseenCommentIds')?.some((id) => id === comment.id) || false
         );
+        timeConflict ||= commentTimeConflict;
       });
 
       CommentStatic.configureAndAddLayers(CommentStatic.getAll().filter((c) => c.isNew));
