@@ -422,6 +422,7 @@
   "error-diffnotfound": "Couldn't find the edit that added this comment.",
   "error-diffnotfound-history": "You can look for it in the [$1 revision history] yourself.",
   "error-elementhidden": "The element is hidden. Can't scroll to it.",
+  "error-elementhidden-container": "The element is hidden. Scrolled to its visible container.",
   "error-purgecache": "Couldn't purge the cache of this page.",
   "error-anoneditwatning": "<strong>You are not logged in.</strong> Your IP address will be publicly visible if you make any edits.",
 

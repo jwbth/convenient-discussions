@@ -398,6 +398,7 @@
 	"error-diffnotfound": "Text of the error notification that appears when the user is carrying out an action that requires finding an edit that added a comment.\n\nSee also: {{msg-wm|Convenient-discussions-error-diffnotfound-history}}",
 	"error-diffnotfound-history": "Text added to the {{msg-wm|Convenient-discussions-error-diffnotfound}} message when looking in the revision history can be helpful.",
 	"error-elementhidden": "Text of an error notification.",
+	"error-elementhidden-container": "Text of a notification.",
 	"error-purgecache": "Text of the error notification that may appear when submitting a comment form on a page that transcludes a section that is altered by the user's action. This error doesn't abort the operation.",
 	"error-anoneditwatning": "Generic error message, short version of {{msg-mw|Anoneditwarning}}. Used in the comment form.",
 	"warning-performance-title": "Title of the warning notification that appears when the script has detected that the page is slow. See also the rest of the text: {{msg-wm|Convenient-discussions-warning-performance|notext=1}}.\n\n\"Performance\" here means how smooth is the interaction between the user and the page. I.e., sometimes the page can become unresponsive because it is long and/or the computer is slow.",

@@ -64,11 +64,19 @@ export default {
       return null;
     }
 
-    const offsetFirst = findFirstVisibleElementOffset('forward');
-    const offsetLast = findFirstVisibleElementOffset('backward');
+    let offsetFirst = findFirstVisibleElementOffset();
+    let offsetLast = findFirstVisibleElementOffset('backward');
     if (!offsetFirst || !offsetLast) {
-      mw.notify(cd.s('error-elementhidden'), { type: 'error' })
-      return this;
+      const $firstVisibleAncestor = $elements.first().closest(':visible');
+      if ($firstVisibleAncestor.length && !$firstVisibleAncestor.is(controller.$root)) {
+        $elements = $firstVisibleAncestor;
+        offsetFirst = findFirstVisibleElementOffset();
+        offsetLast = findFirstVisibleElementOffset('backward');
+        mw.notify(cd.s('error-elementhidden-container'));
+      } else {
+        mw.notify(cd.s('error-elementhidden'), { type: 'error' })
+        return this;
+      }
     }
     const offsetBottom = offsetLast.top + $elements.last().outerHeight();
 
