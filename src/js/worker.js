@@ -153,14 +153,14 @@ function processSections(parser, targets) {
 }
 
 /**
- * Remove an element's `id`, `class`, and `data-...` attributes.
+ * Remove the element's attributes whose names start with "data-".
  *
  * @param {external:Element} element
  * @private
  */
-function removeSomeAttributes(element) {
+function removeDataAttributes(element) {
   Object.keys(element.attribs).forEach((name) => {
-    if (['id', 'class'].includes(name) || /^data-/.test(name)) {
+    if (/^data-/.test(name)) {
       element.removeAttribute(name);
     }
   });
@@ -226,11 +226,9 @@ function filterCommentContent(comment) {
     }
 
     // Data attributes may include dynamic components, for example
-    // https://ru.wikipedia.org/wiki/Проект:Знаете_ли_вы/Подготовка_следующего_выпуска. IDs and
-    // classes may include dynamic components, for example instances of collapsible elements:
-    // https://www.mediawiki.org/wiki/Manual:Collapsible_elements.
-    removeSomeAttributes(element);
-    element.getElementsByAttribute(/^(id$|class$|data-)/).forEach(removeSomeAttributes);
+    // https://ru.wikipedia.org/wiki/Проект:Знаете_ли_вы/Подготовка_следующего_выпуска.
+    removeDataAttributes(element);
+    element.getElementsByAttribute(/^data-/).forEach(removeDataAttributes);
 
     // Empty comment anchors, in most cases added by the script.
     element.getElementsByTagName('span')
