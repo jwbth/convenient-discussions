@@ -757,6 +757,8 @@ export default {
         '*[style*="float: right"]',
         '*[style*="float:left"]',
         '*[style*="float: left"]',
+        'figure[typeof~="mw:File/Thumb"]',
+        'figure[typeof~="mw:File/Frame"]',
         ...this.getTsFloatingElementSelectors(),
       ].join(', ');
 

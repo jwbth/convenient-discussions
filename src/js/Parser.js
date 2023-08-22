@@ -143,9 +143,14 @@ class Parser {
       cd.config.outdentClass,
     ];
 
-    const classSelector = cd.g.noSignatureClasses.map((name) => `, .${name}`).join('');
+    const classSelector = cd.g.noSignatureClasses.map((name) => `.${name}`).join(', ');
+
+    // Example of a comment in a figure element:
+    // https://ru.wikipedia.org/w/index.php?title=Википедия%3AФорум%2FНовости&diff=prev&oldid=131939933
+    const tagSelector = ['blockquote', 'q', 'cite', 'figure'].join(', ');
+
     this.noSignatureElements = [
-      ...this.context.rootElement.querySelectorAll(`blockquote, q, cite${classSelector}`),
+      ...this.context.rootElement.querySelectorAll(`${tagSelector}, ${classSelector}`),
     ];
   }
 
