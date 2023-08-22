@@ -3785,9 +3785,13 @@ class CommentForm {
         $('<p>').append(button.$element),
       ).children(),
       head: true,
-      $floatableContainer: this.$element,
+      $floatableContainer: this.commentInput.$element,
       $container: controller.$root,
-      position: 'before',
+      position: (
+        $('#vector-main-menu-pinned-container, #vector-toc-pinned-container').is(':visible')
+      ) ?
+        'before' :
+        'below',
       padded: true,
       classes: ['cd-popup-onboarding'],
     });
