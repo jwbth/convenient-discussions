@@ -101,30 +101,6 @@ ol .cd-section-button {
   &-moremenu > .oo-ui-buttonElement-button > .oo-ui-iconElement-icon.oo-ui-iconElement-icon {
     background-size: 16px 16px;
   }
-
-  &-nometadata {
-    display: block;
-
-    .cd-section-actions {
-      .sitedir-ltr &,
-      .sitedir-rtl .mw-content-ltr & {
-        float: right;
-        margin-left: 1em;
-      }
-
-      .sitedir-rtl &,
-      .sitedir-ltr .mw-content-rtl & {
-        float: left;
-        margin-right: 1em;
-      }
-    }
-
-    // Prevent "float: right" from affecting the right offset of the actions block of the next
-    // subsection.
-    + .cd-subsection-heading {
-      margin-top: 2.25rem;
-    }
-  }
 }
 
 .cd-section-metadata {
