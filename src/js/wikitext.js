@@ -57,8 +57,7 @@ export function hideDistractingCode(code) {
  * @returns {?string}
  */
 export function findFirstTimestamp(code) {
-  const signatures = extractSignatures(code);
-  return signatures.length ? signatures[0].timestamp : null;
+  return extractSignatures(code)[0]?.timestamp || null;
 }
 
 /**

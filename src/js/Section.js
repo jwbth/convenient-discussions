@@ -1295,7 +1295,7 @@ class Section extends SectionSkeleton {
     Object.assign(this, {
       // It's more convenient to unify regexps to have \n as the last character of anything, not
       // (?:\n|$), and it doesn't seem to affect anything substantially.
-      code: content + '\n',
+      presumedCode: content + '\n',
 
       revisionId: revision.revid,
       queryTimestamp: resp.curtimestamp,
@@ -1398,7 +1398,7 @@ class Section extends SectionSkeleton {
   locateInCode(useSectionCode) {
     this.source = null;
 
-    const code = useSectionCode ? this.code : this.getSourcePage().code;
+    const code = useSectionCode ? this.presumedCode : this.getSourcePage().code;
     if (code === undefined) {
       throw new CdError({
         type: 'parse',
@@ -1415,7 +1415,9 @@ class Section extends SectionSkeleton {
     }
 
     /**
-     * @type {?(object|undefined)}
+     * Section's source code object.
+     *
+     * @type {?(SectionSource|undefined)}
      */
     this.source = source;
   }

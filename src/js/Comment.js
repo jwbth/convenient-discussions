@@ -3076,7 +3076,7 @@ class Comment extends CommentSkeleton {
     if (typeof codeOrUseSectionCode === 'string') {
       code = codeOrUseSectionCode;
     } else {
-      code = isInSectionContext ? this.section.code : this.getSourcePage().code;
+      code = isInSectionContext ? this.section.presumedCode : this.getSourcePage().code;
       this.source = null;
     }
 

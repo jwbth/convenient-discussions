@@ -746,7 +746,7 @@ export default class CommentSource {
     formAction,
     commentCode,
     contextCode: originalContextCode = this.isInSectionContext ?
-      this.comment.section.code :
+      this.comment.section.presumedCode :
       this.comment.getSourcePage().code,
     doDelete,
     commentForm,

@@ -44,13 +44,10 @@ function initArchivePagesMaps() {
   };
   cd.config.archivePaths.forEach((entry) => {
     if (entry instanceof RegExp) {
-      const archiveRegexp = new RegExp(entry.source + '.*');
-      sourcePagesMap.set(archiveRegexp, '');
+      sourcePagesMap.set(new RegExp(entry.source + '.*'), '');
     } else {
-      const sourceRegexp = pathToRegexp(entry.source, entry.replacements);
-      const archiveRegexp = pathToRegexp(entry.archive, entry.replacements, true);
-      archivePagesMap.set(sourceRegexp, entry.archive);
-      sourcePagesMap.set(archiveRegexp, entry.source);
+      archivePagesMap.set(pathToRegexp(entry.source, entry.replacements), entry.archive);
+      sourcePagesMap.set(pathToRegexp(entry.archive, entry.replacements, true), entry.source);
     }
   });
 }
@@ -766,21 +763,27 @@ class PageSource {
     const originalContextCode = this.page.code;
     let contextCode;
     if (commentForm.isNewTopicOnTop()) {
-      const adjustedPageCode = hideDistractingCode(originalContextCode);
-      const firstSectionStartIndex = adjustedPageCode.search(/^(=+).*\1[ \t\x01\x02]*$/m);
-      let codeBefore;
-      if (firstSectionStartIndex === -1) {
-        codeBefore = originalContextCode ? originalContextCode + '\n' : '';
-      } else {
-        codeBefore = originalContextCode.slice(0, firstSectionStartIndex);
-      }
-      const codeAfter = originalContextCode.slice(firstSectionStartIndex);
-      contextCode = codeBefore + commentCode + '\n' + codeAfter;
+      const firstSectionStartIndex = hideDistractingCode(originalContextCode)
+        .search(/^(=+).*\1[ \t\x01\x02]*$/m);
+      contextCode = (
+        (
+          firstSectionStartIndex === -1 ?
+            (originalContextCode ? originalContextCode + '\n' : '') :
+            originalContextCode.slice(0, firstSectionStartIndex)
+        ) +
+        commentCode +
+        '\n' +
+        originalContextCode.slice(firstSectionStartIndex)
+      );
     } else {
-      const codeBefore = commentForm.isSectionSubmitted() ?
-        '' :
-        (originalContextCode + '\n').trimLeft();
-      contextCode = codeBefore + commentCode;
+      contextCode = (
+        (
+          commentForm.isNewSectionApi() ?
+            '' :
+            (originalContextCode + '\n').trimLeft()
+        ) +
+        commentCode
+      );
     }
 
     return { contextCode, commentCode };

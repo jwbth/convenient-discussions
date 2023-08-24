@@ -352,7 +352,7 @@
   "sd-notifications-radio-all": "Notify me about replies to my comments and comments in sections I'm {{gender:$1|subscribed to}}",
   "sd-notifications-radio-tome": "Notify me about replies to my comments only",
   "sd-notifications-radio-none": "Don't notify me",
-  "sd-notifications-help": "This also affects which comments are considered relevant so that the number of new comments in the navigation panel is highlighted in purple.",
+  "sd-notifications-help": "This also affects which comments are considered relevant. When there are relevant new comments, the number of new comments in the navigation panel is highlighted in purple.",
   "sd-notifycollapsedthreads": "Notify about comments in collapsed threads",
   "sd-reformatcomments": "Reformat comments, replacing signatures with standard links above and below",
   "sd-showcontribslink": "Show a contributions link after the user name in comments",

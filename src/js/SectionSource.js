@@ -82,7 +82,7 @@ export default class SectionSource {
    */
   modifyContext({ action, commentCode }) {
     const originalContextCode = this.isInSectionContext ?
-      this.section.code :
+      this.section.presumedCode :
       this.section.getSourcePage().code;
     let contextCode;
     switch (action) {

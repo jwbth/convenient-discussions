@@ -2940,6 +2940,7 @@ class CommentForm {
       // Add the created section to the subscription list or change the headline for legacy
       // subscriptions.
       if (
+        // FIXME: sections added with no headline (actually comments added to the preceding section)
         this.mode === 'addSection' ||
         (
           !settings.get('useTopicSubscription') &&
@@ -2981,7 +2982,7 @@ class CommentForm {
           subscriptions.subscribe(subscribeId, headline, originalHeadline);
         }
       } else {
-        let section = this.targetSection?.getSectionSubscribedTo();
+        const section = this.targetSection?.getSectionSubscribedTo();
         if (section && !section.subscriptionState) {
           section.ensureSubscribeIdPresent(section.oldestComment || editTimestamp);
           section.subscribe('silent');

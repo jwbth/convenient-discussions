@@ -413,12 +413,10 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
 
     const sectionCode = source.sectionSource.code;
     const relativeContentStartIndex = source.sectionSource.relativeContentStartIndex;
-    const codeBefore = sectionCode.slice(0, relativeContentStartIndex);
-    const sectionContentCode = sectionCode.slice(relativeContentStartIndex);
     const newSectionCode = endWithTwoNewlines(
-      codeBefore +
+      sectionCode.slice(0, relativeContentStartIndex) +
       codeBeginning +
-      sectionContentCode +
+      sectionCode.slice(relativeContentStartIndex) +
       codeEnding
     );
 
@@ -428,22 +426,23 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
       // If the page has no sections, we add to the bottom.
       const firstSectionStartIndex = target.page.firstSectionStartIndex ?? pageCode.length;
 
-      const codeBefore = endWithTwoNewlines(pageCode.slice(0, firstSectionStartIndex));
-      const codeAfter = pageCode.slice(firstSectionStartIndex);
-      newCode = codeBefore + newSectionCode + codeAfter;
+      newCode = (
+        endWithTwoNewlines(pageCode.slice(0, firstSectionStartIndex)) +
+        newSectionCode +
+        pageCode.slice(firstSectionStartIndex)
+      );
     } else {
       newCode = pageCode + (pageCode ? '\n' : '') + newSectionCode;
     }
 
     let summaryEnding = this.controls.summaryEnding.input.getValue();
-    const colon = cd.mws('colon-separator', { language: 'content' });
-    summaryEnding &&= colon + summaryEnding;
-    const summary = cd.s('es-move-from', source.sectionWikilink) + summaryEnding;
+    summaryEnding &&= cd.mws('colon-separator', { language: 'content' }) + summaryEnding;
+
     try {
       await target.page.edit({
         text: newCode,
         summary: buildEditSummary({
-          text: summary,
+          text: cd.s('es-move-from', source.sectionWikilink) + summaryEnding,
           section: this.section.headline,
         }),
         baserevid: target.page.revisionId,
@@ -480,35 +479,31 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    */
   async editSourcePage(source, target) {
     const sectionCode = source.sectionSource.code;
-    const timestamp = findFirstTimestamp(sectionCode) || cd.g.signCode + '~';
-
-    let newSectionCode;
-    if (cd.config.getMoveSourcePageCode && this.controls.keepLink.input.isSelected()) {
-      const code = cd.config.getMoveSourcePageCode(
-        target.sectionWikilink,
-        cd.g.userSignature,
-        timestamp
-      );
-      const codeBefore = sectionCode.slice(0, source.sectionSource.relativeContentStartIndex);
-      newSectionCode = codeBefore + code + '\n';
-    } else {
-      newSectionCode = '';
-    }
-
-    const codeBefore = source.page.code.slice(0, source.sectionSource.startIndex);
-    const codeAfter = source.page.code.slice(source.sectionSource.endIndex);
-    const newCode = codeBefore + newSectionCode + codeAfter;
 
     let summaryEnding = this.controls.summaryEnding.input.getValue();
-    const colon = cd.mws('colon-separator', { language: 'content' });
-    summaryEnding &&= colon + summaryEnding;
-    const summary = cd.s('es-move-to', target.sectionWikilink) + summaryEnding;
+    summaryEnding &&= cd.mws('colon-separator', { language: 'content' }) + summaryEnding;
 
     try {
       await source.page.edit({
-        text: newCode,
+        text: (
+          source.page.code.slice(0, source.sectionSource.startIndex) +
+          (
+            cd.config.getMoveSourcePageCode && this.controls.keepLink.input.isSelected() ?
+              (
+                sectionCode.slice(0, source.sectionSource.relativeContentStartIndex) +
+                cd.config.getMoveSourcePageCode(
+                  target.sectionWikilink,
+                  cd.g.userSignature,
+                  findFirstTimestamp(sectionCode) || cd.g.signCode + '~'
+                ) +
+                '\n'
+              ) :
+              ''
+          ) +
+          source.page.code.slice(source.sectionSource.endIndex)
+        ),
         summary: buildEditSummary({
-          text: summary,
+          text: cd.s('es-move-to', target.sectionWikilink) + summaryEnding,
           section: this.section.headline,
         }),
         baserevid: source.page.revisionId,

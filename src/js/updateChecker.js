@@ -201,7 +201,7 @@ function mapSections(otherSections) {
   SectionStatic.getAll().forEach((section) => {
     section.liveSectionNumber = section.match?.sectionNumber ?? null;
     section.liveSectionNumberRevisionId = lastCheckedRevisionId;
-    delete section.code;
+    delete section.presumedCode;
     delete section.revisionId;
     delete section.queryTimestamp;
   });
