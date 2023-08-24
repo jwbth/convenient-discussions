@@ -1302,7 +1302,6 @@ class Section extends SectionSkeleton {
     });
 
     Object.assign(pageRegistry.getCurrent(), {
-      pageId: page.pageid,
       redirectTarget,
       realName: redirectTarget || this.name,
     });

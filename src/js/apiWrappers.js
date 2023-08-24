@@ -165,7 +165,7 @@ export async function getVisits(reuse = false) {
   if (userRegistry.getCurrent().isRegistered()) {
     visits = await (
       (
-        controller.getBootProcess().isPageFirstParsed() &&
+        controller.getBootProcess().isFirstRun() &&
         mw.user.options.get(cd.g.visitsOptionName) === null
       ) ?
         Promise.resolve({}) :
@@ -243,7 +243,7 @@ export async function saveVisits(visits) {
  */
 export function getLegacySubscriptions(reuse = false) {
   return (
-    controller.getBootProcess()?.isPageFirstParsed() &&
+    controller.getBootProcess()?.isFirstRun() &&
     mw.user.options.get(cd.g.subscriptionsOptionName) === null
   ) ?
     Promise.resolve({}) :

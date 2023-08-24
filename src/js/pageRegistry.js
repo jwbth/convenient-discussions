@@ -439,8 +439,6 @@ export class Page {
      */
 
     Object.assign(this, {
-      pageId: page.pageid,
-
       // It's more convenient to unify regexps to have \n as the last character of anything, not
       // (?:\n|$), and it doesn't seem to affect anything substantially.
       code: content + '\n',
@@ -617,8 +615,6 @@ export class Page {
         throw e;
       }
     }
-
-    this.pageId = resp.edit.pageid;
 
     return resp.edit.newtimestamp || 'nochange';
   }

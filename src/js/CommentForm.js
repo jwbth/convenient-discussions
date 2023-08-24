@@ -2758,6 +2758,12 @@ class CommentForm {
   async reloadPage(passedData, operation) {
     this.forget();
 
+    if (!controller.doesPageExist()) {
+      location.hash = passedData.commentIds[0];
+      location.reload();
+      return;
+    }
+
     try {
       await controller.reload(passedData);
     } catch (e) {
@@ -3071,19 +3077,14 @@ class CommentForm {
 
     const editTimestamp = await this.editPage(contextCode, operation);
 
-    // The operation is closed inside CommentForm#editPage.
+    // The operation is closed inside `CommentForm#editPage`.
     if (!editTimestamp) return;
 
-    // Here we use a trick where we pass, in passedData, the name of the section that was set to be
-    // watched/unwatched using a checkbox in a form just sent. The server doesn't manage to update
-    // the value quickly enough, so it returns the old value, but we must display the new one.
+    // Here we use a trick where we pass, in `passedData`, the name of the section that was set to
+    // be watched/unwatched using a checkbox in a form just sent. The server doesn't manage to
+    // update the value quickly enough, so it returns the old value, but we must display the new
+    // one.
     const passedData = { wasCommentFormSubmitted: true };
-
-    // When creating a page
-    if (!controller.doesPageExist()) {
-      mw.config.set('wgArticleId', this.targetPage.pageId);
-      passedData.wasPageCreated = true;
-    }
 
     if (this.subscribeCheckbox) {
       this.updateSubscriptionStatus(editTimestamp, commentCode, passedData);

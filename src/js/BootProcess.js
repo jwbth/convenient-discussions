@@ -86,7 +86,7 @@ function handleDtMarkup(elements) {
   );
   let dtMarkupHavenElement;
   if (moveNotRemove) {
-    if (!controller.getBootProcess().isPageFirstParsed()) {
+    if (!controller.getBootProcess().isFirstRun()) {
       dtMarkupHavenElement = controller.$content.children('.cd-dtMarkupHaven').get(0);
     }
     if (!dtMarkupHavenElement) {
@@ -139,8 +139,6 @@ function handleDtMarkup(elements) {
  * @property {string} [sectionId] ID of a section to scroll to.
  * @property {string} [pushState] Whether to replace the URL in the address bar adding the comment
  *   ID to it if it's specified.
- * @property {boolean} [wasPageCreated] Whether the page was created while it was in the previous
- *   state. Affects navigation panel mounting and addition of certain event handlers.
  * @property {number} [scrollY] Page's Y offset.
  * @property {object[]} [unseenCommentIds] IDs of unseen comments on this page.
  * @property {string} [justWatchedSection] Section just watched so that there could be not enough
@@ -233,15 +231,6 @@ class BootProcess {
    */
   isFirstRun() {
     return this.firstRun;
-  }
-
-  /**
-   * Check whether the page is parsed for the first time.
-   *
-   * @returns {boolean}
-   */
-  isPageFirstParsed() {
-    return this.firstRun || this.data('wasPageCreated');
   }
 
   /**
@@ -886,15 +875,11 @@ class BootProcess {
    * @private
    */
   layOutHtml() {
-    const selector = this.data('wasPageCreated') ?
-      '.noarticletext, .warningbox' :
-      '.mw-parser-output';
     controller.$content
-      // Warning boxes may contain log excerpts on pages that were previously deleted.
-      .children(selector)
-
-      .remove();
-    controller.$content.prepend(controller.$root);
+      .children('.mw-parser-output')
+      .remove()
+        .end()
+      .prepend(controller.$root);
   }
 
   /**
@@ -1592,8 +1577,7 @@ class BootProcess {
            navigation panel is added to such pages, new comments are highlighted.
 
       We need to be accurate regarding which functionality should be turned on on which level. We
-      should also make sure we only add this functionality once. The BootProcess#isPageFirstParsed()
-      output reflects if the page is parsed for the first time.
+      should also make sure we only add this functionality once.
     */
 
     if (controller.doesPageExist()) {
@@ -1668,7 +1652,7 @@ class BootProcess {
       this.hideDtNewTopicForm();
       this.maybeAddAddSectionForm();
 
-      if (this.isPageFirstParsed()) {
+      if (this.isFirstRun()) {
         this.configureActiveCommentFormsConfirmation();
       }
     }
@@ -1711,7 +1695,7 @@ class BootProcess {
         toc.addCommentCount();
       }
 
-      if (this.isPageFirstParsed()) {
+      if (this.isFirstRun()) {
         pageNav.mount();
 
         this.addEventListeners();
