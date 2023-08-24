@@ -2809,31 +2809,37 @@ class Comment extends CommentSkeleton {
   /**
    * Load the comment's source code.
    *
+   * @param {import('./CommentForm').default} [commentForm] Comment form, if it is submitted or code
+   * changes are viewed.
    * @throws {CdError|Error}
    */
-  async loadCode() {
+  async loadCode(commentForm) {
+    commentForm?.setSectionSubmitted(false);
     try {
-      let useSectionCode = false;
-      if (this.section && this.section.liveSectionNumber !== null) {
+      if (commentForm && this.section && this.section.liveSectionNumber !== null) {
         try {
           await this.section.requestCode();
-          useSectionCode = true;
+          this.section.locateInCode(true);
+          this.locateInCode(true);
+          commentForm?.setSectionSubmitted(true);
         } catch (e) {
-          if (e instanceof CdError && e.data.code === 'noSuchSection') {
-            await this.getSourcePage().loadCode();
-          } else {
+          if (!(
+            e instanceof CdError &&
+            ['noSuchSection', 'locateSection', 'locateComment'].includes(e.data.code)
+          )) {
             throw e;
           }
         }
-      } else {
-        await this.getSourcePage().loadCode();
       }
-      this.locateInCode(useSectionCode);
+      if (!commentForm?.isSectionSubmitted()) {
+        await this.getSourcePage().loadCode();
+        this.locateInCode(false);
+      }
     } catch (e) {
       if (e instanceof CdError) {
-        throw new CdError(Object.assign({}, {
-          message: cd.sParse('cf-error-getpagecode'),
-        }, e.data));
+        throw new CdError(
+          Object.assign({}, { message: cd.sParse('cf-error-getpagecode') }, e.data)
+        );
       } else {
         throw e;
       }
@@ -3093,7 +3099,9 @@ class Comment extends CommentSkeleton {
       return source;
     } else {
       /**
-       * @type {?(object|undefined)}
+       * Comment's source code object.
+       *
+       * @type {?(CommentSource|undefined)}
        */
       this.source = source;
     }

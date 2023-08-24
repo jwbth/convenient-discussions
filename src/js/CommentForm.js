@@ -155,6 +155,15 @@ class CommentForm {
     this.sectionOpeningCommentEdited = this.mode === 'edit' && this.target.isOpeningSection;
 
     /**
+     * Whether a new section will be added on submit using a dedicated API request. (Filled upon
+     * submitting or viewing changes.)
+     *
+     * @type {?boolean}
+     * @private
+     */
+    this.newSectionApi = null;
+
+    /**
      * Whether the wikitext of a section will be submitted to the server instead of a page. (Filled
      * upon submitting or viewing changes.)
      *
@@ -1195,7 +1204,7 @@ class CommentForm {
   async loadComment() {
     const operation = this.operations.register('load');
     try {
-      await this.target.loadCode(true);
+      await this.target.loadCode(this);
       let commentInputValue = this.target.source.toInput();
       if (this.target.source.inSmallFont) {
         commentInputValue = `<small>${commentInputValue}</small>`;
@@ -1694,7 +1703,7 @@ class CommentForm {
         this.updateAutoSummary(true, true);
 
         textReactions.forEach(({ regexp, checkFunc, message, type, name }) => {
-          if (regexp.test(text) && (typeof checkFunc !== 'function' || checkFunc(this))) {
+          if (regexp?.test(text) && (typeof checkFunc !== 'function' || checkFunc(this))) {
             this.showMessage(message, { type, name });
           } else {
             this.hideMessage(name);
@@ -2418,46 +2427,35 @@ class CommentForm {
   async prepareSource(action) {
     const commentIds = extractCommentIds(this.commentInput.getValue());
 
-    this.sectionSubmitted = Boolean(
+    this.newSectionApi = Boolean(
       this.mode === 'addSection' &&
       !this.newTopicOnTop &&
-      this.headlineInput?.getValue().trim()
+      this.headlineInput?.getValue().trim() &&
+      !commentIds.length
     );
-    try {
-      if (
-        this.targetSection &&
-        this.targetSection.liveSectionNumber !== null &&
-        !commentIds.length
-      ) {
-        await this.targetSection.loadCode(this);
-      } else {
-        await this.targetPage.loadCode(!controller.doesPageExist());
+
+    if (!this.newSectionApi) {
+      try {
+        const target = commentIds.length ? this.targetPage : this.target;
+        await target.loadCode(target === this.targetPage ? !controller.doesPageExist() : this);
+      } catch (e) {
+        if (e instanceof CdError) {
+          this.handleError(
+            Object.assign({}, { message: cd.sParse('cf-error-getpagecode') }, e.data)
+          );
+        } else {
+          this.handleError({
+            type: 'javascript',
+            logMessage: e,
+          });
+        }
+        return;
       }
-    } catch (e) {
-      if (e instanceof CdError) {
-        this.handleError(
-          Object.assign({}, { message: cd.sParse('cf-error-getpagecode') }, e.data)
-        );
-      } else {
-        this.handleError({
-          type: 'javascript',
-          logMessage: e,
-        });
-      }
-      return;
     }
 
     let contextCode;
     let commentCode;
     try {
-      if (
-        !(this.target instanceof Page) &&
-
-        // We already located the section when got its code.
-        !(this.target instanceof Section && this.sectionSubmitted)
-      ) {
-        this.target.locateInCode(this.sectionSubmitted);
-      }
       ({ contextCode, commentCode } = this.target.source.modifyContext({
         commentCode: this.target instanceof Comment ? undefined : this.inputToCode(action),
         action: this.mode,
@@ -2686,12 +2684,14 @@ class CommentForm {
         prop: 'diff',
         ...cd.g.apiErrorsFormatHtml,
       };
-      if (this.sectionSubmitted || !controller.doesPageExist()) {
+
+      if (this.sectionSubmitted || this.newSectionApi || !this.targetPage.revisionId) {
         options.fromslots = 'main';
-        options['fromtext-main'] = this.mode === 'addSection' ? '' : this.targetSection.code;
+        options['fromtext-main'] = this.sectionSubmitted ? this.targetSection.presumedCode : '';
       } else {
         options.fromrev = this.targetPage.revisionId;
       }
+
       resp = await controller.getApi().post(options, {
         // Beneficial when sending long unicode texts, which is what we do here.
         contentType: 'multipart/form-data',
@@ -2857,30 +2857,25 @@ class CommentForm {
   async editPage(code, operation) {
     let result;
     try {
-      let sectionParam;
+      const options = {
+        text: code,
+        summary: buildEditSummary({ text: this.summaryInput.getValue() }),
+        minor: this.minorCheckbox?.isSelected(),
+        watchlist: this.watchCheckbox.isSelected() ? 'watch' : 'unwatch',
+      };
       let sectionOrPage;
-      let sectionTitleParam;
-      if (this.sectionSubmitted) {
-        if (this.mode === 'addSection') {
-          sectionTitleParam = this.headlineInput.getValue().trim();
-          sectionParam = 'new';
-        } else {
-          sectionParam = this.targetSection.liveSectionNumber;
-        }
+      if (this.newSectionApi) {
+        options.sectiontitle = this.headlineInput.getValue().trim();
+        options.section = 'new';
+      } else if (this.sectionSubmitted) {
+        options.section = this.targetSection.liveSectionNumber;
         sectionOrPage = this.targetSection;
       } else {
         sectionOrPage = this.targetPage;
       }
-      result = await this.targetPage.edit({
-        section: sectionParam,
-        sectiontitle: sectionTitleParam,
-        text: code,
-        summary: buildEditSummary({ text: this.summaryInput.getValue() }),
-        minor: this.minorCheckbox?.isSelected(),
-        baserevid: sectionOrPage?.revisionId,
-        starttimestamp: sectionOrPage?.queryTimestamp,
-        watchlist: this.watchCheckbox.isSelected() ? 'watch' : 'unwatch',
-      });
+      options.baserevid = sectionOrPage?.revisionId;
+      options.starttimestamp = sectionOrPage?.queryTimestamp;
+      result = await this.targetPage.edit(options);
     } catch (e) {
       if (e instanceof CdError) {
         const { type, details } = e.data;
@@ -3658,6 +3653,24 @@ class CommentForm {
    */
   getParentComment() {
     return this.parentComment;
+  }
+
+  /**
+   * Set whether a new section will be added on submit using a dedicated API request.
+   *
+   * @param {boolean} value
+   */
+  setNewSectionApi(value) {
+    this.newSectionApi = Boolean(value);
+  }
+
+  /**
+   * Check whether a new section will be added on submit using a dedicated API request.
+   *
+   * @returns {boolean}
+   */
+  isNewSectionApi() {
+    return this.newSectionApi;
   }
 
   /**

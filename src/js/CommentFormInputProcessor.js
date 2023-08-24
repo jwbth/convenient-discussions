@@ -464,16 +464,7 @@ class CommentFormInputProcessor {
    */
   addHeadline() {
     const headline = this.commentForm.headlineInput?.getValue().trim();
-    if (
-      !headline ||
-      (
-        this.commentForm.getMode() === 'addSection' &&
-        this.commentForm.isSectionSubmitted() &&
-        this.action === 'submit'
-      )
-    ) {
-      return;
-    }
+    if (!headline || (this.commentForm.isNewSectionApi() && this.action === 'submit')) return;
 
     let level;
     if (this.commentForm.getMode() === 'addSection') {

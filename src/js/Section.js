@@ -1316,21 +1316,20 @@ class Section extends SectionSkeleton {
    * @throws {CdError|Error}
    */
   async loadCode(commentForm) {
+    commentForm?.setSectionSubmitted(false);
     try {
-      if (this.liveSectionNumber !== null) {
+      if (commentForm && this.liveSectionNumber !== null) {
         try {
           await this.requestCode();
           this.locateInCode(true);
           commentForm?.setSectionSubmitted(true);
         } catch (e) {
-          if (e instanceof CdError && ['noSuchSection', 'locateSection'].includes(e.data.code)) {
-            await this.getSourcePage().loadCode();
-            this.locateInCode(false);
-          } else {
+          if (!(e instanceof CdError && ['noSuchSection', 'locateSection'].includes(e.data.code))) {
             throw e;
           }
         }
-      } else {
+      }
+      if (!commentForm?.isSectionSubmitted()) {
         await this.getSourcePage().loadCode();
         this.locateInCode(false);
       }

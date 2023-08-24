@@ -143,6 +143,14 @@ export class Page {
      * @type {number}
      */
     this.namespaceId = mwTitle.getNamespaceId();
+
+    /**
+     * Page's source code object. This is mostly for polymorphism with {@link CommentSource} and
+     * {@link SectionSource}; the source code is in {@link Page.code}.
+     *
+     * @type {PageSource}
+     */
+    this.source = new PageSource(this);
   }
 
   /**
@@ -340,15 +348,15 @@ export class Page {
     }
 
     if (page.missing) {
+      Object.assign(this, {
+        code: '',
+        revisionId: undefined,
+        redirectTarget: undefined,
+        realName: this.name,
+        queryTimestamp: resp.curtimestamp,
+      });
+
       if (tolerateMissing) {
-        Object.assign(this, {
-          code: '',
-          realName: this.name,
-          queryTimestamp: resp.curtimestamp,
-        });
-
-        this.source = new PageSource(this);
-
         return;
       } else {
         throw new CdError({
@@ -442,8 +450,6 @@ export class Page {
       realName: redirectTarget || this.name,
       queryTimestamp: resp.curtimestamp,
     });
-
-    this.source = new PageSource(this);
   }
 
   /**
