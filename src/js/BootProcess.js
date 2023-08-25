@@ -1226,7 +1226,10 @@ class BootProcess {
       const isTargetFound = (
         comment ||
         cd.config.idleFragments.some((regexp) => decodedFragment.match(regexp)) ||
-        decodedFragment.startsWith('/media/') ||
+
+        // `/media/` is from MediaViewer, `noticeApplied` is from RedWarn
+        /^\/media\/|^noticeApplied/.test(decodedFragment) ||
+
         $(':target').length ||
         $(`a[name="${escapedDecodedFragment}"]`).length ||
         $(`*[id="${escapedDecodedFragment}"]`).length ||
