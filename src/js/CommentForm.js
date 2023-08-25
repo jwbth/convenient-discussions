@@ -943,21 +943,6 @@ class CommentForm {
       this.commentInput.$element.find('.group-heading').remove();
     }
 
-    // Make the undo/redo functionality work in browsers that support it. Also, fix the behavior
-    // of dialog where text is inserted into the last opened form, not the current.
-    $input.textSelection('register', {
-      encapsulateSelection: (options) => {
-        // Seems like the methods are registered for all inputs instead of the one the method is
-        // called for.
-        CommentFormStatic.getLastActive().encapsulateSelection(options);
-      },
-      setContents: (value) => {
-        const commentForm = CommentFormStatic.getLastActive();
-        commentForm.commentInput.select();
-        insertText(commentForm.commentInput, value);
-      },
-    });
-
     const lang = cd.g.userLanguage;
     $input.wikiEditor('addToToolbar', {
       section: 'main',
