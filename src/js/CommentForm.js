@@ -2979,7 +2979,7 @@ class CommentForm {
           if (isHeadlineAltered) {
             passedData.justUnsubscribedFromSection = originalHeadline;
           }
-          subscriptions.subscribe(subscribeId, headline, originalHeadline);
+          subscriptions.subscribe(subscribeId, headline, originalHeadline, true);
         }
       } else {
         const section = this.targetSection?.getSectionSubscribedTo();
