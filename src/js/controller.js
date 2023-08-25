@@ -899,34 +899,6 @@ export default {
         }
       }
     }
-
-    if (navPanel.isMounted()) {
-      // R
-      if (keyCombination(e, 82) && !isInputFocused()) {
-        navPanel.refreshClick();
-      }
-
-      // W
-      if (keyCombination(e, 87) && !isInputFocused()) {
-        navPanel.goToPreviousNewComment();
-      }
-
-      // S
-      if (keyCombination(e, 83) && !isInputFocused()) {
-        navPanel.goToNextNewComment();
-      }
-
-      // F
-      if (keyCombination(e, 70) && !isInputFocused()) {
-        navPanel.goToFirstUnseenComment();
-      }
-
-      // C
-      if (keyCombination(e, 67) && !isInputFocused()) {
-        e.preventDefault();
-        navPanel.goToNextCommentForm(true);
-      }
-    }
   },
 
   /**
