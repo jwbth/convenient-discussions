@@ -1391,7 +1391,7 @@ export default {
 
     // Diff pages
     this.$content
-      .children('.mw-revslider-container, .ve-init-mw-diffPage-diffMode, .diff, .oo-ui-element-hidden, .diff-hr, .diff-currentversion-title')
+      .children('.mw-revslider-container, .mw-diff-table-prefix, .diff, .oo-ui-element-hidden, .diff-hr, .diff-currentversion-title')
       .remove();
 
     // Revision navigation
