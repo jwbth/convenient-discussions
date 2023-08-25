@@ -83,7 +83,7 @@ export default {
       tagName: 'div',
       classes: ['cd-navPanel-button'],
       id: 'cd-navPanel-previousButton',
-      tooltip: cd.s('navpanel-previous'),
+      tooltip: `${cd.s('navpanel-previous')} ${cd.mws('parentheses', 'W')}`,
       action: () => {
         this.goToPreviousNewComment();
       },
@@ -101,7 +101,7 @@ export default {
       tagName: 'div',
       classes: ['cd-navPanel-button'],
       id: 'cd-navPanel-nextButton',
-      tooltip: cd.s('navpanel-next'),
+      tooltip: `${cd.s('navpanel-next')} ${cd.mws('parentheses', 'S')}`,
       action: () => {
         this.goToNextNewComment();
       },
@@ -119,7 +119,7 @@ export default {
       tagName: 'div',
       classes: ['cd-navPanel-button'],
       id: 'cd-navPanel-firstUnseenButton',
-      tooltip: cd.s('navpanel-firstunseen'),
+      tooltip: `${cd.s('navpanel-firstunseen')} ${cd.mws('parentheses', 'F')}`,
       action: () => {
         this.goToFirstUnseenComment();
       },
@@ -137,7 +137,7 @@ export default {
       tagName: 'div',
       classes: ['cd-navPanel-button'],
       id: 'cd-navPanel-commentFormButton',
-      tooltip: cd.s('navpanel-commentform'),
+      tooltip: `${cd.s('navpanel-commentform')} ${cd.mws('parentheses', 'C')}`,
       action: () => {
         this.goToNextCommentForm();
       },
@@ -343,7 +343,9 @@ export default {
       tooltipText = (
         cd.s('navpanel-newcomments-count', commentCount) +
         ' ' +
-        cd.s('navpanel-newcomments-refresh')
+        cd.s('navpanel-newcomments-refresh') +
+        ' ' +
+        cd.mws('parentheses', 'R')
       );
       if (areThereNew && settings.get('highlightNewInterval')) {
         tooltipText += '\n' + cd.s('navpanel-markasread', cd.g.cmdModifier);
@@ -379,7 +381,7 @@ export default {
         }, cd.g.msInMin);
       }
     } else {
-      tooltipText = cd.s('navpanel-refresh');
+      tooltipText = cd.s('navpanel-refresh') + ' ' + cd.mws('parentheses', 'R');
       if (areThereNew && settings.get('highlightNewInterval')) {
         tooltipText += '\n' + cd.s('navpanel-markasread', cd.g.cmdModifier);
       }
