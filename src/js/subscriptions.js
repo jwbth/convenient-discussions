@@ -2,7 +2,7 @@
  * Singleton related to the subscriptions feature, including the DisussionTools' topic subscription
  * and CD's legacy section watching.
  *
- * @class subscriptions
+ * @module subscriptions
  */
 
 import Button from './Button';

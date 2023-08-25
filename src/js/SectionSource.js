@@ -7,7 +7,7 @@ import { endWithTwoNewlines, extractSignatures, normalizeCode, removeWikiMarkup 
  * Class that keeps the methods and data related to the section's source code. Also used for section
  * source match candidates before a single match is chosen among them.
  */
-export default class SectionSource {
+class SectionSource {
   /**
    * Create a section's source object.
    *
@@ -294,3 +294,5 @@ export default class SectionSource {
     );
   }
 }
+
+export default SectionSource;

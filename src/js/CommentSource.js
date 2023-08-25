@@ -91,7 +91,7 @@ function getAdjustedChunkCodeAfter(currentIndex, contextCode) {
  * Class that keeps the methods and data related to the comment's source code. Also used for comment
  * source match candidates before a single match is chosen among them.
  */
-export default class CommentSource {
+class CommentSource {
   /**
    * Create a comment's source object.
    *
@@ -816,3 +816,5 @@ export default class CommentSource {
     return { contextCode, commentCode };
   }
 }
+
+export default CommentSource;
