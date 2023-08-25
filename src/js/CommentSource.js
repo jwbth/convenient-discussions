@@ -132,9 +132,11 @@ class CommentSource {
       // should be kept coordinated with the reverse transformation code in
       // `CommentForm#inputToCode`. Some more comments are there.
       const entireLineRegexp = new RegExp(/^(?:\x01\d+_(block|template)\x02) *$/);
-      const fileRegexp = new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$`, 'i');
+
+      // `(?:)` to work around Chrome DevTools bug when it sees "$`"
+      const fileRegexp = new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$(?:)`, 'i');
       const currentLineEndingRegexp = new RegExp(
-        `(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x04|<br[ \\n]*\\/?>) *$`,
+        `(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x04|<br[ \\n]*\\/?>) *$(?:)`,
         'i'
       );
       const nextLineBeginningRegexp = new RegExp(
@@ -487,7 +489,7 @@ class CommentSource {
    * Calculate and set a score for the match.
    *
    * @param {object} commentData Data about the comment.
-   * @param {object[]} sources List of all matches.
+   * @param {CommentSource[]} sources List of all matches.
    * @param {object[]} signatures List of signatures extracted from wikitext.
    * @private
    */

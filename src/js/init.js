@@ -404,7 +404,7 @@ function patterns() {
   cd.g.colonNamespacesPrefixRegexp = new RegExp(`^:(?:${colonNssPattern}):`, 'i');
 
   cd.g.badCommentBeginnings = cd.g.badCommentBeginnings
-    .concat(new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\n*(?=[*:#])`, 'i'))
+    .concat(new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\n+(?=[*:#])`, 'i'))
     .concat(cd.config.badCommentBeginnings)
     .concat(
       clearTemplatesPattern ?
