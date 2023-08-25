@@ -34,7 +34,7 @@ function testWithData(label, code, expected, commentForm, action = 'submit', con
   test(label, () => {
     commentForm.getMode = () => commentForm.mode;
     commentForm.getTarget = () => commentForm.target;
-    commentForm.isSectionSubmitted = () => commentForm.sectionSubmitted;
+    commentForm.isNewSectionApi = () => commentForm.newSectionApi;
 
     if (config) {
       cd.config = Object.assign({}, cd.config, config);
@@ -135,7 +135,7 @@ const voteForm = {
 const addSectionForm = {
   mode: 'addSection',
   target: {},
-  sectionSubmitted: true,
+  newSectionApi: true,
   headlineInput: {
     getValue: () => 'Headline',
   },
@@ -144,7 +144,7 @@ const addSectionForm = {
 const addSectionFormNoHeadline = {
   mode: 'addSection',
   target: {},
-  sectionSubmitted: false,
+  newSectionApi: false,
   headlineInput: {
     getValue: () => '',
   },
@@ -153,7 +153,7 @@ const addSectionFormNoHeadline = {
 const addSectionFormOmitSignature = {
   mode: 'addSection',
   target: {},
-  sectionSubmitted: true,
+  newSectionApi: true,
   headlineInput: {
     getValue: () => 'Headline',
   },
