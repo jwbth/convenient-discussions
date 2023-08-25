@@ -294,6 +294,7 @@ const CommentFormStatic = {
           originalHeadline: commentForm.getOriginalHeadline(),
           originalComment: commentForm.getOriginalComment(),
           summaryAltered: commentForm.isSummaryAltered(),
+          omitSignatureCheckboxAltered: commentForm.isOmitSignatureCheckboxAltered(),
           lastFocused: commentForm.getLastFocused(),
         }));
       const saveUnixTime = Date.now();

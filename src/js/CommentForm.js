@@ -147,6 +147,14 @@ class CommentForm {
     this.summaryAltered = initialState?.summaryAltered ?? false;
 
     /**
+     * Was the omit signature checkbox altered manually.
+     *
+     * @type {boolean}
+     * @private
+     */
+    this.omitSignatureCheckboxAltered = initialState?.omitSignatureCheckboxAltered ?? false;
+
+    /**
      * Is section opening comment edited.
      *
      * @type {boolean}
@@ -1798,6 +1806,9 @@ class CommentForm {
     this.omitSignatureCheckbox
       ?.on('change', () => {
         this.preview(false);
+        if (this.omitSignatureCheckbox.$input.is(':focus')) {
+          this.omitSignatureCheckboxAltered = true;
+        }
       })
       .on('change', saveSessionEventHandler);
     this.deleteCheckbox
@@ -2483,6 +2494,38 @@ class CommentForm {
   }
 
   /**
+   * Update the preview area with the content of the preview.
+   *
+   * @param {string} html
+   * @private
+   */
+  updatePreview(html) {
+    this.$previewArea
+      .html(html)
+      .prepend(
+        $('<div>')
+          .addClass('cd-commentForm-previewArea-label')
+          .text(cd.s('cf-block-preview'))
+      )
+      .cdAddCloseButton()
+      .toggleClass(
+        'cd-commentForm-previewArea-indentedComment',
+        this.willCommentBeIndented
+      );
+
+    /**
+     * A comment preview has been rendered.
+     *
+     * @event previewReady
+     * @param {external:jQuery} $previewArea {@link CommentForm#$previewArea} object.
+     * @param {object} cd {@link convenientDiscussions} object.
+     */
+    mw.hook('convenientDiscussions.previewReady').fire(this.$previewArea, cd);
+
+    mw.hook('wikipage.content').fire(this.$previewArea);
+  }
+
+  /**
    * Preview the comment.
    *
    * @param {boolean} [previewEmpty=true] If `false`, don't preview if the comment and headline
@@ -2543,13 +2586,12 @@ class CommentForm {
       if (operation.isClosed()) return;
     }
 
+    const commentInputValue = this.commentInput.getValue();
+
     // In case of an empty comment input, we in fact make this request for the sake of parsing the
     // summary if there is a need. The other possibility is previewing by clicking the relevant
     // button.
-    const areInputsEmpty = (
-      !this.commentInput.getValue().trim() &&
-      !this.headlineInput?.getValue().trim()
-    );
+    const areInputsEmpty = !commentInputValue.trim() && !this.headlineInput?.getValue().trim();
 
     if (areInputsEmpty && !previewEmpty) {
       operation.close();
@@ -2587,29 +2629,26 @@ class CommentForm {
       if ((isAuto && areInputsEmpty) || this.deleteCheckbox?.isSelected()) {
         this.$previewArea.empty();
       } else {
-        this.$previewArea
-          .html(html)
-          .prepend(
-            $('<div>')
-              .addClass('cd-commentForm-previewArea-label')
-              .text(cd.s('cf-block-preview'))
-          )
-          .cdAddCloseButton()
-          .toggleClass(
-            'cd-commentForm-previewArea-indentedComment',
-            this.willCommentBeIndented
-          );
+        this.updatePreview(html);
+      }
 
-        /**
-         * A comment preview has been rendered.
-         *
-         * @event previewReady
-         * @param {external:jQuery} $previewArea {@link CommentForm#$previewArea} object.
-         * @param {object} cd {@link convenientDiscussions} object.
-         */
-        mw.hook('convenientDiscussions.previewReady').fire(this.$previewArea, cd);
-
-        mw.hook('wikipage.content').fire(this.$previewArea);
+      // Workaround to omit the signature when templates containing a signature, like
+      // https://en.wikipedia.org/wiki/Template:Requested_move, are substituted.
+      if (this.omitSignatureCheckbox && !this.omitSignatureCheckboxAltered) {
+        const previewSignature = this.$previewArea.find('.cd-commentForm-signature').html();
+        const substAliasesString = ['subst:'].concat(cd.config.substAliases).join('|')
+        const isThereSubst = (new RegExp(`{{ *(${substAliasesString})`, 'i'))
+          .test(commentInputValue);
+        if (
+          isThereSubst &&
+          html.indexOf(previewSignature) !== html.lastIndexOf(previewSignature) &&
+          !this.omitSignatureCheckbox.isSelected()
+        ) {
+          this.omitSignatureCheckbox.setSelected(true);
+        }
+        if (!isThereSubst && this.omitSignatureCheckbox.isSelected()) {
+          this.omitSignatureCheckbox.setSelected(false);
+        }
       }
 
       this.$summaryPreview.empty();
@@ -3612,6 +3651,15 @@ class CommentForm {
    */
   isSummaryAltered() {
     return this.summaryAltered;
+  }
+
+  /**
+   * Check whether the omit signature checkbox was altered by the user.
+   *
+   * @returns {boolean}
+   */
+  isOmitSignatureCheckboxAltered() {
+    return this.omitSignatureCheckboxAltered;
   }
 
   /**
