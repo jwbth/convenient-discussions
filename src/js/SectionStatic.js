@@ -134,10 +134,10 @@ export default {
    */
   findByHeadlineParts(sectionName) {
     const matches = this.items
-      .map((section) => {
-        const score = calculateWordOverlap(sectionName, section.headline);
-        return { section, score };
-      })
+      .map((section) => ({
+        section,
+        score: calculateWordOverlap(sectionName, section.headline, true),
+      }))
       .filter((match) => match.score > 0.66);
     const bestMatch = matches.sort((m1, m2) => m2.score - m1.score)[0];
     return bestMatch ? bestMatch.section : null;

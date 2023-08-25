@@ -697,7 +697,8 @@ export function keepWorkerSafeValues(obj, allowedFuncNames = []) {
 }
 
 /**
- * Calculate the share of elements of the first array that are included in the second array.
+ * Calculate the proportion of elements matched between arrays to the overall count of array
+ * elements.
  *
  * @param {Array.<*>} arr1
  * @param {Array.<*>} arr2
@@ -705,6 +706,10 @@ export function keepWorkerSafeValues(obj, allowedFuncNames = []) {
  * @private
  */
 function calculateArrayOverlap(arr1, arr2) {
+  if (!arr1.length || !arr2.length) {
+    return 0;
+  }
+
   let total = arr2.length;
   let overlap = 0;
   arr1.forEach((el1) => {
@@ -724,17 +729,15 @@ function calculateArrayOverlap(arr1, arr2) {
  *
  * @param {string} s1
  * @param {string} s2
+ * @param {boolean} caseInsensitive
  * @returns {number}
  */
-export function calculateWordOverlap(s1, s2) {
+export function calculateWordOverlap(s1, s2, caseInsensitive) {
   const regexp = new RegExp(`[${cd.g.letterPattern}]{2,}`, 'g');
-  const words1 = (s1.match(regexp) || []).filter(unique);
-  const words2 = (s2.match(regexp) || []).filter(unique);
-  if (!words1.length || !words2.length) {
-    return 0;
-  }
-
-  return calculateArrayOverlap(words1, words2);
+  const strToArr = (s) => (
+    ((caseInsensitive ? s.toLowerCase() : s).match(regexp) || []).filter(unique)
+  );
+  return calculateArrayOverlap(strToArr(s1), strToArr(s2));
 }
 
 /**

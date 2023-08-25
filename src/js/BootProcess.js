@@ -1222,7 +1222,7 @@ class BootProcess {
       });
     }
 
-    if (decodedFragment && controller.isPageActive()) {
+    if (decodedFragment && !pageRegistry.getCurrent().isArchivePage()) {
       const isTargetFound = (
         comment ||
         cd.config.idleFragments.some((regexp) => decodedFragment.match(regexp)) ||
