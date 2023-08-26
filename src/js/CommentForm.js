@@ -2891,7 +2891,7 @@ class CommentForm {
         text: code,
         summary: buildEditSummary({ text: this.summaryInput.getValue() }),
         minor: this.minorCheckbox?.isSelected(),
-        watchlist: this.watchCheckbox.isSelected() ? 'watch' : 'unwatch',
+        watchlist: this.watchCheckbox?.isSelected() ? 'watch' : 'unwatch',
       };
       let sectionOrPage;
       if (this.newSectionApi) {

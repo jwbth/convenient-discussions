@@ -809,7 +809,7 @@ class BootProcess {
       });
 
     // Can't do it earlier: we don't have section IDs until now.
-    if (settings.get('useTopicSubscription')) {
+    if (userRegistry.getCurrent().isRegistered() && settings.get('useTopicSubscription')) {
       if (this.firstRun) {
         subscriptions.setupTopicSubscription();
       }
@@ -831,14 +831,16 @@ class BootProcess {
     // Depends on DT ID being set
     SectionStatic.addMetadataAndActions();
 
-    subscriptions.getLoadRequest().then(() => {
-      SectionStatic.addSubscribeButtons();
-      subscriptions.cleanUp();
-      toc.markSubscriptions();
-      if (this.firstRun) {
-        subscriptions.addPageSubscribeButton();
-      }
-    });
+    if (userRegistry.getCurrent().isRegistered()) {
+      subscriptions.getLoadRequest().then(() => {
+        SectionStatic.addSubscribeButtons();
+        subscriptions.cleanUp();
+        toc.markSubscriptions();
+        if (this.firstRun) {
+          subscriptions.addPageSubscribeButton();
+        }
+      });
+    }
 
     /**
      * The script has processed the sections.
@@ -1584,12 +1586,14 @@ class BootProcess {
     */
 
     if (controller.doesPageExist()) {
-      if (!settings.get('useTopicSubscription')) {
-        subscriptions.load();
-      }
+      if (userRegistry.getCurrent().isRegistered()) {
+        if (!settings.get('useTopicSubscription')) {
+          subscriptions.load();
+        }
 
-      if (controller.isPageActive()) {
-        this.visitsRequest = getVisits(true);
+        if (controller.isPageActive()) {
+          this.visitsRequest = getVisits(true);
+        }
       }
 
       /**
@@ -1688,7 +1692,9 @@ class BootProcess {
       this.processTargets();
 
       if (controller.isPageActive()) {
-        this.processVisits();
+        if (userRegistry.getCurrent().isRegistered()) {
+          this.processVisits();
+        }
 
         // This should be below `this.processVisits()` because
         // `updateChecker.maybeProcessRevisionsAtLoad()` needs `this.previousVisitUnixTime` to be

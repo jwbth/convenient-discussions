@@ -11,6 +11,7 @@ import init from './init';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
 import subscriptions from './subscriptions';
+import userRegistry from './userRegistry';
 import {
   definedAndNotNull,
   generatePageNamePattern,
@@ -43,7 +44,7 @@ async function prepare() {
   await settings.init();
 
   const requests = [];
-  if (!settings.get('useTopicSubscription')) {
+  if (userRegistry.getCurrent().isRegistered() && !settings.get('useTopicSubscription')) {
     // Loading the subscriptions is not critical, as opposed to messages, so we catch the possible
     // error, not letting it be caught by the try/catch block.
     subscriptions.load(true).catch((e) => {

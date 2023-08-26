@@ -655,41 +655,48 @@ class Comment extends CommentSkeleton {
    * @private
    */
   addThankButton() {
-    if (this.author.isRegistered() && this.date && !this.isOwn) {
-      if (!thanks) {
-        thanks = cleanUpThanks(getFromLocalStorage('thanks'));
-        saveToLocalStorage('thanks', thanks);
-      }
-      const isThanked = Object.keys(thanks).some((key) => (
-        this.id === thanks[key].id &&
-        calculateWordOverlap(this.getText(), thanks[key].text) > 0.66
-      ));
+    if (
+      !userRegistry.getCurrent().isRegistered() ||
+      !this.author.isRegistered() ||
+      !this.date ||
+      this.isOwn
+    ) {
+      return;
+    }
 
-      const action = this.thankButtonClick;
-      if (settings.get('reformatComments')) {
-        /**
-         * Edit button.
-         *
-         * @type {CommentButton}
-         */
-        this.thankButton = new CommentButton({
-          label: cd.s(isThanked ? 'cm-thanked' : 'cm-thank'),
-          tooltip: cd.s(isThanked ? 'cm-thanked-tooltip' : 'cm-thank-tooltip'),
-          classes: ['cd-comment-button-label'],
-          action,
-        });
+    if (!thanks) {
+      thanks = cleanUpThanks(getFromLocalStorage('thanks'));
+      saveToLocalStorage('thanks', thanks);
+    }
+    const isThanked = Object.keys(thanks).some((key) => (
+      this.id === thanks[key].id &&
+      calculateWordOverlap(this.getText(), thanks[key].text) > 0.66
+    ));
 
-        this.menuElement.appendChild(this.thankButton.element);
-      } else {
-        const element = elementPrototypes.thankButton.cloneNode(true);
-        const widgetConstructor = elementPrototypes.getThankButton;
-        this.thankButton = new CommentButton({ element, action, widgetConstructor });
-        this.overlayMenu.appendChild(this.thankButton.element);
-      }
+    const action = this.thankButtonClick;
+    if (settings.get('reformatComments')) {
+      /**
+       * Edit button.
+       *
+       * @type {CommentButton}
+       */
+      this.thankButton = new CommentButton({
+        label: cd.s(isThanked ? 'cm-thanked' : 'cm-thank'),
+        tooltip: cd.s(isThanked ? 'cm-thanked-tooltip' : 'cm-thank-tooltip'),
+        classes: ['cd-comment-button-label'],
+        action,
+      });
 
-      if (isThanked) {
-        this.setThanked();
-      }
+      this.menuElement.appendChild(this.thankButton.element);
+    } else {
+      const element = elementPrototypes.thankButton.cloneNode(true);
+      const widgetConstructor = elementPrototypes.getThankButton;
+      this.thankButton = new CommentButton({ element, action, widgetConstructor });
+      this.overlayMenu.appendChild(this.thankButton.element);
+    }
+
+    if (isThanked) {
+      this.setThanked();
     }
   }
 
