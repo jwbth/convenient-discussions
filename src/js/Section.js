@@ -1367,11 +1367,9 @@ class Section extends SectionSkeleton {
         sectionHeadingMatch,
         contextCode,
         adjustedContextCode,
-        thisHeadline,
-        sectionIndex,
-        headlines,
         isInSectionContext,
       });
+      source.calculateMatchScore(sectionIndex, thisHeadline, headlines);
 
       if (!source.code || !source.firstChunkCode || source.score <= 1) continue;
 

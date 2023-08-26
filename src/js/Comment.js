@@ -624,27 +624,27 @@ class Comment extends CommentSkeleton {
    * @private
    */
   addEditButton() {
-    if (this.isActionable && (this.isOwn || settings.get('allowEditOthersComments'))) {
-      const action = this.editButtonClick;
-      if (settings.get('reformatComments')) {
-        /**
-         * Edit button.
-         *
-         * @type {CommentButton}
-         */
-        this.editButton = new CommentButton({
-          label: cd.s('cm-edit'),
-          classes: ['cd-comment-button-label'],
-          action,
-        });
+    if (!this.isActionable || !(this.isOwn || settings.get('allowEditOthersComments'))) return;
 
-        this.menuElement.appendChild(this.editButton.element);
-      } else {
-        const element = elementPrototypes.editButton.cloneNode(true);
-        const widgetConstructor = elementPrototypes.getEditButton;
-        this.editButton = new CommentButton({ element, action, widgetConstructor });
-        this.overlayMenu.appendChild(this.editButton.element);
-      }
+    const action = this.editButtonClick;
+    if (settings.get('reformatComments')) {
+      /**
+       * Edit button.
+       *
+       * @type {CommentButton}
+       */
+      this.editButton = new CommentButton({
+        label: cd.s('cm-edit'),
+        classes: ['cd-comment-button-label'],
+        action,
+      });
+
+      this.menuElement.appendChild(this.editButton.element);
+    } else {
+      const element = elementPrototypes.editButton.cloneNode(true);
+      const widgetConstructor = elementPrototypes.getEditButton;
+      this.editButton = new CommentButton({ element, action, widgetConstructor });
+      this.overlayMenu.appendChild(this.editButton.element);
     }
   }
 
@@ -707,18 +707,18 @@ class Comment extends CommentSkeleton {
    * @private
    */
   addCopyLinkButton() {
-    if (this.id && !settings.get('reformatComments')) {
-      const element = elementPrototypes.copyLinkButton.cloneNode(true);
-      const widgetConstructor = elementPrototypes.getCopyLinkButton;
-      const href = this.dtId ? '#' + this.dtId : undefined;
-      this.copyLinkButton = new CommentButton({
-        element,
-        action: this.copyLink,
-        widgetConstructor,
-        href,
-      });
-      this.overlayMenu.appendChild(this.copyLinkButton.element);
-    }
+    if (!this.id || settings.get('reformatComments')) return;
+
+    const element = elementPrototypes.copyLinkButton.cloneNode(true);
+    const widgetConstructor = elementPrototypes.getCopyLinkButton;
+    const href = this.dtId ? '#' + this.dtId : undefined;
+    this.copyLinkButton = new CommentButton({
+      element,
+      action: this.copyLink,
+      widgetConstructor,
+      href,
+    });
+    this.overlayMenu.appendChild(this.copyLinkButton.element);
   }
 
   /**
@@ -728,27 +728,27 @@ class Comment extends CommentSkeleton {
    * @private
    */
   addGoToParentButton() {
-    if (this.getParent()) {
-      const action = this.goToParentButtonClick;
-      if (settings.get('reformatComments')) {
-        /**
-         * "Go to the parent comment" button.
-         *
-         * @type {CommentButton}
-         */
-        this.goToParentButton = new CommentButton({
-          tooltip: cd.s('cm-gotoparent-tooltip'),
-          classes: ['cd-comment-button-icon', 'cd-comment-button-goToParent'],
-          action,
-        });
+    if (!this.getParent()) return;
 
-        this.headerElement.appendChild(this.goToParentButton.element);
-      } else {
-        const element = elementPrototypes.goToParentButton.cloneNode(true);
-        const widgetConstructor = elementPrototypes.getGoToParentButton;
-        this.goToParentButton = new CommentButton({ element, action, widgetConstructor });
-        this.overlayMenu.appendChild(this.goToParentButton.element);
-      }
+    const action = this.goToParentButtonClick;
+    if (settings.get('reformatComments')) {
+      /**
+       * "Go to the parent comment" button.
+       *
+       * @type {CommentButton}
+       */
+      this.goToParentButton = new CommentButton({
+        tooltip: cd.s('cm-gotoparent-tooltip'),
+        classes: ['cd-comment-button-icon', 'cd-comment-button-goToParent'],
+        action,
+      });
+
+      this.headerElement.appendChild(this.goToParentButton.element);
+    } else {
+      const element = elementPrototypes.goToParentButton.cloneNode(true);
+      const widgetConstructor = elementPrototypes.getGoToParentButton;
+      this.goToParentButton = new CommentButton({ element, action, widgetConstructor });
+      this.overlayMenu.appendChild(this.goToParentButton.element);
     }
   }
 

@@ -57,11 +57,13 @@ export function handleApiReject(code, resp) {
 export function splitIntoBatches(arr) {
   // `currentUserRights` is rarely set on first page load (when `getDtSubscriptions()` runs, for
   // example).
-  const isHigherApiLimit = currentUserRights ?
-    currentUserRights.includes('apihighlimits') :
-    mw.config.get('wgUserGroups').includes('sysop');
-
-  const limit = isHigherApiLimit ? 500 : 50;
+  const limit = (
+    currentUserRights ?
+      currentUserRights.includes('apihighlimits') :
+      mw.config.get('wgUserGroups').includes('sysop')
+  ) ?
+    500 :
+    50;
   return arr.reduce((result, item, index) => {
     const chunkIndex = Math.floor(index / limit);
     if (!result[chunkIndex]) {
@@ -764,11 +766,13 @@ export async function getPagesExistence(titles) {
 export async function getDtSubscriptions(ids) {
   const subscriptions = {};
   for (const nextIds of splitIntoBatches(ids)) {
-    const resp = await controller.getApi().post({
-      action: 'discussiontoolsgetsubscriptions',
-      commentname: nextIds,
-    }).catch(handleApiReject);
-    Object.assign(subscriptions, resp.subscriptions);
+    Object.assign(
+      subscriptions,
+      (await controller.getApi().post({
+        action: 'discussiontoolsgetsubscriptions',
+        commentname: nextIds,
+      }).catch(handleApiReject)).subscriptions
+    );
   }
   return subscriptions;
 }

@@ -18,9 +18,6 @@ class SectionSource {
     sectionHeadingMatch,
     contextCode,
     adjustedContextCode,
-    thisHeadline,
-    sectionIndex,
-    headlines,
     isInSectionContext,
   }) {
     this.section = section;
@@ -31,8 +28,6 @@ class SectionSource {
       console.warn(`Couldn't read the "${this.headline}" section contents.`);
       return;
     }
-
-    this.calculateMatchScore(sectionIndex, thisHeadline, headlines);
   }
 
   /**

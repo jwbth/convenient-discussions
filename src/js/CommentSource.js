@@ -112,6 +112,8 @@ class CommentSource {
     this.signatureEndIndex = signature.startIndex + signature.dirtyCode.length;
     this.code = contextCode.slice(signature.commentStartIndex, signature.startIndex);
     this.isInSectionContext = isInSectionContext;
+
+    this.adjust();
   }
 
   /**
@@ -527,7 +529,6 @@ class CommentSource {
     }
 
     isPreviousCommentsDataEqual = Boolean(isPreviousCommentsDataEqual);
-    this.adjust();
     if (commentData.followsHeading) {
       doesHeadlineMatch = this.headingMatch ?
         (
