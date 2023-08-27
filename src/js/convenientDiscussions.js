@@ -413,7 +413,7 @@ Object.assign(cd.g, {
    * @type {string[]}
    * @default []
    */
-  noSignatureClasses: ['cd-moveMark'],
+  noSignatureClasses: ['mw-notalk', 'cd-moveMark'],
 
   /**
    * Names of elements that shouldn't be the first or last highlightable element. CD wraps these
