@@ -963,7 +963,7 @@ class BootProcess {
             return;
           }
           pageName = getLastArrayElementOrSelf(url.query.title)
-            .replace(/^Special:NewSection\//i, '');
+            ?.replace(/^Special:NewSection\//i, '');
         } else if ($button.is('input')) {
           pageName = $button
             .closest('form')
