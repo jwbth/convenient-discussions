@@ -1346,6 +1346,7 @@ class CommentForm {
 
       if (code.includes(cd.g.signCode) || this.preloadConfig.omitSignature) {
         this.omitSignatureCheckbox.setSelected(true);
+        this.omitSignatureCheckboxAltered = true;
       }
 
       this.commentInput.setValue(code);
@@ -2635,18 +2636,17 @@ class CommentForm {
       // Workaround to omit the signature when templates containing a signature, like
       // https://en.wikipedia.org/wiki/Template:Requested_move, are substituted.
       if (this.omitSignatureCheckbox && !this.omitSignatureCheckboxAltered) {
-        const previewSignature = this.$previewArea.find('.cd-commentForm-signature').html();
-        const substAliasesString = ['subst:'].concat(cd.config.substAliases).join('|')
-        const isThereSubst = (new RegExp(`{{ *(${substAliasesString})`, 'i'))
-          .test(commentInputValue);
-        if (
-          isThereSubst &&
-          html.indexOf(previewSignature) !== html.lastIndexOf(previewSignature) &&
-          !this.omitSignatureCheckbox.isSelected()
-        ) {
-          this.omitSignatureCheckbox.setSelected(true);
-        }
-        if (!isThereSubst && this.omitSignatureCheckbox.isSelected()) {
+        const substAliasesString = ['subst:'].concat(cd.config.substAliases).join('|');
+        if ((new RegExp(`{{ *(${substAliasesString})`, 'i')).test(commentInputValue)) {
+          const signatureText = this.$previewArea.find('.cd-commentForm-signature').text();
+          const previewText = this.$previewArea.text();
+          if (
+            signatureText &&
+            previewText.indexOf(signatureText) !== previewText.lastIndexOf(signatureText)
+          ) {
+            this.omitSignatureCheckbox.setSelected(true);
+          }
+        } else {
           this.omitSignatureCheckbox.setSelected(false);
         }
       }
