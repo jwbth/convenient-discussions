@@ -930,6 +930,9 @@ class BootProcess {
       '.cd-addTopicButton a',
       'a.cd-addTopicButton',
       'a[href*="section=new"]',
+      'a[href*="Special:NewSection/"]',
+      'a[href*="Special:Newsection/"]',
+      'a[href*="special:newsection/"]',
       '.commentbox input[type="submit"]',
       '.createbox input[type="submit"]',
     ]
@@ -959,7 +962,8 @@ class BootProcess {
           } catch {
             return;
           }
-          pageName = getLastArrayElementOrSelf(url.query.title);
+          pageName = getLastArrayElementOrSelf(url.query.title)
+            .replace(/^Special:NewSection\//i, '');
         } else if ($button.is('input')) {
           pageName = $button
             .closest('form')

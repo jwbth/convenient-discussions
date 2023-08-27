@@ -1333,7 +1333,7 @@ class CommentForm {
       let onlyInclude;
       while ((match = regexp.exec(code))) {
         onlyInclude ??= '';
-        onlyInclude += match[2];
+        onlyInclude += match[3];
       }
       if (onlyInclude !== undefined) {
         code = onlyInclude;
