@@ -219,7 +219,7 @@
 	"deadanchor-section-lead": "לא ניתן למצוא נושא בשם \"$1\" בדף.",
 	"deadanchor-section-exactmatch": "נראה כי הנושא \"$1\" הועבר לארכיון. [[$2|ראו בארכיון]] (או [$3 חפשו בארכיון]).",
 	"deadanchor-section-inexactmatch": "נראה כי הנושא \"$1\" הועבר לארכיון. [$2 חיפוש בארכיון].",
-	"deadanchor-section-notfound": "גם [חיפוש אחר $1 בארכיון] לא החזיר תוצאות.",
+	"deadanchor-section-notfound": "גם [$1 חיפוש בארכיון] לא החזיר תוצאות.",
 	"deadanchor-section-reason": "ייתכן שהוא נמחק או שהשם שונה, או שעקבת אחרי קישור בעל מבנה לא תקין.",
 	"deadanchor-section-similar": "למרות זאת, נושא בעל שם דומה \"[[$1|$2]]\" נמצא בדף.",
 	"deadanchor-comment-lead": "לא הצלחנו למצוא את התגובה בדף.",
