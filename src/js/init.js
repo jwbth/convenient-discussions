@@ -267,6 +267,9 @@ function patterns() {
     cd.config.signatureEndingRegexp = new RegExp(cd.config.signatureEndingRegexp.source + '$');
   }
 
+  const nss = mw.config.get('wgFormattedNamespaces');
+  const nsIds = mw.config.get('wgNamespaceIds');
+
   /**
    * Contributions page local name.
    *
@@ -274,42 +277,36 @@ function patterns() {
    * @type {string}
    * @memberof convenientDiscussions.g
    */
-  cd.g.contribsPage = (
-    mw.config.get('wgFormattedNamespaces')[-1] +
-    ':' +
-    cd.g.specialPageAliases.Contributions
-  );
+  cd.g.contribsPage = `${nss[-1]}:${cd.g.specialPageAliases.Contributions}`;
 
   const anySpace = (s) => s.replace(/[ _]/g, '[ _]+').replace(/:/g, '[ _]*:[ _]*');
+  const joinNsNames = (...ids) => (
+    Object.keys(nsIds)
+      .filter((key) => ids.includes(nsIds[key]))
 
-  const nsIds = mw.config.get('wgNamespaceIds');
+      // Sometimes `wgNamespaceIds` has a string that doesn't transform into one of the keys of
+      // `wgFormattedNamespaces` when converting the first letter to uppercase, like in Azerbaijani
+      // Wikipedia (compare `Object.keys(mw.config.get('wgNamespaceIds'))[4]` = `'i̇stifadəçi'` with
+      // `mw.config.get('wgFormattedNamespaces')[2]` = `'İstifadəçi'`). We simply add the
+      // `wgFormattedNamespaces` name separately.
+      .concat(ids.map((id) => nss[id]))
 
-  const userNssAliasesPattern = Object.keys(nsIds)
-    .filter((key) => nsIds[key] === 2 || nsIds[key] === 3)
-    .map(anySpace)
-    .join('|');
+      .map(anySpace)
+      .join('|')
+  );
+
+  const userNssAliasesPattern = joinNsNames(2, 3);
   cd.g.userNamespacesRegexp = new RegExp(`(?:^|:)(?:${userNssAliasesPattern}):(.+)`, 'i');
 
-  const userNsAliasesPattern = Object.keys(nsIds)
-    .filter((key) => nsIds[key] === 2)
-    .map(anySpace)
-    .join('|');
+  const userNsAliasesPattern = joinNsNames(2);
   cd.g.userLinkRegexp = new RegExp(`^:?(?:${userNsAliasesPattern}):([^/]+)$`, 'i');
   cd.g.userSubpageLinkRegexp = new RegExp(`^:?(?:${userNsAliasesPattern}):.+?/`, 'i');
 
-  const userTalkNsAliasesPattern = Object.keys(nsIds)
-    .filter((key) => nsIds[key] === 3)
-    .map(anySpace)
-    .join('|');
+  const userTalkNsAliasesPattern = joinNsNames(3);
   cd.g.userTalkLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):([^/]+)$`, 'i');
   cd.g.userTalkSubpageLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):.+?/`, 'i');
 
   cd.g.contribsPageLinkRegexp = new RegExp(`^${cd.g.contribsPage}/`);
-
-  const allNssPattern = Object.keys(nsIds)
-    .filter((ns) => ns)
-    .join('|');
-  cd.g.allNamespacesRegexp = new RegExp(`^:?(?:${allNssPattern}):`, 'i');
 
   const contribsPagePattern = anySpace(cd.g.contribsPage);
   cd.g.captureUserNamePattern = (
@@ -391,16 +388,10 @@ function patterns() {
   cd.g.noSignatureClasses = cd.g.noSignatureClasses.concat(cd.config.noSignatureClasses);
   cd.g.noHighlightClasses = cd.g.noHighlightClasses.concat(cd.config.noHighlightClasses);
 
-  const fileNssPattern = Object.keys(nsIds)
-    .filter((key) => nsIds[key] === 6)
-    .map(anySpace)
-    .join('|');
+  const fileNssPattern = joinNsNames(6);
   cd.g.filePrefixPattern = `(?:${fileNssPattern}):`;
 
-  const colonNssPattern = Object.keys(nsIds)
-    .filter((key) => nsIds[key] === 6 || nsIds[key] === 14)
-    .map(anySpace)
-    .join('|');
+  const colonNssPattern = joinNsNames(6, 14);
   cd.g.colonNamespacesPrefixRegexp = new RegExp(`^:(?:${colonNssPattern}):`, 'i');
 
   cd.g.badCommentBeginnings = cd.g.badCommentBeginnings

@@ -150,6 +150,8 @@ class Autocomplete {
     );
 
     const spacesRegexp = new RegExp(cd.mws('word-separator', { language: 'content' }), 'g');
+    const allNssPattern = Object.keys(mw.config.get('wgNamespaceIds')).filter((ns) => ns).join('|');
+    const allNamespacesRegexp = new RegExp(`^:?(?:${allNssPattern}):`, 'i');
 
     const collectionsByType = {
       mentions: {
@@ -321,10 +323,7 @@ class Autocomplete {
               !/[#<>[\]|{}]/.test(text) &&
 
               // Interwikis
-              !(
-                (/^:/.test(text) || /^[a-z]\w*:/.test(text)) &&
-                !cd.g.allNamespacesRegexp.test(text)
-              )
+              !((/^:/.test(text) || /^[a-z]\w*:/.test(text)) && !allNamespacesRegexp.test(text))
             );
             if (valid) {
               values.push(...this.wikilinks.cache);
