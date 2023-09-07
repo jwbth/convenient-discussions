@@ -196,7 +196,7 @@ export async function getVisits(reuse = false) {
 function cleanUpVisits(originalVisits) {
   const visits = Object.assign({}, originalVisits);
   const timestamps = Object.keys(visits).reduce((acc, key) => acc.concat(visits[key]), []);
-  timestamps.sort();
+  timestamps.sort((a, b) => a - b);
   const boundary = timestamps[Math.floor(timestamps.length / 10)];
   Object.keys(visits).forEach((key) => {
     visits[key] = visits[key].filter((visit) => visit >= boundary);
@@ -279,7 +279,7 @@ export function requestInBackground(params, method = 'post') {
         if (resp.error) {
           // Workaround for cases when an options request is made on an idle page whose tokens
           // expire. A re-request of such tokens results is generally successful, but _this_
-          // callback is executed after each response, so we don't rejecting to avoid misleading
+          // callback is executed after each response, so we aren't rejecting to avoid misleading
           // error messages being shown to the user.
           if (resp.error.code !== 'badtoken') {
             reject(['api', resp]);
