@@ -1,4 +1,5 @@
 {
+  "az.wikipedia.org": "https://az.wikipedia.org/w/load.php?modules=ext.gadget.convenientDiscussions&only=scripts",
   "commons.wikimedia.org": "https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-commonsConfig.js&action=raw&ctype=text/javascript",
   "en.wikipedia.org": "https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions.js&action=raw&ctype=text/javascript",
   "fr.wikipedia.org": "https://fr.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions.js&action=raw&ctype=text/javascript",
