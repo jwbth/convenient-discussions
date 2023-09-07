@@ -406,7 +406,7 @@ class CommentSource {
         this.code = this.code.replace(regexp, movePartToSignature);
       });
     };
-    const tagRegexp = new RegExp(`(<${cd.g.piePattern}(?: [\\w ]+?=[^<>]+?)?> *)+$`, 'i');
+    const tagRegexp = new RegExp(`(<${cd.g.piePattern}(?: [\\w ]+?=[^<>]+?)?> *)+$(?:)`, 'i');
 
     // Why signaturePrefixRegexp three times? Well, the test case here is the MusikAnimal's
     // signature here: https://en.wikipedia.org/w/index.php?diff=next&oldid=946899148.
@@ -417,7 +417,7 @@ class CommentSource {
       tagRegexp,
       cd.config.signaturePrefixRegexp,
       tagRegexp,
-      new RegExp(`<small class="${cd.config.unsignedClass}">.*$`),
+      new RegExp(`<small class="${cd.config.unsignedClass}">.*$(?:)`),
       /<!-- *Template:Unsigned.*$/,
       cd.config.signaturePrefixRegexp,
     ].filter(defined));
@@ -535,7 +535,7 @@ class CommentSource {
           normalizeCode(removeWikiMarkup(this.headlineCode)) ===
           normalizeCode(commentData.sectionHeadline)
         ) :
-        -0.75;
+        -0.4999;
     } else {
       doesHeadlineMatch = !this.headingMatch;
     }
@@ -706,7 +706,7 @@ class CommentSource {
       '[:*#]{2,}|';
     const firstChar = cd.config.indentationCharMode === 'mimic' ? '[#*:]' : '#';
     const [, changedIndentation] = (
-      adjustedCodeBetween.match(new RegExp(`\\n(${manyCharsPart}${firstChar}[:*#]*).*\\n$`)) ||
+      adjustedCodeBetween.match(new RegExp(`\\n(${manyCharsPart}${firstChar}[:*#]*).*\\n$(?:)`)) ||
       []
     );
     if (changedIndentation) {
