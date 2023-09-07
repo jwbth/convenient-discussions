@@ -236,9 +236,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
       .concat(redirects)
       .filter((page) => sections[page.from])
       .forEach((page) => {
-        if (!sections[page.to]) {
-          sections[page.to] = [];
-        }
+        sections[page.to] ||= [];
         sections[page.to].push(...sections[page.from]);
         delete sections[page.from];
       });

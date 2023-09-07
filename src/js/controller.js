@@ -380,7 +380,8 @@ export default {
     this.windowManagers ||= {};
 
     if (!this.windowManagers[name]) {
-      this.windowManagers[name] = (new OO.ui.WindowManager()).on('closing', async (win, closed) => {
+      this.windowManagers[name] = new OO.ui.WindowManager();
+      this.windowManagers[name].on('closing', async (win, closed) => {
         // We don't have windows that can be reused.
         await closed;
         this.windowManagers[name].clearWindows();

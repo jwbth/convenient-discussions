@@ -326,7 +326,7 @@ export function createNumberField({
     buttonStep,
     min,
     max,
-    classes: [ 'cd-numberInput' ],
+    classes: ['cd-numberInput'],
   });
   const field = new OO.ui.FieldLayout(input, {
     label,

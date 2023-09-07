@@ -356,8 +356,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
         }
       };
       tweakUserOoUiClass(PageLayout, OO.ui.PageLayout);
-      const page = new PageLayout(this);
-      return page;
+      return new PageLayout(this);
     });
 
     controls.removeData.button.connect(this, { click: 'removeData' });
@@ -479,12 +478,15 @@ class SettingsDialog extends OO.ui.ProcessDialog {
     );
 
     let areInputsValid = true;
-    const numberSettingNames = [].concat(...settings.scheme.ui.map((pageData) => (
-      pageData.controls
-        .filter((data) => data.type === 'number')
-        .map((data) => data.name)
-    )));
-    await Promise.all(numberSettingNames.map((name) => controls[name].input.getValidity()))
+    await Promise.all(
+      []
+        .concat(...settings.scheme.ui.map((pageData) => (
+          pageData.controls
+            .filter((data) => data.type === 'number')
+            .map((data) => data.name)
+        )))
+        .map((name) => controls[name].input.getValidity())
+    )
       .catch(() => {
         areInputsValid = false;
       });
