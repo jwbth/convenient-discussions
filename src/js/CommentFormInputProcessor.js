@@ -130,6 +130,10 @@ class CommentFormInputProcessor {
     this.wrapInSmall = false;
     if (!this.commentForm.headlineInput) {
       this.code = this.code.replace(/^<small>([^]*)<\/small>$/i, (s, content) => {
+        // Filter out <small>text</small><small>text</small>
+        if (/<\/small>/i.test(content)) {
+          return s;
+        }
         this.wrapInSmall = true;
         return content;
       });
