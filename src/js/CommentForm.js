@@ -2782,8 +2782,12 @@ class CommentForm {
     this.forget();
 
     if (!controller.doesPageExist()) {
-      location.hash = passedData.commentIds[0];
-      location.reload();
+      const url = new URL(location.href);
+      url.searchParams.delete('cdaddtopic');
+      url.searchParams.delete('section');
+      url.searchParams.delete('action');
+      url.hash = passedData.commentIds[0];
+      location.href = url.toString();
       return;
     }
 
