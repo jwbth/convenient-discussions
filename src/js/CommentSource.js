@@ -133,7 +133,7 @@ class CommentSource {
       // except for tables. `\x03` and `\x04` mean the beginning and ending of a table. Note: This
       // should be kept coordinated with the reverse transformation code in
       // `CommentForm#inputToCode`. Some more comments are there.
-      const entireLineRegexp = new RegExp(/^(?:\x01\d+_(block|template)\x02) *$/);
+      const entireLineRegexp = /^(?:\x01\d+_(block|template)\x02) *$/;
 
       // `(?:)` to work around Chrome DevTools bug when it sees "$`"
       const fileRegexp = new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$(?:)`, 'i');

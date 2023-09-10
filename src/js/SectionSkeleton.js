@@ -139,7 +139,7 @@ class SectionSkeleton {
     const nextHeadingElement = targets[nextHeadingIndex]?.element;
 
     // Find the next heading element whose section is not a descendant of this section
-    const levelRegexp = new RegExp(`^H[1-${this.level}]$`);
+    const levelRegexp = new RegExp(`^H[1-${this.level}]$(?:)`);
     let nndheIndex = targets.findIndex((target, i) => (
       i > headingIndex &&
       target.type === 'heading' &&

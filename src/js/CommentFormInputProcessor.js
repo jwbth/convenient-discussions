@@ -22,7 +22,7 @@ class CommentFormInputProcessor {
     this.target = commentForm.getTarget();
     this.action = action;
 
-    filePatternEnd ||= `\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$`;
+    filePatternEnd ||= `\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$(?:)`;
 
     this.initIndentationData();
   }
@@ -395,7 +395,7 @@ class CommentFormInputProcessor {
     }
     const paragraphTemplatePattern = mw.util.escapeRegExp(`{{${cd.config.paragraphTemplates[0]}}}`);
     const currentLineEndingRegexp = new RegExp(
-      `(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x04|<br[ \\n]*\\/?>|${paragraphTemplatePattern}${currentLineInTemplates}) *$`,
+      `(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x04|<br[ \\n]*\\/?>|${paragraphTemplatePattern}${currentLineInTemplates}) *$(?:)`,
       'i'
     );
     const nextLineBeginningRegexp = new RegExp(

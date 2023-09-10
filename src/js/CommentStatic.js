@@ -31,7 +31,7 @@ const dtIdRegexp = new RegExp(
   `^c-` +
   `(?:(.+?)-(?:${newDtTimestampPattern}|${oldDtTimestampPattern}))` +
   `(?:-(?:(.+?)-(?:${newDtTimestampPattern}|${oldDtTimestampPattern})|(.+?))` +
-  `(?:-(\\d+))?)?$`
+  `(?:-(\\d+))?)?$(?:)`
 );
 
 let notificationArea;
