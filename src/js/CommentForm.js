@@ -1586,9 +1586,8 @@ class CommentForm {
       label: cd.s('cf-popup-richformatting-convert'),
       flags: ['progressive'],
     });
+    const position = this.commentInput.getRange().to;
     button.on('click', async () => {
-      const position = this.commentInput.getRange().to;
-
       // The input is made disabled, so the content can't be changed by the user during the
       // loading stage.
       const text = await controller.getWikitextFromPaste(html, this.commentInput);
