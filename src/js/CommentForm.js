@@ -1677,7 +1677,7 @@ class CommentForm {
         checkFunc: () => !this.omitSignatureCheckbox?.isSelected(),
       },
       {
-        regexp: /<pre/,
+        regexp: /<pre[ >]/,
         message: cd.sParse(
           'cf-reaction-pre',
           '<code><nowiki><pre></'.concat('nowiki></code>'),
