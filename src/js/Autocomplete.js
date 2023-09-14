@@ -640,12 +640,12 @@ class Autocomplete {
           ['gallery', '<gallery>\n', '\n</gallery>'],
           ['references', '<references />'],
           ['section', '<section />'],
-          ['syntaxhighlight', '<syntaxhighlight>\n', '\n</syntaxhighlight>'],
+          ['syntaxhighlight lang=""', '<syntaxhighlight lang="', '">\n\n</syntaxhighlight>'],
           [
             'syntaxhighlight inline lang=""',
             '<syntaxhighlight inline lang="', '"></syntaxhighlight>',
           ],
-          ['syntaxhighlight lang=""', '<syntaxhighlight lang="', '">\n\n</syntaxhighlight>'],
+          ['syntaxhighlight', '<syntaxhighlight>\n', '\n</syntaxhighlight>'],
           ['templatestyles', '<templatestyles src="', '" />'],
         ];
         const defaultTags = cd.g.allowedTags.filter((tagString) => !(
