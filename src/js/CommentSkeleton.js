@@ -499,13 +499,23 @@ class CommentSkeleton {
    * @returns {boolean}
    */
   isIntro({ step, stage, node, nextNode, lastPartNode, previousPart }) {
-    // Only the first stage code covers cases when there is only one comment part eventually (a list
-    // item, for example), and only the second stage code fully covers comments indented with ":").
+    // Only the first `stage` code (in CommentSkeleton#traverseDom) covers cases when there is only
+    // one comment part eventually (a list item, for example), and only the second `stage` code (in
+    // CommentSkeleton#filterParts) fully covers comments indented with `:`).
 
     return (
       step === 'back' &&
       (!previousPart || previousPart.step === 'up') &&
-      !['DD', 'LI'].includes(node.parentNode.tagName) &&
+      (
+        !['DD', 'LI'].includes(node.parentNode.tagName) ||
+
+        // Cases like
+        // https://en.wikipedia.org/w/index.php?title=Wikipedia:Arbitration/Requests/Case/SmallCat_dispute/Proposed_decision&oldid=1172525361#c-Wugapodes-20230822205500-Purpose_of_Wikipedia
+        (
+          nextNode.tagName === 'OL' &&
+          nextNode[this.parser.context.childElementsProp][0].contains(this.signatureElement)
+        )
+      ) &&
       (
         ['UL', 'OL'].includes(nextNode.tagName) ||
 
@@ -544,6 +554,7 @@ class CommentSkeleton {
         (
           // Note: Text nodes are filtered out as of stage 2.
           node.nodeType === Node.TEXT_NODE &&
+
           node.previousSibling &&
           ['DL', 'UL', 'OL'].includes(node.previousSibling.tagName) &&
           !this.isIntroList(node.previousSibling, false, lastPartNode)
