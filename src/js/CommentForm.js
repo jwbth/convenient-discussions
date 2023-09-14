@@ -1635,19 +1635,45 @@ class CommentForm {
    * @private
    */
   addEventListenersToTextInputs(saveSessionEventHandler, preview) {
+    const substAliasesString = ['subst:'].concat(cd.config.substAliases).join('|');
+    const textReactions = [
+      {
+        regexp: new RegExp(cd.g.signCode + '\\s*$'),
+        message: cd.sParse('cf-reaction-signature', cd.g.signCode),
+        name: 'signatureNotNeeded',
+        type: 'notice',
+        checkFunc: () => !this.omitSignatureCheckbox?.isSelected(),
+      },
+      {
+        regexp: /<pre[ >]/,
+        message: cd.sParse(
+          'cf-reaction-pre',
+          '<code><nowiki><pre></'.concat('nowiki></code>'),
+          '<code><nowiki><syntaxhighlight lang="wikitext"></'.concat('nowiki></code>')
+        ),
+        name: 'dontUsePre',
+        type: 'warning',
+      },
+      {
+        regexp: new RegExp(`\\{\\{(?! *(${substAliasesString}))`, 'i'),
+        message: cd.sParse('cf-reaction-templateinheadline'),
+        type: 'warning',
+        name: 'templateInHeadline',
+        target: 'headline',
+        checkFunc: () => !this.preloadConfig?.headline,
+      },
+    ].concat(cd.config.textReactions);
+
     if (this.headlineInput) {
       this.headlineInput
         .on('change', (headline) => {
           this.updateAutoSummary(true, true);
 
-          if (headline.includes('{{') && !this.preloadConfig?.headline) {
-            this.showMessage(cd.sParse('cf-reaction-templateinheadline'), {
-              type: 'warning',
-              name: 'templateInHeadline',
+          textReactions
+            .filter(({ target }) => target === 'headline' || target === 'all')
+            .forEach((reaction) => {
+              this.reactToText(headline, reaction);
             });
-          } else {
-            this.hideMessage('templateInHeadline');
-          }
         })
         .on('change', preview)
         .on('change', saveSessionEventHandler);
@@ -1668,25 +1694,6 @@ class CommentForm {
       });
     }
 
-    const textReactions = [
-      {
-        regexp: new RegExp(cd.g.signCode + '\\s*$'),
-        message: cd.sParse('cf-reaction-signature', cd.g.signCode),
-        name: 'signatureNotNeeded',
-        type: 'notice',
-        checkFunc: () => !this.omitSignatureCheckbox?.isSelected(),
-      },
-      {
-        regexp: /<pre[ >]/,
-        message: cd.sParse(
-          'cf-reaction-pre',
-          '<code><nowiki><pre></'.concat('nowiki></code>'),
-          '<code><nowiki><syntaxhighlight lang="wikitext"></'.concat('nowiki></code>')
-        ),
-        name: 'dontUsePre',
-        type: 'warning',
-      },
-    ].concat(cd.config.textReactions);
     this.commentInput
       .on('change', (text) => {
         if (this.richFormattingPopup) {
@@ -1695,13 +1702,11 @@ class CommentForm {
 
         this.updateAutoSummary(true, true);
 
-        textReactions.forEach(({ regexp, checkFunc, message, type, name }) => {
-          if (regexp?.test(text) && (typeof checkFunc !== 'function' || checkFunc(this))) {
-            this.showMessage(message, { type, name });
-          } else {
-            this.hideMessage(name);
-          }
-        });
+        textReactions
+          .filter(({ target }) => !target || target === 'comment' || target === 'all')
+          .forEach((reaction) => {
+            this.reactToText(text, reaction);
+          });
       })
       .on('change', preview)
       .on('change', saveSessionEventHandler);
@@ -3262,6 +3267,21 @@ class CommentForm {
         this.originalHeadline !== this.headlineInput.getValue()
       )
     );
+  }
+
+  /**
+   * Show or hide messages as a result of comparing the text to the data in a reaction object.
+   *
+   * @param {string} text Text to check for reactions to.
+   * @param {module:defaultConfig~Reaction} reaction Reaction object.
+   * @private
+   */
+  reactToText(text, { regexp, checkFunc, message, type, name }) {
+    if (regexp?.test(text) && (typeof checkFunc !== 'function' || checkFunc(this))) {
+      this.showMessage(message, { type, name });
+    } else {
+      this.hideMessage(name);
+    }
   }
 
   /**
