@@ -226,8 +226,13 @@ function extractRegularSignatures(adjustedCode, code) {
       const commentEndingStartIndex = Math.max(0, timestampStartIndex - lineStartIndex - 255);
       const commentEnding = authorTimestampMatch[0].slice(commentEndingStartIndex);
 
-      // Should always match logically.
-      const [, lastAuthorLink] = commentEnding.match(lastAuthorLinkRegexp);
+      const [, lastAuthorLink] = commentEnding.match(lastAuthorLinkRegexp) || [];
+
+      // Locically it should always be non-empty. There is an unclear problem with
+      // https://az.wikipedia.org/w/index.php?title=Vikipediya:Kənd_meydanı&diff=prev&oldid=7223881,
+      // probably having something to do with difference between regular length and byte length.
+      if (!lastAuthorLink) continue;
+
       author = userRegistry.get(decodeHtmlEntities(lastAuthorLink));
 
       // Rectify the author name if needed.
