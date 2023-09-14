@@ -933,7 +933,6 @@ export function zeroPad(number, length) {
  *
  * @param {string|string[]} value
  * @returns {string}
- * @private
  */
 export function getLastArrayElementOrSelf(value) {
   return Array.isArray(value) ? value[value.length - 1] : value;

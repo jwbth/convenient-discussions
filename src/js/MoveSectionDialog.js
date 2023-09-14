@@ -141,6 +141,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
           const message = cd.sParse(messageName);
           this.abort(message, false);
         } else {
+          console.warn(e);
           this.abort(cd.sParse('error-javascript'), false);
         }
         return;
@@ -317,6 +318,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
           throw [cd.sParse('error-network'), true];
         }
       } else {
+        console.warn(e);
         throw [cd.sParse('error-javascript'), false];
       }
     }
@@ -330,6 +332,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         const message = cd.sParse(messageName);
         throw [message, true];
       } else {
+        console.warn(e);
         throw [cd.sParse('error-javascript'), false];
       }
     }
@@ -370,6 +373,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
           throw [cd.sParse('error-network'), true];
         }
       } else {
+        console.warn(e);
         throw [cd.sParse('error-javascript'), false];
       }
     }
