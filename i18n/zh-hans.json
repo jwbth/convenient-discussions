@@ -250,6 +250,7 @@
 	"rc-suggestion-yes": "启用新样式",
 	"rc-suggestion-no": "保留通常的样式",
 	"topicsubscription-notice": "<p>快速讨论工具现在使用标准通知界面接收有关我订阅的主题中的评论通知（称为主题订阅）。当有人在您订阅的主题中发表新评论时，您会收到通知。如果您启用了桌面通知，您仍然会收到它们。</p> \n\n<p>您可以在<b>[[Special:Preferences#mw-prefsection-echo|参数设置]]</b>中配置通知类型（网络、电子邮件、应用程序）。或者您可以返回经典部分观看。请参阅<b><span class=\"cd-notification-notificationSettings\">[[$1|快速讨论设置]]</span></b>中的详细信息。</p>",
+	"newTopicsSubscription-popup-title": "新功能",
 	"navpanel-refresh": "刷新页面",
 	"navpanel-previous": "前往上一条新评论",
 	"navpanel-next": "转到下一个新评论",
