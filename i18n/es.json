@@ -190,7 +190,7 @@
 	"dn-grantpermission": "Conceder un permiso al sitio.",
 	"dn-grantpermission-again": "Has activado las notificaciones de escritorio, pero el sitio no tiene permitido enviarlas. Concede permiso al sitio para recibir notificaciones o deniégalo para que este mensaje no aparezca nuevamente.",
 	"deadanchor-section-lead": "Se pudo haber trasladado o archivado.",
-	"deadanchor-section-exactmatch": "Parece que la sección \"$1\" ha sido archivada. [[$2| Consulte la sección archivado]] (o [$3 búsqueda en el archivo]).",
+	"deadanchor-section-exactmatch": "Parece que la sección \"$1\" ha sido archivada. <b>[[$2| Consulte la sección archivado]]</b> (o [$3 búsqueda en el archivo]).",
 	"deadanchor-section-inexactmatch": "Parece que la sección \" $1 \" se ha archivado. [ $2 Buscar en el archivo].",
 	"deadanchor-section-notfound": "[$1 La búsqueda de él en el archivo] no arrojó ningún resultado. Es posible que se haya eliminado o cambiado de nombre, o es posible que haya seguido un enlace con formato incorrecto.",
 	"deadanchor-comment-lead": "Puede haberse trasladado o archivado.",
