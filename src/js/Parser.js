@@ -138,6 +138,7 @@ class Parser {
     this.rejectClasses = [
       'cd-comment-part',
       'ombox',
+      'mw-pt-languages',
       ...cd.config.closedDiscussionClasses,
       cd.config.outdentClass,
     ];
