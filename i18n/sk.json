@@ -200,7 +200,7 @@
 	"deadanchor-section-exactmatch": "Zdá sa, že sekcia „ $1 “ bola archivovaná. [[ $2 | Zobraziť archivovanú sekciu]] (alebo [ $3 hľadať v archíve]).",
 	"deadanchor-section-inexactmatch": "Zdá sa, že sekcia „ $1 “ bola archivovaná. [ $2 Hľadať v archíve].",
 	"deadanchor-section-notfound": "[ $1 Vyhľadávanie v archíve] tiež nevrátilo žiadne výsledky. Je možné, že bola odstránená alebo premenovaná, prípadne ste sledovali chybný odkaz.",
-	"deadanchor-section-similar": "Na stránke sa však našla sekcia s podobným názvom [[$1|$2]].",
+	"deadanchor-section-similar": "Na stránke sa však našla sekcia s podobným názvom <b>[[$1|$2]]</b>.",
 	"deadanchor-comment-lead": "Mohol byť presunutý alebo archivovaný.",
 	"deadanchor-comment-exactmatch": "Zdá sa, že komentár bol archivovaný. [[ $1 | Zobraziť archivovaný komentár]] (alebo [ $2 hľadať v archíve]).",
 	"deadanchor-comment-inexactmatch": "Zdá sa, že komentár bol archivovaný. [ $1 Hľadať v archíve].",

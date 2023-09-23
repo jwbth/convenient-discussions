@@ -137,7 +137,7 @@
 	"deadanchor-section-inexactmatch": "Wygląda na to, że sekcja „$1” została zarchiwizowana. [$2 Szukaj w archiwum].",
 	"deadanchor-section-notfound": "[$1 Wyszukiwanie w archiwum] również nie zwróciło żadnych wyników.",
 	"deadanchor-section-reason": "Być może została usunięta lub zmieniono jej nazwę, albo link był nieprawidłowy.",
-	"deadanchor-section-similar": "Na stronie jest jednak podobna do niej: \"[[$1|$2]]\".",
+	"deadanchor-section-similar": "Na stronie jest jednak podobna do niej: \"<b>[[$1|$2]]</b>\".",
 	"deadanchor-comment-lead": "Nie udało się znaleźć komentarza na stronie.",
 	"deadanchor-comment-exactmatch": "Wygląda na to, że komentarz został zarchiwizowany. <b>[[$1|Zobacz zarchiwizowany komentarz]]</b> (lub [$2 wyszukaj go w archiwum]).",
 	"deadanchor-comment-notfound": "[$1 Wyszukiwanie w archiwum] również nie zwróciło żadnych wyników. Sekcja mogła zostać usunięta lub przeniesiona.",

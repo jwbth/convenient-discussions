@@ -228,7 +228,7 @@
 	"deadanchor-section-inexactmatch": "節「$1」はアーカイブ化されたようです。[$2 アーカイブを検索]してください。",
 	"deadanchor-section-notfound": "[$1 アーカイブ]上にも該当セクションは存在しません。",
 	"deadanchor-section-reason": "除去または名称が変更された、もしくは元リンクに誤りがある可能性があります。",
-	"deadanchor-section-similar": "一方、類似した名称をもつセクション「[[$1|$2]]」が見つかりました。",
+	"deadanchor-section-similar": "一方、類似した名称をもつセクション「<b>[[$1|$2]]</b>」が見つかりました。",
 	"deadanchor-comment-lead": "ページ内に指定された名称のコメントが見つかりませんでした。",
 	"deadanchor-comment-exactmatch": "このコメントはアーカイブ化されたようです。<b>[[$1|アーカイブを閲覧]]</b> (または[$2 検索]) してください。",
 	"deadanchor-comment-inexactmatch": "このコメントはアーカイブ化されたようです。[$1 アーカイブを検索]してください。",

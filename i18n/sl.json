@@ -209,7 +209,7 @@
 	"deadanchor-section-inexactmatch": "Videti je, da je razdelek »$1« arhiviran. [$2 Poiščite ga v arhivu].",
 	"deadanchor-section-notfound": "[ $1 Iskanje v arhivu] prav tako ni vrnilo nobenega zadetka.",
 	"deadanchor-section-reason": "Morda je bila izbrisana ali preimenovana ali pa ste sledili napačno oblikovani povezavi.",
-	"deadanchor-section-similar": "Najden pa je bil razdelek s podobnim imenom »[[$1|$2]]«.",
+	"deadanchor-section-similar": "Najden pa je bil razdelek s podobnim imenom »<b>[[$1|$2]]</b>«.",
 	"deadanchor-comment-lead": "Komentarja na strani ni bilo mogoče najti.",
 	"deadanchor-comment-exactmatch": "Videti je, da je komentar arhiviran. <b>[[$1|Oglejte si arhivirani komentar]]</b> (ali [$2 ga poiščite v arhivu]).",
 	"deadanchor-comment-inexactmatch": "Videti je, da je komentar arhiviran. [$1 Poiščite ga v arhivu].",

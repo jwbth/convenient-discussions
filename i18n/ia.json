@@ -208,7 +208,7 @@
 	"deadanchor-section-inexactmatch": "Pare que le section \"$1\" ha essite archivate. [$2 Cerca in le archivo].",
 	"deadanchor-section-notfound": "[$1 Un recerca del archivo] etiam non ha producite resultatos.",
 	"deadanchor-section-reason": "Illo pote haber essite delite o renominate, o pote esser que tu ha sequite un ligamine mal formate.",
-	"deadanchor-section-similar": "Nonobstante, un section con un nomine similar \"[[$1|$2]]\" ha essite trovate sur le pagina.",
+	"deadanchor-section-similar": "Nonobstante, un section con un nomine similar \"<b>[[$1|$2]]</b>\" ha essite trovate sur le pagina.",
 	"deadanchor-comment-lead": "Non poteva trovar le commento sur le pagina.",
 	"deadanchor-comment-exactmatch": "Pare que le commento ha essite archivate. <b>[[$1|Vide le cinnebti archivate]]</b> (o [$2 cerca in le archivo]).",
 	"deadanchor-comment-inexactmatch": "Pare que le commento ha essite archivate. [$1 Cerca in le archivo].",

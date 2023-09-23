@@ -211,7 +211,7 @@
 	"deadanchor-section-inexactmatch": "Deyəsən \"$1\" bölməsi arxivləşdirilib. [[$2|Arxivlənmiş bölməyə bax]]",
 	"deadanchor-section-notfound": "[$1 Arxivdəki axtarış] da heç bir nəticə vermədi.",
 	"deadanchor-section-reason": "O, silinmiş və ya adı dəyişdirilmiş ola bilər və ya səhv linki izləmiş ola bilərsiniz.",
-	"deadanchor-section-similar": "Bununla belə, səhifədə oxşar adda \"[[$1|$2]]\" bölməsi tapıldı.",
+	"deadanchor-section-similar": "Bununla belə, səhifədə oxşar adda \"<b>[[$1|$2]]</b>\" bölməsi tapıldı.",
 	"deadanchor-comment-lead": "Səhifədə şərhi tapmaq mümkün olmadı.",
 	"deadanchor-comment-exactmatch": "Deyəsən şərh arxivləşdirilib. <b>[[$1|Arxivləşdirilmiş şərhə bax]]</b> (və ya [$2 arxivdə axtar]).",
 	"deadanchor-comment-inexactmatch": "Deyəsən şərh arxivləşdirilib. [[$1|Arxivləşdirilmiş şərhə bax]]",

@@ -224,7 +224,7 @@
 	"deadanchor-section-inexactmatch": "Il semble que la section « $1 » a été archivée. [$2 Chercher dans l’archive].",
 	"deadanchor-section-notfound": "[$1 La recherche pour la trouver dans l’archive] n’a renvoyé aucun résultat non plus.",
 	"deadanchor-section-reason": "Elle a peut-être été supprimée ou renommée, ou bien vous avez peut-être suivi un lien malformé.",
-	"deadanchor-section-similar": "Cependant, une section avec un nom similaire « [[$1|$2]] » a été trouvée dans la page.",
+	"deadanchor-section-similar": "Cependant, une section avec un nom similaire « <b>[[$1|$2]]</b> » a été trouvée dans la page.",
 	"deadanchor-comment-lead": "Impossible de trouver le commentaire sur la page.",
 	"deadanchor-comment-exactmatch": "Il semble que le commentaire a été archivé. <b>[[$1|Voir le commentaire archivé]]</b> (ou [$2 le chercher dans l’archive]).",
 	"deadanchor-comment-inexactmatch": "Il semble que le commentaire a été archivé. [$1 Le chercher dans l’archive].",

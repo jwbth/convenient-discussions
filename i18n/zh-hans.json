@@ -232,7 +232,7 @@
 	"deadanchor-section-inexactmatch": "段落“$1”看起来已被存档。[$2 在存档中搜索]。",
 	"deadanchor-section-notfound": "[$1 在存档中搜索]也未返回任何结果。",
 	"deadanchor-section-reason": "它可能已被删除或重命名，或者您可能点击了格式错误的链接。",
-	"deadanchor-section-similar": "但是，在页面上发现了一个名称相似的部分“[[$1|$2]]”。",
+	"deadanchor-section-similar": "但是，在页面上发现了一个名称相似的部分“<b>[[$1|$2]]</b>”。",
 	"deadanchor-comment-lead": "无法在页面上找到评论。",
 	"deadanchor-comment-exactmatch": "意见似乎已被存档。<b>[[$1|查看已存档意见]]</b>（或是[$2 在存档中搜索]）。",
 	"deadanchor-comment-inexactmatch": "意见看起来已被存档。[$1 在存档中搜索]。",

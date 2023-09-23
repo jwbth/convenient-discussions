@@ -230,7 +230,7 @@
   "deadanchor-section-inexactmatch": "Looks like the section \"$1\" has been archived. [$2 Search in the archive].",
   "deadanchor-section-notfound": "[$1 Searching for it in the archive] also did not return any results.",
   "deadanchor-section-reason": "It may have been deleted or renamed, or you may have followed a malformed link.",
-  "deadanchor-section-similar": "However, a section with a similar name \"[[$1|$2]]\" was found on the page.",
+  "deadanchor-section-similar": "However, a section with a similar name \"<b>[[$1|$2]]</b>\" was found on the page.",
   "deadanchor-comment-lead": "Couldn't find the comment on the page.",
   "deadanchor-comment-exactmatch": "Looks like the comment has been archived. <b>[[$1|See archived comment]]</b> (or [$2 search in the archive]).",
   "deadanchor-comment-inexactmatch": "Looks like the comment has been archived. [$1 Search in the archive].",

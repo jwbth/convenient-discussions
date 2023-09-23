@@ -204,7 +204,7 @@
 	"deadanchor-section-inexactmatch": "Panašu, kad skyrius „$1“ buvo suarchyvuotas. [$2 Ieškokite archyve].",
 	"deadanchor-section-notfound": "[$1 Paieška archyve] taip pat nepateikė jokių rezultatų.",
 	"deadanchor-section-reason": "Gali būti, kad tai buvo ištrinta arba pervardyta, arba spustelėjote netinkamai suformuotą nuorodą.",
-	"deadanchor-section-similar": "Tačiau puslapyje buvo rastas skyrius panašiu pavadinimu „[[$1|$2]]“.",
+	"deadanchor-section-similar": "Tačiau puslapyje buvo rastas skyrius panašiu pavadinimu „<b>[[$1|$2]]</b>“.",
 	"deadanchor-comment-lead": "Nepavyko rasti komentaro puslapyje.",
 	"deadanchor-comment-exactmatch": "Panašu, kad komentaras buvo suarchyvuotas. <b>[[$1|Žiūrėkite archyvuotą komentarą]]</b> (arba [$2 ieškokite archyve]).",
 	"deadanchor-comment-inexactmatch": "Panašu, kad komentaras buvo suarchyvuotas. [$1 Ieškokite archyve].",

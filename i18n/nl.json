@@ -214,7 +214,7 @@
 	"deadanchor-section-inexactmatch": "De sectie \"$1\" is blijkbaar gearchiveerd. [$2 Zoek in het archief].",
 	"deadanchor-section-notfound": "[$1 Ernaar zoeken in het archief] leverde ook niets op.",
 	"deadanchor-section-reason": "Het kan zijn dat het is verwijderd of hernoemd, of u hebt mogelijk een verkeerd opgemaakte link gevolgd.",
-	"deadanchor-section-similar": "Wel is er een sectie met een vergelijkbare naam \"[[$1|$2]]\" op de pagina gevonden.",
+	"deadanchor-section-similar": "Wel is er een sectie met een vergelijkbare naam \"<b>[[$1|$2]]</b>\" op de pagina gevonden.",
 	"deadanchor-comment-lead": "Kan de reactie niet vinden op de pagina.",
 	"deadanchor-comment-exactmatch": "De reactie is blijkbaar gearchiveerd. <b>[[$1|Zie de gearchiveerde reactie]]</b> (of [$2 zoek in het archief]).",
 	"deadanchor-comment-inexactmatch": "De reactie is blijkbaar gearchiveerd. [$1 Zoek in het archief].",

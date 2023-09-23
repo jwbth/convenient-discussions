@@ -214,7 +214,7 @@
 	"deadanchor-section-inexactmatch": "Det ser ut som att avsnittet \"$1\" har arkiverats. [$2 Sök i arkivet].",
 	"deadanchor-section-notfound": "[$1 Sökningen i arkivet] gav inte heller något resultat.",
 	"deadanchor-section-reason": "Den kan ha tagits bort eller bytt namn, eller så kan du ha följt en felaktig länk.",
-	"deadanchor-section-similar": "Ett avsnitt med det liknande namnet \"[[$1|$2]]\" hittades dock på sidan.",
+	"deadanchor-section-similar": "Ett avsnitt med det liknande namnet \"<b>[[$1|$2]]</b>\" hittades dock på sidan.",
 	"deadanchor-comment-lead": "Det har kanske flyttats eller arkiverats.",
 	"deadanchor-comment-exactmatch": "Det ser ut som att kommentaren har arkiverats. <b>[[$1|Se den arkiverade kommentaren]]</b> (eller [$2 sök i arkivet]).",
 	"deadanchor-comment-inexactmatch": "Det ser ut som att kommentaren har arkiverats. [$1 Sök i arkivet].",

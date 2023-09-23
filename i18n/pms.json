@@ -208,7 +208,7 @@
 	"deadanchor-section-inexactmatch": "A dmija che la session « $1 » a l'é stàita archivià. [$2 Sërché ant l'archivi].",
 	"deadanchor-section-notfound": "[$1 Gnanca an sërcandlo ant l'archivi] as son trovasse dj'arzultà.",
 	"deadanchor-section-reason": "A podrìa esse stàita dëscancelà o arnominà, o peul desse che a l'é andaje dapress a na liura malformà.",
-	"deadanchor-section-similar": "Comsëssìa, na session con un nòm ch'a jë smija «[[$1|$2]]» a l'é stàita trovà ant la pàgina.",
+	"deadanchor-section-similar": "Comsëssìa, na session con un nòm ch'a jë smija «<b>[[$1|$2]]</b>» a l'é stàita trovà ant la pàgina.",
 	"deadanchor-comment-lead": "Impossìbil trové ël coment ant la pàgina.",
 	"deadanchor-comment-exactmatch": "A smija che ël coment a l'é stàit archivià. <b>[[$1|Vëdde ël coment archivià]]</b> (o [$2 sërché ant l'archivi]).",
 	"deadanchor-comment-inexactmatch": "A smija che ël coment a sia stàit archivià. [$1 Sërché ant l'archivi].",
