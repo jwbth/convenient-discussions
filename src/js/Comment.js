@@ -2726,6 +2726,14 @@ class Comment extends CommentSkeleton {
         thankUnixTime: Date.now(),
       };
       saveToLocalStorage('thanks', thanks);
+
+      try {
+        await mw.loader.using('ext.thanks');
+        mw.thanks.thanked.push(edit.revid);
+      } catch {
+        // This isn't critical (affects only the "thanked" label in history), so we don't do
+        // anything
+      }
     } else {
       this.thankButton.setPending(false);
     }
