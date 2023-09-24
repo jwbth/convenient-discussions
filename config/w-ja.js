@@ -132,5 +132,5 @@ export default {
 		]
 	],
 	'signatureEndingRegexp': /（会話）/,
-	'tag': 'convenient-discussions',
+	'tagName': 'convenient-discussions',
 };
