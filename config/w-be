@@ -1,0 +1,152 @@
+export default {
+	messages: {
+		'sun': 'нд',
+		'mon': 'пн',
+		'tue': 'аў',
+		'wed': 'ср',
+		'thu': 'чц',
+		'fri': 'пт',
+		'sat': 'сб',
+		'sunday': 'Нядзеля',
+		'monday': 'Панядзелак',
+		'tuesday': 'Аўторак',
+		'wednesday': 'Серада',
+		'thursday': 'Чацвер',
+		'friday': 'Пятніца',
+		'saturday': 'Субота',
+		'jan': 'сту',
+		'feb': 'лют',
+		'mar': 'сак',
+		'apr': 'кра',
+		'may': 'мая',
+		'jun': 'чэр',
+		'jul': 'ліп',
+		'aug': 'жні',
+		'sep': 'Вер',
+		'oct': 'Кас',
+		'nov': 'Ліс',
+		'dec': 'Сне',
+		'january': 'студзень',
+		'february': 'люты',
+		'march': 'сакавік',
+		'april': 'красавік',
+		'may_long': 'Май',
+		'june': 'чэрвень',
+		'july': 'ліпень',
+		'august': 'жнівень',
+		'september': 'верасень',
+		'october': 'кастрычнік',
+		'november': 'лістапад',
+		'december': 'снежань',
+		'january-gen': 'студзеня',
+		'february-gen': 'лютага',
+		'march-gen': 'сакавіка',
+		'april-gen': 'красавіка',
+		'may-gen': 'мая',
+		'june-gen': 'чэрвеня',
+		'july-gen': 'ліпеня',
+		'august-gen': 'жніўня',
+		'september-gen': 'верасня',
+		'october-gen': 'кастрычніка',
+		'november-gen': 'лістапада',
+		'december-gen': 'снежня',
+		'parentheses': '($1)',
+		'parentheses-start': '(',
+		'parentheses-end': ')',
+		'word-separator': ' ',
+		'comma-separator': ', ',
+		'colon-separator': ': ',
+		'nextdiff': 'Наступная праўка →',
+		'timezone-utc': 'UTC',
+		'pagetitle': '$1 — Вікіпедыя',
+		'discussiontools-topicsubscription-button-subscribe': 'падпісацца',
+		'discussiontools-topicsubscription-button-subscribe-tooltip': 'Падпішыцеся на атрыманне апавяшэнняў пра новыя каментарыі.',
+		'discussiontools-topicsubscription-button-unsubscribe': 'адпісацца',
+		'discussiontools-topicsubscription-button-unsubscribe-tooltip': 'Адпішыцеся, каб перастаць атрымліваць апавяшчэнні.',
+		'discussiontools-topicsubscription-notify-subscribed-title': 'Вы падпісаліся!',
+		'discussiontools-topicsubscription-notify-subscribed-body': 'Вы атрымаеце апавяшчэнні пра новыя каментарыі ў гэтай тэме.',
+		'discussiontools-topicsubscription-notify-unsubscribed-title': 'Вы адпісаліся.',
+		'discussiontools-topicsubscription-notify-unsubscribed-body': 'Вы больш не будзеце атрымліваць апавяшчэнні пра новыя каментарыі ў гэтай тэме.',
+		'discussiontools-newtopicssubscription-button-subscribe-label': 'Subscribe',
+		'discussiontools-newtopicssubscription-button-subscribe-tooltip': 'Subscribe to receive notifications when new topics are started on this page.',
+		'discussiontools-newtopicssubscription-button-unsubscribe-label': 'Unsubscribe',
+		'discussiontools-newtopicssubscription-button-unsubscribe-tooltip': 'Unsubscribe to stop receiving notifications when new topics are started on this page.',
+		'discussiontools-newtopicssubscription-notify-subscribed-title': '{{GENDER:|You}} have subscribed!',
+		'discussiontools-newtopicssubscription-notify-subscribed-body': '{{GENDER:|You}} will receive notifications when new topics are started on this page.',
+		'discussiontools-newtopicssubscription-notify-unsubscribed-title': '{{GENDER:|You}} have unsubscribed.',
+		'discussiontools-newtopicssubscription-notify-unsubscribed-body': '{{GENDER:|You}} will no longer receive notifications when new topics are started on this page.',
+		'visualeditor-educationpopup-dismiss': 'Так, зразумела.'
+	},
+	specialPageAliases: {
+		'Contributions': 'Contributions',
+		'Diff': 'Diff',
+		'PermanentLink': 'PermanentLink'
+	},
+	timezone: 'Europe/Minsk',
+	useGlobalPreferences: true,
+	unsignedTemplates: [
+		'Не падпісана',
+		'Unsigned'
+	],
+	pairQuoteTemplates: [
+		[
+			'Пачатак цытаты'
+		],
+		[
+			'Канец цытаты'
+		]
+	],
+	paragraphTemplates: [
+		'абзац'
+	],
+	outdentTemplates: [
+		'адступленне',
+		'Outdent',
+		'Od',
+		'Ад'
+	],
+	clearTemplates: [
+		'-',
+		'Clear',
+		'Clr'
+	],
+	templatesToExclude: [
+		'Перанесена з',
+		'Перанесена на'
+	],
+	closedDiscussionTemplates: [
+		[
+			'Закрыта',
+			'Closed'
+		],
+		[
+			'Канец закрытай секцыі',
+			'Закрыта-канец',
+			'Ecs',
+			'-Rtl'
+		]
+	],
+	signatureEndingRegexp: / \(размовы\)/
+};
+
+areNewTopicsOnTop: function (title, code) {
+    if (/\{\{[нН]овые сверху/.test(code)) {
+      return true;
+    } else if (/^Википедия:(?:.+ запросы|Запросы|Оспаривание |Форум[/ ])/.test(title)) {
+      return true;
+    } else if (/^Википедия:(?:К восстановлению|К объединению|К переименованию|К разделению|К удалению|К улучшению)/.test(title)) {
+      return false;
+    }
+    return null;
+  },
+
+  getMoveSourcePageCode: function (targetPageWikilink, signature, timestamp) {
+    return '{{перенесено на|' + targetPageWikilink + '|' + signature + '}}\n<small>Для бота: ' + timestamp + '</small>\n';
+  },
+
+  getMoveTargetPageCode: function (targetPageWikilink, signature) {
+    return '{{перенесено с|' + targetPageWikilink + '|' + signature + '}}\n';
+  },
+};
+
+});
