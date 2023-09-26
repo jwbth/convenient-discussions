@@ -425,7 +425,7 @@ export function createCopyActionField({ label, value, disabled = false, help, co
   const input = new OO.ui.TextInputWidget({ value, disabled });
   const button = new OO.ui.ButtonWidget({
     label: cd.s('copy'),
-    icon: 'articles',
+    icon: 'copy',
     disabled,
   });
   button.on('click', () => {
