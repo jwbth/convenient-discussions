@@ -127,12 +127,14 @@ const toc = {
       // Update the section list of the TOC
       mw.hook('wikipage.tableOfContents').fire(hideToc ? [] : sections);
 
-      // The hook above initiates an asynchronous process:
-      // https://phabricator.wikimedia.org/source/Vector/browse/master/resources/skins.vector.es6/tableOfContents.js;2450fdeb99a00cba769b6f2e3b43d3fcf2eca863$411?as=source.
-      // If we await the execution of the module requested by the link, our handler will run after
-      // the native one, so we need a respective promise. If/when a hook is added in T316025, this
-      // should be implemented based on it.
-      this.updateTocSectionsPromise = mw.loader.using('mediawiki.template.mustache');
+      this.updateTocSectionsPromise = new Promise((resolve) => {
+        this.resolveUpdateTocSectionsPromise = resolve;
+      });
+    }
+    if (controller.getBootProcess().isFirstRun()) {
+      mw.hook('wikipage.tableOfContents.vector').add(() => {
+        this.resolveUpdateTocSectionsPromise?.();
+      });
     }
   },
 
