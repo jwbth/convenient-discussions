@@ -870,6 +870,9 @@ export default {
 
     // For Timeless, Vector-2022 skins
     cd.g.bodyScrollPaddingTop = parseFloat($('html, body').css('scroll-padding-top')) || 0;
+    if (cd.g.skin = 'timeless') {
+      cd.g.bodyScrollPaddingTop = cd.g.bodyScrollPaddingTop - 5;
+    }
   },
 
   /**
