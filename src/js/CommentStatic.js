@@ -296,7 +296,7 @@ const CommentStatic = {
         } else if (!comment.getLayersContainer().convenientDiscussionsIsTopLayersContainer) {
           // isMoved === false
           notMovedCount++;
-          if (notMovedCount === 2) {
+          if (notMovedCount === 4) {
             return true;
           }
         }
