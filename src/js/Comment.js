@@ -526,7 +526,7 @@ class Comment extends CommentSkeleton {
       this.copyLinkButton = new CommentButton({
         label: this.reformattedTimestamp || this.timestamp,
         tooltip: this.timestampTitle,
-        classes: ['cd-comment-button-label', 'cd-comment-timestamp', 'mw-selflink'],
+        classes: ['cd-comment-button-label', 'cd-comment-timestamp', 'mw-selflink-fragment'],
         action: this.copyLink,
         href: this.dtId && '#' + this.dtId,
       });

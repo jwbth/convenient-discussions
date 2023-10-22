@@ -785,7 +785,7 @@ class Section extends SectionSkeleton {
         },
         flags: ['progressive'],
       });
-      copyLinkButton.buttonElement.classList.add('mw-selflink');
+      copyLinkButton.buttonElement.classList.add('mw-selflink-fragment');
     }
 
     const actionsElement = document.createElement(this.level === 2 ? 'div' : 'span');
