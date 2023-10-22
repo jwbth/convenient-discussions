@@ -31,13 +31,13 @@ let currentUserRights;
  * @throws {CdError}
  */
 export function handleApiReject(code, resp) {
-  // Native promises support only one parameter.
+  // Native promises support only one parameter when `reject()`ing.
   if (Array.isArray(code)) {
     [code, resp] = code;
   }
 
   // See the parameters with which mw.Api() rejects:
-  // https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.api/index.js;fbfa8f1a61c5ffba664e817701439affb4f6a388$245
+  // https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.api/index.js;137c7de7a44534704762105323192d2d1bfb5765$269
   throw code === 'http' ?
     new CdError({ type: 'network' }) :
     new CdError({

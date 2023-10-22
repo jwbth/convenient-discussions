@@ -150,8 +150,10 @@ export default {
       underlinesToSpaces(ucFirst(name)).trim();
 
     if (!this.items[name]) {
-      const options = name === cd.g.userName ? { gender: mw.user.options.get('gender') } : {};
-      this.items[name] = new User(name, options);
+      this.items[name] = new User(
+        name,
+        name === cd.g.userName ? { gender: mw.user.options.get('gender') } : {}
+      );
     }
 
     return this.items[name];

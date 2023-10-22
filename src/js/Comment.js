@@ -1781,14 +1781,12 @@ class Comment extends CommentSkeleton {
       opacity: '',
     };
 
-    const finalMarkerProperties = generateProperties(markerColor);
-    this.$marker.animate(finalMarkerProperties, 400, 'swing', () => {
+    this.$marker.animate(generateProperties(markerColor), 400, 'swing', () => {
       this.$marker.css(propertyDefaults);
     });
 
     const comment = this;
-    const finalBackgroundProperties = generateProperties(backgroundColor);
-    this.$animatedBackground.animate(finalBackgroundProperties, 400, 'swing', function () {
+    this.$animatedBackground.animate(generateProperties(backgroundColor), 400, 'swing', function () {
       if (this !== comment.$animatedBackground.get(-1)) return;
 
       callback?.();
