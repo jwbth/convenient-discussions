@@ -82,7 +82,7 @@ function handleDtMarkup(elements) {
     cd.g.isDtTopicSubscriptionEnabled ||
 
     // DT enabled by default. Don't know how to capture that another way.
-    mw.loader.getState('ext.discussionTools.init') === 'ready'
+    !['registered', null].includes(mw.loader.getState('ext.discussionTools.init'))
   );
   let dtMarkupHavenElement;
   if (moveNotRemove) {
