@@ -113,11 +113,10 @@ Object.assign(cd, {
       return mwStringsCache[name];
     }
     let message;
-    if (/(discussiontools|visualeditor)-/.test(name)) {
-      message = mw.message(
-        mw.messages.exists(name) ? name : name.slice(name.indexOf('-') + 1),
-        ...params
-      ).parse();
+    if (/^(discussiontools|visualeditor)-/.test(name)) {
+      message = mw.messages.exists(name) ?
+        mw.message(name, ...params).parse() :
+        cd.sParse(name.slice(name.indexOf('-') + 1));
     } else {
       message = mw.message(name, ...params).parse();
     }
