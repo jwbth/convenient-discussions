@@ -50,7 +50,7 @@ export function wrap(htmlOrJquery, options = {}) {
         // be a link.
         $link.removeAttr('href').removeAttr('title');
       } else if (!$link.length) {
-        $link = $linkWrapper.wrapInner('<a>').children().first();
+        $link = $linkWrapper.wrapInner('<a href>').children().first();
       }
       buttons.push(
         new Button({

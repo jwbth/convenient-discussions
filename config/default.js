@@ -293,9 +293,9 @@ export default {
    * {@link module:defaultConfig.tagName tag}, in summary.
    *
    * @type {string}
-   * @default 'c:User:JWBTH/CD'
+   * @default 'mw:c:Special:MyLanguage/User:JWBTH/CD'
    */
-  scriptPageWikilink: 'c:Special:MyLanguage/User:JWBTH/CD',
+  scriptPageWikilink: 'mw:c:Special:MyLanguage/User:JWBTH/CD',
 
   /**
    * Name of the hook to fire with author link wrappers after reformatting comments. Used to run

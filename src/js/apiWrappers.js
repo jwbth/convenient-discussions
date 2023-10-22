@@ -795,6 +795,21 @@ export function dtSubscribe(subscribeId, id, subscribe) {
 }
 
 /**
+ * Request a REST API to transform HTML to wikitext.
+ *
+ * @param {string} url URL of the API.
+ * @param {string} html HTML to transform.
+ * @returns {Promise.<string>}
+ * @private
+ */
+function requestTransformApi(url, html) {
+  return $.post(url, {
+    html,
+    scrub_wikitext: true,
+  });
+}
+
+/**
  * Convert HTML into wikitext.
  *
  * @param {string} html
@@ -806,10 +821,17 @@ export async function htmlToWikitext(html, input) {
   input.pushPending();
   input.setDisabled(true);
   try {
-    wikitext = await $.post('/api/rest_v1/transform/html/to/wikitext', {
-      html,
-      scrub_wikitext: true,
-    });
+    try {
+      if (!cd.g.isProbablyWmfSulWiki) {
+        throw undefined;
+      }
+      wikitext = await requestTransformApi('/api/rest_v1/transform/html/to/wikitext', html);
+    } catch {
+      wikitext = await requestTransformApi(
+        'https://en.wikipedia.org/api/rest_v1/transform/html/to/wikitext',
+        html
+      );
+    }
     wikitext = wikitext
       .replace(/(?:^ .*(?:\n|$))+/gm, (s) => (
         '<syntaxhighlight lang="">\n' +

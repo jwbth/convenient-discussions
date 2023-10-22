@@ -252,6 +252,22 @@
   "rc-suggestion-no": "Keep the usual formatting",
 
   "topicsubscription-notice": "<p>Convenient Discussions now uses the standard notifications interface for section watching (now it is called topic subscriptions). You will get a notification when someone posts a new comment in the topic you subscribed to. If you had desktop notifications enabled, you will still receive them.</p>\n\n<p>You can configure the notification types (web, email, app) in the <b>[[Special:Preferences#mw-prefsection-echo|wiki preferences]]</b>. Or you can go back to the classic section watching. See the details in the <b><span class=\"cd-notification-notificationSettings\">[[$1|Convenient Discussions settings]]</span></b>.</p>",
+  "topicsubscription-button-subscribe": "subscribe",
+  "topicsubscription-button-subscribe-tooltip": "{{GENDER:|Subscribe}} to receive notifications about new comments.",
+  "topicsubscription-button-unsubscribe": "unsubscribe",
+  "topicsubscription-button-unsubscribe-tooltip": "{{GENDER:|Unsubscribe}} to stop receiving notifications about new comments.",
+  "topicsubscription-notify-subscribed-title": "{{GENDER:|You}} have subscribed!",
+  "topicsubscription-notify-subscribed-body": "{{GENDER:|You}} will receive notifications about new comments in this topic.",
+  "topicsubscription-notify-unsubscribed-title": "{{GENDER:|You}} have unsubscribed.",
+  "topicsubscription-notify-unsubscribed-body": "{{GENDER:|You}} will no longer receive notifications about new comments in this topic.",
+  "newtopicssubscription-button-subscribe-label": "Subscribe",
+  "newtopicssubscription-button-subscribe-tooltip": "Subscribe to receive notifications when new topics are started on this page.",
+  "newtopicssubscription-button-unsubscribe-label": "Unsubscribe",
+  "newtopicssubscription-button-unsubscribe-tooltip": "Unsubscribe to stop receiving notifications when new topics are started on this page.",
+  "newtopicssubscription-notify-subscribed-title": "{{GENDER:|You}} have subscribed!",
+  "newtopicssubscription-notify-subscribed-body": "{{GENDER:|You}} will receive notifications when new topics are started on this page.",
+  "newtopicssubscription-notify-unsubscribed-title": "{{GENDER:|You}} have unsubscribed.",
+  "newtopicssubscription-notify-unsubscribed-body": "{{GENDER:|You}} will no longer receive notifications when new topics are started on",
 
   "newTopicsSubscription-popup-title": "New feature",
   "newTopicsSubscription-popup-text": "You can now subscribe to talk pages. If you subscribe to a page, you will receive notifications when new topics are started on the page. To subscribe to a page, click \"{{int:discussiontools-newtopicssubscription-button-subscribe-label}}\" in the page actions menu.",
@@ -440,6 +456,8 @@
   "lp-comment-tooltip": "Go to comment",
   "lp-comment-toyou": "the comment is addressed to you",
   "lp-comment-watchedsection": "you are subscribed to this section",
+
+  "educationpopup-dismiss": "Okay, got it",
 
   "bullet": "<b>•</b>",
   "dot-separator": "&nbsp;<b>·</b>&#32;",

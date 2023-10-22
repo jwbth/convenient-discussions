@@ -112,7 +112,15 @@ Object.assign(cd, {
     if (!params.length && mwStringsCache[name]) {
       return mwStringsCache[name];
     }
-    const message = mw.message(name, ...params).parse();
+    let message;
+    if (/(discussiontools|visualeditor)-/.test(name)) {
+      message = mw.message(
+        mw.messages.exists(name) ? name : name.slice(name.indexOf('-') + 1),
+        ...params
+      ).parse();
+    } else {
+      message = mw.message(name, ...params).parse();
+    }
     if (!params.length) {
       // Use cache since in some places a message could be requested very frequently.
       mwStringsCache[name] = message;

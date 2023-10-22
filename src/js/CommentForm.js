@@ -951,6 +951,7 @@ class CommentForm {
       this.commentInput.$element.find('.group-heading').remove();
     }
 
+    const scriptPath = mw.config.get('wgScriptPath');
     const lang = cd.g.userLanguage;
     $input.wikiEditor('addToToolbar', {
       section: 'main',
@@ -959,7 +960,7 @@ class CommentForm {
         smaller: {
           label: cd.mws('wikieditor-toolbar-tool-small'),
           type: 'button',
-          icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-styling&image=smaller&lang=${lang}&skin=vector`,
+          icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-styling&image=smaller&lang=${lang}&skin=vector`,
           action: {
             type: 'encapsulate',
             options: {
@@ -985,7 +986,7 @@ class CommentForm {
         quote: {
           label: `${cd.s('cf-quote-tooltip')} ${cd.mws('parentheses', `Q${cd.mws('comma-separator')}Ctrl+Alt+Q`)}`,
           type: 'button',
-          icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=quotes&lang=${lang}&skin=vector`,
+          icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=quotes&lang=${lang}&skin=vector`,
           action: {
             type: 'callback',
             execute: () => {
@@ -996,7 +997,7 @@ class CommentForm {
         mention: {
           label: cd.s('cf-mention-tooltip', cd.g.cmdModifier),
           type: 'button',
-          icon: `/w/load.php?modules=oojs-ui.styles.icons-user&image=userAvatar&lang=${lang}&skin=vector`,
+          icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-user&image=userAvatar&lang=${lang}&skin=vector`,
           action: {
             type: 'callback',
             execute: () => {},
@@ -1018,7 +1019,7 @@ class CommentForm {
         code: {
           label: cd.s('cf-code-tooltip'),
           type: 'button',
-          icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=code&lang=${lang}&skin=vector`,
+          icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=code&lang=${lang}&skin=vector`,
           action: {
             type: 'encapsulate',
             options: {
@@ -1031,7 +1032,7 @@ class CommentForm {
         codeBlock: {
           label: cd.s('cf-codeblock-tooltip'),
           type: 'button',
-          icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=markup&lang=${lang}&skin=vector`,
+          icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=markup&lang=${lang}&skin=vector`,
           action: {
             type: 'encapsulate',
             options: {
@@ -1044,7 +1045,7 @@ class CommentForm {
         underline: {
           label: cd.s('cf-underline-tooltip'),
           type: 'button',
-          icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-styling&image=underline&lang=${lang}&skin=vector`,
+          icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-styling&image=underline&lang=${lang}&skin=vector`,
           action: {
             type: 'encapsulate',
             options: {
@@ -1057,7 +1058,7 @@ class CommentForm {
         strikethrough: {
           label: cd.s('cf-strikethrough-tooltip'),
           type: 'button',
-          icon: `/w/load.php?modules=oojs-ui.styles.icons-editing-styling&image=strikethrough&lang=${lang}&skin=vector`,
+          icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-styling&image=strikethrough&lang=${lang}&skin=vector`,
           action: {
             type: 'encapsulate',
             options: {
