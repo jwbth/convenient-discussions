@@ -2474,8 +2474,9 @@ class Comment extends CommentSkeleton {
    * @returns {object}
    */
   async findDiffMatches(compareBodies, revisions) {
-    // Only analyze added lines except for headings.
-    const regexp = /<td [^>]*class="[^"]*\bdiff-empty\b[^"]*"[^>]*>\s*<\/td>\s*<td [^>]*class="[^"]*\bdiff-marker\b[^"]*"[^>]*>\s*<\/td>\s*<td [^>]*class="[^"]*\bdiff-addedline\b[^"]*"[^>]*>\s*<div[^>]*>(?!=)(.+?)<\/div>\s*<\/td>/g;
+    // Only analyze added lines except for headings. `diff-empty` is not always present, so we stick
+    // to `colspan="2"` as an indicator.
+    const regexp = /<td [^>]*colspan="2" class="[^"]*\bdiff-side-deleted\b[^"]*"[^>]*>\s*<\/td>\s*<td [^>]*class="[^"]*\bdiff-marker\b[^"]*"[^>]*>\s*<\/td>\s*<td [^>]*class="[^"]*\bdiff-addedline\b[^"]*"[^>]*>\s*<div[^>]*>(?!=)(.+?)<\/div>\s*<\/td>/g;
 
     const commentFullText = this.getText(false) + ' ' + this.signatureText;
     const matches = [];
