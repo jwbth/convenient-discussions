@@ -207,7 +207,7 @@
 	"rd-close": "Cerrar",
 	"rc-suggestion": "<p>Convenient Discussions tiene una opción para cambiar el formato de los comentarios, moviendo el autor y la marca de tiempo hacia arriba y los botones de respuesta y agradecimiento hacia abajo. Esto permite ver rápidamente el autor y la fecha de los comentarios e interactuar con ellos más fácilmente. ¿Quieres habilitarlo? (Siempre puedes desactivarlo en la configuración).</p>\n\n<p>Tenga en cuenta que, en el nuevo formato, puede obtener un enlace al comentario haciendo clic en la marca de tiempo. Además, vea <span class=\"cd-notification-settings\">[[$1|the settings]]</span> para varias características, como los botones de inserción de texto y el formato personalizable de las marcas de tiempo (que, por cierto, se muestran en la zona horaria establecida en sus preferencias wiki por defecto)</p>",
 	"rc-suggestion-no": "Mantenga el formato usual",
-	"newTopicsSubscription-popup-title": "Funcionalidad nueva",
+	"newtopicssubscription-popup-title": "Funcionalidad nueva",
 	"navpanel-refresh": "Actualizar página",
 	"navpanel-previous": "Ir al comentario nuevo anterior",
 	"navpanel-next": "Ir al comentario nuevo siguiente",

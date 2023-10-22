@@ -514,9 +514,9 @@ export default {
     }
     const popup = new OO.ui.PopupWidget({
       icon: 'newspaper',
-      label: cd.s('newTopicsSubscription-popup-title'),
+      label: cd.s('newtopicssubscription-popup-title'),
       $content: $('<div>').append(
-        $('<p>').text(cd.s('newTopicsSubscription-popup-text')),
+        $('<p>').text(cd.s('newtopicssubscription-popup-text')),
         $('<p>').append(button.$element),
       ).children(),
       head: true,

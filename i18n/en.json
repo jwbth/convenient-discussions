@@ -269,8 +269,8 @@
   "newtopicssubscription-notify-unsubscribed-title": "{{GENDER:|You}} have unsubscribed.",
   "newtopicssubscription-notify-unsubscribed-body": "{{GENDER:|You}} will no longer receive notifications when new topics are started on",
 
-  "newTopicsSubscription-popup-title": "New feature",
-  "newTopicsSubscription-popup-text": "You can now subscribe to talk pages. If you subscribe to a page, you will receive notifications when new topics are started on the page. To subscribe to a page, click \"{{int:discussiontools-newtopicssubscription-button-subscribe-label}}\" in the page actions menu.",
+  "newtopicssubscription-popup-title": "New feature",
+  "newtopicssubscription-popup-text": "You can now subscribe to talk pages. If you subscribe to a page, you will receive notifications when new topics are started on the page. To subscribe to a page, click \"{{int:discussiontools-newtopicssubscription-button-subscribe-label}}\" in the page actions menu.",
 
   "popup-manyForms-title": "Did you know?",
   "popup-manyForms-text": "In Convenient Discussions, you can type many comments simultaneously in separate forms and then send them one by one. The text in other forms won't be lost when you submit one of the forms. Give it a try!",
