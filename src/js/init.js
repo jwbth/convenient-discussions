@@ -132,24 +132,35 @@ function loadSiteData() {
   const userLanguageMessageNames = [
     'parentheses', 'parentheses-start', 'parentheses-end', 'word-separator', 'comma-separator',
     'colon-separator', 'nextdiff', 'timezone-utc', 'pagetitle',
-    'discussiontools-topicsubscription-button-subscribe',
-    'discussiontools-topicsubscription-button-subscribe-tooltip',
-    'discussiontools-topicsubscription-button-unsubscribe',
-    'discussiontools-topicsubscription-button-unsubscribe-tooltip',
-    'discussiontools-topicsubscription-notify-subscribed-title',
-    'discussiontools-topicsubscription-notify-subscribed-body',
-    'discussiontools-topicsubscription-notify-unsubscribed-title',
-    'discussiontools-topicsubscription-notify-unsubscribed-body',
-    'discussiontools-newtopicssubscription-button-subscribe-label',
-    'discussiontools-newtopicssubscription-button-subscribe-tooltip',
-    'discussiontools-newtopicssubscription-button-unsubscribe-label',
-    'discussiontools-newtopicssubscription-button-unsubscribe-tooltip',
-    'discussiontools-newtopicssubscription-notify-subscribed-title',
-    'discussiontools-newtopicssubscription-notify-subscribed-body',
-    'discussiontools-newtopicssubscription-notify-unsubscribed-title',
-    'discussiontools-newtopicssubscription-notify-unsubscribed-body',
-    'visualeditor-educationpopup-dismiss',
-  ].concat(...uiDateTokensMessageNames);
+  ]
+    .concat(
+      mw.loader.getState('ext.discussionTools.init') ?
+        [
+          'discussiontools-topicsubscription-button-subscribe',
+          'discussiontools-topicsubscription-button-subscribe-tooltip',
+          'discussiontools-topicsubscription-button-unsubscribe',
+          'discussiontools-topicsubscription-button-unsubscribe-tooltip',
+          'discussiontools-topicsubscription-notify-subscribed-title',
+          'discussiontools-topicsubscription-notify-subscribed-body',
+          'discussiontools-topicsubscription-notify-unsubscribed-title',
+          'discussiontools-topicsubscription-notify-unsubscribed-body',
+          'discussiontools-newtopicssubscription-button-subscribe-label',
+          'discussiontools-newtopicssubscription-button-subscribe-tooltip',
+          'discussiontools-newtopicssubscription-button-unsubscribe-label',
+          'discussiontools-newtopicssubscription-button-unsubscribe-tooltip',
+          'discussiontools-newtopicssubscription-notify-subscribed-title',
+          'discussiontools-newtopicssubscription-notify-subscribed-body',
+          'discussiontools-newtopicssubscription-notify-unsubscribed-title',
+          'discussiontools-newtopicssubscription-notify-unsubscribed-body',
+        ] :
+        []
+    )
+    .concat(
+      mw.loader.getState('ext.visualEditor.core') ?
+        ['visualeditor-educationpopup-dismiss'] :
+        []
+    )
+    .concat(...uiDateTokensMessageNames);
 
   const areLanguagesEqual = mw.config.get('wgContentLanguage') === mw.config.get('wgUserLanguage');
   if (areLanguagesEqual) {
