@@ -323,7 +323,7 @@ class Autocomplete {
               !/[#<>[\]|{}]/.test(text) &&
 
               // Interwikis
-              !((/^:/.test(text) || /^[a-z]\w*:/.test(text)) && !allNamespacesRegexp.test(text))
+              !((/^:/.test(text) || /^[a-z-]\w*:/.test(text)) && !allNamespacesRegexp.test(text))
             );
             if (valid) {
               values.push(...this.wikilinks.cache);
