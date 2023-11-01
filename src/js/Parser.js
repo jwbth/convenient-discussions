@@ -137,8 +137,18 @@ class Parser {
     // (perhaps they need to be "tmbox" too?).
     this.rejectClasses = [
       'cd-comment-part',
-      'ombox',
+
+      // `.ext-discussiontools-init-section-bar` can sometimes be treated as a comment part, like at
+      // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(proposals)#RfC:_Enabling_collapsible_templates_on_the_mobile_site
+      'mw-heading',
+
+      // Extension:Translate
       'mw-pt-languages',
+
+      // Likely won't do much effect, but won't hurt
+      'mw-archivedtalk',
+
+      'ombox',
       ...cd.config.closedDiscussionClasses,
       cd.config.outdentClass,
     ];

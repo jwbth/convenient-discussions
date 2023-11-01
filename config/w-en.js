@@ -381,7 +381,7 @@ export default {
   ],
 
   rejectNode: function (node) {
-    return node.classList.contains('boilerplate-header');
+    return ['boilerplate-header', 'side-box-right'].some((name) => node.classList.contains(name));
   },
 
   getMoveSourcePageCode: function (targetPageWikilink, signature) {

@@ -554,8 +554,8 @@ export default {
 
   /**
    * Classes of elements that shouldn't be highlighted. It is preferable to add the `cd-noHighlight`
-   * class to these elements instead of using this value. Some elements are not highlighted by default
-   * (images, "move topic" marks, empty list elements).
+   * class to these elements instead of using this value. Some elements are not highlighted by
+   * default (images, "move topic" marks, empty list elements).
    *
    * @type {string[]}
    * @default []
