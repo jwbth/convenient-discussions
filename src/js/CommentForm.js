@@ -511,7 +511,7 @@ class CommentForm {
           initialState?.watch ??
           (
             (settings.get('watchOnReply') && this.mode !== 'edit') ||
-            $('#ca-unwatch').length ||
+            $('.mw-watchlink a[href*="action=unwatch"]').length ||
             mw.user.options.get(controller.doesPageExist() ? 'watchdefault' : 'watchcreations')
           )
         ),
