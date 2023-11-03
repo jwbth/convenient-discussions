@@ -185,7 +185,7 @@ function extractRegularSignatures(adjustedCode, code) {
       6 - timestamp
      */
     (
-      `^(((.*?)${cd.g.captureUserNamePattern}.{1,${signatureScanLimit}})` +
+      `^(((.*?)${cd.g.captureUserNamePattern}.{1,${signatureScanLimit}}?)` +
       `(${cd.g.contentTimestampRegexp.source})${afterTimestamp}.*)${ending}`
     ),
     'im'
