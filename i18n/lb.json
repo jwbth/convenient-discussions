@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"Jack who built the house",
+			"Les Meloures",
 			"Robby",
 			"Volvox"
 		]
@@ -47,7 +48,7 @@
 	"cld-diff-error-network": "Gouf net fonnt (Feeler am Reseau)",
 	"cld-diff-error-unknown": "Gouf net fonnt (onbekannte Feeler)",
 	"cld-wikilink": "Wikilink",
-	"cld-currentpagewikilink": "Wikilink vun derselwechter Säit",
+	"cld-currentpagewikilink": "Wikilink vun der selwechter Säit",
 	"cld-link": "Normale Link",
 	"cld-permanentlink": "Permanente Link",
 	"cld-permanentwikilink": "Permanente Wikilink",
