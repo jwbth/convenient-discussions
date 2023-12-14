@@ -374,13 +374,19 @@ class CommentSkeleton {
   }
 
   /**
-   * Check whether the element is a gallery created by the `<gallery` tag.
+   * Check whether the element is an other kind of list like a gallery created by the `<gallery>`
+   * tag.
    *
    * @param {Element|external:Element} element
    * @returns {boolean}
    */
-  isGallery(element) {
-    return element.tagName === 'UL' && element.classList.contains('gallery');
+  isOtherKindOfList(element) {
+    return (
+      element.tagName === 'UL' &&
+
+      // Portal boxes of https://en.wikipedia.org/wiki/Template:Portal have `role="navigation"`
+      (element.classList.contains('gallery') || element.getAttribute('role') === 'navigation')
+    );
   }
 
   /**
@@ -423,7 +429,7 @@ class CommentSkeleton {
         !this.parser.context.getElementByClassName(element, 'cd-signature')
       ) ||
 
-      this.isGallery(element)
+      this.isOtherKindOfList(element)
     );
 
     // "tagName !== 'OL'" helps in cases like
@@ -901,7 +907,8 @@ class CommentSkeleton {
   }
 
   /**
-   * Check whether a node is a comment level node.
+   * Check whether a node is a comment level node and not some foreign node like an internal list or
+   * a gallery.
    *
    * @param {number} i Current part index.
    * @param {Node|external:Node} lastPartNode Node of the last part.
@@ -915,7 +922,7 @@ class CommentSkeleton {
       // https://ru.wikipedia.org/w/index.php?diff=103584477.
       ['DL', 'UL', 'OL', 'DD', 'LI'].includes(part.node.tagName) &&
 
-      !this.isGallery(part.node) &&
+      !this.isOtherKindOfList(part.node) &&
 
       // Exclude lists that are parts of the comment, like at
       // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Comments_starting_with_a_list
@@ -959,7 +966,10 @@ class CommentSkeleton {
         (
           (
             part.node.tagName !== 'UL' &&
-            (this.isPartOfList(this.parts[i + 1].node) && this.parts[i + 1].step !== 'replaced')
+            (
+              this.isPartOfList(this.parts[i + 1].node, false) &&
+              this.parts[i + 1].step !== 'replaced'
+            )
           ) ||
           part.node[this.parser.context.childElementsProp].length > 1
         ) &&
