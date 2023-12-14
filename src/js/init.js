@@ -907,9 +907,7 @@ export default {
       'vector-2022': '.mw-page-container',
       default: 'body',
     }).css('background-color');
-    const metadataFontSize = parseFloat(
-      ((13 / 14) * cd.g.contentFontSize / defaultFontSize).toFixed(7)
-    );
+    const metadataFontSize = parseFloat((cd.g.contentFontSize / defaultFontSize).toFixed(7));
 
     mw.loader.addStyleTag(`:root {
   --cd-comment-hovered-background-color: ${cd.g.commentHoveredBackgroundColor};
