@@ -97,6 +97,13 @@
         target: 'User:Jack who built the house/convenientDiscussions.js',
       },
     },
+    {
+      server: 'www.mediawiki.org',
+      default: {
+        source: 'mw.js',
+        target: 'User:Jack who built the house/convenientDiscussions-mwConfig.js',
+      },
+    },
   ],
 
   sourceMapsBaseUrl: 'https://tools-static.wmflabs.org/convenient-discussions/source-maps/',
