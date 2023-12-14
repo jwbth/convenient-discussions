@@ -180,9 +180,6 @@ class CommentSkeleton {
        * @type {boolean}
        */
       this.isOpeningSection = true;
-
-      const headingLevelMatch = this.parts[0].node.tagName.match(/^H([1-6])$/);
-      this.openingSectionOfLevel = headingLevelMatch && Number(headingLevelMatch[1]);
     } else {
       this.isOpeningSection = false;
     }

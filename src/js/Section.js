@@ -403,9 +403,8 @@ class Section extends SectionSkeleton {
   canEditFirstComment() {
     return Boolean(
       this.isActionable &&
-      this.comments.length &&
+      this.commentsInFirstChunk.length &&
       this.comments[0].isOpeningSection &&
-      this.comments[0].openingSectionOfLevel === this.level &&
       (this.comments[0].isOwn || settings.get('allowEditOthersComments')) &&
       this.comments[0].isActionable &&
       !this.comments[0].isCollapsed
