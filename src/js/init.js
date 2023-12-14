@@ -726,7 +726,7 @@ function getTimestampMainPartPattern(language) {
   const regexpGroup = (regexp) => '(' + regexp + ')';
   const regexpAlternateGroup = (arr) => '(' + arr.map(mw.util.escapeRegExp).join('|') + ')';
 
-  let string = '\\b';
+  let string = '';
 
   for (let p = 0; p < format.length; p++) {
     let num = false;
@@ -1120,7 +1120,7 @@ export default {
        * @memberof convenientDiscussions.g
        */
       cd.g.parseTimestampContentRegexp = new RegExp(
-        `^([^]*)(${cd.g.contentTimestampRegexp.source})(?!["»])`
+        `^([^]*)[\b ](${cd.g.contentTimestampRegexp.source})(?!["»])`
       );
 
       /**
