@@ -2794,6 +2794,7 @@ class CommentForm {
       url.searchParams.delete('action');
       url.hash = passedData.commentIds[0];
       location.href = url.toString();
+      location.reload();
       return;
     }
 
