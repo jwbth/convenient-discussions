@@ -1,7 +1,8 @@
 {
 	"@metadata": {
 		"authors": [
-			"Eleassar"
+			"Eleassar",
+			"Upwinxp"
 		]
 	},
 	"script-name": "Priročne razprave",
@@ -95,7 +96,7 @@
 	"thank-error": "Zahvale ni bilo mogoče poslati.",
 	"thank-success": "Obvestilo »Hvala« je bilo poslano.",
 	"es-reply": "odgovori",
-	"es-reply-to": "odgovor {{gender:$2|uporabniku|uporabnici|uporabniku_ci}} $1",
+	"es-reply-to": "odgovor {{gender:$2|uporabniku|uporabnici|uporabniku/ci}} $1",
 	"es-addition": "dodatek",
 	"es-edit-reply": "uredi odgovor",
 	"es-edit-reply-to": "ureditev odgovora {{gender:$2|}}$1",
