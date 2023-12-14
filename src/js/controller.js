@@ -688,7 +688,7 @@ export default {
   extractTemplateStylesSelectors() {
     this.content.tsSelectorsFloating = [];
     this.content.tsSelectorsHidden = [];
-    const filterRules = (rule) => {
+    const extractSelectors = (rule) => {
       if (rule instanceof CSSStyleRule) {
         const style = rule.style;
         if (style.float === 'left' || style.float === 'right') {
@@ -698,16 +698,16 @@ export default {
           this.content.tsSelectorsHidden.push(rule.selectorText);
         }
       } else if (rule instanceof CSSMediaRule) {
-        [...rule.cssRules].forEach(filterRules);
+        [...rule.cssRules].forEach(extractSelectors);
       }
     };
     [...document.styleSheets]
       .filter((sheet) => sheet.href?.includes('site.styles'))
       .forEach((el) => {
-        [...el.cssRules].forEach(filterRules);
+        [...el.cssRules].forEach(extractSelectors);
       });
     [...this.rootElement.querySelectorAll('style')].forEach((el) => {
-      [...el.sheet.cssRules].forEach(filterRules);
+      [...el.sheet.cssRules].forEach(extractSelectors);
     });
   },
 
@@ -996,8 +996,7 @@ export default {
     }
 
     // Make sure the title has no incorrect new comment count when the user presses the "Back"
-    // button
-    // after a page reload.
+    // button after a page reload.
     this.updatePageTitle();
   },
 
@@ -1025,9 +1024,9 @@ export default {
     };
 
     if (!this.isUpdateThreadLinesHandlerAttached && settings.get('enableThreads')) {
-      // Update only on mouse move to prevent short freezings of a page when there is a
-      // comment form in the beginning of a very long page and the input is changed so that
-      // everything below the form shifts vertically.
+      // Update only on mouse move to prevent short freezings of a page when there is a comment form
+      // in the beginning of a very long page and the input is changed so that everything below the
+      // form shifts vertically.
       $(document).on('mousemove', updateThreadLines);
       this.isUpdateThreadLinesHandlerAttached = true;
     }
@@ -1739,8 +1738,9 @@ export default {
    * @returns {Element[]}
    */
   getRangeContents(start, end) {
-    // It makes more sense to place this function in the util module, but we can't import controller
-    // there because of issues with the worker build and a cyclic dependency that emerges.
+    // It makes more sense to place this function in the `utils` module, but we can't import
+    // `controller` there because of issues with the worker build and a cyclic dependency that
+    // emerges.
 
     // Fight infinite loops
     if (start.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_PRECEDING) return;

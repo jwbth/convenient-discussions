@@ -1646,7 +1646,7 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * _For internal use._ Set the `visibility` CSS value of the section.
+   * _For internal use._ Set the `visibility` CSS value to the section.
    *
    * @param {boolean} show Show or hide.
    */

@@ -462,7 +462,7 @@ const CommentStatic = {
           // The bottom edge of the viewport is above the first comment.
           (
             comment === firstVisibleComment &&
-            viewportBottom < comment.roughOffset.downplayedBottom
+            viewportBottom < comment.roughOffset.bottomForVisibility
           ) ||
 
           // The top edge of the viewport is below the last comment.
@@ -493,7 +493,7 @@ const CommentStatic = {
 
         // Determine the ID of the next comment to check.
         const higherTop = searchArea.top.roughOffset.top;
-        const lowerBottom = searchArea.bottom.roughOffset.downplayedBottom;
+        const lowerBottom = searchArea.bottom.roughOffset.bottomForVisibility;
         const proportion = (
           (viewportTop - higherTop) /
           ((lowerBottom - viewportBottom) + (viewportTop - higherTop))

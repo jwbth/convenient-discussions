@@ -938,7 +938,7 @@ class Comment extends CommentSkeleton {
    * @property {number} bottom
    * @property {number} left
    * @property {number} right
-   * @property {number} downplayedBottom
+   * @property {number} bottomForVisibility
    * @memberof Comment
    * @inner
    */
@@ -1190,11 +1190,11 @@ class Comment extends CommentSkeleton {
 
     // A solution for comments that have the height bigger than the viewport height. In Chrome, the
     // scrolling step is 100 pixels.
-    const downplayedBottom = bottom - top > (window.innerHeight - 200) ?
-      top + (window.innerHeight - 200) :
+    const bottomForVisibility = bottom - top > (window.innerHeight - 250) ?
+      top + (window.innerHeight - 250) :
       bottom;
 
-    const offset = { top, bottom, left, right, downplayedBottom };
+    const offset = { top, bottom, left, right, bottomForVisibility };
     this.maybeAssignOffset(offset, options);
 
     return options.set ? true : offset;
@@ -2394,7 +2394,7 @@ class Comment extends CommentSkeleton {
         (
           this.isOpeningSection ||
           this.editForm ||
-          (offset && offset.bottom !== offset.downplayedBottom)
+          (offset && offset.bottom !== offset.bottomForVisibility)
         ) ?
           'top' :
           'center',
@@ -2885,8 +2885,8 @@ class Comment extends CommentSkeleton {
     const viewportBottom = scrollY + window.innerHeight;
 
     return partially ?
-      offset.downplayedBottom > viewportTop && offset.top < viewportBottom :
-      offset.top >= viewportTop && offset.downplayedBottom <= viewportBottom;
+      offset.bottomForVisibility > viewportTop && offset.top < viewportBottom :
+      offset.top >= viewportTop && offset.bottomForVisibility <= viewportBottom;
   }
 
   /**

@@ -11,7 +11,7 @@ let punctuationRegexp;
 /**
  * @typedef {object} GetPageNameFromUrlReturn
  * @property {string} pageName
- * @property {string} domain
+ * @property {string} hostname
  * @property {string} fragment
  * @memberof Parser
  * @inner
@@ -26,11 +26,11 @@ let punctuationRegexp;
  * @private
  */
 function getPageNameFromUrl(url) {
-  let domain = cd.g.hostname;
+  let hostname = cd.g.hostname;
   let fragment;
   let pageName = url
     .replace(/^(?:https?:)?\/\/([^/]+)/, (s, m1) => {
-      domain = m1;
+      hostname = m1;
       return '';
     })
     .replace(cd.g.startsWithArticlePathRegexp, '')
@@ -46,7 +46,7 @@ function getPageNameFromUrl(url) {
   } catch (e) {
     return null;
   }
-  return { pageName, domain, fragment };
+  return { pageName, hostname, fragment };
 }
 
 /**
@@ -268,7 +268,7 @@ class Parser {
           authorData.talkLink = link;
         } else if (['contribs', 'contribsForeign'].includes(linkType)) {
           // `authorData.contribsNotForeignLink` is used only to make sure there are no two contribs
-          // links to the current domain in a signature.
+          // links to the current hostname in a signature.
           if (authorData.contribsNotForeignLink && (authorData.link || authorData.talkLink)) {
             return false;
           }
@@ -672,7 +672,7 @@ class Parser {
     let userName;
     let linkType = null;
     if (href) {
-      const { pageName, domain, fragment } = getPageNameFromUrl(href) || {};
+      const { pageName, hostname, fragment } = getPageNameFromUrl(href) || {};
       if (!pageName || CommentSkeleton.isAnyId(fragment)) {
         return null;
       }
@@ -698,7 +698,7 @@ class Parser {
         }
         linkType = 'contribs';
       }
-      if (domain !== cd.g.hostname) {
+      if (hostname !== cd.g.hostname) {
         linkType += 'Foreign';
       }
       userName &&= ucFirst(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();

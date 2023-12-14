@@ -348,7 +348,7 @@ class CommentSkeleton {
 
       // Seems to be the best option given pages like
       // https://commons.wikimedia.org/wiki/Project:Graphic_Lab/Illustration_workshop. DLs with a
-      // single DT that are not parts of comments are filtered out in Parser#filterParts.
+      // single DT that are not parts of comments are filtered out in CommentSkeleton#filterParts.
       element.tagName === 'DT' ||
 
       this.isCellOfMultiCommentTable(element) ||
