@@ -293,7 +293,7 @@ function addCompareHelperProperties(comment) {
   comment.headingHtmlToCompare = '';
   comment.elements.forEach((el) => {
     let htmlToCompare;
-    if (el.tagName === 'DIV') {
+    if (el.tagName === 'DIV' && !el.classList.contains('mw-heading')) {
       // Workaround the bug where the {{smalldiv}} output (or any <div> wrapper around the
       // comment) is treated differently depending on whether there are replies to that comment.
       // When there are no, a <li>/<dd> element containing the <div> wrapper is the only comment
@@ -331,6 +331,7 @@ function addCompareHelperProperties(comment) {
   comment.text = comment.elements.map((el) => el.textContent).join('\n').trim();
 
   comment.elementNames = comment.elements.map((el) => el.tagName);
+  comment.elementClassNames = comment.elements.map((el) => el.className);
 }
 
 /**
@@ -394,6 +395,7 @@ function prepareCommentsAndSections(parser) {
   let sectionDangerousKeys = [
     'cachedAncestors',
     'headingElement',
+    'hElement',
     'headlineElement',
     'lastElement',
     'lastElementInFirstChunk',

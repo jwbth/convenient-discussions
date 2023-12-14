@@ -939,13 +939,37 @@ export function getLastArrayElementOrSelf(value) {
 }
 
 /**
- * Check whether the provided node is a heading node (`<h1>` - `<h6>`).
+ * Check whether the provided node is a heading node (`.mw-heading` or `<h1>` - `<h6>`).
  *
  * @param {Node} node
+ * @param {boolean} [onlyHElements=false]
  * @returns {boolean}
  */
-export function isHeadingNode(node) {
-  return ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(node.tagName);
+export function isHeadingNode(node, onlyHElements = false) {
+  return (
+    (!onlyHElements && node.classList?.contains('mw-heading')) ||
+    ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(node.tagName)
+  );
+}
+
+/**
+ * Get the level of a {@link module:util.isHeadingNode heading node} (`.mw-heading` or `<h1>` -
+ * `<h6>`).
+ *
+ * @param {Node|object} node Node or object with `tagName` and `className` properties.
+ * @returns {?number}
+ */
+export function getHeadingLevel(node) {
+  if (!node.tagName || node.className === undefined) {
+    return null;
+  }
+
+  return (
+    Number(
+      ((node.tagName.match(/^H([1-6])$/) || node.className.match(/\bmw-heading([1-6])\b/)) || [])[1]
+    ) ||
+    null
+  );
 }
 
 /**

@@ -1,7 +1,7 @@
 import CdError from './CdError';
 import cd from './cd';
 import { TreeWalker } from './treeWalker';
-import { defined, isMetadataNode } from './utils';
+import { defined, isHeadingNode, isMetadataNode } from './utils';
 
 /**
  * Class containing the main properties of a section. It is extended by {@link Section}. This class
@@ -19,19 +19,33 @@ class SectionSkeleton {
     this.parser = parser;
 
     /**
-     * Heading element.
+     * Heading element (`.mw-heading` or `<h1>` - `<h6>`).
      *
      * @type {Element|external:Element}
      */
     this.headingElement = heading.element;
+
+    const returnNodeIfHNode = (node) => isHeadingNode(node, true) ? node : null;
+
+    /**
+     * `H1...6' element.
+     *
+     * @type {Element|external:Element}
+     */
+    this.hElement = (
+      returnNodeIfHNode(heading.element) ||
+      returnNodeIfHNode(heading.element.firstElementChild) ||
+
+      // Precaution in case something in MediaWiki changes
+      heading.element.querySelectorAll('h1, h2, h3, h4, h5, h6')[0]
+    );
 
     /**
      * Headline element.
      *
      * @type {Element|external:Element}
      */
-    this.headlineElement = this.parser.context
-      .getElementByClassName(this.headingElement, 'mw-headline');
+    this.headlineElement = this.parser.context.getElementByClassName(this.hElement, 'mw-headline');
 
     if (!this.headlineElement) {
       throw new CdError();
@@ -46,7 +60,7 @@ class SectionSkeleton {
 
     this.parseHeadline();
 
-    const levelMatch = this.headingElement.tagName.match(/^H([1-6])$/);
+    const levelMatch = this.hElement.tagName.match(/^H([1-6])$/);
 
     /**
      * Section level. A level is a number representing the number of `=` characters in the section
@@ -64,7 +78,7 @@ class SectionSkeleton {
     this.sectionNumber = null;
 
     const editSectionElement = this.parser.context
-      .getElementByClassName(this.headingElement, 'mw-editsection');
+      .getElementByClassName(this.hElement, 'mw-editsection');
     const menuLinks = editSectionElement ? [...editSectionElement.getElementsByTagName('a')] : [];
 
     // &action=edit, ?action=edit (couldn't figure out where this comes from, but at least one
@@ -123,10 +137,7 @@ class SectionSkeleton {
 
     this.headingNestingLevel = 0;
     while (treeWalker.parentNode()) {
-      // New heading markup after implementing T314714
-      if (!treeWalker.currentNode.classList.contains('mw-heading')) {
-        this.headingNestingLevel++;
-      }
+      this.headingNestingLevel++;
     }
 
     // Find the next heading element
@@ -139,11 +150,10 @@ class SectionSkeleton {
     const nextHeadingElement = targets[nextHeadingIndex]?.element;
 
     // Find the next heading element whose section is not a descendant of this section
-    const levelRegexp = new RegExp(`^H[1-${this.level}]$(?:)`);
     let nndheIndex = targets.findIndex((target, i) => (
       i > headingIndex &&
       target.type === 'heading' &&
-      levelRegexp.test(target.element.tagName)
+      target.level <= this.level
     ));
     if (nndheIndex === -1) {
       nndheIndex = undefined;

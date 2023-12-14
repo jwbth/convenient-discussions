@@ -3,7 +3,7 @@
 import CommentSkeleton from './CommentSkeleton';
 import cd from './cd';
 import { ElementsAndTextTreeWalker, ElementsTreeWalker } from './treeWalker';
-import { defined, isInline, isMetadataNode, ucFirst, underlinesToSpaces } from './utils';
+import { defined, getHeadingLevel, isHeadingNode, isInline, isMetadataNode, ucFirst, underlinesToSpaces } from './utils';
 import { parseTimestamp } from './timestamp';
 
 let punctuationRegexp;
@@ -137,10 +137,6 @@ class Parser {
     // (perhaps they need to be "tmbox" too?).
     this.rejectClasses = [
       'cd-comment-part',
-
-      // `.ext-discussiontools-init-section-bar` can sometimes be treated as a comment part, like at
-      // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(proposals)#RfC:_Enabling_collapsible_templates_on_the_mobile_site
-      'mw-heading',
 
       // Extension:Translate
       'mw-pt-languages',
@@ -608,19 +604,12 @@ class Parser {
    * @returns {object[]}
    */
   findHeadings() {
-    // The worker context doesn't support .querySelector(), so we have to use
-    // .getElementsByTagName().
-    return [
-      ...this.context.rootElement.getElementsByTagName('h1'),
-      ...this.context.rootElement.getElementsByTagName('h2'),
-      ...this.context.rootElement.getElementsByTagName('h3'),
-      ...this.context.rootElement.getElementsByTagName('h4'),
-      ...this.context.rootElement.getElementsByTagName('h5'),
-      ...this.context.rootElement.getElementsByTagName('h6'),
-    ]
-      .filter((el) => el.getAttribute('id') !== 'mw-toc-heading')
+    return [...this.context.rootElement.querySelectorAll('.mw-heading, h1, h2, h3, h4, h5, h6')]
+      .filter((el) => el.getAttribute('id') !== 'mw-toc-heading' && !isHeadingNode(el.parentNode))
       .map((element) => ({
         type: 'heading',
+        isWrapper: !isHeadingNode(element, true),
+        level: getHeadingLevel(element),
         element,
       }));
   }

@@ -18,6 +18,7 @@ import {
   defined,
   flat,
   focusInput,
+  getHeadingLevel,
   underlinesToSpaces,
   unique,
 } from './utils';
@@ -868,16 +869,16 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Add the {@link Section#actionsElement actions element} to the
-   * {@link Secton#headingElement heading element} of a non-2-level section.
+   * Add the {@link Section#actionsElement actions element} to the {@link Secton#hElement h element}
+   * of a non-2-level section.
    *
    * @private
    */
   addActionsElement() {
     const headingInnerWrapper = document.createElement('span');
-    headingInnerWrapper.append(...this.headingElement.childNodes);
-    this.headingElement.append(headingInnerWrapper, this.actionsElement);
-    this.headingElement.classList.add('cd-subsection-heading');
+    headingInnerWrapper.append(...this.hElement.childNodes);
+    this.hElement.append(headingInnerWrapper, this.actionsElement);
+    this.hElement.classList.add('cd-subsection-heading');
   }
 
   /**
@@ -1166,7 +1167,10 @@ class Section extends SectionSkeleton {
     if (
       settings.get('useTopicSubscription') ||
       this.subscriptionState ||
-      !/^H[1-6]$/.test(currentCommentData.elementNames[0]) ||
+      getHeadingLevel({
+        tagName: currentCommentData.elementNames[0],
+        className: currentCommentData.elementClassNames[0],
+      }) ||
       oldCommentData.elementNames[0] !== currentCommentData.elementNames[0]
     ) {
       return;

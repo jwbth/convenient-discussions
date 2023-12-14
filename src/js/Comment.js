@@ -25,6 +25,7 @@ import {
   defined,
   getExtendedRect,
   getFromLocalStorage,
+  getHeadingLevel,
   getHigherNodeAndOffsetInSelection,
   getVisibilityByRects,
   isInline,
@@ -2238,6 +2239,7 @@ class Comment extends CommentSkeleton {
    */
   update(currentComment, newComment) {
     const elementNames = [...this.$elements].map((el) => el.tagName);
+    const elementClassNames = [...this.$elements].map((el) => el.className);
 
     // References themselves may be out of the comment's HTML and might be edited.
     const areThereReferences = newComment.hiddenElementsData
@@ -2270,7 +2272,12 @@ class Comment extends CommentSkeleton {
           /\x01(\d+)_\w+\x02/g,
           (s, num) => newComment.hiddenElementsData[num - 1].html
         );
-        if (/^H[1-6]$/.test(elementNames[i])) {
+        if (
+          getHeadingLevel({
+            tagName: elementNames[i],
+            className: elementClassNames[i],
+          })
+        ) {
           const $headline = this.$elements.eq(i).find('.mw-headline');
           if ($headline.length) {
             const $headlineNumber = $headline.find('.mw-headline-number');

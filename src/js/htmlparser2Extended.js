@@ -242,69 +242,73 @@ Object.defineProperty(Element.prototype, 'classList', {
     if (this._classList) {
       return this._classList;
     } else {
-      this._classList = {
-        list: [],
-
-        isMovedFromClassAttr: false,
-
-        moveFromClassAttr(classAttr) {
-          this.list = (classAttr || '').split(' ');
-          this.isMovedFromClassAttr = true;
-        },
-
-        add: (...names) => {
-          names.forEach((name) => {
-            let classAttr = this.getAttribute('class') || '';
-            if (classAttr) {
-              classAttr += ' ';
-            }
-            classAttr += name;
+      this._classList = [];
+      this._classList.movedFromClassAttr = false;
+      this._classList.moveFromClassAttr = (classAttr) => {
+        this._classList.push(...(classAttr || '').split(' '));
+        this._classList.movedFromClassAttr = true;
+      };
+      this._classList.add = (...names) => {
+        names.forEach((name) => {
+          let classAttr = this.getAttribute('class') || '';
+          if (classAttr) {
+            classAttr += ' ';
+          }
+          classAttr += name;
+          this.setAttribute('class', classAttr);
+          if (this._classList.movedFromClassAttr) {
+            this._classList.push(name);
+          } else {
+            this._classList.moveFromClassAttr(classAttr);
+          }
+        });
+      };
+      this._classList.remove = (...names) => {
+        names.forEach((name) => {
+          let classAttr = this.getAttribute('class') || '';
+          const index = ` ${classAttr} `.indexOf(` ${name} `);
+          if (index !== -1) {
+            classAttr = (
+              classAttr.slice(0, index) + classAttr.slice(index + name.length + 1)
+            ).trim();
             this.setAttribute('class', classAttr);
-            if (this._classList.isMovedFromClassAttr) {
-              this._classList.list.push(name);
+            if (this._classList.movedFromClassAttr) {
+              this._classList.splice(name, this._classList.indexOf(name), 1);
             } else {
               this._classList.moveFromClassAttr(classAttr);
             }
-          });
-        },
-
-        remove: (...names) => {
-          names.forEach((name) => {
-            let classAttr = this.getAttribute('class') || '';
-            const index = ` ${classAttr} `.indexOf(` ${name} `);
-            if (index !== -1) {
-              classAttr = classAttr.slice(0, index) + classAttr.slice(index + name.length + 1);
-              classAttr = classAttr.trim();
-              this.setAttribute('class', classAttr);
-              if (this._classList.isMovedFromClassAttr) {
-                this._classList.list.splice(name, this._classList.list.indexOf(name), 1);
-              } else {
-                this._classList.moveFromClassAttr(classAttr);
-              }
-            }
-          });
-        },
-
-        contains: (name) => {
-          const classAttr = this.getAttribute('class');
-          if (!classAttr) {
-            return false;
           }
-          if (!this._classList.isMovedFromClassAttr) {
-            this._classList.moveFromClassAttr(classAttr);
-          }
+        });
+      };
+      this._classList.contains = (name) => {
+        const classAttr = this.getAttribute('class');
+        if (!classAttr) {
+          return false;
+        }
+        if (!this._classList.movedFromClassAttr) {
+          this._classList.moveFromClassAttr(classAttr);
+        }
 
-          // This can run tens of thousand times, so we microoptimize it (don't use template strings
-          // and String#includes).
-          const returnValue = (
-            Boolean(this._classList.list.length) &&
-            this._classList.list.indexOf(name) !== -1
-          );
-          return returnValue;
-        },
+        // This can run tens of thousand times, so we microoptimize it (don't use template strings
+        // and String#includes).
+        const returnValue = (
+          Boolean(this._classList.length) &&
+          this._classList.indexOf(name) !== -1
+        );
+        return returnValue;
       };
       return this._classList;
     }
+  },
+});
+
+Object.defineProperty(Element.prototype, 'className', {
+  get: function () {
+    return this.getAttribute('class');
+  },
+
+  set: function (value) {
+    return this.setAttribute('class', value);
   },
 });
 
