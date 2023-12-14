@@ -65,11 +65,11 @@ import controller from './controller';
  */
 
 /**
- * OOUI action field layout.
+ * OOUI copy text layout.
  *
- * @class ActionFieldLayout
+ * @class CopyTextLayout
  * @memberof external:OO.ui
- * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ActionFieldLayout
+ * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.CopyTextLayout
  */
 
 /**
@@ -419,24 +419,22 @@ export function createRadioField({ label, selected, help, options }) {
  * @param {object} [options.disabled]
  * @param {object} [options.help]
  * @param {object} options.copyCallback
- * @returns {external:OO.ui.ActionFieldLayout}
+ * @returns {external:OO.ui.CopyTextLayout}
  */
-export function createCopyActionField({ label, value, disabled = false, help, copyCallback }) {
-  const input = new OO.ui.TextInputWidget({ value, disabled });
-  const button = new OO.ui.ButtonWidget({
-    label: cd.s('copy'),
-    icon: 'copy',
-    disabled,
-  });
-  button.on('click', () => {
-    copyCallback(input.getValue());
-  });
-  return new OO.ui.ActionFieldLayout(input, button, {
+export function createCopyTextField({ label, value, disabled = false, help, copyCallback }) {
+  const field = new OO.ui.CopyTextLayout({
     align: 'top',
     label,
+    copyText: value,
+    button: { disabled },
+    textInput: { disabled },
     help,
     helpInline: Boolean(help),
   });
+  field.on('copy', (successful) => {
+    copyCallback(successful, field);
+  });
+  return field;
 }
 
 /**

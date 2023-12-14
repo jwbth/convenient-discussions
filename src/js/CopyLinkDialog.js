@@ -1,8 +1,8 @@
 import CdError from './CdError';
 import Comment from './Comment';
 import cd from './cd';
-import { copyText, dealWithLoadingBug, wrap } from './utils';
-import { createCopyActionField, tweakUserOoUiClass } from './ooui';
+import { createCopyTextField, tweakUserOoUiClass } from './ooui';
+import { dealWithLoadingBug, sleep, wrap } from './utils';
 
 /**
  * Class used to create an "Copy link" dialog.
@@ -113,13 +113,22 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   }
 
   /**
-   * Callback for clicking of the "Copy" button next to an input field.
+   * Callback for copying text.
    *
-   * @param {string} value Input value.
+   * @param {boolean} successful
+   * @param {external:OO.ui.CopyTextLayout} field
    * @private
    */
-  copyCallback(value) {
-    copyText(value, this.content.copyMessages);
+  async copyCallback(successful, field) {
+    if (successful) {
+      mw.notify(this.content.copyMessages.success);
+    } else {
+      mw.notify(this.content.copyMessages.fail, { type: 'error' });
+    }
+
+    // Make external tools that react to text selection quiet
+    field.textInput.selectRange(0);
+
     this.close();
   }
 
@@ -182,9 +191,9 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       helpNotOnlyCd = wrap(cd.sParse('cld-help-notonlycd'));
     }
 
-    const copyCallback = this.copyCallback;
+    const copyCallback = this.copyCallback.bind(this);
 
-    const wikilinkField = createCopyActionField({
+    const wikilinkField = createCopyTextField({
       value: this.content.wikilink,
       disabled: !this.content.wikilink,
       label: cd.s('cld-wikilink'),
@@ -192,28 +201,28 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       help: helpOnlyCd,
     });
 
-    const currentPageWikilinkField = createCopyActionField({
+    const currentPageWikilinkField = createCopyTextField({
       value: this.content.currentPageWikilink,
       label: cd.s('cld-currentpagewikilink'),
       copyCallback,
       help: helpNotOnlyCd,
     });
 
-    const permanentWikilinkField = createCopyActionField({
+    const permanentWikilinkField = createCopyTextField({
       value: this.content.permanentWikilink,
       label: cd.s('cld-permanentwikilink'),
       copyCallback,
       help: helpOnlyCd,
     });
 
-    const linkField = createCopyActionField({
+    const linkField = createCopyTextField({
       value: this.content.link,
       label: cd.s('cld-link'),
       copyCallback,
       help: helpOnlyCd,
     });
 
-    const permanentLinkField = createCopyActionField({
+    const permanentLinkField = createCopyTextField({
       value: this.content.permanentLink,
       label: cd.s('cld-permanentlink'),
       copyCallback,
@@ -246,21 +255,21 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   createDiffPanelContent() {
     const copyCallback = this.copyCallback;
 
-    const standardField = createCopyActionField({
+    const standardField = createCopyTextField({
       value: this.content.diffStandard,
       disabled: !this.content.diffStandard,
       label: cd.s('cld-diff'),
       copyCallback,
     });
 
-    const shortField = createCopyActionField({
+    const shortField = createCopyTextField({
       value: this.content.diffShort,
       disabled: !this.content.diffShort,
       label: cd.s('cld-shortdiff'),
       copyCallback,
     });
 
-    const wikilinkField = createCopyActionField({
+    const wikilinkField = createCopyTextField({
       value: this.content.diffWikilink,
       disabled: !this.content.diffWikilink,
       label: cd.s('cld-diffwikilink'),
