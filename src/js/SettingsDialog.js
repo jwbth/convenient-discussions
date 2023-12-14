@@ -2,16 +2,7 @@ import cd from './cd';
 import controller from './controller';
 import settings from './settings';
 import { areObjectsEqual } from './utils';
-import {
-  confirmCloseDialog,
-  createCheckboxField,
-  createNumberField,
-  createRadioField,
-  createTextField,
-  handleDialogError,
-  isDialogUnsaved,
-  tweakUserOoUiClass,
-} from './ooui';
+import { confirmCloseDialog, createCheckboxField, createNumberField, createRadioField, createTextField, handleDialogError, isDialogUnsaved, tweakUserOoUiClass } from './ooui';
 import { saveGlobalOption, saveLocalOption } from './apiWrappers';
 
 /**

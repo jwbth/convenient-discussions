@@ -15,26 +15,7 @@ import settings from './settings';
 import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
 import { ElementsTreeWalker, TreeWalker } from './treeWalker';
-import {
-  addToArrayIfAbsent,
-  areObjectsEqual,
-  calculateWordOverlap,
-  countOccurrences,
-  dealWithLoadingBug,
-  decodeHtmlEntities,
-  defined,
-  getExtendedRect,
-  getFromLocalStorage,
-  getHeadingLevel,
-  getHigherNodeAndOffsetInSelection,
-  getVisibilityByRects,
-  isInline,
-  saveToLocalStorage,
-  sleep,
-  unique,
-  wrap,
-  wrapDiffBody,
-} from './utils';
+import { addToArrayIfAbsent, areObjectsEqual, calculateWordOverlap, countOccurrences, dealWithLoadingBug, decodeHtmlEntities, defined, getExtendedRect, getFromLocalStorage, getHeadingLevel, getHigherNodeAndOffsetInSelection, getVisibilityByRects, isInline, saveToLocalStorage, sleep, unique, wrap, wrapDiffBody } from './utils';
 import { extractSignatures, removeWikiMarkup } from './wikitext';
 import { formatDate, formatDateNative } from './timestamp';
 import { handleApiReject, loadUserGenders, parseCode } from './apiWrappers';

@@ -11,13 +11,7 @@ import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
 import postponements from './postponements';
-import {
-  areObjectsEqual,
-  focusInput,
-  getFromLocalStorage,
-  removeFromArrayIfPresent,
-  saveToLocalStorage,
-} from './utils';
+import { areObjectsEqual, focusInput, getFromLocalStorage, removeFromArrayIfPresent, saveToLocalStorage } from './utils';
 
 /**
  * Callback to be used in

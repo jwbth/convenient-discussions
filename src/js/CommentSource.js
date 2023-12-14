@@ -1,23 +1,8 @@
 import CdError from './CdError';
 import cd from './cd';
 import settings from './settings';
-import {
-  brsToNewlines,
-  extractSignatures,
-  hideDistractingCode,
-  hideSensitiveCode,
-  hideTemplatesRecursively,
-  normalizeCode,
-  removeWikiMarkup,
-} from './wikitext';
-import {
-  calculateWordOverlap,
-  countOccurrences,
-  defined,
-  definedAndNotNull,
-  generatePageNamePattern,
-  unhideText,
-} from './utils';
+import { brsToNewlines, extractSignatures, hideDistractingCode, hideSensitiveCode, hideTemplatesRecursively, normalizeCode, removeWikiMarkup } from './wikitext';
+import { calculateWordOverlap, countOccurrences, defined, definedAndNotNull, generatePageNamePattern, unhideText } from './utils';
 
 let closedDiscussionPairRegexp;
 let closedDiscussionSingleRegexp;

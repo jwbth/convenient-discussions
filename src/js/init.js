@@ -22,13 +22,7 @@ import subscriptions from './subscriptions';
 import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
 import { dateTokenToMessageNames, initDayjs } from './timestamp';
-import {
-  generatePageNamePattern,
-  getContentLanguageMessages,
-  skin$,
-  transparentize,
-  unique,
-} from './utils';
+import { generatePageNamePattern, getContentLanguageMessages, skin$, transparentize, unique } from './utils';
 import { saveVisits, splitIntoBatches } from './apiWrappers';
 
 let defaultFontSize;

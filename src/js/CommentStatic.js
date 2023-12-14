@@ -12,15 +12,7 @@ import controller from './controller';
 import navPanel from './navPanel';
 import settings from './settings';
 import { TreeWalker } from './treeWalker';
-import {
-  definedAndNotNull,
-  getCommonGender,
-  getExtendedRect,
-  getHigherNodeAndOffsetInSelection,
-  reorderArray,
-  underlinesToSpaces,
-  unique,
-} from './utils';
+import { definedAndNotNull, getCommonGender, getExtendedRect, getHigherNodeAndOffsetInSelection, reorderArray, underlinesToSpaces, unique } from './utils';
 import { getPagesExistence } from './apiWrappers';
 
 const newDtTimestampPattern = '(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})\\d{2}';

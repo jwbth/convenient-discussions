@@ -18,15 +18,7 @@ import subscriptions from './subscriptions';
 import toc from './toc';
 import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
-import {
-  defined,
-  definedAndNotNull,
-  getFooter,
-  getLastArrayElementOrSelf,
-  sleep,
-  underlinesToSpaces,
-  wrap,
-} from './utils';
+import { defined, definedAndNotNull, getFooter, getLastArrayElementOrSelf, sleep, underlinesToSpaces, wrap } from './utils';
 import { formatDateNative } from './timestamp';
 import { getVisits, handleApiReject, saveOptions, saveVisits } from './apiWrappers';
 import { removeWikiMarkup } from './wikitext';

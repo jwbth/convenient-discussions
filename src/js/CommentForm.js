@@ -16,23 +16,7 @@ import pageRegistry, { Page } from './pageRegistry';
 import settings from './settings';
 import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
-import {
-  buildEditSummary,
-  defined,
-  focusInput,
-  getDayTimestamp,
-  hideText,
-  insertText,
-  isCmdModifierPressed,
-  isInputFocused,
-  keyCombination,
-  removeDoubleSpaces,
-  sleep,
-  unhideText,
-  unique,
-  wrap,
-  wrapDiffBody,
-} from './utils';
+import { buildEditSummary, defined, focusInput, getDayTimestamp, hideText, insertText, isCmdModifierPressed, isInputFocused, keyCombination, removeDoubleSpaces, sleep, unhideText, unique, wrap, wrapDiffBody } from './utils';
 import { createCheckboxField } from './ooui';
 import { generateTagsRegexp, removeWikiMarkup } from './wikitext';
 import { handleApiReject, parseCode } from './apiWrappers';

@@ -1,14 +1,7 @@
 import CdError from './CdError';
 import cd from './cd';
 import { ElementsAndTextTreeWalker, ElementsTreeWalker } from './treeWalker';
-import {
-  generateFixedPosTimestamp,
-  isHeadingNode,
-  isInline,
-  isMetadataNode,
-  spacesToUnderlines,
-  unique,
-} from './utils';
+import { generateFixedPosTimestamp, isHeadingNode, isInline, isMetadataNode, spacesToUnderlines, unique } from './utils';
 
 /**
  * Class containing the main properties of a comment. It is extended by {@link Comment}. This class

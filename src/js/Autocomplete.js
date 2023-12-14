@@ -4,20 +4,8 @@ import cd from './cd';
 import controller from './controller';
 import settings from './settings';
 import userRegistry from './userRegistry';
-import {
-  defined,
-  focusInput,
-  insertText,
-  removeDoubleSpaces,
-  underlinesToSpaces,
-  unique,
-} from './utils';
-import {
-  getRelevantPageNames,
-  getRelevantTemplateNames,
-  getRelevantUserNames,
-  handleApiReject,
-} from './apiWrappers';
+import { defined, focusInput, insertText, removeDoubleSpaces, underlinesToSpaces, unique } from './utils';
+import { getRelevantPageNames, getRelevantTemplateNames, getRelevantUserNames, handleApiReject } from './apiWrappers';
 
 /**
  * Search for a string in a list of values.

@@ -5,19 +5,7 @@ import cd from './cd';
 import controller from './controller';
 import settings from './settings';
 import { ElementsTreeWalker } from './treeWalker';
-import {
-  defined,
-  flat,
-  getCommonGender,
-  getExtendedRect,
-  getFromLocalStorage,
-  getVisibilityByRects,
-  isCmdModifierPressed,
-  isHeadingNode,
-  removeFromArrayIfPresent,
-  saveToLocalStorage,
-  unique,
-} from './utils';
+import { defined, flat, getCommonGender, getExtendedRect, getFromLocalStorage, getVisibilityByRects, isCmdModifierPressed, isHeadingNode, removeFromArrayIfPresent, saveToLocalStorage, unique } from './utils';
 import { loadUserGenders } from './apiWrappers';
 
 let elementPrototypes;

@@ -11,12 +11,7 @@ import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
-import {
-  dtSubscribe,
-  getDtSubscriptions,
-  getLegacySubscriptions,
-  saveLegacySubscriptions,
-} from './apiWrappers';
+import { dtSubscribe, getDtSubscriptions, getLegacySubscriptions, saveLegacySubscriptions } from './apiWrappers';
 import { spacesToUnderlines, unique, wrap } from './utils';
 
 let subscribeLegacyPromise = Promise.resolve();

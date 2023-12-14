@@ -13,15 +13,7 @@ import settings from './settings';
 import subscriptions from './subscriptions';
 import toc from './toc';
 import userRegistry from './userRegistry';
-import {
-  dealWithLoadingBug,
-  defined,
-  flat,
-  focusInput,
-  getHeadingLevel,
-  underlinesToSpaces,
-  unique,
-} from './utils';
+import { dealWithLoadingBug, defined, flat, focusInput, getHeadingLevel, underlinesToSpaces, unique } from './utils';
 import { encodeWikilink, hideDistractingCode, normalizeCode } from './wikitext';
 import { formatDate } from './timestamp';
 import { handleApiReject } from './apiWrappers';

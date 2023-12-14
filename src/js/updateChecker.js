@@ -15,12 +15,7 @@ import pageRegistry from './pageRegistry';
 import settings from './settings';
 import toc from './toc';
 import userRegistry from './userRegistry';
-import {
-  calculateWordOverlap,
-  getFromLocalStorage,
-  keepWorkerSafeValues,
-  saveToLocalStorage,
-} from './utils';
+import { calculateWordOverlap, getFromLocalStorage, keepWorkerSafeValues, saveToLocalStorage } from './utils';
 import { loadUserGenders } from './apiWrappers';
 
 const revisionData = {};

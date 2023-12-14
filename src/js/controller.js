@@ -26,22 +26,7 @@ import postponements from './postponements';
 import settings from './settings';
 import toc from './toc';
 import { ElementsTreeWalker } from './treeWalker';
-import {
-  copyText,
-  defined,
-  getExtendedRect,
-  getLastArrayElementOrSelf,
-  getVisibilityByRects,
-  isCmdModifierPressed,
-  isHeadingNode,
-  isInline,
-  isInputFocused,
-  isProbablyTalkPage,
-  keyCombination,
-  skin$,
-  sleep,
-  wrap,
-} from './utils';
+import { copyText, defined, getExtendedRect, getLastArrayElementOrSelf, getVisibilityByRects, isCmdModifierPressed, isHeadingNode, isInline, isInputFocused, isProbablyTalkPage, keyCombination, skin$, sleep, wrap } from './utils';
 import { getUserInfo, htmlToWikitext } from './apiWrappers';
 
 export default {

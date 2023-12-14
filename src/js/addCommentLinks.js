@@ -12,15 +12,7 @@ import pageRegistry from './pageRegistry';
 import settings from './settings';
 import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
-import {
-  definedAndNotNull,
-  generatePageNamePattern,
-  isCommentEdit,
-  isProbablyTalkPage,
-  isUndo,
-  removeDirMarks,
-  spacesToUnderlines,
-} from './utils';
+import { definedAndNotNull, generatePageNamePattern, isCommentEdit, isProbablyTalkPage, isUndo, removeDirMarks, spacesToUnderlines } from './utils';
 import { initDayjs, parseTimestamp } from './timestamp';
 
 let colon;
