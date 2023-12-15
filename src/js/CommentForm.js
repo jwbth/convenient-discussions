@@ -2777,8 +2777,11 @@ class CommentForm {
       url.searchParams.delete('section');
       url.searchParams.delete('action');
       url.hash = passedData.commentIds[0];
+      const currentPathnameAndSearch = location.pathname + location.search;
       location.href = url.toString();
-      location.reload();
+      if (currentPathnameAndSearch === url.pathname + url.search) {
+        location.reload();
+      }
       return;
     }
 
