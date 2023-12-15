@@ -86,28 +86,28 @@ export default {
   useGlobalPreferences: true,
   signatureEndingRegexp: / \(talk\)$/,
   tagName: 'convenient-discussions',
-	unsignedTemplates: [
-		'Unsigned',
-		'Nosig',
-		'Unsigned IP',
-		'Unsigned2',
-		'Unsignedr',
-		'Nosigr'
-	],
-	outdentTemplates: [
-		'outdent'
-	],
-	clearTemplates: [
-		'Clear',
-		'Clr',
-		'-'
-	],
-	closedDiscussionTemplates: [
-		[
-			'Hidden archive top'
-		],
-		[
-			'Hidden archive bottom'
-		]
-	]
+  unsignedTemplates: [
+    'Unsigned',
+    'Nosig',
+    'Unsigned IP',
+    'Unsigned2',
+    'Unsignedr',
+    'Nosigr'
+  ],
+  outdentTemplates: [
+    'outdent'
+  ],
+  clearTemplates: [
+    'Clear',
+    'Clr',
+    '-'
+  ],
+  closedDiscussionTemplates: [
+    [
+      'Hidden archive top'
+    ],
+    [
+      'Hidden archive bottom'
+    ]
+  ]
 };
