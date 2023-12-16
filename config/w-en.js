@@ -210,19 +210,19 @@ export default {
   quoteFormatting: function (isMultiline, author, timestamp) {
     var pre = '';
     var post = '';
-    if (isMultiline) {
-      pre = '{{tqb|1=';
+    // if (isMultiline) {
+      pre = '{{tqb|text=';
       if (author) {
-        post += '|2=' + author;
+        post += '|by=' + author;
       }
       if (timestamp) {
         post += '|ts=' + timestamp;
       }
       post += '}}';
-    } else {
-      pre = '{{tq|1='
-      post += '}}<br>';
-    }
+    // } else {
+    //   pre = '{{tq|1='
+    //   post += '}}<br>';
+    // }
     return [pre, post];
   },
 

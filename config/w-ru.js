@@ -272,7 +272,7 @@ export default {
   quoteFormatting: function (isMultiline, author, timestamp, dtId) {
     var pre = '{{цс|1=';
     var post = '';
-    if (isMultiline) {
+    // if (isMultiline) {
       if (author) {
         post += '|2=' + author;
       }
@@ -283,9 +283,9 @@ export default {
         post += '|4=' + dtId;
       }
       post += '}}';
-    } else {
-      post = '|inline=1}}<br>';
-    }
+    // } else {
+    //   post = '|inline=1}}<br>';
+    // }
     return [pre, post];
   },
 
