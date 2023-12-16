@@ -274,13 +274,13 @@ export default {
     var post = '';
     if (isMultiline) {
       if (author) {
-        post += `|2=${author}`;
+        post += '|2=' + author;
       }
       if (timestamp) {
-        post += `|3=${timestamp}`;
+        post += '|3=' + timestamp;
       }
       if (dtId) {
-        post += `|4=${dtId}`;
+        post += '|4=' + dtId;
       }
       post += '}}';
     } else {
