@@ -1549,7 +1549,13 @@ export default {
     const replaceWithChildren = (el) => {
       if (
         ['DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'DD'].includes(el.tagName) &&
-        el.nextElementSibling
+        (
+          el.nextElementSibling ||
+
+          // Cases like "<div><div>Quote</div>Text</div>", e.g. created by
+          // https://ru.wikipedia.org/wiki/Template:Цитата_сообщения
+          el.nextSibling?.textContent?.trim()
+        )
       ) {
         el.after('\n');
       }
