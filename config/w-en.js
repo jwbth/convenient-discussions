@@ -213,7 +213,7 @@ export default {
     if (isMultiline) {
       pre = '{{tqb|1=';
       if (author) {
-        post += '|' + author;
+        post += '|2=' + author;
       }
       if (timestamp) {
         post += '|ts=' + timestamp;
