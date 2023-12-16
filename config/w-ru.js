@@ -270,8 +270,8 @@ export default {
   ],
 
   quoteFormatting: function (isMultiline, author, timestamp, dtId) {
-    let pre = '{{цс|1=';
-    let post = '';
+    var pre = '{{цс|1=';
+    var post = '';
     if (isMultiline) {
       if (author) {
         post += `|2=${author}`;

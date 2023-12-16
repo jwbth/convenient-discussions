@@ -208,8 +208,8 @@ export default {
   ],
 
   quoteFormatting: function (isMultiline, author, timestamp) {
-    let pre = '';
-    let post = '';
+    var pre = '';
+    var post = '';
     if (isMultiline) {
       pre = '{{tqb|1=';
       if (author) {
