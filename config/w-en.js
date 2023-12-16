@@ -207,9 +207,23 @@ export default {
     'Absatz',
   ],
 
-  quoteFormatting: {
-    singleline: ["{{tq|1=", "}}<br>"],
-    multiline: ["{{tqb|1=", "}}<br>"],
+  quoteFormatting: (isMultiline, author, timestamp) => {
+    let pre = '';
+    let post = '';
+    if (isMultiline) {
+      pre = '{{tqb|1=';
+      if (author) {
+        post += `|${author}`;
+      }
+      if (timestamp) {
+        post += `|ts=${timestamp}`;
+      }
+      post += '}}';
+    } else {
+      pre = '{{tq|1='
+      post += '}}<br>';
+    }
+    return [pre, post];
   },
 
   noSignatureClasses: [

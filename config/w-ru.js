@@ -269,6 +269,26 @@ export default {
     '-',
   ],
 
+  quoteFormatting: (isMultiline, author, timestamp, dtId) => {
+    let pre = '{{цс|1=';
+    let post = '';
+    if (isMultiline) {
+      if (author) {
+        post += `|2=${author}`;
+      }
+      if (timestamp) {
+        post += `|3=${timestamp}`;
+      }
+      if (dtId) {
+        post += `|4=${dtId}`;
+      }
+      post += '}}';
+    } else {
+      post = '|inline=1}}<br>';
+    }
+    return [pre, post];
+  },
+
   noSignatureClasses: [
     'ambox',
     'NavHead',

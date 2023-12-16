@@ -974,7 +974,7 @@ class CommentForm {
           action: {
             type: 'callback',
             execute: () => {
-              this.quote();
+              this.quote(true, CommentStatic.getSelectedComment());
             },
           },
         },
@@ -3502,14 +3502,21 @@ class CommentForm {
   /**
    * Quote the selected text.
    *
-   * @param {boolean} [allowEmptySelection=true] Insert markup (with a placeholder text) even if the
+   * @param {boolean} allowEmptySelection Insert markup (with a placeholder text) even if the
    *   selection is empty.
+   * @param {Comment} [comment] Quoted comment.
    */
-  async quote(allowEmptySelection = true) {
-    const activeElement = document.activeElement;
-    let selectionText = isInputFocused() ?
-      activeElement.value.substring(activeElement.selectionStart, activeElement.selectionEnd) :
-      await controller.getWikitextFromSelection(this.commentInput);
+  async quote(allowEmptySelection, comment) {
+    let selectionText;
+    if (isInputFocused()) {
+      const activeElement = document.activeElement;
+      selectionText = activeElement.value.substring(
+        activeElement.selectionStart,
+        activeElement.selectionEnd
+      );
+    } else {
+      selectionText = await controller.getWikitextFromSelection(this.commentInput);
+    }
     selectionText = selectionText.trim();
 
     // With just "Q" pressed, empty selection doesn't count.
@@ -3526,13 +3533,18 @@ class CommentForm {
         rangeStart = rangeEnd = caretIndex;
       }
 
-      let quoteFormatting = cd.config.quoteFormatting;
-      if ($.isPlainObject(quoteFormatting)) {
-        quoteFormatting = selectionText.includes('\n') ?
-          quoteFormatting.multiline || quoteFormatting.singleline :
-          quoteFormatting.singleline || quoteFormatting.multiline;
-      }
-      const [pre, post] = quoteFormatting;
+      const isMultiline = (
+        selectionText.includes('\n') ||
+        selectionText.match(new RegExp(`<${cd.g.pniePattern}\\b`, 'i'))
+      );
+      const [pre, post] = typeof cd.config.quoteFormatting === 'function' ?
+        cd.config.quoteFormatting(
+          isMultiline,
+          comment?.author.getName(),
+          comment?.timestamp,
+          comment?.dtId
+        ) :
+        cd.config.quoteFormatting;
 
       this.encapsulateSelection({
         pre,

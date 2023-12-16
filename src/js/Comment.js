@@ -2732,49 +2732,49 @@ class Comment extends CommentSkeleton {
    * @param {object|CommentForm} initialState
    */
   reply(initialState) {
-    if (!this.replyForm) {
-      let isSelectionRelevant = false;
-      if (!initialState) {
-        isSelectionRelevant = CommentStatic.getSelectedComment() === this;
-        if (isSelectionRelevant) {
-          initialState = { focus: false };
+    if (this.replyForm) return;
 
-          let endBoundary;
-          if (settings.get('reformatComments')) {
-            endBoundary = this.$menu.get(0);
-          } else {
-            endBoundary = document.createElement('span');
-            this.$elements.last().append(endBoundary);
-          }
+    let isSelectionRelevant = false;
+    if (!initialState) {
+      isSelectionRelevant = CommentStatic.getSelectedComment() === this;
+      if (isSelectionRelevant) {
+        initialState = { focus: false };
 
-          const selection = window.getSelection();
-          const { higherNode, higherOffset } = getHigherNodeAndOffsetInSelection(selection);
-          if (selection.containsNode(endBoundary, true)) {
-            selection.setBaseAndExtent(higherNode, higherOffset, endBoundary, 0);
-          }
+        let endBoundary;
+        if (settings.get('reformatComments')) {
+          endBoundary = this.$menu.get(0);
+        } else {
+          endBoundary = document.createElement('span');
+          this.$elements.last().append(endBoundary);
+        }
 
-          if (!settings.get('reformatComments')) {
-            endBoundary.remove();
-          }
+        const selection = window.getSelection();
+        const { higherNode, higherOffset } = getHigherNodeAndOffsetInSelection(selection);
+        if (selection.containsNode(endBoundary, true)) {
+          selection.setBaseAndExtent(higherNode, higherOffset, endBoundary, 0);
+        }
+
+        if (!settings.get('reformatComments')) {
+          endBoundary.remove();
         }
       }
+    }
 
-      /**
-       * Reply form related to the comment.
-       *
-       * @type {CommentForm|undefined}
-       */
-      this.replyForm = initialState instanceof CommentForm ?
-        initialState :
-        new CommentForm({
-          mode: 'reply',
-          target: this,
-          initialState,
-        });
+    /**
+     * Reply form related to the comment.
+     *
+     * @type {CommentForm|undefined}
+     */
+    this.replyForm = initialState instanceof CommentForm ?
+      initialState :
+      new CommentForm({
+        mode: 'reply',
+        target: this,
+        initialState,
+      });
 
-      if (isSelectionRelevant) {
-        this.replyForm.quote();
-      }
+    if (isSelectionRelevant) {
+      this.replyForm.quote(true, this);
     }
   }
 

@@ -874,11 +874,11 @@ export default {
       (keyCombination(e, 81) && !isInputFocused())
     ) {
       const lastActiveCommentForm = CommentFormStatic.getLastActive();
+      const comment = CommentStatic.getSelectedComment();
       if (lastActiveCommentForm) {
         e.preventDefault();
-        lastActiveCommentForm.quote(isCmdModifierPressed(e));
+        lastActiveCommentForm.quote(isCmdModifierPressed(e), comment);
       } else {
-        const comment = CommentStatic.getSelectedComment();
         if (comment?.isActionable) {
           e.preventDefault();
           comment.reply();

@@ -414,22 +414,29 @@ export default {
   mentionRequiresLeadingSpace: true,
 
   /**
-   * Object specifying quote formatting for singleline and multiline quotes.
+   * Function to use in the {@link module:defaultConfig.quoteFormatting} config value.
    *
-   * @typedef {object} QuoteFormatting
-   * @property {string[]} singleline Starting and ending strings for singleline quotes.
-   * @property {string[]} multiline Starting and ending strings for multiline quotes.
+   * @typedef {Function} QuoteFormattingFunction
+   * @property {string} isMultiline Is the selected text multiline.
+   * @property {string} [author] Quote author.
+   * @property {string} [timestamp] Quote timestamp.
+   * @property {string} [dtId] Comment's DiscussionTools ID.
+   * @returns {string[]}
    */
 
   /**
    * Array of two strings to insert before and after the selection when quote function is activated
-   * (by the toolbar button or Ctrl+Alt+Q / Q). You may also specify an object with two separate
-   * arrays for single line quotations and multi line quotations.
+   * (by the toolbar button or Ctrl+Alt+Q / Q). You may also specify a function that takes the
+   * following parameters: is the selected text multiline, author, date and DiscussionTools ID, and
+   * returns the said array.
    *
-   * If you add template markup, you might want to use `1=` before the parameter content to allow
+   * If you add template markup, you should perhaps use `1=` before the parameter content to allow
    * the `=` character inside a quotation, for example `['{{tq|1=', '}}']`.
    *
-   * @type {string[]|QuoteFormatting}
+   * If you specify a function, you might want to use different templates for single line and
+   * multiline quotations by checking the first argument.
+   *
+   * @type {string[]|QuoteFormattingFunction}
    * @default ["> ''", "''\n"]
    */
   quoteFormatting: ["> ''", "''"],
