@@ -269,7 +269,7 @@ export default {
     '-',
   ],
 
-  quoteFormatting: (isMultiline, author, timestamp, dtId) => {
+  quoteFormatting: function (isMultiline, author, timestamp, dtId) {
     let pre = '{{цс|1=';
     let post = '';
     if (isMultiline) {

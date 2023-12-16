@@ -207,7 +207,7 @@ export default {
     'Absatz',
   ],
 
-  quoteFormatting: (isMultiline, author, timestamp) => {
+  quoteFormatting: function (isMultiline, author, timestamp) {
     let pre = '';
     let post = '';
     if (isMultiline) {
