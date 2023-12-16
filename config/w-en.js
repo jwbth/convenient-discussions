@@ -207,7 +207,7 @@ export default {
     'Absatz',
   ],
 
-  quoteFormatting: function (isMultiline, author, timestamp) {
+  quoteFormatting: function (isMultiline, author, timestamp, dtId) {
     var pre = '';
     var post = '';
     // if (isMultiline) {
@@ -217,6 +217,9 @@ export default {
       }
       if (timestamp) {
         post += '|ts=' + timestamp;
+      }
+      if (dtId) {
+        post += '|id=' + dtId;
       }
       post += '}}';
     // } else {
