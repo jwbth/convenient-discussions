@@ -164,8 +164,10 @@ export function encodeWikilink(link) {
 function extractRegularSignatures(adjustedCode, code) {
   const ending = `(?:\\n*|$)`;
   const afterTimestamp = `(?!["»])(?:\\}\\}|</small>)?`;
+
+  // Use `(?:^|[^=])` to filter out timestamps in a parameter (in quote templates)
   const timestampRegexp = new RegExp(
-    `^((.*?)(${cd.g.contentTimestampRegexp.source})${afterTimestamp}).*${ending}`,
+    `^((.*?(?:^|[^=]))(${cd.g.contentTimestampRegexp.source})${afterTimestamp}).*${ending}`,
     'igm'
   );
 
@@ -185,7 +187,7 @@ function extractRegularSignatures(adjustedCode, code) {
       6 - timestamp
      */
     (
-      `^(((.*?)${cd.g.captureUserNamePattern}.{1,${signatureScanLimit}}?)` +
+      `^(((.*?)${cd.g.captureUserNamePattern}.{1,${signatureScanLimit - 1}}?[^=])` +
       `(${cd.g.contentTimestampRegexp.source})${afterTimestamp}.*)${ending}`
     ),
     'im'
