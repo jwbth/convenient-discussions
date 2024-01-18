@@ -108,6 +108,8 @@ export default {
 
   pageBlacklist: [
     'Wikipedia:Wikipedia Signpost',
+    /Wikipedia:WikiProject [^/]+$/,
+    /Wikipedia:WikiProject [^/]+\/(Members|Participants)/,
   ],
 
   signatureEndingRegexp: / \(talk\)$/,
