@@ -131,7 +131,7 @@
 	"sd-page-talkpage": "หน้าคุย",
 	"sd-page-notifications": "การแจ้งเตือน",
 	"sd-removedata": "ลบข้อมูลสคริปต์ทั้งหมด",
-	"sd-autocompletetypes-tags": "ป้ายกำกับ",
+	"sd-autocompletetypes-tags": "ป้ายระบุ",
 	"sd-insertbuttons-multiselect-placeholder": "เพิ่มปุ่ม",
 	"msd-move": "ย้าย",
 	"error-anoneditwatning": "<strong>คุณไม่ได้อยู่ในระบบ</strong> เลขที่อยู่ IP ของคุณจะเป็นสาธารณะหากทำการแก้ไขใด ๆ"
