@@ -99,7 +99,7 @@ function switchRelevant() {
   // This is for many watchlist types at once.
   const $collapsibles = controller.$content
     .find('.mw-changeslist .mw-collapsible:not(.mw-changeslist-legend)');
-  const $lines = controller.$content.find('.mw-changeslist-line:not(.mw-collapsible)');
+  const $lines = controller.$content.find('.mw-changeslist-line:not(table)');
 
   if (switchRelevantButton.hasFlag('progressive')) {
     // Show all
@@ -332,7 +332,7 @@ function processWatchlist($content) {
   // * with item grouping and without
   // * with enhanced fitlers and without
 
-  const lines = $content.get(0).querySelectorAll('.mw-changeslist-line:not(.mw-collapsible)');
+  const lines = $content.get(0).querySelectorAll('.mw-changeslist-line:not(table)');
   lines.forEach((line) => {
     const nsMatch = line.className.match(/mw-changeslist-ns(\d+)/);
     const nsNumber = nsMatch && Number(nsMatch[1]);
