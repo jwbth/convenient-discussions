@@ -204,7 +204,7 @@
 	"dn-confirm-yes": "Da",
 	"dn-confirm-no": "Ne",
 	"dn-grantpermission": "Podeli dovoljenje mestu.",
-	"dn-grantpermission-again": "V nastavitvah Priročnih razprav imate vklopljena namizna obvestila, vendar jih mesto ne sme pošiljati. Dodelite mestu dovoljenje za prejemanje obvestil ali to zavrnite, da preprečite ponovni prikaz tega sporočila.",
+	"dn-grantpermission-again": "V nastavitvah Priročnih razprav imate vklopljena namizna obvestila, vendar jih mesto ne sme pošiljati. Podelite mestu dovoljenje za prejemanje obvestil ali to zavrnite, da preprečite ponovni prikaz tega sporočila.",
 	"deadanchor-section-lead": "Razdelka »$1« na strani ni bilo mogoče najti.",
 	"deadanchor-section-exactmatch": "Videti je, da je razdelek »$1« arhiviran. [[$2|Oglejte si arhivirani razdelek]] (ali [$3 ga poiščite v arhivu]).",
 	"deadanchor-section-inexactmatch": "Videti je, da je razdelek »$1« arhiviran. [$2 Poiščite ga v arhivu].",
