@@ -399,7 +399,7 @@ class BootProcess {
         // Empty
       }
     }
-    if (sectionName && sectionName !== sectionNameDotDecoded) {
+    if (sectionNameDotDecoded && sectionName !== sectionNameDotDecoded) {
       const tokenDotDecoded = sectionNameDotDecoded.replace(/"/g, '');
       searchQuery += ` OR "${tokenDotDecoded}"`;
     }
@@ -946,15 +946,8 @@ class BootProcess {
         let pageName;
         let url;
         if ($button.is('a')) {
-          const href = $button.attr('href');
-
-          // May crash if the URL contains undecodable "%" in the fragment.
-          try {
-            url = new mw.Uri(href);
-          } catch {
-            return;
-          }
-          pageName = getLastArrayElementOrSelf(url.query.title)
+          url = new URL($button.prop('href'));
+          pageName = getLastArrayElementOrSelf(url.searchParams.getAll('title'))
             ?.replace(/^Special:NewSection\//i, '');
         } else if ($button.is('input')) {
           pageName = $button
@@ -974,8 +967,8 @@ class BootProcess {
           return false;
         }
         if ($button.is('a')) {
-          url.query.dtenable = 0;
-          $button.attr('href', url.toString());
+          url.searchParams.set('dtenable', 0);
+          $button.attr('href', url);
         }
         return true;
       })
@@ -1116,15 +1109,15 @@ class BootProcess {
   maybeAddAddSectionForm() {
     // May crash if the current URL contains undecodable "%" in the fragment,
     // https://phabricator.wikimedia.org/T207365.
-    try {
-      const query = (new mw.Uri()).query;
+    const { searchParams } = new URL(location.href);
 
-      // &action=edit&section=new when DT's New Topic Tool is enabled.
-      if (query.section === 'new' || Number(query.cdaddtopic) || this.dtNewTopicFormData) {
-        CommentFormStatic.createAddSectionForm(undefined, undefined, this.dtNewTopicFormData);
-      }
-    } catch {
-      // Empty
+    // &action=edit&section=new when DT's New Topic Tool is enabled.
+    if (
+      searchParams.get('section') === 'new' ||
+      Number(searchParams.get('cdaddtopic')) ||
+      this.dtNewTopicFormData
+    ) {
+      CommentFormStatic.createAddSectionForm(undefined, undefined, this.dtNewTopicFormData);
     }
   }
 

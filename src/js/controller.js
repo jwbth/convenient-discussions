@@ -1032,24 +1032,16 @@ export default {
     let preloadConfig;
     let newTopicOnTop = false;
     if ($button.is('a')) {
-      const href = $button.attr('href');
-      let query;
-
-      // May crash if the URL contains undecodable "%" in the fragment.
-      try {
-        ({ query } = new mw.Uri(href));
-      } catch {
-        return;
-      }
+      const { searchParams } = new URL($button.prop('href'));
       preloadConfig = {
-        editIntro: getLastArrayElementOrSelf(query.editintro),
-        commentTemplate: getLastArrayElementOrSelf(query.preload),
-        headline: getLastArrayElementOrSelf(query.preloadtitle),
-        summary: getLastArrayElementOrSelf(query.summary)?.replace(/^.+?\*\/ */, ''),
-        noHeadline: Boolean(getLastArrayElementOrSelf(query.nosummary)),
-        omitSignature: Boolean(query.cdomitsignature),
+        editIntro: getLastArrayElementOrSelf(searchParams.getAll('editintro')),
+        commentTemplate: getLastArrayElementOrSelf(searchParams.getAll('preload')),
+        headline: getLastArrayElementOrSelf(searchParams.getAll('preloadtitle')),
+        summary: getLastArrayElementOrSelf(searchParams.getAll('summary'))?.replace(/^.+?\*\/ */, ''),
+        noHeadline: Boolean(getLastArrayElementOrSelf(searchParams.getAll('nosummary'))),
+        omitSignature: Boolean(searchParams.get('cdomitsignature')),
       };
-      newTopicOnTop = getLastArrayElementOrSelf(query.section) === '0';
+      newTopicOnTop = getLastArrayElementOrSelf(searchParams.getAll('section')) === '0';
     } else {
       // <input>
       const $form = $button.closest('form');
@@ -1396,11 +1388,11 @@ export default {
   /**
    * Remove diff-related DOM elements.
    *
-   * @param {object} query
+   * @param {URLSearchParams} searchParams
    * @private
    */
-  cleanUpDom(query) {
-    if (!(query.diff || query.oldid)) return;
+  cleanUpDom(searchParams) {
+    if (!searchParams.has('diff') && !searchParams.has('oldid')) return;
 
     // Diff pages
     this.$content
@@ -1418,11 +1410,11 @@ export default {
   /**
    * Remove fragment and revision parameters from the URL.
    *
-   * @param {object} query
+   * @param {URLSearchParams} searchParams
    * @private
    */
-  cleanUpUrl(query) {
-    const newQuery = Object.assign({}, query);
+  cleanUpUrl(searchParams) {
+    const newQuery = Object.fromEntries(searchParams.entries());
 
     // `title` will be added automatically (after /wiki/ if possible, as a query parameter
     // otherwise).
@@ -1447,8 +1439,8 @@ export default {
 
       // Make the "Back" browser button work.
       $(window).on('popstate', () => {
-        const { query } = new mw.Uri();
-        if (query.diff || query.oldid) {
+        const { searchParams } = new URL(location.href);
+        if (searchParams.has('diff') || searchParams.has('oldid')) {
           location.reload();
         }
       });
@@ -1469,9 +1461,9 @@ export default {
    * Remove fragment and revision parameters from the URL; remove DOM elements related to the diff.
    */
   cleanUpUrlAndDom() {
-    const { query } = new mw.Uri();
-    this.cleanUpDom(query);
-    this.cleanUpUrl(query);
+    const { searchParams } = new URL(location.href);
+    this.cleanUpDom(searchParams);
+    this.cleanUpUrl(searchParams);
   },
 
   /**

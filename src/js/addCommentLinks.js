@@ -552,13 +552,13 @@ function processHistory($content) {
 }
 
 /**
- * Add comment link to a diff view.
+ * Add a comment link to a diff view.
  *
  * @param {external:jQuery} [$diff]
  * @fires commentLinksAdded
  * @private
  */
-async function processDiff($diff) {
+function processDiff($diff) {
   // Filter out cases when "wikipage.diff" was fired for the native MediaWiki's diff at the top of
   // the page that is a diff page (unless only a diff, and no content, is displayed - if
   // mw.user.options.get('diffonly') or the "diffonly" URL parameter is true). We parse that diff on
@@ -604,7 +604,7 @@ async function processDiff($diff) {
       let comment;
       let page;
       if ($diff) {
-        page = pageRegistry.get((new mw.Uri(dateElement.href)).query.title);
+        page = pageRegistry.get((new URL(dateElement.href)).searchParams.get('title'));
       } else {
         comment = CommentStatic.getById(id, true);
       }
@@ -672,7 +672,7 @@ async function processDiff($diff) {
  * @param {external:jQuery} $content
  * @private
  */
-async function processRevisionListPage($content) {
+function processRevisionListPage($content) {
   // Occurs in the watchlist when mediawiki.rcfilters.filters.ui module for some reason fires
   // wikipage.content for the second time with an element that is not in the DOM,
   // fieldset#mw-watchlist-options (in the mw.rcfilters.ui.FormWrapperWidget#onChangesModelUpdate
