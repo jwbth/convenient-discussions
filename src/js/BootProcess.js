@@ -1219,7 +1219,7 @@ class BootProcess {
         cd.config.idleFragments.some((regexp) => decodedFragment.match(regexp)) ||
 
         // `/media/` is from MediaViewer, `noticeApplied` is from RedWarn
-        /^\/media\/|^noticeApplied/.test(decodedFragment) ||
+        /^\/media\/|^noticeApplied-|^h-/.test(decodedFragment) ||
 
         $(':target').length ||
         $(`a[name="${escapedDecodedFragment}"]`).length ||
