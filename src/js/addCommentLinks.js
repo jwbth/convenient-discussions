@@ -139,8 +139,7 @@ function switchRelevant() {
       .not(':has(.cd-commentLink-relevant)')
       .hide();
   }
-  switchRelevantButton
-    .setFlags({ progressive: !switchRelevantButton.hasFlag('progressive') });
+  switchRelevantButton.setFlags({ progressive: !switchRelevantButton.hasFlag('progressive') });
 }
 
 /**
@@ -149,6 +148,8 @@ function switchRelevant() {
  * @private
  */
 function addWatchlistMenu() {
+  if (settings.get('useTopicSubscription')) return;
+
   // For auto-updating watchlists
   mw.hook('wikipage.content').add(() => {
     switchRelevantButton?.setFlags({ progressive: false });
@@ -162,21 +163,19 @@ function addWatchlistMenu() {
     .text(cd.s('script-name-short'))
     .appendTo($menu);
 
-  if (!settings.get('useTopicSubscription')) {
-    switchRelevantButton = new OO.ui.ButtonWidget({
-      framed: false,
-      icon: 'speechBubble',
-      label: cd.s('wl-button-switchrelevant-tooltip', mw.user),
-      invisibleLabel: true,
-      title: cd.s('wl-button-switchrelevant-tooltip', mw.user),
-      classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-switchRelevant'],
-      disabled: !subscriptions.areLoaded(),
-    });
-    switchRelevantButton.on('click', () => {
-      switchRelevant();
-    });
-    switchRelevantButton.$element.appendTo($menu);
-  }
+  switchRelevantButton = new OO.ui.ButtonWidget({
+    framed: false,
+    icon: 'speechBubble',
+    label: cd.s('wl-button-switchrelevant-tooltip', mw.user),
+    invisibleLabel: true,
+    title: cd.s('wl-button-switchrelevant-tooltip', mw.user),
+    classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-switchRelevant'],
+    disabled: !subscriptions.areLoaded(),
+  });
+  switchRelevantButton.on('click', () => {
+    switchRelevant();
+  });
+  switchRelevantButton.$element.appendTo($menu);
 
   const editSubscriptionsButtonConfig = {
     framed: false,
@@ -186,16 +185,10 @@ function addWatchlistMenu() {
     title: cd.s('wl-button-editwatchedsections-tooltip', mw.user),
     classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-editSubscriptions'],
   };
-  if (settings.get('useTopicSubscription')) {
-    editSubscriptionsButtonConfig.href = pageRegistry.get('Special:TopicSubscriptions').getUrl();
-    editSubscriptionsButtonConfig.target = '_blank';
-  }
   const editSubscriptionsButton = new OO.ui.ButtonWidget(editSubscriptionsButtonConfig);
-  if (!settings.get('useTopicSubscription')) {
-    editSubscriptionsButton.on('click', () => {
-      controller.showEditSubscriptionsDialog();
-    });
-  }
+  editSubscriptionsButton.on('click', () => {
+    controller.showEditSubscriptionsDialog();
+  });
   editSubscriptionsButton.$element.appendTo($menu);
 
   const settingsButton = new OO.ui.ButtonWidget({
@@ -212,8 +205,10 @@ function addWatchlistMenu() {
   });
   settingsButton.$element.appendTo($menu);
 
-  // New watchlist, old watchlist
+  // New watchlist
   controller.$content.find('.mw-rcfilters-ui-changesLimitAndDateButtonWidget').prepend($menu);
+
+  // Old watchlist
   controller.$content.find('#mw-watchlist-options .mw-changeslist-legend').after($menu);
 }
 
