@@ -116,7 +116,7 @@ function addNewCommentsNote(parent, childComments, type, newCommentIndexes) {
         $('<div>').append(button.$element) :
         $('<dl>').append($('<dd>').append(button.$element))
     )
-      .addClass('cd-section-button-container cd-thread-newCommentsNote')
+      .addClass('cd-thread-button-container cd-thread-newCommentsNote')
       .insertAfter(
         parent.$addSubsectionButtonContainer && !parent.getChildren().length ?
           parent.$addSubsectionButtonContainer :

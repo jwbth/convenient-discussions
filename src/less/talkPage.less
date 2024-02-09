@@ -47,6 +47,24 @@ ol > .cd-thread-button-container > .cd-thread-button {
   }
 }
 
+.cd-thread-button-container {
+  overflow: hidden;
+
+  // Fix focus/active state
+  .sitedir-ltr div&,
+  .sitedir-rtl .mw-content-ltr div& {
+    margin-left: -1px;
+    padding-left: 1px;
+  }
+
+  // Fix focus/active state
+  .sitedir-rtl div&,
+  .sitedir-ltr .mw-content-rtl div& {
+    margin-right: -1px;
+    padding-right: 1px;
+  }
+}
+
 // Compensation for the 1px border
 .cd-section-button.cd-section-button.cd-section-button,
 .cd-thread-button.cd-thread-button.cd-thread-button.cd-thread-button {
