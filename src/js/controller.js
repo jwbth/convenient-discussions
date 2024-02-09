@@ -26,7 +26,7 @@ import postponements from './postponements';
 import settings from './settings';
 import toc from './toc';
 import { ElementsTreeWalker } from './treeWalker';
-import { copyText, defined, getExtendedRect, getLastArrayElementOrSelf, getVisibilityByRects, isCmdModifierPressed, isHeadingNode, isInline, isInputFocused, isProbablyTalkPage, keyCombination, skin$, sleep, wrap } from './utils';
+import { copyText, defined, definedAndNotNull, getExtendedRect, getLastArrayElementOrSelf, getVisibilityByRects, isCmdModifierPressed, isHeadingNode, isInline, isInputFocused, isProbablyTalkPage, keyCombination, skin$, sleep, wrap } from './utils';
 import { getUserInfo, htmlToWikitext } from './apiWrappers';
 
 export default {
@@ -42,6 +42,7 @@ export default {
   relevantAddedCommentIds: null,
   newCommentsTitleMark: '',
   commentsNotifiedAbout: [],
+  isObstructingElementHoveredCached: false,
 
   /**
    * Last boot process.
@@ -838,9 +839,39 @@ export default {
     if (postponements.is('scroll') || this.isAutoScrolling() || this.isPageOverlayOn()) return;
 
     // Don't throttle. Without throttling performance is generally OK, while the "frame rate" is
-    // about 50 (so, the reaction time is about 20ms). Lower values which should be less
-    // comfortable.
+    // about 50 (so, the reaction time is about 20ms). Lower values would be less comfortable.
     CommentStatic.highlightHovered(e);
+  },
+
+  isObstructingElementHovered() {
+    if (this.notificationArea === undefined) {
+      this.notificationArea = document.querySelector('.mw-notification-area');
+      this.tocButton = document.getElementById('vector-toc-collapsed-button');
+    }
+
+    OO.ui.throttle(() => {
+      this.isObstructingElementHoveredCached = Boolean(
+        [
+          ...(this.notificationArea?.querySelectorAll('.mw-notification') || []),
+          this.getActiveAutocompleteMenu(),
+          navPanel.$element?.get(0),
+          ...document.body.querySelectorAll('.oo-ui-popupWidget:not(.oo-ui-element-hidden)'),
+          this.getStickyHeader(),
+          SectionStatic.getAll()
+            .map((section) => section.actions.moreMenuSelect?.getMenu())
+            .find((menu) => menu?.isVisible())
+            ?.$element.get(0),
+          this.tocButton,
+        ]
+          .filter(definedAndNotNull)
+          .some((el) => el.matches(':hover')) ||
+
+        // WikiEditor dialog
+        $(document.body).children('.ui-dialog').length
+      );
+    }, 100)();
+
+    return this.isObstructingElementHoveredCached;
   },
 
   /**

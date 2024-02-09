@@ -6,13 +6,12 @@
 
 import Comment from './Comment';
 import CommentSkeleton from './CommentSkeleton';
-import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
 import navPanel from './navPanel';
 import settings from './settings';
 import { TreeWalker } from './treeWalker';
-import { definedAndNotNull, getCommonGender, getExtendedRect, getHigherNodeAndOffsetInSelection, reorderArray, underlinesToSpaces, unique } from './utils';
+import { getCommonGender, getExtendedRect, getHigherNodeAndOffsetInSelection, reorderArray, underlinesToSpaces, unique } from './utils';
 import { getPagesExistence } from './apiWrappers';
 
 const newDtTimestampPattern = '(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})\\d{2}';
@@ -25,9 +24,6 @@ const dtIdRegexp = new RegExp(
   `(?:-(?:(.+?)-(?:${newDtTimestampPattern}|${oldDtTimestampPattern})|(.+?))` +
   `(?:-(\\d+))?)?$(?:)`
 );
-
-let notificationArea;
-let tocButton;
 
 /**
  * Add comment's children, including indirect, into an array, if they are in the array of all new
@@ -516,32 +512,7 @@ const CommentStatic = {
    * @param {Event} e
    */
   highlightHovered(e) {
-    if (notificationArea === undefined) {
-      notificationArea = document.querySelector('.mw-notification-area');
-      tocButton = document.getElementById('vector-toc-collapsed-button');
-    }
-
-    const isObstructingElementHovered = (
-      [
-        ...(notificationArea?.querySelectorAll('.mw-notification') || []),
-        controller.getActiveAutocompleteMenu(),
-        navPanel.$element?.get(0),
-        controller.getPopupOverlay()
-          ?.get(0)
-          .querySelector('.oo-ui-popupWidget:not(.oo-ui-element-hidden)'),
-        controller.getStickyHeader(),
-        SectionStatic.getAll()
-          .map((section) => section.actions.moreMenuSelect?.getMenu())
-          .find((menu) => menu?.isVisible())
-          ?.$element.get(0),
-        tocButton,
-      ]
-        .filter(definedAndNotNull)
-        .some((el) => el.matches(':hover')) ||
-
-      // WikiEditor dialog
-      $(document.body).children('.ui-widget-overlay').length
-    );
+    const isObstructingElementHovered = controller.isObstructingElementHovered();
 
     this.items
       .filter((comment) => comment.underlay)
