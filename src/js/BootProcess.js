@@ -1337,11 +1337,20 @@ class BootProcess {
 
       CommentStatic.configureAndAddLayers(CommentStatic.getAll().filter((c) => c.isNew));
 
-      toc.addNewComments(
-        CommentStatic.groupBySection(
-          CommentStatic.getAll().filter((comment) => comment.isSeen === false)
-        )
-      );
+      // If all the comments on the page are unseen, don't add them to the TOC - the user would
+      // definitely prefer to read the names of the topics easily. (But still consider them new -
+      // otherwise the user can be confused, especially if there are few topics on an unpopular
+      // page.)
+      if (
+        CommentStatic.getAll().filter((c) => c.isSeen === false || !c.date).length !==
+        CommentStatic.getCount()
+      ) {
+        toc.addNewComments(
+          CommentStatic.groupBySection(
+            CommentStatic.getAll().filter((comment) => comment.isSeen === false)
+          )
+        );
+      }
     }
 
     // Reduce the probability that we will wrongfully mark a seen comment as unseen/new by adding a
