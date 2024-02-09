@@ -229,6 +229,10 @@ const toc = {
 
       usedFullForm = true;
     });
+
+    if (cd.g.isDtVisualEnhancementsEnabled) {
+      this.$element.find('.ext-discussiontools-init-sidebar-meta').remove();
+    }
   },
 
   /**

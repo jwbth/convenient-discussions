@@ -827,14 +827,21 @@ class Section extends SectionSkeleton {
    *
    * @private
    */
-  addeBarElement() {
+  addBarElement() {
     const barElement = document.createElement('div');
     barElement.className = 'cd-section-bar';
     if (!this.metadataElement) {
       barElement.classList.add('cd-section-bar-nometadata');
     }
     barElement.append(...[this.metadataElement, this.actionsElement].filter(defined));
-    this.headingElement.parentNode.insertBefore(barElement, this.headingElement.nextElementSibling);
+
+    if (cd.g.isDtVisualEnhancementsEnabled) {
+      this.headingElement.querySelector('.ext-discussiontools-init-section-bar')?.remove();
+    }
+    this.headingElement.parentNode.insertBefore(
+      barElement,
+      this.headingElement.nextElementSibling
+    );
 
     if (this.lastElement === this.headingElement) {
       this.lastElement = barElement;
@@ -879,7 +886,7 @@ class Section extends SectionSkeleton {
     this.createActionsElement();
     if (this.level === 2) {
       this.createMetadataElement();
-      this.addeBarElement();
+      this.addBarElement();
     } else {
       this.addActionsElement();
     }
