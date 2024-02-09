@@ -125,6 +125,17 @@ class Parser {
       );
     this.context.handleDtMarkup(elements);
     this.context.removeDtButtonHtmlComments();
+
+    const timestampLinks = [
+      ...this.context.rootElement.getElementsByClassName('ext-discussiontools-init-timestamplink')
+    ];
+    timestampLinks.forEach((link) => {
+      const replacement = document.createElement('span');
+      replacement.classList.add('ext-discussiontools-init-timestamplink');
+      replacement.appendChild(document.createTextNode(link.textContent));
+      link.parentNode.insertBefore(replacement, link);
+      link.remove();
+    });
   }
 
   /**
