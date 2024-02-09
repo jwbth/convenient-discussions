@@ -258,9 +258,13 @@ const toc = {
     // collapsed subsections with their help tend to zero, I believe, although this may
     // change.
     const button = document.createElement('button');
-    button.className = 'mw-ui-icon mw-ui-icon-wikimedia-expand mw-ui-icon-small vector-toc-toggle';
+    button.className = 'cdx-button cdx-button--weight-quiet cdx-button--icon-only vector-toc-toggle';
     button.setAttribute('ariaExpanded', 'true');
     button.setAttribute('ariaControls', ul.id);
+
+    const span = document.createElement('span');
+    span.className = 'vector-icon vector-icon--x-small mw-ui-icon-wikimedia-expand';
+    button.appendChild(span);
 
     upperLevelMatch.$element.append(button);
 
