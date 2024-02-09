@@ -435,7 +435,7 @@ function addCommentHeaderPrototype(prototypes) {
   const headerElement = document.createElement('div');
   headerElement.className = 'cd-comment-header';
 
-  const authorWrapper = document.createElement('span');
+  const authorWrapper = document.createElement('div');
   authorWrapper.className = 'cd-comment-author-wrapper';
   headerElement.append(authorWrapper);
 
