@@ -384,14 +384,15 @@ class Parser {
       }
     } while (
       node &&
+      isInline(node, true) &&
       length < cd.config.signatureScanLimit &&
       !(
         (
           authorData.name &&
           (
             // Users may cross out the text ended with their signature and sign again
-            // (https://ru.wikipedia.org/?diff=114726134). The strike element shouldn't be considered
-            // a part of the signature then.
+            // (https://ru.wikipedia.org/?diff=114726134). The strike element shouldn't be
+            // considered a part of the signature then.
             (node.tagName && ['S', 'STRIKE', 'DEL'].includes(node.tagName)) ||
 
             // Cases like
