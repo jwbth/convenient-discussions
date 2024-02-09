@@ -309,6 +309,9 @@ function extractUnsigneds(adjustedCode, code, signatures) {
       author ||= '<undated>';
     }
 
+    // Double spaces
+    timestamp = timestamp?.replace(/ +/g, ' ');
+
     let startIndex = match.index;
     const endIndex = match.index + match[1].length;
     let dirtyCode = code.slice(startIndex, endIndex);
