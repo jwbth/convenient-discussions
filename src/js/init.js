@@ -1112,7 +1112,8 @@ export default {
        * @memberof convenientDiscussions.g
        */
       cd.g.parseTimestampContentRegexp = new RegExp(
-        `^([^]*(?:\\b| ))(${cd.g.contentTimestampRegexp.source})(?!["»])`
+        // `\b` only captures Latin, so we also need `' '`.
+        `^([^]*(?:^|[^=])(?:\\b| ))(${cd.g.contentTimestampRegexp.source})(?!["»])`
       );
 
       /**

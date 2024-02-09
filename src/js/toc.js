@@ -92,6 +92,32 @@ class TocItem {
     this.$text.html(html);
     this.headline = this.$text.text().trim();
   }
+
+  /**
+   * Add/remove the section's TOC link according to its subscription state and update the `title`
+   * attribute.
+   *
+   * @param {?boolean} subscriptionState
+   */
+  updateSubscriptionState(subscriptionState) {
+    if (!settings.get('modifyToc')) return;
+
+    if (subscriptionState) {
+      this.$link
+        .find(toc.isInSidebar() ? '.vector-toc-text' : '.toctext')
+        .append(
+          $('<span>').addClass('cd-toc-subscriptionIcon-before'),
+          $('<span>')
+            .addClass('cd-toc-subscriptionIcon')
+            .attr('title', cd.s('toc-watched'))
+        );
+    } else {
+      this.$link
+        .removeAttr('title')
+        .find('.cd-toc-subscriptionIcon, .cd-toc-subscriptionIcon-before')
+        .remove();
+    }
+  }
 }
 
 /**
@@ -638,12 +664,11 @@ const toc = {
    * @param {Map} commentsBySection
    */
   async addNewComments(commentsBySection) {
-    await this.updateTocSectionsPromise;
-
-    const firstComment = commentsBySection.values().next().value?.[0];
     if (!settings.get('modifyToc') || !this.isPresent()) return;
 
+    await this.updateTocSectionsPromise;
     this.$element.find('.cd-toc-addedCommentList').remove();
+    const firstComment = commentsBySection.values().next().value?.[0];
     if (!firstComment) return;
 
     const areCommentsRendered = firstComment instanceof Comment;

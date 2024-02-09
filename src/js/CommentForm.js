@@ -3232,6 +3232,8 @@ class CommentForm {
     navPanel.updateCommentFormButton();
     controller.updatePageTitle();
     this.autocomplete.cleanUp();
+    this.headlineAutocomplete?.cleanUp();
+    this.summaryAutocomplete.cleanUp();
     this.destroyInputPopups();
   }
 

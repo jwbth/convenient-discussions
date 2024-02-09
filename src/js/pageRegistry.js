@@ -225,8 +225,7 @@ export class Page {
     if (result === undefined || result === null) {
       result = false;
       const name = this.realName || this.name;
-      const iterator = getSourcePagesMap().keys();
-      for (const sourceRegexp of iterator) {
+      for (const sourceRegexp of getSourcePagesMap().keys()) {
         if (sourceRegexp.test(name)) {
           result = true;
           break;
@@ -275,8 +274,7 @@ export class Page {
     let result = this.findArchivingInfoElement()?.data('archivePrefix');
     const name = this.realName || this.name;
     if (!result) {
-      const iterator = getArchivePagesMap().entries();
-      for (const [sourceRegexp, replacement] of iterator) {
+      for (const [sourceRegexp, replacement] of getArchivePagesMap().entries()) {
         if (sourceRegexp.test(name)) {
           result = name.replace(sourceRegexp, replacement);
           break;
@@ -298,8 +296,7 @@ export class Page {
     let result = this.findArchivingInfoElement()?.data('archivedPage');
     if (!result) {
       const name = this.realName || this.name;
-      const iterator = getSourcePagesMap().entries();
-      for (const [archiveRegexp, replacement] of iterator) {
+      for (const [archiveRegexp, replacement] of getSourcePagesMap().entries()) {
         if (archiveRegexp.test(name)) {
           result = name.replace(archiveRegexp, replacement);
           break;

@@ -19,6 +19,10 @@
   padding: 0 0.5em 0;
   vertical-align: top;
 
+  // Fixes the 1px difference in the height for system font sizes other than the default in Chrome
+  box-sizing: border-box;
+  min-height: 32px;
+
   .ltr & {
     margin: 0 1em 0 0.5em;
   }

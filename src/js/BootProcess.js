@@ -114,11 +114,11 @@ function handleDtMarkup(elements) {
   }
 
   // Reset some interfering methods
-  if (mw.loader.moduleRegistry['ext.discussionTools.init']?.packageExports['highlighter.js']) {
-    mw.loader.moduleRegistry['ext.discussionTools.init'].packageExports['highlighter.js']
-      .highlightTargetComment = () => {};
-    mw.loader.moduleRegistry['ext.discussionTools.init'].packageExports['highlighter.js']
-      .clearHighlightTargetComment = () => {};
+  const highlighter = mw.loader.moduleRegistry['ext.discussionTools.init']
+    ?.packageExports['highlighter.js'];
+  if (highlighter) {
+    highlighter.highlightTargetComment = () => {};
+    highlighter.clearHighlightTargetComment = () => {};
   }
 }
 
@@ -729,12 +729,11 @@ class BootProcess {
         el2.compareDocumentPosition(el1) & Node.DOCUMENT_POSITION_FOLLOWING
       ),
       getAllTextNodes,
-      removeDtButtonHtmlComments,
       getElementByClassName: (el, className) => el.querySelector(`.${className}`),
-      cloneNode: (node) => node.cloneNode(),
       rootElement: controller.rootElement,
       areThereOutdents: controller.areThereOutdents.bind(controller),
       handleDtMarkup,
+      removeDtButtonHtmlComments,
     });
 
     this.parser.processAndRemoveDtMarkup();

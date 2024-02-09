@@ -1514,32 +1514,11 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Bold/unbold the section's TOC link according to its watch state and update the `title`
+   * Add/remove the section's TOC link according to its subscription state and update the `title`
    * attribute.
-   *
-   * @private
    */
   updateTocLink() {
-    if (!settings.get('modifyToc')) return;
-
-    const tocItem = this.getTocItem();
-    if (!tocItem) return;
-
-    if (this.subscriptionState) {
-      tocItem.$link
-        .find(toc.isInSidebar() ? '.vector-toc-text' : '.toctext')
-        .append(
-          $('<span>').addClass('cd-toc-subscriptionIcon-before'),
-          $('<span>')
-            .addClass('cd-toc-subscriptionIcon')
-            .attr('title', cd.s('toc-watched'))
-        );
-    } else {
-      tocItem.$link
-        .removeAttr('title')
-        .find('.cd-toc-subscriptionIcon, .cd-toc-subscriptionIcon-before')
-        .remove();
-    }
+    this.getTocItem()?.updateSubscriptionState(this.subscriptionState);
   }
 
   /**
