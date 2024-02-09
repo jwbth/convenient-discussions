@@ -690,7 +690,11 @@ export default {
     [...document.styleSheets]
       .filter((sheet) => sheet.href?.includes('site.styles'))
       .forEach((el) => {
-        [...el.cssRules].forEach(extractSelectors);
+        try {
+          [...el.cssRules].forEach(extractSelectors);
+        } catch {
+          // CSS rules on other domains can be inaccessible
+        }
       });
     [...this.rootElement.querySelectorAll('style')].forEach((el) => {
       [...el.sheet.cssRules].forEach(extractSelectors);
