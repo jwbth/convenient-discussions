@@ -2,13 +2,11 @@
   color: #72777d;
   text-decoration: inherit;
   user-select: none;
+  display: inline-block;
 
-  .sitedir-ltr & {
-    padding-left: 0.75em;
-  }
-
-  .sitedir-rtl & {
-    padding-right: 0.75em;
+  &-before {
+    // Don't divide into ltr/rtl, because both `margin-right` and `margin-left` will work here
+    margin-right: 0.75em;
   }
 }
 
@@ -27,6 +25,7 @@
   background-size: 14px 14px;
 
   &-before {
+    // Don't divide into ltr/rtl, because both `margin-right` and `margin-left` will work here
     margin-right: 0.75em;
   }
 }

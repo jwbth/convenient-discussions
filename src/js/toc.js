@@ -206,6 +206,9 @@ const toc = {
       const count = section.comments.length;
       if (!count) return;
 
+      const beforeSpan = document.createElement('span');
+      beforeSpan.className = 'cd-toc-commentCount-before';
+
       const span = document.createElement('span');
       span.className = 'cd-toc-commentCount';
 
@@ -222,7 +225,7 @@ const toc = {
       }
 
       span.appendChild(bdi);
-      item.$text.append(span);
+      item.$text.append(beforeSpan, span);
 
       usedFullForm = true;
     });
