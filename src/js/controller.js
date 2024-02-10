@@ -275,9 +275,13 @@ export default {
     return (
       this.talkPage &&
       this.doesPageExist() &&
-      !pageRegistry.getCurrent().isArchivePage() &&
-      this.isCurrentRevision()
+      this.isCurrentRevision() &&
+      !pageRegistry.getCurrent().isArchivePage()
     );
+  },
+
+  isPageCurrentArchive() {
+    return this.isCurrentRevision() && pageRegistry.getCurrent().isArchivePage();
   },
 
   /**

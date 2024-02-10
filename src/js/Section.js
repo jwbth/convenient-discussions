@@ -76,22 +76,28 @@ class Section extends SectionSkeleton {
 
     delete this.sourcePageName;
 
-    // Transclusions of templates that in turn translude content, like here:
-    // https://ru.wikipedia.org/wiki/Project:Выборы_арбитров/Лето_2021/Вопросы/Кандидатские_заявления
-    const isTranscludedFromTemplate = this.sourcePage?.namespaceId === 10;
+    /**
+     * Is the section transcluded from a template (usually, that template in turn transludes
+     * content, like here:
+     * https://ru.wikipedia.org/wiki/Project:Выборы_арбитров/Лето_2021/Вопросы/Кандидатские_заявления.)
+     *
+     * @type {boolean}
+     */
+    this.transcludedFromTemplate = this.sourcePage?.namespaceId === 10;
 
     /**
-     * Is the section actionable (is in a closed discussion or on an old version page).
+     * Is the section actionable. (If it is in a closed discussion or on an old version page, then
+     * no).
      *
      * @type {boolean}
      */
     this.isActionable = (
       controller.isPageActive() &&
       !controller.getClosedDiscussions().some((el) => el.contains(this.headingElement)) &&
-      !isTranscludedFromTemplate
+      !this.transcludedFromTemplate
     );
 
-    if (isTranscludedFromTemplate) {
+    if (this.transcludedFromTemplate) {
       this.comments.forEach((comment) => {
         comment.isActionable = false;
       });
@@ -409,7 +415,11 @@ class Section extends SectionSkeleton {
    * @returns {boolean}
    */
   canBeMoved() {
-    return this.isActionable && this.level === 2;
+    return (
+      this.level === 2 &&
+      !this.transcludedFromTemplate &&
+      (controller.isPageActive() || controller.isPageCurrentArchive())
+    );
   }
 
   /**

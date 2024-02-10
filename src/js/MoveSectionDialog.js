@@ -154,6 +154,10 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         $overlay: this.$overlay,
         excludeCurrentPage: true,
         showMissing: false,
+        showSuggestionsOnFocus: false,
+        value: pageRegistry.getCurrent().isArchivePage() ?
+          pageRegistry.getCurrent().getArchivedPage().name :
+          '',
         validate: () => {
           const title = this.controls.title.input.getMWTitle();
           const page = title && pageRegistry.get(title);
@@ -177,7 +181,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
       if (cd.config.getMoveSourcePageCode || cd.config.getMoveTargetPageCode) {
         this.controls.keepLink = createCheckboxField({
           value: 'keepLink',
-          selected: true,
+          selected: !pageRegistry.getCurrent().isArchivePage(),
           label: cd.s('msd-keeplink'),
         });
       }
