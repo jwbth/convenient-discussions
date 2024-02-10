@@ -55,6 +55,8 @@ class CommentForm {
    * @property {string} [editIntro] Edit intro page name.
    * @property {string} [commentTemplate] Comment template's page name.
    * @property {string} [headline] Subject/headline.
+   * @property {string[]} [params] Preload parameters to take place of `$1`, `$2`, etc. in the
+   *   comment template.
    * @property {string} [summary] Edit summary.
    * @property {string} [noHeadline] Whether to include a headline.
    * @property {string} [omitSignature] Whether to add the user's signature.
@@ -101,7 +103,7 @@ class CommentForm {
     /**
      * Configuration to preload data into the form.
      *
-     * @type {object|undefined}
+     * @type {PreloadConfig}
      * @private
      */
     this.preloadConfig = preloadConfig;
@@ -1326,7 +1328,8 @@ class CommentForm {
 
       code = code
         .replace(generateTagsRegexp(['includeonly']), '$3')
-        .replace(generateTagsRegexp(['noinclude']), '');
+        .replace(generateTagsRegexp(['noinclude']), '')
+        .replace(/\$(\d+)/g, (m, s) => this.preloadConfig.params[s - 1] ?? m);
       code = code.trim();
 
       if (code.includes(cd.g.signCode) || this.preloadConfig.omitSignature) {

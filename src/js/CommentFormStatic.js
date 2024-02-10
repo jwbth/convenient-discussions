@@ -114,7 +114,7 @@ const CommentFormStatic = {
   },
 
   /**
-   * Get default preload configuration for the `addSection` mode.
+   * Get the default preload configuration for the `addSection` mode.
    *
    * @returns {object}
    */
@@ -123,6 +123,7 @@ const CommentFormStatic = {
       editIntro: undefined,
       commentTemplate: undefined,
       headline: undefined,
+      params: [],
       summary: undefined,
       noHeadline: false,
       omitSignature: false,
