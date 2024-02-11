@@ -1060,21 +1060,6 @@ const CommentStatic = {
       item.classList.add('cd-connectToPreviousItem');
     });
   },
-
-  /**
-   * Scroll to the first comment in the list, but highlight all of them.
-   *
-   * @param {Comment[]} comments
-   */
-  scrollToFirstHighlightAll(comments) {
-    comments[0].scrollTo({
-      flash: false,
-      pushState: true,
-      callback: () => {
-        comments.forEach((comment) => comment.flashTarget());
-      },
-    });
-  },
 };
 
 // Move static properties from `CommentSkeleton` to `CommentStatic` so that it acts like real

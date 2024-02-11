@@ -1,7 +1,6 @@
 import Button from './Button';
 import CdError from './CdError';
 import CommentForm from './CommentForm';
-import CommentStatic from './CommentStatic';
 import LiveTimestamp from './LiveTimestamp';
 import SectionSkeleton from './SectionSkeleton';
 import SectionSource from './SectionSource';
@@ -517,7 +516,14 @@ class Section extends SectionSkeleton {
                 .text(author.getName())
                 .attr('href', `#${comments[0].dtId || comments[0].id}`)
                 .on('click', () => {
-                  CommentStatic.scrollToFirstHighlightAll(comments);
+                  // Scroll to the first comment in the list, but highlight all of them.
+                  comments[0].scrollTo({
+                    flash: false,
+                    pushState: true,
+                    callback: () => {
+                      comments.forEach((comment) => comment.flashTarget());
+                    },
+                  });
                 })
                 .get(0),
               i === arr.length - 1 ? undefined : document.createTextNode(cd.mws('comma-separator')),
@@ -526,9 +532,9 @@ class Section extends SectionSkeleton {
         head: false,
         padded: true,
         autoClose: true,
-        $autoCloseIgnore: $(this.authorCountWrapper.firstChild),
+        $autoCloseIgnore: $(this.authorCountWrapper),
         position: 'above',
-        $floatableContainer: $(this.authorCountWrapper.firstChild),
+        $floatableContainer: $(this.authorCountWrapper),
         classes: ['cd-section-metadata-authorsPopup'],
       });
       $(controller.getPopupOverlay()).append(this.authorsPopup.$element);
@@ -564,23 +570,11 @@ class Section extends SectionSkeleton {
         latestComment
     ), null);
 
+    let latestCommentWrapper;
     let commentCountWrapper;
     let authorCountWrapper;
-    let latestCommentWrapper;
     let metadataElement;
     if (this.level === 2 && this.comments.length) {
-      commentCountWrapper = document.createElement('span');
-      commentCountWrapper.className = 'cd-section-bar-item';
-      commentCountWrapper.append(cd.s('section-metadata-commentcount', this.comments.length));
-
-      const authorsLink = document.createElement('a');
-      authorsLink.onclick = this.toggleAuthors;
-      authorsLink.append(cd.s('section-metadata-authorcount', authorCount));
-
-      authorCountWrapper = document.createElement('span');
-      authorCountWrapper.className = 'cd-section-bar-item cd-section-bar-item-authorCount';
-      authorCountWrapper.append(authorsLink);
-
       if (latestComment) {
         const latestCommentLink = document.createElement('a');
         latestCommentLink.href = `#${latestComment.dtId || latestComment.id}`;
@@ -593,14 +587,28 @@ class Section extends SectionSkeleton {
         latestCommentWrapper.append(cd.s('section-metadata-lastcomment'), ' ', latestCommentLink);
       }
 
+      commentCountWrapper = document.createElement('span');
+      commentCountWrapper.className = 'cd-section-bar-item';
+      commentCountWrapper.innerHTML = cd.sParse(
+        'section-metadata-commentcount-authorcount',
+        this.comments.length,
+        authorCount
+      );
+      if (this.comments.length === 1) {
+        commentCountWrapper.querySelector('.cd-section-metadata-authorcount')?.remove();
+      }
+
+      const span = commentCountWrapper.querySelector('.cd-section-metadata-authorcount-link');
+      if (span) {
+        authorCountWrapper = document.createElement('a');
+        authorCountWrapper.textContent = span.textContent;
+        authorCountWrapper.onclick = this.toggleAuthors;
+        span.firstChild.replaceWith(authorCountWrapper);
+      }
+
       metadataElement = document.createElement('div');
       metadataElement.className = 'cd-section-metadata';
-      const metadataItemList = [
-        commentCountWrapper,
-        authorCountWrapper,
-        latestCommentWrapper,
-      ].filter(defined);
-      metadataElement.append(...metadataItemList);
+      metadataElement.append(...[commentCountWrapper, latestCommentWrapper].filter(defined));
     }
 
     /**
@@ -792,10 +800,11 @@ class Section extends SectionSkeleton {
 
     const actionsElement = document.createElement(this.level === 2 ? 'div' : 'span');
     actionsElement.className = 'cd-section-actions';
-    const actionItemList = [copyLinkButton, moreMenuSelectDummy]
-      .filter(defined)
-      .map((button) => button.element);
-    actionsElement.append(...actionItemList);
+    actionsElement.append(
+      ...[copyLinkButton, moreMenuSelectDummy]
+        .filter(defined)
+        .map((button) => button.element)
+    );
 
     /**
      * Actions element under the 2-level section heading _or_ to the right of headings of other
@@ -910,7 +919,10 @@ class Section extends SectionSkeleton {
    */
   scrollToNewComments(e) {
     e.preventDefault();
-    CommentStatic.scrollToFirstHighlightAll(this.newComments);
+    this.newComments[0].scrollTo({
+      flash: false,
+      pushState: true,
+    });
   }
 
   /**
@@ -918,24 +930,32 @@ class Section extends SectionSkeleton {
    * of load".)
    */
   addNewCommentCountMetadata() {
-    if (this.level !== 2 || !this.newComments.length) return;
-
-    const html = cd.sParse(
-      'section-metadata-commentcount-new',
-      this.comments.length,
-      this.newComments.length
-    );
-    this.commentCountWrapper.innerHTML = html;
-    if (this.newComments.length !== this.comments.length) {
-      const span = this.commentCountWrapper.querySelector('.cd-section-metadata-commentcount-new');
-      if (span) {
-        const link = document.createElement('a');
-        link.textContent = span.textContent;
-        link.href = `#${this.newComments[0].dtId}`;
-        link.onclick = this.scrollToNewComments;
-        span.firstChild.replaceWith(link);
-      }
+    if (
+      this.level !== 2 ||
+      !this.newComments.length ||
+      this.newComments.length === this.comments.length
+    ) {
+      return;
     }
+
+    const newText = cd.s('section-metadata-newcommentcount', this.newComments.length);
+
+    let newLink = document.createElement('a');
+    newLink.textContent = newText;
+    newLink.href = `#${this.newComments[0].dtId}`;
+    newLink.onclick = this.scrollToNewComments;
+
+    const newCommentCountWrapper = document.createElement('span');
+    newCommentCountWrapper.className = 'cd-section-bar-item';
+    newCommentCountWrapper.append(newLink || newText);
+
+    this.metadataElement.insertBefore(
+      newCommentCountWrapper,
+      this.commentCountWrapper.nextSibling || null
+    );
+
+    this.newCommentCountWrapper = newCommentCountWrapper;
+    this.$newCommentCountWrapper = $(newCommentCountWrapper);
   }
 
   /**
