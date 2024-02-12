@@ -883,6 +883,9 @@ class BootProcess {
    */
   addAddTopicButton() {
     if (
+      // Vector 2022 has "Add topic" in the sticky header, so our button would duplicate its purpose
+      cd.g.skin !== 'vector-2022' ||
+
       !$('#ca-addsection').length ||
 
       // There is a special welcome text in New Topic Tool for 404 pages.
