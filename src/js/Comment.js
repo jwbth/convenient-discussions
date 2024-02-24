@@ -651,8 +651,8 @@ class Comment extends CommentSkeleton {
       saveToLocalStorage('thanks', thanks);
     }
     const isThanked = Object.keys(thanks).some((key) => (
-      this.id === thanks[key].id &&
-      calculateWordOverlap(this.getText(), thanks[key].text) > 0.66
+      this.dtId === thanks[key].id ||
+      this.id === thanks[key].id
     ));
 
     const action = this.thankButtonClick;
@@ -2709,8 +2709,7 @@ class Comment extends CommentSkeleton {
       this.setThanked();
 
       thanks[edit.revid] = {
-        id: this.id,
-        text: this.getText(),
+        id: this.dtId || this.id,
         thankUnixTime: Date.now(),
       };
       saveToLocalStorage('thanks', thanks);
