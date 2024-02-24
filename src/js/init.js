@@ -417,7 +417,7 @@ function patterns() {
 
     // Sites like wikitech.wikimedia.org, which is not a SUL wiki, will be included as well
     ['mediawiki.org', 'wikibooks.org', 'wikidata.org', 'wikifunctions.org', 'wikimedia.org', 'wikinews.org', 'wikipedia.org', 'wikiquote.org', 'wikisource.org', 'wikiversity.org', 'wikivoyage.org', 'wiktionary.org'].includes(
-      location.hostname.split('.').slice(-2).join('.')
+      mw.config.get('wgServerName').split('.').slice(-2).join('.')
     )
   );
 }

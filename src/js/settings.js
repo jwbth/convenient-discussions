@@ -390,7 +390,7 @@ export default {
                 label: cd.s('sd-desktopnotifications-radio-none'),
               },
             ],
-            help: cd.s('sd-desktopnotifications-help', location.hostname),
+            help: cd.s('sd-desktopnotifications-help', cd.g.serverName),
           },
           {
             name: 'notifyCollapsedThreads',

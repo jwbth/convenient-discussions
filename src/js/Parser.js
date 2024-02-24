@@ -26,7 +26,7 @@ let punctuationRegexp;
  * @private
  */
 function getPageNameFromUrl(url) {
-  let hostname = cd.g.hostname;
+  let hostname = cd.g.serverName;
   let fragment;
   let pageName = url
     .replace(/^(?:https?:)?\/\/([^/]+)/, (s, m1) => {
@@ -710,7 +710,7 @@ class Parser {
         }
         linkType = 'contribs';
       }
-      if (hostname !== cd.g.hostname) {
+      if (hostname !== cd.g.serverName) {
         linkType += 'Foreign';
       }
       userName &&= ucFirst(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();

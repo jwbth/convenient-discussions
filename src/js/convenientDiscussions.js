@@ -14,13 +14,13 @@ import { buildEditSummary, underlinesToSpaces, wrap, wrapDiffBody } from './util
 const mwStringsCache = {};
 let isQqxMode;
 
+const serverName = mw.config.get('wgServerName');
+
 // For historical reasons, ru.wikipedia.org has 'cd'.
-const localOptionsPrefix = location.hostname === 'ru.wikipedia.org' ?
-  'cd' :
-  'convenientDiscussions';
+const localOptionsPrefix = serverName === 'ru.wikipedia.org' ? 'cd' : 'convenientDiscussions';
 
 // For historical reasons, ru.wikipedia.org has 'watchedTopics'.
-const subscriptionsOptionNameEnding = location.hostname === 'ru.wikipedia.org' ?
+const subscriptionsOptionNameEnding = serverName === 'ru.wikipedia.org' ?
   'watchedTopics' :
   'watchedSections';
 
@@ -607,12 +607,8 @@ Object.assign(cd.g, {
   localSettingsOptionName: `userjs-${localOptionsPrefix}-localSettings`,
   visitsOptionName: `userjs-${localOptionsPrefix}-visits`,
   subscriptionsOptionName: `userjs-${localOptionsPrefix}-${subscriptionsOptionNameEnding}`,
-
   server: server.startsWith('//') ? location.protocol + server : server,
-
-  // Worker's location object doesn't have the host name set.
-  hostname: location.hostname,
-
+  serverName,
   pageName: underlinesToSpaces(mw.config.get('wgPageName')),
   pageTitle: mw.config.get('wgTitle'),
   namespaceNumber: mw.config.get('wgNamespaceNumber'),

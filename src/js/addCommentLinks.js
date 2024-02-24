@@ -221,7 +221,7 @@ function addWatchlistMenu() {
  */
 function isWikidataItem(linkElement) {
   return (
-    mw.config.get('wgServerName') === 'www.wikidata.org' &&
+    cd.g.serverName === 'www.wikidata.org' &&
     linkElement.firstElementChild?.classList.contains('wb-itemlink')
   )
 }

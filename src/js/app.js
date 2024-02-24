@@ -229,11 +229,11 @@ function setLanguages() {
  */
 function getConfig() {
   return new Promise((resolve, reject) => {
-    let key = location.hostname;
+    let key = mw.config.get('wgServerName');
     if (IS_TEST) {
       key += '.test';
     }
-    const configUrl = CONFIG_URLS[key] || CONFIG_URLS[location.hostname];
+    const configUrl = CONFIG_URLS[key] || CONFIG_URLS[mw.config.get('wgServerName')];
     if (configUrl) {
       const rejectWithMsg = (e) => {
         reject(['Convenient Discussions can\'t run: couldn\'t load the configuration.', e]);
