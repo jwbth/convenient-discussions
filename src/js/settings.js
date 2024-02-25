@@ -4,10 +4,11 @@
  * @module settings
  */
 
+import TextMasker from './TextMasker';
 import cd from './cd';
 import pageRegistry from './pageRegistry';
 import userRegistry from './userRegistry';
-import { areObjectsEqual, defined, hideText, ucFirst, unhideText, wrap } from './utils';
+import { areObjectsEqual, defined, ucFirst, wrap } from './utils';
 import { formatDateImproved, formatDateNative, formatDateRelative } from './timestamp';
 import { getUserInfo, saveGlobalOption, saveLocalOption } from './apiWrappers';
 
@@ -278,12 +279,12 @@ export default {
             uiToData: (value) => (
               value
                 .map((value) => {
-                  const hidden = [];
-                  value = hideText(value, /\\[+;\\]/g, hidden);
-                  let [, snippet, label] = value.match(/^(.*?)(?:;(.+))?$/) || [];
+                  const textMasker = new TextMasker(value).mask(/\\[+;\\]/g);
+                  let [, snippet, label] = textMasker.getText().match(/^(.*?)(?:;(.+))?$/) || [];
                   if (!snippet?.replace(/^ +$/, '')) return;
-                  snippet = unhideText(snippet, hidden);
-                  label &&= unhideText(label, hidden);
+
+                  snippet = textMasker.unmaskText(snippet);
+                  label &&= textMasker.unmaskText(label);
                   return [snippet, label].filter(defined);
                 })
                 .filter(defined)

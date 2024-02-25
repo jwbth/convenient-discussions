@@ -13,7 +13,7 @@ import subscriptions from './subscriptions';
 import toc from './toc';
 import userRegistry from './userRegistry';
 import { dealWithLoadingBug, defined, flat, focusInput, getHeadingLevel, underlinesToSpaces, unique } from './utils';
-import { encodeWikilink, hideDistractingCode, normalizeCode } from './wikitext';
+import { encodeWikilink, maskDistractingCode, normalizeCode } from './wikitext';
 import { formatDate } from './timestamp';
 import { handleApiReject } from './apiWrappers';
 
@@ -1385,7 +1385,7 @@ class Section extends SectionSkeleton {
    */
   searchInCode(contextCode, isInSectionContext) {
     const thisHeadline = normalizeCode(this.headline);
-    const adjustedContextCode = hideDistractingCode(contextCode);
+    const adjustedContextCode = maskDistractingCode(contextCode);
     const sectionHeadingRegexp = /^((=+)(.*)\2[ \t\x01\x02]*)\n/gm;
 
     const sources = [];

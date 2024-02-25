@@ -449,54 +449,6 @@ export function mergeRegexps(arr) {
 }
 
 /**
- * Replace text matched by a regexp with placeholders.
- *
- * @param {string} text
- * @param {RegExp} regexp
- * @param {string[]} hidden
- * @param {string} type Should consist only of alphanumeric characters.
- * @param {boolean} [useGroups=false] Use the first two capturing groups in the regexp as the
- *   `preText` and `textToHide` parameters. (Used for processing table code.)
- * @returns {string}
- */
-export function hideText(text, regexp, hidden, type, useGroups = false) {
-  return text.replace(regexp, (s, preText, textToHide) => {
-    if (!useGroups) {
-      preText = null;
-      textToHide = null;
-    }
-
-    // Handle tables separately.
-    return (
-      (preText || '') +
-      (type === 'table' ? '\x03' : '\x01') +
-      hidden.push(textToHide || s) +
-      (type ? '_' + type : '') +
-      (type === 'table' ? '\x04' : '\x02')
-    );
-  });
-}
-
-/**
- * Replace placeholders created by {@link module:util.hideText}.
- *
- * @param {string} text
- * @param {string[]} hidden
- * @param {string} type
- * @returns {string}
- */
-export function unhideText(text, hidden, type) {
-  const regexp = type ?
-    new RegExp(`(?:\\x01|\\x03)(\\d+)(?:_${type})?(?:\\x02|\\x04)`, 'g') :
-    /(?:\x01|\x03)(\d+)(?:_\w+)?(?:\x02|\x04)/g;
-  while (regexp.test(text)) {
-    text = text.replace(regexp, (s, num) => hidden[num - 1]);
-  }
-
-  return text;
-}
-
-/**
  * Use a
  * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/race Promise.race()}
  * workaround to get the state of a native promise. Note that it works _only_ with native promises:

@@ -1,15 +1,12 @@
 import CdError from './CdError';
+import TextMasker from './TextMasker';
 import cd from './cd';
 import settings from './settings';
-import { brsToNewlines, extractSignatures, hideDistractingCode, hideSensitiveCode, hideTemplatesRecursively, normalizeCode, removeWikiMarkup } from './wikitext';
-import { calculateWordOverlap, countOccurrences, defined, definedAndNotNull, generatePageNamePattern, unhideText } from './utils';
-
-let closedDiscussionPairRegexp;
-let closedDiscussionSingleRegexp;
-let outdentTemplatesRegexp;
+import { brsToNewlines, extractSignatures, maskDistractingCode, normalizeCode, removeWikiMarkup } from './wikitext';
+import { calculateWordOverlap, countOccurrences, defined, definedAndNotNull, generatePageNamePattern } from './utils';
 
 /**
- * Get the code of the section chunk after the specified index with concealed irrelevant parts.
+ * Get the code of the section chunk after the specified index with masked irrelevant parts.
  *
  * @param {number} currentIndex
  * @param {string} contextCode
@@ -17,43 +14,62 @@ let outdentTemplatesRegexp;
  * @private
  */
 function getAdjustedChunkCodeAfter(currentIndex, contextCode) {
-  let adjustedCode = hideDistractingCode(contextCode);
+  let adjustedCode = maskDistractingCode(contextCode);
 
   if (cd.config.closedDiscussionTemplates[0][0]) {
-    if (!closedDiscussionSingleRegexp) {
-      const closedDiscussionBeginningsPattern = cd.config.closedDiscussionTemplates[0]
-        .map(generatePageNamePattern)
-        .join('|');
-      const closedDiscussionEndingsPattern = cd.config.closedDiscussionTemplates[1]
-        .map(generatePageNamePattern)
-        .join('|');
-      if (closedDiscussionEndingsPattern) {
-        closedDiscussionPairRegexp = new RegExp(
-          (
-            `\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *(?=[|}])[^}]*\\}\\}\\s*([:*#]*)[^]*?` +
-            `\\{\\{ *(?:${closedDiscussionEndingsPattern}) *(?=[|}])[^}]*\\}\\}`
-          ),
-          'g'
-        );
-      }
-      closedDiscussionSingleRegexp = new RegExp(
-        `\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *\\|[^}]{0,50}?=\\s*([:*#]*)`,
+    let closedDiscussionPairRegexp;
+    const closedDiscussionBeginningsPattern = cd.config.closedDiscussionTemplates[0]
+      .map(generatePageNamePattern)
+      .join('|');
+    const closedDiscussionEndingsPattern = cd.config.closedDiscussionTemplates[1]
+      .map(generatePageNamePattern)
+      .join('|');
+    if (closedDiscussionEndingsPattern) {
+      closedDiscussionPairRegexp = new RegExp(
+        (
+          `\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *(?=[|}])[^}]*\\}\\}\\s*([:*#]*)[^]*?` +
+          `\\{\\{ *(?:${closedDiscussionEndingsPattern}) *(?=[|}])[^}]*\\}\\}`
+        ),
         'g'
       );
     }
+    const closedDiscussionSingleRegexp = new RegExp(
+      `\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *\\|[^}]{0,50}?=\\s*([:*#]*)`,
+      'g'
+    );
+
+    // `\x01` are later used in `CommentSource#matchProperPlaceRegexps`. `\x02` is not used, it's
+    // just for consistency
+    const makeIndentationMarkers = (indentationLength, totalLength) => (
+      '\x01'.repeat(indentationLength) + ' '.repeat(totalLength - indentationLength - 1) + '\x02'
+    );
 
     if (closedDiscussionPairRegexp) {
-      adjustedCode = adjustedCode.replace(closedDiscussionPairRegexp, (s, indentation) => (
-        '\x01'.repeat(indentation.length) + ' '.repeat(s.length - indentation.length - 1) + '\x02'
-      ));
+      adjustedCode = adjustedCode.replace(
+        closedDiscussionPairRegexp,
+        (s, indentation) => makeIndentationMarkers(indentation.length, s.length)
+      );
     }
 
     let match;
     while ((match = closedDiscussionSingleRegexp.exec(adjustedCode))) {
-      const codeBeforeMatch = adjustedCode.slice(0, match.index);
-      const codeAfterMatch = adjustedCode.slice(match.index);
-      const adjustedCam = hideTemplatesRecursively(codeAfterMatch, null, match[1].length).code;
-      adjustedCode = codeBeforeMatch + adjustedCam;
+      adjustedCode = (
+        adjustedCode.slice(0, match.index) +
+
+        // Fill the space that the first met template occupies with spaces, and put the specified
+        // number of marker characters at the first positions. This will be later used in
+        // `CommentSource#matchProperPlaceRegexps`.
+        (new TextMasker(adjustedCode.slice(match.index)))
+          .maskTemplatesRecursively(undefined, true)
+          .withText((code) => (
+            code.replace(
+              /\x01\d+_template_(\d+)\x02/,  // No global flag - we only need the first occurrence
+              (m, n) => makeIndentationMarkers(match[1].length, n.length)
+            )
+          ))
+          .unmask()
+          .getText()
+      );
     }
   }
 
@@ -108,71 +124,74 @@ class CommentSource {
    * @returns {string}
    */
   toInput() {
-    let { code, originalIndentation } = this;
-    let hidden;
-    ({ code, hidden } = hideSensitiveCode(code));
+    const originalIndentationLength = this.originalIndentation.length;
+    let code = new TextMasker(this.code)
+      .maskSensitiveCode()
+      .withText((code) => {
+        if (this.comment.level === 0) {
+          // Collapse random line breaks that do not affect text rendering but would otherwise
+          // transform into `<br>` on posting. `\x01` and `\x02` mean the beginning and ending of
+          // sensitive code except for tables. `\x03` and `\x04` mean the beginning and ending of a
+          // table. Note: This should be kept coordinated with the reverse transformation code in
+          // `CommentForm#inputToCode`. Some more comments are there.
+          const entireLineRegexp = /^(?:\x01\d+_(block|template)\x02) *$/;
 
-    if (this.comment.level === 0) {
-      // Collapse random line breaks that do not affect text rendering but would otherwise transform
-      // into `<br>` on posting. `\x01` and `\x02` mean the beginning and ending of sensitive code
-      // except for tables. `\x03` and `\x04` mean the beginning and ending of a table. Note: This
-      // should be kept coordinated with the reverse transformation code in
-      // `CommentForm#inputToCode`. Some more comments are there.
-      const entireLineRegexp = /^(?:\x01\d+_(block|template)\x02) *$/;
-
-      // `(?:)` to work around Chrome DevTools bug when it sees "$`"
-      const fileRegexp = new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$(?:)`, 'i');
-      const currentLineEndingRegexp = new RegExp(
-        `(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x04) *$(?:)`,
-        'i'
-      );
-      const nextLineBeginningRegexp = new RegExp(
-        `^(?:<\\/${cd.g.pniePattern}>|<${cd.g.pniePattern}|\\||!)`,
-        'i'
-      );
-      const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/;
-      code = code.replace(
-        /^((?![:*#; ]).+)\n(?![\n:*#; \x03])(?=(.*))/gm,
-        (s, currentLine, nextLine) => {
-          const newlineOrSpace = (
-            entireLineRegexp.test(currentLine) ||
-            entireLineRegexp.test(nextLine) ||
-            fileRegexp.test(currentLine) ||
-            fileRegexp.test(nextLine) ||
-            entireLineFromStartRegexp.test(currentLine) ||
-            entireLineFromStartRegexp.test(nextLine) ||
-            currentLineEndingRegexp.test(currentLine) ||
-            nextLineBeginningRegexp.test(nextLine)
-          ) ?
-            '\n' :
-            ' ';
-          return currentLine + newlineOrSpace;
+          // `(?:)` to work around Chrome DevTools bug when it sees "$`"
+          const fileRegexp = new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$(?:)`, 'i');
+          const currentLineEndingRegexp = new RegExp(
+            `(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x04) *$(?:)`,
+            'i'
+          );
+          const nextLineBeginningRegexp = new RegExp(
+            `^(?:<\\/${cd.g.pniePattern}>|<${cd.g.pniePattern}|\\||!)`,
+            'i'
+          );
+          const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/;
+          code = code.replace(
+            /^((?![:*#; ]).+)\n(?![\n:*#; \x03])(?=(.*))/gm,
+            (s, currentLine, nextLine) => {
+              const newlineOrSpace = (
+                entireLineRegexp.test(currentLine) ||
+                entireLineRegexp.test(nextLine) ||
+                fileRegexp.test(currentLine) ||
+                fileRegexp.test(nextLine) ||
+                entireLineFromStartRegexp.test(currentLine) ||
+                entireLineFromStartRegexp.test(nextLine) ||
+                currentLineEndingRegexp.test(currentLine) ||
+                nextLineBeginningRegexp.test(nextLine)
+              ) ?
+                '\n' :
+                ' ';
+              return currentLine + newlineOrSpace;
+            }
+          );
         }
-      );
-    }
 
-    code = brsToNewlines(code, '\x01\n')
-      // Templates occupying a whole line with `<br>` at the end get a special treatment too.
-      .replace(/^((?:\x01\d+_template.*\x02) *)\x01$/gm, (s, m1) => m1 + '<br>')
+        code = brsToNewlines(code, '\x01\n')
+          // Templates occupying a whole line with `<br>` at the end get a special treatment too.
+          .replace(/^((?:\x01\d+_template.*\x02) *)\x01$/gm, (s, m1) => m1 + '<br>')
 
-      // Replace a temporary marker.
-      .replace(/\x01\n/g, '\n')
+          // Replace the temporary marker.
+          .replace(/\x01\n/g, '\n')
 
-      // Remove indentation characters
-      .replace(/\n([:*#]*)([ \t]*)/g, (s, chars, spacing) => {
-        let newChars;
-        if (chars.length >= originalIndentation.length) {
-          newChars = chars.slice(originalIndentation.length);
-          if (chars.length > originalIndentation.length) {
-            newChars += spacing;
-          }
-        } else {
-          newChars = chars + spacing;
-        }
-        return '\n' + newChars;
-      });
+          // Remove indentation characters
+          .replace(/\n([:*#]*)([ \t]*)/g, (s, chars, spacing) => {
+            let newChars;
+            if (chars.length >= originalIndentationLength) {
+              newChars = chars.slice(originalIndentationLength);
+              if (chars.length > originalIndentationLength) {
+                newChars += spacing;
+              }
+            } else {
+              newChars = chars + spacing;
+            }
+            return '\n' + newChars;
+          });
 
-    code = unhideText(code, hidden);
+        return code;
+      })
+      .unmask()
+      .getText();
 
     if (cd.config.paragraphTemplates.length) {
       const paragraphTemplatesPattern = cd.config.paragraphTemplates
@@ -573,7 +592,7 @@ class CommentSource {
 
       // `\x01` is from hiding closed discussions and HTML comments. TODO: Line can start with a
       // HTML comment in a <pre> tag, that doesn't mean we can put a comment after it. We perhaps
-      // need to change `wikitext.hideDistractingCode`.
+      // need to change `wikitext.maskDistractingCode`.
       '|(?:^|\\n)\\x01.+)\\n)\\n*'
     );
     const maxIndentationLength = this.replyIndentation.length - 1;
@@ -603,14 +622,12 @@ class CommentSource {
     let isNextLine = countOccurrences(adjustedCodeBetween, /\n/g) === 1;
 
     if (cd.config.outdentTemplates.length) {
-      if (!outdentTemplatesRegexp) {
-        const pattern = cd.config.outdentTemplates
-          .map(generatePageNamePattern)
-          .join('|');
-        outdentTemplatesRegexp = new RegExp(
-          `^\\s*([:*#]*)[ \t]*\\{\\{ *(?:${pattern}) *(?:\\||\\}\\})`
-        );
-      }
+      const outdentTemplatesPattern = cd.config.outdentTemplates
+        .map(generatePageNamePattern)
+        .join('|');
+      const outdentTemplatesRegexp = new RegExp(
+        `^\\s*([:*#]*)[ \t]*\\{\\{ *(?:${outdentTemplatesPattern}) *(?:\\||\\}\\})`
+      );
 
       /*
         If there is an "outdent" template next to the insertion place:
@@ -661,11 +678,9 @@ class CommentSource {
       });
     }
 
-    const {
-      adjustedCodeBetween,
-      indentationAfter,
-      isNextLine,
-    } = this.matchProperPlaceRegexps(adjustedChunkCodeAfter);
+    const { adjustedCodeBetween, indentationAfter, isNextLine } = this.matchProperPlaceRegexps(
+      adjustedChunkCodeAfter
+    );
 
     if (
       cd.config.outdentTemplates.length &&

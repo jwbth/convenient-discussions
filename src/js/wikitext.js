@@ -4,14 +4,11 @@
  * @module wikitext
  */
 
+import TextMasker from './TextMasker';
 import cd from './cd';
 import userRegistry from './userRegistry';
-import { decodeHtmlEntities, generatePageNamePattern, hideText, removeDirMarks } from './utils';
+import { decodeHtmlEntities, generatePageNamePattern, removeDirMarks } from './utils';
 import { parseTimestamp } from './timestamp';
-
-let fileEmbedRegexp;
-let unsignedTemplatesRegexp;
-let commentAntipatternsRegexp;
 
 /**
  * Generate a regular expression that searches for specified tags in the text (opening, closing, and
@@ -36,7 +33,7 @@ export function generateTagsRegexp(tags) {
  * @param {string} code
  * @returns {string}
  */
-export function hideDistractingCode(code) {
+export function maskDistractingCode(code) {
   return code
     .replace(
       generateTagsRegexp(['nowiki', 'syntaxhighlight', 'source', 'pre']),
@@ -74,7 +71,7 @@ export function removeWikiMarkup(code) {
   // format the text is not displayed. See `img_thumbnail` in
   // https://ru.wikipedia.org/w/api.php?action=query&meta=siteinfo&siprop=magicwords&formatversion=2.
   // Unfortunately, that would add like 100ms to the server's response time.
-  fileEmbedRegexp ||= new RegExp(
+  const fileEmbedRegexp = new RegExp(
     `\\[\\[${cd.g.filePrefixPattern}[^\\]]+?(?:\\|[^\\]]+?\\|((?:\\[\\[[^\\]]+?\\]\\]|[^|\\]])+))?\\]\\]`,
     'ig'
   );
@@ -83,7 +80,7 @@ export function removeWikiMarkup(code) {
     // Remove comments
     .replace(/<!--[^]*?-->/g, '')
 
-    // Remove text hidden by the script (for example, in wikitext.hideDistractingCode)
+    // Remove text hidden by the script (for example, in wikitext.maskDistractingCode)
     .replace(/\x01 *\x02/g, '')
 
     // Pipe trick
@@ -283,7 +280,7 @@ function extractUnsigneds(adjustedCode, code, signatures) {
   }
 
   const unsigneds = [];
-  unsignedTemplatesRegexp ||= new RegExp(cd.g.unsignedTemplatesPattern + '.*\\n', 'g');
+  const unsignedTemplatesRegexp = new RegExp(cd.g.unsignedTemplatesPattern + '.*\\n', 'g');
   let match;
   while ((match = unsignedTemplatesRegexp.exec(adjustedCode))) {
     let author;
@@ -345,24 +342,26 @@ function extractUnsigneds(adjustedCode, code, signatures) {
  */
 export function extractSignatures(code) {
   // TODO: Instead of removing only lines containing antipatterns from wikitext, hide entire
-  // templates (see the "markerLength" parameter in wikitext.hideTemplatesRecursively) and tags?
+  // templates and tags?
   // But keep in mind that this code may still be part of comments.
-  if (!commentAntipatternsRegexp) {
-    const noSignatureClassesPattern = cd.g.noSignatureClasses
-      .concat('mw-notalk')
-      .join('\\b|\\b');
-    const patternParts = [`class=(['"])[^'"\\n]*(?:\\b${noSignatureClassesPattern}\\b)[^'"\\n]*\\1`];
-    if (cd.config.noSignatureTemplates.length) {
-      const pattern = cd.config.noSignatureTemplates.map(generatePageNamePattern).join('|');
-      patternParts.push(`\\{\\{ *(?:${pattern}) *(?:\\||\\}\\})`);
-    }
-    patternParts.push(...cd.config.commentAntipatterns.map((regexp) => regexp.source));
-    const pattern = patternParts.join('|');
-    commentAntipatternsRegexp = new RegExp(`^.*(?:${pattern}).*$(?:)`, 'mg');
+  const noSignatureClassesPattern = cd.g.noSignatureClasses
+    .concat('mw-notalk')
+    .join('\\b|\\b');
+  const commentAntipatternsPatternParts = [
+    `class=(['"])[^'"\\n]*(?:\\b${noSignatureClassesPattern}\\b)[^'"\\n]*\\1`
+  ];
+  if (cd.config.noSignatureTemplates.length) {
+    const pattern = cd.config.noSignatureTemplates.map(generatePageNamePattern).join('|');
+    commentAntipatternsPatternParts.push(`\\{\\{ *(?:${pattern}) *(?:\\||\\}\\})`);
   }
+  commentAntipatternsPatternParts.push(
+    ...cd.config.commentAntipatterns.map((regexp) => regexp.source)
+  );
+  const commentAntipatternsPattern = commentAntipatternsPatternParts.join('|');
+  const commentAntipatternsRegexp = new RegExp(`^.*(?:${commentAntipatternsPattern}).*$(?:)`, 'mg');
 
   // Hide HTML comments, quotes and lines containing antipatterns.
-  const adjustedCode = hideDistractingCode(code)
+  const adjustedCode = maskDistractingCode(code)
     .replace(
       cd.g.quoteRegexp,
       (s, beginning, content, ending) => beginning + ' '.repeat(content.length) + ending
@@ -403,98 +402,6 @@ export function extractSignatures(code) {
 }
 
 /**
- * @typedef {object} HideSensitiveCodeReturn
- * @property {string} code
- * @property {string[]} hidden
- */
-
-/**
- * Hide templates taking into account nested ones.
- *
- * @param {string} code
- * @param {string[]} [hidden] Array with texts replaced by markers. Not required if
- *   `concealFirstMode` is `true`.
- * @param {number} [markerLength] Instead of putting markers in place of templates, fill the space
- *   that the first met template occupies with spaces, and put the specified number of marker
- *   characters at the first positions.
- * @param {Function} [handler] Function that processes the template code.
- * @returns {HideSensitiveCodeReturn}
- */
-export function hideTemplatesRecursively(code, hidden, markerLength, handler) {
-  let pos = 0;
-  const stack = [];
-  do {
-    let left = code.indexOf('{{', pos);
-    let right = code.indexOf('}}', pos);
-    if (left === -1 && right === -1 && !stack.length) break;
-    if (left !== -1 && (left < right || right === -1)) {
-      stack.push(left);
-      pos = left + 2;
-    } else {
-      left = stack.pop();
-      if (typeof left === 'undefined') {
-        if (right === -1) {
-          pos += 2;
-          continue;
-        } else {
-          left = 0;
-        }
-      }
-      if (right === -1) {
-        right = code.length;
-      }
-      right += 2;
-      let template = code.substring(left, right);
-      if (handler) {
-        template = handler(template);
-      }
-      const replacement = markerLength === undefined ?
-        '\x01' + hidden.push(template) + '_template\x02' :
-        ('\x01'.repeat(markerLength) + ' '.repeat(template.length - markerLength - 1) + '\x02');
-      code = code.substring(0, left) + replacement + code.substr(right);
-      pos = right - template.length;
-    }
-  } while (markerLength === undefined || stack.length);
-
-  return { code, hidden };
-}
-
-/**
- * Replace code, that should not be modified when processing it, with placeholders.
- *
- * @param {string} code
- * @param {Function} [templateHandler]
- * @returns {HideSensitiveCodeReturn}
- */
-export function hideSensitiveCode(code, templateHandler) {
-  let hidden = [];
-
-  const hide = (regexp, type, useGroups) => {
-    code = hideText(code, regexp, hidden, type, useGroups);
-  };
-  const hideTags = (args, type) => {
-    hide(generateTagsRegexp(args, false), type);
-  };
-
-  // Taken from
-  // https://ru.wikipedia.org/w/index.php?title=MediaWiki:Gadget-wikificator.js&oldid=102530721
-  const hideTemplates = () => {
-    ({code, hidden} = hideTemplatesRecursively(code, hidden, undefined, templateHandler));
-  };
-
-  hideTags(['pre', 'source', 'syntaxhighlight'], 'block');
-  hideTags(['gallery', 'poem'], 'gallery');
-  hideTags(['nowiki'], 'inline');
-  hideTemplates();
-  hide(/^(:* *)(\{\|[^]*?\n\|\})/gm, 'table', true);
-
-  // Tables with a signature inside that are clipped on comment editing.
-  hide(/^(:* *)(\{\|[^]*\n\|)/gm, 'table', true);
-
-  return { code, hidden };
-}
-
-/**
  * Modify a string or leave it unchanged so that is has two newlines at the end of it.
  *
  * @param {string} code
@@ -516,4 +423,21 @@ export function brsToNewlines(code, replacement = '\n') {
   return code.replace(/^(?![:*# ]).*<br[ \n]*\/?>.*$/gmi, (s) => (
     s.replace(/<br[ \n]*\/?>(?![:*#;])\n? */gi, () => replacement)
   ));
+}
+
+/**
+ * Mask links that have `|`, replace `|` with `{{!}}`, unmask links. If `maskedSensitiveCode` is not
+ * provided, sensitive code will be masked as well.
+ *
+ * @param {string} code
+ * @param {string[]} [maskedSensitiveCode]
+ * @returns {string}
+ */
+export function escapePipesOutsideLinks(code, maskedSensitiveCode) {
+  return (new TextMasker(code, maskedSensitiveCode))
+    [maskedSensitiveCode ? 'valueOf' : 'maskSensitiveCode']()
+    .mask(/\[\[[^\]|]+\|/g, 'link')
+    .withText((text) => text.replace(/\|/g, '{{!}}'))
+    .unmask('link')
+    .getText();
 }

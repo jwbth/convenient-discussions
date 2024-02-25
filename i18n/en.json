@@ -359,7 +359,7 @@
   "sd-improveperformance-help": "Enable this if you have lags when you comment on long pages. This is known to happen in Chromium browsers. The script will delay the rendering of the bottom part of the page until you scroll to it. This will speed up the user interface but hinder your ability to search for text in these areas.",
   "sd-insertbuttons": "Text insert buttons",
   "sd-insertbuttons-multiselect-placeholder": "Add a button",
-  "sd-insertbuttons-help": "Use <code>+</code> to specify a place where the caret should be put after inserting the text; for example, <code><nowiki>{{+}}</nowiki></code>. Use <code>;</code> to specify displayed text if you want it to be different from the one inserted; for example, <code><nowiki><code>+</code>;<code /></nowiki></code>. Use <code><nowiki>\\</nowiki></code> before the aforementioned characters to insert them as is; for example, <code><nowiki>2\\+2</nowiki></code>. The buttons can be dragged and dropped.",
+  "sd-insertbuttons-help": "Use <code>+</code> to specify a place where the caret should be put after inserting the text; for example, <code><nowiki>{{+}}</nowiki></code>. Use <code>;</code> to specify displayed text if you want it to be different from the one inserted; for example, <code><nowiki><code>+</code>;<code /></nowiki></code>. Use <code>\n</code> before <code>;</code> to mean a newline. Use <code><nowiki>\\</nowiki></code> before the aforementioned characters to insert them as is; for example, <code><nowiki>2\\+2</nowiki></code>. Buttons can be dragged and dropped.",
   "sd-modifytoc": "Show new comments and sections in the table of contents",
   "sd-outdentlevel": "[$1 Outdent] my replies starting with level",
   "sd-outdentlevel-help": "0 to never outdent.",

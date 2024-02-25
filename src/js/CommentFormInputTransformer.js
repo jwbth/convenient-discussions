@@ -1,28 +1,145 @@
 import CdError from './CdError';
+import TextMasker from './TextMasker';
 import cd from './cd';
-import { generateTagsRegexp, hideSensitiveCode } from './wikitext';
-import { hideText, unhideText } from './utils';
+import { escapePipesOutsideLinks } from './wikitext';
+import { generateTagsRegexp } from './wikitext';
 
 const galleryRegexp = /^\x01\d+_gallery\x02$/m;
 
 let filePatternEnd;
 
 /**
+ * Transform one line object, indexed `i`, so that it represents a list. Recursively do the same
+ * with the lines of that list.
+ *
+ * @param {object[]} lines
+ * @param {number} i
+ * @param {object} list
+ * @param {boolean} [isNested=false]
+ * @private
+ */
+function lineToList(lines, i, list, isNested = false) {
+  if (isNested) {
+    const previousItemIndex = i - list.items.length - 1;
+    if (previousItemIndex >= 0) {
+      const item = {
+        type: lines[previousItemIndex].type,
+        items: [lines[previousItemIndex], list],
+      };
+      lines.splice(previousItemIndex, list.items.length + 1, item);
+    } else {
+      const item = {
+        type: lines[0].type,
+        items: [list],
+      };
+      lines.splice(i - list.items.length, list.items.length, item);
+    }
+  } else {
+    lines.splice(i - list.items.length, list.items.length, list);
+  }
+  linesToLists(list.items, true);
+}
+
+/**
+ * Transform line objects so that they represent lists.
+ *
+ * @param {object[]} lines
+ * @param {boolean} [isNested=false]
+ * @returns {object[]}
+ * @private
+ */
+function linesToLists(lines, isNested = false) {
+  let list = { items: [] };
+  for (let i = 0; i <= lines.length; i++) {
+    if (i === lines.length) {
+      if (list.type) {
+        lineToList(lines, i, list, isNested);
+      }
+    } else {
+      const text = lines[i].text;
+      const firstChar = text[0] || '';
+      const listType = listTags[firstChar];
+      if (list.type && listType !== list.type) {
+        const itemsCount = list.items.length;
+        lineToList(lines, i, list, isNested);
+        i -= itemsCount - 1;
+        list = { items: [] };
+      }
+      if (listType) {
+        list.type = listType;
+        list.items.push({
+          type: itemTags[firstChar],
+          text: text.slice(1),
+        });
+      }
+    }
+  }
+  return lines;
+}
+
+/**
+ * Convert a list object to a string with HTML tags.
+ *
+ * @param {object[]} lines
+ * @param {boolean} [isNested=false]
+ * @returns {string}
+ * @private
+ */
+function listToTags(lines, isNested = false) {
+  let text = '';
+  lines.forEach((line, i) => {
+    if (line.text === undefined) {
+      const itemsText = line.items
+        .map((item) => {
+          const itemText = item.text === undefined ?
+            listToTags(item.items, true) :
+            item.text.trim();
+          return item.type ? `<${item.type}>${itemText}</${item.type}>` : itemText;
+        })
+        .join('');
+      text += `<${line.type}>${itemsText}</${line.type}>`;
+    } else {
+      text += isNested ? line.text.trim() : line.text;
+    }
+    if (i !== lines.length - 1) {
+      text += '\n';
+    }
+  });
+  return text;
+}
+
+const listTags = {
+  ':': 'dl',
+  ';': 'dl',
+  '*': 'ul',
+  '#': 'ol',
+};
+const itemTags = {
+  ':': 'dd',
+  ';': 'dt',
+  '*': 'li',
+  '#': 'li',
+};
+
+/**
  * Class that processes the comment form input and prepares the wikitext to insert into the page.
  */
-class CommentFormInputProcessor {
+class CommentFormInputTransformer extends TextMasker {
   /**
    * Create a comment form input processor.
    *
+   * @param {string} text
    * @param {import('./CommentForm').default} commentForm
    * @param {string} action
    */
-  constructor(commentForm, action) {
+  constructor(text, commentForm, action) {
+    super(text.trim());
+    this.initialText = this.text;
     this.commentForm = commentForm;
     this.target = commentForm.getTarget();
     this.action = action;
 
-    filePatternEnd ||= `\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$(?:)`;
+    filePatternEnd = `\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$(?:)`;
 
     this.initIndentationData();
   }
@@ -77,59 +194,57 @@ class CommentFormInputProcessor {
   }
 
   /**
-   * The main method that actually processes the code.
+   * The main method that actually processes the code and returns the result.
    *
-   * @param {string} code
    * @returns {string}
    */
-  process(code) {
-    this.initialCode = this.code = code.trim();
-
-    this.processAndHideSensitiveCode();
-    this.findWrappers();
-    this.initSignatureAndFixCode();
-    this.processAllCode();
-    this.addHeadline();
-    this.addSignature();
-    this.addOutdent();
-    this.addTrailingNewline();
-    this.addIntentationChars();
-    this.unhideSensitiveCode();
-
-    return this.code;
+  transform() {
+    return this
+      .processAndMaskSensitiveCode()
+      .findWrappers()
+      .initSignatureAndFixCode()
+      .processAllCode()
+      .addHeadline()
+      .addSignature()
+      .addOutdent()
+      .addTrailingNewline()
+      .addIntentationChars()
+      .unmask()
+      .getText();
   }
 
   /**
-   * Process (with {@link CommentFormInputProcessor#processCode}) and hide sensitive code, setting the
-   * `hidden` property and updating `code`.
+   * Process (with {@link CommentFormInputTransformer#processCode}) and mask sensitive code,
+   * updating {@link CommentFormInputTransformer#text}.
    *
+   * @returns {CommentFormInputTransformer}
    * @private
    */
-  processAndHideSensitiveCode() {
-    const templateHandler = (code) => this.processCode(code, true);
-    Object.assign(this, hideSensitiveCode(this.code, templateHandler));
+  processAndMaskSensitiveCode() {
+    return this.maskSensitiveCode((code) => this.processCode(code, true));
   }
 
   /**
    * Find tags in the code and do something about them.
    *
+   * @returns {CommentFormInputTransformer}
    * @private
    */
   findWrappers() {
     // Find tags around potential markup.
     if (this.indentation) {
-      const tagMatches = this.code.match(generateTagsRegexp(['[a-z]+'])) || [];
-      const quoteMatches = this.code.match(cd.g.quoteRegexp) || [];
+      const tagMatches = this.text.match(generateTagsRegexp(['[a-z]+'])) || [];
+      const quoteMatches = this.text.match(cd.g.quoteRegexp) || [];
       const matches = tagMatches.concat(quoteMatches);
       this.areThereTagsAroundListMarkup = matches.some((match) => /\n[:*#;]/.test(match));
     }
 
-    // If the user wrapped the comment in <small></small>, remove the tags to later wrap the
+    // If the user wrapped the comment in `<small></small>`, remove the tags to later wrap the
     // comment together with the signature into the tags and possibly ensure the correct line
     // spacing.
     this.wrapInSmall = false;
     if (!this.commentForm.headlineInput) {
-      this.code = this.code.replace(/^<small>([^]*)<\/small>$/i, (s, content) => {
+      this.text = this.text.replace(/^<small>([^]*)<\/small>$/i, (s, content) => {
         // Filter out <small>text</small><small>text</small>
         if (/<\/small>/i.test(content)) {
           return s;
@@ -138,11 +253,14 @@ class CommentFormInputProcessor {
         return content;
       });
     }
+
+    return this;
   }
 
   /**
    * Set the `signature` property. Also fix the code according to it.
    *
+   * @returns {CommentFormInputTransformer}
    * @private
    */
   initSignatureAndFixCode() {
@@ -162,10 +280,12 @@ class CommentFormInputProcessor {
       // The existing signature doesn't start with a newline.
       (this.commentForm.getMode() !== 'edit' || !/^[ \t]*\n/.test(this.signature)) &&
 
-      /(^|\n)[:*#;].*$/.test(this.code)
+      /(^|\n)[:*#;].*$/.test(this.text)
     ) {
-      this.code += '\n';
+      this.text += '\n';
     }
+
+    return this;
   }
 
   /**
@@ -176,101 +296,14 @@ class CommentFormInputProcessor {
    * @private
    */
   listMarkupToTags(code) {
-    const replaceLineWithList = (lines, i, list, isNested = false) => {
-      if (isNested) {
-        const previousItemIndex = i - list.items.length - 1;
-        if (previousItemIndex >= 0) {
-          const item = {
-            type: lines[previousItemIndex].type,
-            items: [lines[previousItemIndex], list],
-          };
-          lines.splice(previousItemIndex, list.items.length + 1, item);
-        } else {
-          const item = {
-            type: lines[0].type,
-            items: [list],
-          };
-          lines.splice(i - list.items.length, list.items.length, item);
-        }
-      } else {
-        lines.splice(i - list.items.length, list.items.length, list);
-      }
-      parseLines(list.items, true);
-    };
-
-    const parseLines = (lines, isNested = false) => {
-      let list = { items: [] };
-      for (let i = 0; i <= lines.length; i++) {
-        if (i === lines.length) {
-          if (list.type) {
-            replaceLineWithList(lines, i, list, isNested);
-          }
-        } else {
-          const text = lines[i].text;
-          const firstChar = text[0] || '';
-          const listType = listTags[firstChar];
-          if (list.type && listType !== list.type) {
-            const itemsCount = list.items.length;
-            replaceLineWithList(lines, i, list, isNested);
-            i -= itemsCount - 1;
-            list = { items: [] };
-          }
-          if (listType) {
-            list.type = listType;
-            list.items.push({
-              type: itemTags[firstChar],
-              text: text.slice(1),
-            });
-          }
-        }
-      }
-      return lines;
-    };
-
-    const listToTags = (lines, isNested = false) => {
-      let text = '';
-      lines.forEach((line, i) => {
-        if (line.text === undefined) {
-          const itemsText = line.items
-            .map((item) => {
-              const itemText = item.text === undefined ?
-                listToTags(item.items, true) :
-                item.text.trim();
-              return item.type ? `<${item.type}>${itemText}</${item.type}>` : itemText;
-            })
-            .join('');
-          text += `<${line.type}>${itemsText}</${line.type}>`;
-        } else {
-          text += isNested ? line.text.trim() : line.text;
-        }
-        if (i !== lines.length - 1) {
-          text += '\n';
-        }
-      });
-      return text;
-    };
-
-    const listTags = {
-      ':': 'dl',
-      ';': 'dl',
-      '*': 'ul',
-      '#': 'ol',
-    };
-    const itemTags = {
-      ':': 'dd',
-      ';': 'dt',
-      '*': 'li',
-      '#': 'li',
-    };
-
-    let lines = code
-      .split('\n')
-      .map((line) => ({
-        type: '',
-        text: line,
-      }));
-    parseLines(lines);
-    return listToTags(lines);
+    return listToTags(linesToLists(
+      code
+        .split('\n')
+        .map((line) => ({
+          type: '',
+          text: line,
+        }))
+    ));
   }
 
   /**
@@ -354,9 +387,8 @@ class CommentFormInputProcessor {
     // markup.
     const followingLinesRegexp = /^((?:[:*#;\x03].+|\x01\d+_gallery\x02))(\n+)(?![:#])/mg;
     code = code.replace(followingLinesRegexp, (s, previousLine, newlines) => {
-      // Many newlines will be replaced with a paragraph template below. If there is no
-      // paragraph template, there wouldn't be multiple newlines, as they would've been removed
-      // above.
+      // Many newlines will be replaced with a paragraph template below. If there is no paragraph
+      // template, there wouldn't be multiple newlines, as they would've been removed above.
       const newlinesToAdd = newlines.length > 1 ? '\n\n' : '';
 
       return previousLine + '\n' + this.prepareLineStart(this.restLinesIndentation, newlinesToAdd);
@@ -455,28 +487,32 @@ class CommentFormInputProcessor {
   /**
    * Make the core code transformations with all code.
    *
+   * @returns {CommentFormInputTransformer}
    * @private
    */
   processAllCode() {
-    this.code = this.processCode(this.code);
+    this.text = this.processCode(this.text);
+    return this;
   }
 
   /**
    * Add the headline to the code.
    *
+   * @returns {CommentFormInputTransformer}
    * @private
    */
   addHeadline() {
     const headline = this.commentForm.headlineInput?.getValue().trim();
-    if (!headline || (this.commentForm.isNewSectionApi() && this.action === 'submit')) return;
+    if (!headline || (this.commentForm.isNewSectionApi() && this.action === 'submit')) {
+      return this;
+    }
 
     let level;
     if (this.commentForm.getMode() === 'addSection') {
       level = 2;
     } else if (this.commentForm.getMode() === 'addSubsection') {
       level = this.target.level + 1;
-    } else {
-      // 'edit'
+    } else {  // 'edit'
       level = this.target.source.headingLevel;
     }
     const equalSigns = '='.repeat(level);
@@ -491,20 +527,23 @@ class CommentFormInputProcessor {
         /^\n/.test(this.target.source.code)
       )
     ) {
-      this.code = '\n' + this.code;
+      this.text = '\n' + this.text;
     }
-    this.code = `${equalSigns} ${headline} ${equalSigns}\n${this.code}`;
+    this.text = `${equalSigns} ${headline} ${equalSigns}\n${this.text}`;
+
+    return this;
   }
 
   /**
    * Add the signature to the code.
    *
+   * @returns {CommentFormInputTransformer}
    * @private
    */
   addSignature() {
     if (!this.commentForm.omitSignatureCheckbox?.isSelected()) {
       // Remove signature tildes from the end of the comment.
-      this.code = this.code.replace(/\s*~{3,}$/, '');
+      this.text = this.text.replace(/\s*~{3,}$/, '');
     }
 
     if (this.action === 'preview' && this.signature) {
@@ -512,92 +551,93 @@ class CommentFormInputProcessor {
     }
 
     // A space in the beggining of the last line, creating <pre>, or a heading.
-    if (!this.indentation && /(^|\n)[ =].*$/.test(this.code)) {
-      this.code += '\n';
+    if (!this.indentation && /(^|\n)[ =].*$/.test(this.text)) {
+      this.text += '\n';
     }
 
     // Remove starting spaces if the line starts with the signature.
-    if (!this.code || this.code.endsWith('\n') || this.code.endsWith(' ')) {
+    if (!this.text || this.text.endsWith('\n') || this.text.endsWith(' ')) {
       this.signature = this.signature.trimLeft();
     }
 
     // Process the small font wrappers, add the signature.
     if (this.wrapInSmall) {
-      const before = /^[:*#; ]/.test(this.code) ?
+      const before = /^[:*#; ]/.test(this.text) ?
         '\n' + (this.indentation ? this.restLinesIndentation : '') :
         '';
-      if (cd.config.smallDivTemplates.length && !/^[:*#;]/m.test(this.code)) {
-        // Hide links that have "|", then replace "|" with "{{!}}", then wrap in a small div
-        // template.
-        const hiddenLinks = [];
-        this.code = hideText(this.code.trim(), /\[\[[^\]|]+\|/g, hiddenLinks, 'link');
-        this.code = this.code.replace(/\|/g, '{{!}}') + this.signature;
-        this.code = unhideText(this.code, hiddenLinks, 'link');
-        this.code = `{{${cd.config.smallDivTemplates[0]}|1=${this.code}}}`;
+      if (cd.config.smallDivTemplates.length && !/^[:*#;]/m.test(this.text)) {
+        const escapedCodeWithSignature = escapePipesOutsideLinks(this.text.trim()) + this.signature;
+        this.text = `{{${cd.config.smallDivTemplates[0]}|1=${escapedCodeWithSignature}}}`;
       } else {
-        this.code = `<small>${before}${this.code}${this.signature}</small>`;
+        this.text = `<small>${before}${this.text}${this.signature}</small>`;
       }
     } else {
-      this.code += this.signature;
+      this.text += this.signature;
     }
+
+    return this;
   }
 
   /**
    * Add an outdent template to the beginning of the comment.
+   *
+   * @returns {CommentFormInputTransformer}
+   * @private
    */
   addOutdent() {
-    if (!this.target.source?.isReplyOutdented) return;
+    if (!this.target.source?.isReplyOutdented) {
+      return this;
+    }
 
     const outdentDifference = this.target.level - this.target.source.replyIndentation.length;
-    this.code = (
+    this.text = (
       `{{${cd.config.outdentTemplates[0]}|${outdentDifference}}}` +
-      (/^[:*#]+/.test(this.code) ? '\n' : ' ') +
-      this.code
+      (/^[:*#]+/.test(this.text) ? '\n' : ' ') +
+      this.text
     );
+
+    return this;
   }
 
   /**
    * Add a newline to the code.
    *
+   * @returns {CommentFormInputTransformer}
    * @private
    */
   addTrailingNewline() {
     if (this.commentForm.getMode() !== 'edit') {
-      this.code += '\n';
+      this.text += '\n';
     }
+
+    return this;
   }
 
   /**
    * Add the indentation characters to the code.
    *
+   * @returns {CommentFormInputTransformer}
    * @private
    */
   addIntentationChars() {
     // If the comment starts with a list or table, replace all asterisks in the indentation
     // characters with colons to have the comment HTML generated correctly.
-    if (this.indentation && this.action !== 'preview' && /^[*#;\x03]/.test(this.code)) {
+    if (this.indentation && this.action !== 'preview' && /^[*#;\x03]/.test(this.text)) {
       this.indentation = this.restLinesIndentation;
     }
 
     if (this.action !== 'preview') {
-      this.code = this.prepareLineStart(this.indentation, this.code);
+      this.text = this.prepareLineStart(this.indentation, this.text);
 
       if (this.mode === 'addSubsection') {
-        this.code += '\n';
+        this.text += '\n';
       }
-    } else if (this.action === 'preview' && this.indentation && this.initialCode) {
-      this.code = this.prepareLineStart(':', this.code);
+    } else if (this.action === 'preview' && this.indentation && this.initialText) {
+      this.text = this.prepareLineStart(':', this.text);
     }
-  }
 
-  /**
-   * Restore the hidden sensitive code.
-   *
-   * @private
-   */
-  unhideSensitiveCode() {
-    this.code = unhideText(this.code, this.hidden);
+    return this;
   }
 }
 
-export default CommentFormInputProcessor;
+export default CommentFormInputTransformer;

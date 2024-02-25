@@ -2,12 +2,13 @@ import Autocomplete from './Autocomplete';
 import Button from './Button';
 import CdError from './CdError';
 import Comment from './Comment';
-import CommentFormInputProcessor from './CommentFormInputProcessor';
+import CommentFormInputTransformer from './CommentFormInputTransformer';
 import CommentFormOperationRegistry from './CommentFormOperationRegistry';
 import CommentFormStatic from './CommentFormStatic';
 import CommentStatic from './CommentStatic';
 import Section from './Section';
 import SectionStatic from './SectionStatic';
+import TextMasker from './TextMasker';
 import cd from './cd';
 import controller from './controller';
 import navPanel from './navPanel';
@@ -16,8 +17,9 @@ import pageRegistry, { Page } from './pageRegistry';
 import settings from './settings';
 import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
-import { buildEditSummary, defined, focusInput, getDayTimestamp, hideText, insertText, isCmdModifierPressed, isInputFocused, keyCombination, removeDoubleSpaces, sleep, unhideText, unique, wrap, wrapDiffBody } from './utils';
+import { buildEditSummary, defined, focusInput, getDayTimestamp, insertText, isCmdModifierPressed, isInputFocused, keyCombination, removeDoubleSpaces, sleep, unique, wrap, wrapDiffBody } from './utils';
 import { createCheckboxField } from './ooui';
+import { escapePipesOutsideLinks } from './wikitext';
 import { generateTagsRegexp, removeWikiMarkup } from './wikitext';
 import { handleApiReject, parseCode } from './apiWrappers';
 
@@ -1104,19 +1106,20 @@ class CommentForm {
    * @private
    */
   addInsertButton(snippet, label) {
-    const hidden = [];
-    snippet = hideText(snippet, /\\[+;\\]/g, hidden);
-    let [, pre, post] = snippet.match(/^(.*?)(?:\+(.*))?$/) || [];
+    const textMasker = new TextMasker(snippet).mask(/\\[+;\\]/g);
+    let [, pre, post] = textMasker.getText().match(/^(.*?)(?:\+(.*))?$/) || [];
     if (!pre) return;
+
+    pre = pre.replace(/\\n/g, '\n');
     post ||= '';
     const unescape = (snippet) => snippet.replace(/\\([+;\\])/g, '$1');
-    pre = unescape(unhideText(pre, hidden));
-    post = unescape(unhideText(post, hidden));
+    pre = unescape(textMasker.unmaskText(pre));
+    post = unescape(textMasker.unmaskText(post));
     label = label ? unescape(label) : pre + post;
 
     this.$insertButtons.append(
       new Button({
-        label: label,
+        label,
         classes: ['cd-insertButtons-button'],
         action: () => {
           this.encapsulateSelection({ pre, post });
@@ -2335,7 +2338,10 @@ class CommentForm {
     // Are we at a stage where we better introduce a lexical analyzer (or use MediaWiki's / some
     // part of it)?..
 
-    const processor = new CommentFormInputProcessor(this, action);
+    let code = this.commentInput.getValue();
+    code = cd.config.preTransformCode?.(code, this) || code;
+
+    const transformer = new CommentFormInputTransformer(code, this, action);
 
     /**
      * Will the comment be indented (is a reply or an edited reply).
@@ -2345,16 +2351,10 @@ class CommentForm {
      *
      * @type {boolean|undefined}
      */
-    this.willCommentBeIndented = processor.isIndented();
+    this.willCommentBeIndented = transformer.isIndented();
 
-    let code = this.commentInput.getValue();
-    if (cd.config.preTransformCode) {
-      code = cd.config.preTransformCode(code, this);
-    }
-    code = processor.process(code);
-    if (cd.config.postTransformCode) {
-      code = cd.config.postTransformCode(code, this);
-    }
+    code = transformer.transform();
+    code = cd.config.postTransformCode?.(code, this) || code;
 
     return code;
   }
@@ -2377,7 +2377,7 @@ class CommentForm {
         const anchorCode = cd.config.getAnchorCode(id);
         if (commentSource.code.includes(anchorCode)) return;
 
-        const commentCodePart = CommentFormInputProcessor.prototype.prepareLineStart(
+        const commentCodePart = CommentFormInputTransformer.prototype.prepareLineStart(
           commentSource.indentation,
           commentSource.code
         );
@@ -3512,20 +3512,20 @@ class CommentForm {
    * @param {Comment} [comment] Quoted comment.
    */
   async quote(allowEmptySelection, comment) {
-    let selectionText;
+    let selection;
     if (isInputFocused()) {
       const activeElement = document.activeElement;
-      selectionText = activeElement.value.substring(
+      selection = activeElement.value.substring(
         activeElement.selectionStart,
         activeElement.selectionEnd
       );
     } else {
-      selectionText = await controller.getWikitextFromSelection(this.commentInput);
+      selection = await controller.getWikitextFromSelection(this.commentInput);
     }
-    selectionText = selectionText.trim();
+    selection = selection.trim();
 
     // With just "Q" pressed, empty selection doesn't count.
-    if (selectionText || allowEmptySelection) {
+    if (selection || allowEmptySelection) {
       const isCommentInputFocused = this.commentInput.$input.is(':focus');
       const range = this.commentInput.getRange();
       const caretIndex = range.to;
@@ -3539,8 +3539,8 @@ class CommentForm {
       }
 
       const isMultiline = (
-        selectionText.includes('\n') ||
-        selectionText.match(new RegExp(`<${cd.g.pniePattern}\\b`, 'i'))
+        selection.includes('\n') ||
+        selection.match(new RegExp(`<${cd.g.pniePattern}\\b`, 'i'))
       );
       const [pre, post] = typeof cd.config.quoteFormatting === 'function' ?
         cd.config.quoteFormatting(
@@ -3551,11 +3551,15 @@ class CommentForm {
         ) :
         cd.config.quoteFormatting;
 
+      if (pre.includes('{{')) {
+        selection = escapePipesOutsideLinks(selection, true);
+      }
+
       this.encapsulateSelection({
         pre,
         peri: cd.s('cf-quote-placeholder'),
         post,
-        selection: selectionText,
+        selection,
         ownline: true,
       });
     }

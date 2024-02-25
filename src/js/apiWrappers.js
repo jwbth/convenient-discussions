@@ -9,13 +9,14 @@
 import lzString from 'lz-string';
 
 import CdError from './CdError';
+import TextMasker from './TextMasker';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
 import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
-import { brsToNewlines, hideSensitiveCode } from './wikitext';
-import { defined, sleep, ucFirst, unhideText, unique } from './utils';
+import { brsToNewlines } from './wikitext';
+import { defined, sleep, ucFirst, unique } from './utils';
 
 const autocompleteTimeout = 100;
 
@@ -817,9 +818,10 @@ function requestTransformApi(url, html) {
  * @returns {Promise.<string>}
  */
 export async function htmlToWikitext(html, input) {
-  let wikitext;
   input.pushPending();
   input.setDisabled(true);
+
+  let wikitext;
   try {
     try {
       if (!cd.g.isProbablyWmfSulWiki) {
@@ -827,10 +829,7 @@ export async function htmlToWikitext(html, input) {
       }
       wikitext = await requestTransformApi('/api/rest_v1/transform/html/to/wikitext', html);
     } catch {
-      wikitext = await requestTransformApi(
-        'https://en.wikipedia.org/api/rest_v1/transform/html/to/wikitext',
-        html
-      );
+      wikitext = await requestTransformApi('https://en.wikipedia.org/api/rest_v1/transform/html/to/wikitext', html);
     }
     wikitext = wikitext
       .replace(/(?:^ .*(?:\n|$))+/gm, (s) => (
@@ -843,13 +842,15 @@ export async function htmlToWikitext(html, input) {
       ))
       .replace(/<br \/>/g, '<br>')
       .trim();
-    let hidden;
-    ({ code: wikitext, hidden } = hideSensitiveCode(wikitext));
-    wikitext = brsToNewlines(wikitext);
-    wikitext = unhideText(wikitext, hidden);
+    wikitext = (new TextMasker(wikitext))
+      .maskSensitiveCode()
+      .withText(brsToNewlines)
+      .unmask()
+      .getText();
   } catch {
     // Empty
   }
+
   input.popPending();
   input.setDisabled(false);
 

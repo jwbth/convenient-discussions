@@ -64,6 +64,7 @@ module.exports = {
     "jsdoc/valid-types": "warn",
     "no-constant-condition": ["error", { "checkLoops": false }],
     "no-control-regex": "off",
+    "no-unexpected-multiline": "off",
     "no-unused-vars": ["error", { "args": "after-used" }],
     "require-atomic-updates": "off",
     "sort-imports-es6-autofix/sort-imports-es6": ["warn", {

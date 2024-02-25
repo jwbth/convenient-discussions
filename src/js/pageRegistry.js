@@ -5,12 +5,13 @@
  */
 
 import CdError from './CdError';
+import TextMasker from './TextMasker';
 import cd from './cd';
 import controller from './controller';
 import userRegistry from './userRegistry';
-import { findFirstTimestamp, hideDistractingCode } from './wikitext';
+import { findFirstTimestamp, maskDistractingCode } from './wikitext';
 import { handleApiReject, requestInBackground } from './apiWrappers';
-import { hideText, isProbablyTalkPage, mergeRegexps, unhideText } from './utils';
+import { isProbablyTalkPage, mergeRegexps } from './utils';
 import { parseTimestamp } from './timestamp';
 
 let pagesWithoutArchivesRegexp;
@@ -26,22 +27,27 @@ let sourcePagesMap;
 function initArchivePagesMaps() {
   archivePagesMap = new Map();
   sourcePagesMap = new Map();
-  const pathToRegexp = (s, replacements, isArchivePath) => {
-    let hidden = [];
-    let pattern = hideText(s, /\\[$\\]/g, hidden);
-    pattern = mw.util.escapeRegExp(pattern);
-    if (replacements) {
-      pattern = pattern
-        .replace(/\\\$/, '$')
-        .replace(/\$(\d+)/, (s, n) => {
-          const replacement = replacements[n - 1];
-          return replacement ? `(${replacement.source})` : s;
-        });
-    }
-    pattern = '^' + pattern + (isArchivePath ? '.*' : '') + '$';
-    pattern = unhideText(pattern, hidden);
-    return new RegExp(pattern);
-  };
+  const pathToRegexp = (s, replacements, isArchivePath) => (
+    new RegExp(
+      (new TextMasker(s))
+        .mask(/\\[$\\]/g)
+        .withText((pattern) => {
+          pattern = mw.util.escapeRegExp(pattern);
+          if (replacements) {
+            pattern = pattern
+              .replace(/\\\$/, '$')
+              .replace(/\$(\d+)/, (s, n) => {
+                const replacement = replacements[n - 1];
+                return replacement ? `(${replacement.source})` : s;
+              });
+          }
+          pattern = '^' + pattern + (isArchivePath ? '.*' : '') + '$';
+          return pattern;
+        })
+        .unmask()
+        .getText()
+    )
+  );
   cd.config.archivePaths.forEach((entry) => {
     if (entry instanceof RegExp) {
       sourcePagesMap.set(new RegExp(entry.source + '.*'), '');
@@ -627,7 +633,7 @@ export class Page {
 
     let areNewTopicsOnTop = cd.config.areNewTopicsOnTop?.(this.name, this.code) || null;
 
-    const adjustedCode = hideDistractingCode(this.code);
+    const adjustedCode = maskDistractingCode(this.code);
     const sectionHeadingRegexp = /^==[^=].*?==[ \t\x01\x02]*\n/gm;
     let firstSectionStartIndex;
     let sectionHeadingMatch;
@@ -760,7 +766,7 @@ class PageSource {
     const originalContextCode = this.page.code;
     let contextCode;
     if (commentForm.isNewTopicOnTop()) {
-      const firstSectionStartIndex = hideDistractingCode(originalContextCode)
+      const firstSectionStartIndex = maskDistractingCode(originalContextCode)
         .search(/^(=+).*\1[ \t\x01\x02]*$/m);
       contextCode = (
         (
