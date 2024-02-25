@@ -125,7 +125,15 @@ class Parser {
       );
     this.context.handleDtMarkup(elements);
     this.context.removeDtButtonHtmlComments();
+    this.replaceTimestampLinksWithSpans();
+  }
 
+  /**
+   * Replace timestamp links added by DiscussionTools with `<span>` elements, keeping their content.
+   *
+   * @private
+   */
+  replaceTimestampLinksWithSpans() {
     const timestampLinks = [
       ...this.context.rootElement.getElementsByClassName('ext-discussiontools-init-timestamplink')
     ];

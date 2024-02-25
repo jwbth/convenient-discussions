@@ -6,6 +6,7 @@ import CommentFormInputTransformer from './CommentFormInputTransformer';
 import CommentFormOperationRegistry from './CommentFormOperationRegistry';
 import CommentFormStatic from './CommentFormStatic';
 import CommentStatic from './CommentStatic';
+import Parser from './Parser';
 import Section from './Section';
 import SectionStatic from './SectionStatic';
 import TextMasker from './TextMasker';
@@ -2505,6 +2506,10 @@ class CommentForm {
         'cd-commentForm-previewArea-indentedComment',
         this.willCommentBeIndented
       );
+
+    Parser.prototype.replaceTimestampLinksWithSpans.apply({
+      context: { rootElement: this.$previewArea.get(0) },
+    });
 
     /**
      * A comment preview has been rendered.
