@@ -97,8 +97,7 @@ export function packVisits(visits) {
  */
 export function unpackVisits(visitsString) {
   const visits = {};
-  // " *" fixes a error previously made. Not needed for new sites.
-  const regexp = /^(\d+), *(.+)$/gm;
+  const regexp = /^(\d+),(.+)$/gm;
   let match;
   while ((match = regexp.exec(visitsString))) {
     visits[match[1]] = match[2].split(',');
@@ -168,8 +167,8 @@ export async function getVisits(reuse = false) {
   if (userRegistry.getCurrent().isRegistered()) {
     visits = await (
       (
-        controller.getBootProcess().isFirstRun() &&
-        mw.user.options.get(cd.g.visitsOptionName) === null
+        mw.user.options.get(cd.g.visitsOptionName) === null &&
+        controller.getBootProcess().isFirstRun()
       ) ?
         Promise.resolve({}) :
         getUserInfo(reuse).then((options) => options.visits)
@@ -196,8 +195,9 @@ export async function getVisits(reuse = false) {
  */
 function cleanUpVisits(originalVisits) {
   const visits = Object.assign({}, originalVisits);
-  const timestamps = Object.keys(visits).reduce((acc, key) => acc.concat(visits[key]), []);
-  timestamps.sort((a, b) => a - b);
+  const timestamps = Object.keys(visits)
+    .reduce((acc, key) => acc.concat(visits[key]), [])
+    .sort((a, b) => a - b);
   const boundary = timestamps[Math.floor(timestamps.length / 10)];
   Object.keys(visits).forEach((key) => {
     visits[key] = visits[key].filter((visit) => visit >= boundary);
@@ -216,10 +216,11 @@ function cleanUpVisits(originalVisits) {
 export async function saveVisits(visits) {
   if (!visits || !userRegistry.getCurrent().isRegistered()) return;
 
-  const string = packVisits(visits);
-  const compressed = lzString.compressToEncodedURIComponent(string);
   try {
-    await saveLocalOption(cd.g.visitsOptionName, compressed);
+    await saveLocalOption(
+      cd.g.visitsOptionName,
+      lzString.compressToEncodedURIComponent(packVisits(visits))
+    );
   } catch (e) {
     if (e instanceof CdError) {
       const { type, code } = e.data;
@@ -279,9 +280,9 @@ export function requestInBackground(params, method = 'post') {
       success: (resp) => {
         if (resp.error) {
           // Workaround for cases when an options request is made on an idle page whose tokens
-          // expire. A re-request of such tokens results is generally successful, but _this_
-          // callback is executed after each response, so we aren't rejecting to avoid misleading
-          // error messages being shown to the user.
+          // expire. A re-request of such tokens is generally successful, but _this_ callback is
+          // executed after each response, so we aren't rejecting to avoid misleading error messages
+          // being shown to the user.
           if (resp.error.code !== 'badtoken') {
             reject(['api', resp]);
           }
@@ -356,10 +357,7 @@ export function getUserInfo(reuse = false) {
     uiprop: ['options', 'rights'],
   }).then(
     (resp) => {
-      const userinfo = resp.query.userinfo;
-      const options = userinfo.options;
-      const rights = userinfo.rights;
-
+      const { options, rights } = resp.query.userinfo;
       const visits = unpackVisits(
         lzString.decompressFromEncodedURIComponent(options[cd.g.visitsOptionName]) ||
         ''

@@ -1,8 +1,7 @@
 import Button from './Button';
-import settings from './settings';
 
 /**
- * Stop propagation of the event.
+ * Stop propagation of an event.
  *
  * @param {Event} e
  * @private
@@ -93,7 +92,7 @@ class CommentButton extends Button {
    */
   setDisabled(disabled) {
     disabled = Boolean(disabled);
-    if (settings.get('reformatComments')) {
+    if (!this.widgetConstructor) {
       super.setDisabled(disabled);
     } else {
       if (!this.buttonWidget) {
@@ -124,7 +123,7 @@ class CommentButton extends Button {
    * @returns {CommentButton} This button.
    */
   setLabel(label) {
-    if (settings.get('reformatComments')) {
+    if (!this.widgetConstructor) {
       super.setLabel(label);
     } else {
       if (!this.buttonWidget) {
@@ -143,7 +142,7 @@ class CommentButton extends Button {
    * @returns {CommentButton} This button.
    */
   setTooltip(tooltip) {
-    if (settings.get('reformatComments')) {
+    if (!this.widgetConstructor) {
       super.setTooltip(tooltip);
     } else {
       if (!this.buttonWidget) {
@@ -183,7 +182,7 @@ class CommentButton extends Button {
    * @returns {boolean}
    */
   isDisabled() {
-    return settings.get('reformatComments') ?
+    return !this.widgetConstructor ?
       super.isDisabled() :
       Boolean(this.buttonWidget?.isDisabled());
   }
@@ -194,7 +193,7 @@ class CommentButton extends Button {
    * @returns {boolean}
    */
   isPending() {
-    return settings.get('reformatComments') ?
+    return !this.widgetConstructor ?
       super.isPending() :
       Boolean(this.buttonWidget?.isPending());
   }

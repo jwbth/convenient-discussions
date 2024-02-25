@@ -136,13 +136,13 @@ export function wrapDiffBody(body) {
  * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter Array#filter}
  * to remove duplicated elements from an array.
  *
- * @param {*} item
+ * @param {*} el
  * @param {number} i
  * @param {Array.<*>} arr
  * @returns {boolean}
  */
-export function unique(item, i, arr) {
-  return arr.indexOf(item) === i;
+export function unique(el, i, arr) {
+  return arr.indexOf(el) === i;
 }
 
 /**
@@ -182,7 +182,7 @@ export function isInline(node, countTextNodesAsInline = false) {
   if (
     cd.g.popularInlineElements.includes(node.tagName) ||
 
-    // `<meta property="mw:PageProp/toc">` is currently present in place of the TOC in new Vector.
+    // `<meta property="mw:PageProp/toc">` is currently present in place of the TOC in Vector 2022.
     (node.tagName === 'META' && node.getAttribute('property') === 'mw:PageProp/toc')
   ) {
     return true;

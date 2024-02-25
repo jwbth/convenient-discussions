@@ -68,45 +68,45 @@ export default {
    */
   setDefaults() {
     this.scheme.default = {
-      allowEditOthersComments: false,
-      alwaysExpandAdvanced: false,
+      'allowEditOthersComments': false,
+      'alwaysExpandAdvanced': false,
 
       // The order should coincide with the order of checkboxes in the `autocompleteTypes` setting -
       // otherwise the "Save" and "Reset" buttons in the settings dialog won't work properly.
-      autocompleteTypes: ['mentions', 'commentLinks', 'wikilinks', 'templates', 'tags'],
+      'autocompleteTypes': ['mentions', 'commentLinks', 'wikilinks', 'templates', 'tags'],
 
-      autopreview: true,
-      collapseThreadsLevel: 10,
-      desktopNotifications: 'unknown',
-      enableThreads: true,
-      hideTimezone: false,
-      highlightNewInterval: 15,
-      improvePerformance: false,
+      'autopreview': true,
+      'collapseThreadsLevel': 10,
+      'desktopNotifications': 'unknown',
+      'enableThreads': true,
+      'hideTimezone': false,
+      'highlightNewInterval': 15,
+      'improvePerformance': false,
       'improvePerformance-lastSuggested': null,
-      insertButtons: cd.config.defaultInsertButtons || [],
+      'insertButtons': cd.config.defaultInsertButtons || [],
       'insertButtons-altered': false,
       'manyForms-onboarded': false,
-      modifyToc: true,
+      'modifyToc': true,
       'newTopicsSubscription-onboarded': false,
-      notifications: 'all',
-      notifyCollapsedThreads: false,
-      notificationsBlacklist: [],
-      outdentLevel: 15,
-      reformatComments: null,
-      showContribsLink: false,
-      showToolbar: true,
-      signaturePrefix: cd.config.defaultSignaturePrefix,
-      subscribeOnReply: true,
-      timestampFormat: 'default',
-      useBackgroundHighlighting: true,
-      useTemplateData: true,
-      useTopicSubscription: Boolean(mw.loader.getState('ext.discussionTools.init')),
+      'notifications': 'all',
+      'notifyCollapsedThreads': false,
+      'notificationsBlacklist': [],
+      'outdentLevel': 15,
+      'reformatComments': null,
+      'showContribsLink': false,
+      'showToolbar': true,
+      'signaturePrefix': cd.config.defaultSignaturePrefix,
+      'subscribeOnReply': true,
+      'timestampFormat': 'default',
+      'useBackgroundHighlighting': true,
+      'useTemplateData': true,
+      'useTopicSubscription': Boolean(mw.loader.getState('ext.discussionTools.init')),
       'useTopicSubscription-seenNotice': false,
-      useUiTime: true,
+      'useUiTime': true,
 
       // On wikis where there is no topic subscriptions, watching pages on replying is the
       // alternative to keep track of discussions.
-      watchOnReply: !mw.loader.getState('ext.discussionTools.init'),
+      'watchOnReply': !mw.loader.getState('ext.discussionTools.init'),
     };
   },
 
@@ -570,8 +570,7 @@ export default {
    */
   set(name, value) {
     this.values ||= {};
-    const values = typeof name === 'string' ? { [name]: value } : name;
-    Object.assign(this.values, values);
+    Object.assign(this.values, typeof name === 'string' ? { [name]: value } : name);
   },
 
   /**

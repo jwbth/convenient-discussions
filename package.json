@@ -1,5 +1,6 @@
 {
   "name": "convenient-discussions",
+  "version": "0.0.0",
   "description": "A JavaScript shell for wiki talk pages.",
   "scripts": {
     "build": "node buildConfigs && node buildI18n && webpack",
