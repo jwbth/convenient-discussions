@@ -281,7 +281,10 @@ class SectionSkeleton {
     this.headline = [...this.headlineElement.childNodes]
       .filter((node) => (
         node.nodeType === Node.TEXT_NODE ||
-        !(isMetadataNode(node) || classesToFilter.some((name) => node.classList.contains(name)))
+        (
+          node.nodeType === Node.ELEMENT_NODE &&
+          !(isMetadataNode(node) || classesToFilter.some((name) => node.classList.contains(name)))
+        )
       ))
       .map((node) => node.textContent)
       .join('')
