@@ -173,7 +173,7 @@
 	"cf-reaction-templateinheadline": "Başlıqlarda şablonlardan istifadə etməyin: onlar bölmə keçidlərini pozur.",
 	"cf-reaction-signature": "<kbd>$1</kbd> daxil etməyə ehtiyac yoxdur: imza avtomatik olaraq əlavə olunacaq.",
 	"cf-reaction-pre": "$1 teqləri görünüşü poza bilər — ən yaxşısı $2 istifadə edin.",
-	"cf-reaction-mention-edit": "Şərhi <em>redaktə etdiyiniz</em> üçün, a [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|teq bildirişi]] göndərilməyəcək. Bildiriş göndərmək üçün istifadəçini redaktə izahında teq edə bilərsiniz.",
+	"cf-reaction-mention-edit": "Şərhi <em>redaktə etdiyiniz</em> üçün, [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|teq bildirişi]] göndərilməyəcək. Bildiriş göndərmək üçün istifadəçini redaktə izahında teq edə bilərsiniz.",
 	"cf-reaction-mention-nosignature": "Şərhinizə imza daxil etməməyi seçdiyiniz üçün [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|etiket bildirişi]] göndərilməyəcək. Bildiriş göndərmək üçün istifadəçini redaktə izahında etiketləyə bilərsiniz.",
 	"cf-notice-nochanges": "Dəyişiklik yoxdur",
 	"cf-notice-editconflict-retrying": "Yenidən cəhd edilir…",
