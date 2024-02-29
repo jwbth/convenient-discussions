@@ -848,7 +848,11 @@ class CommentSkeleton {
           node.tagName === 'DL' &&
           this.parts[i - 1] &&
           node.nextElementSibling?.firstElementChild?.firstElementChild === this.parts[i - 1].node
-        )
+        ) ||
+
+        // E.g. `mw-notalk` elements at the beginning of the comment (example:
+        // https://ru.wikipedia.org/wiki/Википедия:Заявки_на_статус_администратора/Wikisaurus#c-Khidistavi-20240209164000-Против)
+        this.parser.noSignatureElements.some((el) => el.contains(node))
       ) {
         this.parts.splice(i, 1);
       } else {
@@ -1134,7 +1138,9 @@ class CommentSkeleton {
         // semantical correctness of the markup.
         (this.highlightables.length > 1 && el.tagName === 'LI' && el.parentNode.tagName === 'OL') ||
 
-        el.className ||
+        // This can run the second time from this.deriveLevels() → this.reviewDives() →
+        // this.deriveHighlightables(), so the might have added the wrapper already.
+        (el.className && el.className !== 'cd-comment-replacedPart') ||
         el.getAttribute('style')
       ))
       .forEach((el) => {
