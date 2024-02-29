@@ -953,7 +953,10 @@ class Section extends SectionSkeleton {
     if (this.level !== 2) return;
 
     const subscribeId = SectionStatic.getDtSubscribableThreads()
-      ?.find((thread) => thread.id === this.headlineElement.dataset.mwThreadId)
+      ?.find((thread) => (
+        thread.id === this.hElement.dataset.mwThreadId ||
+        thread.id === this.headlineElement.dataset.mwThreadId
+      ))
       ?.name;
 
     // Filter out sections with no comments, therefore no meaningful ID
