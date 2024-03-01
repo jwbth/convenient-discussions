@@ -268,7 +268,11 @@ class SectionSkeleton {
    * {@link SectionSkeleton#headline headline} property that contains no HTML tags.
    */
   parseHeadline() {
-    const classesToFilter = ['mw-headline-number', ...cd.config.excludeFromHeadlineClasses];
+    const classesToFilter = [
+      'mw-headline-number',
+      'mw-editsection-like',
+      ...cd.config.excludeFromHeadlineClasses,
+    ];
 
     /**
      * Section headline as it appears on the page.
