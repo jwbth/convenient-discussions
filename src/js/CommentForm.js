@@ -221,8 +221,8 @@ class CommentForm {
     }
 
     if (initialState) {
-      this.originalComment = initialState.originalComment;
-      this.originalHeadline = initialState.originalHeadline;
+      this.originalComment = initialState.originalComment || '';
+      this.originalHeadline = initialState.originalHeadline || '';
       if (initialState.lastFocused) {
         /**
          * The date when the comment form was focused last time.
