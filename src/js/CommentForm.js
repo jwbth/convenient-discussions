@@ -1801,8 +1801,8 @@ class CommentForm {
     this.subscribeCheckbox
       ?.on('change', saveSessionEventHandler);
     this.omitSignatureCheckbox
-      ?.on('change', () => {
-        this.preview(false);
+      ?.on('change', preview)
+      .on('change', () => {
         if (this.omitSignatureCheckbox.$input.is(':focus')) {
           this.omitSignatureCheckboxAltered = true;
         }
@@ -1836,7 +1836,7 @@ class CommentForm {
       this.viewChanges();
     });
     this.previewButton.on('click', () => {
-      this.preview(true, false);
+      this.preview(false);
     });
     this.submitButton.on('click', () => {
       this.submit();
@@ -2526,15 +2526,13 @@ class CommentForm {
   /**
    * Preview the comment.
    *
-   * @param {boolean} [previewEmpty=true] If `false`, don't preview if the comment and headline
-   *   inputs are empty.
    * @param {boolean} [isAuto=true] Preview is initiated automatically (if the user has the
    *   `autopreview` setting set to `true`).
    * @param {import('./CommentFormOperation').CommentFormOperation} [operation] Operation object
    *   when the function is called from within itself, being delayed.
    * @fires previewReady
    */
-  async preview(previewEmpty = true, isAuto = true, operation) {
+  async preview(isAuto = true, operation) {
     if (
       this.isContentBeingLoaded() ||
       (isAuto && !settings.get('autopreview')) ||
@@ -2558,7 +2556,7 @@ class CommentForm {
           operation.delay();
           this.previewTimeout = setTimeout(() => {
             this.previewTimeout = null;
-            this.preview(previewEmpty, true, operation);
+            this.preview(true, operation);
           }, isTooEarly ? 1000 - (Date.now() - this.lastPreviewTimestamp) : 100);
         }
         return;
@@ -2590,11 +2588,6 @@ class CommentForm {
     // summary if there is a need. The other possibility is previewing by clicking the relevant
     // button.
     const areInputsEmpty = !commentInputValue.trim() && !this.headlineInput?.getValue().trim();
-
-    if (areInputsEmpty && !previewEmpty) {
-      operation.close();
-      return;
-    }
 
     let html;
     let parsedSummary;
