@@ -134,14 +134,10 @@ class Parser {
    * @private
    */
   replaceTimestampLinksWithSpans() {
-    const timestampLinks = [
+    [
       ...this.context.rootElement.getElementsByClassName('ext-discussiontools-init-timestamplink')
-    ];
-    timestampLinks.forEach((link) => {
-      const replacement = document.createElement('span');
-      replacement.classList.add('ext-discussiontools-init-timestamplink');
-      replacement.appendChild(document.createTextNode(link.textContent));
-      link.parentNode.insertBefore(replacement, link);
+    ].forEach((link) => {
+      link.parentNode.insertBefore(document.createTextNode(link.textContent), link);
       link.remove();
     });
   }
