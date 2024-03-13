@@ -1288,17 +1288,18 @@ class CommentForm {
       .parent()
       .remove();
 
-    // We mirror the functionality of the "ext.charinsert" module to keep the undo/redo
+    // We mirror the functionality of the `ext.charinsert` module to keep the undo/redo
     // functionality.
     this.$messageArea
       .find('.mw-charinsert-item')
       .each((i, el) => {
         const $el = $(el);
-        const pre = $el.data('mw-charinsert-start');
-        const post = $el.data('mw-charinsert-end');
         $el
           .on('click', () => {
-            this.encapsulateSelection({ pre, post });
+            this.encapsulateSelection({
+              pre: $el.data('mw-charinsert-start'),
+              post: $el.data('mw-charinsert-end'),
+            });
           })
           .data('mw-charinsert-done', true);
       });
@@ -2694,7 +2695,7 @@ class CommentForm {
         'totext-main': contextCode,
         topst: true,
         prop: 'diff',
-        ...cd.g.apiErrorsFormatHtml,
+        ...cd.g.apiErrorFormatHtml,
       };
 
       if (this.sectionSubmitted || this.newSectionApi || !this.targetPage.revisionId) {
@@ -3277,17 +3278,17 @@ class CommentForm {
   /**
    * Update the automatic text for the edit summary.
    *
-   * @param {boolean} [set=true] Whether to actually set the input value, or just save auto summary
-   *   to a property.
-   * @param {boolean} [dontAutopreviewOnSummaryChange=false] Whether to prevent making autopreview
-   *   request in order not to make two identical requests (for example, if the update is initiated
-   *   by a change in the comment).
+   * @param {boolean} [set=true] Whether to actually set the input value, or just save the auto
+   *   summary to a property (e.g. to later tell if it was altered).
+   * @param {boolean} [blockAutopreview=false] Whether to prevent making autopreview request in
+   *   order not to make two identical requests (for example, if the update is initiated by a change
+   *   in the comment – that change would initiate its own request).
    * @private
    */
-  updateAutoSummary(set = true, dontAutopreviewOnSummaryChange = false) {
+  updateAutoSummary(set = true, blockAutopreview = false) {
     if (this.summaryAltered) return;
 
-    this.dontAutopreviewOnSummaryChange = dontAutopreviewOnSummaryChange;
+    this.isSummaryAutopreviewBlocked = blockAutopreview;
 
     const text = this.generateStaticSummaryText();
     const section = this.headlineInput && this.mode !== 'addSubsection' ?

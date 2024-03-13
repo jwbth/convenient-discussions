@@ -345,9 +345,7 @@ export function extractSignatures(code) {
   // TODO: Instead of removing only lines containing antipatterns from wikitext, hide entire
   // templates and tags?
   // But keep in mind that this code may still be part of comments.
-  const noSignatureClassesPattern = cd.g.noSignatureClasses
-    .concat('mw-notalk')
-    .join('\\b|\\b');
+  const noSignatureClassesPattern = cd.g.noSignatureClasses.join('\\b|\\b');
   const commentAntipatternsPatternParts = [
     `class=(['"])[^'"\\n]*(?:\\b${noSignatureClassesPattern}\\b)[^'"\\n]*\\1`
   ];

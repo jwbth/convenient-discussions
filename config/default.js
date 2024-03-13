@@ -453,10 +453,11 @@ export default {
 
   /**
    * Elements with classes listed here won't be considered legit comment timestamp containers. They
-   * can still be parts of comments; for the way to prevent certain elements from becoming comment
-   * parts, see {@link module:defaultConfig.filterNode}. This value can have a wikitext counterpart
-   * (though not necessarily), {@link module:defaultConfig.noSignatureTemplates}, for classes that
-   * are specified inside templates.
+   * can still be parts of comments (e.g. in "moved section" templates); for the way to prevent
+   * certain elements from becoming comment parts, see {@link module:defaultConfig.rejectNode}. This
+   * value can have a wikitext counterpart (though not necessarily),
+   * {@link module:defaultConfig.noSignatureTemplates}, for classes that are specified inside
+   * templates.
    *
    * It is preferable to add the `mw-notalk` class to these elements instead of using this value.
    *

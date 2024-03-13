@@ -273,13 +273,15 @@ class BootProcess {
             .addClass('cd-rcnotice-img'),
           $('<div>')
             .addClass('cd-rcnotice-text')
-            .append(wrap(cd.sParse('rc-suggestion'), {
-              callbacks: {
-                'cd-notification-settings': () => {
-                  controller.showSettingsDialog();
+            .append(
+              wrap(cd.sParse('rc-suggestion'), {
+                callbacks: {
+                  'cd-notification-settings': () => {
+                    controller.showSettingsDialog();
+                  },
                 },
-              },
-            }).children()),
+              }).children()
+            ),
         )
         .children(),
       {
@@ -620,13 +622,15 @@ class BootProcess {
       button.setPending(false);
     }
     notification.$notification.hide();
-    mw.notify(wrap(cd.sParse('discussiontools-disabled'), {
-      callbacks: {
-        'cd-notification-refresh': () => {
-          location.reload();
+    mw.notify(
+      wrap(cd.sParse('discussiontools-disabled'), {
+        callbacks: {
+          'cd-notification-refresh': () => {
+            location.reload();
+          },
         },
-      },
-    }));
+      })
+    );
   }
 
   /**

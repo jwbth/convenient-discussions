@@ -472,7 +472,7 @@ export class Page {
       redirects: true,
       prop: ['text', 'revid', 'modules', 'jsconfigvars', 'sections'],
 
-      ...cd.g.apiErrorsFormatHtml,
+      ...cd.g.apiErrorFormatHtml,
     };
     const options = Object.assign({}, defaultOptions, customOptions);
 
@@ -557,7 +557,7 @@ export class Page {
       // Should be `undefined` instead of `null`, otherwise will be interepreted as a string.
       tags: userRegistry.getCurrent().isRegistered() && cd.config.tagName || undefined,
 
-      ...cd.g.apiErrorsFormatHtml,
+      ...cd.g.apiErrorFormatHtml,
     };
     const options = controller.getApi().assertCurrentUser(
       Object.assign({}, defaultOptions, customOptions)

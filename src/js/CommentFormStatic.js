@@ -245,7 +245,7 @@ const CommentFormStatic = {
   },
 
   /**
-   * Adjust the button labels of all comment forms according to the form width: if the form is to
+   * Adjust the button labels of all comment forms according to the form width: if the form is too
    * narrow, the labels will shrink.
    */
   adjustLabels() {

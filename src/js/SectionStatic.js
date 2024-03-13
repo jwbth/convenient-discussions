@@ -171,7 +171,9 @@ export default {
       }
 
       // Score bigger than 3.5 means it's the best match for sure. Two sections can't have
-      // coinciding anchors, so there can't be two sections with the score bigger than 3.5.
+      // coinciding anchors, so there can't be two sections with the score bigger than 3.5. (We do
+      // this because there can be very many sections on the page, so searching for a match for
+      // every section can be expensive.)
       return score >= 3.5;
     });
 
@@ -240,7 +242,7 @@ export default {
   generateDtSubscriptionId(author, timestamp) {
     const date = new Date(timestamp);
     date.setSeconds(0);
-    return `h-${spacesToUnderlines(author)}-${generateFixedPosTimestamp(date, true)}`;
+    return `h-${spacesToUnderlines(author)}-${generateFixedPosTimestamp(date, '00')}`;
   },
 
   /**

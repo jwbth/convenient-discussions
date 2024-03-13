@@ -1,4 +1,4 @@
-console.log(`Collecting data for ${mw.config.get('wgServerName') }…`);
+console.log(`Collecting data for ${mw.config.get('wgServerName')}…`);
 
 mw.loader.using([
   'mediawiki.util',

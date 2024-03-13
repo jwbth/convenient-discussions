@@ -2,10 +2,10 @@ import CdError from './CdError';
 import Comment from './Comment';
 import cd from './cd';
 import { createCopyTextField, tweakUserOoUiClass } from './ooui';
-import { dealWithLoadingBug, sleep, wrap } from './utils';
+import { dealWithLoadingBug, wrap } from './utils';
 
 /**
- * Class used to create an "Copy link" dialog.
+ * Class used to create a "Copy link" dialog.
  *
  * @augments external:OO.ui.MessageDialog
  */
@@ -19,7 +19,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   ];
 
   /**
-   * Create an "Copy link" dialog.
+   * Create a "Copy link" dialog.
    *
    * @param {Comment|import('./Section').default} object
    * @param {object} content

@@ -24,7 +24,10 @@ const subscriptionsOptionNameEnding = serverName === 'ru.wikipedia.org' ?
   'watchedTopics' :
   'watchedSections';
 
-const server = mw.config.get('wgServer');
+let server = mw.config.get('wgServer');
+if (server.startsWith('//')) {
+  server = location.protocol + server;
+}
 const bodyClassList = document.body.classList;
 
 Object.assign(cd, {
@@ -85,7 +88,7 @@ Object.assign(cd, {
   /**
    * A foolproof method to access MediaWiki messages intended to be used instead of
    * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw-method-msg mw.msg()} to
-   * eliminate any possibility of an XSS injection. By a programmer's mistake some `mw.msg()` value
+   * eliminate any possibility of an XSS injection. By programmer's mistake some `mw.msg()` value
    * could be inserted into a page in a raw HTML form. To prevent this, this function should be
    * used, so if the message contains an injection (for example, brought from Translatewiki or
    * inserted by a user who doesn't have the `editsitejs` right but does have the `editinterface`
@@ -125,6 +128,20 @@ Object.assign(cd, {
       mwStringsCache[name] = message;
     }
     return message;
+  },
+
+  getApiConfig() {
+    return {
+      parameters: {
+        formatversion: 2,
+        uselang: cd.g.userLanguage,
+      },
+      ajax: {
+        headers: {
+          'Api-User-Agent': 'c:User:Jack who built the house/Convenient Discussions',
+        },
+      },
+    };
   },
 
   /**
@@ -607,7 +624,7 @@ Object.assign(cd.g, {
   localSettingsOptionName: `userjs-${localOptionsPrefix}-localSettings`,
   visitsOptionName: `userjs-${localOptionsPrefix}-visits`,
   subscriptionsOptionName: `userjs-${localOptionsPrefix}-${subscriptionsOptionNameEnding}`,
-  server: server.startsWith('//') ? location.protocol + server : server,
+  server,
   serverName,
   pageName: underlinesToSpaces(mw.config.get('wgPageName')),
   pageTitle: mw.config.get('wgTitle'),

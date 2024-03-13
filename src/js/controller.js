@@ -377,7 +377,7 @@ export default {
         this.windowManagers[name].clearWindows();
       });
 
-      $(document.body).append(this.windowManagers[name].$element);
+      $(OO.ui.getTeleportTarget()).append(this.windowManagers[name].$element);
     }
 
     return this.windowManagers[name];
@@ -396,17 +396,7 @@ export default {
    * @returns {external:mw.Api}
    */
   getApi() {
-    this.api ||= new mw.Api({
-      parameters: {
-        formatversion: 2,
-        uselang: cd.g.userLanguage,
-      },
-      ajax: {
-        headers: {
-          'Api-User-Agent': 'c:User:Jack who built the house/Convenient Discussions',
-        },
-      },
-    });
+    this.api ||= new mw.Api(cd.getApiConfig());
 
     return this.api;
   },
@@ -1857,9 +1847,7 @@ export default {
   showSettingsDialog(initalPageName) {
     if ($('.cd-dialog-settings').length) return;
 
-    const SettingsDialog = require('./SettingsDialog').default;
-
-    const dialog = new SettingsDialog(initalPageName);
+    const dialog = new (require('./SettingsDialog').default)(initalPageName);
     this.getWindowManager('settings').addWindows([dialog]);
     this.getWindowManager('settings').openWindow(dialog);
 

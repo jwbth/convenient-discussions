@@ -678,9 +678,9 @@ class CommentSkeleton {
           )
         );
 
-        // This is a pretty weak mechanism, effective in a very narrow range of cases, so we might
-        // drop it. A trace from `~~~` at the end of the line most likely means an incorrectly
-        // signed comment.
+        // A trace from `~~~` at the end of the line most likely means an incorrectly signed
+        // comment. This is a pretty weak mechanism, effective in a very narrow range of cases, so
+        // we might drop it.
         if (
           !hasCurrentSignature &&
           !isInline(node) &&

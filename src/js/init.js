@@ -1013,7 +1013,7 @@ export default {
 
     cd.g.isIPv6Address = mw.util.isIPv6Address;
 
-    cd.g.apiErrorsFormatHtml = {
+    cd.g.apiErrorFormatHtml = {
       errorformat: 'html',
       errorlang: cd.g.userLanguage,
       errorsuselocal: true,

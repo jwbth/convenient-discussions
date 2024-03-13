@@ -278,7 +278,7 @@ class CommentFormInputTransformer extends TextMasker {
       this.signature &&
 
       // The existing signature doesn't start with a newline.
-      (this.commentForm.getMode() !== 'edit' || !/^[ \t]*\n/.test(this.signature)) &&
+      !(this.commentForm.getMode() == 'edit' && /^[ \t]*\n/.test(this.signature)) &&
 
       /(^|\n)[:*#;].*$/.test(this.text)
     ) {

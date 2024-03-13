@@ -7,7 +7,7 @@
 import { sleep } from './utils';
 
 export default {
-  list: {},
+  items: {},
 
   /**
    * Postpone the execution of some function. If it is already postponed, don't create a second
@@ -18,11 +18,11 @@ export default {
    * @param {number} delay
    */
   async add(label, func, delay) {
-    if (this.list[label]) return;
+    if (this.items[label]) return;
 
-    this.list[label] = true;
+    this.items[label] = true;
     await sleep(delay);
-    this.list[label] = false;
+    this.items[label] = false;
     func();
   },
 
@@ -33,6 +33,6 @@ export default {
    * @returns {boolean}
    */
   is(label) {
-    return this.list[label];
+    return this.items[label];
   },
 };

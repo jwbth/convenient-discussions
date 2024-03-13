@@ -50,7 +50,7 @@ export function wrap(htmlOrJquery, options = {}) {
         // be a link.
         $link.attr('href', '').removeAttr('title');
       } else if (!$link.length) {
-        $link = $linkWrapper.wrapInner('<a href>').children().first();
+        $link = $linkWrapper.wrapInner('<a>').children().first();
       }
       buttons.push(
         new Button({
@@ -976,17 +976,17 @@ export function getDayTimestamp() {
  * Generate a timestamp for a date, where string positions for the year, month, etc. are fixed.
  *
  * @param {Date} date
- * @param {boolean} isDt
+ * @param {string} [seconds] `'00'` for DiscussionTools timestamp.
  * @returns {string}
  */
-export function generateFixedPosTimestamp(date, isDt) {
+export function generateFixedPosTimestamp(date, seconds) {
   return (
     zeroPad(date.getUTCFullYear(), 4) +
     zeroPad(date.getUTCMonth() + 1, 2) +
     zeroPad(date.getUTCDate(), 2) +
     zeroPad(date.getUTCHours(), 2) +
     zeroPad(date.getUTCMinutes(), 2) +
-    (isDt ? '00' : '')
+    (seconds || '')
   );
 }
 

@@ -1069,8 +1069,7 @@ class Section extends SectionSkeleton {
 
     const MoveSectionDialog = require('./MoveSectionDialog').default;
 
-    const section = this;
-    const dialog = new MoveSectionDialog(section);
+    const dialog = new MoveSectionDialog(this);
     controller.getWindowManager().addWindows([dialog]);
     controller.getWindowManager().openWindow(dialog);
   }
