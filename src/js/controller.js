@@ -744,16 +744,18 @@ export default {
       // (temporarily setting "overflow: hidden") for all comments that they intersect with.
       const floatingElementSelector = [
         '.cd-floating',
-        '.tright',
-        '.floatright',
+
         '.tleft',
+        '.floatright',
         '.floatleft',
+        '.mw-halign-right',
+        '.mw-halign-left',
         '*[style*="float:right"]',
         '*[style*="float: right"]',
         '*[style*="float:left"]',
         '*[style*="float: left"]',
-        'figure[typeof~="mw:File/Thumb"]',
-        'figure[typeof~="mw:File/Frame"]',
+        'figure[typeof="mw:File/Thumb"]',
+        'figure[typeof="mw:File/Frame"]',
         ...this.getTsFloatingElementSelectors(),
       ].join(', ');
 
