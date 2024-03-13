@@ -472,14 +472,20 @@ export function createCopyTextField({ label, value, disabled = false, help, copy
  * {@link https://doc.wikimedia.org/oojs/master/OO.html#.inheritClass OO.inheritClass}.
  *
  * @param {Function} targetClass Inheritor class.
- * @param {Function} originClass Inherited class.
+ * @returns {Function}
  */
-export function tweakUserOoUiClass(targetClass, originClass) {
-  targetClass.parent = targetClass.super = originClass;
-
+export function tweakUserOoUiClass(targetClass) {
+  const originClass = Object.getPrototypeOf(targetClass);
   OO.initClass(originClass);
   targetClass.static = Object.create(originClass.static);
-  Object.keys(targetClass).forEach((key) => {
-    targetClass.static[key] = targetClass[key];
-  });
+  Object.getOwnPropertyNames(targetClass)
+    .filter((key) => key !== 'static')
+    .forEach((key) => {
+      const descriptor = Object.getOwnPropertyDescriptor(targetClass, key);
+      if (descriptor.enumerable || descriptor.get) {
+        targetClass.static[key] = targetClass[key];
+      }
+    });
+  targetClass.parent = targetClass.super = originClass;
+  return targetClass;
 }
