@@ -313,6 +313,13 @@ function patterns() {
 
   cd.g.contribsPageLinkRegexp = new RegExp(`^${cd.g.contribsPage}/`);
 
+  cd.g.isThumbRegexp = new RegExp(
+    ['thumb', 'thumbnail']
+      .concat(cd.config.thumbAliases)
+      .map((alias) => `\\| *${alias} *[|\\]]`)
+      .join('|')
+  );
+
   const contribsPagePattern = anySpace(cd.g.contribsPage);
   cd.g.captureUserNamePattern = (
     `\\[\\[[ _]*:?(?:\\w*:){0,2}(?:(?:${userNssAliasesPattern})[ _]*:[ _]*|` +

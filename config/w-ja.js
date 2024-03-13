@@ -86,6 +86,9 @@ export default {
 		'展開:',
 		'展開：'
 	],
+	'thumbAliases': [
+		'サムネイル',
+	],
 	'timezone': 'UTC',
 	'useGlobalPreferences': true,
 	'unsignedTemplates': [

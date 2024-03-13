@@ -76,6 +76,15 @@ mw.loader.using([
     config.substAliases = substAliases;
   }
 
+  const thumbAliases = siteInfoResp.query.magicwords
+    .find((obj) => obj.name === 'img_thumbnail')
+    ?.aliases
+    .map((alias) => alias.toLowerCase())
+    .filter((alias) => alias !== 'thumb' && alias !== 'thumbnail');
+  if (thumbAliases.length) {
+    config.thumbAliases = thumbAliases;
+  }
+
   config.timezone = siteInfoResp.query.general.timezone;
 
   config.useGlobalPreferences = siteInfoResp.query.extensions

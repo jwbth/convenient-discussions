@@ -89,6 +89,11 @@ export default {
     'подст:',
   ],
 
+  thumbAliases: [
+    'мини',
+    'миниатюра',
+  ],
+
   timezone: 'UTC',
 
   pageWhitelist: [

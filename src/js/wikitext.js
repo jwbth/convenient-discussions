@@ -67,12 +67,13 @@ export function findFirstTimestamp(code) {
  * @returns {string}
  */
 export function removeWikiMarkup(code) {
-  // Actually, only text from "mini" format images should be captured, because in the standard
-  // format the text is not displayed. See `img_thumbnail` in
+  // Ideally, only text from images in the "thumb" format should be captured, because in the
+  // standard format the text is not displayed. See `img_thumbnail` in
   // https://ru.wikipedia.org/w/api.php?action=query&meta=siteinfo&siprop=magicwords&formatversion=2.
-  // Unfortunately, that would add like 100ms to the server's response time.
+  // Unfortunately, that would add like 100ms to the server's response time. So, we use it if it is
+  // present in the config file.
   const fileEmbedRegexp = new RegExp(
-    `\\[\\[${cd.g.filePrefixPattern}[^\\]]+?(?:\\|[^\\]]+?\\|((?:\\[\\[[^\\]]+?\\]\\]|[^|\\]])+))?\\]\\]`,
+    `\\[\\[${cd.g.filePrefixPattern}[^\\]]+?(?:\\|[^\\]]+?\\| *((?:\\[\\[[^\\]]+?\\]\\]|[^|\\]])+))? *\\]\\]`,
     'ig'
   );
 
@@ -87,7 +88,7 @@ export function removeWikiMarkup(code) {
     .replace(cd.g.pipeTrickRegexp, '$1$2$3')
 
     // Extract displayed text from file embeddings
-    .replace(fileEmbedRegexp, '$1')
+    .replace(fileEmbedRegexp, (s, m) => cd.g.isThumbRegexp.test(s) ? m : '')
 
     // Extract displayed text from [[wikilinks]]
     .replace(/\[\[:?(?:[^|[\]<>\n]+\|)?(.+?)\]\]/g, '$1')

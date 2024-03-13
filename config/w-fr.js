@@ -82,6 +82,10 @@ export default {
 		'Diff': 'Diff',
 		'PermanentLink': 'Lien_permanent'
 	},
+	'thumbAliases': [
+		'мини',
+		'миниатюра',
+	],
 	'timezone': 'Europe/Paris',
 	'useGlobalPreferences': true,
 	'unsignedTemplates': [
