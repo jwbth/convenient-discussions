@@ -1758,12 +1758,12 @@ class CommentForm {
     }
 
     this.summaryInput
+      .on('manualChange', () => {
+        this.summaryAltered = true;
+        this.isSummaryAutopreviewBlocked = false;
+      })
       .on('change', () => {
-        if (this.summaryInput.$input.is(':focus')) {
-          this.summaryAltered = true;
-          this.dontAutopreviewOnSummaryChange = false;
-        }
-        if (!this.dontAutopreviewOnSummaryChange) {
+        if (!this.isSummaryAutopreviewBlocked) {
           preview();
         }
       })
@@ -1802,10 +1802,8 @@ class CommentForm {
       ?.on('change', saveSessionEventHandler);
     this.omitSignatureCheckbox
       ?.on('change', preview)
-      .on('change', () => {
-        if (this.omitSignatureCheckbox.$input.is(':focus')) {
-          this.omitSignatureCheckboxAltered = true;
-        }
+      .on('manualChange', () => {
+        this.omitSignatureCheckboxAltered = true;
       })
       .on('change', saveSessionEventHandler);
     this.deleteCheckbox

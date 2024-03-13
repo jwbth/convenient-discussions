@@ -152,6 +152,30 @@ import controller from './controller';
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ButtonMenuSelectWidget
  */
 
+function getCheckboxInputWidgetClass() {
+  return class extends OO.ui.CheckboxInputWidget {
+    constructor(...args) {
+      super(...args);
+
+      this.$input.on('change', () => {
+        this.emit('manualChange', this.$input.prop('checked'));
+      });
+    }
+  };
+}
+
+function getTextInputWidgetClass() {
+  return class extends OO.ui.TextInputWidget {
+    constructor(...args) {
+      super(...args);
+
+      this.$input.on('input', () => {
+        this.emit('manualChange', this.getValue());
+      });
+    }
+  };
+}
+
 /**
  * Display an OOUI message dialog where user is asked to confirm something. Compared to
  * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui-method-confirm OO.ui.confirm},
@@ -265,8 +289,10 @@ export function handleDialogError(dialog, e, messageName, recoverable) {
  * Create a text input field.
  *
  * @param {object} options
- * @param {string} options.value
+ * @param {string} [options.value]
  * @param {string} options.label
+ * @param {string} [options.required]
+ * @param {string} [options.classes]
  * @param {string} [options.maxLength]
  * @param {string} [options.help]
  * @param {string} [options.title]
@@ -275,11 +301,13 @@ export function handleDialogError(dialog, e, messageName, recoverable) {
 export function createTextField({
   value,
   maxLength,
+  required,
+  classes,
   label,
   help,
   title,
 }) {
-  const input = new OO.ui.TextInputWidget({ value, maxLength });
+  const input = new (getTextInputWidgetClass())({ value, maxLength, required, classes });
   const field = new OO.ui.FieldLayout(input, {
     label,
     align: 'top',
@@ -368,7 +396,7 @@ export function createCheckboxField({
   title,
   classes,
 }) {
-  const input = new OO.ui.CheckboxInputWidget({ value, selected, disabled, tabIndex });
+  const input = new (getCheckboxInputWidgetClass())({ value, selected, disabled, tabIndex });
   const field = new OO.ui.FieldLayout(input, {
     label,
     align: 'inline',
