@@ -6,7 +6,21 @@
 
 import cd from './cd';
 import controller from './controller';
-import { isMetadataNode, sleep } from './utils';
+import { defined, isMetadataNode, sleep } from './utils';
+
+/**
+ * Merge many jQuery objects into one. Works like `.add()`, but accepts many parameters and is
+ * faster. Only accepts jQuery objects though and doesn't reorder elements based on their relative
+ * position in the DOM.
+ *
+ * @param {(external:jQuery|undefined)[]} arrayOfJquery jQuery objects. Undefined values will be
+ *   omitted.
+ * @returns {external:JQuery} jQuery
+ * @memberof external:jQuery
+ */
+$.cdMerge = function (...arrayOfJquery) {
+  return $($.map(arrayOfJquery.filter(defined), ($object) => $object.get()));
+}
 
 /**
  * jQuery. See {@link external:jQuery.fn} for extensions.

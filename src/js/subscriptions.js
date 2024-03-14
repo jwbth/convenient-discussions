@@ -510,10 +510,10 @@ export default {
     const popup = new OO.ui.PopupWidget({
       icon: 'newspaper',
       label: cd.s('newtopicssubscription-popup-title'),
-      $content: $('<div>').append(
+      $content: $.cdMerge(
         $('<p>').text(cd.s('newtopicssubscription-popup-text')),
         $('<p>').append(button.$element),
-      ).children(),
+      ),
       head: true,
       $floatableContainer,
       $container: $(document.body),

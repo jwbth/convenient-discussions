@@ -3858,10 +3858,10 @@ class CommentForm {
     const popup = new OO.ui.PopupWidget({
       icon: 'lightbulb',
       label: cd.s('popup-manyForms-title'),
-      $content: $('<div>').append(
+      $content: $.cdMerge(
         $('<p>').text(cd.s('popup-manyForms-text')),
         $('<p>').append(button.$element),
-      ).children(),
+      ),
       head: true,
       $floatableContainer: this.commentInput.$element,
       $container: controller.$root,

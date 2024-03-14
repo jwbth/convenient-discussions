@@ -2689,8 +2689,7 @@ class Comment extends CommentSkeleton {
       targetBlank: true,
     });
     $question.find('a').attr('data-instantdiffs-link', 'link');
-    const $diff = await this.generateDiffView();
-    const $content = $('<div>').append($question, $diff).children();
+    const $content = $.cdMerge($question, await this.generateDiffView());
     mw.hook('wikipage.content').fire($content);
 
     if (await showConfirmDialog($content, { size: 'larger' }) === 'accept') {
