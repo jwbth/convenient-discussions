@@ -17,30 +17,22 @@ import cd from './cd';
  */
 
 /**
- * @typedef {object} WrapComplexReturn
- * @property {external:jQuery} $wrapper
- * @property {Button[]} buttons
- */
-
-/**
- * Generate a `<span>` (or other element) suitable as an argument for various methods for displaying
- * HTML. Optionally, attach callback functions and `target="_blank"` attribute to links with the
- * provided class names.
+ * Wrap a HTML string into a `<span>` (or other element) suitable as an argument for various
+ * methods. It fills the same role as
+ * {@link https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.HtmlSnippet.html OO.ui.HtmlSnippet}, but
+ * works not only with OOUI widgets. Optionally, attach callback functions and `target="_blank"`
+ * attribute to links with the provided class names. See also {@link external:$.cdMerge}.
  *
- * @param {string|external:jQuery} htmlOrJquery
+ * @param {string} html
  * @param {object} [options={}]
  * @param {WrapCallbacks} [options.callbacks]
  * @param {string} [options.tagName='span']
  * @param {boolean} [options.targetBlank]
- * @param {boolean} [options.returnButtons=false]
- * @returns {external:jQuery|WrapComplexReturn} If `options.callbacks` is supplied, returns an array
- *   containing a wrapper and an array of buttons. Otherwise, returns a wrapper alone.
+ * @returns {external:jQuery}
  */
-export function wrap(htmlOrJquery, options = {}) {
-  const $wrapper = (htmlOrJquery instanceof $ ? htmlOrJquery : $($.parseHTML(htmlOrJquery)))
-    .wrapAll(`<${options.tagName || 'span'}>`)
-    .parent();
-  const buttons = [];
+export function wrap(html, options = {}) {
+  const tagName = options.tagName || 'span';
+  const $wrapper = $($.parseHTML(html)).wrapAll(`<${tagName}>`).parent();
   if (options.callbacks) {
     Object.keys(options.callbacks).forEach((className) => {
       const $linkWrapper = $wrapper.find(`.${className}`);
@@ -52,18 +44,16 @@ export function wrap(htmlOrJquery, options = {}) {
       } else if (!$link.length) {
         $link = $linkWrapper.wrapInner('<a>').children().first();
       }
-      buttons.push(
-        new Button({
-          element: $link.get(0),
-          action: options.callbacks[className],
-        })
-      );
+      new Button({
+        element: $link.get(0),
+        action: options.callbacks[className],
+      });
     });
   }
   if (options.targetBlank) {
     $wrapper.find('a[href]').attr('target', '_blank');
   }
-  return options.returnButtons ? { $wrapper, buttons } : $wrapper;
+  return $wrapper;
 }
 
 /**

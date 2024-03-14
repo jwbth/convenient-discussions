@@ -189,7 +189,7 @@ class Button {
       ((!isCmdModifierPressed(e) && !e.shiftKey) || !this.buttonElement.href)
     ) {
       e.preventDefault();
-      action(e);
+      action(e, this);
     }
   }
 

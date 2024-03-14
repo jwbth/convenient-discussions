@@ -642,31 +642,29 @@ class BootProcess {
   maybeSuggestDisableDiscussionTools() {
     if (!cd.g.isDtReplyToolEnabled) return;
 
-    const {
-      $wrapper: $message,
-      buttons: [disableButton, globallyDisableButton],
-    } = wrap(
-      cd.sParse(
-        'discussiontools-incompatible',
-        'Special:Preferences#mw-prefsection-editing-discussion',
-        'Special:GlobalPreferences#mw-prefsection-editing-discussion',
+    const notification = mw.notification.notify(
+      wrap(
+        cd.sParse(
+          'discussiontools-incompatible',
+          'Special:Preferences#mw-prefsection-editing-discussion',
+          'Special:GlobalPreferences#mw-prefsection-editing-discussion',
+        ),
+        {
+          callbacks: {
+            'cd-notification-disabledt': (e, button) => {
+              this.disableDt(false, button, notification);
+            },
+            'cd-notification-disableDtGlobally': (e, button) => {
+              this.disableDt(true, button, notification);
+            },
+          },
+        }
       ),
       {
-        callbacks: {
-          'cd-notification-disabledt': () => {
-            this.disableDt(false, disableButton, notification);
-          },
-          'cd-notification-disableDtGlobally': () => {
-            this.disableDt(true, globallyDisableButton, notification);
-          },
-        },
-        returnButtons: true,
+        type: 'warn',
+        autoHide: false,
       }
     );
-    const notification = mw.notification.notify($message, {
-      type: 'warn',
-      autoHide: false,
-    });
   }
 
   /**
