@@ -153,7 +153,7 @@ import controller from './controller';
  */
 
 function getCheckboxInputWidgetClass() {
-  return class extends OO.ui.CheckboxInputWidget {
+  return tweakUserOoUiClass(class extends OO.ui.CheckboxInputWidget {
     constructor(...args) {
       super(...args);
 
@@ -161,11 +161,11 @@ function getCheckboxInputWidgetClass() {
         this.emit('manualChange', this.$input.prop('checked'));
       });
     }
-  };
+  });
 }
 
 function getTextInputWidgetClass() {
-  return class extends OO.ui.TextInputWidget {
+  return tweakUserOoUiClass(class extends OO.ui.TextInputWidget {
     constructor(...args) {
       super(...args);
 
@@ -173,7 +173,13 @@ function getTextInputWidgetClass() {
         this.emit('manualChange', this.getValue());
       });
     }
-  };
+  });
+}
+
+export function getDivLabelWidgetClass() {
+  return tweakUserOoUiClass(class LabelWidget extends OO.ui.LabelWidget {
+    static tagName = 'div';
+  });
 }
 
 /**
