@@ -206,6 +206,8 @@ function loadSiteData() {
       .filter((name) => !cd.g.contentLanguageMessages[name]);
     for (const nextNames of splitIntoBatches(contentLanguageMessagesToRequest)) {
       const request = controller.getApi().getMessages(nextNames, {
+        // `cd.g.contentLanguage` is not used here for the reasons described in app.js where it is
+        // declared.
         amlang: mw.config.get('wgContentLanguage'),
       }).then(setContentLanguageMessages);
       requests.push(request);

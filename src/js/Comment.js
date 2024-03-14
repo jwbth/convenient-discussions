@@ -2161,7 +2161,7 @@ class Comment extends CommentSkeleton {
     }
 
     // Layers are supposed to be updated (deleted comments background, repositioning) separately,
-    // see updateChecker~checkForNewChanges, for example.
+    // see `updateChecker~checkForNewChanges`, for example.
   }
 
   /**
@@ -2682,12 +2682,18 @@ class Comment extends CommentSkeleton {
       return;
     }
 
-    const url = this.getSourcePage().getArchivedPage().getUrl({ diff: edit.revid });
-    const question = cd.sParse('thank-confirm', this.author.getName(), this.author, url);
-    const $question = wrap(question, {
-      tagName: 'div',
-      targetBlank: true,
-    });
+    const $question = wrap(
+      cd.sParse(
+        'thank-confirm',
+        this.author.getName(),
+        this.author,
+        this.getSourcePage().getArchivedPage().getUrl({ diff: edit.revid })
+      ),
+      {
+        tagName: 'div',
+        targetBlank: true,
+      }
+    );
     $question.find('a').attr('data-instantdiffs-link', 'link');
     const $content = $.cdMerge($question, await this.generateDiffView());
     mw.hook('wikipage.content').fire($content);

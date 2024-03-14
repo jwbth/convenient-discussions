@@ -3,21 +3,22 @@ import { isCmdModifierPressed } from './utils';
 const prototypes = {};
 
 /**
- * Get a button prototype (a skeleton with few properties set) without recreating it if it already
- * exists.
+ * Clone a button prototype (a skeleton with few properties set) without recreating it if it already
+ * exists. When these buttons are created en masse, this is marginally faster than creating a new
+ * one from scratch.
  *
  * @param {string} tagName Tag name.
  * @returns {Element}
  * @private
  */
-function getButtonPrototype(tagName) {
+function cloneButtonPrototype(tagName) {
   if (!prototypes[tagName]) {
     const prototype = document.createElement(tagName);
     prototype.tabIndex = 0;
     prototype.setAttribute('role', 'button');
     prototypes[tagName] = prototype;
   }
-  return prototypes[tagName];
+  return prototypes[tagName].cloneNode(true);
 }
 
 /**
@@ -55,7 +56,7 @@ class Button {
     flags,
     action,
   } = {}) {
-    element ||= getButtonPrototype(tagName).cloneNode(true);
+    element ||= cloneButtonPrototype(tagName);
 
     if (id) {
       element.id = id;
@@ -178,12 +179,12 @@ class Button {
   }
 
   /**
-   * Run a pre-defined action if the button is conditions are met.
+   * Execute a pre-defined action if the button is conditions are met.
    *
    * @param {Function} action
    * @param {Event} e
    */
-  maybeRunAction(action, e) {
+  maybeExecuteAction(action, e) {
     if (
       !this.isDisabled() &&
       ((!isCmdModifierPressed(e) && !e.shiftKey) || !this.buttonElement.href)
@@ -202,14 +203,14 @@ class Button {
   setAction(action) {
     this.buttonElement.onclick = action ?
       (e) => {
-        this.maybeRunAction(action, e);
+        this.maybeExecuteAction(action, e);
       } :
       action;
     this.buttonElement.onkeydown = action ?
       (e) => {
         // Enter, Space
         if ([13, 32].includes(e.keyCode)) {
-          this.maybeRunAction(action, e);
+          this.maybeExecuteAction(action, e);
         }
       } :
       action;

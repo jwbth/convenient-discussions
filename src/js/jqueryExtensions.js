@@ -207,7 +207,9 @@ export default {
    * @memberof external:jQuery.fn
    */
   cdAddCloseButton() {
-    if (this.find('.cd-closeButton').length) return this;
+    if (this.find('.cd-closeButton').length) {
+      return this;
+    }
 
     const $closeButton = $('<a>')
       .attr('title', cd.s('cf-block-close'))

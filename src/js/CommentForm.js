@@ -688,6 +688,7 @@ class CommentForm {
         padded: true,
         align: 'center',
         width: 400,
+        classes: ['cd-helpPopup'],
       },
       $overlay: controller.getPopupOverlay(),
       tabIndex: this.getTabIndex(31),

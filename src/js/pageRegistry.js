@@ -454,13 +454,13 @@ export class Page {
    * Make a parse request (see {@link https://www.mediawiki.org/wiki/API:Parsing_wikitext}).
    *
    * @param {boolean} [customOptions]
-   * @param {boolean} [doRequestInBackground=false] Make a request that won't set the process on
-   *   hold when the tab is in the background.
+   * @param {boolean} [inBackground=false] Make a request that won't set the process on hold when
+   *   the tab is in the background.
    * @param {boolean} [markAsRead=false] Mark the current page as read in the watchlist.
    * @returns {Promise.<object>}
    * @throws {CdError}
    */
-  async parse(customOptions, doRequestInBackground = false, markAsRead = false) {
+  async parse(customOptions, inBackground = false, markAsRead = false) {
     const defaultOptions = {
       action: 'parse',
 
@@ -481,12 +481,11 @@ export class Page {
       delete options.page;
     }
 
-    let request = doRequestInBackground ?
-      requestInBackground(options) :
-      controller.getApi().post(options);
-    request = request.catch(handleApiReject);
-
-    const parse = (await request).parse;
+    const { parse } = await (
+      inBackground ?
+        requestInBackground(options) :
+        controller.getApi().post(options)
+    ).catch(handleApiReject);
     if (parse?.text === undefined) {
       throw new CdError({
         type: 'api',
@@ -505,26 +504,26 @@ export class Page {
    * Get a list of revisions of the page (the `redirects` parameter is set to `true` by default).
    *
    * @param {object} [customOptions={}]
-   * @param {boolean} [doRequestInBackground=false] Make a request that won't set the process on hold
-   *   when the tab is in the background.
+   * @param {boolean} [inBackground=false] Make a request that won't set the process on hold when
+   *   the tab is in the background.
    * @returns {Promise.<Array>}
    */
-  async getRevisions(customOptions = {}, doRequestInBackground = false) {
-    const defaultOptions = {
+  async getRevisions(customOptions = {}, inBackground = false) {
+    const options = Object.assign({}, {
       action: 'query',
       titles: this.name,
       rvslots: 'main',
       prop: 'revisions',
       redirects: !(this.isCurrent() && mw.config.get('wgIsRedirect')),
-    };
-    const options = Object.assign({}, defaultOptions, customOptions);
+    }, customOptions);
 
-    let request = doRequestInBackground ?
-      requestInBackground(options) :
-      controller.getApi().post(options);
-    request = request.catch(handleApiReject);
-
-    const revisions = (await request).query?.pages?.[0]?.revisions;
+    const revisions = (
+      await (
+        inBackground ?
+          requestInBackground(options) :
+          controller.getApi().post(options)
+      ).catch(handleApiReject)
+    ).query?.pages?.[0]?.revisions;
     if (!revisions) {
       throw new CdError({
         type: 'api',
@@ -546,21 +545,20 @@ export class Page {
    *   has changed.
    */
   async edit(customOptions) {
-    const defaultOptions = {
-      action: 'edit',
-
-      // If we know that this page is a redirect, use its target. Otherwise, use the regular name.
-      title: this.realName || this.name,
-
-      notminor: !customOptions.minor,
-
-      // Should be `undefined` instead of `null`, otherwise will be interepreted as a string.
-      tags: userRegistry.getCurrent().isRegistered() && cd.config.tagName || undefined,
-
-      ...cd.g.apiErrorFormatHtml,
-    };
     const options = controller.getApi().assertCurrentUser(
-      Object.assign({}, defaultOptions, customOptions)
+      Object.assign({}, {
+        action: 'edit',
+
+        // If we know that this page is a redirect, use its target. Otherwise, use the regular name.
+        title: this.realName || this.name,
+
+        notminor: !customOptions.minor,
+
+        // Should be `undefined` instead of `null`, otherwise will be interepreted as a string.
+        tags: userRegistry.getCurrent().isRegistered() && cd.config.tagName || undefined,
+
+        ...cd.g.apiErrorFormatHtml,
+      }, customOptions)
     );
 
     let resp;
