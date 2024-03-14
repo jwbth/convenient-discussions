@@ -1114,6 +1114,7 @@ class CommentForm {
 
     pre = pre.replace(/\\n/g, '\n');
     post ||= '';
+    post = post.replace(/\\n/g, '\n');
     const unescape = (snippet) => snippet.replace(/\\([+;\\])/g, '$1');
     pre = unescape(textMasker.unmaskText(pre));
     post = unescape(textMasker.unmaskText(post));
