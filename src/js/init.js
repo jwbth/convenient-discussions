@@ -19,10 +19,10 @@ import languageFallbacksData from '../../data/languageFallbacks.json';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
 import subscriptions from './subscriptions';
-import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
 import { dateTokenToMessageNames, initDayjs } from './timestamp';
 import { generatePageNamePattern, getContentLanguageMessages, skin$, transparentize, unique } from './utils';
+import { processPage } from './updateChecker';
 import { saveVisits, splitIntoBatches } from './apiWrappers';
 
 let defaultFontSize;
@@ -1023,7 +1023,7 @@ export default {
 
     cd.settings = settings;
 
-    cd.tests.processPageInBackground = updateChecker.processPage.bind(updateChecker);
+    cd.tests.processPageInBackground = processPage;
     cd.tests.showSettingsDialog = controller.showSettingsDialog.bind(controller);
     cd.tests.editSubscriptions = controller.showEditSubscriptionsDialog.bind(controller);
     cd.tests.saveVisits = saveVisits;

@@ -9,10 +9,8 @@ import CommentSubitemList from './CommentSubitemList';
 import LiveTimestamp from './LiveTimestamp';
 import cd from './cd';
 import controller from './controller';
-import navPanel from './navPanel';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
-import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
 import { ElementsTreeWalker, TreeWalker } from './treeWalker';
 import { addToArrayIfAbsent, areObjectsEqual, calculateWordOverlap, countOccurrences, dealWithLoadingBug, decodeHtmlEntities, defined, getExtendedRect, getFromLocalStorage, getHeadingLevel, getHigherNodeAndOffsetInSelection, getVisibilityByRects, isInline, saveToLocalStorage, sleep, unique, wrap, wrapDiffBody } from './utils';
@@ -61,22 +59,6 @@ function getCommentPartRect(el) {
     rect = el.getBoundingClientRect();
   }
   return rect;
-}
-
-/**
- * If every changed comment on the page has been seen and there is no new comments on the page that
- * are not displayed, mark the page as read.
- *
- * @private
- */
-function maybeMarkPageAsRead() {
-  if (
-    !navPanel.getHiddenNewCommentCount() &&
-    CommentStatic.getAll().every((comment) => !comment.willFlashChangedOnSight) &&
-    updateChecker.getLastCheckedRevisionId()
-  ) {
-    pageRegistry.getCurrent().markAsRead(updateChecker.getLastCheckedRevisionId());
-  }
 }
 
 /**
@@ -1891,7 +1873,7 @@ class Comment extends CommentSkeleton {
       saveToLocalStorage('seenRenderedChanges', seenRenderedChanges);
     }
 
-    maybeMarkPageAsRead();
+    controller.maybeMarkPageAsRead();
   }
 
   /**
@@ -2197,7 +2179,7 @@ class Comment extends CommentSkeleton {
       // The change was reverted and the user hasn't seen the change - no need to flash the comment.
       if (this.willFlashChangedOnSight) {
         this.willFlashChangedOnSight = false;
-        maybeMarkPageAsRead();
+        controller.maybeMarkPageAsRead();
       } else {
         const seenRenderedChanges = getFromLocalStorage('seenRenderedChanges');
         const articleId = mw.config.get('wgArticleId');

@@ -10,13 +10,13 @@ import cd from './cd';
 import controller from './controller';
 import debug from './debug';
 import init from './init';
+import initUpdateChecker from './updateChecker';
 import navPanel from './navPanel';
 import pageNav from './pageNav';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
 import subscriptions from './subscriptions';
 import toc from './toc';
-import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
 import { defined, definedAndNotNull, getFooter, getLastArrayElementOrSelf, sleep, underlinesToSpaces, wrap } from './utils';
 import { formatDateNative } from './timestamp';
@@ -1699,9 +1699,9 @@ class BootProcess {
         }
 
         // This should be below `this.processVisits()` because
-        // `updateChecker.maybeProcessRevisionsAtLoad()` needs `this.previousVisitUnixTime` to be
+        // `updateChecker~maybeProcessRevisionsAtLoad()` needs `this.previousVisitUnixTime` to be
         // set.
-        updateChecker.init();
+        initUpdateChecker();
       } else {
         toc.addCommentCount();
       }

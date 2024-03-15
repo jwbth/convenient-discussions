@@ -10,7 +10,6 @@ import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
-import postponements from './postponements';
 import { areObjectsEqual, focusInput, getFromLocalStorage, removeFromArrayIfPresent, saveToLocalStorage } from './utils';
 
 /**
@@ -263,6 +262,36 @@ const CommentFormStatic = {
     });
   },
 
+  actuallySaveSession() {
+    const commentForms = this.items
+      .filter((commentForm) => commentForm.isAltered())
+      .map((commentForm) => ({
+        mode: commentForm.getMode(),
+        targetData: commentForm.getTarget().getIdentifyingData(),
+        preloadConfig: commentForm.getPreloadConfig(),
+        newTopicOnTop: commentForm.isNewTopicOnTop(),
+        headline: commentForm.headlineInput?.getValue(),
+        comment: commentForm.commentInput.getValue(),
+        summary: commentForm.summaryInput.getValue(),
+        minor: commentForm.minorCheckbox?.isSelected(),
+        watch: commentForm.watchCheckbox?.isSelected(),
+        subscribe: commentForm.subscribeCheckbox?.isSelected(),
+        omitSignature: commentForm.omitSignatureCheckbox?.isSelected(),
+        delete: commentForm.deleteCheckbox?.isSelected(),
+        originalHeadline: commentForm.getOriginalHeadline(),
+        originalComment: commentForm.getOriginalComment(),
+        summaryAltered: commentForm.isSummaryAltered(),
+        omitSignatureCheckboxAltered: commentForm.isOmitSignatureCheckboxAltered(),
+        lastFocused: commentForm.getLastFocused(),
+      }));
+    const saveUnixTime = Date.now();
+    const data = commentForms.length ? { commentForms, saveUnixTime } : {};
+
+    const dataAllPages = getFromLocalStorage('commentForms');
+    dataAllPages[mw.config.get('wgPageName')] = data;
+    saveToLocalStorage('commentForms', dataAllPages);
+  },
+
   /**
    * _For internal use._ Save comment form data to the local storage. (Session storage doesn't allow
    * to restore when the browser has crashed.)
@@ -270,41 +299,12 @@ const CommentFormStatic = {
    * @param {boolean} [force=true] Save session immediately, without regard for save frequency.
    */
   saveSession(force) {
-    const save = () => {
-      const commentForms = this.items
-        .filter((commentForm) => commentForm.isAltered())
-        .map((commentForm) => ({
-          mode: commentForm.getMode(),
-          targetData: commentForm.getTarget().getIdentifyingData(),
-          preloadConfig: commentForm.getPreloadConfig(),
-          newTopicOnTop: commentForm.isNewTopicOnTop(),
-          headline: commentForm.headlineInput?.getValue(),
-          comment: commentForm.commentInput.getValue(),
-          summary: commentForm.summaryInput.getValue(),
-          minor: commentForm.minorCheckbox?.isSelected(),
-          watch: commentForm.watchCheckbox?.isSelected(),
-          subscribe: commentForm.subscribeCheckbox?.isSelected(),
-          omitSignature: commentForm.omitSignatureCheckbox?.isSelected(),
-          delete: commentForm.deleteCheckbox?.isSelected(),
-          originalHeadline: commentForm.getOriginalHeadline(),
-          originalComment: commentForm.getOriginalComment(),
-          summaryAltered: commentForm.isSummaryAltered(),
-          omitSignatureCheckboxAltered: commentForm.isOmitSignatureCheckboxAltered(),
-          lastFocused: commentForm.getLastFocused(),
-        }));
-      const saveUnixTime = Date.now();
-      const data = commentForms.length ? { commentForms, saveUnixTime } : {};
-
-      const dataAllPages = getFromLocalStorage('commentForms');
-      dataAllPages[mw.config.get('wgPageName')] = data;
-      saveToLocalStorage('commentForms', dataAllPages);
-    };
-
-    // Don't save more often than once per 5 seconds.
     if (force) {
-      save();
+      this.actuallySaveSession();
     } else {
-      postponements.add('saveSession', save, 5000);
+      // Don't save more often than once per 5 seconds.
+      this.throttledSaveSession ||= OO.ui.throttle(this.actuallySaveSession.bind(this), 500);
+      this.throttledSaveSession();
     }
   },
 

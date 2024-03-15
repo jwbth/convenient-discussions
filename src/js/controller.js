@@ -22,7 +22,6 @@ import navPanel from './navPanel';
 import notifications from './notifications';
 import pageNav from './pageNav';
 import pageRegistry from './pageRegistry';
-import postponements from './postponements';
 import settings from './settings';
 import toc from './toc';
 import { ElementsTreeWalker } from './treeWalker';
@@ -37,6 +36,7 @@ export default {
   isUpdateThreadLinesHandlerAttached: false,
   lastScrollX: 0,
   originalPageTitle: document.title,
+  lastCheckedRevisionId: null,
   addedCommentCount: 0,
   areRelevantCommentsAdded: false,
   relevantAddedCommentIds: null,
@@ -459,6 +459,10 @@ export default {
     return mw.config.get('wgRevisionId') >= mw.config.get('wgCurRevisionId');
   },
 
+  setLastCheckedRevisionId(revisionId) {
+    this.lastCheckedRevisionId = revisionId;
+  },
+
   /**
    * Save the scroll position relative to the first element in the viewport looking from the top of
    * the page.
@@ -836,9 +840,9 @@ export default {
    * @param {Event} e
    */
   handleMouseMove(e) {
-    if (postponements.is('scroll') || this.isAutoScrolling() || this.isPageOverlayOn()) return;
+    if (this.mouseMoveBlocked || this.isAutoScrolling() || this.isPageOverlayOn()) return;
 
-    // Don't throttle. Without throttling performance is generally OK, while the "frame rate" is
+    // Don't throttle. Without throttling, performance is generally OK, while the "frame rate" is
     // about 50 (so, the reaction time is about 20ms). Lower values would be less comfortable.
     CommentStatic.highlightHovered(e);
   },
@@ -959,7 +963,9 @@ export default {
     // comments may be registered as seen after a press of Page Down/Page Up. One scroll in Chrome,
     // Firefox with Page Up/Page Down takes a little less than 200ms, but 200ms proved to be not
     // enough, so we try 300ms.
-    postponements.add('scroll', () => {
+    this.throttledHandleScroll ||= OO.ui.throttle(() => {
+      this.mouseMoveBlocked = false;
+
       if (this.isAutoScrolling()) return;
 
       if (this.isPageActive()) {
@@ -974,6 +980,8 @@ export default {
         SectionStatic.maybeUpdateVisibility();
       }
     }, 300);
+    this.mouseMoveBlocked = true;
+    this.throttledHandleScroll();
 
     if (window.scrollX !== this.lastScrollX) {
       $(document).trigger('horizontalscroll.cd');
@@ -1020,7 +1028,11 @@ export default {
    * _For internal use._ Handle a `selectionChange` event.
    */
   handleSelectionChange() {
-    postponements.add('selectionChange', CommentStatic.getSelectedComment.bind(CommentStatic), 200);
+    this.throttledHandleSelectionChange ||= OO.ui.throttle(
+      CommentStatic.getSelectedComment.bind(CommentStatic),
+      200
+    );
+    this.throttledHandleSelectionChange();
   },
 
   /**
@@ -2234,5 +2246,19 @@ export default {
    */
   getRelevantAddedCommentIds() {
     return this.relevantAddedCommentIds;
+  },
+
+  /**
+   * _For internal use._ If every changed comment on the page has been seen and there are no new
+   * comments on the page that are not displayed, mark the page as read.
+   */
+  maybeMarkPageAsRead() {
+    if (
+      !this.addedCommentCount &&
+      CommentStatic.getAll().every((comment) => !comment.willFlashChangedOnSight) &&
+      this.lastCheckedRevisionId
+    ) {
+      pageRegistry.getCurrent().markAsRead(this.lastCheckedRevisionId);
+    }
   },
 };

@@ -21,22 +21,6 @@ let cachedCommentsBySection;
 
 export default {
   /**
-   * The number of new, shown but unseen comments on the page.
-   *
-   * @type {?number}
-   * @private
-   */
-  unseenCommentCount: null,
-
-  /**
-   * The number of new, not yet shown comments on the page.
-   *
-   * @type {number}
-   * @private
-   */
-  hiddenNewCommentCount: 0,
-
-  /**
    * _For internal use._ Render the navigation panel. This is done when the page is first loaded, or
    * created using the script.
    */
@@ -318,8 +302,6 @@ export default {
     }
     this.refreshButton.element.classList
       .toggle('cd-navPanel-refreshButton-relevant', areThereRelevant);
-
-    this.hiddenNewCommentCount = commentCount;
   },
 
   /**
@@ -406,11 +388,11 @@ export default {
   updateFirstUnseenButton() {
     if (!this.isMounted()) return;
 
-    this.unseenCommentCount = CommentStatic.getAll()
+    const unseenCommentCount = CommentStatic.getAll()
       .filter((comment) => comment.isSeen === false)
       .length;
-    if (this.unseenCommentCount) {
-      this.firstUnseenButton.show().setLabel(this.unseenCommentCount);
+    if (unseenCommentCount) {
+      this.firstUnseenButton.show().setLabel(unseenCommentCount);
     } else {
       this.firstUnseenButton.hide();
     }
@@ -427,14 +409,5 @@ export default {
     const areThereHidden = CommentFormStatic.getAll()
       .some((commentForm) => !commentForm.$element.cdIsInViewport(true));
     this.commentFormButton[areThereHidden ? 'show' : 'hide']();
-  },
-
-  /**
-   * Get the number of new, not yet shown comments on the page.
-   *
-   * @returns {number}
-   */
-  getHiddenNewCommentCount() {
-    return this.hiddenNewCommentCount;
   },
 };

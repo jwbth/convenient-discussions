@@ -23,7 +23,7 @@ const resolvers = {};
 
 let isBackgroundCheckArranged;
 let previousVisitRevisionId;
-let lastCheckedRevisionId = null;
+let lastCheckedRevisionId;
 let resolverCount = 0;
 
 /**
@@ -99,7 +99,7 @@ async function processPage(revisionToParseId) {
     revisionData[message.revisionId] = message;
   }
 
-  // Clean up revisionData from values that can't be reused as it may grow really big. (The newest
+  // Clean up `revisionData` from values that can't be reused as it may grow really big. (The newest
   // revision could be reused as the current revision; the current revision could be reused as the
   // previous visit revision.)
   Object.keys(revisionData).forEach((key) => {
@@ -346,7 +346,11 @@ async function checkForUpdates() {
 
     const currentRevisionId = mw.config.get('wgRevisionId');
     if (revisions.length && revisions[0].revid > (lastCheckedRevisionId || currentRevisionId)) {
-      const { revisionId, comments: newComments, sections } = await processPage();
+      const {
+        revisionId,
+        comments: newComments,
+        sections,
+      } = await processPage();
       if (isPageStillAtRevision(currentRevisionId)) {
         const { comments: currentComments } = await processPage(currentRevisionId);
 
@@ -354,6 +358,7 @@ async function checkForUpdates() {
         // lastCheckedRevisionId corresponds to the versions of comments that are currently
         // rendered.
         lastCheckedRevisionId = revisionId;
+        controller.setLastCheckedRevisionId(lastCheckedRevisionId);
 
         if (isPageStillAtRevision(currentRevisionId)) {
           mapSections(sections);
@@ -675,50 +680,36 @@ async function onMessageFromWorker(e) {
   }
 }
 
-const updateChecker = {
-  /**
-   * _For internal use._ Initialize the update checker. Executed on each page reload.
-   *
-   * @memberof module:updateChecker
-   */
-  async init() {
-    isBackgroundCheckArranged = false;
-    previousVisitRevisionId = null;
+/**
+ * _For internal use._ Initialize the update checker. Executed on each page reload.
+ *
+ * @memberof module:updateChecker
+ */
+async function initUpdateChecker() {
+  isBackgroundCheckArranged = false;
+  previousVisitRevisionId = null;
 
-    if (controller.getWorker().onmessage) {
-      removeAlarmViaWorker();
-    } else {
-      controller.getWorker().onmessage = onMessageFromWorker;
-    }
+  if (controller.getWorker().onmessage) {
+    removeAlarmViaWorker();
+  } else {
+    controller.getWorker().onmessage = onMessageFromWorker;
+  }
 
-    setAlarmViaWorker(cd.g.updateCheckInterval * 1000);
+  setAlarmViaWorker(cd.g.updateCheckInterval * 1000);
 
-    const bootProcess = controller.getBootProcess();
+  const bootProcess = controller.getBootProcess();
 
-    // It is handled in BootProcess#processVisits.
-    await bootProcess.getVisitsRequest();
+  // It is handled in BootProcess#processVisits.
+  await bootProcess.getVisitsRequest();
 
-    if (bootProcess.getPreviousVisitUnixTime()) {
-      const submittedCommentId = (
-        (bootProcess.data('wasCommentFormSubmitted') && bootProcess.data('commentIds')?.[0]) ||
-        undefined
-      );
-      maybeProcessRevisionsAtLoad(submittedCommentId);
-    }
-  },
+  if (bootProcess.getPreviousVisitUnixTime()) {
+    const submittedCommentId = (
+      (bootProcess.data('wasCommentFormSubmitted') && bootProcess.data('commentIds')?.[0]) ||
+      undefined
+    );
+    maybeProcessRevisionsAtLoad(submittedCommentId);
+  }
+}
 
-  /**
-   * Get the ID of the last revision checked for updates.
-   *
-   * @type {?string}
-   * @memberof module:updateChecker
-   */
-  getLastCheckedRevisionId() {
-    return lastCheckedRevisionId;
-  },
-};
-
-// For tests
-Object.assign(updateChecker, { processPage });
-
-export default updateChecker;
+export default initUpdateChecker;
+export { processPage };
