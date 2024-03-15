@@ -803,9 +803,6 @@ class BootProcess {
 
     // Can't do it earlier: we don't have section IDs until now.
     if (userRegistry.getCurrent().isRegistered() && settings.get('useTopicSubscription')) {
-      if (this.firstRun) {
-        subscriptions.setupTopicSubscription();
-      }
       subscriptions.load();
     }
 
@@ -1621,6 +1618,16 @@ class BootProcess {
       debug.startTimer('process sections');
       this.processSections();
       debug.stopTimer('process sections');
+    } else {
+      if (
+        userRegistry.getCurrent().isRegistered() &&
+        settings.get('useTopicSubscription') &&
+        this.firstRun
+    ) {
+        subscriptions.load().then(() => {
+          subscriptions.addPageSubscribeButton();
+        });
+      }
     }
 
     if (this.data('html')) {

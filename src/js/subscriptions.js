@@ -18,14 +18,6 @@ let subscribeLegacyPromise = Promise.resolve();
 
 export default {
   /**
-   * _For internal use._ Setup the data for the native topic subscription feature (not the CD's
-   * legacy section watching).
-   */
-  setupTopicSubscription() {
-    this.pageSubscribeId = `p-topics-${cd.g.namespaceNumber}:${spacesToUnderlines(mw.config.get('wgTitle'))}`;
-  },
-
-  /**
    * Request the subscription list from the server and assign them to the `registry` (and
    * `allPagesRegistry` in case of the legacy subscriptions) property.
    *
@@ -35,6 +27,7 @@ export default {
   load(reuse = false) {
     this.loadRequest = (async () => {
       if (settings.get('useTopicSubscription')) {
+        this.pageSubscribeId ||= `p-topics-${cd.g.namespaceNumber}:${spacesToUnderlines(mw.config.get('wgTitle'))}`;
         this.registry = await getDtSubscriptions(
           SectionStatic.getAll()
             .filter((section) => section.subscribeId)
