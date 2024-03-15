@@ -274,6 +274,7 @@ class CommentForm {
     controller.updatePageTitle();
 
     this.onboardOntoMultipleForms();
+    this.onboardOntoUpload();
 
     /**
      * A comment form has been created and added to the page.
@@ -3975,6 +3976,54 @@ class CommentForm {
     popup.toggle(true);
     popup.on('closing', () => {
       settings.saveSettingOnTheFly('manyForms-onboarded', true);
+    });
+  }
+
+  /**
+   * Show an onboarding popup that informs the user they can upload images.
+   *
+   * @private
+   */
+  onboardOntoUpload() {
+    if (
+      settings.get('upload-onboarded') ||
+      // Left column hidden in Timeless
+      (cd.g.skin === 'timeless' && window.innerWidth < 1100) ||
+
+      (cd.g.skin === 'vector-2022' && window.innerWidth < 1000)
+    ) {
+      return;
+    }
+
+    const button = new OO.ui.ButtonWidget({
+      label: cd.mws('visualeditor-educationpopup-dismiss'),
+      flags: ['progressive', 'primary'],
+    });
+    button.on('click', () => {
+      popup.toggle(false);
+    });
+    const popup = new OO.ui.PopupWidget({
+      icon: 'lightbulb',
+      label: cd.s('popup-upload-title'),
+      $content: $.cdMerge(
+        $('<p>').text(cd.s('popup-upload-text')),
+        $('<p>').append(button.$element),
+      ),
+      head: true,
+      $floatableContainer: this.commentInput.$element,
+      $container: controller.$root,
+      position: (
+        $('#vector-main-menu-pinned-container, #vector-toc-pinned-container').is(':visible')
+      ) ?
+        'before' :
+        'below',
+      padded: true,
+      classes: ['cd-popup-onboarding'],
+    });
+    $(document.body).append(popup.$element);
+    popup.toggle(true);
+    popup.on('closing', () => {
+      settings.saveSettingOnTheFly('upload-onboarded', true);
     });
   }
 }

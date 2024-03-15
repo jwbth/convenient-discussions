@@ -188,7 +188,7 @@ export default class UploadDialog extends mw.Upload.Dialog {
     this.autosave = autosave;
     if (this.autosave) {
       this.actions.get({ actions: ['upload', 'save'] }).forEach((action) => {
-        action.setLabel('Upload and save');
+        action.setLabel(cd.s('ud-uploadandsave'));
       });
     } else {
       this.actions.get({ actions: ['upload', 'save'] }).forEach((action) => {

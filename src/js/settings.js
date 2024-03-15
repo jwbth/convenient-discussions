@@ -52,6 +52,7 @@ export default {
       'manyForms-onboarded',
       'newTopicsSubscription-onboarded',
       'notificationsBlacklist',
+      'upload-onboarded',
     ],
 
     resetsTo: {
@@ -96,6 +97,7 @@ export default {
       'signaturePrefix': cd.config.defaultSignaturePrefix,
       'subscribeOnReply': true,
       'timestampFormat': 'default',
+      'upload-onboarded': false,
       'useBackgroundHighlighting': true,
       'useTemplateData': true,
       'useTopicSubscription': Boolean(mw.loader.getState('ext.discussionTools.init')),
