@@ -125,6 +125,11 @@ export class Page {
     }
 
     /**
+     * Page's {@link external:mw.Title mw.Title} object.
+     */
+    this.mwTitle = mwTitle;
+
+    /**
      * Page name, with a namespace name, not necessarily normalized (not normalized if a gendered
      * name is available). The word separator is a space, not an underline.
      *

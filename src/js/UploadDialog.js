@@ -260,18 +260,20 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
       value: '',
     });
     this.insertSubjectPageButton = new PseudoLink({
-      label: new mw.Title(pageRegistry.getCurrent().name).getSubjectPage().getPrefixedText(),
+      label: pageRegistry.getCurrent().mwTitle.getSubjectPage().getPrefixedText(),
       input: this.controls.title.input,
     });
-    this.insertTalkPageButton = new PseudoLink({
-      label: pageRegistry.getCurrent().name,
-      input: this.controls.title.input,
-    });
+    if (pageRegistry.getCurrent().mwTitle.isTalkPage()) {
+      this.insertTalkPageButton = new PseudoLink({
+        label: pageRegistry.getCurrent().name,
+        input: this.controls.title.input,
+      });
+    }
     this.controls.title.field = new OO.ui.FieldLayout(this.controls.title.input, {
       label: cd.s('ud-preset-projectscreenshot-title'),
       help: $.cdMerge(
         $('<div>').append(this.insertSubjectPageButton.element),
-        $('<div>').append(this.insertTalkPageButton.element),
+        this.insertTalkPageButton ? $('<div>').append(this.insertTalkPageButton.element) : undefined,
         $('<div>').html(cd.sParse('ud-preset-projectscreenshot-title-help')),
       ),
       align: 'top',
@@ -321,7 +323,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
     const titleInputDisabled = preset !== 'projectScreenshot';
     this.controls.title.input.setDisabled(titleInputDisabled);
     this.insertSubjectPageButton.setDisabled(titleInputDisabled);
-    this.insertTalkPageButton.setDisabled(titleInputDisabled);
+    this.insertTalkPageButton?.setDisabled(titleInputDisabled);
 
     if (typeof itemOrSelected !== 'boolean') {
       // A radio option was selected, not the checkbox.
