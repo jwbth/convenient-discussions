@@ -187,18 +187,19 @@ export async function getVisits(reuse = false) {
 }
 
 /**
- * Remove the oldest 10% of visits when the size limit is hit.
+ * Remove the oldest `share`% of visits when the size limit is hit.
  *
  * @param {object} originalVisits
+ * @param {number} share
  * @returns {object}
  * @private
  */
-function cleanUpVisits(originalVisits) {
+function cleanUpVisits(originalVisits, share = 0.1) {
   const visits = Object.assign({}, originalVisits);
   const timestamps = Object.keys(visits)
     .reduce((acc, key) => acc.concat(visits[key]), [])
     .sort((a, b) => a - b);
-  const boundary = timestamps[Math.floor(timestamps.length / 10)];
+  const boundary = timestamps[Math.floor(timestamps.length * share)];
   Object.keys(visits).forEach((key) => {
     visits[key] = visits[key].filter((visit) => visit >= boundary);
     if (!visits[key].length) {
@@ -216,16 +217,19 @@ function cleanUpVisits(originalVisits) {
 export async function saveVisits(visits) {
   if (!visits || !userRegistry.getCurrent().isRegistered()) return;
 
+  let compressed = lzString.compressToEncodedURIComponent(packVisits(visits));
+  if (compressed.length > 20480) {
+    cleanUpVisits(visits, ((compressed.length - 20480) / compressed.length) + 0.05);
+    compressed = lzString.compressToEncodedURIComponent(packVisits(visits));
+  }
+
   try {
-    await saveLocalOption(
-      cd.g.visitsOptionName,
-      lzString.compressToEncodedURIComponent(packVisits(visits))
-    );
+    await saveLocalOption(cd.g.visitsOptionName, compressed);
   } catch (e) {
     if (e instanceof CdError) {
       const { type, code } = e.data;
       if (type === 'internal' && code === 'sizeLimit') {
-        saveVisits(cleanUpVisits(visits));
+        saveVisits(cleanUpVisits(visits, 0.1));
       } else {
         console.error(e);
       }
