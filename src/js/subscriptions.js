@@ -139,7 +139,6 @@ export default {
     }
 
     this.updateRegistry(subscribeId, subscribe);
-    this.maybeShowNotice();
   },
 
   /**
@@ -391,41 +390,6 @@ export default {
     if (updated) {
       this.saveLegacy();
     }
-  },
-
-  /**
-   * Show a message dialog informing the user about the new topic subscription feature.
-   *
-   * @private
-   */
-  maybeShowNotice() {
-    if (!settings.get('useTopicSubscription') || settings.get('useTopicSubscription-seenNotice')) {
-      return;
-    }
-
-    OO.ui.alert(
-      $('<div>')
-        .append(
-          $('<img>')
-            .attr('width', 512)
-            .attr('height', 253)
-            .attr('src', '//upload.wikimedia.org/wikipedia/commons/thumb/0/01/Screenshot_of_topic_subscription_prototype.png/512px-Screenshot_of_topic_subscription_prototype.png')
-            .addClass('cd-tsnotice-img'),
-          wrap(cd.sParse('topicsubscription-notice'), {
-            callbacks: {
-              'cd-notification-notificationSettings': () => {
-                controller.showSettingsDialog('notifications');
-              },
-            },
-            targetBlank: true,
-            tagName: 'div',
-          }).addClass('cd-tsnotice-text'),
-        )
-        .children(),
-      { size: 'large' }
-    );
-
-    settings.saveSettingOnTheFly('useTopicSubscription-seenNotice', true);
   },
 
   /**

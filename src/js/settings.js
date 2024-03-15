@@ -44,7 +44,6 @@ export default {
       'insertButtons-altered': ['haveInsertButtonsBeenAltered'],
       'improvePerformance-lastSuggested': ['improvePerformanceLastSuggested'],
       subscribeOnReply: ['watchSectionOnReply'],
-      'useTopicSubscription-seenNotice': ['topicSubscriptionSeenNotice'],
     },
 
     states: [
@@ -53,7 +52,6 @@ export default {
       'manyForms-onboarded',
       'newTopicsSubscription-onboarded',
       'notificationsBlacklist',
-      'useTopicSubscription-seenNotice',
     ],
 
     resetsTo: {
@@ -101,7 +99,6 @@ export default {
       'useBackgroundHighlighting': true,
       'useTemplateData': true,
       'useTopicSubscription': Boolean(mw.loader.getState('ext.discussionTools.init')),
-      'useTopicSubscription-seenNotice': false,
       'useUiTime': true,
 
       // On wikis where there is no topic subscriptions, watching pages on replying is the
