@@ -247,7 +247,7 @@ export function confirmCloseDialog(dialog, dialogCode) {
 }
 
 /**
- * Standard process dialog error handler.
+ * Out process dialog error handler.
  *
  * @param {external:OO.ui.ProcessDialog} dialog
  * @param {CdError|Error} e

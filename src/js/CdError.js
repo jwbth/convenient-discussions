@@ -13,7 +13,7 @@ class CdError extends Error {
    * @param {object} [data.apiResp] API response.
    * @param {object} [data.details] Additional details.
    */
-  constructor(data) {
+  constructor(data = {}) {
     let message;
     if (data) {
       message = data.type;

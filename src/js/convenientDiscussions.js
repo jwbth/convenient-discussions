@@ -123,8 +123,10 @@ Object.assign(cd, {
     } else {
       message = mw.message(name, ...params).parse();
     }
-    if (!params.length) {
-      // Use cache since in some places a message could be requested very frequently.
+    if (!params.length && !message.startsWith('⧼')) {
+      // Use cache since in some places a message could be requested very frequently. Don't cache
+      // missing messages (they can come from dialogs opened with a network error, like
+      // UploadDialog; messages can still be accessed for some silly reason).
       mwStringsCache[name] = message;
     }
     return message;

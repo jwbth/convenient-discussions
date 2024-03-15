@@ -24,6 +24,8 @@ import { escapePipesOutsideLinks } from './wikitext';
 import { generateTagsRegexp, removeWikiMarkup } from './wikitext';
 import { handleApiReject, parseCode } from './apiWrappers';
 
+const allowedFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'];
+
 let commentFormsCounter = 0;
 
 /**
@@ -932,7 +934,13 @@ class CommentForm {
     $input.wikiEditor('addModule', toolbarConfig);
     const dialogsConfig = wikiEditorModule.packageExports['jquery.wikiEditor.dialogs.config.js'];
     dialogsConfig.replaceIcons($input);
-    $input.wikiEditor('addModule', dialogsConfig.getDefaultConfig());
+    const dialogsDefaultConfig = dialogsConfig.getDefaultConfig();
+    const commentForm = this;
+    dialogsDefaultConfig.dialogs['insert-file'].dialog.buttons['wikieditor-toolbar-tool-file-upload'] = function () {
+      $(this).dialog('close');
+      commentForm.uploadImage(undefined, true);
+    };
+    $input.wikiEditor('addModule', dialogsDefaultConfig);
 
     this.commentInput.$element
       .find('.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="newline"], .tool[rel="reference"], .option[rel="heading-2"]')
@@ -1623,6 +1631,88 @@ class CommentForm {
   }
 
   /**
+   * Upload an image and insert its markup to the comment form.
+   *
+   * @param {File} file File to upload.
+   * @param {boolean} openInsertFileDialogAfterwards Whether to open the WikiEditor's "Insert file"
+   *   dialog after the "Upload file" dialog is closed with success.
+   */
+  async uploadImage(file, openInsertFileDialogAfterwards) {
+    if (this.uploadDialog || this.commentInput.isPending()) return;
+
+    this.pushPending();
+
+    try {
+      await mw.loader.using([
+        'mediawiki.Upload.Dialog',
+        'mediawiki.ForeignStructuredUpload.BookletLayout',
+        'mediawiki.widgets',
+      ]);
+    } catch (e) {
+      mw.notify(cd.s('cf-error-uploadimage'), { type: 'error' });
+      this.popPending();
+      return;
+    }
+
+    this.uploadDialog = new (require('./UploadDialog').default)();
+    const windowManager = controller.getWindowManager();
+    windowManager.addWindows([this.uploadDialog]);
+    const win = windowManager.openWindow(this.uploadDialog, {
+      file,
+      commentForm: this,
+    });
+    win.closed.then(() => {
+      delete this.uploadDialog;
+    });
+
+    this.uploadDialog.uploadBooklet.on('fileSaved', (imageInfo) => {
+      this.uploadDialog.close();
+      win.closed.then(() => {
+        if (openInsertFileDialogAfterwards) {
+          $.wikiEditor.modules.dialogs.api.openDialog(this, 'insert-file');
+          $('#wikieditor-toolbar-file-target').val(imageInfo.canonicaltitle);
+        } else {
+          // If some text was selected, insert a link. Otherwise, insert an image.
+          if (this.commentInput.getRange().from === this.commentInput.getRange().to) {
+            // Localise the "File:" prefix
+            const filename = new mw.Title(imageInfo.canonicaltitle).getPrefixedText();
+            this.encapsulateSelection({
+              pre: `[[${filename}|frameless|none]]`,
+            });
+          } else {
+            this.encapsulateSelection({
+              pre: `[${imageInfo.url} `,
+              post: `]`,
+            });
+          }
+        }
+      });
+    });
+  }
+
+  /**
+   * Handle `paste` and `drop` events.
+   *
+   * @param {event} e
+   */
+  handlePasteDrop(e) {
+    const data = e.originalEvent.clipboardData || e.originalEvent.dataTransfer;
+
+    if (data.types.includes('text/html')) {
+      const html = data.getData('text/html');
+      if (!controller.isConvertableToWikitext(html)) return;
+
+      this.suggestConvertToWikitext(html, data.getData('text/plain')?.replace(/\r/g, ''));
+    } else {
+      const image = [...data.items].find((item) => allowedFileTypes.includes(item.type));
+      if (image) {
+        e.preventDefault();
+        this.uploadImage(image.getAsFile());
+      }
+    }
+  }
+
+  /**
    * Add event listeners to the text inputs.
    *
    * @param {Function} saveSessionEventHandler
@@ -1707,15 +1797,21 @@ class CommentForm {
       .on('change', saveSessionEventHandler);
 
     this.commentInput.$input
-      .on('paste drop', (e) => {
-        const data = e.originalEvent.clipboardData || e.originalEvent.dataTransfer;
-        if (!data.types.includes('text/html')) return;
-
-        const html = data.getData('text/html');
-        if (!controller.isConvertableToWikitext(html)) return;
-
-        this.suggestConvertToWikitext(html, data.getData('text/plain')?.replace(/\r/g, ''));
+      .on('dragover', (e) => {
+        if (
+          ![...e.originalEvent.dataTransfer.items].some(((item) => (
+            allowedFileTypes.includes(item.type)
+          )))
+        ) {
+          return;
+        }
+        this.commentInput.$element.addClass('cd-input-acceptFile');
+        e.preventDefault();
       })
+      .on('dragleave dragend drop blur', () => {
+        this.commentInput.$element.removeClass('cd-input-acceptFile');
+      })
+      .on('paste drop', this.handlePasteDrop.bind(this))
       .on('tribute-replaced', (e) => {
         if (e.originalEvent.detail.instance.trigger === cd.config.mentionCharacter) {
           if (this.mode === 'edit') {

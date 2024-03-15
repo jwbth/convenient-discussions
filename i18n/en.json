@@ -199,6 +199,7 @@
   "cf-error-pagedoesntexist": "The page doesn't exist.",
   "cf-error-formconflict": "There already is an \"Add topic\" form of a different type open on the page. Close that form to open this one.",
   "cf-error-othersubmitted": "Can't submit the form because another form is being submitted right now.",
+  "cf-error-uploadimage": "Couldn't upload the image.",
 
   "cf-confirm-noheadline-topic": "You didn't enter the topic subject. The comment will be added to the previous section, without a headline.",
   "cf-confirm-noheadline-subsection": "You didn't enter the section subject. The comment will be added to the previous section, without a headline.",
@@ -414,6 +415,19 @@
   "move-sourcepagecode": "''Moved to [[$1]]. $2''",
   "move-targetpagecode": "''Moved from [[$1]]. $2''",
 
+  "ud-preset": "Choose a preset",
+  "ud-preset-projectscreenshot": "This is a screenshot of $1 or other Wikimedia project",
+  "ud-preset-projectscreenshot-help": "It shouldn't contain non-free fair use pictures. Free pictures should be credited by linking their authors.",
+  "ud-preset-projectscreenshot-title": "Screenshotted page",
+  "ud-preset-projectscreenshot-title-help": "If this is a screenshot of another project, use a full interwiki prefix, e.g. <code>wikt:fr:mot</code>.",
+  "ud-preset-mediawikiscreenshot": "This is a screenshot of the MediaWiki software (e.g. user interface)",
+  "ud-preset-ownwork": "This is my own work",
+  "ud-preset-no": "No preset",
+  "ud-configure": "Configure the contents of all the input fields",
+  "ud-source": "Source",
+  "ud-author": "Author",
+  "ud-license": "License template",
+
   "error-loaddata": "{{int:convenient-discussions-script-name}}: Couldn't load the data required by the script.",
   "error-needreloadpage": "API error. Please <span class=\"cd-notification-reloadPage\">[[$1|reload the page]]</span> and try again.",
   "error-processpage": "{{int:convenient-discussions-script-name}}: Couldn't process the page. See the details in the JavaScript console (F12 → Console).",
@@ -464,5 +478,6 @@
   "ellipsis": "…",
   "loading-ellipsis": "Loading…",
   "addtopic": "Add topic",
-  "addtopicbutton-tooltip": "Open in a new tab to create a new topic using the standard page, not Convenient Discussions"
+  "addtopicbutton-tooltip": "Open in a new tab to create a new topic using the standard page, not Convenient Discussions",
+  "pseudolink-tooltip": "Click to insert"
 }

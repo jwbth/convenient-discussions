@@ -1005,3 +1005,66 @@ export function countOccurrences(string, regexp) {
 export function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+/**
+ * Get the database name for a canonical hostname of a WMF wiki.
+ *
+ * @param {string} hostname Canonical hostname.
+ * @returns {string}
+ */
+export function getDbnameForHostname(hostname) {
+  /*
+    To update the lists of special cases and non-chapter Wikimedia domains,
+    1. Run a SQL query `select url, dbname from wiki`, export in the JSON format.
+    2. Create a `hostnameAndDbname` variable, set it to the result rows.
+    3. Run
+        const wikimediaNonChapters = [];
+        const specialCases = Object.fromEntries(
+          Object.entries(hostnameToDbname).filter(([hostname, dbname]) => {
+            let [, subdomain, languagedProject] = hostname.match(/^([^.]+)\.(wikibooks|wikinews|wikiquote|wikisource|wikiversity|wikivoyage|wikipedia|wiktionary|wikimedia)\./) || [];
+            if (!languagedProject) {
+              return true;
+            }
+            subdomain = subdomain.replace(/-/g, '_');
+            if (languagedProject === 'wikipedia') {
+              languagedProject = 'wiki';
+            }
+            if (dbname !== `${subdomain}${languagedProject}`) {
+              if (languagedProject === 'wikimedia' && dbname === subdomain + 'wiki') {
+                wikimediaNonChapters.push(subdomain);
+                return false;
+              }
+              return true;
+            }
+          })
+        );
+        console.log(`/^(${wikimediaNonChapters.join('|')})$/`);
+        console.log(JSON.stringify(specialCases));
+   */
+  const specialCases = {
+    'api.wikimedia.org': 'apiportalwiki',
+    'be-tarask.wikipedia.org': 'be_x_oldwiki',
+    'ee.wikimedia.org': 'etwikimedia',
+    'wikitech.wikimedia.org': 'labswiki',
+    'www.mediawiki.org': 'mediawikiwiki',
+    'wikisource.org': 'sourceswiki',
+    'test-commons.wikimedia.org': 'testcommonswiki',
+    'test.wikidata.org': 'testwikidatawiki',
+    'www.wikidata.org': 'wikidatawiki',
+    'www.wikifunctions.org': 'wikifunctionswiki',
+  };
+  const languagedProjectsRegexp = /^([^.]+)\.(wikibooks|wikinews|wikiquote|wikisource|wikiversity|wikivoyage|wiktionary|wikimedia|wikipedia)\./;
+  const wikimediaNonChaptersRegexp = /^(advisory|commons|donate|foundation|incubator|login|meta|outreach|quality|species|strategy|usability|vote)$|^wikimania/;
+  if (specialCases[hostname]) {
+    return specialCases[hostname];
+  }
+  let [, subdomain, languagedProject] = hostname.match(languagedProjectsRegexp) || [];
+  subdomain = subdomain.replace(/-/g, '_');
+  if (
+    languagedProject === 'wikipedia' ||
+    (languagedProject === 'wikimedia' && wikimediaNonChaptersRegexp.test(subdomain))
+  ) {
+    languagedProject = 'wiki';
+  }
+  return subdomain + languagedProject;
+}
