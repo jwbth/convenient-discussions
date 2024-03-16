@@ -19,7 +19,7 @@ import settings from './settings';
 import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
 import { buildEditSummary, defined, focusInput, getDayTimestamp, insertText, isCmdModifierPressed, isInputFocused, keyCombination, removeDoubleSpaces, sleep, unique, wrapHtml, wrapDiffBody } from './utils';
-import { createCheckboxField } from './ooui';
+import { createCheckboxField, getTextInputWidgetClass } from './ooui';
 import { escapePipesOutsideLinks } from './wikitext';
 import { generateTagsRegexp, removeWikiMarkup } from './wikitext';
 import { handleApiReject, parseCode } from './apiWrappers';
@@ -428,7 +428,7 @@ class CommentForm {
      *
      * @type {external:OO.ui.TextInputWidget}
      */
-    this.summaryInput = new OO.ui.TextInputWidget({
+    this.summaryInput = new (getTextInputWidgetClass())({
       value: initialState?.summary ?? '',
       maxLength: cd.g.summaryLengthLimit,
       placeholder: cd.s('cf-summary-placeholder'),

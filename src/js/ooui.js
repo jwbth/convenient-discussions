@@ -164,7 +164,7 @@ function getCheckboxInputWidgetClass() {
   });
 }
 
-function getTextInputWidgetClass() {
+export function getTextInputWidgetClass() {
   return tweakUserOoUiClass(class extends OO.ui.TextInputWidget {
     constructor(...args) {
       super(...args);
