@@ -1,8 +1,8 @@
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
+import { CdOoUiProcessDialogMixin, createCheckboxField, createNumberField, createRadioField, createTextField, mixinUserOoUiClass, tweakUserOoUiClass } from './ooui';
 import { areObjectsEqual } from './utils';
-import { confirmCloseDialog, createCheckboxField, createNumberField, createRadioField, createTextField, handleDialogError, isDialogUnsaved, tweakUserOoUiClass } from './ooui';
 import { saveGlobalOption, saveLocalOption } from './apiWrappers';
 
 /**
@@ -42,6 +42,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
     },
   ];
   static size = 'large';
+  static cdKey = 'sd';
 
   /**
    * Create a settings dialog.
@@ -149,7 +150,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       try {
         [this.settings] = await Promise.all(this.preparatoryRequests);
       } catch (e) {
-        handleDialogError(this, e, 'error-settings-load', false);
+        this.handleError(e, 'error-settings-load', false);
         return;
       }
 
@@ -167,7 +168,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
 
       this.popPending();
 
-      controller.addPreventUnloadCondition('dialog', () => isDialogUnsaved(this));
+      controller.addPreventUnloadCondition('dialog', () => this.isUnsaved());
     });
   }
 
@@ -188,7 +189,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
         try {
           await settings.save(this.collectSettings());
         } catch (e) {
-          handleDialogError(this, e, 'error-settings-save', true);
+          this.handleError(e, 'error-settings-save', true);
           return;
         }
 
@@ -206,7 +207,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       });
     } else if (action === 'close') {
       return new OO.ui.Process(() => {
-        confirmCloseDialog(this, 'sd');
+        this.confirmClose();
       });
     } else if (action === 'reset') {
       return new OO.ui.Process(() => {
@@ -533,7 +534,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
           saveGlobalOption(cd.g.settingsOptionName, null),
         ]);
       } catch (e) {
-        handleDialogError(this, e, 'sd-error-removedata', false);
+        this.handleError(e, 'sd-error-removedata', false);
         return;
       }
 
@@ -552,5 +553,6 @@ class SettingsDialog extends OO.ui.ProcessDialog {
 }
 
 tweakUserOoUiClass(SettingsDialog, OO.ui.ProcessDialog);
+mixinUserOoUiClass(SettingsDialog, CdOoUiProcessDialogMixin);
 
 export default SettingsDialog;

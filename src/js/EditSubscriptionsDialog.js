@@ -3,7 +3,7 @@ import cd from './cd';
 import controller from './controller';
 import settings from './settings';
 import subscriptions from './subscriptions';
-import { confirmCloseDialog, handleDialogError, isDialogUnsaved, tweakUserOoUiClass } from './ooui';
+import { CdOoUiProcessDialogMixin, mixinUserOoUiClass, tweakUserOoUiClass } from './ooui';
 import { focusInput, sleep, unique } from './utils';
 import { getPageIds, getPageTitles } from './apiWrappers';
 
@@ -31,6 +31,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
     },
   ];
   static size = 'large';
+  static cdKey = 'ewsd';
 
   /**
    * Create an "Edit subscriptions" dialog.
@@ -126,7 +127,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
         await subscriptions.getLoadRequest();
         pages = await getPageTitles(subscriptions.getPageIds());
       } catch (e) {
-        handleDialogError(this, e, 'ewsd-error-processing', false);
+        this.handleError(e, 'ewsd-error-processing', false);
         return;
       }
 
@@ -170,7 +171,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
       this.updateSize();
       this.popPending();
 
-      controller.addPreventUnloadCondition('dialog', () => isDialogUnsaved(this));
+      controller.addPreventUnloadCondition('dialog', () => this.isUnsaved());
     });
   }
 
@@ -188,7 +189,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
       return new OO.ui.Process(this.save);
     } else if (action === 'close') {
       return new OO.ui.Process(async () => {
-        await confirmCloseDialog(this, 'ewsd');
+        await this.confirmClose();
       });
     }
     return super.getActionProcess(action);
@@ -227,7 +228,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
     try {
       ({ normalized, redirects, pages } = await getPageIds(pageTitles) || {});
     } catch (e) {
-      handleDialogError(this, e, 'ewsd-error-processing', true);
+      this.handleError(e, 'ewsd-error-processing', true);
       return;
     }
 
@@ -261,12 +262,12 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
       if (e instanceof CdError) {
         const { type, code } = e.data;
         if (type === 'internal' && code === 'sizeLimit') {
-          handleDialogError(this, e, 'ewsd-error-maxsize', false);
+          this.handleError(e, 'ewsd-error-maxsize', false);
         } else {
-          handleDialogError(this, e, 'ewsd-error-processing', true);
+          this.handleError(e, 'ewsd-error-processing', true);
         }
       } else {
-        handleDialogError(this, e);
+        this.handleError(e);
       }
       this.actions.setAbilities({ save: true });
       return;
@@ -279,5 +280,6 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
 }
 
 tweakUserOoUiClass(EditSubscriptionsDialog, OO.ui.ProcessDialog);
+mixinUserOoUiClass(EditSubscriptionsDialog, CdOoUiProcessDialogMixin);
 
 export default EditSubscriptionsDialog;

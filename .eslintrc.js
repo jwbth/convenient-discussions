@@ -67,6 +67,7 @@ module.exports = {
     "jsdoc/valid-types": "warn",
     "no-constant-condition": ["error", { "checkLoops": false }],
     "no-control-regex": "off",
+    "no-duplicate-case": "off",
     "no-sparse-arrays": "off",
     "no-unexpected-multiline": "off",
     "no-unused-vars": ["error", { "args": "after-used" }],

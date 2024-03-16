@@ -221,69 +221,68 @@ export async function showConfirmDialog(message, options = {}) {
   return (await windowInstance.closed)?.action;
 }
 
-/**
- * Check if there are unsaved changes in a process dialog.
- *
- * @param {external:OO.ui.ProcessDialog} dialog
- * @returns {boolean}
- * @private
- */
-export function isDialogUnsaved(dialog) {
-  const saveButton = dialog.actions.get({ actions: 'save' })[0];
-  return saveButton?.isVisible() && !saveButton.isDisabled();
-}
-
-/**
- * Confirm closing a process dialog.
- *
- * @param {external:OO.ui.ProcessDialog} dialog
- * @param {string} dialogCode
- */
-export function confirmCloseDialog(dialog, dialogCode) {
-  if (!isDialogUnsaved(dialog) || confirm(cd.s(`${dialogCode}-close-confirm`))) {
-    dialog.close({ action: 'close' });
-    controller.removePreventUnloadCondition('dialog');
+export class CdOoUiProcessDialogMixin {
+  /**
+   * Check if there are unsaved changes.
+   *
+   * @returns {boolean}
+   * @private
+   */
+  isUnsaved() {
+    const saveButton = this.actions.get({ actions: 'save' })[0];
+    return saveButton?.isVisible() && !saveButton.isDisabled();
   }
-}
 
-/**
- * Out process dialog error handler.
- *
- * @param {external:OO.ui.ProcessDialog} dialog
- * @param {CdError|Error} e
- * @param {string} messageName
- * @param {boolean} recoverable
- */
-export function handleDialogError(dialog, e, messageName, recoverable) {
-  let error;
-  if (e instanceof CdError) {
-    const { type } = e.data;
-    let message = cd.s(messageName);
-    if (type === 'network') {
-      message += ' ' + cd.s('error-network');
+  /**
+   * Confirm closing a dialog.
+   */
+  confirmClose() {
+    if (!this.isUnsaved(this) || confirm(cd.s(`${this.constructor.cdKey}-close-confirm`))) {
+      this.close({ action: 'close' });
+      controller.removePreventUnloadCondition('dialog');
     }
-    error = new OO.ui.Error(message, { recoverable });
-  } else {
-    error = new OO.ui.Error(cd.s('error-javascript'), { recoverable: false });
   }
 
-  dialog.showErrors(error);
-  console.warn(e);
-  dialog.$errors
-    .find('.oo-ui-buttonElement:not(.oo-ui-flaggedElement-primary) > .oo-ui-buttonElement-button')
-    .on('click', () => {
-      if (recoverable) {
-        dialog.updateSize();
-      } else {
-        dialog.close();
+  /**
+   * Out process dialog error handler.
+   *
+   * @param {CdError|Error} e
+   * @param {string} messageName
+   * @param {boolean} recoverable
+   */
+  handleError(e, messageName, recoverable) {
+    let error;
+    if (e instanceof CdError) {
+      const { type } = e.data;
+      let message = cd.s(messageName);
+      if (type === 'network') {
+        message += ' ' + cd.s('error-network');
       }
-    });
+      error = new OO.ui.Error(message, { recoverable });
+    } else {
+      error = new OO.ui.Error(cd.s('error-javascript'), { recoverable: false });
+    }
 
-  dialog.actions.setAbilities({ close: true });
+    this.showErrors(error);
+    console.warn(e);
+    this.$errors
+      .find('.oo-ui-buttonElement:not(.oo-ui-flaggedElement-primary) > .oo-ui-buttonElement-button')
+      .on('click', () => {
+        if (recoverable) {
+          this.updateSize();
+        } else {
+          this.close();
+        }
+      });
 
-  dialog.updateSize();
-  dialog.popPending();
+    this.actions.setAbilities({ close: true });
+
+    this.updateSize();
+    this.popPending();
+  }
 }
+
+tweakUserOoUiClass(CdOoUiProcessDialogMixin);
 
 /**
  * @typedef {object} CreateTextFieldReturn
@@ -484,14 +483,21 @@ export function tweakUserOoUiClass(targetClass) {
   const originClass = Object.getPrototypeOf(targetClass);
   OO.initClass(originClass);
   targetClass.static = Object.create(originClass.static);
-  Object.getOwnPropertyNames(targetClass)
+  Object.keys(targetClass)
     .filter((key) => key !== 'static')
     .forEach((key) => {
-      const descriptor = Object.getOwnPropertyDescriptor(targetClass, key);
-      if (descriptor.enumerable || descriptor.get) {
-        targetClass.static[key] = targetClass[key];
-      }
+      targetClass.static[key] = targetClass[key];
     });
   targetClass.parent = targetClass.super = originClass;
   return targetClass;
+}
+
+export function mixinUserOoUiClass(targetClass, originClass) {
+  OO.mixinClass(targetClass, originClass);
+
+  Object.getOwnPropertyNames(originClass.prototype)
+    .filter((key) => key !== 'constructor')
+    .forEach((key) => {
+      targetClass.prototype[key] = originClass.prototype[key];
+    });
 }

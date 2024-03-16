@@ -1,12 +1,12 @@
 /* global moment */
 
 import Button from './Button';
+import CdError from './CdError';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
-import { createCheckboxField, createTextField, getDivLabelWidgetClass, handleDialogError, tweakUserOoUiClass } from './ooui';
-import { generateFixedPosTimestamp, getDbnameForHostname, wrap, zeroPad } from './utils';
-import CdError from './CdError';
+import { CdOoUiProcessDialogMixin, createCheckboxField, createTextField, getDivLabelWidgetClass, mixinUserOoUiClass, tweakUserOoUiClass } from './ooui';
+import { generateFixedPosTimestamp, getDbnameForHostname, wrapHtml, zeroPad } from './utils';
 
 function createRadioField({ label, help, options }) {
   const items = options.map((config) => new RadioOptionWidget(config));
@@ -127,7 +127,7 @@ export default class UploadDialog extends mw.Upload.Dialog {
           messagesPromise.state() === 'rejected' ||
           this.uploadBooklet.upload.getApi().state() === 'rejected'
         ) {
-          handleDialogError(this, new CdError(), 'cf-error-uploadimage', false);
+          this.handleError(new CdError(), 'cf-error-uploadimage', false);
           return;
         }
 
@@ -650,3 +650,4 @@ tweakUserOoUiClass(RadioOptionWidget);
 tweakUserOoUiClass(UploadDialog);
 tweakUserOoUiClass(ForeignStructuredUploadBookletLayout)
 tweakUserOoUiClass(ForeignStructuredUpload);
+mixinUserOoUiClass(UploadDialog, CdOoUiProcessDialogMixin);
