@@ -231,7 +231,7 @@ const CommentStatic = {
     if (controller.isBooting() || (document.hidden && !redrawAll)) return;
 
     this.layersContainers.forEach((container) => {
-      container.convenientDiscussionsCouldHaveMoved = true;
+      container.cdCouldHaveMoved = true;
     });
 
     const comments = [];
@@ -281,7 +281,7 @@ const CommentStatic = {
 
         // Nested containers shouldn't count, the offset of the layers inside them may be OK,
         // unlike the layers preceding them.
-        } else if (!comment.getLayersContainer().convenientDiscussionsIsTopLayersContainer) {
+        } else if (!comment.getLayersContainer().cdIsTopLayersContainer) {
           // isMoved === false
           notMovedCount++;
           if (notMovedCount === 4) {

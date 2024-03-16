@@ -1022,8 +1022,7 @@ class Comment extends CommentSkeleton {
    * @private
    */
   deriveStretched(left, right) {
-    const isTopLayersContainer = this.getLayersContainer()
-      .convenientDiscussionsIsTopLayersContainer;
+    const isTopLayersContainer = this.getLayersContainer().cdIsTopLayersContainer;
 
     /**
      * Is the start (left on LTR wikis, right on RTL wikis) side of the comment stretched to the
@@ -1600,11 +1599,11 @@ class Comment extends CommentSkeleton {
         // These elements have "position: relative" for the purpose we know.
         if (node.classList.contains('cd-connectToPreviousItem')) continue;
 
-        let style = node.convenientDiscussionsStyle;
+        let style = node.cdStyle;
         if (!style) {
           // window.getComputedStyle is expensive, so we save the result to the node's property.
           style = window.getComputedStyle(node);
-          node.convenientDiscussionsStyle = style;
+          node.cdStyle = style;
         }
         const classList = Array.from(node.classList);
         if (
@@ -1634,7 +1633,7 @@ class Comment extends CommentSkeleton {
         container.classList.add('cd-commentLayersContainer');
         offsetParent.insertBefore(container, offsetParent.firstChild);
 
-        container.convenientDiscussionsIsTopLayersContainer = !container.parentNode.parentNode
+        container.cdIsTopLayersContainer = !container.parentNode.parentNode
           .closest('.cd-commentLayersContainer-parent');
       }
       this.layersContainer = container;
@@ -1660,18 +1659,18 @@ class Comment extends CommentSkeleton {
    */
   getLayersContainerOffset() {
     const container = this.getLayersContainer();
-    let top = container.convenientDiscussionsCachedLayersContainerTop;
-    let left = container.convenientDiscussionsCachedLayersContainerLeft;
-    if (top === undefined || container.convenientDiscussionsCouldHaveMoved) {
+    let top = container.cdCachedLayersContainerTop;
+    let left = container.cdCachedLayersContainerLeft;
+    if (top === undefined || container.cdCouldHaveMoved) {
       const rect = container.getBoundingClientRect();
       if (!getVisibilityByRects(rect)) {
         return null;
       }
       top = rect.top + window.scrollY;
       left = rect.left + window.scrollX;
-      container.convenientDiscussionsCouldHaveMoved = false;
-      container.convenientDiscussionsCachedLayersContainerTop = top;
-      container.convenientDiscussionsCachedLayersContainerLeft = left;
+      container.cdCouldHaveMoved = false;
+      container.cdCachedLayersContainerTop = top;
+      container.cdCachedLayersContainerLeft = left;
     }
     return { top, left };
   }

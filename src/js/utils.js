@@ -486,12 +486,12 @@ export function dealWithLoadingBug(moduleName) {
  * @returns {object}
  */
 export function getExtendedRect(el) {
-  if (el.convenientDiscussionsMarginTop === undefined) {
+  if (el.cdMarginTop === undefined) {
     const style = window.getComputedStyle(el);
-    el.convenientDiscussionsMarginTop = parseFloat(style.marginTop);
-    el.convenientDiscussionsMarginBottom = parseFloat(style.marginBottom);
-    el.convenientDiscussionsMarginLeft = parseFloat(style.marginLeft);
-    el.convenientDiscussionsMarginRight = parseFloat(style.marginRight);
+    el.cdMarginTop = parseFloat(style.marginTop);
+    el.cdMarginBottom = parseFloat(style.marginBottom);
+    el.cdMarginLeft = parseFloat(style.marginLeft);
+    el.cdMarginRight = parseFloat(style.marginRight);
   }
   const rect = el.getBoundingClientRect();
   const isVisible = getVisibilityByRects(rect);
@@ -502,10 +502,10 @@ export function getExtendedRect(el) {
     right: rect.right,
     width: rect.width,
     height: rect.height,
-    outerTop: rect.top - (isVisible ? el.convenientDiscussionsMarginTop : 0),
-    outerBottom: rect.bottom + (isVisible ? el.convenientDiscussionsMarginBottom : 0),
-    outerLeft: rect.left - (isVisible ? el.convenientDiscussionsMarginLeft : 0),
-    outerRight: rect.right + (isVisible ? el.convenientDiscussionsMarginRight : 0),
+    outerTop: rect.top - (isVisible ? el.cdMarginTop : 0),
+    outerBottom: rect.bottom + (isVisible ? el.cdMarginBottom : 0),
+    outerLeft: rect.left - (isVisible ? el.cdMarginLeft : 0),
+    outerRight: rect.right + (isVisible ? el.cdMarginRight : 0),
   };
 }
 
