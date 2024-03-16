@@ -1764,20 +1764,8 @@ class CommentForm {
         .on('change', preview)
         .on('change', saveSessionEventHandler);
 
-      this.headlineInput.$input.on('keydown', (e) => {
-        // Enter
-        if (
-          e.keyCode === 13 &&
-          !isCmdModifierPressed(e) &&
-          !controller.getActiveAutocompleteMenu()
-        ) {
-          this.submit();
-
-          // Focus may move to the comment input if the checks aren't successful, adding a newline
-          // if we don't prevent the default action.
-          e.preventDefault();
-        }
-      });
+      this.headlineInput
+        .on('enter', this.submit.bind(this));
     }
 
     this.commentInput
@@ -1869,21 +1857,8 @@ class CommentForm {
       })
       .on('change', saveSessionEventHandler);
 
-    this.summaryInput.$input
-      .on('keydown', (e) => {
-        // Enter
-        if (
-          e.keyCode === 13 &&
-          !isCmdModifierPressed(e) &&
-          !controller.getActiveAutocompleteMenu()
-        ) {
-          this.submit();
-
-          // Focus may move to the comment input if the checks aren't successful, adding a newline
-          // if we don't prevent the default action.
-          e.preventDefault();
-        }
-      });
+    this.summaryInput
+      .on('enter', this.submit.bind(this));
   }
 
   /**

@@ -83,10 +83,10 @@ class Autocomplete {
       this.tribute.attach(element);
       element.cdInput = input;
       element.addEventListener('tribute-active-true', () => {
-        controller.setActiveAutocompleteMenu(this.tribute.menu);
+        this.constructor.activeMenu = this.tribute.menu;
       });
       element.addEventListener('tribute-active-false', () => {
-        controller.forgetActiveAutocompleteMenu();
+        delete this.constructor.activeMenu;
       });
       if (input instanceof OO.ui.MultilineTextInputWidget) {
         input.on('resize', () => {
@@ -658,6 +658,15 @@ class Autocomplete {
     }
 
     return config;
+  }
+
+  /**
+   * Get the active autocomplete menu element.
+   *
+   * @returns {Element}
+   */
+  static getActiveMenu() {
+    return this.activeMenu;
   }
 }
 

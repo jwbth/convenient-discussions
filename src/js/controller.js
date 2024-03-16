@@ -27,6 +27,7 @@ import toc from './toc';
 import { ElementsTreeWalker } from './treeWalker';
 import { copyText, defined, definedAndNotNull, getExtendedRect, getLastArrayElementOrSelf, getVisibilityByRects, isCmdModifierPressed, isHeadingNode, isInline, isInputFocused, isProbablyTalkPage, keyCombination, skin$, sleep, wrapHtml } from './utils';
 import { getUserInfo, htmlToWikitext } from './apiWrappers';
+import Autocomplete from './Autocomplete';
 
 export default {
   content: {},
@@ -320,31 +321,6 @@ export default {
    */
   setAddSectionButtonContainer($container) {
     this.$addSectionButtonContainer = $container;
-  },
-
-  /**
-   * Memorize the active autocomplete menu element.
-   *
-   * @param {Element} menuElement
-   */
-  setActiveAutocompleteMenu(menuElement) {
-    this.activeAutocompleteMenu = menuElement;
-  },
-
-  /**
-   * Get the active autocomplete menu element.
-   *
-   * @returns {Element}
-   */
-  getActiveAutocompleteMenu() {
-    return this.activeAutocompleteMenu;
-  },
-
-  /**
-   * Forget the active autocomplete menu element (after it was deactivated).
-   */
-  forgetActiveAutocompleteMenu() {
-    delete this.activeAutocompleteMenu;
   },
 
   /**
@@ -857,7 +833,7 @@ export default {
       this.isObstructingElementHoveredCached = Boolean(
         [
           ...(this.notificationArea?.querySelectorAll('.mw-notification') || []),
-          this.getActiveAutocompleteMenu(),
+          Autocomplete.getActiveMenu(),
           navPanel.$element?.get(0),
           ...document.body.querySelectorAll('.oo-ui-popupWidget:not(.oo-ui-element-hidden)'),
           this.getStickyHeader(),
