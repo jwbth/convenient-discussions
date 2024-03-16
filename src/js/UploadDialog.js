@@ -172,7 +172,7 @@ export default class UploadDialog extends mw.Upload.Dialog {
       return process;
     }
     if (action === 'cancelupload') {
-      // The upstream dialog calls `initialize()` here which clears all inputs including the file.
+      // The upstream dialog calls `.initialize()` here which clears all inputs including the file.
       // We don't want that.
       return new OO.ui.Process(this.uploadBooklet.cancelUpload());
     }
@@ -411,20 +411,32 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
   }
 
   uploadFile() {
+    const preset = this.controls.preset.select.findSelectedItem().getData();
+
+    // Keep the inputs if the user pressed "Back" and didn't choose another preset.
+    if (this.preset && preset !== this.preset) {
+      this.clear();
+    }
+    this.preset = preset;
+
     let deferred = super.uploadFile();
 
-    const preset = this.controls.preset.select.findSelectedItem().getData();
+    // Use UTC date to make it precise and avoid leaking the user's timezone
+    const date = moment().utc().locale('en');
+
+    // Use +2 days as the max date to avoid getting the user confused if they want to set the local
+    // date nevertheless
+    this.dateWidget.mustBeBefore = moment(date.clone().add(2, 'day').format('YYYY-MM-DD'));
 
     let pageName = '';
     let historyText = '';
     let hasIwPrefix;
     let filenameDate;
-    if (preset === 'projectScreenshot' || preset === 'mediawikiScreenshot') {
-      // Use UTC dates to avoid leaking the user's timezone
-      const date = moment().utc().locale('en');
-      filenameDate = date.format('YYYY-MM-DD HH-mm-ss');
-      this.dateWidget.calendar.setDate(date.format('YYYY-MM-DD'));
-      this.dateWidget.mustBeBefore = moment(date.add(1, 'day').format('YYYY-MM-DD'));
+    if (this.preset === 'projectScreenshot' || this.preset === 'mediawikiScreenshot') {
+      filenameDate = (
+        this.getExactDateFromLastModified(this.getFile()) ||
+        date.format('YYYY-MM-DD HH-mm-ss')
+      );
 
       const title = this.controls.title.input.getMWTitle();
       if (title) {
@@ -443,7 +455,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
       }
     }
 
-    switch (preset) {
+    switch (this.preset) {
       case 'projectScreenshot': {
         // * If the page name has an interwiki prefix, we don't know the project name.
         // * If the page name does not have an interwiki prefix, we don't know the interwiki prefix.
@@ -532,7 +544,6 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
         this.controls.source.input.setValue(this.upload.config.format.ownwork);
         this.controls.author.input.setValue(this.upload.getDefaultUser());
         this.controls.license.input.setValue(this.upload.config.format.license);
-
         break;
       }
     }
@@ -548,12 +559,26 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
     this.controls.license.input.setDisabled(omitted || addedInputsDisabled);
 
     deferred.catch(() => {
-      // Hack to reenable the upload action and clear the fields after an error
-      this.clear();
+      // Hack to reenable the upload action after an error
+      this.onUploadFormChange();
     });
 
     // If the promise failed, return the failed promise, not catched
     return deferred;
+  }
+
+  // Use UTC date for `lastModified` to make it precise and avoid leaking the user's timezone.
+  // This is for screenshots and files on the computer; we keep the original behavior for EXIF.
+  getDateFromLastModified(file) {
+    if (file.lastModified) {
+      return moment(file.lastModified).utc().format('YYYY-MM-DD');
+    }
+  }
+
+  getExactDateFromLastModified(file) {
+    if (file.lastModified) {
+      return moment(file.lastModified).utc().format('YYYY-MM-DD HH-mm-ss');
+    }
   }
 
   getText() {
@@ -578,15 +603,16 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
   }
 
   cancelUpload() {
-    this.clear();
+    this.onUploadFormChange();
     this.setPage('upload');
   }
 
   clear() {
     // Unlike the original dialog, we don't clear the upload form, including the file input, when
-    // the user presses "Back". In the original dialog, there is not much to select on the first
-    // page apart from the file, so clearing the file input would make sense there.
-    //
+    // the user presses "Back". We don't clear the date too. In the original dialog, there is not
+    // much to select on the first page apart from the file, so clearing the file input would make
+    // sense there.
+
     // No idea how `.setValidityFlag(true)` is helpful; borrowed it from
     // `mw.Upload.BookletLayout.prototype.clear`. When we clear the fields that were filled in (e.g.
     // by choosing the "Own work" preset, pressing "Upload", then pressing "Back", then choosing "No
@@ -595,17 +621,17 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
     this.filenameWidget.setValue(null).setValidityFlag(true);
     this.descriptionWidget.setValue(null).setValidityFlag(true);
     this.categoriesWidget.setValue([]);
-    this.dateWidget.setValue('').setValidityFlag(true);
+    if (!this.dateWidget.getValue()) {
+      this.dateWidget.setValidityFlag(true);
+    }
 
     if (this.controls) {
-      // Clear the fields we added as well. We add them on the "setup" step, so they aren't there when
-      // `.clear()` initially runs.
+      // Clear the fields we added as well. We add them on the "setup" step, so they aren't there
+      // when `.clear()` initially runs.
       this.controls.source.input.setValue(null).setValidityFlag(true);
       this.controls.author.input.setValue(null).setValidityFlag(true);
       this.controls.license.input.setValue(null).setValidityFlag(true);
     }
-
-    this.onUploadFormChange();
   }
 }
 
