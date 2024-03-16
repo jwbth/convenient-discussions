@@ -182,7 +182,7 @@ function mapSections(otherSections) {
   });
 
   otherSections.forEach((otherSection) => {
-    const { section, score } = SectionStatic.search(otherSection, true) || {};
+    const { section, score } = SectionStatic.search(otherSection) || {};
     if (section && (!section.match || score > section.matchScore)) {
       if (section.match) {
         delete section.match.match;

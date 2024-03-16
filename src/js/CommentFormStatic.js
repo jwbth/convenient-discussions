@@ -254,11 +254,12 @@ const CommentFormStatic = {
   },
 
   /**
-   * Detach the comment forms keeping events.
+   * Detach the comment forms keeping events. Also reset some of their properties.
    */
   detach() {
     this.items.forEach((commentForm) => {
       commentForm.$outermostElement.detach();
+      commentForm.checkCodeRequest = null;
     });
   },
 
@@ -320,7 +321,7 @@ const CommentFormStatic = {
     commentFormsData.commentForms.forEach((data) => {
       const prop = CommentFormStatic.modeToProperty(data.mode);
       if (data.targetData?.headline) {
-        const section = SectionStatic.search({
+        const { section } = SectionStatic.search({
           headline: data.targetData.headline,
           oldestCommentId: data.targetData.oldestCommentId,
           index: data.targetData.index,

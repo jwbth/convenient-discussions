@@ -125,14 +125,17 @@ export default {
    * @returns {?import('./Section').default}
    */
   findByHeadlineParts(sectionName) {
-    const matches = this.items
-      .map((section) => ({
-        section,
-        score: calculateWordOverlap(sectionName, section.headline, true),
-      }))
-      .filter((match) => match.score > 0.66);
-    const bestMatch = matches.sort((m1, m2) => m2.score - m1.score)[0];
-    return bestMatch ? bestMatch.section : null;
+    return (
+      this.items
+        .map((section) => ({
+          section,
+          score: calculateWordOverlap(sectionName, section.headline),
+        }))
+        .filter((match) => match.score > 0.66)
+        .sort((m1, m2) => m2.score - m1.score)[0]
+        ?.section ||
+      null
+    );
   },
 
   /**
@@ -146,10 +149,9 @@ export default {
    * @param {string} options.id
    * @param {string[]} options.ancestors
    * @param {string} options.oldestCommentId
-   * @param {boolean} [returnScore]
    * @returns {?import('./Section').default}
    */
-  search({ index, headline, id, ancestors, oldestCommentId }, returnScore) {
+  search({ index, headline, id, ancestors, oldestCommentId }) {
     const matches = [];
     this.items.some((section) => {
       const doesIndexMatch = section.index === index;
@@ -170,10 +172,10 @@ export default {
         matches.push({ section, score });
       }
 
-      // Score bigger than 3.5 means it's the best match for sure. Two sections can't have
-      // coinciding anchors, so there can't be two sections with the score bigger than 3.5. (We do
-      // this because there can be very many sections on the page, so searching for a match for
-      // every section can be expensive.)
+      // 3.5 score means it's the best match for sure. Two sections can't have coinciding IDs, so
+      // there can't be two sections with the 3.5 score. (We do this because there can be very many
+      // sections on the page, so searching for a match for every section, e.g. in updateChecker.js,
+      // can be expensive.)
       return score >= 3.5;
     });
 
@@ -183,11 +185,7 @@ export default {
         bestMatch = match;
       }
     });
-    if (returnScore) {
-      return bestMatch || null;
-    } else {
-      return bestMatch ? bestMatch.section : null;
-    }
+    return bestMatch || null;
   },
 
   /**
