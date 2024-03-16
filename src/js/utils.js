@@ -30,7 +30,7 @@ import cd from './cd';
  * @param {boolean} [options.targetBlank]
  * @returns {external:jQuery}
  */
-export function wrap(html, options = {}) {
+export function wrapHtml(html, options = {}) {
   const tagName = options.tagName || 'span';
   const $wrapper = $($.parseHTML(html)).wrapAll(`<${tagName}>`).parent();
   if (options.callbacks) {
@@ -465,7 +465,7 @@ export async function getNativePromiseState(promise) {
  */
 export function dealWithLoadingBug(moduleName) {
   if (mw.loader.getState(moduleName) === 'loading') {
-    const $body = wrap(cd.sParse('error-needreloadpage'), {
+    const $body = wrapHtml(cd.sParse('error-needreloadpage'), {
       callbacks: {
         'cd-notification-reloadPage': () => {
           location.reload();

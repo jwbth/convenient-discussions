@@ -18,7 +18,7 @@ import settings from './settings';
 import subscriptions from './subscriptions';
 import toc from './toc';
 import userRegistry from './userRegistry';
-import { defined, definedAndNotNull, getFooter, getLastArrayElementOrSelf, sleep, underlinesToSpaces, wrap } from './utils';
+import { defined, definedAndNotNull, getFooter, getLastArrayElementOrSelf, sleep, underlinesToSpaces, wrapHtml } from './utils';
 import { formatDateNative } from './timestamp';
 import { getVisits, handleApiReject, saveOptions, saveVisits } from './apiWrappers';
 import { removeWikiMarkup } from './wikitext';
@@ -274,7 +274,7 @@ class BootProcess {
           $('<div>')
             .addClass('cd-rcnotice-text')
             .append(
-              wrap(cd.sParse('rc-suggestion'), {
+              wrapHtml(cd.sParse('rc-suggestion'), {
                 callbacks: {
                   'cd-notification-settings': () => {
                     controller.showSettingsDialog();
@@ -471,7 +471,7 @@ class BootProcess {
           guessedSectionText
         );
       }
-      mw.notify(wrap(label), {
+      mw.notify(wrapHtml(label), {
         type: 'warn',
         autoHideSeconds: 'long',
       });
@@ -518,7 +518,7 @@ class BootProcess {
           cd.sParse('deadanchor-section-inexactmatch', sectionNameFound, searchUrl);
       }
 
-      mw.notify(wrap(label), {
+      mw.notify(wrapHtml(label), {
         autoHideSeconds: 'long',
       });
     }
@@ -584,7 +584,7 @@ class BootProcess {
         guessedSectionText,
       });
     } else {
-      mw.notify(wrap(label), {
+      mw.notify(wrapHtml(label), {
         type: 'warn',
         autoHideSeconds: 'long',
       });
@@ -616,14 +616,14 @@ class BootProcess {
         }).catch(handleApiReject);
       }
     } catch (e) {
-      mw.notify(wrap(cd.sParse('error-settings-save')));
+      mw.notify(wrapHtml(cd.sParse('error-settings-save')));
       return;
     } finally {
       button.setPending(false);
     }
     notification.$notification.hide();
     mw.notify(
-      wrap(cd.sParse('discussiontools-disabled'), {
+      wrapHtml(cd.sParse('discussiontools-disabled'), {
         callbacks: {
           'cd-notification-refresh': () => {
             location.reload();
@@ -643,7 +643,7 @@ class BootProcess {
     if (!cd.g.isDtReplyToolEnabled) return;
 
     const notification = mw.notification.notify(
-      wrap(
+      wrapHtml(
         cd.sParse(
           'discussiontools-incompatible',
           'Special:Preferences#mw-prefsection-editing-discussion',

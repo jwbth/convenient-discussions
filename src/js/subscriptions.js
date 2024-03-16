@@ -12,7 +12,7 @@ import cd from './cd';
 import controller from './controller';
 import settings from './settings';
 import { dtSubscribe, getDtSubscriptions, getLegacySubscriptions, saveLegacySubscriptions } from './apiWrappers';
-import { spacesToUnderlines, unique, wrap } from './utils';
+import { spacesToUnderlines, unique, wrapHtml } from './utils';
 
 let subscribeLegacyPromise = Promise.resolve();
 
@@ -165,7 +165,7 @@ export default {
         if (e instanceof CdError) {
           const { type, code } = e.data;
           if (type === 'internal' && code === 'sizeLimit') {
-            const $body = wrap(cd.sParse('section-watch-error-maxsize'), {
+            const $body = wrapHtml(cd.sParse('section-watch-error-maxsize'), {
               callbacks: {
                 // An old class name is kept for compatibility with strings.
                 'cd-notification-editWatchedSections': () => {
@@ -259,7 +259,7 @@ export default {
           autoHideSeconds = 'long';
         }
       }
-      mw.notify(wrap(body), { title, autoHideSeconds });
+      mw.notify(wrapHtml(body), { title, autoHideSeconds });
     }
   },
 
@@ -292,7 +292,7 @@ export default {
         body += ' ' + cd.sParse('section-unwatch-stillwatched', ancestorSubscribedTo.headline);
         autoHideSeconds = 'long';
       }
-      mw.notify(wrap(body), { title, autoHideSeconds });
+      mw.notify(wrapHtml(body), { title, autoHideSeconds });
     }
   },
 

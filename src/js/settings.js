@@ -8,7 +8,7 @@ import TextMasker from './TextMasker';
 import cd from './cd';
 import pageRegistry from './pageRegistry';
 import userRegistry from './userRegistry';
-import { areObjectsEqual, defined, ucFirst, wrap } from './utils';
+import { areObjectsEqual, defined, ucFirst, wrapHtml } from './utils';
 import { formatDateImproved, formatDateNative, formatDateRelative } from './timestamp';
 import { getUserInfo, saveGlobalOption, saveLocalOption } from './apiWrappers';
 
@@ -228,8 +228,8 @@ export default {
             type: 'number',
             min: 0,
             max: 999,
-            label: wrap(cd.sParse('sd-outdentlevel', outdentTemplateUrl), { targetBlank: true }),
-            help: wrap(cd.sParse('sd-outdentlevel-help') + noOutdentTemplateNote),
+            label: wrapHtml(cd.sParse('sd-outdentlevel', outdentTemplateUrl), { targetBlank: true }),
+            help: wrapHtml(cd.sParse('sd-outdentlevel-help') + noOutdentTemplateNote),
           },
           {
             name: 'autocompleteTypes',
@@ -271,7 +271,7 @@ export default {
             placeholder: cd.s('sd-insertbuttons-multiselect-placeholder'),
             tagLimit: 100,
             label: cd.s('sd-insertbuttons'),
-            help: wrap(cd.sParse('sd-insertbuttons-help') + ' ' + cd.sParse('sd-localsetting')),
+            help: wrapHtml(cd.sParse('sd-insertbuttons-help') + ' ' + cd.sParse('sd-localsetting')),
             dataToUi: (value) => (
               value.map((button) => Array.isArray(button) ? button.join(';') : button)
             ),
@@ -294,7 +294,7 @@ export default {
             type: 'text',
             maxLength: 100,
             label: cd.s('sd-signatureprefix'),
-            help: wrap(cd.sParse('sd-signatureprefix-help') + ' ' + cd.sParse('sd-localsetting')),
+            help: wrapHtml(cd.sParse('sd-signatureprefix-help') + ' ' + cd.sParse('sd-localsetting')),
           },
         ],
       },
@@ -349,8 +349,8 @@ export default {
           {
             name: 'useTopicSubscription',
             type: 'checkbox',
-            label: wrap(cd.sParse('sd-usetopicsubscription', mw.user), { targetBlank: true }),
-            help: wrap(cd.sParse('sd-usetopicsubscription-help'), { targetBlank: true }),
+            label: wrapHtml(cd.sParse('sd-usetopicsubscription', mw.user), { targetBlank: true }),
+            help: wrapHtml(cd.sParse('sd-usetopicsubscription-help'), { targetBlank: true }),
           },
           {
             name: 'notifications',
@@ -409,7 +409,7 @@ export default {
             label: cd.s('sd-removedata'),
             flags: ['destructive'],
             fieldLabel: cd.s('sd-removedata-description'),
-            help: wrap(cd.sParse('sd-removedata-help'), { targetBlank: true }),
+            help: wrapHtml(cd.sParse('sd-removedata-help'), { targetBlank: true }),
           },
         ],
       },

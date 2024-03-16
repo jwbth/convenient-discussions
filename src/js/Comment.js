@@ -13,7 +13,7 @@ import pageRegistry from './pageRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
 import { ElementsTreeWalker, TreeWalker } from './treeWalker';
-import { addToArrayIfAbsent, areObjectsEqual, calculateWordOverlap, countOccurrences, dealWithLoadingBug, decodeHtmlEntities, defined, getExtendedRect, getFromLocalStorage, getHeadingLevel, getHigherNodeAndOffsetInSelection, getVisibilityByRects, isInline, saveToLocalStorage, sleep, unique, wrap, wrapDiffBody } from './utils';
+import { addToArrayIfAbsent, areObjectsEqual, calculateWordOverlap, countOccurrences, dealWithLoadingBug, decodeHtmlEntities, defined, getExtendedRect, getFromLocalStorage, getHeadingLevel, getHigherNodeAndOffsetInSelection, getVisibilityByRects, isInline, saveToLocalStorage, sleep, unique, wrapDiffBody, wrapHtml } from './utils';
 import { extractSignatures, removeWikiMarkup } from './wikitext';
 import { formatDate, formatDateNative } from './timestamp';
 import { handleApiReject, loadUserGenders, parseCode } from './apiWrappers';
@@ -2088,7 +2088,7 @@ class Comment extends CommentSkeleton {
                 text += ' ' + cd.sParse('error-network');
               }
             }
-            mw.notify(wrap(text), { type: e.data?.code === 'emptyDiff'? 'info' : 'error' });
+            mw.notify(wrapHtml(text), { type: e.data?.code === 'emptyDiff'? 'info' : 'error' });
           }
           diffLink.setPending(false);
         },
@@ -2336,7 +2336,7 @@ class Comment extends CommentSkeleton {
     if (this.isCollapsed) {
       this.getVisibleExpandNote().cdScrollTo('top', smooth, callback);
       const notification = mw.notification.notify(
-        wrap(cd.sParse('navpanel-firstunseen-hidden'), {
+        wrapHtml(cd.sParse('navpanel-firstunseen-hidden'), {
           callbacks: {
             'cd-notification-expandThread': () => {
               this.scrollTo({
@@ -2420,7 +2420,7 @@ class Comment extends CommentSkeleton {
           .append(
             cd.sParse('cld-summary'),
             cd.mws('colon-separator'),
-            wrap(edit.parsedcomment, { targetBlank: true }).addClass('comment'),
+            wrapHtml(edit.parsedcomment, { targetBlank: true }).addClass('comment'),
           ),
         wrapDiffBody(edit.diffBody),
       );
@@ -2635,7 +2635,7 @@ class Comment extends CommentSkeleton {
         break;
       }
     }
-    mw.notify(wrap(text, { targetBlank: true }), { type: 'error' });
+    mw.notify(wrapHtml(text, { targetBlank: true }), { type: 'error' });
     this.thankButton.setPending(false);
   }
 
@@ -2664,7 +2664,7 @@ class Comment extends CommentSkeleton {
       return;
     }
 
-    const $question = wrap(
+    const $question = wrapHtml(
       cd.sParse(
         'thank-confirm',
         this.author.getName(),

@@ -18,7 +18,7 @@ import pageRegistry, { Page } from './pageRegistry';
 import settings from './settings';
 import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
-import { buildEditSummary, defined, focusInput, getDayTimestamp, insertText, isCmdModifierPressed, isInputFocused, keyCombination, removeDoubleSpaces, sleep, unique, wrap, wrapDiffBody } from './utils';
+import { buildEditSummary, defined, focusInput, getDayTimestamp, insertText, isCmdModifierPressed, isInputFocused, keyCombination, removeDoubleSpaces, sleep, unique, wrapHtml, wrapDiffBody } from './utils';
 import { createCheckboxField } from './ooui';
 import { escapePipesOutsideLinks } from './wikitext';
 import { generateTagsRegexp, removeWikiMarkup } from './wikitext';
@@ -681,7 +681,7 @@ class CommentForm {
       classes: ['cd-button-ooui'],
       popup: {
         head: false,
-        $content: wrap(
+        $content: wrapHtml(
           cd.sParse('cf-help-content', cd.config.mentionCharacter, cd.g.cmdModifier),
           {
             tagName: 'div',
@@ -1509,7 +1509,7 @@ class CommentForm {
       this.lastKeyPresses[keypressCount - 1] - this.lastKeyPresses[0] <
       keypressCount * rateLimit
     ) {
-      const $body = wrap(cd.sParse('warning-performance'), {
+      const $body = wrapHtml(cd.sParse('warning-performance'), {
         callbacks: {
           'cd-notification-talkPageSettings': () => {
             controller.showSettingsDialog('talkPage');
@@ -1615,7 +1615,7 @@ class CommentForm {
      */
     this.richFormattingPopup = new OO.ui.PopupWidget({
       icon: 'wikiText',
-      label: wrap(cd.sParse('cf-popup-richformatting')),
+      label: wrapHtml(cd.sParse('cf-popup-richformatting')),
       $content: button.$element,
       head: true,
       autoClose: true,
@@ -1817,7 +1817,7 @@ class CommentForm {
         if (e.originalEvent.detail.instance.trigger === cd.config.mentionCharacter) {
           if (this.mode === 'edit') {
             this.showMessage(
-              wrap(cd.sParse('cf-reaction-mention-edit'), { targetBlank: true }),
+              wrapHtml(cd.sParse('cf-reaction-mention-edit'), { targetBlank: true }),
               {
                 type: 'notice',
                 name: 'mentionEdit',
@@ -1829,7 +1829,7 @@ class CommentForm {
             !this.commentInput.getValue().includes(cd.g.signCode)
           ) {
             this.showMessage(
-              wrap(cd.sParse('cf-reaction-mention-nosignature'), {
+              wrapHtml(cd.sParse('cf-reaction-mention-nosignature'), {
                 targetBlank: true,
               }),
               {
@@ -2225,16 +2225,17 @@ class CommentForm {
       return;
     }
 
-    const appendable = isRaw ?
-      htmlOrJquery :
-      (new OO.ui.MessageWidget({
-        type,
-        inline: true,
-        label: htmlOrJquery instanceof $ ? htmlOrJquery : wrap(htmlOrJquery),
-        classes: ['cd-message'].concat(name ? `cd-message-${name}` : []),
-      })).$element;
     this.$messageArea
-      .append(appendable)
+      .append(
+        isRaw ?
+          htmlOrJquery :
+          (new OO.ui.MessageWidget({
+            type,
+            inline: true,
+            label: htmlOrJquery instanceof $ ? htmlOrJquery : wrapHtml(htmlOrJquery),
+            classes: ['cd-message'].concat(name ? `cd-message-${name}` : []),
+          })).$element
+      )
       .cdAddCloseButton()
       .cdScrollIntoView('top');
   }
@@ -2282,7 +2283,7 @@ class CommentForm {
     }
 
     if (cancel) {
-      notifications.add(message instanceof $ ? message : wrap(message), {
+      notifications.add(message instanceof $ ? message : wrapHtml(message), {
         type: 'error',
         autoHideSeconds: 'long',
       });
@@ -2377,7 +2378,7 @@ class CommentForm {
             message = cd.sParse('cf-error-commentlinks-commentnotfound', details.id);
             break;
         }
-        message = wrap(message, {
+        message = wrapHtml(message, {
           callbacks: {
             'cd-message-reloadPage': async () => {
               if (this.confirmClose()) {
@@ -2410,7 +2411,7 @@ class CommentForm {
           }
         }
 
-        message = wrap(message);
+        message = wrapHtml(message);
         message.find('.mw-parser-output').css('display', 'inline');
         logMessage ||= [code, apiResp];
         break;

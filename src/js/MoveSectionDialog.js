@@ -3,7 +3,7 @@ import CdError from './CdError';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
-import { buildEditSummary, focusInput, sleep, wrap } from './utils';
+import { buildEditSummary, focusInput, sleep, wrapHtml } from './utils';
 import { createCheckboxField, tweakUserOoUiClass } from './ooui';
 import { encodeWikilink, endWithTwoNewlines, findFirstTimestamp } from './wikitext';
 
@@ -267,7 +267,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
         }
 
         this.successPanel.$element.append(
-          wrap(cd.sParse('msd-moved', target.sectionWikilink), { tagName: 'div' })
+          wrapHtml(cd.sParse('msd-moved', target.sectionWikilink), { tagName: 'div' })
         );
 
         controller.reload({
@@ -548,7 +548,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
    * @private
    */
   abort(html, recoverable, closeDialog = false) {
-    const $body = wrap(html, {
+    const $body = wrapHtml(html, {
       callbacks: {
         'cd-message-reloadPage': () => {
           this.close();

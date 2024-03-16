@@ -9,7 +9,7 @@ import cd from './cd';
 import controller from './controller';
 import debug from './debug';
 import pageRegistry from './pageRegistry';
-import { buildEditSummary, underlinesToSpaces, wrap, wrapDiffBody } from './utils';
+import { buildEditSummary, underlinesToSpaces, wrapDiffBody, wrapHtml } from './utils';
 
 const mwStringsCache = {};
 let isQqxMode;
@@ -210,11 +210,14 @@ Object.assign(cd, {
     isPageOverlayOn: controller.isPageOverlayOn.bind(controller),
 
     /**
-     * @see module:util.wrap
-     * @function wrap
+     * @see module:util.wrapHtml
+     * @function wrapHtml
      * @memberof convenientDiscussions.api
      */
-    wrap,
+    wrapHtml,
+
+    // TODO: Remove after wiki configurations are updated.
+    wrap: wrapHtml,
 
     /**
      * @see module:util.wrapDiffBody

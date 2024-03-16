@@ -243,7 +243,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
         {
           data: 'ownWork',
           label: cd.s('ud-preset-ownwork'),
-          help: wrap(cd.mws('upload-form-label-own-work-message-commons')),
+          help: wrapHtml(cd.mws('upload-form-label-own-work-message-commons')),
         },
         {
           data: 'no',
@@ -366,7 +366,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
       label: cd.s('ud-license'),
       required: true,
       classes: ['cd-input-monospace'],
-      help: wrap(
+      help: wrapHtml(
         cd.mws('mwe-upwiz-license-custom-explain', null, cd.mws('mwe-upwiz-license-custom-url')),
         { targetBlank: true }
       ),

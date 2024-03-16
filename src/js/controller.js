@@ -25,7 +25,7 @@ import pageRegistry from './pageRegistry';
 import settings from './settings';
 import toc from './toc';
 import { ElementsTreeWalker } from './treeWalker';
-import { copyText, defined, definedAndNotNull, getExtendedRect, getLastArrayElementOrSelf, getVisibilityByRects, isCmdModifierPressed, isHeadingNode, isInline, isInputFocused, isProbablyTalkPage, keyCombination, skin$, sleep, wrap } from './utils';
+import { copyText, defined, definedAndNotNull, getExtendedRect, getLastArrayElementOrSelf, getVisibilityByRects, isCmdModifierPressed, isHeadingNode, isInline, isInputFocused, isProbablyTalkPage, keyCombination, skin$, sleep, wrapHtml } from './utils';
 import { getUserInfo, htmlToWikitext } from './apiWrappers';
 
 export default {
@@ -2067,9 +2067,8 @@ export default {
         );
       }
 
-      const $body = wrap(html);
       const notification = notifications.add(
-        $body,
+        wrapHtml(html),
         { tag: 'convenient-discussions-new-comments' },
         { comments: filteredComments }
       );

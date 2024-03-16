@@ -2,7 +2,7 @@ import CdError from './CdError';
 import Comment from './Comment';
 import cd from './cd';
 import { createCopyTextField, getDivLabelWidgetClass, tweakUserOoUiClass } from './ooui';
-import { dealWithLoadingBug, wrap } from './utils';
+import { dealWithLoadingBug, wrapHtml } from './utils';
 
 /**
  * Class used to create a "Copy link" dialog.
@@ -194,7 +194,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
     let helpNotOnlyCd;
     if (this.isComment && this.content.fragment === this.object.id) {
       helpOnlyCd = cd.s('cld-help-onlycd');
-      helpNotOnlyCd = wrap(cd.sParse('cld-help-notonlycd'));
+      helpNotOnlyCd = wrapHtml(cd.sParse('cld-help-notonlycd'));
     }
 
     const copyCallback = this.copyCallback.bind(this);
