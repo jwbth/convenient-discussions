@@ -244,7 +244,8 @@ export class CdOoUiProcessDialogMixin {
   }
 
   /**
-   * Out process dialog error handler.
+   * Handle a error, displaying a message with the provided name and popping the pending state. If
+   * the error is not recoverable, the dialog is closed at "Dismiss".
    *
    * @param {CdError|Error} e
    * @param {string} messageName

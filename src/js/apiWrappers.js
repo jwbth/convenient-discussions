@@ -16,13 +16,9 @@ import pageRegistry from './pageRegistry';
 import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
 import { brsToNewlines } from './wikitext';
-import { defined, sleep, ucFirst, unique } from './utils';
-
-const autocompleteTimeout = 100;
+import { unique } from './utils';
 
 let cachedUserInfoRequest;
-let currentAutocompletePromise;
-let currentUserRights;
 
 /**
  * Callback used in the `.catch()` parts of API requests.
@@ -56,8 +52,9 @@ export function handleApiReject(code, resp) {
  * @returns {Array.<Array.<*>>}
  */
 export function splitIntoBatches(arr) {
-  // `currentUserRights` is rarely set on first page load (when `getDtSubscriptions()` runs, for
+  // Current user's rights are rarely set on first page load (when `getDtSubscriptions()` runs, for
   // example).
+  const currentUserRights = userRegistry.getCurrent().getRights();
   const limit = (
     currentUserRights ?
       currentUserRights.includes('apihighlimits') :
@@ -370,7 +367,7 @@ export function getUserInfo(reuse = false) {
         lzString.decompressFromEncodedURIComponent(options[cd.g.subscriptionsOptionName]) ||
         ''
       );
-      currentUserRights = rights;
+      userRegistry.getCurrent().setRights(rights);
 
       return { options, visits, subscriptions, rights };
     },
@@ -562,167 +559,6 @@ export async function getUsersByGlobalId(userIds) {
     user.setGlobalId(userInfo.id);
     return user;
   });
-}
-
-/**
- * Get a list of 10 user names matching the specified search text. User names are sorted as
- * {@link https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Only users with a
- * talk page existent are included. Redirects are resolved.
- *
- * Reuses the existing request if available.
- *
- * @param {string} text
- * @returns {Promise.<string[]>}
- * @throws {CdError}
- */
-export function getRelevantUserNames(text) {
-  text = ucFirst(text);
-  // eslint-disable-next-line no-async-promise-executor
-  const promise = new Promise(async (resolve, reject) => {
-    await sleep(autocompleteTimeout);
-    try {
-      if (promise !== currentAutocompletePromise) {
-        throw new CdError();
-      }
-
-      // First, try to use the search to get only users that have talk pages. Most legitimate
-      // users do, while spammers don't.
-      const resp = await controller.getApi().get({
-        action: 'opensearch',
-        search: text,
-        namespace: 3,
-        redirects: 'resolve',
-        limit: 10,
-      }).catch(handleApiReject);
-
-      const users = resp[1]
-        ?.map((name) => (name.match(cd.g.userNamespacesRegexp) || [])[1])
-        .filter(defined)
-        .filter((name) => !name.includes('/'));
-
-      if (users.length) {
-        resolve(users);
-      } else {
-        // If we didn't succeed with search, try the entire users database.
-        const resp = await controller.getApi().get({
-          action: 'query',
-          list: 'allusers',
-          auprefix: text,
-        }).catch(handleApiReject);
-
-        const users = resp.query.allusers.map((user) => user.name);
-        resolve(users);
-      }
-    } catch (e) {
-      reject(e);
-    }
-  });
-  currentAutocompletePromise = promise;
-
-  return promise;
-}
-
-/**
- * Get a list of 10 page names matching the specified search text. Page names are sorted as
- * {@link https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Redirects are not
- * resolved.
- *
- * Reuses the existing request if available.
- *
- * @param {string} text
- * @returns {Promise.<string[]>}
- * @throws {CdError}
- */
-export function getRelevantPageNames(text) {
-  let colonPrefix = false;
-  if (cd.g.colonNamespacesPrefixRegexp.test(text)) {
-    text = text.slice(1);
-    colonPrefix = true;
-  }
-
-  // eslint-disable-next-line no-async-promise-executor
-  const promise = new Promise(async (resolve, reject) => {
-    await sleep(autocompleteTimeout);
-    try {
-      if (promise !== currentAutocompletePromise) {
-        throw new CdError();
-      }
-
-      controller.getApi().get({
-        action: 'opensearch',
-        search: text,
-        redirects: 'return',
-        limit: 10,
-      }).then(
-        (resp) => {
-          const regexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
-          const pages = resp[1]?.map((name) => (
-            name
-              .replace(regexp, () => text[0])
-              .replace(/^/, colonPrefix ? ':' : '')
-          ));
-
-          resolve(pages);
-        },
-        (e) => {
-          handleApiReject(e);
-        }
-      );
-    } catch (e) {
-      reject(e);
-    }
-  });
-  currentAutocompletePromise = promise;
-
-  return promise;
-}
-
-/**
- * Get a list of 10 template names matching the specified search text. Template names are sorted as
- * {@link https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Redirects are not
- * resolved.
- *
- * Reuses the existing request if available.
- *
- * @param {string} text
- * @returns {Promise.<string[]>}
- * @throws {CdError}
- */
-export function getRelevantTemplateNames(text) {
-  // eslint-disable-next-line no-async-promise-executor
-  const promise = new Promise(async (resolve, reject) => {
-    await sleep(autocompleteTimeout);
-    try {
-      if (promise !== currentAutocompletePromise) {
-        throw new CdError();
-      }
-
-      controller.getApi().get({
-        action: 'opensearch',
-        search: text.startsWith(':') ? text.slice(1) : 'Template:' + text,
-        redirects: 'return',
-        limit: 10,
-      }).then(
-        (resp) => {
-          const regexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
-          const templates = resp[1]
-            ?.filter((name) => !/(\/doc|\.css)$/.test(name))
-            .map((name) => text.startsWith(':') ? name : name.slice(name.indexOf(':') + 1))
-            .map((name) => name.replace(regexp, () => text[0]));
-
-          resolve(templates);
-        },
-        (e) => {
-          handleApiReject(e);
-        }
-      );
-    } catch (e) {
-      reject(e);
-    }
-  });
-  currentAutocompletePromise = promise;
-
-  return promise;
 }
 
 /**

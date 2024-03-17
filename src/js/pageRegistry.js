@@ -1,5 +1,5 @@
 /**
- * A singleton used to obtain instances of the `Page` class while avoiding creating duplicates.
+ * Singleton used to obtain instances of the `Page` class while avoiding creating duplicates.
  *
  * @module pageRegistry
  */

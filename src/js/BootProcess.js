@@ -773,7 +773,7 @@ class BootProcess {
     }
 
     /**
-     * The script has processed the comments, except for reformatting them in
+     * The script has processed comments, except for reformatting them in
      * {@link CommentStatic.reformatComments} if the user opted in for that.
      *
      * @event commentsReady
@@ -833,7 +833,7 @@ class BootProcess {
     }
 
     /**
-     * The script has processed the sections.
+     * The script has processed sections.
      *
      * @event sectionsReady
      * @param {object} sections {@link convenientDiscussions.sections} object.
@@ -1017,19 +1017,19 @@ class BootProcess {
       })
       .join('\n\n----\n');
 
-    const input = new OO.ui.MultilineTextInputWidget({
-      value: text,
-      rows: 20,
-    });
-    const field = new OO.ui.FieldLayout(input, {
-      align: 'top',
-      label: cd.s('rd-intro'),
-    });
-
     const dialog = new OO.ui.MessageDialog();
     controller.getWindowManager().addWindows([dialog]);
     controller.getWindowManager().openWindow(dialog, {
-      message: field.$element,
+      message: (new OO.ui.FieldLayout(
+        new OO.ui.MultilineTextInputWidget({
+          value: text,
+          rows: 20,
+        }),
+        {
+          align: 'top',
+          label: cd.s('rd-intro'),
+        }
+      )).$element,
       actions: [
         {
           label: cd.s('rd-close'),
@@ -1640,8 +1640,8 @@ class BootProcess {
 
     debug.stopTimer('main code');
 
-    // Operations that need reflow, such as getBoundingClientRect(), and those dependent on them go
-    // in this section.
+    // Operations that need reflow, such as `getBoundingClientRect()`, and those dependent on them
+    // go in this section.
     debug.startTimer('final code and rendering');
 
     if (controller.doesPageExist()) {
@@ -1660,9 +1660,10 @@ class BootProcess {
       this.connectToAddTopicButtons();
 
       // Should be below the viewport position restoration as it may rely on elements that are made
-      // hidden during the comment forms restoration. Should be below this.setupNavPanel() as it
-      // calls navPanel.updateCommentFormButton() which depends on the navigation panel being
-      // mounted.
+      // hidden during the comment forms restoration (NOT FULFILLED - FIXME? But the comment for
+      // `Thread.init()` seems to contradict). Should be below `this.setupNavPanel()` as
+      // `CommentFormStatic.restoreSession()` indirectly calls `navPanel.updateCommentFormButton()`
+      // which depends on the navigation panel being mounted.
       CommentFormStatic.restoreSession(this.firstRun || this.data('isPageReloadedExternally'));
 
       this.hideDtNewTopicForm();
@@ -1695,7 +1696,7 @@ class BootProcess {
       ));
       CommentStatic.configureAndAddLayers(commentsToAddLayersFor);
 
-      // Should be below Thread.init() as these methods may want to scroll to a comment in a
+      // Should be below `Thread.init()` as these methods may want to scroll to a comment in a
       // collapsed thread.
       this.processFragment();
       this.processTargets();

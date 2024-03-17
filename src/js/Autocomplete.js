@@ -1,11 +1,12 @@
+import CdError from './CdError';
 import SectionStatic from './SectionStatic';
 import Tribute from '../tribute/Tribute';
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
 import userRegistry from './userRegistry';
-import { defined, focusInput, insertText, removeDoubleSpaces, underlinesToSpaces, unique } from './utils';
-import { getRelevantPageNames, getRelevantTemplateNames, getRelevantUserNames, handleApiReject } from './apiWrappers';
+import { defined, focusInput, insertText, removeDoubleSpaces, sleep, ucFirst, underlinesToSpaces, unique } from './utils';
+import { handleApiReject } from './apiWrappers';
 
 /**
  * Search for a string in a list of values.
@@ -196,7 +197,7 @@ class Autocomplete {
             if (makeRequest && !matches.length) {
               let values;
               try {
-                values = await getRelevantUserNames(text);
+                values = await this.constructor.getRelevantUserNames(text);
               } catch {
                 return;
               }
@@ -326,8 +327,8 @@ class Autocomplete {
             if (valid) {
               let values;
               try {
-                values = await getRelevantPageNames(text);
-              } catch (e) {
+                values = await this.constructor.getRelevantPageNames(text);
+              } catch {
                 return;
               }
 
@@ -473,7 +474,7 @@ class Autocomplete {
             if (makeRequest) {
               let values;
               try {
-                values = await getRelevantTemplateNames(text);
+                values = await this.constructor.getRelevantTemplateNames(text);
               } catch {
                 return;
               }
@@ -527,6 +528,8 @@ class Autocomplete {
 
     return collections;
   }
+
+  static delay = 100;
 
   /**
    * _For internal use._ Get an autocomplete configuration for the specified type.
@@ -667,6 +670,167 @@ class Autocomplete {
    */
   static getActiveMenu() {
     return this.activeMenu;
+  }
+
+  /**
+   * Get a list of 10 user names matching the specified search text. User names are sorted as
+   * {@link https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Only users with a
+   * talk page existent are included. Redirects are resolved.
+   *
+   * Reuses the existing request if available.
+   *
+   * @param {string} text
+   * @returns {Promise.<string[]>}
+   * @throws {CdError}
+   */
+  static getRelevantUserNames(text) {
+    text = ucFirst(text);
+    // eslint-disable-next-line no-async-promise-executor
+    const promise = new Promise(async (resolve, reject) => {
+      await sleep(this.delay);
+      try {
+        if (promise !== this.currentPromise) {
+          throw new CdError();
+        }
+
+        // First, try to use the search to get only users that have talk pages. Most legitimate
+        // users do, while spammers don't.
+        const resp = await controller.getApi().get({
+          action: 'opensearch',
+          search: text,
+          namespace: 3,
+          redirects: 'resolve',
+          limit: 10,
+        }).catch(handleApiReject);
+
+        const users = resp[1]
+          ?.map((name) => (name.match(cd.g.userNamespacesRegexp) || [])[1])
+          .filter(defined)
+          .filter((name) => !name.includes('/'));
+
+        if (users.length) {
+          resolve(users);
+        } else {
+          // If we didn't succeed with search, try the entire users database.
+          const resp = await controller.getApi().get({
+            action: 'query',
+            list: 'allusers',
+            auprefix: text,
+          }).catch(handleApiReject);
+
+          const users = resp.query.allusers.map((user) => user.name);
+          resolve(users);
+        }
+      } catch (e) {
+        reject(e);
+      }
+    });
+    this.currentPromise = promise;
+
+    return promise;
+  }
+
+  /**
+   * Get a list of 10 page names matching the specified search text. Page names are sorted as
+   * {@link https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Redirects are not
+   * resolved.
+   *
+   * Reuses the existing request if available.
+   *
+   * @param {string} text
+   * @returns {Promise.<string[]>}
+   * @throws {CdError}
+   */
+  static getRelevantPageNames(text) {
+    let colonPrefix = false;
+    if (cd.g.colonNamespacesPrefixRegexp.test(text)) {
+      text = text.slice(1);
+      colonPrefix = true;
+    }
+
+    // eslint-disable-next-line no-async-promise-executor
+    const promise = new Promise(async (resolve, reject) => {
+      await sleep(this.delay);
+      try {
+        if (promise !== this.currentPromise) {
+          throw new CdError();
+        }
+
+        controller.getApi().get({
+          action: 'opensearch',
+          search: text,
+          redirects: 'return',
+          limit: 10,
+        }).then(
+          (resp) => {
+            const regexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
+            const pages = resp[1]?.map((name) => (
+              name
+                .replace(regexp, () => text[0])
+                .replace(/^/, colonPrefix ? ':' : '')
+            ));
+
+            resolve(pages);
+          },
+          (e) => {
+            handleApiReject(e);
+          }
+        );
+      } catch (e) {
+        reject(e);
+      }
+    });
+    this.currentPromise = promise;
+
+    return promise;
+  }
+
+  /**
+   * Get a list of 10 template names matching the specified search text. Template names are sorted as
+   * {@link https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Redirects are not
+   * resolved.
+   *
+   * Reuses the existing request if available.
+   *
+   * @param {string} text
+   * @returns {Promise.<string[]>}
+   * @throws {CdError}
+   */
+  static getRelevantTemplateNames(text) {
+    // eslint-disable-next-line no-async-promise-executor
+    const promise = new Promise(async (resolve, reject) => {
+      await sleep(this.delay);
+      try {
+        if (promise !== this.currentPromise) {
+          throw new CdError();
+        }
+
+        controller.getApi().get({
+          action: 'opensearch',
+          search: text.startsWith(':') ? text.slice(1) : 'Template:' + text,
+          redirects: 'return',
+          limit: 10,
+        }).then(
+          (resp) => {
+            const regexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
+            const templates = resp[1]
+              ?.filter((name) => !/(\/doc|\.css)$/.test(name))
+              .map((name) => text.startsWith(':') ? name : name.slice(name.indexOf(':') + 1))
+              .map((name) => name.replace(regexp, () => text[0]));
+
+            resolve(templates);
+          },
+          (e) => {
+            handleApiReject(e);
+          }
+        );
+      } catch (e) {
+        reject(e);
+      }
+    });
+    this.currentPromise = promise;
+
+    return promise;
   }
 }
 

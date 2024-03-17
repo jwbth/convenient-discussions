@@ -50,11 +50,11 @@ window.convenientDiscussions = window.convenientDiscussions || {};
 if (convenientDiscussions.config) return;
 
 
-/* BEGINNING OF THE CONFIGURATION */
+/* BEGINNING OF CONFIGURATION */
 
 convenientDiscussions.config = ${content}
 
-/* END OF THE CONFIGURATION */
+/* END OF CONFIGURATION */
 
 
 if (!convenientDiscussions.isRunning) {

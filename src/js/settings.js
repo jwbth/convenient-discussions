@@ -65,7 +65,7 @@ export default {
    *
    * @private
    */
-  setDefaults() {
+  initDefaults() {
     this.scheme.default = {
       'allowEditOthersComments': false,
       'alwaysExpandAdvanced': false,
@@ -417,69 +417,62 @@ export default {
   },
 
   /**
-   * Perform the actual procedure to initialize user settings.
-   *
-   * @private
-   */
-  async actuallyInit() {
-    // We fill the settings after the modules are loaded so that the settings set via common.js have
-    // less chance not to load.
-
-    this.setDefaults();
-
-    const options = {
-      [cd.g.settingsOptionName]: mw.user.options.get(cd.g.settingsOptionName),
-      [cd.g.localSettingsOptionName]: mw.user.options.get(cd.g.localSettingsOptionName),
-    };
-
-    const remoteSettings = await this.load({
-      options,
-      omitLocal: true,
-    });
-
-    this.set(Object.assign(
-      {},
-      this.scheme.default,
-
-      // Settings in global variables like `cdAllowEditOthersComments` used before server-stored
-      // settings were implemented and used for undocumented settings now.
-      this.getSettingPropertiesOfObject(window, 'cd'),
-
-      remoteSettings,
-    ));
-
-    // If the user has never changed the insert buttons configuration, it should change with the
-    // default configuration change.
-    if (
-      !this.values['insertButtons-altered'] &&
-      JSON.stringify(this.values.insertButtons) !== JSON.stringify(cd.config.defaultInsertButtons)
-    ) {
-      this.values.insertButtons = cd.config.defaultInsertButtons;
-    }
-
-    if (!areObjectsEqual(this.values, remoteSettings)) {
-      this.save().catch((e) => {
-        console.warn('Couldn\'t save the settings to the server.', e);
-      });
-    }
-
-    // Undocumented settings and settings in variables `cd...` and `cdLocal...` override all other
-    // and are not saved to the server.
-    this.set(Object.assign(
-      {},
-      this.scheme.undocumented,
-      this.getSettingPropertiesOfObject(window, 'cd', this.scheme.undocumented),
-      this.getLocalOverrides(),
-    ));
-  },
-
-  /**
    * _For internal use._ Initialize user settings, returning a promise, or return an existing one.
    *
    * @returns {Promise.<undefined>}
    */
   init() {
-    this.initPromise ||= this.actuallyInit();
+    this.initPromise ||= (async () => {
+      // We fill the settings after the modules are loaded so that the settings set via common.js
+      // have less chance not to load.
+
+      this.initDefaults();
+
+      const options = {
+        [cd.g.settingsOptionName]: mw.user.options.get(cd.g.settingsOptionName),
+        [cd.g.localSettingsOptionName]: mw.user.options.get(cd.g.localSettingsOptionName),
+      };
+
+      const remoteSettings = await this.load({
+        options,
+        omitLocal: true,
+      });
+
+      this.set(Object.assign(
+        {},
+        this.scheme.default,
+
+        // Settings in global variables like `cdAllowEditOthersComments` used before server-stored
+        // settings were implemented and used for undocumented settings now.
+        this.getSettingPropertiesOfObject(window, 'cd'),
+
+        remoteSettings,
+      ));
+
+      // If the user has never changed the insert buttons configuration, it should change with the
+      // default configuration change.
+      if (
+        !this.values['insertButtons-altered'] &&
+        JSON.stringify(this.values.insertButtons) !== JSON.stringify(cd.config.defaultInsertButtons)
+      ) {
+        this.values.insertButtons = cd.config.defaultInsertButtons;
+      }
+
+      if (!areObjectsEqual(this.values, remoteSettings)) {
+        this.save().catch((e) => {
+          console.warn('Couldn\'t save the settings to the server.', e);
+        });
+      }
+
+      // Undocumented settings and settings in variables `cd...` and `cdLocal...` override all other
+      // and are not saved to the server.
+      this.set(Object.assign(
+        {},
+        this.scheme.undocumented,
+        this.getSettingPropertiesOfObject(window, 'cd', this.scheme.undocumented),
+        this.getLocalOverrides(),
+      ));
+    })();
 
     return this.initPromise;
   },

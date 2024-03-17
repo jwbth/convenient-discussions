@@ -600,9 +600,9 @@ const CommentStatic = {
     if (returnComponents) {
       data.comment = comment;
       return data;
-    } else {
-      return comment;
     }
+
+    return comment;
   },
 
   /**
@@ -694,38 +694,38 @@ const CommentStatic = {
    * relevant setting is enabled.
    */
   async reformatComments() {
-    if (settings.get('reformatComments')) {
-      const pagesToCheckExistence = [];
-      $(document.body).addClass('cd-reformattedComments');
-      this.items.forEach((comment) => {
-        pagesToCheckExistence.push(...comment.replaceSignatureWithHeader());
-        comment.addMenu();
-      });
+    if (!settings.get('reformatComments')) return;
 
-      // Check existence of user and user talk pages and apply respective changes to elements.
-      const pageNamesToLinks = {};
-      pagesToCheckExistence.forEach((page) => {
-        const pageName = page.pageName;
-        if (!pageNamesToLinks[pageName]) {
-          pageNamesToLinks[pageName] = [];
+    const pagesToCheckExistence = [];
+    $(document.body).addClass('cd-reformattedComments');
+    this.items.forEach((comment) => {
+      pagesToCheckExistence.push(...comment.replaceSignatureWithHeader());
+      comment.addMenu();
+    });
+
+    // Check existence of user and user talk pages and apply respective changes to elements.
+    const pageNamesToLinks = {};
+    pagesToCheckExistence.forEach((page) => {
+      const pageName = page.pageName;
+      if (!pageNamesToLinks[pageName]) {
+        pageNamesToLinks[pageName] = [];
+      }
+      pageNamesToLinks[pageName].push(page.link);
+    });
+    const pageNames = Object.keys(pageNamesToLinks);
+    const pagesExistence = await getPagesExistence(pageNames);
+    Object.keys(pagesExistence).forEach((name) => {
+      pageNamesToLinks[name].forEach((link) => {
+        link.title = pagesExistence[name].normalized;
+        if (!pagesExistence[name].exists) {
+          link.classList.add('new');
+          link.href = mw.util.getUrl(name, {
+            action: 'edit',
+            redlink: 1,
+          });
         }
-        pageNamesToLinks[pageName].push(page.link);
       });
-      const pageNames = Object.keys(pageNamesToLinks);
-      const pagesExistence = await getPagesExistence(pageNames);
-      Object.keys(pagesExistence).forEach((name) => {
-        pageNamesToLinks[name].forEach((link) => {
-          link.title = pagesExistence[name].normalized;
-          if (!pagesExistence[name].exists) {
-            link.classList.add('new');
-            link.href = mw.util.getUrl(name, {
-              action: 'edit',
-              redlink: 1,
-            });
-          }
-        });
-      });
-    }
+    });
   },
 
   /**
@@ -786,7 +786,7 @@ const CommentStatic = {
   },
 
   /**
-   * Find the previous comment by time by the specified author within a 1-day window.
+   * Find a previous comment in time by the specified author within a 1-day window.
    *
    * @param {Date} date
    * @param {string} author
@@ -1062,7 +1062,7 @@ const CommentStatic = {
   },
 };
 
-// Move static properties from `CommentSkeleton` to `CommentStatic` so that it acts like real
+// Move static properties from `CommentSkeleton` to `CommentStatic` so that it acts like a real
 // inheritor.
 const CommentSkeletonStatic = Object.entries(Object.getOwnPropertyDescriptors(CommentSkeleton))
   .filter(([, descriptor]) => descriptor.writable)

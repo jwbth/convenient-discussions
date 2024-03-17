@@ -172,7 +172,7 @@ class CommentFormOperation {
       .filter((op) => (
         ['preview', 'viewChanges'].includes(op.getType()) &&
 
-        // If we remove this line, then, with autopreview enabled, preview will be updated only when
+        // If we delete this line, then, with autopreview enabled, preview will be updated only when
         // the user stops typing.
         !op.isDelayed()
       ))

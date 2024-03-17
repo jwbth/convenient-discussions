@@ -401,7 +401,8 @@ export function extractSignatures(code) {
 }
 
 /**
- * Modify a string or leave it unchanged so that is has two newlines at the end of it.
+ * Modify a string or leave it unchanged so that is has two newlines at the end of it. (Meant for
+ * section wikitext.)
  *
  * @param {string} code
  * @returns {string}

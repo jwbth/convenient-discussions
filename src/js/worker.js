@@ -53,7 +53,7 @@ function getAllTextNodes() {
       nodes.push(node);
     }
 
-    // Remove comments DT reply button html comments as well to optimize.
+    // Remove DT reply button html comments as well to optimize.
     if (node.nodeType === Node.COMMENT_NODE && node.data.startsWith('__DTREPLYBUTTONS__')) {
       node.remove();
     }

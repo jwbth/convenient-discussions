@@ -5,6 +5,7 @@
  * @module controller
  */
 
+import Autocomplete from './Autocomplete';
 import BootProcess from './BootProcess';
 import Comment from './Comment';
 import CommentFormStatic from './CommentFormStatic';
@@ -27,7 +28,6 @@ import toc from './toc';
 import { ElementsTreeWalker } from './treeWalker';
 import { copyText, defined, definedAndNotNull, getExtendedRect, getLastArrayElementOrSelf, getVisibilityByRects, isCmdModifierPressed, isHeadingNode, isInline, isInputFocused, isProbablyTalkPage, keyCombination, skin$, sleep, wrapHtml } from './utils';
 import { getUserInfo, htmlToWikitext } from './apiWrappers';
-import Autocomplete from './Autocomplete';
 
 export default {
   content: {},
@@ -41,7 +41,6 @@ export default {
   addedCommentCount: 0,
   areRelevantCommentsAdded: false,
   relevantAddedCommentIds: null,
-  newCommentsTitleMark: '',
   commentsNotifiedAbout: [],
   isObstructingElementHoveredCached: false,
 
@@ -321,18 +320,6 @@ export default {
    */
   setAddSectionButtonContainer($container) {
     this.$addSectionButtonContainer = $container;
-  },
-
-  /**
-   * Get the sticky header element, if present.
-   *
-   * @returns {?Element}
-   */
-  getStickyHeader() {
-    if (this.stickyHeader === undefined) {
-      this.stickyHeader = $('#vector-sticky-header').get(0) || null;
-    }
-    return this.stickyHeader;
   },
 
   /**
@@ -827,16 +814,18 @@ export default {
     if (this.notificationArea === undefined) {
       this.notificationArea = document.querySelector('.mw-notification-area');
       this.tocButton = document.getElementById('vector-toc-collapsed-button');
+      this.stickyHeader = $('#vector-sticky-header').get(0);
     }
 
     OO.ui.throttle(() => {
+      // Use vanilla JS where possible
       this.isObstructingElementHoveredCached = Boolean(
         [
           ...(this.notificationArea?.querySelectorAll('.mw-notification') || []),
           Autocomplete.getActiveMenu(),
           navPanel.$element?.get(0),
           ...document.body.querySelectorAll('.oo-ui-popupWidget:not(.oo-ui-element-hidden)'),
-          this.getStickyHeader(),
+          this.stickyHeader,
           SectionStatic.getAll()
             .map((section) => section.actions.moreMenuSelect?.getMenu())
             .find((menu) => menu?.isVisible())
@@ -2198,7 +2187,7 @@ export default {
     let title = this.originalPageTitle;
     const lastActiveCommentForm = CommentFormStatic.getLastActive();
     if (lastActiveCommentForm) {
-      let ending = CommentFormStatic.modeToProperty(lastActiveCommentForm.getMode()).toLowerCase();
+      const ending = CommentFormStatic.modeToProperty(lastActiveCommentForm.getMode()).toLowerCase();
       title = cd.s(`page-title-${ending}`, title);
     }
 
@@ -2208,10 +2197,12 @@ export default {
     }
 
     const relevantMark = this.areRelevantCommentsAdded ? '*' : '';
-    this.newCommentsTitleMark = this.addedCommentCount ?
-      `(${this.addedCommentCount}${relevantMark}) ` :
-      '';
-    document.title = title.replace(/^(?:\(\d+\*?\) )?/, this.newCommentsTitleMark);
+    document.title = title.replace(
+      /^(?:\(\d+\*?\) )?/,
+      this.addedCommentCount ?
+        `(${this.addedCommentCount}${relevantMark}) ` :
+        ''
+    );
   },
 
   /**

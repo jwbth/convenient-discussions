@@ -74,6 +74,24 @@ export class User {
   }
 
   /**
+   * Set the user's rights.
+   *
+   * @type {'male'|'female'|'unknown'}
+   */
+  setRights(rights) {
+    this.rights = rights;
+  }
+
+  /**
+   * Get the user's rights (must be obtained using {@link module:apiWrappers.getUserInfo}).
+   *
+   * @type {'male'|'female'|'unknown'}
+   */
+  getRights() {
+    return this.rights.slice();
+  }
+
+  /**
    * Get the preferred namespace alias, based on:
    * 1. the `genderNeutralUserNamespaceAlias` CD config value (first choice);
    * 2. the `userNamespacesByGender` CD config value, if the gender is known (second choice);

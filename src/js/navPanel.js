@@ -356,7 +356,7 @@ export default {
       // When timestamps are relative and the TOC is set to be modified, the tooltip is updated
       // together with the updates of the TOC. When the TOC is not modified, we need to update the
       // tooltip manually every minute. When timestamps are "improved", timestamps are updated in
-      // `LiveTimestamp.updateImproved`.
+      // `LiveTimestamp.updateImproved()`.
       if (settings.get('timestampFormat') === 'relative' && !settings.get('modifyToc')) {
         utirbtTimeout = setTimeout(() => {
           this.updateTimestampsInRefreshButtonTooltip();
@@ -406,8 +406,10 @@ export default {
   updateCommentFormButton() {
     if (!this.isMounted() || controller.isAutoScrolling()) return;
 
-    const areThereHidden = CommentFormStatic.getAll()
-      .some((commentForm) => !commentForm.$element.cdIsInViewport(true));
-    this.commentFormButton[areThereHidden ? 'show' : 'hide']();
+    if (CommentFormStatic.getAll().some((cf) => !cf.$element.cdIsInViewport(true))) {
+      this.commentFormButton.show();
+    } else {
+      this.commentFormButton.hide();
+    }
   },
 };

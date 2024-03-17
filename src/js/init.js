@@ -1221,7 +1221,7 @@ export default {
   async talkPage() {
     await Promise.all(this.getSiteData());
 
-    // This can have been executed from `addCommentLinks.prepare()`.
+    // This could have been executed from `addCommentLinks.prepare()`.
     this.globals();
     await settings.init();
 

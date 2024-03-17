@@ -3284,7 +3284,8 @@ class CommentForm {
       }
     }
 
-    // Restore hidden elements
+    // Restore hidden elements. FIXME: use a hook or at least run some routine on the target to
+    // decouple these operations from CommentForm.
     if (this.mode === 'replyInSection') {
       this.target.replyButton.show();
       this.target.$replyButtonWrapper.removeClass('cd-replyButtonWrapper-hasCommentForm');
@@ -3299,9 +3300,10 @@ class CommentForm {
       controller.$addSectionButtonContainer?.show();
     }
 
-    this.torndown = true;
-
     this.forget();
+    controller.updatePageTitle();
+
+    this.torndown = true;
   }
 
   /**
@@ -3313,6 +3315,7 @@ class CommentForm {
    */
   forget() {
     // FIXME: Emit an event using `mw.hook()` and handle it in the objects below to reduce coupling?
+    // Or just run some routine on `controller`.
     if (this.mode === 'addSection') {
       CommentFormStatic.forgetAddSectionForm();
     } else {
@@ -3329,12 +3332,7 @@ class CommentForm {
     this.headlineAutocomplete?.cleanUp();
     this.summaryAutocomplete.cleanUp();
 
-    // If we are forgetting a form that is not torn down, this implies it's inactive anyway, and we
-    // don't need to remove references to it.
-    if (this.torndown) {
-      navPanel.updateCommentFormButton();
-      controller.updatePageTitle();
-    }
+    navPanel.updateCommentFormButton();
   }
 
   /**
