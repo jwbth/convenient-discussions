@@ -7,10 +7,11 @@
 import CommentForm from './CommentForm';
 import CommentStatic from './CommentStatic';
 import SectionStatic from './SectionStatic';
+import StorageItem from './StorageItem';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
-import { areObjectsEqual, focusInput, getFromLocalStorage, removeFromArrayIfPresent, saveToLocalStorage } from './utils';
+import { areObjectsEqual, focusInput, removeFromArrayIfPresent } from './utils';
 
 /**
  * Callback to be used in
@@ -24,24 +25,6 @@ import { areObjectsEqual, focusInput, getFromLocalStorage, removeFromArrayIfPres
  */
 function lastFocused(commentForm1, commentForm2) {
   return (commentForm2.lastFocused || new Date(0)) - (commentForm1.lastFocused || new Date(0));
-}
-
-/**
- * Remove sessions older than 60 days.
- *
- * @param {object[]} data
- * @returns {object}
- * @private
- */
-function cleanUpSessionRegistry(data) {
-  const newData = Object.assign({}, data);
-  Object.keys(newData).forEach((key) => {
-    const page = newData[key];
-    if (!page.commentForms?.length || page.saveUnixTime < Date.now() - 60 * cd.g.msInDay) {
-      delete newData[key];
-    }
-  });
-  return newData;
 }
 
 /**
@@ -264,33 +247,32 @@ const CommentFormStatic = {
   },
 
   actuallySaveSession() {
-    const commentForms = this.items
-      .filter((commentForm) => commentForm.isAltered())
-      .map((commentForm) => ({
-        mode: commentForm.getMode(),
-        targetData: commentForm.getTarget().getIdentifyingData(),
-        preloadConfig: commentForm.getPreloadConfig(),
-        newTopicOnTop: commentForm.isNewTopicOnTop(),
-        headline: commentForm.headlineInput?.getValue(),
-        comment: commentForm.commentInput.getValue(),
-        summary: commentForm.summaryInput.getValue(),
-        minor: commentForm.minorCheckbox?.isSelected(),
-        watch: commentForm.watchCheckbox?.isSelected(),
-        subscribe: commentForm.subscribeCheckbox?.isSelected(),
-        omitSignature: commentForm.omitSignatureCheckbox?.isSelected(),
-        delete: commentForm.deleteCheckbox?.isSelected(),
-        originalHeadline: commentForm.getOriginalHeadline(),
-        originalComment: commentForm.getOriginalComment(),
-        summaryAltered: commentForm.isSummaryAltered(),
-        omitSignatureCheckboxAltered: commentForm.isOmitSignatureCheckboxAltered(),
-        lastFocused: commentForm.getLastFocused(),
-      }));
-    const saveUnixTime = Date.now();
-    const data = commentForms.length ? { commentForms, saveUnixTime } : {};
-
-    const dataAllPages = getFromLocalStorage('commentForms');
-    dataAllPages[mw.config.get('wgPageName')] = data;
-    saveToLocalStorage('commentForms', dataAllPages);
+    (new StorageItem('commentForms'))
+      .setForPage(
+        mw.config.get('wgPageName'),
+        this.items
+          .filter((commentForm) => commentForm.isAltered())
+          .map((commentForm) => ({
+            mode: commentForm.getMode(),
+            targetData: commentForm.getTarget().getIdentifyingData(),
+            preloadConfig: commentForm.getPreloadConfig(),
+            newTopicOnTop: commentForm.isNewTopicOnTop(),
+            headline: commentForm.headlineInput?.getValue(),
+            comment: commentForm.commentInput.getValue(),
+            summary: commentForm.summaryInput.getValue(),
+            minor: commentForm.minorCheckbox?.isSelected(),
+            watch: commentForm.watchCheckbox?.isSelected(),
+            subscribe: commentForm.subscribeCheckbox?.isSelected(),
+            omitSignature: commentForm.omitSignatureCheckbox?.isSelected(),
+            delete: commentForm.deleteCheckbox?.isSelected(),
+            originalHeadline: commentForm.getOriginalHeadline(),
+            originalComment: commentForm.getOriginalComment(),
+            summaryAltered: commentForm.isSummaryAltered(),
+            omitSignatureCheckboxAltered: commentForm.isOmitSignatureCheckboxAltered(),
+            lastFocused: commentForm.getLastFocused(),
+          }))
+      )
+      .save();
   },
 
   /**
@@ -418,9 +400,13 @@ const CommentFormStatic = {
       // This is needed when the page is reloaded externally.
       this.reset();
 
-      const dataAllPages = cleanUpSessionRegistry(getFromLocalStorage('commentForms'));
-      saveToLocalStorage('commentForms', dataAllPages);
-      const data = dataAllPages[mw.config.get('wgPageName')] || {};
+      const data = (new StorageItem('commentForms'))
+        .cleanUp((entry) =>
+          !entry.commentForms?.length ||
+          entry.saveUnixTime < Date.now() - 60 * cd.g.msInDay
+        )
+        .save()
+        .get(mw.config.get('wgPageName'));
       if (data.commentForms) {
         this.restoreFromStorage(data);
       }

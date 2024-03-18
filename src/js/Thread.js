@@ -1,11 +1,12 @@
 import Button from './Button';
 import CdError from './CdError';
 import CommentStatic from './CommentStatic';
+import StorageItem from './StorageItem';
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
 import { ElementsTreeWalker } from './treeWalker';
-import { defined, flat, getCommonGender, getExtendedRect, getFromLocalStorage, getVisibilityByRects, isCmdModifierPressed, isHeadingNode, removeFromArrayIfPresent, saveToLocalStorage, unique } from './utils';
+import { defined, flat, getCommonGender, getExtendedRect, getVisibilityByRects, isCmdModifierPressed, isHeadingNode, removeFromArrayIfPresent, unique } from './utils';
 import { loadUserGenders } from './apiWrappers';
 
 let elementPrototypes;
@@ -96,21 +97,20 @@ function getEndElement(startElement, highlightables, nextForeignElement) {
 function saveCollapsedThreads() {
   if (!controller.isCurrentRevision()) return;
 
-  const threads = CommentStatic.getAll()
-    .filter((comment) => (
-      comment.thread &&
-      comment.thread.isCollapsed !== Boolean(comment.thread.isAutocollapseTarget)
-    ))
-    .map((comment) => ({
-      id: comment.id,
-      collapsed: comment.thread.isCollapsed,
-    }));
-  const saveUnixTime = Date.now();
-  const data = threads.length ? { threads, saveUnixTime } : {};
-
-  const dataAllPages = getFromLocalStorage('collapsedThreads');
-  dataAllPages[mw.config.get('wgArticleId')] = data;
-  saveToLocalStorage('collapsedThreads', dataAllPages);
+  (new StorageItem('collapsedThreads'))
+    .setForPage(
+      mw.config.get('wgArticleId'),
+      CommentStatic.getAll()
+        .filter((comment) => (
+          comment.thread &&
+          comment.thread.isCollapsed !== Boolean(comment.thread.isAutocollapseTarget)
+        ))
+        .map((comment) => ({
+          id: comment.id,
+          collapsed: comment.thread.isCollapsed,
+        }))
+    )
+    .save();
 }
 
 /**
@@ -120,12 +120,17 @@ function saveCollapsedThreads() {
  * @private
  */
 function autocollapseThreads() {
-  const dataAllPages = cleanUpCollapsedThreads(getFromLocalStorage('collapsedThreads'));
-  const data = dataAllPages[mw.config.get('wgArticleId')] || {};
+  const collapsedThreadStorageItem = (new StorageItem('collapsedThreads'))
+    .cleanUp((entry) => (
+      !entry.threads?.length ||
+      entry.saveUnixTime < Date.now() - 60 * cd.g.msInDay
+    ));
+  const data = collapsedThreadStorageItem.get(mw.config.get('wgArticleId'));
 
   let comments = [];
 
-  data.threads?.forEach((thread) => {
+  // Leave only `data.collapsedThreads` after June 2024
+  (data.collapsedThreads || data.threads)?.forEach((thread) => {
     const comment = CommentStatic.getById(thread.id);
     if (comment?.thread) {
       if (thread.collapsed) {
@@ -197,26 +202,8 @@ function autocollapseThreads() {
     });
 
   if (controller.isCurrentRevision()) {
-    saveToLocalStorage('collapsedThreads', dataAllPages);
+    collapsedThreadStorageItem.save();
   }
-}
-
-/**
- * Clean up collapsed threads data older than 60 days.
- *
- * @param {object[]} data
- * @returns {object}
- * @private
- */
-function cleanUpCollapsedThreads(data) {
-  const newData = Object.assign({}, data);
-  Object.keys(newData).forEach((key) => {
-    const page = newData[key];
-    if (!page.threads?.length || page.saveUnixTime < Date.now() - 60 * cd.g.msInDay) {
-      delete newData[key];
-    }
-  });
-  return newData;
 }
 
 /**

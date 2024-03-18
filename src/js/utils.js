@@ -551,31 +551,6 @@ export function areObjectsEqual(object1, object2) {
 }
 
 /**
- * Helper to get the script's local storage item packed in JSON or an empty object in case of an
- * unexistent/falsy/corrupt value or the storage inaccessible.
- *
- * @param {string} name
- * @returns {object}
- */
-export function getFromLocalStorage(name) {
-  const obj = mw.storage.getObject(`convenientDiscussions-${name}`);
-  if (obj === false) {
-    console.error('Storage is unavailable.');
-  }
-  return obj || {};
-}
-
-/**
- * Helper to save an object to the local storage.
- *
- * @param {string} name
- * @param {object} obj
- */
-export function saveToLocalStorage(name, obj) {
-  mw.storage.setObject(`convenientDiscussions-${name}`, obj);
-}
-
-/**
  * Remove left-to-right and right-to-left marks that sometimes are copied from the edit history to
  * the timestamp (for example, https://meta.wikimedia.org/w/index.php?diff=20418518) and also appear
  * after →/← in edit summaries.

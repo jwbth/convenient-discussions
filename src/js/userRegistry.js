@@ -4,9 +4,10 @@
  * @module userRegistry
  */
 
+import StorageItem from './StorageItem';
 import cd from './cd';
-import { getFromLocalStorage, saveToLocalStorage, ucFirst, underlinesToSpaces } from './utils';
 import { getUsersByGlobalId } from './apiWrappers';
+import { ucFirst, underlinesToSpaces } from './utils';
 
 /**
  * Class representing a user. Is made similar to
@@ -196,7 +197,8 @@ export default {
     if (!userIdList) return;
 
     const userIds = userIdList.split('\n');
-    const mutedUsersData = getFromLocalStorage('mutedUsers');
+    const mutedUsersStorage = new StorageItem('mutedUsers');
+    const mutedUsersData = mutedUsersStorage.getAll();
     if (
       !mutedUsersData.users ||
       userIds.some((id) => !mutedUsersData.users[id]) ||
@@ -209,7 +211,7 @@ export default {
           users.forEach((user) => {
             user.setMuted(true);
           });
-          saveToLocalStorage('mutedUsers', {
+          mutedUsersStorage.save('mutedUsers', {
             users: Object.assign({}, ...users.map((user) => ({
               [user.getGlobalId()]: user.getName(),
             }), {})),

@@ -8,6 +8,7 @@ import CdError from './CdError';
 import CommentFormStatic from './CommentFormStatic';
 import CommentStatic from './CommentStatic';
 import SectionStatic from './SectionStatic';
+import StorageItem from './StorageItem';
 import Thread from './Thread';
 import cd from './cd';
 import controller from './controller';
@@ -15,7 +16,7 @@ import pageRegistry from './pageRegistry';
 import settings from './settings';
 import toc from './toc';
 import userRegistry from './userRegistry';
-import { calculateWordOverlap, getFromLocalStorage, keepWorkerSafeValues, saveToLocalStorage } from './utils';
+import { calculateWordOverlap, keepWorkerSafeValues } from './utils';
 import { loadUserGenders } from './apiWrappers';
 
 const revisionData = {};
@@ -144,25 +145,6 @@ async function maybeProcessRevisionsAtLoad(submittedCommentId) {
       checkForChangesSincePreviousVisit(currentComments, submittedCommentId);
     }
   }
-}
-
-/**
- * Remove seen rendered changes data older than 60 days.
- *
- * @param {object[]} data
- * @returns {object}
- * @private
- */
-function cleanUpSeenRenderedChanges(data) {
-  const newData = Object.assign({}, data);
-  Object.keys(newData).forEach((key) => {
-    const page = newData[key];
-    const oldestUnixTime = Math.min(...Object.entries(page).map(([, data]) => data.seenUnixTime));
-    if (!oldestUnixTime || oldestUnixTime < Date.now() - 60 * cd.g.msInDay) {
-      delete newData[key];
-    }
-  });
-  return newData;
 }
 
 /**
@@ -415,10 +397,12 @@ function hasCommentChanged(olderComment, newerComment) {
  * @private
  */
 function checkForChangesSincePreviousVisit(currentComments, submittedCommentId) {
-  const seenRenderedChanges = cleanUpSeenRenderedChanges(
-    getFromLocalStorage('seenRenderedChanges')
-  );
-  const articleId = mw.config.get('wgArticleId');
+  const seenStorageItem = (new StorageItem('seenRenderedChanges'))
+    .cleanUp((entry) => (
+      (Math.min(...Object.values(entry).map((data) => data.seenUnixTime)) || 0) <
+      Date.now() - 60 * cd.g.msInDay
+    ));
+  const seen = seenStorageItem.get(mw.config.get('wgArticleId'));
 
   const changeList = [];
   currentComments.forEach((currentComment) => {
@@ -426,7 +410,7 @@ function checkForChangesSincePreviousVisit(currentComments, submittedCommentId) 
 
     const oldComment = currentComment.match;
     if (oldComment) {
-      const seenHtmlToCompare = seenRenderedChanges[articleId]?.[currentComment.id]?.htmlToCompare;
+      const seenHtmlToCompare = seen?.[currentComment.id]?.htmlToCompare;
       if (
         hasCommentChanged(oldComment, currentComment) &&
         seenHtmlToCompare !== currentComment.htmlToCompare
@@ -466,11 +450,9 @@ function checkForChangesSincePreviousVisit(currentComments, submittedCommentId) 
     mw.hook('convenientDiscussions.changesSincePreviousVisit').fire(changeList);
   }
 
-  delete seenRenderedChanges[articleId];
-  saveToLocalStorage('seenRenderedChanges', seenRenderedChanges);
-
-  // TODO: Remove in November 2021 (3 months after renaming)
-  mw.storage.remove('convenientDiscussions-seenRenderedEdits');
+  seenStorageItem
+    .delete(mw.config.get('wgArticleId'))
+    .save();
 }
 
 /**

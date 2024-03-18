@@ -7,38 +7,20 @@ import CommentSource from './CommentSource';
 import CommentStatic from './CommentStatic';
 import CommentSubitemList from './CommentSubitemList';
 import LiveTimestamp from './LiveTimestamp';
+import StorageItem from './StorageItem';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
 import { ElementsTreeWalker, TreeWalker } from './treeWalker';
-import { addToArrayIfAbsent, areObjectsEqual, calculateWordOverlap, countOccurrences, dealWithLoadingBug, decodeHtmlEntities, defined, getExtendedRect, getFromLocalStorage, getHeadingLevel, getHigherNodeAndOffsetInSelection, getVisibilityByRects, isInline, saveToLocalStorage, sleep, unique, wrapDiffBody, wrapHtml } from './utils';
+import { addToArrayIfAbsent, areObjectsEqual, calculateWordOverlap, countOccurrences, dealWithLoadingBug, decodeHtmlEntities, defined, getExtendedRect, getHeadingLevel, getHigherNodeAndOffsetInSelection, getVisibilityByRects, isInline, sleep, unique, wrapDiffBody, wrapHtml } from './utils';
 import { extractSignatures, removeWikiMarkup } from './wikitext';
 import { formatDate, formatDateNative } from './timestamp';
 import { handleApiReject, loadUserGenders, parseCode } from './apiWrappers';
 import { showConfirmDialog } from './ooui';
 
 let elementPrototypes;
-let thanks;
-
-/**
- * Remove thanks older than 60 days.
- *
- * @param {object[]} data
- * @returns {object}
- * @private
- */
-function cleanUpThanks(data) {
-  const newData = Object.assign({}, data);
-  Object.keys(newData).forEach((key) => {
-    const thank = newData[key];
-    if (!thank.thankUnixTime || thank.thankUnixTime < Date.now() - 60 * cd.g.msInDay) {
-      delete newData[key];
-    }
-  });
-  return newData;
-}
 
 /**
  * Get the bounding client rectangle for a comment part.
@@ -628,13 +610,12 @@ class Comment extends CommentSkeleton {
       return;
     }
 
-    if (!thanks) {
-      thanks = cleanUpThanks(getFromLocalStorage('thanks'));
-      saveToLocalStorage('thanks', thanks);
-    }
-    const isThanked = Object.keys(thanks).some((key) => (
-      this.dtId === thanks[key].id ||
-      this.id === thanks[key].id
+    this.constructor.thanksStorage ||= (new StorageItem('thanks'))
+      .cleanUp((entry) => (entry.thankUnixTime || 0) < Date.now() - 60 * cd.g.msInDay)
+      .save();
+    const isThanked = Object.values(this.constructor.thanksStorage.getAll()).some((thank) => (
+      this.dtId === thank.id ||
+      this.id === thank.id
     ));
 
     const action = this.thankButtonClick;
@@ -1862,14 +1843,15 @@ class Comment extends CommentSkeleton {
     this.flash('changed', 1000);
 
     if (this.isChanged) {
-      const seenRenderedChanges = getFromLocalStorage('seenRenderedChanges');
-      const articleId = mw.config.get('wgArticleId');
-      seenRenderedChanges[articleId] = seenRenderedChanges[articleId] || {};
-      seenRenderedChanges[articleId][this.id] = {
+      const seenStorageItem = new StorageItem('seenRenderedChanges');
+      const seen = seenStorageItem.get(mw.config.get('wgArticleId')) || {};
+      seen[this.id] = {
         htmlToCompare: this.htmlToCompare,
         seenUnixTime: Date.now(),
       };
-      saveToLocalStorage('seenRenderedChanges', seenRenderedChanges);
+      seenStorageItem
+        .set(mw.config.get('wgArticleId'), seen)
+        .save();
     }
 
     controller.maybeMarkPageAsRead();
@@ -2180,11 +2162,12 @@ class Comment extends CommentSkeleton {
         this.willFlashChangedOnSight = false;
         controller.maybeMarkPageAsRead();
       } else {
-        const seenRenderedChanges = getFromLocalStorage('seenRenderedChanges');
-        const articleId = mw.config.get('wgArticleId');
-        seenRenderedChanges[articleId] = seenRenderedChanges[articleId] || {};
-        delete seenRenderedChanges[articleId][this.id];
-        saveToLocalStorage('seenRenderedChanges', seenRenderedChanges);
+        const seenStorageItem = new StorageItem('seenRenderedChanges');
+        const seen = seenStorageItem.get(mw.config.get('wgArticleId')) || {};
+        delete seen[this.id];
+        seenStorageItem
+          .set(mw.config.get('wgArticleId'), seen)
+          .save();
 
         this.flashChangedOnSight();
       }
@@ -2694,11 +2677,13 @@ class Comment extends CommentSkeleton {
       mw.notify(cd.s('thank-success'));
       this.setThanked();
 
-      thanks[edit.revid] = {
-        id: this.dtId || this.id,
-        thankUnixTime: Date.now(),
-      };
-      saveToLocalStorage('thanks', thanks);
+      this.constructor.thanksStorage
+        .init()
+        .set(edit.revid, {
+          id: this.dtId || this.id,
+          thankUnixTime: Date.now(),
+        })
+        .save();
 
       try {
         await mw.loader.using('ext.thanks');
