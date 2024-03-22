@@ -130,7 +130,7 @@ async function processPage(revisionToParseId) {
 async function maybeProcessRevisionsAtLoad(submittedCommentId) {
   const revisions = await pageRegistry.getCurrent().getRevisions({
     rvprop: ['ids'],
-    rvstart: new Date(controller.getBootProcess().getPreviousVisitUnixTime() * 1000).toISOString(),
+    rvstart: new Date(controller.getBootProcess().getPreviousVisitTime() * 1000).toISOString(),
     rvlimit: 1,
   }, true);
 
@@ -336,8 +336,8 @@ async function checkForUpdates() {
       if (isPageStillAtRevision(currentRevisionId)) {
         const { comments: currentComments } = await processPage(currentRevisionId);
 
-        // We set the value here, not after the first "await", so that we are sure that
-        // lastCheckedRevisionId corresponds to the versions of comments that are currently
+        // We set the value here, not after the first `await`, so that we are sure that
+        // `lastCheckedRevisionId` corresponds to the versions of comments that are currently
         // rendered.
         lastCheckedRevisionId = revisionId;
         controller.setLastCheckedRevisionId(lastCheckedRevisionId);
@@ -429,7 +429,7 @@ function checkForChangesSincePreviousVisit(currentComments, submittedCommentId) 
         comment.markAsChanged('changedSince', true, previousVisitRevisionId, commentsData);
 
         if (comment.isOpeningSection) {
-          comment.section?.resubscribeToRenamed(currentComment, oldComment);
+          comment.section?.resubscribeIfRenamed(currentComment, oldComment);
         }
 
         changeList.push({ comment, commentsData });
@@ -684,7 +684,7 @@ async function initUpdateChecker() {
   // It is handled in BootProcess#processVisits.
   await bootProcess.getVisitsRequest();
 
-  if (bootProcess.getPreviousVisitUnixTime()) {
+  if (bootProcess.getPreviousVisitTime()) {
     const submittedCommentId = (
       (bootProcess.data('wasCommentFormSubmitted') && bootProcess.data('commentIds')?.[0]) ||
       undefined

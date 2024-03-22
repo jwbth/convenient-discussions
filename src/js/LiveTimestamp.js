@@ -6,12 +6,6 @@ import settings from './settings';
 import { formatDate, relativeTimeThresholds } from './timestamp';
 import { removeFromArrayIfPresent } from './utils';
 
-let yesterdayStart;
-
-let updateTimeouts = [];
-let improvedTimestampsInitted = false;
-let improvedTimestamps = [];
-
 /**
  * Class representing an element that has contains an automatically updated timestamp with relative
  * (dependent on the current date and time somehow) date and time.
@@ -57,6 +51,9 @@ class LiveTimestamp {
      * @private
      */
     this.callback = callback;
+
+    this.format = settings.get('timestampFormat');
+    this.useUiTime = settings.get('useUiTime');
   }
 
   /**
@@ -64,16 +61,16 @@ class LiveTimestamp {
    * needed).
    */
   init() {
-    if (settings.get('timestampFormat') === 'improved') {
-      if (!improvedTimestampsInitted) {
+    if (this.format === 'improved') {
+      if (!this.constructor.improvedTimestampsInitted) {
         // Timestamps of the "improved" format are updated all together, at the boundaries of days.
         // So, we only need to initiate the timeouts once.
         LiveTimestamp.initImproved();
       }
-      if (this.date.getTime() > yesterdayStart) {
-        improvedTimestamps.push(this);
+      if (this.date.getTime() > this.constructor.yesterdayStart) {
+        this.constructor.improvedTimestamps.push(this);
       }
-    } else if (settings.get('timestampFormat') === 'relative') {
+    } else if (this.format === 'relative') {
       this.setUpdateTimeout();
     }
   }
@@ -100,11 +97,11 @@ class LiveTimestamp {
         boundary += threshold.step * cd.g.msInMin
       ) {
         if (difference < boundary) {
-          removeFromArrayIfPresent(updateTimeouts, this.updateTimeout);
+          removeFromArrayIfPresent(this.constructor.updateTimeouts, this.updateTimeout);
           this.updateTimeout = setTimeout(() => {
             this.setUpdateTimeout(true);
           }, boundary - difference);
-          updateTimeouts.push(this.updateTimeout);
+          this.constructor.updateTimeouts.push(this.updateTimeout);
           break;
         }
       }
@@ -116,19 +113,21 @@ class LiveTimestamp {
    */
   update() {
     this.element.textContent = formatDate(this.date, this.addTimezone);
-    if (this.callback) {
-      this.callback();
-    }
+    this.callback?.();
   }
+
+  static updateTimeouts = [];
+  static improvedTimestampsInitted = false;
+  static improvedTimestamps = [];
 
   /**
    * _For internal use._ Initialize improved timestamps (when the timestamp format is set to
    * "improved").
    */
   static initImproved() {
-    improvedTimestampsInitted = true;
+    this.improvedTimestampsInitted = true;
     let date = dayjs();
-    if (settings.get('useUiTime') && !['UTC', 0].includes(cd.g.uiTimezone)) {
+    if (this.useUiTime && !['UTC', 0].includes(cd.g.uiTimezone)) {
       date = typeof cd.g.uiTimezone === 'number' ?
         date.utcOffset(cd.g.uiTimezone) :
         date.tz(cd.g.uiTimezone);
@@ -136,7 +135,7 @@ class LiveTimestamp {
       date = date.utc();
     }
     date = date.startOf('day');
-    yesterdayStart = date.subtract(1, 'day').valueOf();
+    this.yesterdayStart = date.subtract(1, 'day').valueOf();
     const tomorrowStart = date.add(1, 'day').valueOf();
     const dayAfterTomorrowStart = date.add(2, 'day').valueOf();
 
@@ -144,14 +143,14 @@ class LiveTimestamp {
     const tsTimeout = setTimeout(LiveTimestamp.updateImproved, tsDelay);
     const datsDelay = dayAfterTomorrowStart - Date.now();
     const datsTimeout = setTimeout(LiveTimestamp.updateImproved, datsDelay);
-    updateTimeouts.push(tsTimeout, datsTimeout);
+    this.updateTimeouts.push(tsTimeout, datsTimeout);
   }
 
   /**
    * _For internal use._ Update the timestamps (when the timestamp format is set to "improved").
    */
   static updateImproved() {
-    improvedTimestamps.forEach((timestamp) => {
+    this.improvedTimestamps.forEach((timestamp) => {
       timestamp.update();
     });
     if (navPanel.isMounted()) {
@@ -163,10 +162,10 @@ class LiveTimestamp {
    * Reset all the live timestamps on the page (this is run at every page load).
    */
   static reset() {
-    updateTimeouts.forEach(clearTimeout);
-    updateTimeouts = [];
-    improvedTimestampsInitted = false;
-    improvedTimestamps = [];
+    this.updateTimeouts.forEach(clearTimeout);
+    this.updateTimeouts = [];
+    this.improvedTimestampsInitted = false;
+    this.improvedTimestamps = [];
   }
 }
 

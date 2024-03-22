@@ -371,6 +371,7 @@ export default {
    */
   getWorker() {
     this.worker ||= new Worker();
+
     return this.worker;
   },
 
@@ -1170,16 +1171,18 @@ export default {
 
     this.bootProcess = new BootProcess();
 
-    // Make some requests in advance if the API module is ready in order not to make 2 requests
-    // sequentially. We don't make a userinfo request, because if there is more than one tab in the
-    // background, this request is made and the execution stops at mw.loader.using, which results in
-    // overriding the renewed visits setting of one tab by another tab (the visits are loaded by one
-    // tab, then another tab, then written by one tab, then by another tab).
-    if (mw.loader.getState('mediawiki.api') === 'ready') {
-      init.getSiteData();
+    let siteDataRequests = [];
 
-      // We are _not_ calling getUserInfo() here to avoid losing visits data updates from some pages
-      // if more than one page is opened simultaneously. In this situation, visits could be
+    // Make some requests in advance if the API module is ready in order not to make 2 requests
+    // sequentially. We don't make a `userinfo` request, because if there is more than one tab in
+    // the background, this request is made and the execution stops at mw.loader.using, which
+    // results in overriding the renewed visits setting of one tab by another tab (the visits are
+    // loaded by one tab, then another tab, then written by one tab, then by another tab).
+    if (mw.loader.getState('mediawiki.api') === 'ready') {
+      siteDataRequests = init.getSiteData();
+
+      // We are _not_ calling `getUserInfo()` here to avoid losing visit data updates from some
+      // pages if several pages are opened simultaneously. In this situation, visits could be
       // requested for multiple pages; updated and then saved for each of them with losing the
       // updates from the rest.
     }
@@ -1212,14 +1215,14 @@ export default {
       'user.options',
     ];
 
-    // mw.loader.using delays execution even if all modules are ready (if CD is used as a gadget
-    // with preloaded dependencies, for example), so we use this trick.
+    // `mw.loader.using` delays the execution even if all modules are ready (if CD is used as a
+    // gadget with preloaded dependencies, for example), so we use this trick.
     let modulesRequest;
     if (modules.every((module) => mw.loader.getState(module) === 'ready')) {
       // If there is no data to load and, therefore, no period of time within which a reflow (layout
       // thrashing) could happen without impeding performance, we cache the value so that it could
       // be used in controller.saveRelativeScrollPosition without causing a reflow.
-      if (init.getSiteDataRequests().every((request) => request.state() === 'resolved')) {
+      if (siteDataRequests.every((request) => request.state() === 'resolved')) {
         this.bootProcess.passData('scrollY', window.scrollY);
       }
     } else {
@@ -1227,7 +1230,7 @@ export default {
     }
 
     this.showLoadingOverlay();
-    Promise.all([modulesRequest, ...init.getSiteDataRequests()]).then(
+    Promise.all([modulesRequest, ...siteDataRequests]).then(
       () => {
         this.tryExecuteBootProcess();
       },
@@ -1851,6 +1854,10 @@ export default {
    * @param {Event} e
    */
   showCopyLinkDialog(object, e) {
+    if (this.isPageOverlayOn()) return;
+
+    e.preventDefault();
+
     const fragment = object.getWikilinkFragment();
     const permalinkSpecialPageName = (
       mw.config.get('wgFormattedNamespaces')[-1] +

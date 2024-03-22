@@ -52,9 +52,11 @@ export function handleApiReject(code, resp) {
  * @returns {Array.<Array.<*>>}
  */
 export function splitIntoBatches(arr) {
-  // Current user's rights are rarely set on first page load (when `getDtSubscriptions()` runs, for
-  // example).
-  const currentUserRights = userRegistry.getCurrent().getRights();
+  // Current user's rights are only set on an `userinfo` request which is performed late (see "We
+  // are _not_ calling..." in `controller#loadToTalkPage()`). For example, `getDtSubscriptions()`
+  // runs earlier than that. In addition to that, `cd.g.phpCharToUpper` is empty until we make sure
+  // the `mediawiki.Title` module is loaded.
+  const currentUserRights = cd.g.phpCharToUpper ? userRegistry.getCurrent().getRights() : undefined;
   const limit = (
     currentUserRights ?
       currentUserRights.includes('apihighlimits') :

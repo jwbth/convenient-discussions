@@ -152,8 +152,16 @@ import controller from './controller';
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ButtonMenuSelectWidget
  */
 
+/**
+ * Get a class that extends {@link external:OO.ui.TextInputWidget OO.ui.TextInputWidget} and emits
+ * `manualChange` event when the input changes by user action.
+ *
+ * @returns {Function}
+ */
 function getCheckboxInputWidgetClass() {
+  // eslint-disable-next-line jsdoc/require-jsdoc
   return tweakUserOoUiClass(class extends OO.ui.CheckboxInputWidget {
+    // eslint-disable-next-line jsdoc/require-jsdoc
     constructor(...args) {
       super(...args);
 
@@ -164,8 +172,16 @@ function getCheckboxInputWidgetClass() {
   });
 }
 
+/**
+ * Get a class that extends {@link external:OO.ui.TextInputWidget OO.ui.TextInputWidget} and emits
+ * `manualChange` event when the input changes by user action.
+ *
+ * @returns {Function}
+ */
 export function getTextInputWidgetClass() {
+  // eslint-disable-next-line jsdoc/require-jsdoc
   return tweakUserOoUiClass(class extends OO.ui.TextInputWidget {
+    // eslint-disable-next-line jsdoc/require-jsdoc
     constructor(...args) {
       super(...args);
 
@@ -176,7 +192,15 @@ export function getTextInputWidgetClass() {
   });
 }
 
+/**
+ * Get a class that extends
+ * {@link https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.LabelWidget.html OO.ui.LabelWidget} and
+ * uses `<div>` tag instead of `<label>`.
+ *
+ * @returns {Function}
+ */
 export function getDivLabelWidgetClass() {
+  // eslint-disable-next-line jsdoc/require-jsdoc
   return tweakUserOoUiClass(class LabelWidget extends OO.ui.LabelWidget {
     static tagName = 'div';
   });
@@ -221,6 +245,10 @@ export async function showConfirmDialog(message, options = {}) {
   return (await windowInstance.closed)?.action;
 }
 
+/**
+ * Our mixin that extends the {@link external:OO.ui.ProcessDialog} class, adding a couple of methods
+ * to it.
+ */
 export class CdOoUiProcessDialogMixin {
   /**
    * Check if there are unsaved changes.
@@ -493,6 +521,12 @@ export function tweakUserOoUiClass(targetClass) {
   return targetClass;
 }
 
+/**
+ * Mix in a user class into a target OOUI class.
+ *
+ * @param {Function} targetClass
+ * @param {Function} originClass
+ */
 export function mixinUserOoUiClass(targetClass, originClass) {
   OO.mixinClass(targetClass, originClass);
 

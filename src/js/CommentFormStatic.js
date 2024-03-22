@@ -407,7 +407,7 @@ const CommentFormStatic = {
         )
         .save()
         .get(mw.config.get('wgPageName'));
-      if (data.commentForms) {
+      if (data?.commentForms) {
         this.restoreFromStorage(data);
       }
     } else {

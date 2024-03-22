@@ -7,9 +7,12 @@
  * @module init
  */
 
+import Comment from './Comment';
 import CommentFormStatic from './CommentFormStatic';
 import CommentStatic from './CommentStatic';
+import Section from './Section';
 import SectionStatic from './SectionStatic';
+import Thread from './Thread';
 import cd from './cd';
 import controller from './controller';
 import dateFormatsData from '../../data/dateFormats.json';
@@ -32,7 +35,7 @@ let defaultFontSize;
  *
  * @private
  */
-function setFormats() {
+function initFormats() {
   const getFallbackLanguage = (lang) => (
     (languageFallbacksData[lang] || ['en']).find((fallback) => dateFormatsData[fallback])
   );
@@ -113,7 +116,7 @@ function getUsedDateTokens(format) {
  * @private
  */
 function loadSiteData() {
-  setFormats();
+  initFormats();
 
   const contentDateTokensMessageNames = getUsedDateTokens(cd.g.contentDateFormat)
     .map((pattern) => dateTokenToMessageNames[pattern]);
@@ -262,10 +265,13 @@ function loadSiteData() {
  * @private
  */
 function patterns() {
-  const signatureEndingRegexpLastChar = cd.config.signatureEndingRegexp?.source?.slice(-1);
-  if (signatureEndingRegexpLastChar && signatureEndingRegexpLastChar !== '$') {
-    cd.config.signatureEndingRegexp = new RegExp(cd.config.signatureEndingRegexp.source + '$');
-  }
+  const signatureEndingRegexp = cd.config.signatureEndingRegexp;
+  cd.g.signatureEndingRegexp = signatureEndingRegexp ?
+    new RegExp(
+      signatureEndingRegexp.source + (signatureEndingRegexp.source.slice(-1) === '$' ? '' : '$'),
+      signatureEndingRegexp.flags
+    ) :
+    null;
 
   const nss = mw.config.get('wgFormattedNamespaces');
   const nsIds = mw.config.get('wgNamespaceIds');
@@ -392,8 +398,8 @@ function patterns() {
     .join('|');
   cd.g.quoteRegexp = new RegExp(`(${quoteBeginningsPattern})([^]*?)(${quoteEndingsPattern})`, 'ig');
 
-  cd.g.noSignatureClasses = cd.g.noSignatureClasses.concat(cd.config.noSignatureClasses);
-  cd.g.noHighlightClasses = cd.g.noHighlightClasses.concat(cd.config.noHighlightClasses);
+  cd.g.noSignatureClasses.push(...cd.config.noSignatureClasses);
+  cd.g.noHighlightClasses.push(...cd.config.noHighlightClasses);
 
   const fileNssPattern = joinNsNames(6);
   cd.g.filePrefixPattern = `(?:${fileNssPattern}):`;
@@ -425,276 +431,14 @@ function patterns() {
 }
 
 /**
- * Add comment header element prototype to the prototype collection.
- *
- * @param {object} prototypes
- * @private
- */
-function addCommentHeaderPrototype(prototypes) {
-  // Not true, null
-  if (settings.get('reformatComments') === false) return;
-
-  const headerElement = document.createElement('div');
-  headerElement.className = 'cd-comment-header';
-
-  const authorWrapper = document.createElement('div');
-  authorWrapper.className = 'cd-comment-author-wrapper';
-  headerElement.append(authorWrapper);
-
-  const authorLink = document.createElement('a');
-  authorLink.className = 'cd-comment-author mw-userlink';
-  authorWrapper.append(authorLink);
-
-  const bdiElement = document.createElement('bdi');
-  authorLink.append(bdiElement);
-
-  const authorLinksWrapper = document.createElement('span');
-  authorLinksWrapper.className = 'cd-comment-author-links';
-
-  const authorTalkLink = document.createElement('a');
-  authorTalkLink.textContent = cd.s('comment-author-talk');
-  authorLinksWrapper.append(cd.mws('parentheses-start'), authorTalkLink);
-
-  if (settings.get('showContribsLink')) {
-    const separator = document.createElement('span');
-    separator.innerHTML = cd.sParse('dot-separator');
-
-    const contribsLink = document.createElement('a');
-    contribsLink.textContent = cd.s('comment-author-contribs');
-
-    authorLinksWrapper.append(separator, contribsLink);
-  }
-
-  authorLinksWrapper.append(cd.mws('parentheses-end'));
-  authorWrapper.append(' ', authorLinksWrapper);
-
-  prototypes.headerElement = headerElement;
-}
-
-/**
- * Add OOUI button prototypes to the prototype collection. Creating every button using the
- * constructor takes 15 times longer than cloning which is critical when creating really many of
- * them.
- *
- * @param {object} prototypes
- * @private
- */
-function addCommentOouiPrototypes(prototypes) {
-  if (settings.get('reformatComments') === true) return;
-
-  prototypes.getReplyButton = () => (
-    new OO.ui.ButtonWidget({
-      label: cd.s('cm-reply'),
-      framed: false,
-      classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
-    })
-  );
-  prototypes.replyButton = prototypes.getReplyButton().$element.get(0);
-
-  prototypes.getEditButton = () => (
-    new OO.ui.ButtonWidget({
-      label: cd.s('cm-edit'),
-      framed: false,
-      classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
-    })
-  );
-  prototypes.editButton = prototypes.getEditButton().$element.get(0);
-
-  prototypes.getThankButton = () => (
-    new OO.ui.ButtonWidget({
-      label: cd.s('cm-thank'),
-      title: cd.s('cm-thank-tooltip'),
-      framed: false,
-      classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
-    })
-  );
-  prototypes.thankButton = prototypes.getThankButton().$element.get(0);
-
-  prototypes.getCopyLinkButton = () => (
-    new OO.ui.ButtonWidget({
-      label: cd.s('cm-copylink'),
-      icon: 'link',
-      title: cd.s('cm-copylink-tooltip'),
-      framed: false,
-      invisibleLabel: true,
-      classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
-    })
-  );
-  prototypes.copyLinkButton = prototypes.getCopyLinkButton().$element.get(0);
-
-  prototypes.getGoToParentButton = () => (
-    new OO.ui.ButtonWidget({
-      label: cd.s('cm-gotoparent'),
-      icon: 'upTriangle',
-      title: cd.s('cm-gotoparent-tooltip'),
-      framed: false,
-      invisibleLabel: true,
-      classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
-    })
-  );
-  prototypes.goToParentButton = prototypes.getGoToParentButton().$element.get(0);
-
-  prototypes.getGoToChildButton = () => (
-    new OO.ui.ButtonWidget({
-      label: cd.s('cm-gotochild'),
-      icon: 'downTriangle',
-      title: cd.s('cm-gotochild-tooltip'),
-      framed: false,
-      invisibleLabel: true,
-      classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
-    })
-  );
-  prototypes.goToChildButton = prototypes.getGoToChildButton().$element.get(0);
-}
-
-/**
- * Add comment layer element prototypes to the prototype collection.
- *
- * @param {object} prototypes
- * @private
- */
-function addCommentLayerPrototypes(prototypes) {
-  const commentUnderlay = document.createElement('div');
-  commentUnderlay.className = 'cd-comment-underlay';
-  prototypes.underlay = commentUnderlay;
-
-  const commentOverlay = document.createElement('div');
-  commentOverlay.className = 'cd-comment-overlay';
-  prototypes.overlay = commentOverlay;
-
-  const overlayLine = document.createElement('div');
-  overlayLine.className = 'cd-comment-overlay-line';
-  commentOverlay.appendChild(overlayLine);
-
-  const overlayMarker = document.createElement('div');
-  overlayMarker.className = 'cd-comment-overlay-marker';
-  commentOverlay.appendChild(overlayMarker);
-
-  if (!settings.get('reformatComments')) {
-    const overlayInnerWrapper = document.createElement('div');
-    overlayInnerWrapper.className = 'cd-comment-overlay-innerWrapper';
-    commentOverlay.appendChild(overlayInnerWrapper);
-
-    const overlayGradient = document.createElement('div');
-    overlayGradient.textContent = '\xa0';
-    overlayGradient.className = 'cd-comment-overlay-gradient';
-    overlayInnerWrapper.appendChild(overlayGradient);
-
-    const overlayContent = document.createElement('div');
-    overlayContent.className = 'cd-comment-overlay-content';
-    overlayInnerWrapper.appendChild(overlayContent);
-  }
-}
-
-/**
- * Create element prototypes for comments.
+ * Initialize prototypes of elements and OOUI widgets.
  *
  * @private
  */
-function commentElementPrototypes() {
-  const prototypes = {};
-
-  addCommentHeaderPrototype(prototypes);
-  addCommentOouiPrototypes(prototypes);
-  addCommentLayerPrototypes(prototypes);
-
-  cd.g.commentElementPrototypes = prototypes;
-}
-
-/**
- * Create element prototypes for sections.
- *
- * @private
- */
-function sectionElementPrototypes() {
-  const prototypes = {};
-
-  prototypes.replyButton = new OO.ui.ButtonWidget({
-    label: cd.s('section-reply'),
-    framed: false,
-
-    // Add the thread button class as it behaves as a thread button in fact, being positioned
-    // inside a "cd-commentLevel" list.
-    classes: ['cd-button-ooui', 'cd-section-button', 'cd-thread-button'],
-  }).$element.get(0);
-
-  prototypes.addSubsectionButton = new OO.ui.ButtonWidget({
-    // Will be replaced
-    label: ' ',
-
-    framed: false,
-    classes: ['cd-button-ooui', 'cd-section-button'],
-  }).$element.get(0);
-
-  prototypes.copyLinkButton = new OO.ui.ButtonWidget({
-    framed: false,
-    flags: ['progressive'],
-    icon: 'link',
-    label: cd.s('sm-copylink'),
-    invisibleLabel: true,
-    title: cd.s('sm-copylink-tooltip'),
-    classes: ['cd-section-bar-button'],
-  }).$element.get(0);
-
-  prototypes.getMoreMenuSelect = () => (
-    new OO.ui.ButtonMenuSelectWidget({
-      framed: false,
-      icon: 'ellipsis',
-      label: cd.s('sm-more'),
-      invisibleLabel: true,
-      title: cd.s('sm-more'),
-      menu: {
-        horizontalPosition: 'end',
-      },
-      classes: ['cd-section-bar-button', 'cd-section-bar-moremenu'],
-    })
-  );
-  prototypes.moreMenuSelect = prototypes.getMoreMenuSelect().$element.get(0);
-
-  cd.g.sectionElementPrototypes = prototypes;
-}
-
-/**
- * Create element prototypes for threads.
- *
- * @private
- */
-function threadElementPrototypes() {
-  let prototypes = {};
-
-  prototypes.expandButton = new OO.ui.ButtonWidget({
-    // Isn't displayed
-    label: 'Expand the thread',
-    icon: 'expand',
-
-    framed: false,
-    classes: [
-      'cd-button-ooui',
-      'cd-button-expandNote',
-      'cd-thread-button',
-      'cd-thread-button-invisible',
-    ],
-  }).$element.get(0);
-
-  const threadClickArea = document.createElement('div');
-  threadClickArea.className = 'cd-thread-clickArea';
-  const line = document.createElement('div');
-  line.className = 'cd-thread-line';
-  threadClickArea.appendChild(line);
-  prototypes.clickArea = threadClickArea;
-
-  cd.g.threadElementPrototypes = prototypes;
-}
-
-/**
- * Initialize OOUI and comment layers-related objects.
- *
- * @private
- */
-function oouiAndElementPrototypes() {
-  commentElementPrototypes();
-  sectionElementPrototypes();
-  threadElementPrototypes();
+function prototypes() {
+  Comment.initPrototypes();
+  Section.initPrototypes();
+  Thread.initPrototypes();
 }
 
 /**
@@ -869,15 +613,6 @@ export default {
   },
 
   /**
-   * _For internal use._ Get the site data requests without making them if there are none yet.
-   *
-   * @returns {Promise[]}
-   */
-  getSiteDataRequests() {
-    return this.siteDataRequests || [];
-  },
-
-  /**
    * _For internal use._ Assign some important skin-specific values to the properties of the global
    * object.
    */
@@ -904,29 +639,31 @@ export default {
       default: 'body',
     }).css('background-color');
     const metadataFontSize = parseFloat((cd.g.contentFontSize / defaultFontSize).toFixed(7));
+    const contentStartMargin = controller.getContentColumnOffsets().startMargin;
+    const sidebarTransparentColor = transparentize(sidebarColor);
 
     mw.loader.addStyleTag(`:root {
-  --cd-comment-hovered-background-color: ${cd.g.commentHoveredBackgroundColor};
-  --cd-comment-target-marker-color: ${cd.g.commentTargetMarkerColor};
-  --cd-comment-target-background-color: ${cd.g.commentTargetBackgroundColor};
-  --cd-comment-target-hovered-background-color: ${cd.g.commentTargetHoverBackgroundColor};
-  --cd-comment-new-marker-color: ${cd.g.commentNewMarkerColor};
-  --cd-comment-new-background-color: ${cd.g.commentNewBackgroundColor};
-  --cd-comment-new-hovered-background-color: ${cd.g.commentNewHoveredBackgroundColor};
-  --cd-comment-own-marker-color: ${cd.g.commentOwnMarkerColor};
-  --cd-comment-own-background-color: ${cd.g.commentOwnBackgroundColor};
-  --cd-comment-own-hovered-background-color: ${cd.g.commentOwnHoveredBackgroundColor};
-  --cd-comment-deleted-marker-color: ${cd.g.commentDeletedMarkerColor};
-  --cd-comment-deleted-background-color: ${cd.g.commentDeletedBackgroundColor};
-  --cd-comment-deleted-hovered-background-color: ${cd.g.commentDeletedHoveredBackgroundColor};
+  --cd-comment-hovered-background-color: #f8f9fa;
+  --cd-comment-target-marker-color: #fc3;
+  --cd-comment-target-background-color: #fef6e7;
+  --cd-comment-target-hovered-background-color: #fef2db;
+  --cd-comment-new-marker-color: #00af89;
+  --cd-comment-new-background-color: #edffed;
+  --cd-comment-new-hovered-background-color: #e4ffe4;
+  --cd-comment-own-marker-color: #9f33cc;
+  --cd-comment-own-background-color: #faf3fc;
+  --cd-comment-own-hovered-background-color: #f7edfb;
+  --cd-comment-deleted-marker-color: #d33;
+  --cd-comment-deleted-background-color: #fee7e6;
+  --cd-comment-deleted-hovered-background-color: #fddbd9;
   --cd-comment-fallback-side-margin: ${cd.g.commentFallbackSideMargin}px;
   --cd-thread-line-side-margin: ${cd.g.threadLineSideMargin}px;
   --cd-content-background-color: ${contentBackgroundColor};
-  --cd-content-start-margin: ${controller.getContentColumnOffsets().startMargin}px;
+  --cd-content-start-margin: ${contentStartMargin}px;
   --cd-content-font-size: ${cd.g.contentFontSize}px;
   --cd-content-metadata-font-size: ${metadataFontSize}rem;
   --cd-sidebar-color: ${sidebarColor};
-  --cd-sidebar-transparent-color: ${transparentize(sidebarColor)};
+  --cd-sidebar-transparent-color: ${sidebarTransparentColor};
 }`);
     if (cd.config.outdentClass) {
       mw.loader.addStyleTag(`.cd-parsed .${cd.config.outdentClass} {
@@ -957,7 +694,7 @@ export default {
    * _For internal use._ Set a number of {@link convenientDiscussions global object} properties.
    */
   globals() {
-    if (cd.g.phpCharToUpper) return;
+    if (cd.page) return;
 
     cd.g.phpCharToUpper = (
       mw.loader.moduleRegistry['mediawiki.Title'].script.files['phpCharToUpper.json'] ||
@@ -984,7 +721,7 @@ export default {
      */
     cd.user = userRegistry.getCurrent();
 
-    // {{gender:}} with at least two pipes in a selection of the affected strings.
+    // Is there `{{gender:}}` with at least two pipes in the selection of affected strings?
     cd.g.genderAffectsUserString = /\{\{ *gender *:[^}]+?\|[^} ]+?\|/i.test(
       Object.entries(mw.messages.get())
         .filter(([key]) => key.startsWith('convenient-discussions'))
@@ -1219,15 +956,17 @@ export default {
    * Executed on the first run.
    */
   async talkPage() {
+    // In most cases the site data is already loaded after being requested in
+    // `controller.loadToTalkPage()`.
     await Promise.all(this.getSiteData());
 
-    // This could have been executed from `addCommentLinks.prepare()`.
+    // This could have been executed from `addCommentLinks.prepare()` already.
     this.globals();
     await settings.init();
 
     this.timestampParsingTools('content');
     patterns();
-    oouiAndElementPrototypes();
+    prototypes();
     if (settings.get('useBackgroundHighlighting')) {
       require('../less/commentLayers-optionalBackgroundHighlighting.less');
     }

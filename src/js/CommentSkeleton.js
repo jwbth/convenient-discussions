@@ -157,8 +157,8 @@ class CommentSkeleton {
      */
     this.elements = this.parts.map((part) => part.node);
 
-    this.deriveHighlightables();
-    this.deriveLevels();
+    this.updateHighlightables();
+    this.updateLevels();
 
     if (this.parts[0].isHeading && this.level !== 0) {
       this.parts.shift();
@@ -684,7 +684,7 @@ class CommentSkeleton {
         if (
           !hasCurrentSignature &&
           !isInline(node) &&
-          cd.config.signatureEndingRegexp?.test(node.textContent) &&
+          cd.g.signatureEndingRegexp?.test(node.textContent) &&
           !this.parser.noSignatureElements.some((el) => el.contains(node))
         ) {
           break;
@@ -1090,7 +1090,7 @@ class CommentSkeleton {
    *
    * @private
    */
-  deriveHighlightables() {
+  updateHighlightables() {
     const isHighlightable = (el) => (
       !isHeadingNode(el) &&
       !isMetadataNode(el) &&
@@ -1135,11 +1135,11 @@ class CommentSkeleton {
         cd.g.badHighlightableElements.includes(el.tagName) ||
 
         // Cases such as https://en.wikipedia.org/?diff=998431486. TODO: Do something with the
-        // semantical correctness of the markup.
+        // semantic correctness of the markup.
         (this.highlightables.length > 1 && el.tagName === 'LI' && el.parentNode.tagName === 'OL') ||
 
-        // This can run the second time from this.deriveLevels() → this.reviewDives() →
-        // this.deriveHighlightables(), so the might have added the wrapper already.
+        // This can run a second time from `.updateLevels()` → `.reviewDives()` →
+        // `.updateHighlightables()`, so the might have added the wrapper already.
         (el.className && el.className !== 'cd-comment-replacedPart') ||
         el.getAttribute('style')
       ))
@@ -1251,7 +1251,7 @@ class CommentSkeleton {
           lastLowerLevelElement.lastElementChild?.classList.contains('cd-timestamp')
         ) {
           this.elements.splice(0, firstWrongElementIndex + 1);
-          this.deriveHighlightables();
+          this.updateHighlightables();
           areElementsChanged = true;
         }
       }
@@ -1349,7 +1349,7 @@ class CommentSkeleton {
         this.elements.length - firstItemIndex,
         closestLevelElement
       );
-      this.deriveHighlightables();
+      this.updateHighlightables();
     }
   }
 
@@ -1360,7 +1360,7 @@ class CommentSkeleton {
    * @param {boolean} [fixMarkup=true]
    * @protected
    */
-  deriveLevels(fixMarkup = true) {
+  updateLevels(fixMarkup = true) {
     // Make sure the level on the top and on the bottom of the comment are the same and add
     // appropriate classes.
     let levelElements = this.highlightables.map(this.getListsUpTree.bind(this));

@@ -712,8 +712,7 @@ const CommentStatic = {
       }
       pageNamesToLinks[pageName].push(page.link);
     });
-    const pageNames = Object.keys(pageNamesToLinks);
-    const pagesExistence = await getPagesExistence(pageNames);
+    const pagesExistence = await getPagesExistence(Object.keys(pageNamesToLinks));
     Object.keys(pagesExistence).forEach((name) => {
       pageNamesToLinks[name].forEach((link) => {
         link.title = pagesExistence[name].normalized;

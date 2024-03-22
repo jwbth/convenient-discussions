@@ -26,12 +26,12 @@ let wrapperRelevantPrototype;
 let switchRelevantButton;
 
 /**
- * Prepare variables.
+ * Initialize variables.
  *
  * @private
  */
-async function prepare() {
-  // This can have been executed from `init.talkPage()` already.
+async function initialize() {
+  // This could have been executed from `init.talkPage()` already.
   init.globals();
   await settings.init();
 
@@ -49,7 +49,7 @@ async function prepare() {
   try {
     await Promise.all(requests);
   } catch (e) {
-    throw ['Couldn\'t load the messages required for the script.', e];
+    throw ['Couldn\'t load the data required for the script.', e];
   }
 
   mw.loader.addStyleTag(`:root {
@@ -690,7 +690,7 @@ function processRevisionListPage($content) {
  */
 export default async function addCommentLinks() {
   try {
-    await prepare();
+    await initialize();
   } catch (e) {
     console.warn(...e);
     return;

@@ -353,10 +353,10 @@ export default {
         });
       });
 
-      // When timestamps are relative and the TOC is set to be modified, the tooltip is updated
-      // together with the updates of the TOC. When the TOC is not modified, we need to update the
-      // tooltip manually every minute. When timestamps are "improved", timestamps are updated in
-      // `LiveTimestamp.updateImproved()`.
+      // When timestamps are relative and the TOC is allowed to be modified in the settings, the
+      // tooltip is updated together with the updates of the TOC. When the TOC is not modified, we
+      // need to update the tooltip manually every minute. When `improved` timestamps are used,
+      // timestamps are updated in `LiveTimestamp.updateImproved()`.
       if (settings.get('timestampFormat') === 'relative' && !settings.get('modifyToc')) {
         utirbtTimeout = setTimeout(() => {
           this.updateTimestampsInRefreshButtonTooltip();

@@ -559,6 +559,7 @@ export default {
    *
    * @param {string|object} name
    * @param {string} value
+   * @private
    */
   set(name, value) {
     this.values ||= {};

@@ -1,3 +1,5 @@
+import { removeFromArrayIfPresent } from './utils';
+
 /**
  * Class representing an operation registry (a storage of operations that a comment form currently
  * undergoes, such as `'load'` or `'submit'`).
@@ -34,7 +36,7 @@ class CommentFormOperationRegistry {
    * @param {CommentFormOperation} operation
    */
   remove(operation) {
-    this.items.splice(this.items.indexOf(operation), 1);
+    removeFromArrayIfPresent(this.items, operation);
   }
 
   /**
@@ -123,7 +125,6 @@ class CommentFormOperation {
   close() {
     if (this.closed) return;
 
-    this.closed = true;
     if (!(this.type === 'preview' && this.options.isAuto)) {
       this.commentForm.popPending(
         ['load', 'submit'].includes(this.type),
@@ -132,6 +133,7 @@ class CommentFormOperation {
     }
 
     this.registry.remove(this);
+    this.closed = true;
   }
 
   /**
@@ -152,7 +154,7 @@ class CommentFormOperation {
    * Check for conflicts of the operation with other pending operations, and if there are such,
    * {@link CommentFormOperation#close close} the operation and return `true` to abort it. The rules
    * are the following:
-   * - `preview` and `viewChanges` operations may be overriden with other of one of these types
+   * - `preview` and `viewChanges` operations can be overriden with other of one of these types
    *   (every new request replaces the old, although a new automatic preview request cannot be made
    *   while the old is pending).
    * - `submit` operations cannot be overriden (and are not checked by this function), but also
@@ -168,6 +170,7 @@ class CommentFormOperation {
     if (this.closed) {
       return true;
     }
+
     const lastRelevantOperation = this.registry
       .filter((op) => (
         ['preview', 'viewChanges'].includes(op.getType()) &&

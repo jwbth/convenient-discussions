@@ -3284,6 +3284,8 @@ class CommentForm {
       }
     }
 
+    this.forget();
+
     // Restore hidden elements. FIXME: use a hook or at least run some routine on the target to
     // decouple these operations from CommentForm.
     if (this.mode === 'replyInSection') {
@@ -3300,7 +3302,6 @@ class CommentForm {
       controller.$addSectionButtonContainer?.show();
     }
 
-    this.forget();
     controller.updatePageTitle();
 
     this.torndown = true;

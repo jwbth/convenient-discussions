@@ -25,6 +25,8 @@ class TocItem {
    * @throws {Array.<string|Element>}
    */
   constructor(a) {
+    this.canBeModified = toc.canBeModified;
+
     const textSpan = a.querySelector(toc.isInSidebar() ? '.vector-toc-text' : '.toctext');
     if (!textSpan) {
       throw ['Couldn\'t find text for a link', a];
@@ -72,6 +74,8 @@ class TocItem {
    * @param {external:jQuery} $headline
    */
   replaceText($headline) {
+    if (!this.canBeModified) return;
+
     const html = $headline
       .clone()
       .find('*')
@@ -94,13 +98,13 @@ class TocItem {
   }
 
   /**
-   * Add/remove the section's TOC link according to its subscription state and update the `title`
-   * attribute.
+   * Add/remove a subscription mark to the section's TOC link according to its subscription state
+   * and update the `title` attribute.
    *
    * @param {?boolean} subscriptionState
    */
   updateSubscriptionState(subscriptionState) {
-    if (!settings.get('modifyToc')) return;
+    if (!this.canBeModified) return;
 
     if (subscriptionState) {
       this.$link
@@ -145,8 +149,9 @@ const toc = {
    * @param {boolean} [hideToc] Whether the TOC should be hidden.
    */
   setup(sections, hideToc) {
+    this.canBeModified = settings.get('modifyToc');
     this.$element = this.isInSidebar() ? $('.vector-toc') : controller.$root.find('.toc');
-    this.tocItems = null;
+    this.items = null;
     this.floating = null;
 
     if (this.isInSidebar() && sections) {
@@ -168,31 +173,30 @@ const toc = {
    * Get a TOC item by ID.
    *
    * @param {string} id
-   * @returns {?object}
+   * @returns {?TocItem}
    */
   getItem(id) {
     if (!this.isPresent()) {
       return null;
     }
 
-    if (!this.tocItems) {
+    if (!this.items) {
       const links = [...this.$element.get(0).querySelectorAll('li > a')]
         .filter((link) => link.getAttribute('href') !== '#');
       try {
         // It is executed first time before added (gray) sections are added to the TOC, so we use a
         // simple algorithm to obtain items.
-        this.tocItems = links.map((a) => new TocItem(a));
+        this.items = links.map((a) => new TocItem(a));
       } catch (e) {
         console.error('Couldn\'t find an element of a table of contents item.', ...e);
-        this.tocItems = [];
+        this.items = [];
 
-        // Forcibly switch off the setting - we better not touch the TOC if something is broken
-        // there.
-        settings.set('modifyToc', false);
+        // Override the setting value - we better not touch the TOC if something is broken there.
+        this.canBeModified = false;
       }
     }
 
-    return this.tocItems.find((item) => item.id === id) || null;
+    return this.items.find((item) => item.id === id) || null;
   },
 
   /**
@@ -419,7 +423,7 @@ const toc = {
    *   new revision of the page.
    */
   addNewSections(sections) {
-    if (!settings.get('modifyToc') || !this.isPresent()) return;
+    if (!this.canBeModified || !this.isPresent()) return;
 
     if (!this.isInSidebar()) {
       controller.saveRelativeScrollPosition({ saveTocHeight: true });
@@ -664,7 +668,7 @@ const toc = {
    * @param {Map} commentsBySection
    */
   async addNewComments(commentsBySection) {
-    if (!settings.get('modifyToc') || !this.isPresent()) return;
+    if (!this.canBeModified || !this.isPresent()) return;
 
     await this.updateTocSectionsPromise;
     this.$element.find('.cd-toc-addedCommentList').remove();

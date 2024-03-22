@@ -1,6 +1,7 @@
 import Button from './Button';
 import CdError from './CdError';
 import CommentStatic from './CommentStatic';
+import PrototypeRegistry from './PrototypeRegistry';
 import StorageItem from './StorageItem';
 import cd from './cd';
 import controller from './controller';
@@ -9,7 +10,6 @@ import { ElementsTreeWalker } from './treeWalker';
 import { defined, flat, getCommonGender, getExtendedRect, getVisibilityByRects, isCmdModifierPressed, isHeadingNode, removeFromArrayIfPresent, unique } from './utils';
 import { loadUserGenders } from './apiWrappers';
 
-let elementPrototypes;
 let isInited;
 let threadLinesContainer;
 let treeWalker;
@@ -125,7 +125,7 @@ function autocollapseThreads() {
       !entry.threads?.length ||
       entry.saveUnixTime < Date.now() - 60 * cd.g.msInDay
     ));
-  const data = collapsedThreadStorageItem.get(mw.config.get('wgArticleId'));
+  const data = collapsedThreadStorageItem.get(mw.config.get('wgArticleId')) || {};
 
   let comments = [];
 
@@ -220,8 +220,6 @@ class Thread {
     this.handleClickAreaUnhover = this.handleClickAreaUnhover.bind(this);
     this.handleToggleClick = this.handleToggleClick.bind(this);
 
-    elementPrototypes = cd.g.threadElementPrototypes;
-
     /**
      * Root comment of the thread.
      *
@@ -291,7 +289,7 @@ class Thread {
 
       this.lastComment;
 
-    this.deriveBoundingElements();
+    this.initBoundingElements();
 
     /**
      * Is the thread collapsed.
@@ -308,7 +306,7 @@ class Thread {
    * @throws {CdError}
    * @private
    */
-  deriveBoundingElements() {
+  initBoundingElements() {
     let startElement;
     let endElement;
     let visualEndElement;
@@ -459,7 +457,7 @@ class Thread {
      * @type {Element}
      * @private
      */
-    this.clickArea = elementPrototypes.clickArea.cloneNode(true);
+    this.clickArea = this.constructor.prototypes.get('clickArea');
 
     this.clickArea.title = cd.s('thread-tooltip');
 
@@ -584,7 +582,7 @@ class Thread {
    * @private
    */
   addExpandNode(loadUserGendersPromise) {
-    const expandButton = elementPrototypes.expandButton.cloneNode(true);
+    const expandButton = this.constructor.prototypes.get('expandButton');
     const button = new Button({
       tooltip: cd.s('thread-expand-tooltip', cd.g.cmdModifier),
       action: (e) => {
@@ -938,6 +936,38 @@ class Thread {
 
     this.clickArea.remove();
     this.clickArea = this.clickAreaOffset = this.line = null;
+  }
+
+  /**
+   * Create element prototypes to reuse them instead of creating new elements from scratch (which is
+   * more expensive).
+   */
+  static initPrototypes() {
+    this.prototypes = new PrototypeRegistry();
+
+    this.prototypes.add(
+      'expandButton',
+      (new OO.ui.ButtonWidget({
+        // Isn't displayed
+        label: 'Expand the thread',
+        icon: 'expand',
+
+        framed: false,
+        classes: [
+          'cd-button-ooui',
+          'cd-button-expandNote',
+          'cd-thread-button',
+          'cd-thread-button-invisible',
+        ],
+      })).$element.get(0)
+    );
+
+    const threadClickArea = document.createElement('div');
+    threadClickArea.className = 'cd-thread-clickArea';
+    const line = document.createElement('div');
+    line.className = 'cd-thread-line';
+    threadClickArea.appendChild(line);
+    this.prototypes.add('clickArea', threadClickArea);
   }
 
   /**

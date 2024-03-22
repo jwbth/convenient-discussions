@@ -7,6 +7,7 @@ import CommentSource from './CommentSource';
 import CommentStatic from './CommentStatic';
 import CommentSubitemList from './CommentSubitemList';
 import LiveTimestamp from './LiveTimestamp';
+import PrototypeRegistry from './PrototypeRegistry';
 import StorageItem from './StorageItem';
 import cd from './cd';
 import controller from './controller';
@@ -19,8 +20,6 @@ import { extractSignatures, removeWikiMarkup } from './wikitext';
 import { formatDate, formatDateNative } from './timestamp';
 import { handleApiReject, loadUserGenders, parseCode } from './apiWrappers';
 import { showConfirmDialog } from './ooui';
-
-let elementPrototypes;
 
 /**
  * Get the bounding client rectangle for a comment part.
@@ -71,7 +70,12 @@ class Comment extends CommentSkeleton {
     this.deferHideMenu = this.deferHideMenu.bind(this);
     this.dontHideMenu = this.dontHideMenu.bind(this);
 
-    elementPrototypes = cd.g.commentElementPrototypes;
+    this.isReformatted = settings.get('reformatComments');
+    this.showContribsLink = settings.get('showContribsLink');
+    this.hideTimezone = settings.get('hideTimezone');
+    this.showEditButton = this.isOwn || settings.get('allowEditOthersComments');
+    this.timestampFormat = settings.get('timestampFormat');
+    this.useUiTime = settings.get('useUiTime');
 
     /**
      * Comment author user object.
@@ -101,7 +105,7 @@ class Comment extends CommentSkeleton {
 
     this.highlightables.forEach(this.bindEvents);
 
-    this.deriveAnchorHighlightable();
+    this.updateAnchorHighlightable();
 
     const getContainerListType = (el) => {
       const treeWalker = new ElementsTreeWalker(el, controller.rootElement);
@@ -221,7 +225,7 @@ class Comment extends CommentSkeleton {
    *
    * @private
    */
-  deriveAnchorHighlightable() {
+  updateAnchorHighlightable() {
     if (this.highlightables.length > 1) {
       const nestingLevels = [];
       const closestListTypes = [];
@@ -387,14 +391,14 @@ class Comment extends CommentSkeleton {
   replaceSignatureWithHeader() {
     const pagesToCheckExistence = [];
 
-    this.headerElement = elementPrototypes.headerElement.cloneNode(true);
+    this.headerElement = this.constructor.prototypes.get('headerElement');
     const authorWrapper = this.headerElement.firstChild;
     const authorLink = authorWrapper.firstChild;
     const authorLinksWrapper = authorLink.nextElementSibling;
     const bdiElement = authorLink.firstChild;
     const authorTalkLink = authorLinksWrapper.firstElementChild;
     let contribsLink;
-    if (settings.get('showContribsLink')) {
+    if (this.showContribsLink) {
       contribsLink = authorLinksWrapper.lastElementChild;
       if (!this.author.isRegistered()) {
         contribsLink.previousSibling.remove();
@@ -457,7 +461,7 @@ class Comment extends CommentSkeleton {
 
     bdiElement.textContent = this.author.getName();
 
-    if (settings.get('showContribsLink') && this.author.isRegistered()) {
+    if (this.showContribsLink && this.author.isRegistered()) {
       const pageName = `${cd.g.contribsPage}/${this.author.getName()}`;
       contribsLink.title = pageName;
       contribsLink.href = mw.util.getUrl(pageName);
@@ -479,7 +483,7 @@ class Comment extends CommentSkeleton {
 
       this.headerElement.appendChild(this.copyLinkButton.element);
       this.timestampElement = this.copyLinkButton.labelElement;
-      (new LiveTimestamp(this.timestampElement, this.date, !settings.get('hideTimezone'))).init();
+      (new LiveTimestamp(this.timestampElement, this.date, !this.hideTimezone)).init();
     }
 
     /**
@@ -537,7 +541,7 @@ class Comment extends CommentSkeleton {
     if (!this.isActionable) return;
 
     const action = this.replyButtonClick;
-    if (settings.get('reformatComments')) {
+    if (this.isReformatted) {
       /**
        * Reply button.
        *
@@ -551,9 +555,11 @@ class Comment extends CommentSkeleton {
 
       this.menuElement.appendChild(this.replyButton.element);
     } else {
-      const element = elementPrototypes.replyButton.cloneNode(true);
-      const widgetConstructor = elementPrototypes.getReplyButton;
-      this.replyButton = new CommentButton({ element, action, widgetConstructor });
+      this.replyButton = new CommentButton({
+        element: this.constructor.prototypes.get('replyButton'),
+        action,
+        widgetConstructor: this.constructor.prototypes.getWidget('replyButton'),
+      });
       this.overlayMenu.appendChild(this.replyButton.element);
     }
 
@@ -570,10 +576,10 @@ class Comment extends CommentSkeleton {
    * @private
    */
   addEditButton() {
-    if (!this.isActionable || !(this.isOwn || settings.get('allowEditOthersComments'))) return;
+    if (!this.isActionable || !this.showEditButton) return;
 
     const action = this.editButtonClick;
-    if (settings.get('reformatComments')) {
+    if (this.isReformatted) {
       /**
        * Edit button.
        *
@@ -587,9 +593,11 @@ class Comment extends CommentSkeleton {
 
       this.menuElement.appendChild(this.editButton.element);
     } else {
-      const element = elementPrototypes.editButton.cloneNode(true);
-      const widgetConstructor = elementPrototypes.getEditButton;
-      this.editButton = new CommentButton({ element, action, widgetConstructor });
+      this.editButton = new CommentButton({
+        element: this.constructor.prototypes.get('editButton'),
+        action,
+        widgetConstructor: this.constructor.prototypes.getWidget('editButton'),
+      });
       this.overlayMenu.appendChild(this.editButton.element);
     }
   }
@@ -619,7 +627,7 @@ class Comment extends CommentSkeleton {
     ));
 
     const action = this.thankButtonClick;
-    if (settings.get('reformatComments')) {
+    if (this.isReformatted) {
       /**
        * Edit button.
        *
@@ -634,9 +642,11 @@ class Comment extends CommentSkeleton {
 
       this.menuElement.appendChild(this.thankButton.element);
     } else {
-      const element = elementPrototypes.thankButton.cloneNode(true);
-      const widgetConstructor = elementPrototypes.getThankButton;
-      this.thankButton = new CommentButton({ element, action, widgetConstructor });
+      this.thankButton = new CommentButton({
+        element: this.constructor.prototypes.get('thankButton'),
+        action,
+        widgetConstructor: this.constructor.prototypes.getWidget('thankButton'),
+      });
       this.overlayMenu.appendChild(this.thankButton.element);
     }
 
@@ -652,16 +662,13 @@ class Comment extends CommentSkeleton {
    * @private
    */
   addCopyLinkButton() {
-    if (!this.id || settings.get('reformatComments')) return;
+    if (!this.id || this.isReformatted) return;
 
-    const element = elementPrototypes.copyLinkButton.cloneNode(true);
-    const widgetConstructor = elementPrototypes.getCopyLinkButton;
-    const href = this.dtId ? '#' + this.dtId : undefined;
     this.copyLinkButton = new CommentButton({
-      element,
+      element: this.constructor.prototypes.get('copyLinkButton'),
       action: this.copyLink,
-      widgetConstructor,
-      href,
+      widgetConstructor: this.constructor.prototypes.getWidget('copyLinkButton'),
+      href: this.dtId ? '#' + this.dtId : undefined,
     });
     this.overlayMenu.appendChild(this.copyLinkButton.element);
   }
@@ -676,7 +683,7 @@ class Comment extends CommentSkeleton {
     if (!this.getParent()) return;
 
     const action = this.goToParentButtonClick;
-    if (settings.get('reformatComments')) {
+    if (this.isReformatted) {
       /**
        * "Go to the parent comment" button.
        *
@@ -690,9 +697,11 @@ class Comment extends CommentSkeleton {
 
       this.headerElement.appendChild(this.goToParentButton.element);
     } else {
-      const element = elementPrototypes.goToParentButton.cloneNode(true);
-      const widgetConstructor = elementPrototypes.getGoToParentButton;
-      this.goToParentButton = new CommentButton({ element, action, widgetConstructor });
+      this.goToParentButton = new CommentButton({
+        element: this.constructor.prototypes.get('goToParentButton'),
+        action,
+        widgetConstructor: this.constructor.prototypes.getWidget('goToParentButton'),
+      });
       this.overlayMenu.appendChild(this.goToParentButton.element);
     }
   }
@@ -704,7 +713,7 @@ class Comment extends CommentSkeleton {
    * @private
    */
   addGoToChildButton() {
-    if (settings.get('reformatComments')) {
+    if (this.isReformatted) {
       /**
        * "Go to the child comment" button.
        *
@@ -718,15 +727,17 @@ class Comment extends CommentSkeleton {
       const referenceNode = this.headerElement.lastChild;
       this.headerElement.insertBefore(this.goToChildButton.element, referenceNode?.nextSibling);
     } else {
-      const element = elementPrototypes.goToChildButton;
-      const widgetConstructor = elementPrototypes.getGoToChildButton;
-      this.goToChildButton = new CommentButton({ element, widgetConstructor });
+      const element = this.constructor.prototypes.get('goToChildButton');
+      this.goToChildButton = new CommentButton({
+        element,
+        widgetConstructor: this.constructor.prototypes.getWidget('goToChildButton'),
+      });
       this.$overlayMenu.prepend(element);
     }
   }
 
   /**
-   * Given a date, format it as per user settings, and prepare a title (tooltip) too.
+   * Given a date, format it as per user settings, and build a title (tooltip) too.
    *
    * @param {Date} date
    * @param {string} originalTimestamp
@@ -736,12 +747,12 @@ class Comment extends CommentSkeleton {
     let timestamp;
     let title = '';
     if (cd.g.areTimestampsAltered) {
-      timestamp = formatDate(date, !settings.get('hideTimezone'));
+      timestamp = formatDate(date, !this.hideTimezone);
     }
 
     if (
-      settings.get('timestampFormat') === 'relative' &&
-      settings.get('useUiTime') &&
+      this.timestampFormat === 'relative' &&
+      this.useUiTime &&
       cd.g.contentTimezone !== cd.g.uiTimezone
     ) {
       title = formatDateNative(date, true) + '\n';
@@ -763,15 +774,15 @@ class Comment extends CommentSkeleton {
     if (timestamp) {
       this.reformattedTimestamp = timestamp;
       this.timestampTitle = title;
-      if (!settings.get('reformatComments') || this.extraSignatures.length) {
+      if (!this.isReformatted || this.extraSignatures.length) {
         this.timestampElement.textContent = timestamp;
         this.timestampElement.title = title;
-        (new LiveTimestamp(this.timestampElement, this.date, !settings.get('hideTimezone'))).init();
+        (new LiveTimestamp(this.timestampElement, this.date, !this.hideTimezone)).init();
         this.extraSignatures.forEach((sig) => {
           const { timestamp, title } = this.formatTimestamp(sig.date, sig.timestampText);
           sig.timestampElement.textContent = timestamp;
           sig.timestampElement.title = title;
-          (new LiveTimestamp(sig.timestampElement, sig.date, !settings.get('hideTimezone'))).init();
+          (new LiveTimestamp(sig.timestampElement, sig.date, !this.hideTimezone)).init();
         });
       }
     }
@@ -785,7 +796,7 @@ class Comment extends CommentSkeleton {
    * @private
    */
   bindEvents(element) {
-    if (settings.get('reformatComments')) return;
+    if (this.isReformatted) return;
 
     element.onmouseenter = this.highlightHovered;
     element.onmouseleave = this.unhighlightHovered;
@@ -827,8 +838,8 @@ class Comment extends CommentSkeleton {
           delete el.dataset.commentIndex;
           this.highlightables.splice(i, 1);
           i--;
-          this.deriveLevels(false);
-          this.deriveAnchorHighlightable();
+          this.updateLevels(false);
+          this.updateAnchorHighlightable();
 
           // Update this.ahContainerListType here as well?
         }
@@ -1002,7 +1013,7 @@ class Comment extends CommentSkeleton {
    * @param {number} right Right offset.
    * @private
    */
-  deriveStretched(left, right) {
+  updateStretched(left, right) {
     const isTopLayersContainer = this.getLayersContainer().cdIsTopLayersContainer;
 
     /**
@@ -1128,7 +1139,7 @@ class Comment extends CommentSkeleton {
     const right = scrollX + Math.max(rectTop.right, rectBottom.right);
 
     if (options.considerFloating) {
-      this.deriveStretched(left, right);
+      this.updateStretched(left, right);
     }
 
     // A solution for comments that have the height bigger than the viewport height. In Chrome, the
@@ -1301,7 +1312,7 @@ class Comment extends CommentSkeleton {
      *
      * @type {?(Element|undefined)}
      */
-    this.underlay = elementPrototypes.underlay.cloneNode(true);
+    this.underlay = this.constructor.prototypes.get('underlay');
 
     CommentStatic.underlays.push(this.underlay);
 
@@ -1311,7 +1322,7 @@ class Comment extends CommentSkeleton {
      * @type {?(Element|undefined)}
      * @private
      */
-    this.overlay = elementPrototypes.overlay.cloneNode(true);
+    this.overlay = this.constructor.prototypes.get('overlay');
 
     /**
      * Line element in comment's overlay.
@@ -1329,7 +1340,7 @@ class Comment extends CommentSkeleton {
      */
     this.marker = this.overlay.firstChild.nextSibling;
 
-    if (!settings.get('reformatComments')) {
+    if (!this.isReformatted) {
       /**
        * Inner wrapper in comment's overlay.
        *
@@ -1391,7 +1402,7 @@ class Comment extends CommentSkeleton {
      */
     this.$marker = $(this.marker);
 
-    if (!settings.get('reformatComments')) {
+    if (!this.isReformatted) {
       /**
        * Menu element in the comment's overlay.
        *
@@ -1662,7 +1673,7 @@ class Comment extends CommentSkeleton {
    * @param {Event} e
    */
   highlightHovered(e) {
-    if (this.isHovered || controller.isPageOverlayOn() || settings.get('reformatComments')) return;
+    if (this.isHovered || controller.isPageOverlayOn() || this.isReformatted) return;
 
     if (e && e.type === 'touchstart') {
       CommentStatic.getAll()
@@ -1689,7 +1700,7 @@ class Comment extends CommentSkeleton {
    * Unhighlight the comment when it has lost focus.
    */
   unhighlightHovered() {
-    if (!this.isHovered || settings.get('reformatComments')) return;
+    if (!this.isHovered || this.isReformatted) return;
 
     // Animation will be directed to wrong properties if we keep it going.
     this.$animatedBackground?.stop(true, true);
@@ -1868,12 +1879,13 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Keep only those lines of a diff that a related to the comment.
+   * Keep only those lines of a diff that are related to the comment.
    *
    * @param {string} body
    * @param {object[]} revisions
    * @param {object[]} commentsData
    * @returns {external:jQuery}
+   * @private
    */
   scrubDiff(body, revisions, commentsData) {
     const lineNumbers = [[], []];
@@ -1890,10 +1902,9 @@ class Comment extends CommentSkeleton {
       }
     });
 
-    const $diff = $(wrapDiffBody(body));
     const currentLineNumbers = [];
     let cleanDiffBody = '';
-    $diff.find('tr').each((i, tr) => {
+    $(wrapDiffBody(body)).find('tr').each((i, tr) => {
       const $tr = $(tr);
       const $lineNumbers = $tr.children('.diff-lineno');
       for (let j = 0; j < $lineNumbers.length; j++) {
@@ -2077,7 +2088,7 @@ class Comment extends CommentSkeleton {
 
     let refreshLinkSeparator;
     let diffLinkSeparator;
-    if (settings.get('reformatComments')) {
+    if (this.isReformatted) {
       stringName += '-short';
       refreshLinkSeparator = diffLinkSeparator = cd.sParse('dot-separator');
     } else {
@@ -2101,7 +2112,7 @@ class Comment extends CommentSkeleton {
       $changeMark.append(diffLinkSeparator, diffLink.element);
     }
 
-    if (settings.get('reformatComments')) {
+    if (this.isReformatted) {
       this.$header.append($changeMark);
     } else {
       // Add the mark to the last block element, going as many nesting levels down as needed to
@@ -2175,7 +2186,7 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * _For internal use._ Update the comment's content.
+   * _For internal use._ Live-update the comment's content.
    *
    * @param {object} currentComment Data about the comment in the current revision as delivered by
    *   the worker.
@@ -2231,21 +2242,7 @@ class Comment extends CommentSkeleton {
             $headline
               .html($html.html())
               .prepend($headlineNumber);
-            const section = this.section;
-            if (section) {
-              const originalHeadline = section.headline;
-              section.parseHeadline();
-              if (
-                !settings.get('useTopicSubscription') &&
-                section.subscriptionState &&
-                section.headline !== originalHeadline
-              ) {
-                section.subscribe('quiet', originalHeadline);
-              }
-              if (settings.get('modifyToc')) {
-                section.getTocItem()?.replaceText($html);
-              }
-            }
+            this.section?.update($html);
           }
         } else {
           this.replaceElement(this.$elements.eq(i), html);
@@ -2257,7 +2254,7 @@ class Comment extends CommentSkeleton {
       });
       this.$elements.attr('data-cd-comment-index', this.index);
 
-      if (settings.get('reformatComments')) {
+      if (this.isReformatted) {
         this.signatureElement = this.$elements.find('.cd-signature').get(0);
         this.replaceSignatureWithHeader();
         this.addMenu();
@@ -2282,8 +2279,7 @@ class Comment extends CommentSkeleton {
    *   the viewport.
    */
   scrollIntoView(alignment) {
-    const $target = this.editForm ? this.editForm.$element : this.$elements;
-    $target.cdScrollIntoView(alignment);
+    (this.editForm?.$element || this.$elements).cdScrollIntoView(alignment);
   }
 
   /**
@@ -2336,7 +2332,7 @@ class Comment extends CommentSkeleton {
       );
     } else {
       const offset = this.getOffset({ considerFloating: true });
-      (this.editForm ? this.editForm.$element : this.$elements).cdScrollIntoView(
+      (this.editForm?.$element || this.$elements).cdScrollIntoView(
         (
           this.isOpeningSection ||
           this.editForm ||
@@ -2414,8 +2410,6 @@ class Comment extends CommentSkeleton {
    * @param {Event} e
    */
   async copyLink(e) {
-    if (controller.isPageOverlayOn()) return;
-
     controller.showCopyLinkDialog(this, e);
   }
 
@@ -2712,7 +2706,7 @@ class Comment extends CommentSkeleton {
         initialState = { focus: false };
 
         let endBoundary;
-        if (settings.get('reformatComments')) {
+        if (this.isReformatted) {
           endBoundary = this.$menu.get(0);
         } else {
           endBoundary = document.createElement('span');
@@ -2725,7 +2719,7 @@ class Comment extends CommentSkeleton {
           selection.setBaseAndExtent(higherNode, higherOffset, endBoundary, 0);
         }
 
-        if (!settings.get('reformatComments')) {
+        if (!this.isReformatted) {
           endBoundary.remove();
         }
       }
@@ -2944,7 +2938,7 @@ class Comment extends CommentSkeleton {
         .removeClass('cd-hidden');
       const $dummy = $('<div>').append($clone);
       const selectorParts = ['.cd-signature', '.cd-changeMark', '.noprint'];
-      if (settings.get('reformatComments')) {
+      if (this.isReformatted) {
         selectorParts.push('.cd-comment-header', '.cd-comment-menu');
       }
       if (cd.config.unsignedClass) {
@@ -2954,8 +2948,8 @@ class Comment extends CommentSkeleton {
       $dummy.find(selector).remove();
       let text = $dummy.cdGetText();
       if (cleanUpSignature) {
-        if (cd.config.signatureEndingRegexp) {
-          text = text.replace(cd.config.signatureEndingRegexp, '');
+        if (cd.g.signatureEndingRegexp) {
+          text = text.replace(cd.g.signatureEndingRegexp, '');
         }
 
         // FIXME: We use the same regexp to clean both the wikitext and the render. With the current
@@ -3224,7 +3218,7 @@ class Comment extends CommentSkeleton {
     const $anchorFirstChild = $anchor.children().first();
     if ($anchor.is('dd, li') && $anchorFirstChild.hasClass('cd-commentLevel')) {
       // A relatively rare case possible when two adjacent lists are merged with
-      // BootProcess#mergeAdjacentCommentLevels, for example when replying to
+      // CommentStatic#mergeAdjacentCommentLevels, for example when replying to
       // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(policy)#202103271157_Uanfala.
       $anchor = $anchorFirstChild;
     }
@@ -3365,11 +3359,11 @@ class Comment extends CommentSkeleton {
    * list of the current page visits.
    *
    * @param {number[]} currentPageVisits
-   * @param {number} currentUnixTime
+   * @param {number} currentTime
    * @param {boolean} isUnseenStatePassed
    * @returns {boolean} Whether there is a time conflict.
    */
-  initNewAndSeen(currentPageVisits, currentUnixTime, isUnseenStatePassed) {
+  initNewAndSeen(currentPageVisits, currentTime, isUnseenStatePassed) {
     // Let's take 3 minutes as tolerable time discrepancy.
     const isDateInFuture = this.date && this.date.getTime() > Date.now() + cd.g.msInMin * 3;
 
@@ -3379,23 +3373,18 @@ class Comment extends CommentSkeleton {
       return false;
     }
 
-    const commentUnixTime = Math.floor(this.date.getTime() / 1000);
+    const commentTime = Math.floor(this.date.getTime() / 1000);
 
-    const isNewerThanFirstRememberedVisit = commentUnixTime + 60 > currentPageVisits[0];
-    const isOlderThanPreviousVisit = (
-      commentUnixTime + 60 <= currentPageVisits[currentPageVisits.length - 1]
-    );
-    this.isNew = Boolean(isNewerThanFirstRememberedVisit || isUnseenStatePassed);
+    // Add 60 seconds to the comment time because it doesn't have seconds whereas the visit time
+    // has. See also `timeConflict` in `BootProcess#processVisits()`.
+    this.isNew = Boolean(commentTime + 60 > currentPageVisits[0] || isUnseenStatePassed);
     this.isSeen = Boolean(
-      (
-        !isNewerThanFirstRememberedVisit ||
-        (settings.get('highlightNewInterval') && isOlderThanPreviousVisit) ||
-        this.isOwn
-      ) &&
+      commentTime + 60 <= currentPageVisits[currentPageVisits.length - 1] &&
+      !this.isOwn &&
       !isUnseenStatePassed
     );
 
-    return commentUnixTime <= currentUnixTime && currentUnixTime < commentUnixTime + 60;
+    return commentTime <= currentTime && currentTime < commentTime + 60;
   }
 
   /**
@@ -3440,6 +3429,148 @@ class Comment extends CommentSkeleton {
     ) {
       previousComment.parser.splitParentAfterNode(potentialElement.previousSibling);
     }
+  }
+
+  /**
+   * Create element prototypes to reuse them instead of creating new elements from scratch (which is
+   * more expensive).
+   */
+  static initPrototypes() {
+    this.prototypes = new PrototypeRegistry();
+
+    /* Comment header element */
+    if (settings.get('reformatComments') !== false) {  // true, null
+      const headerElement = document.createElement('div');
+      headerElement.className = 'cd-comment-header';
+
+      const authorWrapper = document.createElement('div');
+      authorWrapper.className = 'cd-comment-author-wrapper';
+      headerElement.append(authorWrapper);
+
+      const authorLink = document.createElement('a');
+      authorLink.className = 'cd-comment-author mw-userlink';
+      authorWrapper.append(authorLink);
+
+      const bdiElement = document.createElement('bdi');
+      authorLink.append(bdiElement);
+
+      const authorLinksWrapper = document.createElement('span');
+      authorLinksWrapper.className = 'cd-comment-author-links';
+
+      const authorTalkLink = document.createElement('a');
+      authorTalkLink.textContent = cd.s('comment-author-talk');
+      authorLinksWrapper.append(cd.mws('parentheses-start'), authorTalkLink);
+
+      if (settings.get('showContribsLink')) {
+        const separator = document.createElement('span');
+        separator.innerHTML = cd.sParse('dot-separator');
+
+        const contribsLink = document.createElement('a');
+        contribsLink.textContent = cd.s('comment-author-contribs');
+
+        authorLinksWrapper.append(separator, contribsLink);
+      }
+
+      authorLinksWrapper.append(cd.mws('parentheses-end'));
+      authorWrapper.append(' ', authorLinksWrapper);
+
+      this.prototypes.add('headerElement', headerElement);
+    }
+
+    /* OOUI buttons. Creating every OOUI button using the constructor takes 15 times longer than
+    cloning */
+    if (settings.get('reformatComments') !== true) {
+      this.prototypes.addWidget('replyButton', () => (
+        new OO.ui.ButtonWidget({
+          label: cd.s('cm-reply'),
+          framed: false,
+          classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
+        })
+      ));
+
+      this.prototypes.addWidget('editButton', () => (
+        new OO.ui.ButtonWidget({
+          label: cd.s('cm-edit'),
+          framed: false,
+          classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
+        })
+      ));
+
+      this.prototypes.addWidget('thankButton', () => (
+        new OO.ui.ButtonWidget({
+          label: cd.s('cm-thank'),
+          title: cd.s('cm-thank-tooltip'),
+          framed: false,
+          classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
+        })
+      ));
+
+      this.prototypes.addWidget('copyLinkButton', () => (
+        new OO.ui.ButtonWidget({
+          label: cd.s('cm-copylink'),
+          icon: 'link',
+          title: cd.s('cm-copylink-tooltip'),
+          framed: false,
+          invisibleLabel: true,
+          classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
+        })
+      ));
+
+      this.prototypes.addWidget('goToParentButton', () => (
+        new OO.ui.ButtonWidget({
+          label: cd.s('cm-gotoparent'),
+          icon: 'upTriangle',
+          title: cd.s('cm-gotoparent-tooltip'),
+          framed: false,
+          invisibleLabel: true,
+          classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
+        })
+      ));
+
+      this.prototypes.addWidget('goToChildButton', () => (
+        new OO.ui.ButtonWidget({
+          label: cd.s('cm-gotochild'),
+          icon: 'downTriangle',
+          title: cd.s('cm-gotochild-tooltip'),
+          framed: false,
+          invisibleLabel: true,
+          classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
+        })
+      ));
+    }
+
+    /* Comment layer elements */
+    const commentUnderlay = document.createElement('div');
+    commentUnderlay.className = 'cd-comment-underlay';
+
+    const commentOverlay = document.createElement('div');
+    commentOverlay.className = 'cd-comment-overlay';
+
+    const overlayLine = document.createElement('div');
+    overlayLine.className = 'cd-comment-overlay-line';
+    commentOverlay.appendChild(overlayLine);
+
+    const overlayMarker = document.createElement('div');
+    overlayMarker.className = 'cd-comment-overlay-marker';
+    commentOverlay.appendChild(overlayMarker);
+
+    if (!settings.get('reformatComments')) {
+      const overlayInnerWrapper = document.createElement('div');
+      overlayInnerWrapper.className = 'cd-comment-overlay-innerWrapper';
+      commentOverlay.appendChild(overlayInnerWrapper);
+
+      const overlayGradient = document.createElement('div');
+      overlayGradient.textContent = '\xa0';
+      overlayGradient.className = 'cd-comment-overlay-gradient';
+      overlayInnerWrapper.appendChild(overlayGradient);
+
+      const overlayContent = document.createElement('div');
+      overlayContent.className = 'cd-comment-overlay-content';
+      overlayInnerWrapper.appendChild(overlayContent);
+    }
+
+    this.prototypes.add('underlay', commentUnderlay);
+    this.prototypes.add('overlay', commentOverlay);
   }
 }
 

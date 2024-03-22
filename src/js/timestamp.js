@@ -168,16 +168,13 @@ export function getDateFromTimestampMatch(match, timezone) {
   }
 
   const unixTime = Date.UTC(year, monthIdx, day, hours, minutes);
-  let timezoneOffset;
-  if (typeof timezone === 'number') {
-    timezoneOffset = timezone * cd.g.msInMin;
-  } else {
-    // Using date-fns-tz's getTimezoneOffset is way faster than using day.js's methods.
-    timezoneOffset = timezone === 'UTC' ? 0 : getTimezoneOffset(timezone, unixTime);
-  }
-  const date = new Date(unixTime - timezoneOffset);
+  const timezoneOffset = typeof timezone === 'number' ?
+    timezone * cd.g.msInMin :
 
-  return date;
+    // Using date-fns-tz's getTimezoneOffset is way faster than using day.js's methods.
+    (timezone === 'UTC' ? 0 : getTimezoneOffset(timezone, unixTime));
+
+  return new Date(unixTime - timezoneOffset);
 }
 
 /**
@@ -223,7 +220,7 @@ function generateTimezonePostfix(offset) {
   utcString ||= cd.mws('timezone-utc');
   let postfix = ` (${utcString}`;
 
-  // Not necessarily an integer
+  // `offset` is not necessarily an integer
   offset /= 60;
 
   const sign = offset > 0 ? '+' : '-';

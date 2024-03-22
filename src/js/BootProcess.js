@@ -211,8 +211,8 @@ class BootProcess {
    *
    * @returns {number}
    */
-  getPreviousVisitUnixTime() {
-    return this.previousVisitUnixTime;
+  getPreviousVisitTime() {
+    return this.previousVisitTime;
   }
 
   /**
@@ -1279,17 +1279,22 @@ class BootProcess {
   }
 
   /**
-   * Remove visit timestamps from the array that we don't need to keep anymore.
+   * Remove timestamps that we don't need anymore from the visits array.
    *
    * @param {number[]} currentPageVisits
-   * @param {number} currentUnixTime
+   * @param {number} currentTime
    * @private
    */
-  cleanUpVisits(currentPageVisits, currentUnixTime) {
+  cleanUpVisits(currentPageVisits, currentTime) {
     for (let i = currentPageVisits.length - 1; i >= 0; i--) {
       if (
+        currentPageVisits[i] < currentTime - 60 * settings.get('highlightNewInterval') ||
+
+        // Add this condition for rare cases when the time of the previous visit is later than the
+        // current time (see `timeConflict`). In that case, when `highlightNewInterval` is set to 0,
+        // the user shouldn't get comments highlighted again all of a sudden.
         !settings.get('highlightNewInterval') ||
-        currentPageVisits[i] < currentUnixTime - 60 * settings.get('highlightNewInterval') ||
+
         this.data('markAsRead')
       ) {
         // Remove visits _before_ the found one.
@@ -1318,19 +1323,19 @@ class BootProcess {
     }
 
     if (currentPageVisits.length >= 1) {
-      this.previousVisitUnixTime = Number(currentPageVisits[currentPageVisits.length - 1]);
+      this.previousVisitTime = Number(currentPageVisits[currentPageVisits.length - 1]);
     }
 
-    const currentUnixTime = Math.floor(Date.now() / 1000);
+    const currentTime = Math.floor(Date.now() / 1000);
 
-    this.cleanUpVisits(currentPageVisits, currentUnixTime);
+    this.cleanUpVisits(currentPageVisits, currentTime);
 
     let timeConflict = false;
     if (currentPageVisits.length) {
       CommentStatic.getAll().forEach((comment) => {
         const commentTimeConflict = comment.initNewAndSeen(
           currentPageVisits,
-          currentUnixTime,
+          currentTime,
           this.data('unseenCommentIds')?.some((id) => id === comment.id) || false
         );
         timeConflict ||= commentTimeConflict;
@@ -1354,11 +1359,20 @@ class BootProcess {
       }
     }
 
-    // Reduce the probability that we will wrongfully mark a seen comment as unseen/new by adding a
-    // minute to the current time if there is a comment with matched time. (Previously, the comment
-    // time needed to be less than the current time which could result in missed comments if a
-    // comment was sent the same minute when the page was loaded but after that moment.)
-    currentPageVisits.push(String(currentUnixTime + timeConflict * 60));
+    // (Nearly) eliminate the probability that we will wrongfully mark a seen comment as unseen/new
+    // at the next page load by adding a minute to the visit time if there is at least one comment
+    // posted at the same minute. If instead we required the comment time to be less than the
+    // current time to be highlighted, it would result in missed comments if the comment was posted
+    // at the same minute as our visit but after that moment.
+    //
+    // We sacrifice the chance that sometimes we will wrongfully mark an unseen comment as seen -
+    // but for that,
+    // * one comment should be added at the same minute as our visit but earlier;
+    // * another comment should be added at the same minute as our visit but later.
+    //
+    // We could decide that not marking unseen comments as seen is an absolute priority and remove
+    // the `timeConflict` stuff.
+    currentPageVisits.push(String(currentTime + timeConflict * 60));
 
     saveVisits(visits);
 
@@ -1707,8 +1721,7 @@ class BootProcess {
         }
 
         // This should be below `this.processVisits()` because
-        // `updateChecker~maybeProcessRevisionsAtLoad()` needs `this.previousVisitUnixTime` to be
-        // set.
+        // `updateChecker~maybeProcessRevisionsAtLoad()` needs `this.previousVisitTime` to be set.
         initUpdateChecker();
       } else {
         toc.addCommentCount();

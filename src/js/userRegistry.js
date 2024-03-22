@@ -20,6 +20,8 @@ import { ucFirst, underlinesToSpaces } from './utils';
  * means of code completion).
  */
 export class User {
+  options = new mw.Map();
+
   /**
    * Create a user object.
    *
@@ -28,7 +30,6 @@ export class User {
    */
   constructor(name, options = {}) {
     this.name = name;
-    this.options = new mw.Map();
     Object.keys(options).forEach((name) => {
       this.options.set(name, options[name]);
     });
@@ -68,7 +69,7 @@ export class User {
   /**
    * User's gender (must be obtained using {@link module:apiWrappers.loadUserGenders}).
    *
-   * @type {'male'|'female'|'unknown'}
+   * @returns {'male'|'female'|'unknown'}
    */
   getGender() {
     return this.options.get('gender');
@@ -77,7 +78,7 @@ export class User {
   /**
    * Set the user's rights.
    *
-   * @type {'male'|'female'|'unknown'}
+   * @param {string[]} rights
    */
   setRights(rights) {
     this.rights = rights;
@@ -86,10 +87,10 @@ export class User {
   /**
    * Get the user's rights (must be obtained using {@link module:apiWrappers.getUserInfo}).
    *
-   * @type {'male'|'female'|'unknown'}
+   * @type {?(string[])}
    */
   getRights() {
-    return this.rights.slice();
+    return this.rights?.slice() || null;
   }
 
   /**

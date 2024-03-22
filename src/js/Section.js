@@ -2,6 +2,7 @@ import Button from './Button';
 import CdError from './CdError';
 import CommentForm from './CommentForm';
 import LiveTimestamp from './LiveTimestamp';
+import PrototypeRegistry from './PrototypeRegistry';
 import SectionSkeleton from './SectionSkeleton';
 import SectionSource from './SectionSource';
 import SectionStatic from './SectionStatic';
@@ -16,8 +17,6 @@ import { dealWithLoadingBug, defined, flat, focusInput, getHeadingLevel, underli
 import { encodeWikilink, maskDistractingCode, normalizeCode } from './wikitext';
 import { formatDate } from './timestamp';
 import { handleApiReject } from './apiWrappers';
-
-let elementPrototypes;
 
 /**
  * Class representing a section.
@@ -45,8 +44,6 @@ class Section extends SectionSkeleton {
     this.deferAddSubsectionButtonHide = this.deferAddSubsectionButtonHide.bind(this);
     this.toggleAuthors = this.toggleAuthors.bind(this);
     this.createMoreMenuSelect = this.createMoreMenuSelect.bind(this);
-
-    elementPrototypes = cd.g.sectionElementPrototypes;
 
     /**
      * Automatically updated sequental number of the section.
@@ -179,7 +176,7 @@ class Section extends SectionSkeleton {
 
     // Don't set more DOM properties to help performance. We don't need them in practice.
     const button = new Button({
-      element: elementPrototypes.replyButton.cloneNode(true),
+      element: this.constructor.prototypes.get('replyButton'),
       action: () => {
         this.reply();
       },
@@ -233,7 +230,7 @@ class Section extends SectionSkeleton {
   addAddSubsectionButton() {
     if (this.level !== 2 || !this.canAddSubsection()) return;
 
-    const element = elementPrototypes.addSubsectionButton.cloneNode(true);
+    const element = this.constructor.prototypes.get('addSubsectionButton');
     const button = new Button({
       element,
       labelElement: element.querySelector('.oo-ui-labelElement-label'),
@@ -687,7 +684,7 @@ class Section extends SectionSkeleton {
    * @private
    */
   createMoreMenuSelect() {
-    const moreMenuSelect = elementPrototypes.getMoreMenuSelect();
+    const moreMenuSelect = this.constructor.prototypes.getWidget('moreMenuSelect')();
 
     const editOpeningCommentOption = this.canEditFirstComment() ?
       new OO.ui.MenuOptionWidget({
@@ -772,7 +769,7 @@ class Section extends SectionSkeleton {
   createActionsElement() {
     let moreMenuSelectDummy;
     if (this.canEditFirstComment() || this.canBeMoved() || this.canAddSubsection()) {
-      const element = elementPrototypes.moreMenuSelect.cloneNode(true);
+      const element = this.constructor.prototypes.get('moreMenuSelect');
       moreMenuSelectDummy = new Button({
         element,
         action: () => {
@@ -784,7 +781,7 @@ class Section extends SectionSkeleton {
 
     let copyLinkButton;
     if (this.headline) {
-      const element = elementPrototypes.copyLinkButton.cloneNode(true);
+      const element = this.constructor.prototypes.get('copyLinkButton');
       copyLinkButton = new Button({
         element,
         buttonElement: element.firstChild,
@@ -1111,7 +1108,7 @@ class Section extends SectionSkeleton {
    *   an error, it will be displayed though.
    * @param {string} [renamedFrom] If DiscussionTools' topic subscriptions API is not used and the
    *   section was renamed, the previous section headline. It is unwatched together with watching
-   *   the current headline if there is no other coinciding headlines on the page.
+   *   the current headline if there are no other coinciding headlines on the page.
    */
   subscribe(mode, renamedFrom) {
     // That's a mechanism mainly for legacy subscriptions but can be used for DT subscriptions as
@@ -1193,7 +1190,7 @@ class Section extends SectionSkeleton {
    * @param {object} currentCommentData
    * @param {object} oldCommentData
    */
-  resubscribeToRenamed(currentCommentData, oldCommentData) {
+  resubscribeIfRenamed(currentCommentData, oldCommentData) {
     if (
       settings.get('useTopicSubscription') ||
       this.subscriptionState ||
@@ -1226,14 +1223,28 @@ class Section extends SectionSkeleton {
   }
 
   /**
+   * _For internal use._ When the section's headline is live-updated in {@link Comment#update}, also
+   * update some aspects of the section.
+   *
+   * @param {external:jQuery} $html
+   */
+  update($html) {
+    const originalHeadline = this.headline;
+    this.parseHeadline();
+    if (this.headline !== originalHeadline) {
+      if (this.headline && this.subscriptionState && !settings.get('useTopicSubscription')) {
+        this.subscribe('quiet', originalHeadline);
+      }
+      this.getTocItem()?.replaceText($html);
+    }
+  }
+
+  /**
    * Copy a link to the section or open a copy link dialog.
    *
    * @param {Event} e
    */
   copyLink(e) {
-    if (controller.isPageOverlayOn()) return;
-
-    e.preventDefault();
     controller.showCopyLinkDialog(this, e);
   }
 
@@ -1539,10 +1550,10 @@ class Section extends SectionSkeleton {
   /**
    * Get the TOC item for the section if present.
    *
-   * @returns {?object}
+   * @returns {?import('./toc').TocItem}
    */
   getTocItem() {
-    return toc.getItem(this.id) || null;
+    return toc.getItem(this.id);
   }
 
   /**
@@ -1668,6 +1679,64 @@ class Section extends SectionSkeleton {
     this.elements.forEach((el) => {
       el.classList.toggle('cd-section-hidden', !show);
     });
+  }
+
+  /**
+   * Create element and widget prototypes to reuse them instead of creating new elements from
+   * scratch (which is more expensive).
+   */
+  static initPrototypes() {
+    this.prototypes = new PrototypeRegistry();
+
+    this.prototypes.add(
+      'replyButton',
+      new OO.ui.ButtonWidget({
+        label: cd.s('section-reply'),
+        framed: false,
+
+        // Add the thread button class as it behaves as a thread button in fact, being positioned
+        // inside a "cd-commentLevel" list.
+        classes: ['cd-button-ooui', 'cd-section-button', 'cd-thread-button'],
+      }).$element.get(0)
+    );
+
+    this.prototypes.add(
+      'addSubsectionButton',
+      new OO.ui.ButtonWidget({
+        // Will be replaced
+        label: ' ',
+
+        framed: false,
+        classes: ['cd-button-ooui', 'cd-section-button'],
+      }).$element.get(0)
+    );
+
+    this.prototypes.add(
+      'copyLinkButton',
+      new OO.ui.ButtonWidget({
+        framed: false,
+        flags: ['progressive'],
+        icon: 'link',
+        label: cd.s('sm-copylink'),
+        invisibleLabel: true,
+        title: cd.s('sm-copylink-tooltip'),
+        classes: ['cd-section-bar-button'],
+      }).$element.get(0)
+    );
+
+    this.prototypes.addWidget('moreMenuSelect', () => (
+      new OO.ui.ButtonMenuSelectWidget({
+        framed: false,
+        icon: 'ellipsis',
+        label: cd.s('sm-more'),
+        invisibleLabel: true,
+        title: cd.s('sm-more'),
+        menu: {
+          horizontalPosition: 'end',
+        },
+        classes: ['cd-section-bar-button', 'cd-section-bar-moremenu'],
+      }))
+    );
   }
 }
 
