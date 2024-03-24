@@ -10,7 +10,6 @@ import cd from './cd';
 import controller from './controller';
 import debug from './debug';
 import init from './init';
-import initUpdateChecker from './updateChecker';
 import navPanel from './navPanel';
 import pageNav from './pageNav';
 import pageRegistry from './pageRegistry';
@@ -18,14 +17,12 @@ import settings from './settings';
 import subscriptions from './subscriptions';
 import toc from './toc';
 import userRegistry from './userRegistry';
+import visits from './visits';
 import { defined, definedAndNotNull, getFooter, getLastArrayElementOrSelf, sleep, underlinesToSpaces, wrapHtml } from './utils';
 import { formatDateNative } from './timestamp';
-import { getVisits, handleApiReject, saveOptions, saveVisits } from './apiWrappers';
+import { handleApiReject, saveOptions } from './apiWrappers';
 import { removeWikiMarkup } from './wikitext';
 import { showConfirmDialog } from './ooui';
-
-let articlePathRegexp;
-let addTopicSelector;
 
 /**
  * Get all text nodes under the root element in the window (not worker) context.
@@ -60,14 +57,14 @@ function removeDtButtonHtmlComments() {
 
 /**
  * Deal with (remove or move in the DOM) the markup added to the page by DiscussionTools. This
- * function can be executed in the worker context (which is why it uses
- * `controller.getBootProcess()` to get the boot process instead of referencing the instance
- * directly).
+ * function can be executed in the worker context.
  *
  * @param {Element[]|external:Element[]} elements
+ * @param {import('./BootProcess').default} [bootProcess]
+ *
  * @private
  */
-function handleDtMarkup(elements) {
+function handleDtMarkup(elements, bootProcess) {
   // Reply Tool is officially incompatible with CD, so we don't care if it is enabled. New Topic
   // Tool doesn't seem to make difference for our purposes here.
   const moveNotRemove = (
@@ -78,7 +75,7 @@ function handleDtMarkup(elements) {
   );
   let dtMarkupHavenElement;
   if (moveNotRemove) {
-    if (!controller.getBootProcess().isFirstRun()) {
+    if (!bootProcess.isFirstRun()) {
       dtMarkupHavenElement = controller.$content.children('.cd-dtMarkupHaven').get(0);
     }
     if (!dtMarkupHavenElement) {
@@ -94,7 +91,7 @@ function handleDtMarkup(elements) {
     )
     .forEach((el, i) => {
       if (el.hasAttribute('data-mw-comment-start') && CommentStatic.isDtId(el.id)) {
-        controller.getBootProcess().addDtCommentId(el.id);
+        bootProcess.addDtCommentId(el.id);
       }
       if (moveNotRemove) {
         // DT gets the DOM offset of each of these elements upon initialization which can take a lot
@@ -195,24 +192,6 @@ class BootProcess {
    */
   addDtCommentId(id) {
     this.dtCommentIds.push(id);
-  }
-
-  /**
-   * Get the visits request.
-   *
-   * @returns {Promise.<module:apiWrappers~GetVisitsReturn>}
-   */
-  getVisitsRequest() {
-    return this.visitsRequest;
-  }
-
-  /**
-   * Get the unix time of the previous visit.
-   *
-   * @returns {number}
-   */
-  getPreviousVisitTime() {
-    return this.previousVisitTime;
   }
 
   /**
@@ -539,7 +518,7 @@ class BootProcess {
     let guessedCommentText = '';
     let sectionName;
     let guessedSectionText = '';
-    articlePathRegexp ||= new RegExp(
+    const articlePathRegexp = new RegExp(
       mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace('\\$1', '(.*)')
     );
 
@@ -689,8 +668,11 @@ class BootProcess {
    * @private
    */
   async setup() {
+    if (this.firstRun) {
+      await init.talkPage();
+    }
     controller.setup(this.data('html'));
-    toc.setup(this.data('toc'), this.data('hidetoc'));
+    toc.setup(this.data('toc'), this.data('hidetoc'), this);
 
     /**
      * Collection of all comments on the page ordered the same way as in the DOM.
@@ -711,10 +693,6 @@ class BootProcess {
      * @memberof convenientDiscussions
      */
     cd.sections = SectionStatic.getAll();
-
-    if (this.firstRun) {
-      await init.talkPage();
-    }
   }
 
   /**
@@ -738,7 +716,7 @@ class BootProcess {
       removeDtButtonHtmlComments,
     });
 
-    this.parser.processAndRemoveDtMarkup();
+    this.parser.processAndRemoveDtMarkup(this);
     const headings = this.parser.findHeadings();
     const signatures = this.parser.findSignatures();
     this.targets = headings
@@ -801,10 +779,8 @@ class BootProcess {
         }
       });
 
-    // Can't do it earlier: we don't have section IDs until now.
-    if (userRegistry.getCurrent().isRegistered() && settings.get('useTopicSubscription')) {
-      subscriptions.load();
-    }
+    // Can't do it earlier: we don't have section DT IDs until now.
+    subscriptions.load(this);
 
     SectionStatic.adjust();
 
@@ -818,19 +794,8 @@ class BootProcess {
     // comments.
     CommentStatic.setDtIds(this.dtCommentIds);
 
-    // Depends on DT ID being set
+    // Depends on DT IDs being set
     SectionStatic.addMetadataAndActions();
-
-    if (userRegistry.getCurrent().isRegistered()) {
-      subscriptions.getLoadRequest().then(() => {
-        SectionStatic.addSubscribeButtons();
-        subscriptions.cleanUp();
-        toc.markSubscriptions();
-        if (this.firstRun) {
-          subscriptions.addPageSubscribeButton();
-        }
-      });
-    }
 
     /**
      * The script has processed sections.
@@ -918,20 +883,21 @@ class BootProcess {
    * @private
    */
   connectToAddTopicButtons() {
-    addTopicSelector ??= [
-      '#ca-addsection a',
-      '.cd-addTopicButton a',
-      'a.cd-addTopicButton',
-      'a[href*="section=new"]',
-      'a[href*="Special:NewSection/"]',
-      'a[href*="Special:Newsection/"]',
-      'a[href*="special:newsection/"]',
-      '.commentbox input[type="submit"]',
-      '.createbox input[type="submit"]',
-    ]
-      .concat(cd.config.addTopicButtonSelectors)
-      .join(', ');
-    $(addTopicSelector)
+    $(
+      [
+        '#ca-addsection a',
+        '.cd-addTopicButton a',
+        'a.cd-addTopicButton',
+        'a[href*="section=new"]',
+        'a[href*="Special:NewSection/"]',
+        'a[href*="Special:Newsection/"]',
+        'a[href*="special:newsection/"]',
+        '.commentbox input[type="submit"]',
+        '.createbox input[type="submit"]',
+      ]
+        .concat(cd.config.addTopicButtonSelectors)
+        .join(', ')
+    )
       .filter(function () {
         const $button = $(this);
 
@@ -1049,20 +1015,17 @@ class BootProcess {
   hideDtNewTopicForm() {
     if (!cd.g.isDtNewTopicToolEnabled) return;
 
-    let headline;
-    let comment;
-
     // `:visible` to exclude the form hidden in BootProcess#hideDtNewTopicForm.
     const $dtNewTopicForm = $('.ext-discussiontools-ui-newTopic:visible');
     if (!$dtNewTopicForm.length) return;
 
     const $headline = $dtNewTopicForm
       .find('.ext-discussiontools-ui-newTopic-sectionTitle input[type="text"]');
-    headline = $headline.val();
+    const headline = $headline.val();
     $headline.val('');
 
     const $comment = $dtNewTopicForm.find('textarea');
-    comment = $comment.textSelection('getContents');
+    const comment = $comment.textSelection('getContents');
     $comment.textSelection('setContents', '');
 
     // DT's comment form produces errors after opening a CD's comment form because of hard code in
@@ -1143,26 +1106,6 @@ class BootProcess {
         )
       );
     });
-  }
-
-  /**
-   * Mount, unmount or reset the {@link module:navPanel navigation panel}.
-   *
-   * @private
-   */
-  setupNavPanel() {
-    if (controller.isPageActive()) {
-      // Can be mounted not only on first parse, if using RevisionSlider, for example.
-      if (!navPanel.isMounted()) {
-        navPanel.mount();
-      } else {
-        navPanel.reset();
-      }
-    } else {
-      if (navPanel.isMounted()) {
-        navPanel.unmount();
-      }
-    }
   }
 
   /**
@@ -1276,125 +1219,6 @@ class BootProcess {
         });
       }
     }
-  }
-
-  /**
-   * Remove timestamps that we don't need anymore from the visits array.
-   *
-   * @param {number[]} currentPageVisits
-   * @param {number} currentTime
-   * @private
-   */
-  cleanUpVisits(currentPageVisits, currentTime) {
-    for (let i = currentPageVisits.length - 1; i >= 0; i--) {
-      if (
-        currentPageVisits[i] < currentTime - 60 * settings.get('highlightNewInterval') ||
-
-        // Add this condition for rare cases when the time of the previous visit is later than the
-        // current time (see `timeConflict`). In that case, when `highlightNewInterval` is set to 0,
-        // the user shouldn't get comments highlighted again all of a sudden.
-        !settings.get('highlightNewInterval') ||
-
-        this.data('markAsRead')
-      ) {
-        // Remove visits _before_ the found one.
-        currentPageVisits.splice(0, i);
-
-        break;
-      }
-    }
-  }
-
-  /**
-   * Highlight new comments and update the navigation panel. A promise obtained from
-   * {@link module:options.getVisits} should be provided.
-   *
-   * @fires newCommentsHighlighted
-   * @private
-   */
-  async processVisits() {
-    let visits;
-    let currentPageVisits;
-    try {
-      ({ visits, currentPageVisits } = await this.visitsRequest);
-    } catch (e) {
-      console.warn('Couldn\'t load the settings from the server.', e);
-      return;
-    }
-
-    if (currentPageVisits.length >= 1) {
-      this.previousVisitTime = Number(currentPageVisits[currentPageVisits.length - 1]);
-    }
-
-    const currentTime = Math.floor(Date.now() / 1000);
-
-    this.cleanUpVisits(currentPageVisits, currentTime);
-
-    let timeConflict = false;
-    if (currentPageVisits.length) {
-      CommentStatic.getAll().forEach((comment) => {
-        const commentTimeConflict = comment.initNewAndSeen(
-          currentPageVisits,
-          currentTime,
-          this.data('unseenCommentIds')?.some((id) => id === comment.id) || false
-        );
-        timeConflict ||= commentTimeConflict;
-      });
-
-      CommentStatic.configureAndAddLayers(CommentStatic.getAll().filter((c) => c.isNew));
-
-      // If all the comments on the page are unseen, don't add them to the TOC - the user would
-      // definitely prefer to read the names of the topics easily. (But still consider them new -
-      // otherwise the user can be confused, especially if there are few topics on an unpopular
-      // page.)
-      if (
-        CommentStatic.getAll().filter((c) => c.isSeen === false || !c.date).length !==
-        CommentStatic.getCount()
-      ) {
-        toc.addNewComments(
-          CommentStatic.groupBySection(
-            CommentStatic.getAll().filter((comment) => comment.isSeen === false)
-          )
-        );
-      }
-    }
-
-    // (Nearly) eliminate the probability that we will wrongfully mark a seen comment as unseen/new
-    // at the next page load by adding a minute to the visit time if there is at least one comment
-    // posted at the same minute. If instead we required the comment time to be less than the
-    // current time to be highlighted, it would result in missed comments if the comment was posted
-    // at the same minute as our visit but after that moment.
-    //
-    // We sacrifice the chance that sometimes we will wrongfully mark an unseen comment as seen -
-    // but for that,
-    // * one comment should be added at the same minute as our visit but earlier;
-    // * another comment should be added at the same minute as our visit but later.
-    //
-    // We could decide that not marking unseen comments as seen is an absolute priority and remove
-    // the `timeConflict` stuff.
-    currentPageVisits.push(String(currentTime + timeConflict * 60));
-
-    saveVisits(visits);
-
-    // Should be before `CommentStatic.registerSeen()` to include all new comments in the metadata,
-    // even those currently inside the viewport.
-    SectionStatic.updateNewCommentsData();
-
-    // Should be below `SectionStatic.updateNewCommentsData()` - `Section#newComments` is set there.
-    // TODO: keep the scrolling position even if adding the comment count moves the content.
-    // (Currently this is done in `toc.addNewComments()`.)
-    toc.addCommentCount();
-
-    CommentStatic.registerSeen();
-    navPanel.fill();
-
-    /**
-     * New comments have been highlighted.
-     *
-     * @event newCommentsHighlighted
-     * @param {object} cd {@link convenientDiscussions} object.
-     */
-    mw.hook('convenientDiscussions.newCommentsHighlighted').fire(cd);
   }
 
   /**
@@ -1598,16 +1422,14 @@ class BootProcess {
       should also make sure we only add this functionality once.
     */
 
+    let visitsPromise;
+    let subscriptionsPromise;
     if (controller.doesPageExist()) {
-      if (userRegistry.getCurrent().isRegistered()) {
-        if (!settings.get('useTopicSubscription')) {
-          subscriptions.load();
-        }
-
-        if (controller.isPageActive()) {
-          this.visitsRequest = getVisits(true);
-        }
+      if (controller.isPageActive()) {
+        visitsPromise = visits.get(true, this);
       }
+
+      subscriptionsPromise = subscriptions.loadLegacy(true, this);
 
       /**
        * The script is going to parse the page for comments, sections, etc.
@@ -1633,16 +1455,14 @@ class BootProcess {
       this.processSections();
       debug.stopTimer('process sections');
     } else {
-      if (
-        userRegistry.getCurrent().isRegistered() &&
-        settings.get('useTopicSubscription') &&
-        this.firstRun
-    ) {
-        subscriptions.load().then(() => {
-          subscriptions.addPageSubscribeButton();
-        });
+      if (settings.get('useTopicSubscription')) {
+        subscriptionsPromise = subscriptions.load(this);
       }
     }
+
+    subscriptionsPromise?.then(() => {
+      toc.markSubscriptions(visitsPromise);
+    });
 
     if (this.data('html')) {
       debug.startTimer('laying out HTML');
@@ -1650,7 +1470,7 @@ class BootProcess {
       debug.stopTimer('laying out HTML');
     }
 
-    this.setupNavPanel();
+    navPanel.setup();
 
     debug.stopTimer('main code');
 
@@ -1700,30 +1520,21 @@ class BootProcess {
 
       // Should better be below the comment form restoration to avoid repositioning of layers
       // after the addition of comment forms.
-      const commentsToAddLayersFor = CommentStatic.getAll().filter((comment) => (
-        comment.isOwn ||
+      CommentStatic.configureAndAddLayers((c) => (
+        c.isOwn ||
 
         // Need to generate a gray line to close the gaps between adjacent list item elements. Do it
         // here, not after processing comments, to group all operations requiring reflow
         // together for performance reasons.
-        comment.isLineGapped
+        c.isLineGapped
       ));
-      CommentStatic.configureAndAddLayers(commentsToAddLayersFor);
 
       // Should be below `Thread.init()` as these methods may want to scroll to a comment in a
       // collapsed thread.
       this.processFragment();
       this.processTargets();
 
-      if (controller.isPageActive()) {
-        if (userRegistry.getCurrent().isRegistered()) {
-          this.processVisits();
-        }
-
-        // This should be below `this.processVisits()` because
-        // `updateChecker~maybeProcessRevisionsAtLoad()` needs `this.previousVisitTime` to be set.
-        initUpdateChecker();
-      } else {
+      if (!controller.isPageActive()) {
         toc.addCommentCount();
       }
 

@@ -21,6 +21,26 @@ let cachedCommentsBySection;
 
 export default {
   /**
+   * Mount, unmount or reset the navigation panel based on the context.
+   *
+   * @private
+   */
+  setup() {
+    if (controller.isPageActive()) {
+      // Can be mounted not only on first parse, if using RevisionSlider, for example.
+      if (!this.isMounted()) {
+        this.mount();
+      } else {
+        this.reset();
+      }
+    } else {
+      if (this.isMounted()) {
+        this.unmount();
+      }
+    }
+  },
+
+  /**
    * _For internal use._ Render the navigation panel. This is done when the page is first loaded, or
    * created using the script.
    */

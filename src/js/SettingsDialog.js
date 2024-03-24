@@ -80,9 +80,9 @@ class SettingsDialog extends OO.ui.ProcessDialog {
 
     this.pushPending();
 
-    this.preparatoryRequests = [
+    this.initPromise = Promise.all([
       settings.load({ omitLocal: true }),
-    ];
+    ]);
 
     this.loadingPanel = new OO.ui.PanelLayout({
       padded: true,
@@ -148,7 +148,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
   getReadyProcess(data) {
     return super.getReadyProcess(data).next(async () => {
       try {
-        [this.settings] = await Promise.all(this.preparatoryRequests);
+        [this.settings] = await this.initPromise;
       } catch (e) {
         this.handleError(e, 'error-settings-load', false);
         return;

@@ -1581,7 +1581,7 @@ class Comment extends CommentSkeleton {
     if (this.layersContainer === undefined) {
       let offsetParent;
 
-      // Use the last element, as in Comment#getTextDirection().
+      // Use the last element, as in `Comment#getTextDirection()`.
       const lastElement = this.elements[this.elements.length - 1];
       const treeWalker = new TreeWalker(document.body, null, true, lastElement);
 

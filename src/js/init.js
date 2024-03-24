@@ -26,7 +26,7 @@ import userRegistry from './userRegistry';
 import { dateTokenToMessageNames, initDayjs } from './timestamp';
 import { generatePageNamePattern, getContentLanguageMessages, skin$, transparentize, unique } from './utils';
 import { processPage } from './updateChecker';
-import { saveVisits, splitIntoBatches } from './apiWrappers';
+import { splitIntoBatches } from './apiWrappers';
 
 let defaultFontSize;
 
@@ -756,7 +756,6 @@ export default {
     cd.tests.processPageInBackground = processPage;
     cd.tests.showSettingsDialog = controller.showSettingsDialog.bind(controller);
     cd.tests.editSubscriptions = controller.showEditSubscriptionsDialog.bind(controller);
-    cd.tests.saveVisits = saveVisits;
     cd.tests.subscriptions = subscriptions;
 
 

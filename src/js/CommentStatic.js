@@ -197,9 +197,11 @@ const CommentStatic = {
   /**
    * Configure and add layers for a group of comments.
    *
-   * @param {Comment[]} comments
+   * @param {Function} condition
    */
-  configureAndAddLayers(comments) {
+  configureAndAddLayers(condition) {
+    const comments = CommentStatic.getAll().filter(condition);
+
     const floatingRects = comments.length ?
       controller.getFloatingElements().map(getExtendedRect) :
       undefined;
@@ -387,8 +389,8 @@ const CommentStatic = {
       if (endIndex !== undefined) {
         comments = comments.filter((comment) => (
           direction === 'forward' ?
-            comment.index < endIndex && comment.index >= startIndex :
-            comment.index > endIndex && comment.index <= startIndex
+            comment.index >= startIndex && comment.index < endIndex :
+            comment.index <= startIndex && comment.index > endIndex
         ));
       }
       return comments.find(isVisible) || null;
@@ -407,14 +409,14 @@ const CommentStatic = {
     let comment = searchArea.top;
     let foundComment;
 
-    const findClosest = (direction, searchArea, reverse = false) => {
-      if (direction) {
-        const isTop = direction === 'forward' ? reverse : !reverse;
-        const startIndex = isTop ? searchArea.top.index : searchArea.bottom.index;
-        return findVisible(direction, startIndex);
-      }
-      return null;
-    };
+    const findClosest = (direction, searchArea, reverse = false) => (
+      direction ?
+        findVisible(
+          direction,
+          searchArea[(direction === 'forward' ? reverse : !reverse) ? 'top' : 'bottom'].index
+        ) :
+        null
+    );
 
     // Here, we don't iterate over this.items as it may look like. We perform a so-called
     // interpolation search: narrow the search region by getting a proportion of the distance

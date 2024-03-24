@@ -67,7 +67,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
 
     this.pushPending();
 
-    this.preparatoryRequests = [
+    this.initRequests = [
       this.section.getSourcePage().loadCode(),
       mw.loader.using('mediawiki.widgets'),
     ];
@@ -126,7 +126,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
   getReadyProcess(data) {
     return super.getReadyProcess(data).next(async () => {
       try {
-        await Promise.all(this.preparatoryRequests);
+        await Promise.all(this.initRequests);
       } catch (e) {
         this.abort(cd.sParse('cf-error-getpagecode'), false);
         return;

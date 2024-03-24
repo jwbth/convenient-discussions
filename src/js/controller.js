@@ -45,14 +45,6 @@ export default {
   isObstructingElementHoveredCached: false,
 
   /**
-   * Last boot process.
-   *
-   * @type {BootProcess|undefined}
-   * @private
-   */
-  bootProcess: undefined,
-
-  /**
    * _For internal use._ Assign some properties required by the controller - those which are not
    * known from the beginning.
    */
@@ -400,8 +392,8 @@ export default {
         end: cd.g.contentTextDirection === 'ltr' ? left + width : left,
       };
 
-      // This is set only on window resize event. The initial value is set in init.addTalkPageCss()
-      // through a style tag.
+      // This is set only on window resize event. The initial value is set in
+      // `init.addTalkPageCss()` through a style tag.
       if (reset) {
         $(this.document).css('--cd-content-start-margin', startMargin + 'px');
       }
@@ -1153,10 +1145,10 @@ export default {
   /**
    * Get the current (or last available) boot process.
    *
-   * @returns {BootProcess}
+   * @returns {?BootProcess}
    */
   getBootProcess() {
-    return this.bootProcess;
+    return this.bootProcess || null;
   },
 
   /**
@@ -1169,6 +1161,12 @@ export default {
     debug.stopTimer('start');
     debug.startTimer('loading data');
 
+    /**
+     * Last boot process.
+     *
+     * @type {BootProcess|undefined}
+     * @private
+     */
     this.bootProcess = new BootProcess();
 
     let siteDataRequests = [];

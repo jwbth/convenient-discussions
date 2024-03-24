@@ -38,6 +38,7 @@ let resolverCount = 0;
  */
 function setAlarmViaWorker(interval) {
   if (Number.isNaN(Number(interval))) return;
+
   controller.getWorker().postMessage({
     type: 'setAlarm',
     interval,
@@ -76,7 +77,6 @@ function runWorkerTask(payload) {
  *
  * @param {number} [revisionToParseId]
  * @returns {Promise.<object>}
- * @memberof module:updateChecker
  */
 async function processPage(revisionToParseId) {
   if (revisionData[revisionToParseId]) {
@@ -124,17 +124,18 @@ async function processPage(revisionToParseId) {
  * any elements that may be added by scripts.) The revisions' data will be finally processed by
  * `checkForChangesSincePreviousVisit()`.
  *
- * @param {number} submittedCommentId
+ * @param {number} previousVisitTime
+ * @param {number} [submittedCommentId]
  * @private
  */
-async function maybeProcessRevisionsAtLoad(submittedCommentId) {
-  const revisions = await pageRegistry.getCurrent().getRevisions({
-    rvprop: ['ids'],
-    rvstart: new Date(controller.getBootProcess().getPreviousVisitTime() * 1000).toISOString(),
-    rvlimit: 1,
-  }, true);
-
-  previousVisitRevisionId = revisions[0]?.revid;
+async function maybeProcessRevisionsAtLoad(previousVisitTime, submittedCommentId) {
+  previousVisitRevisionId = (
+    await pageRegistry.getCurrent().getRevisions({
+      rvprop: ['ids'],
+      rvstart: new Date(previousVisitTime * 1000).toISOString(),
+      rvlimit: 1,
+    }, true)
+  )[0]?.revid;
   const currentRevisionId = mw.config.get('wgRevisionId');
 
   if (previousVisitRevisionId && previousVisitRevisionId < currentRevisionId) {
@@ -665,9 +666,10 @@ async function onMessageFromWorker(e) {
 /**
  * _For internal use._ Initialize the update checker. Executed on each page reload.
  *
- * @memberof module:updateChecker
+ * @param {string} previousVisitTime
+ * @param {number} submittedCommentId
  */
-async function initUpdateChecker() {
+async function initUpdateChecker(previousVisitTime, submittedCommentId) {
   isBackgroundCheckArranged = false;
   previousVisitRevisionId = null;
 
@@ -679,17 +681,8 @@ async function initUpdateChecker() {
 
   setAlarmViaWorker(cd.g.updateCheckInterval * 1000);
 
-  const bootProcess = controller.getBootProcess();
-
-  // It is handled in BootProcess#processVisits.
-  await bootProcess.getVisitsRequest();
-
-  if (bootProcess.getPreviousVisitTime()) {
-    const submittedCommentId = (
-      (bootProcess.data('wasCommentFormSubmitted') && bootProcess.data('commentIds')?.[0]) ||
-      undefined
-    );
-    maybeProcessRevisionsAtLoad(submittedCommentId);
+  if (previousVisitTime) {
+    maybeProcessRevisionsAtLoad(previousVisitTime, submittedCommentId);
   }
 }
 

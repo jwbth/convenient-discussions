@@ -147,8 +147,9 @@ const toc = {
    *
    * @param {object[]} [sections] TOC sections object.
    * @param {boolean} [hideToc] Whether the TOC should be hidden.
+   * @param {import('./BootProcess').default} bootProcess
    */
-  setup(sections, hideToc) {
+  setup(sections, hideToc, bootProcess) {
     this.canBeModified = settings.get('modifyToc');
     this.$element = this.isInSidebar() ? $('.vector-toc') : controller.$root.find('.toc');
     this.items = null;
@@ -162,7 +163,7 @@ const toc = {
         this.resolveUpdateTocSectionsPromise = resolve;
       });
     }
-    if (controller.getBootProcess().isFirstRun()) {
+    if (bootProcess.isFirstRun()) {
       mw.hook('wikipage.tableOfContents.vector').add(() => {
         this.resolveUpdateTocSectionsPromise?.();
       });
@@ -201,16 +202,14 @@ const toc = {
 
   /**
    * _For internal use._ Mark sections that the user is subscribed to.
+   *
+   * @param {Promise} [visitsPromise]
    */
-  async markSubscriptions() {
+  async markSubscriptions(visitsPromise) {
     if (!this.isPresent()) return;
 
-    // Ensure the bell icons are added after comment count in `BootProcess#processVisits`.
-    await controller.bootProcess.getVisitsRequest();
-
-    // Should be below awaiting `getVisitsRequest()` so that this runs after `this.addNewComments()`
-    // that awaits this too.
-    await this.updateTocSectionsPromise;
+    // Ensure the bell icons are added after the comment counts in `visits#process`.
+    await Promise.all[visitsPromise, this.updateTocSectionsPromise];
 
     SectionStatic.getAll()
       .filter((section) => section.subscriptionState || this.isInSidebar())
@@ -666,8 +665,9 @@ const toc = {
    * background) to the table of contents.
    *
    * @param {Map} commentsBySection
+   * @param {import('./BootProcess').default} [bootProcess]
    */
-  async addNewComments(commentsBySection) {
+  async addNewComments(commentsBySection, bootProcess) {
     if (!this.canBeModified || !this.isPresent()) return;
 
     await this.updateTocSectionsPromise;
@@ -678,14 +678,14 @@ const toc = {
     const areCommentsRendered = firstComment instanceof Comment;
     if (!this.isInSidebar()) {
       const saveTocHeight = Boolean(
-        controller.getBootProcess().isFirstRun() ||
-
         // When unrendered (in gray) comments are added
         !areCommentsRendered ||
 
+        bootProcess.isFirstRun() ||
+
         // When the comment or section is opened by a link from the TOC
-        controller.getBootProcess().data('commentIds') ||
-        controller.getBootProcess().data('sectionId')
+        bootProcess.data('commentIds') ||
+        bootProcess.data('sectionId')
       );
       controller.saveRelativeScrollPosition({ saveTocHeight });
     }

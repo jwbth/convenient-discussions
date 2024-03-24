@@ -72,7 +72,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
 
     this.pushPending();
 
-    subscriptions.load();
+    this.initPromise = subscriptions.loadLegacy();
 
     this.loadingPanel = new OO.ui.PanelLayout({
       padded: true,
@@ -124,7 +124,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
     return super.getReadyProcess(data).next(async () => {
       let pages;
       try {
-        await subscriptions.getLoadRequest();
+        await this.initPromise;
         pages = await getPageTitles(subscriptions.getPageIds());
       } catch (e) {
         this.handleError(e, 'ewsd-error-processing', false);

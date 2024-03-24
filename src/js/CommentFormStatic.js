@@ -378,7 +378,7 @@ const CommentFormStatic = {
         comment: commentForm.commentInput.getValue(),
         summary: commentForm.summaryInput.getValue(),
       });
-      this.items.splice(this.items.indexOf(commentForm), 1);
+      this.remove(commentForm);
     };
 
     this.items.forEach((commentForm) => {

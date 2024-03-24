@@ -113,8 +113,10 @@ class Parser {
    * disabled DT) in `BootProcess#processTargets`. Unless the elements prove useful to
    * CD or other scripts, it's better to get rid of them rather than deal with them one by one while
    * parsing.
+   *
+   * @param {import('./BootProcess').default} [bootProcess]
    */
-  processAndRemoveDtMarkup() {
+  processAndRemoveDtMarkup(bootProcess) {
     const elements = [...this.context.rootElement.getElementsByTagName('span')]
       .filter((el) => (
         el.hasAttribute('data-mw-comment-start') ||
@@ -123,7 +125,7 @@ class Parser {
       .concat(
         [...this.context.rootElement.getElementsByClassName('ext-discussiontools-init-replylink-buttons')]
       );
-    this.context.handleDtMarkup(elements);
+    this.context.handleDtMarkup(elements, bootProcess);
     this.context.removeDtButtonHtmlComments();
     this.replaceTimestampLinksWithSpans();
   }

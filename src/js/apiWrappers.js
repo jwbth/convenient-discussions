@@ -74,20 +74,6 @@ export function splitIntoBatches(arr) {
   }, []);
 }
 
-
-/**
- * Pack the visits object into a string for further compression.
- *
- * @param {object} visits
- * @returns {string}
- */
-export function packVisits(visits) {
-  return Object.keys(visits)
-    .map((key) => `${key},${visits[key].join(',')}\n`)
-    .join('')
-    .trim();
-}
-
 /**
  * Unpack the visits string into a visits object.
  *
@@ -144,101 +130,6 @@ export function unpackLegacySubscriptions(string) {
 }
 
 /**
- * @typedef {object} GetVisitsReturn
- * @property {object} visits
- * @property {object} currentPageVisits
- */
-
-/**
- * Request the pages visits data from the server.
- *
- * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.user-property-options mw.user.options}
- * is not used even on the first run because the script may not run immediately after the page has
- * loaded. In fact, when the page is loaded in a background tab, it can be throttled until it is
- * focused, so an indefinite amount of time can pass.
- *
- * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
- * @returns {Promise.<GetVisitsReturn>}
- */
-export async function getVisits(reuse = false) {
-  let visits;
-  let currentPageVisits;
-  if (userRegistry.getCurrent().isRegistered()) {
-    visits = await (
-      (
-        mw.user.options.get(cd.g.visitsOptionName) === null &&
-        controller.getBootProcess().isFirstRun()
-      ) ?
-        Promise.resolve({}) :
-        getUserInfo(reuse).then((options) => options.visits)
-    );
-    const articleId = mw.config.get('wgArticleId');
-    visits[articleId] = visits[articleId] || [];
-    currentPageVisits = visits[articleId];
-  } else {
-    visits = [];
-    currentPageVisits = [];
-  }
-
-  Object.assign(cd.tests, { visits, currentPageVisits });
-
-  return { visits, currentPageVisits };
-}
-
-/**
- * Remove the oldest `share`% of visits when the size limit is hit.
- *
- * @param {object} originalVisits
- * @param {number} share
- * @returns {object}
- * @private
- */
-function cleanUpVisits(originalVisits, share = 0.1) {
-  const visits = Object.assign({}, originalVisits);
-  const timestamps = Object.keys(visits)
-    .reduce((acc, key) => acc.concat(visits[key]), [])
-    .sort((a, b) => a - b);
-  const boundary = timestamps[Math.floor(timestamps.length * share)];
-  Object.keys(visits).forEach((key) => {
-    visits[key] = visits[key].filter((visit) => visit >= boundary);
-    if (!visits[key].length) {
-      delete visits[key];
-    }
-  });
-  return visits;
-}
-
-/**
- * Save the pages visits data to the server.
- *
- * @param {object} visits
- */
-export async function saveVisits(visits) {
-  if (!visits || !userRegistry.getCurrent().isRegistered()) return;
-
-  let compressed = lzString.compressToEncodedURIComponent(packVisits(visits));
-  if (compressed.length > 20480) {
-    cleanUpVisits(visits, ((compressed.length - 20480) / compressed.length) + 0.05);
-    compressed = lzString.compressToEncodedURIComponent(packVisits(visits));
-  }
-
-  try {
-    await saveLocalOption(cd.g.visitsOptionName, compressed);
-  } catch (e) {
-    if (e instanceof CdError) {
-      const { type, code } = e.data;
-      if (type === 'internal' && code === 'sizeLimit') {
-        saveVisits(cleanUpVisits(visits, 0.1));
-      } else {
-        console.error(e);
-      }
-    } else {
-      console.error(e);
-    }
-  }
-}
-
-/**
  * Request the legacy subscriptions from the server.
  *
  * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.user-property-options mw.user.options}
@@ -246,13 +137,11 @@ export async function saveVisits(visits) {
  * determining subscriptions.
  *
  * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
+ * @param {import('./BootProcess').default} [bootProcess]
  * @returns {Promise.<object>}
  */
-export function getLegacySubscriptions(reuse = false) {
-  return (
-    controller.getBootProcess()?.isFirstRun() &&
-    mw.user.options.get(cd.g.subscriptionsOptionName) === null
-  ) ?
+export function getLegacySubscriptions(reuse = false, bootProcess) {
+  return bootProcess?.isFirstRun() && mw.user.options.get(cd.g.subscriptionsOptionName) === null ?
     Promise.resolve({}) :
     getUserInfo(reuse).then((options) => options.subscriptions);
 }
@@ -361,17 +250,11 @@ export function getUserInfo(reuse = false) {
   }).then(
     (resp) => {
       const { options, rights } = resp.query.userinfo;
-      const visits = unpackVisits(
-        lzString.decompressFromEncodedURIComponent(options[cd.g.visitsOptionName]) ||
-        ''
-      );
-      const subscriptions = unpackLegacySubscriptions(
-        lzString.decompressFromEncodedURIComponent(options[cd.g.subscriptionsOptionName]) ||
-        ''
-      );
+      const visits = options[cd.g.visitsOptionName];
+      const subscriptions = options[cd.g.subscriptionsOptionName];
       userRegistry.getCurrent().setRights(rights);
 
-      return { options, visits, subscriptions, rights };
+      return { options, visits, subscriptions };
     },
     handleApiReject
   );
@@ -387,14 +270,15 @@ export function getUserInfo(reuse = false) {
  */
 export async function getPageTitles(pageIds) {
   const pages = [];
-
   for (const nextPageIds of splitIntoBatches(pageIds)) {
-    const resp = await controller.getApi().post({
-      action: 'query',
-      pageids: nextPageIds,
-    }).catch(handleApiReject);
-
-    pages.push(...resp.query.pages);
+    pages.push(
+      ...(
+        await controller.getApi().post({
+          action: 'query',
+          pageids: nextPageIds,
+        }).catch(handleApiReject)
+      ).query.pages
+    );
   }
 
   return pages;
@@ -411,13 +295,12 @@ export async function getPageIds(titles) {
   const redirects = [];
   const pages = [];
   for (const nextTitles of splitIntoBatches(titles)) {
-    const resp = await controller.getApi().post({
+    const { query } = await controller.getApi().post({
       action: 'query',
       titles: nextTitles,
       redirects: true,
     }).catch(handleApiReject);
 
-    const query = resp.query;
     normalized.push(...query.normalized || []);
     redirects.push(...query.redirects || []);
     pages.push(...query.pages);

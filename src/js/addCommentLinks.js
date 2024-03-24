@@ -35,16 +35,16 @@ async function initialize() {
   init.globals();
   await settings.init();
 
-  const requests = [];
+  const requests = [...init.getSiteData()];
   if (userRegistry.getCurrent().isRegistered() && !settings.get('useTopicSubscription')) {
     // Loading the subscriptions is not critical, as opposed to messages, so we catch the possible
     // error, not letting it be caught by the try/catch block.
-    subscriptions.load(true).catch((e) => {
-      console.warn('Couldn\'t load the settings from the server.', e);
-    });
-    requests.push(subscriptions.getLoadRequest());
+    requests.push(
+      subscriptions.loadLegacy(true).catch((e) => {
+        console.warn('Couldn\'t load the settings from the server.', e);
+      })
+    );
   }
-  requests.push(...init.getSiteData());
 
   try {
     await Promise.all(requests);
@@ -314,6 +314,8 @@ function processWatchlist($content) {
     if (!settings.get('useTopicSubscription')) {
       $('.mw-rcfilters-ui-filterWrapperWidget-showNewChanges a').on('click', async () => {
         try {
+          // Reload in case the subscription list has changed (which should be a pretty common
+          // occasion)
           await subscriptions.load();
         } catch (e) {
           console.warn('Couldn\'t load the settings from the server.', e);

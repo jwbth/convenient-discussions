@@ -11,62 +11,123 @@ import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
+import userRegistry from './userRegistry';
 import { dtSubscribe, getDtSubscriptions, getLegacySubscriptions, saveLegacySubscriptions } from './apiWrappers';
 import { spacesToUnderlines, unique, wrapHtml } from './utils';
+import { mixinUserOoUiClass, tweakUserOoUiClass } from './ooui';
 
-let subscribeLegacyPromise = Promise.resolve();
+const subscriptions = {
+  subscribeLegacyPromise: Promise.resolve(),
 
-export default {
   /**
    * Request the subscription list from the server and assign them to the `registry` (and
    * `allPagesRegistry` in case of the legacy subscriptions) property.
    *
-   * @param {boolean} [reuse=false] For legacy subscriptions: Reuse the existing request.
+   * @param {import('./BootProcess').default} [bootProcess]
    * @returns {Promise.<object>}
    */
-  load(reuse = false) {
-    this.loadRequest = (async () => {
-      if (settings.get('useTopicSubscription')) {
-        this.pageSubscribeId ||= `p-topics-${cd.g.namespaceNumber}:${spacesToUnderlines(mw.config.get('wgTitle'))}`;
-        this.registry = await getDtSubscriptions(
-          SectionStatic.getAll()
-            .filter((section) => section.subscribeId)
-            .map((section) => section.subscribeId)
-            .filter(unique)
-            .concat(this.pageSubscribeId || [])
-        );
-      } else {
-        this.allPagesRegistry = await getLegacySubscriptions(reuse);
+  async load(bootProcess) {
+    if (!userRegistry.getCurrent().isRegistered() || !settings.get('useTopicSubscription')) return;
 
-        const articleId = mw.config.get('wgArticleId');
-        if (articleId) {
-          this.allPagesRegistry[articleId] = this.allPagesRegistry[articleId] || {};
-          this.registry = this.allPagesRegistry[articleId];
+    if (settings.get('useTopicSubscription')) {
+      const title = spacesToUnderlines(mw.config.get('wgTitle'));
+      this.pageSubscribeId ||= `p-topics-${cd.g.namespaceNumber}:${title}`;
+      this.registry = await getDtSubscriptions(
+        SectionStatic.getAll()
+          .filter((section) => section.subscribeId)
+          .map((section) => section.subscribeId)
+          .filter(unique)
+          .concat(this.pageSubscribeId || [])
+      );
+    }
 
-          const bootProcess = controller.getBootProcess();
-          if (bootProcess) {
-            // Manually add/remove a section that was added/removed at the same moment the page was
-            // reloaded last time, so when we requested the watched sections from server, this
-            // section wasn't there yet most probably.
-            this.updateRegistry(bootProcess.data('justSubscribedToSection'), true);
-            this.updateRegistry(bootProcess.data('justUnsubscribedFromSection'), false);
-            bootProcess.deleteData('justSubscribedToSection');
-            bootProcess.deleteData('justUnsubscribedFromSection');
-          }
-        }
+    this.process(bootProcess);
+  },
+
+  /**
+   * Request the legacy subscription list from the server and assign them to the `registry` and
+   * `allPagesRegistry` properties.
+   *
+   * @param {boolean} [reuse=false] Reuse the existing request.
+   * @param {import('./BootProcess').default} [bootProcess]
+   * @returns {Promise.<object>}
+   */
+  async loadLegacy(reuse = false, bootProcess) {
+    if (!userRegistry.getCurrent().isRegistered() || settings.get('useTopicSubscription')) return;
+
+    this.allPagesRegistry = await getLegacySubscriptions(reuse, bootProcess);
+
+    const articleId = mw.config.get('wgArticleId');
+    if (articleId) {
+      this.allPagesRegistry[articleId] = this.allPagesRegistry[articleId] || {};
+      this.registry = this.allPagesRegistry[articleId];
+
+      if (bootProcess) {
+        // Manually add/remove a section that was added/removed at the same moment the page was
+        // reloaded last time, so when we requested the watched sections from server, this
+        // section wasn't there yet most probably.
+        this.updateRegistry(bootProcess.data('justSubscribedToSection'), true);
+        this.updateRegistry(bootProcess.data('justUnsubscribedFromSection'), false);
+        bootProcess.deleteData('justSubscribedToSection');
+        bootProcess.deleteData('justUnsubscribedFromSection');
       }
-    })();
+    }
 
-    return this.loadRequest;
+    this.process(bootProcess);
   },
 
   /**
    * Get the request made in {@link subscriptions.load}.
    *
-   * @returns {Promise.<undefined>}
+   * @param {import('./BootProcess').default} [bootProcess]
    */
-  getLoadRequest() {
-    return this.loadRequest;
+  process(bootProcess) {
+    // FIXME: decouple
+
+    if (controller.isTalkPage()) {
+      if (controller.doesPageExist()) {
+        SectionStatic.addSubscribeButtons();
+        this.cleanUp();
+      }
+      if (bootProcess.isFirstRun()) {
+        this.addPageSubscribeButton();
+      }
+    }
+  },
+
+  /**
+   * Add a page subscribe button (link) to the page actions menu.
+   *
+   * @private
+   */
+  async addPageSubscribeButton() {
+    if (!settings.get('useTopicSubscription')) return;
+
+    this.pageSubscribeButton = new Button({
+      element: mw.util.addPortletLink(
+        'p-cactions',
+        mw.util.getUrl(cd.g.pageName, {
+          action: this.getState(this.pageSubscribeId) ? 'dtunsubscribe' : 'dtsubscribe',
+          commentname: this.pageSubscribeId,
+        }),
+        '',
+        'ca-cd-page-subscribe'
+      )?.firstElementChild,
+      action: async () => {
+        this.pageSubscribeButton.setPending(true);
+        try {
+          await this[this.getState(this.pageSubscribeId) ? 'unsubscribe' : 'subscribe'](
+            this.pageSubscribeId,
+            null
+          );
+          this.updatePageSubscribeButton();
+        } finally {
+          this.pageSubscribeButton.setPending(false);
+        }
+      },
+    });
+    this.updatePageSubscribeButton();
+    this.onboardOntoPageSubscription();
   },
 
   /**
@@ -76,17 +137,6 @@ export default {
    */
   areLoaded() {
     return Boolean(this.registry || this.allPagesRegistry);
-  },
-
-  /**
-   * Save the subscription list to the server as a user option.
-   *
-   * @param {object} registry
-   */
-  async saveLegacy(registry) {
-    if (settings.get('useTopicSubscription')) return;
-
-    await saveLegacySubscriptions(registry || this.allPagesRegistry);
   },
 
   /**
@@ -100,13 +150,81 @@ export default {
   updateRegistry(subscribeId, subscribe) {
     if (subscribeId === undefined) return;
 
-    // `this.registry` can be not set on just created pages with DT subscriptions enabled.
+    // `this.registry` can be not set on newly created pages with DT subscriptions enabled.
     this.registry ||= {};
 
     this.registry[subscribeId] = Boolean(subscribe);
 
     if (!subscribe && !settings.get('useTopicSubscription')) {
       delete this.registry[subscribeId];
+    }
+  },
+
+  /**
+   * Subscribe to a section.
+   *
+   * @param {string} subscribeId Section's DiscussionTools ID.
+   * @param {string} id Section's ID.
+   * @param {string} [unsubscribeHeadline] Headline of a section to unsubscribe from (at the same
+   * time).
+   * @param {boolean} [quiet=false] Don't show a success notification.
+   */
+  async subscribe(subscribeId, id, unsubscribeHeadline, quiet = false) {
+    await (
+      settings.get('useTopicSubscription') ?
+        this.dtSubscribe(subscribeId, id, true) :
+        this.subscribeLegacy(subscribeId, unsubscribeHeadline)
+    );
+
+    if (!quiet) {
+      const title = subscribeId.startsWith('p-') ?
+        cd.mws('discussiontools-newtopicssubscription-notify-subscribed-title') :
+        cd.mws('discussiontools-topicsubscription-notify-subscribed-title');
+      let body = subscribeId.startsWith('p-') ?
+        cd.mws('discussiontools-newtopicssubscription-notify-subscribed-body') :
+        cd.mws('discussiontools-topicsubscription-notify-subscribed-body');
+      let autoHideSeconds;
+      if (!settings.get('useTopicSubscription')) {
+        body += ' ' + cd.sParse('section-watch-openpages');
+        if ($('#ca-watch').length) {
+          body += ' ' + cd.sParse('section-watch-pagenotwatched');
+          autoHideSeconds = 'long';
+        }
+      }
+      mw.notify(wrapHtml(body), { title, autoHideSeconds });
+    }
+  },
+
+  /**
+   * Unsubscribe from a section.
+   *
+   * @param {string} subscribeId Section's DiscussionTools ID.
+   * @param {string} id Section's ID.
+   * @param {boolean} [quiet=false] Don't show a success notification.
+   * @param {import('./Section').default} [section] Section being unsubscribed from, if any, for
+   *   legacy subscriptions.
+   */
+  async unsubscribe(subscribeId, id, quiet = false, section) {
+    await (
+      settings.get('useTopicSubscription') ?
+        this.dtSubscribe(subscribeId, id, false) :
+        this.unsubscribeLegacy(subscribeId)
+    );
+
+    const ancestorSubscribedTo = section?.getClosestSectionSubscribedTo();
+    if (!quiet || ancestorSubscribedTo) {
+      const title = subscribeId.startsWith('p-') ?
+        cd.mws('discussiontools-newtopicssubscription-notify-unsubscribed-title') :
+        cd.mws('discussiontools-topicsubscription-notify-unsubscribed-title');
+      let body = subscribeId.startsWith('p-') ?
+        cd.mws('discussiontools-newtopicssubscription-notify-unsubscribed-body') :
+        cd.mws('discussiontools-topicsubscription-notify-unsubscribed-body');
+      let autoHideSeconds;
+      if (ancestorSubscribedTo) {
+        body += ' ' + cd.sParse('section-unwatch-stillwatched', ancestorSubscribedTo.headline);
+        autoHideSeconds = 'long';
+      }
+      mw.notify(wrapHtml(body), { title, autoHideSeconds });
     }
   },
 
@@ -188,9 +306,9 @@ export default {
     };
 
     // Don't run in parallel
-    subscribeLegacyPromise = subscribeLegacyPromise.then(subscribe, subscribe);
+    this.subscribeLegacyPromise = this.subscribeLegacyPromise.then(subscribe, subscribe);
 
-    return subscribeLegacyPromise;
+    return this.subscribeLegacyPromise;
   },
 
   /**
@@ -223,77 +341,20 @@ export default {
     };
 
     // Don't run in parallel
-    subscribeLegacyPromise = subscribeLegacyPromise.then(unsubscribe, unsubscribe);
+    this.subscribeLegacyPromise = this.subscribeLegacyPromise.then(unsubscribe, unsubscribe);
 
-    return subscribeLegacyPromise;
+    return this.subscribeLegacyPromise;
   },
 
   /**
-   * Subscribe to a section.
+   * Save the subscription list to the server as a user option.
    *
-   * @param {string} subscribeId Section's DiscussionTools ID.
-   * @param {string} id Section's ID.
-   * @param {string} [unsubscribeHeadline] Headline of a section to unsubscribe from (at the same
-   * time).
-   * @param {boolean} [quiet=false] Don't show a success notification.
+   * @param {object} registry
    */
-  async subscribe(subscribeId, id, unsubscribeHeadline, quiet = false) {
-    await (
-      settings.get('useTopicSubscription') ?
-        this.dtSubscribe(subscribeId, id, true) :
-        this.subscribeLegacy(subscribeId, unsubscribeHeadline)
-    );
+  async saveLegacy(registry) {
+    if (settings.get('useTopicSubscription')) return;
 
-    if (!quiet) {
-      const title = subscribeId.startsWith('p-') ?
-        cd.mws('discussiontools-newtopicssubscription-notify-subscribed-title') :
-        cd.mws('discussiontools-topicsubscription-notify-subscribed-title');
-      let body = subscribeId.startsWith('p-') ?
-        cd.mws('discussiontools-newtopicssubscription-notify-subscribed-body') :
-        cd.mws('discussiontools-topicsubscription-notify-subscribed-body');
-      let autoHideSeconds;
-      if (!settings.get('useTopicSubscription')) {
-        body += ' ' + cd.sParse('section-watch-openpages');
-        if ($('#ca-watch').length) {
-          body += ' ' + cd.sParse('section-watch-pagenotwatched');
-          autoHideSeconds = 'long';
-        }
-      }
-      mw.notify(wrapHtml(body), { title, autoHideSeconds });
-    }
-  },
-
-  /**
-   * Unsubscribe from a section.
-   *
-   * @param {string} subscribeId Section's DiscussionTools ID.
-   * @param {string} id Section's ID.
-   * @param {boolean} [quiet=false] Don't show a success notification.
-   * @param {import('./Section').default} [section] Section being unsubscribed from, if any, for
-   *   legacy subscriptions.
-   */
-  async unsubscribe(subscribeId, id, quiet = false, section) {
-    await (
-      settings.get('useTopicSubscription') ?
-        this.dtSubscribe(subscribeId, id, false) :
-        this.unsubscribeLegacy(subscribeId)
-    );
-
-    const ancestorSubscribedTo = section?.getClosestSectionSubscribedTo();
-    if (!quiet || ancestorSubscribedTo) {
-      const title = subscribeId.startsWith('p-') ?
-        cd.mws('discussiontools-newtopicssubscription-notify-unsubscribed-title') :
-        cd.mws('discussiontools-topicsubscription-notify-unsubscribed-title');
-      let body = subscribeId.startsWith('p-') ?
-        cd.mws('discussiontools-newtopicssubscription-notify-unsubscribed-body') :
-        cd.mws('discussiontools-topicsubscription-notify-unsubscribed-body');
-      let autoHideSeconds;
-      if (ancestorSubscribedTo) {
-        body += ' ' + cd.sParse('section-unwatch-stillwatched', ancestorSubscribedTo.headline);
-        autoHideSeconds = 'long';
-      }
-      mw.notify(wrapHtml(body), { title, autoHideSeconds });
-    }
+    await saveLegacySubscriptions(registry || this.allPagesRegistry);
   },
 
   /**
@@ -362,8 +423,10 @@ export default {
   },
 
   /**
-   * _For internal use._ Remove sections that can't be found on the page anymore from the
-   * legacy subscription list and save it to the server.
+   * Remove sections that can't be found on the page anymore from the legacy subscription list and
+   * save it to the server.
+   *
+   * @private
    */
   cleanUp() {
     if (settings.get('useTopicSubscription')) return;
@@ -394,39 +457,6 @@ export default {
    */
   itemsToKeys(arr) {
     return Object.assign({}, ...arr.map((page) => ({ [page]: true })));
-  },
-
-  /**
-   * _For internal use._ Add a page subscribe button (link) to the page actions menu.
-   */
-  async addPageSubscribeButton() {
-    if (!settings.get('useTopicSubscription')) return;
-
-    this.pageSubscribeButton = new Button({
-      element: mw.util.addPortletLink(
-        'p-cactions',
-        mw.util.getUrl(cd.g.pageName, {
-          action: this.getState(this.pageSubscribeId) ? 'dtunsubscribe' : 'dtsubscribe',
-          commentname: this.pageSubscribeId,
-        }),
-        '',
-        'ca-cd-page-subscribe'
-      )?.firstElementChild,
-      action: async () => {
-        this.pageSubscribeButton.setPending(true);
-        try {
-          await this[this.getState(this.pageSubscribeId) ? 'unsubscribe' : 'subscribe'](
-            this.pageSubscribeId,
-            null
-          );
-          this.updatePageSubscribeButton();
-        } finally {
-          this.pageSubscribeButton.setPending(false);
-        }
-      },
-    });
-    this.updatePageSubscribeButton();
-    this.onboardOntoPageSubscription();
   },
 
   /**
@@ -504,3 +534,5 @@ export default {
       );
   },
 };
+
+export default subscriptions;

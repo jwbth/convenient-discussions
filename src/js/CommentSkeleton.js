@@ -210,9 +210,6 @@ class CommentSkeleton {
     }
     const farthestInlineAncestor = treeWalker.currentNode;
 
-    const parts = [];
-    let firstForeignComponentAfter;
-
     /*
       The code:
 
@@ -231,6 +228,7 @@ class CommentSkeleton {
       acknowledge there is a foreign not inline element here to be able to tell comment boundaries
       accurately (inline elements in most cases are continuations of the same comment).
     */
+    let firstForeignComponentAfter;
     while (!firstForeignComponentAfter) {
       while (
         (
@@ -247,6 +245,7 @@ class CommentSkeleton {
 
     // As an optimization, avoid adding every text node of the comment to the array of its parts if
     // possible. Add their common container instead.
+    const parts = [];
     if (
       (
         firstForeignComponentAfter &&
