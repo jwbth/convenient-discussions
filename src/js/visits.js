@@ -25,13 +25,13 @@ export default {
   async get(reuse = false, bootProcess) {
     if (!userRegistry.getCurrent().isRegistered()) return;
 
-    if (mw.user.options.get(cd.g.visitsOptionName) !== null || !bootProcess.isFirstRun()) {
-      try {
-        this.unpack(await getUserInfo(reuse).then((options) => options.visits));
-      } catch (e) {
-        console.warn('Couldn\'t load the settings from the server.', e);
-        return;
-      }
+    try {
+      this.data = mw.user.options.get(cd.g.visitsOptionName) !== null || !bootProcess.isFirstRun() ?
+        this.unpack(await getUserInfo(reuse).then(({ visits }) => visits)) :
+        {};
+    } catch (e) {
+      console.warn('Couldn\'t load the settings from the server.', e);
+      return;
     }
 
     const articleId = mw.config.get('wgArticleId');
@@ -172,6 +172,12 @@ export default {
       .trim();
   },
 
+  /**
+   * Unpack the visits string into a visits object.
+   *
+   * @param {string} visitsString
+   * @returns {object}
+   */
   unpack(compressed) {
     const string = LZString.decompressFromEncodedURIComponent(compressed);
     const visits = {};
@@ -180,7 +186,7 @@ export default {
     while ((match = regexp.exec(string))) {
       visits[match[1]] = match[2].split(',');
     }
-    this.data = visits;
+    return visits;
   },
 
   /**

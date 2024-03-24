@@ -6,14 +6,10 @@
  * @module apiWrappers
  */
 
-import lzString from 'lz-string';
-
 import CdError from './CdError';
 import TextMasker from './TextMasker';
 import cd from './cd';
 import controller from './controller';
-import pageRegistry from './pageRegistry';
-import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
 import { brsToNewlines } from './wikitext';
 import { unique } from './utils';
@@ -89,75 +85,6 @@ export function unpackVisits(visitsString) {
   }
   return visits;
 }
-
-/**
- * Pack the legacy subscriptions object into a string for further compression.
- *
- * @param {object} registry
- * @returns {string}
- */
-export function packLegacySubscriptions(registry) {
-  return Object.keys(registry)
-    .filter((pageId) => Object.keys(registry[pageId]).length)
-    .map((key) => ` ${key} ${Object.keys(registry[key]).join('\n')}\n`)
-    .join('')
-    .trim();
-}
-
-/**
- * Unpack the legacy subscriptions string into a visits object.
- *
- * @param {string} string
- * @returns {object}
- */
-export function unpackLegacySubscriptions(string) {
-  const registry = {};
-  const pages = string.split(/(?:^|\n )(\d+) /).slice(1);
-  let pageId;
-  for (
-    let i = 0, isPageId = true;
-    i < pages.length;
-    i++, isPageId = !isPageId
-  ) {
-    if (isPageId) {
-      pageId = pages[i];
-    } else {
-      const pagesArr = pages[i].split('\n');
-      registry[pageId] = subscriptions.itemsToKeys(pagesArr);
-    }
-  }
-  return registry;
-}
-
-/**
- * Request the legacy subscriptions from the server.
- *
- * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.user-property-options mw.user.options}
- * is not used even on first run because it appears to be cached sometimes which can be critical for
- * determining subscriptions.
- *
- * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
- * @param {import('./BootProcess').default} [bootProcess]
- * @returns {Promise.<object>}
- */
-export function getLegacySubscriptions(reuse = false, bootProcess) {
-  return bootProcess?.isFirstRun() && mw.user.options.get(cd.g.subscriptionsOptionName) === null ?
-    Promise.resolve({}) :
-    getUserInfo(reuse).then((options) => options.subscriptions);
-}
-
-/**
- * Save the legacy subscriptions to the server.
- *
- * @param {Promise.<object>} registry
- */
-export async function saveLegacySubscriptions(registry) {
-  await saveLocalOption(
-    cd.g.subscriptionsOptionName,
-    lzString.compressToEncodedURIComponent(packLegacySubscriptions(registry))
-  );
-}
-
 
 /**
  * Make a request that won't set the process on hold when the tab is in the background.
@@ -479,43 +406,6 @@ export async function getPagesExistence(titles) {
   });
 
   return results;
-}
-
-/**
- * Get a list of DiscussionTools subscriptions for a list of section IDs from the server.
- *
- * @param {string[]} ids List of section IDs.
- * @returns {Promise.<object>}
- */
-export async function getDtSubscriptions(ids) {
-  const subscriptions = {};
-  for (const nextIds of splitIntoBatches(ids)) {
-    Object.assign(
-      subscriptions,
-      (await controller.getApi().post({
-        action: 'discussiontoolsgetsubscriptions',
-        commentname: nextIds,
-      }).catch(handleApiReject)).subscriptions
-    );
-  }
-  return subscriptions;
-}
-
-/**
- * Send a request to subscribe to or unsubscribe from a topic in DisussionTools.
- *
- * @param {string} subscribeId Section's DiscussionTools ID.
- * @param {string} id Section's ID.
- * @param {boolean} subscribe Subscribe or unsubscribe.
- * @returns {Promise.<object>}
- */
-export function dtSubscribe(subscribeId, id, subscribe) {
-  return controller.getApi().postWithEditToken({
-    action: 'discussiontoolssubscribe',
-    page: pageRegistry.getCurrent().name + (id ? `#${id}` : ''),
-    commentname: subscribeId,
-    subscribe,
-  }).catch(handleApiReject);
 }
 
 /**

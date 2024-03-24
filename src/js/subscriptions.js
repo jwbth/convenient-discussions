@@ -1,27 +1,28 @@
 /**
- * Singleton related to the subscriptions feature, including the DisussionTools' topic subscription
- * and CD's legacy section watching.
+ * Singleton related to the subscriptions feature, including DisussionTools' topic subscription and
+ * CD's legacy section watching.
  *
  * @module subscriptions
  */
 
 import Button from './Button';
 import CdError from './CdError';
+import LZString from 'lz-string';
 import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
+import pageRegistry from './pageRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
-import { dtSubscribe, getDtSubscriptions, getLegacySubscriptions, saveLegacySubscriptions } from './apiWrappers';
+import { getUserInfo, handleApiReject, saveLocalOption, splitIntoBatches } from './apiWrappers';
 import { spacesToUnderlines, unique, wrapHtml } from './utils';
-import { mixinUserOoUiClass, tweakUserOoUiClass } from './ooui';
 
 const subscriptions = {
   subscribeLegacyPromise: Promise.resolve(),
 
   /**
-   * Request the subscription list from the server and assign them to the `registry` (and
-   * `allPagesRegistry` in case of the legacy subscriptions) property.
+   * Request the subscription list from the server and assign them to the `data` (and
+   * `allPagesData` in case of the legacy subscriptions) property.
    *
    * @param {import('./BootProcess').default} [bootProcess]
    * @returns {Promise.<object>}
@@ -32,7 +33,7 @@ const subscriptions = {
     if (settings.get('useTopicSubscription')) {
       const title = spacesToUnderlines(mw.config.get('wgTitle'));
       this.pageSubscribeId ||= `p-topics-${cd.g.namespaceNumber}:${title}`;
-      this.registry = await getDtSubscriptions(
+      this.data = await this.getDtSubscriptions(
         SectionStatic.getAll()
           .filter((section) => section.subscribeId)
           .map((section) => section.subscribeId)
@@ -45,8 +46,28 @@ const subscriptions = {
   },
 
   /**
-   * Request the legacy subscription list from the server and assign them to the `registry` and
-   * `allPagesRegistry` properties.
+   * Get a list of DiscussionTools subscriptions for a list of section IDs from the server.
+   *
+   * @param {string[]} ids List of section IDs.
+   * @returns {Promise.<object>}
+   */
+  async getDtSubscriptions(ids) {
+    const subscriptions = {};
+    for (const nextIds of splitIntoBatches(ids)) {
+      Object.assign(
+        subscriptions,
+        (await controller.getApi().post({
+          action: 'discussiontoolsgetsubscriptions',
+          commentname: nextIds,
+        }).catch(handleApiReject)).subscriptions
+      );
+    }
+    return subscriptions;
+  },
+
+  /**
+   * Request the legacy subscription list from the server and assign them to the `data` and
+   * `allPagesData` properties.
    *
    * @param {boolean} [reuse=false] Reuse the existing request.
    * @param {import('./BootProcess').default} [bootProcess]
@@ -55,19 +76,26 @@ const subscriptions = {
   async loadLegacy(reuse = false, bootProcess) {
     if (!userRegistry.getCurrent().isRegistered() || settings.get('useTopicSubscription')) return;
 
-    this.allPagesRegistry = await getLegacySubscriptions(reuse, bootProcess);
+    // `mw.user.options` is not used even on first run because it appears to be cached sometimes
+    // which can be critical for determining subscriptions.
+    this.allPagesData = (
+      mw.user.options.get(cd.g.subscriptionsOptionName) !== null ||
+      !bootProcess?.isFirstRun()
+    ) ?
+      this.unpackLegacy(await getUserInfo(reuse).then(({ subscriptions }) => subscriptions)) :
+      {};
 
     const articleId = mw.config.get('wgArticleId');
     if (articleId) {
-      this.allPagesRegistry[articleId] = this.allPagesRegistry[articleId] || {};
-      this.registry = this.allPagesRegistry[articleId];
+      this.allPagesData[articleId] ||= {};
+      this.data = this.allPagesData[articleId];
 
       if (bootProcess) {
         // Manually add/remove a section that was added/removed at the same moment the page was
         // reloaded last time, so when we requested the watched sections from server, this
         // section wasn't there yet most probably.
-        this.updateRegistry(bootProcess.data('justSubscribedToSection'), true);
-        this.updateRegistry(bootProcess.data('justUnsubscribedFromSection'), false);
+        this.updateData(bootProcess.data('justSubscribedToSection'), true);
+        this.updateData(bootProcess.data('justUnsubscribedFromSection'), false);
         bootProcess.deleteData('justSubscribedToSection');
         bootProcess.deleteData('justUnsubscribedFromSection');
       }
@@ -77,7 +105,7 @@ const subscriptions = {
   },
 
   /**
-   * Get the request made in {@link subscriptions.load}.
+   * Get the request made in {@link .load}.
    *
    * @param {import('./BootProcess').default} [bootProcess]
    */
@@ -87,7 +115,7 @@ const subscriptions = {
     if (controller.isTalkPage()) {
       if (controller.doesPageExist()) {
         SectionStatic.addSubscribeButtons();
-        this.cleanUp();
+        this.cleanUpLegacy();
       }
       if (bootProcess.isFirstRun()) {
         this.addPageSubscribeButton();
@@ -136,7 +164,7 @@ const subscriptions = {
    * @returns {boolean}
    */
   areLoaded() {
-    return Boolean(this.registry || this.allPagesRegistry);
+    return Boolean(this.data || this.allPagesData);
   },
 
   /**
@@ -147,16 +175,16 @@ const subscriptions = {
    * @param {boolean} subscribe Subscribe or unsubscribe.
    * @private
    */
-  updateRegistry(subscribeId, subscribe) {
+  updateData(subscribeId, subscribe) {
     if (subscribeId === undefined) return;
 
-    // `this.registry` can be not set on newly created pages with DT subscriptions enabled.
-    this.registry ||= {};
+    // `this.data` can be not set on newly created pages with DT subscriptions enabled.
+    this.data ||= {};
 
-    this.registry[subscribeId] = Boolean(subscribe);
+    this.data[subscribeId] = Boolean(subscribe);
 
     if (!subscribe && !settings.get('useTopicSubscription')) {
-      delete this.registry[subscribeId];
+      delete this.data[subscribeId];
     }
   },
 
@@ -243,13 +271,18 @@ const subscriptions = {
     }
 
     try {
-      await dtSubscribe(subscribeId, id, subscribe);
+      await controller.getApi().postWithEditToken({
+        action: 'discussiontoolssubscribe',
+        page: pageRegistry.getCurrent().name + (id ? `#${id}` : ''),
+        commentname: subscribeId,
+        subscribe,
+      }).catch(handleApiReject);
     } catch (e) {
       mw.notify(cd.s('error-settings-save'), { type: 'error' });
       throw e;
     }
 
-    this.updateRegistry(subscribeId, subscribe);
+    this.updateData(subscribeId, subscribe);
   },
 
   /**
@@ -271,15 +304,15 @@ const subscriptions = {
         throw e;
       }
 
-      // We save the full subscription list, so we need to update the registry first.
-      const backupRegistry = Object.assign({}, this.registry);
-      this.updateRegistry(headline, true);
-      this.updateRegistry(unsubscribeHeadline, false);
+      // We save the full subscription list, so we need to update the data first.
+      const dataBackup = Object.assign({}, this.data);
+      this.updateData(headline, true);
+      this.updateData(unsubscribeHeadline, false);
 
       try {
         await this.saveLegacy();
       } catch (e) {
-        this.registry = backupRegistry;
+        this.data = dataBackup;
         if (e instanceof CdError) {
           const { type, code } = e.data;
           if (type === 'internal' && code === 'sizeLimit') {
@@ -328,13 +361,13 @@ const subscriptions = {
         throw e;
       }
 
-      const backupRegistry = Object.assign({}, this.registry);
-      this.updateRegistry(headline, false);
+      const dataBackup = Object.assign({}, this.data);
+      this.updateData(headline, false);
 
       try {
         await this.saveLegacy();
       } catch (e) {
-        this.registry = backupRegistry;
+        this.data = dataBackup;
         mw.notify(cd.s('error-settings-save'), { type: 'error' });
         throw e;
       }
@@ -349,16 +382,61 @@ const subscriptions = {
   /**
    * Save the subscription list to the server as a user option.
    *
-   * @param {object} registry
+   * @param {object} data
    */
-  async saveLegacy(registry) {
+  async saveLegacy(data) {
     if (settings.get('useTopicSubscription')) return;
 
-    await saveLegacySubscriptions(registry || this.allPagesRegistry);
+    await saveLocalOption(
+      cd.g.subscriptionsOptionName,
+      LZString.compressToEncodedURIComponent(
+        this.packLegacy(data || this.allPagesData)
+      )
+    );
   },
 
   /**
-   * For legacy subscriptions: Get the IDs of the pages that have subscriptions.
+   * Pack the legacy subscriptions object into a string for further compression.
+   *
+   * @param {object} data
+   * @returns {string}
+   */
+  packLegacy(data) {
+    return Object.keys(data)
+      .filter((pageId) => Object.keys(data[pageId]).length)
+      .map((key) => ` ${key} ${Object.keys(data[key]).join('\n')}\n`)
+      .join('')
+      .trim();
+  },
+
+  /**
+   * Unpack a legacy subscriptions string into an object.
+   *
+   * @param {string} string
+   * @returns {object}
+   */
+  unpackLegacy(string) {
+    const data = {};
+    const pages = string.split(/(?:^|\n )(\d+) /).slice(1);
+    let pageId;
+    for (
+      let i = 0, isPageId = true;
+      i < pages.length;
+      i++, isPageId = !isPageId
+    ) {
+      if (isPageId) {
+        pageId = pages[i];
+      } else {
+        const pagesArr = pages[i].split('\n');
+        data[pageId] = this.itemsToKeys(pagesArr);
+      }
+    }
+
+    return data;
+  },
+
+  /**
+   * For legacy subscriptions: Get the IDs of pages that have subscriptions.
    *
    * @returns {number[]}
    */
@@ -367,7 +445,7 @@ const subscriptions = {
       return null;
     }
 
-    return Object.keys(this.allPagesRegistry);
+    return Object.keys(this.allPagesData);
   },
 
   /**
@@ -381,7 +459,7 @@ const subscriptions = {
       return null;
     }
 
-    return Object.keys(this.allPagesRegistry[pageId] || {});
+    return Object.keys(this.allPagesData[pageId] || {});
   },
 
   /**
@@ -405,15 +483,15 @@ const subscriptions = {
       throw new CdError();
     }
 
-    if (this.registry[subscribeId] === undefined) {
+    if (this.data[subscribeId] === undefined) {
       return null;
     }
 
-    return this.registry[subscribeId];
+    return this.data[subscribeId];
   },
 
   /**
-   * Check whether the user was subscribed to a section
+   * Check whether the user was subscribed to a section when the page was loaded.
    *
    * @param {string} headline Headline.
    * @returns {boolean}
@@ -428,18 +506,18 @@ const subscriptions = {
    *
    * @private
    */
-  cleanUp() {
+  cleanUpLegacy() {
     if (settings.get('useTopicSubscription')) return;
 
-    this.originalList = Object.keys(this.registry);
+    this.originalList = Object.keys(this.data);
 
     let updated = false;
-    Object.keys(this.registry)
+    Object.keys(this.data)
       .filter((headline) => (
         SectionStatic.getAll().every((section) => section.headline !== headline)
       ))
       .forEach((headline) => {
-        delete this.registry[headline];
+        delete this.data[headline];
         updated = true;
       });
 
@@ -449,8 +527,8 @@ const subscriptions = {
   },
 
   /**
-   * _For internal use._ Convert subscription list to the standard format, with section IDs as keys
-   * instead of array elements, to keep it in the registry.
+   * _For internal use._ Convert the subscription list to the standard format, with section IDs as
+   * keys instead of array elements, to store it.
    *
    * @param {string[]} arr Array of section IDs.
    * @returns {object[]}
@@ -534,5 +612,8 @@ const subscriptions = {
       );
   },
 };
+
+// tweakUserOoUiClass();
+// mixinUserOoUiClass();
 
 export default subscriptions;

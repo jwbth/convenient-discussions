@@ -26,8 +26,6 @@ import { handleApiReject, parseCode } from './apiWrappers';
 
 const allowedFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'];
 
-let commentFormsCounter = 0;
-
 /**
  * Extract IDs from comment links in the code.
  *
@@ -127,7 +125,7 @@ class CommentForm {
      * @type {number}
      * @private
      */
-    this.index = commentFormsCounter++;
+    this.index = this.constructor.counter++;
 
     /**
      * Has the comment form been {@link CommentForm#teardown torndown}.
@@ -4057,6 +4055,8 @@ class CommentForm {
       settings.saveSettingOnTheFly('upload-onboarded', true);
     });
   }
+
+  static counter = 0;
 }
 
 export default CommentForm;
