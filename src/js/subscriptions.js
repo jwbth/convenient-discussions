@@ -1,19 +1,20 @@
+import CdError from './CdError';
+import cd from './cd';
+import settings from './settings';
+import { wrapHtml } from './utils';
+
 /**
- * Singleton implementing the subscriptions feature. It is extended by
+ * Implementation of the subscriptions feature in general terms. It is extended by
  * {@link DtSubscriptions DisussionTools' topic subscription} and
  * {@link LegacySubscriptions CD's legacy section watching}.
  *
  * @module subscriptions
  */
-
-import CdError from './CdError';
-import SectionStatic from './SectionStatic';
-import cd from './cd';
-import controller from './controller';
-import settings from './settings';
-import { wrapHtml } from './utils';
-
 export default class Subscriptions {
+  /**
+   * Create a subscriptions instance. It is supposed to be used as a singleton returned by
+   * {@link controller.getSubscriptionsInstance}.
+   */
   constructor() {
     // Do it in the constructor because `OO.EventEmitter` can be unavailable on script load.
     OO.mixinClass(Subscriptions, OO.EventEmitter);
@@ -23,24 +24,25 @@ export default class Subscriptions {
   }
 
   /**
-   * Get the request made in {@link .load}.
+   * Do everything {@link .load} does and also perform manipulations with the talk page.
    *
    * @param {import('./BootProcess').default} [bootProcess]
+   * @param {Promise} [visitsPromise]
+   * @param {...*} [args]
+   */
+  async loadToTalkPage(bootProcess, visitsPromise, ...args) {
+    await this.load(bootProcess, ...args);
+
+    this.process(bootProcess, visitsPromise);
+  }
+
+  /**
+   * Process subscriptions when they are {@link .loadToTalkPage loaded to a talk page}.
    *
+   * @param {import('./BootProcess').default} [bootProcess]
    * @param {Promise} [visitsPromise]
    */
   process(bootProcess, visitsPromise) {
-    // FIXME: decouple
-
-    if (controller.isTalkPage()) {
-      if (controller.doesPageExist()) {
-        SectionStatic.addSubscribeButtons();
-      }
-      if (bootProcess.isFirstRun()) {
-        this.addPageSubscribeButton();
-      }
-    }
-
     this.emit('processed', visitsPromise);
   }
 
@@ -52,7 +54,7 @@ export default class Subscriptions {
    * @param {boolean} subscribe Subscribe or unsubscribe.
    * @protected
    */
-  updateData(subscribeId, subscribe) {
+  updateLocally(subscribeId, subscribe) {
     if (subscribeId === undefined) return;
 
     // `this.data` can be not set on newly created pages with DT subscriptions enabled.
@@ -172,6 +174,11 @@ export default class Subscriptions {
     return Object.assign({}, ...arr.map((page) => ({ [page]: true })));
   }
 
+  /**
+   * Get the subscriptions type. In practice, returns `'dt'` or `'legacy'` based on the used class.
+   *
+   * @returns {string}
+   */
   getType() {
     return this.type;
   }

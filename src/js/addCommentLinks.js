@@ -5,6 +5,7 @@
  */
 
 import CommentStatic from './CommentStatic';
+import PrototypeRegistry from './PrototypeRegistry';
 import cd from './cd';
 import controller from './controller';
 import init from './init';
@@ -20,10 +21,10 @@ let moveToBeginning;
 let goToCommentToYou;
 let goToCommentWatchedSection;
 let currentUserRegexp;
-let wrapperRegularPrototype;
-let wrapperRelevantPrototype;
 let switchRelevantButton;
 let subscriptions;
+
+const prototypes = new PrototypeRegistry();
 
 /**
  * Initialize variables.
@@ -35,14 +36,13 @@ async function initialize() {
   init.globals();
   await settings.init();
 
-  subscriptions = controller.getSubscriptionsInstance();
-
   const requests = [...init.getSiteData()];
   if (userRegistry.getCurrent().isRegistered() && !settings.get('useTopicSubscription')) {
     // Loading the subscriptions is not critical, as opposed to messages, so we catch the possible
     // error, not letting it be caught by the try/catch block.
+    subscriptions = controller.getSubscriptionsInstance();
     requests.push(
-      subscriptions.load(true).catch((e) => {
+      subscriptions.load(undefined, undefined, true).catch((e) => {
         console.warn('Couldn\'t load the settings from the server.', e);
       })
     );
@@ -77,11 +77,13 @@ async function initialize() {
     .addClass('cd-commentLink')
     .append($spanRegularPrototype)
     .prepend(' ');
-  wrapperRegularPrototype = $wrapperRegularPrototype.get(0);
-  wrapperRelevantPrototype = $wrapperRegularPrototype
-    .clone()
-    .addClass('cd-commentLink-relevant')
-    .get(0);
+  prototypes.add('wrapperRegular', $wrapperRegularPrototype.get(0));
+  prototypes.add('wrapperRelevant',
+    $wrapperRegularPrototype
+      .clone()
+      .addClass('cd-commentLink-relevant')
+      .get(0)
+  );
 
   const currentUserNamePattern = generatePageNamePattern(cd.g.userName);
   currentUserRegexp = new RegExp(
@@ -150,7 +152,7 @@ function switchRelevant() {
  * @private
  */
 function addWatchlistMenu() {
-  if (settings.get('useTopicSubscription')) return;
+  if (!subscriptions) return;
 
   // For auto-updating watchlists
   mw.hook('wikipage.content').add(() => {
@@ -313,7 +315,7 @@ function processWatchlist($content) {
       });
     }
 
-    if (!settings.get('useTopicSubscription')) {
+    if (subscriptions) {
       $('.mw-rcfilters-ui-filterWrapperWidget-showNewChanges a').on('click', async () => {
         try {
           // Reload in case the subscription list has changed (which should be a pretty common
@@ -372,7 +374,7 @@ function processWatchlist($content) {
 
     let wrapper;
     if (summary && currentUserRegexp.test(` ${summary} `)) {
-      wrapper = wrapperRelevantPrototype.cloneNode(true);
+      wrapper = prototypes.get('wrapperRelevant');
       wrapper.lastChild.lastChild.title = goToCommentToYou;
     } else {
       let isWatched = false;
@@ -387,18 +389,18 @@ function processWatchlist($content) {
         const curIdMatch = curLink?.href?.match(/[&?]curid=(\d+)/);
         const curId = curIdMatch && Number(curIdMatch[1]);
         if (curId) {
-          const watchedSectionHeadlines = subscriptions.getForPageId(curId) || [];
+          const watchedSectionHeadlines = subscriptions?.getForPageId(curId) || [];
           if (watchedSectionHeadlines.length) {
             isWatched = watchedSectionHeadlines.find((headline) => isInSection(summary, headline));
             if (isWatched) {
-              wrapper = wrapperRelevantPrototype.cloneNode(true);
+              wrapper = prototypes.get('wrapperRelevant');
               wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
             }
           }
         }
       }
       if (!isWatched) {
-        wrapper = wrapperRegularPrototype.cloneNode(true);
+        wrapper = prototypes.get('wrapperRegular');
       }
     }
 
@@ -459,11 +461,11 @@ function processContributions($content) {
 
     let wrapper;
     if (summary && currentUserRegexp.test(` ${summary} `)) {
-      wrapper = wrapperRelevantPrototype.cloneNode(true);
+      wrapper = prototypes.get('wrapperRelevant');
       wrapper.lastChild.lastChild.title = goToCommentToYou;
     } else {
       // We have no place to extract the article ID from :-(
-      wrapper = wrapperRegularPrototype.cloneNode(true);
+      wrapper = prototypes.get('wrapperRegular');
     }
     wrapper.lastChild.lastChild.href = `${link}#${id}`;
 
@@ -519,22 +521,22 @@ function processHistory($content) {
 
     let wrapper;
     if (summary && currentUserRegexp.test(` ${summary} `)) {
-      wrapper = wrapperRelevantPrototype.cloneNode(true);
+      wrapper = prototypes.get('wrapperRelevant');
       wrapper.lastChild.lastChild.title = goToCommentToYou;
     } else {
       let isWatched = false;
       if (summary) {
-        const watchedSectionHeadlines = subscriptions.getForCurrentPage() || [];
+        const watchedSectionHeadlines = subscriptions?.getForCurrentPage() || [];
         if (watchedSectionHeadlines.length) {
           isWatched = watchedSectionHeadlines.find((headline) => isInSection(summary, headline));
           if (isWatched) {
-            wrapper = wrapperRelevantPrototype.cloneNode(true);
+            wrapper = prototypes.get('wrapperRelevant');
             wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
           }
         }
       }
       if (!isWatched) {
-        wrapper = wrapperRegularPrototype.cloneNode(true);
+        wrapper = prototypes.get('wrapperRegular');
       }
     }
     wrapper.lastChild.lastChild.href = `${link}#${id}`;
@@ -610,20 +612,20 @@ function processDiff($diff) {
       if (comment || ($diff && page.isProbablyTalkPage())) {
         let wrapper;
         if (summary && currentUserRegexp.test(` ${summary} `)) {
-          wrapper = wrapperRelevantPrototype.cloneNode(true);
+          wrapper = prototypes.get('wrapperRelevant');
           wrapper.lastChild.lastChild.title = goToCommentToYou;
         } else {
           let isWatched = false;
-          const watchedSectionHeadlines = subscriptions.getForCurrentPage() || [];
+          const watchedSectionHeadlines = subscriptions?.getForCurrentPage() || [];
           if (!$diff && summary && watchedSectionHeadlines.length) {
             isWatched = watchedSectionHeadlines.find((headline) => isInSection(summary, headline));
             if (isWatched) {
-              wrapper = wrapperRelevantPrototype.cloneNode(true);
+              wrapper = prototypes.get('wrapperRelevant');
               wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
             }
           }
           if (!isWatched) {
-            wrapper = wrapperRegularPrototype.cloneNode(true);
+            wrapper = prototypes.get('wrapperRegular');
           }
         }
 

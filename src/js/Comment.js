@@ -22,27 +22,6 @@ import { handleApiReject, loadUserGenders, parseCode } from './apiWrappers';
 import { showConfirmDialog } from './ooui';
 
 /**
- * Get the bounding client rectangle for a comment part.
- *
- * @param {Element} el
- * @returns {object}
- * @private
- */
-function getCommentPartRect(el) {
-  let rect;
-  // In most skins, <ul> and <ol> tags have markers in the margin, not padding, area, unlike in
-  // native browser styles, so we include margins in the coordinates for them.
-  if (['UL', 'OL'].includes(el.tagName)) {
-    rect = getExtendedRect(el);
-    rect.left = rect.outerLeft;
-    rect.right = rect.outerRight;
-  } else {
-    rect = el.getBoundingClientRect();
-  }
-  return rect;
-}
-
-/**
  * Class representing a comment (any signed, and in some cases unsigned, text on a wiki talk page).
  *
  * @augments CommentSkeleton
@@ -73,7 +52,6 @@ class Comment extends CommentSkeleton {
     this.isReformatted = settings.get('reformatComments');
     this.showContribsLink = settings.get('showContribsLink');
     this.hideTimezone = settings.get('hideTimezone');
-    this.showEditButton = this.isOwn || settings.get('allowEditOthersComments');
     this.timestampFormat = settings.get('timestampFormat');
     this.useUiTime = settings.get('useUiTime');
 
@@ -101,6 +79,11 @@ class Comment extends CommentSkeleton {
     this.isActionable = (
       controller.isPageActive() &&
       !controller.getClosedDiscussions().some((el) => el.contains(this.elements[0]))
+    );
+
+    this.isEditable = (
+      this.isActionable &&
+      (this.isOwn || settings.get('allowEditOthersComments'))
     );
 
     this.highlightables.forEach(this.bindEvents);
@@ -570,13 +553,22 @@ class Comment extends CommentSkeleton {
   }
 
   /**
+   * Check whether the comment can be edited.
+   *
+   * @returns {boolean}
+   */
+  canBeEdited() {
+    return this.isEditable;
+  }
+
+  /**
    * Create an {@link Comment#editButton edit button} and add it to the comment menu
    * ({@link Comment#$menu} or {@link Comment#$overlayMenu}).
    *
    * @private
    */
   addEditButton() {
-    if (!this.isActionable || !this.showEditButton) return;
+    if (!this.isEditable) return;
 
     const action = this.editButtonClick;
     if (this.isReformatted) {
@@ -979,10 +971,10 @@ class Comment extends CommentSkeleton {
         el.style.overflow = 'hidden';
       });
 
-      rectTop = getCommentPartRect(this.highlightables[0]);
+      rectTop = this.constructor.getCommentPartRect(this.highlightables[0]);
       rectBottom = this.elements.length === 1 ?
         rectTop :
-        getCommentPartRect(this.highlightables[this.highlightables.length - 1]);
+        this.constructor.getCommentPartRect(this.highlightables[this.highlightables.length - 1]);
 
       // If the comment intersects more than one floating block, we better keep `overflow: hidden`
       // to avoid bugs like where there are two floating blocks to the right with different
@@ -1082,10 +1074,10 @@ class Comment extends CommentSkeleton {
     options.considerFloating ??= Boolean(options.floatingRects);
     options.set ??= false;
 
-    let rectTop = getCommentPartRect(this.highlightables[0]);
+    let rectTop = this.constructor.getCommentPartRect(this.highlightables[0]);
     let rectBottom = this.elements.length === 1 ?
       rectTop :
-      getCommentPartRect(this.highlightables[this.highlightables.length - 1]);
+      this.constructor.getCommentPartRect(this.highlightables[this.highlightables.length - 1]);
 
     if (!getVisibilityByRects(rectTop, rectBottom)) {
       this.maybeAssignOffset(null, options);
@@ -3570,6 +3562,27 @@ class Comment extends CommentSkeleton {
 
     this.prototypes.add('underlay', commentUnderlay);
     this.prototypes.add('overlay', commentOverlay);
+  }
+
+  /**
+   * Get the bounding client rectangle for a comment part.
+   *
+   * @param {Element} el
+   * @returns {object}
+   * @private
+   */
+  static getCommentPartRect(el) {
+    let rect;
+    // In most skins, <ul> and <ol> tags have markers in the margin, not padding, area, unlike in
+    // native browser styles, so we include margins in the coordinates for them.
+    if (['UL', 'OL'].includes(el.tagName)) {
+      rect = getExtendedRect(el);
+      rect.left = rect.outerLeft;
+      rect.right = rect.outerRight;
+    } else {
+      rect = el.getBoundingClientRect();
+    }
+    return rect;
   }
 }
 

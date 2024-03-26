@@ -1319,7 +1319,8 @@ export default {
 
     this.showLoadingOverlay();
 
-    // Save time by requesting the options in advance.
+    // Save time by requesting the options in advance. This also resets cache since the `reuse`
+    // argument is `false`.
     getUserInfo().catch((e) => {
       console.warn(e);
     });
@@ -1489,6 +1490,8 @@ export default {
       !this.isContributionsPage() &&
       !this.isHistoryPage() &&
       !(this.diffPage && this.articlePageTalkPage) &&
+
+      // Instant Diffs script can be called on talk pages as well
       !this.talkPage
     ) {
       return;
@@ -2236,6 +2239,7 @@ export default {
   },
 
   /**
+   * Create an appropriate {@link Subscriptions} singleton based on the user settings.
    *
    * @returns {import('./Subscriptions').default}
    */

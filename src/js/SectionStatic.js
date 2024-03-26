@@ -189,10 +189,13 @@ export default {
   },
 
   /**
-   * _For internal use._ Perform extra section-related tasks, including adding the
+   * _For internal use._ Perform some section-related operations in addition to those performed when
+   * each section is added to the registry, including setting the
    * {@link Section#isLastSection isLastSection} property, adding buttons, and binding events.
+   *
+   * @param {import('./Subscriptions').default} subscriptions
    */
-  adjust() {
+  init(subscriptions) {
     this.items.forEach((section) => {
       /**
        * Is the section the last section on the page.
@@ -217,6 +220,10 @@ export default {
         (section.getChildren(true).slice(-1)[0] || section)
           .showAddSubsectionButtonOnReplyButtonHover(section);
       });
+
+    subscriptions.on('processed', () => {
+      this.addSubscribeButtons();
+    });
   },
 
   /**

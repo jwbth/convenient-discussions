@@ -4,25 +4,26 @@ import SectionStatic from './SectionStatic';
 import Subscriptions from './Subscriptions';
 import cd from './cd';
 import controller from './controller';
-import settings from './settings';
 import userRegistry from './userRegistry';
 import { getUserInfo, saveLocalOption } from './apiWrappers';
 import { wrapHtml } from './utils';
 
+/**
+ * Class implementing CD's legacy section watching.
+ */
 export default class LegacySubscriptions extends Subscriptions {
   type = 'legacy';
   subscribePromise = Promise.resolve();
 
   /**
-   * Request the subscription list from the server and assign it to the object.
+   * Request the subscription list from the server and assign it to the instance.
    *
-   * @param {boolean} [reuse=false] Reuse the existing request.
    * @param {import('./BootProcess').default} [bootProcess]
-   * @param {Promise} [visitsPromise]
-   * @returns {Promise.<object>}
+   * @param {boolean} [reuse=false] Reuse the existing request.
+   * @returns {Promise.<undefined>}
    */
-  async load(reuse = false, bootProcess, visitsPromise) {
-    if (!userRegistry.getCurrent().isRegistered() || settings.get('useTopicSubscription')) return;
+  async load(bootProcess, reuse = false) {
+    if (!userRegistry.getCurrent().isRegistered()) return;
 
     // `mw.user.options` is not used even on first run because it appears to be cached sometimes
     // which can be critical for determining subscriptions.
@@ -42,22 +43,25 @@ export default class LegacySubscriptions extends Subscriptions {
         // Manually add/remove a section that was added/removed at the same moment the page was
         // reloaded last time, so when we requested the watched sections from server, this
         // section wasn't there yet most probably.
-        this.updateData(bootProcess.passedData.justSubscribedToSection, true);
-        this.updateData(bootProcess.passedData.justUnsubscribedFromSection, false);
-        delete bootProcess.justSubscribedToSection;
-        delete bootProcess.justUnsubscribedFromSection;
+        this.updateLocally(bootProcess.passedData.justSubscribedToSection, true);
+        this.updateLocally(bootProcess.passedData.justUnsubscribedFromSection, false);
+        delete bootProcess.passedData.justSubscribedToSection;
+        delete bootProcess.passedData.justUnsubscribedFromSection;
       }
     }
-
-    this.process(bootProcess, visitsPromise);
   }
 
+  /**
+   * Process subscriptions when they are {@link .loadToTalkPage loaded to a talk page}.
+   *
+   * @param {...*} [args]
+   */
   process(...args) {
-    super.process(...args);
-
-    if (controller.isTalkPage() && controller.doesPageExist()) {
+    if (controller.doesPageExist()) {
       this.cleanUp();
     }
+
+    super.process(...args);
   }
 
   /**
@@ -78,7 +82,7 @@ export default class LegacySubscriptions extends Subscriptions {
    *   section is renamed on the fly in {@link Comment#update} or {@link CommentForm#submit}).
    * @returns {Promise.<undefined>}
    * @throws {CdError}
-   * @private
+   * @protected
    */
   actuallySubscribe(headline, id, unsubscribeHeadline) {
     const subscribe = async () => {
@@ -91,8 +95,8 @@ export default class LegacySubscriptions extends Subscriptions {
 
       // We save the full subscription list, so we need to update the data first.
       const dataBackup = Object.assign({}, this.data);
-      this.updateData(headline, true);
-      this.updateData(unsubscribeHeadline, false);
+      this.updateLocally(headline, true);
+      this.updateLocally(unsubscribeHeadline, false);
 
       try {
         await this.save();
@@ -147,7 +151,7 @@ export default class LegacySubscriptions extends Subscriptions {
       }
 
       const dataBackup = Object.assign({}, this.data);
-      this.updateData(headline, false);
+      this.updateLocally(headline, false);
 
       try {
         await this.save();
@@ -170,37 +174,36 @@ export default class LegacySubscriptions extends Subscriptions {
    * @param {object} data
    */
   async save(data) {
-    await saveLocalOption(
-      cd.g.subscriptionsOptionName,
-      LZString.compressToEncodedURIComponent(
-        this.pack(data || this.allPagesData)
-      )
-    );
+    await saveLocalOption(cd.g.subscriptionsOptionName, this.pack(data || this.allPagesData));
   }
 
   /**
-   * Pack the subscriptions object into a string for further compression.
+   * Convert a subscriptions object into an optimized string and compress it.
    *
    * @param {object} data
    * @returns {string}
    */
   pack(data) {
-    return Object.keys(data)
-      .filter((pageId) => Object.keys(data[pageId]).length)
-      .map((key) => ` ${key} ${Object.keys(data[key]).join('\n')}\n`)
-      .join('')
-      .trim();
+    return LZString.compressToEncodedURIComponent(
+      Object.keys(data)
+        .filter((pageId) => Object.keys(data[pageId]).length)
+        .map((key) => ` ${key} ${Object.keys(data[key]).join('\n')}\n`)
+        .join('')
+        .trim()
+    );
   }
 
   /**
-   * Unpack a subscriptions string into an object.
+   * Unpack a compressed subscriptions string into an object.
    *
-   * @param {string} string
+   * @param {string} compressed
    * @returns {object}
    */
-  unpack(string) {
+  unpack(compressed) {
     const data = {};
-    const pages = string.split(/(?:^|\n )(\d+) /).slice(1);
+    const pages = LZString.decompressFromEncodedURIComponent(compressed)
+      .split(/(?:^|\n )(\d+) /)
+      .slice(1);
     let pageId;
     for (
       let i = 0, isPageId = true;
@@ -224,10 +227,6 @@ export default class LegacySubscriptions extends Subscriptions {
    * @returns {number[]}
    */
   getPageIds() {
-    if (settings.get('useTopicSubscription') || !this.areLoaded()) {
-      return null;
-    }
-
     return Object.keys(this.allPagesData);
   }
 
@@ -238,10 +237,6 @@ export default class LegacySubscriptions extends Subscriptions {
    * @returns {?(object[])}
    */
   getForPageId(pageId) {
-    if (settings.get('useTopicSubscription') || !this.areLoaded()) {
-      return null;
-    }
-
     return Object.keys(this.allPagesData[pageId] || {});
   }
 
@@ -293,8 +288,8 @@ export default class LegacySubscriptions extends Subscriptions {
    * @param {boolean} subscribe Subscribe or unsubscribe.
    * @protected
    */
-  updateData(subscribeId, subscribe) {
-    super.updateData(subscribeId, subscribe);
+  updateLocally(subscribeId, subscribe) {
+    super.updateLocally(subscribeId, subscribe);
 
     if (!subscribe) {
       delete this.data[subscribeId];

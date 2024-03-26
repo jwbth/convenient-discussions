@@ -753,10 +753,12 @@ class BootProcess {
         }
       });
 
-    // Can't do it earlier: we don't have section DT IDs until now.
-    this.subscriptions.load(this, visitsPromise);
+    if (this.subscriptions.getType() === 'dt') {
+      // Can't do it earlier: we don't have section DT IDs until now.
+      this.subscriptions.loadToTalkPage(this, visitsPromise);
+    }
 
-    SectionStatic.adjust();
+    SectionStatic.init(this.subscriptions);
 
     // Dependent on sections being set
     CommentStatic.processOutdents(this.parser);
@@ -1397,11 +1399,11 @@ class BootProcess {
     let visitsPromise;
     if (controller.doesPageExist()) {
       if (controller.isPageActive()) {
-        visitsPromise = visits.get(true, this);
+        visitsPromise = visits.get(this, true);
       }
 
       if (this.subscriptions.getType() === 'legacy') {
-        this.subscriptions.load(true, this, visitsPromise);
+        this.subscriptions.loadToTalkPage(this, visitsPromise, true);
       }
 
       /**
@@ -1429,7 +1431,7 @@ class BootProcess {
       debug.stopTimer('process sections');
     } else {
       if (this.subscriptions.getType() === 'dt') {
-        this.subscriptions.load(this, visitsPromise);
+        this.subscriptions.loadToTalkPage(this, visitsPromise);
       }
     }
 

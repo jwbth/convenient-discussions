@@ -19,10 +19,10 @@ export default {
    * loaded. In fact, when the page is loaded in a background tab, it can be throttled until it is
    * focused, so an indefinite amount of time can pass.
    *
-   * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
    * @param {import('./BootProcess').default} [bootProcess]
+   * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
    */
-  async get(reuse = false, bootProcess) {
+  async get(bootProcess, reuse = false) {
     if (!userRegistry.getCurrent().isRegistered()) return;
 
     try {
@@ -164,21 +164,23 @@ export default {
   },
 
   /**
-   * Pack the visits object into a string for further compression.
+   * Convert a visits object into an optimized string and compress it.
    *
    * @returns {string}
    */
   pack() {
-    return Object.keys(this.data)
-      .map((key) => `${key},${this.data[key].join(',')}\n`)
-      .join('')
-      .trim();
+    return LZString.compressToEncodedURIComponent(
+      Object.keys(this.data)
+        .map((key) => `${key},${this.data[key].join(',')}\n`)
+        .join('')
+        .trim()
+    );
   },
 
   /**
-   * Unpack the visits string into a visits object.
+   * Unpack a compressed visits string into a visits object.
    *
-   * @param {string} visitsString
+   * @param {string} compressed
    * @returns {object}
    */
   unpack(compressed) {
@@ -196,10 +198,10 @@ export default {
    * Save the pages visits data to the server.
    */
   async save() {
-    let compressed = LZString.compressToEncodedURIComponent(this.pack());
+    let compressed = this.pack();
     if (compressed.length > 20480) {
       this.cleanUp(((compressed.length - 20480) / compressed.length) + 0.05);
-      compressed = LZString.compressToEncodedURIComponent(this.pack());
+      compressed = this.pack();
     }
 
     try {

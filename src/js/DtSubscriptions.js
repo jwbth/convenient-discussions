@@ -10,17 +10,18 @@ import userRegistry from './userRegistry';
 import { handleApiReject, splitIntoBatches } from './apiWrappers';
 import { spacesToUnderlines, unique } from './utils';
 
+/**
+ * Class implementing DiscussionTools' topic subscriptions.
+ */
 export default class DtSubscriptions extends Subscriptions {
   type = 'dt';
 
   /**
-   * Request the subscription list from the server and assign them to the `data` property.
+   * Request the subscription list from the server and assign it to the instance.
    *
-   * @param {import('./BootProcess').default} [bootProcess]
-   * @param {Promise} [visitsPromise]
-   * @returns {Promise.<object>}
+   * @returns {Promise.<undefined>}
    */
-  async load(bootProcess, visitsPromise) {
+  async load() {
     if (!userRegistry.getCurrent().isRegistered()) return;
 
     const title = spacesToUnderlines(mw.config.get('wgTitle'));
@@ -32,8 +33,20 @@ export default class DtSubscriptions extends Subscriptions {
         .filter(unique)
         .concat(this.pageSubscribeId || [])
     );
+  }
 
-    this.process(bootProcess, visitsPromise);
+  /**
+   * Process subscriptions when they are {@link .loadToTalkPage loaded to a talk page}.
+   *
+   * @param {import('./BootProcess').default} [bootProcess]
+   * @param {Promise} [visitsPromise]
+   */
+  process(bootProcess, visitsPromise) {
+    if (bootProcess?.isFirstRun()) {
+      this.addPageSubscribeButton();
+    }
+
+    super.process(bootProcess, visitsPromise);
   }
 
   /**
@@ -124,13 +137,29 @@ export default class DtSubscriptions extends Subscriptions {
       throw e;
     }
 
-    this.updateData(subscribeId, subscribe);
+    this.updateLocally(subscribeId, subscribe);
   }
 
+  /**
+   * Add a section present on the current page to the subscription list.
+   *
+   * @param {string} subscribeId
+   * @param {string} id Unused.
+   * @returns {Promise.<undefined>}
+   * @protected
+   */
   actuallySubscribe(subscribeId, id) {
     return this.changeSubscription(subscribeId, id, true);
   }
 
+  /**
+   * Remove a section present on the current page from the subscription list.
+   *
+   * @param {string} subscribeId
+   * @param {string} id Unused.
+   * @returns {Promise.<undefined>}
+   * @protected
+   */
   actuallyUnsubscribe(subscribeId, id) {
     return this.changeSubscription(subscribeId, id, false);
   }

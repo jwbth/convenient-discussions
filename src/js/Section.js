@@ -47,6 +47,9 @@ class Section extends SectionSkeleton {
 
     this.subscriptions = subscriptions;
 
+    this.useTopicSubscriptions = settings.get('useTopicSubscriptions');
+    this.showEditButton = this.comments[0].isOwn || settings.get('allowEditOthersComments');
+
     /**
      * Automatically updated sequental number of the section.
      *
@@ -131,7 +134,7 @@ class Section extends SectionSkeleton {
    * the first chunk of the section.
    */
   addReplyButton() {
-    if (!this.canAddReply()) return;
+    if (!this.canBeReplied()) return;
 
     const lastElement = this.lastElementInFirstChunk;
 
@@ -230,7 +233,7 @@ class Section extends SectionSkeleton {
    * appears when hovering over a {@link Section#replyButton "Reply in section" button}.
    */
   addAddSubsectionButton() {
-    if (this.level !== 2 || !this.canAddSubsection()) return;
+    if (this.level !== 2 || !this.canBeSubsectioned()) return;
 
     const element = this.constructor.prototypes.get('addSubsectionButton');
     const button = new Button({
@@ -396,13 +399,12 @@ class Section extends SectionSkeleton {
    *
    * @returns {boolean}
    */
-  canEditFirstComment() {
+  canFirstCommentBeEdited() {
     return Boolean(
       this.isActionable &&
       this.commentsInFirstChunk.length &&
       this.comments[0].isOpeningSection &&
-      (this.comments[0].isOwn || settings.get('allowEditOthersComments')) &&
-      this.comments[0].isActionable &&
+      (this.comments[0].canBeEdited()) &&
       !this.comments[0].isCollapsed
     );
   }
@@ -425,7 +427,7 @@ class Section extends SectionSkeleton {
    *
    * @returns {boolean}
    */
-  canAddReply() {
+  canBeReplied() {
     const isFirstChunkClosed = (
       this.commentsInFirstChunk[0] &&
       this.commentsInFirstChunk[0].level === 0 &&
@@ -459,7 +461,7 @@ class Section extends SectionSkeleton {
    *
    * @returns {boolean}
    */
-  canAddSubsection() {
+  canBeSubsectioned() {
     const isClosed = (
       this.comments[0] &&
       this.comments[0].level === 0 &&
@@ -688,7 +690,7 @@ class Section extends SectionSkeleton {
   createMoreMenuSelect() {
     const moreMenuSelect = this.constructor.prototypes.getWidget('moreMenuSelect')();
 
-    const editOpeningCommentOption = this.canEditFirstComment() ?
+    const editOpeningCommentOption = this.canFirstCommentBeEdited() ?
       new OO.ui.MenuOptionWidget({
         data: 'editOpeningComment',
         label: cd.s('sm-editopeningcomment'),
@@ -704,7 +706,7 @@ class Section extends SectionSkeleton {
         icon: 'arrowNext',
       }) :
       undefined;
-    const addSubsectionOption = this.canAddSubsection() ?
+    const addSubsectionOption = this.canBeSubsectioned() ?
       new OO.ui.MenuOptionWidget({
         data: 'addSubsection',
         label: cd.s('sm-addsubsection'),
@@ -770,7 +772,7 @@ class Section extends SectionSkeleton {
    */
   createActionsElement() {
     let moreMenuSelectDummy;
-    if (this.canEditFirstComment() || this.canBeMoved() || this.canAddSubsection()) {
+    if (this.canFirstCommentBeEdited() || this.canBeMoved() || this.canBeSubsectioned()) {
       const element = this.constructor.prototypes.get('moreMenuSelect');
       moreMenuSelectDummy = new Button({
         element,
@@ -1038,7 +1040,7 @@ class Section extends SectionSkeleton {
    * @throws {CdError}
    */
   addSubsection(initialState) {
-    if (!this.canAddSubsection()) {
+    if (!this.canBeSubsectioned()) {
       throw new CdError();
     }
 
