@@ -62,7 +62,7 @@ export default {
         const commentTimeConflict = comment.initNewAndSeen(
           this.currentPageData,
           currentTime,
-          bootProcess.data('unseenCommentIds')?.some((id) => id === comment.id) || false
+          bootProcess.passedData.unseenCommentIds?.some((id) => id === comment.id) || false
         );
         timeConflict ||= commentTimeConflict;
       });
@@ -119,7 +119,10 @@ export default {
         Number(this.currentPageData[this.currentPageData.length - 1]) :
         undefined,
       (
-        (bootProcess.data('wasCommentFormSubmitted') && bootProcess.data('commentIds')?.[0]) ||
+        (
+          bootProcess.passedData.wasCommentFormSubmitted &&
+          bootProcess.passedData.commentIds?.[0]
+        ) ||
         undefined
       )
     );
@@ -150,7 +153,7 @@ export default {
         // the user shouldn't get comments highlighted again all of a sudden.
         !settings.get('highlightNewInterval') ||
 
-        bootProcess.data('markAsRead')
+        bootProcess.passedData.markAsRead
       ) {
         // Remove visits _before_ the found one.
         this.currentPageData.splice(0, i);

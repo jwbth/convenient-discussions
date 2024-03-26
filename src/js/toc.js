@@ -8,6 +8,7 @@ import Comment from './Comment';
 import CommentStatic from './CommentStatic';
 import LiveTimestamp from './LiveTimestamp';
 import SectionStatic from './SectionStatic';
+import TocItem from './TocItem';
 import cd from './cd';
 import controller from './controller';
 import navPanel from './navPanel';
@@ -15,119 +16,24 @@ import settings from './settings';
 import { formatDate, formatDateNative } from './timestamp';
 
 /**
- * Class representing a table of contents item.
- */
-class TocItem {
-  /**
-   * Create a table of contents item object.
-   *
-   * @param {object} a
-   * @throws {Array.<string|Element>}
-   */
-  constructor(a) {
-    this.canBeModified = toc.canBeModified;
-
-    const textSpan = a.querySelector(toc.isInSidebar() ? '.vector-toc-text' : '.toctext');
-    if (!textSpan) {
-      throw ['Couldn\'t find text for a link', a];
-    }
-
-    const headline = textSpan.textContent;
-    const id = a.getAttribute('href').slice(1);
-    const li = a.parentNode;
-    let [, level] = li.className
-      .match(toc.isInSidebar() ? /vector-toc-level-(\d+)/ : /\btoclevel-(\d+)/);
-    level = Number(level);
-    const numberSpan = a.querySelector(toc.isInSidebar() ? '.vector-toc-numb' : '.tocnumber');
-    let number;
-    if (numberSpan) {
-      number = numberSpan.textContent;
-    } else {
-      console.error(['Couldn\'t find a number for a link', a]);
-      number = '?';
-    }
-
-    /**
-     * Link jQuery element.
-     *
-     * @name $link
-     * @type {external:jQuery}
-     * @memberof module:toc~TocItem
-     * @instance
-     */
-
-    Object.assign(this, {
-      headline,
-      id,
-      level,
-      number,
-      $element: $(li),
-      $link: $(a),
-      $text: $(textSpan),
-    });
-  }
-
-  /**
-   * _For internal use._ Generate HTML to use it in the TOC for the section. Only a limited number
-   * of HTML elements is allowed in TOC.
-   *
-   * @param {external:jQuery} $headline
-   */
-  replaceText($headline) {
-    if (!this.canBeModified) return;
-
-    const html = $headline
-      .clone()
-      .find('*')
-        .each((i, el) => {
-          if (['B', 'EM', 'I', 'S', 'STRIKE', 'STRONG', 'SUB', 'SUP'].includes(el.tagName)) {
-            [...el.attributes].forEach((attr) => {
-              el.removeAttribute(attr.name);
-            });
-          } else {
-            [...el.childNodes].forEach((child) => {
-              el.parentNode.insertBefore(child, el);
-            });
-            el.remove();
-          }
-        })
-      .end()
-      .html();
-    this.$text.html(html);
-    this.headline = this.$text.text().trim();
-  }
-
-  /**
-   * Add/remove a subscription mark to the section's TOC link according to its subscription state
-   * and update the `title` attribute.
-   *
-   * @param {?boolean} subscriptionState
-   */
-  updateSubscriptionState(subscriptionState) {
-    if (!this.canBeModified) return;
-
-    if (subscriptionState) {
-      this.$link
-        .find(toc.isInSidebar() ? '.vector-toc-text' : '.toctext')
-        .append(
-          $('<span>').addClass('cd-toc-subscriptionIcon-before'),
-          $('<span>')
-            .addClass('cd-toc-subscriptionIcon')
-            .attr('title', cd.s('toc-watched'))
-        );
-    } else {
-      this.$link
-        .removeAttr('title')
-        .find('.cd-toc-subscriptionIcon, .cd-toc-subscriptionIcon-before')
-        .remove();
-    }
-  }
-}
-
-/**
  * @exports toc
  */
 const toc = {
+  /**
+   * _For internal use._ Initialize the TOC. (Executed only once.)
+   *
+   * @param {import('./Subscriptions').default} subscriptions
+   */
+  init(subscriptions) {
+    mw.hook('wikipage.tableOfContents.vector').add(() => {
+      this.resolveUpdateTocSectionsPromise?.();
+    });
+
+    subscriptions.on('processed', (visitsPromise) => {
+      this.markSubscriptions(visitsPromise);
+    });
+  },
+
   /**
    * _For internal use._ Hide the TOC if the relevant cookie is set. This method duplicates
    * {@link https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.toc/toc.js the native MediaWiki function}
@@ -147,9 +53,8 @@ const toc = {
    *
    * @param {object[]} [sections] TOC sections object.
    * @param {boolean} [hideToc] Whether the TOC should be hidden.
-   * @param {import('./BootProcess').default} bootProcess
    */
-  setup(sections, hideToc, bootProcess) {
+  setup(sections, hideToc) {
     this.canBeModified = settings.get('modifyToc');
     this.$element = this.isInSidebar() ? $('.vector-toc') : controller.$root.find('.toc');
     this.items = null;
@@ -161,11 +66,6 @@ const toc = {
 
       this.updateTocSectionsPromise = new Promise((resolve) => {
         this.resolveUpdateTocSectionsPromise = resolve;
-      });
-    }
-    if (bootProcess.isFirstRun()) {
-      mw.hook('wikipage.tableOfContents.vector').add(() => {
-        this.resolveUpdateTocSectionsPromise?.();
       });
     }
   },
@@ -187,7 +87,7 @@ const toc = {
       try {
         // It is executed first time before added (gray) sections are added to the TOC, so we use a
         // simple algorithm to obtain items.
-        this.items = links.map((a) => new TocItem(a));
+        this.items = links.map((a) => new TocItem(a, this));
       } catch (e) {
         console.error('Couldn\'t find an element of a table of contents item.', ...e);
         this.items = [];
@@ -684,8 +584,8 @@ const toc = {
         bootProcess.isFirstRun() ||
 
         // When the comment or section is opened by a link from the TOC
-        bootProcess.data('commentIds') ||
-        bootProcess.data('sectionId')
+        bootProcess.passedData.commentIds ||
+        bootProcess.passedData.sectionId
       );
       controller.saveRelativeScrollPosition({ saveTocHeight });
     }

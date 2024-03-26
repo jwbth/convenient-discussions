@@ -1,8 +1,6 @@
 import CdError from './CdError';
 import cd from './cd';
 import controller from './controller';
-import settings from './settings';
-import subscriptions from './subscriptions';
 import { CdOoUiProcessDialogMixin, mixinUserOoUiClass, tweakUserOoUiClass } from './ooui';
 import { focusInput, sleep, unique } from './utils';
 import { getPageIds, getPageTitles } from './apiWrappers';
@@ -38,9 +36,9 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
    */
   constructor() {
     super();
-    if (settings.get('useTopicSubscription')) return;
 
     this.save = this.save.bind(this);
+    this.subscriptions = controller.getSubscriptionsInstance();
   }
 
   /**
@@ -72,7 +70,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
 
     this.pushPending();
 
-    this.initPromise = subscriptions.loadLegacy();
+    this.initPromise = this.subscriptions.load();
 
     this.loadingPanel = new OO.ui.PanelLayout({
       padded: true,
@@ -125,7 +123,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
       let pages;
       try {
         await this.initPromise;
-        pages = await getPageTitles(subscriptions.getPageIds());
+        pages = await getPageTitles(this.subscriptions.getPageIds());
       } catch (e) {
         this.handleError(e, 'ewsd-error-processing', false);
         return;
@@ -140,7 +138,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
         .filter((page) => page.title)
 
         .map((page) => (
-          subscriptions.getForPageId(page.pageid)
+          this.subscriptions.getForPageId(page.pageid)
             .map((section) => `${page.title}#${section}`)
             .join('\n')
         ))
@@ -253,11 +251,11 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
     Object.keys(sections)
       .filter((key) => titleToId[key])
       .forEach((key) => {
-        registry[titleToId[key]] = subscriptions.itemsToKeys(sections[key].filter(unique));
+        registry[titleToId[key]] = this.subscriptions.itemsToKeys(sections[key].filter(unique));
       });
 
     try {
-      subscriptions.saveLegacy(registry);
+      this.subscriptions.save(registry);
     } catch (e) {
       if (e instanceof CdError) {
         const { type, code } = e.data;

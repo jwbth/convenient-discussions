@@ -103,6 +103,7 @@ export default class StorageItem {
    */
   save() {
     mw.storage.setObject(`convenientDiscussions-${this.key}`, this.data);
+    console.log(this.data);
 
     return this;
   }

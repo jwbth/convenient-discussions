@@ -21,7 +21,6 @@ import jqueryExtensions from './jqueryExtensions';
 import languageFallbacksData from '../../data/languageFallbacks.json';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
-import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
 import { dateTokenToMessageNames, initDayjs } from './timestamp';
 import { generatePageNamePattern, getContentLanguageMessages, skin$, transparentize, unique } from './utils';
@@ -756,7 +755,6 @@ export default {
     cd.tests.processPageInBackground = processPage;
     cd.tests.showSettingsDialog = controller.showSettingsDialog.bind(controller);
     cd.tests.editSubscriptions = controller.showEditSubscriptionsDialog.bind(controller);
-    cd.tests.subscriptions = subscriptions;
 
 
     /* Some static methods for external use */

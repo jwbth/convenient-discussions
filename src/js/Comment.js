@@ -3379,8 +3379,7 @@ class Comment extends CommentSkeleton {
     // has. See also `timeConflict` in `BootProcess#processVisits()`.
     this.isNew = Boolean(commentTime + 60 > currentPageVisits[0] || isUnseenStatePassed);
     this.isSeen = Boolean(
-      commentTime + 60 <= currentPageVisits[currentPageVisits.length - 1] &&
-      !this.isOwn &&
+      (commentTime + 60 <= currentPageVisits[currentPageVisits.length - 1] || this.isOwn) &&
       !isUnseenStatePassed
     );
 

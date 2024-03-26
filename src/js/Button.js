@@ -259,6 +259,22 @@ class Button {
   }
 
   /**
+   * Show or hide the button, depending on the parameter.
+   *
+   * @param {boolean} show Whether to show the button.
+   * @returns {Button} This button.
+   */
+  toggle(show) {
+    if (show) {
+      this.show();
+    } else {
+      this.hide();
+    }
+
+    return this;
+  }
+
+  /**
    * Set the class to an OOUI icon to make it look like icons with the "progressive" flag do. Somehow
    * OOUI doesn't set it at the building stage.
    */

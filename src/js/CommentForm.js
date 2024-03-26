@@ -16,7 +16,6 @@ import navPanel from './navPanel';
 import notifications from './notifications';
 import pageRegistry, { Page } from './pageRegistry';
 import settings from './settings';
-import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
 import { buildEditSummary, defined, focusInput, getDayTimestamp, insertText, isCmdModifierPressed, isInputFocused, keyCombination, removeDoubleSpaces, sleep, unique, wrapDiffBody, wrapHtml } from './utils';
 import { createCheckboxField, getTextInputWidgetClass } from './ooui';
@@ -3090,7 +3089,8 @@ class CommentForm {
           if (isHeadlineAltered) {
             bootData.justUnsubscribedFromSection = originalHeadline;
           }
-          subscriptions.subscribe(subscribeId, headline, originalHeadline, true);
+          controller.getSubscriptionsInstance()
+            .subscribe(subscribeId, headline, originalHeadline, true);
         }
       } else {
         const section = this.targetSection?.getSectionSubscribedTo();

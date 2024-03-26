@@ -10,7 +10,6 @@ import controller from './controller';
 import init from './init';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
-import subscriptions from './subscriptions';
 import userRegistry from './userRegistry';
 import { definedAndNotNull, generatePageNamePattern, isCommentEdit, isProbablyTalkPage, isUndo, removeDirMarks, spacesToUnderlines } from './utils';
 import { initDayjs, parseTimestamp } from './timestamp';
@@ -24,6 +23,7 @@ let currentUserRegexp;
 let wrapperRegularPrototype;
 let wrapperRelevantPrototype;
 let switchRelevantButton;
+let subscriptions;
 
 /**
  * Initialize variables.
@@ -35,12 +35,14 @@ async function initialize() {
   init.globals();
   await settings.init();
 
+  subscriptions = controller.getSubscriptionsInstance();
+
   const requests = [...init.getSiteData()];
   if (userRegistry.getCurrent().isRegistered() && !settings.get('useTopicSubscription')) {
     // Loading the subscriptions is not critical, as opposed to messages, so we catch the possible
     // error, not letting it be caught by the try/catch block.
     requests.push(
-      subscriptions.loadLegacy(true).catch((e) => {
+      subscriptions.load(true).catch((e) => {
         console.warn('Couldn\'t load the settings from the server.', e);
       })
     );

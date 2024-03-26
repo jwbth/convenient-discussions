@@ -14,7 +14,6 @@ import navPanel from './navPanel';
 import pageNav from './pageNav';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
-import subscriptions from './subscriptions';
 import toc from './toc';
 import userRegistry from './userRegistry';
 import visits from './visits';
@@ -152,36 +151,6 @@ class BootProcess {
 
     this.passedData = passedData;
     this.dtCommentIds = [];
-  }
-
-  /**
-   * Pass some data to the booting process before executing it.
-   *
-   * @param {string} name
-   * @param {*} value
-   */
-  passData(name, value) {
-    const data = typeof name === 'string' ? { [name]: value } : name;
-    Object.assign(this.passedData, data);
-  }
-
-  /**
-   * Remove a piece of data associated with the boot process with the specified name.
-   *
-   * @param {string} name
-   */
-  deleteData(name) {
-    delete this.passedData[name];
-  }
-
-  /**
-   * Get the value of some parameter related to the boot process.
-   *
-   * @param {string} [name]
-   * @returns {*}
-   */
-  data(name) {
-    return name ? this.passedData[name] ?? null : this.passedData;
   }
 
   /**
@@ -671,8 +640,12 @@ class BootProcess {
     if (this.firstRun) {
       await init.talkPage();
     }
-    controller.setup(this.data('html'));
-    toc.setup(this.data('toc'), this.data('hidetoc'), this);
+    this.subscriptions = controller.getSubscriptionsInstance();
+    if (this.firstRun) {
+      toc.init(this.subscriptions);
+    }
+    controller.setup(this.passedData.html);
+    toc.setup(this.passedData.toc, this.passedData.hidetoc);
 
     /**
      * Collection of all comments on the page ordered the same way as in the DOM.
@@ -764,14 +737,15 @@ class BootProcess {
   /**
    * Parse the sections and modify some parts of them.
    *
+   * @param {Promise} [visitsPromise]
    * @private
    */
-  processSections() {
+  processSections(visitsPromise) {
     this.targets
       .filter((target) => target.type === 'heading')
       .forEach((heading) => {
         try {
-          SectionStatic.add(this.parser.createSection(heading, this.targets));
+          SectionStatic.add(this.parser.createSection(heading, this.targets, this.subscriptions));
         } catch (e) {
           if (!(e instanceof CdError)) {
             console.error(e);
@@ -780,7 +754,7 @@ class BootProcess {
       });
 
     // Can't do it earlier: we don't have section DT IDs until now.
-    subscriptions.load(this);
+    this.subscriptions.load(this, visitsPromise);
 
     SectionStatic.adjust();
 
@@ -1184,7 +1158,7 @@ class BootProcess {
    * @private
    */
   async processTargets() {
-    const commentIds = this.data('commentIds');
+    const commentIds = this.passedData.commentIds;
     if (commentIds) {
       const comments = commentIds.map((id) => CommentStatic.getById(id)).filter(definedAndNotNull);
       if (comments.length) {
@@ -1193,10 +1167,10 @@ class BootProcess {
           // A tricky case with flashing is when a comment is in a collapsed thread. In this case,
           // we must use Comment#scrollTo to make sure it is flashed when the thread is uncollapsed
           // by clicking a link in the notification.
-          const flashOne = this.data('wasCommentFormSubmitted') || this.data('pushState');
+          const flashOne = this.passedData.wasCommentFormSubmitted || this.passedData.pushState;
           comments[0].scrollTo({
             smooth: false,
-            pushState: this.data('pushState'),
+            pushState: this.passedData.pushState,
             flash: flashOne,
           });
           if (!flashOne) {
@@ -1206,10 +1180,10 @@ class BootProcess {
       }
     }
 
-    if (this.data('sectionId')) {
-      const section = SectionStatic.getById(this.data('sectionId'));
+    if (this.passedData.sectionId) {
+      const section = SectionStatic.getById(this.passedData.sectionId);
       if (section) {
-        if (this.data('pushState')) {
+        if (this.passedData.pushState) {
           history.pushState(history.state, '', `#${section.id}`);
         }
 
@@ -1325,9 +1299,7 @@ class BootProcess {
 
     // Mutation observer doesn't follow all possible comment position changes (for example,
     // initiated with adding new CSS) unfortunately.
-    setInterval(() => {
-      controller.handlePageMutations();
-    }, 1000);
+    setInterval(controller.handlePageMutations, 1000);
 
     if (controller.isPageCommentable()) {
       $(document).on('keydown', controller.handleGlobalKeyDown);
@@ -1423,13 +1395,14 @@ class BootProcess {
     */
 
     let visitsPromise;
-    let subscriptionsPromise;
     if (controller.doesPageExist()) {
       if (controller.isPageActive()) {
         visitsPromise = visits.get(true, this);
       }
 
-      subscriptionsPromise = subscriptions.loadLegacy(true, this);
+      if (this.subscriptions.getType() === 'legacy') {
+        this.subscriptions.load(true, this, visitsPromise);
+      }
 
       /**
        * The script is going to parse the page for comments, sections, etc.
@@ -1455,16 +1428,12 @@ class BootProcess {
       this.processSections();
       debug.stopTimer('process sections');
     } else {
-      if (settings.get('useTopicSubscription')) {
-        subscriptionsPromise = subscriptions.load(this);
+      if (this.subscriptions.getType() === 'dt') {
+        this.subscriptions.load(this, visitsPromise);
       }
     }
 
-    subscriptionsPromise?.then(() => {
-      toc.markSubscriptions(visitsPromise);
-    });
-
-    if (this.data('html')) {
+    if (this.passedData.html) {
       debug.startTimer('laying out HTML');
       this.layOutHtml();
       debug.stopTimer('laying out HTML');
@@ -1498,7 +1467,7 @@ class BootProcess {
       // `Thread.init()` seems to contradict). Should be below `this.setupNavPanel()` as
       // `CommentFormStatic.restoreSession()` indirectly calls `navPanel.updateCommentFormButton()`
       // which depends on the navigation panel being mounted.
-      CommentFormStatic.restoreSession(this.firstRun || this.data('isPageReloadedExternally'));
+      CommentFormStatic.restoreSession(this.firstRun || this.passedData.isPageReloadedExternally);
 
       this.hideDtNewTopicForm();
       this.maybeAddAddSectionForm();

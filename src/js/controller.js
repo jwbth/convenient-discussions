@@ -10,6 +10,8 @@ import BootProcess from './BootProcess';
 import Comment from './Comment';
 import CommentFormStatic from './CommentFormStatic';
 import CommentStatic from './CommentStatic';
+import DtSubscriptions from './dtSubscriptions';
+import LegacySubscriptions from './legacySubscriptions';
 import LiveTimestamp from './LiveTimestamp';
 import Parser from './Parser';
 import SectionStatic from './SectionStatic';
@@ -429,8 +431,8 @@ export default {
    */
   saveRelativeScrollPosition(switchToAbsolute = null) {
     // Look for a cached value to avoid reflow.
-    const scrollY = this.bootProcess.data('scrollY') || window.scrollY;
-    this.bootProcess.deleteData('scrollY');
+    const scrollY = this.bootProcess.passedData.scrollY || window.scrollY;
+    delete this.bootProcess.passedData.scrollY;
 
     // The viewport has the TOC bottom or is above it.
     if (
@@ -1221,7 +1223,7 @@ export default {
       // thrashing) could happen without impeding performance, we cache the value so that it could
       // be used in controller.saveRelativeScrollPosition without causing a reflow.
       if (siteDataRequests.every((request) => request.state() === 'resolved')) {
-        this.bootProcess.passData('scrollY', window.scrollY);
+        this.bootProcess.scrollY = window.scrollY;
       }
     } else {
       modulesRequest = mw.loader.using(modules);
@@ -1295,7 +1297,7 @@ export default {
     // If the page is reloaded externally, its content is already replaced, so we won't break
     // anything if we remove the layers containers. And we better do so to avoid comment layers
     // hanging around without their owner comments.
-    if (bootProcess.data('isPageReloadedExternally')) {
+    if (bootProcess.passedData.isPageReloadedExternally) {
       CommentStatic.resetLayers();
     }
 
@@ -1305,11 +1307,11 @@ export default {
       CommentFormStatic.saveSession();
     }
 
-    if (!bootProcess.data('commentIds') && !bootProcess.data('sectionId')) {
+    if (!bootProcess.passedData.commentIds && !bootProcess.passedData.sectionId) {
       this.saveScrollPosition();
     }
 
-    notifications.close(bootProcess.data('closeNotificationsSmoothly') ?? true);
+    notifications.close(bootProcess.passedData.closeNotificationsSmoothly ?? true);
 
     debug.init();
     debug.startTimer('total time');
@@ -1327,7 +1329,7 @@ export default {
       parseData = await pageRegistry.getCurrent().parse(null, false, true);
     } catch (e) {
       this.hideLoadingOverlay();
-      if (bootProcess.data('wasCommentFormSubmitted')) {
+      if (bootProcess.passedData.wasCommentFormSubmitted) {
         throw e;
       } else {
         mw.notify(cd.s('error-reloadpage'), { type: 'error' });
@@ -1336,9 +1338,9 @@ export default {
       }
     }
 
-    bootProcess.passData('html', parseData.text);
-    bootProcess.passData('toc', parseData.sections);
-    bootProcess.passData('hideToc', parseData.hidetoc);
+    bootProcess.passedData.html = parseData.text;
+    bootProcess.passedData.toc = parseData.sections;
+    bootProcess.passedData.hideToc = parseData.hidetoc;
     mw.config.set({
       wgRevisionId: parseData.revid,
       wgCurRevisionId: parseData.revid,
@@ -1352,7 +1354,7 @@ export default {
     const unseenCommentIds = CommentStatic.getAll()
       .filter((comment) => comment.isSeen === false)
       .map((comment) => comment.id);
-    bootProcess.passData('unseenCommentIds', unseenCommentIds);
+    bootProcess.passedData.unseenCommentIds = unseenCommentIds;
 
     // At this point, the boot process can't be interrupted, so we can remove all traces of the
     // current page state.
@@ -1374,7 +1376,7 @@ export default {
 
     toc.maybeHide();
 
-    if (!this.bootProcess.data('commentIds') && !this.bootProcess.data('sectionId')) {
+    if (!this.bootProcess.passedData.commentIds && !this.bootProcess.passedData.sectionId) {
       this.restoreScrollPosition(false);
     }
   },
@@ -1457,7 +1459,7 @@ export default {
       });
 
       this.diffPage = false;
-    } else if (!this.bootProcess.data('pushState')) {
+    } else if (!this.bootProcess.passedData.pushState) {
       // Don't reset the fragment if it will be set in the boot process from a comment ID or a
       // section ID, to avoid creating an extra history entry.
       methodName = 'replaceState';
@@ -2232,4 +2234,18 @@ export default {
       pageRegistry.getCurrent().markAsRead(this.lastCheckedRevisionId);
     }
   },
+
+  /**
+   *
+   * @returns {import('./Subscriptions').default}
+   */
+  getSubscriptionsInstance() {
+    if (!this.subscriptionsInstance) {
+      this.subscriptionsInstance = new (
+        settings.get('useTopicSubscription') ? DtSubscriptions : LegacySubscriptions
+      )();
+    }
+
+    return this.subscriptionsInstance;
+  }
 };

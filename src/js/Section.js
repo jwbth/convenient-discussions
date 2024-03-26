@@ -10,7 +10,6 @@ import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
-import subscriptions from './subscriptions';
 import toc from './toc';
 import userRegistry from './userRegistry';
 import { dealWithLoadingBug, defined, flat, focusInput, getHeadingLevel, underlinesToSpaces, unique } from './utils';
@@ -30,10 +29,11 @@ class Section extends SectionSkeleton {
    * @param {import('./Parser').default} parser
    * @param {Element} heading
    * @param {object[]} targets
+   * @param {import('./Subscriptions').default} subscriptions
    * @throws {CdError}
    */
-  constructor(parser, heading, targets) {
-    super(parser, heading, targets);
+  constructor(parser, heading, targets, subscriptions) {
+    super(parser, heading, targets, subscriptions);
 
     this.scrollToLatestComment = this.scrollToLatestComment.bind(this);
     this.scrollToNewComments = this.scrollToNewComments.bind(this);
@@ -44,6 +44,8 @@ class Section extends SectionSkeleton {
     this.deferAddSubsectionButtonHide = this.deferAddSubsectionButtonHide.bind(this);
     this.toggleAuthors = this.toggleAuthors.bind(this);
     this.createMoreMenuSelect = this.createMoreMenuSelect.bind(this);
+
+    this.subscriptions = subscriptions;
 
     /**
      * Automatically updated sequental number of the section.
@@ -353,7 +355,7 @@ class Section extends SectionSkeleton {
      *
      * @type {?boolean}
      */
-    this.subscriptionState = subscriptions.getState(this.subscribeId);
+    this.subscriptionState = this.subscriptions.getState(this.subscribeId);
 
     /**
      * Subscribe button widget in the {@link Section#actionsElement actions element}.
@@ -981,6 +983,7 @@ class Section extends SectionSkeleton {
        * @type {string|undefined}
        */
       this.subscribeId = this.headline;
+
       return;
     }
 
@@ -1131,7 +1134,7 @@ class Section extends SectionSkeleton {
     const unsubscribeHeadline = renamedFrom && !SectionStatic.getBySubscribeId(renamedFrom).length ?
       renamedFrom :
       undefined;
-    subscriptions.subscribe(this.subscribeId, this.id, unsubscribeHeadline, !!mode)
+    this.subscriptions.subscribe(this.subscribeId, this.id, unsubscribeHeadline, !!mode)
       .then(() => {
         // TODO: this condition seems a bad idea because when we could update the subscriptions but
         // couldn't reload the page, the UI becomes unsynchronized. But there is also no UI
@@ -1171,7 +1174,7 @@ class Section extends SectionSkeleton {
       };
     }
 
-    subscriptions.unsubscribe(this.subscribeId, this.id, !!mode)
+    this.subscriptions.unsubscribe(this.subscribeId, this.id, !!mode)
       .then(() => {
         if (mode !== 'silent') {
           sections.forEach((section) => {
@@ -1216,7 +1219,7 @@ class Section extends SectionSkeleton {
     if (
       this.headline &&
       oldSectionDummy.headline !== this.headline &&
-      subscriptions.getOriginalState(oldSectionDummy.headline)
+      this.subscriptions.getOriginalState(oldSectionDummy.headline)
     ) {
       this.subscribe('quiet', oldSectionDummy.headline);
     }

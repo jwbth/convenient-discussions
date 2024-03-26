@@ -408,14 +408,8 @@ export default {
   updateFirstUnseenButton() {
     if (!this.isMounted()) return;
 
-    const unseenCommentCount = CommentStatic.getAll()
-      .filter((comment) => comment.isSeen === false)
-      .length;
-    if (unseenCommentCount) {
-      this.firstUnseenButton.show().setLabel(unseenCommentCount);
-    } else {
-      this.firstUnseenButton.hide();
-    }
+    const unseenCommentCount = CommentStatic.getAll().filter((c) => c.isSeen === false).length;
+    this.firstUnseenButton.toggle(unseenCommentCount).setLabel(unseenCommentCount);
   },
 
   /**
@@ -426,10 +420,8 @@ export default {
   updateCommentFormButton() {
     if (!this.isMounted() || controller.isAutoScrolling()) return;
 
-    if (CommentFormStatic.getAll().some((cf) => !cf.$element.cdIsInViewport(true))) {
-      this.commentFormButton.show();
-    } else {
-      this.commentFormButton.hide();
-    }
+    this.commentFormButton.toggle(
+      CommentFormStatic.getAll().some((cf) => !cf.$element.cdIsInViewport(true))
+    );
   },
 };

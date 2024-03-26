@@ -98,10 +98,11 @@ class Parser {
    *
    * @param {object} heading
    * @param {object[]} targets
+   * @param {import('./Subscriptions').default} subscriptions
    * @returns {*}
    */
-  createSection(heading, targets) {
-    return new this.context.SectionClass(this, heading, targets);
+  createSection(heading, targets, subscriptions) {
+    return new this.context.SectionClass(this, heading, targets, subscriptions);
   }
 
   /**
