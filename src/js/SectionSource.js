@@ -257,7 +257,7 @@ class SectionSource {
       Boolean(
         sectionOldestComment &&
         (
-          oldestSig.timestamp === sectionOldestComment.timestamp ||
+          oldestSig.timestamp === sectionOldestComment.timestamp &&
           oldestSig.author === sectionOldestComment.author
         )
       ) :
