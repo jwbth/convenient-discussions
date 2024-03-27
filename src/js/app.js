@@ -12,7 +12,8 @@ import controller from './controller';
 import debug from './debug';
 import defaultConfig from '../../config/default';
 import { addCommentLinksToSpecialSearch } from './addCommentLinks';
-import { getFooter, mergeRegexps, unique } from './utils';
+import { getFooter } from './utils-window.js';
+import { mergeRegexps, unique } from './utils';
 
 let config;
 

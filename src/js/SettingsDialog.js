@@ -1,16 +1,17 @@
+import ProcessDialog from './ProcessDialog';
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
-import { CdOoUiProcessDialogMixin, createCheckboxField, createNumberField, createRadioField, createTextField, mixinUserOoUiClass, tweakUserOoUiClass } from './ooui';
 import { areObjectsEqual } from './utils';
+import { createCheckboxField, createNumberField, createRadioField, createTextField, tweakUserOoUiClass } from './ooui';
 import { saveGlobalOption, saveLocalOption } from './apiWrappers';
 
 /**
  * Class used to create a settings dialog.
  *
- * @augments external:OO.ui.ProcessDialog
+ * @augments ProcessDialog
  */
-class SettingsDialog extends OO.ui.ProcessDialog {
+export default class SettingsDialog extends ProcessDialog {
   static name = 'settingsDialog';
   static title = cd.s('sd-title');
   static actions = [
@@ -335,7 +336,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
       });
 
       // eslint-disable-next-line jsdoc/require-jsdoc
-      const PageLayout = class extends OO.ui.PageLayout {
+      return new (tweakUserOoUiClass(class extends OO.ui.PageLayout {
         // eslint-disable-next-line jsdoc/require-jsdoc
         constructor() {
           super(pageData.name);
@@ -346,9 +347,7 @@ class SettingsDialog extends OO.ui.ProcessDialog {
         setupOutlineItem() {
           this.outlineItem.setLabel(pageData.label);
         }
-      };
-      tweakUserOoUiClass(PageLayout, OO.ui.PageLayout);
-      return new PageLayout(this);
+      }))(this);
     });
 
     controls.removeData.button.connect(this, { click: 'removeData' });
@@ -552,7 +551,4 @@ class SettingsDialog extends OO.ui.ProcessDialog {
   }
 }
 
-tweakUserOoUiClass(SettingsDialog, OO.ui.ProcessDialog);
-mixinUserOoUiClass(SettingsDialog, CdOoUiProcessDialogMixin);
-
-export default SettingsDialog;
+tweakUserOoUiClass(SettingsDialog);

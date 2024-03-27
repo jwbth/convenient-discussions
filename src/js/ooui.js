@@ -4,8 +4,6 @@
  * @module ooui
  */
 
-import CdError from './CdError';
-import cd from './cd';
 import controller from './controller';
 
 /**
@@ -153,40 +151,6 @@ import controller from './controller';
  */
 
 /**
- * Get a class that extends {@link external:OO.ui.TextInputWidget OO.ui.TextInputWidget} and emits
- * `manualChange` event when the input changes by user action.
- *
- * @returns {Function}
- */
-function getCheckboxInputWidgetClass() {
-  // eslint-disable-next-line jsdoc/require-jsdoc
-  return tweakUserOoUiClass(class extends OO.ui.CheckboxInputWidget {
-    // eslint-disable-next-line jsdoc/require-jsdoc
-    constructor(...args) {
-      super(...args);
-
-      this.$input.on('change', () => {
-        this.emit('manualChange', this.$input.prop('checked'));
-      });
-    }
-  });
-}
-
-/**
- * Get a class that extends
- * {@link https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.LabelWidget.html OO.ui.LabelWidget} and
- * uses `<div>` tag instead of `<label>`.
- *
- * @returns {Function}
- */
-export function getDivLabelWidgetClass() {
-  // eslint-disable-next-line jsdoc/require-jsdoc
-  return tweakUserOoUiClass(class LabelWidget extends OO.ui.LabelWidget {
-    static tagName = 'div';
-  });
-}
-
-/**
  * Display an OOUI message dialog where user is asked to confirm something. Compared to
  * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui-method-confirm OO.ui.confirm},
  * returns an action string, not a boolean (which helps to differentiate between more than two types
@@ -226,112 +190,6 @@ export async function showConfirmDialog(message, options = {}) {
 }
 
 /**
- * Get a class that extends {@link external:OO.ui.TextInputWidget OO.ui.TextInputWidget} and has
- * some features we need.
- * * It emits `manualChange` event when the input changes by user action.
- * * It provides the `cdInsertContent` method that inserts text while keeping the undo/redo
- *   functionality.
- * * It provides the `cdFocus` method that gets around the Firefox 56 and probably some other
- *   browsers bug where the caret doesn't appear in the input after focusing.
- *
- * @returns {Function}
- */
-export function getTextInputWidgetClass() {
-  // eslint-disable-next-line jsdoc/require-jsdoc
-  return tweakUserOoUiClass(class extends OO.ui.TextInputWidget {
-    // eslint-disable-next-line jsdoc/require-jsdoc
-    constructor(...args) {
-      super(...args);
-
-      this.$input.on('input', () => {
-        this.emit('manualChange', this.getValue());
-      });
-    }
-
-    // eslint-disable-next-line jsdoc/require-jsdoc
-    cdInsertContent(text) {
-      this.cdFocus();
-      if (!document.execCommand('insertText', false, text)) {
-        this.insertContent(text);
-      }
-    }
-
-    // eslint-disable-next-line jsdoc/require-jsdoc
-    cdFocus() {
-      this.$input[0].focus();
-    }
-  });
-}
-
-/**
- * Our mixin that extends the {@link external:OO.ui.ProcessDialog} class, adding a couple of methods
- * to it.
- */
-export class CdOoUiProcessDialogMixin {
-  /**
-   * Check if there are unsaved changes.
-   *
-   * @returns {boolean}
-   * @private
-   */
-  isUnsaved() {
-    const saveButton = this.actions.get({ actions: 'save' })[0];
-    return saveButton?.isVisible() && !saveButton.isDisabled();
-  }
-
-  /**
-   * Confirm closing a dialog.
-   */
-  confirmClose() {
-    if (!this.isUnsaved(this) || confirm(cd.s(`${this.constructor.cdKey}-close-confirm`))) {
-      this.close({ action: 'close' });
-      controller.removePreventUnloadCondition('dialog');
-    }
-  }
-
-  /**
-   * Handle a error, displaying a message with the provided name and popping the pending state. If
-   * the error is not recoverable, the dialog is closed at "Dismiss".
-   *
-   * @param {CdError|Error} e
-   * @param {string} messageName
-   * @param {boolean} recoverable
-   */
-  handleError(e, messageName, recoverable) {
-    let error;
-    if (e instanceof CdError) {
-      const { type } = e.data;
-      let message = cd.s(messageName);
-      if (type === 'network') {
-        message += ' ' + cd.s('error-network');
-      }
-      error = new OO.ui.Error(message, { recoverable });
-    } else {
-      error = new OO.ui.Error(cd.s('error-javascript'), { recoverable: false });
-    }
-
-    this.showErrors(error);
-    console.warn(e);
-    this.$errors
-      .find('.oo-ui-buttonElement:not(.oo-ui-flaggedElement-primary) > .oo-ui-buttonElement-button')
-      .on('click', () => {
-        if (recoverable) {
-          this.updateSize();
-        } else {
-          this.close();
-        }
-      });
-
-    this.actions.setAbilities({ close: true });
-
-    this.updateSize();
-    this.popPending();
-  }
-}
-
-tweakUserOoUiClass(CdOoUiProcessDialogMixin);
-
-/**
  * @typedef {object} CreateTextFieldReturn
  * @property {external:OO.ui.FieldLayout} field
  * @property {external:OO.ui.TextInputWidget} input
@@ -359,7 +217,7 @@ export function createTextField({
   help,
   title,
 }) {
-  const input = new (getTextInputWidgetClass())({ value, maxLength, required, classes });
+  const input = new (require('./TextInputWidget').default)({ value, maxLength, required, classes });
   const field = new OO.ui.FieldLayout(input, {
     label,
     align: 'top',
@@ -422,7 +280,7 @@ export function createNumberField({
 /**
  * @typedef {object} CreateCheckboxFieldReturn
  * @property {external:OO.ui.FieldLayout} field
- * @property {external:OO.ui.CheckboxInputWidget} input
+ * @property {import('./CheckboxInputWidget').default} input
  */
 
 /**
@@ -448,7 +306,12 @@ export function createCheckboxField({
   title,
   classes,
 }) {
-  const input = new (getCheckboxInputWidgetClass())({ value, selected, disabled, tabIndex });
+  const input = new (require('./CheckboxInputWidget').default)({
+    value,
+    selected,
+    disabled,
+    tabIndex,
+  });
   const field = new OO.ui.FieldLayout(input, {
     label,
     align: 'inline',

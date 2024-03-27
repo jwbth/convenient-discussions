@@ -1,17 +1,18 @@
 import CdError from './CdError';
+import MultilineTextInputWidget from './MultilineTextInputWidget';
+import ProcessDialog from './ProcessDialog';
 import cd from './cd';
 import controller from './controller';
-import { CdOoUiProcessDialogMixin, mixinUserOoUiClass, tweakUserOoUiClass } from './ooui';
-import { sleep, unique } from './utils';
-import { focusInput } from './utils-window';
 import { getPageIds, getPageTitles } from './apiWrappers';
+import { sleep, unique } from './utils';
+import { tweakUserOoUiClass } from './ooui';
 
 /**
  * Class used to create an "Edit subscriptions" dialog.
  *
- * @augments external:OO.ui.ProcessDialog
+ * @augments ProcessDialog
  */
-class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
+export default class EditSubscriptionsDialog extends ProcessDialog {
   static name = 'editSubscriptionsDialog';
   static title = cd.s('ewsd-title');
   static actions = [
@@ -144,7 +145,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
         ))
         .join('\n');
 
-      this.input = new OO.ui.MultilineTextInputWidget({
+      this.input = new MultilineTextInputWidget({
         value,
         rows: 30,
         classes: ['cd-editSubscriptions-input'],
@@ -156,7 +157,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
       this.sectionsPanel.$element.append(this.input.$element);
 
       this.stackLayout.setItem(this.sectionsPanel);
-      focusInput(this.input);
+      this.input.cdFocus();
       this.actions.setAbilities({ close: true });
 
       // A dirty workaround to avoid a scrollbar appearing when the window is loading. Couldn't
@@ -277,7 +278,4 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
   }
 }
 
-tweakUserOoUiClass(EditSubscriptionsDialog, OO.ui.ProcessDialog);
-mixinUserOoUiClass(EditSubscriptionsDialog, CdOoUiProcessDialogMixin);
-
-export default EditSubscriptionsDialog;
+tweakUserOoUiClass(EditSubscriptionsDialog);

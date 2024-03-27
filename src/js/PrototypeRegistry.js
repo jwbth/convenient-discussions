@@ -33,7 +33,7 @@ export default class PrototypeRegistry {
    * @returns {?*}
    */
   get(id) {
-    return this.elements[id]?.cloneNode(true) || this.widgets[id]?.().$element.get(0) || null;
+    return this.elements[id]?.cloneNode(true) || this.widgets[id]?.().$element[0] || null;
   }
 
   /**

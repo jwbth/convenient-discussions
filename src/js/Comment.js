@@ -16,13 +16,9 @@ import settings from './settings';
 import userRegistry from './userRegistry';
 import { ElementsTreeWalker, TreeWalker } from './treeWalker';
 import { addToArrayIfAbsent, areObjectsEqual, calculateWordOverlap, countOccurrences, decodeHtmlEntities, defined, getHeadingLevel, isInline, sleep, unique } from './utils';
-import { getHigherNodeAndOffsetInSelection } from './utils-window';
-import { getVisibilityByRects } from './utils-window';
-import { getExtendedRect } from './utils-window';
-import { wrapDiffBody } from './utils-window';
-import { wrapHtml } from './utils-window';
 import { extractSignatures, removeWikiMarkup } from './wikitext';
 import { formatDate, formatDateNative } from './timestamp';
+import { getExtendedRect, getHigherNodeAndOffsetInSelection, getVisibilityByRects, wrapDiffBody, wrapHtml } from './utils-window';
 import { handleApiReject, loadUserGenders, parseCode } from './apiWrappers';
 import { showConfirmDialog } from './ooui';
 

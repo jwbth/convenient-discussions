@@ -8,8 +8,7 @@ import cd from './cd';
 import controller from './controller';
 import settings from './settings';
 import { areObjectsEqual, calculateWordOverlap, flat, generateFixedPosTimestamp, spacesToUnderlines } from './utils';
-import { getVisibilityByRects } from './utils-window';
-import { getExtendedRect } from './utils-window';
+import { getExtendedRect, getVisibilityByRects } from './utils-window';
 
 export default {
   /**
@@ -191,13 +190,22 @@ export default {
   },
 
   /**
-   * _For internal use._ Perform some section-related operations in addition to those performed when
-   * each section is added to the registry, including setting the
-   * {@link Section#isLastSection isLastSection} property, adding buttons, and binding events.
+   * _For internal use._ Initialize the section registry.
    *
    * @param {import('./Subscriptions').default} subscriptions
    */
   init(subscriptions) {
+    subscriptions.on('processed', () => {
+      this.addSubscribeButtons();
+    });
+  },
+
+  /**
+   * _For internal use._ Perform some section-related operations in addition to those performed when
+   * each section is added to the registry, including setting the
+   * {@link Section#isLastSection isLastSection} property, adding buttons, and binding events.
+   */
+  setup() {
     this.items.forEach((section) => {
       /**
        * Is the section the last section on the page.
@@ -222,10 +230,6 @@ export default {
         (section.getChildren(true).slice(-1)[0] || section)
           .showAddSubsectionButtonOnReplyButtonHover(section);
       });
-
-    subscriptions.on('processed', () => {
-      this.addSubscribeButtons();
-    });
   },
 
   /**

@@ -18,9 +18,8 @@ import toc from './toc';
 import userRegistry from './userRegistry';
 import visits from './visits';
 import { defined, definedAndNotNull, getLastArrayElementOrSelf, sleep, underlinesToSpaces } from './utils';
-import { getFooter } from './utils-window';
-import { wrapHtml } from './utils-window';
 import { formatDateNative } from './timestamp';
+import { getFooter, wrapHtml } from './utils-window';
 import { handleApiReject, saveOptions } from './apiWrappers';
 import { removeWikiMarkup } from './wikitext';
 import { showConfirmDialog } from './ooui';
@@ -641,6 +640,7 @@ class BootProcess {
     this.subscriptions = controller.getSubscriptionsInstance();
     if (this.firstRun) {
       toc.init(this.subscriptions);
+      SectionStatic.init(this.subscriptions);
     }
     controller.setup(this.passedData.html);
     toc.setup(this.passedData.toc, this.passedData.hidetoc);
@@ -756,7 +756,7 @@ class BootProcess {
       this.subscriptions.loadToTalkPage(this, visitsPromise);
     }
 
-    SectionStatic.init(this.subscriptions);
+    SectionStatic.setup();
 
     // Dependent on sections being set
     CommentStatic.processOutdents(this.parser);

@@ -18,17 +18,11 @@ import pageRegistry, { Page } from './pageRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
 import { buildEditSummary, defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './utils';
-import { isCmdModifierPressed } from './utils-window';
-import { focusInput } from './utils-window';
-import { keyCombination } from './utils-window';
-import { insertText } from './utils-window';
-import { isInputFocused } from './utils-window';
-import { wrapDiffBody } from './utils-window';
-import { wrapHtml } from './utils-window';
-import { createCheckboxField, getTextInputWidgetClass } from './ooui';
+import { createCheckboxField } from './ooui';
 import { escapePipesOutsideLinks } from './wikitext';
 import { generateTagsRegexp, removeWikiMarkup } from './wikitext';
 import { handleApiReject, parseCode } from './apiWrappers';
+import { isCmdModifierPressed, isInputFocused, keyCombination, wrapDiffBody, wrapHtml } from './utils-window';
 
 const allowedFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'];
 
@@ -271,7 +265,7 @@ class CommentForm {
     } else {
       this.$element.cdScrollIntoView('center', true, () => {
         if (this.mode !== 'edit') {
-          focusInput(this.headlineInput || this.commentInput);
+          (this.headlineInput || this.commentInput).cdFocus();
         }
 
         // This is for the case when scrolling isn't performed (when it is, callback at the end of
@@ -372,20 +366,20 @@ class CommentForm {
       this.sectionOpeningCommentEdited
     ) {
       const parentSection = this.targetSection?.getParent();
-      if (this.mode === 'addSubsection') {
-        this.headlineInputPlaceholder = cd.s('cf-headline-subsection', this.targetSection.headline);
-      } else if (this.mode === 'edit' && parentSection) {
-        this.headlineInputPlaceholder = cd.s('cf-headline-subsection', parentSection.headline);
-      } else {
-        this.headlineInputPlaceholder = cd.s('cf-headline-topic');
-      }
+      this.headlineInputPlaceholder = this.mode === 'addSubsection' ?
+        cd.s('cf-headline-subsection', this.targetSection.headline) :
+        (
+          this.mode === 'edit' && parentSection ?
+            cd.s('cf-headline-subsection', parentSection.headline) :
+            cd.s('cf-headline-topic')
+        );
 
       /**
        * Headline input.
        *
        * @type {external:OO.ui.TextInputWidget|undefined}
        */
-      this.headlineInput = new (getTextInputWidgetClass())({
+      this.headlineInput = new (require('./TextInputWidget').default)({
         value: initialState?.headline ?? '',
         placeholder: this.headlineInputPlaceholder,
         classes: ['cd-commentForm-headlineInput'],
@@ -419,9 +413,9 @@ class CommentForm {
     /**
      * Comment input.
      *
-     * @type {external:OO.ui.MultilineTextInputWidget}
+     * @type {import('./MultilineTextInputWidget').default}
      */
-    this.commentInput = new OO.ui.MultilineTextInputWidget({
+    this.commentInput = new (require('./MultilineTextInputWidget').default)({
       value: initialState?.comment ?? '',
       placeholder: commentInputPlaceholder,
       autosize: true,
@@ -437,7 +431,7 @@ class CommentForm {
      *
      * @type {external:OO.ui.TextInputWidget}
      */
-    this.summaryInput = new (getTextInputWidgetClass())({
+    this.summaryInput = new (require('./TextInputWidget').default)({
       value: initialState?.summary ?? '',
       maxLength: cd.g.summaryLengthLimit,
       placeholder: cd.s('cf-summary-placeholder'),
@@ -471,7 +465,7 @@ class CommentForm {
          * Minor change checkbox.
          *
          * @name minorCheckbox
-         * @type {external:OO.ui.CheckboxInputWidget|undefined}
+         * @type {import('./CheckboxInputWidget').default|undefined}
          * @memberof CommentForm
          * @instance
          */
@@ -499,7 +493,7 @@ class CommentForm {
        * Watch page checkbox.
        *
        * @name watchCheckbox
-       * @type {external:OO.ui.CheckboxInputWidget}
+       * @type {import('./CheckboxInputWidget').default}
        * @memberof CommentForm
        * @instance
        */
@@ -534,7 +528,7 @@ class CommentForm {
          * Subscribe checkbox.
          *
          * @name subscribeCheckbox
-         * @type {external:OO.ui.CheckboxInputWidget|undefined}
+         * @type {import('./CheckboxInputWidget').default|undefined}
          * @memberof CommentForm
          * @instance
          */
@@ -583,7 +577,7 @@ class CommentForm {
        * Omit signature checkbox.
        *
        * @name omitSignatureCheckbox
-       * @type {external:OO.ui.CheckboxInputWidget|undefined}
+       * @type {import('./CheckboxInputWidget').default|undefined}
        * @memberof CommentForm
        * @instance
        */
@@ -620,7 +614,7 @@ class CommentForm {
        * Delete checkbox.
        *
        * @name deleteCheckbox
-       * @type {external:OO.ui.CheckboxInputWidget|undefined}
+       * @type {import('./CheckboxInputWidget').default|undefined}
        * @memberof CommentForm
        * @instance
        */
@@ -1100,7 +1094,7 @@ class CommentForm {
     // Fix a focus bug in Firefox 56.
     if ($input.is(':focus')) {
       $input.blur();
-      focusInput(this.commentInput);
+      this.commentInput.cdFocus();
     }
 
     // A hack to make the WikiEditor cookies related to active sections and pages saved correctly.
@@ -1224,7 +1218,7 @@ class CommentForm {
 
       operation.close();
 
-      focusInput(this.commentInput);
+      this.commentInput.cdFocus();
       this.preview();
     } catch (e) {
       if (e instanceof CdError) {
@@ -1367,7 +1361,7 @@ class CommentForm {
 
       operation.close();
 
-      focusInput(this.headlineInput || this.commentInput);
+      (this.headlineInput || this.commentInput).cdFocus();
       this.preview();
     } catch (e) {
       if (e instanceof CdError) {
@@ -1608,8 +1602,9 @@ class CommentForm {
       // loading stage.
       const text = await controller.getWikitextFromPaste(html, this.commentInput);
 
-      this.commentInput.selectRange(position - insertedText.length, position);
-      insertText(this.commentInput, text);
+      this.commentInput
+        .selectRange(position - insertedText.length, position)
+        .cdInsertContent(text);
       this.teardownInputPopups();
     });
     this.teardownInputPopups();
@@ -2063,11 +2058,12 @@ class CommentForm {
       this.$advanced.show();
       const value = this.summaryInput.getValue();
       const match = value.match(/^.+?\*\/ */);
-      focusInput(this.summaryInput);
-      this.summaryInput.selectRange(match ? match[0].length : 0, value.length);
+      this.summaryInput
+        .cdFocus()
+        .selectRange(match ? match[0].length : 0, value.length);
     } else {
       this.$advanced.hide();
-      focusInput(this.commentInput);
+      this.commentInput.cdFocus();
     }
   }
 
@@ -2763,7 +2759,7 @@ class CommentForm {
           'top' :
           'bottom'
       );
-      focusInput(this.commentInput);
+      this.commentInput.cdFocus();
     }
   }
 
@@ -2853,7 +2849,7 @@ class CommentForm {
         'top' :
         'bottom'
     );
-    focusInput(this.commentInput);
+    this.commentInput.cdFocus();
   }
 
   /**
@@ -2959,7 +2955,7 @@ class CommentForm {
 
     for (const check of checks) {
       if (check.condition && !check.confirmation()) {
-        focusInput(this.commentInput);
+        this.commentInput.cdFocus();
         return false;
       }
     }
@@ -3251,7 +3247,7 @@ class CommentForm {
     if (controller.isPageOverlayOn() || this.isBeingSubmitted()) return;
 
     if (confirmClose && !this.confirmClose()) {
-      focusInput(this.commentInput);
+      this.commentInput.cdFocus();
       return;
     }
 
@@ -3588,9 +3584,10 @@ class CommentForm {
       data.cmdModify();
       const text = data.start + data.content + data.end;
       const range = this.commentInput.getRange();
-      this.commentInput.selectRange(0);
-      insertText(this.commentInput, text);
-      this.commentInput.selectRange(range.from + text.length, range.to + text.length);
+      this.commentInput
+        .selectRange(0)
+        .cdInsertContent(text)
+        .selectRange(range.from + text.length, range.to + text.length);
       return;
     }
 
@@ -3603,7 +3600,7 @@ class CommentForm {
 
     // Insert a space if the preceding text doesn't end with one
     if (caretIndex && !/\s/.test(this.commentInput.getValue().substr(caretIndex - 1, 1))) {
-      insertText(this.commentInput, ' ');
+      this.commentInput.cdInsertContent(' ');
     }
 
     this.autocomplete.tribute.showMenuForCollection(
@@ -3735,7 +3732,7 @@ class CommentForm {
       trailingNewline
     );
 
-    insertText(this.commentInput, text);
+    this.commentInput.cdInsertContent(text);
     if (!selection && !replace) {
       this.commentInput.selectRange(periStartPos, periStartPos + peri.length);
     }
@@ -3960,7 +3957,7 @@ class CommentForm {
   goTo() {
     this.getParentComment()?.expandAllThreadsDownTo();
     this.$element.cdScrollIntoView('center');
-    focusInput(this.commentInput);
+    this.commentInput.cdFocus();
   }
 
   /**

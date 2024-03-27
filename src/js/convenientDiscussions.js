@@ -9,7 +9,8 @@ import cd from './cd';
 import controller from './controller';
 import debug from './debug';
 import pageRegistry from './pageRegistry';
-import { buildEditSummary, underlinesToSpaces, wrapDiffBody, wrapHtml } from './utils';
+import { buildEditSummary, underlinesToSpaces } from './utils';
+import { wrapDiffBody, wrapHtml } from './utils-window';
 
 const mwStringsCache = {};
 let isQqxMode;

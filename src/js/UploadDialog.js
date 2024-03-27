@@ -2,10 +2,12 @@
 
 import Button from './Button';
 import CdError from './CdError';
+import DivLabelWidget from './DivLabelWidget';
+import ProcessDialog from './ProcessDialog';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
-import { CdOoUiProcessDialogMixin, createCheckboxField, createTextField, getDivLabelWidgetClass, mixinUserOoUiClass, tweakUserOoUiClass } from './ooui';
+import { createCheckboxField, createTextField, mixinUserOoUiClass, tweakUserOoUiClass } from './ooui';
 import { generateFixedPosTimestamp, getDbnameForHostname, zeroPad } from './utils';
 import { wrapHtml } from './utils-window';
 
@@ -54,7 +56,7 @@ class RadioOptionWidget extends OO.ui.RadioOptionWidget {
   }
 
   createHelpElement(text) {
-    const helpWidget = new (getDivLabelWidgetClass())({
+    const helpWidget = new DivLabelWidget({
       label: text,
       classes: ['oo-ui-inline-help'],
     });
@@ -677,4 +679,4 @@ tweakUserOoUiClass(RadioOptionWidget);
 tweakUserOoUiClass(UploadDialog);
 tweakUserOoUiClass(ForeignStructuredUploadBookletLayout)
 tweakUserOoUiClass(ForeignStructuredUpload);
-mixinUserOoUiClass(UploadDialog, CdOoUiProcessDialogMixin);
+mixinUserOoUiClass(UploadDialog, ProcessDialog);

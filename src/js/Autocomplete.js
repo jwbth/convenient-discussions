@@ -6,8 +6,6 @@ import controller from './controller';
 import settings from './settings';
 import userRegistry from './userRegistry';
 import { defined, removeDoubleSpaces, sleep, ucFirst, underlinesToSpaces, unique } from './utils';
-import { focusInput } from './utils-window';
-import { insertText } from './utils-window';
 import { handleApiReject } from './apiWrappers';
 
 /**
@@ -37,17 +35,25 @@ class Autocomplete {
    * @param {object} options
    * @param {Array.<'mentions'|'commentLinks'|'wikilinks'|'templates'|'tags'>} options.types Which
    *   values should be autocompleted.
-   * @param {external:OO.ui.TextInputWidget[]} options.inputs Inputs to attach the autocomplete to.
+   * @param {external:TextInputWidget[]} options.inputs Inputs to attach the autocomplete to. Please
+   *   note that these should be CD's {@link TextInputWidget}s, not
+   *   {@link external:OO.ui.TextInputWidget}s, since we use some CD's methods on the inputs here
+   *   ({@link TextInputWidget#cdFocus}, {@link TextInputWidget#cdInsertContent}). This is not
+   *   essential, so if you borrow the source code, you can replace them with native
+   *   {@link external:OO.ui.TextInputWidget#focus} and
+   *   {@link external:OO.ui.TextInputWidget#insertContent}.
    * @param {string[]} [options.comments] List of comments in the section for the mentions and
    *   comment links autocomplete.
    * @param {string[]} [options.defaultUserNames] Default list of user names for the mentions
    *   autocomplete.
    */
   constructor({ types, inputs, comments, defaultUserNames }) {
-    types = types
-      // The "mentions" type is needed in any case as it can be triggered from the toolbar. When it
-      // is not, we will suppress it specifically.
-      .filter((type) => settings.get('autocompleteTypes').includes(type) || type === 'mentions');
+    this.types = settings.get('autocompleteTypes');
+    this.useTemplateData = settings.get('useTemplateData');
+
+    // The `mentions` type is needed in any case as it can be triggered from the toolbar. When it is
+    // not, we will suppress it specifically.
+    types = types.filter((type) => this.types.includes(type) || type === 'mentions');
 
     const collections = this.getCollections(types, comments, defaultUserNames);
 
@@ -109,7 +115,7 @@ class Autocomplete {
   }
 
   /**
-   * Get a list of collections of specified types.
+   * Get the list of collections of specified types.
    *
    * @param {string[]} types
    * @param {string[]} comments
@@ -152,10 +158,7 @@ class Autocomplete {
         requireLeadingSpace: cd.config.mentionRequiresLeadingSpace,
         selectTemplate,
         values: async (text, callback) => {
-          if (
-            !settings.get('autocompleteTypes').includes('mentions') &&
-            !this.tribute.current.externalTrigger
-          ) {
+          if (!this.types.includes('mentions') && !this.tribute.current.externalTrigger) {
             return;
           }
 
@@ -360,12 +363,13 @@ class Autocomplete {
         searchOpts: { skip: true },
         selectTemplate: (item, event) => {
           if (item) {
-            if (settings.get('useTemplateData') && event.shiftKey && !event.altKey) {
+            if (this.useTemplateData && event.shiftKey && !event.altKey) {
               const input = this.tribute.current.element.cdInput;
 
               setTimeout(() => {
-                input.setDisabled(true);
-                input.pushPending();
+                input
+                  .setDisabled(true)
+                  .pushPending();
 
                 controller.getApi().get({
                   action: 'templatedata',
@@ -416,15 +420,16 @@ class Autocomplete {
                       // Remove leading "|".
                       paramsString = paramsString.slice(1);
 
-                      input.setDisabled(false);
-
                       const caretIndex = input.getRange().to;
-                      insertText(input, paramsString);
-                      input.selectRange(caretIndex + firstValueIndex - 1);
+                      input
+                        .setDisabled(false)
+                        .cdInsertContent(paramsString)
+                        .selectRange(caretIndex + firstValueIndex - 1);
                     },
                     () => {
-                      input.setDisabled(false);
-                      focusInput(input);
+                      input
+                        .setDisabled(false)
+                        .cdFocus();
                     }
                   )
                   .always(() => {

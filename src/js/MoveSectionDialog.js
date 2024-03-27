@@ -1,20 +1,21 @@
 import Autocomplete from './Autocomplete';
 import CdError from './CdError';
+import ProcessDialog from './ProcessDialog';
+import TextInputWidget from './TextInputWidget';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
 import { buildEditSummary, sleep } from './utils';
-import { focusInput } from './utils-window';
-import { wrapHtml } from './utils-window';
 import { createCheckboxField, tweakUserOoUiClass } from './ooui';
 import { encodeWikilink, endWithTwoNewlines, findFirstTimestamp } from './wikitext';
+import { wrapHtml } from './utils-window';
 
 /**
  * Class used to create a move section dialog.
  *
- * @augments external:OO.ui.ProcessDialog
+ * @augments ProcessDialog
  */
-class MoveSectionDialog extends OO.ui.ProcessDialog {
+export default class MoveSectionDialog extends ProcessDialog {
   static name = 'moveSectionDialog';
   static title = cd.s('msd-title');
   static actions = [
@@ -189,7 +190,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
       }
 
       this.controls.summaryEnding = {};
-      this.controls.summaryEnding.input = new OO.ui.TextInputWidget({
+      this.controls.summaryEnding.input = new TextInputWidget({
         // TODO: Take into account the whole summary length, updating the maximum value dynamically.
         maxLength: 250,
       });
@@ -216,7 +217,7 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
       );
 
       this.stackLayout.setItem(this.movePanel);
-      focusInput(this.controls.title.input);
+      this.controls.title.input.cdFocus();
       this.actions.setAbilities({ close: true });
 
       // A dirty workaround to avoid a scrollbar appearing when the window is loading. Couldn't
@@ -579,6 +580,4 @@ class MoveSectionDialog extends OO.ui.ProcessDialog {
   }
 }
 
-tweakUserOoUiClass(MoveSectionDialog, OO.ui.ProcessDialog);
-
-export default MoveSectionDialog;
+tweakUserOoUiClass(MoveSectionDialog);

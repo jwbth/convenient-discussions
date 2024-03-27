@@ -13,7 +13,6 @@ import settings from './settings';
 import toc from './toc';
 import userRegistry from './userRegistry';
 import { defined, flat, getHeadingLevel, underlinesToSpaces, unique } from './utils';
-import { focusInput } from './utils-window';
 import { encodeWikilink, maskDistractingCode, normalizeCode } from './wikitext';
 import { formatDate } from './timestamp';
 import { handleApiReject } from './apiWrappers';
@@ -1036,7 +1035,7 @@ class Section extends SectionSkeleton {
 
     if (this.addSubsectionForm) {
       this.addSubsectionForm.$element.cdScrollIntoView('center');
-      focusInput(this.addSubsectionForm.headlineInput);
+      this.addSubsectionForm.headlineInput.cdFocus();
     } else {
       /**
        * Add subsection form related to the section.

@@ -12,7 +12,6 @@ import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
 import { areObjectsEqual, removeFromArrayIfPresent } from './utils';
-import { focusInput } from './utils-window';
 
 /**
  * Callback to be used in
@@ -178,7 +177,7 @@ const CommentFormStatic = {
       addSectionForm.$element.cdScrollIntoView('center');
 
       // Headline input may be missing if the "nosummary" preload parameter is truthy.
-      focusInput(addSectionForm.headlineInput || addSectionForm.commentInput);
+      (addSectionForm.headlineInput || addSectionForm.commentInput).cdFocus();
     } else {
       /**
        * Add section form.

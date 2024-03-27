@@ -8,9 +8,7 @@ import controller from './controller';
 import settings from './settings';
 import { ElementsTreeWalker } from './treeWalker';
 import { defined, flat, getCommonGender, isHeadingNode, removeFromArrayIfPresent, unique } from './utils';
-import { isCmdModifierPressed } from './utils-window';
-import { getVisibilityByRects } from './utils-window';
-import { getExtendedRect } from './utils-window';
+import { getExtendedRect, getVisibilityByRects, isCmdModifierPressed } from './utils-window';
 import { loadUserGenders } from './apiWrappers';
 
 let isInited;

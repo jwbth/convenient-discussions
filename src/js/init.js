@@ -24,9 +24,8 @@ import settings from './settings';
 import userRegistry from './userRegistry';
 import { dateTokenToMessageNames, initDayjs } from './timestamp';
 import { generatePageNamePattern, getContentLanguageMessages, unique } from './utils';
-import { skin$ } from './utils-window';
-import { transparentize } from './utils-window';
 import { processPage } from './updateChecker';
+import { skin$, transparentize } from './utils-window';
 import { splitIntoBatches } from './apiWrappers';
 
 let defaultFontSize;

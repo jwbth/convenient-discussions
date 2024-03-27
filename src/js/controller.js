@@ -28,15 +28,8 @@ import pageRegistry from './pageRegistry';
 import settings from './settings';
 import toc from './toc';
 import { ElementsTreeWalker } from './treeWalker';
+import { copyText, getExtendedRect, getVisibilityByRects, isCmdModifierPressed, isInputFocused, keyCombination, skin$, wrapHtml } from './utils-window';
 import { defined, definedAndNotNull, getLastArrayElementOrSelf, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils';
-import { copyText } from './utils-window';
-import { isCmdModifierPressed } from './utils-window';
-import { getVisibilityByRects } from './utils-window';
-import { skin$ } from './utils-window';
-import { keyCombination } from './utils-window';
-import { getExtendedRect } from './utils-window';
-import { isInputFocused } from './utils-window';
-import { wrapHtml } from './utils-window';
 import { getUserInfo, htmlToWikitext } from './apiWrappers';
 
 export default {

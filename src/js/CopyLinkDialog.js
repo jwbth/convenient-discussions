@@ -1,7 +1,8 @@
 import CdError from './CdError';
 import Comment from './Comment';
+import DivLabelWidget from './DivLabelWidget';
 import cd from './cd';
-import { createCopyTextField, getDivLabelWidgetClass, tweakUserOoUiClass } from './ooui';
+import { createCopyTextField, tweakUserOoUiClass } from './ooui';
 import { wrapHtml } from './utils-window';
 
 /**
@@ -9,7 +10,7 @@ import { wrapHtml } from './utils-window';
  *
  * @augments external:OO.ui.MessageDialog
  */
-class CopyLinkDialog extends OO.ui.MessageDialog {
+export default class CopyLinkDialog extends OO.ui.MessageDialog {
   static name = 'copyLinkDialog';
   static actions = [
     {
@@ -49,7 +50,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
     // By default, the whole message is wrapped in a `<label>` element. We don't want that behavior
     // and revert it.
     this.message.$element.remove();
-    this.message = new (getDivLabelWidgetClass())({ classes: ['oo-ui-messageDialog-message'] });
+    this.message = new DivLabelWidget({ classes: ['oo-ui-messageDialog-message'] });
     this.text.$element.append(this.message.$element);
 
     if (this.isComment) {
@@ -279,6 +280,4 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   }
 }
 
-tweakUserOoUiClass(CopyLinkDialog, OO.ui.MessageDialog);
-
-export default CopyLinkDialog;
+tweakUserOoUiClass(CopyLinkDialog);

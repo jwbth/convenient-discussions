@@ -1,9 +1,6 @@
-import Button from "./Button";
-import cd from "./cd";
-import cd from "./cd";
-import cd from "./cd";
+import Button from './Button';
+import cd from './cd';
 import { removeFromArrayIfPresent } from './utils';
-
 
 /**
  * @typedef {object} WrapCallbacks
@@ -49,7 +46,9 @@ export function wrapHtml(html, options = {}) {
   }
   return $wrapper;
 
-}/**
+}
+
+/**
  * Wrap the response to the "compare" API request in a table.
  *
  * @param {string} body
@@ -93,20 +92,6 @@ export function transparentize(color) {
 export function isInputFocused() {
   const $active = $(document.activeElement);
   return $active.is(':input') || $active.prop('isContentEditable');
-}
-
-/**
- * Replace the selected text (if any) in an input (`<input>` or `<textarea>`) with the provided text
- * and keep the undo/redo functionality.
- *
- * @param {external:OO.ui.TextInputWidget} input Input to set replace the selection in.
- * @param {string} text Text to replace the selection with.
- */
-export function insertText(input, text) {
-  focusInput(input);
-  if (!document.execCommand('insertText', false, text)) {
-    input.insertContent(text);
-  }
 }
 
 /**
