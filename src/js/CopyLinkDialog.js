@@ -2,7 +2,7 @@ import CdError from './CdError';
 import Comment from './Comment';
 import cd from './cd';
 import { createCopyTextField, getDivLabelWidgetClass, tweakUserOoUiClass } from './ooui';
-import { dealWithLoadingBug, wrapHtml } from './utils';
+import { wrapHtml } from './utils-window';
 
 /**
  * Class used to create a "Copy link" dialog.
@@ -28,8 +28,6 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
     super({
       classes: ['cd-dialog-copyLink'],
     });
-
-    this.copyCallback = this.copyCallback.bind(this);
 
     this.object = object;
     this.content = content;
@@ -155,8 +153,6 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 
       mw.hook('wikipage.content').fire(this.content.$diffView);
 
-      if (dealWithLoadingBug('mediawiki.diff.styles')) return;
-
       await mw.loader.using(['mediawiki.diff', 'mediawiki.diff.styles']);
     } catch (e) {
       if (e instanceof CdError) {
@@ -251,7 +247,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    * @private
    */
   createDiffPanelContent() {
-    const copyCallback = this.copyCallback;
+    const copyCallback = this.copyCallback.bind(this);
 
     const standardField = createCopyTextField({
       value: this.content.diffStandard,

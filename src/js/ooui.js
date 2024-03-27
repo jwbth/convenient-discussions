@@ -173,26 +173,6 @@ function getCheckboxInputWidgetClass() {
 }
 
 /**
- * Get a class that extends {@link external:OO.ui.TextInputWidget OO.ui.TextInputWidget} and emits
- * `manualChange` event when the input changes by user action.
- *
- * @returns {Function}
- */
-export function getTextInputWidgetClass() {
-  // eslint-disable-next-line jsdoc/require-jsdoc
-  return tweakUserOoUiClass(class extends OO.ui.TextInputWidget {
-    // eslint-disable-next-line jsdoc/require-jsdoc
-    constructor(...args) {
-      super(...args);
-
-      this.$input.on('input', () => {
-        this.emit('manualChange', this.getValue());
-      });
-    }
-  });
-}
-
-/**
  * Get a class that extends
  * {@link https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.LabelWidget.html OO.ui.LabelWidget} and
  * uses `<div>` tag instead of `<label>`.
@@ -243,6 +223,44 @@ export async function showConfirmDialog(message, options = {}) {
   );
 
   return (await windowInstance.closed)?.action;
+}
+
+/**
+ * Get a class that extends {@link external:OO.ui.TextInputWidget OO.ui.TextInputWidget} and has
+ * some features we need.
+ * * It emits `manualChange` event when the input changes by user action.
+ * * It provides the `cdInsertContent` method that inserts text while keeping the undo/redo
+ *   functionality.
+ * * It provides the `cdFocus` method that gets around the Firefox 56 and probably some other
+ *   browsers bug where the caret doesn't appear in the input after focusing.
+ *
+ * @returns {Function}
+ */
+export function getTextInputWidgetClass() {
+  // eslint-disable-next-line jsdoc/require-jsdoc
+  return tweakUserOoUiClass(class extends OO.ui.TextInputWidget {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    constructor(...args) {
+      super(...args);
+
+      this.$input.on('input', () => {
+        this.emit('manualChange', this.getValue());
+      });
+    }
+
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    cdInsertContent(text) {
+      this.cdFocus();
+      if (!document.execCommand('insertText', false, text)) {
+        this.insertContent(text);
+      }
+    }
+
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    cdFocus() {
+      this.$input[0].focus();
+    }
+  });
 }
 
 /**

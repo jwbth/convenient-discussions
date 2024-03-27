@@ -11,7 +11,8 @@ import StorageItem from './StorageItem';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
-import { areObjectsEqual, focusInput, removeFromArrayIfPresent } from './utils';
+import { areObjectsEqual, removeFromArrayIfPresent } from './utils';
+import { focusInput } from './utils-window';
 
 /**
  * Callback to be used in

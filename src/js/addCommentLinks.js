@@ -77,12 +77,11 @@ async function initialize() {
     .addClass('cd-commentLink')
     .append($spanRegularPrototype)
     .prepend(' ');
-  prototypes.add('wrapperRegular', $wrapperRegularPrototype.get(0));
+  prototypes.add('wrapperRegular', $wrapperRegularPrototype[0]);
   prototypes.add('wrapperRelevant',
     $wrapperRegularPrototype
       .clone()
-      .addClass('cd-commentLink-relevant')
-      .get(0)
+      .addClass('cd-commentLink-relevant')[0]
   );
 
   const currentUserNamePattern = generatePageNamePattern(cd.g.userName);
@@ -333,7 +332,7 @@ function processWatchlist($content) {
   // * with item grouping and without
   // * with enhanced fitlers and without
 
-  const lines = $content.get(0).querySelectorAll('.mw-changeslist-line:not(table)');
+  const lines = $content[0].querySelectorAll('.mw-changeslist-line:not(table)');
   lines.forEach((line) => {
     const nsMatch = line.className.match(/mw-changeslist-ns(\d+)/);
     const nsNumber = nsMatch && Number(nsMatch[1]);
@@ -424,7 +423,7 @@ function processContributions($content) {
   if (cd.g.uiTimezone === null) return;
 
   [
-    ...$content.get(0).querySelectorAll('.mw-contributions-list > li:not(.mw-tag-mw-new-redirect)')
+    ...$content[0].querySelectorAll('.mw-contributions-list > li:not(.mw-tag-mw-new-redirect)')
   ].forEach((line) => {
     const linkElement = line.querySelector('.mw-contributions-title');
     if (!linkElement || isWikidataItem(linkElement)) return;
@@ -490,7 +489,7 @@ function processHistory($content) {
 
   const link = pageRegistry.getCurrent().getUrl();
   [
-    ...$content.get(0)
+    ...$content[0]
       .querySelectorAll('#pagehistory > li, #pagehistory > .mw-contributions-list > li:not(.mw-tag-mw-new-redirect)')
   ].forEach((line) => {
     if (line.querySelector('.minoredit')) return;
@@ -572,7 +571,7 @@ function processDiff($diff) {
   if (cd.g.uiTimezone === null) return;
 
   const $root = $diff || controller.$content;
-  const root = $root.get(0);
+  const root = $root[0];
   [root.querySelector('.diff-otitle'), root.querySelector('.diff-ntitle')]
     .filter(definedAndNotNull)
     .forEach((area) => {

@@ -3,7 +3,9 @@ import CdError from './CdError';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
-import { buildEditSummary, focusInput, sleep, wrapHtml } from './utils';
+import { buildEditSummary, sleep } from './utils';
+import { focusInput } from './utils-window';
+import { wrapHtml } from './utils-window';
 import { createCheckboxField, tweakUserOoUiClass } from './ooui';
 import { encodeWikilink, endWithTwoNewlines, findFirstTimestamp } from './wikitext';
 

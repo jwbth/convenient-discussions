@@ -8,7 +8,8 @@ import TextMasker from './TextMasker';
 import cd from './cd';
 import pageRegistry from './pageRegistry';
 import userRegistry from './userRegistry';
-import { areObjectsEqual, defined, ucFirst, wrapHtml } from './utils';
+import { areObjectsEqual, defined, ucFirst } from './utils';
+import { wrapHtml } from './utils-window';
 import { formatDateImproved, formatDateNative, formatDateRelative } from './timestamp';
 import { getUserInfo, saveGlobalOption, saveLocalOption } from './apiWrappers';
 

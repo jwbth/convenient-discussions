@@ -17,7 +17,14 @@ import notifications from './notifications';
 import pageRegistry, { Page } from './pageRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
-import { buildEditSummary, defined, focusInput, getDayTimestamp, insertText, isCmdModifierPressed, isInputFocused, keyCombination, removeDoubleSpaces, sleep, unique, wrapDiffBody, wrapHtml } from './utils';
+import { buildEditSummary, defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './utils';
+import { isCmdModifierPressed } from './utils-window';
+import { focusInput } from './utils-window';
+import { keyCombination } from './utils-window';
+import { insertText } from './utils-window';
+import { isInputFocused } from './utils-window';
+import { wrapDiffBody } from './utils-window';
+import { wrapHtml } from './utils-window';
 import { createCheckboxField, getTextInputWidgetClass } from './ooui';
 import { escapePipesOutsideLinks } from './wikitext';
 import { generateTagsRegexp, removeWikiMarkup } from './wikitext';
@@ -89,8 +96,6 @@ class CommentForm {
     ) {
       throw new CdError();
     }
-
-    this.updateAutoSummary = this.updateAutoSummary.bind(this);
 
     /**
      * Form mode.
@@ -380,7 +385,7 @@ class CommentForm {
        *
        * @type {external:OO.ui.TextInputWidget|undefined}
        */
-      this.headlineInput = new OO.ui.TextInputWidget({
+      this.headlineInput = new (getTextInputWidgetClass())({
         value: initialState?.headline ?? '',
         placeholder: this.headlineInputPlaceholder,
         classes: ['cd-commentForm-headlineInput'],
@@ -1537,7 +1542,7 @@ class CommentForm {
    * @private
    */
   getCommentInputDummyFloatableContainer() {
-    const element = this.commentInput.$input.get(0);
+    const element = this.commentInput.$input[0];
     const computedStyle = window.getComputedStyle(element);
     const $span = $('<span>');
     $('<div>')
@@ -1562,8 +1567,8 @@ class CommentForm {
       .appendTo(document.body);
     $span
       .css({
-        top: $span.get(0).offsetTop,
-        left: $span.get(0).offsetLeft,
+        top: $span[0].offsetTop,
+        left: $span[0].offsetLeft,
         width: 0,
         height: parseFloat($span.css('line-height')) - 3,
       })
@@ -2599,7 +2604,7 @@ class CommentForm {
       );
 
     Parser.prototype.replaceTimestampLinksWithSpans.apply({
-      context: { rootElement: this.$previewArea.get(0) },
+      context: { rootElement: this.$previewArea[0] },
     });
 
     /**
@@ -3449,7 +3454,7 @@ class CommentForm {
         if (this.target.isOpeningSection) {
           return cd.s('es-reply');
         } else {
-          this.target.maybeRequestAuthorGender(this.updateAutoSummary);
+          this.target.maybeRequestAuthorGender(this.updateAutoSummary.bind(this));
           return this.target.isOwn ?
             cd.s('es-addition') :
             removeDoubleSpaces(
@@ -3470,7 +3475,7 @@ class CommentForm {
               if (targetParent.level === 0) {
                 subject = 'reply';
               } else {
-                targetParent.maybeRequestAuthorGender(this.updateAutoSummary);
+                targetParent.maybeRequestAuthorGender(this.updateAutoSummary.bind(this));
                 subject = targetParent.isOwn ? 'addition' : 'reply-to';
                 realTarget = targetParent;
               }
@@ -3485,7 +3490,7 @@ class CommentForm {
             if (this.target.isOpeningSection) {
               subject = this.targetSection.getParent() ? 'subsection' : 'topic';
             } else {
-              this.target.maybeRequestAuthorGender(this.updateAutoSummary);
+              this.target.maybeRequestAuthorGender(this.updateAutoSummary.bind(this));
               subject = 'comment-by';
             }
           }
@@ -3602,7 +3607,7 @@ class CommentForm {
     }
 
     this.autocomplete.tribute.showMenuForCollection(
-      this.commentInput.$input.get(0),
+      this.commentInput.$input[0],
       this.autocomplete.tribute.collection
         .findIndex((collection) => collection.trigger === cd.config.mentionCharacter)
     );

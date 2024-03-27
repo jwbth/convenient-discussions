@@ -351,7 +351,7 @@ mw.hook('convenientDiscussions.commentFormCustomModulesReady').add(function (com
 		// Ctrl+Alt+W
 		const isCmdModifierPressed = cd.g.clientProfile.platform === 'mac' ? e.metaKey : e.ctrlKey;
 		if (isCmdModifierPressed && !e.shiftKey && e.altKey && e.keyCode === 87) {
-			window.Wikify(commentForm.commentInput.$input.get(0));
+			window.Wikify(commentForm.commentInput.$input[0]);
 		}
 	});
 });
@@ -369,7 +369,7 @@ mw.hook('convenientDiscussions.commentFormToolbarReady').add(function (commentFo
 						action: {
 							type: 'callback',
 							execute: function () {
-								window.Wikify(commentForm.commentInput.$input.get(0));
+								window.Wikify(commentForm.commentInput.$input[0]);
 							},
 						},
 					},
@@ -393,7 +393,7 @@ mw.hook('convenientDiscussions.commentFormToolbarReady').add(function (commentFo
 					action: {
 						type: 'callback',
 						execute: function () {
-							window.urlDecoderRun(commentForm.commentInput.$input.get(0));
+							window.urlDecoderRun(commentForm.commentInput.$input[0]);
 						},
 					},
 				},

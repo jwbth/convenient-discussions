@@ -11,7 +11,9 @@ import controller from './controller';
 import navPanel from './navPanel';
 import settings from './settings';
 import { TreeWalker } from './treeWalker';
-import { getCommonGender, getExtendedRect, getHigherNodeAndOffsetInSelection, reorderArray, underlinesToSpaces, unique } from './utils';
+import { getCommonGender, reorderArray, underlinesToSpaces, unique } from './utils';
+import { getHigherNodeAndOffsetInSelection } from './utils-window';
+import { getExtendedRect } from './utils-window';
 import { getPagesExistence } from './apiWrappers';
 
 const newDtTimestampPattern = '(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})\\d{2}';
@@ -237,7 +239,7 @@ const CommentStatic = {
     });
 
     const comments = [];
-    const rootBottom = controller.$root.get(0).getBoundingClientRect().bottom + window.scrollY;
+    const rootBottom = controller.$root[0].getBoundingClientRect().bottom + window.scrollY;
     let notMovedCount = 0;
 
     // We go from the end and stop at the first _three_ comments that have not been misplaced. A

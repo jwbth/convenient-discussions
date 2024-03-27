@@ -59,7 +59,7 @@ function getPageNameFromUrl(url) {
  * @property {Function} getElementByClassName
  * @property {Element|external:Element} rootElement
  * @property {boolean} areThereOutdents
- * @property {Function} handleDtMarkup
+ * @property {Function} processAndRemoveDtElements
  * @property {Function} removeDtButtonHtmlComments
  */
 
@@ -76,8 +76,6 @@ class Parser {
    *   the tasks we need in the current context (window or worker).
    */
   constructor(context) {
-    this.timestampToSignature = this.timestampToSignature.bind(this);
-
     this.context = context;
     this.existingCommentIds = [];
   }
@@ -126,7 +124,7 @@ class Parser {
       .concat(
         [...this.context.rootElement.getElementsByClassName('ext-discussiontools-init-replylink-buttons')]
       );
-    this.context.handleDtMarkup(elements, bootProcess);
+    this.context.processAndRemoveDtElements(elements, bootProcess);
     this.context.removeDtButtonHtmlComments();
     this.replaceTimestampLinksWithSpans();
   }
@@ -529,7 +527,7 @@ class Parser {
    */
   findSignatures() {
     let signatures = this.findTimestamps()
-      .map(this.timestampToSignature)
+      .map(this.timestampToSignature.bind(this))
       .filter(defined);
     signatures.push(...this.findUnsigneds());
 

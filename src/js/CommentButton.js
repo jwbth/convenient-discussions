@@ -69,7 +69,7 @@ class CommentButton extends Button {
      */
     this.buttonWidget = this.widgetConstructor();
 
-    const element = this.buttonWidget.$element.get(0);
+    const element = this.buttonWidget.$element[0];
     this.element.parentNode.replaceChild(element, this.element);
     this.element = element;
     this.buttonElement = element.firstChild;

@@ -12,7 +12,8 @@ import pageRegistry from './pageRegistry';
 import settings from './settings';
 import toc from './toc';
 import userRegistry from './userRegistry';
-import { dealWithLoadingBug, defined, flat, focusInput, getHeadingLevel, underlinesToSpaces, unique } from './utils';
+import { defined, flat, getHeadingLevel, underlinesToSpaces, unique } from './utils';
+import { focusInput } from './utils-window';
 import { encodeWikilink, maskDistractingCode, normalizeCode } from './wikitext';
 import { formatDate } from './timestamp';
 import { handleApiReject } from './apiWrappers';
@@ -34,16 +35,6 @@ class Section extends SectionSkeleton {
    */
   constructor(parser, heading, targets, subscriptions) {
     super(parser, heading, targets, subscriptions);
-
-    this.scrollToLatestComment = this.scrollToLatestComment.bind(this);
-    this.scrollToNewComments = this.scrollToNewComments.bind(this);
-    this.handleReplyButtonHover = this.handleReplyButtonHover.bind(this);
-    this.handleReplyButtonUnhover = this.handleReplyButtonUnhover.bind(this);
-    this.resetShowAddSubsectionButtonTimeout = this.resetShowAddSubsectionButtonTimeout.bind(this);
-    this.resetHideAddSubsectionButtonTimeout = this.resetHideAddSubsectionButtonTimeout.bind(this);
-    this.deferAddSubsectionButtonHide = this.deferAddSubsectionButtonHide.bind(this);
-    this.toggleAuthors = this.toggleAuthors.bind(this);
-    this.createMoreMenuSelect = this.createMoreMenuSelect.bind(this);
 
     this.subscriptions = subscriptions;
 
@@ -244,8 +235,8 @@ class Section extends SectionSkeleton {
         this.addSubsection();
       },
     });
-    button.buttonElement.onmouseenter = this.resetHideAddSubsectionButtonTimeout;
-    button.buttonElement.onmouseleave = this.deferAddSubsectionButtonHide;
+    button.buttonElement.onmouseenter = this.resetHideAddSubsectionButtonTimeout.bind(this);
+    button.buttonElement.onmouseleave = this.deferAddSubsectionButtonHide.bind(this);
 
     const container = document.createElement('div');
     container.className = 'cd-section-button-container cd-addSubsectionButton-container';
@@ -340,8 +331,8 @@ class Section extends SectionSkeleton {
   showAddSubsectionButtonOnReplyButtonHover(baseSection) {
     if (!this.replyButton) return;
 
-    this.replyButton.buttonElement.onmouseenter = baseSection.handleReplyButtonHover;
-    this.replyButton.buttonElement.onmouseleave = baseSection.handleReplyButtonUnhover;
+    this.replyButton.buttonElement.onmouseenter = baseSection.handleReplyButtonHover.bind(baseSection);
+    this.replyButton.buttonElement.onmouseleave = baseSection.handleReplyButtonUnhover.bind(baseSection);
   }
 
   /**
@@ -381,7 +372,7 @@ class Section extends SectionSkeleton {
 
     this.updateSubscribeButtonState();
 
-    this.actionsElement.prepend(this.actions.subscribeButton.$element.get(0));
+    this.actionsElement.prepend(this.actions.subscribeButton.$element[0]);
 
     /**
      * A subscribe button has been added to the section actions element.
@@ -525,8 +516,7 @@ class Section extends SectionSkeleton {
                       comments.forEach((comment) => comment.flashTarget());
                     },
                   });
-                })
-                .get(0),
+                })[0],
               i === arr.length - 1 ? undefined : document.createTextNode(cd.mws('comma-separator')),
             ]))
         )),
@@ -579,7 +569,7 @@ class Section extends SectionSkeleton {
       if (latestComment) {
         const latestCommentLink = document.createElement('a');
         latestCommentLink.href = `#${latestComment.dtId || latestComment.id}`;
-        latestCommentLink.onclick = this.scrollToLatestComment;
+        latestCommentLink.onclick = this.scrollToLatestComment.bind(this);
         latestCommentLink.textContent = formatDate(latestComment.date);
         (new LiveTimestamp(latestCommentLink, latestComment.date, false)).init();
 
@@ -603,7 +593,7 @@ class Section extends SectionSkeleton {
       if (span) {
         authorCountWrapper = document.createElement('a');
         authorCountWrapper.textContent = span.textContent;
-        authorCountWrapper.onclick = this.toggleAuthors;
+        authorCountWrapper.onclick = this.toggleAuthors.bind(this);
         span.firstChild.replaceWith(authorCountWrapper);
       }
 
@@ -716,7 +706,7 @@ class Section extends SectionSkeleton {
       undefined;
 
     this.actions.moreMenuSelectDummy.element.remove();
-    this.actionsElement.append(moreMenuSelect.$element.get(0));
+    this.actionsElement.append(moreMenuSelect.$element[0]);
 
     const items = [editOpeningCommentOption, moveOption, addSubsectionOption].filter(defined);
     moreMenuSelect.getMenu()
@@ -780,7 +770,7 @@ class Section extends SectionSkeleton {
           this.createAndClickMoreMenuSelect();
         },
       });
-      moreMenuSelectDummy.buttonElement.onmouseenter = this.createMoreMenuSelect;
+      moreMenuSelectDummy.buttonElement.onmouseenter = this.createMoreMenuSelect.bind(this);
     }
 
     let copyLinkButton;
@@ -944,7 +934,7 @@ class Section extends SectionSkeleton {
     let newLink = document.createElement('a');
     newLink.textContent = newText;
     newLink.href = `#${this.newComments[0].dtId}`;
-    newLink.onclick = this.scrollToNewComments;
+    newLink.onclick = this.scrollToNewComments.bind(this);
 
     const newCommentCountWrapper = document.createElement('span');
     newCommentCountWrapper.className = 'cd-section-bar-item';
@@ -1067,7 +1057,7 @@ class Section extends SectionSkeleton {
    * Show a move section dialog.
    */
   move() {
-    if (controller.isPageOverlayOn() || dealWithLoadingBug('mediawiki.widgets')) return;
+    if (controller.isPageOverlayOn()) return;
 
     const MoveSectionDialog = require('./MoveSectionDialog').default;
 
@@ -1212,11 +1202,7 @@ class Section extends SectionSkeleton {
       /\x01(\d+)_\w+\x02/g,
       (s, num) => currentCommentData.hiddenElementsData[num - 1].html
     );
-    const oldSectionDummy = {
-      headlineElement: $('<span>')
-        .html($(oldHeadingHtml).html())
-        .get(0),
-    };
+    const oldSectionDummy = { headlineElement: $('<span>').html($(oldHeadingHtml).html())[0] };
     SectionStatic.prototype.parseHeadline.call(oldSectionDummy);
     if (
       this.headline &&
@@ -1260,7 +1246,7 @@ class Section extends SectionSkeleton {
    * @throws {CdError}
    */
   async requestCode() {
-    const resp = await controller.getApi().post({
+    const { query, curtimestamp: queryTimestamp } = await controller.getApi().post({
       action: 'query',
       titles: this.getSourcePage().name,
       prop: 'revisions',
@@ -1271,7 +1257,6 @@ class Section extends SectionSkeleton {
       curtimestamp: true,
     }).catch(handleApiReject);
 
-    const query = resp.query;
     const page = query?.pages?.[0];
     const revision = page?.revisions?.[0];
     const main = revision?.slots?.main;
@@ -1348,7 +1333,7 @@ class Section extends SectionSkeleton {
       presumedCode: content + '\n',
 
       revisionId: revision.revid,
-      queryTimestamp: resp.curtimestamp,
+      queryTimestamp,
     });
 
     Object.assign(pageRegistry.getCurrent(), {
@@ -1702,7 +1687,7 @@ class Section extends SectionSkeleton {
         // Add the thread button class as it behaves as a thread button in fact, being positioned
         // inside a "cd-commentLevel" list.
         classes: ['cd-button-ooui', 'cd-section-button', 'cd-thread-button'],
-      }).$element.get(0)
+      }).$element[0]
     );
 
     this.prototypes.add(
@@ -1713,7 +1698,7 @@ class Section extends SectionSkeleton {
 
         framed: false,
         classes: ['cd-button-ooui', 'cd-section-button'],
-      }).$element.get(0)
+      }).$element[0]
     );
 
     this.prototypes.add(
@@ -1726,7 +1711,7 @@ class Section extends SectionSkeleton {
         invisibleLabel: true,
         title: cd.s('sm-copylink-tooltip'),
         classes: ['cd-section-bar-button'],
-      }).$element.get(0)
+      }).$element[0]
     );
 
     this.prototypes.addWidget('moreMenuSelect', () => (

@@ -28,7 +28,15 @@ import pageRegistry from './pageRegistry';
 import settings from './settings';
 import toc from './toc';
 import { ElementsTreeWalker } from './treeWalker';
-import { copyText, defined, definedAndNotNull, getExtendedRect, getLastArrayElementOrSelf, getVisibilityByRects, isCmdModifierPressed, isHeadingNode, isInline, isInputFocused, isProbablyTalkPage, keyCombination, skin$, sleep, wrapHtml } from './utils';
+import { defined, definedAndNotNull, getLastArrayElementOrSelf, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils';
+import { copyText } from './utils-window';
+import { isCmdModifierPressed } from './utils-window';
+import { getVisibilityByRects } from './utils-window';
+import { skin$ } from './utils-window';
+import { keyCombination } from './utils-window';
+import { getExtendedRect } from './utils-window';
+import { isInputFocused } from './utils-window';
+import { wrapHtml } from './utils-window';
 import { getUserInfo, htmlToWikitext } from './apiWrappers';
 
 export default {
@@ -51,16 +59,6 @@ export default {
    * known from the beginning.
    */
   init() {
-    this.handleMouseMove = this.handleMouseMove.bind(this);
-    this.handleWindowResize = this.handleWindowResize.bind(this);
-    this.handleGlobalKeyDown = this.handleGlobalKeyDown.bind(this);
-    this.handleScroll = this.handleScroll.bind(this);
-    this.handlePopState = this.handlePopState.bind(this);
-    this.handleSelectionChange = this.handleSelectionChange.bind(this);
-    this.handlePageMutations = this.handlePageMutations.bind(this);
-    this.handleAddTopicButtonClick = this.handleAddTopicButtonClick.bind(this);
-    this.handleWikipageContentHookFirings = this.handleWikipageContentHookFirings.bind(this);
-
     this.$content ||= $('#mw-content-text');
 
     if (cd.g.isMobile) {
@@ -114,7 +112,7 @@ export default {
    */
   setup(htmlToLayOut) {
     // RevisionSlider replaces the `#mw-content-text` element.
-    if (!this.$content.get(0)?.parentNode) {
+    if (!this.$content[0]?.parentNode) {
       this.$content = $('#mw-content-text');
     }
 
@@ -131,7 +129,7 @@ export default {
         this.$root = this.$content;
       }
 
-      this.rootElement = this.$root.get(0);
+      this.rootElement = this.$root[0];
     }
 
     // Add the class immediately to prevent the issue when any unexpected error prevents this from
@@ -809,7 +807,7 @@ export default {
     if (this.notificationArea === undefined) {
       this.notificationArea = document.querySelector('.mw-notification-area');
       this.tocButton = document.getElementById('vector-toc-collapsed-button');
-      this.stickyHeader = $('#vector-sticky-header').get(0);
+      this.stickyHeader = $('#vector-sticky-header')[0];
     }
 
     OO.ui.throttle(() => {
@@ -818,13 +816,13 @@ export default {
         [
           ...(this.notificationArea?.querySelectorAll('.mw-notification') || []),
           Autocomplete.getActiveMenu(),
-          navPanel.$element?.get(0),
+          navPanel.$element?.[0],
           ...document.body.querySelectorAll('.oo-ui-popupWidget:not(.oo-ui-element-hidden)'),
           this.stickyHeader,
           SectionStatic.getAll()
             .map((section) => section.actions.moreMenuSelect?.getMenu())
             .find((menu) => menu?.isVisible())
-            ?.$element.get(0),
+            ?.$element[0],
           this.tocButton,
         ]
           .filter(definedAndNotNull)
@@ -1161,7 +1159,7 @@ export default {
     if (!this.talkPage) return;
 
     debug.stopTimer('start');
-    debug.startTimer('loading data');
+    debug.startTimer('load data');
 
     /**
      * Last boot process.
@@ -1625,7 +1623,7 @@ export default {
       .forEach(replaceWithChildren);
 
     const allElements = [...div.querySelectorAll('*')];
-    const needParse = Boolean(
+    const needToParse = Boolean(
       div.childElementCount &&
       !(
         allElements.length === 1 &&
@@ -1637,8 +1635,8 @@ export default {
     div.remove();
 
     return {
-      needParse,
-      text: needParse ? div.innerHTML : div.innerText,
+      needToParse,
+      text: needToParse ? div.innerHTML : div.innerText,
     };
   },
 
@@ -1651,8 +1649,8 @@ export default {
   async getWikitextFromSelection(input) {
     const div = document.createElement('div');
     div.appendChild(window.getSelection().getRangeAt(0).cloneContents());
-    const { text, needParse } = this.cleanUpPasteDom(div);
-    return needParse ? await htmlToWikitext(text, input) : text;
+    const { text, needToParse } = this.cleanUpPasteDom(div);
+    return needToParse ? await htmlToWikitext(text, input) : text;
   },
 
   /**
@@ -1662,7 +1660,7 @@ export default {
    * @returns {boolean}
    */
   isConvertableToWikitext(html) {
-    return this.cleanUpPasteDom(this.pasteHtmlToElement(html)).needParse;
+    return this.cleanUpPasteDom(this.pasteHtmlToElement(html)).needToParse;
   },
 
   pasteHtmlToElement(html) {
@@ -1681,8 +1679,8 @@ export default {
    * @returns {string}
    */
   async getWikitextFromPaste(html, input) {
-    const { text, needParse } = this.cleanUpPasteDom(this.pasteHtmlToElement(html));
-    return needParse ? await htmlToWikitext(text, input) : text;
+    const { text, needToParse } = this.cleanUpPasteDom(this.pasteHtmlToElement(html));
+    return needToParse ? await htmlToWikitext(text, input) : text;
   },
 
   /**
@@ -1949,7 +1947,7 @@ export default {
 
       this.handlePageMutations();
     });
-    this.mutationObserver.observe(this.$content.get(0), {
+    this.mutationObserver.observe(this.$content[0], {
       attributes: true,
       childList: true,
       subtree: true,

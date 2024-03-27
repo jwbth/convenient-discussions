@@ -15,7 +15,12 @@ import pageRegistry from './pageRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
 import { ElementsTreeWalker, TreeWalker } from './treeWalker';
-import { addToArrayIfAbsent, areObjectsEqual, calculateWordOverlap, countOccurrences, dealWithLoadingBug, decodeHtmlEntities, defined, getExtendedRect, getHeadingLevel, getHigherNodeAndOffsetInSelection, getVisibilityByRects, isInline, sleep, unique, wrapDiffBody, wrapHtml } from './utils';
+import { addToArrayIfAbsent, areObjectsEqual, calculateWordOverlap, countOccurrences, decodeHtmlEntities, defined, getHeadingLevel, isInline, sleep, unique } from './utils';
+import { getHigherNodeAndOffsetInSelection } from './utils-window';
+import { getVisibilityByRects } from './utils-window';
+import { getExtendedRect } from './utils-window';
+import { wrapDiffBody } from './utils-window';
+import { wrapHtml } from './utils-window';
 import { extractSignatures, removeWikiMarkup } from './wikitext';
 import { formatDate, formatDateNative } from './timestamp';
 import { handleApiReject, loadUserGenders, parseCode } from './apiWrappers';
@@ -36,18 +41,6 @@ class Comment extends CommentSkeleton {
    */
   constructor(parser, signature, targets) {
     super(parser, signature, targets);
-
-    this.bindEvents = this.bindEvents.bind(this);
-    this.replyButtonClick = this.replyButtonClick.bind(this);
-    this.editButtonClick = this.editButtonClick.bind(this);
-    this.thankButtonClick = this.thankButtonClick.bind(this);
-    this.copyLink = this.copyLink.bind(this);
-    this.goToParentButtonClick = this.goToParentButtonClick.bind(this);
-    this.highlightHovered = this.highlightHovered.bind(this);
-    this.unhighlightHovered = this.unhighlightHovered.bind(this);
-    this.hideMenu = this.hideMenu.bind(this);
-    this.deferHideMenu = this.deferHideMenu.bind(this);
-    this.dontHideMenu = this.dontHideMenu.bind(this);
 
     this.isReformatted = settings.get('reformatComments');
     this.showContribsLink = settings.get('showContribsLink');
@@ -86,7 +79,7 @@ class Comment extends CommentSkeleton {
       (this.isOwn || settings.get('allowEditOthersComments'))
     );
 
-    this.highlightables.forEach(this.bindEvents);
+    this.highlightables.forEach(this.bindEvents.bind(this));
 
     this.updateAnchorHighlightable();
 
@@ -460,7 +453,7 @@ class Comment extends CommentSkeleton {
         label: this.reformattedTimestamp || this.timestamp,
         tooltip: this.timestampTitle,
         classes: ['cd-comment-button-label', 'cd-comment-timestamp', 'mw-selflink-fragment'],
-        action: this.copyLink,
+        action: this.copyLink.bind(this),
         href: this.dtId && '#' + this.dtId,
       });
 
@@ -523,7 +516,7 @@ class Comment extends CommentSkeleton {
   addReplyButton() {
     if (!this.isActionable) return;
 
-    const action = this.replyButtonClick;
+    const action = this.replyButtonClick.bind(this);
     if (this.isReformatted) {
       /**
        * Reply button.
@@ -570,7 +563,7 @@ class Comment extends CommentSkeleton {
   addEditButton() {
     if (!this.isEditable) return;
 
-    const action = this.editButtonClick;
+    const action = this.editButtonClick.bind(this);
     if (this.isReformatted) {
       /**
        * Edit button.
@@ -618,7 +611,7 @@ class Comment extends CommentSkeleton {
       this.id === thank.id
     ));
 
-    const action = this.thankButtonClick;
+    const action = this.thankButtonClick.bind(this);
     if (this.isReformatted) {
       /**
        * Edit button.
@@ -658,7 +651,7 @@ class Comment extends CommentSkeleton {
 
     this.copyLinkButton = new CommentButton({
       element: this.constructor.prototypes.get('copyLinkButton'),
-      action: this.copyLink,
+      action: this.copyLink.bind(this),
       widgetConstructor: this.constructor.prototypes.getWidget('copyLinkButton'),
       href: this.dtId ? '#' + this.dtId : undefined,
     });
@@ -674,7 +667,7 @@ class Comment extends CommentSkeleton {
   addGoToParentButton() {
     if (!this.getParent()) return;
 
-    const action = this.goToParentButtonClick;
+    const action = this.goToParentButtonClick.bind(this);
     if (this.isReformatted) {
       /**
        * "Go to the parent comment" button.
@@ -790,9 +783,9 @@ class Comment extends CommentSkeleton {
   bindEvents(element) {
     if (this.isReformatted) return;
 
-    element.onmouseenter = this.highlightHovered;
-    element.onmouseleave = this.unhighlightHovered;
-    element.ontouchstart = this.highlightHovered;
+    element.onmouseenter = this.highlightHovered.bind(this);
+    element.onmouseleave = this.unhighlightHovered.bind(this);
+    element.ontouchstart = this.highlightHovered.bind(this);
   }
 
   /**
@@ -1280,7 +1273,7 @@ class Comment extends CommentSkeleton {
     // Ignore other than left button clicks.
     if (e.which !== 1) return;
 
-    this.hideMenuTimeout = setTimeout(this.hideMenu, 1200);
+    this.hideMenuTimeout = setTimeout(this.hideMenu.bind(this), 1200);
   }
 
   /**
@@ -1358,11 +1351,11 @@ class Comment extends CommentSkeleton {
       this.overlayMenu = this.overlayInnerWrapper.lastChild;
 
       // Hide the overlay on right click. It can block clicking the author page link.
-      this.overlayInnerWrapper.oncontextmenu = this.hideMenu;
+      this.overlayInnerWrapper.oncontextmenu = this.hideMenu.bind(this);
 
       // Hide the overlay on long click/tap.
-      this.overlayInnerWrapper.onmousedown = this.deferHideMenu;
-      this.overlayInnerWrapper.onmouseup = this.dontHideMenu;
+      this.overlayInnerWrapper.onmousedown = this.deferHideMenu.bind(this);
+      this.overlayInnerWrapper.onmouseup = this.dontHideMenu.bind(this);
 
       this.addGoToParentButton();
       this.addCopyLinkButton();
@@ -1593,7 +1586,7 @@ class Comment extends CommentSkeleton {
         if (
           ['absolute', 'relative'].includes(style.position) ||
           (
-            node !== controller.$content.get(0) &&
+            node !== controller.$content[0] &&
             (classList.includes('mw-content-ltr') || classList.includes('mw-content-rtl'))
           )
         ) {
@@ -1936,8 +1929,6 @@ class Comment extends CommentSkeleton {
    * @private
    */
   async showDiff(comparedRevisionId, commentsData) {
-    if (dealWithLoadingBug('mediawiki.diff.styles')) return;
-
     let revisionIdLesser = Math.min(mw.config.get('wgRevisionId'), comparedRevisionId);
     let revisionIdGreater = Math.max(mw.config.get('wgRevisionId'), comparedRevisionId);
 
@@ -2114,7 +2105,7 @@ class Comment extends CommentSkeleton {
       do {
         $last = $tested;
         $tested = $last.children().last();
-      } while ($tested.length && !isInline($tested.get(0)));
+      } while ($tested.length && !isInline($tested[0]));
 
       if (!$last.find('.cd-changeMark-before').length) {
         $last.append(' ', $('<span>').addClass('cd-changeMark-before'));
@@ -2247,11 +2238,11 @@ class Comment extends CommentSkeleton {
       this.$elements.attr('data-cd-comment-index', this.index);
 
       if (this.isReformatted) {
-        this.signatureElement = this.$elements.find('.cd-signature').get(0);
+        this.signatureElement = this.$elements.find('.cd-signature')[0];
         this.replaceSignatureWithHeader();
         this.addMenu();
       } else {
-        this.timestampElement = this.$elements.find('.cd-signature .cd-timestamp').get(0);
+        this.timestampElement = this.$elements.find('.cd-signature .cd-timestamp')[0];
         this.reformatTimestamp();
       }
 
@@ -2612,8 +2603,6 @@ class Comment extends CommentSkeleton {
    * notification.
    */
   async thank() {
-    if (dealWithLoadingBug('mediawiki.diff.styles')) return;
-
     this.thankButton.setPending(true);
 
     const genderRequest = cd.g.genderAffectsUserString && this.author.isRegistered() ?
@@ -2699,7 +2688,7 @@ class Comment extends CommentSkeleton {
 
         let endBoundary;
         if (this.isReformatted) {
-          endBoundary = this.$menu.get(0);
+          endBoundary = this.$menu[0];
         } else {
           endBoundary = document.createElement('span');
           this.$elements.last().append(endBoundary);
@@ -2887,7 +2876,7 @@ class Comment extends CommentSkeleton {
    * @param {Element|string} newElementOrHtml Element or HTML string to replace with.
    */
   replaceElement(element, newElementOrHtml) {
-    const nativeElement = element instanceof $ ? element.get(0) : element;
+    const nativeElement = element instanceof $ ? element[0] : element;
     let newElement;
     if (typeof newElementOrHtml === 'string') {
       const index = [...nativeElement.parentNode.children].indexOf(nativeElement);
@@ -3251,8 +3240,7 @@ class Comment extends CommentSkeleton {
 
         // Layout bug where not all children are `li`s:
         // https://ru.wikipedia.org/wiki/Википедия:Заявки_на_статус_администратора/Евгений_Юрьев#Против
-        const index = [...$outerWrapper.parent().children('li:not(.cd-skip)')]
-          .indexOf($next.get(0));
+        const index = [...$outerWrapper.parent().children('li:not(.cd-skip)')].indexOf($next[0]);
 
         $next.attr('value', index + 1);
       }

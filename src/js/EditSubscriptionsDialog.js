@@ -2,7 +2,8 @@ import CdError from './CdError';
 import cd from './cd';
 import controller from './controller';
 import { CdOoUiProcessDialogMixin, mixinUserOoUiClass, tweakUserOoUiClass } from './ooui';
-import { focusInput, sleep, unique } from './utils';
+import { sleep, unique } from './utils';
+import { focusInput } from './utils-window';
 import { getPageIds, getPageTitles } from './apiWrappers';
 
 /**
@@ -37,7 +38,6 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
   constructor() {
     super();
 
-    this.save = this.save.bind(this);
     this.subscriptions = controller.getSubscriptionsInstance();
   }
 
@@ -184,7 +184,7 @@ class EditSubscriptionsDialog extends OO.ui.ProcessDialog {
    */
   getActionProcess(action) {
     if (action === 'save') {
-      return new OO.ui.Process(this.save);
+      return new OO.ui.Process(this.save.bind(this));
     } else if (action === 'close') {
       return new OO.ui.Process(async () => {
         await this.confirmClose();

@@ -6,7 +6,8 @@ import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
 import { CdOoUiProcessDialogMixin, createCheckboxField, createTextField, getDivLabelWidgetClass, mixinUserOoUiClass, tweakUserOoUiClass } from './ooui';
-import { generateFixedPosTimestamp, getDbnameForHostname, wrapHtml, zeroPad } from './utils';
+import { generateFixedPosTimestamp, getDbnameForHostname, zeroPad } from './utils';
+import { wrapHtml } from './utils-window';
 
 function createRadioField({ label, help, options }) {
   const items = options.map((config) => new RadioOptionWidget(config));

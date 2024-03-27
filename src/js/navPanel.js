@@ -12,7 +12,8 @@ import cd from './cd';
 import controller from './controller';
 import settings from './settings';
 import { formatDate } from './timestamp';
-import { isCmdModifierPressed, reorderArray } from './utils';
+import { reorderArray } from './utils';
+import { isCmdModifierPressed } from './utils-window';
 import { removeWikiMarkup } from './wikitext';
 
 let utirbtTimeout;
@@ -290,7 +291,7 @@ export default {
     CommentFormStatic.getAll()
       .filter((commentForm) => inSight || !commentForm.$element.cdIsInViewport(true))
       .map((commentForm) => {
-        let top = commentForm.$element.get(0).getBoundingClientRect().top;
+        let top = commentForm.$element[0].getBoundingClientRect().top;
         if (top < 0) {
           top += $(document).height() * 2;
         }

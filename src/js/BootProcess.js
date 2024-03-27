@@ -17,7 +17,9 @@ import settings from './settings';
 import toc from './toc';
 import userRegistry from './userRegistry';
 import visits from './visits';
-import { defined, definedAndNotNull, getFooter, getLastArrayElementOrSelf, sleep, underlinesToSpaces, wrapHtml } from './utils';
+import { defined, definedAndNotNull, getLastArrayElementOrSelf, sleep, underlinesToSpaces } from './utils';
+import { getFooter } from './utils-window';
+import { wrapHtml } from './utils-window';
 import { formatDateNative } from './timestamp';
 import { handleApiReject, saveOptions } from './apiWrappers';
 import { removeWikiMarkup } from './wikitext';
@@ -55,15 +57,14 @@ function removeDtButtonHtmlComments() {
 }
 
 /**
- * Deal with (remove or move in the DOM) the markup added to the page by DiscussionTools. This
- * function can be executed in the worker context.
+ * Deal with (remove or move in the DOM) the markup added to the page by DiscussionTools.
  *
  * @param {Element[]|external:Element[]} elements
  * @param {import('./BootProcess').default} [bootProcess]
  *
  * @private
  */
-function handleDtMarkup(elements, bootProcess) {
+function processAndRemoveDtElements(elements, bootProcess) {
   // Reply Tool is officially incompatible with CD, so we don't care if it is enabled. New Topic
   // Tool doesn't seem to make difference for our purposes here.
   const moveNotRemove = (
@@ -75,7 +76,7 @@ function handleDtMarkup(elements, bootProcess) {
   let dtMarkupHavenElement;
   if (moveNotRemove) {
     if (!bootProcess.isFirstRun()) {
-      dtMarkupHavenElement = controller.$content.children('.cd-dtMarkupHaven').get(0);
+      dtMarkupHavenElement = controller.$content.children('.cd-dtMarkupHaven')[0];
     }
     if (!dtMarkupHavenElement) {
       dtMarkupHavenElement = document.createElement('span');
@@ -146,9 +147,6 @@ class BootProcess {
    * @param {PassedData} [passedData={}]
    */
   constructor(passedData = {}) {
-    this.connectToCommentLinks = this.connectToCommentLinks.bind(this);
-    this.highlightMentions = this.highlightMentions.bind(this);
-
     this.passedData = passedData;
     this.dtCommentIds = [];
   }
@@ -685,7 +683,7 @@ class BootProcess {
       getElementByClassName: (el, className) => el.querySelector(`.${className}`),
       rootElement: controller.rootElement,
       areThereOutdents: controller.areThereOutdents.bind(controller),
-      handleDtMarkup,
+      processAndRemoveDtElements,
       removeDtButtonHtmlComments,
     });
 
@@ -920,7 +918,7 @@ class BootProcess {
       // topic" button click handler is trickier, see below.
       .off('click')
 
-      .on('click.cd', controller.handleAddTopicButtonClick)
+      .on('click.cd', controller.handleAddTopicButtonClick.bind(controller))
       .filter(function () {
         const $button = $(this);
         return (
@@ -1021,7 +1019,7 @@ class BootProcess {
           observer.disconnect();
         }
       });
-      observer.observe(controller.$content.get(0), {
+      observer.observe(controller.$content[0], {
         childList: true,
         subtree: true,
       });
@@ -1273,15 +1271,15 @@ class BootProcess {
       // The benefit may be low compared to the performance cost, but it's unexpected when the user
       // scrolls a comment and it suddenly stops being highlighted because the cursor is between
       // neighboring `<p>`'s.
-      $(document).on('mousemove mouseover', controller.handleMouseMove);
+      $(document).on('mousemove mouseover', controller.handleMouseMove.bind(controller));
     }
 
     // We need the `visibilitychange` event because many things may move while the document is
     // hidden, and the movements are not processed when the document is hidden.
     $(document)
-      .on('scroll visibilitychange', controller.handleScroll)
-      .on('horizontalscroll.cd visibilitychange', controller.handleHorizontalScroll)
-      .on('selectionchange', controller.handleSelectionChange);
+      .on('scroll visibilitychange', controller.handleScroll.bind(controller))
+      .on('horizontalscroll.cd visibilitychange', controller.handleHorizontalScroll.bind(controller))
+      .on('selectionchange', controller.handleSelectionChange.bind(controller));
 
     if (settings.get('improvePerformance')) {
       // Unhide when the user opens a search box to allow searching the full page.
@@ -1291,23 +1289,26 @@ class BootProcess {
     }
 
     $(window)
-      .on('resize orientationchange', controller.handleWindowResize)
-      .on('popstate', controller.handlePopState);
+      .on('resize orientationchange', controller.handleWindowResize.bind(controller))
+      .on('popstate', controller.handlePopState.bind(controller));
 
     // Should be above `mw.hook('wikipage.content').fire` so that it runs for the whole page content
     // as opposed to `$('.cd-comment-author-wrapper')`.
-    mw.hook('wikipage.content').add(this.connectToCommentLinks, this.highlightMentions);
-    mw.hook('convenientDiscussions.previewReady').add(this.connectToCommentLinks);
+    mw.hook('wikipage.content').add(
+      this.connectToCommentLinks.bind(this),
+      this.highlightMentions.bind(this)
+    );
+    mw.hook('convenientDiscussions.previewReady').add(this.connectToCommentLinks.bind(this));
 
     // Mutation observer doesn't follow all possible comment position changes (for example,
     // initiated with adding new CSS) unfortunately.
-    setInterval(controller.handlePageMutations, 1000);
+    setInterval(controller.handlePageMutations.bind(controller), 1000);
 
     if (controller.isPageCommentable()) {
-      $(document).on('keydown', controller.handleGlobalKeyDown);
+      $(document).on('keydown', controller.handleGlobalKeyDown.bind(controller));
     }
 
-    mw.hook('wikipage.content').add(controller.handleWikipageContentHookFirings);
+    mw.hook('wikipage.content').add(controller.handleWikipageContentHookFirings.bind(controller));
   }
 
   /**
@@ -1358,7 +1359,7 @@ class BootProcess {
   async execute(isReload) {
     this.firstRun = !isReload;
     if (this.firstRun) {
-      debug.stopTimer('loading data');
+      debug.stopTimer('load data');
     }
 
     debug.startTimer('preparations');
@@ -1466,7 +1467,7 @@ class BootProcess {
 
       // Should be below the viewport position restoration as it may rely on elements that are made
       // hidden during the comment forms restoration (NOT FULFILLED - FIXME? But the comment for
-      // `Thread.init()` seems to contradict). Should be below `this.setupNavPanel()` as
+      // `Thread.init()` seems to contradict). Should be below `navPanel.setup()` as
       // `CommentFormStatic.restoreSession()` indirectly calls `navPanel.updateCommentFormButton()`
       // which depends on the navigation panel being mounted.
       CommentFormStatic.restoreSession(this.firstRun || this.passedData.isPageReloadedExternally);

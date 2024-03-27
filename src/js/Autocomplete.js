@@ -5,7 +5,9 @@ import cd from './cd';
 import controller from './controller';
 import settings from './settings';
 import userRegistry from './userRegistry';
-import { defined, focusInput, insertText, removeDoubleSpaces, sleep, ucFirst, underlinesToSpaces, unique } from './utils';
+import { defined, removeDoubleSpaces, sleep, ucFirst, underlinesToSpaces, unique } from './utils';
+import { focusInput } from './utils-window';
+import { insertText } from './utils-window';
 import { handleApiReject } from './apiWrappers';
 
 /**
@@ -80,7 +82,7 @@ class Autocomplete {
     require('../tribute/tribute.less');
 
     this.inputs.forEach((input) => {
-      const element = input.$input.get(0);
+      const element = input.$input[0];
       this.tribute.attach(element);
       element.cdInput = input;
       element.addEventListener('tribute-active-true', () => {
@@ -102,7 +104,7 @@ class Autocomplete {
    */
   cleanUp() {
     this.inputs.forEach((input) => {
-      this.tribute.detach(input.$input.get(0));
+      this.tribute.detach(input.$input[0]);
     });
   }
 

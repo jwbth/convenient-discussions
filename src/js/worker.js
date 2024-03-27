@@ -438,7 +438,7 @@ function parse() {
       );
       return areThereOutdents;
     },
-    handleDtMarkup: (elements) => {
+    processAndRemoveDtElements: (elements) => {
       elements.forEach((el) => {
         el.remove();
       });

@@ -6,7 +6,7 @@ import cd from './cd';
 import controller from './controller';
 import userRegistry from './userRegistry';
 import { getUserInfo, saveLocalOption } from './apiWrappers';
-import { wrapHtml } from './utils';
+import { wrapHtml } from './utils-window';
 
 /**
  * Class implementing CD's legacy section watching.

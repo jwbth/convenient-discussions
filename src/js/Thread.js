@@ -7,7 +7,10 @@ import cd from './cd';
 import controller from './controller';
 import settings from './settings';
 import { ElementsTreeWalker } from './treeWalker';
-import { defined, flat, getCommonGender, getExtendedRect, getVisibilityByRects, isCmdModifierPressed, isHeadingNode, removeFromArrayIfPresent, unique } from './utils';
+import { defined, flat, getCommonGender, isHeadingNode, removeFromArrayIfPresent, unique } from './utils';
+import { isCmdModifierPressed } from './utils-window';
+import { getVisibilityByRects } from './utils-window';
+import { getExtendedRect } from './utils-window';
 import { loadUserGenders } from './apiWrappers';
 
 let isInited;
@@ -122,7 +125,7 @@ function saveCollapsedThreads() {
 function autocollapseThreads() {
   const collapsedThreadStorageItem = (new StorageItem('collapsedThreads'))
     .cleanUp((entry) => (
-      !entry.threads?.length ||
+      !(entry.collapsedThreads || entry.threads)?.length ||
       entry.saveUnixTime < Date.now() - 60 * cd.g.msInDay
     ));
   const data = collapsedThreadStorageItem.get(mw.config.get('wgArticleId')) || {};
@@ -216,10 +219,6 @@ class Thread {
    * @param {import('./Comment').default} rootComment Root comment of the thread.
    */
   constructor(rootComment) {
-    this.handleClickAreaHover = this.handleClickAreaHover.bind(this);
-    this.handleClickAreaUnhover = this.handleClickAreaUnhover.bind(this);
-    this.handleToggleClick = this.handleToggleClick.bind(this);
-
     /**
      * Root comment of the thread.
      *
@@ -467,10 +466,10 @@ class Thread {
 
     // Add some debouncing so that the user is not annoyed by the cursor changing its form when
     // moving across thread lines.
-    this.clickArea.onmouseenter = this.handleClickAreaHover;
-    this.clickArea.onmouseleave = this.handleClickAreaUnhover;
+    this.clickArea.onmouseenter = this.handleClickAreaHover.bind(this);
+    this.clickArea.onmouseleave = this.handleClickAreaUnhover.bind(this);
 
-    this.clickArea.onclick = this.handleToggleClick;
+    this.clickArea.onclick = this.handleToggleClick.bind(this);
 
     /**
      * Thread line.
@@ -559,7 +558,7 @@ class Thread {
     );
 
     return $lastSubitem?.is(':visible') ?
-      findItemElement($lastSubitem.get(0), this.rootComment.level) :
+      findItemElement($lastSubitem[0], this.rootComment.level) :
       endElement;
   }
 
@@ -959,7 +958,7 @@ class Thread {
           'cd-thread-button',
           'cd-thread-button-invisible',
         ],
-      })).$element.get(0)
+      })).$element[0]
     );
 
     const threadClickArea = document.createElement('div');

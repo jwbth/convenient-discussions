@@ -1,7 +1,7 @@
 import CdError from './CdError';
 import cd from './cd';
 import settings from './settings';
-import { wrapHtml } from './utils';
+import { wrapHtml } from './utils-window';
 
 /**
  * Implementation of the subscriptions feature in general terms. It is extended by

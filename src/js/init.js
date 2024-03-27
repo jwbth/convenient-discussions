@@ -23,7 +23,9 @@ import pageRegistry from './pageRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
 import { dateTokenToMessageNames, initDayjs } from './timestamp';
-import { generatePageNamePattern, getContentLanguageMessages, skin$, transparentize, unique } from './utils';
+import { generatePageNamePattern, getContentLanguageMessages, unique } from './utils';
+import { skin$ } from './utils-window';
+import { transparentize } from './utils-window';
 import { processPage } from './updateChecker';
 import { splitIntoBatches } from './apiWrappers';
 

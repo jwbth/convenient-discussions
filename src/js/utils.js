@@ -7,54 +7,8 @@
 
 import html_entity_decode from 'locutus/php/strings/html_entity_decode';
 
-import Button from './Button';
 import CdError from './CdError';
 import cd from './cd';
-
-/**
- * @typedef {object} WrapCallbacks
- * @property {Function} *
- */
-
-/**
- * Wrap a HTML string into a `<span>` (or other element) suitable as an argument for various
- * methods. It fills the same role as
- * {@link https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.HtmlSnippet.html OO.ui.HtmlSnippet}, but
- * works not only with OOUI widgets. Optionally, attach callback functions and `target="_blank"`
- * attribute to links with the provided class names. See also {@link external:$.cdMerge}.
- *
- * @param {string} html
- * @param {object} [options={}]
- * @param {WrapCallbacks} [options.callbacks]
- * @param {string} [options.tagName='span']
- * @param {boolean} [options.targetBlank]
- * @returns {external:jQuery}
- */
-export function wrapHtml(html, options = {}) {
-  const tagName = options.tagName || 'span';
-  const $wrapper = $($.parseHTML(html)).wrapAll(`<${tagName}>`).parent();
-  if (options.callbacks) {
-    Object.keys(options.callbacks).forEach((className) => {
-      const $linkWrapper = $wrapper.find(`.${className}`);
-      let $link = $linkWrapper.find('a');
-      if (/\$\d$/.test($link.attr('href'))) {
-        // Dummy links we put into strings for translation so that translators understand this will
-        // be a link.
-        $link.attr('href', '').removeAttr('title');
-      } else if (!$link.length) {
-        $link = $linkWrapper.wrapInner('<a>').children().first();
-      }
-      new Button({
-        element: $link.get(0),
-        action: options.callbacks[className],
-      });
-    });
-  }
-  if (options.targetBlank) {
-    $wrapper.find('a[href]').attr('target', '_blank');
-  }
-  return $wrapper;
-}
 
 /**
  * Combine the section headline, summary text, and, optionally, summary postfix to create an edit
@@ -103,25 +57,6 @@ export function buildEditSummary({ text, optionalText, section, addPostfix = tru
 }
 
 /**
- * Wrap the response to the "compare" API request in a table.
- *
- * @param {string} body
- * @returns {string}
- */
-export function wrapDiffBody(body) {
-  const className = mw.user.options.get('editfont') === 'monospace' ?
-    'diff diff-editfont-monospace' :
-    'diff';
-  return (
-    `<table class="${className}">` +
-    '<col class="diff-marker"><col class="diff-content">' +
-    '<col class="diff-marker"><col class="diff-content">' +
-    body +
-    '</table>'
-  );
-}
-
-/**
  * Callback for
  * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter Array#filter}
  * to remove duplicated elements from an array.
@@ -133,23 +68,6 @@ export function wrapDiffBody(body) {
  */
 export function unique(el, i, arr) {
   return arr.indexOf(el) === i;
-}
-
-/**
- * Generate a transparent color for the given color to use it in a gradient.
- *
- * @param {string} color
- * @returns {string}
- */
-export function transparentize(color) {
-  const dummyElement = document.createElement('span');
-  dummyElement.style.color = color;
-  color = dummyElement.style.color;
-  return color.includes('rgba') ?
-    color.replace(/\d+(?=\))/, '0') :
-    color
-      .replace('rgb', 'rgba')
-      .replace(')', ', 0)');
 }
 
 /**
@@ -416,16 +334,6 @@ export function getContentLanguageMessages(messages) {
 }
 
 /**
- * Check if an input or editable element is focused.
- *
- * @returns {boolean}
- */
-export function isInputFocused() {
-  const $active = $(document.activeElement);
-  return $active.is(':input') || $active.prop('isContentEditable');
-}
-
-/**
  * Turn many regexps into one, putting it in `()` and separating individual expressions by `|`.
  *
  * @param {?(RegExp[]|string[])} arr
@@ -449,64 +357,10 @@ export function mergeRegexps(arr) {
  */
 export async function getNativePromiseState(promise) {
   const obj = {};
-  return Promise.race([promise, obj])
-    .then((value) => value === obj ? 'pending' : 'resolved', () => 'rejected');
-}
-
-/**
- * Show a notification suggesting to reload the page if the specified module is in the `loading`
- * state. Also return `true` in such a case.
- *
- * For the details of the bug, see {@link https://phabricator.wikimedia.org/T68598} "mw.loader state
- * of module stuck at "loading" if request was aborted".
- *
- * @param {string} moduleName
- * @returns {boolean}
- */
-export function dealWithLoadingBug(moduleName) {
-  if (mw.loader.getState(moduleName) === 'loading') {
-    const $body = wrapHtml(cd.sParse('error-needreloadpage'), {
-      callbacks: {
-        'cd-notification-reloadPage': () => {
-          location.reload();
-        },
-      },
-    });
-    mw.notify($body, { type: 'error' });
-    return true;
-  }
-  return false;
-}
-
-/**
- * Get the bounding client rectangle of an element, setting values that include margins to the
- * `outerTop`, `outerBottom`, `outerLeft`, and `outerRight` properties. The margins are cached.
- *
- * @param {Element} el
- * @returns {object}
- */
-export function getExtendedRect(el) {
-  if (el.cdMarginTop === undefined) {
-    const style = window.getComputedStyle(el);
-    el.cdMarginTop = parseFloat(style.marginTop);
-    el.cdMarginBottom = parseFloat(style.marginBottom);
-    el.cdMarginLeft = parseFloat(style.marginLeft);
-    el.cdMarginRight = parseFloat(style.marginRight);
-  }
-  const rect = el.getBoundingClientRect();
-  const isVisible = getVisibilityByRects(rect);
-  return {
-    top: rect.top,
-    bottom: rect.bottom,
-    left: rect.left,
-    right: rect.right,
-    width: rect.width,
-    height: rect.height,
-    outerTop: rect.top - (isVisible ? el.cdMarginTop : 0),
-    outerBottom: rect.bottom + (isVisible ? el.cdMarginBottom : 0),
-    outerLeft: rect.left - (isVisible ? el.cdMarginLeft : 0),
-    outerRight: rect.right + (isVisible ? el.cdMarginRight : 0),
-  };
+  return Promise.race([promise, obj]).then(
+    (value) => value === obj ? 'pending' : 'resolved',
+    () => 'rejected'
+  );
 }
 
 /**
@@ -561,20 +415,6 @@ export function areObjectsEqual(object1, object2) {
  */
 export function removeDirMarks(text, replaceWithSpace) {
   return text.replace(/[\u200e\u200f]/g, replaceWithSpace ? ' ' : '');
-}
-
-/**
- * Replace the selected text (if any) in an input (`<input>` or `<textarea>`) with the provided text
- * and keep the undo/redo functionality.
- *
- * @param {external:OO.ui.TextInputWidget} input Input to set replace the selection in.
- * @param {string} text Text to replace the selection with.
- */
-export function insertText(input, text) {
-  focusInput(input);
-  if (!document.execCommand('insertText', false, text)) {
-    input.insertContent(text);
-  }
 }
 
 /**
@@ -658,61 +498,6 @@ export function calculateWordOverlap(s1, s2, caseInsensitive) {
 }
 
 /**
- * Check if the provided key combination is pressed given an event.
- *
- * @param {Event} e
- * @param {number} keyCode
- * @param {Array.<'cmd'|'shift'|'alt'|'meta'>} [modifiers=[]] Use `'cmd'` instead of `'ctrl'`.
- * @returns {boolean}
- */
-export function keyCombination(e, keyCode, modifiers = []) {
-  if (modifiers.includes('cmd')) {
-    removeFromArrayIfPresent(modifiers, 'cmd');
-    // In Chrome on Windows, e.metaKey corresponds to the Windows key, so we better check for a
-    // platform.
-    modifiers.push(cd.g.clientProfile.platform === 'mac' ? 'meta' : 'ctrl');
-  }
-  return (
-    e.keyCode === keyCode &&
-    ['ctrl', 'shift', 'alt', 'meta'].every((mod) => modifiers.includes(mod) === e[mod + 'Key'])
-  );
-}
-
-/**
- * Get around the Firefox 56 and probably some other browsers bug where the caret doesn't appear in
- * the input after focusing.
- *
- * @param {external:OO.ui.TextInputWidget} input
- */
-export function focusInput(input) {
-  input.$input.get(0).focus();
-}
-
-/**
- * Get elements using the right selector for the current skin given an object with skin names as
- * keys and selectors as values. If no value for the skin is provided, the `default` value is used.
- *
- * @param {object} selectors
- * @returns {external:jQuery}
- */
-export function skin$(selectors) {
-  return $(selectors[cd.g.skin] || selectors.default || selectors.vector);
-}
-
-/**
- * Get the footer element.
- *
- * @returns {external:jQuery}
- */
-export function getFooter() {
-  return skin$({
-    monobook: '#f-list',
-    modern: '#footer-info',
-    default: '#footer-places',
-  });
-}
-
-/**
  * Helper to add an element to the array if the array doesn't already include the element. Doesn't
  * add `undefined` elements.
  *
@@ -739,17 +524,6 @@ export function removeFromArrayIfPresent(arr, el) {
 }
 
 /**
- * Given bounding client rectangle(s), determine whether the element is visible.
- *
- * @param {...object} rects
- * @returns {boolean} `true` if visible, `false` if not.
- */
-export function getVisibilityByRects(...rects) {
-  // If the element has 0 as the left position and height, it's probably invisible for some reason.
-  return !rects.some((rect) => rect.left === 0 && rect.height === 0);
-}
-
-/**
  * Get the gender that is common for a list of users (`'unknown'` is treated as `'male'`) or
  * `'unknown'` if there is no such.
  *
@@ -767,65 +541,6 @@ export function getCommonGender(users) {
     commonGender = 'unknown';
   }
   return commonGender;
-}
-
-/**
- * Given a {@link https://developer.mozilla.org/en-US/docs/Web/API/Selection selection}, get a
- * node and offset that are higher in the document, regardless if they belong to an anchor node or
- * focus node.
- *
- * @param {Selection} selection
- * @returns {object}
- */
-export function getHigherNodeAndOffsetInSelection(selection) {
-  if (!selection.anchorNode) {
-    return null;
-  }
-
-  const isAnchorHigher = (
-    selection.anchorNode.compareDocumentPosition(selection.focusNode) &
-    Node.DOCUMENT_POSITION_FOLLOWING
-  );
-  const higherNode = isAnchorHigher ? selection.anchorNode : selection.focusNode;
-  const higherOffset = isAnchorHigher ? selection.anchorOffset : selection.focusOffset;
-  return { higherNode, higherOffset };
-}
-
-/**
- * Whether a command modifier is pressed. On Mac, this means the Cmd key. On Windows, this means the
- * Ctrl key.
- *
- * @param {Event} e
- * @returns {boolean}
- */
-export function isCmdModifierPressed(e) {
-  // In Chrome on Windows, e.metaKey corresponds to the Windows key, so we better check for a
-  // platform.
-  return cd.g.clientProfile.platform === 'mac' ? e.metaKey : e.ctrlKey;
-}
-
-/**
- * Copy text and notify whether the operation was successful.
- *
- * @param {string} text Text to copy.
- * @param {object} messages
- * @param {string|external:jQuery} messages.success Success message.
- * @param {string|external:jQuery} messages.fail Fail message.
- * @private
- */
-export function copyText(text, { success, fail }) {
-  const $textarea = $('<textarea>')
-    .val(text)
-    .appendTo(document.body)
-    .select();
-  const successful = document.execCommand('copy');
-  $textarea.remove();
-
-  if (text && successful) {
-    mw.notify(success);
-  } else {
-    mw.notify(fail, { type: 'error' });
-  }
 }
 
 /**
@@ -883,7 +598,7 @@ export function getHeadingLevel(node) {
 
   return (
     Number(
-      ((node.tagName.match(/^H([1-6])$/) || node.className.match(/\bmw-heading([1-6])\b/)) || [])[1]
+      (node.tagName.match(/^H([1-6])$/) || node.className.match(/\bmw-heading([1-6])\b/) || [])[1]
     ) ||
     null
   );

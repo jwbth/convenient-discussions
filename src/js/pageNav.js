@@ -11,7 +11,7 @@ import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
 import toc from './toc';
-import { getVisibilityByRects } from './utils';
+import { getVisibilityByRects } from './utils-window';
 
 const htmlElement = document.documentElement;
 
@@ -90,7 +90,7 @@ export default {
   getRelativeOffsets(scrollY) {
     let afterLeadOffset;
     if (toc.isPresent()) {
-      const rect = toc.$element.get(0).getBoundingClientRect();
+      const rect = toc.$element[0].getBoundingClientRect();
       if (getVisibilityByRects(rect)) {
         afterLeadOffset = rect.top;
       }

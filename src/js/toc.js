@@ -82,7 +82,7 @@ const toc = {
     }
 
     if (!this.items) {
-      const links = [...this.$element.get(0).querySelectorAll('li > a')]
+      const links = [...this.$element[0].querySelectorAll('li > a')]
         .filter((link) => link.getAttribute('href') !== '#');
       try {
         // It is executed first time before added (gray) sections are added to the TOC, so we use a
@@ -419,7 +419,7 @@ const toc = {
       }
     }
 
-    return $target?.get(0) || null;
+    return $target?.[0] || null;
   },
 
   /**

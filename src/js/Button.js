@@ -1,4 +1,4 @@
-import { isCmdModifierPressed } from './utils';
+import { isCmdModifierPressed } from './utils-window';
 
 const prototypes = {};
 

@@ -477,7 +477,7 @@ mw.hook('convenientDiscussions.beforeParse').add(function () {
   /*$('.ruwiki-commentIndentation-minus1level').each(function (i, el) {
     const $current = $(el).css('margin', 0);
     const $list = $current.parent('dd, li').parent('dl, ul, ol');
-    while ($list.get(0).contains($current.get(0))) {
+    while ($list[0].contains($current[0])) {
       const $parent = $current.parent();
       const $elementsAfter = $current.nextAll();
       if ($elementsAfter.length) {
@@ -569,7 +569,7 @@ mw.hook('convenientDiscussions.commentFormCustomModulesReady').add(function (com
     // Ctrl+Alt+W
     const isCmdModifierPressed = cd.g.clientProfile.platform === 'mac' ? e.metaKey : e.ctrlKey;
     if (isCmdModifierPressed && !e.shiftKey && e.altKey && e.keyCode === 87) {
-      window.Wikify(commentForm.commentInput.$input.get(0));
+      window.Wikify(commentForm.commentInput.$input[0]);
     }
   });
 });
@@ -587,7 +587,7 @@ mw.hook('convenientDiscussions.commentFormToolbarReady').add(function (commentFo
             action: {
               type: 'callback',
               execute: function () {
-                window.Wikify(commentForm.commentInput.$input.get(0));
+                window.Wikify(commentForm.commentInput.$input[0]);
               },
             },
           },
@@ -611,7 +611,7 @@ mw.hook('convenientDiscussions.commentFormToolbarReady').add(function (commentFo
           action: {
             type: 'callback',
             execute: function () {
-              window.urlDecoderRun(commentForm.commentInput.$input.get(0));
+              window.urlDecoderRun(commentForm.commentInput.$input[0]);
             },
           },
         },
