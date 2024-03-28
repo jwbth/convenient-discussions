@@ -10,12 +10,12 @@ import BootProcess from './BootProcess';
 import Comment from './Comment';
 import CommentFormStatic from './CommentFormStatic';
 import CommentStatic from './CommentStatic';
-import DtSubscriptions from './dtSubscriptions';
+import DtSubscriptions from './DtSubscriptions';
+import ElementsTreeWalker from './ElementsTreeWalker';
 import LegacySubscriptions from './LegacySubscriptions';
 import LiveTimestamp from './LiveTimestamp';
 import SectionStatic from './SectionStatic';
 import Thread from './Thread';
-import Worker from './worker-gate';
 import addCommentLinks from './addCommentLinks';
 import cd from './cd';
 import debug from './debug';
@@ -26,10 +26,10 @@ import pageNav from './pageNav';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
 import toc from './toc';
-import { ElementsTreeWalker } from './treeWalker';
-import { copyText, getExtendedRect, getVisibilityByRects, isCmdModifierPressed, isInputFocused, keyCombination, skin$, wrapHtml } from './utils-window';
-import { defined, definedAndNotNull, getLastArrayElementOrSelf, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
 import { getUserInfo } from './utils-api';
+import { defined, definedAndNotNull, getLastArrayElementOrSelf, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
+import { copyText, getExtendedRect, getVisibilityByRects, isCmdModifierPressed, isInputFocused, keyCombination, skin$, wrapHtml } from './utils-window';
+import Worker from './worker-gate';
 
 export default {
   content: {},

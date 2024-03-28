@@ -17,12 +17,11 @@ import notifications from './notifications';
 import pageRegistry, { Page } from './pageRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
+import { handleApiReject, parseCode } from './utils-api';
 import { buildEditSummary, defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './utils-general';
 import { createCheckboxField } from './utils-ooui';
-import { escapePipesOutsideLinks } from './utils-wikitext';
-import { generateTagsRegexp, removeWikiMarkup } from './utils-wikitext';
-import { getWikitextFromPaste, getWikitextFromSelection, isCmdModifierPressed, isConvertibleToWikitext, isInputFocused, keyCombination, wrapDiffBody, wrapHtml } from './utils-window';
-import { handleApiReject, parseCode } from './utils-api';
+import { escapePipesOutsideLinks, generateTagsRegexp, removeWikiMarkup } from './utils-wikitext';
+import { isCmdModifierPressed, isConvertibleToWikitext, isInputFocused, keyCombination, wrapDiffBody, wrapHtml } from './utils-window';
 
 const allowedFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'];
 

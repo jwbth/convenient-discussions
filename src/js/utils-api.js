@@ -11,8 +11,8 @@ import TextMasker from './TextMasker';
 import cd from './cd';
 import controller from './controller';
 import userRegistry from './userRegistry';
-import { brsToNewlines } from './utils-wikitext';
 import { unique } from './utils-general';
+import { brsToNewlines } from './utils-wikitext';
 
 let cachedUserInfoRequest;
 

@@ -4,16 +4,17 @@
  * @module app
  */
 
+import defaultConfig from '../../config/default';
 import CONFIG_URLS from '../../config/urls.json';
 import I18N_LIST from '../../data/i18nList.json';
 import LANGUAGE_FALLBACKS from '../../data/languageFallbacks.json';
+
+import { addCommentLinksToSpecialSearch } from './addCommentLinks';
 import cd from './cd';
 import controller from './controller';
 import debug from './debug';
-import defaultConfig from '../../config/default';
-import { addCommentLinksToSpecialSearch } from './addCommentLinks';
-import { getFooter } from './utils-window.js';
 import { mergeRegexps, unique } from './utils-general.js';
+import { getFooter } from './utils-window.js';
 
 let config;
 

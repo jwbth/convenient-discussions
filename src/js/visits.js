@@ -1,12 +1,13 @@
+import LZString from 'lz-string';
+
 import CdError from './CdError';
 import CommentStatic from './CommentStatic';
-import LZString from 'lz-string';
 import SectionStatic from './SectionStatic';
 import cd from './cd';
-import initUpdateChecker from './updateChecker';
 import navPanel from './navPanel';
 import settings from './settings';
 import toc from './toc';
+import initUpdateChecker from './updateChecker';
 import userRegistry from './userRegistry';
 import { getUserInfo, saveLocalOption } from './utils-api';
 

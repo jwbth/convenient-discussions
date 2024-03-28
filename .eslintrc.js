@@ -5,7 +5,7 @@ module.exports = {
     "node": true,
     "jest": true,
   },
-  "extends": "eslint:recommended",
+  "extends": ["eslint:recommended", "plugin:import/recommended"],
   "globals": {
     "$": "readonly",
     "CONFIG_FILE_NAME": "readonly",
@@ -37,7 +37,6 @@ module.exports = {
     "sourceType": "module",
   },
   "plugins": [
-    "sort-imports-es6-autofix",
     "jsdoc",
   ],
   "rules": {
@@ -72,10 +71,12 @@ module.exports = {
     "no-unexpected-multiline": "off",
     "no-unused-vars": ["error", { "args": "after-used" }],
     "require-atomic-updates": "off",
-    "sort-imports-es6-autofix/sort-imports-es6": ["warn", {
-      "ignoreCase": false,
-      "ignoreMemberSort": false,
-      "memberSyntaxSortOrder": ["none", "all", "single", "multiple"],
+    "import/order": ["warn", {
+      "alphabetize": {
+        caseInsensitive: false,
+        order: "asc",
+      },
+      "newlines-between": "always",
     }],
   },
 };

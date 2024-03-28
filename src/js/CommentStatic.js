@@ -6,14 +6,14 @@
 
 import Comment from './Comment';
 import CommentSkeleton from './CommentSkeleton';
+import TreeWalker from './TreeWalker';
 import cd from './cd';
 import controller from './controller';
 import navPanel from './navPanel';
 import settings from './settings';
-import { TreeWalker } from './treeWalker';
+import { getPagesExistence } from './utils-api';
 import { getCommonGender, reorderArray, underlinesToSpaces, unique } from './utils-general';
 import { getExtendedRect, getHigherNodeAndOffsetInSelection } from './utils-window';
-import { getPagesExistence } from './utils-api';
 
 const newDtTimestampPattern = '(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})\\d{2}';
 const oldDtTimestampPattern = '(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{3}Z)';

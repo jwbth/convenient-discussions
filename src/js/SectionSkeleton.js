@@ -1,6 +1,6 @@
 import CdError from './CdError';
+import TreeWalker from './TreeWalker';
 import cd from './cd';
-import { TreeWalker } from './treeWalker';
 import { defined, isHeadingNode, isMetadataNode } from './utils-general';
 
 /**
@@ -243,7 +243,7 @@ class SectionSkeleton {
    * paragraphs 3 and 4 as such. Our code must capture that.
    *
    * @param {Element|external:Element|undefined} followingHeadingElement
-   * @param {import('./treeWalker').TreeWalker} treeWalker
+   * @param {import('./TreeWalker').TreeWalker} treeWalker
    * @returns {Element|external:Element}
    */
   getLastElement(followingHeadingElement, treeWalker) {

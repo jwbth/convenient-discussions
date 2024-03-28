@@ -1,5 +1,6 @@
-import CdError from './CdError';
 import LZString from 'lz-string';
+
+import CdError from './CdError';
 import SectionStatic from './SectionStatic';
 import Subscriptions from './Subscriptions';
 import cd from './cd';

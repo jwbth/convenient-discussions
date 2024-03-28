@@ -16,13 +16,13 @@ import pageRegistry from './pageRegistry';
 import settings from './settings';
 import toc from './toc';
 import userRegistry from './userRegistry';
-import visits from './visits';
-import { defined, definedAndNotNull, getLastArrayElementOrSelf, sleep, underlinesToSpaces } from './utils-general';
-import { formatDateNative } from './utils-timestamp';
-import { getFooter, wrapHtml } from './utils-window';
 import { handleApiReject, saveOptions } from './utils-api';
-import { removeWikiMarkup } from './utils-wikitext';
+import { defined, definedAndNotNull, getLastArrayElementOrSelf, sleep, underlinesToSpaces } from './utils-general';
 import { showConfirmDialog } from './utils-ooui';
+import { formatDateNative } from './utils-timestamp';
+import { removeWikiMarkup } from './utils-wikitext';
+import { getFooter, wrapHtml } from './utils-window';
+import visits from './visits';
 
 /**
  * Get all text nodes under the root element in the window (not worker) context.

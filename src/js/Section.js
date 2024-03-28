@@ -12,11 +12,11 @@ import pageRegistry from './pageRegistry';
 import settings from './settings';
 import toc from './toc';
 import userRegistry from './userRegistry';
-import { defined, flat, getHeadingLevel, underlinesToSpaces, unique } from './utils-general';
-import { encodeWikilink, maskDistractingCode, normalizeCode } from './utils-wikitext';
-import { formatDate } from './utils-timestamp';
-import { getRangeContents } from './utils-window';
 import { handleApiReject } from './utils-api';
+import { defined, flat, getHeadingLevel, underlinesToSpaces, unique } from './utils-general';
+import { formatDate } from './utils-timestamp';
+import { encodeWikilink, maskDistractingCode, normalizeCode } from './utils-wikitext';
+import { getRangeContents } from './utils-window';
 
 /**
  * Class representing a section.

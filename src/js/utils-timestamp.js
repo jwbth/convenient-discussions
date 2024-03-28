@@ -12,11 +12,11 @@
 // Note: cd.settings is used in this module instead of imported "settings" to prevent adding that
 // module to the worker build (and a lot of others together with it).
 
+import { formatDistanceToNowStrict } from 'date-fns';
+import { getTimezoneOffset } from 'date-fns-tz';
 import dayjs from 'dayjs';
 import timezone from 'dayjs/plugin/timezone';
 import utc from 'dayjs/plugin/utc';
-import { formatDistanceToNowStrict } from 'date-fns';
-import { getTimezoneOffset } from 'date-fns-tz';
 
 import cd from './cd';
 import { getContentLanguageMessages, removeDirMarks, zeroPad } from './utils-general';

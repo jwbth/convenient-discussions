@@ -1,15 +1,9 @@
 /**
- * Tree walker classes.
- *
- * @module treeWalker
- */
-
-/**
  * Generalization and simplification of the
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/TreeWalker TreeWalker web API} for the
  * normal and worker contexts.
  */
-export class TreeWalker {
+export default class TreeWalker {
   /**
    * Create a tree walker.
    *
@@ -150,45 +144,5 @@ export class TreeWalker {
       this.currentNode = node;
     }
     return node;
-  }
-}
-
-/**
- * Tree walker that walks only on element nodes.
- *
- * @augments module:treeWalker.TreeWalker
- */
-export class ElementsTreeWalker extends TreeWalker {
-  /**
-   * Create an elements {@link module:treeWalker.TreeWalker tree walker}.
-   *
-   * @param {Node|external:Node} [startNode]
-   * @param {Node|external:Node} [root]
-   */
-  constructor(startNode, root) {
-    super(root, null, true);
-    if (startNode) {
-      this.currentNode = startNode;
-    }
-  }
-}
-
-/**
- * Tree walker that walks on both element and text nodes.
- *
- * @augments module:treeWalker.TreeWalker
- */
-export class ElementsAndTextTreeWalker extends TreeWalker {
-  /**
-   * Create an elements and text {@link module:treeWalker.TreeWalker tree walker}.
-   *
-   * @param {Node|external:Node} [startNode]
-   * @param {Node|external:Node} [root]
-   */
-  constructor(startNode, root) {
-    super(root, (node) => node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE);
-    if (startNode) {
-      this.currentNode = startNode;
-    }
   }
 }

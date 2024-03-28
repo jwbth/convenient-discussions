@@ -1,7 +1,7 @@
 import Button from './Button';
+import ElementsTreeWalker from './ElementsTreeWalker';
 import Parser from './Parser';
 import cd from './cd';
-import { ElementsTreeWalker } from './treeWalker';
 import { removeFromArrayIfPresent } from './utils-general';
 
 /**

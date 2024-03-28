@@ -1,15 +1,15 @@
 import Button from './Button';
 import CdError from './CdError';
 import CommentStatic from './CommentStatic';
+import ElementsTreeWalker from './ElementsTreeWalker';
 import PrototypeRegistry from './PrototypeRegistry';
 import StorageItem from './StorageItem';
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
-import { ElementsTreeWalker } from './treeWalker';
+import { loadUserGenders } from './utils-api';
 import { defined, flat, getCommonGender, isHeadingNode, removeFromArrayIfPresent, unique } from './utils-general';
 import { getExtendedRect, getRangeContents, getVisibilityByRects, isCmdModifierPressed } from './utils-window';
-import { loadUserGenders } from './utils-api';
 
 let isInited;
 let threadLinesContainer;

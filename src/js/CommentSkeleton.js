@@ -1,6 +1,7 @@
 import CdError from './CdError';
+import ElementsAndTextTreeWalker from './ElementsAndTextTreeWalker';
+import ElementsTreeWalker from './ElementsTreeWalker';
 import cd from './cd';
-import { ElementsAndTextTreeWalker, ElementsTreeWalker } from './treeWalker';
 import { generateFixedPosTimestamp, isHeadingNode, isInline, isMetadataNode, spacesToUnderlines, unique } from './utils-general';
 
 /**

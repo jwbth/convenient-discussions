@@ -7,6 +7,10 @@
  * @module init
  */
 
+import dateFormatsData from '../../data/dateFormats.json';
+import digitsData from '../../data/digits.json';
+import languageFallbacksData from '../../data/languageFallbacks.json';
+
 import Comment from './Comment';
 import CommentFormStatic from './CommentFormStatic';
 import CommentStatic from './CommentStatic';
@@ -15,18 +19,15 @@ import SectionStatic from './SectionStatic';
 import Thread from './Thread';
 import cd from './cd';
 import controller from './controller';
-import dateFormatsData from '../../data/dateFormats.json';
-import digitsData from '../../data/digits.json';
 import jqueryExtensions from './jqueryExtensions';
-import languageFallbacksData from '../../data/languageFallbacks.json';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
-import userRegistry from './userRegistry';
-import { dateTokenToMessageNames, initDayjs } from './utils-timestamp';
-import { generatePageNamePattern, getContentLanguageMessages, unique } from './utils-general';
 import { processPage } from './updateChecker';
-import { skin$, transparentize } from './utils-window';
+import userRegistry from './userRegistry';
 import { splitIntoBatches } from './utils-api';
+import { generatePageNamePattern, getContentLanguageMessages, unique } from './utils-general';
+import { dateTokenToMessageNames, initDayjs } from './utils-timestamp';
+import { skin$, transparentize } from './utils-window';
 
 let defaultFontSize;
 

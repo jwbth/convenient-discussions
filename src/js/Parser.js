@@ -1,8 +1,9 @@
 // Here, we use vanilla JavaScript for recurring operations that together take up a lot of time.
 
 import CommentSkeleton from './CommentSkeleton';
+import ElementsAndTextTreeWalker from './ElementsAndTextTreeWalker';
+import ElementsTreeWalker from './ElementsTreeWalker';
 import cd from './cd';
-import { ElementsAndTextTreeWalker, ElementsTreeWalker } from './treeWalker';
 import { defined, getHeadingLevel, isHeadingNode, isInline, isMetadataNode, ucFirst, underlinesToSpaces } from './utils-general';
 import { parseTimestamp } from './utils-timestamp';
 

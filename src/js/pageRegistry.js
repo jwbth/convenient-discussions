@@ -9,10 +9,10 @@ import TextMasker from './TextMasker';
 import cd from './cd';
 import controller from './controller';
 import userRegistry from './userRegistry';
-import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
 import { handleApiReject, requestInBackground } from './utils-api';
 import { isProbablyTalkPage, mergeRegexps } from './utils-general';
 import { parseTimestamp } from './utils-timestamp';
+import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
 
 let pagesWithoutArchivesRegexp;
 let $archivingInfo;

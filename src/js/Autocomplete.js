@@ -1,12 +1,13 @@
+import Tribute from '../tribute/Tribute';
+
 import CdError from './CdError';
 import SectionStatic from './SectionStatic';
-import Tribute from '../tribute/Tribute';
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
 import userRegistry from './userRegistry';
-import { defined, removeDoubleSpaces, sleep, ucFirst, underlinesToSpaces, unique } from './utils-general';
 import { handleApiReject } from './utils-api';
+import { defined, removeDoubleSpaces, sleep, ucFirst, underlinesToSpaces, unique } from './utils-general';
 
 /**
  * Search for a string in a list of values.

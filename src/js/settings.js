@@ -8,10 +8,10 @@ import TextMasker from './TextMasker';
 import cd from './cd';
 import pageRegistry from './pageRegistry';
 import userRegistry from './userRegistry';
-import { areObjectsEqual, defined, ucFirst } from './utils-general';
-import { wrapHtml } from './utils-window';
-import { formatDateImproved, formatDateNative, formatDateRelative } from './utils-timestamp';
 import { getUserInfo, saveGlobalOption, saveLocalOption } from './utils-api';
+import { areObjectsEqual, defined, ucFirst } from './utils-general';
+import { formatDateImproved, formatDateNative, formatDateRelative } from './utils-timestamp';
+import { wrapHtml } from './utils-window';
 
 export default {
   /**
@@ -608,7 +608,7 @@ export default {
 
   /**
    * Update a setting value, saving it to the server and changing it for the current session as
-   * well.
+   * well. This should be done cautiously, because many settings only have effect on page reload.
    *
    * @param {string} key The key of the settings to save.
    * @param {*} value The value to set.

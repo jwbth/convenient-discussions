@@ -1,6 +1,6 @@
 import { convertHtmlToWikitext } from './utils-api';
-import { getElementFromPasteHtml, processPasteDom } from './utils-window';
 import { tweakUserOoUiClass } from './utils-ooui';
+import { getElementFromPasteHtml, processPasteDom } from './utils-window';
 
 /**
  * Our mixin that extends the {@link external:OO.ui.ProcessDialog} class

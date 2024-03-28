@@ -1,8 +1,8 @@
 import CdError from './CdError';
 import TextMasker from './TextMasker';
 import cd from './cd';
-import { escapePipesOutsideLinks } from './utils-wikitext';
-import { generateTagsRegexp } from './utils-wikitext';
+import { escapePipesOutsideLinks, generateTagsRegexp } from './utils-wikitext';
+
 
 const galleryRegexp = /^\x01\d+_gallery\x02$/m;
 
