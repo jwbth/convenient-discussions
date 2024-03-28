@@ -9,7 +9,7 @@ import cd from './cd';
 import controller from './controller';
 import debug from './debug';
 import pageRegistry from './pageRegistry';
-import { buildEditSummary, underlinesToSpaces } from './utils';
+import { buildEditSummary, underlinesToSpaces } from './utils-general';
 import { wrapDiffBody, wrapHtml } from './utils-window';
 
 const mwStringsCache = {};

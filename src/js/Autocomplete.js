@@ -5,8 +5,8 @@ import cd from './cd';
 import controller from './controller';
 import settings from './settings';
 import userRegistry from './userRegistry';
-import { defined, removeDoubleSpaces, sleep, ucFirst, underlinesToSpaces, unique } from './utils';
-import { handleApiReject } from './apiWrappers';
+import { defined, removeDoubleSpaces, sleep, ucFirst, underlinesToSpaces, unique } from './utils-general';
+import { handleApiReject } from './utils-api';
 
 /**
  * Search for a string in a list of values.

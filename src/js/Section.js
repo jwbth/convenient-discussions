@@ -12,10 +12,11 @@ import pageRegistry from './pageRegistry';
 import settings from './settings';
 import toc from './toc';
 import userRegistry from './userRegistry';
-import { defined, flat, getHeadingLevel, underlinesToSpaces, unique } from './utils';
-import { encodeWikilink, maskDistractingCode, normalizeCode } from './wikitext';
-import { formatDate } from './timestamp';
-import { handleApiReject } from './apiWrappers';
+import { defined, flat, getHeadingLevel, underlinesToSpaces, unique } from './utils-general';
+import { encodeWikilink, maskDistractingCode, normalizeCode } from './utils-wikitext';
+import { formatDate } from './utils-timestamp';
+import { getRangeContents } from './utils-window';
+import { handleApiReject } from './utils-api';
 
 /**
  * Class representing a section.
@@ -1663,7 +1664,7 @@ class Section extends SectionSkeleton {
   updateVisibility(show) {
     if (Boolean(show) !== this.isHidden) return;
 
-    this.elements ||= controller.getRangeContents(this.headingElement, this.findRealLastElement());
+    this.elements ||= getRangeContents(this.headingElement, this.findRealLastElement());
     this.isHidden = !show;
     this.elements.forEach((el) => {
       el.classList.toggle('cd-section-hidden', !show);

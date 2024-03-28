@@ -16,8 +16,8 @@ import pageRegistry from './pageRegistry';
 import settings from './settings';
 import toc from './toc';
 import userRegistry from './userRegistry';
-import { calculateWordOverlap, keepWorkerSafeValues } from './utils';
-import { loadUserGenders } from './apiWrappers';
+import { calculateWordOverlap, keepWorkerSafeValues } from './utils-general';
+import { loadUserGenders } from './utils-api';
 
 const revisionData = {};
 const resolvers = {};

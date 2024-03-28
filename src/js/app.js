@@ -13,7 +13,7 @@ import debug from './debug';
 import defaultConfig from '../../config/default';
 import { addCommentLinksToSpecialSearch } from './addCommentLinks';
 import { getFooter } from './utils-window.js';
-import { mergeRegexps, unique } from './utils';
+import { mergeRegexps, unique } from './utils-general.js';
 
 let config;
 

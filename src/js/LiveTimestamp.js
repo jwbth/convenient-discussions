@@ -3,8 +3,8 @@ import dayjs from 'dayjs';
 import cd from './cd';
 import navPanel from './navPanel';
 import settings from './settings';
-import { formatDate, relativeTimeThresholds } from './timestamp';
-import { removeFromArrayIfPresent } from './utils';
+import { formatDate, relativeTimeThresholds } from './utils-timestamp';
+import { removeFromArrayIfPresent } from './utils-general';
 
 /**
  * Class representing an element that has contains an automatically updated timestamp with relative

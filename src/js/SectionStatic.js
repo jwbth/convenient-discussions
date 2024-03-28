@@ -7,7 +7,7 @@
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
-import { areObjectsEqual, calculateWordOverlap, flat, generateFixedPosTimestamp, spacesToUnderlines } from './utils';
+import { areObjectsEqual, calculateWordOverlap, flat, generateFixedPosTimestamp, spacesToUnderlines } from './utils-general';
 import { getExtendedRect, getVisibilityByRects } from './utils-window';
 
 export default {

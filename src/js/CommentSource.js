@@ -2,8 +2,8 @@ import CdError from './CdError';
 import TextMasker from './TextMasker';
 import cd from './cd';
 import settings from './settings';
-import { brsToNewlines, extractSignatures, maskDistractingCode, normalizeCode, removeWikiMarkup } from './wikitext';
-import { calculateWordOverlap, countOccurrences, defined, definedAndNotNull, generatePageNamePattern } from './utils';
+import { brsToNewlines, extractSignatures, maskDistractingCode, normalizeCode, removeWikiMarkup } from './utils-wikitext';
+import { calculateWordOverlap, countOccurrences, defined, definedAndNotNull, generatePageNamePattern } from './utils-general';
 
 /**
  * Get the code of the section chunk after the specified index with masked irrelevant parts.

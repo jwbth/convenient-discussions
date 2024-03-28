@@ -12,8 +12,8 @@ import init from './init';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
-import { definedAndNotNull, generatePageNamePattern, isCommentEdit, isProbablyTalkPage, isUndo, removeDirMarks, spacesToUnderlines } from './utils';
-import { initDayjs, parseTimestamp } from './timestamp';
+import { definedAndNotNull, generatePageNamePattern, isCommentEdit, isProbablyTalkPage, isUndo, removeDirMarks, spacesToUnderlines } from './utils-general';
+import { initDayjs, parseTimestamp } from './utils-timestamp';
 
 let colon;
 let moveFromBeginning;

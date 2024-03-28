@@ -2,9 +2,9 @@ import ProcessDialog from './ProcessDialog';
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
-import { areObjectsEqual } from './utils';
-import { createCheckboxField, createNumberField, createRadioField, createTextField, tweakUserOoUiClass } from './ooui';
-import { saveGlobalOption, saveLocalOption } from './apiWrappers';
+import { areObjectsEqual } from './utils-general';
+import { createCheckboxField, createNumberField, createRadioField, createTextField, tweakUserOoUiClass } from './utils-ooui';
+import { saveGlobalOption, saveLocalOption } from './utils-api';
 
 /**
  * Class used to create a settings dialog.

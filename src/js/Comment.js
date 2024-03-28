@@ -15,12 +15,12 @@ import pageRegistry from './pageRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
 import { ElementsTreeWalker, TreeWalker } from './treeWalker';
-import { addToArrayIfAbsent, areObjectsEqual, calculateWordOverlap, countOccurrences, decodeHtmlEntities, defined, getHeadingLevel, isInline, sleep, unique } from './utils';
-import { extractSignatures, removeWikiMarkup } from './wikitext';
-import { formatDate, formatDateNative } from './timestamp';
+import { addToArrayIfAbsent, areObjectsEqual, calculateWordOverlap, countOccurrences, decodeHtmlEntities, defined, getHeadingLevel, isInline, sleep, unique } from './utils-general';
+import { extractSignatures, removeWikiMarkup } from './utils-wikitext';
+import { formatDate, formatDateNative } from './utils-timestamp';
 import { getExtendedRect, getHigherNodeAndOffsetInSelection, getVisibilityByRects, wrapDiffBody, wrapHtml } from './utils-window';
-import { handleApiReject, loadUserGenders, parseCode } from './apiWrappers';
-import { showConfirmDialog } from './ooui';
+import { handleApiReject, loadUserGenders, parseCode } from './utils-api';
+import { showConfirmDialog } from './utils-ooui';
 
 /**
  * Class representing a comment (any signed, and in some cases unsigned, text on a wiki talk page).

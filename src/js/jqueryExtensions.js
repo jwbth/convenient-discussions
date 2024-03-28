@@ -6,7 +6,7 @@
 
 import cd from './cd';
 import controller from './controller';
-import { defined, isMetadataNode, sleep } from './utils';
+import { defined, isMetadataNode, sleep } from './utils-general';
 
 /**
  * Merge many jQuery objects into one. Works like `.add()`, but accepts many parameters and is

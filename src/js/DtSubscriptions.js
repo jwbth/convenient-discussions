@@ -7,8 +7,8 @@ import controller from './controller';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
-import { handleApiReject, splitIntoBatches } from './apiWrappers';
-import { spacesToUnderlines, unique } from './utils';
+import { handleApiReject, splitIntoBatches } from './utils-api';
+import { spacesToUnderlines, unique } from './utils-general';
 
 /**
  * Class implementing DiscussionTools' topic subscriptions.

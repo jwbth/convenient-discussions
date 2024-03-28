@@ -11,7 +11,7 @@ import StorageItem from './StorageItem';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
-import { areObjectsEqual, removeFromArrayIfPresent } from './utils';
+import { areObjectsEqual, removeFromArrayIfPresent } from './utils-general';
 
 /**
  * Callback to be used in

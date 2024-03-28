@@ -6,8 +6,8 @@
 
 import StorageItem from './StorageItem';
 import cd from './cd';
-import { getUsersByGlobalId } from './apiWrappers';
-import { ucFirst, underlinesToSpaces } from './utils';
+import { getUsersByGlobalId } from './utils-api';
+import { ucFirst, underlinesToSpaces } from './utils-general';
 
 /**
  * Class representing a user. Is made similar to

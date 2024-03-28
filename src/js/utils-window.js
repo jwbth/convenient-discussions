@@ -1,6 +1,8 @@
 import Button from './Button';
+import Parser from './Parser';
 import cd from './cd';
-import { removeFromArrayIfPresent } from './utils';
+import { ElementsTreeWalker } from './treeWalker';
+import { removeFromArrayIfPresent } from './utils-general';
 
 /**
  * @typedef {object} WrapCallbacks
@@ -238,4 +240,220 @@ export function copyText(text, { success, fail }) {
   } else {
     mw.notify(fail, { type: 'error' });
   }
+}
+
+/**
+ * Check whether there is something in the HTML to convert to wikitext.
+ *
+ * @param {string} html
+ * @param {Element} rootElement
+ * @returns {boolean}
+ */
+export function isConvertibleToWikitext(html, rootElement) {
+  return processPasteDom(getElementFromPasteHtml(html), rootElement).isConvertible;
+}
+
+/**
+ * Clean up the contents of an element created based on the HTML code of a paste and returns
+ * 1. whether there is something in the HTML to convert to wikitext;
+ * 2. HTML;
+ * 3. wikitext.
+ *
+ * @param {Element} div
+ * @param {Element} rootElement
+ * @returns {object}
+ */
+export function processPasteDom(div, rootElement) {
+  // Get all styles (such as `user-select: none`) from classes applied when the element is added
+  // to the DOM. If HTML is retrieved from a paste, this is not needed (styles are added to
+  // elements themselves in the text/html format), but won't hurt.
+  div.className = 'cd-hidden';
+  rootElement.appendChild(div);
+
+  [...div.querySelectorAll('[style]')].forEach((el) => {
+    el.removeAttribute('style');
+  });
+
+  const removeElement = (el) => el.remove();
+  const replaceWithChildren = (el) => {
+    if (
+      ['DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'DD'].includes(el.tagName) &&
+      (
+        el.nextElementSibling ||
+
+        // Cases like "<div><div>Quote</div>Text</div>", e.g. created by
+        // https://ru.wikipedia.org/wiki/Template:Цитата_сообщения
+        el.nextSibling?.textContent?.trim()
+      )
+    ) {
+      el.after('\n');
+    }
+    el.replaceWith(...el.childNodes);
+  };
+
+  [...div.querySelectorAll('*')]
+    .filter((el) => window.getComputedStyle(el).userSelect === 'none')
+    .forEach(removeElement);
+
+  // Should run after removing elements with `user-select: none`, to remove their wrappers that
+  // now have no content.
+  [...div.querySelectorAll('*')]
+    // Need to keep non-breaking spaces.
+    .filter((el) => (
+      (
+        !['BR', 'HR'].includes(el.tagName) ||
+        el.classList.contains('Apple-interchange-newline')
+      ) &&
+      !el.textContent.replace(/[ \n]+/g, ''))
+    )
+
+    .forEach(removeElement);
+
+  [...div.querySelectorAll('style')].forEach(removeElement);
+
+  const topElements = new Parser({ childElementsProp: 'children' })
+    .getTopElementsWithText(div, true).nodes;
+  if (topElements[0] !== div) {
+    div.innerHTML = '';
+    div.append(...topElements);
+  }
+
+  [...div.querySelectorAll('div, span, h1, h2, h3, h4, h5, h6')].forEach(replaceWithChildren);
+  [...div.querySelectorAll('p > br')].forEach((el) => {
+    el.after('\n');
+    el.remove();
+  });
+
+  const allowedTags = cd.g.allowedTags.concat('a', 'center', 'big', 'strike', 'tt');
+  [...div.querySelectorAll('*')].forEach((el) => {
+    if (!allowedTags.includes(el.tagName.toLowerCase())) {
+      replaceWithChildren(el);
+      return;
+    }
+
+    [...el.attributes]
+      .filter((attr) => attr.name === 'class' || /^data-/.test(attr.name))
+      .forEach((attr) => {
+        el.removeAttribute(attr.name);
+      });
+  });
+
+  [...div.children]
+    // DDs out of DLs are likely comment parts that should not create `:` markup. (Bare LIs don't
+    // create `*` markup in the API.)
+    .filter((el) => el.tagName === 'DD')
+
+    .forEach(replaceWithChildren);
+
+  div.remove();
+
+  return {
+    isConvertible: Boolean(
+      div.childElementCount &&
+      !(
+        [...div.querySelectorAll('*')].length === 1 &&
+        div.childNodes.length === 1 &&
+        ['P', 'LI', 'DD'].includes(div.childNodes[0].tagName)
+      )
+    ),
+    html: div.innerHTML,
+    text: div.innerText,
+  };
+}
+
+/**
+ * Turn HTML code of a paste into an element.
+ *
+ * @param {string} html
+ * @returns {Element}
+ */
+export function getElementFromPasteHtml(html) {
+  const div = document.createElement('div');
+  div.innerHTML = html
+    .replace(/^[^]*<!-- *StartFragment *-->/, '')
+    .replace(/<!-- *EndFragment *-->[^]*$/, '');
+  return div;
+}
+
+/**
+ * Get all nodes between the two specified, including them. This works equally well if they are at
+ * different nesting levels. Descendants of nodes that are already included are not included.
+ *
+ * @param {Element} start
+ * @param {Element} end
+ * @returns {Element[]}
+ */
+export function getRangeContents(start, end) {
+  // It makes more sense to place this function in the `utils` module, but we can't import
+  // `controller` there because of issues with the worker build and a cyclic dependency that
+  // emerges.
+
+  // Fight infinite loops
+  if (start.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_PRECEDING) return;
+
+  let commonAncestor;
+  for (let el = start; el; el = el.parentNode) {
+    if (el.contains(end)) {
+      commonAncestor = el;
+      break;
+    }
+  }
+
+  /*
+    Here we should equally account for all cases of the start and end item relative position.
+
+      <ul>         <!-- Say, may start anywhere from here... -->
+        <li></li>
+        <li>
+          <div></div>
+        </li>
+        <li></li>
+      </ul>
+      <div></div>  <!-- ...to here. And, may end anywhere from here... -->
+      <ul>
+        <li></li>
+        <li>
+          <div></div>
+        </li>
+        <li></li>  <-- ...to here. -->
+      </ul>
+  */
+  const rangeContents = [start];
+
+  // The start container could contain the end container and be different from it in the case with
+  // adjusted end items.
+  if (!start.contains(end)) {
+    const treeWalker = new ElementsTreeWalker(start, this.rootElement);
+
+    while (treeWalker.currentNode.parentNode !== commonAncestor) {
+      while (treeWalker.nextSibling()) {
+        rangeContents.push(treeWalker.currentNode);
+      }
+      treeWalker.parentNode();
+    }
+    treeWalker.nextSibling();
+    while (!treeWalker.currentNode.contains(end)) {
+      rangeContents.push(treeWalker.currentNode);
+      treeWalker.nextSibling();
+    }
+
+    // This step fixes some issues with `.cd-connectToPreviousItem` like wrong margins below the
+    // expand note of the comment
+    // https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house/CD_test_page&oldid=678031044#c-Example-2021-10-02T05:14:00.000Z-Example-2021-10-02T05:13:00.000Z
+    // if you collapse its thread.
+    while (end.parentNode.lastChild === end && treeWalker.currentNode.contains(end.parentNode)) {
+      end = end.parentNode;
+    }
+
+    while (treeWalker.currentNode !== end) {
+      treeWalker.firstChild();
+      while (!treeWalker.currentNode.contains(end)) {
+        rangeContents.push(treeWalker.currentNode);
+        treeWalker.nextSibling();
+      }
+    }
+    rangeContents.push(end);
+  }
+
+  return rangeContents;
 }

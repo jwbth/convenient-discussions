@@ -5,7 +5,7 @@ import Subscriptions from './Subscriptions';
 import cd from './cd';
 import controller from './controller';
 import userRegistry from './userRegistry';
-import { getUserInfo, saveLocalOption } from './apiWrappers';
+import { getUserInfo, saveLocalOption } from './utils-api';
 import { wrapHtml } from './utils-window';
 
 /**

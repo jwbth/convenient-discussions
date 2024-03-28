@@ -1,6 +1,6 @@
 import { DomUtils, parseDocument } from 'htmlparser2';
 
-import { decodeHtmlEntities } from './utils';
+import { decodeHtmlEntities } from './utils-general';
 
 self.Node = {
   ELEMENT_NODE: 1,

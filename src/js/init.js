@@ -22,11 +22,11 @@ import languageFallbacksData from '../../data/languageFallbacks.json';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
-import { dateTokenToMessageNames, initDayjs } from './timestamp';
-import { generatePageNamePattern, getContentLanguageMessages, unique } from './utils';
+import { dateTokenToMessageNames, initDayjs } from './utils-timestamp';
+import { generatePageNamePattern, getContentLanguageMessages, unique } from './utils-general';
 import { processPage } from './updateChecker';
 import { skin$, transparentize } from './utils-window';
-import { splitIntoBatches } from './apiWrappers';
+import { splitIntoBatches } from './utils-api';
 
 let defaultFontSize;
 

@@ -3,8 +3,8 @@
 import CommentSkeleton from './CommentSkeleton';
 import cd from './cd';
 import { ElementsAndTextTreeWalker, ElementsTreeWalker } from './treeWalker';
-import { defined, getHeadingLevel, isHeadingNode, isInline, isMetadataNode, ucFirst, underlinesToSpaces } from './utils';
-import { parseTimestamp } from './timestamp';
+import { defined, getHeadingLevel, isHeadingNode, isInline, isMetadataNode, ucFirst, underlinesToSpaces } from './utils-general';
+import { parseTimestamp } from './utils-timestamp';
 
 let punctuationRegexp;
 

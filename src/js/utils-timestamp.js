@@ -19,7 +19,7 @@ import { formatDistanceToNowStrict } from 'date-fns';
 import { getTimezoneOffset } from 'date-fns-tz';
 
 import cd from './cd';
-import { getContentLanguageMessages, removeDirMarks, zeroPad } from './utils';
+import { getContentLanguageMessages, removeDirMarks, zeroPad } from './utils-general';
 
 let utcString;
 

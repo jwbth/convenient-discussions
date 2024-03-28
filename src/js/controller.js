@@ -11,9 +11,8 @@ import Comment from './Comment';
 import CommentFormStatic from './CommentFormStatic';
 import CommentStatic from './CommentStatic';
 import DtSubscriptions from './dtSubscriptions';
-import LegacySubscriptions from './legacySubscriptions';
+import LegacySubscriptions from './LegacySubscriptions';
 import LiveTimestamp from './LiveTimestamp';
-import Parser from './Parser';
 import SectionStatic from './SectionStatic';
 import Thread from './Thread';
 import Worker from './worker-gate';
@@ -29,13 +28,12 @@ import settings from './settings';
 import toc from './toc';
 import { ElementsTreeWalker } from './treeWalker';
 import { copyText, getExtendedRect, getVisibilityByRects, isCmdModifierPressed, isInputFocused, keyCombination, skin$, wrapHtml } from './utils-window';
-import { defined, definedAndNotNull, getLastArrayElementOrSelf, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils';
-import { getUserInfo, htmlToWikitext } from './apiWrappers';
+import { defined, definedAndNotNull, getLastArrayElementOrSelf, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
+import { getUserInfo } from './utils-api';
 
 export default {
   content: {},
   scrollData: { offset: null },
-  document: document.documentElement,
   autoScrolling: false,
   isUpdateThreadLinesHandlerAttached: false,
   lastScrollX: 0,
@@ -388,7 +386,7 @@ export default {
       // This is set only on window resize event. The initial value is set in
       // `init.addTalkPageCss()` through a style tag.
       if (reset) {
-        $(this.document).css('--cd-content-start-margin', startMargin + 'px');
+        $(document.documentElement).css('--cd-content-start-margin', startMargin + 'px');
       }
     }
 
@@ -437,7 +435,9 @@ export default {
       this.scrollData.element = null;
       this.scrollData.elementTop = null;
       this.scrollData.touchesBottom = false;
-      this.scrollData.offsetBottom = this.document.scrollHeight - (scrollY + window.innerHeight);
+      this.scrollData.offsetBottom = (
+        document.documentElement.scrollHeight - (scrollY + window.innerHeight)
+      );
 
       // The number 100 accounts for various content moves by scripts running on the page (like
       // HotCat that may add an empty category list).
@@ -505,7 +505,7 @@ export default {
       if (this.scrollData.touchesBottom && window.scrollY !== 0) {
         window.scrollTo(
           0,
-          this.document.scrollHeight - window.innerHeight - this.scrollData.offsetBottom
+          document.documentElement.scrollHeight - window.innerHeight - this.scrollData.offsetBottom
         );
       } else if (this.scrollData.element) {
         const rect = this.scrollData.element.getBoundingClientRect();
@@ -1533,181 +1533,6 @@ export default {
     );
   },
 
-  cleanUpPasteDom(div) {
-    // Get all styles (such as `user-select: none`) from classes applied when the element is added
-    // to the DOM. If HTML is retrieved from a paste, this is not needed (styles are added to
-    // elements themselves in the text/html format), but won't hurt.
-    div.className = 'cd-hidden';
-    this.rootElement.appendChild(div);
-
-    [...div.querySelectorAll('[style]')].forEach((el) => {
-      el.removeAttribute('style');
-    });
-
-    const removeElement = (el) => el.remove();
-    const replaceWithChildren = (el) => {
-      if (
-        ['DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'DD'].includes(el.tagName) &&
-        (
-          el.nextElementSibling ||
-
-          // Cases like "<div><div>Quote</div>Text</div>", e.g. created by
-          // https://ru.wikipedia.org/wiki/Template:Цитата_сообщения
-          el.nextSibling?.textContent?.trim()
-        )
-      ) {
-        el.after('\n');
-      }
-      el.replaceWith(...el.childNodes);
-    };
-
-    [...div.querySelectorAll('*')]
-      .filter((el) => window.getComputedStyle(el).userSelect === 'none')
-      .forEach(removeElement);
-
-    // Should run after removing elements with `user-select: none`, to remove their wrappers that
-    // now have no content.
-    [...div.querySelectorAll('*')]
-      // Need to keep non-breaking spaces.
-      .filter((el) => (
-        (
-          !['BR', 'HR'].includes(el.tagName) ||
-          el.classList.contains('Apple-interchange-newline')
-        ) &&
-        !el.textContent.replace(/[ \n]+/g, ''))
-      )
-
-      .forEach(removeElement);
-
-    [...div.querySelectorAll('style')].forEach(removeElement);
-
-    const topElements = new Parser({ childElementsProp: 'children' })
-      .getTopElementsWithText(div, true).nodes;
-    if (topElements[0] !== div) {
-      div.innerHTML = '';
-      div.append(...topElements);
-    }
-
-    [...div.querySelectorAll('div, span, h1, h2, h3, h4, h5, h6')].forEach(replaceWithChildren);
-    [...div.querySelectorAll('p > br')].forEach((el) => {
-      el.after('\n');
-      el.remove();
-    });
-
-    const allowedTags = cd.g.allowedTags.concat('a', 'center', 'big', 'strike', 'tt');
-    [...div.querySelectorAll('*')].forEach((el) => {
-      if (!allowedTags.includes(el.tagName.toLowerCase())) {
-        replaceWithChildren(el);
-        return;
-      }
-
-      [...el.attributes]
-        .filter((attr) => attr.name === 'class' || /^data-/.test(attr.name))
-        .forEach((attr) => {
-          el.removeAttribute(attr.name);
-        });
-    });
-
-    [...div.children]
-      // DDs out of DLs are likely comment parts that should not create `:` markup. (Bare LIs don't
-      // create `*` markup in the API.)
-      .filter((el) => el.tagName === 'DD')
-
-      .forEach(replaceWithChildren);
-
-    const allElements = [...div.querySelectorAll('*')];
-    const needToParse = Boolean(
-      div.childElementCount &&
-      !(
-        allElements.length === 1 &&
-        div.childNodes.length === 1 &&
-        ['P', 'LI', 'DD'].includes(div.childNodes[0].tagName)
-      )
-    );
-
-    div.remove();
-
-    return {
-      needToParse,
-      text: needToParse ? div.innerHTML : div.innerText,
-    };
-  },
-
-  /**
-   * Given a selection, get its content as wikitext.
-   *
-   * @param {external:OO.ui.TextInputWidget} input
-   * @returns {string}
-   */
-  async getWikitextFromSelection(input) {
-    const div = document.createElement('div');
-    div.appendChild(window.getSelection().getRangeAt(0).cloneContents());
-    const { text, needToParse } = this.cleanUpPasteDom(div);
-    return needToParse ? await htmlToWikitext(text, input) : text;
-  },
-
-  /**
-   * Check whether there is something in the HTML to convert to wikitext.
-   *
-   * @param {string} html
-   * @returns {boolean}
-   */
-  isConvertableToWikitext(html) {
-    return this.cleanUpPasteDom(this.pasteHtmlToElement(html)).needToParse;
-  },
-
-  pasteHtmlToElement(html) {
-    const div = document.createElement('div');
-    div.innerHTML = html
-      .replace(/^[^]*<!-- *StartFragment *-->/, '')
-      .replace(/<!-- *EndFragment *-->[^]*$/, '');
-    return div;
-  },
-
-  /**
-   * Convert HTML code of a paste into wikitext.
-   *
-   * @param {string} html Pasted HTML.
-   * @param {external:OO.ui.TextInputWidget} input Input that HTML is pasted to.
-   * @returns {string}
-   */
-  async getWikitextFromPaste(html, input) {
-    const { text, needToParse } = this.cleanUpPasteDom(this.pasteHtmlToElement(html));
-    return needToParse ? await htmlToWikitext(text, input) : text;
-  },
-
-  /**
-   * Replace an element with an identical one but with another tag name, i.e. move all child nodes,
-   * attributes, and some bound events to a new node, and also reassign references in some variables
-   * and properties to this element. Unfortunately, we can't just change the element's `tagName` to
-   * do that.
-   *
-   * @param {Element} element
-   * @param {string} newType
-   * @returns {Element}
-   */
-  changeElementType(element, newType) {
-    const newElement = document.createElement(newType);
-    while (element.firstChild) {
-      newElement.appendChild(element.firstChild);
-    }
-    [...element.attributes].forEach((attribute) => {
-      newElement.setAttribute(attribute.name, attribute.value);
-    });
-
-    // If this element is a part of a comment, replace it in the `Comment` object instance.
-    let commentIndex = element.getAttribute('data-cd-comment-index');
-    if (commentIndex !== null) {
-      CommentStatic.getAll()[Number(commentIndex)].replaceElement(element, newElement);
-    } else {
-      element.parentNode.replaceChild(newElement, element);
-    }
-
-    this.replaceScrollAnchorElement(element, newElement);
-
-    return newElement;
-  },
-
   /**
    * _For internal use._ Check whether the page qualifies to be considered a long page (which
    * affects attempting performance improvements).
@@ -1717,89 +1542,6 @@ export default {
   isLongPage() {
     this.content.longPage ??= $(document).height() > 15000;
     return this.content.longPage;
-  },
-
-  /**
-   * Get all nodes between the two specified, including them. This works equally well if they are at
-   * different nesting levels. Descendants of nodes that are already included are not included.
-   *
-   * @param {Element} start
-   * @param {Element} end
-   * @returns {Element[]}
-   */
-  getRangeContents(start, end) {
-    // It makes more sense to place this function in the `utils` module, but we can't import
-    // `controller` there because of issues with the worker build and a cyclic dependency that
-    // emerges.
-
-    // Fight infinite loops
-    if (start.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_PRECEDING) return;
-
-    let commonAncestor;
-    for (let el = start; el; el = el.parentNode) {
-      if (el.contains(end)) {
-        commonAncestor = el;
-        break;
-      }
-    }
-
-    /*
-      Here we should equally account for all cases of the start and end item relative position.
-
-        <ul>         <!-- Say, may start anywhere from here... -->
-          <li></li>
-          <li>
-            <div></div>
-          </li>
-          <li></li>
-        </ul>
-        <div></div>  <!-- ...to here. And, may end anywhere from here... -->
-        <ul>
-          <li></li>
-          <li>
-            <div></div>
-          </li>
-          <li></li>  <-- ...to here. -->
-        </ul>
-    */
-    const rangeContents = [start];
-
-    // The start container could contain the end container and be different from it in the case with
-    // adjusted end items.
-    if (!start.contains(end)) {
-      const treeWalker = new ElementsTreeWalker(start, this.rootElement);
-
-      while (treeWalker.currentNode.parentNode !== commonAncestor) {
-        while (treeWalker.nextSibling()) {
-          rangeContents.push(treeWalker.currentNode);
-        }
-        treeWalker.parentNode();
-      }
-      treeWalker.nextSibling();
-      while (!treeWalker.currentNode.contains(end)) {
-        rangeContents.push(treeWalker.currentNode);
-        treeWalker.nextSibling();
-      }
-
-      // This step fixes some issues with `.cd-connectToPreviousItem` like wrong margins below the
-      // expand note of the comment
-      // https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house/CD_test_page&oldid=678031044#c-Example-2021-10-02T05:14:00.000Z-Example-2021-10-02T05:13:00.000Z
-      // if you collapse its thread.
-      while (end.parentNode.lastChild === end && treeWalker.currentNode.contains(end.parentNode)) {
-        end = end.parentNode;
-      }
-
-      while (treeWalker.currentNode !== end) {
-        treeWalker.firstChild();
-        while (!treeWalker.currentNode.contains(end)) {
-          rangeContents.push(treeWalker.currentNode);
-          treeWalker.nextSibling();
-        }
-      }
-      rangeContents.push(end);
-    }
-
-    return rangeContents;
   },
 
   /**

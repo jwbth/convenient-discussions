@@ -3,9 +3,9 @@ import MultilineTextInputWidget from './MultilineTextInputWidget';
 import ProcessDialog from './ProcessDialog';
 import cd from './cd';
 import controller from './controller';
-import { getPageIds, getPageTitles } from './apiWrappers';
-import { sleep, unique } from './utils';
-import { tweakUserOoUiClass } from './ooui';
+import { getPageIds, getPageTitles } from './utils-api';
+import { sleep, unique } from './utils-general';
+import { tweakUserOoUiClass } from './utils-ooui';
 
 /**
  * Class used to create an "Edit subscriptions" dialog.

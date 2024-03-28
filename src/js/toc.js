@@ -13,7 +13,7 @@ import cd from './cd';
 import controller from './controller';
 import navPanel from './navPanel';
 import settings from './settings';
-import { formatDate, formatDateNative } from './timestamp';
+import { formatDate, formatDateNative } from './utils-timestamp';
 
 /**
  * @exports toc

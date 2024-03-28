@@ -15,7 +15,7 @@ import Parser from './Parser';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
 import debug from './debug';
-import { isHeadingNode, isMetadataNode } from './utils';
+import { isHeadingNode, isMetadataNode } from './utils-general';
 import { parseDocument, walkThroughSubtree } from './htmlparser2Extended';
 
 let isFirstRun = true;

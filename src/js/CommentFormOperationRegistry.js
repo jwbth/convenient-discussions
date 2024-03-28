@@ -1,4 +1,4 @@
-import { removeFromArrayIfPresent } from './utils';
+import { removeFromArrayIfPresent } from './utils-general';
 
 /**
  * Class representing an operation registry (a storage of operations that a comment form currently

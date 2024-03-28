@@ -7,9 +7,9 @@ import cd from './cd';
 import controller from './controller';
 import settings from './settings';
 import { ElementsTreeWalker } from './treeWalker';
-import { defined, flat, getCommonGender, isHeadingNode, removeFromArrayIfPresent, unique } from './utils';
-import { getExtendedRect, getVisibilityByRects, isCmdModifierPressed } from './utils-window';
-import { loadUserGenders } from './apiWrappers';
+import { defined, flat, getCommonGender, isHeadingNode, removeFromArrayIfPresent, unique } from './utils-general';
+import { getExtendedRect, getRangeContents, getVisibilityByRects, isCmdModifierPressed } from './utils-window';
+import { loadUserGenders } from './utils-api';
 
 let isInited;
 let threadLinesContainer;
@@ -326,9 +326,9 @@ class Thread {
     } else {
       // We could improve the positioning of the thread line to exclude the vertical space next to
       // an outdent template placed at a non-0 level by taking the first element as the start
-      // element. But then we need to fix areTopAndBottomAligned() (calculate the last comment's
-      // margins instead of using the first comment's) and controller.getRangeContents() (come up
-      // with a treatment for the situation when the end element includes the start element).
+      // element. But then we need to fix `areTopAndBottomAligned()` (calculate the last comment's
+      // margins instead of using the first comment's) and `utils-window.getRangeContents()` (come
+      // up with a treatment for the situation when the end element includes the start element).
       startElement = (
         findItemElement(firstNotHeadingElement, this.rootComment.level, nextForeignElement) ||
         firstNotHeadingElement
@@ -666,10 +666,7 @@ class Thread {
      * @type {Node[]|undefined}
      * @private
      */
-    this.collapsedRange = controller.getRangeContents(
-      this.startElement,
-      this.getAdjustedEndElement()
-    );
+    this.collapsedRange = getRangeContents(this.startElement, this.getAdjustedEndElement());
 
     this.collapsedRange.forEach((el) => {
       // We use a class here because there can be elements in the comment that are hidden from the

@@ -11,8 +11,8 @@ import TextMasker from './TextMasker';
 import cd from './cd';
 import controller from './controller';
 import userRegistry from './userRegistry';
-import { brsToNewlines } from './wikitext';
-import { unique } from './utils';
+import { brsToNewlines } from './utils-wikitext';
+import { unique } from './utils-general';
 
 let cachedUserInfoRequest;
 
@@ -68,22 +68,6 @@ export function splitIntoBatches(arr) {
     result[chunkIndex].push(item);
     return result;
   }, []);
-}
-
-/**
- * Unpack the visits string into a visits object.
- *
- * @param {string} visitsString
- * @returns {object}
- */
-export function unpackVisits(visitsString) {
-  const visits = {};
-  const regexp = /^(\d+),(.+)$/gm;
-  let match;
-  while ((match = regexp.exec(visitsString))) {
-    visits[match[1]] = match[2].split(',');
-  }
-  return visits;
 }
 
 /**
@@ -427,13 +411,9 @@ function requestTransformApi(url, html) {
  * Convert HTML into wikitext.
  *
  * @param {string} html
- * @param {external:OO.ui.TextInputWidget} input
  * @returns {Promise.<string>}
  */
-export async function htmlToWikitext(html, input) {
-  input.pushPending();
-  input.setDisabled(true);
-
+export async function convertHtmlToWikitext(html) {
   let wikitext;
   try {
     try {
@@ -463,9 +443,6 @@ export async function htmlToWikitext(html, input) {
   } catch {
     // Empty
   }
-
-  input.popPending();
-  input.setDisabled(false);
 
   return wikitext;
 }

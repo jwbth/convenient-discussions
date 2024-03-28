@@ -17,12 +17,12 @@ import notifications from './notifications';
 import pageRegistry, { Page } from './pageRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
-import { buildEditSummary, defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './utils';
-import { createCheckboxField } from './ooui';
-import { escapePipesOutsideLinks } from './wikitext';
-import { generateTagsRegexp, removeWikiMarkup } from './wikitext';
-import { handleApiReject, parseCode } from './apiWrappers';
-import { isCmdModifierPressed, isInputFocused, keyCombination, wrapDiffBody, wrapHtml } from './utils-window';
+import { buildEditSummary, defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './utils-general';
+import { createCheckboxField } from './utils-ooui';
+import { escapePipesOutsideLinks } from './utils-wikitext';
+import { generateTagsRegexp, removeWikiMarkup } from './utils-wikitext';
+import { getWikitextFromPaste, getWikitextFromSelection, isCmdModifierPressed, isConvertibleToWikitext, isInputFocused, keyCombination, wrapDiffBody, wrapHtml } from './utils-window';
+import { handleApiReject, parseCode } from './utils-api';
 
 const allowedFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'];
 
@@ -1600,7 +1600,7 @@ class CommentForm {
     button.on('click', async () => {
       // The input is made disabled, so the content can't be changed by the user during the
       // loading stage.
-      const text = await controller.getWikitextFromPaste(html, this.commentInput);
+      const text = await getWikitextFromPaste(html, this.commentInput);
 
       this.commentInput
         .selectRange(position - insertedText.length, position)
@@ -1708,7 +1708,7 @@ class CommentForm {
 
     if (data.types.includes('text/html')) {
       const html = data.getData('text/html');
-      if (!controller.isConvertableToWikitext(html)) return;
+      if (!isConvertibleToWikitext(html, controller.getRootElement())) return;
 
       this.suggestConvertToWikitext(html, data.getData('text/plain')?.replace(/\r/g, ''));
     } else {
@@ -3626,7 +3626,7 @@ class CommentForm {
         activeElement.selectionEnd
       );
     } else {
-      selection = await controller.getWikitextFromSelection(this.commentInput);
+      selection = await getWikitextFromSelection(this.commentInput, controller.getRootElement());
     }
     selection = selection.trim();
 

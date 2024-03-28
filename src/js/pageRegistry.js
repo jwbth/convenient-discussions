@@ -9,10 +9,10 @@ import TextMasker from './TextMasker';
 import cd from './cd';
 import controller from './controller';
 import userRegistry from './userRegistry';
-import { findFirstTimestamp, maskDistractingCode } from './wikitext';
-import { handleApiReject, requestInBackground } from './apiWrappers';
-import { isProbablyTalkPage, mergeRegexps } from './utils';
-import { parseTimestamp } from './timestamp';
+import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
+import { handleApiReject, requestInBackground } from './utils-api';
+import { isProbablyTalkPage, mergeRegexps } from './utils-general';
+import { parseTimestamp } from './utils-timestamp';
 
 let pagesWithoutArchivesRegexp;
 let $archivingInfo;
@@ -624,12 +624,12 @@ export class Page {
 
   /**
    * Enrich the page instance with the properties regarding whether new topics go on top on this
-   * page (based on the various factors) and, if new topics are on top, the start index of the first
+   * page (based on various factors) and, if new topics are on top, the start index of the first
    * section.
    *
    * @throws {CdError}
    */
-  analyzeNewTopicPlacement() {
+  guessNewTopicPlacement() {
     if (this.code === undefined) {
       throw new CdError('Can\'t analyze the new topics placement: Page#code is undefined.');
     }
@@ -667,7 +667,7 @@ export class Page {
 
     /**
      * Whether new topics go on top on this page. Filled upon running
-     * {@link Page#analyzeNewTopicPlacement}.
+     * {@link Page#guessNewTopicPlacement}.
      *
      * @name areNewTopicsOnTop
      * @type {boolean|undefined}
@@ -677,7 +677,7 @@ export class Page {
 
     /**
      * The start index of the first section, if new topics are on top on this page. Filled upon
-     * running {@link Page#analyzeNewTopicPlacement}.
+     * running {@link Page#guessNewTopicPlacement}.
      *
      * @name firstSectionStartIndex
      * @type {number|undefined}

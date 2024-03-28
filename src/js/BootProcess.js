@@ -17,12 +17,12 @@ import settings from './settings';
 import toc from './toc';
 import userRegistry from './userRegistry';
 import visits from './visits';
-import { defined, definedAndNotNull, getLastArrayElementOrSelf, sleep, underlinesToSpaces } from './utils';
-import { formatDateNative } from './timestamp';
+import { defined, definedAndNotNull, getLastArrayElementOrSelf, sleep, underlinesToSpaces } from './utils-general';
+import { formatDateNative } from './utils-timestamp';
 import { getFooter, wrapHtml } from './utils-window';
-import { handleApiReject, saveOptions } from './apiWrappers';
-import { removeWikiMarkup } from './wikitext';
-import { showConfirmDialog } from './ooui';
+import { handleApiReject, saveOptions } from './utils-api';
+import { removeWikiMarkup } from './utils-wikitext';
+import { showConfirmDialog } from './utils-ooui';
 
 /**
  * Get all text nodes under the root element in the window (not worker) context.

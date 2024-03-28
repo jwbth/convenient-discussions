@@ -1,7 +1,7 @@
 import CdError from './CdError';
 import cd from './cd';
 import controller from './controller';
-import { tweakUserOoUiClass } from './ooui';
+import { tweakUserOoUiClass } from './utils-ooui';
 
 /**
  * Our class that extends {@link external:OO.ui.ProcessDialog}, adding a couple of methods to it.

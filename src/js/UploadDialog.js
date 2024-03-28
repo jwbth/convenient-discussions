@@ -7,8 +7,8 @@ import ProcessDialog from './ProcessDialog';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
-import { createCheckboxField, createTextField, mixinUserOoUiClass, tweakUserOoUiClass } from './ooui';
-import { generateFixedPosTimestamp, getDbnameForHostname, zeroPad } from './utils';
+import { createCheckboxField, createTextField, mixinUserOoUiClass, tweakUserOoUiClass } from './utils-ooui';
+import { generateFixedPosTimestamp, getDbnameForHostname, zeroPad } from './utils-general';
 import { wrapHtml } from './utils-window';
 
 function createRadioField({ label, help, options }) {

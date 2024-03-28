@@ -1,7 +1,7 @@
 import CdError from './CdError';
 import cd from './cd';
 import { TreeWalker } from './treeWalker';
-import { defined, isHeadingNode, isMetadataNode } from './utils';
+import { defined, isHeadingNode, isMetadataNode } from './utils-general';
 
 /**
  * Class containing the main properties of a section. It is extended by {@link Section}. This class

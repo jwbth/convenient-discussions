@@ -11,9 +11,9 @@ import controller from './controller';
 import navPanel from './navPanel';
 import settings from './settings';
 import { TreeWalker } from './treeWalker';
-import { getCommonGender, reorderArray, underlinesToSpaces, unique } from './utils';
+import { getCommonGender, reorderArray, underlinesToSpaces, unique } from './utils-general';
 import { getExtendedRect, getHigherNodeAndOffsetInSelection } from './utils-window';
-import { getPagesExistence } from './apiWrappers';
+import { getPagesExistence } from './utils-api';
 
 const newDtTimestampPattern = '(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})\\d{2}';
 const oldDtTimestampPattern = '(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{3}Z)';
@@ -1062,6 +1062,38 @@ const CommentStatic = {
       item.classList.add('cd-connectToPreviousItem');
     });
   },
+
+  /**
+   * Replace an element with an identical one but with another tag name, i.e. move all child nodes,
+   * attributes, and some bound events to a new node, and also reassign references in some variables
+   * and properties to this element. Unfortunately, we can't just change the element's `tagName` to
+   * do that.
+   *
+   * @param {Element} element
+   * @param {string} newType
+   * @returns {Element}
+   */
+  changeElementType(element, newType) {
+    const newElement = document.createElement(newType);
+    while (element.firstChild) {
+      newElement.appendChild(element.firstChild);
+    }
+    [...element.attributes].forEach((attribute) => {
+      newElement.setAttribute(attribute.name, attribute.value);
+    });
+
+    // If this element is a part of a comment, replace it in the `Comment` object instance.
+    const commentIndex = element.getAttribute('data-cd-comment-index');
+    if (commentIndex !== null) {
+      this.items[Number(commentIndex)].replaceElement(element, newElement);
+    } else {
+      element.parentNode.replaceChild(newElement, element);
+    }
+
+    controller.replaceScrollAnchorElement(element, newElement);
+
+    return newElement;
+  }
 };
 
 // Move static properties from `CommentSkeleton` to `CommentStatic` so that it acts like a real

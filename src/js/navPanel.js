@@ -11,10 +11,10 @@ import CommentStatic from './CommentStatic';
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
-import { formatDate } from './timestamp';
-import { reorderArray } from './utils';
+import { formatDate } from './utils-timestamp';
+import { reorderArray } from './utils-general';
 import { isCmdModifierPressed } from './utils-window';
-import { removeWikiMarkup } from './wikitext';
+import { removeWikiMarkup } from './utils-wikitext';
 
 let utirbtTimeout;
 let cachedCommentCount;

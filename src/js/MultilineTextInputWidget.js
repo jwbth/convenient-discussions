@@ -1,5 +1,5 @@
 import TextInputWidget from './TextInputWidget';
-import { mixinUserOoUiClass } from './ooui';
+import { mixinUserOoUiClass } from './utils-ooui';
 
 /**
  * Class that we use instead of {@link external:OO.ui.MultilineTextInputWidget} to include our

@@ -5,9 +5,9 @@ import TextInputWidget from './TextInputWidget';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
-import { buildEditSummary, sleep } from './utils';
-import { createCheckboxField, tweakUserOoUiClass } from './ooui';
-import { encodeWikilink, endWithTwoNewlines, findFirstTimestamp } from './wikitext';
+import { buildEditSummary, sleep } from './utils-general';
+import { createCheckboxField, tweakUserOoUiClass } from './utils-ooui';
+import { encodeWikilink, endWithTwoNewlines, findFirstTimestamp } from './utils-wikitext';
 import { wrapHtml } from './utils-window';
 
 /**
@@ -385,7 +385,7 @@ export default class MoveSectionDialog extends ProcessDialog {
       }
     }
 
-    targetPage.analyzeNewTopicPlacement();
+    targetPage.guessNewTopicPlacement();
 
     return {
       page: targetPage,

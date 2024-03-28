@@ -1,7 +1,7 @@
 import SectionStatic from './SectionStatic';
 import cd from './cd';
-import { calculateWordOverlap } from './utils';
-import { endWithTwoNewlines, extractSignatures, normalizeCode, removeWikiMarkup } from './wikitext';
+import { calculateWordOverlap } from './utils-general';
+import { endWithTwoNewlines, extractSignatures, normalizeCode, removeWikiMarkup } from './utils-wikitext';
 
 /**
  * Class that keeps the methods and data related to the section's source code. Also used for section

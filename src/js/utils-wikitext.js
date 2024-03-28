@@ -7,8 +7,8 @@
 import TextMasker from './TextMasker';
 import cd from './cd';
 import userRegistry from './userRegistry';
-import { decodeHtmlEntities, generatePageNamePattern, removeDirMarks } from './utils';
-import { parseTimestamp } from './timestamp';
+import { decodeHtmlEntities, generatePageNamePattern, removeDirMarks } from './utils-general';
+import { parseTimestamp } from './utils-timestamp';
 
 /**
  * Generate a regular expression that searches for specified tags in the text (opening, closing, and
