@@ -108,8 +108,9 @@ const toc = {
   async markSubscriptions(visitsPromise) {
     if (!this.isPresent()) return;
 
-    // Ensure the bell icons are added after the comment counts in `visits#process`.
-    await Promise.all[visitsPromise, this.updateTocSectionsPromise];
+    // Ensure the bell icons are added after the TOC is updated and the comment counts are added in
+    // `visits#process`.
+    await Promise.all([visitsPromise, this.updateTocSectionsPromise]);
 
     SectionStatic.getAll()
       .filter((section) => section.subscriptionState || this.isInSidebar())

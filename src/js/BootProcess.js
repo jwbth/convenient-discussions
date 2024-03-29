@@ -1428,7 +1428,7 @@ class BootProcess {
 
     if (controller.doesPageExist()) {
       debug.startTimer('process sections');
-      this.processSections();
+      this.processSections(visitsPromise);
       debug.stopTimer('process sections');
     } else {
       if (this.subscriptions.getType() === 'dt') {
