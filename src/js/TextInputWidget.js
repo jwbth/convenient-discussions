@@ -55,25 +55,23 @@ export default class TextInputWidget extends OO.ui.TextInputWidget {
   /**
    * Given a selection, get its content as wikitext.
    *
-   * @param {Element} rootElement
    * @returns {Promise.<string>}
    */
-  getWikitextFromSelection(rootElement) {
+  getWikitextFromSelection() {
     const div = document.createElement('div');
     div.appendChild(window.getSelection().getRangeAt(0).cloneContents());
-    return this.maybeConvertElementToWikitext(cleanUpPasteDom(div, rootElement));
+    return this.maybeConvertElementToWikitext(cleanUpPasteDom(div, this.$element[0]));
   }
 
   /**
    * Convert HTML code of a paste into wikitext.
    *
    * @param {string} html Pasted HTML.
-   * @param {Element} rootElement
    * @returns {string}
    */
-  getWikitextFromPaste(html, rootElement) {
+  getWikitextFromPaste(html) {
     return this.maybeConvertElementToWikitext(
-      cleanUpPasteDom(getElementFromPasteHtml(html), rootElement)
+      cleanUpPasteDom(getElementFromPasteHtml(html), this.$element[0])
     );
   }
 
@@ -84,9 +82,9 @@ export default class TextInputWidget extends OO.ui.TextInputWidget {
    * @param {object} data Return value of {@link module:utils-window.cleanUpPasteDom}.
    * @returns {string}
    */
-  async maybeConvertElementToWikitext({ element, syntaxHighlightLanguages }) {
+  async maybeConvertElementToWikitext({ element, text, syntaxHighlightLanguages }) {
     if (!isElementConvertibleToWikitext(element)) {
-      return element.innerText;
+      return text;
     }
 
     this.pushPending().setDisabled(true);

@@ -252,12 +252,12 @@ export function copyText(text, { success, fail }) {
  * Check whether there is something in the HTML that can be converted to wikitext.
  *
  * @param {string} html
- * @param {Element} rootElement
+ * @param {Element} containerElement
  * @returns {boolean}
  */
-export function isHtmlConvertibleToWikitext(html, rootElement) {
+export function isHtmlConvertibleToWikitext(html, containerElement) {
   return isElementConvertibleToWikitext(
-    cleanUpPasteDom(getElementFromPasteHtml(html), rootElement).element
+    cleanUpPasteDom(getElementFromPasteHtml(html), containerElement).element
   )
 }
 
@@ -273,8 +273,9 @@ export function isElementConvertibleToWikitext(element) {
     !(
       [...element.querySelectorAll('*')].length === 1 &&
       element.childNodes.length === 1 &&
-      ['P', 'LI', 'DD'].includes(element.childNodes[0].tagName)
-    )
+      ['P', 'LI', 'DD'].includes(element.children[0].tagName)
+    ) &&
+    ![...element.querySelectorAll('*')].every((el) => el.tagName === 'BR')
   );
 }
 
@@ -282,15 +283,15 @@ export function isElementConvertibleToWikitext(element) {
  * Clean up the contents of an element created based on the HTML code of a paste.
  *
  * @param {Element} element
- * @param {Element} rootElement
+ * @param {Element} containerElement
  * @returns {object}
  */
-export function cleanUpPasteDom(element, rootElement) {
+export function cleanUpPasteDom(element, containerElement) {
   // Get all styles (such as `user-select: none`) from classes applied when the element is added
   // to the DOM. If HTML is retrieved from a paste, this is not needed (styles are added to
   // elements themselves in the text/html format), but won't hurt.
-  element.className = 'cd-hidden';
-  rootElement.appendChild(element);
+  element.className = 'cd-commentForm-dummyElement';
+  containerElement.appendChild(element);
 
   [...element.querySelectorAll('[style]:not(pre [style])')]
     .forEach((el) => {
@@ -400,9 +401,13 @@ export function cleanUpPasteDom(element, rootElement) {
 
     .forEach(replaceWithChildren);
 
+  // Need to do it before removing the element; if we do it later, the literal textual content of
+  // the elements will be used instead of the rendered appearance.
+  const text = element.innerText;
+
   element.remove();
 
-  return { element, syntaxHighlightLanguages };
+  return { element, text, syntaxHighlightLanguages };
 }
 
 /**

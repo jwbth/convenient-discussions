@@ -1707,7 +1707,7 @@ class CommentForm {
 
     if (data.types.includes('text/html')) {
       const html = data.getData('text/html');
-      if (!isHtmlConvertibleToWikitext(html, controller.getRootElement())) return;
+      if (!isHtmlConvertibleToWikitext(html, this.commentInput.$element[0])) return;
 
       this.suggestConvertToWikitext(html, data.getData('text/plain')?.replace(/\r/g, ''));
     } else {
@@ -3643,13 +3643,14 @@ class CommentForm {
         rangeStart = rangeEnd = caretIndex;
       }
 
-      const isMultiline = (
-        selection.includes('\n') ||
-        selection.match(new RegExp(`<${cd.g.pniePattern}\\b`, 'i'))
-      );
       const [pre, post] = typeof cd.config.quoteFormatting === 'function' ?
         cd.config.quoteFormatting(
-          isMultiline,
+          // Is multiline
+          Boolean(
+            selection.includes('\n') ||
+            selection.match(new RegExp(`<${cd.g.pniePattern}\\b`, 'i'))
+          ),
+
           comment?.author.getName(),
           comment?.timestamp,
           comment?.dtId
