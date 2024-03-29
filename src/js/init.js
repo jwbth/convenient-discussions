@@ -383,10 +383,12 @@ function patterns() {
   cd.g.pniePattern = `(?:${pnieJoined})`;
 
   cd.g.startsWithArticlePathRegexp = new RegExp(
-    '^' + mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace('\\$1', '')
+    '^' +
+    mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace('\\$1', '')
   );
   cd.g.startsWithScriptTitleRegexp = new RegExp(
-    '^' + mw.util.escapeRegExp(mw.config.get('wgScript') + '?title=')
+    '^' +
+    mw.util.escapeRegExp(mw.config.get('wgScript') + '?title=')
   );
 
   // Template names are not case-sensitive here for code simplicity.

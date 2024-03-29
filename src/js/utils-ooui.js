@@ -1,7 +1,7 @@
 /**
  * Helpers for heavily used OOUI widgets and dialogs.
  *
- * @module ooui
+ * @module utils-ooui
  */
 
 import controller from './controller';

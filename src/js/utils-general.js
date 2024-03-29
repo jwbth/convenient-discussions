@@ -1,8 +1,8 @@
 /**
- * Utilities module. Some of the utilities are parts of the
+ * General utilities. Some of the utilities are parts of the
  * {@link convenientDiscussions.api convenientDiscussions.api} object.
  *
- * @module util
+ * @module util-general
  */
 
 import html_entity_decode from 'locutus/php/strings/html_entity_decode';

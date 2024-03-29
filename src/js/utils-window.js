@@ -1,3 +1,9 @@
+/**
+ * Utilities for the window context. DOM, rendering, visual effects, user input, etc.
+ *
+ * @module utils-window
+ */
+
 import Button from './Button';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import Parser from './Parser';

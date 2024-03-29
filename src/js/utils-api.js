@@ -1,9 +1,9 @@
 /**
  * Wrappers for MediaWiki action API requests ({@link https://www.mediawiki.org/wiki/API:Main_page})
  * together with some user options handling functions. See also the {@link Page} class methods for
- * functions regarding concrete page names.
+ * API methods related to specific titles.
  *
- * @module apiWrappers
+ * @module utils-api
  */
 
 import CdError from './CdError';
@@ -230,7 +230,7 @@ export async function getPageIds(titles) {
  */
 export async function saveOptions(options, isGlobal = false) {
   const action = isGlobal ? 'globalpreferences' : 'options';
-  if (Object.entries(options).some(([ , value]) => value && value.length > 65535)) {
+  if (Object.entries(options).some(([, value]) => value && value.length > 65535)) {
     throw new CdError({
       type: 'internal',
       code: 'sizeLimit',

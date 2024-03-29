@@ -6,7 +6,7 @@
  * - "date" is a `Date` object,
  * - "timestamp" is a string date as it is present on wiki pages (`23:29, 10 May 2019 (UTC)`).
  *
- * @module timestamp
+ * @module utils-timestamp
  */
 
 // Note: cd.settings is used in this module instead of imported "settings" to prevent adding that

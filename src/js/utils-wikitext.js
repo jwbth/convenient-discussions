@@ -1,7 +1,7 @@
 /**
  * Wikitext parsing and processing utilities.
  *
- * @module wikitext
+ * @module utils-wikitext
  */
 
 import TextMasker from './TextMasker';

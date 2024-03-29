@@ -67,7 +67,7 @@ export class User {
   }
 
   /**
-   * User's gender (must be obtained using {@link module:apiWrappers.loadUserGenders}).
+   * User's gender (must be obtained using {@link module:utils-api.loadUserGenders}).
    *
    * @returns {'male'|'female'|'unknown'}
    */
@@ -85,7 +85,7 @@ export class User {
   }
 
   /**
-   * Get the user's rights (must be obtained using {@link module:apiWrappers.getUserInfo}).
+   * Get the user's rights (must be obtained using {@link module:utils-api.getUserInfo}).
    *
    * @type {?(string[])}
    */
