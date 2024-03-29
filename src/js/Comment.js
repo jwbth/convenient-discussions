@@ -259,23 +259,20 @@ class Comment extends CommentSkeleton {
     // Remove the entire element.
     if (
       n.tagName &&
-      (n.getAttribute('style') || ['SUP', 'SUB'].includes(n.tagName)) &&
       n.textContent.length < 30 &&
-
       (
-        !(
-          // Templates like "citation needed" or https://ru.wikipedia.org/wiki/Template:-:
-          n.classList.length ||
+        (
+          ['SUP', 'SUB'].includes(n.tagName) &&
 
-          // <b> tags may be the output of templates like
-          // https://meta.wikimedia.org/wiki/Template:Done. Some opinion templates may have <b>,
-          // <strong> inside another tag.
-          ['B', 'STRONG'].includes(n.tagName) ||
-          n.querySelector('b, strong')
+          // Templates like "citation needed" or https://ru.wikipedia.org/wiki/Template:-:
+          !n.classList.length
         ) ||
 
         // Cases like https://ru.wikipedia.org/?diff=119667594
-        n.textContent.toLowerCase() === this.author.getName().toLowerCase()
+        (
+          n.getAttribute('style') &&
+          n.textContent.toLowerCase() === this.author.getName().toLowerCase()
+        )
       )
     ) {
       n.remove();
