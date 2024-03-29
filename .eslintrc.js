@@ -25,9 +25,10 @@ module.exports = {
   "ignorePatterns": ["dist/**", "misc/**", "*.json5", "w-he.js"],
   "overrides": [
     {
-      "files": ["./*.js", "src/tribute/**", "*.test.js"],
+      "files": ["./*", "src/tribute/**", "jsdoc/**", "*.test.js"],
       "rules": {
         "jsdoc/require-jsdoc": "off",
+        "import/order": "off",
       },
     },
   ],
@@ -67,11 +68,6 @@ module.exports = {
     "jsdoc/valid-types": "warn",
     "no-constant-condition": ["error", { "checkLoops": false }],
     "no-control-regex": "off",
-    "no-duplicate-case": "off",
-    "no-sparse-arrays": "off",
-    "no-unexpected-multiline": "off",
-    "no-unused-vars": ["error", { "args": "after-used" }],
-    "require-atomic-updates": "off",
     "import/order": ["warn", {
       "alphabetize": {
         caseInsensitive: false,

@@ -426,16 +426,19 @@ export function brsToNewlines(code, replacement = '\n') {
 }
 
 /**
- * Mask links that have `|`, replace `|` with `{{!}}`, unmask links. If `maskedSensitiveCode` is not
+ * Mask links that have `|`, replace `|` with `{{!}}`, unmask links. If `maskedTexts` is not
  * provided, sensitive code will be masked as well.
  *
  * @param {string} code
- * @param {string[]} [maskedSensitiveCode]
+ * @param {string[]} [maskedTexts]
  * @returns {string}
  */
-export function escapePipesOutsideLinks(code, maskedSensitiveCode) {
-  return (new TextMasker(code, maskedSensitiveCode))
-    [maskedSensitiveCode ? 'valueOf' : 'maskSensitiveCode']()
+export function escapePipesOutsideLinks(code, maskedTexts) {
+  const textMasker = new TextMasker(code, maskedTexts);
+  if (!maskedTexts) {
+    textMasker.maskSensitiveCode();
+  }
+  return textMasker
     .mask(/\[\[[^\]|]+\|/g, 'link')
     .withText((text) => text.replace(/\|/g, '{{!}}'))
     .unmask('link')

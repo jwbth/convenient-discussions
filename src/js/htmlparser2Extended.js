@@ -308,7 +308,7 @@ Object.defineProperty(Element.prototype, 'className', {
   },
 
   set: function (value) {
-    return this.setAttribute('class', value);
+    this.setAttribute('class', value);
   },
 });
 
