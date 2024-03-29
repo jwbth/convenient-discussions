@@ -2,7 +2,7 @@ import Button from './Button';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import Parser from './Parser';
 import cd from './cd';
-import { removeFromArrayIfPresent } from './utils-general';
+import { parseWikiUrl, isInline, removeFromArrayIfPresent } from './utils-general';
 
 /**
  * @typedef {object} WrapCallbacks
@@ -243,36 +243,65 @@ export function copyText(text, { success, fail }) {
 }
 
 /**
- * Check whether there is something in the HTML to convert to wikitext.
+ * Check whether there is something in the HTML that can be converted to wikitext.
  *
  * @param {string} html
  * @param {Element} rootElement
  * @returns {boolean}
  */
-export function isConvertibleToWikitext(html, rootElement) {
-  return processPasteDom(getElementFromPasteHtml(html), rootElement).isConvertible;
+export function isHtmlConvertibleToWikitext(html, rootElement) {
+  return isElementConvertibleToWikitext(
+    cleanUpPasteDom(getElementFromPasteHtml(html), rootElement).element
+  )
 }
 
 /**
- * Clean up the contents of an element created based on the HTML code of a paste and returns
- * 1. whether there is something in the HTML to convert to wikitext;
- * 2. HTML;
- * 3. wikitext.
+ * Check whether there is something in the element that can be converted to wikitext.
  *
- * @param {Element} div
+ * @param {Element} element
+ * @returns {boolean}
+ */
+export function isElementConvertibleToWikitext(element) {
+  return Boolean(
+    element.childElementCount &&
+    !(
+      [...element.querySelectorAll('*')].length === 1 &&
+      element.childNodes.length === 1 &&
+      ['P', 'LI', 'DD'].includes(element.childNodes[0].tagName)
+    )
+  );
+}
+
+/**
+ * Clean up the contents of an element created based on the HTML code of a paste.
+ *
+ * @param {Element} element
  * @param {Element} rootElement
  * @returns {object}
  */
-export function processPasteDom(div, rootElement) {
+export function cleanUpPasteDom(element, rootElement) {
   // Get all styles (such as `user-select: none`) from classes applied when the element is added
   // to the DOM. If HTML is retrieved from a paste, this is not needed (styles are added to
   // elements themselves in the text/html format), but won't hurt.
-  div.className = 'cd-hidden';
-  rootElement.appendChild(div);
+  element.className = 'cd-hidden';
+  rootElement.appendChild(element);
 
-  [...div.querySelectorAll('[style]')].forEach((el) => {
-    el.removeAttribute('style');
-  });
+  [...element.querySelectorAll('[style]:not(pre [style])')]
+    .forEach((el) => {
+      if (el.style.textDecoration === 'underline' && !['U', 'INS', 'A'].includes(el.tagName)) {
+        $(el).wrapInner('<u>');
+      }
+      if (el.style.textDecoration === 'line-through' && !['STRIKE', 'S', 'DEL'].includes(el.tagName)) {
+        $(el).wrapInner('<s>');
+      }
+      if (el.style.fontStyle === 'italic' && !['I', 'EM'].includes(el.tagName)) {
+        $(el).wrapInner('<i>');
+      }
+      if (['bold', '700'].includes(el.style.fontWeight) && !['B', 'STRONG'].includes(el.tagName)) {
+        $(el).wrapInner('<b>');
+      }
+      el.removeAttribute('style');
+    });
 
   const removeElement = (el) => el.remove();
   const replaceWithChildren = (el) => {
@@ -291,74 +320,83 @@ export function processPasteDom(div, rootElement) {
     el.replaceWith(...el.childNodes);
   };
 
-  [...div.querySelectorAll('*')]
+  [...element.querySelectorAll('*')]
     .filter((el) => window.getComputedStyle(el).userSelect === 'none')
     .forEach(removeElement);
 
   // Should run after removing elements with `user-select: none`, to remove their wrappers that
   // now have no content.
-  [...div.querySelectorAll('*')]
+  [...element.querySelectorAll('*')]
     // Need to keep non-breaking spaces.
     .filter((el) => (
       (
         !['BR', 'HR'].includes(el.tagName) ||
         el.classList.contains('Apple-interchange-newline')
       ) &&
+      !isInline(el) &&
       !el.textContent.replace(/[ \n]+/g, ''))
     )
 
     .forEach(removeElement);
 
-  [...div.querySelectorAll('style')].forEach(removeElement);
+  [...element.querySelectorAll('style')]
+    .forEach(removeElement);
 
   const topElements = new Parser({ childElementsProp: 'children' })
-    .getTopElementsWithText(div, true).nodes;
-  if (topElements[0] !== div) {
-    div.innerHTML = '';
-    div.append(...topElements);
+    .getTopElementsWithText(element, true).nodes;
+  if (topElements[0] !== element) {
+    element.innerHTML = '';
+    element.append(...topElements);
   }
 
-  [...div.querySelectorAll('div, span, h1, h2, h3, h4, h5, h6')].forEach(replaceWithChildren);
-  [...div.querySelectorAll('p > br')].forEach((el) => {
-    el.after('\n');
-    el.remove();
-  });
+  const syntaxHighlightLanguages = [...element.querySelectorAll('pre')].map((el) => (
+    (el.parentNode.className.match('mw-highlight-lang-([0-9a-z_-]+)') || [])[1]
+  ));
+
+  [...element.querySelectorAll('div, span, h1, h2, h3, h4, h5, h6')]
+    .forEach(replaceWithChildren);
+  [...element.querySelectorAll('p > br')]
+    .forEach((el) => {
+      el.after('\n');
+      el.remove();
+    });
+
+  // This will turn links to unexistent pages to actual red links. Should be above the removal of
+  // classes.
+  [...element.querySelectorAll('a')]
+    .filter((el) => el.classList.contains('new'))
+    .forEach((el) => {
+      const urlData = parseWikiUrl(el.getAttribute('href'))
+      if (urlData && urlData.hostname === location.hostname) {
+        el.setAttribute('href', mw.util.getUrl(urlData.pageName));
+      }
+    });
 
   const allowedTags = cd.g.allowedTags.concat('a', 'center', 'big', 'strike', 'tt');
-  [...div.querySelectorAll('*')].forEach((el) => {
-    if (!allowedTags.includes(el.tagName.toLowerCase())) {
-      replaceWithChildren(el);
-      return;
-    }
+  [...element.querySelectorAll('*')]
+    .forEach((el) => {
+      if (!allowedTags.includes(el.tagName.toLowerCase())) {
+        replaceWithChildren(el);
+        return;
+      }
 
-    [...el.attributes]
-      .filter((attr) => attr.name === 'class' || /^data-/.test(attr.name))
-      .forEach((attr) => {
-        el.removeAttribute(attr.name);
-      });
-  });
+      [...el.attributes]
+        .filter((attr) => attr.name === 'class' || /^data-/.test(attr.name))
+        .forEach((attr) => {
+          el.removeAttribute(attr.name);
+        });
+    });
 
-  [...div.children]
+  [...element.children]
     // DDs out of DLs are likely comment parts that should not create `:` markup. (Bare LIs don't
     // create `*` markup in the API.)
     .filter((el) => el.tagName === 'DD')
 
     .forEach(replaceWithChildren);
 
-  div.remove();
+  element.remove();
 
-  return {
-    isConvertible: Boolean(
-      div.childElementCount &&
-      !(
-        [...div.querySelectorAll('*')].length === 1 &&
-        div.childNodes.length === 1 &&
-        ['P', 'LI', 'DD'].includes(div.childNodes[0].tagName)
-      )
-    ),
-    html: div.innerHTML,
-    text: div.innerText,
-  };
+  return { element, syntaxHighlightLanguages };
 }
 
 /**

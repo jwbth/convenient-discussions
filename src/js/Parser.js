@@ -4,51 +4,10 @@ import CommentSkeleton from './CommentSkeleton';
 import ElementsAndTextTreeWalker from './ElementsAndTextTreeWalker';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import cd from './cd';
-import { defined, getHeadingLevel, isHeadingNode, isInline, isMetadataNode, ucFirst, underlinesToSpaces } from './utils-general';
+import { defined, getHeadingLevel, parseWikiUrl, isHeadingNode, isInline, isMetadataNode, ucFirst, underlinesToSpaces } from './utils-general';
 import { parseTimestamp } from './utils-timestamp';
 
 let punctuationRegexp;
-
-/**
- * @typedef {object} GetPageNameFromUrlReturn
- * @property {string} pageName
- * @property {string} hostname
- * @property {string} fragment
- * @memberof Parser
- * @inner
- * @private
- */
-
-/**
- * Get a page name from a URL.
- *
- * @param {string} url
- * @returns {?GetPageNameFromUrlReturn}
- * @private
- */
-function getPageNameFromUrl(url) {
-  let hostname = cd.g.serverName;
-  let fragment;
-  let pageName = url
-    .replace(/^(?:https?:)?\/\/([^/]+)/, (s, m1) => {
-      hostname = m1;
-      return '';
-    })
-    .replace(cd.g.startsWithArticlePathRegexp, '')
-    .replace(cd.g.startsWithScriptTitleRegexp, '')
-    .replace(/&action=edit.*/, '')
-    .replace(/#(.*)/, (s, m1) => {
-      fragment = m1;
-      return '';
-    })
-    .replace(/_/g, ' ');
-  try {
-    pageName = decodeURIComponent(pageName);
-  } catch (e) {
-    return null;
-  }
-  return { pageName, hostname, fragment };
-}
 
 /**
  * @typedef {object} Context
@@ -690,7 +649,7 @@ class Parser {
     let userName;
     let linkType = null;
     if (href) {
-      const { pageName, hostname, fragment } = getPageNameFromUrl(href) || {};
+      const { pageName, hostname, fragment } = parseWikiUrl(href) || {};
       if (!pageName || CommentSkeleton.isAnyId(fragment)) {
         return null;
       }

@@ -758,3 +758,39 @@ export function getDbnameForHostname(hostname) {
   }
   return subdomain + languagedProject;
 }
+/**
+ * @typedef {object} ParsedWikiUrl
+ * @property {string} pageName
+ * @property {string} hostname
+ * @property {string} fragment
+ */
+
+/**
+ * Get a page name, host name and fragment from a URL.
+ *
+ * @param {string} url
+ * @returns {?ParsedWikiUrl}
+ */
+export function parseWikiUrl(url) {
+  let hostname = cd.g.serverName;
+  let fragment;
+  let pageName = url
+    .replace(/^(?:https?:)?\/\/([^/]+)/, (s, m1) => {
+      hostname = m1;
+      return '';
+    })
+    .replace(cd.g.startsWithArticlePathRegexp, '')
+    .replace(cd.g.startsWithScriptTitleRegexp, '')
+    .replace(/&action=edit.*/, '')
+    .replace(/#(.*)/, (s, m1) => {
+      fragment = m1;
+      return '';
+    })
+    .replace(/_/g, ' ');
+  try {
+    pageName = decodeURIComponent(pageName);
+  } catch (e) {
+    return null;
+  }
+  return { pageName, hostname, fragment };
+}

@@ -1,6 +1,6 @@
 import { convertHtmlToWikitext } from './utils-api';
 import { tweakUserOoUiClass } from './utils-ooui';
-import { getElementFromPasteHtml, processPasteDom } from './utils-window';
+import { getElementFromPasteHtml, cleanUpPasteDom, isElementConvertibleToWikitext } from './utils-window';
 
 /**
  * Our mixin that extends the {@link external:OO.ui.ProcessDialog} class
@@ -61,7 +61,7 @@ export default class TextInputWidget extends OO.ui.TextInputWidget {
   getWikitextFromSelection(rootElement) {
     const div = document.createElement('div');
     div.appendChild(window.getSelection().getRangeAt(0).cloneContents());
-    return this.maybeConvertHtmlToWikitext(processPasteDom(div, rootElement));
+    return this.maybeConvertHtmlToWikitext(cleanUpPasteDom(div, rootElement));
   }
 
   /**
@@ -73,24 +73,24 @@ export default class TextInputWidget extends OO.ui.TextInputWidget {
    */
   getWikitextFromPaste(html, rootElement) {
     return this.maybeConvertHtmlToWikitext(
-      processPasteDom(getElementFromPasteHtml(html), rootElement)
+      cleanUpPasteDom(getElementFromPasteHtml(html), rootElement)
     );
   }
 
   /**
-   * Given the return value of {@link utils-window.processPasteDom}, convert the HTML to wikitext if
-   * necessary.
+   * Given the return value of {@link module:utils-window.processPasteDom}, convert the HTML to
+   * wikitext if necessary.
    *
-   * @param {object} data The return value of {@link utils-window.processPasteDom}.
+   * @param {object} data Return value of {@link module:utils-window.cleanUpPasteDom}.
    * @returns {string}
    */
-  async maybeConvertHtmlToWikitext({ isConvertible, html, text }) {
-    if (!isConvertible) {
-      return text;
+  async maybeConvertHtmlToWikitext({ element, syntaxHighlightLanguages }) {
+    if (!isElementConvertibleToWikitext(element)) {
+      return element.innerText;
     }
 
     this.pushPending().setDisabled(true);
-    const wikitext = await convertHtmlToWikitext(html);
+    const wikitext = await convertHtmlToWikitext(element.innerHTML, syntaxHighlightLanguages);
     this.popPending().setDisabled(false);
 
     return wikitext;

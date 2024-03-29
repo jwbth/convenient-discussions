@@ -21,7 +21,7 @@ import { handleApiReject, parseCode } from './utils-api';
 import { buildEditSummary, defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './utils-general';
 import { createCheckboxField } from './utils-ooui';
 import { escapePipesOutsideLinks, generateTagsRegexp, removeWikiMarkup } from './utils-wikitext';
-import { isCmdModifierPressed, isConvertibleToWikitext, isInputFocused, keyCombination, wrapDiffBody, wrapHtml } from './utils-window';
+import { isCmdModifierPressed, isHtmlConvertibleToWikitext, isInputFocused, keyCombination, wrapDiffBody, wrapHtml } from './utils-window';
 
 const allowedFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'];
 
@@ -1599,7 +1599,7 @@ class CommentForm {
     button.on('click', async () => {
       // The input is made disabled, so the content can't be changed by the user during the
       // loading stage.
-      const text = await getWikitextFromPaste(html, this.commentInput);
+      const text = await this.commentInput.getWikitextFromPaste(html, controller.getRootElement());
 
       this.commentInput
         .selectRange(position - insertedText.length, position)
@@ -1707,7 +1707,7 @@ class CommentForm {
 
     if (data.types.includes('text/html')) {
       const html = data.getData('text/html');
-      if (!isConvertibleToWikitext(html, controller.getRootElement())) return;
+      if (!isHtmlConvertibleToWikitext(html, controller.getRootElement())) return;
 
       this.suggestConvertToWikitext(html, data.getData('text/plain')?.replace(/\r/g, ''));
     } else {
@@ -3625,7 +3625,7 @@ class CommentForm {
         activeElement.selectionEnd
       );
     } else {
-      selection = await getWikitextFromSelection(this.commentInput, controller.getRootElement());
+      selection = await this.commentInput.getWikitextFromSelection(controller.getRootElement());
     }
     selection = selection.trim();
 
