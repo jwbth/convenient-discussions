@@ -601,7 +601,8 @@ class Comment extends CommentSkeleton {
     }
 
     this.constructor.thanksStorage ||= (new StorageItem('thanks'))
-      .cleanUp((entry) => (entry.thankUnixTime || 0) < Date.now() - 60 * cd.g.msInDay)
+      // FIXME: Remove `|| entry.thankUnixTime` after June 2024
+      .cleanUp((entry) => (entry.thankTime || entry.thankUnixTime || 0) < Date.now() - 60 * cd.g.msInDay)
       .save();
     const isThanked = Object.values(this.constructor.thanksStorage.getAll()).some((thank) => (
       this.dtId === thank.id ||
@@ -1840,7 +1841,7 @@ class Comment extends CommentSkeleton {
       const seen = seenStorageItem.get(mw.config.get('wgArticleId')) || {};
       seen[this.id] = {
         htmlToCompare: this.htmlToCompare,
-        seenUnixTime: Date.now(),
+        seenTime: Date.now(),
       };
       seenStorageItem
         .set(mw.config.get('wgArticleId'), seen)
@@ -2653,7 +2654,7 @@ class Comment extends CommentSkeleton {
         .init()
         .set(edit.revid, {
           id: this.dtId || this.id,
-          thankUnixTime: Date.now(),
+          thankTime: Date.now(),
         })
         .save();
 

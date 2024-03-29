@@ -103,7 +103,6 @@ export default class StorageItem {
    */
   save() {
     mw.storage.setObject(`convenientDiscussions-${this.key}`, this.data);
-    console.log(this.data);
 
     return this;
   }
@@ -121,7 +120,7 @@ export default class StorageItem {
       pageData.length ?
         {
           [this.key]: pageData,
-          saveUnixTime: Date.now(),
+          saveTime: Date.now(),
         } :
         {}
     );

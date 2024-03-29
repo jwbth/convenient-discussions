@@ -403,7 +403,8 @@ const CommentFormStatic = {
       const data = (new StorageItem('commentForms'))
         .cleanUp((entry) =>
           !entry.commentForms?.length ||
-          entry.saveUnixTime < Date.now() - 60 * cd.g.msInDay
+          // FIXME: Remove `([keep] || entry.saveUnixTime)` after June 2024
+          (entry.saveTime || entry.saveUnixTime) < Date.now() - 60 * cd.g.msInDay
         )
         .save()
         .get(mw.config.get('wgPageName'));

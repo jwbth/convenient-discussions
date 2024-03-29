@@ -124,13 +124,14 @@ function autocollapseThreads() {
   const collapsedThreadStorageItem = (new StorageItem('collapsedThreads'))
     .cleanUp((entry) => (
       !(entry.collapsedThreads || entry.threads)?.length ||
-      entry.saveUnixTime < Date.now() - 60 * cd.g.msInDay
+      // FIXME: Remove `([keep] || entry.saveUnixTime)` after June 2024
+      (entry.saveTime || entry.saveUnixTime) < Date.now() - 60 * cd.g.msInDay
     ));
   const data = collapsedThreadStorageItem.get(mw.config.get('wgArticleId')) || {};
 
   let comments = [];
 
-  // Leave only `data.collapsedThreads` after June 2024
+  // FIXME: Leave only `data.collapsedThreads` after June 2024
   (data.collapsedThreads || data.threads)?.forEach((thread) => {
     const comment = CommentStatic.getById(thread.id);
     if (comment?.thread) {
