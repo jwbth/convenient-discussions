@@ -104,11 +104,11 @@ class Parser {
   }
 
   /**
-   * Set some properties required for parsing comments.
+   * Set some properties and find some elements required for parsing.
    *
    * @private
    */
-  initCommentParsing() {
+  init() {
     // "Ombox" for templates like https://ru.wikipedia.org/wiki/Template:Сложное_обсуждение
     // (perhaps they need to be "tmbox" too?).
     this.rejectClasses = [
@@ -173,8 +173,6 @@ class Parser {
    * @private
    */
   findTimestamps() {
-    this.initCommentParsing();
-
     return this.context.getAllTextNodes()
       .map((node) => {
         const text = node.textContent;
@@ -486,10 +484,10 @@ class Parser {
    * @returns {object[]}
    */
   findSignatures() {
-    let signatures = this.findTimestamps()
+    const signatures = this.findTimestamps()
       .map(this.timestampToSignature.bind(this))
-      .filter(defined);
-    signatures.push(...this.findUnsigneds());
+      .filter(defined)
+      .concat(this.findUnsigneds());
 
     // Move extra signatures (additional signatures for a comment, if there is more than one) to an
     // array which then assign to a relevant signature (the one which goes first).
@@ -582,7 +580,11 @@ class Parser {
    */
   findHeadings() {
     return [...this.context.rootElement.querySelectorAll('.mw-heading, h1, h2, h3, h4, h5, h6')]
-      .filter((el) => el.getAttribute('id') !== 'mw-toc-heading' && !isHeadingNode(el.parentNode))
+      .filter((el) => (
+        el.getAttribute('id') !== 'mw-toc-heading' &&
+        !isHeadingNode(el.parentNode) &&
+        !this.noSignatureElements.some((noSigEl) => noSigEl.contains(el))
+      ))
       .map((element) => ({
         type: 'heading',
         isWrapper: !isHeadingNode(element, true),

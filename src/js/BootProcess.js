@@ -686,12 +686,10 @@ class BootProcess {
       processAndRemoveDtElements,
       removeDtButtonHtmlComments,
     });
-
+    this.parser.init();
     this.parser.processAndRemoveDtMarkup(this);
-    const headings = this.parser.findHeadings();
-    const signatures = this.parser.findSignatures();
-    this.targets = headings
-      .concat(signatures)
+    this.targets = this.parser.findHeadings()
+      .concat(this.parser.findSignatures())
       .sort((t1, t2) => this.parser.context.follows(t1.element, t2.element) ? 1 : -1);
   }
 

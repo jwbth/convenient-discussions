@@ -102,11 +102,10 @@ function removeDtButtonHtmlComments() {
  * @private
  */
 function findTargets(parser) {
+  parser.init();
   parser.processAndRemoveDtMarkup();
-  const headings = parser.findHeadings();
-  const signatures = parser.findSignatures();
-  return headings
-    .concat(signatures)
+  return parser.findHeadings()
+    .concat(parser.findSignatures())
     .sort((t1, t2) => parser.context.follows(t1.element, t2.element) ? 1 : -1);
 }
 
