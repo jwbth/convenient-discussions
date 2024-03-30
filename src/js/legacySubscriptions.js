@@ -185,6 +185,10 @@ export default class LegacySubscriptions extends Subscriptions {
    * @returns {string}
    */
   pack(data) {
+    /*
+      The format of the items:
+      <Space, except for the first item><Page ID> <List of sections separated by \n>\n
+    */
     return LZString.compressToEncodedURIComponent(
       Object.keys(data)
         .filter((pageId) => Object.keys(data[pageId]).length)
@@ -201,22 +205,14 @@ export default class LegacySubscriptions extends Subscriptions {
    * @returns {object}
    */
   unpack(compressed) {
-    const data = {};
+    // Page IDs alternating with section lists
     const pages = LZString.decompressFromEncodedURIComponent(compressed)
       .split(/(?:^|\n )(\d+) /)
       .slice(1);
-    let pageId;
-    for (
-      let i = 0, isPageId = true;
-      i < pages.length;
-      i++, isPageId = !isPageId
-    ) {
-      if (isPageId) {
-        pageId = pages[i];
-      } else {
-        const pagesArr = pages[i].split('\n');
-        data[pageId] = this.itemsToKeys(pagesArr);
-      }
+
+    const data = {};
+    for (let i = 1; i < pages.length; i += 2) {
+      data[pages[i - 1]] = this.itemsToKeys(pages[i].split('\n'));
     }
 
     return data;
