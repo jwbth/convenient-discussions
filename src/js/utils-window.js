@@ -430,9 +430,10 @@ export function getElementFromPasteHtml(html) {
  *
  * @param {Element} start
  * @param {Element} end
+ * @param {Element} rootElement
  * @returns {Element[]}
  */
-export function getRangeContents(start, end) {
+export function getRangeContents(start, end, rootElement) {
   // It makes more sense to place this function in the `utils` module, but we can't import
   // `controller` there because of issues with the worker build and a cyclic dependency that
   // emerges.
@@ -472,7 +473,7 @@ export function getRangeContents(start, end) {
   // The start container could contain the end container and be different from it in the case with
   // adjusted end items.
   if (!start.contains(end)) {
-    const treeWalker = new ElementsTreeWalker(start, this.rootElement);
+    const treeWalker = new ElementsTreeWalker(start, rootElement);
 
     while (treeWalker.currentNode.parentNode !== commonAncestor) {
       while (treeWalker.nextSibling()) {

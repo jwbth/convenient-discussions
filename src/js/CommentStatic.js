@@ -961,7 +961,7 @@ const CommentStatic = {
               let child = currentBottomElement.firstChild;
               if (child.tagName) {
                 if (bottomInnerTags[child.tagName]) {
-                  child = controller.changeElementType(child, bottomInnerTags[child.tagName]);
+                  child = this.changeElementType(child, bottomInnerTags[child.tagName]);
                 }
                 firstMoved ??= child;
               } else if (firstMoved === undefined && child.textContent.trim()) {

@@ -11,207 +11,10 @@ import { loadUserGenders } from './utils-api';
 import { defined, flat, getCommonGender, isHeadingNode, removeFromArrayIfPresent, unique } from './utils-general';
 import { getExtendedRect, getRangeContents, getVisibilityByRects, isCmdModifierPressed } from './utils-window';
 
-let isInited;
-let threadLinesContainer;
-let treeWalker;
-
-/**
- * Find the closest item element (`<li>`, `<dd>`) for an element.
- *
- * @param {Element} element
- * @param {number} level
- * @param {Element} nextForeignElement
- * @returns {?Element}
- * @private
- */
-function findItemElement(element, level, nextForeignElement) {
-  treeWalker.currentNode = element;
-
-  let item;
-  let previousNode = element;
-  do {
-    if (treeWalker.currentNode.classList.contains('cd-commentLevel')) {
-      const className = treeWalker.currentNode.getAttribute('class');
-      const match = className.match(/cd-commentLevel-(\d+)/);
-      if (match && Number(match[1]) === (level || 1)) {
-        // If the level is 0 (outdented comment or subitem of a 0-level comment), we need the list
-        // element, not the item element.
-        item = level === 0 ? treeWalker.currentNode : previousNode;
-
-        // The element can contain parts of a comment that is not in the thread, for example
-        // https://ru.wikipedia.org/wiki/Википедия:К_оценке_источников#202104120830_RosssW_2.
-        if (nextForeignElement && item.contains(nextForeignElement)) {
-          return null;
-        }
-
-        break;
-      }
-    }
-    previousNode = treeWalker.currentNode;
-  } while (treeWalker.parentNode());
-
-  return item || null;
-}
-
-/**
- * Get a thread's end element for a comment at the 0th level.
- *
- * @param {Element} startElement
- * @param {Element[]} highlightables
- * @param {Element} nextForeignElement
- * @returns {Element}
- * @private
- */
-function getEndElement(startElement, highlightables, nextForeignElement) {
-  let commonAncestor = startElement;
-  const lastHighlightable = highlightables[highlightables.length - 1];
-  do {
-    commonAncestor = commonAncestor.parentNode;
-  } while (!commonAncestor.contains(lastHighlightable));
-
-  let endElement = lastHighlightable;
-  for (
-    let n = endElement.parentNode;
-    n !== commonAncestor && !(nextForeignElement && n.contains(nextForeignElement));
-    n = n.parentNode
-  ) {
-    endElement = n;
-  }
-
-  // "Reply in section", "There are new comments in this thread" button container
-  for (
-    let n = endElement.nextElementSibling;
-    n && n.tagName === 'DL' && n.classList.contains('cd-section-button-container');
-    n = n.nextElementSibling
-  ) {
-    endElement = n;
-  }
-
-  return endElement;
-}
-
-/**
- * Save collapsed threads to the local storage.
- *
- * @private
- */
-function saveCollapsedThreads() {
-  if (!controller.isCurrentRevision()) return;
-
-  (new StorageItem('collapsedThreads'))
-    .setForPage(
-      mw.config.get('wgArticleId'),
-      CommentStatic.getAll()
-        .filter((comment) => (
-          comment.thread &&
-          comment.thread.isCollapsed !== Boolean(comment.thread.isAutocollapseTarget)
-        ))
-        .map((comment) => ({
-          id: comment.id,
-          collapsed: comment.thread.isCollapsed,
-        }))
-    )
-    .save();
-}
-
-/**
- * Autocollapse threads starting from some level according to the setting value and restore
- * collapsed threads from the local storage.
- *
- * @private
- */
-function autocollapseThreads() {
-  const collapsedThreadStorageItem = (new StorageItem('collapsedThreads'))
-    .cleanUp((entry) => (
-      !(entry.collapsedThreads || entry.threads)?.length ||
-      // FIXME: Remove `([keep] || entry.saveUnixTime)` after June 2024
-      (entry.saveTime || entry.saveUnixTime) < Date.now() - 60 * cd.g.msInDay
-    ));
-  const data = collapsedThreadStorageItem.get(mw.config.get('wgArticleId')) || {};
-
-  let comments = [];
-
-  // FIXME: Leave only `data.collapsedThreads` after June 2024
-  (data.collapsedThreads || data.threads)?.forEach((thread) => {
-    const comment = CommentStatic.getById(thread.id);
-    if (comment?.thread) {
-      if (thread.collapsed) {
-        comments.push(comment);
-      } else {
-        /**
-         * Whether the thread should have been autocollapsed, but haven't been because the user
-         * expanded it manually in previous sessions.
-         *
-         * @name wasManuallyExpanded
-         * @type {boolean}
-         * @memberof Thread
-         * @instance
-         * @private
-         */
-        comment.thread.wasManuallyExpanded = true;
-      }
-    } else {
-      // Remove IDs that have no corresponding comments or threads from the data.
-      data.threads.splice(data.threads.indexOf(thread.id), 1);
-    }
-  });
-
-  const collapseThreadsLevel = settings.get('collapseThreadsLevel');
-  if (collapseThreadsLevel !== 0) {
-    // Don't precisely target comments of level collapseThreadsLevel in case there is a gap, for
-    // example between the (collapseThreadsLevel - 1) level and the (collapseThreadsLevel + 1) level
-    // (the user should have replied on the (collapseThreadsLevel - 1) level but inserted two "::"
-    // instead of one).
-    for (let i = 0; i < CommentStatic.getCount(); i++) {
-      const comment = CommentStatic.getByIndex(i);
-      if (!comment.thread) continue;
-
-      if (comment.level >= collapseThreadsLevel) {
-        // Exclude threads where the user participates at any level up and down the tree or that the
-        // user has specifically expanded.
-        if (![...comment.getAncestors(), ...comment.thread.comments].some((c) => c.isOwn)) {
-          /**
-           * Should the thread be automatically collapsed on page load if taking only comment level
-           * into account and not remembering the user's previous actions.
-           *
-           * @name isAutocollapseTarget
-           * @type {boolean}
-           * @memberof Thread
-           * @instance
-           * @private
-           */
-          comment.thread.isAutocollapseTarget = true;
-
-          if (!comment.thread.wasManuallyExpanded) {
-            comments.push(comment);
-          }
-        }
-
-        i = comment.thread.lastComment.index;
-      }
-    }
-  }
-
-  const loadUserGendersPromise = cd.g.genderAffectsUserString ?
-    loadUserGenders(flat(comments.map((comment) => comment.thread.getUsersInThread()))) :
-    undefined;
-
-  // Reverse order is used for threads to be expanded correctly.
-  comments
-    .sort((c1, c2) => c1.index - c2.index)
-    .forEach((comment) => {
-      comment.thread.collapse(loadUserGendersPromise);
-    });
-
-  if (controller.isCurrentRevision()) {
-    collapsedThreadStorageItem.save();
-  }
-}
-
 /**
  * Class used to create a comment thread object.
  */
-class Thread {
+export default class Thread {
   /**
    * Create a comment thread object.
    *
@@ -317,12 +120,24 @@ class Thread {
 
     if (this.rootComment.level === 0) {
       startElement = firstNotHeadingElement;
-      visualEndElement = getEndElement(startElement, visualHighlightables, nextForeignElement);
+      visualEndElement = this.constructor.findEndElement(
+        startElement,
+        visualHighlightables,
+        nextForeignElement
+      );
       visualEndElementFallback = this.visualLastComment === this.visualLastCommentFallback ?
         visualEndElement :
-        getEndElement(startElement, visualHighlightablesFallback, nextForeignElement);
+        this.constructor.findEndElement(
+          startElement,
+          visualHighlightablesFallback,
+          nextForeignElement
+        );
       endElement = this.hasOutdents ?
-        getEndElement(startElement, highlightables, nextForeignElement) :
+        this.constructor.findEndElement(
+          startElement,
+          highlightables,
+          nextForeignElement
+        ) :
         visualEndElement;
     } else {
       // We could improve the positioning of the thread line to exclude the vertical space next to
@@ -331,7 +146,11 @@ class Thread {
       // margins instead of using the first comment's) and `utils-window.getRangeContents()` (come
       // up with a treatment for the situation when the end element includes the start element).
       startElement = (
-        findItemElement(firstNotHeadingElement, this.rootComment.level, nextForeignElement) ||
+        this.constructor.findItemElement(
+          firstNotHeadingElement,
+          this.rootComment.level,
+          nextForeignElement
+        ) ||
         firstNotHeadingElement
       );
       const lastHighlightable = highlightables[highlightables.length - 1];
@@ -342,28 +161,36 @@ class Thread {
           .reverse()
           .find((comment) => comment.isOutdented);
         endElement = lastOutdentedComment.level === 0 ?
-          getEndElement(startElement, highlightables, nextForeignElement) :
-          findItemElement(
+          this.constructor.findEndElement(
+            startElement,
+            highlightables,
+            nextForeignElement
+          ) :
+          this.constructor.findItemElement(
             lastHighlightable,
             Math.min(lastOutdentedComment.level, this.rootComment.level),
             nextForeignElement
           );
 
-        visualEndElement = findItemElement(
+        visualEndElement = this.constructor.findItemElement(
           visualHighlightables[visualHighlightables.length - 1],
           this.rootComment.level,
           nextForeignElement
         );
         visualEndElementFallback = this.visualLastComment === this.visualLastCommentFallback ?
           visualEndElement :
-          findItemElement(
+          this.constructor.findItemElement(
             visualHighlightablesFallback[visualHighlightablesFallback.length - 1],
             this.rootComment.level,
             nextForeignElement
           );
       } else {
         endElement = (
-          findItemElement(lastHighlightable, this.rootComment.level, nextForeignElement) ||
+          this.constructor.findItemElement(
+            lastHighlightable,
+            this.rootComment.level,
+            nextForeignElement
+          ) ||
           lastHighlightable
         );
 
@@ -501,7 +328,7 @@ class Thread {
    *
    * @param {boolean} visual Use the visual thread end.
    * @returns {?Element} Logically, should never return `null`, unless something extraordinary
-   *   happens that makes the return value of `findItemElement()` `null`.
+   *   happens that makes the return value of `Thread.findItemElement()` `null`.
    * @private
    */
   getAdjustedEndElement(visual) {
@@ -519,7 +346,7 @@ class Thread {
 
       - we need to calculate the end element accurately. In this case, it is "New comments note 2",
       despite the fact that it is not a subitem of the last comment. (Subitems of 0-level comments
-      are handled by a different mechanism, see `getEndElement()`.)
+      are handled by a different mechanism, see `Thread.findEndElement()`.)
     */
     let lastComment;
     let endElement;
@@ -557,7 +384,7 @@ class Thread {
     );
 
     return $lastSubitem?.is(':visible') ?
-      findItemElement($lastSubitem[0], this.rootComment.level) :
+      this.constructor.findItemElement($lastSubitem[0], this.rootComment.level) :
       endElement;
   }
 
@@ -667,7 +494,11 @@ class Thread {
      * @type {Node[]|undefined}
      * @private
      */
-    this.collapsedRange = getRangeContents(this.startElement, this.getAdjustedEndElement());
+    this.collapsedRange = getRangeContents(
+      this.startElement,
+      this.getAdjustedEndElement(),
+      controller.getRootElement()
+    );
 
     this.collapsedRange.forEach((el) => {
       // We use a class here because there can be elements in the comment that are hidden from the
@@ -697,7 +528,7 @@ class Thread {
 
     this.addExpandNode(loadUserGendersPromise);
 
-    if (isInited && !inBackground) {
+    if (this.constructor.isInited && !inBackground) {
       this.$expandNote.cdScrollIntoView();
     }
 
@@ -717,9 +548,9 @@ class Thread {
       }
     }
 
-    saveCollapsedThreads();
+    this.constructor.saveCollapsedThreads();
     controller.handleScroll();
-    Thread.updateLines();
+    this.constructor.updateLines();
   }
 
   /**
@@ -773,9 +604,9 @@ class Thread {
       }
     }
 
-    saveCollapsedThreads();
+    this.constructor.saveCollapsedThreads();
     controller.handleScroll();
-    Thread.updateLines();
+    this.constructor.updateLines();
   }
 
   /**
@@ -972,10 +803,12 @@ class Thread {
    *   collapsed threads from the local storage.
    */
   static init(autocollapse = true) {
-    if (!settings.get('enableThreads')) return;
+    this.enabled = settings.get('enableThreads');
+    if (!this.enabled) return;
 
-    isInited = false;
-    treeWalker = new ElementsTreeWalker(undefined, controller.rootElement);
+    this.collapseThreadsLevel = settings.get('collapseThreadsLevel');
+    this.isInited = false;
+    this.treeWalker = new ElementsTreeWalker(undefined, controller.rootElement);
     CommentStatic.getAll().forEach((rootComment) => {
       try {
         rootComment.thread = new Thread(rootComment);
@@ -984,25 +817,193 @@ class Thread {
       }
     });
 
-    if (!threadLinesContainer) {
-      threadLinesContainer = document.createElement('div');
-      threadLinesContainer.className = 'cd-threadLinesContainer';
+    if (!this.threadLinesContainer) {
+      this.threadLinesContainer = document.createElement('div');
+      this.threadLinesContainer.className = 'cd-threadLinesContainer';
     } else {
-      threadLinesContainer.innerHTML = '';
+      this.threadLinesContainer.innerHTML = '';
     }
 
     // We might not update lines on initialization as it is a relatively costly operation that can
     // be delayed, but not sure it makes any difference at which point the page is blocked for
     // interactions.
-    Thread.updateLines();
+    this.updateLines();
 
-    if (!threadLinesContainer.parentNode) {
-      document.body.appendChild(threadLinesContainer);
+    if (!this.threadLinesContainer.parentNode) {
+      document.body.appendChild(this.threadLinesContainer);
     }
     if (autocollapse) {
-      autocollapseThreads();
+      this.autocollapseThreads();
     }
-    isInited = true;
+    this.isInited = true;
+  }
+
+  /**
+   * Autocollapse threads starting from some level according to the setting value and restore
+   * collapsed threads from the local storage.
+   *
+   * @private
+   */
+  static autocollapseThreads() {
+    const collapsedThreadStorageItem = (new StorageItem('collapsedThreads'))
+      .cleanUp((entry) => (
+        !(entry.collapsedThreads || entry.threads)?.length ||
+        // FIXME: Remove `([keep] || entry.saveUnixTime)` after June 2024
+        (entry.saveTime || entry.saveUnixTime) < Date.now() - 60 * cd.g.msInDay
+      ));
+    const data = collapsedThreadStorageItem.get(mw.config.get('wgArticleId')) || {};
+
+    const comments = [];
+
+    // FIXME: Leave only `data.collapsedThreads` after June 2024
+    (data.collapsedThreads || data.threads)?.forEach((thread) => {
+      const comment = CommentStatic.getById(thread.id);
+      if (comment?.thread) {
+        if (thread.collapsed) {
+          comments.push(comment);
+        } else {
+          /**
+           * Whether the thread should have been autocollapsed, but haven't been because the user
+           * expanded it manually in previous sessions.
+           *
+           * @name wasManuallyExpanded
+           * @type {boolean}
+           * @memberof Thread
+           * @instance
+           * @private
+           */
+          comment.thread.wasManuallyExpanded = true;
+        }
+      } else {
+        // Remove IDs that have no corresponding comments or threads from the data.
+        data.threads.splice(data.threads.indexOf(thread.id), 1);
+      }
+    });
+
+    if (this.collapseThreadsLevel !== 0) {
+      // Don't precisely target comments of level `this.collapseThreadsLevel` in case there is a
+      // gap, for example between the `(this.collapseThreadsLevel - 1)` level and the
+      // `(this.collapseThreadsLevel + 1)` level (the user muse have replied to a comment at the
+      // `(this.collapseThreadsLevel - 1)` level but inserted `::` instead of `:`).
+      for (let i = 0; i < CommentStatic.getCount(); i++) {
+        const comment = CommentStatic.getByIndex(i);
+        if (!comment.thread) continue;
+
+        if (comment.level >= this.collapseThreadsLevel) {
+          // Exclude threads where the user participates at any level up and down the tree or that the
+          // user has specifically expanded.
+          if (![...comment.getAncestors(), ...comment.thread.comments].some((c) => c.isOwn)) {
+            /**
+             * Should the thread be automatically collapsed on page load if taking only comment level
+             * into account and not remembering the user's previous actions.
+             *
+             * @name isAutocollapseTarget
+             * @type {boolean}
+             * @memberof Thread
+             * @instance
+             * @private
+             */
+            comment.thread.isAutocollapseTarget = true;
+
+            if (!comment.thread.wasManuallyExpanded) {
+              comments.push(comment);
+            }
+          }
+
+          i = comment.thread.lastComment.index;
+        }
+      }
+    }
+
+    const loadUserGendersPromise = cd.g.genderAffectsUserString ?
+      loadUserGenders(flat(comments.map((comment) => comment.thread.getUsersInThread()))) :
+      undefined;
+
+    // Reverse order is used for threads to be expanded correctly.
+    comments
+      .sort((c1, c2) => c1.index - c2.index)
+      .forEach((comment) => {
+        comment.thread.collapse(loadUserGendersPromise);
+      });
+
+    if (controller.isCurrentRevision()) {
+      collapsedThreadStorageItem.save();
+    }
+  }
+
+  /**
+   * Find the closest item element (`<li>`, `<dd>`) for an element.
+   *
+   * @param {Element} element
+   * @param {number} level
+   * @param {Element} nextForeignElement
+   * @returns {?Element}
+   * @private
+   */
+  static findItemElement(element, level, nextForeignElement) {
+    this.treeWalker.currentNode = element;
+
+    let item;
+    let previousNode = element;
+    do {
+      if (this.treeWalker.currentNode.classList.contains('cd-commentLevel')) {
+        const className = this.treeWalker.currentNode.getAttribute('class');
+        const match = className.match(/cd-commentLevel-(\d+)/);
+        if (match && Number(match[1]) === (level || 1)) {
+          // If the level is 0 (outdented comment or subitem of a 0-level comment), we need the list
+          // element, not the item element.
+          item = level === 0 ? this.treeWalker.currentNode : previousNode;
+
+          // The element can contain parts of a comment that is not in the thread, for example
+          // https://ru.wikipedia.org/wiki/Википедия:К_оценке_источников#202104120830_RosssW_2.
+          if (nextForeignElement && item.contains(nextForeignElement)) {
+            return null;
+          }
+
+          break;
+        }
+      }
+      previousNode = this.treeWalker.currentNode;
+    } while (this.treeWalker.parentNode());
+
+    return item || null;
+  }
+
+  /**
+   * Find the thread's end element for a comment at the 0th level.
+   *
+   * @param {Element} startElement
+   * @param {Element[]} highlightables
+   * @param {Element} nextForeignElement
+   * @returns {Element}
+   * @private
+   */
+  static findEndElement(startElement, highlightables, nextForeignElement) {
+    let commonAncestor = startElement;
+    const lastHighlightable = highlightables[highlightables.length - 1];
+    do {
+      commonAncestor = commonAncestor.parentNode;
+    } while (!commonAncestor.contains(lastHighlightable));
+
+    let endElement = lastHighlightable;
+    for (
+      let n = endElement.parentNode;
+      n !== commonAncestor && !(nextForeignElement && n.contains(nextForeignElement));
+      n = n.parentNode
+    ) {
+      endElement = n;
+    }
+
+    // "Reply in section", "There are new comments in this thread" button container
+    for (
+      let n = endElement.nextElementSibling;
+      n && n.tagName === 'DL' && n.classList.contains('cd-section-button-container');
+      n = n.nextElementSibling
+    ) {
+      endElement = n;
+    }
+
+    return endElement;
   }
 
   /**
@@ -1011,12 +1012,7 @@ class Thread {
    * @param {object} [floatingRects]
    */
   static updateLines(floatingRects) {
-    if (
-      !settings.get('enableThreads') ||
-      ((controller.isBooting() || document.hidden) && isInited)
-    ) {
-      return;
-    }
+    if (!this.enabled || ((controller.isBooting() || document.hidden) && this.isInited)) return;
 
     const elementsToAdd = [];
     const threadsToUpdate = [];
@@ -1043,9 +1039,31 @@ class Thread {
     });
 
     if (elementsToAdd.length) {
-      threadLinesContainer.append(...elementsToAdd);
+      this.threadLinesContainer.append(...elementsToAdd);
     }
   }
-}
 
-export default Thread;
+  /**
+   * Save collapsed threads to the local storage.
+   *
+   * @private
+   */
+  static saveCollapsedThreads() {
+    if (!controller.isCurrentRevision()) return;
+
+    (new StorageItem('collapsedThreads'))
+      .setForPage(
+        mw.config.get('wgArticleId'),
+        CommentStatic.getAll()
+          .filter((comment) => (
+            comment.thread &&
+            comment.thread.isCollapsed !== Boolean(comment.thread.isAutocollapseTarget)
+          ))
+          .map((comment) => ({
+            id: comment.id,
+            collapsed: comment.thread.isCollapsed,
+          }))
+      )
+      .save();
+  }
+}

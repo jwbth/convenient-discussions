@@ -38,8 +38,7 @@ class Section extends SectionSkeleton {
 
     this.subscriptions = subscriptions;
 
-    this.useTopicSubscriptions = settings.get('useTopicSubscriptions');
-    this.showEditButton = this.comments[0].isOwn || settings.get('allowEditOthersComments');
+    this.useTopicSubscription = settings.get('useTopicSubscription');
 
     /**
      * Automatically updated sequental number of the section.
@@ -967,7 +966,7 @@ class Section extends SectionSkeleton {
    * Extract the section's {@link Section#subscribeId subscribe ID}.
    */
   extractSubscribeId() {
-    if (!settings.get('useTopicSubscription')) {
+    if (!this.useTopicSubscription) {
       /**
        * The section subscribe ID, either in the DiscussionTools format or just a headline if legacy
        * subscriptions are used.
@@ -1187,7 +1186,7 @@ class Section extends SectionSkeleton {
    */
   resubscribeIfRenamed(currentCommentData, oldCommentData) {
     if (
-      settings.get('useTopicSubscription') ||
+      this.useTopicSubscription ||
       this.subscriptionState ||
       getHeadingLevel({
         tagName: currentCommentData.elementNames[0],
@@ -1223,7 +1222,7 @@ class Section extends SectionSkeleton {
     const originalHeadline = this.headline;
     this.parseHeadline();
     if (this.headline !== originalHeadline) {
-      if (this.headline && this.subscriptionState && !settings.get('useTopicSubscription')) {
+      if (this.headline && this.subscriptionState && !this.useTopicSubscription) {
         this.subscribe('quiet', originalHeadline);
       }
       this.getTocItem()?.replaceText($html);
@@ -1617,7 +1616,7 @@ class Section extends SectionSkeleton {
    * @param {string} timestamp Oldest timestamp in the section.
    */
   ensureSubscribeIdPresent(timestamp) {
-    if (!settings.get('useTopicSubscription') || this.subscribeId) return;
+    if (!this.useTopicSubscription || this.subscribeId) return;
 
     this.subscribeId = SectionStatic.generateDtSubscriptionId(
       userRegistry.getCurrent().getName(),
@@ -1631,7 +1630,7 @@ class Section extends SectionSkeleton {
    * @returns {?Section}
    */
   getSectionSubscribedTo() {
-    return settings.get('useTopicSubscription') ? this.getBase(true) : this;
+    return this.useTopicSubscription ? this.getBase(true) : this;
   }
 
   /**
@@ -1664,7 +1663,11 @@ class Section extends SectionSkeleton {
   updateVisibility(show) {
     if (Boolean(show) !== this.isHidden) return;
 
-    this.elements ||= getRangeContents(this.headingElement, this.findRealLastElement());
+    this.elements ||= getRangeContents(
+      this.headingElement,
+      this.findRealLastElement(),
+      controller.getRootElement()
+    );
     this.isHidden = !show;
     this.elements.forEach((el) => {
       el.classList.toggle('cd-section-hidden', !show);
