@@ -423,7 +423,7 @@ class BootProcess {
     } else {
       let exactMatchPageTitle;
 
-      // Will be either sectionName or sectionNameDotDecoded.
+      // Will be either `sectionName` or `sectionNameDotDecoded`.
       let sectionNameFound = sectionName;
 
       if (date) {
@@ -464,6 +464,7 @@ class BootProcess {
       }
 
       mw.notify(wrapHtml(label), {
+        type: 'warn',
         autoHideSeconds: 'long',
       });
     }
