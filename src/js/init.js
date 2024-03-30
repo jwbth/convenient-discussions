@@ -28,6 +28,7 @@ import { splitIntoBatches } from './utils-api';
 import { generatePageNamePattern, getContentLanguageMessages, unique } from './utils-general';
 import { dateTokenToMessageNames, initDayjs } from './utils-timestamp';
 import { skin$, transparentize } from './utils-window';
+import visits from './visits';
 
 let defaultFontSize;
 
@@ -759,6 +760,7 @@ export default {
     cd.tests.processPageInBackground = processPage;
     cd.tests.showSettingsDialog = controller.showSettingsDialog.bind(controller);
     cd.tests.editSubscriptions = controller.showEditSubscriptionsDialog.bind(controller);
+    cd.tests.visits = visits;
 
 
     /* Some static methods for external use */

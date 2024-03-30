@@ -170,6 +170,10 @@ export default {
    * @returns {string}
    */
   pack() {
+    /**
+     * The format of the items:
+     * <Page ID>,<List of visits, from oldest to newest, separated by comma>\n
+     */
     return LZString.compressToEncodedURIComponent(
       Object.keys(this.data)
         .map((key) => `${key},${this.data[key].join(',')}\n`)
@@ -186,13 +190,14 @@ export default {
    */
   unpack(compressed) {
     const string = LZString.decompressFromEncodedURIComponent(compressed);
-    const visits = {};
+    const data = {};
     const regexp = /^(\d+),(.+)$/gm;
     let match;
     while ((match = regexp.exec(string))) {
-      visits[match[1]] = match[2].split(',');
+      data[match[1]] = match[2].split(',');
     }
-    return visits;
+
+    return data;
   },
 
   /**
