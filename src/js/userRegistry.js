@@ -213,12 +213,14 @@ export default {
           users.forEach((user) => {
             user.setMuted(true);
           });
-          mutedUsersStorage.save('mutedUsers', {
-            users: Object.assign({}, ...users.map((user) => ({
-              [user.getGlobalId()]: user.getName(),
-            }), {})),
-            saveTime: Date.now(),
-          });
+          mutedUsersStorage
+            .set('mutedUsers', {
+              users: Object.assign({}, ...users.map((user) => ({
+                [user.getGlobalId()]: user.getName(),
+              }), {})),
+              saveTime: Date.now(),
+            })
+            .save();
 
           /**
            * The list of muted users has been obtained from the server or local storage.
