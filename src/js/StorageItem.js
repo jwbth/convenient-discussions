@@ -111,20 +111,31 @@ export default class StorageItem {
    * Update a storage entry by page key (be it an article ID or page name): set and add a UNIX time.
    *
    * @param {string} pageKey
-   * @param {object} pageData
+   * @param {*} pageData
    * @returns {StorageItem}
    */
-  setForPage(pageKey, pageData) {
+  setWithTime(pageKey, pageData) {
+    const isEmpty = !(
+      Array.isArray(pageData) ?
+        pageData.length :
+        (
+          $.isPlainObject(pageData) ?
+            Object.keys(pageData).length :
+            pageData
+        )
+    );
     this.set(
       pageKey,
-      pageData.length ?
+      isEmpty ?
+        undefined :
         {
           [this.key]: pageData,
           saveTime: Date.now(),
-        } :
-        {}
+        }
     );
 
     return this;
   }
 }
+
+export default StorageItem;

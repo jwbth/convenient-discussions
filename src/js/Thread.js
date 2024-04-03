@@ -1052,7 +1052,7 @@ export default class Thread {
     if (!controller.isCurrentRevision()) return;
 
     (new StorageItem('collapsedThreads'))
-      .setForPage(
+      .setWithTime(
         mw.config.get('wgArticleId'),
         CommentStatic.getAll()
           .filter((comment) => (
