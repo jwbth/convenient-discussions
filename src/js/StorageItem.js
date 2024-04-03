@@ -1,7 +1,14 @@
 /**
  * Class meant to facilitate communication with the local storage.
  */
-export default class StorageItem {
+class StorageItem {
+  /**
+   * Prefix added to the name of the storage item.
+   *
+   * @type {string}
+   */
+  static prefix = 'convenientDiscussions';
+
   /**
    * Create a storage instance, get the storage item and set it to the instance. In case of an
    * unexistent/falsy/corrupt value or the storage inaccessible, set an empty object.
@@ -9,7 +16,7 @@ export default class StorageItem {
    * To update the storage item after an idle period, run {@link #reload}. Note that the user may
    * interact with the storage in other tabs.
    *
-   * @param {string} key Local storage Item key (will be prepended by `convenientDiscussions-`).
+   * @param {string} key Local storage Item key (will be prepended by {@link StorageItem.prefix}).
    */
   constructor(key) {
     this.key = key;
@@ -27,7 +34,7 @@ export default class StorageItem {
    * @returns {StorageItem}
    */
   reload() {
-    const obj = mw.storage.getObject(`convenientDiscussions-${this.key}`);
+    const obj = mw.storage.getObject(`${this.constructor.prefix}-${this.key}`);
     if (obj === false) {
       console.error('Storage is unavailable.');
     }
@@ -37,17 +44,12 @@ export default class StorageItem {
   }
 
   /**
-   * Clean up entries (e.g. old ones), if callback returns `true` for an entry.
+   * Delete the entire item from the storage.
    *
-   * @param {Function} removeCondition
    * @returns {StorageItem}
    */
-  cleanUp(removeCondition) {
-    Object.keys(this.data).forEach((key) => {
-      if (removeCondition(this.data[key])) {
-        delete this.data[key];
-      }
-    });
+  deleteItem() {
+    mw.storage.remove(`${this.constructor.prefix}-${this.key}`);
 
     return this;
   }
@@ -102,7 +104,23 @@ export default class StorageItem {
    * @returns {StorageItem}
    */
   save() {
-    mw.storage.setObject(`convenientDiscussions-${this.key}`, this.data);
+    mw.storage.setObject(`${this.constructor.prefix}-${this.key}`, this.data);
+
+    return this;
+  }
+
+  /**
+   * Clean up entries (e.g. old ones), if callback returns `true` for an entry.
+   *
+   * @param {Function} removeCondition
+   * @returns {StorageItem}
+   */
+  cleanUp(removeCondition) {
+    Object.keys(this.data).forEach((key) => {
+      if (removeCondition(this.data[key])) {
+        this.delete(key);
+      }
+    });
 
     return this;
   }

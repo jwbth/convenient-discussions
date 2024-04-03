@@ -1,4 +1,5 @@
 import ProcessDialog from './ProcessDialog';
+import StorageItem from './StorageItem';
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
@@ -537,11 +538,11 @@ export default class SettingsDialog extends ProcessDialog {
         return;
       }
 
-      mw.storage.remove('convenientDiscussions-commentForms');
-      mw.storage.remove('convenientDiscussions-thanks');
-      mw.storage.remove('convenientDiscussions-seenRenderedChanges');
-      mw.storage.remove('convenientDiscussions-collapsedThreads');
-      mw.storage.remove('convenientDiscussions-mutedUsers');
+      (new StorageItem('commentForms')).deleteItem();
+      (new StorageItem('thanks')).deleteItem();
+      (new StorageItem('seenRenderedChanges')).deleteItem();
+      (new StorageItem('collapsedThreads')).deleteItem();
+      (new StorageItem('mutedUsers')).deleteItem();
 
       this.stackLayout.setItem(this.dataRemovedPanel);
       this.actions.setMode('dataRemoved');
