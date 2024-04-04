@@ -5,7 +5,7 @@ module.exports = {
     "node": true,
     "jest": true,
   },
-  "extends": ["eslint:recommended", "plugin:import/recommended"],
+  "extends": "eslint:recommended",
   "globals": {
     "$": "readonly",
     "CONFIG_FILE_NAME": "readonly",
@@ -40,6 +40,7 @@ module.exports = {
   },
   "plugins": [
     "jsdoc",
+    "import",
   ],
   "rules": {
     "jsdoc/check-alignment": "warn",
