@@ -16,7 +16,7 @@ import { generateTagsRegexp } from './utils-wikitext';
  * Note that the methods support chaining, so you can sometimes successfully fit all transformations
  * in one chain.
  */
-export default class TextMasker {
+class TextMasker {
   /**
    * Create a text masker.
    *
@@ -218,3 +218,5 @@ export default class TextMasker {
     return this.maskedTexts;
   }
 }
+
+export default TextMasker;

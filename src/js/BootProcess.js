@@ -1,27 +1,24 @@
 import CdError from './CdError';
 import Comment from './Comment';
-import CommentFormStatic from './CommentFormStatic';
-import CommentStatic from './CommentStatic';
 import Parser from './Parser';
 import Section from './Section';
-import SectionStatic from './SectionStatic';
 import Thread from './Thread';
 import cd from './cd';
+import commentFormRegistry from './commentFormRegistry';
+import commentRegistry from './commentRegistry';
 import controller from './controller';
 import debug from './debug';
 import init from './init';
 import navPanel from './navPanel';
 import pageNav from './pageNav';
-import pageRegistry from './pageRegistry';
+import processFragment from './processFragment';
+import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import toc from './toc';
 import userRegistry from './userRegistry';
 import { handleApiReject, saveOptions } from './utils-api';
-import { defined, definedAndNotNull, getLastArrayElementOrSelf, sleep, underlinesToSpaces } from './utils-general';
-import { showConfirmDialog } from './utils-ooui';
-import { formatDateNative } from './utils-timestamp';
-import { removeWikiMarkup } from './utils-wikitext';
-import { getFooter, wrapHtml } from './utils-window';
+import { definedAndNotNull, sleep } from './utils-general';
+import { wrapHtml } from './utils-window';
 import visits from './visits';
 
 /**
@@ -89,7 +86,7 @@ function processAndRemoveDtElements(elements, bootProcess) {
       [...controller.rootElement.getElementsByClassName('ext-discussiontools-init-highlight')]
     )
     .forEach((el, i) => {
-      if (el.hasAttribute('data-mw-comment-start') && CommentStatic.isDtId(el.id)) {
+      if (el.hasAttribute('data-mw-comment-start') && Comment.isDtId(el.id)) {
         bootProcess.addDtCommentId(el.id);
       }
       if (moveNotRemove) {
@@ -107,14 +104,6 @@ function processAndRemoveDtElements(elements, bootProcess) {
     [...controller.rootElement.getElementsByTagName('span[data-mw-comment]')].forEach((el) => {
       el.removeAttribute('data-mw-comment');
     });
-  }
-
-  // Reset some interfering methods
-  const highlighter = mw.loader.moduleRegistry['ext.discussionTools.init']
-    ?.packageExports['highlighter.js'];
-  if (highlighter) {
-    highlighter.highlightTargetComment = () => {};
-    highlighter.clearHighlightTargetComment = () => {};
   }
 }
 
@@ -137,7 +126,8 @@ function processAndRemoveDtElements(elements, bootProcess) {
  */
 
 /**
- * Class representing the process of loading or reloading CD onto an article page.
+ * Class representing the process of loading or reloading CD onto an article page. In some sense, it
+ * is a builder for {@link module:controller controller}.
  */
 class BootProcess {
   /**
@@ -168,373 +158,6 @@ class BootProcess {
    */
   isFirstRun() {
     return this.firstRun;
-  }
-
-  /**
-   * Show a popup asking the user if they want to enable the new comment formatting. Save the
-   * settings after they make the choice.
-   *
-   * @returns {Promise.<boolean>} Did the user enable comment reformatting.
-   * @private
-   */
-  async maybeSuggestEnableCommentReformatting() {
-    if (settings.get('reformatComments') !== null) {
-      return false;
-    }
-
-    const { reformatComments } = await settings.load({ reuse: true });
-    if (definedAndNotNull(reformatComments)) {
-      return false;
-    }
-
-    const actions = [
-      {
-        label: cd.s('rc-suggestion-yes'),
-        action: 'accept',
-        flags: 'primary',
-      },
-      {
-        label: cd.s('rc-suggestion-no'),
-        action: 'reject',
-      },
-    ];
-    const action = await showConfirmDialog(
-      $('<div>')
-        .append(
-          $('<img>')
-            .attr('width', 626)
-            .attr('height', 67)
-            .attr('src', '//upload.wikimedia.org/wikipedia/commons/0/08/Convenient_Discussions_comment_-_old_format.png')
-            .addClass('cd-rcnotice-img'),
-          $('<img>')
-            .attr('width', 30)
-            .attr('height', 30)
-            .attr('src', "data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.58 8.59L11 14.17L11 2L9 2L9 14.17L3.41 8.59L2 10L10 18L18 10L16.58 8.59Z' fill='black'/%3E%3C/svg%3E")
-            .addClass('cd-rcnotice-img cd-rcnotice-arrow'),
-          $('<img>')
-            .attr('width', 626)
-            .attr('height', 118)
-            .attr('src', '//upload.wikimedia.org/wikipedia/commons/d/da/Convenient_Discussions_comment_-_new_format.png')
-            .addClass('cd-rcnotice-img'),
-          $('<div>')
-            .addClass('cd-rcnotice-text')
-            .append(
-              wrapHtml(cd.sParse('rc-suggestion'), {
-                callbacks: {
-                  'cd-notification-settings': () => {
-                    controller.showSettingsDialog();
-                  },
-                },
-              }).children()
-            ),
-        )
-        .children(),
-      {
-        size: 'large',
-        actions,
-      }
-    );
-    if (action) {
-      try {
-        const reformatComments = action === 'accept';
-        await settings.saveSettingOnTheFly('reformatComments', reformatComments);
-        return reformatComments;
-      } catch (e) {
-        mw.notify(cd.s('error-settings-save'), { type: 'error' });
-        console.warn(e);
-      }
-    }
-  }
-
-  /**
-   * Show a popup asking the user if they want to receive desktop notifications, or ask for a
-   * permission if it has not been granted but the user has desktop notifications enabled (for
-   * example, if they are using a browser different from where they have previously used). Save the
-   * settings after they make the choice.
-   *
-   * @private
-   */
-  async maybeConfirmDesktopNotifications() {
-    if (typeof Notification === 'undefined') return;
-
-    if (
-      settings.get('desktopNotifications') === 'unknown' &&
-      Notification.permission !== 'denied'
-    ) {
-      // Avoid using the setting kept in `mw.user.options`, as it may be outdated. Also don't reuse
-      // the previous settings request, as the settings might be changed in
-      // `this.maybeSuggestEnableCommentReformatting()`.
-      const { desktopNotifications } = await settings.load();
-      if (['unknown', undefined].includes(desktopNotifications)) {
-        const actions = [
-          {
-            label: cd.s('dn-confirm-yes'),
-            action: 'accept',
-            flags: 'primary',
-          },
-          {
-            label: cd.s('dn-confirm-no'),
-            action: 'reject',
-          },
-        ];
-        const action = await showConfirmDialog(cd.s('dn-confirm'), {
-          size: 'medium',
-          actions,
-        });
-        let promise;
-        if (action === 'accept') {
-          if (Notification.permission === 'default') {
-            OO.ui.alert(cd.s('dn-grantpermission'));
-            Notification.requestPermission((permission) => {
-              if (permission === 'granted') {
-                promise = settings.saveSettingOnTheFly('desktopNotifications', 'all');
-              } else if (permission === 'denied') {
-                promise = settings.saveSettingOnTheFly('desktopNotifications', 'none');
-              }
-            });
-          } else if (Notification.permission === 'granted') {
-            promise = settings.saveSettingOnTheFly('desktopNotifications', 'all');
-          }
-        } else if (action === 'reject') {
-          promise = settings.saveSettingOnTheFly('desktopNotifications', 'none');
-        }
-        if (promise) {
-          try {
-            await promise;
-          } catch (e) {
-            mw.notify(cd.s('error-settings-save'), { type: 'error' })
-            console.warn(e);
-          }
-        }
-      }
-    }
-
-    if (
-      !['unknown', 'none'].includes(settings.get('desktopNotifications')) &&
-      Notification.permission === 'default'
-    ) {
-      await OO.ui.alert(cd.s('dn-grantpermission-again'), { title: cd.s('script-name') });
-      Notification.requestPermission();
-    }
-  }
-
-  /**
-   * Make a search request and show a "Not found" notification.
-   *
-   * @param {object} data
-   * @private
-   */
-  async searchForNotFoundItem({
-    date,
-    decodedFragment,
-    guessedCommentText,
-    sectionName,
-    guessedSectionText,
-  }) {
-    const token = date ?
-      formatDateNative(date, false, cd.g.contentTimezone) :
-      sectionName.replace(/"/g, '');
-    let searchQuery = `"${token}"`;
-
-    let sectionNameDotDecoded;
-    if (!date) {
-      try {
-        sectionNameDotDecoded = decodeURIComponent(
-          sectionName.replace(/\.([0-9A-F]{2})/g, '%$1')
-        );
-      } catch {
-        // Empty
-      }
-    }
-    if (sectionNameDotDecoded && sectionName !== sectionNameDotDecoded) {
-      const tokenDotDecoded = sectionNameDotDecoded.replace(/"/g, '');
-      searchQuery += ` OR "${tokenDotDecoded}"`;
-    }
-
-    if (date) {
-      // There can be a time difference between the time we know (taken from the history) and the
-      // time on the page. We take it to be not more than 3 minutes for the time on the page.
-      for (let gap = 1; gap <= 3; gap++) {
-        const adjustedToken = formatDateNative(
-          new Date(date.getTime() - cd.g.msInMin * gap),
-          false,
-          cd.g.contentTimezone
-        );
-        searchQuery += ` OR "${adjustedToken}"`;
-      }
-    }
-    const archivePrefix = pageRegistry.getCurrent().getArchivePrefix();
-    searchQuery += ` prefix:${archivePrefix}`;
-
-    const resp = await controller.getApi().get({
-      action: 'query',
-      list: 'search',
-      srsearch: searchQuery,
-      srprop: date ? undefined : 'sectiontitle',
-
-      // List more recent archives first
-      srsort: 'create_timestamp_desc',
-
-      srlimit: '20'
-    });
-    const results = resp?.query?.search;
-
-    const searchUrl = (
-      cd.g.server +
-      mw.util.getUrl('Special:Search', {
-        search: searchQuery,
-        sort: 'create_timestamp_desc',
-        cdcomment: date && decodedFragment,
-      })
-    );
-
-    if (results.length === 0) {
-      let label;
-      if (date) {
-        label = (
-          cd.sParse('deadanchor-comment-lead') +
-          ' ' +
-          cd.sParse('deadanchor-comment-notfound', searchUrl) +
-          guessedCommentText
-        );
-      } else {
-        label = (
-          cd.sParse('deadanchor-section-lead', sectionName) +
-          (
-            guessedSectionText && sectionName.includes('{{') ?
-              // Use of a template in the section title. In such a case, it's almost always the real
-              // match, so we don't show any fail messages.
-              '' :
-
-              (
-                ' ' +
-                cd.sParse('deadanchor-section-notfound', searchUrl) +
-                ' ' +
-                cd.sParse('deadanchor-section-reason', searchUrl)
-              )
-          ) +
-          guessedSectionText
-        );
-      }
-      mw.notify(wrapHtml(label), {
-        type: 'warn',
-        autoHideSeconds: 'long',
-      });
-    } else {
-      let exactMatchPageTitle;
-
-      // Will be either `sectionName` or `sectionNameDotDecoded`.
-      let sectionNameFound = sectionName;
-
-      if (date) {
-        const matches = Object.entries(results)
-          .map(([, result]) => result)
-          .filter((result) => (
-            removeWikiMarkup(result.snippet)?.includes(token)
-          ));
-        if (matches.length === 1) {
-          exactMatchPageTitle = matches[0].title;
-        }
-      } else {
-        // Obtain the first exact section title match (which would be from the most recent archive).
-        // This loop iterates over just one item in the vast majority of cases.
-        const exactMatch = Object.entries(results)
-          .map(([, result]) => result)
-          .find((result) => (
-            result.sectiontitle &&
-            [sectionName, sectionNameDotDecoded].filter(defined).includes(result.sectiontitle)
-          ));
-        if (exactMatch) {
-          exactMatchPageTitle = exactMatch.title;
-          sectionNameFound = underlinesToSpaces(exactMatch.sectiontitle);
-        }
-      }
-
-      let label;
-      if (exactMatchPageTitle) {
-        const fragment = date ? decodedFragment : sectionNameFound;
-        const wikilink = `${exactMatchPageTitle}#${fragment}`;
-        label = date ?
-          cd.sParse('deadanchor-comment-exactmatch', wikilink, searchUrl) + guessedCommentText :
-          cd.sParse('deadanchor-section-exactmatch', sectionNameFound, wikilink, searchUrl);
-      } else {
-        label = date ?
-          cd.sParse('deadanchor-comment-inexactmatch', searchUrl) + guessedCommentText :
-          cd.sParse('deadanchor-section-inexactmatch', sectionNameFound, searchUrl);
-      }
-
-      mw.notify(wrapHtml(label), {
-        type: 'warn',
-        autoHideSeconds: 'long',
-      });
-    }
-  }
-
-  /**
-   * Show a notification that a section/comment was not found, a link to search in the archive, a
-   * link to the section/comment if it was found automatically, and/or a link to a section found
-   * with a similar name or a comment found with the closest date in the past.
-   *
-   * @param {string} decodedFragment Decoded fragment.
-   * @param {Date} [date] Comment date, if there is a comment ID in the fragment.
-   * @param {string} [author] Comment author, if there is a comment ID in the fragment.
-   * @private
-   */
-  async maybeNotifyNotFound(decodedFragment, date, author) {
-    let label;
-    let guessedCommentText = '';
-    let sectionName;
-    let guessedSectionText = '';
-    const articlePathRegexp = new RegExp(
-      mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace('\\$1', '(.*)')
-    );
-
-    if (date) {
-      label = cd.sParse('deadanchor-comment-lead');
-      const previousCommentByTime = CommentStatic.findPreviousCommentByTime(date, author);
-      if (previousCommentByTime) {
-        guessedCommentText = (
-          ' ' +
-          cd.sParse('deadanchor-comment-previous', '#' + previousCommentByTime.id)
-        )
-          // Until https://phabricator.wikimedia.org/T288415 is online on most wikis.
-          .replace(articlePathRegexp, '$1');
-        label += guessedCommentText;
-      }
-    } else {
-      sectionName = underlinesToSpaces(decodedFragment);
-      label = (
-        cd.sParse('deadanchor-section-lead', sectionName) +
-        ' ' +
-        cd.sParse('deadanchor-section-reason')
-      );
-      const sectionMatch = SectionStatic.findByHeadlineParts(sectionName);
-      if (sectionMatch) {
-        guessedSectionText = (
-          ' ' +
-          cd.sParse('deadanchor-section-similar', '#' + sectionMatch.id, sectionMatch.headline)
-        )
-          // Until https://phabricator.wikimedia.org/T288415 is online on most wikis.
-          .replace(articlePathRegexp, '$1');
-
-        label += guessedSectionText;
-      }
-    }
-
-    if (pageRegistry.getCurrent().canHaveArchives()) {
-      this.searchForNotFoundItem({
-        date,
-        decodedFragment,
-        guessedCommentText,
-        sectionName,
-        guessedSectionText,
-      });
-    } else {
-      mw.notify(wrapHtml(label), {
-        type: 'warn',
-        autoHideSeconds: 'long',
-      });
-    }
   }
 
   /**
@@ -585,7 +208,7 @@ class BootProcess {
    *
    * @private
    */
-  maybeSuggestDisableDiscussionTools() {
+  maybeSuggestDisableDt() {
     if (!cd.g.isDtReplyToolEnabled) return;
 
     const notification = mw.notification.notify(
@@ -614,21 +237,6 @@ class BootProcess {
   }
 
   /**
-   * Add a settings link to the page footer.
-   */
-  addSettingsLinkToFooter() {
-    getFooter().append(
-      $('<li>').append(
-        $('<a>')
-          .text(cd.s('footer-settings'))
-          .on('click', () => {
-            controller.showSettingsDialog();
-          })
-      )
-    );
-  }
-
-  /**
    * Setup various components required for the boot process. Some DOM preparations are also made
    * here.
    *
@@ -641,7 +249,7 @@ class BootProcess {
     this.subscriptions = controller.getSubscriptionsInstance();
     if (this.firstRun) {
       toc.init(this.subscriptions);
-      SectionStatic.init(this.subscriptions);
+      sectionRegistry.init(this.subscriptions);
     }
     controller.setup(this.passedData.html);
     toc.setup(this.passedData.toc, this.passedData.hidetoc);
@@ -649,22 +257,22 @@ class BootProcess {
     /**
      * Collection of all comments on the page ordered the same way as in the DOM.
      *
-     * @see module:CommentStatic.getAll
+     * @see module:commentRegistry.getAll
      * @name comments
      * @type {Comment[]}
      * @memberof convenientDiscussions
      */
-    cd.comments = CommentStatic.getAll();
+    cd.comments = commentRegistry.getAll();
 
     /**
      * Collection of all sections on the page ordered the same way as in the DOM.
      *
-     * @see module:SectionStatic.getAll
+     * @see module:sectionRegistry.getAll
      * @name sections
      * @type {Section[]}
      * @memberof convenientDiscussions
      */
-    cd.sections = SectionStatic.getAll();
+    cd.sections = sectionRegistry.getAll();
   }
 
   /**
@@ -705,7 +313,7 @@ class BootProcess {
         .filter((target) => target.type === 'signature')
         .forEach((signature) => {
           try {
-            CommentStatic.add(this.parser.createComment(signature, this.targets));
+            commentRegistry.add(this.parser.createComment(signature, this.targets));
           } catch (e) {
             if (!(e instanceof CdError)) {
               console.error(e);
@@ -713,22 +321,22 @@ class BootProcess {
           }
         });
 
-      CommentStatic.reformatTimestamps();
-      CommentStatic.findAndUpdateTableComments();
-      CommentStatic.adjustDom();
+      commentRegistry.reformatTimestamps();
+      commentRegistry.findAndUpdateTableComments();
+      commentRegistry.adjustDom();
     } catch (e) {
       console.error(e);
     }
 
     /**
      * The script has processed comments, except for reformatting them in
-     * {@link CommentStatic.reformatComments} if the user opted in for that.
+     * {@link commentRegistry.reformatComments} if the user opted in for that.
      *
      * @event commentsReady
      * @param {object} comments {@link convenientDiscussions.comments} object.
      * @param {object} cd {@link convenientDiscussions} object.
      */
-    mw.hook('convenientDiscussions.commentsReady').fire(CommentStatic.getAll(), cd);
+    mw.hook('convenientDiscussions.commentsReady').fire(commentRegistry.getAll(), cd);
   }
 
   /**
@@ -742,7 +350,7 @@ class BootProcess {
       .filter((target) => target.type === 'heading')
       .forEach((heading) => {
         try {
-          SectionStatic.add(this.parser.createSection(heading, this.targets, this.subscriptions));
+          sectionRegistry.add(this.parser.createSection(heading, this.targets, this.subscriptions));
         } catch (e) {
           if (!(e instanceof CdError)) {
             console.error(e);
@@ -755,20 +363,20 @@ class BootProcess {
       this.subscriptions.loadToTalkPage(this, visitsPromise);
     }
 
-    SectionStatic.setup();
+    sectionRegistry.setup();
 
     // Dependent on sections being set
-    CommentStatic.processOutdents(this.parser);
+    Comment.processOutdents(this.parser);
 
     // Dependent on outdents being processed
-    CommentStatic.connectBrokenThreads();
+    commentRegistry.connectBrokenThreads();
 
     // This runs after extracting sections because Comment#getParent needs sections to be set on
     // comments.
-    CommentStatic.setDtIds(this.dtCommentIds);
+    commentRegistry.setDtIds(this.dtCommentIds);
 
     // Depends on DT IDs being set
-    SectionStatic.addMetadataAndActions();
+    sectionRegistry.addMetadataAndActions();
 
     /**
      * The script has processed sections.
@@ -777,7 +385,7 @@ class BootProcess {
      * @param {object} sections {@link convenientDiscussions.sections} object.
      * @param {object} cd {@link convenientDiscussions} object.
      */
-    mw.hook('convenientDiscussions.sectionsReady').fire(SectionStatic.getAll(), cd);
+    mw.hook('convenientDiscussions.sectionsReady').fire(sectionRegistry.getAll(), cd);
   }
 
   /**
@@ -800,183 +408,17 @@ class BootProcess {
   }
 
   /**
-   * Update the page's HTML.
+   * Disable some interfering methods in DiscussionTools to avoid double highlighting.
    *
    * @private
    */
-  layOutHtml() {
-    controller.$content
-      .children('.mw-parser-output')
-      .remove()
-        .end()
-      .prepend(controller.$root);
-  }
-
-  /**
-   * Add an "Add topic" button to the bottom of the page if there is an "Add topic" tab. (Otherwise,
-   * it may be added to a wrong place.)
-   *
-   * @private
-   */
-  addAddTopicButton() {
-    if (
-      // Vector 2022 has "Add topic" in the sticky header, so our button would duplicate its purpose
-      cd.g.skin !== 'vector-2022' ||
-
-      !$('#ca-addsection').length ||
-
-      // There is a special welcome text in New Topic Tool for 404 pages.
-      (cd.g.isDtNewTopicToolEnabled && !controller.doesPageExist())
-    ) {
-      return;
+  deactivateDtHighlight() {
+    const highlighter = mw.loader.moduleRegistry['ext.discussionTools.init']
+      ?.packageExports['highlighter.js'];
+    if (highlighter) {
+      highlighter.highlightTargetComment = () => { };
+      highlighter.clearHighlightTargetComment = () => { };
     }
-
-    controller.setAddSectionButtonContainer(
-      $('<div>')
-        .addClass('cd-section-button-container cd-addTopicButton-container')
-        .append(
-          (new OO.ui.ButtonWidget({
-            label: cd.s('addtopic'),
-            framed: false,
-            classes: ['cd-button-ooui', 'cd-section-button'],
-          })).on('click', () => {
-            CommentFormStatic.createAddSectionForm();
-          }).$element
-        )
-
-        // If appending to `controller.rootElement`, it can land on a wrong place, like on 404 pages
-        // with New Topic Tool enabled.
-        .insertAfter(controller.$root)
-    );
-  }
-
-  /**
-   * Bind a click handler to every known "Add new topic" button.
-   *
-   * @private
-   */
-  connectToAddTopicButtons() {
-    $(
-      [
-        '#ca-addsection a',
-        '.cd-addTopicButton a',
-        'a.cd-addTopicButton',
-        'a[href*="section=new"]',
-        'a[href*="Special:NewSection/"]',
-        'a[href*="Special:Newsection/"]',
-        'a[href*="special:newsection/"]',
-        '.commentbox input[type="submit"]',
-        '.createbox input[type="submit"]',
-      ]
-        .concat(cd.config.addTopicButtonSelectors)
-        .join(', ')
-    )
-      .filter(function () {
-        const $button = $(this);
-
-        // When DT's new topic tool is enabled
-        if (
-          mw.util.getParamValue('section') === 'new' &&
-          $button.parent().attr('id') !== 'ca-addsection' &&
-          !$button.closest(controller.$root).length
-        ) {
-          return false;
-        }
-
-        let pageName;
-        let url;
-        if ($button.is('a')) {
-          url = new URL($button.prop('href'));
-          pageName = getLastArrayElementOrSelf(url.searchParams.getAll('title'))
-            ?.replace(/^Special:NewSection\//i, '');
-        } else if ($button.is('input')) {
-          pageName = $button
-            .closest('form')
-            .find('input[name="title"][type="hidden"]')
-            .val();
-        } else {
-          return false;
-        }
-        let page;
-        try {
-          page = pageRegistry.get(pageName);
-        } catch (e) {
-          return false;
-        }
-        if (page !== pageRegistry.getCurrent()) {
-          return false;
-        }
-        if ($button.is('a')) {
-          url.searchParams.set('dtenable', 0);
-          $button.attr('href', url);
-        }
-        return true;
-      })
-
-      // DT may add its handler (as adds to a "Start new discussion" button on 404 pages). DT's "Add
-      // topic" button click handler is trickier, see below.
-      .off('click')
-
-      .on('click.cd', controller.handleAddTopicButtonClick.bind(controller))
-      .filter(function () {
-        const $button = $(this);
-        return (
-          !cd.g.isDtNewTopicToolEnabled &&
-          !($button.is('a') && Number(mw.util.getParamValue('cdaddtopic', $button.attr('href'))))
-        );
-      })
-      .attr('title', cd.s('addtopicbutton-tooltip'));
-
-    // In case DT's new topic tool is enabled, remove the handler of the "Add topic" button.
-    const dtHandler = $._data(document.body).events?.click
-      ?.find((event) => event.selector?.includes('data-mw-comment'))
-      ?.handler;
-    if (dtHandler) {
-      $(document.body).off('click', dtHandler);
-    }
-  }
-
-  /**
-   * _For internal use._ Show a modal with content of comment forms that we were unable to restore
-   * to the page (because their target comments/sections disappeared, for example).
-   *
-   * @param {object[]} content
-   * @param {string} [content[].headline]
-   * @param {string} content[].comment
-   * @param {string} content[].summary
-   */
-  rescueCommentFormsContent(content) {
-    const text = content
-      .map((data) => {
-        let text = data.headline !== undefined ?
-          `${cd.s('rd-headline')}: ${data.headline}\n\n` :
-          '';
-        text += `${cd.s('rd-comment')}: ${data.comment}\n\n${cd.s('rd-summary')}: ${data.summary}`;
-        return text;
-      })
-      .join('\n\n----\n');
-
-    const dialog = new OO.ui.MessageDialog();
-    controller.getWindowManager().addWindows([dialog]);
-    controller.getWindowManager().openWindow(dialog, {
-      message: (new OO.ui.FieldLayout(
-        new OO.ui.MultilineTextInputWidget({
-          value: text,
-          rows: 20,
-        }),
-        {
-          align: 'top',
-          label: cd.s('rd-intro'),
-        }
-      )).$element,
-      actions: [
-        {
-          label: cd.s('rd-close'),
-          action: 'close',
-        },
-      ],
-      size: 'large',
-    });
   }
 
   /**
@@ -988,7 +430,7 @@ class BootProcess {
   hideDtNewTopicForm() {
     if (!cd.g.isDtNewTopicToolEnabled) return;
 
-    // `:visible` to exclude the form hidden in BootProcess#hideDtNewTopicForm.
+    // `:visible` to exclude the form hidden previously.
     const $dtNewTopicForm = $('.ext-discussiontools-ui-newTopic:visible');
     if (!$dtNewTopicForm.length) return;
 
@@ -1039,118 +481,6 @@ class BootProcess {
   }
 
   /**
-   * Add an "Add section" form if needed.
-   *
-   * @private
-   */
-  maybeAddAddSectionForm() {
-    // May crash if the current URL contains undecodable "%" in the fragment,
-    // https://phabricator.wikimedia.org/T207365.
-    const { searchParams } = new URL(location.href);
-
-    // &action=edit&section=new when DT's New Topic Tool is enabled.
-    if (
-      searchParams.get('section') === 'new' ||
-      Number(searchParams.get('cdaddtopic')) ||
-      this.dtNewTopicFormData
-    ) {
-      CommentFormStatic.createAddSectionForm(undefined, undefined, this.dtNewTopicFormData);
-    }
-  }
-
-  /**
-   * Add a condition to show a confirmation when trying to close the page with active comment forms
-   * on it.
-   *
-   * @private
-   */
-  configureActiveCommentFormsConfirmation() {
-    const alwaysConfirmLeavingPage = (
-      mw.user.options.get('editondblclick') ||
-      mw.user.options.get('editsectiononrightclick')
-    );
-    controller.addPreventUnloadCondition('commentForms', () => {
-      CommentFormStatic.saveSession(true);
-      return (
-        mw.user.options.get('useeditwarning') &&
-        (
-          CommentFormStatic.getLastActiveAltered() ||
-          (alwaysConfirmLeavingPage && CommentFormStatic.getCount())
-        )
-      );
-    });
-  }
-
-  /**
-   * Perform URL fragment-related tasks.
-   *
-   * @private
-   */
-  async processFragment() {
-    if (!this.firstRun) return;
-
-    const fragment = location.hash.slice(1);
-    const escapedFragment = $.escapeSelector(fragment);
-    let decodedFragment;
-    let escapedDecodedFragment;
-    let commentId;
-    try {
-      decodedFragment = decodeURIComponent(fragment);
-      escapedDecodedFragment = decodedFragment && $.escapeSelector(decodedFragment);
-      if (CommentStatic.isId(fragment)) {
-        commentId = decodedFragment;
-      }
-    } catch (e) {
-      console.error(e);
-    }
-
-    let date;
-    let author;
-    let comment;
-    if (commentId) {
-      ({ date, author } = CommentStatic.parseId(commentId) || {});
-      comment = CommentStatic.getById(commentId, true);
-    } else if (decodedFragment) {
-      ({ comment, date, author } = CommentStatic.getByDtId(decodedFragment, true) || {});
-    }
-
-    if (comment) {
-      // `sleep()` is for Firefox - for some reason, without it Firefox positions the underlay
-      // incorrectly. (TODO: does it still? Need to check.)
-      sleep().then(() => {
-        comment.scrollTo({
-          smooth: false,
-          expandThreads: true,
-        });
-
-        // Replace CD's comment ID in the fragment with DiscussionTools' if available.
-        const newFragment = comment.dtId ? `#${comment.dtId}` : undefined;
-        const newState = Object.assign({}, history.state, { cdJumpedToComment: true });
-        history.replaceState(newState, '', newFragment);
-      });
-    }
-
-    if (decodedFragment && !pageRegistry.getCurrent().isArchivePage()) {
-      const isTargetFound = (
-        comment ||
-        cd.config.idleFragments.some((regexp) => decodedFragment.match(regexp)) ||
-
-        // `/media/` is from MediaViewer, `noticeApplied` is from RedWarn
-        /^\/media\/|^noticeApplied-|^h-/.test(decodedFragment) ||
-
-        $(':target').length ||
-        $(`a[name="${escapedDecodedFragment}"]`).length ||
-        $(`*[id="${escapedDecodedFragment}"]`).length ||
-        $(`a[name="${escapedFragment}"]`).length ||
-        $(`*[id="${escapedFragment}"]`).length
-      );
-      if (!isTargetFound) {
-        await this.maybeNotifyNotFound(decodedFragment, date, author);
-      }
-    }
-  }
-
-  /**
    * Process the data passed to the boot process related to target comments or section and perform
    * the relevant actions with it.
    *
@@ -1159,7 +489,9 @@ class BootProcess {
   async processTargets() {
     const commentIds = this.passedData.commentIds;
     if (commentIds) {
-      const comments = commentIds.map((id) => CommentStatic.getById(id)).filter(definedAndNotNull);
+      const comments = commentIds
+        .map((id) => commentRegistry.getById(id))
+        .filter(definedAndNotNull);
       if (comments.length) {
         // `sleep()` for Firefox, as above
         sleep().then(() => {
@@ -1180,7 +512,7 @@ class BootProcess {
     }
 
     if (this.passedData.sectionId) {
-      const section = SectionStatic.getById(this.passedData.sectionId);
+      const section = sectionRegistry.getById(this.passedData.sectionId);
       if (section) {
         if (this.passedData.pushState) {
           history.pushState(history.state, '', `#${section.id}`);
@@ -1195,122 +527,6 @@ class BootProcess {
   }
 
   /**
-   * Bind a click handler to comment links to make them work as in-script comment links.
-   *
-   * This method exists in addition to {@link module:controller.handlePopState}. It's preferable to
-   * have click events handled by this method instead of `controller.handlePopState` because that
-   * method, if encounters `cdJumpedToComment` in the history state, doesn't scroll to the comment
-   * which is a wrong behavior when the user clicks a link.
-   *
-   * @param {external:jQuery} $content
-   * @private
-   */
-  connectToCommentLinks($content) {
-    if (!$content.is('#mw-content-text, .cd-commentForm-preview')) return;
-
-    $content
-      .find(`a[href^="#"]`)
-      .filter(function () {
-        return !this.onclick && CommentStatic.isAnyId($(this).attr('href').slice(1));
-      })
-      .on('click', function (e) {
-        e.preventDefault();
-        CommentStatic.getByAnyId($(this).attr('href').slice(1), true)?.scrollTo({
-          expandThreads: true,
-          pushState: true,
-        });
-      });
-  }
-
-  /**
-   * Highlight mentions of the current user.
-   *
-   * @param {external:jQuery} $content
-   * @private
-   */
-  highlightMentions($content) {
-    if (!$content.is('#mw-content-text, .cd-comment-part')) return;
-
-    const currentUserName = userRegistry.getCurrent().getName();
-    const excludeSelector = [
-      settings.get('reformatComments') ?
-        'cd-comment-author' :
-        'cd-signature'
-    ]
-      .concat(cd.config.noSignatureClasses)
-      .map((name) => `.${name}`)
-      .join(', ');
-    $content
-      .find(
-        $content.hasClass('cd-comment-part') ?
-          `a[title$=":${currentUserName}"], a[title*=":${currentUserName} ("]` :
-          `.cd-comment-part a[title$=":${currentUserName}"], .cd-comment-part a[title*=":${currentUserName} ("]`
-      )
-      .filter(function () {
-        return (
-          cd.g.userLinkRegexp.test(this.title) &&
-          !this.closest(excludeSelector) &&
-          Parser.processLink(this)?.userName === userRegistry.getCurrent().getName()
-        );
-      })
-      .each((i, link) => {
-        link.classList.add('cd-currentUserLink');
-      });
-  }
-
-  /**
-   * Add event listeners to `window`, `document`, hooks.
-   *
-   * @private
-   */
-  addEventListeners() {
-    if (!settings.get('reformatComments')) {
-      // The `mouseover` event allows to capture the state when the cursor is not moving but ends up
-      // above a comment but not above any comment parts (for example, as a result of scrolling).
-      // The benefit may be low compared to the performance cost, but it's unexpected when the user
-      // scrolls a comment and it suddenly stops being highlighted because the cursor is between
-      // neighboring `<p>`'s.
-      $(document).on('mousemove mouseover', controller.handleMouseMove.bind(controller));
-    }
-
-    // We need the `visibilitychange` event because many things may move while the document is
-    // hidden, and the movements are not processed when the document is hidden.
-    $(document)
-      .on('scroll visibilitychange', controller.handleScroll.bind(controller))
-      .on('horizontalscroll.cd visibilitychange', controller.handleHorizontalScroll.bind(controller))
-      .on('selectionchange', controller.handleSelectionChange.bind(controller));
-
-    if (settings.get('improvePerformance')) {
-      // Unhide when the user opens a search box to allow searching the full page.
-      $(window)
-        .on('focus', SectionStatic.maybeUpdateVisibility.bind(SectionStatic))
-        .on('blur', SectionStatic.maybeUnhideAll.bind(SectionStatic));
-    }
-
-    $(window)
-      .on('resize orientationchange', controller.handleWindowResize.bind(controller))
-      .on('popstate', controller.handlePopState.bind(controller));
-
-    // Should be above `mw.hook('wikipage.content').fire` so that it runs for the whole page content
-    // as opposed to `$('.cd-comment-author-wrapper')`.
-    mw.hook('wikipage.content').add(
-      this.connectToCommentLinks.bind(this),
-      this.highlightMentions.bind(this)
-    );
-    mw.hook('convenientDiscussions.previewReady').add(this.connectToCommentLinks.bind(this));
-
-    // Mutation observer doesn't follow all possible comment position changes (for example,
-    // initiated with adding new CSS) unfortunately.
-    setInterval(controller.handlePageMutations.bind(controller), 1000);
-
-    if (controller.isPageCommentable()) {
-      $(document).on('keydown', controller.handleGlobalKeyDown.bind(controller));
-    }
-
-    mw.hook('wikipage.content').add(controller.handleWikipageContentHookFirings.bind(controller));
-  }
-
-  /**
    * Log debug data to the console.
    *
    * @private
@@ -1322,10 +538,10 @@ class BootProcess {
       debug.getTimerTotal('main code') +
       debug.getTimerTotal('final code and rendering')
     );
-    const timePerComment = baseTime / CommentStatic.getCount();
+    const timePerComment = baseTime / commentRegistry.getCount();
 
     debug.logAndResetTimer('total time');
-    console.debug(`number of comments: ${CommentStatic.getCount()}`);
+    console.debug(`number of comments: ${commentRegistry.getCount()}`);
     console.debug(`per comment: ${timePerComment.toFixed(2)}`);
     debug.logAndResetEverything();
   }
@@ -1336,10 +552,10 @@ class BootProcess {
    * @private
    */
   async showPopups() {
-    this.maybeSuggestDisableDiscussionTools();
+    this.maybeSuggestDisableDt();
 
-    const didEnableCommentReformatting = await this.maybeSuggestEnableCommentReformatting();
-    await this.maybeConfirmDesktopNotifications();
+    const didEnableCommentReformatting = await settings.maybeSuggestEnableCommentReformatting();
+    await settings.maybeConfirmDesktopNotifications();
     if (didEnableCommentReformatting) {
       controller.reload();
     }
@@ -1368,7 +584,7 @@ class BootProcess {
     debug.startTimer('main code');
 
     if (this.firstRun) {
-      controller.saveRelativeScrollPosition();
+      controller.saveRelativeScrollPosition(this.passedData.scrollY);
 
       userRegistry.loadMuted();
     }
@@ -1420,7 +636,7 @@ class BootProcess {
       debug.stopTimer('process comments');
     }
 
-    if (this.firstRun && !controller.isDefinitelyTalkPage() && !CommentStatic.getCount()) {
+    if (this.firstRun && !controller.isDefinitelyTalkPage() && !commentRegistry.getCount()) {
       this.retractTalkPageness();
       return;
     }
@@ -1436,9 +652,9 @@ class BootProcess {
     }
 
     if (this.passedData.html) {
-      debug.startTimer('laying out HTML');
-      this.layOutHtml();
-      debug.stopTimer('laying out HTML');
+      debug.startTimer('updating HTML');
+      controller.updatePageContents();
+      debug.stopTimer('updating HTML');
     }
 
     navPanel.setup();
@@ -1450,33 +666,26 @@ class BootProcess {
     debug.startTimer('final code and rendering');
 
     if (controller.doesPageExist()) {
-      // Should be above all code that deals with comment highlightable elements and comment levels
-      // as this may alter that.
-      CommentStatic.reviewHighlightables();
+      // Should be above all code that deals with highlightable elements of comments and comment
+      // levels as this may alter that.
+      commentRegistry.reviewHighlightables();
 
-      CommentStatic.reformatComments();
+      commentRegistry.reformatComments();
     }
 
     // This updates some styles, shifting the offsets.
     controller.$root.addClass('cd-parsed');
 
+    // Should be below the viewport position restoration as it may rely on elements that are made
+    // hidden during the comment forms restoration (NOT FULFILLED - FIXME? But the comment for
+    // `Thread.init()` seems to contradict). Should be below `navPanel.setup()` as
+    // `commentFormRegistry.restoreSession()` indirectly calls `navPanel.updateCommentFormButton()`
+    // which depends on the navigation panel being mounted.
     if (controller.isPageCommentable()) {
-      this.addAddTopicButton();
-      this.connectToAddTopicButtons();
+      controller.addAddTopicButton();
+      controller.connectToAddTopicButtons();
 
-      // Should be below the viewport position restoration as it may rely on elements that are made
-      // hidden during the comment forms restoration (NOT FULFILLED - FIXME? But the comment for
-      // `Thread.init()` seems to contradict). Should be below `navPanel.setup()` as
-      // `CommentFormStatic.restoreSession()` indirectly calls `navPanel.updateCommentFormButton()`
-      // which depends on the navigation panel being mounted.
-      CommentFormStatic.restoreSession(this.firstRun || this.passedData.isPageReloadedExternally);
-
-      this.hideDtNewTopicForm();
-      this.maybeAddAddSectionForm();
-
-      if (this.isFirstRun()) {
-        this.configureActiveCommentFormsConfirmation();
-      }
+      commentFormRegistry.setup(this);
     }
 
     if (controller.doesPageExist()) {
@@ -1485,13 +694,13 @@ class BootProcess {
       // viewport position restoration as it may shift the layout (if the viewport position
       // restoration relies on elements that are made hidden when threads are collapsed, the
       // algorithm finds the expand note). Should better be above comment highlighting
-      // (`CommentStatic.configureAndAddLayers()`, `processVisits()`) to avoid spending time on
+      // (`commentRegistry.configureAndAddLayers()`, `visits#process()`) to avoid spending time on
       // comments in collapsed threads.
       Thread.init();
 
       // Should better be below the comment form restoration to avoid repositioning of layers
       // after the addition of comment forms.
-      CommentStatic.configureAndAddLayers((c) => (
+      commentRegistry.configureAndAddLayers((c) => (
         c.isOwn ||
 
         // Need to generate a gray line to close the gaps between adjacent list item elements. Do it
@@ -1502,17 +711,20 @@ class BootProcess {
 
       // Should be below `Thread.init()` as these methods may want to scroll to a comment in a
       // collapsed thread.
-      this.processFragment();
+      if (this.firstRun) {
+        this.deactivateDtHighlight();
+        processFragment();
+      }
       this.processTargets();
 
       if (!controller.isPageActive()) {
         toc.addCommentCount();
       }
 
-      if (this.isFirstRun()) {
+      if (this.firstRun) {
         pageNav.mount();
 
-        this.addEventListeners();
+        controller.addEventListeners();
       } else {
         pageNav.update();
       }
@@ -1520,7 +732,7 @@ class BootProcess {
       // We set the setup observer at every reload because `controller.$content` may change.
       controller.setupMutationObserver();
 
-      if (settings.get('reformatComments') && CommentStatic.getCount()) {
+      if (settings.get('reformatComments') && commentRegistry.getCount()) {
         // Using the `wikipage.content` hook could theoretically disrupt code that needs to process
         // the whole page content, if it runs later than CD. But typically CD runs relatively late.
         mw.hook(cd.config.hookToFireWithAuthorWrappers).fire($('.cd-comment-author-wrapper'));
@@ -1532,7 +744,7 @@ class BootProcess {
       // sees it.
       controller.restoreRelativeScrollPosition();
 
-      this.addSettingsLinkToFooter();
+      controller.addSettingsLinkToFooter();
     }
 
     /**

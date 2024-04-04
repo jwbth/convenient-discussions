@@ -1,29 +1,13 @@
 import Tribute from '../tribute/Tribute';
 
 import CdError from './CdError';
-import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
+import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
 import { handleApiReject } from './utils-api';
 import { defined, removeDoubleSpaces, sleep, ucFirst, underlinesToSpaces, unique } from './utils-general';
-
-/**
- * Search for a string in a list of values.
- *
- * @param {string} string
- * @param {string[]} list
- * @returns {string[]} Matched results.
- * @private
- */
-function search(string, list) {
-  const containsRegexp = new RegExp(mw.util.escapeRegExp(string), 'i');
-  const startsWithRegexp = new RegExp('^' + mw.util.escapeRegExp(string), 'i');
-  return list
-    .filter((item) => containsRegexp.test(item))
-    .sort((item1, item2) => startsWithRegexp.test(item2) - startsWithRegexp.test(item1));
-}
 
 /**
  * Autocomplete dropdown class.
@@ -173,7 +157,7 @@ class Autocomplete {
           if (this.mentions.byText[text]) {
             callback(prepareValues(this.mentions.byText[text], this.mentions));
           } else {
-            const matches = search(text, this.mentions.default);
+            const matches = this.constructor.search(text, this.mentions.default);
             let values = matches.slice();
 
             const makeRequest = (
@@ -192,7 +176,7 @@ class Autocomplete {
               if (!matches.length) {
                 values.push(...this.mentions.cache);
               }
-              values = search(text, values);
+              values = this.constructor.search(text, values);
 
               // Make the typed text always appear on the last, 10th place.
               values[9] = text.trim();
@@ -267,7 +251,7 @@ class Autocomplete {
                 timestamp,
               });
             });
-            SectionStatic.getAll().forEach((section) => {
+            sectionRegistry.getAll().forEach((section) => {
               this.commentLinks.default.push({
                 key: underlinesToSpaces(section.id),
                 id: underlinesToSpaces(section.id),
@@ -322,7 +306,7 @@ class Autocomplete {
             );
             if (valid) {
               values.push(...this.wikilinks.cache);
-              values = search(text, values);
+              values = this.constructor.search(text, values);
 
               // Make the typed text always appear on the last, 10th place.
               values[9] = text.trim();
@@ -471,7 +455,7 @@ class Autocomplete {
             );
             if (makeRequest) {
               values.push(...this.templates.cache);
-              values = search(text, values);
+              values = this.constructor.search(text, values);
 
               // Make the typed text always appear on the last, 10th place.
               values[9] = text.trim();
@@ -530,7 +514,7 @@ class Autocomplete {
       commentLinks: comments,
     };
     const collections = types.map((type) => {
-      this[type] = Autocomplete.getConfig(type, params[type]);
+      this[type] = this.constructor.getConfig(type, params[type]);
       return collectionsByType[type];
     });
 
@@ -839,6 +823,22 @@ class Autocomplete {
     this.currentPromise = promise;
 
     return promise;
+  }
+
+  /**
+   * Search for a string in a list of values.
+   *
+   * @param {string} string
+   * @param {string[]} list
+   * @returns {string[]} Matched results.
+   * @private
+   */
+  static search(string, list) {
+    const containsRegexp = new RegExp(mw.util.escapeRegExp(string), 'i');
+    const startsWithRegexp = new RegExp('^' + mw.util.escapeRegExp(string), 'i');
+    return list
+      .filter((item) => containsRegexp.test(item))
+      .sort((item1, item2) => startsWithRegexp.test(item2) - startsWithRegexp.test(item1));
   }
 }
 

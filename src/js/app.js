@@ -175,10 +175,8 @@ async function go() {
   }
 
   controller.init();
-  controller.loadToTalkPage();
   maybeAddFooterSwitcher();
   maybeTweakAddTopicButton();
-  controller.loadToCommentLinksPage();
   addCommentLinksToSpecialSearch();
 
   if (!controller.isBooting()) {
@@ -324,7 +322,7 @@ async function app() {
 
   debug.init();
   debug.startTimer('total time');
-  debug.startTimer('loading config and strings');
+  debug.startTimer('load config and strings');
 
   /**
    * The script has launched.
@@ -349,7 +347,7 @@ async function app() {
     return;
   }
 
-  debug.stopTimer('loading config and strings');
+  debug.stopTimer('load config and strings');
 
   $(go);
 }

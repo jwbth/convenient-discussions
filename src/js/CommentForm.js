@@ -4,17 +4,17 @@ import CdError from './CdError';
 import Comment from './Comment';
 import CommentFormInputTransformer from './CommentFormInputTransformer';
 import CommentFormOperationRegistry from './CommentFormOperationRegistry';
-import CommentFormStatic from './CommentFormStatic';
-import CommentStatic from './CommentStatic';
 import Parser from './Parser';
 import Section from './Section';
-import SectionStatic from './SectionStatic';
 import TextMasker from './TextMasker';
 import cd from './cd';
+import commentFormRegistry from './commentFormRegistry';
+import commentRegistry from './commentRegistry';
 import controller from './controller';
 import navPanel from './navPanel';
 import notifications from './notifications';
 import pageRegistry, { Page } from './pageRegistry';
+import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
 import { handleApiReject, parseCode } from './utils-api';
@@ -22,28 +22,6 @@ import { buildEditSummary, defined, getDayTimestamp, removeDoubleSpaces, sleep, 
 import { createCheckboxField } from './utils-ooui';
 import { escapePipesOutsideLinks, generateTagsRegexp, removeWikiMarkup } from './utils-wikitext';
 import { isCmdModifierPressed, isHtmlConvertibleToWikitext, isInputFocused, keyCombination, wrapDiffBody, wrapHtml } from './utils-window';
-
-const allowedFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'];
-
-/**
- * Extract IDs from comment links in the code.
- *
- * @param {string} code
- * @returns {string[]}
- * @private
- */
-function extractCommentIds(code) {
-  // Russian Wikipedia's Wikificator might mangle these links, replacing "_" with " ", so we search
-  // for both characters.
-  const idRegexp = /\[\[#(\d{12}[_ ][^|\]]+)/g;
-
-  const ids = [];
-  let match;
-  while ((match = idRegexp.exec(code))) {
-    ids.push(match[1]);
-  }
-  return ids;
-}
 
 /**
  * Class representing a comment form.
@@ -89,6 +67,18 @@ class CommentForm {
     ) {
       throw new CdError();
     }
+
+    this.watchOnReply = settings.get('watchOnReply');
+    this.subscribeOnReply = settings.get('subscribeOnReply');
+    this.useTopicSubscription = settings.get('useTopicSubscription');
+    this.autopreview = settings.get('autopreview');
+    this.alwaysExpandAdvanced = settings.get('alwaysExpandAdvanced');
+    this.showToolbar = settings.get('showToolbar');
+    this.insertButtons = settings.get('insertButtons');
+    this.improvePerformance = settings.get('improvePerformance');
+    this.improvePerformanceLastSuggested = settings.get('improvePerformance-lastSuggested');
+    this.manyFormsOnboarded = settings.get('manyForms-onboarded');
+    this.uploadOnboarded = settings.get('upload-onboarded');
 
     /**
      * Form mode.
@@ -257,7 +247,7 @@ class CommentForm {
       this.checkCode();
     }
 
-    CommentFormStatic.add(this);
+    commentFormRegistry.add(this);
 
     if (initialState && !initialState.focus) {
       navPanel.updateCommentFormButton();
@@ -504,7 +494,7 @@ class CommentForm {
         selected: (
           initialState?.watch ??
           (
-            (settings.get('watchOnReply') && this.mode !== 'edit') ||
+            (this.watchOnReply && this.mode !== 'edit') ||
             $('.mw-watchlink a[href*="action=unwatch"]').length ||
             mw.user.options.get(controller.doesPageExist() ? 'watchdefault' : 'watchcreations')
           )
@@ -539,16 +529,16 @@ class CommentForm {
           selected: (
             initialState?.subscribe ??
             (
-              (settings.get('subscribeOnReply') && this.mode !== 'edit') ||
+              (this.subscribeOnReply && this.mode !== 'edit') ||
               (
-                settings.get('useTopicSubscription') ?
+                this.useTopicSubscription ?
                   this.targetSection?.getBase(true)?.subscriptionState :
                   this.targetSection?.subscriptionState
               )
             )
           ),
           label: (
-            settings.get('useTopicSubscription') ||
+            this.useTopicSubscription ||
             (
               this.mode !== 'addSubsection' &&
               ((this.targetSection && this.targetSection.level <= 2) || this.mode === 'addSection')
@@ -750,7 +740,7 @@ class CommentForm {
       classes: ['cd-commentForm-previewButton'],
       tabIndex: this.getTabIndex(35),
     });
-    if (settings.get('autopreview')) {
+    if (this.autopreview) {
       this.previewButton.$element.hide();
     }
 
@@ -878,7 +868,7 @@ class CommentForm {
       this.$buttons,
     );
 
-    if (this.mode !== 'edit' && !settings.get('alwaysExpandAdvanced')) {
+    if (this.mode !== 'edit' && !this.alwaysExpandAdvanced) {
       this.$advanced.hide();
     }
 
@@ -890,7 +880,7 @@ class CommentForm {
      */
     this.$previewArea = $('<div>').addClass('cd-commentForm-previewArea mw-body-content');
 
-    if (settings.get('autopreview')) {
+    if (this.autopreview) {
       this.$previewArea
         .addClass('cd-commentForm-previewArea-below')
         .appendTo(this.$element);
@@ -920,7 +910,7 @@ class CommentForm {
    * @private
    */
   async addToolbar(requestedModulesNames) {
-    if (!settings.get('showToolbar')) return;
+    if (!this.showToolbar) return;
 
     const $toolbarPlaceholder = $('<div>')
       .addClass('cd-toolbarPlaceholder')
@@ -991,7 +981,7 @@ class CommentForm {
           action: {
             type: 'callback',
             execute: () => {
-              this.quote(true, CommentStatic.getSelectedComment());
+              this.quote(true, commentRegistry.getSelectedComment());
             },
           },
         },
@@ -1149,7 +1139,7 @@ class CommentForm {
    * @private
    */
   addInsertButtons() {
-    if (!settings.get('insertButtons').length) return;
+    if (!this.insertButtons.length) return;
 
     /**
      * Text insert buttons.
@@ -1160,7 +1150,7 @@ class CommentForm {
       .addClass('cd-insertButtons')
       .insertAfter(this.commentInput.$element);
 
-    settings.get('insertButtons').forEach((button) => {
+    this.insertButtons.forEach((button) => {
       let snippet;
       let label;
       if (Array.isArray(button)) {
@@ -1387,6 +1377,7 @@ class CommentForm {
    * @private
    */
   addToPage() {
+    // FIXME: decouple by moving hide manipulations to the target classes
     if (this.mode === 'replyInSection') {
       this.target.replyButton.hide();
     } else if (this.mode === 'addSubsection') {
@@ -1452,8 +1443,8 @@ class CommentForm {
       }
 
       case 'addSection': {
-        if (this.newTopicOnTop && SectionStatic.getByIndex(0)) {
-          this.$element.insertBefore(SectionStatic.getByIndex(0).$heading);
+        if (this.newTopicOnTop && sectionRegistry.getByIndex(0)) {
+          this.$element.insertBefore(sectionRegistry.getByIndex(0).$heading);
         } else {
           this.$element.insertAfter(controller.$root);
         }
@@ -1490,7 +1481,7 @@ class CommentForm {
    * @returns {boolean}
    */
   haveSuggestedToImprovePerformanceRecently() {
-    return getDayTimestamp() - settings.get('improvePerformance-lastSuggested') < 14;
+    return getDayTimestamp() - this.improvePerformanceLastSuggested < 14;
   }
 
   /**
@@ -1599,7 +1590,7 @@ class CommentForm {
     button.on('click', async () => {
       // The input is made disabled, so the content can't be changed by the user during the
       // loading stage.
-      const text = await this.commentInput.getWikitextFromPaste(html, controller.getRootElement());
+      const text = await this.commentInput.getWikitextFromPaste(html, controller.rootElement);
 
       this.commentInput
         .selectRange(position - insertedText.length, position)
@@ -1608,7 +1599,7 @@ class CommentForm {
     });
     this.teardownInputPopups();
 
-    const $textareaWrapper = settings.get('showToolbar') ?
+    const $textareaWrapper = this.showToolbar ?
       this.$element.find('.wikiEditor-ui-text') :
       this.commentInput.$element;
     this.$commentInputPopupFloatableContainer = this.getCommentInputDummyFloatableContainer();
@@ -1711,7 +1702,9 @@ class CommentForm {
 
       this.suggestConvertToWikitext(html, data.getData('text/plain')?.replace(/\r/g, ''));
     } else {
-      const image = [...data.items].find((item) => allowedFileTypes.includes(item.type));
+      const image = [...data.items].find((item) => (
+        this.constructor.allowedFileTypes.includes(item.type)
+      ));
       if (image) {
         e.preventDefault();
         this.uploadImage(image.getAsFile());
@@ -1795,7 +1788,7 @@ class CommentForm {
       .on('dragover', (e) => {
         if (
           ![...e.originalEvent.dataTransfer.items].some(((item) => (
-            allowedFileTypes.includes(item.type)
+            this.constructor.allowedFileTypes.includes(item.type)
           )))
         ) {
           return;
@@ -1839,7 +1832,7 @@ class CommentForm {
     if (
       controller.isLongPage() &&
       cd.g.clientProfile.layout === 'webkit' &&
-      !settings.get('improvePerformance') &&
+      !this.improvePerformance &&
       !this.haveSuggestedToImprovePerformanceRecently()
     ) {
       const keypressCount = 10;
@@ -1929,7 +1922,7 @@ class CommentForm {
    */
   addEventListeners() {
     const saveSessionEventHandler = () => {
-      CommentFormStatic.saveSession();
+      commentFormRegistry.saveSession();
     };
     const preview = () => {
       this.preview();
@@ -1971,7 +1964,7 @@ class CommentForm {
       commentsInSection = this.targetSection.getBase().comments;
     } else if (this.mode !== 'addSection') {
       // Comments in the lead section
-      commentsInSection = CommentStatic.getAll().filter((comment) => !comment.section);
+      commentsInSection = commentRegistry.getAll().filter((comment) => !comment.section);
     }
     if (this.mode === 'edit') {
       commentsInSection = commentsInSection.filter((comment) => comment !== this.target);
@@ -2071,7 +2064,7 @@ class CommentForm {
    * shrink.
    */
   adjustLabels() {
-    let formWidth = this.$element.width();
+    const formWidth = this.$element.width();
     const additive = 7;
 
     if (this.$element.hasClass('cd-commentForm-short')) {
@@ -2456,7 +2449,7 @@ class CommentForm {
   addAnchorsToComments(originalContextCode, commentIds) {
     let contextCode = originalContextCode;
     commentIds.forEach((id) => {
-      const comment = CommentStatic.getById(id);
+      const comment = commentRegistry.getById(id);
       if (comment) {
         const commentSource = comment.locateInCode(contextCode);
         const anchorCode = cd.config.getAnchorCode(id);
@@ -2501,7 +2494,7 @@ class CommentForm {
    * @private
    */
   async prepareSource(action, operation) {
-    const commentIds = extractCommentIds(this.commentInput.getValue());
+    const commentIds = this.constructor.extractCommentIds(this.commentInput.getValue());
 
     this.newSectionApi = Boolean(
       this.mode === 'addSection' &&
@@ -2626,8 +2619,8 @@ class CommentForm {
   async preview(isAuto = true, operation) {
     if (
       this.isContentBeingLoaded() ||
-      (isAuto && !settings.get('autopreview')) ||
-      (!settings.get('autopreview') && this.isBeingSubmitted())
+      (isAuto && !this.autopreview) ||
+      (!this.autopreview && this.isBeingSubmitted())
     ) {
       operation?.close();
       return;
@@ -2744,7 +2737,7 @@ class CommentForm {
       }
     }
 
-    if (settings.get('autopreview') && this.previewButton.$element.is(':visible')) {
+    if (this.autopreview && this.previewButton.$element.is(':visible')) {
       this.previewButton.$element.hide();
       this.viewChangesButton.$element.show();
       this.adjustLabels();
@@ -2835,7 +2828,7 @@ class CommentForm {
       }
     }
 
-    if (settings.get('autopreview')) {
+    if (this.autopreview) {
       this.viewChangesButton.$element.hide();
       this.previewButton.$element.show();
       this.adjustLabels();
@@ -3054,7 +3047,7 @@ class CommentForm {
         // FIXME: sections added with no headline (actually comments added to the preceding section)
         this.mode === 'addSection' ||
         (
-          !settings.get('useTopicSubscription') &&
+          !this.useTopicSubscription &&
           (this.mode === 'addSubsection' || this.sectionOpeningCommentEdited)
         )
       ) {
@@ -3071,8 +3064,8 @@ class CommentForm {
         let subscribeId;
         let originalHeadline;
         let isHeadlineAltered;
-        if (settings.get('useTopicSubscription')) {
-          subscribeId = SectionStatic.generateDtSubscriptionId(
+        if (this.useTopicSubscription) {
+          subscribeId = sectionRegistry.generateDtSubscriptionId(
             userRegistry.getCurrent().getName(),
             editTimestamp
           );
@@ -3124,37 +3117,17 @@ class CommentForm {
     // Timestamps on the page (and therefore anchors) have no seconds.
     date.setSeconds(0);
 
-    let commentAbove;
-    if (this.target instanceof Comment) {
-      const descendants = this.target.getChildren(true);
-      commentAbove = descendants[descendants.length - 1] || this.target;
-    } else if (this.target instanceof Section) {
-      const sectionAbove = (
-        (this.mode === 'addSubsection' && this.target.getChildren(true).slice(-1)[0]) ||
-        this.target
-      );
-      SectionStatic.getAll()
-        .slice(0, sectionAbove.index + 1)
-        .reverse()
-        .some((section) => {
-          if (section.commentsInFirstChunk.length) {
-            commentAbove = section.commentsInFirstChunk[section.commentsInFirstChunk.length - 1];
-          }
-          return commentAbove;
-        });
-    } else {
-      commentAbove = this.newTopicOnTop ? null : CommentStatic.getByIndex(-1);
-    }
-
-    const existingIds = CommentStatic.getAll()
-      .slice(0, commentAbove ? commentAbove.index + 1 : 0)
-      .filter((comment) => (
-        comment.author === userRegistry.getCurrent() &&
-        comment.date?.getTime() === date.getTime()
-      ))
-      .map((comment) => comment.id);
-
-    return CommentStatic.generateId(date, userRegistry.getCurrent().getName(), existingIds);
+    return Comment.generateId(
+      date,
+      userRegistry.getCurrent().getName(),
+      commentRegistry.getAll()
+        .slice(0, this.target.getCommentAboveReply(this)?.index + 1 ?? 0)
+        .filter((comment) => (
+          comment.author === userRegistry.getCurrent() &&
+          comment.date?.getTime() === date.getTime()
+        ))
+        .map((comment) => comment.id)
+    );
   }
 
   /**
@@ -3168,7 +3141,7 @@ class CommentForm {
       return;
     }
 
-    if (CommentFormStatic.getAll().some((commentForm) => commentForm.isBeingSubmitted())) {
+    if (commentFormRegistry.getAll().some((commentForm) => commentForm.isBeingSubmitted())) {
       this.handleError({
         type: 'ui',
         message: cd.sParse('cf-error-othersubmitted'),
@@ -3317,12 +3290,12 @@ class CommentForm {
     // FIXME: Emit an event using `mw.hook()` and handle it in the objects below to reduce coupling?
     // Or just run some routine on `controller`.
     if (this.mode === 'addSection') {
-      CommentFormStatic.forgetAddSectionForm();
+      commentFormRegistry.forgetAddSectionForm();
     } else {
       delete this.target[this.getModeProperty() + 'Form'];
     }
-    CommentFormStatic.remove(this);
-    CommentFormStatic.saveSession(true);
+    commentFormRegistry.remove(this);
+    commentFormRegistry.saveSession(true);
 
     // Popups can be placed outside the form element, so they need to be torn down whenever the form
     // is forgotten (even if the form itself is not torn down).
@@ -3341,7 +3314,7 @@ class CommentForm {
    * @returns {boolean}
    */
   isForgotten() {
-    return CommentFormStatic.items.includes(this);
+    return commentFormRegistry.items.includes(this);
   }
 
   /**
@@ -3625,7 +3598,7 @@ class CommentForm {
         activeElement.selectionEnd
       );
     } else {
-      selection = await this.commentInput.getWikitextFromSelection(controller.getRootElement());
+      selection = await this.commentInput.getWikitextFromSelection(controller.rootElement);
     }
     selection = selection.trim();
 
@@ -3754,7 +3727,7 @@ class CommentForm {
    * @returns {string}
    */
   getModeProperty() {
-    return CommentFormStatic.modeToProperty(this.mode);
+    return this.constructor.modeToProperty(this.mode);
   }
 
   /**
@@ -3903,7 +3876,7 @@ class CommentForm {
     const target = this.target;
     if (target instanceof Comment) {
       if (target.id) {
-        const comment = CommentStatic.getById(target.id);
+        const comment = commentRegistry.getById(target.id);
         if (comment) {
           try {
             this.setTargets(comment);
@@ -3920,14 +3893,14 @@ class CommentForm {
         addToRescue();
       }
     } else if (target instanceof Section) {
-      const { section } = SectionStatic.search({
+      const { section } = sectionRegistry.search({
         headline: target.headline,
         oldestCommentId: target.oldestComment?.id,
         index: target.index,
         id: target.id,
 
         // We cache ancestors when saving the session, so this call will return the right value,
-        // despite the fact that SectionStatic.items has already changed.
+        // despite the fact that `sectionRegistry.items` has already changed.
         ancestors: target.getAncestors().map((section) => section.headline),
       });
       if (section) {
@@ -3944,7 +3917,7 @@ class CommentForm {
       }
     } else if (this.mode === 'addSection') {
       this.addToPage();
-      CommentFormStatic.setAddSectionForm(this);
+      commentFormRegistry.setAddSectionForm(this);
     }
 
     return rescue;
@@ -3967,8 +3940,8 @@ class CommentForm {
    */
   onboardOntoMultipleForms() {
     if (
-      settings.get('manyForms-onboarded') ||
-      CommentFormStatic.getCount() !== 2 ||
+      this.manyFormsOnboarded ||
+      commentFormRegistry.getCount() !== 2 ||
 
       // Left column hidden in Timeless
       (cd.g.skin === 'timeless' && window.innerWidth < 1100) ||
@@ -4017,7 +3990,8 @@ class CommentForm {
    */
   onboardOntoUpload() {
     if (
-      settings.get('upload-onboarded') ||
+      this.uploadOnboarded ||
+
       // Left column hidden in Timeless
       (cd.g.skin === 'timeless' && window.innerWidth < 1100) ||
 
@@ -4059,6 +4033,38 @@ class CommentForm {
   }
 
   static counter = 0;
+  static allowedFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'];
+
+  /**
+   * Extract IDs from comment links in the code.
+   *
+   * @param {string} code
+   * @returns {string[]}
+   * @private
+   */
+  static extractCommentIds(code) {
+    // Russian Wikipedia's Wikificator might mangle these links, replacing "_" with " ", so we search
+    // for both characters.
+    const idRegexp = /\[\[#(\d{12}[_ ][^|\]]+)/g;
+
+    const ids = [];
+    let match;
+    while ((match = idRegexp.exec(code))) {
+      ids.push(match[1]);
+    }
+    return ids;
+  }
+
+  /**
+   * Get the name of the correlated property of the comment form target based on the comment for
+   * mode.
+   *
+   * @param {string} mode
+   * @returns {string}
+   */
+  static modeToProperty(mode) {
+    return mode === 'replyInSection' ? 'reply' : mode;
+  }
 }
 
 export default CommentForm;

@@ -10,7 +10,7 @@ import { getElementFromPasteHtml, cleanUpPasteDom, isElementConvertibleToWikitex
  *
  * @augments external:OO.ui.TextInputWidget
  */
-export default class TextInputWidget extends OO.ui.TextInputWidget {
+class TextInputWidget extends OO.ui.TextInputWidget {
   /**
    * Create an instance.
    *
@@ -96,3 +96,5 @@ export default class TextInputWidget extends OO.ui.TextInputWidget {
 }
 
 tweakUserOoUiClass(TextInputWidget);
+
+export default TextInputWidget;

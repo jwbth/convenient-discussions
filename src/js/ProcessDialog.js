@@ -8,7 +8,7 @@ import { tweakUserOoUiClass } from './utils-ooui';
  *
  * @augments external:OO.ui.ProcessDialog
  */
-export default class ProcessDialog extends OO.ui.ProcessDialog {
+class ProcessDialog extends OO.ui.ProcessDialog {
   /**
    * Check if there are unsaved changes.
    *
@@ -71,3 +71,5 @@ export default class ProcessDialog extends OO.ui.ProcessDialog {
 }
 
 tweakUserOoUiClass(ProcessDialog);
+
+export default ProcessDialog;

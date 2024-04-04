@@ -1,5 +1,5 @@
-import SectionStatic from './SectionStatic';
 import cd from './cd';
+import sectionRegistry from './sectionRegistry';
 import { calculateWordOverlap } from './utils-general';
 import { endWithTwoNewlines, extractSignatures, normalizeCode, removeWikiMarkup } from './utils-wikitext';
 
@@ -237,7 +237,7 @@ class SectionSource {
       const previousHeadlinesInCode = headlines
         .slice(-previousHeadlinesToCheckCount)
         .reverse();
-      doPreviousHeadlinesMatch = SectionStatic.getAll()
+      doPreviousHeadlinesMatch = sectionRegistry.getAll()
         .slice(Math.max(0, this.section.index - previousHeadlinesToCheckCount), this.section.index)
         .reverse()
         .map((section) => section.headline)

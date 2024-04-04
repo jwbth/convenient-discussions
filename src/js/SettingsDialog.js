@@ -12,7 +12,7 @@ import { createCheckboxField, createNumberField, createRadioField, createTextFie
  *
  * @augments ProcessDialog
  */
-export default class SettingsDialog extends ProcessDialog {
+class SettingsDialog extends ProcessDialog {
   static name = 'settingsDialog';
   static title = cd.s('sd-title');
   static actions = [
@@ -553,3 +553,5 @@ export default class SettingsDialog extends ProcessDialog {
 }
 
 tweakUserOoUiClass(SettingsDialog);
+
+export default SettingsDialog;

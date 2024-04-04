@@ -4,9 +4,10 @@
  * @module addCommentLinks
  */
 
-import CommentStatic from './CommentStatic';
+import Comment from './Comment';
 import PrototypeRegistry from './PrototypeRegistry';
 import cd from './cd';
+import commentRegistry from './commentRegistry';
 import controller from './controller';
 import init from './init';
 import pageRegistry from './pageRegistry';
@@ -456,7 +457,7 @@ function processContributions($content) {
     const { date } = parseTimestamp(dateElement.textContent, cd.g.uiTimezone) || {};
     if (!date) return;
 
-    const id = CommentStatic.generateId(date, mw.config.get('wgRelevantUserName'));
+    const id = Comment.generateId(date, mw.config.get('wgRelevantUserName'));
 
     let wrapper;
     if (summary && currentUserRegexp.test(` ${summary} `)) {
@@ -516,7 +517,7 @@ function processHistory($content) {
     const author = extractAuthor(line);
     if (!author) return;
 
-    const id = CommentStatic.generateId(date, author);
+    const id = Comment.generateId(date, author);
 
     let wrapper;
     if (summary && currentUserRegexp.test(` ${summary} `)) {
@@ -599,14 +600,14 @@ function processDiff($diff) {
       const author = extractAuthor(area);
       if (!author) return;
 
-      const id = CommentStatic.generateId(date, author);
+      const id = Comment.generateId(date, author);
 
       let comment;
       let page;
       if ($diff) {
         page = pageRegistry.get((new URL(dateElement.href)).searchParams.get('title'));
       } else {
-        comment = CommentStatic.getById(id, true);
+        comment = commentRegistry.getById(id, true);
       }
       if (comment || ($diff && page.isProbablyTalkPage())) {
         let wrapper;

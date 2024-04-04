@@ -2,7 +2,7 @@
  * Class for keeping prototypes - skeletons of elements to be cloned instead of creating a new one
  * from scratch (which is often expensive).
  */
-export default class PrototypeRegistry {
+class PrototypeRegistry {
   elements = {};
   widgets = {};
 
@@ -45,3 +45,5 @@ export default class PrototypeRegistry {
     return this.widgets[id] || null;
   }
 }
+
+export default PrototypeRegistry;

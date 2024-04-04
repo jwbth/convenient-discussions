@@ -7,6 +7,7 @@
 import CdError from './CdError';
 import TextMasker from './TextMasker';
 import cd from './cd';
+import commentRegistry from './commentRegistry';
 import controller from './controller';
 import userRegistry from './userRegistry';
 import { handleApiReject, requestInBackground } from './utils-api';
@@ -740,6 +741,14 @@ export class Page {
    */
   getIdentifyingData() {
     return null;
+  }
+
+  getCommentAboveReply(commentForm) {
+    return commentForm.isNewTopicOnTop() ? null : commentRegistry.getByIndex(-1);
+  }
+
+  getNewSelf() {
+    return this;
   }
 }
 

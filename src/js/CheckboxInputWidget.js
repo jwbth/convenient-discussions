@@ -4,7 +4,7 @@
  *
  * @augments external:OO.ui.CheckboxInputWidget
  */
-export default class CheckboxInputWidget extends OO.ui.CheckboxInputWidget {
+class CheckboxInputWidget extends OO.ui.CheckboxInputWidget {
   // eslint-disable-next-line jsdoc/require-jsdoc
   constructor(...args) {
     super(...args);
@@ -14,3 +14,5 @@ export default class CheckboxInputWidget extends OO.ui.CheckboxInputWidget {
     });
   }
 }
+
+export default CheckboxInputWidget;

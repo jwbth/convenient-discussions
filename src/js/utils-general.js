@@ -779,7 +779,7 @@ export function parseWikiUrl(url) {
       hostname = m1;
       return '';
     })
-    .replace(cd.g.startsWithArticlePathRegexp, '')
+    .replace(cd.g.articlePathRegexp, '$1')
     .replace(cd.g.startsWithScriptTitleRegexp, '')
     .replace(/&action=edit.*/, '')
     .replace(/#(.*)/, (s, m1) => {

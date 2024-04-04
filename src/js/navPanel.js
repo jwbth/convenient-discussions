@@ -6,9 +6,9 @@
  */
 
 import Button from './Button';
-import CommentFormStatic from './CommentFormStatic';
-import CommentStatic from './CommentStatic';
 import cd from './cd';
+import commentFormRegistry from './commentFormRegistry';
+import commentRegistry from './commentRegistry';
 import controller from './controller';
 import settings from './settings';
 import { reorderArray } from './utils-general';
@@ -16,17 +16,15 @@ import { formatDate } from './utils-timestamp';
 import { removeWikiMarkup } from './utils-wikitext';
 import { isCmdModifierPressed } from './utils-window';
 
-let utirbtTimeout;
-let cachedCommentCount;
-let cachedCommentsBySection;
-
 export default {
   /**
-   * Mount, unmount or reset the navigation panel based on the context.
-   *
-   * @private
+   * _For internal use._ Mount, unmount or reset the navigation panel based on the context.
    */
   setup() {
+    this.timestampFormat = settings.get('timestampFormat');
+    this.modifyToc = settings.get('modifyToc');
+    this.highlightNewInterval = settings.get('highlightNewInterval');
+
     if (controller.isPageActive()) {
       // Can be mounted not only on first parse, if using RevisionSlider, for example.
       if (!this.isMounted()) {
@@ -187,14 +185,14 @@ export default {
     this.nextButton.hide();
     this.firstUnseenButton.hide();
     this.commentFormButton.hide();
-    clearTimeout(utirbtTimeout);
+    clearTimeout(this.utirbtTimeout);
   },
 
   /**
    * Count the new and unseen comments on the page, and update the navigation panel to reflect that.
    */
   fill() {
-    if (CommentStatic.getAll().some((comment) => comment.isNew)) {
+    if (commentRegistry.getAll().some((comment) => comment.isNew)) {
       this.updateRefreshButtonTooltip(0);
       this.previousButton.show();
       this.nextButton.show();
@@ -226,11 +224,11 @@ export default {
   goToNewCommentInDirection(direction) {
     if (controller.isAutoScrolling()) return;
 
-    const commentInViewport = CommentStatic.findInViewport(direction);
+    const commentInViewport = commentRegistry.findInViewport(direction);
     if (!commentInViewport) return;
 
     const reorderedComments = reorderArray(
-      CommentStatic.getAll(),
+      commentRegistry.getAll(),
       commentInViewport.index,
       direction === 'backward'
     );
@@ -269,7 +267,7 @@ export default {
   goToFirstUnseenComment() {
     if (controller.isAutoScrolling()) return;
 
-    const candidates = CommentStatic.getAll().filter((comment) => comment.isSeen === false);
+    const candidates = commentRegistry.getAll().filter((comment) => comment.isSeen === false);
     const comment = candidates.find((comment) => comment.isInViewport() === false) || candidates[0];
     comment?.scrollTo({
       flash: null,
@@ -288,7 +286,7 @@ export default {
    * @param {boolean} [inSight=false]
    */
   goToNextCommentForm(inSight) {
-    CommentFormStatic.getAll()
+    commentFormRegistry.getAll()
       .filter((commentForm) => inSight || !commentForm.$element.cdIsInViewport(true))
       .map((commentForm) => {
         let top = commentForm.$element[0].getBoundingClientRect().top;
@@ -335,13 +333,13 @@ export default {
    */
   updateRefreshButtonTooltip(commentCount, commentsBySection) {
     // If the method was not called after a timeout and the timeout exists, clear it.
-    clearTimeout(utirbtTimeout);
+    clearTimeout(this.utirbtTimeout);
 
-    cachedCommentCount = commentCount;
-    cachedCommentsBySection = commentsBySection;
+    this.cachedCommentCount = commentCount;
+    this.cachedCommentsBySection = commentsBySection;
 
     let tooltipText = null;
-    const areThereNew = CommentStatic.getAll().some((comment) => comment.isNew);
+    const areThereNew = commentRegistry.getAll().some((comment) => comment.isNew);
     if (commentCount) {
       tooltipText = (
         cd.s('navpanel-newcomments-count', commentCount) +
@@ -350,7 +348,7 @@ export default {
         ' ' +
         cd.mws('parentheses', 'R')
       );
-      if (areThereNew && settings.get('highlightNewInterval')) {
+      if (areThereNew && this.highlightNewInterval) {
         tooltipText += '\n' + cd.s('navpanel-markasread', cd.g.cmdModifier);
       }
       const bullet = removeWikiMarkup(cd.s('bullet'));
@@ -378,14 +376,14 @@ export default {
       // tooltip is updated together with the updates of the TOC. When the TOC is not modified, we
       // need to update the tooltip manually every minute. When `improved` timestamps are used,
       // timestamps are updated in `LiveTimestamp.updateImproved()`.
-      if (settings.get('timestampFormat') === 'relative' && !settings.get('modifyToc')) {
-        utirbtTimeout = setTimeout(() => {
+      if (this.timestampFormat === 'relative' && !this.modifyToc) {
+        this.utirbtTimeout = setTimeout(() => {
           this.updateTimestampsInRefreshButtonTooltip();
         }, cd.g.msInMin);
       }
     } else {
       tooltipText = cd.s('navpanel-refresh') + ' ' + cd.mws('parentheses', 'R');
-      if (areThereNew && settings.get('highlightNewInterval')) {
+      if (areThereNew && this.highlightNewInterval) {
         tooltipText += '\n' + cd.s('navpanel-markasread', cd.g.cmdModifier);
       }
     }
@@ -399,7 +397,7 @@ export default {
    * the text.
    */
   updateTimestampsInRefreshButtonTooltip() {
-    this.updateRefreshButtonTooltip(cachedCommentCount, cachedCommentsBySection);
+    this.updateRefreshButtonTooltip(this.cachedCommentCount, this.cachedCommentsBySection);
   },
 
   /**
@@ -409,7 +407,7 @@ export default {
   updateFirstUnseenButton() {
     if (!this.isMounted()) return;
 
-    const unseenCommentCount = CommentStatic.getAll().filter((c) => c.isSeen === false).length;
+    const unseenCommentCount = commentRegistry.getAll().filter((c) => c.isSeen === false).length;
     this.firstUnseenButton.toggle(unseenCommentCount).setLabel(unseenCommentCount);
   },
 
@@ -422,7 +420,7 @@ export default {
     if (!this.isMounted() || controller.isAutoScrolling()) return;
 
     this.commentFormButton.toggle(
-      CommentFormStatic.getAll().some((cf) => !cf.$element.cdIsInViewport(true))
+      commentFormRegistry.getAll().some((cf) => !cf.$element.cdIsInViewport(true))
     );
   },
 };

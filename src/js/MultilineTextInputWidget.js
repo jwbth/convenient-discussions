@@ -7,8 +7,10 @@ import { mixinUserOoUiClass } from './utils-ooui';
  *
  * @augments external:OO.ui.MultilineTextInputWidget
  */
-export default class MultilineTextInputWidget extends OO.ui.MultilineTextInputWidget {}
+class MultilineTextInputWidget extends OO.ui.MultilineTextInputWidget {}
 
 // We can't make `OO.ui.MultilineTextInputWidget` extend our `TextInputWidget`, but we can mixin
 // `TextInputWidget` into a class that extends `OO.ui.MultilineTextInputWidget`.
 mixinUserOoUiClass(MultilineTextInputWidget, TextInputWidget);
+
+export default MultilineTextInputWidget;

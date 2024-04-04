@@ -4,7 +4,6 @@ import CommentButton from './CommentButton';
 import CommentForm from './CommentForm';
 import CommentSkeleton from './CommentSkeleton';
 import CommentSource from './CommentSource';
-import CommentStatic from './CommentStatic';
 import CommentSubitemList from './CommentSubitemList';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import LiveTimestamp from './LiveTimestamp';
@@ -12,12 +11,13 @@ import PrototypeRegistry from './PrototypeRegistry';
 import StorageItem from './StorageItem';
 import TreeWalker from './TreeWalker';
 import cd from './cd';
+import commentRegistry from './commentRegistry';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
 import { handleApiReject, loadUserGenders, parseCode } from './utils-api';
-import { addToArrayIfAbsent, areObjectsEqual, calculateWordOverlap, countOccurrences, decodeHtmlEntities, defined, getHeadingLevel, isInline, sleep, unique } from './utils-general';
+import { addToArrayIfAbsent, areObjectsEqual, calculateWordOverlap, countOccurrences, decodeHtmlEntities, defined, getHeadingLevel, isInline, removeFromArrayIfPresent, sleep, underlinesToSpaces, unique } from './utils-general';
 import { showConfirmDialog } from './utils-ooui';
 import { formatDate, formatDateNative } from './utils-timestamp';
 import { extractSignatures, removeWikiMarkup } from './utils-wikitext';
@@ -533,7 +533,7 @@ class Comment extends CommentSkeleton {
       this.overlayMenu.appendChild(this.replyButton.element);
     }
 
-    if (CommentStatic.getByIndex(this.index + 1)?.isOutdented) {
+    if (commentRegistry.getByIndex(this.index + 1)?.isOutdented) {
       this.replyButton.setDisabled(true);
       this.replyButton.setTooltip(cd.s('cm-reply-outdented-tooltip'));
     }
@@ -1294,7 +1294,7 @@ class Comment extends CommentSkeleton {
      */
     this.underlay = this.constructor.prototypes.get('underlay');
 
-    CommentStatic.underlays.push(this.underlay);
+    commentRegistry.underlays.push(this.underlay);
 
     /**
      * Comment's overlay.
@@ -1518,9 +1518,9 @@ class Comment extends CommentSkeleton {
    * layers.
    */
   updateLayersOffset() {
-    // The underlay can be absent if called from `CommentStatic.maybeRedrawLayers` with `redrawAll`
-    // set to `true`. `layersOffset` can be absent in some rare cases when the comment became
-    // invisible.
+    // The underlay can be absent if called from `commentRegistry.maybeRedrawLayers()` with
+    // `redrawAll` set to `true`. `layersOffset` can be absent in some rare cases when the comment
+    // became invisible.
     if (!this.underlay || !this.layersOffset) return;
 
     this.underlay.style.top = this.overlay.style.top = this.layersOffset.top + 'px';
@@ -1536,7 +1536,9 @@ class Comment extends CommentSkeleton {
     if (!this.underlay) return;
 
     this.$animatedBackground?.add(this.$marker).stop(true, true);
-    CommentStatic.underlays.splice(CommentStatic.underlays.indexOf(this.underlay), 1);
+
+    // TODO: add add/remove methods to `commentRegistry.underlays`
+    removeFromArrayIfPresent(commentRegistry.underlays, this.underlay);
 
     this.dontHideMenu();
 
@@ -1610,7 +1612,7 @@ class Comment extends CommentSkeleton {
       }
       this.layersContainer = container;
 
-      addToArrayIfAbsent(CommentStatic.layersContainers, container);
+      addToArrayIfAbsent(commentRegistry.layersContainers, container);
     }
 
     return this.layersContainer;
@@ -1656,7 +1658,8 @@ class Comment extends CommentSkeleton {
     if (this.isHovered || controller.isPageOverlayOn() || this.isReformatted) return;
 
     if (e && e.type === 'touchstart') {
-      CommentStatic.getAll()
+      // FIXME: decouple
+      commentRegistry.getAll()
         .filter((comment) => comment.isHovered)
         .forEach((comment) => {
           comment.unhighlightHovered();
@@ -2113,7 +2116,7 @@ class Comment extends CommentSkeleton {
     }
 
     // Layers are supposed to be updated (deleted comments background, repositioning) separately,
-    // see `updateChecker~checkForNewChanges`, for example.
+    // see `updateChecker~checkForNewChanges()`, for example.
   }
 
   /**
@@ -2132,9 +2135,9 @@ class Comment extends CommentSkeleton {
       case 'deleted':
         this.isDeleted = false;
 
-        // `Comments.maybeRedrawLayers()`, that is called on DOM updates, could circumvent this
-        // comment if it has no property signalling that it should be highlighted, so we update its
-        // styles manually.
+        // `commentRegistry.maybeRedrawLayers()`, that is called on DOM updates, could circumvent
+        // this comment if it has no property signalling that it should be highlighted, so we update
+        // its styles manually.
         this.updateLayersStyles();
 
         break;
@@ -2677,7 +2680,7 @@ class Comment extends CommentSkeleton {
 
     let isSelectionRelevant = false;
     if (!initialState) {
-      isSelectionRelevant = CommentStatic.getSelectedComment() === this;
+      isSelectionRelevant = commentRegistry.getSelectedComment() === this;
       if (isSelectionRelevant) {
         initialState = { focus: false };
 
@@ -2831,11 +2834,13 @@ class Comment extends CommentSkeleton {
       this.flashChanged();
     }
 
-    const makesSenseToRegisterFurther = CommentStatic.getAll()
-      .some((comment) => comment.isSeen || comment.willFlashChangedOnSight);
+    const makesSenseToRegisterFurther = commentRegistry.getAll().some((comment) => (
+      comment.isSeen ||
+      comment.willFlashChangedOnSight
+    ));
     if (registerAllInDirection && makesSenseToRegisterFurther) {
       const change = registerAllInDirection === 'backward' ? -1 : 1;
-      const nextComment = CommentStatic.getByIndex(this.index + change);
+      const nextComment = commentRegistry.getByIndex(this.index + change);
       if (nextComment && nextComment.isInViewport() !== false) {
         nextComment.registerSeen(registerAllInDirection, flash);
       }
@@ -2964,7 +2969,7 @@ class Comment extends CommentSkeleton {
         commentText: commentData.text,
       };
     } else {
-      const comments = isInSectionContext ? this.section.comments : CommentStatic.getAll();
+      const comments = isInSectionContext ? this.section.comments : commentRegistry.getAll();
       const index = comments.indexOf(this);
       thisData = {
         index,
@@ -3194,7 +3199,7 @@ class Comment extends CommentSkeleton {
     const $anchorFirstChild = $anchor.children().first();
     if ($anchor.is('dd, li') && $anchorFirstChild.hasClass('cd-commentLevel')) {
       // A relatively rare case possible when two adjacent lists are merged with
-      // CommentStatic#mergeAdjacentCommentLevels, for example when replying to
+      // Comment#mergeAdjacentCommentLevels, for example when replying to
       // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(policy)#202103271157_Uanfala.
       $anchor = $anchorFirstChild;
     }
@@ -3389,7 +3394,7 @@ class Comment extends CommentSkeleton {
    * second one. This fixes the thread feature behavior among other things.
    */
   maybeSplitParent() {
-    const previousComment = CommentStatic.getByIndex(this.index - 1);
+    const previousComment = commentRegistry.getByIndex(this.index - 1);
     if (this.level !== previousComment.level) return;
 
     const previousCommentLastElement = previousComment
@@ -3405,6 +3410,31 @@ class Comment extends CommentSkeleton {
     }
   }
 
+  getCommentAboveReply() {
+    return this.getChildren(true).slice(-1)[0] || this;
+  }
+
+  findNewSelf() {
+    if (!this.id) {
+      return null;
+    }
+
+    return commentRegistry.getById(this.id);
+  }
+
+  static {
+    // Doesn't account for cases when the section headline ends with `-[number]`.
+    const newDtTimestampPattern = '(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})\\d{2}';
+    const oldDtTimestampPattern = '(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{3}Z)';
+
+    this.dtIdRegexp = new RegExp(
+      `^c-` +
+      `(?:(.+?)-(?:${newDtTimestampPattern}|${oldDtTimestampPattern}))` +
+      `(?:-(?:(.+?)-(?:${newDtTimestampPattern}|${oldDtTimestampPattern})|(.+?))` +
+      `(?:-(\\d+))?)?$(?:)`
+    );
+  }
+
   /**
    * Create element prototypes to reuse them instead of creating new elements from scratch (which is
    * more expensive).
@@ -3413,7 +3443,7 @@ class Comment extends CommentSkeleton {
     this.prototypes = new PrototypeRegistry();
 
     /* Comment header element */
-    if (settings.get('reformatComments') !== false) {  // true, null
+    if (this.isReformatted !== false) {  // true, null
       const headerElement = document.createElement('div');
       headerElement.className = 'cd-comment-header';
 
@@ -3435,7 +3465,7 @@ class Comment extends CommentSkeleton {
       authorTalkLink.textContent = cd.s('comment-author-talk');
       authorLinksWrapper.append(cd.mws('parentheses-start'), authorTalkLink);
 
-      if (settings.get('showContribsLink')) {
+      if (this.showContribsLink) {
         const separator = document.createElement('span');
         separator.innerHTML = cd.sParse('dot-separator');
 
@@ -3453,7 +3483,7 @@ class Comment extends CommentSkeleton {
 
     /* OOUI buttons. Creating every OOUI button using the constructor takes 15 times longer than
     cloning */
-    if (settings.get('reformatComments') !== true) {
+    if (this.isReformatted !== true) {
       this.prototypes.addWidget('replyButton', () => (
         new OO.ui.ButtonWidget({
           label: cd.s('cm-reply'),
@@ -3528,7 +3558,7 @@ class Comment extends CommentSkeleton {
     overlayMarker.className = 'cd-comment-overlay-marker';
     commentOverlay.appendChild(overlayMarker);
 
-    if (!settings.get('reformatComments')) {
+    if (!this.isReformatted) {
       const overlayInnerWrapper = document.createElement('div');
       overlayInnerWrapper.className = 'cd-comment-overlay-innerWrapper';
       commentOverlay.appendChild(overlayInnerWrapper);
@@ -3566,6 +3596,91 @@ class Comment extends CommentSkeleton {
       rect = el.getBoundingClientRect();
     }
     return rect;
+  }
+
+  /**
+   * Turn a comment array into an object with sections or their IDs as keys.
+   *
+   * @param {import('./CommentSkeleton').CommentSkeletonLike[]|Comment[]} comments
+   * @returns {Map}
+   */
+  static groupBySection(comments) {
+    return comments.reduce((map, comment) => {
+      if (!map.get(comment.section)) {
+        map.set(comment.section, []);
+      }
+      map.get(comment.section).push(comment);
+      return map;
+    }, new Map());
+  }
+
+  /**
+   * @typedef {object} ParseIdReturn
+   * @property {Date} date
+   * @property {string} author
+   * @inner
+   */
+
+  /**
+   * Extract a date and author from a comment ID. Currently doesn't extract the index (if there are
+   * multiple comments with the same timestamp on the page), but it hasn't been needed yet in the
+   * script.
+   *
+   * @param {string} id
+   * @returns {?ParseIdReturn}
+   */
+  static parseId(id) {
+    const match = id.match(/^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})_(.+)$/);
+    if (!match) {
+      return null;
+    }
+
+    const year = Number(match[1]);
+    const month = Number(match[2]) - 1;
+    const day = Number(match[3]);
+    const hours = Number(match[4]);
+    const minutes = Number(match[5]);
+    const author = underlinesToSpaces(match[6]);
+
+    const date = new Date(Date.UTC(year, month, day, hours, minutes));
+
+    return { date, author };
+  }
+
+  /**
+   * Parse a comment ID in the DiscussionTools format.
+   *
+   * @param {string} id Comment ID in the DiscussionTools format.
+   * @returns {?object}
+   */
+  static parseDtId(id) {
+    const match = id.match(this.dtIdRegexp);
+    if (!match) {
+      return null;
+    }
+
+    const parseTimestamp = (startIndex) => {
+      const author = underlinesToSpaces(match[startIndex]);
+      let date;
+      if (match[startIndex + 1]) {
+        const year = Number(match[startIndex + 1]);
+        const month = Number(match[startIndex + 2]) - 1;
+        const day = Number(match[startIndex + 3]);
+        const hours = Number(match[startIndex + 4]);
+        const minutes = Number(match[startIndex + 5]);
+        date = new Date(Date.UTC(year, month, day, hours, minutes));
+      } else {
+        date = new Date(match[startIndex + 6]);
+      }
+      return [author, date];
+    };
+
+    const [author, date] = parseTimestamp(1);
+    const [parentAuthor, parentDate] = match[8] ? parseTimestamp(8) : [];
+    const sectionIdBeginning = match[15];
+    const index = match[16] ? Number(match[16]) : undefined;
+
+    return { author, date, parentAuthor, parentDate, sectionIdBeginning, index };
   }
 }
 

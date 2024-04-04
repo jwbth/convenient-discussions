@@ -1,10 +1,11 @@
 import LZString from 'lz-string';
 
 import CdError from './CdError';
-import CommentStatic from './CommentStatic';
-import SectionStatic from './SectionStatic';
+import Comment from './Comment';
 import cd from './cd';
+import commentRegistry from './commentRegistry';
 import navPanel from './navPanel';
+import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import toc from './toc';
 import initUpdateChecker from './updateChecker';
@@ -59,29 +60,27 @@ export default {
 
     let timeConflict = false;
     if (this.currentPageData.length) {
-      CommentStatic.getAll().forEach((comment) => {
-        const commentTimeConflict = comment.initNewAndSeen(
+      commentRegistry.getAll().forEach((c) => {
+        const commentTimeConflict = c.initNewAndSeen(
           this.currentPageData,
           currentTime,
-          bootProcess.passedData.unseenCommentIds?.some((id) => id === comment.id) || false
+          bootProcess.passedData.unseenCommentIds?.some((id) => id === c.id) || false
         );
         timeConflict ||= commentTimeConflict;
       });
 
-      CommentStatic.configureAndAddLayers((c) => c.isNew);
+      commentRegistry.configureAndAddLayers((c) => c.isNew);
 
       // If all the comments on the page are unseen, don't add them to the TOC - the user would
       // definitely prefer to read the names of the topics easily. (But still consider them new -
       // otherwise the user can be confused, especially if there are few topics on an unpopular
       // page.)
       if (
-        CommentStatic.getAll().filter((c) => c.isSeen === false || !c.date).length !==
-        CommentStatic.getCount()
+        commentRegistry.getAll().filter((c) => c.isSeen === false || !c.date).length !==
+        commentRegistry.getCount()
       ) {
         toc.addNewComments(
-          CommentStatic.groupBySection(
-            CommentStatic.getAll().filter((c) => c.isSeen === false)
-          ),
+          Comment.groupBySection(commentRegistry.getAll().filter((c) => c.isSeen === false)),
           bootProcess
         );
       }
@@ -104,16 +103,16 @@ export default {
 
     this.save();
 
-    // Should be before `CommentStatic.registerSeen()` to include all new comments in the metadata,
-    // even those currently inside the viewport.
-    SectionStatic.updateNewCommentsData();
+    // Should be before `commentRegistry.registerSeen()` to include all new comments in the
+    // metadata, even those currently inside the viewport.
+    sectionRegistry.updateNewCommentsData();
 
-    // Should be below `SectionStatic.updateNewCommentsData()` - `Section#newComments` is set there.
-    // TODO: keep the scrolling position even if adding the comment count moves the content.
+    // Should be below `sectionRegistry.updateNewCommentsData()` - `Section#newComments` is set
+    // there. TODO: keep the scrolling position even if adding the comment count moves the content.
     // (Currently this is done in `toc.addNewComments()`.)
     toc.addCommentCount();
 
-    CommentStatic.registerSeen();
+    commentRegistry.registerSeen();
     navPanel.fill();
     initUpdateChecker(
       this.currentPageData.length >= 1 ?

@@ -1,36 +1,19 @@
 /**
- * Static {@link CommentForm comment form} methods and properties.
+ * Singleton storing data about comment forms on the page and managing them.
  *
- * @module CommentFormStatic
+ * @module commentFormRegistry
  */
 
 import CommentForm from './CommentForm';
-import CommentStatic from './CommentStatic';
-import SectionStatic from './SectionStatic';
 import StorageItem from './StorageItem';
 import cd from './cd';
+import commentRegistry from './commentRegistry';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
+import sectionRegistry from './sectionRegistry';
 import { areObjectsEqual, removeFromArrayIfPresent } from './utils-general';
 
-/**
- * Callback to be used in
- * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort Array#sort()}
- * for comment forms.
- *
- * @param {CommentForm} commentForm1
- * @param {CommentForm} commentForm2
- * @returns {number}
- * @private
- */
-function lastFocused(commentForm1, commentForm2) {
-  return (commentForm2.lastFocused || new Date(0)) - (commentForm1.lastFocused || new Date(0));
-}
-
-/**
- * @exports CommentFormStatic
- */
-const CommentFormStatic = {
+export default {
   /**
    * List of comment forms.
    *
@@ -113,17 +96,6 @@ const CommentFormStatic = {
   },
 
   /**
-   * Get the name of the correlated property of the comment form target based on the comment for
-   * mode.
-   *
-   * @param {string} mode
-   * @returns {string}
-   */
-  modeToProperty(mode) {
-    return mode === 'replyInSection' ? 'reply' : mode;
-  },
-
-  /**
    * Get the last active comment form.
    *
    * @returns {?CommentForm}
@@ -132,7 +104,7 @@ const CommentFormStatic = {
     return (
       this.items
         .slice()
-        .sort(lastFocused)[0] ||
+        .sort(this.lastFocused)[0] ||
       null
     );
   },
@@ -147,16 +119,30 @@ const CommentFormStatic = {
     return (
       this.items
         .slice()
-        .sort(lastFocused)
+        .sort(this.lastFocused)
         .find((commentForm) => commentForm.isAltered()) ||
       null
     );
   },
 
   /**
+   * Callback to be used in
+   * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort Array#sort()}
+   * for comment forms.
+   *
+   * @param {CommentForm} commentForm1
+   * @param {CommentForm} commentForm2
+   * @returns {number}
+   * @private
+   */
+  lastFocused(commentForm1, commentForm2) {
+    return (commentForm2.lastFocused || new Date(0)) - (commentForm1.lastFocused || new Date(0));
+  },
+
+  /**
    * Create an add section form if not existent.
    *
-   * @param {object} [preloadConfig={@link CommentFormStatic.getDefaultPreloadConfig CommentFormStatic.getDefaultPreloadConfig()}]
+   * @param {object} [preloadConfig={@link commentRegistry.getDefaultPreloadConfig commentRegistry.getDefaultPreloadConfig()}]
    * @param {boolean} [newTopicOnTop=false]
    * @param {object} [initialState]
    */
@@ -248,7 +234,7 @@ const CommentFormStatic = {
 
   actuallySaveSession() {
     (new StorageItem('commentForms'))
-      .setForPage(
+      .setWithTime(
         mw.config.get('wgPageName'),
         this.items
           .filter((commentForm) => commentForm.isAltered())
@@ -297,13 +283,13 @@ const CommentFormStatic = {
    * @param {object} commentFormsData
    * @private
    */
-  restoreFromStorage(commentFormsData) {
+  restoreSessionFromStorage(commentFormsData) {
     let haveRestored = false;
     const rescue = [];
     commentFormsData.commentForms.forEach((data) => {
-      const prop = CommentFormStatic.modeToProperty(data.mode);
+      const prop = CommentForm.modeToProperty(data.mode);
       if (data.targetData?.headline) {
-        const { section } = SectionStatic.search({
+        const { section } = sectionRegistry.search({
           headline: data.targetData.headline,
           oldestCommentId: data.targetData.oldestCommentId,
           index: data.targetData.index,
@@ -324,7 +310,7 @@ const CommentFormStatic = {
 
         // TODO: remove the "data.targetData.anchor" part 2 months after the release.
       } else if (data.targetData?.id || data.targetData?.anchor) {
-        const comment = CommentStatic.getById(data.targetData.id || data.targetData.anchor);
+        const comment = commentRegistry.getById(data.targetData.id || data.targetData.anchor);
         if (comment?.isActionable && !comment[`${prop}Form`]) {
           try {
             comment[prop](data);
@@ -337,15 +323,16 @@ const CommentFormStatic = {
           rescue.push(data);
         }
       } else if (data.mode === 'addSection') {
-        if (!CommentFormStatic.getAddSectionForm()) {
-          const commentForm = new CommentForm({
-            target: pageRegistry.getCurrent(),
-            mode: data.mode,
-            initialState: data,
-            preloadConfig: data.preloadConfig,
-            newTopicOnTop: data.newTopicOnTop,
-          });
-          CommentFormStatic.setAddSectionForm(commentForm);
+        if (!this.getAddSectionForm()) {
+          this.setAddSectionForm(
+            new CommentForm({
+              target: pageRegistry.getCurrent(),
+              mode: data.mode,
+              initialState: data,
+              preloadConfig: data.preloadConfig,
+              newTopicOnTop: data.newTopicOnTop,
+            })
+          );
           haveRestored = true;
         } else {
           rescue.push(data);
@@ -361,7 +348,7 @@ const CommentFormStatic = {
       });
     }
     if (rescue.length) {
-      controller.getBootProcess().rescueCommentFormsContent(rescue);
+      this.rescueCommentFormsContent(rescue);
     }
   },
 
@@ -370,7 +357,7 @@ const CommentFormStatic = {
    *
    * @private
    */
-  restoreDirectly() {
+  restoreSessionDirectly() {
     const rescue = [];
     const addToRescue = (commentForm) => {
       rescue.push({
@@ -385,8 +372,49 @@ const CommentFormStatic = {
       commentForm.restore(addToRescue);
     });
     if (rescue.length) {
-      controller.getBootProcess().rescueCommentFormsContent(rescue);
+      this.rescueCommentFormsContent(rescue);
     }
+  },
+
+  /**
+   * Show a modal with content of comment forms that we were unable to restore to the page (because
+   * their target comments/sections disappeared, for example).
+   *
+   * @param {object[]} content
+   * @param {string} [content[].headline]
+   * @param {string} content[].comment
+   * @param {string} content[].summary
+   * @private
+   */
+  maybeShowRescueDialog(content) {
+    const text = content
+      .map((data) => (
+        (data.headline === undefined ? '' : `${cd.s('rd-headline')}: ${data.headline}\n\n`) +
+        `${cd.s('rd-comment')}: ${data.comment}\n\n${cd.s('rd-summary')}: ${data.summary}`
+      ))
+      .join('\n\n----\n');
+
+    const dialog = new OO.ui.MessageDialog();
+    controller.getWindowManager().addWindows([dialog]);
+    controller.getWindowManager().openWindow(dialog, {
+      message: (new OO.ui.FieldLayout(
+        new OO.ui.MultilineTextInputWidget({
+          value: text,
+          rows: 20,
+        }),
+        {
+          align: 'top',
+          label: cd.s('rd-intro'),
+        }
+      )).$element,
+      actions: [
+        {
+          label: cd.s('rd-close'),
+          action: 'close',
+        },
+      ],
+      size: 'large',
+    });
   },
 
   /**
@@ -409,13 +437,69 @@ const CommentFormStatic = {
         .save()
         .get(mw.config.get('wgPageName'));
       if (data?.commentForms) {
-        this.restoreFromStorage(data);
+        this.restoreSessionFromStorage(data);
       }
     } else {
-      this.restoreDirectly();
+      this.restoreSessionDirectly();
     }
     this.saveSession();
   },
-};
 
-export default CommentFormStatic;
+  /**
+   * _For internal use._ Add buttons and connect to existing ones, attach event handlers, restore
+   * the previous session, etc.
+   *
+   * @param {import('./BootProcess').default} bootProcess
+   */
+  setup(bootProcess) {
+    this.restoreSession(
+      bootProcess.isFirstRun() ||
+      bootProcess.passedData.isPageReloadedExternally
+    );
+
+    this.maybeAddAddSectionForm(bootProcess.hideDtNewTopicForm());
+
+    if (bootProcess.isFirstRun()) {
+      this.configureClosePageConfirmation();
+    }
+  },
+
+  /**
+   * Add an "Add section" form or not depending on the URL.
+   *
+   * @param {object} dtNewTopicFormData
+   * @private
+   */
+  maybeAddAddSectionForm(dtNewTopicFormData) {
+    // May crash if the current URL contains undecodable "%" in the fragment,
+    // https://phabricator.wikimedia.org/T207365.
+    const { searchParams } = new URL(location.href);
+
+    // &action=edit&section=new when DT's New Topic Tool is enabled.
+    if (
+      searchParams.get('section') === 'new' ||
+      Number(searchParams.get('cdaddtopic')) ||
+      dtNewTopicFormData
+    ) {
+      this.createAddSectionForm(undefined, undefined, dtNewTopicFormData);
+    }
+  },
+
+  /**
+   * _For internal use._ Add a condition to show a confirmation when trying to close the page with
+   * active comment forms on it.
+   */
+  configureClosePageConfirmation() {
+    const alwaysConfirmLeavingPage = (
+      mw.user.options.get('editondblclick') ||
+      mw.user.options.get('editsectiononrightclick')
+    );
+    controller.addPreventUnloadCondition('commentForms', () => {
+      this.saveSession(true);
+      return (
+        mw.user.options.get('useeditwarning') &&
+        (this.getLastActiveAltered() || (alwaysConfirmLeavingPage && this.getCount()))
+      );
+    });
+  },
+};

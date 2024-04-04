@@ -3,7 +3,7 @@
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/TreeWalker TreeWalker web API} for the
  * normal and worker contexts.
  */
-export default class TreeWalker {
+class TreeWalker {
   /**
    * Create a tree walker.
    *
@@ -146,3 +146,5 @@ export default class TreeWalker {
     return node;
   }
 }
+
+export default TreeWalker;

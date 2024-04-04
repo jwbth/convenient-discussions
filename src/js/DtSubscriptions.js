@@ -1,10 +1,10 @@
 import Button from './Button';
 import CdError from './CdError';
-import SectionStatic from './SectionStatic';
 import Subscriptions from './Subscriptions';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
+import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
 import { handleApiReject, splitIntoBatches } from './utils-api';
@@ -13,7 +13,7 @@ import { spacesToUnderlines, unique } from './utils-general';
 /**
  * Class implementing DiscussionTools' topic subscriptions.
  */
-export default class DtSubscriptions extends Subscriptions {
+class DtSubscriptions extends Subscriptions {
   type = 'dt';
 
   /**
@@ -27,7 +27,7 @@ export default class DtSubscriptions extends Subscriptions {
     const title = spacesToUnderlines(mw.config.get('wgTitle'));
     this.pageSubscribeId ||= `p-topics-${cd.g.namespaceNumber}:${title}`;
     this.data = await this.getSubscriptions(
-      SectionStatic.getAll()
+      sectionRegistry.getAll()
         .filter((section) => section.subscribeId)
         .map((section) => section.subscribeId)
         .filter(unique)
@@ -220,3 +220,5 @@ export default class DtSubscriptions extends Subscriptions {
     });
   }
 }
+
+export default DtSubscriptions;

@@ -7,8 +7,10 @@ import { tweakUserOoUiClass } from './utils-ooui';
  *
  * @returns {Function}
  */
-export default class DivLabelWidget extends OO.ui.LabelWidget {
+class DivLabelWidget extends OO.ui.LabelWidget {
   static tagName = 'div';
 }
 
 tweakUserOoUiClass(DivLabelWidget);
+
+export default DivLabelWidget;

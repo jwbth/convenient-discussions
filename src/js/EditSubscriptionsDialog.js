@@ -12,7 +12,7 @@ import { tweakUserOoUiClass } from './utils-ooui';
  *
  * @augments ProcessDialog
  */
-export default class EditSubscriptionsDialog extends ProcessDialog {
+class EditSubscriptionsDialog extends ProcessDialog {
   static name = 'editSubscriptionsDialog';
   static title = cd.s('ewsd-title');
   static actions = [
@@ -279,3 +279,5 @@ export default class EditSubscriptionsDialog extends ProcessDialog {
 }
 
 tweakUserOoUiClass(EditSubscriptionsDialog);
+
+export default EditSubscriptionsDialog;

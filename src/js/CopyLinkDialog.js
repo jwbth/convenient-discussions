@@ -10,7 +10,7 @@ import { wrapHtml } from './utils-window';
  *
  * @augments external:OO.ui.MessageDialog
  */
-export default class CopyLinkDialog extends OO.ui.MessageDialog {
+class CopyLinkDialog extends OO.ui.MessageDialog {
   static name = 'copyLinkDialog';
   static actions = [
     {
@@ -281,3 +281,5 @@ export default class CopyLinkDialog extends OO.ui.MessageDialog {
 }
 
 tweakUserOoUiClass(CopyLinkDialog);
+
+export default CopyLinkDialog;

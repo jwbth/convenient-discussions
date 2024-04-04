@@ -4,7 +4,7 @@
  * @module convenientDiscussions
  */
 
-import CommentStatic from './CommentStatic';
+import Comment from './Comment';
 import cd from './cd';
 import controller from './controller';
 import debug from './debug';
@@ -187,14 +187,14 @@ Object.assign(cd, {
      * @function generateCommentId
      * @memberof convenientDiscussions.api
      */
-    generateCommentId: CommentStatic.generateId.bind(CommentStatic),
+    generateCommentId: Comment.generateId.bind(Comment),
 
     /**
-     * @see module:CommentStatic.parseId
+     * @see module:Comment.parseId
      * @function parseCommentId
      * @memberof convenientDiscussions.api
      */
-    parseCommentId: CommentStatic.parseId.bind(CommentStatic),
+    parseCommentId: Comment.parseId.bind(Comment),
 
     /**
      * @see module:util.buildEditSummary

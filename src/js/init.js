@@ -12,15 +12,15 @@ import digitsData from '../../data/digits.json';
 import languageFallbacksData from '../../data/languageFallbacks.json';
 
 import Comment from './Comment';
-import CommentFormStatic from './CommentFormStatic';
-import CommentStatic from './CommentStatic';
 import Section from './Section';
-import SectionStatic from './SectionStatic';
 import Thread from './Thread';
 import cd from './cd';
+import commentFormRegistry from './commentFormRegistry';
+import commentRegistry from './commentRegistry';
 import controller from './controller';
 import jqueryExtensions from './jqueryExtensions';
 import pageRegistry from './pageRegistry';
+import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import { processPage } from './updateChecker';
 import userRegistry from './userRegistry';
@@ -383,9 +383,9 @@ function patterns() {
   const pnieJoined = cd.g.popularNotInlineElements.join('|');
   cd.g.pniePattern = `(?:${pnieJoined})`;
 
-  cd.g.startsWithArticlePathRegexp = new RegExp(
+  cd.g.articlePathRegexp = new RegExp(
     '^' +
-    mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace('\\$1', '')
+    mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace('\\$1', '(.*)')
   );
   cd.g.startsWithScriptTitleRegexp = new RegExp(
     '^' +
@@ -766,47 +766,47 @@ export default {
     /* Some static methods for external use */
 
     /**
-     * @see module:CommentStatic.getById
+     * @see module:commentRegistry.getById
      * @function getCommentById
      * @memberof convenientDiscussions.api
      */
-    cd.api.getCommentById = CommentStatic.getById.bind(CommentStatic);
+    cd.api.getCommentById = commentRegistry.getById.bind(commentRegistry);
 
     /**
-     * @see module:CommentStatic.getByDtId
+     * @see module:commentRegistry.getByDtId
      * @function getCommentByDtId
      * @memberof convenientDiscussions.api
      */
-    cd.api.getCommentByDtId = CommentStatic.getByDtId.bind(CommentStatic);
+    cd.api.getCommentByDtId = commentRegistry.getByDtId.bind(commentRegistry);
 
     /**
-     * @see module:SectionStatic.getById
+     * @see module:sectionRegistry.getById
      * @function getSectionById
      * @memberof convenientDiscussions.api
      */
-    cd.api.getSectionById = SectionStatic.getById.bind(SectionStatic);
+    cd.api.getSectionById = sectionRegistry.getById.bind(sectionRegistry);
 
     /**
-     * @see module:SectionStatic.getByHeadline
+     * @see module:sectionRegistry.getByHeadline
      * @function getSectionsByHeadline
      * @memberof convenientDiscussions.api
      */
-    cd.api.getSectionsByHeadline = SectionStatic.getByHeadline.bind(SectionStatic);
+    cd.api.getSectionsByHeadline = sectionRegistry.getByHeadline.bind(sectionRegistry);
 
     /**
-     * @see module:CommentFormStatic.getLastActive
+     * @see module:commentFormRegistry.getLastActive
      * @function getLastActiveCommentForm
      * @memberof convenientDiscussions.api
      */
-    cd.api.getLastActiveCommentForm = CommentFormStatic.getLastActive.bind(CommentFormStatic);
+    cd.api.getLastActiveCommentForm = commentFormRegistry.getLastActive.bind(commentFormRegistry);
 
     /**
-     * @see module:CommentFormStatic.getLastActiveAltered
+     * @see module:commentFormRegistry.getLastActiveAltered
      * @function getLastActiveAlteredCommentForm
      * @memberof convenientDiscussions.api
      */
-    cd.api.getLastActiveAlteredCommentForm = CommentFormStatic.getLastActiveAltered
-      .bind(CommentFormStatic);
+    cd.api.getLastActiveAlteredCommentForm = commentFormRegistry.getLastActiveAltered
+      .bind(commentFormRegistry);
 
     /**
      * @see module:controller.reload
@@ -981,9 +981,9 @@ export default {
      *
      * @name commentForms
      * @type {import('./CommentForm').default[]}
-     * @see module:CommentFormStatic.getAll
+     * @see module:commentFormRegistry.getAll
      * @memberof convenientDiscussions
      */
-    cd.commentForms = CommentFormStatic.getAll();
+    cd.commentForms = commentFormRegistry.getAll();
   },
 };

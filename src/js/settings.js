@@ -6,10 +6,12 @@
 
 import TextMasker from './TextMasker';
 import cd from './cd';
+import controller from './controller';
 import pageRegistry from './pageRegistry';
 import userRegistry from './userRegistry';
 import { getUserInfo, saveGlobalOption, saveLocalOption } from './utils-api';
-import { areObjectsEqual, defined, ucFirst } from './utils-general';
+import { areObjectsEqual, defined, definedAndNotNull, ucFirst } from './utils-general';
+import { showConfirmDialog } from './utils-ooui';
 import { formatDateImproved, formatDateNative, formatDateRelative } from './utils-timestamp';
 import { wrapHtml } from './utils-window';
 
@@ -619,5 +621,151 @@ export default {
     const settings = await this.load();
     settings[key] = value;
     return this.save(settings);
+  },
+
+  /**
+   * Show a popup asking the user if they want to enable the new comment formatting. Save the
+   * settings after they make the choice.
+   *
+   * @returns {Promise.<boolean>} Did the user enable comment reformatting.
+   */
+  async maybeSuggestEnableCommentReformatting() {
+    if (this.get('reformatComments') !== null) {
+      return false;
+    }
+
+    const { reformatComments } = await this.load({ reuse: true });
+    if (definedAndNotNull(reformatComments)) {
+      return false;
+    }
+
+    const actions = [
+      {
+        label: cd.s('rc-suggestion-yes'),
+        action: 'accept',
+        flags: 'primary',
+      },
+      {
+        label: cd.s('rc-suggestion-no'),
+        action: 'reject',
+      },
+    ];
+    const action = await showConfirmDialog(
+      $('<div>')
+        .append(
+          $('<img>')
+            .attr('width', 626)
+            .attr('height', 67)
+            .attr('src', '//upload.wikimedia.org/wikipedia/commons/0/08/Convenient_Discussions_comment_-_old_format.png')
+            .addClass('cd-rcnotice-img'),
+          $('<img>')
+            .attr('width', 30)
+            .attr('height', 30)
+            .attr('src', "data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.58 8.59L11 14.17L11 2L9 2L9 14.17L3.41 8.59L2 10L10 18L18 10L16.58 8.59Z' fill='black'/%3E%3C/svg%3E")
+            .addClass('cd-rcnotice-img cd-rcnotice-arrow'),
+          $('<img>')
+            .attr('width', 626)
+            .attr('height', 118)
+            .attr('src', '//upload.wikimedia.org/wikipedia/commons/d/da/Convenient_Discussions_comment_-_new_format.png')
+            .addClass('cd-rcnotice-img'),
+          $('<div>')
+            .addClass('cd-rcnotice-text')
+            .append(
+              wrapHtml(cd.sParse('rc-suggestion'), {
+                callbacks: {
+                  'cd-notification-settings': () => {
+                    controller.showSettingsDialog();
+                  },
+                },
+              }).children()
+            ),
+        )
+        .children(),
+      {
+        size: 'large',
+        actions,
+      }
+    );
+
+    // Escape key press
+    if (!action) {
+      return false;
+    }
+
+    try {
+      const reformatComments = action === 'accept';
+      await this.saveSettingOnTheFly('reformatComments', reformatComments);
+      return reformatComments;
+    } catch (e) {
+      mw.notify(cd.s('error-settings-save'), { type: 'error' });
+      console.warn(e);
+    }
+  },
+
+  /**
+   * Show a popup asking the user if they want to receive desktop notifications, or ask for a
+   * permission if it has not been granted but the user has desktop notifications enabled (for
+   * example, if they are using a browser different from where they have previously used). Save the
+   * settings after they make the choice.
+   */
+  async maybeConfirmDesktopNotifications() {
+    if (typeof Notification === 'undefined') return;
+
+    if (this.get('desktopNotifications') === 'unknown' && Notification.permission !== 'denied') {
+      // Avoid using the setting kept in `mw.user.options`, as it may be outdated. Also don't reuse
+      // the previous settings request, as the settings might be changed in
+      // `this.maybeSuggestEnableCommentReformatting()`.
+      const { desktopNotifications } = await this.load();
+      if (['unknown', undefined].includes(desktopNotifications)) {
+        const actions = [
+          {
+            label: cd.s('dn-confirm-yes'),
+            action: 'accept',
+            flags: 'primary',
+          },
+          {
+            label: cd.s('dn-confirm-no'),
+            action: 'reject',
+          },
+        ];
+        const action = await showConfirmDialog(cd.s('dn-confirm'), {
+          size: 'medium',
+          actions,
+        });
+        let promise;
+        if (action === 'accept') {
+          if (Notification.permission === 'default') {
+            OO.ui.alert(cd.s('dn-grantpermission'));
+            Notification.requestPermission((permission) => {
+              if (permission === 'granted') {
+                promise = this.saveSettingOnTheFly('desktopNotifications', 'all');
+              } else if (permission === 'denied') {
+                promise = this.saveSettingOnTheFly('desktopNotifications', 'none');
+              }
+            });
+          } else if (Notification.permission === 'granted') {
+            promise = this.saveSettingOnTheFly('desktopNotifications', 'all');
+          }
+        } else if (action === 'reject') {
+          promise = this.saveSettingOnTheFly('desktopNotifications', 'none');
+        }
+        if (promise) {
+          try {
+            await promise;
+          } catch (e) {
+            mw.notify(cd.s('error-settings-save'), { type: 'error' })
+            console.warn(e);
+          }
+        }
+      }
+    }
+
+    if (
+      !['unknown', 'none'].includes(this.get('desktopNotifications')) &&
+      Notification.permission === 'default'
+    ) {
+      await OO.ui.alert(cd.s('dn-grantpermission-again'), { title: cd.s('script-name') });
+      Notification.requestPermission();
+    }
   },
 };

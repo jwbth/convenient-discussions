@@ -5,10 +5,10 @@ import LiveTimestamp from './LiveTimestamp';
 import PrototypeRegistry from './PrototypeRegistry';
 import SectionSkeleton from './SectionSkeleton';
 import SectionSource from './SectionSource';
-import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
+import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import toc from './toc';
 import userRegistry from './userRegistry';
@@ -430,8 +430,8 @@ class Section extends SectionSkeleton {
 
     // May mean complex formatting, so we better keep out.
     const doesNestingLevelMatch = (
-      !SectionStatic.getByIndex(this.index + 1) ||
-      SectionStatic.getByIndex(this.index + 1).headingNestingLevel === this.headingNestingLevel
+      !sectionRegistry.getByIndex(this.index + 1) ||
+      sectionRegistry.getByIndex(this.index + 1).headingNestingLevel === this.headingNestingLevel
     );
 
     // https://ru.wikipedia.org/wiki/Project:Запросы_к_администраторам/Быстрые
@@ -457,7 +457,7 @@ class Section extends SectionSkeleton {
       this.comments[0].level === 0 &&
       this.comments.every((comment) => !comment.isActionable)
     );
-    const nextSameLevelSection = SectionStatic.getAll()
+    const nextSameLevelSection = sectionRegistry.getAll()
       .slice(this.index + 1)
       .find((otherSection) => otherSection.level === this.level);
 
@@ -980,7 +980,7 @@ class Section extends SectionSkeleton {
 
     if (this.level !== 2) return;
 
-    const subscribeId = SectionStatic.getDtSubscribableThreads()
+    const subscribeId = sectionRegistry.getDtSubscribableThreads()
       ?.find((thread) => (
         thread.id === this.hElement.dataset.mwThreadId ||
         thread.id === this.headlineElement.dataset.mwThreadId
@@ -1108,7 +1108,7 @@ class Section extends SectionSkeleton {
     // That's a mechanism mainly for legacy subscriptions but can be used for DT subscriptions as
     // well, for which `sections` will have more than one section when there is more than one
     // section created by a certain user at a certain moment in time.
-    const sections = SectionStatic.getBySubscribeId(this.subscribeId);
+    const sections = sectionRegistry.getBySubscribeId(this.subscribeId);
     let finallyCallback;
     if (mode !== 'silent') {
       const buttons = sections.map((section) => section.actions.subscribeButton).filter(defined);
@@ -1122,19 +1122,22 @@ class Section extends SectionSkeleton {
       };
     }
 
-    const unsubscribeHeadline = renamedFrom && !SectionStatic.getBySubscribeId(renamedFrom).length ?
-      renamedFrom :
-      undefined;
-    this.subscriptions.subscribe(this.subscribeId, this.id, unsubscribeHeadline, !!mode)
+    this.subscriptions.subscribe(
+      this.subscribeId,
+      this.id,
+      // Unsubscribe from
+      renamedFrom && !sectionRegistry.getBySubscribeId(renamedFrom).length ?
+        renamedFrom :
+        undefined,
+      !!mode
+    )
       .then(() => {
         // TODO: this condition seems a bad idea because when we could update the subscriptions but
         // couldn't reload the page, the UI becomes unsynchronized. But there is also no UI
         // flickering when posting. Maybe update the UI in case the page reload was unsuccessful?
         if (mode !== 'silent') {
           sections.forEach((section) => {
-            section.subscriptionState = true;
-            section.updateSubscribeButtonState();
-            section.updateTocLink();
+            section.changeSubscriptionState(true);
           });
         }
       })
@@ -1151,7 +1154,7 @@ class Section extends SectionSkeleton {
    *   an error, it will be displayed though.
    */
   unsubscribe(mode) {
-    const sections = SectionStatic.getBySubscribeId(this.subscribeId);
+    const sections = sectionRegistry.getBySubscribeId(this.subscribeId);
     let finallyCallback;
     if (mode !== 'silent') {
       const buttons = sections.map((section) => section.actions.subscribeButton).filter(defined);
@@ -1169,13 +1172,24 @@ class Section extends SectionSkeleton {
       .then(() => {
         if (mode !== 'silent') {
           sections.forEach((section) => {
-            section.subscriptionState = false;
-            section.updateSubscribeButtonState();
-            section.updateTocLink();
+            section.changeSubscriptionState(false);
           });
         }
       })
       .then(finallyCallback, finallyCallback);
+  }
+
+  /**
+   * Change the subscription state after actually subscribing/unsubscribing and change the related
+   * DOM.
+   *
+   * @param {boolean} state
+   * @private
+   */
+  changeSubscriptionState(state) {
+    this.subscriptionState = state;
+    this.updateSubscribeButtonState();
+    this.updateTocLink();
   }
 
   /**
@@ -1202,7 +1216,7 @@ class Section extends SectionSkeleton {
       (s, num) => currentCommentData.hiddenElementsData[num - 1].html
     );
     const oldSectionDummy = { headlineElement: $('<span>').html($(oldHeadingHtml).html())[0] };
-    SectionStatic.prototype.parseHeadline.call(oldSectionDummy);
+    sectionRegistry.prototype.parseHeadline.call(oldSectionDummy);
     if (
       this.headline &&
       oldSectionDummy.headline !== this.headline &&
@@ -1477,7 +1491,7 @@ class Section extends SectionSkeleton {
     return this.level <= 2 ?
       defaultValue :
       (
-        SectionStatic.getAll()
+        sectionRegistry.getAll()
           .slice(0, this.index)
           .reverse()
           .find((section) => section.level === 2) ||
@@ -1495,7 +1509,7 @@ class Section extends SectionSkeleton {
   getChildren(indirect = false) {
     const children = [];
     let haveMetDirect = false;
-    SectionStatic.getAll()
+    sectionRegistry.getAll()
       .slice(this.index + 1)
       .some((section) => {
         if (section.level > this.level) {
@@ -1618,7 +1632,7 @@ class Section extends SectionSkeleton {
   ensureSubscribeIdPresent(timestamp) {
     if (!this.useTopicSubscription || this.subscribeId) return;
 
-    this.subscribeId = SectionStatic.generateDtSubscriptionId(
+    this.subscribeId = sectionRegistry.generateDtSubscriptionId(
       userRegistry.getCurrent().getName(),
       timestamp
     );
@@ -1666,12 +1680,41 @@ class Section extends SectionSkeleton {
     this.elements ||= getRangeContents(
       this.headingElement,
       this.findRealLastElement(),
-      controller.getRootElement()
+      controller.rootElement
     );
     this.isHidden = !show;
     this.elements.forEach((el) => {
       el.classList.toggle('cd-section-hidden', !show);
     });
+  }
+
+  getCommentAboveReply(commentForm) {
+    return sectionRegistry.getAll()
+      .slice(
+        0,
+        (
+          // Section above reply
+          (commentForm.getMode() === 'addSubsection' && this.getChildren(true).slice(-1)[0]) || this
+        ).index + 1
+      )
+      .reverse()
+      .reduce((comment, section) => (
+        comment ||
+        section.commentsInFirstChunk[section.commentsInFirstChunk.length - 1]
+      ));
+  }
+
+  findNewSelf() {
+    return sectionRegistry.search({
+      headline: this.headline,
+      oldestCommentId: this.oldestComment?.id,
+      index: this.index,
+      id: this.id,
+
+      // We cache ancestors when saving the session, so this call will return the right value,
+      // despite the fact that `sectionRegistry.items` has already changed.
+      ancestors: this.getAncestors().map((section) => section.headline),
+    })?.section || null;
   }
 
   /**

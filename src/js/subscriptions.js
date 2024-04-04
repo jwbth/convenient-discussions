@@ -10,7 +10,7 @@ import { wrapHtml } from './utils-window';
  *
  * @module subscriptions
  */
-export default class Subscriptions {
+class Subscriptions {
   /**
    * Create a subscriptions instance. It is supposed to be used as a singleton returned by
    * {@link controller.getSubscriptionsInstance}.
@@ -183,3 +183,5 @@ export default class Subscriptions {
     return this.type;
   }
 }
+
+export default Subscriptions;

@@ -5,14 +5,14 @@
  */
 
 import CdError from './CdError';
-import CommentFormStatic from './CommentFormStatic';
-import CommentStatic from './CommentStatic';
-import SectionStatic from './SectionStatic';
 import StorageItem from './StorageItem';
 import Thread from './Thread';
 import cd from './cd';
+import commentFormRegistry from './commentFormRegistry';
+import commentRegistry from './commentRegistry';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
+import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import toc from './toc';
 import userRegistry from './userRegistry';
@@ -156,7 +156,7 @@ async function maybeProcessRevisionsAtLoad(previousVisitTime, submittedCommentId
  */
 function mapSections(otherSections) {
   // Reset values set in the previous run.
-  SectionStatic.getAll().forEach((section) => {
+  sectionRegistry.getAll().forEach((section) => {
     delete section.match;
     delete section.matchScore;
   });
@@ -165,7 +165,7 @@ function mapSections(otherSections) {
   });
 
   otherSections.forEach((otherSection) => {
-    const { section, score } = SectionStatic.search(otherSection) || {};
+    const { section, score } = sectionRegistry.search(otherSection) || {};
     if (section && (!section.match || score > section.matchScore)) {
       if (section.match) {
         delete section.match.match;
@@ -176,7 +176,7 @@ function mapSections(otherSections) {
     }
   });
 
-  SectionStatic.getAll().forEach((section) => {
+  sectionRegistry.getAll().forEach((section) => {
     section.liveSectionNumber = section.match?.sectionNumber ?? null;
     section.liveSectionNumberRevisionId = lastCheckedRevisionId;
     delete section.presumedCode;
@@ -417,7 +417,7 @@ function checkForChangesSincePreviousVisit(currentComments, submittedCommentId) 
         hasCommentChanged(oldComment, currentComment) &&
         seenHtmlToCompare !== currentComment.htmlToCompare
       ) {
-        const comment = CommentStatic.getById(currentComment.id);
+        const comment = commentRegistry.getById(currentComment.id);
         if (!comment) return;
 
         // Different indexes to supply one object both to the event and Comment#markAsChanged.
@@ -480,7 +480,7 @@ function checkForNewChanges(currentComments) {
     };
 
     if (newComment) {
-      comment = CommentStatic.getById(currentComment.id);
+      comment = commentRegistry.getById(currentComment.id);
       if (!comment) return;
 
       if (comment.isDeleted) {
@@ -508,7 +508,7 @@ function checkForNewChanges(currentComments) {
         events.unchanged = true;
       }
     } else if (!currentComment.hasPoorMatch) {
-      comment = CommentStatic.getById(currentComment.id);
+      comment = commentRegistry.getById(currentComment.id);
       if (!comment || comment.isDeleted) return;
 
       comment.markAsChanged('deleted');
@@ -524,9 +524,9 @@ function checkForNewChanges(currentComments) {
   if (isChangeMarkUpdated) {
     // If the layers of deleted comments have been configured in `Comment#unmarkAsChanged`, they
     // will prevent layers before them from being updated due to the "stop at the first three
-    // unmoved comments" optimization in `CommentStatic.maybeRedrawLayers`. So we just do the whole
-    // job here.
-    CommentStatic.maybeRedrawLayers(false, true);
+    // unmoved comments" optimization in `commentRegistry.maybeRedrawLayers`. So we just do the
+    // whole job here.
+    commentRegistry.maybeRedrawLayers(false, true);
 
     // Thread start and end elements may be replaced, so we need to restart threads.
     Thread.init(false);
@@ -563,7 +563,7 @@ function isPageStillAtRevision(revisionId) {
   return (
     revisionId === mw.config.get('wgRevisionId') &&
     !controller.isBooting() &&
-    !CommentFormStatic.getAll().some((commentForm) => commentForm.isBeingSubmitted())
+    !commentFormRegistry.getAll().some((commentForm) => commentForm.isBeingSubmitted())
   );
 }
 
@@ -595,7 +595,7 @@ async function processComments(comments, currentComments, currentRevisionId) {
       if (comment.parent) {
         const parentMatch = currentComments.find((mcc) => mcc.match === comment.parent);
         if (parentMatch?.id) {
-          newComment.parentMatch = CommentStatic.getById(parentMatch.id);
+          newComment.parentMatch = commentRegistry.getById(parentMatch.id);
         }
       }
       return newComment;

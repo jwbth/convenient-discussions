@@ -1,7 +1,7 @@
 /**
- * Static {@link Section section} methods and properties.
+ * Singleton storing data about sections on the page and managing them.
  *
- * @module SectionStatic
+ * @module sectionRegistry
  */
 
 import cd from './cd';
@@ -26,17 +26,16 @@ export default {
    * @returns {object[]}
    */
   getDtSubscribableThreads() {
-    if (!this.dtSubscribableThreads) {
-      this.dtSubscribableThreads = mw.config.get('wgDiscussionToolsPageThreads')
-        ?.concat(
-          flat(
-            mw.config.get('wgDiscussionToolsPageThreads')
-              .filter((thread) => thread.headingLevel === 1)
-              .map((thread) => thread.replies)
-          )
+    this.dtSubscribableThreads ||= mw.config.get('wgDiscussionToolsPageThreads')
+      ?.concat(
+        flat(
+          mw.config.get('wgDiscussionToolsPageThreads')
+            .filter((thread) => thread.headingLevel === 1)
+            .map((thread) => thread.replies)
         )
-        .filter((thread) => thread.headingLevel === 2);
-    }
+      )
+      .filter((thread) => thread.headingLevel === 2);
+
     return this.dtSubscribableThreads;
   },
 

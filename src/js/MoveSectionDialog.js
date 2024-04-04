@@ -15,7 +15,7 @@ import { wrapHtml } from './utils-window';
  *
  * @augments ProcessDialog
  */
-export default class MoveSectionDialog extends ProcessDialog {
+class MoveSectionDialog extends ProcessDialog {
   static name = 'moveSectionDialog';
   static title = cd.s('msd-title');
   static actions = [
@@ -581,3 +581,5 @@ export default class MoveSectionDialog extends ProcessDialog {
 }
 
 tweakUserOoUiClass(MoveSectionDialog);
+
+export default MoveSectionDialog;

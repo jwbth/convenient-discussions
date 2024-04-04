@@ -8,27 +8,30 @@
 import Autocomplete from './Autocomplete';
 import BootProcess from './BootProcess';
 import Comment from './Comment';
-import CommentFormStatic from './CommentFormStatic';
-import CommentStatic from './CommentStatic';
+import CommentForm from './CommentForm';
 import DtSubscriptions from './DtSubscriptions';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import LegacySubscriptions from './LegacySubscriptions';
 import LiveTimestamp from './LiveTimestamp';
-import SectionStatic from './SectionStatic';
+import Parser from './Parser';
 import Thread from './Thread';
 import addCommentLinks from './addCommentLinks';
 import cd from './cd';
+import commentFormRegistry from './commentFormRegistry';
+import commentRegistry from './commentRegistry';
 import debug from './debug';
 import init from './init';
 import navPanel from './navPanel';
 import notifications from './notifications';
 import pageNav from './pageNav';
 import pageRegistry from './pageRegistry';
+import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import toc from './toc';
+import userRegistry from './userRegistry';
 import { getUserInfo } from './utils-api';
 import { defined, definedAndNotNull, getLastArrayElementOrSelf, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
-import { copyText, getExtendedRect, getVisibilityByRects, isCmdModifierPressed, isInputFocused, keyCombination, skin$, wrapHtml } from './utils-window';
+import { copyText, getExtendedRect, getFooter, getVisibilityByRects, isCmdModifierPressed, isInputFocused, keyCombination, skin$, wrapHtml } from './utils-window';
 import Worker from './worker-gate';
 
 export default {
@@ -56,15 +59,15 @@ export default {
       $(document.body).addClass('cd-mobile');
     }
 
-    // Not constants: go() may run a second time, see addFooterLink().
+    // Not constants: `go()` may run a second time, see `addFooterLink()`.
     const isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
     const isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);
 
-    // See controller.isDefinitelyTalkPage
+    // See `controller.isDefinitelyTalkPage`
     this.definitelyTalkPage = Boolean(
       isEnabledInQuery ||
 
-      // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
+      // `.cd-talkPage` is used as a last resort way to make CD parse the page, as opposed to using
       // the list of supported namespaces and page white/black list in the configuration. With this
       // method, there won't be "comment" links for edits on pages that list revisions such as the
       // watchlist.
@@ -76,7 +79,7 @@ export default {
       )
     );
 
-    // See controller.isArticlePageTalkPage
+    // See `controller.isArticlePageTalkPage()`
     this.articlePageTalkPage = (
       (!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
       !this.$content.find('.cd-notTalkPage').length &&
@@ -86,7 +89,7 @@ export default {
       !(typeof cdOnlyRunByFooterLink !== 'undefined' && window.cdOnlyRunByFooterLink)
     );
 
-    // See controller.isDiffPage
+    // See `controller.isDiffPage()`
     this.diffPage = /[?&]diff=[^&]/.test(location.search);
 
     this.talkPage = Boolean(
@@ -94,22 +97,25 @@ export default {
       !isDisabledInQuery &&
       (isEnabledInQuery || this.articlePageTalkPage)
     );
+
+    this.loadToTalkPage();
+    this.loadToCommentLinksPage();
   },
 
   /**
    * Setup the controller for use in the current boot process. (Executed at every page reload.)
    *
-   * @param {string} htmlToLayOut HTML to update the page with.
+   * @param {string} pageHtml HTML to update the page with.
    */
-  setup(htmlToLayOut) {
+  setup(pageHtml) {
     // RevisionSlider replaces the `#mw-content-text` element.
     if (!this.$content[0]?.parentNode) {
       this.$content = $('#mw-content-text');
     }
 
-    if (htmlToLayOut) {
+    if (pageHtml) {
       const div = document.createElement('div');
-      div.innerHTML = htmlToLayOut;
+      div.innerHTML = pageHtml;
       this.rootElement = div.firstChild;
       this.$root = $(this.rootElement);
     } else {
@@ -125,7 +131,7 @@ export default {
 
     // Add the class immediately to prevent the issue when any unexpected error prevents this from
     // being executed and then `this.handleWikipageContentHookFirings()` is called with
-    // ``#mw-content-text`` element for some reason, and the page goes into an infinite reloading
+    // `#mw-content-text` element for some reason, and the page goes into an infinite reloading
     // loop.
     this.$root.addClass('cd-parse-started');
   },
@@ -139,8 +145,8 @@ export default {
     this.cleanUpUrlAndDom();
     this.mutationObserver?.disconnect();
 
-    CommentStatic.reset();
-    SectionStatic.reset();
+    commentRegistry.reset();
+    sectionRegistry.reset();
 
     this.content = {};
 
@@ -399,8 +405,8 @@ export default {
    * @returns {boolean}
    */
   isCurrentRevision() {
-    // RevisionSlider may show a revision newer than the revision in `wgCurRevisionId` (when
-    // navigating forward, at least twice, from a revision older than the revision in
+    // RevisionSlider may show a revision newer than the revision in `wgCurRevisionId` due to a bug
+    // (when navigating forward, at least twice, from a revision older than the revision in
     // `wgCurRevisionId` after some revisions were added). Unfortunately, it doesn't update the
     // `wgCurRevisionId` value.
     return mw.config.get('wgRevisionId') >= mw.config.get('wgCurRevisionId');
@@ -417,12 +423,9 @@ export default {
    * @param {?object} [switchToAbsolute=null] If an object with the `saveTocHeight` property and the
    *   viewport is above the bottom of the table of contents, then use
    *   {@link module:controller.saveScrollPosition} (this allows for better precision).
+   * @param {number} scrollY Cached horizontal scroll value used to avoid reflow.
    */
-  saveRelativeScrollPosition(switchToAbsolute = null) {
-    // Look for a cached value to avoid reflow.
-    const scrollY = this.bootProcess.passedData.scrollY || window.scrollY;
-    delete this.bootProcess.passedData.scrollY;
-
+  saveRelativeScrollPosition(switchToAbsolute = null, scrollY = window.scrollY) {
     // The viewport has the TOC bottom or is above it.
     if (
       switchToAbsolute &&
@@ -515,7 +518,7 @@ export default {
           // In a collapsed thread?
           const closestHidden = this.scrollData.element.closest('.cd-hidden');
           if (closestHidden) {
-            CommentStatic.getAll()
+            commentRegistry.getAll()
               .map((comment) => comment.thread)
               .filter(defined)
               .filter((thread) => thread.isCollapsed)
@@ -762,11 +765,11 @@ export default {
   addPreventUnloadCondition(name, condition) {
     this.beforeUnloadHandlers ||= {};
     this.beforeUnloadHandlers[name] = (e) => {
-      if (condition()) {
-        e.preventDefault();
-        e.returnValue = '';
-        return '';
-      }
+      if (!condition()) return;
+
+      e.preventDefault();
+      e.returnValue = '';
+      return '';
     };
     $(window).on('beforeunload', this.beforeUnloadHandlers[name]);
   },
@@ -777,10 +780,10 @@ export default {
    * @param {string} name
    */
   removePreventUnloadCondition(name) {
-    if (this.beforeUnloadHandlers[name]) {
-      $(window).off('beforeunload', this.beforeUnloadHandlers[name]);
-      delete this.beforeUnloadHandlers[name];
-    }
+    if (!this.beforeUnloadHandlers[name]) return;
+
+    $(window).off('beforeunload', this.beforeUnloadHandlers[name]);
+    delete this.beforeUnloadHandlers[name];
   },
 
   /**
@@ -793,7 +796,7 @@ export default {
 
     // Don't throttle. Without throttling, performance is generally OK, while the "frame rate" is
     // about 50 (so, the reaction time is about 20ms). Lower values would be less comfortable.
-    CommentStatic.highlightHovered(e);
+    commentRegistry.highlightHovered(e);
   },
 
   isObstructingElementHovered() {
@@ -812,7 +815,7 @@ export default {
           navPanel.$element?.[0],
           ...document.body.querySelectorAll('.oo-ui-popupWidget:not(.oo-ui-element-hidden)'),
           this.stickyHeader,
-          SectionStatic.getAll()
+          sectionRegistry.getAll()
             .map((section) => section.actions.moreMenuSelect?.getMenu())
             .find((menu) => menu?.isVisible())
             ?.$element[0],
@@ -837,10 +840,10 @@ export default {
     await sleep(cd.g.skin === 'vector-2022' ? 100 : 0);
 
     this.getContentColumnOffsets(true);
-    CommentStatic.maybeRedrawLayers(true);
+    commentRegistry.maybeRedrawLayers(true);
     Thread.updateLines();
     pageNav.updateWidth();
-    CommentFormStatic.adjustLabels();
+    commentFormRegistry.adjustLabels();
     this.handleScroll();
   },
 
@@ -859,8 +862,8 @@ export default {
       // Q
       (keyCombination(e, 81) && !isInputFocused())
     ) {
-      const lastActiveCommentForm = CommentFormStatic.getLastActive();
-      const comment = CommentStatic.getSelectedComment();
+      const lastActiveCommentForm = commentFormRegistry.getLastActive();
+      const comment = commentRegistry.getSelectedComment();
       if (lastActiveCommentForm) {
         e.preventDefault();
         lastActiveCommentForm.quote(isCmdModifierPressed(e), comment);
@@ -920,15 +923,15 @@ export default {
       if (this.isAutoScrolling()) return;
 
       if (this.isPageActive()) {
-        CommentStatic.registerSeen();
+        commentRegistry.registerSeen();
         navPanel.updateCommentFormButton();
       }
       pageNav.update();
 
       // When the document has no focus, all sections are visible (see
-      // `SectionStatic.maybeUnhideAll()`).
+      // `sectionRegistry.maybeUnhideAll()`).
       if (document.hasFocus()) {
-        SectionStatic.maybeUpdateVisibility();
+        sectionRegistry.maybeUpdateVisibility();
       }
     }, 300);
     this.mouseMoveBlocked = true;
@@ -954,7 +957,7 @@ export default {
    */
   handlePopState() {
     let fragment = location.hash.slice(1);
-    if (CommentStatic.isAnyId(fragment)) {
+    if (Comment.isAnyId(fragment)) {
       // Don't jump to the comment if the user pressed "Back"/"Forward" in the browser or if
       // `history.pushState()` is called from `Comment#scrollTo()` (after clicks on added (gray)
       // items in the TOC). A marginal state of this happening is when a page with a comment ID in
@@ -967,7 +970,7 @@ export default {
         console.error(e);
         return;
       }
-      CommentStatic.getByAnyId(fragment, true)?.scrollTo();
+      commentRegistry.getByAnyId(fragment, true)?.scrollTo();
     }
 
     // Make sure the title has no incorrect new comment count when the user presses the "Back"
@@ -980,7 +983,7 @@ export default {
    */
   handleSelectionChange() {
     this.throttledHandleSelectionChange ||= OO.ui.throttle(
-      CommentStatic.getSelectedComment.bind(CommentStatic),
+      commentRegistry.getSelectedComment.bind(commentRegistry),
       200
     );
     this.throttledHandleSelectionChange();
@@ -994,7 +997,7 @@ export default {
 
     const floatingRects = this.getFloatingElements().map(getExtendedRect);
 
-    CommentStatic.maybeRedrawLayers(false, false, floatingRects);
+    commentRegistry.maybeRedrawLayers(false, false, floatingRects);
 
     const updateThreadLines = () => {
       Thread.updateLines(floatingRects);
@@ -1015,11 +1018,11 @@ export default {
   },
 
   /**
-   * Handle a click on an "Add topic" button.
+   * Handle a click on an "Add topic" button excluding those added by the script.
    *
    * @param {Event} e
    */
-  handleAddTopicButtonClick(e) {
+  handleWildAddTopicButtonClick(e) {
     if (e.ctrlKey || e.shiftKey || e.metaKey) return;
 
     const $button = $(e.currentTarget);
@@ -1052,7 +1055,7 @@ export default {
     }
 
     e.preventDefault();
-    CommentFormStatic.createAddSectionForm(preloadConfig, newTopicOnTop);
+    commentFormRegistry.createAddSectionForm(preloadConfig, newTopicOnTop);
   },
 
   /**
@@ -1281,7 +1284,7 @@ export default {
     // dysfunctional page.
 
     // Stop all animations, clear all timeouts.
-    CommentStatic.getAll().forEach((comment) => {
+    commentRegistry.getAll().forEach((comment) => {
       comment.$animatedBackground?.add(comment.$marker).stop(true, true);
     });
 
@@ -1289,13 +1292,13 @@ export default {
     // anything if we remove the layers containers. And we better do so to avoid comment layers
     // hanging around without their owner comments.
     if (bootProcess.passedData.isPageReloadedExternally) {
-      CommentStatic.resetLayers();
+      commentRegistry.resetLayers();
     }
 
-    // A check in light of the existence of RevisionSlider.
+    // A check in light of the existence of RevisionSlider
     if (this.isCurrentRevision()) {
-      // In case checkboxes were changed programmatically.
-      CommentFormStatic.saveSession();
+      // In case checkboxes were changed programmatically
+      commentFormRegistry.saveSession();
     }
 
     if (!bootProcess.passedData.commentIds && !bootProcess.passedData.sectionId) {
@@ -1343,7 +1346,7 @@ export default {
 
     // Get IDs of unseen comments. This is used to arrange that they will still be there after
     // replying on or refreshing the page.
-    const unseenCommentIds = CommentStatic.getAll()
+    const unseenCommentIds = commentRegistry.getAll()
       .filter((comment) => comment.isSeen === false)
       .map((comment) => comment.id);
     bootProcess.passedData.unseenCommentIds = unseenCommentIds;
@@ -1352,7 +1355,7 @@ export default {
     // current page state.
     this.bootProcess = bootProcess;
 
-    CommentFormStatic.detach();
+    commentFormRegistry.detach();
 
     // Just submitted form. Forms that should stay are detached above.
     $('.cd-commentForm-addSection').remove();
@@ -1360,7 +1363,7 @@ export default {
     LiveTimestamp.reset();
     this.reset();
     this.$addSectionButtonContainer?.remove();
-    CommentStatic.resetLayers();
+    commentRegistry.resetLayers();
 
     debug.stopTimer('getting HTML');
 
@@ -1374,12 +1377,155 @@ export default {
   },
 
   /**
-   * _For internal use._ Handle firings of the hook
+   * _For internal use._ Update the page's HTML
+   */
+  updatePageContents() {
+    this.$content
+      .children('.mw-parser-output')
+        .remove()
+      .end()
+      .prepend(this.$root);
+  },
+
+  /**
+   * Highlight mentions of the current user.
+   *
+   * @param {external:jQuery} $content
+   * @private
+   */
+  highlightMentions($content) {
+    if (!$content.is('#mw-content-text, .cd-comment-part')) return;
+
+    const currentUserName = userRegistry.getCurrent().getName();
+    const excludeSelector = [
+      settings.get('reformatComments') ?
+        'cd-comment-author' :
+        'cd-signature'
+    ]
+      .concat(cd.config.noSignatureClasses)
+      .map((name) => `.${name}`)
+      .join(', ');
+    $content
+      .find(
+        $content.hasClass('cd-comment-part') ?
+          `a[title$=":${currentUserName}"], a[title*=":${currentUserName} ("]` :
+          `.cd-comment-part a[title$=":${currentUserName}"], .cd-comment-part a[title*=":${currentUserName} ("]`
+      )
+      .filter(function () {
+        return (
+          cd.g.userLinkRegexp.test(this.title) &&
+          !this.closest(excludeSelector) &&
+          Parser.processLink(this)?.userName === userRegistry.getCurrent().getName()
+        );
+      })
+      .each((i, link) => {
+        link.classList.add('cd-currentUserLink');
+      });
+  },
+
+  /**
+   * Add event listeners to `window`, `document`, hooks.
+   *
+   * @private
+   */
+  addEventListeners() {
+    if (!settings.get('reformatComments')) {
+      // The `mouseover` event allows to capture the state when the cursor is not moving but ends up
+      // above a comment but not above any comment parts (for example, as a result of scrolling).
+      // The benefit may be low compared to the performance cost, but it's unexpected when the user
+      // scrolls a comment and it suddenly stops being highlighted because the cursor is between
+      // neighboring `<p>`'s.
+      $(document).on('mousemove mouseover', this.handleMouseMove.bind(this));
+    }
+
+    // We need the `visibilitychange` event because many things may move while the document is
+    // hidden, and the movements are not processed when the document is hidden.
+    $(document)
+      .on('scroll visibilitychange', this.handleScroll.bind(this))
+      .on('horizontalscroll.cd visibilitychange', this.handleHorizontalScroll.bind(this))
+      .on('selectionchange', this.handleSelectionChange.bind(this));
+
+    if (settings.get('improvePerformance')) {
+      // Unhide when the user opens a search box to allow searching the full page.
+      $(window)
+        .on('focus', sectionRegistry.maybeUpdateVisibility.bind(sectionRegistry))
+        .on('blur', sectionRegistry.maybeUnhideAll.bind(sectionRegistry));
+    }
+
+    $(window)
+      .on('resize orientationchange', this.handleWindowResize.bind(this))
+      .on('popstate', this.handlePopState.bind(this));
+
+    // Should be above `mw.hook('wikipage.content').fire` so that it runs for the whole page content
+    // as opposed to `$('.cd-comment-author-wrapper')`.
+    mw.hook('wikipage.content').add(
+      this.connectToCommentLinks.bind(this),
+      this.highlightMentions.bind(this)
+    );
+    mw.hook('convenientDiscussions.previewReady').add(this.connectToCommentLinks.bind(this));
+
+    // Mutation observer doesn't follow all possible comment position changes (for example,
+    // initiated with adding new CSS) unfortunately.
+    setInterval(this.handlePageMutations.bind(this), 1000);
+
+    if (this.isPageCommentable()) {
+      $(document).on('keydown', this.handleGlobalKeyDown.bind(this));
+    }
+
+    mw.hook('wikipage.content').add(this.handleWikipageContentHookFirings.bind(this));
+  },
+
+  /**
+   * Bind a click handler to comment links to make them work as in-script comment links.
+   *
+   * This method exists in addition to {@link module:controller.handlePopState}. It's preferable to
+   * have click events handled by this method instead of `controller.handlePopState()` because that
+   * method, if encounters `cdJumpedToComment` in the history state, doesn't scroll to the comment
+   * which is a wrong behavior when the user clicks a link.
+   *
+   * @param {external:jQuery} $content
+   * @private
+   */
+  connectToCommentLinks($content) {
+    if (!$content.is('#mw-content-text, .cd-commentForm-preview')) return;
+
+    $content
+      .find(`a[href^="#"]`)
+      .filter(function () {
+        return !this.onclick && Comment.isAnyId($(this).attr('href').slice(1));
+      })
+      .on('click', function (e) {
+        e.preventDefault();
+        commentRegistry.getByAnyId($(this).attr('href').slice(1), true)?.scrollTo({
+          expandThreads: true,
+          pushState: true,
+        });
+      });
+  },
+
+  /**
+   * Add a settings link to the page footer.
+   */
+  addSettingsLinkToFooter() {
+    getFooter().append(
+      $('<li>').append(
+        $('<a>')
+          .text(cd.s('footer-settings'))
+          .on('click', () => {
+            this.showSettingsDialog();
+          })
+      )
+    );
+  },
+
+  /**
+   * Handle firings of the hook
    * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.hook-event-wikipage_content wikipage.content}
    * (by using `mw.hook('wikipage.content').fire()`). This is performed by some user scripts, such
    * as QuickEdit.
    *
    * @param {external:jQuery} $content
+   * @private
    */
   handleWikipageContentHookFirings($content) {
     if (!$content.is('#mw-content-text')) return;
@@ -1716,7 +1862,7 @@ export default {
 
     if (filteredComments.length) {
       let html;
-      const formDataNote = CommentFormStatic.getAll().some((cf) => cf.isAltered()) ?
+      const formDataNote = commentFormRegistry.getAll().some((cf) => cf.isAltered()) ?
         ' ' + cd.mws('parentheses', cd.s('notification-formdata')) :
         '';
       const reloadHtml = cd.sParse('notification-reload', formDataNote);
@@ -1875,7 +2021,7 @@ export default {
       // Just in case, old browsers. TODO: delete?
       window.focus();
 
-      CommentStatic.maybeRedrawLayers(false, true);
+      commentRegistry.maybeRedrawLayers(false, true);
 
       this.reload({
         commentIds: [comment.id],
@@ -1900,7 +2046,7 @@ export default {
       this.relevantAddedCommentIds = comments.map((comment) => comment.id);
     }
 
-    const commentsBySection = CommentStatic.groupBySection(comments);
+    const commentsBySection = Comment.groupBySection(comments);
     navPanel.updateRefreshButton(
       this.addedCommentCount,
       commentsBySection,
@@ -1909,7 +2055,7 @@ export default {
     this.updatePageTitle();
     toc.addNewComments(commentsBySection);
 
-    CommentStatic.addNewCommentsNotes(comments);
+    commentRegistry.addNewCommentsNotes(comments);
 
     const commentsToNotifyAbout = relevantComments
       .filter((comment) => !this.commentsNotifiedAbout.some((cna) => cna.id === comment.id));
@@ -1928,9 +2074,9 @@ export default {
    */
   updatePageTitle() {
     let title = this.originalPageTitle;
-    const lastActiveCommentForm = CommentFormStatic.getLastActive();
+    const lastActiveCommentForm = commentFormRegistry.getLastActive();
     if (lastActiveCommentForm) {
-      const ending = CommentFormStatic.modeToProperty(lastActiveCommentForm.getMode()).toLowerCase();
+      const ending = CommentForm.modeToProperty(lastActiveCommentForm.getMode()).toLowerCase();
       title = cd.s(`page-title-${ending}`, title);
     }
 
@@ -1964,7 +2110,7 @@ export default {
   maybeMarkPageAsRead() {
     if (
       !this.addedCommentCount &&
-      CommentStatic.getAll().every((comment) => !comment.willFlashChangedOnSight) &&
+      commentRegistry.getAll().every((comment) => !comment.willFlashChangedOnSight) &&
       this.lastCheckedRevisionId
     ) {
       pageRegistry.getCurrent().markAsRead(this.lastCheckedRevisionId);
@@ -1984,5 +2130,125 @@ export default {
     }
 
     return this.subscriptionsInstance;
-  }
+  },
+
+  /**
+   * _For internal use._ Add an "Add topic" button to the bottom of the page if there is an "Add
+   * topic" tab. (Otherwise, it may be added to a wrong place.)
+   */
+  addAddTopicButton() {
+    if (
+      // Vector 2022 has "Add topic" in the sticky header, so our button would duplicate its purpose
+      cd.g.skin !== 'vector-2022' ||
+
+      !$('#ca-addsection').length ||
+
+      // There is a special welcome text in New Topic Tool for 404 pages.
+      (cd.g.isDtNewTopicToolEnabled && !this.doesPageExist())
+    ) {
+      return;
+    }
+
+    this.setAddSectionButtonContainer(
+      $('<div>')
+        .addClass('cd-section-button-container cd-addTopicButton-container')
+        .append(
+          (new OO.ui.ButtonWidget({
+            label: cd.s('addtopic'),
+            framed: false,
+            classes: ['cd-button-ooui', 'cd-section-button'],
+          })).on('click', () => {
+            commentFormRegistry.createAddSectionForm();
+          }).$element
+        )
+
+        // If appending to `this.rootElement`, it can land on a wrong place, like on 404 pages
+        // with New Topic Tool enabled.
+        .insertAfter(this.$root)
+    );
+  },
+
+  /**
+   * _For internal use._ Bind a click handler to every known "Add new topic" button.
+   */
+  connectToAddTopicButtons() {
+    $(
+      [
+        '#ca-addsection a',
+        '.cd-addTopicButton a',
+        'a.cd-addTopicButton',
+        'a[href*="section=new"]',
+        'a[href*="Special:NewSection/"]',
+        'a[href*="Special:Newsection/"]',
+        'a[href*="special:newsection/"]',
+        '.commentbox input[type="submit"]',
+        '.createbox input[type="submit"]',
+      ]
+        .concat(cd.config.addTopicButtonSelectors)
+        .join(', ')
+    )
+      .filter(function () {
+        const $button = $(this);
+
+        // When DT's new topic tool is enabled
+        if (
+          mw.util.getParamValue('section') === 'new' &&
+          $button.parent().attr('id') !== 'ca-addsection' &&
+          !$button.closest(this.$root).length
+        ) {
+          return false;
+        }
+
+        let pageName;
+        let url;
+        if ($button.is('a')) {
+          url = new URL($button.prop('href'));
+          pageName = getLastArrayElementOrSelf(url.searchParams.getAll('title'))
+            ?.replace(/^Special:NewSection\//i, '');
+        } else if ($button.is('input')) {
+          pageName = $button
+            .closest('form')
+            .find('input[name="title"][type="hidden"]')
+            .val();
+        } else {
+          return false;
+        }
+        let page;
+        try {
+          page = pageRegistry.get(pageName);
+        } catch (e) {
+          return false;
+        }
+        if (page !== pageRegistry.getCurrent()) {
+          return false;
+        }
+        if ($button.is('a')) {
+          url.searchParams.set('dtenable', 0);
+          $button.attr('href', url);
+        }
+        return true;
+      })
+
+      // DT may add its handler (as adds to a "Start new discussion" button on 404 pages). DT's "Add
+      // topic" button click handler is trickier, see below.
+      .off('click')
+
+      .on('click.cd', this.handleWildAddTopicButtonClick.bind(this))
+      .filter(function () {
+        const $button = $(this);
+        return (
+          !cd.g.isDtNewTopicToolEnabled &&
+          !($button.is('a') && Number(mw.util.getParamValue('cdaddtopic', $button.attr('href'))))
+        );
+      })
+      .attr('title', cd.s('addtopicbutton-tooltip'));
+
+    // In case DT's new topic tool is enabled, remove the handler of the "Add topic" button.
+    const dtHandler = $._data(document.body).events?.click
+      ?.find((event) => event.selector?.includes('data-mw-comment'))
+      ?.handler;
+    if (dtHandler) {
+      $(document.body).off('click', dtHandler);
+    }
+  },
 };

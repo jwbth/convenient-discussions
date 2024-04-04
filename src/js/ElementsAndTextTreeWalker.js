@@ -5,7 +5,7 @@ import TreeWalker from './TreeWalker';
  *
  * @augments module:treeWalker.TreeWalker
  */
-export default class ElementsAndTextTreeWalker extends TreeWalker {
+class ElementsAndTextTreeWalker extends TreeWalker {
   /**
    * Create an elements and text {@link module:treeWalker.TreeWalker tree walker}.
    *
@@ -19,3 +19,5 @@ export default class ElementsAndTextTreeWalker extends TreeWalker {
     }
   }
 }
+
+export default ElementsAndTextTreeWalker;

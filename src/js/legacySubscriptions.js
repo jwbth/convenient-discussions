@@ -1,10 +1,10 @@
 import LZString from 'lz-string';
 
 import CdError from './CdError';
-import SectionStatic from './SectionStatic';
 import Subscriptions from './Subscriptions';
 import cd from './cd';
 import controller from './controller';
+import sectionRegistry from './sectionRegistry';
 import userRegistry from './userRegistry';
 import { getUserInfo, saveLocalOption } from './utils-api';
 import { wrapHtml } from './utils-window';
@@ -12,7 +12,7 @@ import { wrapHtml } from './utils-window';
 /**
  * Class implementing CD's legacy section watching.
  */
-export default class LegacySubscriptions extends Subscriptions {
+class LegacySubscriptions extends Subscriptions {
   type = 'legacy';
   subscribePromise = Promise.resolve();
 
@@ -266,7 +266,7 @@ export default class LegacySubscriptions extends Subscriptions {
     this.originalList = Object.keys(this.data);
     let updated = false;
     Object.keys(this.data)
-      .filter((headline) => SectionStatic.getAll().every((s) => s.headline !== headline))
+      .filter((headline) => sectionRegistry.getAll().every((s) => s.headline !== headline))
       .forEach((headline) => {
         delete this.data[headline];
         updated = true;
@@ -293,3 +293,5 @@ export default class LegacySubscriptions extends Subscriptions {
     }
   }
 }
+
+export default LegacySubscriptions;

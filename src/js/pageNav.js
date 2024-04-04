@@ -7,9 +7,9 @@
  */
 
 import Button from './Button';
-import SectionStatic from './SectionStatic';
 import cd from './cd';
 import controller from './controller';
+import sectionRegistry from './sectionRegistry';
 import toc from './toc';
 import { getVisibilityByRects } from './utils-window';
 
@@ -96,7 +96,7 @@ export default {
       }
     }
 
-    const firstSectionTop = SectionStatic.getFirstSectionRelativeTopOffset(
+    const firstSectionTop = sectionRegistry.getFirstSectionRelativeTopOffset(
       scrollY,
       afterLeadOffset
     );
@@ -163,7 +163,7 @@ export default {
     }
 
     if (
-      (SectionStatic.getCount() && scrollY + window.innerHeight < htmlElement.scrollHeight) ||
+      (sectionRegistry.getCount() && scrollY + window.innerHeight < htmlElement.scrollHeight) ||
       backLinkLocation === 'bottom'
     ) {
       if (!this.$bottomLink) {
@@ -204,7 +204,7 @@ export default {
       return;
     }
 
-    const updatedCurrentSection = SectionStatic.getCurrentSection();
+    const updatedCurrentSection = sectionRegistry.getCurrentSection();
     if (!updatedCurrentSection || updatedCurrentSection === currentSection) return;
 
     currentSection = updatedCurrentSection;

@@ -78,7 +78,7 @@ class PseudoLink extends Button {
   }
 }
 
-export default class UploadDialog extends mw.Upload.Dialog {
+class UploadDialog extends mw.Upload.Dialog {
   constructor(config = {}) {
     super(Object.assign({
       bookletClass: ForeignStructuredUploadBookletLayout,
@@ -680,3 +680,5 @@ tweakUserOoUiClass(UploadDialog);
 tweakUserOoUiClass(ForeignStructuredUploadBookletLayout)
 tweakUserOoUiClass(ForeignStructuredUpload);
 mixinUserOoUiClass(UploadDialog, ProcessDialog);
+
+export default UploadDialog;

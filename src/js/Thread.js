@@ -1,10 +1,10 @@
 import Button from './Button';
 import CdError from './CdError';
-import CommentStatic from './CommentStatic';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import PrototypeRegistry from './PrototypeRegistry';
 import StorageItem from './StorageItem';
 import cd from './cd';
+import commentRegistry from './commentRegistry';
 import controller from './controller';
 import settings from './settings';
 import { loadUserGenders } from './utils-api';
@@ -14,7 +14,7 @@ import { getExtendedRect, getRangeContents, getVisibilityByRects, isCmdModifierP
 /**
  * Class used to create a comment thread object.
  */
-export default class Thread {
+class Thread {
   /**
    * Create a comment thread object.
    *
@@ -116,7 +116,7 @@ export default class Thread {
     const highlightables = this.lastComment.highlightables;
     const visualHighlightables = this.visualLastComment.highlightables;
     const visualHighlightablesFallback = this.visualLastCommentFallback.highlightables;
-    const nextForeignElement = CommentStatic.getByIndex(this.lastComment.index + 1)?.elements[0];
+    const nextForeignElement = commentRegistry.getByIndex(this.lastComment.index + 1)?.elements[0];
 
     if (this.rootComment.level === 0) {
       startElement = firstNotHeadingElement;
@@ -156,7 +156,7 @@ export default class Thread {
       const lastHighlightable = highlightables[highlightables.length - 1];
 
       if (this.hasOutdents) {
-        const lastOutdentedComment = CommentStatic.getAll()
+        const lastOutdentedComment = commentRegistry.getAll()
           .slice(0, this.lastComment.index + 1)
           .reverse()
           .find((comment) => comment.isOutdented);
@@ -308,7 +308,7 @@ export default class Thread {
     if (this.endElement !== this.visualEndElement) {
       let areOutdentedCommentsShown = false;
       for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
-        const comment = CommentStatic.getByIndex(i);
+        const comment = commentRegistry.getByIndex(i);
         if (comment.isOutdented) {
           areOutdentedCommentsShown = true;
         }
@@ -412,7 +412,7 @@ export default class Thread {
       tooltip: cd.s('thread-expand-tooltip', cd.g.cmdModifier),
       action: (e) => {
         if (isCmdModifierPressed(e)) {
-          CommentStatic.getAll().slice().reverse().forEach((comment) => {
+          commentRegistry.getAll().slice().reverse().forEach((comment) => {
             if (comment.thread?.isCollapsed) {
               comment.thread.expand();
             }
@@ -497,7 +497,7 @@ export default class Thread {
     this.collapsedRange = getRangeContents(
       this.startElement,
       this.getAdjustedEndElement(),
-      controller.getRootElement()
+      controller.rootElement
     );
 
     this.collapsedRange.forEach((el) => {
@@ -516,7 +516,7 @@ export default class Thread {
     this.isCollapsed = true;
 
     for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
-      const comment = CommentStatic.getByIndex(i);
+      const comment = commentRegistry.getByIndex(i);
       if (comment.thread?.isCollapsed && comment.thread !== this) {
         i = comment.thread.lastComment.index;
         continue;
@@ -582,7 +582,7 @@ export default class Thread {
     this.isCollapsed = false;
     let areOutdentedCommentsShown = false;
     for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
-      const comment = CommentStatic.getByIndex(i);
+      const comment = commentRegistry.getByIndex(i);
       if (comment.isOutdented) {
         areOutdentedCommentsShown = true;
       }
@@ -809,7 +809,7 @@ export default class Thread {
     this.collapseThreadsLevel = settings.get('collapseThreadsLevel');
     this.isInited = false;
     this.treeWalker = new ElementsTreeWalker(undefined, controller.rootElement);
-    CommentStatic.getAll().forEach((rootComment) => {
+    commentRegistry.getAll().forEach((rootComment) => {
       try {
         rootComment.thread = new Thread(rootComment);
       } catch {
@@ -857,7 +857,7 @@ export default class Thread {
 
     // FIXME: Leave only `data.collapsedThreads` after June 2024
     (data.collapsedThreads || data.threads)?.forEach((thread) => {
-      const comment = CommentStatic.getById(thread.id);
+      const comment = commentRegistry.getById(thread.id);
       if (comment?.thread) {
         if (thread.collapsed) {
           comments.push(comment);
@@ -885,8 +885,8 @@ export default class Thread {
       // gap, for example between the `(this.collapseThreadsLevel - 1)` level and the
       // `(this.collapseThreadsLevel + 1)` level (the user muse have replied to a comment at the
       // `(this.collapseThreadsLevel - 1)` level but inserted `::` instead of `:`).
-      for (let i = 0; i < CommentStatic.getCount(); i++) {
-        const comment = CommentStatic.getByIndex(i);
+      for (let i = 0; i < commentRegistry.getCount(); i++) {
+        const comment = commentRegistry.getByIndex(i);
         if (!comment.thread) continue;
 
         if (comment.level >= this.collapseThreadsLevel) {
@@ -1019,7 +1019,7 @@ export default class Thread {
     const scrollX = window.scrollX;
     const scrollY = window.scrollY;
 
-    CommentStatic.getAll()
+    commentRegistry.getAll()
       .slice()
       .reverse()
       .some((comment) => (
@@ -1054,7 +1054,7 @@ export default class Thread {
     (new StorageItem('collapsedThreads'))
       .setWithTime(
         mw.config.get('wgArticleId'),
-        CommentStatic.getAll()
+        commentRegistry.getAll()
           .filter((comment) => (
             comment.thread &&
             comment.thread.isCollapsed !== Boolean(comment.thread.isAutocollapseTarget)
@@ -1067,3 +1067,5 @@ export default class Thread {
       .save();
   }
 }
+
+export default Thread;
