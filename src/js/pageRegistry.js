@@ -5,87 +5,16 @@
  */
 
 import CdError from './CdError';
+import CommentForm from './CommentForm';
 import TextMasker from './TextMasker';
 import cd from './cd';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
 import userRegistry from './userRegistry';
 import { handleApiReject, requestInBackground } from './utils-api';
-import { isProbablyTalkPage, mergeRegexps } from './utils-general';
+import { areObjectsEqual, isProbablyTalkPage, mergeRegexps } from './utils-general';
 import { parseTimestamp } from './utils-timestamp';
 import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
-
-let pagesWithoutArchivesRegexp;
-let $archivingInfo;
-let archivePagesMap;
-let sourcePagesMap;
-
-/**
- * Set some map object variables related to archive pages.
- *
- * @private
- */
-function initArchivePagesMaps() {
-  archivePagesMap = new Map();
-  sourcePagesMap = new Map();
-  const pathToRegexp = (s, replacements, isArchivePath) => (
-    new RegExp(
-      (new TextMasker(s))
-        .mask(/\\[$\\]/g)
-        .withText((pattern) => {
-          pattern = mw.util.escapeRegExp(pattern);
-          if (replacements) {
-            pattern = pattern
-              .replace(/\\\$/, '$')
-              .replace(/\$(\d+)/, (s, n) => {
-                const replacement = replacements[n - 1];
-                return replacement ? `(${replacement.source})` : s;
-              });
-          }
-          pattern = '^' + pattern + (isArchivePath ? '.*' : '') + '$';
-          return pattern;
-        })
-        .unmask()
-        .getText()
-    )
-  );
-  cd.config.archivePaths.forEach((entry) => {
-    if (entry instanceof RegExp) {
-      sourcePagesMap.set(new RegExp(entry.source + '.*'), '');
-    } else {
-      archivePagesMap.set(pathToRegexp(entry.source, entry.replacements), entry.archive);
-      sourcePagesMap.set(pathToRegexp(entry.archive, entry.replacements, true), entry.source);
-    }
-  });
-}
-
-/**
- * Lazy initialization for archive pages map.
- *
- * @returns {Map}
- * @private
- */
-function getArchivePagesMap() {
-  if (!archivePagesMap) {
-    initArchivePagesMaps();
-  }
-
-  return archivePagesMap;
-}
-
-/**
- * Lazy initialization for source pages map.
- *
- * @returns {Map}
- * @private
- */
-function getSourcePagesMap() {
-  if (!sourcePagesMap) {
-    initArchivePagesMaps();
-  }
-
-  return sourcePagesMap;
-}
 
 /**
  * Main MediaWiki object.
@@ -160,6 +89,14 @@ export class Page {
      * @type {PageSource}
      */
     this.source = new PageSource(this);
+
+    /**
+     * Is the page actionable, i.e. you can add a section to it. Can be `true` only for the current
+     * page.
+     *
+     * @type {boolean}
+     */
+    this.isActionable = this.isCurrent() ? controller.isPageCommentable() : false;
   }
 
   /**
@@ -190,11 +127,11 @@ export class Page {
    * @returns {string}
    */
   getDecodedUrlWithFragment(fragment, permanent) {
-    let params = {};
-    if (permanent) {
-      params.oldid = mw.config.get('wgRevisionId');
-    }
-    const decodedPageUrl = decodeURI(this.getUrl(params));
+    const decodedPageUrl = decodeURI(
+      this.getUrl({
+        ...(permanent ? { oldid: mw.config.get('wgRevisionId') } : {})
+      })
+    );
     return `${cd.g.server}${decodedPageUrl}#${fragment}`;
   }
 
@@ -209,11 +146,11 @@ export class Page {
       return null;
     }
 
-    // For performance reasons, this is not reevaluated after page reloads. The reevaluation is
-    // unlikely make any difference.
-    $archivingInfo ||= controller.$root.find('.cd-archivingInfo');
+    // This is not reevaluated after page reloads. Since archive settings we need rarely change, the
+    // reevaluation is unlikely to make any difference.
+    this.$archivingInfo ||= controller.$root.find('.cd-archivingInfo');
 
-    return $archivingInfo;
+    return this.$archivingInfo;
   }
 
   /**
@@ -237,7 +174,7 @@ export class Page {
     if (result === undefined || result === null) {
       result = false;
       const name = this.realName || this.name;
-      for (const sourceRegexp of getSourcePagesMap().keys()) {
+      for (const sourceRegexp of this.constructor.getSourcePagesMap().keys()) {
         if (sourceRegexp.test(name)) {
           result = true;
           break;
@@ -262,11 +199,7 @@ export class Page {
     }
     let result = this.findArchivingInfoElement()?.data('canHaveArchives');
     if (result === undefined || result === null) {
-      const name = this.realName || this.name;
-      if (pagesWithoutArchivesRegexp === undefined) {
-        pagesWithoutArchivesRegexp = mergeRegexps(cd.config.pagesWithoutArchives);
-      }
-      result = !pagesWithoutArchivesRegexp?.test(name);
+      result = !mergeRegexps(cd.config.pagesWithoutArchives)?.test(this.realName || this.name);
     }
     return Boolean(result);
   }
@@ -283,16 +216,18 @@ export class Page {
     if (!this.canHaveArchives()) {
       return null;
     }
+
     let result = this.findArchivingInfoElement()?.data('archivePrefix');
     const name = this.realName || this.name;
     if (!result) {
-      for (const [sourceRegexp, replacement] of getArchivePagesMap().entries()) {
+      for (const [sourceRegexp, replacement] of this.constructor.getArchivePagesMap().entries()) {
         if (sourceRegexp.test(name)) {
           result = name.replace(sourceRegexp, replacement);
           break;
         }
       }
     }
+
     return result ? String(result) : name + '/';
   }
 
@@ -308,20 +243,21 @@ export class Page {
     let result = this.findArchivingInfoElement()?.data('archivedPage');
     if (!result) {
       const name = this.realName || this.name;
-      for (const [archiveRegexp, replacement] of getSourcePagesMap().entries()) {
+      for (const [archiveRegexp, replacement] of this.constructor.getSourcePagesMap().entries()) {
         if (archiveRegexp.test(name)) {
           result = name.replace(archiveRegexp, replacement);
           break;
         }
       }
     }
+
     return result ? pageRegistry.get(String(result)) : this;
   }
 
   /**
    * Make a revision request (see {@link https://www.mediawiki.org/wiki/API:Revisions}) to load the
    * wikitext of the page, together with a few revision properties: the timestamp, redirect target,
-   * and query timestamp (curtimestamp). Enrich the page instance with those properties. Also set
+   * and query timestamp (`curtimestamp`). Enrich the page instance with those properties. Also set
    * the `realName` property that indicates either the redirect target if it's present or the page
    * name.
    *
@@ -331,7 +267,7 @@ export class Page {
    * @throws {CdError}
    */
   async loadCode(tolerateMissing = true) {
-    const resp = await controller.getApi().post({
+    const { query, curtimestamp: queryTimestamp } = await controller.getApi().post({
       action: 'query',
       titles: this.name,
       prop: 'revisions',
@@ -341,7 +277,6 @@ export class Page {
       curtimestamp: true,
     }).catch(handleApiReject);
 
-    const query = resp.query;
     const page = query?.pages?.[0];
     const revision = page?.revisions?.[0];
     const content = revision?.slots?.main?.content;
@@ -359,7 +294,7 @@ export class Page {
         revisionId: undefined,
         redirectTarget: undefined,
         realName: this.name,
-        queryTimestamp: resp.curtimestamp,
+        queryTimestamp,
       });
 
       if (tolerateMissing) {
@@ -452,7 +387,7 @@ export class Page {
       revisionId: revision.revid,
       redirectTarget,
       realName: redirectTarget || this.name,
-      queryTimestamp: resp.curtimestamp,
+      queryTimestamp,
     });
   }
 
@@ -714,6 +649,123 @@ export class Page {
   }
 
   /**
+   * _For internal use._ Add an "Add topic" button to the bottom of the page if there is an "Add
+   * topic" tab. (Otherwise, it may be added to a wrong place.)
+   */
+  addAddTopicButton() {
+    if (
+      // Vector 2022 has "Add topic" in the sticky header, so our button would duplicate its purpose
+      cd.g.skin !== 'vector-2022' ||
+
+      !$('#ca-addsection').length ||
+
+      // There is a special welcome text in New Topic Tool for 404 pages.
+      (cd.g.isDtNewTopicToolEnabled && !controller.doesPageExist())
+    ) {
+      return;
+    }
+
+    this.$addSectionButtonContainer = $('<div>')
+      .addClass('cd-section-button-container cd-addTopicButton-container')
+      .append(
+        (new OO.ui.ButtonWidget({
+          label: cd.s('addtopic'),
+          framed: false,
+          classes: ['cd-button-ooui', 'cd-section-button'],
+        })).on('click', () => {
+          this.addSection();
+        }).$element
+      )
+
+      // If appending to `this.rootElement`, it can land on a wrong place, like on 404 pages
+      // with New Topic Tool enabled.
+      .insertAfter(this.$root);
+  }
+
+  /**
+   * Add an "Add section" form or not on page load depending on the URL and presence of a
+   * DiscussionTools' "New topic" form.
+   *
+   * @param {object} dtFormData
+   */
+  autoAddSection(dtFormData) {
+    const { searchParams } = new URL(location.href);
+
+    // &action=edit&section=new when DT's New Topic Tool is enabled.
+    if (
+      searchParams.get('section') === 'new' ||
+      Number(searchParams.get('cdaddtopic')) ||
+      dtFormData
+    ) {
+      this.addSection(dtFormData);
+    }
+  }
+
+  /**
+   * Create an add section form if not existent.
+   *
+   * @param {object} [initialState]
+   * @param {object} [preloadConfig={@link commentRegistry.getDefaultPreloadConfig commentRegistry.getDefaultPreloadConfig()}]
+   * @param {boolean} [newTopicOnTop=false]
+   */
+  addSection(
+    initialState,
+    preloadConfig = CommentForm.getDefaultPreloadConfig(),
+    newTopicOnTop = false
+  ) {
+    if (this.addSectionForm) {
+      // Sometimes there is more than one "Add section" button on the page, and they lead to opening
+      // forms with different content.
+      if (!areObjectsEqual(preloadConfig, this.addSectionForm.getPreloadConfig())) {
+        mw.notify(cd.s('cf-error-formconflict'), { type: 'error' });
+        return;
+      }
+
+      this.addSectionForm.$element.cdScrollIntoView('center');
+
+      // Headline input may be missing if the `nosummary` preload parameter is truthy.
+      (this.addSectionForm.headlineInput || this.addSectionForm.commentInput).cdFocus();
+    } else {
+      /**
+       * "Add section" form.
+       *
+       * @type {CommentForm|undefined}
+       */
+      this.addSectionForm = initialState instanceof CommentForm ?
+        initialState :
+        new CommentForm({
+          mode: 'addSection',
+          target: pageRegistry.getCurrent(),
+          preloadConfig,
+          newTopicOnTop,
+          initialState,
+        });
+
+      $('#ca-addsection').addClass('selected');
+      $('#ca-view').removeClass('selected');
+    }
+  }
+
+  getCommentFormMethodName(mode) {
+    return mode;
+  }
+
+  getCommentFormPropertyName(mode) {
+    return this.getCommentFormMethodName(mode) + 'Form';
+  }
+
+  /**
+   * Forget the "Add section" form (after it was torn down).
+   *
+   * @param {string} mode
+   */
+  forgetCommentForm(mode) {
+    delete this[this.getCommentFormPropertyName(mode)];
+    $('#ca-addsection').removeClass('selected');
+    $('#ca-view').addClass('selected');
+  }
+
+  /**
    * Used for polymorphism with {@link Comment#getRelevantSection} and
    * {@link Section#getRelevantSection}.
    *
@@ -750,6 +802,73 @@ export class Page {
   getNewSelf() {
     return this;
   }
+
+  /**
+   * Set some map object variables related to archive pages.
+   *
+   * @private
+   */
+  static initArchivePagesMaps() {
+    this.archivePagesMap = new Map();
+    this.sourcePagesMap = new Map();
+    const pathToRegexp = (s, replacements, isArchivePath) => (
+      new RegExp(
+        (new TextMasker(s))
+          .mask(/\\[$\\]/g)
+          .withText((pattern) => {
+            pattern = mw.util.escapeRegExp(pattern);
+            if (replacements) {
+              pattern = pattern
+                .replace(/\\\$/, '$')
+                .replace(/\$(\d+)/, (s, n) => {
+                  const replacement = replacements[n - 1];
+                  return replacement ? `(${replacement.source})` : s;
+                });
+            }
+            pattern = '^' + pattern + (isArchivePath ? '.*' : '') + '$';
+            return pattern;
+          })
+          .unmask()
+          .getText()
+      )
+    );
+    cd.config.archivePaths.forEach((entry) => {
+      if (entry instanceof RegExp) {
+        this.sourcePagesMap.set(new RegExp(entry.source + '.*'), '');
+      } else {
+        this.archivePagesMap.set(pathToRegexp(entry.source, entry.replacements), entry.archive);
+        this.sourcePagesMap.set(pathToRegexp(entry.archive, entry.replacements, true), entry.source);
+      }
+    });
+  }
+
+  /**
+   * Lazy initialization for archive pages map.
+   *
+   * @returns {Map}
+   * @private
+   */
+  static getArchivePagesMap() {
+    if (!this.archivePagesMap) {
+      this.initArchivePagesMaps();
+    }
+
+    return this.archivePagesMap;
+  }
+
+  /**
+   * Lazy initialization for source pages map.
+   *
+   * @returns {Map}
+   * @private
+   */
+  static getSourcePagesMap() {
+    if (!this.sourcePagesMap) {
+      this.initArchivePagesMaps();
+    }
+
+    return this.sourcePagesMap;
+  }
 }
 
 /**
@@ -771,7 +890,7 @@ class PageSource {
    * @param {object} options
    * @param {string} options.commentCode Comment code, including trailing newlines and the
    *   signature.
-   * @param {import('./CommentForm').default} options.commentForm Comment form that has the code.
+   * @param {CommentForm} options.commentForm Comment form that has the code.
    * @returns {object}
    */
   modifyContext({ commentCode, commentForm }) {

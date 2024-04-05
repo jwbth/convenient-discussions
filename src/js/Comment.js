@@ -3422,6 +3422,18 @@ class Comment extends CommentSkeleton {
     return commentRegistry.getById(this.id);
   }
 
+  getCommentFormMethodName(mode) {
+    return mode;
+  }
+
+  getCommentFormPropertyName(mode) {
+    return this.getCommentFormMethodName(mode) + 'Form';
+  }
+
+  forgetCommentForm(mode) {
+    delete this[this.getCommentFormPropertyName(mode)];
+  }
+
   static {
     // Doesn't account for cases when the section headline ends with `-[number]`.
     const newDtTimestampPattern = '(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})\\d{2}';

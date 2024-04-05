@@ -8,7 +8,6 @@
 import Autocomplete from './Autocomplete';
 import BootProcess from './BootProcess';
 import Comment from './Comment';
-import CommentForm from './CommentForm';
 import DtSubscriptions from './DtSubscriptions';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import LegacySubscriptions from './LegacySubscriptions';
@@ -269,6 +268,11 @@ export default {
     );
   },
 
+  /**
+   * Check whether the current page is an archive and the displayed revision the current one.
+   *
+   * @returns {boolean}
+   */
   isPageCurrentArchive() {
     return this.isCurrentRevision() && pageRegistry.getCurrent().isArchivePage();
   },
@@ -300,15 +304,6 @@ export default {
    */
   isAutoScrolling() {
     return this.autoScrolling;
-  },
-
-  /**
-   * Memorize the section button container element.
-   *
-   * @param {external:jQuery} $container
-   */
-  setAddSectionButtonContainer($container) {
-    this.$addSectionButtonContainer = $container;
   },
 
   /**
@@ -927,12 +922,7 @@ export default {
         navPanel.updateCommentFormButton();
       }
       pageNav.update();
-
-      // When the document has no focus, all sections are visible (see
-      // `sectionRegistry.maybeUnhideAll()`).
-      if (document.hasFocus()) {
-        sectionRegistry.maybeUpdateVisibility();
-      }
+      sectionRegistry.maybeUpdateVisibility();
     }, 300);
     this.mouseMoveBlocked = true;
     this.throttledHandleScroll();
@@ -1055,7 +1045,7 @@ export default {
     }
 
     e.preventDefault();
-    commentFormRegistry.createAddSectionForm(preloadConfig, newTopicOnTop);
+    pageRegistry.getCurrent().addSection(undefined, preloadConfig, newTopicOnTop);
   },
 
   /**
@@ -2076,7 +2066,11 @@ export default {
     let title = this.originalPageTitle;
     const lastActiveCommentForm = commentFormRegistry.getLastActive();
     if (lastActiveCommentForm) {
-      const ending = CommentForm.modeToProperty(lastActiveCommentForm.getMode()).toLowerCase();
+      const ending = lastActiveCommentForm
+        .getTarget()
+        .getCommentFormPropertyName()
+        .toLowerCase()
+        .replace(/Form$/, '');
       title = cd.s(`page-title-${ending}`, title);
     }
 
@@ -2133,45 +2127,10 @@ export default {
   },
 
   /**
-   * _For internal use._ Add an "Add topic" button to the bottom of the page if there is an "Add
-   * topic" tab. (Otherwise, it may be added to a wrong place.)
+   * _For internal use._ Bind a click handler to every known "Add new topic" button out of our
+   * control.
    */
-  addAddTopicButton() {
-    if (
-      // Vector 2022 has "Add topic" in the sticky header, so our button would duplicate its purpose
-      cd.g.skin !== 'vector-2022' ||
-
-      !$('#ca-addsection').length ||
-
-      // There is a special welcome text in New Topic Tool for 404 pages.
-      (cd.g.isDtNewTopicToolEnabled && !this.doesPageExist())
-    ) {
-      return;
-    }
-
-    this.setAddSectionButtonContainer(
-      $('<div>')
-        .addClass('cd-section-button-container cd-addTopicButton-container')
-        .append(
-          (new OO.ui.ButtonWidget({
-            label: cd.s('addtopic'),
-            framed: false,
-            classes: ['cd-button-ooui', 'cd-section-button'],
-          })).on('click', () => {
-            commentFormRegistry.createAddSectionForm();
-          }).$element
-        )
-
-        // If appending to `this.rootElement`, it can land on a wrong place, like on 404 pages
-        // with New Topic Tool enabled.
-        .insertAfter(this.$root)
-    );
-  },
-
-  /**
-   * _For internal use._ Bind a click handler to every known "Add new topic" button.
-   */
-  connectToAddTopicButtons() {
+  connectToWildAddTopicButtons() {
     $(
       [
         '#ca-addsection a',

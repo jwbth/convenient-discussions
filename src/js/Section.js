@@ -74,7 +74,7 @@ class Section extends SectionSkeleton {
      *
      * @type {boolean}
      */
-    this.transcludedFromTemplate = this.sourcePage?.namespaceId === 10;
+    this.isTranscludedFromTemplate = this.sourcePage?.namespaceId === 10;
 
     /**
      * Is the section actionable. (If it is in a closed discussion or on an old version page, then
@@ -85,10 +85,10 @@ class Section extends SectionSkeleton {
     this.isActionable = (
       controller.isPageActive() &&
       !controller.getClosedDiscussions().some((el) => el.contains(this.headingElement)) &&
-      !this.transcludedFromTemplate
+      !this.isTranscludedFromTemplate
     );
 
-    if (this.transcludedFromTemplate) {
+    if (this.isTranscludedFromTemplate) {
       this.comments.forEach((comment) => {
         comment.isActionable = false;
       });
@@ -407,7 +407,7 @@ class Section extends SectionSkeleton {
   canBeMoved() {
     return (
       this.level === 2 &&
-      !this.transcludedFromTemplate &&
+      !this.isTranscludedFromTemplate &&
       (controller.isPageActive() || controller.isPageCurrentArchive())
     );
   }
@@ -452,32 +452,33 @@ class Section extends SectionSkeleton {
    * @returns {boolean}
    */
   canBeSubsectioned() {
-    const isClosed = (
-      this.comments[0] &&
-      this.comments[0].level === 0 &&
-      this.comments.every((comment) => !comment.isActionable)
-    );
     const nextSameLevelSection = sectionRegistry.getAll()
       .slice(this.index + 1)
       .find((otherSection) => otherSection.level === this.level);
-
-    // While the "Reply" button is added to the end of the first chunk, the "Add subsection" button
-    // is added to the end of the whole section, so we look the next section of the same level.
-    const doesNestingLevelMatch = (
-      !nextSameLevelSection ||
-      nextSameLevelSection.headingNestingLevel === this.headingNestingLevel
-    );
 
     return Boolean(
       this.isActionable &&
       this.level >= 2 &&
       this.level <= 5 &&
-      !isClosed &&
 
-      // If the next section of the same level has another nesting level (e.g., is inside a <div>
-      // with a specific style), don't add the "Add subsection" button - it would appear in a wrong
-      // place.
-      doesNestingLevelMatch
+      // Not closed
+      !(
+        this.comments[0] &&
+        this.comments[0].level === 0 &&
+        this.comments.every((comment) => !comment.isActionable)
+      ) &&
+
+      (
+        // While the "Reply" button is added to the end of the first chunk, the "Add subsection"
+        // button is added to the end of the whole section, so we look the next section of the same
+        // level.
+        !nextSameLevelSection ||
+
+        // If the next section of the same level has another nesting level (e.g., is inside a <div>
+        // with a specific style), don't add the "Add subsection" button - it would appear in a
+        // wrong place.
+        nextSameLevelSection.headingNestingLevel === this.headingNestingLevel
+      )
     );
   }
 
@@ -1001,7 +1002,7 @@ class Section extends SectionSkeleton {
     // to call it from CD).
     if (!this.replyForm) {
       /**
-       * A reply form related to the section.
+       * Reply form related to the section.
        *
        * @type {CommentForm|undefined}
        */
@@ -1038,7 +1039,7 @@ class Section extends SectionSkeleton {
       this.addSubsectionForm.headlineInput.cdFocus();
     } else {
       /**
-       * Add subsection form related to the section.
+       * "Add subsection" form related to the section.
        *
        * @type {CommentForm|undefined}
        */
@@ -1715,6 +1716,18 @@ class Section extends SectionSkeleton {
       // despite the fact that `sectionRegistry.items` has already changed.
       ancestors: this.getAncestors().map((section) => section.headline),
     })?.section || null;
+  }
+
+  getCommentFormMethodName(mode) {
+    return mode === 'replyInSection' ? 'reply' : mode;
+  }
+
+  getCommentFormPropertyName(mode) {
+    return this.getCommentFormMethodName(mode) + 'Form';
+  }
+
+  forgetCommentForm(mode) {
+    delete this[this.getCommentFormPropertyName(mode)];
   }
 
   /**

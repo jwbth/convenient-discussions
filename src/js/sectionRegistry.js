@@ -194,6 +194,8 @@ export default {
    * @param {import('./Subscriptions').default} subscriptions
    */
   init(subscriptions) {
+    this.improvePerformance = settings.get('improvePerformance');
+
     subscriptions.on('processed', () => {
       this.addSubscribeButtons();
     });
@@ -325,11 +327,19 @@ export default {
   },
 
   /**
-   * _For internal use._ Make sections visible or invisible to improve performance if the relevant
-   * setting is enabled.
+   * _For internal use._ Make sections visible or invisible to improve performance if the
+   * corresponding setting is enabled.
    */
   maybeUpdateVisibility() {
-    if (!settings.get('improvePerformance') || !this.items.length || !controller.isLongPage()) {
+    if (
+      !this.improvePerformance ||
+      !this.items.length ||
+      !controller.isLongPage() ||
+
+      // When the document has no focus, all sections are visible (see
+      // `sectionRegistry.maybeUnhideAll()`).
+      document.hasFocus()
+    ) {
       return;
     }
 

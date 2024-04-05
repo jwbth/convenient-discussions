@@ -11,7 +11,6 @@ import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
-import navPanel from './navPanel';
 import notifications from './notifications';
 import pageRegistry, { Page } from './pageRegistry';
 import sectionRegistry from './sectionRegistry';
@@ -249,17 +248,11 @@ class CommentForm {
 
     commentFormRegistry.add(this);
 
-    if (initialState && !initialState.focus) {
-      navPanel.updateCommentFormButton();
-    } else {
+    if (!initialState || initialState.focus) {
       this.$element.cdScrollIntoView('center', true, () => {
         if (this.mode !== 'edit') {
           (this.headlineInput || this.commentInput).cdFocus();
         }
-
-        // This is for the case when scrolling isn't performed (when it is, callback at the end of
-        // $#cdScrollIntoView executes this line itself).
-        navPanel.updateCommentFormButton();
       });
     }
 
@@ -1383,7 +1376,7 @@ class CommentForm {
     } else if (this.mode === 'addSubsection') {
       this.target.$addSubsectionButtonContainer?.hide();
     } else if (this.mode === 'addSection') {
-      controller.$addSectionButtonContainer?.hide();
+      pageRegistry.getCurrent().$addSectionButtonContainer?.hide();
     }
 
     // 'addSection'
@@ -3258,8 +3251,8 @@ class CommentForm {
 
     this.forget();
 
-    // Restore hidden elements. FIXME: use a hook or at least run some routine on the target to
-    // decouple these operations from CommentForm.
+    // Restore hidden elements. FIXME: use a hook or run some routine on the target to decouple
+    // these operations from CommentForm.
     if (this.mode === 'replyInSection') {
       this.target.replyButton.show();
       this.target.$replyButtonWrapper.removeClass('cd-replyButtonWrapper-hasCommentForm');
@@ -3271,7 +3264,7 @@ class CommentForm {
       this.target.scrollIntoView('top');
       this.target.configureLayers();
     } else if (this.mode === 'addSection') {
-      controller.$addSectionButtonContainer?.show();
+      pageRegistry.getCurrent().$addSectionButtonContainer?.show();
     }
 
     controller.updatePageTitle();
@@ -3287,15 +3280,8 @@ class CommentForm {
    * @private
    */
   forget() {
-    // FIXME: Emit an event using `mw.hook()` and handle it in the objects below to reduce coupling?
-    // Or just run some routine on `controller`.
-    if (this.mode === 'addSection') {
-      commentFormRegistry.forgetAddSectionForm();
-    } else {
-      delete this.target[this.getModeProperty() + 'Form'];
-    }
+    this.target.forgetCommentForm(this.mode);
     commentFormRegistry.remove(this);
-    commentFormRegistry.saveSession(true);
 
     // Popups can be placed outside the form element, so they need to be torn down whenever the form
     // is forgotten (even if the form itself is not torn down).
@@ -3304,8 +3290,6 @@ class CommentForm {
     this.autocomplete.cleanUp();
     this.headlineAutocomplete?.cleanUp();
     this.summaryAutocomplete.cleanUp();
-
-    navPanel.updateCommentFormButton();
   }
 
   /**
@@ -3726,8 +3710,8 @@ class CommentForm {
    *
    * @returns {string}
    */
-  getModeProperty() {
-    return this.constructor.modeToProperty(this.mode);
+  getModeTargetProperty() {
+    return this.constructor.modeToTargetProperty(this.mode);
   }
 
   /**
@@ -3863,64 +3847,29 @@ class CommentForm {
    * @returns {object}
    */
   restore() {
-    const addToRescue = () => {
-      rescue.push({
-        headline: this.headlineInput?.getValue(),
-        comment: this.commentInput.getValue(),
-        summary: this.summaryInput.getValue(),
-      });
-      this.forget();
-    };
-
-    const rescue = [];
-    const target = this.target;
-    if (target instanceof Comment) {
-      if (target.id) {
-        const comment = commentRegistry.getById(target.id);
-        if (comment) {
-          try {
-            this.setTargets(comment);
-            comment[this.getModeProperty()](this);
-            this.addToPage();
-          } catch (e) {
-            console.warn(e);
-            addToRescue();
-          }
-        } else {
-          addToRescue();
-        }
-      } else {
-        addToRescue();
+    const newSelf = this.target.findNewSelf();
+    if (newSelf) {
+      try {
+        this.setTargets(newSelf);
+        newSelf[this.getModeTargetProperty()](this);
+        this.addToPage();
+      } catch (e) {
+        console.warn(e);
+        return this.rescue();
       }
-    } else if (target instanceof Section) {
-      const { section } = sectionRegistry.search({
-        headline: target.headline,
-        oldestCommentId: target.oldestComment?.id,
-        index: target.index,
-        id: target.id,
-
-        // We cache ancestors when saving the session, so this call will return the right value,
-        // despite the fact that `sectionRegistry.items` has already changed.
-        ancestors: target.getAncestors().map((section) => section.headline),
-      });
-      if (section) {
-        try {
-          this.setTargets(section);
-          section[this.getModeProperty()](this);
-          this.addToPage();
-        } catch (e) {
-          console.warn(e);
-          addToRescue();
-        }
-      } else {
-        addToRescue();
-      }
-    } else if (this.mode === 'addSection') {
-      this.addToPage();
-      commentFormRegistry.setAddSectionForm(this);
+    } else {
+      return this.rescue();
     }
+  }
 
-    return rescue;
+  rescue() {
+    this.forget();
+
+    return {
+      headline: this.headlineInput?.getValue(),
+      comment: this.commentInput.getValue(),
+      summary: this.summaryInput.getValue(),
+    };
   }
 
   /**
@@ -4062,7 +4011,7 @@ class CommentForm {
    * @param {string} mode
    * @returns {string}
    */
-  static modeToProperty(mode) {
+  static modeToTargetProperty(mode) {
     return mode === 'replyInSection' ? 'reply' : mode;
   }
 }

@@ -22,6 +22,17 @@ let backLinkLocation;
 
 export default {
   /**
+   * _For internal use._ Setup the page navigation block (mount or update).
+   */
+  setup() {
+    if (this.isMounted()) {
+      this.mount();
+    } else {
+      this.update();
+    }
+  },
+
+  /**
    * _For internal use._ Render the page navigation block. This is done when the page is first
    * loaded.
    */

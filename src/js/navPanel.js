@@ -29,6 +29,9 @@ export default {
       // Can be mounted not only on first parse, if using RevisionSlider, for example.
       if (!this.isMounted()) {
         this.mount();
+        commentFormRegistry
+          .on('add', this.updateCommentFormButton.bind(this))
+          .on('remove', this.updateCommentFormButton.bind(this));
       } else {
         this.reset();
       }
@@ -239,8 +242,9 @@ export default {
       comment.scrollTo({
         flash: null,
         callback: () => {
-          // The default handleScroll() callback is executed in $#cdScrollTo, but that happens after
-          // a 300ms timeout, so we have a chance to have our callback executed first.
+          // The default `controller.handleScroll()` callback is executed in `$#cdScrollTo`, but
+          // that happens after a 300ms timeout, so we have a chance to have our callback executed
+          // first.
           comment.registerSeen(direction, true);
         },
       });
@@ -272,8 +276,9 @@ export default {
     comment?.scrollTo({
       flash: null,
       callback: () => {
-        // The default handleScroll() callback is executed in $#cdScrollTo, but that happens after
-        // a 300ms timeout, so we have a chance to have our callback executed first.
+        // The default `controller.handleScroll()` callback is executed in `$#cdScrollTo`, but
+        // that happens after a 300ms timeout, so we have a chance to have our callback executed
+        // first.
         comment.registerSeen('forward', true);
       },
     });

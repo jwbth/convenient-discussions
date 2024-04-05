@@ -7,8 +7,6 @@ import cd from './cd';
 import { defined, getHeadingLevel, parseWikiUrl, isHeadingNode, isInline, isMetadataNode, ucFirst, underlinesToSpaces } from './utils-general';
 import { parseTimestamp } from './utils-timestamp';
 
-let punctuationRegexp;
-
 /**
  * @typedef {object} Context
  * @property {Function} CommentClass
@@ -283,7 +281,7 @@ class Parser {
    * @private
    */
   timestampToSignature(timestamp) {
-    punctuationRegexp ||= new RegExp(`(?:^|${cd.g.letterPattern})[.!?…] `);
+    this.constructor.punctuationRegexp ||= new RegExp(`(?:^|${cd.g.letterPattern})[.!?…] `);
 
     let unsignedElement;
     let el = timestamp.element;
@@ -376,7 +374,7 @@ class Parser {
             // outside of links or even tags, and this is much work for little gain. This is the
             // cost of us not relying on a DOM -> wikitext correspondence and processing those parts
             // separately.
-            (!node.tagName && punctuationRegexp.test(node.textContent))
+            (!node.tagName && this.constructor.punctuationRegexp.test(node.textContent))
           )
         ) ||
         (

@@ -11,6 +11,7 @@ import debug from './debug';
 import init from './init';
 import navPanel from './navPanel';
 import pageNav from './pageNav';
+import pageRegistry from './pageRegistry';
 import processFragment from './processFragment';
 import sectionRegistry from './sectionRegistry';
 import settings from './settings';
@@ -682,10 +683,10 @@ class BootProcess {
     // `commentFormRegistry.restoreSession()` indirectly calls `navPanel.updateCommentFormButton()`
     // which depends on the navigation panel being mounted.
     if (controller.isPageCommentable()) {
-      controller.addAddTopicButton();
-      controller.connectToAddTopicButtons();
-
+      pageRegistry.getCurrent().addAddTopicButton();
+      controller.connectToWildAddTopicButtons();
       commentFormRegistry.setup(this);
+      pageRegistry.getCurrent().autoAddSection(this.hideDtNewTopicForm());
     }
 
     if (controller.doesPageExist()) {
@@ -721,12 +722,10 @@ class BootProcess {
         toc.addCommentCount();
       }
 
-      if (this.firstRun) {
-        pageNav.mount();
+      pageNav.setup(this);
 
+      if (this.firstRun) {
         controller.addEventListeners();
-      } else {
-        pageNav.update();
       }
 
       // We set the setup observer at every reload because `controller.$content` may change.

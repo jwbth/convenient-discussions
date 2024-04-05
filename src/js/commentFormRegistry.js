@@ -11,7 +11,7 @@ import commentRegistry from './commentRegistry';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
 import sectionRegistry from './sectionRegistry';
-import { areObjectsEqual, removeFromArrayIfPresent } from './utils-general';
+import { defined, removeFromArrayIfPresent } from './utils-general';
 
 export default {
   /**
@@ -29,6 +29,7 @@ export default {
    */
   add(item) {
     this.items.push(item);
+    this.emit('add');
   },
 
   /**
@@ -38,6 +39,8 @@ export default {
    */
   remove(item) {
     removeFromArrayIfPresent(this.items, item);
+    this.saveSession(true);
+    this.emit('remove');
   },
 
   /**
@@ -140,79 +143,6 @@ export default {
   },
 
   /**
-   * Create an add section form if not existent.
-   *
-   * @param {object} [preloadConfig={@link commentRegistry.getDefaultPreloadConfig commentRegistry.getDefaultPreloadConfig()}]
-   * @param {boolean} [newTopicOnTop=false]
-   * @param {object} [initialState]
-   */
-  createAddSectionForm(
-    preloadConfig = this.getDefaultPreloadConfig(),
-    newTopicOnTop = false,
-    initialState
-  ) {
-    const addSectionForm = this.getAddSectionForm();
-    if (addSectionForm) {
-      // Sometimes there is more than one "Add section" button on the page, and they lead to opening
-      // forms with different content.
-      if (!areObjectsEqual(preloadConfig, addSectionForm.getPreloadConfig())) {
-        mw.notify(cd.s('cf-error-formconflict'), { type: 'error' });
-        return;
-      }
-
-      addSectionForm.$element.cdScrollIntoView('center');
-
-      // Headline input may be missing if the "nosummary" preload parameter is truthy.
-      (addSectionForm.headlineInput || addSectionForm.commentInput).cdFocus();
-    } else {
-      /**
-       * Add section form.
-       *
-       * @name addSectionForm
-       * @type {CommentForm|undefined}
-       * @memberof convenientDiscussions.g
-       */
-      const commentForm = new CommentForm({
-        mode: 'addSection',
-        target: pageRegistry.getCurrent(),
-        preloadConfig,
-        newTopicOnTop,
-        initialState,
-      });
-      this.setAddSectionForm(commentForm);
-    }
-  },
-
-  /**
-   * Memorize the "Add section" form.
-   *
-   * @param {CommentForm} commentForm
-   */
-  setAddSectionForm(commentForm) {
-    this.addSectionForm = commentForm;
-    $('#ca-addsection').addClass('selected');
-    $('#ca-view').removeClass('selected');
-  },
-
-  /**
-   * Get the "Add section" form.
-   *
-   * @returns {CommentForm}
-   */
-  getAddSectionForm() {
-    return this.addSectionForm;
-  },
-
-  /**
-   * Forget the "Add section" form (after it was torn down).
-   */
-  forgetAddSectionForm() {
-    delete this.addSectionForm;
-    $('#ca-addsection').removeClass('selected');
-    $('#ca-view').addClass('selected');
-  },
-
-  /**
    * Adjust the button labels of all comment forms according to the form width: if the form is too
    * narrow, the labels will shrink.
    */
@@ -279,76 +209,75 @@ export default {
 
   /**
    * Restore comment forms using the data saved in the local storage.
+   * {@link module:commentFormRegistry.maybeShowRescueDialog Rescue} forms that couldn't be
+   * restored.
    *
-   * @param {object} commentFormsData
    * @private
    */
-  restoreSessionFromStorage(commentFormsData) {
+  restoreSessionFromStorage() {
     let haveRestored = false;
-    const rescue = [];
-    commentFormsData.commentForms.forEach((data) => {
-      const prop = CommentForm.modeToProperty(data.mode);
-      if (data.targetData?.headline) {
-        const { section } = sectionRegistry.search({
-          headline: data.targetData.headline,
-          oldestCommentId: data.targetData.oldestCommentId,
-          index: data.targetData.index,
-          id: data.targetData.id,
-          ancestors: data.targetData.ancestors,
-        });
-        if (section?.isActionable && !section[`${prop}Form`]) {
-          try {
-            section[prop](data);
-            haveRestored = true;
-          } catch (e) {
-            console.warn(e);
-            rescue.push(data);
-          }
-        } else {
-          rescue.push(data);
-        }
 
-        // TODO: remove the "data.targetData.anchor" part 2 months after the release.
-      } else if (data.targetData?.id || data.targetData?.anchor) {
-        const comment = commentRegistry.getById(data.targetData.id || data.targetData.anchor);
-        if (comment?.isActionable && !comment[`${prop}Form`]) {
-          try {
-            comment[prop](data);
-            haveRestored = true;
-          } catch (e) {
-            console.warn(e);
-            rescue.push(data);
+    this.maybeShowRescueDialog(
+      (new StorageItem('commentForms'))
+        .cleanUp((entry) =>
+          !entry.commentForms?.length ||
+          // FIXME: Remove `([keep] || entry.saveUnixTime)` after June 2024
+          (entry.saveTime || entry.saveUnixTime) < Date.now() - 60 * cd.g.msInDay
+        )
+        .save()
+        .get(mw.config.get('wgPageName'))
+        ?.commentForms
+        .map((data) => {
+          const target = this.getTargetFromData(data.targetData);
+          if (
+            target?.isActionable &&
+
+            // Check if there is another form already
+            !target[target.getCommentFormPropertyName(data.mode)]
+          ) {
+            try {
+              target[target.getCommentFormMethodName(data.mode)](
+                data,
+                data.preloadConfig,
+                data.newTopicOnTop
+              );
+              haveRestored = true;
+            } catch (e) {
+              console.warn(e);
+              return data;
+            }
+          } else {
+            return data;
           }
-        } else {
-          rescue.push(data);
-        }
-      } else if (data.mode === 'addSection') {
-        if (!this.getAddSectionForm()) {
-          this.setAddSectionForm(
-            new CommentForm({
-              target: pageRegistry.getCurrent(),
-              mode: data.mode,
-              initialState: data,
-              preloadConfig: data.preloadConfig,
-              newTopicOnTop: data.newTopicOnTop,
-            })
-          );
-          haveRestored = true;
-        } else {
-          rescue.push(data);
-        }
-      }
-    });
+        })
+        .filter(defined)
+    );
+
     if (haveRestored) {
-      const notification = mw.notification.notify(cd.s('restore-restored-text'), {
+      mw.notification.notify(cd.s('restore-restored-text'), {
         title: cd.s('restore-restored-title'),
-      });
-      notification.$notification.on('click', () => {
+      }).$notification.on('click', () => {
         this.items[0].goTo();
       });
     }
-    if (rescue.length) {
-      this.rescueCommentFormsContent(rescue);
+  },
+
+  getTargetFromData(targetData) {
+    if (targetData?.headline) {
+      // Section
+      return sectionRegistry.search({
+        headline: targetData.headline,
+        oldestCommentId: targetData.oldestCommentId,
+        index: targetData.index,
+        id: targetData.id,
+        ancestors: targetData.ancestors,
+      })?.section;
+    } else if (targetData?.id) {
+      // Comment
+      return commentRegistry.getById(targetData.id);
+    } else {  // `data.mode === 'addSection'` or `targetData === null`
+      // Page
+      return pageRegistry.getCurrent();
     }
   },
 
@@ -358,35 +287,26 @@ export default {
    * @private
    */
   restoreSessionDirectly() {
-    const rescue = [];
-    const addToRescue = (commentForm) => {
-      rescue.push({
-        headline: commentForm.headlineInput?.getValue(),
-        comment: commentForm.commentInput.getValue(),
-        summary: commentForm.summaryInput.getValue(),
-      });
-      this.remove(commentForm);
-    };
-
-    this.items.forEach((commentForm) => {
-      commentForm.restore(addToRescue);
-    });
-    if (rescue.length) {
-      this.rescueCommentFormsContent(rescue);
-    }
+    this.maybeShowRescueDialog(
+      this.items
+        .map((commentForm) => commentForm.restore())
+        .filter(defined)
+    );
   },
 
   /**
    * Show a modal with content of comment forms that we were unable to restore to the page (because
    * their target comments/sections disappeared, for example).
    *
-   * @param {object[]} content
+   * @param {object[]} [content]
    * @param {string} [content[].headline]
    * @param {string} content[].comment
    * @param {string} content[].summary
    * @private
    */
   maybeShowRescueDialog(content) {
+    if (!content?.length) return;
+
     const text = content
       .map((data) => (
         (data.headline === undefined ? '' : `${cd.s('rd-headline')}: ${data.headline}\n\n`) +
@@ -428,17 +348,7 @@ export default {
       // This is needed when the page is reloaded externally.
       this.reset();
 
-      const data = (new StorageItem('commentForms'))
-        .cleanUp((entry) =>
-          !entry.commentForms?.length ||
-          // FIXME: Remove `([keep] || entry.saveUnixTime)` after June 2024
-          (entry.saveTime || entry.saveUnixTime) < Date.now() - 60 * cd.g.msInDay
-        )
-        .save()
-        .get(mw.config.get('wgPageName'));
-      if (data?.commentForms) {
-        this.restoreSessionFromStorage(data);
-      }
+      this.restoreSessionFromStorage();
     } else {
       this.restoreSessionDirectly();
     }
@@ -452,37 +362,20 @@ export default {
    * @param {import('./BootProcess').default} bootProcess
    */
   setup(bootProcess) {
+    if (bootProcess.isFirstRun()) {
+      // Do it in the constructor because `OO.EventEmitter` can be unavailable on script load.
+      OO.mixinClass(this, OO.EventEmitter);
+
+      // Mixin constructor
+      OO.EventEmitter.call(this);
+
+      this.configureClosePageConfirmation();
+    }
+
     this.restoreSession(
       bootProcess.isFirstRun() ||
       bootProcess.passedData.isPageReloadedExternally
     );
-
-    this.maybeAddAddSectionForm(bootProcess.hideDtNewTopicForm());
-
-    if (bootProcess.isFirstRun()) {
-      this.configureClosePageConfirmation();
-    }
-  },
-
-  /**
-   * Add an "Add section" form or not depending on the URL.
-   *
-   * @param {object} dtNewTopicFormData
-   * @private
-   */
-  maybeAddAddSectionForm(dtNewTopicFormData) {
-    // May crash if the current URL contains undecodable "%" in the fragment,
-    // https://phabricator.wikimedia.org/T207365.
-    const { searchParams } = new URL(location.href);
-
-    // &action=edit&section=new when DT's New Topic Tool is enabled.
-    if (
-      searchParams.get('section') === 'new' ||
-      Number(searchParams.get('cdaddtopic')) ||
-      dtNewTopicFormData
-    ) {
-      this.createAddSectionForm(undefined, undefined, dtNewTopicFormData);
-    }
   },
 
   /**
