@@ -329,12 +329,15 @@ function processWatchlist($content) {
   }
 
   // There are 2 ^ 3 = 8 (!) different watchlist modes:
-  // * expanded and not
-  // * with item grouping and without
-  // * with enhanced fitlers and without
-
-  const lines = $content[0].querySelectorAll('.mw-changeslist-line:not(table)');
-  lines.forEach((line) => {
+  // * expanded and not (Special:Preferences#mw-prefsection-watchlist "Expand watchlist to show all
+  //   changes, not just the most recent")
+  // * with item grouping and without (Special:Preferences#mw-prefsection-rc "Group changes by page
+  //   in recent changes and watchlist")
+  // * with enhanced fitlers and without (Special:Preferences#mw-prefsection-watchlist "Use
+  //   non-JavaScript interface")
+  const lines = $content[0].querySelectorAll('.mw-changeslist-line[data-mw-revid]');
+  lines.forEach((lineOrBareTr) => {
+    const line = lineOrBareTr.className ? lineOrBareTr : lineOrBareTr.parentNode.parentNode;
     const nsMatch = line.className.match(/mw-changeslist-ns(\d+)/);
     const nsNumber = nsMatch && Number(nsMatch[1]);
     if (nsNumber === null) return;
