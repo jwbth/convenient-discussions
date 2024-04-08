@@ -1563,9 +1563,34 @@ class Comment extends CommentSkeleton {
     if (this.layersContainer === undefined) {
       let offsetParent;
 
-      // Use the last element, as in `Comment#getTextDirection()`.
-      const lastElement = this.elements[this.elements.length - 1];
-      const treeWalker = new TreeWalker(document.body, null, true, lastElement);
+      const treeWalker = new TreeWalker(
+        document.body,
+        null,
+        true,
+
+        // Start with the first or last element dependent on which is higher in the DOM hierarchy in
+        // terms of nesting level. There were issues with RTL in LTR (and vice versa) when we
+        // started with the first element, see
+        // https://github.com/jwbth/convenient-discussions/commit/9fcad9226a7019d6a643d7b17f1e824657302ebd.
+        // On the other hand, if we start with the first/last element, we get can in trouble when
+        // the start/end of the comment is inside a container while the end/start is not. A good
+        // example that combines both cases (press "up" on the "comments" "These images are too
+        // monochrome" and "So my suggestion is just, to..."):
+        // https://en.wikipedia.org/w/index.php?title=Wikipedia:Village_pump_(technical)&oldid=1217857130#c-Example-20240401111100-Indented_tables.
+        // This is a error, of course, that quoted comments are treated as real, but we can't do
+        // anything here.
+        (
+          (
+            this.elements.length === 1 ||
+            (
+              this.parser.constructor.getNestingLevel(this.elements[0]) <=
+              this.parser.constructor.getNestingLevel(this.elements[this.elements.length - 1])
+            )
+          ) ?
+            this.elements[0] :
+            this.elements[this.elements.length - 1]
+        )
+      );
 
       while (treeWalker.parentNode()) {
         const node = treeWalker.currentNode;

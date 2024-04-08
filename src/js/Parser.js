@@ -694,6 +694,17 @@ class Parser {
     }
     return { userName, linkType };
   }
+
+  static getNestingLevel(element) {
+    const treeWalker = new ElementsTreeWalker(element);
+
+    let nestingLevel = 0;
+    while (treeWalker.parentNode()) {
+      nestingLevel++;
+    }
+
+    return nestingLevel;
+  }
 }
 
 export default Parser;

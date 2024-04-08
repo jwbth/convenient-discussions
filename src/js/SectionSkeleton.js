@@ -128,17 +128,7 @@ class SectionSkeleton {
    * @private
    */
   initContent(heading, targets) {
-    const treeWalker = new TreeWalker(
-      this.parser.context.rootElement,
-      (node) => !isMetadataNode(node) && !node.classList.contains('cd-section-button-container'),
-      true,
-      this.headingElement
-    );
-
-    this.headingNestingLevel = 0;
-    while (treeWalker.parentNode()) {
-      this.headingNestingLevel++;
-    }
+    this.headingNestingLevel = this.parser.constructor.getNestingLevel(this.headingElement);
 
     // Find the next heading element
     const headingIndex = targets.indexOf(heading);
