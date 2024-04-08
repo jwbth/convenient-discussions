@@ -1260,8 +1260,8 @@ class CommentForm {
   async addEditNotices() {
     const title = pageRegistry.getCurrent().title.replace(/\//g, '-');
     let code = (
-`<div class="cd-editnotice">{{MediaWiki:Editnotice-${cd.g.namespaceNumber}}}</div>
-<div class="cd-editnotice">{{MediaWiki:Editnotice-${cd.g.namespaceNumber}-${title}}}</div>`
+      `<div class="cd-editnotice">{{MediaWiki:Editnotice-${cd.g.namespaceNumber}}}</div>` +
+      `<div class="cd-editnotice">{{MediaWiki:Editnotice-${cd.g.namespaceNumber}-${title}}}</div>`
     );
     if (this.preloadConfig?.editIntro) {
       code = `<div class="cd-editintro">{{${this.preloadConfig.editIntro}}}</div>\n` + code;
@@ -1276,9 +1276,13 @@ class CommentForm {
       return;
     }
 
+    const $editNotices = $(result.html.replace(/<div class="cd-editnotice"><\/div>/g, ''))
+      .find('.mw-parser-output');
+    if (!$editNotices.children().length && !$editNotices.text()) return;
+
     const mediaWikiNamespace = mw.config.get('wgFormattedNamespaces')[8];
     this.$messageArea
-      .append(result.html.replace(/<div class="cd-editnotice"><\/div>/g, ''))
+      .append($editNotices)
       .cdAddCloseButton()
       .find(`.cd-editnotice > a.new[title^="${mediaWikiNamespace}:Editnotice-"]`)
       .parent()
