@@ -99,7 +99,7 @@ export function isInline(node, countTextNodesAsInline = false) {
   } else {
     // This can be called from a worker.
     if (typeof window !== 'undefined') {
-      console.warn('Expensive operation: isInline() called for:', node);
+      console.warn('Convenient Discussions: Expensive operation: isInline() called for:', node);
 
       // This is very expensive. Avoid by any means.
       return window.getComputedStyle(node).display.startsWith('inline');

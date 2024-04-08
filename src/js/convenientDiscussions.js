@@ -311,15 +311,17 @@ Object.assign(cd.g, {
   msInDay: 1000 * 60 * 60 * 24,
 
   /**
-   * Popular elements that don't have the `display: inline` property in the default browser styles.
+   * Popular elements that can be met in page content and don't have the `display: inline` property
+   * in the default browser styles.
    *
    * @type {string[]}
    * @memberof convenientDiscussions.g
    */
-  popularNotInlineElements: ['BLOCKQUOTE', 'CENTER', 'DD', 'DIV', 'DL', 'DT', 'FIGURE', 'FIGCAPTION', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HR', 'INPUT', 'LI', 'LINK', 'OL', 'P', 'PRE', 'STYLE', 'TABLE', 'TBODY', 'TR', 'TH', 'TD', 'UL'],
+  popularNotInlineElements: ['BLOCKQUOTE', 'CENTER', 'DD', 'DIV', 'DL', 'DT', 'FIGURE', 'FIGCAPTION', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HR', 'INPUT', 'LI', 'LINK', 'OL', 'P', 'PRE', 'STYLE', 'TABLE', 'TBODY', 'TD', 'TFOOT', 'TH', 'THEAD', 'TR', 'UL'],
 
   /**
-   * Popular elements that do have the `display: inline` property in the default browser styles.
+   * Popular elements that can be met in page content and do have the `display: inline` property in
+   * the default browser styles.
    *
    * @type {string[]}
    * @memberof convenientDiscussions.g
