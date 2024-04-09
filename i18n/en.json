@@ -324,7 +324,7 @@
   "sd-page-commentform": "Comment form",
   "sd-page-timestamps": "Timestamps",
   "sd-page-notifications": "Notifications",
-  "sd-page-dataremoval": "Data removal",
+  "sd-page-dataremoval": "Data deletion",
   "sd-close-confirm": "The settings were not saved. Are you sure you want to close the window?",
   "sd-saved": "The settings have been saved successfully. Reload the page to apply them.",
   "sd-reset": "Reset settings (in all sections)",
