@@ -11,9 +11,7 @@ import Comment from './Comment';
 import DtSubscriptions from './DtSubscriptions';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import LegacySubscriptions from './LegacySubscriptions';
-import LiveTimestamp from './LiveTimestamp';
 import Parser from './Parser';
-import Thread from './Thread';
 import addCommentLinks from './addCommentLinks';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
@@ -22,15 +20,15 @@ import debug from './debug';
 import init from './init';
 import navPanel from './navPanel';
 import notifications from './notifications';
-import pageNav from './pageNav';
 import pageRegistry from './pageRegistry';
 import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import toc from './toc';
 import userRegistry from './userRegistry';
 import { getUserInfo } from './utils-api';
-import { defined, definedAndNotNull, getLastArrayElementOrSelf, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
-import { copyText, getExtendedRect, getFooter, getVisibilityByRects, isCmdModifierPressed, isInputFocused, keyCombination, skin$, wrapHtml } from './utils-window';
+import { defined, definedAndNotNull, flat, getLastArrayElementOrSelf, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
+import { mixEventEmitterIntoObject } from './utils-oojs';
+import { copyText, getVisibilityByRects, skin$, wrapHtml } from './utils-window';
 import Worker from './worker-gate';
 
 export default {
@@ -49,7 +47,7 @@ export default {
 
   /**
    * _For internal use._ Assign some properties required by the controller - those which are not
-   * known from the beginning.
+   * known from the beginning - and run the boot process (on talk page or comment links page).
    */
   init() {
     this.$content ||= $('#mw-content-text');
@@ -58,11 +56,11 @@ export default {
       $(document.body).addClass('cd-mobile');
     }
 
-    // Not constants: `go()` may run a second time, see `addFooterLink()`.
+    // Not constants: `go()` may run a second time, see `app~maybeAddFooterSwitcher()`.
     const isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
     const isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);
 
-    // See `controller.isDefinitelyTalkPage`
+    // See `.isDefinitelyTalkPage()`
     this.definitelyTalkPage = Boolean(
       isEnabledInQuery ||
 
@@ -78,7 +76,7 @@ export default {
       )
     );
 
-    // See `controller.isArticlePageTalkPage()`
+    // See `.isArticlePageTalkPage()`
     this.articlePageTalkPage = (
       (!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
       !this.$content.find('.cd-notTalkPage').length &&
@@ -88,7 +86,7 @@ export default {
       !(typeof cdOnlyRunByFooterLink !== 'undefined' && window.cdOnlyRunByFooterLink)
     );
 
-    // See `controller.isDiffPage()`
+    // See `.isDiffPage()`
     this.diffPage = /[?&]diff=[^&]/.test(location.search);
 
     this.talkPage = Boolean(
@@ -97,8 +95,8 @@ export default {
       (isEnabledInQuery || this.articlePageTalkPage)
     );
 
-    this.loadToTalkPage();
-    this.loadToCommentLinksPage();
+    this.bootOnTalkPage();
+    this.bootOnCommentLinksPage();
   },
 
   /**
@@ -143,15 +141,13 @@ export default {
   reset() {
     this.cleanUpUrlAndDom();
     this.mutationObserver?.disconnect();
-
     commentRegistry.reset();
     sectionRegistry.reset();
-
     this.content = {};
-
     this.addedCommentCount = 0;
     this.areRelevantCommentsAdded = false;
     this.relevantAddedCommentIds = null;
+    delete this.dtSubscribableThreads;
     this.updatePageTitle();
   },
 
@@ -205,9 +201,9 @@ export default {
    * Check whether the current page is a diff page.
    *
    * This is not a constant: the diff may be removed from the page (and the URL updated, see
-   * `controller.cleanUpUrlAndDom`) when it's for the last revision and the page is reloaded using
-   * the script. `wgIsArticle` config value is not taken into account: if the "Do not show page
-   * content below diffs" MediaWiki setting is on, `wgIsArticle` is false.
+   * `.cleanUpUrlAndDom()`) when it's for the last revision and the page is reloaded using the
+   * script. `wgIsArticle` config value is not taken into account: if the "Do not show page content
+   * below diffs" MediaWiki setting is on, `wgIsArticle` is false.
    *
    * @returns {boolean}
    */
@@ -235,55 +231,6 @@ export default {
    */
   isArticlePageTalkPage() {
     return this.articlePageTalkPage;
-  },
-
-  /**
-   * Check whether the current page exists (is not 404).
-   *
-   * @returns {boolean}
-   */
-  doesPageExist() {
-    return Boolean(mw.config.get('wgArticleId'));
-  },
-
-  /**
-   * Check whether the current page is an active talk page: existing, the current revision, not an
-   * archive page.
-   *
-   * This value isn't static:
-   *   1. A 404 page doesn't have an ID and is considered inactive, but if the user adds a topic to
-   *      it, it will become active and get an ID.
-   *   2. The user may switch to another revision using RevisionSlider.
-   *   3. On a really rare occasion, an active page may become inactive if it becomes identified as
-   *      an archive page. This possibility is currently switched off.
-   *
-   * @returns {boolean}
-   */
-  isPageActive() {
-    return (
-      this.talkPage &&
-      this.doesPageExist() &&
-      this.isCurrentRevision() &&
-      !pageRegistry.getCurrent().isArchivePage()
-    );
-  },
-
-  /**
-   * Check whether the current page is an archive and the displayed revision the current one.
-   *
-   * @returns {boolean}
-   */
-  isPageCurrentArchive() {
-    return this.isCurrentRevision() && pageRegistry.getCurrent().isArchivePage();
-  },
-
-  /**
-   * Check whether the current page is eligible for submitting comments to.
-   *
-   * @returns {boolean}
-   */
-  isPageCommentable() {
-    return this.talkPage && (this.isPageActive() || !this.doesPageExist());
   },
 
   /**
@@ -360,7 +307,7 @@ export default {
   },
 
   /**
-   * Get the offset data related to `controller.$contentColumn`.
+   * Get the offset data related to `.$contentColumn`.
    *
    * @param {boolean} reset Whether to bypass cache.
    * @returns {object}
@@ -415,20 +362,20 @@ export default {
    * Save the scroll position relative to the first element in the viewport looking from the top of
    * the page.
    *
-   * @param {?object} [switchToAbsolute=null] If an object with the `saveTocHeight` property and the
-   *   viewport is above the bottom of the table of contents, then use
+   * @param {?boolean} [switchToAbsolute=null] If this value is `true` or `false` and the viewport
+   *   is above the bottom of the table of contents, then use
    *   {@link module:controller.saveScrollPosition} (this allows for better precision).
    * @param {number} scrollY Cached horizontal scroll value used to avoid reflow.
    */
   saveRelativeScrollPosition(switchToAbsolute = null, scrollY = window.scrollY) {
     // The viewport has the TOC bottom or is above it.
     if (
-      switchToAbsolute &&
+      switchToAbsolute !== null &&
       !toc.isInSidebar() &&
       toc.isPresent() &&
       scrollY < toc.getBottomOffset()
     ) {
-      this.saveScrollPosition(switchToAbsolute.saveTocHeight);
+      this.saveScrollPosition(switchToAbsolute);
     } else {
       this.scrollData.element = null;
       this.scrollData.elementTop = null;
@@ -791,18 +738,29 @@ export default {
 
     // Don't throttle. Without throttling, performance is generally OK, while the "frame rate" is
     // about 50 (so, the reaction time is about 20ms). Lower values would be less comfortable.
-    commentRegistry.highlightHovered(e);
+    this.emit('mousemove', e);
   },
 
+  /**
+   * _For internal use._ Are there elements obstructing the content area, like popups or windows.
+   *
+   * @returns {boolean}
+   */
   isObstructingElementHovered() {
     if (this.notificationArea === undefined) {
-      this.notificationArea = document.querySelector('.mw-notification-area');
-      this.tocButton = document.getElementById('vector-toc-collapsed-button');
+      this.notificationArea = $('.mw-notification-area')[0];
+      this.tocButton = $('#vector-page-titlebar-toc')[0];
       this.stickyHeader = $('#vector-sticky-header')[0];
+      this.tocContent = $('.vector-dropdown-content')[0];
     }
 
     OO.ui.throttle(() => {
-      // Use vanilla JS where possible
+      // We just list everything we know that can stand between the user and the content area where
+      // comments reside. This is a very ugly method, because I honestly don't know the
+      // alternatives. We can't put any element to check `:hover` on it, because the absence of such
+      // an element is the reason why we need to check for obstructing elements in the first place.
+      // On the other hand, if this incorrectly returns `false`, this doesn't really affect anything
+      // important. It's just for better visual effects. Use vanilla JS where possible.
       this.isObstructingElementHoveredCached = Boolean(
         [
           ...(this.notificationArea?.querySelectorAll('.mw-notification') || []),
@@ -815,6 +773,7 @@ export default {
             .find((menu) => menu?.isVisible())
             ?.$element[0],
           this.tocButton,
+          this.tocContent,
         ]
           .filter(definedAndNotNull)
           .some((el) => el.matches(':hover')) ||
@@ -828,75 +787,29 @@ export default {
   },
 
   /**
-   * _For internal use._ Handles the window `resize` event as well as `orientationchange`.
+   * Handles the window `resize` event as well as `orientationchange`.
+   *
+   * @private
    */
   async handleWindowResize() {
     // `sleep()`, because it seems like sometimes it doesn't have time to update.
     await sleep(cd.g.skin === 'vector-2022' ? 100 : 0);
 
     this.getContentColumnOffsets(true);
-    commentRegistry.maybeRedrawLayers(true);
-    Thread.updateLines();
-    pageNav.updateWidth();
-    commentFormRegistry.adjustLabels();
+    this.emit('resize');
     this.handleScroll();
   },
 
   /**
-   * _For internal use._ Handles the document `keydown` event.
+   * Handles `keydown` event on the document.
    *
    * @param {Event} e
+   * @private
    */
   handleGlobalKeyDown(e) {
     if (this.isPageOverlayOn()) return;
 
-    if (
-      // Ctrl+Alt+Q
-      keyCombination(e, 81, ['cmd', 'alt']) ||
-
-      // Q
-      (keyCombination(e, 81) && !isInputFocused())
-    ) {
-      const lastActiveCommentForm = commentFormRegistry.getLastActive();
-      const comment = commentRegistry.getSelectedComment();
-      if (lastActiveCommentForm) {
-        e.preventDefault();
-        lastActiveCommentForm.quote(isCmdModifierPressed(e), comment);
-      } else {
-        if (comment?.isActionable) {
-          e.preventDefault();
-          comment.reply();
-        }
-      }
-    }
-
-    if (navPanel.isMounted()) {
-      // R
-      if (keyCombination(e, 82) && !isInputFocused()) {
-        navPanel.refreshClick();
-      }
-
-      // W
-      if (keyCombination(e, 87) && !isInputFocused()) {
-        navPanel.goToPreviousNewComment();
-      }
-
-      // S
-      if (keyCombination(e, 83) && !isInputFocused()) {
-        navPanel.goToNextNewComment();
-      }
-
-      // F
-      if (keyCombination(e, 70) && !isInputFocused()) {
-        navPanel.goToFirstUnseenComment();
-      }
-
-      // C
-      if (keyCombination(e, 67) && !isInputFocused()) {
-        e.preventDefault();
-        navPanel.goToNextCommentForm(true);
-      }
-    }
+    this.emit('keydown', e);
   },
 
   /**
@@ -908,6 +821,8 @@ export default {
     // Scroll will be handled when the autoscroll is finished.
     if (this.isAutoScrolling()) return;
 
+    this.mouseMoveBlocked = true;
+
     // Throttle handling scroll to run not more than once in 300ms. Wait before running, otherwise
     // comments may be registered as seen after a press of Page Down/Page Up. One scroll in Chrome,
     // Firefox with Page Up/Page Down takes a little less than 200ms, but 200ms proved to be not
@@ -917,14 +832,8 @@ export default {
 
       if (this.isAutoScrolling()) return;
 
-      if (this.isPageActive()) {
-        commentRegistry.registerSeen();
-        navPanel.updateCommentFormButton();
-      }
-      pageNav.update();
-      sectionRegistry.maybeUpdateVisibility();
+      this.emit('scroll');
     }, 300);
-    this.mouseMoveBlocked = true;
     this.throttledHandleScroll();
 
     if (window.scrollX !== this.lastScrollX) {
@@ -934,76 +843,56 @@ export default {
   },
 
   /**
-   * _For internal use._ Handle a `horizontalscroll` event, triggered from
-   * {@link module:controller.handleScroll}.
+   * Handle a `horizontalscroll` event, triggered from {@link module:controller.handleScroll}.
+   *
+   * @private
    */
   handleHorizontalScroll() {
-    pageNav.updateWidth();
+    this.emit('horizontalscroll');
   },
 
   /**
-   * _For internal use._ Handle a `popstate` event, including clicks on links pointing to comment
-   * anchors.
+   * Handle a `popstate` event, including clicks on links pointing to comment anchors.
+   *
+   * @private
    */
   handlePopState() {
-    let fragment = location.hash.slice(1);
-    if (Comment.isAnyId(fragment)) {
-      // Don't jump to the comment if the user pressed "Back"/"Forward" in the browser or if
-      // `history.pushState()` is called from `Comment#scrollTo()` (after clicks on added (gray)
-      // items in the TOC). A marginal state of this happening is when a page with a comment ID in
-      // the fragment is opened and then a link with the same fragment is clicked.
-      if (history.state?.cdJumpedToComment) return;
-
-      try {
-        fragment = decodeURIComponent(fragment);
-      } catch (e) {
-        console.error(e);
-        return;
-      }
-      commentRegistry.getByAnyId(fragment, true)?.scrollTo();
+    // Use `popstate`, not `hashchange`, because we need to handle cases when the user clicks a
+    // link with the same fragment as is in the URL.
+    try {
+      this.emit('popstate', decodeURIComponent(location.hash.slice(1)));
+    } catch (e) {
+      console.error(e);
     }
 
     // Make sure the title has no incorrect new comment count when the user presses the "Back"
-    // button after a page reload.
+    // button after an (internal) page reload.
     this.updatePageTitle();
   },
 
   /**
-   * _For internal use._ Handle a `selectionChange` event.
+   * Handle a `selectionchange` event.
+   *
+   * @private
    */
   handleSelectionChange() {
-    this.throttledHandleSelectionChange ||= OO.ui.throttle(
-      commentRegistry.getSelectedComment.bind(commentRegistry),
-      200
-    );
+    this.throttledHandleSelectionChange ||= OO.ui.throttle(() => {
+      this.emit('selectionchange');
+    }, 200);
     this.throttledHandleSelectionChange();
   },
 
   /**
-   * _For internal use._ Handle page (content area) mutations.
+   * Handle page (content area) mutations.
+   *
+   * @private
    */
-  handlePageMutations() {
+  handlePageMutate() {
     if (this.booting) return;
 
-    const floatingRects = this.getFloatingElements().map(getExtendedRect);
+    this.emit('mutate');
 
-    commentRegistry.maybeRedrawLayers(false, false, floatingRects);
-
-    const updateThreadLines = () => {
-      Thread.updateLines(floatingRects);
-      $(document).off('mousemove', updateThreadLines);
-      this.isUpdateThreadLinesHandlerAttached = false;
-    };
-
-    if (!this.isUpdateThreadLinesHandlerAttached && settings.get('enableThreads')) {
-      // Update only on mouse move to prevent short freezings of a page when there is a comment form
-      // in the beginning of a very long page and the input is changed so that everything below the
-      // form shifts vertically.
-      $(document).on('mousemove', updateThreadLines);
-      this.isUpdateThreadLinesHandlerAttached = true;
-    }
-
-    // Could also run handleScroll() here, but not sure, as it will double the execution
+    // Could also run `this.handleScroll()` here, but not sure, as it would double the execution
     // time with rare effect.
   },
 
@@ -1011,6 +900,7 @@ export default {
    * Handle a click on an "Add topic" button excluding those added by the script.
    *
    * @param {Event} e
+   * @private
    */
   handleWildAddTopicButtonClick(e) {
     if (e.ctrlKey || e.shiftKey || e.metaKey) return;
@@ -1112,7 +1002,7 @@ export default {
   async tryExecuteBootProcess(isReload) {
     this.booting = true;
 
-    // We could say "let it crash", but, well, unforeseen errors in BootProcess#execute() are just
+    // We could say "let it crash", but, well, unforeseen errors in `BootProcess#execute()` are just
     // too likely to go without a safeguard.
     try {
       await this.bootProcess.execute(isReload);
@@ -1138,10 +1028,12 @@ export default {
   },
 
   /**
-   * _For internal use._ Load the data required for the script to run on a talk page and,
-   * respectively, execute the {@link BootProcess boot process}.
+   * Load the data required for the script to run on a talk page and execute the
+   * {@link BootProcess boot process}.
+   *
+   * @private
    */
-  loadToTalkPage() {
+  bootOnTalkPage() {
     if (!this.talkPage) return;
 
     debug.stopTimer('start');
@@ -1205,9 +1097,9 @@ export default {
     if (modules.every((module) => mw.loader.getState(module) === 'ready')) {
       // If there is no data to load and, therefore, no period of time within which a reflow (layout
       // thrashing) could happen without impeding performance, we cache the value so that it could
-      // be used in controller.saveRelativeScrollPosition without causing a reflow.
+      // be used in `.saveRelativeScrollPosition()` without causing a reflow.
       if (siteDataRequests.every((request) => request.state() === 'resolved')) {
-        this.bootProcess.scrollY = window.scrollY;
+        this.bootProcess.passedData = { scrollY: window.scrollY };
       }
     } else {
       modulesRequest = mw.loader.using(modules);
@@ -1216,6 +1108,9 @@ export default {
     this.showLoadingOverlay();
     Promise.all([modulesRequest, ...siteDataRequests]).then(
       () => {
+        // Do it here because `OO.EventEmitter` can be unavailable before.
+        mixEventEmitterIntoObject(this);
+
         this.tryExecuteBootProcess();
       },
       (e) => {
@@ -1273,23 +1168,7 @@ export default {
     // request is received. Otherwise, if the request fails, the user would be left with a
     // dysfunctional page.
 
-    // Stop all animations, clear all timeouts.
-    commentRegistry.getAll().forEach((comment) => {
-      comment.$animatedBackground?.add(comment.$marker).stop(true, true);
-    });
-
-    // If the page is reloaded externally, its content is already replaced, so we won't break
-    // anything if we remove the layers containers. And we better do so to avoid comment layers
-    // hanging around without their owner comments.
-    if (bootProcess.passedData.isPageReloadedExternally) {
-      commentRegistry.resetLayers();
-    }
-
-    // A check in light of the existence of RevisionSlider
-    if (this.isCurrentRevision()) {
-      // In case checkboxes were changed programmatically
-      commentFormRegistry.saveSession();
-    }
+    this.emit('beforereload', bootProcess.passedData);
 
     if (!bootProcess.passedData.commentIds && !bootProcess.passedData.sectionId) {
       this.saveScrollPosition();
@@ -1299,7 +1178,7 @@ export default {
 
     debug.init();
     debug.startTimer('total time');
-    debug.startTimer('getting HTML');
+    debug.startTimer('get HTML');
 
     this.showLoadingOverlay();
 
@@ -1309,9 +1188,18 @@ export default {
       console.warn(e);
     });
 
-    let parseData;
     try {
-      parseData = await pageRegistry.getCurrent().parse(null, false, true);
+      const parseData = await pageRegistry.getCurrent().parse(null, false, true);
+      bootProcess.passedData.html = parseData.text;
+      bootProcess.passedData.toc = parseData.sections;
+      bootProcess.passedData.hideToc = parseData.hidetoc;
+      mw.config.set({
+        wgRevisionId: parseData.revid,
+        wgCurRevisionId: parseData.revid,
+      });
+      mw.loader.load(parseData.modules);
+      mw.loader.load(parseData.modulestyles);
+      mw.config.set(parseData.jsconfigvars);
     } catch (e) {
       this.hideLoadingOverlay();
       if (bootProcess.passedData.wasCommentFormSubmitted) {
@@ -1323,44 +1211,30 @@ export default {
       }
     }
 
-    bootProcess.passedData.html = parseData.text;
-    bootProcess.passedData.toc = parseData.sections;
-    bootProcess.passedData.hideToc = parseData.hidetoc;
-    mw.config.set({
-      wgRevisionId: parseData.revid,
-      wgCurRevisionId: parseData.revid,
-    });
-    mw.loader.load(parseData.modules);
-    mw.loader.load(parseData.modulestyles);
-    mw.config.set(parseData.jsconfigvars);
-
     // Get IDs of unseen comments. This is used to arrange that they will still be there after
     // replying on or refreshing the page.
-    const unseenCommentIds = commentRegistry.getAll()
+    bootProcess.passedData.unseenCommentIds = commentRegistry.getAll()
       .filter((comment) => comment.isSeen === false)
       .map((comment) => comment.id);
-    bootProcess.passedData.unseenCommentIds = unseenCommentIds;
 
     // At this point, the boot process can't be interrupted, so we can remove all traces of the
     // current page state.
     this.bootProcess = bootProcess;
 
-    commentFormRegistry.detach();
+    this.emit('reload');
 
-    // Just submitted form. Forms that should stay are detached above.
+    // Just submitted "Add section" form (it is outside of the `.$root` element). Forms that should
+    // stay are detached above.
+    this.$addSectionButtonContainer?.remove();
     $('.cd-commentForm-addSection').remove();
 
-    LiveTimestamp.reset();
     this.reset();
-    this.$addSectionButtonContainer?.remove();
-    commentRegistry.resetLayers();
 
-    debug.stopTimer('getting HTML');
+    debug.stopTimer('get HTML');
 
     await this.tryExecuteBootProcess(true);
 
     toc.maybeHide();
-
     if (!this.bootProcess.passedData.commentIds && !this.bootProcess.passedData.sectionId) {
       this.restoreScrollPosition(false);
     }
@@ -1456,9 +1330,9 @@ export default {
 
     // Mutation observer doesn't follow all possible comment position changes (for example,
     // initiated with adding new CSS) unfortunately.
-    setInterval(this.handlePageMutations.bind(this), 1000);
+    setInterval(this.handlePageMutate.bind(this), 1000);
 
-    if (this.isPageCommentable()) {
+    if (pageRegistry.getCurrent().isCommentable()) {
       $(document).on('keydown', this.handleGlobalKeyDown.bind(this));
     }
 
@@ -1469,9 +1343,9 @@ export default {
    * Bind a click handler to comment links to make them work as in-script comment links.
    *
    * This method exists in addition to {@link module:controller.handlePopState}. It's preferable to
-   * have click events handled by this method instead of `controller.handlePopState()` because that
-   * method, if encounters `cdJumpedToComment` in the history state, doesn't scroll to the comment
-   * which is a wrong behavior when the user clicks a link.
+   * have click events handled by this method instead of `.handlePopState()` because that method, if
+   * encounters `cdJumpedToComment` in the history state, doesn't scroll to the comment which is a
+   * wrong behavior when the user clicks a link.
    *
    * @param {external:jQuery} $content
    * @private
@@ -1491,21 +1365,6 @@ export default {
           pushState: true,
         });
       });
-  },
-
-  /**
-   * Add a settings link to the page footer.
-   */
-  addSettingsLinkToFooter() {
-    getFooter().append(
-      $('<li>').append(
-        $('<a>')
-          .text(cd.s('footer-settings'))
-          .on('click', () => {
-            this.showSettingsDialog();
-          })
-      )
-    );
   },
 
   /**
@@ -1608,10 +1467,12 @@ export default {
   },
 
   /**
-   * _For internal use._ Load the data required for the script to process the page as a log page and
+   * Load the data required for the script to process the page as a log page and
    * {@link module:addCommentLinks process it}.
+   *
+   * @private
    */
-  loadToCommentLinksPage() {
+  bootOnCommentLinksPage() {
     if (
       !this.isWatchlistPage() &&
       !this.isContributionsPage() &&
@@ -1689,21 +1550,6 @@ export default {
    */
   getRootElement() {
     return this.rootElement;
-  },
-
-  /**
-   * Show a settings dialog.
-   *
-   * @param {string} [initalPageName]
-   */
-  showSettingsDialog(initalPageName) {
-    if ($('.cd-dialog-settings').length) return;
-
-    const dialog = new (require('./SettingsDialog').default)(initalPageName);
-    this.getWindowManager('settings').addWindows([dialog]);
-    this.getWindowManager('settings').openWindow(dialog);
-
-    cd.tests.settingsDialog = dialog;
   },
 
   /**
@@ -1816,7 +1662,7 @@ export default {
       const layerClassRegexp = /^cd-comment(-underlay|-overlay|Layers)/;
       if (records.every((record) => layerClassRegexp.test(record.target.className))) return;
 
-      this.handlePageMutations();
+      this.handlePageMutate();
     });
     this.mutationObserver.observe(this.$content[0], {
       attributes: true,
@@ -2011,7 +1857,7 @@ export default {
       // Just in case, old browsers. TODO: delete?
       window.focus();
 
-      commentRegistry.maybeRedrawLayers(false, true);
+      this.emit('desktopnotificationclick');
 
       this.reload({
         commentIds: [comment.id],
@@ -2068,9 +1914,9 @@ export default {
     if (lastActiveCommentForm) {
       const ending = lastActiveCommentForm
         .getTarget()
-        .getCommentFormPropertyName()
-        .toLowerCase()
-        .replace(/Form$/, '');
+        .getCommentFormPropertyName(lastActiveCommentForm.getMode())
+        .replace(/Form$/, '')
+        .toLowerCase();
       title = cd.s(`page-title-${ending}`, title);
     }
 
@@ -2117,11 +1963,9 @@ export default {
    * @returns {import('./Subscriptions').default}
    */
   getSubscriptionsInstance() {
-    if (!this.subscriptionsInstance) {
-      this.subscriptionsInstance = new (
-        settings.get('useTopicSubscription') ? DtSubscriptions : LegacySubscriptions
-      )();
-    }
+    this.subscriptionsInstance ||= new (
+      settings.get('useTopicSubscription') ? DtSubscriptions : LegacySubscriptions
+    )();
 
     return this.subscriptionsInstance;
   },
@@ -2209,5 +2053,25 @@ export default {
     if (dtHandler) {
       $(document.body).off('click', dtHandler);
     }
+  },
+
+  /**
+   * Get the list of DiscussionTools threads that are related to subscribable (2-level) threads.
+   * This is updated on page reload.
+   *
+   * @returns {object[]}
+   */
+  getDtSubscribableThreads() {
+    this.dtSubscribableThreads ||= mw.config.get('wgDiscussionToolsPageThreads')
+      ?.concat(
+        flat(
+          mw.config.get('wgDiscussionToolsPageThreads')
+            .filter((thread) => thread.headingLevel === 1)
+            .map((thread) => thread.replies)
+        )
+      )
+      .filter((thread) => thread.headingLevel === 2);
+
+    return this.dtSubscribableThreads;
   },
 };

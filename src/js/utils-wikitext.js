@@ -6,7 +6,6 @@
 
 import TextMasker from './TextMasker';
 import cd from './cd';
-import userRegistry from './userRegistry';
 import { decodeHtmlEntities, generatePageNamePattern, removeDirMarks } from './utils-general';
 import { parseTimestamp } from './utils-timestamp';
 
@@ -152,6 +151,76 @@ export function encodeWikilink(link) {
 }
 
 /**
+ * Extract signatures from wikitext.
+ *
+ * Only basic signature parsing is performed here; more precise signature text identification is
+ * performed in `CommentSource#adjustSignature`. See also `CommentSource#adjust`.
+ *
+ * @param {string} code Code to extract signatures from.
+ * @returns {object[]}
+ */
+export function extractSignatures(code) {
+  // TODO: Instead of removing only lines containing antipatterns from wikitext, hide entire
+  // templates and tags?
+  // But keep in mind that this code may still be part of comments.
+  const noSignatureClassesPattern = cd.g.noSignatureClasses.join('\\b|\\b');
+  const commentAntipatternsPatternParts = [
+    `class=(['"])[^'"\\n]*(?:\\b${noSignatureClassesPattern}\\b)[^'"\\n]*\\1`
+  ];
+  if (cd.config.noSignatureTemplates.length) {
+    const pattern = cd.config.noSignatureTemplates.map(generatePageNamePattern).join('|');
+    commentAntipatternsPatternParts.push(`\\{\\{ *(?:${pattern}) *(?:\\||\\}\\})`);
+  }
+  commentAntipatternsPatternParts.push(
+    ...cd.config.commentAntipatterns.map((regexp) => regexp.source)
+  );
+  const commentAntipatternsPattern = commentAntipatternsPatternParts.join('|');
+  const commentAntipatternsRegexp = new RegExp(`^.*(?:${commentAntipatternsPattern}).*$(?:)`, 'mg');
+
+  // Hide HTML comments, quotes and lines containing antipatterns.
+  const adjustedCode = maskDistractingCode(code)
+    .replace(
+      cd.g.quoteRegexp,
+      (s, beginning, content, ending) => beginning + ' '.repeat(content.length) + ending
+    )
+    .replace(commentAntipatternsRegexp, (s) => ' '.repeat(s.length));
+
+  let signatures = extractRegularSignatures(adjustedCode, code);
+  const unsigneds = extractUnsigneds(adjustedCode, code, signatures);
+  signatures.push(...unsigneds);
+
+  // This is for the procedure adding anchors to comments linked from the comment, see
+  // CommentForm#prepareNewPageCode.
+  const signatureIndex = adjustedCode.indexOf(cd.g.signCode);
+  if (signatureIndex !== -1) {
+    signatures.push({
+      // `require()` to avoid circular dependency
+      author: require('./userRegistry').default.getCurrent().getName(),
+
+      startIndex: signatureIndex,
+      nextCommentStartIndex: signatureIndex + adjustedCode.slice(signatureIndex).indexOf('\n') + 1,
+    });
+  }
+
+  if (unsigneds.length || signatureIndex !== -1) {
+    signatures.sort((sig1, sig2) => sig1.startIndex > sig2.startIndex ? 1 : -1);
+  }
+
+  signatures = signatures.filter((sig) => sig.author);
+  signatures.forEach((sig, i) => {
+    sig.commentStartIndex = i === 0 ? 0 : signatures[i - 1].nextCommentStartIndex;
+  });
+  signatures.forEach((sig, i) => {
+    const { date } = sig.timestamp && parseTimestamp(sig.timestamp) || {};
+    sig.index = i;
+    sig.date = date;
+    delete sig.nextCommentStartIndex;
+  });
+
+  return signatures;
+}
+
+/**
  * Extract signatures that don't come from the unsigned templates from wikitext.
  *
  * @param {string} adjustedCode Adjusted page code.
@@ -233,6 +302,9 @@ function extractRegularSignatures(adjustedCode, code) {
       // probably having something to do with difference between regular length and byte length.
       if (!lastAuthorLink) continue;
 
+      // `require()` to avoid circular dependency
+      const userRegistry = require('./userRegistry').default;
+
       author = userRegistry.get(decodeHtmlEntities(lastAuthorLink));
 
       // Rectify the author name if needed.
@@ -279,6 +351,9 @@ function extractUnsigneds(adjustedCode, code, signatures) {
   if (!cd.config.unsignedTemplates.length) {
     return [];
   }
+
+  // `require()` to avoid circular dependency
+  const userRegistry = require('./userRegistry').default;
 
   const unsigneds = [];
   const unsignedTemplatesRegexp = new RegExp(cd.g.unsignedTemplatesPattern + '.*\\n', 'g');
@@ -330,74 +405,6 @@ function extractUnsigneds(adjustedCode, code, signatures) {
   }
 
   return unsigneds;
-}
-
-/**
- * Extract signatures from wikitext.
- *
- * Only basic signature parsing is performed here; more precise signature text identification is
- * performed in `CommentSource#adjustSignature`. See also `CommentSource#adjust`.
- *
- * @param {string} code Code to extract signatures from.
- * @returns {object[]}
- */
-export function extractSignatures(code) {
-  // TODO: Instead of removing only lines containing antipatterns from wikitext, hide entire
-  // templates and tags?
-  // But keep in mind that this code may still be part of comments.
-  const noSignatureClassesPattern = cd.g.noSignatureClasses.join('\\b|\\b');
-  const commentAntipatternsPatternParts = [
-    `class=(['"])[^'"\\n]*(?:\\b${noSignatureClassesPattern}\\b)[^'"\\n]*\\1`
-  ];
-  if (cd.config.noSignatureTemplates.length) {
-    const pattern = cd.config.noSignatureTemplates.map(generatePageNamePattern).join('|');
-    commentAntipatternsPatternParts.push(`\\{\\{ *(?:${pattern}) *(?:\\||\\}\\})`);
-  }
-  commentAntipatternsPatternParts.push(
-    ...cd.config.commentAntipatterns.map((regexp) => regexp.source)
-  );
-  const commentAntipatternsPattern = commentAntipatternsPatternParts.join('|');
-  const commentAntipatternsRegexp = new RegExp(`^.*(?:${commentAntipatternsPattern}).*$(?:)`, 'mg');
-
-  // Hide HTML comments, quotes and lines containing antipatterns.
-  const adjustedCode = maskDistractingCode(code)
-    .replace(
-      cd.g.quoteRegexp,
-      (s, beginning, content, ending) => beginning + ' '.repeat(content.length) + ending
-    )
-    .replace(commentAntipatternsRegexp, (s) => ' '.repeat(s.length));
-
-  let signatures = extractRegularSignatures(adjustedCode, code);
-  const unsigneds = extractUnsigneds(adjustedCode, code, signatures);
-  signatures.push(...unsigneds);
-
-  // This is for the procedure adding anchors to comments linked from the comment, see
-  // CommentForm#prepareNewPageCode.
-  const signatureIndex = adjustedCode.indexOf(cd.g.signCode);
-  if (signatureIndex !== -1) {
-    signatures.push({
-      author: userRegistry.getCurrent().getName(),
-      startIndex: signatureIndex,
-      nextCommentStartIndex: signatureIndex + adjustedCode.slice(signatureIndex).indexOf('\n') + 1,
-    });
-  }
-
-  if (unsigneds.length || signatureIndex !== -1) {
-    signatures.sort((sig1, sig2) => sig1.startIndex > sig2.startIndex ? 1 : -1);
-  }
-
-  signatures = signatures.filter((sig) => sig.author);
-  signatures.forEach((sig, i) => {
-    sig.commentStartIndex = i === 0 ? 0 : signatures[i - 1].nextCommentStartIndex;
-  });
-  signatures.forEach((sig, i) => {
-    const { date } = sig.timestamp && parseTimestamp(sig.timestamp) || {};
-    sig.index = i;
-    sig.date = date;
-    delete sig.nextCommentStartIndex;
-  });
-
-  return signatures;
 }
 
 /**

@@ -275,7 +275,7 @@
   "popup-manyForms-title": "Did you know?",
   "popup-manyForms-text": "In Convenient Discussions, you can type many comments simultaneously in separate forms and then send them one by one. The text in other forms won't be lost when you submit one of the forms. Give it a try!",
   "popup-upload-title": "New feature",
-  "popup-upload-text": "You can now upload screenshots and other images to Commons in 3 clicks! Just paste or drag an image into the comment input, choose the preset, and click \"{{int:convenient-discussions-ud-uploadandsave}}\".",
+  "popup-upload-text": "You can now upload screenshots and other images to Commons in three clicks! Just paste or drag an image into the comment input, choose the preset, and click \"{{int:convenient-discussions-ud-uploadandsave}}\".",
 
   "navpanel-refresh": "Refresh page",
   "navpanel-previous": "Go to the previous new comment",

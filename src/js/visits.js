@@ -54,7 +54,7 @@ export default {
   async process(bootProcess) {
     const currentTime = Math.floor(Date.now() / 1000);
 
-    this.update(currentTime, bootProcess);
+    this.update(currentTime, bootProcess.passedData.markAsRead);
 
     // FIXME: decouple the following
 
@@ -140,10 +140,10 @@ export default {
    * Remove timestamps that we don't need anymore from the visits array.
    *
    * @param {number} currentTime
-   * @param {import('./BootProcess').default} bootProcess
+   * @param {boolean} markAsReadRequested
    * @private
    */
-  update(currentTime, bootProcess) {
+  update(currentTime, markAsReadRequested) {
     for (let i = this.currentPageData.length - 1; i >= 0; i--) {
       if (
         this.currentPageData[i] < currentTime - 60 * settings.get('highlightNewInterval') ||
@@ -153,7 +153,7 @@ export default {
         // the user shouldn't get comments highlighted again all of a sudden.
         !settings.get('highlightNewInterval') ||
 
-        bootProcess.passedData.markAsRead
+        markAsReadRequested
       ) {
         // Remove visits _before_ the found one.
         this.currentPageData.splice(0, i);

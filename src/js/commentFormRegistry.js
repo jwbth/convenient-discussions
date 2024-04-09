@@ -12,6 +12,8 @@ import controller from './controller';
 import pageRegistry from './pageRegistry';
 import sectionRegistry from './sectionRegistry';
 import { defined, removeFromArrayIfPresent } from './utils-general';
+import { mixEventEmitterIntoObject } from './utils-oojs';
+import { isCmdModifierPressed, isInputFocused, keyCombination } from './utils-window';
 
 export default {
   /**
@@ -23,24 +25,96 @@ export default {
   items: [],
 
   /**
-   * Add a comment form to the list.
-   *
-   * @param {CommentForm} item
+   * _For internal use._ Initialize the registry.
    */
-  add(item) {
-    this.items.push(item);
-    this.emit('add');
+  init() {
+    // Do it here because `OO.EventEmitter` can be unavailable when this module is first imported.
+    mixEventEmitterIntoObject(this);
+
+    this.configureClosePageConfirmation();
+
+    controller
+      .on('beforereload', () => {
+        // In case checkboxes were changed programmatically
+        this.saveSession();
+      })
+      .on('reload', this.detach.bind(this))
+      .on('keydown', (e) => {
+        if (
+          // Ctrl+Alt+Q
+          keyCombination(e, 81, ['cmd', 'alt']) ||
+
+          // Q
+          (keyCombination(e, 81) && !isInputFocused())
+        ) {
+          const lastActiveCommentForm = this.getLastActive();
+          const comment = commentRegistry.getSelectedComment();
+          if (lastActiveCommentForm) {
+            e.preventDefault();
+            lastActiveCommentForm.quote(isCmdModifierPressed(e), comment);
+          } else {
+            if (comment?.isActionable) {
+              e.preventDefault();
+              comment.reply();
+            }
+          }
+        }
+      })
+      .on('resize', this.adjustLabels.bind(this));
   },
 
   /**
-   * Remove a comment form from the list.
+   * Add a comment form to the registry, creating it if didn't exist.
+   *
+   * @param {import('./Comment').default|import('./Section').default|import('./pageRegistry').Page} target
+   * @param {object} config See {@link CommentForm}.
+   * @param {object|import('./CommentForm').default} [initialStateOrCommentForm]
+   * @returns {CommentForm}
+   * @fires commentFormCreated
+   */
+  add(target, config, initialStateOrCommentForm) {
+    let item;
+    if (initialStateOrCommentForm instanceof CommentForm) {
+      item = initialStateOrCommentForm;
+      item.setTargets(target);
+      item.addToPage();
+    } else {
+      item = new CommentForm(Object.assign({
+        target,
+        initialState: initialStateOrCommentForm,
+      }, config));
+    }
+    this.items.push(item);
+    this.saveSession();
+    item
+      .on('change', this.saveSession.bind(this))
+      .on('unregister', () => {
+        this.remove(item);
+      });
+
+    this.emit('add', item);
+
+    /**
+     * A comment form has been created and added to the page.
+     *
+     * @event commentFormCreated
+     * @param {CommentForm} commentForm
+     * @param {object} cd {@link convenientDiscussions} object.
+     */
+    mw.hook('convenientDiscussions.commentFormCreated').fire(item, cd);
+
+    return item;
+  },
+
+  /**
+   * Remove a comment form from the registry.
    *
    * @param {CommentForm} item
    */
   remove(item) {
     removeFromArrayIfPresent(this.items, item);
     this.saveSession(true);
-    this.emit('remove');
+    this.emit('remove', item);
   },
 
   /**
@@ -76,26 +150,11 @@ export default {
 
   /**
    * Reset the comment form list.
+   *
+   * @private
    */
   reset() {
     this.items.length = 0;
-  },
-
-  /**
-   * Get the default preload configuration for the `addSection` mode.
-   *
-   * @returns {object}
-   */
-  getDefaultPreloadConfig() {
-    return {
-      editIntro: undefined,
-      commentTemplate: undefined,
-      headline: undefined,
-      params: [],
-      summary: undefined,
-      noHeadline: false,
-      omitSignature: false,
-    };
   },
 
   /**
@@ -162,6 +221,11 @@ export default {
     });
   },
 
+  /**
+   * The method that does the actual work for {@link module:commentFormRegistry.saveSession}.
+   *
+   * @private
+   */
   actuallySaveSession() {
     (new StorageItem('commentForms'))
       .setWithTime(
@@ -198,6 +262,9 @@ export default {
    * @param {boolean} [force=true] Save session immediately, without regard for save frequency.
    */
   saveSession(force) {
+    // A check in light of the existence of RevisionSlider, see the method
+    if (!controller.isCurrentRevision()) return;
+
     if (force) {
       this.actuallySaveSession();
     } else {
@@ -228,9 +295,10 @@ export default {
         .get(mw.config.get('wgPageName'))
         ?.commentForms
         .map((data) => {
-          const target = this.getTargetFromData(data.targetData);
+          const target = this.getTargetByData(data.targetData);
           if (
             target?.isActionable &&
+            (!target.canBeReplied || target.canBeReplied()) &&
 
             // Check if there is another form already
             !target[target.getCommentFormPropertyName(data.mode)]
@@ -262,7 +330,14 @@ export default {
     }
   },
 
-  getTargetFromData(targetData) {
+  /**
+   * Given identifying data (created by e.g. {@link Comment#getIdentifyingData}), get a comment or
+   * section on the page or the page itself.
+   *
+   * @param {object} targetData
+   * @returns {import('./Comment').default|import('./Section').default|import('./Page').default}
+   */
+  getTargetByData(targetData) {
     if (targetData?.headline) {
       // Section
       return sectionRegistry.search({
@@ -338,10 +413,11 @@ export default {
   },
 
   /**
-   * _For internal use._ Return saved comment forms to their places.
+   * Return saved comment forms to their places.
    *
    * @param {boolean} fromStorage Should the session be restored from the local storage instead of
    *   directly from {@link convenientDiscussions.commentForms}.
+   * @private
    */
   restoreSession(fromStorage) {
     if (fromStorage) {
@@ -352,46 +428,29 @@ export default {
     } else {
       this.restoreSessionDirectly();
     }
-    this.saveSession();
   },
 
   /**
-   * _For internal use._ Add buttons and connect to existing ones, attach event handlers, restore
-   * the previous session, etc.
+   * Add a condition to show a confirmation when trying to close the page with active comment forms
+   * on it.
    *
-   * @param {import('./BootProcess').default} bootProcess
-   */
-  setup(bootProcess) {
-    if (bootProcess.isFirstRun()) {
-      // Do it in the constructor because `OO.EventEmitter` can be unavailable on script load.
-      OO.mixinClass(this, OO.EventEmitter);
-
-      // Mixin constructor
-      OO.EventEmitter.call(this);
-
-      this.configureClosePageConfirmation();
-    }
-
-    this.restoreSession(
-      bootProcess.isFirstRun() ||
-      bootProcess.passedData.isPageReloadedExternally
-    );
-  },
-
-  /**
-   * _For internal use._ Add a condition to show a confirmation when trying to close the page with
-   * active comment forms on it.
+   * @private
    */
   configureClosePageConfirmation() {
-    const alwaysConfirmLeavingPage = (
-      mw.user.options.get('editondblclick') ||
-      mw.user.options.get('editsectiononrightclick')
-    );
     controller.addPreventUnloadCondition('commentForms', () => {
       this.saveSession(true);
       return (
         mw.user.options.get('useeditwarning') &&
-        (this.getLastActiveAltered() || (alwaysConfirmLeavingPage && this.getCount()))
+        (
+          this.getLastActiveAltered() ||
+          (
+            (
+              mw.user.options.get('editondblclick') ||
+              mw.user.options.get('editsectiononrightclick')
+            ) &&
+            this.getCount()
+          )
+        )
       );
     });
   },

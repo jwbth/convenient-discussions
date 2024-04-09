@@ -1,5 +1,5 @@
 /**
- * Settings-related functions and data.
+ * Singleton for settings-related methods and data.
  *
  * @module settings
  */
@@ -11,9 +11,9 @@ import pageRegistry from './pageRegistry';
 import userRegistry from './userRegistry';
 import { getUserInfo, saveGlobalOption, saveLocalOption } from './utils-api';
 import { areObjectsEqual, defined, definedAndNotNull, ucFirst } from './utils-general';
-import { showConfirmDialog } from './utils-ooui';
+import { showConfirmDialog } from './utils-oojs';
 import { formatDateImproved, formatDateNative, formatDateRelative } from './utils-timestamp';
-import { wrapHtml } from './utils-window';
+import { getFooter, wrapHtml } from './utils-window';
 
 export default {
   /**
@@ -624,6 +624,21 @@ export default {
   },
 
   /**
+   * Show a settings dialog.
+   *
+   * @param {string} [initalPageName]
+   */
+  showDialog(initalPageName) {
+    if ($('.cd-dialog-settings').length) return;
+
+    const dialog = new (require('./SettingsDialog').default)(initalPageName);
+    controller.getWindowManager('settings').addWindows([dialog]);
+    controller.getWindowManager('settings').openWindow(dialog);
+
+    cd.tests.settingsDialog = dialog;
+  },
+
+  /**
    * Show a popup asking the user if they want to enable the new comment formatting. Save the
    * settings after they make the choice.
    *
@@ -674,7 +689,7 @@ export default {
               wrapHtml(cd.sParse('rc-suggestion'), {
                 callbacks: {
                   'cd-notification-settings': () => {
-                    controller.showSettingsDialog();
+                    this.showDialog();
                   },
                 },
               }).children()
@@ -767,5 +782,20 @@ export default {
       await OO.ui.alert(cd.s('dn-grantpermission-again'), { title: cd.s('script-name') });
       Notification.requestPermission();
     }
+  },
+
+  /**
+   * Add a settings link to the page footer.
+   */
+  addLinkToFooter() {
+    getFooter().append(
+      $('<li>').append(
+        $('<a>')
+          .text(cd.s('footer-settings'))
+          .on('click', () => {
+            this.showDialog();
+          })
+      )
+    );
   },
 };

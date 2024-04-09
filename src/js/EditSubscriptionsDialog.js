@@ -5,7 +5,7 @@ import cd from './cd';
 import controller from './controller';
 import { getPageIds, getPageTitles } from './utils-api';
 import { sleep, unique } from './utils-general';
-import { tweakUserOoUiClass } from './utils-ooui';
+import { tweakUserOoUiClass } from './utils-oojs';
 
 /**
  * Class used to create an "Edit subscriptions" dialog.

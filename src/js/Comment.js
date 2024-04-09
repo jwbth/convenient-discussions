@@ -1,7 +1,6 @@
 import Button from './Button';
 import CdError from './CdError';
 import CommentButton from './CommentButton';
-import CommentForm from './CommentForm';
 import CommentSkeleton from './CommentSkeleton';
 import CommentSource from './CommentSource';
 import CommentSubitemList from './CommentSubitemList';
@@ -11,6 +10,7 @@ import PrototypeRegistry from './PrototypeRegistry';
 import StorageItem from './StorageItem';
 import TreeWalker from './TreeWalker';
 import cd from './cd';
+import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
@@ -18,7 +18,7 @@ import settings from './settings';
 import userRegistry from './userRegistry';
 import { handleApiReject, loadUserGenders, parseCode } from './utils-api';
 import { addToArrayIfAbsent, areObjectsEqual, calculateWordOverlap, countOccurrences, decodeHtmlEntities, defined, getHeadingLevel, isInline, removeFromArrayIfPresent, sleep, underlinesToSpaces, unique } from './utils-general';
-import { showConfirmDialog } from './utils-ooui';
+import { showConfirmDialog } from './utils-oojs';
 import { formatDate, formatDateNative } from './utils-timestamp';
 import { extractSignatures, removeWikiMarkup } from './utils-wikitext';
 import { getExtendedRect, getHigherNodeAndOffsetInSelection, getVisibilityByRects, wrapDiffBody, wrapHtml } from './utils-window';
@@ -67,7 +67,7 @@ class Comment extends CommentSkeleton {
      * @type {boolean}
      */
     this.isActionable = (
-      controller.isPageActive() &&
+      pageRegistry.getCurrent().isActive() &&
       !controller.getClosedDiscussions().some((el) => el.contains(this.elements[0]))
     );
 
@@ -994,8 +994,6 @@ class Comment extends CommentSkeleton {
    * @private
    */
   updateStretched(left, right) {
-    const isTopLayersContainer = this.getLayersContainer().cdIsTopLayersContainer;
-
     /**
      * Is the start (left on LTR wikis, right on RTL wikis) side of the comment stretched to the
      * start of the content area.
@@ -1012,7 +1010,7 @@ class Comment extends CommentSkeleton {
       */
     this.isEndStretched = false;
 
-    if (!isTopLayersContainer) return;
+    if (!this.getLayersContainer().cdIsTopLayersContainer) return;
 
     if (this.level === 0) {
       const offsets = controller.getContentColumnOffsets();
@@ -1675,6 +1673,33 @@ class Comment extends CommentSkeleton {
   }
 
   /**
+   * _For internal use._ Update the comment's hover state based on a `mousemove` event.
+   *
+   * @param {Event} e
+   * @param {boolean} isObstructingElementHovered
+   */
+  updateHoverState(e, isObstructingElementHovered) {
+    const layersOffset = this.layersOffset;
+    const layersContainerOffset = this.getLayersContainerOffset();
+    if (!layersOffset || !layersContainerOffset) {
+      // Something has happened with the comment (or the layers container); it disappeared.
+      this.removeLayers();
+      return;
+    }
+    if (
+      !isObstructingElementHovered &&
+      e.pageY >= layersOffset.top + layersContainerOffset.top &&
+      e.pageY <= layersOffset.top + layersOffset.height + layersContainerOffset.top &&
+      e.pageX >= layersOffset.left + layersContainerOffset.left &&
+      e.pageX <= layersOffset.left + layersOffset.width + layersContainerOffset.left
+    ) {
+      this.highlightHovered();
+    } else {
+      this.unhighlightHovered();
+    }
+  }
+
+  /**
    * Highlight the comment when it is hovered.
    *
    * @param {Event} e
@@ -1884,6 +1909,13 @@ class Comment extends CommentSkeleton {
     if (!document.hidden && this.isInViewport()) {
       this.flashChanged();
     }
+  }
+
+  /**
+   * _For internal use._ Stop all animations on the comment.
+   */
+  stopAnimations() {
+    this.$animatedBackground?.add(this.$marker).stop(true, true);
   }
 
   /**
@@ -2698,16 +2730,16 @@ class Comment extends CommentSkeleton {
   /**
    * Create a {@link Comment#replyForm reply form} for the comment.
    *
-   * @param {object|CommentForm} initialState
+   * @param {object|import('./CommentForm').default} [initialStateOrCommentForm]
    */
-  reply(initialState) {
+  reply(initialStateOrCommentForm) {
     if (this.replyForm) return;
 
     let isSelectionRelevant = false;
-    if (!initialState) {
+    if (!initialStateOrCommentForm) {
       isSelectionRelevant = commentRegistry.getSelectedComment() === this;
       if (isSelectionRelevant) {
-        initialState = { focus: false };
+        initialStateOrCommentForm = { focus: false };
 
         let endBoundary;
         if (this.isReformatted) {
@@ -2732,15 +2764,9 @@ class Comment extends CommentSkeleton {
     /**
      * Reply form related to the comment.
      *
-     * @type {CommentForm|undefined}
+     * @type {import('./CommentForm').default|undefined}
      */
-    this.replyForm = initialState instanceof CommentForm ?
-      initialState :
-      new CommentForm({
-        mode: 'reply',
-        target: this,
-        initialState,
-      });
+    this.replyForm = commentFormRegistry.add(this, { mode: 'reply' }, initialStateOrCommentForm);
 
     if (isSelectionRelevant) {
       this.replyForm.quote(true, this);
@@ -2750,9 +2776,9 @@ class Comment extends CommentSkeleton {
   /**
    * Create an {@link Comment#editForm edit form} for the comment.
    *
-   * @param {object|CommentForm} initialState
+   * @param {object|import('./CommentForm').default} [initialStateOrCommentForm]
    */
-  edit(initialState) {
+  edit(initialStateOrCommentForm) {
     // We use a class here because there can be elements in the comment that are hidden from the
     // beginning and should stay so when reshowing the comment.
     this.$elements.addClass('cd-hidden');
@@ -2766,15 +2792,9 @@ class Comment extends CommentSkeleton {
     /**
      * Edit form related to the comment.
      *
-     * @type {CommentForm|undefined}
+     * @type {import('./CommentForm').default|undefined}
      */
-    this.editForm ||= initialState instanceof CommentForm ?
-      initialState :
-      new CommentForm({
-        mode: 'edit',
-        target: this,
-        initialState,
-      });
+    this.editForm ||= commentFormRegistry.add(this, { mode: 'edit' }, initialStateOrCommentForm);
   }
 
   /**
@@ -3459,6 +3479,41 @@ class Comment extends CommentSkeleton {
     delete this[this.getCommentFormPropertyName(mode)];
   }
 
+  /**
+   * Collapse the comment in a thread.
+   *
+   * @param {import('./Thread').default} thread
+   * @returns {?number} If the comment is already collapsed, the index of the last comment in the
+   *   collapsed thread.
+   */
+  collapse(thread) {
+    if (this.thread?.isCollapsed && this.thread !== thread) {
+      return this.thread.lastComment.index;
+    }
+    this.isCollapsed = true;
+    this.collapsedThread = thread;
+    this.removeLayers();
+
+    return null;
+  }
+
+  /**
+   * Expand the comment in a thread.
+   *
+   * @returns {?number} If the comment is collapsed, the index of the last comment in the collapsed
+   *   thread.
+   */
+  expand() {
+    if (this.thread?.isCollapsed) {
+      return this.thread.lastComment.index;
+    }
+    this.isCollapsed = false;
+    this.collapsedThread = null;
+    this.configureLayers();
+
+    return null;
+  }
+
   static {
     // Doesn't account for cases when the section headline ends with `-[number]`.
     const newDtTimestampPattern = '(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})\\d{2}';
@@ -3502,7 +3557,7 @@ class Comment extends CommentSkeleton {
       authorTalkLink.textContent = cd.s('comment-author-talk');
       authorLinksWrapper.append(cd.mws('parentheses-start'), authorTalkLink);
 
-      if (this.showContribsLink) {
+      if (settings.get('showContribsLink')) {
         const separator = document.createElement('span');
         separator.innerHTML = cd.sParse('dot-separator');
 

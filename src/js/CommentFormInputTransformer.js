@@ -3,124 +3,6 @@ import TextMasker from './TextMasker';
 import cd from './cd';
 import { escapePipesOutsideLinks, generateTagsRegexp } from './utils-wikitext';
 
-
-const galleryRegexp = /^\x01\d+_gallery\x02$/m;
-
-let filePatternEnd;
-
-/**
- * Transform one line object, indexed `i`, so that it represents a list. Recursively do the same
- * with the lines of that list.
- *
- * @param {object[]} lines
- * @param {number} i
- * @param {object} list
- * @param {boolean} [isNested=false]
- * @private
- */
-function lineToList(lines, i, list, isNested = false) {
-  if (isNested) {
-    const previousItemIndex = i - list.items.length - 1;
-    if (previousItemIndex >= 0) {
-      const item = {
-        type: lines[previousItemIndex].type,
-        items: [lines[previousItemIndex], list],
-      };
-      lines.splice(previousItemIndex, list.items.length + 1, item);
-    } else {
-      const item = {
-        type: lines[0].type,
-        items: [list],
-      };
-      lines.splice(i - list.items.length, list.items.length, item);
-    }
-  } else {
-    lines.splice(i - list.items.length, list.items.length, list);
-  }
-  linesToLists(list.items, true);
-}
-
-/**
- * Transform line objects so that they represent lists.
- *
- * @param {object[]} lines
- * @param {boolean} [isNested=false]
- * @returns {object[]}
- * @private
- */
-function linesToLists(lines, isNested = false) {
-  let list = { items: [] };
-  for (let i = 0; i <= lines.length; i++) {
-    if (i === lines.length) {
-      if (list.type) {
-        lineToList(lines, i, list, isNested);
-      }
-    } else {
-      const text = lines[i].text;
-      const firstChar = text[0] || '';
-      const listType = listTags[firstChar];
-      if (list.type && listType !== list.type) {
-        const itemsCount = list.items.length;
-        lineToList(lines, i, list, isNested);
-        i -= itemsCount - 1;
-        list = { items: [] };
-      }
-      if (listType) {
-        list.type = listType;
-        list.items.push({
-          type: itemTags[firstChar],
-          text: text.slice(1),
-        });
-      }
-    }
-  }
-  return lines;
-}
-
-/**
- * Convert a list object to a string with HTML tags.
- *
- * @param {object[]} lines
- * @param {boolean} [isNested=false]
- * @returns {string}
- * @private
- */
-function listToTags(lines, isNested = false) {
-  let text = '';
-  lines.forEach((line, i) => {
-    if (line.text === undefined) {
-      const itemsText = line.items
-        .map((item) => {
-          const itemText = item.text === undefined ?
-            listToTags(item.items, true) :
-            item.text.trim();
-          return item.type ? `<${item.type}>${itemText}</${item.type}>` : itemText;
-        })
-        .join('');
-      text += `<${line.type}>${itemsText}</${line.type}>`;
-    } else {
-      text += isNested ? line.text.trim() : line.text;
-    }
-    if (i !== lines.length - 1) {
-      text += '\n';
-    }
-  });
-  return text;
-}
-
-const listTags = {
-  ':': 'dl',
-  ';': 'dl',
-  '*': 'ul',
-  '#': 'ol',
-};
-const itemTags = {
-  ':': 'dd',
-  ';': 'dt',
-  '*': 'li',
-  '#': 'li',
-};
-
 /**
  * Class that processes the comment form input and prepares the wikitext to insert into the page.
  */
@@ -138,8 +20,6 @@ class CommentFormInputTransformer extends TextMasker {
     this.commentForm = commentForm;
     this.target = commentForm.getTarget();
     this.action = action;
-
-    filePatternEnd = `\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$(?:)`;
 
     this.initIndentationData();
   }
@@ -296,7 +176,7 @@ class CommentFormInputTransformer extends TextMasker {
    * @private
    */
   listMarkupToTags(code) {
-    return listToTags(linesToLists(
+    return this.constructor.listToTags(this.constructor.linesToLists(
       code
         .split('\n')
         .map((line) => ({
@@ -350,7 +230,10 @@ class CommentFormInputTransformer extends TextMasker {
     // occupied by the file markup. File markup is tricky because, depending on the alignment and
     // line breaks, the result can be very different. The safest way to fight that is to use
     // indentation.
-    const lineStartMarkupRegexp = new RegExp(`(\\n+)([:*#;\\x03]|${filePatternEnd})`, 'gmi');
+    const lineStartMarkupRegexp = new RegExp(
+      `(\\n+)([:*#;\\x03]|${this.constructor.filePatternEnd})`,
+      'gmi'
+    );
     code = code.replace(lineStartMarkupRegexp, (s, newlines, nextLine) => {
       // Many newlines will be replaced with a paragraph template below. It could help visual
       // formatting. If there is no paragraph template, there won't be multiple newlines, as they
@@ -375,7 +258,7 @@ class CommentFormInputTransformer extends TextMasker {
     }
 
     if (this.restLinesIndentation === '#') {
-      if (galleryRegexp.test(code)) {
+      if (this.constructor.galleryRegexp.test(code)) {
         throw new CdError({
           type: 'parse',
           code: 'numberedList',
@@ -417,7 +300,7 @@ class CommentFormInputTransformer extends TextMasker {
   processNewlines(code, isInTemplate = false) {
     const entireLineRegexp = new RegExp(/^(?:\x01\d+_(block|template)\x02) *$/);
     const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/;
-    const fileRegexp = new RegExp('^' + filePatternEnd, 'i');
+    const fileRegexp = new RegExp('^' + this.constructor.filePatternEnd, 'i');
 
     let currentLineInTemplates = '';
     let nextLineInTemplates = '';
@@ -449,8 +332,8 @@ class CommentFormInputTransformer extends TextMasker {
         ) ||
         fileRegexp.test(currentLine) ||
         fileRegexp.test(nextLine) ||
-        galleryRegexp.test(currentLine) ||
-        galleryRegexp.test(nextLine) ||
+        this.constructor.galleryRegexp.test(currentLine) ||
+        this.constructor.galleryRegexp.test(nextLine) ||
 
         // Removing <br>s after block elements is not a perfect solution as there would be no
         // newlines when editing such a comment, but this way we would avoid empty lines in cases
@@ -461,8 +344,10 @@ class CommentFormInputTransformer extends TextMasker {
         '' :
         '<br>';
 
-      // Current line can match galleryRegexp only if the comment will not be indented.
-      const newlineOrNot = this.indentation && !galleryRegexp.test(nextLine) ? '' : '\n';
+      // Current line can match `galleryRegexp` only if the comment will not be indented.
+      const newlineOrNot = this.indentation && !this.constructor.galleryRegexp.test(nextLine) ?
+        '' :
+        '\n';
 
       return currentLine + lineBreakOrNot + newlineOrNot;
     });
@@ -637,6 +522,128 @@ class CommentFormInputTransformer extends TextMasker {
     }
 
     return this;
+  }
+
+  static galleryRegexp = /^\x01\d+_gallery\x02$/m;
+
+  static listTags = {
+    ':': 'dl',
+    ';': 'dl',
+    '*': 'ul',
+    '#': 'ol',
+  };
+  static itemTags = {
+    ':': 'dd',
+    ';': 'dt',
+    '*': 'li',
+    '#': 'li',
+  };
+
+  /**
+   * Initialize the class.
+   */
+  static init() {
+    this.filePatternEnd = `\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$(?:)`;
+  }
+
+  /**
+   * Transform line objects so that they represent lists.
+   *
+   * @param {object[]} lines
+   * @param {boolean} [isNested=false]
+   * @returns {object[]}
+   * @private
+   */
+  static linesToLists(lines, isNested = false) {
+    let list = { items: [] };
+    for (let i = 0; i <= lines.length; i++) {
+      if (i === lines.length) {
+        if (list.type) {
+          this.lineToList(lines, i, list, isNested);
+        }
+      } else {
+        const text = lines[i].text;
+        const firstChar = text[0] || '';
+        const listType = this.listTags[firstChar];
+        if (list.type && listType !== list.type) {
+          const itemsCount = list.items.length;
+          this.lineToList(lines, i, list, isNested);
+          i -= itemsCount - 1;
+          list = { items: [] };
+        }
+        if (listType) {
+          list.type = listType;
+          list.items.push({
+            type: this.itemTags[firstChar],
+            text: text.slice(1),
+          });
+        }
+      }
+    }
+    return lines;
+  }
+
+  /**
+   * Transform one line object, indexed `i`, so that it represents a list. Recursively do the same
+   * with the lines of that list.
+   *
+   * @param {object[]} lines
+   * @param {number} i
+   * @param {object} list
+   * @param {boolean} [isNested=false]
+   * @private
+   */
+  static lineToList(lines, i, list, isNested = false) {
+    if (isNested) {
+      const previousItemIndex = i - list.items.length - 1;
+      if (previousItemIndex >= 0) {
+        const item = {
+          type: lines[previousItemIndex].type,
+          items: [lines[previousItemIndex], list],
+        };
+        lines.splice(previousItemIndex, list.items.length + 1, item);
+      } else {
+        const item = {
+          type: lines[0].type,
+          items: [list],
+        };
+        lines.splice(i - list.items.length, list.items.length, item);
+      }
+    } else {
+      lines.splice(i - list.items.length, list.items.length, list);
+    }
+    this.linesToLists(list.items, true);
+  }
+
+  /**
+   * Convert a list object to a string with HTML tags.
+   *
+   * @param {object[]} lines
+   * @param {boolean} [isNested=false]
+   * @returns {string}
+   * @private
+   */
+  static listToTags(lines, isNested = false) {
+    let text = '';
+    lines.forEach((line, i) => {
+      if (line.text === undefined) {
+        const itemsText = line.items
+          .map((item) => {
+            const itemText = item.text === undefined ?
+              this.listToTags(item.items, true) :
+              item.text.trim();
+            return item.type ? `<${item.type}>${itemText}</${item.type}>` : itemText;
+          })
+          .join('');
+        text += `<${line.type}>${itemsText}</${line.type}>`;
+      } else {
+        text += isNested ? line.text.trim() : line.text;
+      }
+      if (i !== lines.length - 1) {
+        text += '\n';
+      }
+    });
+    return text;
   }
 }
 

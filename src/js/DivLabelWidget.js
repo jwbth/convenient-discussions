@@ -1,4 +1,4 @@
-import { tweakUserOoUiClass } from './utils-ooui';
+import { tweakUserOoUiClass } from './utils-oojs';
 
 /**
  * Class that extends

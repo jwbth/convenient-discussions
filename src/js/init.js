@@ -758,7 +758,7 @@ export default {
     cd.settings = settings;
 
     cd.tests.processPageInBackground = processPage;
-    cd.tests.showSettingsDialog = controller.showSettingsDialog.bind(controller);
+    cd.tests.showSettingsDialog = settings.showDialog.bind(settings);
     cd.tests.editSubscriptions = controller.showEditSubscriptionsDialog.bind(controller);
     cd.tests.visits = visits;
 

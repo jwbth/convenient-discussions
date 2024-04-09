@@ -1,11 +1,11 @@
 import Button from './Button';
 import CdError from './CdError';
-import CommentForm from './CommentForm';
 import LiveTimestamp from './LiveTimestamp';
 import PrototypeRegistry from './PrototypeRegistry';
 import SectionSkeleton from './SectionSkeleton';
 import SectionSource from './SectionSource';
 import cd from './cd';
+import commentFormRegistry from './commentFormRegistry';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
 import sectionRegistry from './sectionRegistry';
@@ -83,7 +83,7 @@ class Section extends SectionSkeleton {
      * @type {boolean}
      */
     this.isActionable = (
-      controller.isPageActive() &&
+      pageRegistry.getCurrent().isActive() &&
       !controller.getClosedDiscussions().some((el) => el.contains(this.headingElement)) &&
       !this.isTranscludedFromTemplate
     );
@@ -123,7 +123,7 @@ class Section extends SectionSkeleton {
    * _For internal use._ Add a {@link Section#replyButton "Reply in section" button} to the end of
    * the first chunk of the section.
    */
-  addReplyButton() {
+  maybeAddReplyButton() {
     if (!this.canBeReplied()) return;
 
     const lastElement = this.lastElementInFirstChunk;
@@ -222,7 +222,7 @@ class Section extends SectionSkeleton {
    * _For internal use._ Add an {@link Section#addSubsectionButton "Add subsection" button} that
    * appears when hovering over a {@link Section#replyButton "Reply in section" button}.
    */
-  addAddSubsectionButton() {
+  maybeAddAddSubsectionButton() {
     if (this.level !== 2 || !this.canBeSubsectioned()) return;
 
     const element = this.constructor.prototypes.get('addSubsectionButton');
@@ -408,7 +408,7 @@ class Section extends SectionSkeleton {
     return (
       this.level === 2 &&
       !this.isTranscludedFromTemplate &&
-      (controller.isPageActive() || controller.isPageCurrentArchive())
+      (pageRegistry.getCurrent().isActive() || pageRegistry.getCurrent().isCurrentArchive())
     );
   }
 
@@ -418,31 +418,31 @@ class Section extends SectionSkeleton {
    * @returns {boolean}
    */
   canBeReplied() {
-    const isFirstChunkClosed = (
-      this.commentsInFirstChunk[0] &&
-      this.commentsInFirstChunk[0].level === 0 &&
-      this.commentsInFirstChunk.every((comment) => !comment.isActionable)
-    );
-    const isFirstChunkEmptyBeforeSubsection = (
-      this.lastElementInFirstChunk !== this.lastElement &&
-      this.lastElementInFirstChunk === this.headingElement
-    );
-
-    // May mean complex formatting, so we better keep out.
-    const doesNestingLevelMatch = (
-      !sectionRegistry.getByIndex(this.index + 1) ||
-      sectionRegistry.getByIndex(this.index + 1).headingNestingLevel === this.headingNestingLevel
-    );
-
-    // https://ru.wikipedia.org/wiki/Project:Запросы_к_администраторам/Быстрые
-    const isBuriedInTable = ['TR', 'TD', 'TH'].includes(this.lastElementInFirstChunk.tagName);
-
     return Boolean(
       this.isActionable &&
-      !isFirstChunkClosed &&
-      !isFirstChunkEmptyBeforeSubsection &&
-      doesNestingLevelMatch &&
-      !isBuriedInTable
+
+      // Is the first chunk closed
+      !(
+        this.commentsInFirstChunk[0] &&
+        this.commentsInFirstChunk[0].level === 0 &&
+        this.commentsInFirstChunk.every((comment) => !comment.isActionable)
+      ) &&
+
+      // Is the first chunk empty and precedes a subsection
+      !(
+        this.lastElementInFirstChunk !== this.lastElement &&
+        this.lastElementInFirstChunk === this.headingElement
+      ) &&
+
+      // May mean complex formatting, so we better keep out
+      (
+        !sectionRegistry.getByIndex(this.index + 1) ||
+        sectionRegistry.getByIndex(this.index + 1).headingNestingLevel === this.headingNestingLevel
+      ) &&
+
+      // If the section buried in a table.
+      // https://ru.wikipedia.org/wiki/Project:Запросы_к_администраторам/Быстрые
+      !['TR', 'TD', 'TH'].includes(this.lastElementInFirstChunk.tagName)
     );
   }
 
@@ -474,9 +474,9 @@ class Section extends SectionSkeleton {
         // level.
         !nextSameLevelSection ||
 
-        // If the next section of the same level has another nesting level (e.g., is inside a <div>
-        // with a specific style), don't add the "Add subsection" button - it would appear in a
-        // wrong place.
+        // If the next section of the same level has another nesting level (e.g., is inside a
+        // `<div>` with a specific style), don't add the "Add subsection" button - it would appear
+        // in a wrong place.
         nextSameLevelSection.headingNestingLevel === this.headingNestingLevel
       )
     );
@@ -981,7 +981,7 @@ class Section extends SectionSkeleton {
 
     if (this.level !== 2) return;
 
-    const subscribeId = sectionRegistry.getDtSubscribableThreads()
+    const subscribeId = controller.getDtSubscribableThreads()
       ?.find((thread) => (
         thread.id === this.hElement.dataset.mwThreadId ||
         thread.id === this.headlineElement.dataset.mwThreadId
@@ -995,24 +995,20 @@ class Section extends SectionSkeleton {
   /**
    * Create an {@link Section#replyForm add reply form}.
    *
-   * @param {object|CommentForm} initialState
+   * @param {object|import('./CommentForm').default} [initialStateOrCommentForm]
    */
-  reply(initialState) {
+  reply(initialStateOrCommentForm) {
     // Check for existence in case replying is called from a script of some kind (there is no button
     // to call it from CD).
     if (!this.replyForm) {
       /**
        * Reply form related to the section.
        *
-       * @type {CommentForm|undefined}
+       * @type {import('./CommentForm').default|undefined}
        */
-      this.replyForm = initialState instanceof CommentForm ?
-        initialState :
-        new CommentForm({
-          mode: 'replyInSection',
-          target: this,
-          initialState,
-        });
+      this.replyForm = commentFormRegistry.add(this, {
+        mode: 'replyInSection',
+      }, initialStateOrCommentForm);
     }
 
     const baseSection = this.getBase();
@@ -1026,10 +1022,10 @@ class Section extends SectionSkeleton {
   /**
    * Create an {@link Section#addSubsectionForm add subsection form} form or focus an existing one.
    *
-   * @param {object|CommentForm} initialState
+   * @param {object|import('./CommentForm').default} [initialStateOrCommentForm]
    * @throws {CdError}
    */
-  addSubsection(initialState) {
+  addSubsection(initialStateOrCommentForm) {
     if (!this.canBeSubsectioned()) {
       throw new CdError();
     }
@@ -1041,15 +1037,11 @@ class Section extends SectionSkeleton {
       /**
        * "Add subsection" form related to the section.
        *
-       * @type {CommentForm|undefined}
+       * @type {import('./CommentForm').default|undefined}
        */
-      this.addSubsectionForm = initialState instanceof CommentForm ?
-        initialState :
-        new CommentForm({
-          mode: 'addSubsection',
-          target: this,
-          initialState,
-        });
+      this.addSubsectionForm = commentFormRegistry.add(this, {
+        mode: 'addSubsection',
+      }, initialStateOrCommentForm);
     }
   }
 

@@ -5,7 +5,7 @@ import controller from './controller';
 import settings from './settings';
 import { saveGlobalOption, saveLocalOption } from './utils-api';
 import { areObjectsEqual } from './utils-general';
-import { createCheckboxField, createNumberField, createRadioField, createTextField, tweakUserOoUiClass } from './utils-ooui';
+import { createCheckboxField, createNumberField, createRadioField, createTextField, tweakUserOoUiClass } from './utils-oojs';
 
 /**
  * Class used to create a settings dialog.
@@ -97,22 +97,20 @@ class SettingsDialog extends ProcessDialog {
       expanded: true,
     });
 
-    const $settingsSaved = $('<p>').text(cd.s('sd-saved'));
     this.reloadPanel = new OO.ui.PanelLayout({
       padded: true,
       expanded: false,
     });
-    this.reloadPanel.$element.append($settingsSaved);
+    this.reloadPanel.$element.append($('<p>').text(cd.s('sd-saved')));
 
-    const $dataRemoved = $('<p>').text(cd.s('sd-dataremoved'));
-    this.dataRemovedPanel = new OO.ui.PanelLayout({
+    this.dataDeletedPanel = new OO.ui.PanelLayout({
       padded: true,
       expanded: false,
     });
-    this.dataRemovedPanel.$element.append($dataRemoved);
+    this.dataDeletedPanel.$element.append($('<p>').text(cd.s('sd-dataremoved')));
 
     this.stackLayout = new OO.ui.StackLayout({
-      items: [this.loadingPanel, this.settingsPanel, this.reloadPanel, this.dataRemovedPanel],
+      items: [this.loadingPanel, this.settingsPanel, this.reloadPanel, this.dataDeletedPanel],
     });
 
     this.$body.append(this.stackLayout.$element);
@@ -538,13 +536,13 @@ class SettingsDialog extends ProcessDialog {
         return;
       }
 
-      (new StorageItem('commentForms')).deleteItem();
-      (new StorageItem('thanks')).deleteItem();
-      (new StorageItem('seenRenderedChanges')).deleteItem();
-      (new StorageItem('collapsedThreads')).deleteItem();
-      (new StorageItem('mutedUsers')).deleteItem();
+      (new StorageItem('commentForms')).removeItem();
+      (new StorageItem('thanks')).removeItem();
+      (new StorageItem('seenRenderedChanges')).removeItem();
+      (new StorageItem('collapsedThreads')).removeItem();
+      (new StorageItem('mutedUsers')).removeItem();
 
-      this.stackLayout.setItem(this.dataRemovedPanel);
+      this.stackLayout.setItem(this.dataDeletedPanel);
       this.actions.setMode('dataRemoved');
 
       this.popPending();

@@ -1,5 +1,7 @@
 import CdError from './CdError';
 import Comment from './Comment';
+import CommentFormInputTransformer from './CommentFormInputTransformer';
+import LiveTimestamp from './LiveTimestamp';
 import Parser from './Parser';
 import Section from './Section';
 import Thread from './Thread';
@@ -250,7 +252,11 @@ class BootProcess {
     this.subscriptions = controller.getSubscriptionsInstance();
     if (this.firstRun) {
       toc.init(this.subscriptions);
+      commentRegistry.init();
       sectionRegistry.init(this.subscriptions);
+      commentFormRegistry.init();
+      LiveTimestamp.init();
+      CommentFormInputTransformer.init();
     }
     controller.setup(this.passedData.html);
     toc.setup(this.passedData.toc, this.passedData.hidetoc);
@@ -322,9 +328,7 @@ class BootProcess {
           }
         });
 
-      commentRegistry.reformatTimestamps();
-      commentRegistry.findAndUpdateTableComments();
-      commentRegistry.adjustDom();
+      commentRegistry.setup();
     } catch (e) {
       console.error(e);
     }
@@ -585,7 +589,7 @@ class BootProcess {
     debug.startTimer('main code');
 
     if (this.firstRun) {
-      controller.saveRelativeScrollPosition(this.passedData.scrollY);
+      controller.saveRelativeScrollPosition(undefined, this.passedData.scrollY);
 
       userRegistry.loadMuted();
     }
@@ -601,21 +605,21 @@ class BootProcess {
            into two categories:
         2.1. The page is eligible to create comment forms on. (This includes 404 pages where the
              user could create a section, but excludes archive pages and old revisions.)
-             controller.isPageCommentable() reflects this level.
-        2.2. The page exists (not a 404 page). controller.doesPageExists() shows this. (This
+             pageRegistry.getCurrent().isCommentable() reflects this level.
+        2.2. The page exists (not a 404 page). pageRegistry.getCurrent().exists() shows this. (This
              includes archive pages and old revisions, which are not eligible to create comment
              forms on.) Such pages are parsed, the page navigation block is added to them.
         3. The page is active. This means, it's not a 404 page, not an archive page, and not an old
-           revision. controller.isPageActive() is true when the page is of this level. The
-           navigation panel is added to such pages, new comments are highlighted.
+           revision. pageRegistry.getCurrent().isActive() is true when the page is of this level.
+           The navigation panel is added to such pages, new comments are highlighted.
 
       We need to be accurate regarding which functionality should be turned on on which level. We
       should also make sure we only add this functionality once.
     */
 
     let visitsPromise;
-    if (controller.doesPageExist()) {
-      if (controller.isPageActive()) {
+    if (pageRegistry.getCurrent().exists()) {
+      if (pageRegistry.getCurrent().isActive()) {
         visitsPromise = visits.get(this, true);
       }
 
@@ -642,7 +646,7 @@ class BootProcess {
       return;
     }
 
-    if (controller.doesPageExist()) {
+    if (pageRegistry.getCurrent().exists()) {
       debug.startTimer('process sections');
       this.processSections(visitsPromise);
       debug.stopTimer('process sections');
@@ -653,9 +657,9 @@ class BootProcess {
     }
 
     if (this.passedData.html) {
-      debug.startTimer('updating HTML');
+      debug.startTimer('update page contents');
       controller.updatePageContents();
-      debug.stopTimer('updating HTML');
+      debug.stopTimer('update page contents');
     }
 
     navPanel.setup();
@@ -666,9 +670,10 @@ class BootProcess {
     // go in this section.
     debug.startTimer('final code and rendering');
 
-    if (controller.doesPageExist()) {
-      // Should be above all code that deals with highlightable elements of comments and comment
-      // levels as this may alter that.
+    if (pageRegistry.getCurrent().exists()) {
+      // This should be done on rendering stage (would have resulted in unnecessary reflows were it
+      // done earlier). Should be above all code that deals with highlightable elements of comments
+      // and comment levels as this may alter that.
       commentRegistry.reviewHighlightables();
 
       commentRegistry.reformatComments();
@@ -677,19 +682,21 @@ class BootProcess {
     // This updates some styles, shifting the offsets.
     controller.$root.addClass('cd-parsed');
 
-    // Should be below the viewport position restoration as it may rely on elements that are made
-    // hidden during the comment forms restoration (NOT FULFILLED - FIXME? But the comment for
-    // `Thread.init()` seems to contradict). Should be below `navPanel.setup()` as
-    // `commentFormRegistry.restoreSession()` indirectly calls `navPanel.updateCommentFormButton()`
-    // which depends on the navigation panel being mounted.
-    if (controller.isPageCommentable()) {
+    // Should be below `navPanel.setup()` as `commentFormRegistry.restoreSession()` indirectly calls
+    // `navPanel.updateCommentFormButton()` which depends on the navigation panel being mounted.
+    if (pageRegistry.getCurrent().isCommentable()) {
       pageRegistry.getCurrent().addAddTopicButton();
       controller.connectToWildAddTopicButtons();
-      commentFormRegistry.setup(this);
+
+      // If the viewport position restoration relies on elements that are made hidden during this
+      // (when editing a comment), it can't be restored properly, but this is relatively minor
+      // detail.
+      commentFormRegistry.restoreSession(this.firstRun || this.passedData.isPageReloadedExternally);
+
       pageRegistry.getCurrent().autoAddSection(this.hideDtNewTopicForm());
     }
 
-    if (controller.doesPageExist()) {
+    if (pageRegistry.getCurrent().exists()) {
       // Should be below the comment form restoration for threads to be expanded correctly and also
       // to avoid repositioning threads after the addition of comment forms. Should be above the
       // viewport position restoration as it may shift the layout (if the viewport position
@@ -718,7 +725,7 @@ class BootProcess {
       }
       this.processTargets();
 
-      if (!controller.isPageActive()) {
+      if (!pageRegistry.getCurrent().isActive()) {
         toc.addCommentCount();
       }
 
@@ -728,7 +735,8 @@ class BootProcess {
         controller.addEventListeners();
       }
 
-      // We set the setup observer at every reload because `controller.$content` may change.
+      // We set up the mutation observer at every reload because `controller.$content` may change
+      // (e.g. RevisionSlider replaces it).
       controller.setupMutationObserver();
 
       if (settings.get('reformatComments') && commentRegistry.getCount()) {
@@ -743,7 +751,7 @@ class BootProcess {
       // sees it.
       controller.restoreRelativeScrollPosition();
 
-      controller.addSettingsLinkToFooter();
+      settings.addLinkToFooter();
     }
 
     /**
@@ -775,7 +783,7 @@ class BootProcess {
 
     this.debugLog();
 
-    if (this.firstRun && controller.isPageActive() && userRegistry.getCurrent().isRegistered()) {
+    if (this.firstRun && pageRegistry.getCurrent().isActive() && userRegistry.getCurrent().isRegistered()) {
       this.showPopups();
     }
   }

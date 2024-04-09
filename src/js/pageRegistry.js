@@ -8,6 +8,7 @@ import CdError from './CdError';
 import CommentForm from './CommentForm';
 import TextMasker from './TextMasker';
 import cd from './cd';
+import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
 import userRegistry from './userRegistry';
@@ -96,7 +97,7 @@ export class Page {
      *
      * @type {boolean}
      */
-    this.isActionable = this.isCurrent() ? controller.isPageCommentable() : false;
+    this.isActionable = this.isCurrent() ? this.isCommentable() : false;
   }
 
   /**
@@ -107,6 +108,67 @@ export class Page {
    */
   isCurrent() {
     return this.name === cd.g.pageName;
+  }
+
+  /**
+   * Check whether the current page is eligible for submitting comments to.
+   *
+   * @returns {?boolean}
+   */
+  isCommentable() {
+    if (!this.isCurrent()) {
+      return null;
+    }
+
+    return controller.isTalkPage() && (this.isActive() || !this.exists());
+  }
+
+  /**
+   * Check whether the current page exists (is not 404).
+   *
+   * @returns {boolean}
+   */
+  exists() {
+    if (!this.isCurrent()) {
+      return null;
+    }
+
+    return Boolean(mw.config.get('wgArticleId'));
+  }
+
+  /**
+   * Check whether the current page is an active talk page: existing, the current revision, not an
+   * archive page.
+   *
+   * This value isn't static:
+   *   1. A 404 page doesn't have an ID and is considered inactive, but if the user adds a topic to
+   *      it, it will become active and get an ID.
+   *   2. The user may switch to another revision using RevisionSlider.
+   *   3. On a really rare occasion, an active page may become inactive if it becomes identified as
+   *      an archive page. This possibility is currently switched off.
+   *
+   * @returns {?boolean}
+   */
+  isActive() {
+    if (!this.isCurrent()) {
+      return null;
+    }
+
+    return (
+      controller.isTalkPage() &&
+      this.exists() &&
+      controller.isCurrentRevision() &&
+      !this.isArchivePage()
+    );
+  }
+
+  /**
+   * Check whether the current page is an archive and the displayed revision the current one.
+   *
+   * @returns {boolean}
+   */
+  isCurrentArchive() {
+    return controller.isCurrentRevision() && this.isArchivePage();
   }
 
   /**
@@ -147,8 +209,9 @@ export class Page {
     }
 
     // This is not reevaluated after page reloads. Since archive settings we need rarely change, the
-    // reevaluation is unlikely to make any difference.
-    this.$archivingInfo ||= controller.$root.find('.cd-archivingInfo');
+    // reevaluation is unlikely to make any difference. `$root?` because the `$root` can not be set
+    // when it runs from the `addCommentLinks` module.
+    this.$archivingInfo ||= controller.$root?.find('.cd-archivingInfo');
 
     return this.$archivingInfo;
   }
@@ -654,13 +717,14 @@ export class Page {
    */
   addAddTopicButton() {
     if (
-      // Vector 2022 has "Add topic" in the sticky header, so our button would duplicate its purpose
+      // Vector 2022 has "Add topic" in the sticky header, so the purpose of our button would
+      // duplicate its purpose.
       cd.g.skin !== 'vector-2022' ||
 
       !$('#ca-addsection').length ||
 
       // There is a special welcome text in New Topic Tool for 404 pages.
-      (cd.g.isDtNewTopicToolEnabled && !controller.doesPageExist())
+      (cd.g.isDtNewTopicToolEnabled && !this.exists())
     ) {
       return;
     }
@@ -704,12 +768,12 @@ export class Page {
   /**
    * Create an add section form if not existent.
    *
-   * @param {object} [initialState]
-   * @param {object} [preloadConfig={@link commentRegistry.getDefaultPreloadConfig commentRegistry.getDefaultPreloadConfig()}]
+   * @param {object} [initialStateOrCommentForm]
+   * @param {object} [preloadConfig={@link CommentForm.getDefaultPreloadConfig CommentForm.getDefaultPreloadConfig()}]
    * @param {boolean} [newTopicOnTop=false]
    */
   addSection(
-    initialState,
+    initialStateOrCommentForm,
     preloadConfig = CommentForm.getDefaultPreloadConfig(),
     newTopicOnTop = false
   ) {
@@ -731,15 +795,11 @@ export class Page {
        *
        * @type {CommentForm|undefined}
        */
-      this.addSectionForm = initialState instanceof CommentForm ?
-        initialState :
-        new CommentForm({
-          mode: 'addSection',
-          target: pageRegistry.getCurrent(),
-          preloadConfig,
-          newTopicOnTop,
-          initialState,
-        });
+      this.addSectionForm = commentFormRegistry.add(this, {
+        mode: 'addSection',
+        preloadConfig,
+        newTopicOnTop,
+      }, initialStateOrCommentForm);
 
       $('#ca-addsection').addClass('selected');
       $('#ca-view').removeClass('selected');
@@ -755,7 +815,7 @@ export class Page {
   }
 
   /**
-   * Forget the "Add section" form (after it was torn down).
+   * Remove references to the "Add section" form (after it was unregistered).
    *
    * @param {string} mode
    */

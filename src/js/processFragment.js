@@ -102,12 +102,9 @@ async function maybeNotifyNotFound() {
 
   if (date) {
     label = cd.sParse('deadanchor-comment-lead');
-    const previousCommentByTime = commentRegistry.findPreviousCommentByTime(date, author);
-    if (previousCommentByTime) {
-      guessedCommentText = (
-        ' ' +
-        cd.sParse('deadanchor-comment-previous', '#' + previousCommentByTime.id)
-      )
+    const priorComment = commentRegistry.findPriorComment(date, author);
+    if (priorComment) {
+      guessedCommentText = (' ' + cd.sParse('deadanchor-comment-previous', '#' + priorComment.id))
         // Until https://phabricator.wikimedia.org/T288415 is online on most wikis.
         .replace(cd.g.articlePathRegexp, '$1');
       label += guessedCommentText;

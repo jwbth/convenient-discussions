@@ -48,7 +48,7 @@ class StorageItem {
    *
    * @returns {StorageItem}
    */
-  deleteItem() {
+  removeItem() {
     mw.storage.remove(`${this.constructor.prefix}-${this.key}`);
 
     return this;
@@ -87,12 +87,12 @@ class StorageItem {
   }
 
   /**
-   * Delete an entry of the storage item.
+   * Remove an entry of the storage item.
    *
    * @param {string} key
    * @returns {StorageItem}
    */
-  delete(key) {
+  remove(key) {
     delete this.data[key];
 
     return this;
@@ -118,7 +118,7 @@ class StorageItem {
   cleanUp(removeCondition) {
     Object.keys(this.data).forEach((key) => {
       if (removeCondition(this.data[key])) {
-        this.delete(key);
+        this.remove(key);
       }
     });
 

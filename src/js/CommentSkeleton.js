@@ -5,8 +5,9 @@ import cd from './cd';
 import { generateFixedPosTimestamp, isHeadingNode, isInline, isMetadataNode, spacesToUnderlines, unique } from './utils-general';
 
 /**
- * Class containing the main properties of a comment. It is extended by {@link Comment}. This class
- * is the only one used in the worker context for comments.
+ * Class containing the main properties of a comment and building it from a signature (we should
+ * probably extract `CommentParser` from it). It is extended by {@link Comment}. This class is the
+ * only one used in the worker context for comments.
  *
  * @class
  */
@@ -1409,7 +1410,7 @@ class CommentSkeleton {
    * @returns {?CommentSkeleton}
    */
   getParent(visual = false) {
-    // Note: `this.cachedParent.logicalLevel` can be overriden in `this.processOutdents()`.
+    // Note: `this.cachedParent.logicalLevel` can be overriden in `.processOutdents()`.
 
     const prop = visual ? 'level' : 'logicalLevel';
     this.cachedParent ||= {};

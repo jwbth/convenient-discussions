@@ -7,7 +7,7 @@
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
-import { areObjectsEqual, calculateWordOverlap, flat, generateFixedPosTimestamp, spacesToUnderlines } from './utils-general';
+import { areObjectsEqual, calculateWordOverlap, generateFixedPosTimestamp, spacesToUnderlines } from './utils-general';
 import { getExtendedRect, getVisibilityByRects } from './utils-window';
 
 export default {
@@ -20,23 +20,51 @@ export default {
   items: [],
 
   /**
-   * Get the list of DiscussionTools threads that are related to subscribable (2-level) threads.
-   * This is updated on page reload.
+   * _For internal use._ Initialize the registry.
    *
-   * @returns {object[]}
+   * @param {import('./Subscriptions').default} subscriptions
    */
-  getDtSubscribableThreads() {
-    this.dtSubscribableThreads ||= mw.config.get('wgDiscussionToolsPageThreads')
-      ?.concat(
-        flat(
-          mw.config.get('wgDiscussionToolsPageThreads')
-            .filter((thread) => thread.headingLevel === 1)
-            .map((thread) => thread.replies)
-        )
-      )
-      .filter((thread) => thread.headingLevel === 2);
+  init(subscriptions) {
+    this.improvePerformance = settings.get('improvePerformance');
 
-    return this.dtSubscribableThreads;
+    controller
+      .on('scroll', this.maybeUpdateVisibility.bind(this));
+    subscriptions
+      .on('processed', () => {
+        this.addSubscribeButtons();
+      });
+  },
+
+  /**
+   * _For internal use._ Perform some section-related operations when the registry is filled, in
+   * addition to those performed when each section is added to the registry. Set the
+   * {@link Section#isLastSection isLastSection} property, adding buttons, and binding events.
+   */
+  setup() {
+    this.items.forEach((section) => {
+      /**
+       * Is the section the last section on the page.
+       *
+       * @name isLastSection
+       * @type {boolean}
+       * @memberof Section
+       * @instance
+       */
+      section.isLastSection = section.index === this.items.length - 1;
+
+      section.maybeAddAddSubsectionButton();
+      section.maybeAddReplyButton();
+    });
+
+    // Run this after running `section.addReplyButton()` for each section because reply buttons must
+    // be in place for this.
+    this.items
+      .filter((section) => section.addSubsectionButton)
+      .forEach((section) => {
+        // Section with the last reply button
+        (section.getChildren(true).slice(-1)[0] || section)
+          .showAddSubsectionButtonOnReplyButtonHover(section);
+      });
   },
 
   /**
@@ -84,7 +112,6 @@ export default {
    */
   reset() {
     this.items = [];
-    delete this.dtSubscribableThreads;
   },
 
   /**
@@ -189,52 +216,9 @@ export default {
   },
 
   /**
-   * _For internal use._ Initialize the section registry.
+   * Add a "Subscribe" / "Unsubscribe" button to each section's actions element.
    *
-   * @param {import('./Subscriptions').default} subscriptions
-   */
-  init(subscriptions) {
-    this.improvePerformance = settings.get('improvePerformance');
-
-    subscriptions.on('processed', () => {
-      this.addSubscribeButtons();
-    });
-  },
-
-  /**
-   * _For internal use._ Perform some section-related operations in addition to those performed when
-   * each section is added to the registry, including setting the
-   * {@link Section#isLastSection isLastSection} property, adding buttons, and binding events.
-   */
-  setup() {
-    this.items.forEach((section) => {
-      /**
-       * Is the section the last section on the page.
-       *
-       * @name isLastSection
-       * @type {boolean}
-       * @memberof Section
-       * @instance
-       */
-      section.isLastSection = section.index === this.items.length - 1;
-
-      section.addAddSubsectionButton();
-      section.addReplyButton();
-    });
-
-    // Run this after running `section.addReplyButton()` for each section because reply buttons must
-    // be in place for this.
-    this.items
-      .filter((section) => section.addSubsectionButton)
-      .forEach((section) => {
-        // Section with the last reply button
-        (section.getChildren(true).slice(-1)[0] || section)
-          .showAddSubsectionButtonOnReplyButtonHover(section);
-      });
-  },
-
-  /**
-   * _For internal use._ Add a "Subscribe" / "Unsubscribe" button to each section's actions element.
+   * @private
    */
   addSubscribeButtons() {
     controller.saveRelativeScrollPosition();
@@ -336,8 +320,7 @@ export default {
       !this.items.length ||
       !controller.isLongPage() ||
 
-      // When the document has no focus, all sections are visible (see
-      // `sectionRegistry.maybeUnhideAll()`).
+      // When the document has no focus, all sections are visible (see `.maybeUnhideAll()`).
       document.hasFocus()
     ) {
       return;

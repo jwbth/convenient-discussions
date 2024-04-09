@@ -1,9 +1,9 @@
 import dayjs from 'dayjs';
 
 import cd from './cd';
-import navPanel from './navPanel';
 import settings from './settings';
 import { removeFromArrayIfPresent } from './utils-general';
+import { mixEventEmitterIntoObject } from './utils-oojs';
 import { formatDate, relativeTimeThresholds } from './utils-timestamp';
 
 /**
@@ -62,10 +62,10 @@ class LiveTimestamp {
    */
   init() {
     if (this.format === 'improved') {
-      if (!this.constructor.improvedTimestampsInitted) {
+      if (!this.constructor.improvedTimestampsInited) {
         // Timestamps of the "improved" format are updated all together, at the boundaries of days.
         // So, we only need to initiate the timeouts once.
-        LiveTimestamp.initImproved();
+        this.constructor.initImproved();
       }
       if (this.date.getTime() > this.constructor.yesterdayStart) {
         this.constructor.improvedTimestamps.push(this);
@@ -117,15 +117,21 @@ class LiveTimestamp {
   }
 
   static updateTimeouts = [];
-  static improvedTimestampsInitted = false;
+  static improvedTimestampsInited = false;
   static improvedTimestamps = [];
+
+  /**
+   * Initialize the class (runs once).
+   */
+  static init() {
+    mixEventEmitterIntoObject(this);
+  }
 
   /**
    * _For internal use._ Initialize improved timestamps (when the timestamp format is set to
    * "improved").
    */
   static initImproved() {
-    this.improvedTimestampsInitted = true;
     let date = dayjs();
     if (this.useUiTime && !['UTC', 0].includes(cd.g.uiTimezone)) {
       date = typeof cd.g.uiTimezone === 'number' ?
@@ -140,10 +146,12 @@ class LiveTimestamp {
     const dayAfterTomorrowStart = date.add(2, 'day').valueOf();
 
     const tsDelay = tomorrowStart - Date.now();
-    const tsTimeout = setTimeout(LiveTimestamp.updateImproved, tsDelay);
+    const tsTimeout = setTimeout(this.updateImproved.bind(this), tsDelay);
     const datsDelay = dayAfterTomorrowStart - Date.now();
-    const datsTimeout = setTimeout(LiveTimestamp.updateImproved, datsDelay);
+    const datsTimeout = setTimeout(this.updateImproved.bind(this), datsDelay);
     this.updateTimeouts.push(tsTimeout, datsTimeout);
+
+    this.improvedTimestampsInited = true;
   }
 
   /**
@@ -153,9 +161,7 @@ class LiveTimestamp {
     this.improvedTimestamps.forEach((timestamp) => {
       timestamp.update();
     });
-    if (navPanel.isMounted()) {
-      navPanel.updateTimestampsInRefreshButtonTooltip();
-    }
+    this.emit('updateimproved');
   }
 
   /**
@@ -164,7 +170,7 @@ class LiveTimestamp {
   static reset() {
     this.updateTimeouts.forEach(clearTimeout);
     this.updateTimeouts = [];
-    this.improvedTimestampsInitted = false;
+    this.improvedTimestampsInited = false;
     this.improvedTimestamps = [];
   }
 }

@@ -324,7 +324,7 @@ const toc = {
     if (!this.canBeModified || !this.isPresent()) return;
 
     if (!this.isInSidebar()) {
-      controller.saveRelativeScrollPosition({ saveTocHeight: true });
+      controller.saveRelativeScrollPosition(true);
     }
 
     const $addedSections = this.$element.find('.cd-toc-addedSection');
@@ -576,7 +576,7 @@ const toc = {
 
     const areCommentsRendered = !$.isPlainObject(firstComment);
     if (!this.isInSidebar()) {
-      const saveTocHeight = Boolean(
+      controller.saveRelativeScrollPosition(
         // When unrendered (in gray) comments are added
         !areCommentsRendered ||
 
@@ -586,7 +586,6 @@ const toc = {
         bootProcess.passedData.commentIds ||
         bootProcess.passedData.sectionId
       );
-      controller.saveRelativeScrollPosition({ saveTocHeight });
     }
 
     commentsBySection.forEach((comments, section) => {

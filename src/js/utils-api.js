@@ -52,7 +52,13 @@ export function splitIntoBatches(arr) {
   // are _not_ calling..." in `controller#loadToTalkPage()`). For example, `getDtSubscriptions()`
   // runs earlier than that. In addition to that, `cd.g.phpCharToUpper` is empty until we make sure
   // the `mediawiki.Title` module is loaded.
-  const currentUserRights = cd.g.phpCharToUpper ? userRegistry.getCurrent().getRights() : undefined;
+  let currentUserRights;
+  try {
+    currentUserRights = userRegistry.getCurrent().getRights();
+  } catch {
+    // Can throw a error when `cd.g.phpCharToUpper` is undefined, because it's set when the modules
+    // are ready.
+  }
   const limit = (
     currentUserRights ?
       currentUserRights.includes('apihighlimits') :
@@ -62,9 +68,7 @@ export function splitIntoBatches(arr) {
     50;
   return arr.reduce((result, item, index) => {
     const chunkIndex = Math.floor(index / limit);
-    if (!result[chunkIndex]) {
-      result[chunkIndex] = [];
-    }
+    result[chunkIndex] ||= [];
     result[chunkIndex].push(item);
     return result;
   }, []);
@@ -163,7 +167,12 @@ export function getUserInfo(reuse = false) {
       const { options, rights } = resp.query.userinfo;
       const visits = options[cd.g.visitsOptionName];
       const subscriptions = options[cd.g.subscriptionsOptionName];
-      userRegistry.getCurrent().setRights(rights);
+      try {
+        userRegistry.getCurrent().setRights(rights);
+      } catch {
+        // Can throw a error when `cd.g.phpCharToUpper` is undefined, because it's set when the
+        // modules are ready
+      }
 
       return { options, visits, subscriptions };
     },
@@ -283,10 +292,10 @@ export async function saveLocalOption(name, value) {
  */
 export async function saveGlobalOption(name, value) {
   if (!cd.config.useGlobalPreferences) {
-    // Normally, this won't run if cd.config.useGlobalPreferences is false. But it will run as part
-    // of SettingsDialog#removeData in controller.showSettingsDialog, removing the option if it
-    // existed, which may have a benificial effect if cd.config.useGlobalPreferences was true at
-    // some stage and a local setting with cd.g.settingsOptionName name was created instead of a
+    // Normally, this won't run if `cd.config.useGlobalPreferences` is false. But it will run as
+    // part of `SettingsDialog#removeData()` in `settings.showDialog()`, removing the option if it
+    // existed, which may have a benificial effect if `cd.config.useGlobalPreferences` was true at
+    // some stage and a local setting with `cd.g.settingsOptionName` name was created instead of a
     // global one, thus inviting the need to remove it upon removing all data.
     await saveLocalOption(name, value);
 
@@ -333,28 +342,6 @@ export async function loadUserGenders(users, doRequestInBackground = false) {
         userRegistry.get(user.name).setGender(user.gender);
       });
   }
-}
-
-/**
- * Given a list of user IDs, return a list of users.
- *
- * @param {number[]|string[]} userIds List of user IDs.
- * @returns {Promise.<import('./userRegistry').User[]>}
- */
-export async function getUsersByGlobalId(userIds) {
-  const requests = userIds.map((id) => (
-    controller.getApi().post({
-      action: 'query',
-      meta: 'globaluserinfo',
-      guiid: id,
-    }).catch(handleApiReject)
-  ));
-  return (await Promise.all(requests)).map((resp) => {
-    const userInfo = resp.query.globaluserinfo;
-    const user = userRegistry.get(userInfo.name);
-    user.setGlobalId(userInfo.id);
-    return user;
-  });
 }
 
 /**

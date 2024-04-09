@@ -53,6 +53,11 @@ export default {
 
     this.updateWidth();
     this.update();
+
+    controller
+      .on('scroll', this.update.bind(this))
+      .on('horizontalscroll', this.updateWidth.bind(this))
+      .on('resize', this.updateWidth.bind(this));
   },
 
   /**
@@ -111,9 +116,7 @@ export default {
       scrollY,
       afterLeadOffset
     );
-    if (!afterLeadOffset) {
-      afterLeadOffset = firstSectionTop;
-    }
+    afterLeadOffset ??= firstSectionTop;
 
     return { afterLeadOffset, firstSectionTop };
   },
@@ -131,18 +134,19 @@ export default {
           .attr('id', 'cd-pageNav-linksOnTop')
           .addClass('cd-pageNav-list')
           .appendTo(this.$topElement);
-        const topLink = new Button({
-          href: '#',
-          classes: ['cd-pageNav-link'],
-          label: cd.s('pagenav-pagetop'),
-          action: () => {
-            this.jump(0, this.$topLink);
-          },
-        });
         this.$topLink = $('<li>')
           .attr('id', 'cd-pageNav-topLink')
           .addClass('cd-pageNav-item')
-          .append(topLink.element)
+          .append(
+            (new Button({
+              href: '#',
+              classes: ['cd-pageNav-link'],
+              label: cd.s('pagenav-pagetop'),
+              action: () => {
+                this.jump(0, this.$topLink);
+              },
+            })).element
+          )
           .appendTo(this.$linksOnTop);
       }
     } else {

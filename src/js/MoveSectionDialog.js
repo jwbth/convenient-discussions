@@ -6,7 +6,7 @@ import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
 import { buildEditSummary, sleep } from './utils-general';
-import { createCheckboxField, tweakUserOoUiClass } from './utils-ooui';
+import { createCheckboxField, tweakUserOoUiClass } from './utils-oojs';
 import { encodeWikilink, endWithTwoNewlines, findFirstTimestamp } from './utils-wikitext';
 import { wrapHtml } from './utils-window';
 

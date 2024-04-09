@@ -485,9 +485,10 @@ class Thread {
    * Collapse the thread.
    *
    * @param {Promise.<undefined>} [loadUserGendersPromise]
-   * @param {boolean} [inBackground=false]
+   * @param {boolean} [auto=false] Automatic collapse - don't scroll anywhere and don't save
+   *   collapsed threads.
    */
-  collapse(loadUserGendersPromise, inBackground = false) {
+  collapse(loadUserGendersPromise, auto = false) {
     /**
      * Nodes that are collapsed. These can change, at least due to comment forms showing up.
      *
@@ -516,19 +517,12 @@ class Thread {
     this.isCollapsed = true;
 
     for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
-      const comment = commentRegistry.getByIndex(i);
-      if (comment.thread?.isCollapsed && comment.thread !== this) {
-        i = comment.thread.lastComment.index;
-        continue;
-      }
-      comment.isCollapsed = true;
-      comment.collapsedThread = this;
-      comment.removeLayers();
+      i = commentRegistry.getByIndex(i).collapse() ?? i;
     }
 
     this.addExpandNode(loadUserGendersPromise);
 
-    if (this.constructor.isInited && !inBackground) {
+    if (!auto) {
       this.$expandNote.cdScrollIntoView();
     }
 
@@ -548,15 +542,19 @@ class Thread {
       }
     }
 
-    this.constructor.saveCollapsedThreads();
-    controller.handleScroll();
+    if (!auto) {
+      this.constructor.saveCollapsedThreads();
+    }
     this.constructor.updateLines();
+    controller.handleScroll();
   }
 
   /**
    * Expand the thread.
+   *
+   * @param {boolean} [auto=false]
    */
-  expand() {
+  expand(auto = false) {
     this.collapsedRange.forEach((el) => {
       const $el = $(el);
       const roots = $el.data('cd-collapsed-thread-root-comments') || [];
@@ -583,16 +581,10 @@ class Thread {
     let areOutdentedCommentsShown = false;
     for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
       const comment = commentRegistry.getByIndex(i);
+      i = comment.expand() ?? i;
       if (comment.isOutdented) {
         areOutdentedCommentsShown = true;
       }
-      if (comment.thread?.isCollapsed) {
-        i = comment.thread.lastComment.index;
-        continue;
-      }
-      comment.isCollapsed = false;
-      comment.collapsedThread = null;
-      comment.configureLayers();
     }
 
     if (this.endElement !== this.visualEndElement && areOutdentedCommentsShown) {
@@ -604,9 +596,11 @@ class Thread {
       }
     }
 
-    this.constructor.saveCollapsedThreads();
-    controller.handleScroll();
+    if (!auto) {
+      this.constructor.saveCollapsedThreads();
+    }
     this.constructor.updateLines();
+    controller.handleScroll();
   }
 
   /**
@@ -615,7 +609,11 @@ class Thread {
    * @private
    */
   toggle() {
-    this[this.isCollapsed ? 'expand' : 'collapse']();
+    if (this.isCollapsed) {
+      this.expand();
+    } else {
+      this.collapse();
+    }
   }
 
   /**
@@ -625,13 +623,7 @@ class Thread {
    * @returns {boolean}
    * @private
    */
-  updateLine({
-    elementsToAdd,
-    threadsToUpdate,
-    scrollX,
-    scrollY,
-    floatingRects,
-  }) {
+  updateLine({ elementsToAdd, threadsToUpdate, scrollX, scrollY, floatingRects }) {
     const getLeft = (rectOrOffset, commentMargins, dir) => {
       let offset;
       if (dir === 'ltr') {
@@ -679,7 +671,6 @@ class Thread {
       undefined :
       this[this.isCollapsed ? 'expandNote' : 'startElement'].getBoundingClientRect();
 
-    floatingRects ||= controller.getFloatingElements().map(getExtendedRect);
     const rectOrOffset = rectTop || comment.getOffset({ floatingRects });
 
     // Should be below `comment.getOffset()` as `Comment#isStartStretched` is set inside that call.
@@ -764,6 +755,8 @@ class Thread {
     this.clickArea = this.clickAreaOffset = this.line = null;
   }
 
+  static isInited = false;
+
   /**
    * Create element prototypes to reuse them instead of creating new elements from scratch (which is
    * more expensive).
@@ -797,17 +790,40 @@ class Thread {
   }
 
   /**
-   * Create threads.
+   * Create threads. Can be re-run if DOM elements are replaced.
    *
    * @param {boolean} [autocollapse=true] Autocollapse threads according to the settings and restore
    *   collapsed threads from the local storage.
    */
   static init(autocollapse = true) {
     this.enabled = settings.get('enableThreads');
-    if (!this.enabled) return;
+    if (!this.enabled) {
+      (new StorageItem('collapsedThreads')).removeItem();
+      return;
+    }
+
+    if (!this.isInited) {
+      controller
+        .on('resize', this.updateLines.bind(this))
+        .on('mutate', () => {
+          if (!this.isMutateHandlerAttached) {
+            this.isMutateHandlerAttached = true;
+
+            const updateLines = () => {
+              this.updateLines();
+              $(document).off('mousemove', updateLines);
+              this.isMutateHandlerAttached = false;
+            };
+
+            // Update only on mouse move to prevent short freezings of a page when there is a
+            // comment form in the beginning of a very long page and the input is changed so that
+            // everything below the form shifts vertically.
+            $(document).on('mousemove', updateLines);
+          }
+        });
+    }
 
     this.collapseThreadsLevel = settings.get('collapseThreadsLevel');
-    this.isInited = false;
     this.treeWalker = new ElementsTreeWalker(undefined, controller.rootElement);
     commentRegistry.getAll().forEach((rootComment) => {
       try {
@@ -824,10 +840,10 @@ class Thread {
       this.threadLinesContainer.innerHTML = '';
     }
 
-    // We might not update lines on initialization as it is a relatively costly operation that can
-    // be delayed, but not sure it makes any difference at which point the page is blocked for
-    // interactions.
-    this.updateLines();
+    // We could choose not to update lines on initialization as it is a relatively costly operation
+    // that can be delayed, but not sure it makes any difference at which point the page is blocked
+    // for interactions.
+    this.updateLines(true);
 
     if (!this.threadLinesContainer.parentNode) {
       document.body.appendChild(this.threadLinesContainer);
@@ -845,13 +861,13 @@ class Thread {
    * @private
    */
   static autocollapseThreads() {
-    const collapsedThreadStorageItem = (new StorageItem('collapsedThreads'))
+    const collapsedThreadsStorageItem = (new StorageItem('collapsedThreads'))
       .cleanUp((entry) => (
         !(entry.collapsedThreads || entry.threads)?.length ||
         // FIXME: Remove `([keep] || entry.saveUnixTime)` after June 2024
         (entry.saveTime || entry.saveUnixTime) < Date.now() - 60 * cd.g.msInDay
       ));
-    const data = collapsedThreadStorageItem.get(mw.config.get('wgArticleId')) || {};
+    const data = collapsedThreadsStorageItem.get(mw.config.get('wgArticleId')) || {};
 
     const comments = [];
 
@@ -890,12 +906,12 @@ class Thread {
         if (!comment.thread) continue;
 
         if (comment.level >= this.collapseThreadsLevel) {
-          // Exclude threads where the user participates at any level up and down the tree or that the
-          // user has specifically expanded.
+          // Exclude threads where the user participates at any level up and down the tree or that
+          // the user has specifically expanded.
           if (![...comment.getAncestors(), ...comment.thread.comments].some((c) => c.isOwn)) {
             /**
-             * Should the thread be automatically collapsed on page load if taking only comment level
-             * into account and not remembering the user's previous actions.
+             * Should the thread be automatically collapsed on page load if taking only comment
+             * level into account and not remembering the user's previous actions.
              *
              * @name isAutocollapseTarget
              * @type {boolean}
@@ -919,15 +935,17 @@ class Thread {
       loadUserGenders(flat(comments.map((comment) => comment.thread.getUsersInThread()))) :
       undefined;
 
-    // Reverse order is used for threads to be expanded correctly.
+    // The reverse order is used for threads to be expanded correctly.
     comments
       .sort((c1, c2) => c1.index - c2.index)
       .forEach((comment) => {
-        comment.thread.collapse(loadUserGendersPromise);
+        comment.thread.collapse(loadUserGendersPromise, true);
       });
 
     if (controller.isCurrentRevision()) {
-      collapsedThreadStorageItem.save();
+      collapsedThreadsStorageItem
+        .setWithTime(mw.config.get('wgArticleId'), data)
+        .save();
     }
   }
 
@@ -1009,16 +1027,17 @@ class Thread {
   /**
    * _For internal use._ Calculate the offset and (if needed) add the thread lines to the container.
    *
-   * @param {object} [floatingRects]
+   * @param {boolean} init
    */
-  static updateLines(floatingRects) {
-    if (!this.enabled || ((controller.isBooting() || document.hidden) && this.isInited)) return;
+  static updateLines(init) {
+    if (!this.enabled || (!init && (controller.isBooting() || document.hidden))) return;
 
     const elementsToAdd = [];
     const threadsToUpdate = [];
     const scrollX = window.scrollX;
     const scrollY = window.scrollY;
 
+    const floatingRects = controller.getFloatingElements().map(getExtendedRect);
     commentRegistry.getAll()
       .slice()
       .reverse()

@@ -96,9 +96,7 @@ async function processPage(revisionToParseId) {
     config: keepWorkerSafeValues(cd.config, ['rejectNode']),
   });
 
-  if (!revisionData[message.revisionId]) {
-    revisionData[message.revisionId] = message;
-  }
+  revisionData[message.revisionId] ??= message;
 
   // Clean up `revisionData` from values that can't be reused as it may grow really big. (The newest
   // revision could be reused as the current revision; the current revision could be reused as the
@@ -301,7 +299,7 @@ function mapComments(currentComments, otherComments) {
  * @private
  */
 async function checkForUpdates() {
-  if (!controller.isPageActive() || controller.isBooting()) return;
+  if (!pageRegistry.getCurrent().isActive() || controller.isBooting()) return;
 
   // We need a value that wouldn't change during `await`s.
   const documentHidden = document.hidden;
@@ -453,7 +451,7 @@ function checkForChangesSincePreviousVisit(currentComments, submittedCommentId) 
   }
 
   seenStorageItem
-    .delete(mw.config.get('wgArticleId'))
+    .remove(mw.config.get('wgArticleId'))
     .save();
 }
 
@@ -526,9 +524,9 @@ function checkForNewChanges(currentComments) {
     // will prevent layers before them from being updated due to the "stop at the first three
     // unmoved comments" optimization in `commentRegistry.maybeRedrawLayers`. So we just do the
     // whole job here.
-    commentRegistry.maybeRedrawLayers(false, true);
+    commentRegistry.maybeRedrawLayers(true);
 
-    // Thread start and end elements may be replaced, so we need to restart threads.
+    // Start and end elements of threads may be replaced, so we need to restart threads.
     Thread.init(false);
   }
 

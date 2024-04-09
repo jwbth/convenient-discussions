@@ -2,7 +2,7 @@ import CdError from './CdError';
 import Comment from './Comment';
 import DivLabelWidget from './DivLabelWidget';
 import cd from './cd';
-import { createCopyTextField, tweakUserOoUiClass } from './utils-ooui';
+import { createCopyTextField, tweakUserOoUiClass } from './utils-oojs';
 import { wrapHtml } from './utils-window';
 
 /**

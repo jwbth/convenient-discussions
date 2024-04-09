@@ -6,15 +6,17 @@
  */
 
 import Button from './Button';
+import LiveTimestamp from './LiveTimestamp';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
+import pageRegistry from './pageRegistry';
 import settings from './settings';
 import { reorderArray } from './utils-general';
 import { formatDate } from './utils-timestamp';
 import { removeWikiMarkup } from './utils-wikitext';
-import { isCmdModifierPressed } from './utils-window';
+import { isCmdModifierPressed, isInputFocused, keyCombination } from './utils-window';
 
 export default {
   /**
@@ -25,13 +27,45 @@ export default {
     this.modifyToc = settings.get('modifyToc');
     this.highlightNewInterval = settings.get('highlightNewInterval');
 
-    if (controller.isPageActive()) {
+    if (pageRegistry.getCurrent().isActive()) {
       // Can be mounted not only on first parse, if using RevisionSlider, for example.
       if (!this.isMounted()) {
         this.mount();
+        controller
+          .on('scroll', this.updateCommentFormButton.bind(this))
+          .on('keydown', (e) => {
+            if (isInputFocused()) return;
+
+            // R
+            if (keyCombination(e, 82)) {
+              this.refreshClick();
+            }
+
+            // W
+            if (keyCombination(e, 87)) {
+              this.goToPreviousNewComment();
+            }
+
+            // S
+            if (keyCombination(e, 83)) {
+              this.goToNextNewComment();
+            }
+
+            // F
+            if (keyCombination(e, 70)) {
+              this.goToFirstUnseenComment();
+            }
+
+            // C
+            if (keyCombination(e, 67)) {
+              e.preventDefault();
+              this.goToNextCommentForm(true);
+            }
+          });
         commentFormRegistry
           .on('add', this.updateCommentFormButton.bind(this))
           .on('remove', this.updateCommentFormButton.bind(this));
+        LiveTimestamp.on('updateimproved', this.updateTimestampsInRefreshButtonTooltip.bind(this));
       } else {
         this.reset();
       }
@@ -169,7 +203,7 @@ export default {
   /**
    * Check if the navigation panel is mounted. Is equivalent to checking the existence of
    * {@link module:navPanel.$element}, and for most practical purposes, does the same as the
-   * {@link module:controller.isPageActive} check.
+   * {@link module:Page#isActive} check.
    *
    * @returns {boolean}
    */

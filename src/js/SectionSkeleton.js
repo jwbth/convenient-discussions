@@ -4,8 +4,9 @@ import cd from './cd';
 import { defined, isHeadingNode, isMetadataNode } from './utils-general';
 
 /**
- * Class containing the main properties of a section. It is extended by {@link Section}. This class
- * is the only one used in the worker context for sections.
+ * Class containing the main properties of a section and building it from a heading (we should
+ * probably extract `SectionParser` from it). It is extended by {@link Section}. This class is the
+ * only one used in the worker context for sections.
  */
 class SectionSkeleton {
   /**
@@ -149,6 +150,12 @@ class SectionSkeleton {
       nndheIndex = undefined;
     }
     const nextNotDescendantHeadingElement = targets[nndheIndex]?.element;
+
+    const treeWalker = new TreeWalker(
+      this.parser.context.rootElement,
+      (node) => !isMetadataNode(node) && !node.classList.contains('cd-section-button-container'),
+      true
+    );
 
     /**
      * Last element in the section.

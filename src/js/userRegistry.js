@@ -6,7 +6,8 @@
 
 import StorageItem from './StorageItem';
 import cd from './cd';
-import { getUsersByGlobalId } from './utils-api';
+import controller from './controller';
+import { handleApiReject } from './utils-api';
 import { ucFirst, underlinesToSpaces } from './utils-general';
 
 /**
@@ -165,16 +166,15 @@ export default {
     if (name.includes('#')) {
       name = name.slice(0, name.indexOf('#'));
     }
-    name = mw.util.isIPv6Address(name) ?
-      name.toUpperCase().trim() :
-      underlinesToSpaces(ucFirst(name)).trim();
-
-    if (!this.items[name]) {
-      this.items[name] = new User(
-        name,
-        name === cd.g.userName ? { gender: mw.user.options.get('gender') } : {}
-      );
-    }
+    name = (
+      mw.util.isIPv6Address(name) ?
+        name.toUpperCase() :
+        underlinesToSpaces(ucFirst(name))
+    ).trim();
+    this.items[name] ||= new User(
+      name,
+      name === cd.g.userName ? { gender: mw.user.options.get('gender') } : {}
+    );
 
     return this.items[name];
   },
@@ -208,7 +208,7 @@ export default {
       // FIXME: Remove `([keep] || mutedUsersData.saveUnixTime)` after June 2024
       (mutedUsersData.saveTime || mutedUsersData.saveUnixTime) < Date.now() - 7 * cd.g.msInDay
     ) {
-      getUsersByGlobalId(userIds).then(
+      this.getUsersByGlobalId(userIds).then(
         (users) => {
           users.forEach((user) => {
             user.setMuted(true);
@@ -237,8 +237,30 @@ export default {
       );
     } else {
       const users = Object.entries(mutedUsersData.users).map(([, name]) => this.get(name));
-      users.forEach((user) => user.setMuted(true))
+      users.forEach((user) => user.setMuted(true));
       mw.hook('convenientDiscussions.mutedUsers').fire(users);
     }
+  },
+
+  /**
+   * Given a list of user IDs, return a list of users.
+   *
+   * @param {number[]|string[]} userIds List of user IDs.
+   * @returns {Promise.<import('./userRegistry').User[]>}
+   */
+  async getUsersByGlobalId(userIds) {
+    const requests = userIds.map((id) => (
+      controller.getApi().post({
+        action: 'query',
+        meta: 'globaluserinfo',
+        guiid: id,
+      }).catch(handleApiReject)
+    ));
+    return (await Promise.all(requests)).map((resp) => {
+      const userInfo = resp.query.globaluserinfo;
+      const user = this.get(userInfo.name);
+      user.setGlobalId(userInfo.id);
+      return user;
+    });
   },
 };

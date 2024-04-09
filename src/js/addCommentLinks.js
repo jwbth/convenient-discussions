@@ -205,7 +205,7 @@ function addWatchlistMenu() {
   });
   settingsButton.on('click', () => {
     initDayjs();
-    controller.showSettingsDialog();
+    settings.showDialog();
   });
   settingsButton.$element.appendTo($menu);
 
@@ -701,7 +701,7 @@ export default async function addCommentLinks() {
   try {
     await initialize();
   } catch (e) {
-    console.warn(...e);
+    console.warn(e);
     return;
   }
 

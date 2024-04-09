@@ -5,20 +5,19 @@ import Comment from './Comment';
 import CommentFormInputTransformer from './CommentFormInputTransformer';
 import CommentFormOperationRegistry from './CommentFormOperationRegistry';
 import Parser from './Parser';
-import Section from './Section';
 import TextMasker from './TextMasker';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
 import notifications from './notifications';
-import pageRegistry, { Page } from './pageRegistry';
+import pageRegistry from './pageRegistry';
 import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
 import { handleApiReject, parseCode } from './utils-api';
 import { buildEditSummary, defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './utils-general';
-import { createCheckboxField } from './utils-ooui';
+import { createCheckboxField } from './utils-oojs';
 import { escapePipesOutsideLinks, generateTagsRegexp, removeWikiMarkup } from './utils-wikitext';
 import { isCmdModifierPressed, isHtmlConvertibleToWikitext, isInputFocused, keyCombination, wrapDiffBody, wrapHtml } from './utils-window';
 
@@ -48,24 +47,20 @@ class CommentForm {
    *
    * @param {object} config
    * @param {'reply'|'replyInSection'|'edit'|'addSubsection'|'addSection'} config.mode
-   * @param {Comment|Section|Page} config.target Comment, section, or page that the form is related
-   *   to.
+   * @param {Comment|import('./Section').default|import('./Page').Page} config.target Comment,
+   *   section, or page that the form is related to.
    * @param {object} [config.initialState] Initial state of the form (data saved in the previous
    *   session, quoted text, or data transferred from DT's new topic form).
    * @param {PreloadConfig} [config.preloadConfig] Configuration to preload data into the form.
    * @param {boolean} [config.newTopicOnTop] When adding a topic, whether it should be on top.
-   * @throws {CdError}
    * @fires commentFormCustomModulesReady
-   * @fires commentFormCreated
    */
   constructor({ mode, target, initialState, preloadConfig, newTopicOnTop }) {
-    // This is possible when restoring a form.
-    if (
-      !(target instanceof Page) && !target.isActionable ||
-      (mode === 'replyInSection' && !target.replyButton)
-    ) {
-      throw new CdError();
-    }
+    // Do it here because `OO.EventEmitter` can be unavailable when this module is first imported.
+    OO.mixinClass(CommentForm, OO.EventEmitter);
+
+    // Mixin constructor
+    OO.EventEmitter.call(this);
 
     this.watchOnReply = settings.get('watchOnReply');
     this.subscribeOnReply = settings.get('subscribeOnReply');
@@ -112,6 +107,14 @@ class CommentForm {
      * @private
      */
     this.index = this.constructor.counter++;
+
+    /**
+     * Is the comment form registered ({@link CommentForm#unregister .unregister()} hasn't been run
+     * on it).
+     *
+     * @type {boolean}
+     */
+    this.registered = true;
 
     /**
      * Has the comment form been {@link CommentForm#teardown torndown}.
@@ -242,11 +245,9 @@ class CommentForm {
       }
     }
 
-    if (!(this.target instanceof Page) && this.mode !== 'edit') {
+    if (this.mode !== 'addSection' && this.mode !== 'edit') {
       this.checkCode();
     }
-
-    commentFormRegistry.add(this);
 
     if (!initialState || initialState.focus) {
       this.$element.cdScrollIntoView('center', true, () => {
@@ -260,28 +261,19 @@ class CommentForm {
 
     this.onboardOntoMultipleForms();
     this.onboardOntoUpload();
-
-    /**
-     * A comment form has been created and added to the page.
-     *
-     * @event commentFormCreated
-     * @param {CommentForm} commentForm
-     * @param {object} cd {@link convenientDiscussions} object.
-     */
-    mw.hook('convenientDiscussions.commentFormCreated').fire(this, cd);
   }
 
   /**
    * Set the `target`, `targetSection`, `targetComment`, and `targetPage` properties.
    *
-   * @param {Comment|Section|Page} target
+   * @param {Comment|import('./Section').default|import('./Page').Page} target
    * @private
    */
   setTargets(target) {
     /**
      * Target object.
      *
-     * @type {Comment|Section|Page}
+     * @type {Comment|import('./Section').default|import('./Page').Page}
      * @private
      */
     this.target = target;
@@ -289,7 +281,7 @@ class CommentForm {
     /**
      * Target section.
      *
-     * @type {?Section}
+     * @type {?import('./Section').default}
      * @private
      */
     this.targetSection = this.target.getRelevantSection();
@@ -317,7 +309,7 @@ class CommentForm {
      * Wiki page that has the source code of the target object (may be different from the current
      * page if the section is transcluded from another page).
      *
-     * @type {Page}
+     * @type {import('./pageRegistry').Page}
      * @private
      */
     this.targetPage = this.targetSection ?
@@ -489,7 +481,7 @@ class CommentForm {
           (
             (this.watchOnReply && this.mode !== 'edit') ||
             $('.mw-watchlink a[href*="action=unwatch"]').length ||
-            mw.user.options.get(controller.doesPageExist() ? 'watchdefault' : 'watchcreations')
+            mw.user.options.get(pageRegistry.getCurrent().exists() ? 'watchdefault' : 'watchcreations')
           )
         ),
         label: cd.s('cf-watch'),
@@ -757,20 +749,18 @@ class CommentForm {
    * @private
    */
   createElements() {
-    if (!['addSection', 'addSubsection'].includes(this.mode)) {
-      if (this.mode === 'reply') {
-        /**
-         * Name of the tag of the list that this comment form is an item of.
-         *
-         * @type {'dl'|'ul'|'ol'|undefined}
-         * @private
-         */
-        this.containerListType = 'dl';
-      } else if (this.mode === 'edit') {
-        this.containerListType = this.target.containerListType;
-      } else if (this.mode === 'replyInSection') {
-        this.containerListType = this.target.$replyButtonContainer.prop('tagName').toLowerCase();
-      }
+    if (this.mode === 'reply') {
+      /**
+       * Name of the tag of the list that this comment form is an item of.
+       *
+       * @type {'dl'|'ul'|'ol'|undefined}
+       * @private
+       */
+      this.containerListType = 'dl';
+    } else if (this.mode === 'edit') {
+      this.containerListType = this.target.containerListType;
+    } else if (this.mode === 'replyInSection') {
+      this.containerListType = this.target.$replyButtonContainer.prop('tagName').toLowerCase();
     }
 
     /**
@@ -1258,18 +1248,24 @@ class CommentForm {
    * @private
    */
   async addEditNotices() {
-    const title = pageRegistry.getCurrent().title.replace(/\//g, '-');
-    let code = (
-      `<div class="cd-editnotice">{{MediaWiki:Editnotice-${cd.g.namespaceNumber}}}</div>` +
-      `<div class="cd-editnotice">{{MediaWiki:Editnotice-${cd.g.namespaceNumber}-${title}}}</div>`
-    );
-    if (this.preloadConfig?.editIntro) {
-      code = `<div class="cd-editintro">{{${this.preloadConfig.editIntro}}}</div>\n` + code;
-    }
-
     let result;
     try {
-      result = await parseCode(code, { title: pageRegistry.getCurrent().name });
+      const title = pageRegistry.getCurrent().title.replace(/\//g, '-');
+
+      // Just making a parse request with both edit intro and edit notices is simpler than making
+      // two requests for each of them.
+      result = await parseCode(
+        (
+          (
+            this.preloadConfig?.editIntro ?
+              `<div class="cd-editintro">{{${this.preloadConfig.editIntro}}}</div>\n` :
+              ''
+          ) +
+          `<div class="cd-editnotice">{{MediaWiki:Editnotice-${cd.g.namespaceNumber}}}</div>` +
+          `<div class="cd-editnotice">{{MediaWiki:Editnotice-${cd.g.namespaceNumber}-${title}}}</div>`
+        ),
+        { title: pageRegistry.getCurrent().name }
+      );
     } catch {
       // TODO: Some error message? (But in most cases there are no edit notices anyway, and if the
       // user is knowingly offline they would be annoying.)
@@ -1384,7 +1380,7 @@ class CommentForm {
     }
 
     // 'addSection'
-    if (!controller.doesPageExist()) {
+    if (!pageRegistry.getCurrent().exists()) {
       controller.$content.children('.noarticletext, .warningbox').hide();
     }
 
@@ -1502,7 +1498,7 @@ class CommentForm {
       const $body = wrapHtml(cd.sParse('warning-performance'), {
         callbacks: {
           'cd-notification-talkPageSettings': () => {
-            controller.showSettingsDialog('talkPage');
+            settings.showDialog('talkPage');
           },
         },
       });
@@ -1712,11 +1708,11 @@ class CommentForm {
   /**
    * Add event listeners to the text inputs.
    *
-   * @param {Function} saveSessionEventHandler
+   * @param {Function} emitChange
    * @param {Function} preview
    * @private
    */
-  addEventListenersToTextInputs(saveSessionEventHandler, preview) {
+  addEventListenersToTextInputs(emitChange, preview) {
     const substAliasesString = ['subst:'].concat(cd.config.substAliases).join('|');
     const textReactions = [
       {
@@ -1758,7 +1754,7 @@ class CommentForm {
             });
         })
         .on('change', preview)
-        .on('change', saveSessionEventHandler);
+        .on('change', emitChange);
 
       this.headlineInput
         .on('enter', this.submit.bind(this));
@@ -1779,7 +1775,7 @@ class CommentForm {
           });
       })
       .on('change', preview)
-      .on('change', saveSessionEventHandler);
+      .on('change', emitChange);
 
     this.commentInput.$input
       .on('dragover', (e) => {
@@ -1844,14 +1840,14 @@ class CommentForm {
     this.summaryInput
       .on('manualChange', () => {
         this.summaryAltered = true;
-        this.isSummaryAutopreviewBlocked = false;
+        this.summaryAutopreviewBlocked = false;
       })
       .on('change', () => {
-        if (!this.isSummaryAutopreviewBlocked) {
+        if (!this.summaryAutopreviewBlocked) {
           preview();
         }
       })
-      .on('change', saveSessionEventHandler);
+      .on('change', emitChange);
 
     this.summaryInput
       .on('enter', this.submit.bind(this));
@@ -1860,30 +1856,30 @@ class CommentForm {
   /**
    * Add event listeners to the checkboxes.
    *
-   * @param {Function} saveSessionEventHandler
+   * @param {Function} emitChange
    * @param {Function} preview
    * @private
    */
-  addEventListenersToCheckboxes(saveSessionEventHandler, preview) {
+  addEventListenersToCheckboxes(emitChange, preview) {
     this.minorCheckbox
-      ?.on('change', saveSessionEventHandler);
+      ?.on('change', emitChange);
     this.watchCheckbox
-      ?.on('change', saveSessionEventHandler);
+      ?.on('change', emitChange);
     this.subscribeCheckbox
-      ?.on('change', saveSessionEventHandler);
+      ?.on('change', emitChange);
     this.omitSignatureCheckbox
       ?.on('change', preview)
       .on('manualChange', () => {
         this.omitSignatureCheckboxAltered = true;
       })
-      .on('change', saveSessionEventHandler);
+      .on('change', emitChange);
     this.deleteCheckbox
       ?.on('change', (selected) => {
         this.updateAutoSummary(true, true);
         this.updateFormOnDeleteCheckboxChange(selected);
       })
       .on('change', preview)
-      .on('change', saveSessionEventHandler);
+      .on('change', emitChange);
   }
 
   /**
@@ -1896,7 +1892,7 @@ class CommentForm {
       this.toggleAdvanced();
     });
     this.settingsButton?.on('click', () => {
-      controller.showSettingsDialog();
+      settings.showDialog();
     });
     this.cancelButton.on('click', () => {
       this.cancel();
@@ -1918,8 +1914,8 @@ class CommentForm {
    * @private
    */
   addEventListeners() {
-    const saveSessionEventHandler = () => {
-      commentFormRegistry.saveSession();
+    const emitChange = () => {
+      this.emit('change');
     };
     const preview = () => {
       this.preview();
@@ -1945,8 +1941,8 @@ class CommentForm {
         controller.updatePageTitle();
       });
 
-    this.addEventListenersToTextInputs(saveSessionEventHandler, preview);
-    this.addEventListenersToCheckboxes(saveSessionEventHandler, preview);
+    this.addEventListenersToTextInputs(emitChange, preview);
+    this.addEventListenersToCheckboxes(emitChange, preview);
     this.addEventListenersToButtons();
   }
 
@@ -2170,7 +2166,7 @@ class CommentForm {
       this.omitSignatureCheckbox?.setDisabled(false);
       this.deleteCheckbox?.setDisabled(false);
 
-      // Restore needed "disabled"s.
+      // Restore disabled states caused by the delete checkbox being checked
       if (this.deleteCheckbox?.isSelected()) {
         this.updateFormOnDeleteCheckboxChange(true);
       }
@@ -2263,7 +2259,7 @@ class CommentForm {
       });
       this.cancel(false);
     } else {
-      if (this.isForgotten()) return;
+      if (!this.registered) return;
       if (!(operation && operation.getType() === 'preview' && operation.getOption('isAuto'))) {
         this.showMessage(message, {
           type: messageType,
@@ -2297,8 +2293,8 @@ class CommentForm {
    * @param {string} [options.logMessage] Data or text to display in the browser console.
    * @param {boolean} [options.cancel=false] Cancel the form and show the message as a notification.
    * @param {boolean} [options.isRawMessage=false] Show the message as it is, without OOUI framing.
-   * @param {import('./CommentFormOperation').CommentFormOperation} [options.operation] Operation
-   *   the form is undergoing.
+   * @param {import('./CommentFormOperationRegistry').CommentFormOperation} [options.operation]
+   *   Operation the form is undergoing.
    */
   handleError({
     type,
@@ -2503,7 +2499,7 @@ class CommentForm {
     if (!this.newSectionApi) {
       try {
         const target = commentIds.length ? this.targetPage : this.target;
-        await target.loadCode(target === this.targetPage ? !controller.doesPageExist() : this);
+        await target.loadCode(target === this.targetPage ? !pageRegistry.getCurrent().exists() : this);
       } catch (e) {
         if (e instanceof CdError) {
           this.handleError(
@@ -2655,7 +2651,7 @@ class CommentForm {
         (if the mode is 'edit' and the comment has not been loaded, this method would halt after
         looking for an unclosed 'load' operation above).
      */
-    if (!(this.target instanceof Page) && !this.target.source) {
+    if (this.mode !== 'addSection' && !this.target.source) {
       await this.checkCode();
       if (!this.target.source) {
         operation.close();
@@ -2842,15 +2838,15 @@ class CommentForm {
   }
 
   /**
-   * Forget the form and reload the page.
+   * Remove references to the form and reload the page.
    *
    * @param {object} [bootData] Data to pass to the boot process.
    * @param {import('./CommentFormOperationRegistry').CommentFormOperation} [operation] Operation
    */
   async reloadPage(bootData, operation) {
-    this.forget();
+    this.unregister();
 
-    if (!controller.doesPageExist()) {
+    if (!pageRegistry.getCurrent().exists()) {
       const url = new URL(location.href);
       url.searchParams.delete('cdaddtopic');
       url.searchParams.delete('section');
@@ -3242,7 +3238,7 @@ class CommentForm {
       this.target.subitemList.remove('replyForm');
     } else {
       this.$outermostElement.remove();
-      if (this.mode === 'addSection' && !controller.doesPageExist()) {
+      if (this.mode === 'addSection' && !pageRegistry.getCurrent().exists()) {
         controller.$content
           // In case DT's new topic tool is enabled. This is responsible for correct styles being
           // set.
@@ -3253,10 +3249,10 @@ class CommentForm {
       }
     }
 
-    this.forget();
+    this.unregister();
 
-    // Restore hidden elements. FIXME: use a hook or run some routine on the target to decouple
-    // these operations from CommentForm.
+    // Restore hidden elements. FIXME: emit an event or at least run some routine on the target to
+    // decouple these operations from CommentForm.
     if (this.mode === 'replyInSection') {
       this.target.replyButton.show();
       this.target.$replyButtonWrapper.removeClass('cd-replyButtonWrapper-hasCommentForm');
@@ -3278,31 +3274,25 @@ class CommentForm {
 
   /**
    * Remove all outside references to the form and unload it from the session data thus making it
-   * not appear after a page reload. A form may be forgotten without being torn down (but not vice
-   * versa); for example, submitted forms and forms that can't be restored after a page reload.
+   * not appear after a page reload. A form may be unregistered without being torn down (but not
+   * vice versa); for example, submitted forms and forms that can't be restored after a page reload
+   * for whatever reason.
    *
    * @private
    */
-  forget() {
+  unregister() {
     this.target.forgetCommentForm(this.mode);
-    commentFormRegistry.remove(this);
 
     // Popups can be placed outside the form element, so they need to be torn down whenever the form
-    // is forgotten (even if the form itself is not torn down).
+    // is unregistered (even if the form itself is not torn down).
     this.teardownInputPopups();
 
     this.autocomplete.cleanUp();
     this.headlineAutocomplete?.cleanUp();
     this.summaryAutocomplete.cleanUp();
-  }
 
-  /**
-   * Check whether the comment form was {@link CommentForm#forget forgotten}.
-   *
-   * @returns {boolean}
-   */
-  isForgotten() {
-    return commentFormRegistry.items.includes(this);
+    this.registered = false;
+    this.emit('unregister');
   }
 
   /**
@@ -3356,7 +3346,7 @@ class CommentForm {
   updateAutoSummary(set = true, blockAutopreview = false) {
     if (this.summaryAltered) return;
 
-    this.isSummaryAutopreviewBlocked = blockAutopreview;
+    this.summaryAutopreviewBlocked = blockAutopreview;
 
     const text = this.generateStaticSummaryText();
     const section = this.headlineInput && this.mode !== 'addSubsection' ?
@@ -3713,9 +3703,10 @@ class CommentForm {
    * mode.
    *
    * @returns {string}
+   * @private
    */
   getModeTargetProperty() {
-    return this.constructor.modeToTargetProperty(this.mode);
+    return this.mode === 'replyInSection' ? 'reply' : this.mode;
   }
 
   /**
@@ -3784,7 +3775,7 @@ class CommentForm {
   /**
    * Get the {@link CommentForm#target target} object of the form.
    *
-   * @returns {Comment|Section|Page}
+   * @returns {Comment|import('./Section').default|import('./Page').Page}
    */
   getTarget() {
     return this.target;
@@ -3852,11 +3843,9 @@ class CommentForm {
    */
   restore() {
     const newSelf = this.target.findNewSelf();
-    if (newSelf) {
+    if (newSelf?.isActionable) {
       try {
-        this.setTargets(newSelf);
         newSelf[this.getModeTargetProperty()](this);
-        this.addToPage();
       } catch (e) {
         console.warn(e);
         return this.rescue();
@@ -3866,8 +3855,14 @@ class CommentForm {
     }
   }
 
+  /**
+   * Return the key contents of the form, to be printed to the user in a popup so that they may have
+   * a chance to copy it and not lose.
+   *
+   * @returns {object}
+   */
   rescue() {
-    this.forget();
+    this.unregister();
 
     return {
       headline: this.headlineInput?.getValue(),
@@ -4009,14 +4004,20 @@ class CommentForm {
   }
 
   /**
-   * Get the name of the correlated property of the comment form target based on the comment for
-   * mode.
+   * Get the default preload configuration for the `addSection` mode.
    *
-   * @param {string} mode
-   * @returns {string}
+   * @returns {object}
    */
-  static modeToTargetProperty(mode) {
-    return mode === 'replyInSection' ? 'reply' : mode;
+  static getDefaultPreloadConfig() {
+    return {
+      editIntro: undefined,
+      commentTemplate: undefined,
+      headline: undefined,
+      params: [],
+      summary: undefined,
+      noHeadline: false,
+      omitSignature: false,
+    };
   }
 }
 

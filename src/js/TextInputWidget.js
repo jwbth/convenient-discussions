@@ -1,5 +1,5 @@
 import { convertHtmlToWikitext } from './utils-api';
-import { tweakUserOoUiClass } from './utils-ooui';
+import { tweakUserOoUiClass } from './utils-oojs';
 import { getElementFromPasteHtml, cleanUpPasteDom, isElementConvertibleToWikitext } from './utils-window';
 
 /**

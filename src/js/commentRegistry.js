@@ -5,6 +5,7 @@
  */
 
 import Comment from './Comment';
+import TreeWalker from './TreeWalker';
 import cd from './cd';
 import controller from './controller';
 import navPanel from './navPanel';
@@ -35,6 +36,56 @@ export default {
    * @type {Element[]}
    */
   layersContainers: [],
+
+  /**
+   * _For internal use._ Initialize the registry.
+   */
+  init() {
+    this.reformatCommentsSetting = settings.get('reformatComments');
+
+    controller
+      .on('scroll', this.registerSeen.bind(this))
+      .on('mutate', this.maybeRedrawLayers.bind(this))
+      .on('resize', this.maybeRedrawLayers.bind(this))
+      .on('mousemove', this.maybeHighlightHovered.bind(this))
+      .on('popstate', (fragment) => {
+        // Don't jump to the comment if the user pressed "Back"/"Forward" in the browser or if
+        // `history.pushState()` is called from `Comment#scrollTo()` (after clicks on added (gray)
+        // items in the TOC). A marginal state of this happening is when a page with a comment ID in
+        // the fragment is opened and then a link with the same fragment is clicked.
+        if (!Comment.isAnyId(fragment) || history.state?.cdJumpedToComment) return;
+
+        this.getByAnyId(fragment, true)?.scrollTo();
+      })
+      .on('selectionchange', this.getSelectedComment.bind(this))
+      .on('beforereload', (passedData) => {
+        // Stop all animations, clear all timeouts.
+        this.getAll().forEach((comment) => {
+          comment.stopAnimations();
+        });
+
+        // If the page is reloaded externally, its content is already replaced, so we won't break
+        // anything if we remove the layers containers early. And we better do so to avoid comment
+        // layers hanging around without their owner comments.
+        if (passedData.isPageReloadedExternally) {
+          this.resetLayers();
+        }
+      })
+      .on('reload', this.resetLayers.bind(this))
+      .on('desktopnotificationclick', () => {
+        this.maybeRedrawLayers(true);
+      });
+  },
+
+  /**
+   * _For internal use._ Perform some coment-related operations when the registry is filled, in
+   * addition to those performed when each comment is added to the registry.
+   */
+  setup() {
+    this.reformatTimestamps();
+    this.findAndUpdateTableComments();
+    this.adjustDom();
+  },
 
   /**
    * Add a comment to the list.
@@ -112,19 +163,16 @@ export default {
    * Recalculate the offset of the highlighted comments' (usually, new or own) layers and redraw if
    * they've changed.
    *
-   * @param {boolean} [removeUnhighlighted] Whether to remove the unhighlighted comments' layers.
-   *   This is necessary when the window is resized, because these layers can occupy space at the
-   *   bottom of the page extending it to the bottom.
    * @param {boolean} [redrawAll] Whether to redraw all layers and not stop at first three unmoved.
-   * @param {object} [floatingRects]
    */
-  maybeRedrawLayers(removeUnhighlighted = false, redrawAll = false, floatingRects) {
+  maybeRedrawLayers(redrawAll = false) {
     if (controller.isBooting() || (document.hidden && !redrawAll)) return;
 
     this.layersContainers.forEach((container) => {
       container.cdCouldHaveMoved = true;
     });
 
+    let floatingRects;
     const comments = [];
     const rootBottom = controller.$root[0].getBoundingClientRect().bottom + window.scrollY;
     let notMovedCount = 0;
@@ -153,7 +201,7 @@ export default {
       // bottom down.
       const isUnderRootBottom = comment.offset && comment.offset.bottom > rootBottom;
 
-      if (comment.underlay && !shouldBeHighlighted && (removeUnhighlighted || isUnderRootBottom)) {
+      if (comment.underlay && !shouldBeHighlighted && isUnderRootBottom) {
         comment.removeLayers();
       } else if (shouldBeHighlighted) {
         floatingRects ||= controller.getFloatingElements().map(getExtendedRect);
@@ -170,8 +218,8 @@ export default {
         } else if (isMoved === null) {
           comment.removeLayers();
 
-          // Nested containers shouldn't count, the offset of the layers inside them may be OK,
-          // unlike the layers preceding them.
+        // Nested containers shouldn't count, the offset of layers inside them may be OK, unlike the
+        // layers preceding them.
         } else if (!comment.getLayersContainer().cdIsTopLayersContainer) {
           // isMoved === false
           notMovedCount++;
@@ -382,34 +430,19 @@ export default {
 
   /**
    * Handles the `mousemove` and `mouseover` events and highlights hovered comments even when the
-   * cursor is between comment parts, not over them.
+   * cursor is between comment parts, not over them. (An event handler for comment part elements
+   * wouldn't be able to handle this space between.)
    *
    * @param {Event} e
    */
-  highlightHovered(e) {
-    const isObstructingElementHovered = controller.isObstructingElementHovered();
+  maybeHighlightHovered(e) {
+    if (this.reformatCommentsSetting) return;
 
+    const isObstructingElementHovered = controller.isObstructingElementHovered();
     this.items
       .filter((comment) => comment.underlay)
       .forEach((comment) => {
-        const layersOffset = comment.layersOffset;
-        const layersContainerOffset = comment.getLayersContainerOffset();
-        if (!layersOffset || !layersContainerOffset) {
-          // Something has happened with the comment (or the layers container); it disappeared.
-          comment.removeLayers();
-          return;
-        }
-        if (
-          !isObstructingElementHovered &&
-          e.pageY >= layersOffset.top + layersContainerOffset.top &&
-          e.pageY <= layersOffset.top + layersOffset.height + layersContainerOffset.top &&
-          e.pageX >= layersOffset.left + layersContainerOffset.left &&
-          e.pageX <= layersOffset.left + layersOffset.width + layersContainerOffset.left
-        ) {
-          comment.highlightHovered();
-        } else {
-          comment.unhighlightHovered();
-        }
+        comment.updateHoverState(e, isObstructingElementHovered);
       });
   },
 
@@ -490,7 +523,7 @@ export default {
    * @returns {?Comment}
    */
   getByAnyId(id, impreciseDate = false) {
-    return this.isId(id) ?
+    return Comment.isId(id) ?
       this.getById(id, impreciseDate) :
       this.getByDtId(id);
   },
@@ -647,7 +680,7 @@ export default {
    * relevant setting is enabled.
    */
   async reformatComments() {
-    if (!settings.get('reformatComments')) return;
+    if (!this.reformatCommentsSetting) return;
 
     const pagesToCheckExistence = [];
     $(document.body).addClass('cd-reformattedComments');
@@ -659,11 +692,8 @@ export default {
     // Check existence of user and user talk pages and apply respective changes to elements.
     const pageNamesToLinks = {};
     pagesToCheckExistence.forEach((page) => {
-      const pageName = page.pageName;
-      if (!pageNamesToLinks[pageName]) {
-        pageNamesToLinks[pageName] = [];
-      }
-      pageNamesToLinks[pageName].push(page.link);
+      pageNamesToLinks[page.pageName] ||= [];
+      pageNamesToLinks[page.pageName].push(page.link);
     });
     const pagesExistence = await getPagesExistence(Object.keys(pageNamesToLinks));
     Object.keys(pagesExistence).forEach((name) => {
@@ -738,14 +768,14 @@ export default {
   },
 
   /**
-   * Find a previous comment in time by the specified author within a 1-day window.
+   * Find a previous comment by time by the specified author within a 1-day window.
    *
    * @param {Date} date
    * @param {string} author
    * @returns {Comment}
    * @private
    */
-  findPreviousCommentByTime(date, author) {
+  findPriorComment(date, author) {
     return this.items
       .filter((comment) => (
         comment.author.getName() === author &&

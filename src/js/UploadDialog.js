@@ -8,7 +8,7 @@ import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
 import { generateFixedPosTimestamp, getDbnameForHostname, zeroPad } from './utils-general';
-import { createCheckboxField, createTextField, mixinUserOoUiClass, tweakUserOoUiClass } from './utils-ooui';
+import { createCheckboxField, createTextField, mixinUserOoUiClass, tweakUserOoUiClass } from './utils-oojs';
 import { wrapHtml } from './utils-window';
 
 function createRadioField({ label, help, options }) {

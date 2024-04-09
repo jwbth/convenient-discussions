@@ -474,7 +474,7 @@ class CommentSource {
         // Cases where indentation characters on the first line don't denote a comment level but
         // serve some other purposes. Examples: https://en.wikipedia.org/?diff=998431486,
         // https://ru.wikipedia.org/w/index.php?diff=105978713 (this one is actually handled by
-        // `replaceIndentation()` in `this.excludeIndentationAndIntro()`).
+        // `replaceIndentation()` in `.excludeIndentationAndIntro()`).
         if (replyIndentation.length < this.originalIndentation.length) {
           // TODO: restore the original space or its absence here?
           const spaceOrNot = cd.config.spaceAfterIndentationChars ? ' ' : '';

@@ -4,7 +4,7 @@ import CommentSkeleton from './CommentSkeleton';
 import ElementsAndTextTreeWalker from './ElementsAndTextTreeWalker';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import cd from './cd';
-import { defined, getHeadingLevel, parseWikiUrl, isHeadingNode, isInline, isMetadataNode, ucFirst, underlinesToSpaces } from './utils-general';
+import { getHeadingLevel, parseWikiUrl, isHeadingNode, isInline, isMetadataNode, ucFirst, underlinesToSpaces, definedAndNotNull } from './utils-general';
 import { parseTimestamp } from './utils-timestamp';
 
 /**
@@ -36,6 +36,40 @@ class Parser {
   constructor(context) {
     this.context = context;
     this.existingCommentIds = [];
+  }
+
+  /**
+   * Set some properties and find some elements required for parsing.
+   *
+   * @private
+   */
+  init() {
+    this.rejectClasses = [
+      'cd-comment-part',
+
+      // Extension:Translate
+      'mw-pt-languages',
+
+      // Likely won't have much effect, but won't hurt
+      'mw-archivedtalk',
+
+      // For templates like https://ru.wikipedia.org/wiki/Template:Сложное_обсуждение (perhaps they
+      // need to be `tmbox` too?).
+      'ombox',
+
+      ...cd.config.closedDiscussionClasses,
+      cd.config.outdentClass,
+    ];
+
+    // Example of a comment in a figure element:
+    // https://ru.wikipedia.org/w/index.php?title=Википедия%3AФорум%2FНовости&diff=prev&oldid=131939933
+    const tagSelector = ['blockquote', 'q', 'cite', 'figure'].join(', ');
+
+    const classSelector = cd.g.noSignatureClasses.map((name) => `.${name}`).join(', ');
+
+    this.noSignatureElements = [
+      ...this.context.rootElement.querySelectorAll(`${tagSelector}, ${classSelector}`),
+    ];
   }
 
   /**
@@ -102,39 +136,6 @@ class Parser {
   }
 
   /**
-   * Set some properties and find some elements required for parsing.
-   *
-   * @private
-   */
-  init() {
-    // "Ombox" for templates like https://ru.wikipedia.org/wiki/Template:Сложное_обсуждение
-    // (perhaps they need to be "tmbox" too?).
-    this.rejectClasses = [
-      'cd-comment-part',
-
-      // Extension:Translate
-      'mw-pt-languages',
-
-      // Likely won't do much effect, but won't hurt
-      'mw-archivedtalk',
-
-      'ombox',
-      ...cd.config.closedDiscussionClasses,
-      cd.config.outdentClass,
-    ];
-
-    const classSelector = cd.g.noSignatureClasses.map((name) => `.${name}`).join(', ');
-
-    // Example of a comment in a figure element:
-    // https://ru.wikipedia.org/w/index.php?title=Википедия%3AФорум%2FНовости&diff=prev&oldid=131939933
-    const tagSelector = ['blockquote', 'q', 'cite', 'figure'].join(', ');
-
-    this.noSignatureElements = [
-      ...this.context.rootElement.querySelectorAll(`${tagSelector}, ${classSelector}`),
-    ];
-  }
-
-  /**
    * Handle outdent character sequences added by
    * {@link https://en.wikipedia.org/wiki/User:Alexis_Jazz/Factotum Factotum}.
    *
@@ -143,6 +144,14 @@ class Parser {
    * @private
    */
   handleFactotumOutdents(text, node) {
+    if (
+      !/^┌─*┘$/.test(text) ||
+      node.parentNode.classList.contains(cd.config.outdentClass) ||
+      node.parentNode.parentNode.classList.contains(cd.config.outdentClass)
+    ) {
+      return;
+    }
+
     const span = document.createElement('span');
     span.className = cd.config.outdentClass;
     span.textContent = text;
@@ -165,122 +174,44 @@ class Parser {
    */
 
   /**
-   * _For internal use._ Find timestamps under the root element.
+   * Find a timestamp in a text node.
    *
-   * @returns {Timestamp[]}
+   * @param {Node} node
+   * @returns {?Timestamp}
    * @private
    */
-  findTimestamps() {
-    return this.context.getAllTextNodes()
-      .map((node) => {
-        const text = node.textContent;
+  findTimestamp(node) {
+    const text = node.textContent;
 
-        // While we're here, wrap outdents inserted by Factotum into a span.
-        if (
-          /^┌─*┘$/.test(text) &&
-          !node.parentNode.classList.contains(cd.config.outdentClass) &&
-          !node.parentNode.parentNode.classList.contains(cd.config.outdentClass)
-        ) {
-          this.handleFactotumOutdents(text, node);
-        }
+    // While we're here, wrap outdents inserted by Factotum into a span.
+    this.handleFactotumOutdents(text, node);
 
-        const { date, match } = parseTimestamp(text) || {};
-        if (date && !this.noSignatureElements.some((el) => el.contains(node))) {
-          return { node, date, match };
-        }
-      })
-      .filter(defined)
-      .map((finding) => {
-        const { node, match, date } = finding;
-        const element = document.createElement('span');
-        element.classList.add('cd-timestamp');
-        element.appendChild(document.createTextNode(match[2]));
-        const remainedText = node.textContent.slice(match.index + match[0].length);
-        const afterNode = remainedText ? document.createTextNode(remainedText) : undefined;
-        node.textContent = match[1];
-        node.parentNode.insertBefore(element, node.nextSibling);
-        if (afterNode) {
-          node.parentNode.insertBefore(afterNode, element.nextSibling);
-        }
-        return { element, date };
-      });
-  }
-
-  /**
-   * Given a link node, enrich the author data and return a boolean denoting whether the node is a
-   * part of the signature.
-   *
-   * @param {Element|external:Element} link
-   * @param {object} authorData
-   * @returns {boolean}
-   * @private
-   */
-  processLinkData(link, authorData) {
-    const { userName, linkType } = Parser.processLink(link) || {};
-    if (userName) {
-      authorData.name ||= userName;
-      if (authorData.name === userName) {
-        if (['user', 'userForeign'].includes(linkType)) {
-          // Break only when the second user link is a link to another wiki (but not the other way
-          // around, see an example: https://en.wikipedia.org/?diff=1012665097).
-          if (authorData.notForeignLink && linkType === 'userForeign') {
-            return false;
-          }
-          if (linkType !== 'userForeign') {
-            authorData.notForeignLink = link;
-          }
-          authorData.link = link;
-        } else if (['userTalk', 'userTalkForeign'].includes(linkType)) {
-          if (authorData.talkNotForeignLink) {
-            return false;
-          }
-          if (linkType !== 'userTalkForeign') {
-            authorData.talkNotForeignLink = link;
-          }
-          authorData.talkLink = link;
-        } else if (['contribs', 'contribsForeign'].includes(linkType)) {
-          // `authorData.contribsNotForeignLink` is used only to make sure there are no two contribs
-          // links to the current hostname in a signature.
-          if (authorData.contribsNotForeignLink && (authorData.link || authorData.talkLink)) {
-            return false;
-          }
-          if (linkType !== 'contribsForeign') {
-            authorData.contribsNotForeignLink = link;
-          }
-        } else if (['userSubpage', 'userSubpageForeign'].includes(linkType)) {
-          // A user subpage link after a user link is OK. A user subpage link before a user link is
-          // not OK (example: https://ru.wikipedia.org/?diff=112885854). Perhaps part of the
-          // comment.
-          if (authorData.link || authorData.talkLink) {
-            return false;
-          }
-        } else if (['userTalkSubpage', 'userTalkSubpageForeign'].includes(linkType)) {
-          // Same as with a user page above.
-          if (authorData.link || authorData.talkLink) {
-            return false;
-          }
-        } else {
-          // Cases like https://ru.wikipedia.org/?diff=115909247
-          if (authorData.link || authorData.talkLink) {
-            return false;
-          }
-        }
-        authorData.isLastLinkAuthorLink = true;
-      } else {
-        // Don't return false here in case the user mentioned a redirect to their user page here.
-      }
+    const { date, match } = parseTimestamp(text) || {};
+    if (!date || this.noSignatureElements.some((el) => el.contains(node))) {
+      return null;
     }
-    return true;
+
+    const element = document.createElement('span');
+    element.classList.add('cd-timestamp');
+    element.appendChild(document.createTextNode(match[2]));
+    const remainedText = node.textContent.slice(match.index + match[0].length);
+    const afterNode = remainedText ? document.createTextNode(remainedText) : undefined;
+    node.textContent = match[1];
+    node.parentNode.insertBefore(element, node.nextSibling);
+    if (afterNode) {
+      node.parentNode.insertBefore(afterNode, element.nextSibling);
+    }
+    return { element, date };
   }
 
   /**
    * Collect nodes related to signatures starting from timestamp nodes.
    *
    * @param {object} timestamp
-   * @returns {object}
+   * @returns {?object}
    * @private
    */
-  timestampToSignature(timestamp) {
+  convertTimestampToSignature(timestamp) {
     this.constructor.punctuationRegexp ||= new RegExp(`(?:^|${cd.g.letterPattern})[.!?…] `);
 
     let unsignedElement;
@@ -330,14 +261,14 @@ class Parser {
         authorData.isLastLinkAuthorLink = false;
 
         if (node.tagName === 'A') {
-          if (!this.processLinkData(node, authorData)) break;
+          if (!this.constructor.processLinkData(node, authorData)) break;
         } else {
           const links = [...node.getElementsByTagName('a')].reverse();
           for (const link of links) {
             // https://en.wikipedia.org/wiki/Template:Talkback and similar cases
             if (link.classList.contains('external')) continue;
 
-            this.processLinkData(link, authorData);
+            this.constructor.processLinkData(link, authorData);
           }
         }
 
@@ -390,7 +321,9 @@ class Parser {
       )
     );
 
-    if (!authorData.name) return;
+    if (!authorData.name) {
+      return null;
+    }
 
     if (!signatureNodes.length) {
       signatureNodes = [startElement];
@@ -448,7 +381,7 @@ class Parser {
       })
       .forEach((element) => {
         [...element.getElementsByTagName('a')].some((link) => {
-          const { userName: authorName, linkType } = Parser.processLink(link) || {};
+          const { userName: authorName, linkType } = this.constructor.processLink(link) || {};
           if (authorName) {
             let authorLink;
             let authorTalkLink;
@@ -482,9 +415,11 @@ class Parser {
    * @returns {object[]}
    */
   findSignatures() {
-    const signatures = this.findTimestamps()
-      .map(this.timestampToSignature.bind(this))
-      .filter(defined)
+    const signatures = this.context.getAllTextNodes()
+      .map(this.findTimestamp.bind(this))
+      .filter(definedAndNotNull)
+      .map(this.convertTimestampToSignature.bind(this))
+      .filter(definedAndNotNull)
       .concat(this.findUnsigneds());
 
     // Move extra signatures (additional signatures for a comment, if there is more than one) to an
@@ -509,8 +444,8 @@ class Parser {
    * With code like this:
    *
    * ```html
-   *   * Smth. [signature]
-   *   :: Smth. [signature]
+   * * Smth. [signature]
+   * :: Smth. [signature]
    * ```
    *
    * one comment (preceded by :: in this case) creates its own list tree, not a subtree, even though
@@ -519,9 +454,9 @@ class Parser {
    * accurately). One of the most complex tree structures is this:
    *
    * ```html
-   *    * Smth. [signature]
-   *    :* Smth.
-   *    :: Smth. [signature]
+   *  * Smth. [signature]
+   *  :* Smth.
+   *  :: Smth. [signature]
    * ```
    *
    * (seen here:
@@ -593,13 +528,16 @@ class Parser {
 
   /**
    * Turn a structure like this
+   *
    * ```html
    * <dd>
    *   <div>Comment. [signature]</div>
    *   <ul>...</ul>
    * </dd>
    * ```
+   *
    * into a structure like this
+   *
    * ```html
    * <dd>
    *   <div>Comment. [signature]</div>
@@ -608,6 +546,7 @@ class Parser {
    *   <ul>...</ul>
    * </dd>
    * ```
+   *
    * by splitting the parent node of the given node, moving all the following nodes into the second
    * node resulting from the split. If there is no following nodes, don't perform the split.
    *
@@ -635,7 +574,6 @@ class Parser {
    *   `userTalkSubpage`, or any of this `Foreign` at the end).
    * @memberof Parser
    * @inner
-   * @private
    */
 
   /**
@@ -653,6 +591,7 @@ class Parser {
       if (!pageName || CommentSkeleton.isAnyId(fragment)) {
         return null;
       }
+
       const match = pageName.match(cd.g.userNamespacesRegexp);
       if (match) {
         userName = match[1];
@@ -692,7 +631,75 @@ class Parser {
         return null;
       }
     }
+
     return { userName, linkType };
+  }
+
+  /**
+   * Given a link node, enrich the author data and return a boolean denoting whether the node is a
+   * part of the signature.
+   *
+   * @param {Element|external:Element} link
+   * @param {object} authorData
+   * @returns {boolean}
+   * @private
+   */
+  static processLinkData(link, authorData) {
+    const { userName, linkType } = this.processLink(link) || {};
+    if (userName) {
+      authorData.name ||= userName;
+      if (authorData.name === userName) {
+        if (['user', 'userForeign'].includes(linkType)) {
+          // Break only when the second user link is a link to another wiki (but not the other way
+          // around, see an example: https://en.wikipedia.org/?diff=1012665097).
+          if (authorData.notForeignLink && linkType === 'userForeign') {
+            return false;
+          }
+          if (linkType !== 'userForeign') {
+            authorData.notForeignLink = link;
+          }
+          authorData.link = link;
+        } else if (['userTalk', 'userTalkForeign'].includes(linkType)) {
+          if (authorData.talkNotForeignLink) {
+            return false;
+          }
+          if (linkType !== 'userTalkForeign') {
+            authorData.talkNotForeignLink = link;
+          }
+          authorData.talkLink = link;
+        } else if (['contribs', 'contribsForeign'].includes(linkType)) {
+          // `authorData.contribsNotForeignLink` is used only to make sure there are no two contribs
+          // links to the current hostname in a signature.
+          if (authorData.contribsNotForeignLink && (authorData.link || authorData.talkLink)) {
+            return false;
+          }
+          if (linkType !== 'contribsForeign') {
+            authorData.contribsNotForeignLink = link;
+          }
+        } else if (['userSubpage', 'userSubpageForeign'].includes(linkType)) {
+          // A user subpage link after a user link is OK. A user subpage link before a user link is
+          // not OK (example: https://ru.wikipedia.org/?diff=112885854). Perhaps part of the
+          // comment.
+          if (authorData.link || authorData.talkLink) {
+            return false;
+          }
+        } else if (['userTalkSubpage', 'userTalkSubpageForeign'].includes(linkType)) {
+          // Same as with a user page above.
+          if (authorData.link || authorData.talkLink) {
+            return false;
+          }
+        } else {
+          // Cases like https://ru.wikipedia.org/?diff=115909247
+          if (authorData.link || authorData.talkLink) {
+            return false;
+          }
+        }
+        authorData.isLastLinkAuthorLink = true;
+      } else {
+        // Don't return false here in case the user mentioned a redirect to their user page here.
+      }
+    }
+    return true;
   }
 
   static getNestingLevel(element) {
