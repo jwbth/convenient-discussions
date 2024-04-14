@@ -1161,6 +1161,7 @@ export default {
   async reload(passedData = {}) {
     if (this.booting) return;
 
+    passedData.isRevisionSliderRunning = Boolean(history.state?.sliderPos);
     const bootProcess = new BootProcess(passedData);
 
     // We reset the live timestamps only during the boot process, because we shouldn't dismount the
@@ -1241,14 +1242,10 @@ export default {
   },
 
   /**
-   * _For internal use._ Update the page's HTML
+   * _For internal use._ Update the page's HTML.
    */
   updatePageContents() {
-    this.$content
-      .children('.mw-parser-output')
-        .remove()
-      .end()
-      .prepend(this.$root);
+    this.$content.children('.mw-parser-output').replaceWith(this.$root);
   },
 
   /**
@@ -1461,6 +1458,8 @@ export default {
    * Remove fragment and revision parameters from the URL; remove DOM elements related to the diff.
    */
   cleanUpUrlAndDom() {
+    if (this.bootProcess.passedData.isRevisionSliderRunning) return;
+
     const { searchParams } = new URL(location.href);
     this.cleanUpDom(searchParams);
     this.cleanUpUrl(searchParams);
