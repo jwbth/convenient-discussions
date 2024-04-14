@@ -534,8 +534,10 @@ Object.assign(cd.g, {
   namespaceNumber: mw.config.get('wgNamespaceNumber'),
   pageAction: mw.config.get('wgAction'),
 
-  // "<unregistered>" is a workaround for anonymous users (there are such!).
-  userName: mw.config.get('wgUserName') || '<unregistered>',
+  // Check for `mw.user.isNamed()` to treat temporary accounts as unregistered (we can't save
+  // options for them anyway). `<unregistered>` is a workaround for anonymous users (there are
+  // such!).
+  userName: mw.user.isNamed() ? mw.config.get('wgUserName') : '<unregistered>',
 
   contentTextDirection: bodyClassList.contains('sitedir-rtl') ? 'rtl' : 'ltr',
   skin: mw.config.get('skin'),

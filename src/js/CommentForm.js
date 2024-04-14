@@ -209,7 +209,7 @@ class CommentForm {
     this.initAutocomplete();
     this.addToPage();
 
-    if (!userRegistry.getCurrent().isRegistered()) {
+    if (!userRegistry.getCurrent().isRegistered() && !mw.user.isTemp()) {
       this.showMessage(cd.sParse('error-anoneditwatning'), {
         type: 'warning',
         name: 'anonEditWarning',
