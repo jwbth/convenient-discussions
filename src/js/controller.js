@@ -116,7 +116,8 @@ export default {
       this.rootElement = div.firstChild;
       this.$root = $(this.rootElement);
     } else {
-      this.$root = this.$content.children('.mw-parser-output');
+      // There can be more than one `.mw-parser-output` child, e.g. on talk pages of IP editors.
+      this.$root = this.$content.children('.mw-parser-output').first();
 
       // 404 pages
       if (!this.$root.length) {
