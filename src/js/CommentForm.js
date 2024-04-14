@@ -958,7 +958,7 @@ class CommentForm {
       group: 'convenient-discussions',
       tools: {
         quote: {
-          label: `${cd.s('cf-quote-tooltip')} ${cd.mws('parentheses', `Q${cd.mws('comma-separator')}Ctrl+Alt+Q`)}`,
+          label: `${cd.s('cf-quote-tooltip')} ${cd.mws('parentheses', `Q${cd.mws('comma-separator')}${cd.g.cmdModifier}+Alt+Q`)}`,
           type: 'button',
           icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=quotes&lang=${lang}&skin=vector`,
           action: {
@@ -991,16 +991,12 @@ class CommentForm {
       group: 'format',
       tools: {
         code: {
-          label: cd.s('cf-code-tooltip'),
+          label: `${cd.s('cf-code-tooltip')} ${cd.mws('parentheses', `${cd.g.cmdModifier}+Shift+6`)}`,
           type: 'button',
           icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=code&lang=${lang}&skin=vector`,
           action: {
             type: 'encapsulate',
-            options: {
-              pre: '<code><nowiki>',
-              peri: cd.s('cf-code-placeholder'),
-              post: '</'.concat('nowiki></code>'),
-            },
+            options: this.constructor.encapsulateOptions.code,
           },
         },
         codeBlock: {
@@ -1017,33 +1013,41 @@ class CommentForm {
           },
         },
         underline: {
-          label: cd.s('cf-underline-tooltip'),
+          label: `${cd.s('cf-underline-tooltip')} ${cd.mws('parentheses', `${cd.g.cmdModifier}+U`)}`,
           type: 'button',
           icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-styling&image=underline&lang=${lang}&skin=vector`,
           action: {
             type: 'encapsulate',
-            options: {
-              pre: '<u>',
-              peri: cd.s('cf-underline-placeholder'),
-              post: '</u>',
-            },
+            options: this.constructor.encapsulateOptions.underline,
           },
         },
         strikethrough: {
-          label: cd.s('cf-strikethrough-tooltip'),
+          label: `${cd.s('cf-strikethrough-tooltip')} ${cd.mws('parentheses', `${cd.g.cmdModifier}+Shift+5`)}`,
           type: 'button',
           icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-styling&image=strikethrough&lang=${lang}&skin=vector`,
           action: {
             type: 'encapsulate',
-            options: {
-              pre: '<s>',
-              peri: cd.s('cf-strikethrough-placeholder'),
-              post: '</s>',
-            },
+            options: this.constructor.encapsulateOptions.strikethrough,
           },
         },
       },
     });
+
+    this.$element
+      .find('.tool[rel="bold"] a')
+      .attr('title', `${mw.msg('wikieditor-toolbar-tool-bold')} ${cd.mws('parentheses', `${cd.g.cmdModifier}+B`)}`);
+
+    this.$element
+      .find('.tool[rel="italic"] a')
+      .attr('title', `${mw.msg('wikieditor-toolbar-tool-italic')} ${cd.mws('parentheses', `${cd.g.cmdModifier}+I`)}`);
+
+    this.$element
+      .find('.tool[rel="link"] a')
+      .attr('title', `${mw.msg('wikieditor-toolbar-tool-link')} ${cd.mws('parentheses', `${cd.g.cmdModifier}+K`)}`);
+
+    this.$element
+      .find('.tool[rel="ulist"] a')
+      .attr('title', `${mw.msg('wikieditor-toolbar-tool-ulist')} ${cd.mws('parentheses', `${cd.g.cmdModifier}+Shift+8`)}`);
 
     this.$element
       .find('.tool[rel="link"] a, .tool[rel="file"] a')
@@ -1932,6 +1936,56 @@ class CommentForm {
         // Esc
         if (keyCombination(e, 27)) {
           this.cancel();
+        }
+
+        // Ctrl+B
+        if (keyCombination(e, 66, ['cmd'])) {
+          this.encapsulateSelection({
+            pre: "'''",
+            peri: mw.msg('wikieditor-toolbar-tool-bold-example'),
+            post: "'''",
+          });
+          e.preventDefault();
+        }
+
+        // Ctrl+I
+        if (keyCombination(e, 73, ['cmd'])) {
+          this.encapsulateSelection({
+            pre: "''",
+            peri: mw.msg('wikieditor-toolbar-tool-italic-example'),
+            post: "''",
+          });
+          e.preventDefault();
+        }
+
+        // Ctrl+U
+        if (keyCombination(e, 85, ['cmd'])) {
+          this.encapsulateSelection(this.constructor.encapsulateOptions.underline);
+          e.preventDefault();
+        }
+
+        // Ctrk+K
+        if (keyCombination(e, 75, ['cmd'])) {
+          this.commentInput.$element.find('.tool[rel="link"] a')[0].click();
+          e.preventDefault();
+        }
+
+        // Ctrk+Shift+5
+        if (keyCombination(e, 53, ['cmd', 'shift'])) {
+          this.encapsulateSelection(this.constructor.encapsulateOptions.strikethrough);
+          e.preventDefault();
+        }
+
+        // Ctrk+Shift+6
+        if (keyCombination(e, 54, ['cmd', 'shift'])) {
+          this.encapsulateSelection(this.constructor.encapsulateOptions.code);
+          e.preventDefault();
+        }
+
+        // Ctrk+Shift+8
+        if (keyCombination(e, 56, ['cmd', 'shift'])) {
+          this.commentInput.$element.find('.tool[rel="ulist"] a')[0].click();
+          e.preventDefault();
         }
       })
 
@@ -3982,6 +4036,26 @@ class CommentForm {
 
   static counter = 0;
   static allowedFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'];
+
+  static init() {
+    this.encapsulateOptions = {
+      code: {
+        pre: '<code><nowiki>',
+        peri: cd.s('cf-code-placeholder'),
+        post: '</'.concat('nowiki></code>'),
+      },
+      underline: {
+        pre: '<u>',
+        peri: cd.s('cf-underline-placeholder'),
+        post: '</u>',
+      },
+      strikethrough: {
+        pre: '<s>',
+        peri: cd.s('cf-strikethrough-placeholder'),
+        post: '</s>',
+      },
+    };
+  }
 
   /**
    * Extract IDs from comment links in the code.

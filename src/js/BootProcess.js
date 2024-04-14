@@ -1,5 +1,6 @@
 import CdError from './CdError';
 import Comment from './Comment';
+import CommentForm from './CommentForm';
 import CommentFormInputTransformer from './CommentFormInputTransformer';
 import LiveTimestamp from './LiveTimestamp';
 import Parser from './Parser';
@@ -256,6 +257,7 @@ class BootProcess {
       sectionRegistry.init(this.subscriptions);
       commentFormRegistry.init();
       LiveTimestamp.init();
+      CommentForm.init();
       CommentFormInputTransformer.init();
     }
     controller.setup(this.passedData.html);
