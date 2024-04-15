@@ -64,7 +64,8 @@ export default {
   },
 
   /**
-   * Add a comment form to the registry, creating it if didn't exist.
+   * Create a comment form and add it both to the registry and to the page. If it already exists,
+   * reattach it to the page.
    *
    * @param {import('./Comment').default|import('./Section').default|import('./pageRegistry').Page} target
    * @param {object} config See {@link CommentForm}.
@@ -72,7 +73,7 @@ export default {
    * @returns {CommentForm}
    * @fires commentFormCreated
    */
-  add(target, config, initialStateOrCommentForm) {
+  setupCommentForm(target, config, initialStateOrCommentForm) {
     let item;
     if (initialStateOrCommentForm instanceof CommentForm) {
       item = initialStateOrCommentForm;
@@ -85,20 +86,19 @@ export default {
       }, config));
       target.addCommentFormToPage(config.mode, item);
       item.setup(initialStateOrCommentForm);
+      this.items.push(item);
+      item
+        .on('change', this.saveSession.bind(this))
+        .on('unregister', () => {
+          this.remove(item);
+        })
+        .on('teardown', () => {
+          controller.updatePageTitle();
+        });
+      this.emit('add', item);
     }
     controller.updatePageTitle();
-    this.items.push(item);
     this.saveSession();
-    item
-      .on('change', this.saveSession.bind(this))
-      .on('unregister', () => {
-        this.remove(item);
-      })
-      .on('teardown', () => {
-        controller.updatePageTitle();
-      });
-
-    this.emit('add', item);
 
     /**
      * A comment form has been created and added to the page.

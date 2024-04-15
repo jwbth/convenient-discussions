@@ -2766,7 +2766,9 @@ class Comment extends CommentSkeleton {
      *
      * @type {import('./CommentForm').default|undefined}
      */
-    this.replyForm = commentFormRegistry.add(this, { mode: 'reply' }, initialStateOrCommentForm);
+    this.replyForm = commentFormRegistry.setupCommentForm(this, {
+      mode: 'reply',
+    }, initialStateOrCommentForm);
 
     if (isSelectionRelevant) {
       this.replyForm.quote(true, this);
@@ -2796,7 +2798,9 @@ class Comment extends CommentSkeleton {
      *
      * @type {import('./CommentForm').default|undefined}
      */
-    this.editForm = commentFormRegistry.add(this, { mode: 'edit' }, initialStateOrCommentForm);
+    this.editForm = commentFormRegistry.setupCommentForm(this, {
+      mode: 'edit',
+    }, initialStateOrCommentForm);
   }
 
   /**

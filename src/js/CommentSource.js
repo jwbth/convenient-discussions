@@ -6,89 +6,6 @@ import { calculateWordOverlap, countOccurrences, defined, definedAndNotNull, gen
 import { brsToNewlines, extractSignatures, maskDistractingCode, normalizeCode, removeWikiMarkup } from './utils-wikitext';
 
 /**
- * Get the code of the section chunk after the specified index with masked irrelevant parts.
- *
- * @param {number} currentIndex
- * @param {string} contextCode
- * @returns {string}
- * @private
- */
-function getAdjustedChunkCodeAfter(currentIndex, contextCode) {
-  let adjustedCode = maskDistractingCode(contextCode);
-
-  if (cd.config.closedDiscussionTemplates[0][0]) {
-    let closedDiscussionPairRegexp;
-    const closedDiscussionBeginningsPattern = cd.config.closedDiscussionTemplates[0]
-      .map(generatePageNamePattern)
-      .join('|');
-    const closedDiscussionEndingsPattern = cd.config.closedDiscussionTemplates[1]
-      .map(generatePageNamePattern)
-      .join('|');
-    if (closedDiscussionEndingsPattern) {
-      closedDiscussionPairRegexp = new RegExp(
-        (
-          `\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *(?=[|}])[^}]*\\}\\}\\s*([:*#]*)[^]*?` +
-          `\\{\\{ *(?:${closedDiscussionEndingsPattern}) *(?=[|}])[^}]*\\}\\}`
-        ),
-        'g'
-      );
-    }
-    const closedDiscussionSingleRegexp = new RegExp(
-      `\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *\\|[^}]{0,50}?=\\s*([:*#]*)`,
-      'g'
-    );
-
-    // `\x01` are later used in `CommentSource#matchProperPlaceRegexps`. `\x02` is not used, it's
-    // just for consistency
-    const makeIndentationMarkers = (indentationLength, totalLength) => (
-      '\x01'.repeat(indentationLength) + ' '.repeat(totalLength - indentationLength - 1) + '\x02'
-    );
-
-    if (closedDiscussionPairRegexp) {
-      adjustedCode = adjustedCode.replace(
-        closedDiscussionPairRegexp,
-        (s, indentation) => makeIndentationMarkers(indentation.length, s.length)
-      );
-    }
-
-    let match;
-    while ((match = closedDiscussionSingleRegexp.exec(adjustedCode))) {
-      adjustedCode = (
-        adjustedCode.slice(0, match.index) +
-
-        // Fill the space that the first met template occupies with spaces, and put the specified
-        // number of marker characters at the first positions. This will be later used in
-        // `CommentSource#matchProperPlaceRegexps`.
-        (new TextMasker(adjustedCode.slice(match.index)))
-          .maskTemplatesRecursively(undefined, true)
-          .withText((code) => (
-            code.replace(
-              /\x01\d+_template_(\d+)\x02/,  // No global flag - we only need the first occurrence
-              (m, n) => makeIndentationMarkers(match[1].length, n.length)
-            )
-          ))
-          .unmask()
-          .getText()
-      );
-    }
-  }
-
-  const adjustedCodeAfter = adjustedCode.slice(currentIndex);
-  const nextSectionHeadingMatch = adjustedCodeAfter.match(/\n+(=+).*\1[ \t\x01\x02]*\n|$/);
-  let chunkCodeAfterEndIndex = currentIndex + nextSectionHeadingMatch.index + 1;
-  const chunkCodeAfter = contextCode.slice(currentIndex, chunkCodeAfterEndIndex);
-  cd.g.keepInSectionEnding.forEach((regexp) => {
-    const match = chunkCodeAfter.match(regexp);
-    if (match) {
-      // `1` accounts for the first line break.
-      chunkCodeAfterEndIndex -= match[0].length - 1;
-    }
-  });
-
-  return adjustedCode.slice(currentIndex, chunkCodeAfterEndIndex);
-}
-
-/**
  * Class that keeps the methods and data related to the comment's source code. Also used for comment
  * source match candidates before a single match is chosen among them.
  */
@@ -679,7 +596,10 @@ class CommentSource {
   findProperPlaceForReply(contextCode) {
     let currentIndex = this.endIndex;
 
-    const adjustedChunkCodeAfter = getAdjustedChunkCodeAfter(currentIndex, contextCode);
+    const adjustedChunkCodeAfter = this.constructor.getAdjustedChunkCodeAfter(
+      currentIndex,
+      contextCode
+    );
     if (/^ +\x02/.test(adjustedChunkCodeAfter)) {
       throw new CdError({
         type: 'parse',
@@ -774,7 +694,7 @@ class CommentSource {
           let startIndex;
           let endIndex;
           if (this.comment.isOpeningSection && this.headingStartIndex !== undefined) {
-            // Usually, `source` is set in `CommentForm#prepareSource()`.
+            // Usually, `source` is set in `CommentForm#buildSource()`.
             if (!this.comment.section.source) {
               this.comment.section.locateInCode();
             }
@@ -818,6 +738,89 @@ class CommentSource {
     }
 
     return { contextCode, commentCode };
+  }
+
+  /**
+   * Get the code of the section chunk after the specified index with masked irrelevant parts.
+   *
+   * @param {number} currentIndex
+   * @param {string} contextCode
+   * @returns {string}
+   * @private
+   */
+  static getAdjustedChunkCodeAfter(currentIndex, contextCode) {
+    let adjustedCode = maskDistractingCode(contextCode);
+
+    if (cd.config.closedDiscussionTemplates[0][0]) {
+      let closedDiscussionPairRegexp;
+      const closedDiscussionBeginningsPattern = cd.config.closedDiscussionTemplates[0]
+        .map(generatePageNamePattern)
+        .join('|');
+      const closedDiscussionEndingsPattern = cd.config.closedDiscussionTemplates[1]
+        .map(generatePageNamePattern)
+        .join('|');
+      if (closedDiscussionEndingsPattern) {
+        closedDiscussionPairRegexp = new RegExp(
+          (
+            `\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *(?=[|}])[^}]*\\}\\}\\s*([:*#]*)[^]*?` +
+            `\\{\\{ *(?:${closedDiscussionEndingsPattern}) *(?=[|}])[^}]*\\}\\}`
+          ),
+          'g'
+        );
+      }
+      const closedDiscussionSingleRegexp = new RegExp(
+        `\\{\\{ *(?:${closedDiscussionBeginningsPattern}) *\\|[^}]{0,50}?=\\s*([:*#]*)`,
+        'g'
+      );
+
+      // `\x01` are later used in `CommentSource#matchProperPlaceRegexps`. `\x02` is not used, it's
+      // just for consistency
+      const makeIndentationMarkers = (indentationLength, totalLength) => (
+        '\x01'.repeat(indentationLength) + ' '.repeat(totalLength - indentationLength - 1) + '\x02'
+      );
+
+      if (closedDiscussionPairRegexp) {
+        adjustedCode = adjustedCode.replace(
+          closedDiscussionPairRegexp,
+          (s, indentation) => makeIndentationMarkers(indentation.length, s.length)
+        );
+      }
+
+      let match;
+      while ((match = closedDiscussionSingleRegexp.exec(adjustedCode))) {
+        adjustedCode = (
+          adjustedCode.slice(0, match.index) +
+
+          // Fill the space that the first met template occupies with spaces, and put the specified
+          // number of marker characters at the first positions. This will be later used in
+          // `CommentSource#matchProperPlaceRegexps`.
+          (new TextMasker(adjustedCode.slice(match.index)))
+            .maskTemplatesRecursively(undefined, true)
+            .withText((code) => (
+              code.replace(
+                /\x01\d+_template_(\d+)\x02/,  // No global flag - we only need the first occurrence
+                (m, n) => makeIndentationMarkers(match[1].length, n.length)
+              )
+            ))
+            .unmask()
+            .getText()
+        );
+      }
+    }
+
+    const adjustedCodeAfter = adjustedCode.slice(currentIndex);
+    const nextSectionHeadingMatch = adjustedCodeAfter.match(/\n+(=+).*\1[ \t\x01\x02]*\n|$/);
+    let chunkCodeAfterEndIndex = currentIndex + nextSectionHeadingMatch.index + 1;
+    const chunkCodeAfter = contextCode.slice(currentIndex, chunkCodeAfterEndIndex);
+    cd.g.keepInSectionEnding.forEach((regexp) => {
+      const match = chunkCodeAfter.match(regexp);
+      if (match) {
+        // `1` accounts for the first line break.
+        chunkCodeAfterEndIndex -= match[0].length - 1;
+      }
+    });
+
+    return adjustedCode.slice(currentIndex, chunkCodeAfterEndIndex);
   }
 }
 

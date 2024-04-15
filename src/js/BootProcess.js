@@ -702,7 +702,9 @@ class BootProcess {
     // Should be below `navPanel.setup()` as `commentFormRegistry.restoreSession()` indirectly calls
     // `navPanel.updateCommentFormButton()` which depends on the navigation panel being mounted.
     if (pageRegistry.getCurrent().isCommentable()) {
-      pageRegistry.getCurrent().addAddTopicButton();
+      if (this.firstRun) {
+        pageRegistry.getCurrent().addAddTopicButton();
+      }
       controller.connectToWildAddTopicButtons();
 
       // If the viewport position restoration relies on elements that are made hidden during this

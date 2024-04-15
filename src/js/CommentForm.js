@@ -2446,7 +2446,7 @@ class CommentForm {
    * @returns {Promise.<object|undefined>}
    * @private
    */
-  async prepareSource(action, operation) {
+  async buildSource(action, operation) {
     const commentIds = this.constructor.extractCommentIds(this.commentInput.getValue());
 
     this.newSectionApi = Boolean(
@@ -2458,8 +2458,7 @@ class CommentForm {
 
     if (!this.newSectionApi) {
       try {
-        const target = commentIds.length ? this.targetPage : this.target;
-        await target.loadCode(target === this.targetPage ? !pageRegistry.getCurrent().exists() : this);
+        await this.target.loadCode(this.mode === 'addSection' ? !pageRegistry.getCurrent().exists() : this);
       } catch (e) {
         if (e instanceof CdError) {
           this.handleError(
@@ -2714,7 +2713,7 @@ class CommentForm {
 
     const operation = this.operations.add('viewChanges');
 
-    const { contextCode } = await this.prepareSource('viewChanges', operation) || {};
+    const { contextCode } = await this.buildSource('viewChanges', operation) || {};
     if (operation.isClosed()) return;
 
     mw.loader.load('mediawiki.diff.styles');
@@ -3101,7 +3100,7 @@ class CommentForm {
 
     const operation = this.operations.add('submit', undefined, !afterEditConflict);
 
-    const { contextCode, commentCode } = await this.prepareSource('submit', operation) || {};
+    const { contextCode, commentCode } = await this.buildSource('submit', operation) || {};
     if (operation.isClosed()) return;
 
     const editTimestamp = await this.editPage(contextCode, operation);

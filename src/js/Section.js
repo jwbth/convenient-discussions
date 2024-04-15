@@ -1006,7 +1006,7 @@ class Section extends SectionSkeleton {
        *
        * @type {import('./CommentForm').default|undefined}
        */
-      this.replyForm = commentFormRegistry.add(this, {
+      this.replyForm = commentFormRegistry.setupCommentForm(this, {
         mode: 'replyInSection',
       }, initialStateOrCommentForm);
 
@@ -1041,7 +1041,7 @@ class Section extends SectionSkeleton {
        *
        * @type {import('./CommentForm').default|undefined}
        */
-      this.addSubsectionForm = commentFormRegistry.add(this, {
+      this.addSubsectionForm = commentFormRegistry.setupCommentForm(this, {
         mode: 'addSubsection',
       }, initialStateOrCommentForm);
 

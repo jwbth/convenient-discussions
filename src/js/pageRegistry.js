@@ -740,8 +740,8 @@ export class Page {
         }).$element
       )
 
-      // If appending to `this.rootElement`, it can land on a wrong place, like on 404 pages
-      // with New Topic Tool enabled.
+      // If appending to `this.rootElement`, it can land on a wrong place, like on 404 pages with
+      // New Topic Tool enabled.
       .insertAfter(controller.$root);
   }
 
@@ -794,7 +794,7 @@ export class Page {
        *
        * @type {CommentForm|undefined}
        */
-      this.addSectionForm = commentFormRegistry.add(this, {
+      this.addSectionForm = commentFormRegistry.setupCommentForm(this, {
         mode: 'addSection',
         preloadConfig,
         newTopicOnTop,
