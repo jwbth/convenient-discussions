@@ -784,7 +784,7 @@ export default {
       if (commentIndex !== undefined) {
         comment = this.items[commentIndex];
         this.resetSelectedComment();
-        if (comment?.isActionable && !comment.replyForm) {
+        if (comment?.isActionable) {
           comment.isSelected = true;
           comment.configureLayers();
           comment.replyButton.setLabel(cd.s('cm-quote'));

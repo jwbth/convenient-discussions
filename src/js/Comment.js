@@ -833,7 +833,10 @@ class Comment extends CommentSkeleton {
    * @private
    */
   replyButtonClick() {
-    if (this.replyForm) {
+    if (this.replyForm && this.isSelected) {
+      this.fixSelection();
+      this.replyForm.quote(true, this);
+    } else if (this.replyForm) {
       this.replyForm.cancel();
     } else {
       this.reply();
@@ -2741,23 +2744,7 @@ class Comment extends CommentSkeleton {
       if (isSelectionRelevant) {
         initialStateOrCommentForm = { focus: false };
 
-        let endBoundary;
-        if (this.isReformatted) {
-          endBoundary = this.$menu[0];
-        } else {
-          endBoundary = document.createElement('span');
-          this.$elements.last().append(endBoundary);
-        }
-
-        const selection = window.getSelection();
-        if (selection.containsNode(endBoundary, true)) {
-          const { higherNode, higherOffset } = getHigherNodeAndOffsetInSelection(selection);
-          selection.setBaseAndExtent(higherNode, higherOffset, endBoundary, 0);
-        }
-
-        if (!this.isReformatted) {
-          endBoundary.remove();
-        }
+        this.fixSelection();
       }
     }
 
@@ -2772,6 +2759,26 @@ class Comment extends CommentSkeleton {
 
     if (isSelectionRelevant) {
       this.replyForm.quote(true, this);
+    }
+  }
+
+  fixSelection() {
+    let endBoundary;
+    if (this.isReformatted) {
+      endBoundary = this.$menu[0];
+    } else {
+      endBoundary = document.createElement('span');
+      this.$elements.last().append(endBoundary);
+    }
+
+    const selection = window.getSelection();
+    if (selection.containsNode(endBoundary, true)) {
+      const { higherNode, higherOffset } = getHigherNodeAndOffsetInSelection(selection);
+      selection.setBaseAndExtent(higherNode, higherOffset, endBoundary, 0);
+    }
+
+    if (!this.isReformatted) {
+      endBoundary.remove();
     }
   }
 
