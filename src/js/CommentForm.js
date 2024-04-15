@@ -538,34 +538,37 @@ class CommentForm {
       }
     }
 
-    if (['addSection', 'addSubsection'].includes(this.mode)) {
-      /**
-       * Omit signature checkbox field.
-       *
-       * @name omitSignatureField
-       * @type {external:OO.ui.FieldLayout|undefined}
-       * @memberof CommentForm
-       * @instance
-       */
+    /**
+     * Omit signature checkbox field.
+     *
+     * @name omitSignatureField
+     * @type {external:OO.ui.FieldLayout|undefined}
+     * @memberof CommentForm
+     * @instance
+     */
 
-      /**
-       * Omit signature checkbox.
-       *
-       * @name omitSignatureCheckbox
-       * @type {import('./CheckboxInputWidget').default|undefined}
-       * @memberof CommentForm
-       * @instance
-       */
-      ({
-        field: this.omitSignatureField,
-        input: this.omitSignatureCheckbox,
-      } = createCheckboxField({
-        value: 'omitSignature',
-        selected: initialState?.omitSignature ?? false,
-        label: cd.s('cf-omitsignature'),
-        title: cd.s('cf-omitsignature-tooltip'),
-        tabIndex: this.getTabIndex(25),
-      }));
+    /**
+     * Omit signature checkbox.
+     *
+     * @name omitSignatureCheckbox
+     * @type {import('./CheckboxInputWidget').default|undefined}
+     * @memberof CommentForm
+     * @instance
+     */
+    ({
+      field: this.omitSignatureField,
+      input: this.omitSignatureCheckbox,
+    } = createCheckboxField({
+      value: 'omitSignature',
+      selected: initialState?.omitSignature ?? false,
+      label: cd.s('cf-omitsignature'),
+      title: cd.s('cf-omitsignature-tooltip'),
+      tabIndex: this.getTabIndex(25),
+    }));
+    if (!['addSection', 'addSubsection'].includes(this.mode)) {
+      // The checkbox works (for cases like https://en.wikipedia.org/wiki/Template:3ORshort) but is
+      // hidden.
+      this.omitSignatureField.toggle(false);
     }
 
     if (
