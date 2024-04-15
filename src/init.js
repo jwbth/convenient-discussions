@@ -7,9 +7,9 @@
  * @module init
  */
 
-import dateFormatsData from '../../data/dateFormats.json';
-import digitsData from '../../data/digits.json';
-import languageFallbacksData from '../../data/languageFallbacks.json';
+import dateFormatsData from '../data/dateFormats.json';
+import digitsData from '../data/digits.json';
+import languageFallbacksData from '../data/languageFallbacks.json';
 
 import Comment from './Comment';
 import Section from './Section';
@@ -681,17 +681,17 @@ export default {
 }`);
     }
 
-    require('../less/global.less');
+    require('./global.less');
 
-    require('../less/Comment.less');
-    require('../less/CommentForm.less');
-    require('../less/Section.less');
-    require('../less/commentLayers.less');
-    require('../less/navPanel.less');
-    require('../less/pageNav.less');
-    require('../less/skins.less');
-    require('../less/talkPage.less');
-    require('../less/toc.less');
+    require('./Comment.less');
+    require('./CommentForm.less');
+    require('./Section.less');
+    require('./commentLayers.less');
+    require('./navPanel.less');
+    require('./pageNav.less');
+    require('./skins.less');
+    require('./talkPage.less');
+    require('./toc.less');
   },
 
   /**
@@ -971,7 +971,7 @@ export default {
     patterns();
     prototypes();
     if (settings.get('useBackgroundHighlighting')) {
-      require('../less/commentLayers-optionalBackgroundHighlighting.less');
+      require('./commentLayers-optionalBackgroundHighlighting.less');
     }
     $.fn.extend(jqueryExtensions);
     initDayjs();

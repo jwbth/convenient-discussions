@@ -10,8 +10,8 @@ window.mw = {
   },
 };
 
-const CommentFormInputTransformer = require('../src/js/CommentFormInputTransformer').default;
-const cd = require('../src/js/cd').default;
+const CommentFormInputTransformer = require('../src/CommentFormInputTransformer').default;
+const cd = require('../src/cd').default;
 
 const defaultConfig = {
   defaultIndentationChar: ':',

@@ -753,7 +753,7 @@ export default {
    * @type {?Function}
    * @kind function
    * @param {Node|external:Node} node
-   * @param {import('./../src/js/Parser').Context} context
+   * @param {import('./../src/Parser').Context} context
    * @returns {boolean}
    * @default null
    */

@@ -1516,9 +1516,9 @@ export default {
         addCommentLinks();
 
         // See the comment above: "Additions of CSS...".
-        require('../less/global.less');
+        require('./global.less');
 
-        require('../less/logPages.less');
+        require('./logPages.less');
       },
       (e) => {
         mw.notify(cd.s('error-loaddata'), { type: 'error' });

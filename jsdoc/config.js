@@ -1,6 +1,6 @@
 module.exports = {
   "source": {
-    "include": ["src/js", "src/tribute", "config/default.js"],
+    "include": ["src", "src/tribute", "config/default.js"],
   },
   "opts": {
     "template": "node_modules/docdash",

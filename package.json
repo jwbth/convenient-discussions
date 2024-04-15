@@ -15,7 +15,7 @@
     "single": "node buildConfigs && node buildI18n && cross-env NODE_OPTIONS=--max-old-space-size=2048 webpack serve --env single",
     "test": "jest"
   },
-  "browser": "src/js/app.js",
+  "browser": "src/app.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jwbth/convenient-discussions.git"
@@ -81,7 +81,7 @@
     "yargs": "^15.4.1"
   },
   "sideEffects": [
-    "./src/js/worker.js"
+    "./src/worker.js"
   ],
   "browserslist": [
     "> 1%",

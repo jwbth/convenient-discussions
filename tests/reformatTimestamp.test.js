@@ -22,11 +22,11 @@ window.mw = {
 
 const getTimezoneOffset = require('date-fns-tz').getTimezoneOffset;
 
-const Comment = require('../src/js/Comment').default;
-const cd = require('../src/js/cd').default;
+const Comment = require('../src/Comment').default;
+const cd = require('../src/cd').default;
 const en = require('../i18n/en.json');
-const settings = require('../src/js/settings').default;
-const { formatDateNative, initDayjs } = require('../src/js/timestamp');
+const settings = require('../src/settings').default;
+const { formatDateNative, initDayjs } = require('../src/timestamp');
 
 cd.config = {
   defaultInsertButtons: [],

@@ -1,10 +1,10 @@
-import Tribute from '../tribute/Tribute';
 
 import CdError from './CdError';
 import cd from './cd';
 import controller from './controller';
 import sectionRegistry from './sectionRegistry';
 import settings from './settings';
+import Tribute from './tribute/Tribute';
 import userRegistry from './userRegistry';
 import { handleApiReject } from './utils-api';
 import { defined, removeDoubleSpaces, sleep, ucFirst, underlinesToSpaces, unique } from './utils-general';
@@ -70,7 +70,7 @@ class Autocomplete {
    * Initialize autocomplete for the inputs.
    */
   init() {
-    require('../tribute/tribute.less');
+    require('./tribute/tribute.less');
 
     this.inputs.forEach((input) => {
       const element = input.$input[0];

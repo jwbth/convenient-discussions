@@ -4,10 +4,10 @@
  * @module app
  */
 
-import defaultConfig from '../../config/default';
-import CONFIG_URLS from '../../config/urls.json';
-import I18N_LIST from '../../data/i18nList.json';
-import LANGUAGE_FALLBACKS from '../../data/languageFallbacks.json';
+import defaultConfig from '../config/default';
+import CONFIG_URLS from '../config/urls.json';
+import I18N_LIST from '../data/i18nList.json';
+import LANGUAGE_FALLBACKS from '../data/languageFallbacks.json';
 
 import { addCommentLinksToSpecialSearch } from './addCommentLinks';
 import cd from './cd';
@@ -20,7 +20,7 @@ let config;
 
 if (IS_SINGLE) {
   try {
-    config = require(`../../config/${CONFIG_FILE_NAME}`).default;
+    config = require(`../config/${CONFIG_FILE_NAME}`).default;
   } catch {
     // Empty
   }
@@ -35,12 +35,12 @@ if (IS_SINGLE) {
   );
 
   cd.i18n = {};
-  cd.i18n.en = require('../../i18n/en.json');
+  cd.i18n.en = require('../i18n/en.json');
   Object.keys(cd.i18n.en).forEach((name) => {
     cd.i18n.en[name] = replaceEntities(cd.i18n.en[name]);
   });
   if (LANG_CODE !== 'en') {
-    cd.i18n[LANG_CODE] = require(`../../i18n/${LANG_CODE}.json`);
+    cd.i18n[LANG_CODE] = require(`../i18n/${LANG_CODE}.json`);
     const langObj = cd.i18n[LANG_CODE];
     Object.keys(cd.i18n[LANG_CODE])
       .filter((name) => typeof langObj[name] === 'string')
@@ -66,7 +66,7 @@ function setStrings() {
   ];
 
   if (!IS_SINGLE) {
-    require('../../dist/convenientDiscussions-i18n/en.js');
+    require('../dist/convenientDiscussions-i18n/en.js');
   }
   const strings = {};
   Object.keys(cd.i18n.en).forEach((name) => {
