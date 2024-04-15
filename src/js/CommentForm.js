@@ -1466,8 +1466,10 @@ class CommentForm {
   teardownInputPopups() {
     this.richFormattingPopup?.toggle(false).$element.remove();
     this.$commentInputPopupFloatableContainer?.remove();
-    this.manyFormsPopup?.toggle(false);
-    this.uploadPopup?.toggle(false);
+
+    // Don't toggle off, just remove, so that it is not considered closed and may reappear
+    this.manyFormsPopup?.$element.remove();
+    this.uploadPopup?.$element.remove();
   }
 
   /**
@@ -3831,7 +3833,10 @@ class CommentForm {
       ),
       head: true,
       $floatableContainer: this.commentInput.$element,
-      $container: controller.$root,
+
+      // Not `$root` - add section form is outside it.
+      $container: controller.$content,
+
       position: (
         $('#vector-main-menu-pinned-container, #vector-toc-pinned-container').is(':visible')
       ) ?
@@ -3880,7 +3885,10 @@ class CommentForm {
       ),
       head: true,
       $floatableContainer: this.commentInput.$element,
-      $container: controller.$root,
+
+      // Not `$root` - add section form is outside it.
+      $container: controller.$content,
+
       position: (
         $('#vector-main-menu-pinned-container, #vector-toc-pinned-container').is(':visible')
       ) ?
