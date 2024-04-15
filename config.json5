@@ -37,6 +37,7 @@
         target2: 'User:Jack who built the house/convenientDiscussions.js',
         editGadgetsDefinition: true,
         modules: [
+          'ext.confirmEdit.CaptchaInputWidget',
           'jquery.client',
           'jquery.ui',
           'mediawiki.Title',

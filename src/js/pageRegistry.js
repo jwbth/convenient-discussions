@@ -621,6 +621,20 @@ export class Page {
       }
     }
 
+    if (resp.result !== 'Success') {
+      const code = resp.edit.captcha ? 'captcha' : undefined;
+      throw new CdError({
+        type: 'api',
+        code: 'error',
+        apiResp: resp,
+        details: {
+          code,
+          isRawMessage: true,
+          logMessage: [code, resp],
+        },
+      })
+    }
+
     return resp.edit.newtimestamp || 'nochange';
   }
 

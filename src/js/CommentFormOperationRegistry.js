@@ -107,7 +107,7 @@ class CommentFormOperation {
     this.delayed = false;
 
     if (this.type !== 'preview' || !this.options.isAuto) {
-      if (clearMessages) {
+      if (clearMessages && !this.commentForm.captchaInput) {
         this.commentForm.$messageArea.empty();
       }
       this.commentForm.pushPending(

@@ -2227,6 +2227,7 @@ class CommentForm {
         });
       }
       this.$messageArea.cdScrollIntoView('top');
+      this.captchaInput?.focus();
     }
   }
 
@@ -2921,6 +2922,8 @@ class CommentForm {
         summary: buildEditSummary({ text: this.summaryInput.getValue() }),
         minor: this.minorCheckbox?.isSelected(),
         watchlist: this.watchCheckbox?.isSelected() ? 'watch' : 'unwatch',
+        captchaid: this.captchaInput?.getCaptchaId(),
+        captchaword: this.captchaInput?.getCaptchaWord(),
       };
       let sectionOrPage;
       if (this.newSectionApi) {
@@ -2936,8 +2939,10 @@ class CommentForm {
       options.starttimestamp = sectionOrPage?.queryTimestamp;
       result = await this.targetPage.edit(options);
     } catch (e) {
+      delete this.captchaInput;
+
       if (e instanceof CdError) {
-        const { type, details } = e.data;
+        const { type, details, apiResp } = e.data;
         if (type === 'network') {
           this.handleError({
             type,
@@ -2950,6 +2955,16 @@ class CommentForm {
           if (code === 'editconflict') {
             message += ' ' + cd.sParse('cf-notice-editconflict-retrying');
             messageType = 'notice';
+          } else if (code === 'captcha') {
+            this.captchaInput = new mw.libs.confirmEdit.CaptchaInputWidget(apiResp.edit.captcha);
+            this.captchaInput.on('enter', () => {
+              this.submit();
+            });
+            let captchaMessage = new OO.ui.MessageWidget({
+              type: 'notice',
+              label: this.captchaInput.$element,
+            });
+            message = captchaMessage.$element;
           }
 
           // FIXME: We don't pass `apiResp` to prevent the message for `missingtitle` to be

@@ -1063,6 +1063,7 @@ export default {
     }
 
     const modules = [
+      'ext.confirmEdit.CaptchaInputWidget',
       'jquery.client',
       'jquery.ui',
       'mediawiki.Title',
