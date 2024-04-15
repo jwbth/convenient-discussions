@@ -219,9 +219,10 @@ export function getHigherNodeAndOffsetInSelection(selection) {
     selection.anchorNode.compareDocumentPosition(selection.focusNode) &
     Node.DOCUMENT_POSITION_FOLLOWING
   );
-  const higherNode = isAnchorHigher ? selection.anchorNode : selection.focusNode;
-  const higherOffset = isAnchorHigher ? selection.anchorOffset : selection.focusOffset;
-  return { higherNode, higherOffset };
+  return {
+    higherNode: isAnchorHigher ? selection.anchorNode : selection.focusNode,
+    higherOffset: isAnchorHigher ? selection.anchorOffset : selection.focusOffset,
+  };
 }
 
 /**

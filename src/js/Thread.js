@@ -7,6 +7,7 @@ import cd from './cd';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
 import settings from './settings';
+import updateChecker from './updateChecker';
 import { loadUserGenders } from './utils-api';
 import { defined, flat, getCommonGender, isHeadingNode, removeFromArrayIfPresent, unique } from './utils-general';
 import { getExtendedRect, getRangeContents, getVisibilityByRects, isCmdModifierPressed } from './utils-window';
@@ -809,18 +810,18 @@ class Thread {
           if (!this.isMutateHandlerAttached) {
             this.isMutateHandlerAttached = true;
 
-            const updateLines = () => {
-              this.updateLines();
-              $(document).off('mousemove', updateLines);
-              this.isMutateHandlerAttached = false;
-            };
-
             // Update only on mouse move to prevent short freezings of a page when there is a
             // comment form in the beginning of a very long page and the input is changed so that
             // everything below the form shifts vertically.
-            $(document).on('mousemove', updateLines);
+            $(document).one('mousemove', () => {
+              this.updateLines();
+              this.isMutateHandlerAttached = false;
+            });
           }
         });
+      updateChecker
+        // Start and end elements of threads may be replaced, so we need to restart threads.
+        .on('change', this.init.bind(this, false));
     }
 
     this.collapseThreadsLevel = settings.get('collapseThreadsLevel');

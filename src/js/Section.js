@@ -1009,6 +1009,8 @@ class Section extends SectionSkeleton {
       this.replyForm = commentFormRegistry.add(this, {
         mode: 'replyInSection',
       }, initialStateOrCommentForm);
+
+      this.replyButton.hide();
     }
 
     const baseSection = this.getBase();
@@ -1042,6 +1044,38 @@ class Section extends SectionSkeleton {
       this.addSubsectionForm = commentFormRegistry.add(this, {
         mode: 'addSubsection',
       }, initialStateOrCommentForm);
+
+      this.$addSubsectionButtonContainer?.hide();
+    }
+  }
+
+  addCommentFormToPage(mode, commentForm) {
+    if (mode === 'replyInSection') {
+      this.$replyButtonWrapper
+        .append(commentForm.$element)
+        .addClass('cd-replyButtonWrapper-hasCommentForm');
+    } else if (mode === 'addSubsection') {
+      /*
+        In the following structure:
+          == Level 2 section ==
+          === Level 3 section ===
+          ==== Level 4 section ====
+        ..."Add subsection" forms should go in the opposite order. So, if there are "Add
+        subsection" forms for a level 4 and then a level 2 section and the user clicks "Add
+        subsection" for a level 3 section, we need to put our form between them.
+        */
+      $(this.findRealLastElement((el) => (
+        [...el.classList].some((className) => (
+          className.match(new RegExp(`^cd-commentForm-addSubsection-[${this.level}-6]$`))
+        ))
+      ))).after(commentForm.$element);
+    }
+  }
+
+  removeCommentFormFromPage(mode) {
+    if (mode === 'replyInSection') {
+      this.replyButton.show();
+      this.$replyButtonWrapper.removeClass('cd-replyButtonWrapper-hasCommentForm');
     }
   }
 
@@ -1686,7 +1720,7 @@ class Section extends SectionSkeleton {
       .slice(
         0,
         (
-          // Section above reply
+          // Section above the reply
           (commentForm.getMode() === 'addSubsection' && this.getChildren(true).slice(-1)[0]) || this
         ).index + 1
       )

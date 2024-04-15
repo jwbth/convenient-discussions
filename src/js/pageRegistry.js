@@ -11,6 +11,7 @@ import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
+import sectionRegistry from './sectionRegistry';
 import userRegistry from './userRegistry';
 import { handleApiReject, requestInBackground } from './utils-api';
 import { areObjectsEqual, isProbablyTalkPage, mergeRegexps } from './utils-general';
@@ -31,12 +32,14 @@ import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
  * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Title
  */
 
-// Export for the sake of VS Code IntelliSense
+// Export for the sake of VS Code IntelliSense. FIXME: make the class of the current page extend the
+// page's class? The current page has more methods effectively.
 
 /**
  * Class representing a wiki page (a page for which the
  * {@link https://www.mediawiki.org/wiki/Manual:Interface/JavaScript#All_pages_(user/page-specific) wgIsArticle}
- * config value is `true`).
+ * config value is `true`) in both of its facets – a rendered instance (for the current page) and
+ * an entry in the database with data and content. See also {@link module:pageRegistry~PageSource}.
  *
  * To access the constructor, use {@link module:pageRegistry.get} (it is only exported for means of
  * code completion).
@@ -300,7 +303,7 @@ export class Page {
    * and/or, for the current page, elements with the class `cd-archivingInfo` and attribute
    * `data-archived-page`.
    *
-   * @returns {import('./pageRegistry').Page}
+   * @returns {Page}
    */
   getArchivedPage() {
     let result = this.findArchivingInfoElement()?.data('archivedPage');
@@ -717,10 +720,6 @@ export class Page {
    */
   addAddTopicButton() {
     if (
-      // Vector 2022 has "Add topic" in the sticky header, so the purpose of our button would
-      // duplicate its purpose.
-      cd.g.skin !== 'vector-2022' ||
-
       !$('#ca-addsection').length ||
 
       // There is a special welcome text in New Topic Tool for 404 pages.
@@ -743,7 +742,7 @@ export class Page {
 
       // If appending to `this.rootElement`, it can land on a wrong place, like on 404 pages
       // with New Topic Tool enabled.
-      .insertAfter(this.$root);
+      .insertAfter(controller.$root);
   }
 
   /**
@@ -801,9 +800,34 @@ export class Page {
         newTopicOnTop,
       }, initialStateOrCommentForm);
 
+      this.$addSectionButtonContainer?.hide();
+      if (!this.exists()) {
+        controller.$content.children('.noarticletext, .warningbox').hide();
+      }
       $('#ca-addsection').addClass('selected');
       $('#ca-view').removeClass('selected');
     }
+  }
+
+  addCommentFormToPage(mode, commentForm) {
+    if (commentForm.isNewTopicOnTop() && sectionRegistry.getByIndex(0)) {
+      sectionRegistry.getByIndex(0).$heading.before(commentForm.$element);
+    } else {
+      controller.$root.after(commentForm.$element);
+    }
+  }
+
+  removeCommentFormFromPage() {
+    if (!this.exists()) {
+      controller.$content
+        // In case DT's new topic tool is enabled. This is responsible for correct styles being set.
+        .removeClass('ext-discussiontools-init-replylink-open')
+
+        .children('.noarticletext, .warningbox')
+        .show();
+    }
+
+    this.$addSectionButtonContainer?.show();
   }
 
   getCommentFormMethodName(mode) {
@@ -859,7 +883,7 @@ export class Page {
     return commentForm.isNewTopicOnTop() ? null : commentRegistry.getByIndex(-1);
   }
 
-  getNewSelf() {
+  findNewSelf() {
     return this;
   }
 
@@ -971,11 +995,7 @@ class PageSource {
       );
     } else {
       contextCode = (
-        (
-          commentForm.isNewSectionApi() ?
-            '' :
-            (originalContextCode + '\n').trimLeft()
-        ) +
+        (commentForm.isNewSectionApi() ? '' : (originalContextCode + '\n').trimLeft()) +
         commentCode
       );
     }

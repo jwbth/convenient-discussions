@@ -2750,8 +2750,8 @@ class Comment extends CommentSkeleton {
         }
 
         const selection = window.getSelection();
-        const { higherNode, higherOffset } = getHigherNodeAndOffsetInSelection(selection);
         if (selection.containsNode(endBoundary, true)) {
+          const { higherNode, higherOffset } = getHigherNodeAndOffsetInSelection(selection);
           selection.setBaseAndExtent(higherNode, higherOffset, endBoundary, 0);
         }
 
@@ -2779,6 +2779,10 @@ class Comment extends CommentSkeleton {
    * @param {object|import('./CommentForm').default} [initialStateOrCommentForm]
    */
   edit(initialStateOrCommentForm) {
+    // Check for existence in case the editing is initiated from a script of some kind (there is no
+    // button to call it from CD when the form is displayed).
+    if (this.editForm) return;
+
     // We use a class here because there can be elements in the comment that are hidden from the
     // beginning and should stay so when reshowing the comment.
     this.$elements.addClass('cd-hidden');
@@ -2787,14 +2791,12 @@ class Comment extends CommentSkeleton {
       $(this.section.barElement).addClass('cd-hidden');
     }
 
-    // The implicit `!this.editForm` check is in case the editing is initiated from a script of some
-    // kind (there is no button to call it from CD when the form is displayed).
     /**
      * Edit form related to the comment.
      *
      * @type {import('./CommentForm').default|undefined}
      */
-    this.editForm ||= commentFormRegistry.add(this, { mode: 'edit' }, initialStateOrCommentForm);
+    this.editForm = commentFormRegistry.add(this, { mode: 'edit' }, initialStateOrCommentForm);
   }
 
   /**
@@ -2834,6 +2836,49 @@ class Comment extends CommentSkeleton {
       } else {
         throw e;
       }
+    }
+  }
+
+  addCommentFormToPage(mode, commentForm) {
+    if (mode === 'reply') {
+      const { $wrappingItem, $outerWrapper } = this.addSubitem('replyForm', 'top');
+      ($wrappingItem || $outerWrapper).append(commentForm.$element);
+    } else if (mode === 'edit') {
+      let $outermostElement;
+      const $first = this.$elements.first();
+      if ($first.is('dd, li')) {
+        const outerWrapperTag = $first.prop('tagName').toLowerCase();
+        $outermostElement = $(`<${outerWrapperTag}>`).addClass('cd-commentForm-outerWrapper');
+        $outermostElement.append(commentForm.$element);
+      } else {
+        $outermostElement = commentForm.$element;
+      }
+
+      // We insert the form before the comment so that if the comment ends on a wrong level, the form
+      // is on a right one. The exception is comments that open a section (otherwise a bug will be
+      // introduced that will manifest when opening an "Add subsection" form of the previous section).
+      if (this.isOpeningSection) {
+        this.$elements.last().after($outermostElement);
+      } else {
+        this.$elements.first().before($outermostElement);
+      }
+    }
+  }
+
+  removeCommentFormFromPage(mode, commentForm) {
+    if (mode === 'reply') {
+      this.subitemList.remove('replyForm');
+      this.scrollIntoView('top');
+    } else if (mode === 'edit') {
+      commentForm.$element.parent('.cd-commentForm-outerWrapper').remove();
+      this.$elements.removeClass('cd-hidden');
+      if (this.isOpeningSection) {
+        $(this.section.barElement).removeClass('cd-hidden');
+      }
+      this.configureLayers();
+
+      // Wait until the comment form is unregistered
+      setTimeout(this.scrollIntoView.bind(this, 'top'));
     }
   }
 

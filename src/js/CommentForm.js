@@ -207,7 +207,10 @@ class CommentForm {
     this.createContents(initialState, customModulesNames);
     this.addEventListeners();
     this.initAutocomplete();
-    this.addToPage();
+  }
+
+  setup(initialState) {
+    this.adjustLabels();
 
     if (!userRegistry.getCurrent().isRegistered() && !mw.user.isTemp()) {
       this.showMessage(cd.sParse('error-anoneditwatning'), {
@@ -256,8 +259,6 @@ class CommentForm {
         }
       });
     }
-
-    controller.updatePageTitle();
 
     this.onboardOntoMultipleForms();
     this.onboardOntoUpload();
@@ -714,6 +715,7 @@ class CommentForm {
       classes: ['cd-commentForm-viewChangesButton'],
       tabIndex: this.getTabIndex(34),
     });
+    this.viewChangesButton.on('toggle', this.adjustLabels.bind(this));
 
     /**
      * Preview button.
@@ -726,8 +728,9 @@ class CommentForm {
       tabIndex: this.getTabIndex(35),
     });
     if (this.autopreview) {
-      this.previewButton.$element.hide();
+      this.previewButton.toggle(false);
     }
+    this.previewButton.on('toggle', this.adjustLabels.bind(this));
 
     /**
      * Submit button.
@@ -768,17 +771,18 @@ class CommentForm {
      *
      * @type {external:jQuery}
      */
-    this.$element = $('<div>').addClass(`cd-commentForm cd-commentForm-${this.mode}`);
-
-    if (this.containerListType === 'ol') {
-      this.$element.addClass('cd-commentForm-inNumberedList');
-    }
-    if (this.sectionOpeningCommentEdited) {
-      this.$element.addClass('cd-commentForm-sectionOpeningComment');
-    }
-    if (this.mode === 'addSubsection') {
-      this.$element.addClass(`cd-commentForm-addSubsection-${this.target.level}`);
-    }
+    this.$element = $('<div>').addClass([
+      `cd-commentForm cd-commentForm-${this.mode}`,
+      this.containerListType === 'ol' ?
+        'cd-commentForm-inNumberedList' :
+        undefined,
+      this.sectionOpeningCommentEdited ?
+        'cd-commentForm-sectionOpeningComment' :
+        undefined,
+      this.mode === 'addSubsection' ?
+        `cd-commentForm-addSubsection-${this.target.level}` :
+        undefined,
+    ].filter(defined));
 
     /**
      * The area where service messages are displayed.
@@ -1366,109 +1370,6 @@ class CommentForm {
         });
       }
     }
-  }
-
-  /**
-   * Insert the form into the DOM.
-   *
-   * @private
-   */
-  addToPage() {
-    // FIXME: decouple by moving hide manipulations to the target classes
-    if (this.mode === 'replyInSection') {
-      this.target.replyButton.hide();
-    } else if (this.mode === 'addSubsection') {
-      this.target.$addSubsectionButtonContainer?.hide();
-    } else if (this.mode === 'addSection') {
-      pageRegistry.getCurrent().$addSectionButtonContainer?.hide();
-    }
-
-    // 'addSection'
-    if (!pageRegistry.getCurrent().exists()) {
-      controller.$content.children('.noarticletext, .warningbox').hide();
-    }
-
-    let $wrappingItem;
-    let $wrappingList;
-    let $outerWrapper;
-    if (this.mode === 'reply') {
-      ({ $wrappingItem, $wrappingList, $outerWrapper } = this.target
-        .addSubitem('replyForm', 'top'));
-    } else if (this.mode === 'edit') {
-      const $firstOfTarget = this.target.$elements.first();
-      if ($firstOfTarget.is('dd, li')) {
-        const outerWrapperTag = $firstOfTarget.prop('tagName').toLowerCase();
-        $outerWrapper = $(`<${outerWrapperTag}>`);
-        this.$element.appendTo($outerWrapper);
-      }
-    }
-
-    /**
-     * The outermost element of the form (equal to the comment form element, item that wraps the
-     * comment form element, list that wraps the item etc., or outer wrapper (usually an item of a
-     * list itself) that wraps the list etc. It is removed to return the DOM to the original state,
-     * before the form was created.
-     *
-     * @type {external:jQuery}
-     */
-    this.$outermostElement = $outerWrapper || $wrappingList || $wrappingItem || this.$element;
-
-    // Add to page
-    switch (this.mode) {
-      case 'reply': {
-        this.$element.appendTo($wrappingItem || $outerWrapper);
-        break;
-      }
-
-      case 'edit': {
-        // We insert the form before the comment so that if the comment ends on a wrong level, the
-        // form is on a right one. The exception is comments that open a section (otherwise a bug
-        // will be introduced that will manifest when opening an "Add subsection" form of the
-        // previous section).
-        if (this.target.isOpeningSection) {
-          this.$outermostElement.insertAfter(this.target.$elements.last());
-        } else {
-          this.$outermostElement.insertBefore(this.target.$elements.first());
-        }
-        break;
-      }
-
-      case 'replyInSection': {
-        this.$element.appendTo(this.target.$replyButtonWrapper);
-        this.target.$replyButtonWrapper.addClass('cd-replyButtonWrapper-hasCommentForm');
-        break;
-      }
-
-      case 'addSection': {
-        if (this.newTopicOnTop && sectionRegistry.getByIndex(0)) {
-          this.$element.insertBefore(sectionRegistry.getByIndex(0).$heading);
-        } else {
-          this.$element.insertAfter(controller.$root);
-        }
-        break;
-      }
-
-      case 'addSubsection': {
-        /*
-          In the following structure:
-            == Level 2 section ==
-            === Level 3 section ===
-            ==== Level 4 section ====
-          ..."Add subsection" forms should go in the opposite order. So, if there are "Add
-          subsection" forms for a level 4 and then a level 2 section and the user clicks "Add
-          subsection" for a level 3 section, we need to put our form between them.
-         */
-        const targetElement = this.target.findRealLastElement((el) => (
-          el.className.match(
-            new RegExp(`\\bcd-commentForm-addSubsection-[${this.target.level}-6]\\b`)
-          )
-        ));
-        this.$element.insertAfter(targetElement);
-        break;
-      }
-    }
-
-    this.adjustLabels();
   }
 
   /**
@@ -2256,7 +2157,7 @@ class CommentForm {
             type,
             inline: true,
             label: htmlOrJquery instanceof $ ? htmlOrJquery : wrapHtml(htmlOrJquery),
-            classes: ['cd-message'].concat(name ? `cd-message-${name}` : []),
+            classes: ['cd-message', name ? `cd-message-${name}` : undefined].filter(defined),
           })).$element
       )
       .cdAddCloseButton()
@@ -2502,7 +2403,7 @@ class CommentForm {
         const anchorCode = cd.config.getAnchorCode(id);
         if (commentSource.code.includes(anchorCode)) return;
 
-        const commentCodePart = CommentFormInputTransformer.prototype.prepareLineStart(
+        const commentCodePart = CommentFormInputTransformer.prependIndentationToLine(
           commentSource.indentation,
           commentSource.code
         );
@@ -2577,9 +2478,8 @@ class CommentForm {
     let commentCode;
     try {
       ({ contextCode, commentCode } = this.target.source.modifyContext({
-        commentCode: this.target instanceof Comment ? undefined : this.inputToCode(action),
+        commentCode: this.inputToCode(action),
         action: this.mode,
-        formAction: action,
         doDelete: this.deleteCheckbox?.isSelected(),
         commentForm: this,
       }));
@@ -2785,9 +2685,8 @@ class CommentForm {
     }
 
     if (this.autopreview && this.previewButton.$element.is(':visible')) {
-      this.previewButton.$element.hide();
-      this.viewChangesButton.$element.show();
-      this.adjustLabels();
+      this.previewButton.toggle(false);
+      this.viewChangesButton.toggle(true);
     }
 
     operation.close();
@@ -2876,9 +2775,8 @@ class CommentForm {
     }
 
     if (this.autopreview) {
-      this.viewChangesButton.$element.hide();
-      this.previewButton.$element.show();
-      this.adjustLabels();
+      this.viewChangesButton.toggle(false);
+      this.previewButton.toggle(true);
     }
 
     operation.close();
@@ -3271,10 +3169,6 @@ class CommentForm {
     }
 
     this.teardown();
-
-    if (['reply', 'edit'].includes(this.mode)) {
-      this.target.scrollIntoView('top');
-    }
   }
 
   /**
@@ -3286,43 +3180,10 @@ class CommentForm {
    */
   teardown() {
     this.operations.closeAll();
-
-    // Remove the form elements
-    if (this.mode === 'reply') {
-      this.target.subitemList.remove('replyForm');
-    } else {
-      this.$outermostElement.remove();
-      if (this.mode === 'addSection' && !pageRegistry.getCurrent().exists()) {
-        controller.$content
-          // In case DT's new topic tool is enabled. This is responsible for correct styles being
-          // set.
-          .removeClass('ext-discussiontools-init-replylink-open')
-
-          .children('.noarticletext, .warningbox')
-          .show();
-      }
-    }
-
+    this.target.removeCommentFormFromPage(this.mode, this);
+    this.$element.remove();
     this.unregister();
-
-    // Restore hidden elements. FIXME: emit an event or at least run some routine on the target to
-    // decouple these operations from CommentForm.
-    if (this.mode === 'replyInSection') {
-      this.target.replyButton.show();
-      this.target.$replyButtonWrapper.removeClass('cd-replyButtonWrapper-hasCommentForm');
-    } else if (this.mode === 'edit') {
-      this.target.$elements.removeClass('cd-hidden');
-      if (this.target.isOpeningSection) {
-        $(this.target.section.barElement).removeClass('cd-hidden');
-      }
-      this.target.scrollIntoView('top');
-      this.target.configureLayers();
-    } else if (this.mode === 'addSection') {
-      pageRegistry.getCurrent().$addSectionButtonContainer?.show();
-    }
-
-    controller.updatePageTitle();
-
+    this.emit('teardown');
     this.torndown = true;
   }
 
@@ -3449,6 +3310,7 @@ class CommentForm {
    * @private
    */
   generateStaticSummaryText() {
+    // FIXME: distribute this across the classes of targets? Not sure this belongs here.
     switch (this.mode) {
       case 'reply': {
         if (this.target.isOpeningSection) {

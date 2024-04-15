@@ -77,19 +77,25 @@ export default {
     if (initialStateOrCommentForm instanceof CommentForm) {
       item = initialStateOrCommentForm;
       item.setTargets(target);
-      item.addToPage();
+      target.addCommentFormToPage(config.mode, item);
     } else {
       item = new CommentForm(Object.assign({
         target,
         initialState: initialStateOrCommentForm,
       }, config));
+      target.addCommentFormToPage(config.mode, item);
+      item.setup(initialStateOrCommentForm);
     }
+    controller.updatePageTitle();
     this.items.push(item);
     this.saveSession();
     item
       .on('change', this.saveSession.bind(this))
       .on('unregister', () => {
         this.remove(item);
+      })
+      .on('teardown', () => {
+        controller.updatePageTitle();
       });
 
     this.emit('add', item);
@@ -216,7 +222,7 @@ export default {
    */
   detach() {
     this.items.forEach((commentForm) => {
-      commentForm.$outermostElement.detach();
+      commentForm.$element.detach();
       commentForm.checkCodeRequest = null;
     });
   },

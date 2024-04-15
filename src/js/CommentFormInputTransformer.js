@@ -187,20 +187,6 @@ class CommentFormInputTransformer extends TextMasker {
   }
 
   /**
-   * Add indentation chars to the start of the line.
-   *
-   * @param {string} indentation
-   * @param {string} line
-   * @param {boolean} [addLine=true] Add the line itself.
-   * @returns {string}
-   * @private
-   */
-  prepareLineStart(indentation, line, addLine = true) {
-    const addSpace = indentation && cd.config.spaceAfterIndentationChars && !/^[:*#;]/.test(line);
-    return indentation + (addSpace ? ' ' : '') + (addLine ? line : '');
-  }
-
-  /**
    * Perform operations with code in an indented comment.
    *
    * @param {string} code
@@ -226,23 +212,25 @@ class CommentFormInputTransformer extends TextMasker {
       code = this.listMarkupToTags(code);
     }
 
-    // Add indentation characters to lines with the list and table markup as well as lines wholly
-    // occupied by the file markup. File markup is tricky because, depending on the alignment and
-    // line breaks, the result can be very different. The safest way to fight that is to use
-    // indentation.
-    const lineStartMarkupRegexp = new RegExp(
-      `(\\n+)([:*#;\\x03]|${this.constructor.filePatternEnd})`,
-      'gmi'
-    );
-    code = code.replace(lineStartMarkupRegexp, (s, newlines, nextLine) => {
-      // Many newlines will be replaced with a paragraph template below. It could help visual
-      // formatting. If there is no paragraph template, there won't be multiple newlines, as they
-      // will have been removed above.
-      const newlinesToAdd = newlines.length > 1 ? '\n\n\n' : '\n';
-      const line = this.prepareLineStart(this.restLinesIndentation, nextLine);
+    code = code.replace(
+      // Lines with the list and table markup as well as lines wholly occupied by the file markup
+      new RegExp(
+        `(\\n+)([:*#;\\x03]|${this.constructor.filePatternEnd})`,
+        'gmi'
+      ),
 
-      return newlinesToAdd + line;
-    });
+      // Add indentation characters. File markup is tricky because, depending on the alignment and
+      // line breaks, the result can be very different. The safest way to fight that is to use
+      // indentation.
+      (s, newlines, nextLine) => (
+        // Newline sequences will be replaced with a paragraph template below. It could help
+        // visual formatting. If there is no paragraph template, there won't be multiple newlines,
+        // as they will have been removed above.
+        (newlines.length > 1 ? '\n\n\n' : '\n') +
+
+        this.constructor.prependIndentationToLine(this.restLinesIndentation, nextLine)
+      )
+    );
 
     // Add newlines before and after gallery (yes, even if the comment starts with it).
     code = code
@@ -266,16 +254,24 @@ class CommentFormInputTransformer extends TextMasker {
       }
     }
 
-    // Add indentation characters to lines following the lines with the list, table, and gallery
-    // markup.
-    const followingLinesRegexp = /^((?:[:*#;\x03].+|\x01\d+_gallery\x02))(\n+)(?![:#])/mg;
-    code = code.replace(followingLinesRegexp, (s, previousLine, newlines) => {
-      // Many newlines will be replaced with a paragraph template below. If there is no paragraph
-      // template, there wouldn't be multiple newlines, as they would've been removed above.
-      const newlinesToAdd = newlines.length > 1 ? '\n\n' : '';
+    code = code.replace(
+      // Lines following lines with the list, table, and gallery markup
+      /^((?:[:*#;\x03].+|\x01\d+_gallery\x02))(\n+)(?![:#])/mg,
 
-      return previousLine + '\n' + this.prepareLineStart(this.restLinesIndentation, newlinesToAdd);
-    });
+      // Add indentation characters
+      (s, previousLine, newlines) => (
+        previousLine +
+        '\n' +
+        this.constructor.prependIndentationToLine(
+          this.restLinesIndentation,
+
+          // Newline sequences will be replaced with a paragraph template below. If there is no
+          // paragraph template, there wouldn't be multiple newlines, as they would've been removed
+          // above.
+          newlines.length > 1 ? '\n\n' : ''
+        )
+      )
+    );
 
     const paragraphCode = cd.config.paragraphTemplates.length ?
       `$1{{${cd.config.paragraphTemplates[0]}}}\n` :
@@ -512,13 +508,13 @@ class CommentFormInputTransformer extends TextMasker {
     }
 
     if (this.action !== 'preview') {
-      this.text = this.prepareLineStart(this.indentation, this.text);
+      this.text = this.constructor.prependIndentationToLine(this.indentation, this.text);
 
       if (this.mode === 'addSubsection') {
         this.text += '\n';
       }
     } else if (this.action === 'preview' && this.indentation && this.initialText) {
-      this.text = this.prepareLineStart(':', this.text);
+      this.text = this.constructor.prependIndentationToLine(':', this.text);
     }
 
     return this;
@@ -644,6 +640,21 @@ class CommentFormInputTransformer extends TextMasker {
       }
     });
     return text;
+  }
+
+  /**
+   * Add indentation chars to the start of a line.
+   *
+   * @param {string} indentation
+   * @param {string} line
+   * @returns {string}
+   */
+  static prependIndentationToLine(indentation, line) {
+    return (
+      indentation +
+      (indentation && cd.config.spaceAfterIndentationChars && !/^[:*#;]/.test(line) ? ' ' : '') +
+      line
+    );
   }
 }
 

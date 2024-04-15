@@ -78,25 +78,28 @@ class SectionSkeleton {
      */
     this.sectionNumber = null;
 
-    const editSectionElement = this.parser.context
-      .getElementByClassName(this.hElement, 'mw-editsection');
-    const menuLinks = editSectionElement ? [...editSectionElement.getElementsByTagName('a')] : [];
-
-    // &action=edit, ?action=edit (couldn't figure out where this comes from, but at least one
-    // user has such links), &veaction=editsource. We perhaps could catch veaction=edit, but
-    // there's probably no harm in that.
-    const editLink = menuLinks.find((link) => link.getAttribute('href')?.includes('action=edit'));
+    const editLink = [
+      ...(
+        // Get menu links. Use two calls because our improvised `.querySelectorAll()` in
+        // `htmlparser2Extended` doesn't support composite selectors.
+        this.parser.context.getElementByClassName(this.hElement, 'mw-editsection')
+          ?.getElementsByTagName('a') ||
+        []
+      )
+    ]
+      // &action=edit, ?action=edit (couldn't figure out where this comes from, but at least one
+      // user has such links), &veaction=editsource. We perhaps could catch veaction=edit, but
+      // there's probably no harm in that.
+      .find((link) => link.getAttribute('href')?.includes('action=edit'));
 
     if (editLink) {
       // `href` property with the full URL is not available in the worker context.
-      const href = cd.g.server + editLink.getAttribute('href');
-
       /**
        * URL to edit the section.
        *
        * @type {string}
        */
-      this.editUrl = new URL(href);
+      this.editUrl = new URL(cd.g.server + editLink.getAttribute('href'));
 
       if (this.editUrl) {
         const sectionNumber = this.editUrl.searchParams.get('section');

@@ -16,10 +16,9 @@ class LiveTimestamp {
    *
    * @param {Element} element Element that has the timestamp.
    * @param {Date} date Timestamp's date.
-   * @param {boolean} addTimezone Whether to add timezone to the timestamp.
-   * @param {Function} [callback] Function to run after the timestamp updates.
+   * @param {boolean} addTimezone Whether to add a timezone to the timestamp.
    */
-  constructor(element, date, addTimezone, callback) {
+  constructor(element, date, addTimezone) {
     /**
      * Element that has the timestamp.
      *
@@ -43,14 +42,6 @@ class LiveTimestamp {
      * @private
      */
     this.addTimezone = addTimezone;
-
-    /**
-     * Function to run after the timestamp updates.
-     *
-     * @type {Function|undefined}
-     * @private
-     */
-    this.callback = callback;
 
     this.format = settings.get('timestampFormat');
     this.useUiTime = settings.get('useUiTime');
@@ -113,7 +104,6 @@ class LiveTimestamp {
    */
   update() {
     this.element.textContent = formatDate(this.date, this.addTimezone);
-    this.callback?.();
   }
 
   static updateTimeouts = [];

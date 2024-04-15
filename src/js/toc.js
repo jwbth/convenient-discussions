@@ -4,14 +4,16 @@
  * @module toc
  */
 
+import Comment from './Comment';
 import LiveTimestamp from './LiveTimestamp';
 import cd from './cd';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
-import navPanel from './navPanel';
 import sectionRegistry from './sectionRegistry';
 import settings from './settings';
+import updateChecker from './updateChecker';
 import { formatDate, formatDateNative } from './utils-timestamp';
+import visits from './visits';
 
 /**
  * @exports toc
@@ -27,9 +29,33 @@ const toc = {
       this.resolveUpdateTocSectionsPromise?.();
     });
 
-    subscriptions.on('processed', (visitsPromise) => {
-      this.markSubscriptions(visitsPromise);
-    });
+    this.canBeModified = settings.get('modifyToc');
+
+    visits
+      .on('processed', () => {
+        // If all the comments on the page are unseen, don't add them to the TOC - the user would
+        // definitely prefer to read the names of the topics easily. (But still consider them new -
+        // otherwise the user can be confused, especially if there are few topics on an unpopular
+        // page.)
+        if (
+          commentRegistry.getAll().filter((c) => c.isSeen === false || !c.date).length !==
+          commentRegistry.getCount()
+        ) {
+          this.addNewComments(
+            Comment.groupBySection(commentRegistry.getAll().filter((c) => c.isSeen === false)),
+            controller.getBootProcess()
+          );
+        }
+        this.addCommentCount();
+      });
+    subscriptions
+      .on('processed', this.markSubscriptions.bind(this));
+    controller
+      .on('commentsadded', ({ bySection }) => {
+        this.addNewComments(bySection);
+      });
+    updateChecker
+      .on('updatesections', this.addNewSections.bind(this));
   },
 
   /**
@@ -53,10 +79,12 @@ const toc = {
    * @param {boolean} [hideToc] Whether the TOC should be hidden.
    */
   setup(sections, hideToc) {
-    this.canBeModified = settings.get('modifyToc');
     this.$element = this.isInSidebar() ? $('.vector-toc') : controller.$root.find('.toc');
     this.items = null;
     this.floating = null;
+    this.visitsPromise = new Promise((resolve) => {
+      visits.once('processed', resolve);
+    });
 
     if (this.isInSidebar() && sections) {
       // Update the section list of the TOC
@@ -99,16 +127,16 @@ const toc = {
   },
 
   /**
-   * _For internal use._ Mark sections that the user is subscribed to.
+   * Mark sections that the user is subscribed to.
    *
-   * @param {Promise} [visitsPromise]
+   * @private
    */
-  async markSubscriptions(visitsPromise) {
+  async markSubscriptions() {
     if (!this.isPresent()) return;
 
     // Ensure the bell icons are added after the TOC is updated and the comment counts are added in
-    // `visits#process`.
-    await Promise.all([visitsPromise, this.updateTocSectionsPromise]);
+    // `visits#process()`.
+    await Promise.all([this.visitsPromise, this.updateTocSectionsPromise]);
 
     sectionRegistry.getAll()
       .filter((section) => section.subscriptionState || this.isInSidebar())
@@ -505,12 +533,7 @@ const toc = {
           timestampSpan = document.createElement('span');
           timestampSpan.textContent = date;
           timestampSpan.title = nativeDate;
-          const callback = areCommentsRendered ?
-            undefined :
-            () => {
-              navPanel.updateTimestampsInRefreshButtonTooltip();
-            };
-          (new LiveTimestamp(timestampSpan, comment.date, false, callback)).init();
+          (new LiveTimestamp(timestampSpan, comment.date, false)).init();
         }
 
         if (this.isInSidebar()) {
@@ -577,7 +600,8 @@ const toc = {
     const areCommentsRendered = !$.isPlainObject(firstComment);
     if (!this.isInSidebar()) {
       controller.saveRelativeScrollPosition(
-        // When unrendered (in gray) comments are added
+        // When unrendered (in gray) comments are added. (Boot process is also not specified at
+        // those times.)
         !areCommentsRendered ||
 
         bootProcess.isFirstRun() ||

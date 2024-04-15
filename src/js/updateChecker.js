@@ -6,7 +6,6 @@
 
 import CdError from './CdError';
 import StorageItem from './StorageItem';
-import Thread from './Thread';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
@@ -14,10 +13,14 @@ import controller from './controller';
 import pageRegistry from './pageRegistry';
 import sectionRegistry from './sectionRegistry';
 import settings from './settings';
-import toc from './toc';
 import userRegistry from './userRegistry';
 import { loadUserGenders } from './utils-api';
 import { calculateWordOverlap, keepWorkerSafeValues } from './utils-general';
+import { mixEventEmitterIntoObject } from './utils-oojs';
+import visits from './visits';
+
+// FIXME: Make this into a singleton (object) without inner module variables, so that it emits with
+// `this.emit()`. Move worker-related stuff to controller.
 
 const revisionData = {};
 const resolvers = {};
@@ -305,13 +308,11 @@ async function checkForUpdates() {
   const documentHidden = document.hidden;
 
   if (documentHidden && !isBackgroundCheckArranged) {
-    const onDocumentVisible = () => {
-      $(document).off('visibilitychange', onDocumentVisible);
+    $(document).one('visibilitychange', () => {
       isBackgroundCheckArranged = false;
       removeAlarmViaWorker();
       checkForUpdates();
-    };
-    $(document).on('visibilitychange', onDocumentVisible);
+    });
 
     const interval = Math.abs(cd.g.backgroundUpdateCheckInterval - cd.g.updateCheckInterval);
     setAlarmViaWorker(interval * 1000);
@@ -339,12 +340,13 @@ async function checkForUpdates() {
         // `lastCheckedRevisionId` corresponds to the versions of comments that are currently
         // rendered.
         lastCheckedRevisionId = revisionId;
-        controller.setLastCheckedRevisionId(lastCheckedRevisionId);
+        updateChecker.emit('checked', lastCheckedRevisionId);
 
         if (isPageStillAtRevision(currentRevisionId)) {
           mapSections(sections);
-          toc.addNewSections(sections);
           mapComments(currentComments, newComments);
+
+          updateChecker.emit('updatesections', sections)
 
           // We check for changes before notifying about new comments to notify about changes in a
           // renamed section if it is watched.
@@ -462,7 +464,6 @@ function checkForChangesSincePreviousVisit(currentComments, submittedCommentId) 
  * @private
  */
 function checkForNewChanges(currentComments) {
-  let isChangeMarkUpdated = false;
   const changeList = [];
   currentComments.forEach((currentComment) => {
     const newComment = currentComment.match;
@@ -483,7 +484,6 @@ function checkForNewChanges(currentComments) {
 
       if (comment.isDeleted) {
         comment.unmarkAsChanged('deleted');
-        isChangeMarkUpdated = true;
         events.undeleted = true;
       }
       if (hasCommentChanged(currentComment, newComment)) {
@@ -496,13 +496,11 @@ function checkForNewChanges(currentComments) {
           comment.htmlToCompare = newComment.htmlToCompare;
 
           comment.markAsChanged('changed', updateSuccess, lastCheckedRevisionId, commentsData);
-          isChangeMarkUpdated = true;
-          events.changed = { updateSuccess };
+            events.changed = { updateSuccess };
         }
       } else if (comment.isChanged) {
         comment.update(currentComment, newComment);
         comment.unmarkAsChanged('changed');
-        isChangeMarkUpdated = true;
         events.unchanged = true;
       }
     } else if (!currentComment.hasPoorMatch) {
@@ -510,7 +508,6 @@ function checkForNewChanges(currentComments) {
       if (!comment || comment.isDeleted) return;
 
       comment.markAsChanged('deleted');
-      isChangeMarkUpdated = true;
       events.deleted = true;
     }
 
@@ -519,18 +516,9 @@ function checkForNewChanges(currentComments) {
     }
   });
 
-  if (isChangeMarkUpdated) {
-    // If the layers of deleted comments have been configured in `Comment#unmarkAsChanged`, they
-    // will prevent layers before them from being updated due to the "stop at the first three
-    // unmoved comments" optimization in `commentRegistry.maybeRedrawLayers`. So we just do the
-    // whole job here.
-    commentRegistry.maybeRedrawLayers(true);
-
-    // Start and end elements of threads may be replaced, so we need to restart threads.
-    Thread.init(false);
-  }
-
   if (changeList.length) {
+    updateChecker.emit('changes', changeList);
+
     /**
      * Existing comments have changed (probably edited).
      *
@@ -639,7 +627,7 @@ async function processComments(comments, currentComments, currentRevisionId) {
 
   if (!isPageStillAtRevision(currentRevisionId)) return;
 
-  controller.updateAddedComments(newComments, relevantNewComments);
+  updateChecker.emit('updatecomments', newComments, relevantNewComments);
 }
 
 /**
@@ -662,28 +650,52 @@ async function onMessageFromWorker(e) {
   }
 }
 
-/**
- * _For internal use._ Initialize the update checker. Executed on each page reload.
- *
- * @param {string} previousVisitTime
- * @param {number} submittedCommentId
- */
-async function initUpdateChecker(previousVisitTime, submittedCommentId) {
-  isBackgroundCheckArranged = false;
-  previousVisitRevisionId = null;
+const updateChecker = {
+  init() {
+    mixEventEmitterIntoObject(this);
 
-  if (controller.getWorker().onmessage) {
-    removeAlarmViaWorker();
-  } else {
-    controller.getWorker().onmessage = onMessageFromWorker;
-  }
+    visits
+      .on('processed', (currentPageData) => {
+        const bootProcess = controller.getBootProcess();
+        this.setup(
+          currentPageData.length >= 1 ?
+            Number(currentPageData[currentPageData.length - 1]) :
+            undefined,
+          (
+            (
+              bootProcess.passedData.wasCommentFormSubmitted &&
+              bootProcess.passedData.commentIds?.[0]
+            ) ||
+            undefined
+          )
+        );
+      });
+  },
 
-  setAlarmViaWorker(cd.g.updateCheckInterval * 1000);
+  /**
+   * _For internal use._ Initialize the update checker. Executed on each page reload.
+   *
+   * @param {string} previousVisitTime
+   * @param {number} submittedCommentId
+   */
+  async setup(previousVisitTime, submittedCommentId) {
+    isBackgroundCheckArranged = false;
+    previousVisitRevisionId = null;
 
-  if (previousVisitTime) {
-    maybeProcessRevisionsAtLoad(previousVisitTime, submittedCommentId);
-  }
-}
+    const worker = controller.getWorker();
+    if (worker.onmessage) {
+      removeAlarmViaWorker();
+    } else {
+      worker.onmessage = onMessageFromWorker;
+    }
 
-export default initUpdateChecker;
+    setAlarmViaWorker(cd.g.updateCheckInterval * 1000);
+
+    if (previousVisitTime) {
+      maybeProcessRevisionsAtLoad(previousVisitTime, submittedCommentId);
+    }
+  },
+};
+
+export default updateChecker;
 export { processPage };

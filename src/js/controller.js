@@ -24,6 +24,7 @@ import pageRegistry from './pageRegistry';
 import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import toc from './toc';
+import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
 import { getUserInfo } from './utils-api';
 import { defined, definedAndNotNull, flat, getLastArrayElementOrSelf, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
@@ -144,6 +145,7 @@ export default {
     this.mutationObserver?.disconnect();
     commentRegistry.reset();
     sectionRegistry.reset();
+    pageRegistry.getCurrent().forgetCommentForm('addSection');
     this.content = {};
     this.addedCommentCount = 0;
     this.areRelevantCommentsAdded = false;
@@ -353,10 +355,6 @@ export default {
     // `wgCurRevisionId` after some revisions were added). Unfortunately, it doesn't update the
     // `wgCurRevisionId` value.
     return mw.config.get('wgRevisionId') >= mw.config.get('wgCurRevisionId');
-  },
-
-  setLastCheckedRevisionId(revisionId) {
-    this.lastCheckedRevisionId = revisionId;
   },
 
   /**
@@ -780,7 +778,7 @@ export default {
           .some((el) => el.matches(':hover')) ||
 
         // WikiEditor dialog
-        $(document.body).children('.ui-dialog').length
+        $(document.body).children('.ui-dialog').not('[style*="display: none"]').length
       );
     }, 100)();
 
@@ -1108,11 +1106,17 @@ export default {
 
     this.showLoadingOverlay();
     Promise.all([modulesRequest, ...siteDataRequests]).then(
-      () => {
+      async () => {
         // Do it here because `OO.EventEmitter` can be unavailable before.
         mixEventEmitterIntoObject(this);
 
-        this.tryExecuteBootProcess();
+        await this.tryExecuteBootProcess();
+
+        updateChecker
+          .on('checked', (revisionId) => {
+            this.lastCheckedRevisionId = revisionId;
+          })
+          .on('updatecomments', this.updateAddedComments.bind(this));
       },
       (e) => {
         mw.notify(cd.s('error-loaddata'), { type: 'error' });
@@ -1246,7 +1250,7 @@ export default {
    * _For internal use._ Update the page's HTML.
    */
   updatePageContents() {
-    this.$content.children('.mw-parser-output').replaceWith(this.$root);
+    this.$content.children('.mw-parser-output').first().replaceWith(this.$root);
   },
 
   /**
@@ -1306,13 +1310,6 @@ export default {
       .on('scroll visibilitychange', this.handleScroll.bind(this))
       .on('horizontalscroll.cd visibilitychange', this.handleHorizontalScroll.bind(this))
       .on('selectionchange', this.handleSelectionChange.bind(this));
-
-    if (settings.get('improvePerformance')) {
-      // Unhide when the user opens a search box to allow searching the full page.
-      $(window)
-        .on('focus', sectionRegistry.maybeUpdateVisibility.bind(sectionRegistry))
-        .on('blur', sectionRegistry.maybeUnhideAll.bind(sectionRegistry));
-    }
 
     $(window)
       .on('resize orientationchange', this.handleWindowResize.bind(this))
@@ -1698,10 +1695,14 @@ export default {
 
     if (filteredComments.length) {
       let html;
-      const formDataNote = commentFormRegistry.getAll().some((cf) => cf.isAltered()) ?
-        ' ' + cd.mws('parentheses', cd.s('notification-formdata')) :
-        '';
-      const reloadHtml = cd.sParse('notification-reload', formDataNote);
+      const reloadHtml = cd.sParse(
+        'notification-reload',
+
+        // Note about the form data
+        commentFormRegistry.getAll().some((cf) => cf.isAltered()) ?
+          ' ' + cd.mws('parentheses', cd.s('notification-formdata')) :
+          ''
+      );
       if (filteredComments.length === 1) {
         const comment = filteredComments[0];
         if (comment.isToMe) {
@@ -1870,30 +1871,27 @@ export default {
    * Update the data about added comments (new comments added while the page was idle), update page
    * components accordingly, show notifications.
    *
-   * @param {import('./CommentSkeleton').CommentSkeletonLike[]} comments
-   * @param {import('./CommentSkeleton').CommentSkeletonLike[]} relevantComments
+   * @param {import('./CommentSkeleton').CommentSkeletonLike[]} all
+   * @param {import('./CommentSkeleton').CommentSkeletonLike[]} relevant
    */
-  updateAddedComments(comments, relevantComments) {
-    this.addedCommentCount = comments.length;
-    this.areRelevantCommentsAdded = Boolean(relevantComments.length);
-    if (relevantComments.length) {
-      this.relevantAddedCommentIds = relevantComments.map((comment) => comment.id);
-    } else if (comments.length) {
-      this.relevantAddedCommentIds = comments.map((comment) => comment.id);
+  updateAddedComments(all, relevant) {
+    this.addedCommentCount = all.length;
+    this.areRelevantCommentsAdded = Boolean(relevant.length);
+    if (relevant.length) {
+      this.relevantAddedCommentIds = relevant.map((comment) => comment.id);
+    } else if (all.length) {
+      this.relevantAddedCommentIds = all.map((comment) => comment.id);
     }
 
-    const commentsBySection = Comment.groupBySection(comments);
-    navPanel.updateRefreshButton(
-      this.addedCommentCount,
-      commentsBySection,
-      this.areRelevantCommentsAdded
-    );
+    this.emit('commentsadded', {
+      all,
+      relevant,
+      bySection: Comment.groupBySection(all),
+    });
+
     this.updatePageTitle();
-    toc.addNewComments(commentsBySection);
 
-    commentRegistry.addNewCommentsNotes(comments);
-
-    const commentsToNotifyAbout = relevantComments
+    const commentsToNotifyAbout = relevant
       .filter((comment) => !this.commentsNotifiedAbout.some((cna) => cna.id === comment.id));
     this.showRegularNotification(commentsToNotifyAbout);
     this.showDesktopNotification(commentsToNotifyAbout);

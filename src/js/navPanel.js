@@ -17,6 +17,7 @@ import { reorderArray } from './utils-general';
 import { formatDate } from './utils-timestamp';
 import { removeWikiMarkup } from './utils-wikitext';
 import { isCmdModifierPressed, isInputFocused, keyCombination } from './utils-window';
+import visits from './visits';
 
 export default {
   /**
@@ -61,11 +62,19 @@ export default {
               e.preventDefault();
               this.goToNextCommentForm(true);
             }
+          })
+          .on('commentsadded', ({ all, relevant, bySection }) => {
+            this.updateRefreshButton(all.length, bySection, Boolean(relevant.length));
           });
         commentFormRegistry
           .on('add', this.updateCommentFormButton.bind(this))
           .on('remove', this.updateCommentFormButton.bind(this));
-        LiveTimestamp.on('updateimproved', this.updateTimestampsInRefreshButtonTooltip.bind(this));
+        LiveTimestamp
+          .on('updateimproved', this.updateTimestampsInRefreshButtonTooltip.bind(this));
+        visits
+          .on('processed', this.fill.bind(this));
+        commentRegistry
+          .on('seenregistered', this.updateFirstUnseenButton.bind(this));
       } else {
         this.reset();
       }
@@ -411,14 +420,13 @@ export default {
         });
       });
 
-      // When timestamps are relative and the TOC is allowed to be modified in the settings, the
-      // tooltip is updated together with the updates of the TOC. When the TOC is not modified, we
-      // need to update the tooltip manually every minute. When `improved` timestamps are used,
-      // timestamps are updated in `LiveTimestamp.updateImproved()`.
-      if (this.timestampFormat === 'relative' && !this.modifyToc) {
-        this.utirbtTimeout = setTimeout(() => {
-          this.updateTimestampsInRefreshButtonTooltip();
-        }, cd.g.msInMin);
+      // When timestamps are relative, we need to update the tooltip manually every minute. When
+      // `improved` timestamps are used, timestamps are updated in `LiveTimestamp.updateImproved()`.
+      if (this.timestampFormat === 'relative') {
+        this.utirbtTimeout = setTimeout(
+          this.updateTimestampsInRefreshButtonTooltip.bind(this),
+          cd.g.msInMin
+        );
       }
     } else {
       tooltipText = cd.s('navpanel-refresh') + ' ' + cd.mws('parentheses', 'R');
@@ -431,9 +439,10 @@ export default {
   },
 
   /**
-   * _For internal use._ Update the tooltip of the
-   * {@link module:navPanel.refreshButton refresh button}. This is called to update timestamps in
-   * the text.
+   * Update the tooltip of the {@link module:navPanel.refreshButton refresh button}. This is called
+   * to update timestamps in the text.
+   *
+   * @private
    */
   updateTimestampsInRefreshButtonTooltip() {
     this.updateRefreshButtonTooltip(this.cachedCommentCount, this.cachedCommentsBySection);

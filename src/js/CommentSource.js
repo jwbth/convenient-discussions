@@ -731,34 +731,27 @@ class CommentSource {
    *
    * @param {object} options
    * @param {'reply'|'edit'} options.action
-   * @param {'submit'|'viewChanged'|'preview'} options.formAction
    * @param {string} [options.commentCode] Comment code, including trailing newlines, indentation
-   *   characters, and the signature. Can be not set if `commentForm` is set or `doDelete` is
-   *   `true`.
+   *   characters, and the signature.
    * @param {boolean} [options.doDelete] Whether to delete the comment.
    * @param {string} [options.contextCode] Code that has the comment. Usually not needed; provide it
    *   only if you need to perform operations on some code that is not the code of a section or
    *   page).
-   * @param {import('./CommentForm').default} [options.commentForm] Comment form that has the code.
-   *   Can be not set if `commentCode` is set or `action` is `'edit'`.
    * @returns {object}
    * @throws {CdError}
    */
   modifyContext({
     action,
-    formAction,
     commentCode,
     contextCode: originalContextCode = this.isInSectionContext ?
       this.comment.section.presumedCode :
       this.comment.getSourcePage().code,
     doDelete,
-    commentForm,
   }) {
     let contextCode;
     switch (action) {
       case 'reply': {
         const currentIndex = this.findProperPlaceForReply(originalContextCode);
-        commentCode ??= commentForm.inputToCode(formAction);
         contextCode = (
           originalContextCode.slice(0, currentIndex) +
           commentCode +
@@ -772,7 +765,7 @@ class CommentSource {
           let startIndex;
           let endIndex;
           if (this.comment.isOpeningSection && this.headingStartIndex !== undefined) {
-            // Usually, `source` is set in CommentForm#prepareSource.
+            // Usually, `source` is set in `CommentForm#prepareSource()`.
             if (!this.comment.section.source) {
               this.comment.section.locateInCode();
             }
@@ -805,7 +798,6 @@ class CommentSource {
 
           contextCode = originalContextCode.slice(0, startIndex) + originalContextCode.slice(endIndex);
         } else {
-          commentCode ??= commentForm.inputToCode(formAction);
           contextCode = (
             originalContextCode.slice(0, this.lineStartIndex) +
             commentCode +

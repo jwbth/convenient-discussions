@@ -8,11 +8,13 @@ import Comment from './Comment';
 import TreeWalker from './TreeWalker';
 import cd from './cd';
 import controller from './controller';
-import navPanel from './navPanel';
 import settings from './settings';
+import updateChecker from './updateChecker';
 import { getPagesExistence } from './utils-api';
 import { getCommonGender, reorderArray, unique } from './utils-general';
+import { mixEventEmitterIntoObject } from './utils-oojs';
 import { getExtendedRect, getHigherNodeAndOffsetInSelection } from './utils-window';
+import visits from './visits';
 
 export default {
   /**
@@ -43,6 +45,8 @@ export default {
   init() {
     this.reformatCommentsSetting = settings.get('reformatComments');
 
+    mixEventEmitterIntoObject(this);
+
     controller
       .on('scroll', this.registerSeen.bind(this))
       .on('mutate', this.maybeRedrawLayers.bind(this))
@@ -60,7 +64,7 @@ export default {
       .on('selectionchange', this.getSelectedComment.bind(this))
       .on('beforereload', (passedData) => {
         // Stop all animations, clear all timeouts.
-        this.getAll().forEach((comment) => {
+        this.items.forEach((comment) => {
           comment.stopAnimations();
         });
 
@@ -72,13 +76,21 @@ export default {
         }
       })
       .on('reload', this.resetLayers.bind(this))
-      .on('desktopnotificationclick', () => {
-        this.maybeRedrawLayers(true);
-      });
+      .on('commentsadded', ({ all }) => {
+        this.addNewCommentsNotes(all);
+      })
+      .on('desktopnotificationclick', this.maybeRedrawLayers.bind(this, true));
+    visits
+      .on('processed', this.registerSeen.bind(this));
+    updateChecker
+      // If the layers of deleted comments have been configured in `Comment#unmarkAsChanged()`, they
+      // will prevent layers before them from being updated due to the "stop at the first three
+      // unmoved comments" optimization in `.maybeRedrawLayers()`. So we just do the whole job here.
+      .on('change', this.maybeRedrawLayers.bind(this, true));
   },
 
   /**
-   * _For internal use._ Perform some coment-related operations when the registry is filled, in
+   * _For internal use._ Perform some comment-related operations when the registry is filled, in
    * addition to those performed when each comment is added to the registry.
    */
   setup() {
@@ -132,6 +144,23 @@ export default {
    */
   reset() {
     this.items = [];
+  },
+
+  initNewAndSeen(currentPageData, currentTime) {
+    let timeConflict = false;
+    const unseenCommentIds = controller.getBootProcess().passedData.unseenCommentIds;
+    this.items.forEach((c) => {
+      const commentTimeConflict = c.initNewAndSeen(
+        currentPageData,
+        currentTime,
+        unseenCommentIds?.some((id) => id === c.id) || false
+      );
+      timeConflict ||= commentTimeConflict;
+    });
+
+    this.configureAndAddLayers((c) => c.isNew);
+
+    return timeConflict;
   },
 
   /**
@@ -280,7 +309,7 @@ export default {
       .slice(commentInViewport.index)
       .some(registerIfInViewport);
 
-    navPanel.updateFirstUnseenButton();
+    this.emit('seenregistered');
   },
 
   /**
@@ -306,7 +335,7 @@ export default {
       return Boolean(comment.roughOffset);
     };
     const findVisible = (direction, startIndex = 0, endIndex) => {
-      let comments = reorderArray(this.getAll(), startIndex, direction === 'backward');
+      let comments = reorderArray(this.items, startIndex, direction === 'backward');
       if (endIndex !== undefined) {
         comments = comments.filter((comment) => (
           direction === 'forward' ?
@@ -466,7 +495,9 @@ export default {
     if (!comment && impreciseDate) {
       const { date, author } = Comment.parseId(id) || {};
       for (let gap = 1; !comment && gap <= 3; gap++) {
-        comment = findById(this.generateId(new Date(date.getTime() - cd.g.msInMin * gap), author));
+        comment = findById(
+          Comment.generateId(new Date(date.getTime() - cd.g.msInMin * gap), author)
+        );
       }
     }
 

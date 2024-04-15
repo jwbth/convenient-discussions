@@ -9,6 +9,7 @@ import controller from './controller';
 import settings from './settings';
 import { areObjectsEqual, calculateWordOverlap, generateFixedPosTimestamp, spacesToUnderlines } from './utils-general';
 import { getExtendedRect, getVisibilityByRects } from './utils-window';
+import visits from './visits';
 
 export default {
   /**
@@ -30,9 +31,16 @@ export default {
     controller
       .on('scroll', this.maybeUpdateVisibility.bind(this));
     subscriptions
-      .on('processed', () => {
-        this.addSubscribeButtons();
-      });
+      .on('processed', this.addSubscribeButtons.bind(this));
+    visits
+      .on('processed', this.updateNewCommentsData.bind(this));
+
+    if (this.improvePerformance) {
+      // Unhide when the user opens a search box to allow searching the full page.
+      $(window)
+        .on('focus', this.maybeUpdateVisibility.bind(this))
+        .on('blur', this.maybeUnhideAll.bind(this));
+    }
   },
 
   /**

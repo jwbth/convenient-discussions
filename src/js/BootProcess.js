@@ -19,6 +19,7 @@ import processFragment from './processFragment';
 import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import toc from './toc';
+import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
 import { handleApiReject, saveOptions } from './utils-api';
 import { definedAndNotNull, sleep } from './utils-general';
@@ -78,7 +79,9 @@ function processAndRemoveDtElements(elements, bootProcess) {
     if (!bootProcess.isFirstRun()) {
       dtMarkupHavenElement = controller.$content.children('.cd-dtMarkupHaven')[0];
     }
-    if (!dtMarkupHavenElement) {
+    if (dtMarkupHavenElement) {
+      dtMarkupHavenElement.innerHTML = '';
+    } else {
       dtMarkupHavenElement = document.createElement('span');
       dtMarkupHavenElement.className = 'cd-dtMarkupHaven cd-hidden';
       controller.$content.append(dtMarkupHavenElement);
@@ -252,9 +255,23 @@ class BootProcess {
     }
     this.subscriptions = controller.getSubscriptionsInstance();
     if (this.firstRun) {
+      // The order of the subsequent calls matter because modules depend on others in a certain way.
+
+      visits.init();
+
+      // A little dirty code here - `sectionRegistry.init()` is placed above `toc.init()` and
+      // `commentRegistry.init()`, to add event handlers for its methods quicker than
+      // `sectionRegistry` and `toc` do for theirs:
+      // 1. `sectionRegistry.updateNewCommentsData()` sets `Section#newComments` that is later used
+      //    in `toc.addCommentCount()`.
+      // 2. `sectionRegistry.updateNewCommentsData()` must set `Section#newComments` before
+      //    `commentRegistry.registerSeen()` registers them as seen (= not new, in section's
+      //    terminology).
+      sectionRegistry.init(this.subscriptions);
+
+      updateChecker.init();
       toc.init(this.subscriptions);
       commentRegistry.init();
-      sectionRegistry.init(this.subscriptions);
       commentFormRegistry.init();
       LiveTimestamp.init();
       CommentForm.init();
@@ -349,10 +366,9 @@ class BootProcess {
   /**
    * Parse the sections and modify some parts of them.
    *
-   * @param {Promise} [visitsPromise]
    * @private
    */
-  processSections(visitsPromise) {
+  processSections() {
     this.targets
       .filter((target) => target.type === 'heading')
       .forEach((heading) => {
@@ -367,7 +383,7 @@ class BootProcess {
 
     if (this.subscriptions.getType() === 'dt') {
       // Can't do it earlier: we don't have section DT IDs until now.
-      this.subscriptions.loadToTalkPage(this, visitsPromise);
+      this.subscriptions.loadToTalkPage(this);
     }
 
     sectionRegistry.setup();
@@ -451,7 +467,7 @@ class BootProcess {
     $comment.textSelection('setContents', '');
 
     // DT's comment form produces errors after opening a CD's comment form because of hard code in
-    // WikiEditor that relies on $('#wpTextbox1'). We can't simply delete DT's dummy textarea
+    // WikiEditor that relies on `$('#wpTextbox1')`. We can't simply delete DT's dummy textarea
     // because it can show up unexpectedly right before WikiEditor's code is executed where it's
     // hard for us to wedge in.
     if ($('#wpTextbox1').length) {
@@ -619,14 +635,13 @@ class BootProcess {
       should also make sure we only add this functionality once.
     */
 
-    let visitsPromise;
     if (pageRegistry.getCurrent().exists()) {
       if (pageRegistry.getCurrent().isActive()) {
-        visitsPromise = visits.get(this, true);
+        visits.load(this, true);
       }
 
       if (this.subscriptions.getType() === 'legacy') {
-        this.subscriptions.loadToTalkPage(this, visitsPromise, true);
+        this.subscriptions.loadToTalkPage(this, true);
       }
 
       /**
@@ -650,11 +665,11 @@ class BootProcess {
 
     if (pageRegistry.getCurrent().exists()) {
       debug.startTimer('process sections');
-      this.processSections(visitsPromise);
+      this.processSections();
       debug.stopTimer('process sections');
     } else {
       if (this.subscriptions.getType() === 'dt') {
-        this.subscriptions.loadToTalkPage(this, visitsPromise);
+        this.subscriptions.loadToTalkPage(this);
       }
     }
 

@@ -1,18 +1,19 @@
 import LZString from 'lz-string';
 
 import CdError from './CdError';
-import Comment from './Comment';
 import cd from './cd';
 import commentRegistry from './commentRegistry';
-import navPanel from './navPanel';
-import sectionRegistry from './sectionRegistry';
 import settings from './settings';
-import toc from './toc';
-import initUpdateChecker from './updateChecker';
 import userRegistry from './userRegistry';
 import { getUserInfo, saveLocalOption } from './utils-api';
+import { mixEventEmitterIntoObject } from './utils-oojs';
 
 export default {
+  init() {
+    // Do it here because `OO.EventEmitter` can be unavailable when this module is first imported.
+    mixEventEmitterIntoObject(this);
+  },
+
   /**
    * Request the pages visits data from the server.
    *
@@ -24,7 +25,7 @@ export default {
    * @param {import('./BootProcess').default} [bootProcess]
    * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
    */
-  async get(bootProcess, reuse = false) {
+  async load(bootProcess, reuse = false) {
     if (!userRegistry.getCurrent().isRegistered()) return;
 
     try {
@@ -41,52 +42,26 @@ export default {
     this.data[articleId] ||= [];
     this.currentPageData = this.data[articleId];
 
-    this.process(bootProcess);
+    this.process(bootProcess.passedData.markAsRead);
   },
 
   /**
-   * Highlight new comments and update the navigation panel.
+   * Process the visits data and emit events.
    *
-   * @param {import('./BootProcess').default} [bootProcess]
+   * @param {boolean} markAsReadRequested
    * @fires newCommentsHighlighted
    * @private
    */
-  async process(bootProcess) {
+  async process(markAsReadRequested) {
     const currentTime = Math.floor(Date.now() / 1000);
 
-    this.update(currentTime, bootProcess.passedData.markAsRead);
+    this.update(currentTime, markAsReadRequested);
 
-    // FIXME: decouple the following
+    const timeConflict = this.currentPageData.length ?
+      commentRegistry.initNewAndSeen(this.currentPageData, currentTime) :
+      false;
 
-    let timeConflict = false;
-    if (this.currentPageData.length) {
-      commentRegistry.getAll().forEach((c) => {
-        const commentTimeConflict = c.initNewAndSeen(
-          this.currentPageData,
-          currentTime,
-          bootProcess.passedData.unseenCommentIds?.some((id) => id === c.id) || false
-        );
-        timeConflict ||= commentTimeConflict;
-      });
-
-      commentRegistry.configureAndAddLayers((c) => c.isNew);
-
-      // If all the comments on the page are unseen, don't add them to the TOC - the user would
-      // definitely prefer to read the names of the topics easily. (But still consider them new -
-      // otherwise the user can be confused, especially if there are few topics on an unpopular
-      // page.)
-      if (
-        commentRegistry.getAll().filter((c) => c.isSeen === false || !c.date).length !==
-        commentRegistry.getCount()
-      ) {
-        toc.addNewComments(
-          Comment.groupBySection(commentRegistry.getAll().filter((c) => c.isSeen === false)),
-          bootProcess
-        );
-      }
-    }
-
-    // (Nearly) eliminate the probability that we will wrongfully mark a seen comment as unseen/new
+    // (Nearly) eliminate the possibility that we will wrongfully mark a seen comment as unseen/new
     // at the next page load by adding a minute to the visit time if there is at least one comment
     // posted at the same minute. If instead we required the comment time to be less than the
     // current time to be highlighted, it would result in missed comments if the comment was posted
@@ -103,29 +78,7 @@ export default {
 
     this.save();
 
-    // Should be before `commentRegistry.registerSeen()` to include all new comments in the
-    // metadata, even those currently inside the viewport.
-    sectionRegistry.updateNewCommentsData();
-
-    // Should be below `sectionRegistry.updateNewCommentsData()` - `Section#newComments` is set
-    // there. TODO: keep the scrolling position even if adding the comment count moves the content.
-    // (Currently this is done in `toc.addNewComments()`.)
-    toc.addCommentCount();
-
-    commentRegistry.registerSeen();
-    navPanel.fill();
-    initUpdateChecker(
-      this.currentPageData.length >= 1 ?
-        Number(this.currentPageData[this.currentPageData.length - 1]) :
-        undefined,
-      (
-        (
-          bootProcess.passedData.wasCommentFormSubmitted &&
-          bootProcess.passedData.commentIds?.[0]
-        ) ||
-        undefined
-      )
-    );
+    this.emit('processed', this.currentPageData);
 
     /**
      * New comments have been highlighted.

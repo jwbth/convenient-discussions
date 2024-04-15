@@ -27,23 +27,19 @@ class Subscriptions {
    * Do everything {@link .load} does and also perform manipulations with the talk page.
    *
    * @param {import('./BootProcess').default} [bootProcess]
-   * @param {Promise} [visitsPromise]
    * @param {...*} [args]
    */
-  async loadToTalkPage(bootProcess, visitsPromise, ...args) {
+  async loadToTalkPage(bootProcess, ...args) {
     await this.load(bootProcess, ...args);
 
-    this.process(bootProcess, visitsPromise);
+    this.process(bootProcess);
   }
 
   /**
    * Process subscriptions when they are {@link .loadToTalkPage loaded to a talk page}.
-   *
-   * @param {import('./BootProcess').default} [bootProcess]
-   * @param {Promise} [visitsPromise]
    */
-  process(bootProcess, visitsPromise) {
-    this.emit('processed', visitsPromise);
+  process() {
+    this.emit('processed');
   }
 
   /**
