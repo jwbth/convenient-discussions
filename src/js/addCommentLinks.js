@@ -12,7 +12,6 @@ import controller from './controller';
 import init from './init';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
-import userRegistry from './userRegistry';
 import { definedAndNotNull, generatePageNamePattern, isCommentEdit, isProbablyTalkPage, isUndo, removeDirMarks, spacesToUnderlines } from './utils-general';
 import { initDayjs, parseTimestamp } from './utils-timestamp';
 
@@ -38,7 +37,7 @@ async function initialize() {
   await settings.init();
 
   const requests = [...init.getSiteData()];
-  if (userRegistry.getCurrent().isRegistered() && !settings.get('useTopicSubscription')) {
+  if (cd.user.isRegistered() && !settings.get('useTopicSubscription')) {
     // Loading the subscriptions is not critical, as opposed to messages, so we catch the possible
     // error, not letting it be caught by the try/catch block.
     subscriptions = controller.getSubscriptionsInstance();
@@ -491,7 +490,7 @@ function processHistory($content) {
   init.timestampParsingTools('user');
   if (cd.g.uiTimezone === null) return;
 
-  const link = pageRegistry.getCurrent().getUrl();
+  const link = cd.page.getUrl();
   [
     ...$content[0]
       .querySelectorAll('#pagehistory > li, #pagehistory > .mw-contributions-list > li:not(.mw-tag-mw-new-redirect)')

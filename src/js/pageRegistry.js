@@ -12,7 +12,6 @@ import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
 import sectionRegistry from './sectionRegistry';
-import userRegistry from './userRegistry';
 import { handleApiReject, requestInBackground } from './utils-api';
 import { areObjectsEqual, isProbablyTalkPage, mergeRegexps } from './utils-general';
 import { parseTimestamp } from './utils-timestamp';
@@ -562,7 +561,7 @@ export class Page {
         notminor: !customOptions.minor,
 
         // Should be `undefined` instead of `null`, otherwise will be interepreted as a string.
-        tags: userRegistry.getCurrent().isRegistered() && cd.config.tagName || undefined,
+        tags: cd.user.isRegistered() && cd.config.tagName || undefined,
 
         ...cd.g.apiErrorFormatHtml,
       }, customOptions)

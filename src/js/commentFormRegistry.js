@@ -358,7 +358,7 @@ export default {
       return commentRegistry.getById(targetData.id);
     } else {  // `data.mode === 'addSection'` or `targetData === null`
       // Page
-      return pageRegistry.getCurrent();
+      return cd.page;
     }
   },
 

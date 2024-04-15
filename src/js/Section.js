@@ -11,7 +11,6 @@ import pageRegistry from './pageRegistry';
 import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import toc from './toc';
-import userRegistry from './userRegistry';
 import { handleApiReject } from './utils-api';
 import { defined, flat, getHeadingLevel, underlinesToSpaces, unique } from './utils-general';
 import { formatDate } from './utils-timestamp';
@@ -63,7 +62,7 @@ class Section extends SectionSkeleton {
      */
     this.sourcePage = this.sourcePageName ?
       pageRegistry.get(this.sourcePageName) :
-      pageRegistry.getCurrent();
+      cd.page;
 
     delete this.sourcePageName;
 
@@ -83,7 +82,7 @@ class Section extends SectionSkeleton {
      * @type {boolean}
      */
     this.isActionable = (
-      pageRegistry.getCurrent().isActive() &&
+      cd.page.isActive() &&
       !controller.getClosedDiscussions().some((el) => el.contains(this.headingElement)) &&
       !this.isTranscludedFromTemplate
     );
@@ -340,7 +339,7 @@ class Section extends SectionSkeleton {
    * @fires subscribeButtonAdded
    */
   addSubscribeButton() {
-    if (!this.subscribeId || pageRegistry.getCurrent().isArchivePage()) return;
+    if (!this.subscribeId || cd.page.isArchivePage()) return;
 
     /**
      * Subscription state of the section. Currently, `true` stands for "subscribed", `false` for
@@ -408,7 +407,7 @@ class Section extends SectionSkeleton {
     return (
       this.level === 2 &&
       !this.isTranscludedFromTemplate &&
-      (pageRegistry.getCurrent().isActive() || pageRegistry.getCurrent().isCurrentArchive())
+      (cd.page.isActive() || cd.page.isCurrentArchive())
     );
   }
 
@@ -780,7 +779,7 @@ class Section extends SectionSkeleton {
         element,
         buttonElement: element.firstChild,
         iconElement: element.querySelector('.oo-ui-iconElement-icon'),
-        href: `${pageRegistry.getCurrent().getUrl()}#${this.id}`,
+        href: `${cd.page.getUrl()}#${this.id}`,
         action: (e) => {
           this.copyLink(e);
         },
@@ -1376,7 +1375,7 @@ class Section extends SectionSkeleton {
       queryTimestamp,
     });
 
-    Object.assign(pageRegistry.getCurrent(), {
+    Object.assign(cd.page, {
       redirectTarget,
       realName: redirectTarget || this.name,
     });
@@ -1601,7 +1600,7 @@ class Section extends SectionSkeleton {
    * @returns {string}
    */
   getUrl(permanent) {
-    return pageRegistry.getCurrent().getDecodedUrlWithFragment(this.id, permanent);
+    return cd.page.getDecodedUrlWithFragment(this.id, permanent);
   }
 
   /**
@@ -1659,10 +1658,7 @@ class Section extends SectionSkeleton {
   ensureSubscribeIdPresent(timestamp) {
     if (!this.useTopicSubscription || this.subscribeId) return;
 
-    this.subscribeId = sectionRegistry.generateDtSubscriptionId(
-      userRegistry.getCurrent().getName(),
-      timestamp
-    );
+    this.subscribeId = sectionRegistry.generateDtSubscriptionId(cd.user.getName(), timestamp);
   }
 
   /**

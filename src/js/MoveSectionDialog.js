@@ -158,9 +158,7 @@ class MoveSectionDialog extends ProcessDialog {
         excludeCurrentPage: true,
         showMissing: false,
         showSuggestionsOnFocus: false,
-        value: pageRegistry.getCurrent().isArchivePage() ?
-          pageRegistry.getCurrent().getArchivedPage().name :
-          '',
+        value: cd.page.isArchivePage() ? cd.page.getArchivedPage().name : '',
         validate: () => {
           const title = this.controls.title.input.getMWTitle();
           const page = title && pageRegistry.get(title);
@@ -184,7 +182,7 @@ class MoveSectionDialog extends ProcessDialog {
       if (cd.config.getMoveSourcePageCode || cd.config.getMoveTargetPageCode) {
         this.controls.keepLink = createCheckboxField({
           value: 'keepLink',
-          selected: !pageRegistry.getCurrent().isArchivePage(),
+          selected: !cd.page.isArchivePage(),
           label: cd.s('msd-keeplink'),
         });
       }

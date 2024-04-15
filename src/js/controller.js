@@ -25,7 +25,6 @@ import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import toc from './toc';
 import updateChecker from './updateChecker';
-import userRegistry from './userRegistry';
 import { getUserInfo } from './utils-api';
 import { defined, definedAndNotNull, flat, getLastArrayElementOrSelf, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
 import { mixEventEmitterIntoObject } from './utils-oojs';
@@ -145,7 +144,7 @@ export default {
     this.mutationObserver?.disconnect();
     commentRegistry.reset();
     sectionRegistry.reset();
-    pageRegistry.getCurrent().forgetCommentForm('addSection');
+    cd.page.forgetCommentForm('addSection');
     this.content = {};
     this.addedCommentCount = 0;
     this.areRelevantCommentsAdded = false;
@@ -934,7 +933,7 @@ export default {
     }
 
     e.preventDefault();
-    pageRegistry.getCurrent().addSection(undefined, preloadConfig, newTopicOnTop);
+    cd.page.addSection(undefined, preloadConfig, newTopicOnTop);
   },
 
   /**
@@ -1196,7 +1195,7 @@ export default {
     });
 
     try {
-      const parseData = await pageRegistry.getCurrent().parse(null, false, true);
+      const parseData = await cd.page.parse(null, false, true);
       bootProcess.passedData.html = parseData.text;
       bootProcess.passedData.toc = parseData.sections;
       bootProcess.passedData.hideToc = parseData.hidetoc;
@@ -1263,7 +1262,7 @@ export default {
   highlightMentions($content) {
     if (!$content.is('#mw-content-text, .cd-comment-part')) return;
 
-    const currentUserName = userRegistry.getCurrent().getName();
+    const currentUserName = cd.user.getName();
     const excludeSelector = [
       settings.get('reformatComments') ?
         'cd-comment-author' :
@@ -1282,7 +1281,7 @@ export default {
         return (
           cd.g.userLinkRegexp.test(this.title) &&
           !this.closest(excludeSelector) &&
-          Parser.processLink(this)?.userName === userRegistry.getCurrent().getName()
+          Parser.processLink(this)?.userName === cd.user.getName()
         );
       })
       .each((i, link) => {
@@ -1328,7 +1327,7 @@ export default {
     // initiated with adding new CSS) unfortunately.
     setInterval(this.handlePageMutate.bind(this), 1000);
 
-    if (pageRegistry.getCurrent().isCommentable()) {
+    if (cd.page.isCommentable()) {
       $(document).on('keydown', this.handleGlobalKeyDown.bind(this));
     }
 
@@ -1398,8 +1397,8 @@ export default {
     // Revision navigation
     $('.mw-revision').remove();
 
-    $('#firstHeading').text(pageRegistry.getCurrent().name);
-    document.title = cd.mws('pagetitle', pageRegistry.getCurrent().name);
+    $('#firstHeading').text(cd.page.name);
+    document.title = cd.mws('pagetitle', cd.page.name);
     this.originalPageTitle = document.title;
   },
 
@@ -1449,7 +1448,7 @@ export default {
     }
 
     if (methodName) {
-      history[methodName](history.state, '', pageRegistry.getCurrent().getUrl(newQuery));
+      history[methodName](history.state, '', cd.page.getUrl(newQuery));
     }
   },
 
@@ -1584,7 +1583,7 @@ export default {
     );
     const content = {
       fragment,
-      wikilink: `[[${pageRegistry.getCurrent().name}#${fragment}]]`,
+      wikilink: `[[${cd.page.name}#${fragment}]]`,
       currentPageWikilink: `[[#${fragment}]]`,
       permanentWikilink: `[[${permalinkSpecialPageName}#${fragment}]]`,
       link: object.getUrl(),
@@ -1795,7 +1794,7 @@ export default {
 
     let body;
     const comment = filteredComments[0];
-    const currentPageName = pageRegistry.getCurrent().name;
+    const currentPageName = cd.page.name;
     if (filteredComments.length === 1) {
       if (comment.isToMe) {
         const where = comment.section?.headline ?
@@ -1952,7 +1951,7 @@ export default {
       commentRegistry.getAll().every((comment) => !comment.willFlashChangedOnSight) &&
       this.lastCheckedRevisionId
     ) {
-      pageRegistry.getCurrent().markAsRead(this.lastCheckedRevisionId);
+      cd.page.markAsRead(this.lastCheckedRevisionId);
     }
   },
 
@@ -2021,7 +2020,7 @@ export default {
         } catch (e) {
           return false;
         }
-        if (page !== pageRegistry.getCurrent()) {
+        if (page !== cd.page) {
           return false;
         }
         if ($button.is('a')) {

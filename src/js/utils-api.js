@@ -54,7 +54,7 @@ export function splitIntoBatches(arr) {
   // the `mediawiki.Title` module is loaded.
   let currentUserRights;
   try {
-    currentUserRights = userRegistry.getCurrent().getRights();
+    currentUserRights = cd.user.getRights();
   } catch {
     // Can throw a error when `cd.g.phpCharToUpper` is undefined, because it's set when the modules
     // are ready.
@@ -168,7 +168,7 @@ export function getUserInfo(reuse = false) {
       const visits = options[cd.g.visitsOptionName];
       const subscriptions = options[cd.g.subscriptionsOptionName];
       try {
-        userRegistry.getCurrent().setRights(rights);
+        cd.user.setRights(rights);
       } catch {
         // Can throw a error when `cd.g.phpCharToUpper` is undefined, because it's set when the
         // modules are ready

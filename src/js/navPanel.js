@@ -28,7 +28,7 @@ export default {
     this.modifyToc = settings.get('modifyToc');
     this.highlightNewInterval = settings.get('highlightNewInterval');
 
-    if (pageRegistry.getCurrent().isActive()) {
+    if (cd.page.isActive()) {
       // Can be mounted not only on first parse, if using RevisionSlider, for example.
       if (!this.isMounted()) {
         this.mount();

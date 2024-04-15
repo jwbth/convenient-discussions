@@ -25,7 +25,7 @@ class LegacySubscriptions extends Subscriptions {
    * @returns {Promise.<undefined>}
    */
   async load(bootProcess, reuse = false) {
-    if (!userRegistry.getCurrent().isRegistered()) return;
+    if (!cd.user.isRegistered()) return;
 
     // `mw.user.options` is not used even on first run because it appears to be cached sometimes
     // which can be critical for determining subscriptions.
@@ -59,7 +59,7 @@ class LegacySubscriptions extends Subscriptions {
    * @param {...*} [args]
    */
   process(...args) {
-    if (pageRegistry.getCurrent().exists()) {
+    if (cd.page.exists()) {
       this.cleanUp();
     }
 

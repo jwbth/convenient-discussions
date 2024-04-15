@@ -586,7 +586,7 @@ export default {
    * @param {object} [settings=this.values] Settings to save.
    */
   async save(settings = this.values) {
-    if (!userRegistry.getCurrent().isRegistered()) return;
+    if (!cd.user.isRegistered()) return;
 
     if (cd.config.useGlobalPreferences) {
       const globalSettings = {};

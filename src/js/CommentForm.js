@@ -212,7 +212,7 @@ class CommentForm {
   setup(initialState) {
     this.adjustLabels();
 
-    if (!userRegistry.getCurrent().isRegistered() && !mw.user.isTemp()) {
+    if (!cd.user.isRegistered() && !mw.user.isTemp()) {
       this.showMessage(cd.sParse('error-anoneditwatning'), {
         type: 'warning',
         name: 'anonEditWarning',
@@ -315,7 +315,7 @@ class CommentForm {
      */
     this.targetPage = this.targetSection ?
       this.targetSection.getSourcePage() :
-      pageRegistry.getCurrent();
+      cd.page;
   }
 
   /**
@@ -425,7 +425,7 @@ class CommentForm {
    * @private
    */
   createCheckboxes(initialState) {
-    if (userRegistry.getCurrent().isRegistered()) {
+    if (cd.user.isRegistered()) {
       if (this.mode === 'edit') {
         /**
          * Minor change checkbox field.
@@ -482,7 +482,7 @@ class CommentForm {
           (
             (this.watchOnReply && this.mode !== 'edit') ||
             $('.mw-watchlink a[href*="action=unwatch"]').length ||
-            mw.user.options.get(pageRegistry.getCurrent().exists() ? 'watchdefault' : 'watchcreations')
+            mw.user.options.get(cd.page.exists() ? 'watchdefault' : 'watchcreations')
           )
         ),
         label: cd.s('cf-watch'),
@@ -678,7 +678,7 @@ class CommentForm {
       tabIndex: this.getTabIndex(31),
     });
 
-    if (userRegistry.getCurrent().isRegistered()) {
+    if (cd.user.isRegistered()) {
       /**
        * Script settings button.
        *
@@ -1261,7 +1261,7 @@ class CommentForm {
   async addEditNotices() {
     let result;
     try {
-      const title = pageRegistry.getCurrent().title.replace(/\//g, '-');
+      const title = cd.page.title.replace(/\//g, '-');
 
       // Just making a parse request with both edit intro and edit notices is simpler than making
       // two requests for each of them.
@@ -1275,7 +1275,7 @@ class CommentForm {
           `<div class="cd-editnotice">{{MediaWiki:Editnotice-${cd.g.namespaceNumber}}}</div>` +
           `<div class="cd-editnotice">{{MediaWiki:Editnotice-${cd.g.namespaceNumber}-${title}}}</div>`
         ),
-        { title: pageRegistry.getCurrent().name }
+        { title: cd.page.name }
       );
     } catch {
       // TODO: Some error message? (But in most cases there are no edit notices anyway, and if the
@@ -1925,7 +1925,7 @@ class CommentForm {
 
     let pageOwner;
     if (cd.g.namespaceNumber === 3) {
-      const userName = (pageRegistry.getCurrent().title.match(/^([^/]+)/) || [])[0];
+      const userName = (cd.page.title.match(/^([^/]+)/) || [])[0];
       if (userName) {
         pageOwner = userRegistry.get(userName);
       }
@@ -1935,13 +1935,13 @@ class CommentForm {
       .concat(pageOwner)
       .filter(defined)
       .sort((u1, u2) => u2.isRegistered() - u1.isRegistered() || (u2.name > u1.name ? -1 : 1))
-      .filter((u) => u !== userRegistry.getCurrent())
+      .filter((u) => u !== cd.user)
       .map((u) => u.name);
 
     // Move the addressee to the beginning of the user list
     if (this.targetComment) {
       for (let с = this.targetComment; с; с = с.getParent()) {
-        if (с.author !== userRegistry.getCurrent()) {
+        if (с.author !== cd.user) {
           if (!с.author.isRegistered()) break;
           defaultUserNames.unshift(с.author.getName());
           break;
@@ -2272,7 +2272,7 @@ class CommentForm {
     switch (type) {
       case 'parse': {
         const editUrl = ['locateComment', 'findPlace', 'locateSection'].includes(code) ?
-          pageRegistry.getCurrent().getUrl({
+          cd.page.getUrl({
             action: 'edit',
             ...(this.targetSection ? {} : { section: 0 }),
           }) :
@@ -2459,7 +2459,7 @@ class CommentForm {
 
     if (!this.newSectionApi) {
       try {
-        await this.target.loadCode(this.mode === 'addSection' ? !pageRegistry.getCurrent().exists() : this);
+        await this.target.loadCode(this.mode === 'addSection' ? !cd.page.exists() : this);
       } catch (e) {
         if (e instanceof CdError) {
           this.handleError(
@@ -2803,7 +2803,7 @@ class CommentForm {
   async reloadPage(bootData, operation) {
     this.unregister();
 
-    if (!pageRegistry.getCurrent().exists()) {
+    if (!cd.page.exists()) {
       const url = new URL(location.href);
       url.searchParams.delete('cdaddtopic');
       url.searchParams.delete('section');
@@ -2868,8 +2868,7 @@ class CommentForm {
         condition: (
           !doDelete &&
           !this.commentInput.getValue().trim() &&
-          !cd.config.dontConfirmEmptyCommentPages
-            .some((regexp) => pageRegistry.getCurrent().name.match(regexp))
+          !cd.config.dontConfirmEmptyCommentPages.some((regexp) => cd.page.name.match(regexp))
         ),
         confirmation: () => confirm(cd.s('cf-confirm-empty')),
       },
@@ -3029,10 +3028,7 @@ class CommentForm {
         let originalHeadline;
         let isHeadlineAltered;
         if (this.useTopicSubscription) {
-          subscribeId = sectionRegistry.generateDtSubscriptionId(
-            userRegistry.getCurrent().getName(),
-            editTimestamp
-          );
+          subscribeId = sectionRegistry.generateDtSubscriptionId(cd.user.getName(), editTimestamp);
         } else {
           subscribeId = headline;
           if (this.sectionOpeningCommentEdited) {
@@ -3083,11 +3079,11 @@ class CommentForm {
 
     return Comment.generateId(
       date,
-      userRegistry.getCurrent().getName(),
+      cd.user.getName(),
       commentRegistry.getAll()
         .slice(0, this.target.getCommentAboveReply(this)?.index + 1 ?? 0)
         .filter((comment) => (
-          comment.author === userRegistry.getCurrent() &&
+          comment.author === cd.user &&
           comment.date?.getTime() === date.getTime()
         ))
         .map((comment) => comment.id)
@@ -3137,13 +3133,13 @@ class CommentForm {
       $('#ca-watch')
         .attr('id', 'ca-unwatch')
         .find('a')
-        .attr('href', pageRegistry.getCurrent().getUrl({ action: 'unwatch' }));
+        .attr('href', cd.page.getUrl({ action: 'unwatch' }));
     }
     if (!this.watchCheckbox?.isSelected() && $('#ca-unwatch').length) {
       $('#ca-unwatch')
         .attr('id', 'ca-watch')
         .find('a')
-        .attr('href', pageRegistry.getCurrent().getUrl({ action: 'watch' }));
+        .attr('href', cd.page.getUrl({ action: 'watch' }));
     }
 
     if (!doDelete) {
@@ -3157,8 +3153,8 @@ class CommentForm {
 
     // When the edit takes place on another page that is transcluded in the current one, we must
     // purge the current page, otherwise we may get an old version without the submitted comment.
-    if (this.targetPage !== pageRegistry.getCurrent()) {
-      await pageRegistry.getCurrent().purge();
+    if (this.targetPage !== cd.page) {
+      await cd.page.purge();
     }
 
     this.reloadPage(bootData, operation);

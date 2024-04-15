@@ -26,7 +26,7 @@ export default {
    * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
    */
   async load(bootProcess, reuse = false) {
-    if (!userRegistry.getCurrent().isRegistered()) return;
+    if (!cd.user.isRegistered()) return;
 
     try {
       this.data = mw.user.options.get(cd.g.visitsOptionName) !== null || !bootProcess.isFirstRun() ?

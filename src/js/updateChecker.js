@@ -89,7 +89,7 @@ async function processPage(revisionToParseId) {
   const {
     text,
     revid: revisionId,
-  } = await pageRegistry.getCurrent().parse({ oldid: revisionToParseId }, true) || {};
+  } = await cd.page.parse({ oldid: revisionToParseId }, true) || {};
 
   const message = await runWorkerTask({
     type: 'parse',
@@ -131,7 +131,7 @@ async function processPage(revisionToParseId) {
  */
 async function maybeProcessRevisionsAtLoad(previousVisitTime, submittedCommentId) {
   previousVisitRevisionId = (
-    await pageRegistry.getCurrent().getRevisions({
+    await cd.page.getRevisions({
       rvprop: ['ids'],
       rvstart: new Date(previousVisitTime * 1000).toISOString(),
       rvlimit: 1,
@@ -302,7 +302,7 @@ function mapComments(currentComments, otherComments) {
  * @private
  */
 async function checkForUpdates() {
-  if (!pageRegistry.getCurrent().isActive() || controller.isBooting()) return;
+  if (!cd.page.isActive() || controller.isBooting()) return;
 
   // We need a value that wouldn't change during `await`s.
   const documentHidden = document.hidden;
@@ -321,7 +321,7 @@ async function checkForUpdates() {
   }
 
   try {
-    const revisions = await pageRegistry.getCurrent().getRevisions({
+    const revisions = await cd.page.getRevisions({
       rvprop: ['ids'],
       rvlimit: 1,
     }, true);

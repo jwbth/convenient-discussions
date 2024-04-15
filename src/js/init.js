@@ -733,7 +733,7 @@ export default {
         .join()
     );
 
-    if (cd.config.tagName && userRegistry.getCurrent().isRegistered()) {
+    if (cd.config.tagName && cd.user.isRegistered()) {
       cd.g.summaryPostfix = '';
       cd.g.summaryLengthLimit = mw.config.get('wgCommentCodePointLimit');
     } else {

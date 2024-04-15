@@ -69,7 +69,7 @@ export default async function processFragment() {
     });
   }
 
-  if (decodedValue && pageRegistry.getCurrent().isArchivePage()) {
+  if (decodedValue && cd.page.isArchivePage()) {
     const escapedValue = $.escapeSelector(value);
     const escapedDecodedValue = decodedValue && $.escapeSelector(decodedValue);
     const isTargetFound = (
@@ -128,7 +128,7 @@ async function maybeNotifyNotFound() {
     }
   }
 
-  if (pageRegistry.getCurrent().canHaveArchives()) {
+  if (cd.page.canHaveArchives()) {
     searchForNotFoundItem();
   } else {
     mw.notify(wrapHtml(label), {
@@ -175,7 +175,7 @@ async function searchForNotFoundItem() {
       searchQuery += ` OR "${adjustedToken}"`;
     }
   }
-  const archivePrefix = pageRegistry.getCurrent().getArchivePrefix();
+  const archivePrefix = cd.page.getArchivePrefix();
   searchQuery += ` prefix:${archivePrefix}`;
 
   const resp = await controller.getApi().get({

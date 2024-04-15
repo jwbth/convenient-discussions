@@ -14,7 +14,6 @@ import debug from './debug';
 import init from './init';
 import navPanel from './navPanel';
 import pageNav from './pageNav';
-import pageRegistry from './pageRegistry';
 import processFragment from './processFragment';
 import sectionRegistry from './sectionRegistry';
 import settings from './settings';
@@ -623,20 +622,20 @@ class BootProcess {
            into two categories:
         2.1. The page is eligible to create comment forms on. (This includes 404 pages where the
              user could create a section, but excludes archive pages and old revisions.)
-             pageRegistry.getCurrent().isCommentable() reflects this level.
-        2.2. The page exists (not a 404 page). pageRegistry.getCurrent().exists() shows this. (This
-             includes archive pages and old revisions, which are not eligible to create comment
-             forms on.) Such pages are parsed, the page navigation block is added to them.
+             cd.page.isCommentable() reflects this level.
+        2.2. The page exists (not a 404 page). cd.page.exists() shows this. (This includes archive
+             pages and old revisions, which are not eligible to create comment forms on.) Such pages
+             are parsed, the page navigation block is added to them.
         3. The page is active. This means, it's not a 404 page, not an archive page, and not an old
-           revision. pageRegistry.getCurrent().isActive() is true when the page is of this level.
-           The navigation panel is added to such pages, new comments are highlighted.
+           revision. cd.page.isActive() is true when the page is of this level. The navigation panel
+           is added to such pages, new comments are highlighted.
 
       We need to be accurate regarding which functionality should be turned on on which level. We
       should also make sure we only add this functionality once.
     */
 
-    if (pageRegistry.getCurrent().exists()) {
-      if (pageRegistry.getCurrent().isActive()) {
+    if (cd.page.exists()) {
+      if (cd.page.isActive()) {
         visits.load(this, true);
       }
 
@@ -663,7 +662,7 @@ class BootProcess {
       return;
     }
 
-    if (pageRegistry.getCurrent().exists()) {
+    if (cd.page.exists()) {
       debug.startTimer('process sections');
       this.processSections();
       debug.stopTimer('process sections');
@@ -687,7 +686,7 @@ class BootProcess {
     // go in this section.
     debug.startTimer('final code and rendering');
 
-    if (pageRegistry.getCurrent().exists()) {
+    if (cd.page.exists()) {
       // This should be done on rendering stage (would have resulted in unnecessary reflows were it
       // done earlier). Should be above all code that deals with highlightable elements of comments
       // and comment levels as this may alter that.
@@ -701,9 +700,9 @@ class BootProcess {
 
     // Should be below `navPanel.setup()` as `commentFormRegistry.restoreSession()` indirectly calls
     // `navPanel.updateCommentFormButton()` which depends on the navigation panel being mounted.
-    if (pageRegistry.getCurrent().isCommentable()) {
+    if (cd.page.isCommentable()) {
       if (this.firstRun) {
-        pageRegistry.getCurrent().addAddTopicButton();
+        cd.page.addAddTopicButton();
       }
       controller.connectToWildAddTopicButtons();
 
@@ -712,10 +711,10 @@ class BootProcess {
       // detail.
       commentFormRegistry.restoreSession(this.firstRun || this.passedData.isPageReloadedExternally);
 
-      pageRegistry.getCurrent().autoAddSection(this.hideDtNewTopicForm());
+      cd.page.autoAddSection(this.hideDtNewTopicForm());
     }
 
-    if (pageRegistry.getCurrent().exists()) {
+    if (cd.page.exists()) {
       // Should be below the comment form restoration for threads to be expanded correctly and also
       // to avoid repositioning threads after the addition of comment forms. Should be above the
       // viewport position restoration as it may shift the layout (if the viewport position
@@ -744,7 +743,7 @@ class BootProcess {
       }
       this.processTargets();
 
-      if (!pageRegistry.getCurrent().isActive()) {
+      if (!cd.page.isActive()) {
         toc.addCommentCount();
       }
 
@@ -802,7 +801,7 @@ class BootProcess {
 
     this.debugLog();
 
-    if (this.firstRun && pageRegistry.getCurrent().isActive() && userRegistry.getCurrent().isRegistered()) {
+    if (this.firstRun && cd.page.isActive() && cd.user.isRegistered()) {
       this.showPopups();
     }
   }

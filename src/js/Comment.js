@@ -13,7 +13,6 @@ import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
-import pageRegistry from './pageRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
 import { handleApiReject, loadUserGenders, parseCode } from './utils-api';
@@ -67,7 +66,7 @@ class Comment extends CommentSkeleton {
      * @type {boolean}
      */
     this.isActionable = (
-      pageRegistry.getCurrent().isActive() &&
+      cd.page.isActive() &&
       !controller.getClosedDiscussions().some((el) => el.contains(this.elements[0]))
     );
 
@@ -588,14 +587,7 @@ class Comment extends CommentSkeleton {
    * @private
    */
   addThankButton() {
-    if (
-      !userRegistry.getCurrent().isRegistered() ||
-      !this.author.isRegistered() ||
-      !this.date ||
-      this.isOwn
-    ) {
-      return;
-    }
+    if (!cd.user.isRegistered() || !this.author.isRegistered() || !this.date || this.isOwn) return;
 
     this.constructor.thanksStorage ||= (new StorageItem('thanks'))
       // FIXME: Remove `|| entry.thankUnixTime` after June 2024
@@ -2103,7 +2095,7 @@ class Comment extends CommentSkeleton {
         },
       });
 
-    const diffLink = type === 'deleted' || this.getSourcePage() !== pageRegistry.getCurrent() ?
+    const diffLink = type === 'deleted' || this.getSourcePage() !== cd.page ?
       undefined :
       new Button({
         label: cd.s('comment-diff'),
@@ -2504,10 +2496,7 @@ class Comment extends CommentSkeleton {
       if (wordOverlap < 1 && diffOriginalText.includes('{{')) {
         try {
           diffOriginalText = $('<div>')
-            .append(
-              (await parseCode(diffOriginalText, { title: pageRegistry.getCurrent().name }))
-                .html
-            )
+            .append((await parseCode(diffOriginalText, { title: cd.page.name })).html)
             .cdGetText();
         } catch {
           throw new CdError({
@@ -2586,9 +2575,7 @@ class Comment extends CommentSkeleton {
   async getDiffLink(format = 'standard') {
     const edit = await this.findEdit();
     if (format === 'standard') {
-      const urlEnding = decodeURI(
-        pageRegistry.getCurrent().getArchivedPage().getUrl({ diff: edit.revid })
-      );
+      const urlEnding = decodeURI(cd.page.getArchivedPage().getUrl({ diff: edit.revid }));
       return `${cd.g.server}${urlEnding}`;
     } else if (format === 'short') {
       return `${cd.g.server}/?diff=${edit.revid}`;
@@ -3192,7 +3179,7 @@ class Comment extends CommentSkeleton {
    * @returns {import('./pageRegistry').Page}
    */
   getSourcePage() {
-    return this.section ? this.section.getSourcePage() : pageRegistry.getCurrent();
+    return this.section ? this.section.getSourcePage() : cd.page;
   }
 
   /**
@@ -3223,7 +3210,7 @@ class Comment extends CommentSkeleton {
    * @returns {string}
    */
   getUrl(permanent) {
-    return pageRegistry.getCurrent().getDecodedUrlWithFragment(this.dtId || this.id, permanent);
+    return cd.page.getDecodedUrlWithFragment(this.dtId || this.id, permanent);
   }
 
   /**

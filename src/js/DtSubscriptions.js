@@ -3,10 +3,8 @@ import CdError from './CdError';
 import Subscriptions from './Subscriptions';
 import cd from './cd';
 import controller from './controller';
-import pageRegistry from './pageRegistry';
 import sectionRegistry from './sectionRegistry';
 import settings from './settings';
-import userRegistry from './userRegistry';
 import { handleApiReject, splitIntoBatches } from './utils-api';
 import { spacesToUnderlines, unique } from './utils-general';
 
@@ -22,7 +20,7 @@ class DtSubscriptions extends Subscriptions {
    * @returns {Promise.<undefined>}
    */
   async load() {
-    if (!userRegistry.getCurrent().isRegistered()) return;
+    if (!cd.user.isRegistered()) return;
 
     const title = spacesToUnderlines(mw.config.get('wgTitle'));
     this.pageSubscribeId ||= `p-topics-${cd.g.namespaceNumber}:${title}`;
@@ -127,7 +125,7 @@ class DtSubscriptions extends Subscriptions {
     try {
       await controller.getApi().postWithEditToken({
         action: 'discussiontoolssubscribe',
-        page: pageRegistry.getCurrent().name + (id ? `#${id}` : ''),
+        page: cd.page.name + (id ? `#${id}` : ''),
         commentname: subscribeId,
         subscribe,
       }).catch(handleApiReject);
