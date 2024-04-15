@@ -278,18 +278,18 @@ export default {
     var pre = '{{цс|1=';
     var post = '';
     // if (isMultiline) {
-      if (author) {
-        post += '|2=' + author;
-      }
-      if (timestamp) {
-        post += '|3=' + timestamp;
-      }
-      if (dtId) {
-        post += '|4=' + dtId;
-      }
-      post += '}}';
+    //   if (author) {
+    //     post += '|2=' + author;
+    //   }
+    //   if (timestamp) {
+    //     post += '|3=' + timestamp;
+    //   }
+    //   if (dtId) {
+    //     post += '|4=' + dtId;
+    //   }
+    //   post += '}}';
     // } else {
-    //   post = '|inline=1}}<br>';
+      post = '|inline=1}}<br>';
     // }
     return [pre, post];
   },

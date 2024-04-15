@@ -213,20 +213,20 @@ export default {
     var pre = '';
     var post = '';
     // if (isMultiline) {
-      pre = '{{tqb|text=';
-      if (author) {
-        post += '|by=' + author;
-      }
-      if (timestamp) {
-        post += '|ts=' + timestamp;
-      }
-      if (dtId) {
-        post += '|id=' + dtId;
-      }
-      post += '}}';
+    //   pre = '{{tqb|text=';
+    //   if (author) {
+    //     post += '|by=' + author;
+    //   }
+    //   if (timestamp) {
+    //     post += '|ts=' + timestamp;
+    //   }
+    //   if (dtId) {
+    //     post += '|id=' + dtId;
+    //   }
+    //   post += '}}';
     // } else {
-    //   pre = '{{tq|1='
-    //   post += '}}<br>';
+      pre = '{{tq|1='
+      post += '}}<br>';
     // }
     return [pre, post];
   },
