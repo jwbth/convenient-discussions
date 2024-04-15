@@ -383,7 +383,16 @@ class CommentSource {
    */
   adjust() {
     this.lineStartIndex = this.startIndex;
-    this.headingMatch = this.code.match(/(^[^]*(?:^|\n))((=+)(.*)\3[ \t\x01\x02]*\n)/);
+
+    // Ignore heading markup inside `<nowiki>`, `<syntaxhighlight>`, etc.
+    this.code = (new TextMasker(this.code))
+      .maskSensitiveCode()
+      .withText((text) => {
+        this.headingMatch = text.match(/(^[^]*(?:^|\n))((=+)(.*)\3[ \t\x01\x02]*\n)/);
+        return text;
+      })
+      .unmask()
+      .getText();
     this.originalIndentation = '';
     this.indentation = '';
 
