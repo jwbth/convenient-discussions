@@ -33,8 +33,10 @@ export default {
   },
 
   /**
-   * _For internal use._ Render the page navigation block. This is done when the page is first
+   * Render the page navigation block. This is done when the page is first
    * loaded.
+   *
+   * @private
    */
   mount() {
     if (cd.g.skin === 'vector-2022') return;
@@ -71,6 +73,8 @@ export default {
 
   /**
    * Update or set the width of the page nagivation blocks.
+   *
+   * @private
    */
   updateWidth() {
     if (!this.isMounted() || !controller.$contentColumn.length) return;
@@ -102,6 +106,7 @@ export default {
    *
    * @param {number} scrollY
    * @returns {object}
+   * @private
    */
   getRelativeOffsets(scrollY) {
     let afterLeadOffset;
@@ -126,6 +131,7 @@ export default {
    *
    * @param {number} afterLeadOffset
    * @param {number} scrollY
+   * @private
    */
   createOrUpdateSkeleton(afterLeadOffset, scrollY) {
     if (afterLeadOffset < cd.g.bodyScrollPaddingTop + 1 || backLinkLocation === 'top') {
@@ -207,6 +213,7 @@ export default {
    * Update the name of the current section and its ancestors.
    *
    * @param {number} firstSectionTop
+   * @private
    */
   updateCurrentSection(firstSectionTop) {
     // `1` as a threshold (also below, in `extendedRect.outerTop < BODY_SCROLL_PADDING_TOP + 1`)
@@ -254,6 +261,8 @@ export default {
 
   /**
    * Update the contents of the page navigation blocks.
+   *
+   * @private
    */
   update() {
     if (!this.isMounted()) return;

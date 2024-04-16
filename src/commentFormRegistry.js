@@ -306,7 +306,7 @@ export default {
             (!target.canBeReplied || target.canBeReplied()) &&
 
             // Check if there is another form already
-            !target[target.getCommentFormPropertyName(data.mode)]
+            !target[CommentForm.getPropertyNameOnTarget(target, data.mode)]
           ) {
             try {
               target[target.getCommentFormMethodName(data.mode)](

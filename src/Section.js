@@ -1048,6 +1048,12 @@ class Section extends SectionSkeleton {
     }
   }
 
+  /**
+   * Add a comment form targeted at this section to the page.
+   *
+   * @param {string} mode
+   * @param {import('./CommentForm').default} commentForm
+   */
   addCommentFormToPage(mode, commentForm) {
     if (mode === 'replyInSection') {
       this.$replyButtonWrapper
@@ -1071,6 +1077,11 @@ class Section extends SectionSkeleton {
     }
   }
 
+  /**
+   * Remove a comment form targeted at this section from the page.
+   *
+   * @param {string} mode
+   */
   removeCommentFormFromPage(mode) {
     if (mode === 'replyInSection') {
       this.replyButton.show();
@@ -1579,7 +1590,7 @@ class Section extends SectionSkeleton {
   /**
    * Get the TOC item for the section if present.
    *
-   * @returns {?import('./toc').TocItem}
+   * @returns {?import('./toc')~TocItem}
    */
   getTocItem() {
     return toc.getItem(this.id);
@@ -1711,6 +1722,12 @@ class Section extends SectionSkeleton {
     });
   }
 
+  /**
+   * If this section is replied to, get the comment that will end up directly above the reply.
+   *
+   * @param {import('./CommentForm').default} commentForm
+   * @returns {Comment}
+   */
   getCommentAboveReply(commentForm) {
     return sectionRegistry.getAll()
       .slice(
@@ -1727,6 +1744,12 @@ class Section extends SectionSkeleton {
       ));
   }
 
+  /**
+   * After the page is reloaded and this instance doesn't relate to a rendered section on the page,
+   * get the instance of this section that does.
+   *
+   * @returns {?Section}
+   */
   findNewSelf() {
     return sectionRegistry.search({
       headline: this.headline,
@@ -1740,16 +1763,14 @@ class Section extends SectionSkeleton {
     })?.section || null;
   }
 
+  /**
+   * Get the name of the section's method creating a comment form with the specified mode.
+   *
+   * @param {string} mode
+   * @returns {string}
+   */
   getCommentFormMethodName(mode) {
     return mode === 'replyInSection' ? 'reply' : mode;
-  }
-
-  getCommentFormPropertyName(mode) {
-    return this.getCommentFormMethodName(mode) + 'Form';
-  }
-
-  forgetCommentForm(mode) {
-    delete this[this.getCommentFormPropertyName(mode)];
   }
 
   /**

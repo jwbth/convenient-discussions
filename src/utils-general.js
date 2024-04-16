@@ -296,7 +296,7 @@ function charAt(string, offset, backwards) {
 
 /**
  * Provide the
- * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Title-method-phpCharToUpper mw.Title.phpCharToUpper}
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.Title.html#.phpCharToUpper mw.Title.phpCharToUpper}
  * functionality in the web worker context.
  *
  * @param {string} char
@@ -557,9 +557,9 @@ export function zeroPad(number, length) {
 
 /**
  * If the argument is an array, return its last element. Otherwise, return the value. (To process
- * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Uri-property-query mw.Uri#query}.
- * If there is more than one parameter with some name, its property becomes an array in
- * `mw.Uri#query`. This is also why `mw.Uri` is used and not native
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.Uri.html#query mw.Uri#query}. If
+ * there is more than one parameter with some name, its property becomes an array in `mw.Uri#query`.
+ * This is also why `mw.Uri` is used and not native
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/URL URL} - in MediaWiki, the second value
  * of the parameter is used, while with `URL` it is the first one.)
  *

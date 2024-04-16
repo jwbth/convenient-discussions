@@ -46,8 +46,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
    * OOUI native method to get the height of the window body.
    *
    * @returns {number}
-   * @see
-   *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Window-method-getBodyHeight
+   * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getBodyHeight
    */
   getBodyHeight() {
     return (
@@ -62,8 +61,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
    * OOUI native method that initializes window contents.
    *
    * @param {...*} [args]
-   * @see
-   *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.ProcessDialog-method-initialize
+   * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#initialize
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
    */
   initialize(...args) {
@@ -97,8 +95,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
    *
    * @param {object} [data] Dialog opening data
    * @returns {external:OO.ui.Process}
-   * @see
-   *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Dialog-method-getSetupProcess
+   * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getSetupProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
    */
   getSetupProcess(data) {
@@ -114,8 +111,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
    *
    * @param {object} data Window opening data
    * @returns {external:OO.ui.Process}
-   * @see
-   *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Window-method-getReadyProcess
+   * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getReadyProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
    * @private
    */
@@ -179,8 +175,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
    *
    * @param {string} action Symbolic name of the action.
    * @returns {external:OO.ui.Process}
-   * @see
-   *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Dialog-method-getActionProcess
+   * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getActionProcess
    * @private
    */
   getActionProcess(action) {

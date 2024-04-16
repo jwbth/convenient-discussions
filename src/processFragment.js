@@ -3,7 +3,7 @@
  * needed, and showing a notification if the target comment or section is not found, optionally
  * searching in the archive.
  *
- * @module fragment
+ * @module processFragment
  */
 
 import Comment from './Comment';
@@ -28,7 +28,7 @@ let searchQuery;
 let searchResults;
 
 /**
- * Perform URL fragment-related tasks.
+ * _For internal use._ Perform URL fragment-related tasks.
  */
 export default async function processFragment() {
   const value = location.hash.slice(1);

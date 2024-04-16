@@ -7,8 +7,6 @@ import { wrapHtml } from './utils-window';
  * Implementation of the subscriptions feature in general terms. It is extended by
  * {@link DtSubscriptions DisussionTools' topic subscription} and
  * {@link LegacySubscriptions CD's legacy section watching}.
- *
- * @module subscriptions
  */
 class Subscriptions {
   /**
@@ -43,8 +41,8 @@ class Subscriptions {
   }
 
   /**
-   * Update the subscription list by adding or removing a subscription. It's a local operation -
-   * nothing is saved to the server.
+   * Update the subscription list by adding or removing a subscription, without saving anything to
+   * the server.
    *
    * @param {string} subscribeId Section's subscribe ID (modern or legacy format).
    * @param {boolean} subscribe Subscribe or unsubscribe.

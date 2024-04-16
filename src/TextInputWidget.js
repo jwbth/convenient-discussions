@@ -3,10 +3,7 @@ import { tweakUserOoUiClass } from './utils-oojs';
 import { getElementFromPasteHtml, cleanUpPasteDom, isElementConvertibleToWikitext } from './utils-window';
 
 /**
- * Our mixin that extends the {@link external:OO.ui.ProcessDialog} class
- *
- * Class that extends {@link external:OO.ui.TextInputWidget OO.ui.TextInputWidget} and has some
- * features we need.
+ * Class that extends {@link external:OO.ui.TextInputWidget} and has some features we need.
  *
  * @augments external:OO.ui.TextInputWidget
  */

@@ -85,8 +85,10 @@ export default {
   },
 
   /**
-   * _For internal use._ Render the navigation panel. This is done when the page is first loaded, or
-   * created using the script.
+   * Render the navigation panel. This is done when the page is first loaded, or created using the
+   * script.
+   *
+   * @private
    */
   mount() {
     /**
@@ -201,7 +203,9 @@ export default {
   },
 
   /**
-   * _For internal use._ Remove the navigation panel.
+   * Remove the navigation panel.
+   *
+   * @private
    */
   unmount() {
     this.$element.remove();
@@ -220,8 +224,10 @@ export default {
   },
 
   /**
-   * _For internal use._ Reset the navigation panel to the initial state. This is done after page
-   * refreshes. (Comment forms are expected to be restored already.)
+   * Reset the navigation panel to the initial state. This is done after page refreshes. (Comment
+   * forms are expected to be restored already.)
+   *
+   * @private
    */
   reset() {
     this.refreshButton.setLabel('');
@@ -234,7 +240,9 @@ export default {
   },
 
   /**
-   * Count the new and unseen comments on the page, and update the navigation panel to reflect that.
+   * Count the new and unseen comments on the page and update the navigation panel to reflect that.
+   *
+   * @private
    */
   fill() {
     if (commentRegistry.getAll().some((comment) => comment.isNew)) {
@@ -246,9 +254,10 @@ export default {
   },
 
   /**
-   * _For internal use._ Perform routines at the refresh button click.
+   * Perform routines at the refresh button click.
    *
    * @param {boolean} markAsRead Whether to mark all comments as read.
+   * @private
    */
   refreshClick(markAsRead) {
     // There was reload confirmation here, but after session restore was introduced, the
@@ -354,6 +363,7 @@ export default {
    * @param {number} commentCount
    * @param {Map} commentsBySection
    * @param {boolean} areThereRelevant
+   * @private
    */
   updateRefreshButton(commentCount, commentsBySection, areThereRelevant) {
     this.refreshButton.setLabel('');
@@ -448,8 +458,10 @@ export default {
   },
 
   /**
-   * _For internal use._ Update the state of the
+   * Update the state of the
    * {@link module:navPanel.firstUnseenButton "Go to the first unseen comment"} button.
+   *
+   * @private
    */
   updateFirstUnseenButton() {
     if (!this.isMounted()) return;
@@ -459,9 +471,10 @@ export default {
   },
 
   /**
-   * _For internal use._ Update the
-   * {@link module:navPanel.commentFormButton "Go to the next comment form out of sight"} button
-   * visibility.
+   * Update the {@link module:navPanel.commentFormButton "Go to the next comment form out of sight"}
+   * button visibility.
+   *
+   * @private
    */
   updateCommentFormButton() {
     if (!this.isMounted() || controller.isAutoScrolling()) return;

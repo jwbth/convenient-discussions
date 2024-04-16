@@ -13,7 +13,7 @@ class ProcessDialog extends OO.ui.ProcessDialog {
    * Check if there are unsaved changes.
    *
    * @returns {boolean}
-   * @private
+   * @protected
    */
   isUnsaved() {
     const saveButton = this.actions.get({ actions: 'save' })[0];
@@ -22,6 +22,8 @@ class ProcessDialog extends OO.ui.ProcessDialog {
 
   /**
    * Confirm closing a dialog.
+   *
+   * @protected
    */
   confirmClose() {
     if (!this.isUnsaved(this) || confirm(cd.s(`${this.constructor.cdKey}-close-confirm`))) {
@@ -32,11 +34,12 @@ class ProcessDialog extends OO.ui.ProcessDialog {
 
   /**
    * Handle a error, displaying a message with the provided name and popping the pending state. If
-   * the error is not recoverable, the dialog is closed at "Dismiss".
+   * the error is not recoverable, the dialog is closed on "Dismiss".
    *
    * @param {CdError|Error} e
    * @param {string} messageName
    * @param {boolean} recoverable
+   * @protected
    */
   handleError(e, messageName, recoverable) {
     let error;

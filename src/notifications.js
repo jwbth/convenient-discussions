@@ -1,15 +1,20 @@
 /**
- * Singleton related to the notification (`mw.Notification`) functionality. Only those notifications
- * that need to be controlled collectively go through this object.
+ * Singleton related to the notification
+ * ({@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.notification.html#.notify mw.notification})
+ * functionality. Only those notifications that need to be controlled collectively go through this
+ * object.
  *
  * @module notifications
  */
 
+import controller from './controller';
+
 /**
- * Notification object created by running `mw.notification.notify(...)`.
+ * Notification object created by running
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.notification.html#.notify mw.notification.notify(...)}.
  *
  * @typedef {object} Notification
- * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Notification_
+ * @see https://doc.wikimedia.org/mediawiki-core/master/js/Notification.html
  */
 
 export default {
@@ -18,7 +23,8 @@ export default {
   /**
    * Show a notificaition and add it to the registry. This is used to be able to keep track of shown
    * notifications and close them all at once if needed. Most notifications are shown using simple
-   * `mw.notify` or `mw.notification.notify`.
+   * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.html#.notify mw.notify()} or
+   * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.notification.html#.notify mw.notification.notify()}).
    *
    * @param {string|external:Query} message Message text.
    * @param {object} [options]
@@ -33,8 +39,7 @@ export default {
 
   /**
    * Get all notifications added to the registry (including already hidden). The
-   * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Notification_ mw.Notification}
-   * object will be in the `notification` property.
+   * {@link Notification} object will be in the `notification` property.
    *
    * @returns {object[]}
    */

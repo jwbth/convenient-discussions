@@ -39,8 +39,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    * OOUI native method that initializes window contents.
    *
    * @param {...*} [args]
-   * @see
-   *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.MessageDialog-method-initialize
+   * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.MessageDialog.html#initialize
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
    * @private
    */
@@ -98,8 +97,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    *
    * @param {object} [data] Dialog opening data
    * @returns {external:OO.ui.Process}
-   * @see
-   *   https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.Dialog-method-getSetupProcess
+   * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.Window.html#getSetupProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
    * @private
    */

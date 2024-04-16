@@ -1576,8 +1576,8 @@ class Comment extends CommentSkeleton {
           (
             this.elements.length === 1 ||
             (
-              this.parser.constructor.getNestingLevel(this.elements[0]) <=
-              this.parser.constructor.getNestingLevel(this.elements[this.elements.length - 1])
+              this.parser.getNestingLevel(this.elements[0]) <=
+              this.parser.getNestingLevel(this.elements[this.elements.length - 1])
             )
           ) ?
             this.elements[0] :
@@ -2730,7 +2730,6 @@ class Comment extends CommentSkeleton {
       isSelectionRelevant = commentRegistry.getSelectedComment() === this;
       if (isSelectionRelevant) {
         initialStateOrCommentForm = { focus: false };
-
         this.fixSelection();
       }
     }
@@ -2749,6 +2748,11 @@ class Comment extends CommentSkeleton {
     }
   }
 
+  /**
+   * Make sure the selection will not include the comment form itself when it appears.
+   *
+   * @private
+   */
   fixSelection() {
     let endBoundary;
     if (this.isReformatted) {
@@ -2837,6 +2841,12 @@ class Comment extends CommentSkeleton {
     }
   }
 
+  /**
+   * Add a comment form targeted at this comment to the page.
+   *
+   * @param {string} mode
+   * @param {import('./CommentForm').default} commentForm
+   */
   addCommentFormToPage(mode, commentForm) {
     if (mode === 'reply') {
       const { $wrappingItem, $outerWrapper } = this.addSubitem('replyForm', 'top');
@@ -2863,6 +2873,12 @@ class Comment extends CommentSkeleton {
     }
   }
 
+  /**
+   * Remove a comment form targeted at this comment from the page.
+   *
+   * @param {string} mode
+   * @param {import('./CommentForm').default} commentForm
+   */
   removeCommentFormFromPage(mode, commentForm) {
     if (mode === 'reply') {
       this.subitemList.remove('replyForm');
@@ -3498,10 +3514,21 @@ class Comment extends CommentSkeleton {
     }
   }
 
+  /**
+   * If this comment is replied to, get the comment that will end up directly above the reply.
+   *
+   * @returns {Comment}
+   */
   getCommentAboveReply() {
     return this.getChildren(true).slice(-1)[0] || this;
   }
 
+  /**
+   * After the page is reloaded and this instance doesn't relate to a rendered comment on the page,
+   * get the instance of this comment that does.
+   *
+   * @returns {?Comment}
+   */
   findNewSelf() {
     if (!this.id) {
       return null;
@@ -3510,16 +3537,15 @@ class Comment extends CommentSkeleton {
     return commentRegistry.getById(this.id);
   }
 
+  /**
+   * Get the name of the comment's method creating a comment form with the specified mode. Used for
+   * polymorphism with {@link Section}.
+   *
+   * @param {string} mode
+   * @returns {string}
+   */
   getCommentFormMethodName(mode) {
     return mode;
-  }
-
-  getCommentFormPropertyName(mode) {
-    return this.getCommentFormMethodName(mode) + 'Form';
-  }
-
-  forgetCommentForm(mode) {
-    delete this[this.getCommentFormPropertyName(mode)];
   }
 
   /**

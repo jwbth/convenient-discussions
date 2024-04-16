@@ -663,8 +663,8 @@ export default {
    * @property {RegExp} regexp Regular expression to match.
    * @property {string} message Message displayed to the user.
    * @property {string} name Latin letters, digits, `-`.
-   * @property {'notice'|'error'|'warning'|'success'} [type='notice'] The value is one of
-   *   {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/OO.ui.MessageWidget-cfg-type OO.ui.MessageWidget}'s
+   * @property {'notice'|'error'|'warning'|'success'} [type='notice'] One of
+   *   {@link https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.MessageWidget.html#MessageWidget OO.ui.MessageWidget}'s
    *   types.
    * @property {Function} [checkFunc] If this function returns `false`, no message is displayed.
    */

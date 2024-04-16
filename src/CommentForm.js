@@ -209,6 +209,11 @@ class CommentForm {
     this.initAutocomplete();
   }
 
+  /**
+   * Setup the form after it is added to the page for the first time (not after a page reload).
+   *
+   * @param {object} initialState
+   */
   setup(initialState) {
     this.adjustLabels();
 
@@ -2058,8 +2063,7 @@ class CommentForm {
    * @param {boolean} setDisabled Whether to set the buttons and inputs disabled.
    * @param {boolean} affectsHeadline Should the `pushPending` method be applied to the headline
    *   input.
-   * @see
-   *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.mixin.PendingElement-method-pushPending
+   * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.mixin.PendingElement.html#pushPending
    */
   pushPending(setDisabled = false, affectsHeadline = true) {
     this.commentInput.pushPending();
@@ -2098,8 +2102,7 @@ class CommentForm {
    * @param {boolean} [setEnabled=false] Whether to set buttons and inputs enabled.
    * @param {boolean} [affectsHeadline=true] Should the `popPending` method be applied to the
    *   headline input.
-   * @see
-   *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.mixin.PendingElement-method-popPending
+   * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.mixin.PendingElement.html#popPending
    */
   popPending(setEnabled = false, affectsHeadline = true) {
     this.commentInput.popPending();
@@ -3211,7 +3214,7 @@ class CommentForm {
    * @private
    */
   unregister() {
-    this.target.forgetCommentForm(this.mode);
+    this.constructor.forgetOnTarget(this.target, this.mode);
 
     // Popups can be placed outside the form element, so they need to be torn down whenever the form
     // is unregistered (even if the form itself is not torn down).
@@ -3630,8 +3633,7 @@ class CommentForm {
   }
 
   /**
-   * Get the name of the correlated property of the comment form target based on the comment form
-   * mode.
+   * Get the name of the correlated property of the form's target based on the form's mode.
    *
    * @returns {string}
    * @private
@@ -3920,6 +3922,9 @@ class CommentForm {
   static counter = 0;
   static allowedFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'];
 
+  /**
+   * Initialize the class.
+   */
   static init() {
     this.encapsulateOptions = {
       code: {
@@ -3975,6 +3980,27 @@ class CommentForm {
       noHeadline: false,
       omitSignature: false,
     };
+  }
+
+  /**
+   * Get the name of the target's property that can contain a comment form with the specified mode.
+   *
+   * @param {Comment|import('./Section').default|import('./Page').Page} target
+   * @param {string} mode
+   * @returns {string}
+   */
+  static getPropertyNameOnTarget(target, mode) {
+    return target.getCommentFormMethodName(mode) + 'Form';
+  }
+
+  /**
+   * Remove references to the "Add section" form (after it was unregistered).
+   *
+   * @param {Comment|import('./Section').default|import('./Page').Page} target
+   * @param {string} mode
+   */
+  static forgetOnTarget(target, mode) {
+    delete target[this.getPropertyNameOnTarget(target, mode)];
   }
 }
 

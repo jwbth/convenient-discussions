@@ -13,7 +13,7 @@ import { defined, isMetadataNode, sleep } from './utils-general';
  * faster. Only accepts jQuery objects though and doesn't reorder elements based on their relative
  * position in the DOM.
  *
- * @param {(external:jQuery|undefined)[]} arrayOfJquery jQuery objects. Undefined values will be
+ * @param {Array.<external:jQuery|undefined>} arrayOfJquery jQuery objects. Undefined values will be
  *   omitted.
  * @returns {external:JQuery} jQuery
  * @memberof external:jQuery

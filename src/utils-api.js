@@ -398,7 +398,7 @@ function requestTransformApi(url, html) {
  * Convert HTML into wikitext.
  *
  * @param {string} html
- * @param {(string|undefined)[]} syntaxHighlightLanguages
+ * @param {Array.<string|undefined>} syntaxHighlightLanguages
  * @returns {Promise.<string>}
  */
 export async function convertHtmlToWikitext(html, syntaxHighlightLanguages) {

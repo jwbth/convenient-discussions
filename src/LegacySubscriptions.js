@@ -10,6 +10,8 @@ import { wrapHtml } from './utils-window';
 
 /**
  * Class implementing CD's legacy section watching.
+ *
+ * @augments Subscriptions
  */
 class LegacySubscriptions extends Subscriptions {
   type = 'legacy';
@@ -27,17 +29,17 @@ class LegacySubscriptions extends Subscriptions {
 
     // `mw.user.options` is not used even on first run because it appears to be cached sometimes
     // which can be critical for determining subscriptions.
-    this.allPagesData = (
-      mw.user.options.get(cd.g.subscriptionsOptionName) !== null ||
-      !bootProcess?.isFirstRun()
+    this.data = (
+      mw.user.options.get(cd.g.subscriptionsOptionName) === null &&
+      bootProcess?.isFirstRun()
     ) ?
-      this.unpack(await getUserInfo(reuse).then(({ subscriptions }) => subscriptions)) :
-      {};
+      {} :
+      this.unpack(await getUserInfo(reuse).then(({ subscriptions }) => subscriptions));
 
     const articleId = mw.config.get('wgArticleId');
     if (articleId) {
-      this.allPagesData[articleId] ||= {};
-      this.data = this.allPagesData[articleId];
+      this.data[articleId] ||= {};
+      this.currentPageData = this.data[articleId];
 
       if (bootProcess) {
         // Manually add/remove a section that was added/removed at the same moment the page was
@@ -70,7 +72,7 @@ class LegacySubscriptions extends Subscriptions {
    * @returns {boolean}
    */
   areLoaded() {
-    return Boolean(this.allPagesData);
+    return Boolean(this.data);
   }
 
   /**
@@ -94,14 +96,14 @@ class LegacySubscriptions extends Subscriptions {
       }
 
       // We save the full subscription list, so we need to update the data first.
-      const dataBackup = Object.assign({}, this.data);
+      const currentPageDataBackup = Object.assign({}, this.currentPageData);
       this.updateLocally(headline, true);
       this.updateLocally(unsubscribeHeadline, false);
 
       try {
         await this.save();
       } catch (e) {
-        this.data = dataBackup;
+        this.currentPageData = currentPageDataBackup;
         if (e instanceof CdError) {
           const { type, code } = e.data;
           if (type === 'internal' && code === 'sizeLimit') {
@@ -150,13 +152,13 @@ class LegacySubscriptions extends Subscriptions {
         throw e;
       }
 
-      const dataBackup = Object.assign({}, this.data);
+      const currentPageDataBackup = Object.assign({}, this.currentPageData);
       this.updateLocally(headline, false);
 
       try {
         await this.save();
       } catch (e) {
-        this.data = dataBackup;
+        this.currentPageData = currentPageDataBackup;
         mw.notify(cd.s('error-settings-save'), { type: 'error' });
         throw e;
       }
@@ -174,7 +176,7 @@ class LegacySubscriptions extends Subscriptions {
    * @param {object} data
    */
   async save(data) {
-    await saveLocalOption(cd.g.subscriptionsOptionName, this.pack(data || this.allPagesData));
+    await saveLocalOption(cd.g.subscriptionsOptionName, this.pack(data || this.data));
   }
 
   /**
@@ -223,7 +225,7 @@ class LegacySubscriptions extends Subscriptions {
    * @returns {number[]}
    */
   getPageIds() {
-    return Object.keys(this.allPagesData);
+    return Object.keys(this.data);
   }
 
   /**
@@ -233,7 +235,7 @@ class LegacySubscriptions extends Subscriptions {
    * @returns {?(object[])}
    */
   getForPageId(pageId) {
-    return Object.keys(this.allPagesData[pageId] || {});
+    return Object.keys(this.data[pageId] || {});
   }
 
   /**
@@ -262,12 +264,12 @@ class LegacySubscriptions extends Subscriptions {
    * @private
    */
   cleanUp() {
-    this.originalList = Object.keys(this.data);
+    this.originalList = Object.keys(this.currentPageData);
     let updated = false;
-    Object.keys(this.data)
+    Object.keys(this.currentPageData)
       .filter((headline) => sectionRegistry.getAll().every((s) => s.headline !== headline))
       .forEach((headline) => {
-        delete this.data[headline];
+        delete this.currentPageData[headline];
         updated = true;
       });
 
@@ -288,7 +290,7 @@ class LegacySubscriptions extends Subscriptions {
     super.updateLocally(subscribeId, subscribe);
 
     if (!subscribe) {
-      delete this.data[subscribeId];
+      delete this.currentPageData[subscribeId];
     }
   }
 }

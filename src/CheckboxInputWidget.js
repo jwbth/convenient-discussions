@@ -1,6 +1,6 @@
 /**
- * Class that extends {@link external:OO.ui.CheckboxInputWidget OO.ui.CheckboxInputWidget} and emits
- * `manualChange` event when the input changes by user action.
+ * Class that extends {@link external:OO.ui.CheckboxInputWidget} and emits `manualChange` event when
+ * the input changes by user action.
  *
  * @augments external:OO.ui.CheckboxInputWidget
  */

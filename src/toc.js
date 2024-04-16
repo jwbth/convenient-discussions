@@ -15,10 +15,7 @@ import updateChecker from './updateChecker';
 import { formatDate, formatDateNative } from './utils-timestamp';
 import visits from './visits';
 
-/**
- * @exports toc
- */
-const toc = {
+export default {
   /**
    * _For internal use._ Initialize the TOC. (Executed only once.)
    *
@@ -64,7 +61,7 @@ const toc = {
    * and exists because we may need to hide the TOC earlier than the native method does it.
    */
   maybeHide() {
-    if (toc.isInSidebar() || !toc.isPresent()) return;
+    if (this.isInSidebar() || !this.isPresent()) return;
 
     if (mw.cookie.get('hidetoc') === '1') {
       this.$element.find('.toctogglecheckbox').prop('checked', true);
@@ -339,14 +336,15 @@ const toc = {
   },
 
   /**
-   * _For internal use._ Add links to new, not yet rendered sections (loaded in the background) to
-   * the table of contents.
+   * Add links to new, not yet rendered sections (loaded in the background) to the table of
+   * contents.
    *
    * Note that this method may also add the `match` property to the section elements containing a
-   * matched `Section` object.
+   * matched {@link Section} object.
    *
    * @param {import('./SectionSkeleton').SectionSkeletonLike[]} sections All sections present on the
    *   new revision of the page.
+   * @private
    */
   addNewSections(sections) {
     if (!this.canBeModified || !this.isPresent()) return;
@@ -583,11 +581,12 @@ const toc = {
   },
 
   /**
-   * _For internal use._ Add links to new comments (either already displayed or loaded in the
-   * background) to the table of contents.
+   * Add links to new comments (either already displayed or loaded in the background) to the table
+   * of contents.
    *
    * @param {Map} commentsBySection
    * @param {import('./BootProcess').default} [bootProcess]
+   * @private
    */
   async addNewComments(commentsBySection, bootProcess) {
     if (!this.canBeModified || !this.isPresent()) return;
@@ -675,7 +674,9 @@ const toc = {
 };
 
 /**
- * Class representing a table of contents item.
+ * Class representing an item of the table of contents.
+ *
+ * @private
  */
 class TocItem {
   /**
@@ -785,5 +786,3 @@ class TocItem {
     }
   }
 }
-
-export default toc;

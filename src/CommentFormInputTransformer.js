@@ -5,6 +5,8 @@ import { escapePipesOutsideLinks, generateTagsRegexp } from './utils-wikitext';
 
 /**
  * Class that processes the comment form input and prepares the wikitext to insert into the page.
+ *
+ * @augments TextMasker
  */
 class CommentFormInputTransformer extends TextMasker {
   /**

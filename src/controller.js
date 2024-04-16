@@ -1912,8 +1912,7 @@ export default {
     if (lastActiveCommentForm) {
       const ending = lastActiveCommentForm
         .getTarget()
-        .getCommentFormPropertyName(lastActiveCommentForm.getMode())
-        .replace(/Form$/, '')
+        .getCommentFormMethodName(lastActiveCommentForm.getMode())
         .toLowerCase();
       title = cd.s(`page-title-${ending}`, title);
     }

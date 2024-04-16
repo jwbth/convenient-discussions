@@ -10,6 +10,8 @@ import { spacesToUnderlines, unique } from './utils-general';
 
 /**
  * Class implementing DiscussionTools' topic subscriptions.
+ *
+ * @augments Subscriptions
  */
 class DtSubscriptions extends Subscriptions {
   type = 'dt';
@@ -34,7 +36,7 @@ class DtSubscriptions extends Subscriptions {
   }
 
   /**
-   * Process subscriptions when they are {@link .loadToTalkPage loaded to a talk page}.
+   * Process subscriptions when they are {@link DtSubscriptions#load loaded to a talk page}.
    *
    * @param {import('./BootProcess').default} [bootProcess]
    */

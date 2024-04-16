@@ -1,5 +1,5 @@
 /**
- * Singleton used to obtain instances of the `Page` class while avoiding creating duplicates.
+ * Singleton used to obtain instances of the {@link Page} class while avoiding creating duplicates.
  *
  * @module pageRegistry
  */
@@ -38,7 +38,7 @@ import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
  * Class representing a wiki page (a page for which the
  * {@link https://www.mediawiki.org/wiki/Manual:Interface/JavaScript#All_pages_(user/page-specific) wgIsArticle}
  * config value is `true`) in both of its facets – a rendered instance (for the current page) and
- * an entry in the database with data and content. See also {@link module:pageRegistry~PageSource}.
+ * an entry in the database with data and content.
  *
  * To access the constructor, use {@link module:pageRegistry.get} (it is only exported for means of
  * code completion).
@@ -87,7 +87,7 @@ export class Page {
 
     /**
      * Page's source code object. This is mostly for polymorphism with {@link CommentSource} and
-     * {@link SectionSource}; the source code is in {@link Page.code}.
+     * {@link SectionSource}; the source code is in {@link Page#code}.
      *
      * @type {PageSource}
      */
@@ -228,8 +228,8 @@ export class Page {
   }
 
   /**
-   * Check if the page is an archive page. Relies on {@link defaultConfig.archivePaths} and/or, for
-   * the current page, elements with the class `cd-archivingInfo` and attribute
+   * Check if the page is an archive page. Relies on {@link module:defaultConfig.archivePaths}
+   * and/or, for the current page, elements with the class `cd-archivingInfo` and attribute
    * `data-is-archive-page`.
    *
    * @returns {boolean}
@@ -252,9 +252,9 @@ export class Page {
 
   /**
    * Check if this page can have archives. If the page is an archive page, returns `false`. Relies
-   * on {@link defaultConfig.pagesWithoutArchives} and {@link defaultConfig.archivePaths} and/or,
-   * for the current page, elements with the class `cd-archivingInfo` and attribute
-   * `data-can-have-archives`.
+   * on {@link module:defaultConfig.pagesWithoutArchives} and
+   * {@link module:defaultConfig.archivePaths} and/or, for the current page, elements with the class
+   * `cd-archivingInfo` and attribute `data-can-have-archives`.
    *
    * @returns {?boolean}
    */
@@ -271,7 +271,7 @@ export class Page {
 
   /**
    * Get the archive prefix for the page. If no prefix is found based on
-   * {@link defaultConfig.archivePaths} and/or, for the current page, elements with the class
+   * {@link module:defaultConfig.archivePaths} and/or, for the current page, elements with the class
    * `cd-archivingInfo` and attribute `data-archive-prefix`, returns the current page's name. If the
    * page is an archive page or can't have archives, returns `null`.
    *
@@ -298,9 +298,9 @@ export class Page {
 
   /**
    * Get the source page for the page (i.e., the page from which archiving is happening). Returns
-   * the page itself if it is not an archive page. Relies on {@link defaultConfig.archivePaths}
-   * and/or, for the current page, elements with the class `cd-archivingInfo` and attribute
-   * `data-archived-page`.
+   * the page itself if it is not an archive page. Relies on
+   * {@link module:defaultConfig.archivePaths} and/or, for the current page, elements with the class
+   * `cd-archivingInfo` and attribute `data-archived-page`.
    *
    * @returns {Page}
    */
@@ -393,16 +393,16 @@ export class Page {
      *
      * @name pageId
      * @type {number|undefined}
-     * @memberof Page
+     * @memberof module:pageRegistry.Page
      * @instance
      */
 
     /**
-     * Page code. Filled upon running {@link Page#loadCode}.
+     * Page's source code (wikitext), ending with `\n`. Filled upon running {@link Page#loadCode}.
      *
      * @name code
      * @type {string|undefined}
-     * @memberof Page
+     * @memberof module:pageRegistry.Page
      * @instance
      */
 
@@ -411,7 +411,7 @@ export class Page {
      *
      * @name revisionId
      * @type {number|undefined}
-     * @memberof Page
+     * @memberof module:pageRegistry.Page
      * @instance
      */
 
@@ -420,7 +420,7 @@ export class Page {
      *
      * @name redirectTarget
      * @type {?(string|undefined)}
-     * @memberof Page
+     * @memberof module:pageRegistry.Page
      * @instance
      */
 
@@ -430,7 +430,7 @@ export class Page {
      *
      * @name realName
      * @type {string|undefined}
-     * @memberof Page
+     * @memberof module:pageRegistry.Page
      * @instance
      */
 
@@ -440,7 +440,7 @@ export class Page {
      *
      * @name queryTimestamp
      * @type {string|undefined}
-     * @memberof Page
+     * @memberof module:pageRegistry.Page
      * @instance
      */
 
@@ -686,7 +686,7 @@ export class Page {
      *
      * @name areNewTopicsOnTop
      * @type {boolean|undefined}
-     * @memberof Page
+     * @memberof module:pageRegistry.Page
      * @instance
      */
 
@@ -696,7 +696,7 @@ export class Page {
      *
      * @name firstSectionStartIndex
      * @type {number|undefined}
-     * @memberof Page
+     * @memberof module:pageRegistry.Page
      * @instance
      */
     Object.assign(this, { areNewTopicsOnTop, firstSectionStartIndex });
@@ -819,9 +819,19 @@ export class Page {
       }
       $('#ca-addsection').addClass('selected');
       $('#ca-view').removeClass('selected');
+      this.addSectionForm.on('unregister', () => {
+        $('#ca-addsection').removeClass('selected');
+        $('#ca-view').addClass('selected');
+      });
     }
   }
 
+  /**
+   * Add a comment form targeted at this page to the page.
+   *
+   * @param {string} mode
+   * @param {import('./CommentForm').default} commentForm
+   */
   addCommentFormToPage(mode, commentForm) {
     if (commentForm.isNewTopicOnTop() && sectionRegistry.getByIndex(0)) {
       sectionRegistry.getByIndex(0).$heading.before(commentForm.$element);
@@ -830,6 +840,9 @@ export class Page {
     }
   }
 
+  /**
+   * Remove a comment form targeted at this page from the page.
+   */
   removeCommentFormFromPage() {
     if (!this.exists()) {
       controller.$content
@@ -843,23 +856,15 @@ export class Page {
     this.$addSectionButtonContainer?.show();
   }
 
-  getCommentFormMethodName(mode) {
-    return mode;
-  }
-
-  getCommentFormPropertyName(mode) {
-    return this.getCommentFormMethodName(mode) + 'Form';
-  }
-
   /**
-   * Remove references to the "Add section" form (after it was unregistered).
+   * Get the name of the page's method creating a comment form with the specified mode. Used for
+   * polymorphism with {@link Section}.
    *
    * @param {string} mode
+   * @returns {string}
    */
-  forgetCommentForm(mode) {
-    delete this[this.getCommentFormPropertyName(mode)];
-    $('#ca-addsection').removeClass('selected');
-    $('#ca-view').addClass('selected');
+  getCommentFormMethodName(mode) {
+    return mode;
   }
 
   /**
@@ -892,10 +897,22 @@ export class Page {
     return null;
   }
 
+  /**
+   * If a new section is added to the page, get the comment that will end up directly above the
+   * section.
+   *
+   * @param {import('./CommentForm').default} commentForm
+   * @returns {?import('./Comment').default}
+   */
   getCommentAboveReply(commentForm) {
     return commentForm.isNewTopicOnTop() ? null : commentRegistry.getByIndex(-1);
   }
 
+  /**
+   * Used for polymorphism with {@link Comment} and {@link Section}.
+   *
+   * @returns {Page}
+   */
   findNewSelf() {
     return this;
   }
@@ -970,6 +987,8 @@ export class Page {
 
 /**
  * Class that keeps the methods and data related to the page's source code.
+ *
+ * @private
  */
 class PageSource {
   /**

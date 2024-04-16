@@ -16,7 +16,7 @@ export default {
   /**
    * Request the pages visits data from the server.
    *
-   * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.user-property-options mw.user.options}
+   * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.user.html#.options mw.user.options}
    * is not used even on the first run because the script may not run immediately after the page has
    * loaded. In fact, when the page is loaded in a background tab, it can be throttled until it is
    * focused, so an indefinite amount of time can pass.
@@ -28,9 +28,9 @@ export default {
     if (!cd.user.isRegistered()) return;
 
     try {
-      this.data = mw.user.options.get(cd.g.visitsOptionName) !== null || !bootProcess.isFirstRun() ?
-        this.unpack(await getUserInfo(reuse).then(({ visits }) => visits)) :
-        {};
+      this.data = mw.user.options.get(cd.g.visitsOptionName) === null && bootProcess.isFirstRun() ?
+        {} :
+        this.unpack(await getUserInfo(reuse).then(({ visits }) => visits));
     } catch (e) {
       console.warn('Couldn\'t load the settings from the server.', e);
       return;

@@ -133,7 +133,7 @@ function processAndRemoveDtElements(elements, bootProcess) {
 
 /**
  * Class representing the process of loading or reloading CD onto an article page. In some sense, it
- * is a builder for {@link module:controller controller}.
+ * is a (re-)builder for {@link module:controller controller}.
  */
 class BootProcess {
   /**

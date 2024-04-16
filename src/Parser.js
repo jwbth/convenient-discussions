@@ -227,7 +227,7 @@ class Parser {
     // last. There is no point for us to parse them as distinct comments as a reply posted using our
     // script will go below all of them anyway.
     let isExtraSignature = false;
-    const elementsTreeWalker = new ElementsTreeWalker(timestamp.element);
+    const elementsTreeWalker = new ElementsTreeWalker(timestamp.element, this.context.rootElement);
     while (
       elementsTreeWalker.previousNode() &&
       (isInline(elementsTreeWalker.currentNode) || isMetadataNode(elementsTreeWalker.currentNode))
@@ -702,8 +702,14 @@ class Parser {
     return true;
   }
 
-  static getNestingLevel(element) {
-    const treeWalker = new ElementsTreeWalker(element);
+  /**
+   * Get a nesting level of an element relative to the root element.
+   *
+   * @param {Element} element
+   * @returns {number}
+   */
+  getNestingLevel(element) {
+    const treeWalker = new ElementsTreeWalker(element, this.context.rootElement);
 
     let nestingLevel = 0;
     while (treeWalker.parentNode()) {

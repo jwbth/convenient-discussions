@@ -72,8 +72,8 @@ class CommentSkeleton {
     this.wrapNumberedList();
 
     /**
-     * Comment index. Same as the comment's index in
-     * {@link convenientDiscussions.comments convenientDiscussions.comments}.
+     * Comment index. Same as the index in the array returned by
+     * {@link module:commentRegistry.getAll}.
      *
      * @type {number}
      */

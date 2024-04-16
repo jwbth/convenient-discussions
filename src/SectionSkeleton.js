@@ -116,8 +116,8 @@ class SectionSkeleton {
     this.initContent(heading, targets);
 
     /**
-     * Section index. Same as the section index in
-     * {@link convenientDiscussions.sections convenientDiscussions.sections}.
+     * Section index. Same as the index in the array returned by
+     * {@link module:sectionRegistry.getAll}.
      *
      * @type {number}
      */
@@ -132,7 +132,7 @@ class SectionSkeleton {
    * @private
    */
   initContent(heading, targets) {
-    this.headingNestingLevel = this.parser.constructor.getNestingLevel(this.headingElement);
+    this.headingNestingLevel = this.parser.getNestingLevel(this.headingElement);
 
     // Find the next heading element
     const headingIndex = targets.indexOf(heading);

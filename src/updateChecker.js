@@ -1,5 +1,5 @@
 /**
- * Singleton responsible for checking for updates of the page in the background.
+ * Singleton responsible for polling for updates of the page in the background.
  *
  * @module updateChecker
  */
@@ -75,10 +75,11 @@ function runWorkerTask(payload) {
 }
 
 /**
- * _For internal use._ Process the current page in a web worker.
+ * Process the current page in a web worker.
  *
  * @param {number} [revisionToParseId]
  * @returns {Promise.<object>}
+ * @private
  */
 async function processPage(revisionToParseId) {
   if (revisionData[revisionToParseId]) {
@@ -649,7 +650,13 @@ async function onMessageFromWorker(e) {
   }
 }
 
+/**
+ * @exports updateChecker
+ */
 const updateChecker = {
+  /**
+   * _For internal use._ Initialize the update checker.
+   */
   init() {
     mixEventEmitterIntoObject(this);
 
@@ -672,7 +679,7 @@ const updateChecker = {
   },
 
   /**
-   * _For internal use._ Initialize the update checker. Executed on each page reload.
+   * _For internal use._ Set up the update checker. Executed on each page reload.
    *
    * @param {string} previousVisitTime
    * @param {number} submittedCommentId
