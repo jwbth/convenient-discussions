@@ -616,9 +616,9 @@ export default {
         // example, level 1 comments without a parent and their children) separately.
         const sectionComments = comments
           .filter((comment) => comment.logicalLevel === 0)
-          .reduce((obj, child) => {
-            this.searchForNewCommentsInSubtree(child, obj, newCommentIndexes);
-          }, {});
+          .reduce((arr, child) => (
+            this.searchForNewCommentsInSubtree(child, arr, newCommentIndexes)
+          ), []);
         const threadComments = comments.filter((comment) => !sectionComments.includes(comment));
         this.addNewCommentsNote(parent, sectionComments, 'section', newCommentIndexes);
         this.addNewCommentsNote(parent, threadComments, 'thread', newCommentIndexes);
@@ -640,15 +640,11 @@ export default {
   addNewCommentsNote(parent, childComments, type, newCommentIndexes) {
     if (!childComments.length) return;
 
-    let descendantComments;
-    if (parent instanceof Comment) {
-      descendantComments = [];
-      childComments.forEach((child) => {
-        this.searchForNewCommentsInSubtree(child, descendantComments, newCommentIndexes);
-      });
-    } else {
-      descendantComments = childComments;
-    }
+    const descendantComments = parent instanceof Comment ?
+      childComments.reduce((arr, child) => (
+        this.searchForNewCommentsInSubtree(child, arr, newCommentIndexes)
+      ), []) :
+      childComments;
 
     const authors = descendantComments
       .map((comment) => comment.author)
@@ -855,6 +851,7 @@ export default {
    * @param {import('./CommentSkeleton').default} childComment
    * @param {import('./CommentSkeleton').default[]} newCommentsInSubtree
    * @param {number[]} newCommentIndexes
+   * @returns {import('./CommentSkeleton').default[]}
    * @private
    */
   searchForNewCommentsInSubtree(childComment, newCommentsInSubtree, newCommentIndexes) {
@@ -864,6 +861,7 @@ export default {
     childComment.children.forEach((childComment) => {
       this.searchForNewCommentsInSubtree(childComment, newCommentsInSubtree, newCommentIndexes);
     });
+    return newCommentsInSubtree;
   },
 
   /**
