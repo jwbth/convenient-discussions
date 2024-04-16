@@ -4,9 +4,7 @@ import CdError from './CdError';
 import Subscriptions from './Subscriptions';
 import cd from './cd';
 import controller from './controller';
-import pageRegistry from './pageRegistry';
 import sectionRegistry from './sectionRegistry';
-import userRegistry from './userRegistry';
 import { getUserInfo, saveLocalOption } from './utils-api';
 import { wrapHtml } from './utils-window';
 

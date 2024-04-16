@@ -11,7 +11,6 @@ import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
-import pageRegistry from './pageRegistry';
 import settings from './settings';
 import { reorderArray } from './utils-general';
 import { formatDate } from './utils-timestamp';

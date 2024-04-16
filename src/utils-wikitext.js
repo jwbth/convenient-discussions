@@ -194,9 +194,7 @@ export function extractSignatures(code) {
   const signatureIndex = adjustedCode.indexOf(cd.g.signCode);
   if (signatureIndex !== -1) {
     signatures.push({
-      // `require()` to avoid circular dependency
-      author: require('./userRegistry').default.getCurrent().getName(),
-
+      author: cd.user.getName(),
       startIndex: signatureIndex,
       nextCommentStartIndex: signatureIndex + adjustedCode.slice(signatureIndex).indexOf('\n') + 1,
     });

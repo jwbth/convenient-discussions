@@ -8,7 +8,6 @@ import TextMasker from './TextMasker';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
-import userRegistry from './userRegistry';
 import { getUserInfo, saveGlobalOption, saveLocalOption } from './utils-api';
 import { areObjectsEqual, defined, definedAndNotNull, ucFirst } from './utils-general';
 import { showConfirmDialog } from './utils-oojs';

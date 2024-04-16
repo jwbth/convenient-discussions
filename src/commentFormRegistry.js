@@ -9,7 +9,6 @@ import StorageItem from './StorageItem';
 import cd from './cd';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
-import pageRegistry from './pageRegistry';
 import sectionRegistry from './sectionRegistry';
 import { defined, removeFromArrayIfPresent } from './utils-general';
 import { mixEventEmitterIntoObject } from './utils-oojs';

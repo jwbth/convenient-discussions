@@ -4,7 +4,6 @@ import CdError from './CdError';
 import cd from './cd';
 import commentRegistry from './commentRegistry';
 import settings from './settings';
-import userRegistry from './userRegistry';
 import { getUserInfo, saveLocalOption } from './utils-api';
 import { mixEventEmitterIntoObject } from './utils-oojs';
 

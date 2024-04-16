@@ -10,7 +10,6 @@ import Comment from './Comment';
 import cd from './cd';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
-import pageRegistry from './pageRegistry';
 import sectionRegistry from './sectionRegistry';
 import { defined, sleep, underlinesToSpaces } from './utils-general';
 import { formatDateNative } from './utils-timestamp';
