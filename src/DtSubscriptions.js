@@ -27,8 +27,8 @@ class DtSubscriptions extends Subscriptions {
     const title = spacesToUnderlines(mw.config.get('wgTitle'));
     this.pageSubscribeId ||= `p-topics-${cd.g.namespaceNumber}:${title}`;
     this.data = await this.getSubscriptions(
-      sectionRegistry.getAll()
-        .filter((section) => section.subscribeId)
+      sectionRegistry
+        .query((section) => section.subscribeId)
         .map((section) => section.subscribeId)
         .filter(unique)
         .concat(this.pageSubscribeId || [])

@@ -1219,8 +1219,8 @@ export default {
 
     // Get IDs of unseen comments. This is used to arrange that they will still be there after
     // replying on or refreshing the page.
-    bootProcess.passedData.unseenCommentIds = commentRegistry.getAll()
-      .filter((comment) => comment.isSeen === false)
+    bootProcess.passedData.unseenCommentIds = commentRegistry
+      .query((comment) => comment.isSeen === false)
       .map((comment) => comment.id);
 
     // At this point, the boot process can't be interrupted, so we can remove all traces of the

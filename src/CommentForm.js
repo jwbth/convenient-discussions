@@ -1922,7 +1922,7 @@ class CommentForm {
       commentsInSection = this.targetSection.getBase().comments;
     } else if (this.mode !== 'addSection') {
       // Comments in the lead section
-      commentsInSection = commentRegistry.getAll().filter((comment) => !comment.section);
+      commentsInSection = commentRegistry.query((comment) => !comment.section);
     }
     if (this.mode === 'edit') {
       commentsInSection = commentsInSection.filter((comment) => comment !== this.target);

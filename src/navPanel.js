@@ -322,7 +322,7 @@ export default {
   goToFirstUnseenComment() {
     if (controller.isAutoScrolling()) return;
 
-    const candidates = commentRegistry.getAll().filter((comment) => comment.isSeen === false);
+    const candidates = commentRegistry.query((comment) => comment.isSeen === false);
     const comment = candidates.find((comment) => comment.isInViewport() === false) || candidates[0];
     comment?.scrollTo({
       flash: null,
@@ -342,8 +342,8 @@ export default {
    * @param {boolean} [inSight=false]
    */
   goToNextCommentForm(inSight) {
-    commentFormRegistry.getAll()
-      .filter((commentForm) => inSight || !commentForm.$element.cdIsInViewport(true))
+    commentFormRegistry
+      .query((commentForm) => inSight || !commentForm.$element.cdIsInViewport(true))
       .map((commentForm) => {
         let top = commentForm.$element[0].getBoundingClientRect().top;
         if (top < 0) {
@@ -466,7 +466,7 @@ export default {
   updateFirstUnseenButton() {
     if (!this.isMounted()) return;
 
-    const unseenCommentCount = commentRegistry.getAll().filter((c) => c.isSeen === false).length;
+    const unseenCommentCount = commentRegistry.query((c) => c.isSeen === false).length;
     this.firstUnseenButton.toggle(unseenCommentCount).setLabel(unseenCommentCount);
   },
 

@@ -35,11 +35,11 @@ export default {
         // otherwise the user can be confused, especially if there are few topics on an unpopular
         // page.)
         if (
-          commentRegistry.getAll().filter((c) => c.isSeen === false || !c.date).length !==
+          commentRegistry.query((c) => c.isSeen === false || !c.date).length !==
           commentRegistry.getCount()
         ) {
           this.addNewComments(
-            Comment.groupBySection(commentRegistry.getAll().filter((c) => c.isSeen === false)),
+            Comment.groupBySection(commentRegistry.query((c) => c.isSeen === false)),
             controller.getBootProcess()
           );
         }
@@ -135,8 +135,8 @@ export default {
     // `visits#process()`.
     await Promise.all([this.visitsPromise, this.updateTocSectionsPromise]);
 
-    sectionRegistry.getAll()
-      .filter((section) => section.subscriptionState || this.isInSidebar())
+    sectionRegistry
+      .query((section) => section.subscriptionState || this.isInSidebar())
       .forEach((section) => {
         section.updateTocLink();
       });

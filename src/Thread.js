@@ -1074,8 +1074,8 @@ class Thread {
     (new StorageItem('collapsedThreads'))
       .setWithTime(
         mw.config.get('wgArticleId'),
-        commentRegistry.getAll()
-          .filter((comment) => (
+        commentRegistry
+          .query((comment) => (
             comment.thread &&
             comment.thread.isCollapsed !== Boolean(comment.thread.isAutocollapseTarget)
           ))

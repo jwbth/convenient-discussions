@@ -16,6 +16,8 @@ import { mixEventEmitterIntoObject } from './utils-oojs';
 import { getExtendedRect, getHigherNodeAndOffsetInSelection } from './utils-window';
 import visits from './visits';
 
+// TODO: make into a class extending a generic registry.
+
 export default {
   /**
    * List of comments.
@@ -137,6 +139,16 @@ export default {
    */
   getCount() {
     return this.items.length;
+  },
+
+  /**
+   * Get comments by a condition.
+   *
+   * @param {Function} condition
+   * @returns {Comment[]}
+   */
+  query(condition) {
+    return this.items.filter(condition);
   },
 
   /**

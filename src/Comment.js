@@ -1704,8 +1704,8 @@ class Comment extends CommentSkeleton {
 
     if (e && e.type === 'touchstart') {
       // FIXME: decouple
-      commentRegistry.getAll()
-        .filter((comment) => comment.isHovered)
+      commentRegistry
+        .query((comment) => comment.isHovered)
         .forEach((comment) => {
           comment.unhighlightHovered();
         });

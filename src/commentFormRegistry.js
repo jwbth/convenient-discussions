@@ -14,6 +14,8 @@ import { defined, removeFromArrayIfPresent } from './utils-general';
 import { mixEventEmitterIntoObject } from './utils-oojs';
 import { isCmdModifierPressed, isInputFocused, keyCombination } from './utils-window';
 
+// TODO: make into a class extending a generic registry.
+
 export default {
   /**
    * List of comment forms.
@@ -151,6 +153,16 @@ export default {
    */
   getCount() {
     return this.items.length;
+  },
+
+  /**
+   * Get comment forms by a condition.
+   *
+   * @param {Function} condition
+   * @returns {CommentForm[]}
+   */
+  query(condition) {
+    return this.items.filter(condition);
   },
 
   /**

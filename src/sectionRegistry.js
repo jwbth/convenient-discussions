@@ -11,6 +11,8 @@ import { areObjectsEqual, calculateWordOverlap, generateFixedPosTimestamp, space
 import { getExtendedRect, getVisibilityByRects } from './utils-window';
 import visits from './visits';
 
+// TODO: make into a class extending a generic registry.
+
 export default {
   /**
    * List of sections.
@@ -113,6 +115,16 @@ export default {
    */
   getCount() {
     return this.items.length;
+  },
+
+  /**
+   * Get sections by a condition.
+   *
+   * @param {Function} condition
+   * @returns {Section[]}
+   */
+  query(condition) {
+    return this.items.filter(condition);
   },
 
   /**
