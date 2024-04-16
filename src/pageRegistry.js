@@ -620,7 +620,7 @@ export class Page {
       }
     }
 
-    if (resp.result !== 'Success') {
+    if (resp.edit.result !== 'Success') {
       const code = resp.edit.captcha ? 'captcha' : undefined;
       throw new CdError({
         type: 'api',
