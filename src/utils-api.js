@@ -3,7 +3,7 @@
  * together with some user options handling functions. See also the {@link Page} class methods for
  * API methods related to specific titles.
  *
- * @module utils-api
+ * @module utilsApi
  */
 
 import CdError from './CdError';

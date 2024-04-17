@@ -2,70 +2,26 @@
 
 import Button from './Button';
 import CdError from './CdError';
-import DivLabelWidget from './DivLabelWidget';
 import ProcessDialog from './ProcessDialog';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
+import { canonicalUrlToPageName, defined } from './utils-general';
 import { generateFixedPosTimestamp, getDbnameForHostname, zeroPad } from './utils-general';
-import { createCheckboxField, createTextField, mixinUserOoUiClass, tweakUserOoUiClass } from './utils-oojs';
+import { createCheckboxField, createRadioField, createTextField, mixinUserOoUiClass, tweakUserOoUiClass } from './utils-oojs';
 import { wrapHtml } from './utils-window';
 
-function createRadioField({ label, help, options }) {
-  const items = options.map((config) => new RadioOptionWidget(config));
-  const select = new OO.ui.RadioSelectWidget({ items });
-
-  // Workarounds for T359920
-  select.$element.off('mousedown');
-  select.$focusOwner = $();
-
-  const field = new OO.ui.FieldLayout(select, {
-    label,
-    align: 'top',
-    help,
-    helpInline: true,
-  });
-
-  return { field, select, items };
-}
-
-function generateHistoryText(hostname, pageName) {
-  if (!pageName) {
-    return '';
-  }
-  const path = mw.util.getUrl(pageName, {
-    action: 'history',
-    offset: generateFixedPosTimestamp(new Date(), zeroPad(new Date().getUTCSeconds(), 2)),
-  });
-  const link = `https://${hostname}${path}`;
-  return `, see the [${link} history]`;
-}
-
-function canonicalUrlToPageName(url) {
-  return decodeURIComponent(url.slice(url.indexOf('/wiki/') + 6)).replace(/_/g, ' ');
-}
-
-class RadioOptionWidget extends OO.ui.RadioOptionWidget {
-  constructor(config) {
-    super(config);
-
-    this.$help = config.help ?
-      this.createHelpElement(config.help) :
-      $();
-    this.$label.append(this.$help);
-  }
-
-  createHelpElement(text) {
-    const helpWidget = new DivLabelWidget({
-      label: text,
-      classes: ['oo-ui-inline-help'],
-    });
-    this.radio.$input.attr('aria-describedby', helpWidget.getElementId());
-    return helpWidget.$element;
-  }
-}
-
+/**
+ * Button that inserts text in an input by click and looks like a link with dashed underline.
+ *
+ * @private
+ */
 class PseudoLink extends Button {
+  /**
+   * Create a pseudolink.
+   *
+   * @param {object} config
+   */
   constructor(config) {
     super({
       classes: ['cd-pseudolink'],
@@ -78,7 +34,27 @@ class PseudoLink extends Button {
   }
 }
 
+/**
+ * @class Upload
+ * @memberof external:mw
+ * @see https://doc.wikimedia.org/mediawiki-core/master/js/mw.Upload.html
+ */
+
+/**
+ * @class Dialog
+ * @memberof external:mw.Upload
+ * @see https://doc.wikimedia.org/mediawiki-core/master/js/mw.Upload.Dialog.html
+ */
+
+/**
+ * Class that extends {@link external:mw.Upload.Dialog} and adds some logic we need.
+ */
 class UploadDialog extends mw.Upload.Dialog {
+  /**
+   * Create an upload dialog.
+   *
+   * @param {object} [config={}]
+   */
   constructor(config = {}) {
     super(Object.assign({
       bookletClass: ForeignStructuredUploadBookletLayout,
@@ -89,6 +65,20 @@ class UploadDialog extends mw.Upload.Dialog {
     }, config));
   }
 
+  /**
+   * OOUI native method that returns a "setup" process which is used to set up a window for use in a
+   * particular context, based on the `data` argument.
+   *
+   * We load some stuff in here and modify the booklet's behavior (we can't do that in
+   * {@link ForeignStructuredUploadBookletLayout#initialize}, because we need some data loaded
+   * first).
+   *
+   * @param {object} data Dialog opening data
+   * @returns {external:OO.ui.Process}
+   * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getSetupProcess
+   * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
+   * @ignore
+   */
   getSetupProcess(data) {
     // This script is optional and used to improve description fields by using correct project
     // names and prefixes. With it, `wikt:fr:` will translate into "French Wiktionary" and
@@ -125,7 +115,7 @@ class UploadDialog extends mw.Upload.Dialog {
 
         data.commentForm?.popPending();
 
-        // For some reason there is no handling of network errors, the dialog just outputs "http".
+        // For some reason there is no handling of network errors; the dialog just outputs "http".
         if (
           messagesPromise.state() === 'rejected' ||
           this.uploadBooklet.upload.getApi().state() === 'rejected'
@@ -134,32 +124,40 @@ class UploadDialog extends mw.Upload.Dialog {
           return;
         }
 
-        this.uploadBooklet.modifyUploadForm();
-        this.uploadBooklet.modifyInfoForm();
-
-        if (data.file) {
-          this.uploadBooklet.setFile(data.file);
-        }
-        this.uploadBooklet.enProjectName = enProjectName;
         this.uploadBooklet
           .on('changeSteps', this.updateActionLabels.bind(this))
-          .on('submitUpload', () => {
-            this.executeAction('upload');
-          })
-          .on('fileSaved', () => {
-            // Pretend that the page hasn't changed to 'insert'
-            this.uploadBooklet.setPage('info');
-          });
-        this.uploadBooklet.onPresetChange();
+          .on('submitUpload', this.executeAction.bind(this, 'upload'));
+        this.uploadBooklet.setup(data.file, enProjectName);
       });
   }
 
+  /**
+   * OOUI native method that returns a "ready" process which is used to ready a window for use in a
+   * particular context.
+   *
+   * We focus the title input here.
+   *
+   * @returns {external:OO.ui.Process}
+   * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getReadyProcess
+   * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
+   * @ignore
+   */
   getReadyProcess() {
     return super.getReadyProcess().next(() => {
       this.uploadBooklet.controls?.title.input.focus();
     });
   }
 
+  /**
+   * OOUI native method that returns a process for taking action.
+   *
+   * We alter the handling of the `'upload'` and `'cancelupload'` actions.
+   *
+   * @param {string} action Symbolic name of the action.
+   * @returns {external:OO.ui.Process}
+   * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getActionProcess
+   * @ignore
+   */
   getActionProcess(action) {
     if (action === 'upload') {
       let process = new OO.ui.Process(this.uploadBooklet.uploadFile());
@@ -173,8 +171,7 @@ class UploadDialog extends mw.Upload.Dialog {
         });
       }
       return process;
-    }
-    if (action === 'cancelupload') {
+    } else if (action === 'cancelupload') {
       // The upstream dialog calls `.initialize()` here which clears all inputs including the file.
       // We don't want that.
       return new OO.ui.Process(this.uploadBooklet.cancelUpload());
@@ -183,10 +180,23 @@ class UploadDialog extends mw.Upload.Dialog {
     return super.getActionProcess(action);
   }
 
+  /**
+   * OOUI native method to get the height of the window body.
+   *
+   * @returns {number}
+   * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getBodyHeight
+   * @ignore
+   */
   getBodyHeight() {
     return 620;
   }
 
+  /**
+   * Update the labels of actions.
+   *
+   * @param {boolean} autosave Whether to save the upload when clicking the main button.
+   * @protected
+   */
   updateActionLabels(autosave) {
     this.autosave = autosave;
     if (this.autosave) {
@@ -200,20 +210,79 @@ class UploadDialog extends mw.Upload.Dialog {
     }
   }
 
+  /**
+   * @class Error
+   * @memberof external:OO.ui
+   * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.Error.html
+   */
+
+  /**
+   * OOUI native method.
+   *
+   * Here we use a hack to hide the second identical error message that can appear since we execute
+   * two actions, not one ("Upload and save").
+   *
+   * @param {external:OO.ui.Error} errors
+   * @protected
+   */
   showErrors(errors) {
-    // // A hack to hide the second identical error message that can appear since we execute two
-    // actions, not one ("Upload and save").
     this.hideErrors();
 
     super.showErrors(errors);
   }
 }
 
+/**
+ * @class BookletLayout
+ * @memberof external:mw.ForeignStructuredUpload
+ * @see https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html
+ */
+
+/**
+ * Class extending
+ * {@link external:mw.ForeignStructuredUpload.BookletLayout mw.ForeignStructuredUpload.BookletLayout}
+ * and adding more details to the process of uploading a file using the
+ * {@link external:mw.ForeignStructuredUpload mw.ForeignStructuredUpload} model.
+ *
+ * @augments external:mw.ForeignStructuredUpload.BookletLayout
+ */
 class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.BookletLayout {
+  /**
+   * Create a booklet layout for foreign structured upload.
+   *
+   * @param  {...any} args
+   */
   constructor(...args) {
     super(...args);
   }
 
+  /**
+   * Setup the booklet with some data. (This method is not in the parent class - it's our own.)
+   *
+   * @param {File} file
+   * @param {string} enProjectName
+   */
+  setup(file, enProjectName) {
+    this.modifyUploadForm();
+    this.modifyInfoForm();
+
+    if (file) {
+      this.setFile(file);
+    }
+    this.enProjectName = enProjectName;
+    this
+      .on('fileSaved', () => {
+        // Pretend that the page hasn't changed to 'insert'
+        this.setPage('info');
+      });
+    this.onPresetChange();
+  }
+
+  /**
+   * Add content and logic to the upload form.
+   *
+   * @protected
+   */
   modifyUploadForm() {
     // We hide that checkbox, replacing it with a radio select
     this.ownWorkCheckbox.setSelected(true);
@@ -306,11 +375,15 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
       });
     this.controls.title.input
       .on('change', this.onUploadFormChange.bind(this))
-      .on('enter', () => {
-        this.emit('submitUpload');
-      });
+      .on('enter', this.emit.bind(this, 'submitUpload'));
   }
 
+  /**
+   * Handle change events to the upload form.
+   *
+   * @see https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html#onUploadFormChange
+   * @protected
+   */
   async onUploadFormChange() {
     let valid = true;
     if (this.controls) {
@@ -321,6 +394,12 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
     this.emit('uploadValid', this.selectFileWidget.getValue() && valid);
   }
 
+  /**
+   * Handle events changing the preset.
+   *
+   * @param {import('./utils-oojs')~RadioOptionWidget|boolean} itemOrSelected
+   * @protected
+   */
   onPresetChange(itemOrSelected) {
     const preset = this.controls.preset.select.findSelectedItem().getData();
     const titleInputDisabled = preset !== 'projectScreenshot';
@@ -341,6 +420,12 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
     this.emit('changeSteps', this.isInfoFormOmitted());
   }
 
+  /**
+   * Find out whether the information form should be omitted given the current state of controls.
+   *
+   * @returns {boolean}
+   * @protected
+   */
   isInfoFormOmitted() {
     const preset = this.controls.preset.select.findSelectedItem().getData();
     return (
@@ -349,6 +434,12 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
     );
   }
 
+  /**
+   * Find out whether the inputs we added to the information form should be disabled.
+   *
+   * @returns {boolean}
+   * @protected
+   */
   areAddedInputsDisabled() {
     return (
       this.controls.preset.select.findSelectedItem().getData() === 'ownWork' &&
@@ -356,6 +447,11 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
     );
   }
 
+  /**
+   * Add content and logic to the information form.
+   *
+   * @protected
+   */
   modifyInfoForm() {
     this.controls.source = createTextField({
       label: cd.s('ud-source'),
@@ -387,6 +483,12 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
     ], 2);
   }
 
+  /**
+   * Handle change events to the information form.
+   *
+   * @see https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html#onInfoFormChange
+   * @protected
+   */
   async onInfoFormChange() {
     let valid = true;
     await Promise.all(
@@ -394,25 +496,39 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
         this.uploadPromise,
         this.filenameWidget.getValidity(),
         this.descriptionWidget.getValidity(),
-      ].concat(
-        this.controls ?
-          [
-            this.controls.source.input.getValidity(),
-            this.controls.author.input.getValidity(),
-            this.controls.license.input.getValidity(),
-          ] :
-          []
-      )
+        this.controls?.source.input.getValidity(),
+        this.controls?.author.input.getValidity(),
+        this.controls?.license.input.getValidity(),
+      ].filter(defined)
     ).catch(() => {
       valid = false;
     });
     this.emit('infoValid', valid);
   }
 
+  /**
+   * Returns a {@link external:mw.ForeignStructuredUpload mw.ForeignStructuredUpload} with the
+   * target specified in config.
+   *
+   * @returns {ForeignStructuredUpload}
+   * @protected
+   * @override
+   */
   createUpload() {
     return new ForeignStructuredUpload(this.target);
   }
 
+  /**
+   * Native methods that uploads the file that was added in the upload form. Uses
+   * {@link external:mw.Upload.BookletLayout#getFile getFile} to get the HTML5 file object.
+   *
+   * We add logic that changes the information form according to the user input in the upload form.
+   *
+   * @see
+   * https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html#uploadFile
+   * @returns {external:jQueryPromise}
+   * @protected
+   */
   uploadFile() {
     const preset = this.controls.preset.select.findSelectedItem().getData();
 
@@ -454,7 +570,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
           pageName = this.controls.title.input.getValue();
         }
 
-        historyText = generateHistoryText(cd.g.serverName, pageName);
+        historyText = this.constructor.generateHistoryText(cd.g.serverName, pageName);
       }
     }
 
@@ -517,7 +633,10 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
               ([messages, unprefixedPageName, hostname]) => {
                 if (!messages) return;
                 const projectName = Object.values(messages)[0];
-                const historyText = generateHistoryText(hostname, unprefixedPageName);
+                const historyText = this.constructor.generateHistoryText(
+                  hostname,
+                  unprefixedPageName
+                );
                 this.filenameWidget.setValue(`${projectName} ${unprefixedPageName} ${filenameDate}`);
                 this.controls.author.input.setValue(`${projectName} authors${historyText}`);
               },
@@ -570,20 +689,53 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
     return deferred;
   }
 
-  // Use UTC date for `lastModified` to make it precise and avoid leaking the user's timezone.
-  // This is for screenshots and files on the computer; we keep the original behavior for EXIF.
+  /**
+   * Native method that gets last modified date from file.
+   *
+   * We make the last modified date to use UTC to make it precise and avoid leaking the user's
+   * timezone. This is for screenshots and files on the computer; we keep the original behavior for
+   * EXIF.
+   *
+   * See also
+   * {@link ForeignStructuredUploadBookletLayout#getExactDateFromLastModified getExactDateFromLastModified}.
+   *
+   * @param {File} file
+   * @returns {string|undefined} Last modified date from file
+   * @see
+   *   https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html#getDateFromLastModified
+   * @protected
+   */
   getDateFromLastModified(file) {
     if (file.lastModified) {
       return moment(file.lastModified).utc().format('YYYY-MM-DD');
     }
   }
 
+  /**
+   * Get the last modified date from file in UTC, including hours, minutes, and seconds.
+   *
+   * See also
+   * {@link ForeignStructuredUploadBookletLayout#getDateFromLastModified getDateFromLastModified}.
+   *
+   * @param {File} file
+   * @returns {string|undefined} Last modified date from file
+   * @protected
+   */
   getExactDateFromLastModified(file) {
     if (file.lastModified) {
       return moment(file.lastModified).utc().format('YYYY-MM-DD HH-mm-ss');
     }
   }
 
+  /**
+   * Native method that gets the page text from the
+   * {@link external:mw.ForeignStructuredUpload.BookletLayout#infoForm information form}.
+   *
+   * @returns {string}
+   * @see
+   *   https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html#getText
+   * @protected
+   */
   getText() {
     this.upload.setSource(this.controls.source.input.getValue());
     this.upload.setUser(this.controls.author.input.getValue());
@@ -591,6 +743,16 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
     return super.getText();
   }
 
+  /**
+   * Native method that saves the stash finalizes upload. Uses
+   * {@link mw.Upload.ForeignStructuredUpload#getFilename getFilename}, and
+   * {@link ForeignStructuredUpload#getText getText} to get details from the form.
+   *
+   * @returns {external:jQueryPromise}
+   * @see
+   *   https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html#saveFile
+   * @protected
+   */
   saveFile() {
     this.categoriesWidget.addTag('Uploaded with Convenient Discussions');
 
@@ -605,17 +767,27 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
     return promise;
   }
 
+  /**
+   * Cancel the upload. (This method is not in the parent class - it's our own.)
+   *
+   * @protected
+   */
   cancelUpload() {
     this.onUploadFormChange();
     this.setPage('upload');
   }
 
+  /**
+   * Clear the values of the information form fields. Unlike the original dialog, we don't clear the
+   * upload form, including the file input, when the user presses "Back". We don't clear the date
+   * too. In the original dialog, there is not much to select on the first page apart from the file,
+   * so clearing the file input would make sense there.
+   *
+   * @see
+   *   https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html#clear
+   * @protected
+   */
   clear() {
-    // Unlike the original dialog, we don't clear the upload form, including the file input, when
-    // the user presses "Back". We don't clear the date too. In the original dialog, there is not
-    // much to select on the first page apart from the file, so clearing the file input would make
-    // sense there.
-
     // No idea how `.setValidityFlag(true)` is helpful; borrowed it from
     // `mw.Upload.BookletLayout.prototype.clear`. When we clear the fields that were filled in (e.g.
     // by choosing the "Own work" preset, pressing "Upload", then pressing "Back", then choosing "No
@@ -628,17 +800,52 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
       this.dateWidget.setValidityFlag(true);
     }
 
-    if (this.controls) {
-      // Clear the fields we added as well. We add them on the "setup" step, so they aren't there
-      // when `.clear()` initially runs.
-      this.controls.source.input.setValue(null).setValidityFlag(true);
-      this.controls.author.input.setValue(null).setValidityFlag(true);
-      this.controls.license.input.setValue(null).setValidityFlag(true);
+    // Clear the fields we added as well. We add them on the "setup" step, so they aren't there
+    // when `.clear()` initially runs.
+    this.controls?.source.input.setValue(null).setValidityFlag(true);
+    this.controls?.author.input.setValue(null).setValidityFlag(true);
+    this.controls?.license.input.setValue(null).setValidityFlag(true);
+  }
+
+  /**
+   * Generate the end part of text for the author input, linking page history.
+   *
+   * @param {string} hostname
+   * @param {string} pageName
+   * @returns {string}
+   * @private
+   */
+  static generateHistoryText(hostname, pageName) {
+    if (!pageName) {
+      return '';
     }
+    const path = mw.util.getUrl(pageName, {
+      action: 'history',
+      offset: generateFixedPosTimestamp(new Date(), zeroPad(new Date().getUTCSeconds(), 2)),
+    });
+    const link = `https://${hostname}${path}`;
+    return `, see the [${link} history]`;
   }
 }
 
+/**
+ * @class ForeignStructuredUpload
+ * @memberof external:mw
+ * @see https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.html
+ */
+
+/**
+ * Class extending {@link external:mw.ForeignStructuredUpload mw.ForeignStructuredUpload} and
+ * allowing to get and set additional fields.
+ *
+ * @augments external:mw.ForeignStructuredUpload
+ */
 class ForeignStructuredUpload extends mw.ForeignStructuredUpload {
+  /**
+   * Create a foreign structured upload.
+   *
+   * @param {string} target
+   */
   constructor(target) {
     super(target, {
       ...cd.getApiConfig(),
@@ -646,36 +853,70 @@ class ForeignStructuredUpload extends mw.ForeignStructuredUpload {
     });
   }
 
+  /**
+   * Set the source.
+   *
+   * @param {string} source
+   */
   setSource(source) {
     this.source = source;
   }
 
+  /**
+   * Set the author.
+   *
+   * @param {string} user
+   */
   setUser(user) {
     this.user = user;
   }
 
+  /**
+   * Set the license.
+   *
+   * @param {string} license
+   */
   setLicense(license) {
     this.license = license;
   }
 
+  /**
+   * Get the source.
+   *
+   * @returns {string}
+   */
   getSource() {
     return this.source;
   }
 
+  /**
+   * Get the author.
+   *
+   * @returns {string}
+   */
   getUser() {
     return this.user || this.getDefaultUser();
   }
 
+  /**
+   * Get the author as the parent method returns it.
+   *
+   * @returns {string}
+   */
   getDefaultUser() {
     return super.getUser();
   }
 
+  /**
+   * Get the license.
+   *
+   * @returns {string}
+   */
   getLicense() {
     return this.license;
   }
 }
 
-tweakUserOoUiClass(RadioOptionWidget);
 tweakUserOoUiClass(UploadDialog);
 tweakUserOoUiClass(ForeignStructuredUploadBookletLayout)
 tweakUserOoUiClass(ForeignStructuredUpload);

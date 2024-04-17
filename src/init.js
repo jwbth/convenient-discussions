@@ -955,8 +955,8 @@ export default {
 
   /**
    * _For internal use._ Assign various global objects' ({@link convenientDiscussions},
-   * {@link external:jQuery.fn}) properties and methods that are needed for processing a talk page.
-   * Executed on the first run.
+   * {@link external:jQuery.fn jQuery.fn}) properties and methods that are needed for processing a
+   * talk page. Executed on the first run.
    */
   async talkPage() {
     // In most cases the site data is already loaded after being requested in

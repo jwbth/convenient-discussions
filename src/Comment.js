@@ -2978,6 +2978,7 @@ class Comment extends CommentSkeleton {
    *   we're in the page processing phase (and {@link Comment#$elements} has not been requested,
    *   hence cached yet).
    * @param {Element|string} newElementOrHtml Element or HTML string to replace with.
+   * @returns {Element}
    */
   replaceElement(element, newElementOrHtml) {
     const nativeElement = element instanceof $ ? element[0] : element;
@@ -3007,6 +3008,8 @@ class Comment extends CommentSkeleton {
     if (this.anchorHighlightable === nativeElement) {
       this.anchorHighlightable = newElement;
     }
+
+    return newElement;
   }
 
   /**

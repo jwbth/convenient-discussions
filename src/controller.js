@@ -736,7 +736,7 @@ export default {
 
     // Don't throttle. Without throttling, performance is generally OK, while the "frame rate" is
     // about 50 (so, the reaction time is about 20ms). Lower values would be less comfortable.
-    this.emit('mousemove', e);
+    this.emit('mouseMove', e);
   },
 
   /**
@@ -846,7 +846,7 @@ export default {
    * @private
    */
   handleHorizontalScroll() {
-    this.emit('horizontalscroll');
+    this.emit('horizontalScroll');
   },
 
   /**
@@ -858,7 +858,7 @@ export default {
     // Use `popstate`, not `hashchange`, because we need to handle cases when the user clicks a
     // link with the same fragment as is in the URL.
     try {
-      this.emit('popstate', decodeURIComponent(location.hash.slice(1)));
+      this.emit('popState', decodeURIComponent(location.hash.slice(1)));
     } catch (e) {
       console.error(e);
     }
@@ -875,7 +875,7 @@ export default {
    */
   handleSelectionChange() {
     this.throttledHandleSelectionChange ||= OO.ui.throttle(() => {
-      this.emit('selectionchange');
+      this.emit('selectionChange');
     }, 200);
     this.throttledHandleSelectionChange();
   },
@@ -1113,10 +1113,10 @@ export default {
         await this.tryExecuteBootProcess();
 
         updateChecker
-          .on('checked', (revisionId) => {
+          .on('check', (revisionId) => {
             this.lastCheckedRevisionId = revisionId;
           })
-          .on('updatecomments', this.updateAddedComments.bind(this));
+          .on('commentsUpdate', this.updateAddedComments.bind(this));
       },
       (e) => {
         mw.notify(cd.s('error-loaddata'), { type: 'error' });
@@ -1174,13 +1174,11 @@ export default {
     // request is received. Otherwise, if the request fails, the user would be left with a
     // dysfunctional page.
 
-    this.emit('beforereload', bootProcess.passedData);
+    this.emit('beforeReload', bootProcess.passedData);
 
     if (!bootProcess.passedData.commentIds && !bootProcess.passedData.sectionId) {
       this.saveScrollPosition();
     }
-
-    notifications.close(bootProcess.passedData.closeNotificationsSmoothly ?? true);
 
     debug.init();
     debug.startTimer('total time');
@@ -1227,7 +1225,7 @@ export default {
     // current page state.
     this.bootProcess = bootProcess;
 
-    this.emit('reload');
+    this.emit('startReload');
 
     // Just submitted "Add section" form (it is outside of the `.$root` element). Forms that should
     // stay are detached above.
@@ -1240,8 +1238,9 @@ export default {
 
     await this.tryExecuteBootProcess(true);
 
-    toc.maybeHide();
-    if (!this.bootProcess.passedData.commentIds && !this.bootProcess.passedData.sectionId) {
+    this.emit('reload');
+
+    if (!bootProcess.passedData.commentIds && !bootProcess.passedData.sectionId) {
       this.restoreScrollPosition(false);
     }
   },
@@ -1555,9 +1554,7 @@ export default {
   showEditSubscriptionsDialog() {
     if (this.isPageOverlayOn()) return;
 
-    const EditSubscriptionsDialog = require('./EditSubscriptionsDialog').default;
-
-    const dialog = new EditSubscriptionsDialog();
+    const dialog = new (require('./EditSubscriptionsDialog').default)();
     this.getWindowManager().addWindows([dialog]);
     this.getWindowManager().openWindow(dialog);
   },
@@ -1610,9 +1607,7 @@ export default {
       return;
     }
 
-    const CopyLinkDialog = require('./CopyLinkDialog').default;
-
-    const dialog = new CopyLinkDialog(object, content);
+    const dialog = new (require('./CopyLinkDialog').default)(object, content);
     this.getWindowManager().addWindows([dialog]);
     this.getWindowManager().openWindow(dialog);
   },
@@ -1858,7 +1853,7 @@ export default {
       // Just in case, old browsers. TODO: delete?
       window.focus();
 
-      this.emit('desktopnotificationclick');
+      this.emit('desktopNotificationClick');
 
       this.reload({
         commentIds: [comment.id],
@@ -1883,7 +1878,7 @@ export default {
       this.relevantAddedCommentIds = all.map((comment) => comment.id);
     }
 
-    this.emit('commentsadded', {
+    this.emit('addedCommentsUpdate', {
       all,
       relevant,
       bySection: Comment.groupBySection(all),

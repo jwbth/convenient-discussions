@@ -1,7 +1,7 @@
 /**
  * Helpers for heavily used OOUI widgets and dialogs.
  *
- * @module utils-ooui
+ * @module utilsOoui
  */
 
 import controller from './controller';
@@ -169,29 +169,31 @@ import controller from './controller';
  * @returns {Promise.<Array>}
  */
 export async function showConfirmDialog(message, options = {}) {
-  const defaultOptions = {
-    message,
-
-    // OO.ui.MessageDialog standard
-    actions: [
-      {
-        action: 'accept',
-        label: OO.ui.deferMsg('ooui-dialog-message-accept'),
-        flags: 'primary',
-      },
-      {
-        action: 'reject',
-        label: OO.ui.deferMsg('ooui-dialog-message-reject'),
-        flags: 'safe',
-      },
-    ],
-  };
-
   const dialog = new OO.ui.MessageDialog({ classes: ['cd-dialog-confirm'] });
   controller.getWindowManager().addWindows([dialog]);
   const windowInstance = controller.getWindowManager().openWindow(
     dialog,
-    Object.assign({}, defaultOptions, options)
+    Object.assign(
+      // Default options
+      {
+        message,
+
+        // `OO.ui.MessageDialog` standard
+        actions: [
+          {
+            action: 'accept',
+            label: OO.ui.deferMsg('ooui-dialog-message-accept'),
+            flags: 'primary',
+          },
+          {
+            action: 'reject',
+            label: OO.ui.deferMsg('ooui-dialog-message-reject'),
+            flags: 'safe',
+          },
+        ],
+      },
+      options
+    )
   );
 
   return (await windowInstance.closed)?.action;
@@ -335,7 +337,7 @@ export function createCheckboxField({
  * @typedef {object} CreateRadioFieldReturn
  * @property {external:OO.ui.FieldLayout} field
  * @property {external:OO.ui.RadioSelectWidget} select
- * @property {external:OO.ui.RadioOptionWidget[]} items
+ * @property {RadioOptionWidget[]} items
  */
 
 /**
@@ -349,15 +351,24 @@ export function createCheckboxField({
  * @returns {CreateRadioFieldReturn}
  */
 export function createRadioField({ label, selected, help, options }) {
-  const items = options.map((config) => new OO.ui.RadioOptionWidget(config));
+  const items = options.map((config) => new (require('./RadioOptionWidget').default)(config));
   const select = new OO.ui.RadioSelectWidget({ items });
+
+  // Workarounds for T359920
+  select.$element.off('mousedown');
+  select.$focusOwner = $();
+
   const field = new OO.ui.FieldLayout(select, {
     label,
     align: 'top',
     help,
     helpInline: true,
   });
-  select.selectItemByData(selected);
+
+  if (selected !== undefined) {
+    select.selectItemByData(selected);
+  }
+
   return { field, select, items };
 }
 
@@ -427,8 +438,9 @@ export function mixinUserOoUiClass(targetClass, originClass) {
 }
 
 /**
- * Add {@link external:OO.EventEmitter}'s methods to an arbitrary object itself, not its prototype.
- * Can be used for singletons or classes. In the latter case, the methods will be added as static.
+ * Add {@link external:OO.EventEmitter OO.EventEmitter}'s methods to an arbitrary object itself, not
+ * its prototype. Can be used for singletons or classes. In the latter case, the methods will be
+ * added as static.
  *
  * @param {object} obj
  */

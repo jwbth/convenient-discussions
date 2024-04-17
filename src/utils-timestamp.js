@@ -6,10 +6,10 @@
  * - "date" is a `Date` object,
  * - "timestamp" is a string date as it is present on wiki pages (`23:29, 10 May 2019 (UTC)`).
  *
- * @module utils-timestamp
+ * @module utilsTimestamp
  */
 
-// Note: cd.settings is used in this module instead of imported "settings" to prevent adding that
+// Note: `cd.settings` is used in this module instead of imported "settings" to prevent adding that
 // module to the worker build (and a lot of others together with it).
 
 import { formatDistanceToNowStrict } from 'date-fns';

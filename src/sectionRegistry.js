@@ -33,9 +33,9 @@ export default {
     controller
       .on('scroll', this.maybeUpdateVisibility.bind(this));
     subscriptions
-      .on('processed', this.addSubscribeButtons.bind(this));
+      .on('process', this.addSubscribeButtons.bind(this));
     visits
-      .on('processed', this.updateNewCommentsData.bind(this));
+      .on('process', this.updateNewCommentsData.bind(this));
 
     if (this.improvePerformance) {
       // Unhide when the user opens a search box to allow searching the full page.
@@ -121,7 +121,7 @@ export default {
    * Get sections by a condition.
    *
    * @param {Function} condition
-   * @returns {Section[]}
+   * @returns {import('./Section').default[]}
    */
   query(condition) {
     return this.items.filter(condition);

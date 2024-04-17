@@ -13,6 +13,7 @@ import controller from './controller';
 import debug from './debug';
 import init from './init';
 import navPanel from './navPanel';
+import notifications from './notifications';
 import pageNav from './pageNav';
 import processFragment from './processFragment';
 import sectionRegistry from './sectionRegistry';
@@ -270,11 +271,12 @@ class BootProcess {
 
       updateChecker.init();
       toc.init(this.subscriptions);
-      commentRegistry.init();
       commentFormRegistry.init();
+      commentRegistry.init();
       LiveTimestamp.init();
       CommentForm.init();
       CommentFormInputTransformer.init();
+      notifications.init();
     }
     controller.setup(this.passedData.html);
     toc.setup(this.passedData.toc, this.passedData.hidetoc);

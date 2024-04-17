@@ -29,7 +29,7 @@ export default {
     this.canBeModified = settings.get('modifyToc');
 
     visits
-      .on('processed', () => {
+      .on('process', () => {
         // If all the comments on the page are unseen, don't add them to the TOC - the user would
         // definitely prefer to read the names of the topics easily. (But still consider them new -
         // otherwise the user can be confused, especially if there are few topics on an unpopular
@@ -46,19 +46,22 @@ export default {
         this.addCommentCount();
       });
     subscriptions
-      .on('processed', this.markSubscriptions.bind(this));
+      .on('process', this.markSubscriptions.bind(this));
     controller
-      .on('commentsadded', ({ bySection }) => {
+      .on('addedCommentsUpdate', ({ bySection }) => {
         this.addNewComments(bySection);
-      });
+      })
+      .on('reload', this.maybeHide.bind(this));
     updateChecker
-      .on('updatesections', this.addNewSections.bind(this));
+      .on('sectionsUpdate', this.addNewSections.bind(this));
   },
 
   /**
-   * _For internal use._ Hide the TOC if the relevant cookie is set. This method duplicates
+   * Hide the TOC if the relevant cookie is set. This method duplicates
    * {@link https://phabricator.wikimedia.org/source/mediawiki/browse/master/resources/src/mediawiki.toc/toc.js the native MediaWiki function}
    * and exists because we may need to hide the TOC earlier than the native method does it.
+   *
+   * @private
    */
   maybeHide() {
     if (this.isInSidebar() || !this.isPresent()) return;
@@ -80,7 +83,7 @@ export default {
     this.items = null;
     this.floating = null;
     this.visitsPromise = new Promise((resolve) => {
-      visits.once('processed', resolve);
+      visits.once('process', resolve);
     });
 
     if (this.isInSidebar() && sections) {
@@ -97,7 +100,7 @@ export default {
    * Get a TOC item by ID.
    *
    * @param {string} id
-   * @returns {?TocItem}
+   * @returns {?import('./toc')~TocItem}
    */
   getItem(id) {
     if (!this.isPresent()) {
@@ -675,8 +678,6 @@ export default {
 
 /**
  * Class representing an item of the table of contents.
- *
- * @private
  */
 class TocItem {
   /**

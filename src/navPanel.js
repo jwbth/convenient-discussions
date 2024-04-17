@@ -62,7 +62,7 @@ export default {
               this.goToNextCommentForm(true);
             }
           })
-          .on('commentsadded', ({ all, relevant, bySection }) => {
+          .on('addedCommentsUpdate', ({ all, relevant, bySection }) => {
             this.updateRefreshButton(all.length, bySection, Boolean(relevant.length));
           });
         commentFormRegistry
@@ -71,9 +71,9 @@ export default {
         LiveTimestamp
           .on('updateimproved', this.updateTimestampsInRefreshButtonTooltip.bind(this));
         visits
-          .on('processed', this.fill.bind(this));
+          .on('process', this.fill.bind(this));
         commentRegistry
-          .on('seenregistered', this.updateFirstUnseenButton.bind(this));
+          .on('registerSeen', this.updateFirstUnseenButton.bind(this));
       } else {
         this.reset();
       }

@@ -7,6 +7,7 @@
 import Comment from './Comment';
 import TreeWalker from './TreeWalker';
 import cd from './cd';
+import commentFormRegistry from './commentFormRegistry';
 import controller from './controller';
 import settings from './settings';
 import updateChecker from './updateChecker';
@@ -53,8 +54,8 @@ export default {
       .on('scroll', this.registerSeen.bind(this))
       .on('mutate', this.maybeRedrawLayers.bind(this))
       .on('resize', this.maybeRedrawLayers.bind(this))
-      .on('mousemove', this.maybeHighlightHovered.bind(this))
-      .on('popstate', (fragment) => {
+      .on('mouseMove', this.maybeHighlightHovered.bind(this))
+      .on('popState', (fragment) => {
         // Don't jump to the comment if the user pressed "Back"/"Forward" in the browser or if
         // `history.pushState()` is called from `Comment#scrollTo()` (after clicks on added (gray)
         // items in the TOC). A marginal state of this happening is when a page with a comment ID in
@@ -63,8 +64,8 @@ export default {
 
         this.getByAnyId(fragment, true)?.scrollTo();
       })
-      .on('selectionchange', this.getSelectedComment.bind(this))
-      .on('beforereload', (passedData) => {
+      .on('selectionChange', this.getSelectedComment.bind(this))
+      .on('beforeReload', (passedData) => {
         // Stop all animations, clear all timeouts.
         this.items.forEach((comment) => {
           comment.stopAnimations();
@@ -77,18 +78,19 @@ export default {
           this.resetLayers();
         }
       })
-      .on('reload', this.resetLayers.bind(this))
-      .on('commentsadded', ({ all }) => {
+      .on('startReload', this.resetLayers.bind(this))
+      .on('addedCommentsUpdate', ({ all }) => {
         this.addNewCommentsNotes(all);
       })
-      .on('desktopnotificationclick', this.maybeRedrawLayers.bind(this, true));
+      .on('desktopNotificationClick', this.maybeRedrawLayers.bind(this, true));
     visits
-      .on('processed', this.registerSeen.bind(this));
+      .on('process', this.registerSeen.bind(this));
     updateChecker
       // If the layers of deleted comments have been configured in `Comment#unmarkAsChanged()`, they
       // will prevent layers before them from being updated due to the "stop at the first three
       // unmoved comments" optimization in `.maybeRedrawLayers()`. So we just do the whole job here.
-      .on('change', this.maybeRedrawLayers.bind(this, true));
+      .on('newChanges', this.maybeRedrawLayers.bind(this, true));
+    commentFormRegistry
   },
 
   /**
@@ -321,7 +323,7 @@ export default {
       .slice(commentInViewport.index)
       .some(registerIfInViewport);
 
-    this.emit('seenregistered');
+    this.emit('registerSeen');
   },
 
   /**

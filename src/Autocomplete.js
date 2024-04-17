@@ -22,11 +22,12 @@ class Autocomplete {
    *   values should be autocompleted.
    * @param {external:TextInputWidget[]} options.inputs Inputs to attach the autocomplete to. Please
    *   note that these should be CD's {@link TextInputWidget}s, not
-   *   {@link external:OO.ui.TextInputWidget}s, since we use some CD's methods on the inputs here
-   *   ({@link TextInputWidget#cdFocus}, {@link TextInputWidget#cdInsertContent}). This is not
-   *   essential, so if you borrow the source code, you can replace them with native
-   *   {@link external:OO.ui.TextInputWidget#focus} and
-   *   {@link external:OO.ui.TextInputWidget#insertContent}.
+   *   {@link external:OO.ui.TextInputWidget OO.ui.TextInputWidget}s, since we use some CD's methods
+   *   on the inputs here ({@link TextInputWidget#cdFocus},
+   *   {@link TextInputWidget#cdInsertContent}). This is not essential, so if you borrow the source
+   *   code, you can replace them with native
+   *   {@link external:OO.ui.TextInputWidget#focus OO.ui.TextInputWidget#focus} and
+   *   {@link external:OO.ui.TextInputWidget#insertContent OO.ui.TextInputWidget#insertContent}.
    * @param {string[]} [options.comments] List of comments in the section for the mentions and
    *   comment links autocomplete.
    * @param {string[]} [options.defaultUserNames] Default list of user names for the mentions

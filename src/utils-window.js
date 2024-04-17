@@ -1,7 +1,7 @@
 /**
  * Utilities for the window context. DOM, rendering, visual effects, user input, etc.
  *
- * @module utils-window
+ * @module utilsWindow
  */
 
 import Button from './Button';
@@ -20,7 +20,8 @@ import { parseWikiUrl, isInline, removeFromArrayIfPresent } from './utils-genera
  * methods. It fills the same role as
  * {@link https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.HtmlSnippet.html OO.ui.HtmlSnippet}, but
  * works not only with OOUI widgets. Optionally, attach callback functions and `target="_blank"`
- * attribute to links with the provided class names. See also {@link external:$.cdMerge}.
+ * attribute to links with the provided class names. See also
+ * {@link external:jQuery.cdMerge jQuery.cdMerge}.
  *
  * @param {string} html
  * @param {object} [options={}]

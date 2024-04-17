@@ -77,7 +77,7 @@ export default {
 
     this.save();
 
-    this.emit('processed', this.currentPageData);
+    this.emit('process', this.currentPageData);
 
     /**
      * New comments have been highlighted.

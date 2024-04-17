@@ -49,7 +49,7 @@ class MoveSectionDialog extends ProcessDialog {
    *
    * @returns {number}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getBodyHeight
-   * @private
+   * @ignore
    */
   getBodyHeight() {
     return this.$errorItems ? this.$errors.prop('scrollHeight') : this.$body.prop('scrollHeight');
@@ -61,7 +61,7 @@ class MoveSectionDialog extends ProcessDialog {
    * @param {...*} [args]
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#initialize
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
-   * @private
+   * @ignore
    */
   initialize(...args) {
     super.initialize(...args);
@@ -103,7 +103,7 @@ class MoveSectionDialog extends ProcessDialog {
    * @returns {external:OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getSetupProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
-   * @private
+   * @ignore
    */
   getSetupProcess(data) {
     return super.getSetupProcess(data).next(() => {
@@ -120,7 +120,7 @@ class MoveSectionDialog extends ProcessDialog {
    * @returns {external:OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getReadyProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
-   * @private
+   * @ignore
    */
   getReadyProcess(data) {
     return super.getReadyProcess(data).next(async () => {
@@ -232,7 +232,7 @@ class MoveSectionDialog extends ProcessDialog {
    * @param {string} action Symbolic name of the action.
    * @returns {external:OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getActionProcess
-   * @private
+   * @ignore
    */
   getActionProcess(action) {
     if (action === 'move') {
@@ -285,7 +285,7 @@ class MoveSectionDialog extends ProcessDialog {
   /**
    * Handler of the event of change of the title input.
    *
-   * @private
+   * @protected
    */
   async onTitleInputChange() {
     let move = true;
@@ -300,7 +300,7 @@ class MoveSectionDialog extends ProcessDialog {
    *
    * @returns {object}
    * @throws {Array.<string|boolean>}
-   * @private
+   * @protected
    */
   async loadSourcePage() {
     try {
@@ -354,7 +354,7 @@ class MoveSectionDialog extends ProcessDialog {
    * @param {import('./pageRegistry').Page} targetPage
    * @returns {object}
    * @throws {Array.<string|boolean>}
-   * @private
+   * @protected
    */
   async loadTargetPage(targetPage) {
     try {
@@ -393,7 +393,7 @@ class MoveSectionDialog extends ProcessDialog {
    * @param {object} target
    * @returns {object}
    * @throws {Array.<string|boolean>}
-   * @private
+   * @protected
    */
   async editTargetPage(source, target) {
     let codeBeginning;
@@ -541,7 +541,7 @@ class MoveSectionDialog extends ProcessDialog {
    * @param {boolean} recoverable Is the error recoverable.
    * @param {boolean} [closeDialog=false] Close the dialog after pressing "Close" under the error
    *   message.
-   * @private
+   * @protected
    */
   abort(html, recoverable, closeDialog = false) {
     const $body = wrapHtml(html, {

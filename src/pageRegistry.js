@@ -987,8 +987,6 @@ export class Page {
 
 /**
  * Class that keeps the methods and data related to the page's source code.
- *
- * @private
  */
 class PageSource {
   /**

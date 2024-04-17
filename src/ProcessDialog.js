@@ -4,7 +4,8 @@ import controller from './controller';
 import { tweakUserOoUiClass } from './utils-oojs';
 
 /**
- * Our class that extends {@link external:OO.ui.ProcessDialog}, adding a couple of methods to it.
+ * Our class that extends {@link external:OO.ui.ProcessDialog OO.ui.ProcessDialog}, adding a couple
+ * of methods to it.
  *
  * @augments external:OO.ui.ProcessDialog
  */
@@ -13,7 +14,6 @@ class ProcessDialog extends OO.ui.ProcessDialog {
    * Check if there are unsaved changes.
    *
    * @returns {boolean}
-   * @protected
    */
   isUnsaved() {
     const saveButton = this.actions.get({ actions: 'save' })[0];
@@ -21,9 +21,7 @@ class ProcessDialog extends OO.ui.ProcessDialog {
   }
 
   /**
-   * Confirm closing a dialog.
-   *
-   * @protected
+   * Confirm closing the dialog.
    */
   confirmClose() {
     if (!this.isUnsaved(this) || confirm(cd.s(`${this.constructor.cdKey}-close-confirm`))) {

@@ -340,13 +340,13 @@ async function checkForUpdates() {
         // `lastCheckedRevisionId` corresponds to the versions of comments that are currently
         // rendered.
         lastCheckedRevisionId = revisionId;
-        updateChecker.emit('checked', lastCheckedRevisionId);
+        updateChecker.emit('check', lastCheckedRevisionId);
 
         if (isPageStillAtRevision(currentRevisionId)) {
           mapSections(sections);
           mapComments(currentComments, newComments);
 
-          updateChecker.emit('updatesections', sections)
+          updateChecker.emit('sectionsUpdate', sections)
 
           // We check for changes before notifying about new comments to notify about changes in a
           // renamed section if it is watched.
@@ -491,12 +491,12 @@ function checkForNewChanges(currentComments) {
         if (!comment.htmlToCompare || comment.htmlToCompare !== newComment.htmlToCompare) {
           const updateSuccess = comment.update(currentComment, newComment);
 
-          // It is above the Comment#markAsChanged call, because it's used in Comment#flashChanged
-          // called indirectly by Comment#markAsChanged.
+          // It is above the `Comment#markAsChanged()` call, because it's used in
+          // `Comment#flashChanged()` called indirectly by `Comment#markAsChanged()`.
           comment.htmlToCompare = newComment.htmlToCompare;
 
           comment.markAsChanged('changed', updateSuccess, lastCheckedRevisionId, commentsData);
-            events.changed = { updateSuccess };
+          events.changed = { updateSuccess };
         }
       } else if (comment.isChanged) {
         comment.update(currentComment, newComment);
@@ -517,7 +517,7 @@ function checkForNewChanges(currentComments) {
   });
 
   if (changeList.length) {
-    updateChecker.emit('changes', changeList);
+    updateChecker.emit('newChanges', changeList);
 
     /**
      * Existing comments have changed (probably edited).
@@ -627,7 +627,7 @@ async function processComments(comments, currentComments, currentRevisionId) {
 
   if (!isPageStillAtRevision(currentRevisionId)) return;
 
-  updateChecker.emit('updatecomments', newComments, relevantNewComments);
+  updateChecker.emit('commentsUpdate', newComments, relevantNewComments);
 }
 
 /**
@@ -661,7 +661,7 @@ const updateChecker = {
     mixEventEmitterIntoObject(this);
 
     visits
-      .on('processed', (currentPageData) => {
+      .on('process', (currentPageData) => {
         const bootProcess = controller.getBootProcess();
         this.setup(
           currentPageData.length >= 1 ?

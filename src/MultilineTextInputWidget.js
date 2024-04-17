@@ -2,7 +2,8 @@ import TextInputWidget from './TextInputWidget';
 import { mixinUserOoUiClass } from './utils-oojs';
 
 /**
- * Class that we use instead of {@link external:OO.ui.MultilineTextInputWidget} to include our
+ * Class that we use instead of
+ * {@link external:OO.ui.MultilineTextInputWidget OO.ui.MultilineTextInputWidget} to include our
  * mixin.
  *
  * @augments external:OO.ui.MultilineTextInputWidget

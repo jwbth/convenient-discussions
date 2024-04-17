@@ -35,11 +35,11 @@ export default {
     this.configureClosePageConfirmation();
 
     controller
-      .on('beforereload', () => {
+      .on('beforeReload', () => {
         // In case checkboxes were changed programmatically
         this.saveSession();
       })
-      .on('reload', this.detach.bind(this))
+      .on('startReload', this.detach.bind(this))
       .on('keydown', (e) => {
         if (
           // Ctrl+Alt+Q
@@ -107,6 +107,7 @@ export default {
      * @event commentFormCreated
      * @param {CommentForm} commentForm
      * @param {object} cd {@link convenientDiscussions} object.
+     * @global
      */
     mw.hook('convenientDiscussions.commentFormCreated').fire(item, cd);
 

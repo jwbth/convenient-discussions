@@ -61,7 +61,7 @@ class SettingsDialog extends ProcessDialog {
    *
    * @returns {number}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getBodyHeight
-   * @private
+   * @ignore
    */
   getBodyHeight() {
     return 600;
@@ -73,7 +73,7 @@ class SettingsDialog extends ProcessDialog {
    * @param {...*} [args]
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#initialize
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
-   * @private
+   * @ignore
    */
   initialize(...args) {
     super.initialize(...args);
@@ -120,10 +120,9 @@ class SettingsDialog extends ProcessDialog {
    *
    * @param {object} [data] Dialog opening data
    * @returns {external:OO.ui.Process}
-   * @see
-   *   https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.DialoggetSetupProcess
+   * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getSetupProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
-   * @private
+   * @ignore
    */
   getSetupProcess(data) {
     return super.getSetupProcess(data).next(() => {
@@ -140,7 +139,7 @@ class SettingsDialog extends ProcessDialog {
    * @returns {external:OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getReadyProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
-   * @private
+   * @ignore
    */
   getReadyProcess(data) {
     return super.getReadyProcess(data).next(async () => {
@@ -175,7 +174,7 @@ class SettingsDialog extends ProcessDialog {
    * @param {string} action Symbolic name of the action.
    * @returns {external:OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getActionProcess
-   * @private
+   * @ignore
    */
   getActionProcess(action) {
     if (action === 'save') {
@@ -223,7 +222,7 @@ class SettingsDialog extends ProcessDialog {
    * @param {object} settingValues Values of settings according to which to set the states of
    *   controls.
    * @returns {object}
-   * @private
+   * @protected
    */
   createPages(settingValues) {
     const controls = {};
@@ -360,7 +359,7 @@ class SettingsDialog extends ProcessDialog {
    *
    * @param {object} settingValues Values of settings according to which to set the states of
    *   controls.
-   * @private
+   * @protected
    */
   renderControls(settingValues) {
     settings.initUi();
@@ -378,9 +377,9 @@ class SettingsDialog extends ProcessDialog {
    * Get an object with settings related to states (see {@link module:settings.scheme}).
    *
    * @returns {object}
-   * @private
+   * @protected
    */
-  getStatesSettings() {
+  getStateSettings() {
     return settings.scheme.states.reduce((obj, state) => {
       obj[state] = this.settings[state];
       return obj;
@@ -391,7 +390,7 @@ class SettingsDialog extends ProcessDialog {
    * Get setting values from controls.
    *
    * @returns {object}
-   * @private
+   * @protected
    */
   collectSettings() {
     const collectedSettings = {};
@@ -432,7 +431,7 @@ class SettingsDialog extends ProcessDialog {
       {},
       settings.scheme.default,
       collectedSettings,
-      this.getStatesSettings(),
+      this.getStateSettings(),
       {
         'insertButtons-altered': (
           JSON.stringify(collectedSettings.insertButtons) !==
@@ -445,7 +444,7 @@ class SettingsDialog extends ProcessDialog {
   /**
    * Update the control states.
    *
-   * @private
+   * @protected
    */
   async updateStates() {
     const controls = this.controls;
@@ -486,7 +485,7 @@ class SettingsDialog extends ProcessDialog {
           {},
           settings.scheme.default,
           settings.scheme.resetsTo,
-          this.getStatesSettings(),
+          this.getStateSettings(),
         )
       ),
     });
@@ -496,7 +495,7 @@ class SettingsDialog extends ProcessDialog {
    * Handler of the event of change of the desktop notifications radio select.
    *
    * @param {external:OO.ui.RadioOptionWidget} option
-   * @private
+   * @protected
    */
   onDesktopNotificationsSelectChange(option) {
     if (typeof Notification === 'undefined') return;
@@ -514,7 +513,7 @@ class SettingsDialog extends ProcessDialog {
   /**
    * Remove script data as requested by the user after confirmation.
    *
-   * @private
+   * @protected
    */
   async removeData() {
     if (confirm(cd.s('sd-removedata-confirm'))) {

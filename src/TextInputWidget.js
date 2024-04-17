@@ -3,16 +3,22 @@ import { tweakUserOoUiClass } from './utils-oojs';
 import { getElementFromPasteHtml, cleanUpPasteDom, isElementConvertibleToWikitext } from './utils-window';
 
 /**
- * Class that extends {@link external:OO.ui.TextInputWidget} and has some features we need.
+ * An input was changed manually.
+ *
+ * @param {*} value Value of the input.
+ */
+
+/**
+ * Class that extends {@link external:OO.ui.TextInputWidget OO.ui.TextInputWidget} and has some
+ * features we need.
  *
  * @augments external:OO.ui.TextInputWidget
  */
 class TextInputWidget extends OO.ui.TextInputWidget {
   /**
-   * Create an instance.
+   * Create a text input widget.
    *
    * @param  {...any} args
-   * @fires manualChange The input changed by user action.
    */
   constructor(...args) {
     super(...args);
@@ -73,10 +79,10 @@ class TextInputWidget extends OO.ui.TextInputWidget {
   }
 
   /**
-   * Given the return value of {@link module:utils-window.processPasteDom}, convert the HTML to
+   * Given the return value of {@link module:utilsWindow.cleanUpPasteDom}, convert the HTML to
    * wikitext if necessary.
    *
-   * @param {object} data Return value of {@link module:utils-window.cleanUpPasteDom}.
+   * @param {object} data Return value of {@link module:utilsWindow.cleanUpPasteDom}.
    * @returns {string}
    */
   async maybeConvertElementToWikitext({ element, text, syntaxHighlightLanguages }) {

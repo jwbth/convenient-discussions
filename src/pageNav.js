@@ -58,7 +58,7 @@ export default {
 
     controller
       .on('scroll', this.update.bind(this))
-      .on('horizontalscroll', this.updateWidth.bind(this))
+      .on('horizontalScroll', this.updateWidth.bind(this))
       .on('resize', this.updateWidth.bind(this));
   },
 

@@ -47,6 +47,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
    *
    * @returns {number}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getBodyHeight
+   * @ignore
    */
   getBodyHeight() {
     return (
@@ -63,6 +64,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
    * @param {...*} [args]
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#initialize
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
+   * @ignore
    */
   initialize(...args) {
     super.initialize(...args);
@@ -97,6 +99,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
    * @returns {external:OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getSetupProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
+   * @ignore
    */
   getSetupProcess(data) {
     return super.getSetupProcess(data).next(() => {
@@ -113,7 +116,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
    * @returns {external:OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getReadyProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
-   * @private
+   * @ignore
    */
   getReadyProcess(data) {
     return super.getReadyProcess(data).next(async () => {
@@ -176,7 +179,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
    * @param {string} action Symbolic name of the action.
    * @returns {external:OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getActionProcess
-   * @private
+   * @ignore
    */
   getActionProcess(action) {
     if (action === 'save') {
@@ -192,7 +195,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
   /**
    * Save the subscriptions list.
    *
-   * @private
+   * @protected
    */
   async save() {
     this.updateSize();

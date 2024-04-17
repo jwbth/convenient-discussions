@@ -21,6 +21,16 @@ export default {
   data: [],
 
   /**
+   * Initialize the singleton.
+   */
+  init() {
+    controller
+      .on('beforeReload', (passedData) => {
+        this.close(passedData.closeNotificationsSmoothly ?? true);
+      });
+  },
+
+  /**
    * Show a notificaition and add it to the registry. This is used to be able to keep track of shown
    * notifications and close them all at once if needed. Most notifications are shown using simple
    * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.html#.notify mw.notify()} or

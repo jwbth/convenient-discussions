@@ -41,7 +41,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    * @param {...*} [args]
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.MessageDialog.html#initialize
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
-   * @private
+   * @ignore
    */
   initialize(...args) {
     super.initialize(...args);
@@ -97,9 +97,9 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    *
    * @param {object} [data] Dialog opening data
    * @returns {external:OO.ui.Process}
-   * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.Window.html#getSetupProcess
+   * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.Dialog.html#getSetupProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
-   * @private
+   * @ignore
    */
   getSetupProcess(data) {
     return super.getSetupProcess(data).next(() => {
@@ -120,7 +120,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    *
    * @param {boolean} successful
    * @param {external:OO.ui.CopyTextLayout} field
-   * @private
+   * @protected
    */
   async copyCallback(successful, field) {
     if (successful) {
@@ -138,7 +138,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   /**
    * Create the "Diff" panel in the dialog.
    *
-   * @private
+   * @protected
    */
   async createDiffPanel() {
     let errorText;
@@ -181,7 +181,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    * Create the content of the "Anchor" panel in the dialog.
    *
    * @returns {external:jQuery}
-   * @private
+   * @protected
    */
   createAnchorPanelContent() {
     // Doesn't apply to DT IDs.
@@ -243,7 +243,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    * Create the content of the "Diff" panel in the dialog.
    *
    * @returns {external:jQuery}
-   * @private
+   * @protected
    */
   createDiffPanelContent() {
     const copyCallback = this.copyCallback.bind(this);

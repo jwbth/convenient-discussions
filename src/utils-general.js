@@ -2,7 +2,7 @@
  * General utilities. Some of the utilities are parts of the
  * {@link convenientDiscussions.api convenientDiscussions.api} object.
  *
- * @module util-general
+ * @module utilsGeneral
  */
 
 import html_entity_decode from 'locutus/php/strings/html_entity_decode';
@@ -793,4 +793,14 @@ export function parseWikiUrl(url) {
     return null;
   }
   return { pageName, hostname, fragment };
+}
+
+/**
+ * Get a page name from a URL in the canonical format (`.../wiki/Page`).
+ *
+ * @param {string} url
+ * @returns {string}
+ */
+export function canonicalUrlToPageName(url) {
+  return decodeURIComponent(url.slice(url.indexOf('/wiki/') + 6)).replace(/_/g, ' ');
 }

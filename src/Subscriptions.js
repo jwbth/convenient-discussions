@@ -37,7 +37,7 @@ class Subscriptions {
    * Process subscriptions when they are {@link .loadToTalkPage loaded to a talk page}.
    */
   process() {
-    this.emit('processed');
+    this.emit('process');
   }
 
   /**

@@ -821,7 +821,7 @@ class Thread {
         });
       updateChecker
         // Start and end elements of threads may be replaced, so we need to restart threads.
-        .on('change', this.init.bind(this, false));
+        .on('newChanges', this.init.bind(this, false));
     }
 
     this.collapseThreadsLevel = settings.get('collapseThreadsLevel');

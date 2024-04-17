@@ -1,5 +1,5 @@
 /**
- * jQuery extensions. See {@link external:jQuery.fn}.
+ * jQuery extensions. See {@link external:jQuery.fn jQuery.fn}.
  *
  * @module jqueryExtensions
  */
@@ -16,6 +16,7 @@ import { defined, isMetadataNode, sleep } from './utils-general';
  * @param {Array.<external:jQuery|undefined>} arrayOfJquery jQuery objects. Undefined values will be
  *   omitted.
  * @returns {external:JQuery} jQuery
+ * @name cdMerge
  * @memberof external:jQuery
  */
 $.cdMerge = function (...arrayOfJquery) {
@@ -23,7 +24,7 @@ $.cdMerge = function (...arrayOfJquery) {
 }
 
 /**
- * jQuery. See {@link external:jQuery.fn} for extensions.
+ * jQuery. See {@link external:jQuery.fn jQuery.fn} for extensions.
  *
  * @external jQuery
  * @type {object}
