@@ -46,8 +46,6 @@ export default {
    * _For internal use._ Initialize the registry.
    */
   init() {
-    this.reformatCommentsSetting = settings.get('reformatComments');
-
     mixEventEmitterIntoObject(this);
 
     controller
@@ -98,6 +96,7 @@ export default {
    * addition to those performed when each comment is added to the registry.
    */
   setup() {
+    this.reformatCommentsSetting = settings.get('reformatComments');
     this.reformatTimestamps();
     this.findAndUpdateTableComments();
     this.adjustDom();

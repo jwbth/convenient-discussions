@@ -250,7 +250,7 @@
 
   "rc-suggestion": "<p>Convenient Discussions has an option to change the formatting of comments, moving the author and timestamp up and the reply and thank buttons down. This allows to quickly see the author and date of comments and interact with them easier. Do you want to enable it? (You can always disable it in the settings.)</p>\n\n<p>Note that, in the new formatting, you can get a link to the comment by clicking the timestamp. Also, see <span class=\"cd-notification-settings\">[[$1|the settings]]</span> for various features, such as text insert buttons and customizable formatting of timestamps (which, by the way, are displayed in the timezone set in your wiki preferences by default).</p>",
   "rc-suggestion-yes": "Enable the new formatting",
-  "rc-suggestion-no": "Keep the usual formatting",
+  "rc-suggestion-no": "Keep the regular formatting",
 
   "topicsubscription-button-subscribe": "subscribe",
   "topicsubscription-button-subscribe-tooltip": "{{GENDER:|Subscribe}} to receive notifications about new comments.",
@@ -330,7 +330,7 @@
   "sd-reset": "Reset settings (in all sections)",
   "sd-reset-confirm": "Are you sure you want to reset the settings? (Click \"{{int:convenient-discussions-sd-save}}\" after resetting.)",
   "sd-removedata": "Delete all script data",
-  "sd-removedata-description": "Delete the data that Convenient Discussions has collected: your settings, talk page last visits, subscriptions, and drafts of unsent comments",
+  "sd-removedata-description": "Delete the data that Convenient Discussions has collected: your settings, talk page last visits, legacy subscriptions, and drafts of unsent comments",
   "sd-removedata-help": "Note that everything except the global settings is deleted for the current wiki only. If you have used Convenient Discussions on other wikis and you want to delete data for them, you will have to delete it on those wikis. See [[mw:c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions#Data|the script's homepage]] for the details on what, why, and how the script stores and instructions on how to delete each piece of data individually. <strong>Note:</strong> If you use the standard notifications interface for topic subscriptions, your subscriptions aren't deleted as they are part of your wiki account.",
   "sd-removedata-confirm": "This will permanently delete your settings, talk page last visits, subscriptions, and drafts of unsent comments. Do you want to proceed?",
   "sd-dataremoved": "Your data has been successfully deleted. To prevent creation of any new data, make sure you don't visit any talk pages before disabling Convenient Discussions.",
