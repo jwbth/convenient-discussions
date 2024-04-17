@@ -2278,7 +2278,12 @@ class Comment extends CommentSkeleton {
             this.section?.update($html);
           }
         } else {
-          this.replaceElement(this.$elements.eq(i), html);
+          const $element = this.$elements.eq(i);
+          const isHidden = $element.hasClass('cd-hidden');
+          const newElement = this.replaceElement($element, html);
+          if (isHidden) {
+            $(newElement).addClass('cd-hidden');
+          }
         }
       });
       this.$elements.find('.autonumber').each((i, el) => {

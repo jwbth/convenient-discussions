@@ -89,6 +89,7 @@ export default {
       // unmoved comments" optimization in `.maybeRedrawLayers()`. So we just do the whole job here.
       .on('newChanges', this.maybeRedrawLayers.bind(this, true));
     commentFormRegistry
+      .on('teardown', this.registerSeen.bind(this));
   },
 
   /**
