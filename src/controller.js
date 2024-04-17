@@ -8,6 +8,7 @@
 import Autocomplete from './Autocomplete';
 import BootProcess from './BootProcess';
 import Comment from './Comment';
+import CommentForm from './CommentForm';
 import DtSubscriptions from './DtSubscriptions';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import LegacySubscriptions from './LegacySubscriptions';
@@ -144,7 +145,7 @@ export default {
     this.mutationObserver?.disconnect();
     commentRegistry.reset();
     sectionRegistry.reset();
-    cd.page.forgetCommentForm('addSection');
+    CommentForm.forgetOnTarget(cd.page, 'addSection');
     this.content = {};
     this.addedCommentCount = 0;
     this.areRelevantCommentsAdded = false;
