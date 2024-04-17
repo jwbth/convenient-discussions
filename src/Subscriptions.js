@@ -127,6 +127,10 @@ class Subscriptions {
    * @throws {CdError}
    */
   getState(subscribeId) {
+    if (!cd.user.isRegistered()) {
+      return null;
+    }
+
     if (!this.areLoaded()) {
       throw new CdError();
     }

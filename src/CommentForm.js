@@ -3822,6 +3822,7 @@ class CommentForm {
   onboardOntoMultipleForms() {
     if (
       this.manyFormsOnboarded ||
+      !cd.user.isRegistered() ||
       commentFormRegistry.getCount() !== 2 ||
 
       // Left column hidden in Timeless
@@ -3875,6 +3876,7 @@ class CommentForm {
   onboardOntoUpload() {
     if (
       this.uploadOnboarded ||
+      !cd.user.isRegistered() ||
 
       // Left column hidden in Timeless
       (cd.g.skin === 'timeless' && window.innerWidth < 1100) ||

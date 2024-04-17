@@ -83,6 +83,8 @@ class DtSubscriptions extends Subscriptions {
    * @private
    */
   async addPageSubscribeButton() {
+    if (!cd.user.isRegistered()) return;
+
     this.pageSubscribeButton = new Button({
       element: mw.util.addPortletLink(
         'p-cactions',

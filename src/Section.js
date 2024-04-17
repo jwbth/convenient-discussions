@@ -339,7 +339,7 @@ class Section extends SectionSkeleton {
    * @fires subscribeButtonAdded
    */
   addSubscribeButton() {
-    if (!this.subscribeId || cd.page.isArchivePage()) return;
+    if (!this.subscribeId) return;
 
     /**
      * Subscription state of the section. Currently, `true` stands for "subscribed", `false` for
