@@ -48,7 +48,6 @@ module.exports = {
     "jsdoc/check-tag-names": "warn",
     "jsdoc/check-types": "warn",
     "jsdoc/implements-on-classes": "warn",
-    "jsdoc/newline-after-description": "warn",
     "jsdoc/no-undefined-types": "warn",
     "jsdoc/require-jsdoc": ["warn", {
       "require": {
@@ -66,6 +65,13 @@ module.exports = {
     "jsdoc/require-returns-check": "warn",
     // "jsdoc/require-returns-description": "warn",
     "jsdoc/require-returns-type": "warn",
+    "jsdoc/tag-lines": [
+      "warn",
+      "any",
+      {
+        startLines: 1,
+      },
+    ],
     "jsdoc/valid-types": "warn",
     "no-constant-condition": ["error", { "checkLoops": false }],
     "no-control-regex": "off",
