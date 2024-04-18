@@ -2913,10 +2913,11 @@ class CommentForm {
    * @param {string} code Code to save.
    * @param {import('./CommentFormOperationRegistry').CommentFormOperation} operation Operation the
    *   form is undergoing.
+   * @param {boolean} [suppressTag]
    * @returns {Promise.<object|null>}
    * @private
    */
-  async editPage(code, operation) {
+  async editPage(code, operation, suppressTag) {
     let result;
     try {
       const options = {
@@ -2939,6 +2940,9 @@ class CommentForm {
       }
       options.baserevid = sectionOrPage?.revisionId;
       options.starttimestamp = sectionOrPage?.queryTimestamp;
+      if (suppressTag) {
+        options.tag = undefined;
+      }
       result = await this.targetPage.edit(options);
     } catch (e) {
       delete this.captchaInput;
@@ -2981,7 +2985,10 @@ class CommentForm {
           });
 
           if (code === 'editconflict') {
-            this.submit(true);
+            this.submit(false);
+          }
+          if (code === 'tags-apply-blocked') {
+            this.submit(false, true);
           }
         }
       } else {
@@ -3096,9 +3103,10 @@ class CommentForm {
   /**
    * Submit the form.
    *
-   * @param {boolean} [afterEditConflict=false]
+   * @param {boolean} [clearMessages=true]
+   * @param {boolean} [suppressTag=false]
    */
-  async submit(afterEditConflict = false) {
+  async submit(clearMessages = true, suppressTag = false) {
     const doDelete = this.deleteCheckbox?.isSelected();
     if (this.isBeingSubmitted() || this.isContentBeingLoaded() || !this.runChecks({ doDelete })) {
       return;
@@ -3112,12 +3120,12 @@ class CommentForm {
       return;
     }
 
-    const operation = this.operations.add('submit', undefined, !afterEditConflict);
+    const operation = this.operations.add('submit', undefined, clearMessages);
 
     const { contextCode, commentCode } = await this.buildSource('submit', operation) || {};
     if (operation.isClosed()) return;
 
-    const editTimestamp = await this.editPage(contextCode, operation);
+    const editTimestamp = await this.editPage(contextCode, operation, suppressTag);
 
     // The operation is closed inside `CommentForm#editPage`.
     if (!editTimestamp) return;
