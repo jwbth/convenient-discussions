@@ -286,7 +286,7 @@ describe('Tricky markup', () => {
   testWithData(
     'File markup',
     'Start.\n[[File:Example.png]]\nEnd.',
-    ': Start.\n: [[File:Example.png]]\n: End. ~~~~\n',
+    ': Start.<br>[[File:Example.png]]<br>End. ~~~~\n',
     firstCommentReplyForm
   );
   testWithData(

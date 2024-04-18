@@ -22,11 +22,14 @@ window.mw = {
 
 const getTimezoneOffset = require('date-fns-tz').getTimezoneOffset;
 
+self.$ = {};
+require('../src/jqueryExtensions');
+
 const Comment = require('../src/Comment').default;
 const cd = require('../src/cd').default;
 const en = require('../i18n/en.json');
 const settings = require('../src/settings').default;
-const { formatDateNative, initDayjs } = require('../src/timestamp');
+const { formatDateNative, initDayjs } = require('../src/utils-timestamp');
 
 cd.config = {
   defaultInsertButtons: [],
@@ -93,6 +96,9 @@ function testWithSettings(
       timestampElement: {},
       setDateUpdateTimer: () => {},
       extraSignatures: [],
+      timestampFormat,
+      useUiTime,
+      hideTimezone,
     };
 
     const adaptedReformatTimestamp = (date) => {
