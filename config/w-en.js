@@ -210,25 +210,25 @@ export default {
   ],
 
   // eslint-disable-next-line no-unused-vars
-  quoteFormatting: function (isMultiline, author, timestamp, dtId) {
+  quoteFormatting: function (useBlockFormatting, author, timestamp, dtId) {
     var pre = '';
     var post = '';
-    // if (isMultiline) {
-    //   pre = '{{tqb|text=';
-    //   if (author) {
-    //     post += '|by=' + author;
-    //   }
-    //   if (timestamp) {
-    //     post += '|ts=' + timestamp;
-    //   }
-    //   if (dtId) {
-    //     post += '|id=' + dtId;
-    //   }
-    //   post += '}}';
-    // } else {
+    if (useBlockFormatting) {
+      pre = '{{tqb|text=';
+      if (author) {
+        post += '|by=' + author;
+      }
+      if (timestamp) {
+        post += '|ts=' + timestamp;
+      }
+      if (dtId) {
+        post += '|id=' + dtId;
+      }
+      post += '}}';
+    } else {
       pre = '{{tq|1='
       post += '}}<br>';
-    // }
+    }
     return [pre, post];
   },
 

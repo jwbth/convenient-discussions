@@ -532,7 +532,15 @@ class Comment extends CommentSkeleton {
       this.overlayMenu.appendChild(this.replyButton.element);
     }
 
-    if (commentRegistry.getByIndex(this.index + 1)?.isOutdented) {
+    if (
+      commentRegistry.getByIndex(this.index + 1)?.isOutdented &&
+      (
+        !this.section ||
+
+        // Probably shouldn't add a comment to a numbered list
+        this.elements[0].matches('ol *')
+      )
+    ) {
       this.replyButton.setDisabled(true);
       this.replyButton.setTooltip(cd.s('cm-reply-outdented-tooltip'));
     }
@@ -2737,6 +2745,26 @@ class Comment extends CommentSkeleton {
         initialStateOrCommentForm = { focus: false };
         this.fixSelection();
       }
+    }
+
+    if (commentRegistry.getByIndex(this.index + 1)?.isOutdented && this.section) {
+      this.section.reply({ outdentNotice: true });
+      const range = document.createRange();
+      if (this.isReformatted) {
+        range.setStart(this.headerElement, this.headerElement.childNodes.length);
+      } else {
+        range.setStart(this.elements[0], 0);
+      }
+      if (this.isReformatted) {
+        range.setEnd(this.menuElement, 0);
+      } else {
+        range.setEnd(this.elements.slice(-1)[0], this.elements.slice(-1)[0].childNodes.length);
+      }
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      this.section.replyForm.quote(true, this, true);
+      return;
     }
 
     /**

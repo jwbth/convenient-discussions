@@ -275,23 +275,23 @@ export default {
   ],
 
   // eslint-disable-next-line no-unused-vars
-  quoteFormatting: function (isMultiline, author, timestamp, dtId) {
+  quoteFormatting: function (useBlockFormatting, author, timestamp, dtId) {
     var pre = '{{цс|1=';
     var post = '';
-    // if (isMultiline) {
-    //   if (author) {
-    //     post += '|2=' + author;
-    //   }
-    //   if (timestamp) {
-    //     post += '|3=' + timestamp;
-    //   }
-    //   if (dtId) {
-    //     post += '|4=' + dtId;
-    //   }
-    //   post += '}}';
-    // } else {
+    if (useBlockFormatting) {
+      if (author) {
+        post += '|2=' + author;
+      }
+      if (timestamp) {
+        post += '|3=' + timestamp;
+      }
+      if (dtId) {
+        post += '|4=' + dtId;
+      }
+      post += '}}';
+    } else {
       post = '|inline=1}}<br>';
-    // }
+    }
     return [pre, post];
   },
 

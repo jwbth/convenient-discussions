@@ -184,6 +184,7 @@
 
   "cf-notice-nochanges": "No changes.",
   "cf-notice-editconflict-retrying": "Trying again…",
+  "cf-notice-outdent": "The comment you are replying to has [[$1|outdented]] replies. You can only reply to such a comment by replying to the section.",
 
   "cf-error-getpagecode": "Couldn't get the page code.",
   "cf-error-closed": "The discussion is closed.",

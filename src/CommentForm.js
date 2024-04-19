@@ -236,6 +236,21 @@ class CommentForm {
          */
         this.lastFocused = new Date(initialState.lastFocused);
       }
+      if (initialState.outdentNotice) {
+        this.showMessage(
+          wrapHtml(
+            cd.sParse(
+              'cf-notice-outdent',
+              (new mw.Title(cd.config.outdentTemplates[0], 10)).toString()
+            ),
+            { targetBlank: true }
+          ),
+          {
+            type: 'notice',
+            name: 'outdent',
+          }
+        );
+      }
     } else {
       if (this.mode === 'edit') {
         this.loadComment();
@@ -3508,8 +3523,10 @@ class CommentForm {
    * @param {boolean} allowEmptySelection Insert markup (with a placeholder text) even if the
    *   selection is empty.
    * @param {Comment} [comment] Quoted comment.
+   * @param {boolean} useBlockFormatting Whether to use a template with block formatting, if
+   *   available.
    */
-  async quote(allowEmptySelection, comment) {
+  async quote(allowEmptySelection, comment, useBlockFormatting) {
     let selection;
     if (isInputFocused()) {
       const activeElement = document.activeElement;
@@ -3538,12 +3555,7 @@ class CommentForm {
 
       const [pre, post] = typeof cd.config.quoteFormatting === 'function' ?
         cd.config.quoteFormatting(
-          // Is multiline
-          Boolean(
-            selection.includes('\n') ||
-            selection.match(new RegExp(`<${cd.g.pniePattern}\\b`, 'i'))
-          ),
-
+          useBlockFormatting,
           comment?.author.getName(),
           comment?.timestamp,
           comment?.dtId

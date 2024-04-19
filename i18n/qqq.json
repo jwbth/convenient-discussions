@@ -183,6 +183,7 @@
 	"cf-reaction-mention-nosignature": "Message outputted above the comment form when he user inserts a mention into the comment input using the autocomplete function and the \"No signature\" checkbox is set.",
 	"cf-notice-nochanges": "Message outputted above the comment form when viewing changes in the source code and there is no.",
 	"cf-notice-editconflict-retrying": "Text added to the edit conflict notice ({{msg-wm|Convenient-discussions-error-editconflict}}) when the script automatically tries to resend the form.",
+	"cf-notice-outdent": "Message outputted above the comment form when replying to a comment with replies having an \"Outdent\" template (e.g. https://en.wikipedia.org/wiki/Template:Outdent) under it.\n\n* $1: the page name of the \"Outdent\" template.",
 	"cf-error-getpagecode": "Error message outputted above the comment form.",
 	"cf-error-closed": "Error message outputted above the comment form.",
 	"cf-error-findplace": "Error message outputted above the comment form.\n\nSee also {{msg-wm|Convenient-discussions-cf-error-findplace-unexpectedheading}}.",
