@@ -48,7 +48,6 @@ module.exports = {
     "jsdoc/check-tag-names": "warn",
     "jsdoc/check-types": "warn",
     "jsdoc/implements-on-classes": "warn",
-    "jsdoc/no-undefined-types": "warn",
     "jsdoc/require-jsdoc": ["warn", {
       "require": {
         "FunctionDeclaration": true,
@@ -72,7 +71,11 @@ module.exports = {
         startLines: 1,
       },
     ],
-    "jsdoc/valid-types": "warn",
+
+    // Produces a lot of strange errors, doesn't support `external:`
+    "jsdoc/valid-types": "off",
+    "jsdoc/no-undefined-types": "off",
+
     "no-constant-condition": ["error", { "checkLoops": false }],
     "no-control-regex": "off",
     "import/order": ["warn", {

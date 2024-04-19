@@ -1590,7 +1590,7 @@ class Section extends SectionSkeleton {
   /**
    * Get the TOC item for the section if present.
    *
-   * @returns {?import('./toc')~TocItem}
+   * @returns {?import('./toc').TocItem}
    */
   getTocItem() {
     return toc.getItem(this.id);

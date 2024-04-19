@@ -3263,7 +3263,7 @@ class CommentForm {
    * Show or hide messages as a result of comparing the text to the data in a reaction object.
    *
    * @param {string} text Text to check for reactions to.
-   * @param {import('../config/default')~Reaction} reaction Reaction object.
+   * @param {import('../config/default').Reaction} reaction Reaction object.
    * @private
    */
   reactToText(text, { regexp, checkFunc, message, type, name }) {
@@ -3780,7 +3780,7 @@ class CommentForm {
   /**
    * Restore the form from data.
    *
-   * @returns {object}
+   * @returns {object|undefined}
    */
   restore() {
     const newSelf = this.target.findNewSelf();
