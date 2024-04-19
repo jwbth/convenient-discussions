@@ -211,7 +211,7 @@ class MoveSectionDialog extends ProcessDialog {
       );
 
       this.stackLayout.setItem(this.movePanel);
-      this.controls.title.input.cdFocus();
+      this.controls.title.input.focus();
       this.actions.setAbilities({ close: true });
 
       // A dirty workaround to avoid a scrollbar appearing when the window is loading. Couldn't

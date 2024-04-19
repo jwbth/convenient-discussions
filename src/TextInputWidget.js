@@ -44,8 +44,8 @@ class TextInputWidget extends OO.ui.TextInputWidget {
   }
 
   /**
-   * Get around the Firefox 56 and probably some other browsers bug where the caret doesn't appear
-   * in the input after focusing.
+   * Get around the bug of Firefox 56 and probably some other browsers where the caret doesn't
+   * appear in the input after focusing.
    *
    * @returns {TextInputWidget}
    */
