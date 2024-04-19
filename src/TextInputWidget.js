@@ -87,6 +87,9 @@ class TextInputWidget extends OO.ui.TextInputWidget {
    * wikitext if necessary.
    *
    * @param {object} data Return value of {@link module:utilsWindow.cleanUpPasteDom}.
+   * @param {Element} data.element
+   * @param {string} data.text
+   * @param {Array.<string|undefined>} [data.syntaxHighlightLanguages]
    * @returns {string}
    */
   async maybeConvertElementToWikitext({ element, text, syntaxHighlightLanguages }) {

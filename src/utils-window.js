@@ -433,7 +433,7 @@ export function getElementFromPasteHtml(html) {
  * @param {Element} start
  * @param {Element} end
  * @param {Element} rootElement
- * @returns {Element[]}
+ * @returns {?Element[]}
  */
 export function getRangeContents(start, end, rootElement) {
   // It makes more sense to place this function in the `utils` module, but we can't import
@@ -441,7 +441,9 @@ export function getRangeContents(start, end, rootElement) {
   // emerges.
 
   // Fight infinite loops
-  if (start.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_PRECEDING) return;
+  if (start.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_PRECEDING) {
+    return null;
+  }
 
   let commonAncestor;
   for (let el = start; el; el = el.parentNode) {

@@ -12,6 +12,11 @@ class SectionSource {
    * Create a section's source object.
    *
    * @param {object} options
+   * @param {import('./Section').default} options.section
+   * @param {string[]} options.sectionHeadingMatch
+   * @param {string} options.contextCode
+   * @param {string} options.adjustedContextCode
+   * @param {boolean} options.isInSectionContext
    */
   constructor({
     section,
@@ -35,7 +40,7 @@ class SectionSource {
    * vote / bulleted reply placeholder.
    *
    * @param {import('./CommentForm').default} commentForm
-   * @returns {string}
+   * @returns {?string}
    */
   extractLastCommentIndentation(commentForm) {
     const [, replyPlaceholder] = this.firstChunkCode.match(/\n([#*]) *\n+$/) || [];
@@ -45,25 +50,29 @@ class SectionSource {
 
     const lastComment = this.section.commentsInFirstChunk.slice(-1)[0];
     if (
-      lastComment &&
-      (commentForm.getContainerListType() === 'ol' || cd.config.indentationCharMode === 'mimic')
+      !lastComment ||
+      !(commentForm.getContainerListType() === 'ol' || cd.config.indentationCharMode === 'mimic')
     ) {
-      try {
-        lastComment.locateInCode(commentForm.isSectionSubmitted());
-      } catch {
-        return;
-      }
-      if (
-        !lastComment.source.indentation.startsWith('#') ||
-
-        // For now we use the workaround with `commentForm.getContainerListType()` to make sure
-        // `#` is a part of comments organized in a numbered list, not of a numbered list _in_ the
-        // target comment.
-        commentForm.getContainerListType() === 'ol'
-      ) {
-        return lastComment.source.indentation;
-      }
+      return null;
     }
+
+    try {
+      lastComment.locateInCode(commentForm.isSectionSubmitted());
+    } catch {
+      return null;
+    }
+    if (
+      lastComment.source.indentation.startsWith('#') &&
+
+      // For now we use the workaround with `commentForm.getContainerListType()` to make sure
+      // `#` is a part of comments organized in a numbered list, not of a numbered list _in_ the
+      // target comment.
+      commentForm.getContainerListType() !== 'ol'
+    ) {
+      return null;
+    }
+
+    return lastComment.source.indentation;
   }
 
   /**
