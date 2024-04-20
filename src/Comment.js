@@ -189,6 +189,8 @@ class Comment extends CommentSkeleton {
      */
     this.subitemList = new CommentSubitemList();
 
+    this.wasMenuHidden = false;
+
     this.genderRequestCallbacks = [];
   }
 
@@ -1257,6 +1259,7 @@ class Comment extends CommentSkeleton {
   hideMenu(e) {
     e?.preventDefault();
     this.overlayInnerWrapper.style.display = 'none';
+    this.wasMenuHidden = true;
   }
 
   /**
@@ -1711,6 +1714,11 @@ class Comment extends CommentSkeleton {
     if (this.isHovered || controller.isPageOverlayOn() || this.isReformatted) return;
 
     if (e && e.type === 'touchstart') {
+      if (this.wasMenuHidden) {
+        this.wasMenuHidden = false;
+        return;
+      }
+
       // FIXME: decouple
       commentRegistry
         .query((comment) => comment.isHovered)
