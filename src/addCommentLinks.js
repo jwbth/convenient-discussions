@@ -41,11 +41,7 @@ async function initialize() {
     // Loading the subscriptions is not critical, as opposed to messages, so we catch the possible
     // error, not letting it be caught by the try/catch block.
     subscriptions = controller.getSubscriptionsInstance();
-    requests.push(
-      subscriptions.load(undefined, undefined, true).catch((e) => {
-        console.warn('Couldn\'t load the settings from the server.', e);
-      })
-    );
+    requests.push(subscriptions.load(undefined, true).catch(() => {}));
   }
 
   try {
@@ -316,13 +312,9 @@ function processWatchlist($content) {
 
     if (subscriptions) {
       $('.mw-rcfilters-ui-filterWrapperWidget-showNewChanges a').on('click', async () => {
-        try {
-          // Reload in case the subscription list has changed (which should be a pretty common
-          // occasion)
-          await subscriptions.load();
-        } catch (e) {
-          console.warn('Couldn\'t load the settings from the server.', e);
-        }
+        // Reload in case the subscription list has changed (which should be a pretty common
+        // occasion)
+        await subscriptions.load();
       });
     }
   }

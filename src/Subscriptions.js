@@ -30,13 +30,13 @@ class Subscriptions {
   async loadToTalkPage(bootProcess, ...args) {
     await this.load(bootProcess, ...args);
 
-    this.process(bootProcess);
+    this.processOnTalkPage(bootProcess);
   }
 
   /**
-   * Process subscriptions when they are {@link .loadToTalkPage loaded to a talk page}.
+   * Process subscriptions when they are {@link Subscriptions#loadToTalkPage loaded to a talk page}.
    */
-  process() {
+  processOnTalkPage() {
     this.emit('process');
   }
 

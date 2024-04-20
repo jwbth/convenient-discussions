@@ -246,15 +246,15 @@ class EditSubscriptionsDialog extends ProcessDialog {
         titleToId[page.title] = page.pageid;
       });
 
-    const registry = {};
+    const allPagesData = {};
     Object.keys(sections)
       .filter((key) => titleToId[key])
       .forEach((key) => {
-        registry[titleToId[key]] = this.subscriptions.itemsToKeys(sections[key].filter(unique));
+        allPagesData[titleToId[key]] = this.subscriptions.itemsToKeys(sections[key].filter(unique));
       });
 
     try {
-      this.subscriptions.save(registry);
+      this.subscriptions.save(allPagesData);
     } catch (e) {
       if (e instanceof CdError) {
         const { type, code } = e.data;

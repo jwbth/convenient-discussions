@@ -28,11 +28,11 @@ export default {
     if (!cd.user.isRegistered()) return;
 
     try {
-      this.data = mw.user.options.get(cd.g.visitsOptionName) === null && bootProcess.isFirstRun() ?
-        {} :
-        this.unpack(await getUserInfo(reuse).then(({ visits }) => visits));
+      // `mw.user.options` is not used even on first run because it appears to be cached sometimes
+      // which can be critical for determining subscriptions.
+      this.data = this.unpack(await getUserInfo(reuse).then(({ visits }) => visits));
     } catch (e) {
-      console.warn('Couldn\'t load the settings from the server.', e);
+      console.warn('Convenient Discussions: Couldn\'t load the settings from the server.', e);
       return;
     }
 
@@ -136,10 +136,14 @@ export default {
   /**
    * Unpack a compressed visits string into a visits object.
    *
-   * @param {string} compressed
+   * @param {string|undefined} compressed
    * @returns {object}
    */
   unpack(compressed) {
+    if (!compressed) {
+      return {};
+    }
+
     const string = LZString.decompressFromEncodedURIComponent(compressed);
     const data = {};
     const regexp = /^(\d+),(.+)$/gm;

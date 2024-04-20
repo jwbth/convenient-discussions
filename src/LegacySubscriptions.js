@@ -27,19 +27,24 @@ class LegacySubscriptions extends Subscriptions {
   async load(bootProcess, reuse = false) {
     if (!cd.user.isRegistered()) return;
 
-    // `mw.user.options` is not used even on first run because it appears to be cached sometimes
-    // which can be critical for determining subscriptions.
-    this.data = (
-      mw.user.options.get(cd.g.subscriptionsOptionName) === null &&
-      bootProcess?.isFirstRun()
-    ) ?
-      {} :
-      this.unpack(await getUserInfo(reuse).then(({ subscriptions }) => subscriptions));
+    try {
+      // `mw.user.options` is not used even on first run because it appears to be cached sometimes
+      // which can be critical for determining subscriptions.
+      this.allPagesData = this.unpack(
+        await getUserInfo(reuse).then(({ subscriptions }) => subscriptions)
+      );
+    } catch (e) {
+      console.warn('Convenient Discussions: Couldn\'t load the settings from the server.', e);
+      return;
+    }
 
     const articleId = mw.config.get('wgArticleId');
     if (articleId) {
-      this.data[articleId] ||= {};
-      this.currentPageData = this.data[articleId];
+      // This naming, with `allPagesData` and `data`, instead of `data` and  `currentPageData`, is
+      // on purpose for compatibility with the DtSubscriptions class (that doesn't keep data for all
+      // pages).
+      this.allPagesData[articleId] ||= {};
+      this.data = this.allPagesData[articleId];
 
       if (bootProcess) {
         // Manually add/remove a section that was added/removed at the same moment the page was
@@ -54,16 +59,17 @@ class LegacySubscriptions extends Subscriptions {
   }
 
   /**
-   * Process subscriptions when they are {@link .loadToTalkPage loaded to a talk page}.
+   * Process subscriptions when they are
+   * {@link LegacySubscriptions#loadToTalkPage loaded to a talk page}.
    *
    * @param {...*} [args]
    */
-  process(...args) {
+  processOnTalkPage(...args) {
     if (cd.page.exists()) {
       this.cleanUp();
     }
 
-    super.process(...args);
+    super.processOnTalkPage(...args);
   }
 
   /**
@@ -72,7 +78,7 @@ class LegacySubscriptions extends Subscriptions {
    * @returns {boolean}
    */
   areLoaded() {
-    return Boolean(this.data);
+    return Boolean(this.allPagesData);
   }
 
   /**
@@ -96,14 +102,14 @@ class LegacySubscriptions extends Subscriptions {
       }
 
       // We save the full subscription list, so we need to update the data first.
-      const currentPageDataBackup = Object.assign({}, this.currentPageData);
+      const currentPageDataBackup = Object.assign({}, this.data);
       this.updateLocally(headline, true);
       this.updateLocally(unsubscribeHeadline, false);
 
       try {
         await this.save();
       } catch (e) {
-        this.currentPageData = currentPageDataBackup;
+        this.data = currentPageDataBackup;
         if (e instanceof CdError) {
           const { type, code } = e.data;
           if (type === 'internal' && code === 'sizeLimit') {
@@ -152,13 +158,13 @@ class LegacySubscriptions extends Subscriptions {
         throw e;
       }
 
-      const currentPageDataBackup = Object.assign({}, this.currentPageData);
+      const currentPageDataBackup = Object.assign({}, this.data);
       this.updateLocally(headline, false);
 
       try {
         await this.save();
       } catch (e) {
-        this.currentPageData = currentPageDataBackup;
+        this.data = currentPageDataBackup;
         mw.notify(cd.s('error-settings-save'), { type: 'error' });
         throw e;
       }
@@ -173,27 +179,30 @@ class LegacySubscriptions extends Subscriptions {
   /**
    * Save the subscription list to the server as a user option.
    *
-   * @param {object} data
+   * @param {object} allPagesData
    */
-  async save(data) {
-    await saveLocalOption(cd.g.subscriptionsOptionName, this.pack(data || this.data));
+  async save(allPagesData) {
+    await saveLocalOption(
+      cd.g.subscriptionsOptionName,
+      this.pack(allPagesData || this.allPagesData)
+    );
   }
 
   /**
    * Convert a subscriptions object into an optimized string and compress it.
    *
-   * @param {object} data
+   * @param {object} allPagesData
    * @returns {string}
    */
-  pack(data) {
+  pack(allPagesData) {
     /*
       The format of the items:
       <Space, except for the first item><Page ID> <List of sections separated by \n>\n
     */
     return LZString.compressToEncodedURIComponent(
-      Object.keys(data)
-        .filter((pageId) => Object.keys(data[pageId]).length)
-        .map((key) => ` ${key} ${Object.keys(data[key]).join('\n')}\n`)
+      Object.keys(allPagesData)
+        .filter((pageId) => Object.keys(allPagesData[pageId]).length)
+        .map((key) => ` ${key} ${Object.keys(allPagesData[key]).join('\n')}\n`)
         .join('')
         .trim()
     );
@@ -206,17 +215,21 @@ class LegacySubscriptions extends Subscriptions {
    * @returns {object}
    */
   unpack(compressed) {
+    if (!compressed) {
+      return {};
+    }
+
     // Page IDs alternating with section lists
     const pages = LZString.decompressFromEncodedURIComponent(compressed)
       .split(/(?:^|\n )(\d+) /)
       .slice(1);
 
-    const data = {};
+    const allPagesData = {};
     for (let i = 1; i < pages.length; i += 2) {
-      data[pages[i - 1]] = this.itemsToKeys(pages[i].split('\n'));
+      allPagesData[pages[i - 1]] = this.itemsToKeys(pages[i].split('\n'));
     }
 
-    return data;
+    return allPagesData;
   }
 
   /**
@@ -225,7 +238,7 @@ class LegacySubscriptions extends Subscriptions {
    * @returns {number[]}
    */
   getPageIds() {
-    return Object.keys(this.data);
+    return Object.keys(this.allPagesData);
   }
 
   /**
@@ -235,7 +248,7 @@ class LegacySubscriptions extends Subscriptions {
    * @returns {?(object[])}
    */
   getForPageId(pageId) {
-    return Object.keys(this.data[pageId] || {});
+    return Object.keys(this.allPagesData[pageId] || {});
   }
 
   /**
@@ -264,12 +277,12 @@ class LegacySubscriptions extends Subscriptions {
    * @private
    */
   cleanUp() {
-    this.originalList = Object.keys(this.currentPageData);
+    this.originalList = Object.keys(this.data);
     let updated = false;
-    Object.keys(this.currentPageData)
+    Object.keys(this.data)
       .filter((headline) => sectionRegistry.getAll().every((s) => s.headline !== headline))
       .forEach((headline) => {
-        delete this.currentPageData[headline];
+        delete this.data[headline];
         updated = true;
       });
 
@@ -290,7 +303,7 @@ class LegacySubscriptions extends Subscriptions {
     super.updateLocally(subscribeId, subscribe);
 
     if (!subscribe) {
-      delete this.currentPageData[subscribeId];
+      delete this.data[subscribeId];
     }
   }
 }

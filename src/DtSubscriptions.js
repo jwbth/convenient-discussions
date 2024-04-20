@@ -36,16 +36,17 @@ class DtSubscriptions extends Subscriptions {
   }
 
   /**
-   * Process subscriptions when they are {@link DtSubscriptions#load loaded to a talk page}.
+   * Process subscriptions when they are
+   * {@link DtSubscriptions#loadToTalkPage loaded to a talk page}.
    *
    * @param {import('./BootProcess').default} [bootProcess]
    */
-  process(bootProcess) {
+  processOnTalkPage(bootProcess) {
     if (bootProcess?.isFirstRun()) {
       this.addPageSubscribeButton();
     }
 
-    super.process(bootProcess);
+    super.processOnTalkPage(bootProcess);
   }
 
   /**
