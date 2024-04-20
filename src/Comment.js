@@ -891,7 +891,7 @@ class Comment extends CommentSkeleton {
    * @param {object} options
    * @private
    */
-  maybeAssignOffset(offset, options) {
+  setOffset(offset, options) {
     if (!options.set) return;
 
     if (options.considerFloating) {
@@ -1071,7 +1071,7 @@ class Comment extends CommentSkeleton {
       this.constructor.getCommentPartRect(this.highlightables[this.highlightables.length - 1]);
 
     if (!getVisibilityByRects(rectTop, rectBottom)) {
-      this.maybeAssignOffset(null, options);
+      this.setOffset(null, options);
       return null;
     }
 
@@ -1080,24 +1080,21 @@ class Comment extends CommentSkeleton {
     // content starts to occupy less space.
     const scrollY = window.scrollY;
 
-    let isMoved;
-    if (this.offset) {
-      // With scale other than 100% values of less than 0.001 appear in Chrome and Firefox.
-      const isTopSame = Math.abs(scrollY + rectTop.top - this.offset.top) < 0.01;
-      const isHeightSame = (
-        Math.abs((rectBottom.bottom - rectTop.top) - (this.offset.bottom - this.offset.top)) < 0.01
-      );
-      const isFhWidthSame = (
-        Math.abs(this.highlightables[0].offsetWidth - this.firstHighlightableWidth) < 0.01
-      );
-
+    const isMoved = this.offset ?
       // This value will be `true` wrongly if the comment is around floating elements. But that
       // doesn't hurt much.
-      isMoved = !isTopSame || !isHeightSame || !isFhWidthSame;
-    } else {
-      isMoved = true;
-    }
+      (
+        // Has the top changed. With scale other than 100% values of less than 0.001 appear in
+        // Chrome and Firefox.
+        !(Math.abs(scrollY + rectTop.top - this.offset.top) < 0.01) ||
 
+        // Has the height changed
+        !(Math.abs((rectBottom.bottom - rectTop.top) - (this.offset.bottom - this.offset.top)) < 0.01) ||
+
+        // Has the width of the first highlightable changed
+        !(Math.abs(this.highlightables[0].offsetWidth - this.firstHighlightableWidth) < 0.01)
+      ) :
+      true;
     if (!isMoved) {
       // If floating elements aren't supposed to be taken into account but the comment isn't moved,
       // we still set/return the offset with floating elements taken into account because that
@@ -1132,7 +1129,7 @@ class Comment extends CommentSkeleton {
       bottom;
 
     const offset = { top, bottom, left, right, bottomForVisibility };
-    this.maybeAssignOffset(offset, options);
+    this.setOffset(offset, options);
 
     return options.set ? true : offset;
   }
@@ -1222,7 +1219,7 @@ class Comment extends CommentSkeleton {
    * @returns {?boolean} Is the comment moved. `null` if it is invisible.
    * @private
    */
-  calculateAndAssignLayersOffset(options = {}) {
+  computeLayersOffset(options = {}) {
     const layersContainerOffset = this.getLayersContainerOffset();
     if (!layersContainerOffset) {
       return null;
@@ -1484,7 +1481,7 @@ class Comment extends CommentSkeleton {
     options.add ??= true;
     options.update ??= true;
 
-    const isMoved = this.calculateAndAssignLayersOffset(options);
+    const isMoved = this.computeLayersOffset(options);
     if (isMoved === null) {
       return null;
     }

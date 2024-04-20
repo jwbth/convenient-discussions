@@ -95,7 +95,7 @@ export default {
         })
         .on('teardown', () => {
           controller.updatePageTitle();
-          this.emit('teardown');
+          this.emit('teardown', item);
         });
       this.emit('add', item);
     }

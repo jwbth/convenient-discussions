@@ -1189,7 +1189,7 @@ export default {
 
     this.showLoadingOverlay();
 
-    // Save time by requesting the options in advance. This also resets cache since the `reuse`
+    // Save time by requesting the options in advance. This also resets the cache since the `reuse`
     // argument is `false`.
     getUserInfo().catch((e) => {
       console.warn(e);
