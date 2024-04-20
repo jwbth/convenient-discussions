@@ -2930,7 +2930,10 @@ class Comment extends CommentSkeleton {
       if (this.isOpeningSection) {
         $(this.section.barElement).removeClass('cd-hidden');
       }
-      this.configureLayers();
+
+      // Wait until the comment form is removed - its presence can e.g. affect the presence of a
+      // scrollbar, therefore the comment's offset.
+      setTimeout(this.configureLayers.bind(this));
 
       // Wait until the comment form is unregistered
       setTimeout(this.scrollIntoView.bind(this, 'top'));
