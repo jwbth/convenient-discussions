@@ -1063,7 +1063,6 @@ export default {
     }
 
     const modules = [
-      'ext.confirmEdit.CaptchaInputWidget',
       'jquery.client',
       'jquery.ui',
       'mediawiki.Title',
@@ -1089,7 +1088,10 @@ export default {
       'oojs-ui.styles.icons-interactions',
       'oojs-ui.styles.icons-movement',
       'user.options',
-    ];
+      mw.loader.getState('ext.confirmEdit.CaptchaInputWidget') ?
+        'ext.confirmEdit.CaptchaInputWidget' :
+        undefined,
+    ].filter(defined);
 
     // `mw.loader.using` delays the execution even if all modules are ready (if CD is used as a
     // gadget with preloaded dependencies, for example), so we use this trick.

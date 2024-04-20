@@ -74,6 +74,8 @@ class CommentForm {
     this.manyFormsOnboarded = settings.get('manyForms-onboarded');
     this.uploadOnboarded = settings.get('upload-onboarded');
 
+    this.uploadToCommons = convenientDiscussions.g.isProbablyWmfSulWiki;
+
     /**
      * Form mode.
      *
@@ -920,7 +922,7 @@ class CommentForm {
    * @private
    */
   async addToolbar(requestedModulesNames) {
-    if (!this.showToolbar) return;
+    if (!this.showToolbar || !mw.loader.getState('ext.wikiEditor')) return;
 
     const $toolbarPlaceholder = $('<div>')
       .addClass('cd-toolbarPlaceholder')
@@ -938,11 +940,13 @@ class CommentForm {
     const dialogsConfig = wikiEditorModule.packageExports['jquery.wikiEditor.dialogs.config.js'];
     dialogsConfig.replaceIcons($input);
     const dialogsDefaultConfig = dialogsConfig.getDefaultConfig();
-    const commentForm = this;
-    dialogsDefaultConfig.dialogs['insert-file'].dialog.buttons['wikieditor-toolbar-tool-file-upload'] = function () {
-      $(this).dialog('close');
-      commentForm.uploadImage(undefined, true);
-    };
+    if (this.uploadToCommons) {
+      const commentForm = this;
+      dialogsDefaultConfig.dialogs['insert-file'].dialog.buttons['wikieditor-toolbar-tool-file-upload'] = function () {
+        $(this).dialog('close');
+        commentForm.uploadImage(undefined, true);
+      };
+    }
     $input.wikiEditor('addModule', dialogsDefaultConfig);
 
     this.commentInput.$element
@@ -1559,7 +1563,7 @@ class CommentForm {
    *   dialog after the "Upload file" dialog is closed with success.
    */
   async uploadImage(file, openInsertFileDialogAfterwards) {
-    if (this.uploadDialog || this.commentInput.isPending()) return;
+    if (this.uploadDialog || this.commentInput.isPending() || !this.uploadToCommons) return;
 
     this.pushPending();
 
@@ -1892,7 +1896,7 @@ class CommentForm {
 
         // Ctrk+K
         if (keyCombination(e, 75, ['cmd'])) {
-          this.commentInput.$element.find('.tool[rel="link"] a')[0].click();
+          this.commentInput.$element.find('.tool[rel="link"] a')[0]?.click();
           e.preventDefault();
         }
 
@@ -1910,7 +1914,7 @@ class CommentForm {
 
         // Ctrk+Shift+8
         if (keyCombination(e, 56, ['cmd', 'shift'])) {
-          this.commentInput.$element.find('.tool[rel="ulist"] a')[0].click();
+          this.commentInput.$element.find('.tool[rel="ulist"] a')[0]?.click();
           e.preventDefault();
         }
       })
@@ -2976,7 +2980,7 @@ class CommentForm {
           if (code === 'editconflict') {
             message += ' ' + cd.sParse('cf-notice-editconflict-retrying');
             messageType = 'notice';
-          } else if (code === 'captcha') {
+          } else if (code === 'captcha' && mw.libs.confirmEdit) {
             this.captchaInput = new mw.libs.confirmEdit.CaptchaInputWidget(apiResp.edit.captcha);
             this.captchaInput.on('enter', () => {
               this.submit();
@@ -3895,6 +3899,7 @@ class CommentForm {
    */
   onboardOntoUpload() {
     if (
+      !this.uploadToCommons ||
       this.uploadOnboarded ||
       !cd.user.isRegistered() ||
 
