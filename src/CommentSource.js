@@ -85,8 +85,16 @@ class CommentSource {
         }
 
         code = brsToNewlines(code, '\x01\n')
-          // Templates occupying a whole line with `<br>` at the end get a special treatment too.
+          // Templates occupying a whole line with `<br>` at the end get a special treatment.
           .replace(/^((?:\x01\d+_template.*\x02) *)\x01$/gm, (s, m1) => m1 + '<br>')
+
+          // Two templates in a row is likely a paragraph template + other template. This is a
+          // workaround; may need to look specifically for paragraph templates and mark them as
+          // such.
+          .replace(
+            /((?:\x01\d+_template.*\x02){2} *)\x01/g,
+            (s, m1) => cd.config.paragraphTemplates.length ? m1 + '<br>' : s
+          )
 
           // Replace the temporary marker.
           .replace(/\x01\n/g, '\n')
