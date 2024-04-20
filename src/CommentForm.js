@@ -3874,8 +3874,9 @@ class CommentForm {
       head: true,
       $floatableContainer: this.commentInput.$element,
 
-      // Not `$root` - add section form is outside it.
-      $container: controller.$content,
+      // Not `$root` - add section form is outside it. Not `$content` either - it's the same as
+      // `$root` on 404 pages.
+      $container: controller.$root.parent(),
 
       position: (
         $('#vector-main-menu-pinned-container, #vector-toc-pinned-container').is(':visible')
@@ -3928,8 +3929,9 @@ class CommentForm {
       head: true,
       $floatableContainer: this.commentInput.$element,
 
-      // Not `$root` - add section form is outside it.
-      $container: controller.$content,
+      // Not `$root` - add section form is outside it. Not `$content` either - it's the same as
+      // `$root` on 404 pages.
+      $container: controller.$root.parent(),
 
       position: (
         $('#vector-main-menu-pinned-container, #vector-toc-pinned-container').is(':visible')
