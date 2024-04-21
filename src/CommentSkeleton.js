@@ -355,12 +355,6 @@ class CommentSkeleton {
         this.parser.context.getElementByClassName(element.previousElementSibling, 'cd-signature')
       ) ||
 
-      (
-        step !== 'up' &&
-        this.parser.context.areThereOutdents() &&
-        this.parser.context.getElementByClassName(element, cd.config.outdentClass)
-      ) ||
-
       cd.config.rejectNode?.(element, this.context)
     );
   }
@@ -883,7 +877,14 @@ class CommentSkeleton {
 
         // E.g. `mw-notalk` elements at the beginning of the comment (example:
         // https://ru.wikipedia.org/wiki/Википедия:Заявки_на_статус_администратора/Wikisaurus#c-Khidistavi-20240209164000-Против)
-        this.parser.noSignatureElements.some((el) => el.contains(node))
+        this.parser.noSignatureElements.some((el) => el.contains(node)) ||
+
+        // In most cases outdent template will be filtered by `this.parser.rejectClasses`
+        (
+          this.parts[i].step !== 'up' &&
+          this.parser.context.areThereOutdents() &&
+          this.parser.context.getElementByClassName(node, cd.config.outdentClass)
+        )
       ) {
         this.parts.splice(i, 1);
       } else {
