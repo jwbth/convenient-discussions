@@ -510,7 +510,7 @@ class CommentForm {
         tabIndex: this.getTabIndex(21),
       }));
 
-      if (this.targetSection || this.mode === 'addSection') {
+      if (this.targetSection?.subscribeId || this.mode === 'addSection') {
         /**
          * Subscribe checkbox field.
          *
