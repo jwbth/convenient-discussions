@@ -112,6 +112,9 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       );
       this.size = this.isComment ? 'larger' : 'large';
       this.stackLayout.setItem(this.anchorPanel);
+      if (this.content.$diffView) {
+        mw.hook('wikipage.content').fire(this.content.$diffView);
+      }
     });
   }
 
@@ -149,8 +152,6 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
         diffWikilink: await this.object.getDiffLink('wikilink'),
         $diffView: await this.object.generateDiffView(),
       });
-
-      mw.hook('wikipage.content').fire(this.content.$diffView);
 
       await mw.loader.using(['mediawiki.diff', 'mediawiki.diff.styles']);
     } catch (e) {
