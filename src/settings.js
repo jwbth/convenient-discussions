@@ -307,7 +307,10 @@ export default {
           {
             name: 'useUiTime',
             type: 'checkbox',
-            label: cd.s('sd-useuitime'),
+            label: wrapHtml(
+              cd.sParse('sd-useuitime', 'Special:Preferences#mw-prefsection-rendering-timeoffset'),
+              { targetBlank: true }
+            ),
           },
           {
             name: 'hideTimezone',
