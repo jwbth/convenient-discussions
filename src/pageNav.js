@@ -25,7 +25,7 @@ export default {
    * _For internal use._ Setup the page navigation block (mount or update).
    */
   setup() {
-    if (this.isMounted()) {
+    if (!this.isMounted()) {
       this.mount();
     } else {
       this.update();
