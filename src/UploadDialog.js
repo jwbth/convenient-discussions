@@ -5,9 +5,7 @@ import CdError from './CdError';
 import ProcessDialog from './ProcessDialog';
 import cd from './cd';
 import controller from './controller';
-import pageRegistry from './pageRegistry';
-import { canonicalUrlToPageName, defined } from './utils-general';
-import { generateFixedPosTimestamp, getDbnameForHostname, zeroPad } from './utils-general';
+import { canonicalUrlToPageName, defined, generateFixedPosTimestamp, getDbnameForHostname, zeroPad } from './utils-general';
 import { createCheckboxField, createRadioField, createTextField, mixinUserOoUiClass, tweakUserOoUiClass } from './utils-oojs';
 import { wrapHtml } from './utils-window';
 
@@ -332,12 +330,12 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
       value: '',
     });
     this.insertSubjectPageButton = new PseudoLink({
-      label: pageRegistry.getCurrent().mwTitle.getSubjectPage().getPrefixedText(),
+      label: cd.page.mwTitle.getSubjectPage().getPrefixedText(),
       input: this.controls.title.input,
     });
-    if (pageRegistry.getCurrent().mwTitle.isTalkPage()) {
+    if (cd.page.mwTitle.isTalkPage()) {
       this.insertTalkPageButton = new PseudoLink({
-        label: pageRegistry.getCurrent().name,
+        label: cd.page.name,
         input: this.controls.title.input,
       });
     }

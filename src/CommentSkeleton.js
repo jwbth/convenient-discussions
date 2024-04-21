@@ -58,7 +58,7 @@ class CommentSkeleton {
 
     // We may need to enclose sibling sequences in a <div> tag in order for them not to be bare (we
     // can't get a bounding client rectangle for text nodes, can't specify margins for them etc.).
-    this.encloseInlineParts();
+    this.wrapInlineParts();
 
     // At this point, we can safely remove unnecessary nodes.
     this.filterParts();
@@ -587,7 +587,7 @@ class CommentSkeleton {
       return false;
     }
 
-    return Boolean(this.parser.constructor.processLink(link).userName);
+    return Boolean(this.parser.constructor.processLink(link)?.userName);
   }
 
   /**
@@ -777,7 +777,7 @@ class CommentSkeleton {
    *
    * @returns {object[]}
    */
-  encloseInlineParts() {
+  wrapInlineParts() {
     const sequencesToBeEnclosed = [];
     let start = null;
     let encloseThis = false;
