@@ -256,7 +256,8 @@ class CommentSkeleton {
 
       // Cases when the comment has no wrapper that contains only that comment (for example,
       // https://ru.wikipedia.org/wiki/Project:Форум/Архив/Технический/2020/10#202010140847_AndreiK).
-      // The second parameter of getElementsByClassName() is an optimization for the worker context.
+      // The second parameter of `.getElementsByClassName()` is an optimization for the worker
+      // context.
       farthestInlineAncestor.parentNode.getElementsByClassName('cd-signature', 2).length > 1 ||
 
       !this.isElementEligible(farthestInlineAncestor.parentNode, treeWalker, 'start')
@@ -395,6 +396,7 @@ class CommentSkeleton {
     if (!['DL', 'UL', 'OL'].includes(tagName)) {
       return false;
     }
+
     const previousElement = element.previousElementSibling;
     const nextElement = element.nextElementSibling;
     let result = (
@@ -496,9 +498,9 @@ class CommentSkeleton {
    * @returns {boolean}
    */
   isIntro({ step, stage, node, nextNode, lastPartNode, previousPart }) {
-    // Only the first `stage` code (in CommentSkeleton#traverseDom) covers cases when there is only
-    // one comment part eventually (a list item, for example), and only the second `stage` code (in
-    // CommentSkeleton#filterParts) fully covers comments indented with `:`).
+    // Only the first `stage` code (in `CommentSkeleton#traverseDom()`) covers cases when there is
+    // only one comment part eventually (a list item, for example), and only the second `stage` code
+    // (in `CommentSkeleton#filterParts()`) fully covers comments indented with `:`).
 
     return (
       step === 'back' &&
@@ -541,7 +543,7 @@ class CommentSkeleton {
       ) &&
 
       // Exceptions like https://ru.wikipedia.org/w/index.php?diff=105007602#202002071806_G2ii2g.
-      // Supplying `true` as the second parameter to this.isIntroList() at stage 1 is costly so we
+      // Supplying `true` as the second parameter to `this.isIntroList()` at stage 1 is costly so we
       // do it only at stage 2.
       !(
         (
@@ -566,6 +568,32 @@ class CommentSkeleton {
         !nextNode[this.parser.context.childElementsProp][0].contains(this.signatureElement)
       )
     );
+  }
+
+  /**
+   * Check whether the element is an unsigned item of a bulleted or numbered list, in cases like
+   * {@link https://de.wikipedia.org/w/index.php?title=Portal:Comic/Treffen_2024&oldid=242740035 this}.
+   *
+   * @param {object} part
+   * @returns {boolean}
+   */
+  isUnsignedItem(part) {
+    if (
+      part.step !== 'back' ||
+      part.node.tagName !== 'LI' ||
+
+      // Here we, in fact, hardcode `wgDiscussionToolsReplyIndentation` = `'bullet'` for ruwiki.
+      cd.g.serverName === 'ru.wikipedia.org'
+    ) {
+      return false;
+    }
+
+    const link = part.node.querySelector('a');
+    if (!link) {
+      return false;
+    }
+
+    return Boolean(this.parser.constructor.processLink(link).userName);
   }
 
   /**
@@ -627,13 +655,15 @@ class CommentSkeleton {
 
       const node = treeWalker.currentNode;
 
-      if (this.isIntro({
-        step,
-        stage: 1,
-        node,
-        nextNode: previousPart.node,
-        previousPart,
-      })) {
+      if (
+        this.isIntro({
+          step,
+          stage: 1,
+          node,
+          nextNode: previousPart.node,
+          previousPart,
+        })
+      ) {
         break;
       }
 
@@ -647,7 +677,7 @@ class CommentSkeleton {
         isHeading = isHeadingNode(node);
         hasCurrentSignature = node.contains(this.signatureElement);
 
-        // The second parameter of getElementsByClassName() is an optimization for the worker
+        // The second parameter of `.getElementsByClassName()` is an optimization for the worker
         // context.
         const signatureCount = node
           .getElementsByClassName('cd-signature', Number(hasCurrentSignature) + 1)
@@ -829,10 +859,10 @@ class CommentSkeleton {
   filterParts() {
     this.parts = this.parts.filter((part) => !part.hasForeignComponents && !part.isTextNode);
 
-    // <style> and <link> tags at the beginning. Also <references> tags and {{reflist-talk}}
+    // `<style>` and `<link>` tags at the beginning. Also `<references>` tags and `{{reflist-talk}}`
     // templates (will need to generalize this, possibly via wiki configuration, if other wikis
     // employ a differently named class).
-    for (let i = this.parts.length - 1; i > 0; i--) {
+    for (let i = this.parts.length - 1; i >= 1; i--) {
       const node = this.parts[i].node;
       if (
         (
@@ -861,7 +891,7 @@ class CommentSkeleton {
       }
     }
 
-    // When the first comment part starts with <br>
+    // When the first comment part starts with `<br>`
     const firstNode = this.parts[this.parts.length - 1]?.node;
     if (firstNode.tagName === 'P') {
       if (firstNode.firstChild?.tagName === 'BR') {
@@ -869,34 +899,38 @@ class CommentSkeleton {
       }
     }
 
-    if (this.parts.length > 1) {
-      let startNode;
-      for (let i = this.parts.length - 1; i >= 1; i--) {
-        const part = this.parts[i];
-        if (part.isHeading) continue;
+    for (let i = this.parts.length - 1, startNode; i >= 1; i--) {
+      const part = this.parts[i];
+      if (part.isHeading) continue;
 
-        if (!startNode) {
-          startNode = part.node;
-          if (
-            ['DL', 'UL', 'OL', 'DD', 'LI'].includes(startNode.tagName) &&
-            !this.isIntroList(startNode, true, this.parts[0].node)
-          ) {
-            break;
-          }
+      if (this.isUnsignedItem(part)) {
+        this.parts.splice(i);
+        continue;
+      }
+
+      if (!startNode) {
+        startNode = part.node;
+        if (
+          ['DL', 'UL', 'OL', 'DD', 'LI'].includes(startNode.tagName) &&
+          !this.isIntroList(startNode, true, this.parts[0].node)
+        ) {
+          break;
         }
+      }
 
-        const nextElement = part.node.nextElementSibling;
-        if (!nextElement) continue;
+      const nextElement = part.node.nextElementSibling;
+      if (!nextElement) continue;
 
-        if (this.isIntro({
+      if (
+        this.isIntro({
           step: part.step,
           stage: 2,
           node: part.node,
           nextNode: nextElement,
           lastPartNode: this.parts[0].node,
-        })) {
-          this.parts.splice(i);
-        }
+        })
+      ) {
+        this.parts.splice(i);
       }
     }
   }
