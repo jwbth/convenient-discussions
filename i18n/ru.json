@@ -81,7 +81,7 @@
 	"section-watch-openpages": "(Вы будете получать уведомления только тогда, когда открыта эта вкладка.)",
 	"section-watch-pagenotwatched": "<strong>Внимание:</strong> вы подписаны на раздел, но не наблюдаете за страницей. Чтобы новые сообщения в разделе выделялись на странице списка наблюдения, добавьте страницу в список наблюдения.",
 	"section-watch-error-maxsize": "Не удалось обновить настройки: размер списка подписок превышает максимально допустимый. <span class=\"cd-notification-editWatchedSections\">[[$1|Отредактируйте список подписок]]</span>, чтобы это исправить.",
-	"section-metadata-commentcount-authorcount": "$1 {{plural:$1|comment|comments}}<span class=\"cd-section-metadata-authorcount\"> from <span class=\"cd-section-metadata-authorcount-link\">$2 {{plural:$2|person|people}}</span></span>",
+	"section-metadata-commentcount-authorcount": "$1 {{plural:$1|сообщение|сообщения|сообщений}}<span class=\"cd-section-metadata-authorcount\"> от <span class=\"cd-section-metadata-authorcount-link\">$2 {{plural:$2|человека|человек}}</span></span>",
 	"section-metadata-newcommentcount": "+$1 {{plural:$1|новое|новых}}",
 	"section-metadata-authorcount": "$1 {{plural:$1|человек|человека|человек}}",
 	"section-metadata-lastcomment": "Последнее сообщение:",
