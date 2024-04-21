@@ -146,6 +146,8 @@ export default {
     commentRegistry.reset();
     sectionRegistry.reset();
     CommentForm.forgetOnTarget(cd.page, 'addSection');
+    this.$emulatedAddTopicButton.remove();
+    delete this.$addTopicButtons;
     this.content = {};
     this.addedCommentCount = 0;
     this.areRelevantCommentsAdded = false;
@@ -901,7 +903,7 @@ export default {
    * @param {Event} e
    * @private
    */
-  handleWildAddTopicButtonClick(e) {
+  handleAddTopicButtonClick(e) {
     if (e.ctrlKey || e.shiftKey || e.metaKey) return;
 
     const $button = $(e.currentTarget);
@@ -1966,11 +1968,11 @@ export default {
   },
 
   /**
-   * _For internal use._ Bind a click handler to every known "Add new topic" button out of our
-   * control.
+   * _For internal use._ Bind a click handler to every known "Add topic" button out of our
+   * control (and update the behavior of the native "Add topic" button).
    */
-  connectToWildAddTopicButtons() {
-    $(
+  connectToAddTopicButtons() {
+    this.$addTopicButtons = $(
       [
         '#ca-addsection a',
         '.cd-addTopicButton a',
@@ -2025,13 +2027,29 @@ export default {
           $button.attr('href', url);
         }
         return true;
-      })
+      });
 
+    if (!$('#ca-addsection a').length && this.$addTopicButtons.length === 1) {
+      this.$emulatedAddTopicButton = $(mw.util.addPortletLink(
+        'p-views',
+        this.$addTopicButtons.attr('href'),
+        cd.s('addtopic'),
+        'ca-addsection',
+        cd.s('addtopicbutton-tooltip'),
+        '+',
+        '#ca-history'
+      ));
+      this.$addTopicButtons = this.$addTopicButtons.add(
+        this.$emulatedAddTopicButton.children()
+      );
+    }
+
+    this.$addTopicButtons
       // DT may add its handler (as adds to a "Start new discussion" button on 404 pages). DT's "Add
       // topic" button click handler is trickier, see below.
       .off('click')
 
-      .on('click.cd', this.handleWildAddTopicButtonClick.bind(this))
+      .on('click.cd', this.handleAddTopicButtonClick.bind(this))
       .filter(function () {
         const $button = $(this);
         return (
@@ -2040,6 +2058,8 @@ export default {
         );
       })
       .attr('title', cd.s('addtopicbutton-tooltip'));
+
+    $('#ca-addsection a').updateTooltipAccessKeys();
 
     // In case DT's new topic tool is enabled, remove the handler of the "Add topic" button.
     const dtHandler = $._data(document.body).events?.click

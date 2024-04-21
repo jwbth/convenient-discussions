@@ -706,7 +706,7 @@ class BootProcess {
       if (this.firstRun) {
         cd.page.addAddTopicButton();
       }
-      controller.connectToWildAddTopicButtons();
+      controller.connectToAddTopicButtons();
 
       // If the viewport position restoration relies on elements that are made hidden during this
       // (when editing a comment), it can't be restored properly, but this is relatively minor
