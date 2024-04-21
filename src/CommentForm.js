@@ -70,7 +70,6 @@ class CommentForm {
     this.showToolbar = settings.get('showToolbar');
     this.insertButtons = settings.get('insertButtons');
     this.improvePerformance = settings.get('improvePerformance');
-    this.improvePerformanceLastSuggested = settings.get('improvePerformance-lastSuggested');
     this.manyFormsOnboarded = settings.get('manyForms-onboarded');
     this.uploadOnboarded = settings.get('upload-onboarded');
 
@@ -1406,7 +1405,7 @@ class CommentForm {
    * @returns {boolean}
    */
   haveSuggestedToImprovePerformanceRecently() {
-    return getDayTimestamp() - this.improvePerformanceLastSuggested < 14;
+    return getDayTimestamp() - settings.get('improvePerformance-lastSuggested') < 14;
   }
 
   /**
@@ -1763,7 +1762,7 @@ class CommentForm {
       !this.haveSuggestedToImprovePerformanceRecently()
     ) {
       const keypressCount = 10;
-      const rateLimit = 10;
+      const rateLimit = 50;
       const checkForPerformanceIssues = (e) => {
         this.checkForPerformanceIssues(e, keypressCount, rateLimit);
       };
