@@ -548,7 +548,7 @@ class Autocomplete {
               `${cd.g.contribsPage}/${name}`;
             return {
               start: `@[[${pageName}|`,
-              end: ']]',
+              end: name.match(/[(,]/) ? `${name}]]` : ']]',
               content: name,
               skipContentCheck: (data) => !data.start.includes('/'),
               cmdModify: function () {
