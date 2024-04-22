@@ -449,7 +449,10 @@ class CommentFormInputTransformer extends TextMasker {
         '\n' + (this.indentation ? this.restLinesIndentation : '') :
         '';
       if (cd.config.smallDivTemplates.length && !/^[:*#;]/m.test(this.text)) {
-        const escapedCodeWithSignature = escapePipesOutsideLinks(this.text.trim()) + this.signature;
+        const escapedCodeWithSignature = (
+          escapePipesOutsideLinks(this.text.trim(), this.maskedTexts) +
+          this.signature
+        );
         this.text = `{{${cd.config.smallDivTemplates[0]}|1=${escapedCodeWithSignature}}}`;
       } else {
         this.text = `<small>${before}${this.text}${this.signature}</small>`;
