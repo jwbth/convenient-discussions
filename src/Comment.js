@@ -2754,20 +2754,23 @@ class Comment extends CommentSkeleton {
 
     if (commentRegistry.getByIndex(this.index + 1)?.isOutdented && this.section) {
       this.section.reply({ outdentNotice: true });
-      const range = document.createRange();
-      if (this.isReformatted) {
-        range.setStart(this.headerElement, this.headerElement.childNodes.length);
-      } else {
-        range.setStart(this.elements[0], 0);
+      let selection = window.getSelection();
+      if (selection.type !== 'Range') {
+        const range = document.createRange();
+        if (this.isReformatted) {
+          range.setStart(this.headerElement, this.headerElement.childNodes.length);
+        } else {
+          range.setStart(this.elements[0], 0);
+        }
+        if (this.isReformatted) {
+          range.setEnd(this.menuElement, 0);
+        } else {
+          range.setEnd(this.signatureElement, 0);
+        }
+        selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
       }
-      if (this.isReformatted) {
-        range.setEnd(this.menuElement, 0);
-      } else {
-        range.setEnd(this.elements.slice(-1)[0], this.elements.slice(-1)[0].childNodes.length);
-      }
-      const selection = window.getSelection();
-      selection.removeAllRanges();
-      selection.addRange(range);
       this.section.replyForm.quote(true, this, true);
       return;
     }

@@ -3566,7 +3566,7 @@ class CommentForm {
         cd.config.quoteFormatting;
 
       if (pre.includes('{{')) {
-        selection = escapePipesOutsideLinks(selection, true);
+        selection = escapePipesOutsideLinks(selection);
       }
 
       this.encapsulateSelection({
