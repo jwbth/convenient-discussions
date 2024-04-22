@@ -260,7 +260,13 @@ class CommentSkeleton {
       // context.
       farthestInlineAncestor.parentNode.getElementsByClassName('cd-signature', 2).length > 1 ||
 
-      !this.isElementEligible(farthestInlineAncestor.parentNode, treeWalker, 'start')
+      !this.isElementEligible(farthestInlineAncestor.parentNode, treeWalker, 'start') ||
+
+      // Outdent templates in the same item element. TODO: add a test for this case (e.g.
+      // https://ru.wikipedia.org/wiki/Википедия:Голосования/Срочное_включение_нового_Vector#c-Iniquity-20240204205500-AndyVolykhov-20240204201000)
+      [...farthestInlineAncestor.parentNode[this.parser.context.childElementsProp]].some((child) => (
+        this.parser.rejectClasses.some((name) => child.classList.contains(name))
+      ))
     ) {
       // Collect inline parts after the signature
       treeWalker.currentNode = farthestInlineAncestor;
@@ -343,7 +349,7 @@ class CommentSkeleton {
 
       // Seems to be the best option given pages like
       // https://commons.wikimedia.org/wiki/Project:Graphic_Lab/Illustration_workshop. DLs with a
-      // single DT that are not parts of comments are filtered out in CommentSkeleton#filterParts.
+      // single DT that are not parts of comments are filtered out in CommentSkeleton#filterParts().
       element.tagName === 'DT' ||
 
       this.isCellOfMultiCommentTable(element) ||
