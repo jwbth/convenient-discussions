@@ -892,8 +892,9 @@ class Thread {
           comment.thread.wasManuallyExpanded = true;
         }
       } else {
-        // Remove IDs that have no corresponding comments or threads from the data.
-        data.threads.splice(data.threads.indexOf(thread.id), 1);
+        // Remove IDs that have no corresponding comments or threads from the data. FIXME: Leave
+        // only `data.collapsedThreads` after June 2024
+        removeFromArrayIfPresent(data.collapsedThreads || data.threads, thread)
       }
     });
 
@@ -945,7 +946,7 @@ class Thread {
 
     if (controller.isCurrentRevision()) {
       collapsedThreadsStorageItem
-        .setWithTime(mw.config.get('wgArticleId'), data)
+        .setWithTime(mw.config.get('wgArticleId'), data.collapsedThreads)
         .save();
     }
   }
