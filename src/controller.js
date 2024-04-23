@@ -2089,4 +2089,14 @@ export default {
 
     return this.dtSubscribableThreads;
   },
+
+  /**
+   * Check whether subscribing is disabled on this page despite it being an active page (because
+   * it's a user's own talk page).
+   *
+   * @returns {boolean}
+   */
+  isSubscribingDisabled() {
+    return cd.page.isOwnTalkPage() && !['all', 'toMe'].includes(settings.get('desktopNotifications'));
+  },
 };

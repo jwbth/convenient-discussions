@@ -510,7 +510,10 @@ class CommentForm {
         tabIndex: this.getTabIndex(21),
       }));
 
-      if (this.targetSection?.subscribeId || this.mode === 'addSection') {
+      if (
+        (this.targetSection?.subscribeId || this.mode === 'addSection') &&
+        (!controller.isSubscribingDisabled() || this.targetSection?.subscriptionState)
+      ) {
         /**
          * Subscribe checkbox field.
          *
@@ -3076,7 +3079,7 @@ class CommentForm {
       } else {
         const section = this.targetSection?.getSectionSubscribedTo();
         if (section && !section.subscriptionState) {
-          section.ensureSubscribeIdPresent(section.oldestComment || editTimestamp);
+          section.ensureSubscribeIdPresent(editTimestamp);
           section.subscribe('silent');
           bootData.justSubscribedToSection = section.subscribeId;
         }
@@ -3084,7 +3087,7 @@ class CommentForm {
     } else {
       const section = this.targetSection?.getSectionSubscribedTo();
       if (section?.subscriptionState) {
-        section.ensureSubscribeIdPresent(section.oldestComment || editTimestamp);
+        section.ensureSubscribeIdPresent(editTimestamp);
         section.unsubscribe('silent');
         bootData.justUnsubscribedFromSection = section.subscribeId;
       }

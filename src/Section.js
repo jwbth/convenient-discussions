@@ -349,6 +349,8 @@ class Section extends SectionSkeleton {
      */
     this.subscriptionState = this.subscriptions.getState(this.subscribeId);
 
+    if (controller.isSubscribingDisabled() && !this.subscriptionState) return;
+
     /**
      * Subscribe button widget in the {@link Section#actionsElement actions element}.
      *
@@ -1664,12 +1666,15 @@ class Section extends SectionSkeleton {
    * Generate a DT subscribe ID from the oldest timestamp in the section and the current user's name
    * if there is no.
    *
-   * @param {string} timestamp Oldest timestamp in the section.
+   * @param {string} editTimestamp Timestamp of the edit just made.
    */
-  ensureSubscribeIdPresent(timestamp) {
+  ensureSubscribeIdPresent(editTimestamp) {
     if (!this.useTopicSubscription || this.subscribeId) return;
 
-    this.subscribeId = sectionRegistry.generateDtSubscriptionId(cd.user.getName(), timestamp);
+    this.subscribeId = sectionRegistry.generateDtSubscriptionId(
+      cd.user.getName(),
+      this.oldestComment || editTimestamp
+    );
   }
 
   /**

@@ -103,13 +103,22 @@ export class Page {
   }
 
   /**
-   * Check is the page the one the user is visiting.
+   * Check whether the page is the one the user is visiting.
    *
    * @returns {boolean}
    * @private
    */
   isCurrent() {
     return this.name === cd.g.pageName;
+  }
+
+  /**
+   * Check whether the page is the user's own talk page.
+   *
+   * @returns {boolean}
+   */
+  isOwnTalkPage() {
+    return mw.config.get('wgNamespaceNumber') === 3 && this.title === cd.user.getName();
   }
 
   /**
