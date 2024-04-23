@@ -697,14 +697,14 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * See also
    * {@link ForeignStructuredUploadBookletLayout#getExactDateFromLastModified getExactDateFromLastModified}.
    *
-   * @param {File} file
+   * @param {File} [file]
    * @returns {string|undefined} Last modified date from file
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html#getDateFromLastModified
    * @protected
    */
   getDateFromLastModified(file) {
-    if (file.lastModified) {
+    if (file?.lastModified) {
       return moment(file.lastModified).utc().format('YYYY-MM-DD');
     }
   }
