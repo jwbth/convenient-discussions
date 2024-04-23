@@ -54,9 +54,9 @@ class CommentSource {
           const entireLineRegexp = /^(?:\x01\d+_(block|template)\x02) *$/;
 
           // `(?:)` to work around Chrome DevTools bug when it sees "$`"
-          const fileRegexp = new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$(?:)`, 'i');
+          const fileRegexp = new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$`, 'i');
           const currentLineEndingRegexp = new RegExp(
-            `(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x04) *$(?:)`,
+            `(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x04) *$`,
             'i'
           );
           const nextLineBeginningRegexp = new RegExp(
@@ -349,7 +349,7 @@ class CommentSource {
         this.code = this.code.replace(regexp, movePartToSignature);
       });
     };
-    const tagRegexp = new RegExp(`(<${cd.g.piePattern}(?: [\\w ]+?=[^<>]+?)?> *)+$(?:)`, 'i');
+    const tagRegexp = new RegExp(`(<${cd.g.piePattern}(?: [\\w ]+?=[^<>]+?)?> *)+$`, 'i');
 
     // Why signaturePrefixRegexp three times? Well, the test case here is the MusikAnimal's
     // signature here: https://en.wikipedia.org/w/index.php?diff=next&oldid=946899148.
@@ -360,8 +360,8 @@ class CommentSource {
       tagRegexp,
       cd.config.signaturePrefixRegexp,
       tagRegexp,
-      new RegExp(`<small class="${cd.config.unsignedClass}">.*$(?:)`),
       /\s+'+$/,  // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)#c-Acroterion-20240423134900-History_indexing
+      new RegExp(`<small class="${cd.config.unsignedClass}">.*$`),
       /<!-- *Template:Unsigned.*$/,
       cd.config.signaturePrefixRegexp,
     ].filter(defined));
@@ -649,7 +649,7 @@ class CommentSource {
       '[:*#]{2,}|';
     const firstChar = cd.config.indentationCharMode === 'mimic' ? '[#*:]' : '#';
     const [, changedIndentation] = (
-      adjustedCodeBetween.match(new RegExp(`\\n(${manyCharsPart}${firstChar}[:*#]*).*\\n$(?:)`)) ||
+      adjustedCodeBetween.match(new RegExp(`\\n(${manyCharsPart}${firstChar}[:*#]*).*\\n$`)) ||
       []
     );
     if (changedIndentation) {

@@ -3640,7 +3640,7 @@ class Comment extends CommentSkeleton {
       `^c-` +
       `(?:(.+?)-(?:${newDtTimestampPattern}|${oldDtTimestampPattern}))` +
       `(?:-(?:(.+?)-(?:${newDtTimestampPattern}|${oldDtTimestampPattern})|(.+?))` +
-      `(?:-(\\d+))?)?$(?:)`
+      `(?:-(\\d+))?)?$`
     );
   }
 

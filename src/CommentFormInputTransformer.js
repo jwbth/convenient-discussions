@@ -308,7 +308,7 @@ class CommentFormInputTransformer extends TextMasker {
     }
     const paragraphTemplatePattern = mw.util.escapeRegExp(`{{${cd.config.paragraphTemplates[0]}}}`);
     const currentLineEndingRegexp = new RegExp(
-      `(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x04|<br[ \\n]*\\/?>|${paragraphTemplatePattern}${currentLineInTemplates}) *$(?:)`,
+      `(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x04|<br[ \\n]*\\/?>|${paragraphTemplatePattern}${currentLineInTemplates}) *$`,
       'i'
     );
     const nextLineBeginningRegexp = new RegExp(
@@ -544,7 +544,7 @@ class CommentFormInputTransformer extends TextMasker {
    * Initialize the class.
    */
   static init() {
-    this.filePatternEnd = `\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$(?:)`;
+    this.filePatternEnd = `\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$`;
   }
 
   /**

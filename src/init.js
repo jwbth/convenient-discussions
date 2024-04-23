@@ -314,11 +314,11 @@ function patterns() {
   cd.g.userNamespacesRegexp = new RegExp(`(?:^|:)(?:${userNssAliasesPattern}):(.+)`, 'i');
 
   const userNsAliasesPattern = joinNsNames(2);
-  cd.g.userLinkRegexp = new RegExp(`^:?(?:${userNsAliasesPattern}):([^/]+)$(?:)`, 'i');
+  cd.g.userLinkRegexp = new RegExp(`^:?(?:${userNsAliasesPattern}):([^/]+)$`, 'i');
   cd.g.userSubpageLinkRegexp = new RegExp(`^:?(?:${userNsAliasesPattern}):.+?/`, 'i');
 
   const userTalkNsAliasesPattern = joinNsNames(3);
-  cd.g.userTalkLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):([^/]+)$(?:)`, 'i');
+  cd.g.userTalkLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):([^/]+)$`, 'i');
   cd.g.userTalkSubpageLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):.+?/`, 'i');
 
   const contribsPagesLinkPattern = cd.g.contribsPages.join('|');
@@ -352,7 +352,7 @@ function patterns() {
     .slice()
     .concat(
       clearTemplatesPattern ?
-        new RegExp(`\\n+\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\}\\s*$(?:)`) :
+        new RegExp(`\\n+\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\}\\s*$`) :
         []
     );
 

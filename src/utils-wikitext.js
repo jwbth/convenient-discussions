@@ -175,7 +175,7 @@ export function extractSignatures(code) {
     ...cd.config.commentAntipatterns.map((regexp) => regexp.source)
   );
   const commentAntipatternsPattern = commentAntipatternsPatternParts.join('|');
-  const commentAntipatternsRegexp = new RegExp(`^.*(?:${commentAntipatternsPattern}).*$(?:)`, 'mg');
+  const commentAntipatternsRegexp = new RegExp(`^.*(?:${commentAntipatternsPattern}).*$`, 'mg');
 
   // Hide HTML comments, quotes and lines containing antipatterns.
   const adjustedCode = maskDistractingCode(code)

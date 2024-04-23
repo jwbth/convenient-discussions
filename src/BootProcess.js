@@ -510,7 +510,7 @@ class BootProcess {
    *
    * @private
    */
-  async processTargets() {
+  processPassedTargets() {
     const commentIds = this.passedData.commentIds;
     if (commentIds) {
       const comments = commentIds
@@ -533,9 +533,7 @@ class BootProcess {
           }
         });
       }
-    }
-
-    if (this.passedData.sectionId) {
+    } else if (this.passedData.sectionId) {
       const section = sectionRegistry.getById(this.passedData.sectionId);
       if (section) {
         if (this.passedData.pushState) {
@@ -743,7 +741,7 @@ class BootProcess {
         this.deactivateDtHighlight();
         processFragment();
       }
-      this.processTargets();
+      this.processPassedTargets();
 
       if (!cd.page.isActive()) {
         toc.addCommentCount();
