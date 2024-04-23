@@ -490,6 +490,8 @@ class Thread {
    *   collapsed threads.
    */
   collapse(loadUserGendersPromise, auto = false) {
+    if (this.isCollapsed) return;
+
     /**
      * Nodes that are collapsed. These can change, at least due to comment forms showing up.
      *
@@ -556,6 +558,8 @@ class Thread {
    * @param {boolean} [auto=false]
    */
   expand(auto = false) {
+    if (!this.isCollapsed) return;
+
     this.collapsedRange.forEach((el) => {
       const $el = $(el);
       const roots = $el.data('cd-collapsed-thread-root-comments') || [];
