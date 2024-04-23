@@ -405,7 +405,7 @@ class Comment extends CommentSkeleton {
           link: this.authorLink,
         });
       } else {
-        pageName = `${cd.g.contribsPage}/${this.author.getName()}`;
+        pageName = `${cd.g.contribsPages[0]}/${this.author.getName()}`;
       }
       this.authorLink.title = pageName;
       this.authorLink.href = mw.util.getUrl(pageName);
@@ -433,7 +433,7 @@ class Comment extends CommentSkeleton {
     bdiElement.textContent = this.author.getName();
 
     if (this.showContribsLink && this.author.isRegistered()) {
-      const pageName = `${cd.g.contribsPage}/${this.author.getName()}`;
+      const pageName = `${cd.g.contribsPages[0]}/${this.author.getName()}`;
       contribsLink.title = pageName;
       contribsLink.href = mw.util.getUrl(pageName);
     }
@@ -2601,7 +2601,7 @@ class Comment extends CommentSkeleton {
       const specialPageName = (
         mw.config.get('wgFormattedNamespaces')[-1] +
         ':' +
-        cd.g.specialPageAliases.Diff
+        cd.g.specialPageAliases.Diff[0]
       );
       return `[[${specialPageName}/${edit.revid}]]`;
     }

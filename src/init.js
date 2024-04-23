@@ -226,11 +226,17 @@ function loadSiteData() {
   /**
    * Some special page aliases in the wiki's language.
    *
-   * @name SPECIAL_PAGE_ALIASES
+   * @name specialPageAliases
    * @type {string[]}
    * @memberof convenientDiscussions.g
    */
   cd.g.specialPageAliases = Object.assign({}, cd.config.specialPageAliases);
+
+  Object.entries(cd.g.specialPageAliases).forEach(([key, value]) => {
+    if (typeof value === 'string') {
+      cd.g.specialPageAliases[key] = [value];
+    }
+  });
 
   /**
    * Timezone of the wiki.
@@ -249,9 +255,10 @@ function loadSiteData() {
       siprop: ['specialpagealiases', 'general'],
     }).then((resp) => {
       resp.query.specialpagealiases
-        .filter((alias) => specialPages.includes(alias.realname))
-        .forEach((alias) => {
-          cd.g.specialPageAliases[alias.realname] = alias.aliases[0];
+        .filter((page) => specialPages.includes(page.realname))
+        .forEach((page) => {
+          cd.g.specialPageAliases[page.realname] = page.aliases
+            .slice(0, page.aliases.indexOf(page.realname));
         });
       cd.g.contentTimezone = resp.query.general.timezone;
     });
@@ -282,10 +289,10 @@ function patterns() {
    * Contributions page local name.
    *
    * @name contribsPage
-   * @type {string}
+   * @type {string[]}
    * @memberof convenientDiscussions.g
    */
-  cd.g.contribsPage = `${nss[-1]}:${cd.g.specialPageAliases.Contributions}`;
+  cd.g.contribsPages = cd.g.specialPageAliases.Contributions.map((alias) => `${nss[-1]}:${alias}`);
 
   const anySpace = (s) => s.replace(/[ _]/g, '[ _]+').replace(/:/g, '[ _]*:[ _]*');
   const joinNsNames = (...ids) => (
@@ -314,19 +321,20 @@ function patterns() {
   cd.g.userTalkLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):([^/]+)$(?:)`, 'i');
   cd.g.userTalkSubpageLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):.+?/`, 'i');
 
-  cd.g.contribsPageLinkRegexp = new RegExp(`^${cd.g.contribsPage}/`);
+  const contribsPagesLinkPattern = cd.g.contribsPages.join('|');
+  cd.g.contribsPageLinkRegexp = new RegExp(`^(?:${contribsPagesLinkPattern})/`);
+
+  const contribsPagesPattern = anySpace(contribsPagesLinkPattern);
+  cd.g.captureUserNamePattern = (
+    `\\[\\[[ _]*:?(?:\\w*:){0,2}(?:(?:${userNssAliasesPattern})[ _]*:[ _]*|` +
+    `(?:Special[ _]*:[ _]*Contributions|${contribsPagesPattern})\\/[ _]*)([^|\\]/]+)(/)?`
+  );
 
   cd.g.isThumbRegexp = new RegExp(
     ['thumb', 'thumbnail']
       .concat(cd.config.thumbAliases)
       .map((alias) => `\\| *${alias} *[|\\]]`)
       .join('|')
-  );
-
-  const contribsPagePattern = anySpace(cd.g.contribsPage);
-  cd.g.captureUserNamePattern = (
-    `\\[\\[[ _]*:?(?:\\w*:){0,2}(?:(?:${userNssAliasesPattern})[ _]*:[ _]*|` +
-    `(?:Special[ _]*:[ _]*Contributions|${contribsPagePattern})\\/[ _]*)([^|\\]/]+)(/)?`
   );
 
   if (cd.config.unsignedTemplates.length) {

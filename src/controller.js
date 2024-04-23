@@ -1579,7 +1579,7 @@ export default {
     const permalinkSpecialPageName = (
       mw.config.get('wgFormattedNamespaces')[-1] +
       ':' +
-      cd.g.specialPageAliases.PermanentLink +
+      cd.g.specialPageAliases.PermanentLink[0] +
       '/' +
       mw.config.get('wgRevisionId')
     );

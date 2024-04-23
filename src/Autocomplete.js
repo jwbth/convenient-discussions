@@ -545,7 +545,7 @@ class Autocomplete {
             const userNamespace = user.getNamespaceAlias();
             const pageName = user.isRegistered() ?
               `${userNamespace}:${name}` :
-              `${cd.g.contribsPage}/${name}`;
+              `${cd.g.contribsPages[0]}/${name}`;
             return {
               start: `@[[${pageName}|`,
               end: name.match(/[(,]/) ? `${name}]]` : ']]',
