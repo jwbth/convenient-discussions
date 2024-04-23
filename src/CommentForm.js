@@ -1769,8 +1769,8 @@ class CommentForm {
       const checkForPerformanceIssues = (e) => {
         this.checkForPerformanceIssues(e, keypressCount, rateLimit);
       };
-      this.commentInput.$input.on('keydown', checkForPerformanceIssues);
-      this.headlineInput?.$input.on('keydown', checkForPerformanceIssues);
+      this.commentInput.$input.on('input', checkForPerformanceIssues);
+      this.headlineInput?.$input.on('input', checkForPerformanceIssues);
     }
 
     this.summaryInput
