@@ -878,16 +878,16 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Add the {@link Section#actionsElement actions element} to the {@link Secton#hElement h element}
-   * of a non-2-level section.
+   * Add the {@link Section#actionsElement actions element} to the
+   * {@link Secton#headingElement heading element} of a non-2-level section.
    *
    * @private
    */
   addActionsElement() {
     const headingInnerWrapper = document.createElement('span');
-    headingInnerWrapper.append(...this.hElement.childNodes);
-    this.hElement.append(headingInnerWrapper, this.actionsElement);
-    this.hElement.classList.add('cd-subsection-heading');
+    headingInnerWrapper.append(...this.headingElement.childNodes);
+    this.headingElement.append(headingInnerWrapper, this.actionsElement);
+    this.headingElement.classList.add('cd-subsection-heading');
   }
 
   /**

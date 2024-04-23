@@ -34,11 +34,11 @@ class SectionSkeleton {
      * @type {Element|external:Element}
      */
     this.hElement = (
-      returnNodeIfHNode(heading.element) ||
-      returnNodeIfHNode(heading.element.firstElementChild) ||
+      returnNodeIfHNode(this.headingElement) ||
+      returnNodeIfHNode(this.headingElement.firstElementChild) ||
 
       // Precaution in case something in MediaWiki changes
-      heading.element.querySelectorAll('h1, h2, h3, h4, h5, h6')[0]
+      this.headingElement.querySelectorAll('h1, h2, h3, h4, h5, h6')[0]
     );
 
     /**
