@@ -419,7 +419,7 @@
 
   "ud-preset": "Choose a preset",
   "ud-preset-projectscreenshot": "This is a screenshot of $1 or other Wikimedia project",
-  "ud-preset-projectscreenshot-help": "It shouldn't contain non-free fair use pictures. Free pictures should be credited by linking their authors.",
+  "ud-preset-projectscreenshot-help": "It shouldn't contain non-free pictures. Free pictures should be credited by linking their authors.",
   "ud-preset-projectscreenshot-title": "Screenshotted page",
   "ud-preset-projectscreenshot-title-help": "If this is a screenshot of another project, use a full interwiki prefix, e.g. <code>wikt:fr:mot</code>.",
   "ud-preset-mediawikiscreenshot": "This is a screenshot of the MediaWiki software (e.g. user interface)",
