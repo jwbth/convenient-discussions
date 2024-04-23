@@ -486,7 +486,7 @@ export class Page {
       useskin: cd.g.skin,
       redirects: true,
       prop: ['text', 'revid', 'modules', 'jsconfigvars', 'sections'],
-
+      parsoid: cd.g.isParsoidUsed,
       ...cd.g.apiErrorFormatHtml,
     };
     const options = Object.assign({}, defaultOptions, customOptions);

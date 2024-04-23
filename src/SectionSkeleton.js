@@ -46,7 +46,9 @@ class SectionSkeleton {
      *
      * @type {Element|external:Element}
      */
-    this.headlineElement = this.parser.context.getElementByClassName(this.hElement, 'mw-headline');
+    this.headlineElement = cd.g.isParsoidUsed ?
+      this.hElement :
+      this.parser.context.getElementByClassName(this.hElement, 'mw-headline');
 
     if (!this.headlineElement) {
       throw new CdError();
@@ -82,7 +84,7 @@ class SectionSkeleton {
       ...(
         // Get menu links. Use two calls because our improvised `.querySelectorAll()` in
         // `htmlparser2Extended` doesn't support composite selectors.
-        this.parser.context.getElementByClassName(this.hElement, 'mw-editsection')
+        this.parser.context.getElementByClassName(this.headingElement, 'mw-editsection')
           ?.getElementsByTagName('a') ||
         []
       )

@@ -317,7 +317,7 @@ Object.assign(cd.g, {
    * @type {string[]}
    * @memberof convenientDiscussions.g
    */
-  popularNotInlineElements: ['BLOCKQUOTE', 'CAPTION', 'CENTER', 'DD', 'DIV', 'DL', 'DT', 'FIGURE', 'FIGCAPTION', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HR', 'INPUT', 'LI', 'LINK', 'OL', 'P', 'PRE', 'STYLE', 'TABLE', 'TBODY', 'TD', 'TFOOT', 'TH', 'THEAD', 'TR', 'UL'],
+  popularNotInlineElements: ['BLOCKQUOTE', 'CAPTION', 'CENTER', 'DD', 'DIV', 'DL', 'DT', 'FIGURE', 'FIGCAPTION', 'FORM', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'HR', 'INPUT', 'LI', 'LINK', 'OL', 'P', 'PRE', 'SECTION', 'STYLE', 'TABLE', 'TBODY', 'TD', 'TFOOT', 'TH', 'THEAD', 'TR', 'UL'],
 
   /**
    * Popular elements that can be met in page content and do have the `display: inline` property in
@@ -326,7 +326,7 @@ Object.assign(cd.g, {
    * @type {string[]}
    * @memberof convenientDiscussions.g
    */
-  popularInlineElements: ['A', 'ABBR', 'B', 'BDI', 'BIG', 'BR', 'BUTTON', 'CITE', 'CODE', 'DEL', 'EM', 'FONT', 'I', 'IMG', 'INS', 'KBD', 'Q', 'S', 'SAMP', 'SMALL', 'SPAN', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TIME', 'TT', 'U', 'VAR'],
+  popularInlineElements: ['A', 'ABBR', 'B', 'BDI', 'BIG', 'BR', 'BUTTON', 'CITE', 'CODE', 'DEL', 'EM', 'FONT', 'I', 'IMG', 'INS', 'KBD', 'META', 'Q', 'S', 'SAMP', 'SMALL', 'SPAN', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TIME', 'TT', 'U', 'VAR'],
 
   /**
    * Elements with classes listed here won't be considered legit comment timestamp containers. They
@@ -557,4 +557,10 @@ Object.assign(cd.g, {
     .contains('ext-discussiontools-topicsubscription-enabled'),
   isDtVisualEnhancementsEnabled: bodyClassList
     .contains('ext-discussiontools-visualenhancements-enabled'),
+
+  isParsoidUsed: $('#mw-content-text > .mw-parser-output')
+    .contents()
+    .get()
+    .filter((node) => node.nodeType === Node.COMMENT_NODE)
+    .some((c) => c.textContent.startsWith('Parsoid')),
 });
