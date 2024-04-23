@@ -607,7 +607,7 @@ class Parser {
 
         // Another alternative is a user link to another site where a prefix is specified before a
         // namespace. Enough to capture a user name from, not enough to make any inferences.
-      } else if (pageName.startsWith(cd.g.contribsPage + '/')) {
+      } else if (cd.g.contribsPageLinkRegexp.test(pageName)) {
         userName = pageName.replace(cd.g.contribsPageLinkRegexp, '');
         if (cd.g.isIPv6Address(userName)) {
           userName = userName.toUpperCase();
