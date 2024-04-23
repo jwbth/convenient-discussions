@@ -814,18 +814,14 @@ class Thread {
       controller
         .on('resize', this.updateLines.bind(this))
         .on('mutate', () => {
-          if (!this.isMutateHandlerAttached) {
-            this.isMutateHandlerAttached = true;
-
-            // Update only on mouse move to prevent short freezings of a page when there is a
-            // comment form in the beginning of a very long page and the input is changed so that
-            // everything below the form shifts vertically.
-            $(document).one('mousemove', () => {
-              this.updateLines();
-              this.isMutateHandlerAttached = false;
-            });
-          }
+          // Update only on mouse move to prevent short freezings of a page when there is a
+          // comment form in the beginning of a very long page and the input is changed so that
+          // everything below the form shifts vertically.
+          $(document)
+            .off('mousemove.cd')
+            .one('mousemove.cd', this.updateLines.bind(this));
         });
+      $(document).on('visibilitychange', this.updateLines.bind(this));
       updateChecker
         // Start and end elements of threads may be replaced, so we need to restart threads.
         .on('newChanges', this.init.bind(this, false));
@@ -851,7 +847,7 @@ class Thread {
     // We could choose not to update lines on initialization as it is a relatively costly operation
     // that can be delayed, but not sure it makes any difference at which point the page is blocked
     // for interactions.
-    this.updateLines(true);
+    this.updateLines();
 
     if (!this.threadLinesContainer.parentNode) {
       document.body.appendChild(this.threadLinesContainer);
@@ -1035,11 +1031,9 @@ class Thread {
 
   /**
    * _For internal use._ Calculate the offset and (if needed) add the thread lines to the container.
-   *
-   * @param {boolean} init
    */
-  static updateLines(init) {
-    if (!this.enabled || (!init && (controller.isBooting() || document.hidden))) return;
+  static updateLines() {
+    if (!this.enabled || document.hidden) return;
 
     const elementsToAdd = [];
     const threadsToUpdate = [];

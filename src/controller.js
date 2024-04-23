@@ -1309,7 +1309,7 @@ export default {
     }
 
     // We need the `visibilitychange` event because many things may move while the document is
-    // hidden, and the movements are not processed when the document is hidden.
+    // hidden, and movements are not processed when the document is hidden.
     $(document)
       .on('scroll visibilitychange', this.handleScroll.bind(this))
       .on('horizontalscroll.cd visibilitychange', this.handleHorizontalScroll.bind(this))
