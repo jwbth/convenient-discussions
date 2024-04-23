@@ -708,7 +708,7 @@ class Comment extends CommentSkeleton {
 
       const referenceNode = this.headerElement.lastChild;
       this.headerElement.insertBefore(this.goToChildButton.element, referenceNode?.nextSibling);
-    } else {
+    } else if (this.$overlayMenu) {
       const element = this.constructor.prototypes.get('goToChildButton');
       this.goToChildButton = new CommentButton({
         element,
@@ -2417,7 +2417,7 @@ class Comment extends CommentSkeleton {
     if (!parent.goToChildButton) {
       parent.addGoToChildButton();
     }
-    parent.goToChildButton.setAction(() => {
+    parent.goToChildButton?.setAction(() => {
       this.scrollTo({ pushState: true });
     });
   }
