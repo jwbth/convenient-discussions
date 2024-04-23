@@ -2429,7 +2429,7 @@ class CommentForm {
     commentIds.forEach((id) => {
       const comment = commentRegistry.getById(id);
       if (comment) {
-        const commentSource = comment.locateInCode(contextCode);
+        const commentSource = comment.locateInCode(false, contextCode);
         const anchorCode = cd.config.getAnchorCode(id);
         if (commentSource.code.includes(anchorCode)) return;
 

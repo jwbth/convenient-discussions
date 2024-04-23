@@ -1939,7 +1939,7 @@ class Comment extends CommentSkeleton {
     const lineNumbers = [[], []];
     revisions.forEach((revision, i) => {
       const pageCode = revision.slots.main.content;
-      const source = this.locateInCode(pageCode, commentsData[i]);
+      const source = this.locateInCode(false, pageCode, commentsData[i]);
       const startLineNumber = countOccurrences(pageCode.slice(0, source.lineStartIndex), /\n/g) + 1;
       const endLineNumber = (
         startLineNumber +
@@ -3165,20 +3165,18 @@ class Comment extends CommentSkeleton {
    * It is expected that the section or page code is loaded (using {@link Page#loadCode}) before
    * this method is called. Otherwise, the method will throw an error.
    *
-   * @param {string|boolean} [codeOrUseSectionCode] Wikitext that should have the comment (provided
-   *   only if we need to perform operations on some code that is not the code of a section or
-   *   page). Boolean `true` means to use the (prefetched) section code to locate the comment in.
+   * @param {boolean} useSectionCode Whether to use the (prefetched) section code, not the page
+   *   code, to locate the comment in.
+   * @param {string} [code] Wikitext that should have the comment (provided only if we need to
+   *   perform operations on some code that is not the code of a section or page).
    * @param {string} [commentData] Comment data for comparison (can be set together with `code`).
    * @returns {CommentSource|undefined}
    * @throws {CdError}
    */
-  locateInCode(codeOrUseSectionCode, commentData) {
-    const isInSectionContext = codeOrUseSectionCode === true;
-    let code;
-    if (typeof codeOrUseSectionCode === 'string') {
-      code = codeOrUseSectionCode;
-    } else {
-      code = isInSectionContext ? this.section.presumedCode : this.getSourcePage().code;
+  locateInCode(useSectionCode, code, commentData) {
+    const codePassed = code !== undefined;
+    if (!code) {
+      code = useSectionCode ? this.section.presumedCode : this.getSourcePage().code;
       this.source = null;
     }
 
@@ -3189,7 +3187,7 @@ class Comment extends CommentSkeleton {
       });
     }
 
-    const source = this.searchInCode(code, commentData, isInSectionContext);
+    const source = this.searchInCode(code, commentData, useSectionCode);
     if (!source) {
       throw new CdError({
         type: 'parse',
@@ -3197,7 +3195,7 @@ class Comment extends CommentSkeleton {
       });
     }
 
-    if (typeof codeOrUseSectionCode === 'string') {
+    if (codePassed) {
       return source;
     } else {
       /**

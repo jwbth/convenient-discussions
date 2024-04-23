@@ -1380,8 +1380,8 @@ class Section extends SectionSkeleton {
      * @instance
      */
     Object.assign(this, {
-      // It's more convenient to unify regexps to have \n as the last character of anything, not
-      // (?:\n|$), and it doesn't seem to affect anything substantially.
+      // It's more convenient to unify regexps to have `\n` as the last character of anything, not
+      // `(?:\n|$)`, and it doesn't seem to affect anything substantially.
       presumedCode: content + '\n',
 
       revisionId: revision.revid,

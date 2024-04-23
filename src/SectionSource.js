@@ -43,36 +43,40 @@ class SectionSource {
    * @returns {?string}
    */
   extractLastCommentIndentation(commentForm) {
-    const [, replyPlaceholder] = this.firstChunkCode.match(/\n([#*]) *\n+$/) || [];
-    if (replyPlaceholder) {
-      return replyPlaceholder;
+    if (!this.lastCommentIndentation) {
+      const [, replyPlaceholder] = this.firstChunkCode.match(/\n([#*]) *\n+$/) || [];
+      if (replyPlaceholder) {
+        this.lastCommentIndentation = replyPlaceholder;
+      }
+
+      const lastComment = this.section.commentsInFirstChunk.slice(-1)[0];
+      if (
+        !lastComment ||
+        !(commentForm.getContainerListType() === 'ol' || cd.config.indentationCharMode === 'mimic')
+      ) {
+        this.lastCommentIndentation = null;
+      }
+
+      try {
+        lastComment.locateInCode(commentForm.isSectionSubmitted());
+      } catch {
+        this.lastCommentIndentation = null;
+      }
+      if (
+        lastComment.source.indentation.startsWith('#') &&
+
+        // For now we use the workaround with `commentForm.getContainerListType()` to make sure
+        // `#` is a part of comments organized in a numbered list, not of a numbered list _in_ the
+        // target comment.
+        commentForm.getContainerListType() !== 'ol'
+      ) {
+        this.lastCommentIndentation = null;
+      }
+
+      this.lastCommentIndentation = lastComment.source.indentation;
     }
 
-    const lastComment = this.section.commentsInFirstChunk.slice(-1)[0];
-    if (
-      !lastComment ||
-      !(commentForm.getContainerListType() === 'ol' || cd.config.indentationCharMode === 'mimic')
-    ) {
-      return null;
-    }
-
-    try {
-      lastComment.locateInCode(commentForm.isSectionSubmitted());
-    } catch {
-      return null;
-    }
-    if (
-      lastComment.source.indentation.startsWith('#') &&
-
-      // For now we use the workaround with `commentForm.getContainerListType()` to make sure
-      // `#` is a part of comments organized in a numbered list, not of a numbered list _in_ the
-      // target comment.
-      commentForm.getContainerListType() !== 'ol'
-    ) {
-      return null;
-    }
-
-    return lastComment.source.indentation;
+    return this.lastCommentIndentation;
   }
 
   /**
