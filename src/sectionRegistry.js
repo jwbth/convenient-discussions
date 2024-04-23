@@ -287,10 +287,12 @@ export default {
    *
    * @param {number} [scrollY=window.scrollY]
    * @param {number} [tocOffset]
-   * @returns {number}
+   * @returns {?number}
    */
   getFirstSectionRelativeTopOffset(scrollY = window.scrollY, tocOffset) {
-    if (scrollY <= cd.g.bodyScrollPaddingTop) return;
+    if (scrollY <= cd.g.bodyScrollPaddingTop) {
+      return null;
+    }
 
     let top;
     this.items.some((section) => {
@@ -316,7 +318,7 @@ export default {
   getCurrentSection() {
     const firstSectionTop = this.getFirstSectionRelativeTopOffset();
     return (
-      firstSectionTop !== undefined &&
+      firstSectionTop !== null &&
       firstSectionTop < cd.g.bodyScrollPaddingTop + 1 &&
       this.items
         .slice()

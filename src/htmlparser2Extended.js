@@ -29,6 +29,7 @@ function walkThroughSubtree(base, callback, checkSelf) {
       return true;
     }
   }
+  return false;
 }
 
 const dummyDocument = parseDocument('<a>a</a>');

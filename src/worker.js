@@ -170,7 +170,7 @@ function removeDataAttributes(element) {
  *
  * @param {external:Element} el
  * @param {CommentSkeleton} comment
- * @returns {external:DataNode|undefined}
+ * @returns {?external:DataNode}
  * @private
  */
 function hideElement(el, comment) {
@@ -198,6 +198,8 @@ function hideElement(el, comment) {
     comment.elements[comment.elements.indexOf(el)] = textNode;
     return textNode;
   }
+
+  return null;
 }
 
 /**

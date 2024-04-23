@@ -252,7 +252,7 @@ export function createTextField({
  * @param {string} options.label
  * @param {string} [options.min]
  * @param {string} [options.max]
- * @param {string} [options.step]
+ * @param {string} [options.buttonStep]
  * @param {string} [options.help]
  * @param {string} [options.title]
  * @param {string[]} [options.classes]
@@ -300,6 +300,7 @@ export function createNumberField({
  * @param {string} options.value
  * @param {string} options.label
  * @param {boolean} [options.selected]
+ * @param {boolean} [options.disabled]
  * @param {string} [options.help]
  * @param {string} [options.tabIndex]
  * @param {string} [options.title]

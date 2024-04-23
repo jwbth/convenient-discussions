@@ -1043,7 +1043,7 @@ class Comment extends CommentSkeleton {
    * occasionally.
    *
    * @param {object} [options={}]
-   * @param {object} [options.floatingRects]
+   * @param {object[]} [options.floatingRects]
    *   {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect Element#getBoundingClientRect}
    *   results for floating elements from `convenientDiscussions.g.floatingElements`. It may be
    *   calculated in advance for many elements in one sequence to save time.
@@ -1468,7 +1468,7 @@ class Comment extends CommentSkeleton {
    *   bugs).
    * @param {boolean} [options.update=true] Update the layers' offset in case the comment is moved.
    *   If set to `false`, it is expected that the offset will be updated afterwards.
-   * @param {object} [options.floatingRects]
+   * @param {object[]} [options.floatingRects]
    *   {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect Element#getBoundingClientRect}
    *   results for floating elements from `convenientDiscussions.g.floatingElements`. It may be
    *   calculated in advance for many elements in one sequence to save time.

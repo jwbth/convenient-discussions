@@ -268,7 +268,7 @@ function noExtension(filename) {
  *
  * @param {string} identifier
  * @param {string} typeDefs
- * @returns {object}
+ * @returns {object|undefined}
  */
 function findTypeDef(identifier, typeDefs) {
   if (!typeDefs) return;

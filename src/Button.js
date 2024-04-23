@@ -36,6 +36,7 @@ class Button {
    * @param {Element} [config.iconElement] Pre-created {@link Button#iconElement icon element}.
    * @param {string} [config.tagName='a'] Tag name of the button element.
    * @param {string[]} [config.classes=[]] List of classes to add to the button element.
+   * @param {string} [config.id] ID attribute of the button.
    * @param {string} [config.href] Value of the `href` parameter to add to the link element.
    * @param {string} [config.label] Label of the button.
    * @param {string} [config.tooltip] Tooltip for the button.

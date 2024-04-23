@@ -366,8 +366,8 @@ class CommentSkeleton {
   }
 
   /**
-   * Check whether the element is an other kind of list like a gallery created by the `<gallery>`
-   * tag.
+   * Check whether the element is an other kind of list than a comment thread, like a gallery
+   * created by the `<gallery>` tag.
    *
    * @param {Element|external:Element} element
    * @returns {boolean}

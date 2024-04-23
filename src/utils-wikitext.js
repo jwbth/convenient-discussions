@@ -236,10 +236,10 @@ function extractRegularSignatures(adjustedCode, code) {
     'igm'
   );
 
-  // After capturing the first signature with ".*?" we make another capture (with authorLinkRegexp)
-  // to make sure we take the first link to the same author as the author in the last link. 251 is
-  // not arbitrary: it's 255 (maximum allowed signature length) minus '[[u:a'.length plus ' '.length
-  // (the space before the timestamp).
+  // After capturing the first signature with `.*?` we make another capture (with
+  // `authorLinkRegexp`) to make sure we take the first link to the same author as the author in the
+  // last link. 251 is not arbitrary: it's 255 (maximum allowed signature length) minus
+  // `'[[u:a'.length` plus `' '.length` (the space before the timestamp).
   const signatureScanLimit = 251;
   const signatureRegexp = new RegExp(
     /*
@@ -247,8 +247,8 @@ function extractRegularSignatures(adjustedCode, code) {
       1 - the whole line with the signature
       2 - text before the timestamp
       3 - text before the first user link
-      4 - author name (inside cd.g.captureUserNamePattern)
-      5 - sometimes, a slash appears here (inside cd.g.captureUserNamePattern)
+      4 - author name (inside `cd.g.captureUserNamePattern`)
+      5 - sometimes, a slash appears here (inside `cd.g.captureUserNamePattern`)
       6 - timestamp
      */
     (

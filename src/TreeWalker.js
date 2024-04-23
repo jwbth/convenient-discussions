@@ -129,7 +129,9 @@ class TreeWalker {
    */
   previousNode() {
     let node = this.currentNode;
-    if (node === this.root) return;
+    if (node === this.root) {
+      return null;
+    }
     do {
       if (node[this.previousSiblingProp]) {
         node = node[this.previousSiblingProp];

@@ -621,6 +621,11 @@ class Thread {
    * Calculate the offset of the thread line.
    *
    * @param {object} options
+   * @param {Element[]} options.elementsToAdd
+   * @param {Thread[]} options.threadsToUpdate
+   * @param {number} options.scrollX
+   * @param {number} options.scrollY
+   * @param {object[]} options.floatingRects
    * @returns {boolean}
    * @private
    */
@@ -731,6 +736,8 @@ class Thread {
     if (!this.clickArea.parentNode) {
       elementsToAdd.push(this.clickArea);
     }
+
+    return false;
   }
 
   /**

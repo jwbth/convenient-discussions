@@ -134,7 +134,10 @@ export default {
    * @private
    */
   createOrUpdateSkeleton(afterLeadOffset, scrollY) {
-    if (afterLeadOffset < cd.g.bodyScrollPaddingTop + 1 || backLinkLocation === 'top') {
+    if (
+      (afterLeadOffset !== null && afterLeadOffset < cd.g.bodyScrollPaddingTop + 1) ||
+      backLinkLocation === 'top'
+    ) {
       if (!this.$linksOnTop) {
         this.$linksOnTop = $('<ul>')
           .attr('id', 'cd-pageNav-linksOnTop')
@@ -219,7 +222,7 @@ export default {
     // `1` as a threshold (also below, in `extendedRect.outerTop < BODY_SCROLL_PADDING_TOP + 1`)
     // works better for Monobook for some reason (scroll to the first section using the page
     // navigation to see the difference).
-    if (firstSectionTop === undefined || firstSectionTop >= cd.g.bodyScrollPaddingTop + 1) {
+    if (firstSectionTop === null || firstSectionTop >= cd.g.bodyScrollPaddingTop + 1) {
       if (currentSection) {
         this.resetSections();
       }
@@ -275,7 +278,7 @@ export default {
 
     const scrollY = window.scrollY;
 
-    // afterLeadOffset is the top position of the TOC or the first section.
+    // `afterLeadOffset` is the top position of the TOC or the first section.
     const { afterLeadOffset, firstSectionTop } = this.getRelativeOffsets(scrollY);
 
     this.createOrUpdateSkeleton(afterLeadOffset, scrollY);
