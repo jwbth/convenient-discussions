@@ -19,6 +19,8 @@ export default {
    * {@link https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js}
    * in your browser's console while the page of your wiki is open.
    *
+   * Each special page can have either an array of alias strings or an alias string.
+   *
    * @type {object}
    * @default []
    */
