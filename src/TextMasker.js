@@ -196,7 +196,7 @@ class TextMasker {
    * @returns {TextMasker}
    */
   withText(func) {
-    this.text = func(this.text);
+    this.text = func(this.text, this);
     return this;
   }
 
