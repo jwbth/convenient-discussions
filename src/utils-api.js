@@ -253,10 +253,7 @@ export async function saveOptions(options, isGlobal = false) {
       change: (
         '\x1f' +
         Object.entries(options)
-          // Global options can't be deleted because of a bug
-          // https://phabricator.wikimedia.org/T207448.
-          .map(([name, value]) => name + (value === null && !isGlobal ? '' : '=') + (value ?? ''))
-
+          .map(([name, value]) => name + (value === null ? '' : '=' + value))
           .join('\x1f')
       ),
     }),
