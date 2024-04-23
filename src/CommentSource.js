@@ -355,6 +355,7 @@ class CommentSource {
       tagRegexp,
       cd.config.signaturePrefixRegexp,
       tagRegexp,
+      /'+$/,  // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)#c-Acroterion-20240423134900-History_indexing
       new RegExp(`<small class="${cd.config.unsignedClass}">.*$(?:)`),
       /<!-- *Template:Unsigned.*$/,
       cd.config.signaturePrefixRegexp,
