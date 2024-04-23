@@ -3065,7 +3065,7 @@ class Comment extends CommentSkeleton {
   getText(cleanUpSignature = true) {
     if (this.cachedText === undefined) {
       const $clone = this.$elements
-        .not('h1, h2, h3, h4, h5, h6')
+        .not(':header, .mw-heading')
         .clone()
         .removeClass('cd-hidden');
       const $dummy = $('<div>').append($clone);
