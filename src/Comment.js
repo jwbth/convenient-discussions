@@ -271,7 +271,13 @@ class Comment extends CommentSkeleton {
 
         // Cases like https://ru.wikipedia.org/?diff=119667594
         (
-          n.getAttribute('style') &&
+          (
+            // https://ru.wikipedia.org/wiki/Обсуждение_участника:Adamant.pwn/Архив/2023#c-Adamant.pwn-20230722131600-Rampion-20230722130800
+            n.getAttribute('style') ||
+
+            // https://en.wikipedia.org/?oldid=1220458782#c-Dxneo-20240423211700-Dilettante-20240423210300
+            ['B', 'STRONG'].includes(n.tagName)
+          ) &&
           n.textContent.toLowerCase() === this.author.getName().toLowerCase()
         )
       )
@@ -3174,8 +3180,8 @@ class Comment extends CommentSkeleton {
    * @throws {CdError}
    */
   locateInCode(useSectionCode, code, commentData) {
-    const codePassed = code !== undefined;
-    if (!code) {
+    const codePassed = typeof code === 'string';
+    if (!codePassed) {
       code = useSectionCode ? this.section.presumedCode : this.getSourcePage().code;
       this.source = null;
     }

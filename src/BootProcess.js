@@ -277,6 +277,7 @@ class BootProcess {
       CommentForm.init();
       CommentFormInputTransformer.init();
       notifications.init();
+      Parser.init();
     }
     controller.setup(this.passedData.html);
     toc.setup(this.passedData.toc, this.passedData.hidetoc);

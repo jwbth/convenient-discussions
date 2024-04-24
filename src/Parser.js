@@ -211,8 +211,6 @@ class Parser {
    * @private
    */
   convertTimestampToSignature(timestamp) {
-    this.constructor.punctuationRegexp ||= new RegExp(`(?:^|${cd.g.letterPattern})[.!?…] `);
-
     let unsignedElement;
     let el = timestamp.element;
     while (!unsignedElement && (el = el.parentNode) && isInline(el)) {
@@ -297,12 +295,12 @@ class Parser {
             // considered a part of the signature then.
             (node.tagName && ['S', 'STRIKE', 'DEL'].includes(node.tagName)) ||
 
-            // Cases like
+            // Cases with a talk page link at the end of comment's text like
             // https://ru.wikipedia.org/wiki/Википедия:Заявки_на_статус_администратора/Obersachse_3#c-Obersachse-2012-03-11T08:03:00.000Z-Итог
-            // Note that this is currently unsupported by the wikitext parser. When edited, such a
-            // comment will be cut at the first user link. You would need to discern ". " inside
+            // Note that this is currently unsupported by our wikitext parser. When edited, such a
+            // comment will be cut at the first user link. You would need to discern ". " inside and
             // outside of links or even tags, and this is much work for little gain. This is the
-            // cost of us not relying on a DOM -> wikitext correspondence and processing those parts
+            // cost of us not relying on a DOM -> wikitext correspondence and processing these parts
             // separately.
             (!node.tagName && this.constructor.punctuationRegexp.test(node.textContent))
           )
@@ -716,6 +714,13 @@ class Parser {
     }
 
     return nestingLevel;
+  }
+
+  /**
+   * Initialize the class.
+   */
+  static init() {
+    this.punctuationRegexp = new RegExp(`(?:^|[${cd.g.letterPattern}])[.!?…] `);
   }
 }
 

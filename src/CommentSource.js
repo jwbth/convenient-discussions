@@ -53,7 +53,6 @@ class CommentSource {
           // `CommentForm#inputToCode`. Some more comments are there.
           const entireLineRegexp = /^(?:\x01\d+_(block|template)\x02) *$/;
 
-          // `(?:)` to work around Chrome DevTools bug when it sees "$`"
           const fileRegexp = new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$`, 'i');
           const currentLineEndingRegexp = new RegExp(
             `(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x04) *$`,

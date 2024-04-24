@@ -901,7 +901,7 @@ class Thread {
       } else {
         // Remove IDs that have no corresponding comments or threads from the data. FIXME: Leave
         // only `data.collapsedThreads` after June 2024
-        removeFromArrayIfPresent(data.collapsedThreads || data.threads, thread)
+        removeFromArrayIfPresent(data.collapsedThreads || data.threads, thread);
       }
     });
 
