@@ -421,6 +421,7 @@ function parse() {
   cd.comments = [];
   cd.sections = [];
 
+  Parser.init();
   let areThereOutdents;
   const parser = new Parser({
     CommentClass: CommentSkeleton,
