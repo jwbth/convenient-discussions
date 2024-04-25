@@ -335,8 +335,10 @@ export default {
   },
 
   /**
-   * _For internal use._ Make sections visible or invisible to improve performance if the
-   * corresponding setting is enabled.
+   * Make sections visible or invisible to improve performance if the corresponding setting is
+   * enabled.
+   *
+   * @private
    */
   maybeUpdateVisibility() {
     if (
@@ -345,7 +347,7 @@ export default {
       !controller.isLongPage() ||
 
       // When the document has no focus, all sections are visible (see `.maybeUnhideAll()`).
-      document.hasFocus()
+      !document.hasFocus()
     ) {
       return;
     }
