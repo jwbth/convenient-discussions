@@ -248,7 +248,7 @@ function loadSiteData() {
   cd.g.contentTimezone = cd.config.timezone;
 
   const specialPages = ['Contributions', 'Diff', 'PermanentLink'];
-  if (specialPages.some((page) => !cd.g.specialPageAliases[page]) || !cd.g.contentTimezone) {
+  if (specialPages.some((page) => !cd.g.specialPageAliases[page]?.length) || !cd.g.contentTimezone) {
     const request = controller.getApi().get({
       action: 'query',
       meta: 'siteinfo',
@@ -258,7 +258,7 @@ function loadSiteData() {
         .filter((page) => specialPages.includes(page.realname))
         .forEach((page) => {
           cd.g.specialPageAliases[page.realname] = page.aliases
-            .slice(0, page.aliases.indexOf(page.realname));
+            .slice(0, page.aliases.indexOf(page.realname) + 1);
         });
       cd.g.contentTimezone = resp.query.general.timezone;
     });
@@ -284,15 +284,6 @@ function patterns() {
 
   const nss = mw.config.get('wgFormattedNamespaces');
   const nsIds = mw.config.get('wgNamespaceIds');
-
-  /**
-   * Contributions page local name.
-   *
-   * @name contribsPage
-   * @type {string[]}
-   * @memberof convenientDiscussions.g
-   */
-  cd.g.contribsPages = cd.g.specialPageAliases.Contributions.map((alias) => `${nss[-1]}:${alias}`);
 
   const anySpace = (s) => s.replace(/[ _]/g, '[ _]+').replace(/:/g, '[ _]*:[ _]*');
   const joinNsNames = (...ids) => (
@@ -320,6 +311,15 @@ function patterns() {
   const userTalkNsAliasesPattern = joinNsNames(3);
   cd.g.userTalkLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):([^/]+)$`, 'i');
   cd.g.userTalkSubpageLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):.+?/`, 'i');
+
+  /**
+   * Contributions page local name.
+   *
+   * @name contribsPage
+   * @type {string[]}
+   * @memberof convenientDiscussions.g
+   */
+  cd.g.contribsPages = cd.g.specialPageAliases.Contributions.map((alias) => `${nss[-1]}:${alias}`);
 
   const contribsPagesLinkPattern = cd.g.contribsPages.join('|');
   cd.g.contribsPageLinkRegexp = new RegExp(`^(?:${contribsPagesLinkPattern})/`);

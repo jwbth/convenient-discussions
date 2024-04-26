@@ -64,7 +64,7 @@ mw.loader.using([
     config.specialPageAliases = Object.assign(
       {},
       ...specialPageAliases.map((page) => ({
-        [page.realname]: page.aliases.slice(0, page.aliases.indexOf(page.realname)),
+        [page.realname]: page.aliases.slice(0, page.aliases.indexOf(page.realname) + 1),
       }))
     )
   }
