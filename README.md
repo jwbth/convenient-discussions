@@ -25,6 +25,7 @@
 * Jumping to a specific comment from the watchlist and other pages that list revisions
 * Always seeing the current section's name and navigating page parts in one click
 * Searching for comments and sections in the archive
+* Uploading images to Wikimedia Commons in three clicks
 
 The script makes the user forget about:
 * the need to search the code for a place for a comment, count colons, type tildes and other markup;
