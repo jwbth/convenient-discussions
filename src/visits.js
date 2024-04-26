@@ -30,7 +30,7 @@ export default {
     try {
       // `mw.user.options` is not used even on first run because it appears to be cached sometimes
       // which can be critical for determining subscriptions.
-      this.data = this.unpack(await getUserInfo(reuse).then(({ visits }) => visits));
+      this.unpack(await getUserInfo(reuse).then(({ visits }) => visits));
     } catch (e) {
       console.warn('Convenient Discussions: Couldn\'t load the settings from the server.', e);
       return;
@@ -121,10 +121,8 @@ export default {
    * @returns {string}
    */
   pack() {
-    /**
-     * The format of the items:
-     * <Page ID>,<List of visits, from oldest to newest, separated by comma>\n
-     */
+    // The format of the items:
+    // <Page ID>,<List of visits, from oldest to newest, separated by comma>\n
     return LZString.compressToEncodedURIComponent(
       Object.keys(this.data)
         .map((key) => `${key},${this.data[key].join(',')}\n`)
@@ -137,22 +135,17 @@ export default {
    * Unpack a compressed visits string into a visits object.
    *
    * @param {string|undefined} compressed
-   * @returns {object}
    */
   unpack(compressed) {
-    if (!compressed) {
-      return {};
-    }
+    this.data = {};
+    if (!compressed) return;
 
     const string = LZString.decompressFromEncodedURIComponent(compressed);
-    const data = {};
     const regexp = /^(\d+),(.+)$/gm;
     let match;
     while ((match = regexp.exec(string))) {
-      data[match[1]] = match[2].split(',');
+      this.data[match[1]] = match[2].split(',');
     }
-
-    return data;
   },
 
   /**

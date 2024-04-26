@@ -414,8 +414,8 @@ class CommentForm {
     this.commentInput = new (require('./MultilineTextInputWidget').default)({
       value: initialState?.comment ?? '',
       placeholder: commentInputPlaceholder,
-      autosize: true,
       rows: this.headlineInput ? 5 : 3,
+      autosize: true,
       maxRows: 9999,
       classes: ['cd-commentForm-commentInput'],
       tabIndex: this.getTabIndex(12),

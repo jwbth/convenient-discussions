@@ -231,47 +231,32 @@ class SettingsDialog extends ProcessDialog {
         const name = data.name;
         switch (data.type) {
           case 'checkbox':
-            controls[name] = createCheckboxField({
+            controls[name] = createCheckboxField(Object.assign({
               value: name,
               selected: settingValues[name],
-              label: data.label,
-              help: data.help,
-              classes: data.classes,
-            });
-            controls[name].input.connect(this, { change: 'updateStates' });
+            }, data));
+            controls[name].input.on('change', this.updateStates.bind(this));
             break;
 
           case 'radio':
-            controls[name] = createRadioField({
-              options: data.options,
+            controls[name] = createRadioField(Object.assign({
               selected: settingValues[name],
-              label: data.label,
-              help: data.help,
-            });
-            controls[name].select.connect(this, { select: 'updateStates' });
+            }, data));
+            controls[name].select.on('select', this.updateStates.bind(this));
             break;
 
           case 'text':
-            controls[name] = createTextField({
+            controls[name] = createTextField(Object.assign({
               value: settingValues[name],
-              maxLength: 100,
-              label: data.label,
-              help: data.help,
-            });
-            controls[name].input.connect(this, { change: 'updateStates' });
+            }, data));
+            controls[name].input.on('change', this.updateStates.bind(this));
             break;
 
           case 'number':
-            controls[name] = createNumberField({
+            controls[name] = createNumberField(Object.assign({
               value: settingValues[name],
-              min: data.min,
-              max: data.max,
-              buttonStep: data.buttonStep,
-              label: data.label,
-              help: data.help,
-              classes: data.classes,
-            });
-            controls[name].input.connect(this, { change: 'updateStates' });
+            }, data));
+            controls[name].input.on('change', this.updateStates.bind(this));
             break;
 
           case 'multicheckbox':
@@ -286,7 +271,7 @@ class SettingsDialog extends ProcessDialog {
               )),
               classes: data.classes,
             });
-            controls[name].multiselect.connect(this, { select: 'updateStates' });
+            controls[name].multiselect.on('select', this.updateStates.bind(this));
             controls[name].field = new OO.ui.FieldLayout(controls[name].multiselect, {
               label: data.label,
               align: 'top',
@@ -302,7 +287,7 @@ class SettingsDialog extends ProcessDialog {
               tagLimit: data.tagLimit,
               selected: (data.dataToUi || ((val) => val)).call(null, settingValues[name]),
             });
-            controls[name].multiselect.connect(this, { change: 'updateStates' });
+            controls[name].multiselect.on('change', this.updateStates.bind(this));
             controls[name].field = new OO.ui.FieldLayout(controls[name].multiselect, {
               label: data.label,
               align: 'top',

@@ -111,14 +111,6 @@ import controller from './controller';
  */
 
 /**
- * OOUI multiline text input widget.
- *
- * @class MultilineTextInputWidget
- * @memberof external:OO.ui
- * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.MultilineTextInputWidget
- */
-
-/**
  * OOUI horizontal layout.
  *
  * @class HorizontalLayout

@@ -758,6 +758,7 @@ export function getDbnameForHostname(hostname) {
   }
   return subdomain + languagedProject;
 }
+
 /**
  * @typedef {object} ParsedWikiUrl
  * @property {string} pageName

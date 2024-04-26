@@ -30,9 +30,7 @@ class LegacySubscriptions extends Subscriptions {
     try {
       // `mw.user.options` is not used even on first run because it appears to be cached sometimes
       // which can be critical for determining subscriptions.
-      this.allPagesData = this.unpack(
-        await getUserInfo(reuse).then(({ subscriptions }) => subscriptions)
-      );
+      this.unpack(await getUserInfo(reuse).then(({ subscriptions }) => subscriptions));
     } catch (e) {
       console.warn('Convenient Discussions: Couldn\'t load the settings from the server.', e);
       return;
@@ -195,10 +193,8 @@ class LegacySubscriptions extends Subscriptions {
    * @returns {string}
    */
   pack(allPagesData) {
-    /*
-      The format of the items:
-      <Space, except for the first item><Page ID> <List of sections separated by \n>\n
-    */
+    // The format of the items:
+    // <Space, except for the first item><Page ID> <List of sections separated by \n>\n
     return LZString.compressToEncodedURIComponent(
       Object.keys(allPagesData)
         .filter((pageId) => Object.keys(allPagesData[pageId]).length)
@@ -212,24 +208,19 @@ class LegacySubscriptions extends Subscriptions {
    * Unpack a compressed subscriptions string into an object.
    *
    * @param {string} compressed
-   * @returns {object}
    */
   unpack(compressed) {
-    if (!compressed) {
-      return {};
-    }
+    this.allPagesData = {};
+    if (!compressed) return;
 
     // Page IDs alternating with section lists
     const pages = LZString.decompressFromEncodedURIComponent(compressed)
       .split(/(?:^|\n )(\d+) /)
       .slice(1);
 
-    const allPagesData = {};
     for (let i = 1; i < pages.length; i += 2) {
-      allPagesData[pages[i - 1]] = this.itemsToKeys(pages[i].split('\n'));
+      this.allPagesData[pages[i - 1]] = this.itemsToKeys(pages[i].split('\n'));
     }
-
-    return allPagesData;
   }
 
   /**
