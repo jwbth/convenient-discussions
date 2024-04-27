@@ -18,6 +18,7 @@
     assets: {
       default: [
         'convenientDiscussions.js',
+        'convenientDiscussions-generateBasicConfig.js',
         'convenientDiscussions.js.LICENSE.js',
         'convenientDiscussions-i18n/',
       ],

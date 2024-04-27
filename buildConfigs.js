@@ -9,15 +9,15 @@ const testSuffix = (argv.test || process.env.npm_config_test) ? '.test' : '';
 fs.readdirSync('./config/').forEach((filename) => {
   const [, name] = filename.match(/^(\w+(?:-\w+)?)\.js$/) || [];
   if (!name || name === 'default') return;
-  const content = fs.readFileSync(`./config/${filename}`, 'utf8')
+  let content = fs.readFileSync(`config/${filename}`, 'utf8')
     .trim()
     .replace(/[^]*?export default /, '');
 
   // When updating this code, update the code in misc/convenientDiscussions-generateBasicConfig.js
   // as well.
-  const data = `/**
+  content = `/**
  * This file was assembled automatically from the configuration at
- * https://github.com/jwbth/convenient-discussions/tree/master/config/${filename} by running
+ * https://github.com/jwbth/convenient-discussions/tree/main/config/${filename} by running
  * "node buildConfigs". The configuration might get outdated as the script evolves, so it's best
  * to keep it up to date by checking for the documentation updates from time to time. See the
  * documentation at
@@ -70,7 +70,12 @@ if (!convenientDiscussions.isRunning) {
 // </nowiki>
 `;
   fs.mkdirSync('dist/convenientDiscussions-config', { recursive: true });
-  fs.writeFileSync(`dist/convenientDiscussions-config/${name}${testSuffix}.js`, data);
+  fs.writeFileSync(`dist/convenientDiscussions-config/${name}${testSuffix}.js`, content);
 });
+
+fs.copyFileSync(
+  `misc/convenientDiscussions-generateBasicConfig.js`,
+  `dist/convenientDiscussions-generateBasicConfig.js`
+);
 
 console.log('Project configs have been built successfully.');
