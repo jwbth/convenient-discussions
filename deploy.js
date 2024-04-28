@@ -199,7 +199,7 @@ function getLastDeployedCommit(revisions) {
       .slice(0, newCommitsCount)
       .map((commit) => commit.subject)
       .filter((commit) => (
-        !/^(Merge branch|Merge pull request|Localisation updates|deploy:|build:|configs?:|tests?:|jsdoc:|chore:)/.test(commit)
+        !/^(Merge branch|Merge pull request|Localisation updates|deploy:|build:|configs?:|tests?:|jsdoc:|chore:|docs:)/.test(commit)
       ));
     newCommitsCount = newCommitsSubjects.length;
   }
@@ -262,7 +262,7 @@ function getMainEdits() {
           `Automatically update to ${version || commitString}` :
           `Update to ${commitString}`;
         if (i === 0 && newCommitsCount) {
-          summary += `. ${pluralize(newCommitsCount, 'new commit')}: ${newCommitsSubjects.join('. ')}`;
+          summary += `. ${pluralize(newCommitsCount, 'commit')}: ${newCommitsSubjects.join('. ')}`;
         }
 
         return {
