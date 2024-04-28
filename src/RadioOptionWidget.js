@@ -6,7 +6,7 @@ const { tweakUserOoUiClass } = require('./utils-oojs');
  *
  * @augments external:OO.ui.RadioOptionWidget
  */
-export default class RadioOptionWidget extends OO.ui.RadioOptionWidget {
+class RadioOptionWidget extends OO.ui.RadioOptionWidget {
   /**
    * Create a radio input widget.
    *
@@ -38,3 +38,5 @@ export default class RadioOptionWidget extends OO.ui.RadioOptionWidget {
 }
 
 tweakUserOoUiClass(RadioOptionWidget);
+
+export default RadioOptionWidget;

@@ -5,9 +5,9 @@
  */
 
 import defaultConfig from '../config/default';
-import CONFIG_URLS from '../config/urls.json';
-import I18N_LIST from '../data/i18nList.json';
-import LANGUAGE_FALLBACKS from '../data/languageFallbacks.json';
+import configUrls from '../config/urls.json';
+import i18nList from '../data/i18nList.json';
+import languageFallbacks from '../data/languageFallbacks.json';
 
 import { addCommentLinksToSpecialSearch } from './addCommentLinks';
 import cd from './cd';
@@ -202,9 +202,9 @@ async function go() {
  */
 function setLanguages() {
   const languageOrFallback = (lang) => (
-    I18N_LIST.includes(lang) ?
+    i18nList.includes(lang) ?
       lang :
-      (LANGUAGE_FALLBACKS[lang] || []).find((fallback) => I18N_LIST.includes(fallback)) || 'en'
+      (languageFallbacks[lang] || []).find((fallback) => i18nList.includes(fallback)) || 'en'
   );
 
   cd.g.userLanguage = languageOrFallback(mw.config.get('wgUserLanguage'));
@@ -233,7 +233,7 @@ function getConfig() {
     if (IS_TEST) {
       key += '.test';
     }
-    const configUrl = CONFIG_URLS[key] || CONFIG_URLS[mw.config.get('wgServerName')];
+    const configUrl = configUrls[key] || configUrls[mw.config.get('wgServerName')];
     if (configUrl) {
       const rejectWithMsg = (e) => {
         reject(['Convenient Discussions can\'t run: couldn\'t load the configuration.', e]);
@@ -337,7 +337,7 @@ async function app() {
   const getStringsPromise = areLanguageFallbacksEmployed ?
     getStrings() :
 
-    // cd.getStringsPromise may be set in the configuration file.
+    // `cd.getStringsPromise` may be set in the configuration file.
     !cd.i18n && (cd.getStringsPromise || getStrings());
 
   try {

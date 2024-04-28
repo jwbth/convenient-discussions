@@ -7,9 +7,9 @@
  * @module init
  */
 
-import dateFormatsData from '../data/dateFormats.json';
+import dateFormats from '../data/dateFormats.json';
 import digitsData from '../data/digits.json';
-import languageFallbacksData from '../data/languageFallbacks.json';
+import languageFallbacks from '../data/languageFallbacks.json';
 
 import Comment from './Comment';
 import Section from './Section';
@@ -39,9 +39,9 @@ let defaultFontSize;
  */
 function initFormats() {
   const getFallbackLanguage = (lang) => (
-    (languageFallbacksData[lang] || ['en']).find((fallback) => dateFormatsData[fallback])
+    (languageFallbacks[lang] || ['en']).find((fallback) => dateFormats[fallback])
   );
-  const languageOrFallback = (lang) => dateFormatsData[lang] ? lang : getFallbackLanguage(lang);
+  const languageOrFallback = (lang) => dateFormats[lang] ? lang : getFallbackLanguage(lang);
 
   const contentLanguage = languageOrFallback(mw.config.get('wgContentLanguage'));
   const userLanguage = languageOrFallback(mw.config.get('wgUserLanguage'));
@@ -53,7 +53,7 @@ function initFormats() {
    * @type {string}
    * @memberof convenientDiscussions.g
    */
-  cd.g.contentDateFormat = dateFormatsData[contentLanguage];
+  cd.g.contentDateFormat = dateFormats[contentLanguage];
 
   /**
    * Format of date in user (interface) language, as used by MediaWiki.
@@ -62,7 +62,7 @@ function initFormats() {
    * @type {string}
    * @memberof convenientDiscussions.g
    */
-  cd.g.uiDateFormat = dateFormatsData[userLanguage];
+  cd.g.uiDateFormat = dateFormats[userLanguage];
 
   /**
    * Regular expression matching a single digit in content language, e.g. `[0-9]`.

@@ -92,6 +92,7 @@ mw.loader.using([
   config.useGlobalPreferences = siteInfoResp.query.extensions
     .some((ext) => ext.name === 'GlobalPreferences');
   if (config.useGlobalPreferences) {
+    // Global preferences are used by default. On WMF wikis this would just distract.
     delete config.useGlobalPreferences;
   }
 

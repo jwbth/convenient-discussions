@@ -366,19 +366,6 @@ function prepareCommentsAndSections(parser) {
     addCompareHelperProperties(comment);
   });
 
-  let commentDangerousKeys = [
-    'authorLink',
-    'authorTalkLink',
-    'cachedParent',
-    'elements',
-    'extraSignatures',
-    'highlightables',
-    'parser',
-    'parts',
-    'signatureElement',
-    'timestampElement',
-  ];
-
   cd.comments.forEach((comment, i) => {
     comment.children = comment.getChildren();
     comment.children.forEach((reply) => {
@@ -390,25 +377,34 @@ function prepareCommentsAndSections(parser) {
       .slice(Math.max(0, i - 2), i)
       .reverse();
 
-    keepSafeValues(comment, commentDangerousKeys);
+    keepSafeValues(comment, [
+      'authorLink',
+      'authorTalkLink',
+      'cachedParent',
+      'elements',
+      'extraSignatures',
+      'highlightables',
+      'parser',
+      'parts',
+      'signatureElement',
+      'timestampElement',
+    ]);
   });
-
-  let sectionDangerousKeys = [
-    'cachedAncestors',
-    'headingElement',
-    'hElement',
-    'headlineElement',
-    'lastElement',
-    'lastElementInFirstChunk',
-    'parser',
-  ];
 
   cd.sections.forEach((section) => {
     section.parent = section.getParent();
     section.ancestors = section.getAncestors().map((section) => section.headline);
     section.oldestCommentId = section.oldestComment?.id;
 
-    keepSafeValues(section, sectionDangerousKeys);
+    keepSafeValues(section, [
+      'cachedAncestors',
+      'headingElement',
+      'hElement',
+      'headlineElement',
+      'lastElement',
+      'lastElementInFirstChunk',
+      'parser',
+    ]);
   });
 }
 
