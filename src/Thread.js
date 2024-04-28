@@ -520,7 +520,7 @@ class Thread {
     this.isCollapsed = true;
 
     for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
-      i = commentRegistry.getByIndex(i).collapse() ?? i;
+      i = commentRegistry.getByIndex(i).collapse(this) ?? i;
     }
 
     this.addExpandNode(loadUserGendersPromise);
