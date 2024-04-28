@@ -630,10 +630,9 @@ export default {
   getFloatingElements() {
     if (!this.content.floatingElements) {
       // Describe all floating elements on the page in order to calculate the correct border
-      // (temporarily setting "overflow: hidden") for all comments that they intersect with.
+      // (temporarily setting `overflow: hidden`) for all comments they intersect with.
       const floatingElementSelector = [
         '.cd-floating',
-
         '.tleft',
         '.floatright',
         '.floatleft',
@@ -643,8 +642,8 @@ export default {
         '*[style*="float: right"]',
         '*[style*="float:left"]',
         '*[style*="float: left"]',
-        'figure[typeof="mw:File/Thumb"]',
-        'figure[typeof="mw:File/Frame"]',
+        'figure[typeof~="mw:File/Thumb"]',
+        'figure[typeof~="mw:File/Frame"]',
         ...this.getTsFloatingElementSelectors(),
       ].join(', ');
 

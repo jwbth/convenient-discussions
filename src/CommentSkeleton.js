@@ -1137,7 +1137,7 @@ class CommentSkeleton {
       !isHeadingNode(el) &&
       !isMetadataNode(el) &&
       !cd.g.noHighlightClasses.some((name) => el.classList.contains(name)) &&
-      !(el.tagName === 'FIGURE' && /^(mw:File\/(Thumb|Frame))/.test(el.getAttribute('typeof'))) &&
+      !(el.tagName === 'FIGURE' && /\b(mw:File\/(Thumb|Frame))/.test(el.getAttribute('typeof'))) &&
 
       // Can't access stylesheets from the worker context, so we do it only in
       // Comment#reviewHighlightables, and here we look at the style attribute only.
