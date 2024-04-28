@@ -789,12 +789,14 @@ export class Page {
   /**
    * Create an add section form if not existent.
    *
-   * @param {object} [initialStateOrCommentForm]
+   * @param {object} [initialState]
+   * @param {import('./CommentForm').default} [commentForm]
    * @param {object} [preloadConfig={@link CommentForm.getDefaultPreloadConfig CommentForm.getDefaultPreloadConfig()}]
    * @param {boolean} [newTopicOnTop=false]
    */
   addSection(
-    initialStateOrCommentForm,
+    initialState,
+    commentForm,
     preloadConfig = CommentForm.getDefaultPreloadConfig(),
     newTopicOnTop = false
   ) {
@@ -820,7 +822,7 @@ export class Page {
         mode: 'addSection',
         preloadConfig,
         newTopicOnTop,
-      }, initialStateOrCommentForm);
+      }, initialState, commentForm);
 
       this.$addSectionButtonContainer?.hide();
       if (!this.exists()) {

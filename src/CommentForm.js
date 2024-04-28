@@ -50,7 +50,7 @@ class CommentForm {
    * @param {Comment|import('./Section').default|import('./pageRegistry').Page} config.target
    *   Comment, section, or page that the form is related to.
    * @param {object} [config.initialState] Initial state of the form (data saved in the previous
-   *   session, quoted text, or data transferred from DT's new topic form).
+   *   session, quoted text, data transferred from DT's new topic form, etc.).
    * @param {PreloadConfig} [config.preloadConfig] Configuration to preload data into the form.
    * @param {boolean} [config.newTopicOnTop] When adding a topic, whether it should be on top.
    * @fires commentFormCustomModulesReady
@@ -309,22 +309,14 @@ class CommentForm {
     this.targetSection = this.target.getRelevantSection();
 
     /**
-     * Target comment. This may be the comment the user replies to, or the comment opening the
+     * Parent comment. This is the comment the user replies to, if any, or the comment opening the
      * section.
      *
      * @type {?Comment}
      * @private
      */
-    this.targetComment = this.mode === 'edit' ? null : this.target.getRelevantComment();
-
-    /**
-     * Parent comment. This is the comment the user replies to, if any.
-     *
-     * @type {?Comment}
-     * @private
-     */
     this.parentComment = ['reply', 'replyInSection'].includes(this.mode) ?
-      this.targetComment :
+      this.target.getRelevantComment() :
       null;
 
     /**
@@ -1965,8 +1957,8 @@ class CommentForm {
       .map((u) => u.name);
 
     // Move the addressee to the beginning of the user list
-    if (this.targetComment) {
-      for (let с = this.targetComment; с; с = с.getParent()) {
+    if (this.parentComment) {
+      for (let с = this.parentComment; с; с = с.getParent()) {
         if (с.author !== cd.user) {
           if (!с.author.isRegistered()) break;
           defaultUserNames.unshift(с.author.getName());
@@ -3487,9 +3479,9 @@ class CommentForm {
    *   the addressee to the beginning of the comment input.
    */
   mention(mentionAddressee) {
-    if (mentionAddressee && this.targetComment) {
+    if (mentionAddressee && this.parentComment) {
       const data = Autocomplete.getConfig('mentions').transform(
-        this.targetComment.author.getName()
+        this.parentComment.author.getName()
       );
       if (data.skipContentCheck(data)) {
         data.content = '';
@@ -3742,7 +3734,8 @@ class CommentForm {
 
   /**
    * Get the {@link CommentForm#parentComment parent comment} object of the form. This is the
-   * comment the user replies to, if any.
+   * comment the user replies to, if any. If the user replies to a section, this is the comment
+   * opening the section.
    *
    * @returns {?Comment}
    */
@@ -3804,7 +3797,7 @@ class CommentForm {
     const newSelf = this.target.findNewSelf();
     if (newSelf?.isActionable) {
       try {
-        newSelf[this.getModeTargetProperty()](this);
+        newSelf[this.getModeTargetProperty()](undefined, this);
       } catch (e) {
         console.warn(e);
         return this.rescue();
@@ -3849,7 +3842,9 @@ class CommentForm {
     if (
       this.manyFormsOnboarded ||
       !cd.user.isRegistered() ||
-      commentFormRegistry.getCount() !== 2 ||
+
+      // This form will be the second
+      commentFormRegistry.getCount() !== 1 ||
 
       // Left column hidden in Timeless
       (cd.g.skin === 'timeless' && window.innerWidth < 1100) ||

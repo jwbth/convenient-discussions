@@ -935,7 +935,7 @@ export default {
     }
 
     e.preventDefault();
-    cd.page.addSection(undefined, preloadConfig, newTopicOnTop);
+    cd.page.addSection(undefined, undefined, preloadConfig, newTopicOnTop);
   },
 
   /**

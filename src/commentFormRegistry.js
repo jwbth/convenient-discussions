@@ -69,35 +69,31 @@ export default {
    * reattach it to the page.
    *
    * @param {import('./Comment').default|import('./Section').default|import('./pageRegistry').Page} target
-   * @param {object} config See {@link CommentForm}.
-   * @param {object|import('./CommentForm').default} [initialStateOrCommentForm]
+   * @param {object} config See {@link CommentForm}'s constructor.
+   * @param {object} [initialState] See {@link CommentForm}'s constructor.
+   * @param {import('./CommentForm').default} [commentForm]
    * @returns {CommentForm}
    * @fires commentFormCreated
    */
-  setupCommentForm(target, config, initialStateOrCommentForm) {
-    let item;
-    if (initialStateOrCommentForm instanceof CommentForm) {
-      item = initialStateOrCommentForm;
-      item.setTargets(target);
-      target.addCommentFormToPage(config.mode, item);
+  setupCommentForm(target, config, initialState, commentForm) {
+    if (commentForm) {
+      commentForm.setTargets(target);
+      target.addCommentFormToPage(config.mode, commentForm);
     } else {
-      item = new CommentForm(Object.assign({
-        target,
-        initialState: initialStateOrCommentForm,
-      }, config));
-      target.addCommentFormToPage(config.mode, item);
-      item.setup(initialStateOrCommentForm);
-      this.items.push(item);
-      item
+      commentForm = new CommentForm(Object.assign({ target, initialState }, config));
+      target.addCommentFormToPage(config.mode, commentForm);
+      commentForm.setup(initialState);
+      this.items.push(commentForm);
+      commentForm
         .on('change', this.saveSession.bind(this))
         .on('unregister', () => {
-          this.remove(item);
+          this.remove(commentForm);
         })
         .on('teardown', () => {
           controller.updatePageTitle();
-          this.emit('teardown', item);
+          this.emit('teardown', commentForm);
         });
-      this.emit('add', item);
+      this.emit('add', commentForm);
     }
     controller.updatePageTitle();
     this.saveSession();
@@ -110,9 +106,9 @@ export default {
      * @param {object} cd {@link convenientDiscussions} object.
      * @global
      */
-    mw.hook('convenientDiscussions.commentFormCreated').fire(item, cd);
+    mw.hook('convenientDiscussions.commentFormCreated').fire(commentForm, cd);
 
-    return item;
+    return commentForm;
   },
 
   /**
@@ -325,6 +321,7 @@ export default {
             try {
               target[target.getCommentFormMethodName(data.mode)](
                 data,
+                undefined,
                 data.preloadConfig,
                 data.newTopicOnTop
               );

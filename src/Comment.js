@@ -2745,16 +2745,17 @@ class Comment extends CommentSkeleton {
   /**
    * Create a {@link Comment#replyForm reply form} for the comment.
    *
-   * @param {object|import('./CommentForm').default} [initialStateOrCommentForm]
+   * @param {object} [initialState]
+   * @param {import('./CommentForm').default} [commentForm]
    */
-  reply(initialStateOrCommentForm) {
+  reply(initialState, commentForm) {
     if (this.replyForm) return;
 
     let isSelectionRelevant = false;
-    if (!initialStateOrCommentForm) {
+    if (!initialState && !commentForm) {
       isSelectionRelevant = commentRegistry.getSelectedComment() === this;
       if (isSelectionRelevant) {
-        initialStateOrCommentForm = { focus: false };
+        initialState = { focus: false };
         this.fixSelection();
       }
     }
@@ -2789,7 +2790,7 @@ class Comment extends CommentSkeleton {
      */
     this.replyForm = commentFormRegistry.setupCommentForm(this, {
       mode: 'reply',
-    }, initialStateOrCommentForm);
+    }, initialState, commentForm);
 
     if (isSelectionRelevant) {
       this.replyForm.quote(true, this);
@@ -2824,9 +2825,10 @@ class Comment extends CommentSkeleton {
   /**
    * Create an {@link Comment#editForm edit form} for the comment.
    *
-   * @param {object|import('./CommentForm').default} [initialStateOrCommentForm]
+   * @param {object} [initialState]
+   * @param {import('./CommentForm').default} [commentForm]
    */
-  edit(initialStateOrCommentForm) {
+  edit(initialState, commentForm) {
     // Check for existence in case the editing is initiated from a script of some kind (there is no
     // button to call it from CD when the form is displayed).
     if (this.editForm) return;
@@ -2846,7 +2848,7 @@ class Comment extends CommentSkeleton {
      */
     this.editForm = commentFormRegistry.setupCommentForm(this, {
       mode: 'edit',
-    }, initialStateOrCommentForm);
+    }, initialState, commentForm);
   }
 
   /**

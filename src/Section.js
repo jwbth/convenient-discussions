@@ -997,9 +997,10 @@ class Section extends SectionSkeleton {
   /**
    * Create an {@link Section#replyForm add reply form}.
    *
-   * @param {object|import('./CommentForm').default} [initialStateOrCommentForm]
+   * @param {object} [initialState]
+   * @param {import('./CommentForm').default} [commentForm]
    */
-  reply(initialStateOrCommentForm) {
+  reply(initialState, commentForm) {
     // Check for existence in case replying is called from a script of some kind (there is no button
     // to call it from CD).
     if (!this.replyForm) {
@@ -1010,7 +1011,7 @@ class Section extends SectionSkeleton {
        */
       this.replyForm = commentFormRegistry.setupCommentForm(this, {
         mode: 'replyInSection',
-      }, initialStateOrCommentForm);
+      }, initialState, commentForm);
 
       this.replyButton.hide();
     }
@@ -1026,10 +1027,11 @@ class Section extends SectionSkeleton {
   /**
    * Create an {@link Section#addSubsectionForm add subsection form} form or focus an existing one.
    *
-   * @param {object|import('./CommentForm').default} [initialStateOrCommentForm]
+   * @param {object} [initialState]
+   * @param {import('./CommentForm').default} [commentForm]
    * @throws {CdError}
    */
-  addSubsection(initialStateOrCommentForm) {
+  addSubsection(initialState, commentForm) {
     if (!this.canBeSubsectioned()) {
       throw new CdError();
     }
@@ -1045,7 +1047,7 @@ class Section extends SectionSkeleton {
        */
       this.addSubsectionForm = commentFormRegistry.setupCommentForm(this, {
         mode: 'addSubsection',
-      }, initialStateOrCommentForm);
+      }, initialState, commentForm);
 
       this.$addSubsectionButtonContainer?.hide();
     }
