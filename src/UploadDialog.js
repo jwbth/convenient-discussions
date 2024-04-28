@@ -45,7 +45,8 @@ class PseudoLink extends Button {
  */
 
 /**
- * Class that extends {@link external:mw.Upload.Dialog} and adds some logic we need.
+ * Class that extends {@link external:mw.Upload.Dialog} and adds some logic we need. Uses
+ * {@link ForeignStructuredUploadBookletLayout}, which in turn uses {@link ForeignStructuredUpload}.
  */
 class UploadDialog extends mw.Upload.Dialog {
   /**
@@ -240,7 +241,7 @@ class UploadDialog extends mw.Upload.Dialog {
  * Class extending
  * {@link external:mw.ForeignStructuredUpload.BookletLayout mw.ForeignStructuredUpload.BookletLayout}
  * and adding more details to the process of uploading a file using the
- * {@link external:mw.ForeignStructuredUpload mw.ForeignStructuredUpload} model.
+ * {@link ForeignStructuredUpload} model. See {@link UploadDialog} for the dialog itself.
  *
  * @augments external:mw.ForeignStructuredUpload.BookletLayout
  */
@@ -811,7 +812,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * @param {string} hostname
    * @param {string} pageName
    * @returns {string}
-   * @private
+   * @protected
    */
   static generateHistoryText(hostname, pageName) {
     if (!pageName) {
@@ -834,7 +835,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 
 /**
  * Class extending {@link external:mw.ForeignStructuredUpload mw.ForeignStructuredUpload} and
- * allowing to get and set additional fields.
+ * allowing to get and set additional fields. See {@link UploadDialog} for the dialog.
  *
  * @augments external:mw.ForeignStructuredUpload
  */

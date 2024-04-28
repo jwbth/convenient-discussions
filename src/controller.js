@@ -1367,7 +1367,7 @@ export default {
 
   /**
    * Handle firings of the hook
-   * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.hook-event-wikipage_content wikipage.content}
+   * {@link https://doc.wikimedia.org/mediawiki-core/master/js/Hooks.html#~event:'wikipage.content' wikipage.content}
    * (by using `mw.hook('wikipage.content').fire()`). This is performed by some user scripts, such
    * as QuickEdit.
    *

@@ -47,8 +47,8 @@ class CommentForm {
    *
    * @param {object} config
    * @param {'reply'|'replyInSection'|'edit'|'addSubsection'|'addSection'} config.mode
-   * @param {Comment|import('./Section').default|import('./Page').Page} config.target Comment,
-   *   section, or page that the form is related to.
+   * @param {Comment|import('./Section').default|import('./pageRegistry').Page} config.target
+   *   Comment, section, or page that the form is related to.
    * @param {object} [config.initialState] Initial state of the form (data saved in the previous
    *   session, quoted text, or data transferred from DT's new topic form).
    * @param {PreloadConfig} [config.preloadConfig] Configuration to preload data into the form.
@@ -288,14 +288,14 @@ class CommentForm {
   /**
    * Set the `target`, `targetSection`, `targetComment`, and `targetPage` properties.
    *
-   * @param {Comment|import('./Section').default|import('./Page').Page} target
+   * @param {Comment|import('./Section').default|import('./pageRegistry').Page} target
    * @private
    */
   setTargets(target) {
     /**
      * Target object.
      *
-     * @type {Comment|import('./Section').default|import('./Page').Page}
+     * @type {Comment|import('./Section').default|import('./pageRegistry').Page}
      * @private
      */
     this.target = target;
@@ -3734,7 +3734,7 @@ class CommentForm {
   /**
    * Get the {@link CommentForm#target target} object of the form.
    *
-   * @returns {Comment|import('./Section').default|import('./Page').Page}
+   * @returns {Comment|import('./Section').default|import('./pageRegistry').Page}
    */
   getTarget() {
     return this.target;
@@ -4016,7 +4016,7 @@ class CommentForm {
   /**
    * Get the name of the target's property that can contain a comment form with the specified mode.
    *
-   * @param {Comment|import('./Section').default|import('./Page').Page} target
+   * @param {Comment|import('./Section').default|import('./pageRegistry').Page} target
    * @param {string} mode
    * @returns {string}
    */
@@ -4027,7 +4027,7 @@ class CommentForm {
   /**
    * Remove references to the "Add section" form (after it was unregistered).
    *
-   * @param {Comment|import('./Section').default|import('./Page').Page} target
+   * @param {Comment|import('./Section').default|import('./pageRegistry').Page} target
    * @param {string} mode
    */
   static forgetOnTarget(target, mode) {

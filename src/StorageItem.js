@@ -1,5 +1,8 @@
 /**
- * Class meant to facilitate communication with the local storage.
+ * Class meant to facilitate communication with the
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage local storage}.
+ *
+ * The methods support chaining.
  */
 class StorageItem {
   /**
@@ -10,11 +13,11 @@ class StorageItem {
   static prefix = 'convenientDiscussions';
 
   /**
-   * Create a storage instance, get the storage item and set it to the instance. In case of an
-   * unexistent/falsy/corrupt value or the storage inaccessible, set an empty object.
+   * Create an instance of a storage item, getting its contents from the local storage. In case of
+   * an unexistent/falsy/corrupt value or the storage inaccessible, set an empty object.
    *
-   * To update the storage item after an idle period, run {@link #reload}. Note that the user may
-   * interact with the storage in other tabs.
+   * To reload the contents of the storage item after an idle period, run
+   * {@link StorageItem#reload}. Note that the user may interact with the storage in other tabs.
    *
    * @param {string} key Local storage Item key (will be prepended by {@link StorageItem.prefix}).
    */
@@ -25,8 +28,8 @@ class StorageItem {
   }
 
   /**
-   * Get the storage item and set it to the instance. In case of an unexistent/falsy/corrupt
-   * value or the storage inaccessible, set an empty object.
+   * Get the contents of the storage item and set it to the instance. In case of an
+   * unexistent/falsy/corrupt value or the storage inaccessible, set an empty object.
    *
    * Run this every time you use the storage after an idle period: the user may interact with the
    * storage in other tabs in the same time frame.

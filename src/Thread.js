@@ -13,7 +13,7 @@ import { defined, flat, getCommonGender, isHeadingNode, removeFromArrayIfPresent
 import { getExtendedRect, getRangeContents, getVisibilityByRects, isCmdModifierPressed } from './utils-window';
 
 /**
- * Class used to create a comment thread object.
+ * Class representing a comment thread object.
  */
 class Thread {
   /**
@@ -770,8 +770,8 @@ class Thread {
   static isInited = false;
 
   /**
-   * Create element prototypes to reuse them instead of creating new elements from scratch (which is
-   * more expensive).
+   * _For internal use._ Create element prototypes to reuse them instead of creating new elements
+   * from scratch (which is more expensive).
    */
   static initPrototypes() {
     this.prototypes = new PrototypeRegistry();

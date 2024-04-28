@@ -27,8 +27,9 @@ class Section extends SectionSkeleton {
    * Create a section object.
    *
    * @param {import('./Parser').default} parser
-   * @param {Element} heading
-   * @param {object[]} targets
+   * @param {Element} heading Heading object returned by {@link Parser#findHeadings}.
+   * @param {object[]} targets Sorted target objects returned by  {@link Parser#findSignatures} +
+   *   {@link Parser#findHeadings}.
    * @param {import('./Subscriptions').default} subscriptions
    * @throws {CdError}
    */
@@ -1779,8 +1780,8 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Create element and widget prototypes to reuse them instead of creating new elements from
-   * scratch (which is more expensive).
+   * _For internal use._ Create element and widget prototypes to reuse them instead of creating new
+   * elements from scratch (which is more expensive).
    */
   static initPrototypes() {
     this.prototypes = new PrototypeRegistry();

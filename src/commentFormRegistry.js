@@ -354,7 +354,8 @@ export default {
    * section on the page or the page itself.
    *
    * @param {object} targetData
-   * @returns {import('./Comment').default|import('./Section').default|import('./Page').default}
+   * @returns {import('./Comment').default|import('./Section').default|import('./pageRegistry').default}
+   * @private
    */
   getTargetByData(targetData) {
     if (targetData?.headline) {

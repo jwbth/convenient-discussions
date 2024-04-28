@@ -33,7 +33,8 @@ class Comment extends CommentSkeleton {
    *
    * @param {import('./Parser').default} parser
    * @param {object} signature Signature object returned by {@link Parser#findSignatures}.
-   * @param {object[]} targets
+   * @param {object[]} targets Sorted target objects returned by  {@link Parser#findSignatures} +
+   *   {@link Parser#findHeadings}.
    */
   constructor(parser, signature, targets) {
     super(parser, signature, targets);
@@ -3651,8 +3652,8 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Create element prototypes to reuse them instead of creating new elements from scratch (which is
-   * more expensive).
+   * _For internal use._ Create element prototypes to reuse them instead of creating new elements
+   * from scratch (which is more expensive).
    */
   static initPrototypes() {
     this.prototypes = new PrototypeRegistry();

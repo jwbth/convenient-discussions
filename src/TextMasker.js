@@ -2,16 +2,17 @@ import { generateTagsRegexp } from './utils-wikitext';
 
 /**
  * Class for replacing parts of a text that shouldn't be modified with a placeholder, in order to
- * bypass it when performing certain text replacement operations and then replace the placeholders
+ * ignore it when performing certain text replacement operations and then replace the placeholders
  * back with the original text.
  *
  * After creating an instance and masking some text using {@link TextMasker#mask} or its derivative
- * methods like {@link TextMasker#maskTemplatesRecursively}, there are two ways to use this class:
- * 1. Use {@link textMasker.withText} to make further transformations to the text, unmask it using
- *    {@link textMasker.unmask} (as opposed to {@link textMasker.unmaskText}), and get the result
- *    using {@link textMasker.getText}.
- * 2. Get the text using {@link textMasker.getText}, work with it, and, in the end, unmask it using
- *    {@link textMasker.unmaskText} (as opposed to {@link textMasker.unmask}).
+ * methods like {@link TextMasker#maskTemplatesRecursively}, there are two ways to use this class
+ * based on your needs:
+ * 1. Use {@link TextMasker#withText} to make further transformations to the text, unmask it using
+ *    {@link TextMasker#unmask} (as opposed to {@link TextMasker#unmaskText}), and get the result
+ *    using {@link TextMasker#getText}.
+ * 2. Get the text using {@link TextMasker#getText}, work with it, and, in the end, unmask it using
+ *    {@link TextMasker#unmaskText}.
  *
  * Note that the methods support chaining, so you can sometimes successfully fit all transformations
  * in one chain.
