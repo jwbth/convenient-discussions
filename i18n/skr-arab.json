@@ -84,6 +84,7 @@
 	"rd-comment": "تبصرہ",
 	"rd-summary": "تبدیلی دا خلاصہ",
 	"rd-close": "بند کرو",
+	"topicsubscription-button-subscribe": "سبسکرائب کرو",
 	"newtopicssubscription-popup-title": "نویں خصوصیت",
 	"popup-manyForms-title": "بھلا تساں ڄاݨدے ہو؟",
 	"navpanel-newcomments-unknowndate": "نامعلوم تریخ",
@@ -108,11 +109,11 @@
 	"msd-move": "ٹورو",
 	"msd-error-wrongpage": "غلط ورقہ۔",
 	"msd-error-invalidpagename": "غلط ورقہ ناں۔",
+	"ud-source": "ماخذ",
 	"lp-comment": "تبصرہ",
 	"lp-comment-tooltip": "تبصرے تے ون٘ڄو",
 	"dot-separator": "&nbsp;<b>·</b>&#32;",
 	"ellipsis": "…",
 	"loading-ellipsis": "لوڈ تھین٘دا پئے۔۔۔",
-	"addtopic": "موضوع شامل کرو",
-	"copy": "نقل کرو"
+	"addtopic": "موضوع شامل کرو"
 }

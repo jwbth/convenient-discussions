@@ -42,7 +42,7 @@
 	"sm-move": "Verplaatsen",
 	"sm-move-tooltip": "Verplaats het onderwerp naar een andere pagina",
 	"sm-subscribe": "Abonneren",
-	"sm-unsubscribe": "Opzeggen",
+	"sm-unsubscribe": "Uitschrijven",
 	"sm-copylink-tooltip": "Een koppeling kopiëren",
 	"sm-more": "Meer opties",
 	"comment-timestamp-today": "[Vandaag], H:mm",
@@ -72,9 +72,6 @@
 	"section-watch-openpages": "(U ontvangt alleen meldingen zolang dit tabblad geopend is.)",
 	"section-watch-pagenotwatched": "<strong>Let op:</strong> u bent geabonneerd op deze sectie, maar u volgt de pagina niet. Als u nieuwe reacties uitgelicht wilt hebben op uw volglijstpagina, voeg de pagina dan toe aan de volglijst.",
 	"section-watch-error-maxsize": "Kan de instellingen niet bijwerken: de grootte van de abonneelijst overschrijdt de maximale grootte. <span class=\"cd-notification-editWatchedSections\">[[$1|Bewerk de abonneelijst]]</span> om dit op te lossen.",
-	"section-metadata-commentcount": "$1 {{plural:$1|reactie|reacties}}",
-	"section-metadata-commentcount-new": "$1 {{plural:$1|reactie|reacties}} <span class=\"cd-section-metadata-commentcount-new\">+$2 {{plural:$2|nieuwe}}</span>",
-	"section-metadata-authorcount": "$1 {{plural:$1|persoon|personen}}",
 	"section-metadata-lastcomment": "Nieuwste reactie:",
 	"cld-title-comment": "Reactiekoppeling kopiëren",
 	"cld-title-section": "Sectiekoppeling kopiëren",
@@ -232,7 +229,6 @@
 	"rc-suggestion": "<p>\"Handige discussies\" heeft een optie om de opmaak van reacties zo te wijzigen dat de auteur en de tijdsaanduiding naar boven worden verplaatst en de knoppen voor beantwoorden en bedanken naar beneden. Zo kunt u snel de auteur en de datum van reacties zien en er gemakkelijker mee werken. Wilt u dit inschakelen? (U kunt het altijd uitschakelen in de instellingen).</p> \n\n<p>Merk op dat u in de nieuwe opmaak een koppeling naar de reactie kunt krijgen door op de tijdsaanduiding te klikken. Zie ook <span class=\"cd-notification-settings\">[[$1|de instellingen]]</span> voor verschillende nieuwe functies, zoals knoppen voor het invoegen van tekst en aanpasbare opmaak van tijdsaanduidingen (die overigens standaard worden weergegeven in de tijdzone die is ingesteld in uw wiki-voorkeuren).</p>",
 	"rc-suggestion-yes": "Nieuwe opmaak gebruiken",
 	"rc-suggestion-no": "Gebruikelijke opmaak behouden",
-	"topicsubscription-notice": "<p>\"Handige discussies\" gebruikt nu de standaard meldingsinterface voor het volgen van secties (nu heet dat: onderwerpsabonnementen). U krijgt een melding wanneer iemand een nieuwe reactie plaatst in het onderwerp waarop u bent geabonneerd. Als u bureaubladmeldingen had ingeschakeld, blijft u deze ontvangen.</p>\n<p>U kunt de meldingstypen (web, e-mail, app) instellen in de <b>[[Special:Preferences#mw-prefsection-echo|wiki-voorkeuren]]</b>. Of u kunt teruggaan naar het klassieke volgen van secties. Kijk voor details in de <b><span class=\"cd-notification-notificationSettings\">[[$1|instellingen van \"Handige discussies\"]]</span></b>.</p>",
 	"newtopicssubscription-popup-title": "Nieuwe functie",
 	"newtopicssubscription-popup-text": "U kunt zich voortaan abonneren op overlegpagina's. Als u zich abonneert op een pagina, ontvangt u meldingen zodra er nieuwe onderwerpen op de pagina worden gestart. Om u te abonneren op een pagina, klikt u op \"{{int:discussiontools-newtopicssubscription-button-subscribe-label}}\" in het pagina-actiemenu.",
 	"popup-manyForms-title": "Wist u dat?",
@@ -406,6 +402,5 @@
 	"ellipsis": "…",
 	"loading-ellipsis": "Bezig met laden…",
 	"addtopic": "Onderwerp toevoegen",
-	"addtopicbutton-tooltip": "Open dit op een nieuw tabblad om een nieuw onderwerp aan te maken op de standaardpagina en niet in \"Handige discussies\"",
-	"copy": "Kopiëren"
+	"addtopicbutton-tooltip": "Open dit op een nieuw tabblad om een nieuw onderwerp aan te maken op de standaardpagina en niet in \"Handige discussies\""
 }

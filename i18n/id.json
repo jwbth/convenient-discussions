@@ -42,7 +42,6 @@
 	"comment-deleted": "Komentar telah dihapus.",
 	"comment-deleted-short": "Telah dihapus",
 	"section-reply": "Balas ke bagian",
-	"section-metadata-authorcount": "$1 {{PLURAL:$1|orang}}",
 	"section-metadata-lastcomment": "Komentar terbaru:",
 	"cld-title-comment": "Salin tautan komentar",
 	"cld-title-section": "Salin tautan bagian",

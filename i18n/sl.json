@@ -67,9 +67,6 @@
 	"section-watch-openpages": "(Obvestila boste prejemali samo, ko bo odprt ta zavihek.)",
 	"section-watch-pagenotwatched": "<strong>Opomba:</strong> Naročeni ste na razdelek, vendar strani ne opazujete. Če želite, da bodo novi komentarji označeni na vašem spisku nadzorov, dodajte stran na svoj spisek nadzorov.",
 	"section-watch-error-maxsize": "Nastavitev ni bilo mogoče posodobiti: velikost seznama naročil presega največjo velikost. <span class=\"cd-notification-editWatchedSections\">[[$1|Uredite seznam naročil]]</span>, da to popravite.",
-	"section-metadata-commentcount": "$1 {{plural:$1|komentar|komentarja|komentarji|komentarjev}}",
-	"section-metadata-commentcount-new": "$1 {{plural:$1|komentar|komentarja|komentarji|komentarjev}} <span class=\"cd-section-metadata-commentcount-new\">+$2 {{plural:$2|nov|nova|novi|novih}}</span>",
-	"section-metadata-authorcount": "$1 {{plural:$1|oseba|osebi|osebe|oseb}}",
 	"section-metadata-lastcomment": "Zadnji komentar:",
 	"cld-title-comment": "Kopiranje povezave na komentar",
 	"cld-title-section": "Kopiranje povezave na razdelek",
@@ -227,7 +224,6 @@
 	"rc-suggestion": "<p>Convenient Discussions imajo možnost spreminjanja oblikovanja komentarjev, tako da premaknete avtorja in časovni žig navzgor ter gumb za odgovor in zahvalo navzdol. To omogoča hiter ogled avtorja in datuma komentarjev ter lažjo interakcijo z njimi. Ali jih želite omogočiti? (Vedno jih lahko onemogočite v nastavitvah.)</p> \n\n<p>Upoštevajte, da lahko v novem oblikovanju povezavo do komentarja dobite s klikom na časovni žig. Oglejte si tudi <span class=\"cd-notification-settings\">[[$1|nastavitve]]</span> za različne funkcije, kot so gumbi za vstavljanje besedila in prilagodljivo oblikovanje časovnih žigov (ki so mimogrede prikazani v časovnem pasu, ki je privzeto nastavljen v vaših vikinastavitvah).</p>",
 	"rc-suggestion-yes": "Omogoči novo oblikovanje",
 	"rc-suggestion-no": "Obdrži običajno oblikovanje",
-	"topicsubscription-notice": "<p>Priročne razprave zdaj za ogled razdelkov uporabljajo standardni vmesnik (zdaj se imenuje naročila na teme). Ko bo kdo v temi, na katero ste naročeni, objavil nov komentar, boste prejeli obvestilo. Če ste imeli omogočena obvestila na namizju, jih boste še vedno prejemali.</p> \n\n<p>Vrste obvestil (splet, e-pošta, aplikacija) lahko konfigurirate v <b>[[Special:Preferences#mw-prefsection-echo|viki prilagoditvah]]</b>. Lahko pa se vrnete na klasično opazovanje razdelkov. Podrobnosti si oglejte v <b><span class=\"cd-notification-notificationSettings\">[[$1|nastavitvah Priročnih razprav]]</span></b>.</p>",
 	"newtopicssubscription-popup-title": "Nova možnost",
 	"newtopicssubscription-popup-text": "Zdaj se lahko naročite na pogovorne strani. Če se boste naročili na stran, boste prejemali obvestila, ko se bodo na strani začnejo nove teme. Če se želite naročiti na stran, kliknite »{{int:discussiontools-newtopicssubscription-button-subscribe-label}}« v meniju dejanj strani.",
 	"popup-manyForms-title": "Ste vedeli?",
@@ -401,6 +397,5 @@
 	"ellipsis": "…",
 	"loading-ellipsis": "Nalaganje ...",
 	"addtopic": "Dodaj temo",
-	"addtopicbutton-tooltip": "Odprite v novem zavihku, da ustvarite novo temo na standardni strani, ne v Priročnih razpravah",
-	"copy": "Kopiraj"
+	"addtopicbutton-tooltip": "Odprite v novem zavihku, da ustvarite novo temo na standardni strani, ne v Priročnih razpravah"
 }

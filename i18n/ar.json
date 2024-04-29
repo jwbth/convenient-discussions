@@ -63,8 +63,6 @@
 	"section-reply": "رّد على القسم",
 	"section-addsubsection-to": "إضافة قسم فرعي إلى «$1»",
 	"section-watch-openpages": "(ستتلقى إشعارات فقط عندما تكون علامة التبويب هذه مفتوحة.)",
-	"section-metadata-commentcount": "$1 {{plural:$1|تعليق|تعليقات}}",
-	"section-metadata-authorcount": "$1 {{plural:$1|شخص|أشخاص}}",
 	"section-metadata-lastcomment": "آخر تعليق",
 	"cld-title-comment": "نسخ رابط التعليق",
 	"cld-title-section": "نسخ رابط القسم",
@@ -277,6 +275,5 @@
 	"dot-separator": "&nbsp;<b>·</b>&#32;",
 	"ellipsis": "…",
 	"loading-ellipsis": "جارٍ التحميل…",
-	"addtopic": "أضِف موضوعًا",
-	"copy": "نسخ"
+	"addtopic": "أضِف موضوعًا"
 }
