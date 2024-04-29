@@ -434,6 +434,12 @@ export function brsToNewlines(code, replacement = '\n') {
  * Mask links that have `|`, replace `|` with `{{!}}`, unmask links. If `maskedTexts` is not
  * provided, sensitive code will be masked as well.
  *
+ * Also masks bare `{` and `}` that weren't identified as part of other markup (e.g. try quoting the
+ * sentence "Или держал в голове то, что практика использования {{doc/begin}} ... делали </div>
+ * вместо шаблона." in
+ * https://ru.wikipedia.org/wiki/User_talk:Jack_who_built_the_house#c-Jack_who_built_the_house-2020-03-22T12:18:00.000Z-DonRumata-2020-03-22T11:05:00.000Z
+ * - </div> screws everything up.)
+ *
  * @param {string} code
  * @param {string[]} [maskedTexts]
  * @returns {string}
@@ -445,7 +451,12 @@ export function escapePipesOutsideLinks(code, maskedTexts) {
   }
   return textMasker
     .mask(/\[\[[^\]|]+\|/g, 'link')
-    .withText((text) => text.replace(/\|/g, '{{!}}'))
-    .unmask('link')
+    .withText((text) => (
+      text
+        .replace(/\|/g, '{{!}}')
+        .replace(/\{/g, '&#123;')
+        .replace(/\}/g, '&#125;')
+    ))
+    .unmask(maskedTexts ? 'link' : undefined)
     .getText();
 }
