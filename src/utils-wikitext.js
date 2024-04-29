@@ -453,9 +453,9 @@ export function escapePipesOutsideLinks(code, maskedTexts) {
     .mask(/\[\[[^\]|]+\|/g, 'link')
     .withText((text) => (
       text
-        .replace(/\|/g, '{{!}}')
         .replace(/\{/g, '&#123;')
         .replace(/\}/g, '&#125;')
+        .replace(/\|/g, '{{!}}')
     ))
     .unmask(maskedTexts ? 'link' : undefined)
     .getText();
