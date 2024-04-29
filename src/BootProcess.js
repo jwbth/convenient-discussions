@@ -692,9 +692,9 @@ class BootProcess {
       // done earlier). Should be above all code that deals with highlightable elements of comments
       // and comment levels as this may alter that.
       commentRegistry.reviewHighlightables();
-
-      commentRegistry.reformatComments();
     }
+
+    commentRegistry.reformatComments();
 
     // This updates some styles, shifting the offsets.
     controller.$root.addClass('cd-parsed');

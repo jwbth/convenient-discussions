@@ -48,6 +48,8 @@ export default {
   init() {
     mixEventEmitterIntoObject(this);
 
+    this.reformatCommentsSetting = settings.get('reformatComments');
+
     controller
       .on('scroll', this.registerSeen.bind(this))
       .on('mutate', this.maybeRedrawLayers.bind(this))
@@ -97,7 +99,10 @@ export default {
    * addition to those performed when each comment is added to the registry.
    */
   setup() {
+    // This can be updated after an in-script page reload if the user agrees to this setting in the
+    // onboarding popup (`settings.maybeSuggestEnableCommentReformatting()`).
     this.reformatCommentsSetting = settings.get('reformatComments');
+
     this.reformatTimestamps();
     this.findAndUpdateTableComments();
     this.adjustDom();
@@ -723,8 +728,10 @@ export default {
   async reformatComments() {
     if (!this.reformatCommentsSetting) return;
 
-    const pagesToCheckExistence = [];
     $(document.body).addClass('cd-reformattedComments');
+    if (!cd.page.exists()) return;
+
+    const pagesToCheckExistence = [];
     this.items.forEach((comment) => {
       pagesToCheckExistence.push(...comment.replaceSignatureWithHeader());
       comment.addMenu();
