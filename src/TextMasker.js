@@ -119,23 +119,21 @@ class TextMasker {
     while (true) {
       let left = this.text.indexOf('{{', pos);
       let right = this.text.indexOf('}}', pos);
-      if (left === -1 && right === -1 && !stack.length) break;
-      if (left !== -1 && (left < right || right === -1)) {
+
+      if (left !== -1 && left < right) {
+        // Memorize the wrapper's start position; will search the wrapped next
         stack.push(left);
         pos = left + 2;
       } else {
+        // Nothing more found _inside_ the wrapper; time to go up the hierarchy
+
+        // No wrappers left - we're at the outermost level
+        if (!stack.length) break;
+
+        // Get back to the wrapper
         left = stack.pop();
-        if (typeof left === 'undefined') {
-          if (right === -1) {
-            pos += 2;
-            continue;
-          } else {
-            left = 0;
-          }
-        }
-        if (right === -1) {
-          right = this.text.length;
-        }
+
+        // Mask the template
         right += 2;
         let template = this.text.substring(left, right);
         if (handler) {
@@ -153,6 +151,8 @@ class TextMasker {
           '\x02' +
           this.text.substr(right)
         );
+
+        // Synchronize the position
         pos = right - template.length;
       }
     }
