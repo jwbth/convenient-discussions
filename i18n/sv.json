@@ -71,9 +71,6 @@
 	"section-watch-openpages": "(Du kommer endast få aviseringar medan denna flik är öppen.)",
 	"section-watch-pagenotwatched": "<strong>OBS:</strong> Du prenumererar på det här avsnittet men bevakar inte sidan. Lägg till sidan i din bevakningslista för att belysa nya kommentarer i bevakningslistan.",
 	"section-watch-error-maxsize": "Kunde inte uppdatera inställningarna: De prenumererade avsnittens storlek övergår den tillåtna begränsningen. <span class=\"cd-notification-editWatchedSections\">[[$1|Redigera avsnittslistan]]</span> för att åtgärda det.",
-	"section-metadata-commentcount": "$1 {{plural:$1|kommentar|kommentarer}}",
-	"section-metadata-commentcount-new": "$1 {{plural:$1|kommentar|kommentarer}} <span class=\"cd-section-metadata-commentcount-new\">+$2 {{plural:$2|ny|nya}}</span>",
-	"section-metadata-authorcount": "$1 {{plural:$1|person|personer}}",
 	"section-metadata-lastcomment": "Senaste kommentaren:",
 	"cld-title-comment": "Kopiera kommentarslänk",
 	"cld-title-section": "Kopiera avsnittslänk",
@@ -231,7 +228,6 @@
 	"rc-suggestion": "<p>Angenäma diskussioner har möjligheten att ändra formatering av kommentarer, flytta upp författare och tidsstämpel och flytta ner svara- och tacka-knapparna. Detta låter en snabbt se författare, kommentar och datum och förenklar kommunikation. Vill du aktivera det? (Du kan alltid inaktivera det i dina inställningar.)</p>\n\n<p>Observera att du kan få en länk till kommentaren i den nya formateringen genom att klicka på tidsstämpeln. Spana också in <span class=\"cd-notification-settings\">[[$1|inställningarna]]</span> för diverse uppdateringar, som knappar för att infoga text och anpassningsbar formatering av tidsstämplar (vilket, nuförtiden, visas som standard i samma tidszon som du angett in i dina inställningar.)</p>",
 	"rc-suggestion-yes": "Aktivera den nya formateringen",
 	"rc-suggestion-no": "Behåll den vanliga formateringen",
-	"topicsubscription-notice": "<p>Angenäma diskussioner använder nu standardaviseringsgränssnittet för avsnittsbevakning (heter nu ämnesprenumerationer). Du får en avisering när någon publicerar en ny kommentar i ett ämne du prenumererar på. Om du har aktiverat stationära aviseringar kommer du fortfarande få dem.</p>\n\n<p>Du kan konfigurera aviseringstyperna (webb, e-post, app) i <b>[[Special:Preferences#mw-prefsection-echo|inställningarna]]</b>. Eller så kan du gå tillbaka till den klassiska avsnittsbevakningen. Läs detaljerna i <b><span class=\"cd-notification-notificationSettings\">[[$1|Angenäma diskussioners inställningar]]</span></b>.</p>",
 	"newtopicssubscription-popup-title": "Ny funktion",
 	"newtopicssubscription-popup-text": "Du kan nu prenumerera på diskussionssidor. Om du prenumererar på en sida får du aviseringar när nya ämnen startas på sidan. För att prenumerera på en sida, klicka på \"{{int:discussiontools-newtopicssubscription-button-subscribe-label}}\" i sidåtgärdsmenyn.",
 	"popup-manyForms-title": "Visste du att?",
@@ -406,6 +402,5 @@
 	"ellipsis": "…",
 	"loading-ellipsis": "Läser in...",
 	"addtopic": "Lägg till ämne",
-	"addtopicbutton-tooltip": "Öppna i en flik för att skapa ett nytt ämne på den vanliga sidan, inte i Angenäma diskussioner",
-	"copy": "Kopiera"
+	"addtopicbutton-tooltip": "Öppna i en flik för att skapa ett nytt ämne på den vanliga sidan, inte i Angenäma diskussioner"
 }

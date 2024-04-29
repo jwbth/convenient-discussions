@@ -4,11 +4,13 @@
 			"Caden99",
 			"Doraemonluonbentoi",
 			"Flyplanevn27",
+			"Hide on Rosé",
 			"Jack who built the house",
 			"Minh Nguyen",
 			"Nghiemtrongdai VN",
 			"NguoiDungKhongDinhDanh",
 			"Phjtieudoc",
+			"Quangkhanhhuynh",
 			"RiceCracker12",
 			"Tryvix1509"
 		]
@@ -73,9 +75,6 @@
 	"section-watch-openpages": "(Bạn sẽ chỉ nhận được thông báo khi thẻ này đang mở.)",
 	"section-watch-pagenotwatched": "<strong>Lưu ý:</strong> bạn đã theo dõi mục nhưng không theo dõi trang. Để các bình luận mới được đánh dấu trên trang danh sách theo dõi của bạn, hãy thêm trang vào danh sách theo dõi.",
 	"section-watch-error-maxsize": "Không thể cập nhật tùy chọn: kích thước của danh sách theo dõi vượt quá kích thước tối đa. <span class=\"cd-notification-editWatchedSections\">[[$1|Sửa danh sách theo dõi]]</span> để sửa lỗi.",
-	"section-metadata-commentcount": "$1 {{PLURAL:$1|}}bình luận",
-	"section-metadata-commentcount-new": "$1 {{plural:$1|}}bình luận <span class=\"cd-section-metadata-commentcount-new\">+$2 {{plural:$2|}}mới</span>",
-	"section-metadata-authorcount": "$1 {{plural:$1|}}người",
 	"section-metadata-lastcomment": "Bình luận mới nhất:",
 	"cld-title-comment": "Sao chép liên kết đến bình luận",
 	"cld-title-section": "Sao chép liên kết đến mục",
@@ -233,7 +232,10 @@
 	"rc-suggestion": "<p>Thảo luận tiện lợi có chức năng thay đổi định dạng bình luận, di chuyển tác giả và mốc thời gian lên trên cùng nút trả lời và cảm ơn xuống dưới. Điều này cho phép nhanh chóng xem tác giả và ngày của bình luận và tương tác với họ dễ dàng hơn. Bạn có muốn kích hoạt nó không? (Bạn luôn có thể tắt tính năng này bất cứ lúc nào trong tùy chọn.)</p>\n\n<p>Ở định dạng mới, bạn có thể nhận đường liên kết đến bình luận bằng cách nhấp vào thời gian. Ngoài ra, hãy xem xét <span class=\"cd-notification-settings\">[[$1|tùy chọn]]</span> cho các tính năng mới khác nhau, chẳng hạn như định dạng có thể tùy chỉnh của thời gian (có thể được hiển thị trong múi giờ được đặt trong tùy chọn wiki của bạn theo mặc định).</p>",
 	"rc-suggestion-yes": "Kích hoạt định dạng mới",
 	"rc-suggestion-no": "Giữ định dạng thông thường",
-	"topicsubscription-notice": "<p>Thảo luận tiện lợi hiện sử dụng giao diện thông báo tiêu chuẩn để theo dõi đề mục. Bạn sẽ nhận được thông báo khi ai đó đăng lời bình luận mới trong chủ đề mà bạn đang theo dõi. Nếu bạn đã bật thông báo trên màn hình, bạn sẽ vẫn nhận được chúng.</p>\n\n<p>Bạn có thể tùy chỉnh các loại thông báo (web, email, ứng dụng) trong <b>[[Special:Preferences#mw-prefsection-echo|tùy chọn]]</b>. Hoặc bạn có thể sử dụng chức năng theo dõi cũ. Xem chi tiết trong <b><span class=\"cd-notification-notificationSettings\">[[$1|tùy chọn Thảo luận tiện lợi]]</span></b>.</p>",
+	"newtopicssubscription-popup-title": "Tính năng mới",
+	"newtopicssubscription-popup-text": "Bây giờ bạn có thể theo dõi các trang thảo luận. Nếu bạn theo dõi một trang, bạn sẽ nhận được thông báo khi chủ đề mới được bắt đầu trên trang. Để theo dõi một trang, hãy nhấp vào \"{{int:discussiontools-newtopicssubscription-button-subscribe-label}}\" trong menu tác vụ của trang.",
+	"popup-manyForms-title": "Bạn có biết?",
+	"popup-manyForms-text": "Trong Convenient Discussions, bạn có thể nhập nhiều bình luận cùng một lúc trong các mẫu riêng biệt và sau đó gửi chúng từng cái một. Các văn bản trong các hình thức khác sẽ không bị mất khi bạn gửi một trong các mẫu. Hãy thử!",
 	"navpanel-refresh": "Làm mới trang",
 	"navpanel-previous": "Đi tới bình luận mới trước đó",
 	"navpanel-next": "Đi tới bình luận mới tiếp theo",
@@ -402,6 +404,5 @@
 	"ellipsis": "…",
 	"loading-ellipsis": "Đang tải…",
 	"addtopic": "Thêm đề tài",
-	"addtopicbutton-tooltip": "{{int:Tooltip-ca-addsection}}. Nhấp chuột phải vào đây rồi chọn “Mở trong thẻ mới” để tạo chủ đề mới trên trang thông thường nhưng không dùng Thảo luận tiện lợi",
-	"copy": "Sao chép"
+	"addtopicbutton-tooltip": "{{int:Tooltip-ca-addsection}}. Nhấp chuột phải vào đây rồi chọn “Mở trong thẻ mới” để tạo chủ đề mới trên trang thông thường nhưng không dùng Thảo luận tiện lợi"
 }

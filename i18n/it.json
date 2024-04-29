@@ -33,8 +33,6 @@
 	"comment-diff-history": "Cronologia delle modifiche",
 	"comment-deleted": "Il commento è stato cancellato.",
 	"comment-deleted-short": "Cancellato",
-	"section-metadata-commentcount": "$1 {{PLURAL:$1|commento|commenti}}",
-	"section-metadata-authorcount": "$1 {{plural:$1|persona|persone}}",
 	"section-metadata-lastcomment": "Ultimo commento:",
 	"cld-title-comment": "Copia link commento",
 	"cld-title-section": "Copia link sezione",
@@ -87,7 +85,7 @@
 	"rd-summary": "Oggetto della modifica",
 	"rd-close": "Chiudi",
 	"rc-suggestion": "<p>Convenient Discussions ha un'opzione per cambiare la formattazione dei commenti, spostando l'autore e il timestamp verso l'alto e i pulsanti di risposta e di ringraziamento verso il basso. Ciò consente di vedere rapidamente l'autore e la data dei commenti e interagire con essi più facilmente. Vuoi abilitarlo? (Puoi sempre disabilitarlo nelle impostazioni.) </p>\n\n<p>Nota che, nella nuova formattazione, puoi ottenere un collegamento al commento facendo clic sul timestamp. Inoltre, guarda <span class=\"cd-notification-settings\">[[$1|le impostazioni]]</span> per varie nuove funzionalità, come i pulsanti di inserimento del testo e la formattazione personalizzabile dei timestamp (che, tra l'altro, ora vengono visualizzati nel fuso orario impostato nelle preferenze wiki per impostazione predefinita). </p>",
-	"rc-suggestion-no": "Mantieni la solita formattazione",
+	"rc-suggestion-no": "Mantieni la formattazione normale",
 	"newtopicssubscription-popup-title": "Nuova funzionalità",
 	"popup-manyForms-title": "Lo sapevi?",
 	"navpanel-firstunseen": "Vai al primo commento inedito.",
@@ -104,7 +102,7 @@
 	"sd-autocompletetypes-templates": "template",
 	"sd-hidetimezone": "Nascondi il fuso orario",
 	"sd-timestampformat": "Formato della data",
-	"sd-useuitime": "Mostra le date dei commenti espresse nel fuso orario impostato nelle mie preferenze wiki",
+	"sd-useuitime": "Mostra le date dei commenti espresse nel fuso orario impostato [[$1|nelle mie preferenze wiki]]",
 	"ewsd-save": "Salva",
 	"msd-move": "Sposta",
 	"error-api": "Errore API: $1.",
@@ -114,6 +112,5 @@
 	"lp-comment": "commento",
 	"dot-separator": "&nbsp;<b>·</b>&#32;",
 	"loading-ellipsis": "Caricamento...",
-	"addtopic": "Aggiungi argomento",
-	"copy": "Copia"
+	"addtopic": "Aggiungi argomento"
 }

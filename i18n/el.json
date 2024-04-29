@@ -103,6 +103,5 @@
 	"sd-timestampformat-radio-default": "Προεπιλογή (\"$1\")",
 	"sd-timestampformat-radio-improved": "Βελτιώθηκε (\"$1\", \"$2\")",
 	"sd-timestampformat-radio-relative": "Σχετικό (\"$1\", \"$2\")",
-	"error-reloadpage-saved": "Η σελίδα αποθηκεύτηκε, αλλά δεν ήταν δυνατή η επαναφόρτωσή της.",
-	"copy": "Αντιγραφή"
+	"error-reloadpage-saved": "Η σελίδα αποθηκεύτηκε, αλλά δεν ήταν δυνατή η επαναφόρτωσή της."
 }

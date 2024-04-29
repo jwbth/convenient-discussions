@@ -149,7 +149,6 @@
 	"rd-headline": "Aiheotsikko",
 	"rd-summary": "Muokkausyhteenveto",
 	"rd-close": "Sulje",
-	"topicsubscription-notice": "Kätevät Keskustelut käyttää nyt standardoitua ilmoitusrajapintaa aiheiden seuraamiseen (tätä kutsutaan nyt keskusteluketjujen seuraamiseksi). Saat nyt ilmoituksen kun joku lähettää viestin seuraamaasi keskusteluketjuun. Jos olet ottanut käyttöön työpöytäilmoitukset, tulet saamaan niitä yhä. Voit valita ilmoitustyypit (selain, sähköposti, sovellus) <b>[[Special:Preferences#mw-prefsection-echo|asetuksistasi]]</b>. Voit myös palata aiempaan keskusteluketjujen seuraamiseen. Lisätietoja saat <b><span class=\"cd-notification-notificationSettings\">Kätevät Keskustelut -asetuksista</span></b>.",
 	"navpanel-refresh": "Päivitä sivu",
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 {{plural:$1|kommentti|kommenttia}}",
@@ -194,6 +193,5 @@
 	"lp-comment-toyou": "kommentti on osoitettu sinulle",
 	"loading-ellipsis": "Ladataan…",
 	"addtopic": "Uusi keskustelu",
-	"addtopicbutton-tooltip": "Avaa uudessa välilehdessä luodaksesi keskusteluketjun tavaliselle sivulle Kätevät Keskustelut -sivun sijasta",
-	"copy": "Kopioi"
+	"addtopicbutton-tooltip": "Avaa uudessa välilehdessä luodaksesi keskusteluketjun tavaliselle sivulle Kätevät Keskustelut -sivun sijasta"
 }

@@ -61,9 +61,6 @@
 	"section-watch-openpages": "(Pranešimus gausite tik tada, kol šis skirtukas bus atidarytas.)",
 	"section-watch-pagenotwatched": "<strong>Pastaba:</strong> užsiprenumeravote skyrių, bet nestebite puslapio. Jei norite, kad nauji komentarai būtų paryškinti jūsų stebėjimo sąrašo puslapyje, pridėkite puslapį prie stebėjimo sąrašo.",
 	"section-watch-error-maxsize": "Nepavyko atnaujinti nustatymų: prenumeratų sąrašo dydis viršija maksimalų dydį. <span class=\"cd-notification-editWatchedSections\">[[$1|Redaguokite prenumeratų sąrašą]],</span> kad tai ištaisytumėte.",
-	"section-metadata-commentcount": "$1 {{plural:$1|komentaras|komentarai}}",
-	"section-metadata-commentcount-new": "$1 {{plural:$1|komentaras|komentarai}} <span class=\"cd-section-metadata-commentcount-new\">+$2 {{plural:$2|naujas}}</span>",
-	"section-metadata-authorcount": "$1 {{plural:$1|asmuo|asmenys}}",
 	"section-metadata-lastcomment": "Naujausias komentaras:",
 	"cld-title-comment": "Kopijuoti komentaro nuorodą",
 	"cld-title-section": "Kopijuoti skyriaus nuorodą",
@@ -221,7 +218,6 @@
 	"rc-suggestion": "<p>\"Patogios diskusijos\" turi galimybę pakeisti komentraų formatavimą, \"autorių\" ir \"laiko žymą\" perkeliant aukštyn, o \"atsakymo\" ir \"padėkos\" mygtukus žemyn. Tai leidžia greitai pamatyti komentarų autorių ir datą, bei lengviau su jais bendrauti. Ar norite jį įjungti? (Visada galite jį išjungti nustatymuose.)</p>\n\n<p>Atiminkite, kad naujai formatuojant nuorodą į komentarą galite išgauti spustelėję laiko žymą. Taip pat žiūrėkite <span class=\"cd-notification-settings\">[[$1|nustatymus]]</span> įvairioms funkcijoms, tokioms kaip teksto įterpimo mygtukai bei pritaikomas laiko žymų formatavimas (kurie, beje, rodomi laiko juostoje, nustatytoje jūsų \"vikio\" nuostatose pagal numatytuosius nustatymus).</p>",
 	"rc-suggestion-yes": "Įgalinti naują formatavimą",
 	"rc-suggestion-no": "Išlaikyti įprastą formatavimą",
-	"topicsubscription-notice": "<p>Patogios diskusijos dabar naudoja standartinę pranešimų sąsają skyriams stebėti (dabar tai vadinama temų prenumerata). Gausite pranešimą, kai kas nors paskelbs naują komentarą temoje, kurią užsiprenumeravote. Jei darbalaukio pranešimai buvo įjungti, juos gausite ir toliau.</p> \n\n<p>Pranešimų tipus (žiniateklio, el. paštas, programėlė) galite konfigūruoti <b>[[Special:Preferences#mw-prefsection-echo|viki nustatymuose]]</b>. Arba galite grįžti prie klasikinio skyrių stebėjimo. Žiūrėkite išsamią informaciją <b><span class=\"cd-notification-notificationSettings\">[[$1|Patogių diskusijų nustatymuose]]</span></b>.</p>",
 	"navpanel-refresh": "Atnaujinti puslapį",
 	"navpanel-previous": "Eiti į ankstesnį naują komentarą",
 	"navpanel-next": "Eiti į kitą naują komentarą",
@@ -378,6 +374,5 @@
 	"ellipsis": "…",
 	"loading-ellipsis": "Įkeliama...",
 	"addtopic": "Pridėti temą",
-	"addtopicbutton-tooltip": "Atidarykite naujame skirtuke, kad sukurtumėte naują temą standartiniame puslapyje, o ne Patogiose diskusijose",
-	"copy": "Kopijuoti"
+	"addtopicbutton-tooltip": "Atidarykite naujame skirtuke, kad sukurtumėte naują temą standartiniame puslapyje, o ne Patogiose diskusijose"
 }

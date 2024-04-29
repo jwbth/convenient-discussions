@@ -60,9 +60,6 @@
 	"section-watch-openpages": "(Oznámenia vám budú prichádzať len ak bude otvorený tento hárok.)",
 	"section-watch-pagenotwatched": "<strong>Poznámka:</strong> táto sekcia je v zozname sledovaných ale stránka nie je. Aby sa nové komentáre na Vašom zozname sledovaných zvýraznili, pridajte stránku do zoznamu sledovaných.",
 	"section-watch-error-maxsize": "Nepodarilo sa aktualizovať nastavenia: veľkosť zoznamu sledovaných sekcií presahuje maximálnu veľkosť. Pre opravu <span class=\"cd-notification-editWatchedSections\">Upravte zoznam sekcií</span>.",
-	"section-metadata-commentcount": "$1 {{plural:$1|komentár|komentáre|komentárov}}",
-	"section-metadata-commentcount-new": "$1 {{plural:$1|komentár|komentáre|komentárov}} <span class=\"cd-section-metadata-commentcount-new\">+$2 {{plural:$2|nový|nové|nových}}</span>",
-	"section-metadata-authorcount": "$1 {{plural:$1|človek|ľudia|ľudí}}",
 	"section-metadata-lastcomment": "Posledný komentár:",
 	"cld-title-comment": "Kopírovať odkaz na komentár",
 	"cld-title-section": "Kopírovať odkaz na sekciu",
@@ -217,7 +214,6 @@
 	"rc-suggestion": "<p>Pohodlné diskusie majú možnosť zmeniť formátovanie komentárov, posunúť autora a časovú pečiatku nahor a tlačidlá odpovedať a poďakovať nadol. To umožňuje rýchlo vidieť autora a dátum komentárov a ľahšie s nimi pracovať. Chcete to povoliť? (Vždy to môžete vypnúť v nastaveniach.)</p> \n\n<p> Pozrite si tiež<span class=\"cd-notification-settings\">nastavenia</span> rôznych nových funkcií, ako je napríklad prispôsobiteľné formátovanie časových pečiatok (ktoré sa mimochodom štandardne zobrazujú v časovom pásme nastavenom vo vašich preferenciách wiki).</p>",
 	"rc-suggestion-yes": "Povoliť nové formátovanie",
 	"rc-suggestion-no": "Zachovať obvyklé formátovanie",
-	"topicsubscription-notice": "Pohodlné diskusie teraz používajú štandardné rozhranie upozornení na sledovanie sekcií (teraz sa to nazýva odbery tém). Keď niekto pridá nový komentár v téme, na odber ktorej ste sa prihlásili, dostanete upozornenie. Ak ste mali zapnuté upozornenia na pracovnej ploche, stále ich budete dostávať. Typy upozornení (web, e-mail, aplikácia) môžete nakonfigurovať v <b>[[Special:Preferences#mw-prefsection-echo|nastaveniach]]</b> . Alebo sa môžete vrátiť ku klasickej sekcii sledovania. Podrobnosti nájdete v <b><span class=\"cd-notification-notificationSettings\">nastaveniach Pohodlných diskusií</span></b> .",
 	"navpanel-refresh": "Aktualizovať stránku",
 	"navpanel-previous": "Ísť na predošlý nový komentár",
 	"navpanel-next": "Ísť na nasledovný nový komentár",
@@ -384,6 +380,5 @@
 	"ellipsis": "...",
 	"loading-ellipsis": "Načítava sa…",
 	"addtopic": "Pridať tému",
-	"addtopicbutton-tooltip": "Otvoriť na novej karte pre vytvorenie novej témy na štandardnej stránke, nie v Pohodlných diskusiách",
-	"copy": "Kopírovať"
+	"addtopicbutton-tooltip": "Otvoriť na novej karte pre vytvorenie novej témy na štandardnej stránke, nie v Pohodlných diskusiách"
 }
