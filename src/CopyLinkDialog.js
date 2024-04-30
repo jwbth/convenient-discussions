@@ -112,9 +112,6 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       );
       this.size = this.isComment ? 'larger' : 'large';
       this.stackLayout.setItem(this.anchorPanel);
-      if (this.content.$diffView) {
-        mw.hook('wikipage.content').fire(this.content.$diffView);
-      }
     });
   }
 
@@ -154,6 +151,14 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       });
 
       await mw.loader.using(['mediawiki.diff', 'mediawiki.diff.styles']);
+
+      this.diffPanel = new OO.ui.PanelLayout({
+        $content: this.createDiffPanelContent(),
+        padded: false,
+        expanded: false,
+        scrollable: true,
+      });
+      this.stackLayout.addItems([this.diffPanel]);
     } catch (e) {
       if (e instanceof CdError) {
         const { type } = e.data;
@@ -166,16 +171,12 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       }
     }
 
-    this.diffPanel = new OO.ui.PanelLayout({
-      $content: this.createDiffPanelContent(),
-      padded: false,
-      expanded: false,
-      scrollable: true,
-    });
-
-    this.stackLayout.addItems([this.diffPanel]);
     this.diffOptionWidget.setDisabled(errorText);
     this.diffOptionWidget.setTitle(errorText || '');
+
+    if (this.content.$diffView) {
+      mw.hook('wikipage.content').fire(this.content.$diffView);
+    }
   }
 
   /**
