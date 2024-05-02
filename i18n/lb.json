@@ -109,6 +109,7 @@
 	"cf-error-delete-repliestocomment": "D'Bemierkung kann net geläscht gi well se Äntwerten huet.",
 	"cf-error-couldntedit": "D'Säit gouf eventuell net geännert.",
 	"cf-error-pagedoesntexist": "D'Säit gëtt et net.",
+	"cf-error-uploadimage": "D'Bild konnt net héichgeluede ginn.",
 	"cf-confirm-empty": "Sidd Dir sécher datt Dir eng eidel Bemierkung publizéiere wëllt?",
 	"cf-confirm-delete": "Sidd Dir sécher, datt Dir d'Bemierkung läsche wëllt?",
 	"cf-autocomplete-mentions-label": "E Benotzer ernimmen",
@@ -165,6 +166,7 @@
 	"msd-error-sourcepagedeleted": "Déi aktuell Säit gouf geläscht.",
 	"move-sourcepagecode": "\"Geréckelt op [[$1]]. $2\"",
 	"move-targetpagecode": "\"Geréckelt vum [[$1]]. $2\"",
+	"ud-preset-ownwork": "Dëst ass mäin eegent Wierk",
 	"error-processpage": "{{int:convenient-discussions-script-name}}: D'Säit konnt net verschafft ginn. Kuckt d'Detailer an der JavaScript Konsole (F12 → Console).",
 	"error-settings-load": "{{int:convenient-discussions-script-name}}: D'Astellunge konnten net vum Server geluede ginn.",
 	"error-settings-save": "{{int:convenient-discussions-script-name}}: D'Astellunge konnten net um Server gespäichert ginn.",
@@ -185,6 +187,7 @@
 	"lp-comment-tooltip": "Op d'Bemierkung goen",
 	"lp-comment-toyou": "d'Bemierkung ass un Iech adresséiert",
 	"lp-comment-watchedsection": "Dir sidd op dësen Abschnitt abonéiert",
+	"educationpopup-dismiss": "OK, verstan",
 	"ellipsis": "…",
 	"loading-ellipsis": "Lueden...",
 	"addtopic": "Sujet derbäisetzen"

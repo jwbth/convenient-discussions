@@ -223,7 +223,7 @@
 	"dn-confirm-yes": "はい",
 	"dn-confirm-no": "いいえ",
 	"dn-grantpermission": "サイトの通知送信を許可してください。",
-	"dn-grantpermission-again": "Convenient Discussionsの設定でデスクトップ通知が有効化されていますが、サイトの通知送信が不許可となっています。通知を受け取るには、サイトに対し通知の許可/不許可設定を行ってください。設定後、このメッセージは再表示されなくなります。",
+	"dn-grantpermission-again": "Convenient Discussionsの設定でデスクトップ通知が有効化されていますが、サイトの通知送信が不許可となっています。通知を受け取るには、ポップアップメッセージ上でサイトに対し通知の許可設定を行ってください。不許可設定をした場合、このメッセージは再表示されなくなります。",
 	"deadanchor-section-lead": "ページ内に「$1」のセクションが見つかりませんでした。",
 	"deadanchor-section-exactmatch": "セクション「$1」はアーカイブ化されたようです。<b>[[$2|アーカイブを閲覧]]</b> (または[$3 検索]) してください。",
 	"deadanchor-section-inexactmatch": "節「$1」はアーカイブ化されたようです。[$2 アーカイブを検索]してください。",
