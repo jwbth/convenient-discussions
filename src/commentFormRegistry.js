@@ -271,8 +271,7 @@ export default {
   },
 
   /**
-   * _For internal use._ Save comment form data to the local storage. (Session storage doesn't allow
-   * to restore when the browser has crashed.)
+   * _For internal use._ Save comment form data to the local storage.
    *
    * @param {boolean} [force=true] Save session immediately, without regard for save frequency.
    */

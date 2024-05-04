@@ -557,11 +557,9 @@ export function zeroPad(number, length) {
 
 /**
  * If the argument is an array, return its last element. Otherwise, return the value. (To process
- * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.Uri.html#query mw.Uri#query}. If
- * there is more than one parameter with some name, its property becomes an array in `mw.Uri#query`.
- * This is also why `mw.Uri` is used and not native
- * {@link https://developer.mozilla.org/en-US/docs/Web/API/URL URL} - in MediaWiki, the second value
- * of the parameter is used, while with `URL` it is the first one.)
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/getAll URLSearchParams#getAll}
+ * return value. In MediaWiki, if there is more than one parameter with some name, the second value
+ * of the parameter is used, while with `URLSearchParams#get` it is the first one.)
  *
  * @param {string|string[]} value
  * @returns {string}

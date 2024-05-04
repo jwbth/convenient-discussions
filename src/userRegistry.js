@@ -1,5 +1,5 @@
 /**
- * A singleton used to obtain instances of the `User` class while avoiding creating duplicates.
+ * Singleton used to obtain instances of the `User` class while avoiding creating duplicates.
  *
  * @module userRegistry
  */
@@ -47,7 +47,9 @@ export class User {
     if (this.name === '<unregistered>') {
       return false;
     }
+
     this.registered ??= !mw.util.isIPAddress(this.name);
+
     return this.registered;
   }
 

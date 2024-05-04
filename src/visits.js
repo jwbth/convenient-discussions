@@ -119,6 +119,7 @@ export default {
    * Convert a visits object into an optimized string and compress it.
    *
    * @returns {string}
+   * @private
    */
   pack() {
     // The format of the items:
@@ -135,6 +136,7 @@ export default {
    * Unpack a compressed visits string into a visits object.
    *
    * @param {string|undefined} compressed
+   * @private
    */
   unpack(compressed) {
     this.data = {};
@@ -179,6 +181,7 @@ export default {
    * Remove the oldest `share`% of visits when the size limit is hit.
    *
    * @param {number} share
+   * @private
    */
   cleanUp(share = 0.1) {
     const visits = Object.assign({}, this.data);

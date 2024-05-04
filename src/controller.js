@@ -1,5 +1,5 @@
 /**
- * A singleton that stores and changes the overall state of the page, initiating boot processes and
+ * Singleton that stores and changes the overall state of the page, initiating boot processes and
  * reacting to events.
  *
  * @module controller
@@ -756,17 +756,19 @@ export default {
 
     OO.ui.throttle(() => {
       // We just list everything we know that can stand between the user and the content area where
-      // comments reside. This is a very ugly method, because I honestly don't know the
-      // alternatives. We can't put any element to check `:hover` on it, because the absence of such
-      // an element is the reason why we need to check for obstructing elements in the first place.
-      // On the other hand, if this incorrectly returns `false`, this doesn't really affect anything
-      // important. It's just for better visual effects. Use vanilla JS where possible.
+      // comments reside. This is a very ugly method I resorted to because I honestly don't know the
+      // alternatives. We can't put any element out there to check `:hover` on it because the
+      // absence of such an element for comments is the reason why we need to check for obstructing
+      // elements in the first place. On the other hand, if this incorrectly returns `false`, this
+      // doesn't really affect anything important. It's just for better visual effects. Use vanilla
+      // JS where possible.
       this.isObstructingElementHoveredCached = Boolean(
         [
           ...(this.notificationArea?.querySelectorAll('.mw-notification') || []),
           Autocomplete.getActiveMenu(),
           navPanel.$element?.[0],
           ...document.body.querySelectorAll('.oo-ui-popupWidget:not(.oo-ui-element-hidden)'),
+          $(document.body).children('dialog')[0],
           this.stickyHeader,
           sectionRegistry.getAll()
             .map((section) => section.actions.moreMenuSelect?.getMenu())

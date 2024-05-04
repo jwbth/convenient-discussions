@@ -438,7 +438,7 @@ export function brsToNewlines(code, replacement = '\n') {
  * sentence "Или держал в голове то, что практика использования {{doc/begin}} ... делали </div>
  * вместо шаблона." in
  * https://ru.wikipedia.org/wiki/User_talk:Jack_who_built_the_house#c-Jack_who_built_the_house-2020-03-22T12:18:00.000Z-DonRumata-2020-03-22T11:05:00.000Z
- * - </div> screws everything up.)
+ * - "</div>" screws everything up.)
  *
  * @param {string} code
  * @param {string[]} [maskedTexts]

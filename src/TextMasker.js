@@ -1,7 +1,7 @@
 import { generateTagsRegexp } from './utils-wikitext';
 
 /**
- * Class for replacing parts of a text that shouldn't be modified with a placeholder, in order to
+ * Class for replacing parts of a text that shouldn't be modified, with a placeholder, in order to
  * ignore it when performing certain text replacement operations and then replace the placeholders
  * back with the original text.
  *

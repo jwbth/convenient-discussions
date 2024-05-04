@@ -27,7 +27,7 @@ class Section extends SectionSkeleton {
    * Create a section object.
    *
    * @param {import('./Parser').default} parser
-   * @param {Element} heading Heading object returned by {@link Parser#findHeadings}.
+   * @param {object} heading Heading object returned by {@link Parser#findHeadings}.
    * @param {object[]} targets Sorted target objects returned by  {@link Parser#findSignatures} +
    *   {@link Parser#findHeadings}.
    * @param {import('./Subscriptions').default} subscriptions

@@ -945,8 +945,8 @@ class Comment extends CommentSkeleton {
     bottom,
     floatingRects = controller.getFloatingElements().map(getExtendedRect)
   ) {
-    // Check if the comment offset intersects the offset of floating elements on the page. (Only
-    // then we would need altering comment styles to get the correct offset which is an expensive
+    // Check if the comment offset intersects the offsets of floating elements on the page. (Only
+    // then would we need altering comment styles to get the correct offset which is an expensive
     // operation.)
     let intersectsFloatingCount = 0;
     let bottomIntersectsFloating = false;
@@ -1453,7 +1453,7 @@ class Comment extends CommentSkeleton {
 
     if (wereJustCreated) {
       if (this.isLineGapped) {
-        this.line.classList.add('cd-comment-overlay-line-closingGap');
+        this.line.classList.add('cd-comment-overlay-line-gapCloser');
       }
       if (this.isStartStretched) {
         this.overlay.classList.add('cd-comment-overlay-stretchedStart');

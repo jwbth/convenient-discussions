@@ -687,12 +687,10 @@ class BootProcess {
     // go in this section.
     debug.startTimer('final code and rendering');
 
-    if (cd.page.exists()) {
-      // This should be done on rendering stage (would have resulted in unnecessary reflows were it
-      // done earlier). Should be above all code that deals with highlightable elements of comments
-      // and comment levels as this may alter that.
-      commentRegistry.reviewHighlightables();
-    }
+    // This should be done on rendering stage (would have resulted in unnecessary reflows were it
+    // done earlier). Should be above all code that deals with highlightable elements of comments
+    // and comment levels as this may alter that.
+    commentRegistry.reviewHighlightables();
 
     commentRegistry.reformatComments();
 
