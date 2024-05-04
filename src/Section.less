@@ -42,7 +42,7 @@ ol .cd-section-button {
 }
 
 .cd-section-bar {
-  margin: 0.25em 0;
+  margin: 0.5em 0 0.75em;
   display: flex;
   flex-wrap: wrap;
 
@@ -55,10 +55,12 @@ ol .cd-section-button {
     min-height: 30px;
     border-top: 1px solid transparent;
     border-bottom: 1px solid transparent;
-    padding: 4px 0;
-
     color: #54595d;
-    line-height: 1.7142857em;
+
+    // Like the section buttons on the right - to have the metadata aligned with them
+    padding: 5px 0;
+    line-height: 1.42857143em;
+
     white-space: nowrap;
     unicode-bidi: plaintext;
 
@@ -70,16 +72,20 @@ ol .cd-section-button {
     .sitedir-rtl .mw-content-ltr & {
       margin-left: 0;
       margin-right: 1.5em;
+
+      &:last-child {
+        margin-right: 0;
+      }
     }
 
     .sitedir-rtl &,
     .sitedir-ltr .mw-content-rtl & {
       margin-left: 1.5em;
       margin-right: 0;
-    }
 
-    .ext-discussiontools-visualenhancements-enabled & {
-      padding: 6px 0;
+      &:last-child {
+        margin-left: 0;
+      }
     }
   }
 
@@ -90,15 +96,9 @@ ol .cd-section-button {
       min-height: 16px;
     }
 
-    .oo-ui-buttonElement-button > .oo-ui-labelElement-label.oo-ui-labelElement-label {
-      line-height: 1.53846153em;
-    }
-
     &.cd-section-bar-button > .oo-ui-buttonElement-button {
       min-width: 30px;
       min-height: 30px;
-      padding-top: 4px;
-      padding-bottom: 4px;
       font-weight: normal;
 
       // For legacy subscriptions in Vector
@@ -113,7 +113,7 @@ ol .cd-section-button {
   }
 
   .ext-discussiontools-visualenhancements-enabled .ext-discussiontools-init-section + & {
-    margin-top: -12px;
+    margin-top: -10px;
   }
 }
 
@@ -144,14 +144,14 @@ ol .cd-section-button {
   .sitedir-rtl .mw-content-ltr & {
     margin-left: auto;
     margin-right: -0.4615385em;
-    padding-left: 1em;
+    padding-left: 1.5em;
   }
 
   .sitedir-rtl &,
   .sitedir-ltr .mw-content-rtl & {
     margin-left: -0.4615385em;
     margin-right: auto;
-    padding-right: 1em;
+    padding-right: 1.5em;
   }
 }
 
