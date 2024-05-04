@@ -224,7 +224,7 @@
   "dn-confirm-yes": "Yes",
   "dn-confirm-no": "No",
   "dn-grantpermission": "Grant a permission to the site.",
-  "dn-grantpermission-again": "You have desktop notifications enabled in the Convenient Discussions settings, but the site is not allowed to send them. Grant a permission to the site in the popup that will appear to receive notifications, or deny to prevent this message from showing up again.",
+  "dn-grantpermission-again": "You have desktop notifications enabled in the Convenient Discussions settings, but the site is not allowed to send them. Grant a permission to the site in the popup that will appear, or deny to prevent this message from showing up again.",
 
   "deadanchor-section-lead": "Couldn't find the section \"$1\" on the page.",
   "deadanchor-section-exactmatch": "Looks like the section \"$1\" has been archived. <b>[[$2|See archived section]]</b> (or [$3 search in the archive]).",
