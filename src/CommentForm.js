@@ -218,7 +218,7 @@ class CommentForm {
   setup(initialState) {
     this.adjustLabels();
 
-    if (!cd.user.isRegistered() && !mw.user.isTemp()) {
+    if (!cd.user.isRegistered() && !mw.user.isTemp?.()) {
       this.showMessage(cd.sParse('error-anoneditwatning'), {
         type: 'warning',
         name: 'anonEditWarning',
