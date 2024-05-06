@@ -580,7 +580,9 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
         // So, we use what is availble to us while trying to get/load missing parts if we can.
 
         const projectName = hasIwPrefix ? '' : this.enProjectName;
-        const filenameMainPart = `${projectName} ${pageName}`.trim().replace(/[:/]/g, '-');
+        const filenameMainPart = `${projectName} ${pageName}`
+          .trim()
+          .replace(new RegExp('[' + mw.config.get('wgIllegalFileChars', '') + ']', 'g'), '-');
         const pageNameOrProjectName = projectName || `[[${pageName}]]`;
         let projectNameOrPageName;
         if (!hasIwPrefix && pageName && getInterwikiPrefixForHostnameSync) {
