@@ -120,18 +120,12 @@ export function getExtendedRect(el) {
   }
   const rect = el.getBoundingClientRect();
   const isVisible = getVisibilityByRects(rect);
-  return {
-    top: rect.top,
-    bottom: rect.bottom,
-    left: rect.left,
-    right: rect.right,
-    width: rect.width,
-    height: rect.height,
+  return $.extend({
     outerTop: rect.top - (isVisible ? el.cdMarginTop : 0),
     outerBottom: rect.bottom + (isVisible ? el.cdMarginBottom : 0),
     outerLeft: rect.left - (isVisible ? el.cdMarginLeft : 0),
     outerRight: rect.right + (isVisible ? el.cdMarginRight : 0),
-  };
+  }, rect);
 }
 
 /**

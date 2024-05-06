@@ -3431,14 +3431,14 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get a section relevant to this comment which means the same value as
-   * {@link Section#getSection}. (Used for polymorphism with {@link Comment#getRelevantSection} and
+   * Get a section relevant to this comment which means the same value as {@link Comment#section}.
+   * (Used for polymorphism with {@link Section#getRelevantSection} and
    * {@link Page#getRelevantSection}.)
    *
    * @returns {?import('./Section').default}
    */
   getRelevantSection() {
-    return this.section || null;
+    return this.section;
   }
 
   /**
