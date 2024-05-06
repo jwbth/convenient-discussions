@@ -124,6 +124,7 @@
 
   "cf-headline-topic": "Subject",
   "cf-headline-subsection": "Subject for the subsection of \"$1\"",
+  "cf-comment-placeholder": "Text",
   "cf-comment-placeholder-replytosection": "Reply to \"$1\"",
   "cf-comment-placeholder-replytocomment": "Reply to {{gender:$2|}} $1",
   "cf-summary-placeholder": "Edit summary",

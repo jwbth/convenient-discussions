@@ -375,7 +375,7 @@ class CommentForm {
       });
     }
 
-    let commentInputPlaceholder;
+    let commentInputPlaceholder = cd.s('cf-comment-placeholder');
     if (this.mode === 'replyInSection' || (this.mode === 'reply' && this.target.isOpeningSection)) {
       commentInputPlaceholder = cd.s(
         'cf-comment-placeholder-replytosection',
@@ -384,8 +384,7 @@ class CommentForm {
     } else if (this.mode === 'reply') {
       // If there is a need to make a request to get the user gender, we don't show any
       // placeholder text at the beginning to avoid drawing the user's attention to the changing
-      // of the text. (But it could be a better idea to set the `showCommentInputPlaceholder`
-      // config variable to `false` to avoid showing any text whatsoever.)
+      // of the text.
       this.target.maybeRequestAuthorGender(() => {
         this.commentInput.$input.attr(
           'placeholder',
