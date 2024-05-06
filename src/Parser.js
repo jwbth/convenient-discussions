@@ -110,7 +110,10 @@ class Parser {
     const elements = [...this.context.rootElement.getElementsByTagName('span')]
       .filter((el) => (
         el.hasAttribute('data-mw-comment-start') ||
-        el.hasAttribute('data-mw-comment-end')
+        el.hasAttribute('data-mw-comment-end') ||
+
+        // This, in fact, targets the one span at the top of the page, out of sections
+        (el.tagName === 'SPAN' && el.hasAttribute('data-mw-thread-id'))
       ))
       .concat(
         [...this.context.rootElement.getElementsByClassName('ext-discussiontools-init-replylink-buttons')]
