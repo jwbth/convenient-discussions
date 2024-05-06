@@ -1447,7 +1447,7 @@ class CommentForm {
     const element = this.commentInput.$input[0];
     const computedStyle = window.getComputedStyle(element);
     const $span = $('<span>');
-    $('<div>')
+    const $div = $('<div>')
       .text(element.value.substring(0, this.commentInput.getRange().to))
       .css({
         whiteSpace: 'pre-wrap',
@@ -1475,6 +1475,7 @@ class CommentForm {
         height: parseFloat($span.css('line-height')) - 3,
       })
       .addClass('cd-dummyFloatableContainer');
+    $div.remove();
     return $span;
   }
 
