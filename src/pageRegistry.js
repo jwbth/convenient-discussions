@@ -485,7 +485,7 @@ export class Page {
       disabletoc: cd.g.skin === 'vector-2022',
       useskin: cd.g.skin,
       redirects: true,
-      prop: ['text', 'revid', 'modules', 'jsconfigvars', 'sections'],
+      prop: ['text', 'revid', 'modules', 'jsconfigvars', 'sections', 'subtitle', 'categorieshtml'],
       parsoid: cd.g.isParsoidUsed,
       ...cd.g.apiErrorFormatHtml,
     };

@@ -1199,17 +1199,7 @@ export default {
     });
 
     try {
-      const parseData = await cd.page.parse(null, false, true);
-      bootProcess.passedData.html = parseData.text;
-      bootProcess.passedData.toc = parseData.sections;
-      bootProcess.passedData.hideToc = parseData.hidetoc;
-      mw.config.set({
-        wgRevisionId: parseData.revid,
-        wgCurRevisionId: parseData.revid,
-      });
-      mw.loader.load(parseData.modules);
-      mw.loader.load(parseData.modulestyles);
-      mw.config.set(parseData.jsconfigvars);
+      bootProcess.passedData.parseData = await cd.page.parse(null, false, true);
     } catch (e) {
       this.hideLoadingOverlay();
       if (bootProcess.passedData.wasCommentFormSubmitted) {
@@ -1252,10 +1242,29 @@ export default {
   },
 
   /**
-   * _For internal use._ Update the page's HTML.
+   * _For internal use._ Update the page's HTML and certain configuration values.
+   *
+   * @param {object} parseData
    */
-  updatePageContents() {
+  updatePageContents(parseData) {
     this.$content.children('.mw-parser-output').first().replaceWith(this.$root);
+
+    mw.util.clearSubtitle();
+    mw.util.addSubtitle(parseData.subtitle);
+
+    if ($('#catlinks').length) {
+      const $categories = $($.parseHTML(parseData.categorieshtml));
+      mw.hook('wikipage.categories').fire($categories);
+      $('#catlinks').replaceWith($categories);
+    }
+
+    mw.config.set({
+      wgRevisionId: parseData.revid,
+      wgCurRevisionId: parseData.revid,
+    });
+    mw.loader.load(parseData.modules);
+    mw.loader.load(parseData.modulestyles);
+    mw.config.set(parseData.jsconfigvars);
   },
 
   /**

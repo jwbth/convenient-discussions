@@ -23,7 +23,6 @@ import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
 import { handleApiReject, saveOptions } from './utils-api';
 import { definedAndNotNull, sleep } from './utils-general';
-import { formatDate } from './utils-timestamp';
 import { wrapHtml } from './utils-window';
 import visits from './visits';
 
@@ -280,8 +279,8 @@ class BootProcess {
       notifications.init();
       Parser.init();
     }
-    controller.setup(this.passedData.html);
-    toc.setup(this.passedData.toc, this.passedData.hidetoc);
+    controller.setup(this.passedData.parseData?.text);
+    toc.setup(this.passedData.parseData?.sections, this.passedData.parseData?.hidetoc);
 
     /**
      * Collection of all comments on the page ordered the same way as in the DOM.
@@ -551,55 +550,6 @@ class BootProcess {
   }
 
   /**
-   * Update DiscussionTools' "Latest comment" text in the page subtitle if Visual Enhancements are
-   * enabled. The differences between DT and CD:
-   * * CD uses user's settings for the timestamp format while DT always uses relative timestamp;
-   * * CD auto-updates relative timestamps (e.g. "less than a minute ago" → "1 minute ago");
-   * * CD uses "less than a minute ago" whereas DT uses "just now" for relative dates less than a
-   *   minute ago.
-   *
-   * @private
-   */
-  async updateDtLatestComment() {
-    if (!cd.g.isDtVisualEnhancementsEnabled) return;
-
-    const $latestComment = $('.ext-discussiontools-init-pageframe-latestcomment');
-    if (!$latestComment) return;
-
-    await controller.getApi().loadMessagesIfMissing([
-      'discussiontools-pageframe-latestcomment',
-      'discussiontools-pageframe-latestcomment-notopic',
-    ]);
-
-    const latestComment = Comment.getLatest(commentRegistry.getAll());
-    if (latestComment) {
-      const $latestCommentLink = $('<a>')
-        .attr('href', `#${latestComment.dtId || latestComment.id}`)
-        .text(formatDate(latestComment.date));
-      if (latestComment.section) {
-        const $sectionLink = $('<a>')
-          .attr('href', '#' + latestComment.section.id)
-          .text(latestComment.section.headline);
-        $latestComment.msg(
-          'discussiontools-pageframe-latestcomment',
-          $latestCommentLink,
-          latestComment.author.getName(),
-          $sectionLink
-        );
-      } else {
-        $latestComment.msg(
-          'discussiontools-pageframe-latestcomment-notopic',
-          $latestCommentLink,
-          latestComment.author.getName()
-        )
-      }
-      (new LiveTimestamp($latestCommentLink[0], latestComment.date, false)).init();
-    } else {
-      $latestComment.empty();
-    }
-  }
-
-  /**
    * Log debug data to the console.
    *
    * @private
@@ -723,9 +673,9 @@ class BootProcess {
       }
     }
 
-    if (this.passedData.html) {
+    if (this.passedData.parseData?.text) {
       debug.startTimer('update page contents');
-      controller.updatePageContents();
+      controller.updatePageContents(this.passedData.parseData);
       debug.stopTimer('update page contents');
     }
 
@@ -797,8 +747,6 @@ class BootProcess {
       }
 
       pageNav.setup(this);
-
-      this.updateDtLatestComment();
 
       if (this.firstRun) {
         controller.addEventListeners();
