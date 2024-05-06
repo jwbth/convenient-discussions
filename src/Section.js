@@ -1,5 +1,6 @@
 import Button from './Button';
 import CdError from './CdError';
+import Comment from './Comment';
 import LiveTimestamp from './LiveTimestamp';
 import PrototypeRegistry from './PrototypeRegistry';
 import SectionSkeleton from './SectionSkeleton';
@@ -554,14 +555,7 @@ class Section extends SectionSkeleton {
    */
   createMetadataElement() {
     const authorCount = this.comments.map((comment) => comment.author).filter(unique).length;
-    const latestComment = this.comments.reduce((latestComment, comment) => (
-      (
-        comment.date &&
-        (!latestComment || !latestComment.date || latestComment.date < comment.date)
-      ) ?
-        comment :
-        latestComment
-    ), null);
+    const latestComment = Comment.getLatest(this.comments);
 
     let latestCommentWrapper;
     let commentCountWrapper;

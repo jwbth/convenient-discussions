@@ -3833,6 +3833,23 @@ class Comment extends CommentSkeleton {
   }
 
   /**
+   * Get the latest comment from a collection.
+   *
+   * @param {import('./CommentSkeleton').CommentSkeletonLike[]|Comment[]} comments
+   * @returns {import('./CommentSkeleton').CommentSkeletonLike|Comment}
+   */
+  static getLatest(comments) {
+    return comments.reduce((latestComment, comment) => (
+      (
+        comment.date &&
+        (!latestComment || !latestComment.date || latestComment.date < comment.date)
+      ) ?
+        comment :
+        latestComment
+    ), null)
+  }
+
+  /**
    * @typedef {object} ParseIdReturn
    * @property {Date} date
    * @property {string} author
