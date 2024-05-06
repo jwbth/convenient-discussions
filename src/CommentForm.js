@@ -1595,6 +1595,12 @@ class CommentForm {
           if (this.commentInput.getRange().from === this.commentInput.getRange().to) {
             // Localise the "File:" prefix
             const filename = new mw.Title(imageInfo.canonicaltitle).getPrefixedText();
+
+            // Sometimes the file is not yet available on Commons. The preview gives a red link in
+            // that case. Use a hack to run the preview now so that the next preview runs a second
+            // later.
+            this.preview(true);
+
             this.encapsulateSelection({
               pre: `[[${filename}|frameless|none]]`,
             });
