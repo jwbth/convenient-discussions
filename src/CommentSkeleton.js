@@ -588,7 +588,7 @@ class CommentSkeleton {
       return false;
     }
 
-    const link = part.node.querySelector('a');
+    const link = part.node.querySelectorAll('a')[0];
     if (!link) {
       return false;
     }
