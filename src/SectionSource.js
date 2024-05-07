@@ -43,37 +43,36 @@ class SectionSource {
    * @returns {?string}
    */
   extractLastCommentIndentation(commentForm) {
-    if (!this.lastCommentIndentation) {
+    if (this.lastCommentIndentation === undefined) {
       const [, replyPlaceholder] = this.firstChunkCode.match(/\n([#*]) *\n+$/) || [];
       if (replyPlaceholder) {
         this.lastCommentIndentation = replyPlaceholder;
-      }
-
-      const lastComment = this.section.commentsInFirstChunk.slice(-1)[0];
-      if (
-        !lastComment ||
-        !(commentForm.getContainerListType() === 'ol' || cd.config.indentationCharMode === 'mimic')
-      ) {
+      } else {
         this.lastCommentIndentation = null;
-      }
 
-      try {
-        lastComment.locateInCode(commentForm.isSectionSubmitted());
-      } catch {
-        this.lastCommentIndentation = null;
-      }
-      if (
-        lastComment.source.indentation.startsWith('#') &&
+        const lastComment = this.section.commentsInFirstChunk.slice(-1)[0];
+        if (
+          lastComment &&
+          (commentForm.getContainerListType() === 'ol' || cd.config.indentationCharMode === 'mimic')
+        ) {
+          try {
+            lastComment.locateInCode(commentForm.isSectionSubmitted());
 
-        // For now we use the workaround with `commentForm.getContainerListType()` to make sure
-        // `#` is a part of comments organized in a numbered list, not of a numbered list _in_ the
-        // target comment.
-        commentForm.getContainerListType() !== 'ol'
-      ) {
-        this.lastCommentIndentation = null;
-      }
+            if (
+              !lastComment.source.indentation.startsWith('#') ||
 
-      this.lastCommentIndentation = lastComment.source.indentation;
+              // For now we use the workaround with `commentForm.getContainerListType()` to make
+              // sure `#` is a part of comments organized in a numbered list, not of a numbered list
+              // _in_ the target comment.
+              commentForm.getContainerListType() === 'ol'
+            ) {
+              this.lastCommentIndentation = lastComment.source.indentation;
+            }
+          } catch {
+            // Empty
+          }
+        }
+      }
     }
 
     return this.lastCommentIndentation;
