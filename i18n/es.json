@@ -191,7 +191,7 @@
 	"dn-confirm-yes": "Sí",
 	"dn-confirm-no": "No",
 	"dn-grantpermission": "Conceder un permiso al sitio.",
-	"dn-grantpermission-again": "Has activado las notificaciones de escritorio, pero el sitio no tiene permitido enviarlas. Concede permiso al sitio para recibir notificaciones o deniégalo para que este mensaje no aparezca nuevamente.",
+	"dn-grantpermission-again": "Tienes habilitadas las notificaciones de escritorio en la configuración de Discusiones convenientes, pero el sitio no puede enviarlas. Otorga un permiso al sitio en la ventana emergente que aparecerá, o deniégalo para evitar que este mensaje vuelva a aparecer.",
 	"deadanchor-section-lead": "Se pudo haber trasladado o archivado.",
 	"deadanchor-section-exactmatch": "Parece que la sección \"$1\" ha sido archivada. <b>[[$2| Consulte la sección archivado]]</b> (o [$3 búsqueda en el archivo]).",
 	"deadanchor-section-inexactmatch": "Parece que la sección \"$1\" se ha archivado. [$2 Buscar en el archivo].",
