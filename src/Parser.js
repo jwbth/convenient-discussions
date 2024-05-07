@@ -4,7 +4,7 @@ import CommentSkeleton from './CommentSkeleton';
 import ElementsAndTextTreeWalker from './ElementsAndTextTreeWalker';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import cd from './cd';
-import { getHeadingLevel, parseWikiUrl, isHeadingNode, isInline, isMetadataNode, ucFirst, underlinesToSpaces, definedAndNotNull } from './utils-general';
+import { getHeadingLevel, parseWikiUrl, isHeadingNode, isInline, isMetadataNode, ucFirst, underlinesToSpaces, definedAndNotNull, unique } from './utils-general';
 import { parseTimestamp } from './utils-timestamp';
 
 /**
@@ -117,7 +117,8 @@ class Parser {
       ))
       .concat(
         [...this.context.rootElement.getElementsByClassName('ext-discussiontools-init-replylink-buttons')]
-      );
+      )
+      .filter(unique);
     this.context.processAndRemoveDtElements(elements, bootProcess);
     this.context.removeDtButtonHtmlComments();
     this.replaceTimestampLinksWithSpans();

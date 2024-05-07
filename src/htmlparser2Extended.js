@@ -144,7 +144,7 @@ Element.prototype.setAttribute = function (name, value) {
       value = value.replace(/"/g, '&quot;');
     }
   }
-  this.attribs[name] = value || '';
+  this.attribs[name] = String(value) || '';
 };
 
 Element.prototype.removeAttribute = function (name) {
