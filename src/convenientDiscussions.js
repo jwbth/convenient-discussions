@@ -537,7 +537,10 @@ Object.assign(cd.g, {
   // Check for `mw.user.isNamed()` to treat temporary accounts as unregistered (we can't save
   // options for them anyway). `<unregistered>` is a workaround for anonymous users (there are
   // such!).
-  userName: (!mw.user.isNamed || mw.user.isNamed()) ? mw.config.get('wgUserName') : '<unregistered>',
+  userName: (
+    ((!mw.user.isNamed || mw.user.isNamed()) && mw.config.get('wgUserName')) ||
+    '<unregistered>'
+  ),
 
   contentTextDirection: bodyClassList.contains('sitedir-rtl') ? 'rtl' : 'ltr',
   skin: mw.config.get('skin'),
