@@ -1249,8 +1249,8 @@ export default {
   updatePageContents(parseData) {
     this.$content.children('.mw-parser-output').first().replaceWith(this.$root);
 
-    mw.util.clearSubtitle();
-    mw.util.addSubtitle(parseData.subtitle);
+    mw.util.clearSubtitle?.();
+    mw.util.addSubtitle?.(parseData.subtitle);
 
     if ($('#catlinks').length) {
       const $categories = $($.parseHTML(parseData.categorieshtml));

@@ -61,10 +61,14 @@ export default {
    * {@link https://www.mediawiki.org/wiki/Extension:GlobalPreferences GlobalPreferences extension}
    * to be enabled.
    *
+   * The default is the value of as a workaround to allow third-party wikis to use the script
+   * without a config. We assume that if the GlobalCssJs extension is not installed, then the
+   * GlobalPreferences is not installed too.
+   *
    * @type {?boolean}
-   * @default true
+   * @default Boolean(mw.loader.getState('ext.globalCssJs.user'))
    */
-  useGlobalPreferences: true,
+  useGlobalPreferences: Boolean(mw.loader.getState('ext.globalCssJs.user')),
 
   /**
    * Numbers of talk namespaces other than odd namespaces. If not set, the value of
