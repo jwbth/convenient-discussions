@@ -112,6 +112,7 @@
 	"es-move-to": "[[$1]] पर स्थानांतरित किया",
 	"cf-headline-topic": "विषय",
 	"cf-headline-subsection": "\"$1\" के उप-अनुभाग के लिए विषय",
+	"cf-comment-placeholder": "टेक्स्ट",
 	"cf-comment-placeholder-replytosection": "\"$1\" को उत्तर दें",
 	"cf-comment-placeholder-replytocomment": "{{gender:$2|}} $1 को उत्तर दें",
 	"cf-summary-placeholder": "संपादन सारांश",

@@ -274,7 +274,7 @@
 	"popup-manyForms-title": "您知道吗？",
 	"popup-manyForms-text": "在快捷讨论中，您可以在单独的表单中同时输入多个评论，然后一一发送。当您提交其中一个表单时，其他表单中的文本不会丢失。来试一试吧！",
 	"popup-upload-title": "新功能",
-	"popup-upload-text": "现在，您只需三次点击便可将截图和其他图片上传到维基贡献资源！只需将图片粘贴或拖入评论输入框，选择图片来源，然后点击“{{int:convenient-discussions-ud-uploadandsave}}”。",
+	"popup-upload-text": "现在，您只需三次点击便可将截图上传到维基共享资源！只需将图像粘贴或拖入评论输入框，选择图像来源，然后点击“{{int:convenient-discussions-ud-uploadandsave}}”。",
 	"navpanel-refresh": "刷新页面",
 	"navpanel-previous": "前往上一条新评论",
 	"navpanel-next": "转到下一个新评论",
