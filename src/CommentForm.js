@@ -375,7 +375,7 @@ class CommentForm {
       });
     }
 
-    let commentInputPlaceholder = cd.s('cf-comment-placeholder');
+    let commentInputPlaceholder;
     if (this.mode === 'replyInSection' || (this.mode === 'reply' && this.target.isOpeningSection)) {
       commentInputPlaceholder = cd.s(
         'cf-comment-placeholder-replytosection',
@@ -395,6 +395,8 @@ class CommentForm {
           ))
         );
       }, true);
+    } else if (this.mode === 'addSection' || this.mode === 'addSubsection') {
+      commentInputPlaceholder = cd.s('cf-comment-placeholder');
     }
 
     /**
