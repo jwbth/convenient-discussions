@@ -638,6 +638,11 @@ export default {
     if (cd.g.skin === 'timeless') {
       cd.g.bodyScrollPaddingTop -= 5;
     }
+    if (cd.g.skin === 'vector-2022') {
+      // When jumping to the parent comment that is opening a section, the active section shown in
+      // the TOC is wrong. Probably some mechanisms in the scripts or the browser are out of sync.
+      cd.g.bodyScrollPaddingTop -= 1;
+    }
   },
 
   /**
