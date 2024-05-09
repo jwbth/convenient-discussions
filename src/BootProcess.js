@@ -450,14 +450,19 @@ class BootProcess {
    * If a DT's comment form is present (for example, on `&action=edit&section=new` pages), remove it
    * and later replace it with ours, keeping the input.
    *
+   * @returns {?object}
    * @private
    */
   hideDtNewTopicForm() {
-    if (!cd.g.isDtNewTopicToolEnabled) return;
+    if (!cd.g.isDtNewTopicToolEnabled) {
+      return null;
+    }
 
     // `:visible` to exclude the form hidden previously.
     const $dtNewTopicForm = $('.ext-discussiontools-ui-newTopic:visible');
-    if (!$dtNewTopicForm.length) return;
+    if (!$dtNewTopicForm.length) {
+      return null;
+    }
 
     const $headline = $dtNewTopicForm
       .find('.ext-discussiontools-ui-newTopic-sectionTitle input[type="text"]');
@@ -498,7 +503,7 @@ class BootProcess {
     // refreshes.
     mw.config.set('wgDiscussionToolsStartNewTopicTool', false);
 
-    this.dtNewTopicFormData = {
+    return {
       headline,
       comment,
       focus: true,
