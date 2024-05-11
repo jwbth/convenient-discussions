@@ -411,17 +411,7 @@ class Thread {
     const expandButton = this.constructor.prototypes.get('expandButton');
     const button = new Button({
       tooltip: cd.s('thread-expand-tooltip', cd.g.cmdModifier),
-      action: (e) => {
-        if (isCmdModifierPressed(e)) {
-          commentRegistry.getAll().slice().reverse().forEach((comment) => {
-            if (comment.thread?.isCollapsed) {
-              comment.thread.expand();
-            }
-          });
-        } else {
-          this.expand();
-        }
-      },
+      action: this.onExpandNoteClick.bind(this),
       element: expandButton,
       labelElement: expandButton.querySelector('.oo-ui-labelElement-label'),
     });
@@ -480,6 +470,25 @@ class Thread {
      * @type {external:jQuery|undefined}
      */
     this.$expandNote = $(expandNote);
+  }
+
+  /**
+   * Handle clicking the expand note.
+   *
+   * @param {Event} e
+   * @private
+   */
+  onExpandNoteClick(e) {
+    if (isCmdModifierPressed(e)) {
+      commentRegistry.getAll().slice().reverse().forEach((comment) => {
+        if (comment.thread?.isCollapsed) {
+          comment.thread.expand();
+        }
+      });
+      this.comments[0].scrollTo();
+    } else {
+      this.expand();
+    }
   }
 
   /**
