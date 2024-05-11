@@ -319,7 +319,7 @@ export default {
    */
   getContentColumnOffsets(reset) {
     if (!this.contentColumnOffsets || reset) {
-      const prop = cd.g.contentTextDirection === 'ltr' ? 'padding-left' : 'padding-right';
+      const prop = cd.g.contentDirection === 'ltr' ? 'padding-left' : 'padding-right';
       let startMargin = Math.max(parseFloat(this.$contentColumn.css(prop)), cd.g.contentFontSize);
 
       // The content column in Timeless has no _borders_ as such, so it's wrong to penetrate the
@@ -332,8 +332,8 @@ export default {
       const width = this.$contentColumn.outerWidth();
       this.contentColumnOffsets = {
         startMargin,
-        start: cd.g.contentTextDirection === 'ltr' ? left : left + width,
-        end: cd.g.contentTextDirection === 'ltr' ? left + width : left,
+        start: cd.g.contentDirection === 'ltr' ? left : left + width,
+        end: cd.g.contentDirection === 'ltr' ? left + width : left,
       };
 
       // This is set only on window resize event. The initial value is set in

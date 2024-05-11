@@ -287,10 +287,6 @@ class Thread {
 
     this.clickArea.title = cd.s('thread-tooltip');
 
-    if (this.rootComment.isStartStretched) {
-      this.clickArea.classList.add('cd-thread-clickArea-stretchedStart');
-    }
-
     // Add some debouncing so that the user is not annoyed by the cursor changing its form when
     // moving across thread lines.
     this.clickArea.onmouseenter = this.handleClickAreaHover.bind(this);
@@ -697,7 +693,7 @@ class Thread {
 
     let top;
     let left;
-    const dir = comment.getTextDirection();
+    const dir = comment.getDirection();
     if (rectOrOffset) {
       top = getTop(rectOrOffset);
       left = getLeft(rectOrOffset, commentMargins, dir);

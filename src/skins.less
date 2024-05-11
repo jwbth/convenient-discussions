@@ -58,20 +58,9 @@
   }
 
   // No border, no 1px compensation needed.
-  &.sitedir-ltr,
-  &.sitedir-rtl .mw-content-ltr {
-    .cd-section-button.cd-section-button.cd-section-button,
-    .cd-thread-button.cd-thread-button.cd-thread-button.cd-thread-button {
-      margin-left: 0;
-    }
-  }
-
-  &.sitedir-rtl,
-  &.sitedir-ltr .mw-content-rtl {
-    .cd-section-button.cd-section-button.cd-section-button,
-    .cd-thread-button.cd-thread-button.cd-thread-button.cd-thread-button {
-      margin-right: 0;
-    }
+  .cd-section-button.cd-section-button.cd-section-button,
+  .cd-thread-button.cd-thread-button.cd-thread-button.cd-thread-button {
+    margin-inline-start: 0;
   }
 
   &.sitedir-ltr,
@@ -84,7 +73,7 @@
   &.sitedir-rtl,
   &.sitedir-ltr .mw-content-rtl {
     .cd-button-expandNote.cd-button-expandNote > .oo-ui-buttonElement-button > .oo-ui-iconElement-icon {
-      background-position: 0 3px;
+      background-position: 3px 0;
     }
   }
 

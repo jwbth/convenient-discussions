@@ -156,7 +156,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
       this.sectionsPanel.$element.append(this.input.$element);
 
       this.stackLayout.setItem(this.sectionsPanel);
-      this.input.cdFocus();
+      this.input.focus();
       this.actions.setAbilities({ close: true });
 
       // A dirty workaround to avoid a scrollbar appearing when the window is loading. Couldn't

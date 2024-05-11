@@ -93,23 +93,11 @@
   font-size: 0.875rem;
   display: none;
   flex-direction: row;
+  direction: var(--cd-direction-user);
+  inset-inline-end: 0;
 
   .cd-comment-overlay-hovered & {
     display: flex;
-  }
-
-  .ltr & {
-    direction: ltr;
-
-    // Fix for Firefox 56
-    right: 0;
-  }
-
-  .rtl & {
-    direction: rtl;
-
-    // Fix for Firefox 56
-    left: 0;
   }
 }
 
@@ -119,38 +107,19 @@
   -moz-user-select: none;
   -webkit-user-select: none;
   user-select: none;
-
-  .ltr & {
-    background-image: linear-gradient(to left, var(--cd-comment-hovered-background-color), rgba(255, 255, 255, 0));
-  }
-
-  .rtl & {
-    background-image: linear-gradient(to right, var(--cd-comment-hovered-background-color), rgba(255, 255, 255, 0));
-  }
+  background-image: linear-gradient(var(--cd-gradient-user-start), var(--cd-comment-hovered-background-color), rgba(255, 255, 255, 0));
 
   .cd-comment-overlay-deleted.cd-comment-overlay-deleted & {
-    .ltr & {
-      background-image: linear-gradient(to left, var(--cd-comment-deleted-hovered-background-color), rgba(255, 255, 255, 0));
-    }
-
-    .rtl & {
-      background-image: linear-gradient(to right, var(--cd-comment-deleted-hovered-background-color), rgba(255, 255, 255, 0));
-    }
-  }
-
-  // Gradient can't be animated. Not with jquery.ui and jquery.color.
-  .cd-comment-overlay-target.cd-comment-overlay-target.cd-comment-overlay-target & {
-    background-image: none;
+    background-image: linear-gradient(var(--cd-gradient-user-start), var(--cd-comment-deleted-hovered-background-color), rgba(255, 255, 255, 0));
   }
 
   .cd-comment-overlay-changed.cd-comment-overlay-changed & {
-    .ltr & {
-      background-image: linear-gradient(to left, var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0));
-    }
+    background-image: linear-gradient(var(--cd-gradient-user-start), var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0));
+  }
 
-    .rtl & {
-      background-image: linear-gradient(to right, var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0));
-    }
+  // Gradient can't be animated. Not with jquery.ui and jquery.color.
+  .cd-comment-overlay-target.cd-comment-overlay-target & {
+    background-image: none;
   }
 }
 
@@ -164,80 +133,29 @@
     line-height: 1.4285714em;
   }
 
-  .sitedir-rtl.ltr &,
-  .sitedir-ltr.ltr .mw-content-rtl & {
-    margin-left: 0;
-    margin-right: 0.5em;
-  }
-
-  .sitedir-ltr.rtl &,
-  .sitedir-rtl.rtl .mw-content-ltr & {
-    margin-left: 0.5em;
-    margin-right: 0;
-  }
-
-  .cd-comment-overlay-stretchedStart & {
-    .sitedir-rtl.ltr &,
-    .sitedir-ltr.ltr .mw-content-rtl & {
-      margin-right: calc(~"var(--cd-content-start-margin) - var(--cd-comment-fallback-side-margin)");
-    }
-
-    .sitedir-ltr.rtl &,
-    .sitedir-rtl.rtl .mw-content-ltr & {
-      margin-left: calc(~"var(--cd-content-start-margin) - var(--cd-comment-fallback-side-margin)");
-    }
-  }
-
-  .cd-comment-overlay-stretchedEnd & {
-    .sitedir-ltr.ltr &,
-    .sitedir-rtl.ltr .mw-content-ltr & {
-      padding-right: calc(~"var(--cd-content-start-margin) - var(--cd-comment-fallback-side-margin) + 0.5em");
-    }
-
-    .sitedir-rtl.rtl &,
-    .sitedir-ltr.rtl .mw-content-rtl & {
-      padding-left: calc(~"var(--cd-content-start-margin) - var(--cd-comment-fallback-side-margin) + 0.5em");
-    }
+  // When the user language and content language point in opposite directions, align the menu with
+  // the _start_ of the line. Don't care about RTL content in LTR content and vice versa here -
+  // those are too narrow and unimportant.
+  .ltr.sitedir-rtl &,
+  .rtl.sitedir-ltr & {
+    margin-inline: 0 0.5em;
   }
 }
 
-.sitedir-ltr .cd-comment-overlay-marker,
-.sitedir-ltr .cd-comment-overlay-line,
-.sitedir-rtl .mw-content-ltr .cd-comment-overlay-marker,
-.sitedir-rtl .mw-content-ltr .cd-comment-overlay-line {
-  left: -1px;
-}
-
-.sitedir-rtl .cd-comment-overlay-marker,
-.sitedir-rtl .cd-comment-overlay-line,
-.sitedir-ltr .mw-content-rtl .cd-comment-overlay-marker,
-.sitedir-ltr .mw-content-rtl .cd-comment-overlay-line {
-  right: -1px;
+.cd-comment-overlay-marker,
+.cd-comment-overlay-line {
+  inset-inline-start: -1px;
 }
 
 .cd-comment-button-ooui.cd-comment-button-ooui {
-  .ltr & {
-    margin-right: 0;
+  margin-inline-end: 0;
 
-    &:not(:first-child) {
-      margin-left: 1em;
-    }
-
-    &.oo-ui-iconElement:first-child {
-      margin-left: 0;
-    }
+  &:not(:first-child) {
+    margin-inline-start: 1em;
   }
 
-  .rtl & {
-    margin-left: 0;
-
-    &:not(:first-child) {
-      margin-right: 1em;
-    }
-
-    &.oo-ui-iconElement:first-child {
-      margin-right: 0;
-    }
+  &.oo-ui-iconElement:first-child {
+    margin-inline-start: 0;
   }
 }
 
@@ -245,21 +163,10 @@
   body:not(.skin-monobook) & {
     padding-top: 1.4285714em;
     min-width: unset;
-  }
-
-  .ltr:not(.skin-monobook) & {
-    padding-left: 1.4285714em;
+    padding-inline-start: 1.4285714em;
 
     > .oo-ui-iconElement-icon {
-      left: 0;
-    }
-  }
-
-  .rtl:not(.skin-monobook) & {
-    padding-right: 1.4285714em;
-
-    > .oo-ui-iconElement-icon {
-      right: 0;
+      inset-inline-start: 0;
     }
   }
 }
@@ -267,16 +174,7 @@
 .cd-commentLayersContainer {
   position: relative;
   pointer-events: none;
-
-  .sitedir-ltr &,
-  .sitedir-rtl .mw-content-ltr & {
-    direction: ltr;
-  }
-
-  .sitedir-rtl &,
-  .sitedir-ltr .mw-content-rtl & {
-    direction: rtl;
-  }
+  direction: var(--cd-direction-content);
 
   &-parent-relative {
     position: relative;

@@ -542,7 +542,8 @@ Object.assign(cd.g, {
     '<unregistered>'
   ),
 
-  contentTextDirection: bodyClassList.contains('sitedir-rtl') ? 'rtl' : 'ltr',
+  contentDirection: bodyClassList.contains('sitedir-rtl') ? 'rtl' : 'ltr',
+  userDirection: bodyClassList.contains('rtl') ? 'rtl' : 'ltr',
   skin: mw.config.get('skin'),
 
   // Quite a rough check for mobile browsers, a mix of what is advised at

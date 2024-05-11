@@ -4,6 +4,10 @@
   font-weight: normal;
   text-align: start;
 
+  // The form may sometimes get inside a `<div dir="...">` element, so we need to reset the text
+  // direction.
+  direction: var(--cd-direction-user);
+
   .oo-ui-textInputWidget {
     max-width: none;
   }
@@ -17,7 +21,7 @@
   }
 
   .wikiEditor-ui-left {
-    // Make a number in <ol> lists appear in front of the textarea, not below it.
+    // Make a number in `<ol>` lists appear in front of the textarea, not below it.
     float: none;
   }
 
@@ -36,15 +40,9 @@
     height: 2.14285714em;
     border: 1px solid transparent;
 
-    .sitedir-ltr & {
-      // Otherwise, text may be visible in some combinations of content and interface language (for
-      // example, Russian Wikipedia and uselang=he).
-      direction: ltr;
-    }
-
-    .sitedir-rtl & {
-      direction: rtl;
-    }
+    // Otherwise, text may be visible in some combinations of content and user language (for
+    // example, Russian Wikipedia and uselang=he).
+    direction: var(--cd-direction-content);
   }
 
   // Until T312970 is fixed
@@ -62,73 +60,30 @@
   .wikiEditor-ui-text {
     position: relative;
   }
-
-  // Use the .ltr and .rtl classes to detect the text direction of the user interface (not the site
-  // content for which case the .sitedir-ltr/rtl classes are used).
-  .ltr & {
-    // The form may sometimes get inside <div dir="..."> element, so we need to reset the text
-    // direction.
-    direction: ltr;
-  }
-
-  .rtl & {
-    direction: rtl;
-  }
 }
 
 .cd-commentForm-checkboxes {
-  .ltr & {
-    direction: ltr;
-    text-align: left;
+  text-align: start;
+  direction: var(--cd-direction-user);
 
-    .oo-ui-fieldLayout {
-      margin-right: 1em;
-      margin-left: 0;
+  .oo-ui-fieldLayout {
+    margin-inline: 0 1em;
 
-      &:last-child {
-        margin-right: 0;
-      }
-    }
-  }
-
-  .rtl & {
-    direction: rtl;
-    text-align: right;
-
-    .oo-ui-fieldLayout {
-      margin-left: 1em;
-      margin-right: 0;
-
-      &:last-child {
-        margin-left: 0;
-      }
+    &:last-child {
+      margin-inline-end: 0;
     }
   }
 }
 
 .cd-commentForm-buttons {
-  .ltr & {
-    direction: ltr;
+  direction: var(--cd-direction-user);
 
-    &-start {
-      float: left;
-    }
-
-    &-end {
-      float: right;
-    }
+  &-start {
+    float: var(--cd-float-user-start);
   }
 
-  .rtl & {
-    direction: rtl;
-
-    &-start {
-      float: right;
-    }
-
-    &-end {
-      float: left;
-    }
+  &-end {
+    float: var(--cd-float-user-end);
   }
 }
 
@@ -217,23 +172,25 @@
   padding: 0.5em 0.75em;
   background-color: #f8f9fa;
 
-  > .mw-parser-output > *:first-child {
-    margin-top: 0;
-    padding-top: 0;
-
+  > .mw-parser-output {
     > *:first-child {
       margin-top: 0;
       padding-top: 0;
-    }
-  }
 
-  > .mw-parser-output > *:last-child {
-    margin-bottom: 0;
-    padding-bottom: 0;
+      > *:first-child {
+        margin-top: 0;
+        padding-top: 0;
+      }
+    }
 
     > *:last-child {
       margin-bottom: 0;
       padding-bottom: 0;
+
+      > *:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+      }
     }
   }
 
@@ -264,27 +221,11 @@
     margin-bottom: 0.5em;
   }
 
-  .sitedir-ltr & {
-    direction: ltr;
+  &-indentedComment > .mw-parser-output > dl {
+    margin-inline-start: 0;
 
-    &-indentedComment > .mw-parser-output > dl {
-      margin-left: 0;
-
-      > dd {
-        margin-left: 0;
-      }
-    }
-  }
-
-  .sitedir-rtl & {
-    direction: rtl;
-
-    &-indentedComment > .mw-parser-output > dl {
-      margin-right: 0;
-
-      > dd {
-        margin-right: 0;
-      }
+    > dd {
+      margin-inline-start: 0;
     }
   }
 
@@ -329,6 +270,7 @@
   // have a 1px border, so we make it as well to avoid the border being overlapped by the close
   // button.
   top: 1px;
+  inset-inline-end: 1px;
 
   width: 20px;
   height: 20px;
@@ -349,24 +291,15 @@
     top: 0.5em;
   }
 
-  // Preview area always has text in content language.
-  .ltr &,
-  .sitedir-ltr .cd-commentForm-previewArea & {
-    right: 1px;
-    left: unset;
+  // Note that preview area and message area may have oppositely aligned closed buttons: the message
+  // area follows the user language; the preview area follows the content language. This is based on
+  // the value of `direction` (which we set in this file).
+  .cd-commentForm-previewArea & {
+    inset-inline-end: 1px;
+    inset-inline-start: unset;
 
     .cd-mobile& {
-      right: 0.5em;
-    }
-  }
-
-  .rtl &,
-  .sitedir-rtl .cd-commentForm-previewArea & {
-    left: 1px;
-    right: unset;
-
-    .cd-mobile& {
-      left: 0.5em;
+      inset-inline-end: 0.5em;
     }
   }
 }
@@ -390,6 +323,7 @@
   border-style: solid;
   font-size: 0.928571em;
   line-height: 1.384616em;
+  direction: var(--cd-direction-content);
 
   &::after {
     display: block;
@@ -406,6 +340,7 @@
     padding: 2px 0.5em 3px;
     white-space: nowrap;
     display: block;
+    float: var(--cd-float-user-start);
 
     &:hover,
     &:focus {
@@ -415,22 +350,6 @@
       // As with toolbar buttons
       background-color: rgba(0, 23, 70, 0.086);
     }
-
-    .ltr & {
-      float: left;
-    }
-
-    .rtl & {
-      float: right;
-    }
-  }
-
-  .sitedir-ltr & {
-    direction: ltr;
-  }
-
-  .sitedir-rtl & {
-    direction: rtl;
   }
 }
 

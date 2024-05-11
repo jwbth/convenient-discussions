@@ -2,8 +2,7 @@
 .cd-section-button.cd-section-button.cd-section-button,
 .cd-thread-button.cd-thread-button.cd-thread-button.cd-thread-button {
   &:first-child {
-    margin-left: 0;
-    margin-right: 0;
+    margin-inline: 0;
   }
 
   > .oo-ui-buttonElement-button {
@@ -33,17 +32,14 @@ ol > .cd-thread-button-container > .cd-thread-button {
 
 // Three times to override `.skin-vector .cd-parsed dd`.
 .cd-thread-button-container.cd-thread-button-container.cd-thread-button-container {
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
+  margin-block: 0.5em;
 
   .cd-reformattedComments & {
-    margin-top: 0.75em;
-    margin-bottom: 0.75em;
+    margin-block: 0.75em;
   }
 
   .skin-vector ol > li& {
-    margin-top: 0.14285714em;
-    margin-bottom: 0.14285714em;
+    margin-block: 0.14285714em;
   }
 }
 
@@ -51,79 +47,55 @@ ol > .cd-thread-button-container > .cd-thread-button {
   overflow: hidden;
 
   // Fix focus/active state
-  .sitedir-ltr div&,
-  .sitedir-rtl .mw-content-ltr div& {
-    margin-left: -1px;
-    padding-left: 1px;
-  }
-
-  // Fix focus/active state
-  .sitedir-rtl div&,
-  .sitedir-ltr .mw-content-rtl div& {
-    margin-right: -1px;
-    padding-right: 1px;
+  div& {
+    margin-inline-start: -1px;
+    padding-inline-start: 1px;
   }
 }
 
 // Compensation for the 1px border
 .cd-section-button.cd-section-button.cd-section-button,
 .cd-thread-button.cd-thread-button.cd-thread-button.cd-thread-button {
-  .sitedir-ltr &,
-  .sitedir-rtl .mw-content-ltr & {
-    margin-left: -1px;
-  }
-
-  .sitedir-rtl &,
-  .sitedir-ltr .mw-content-rtl & {
-    margin-right: -1px;
-  }
+  margin-inline-start: -1px;
 }
 
 .cd-thread-button-invisible {
   visibility: hidden;
 }
 
-.cd-button-expandNote.cd-button-expandNote.cd-button-expandNote {
+// Need to override `.cd-thread-button.cd-thread-button.cd-thread-button.cd-thread-button`
+.cd-button-expandNote.cd-button-expandNote.cd-button-expandNote.cd-button-expandNote {
+  direction: var(--cd-direction-user);
+
   > .oo-ui-buttonElement-button {
+    padding-inline: 1em 0;
+
     > .oo-ui-iconElement-icon {
       // More thick icon
       background-image: url("data:image/svg+xml,%3Csvg width='7' height='12' viewBox='0 0 7 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1.27273 -4.13261e-07L-4.66255e-07 1.33333L4.45455 6L-5.82819e-08 10.6667L1.27273 12L7 6L1.27273 -4.13261e-07Z' fill='black'/%3E%3C/svg%3E");
 
       background-size: 7px 12px;
       background-position: 0 0.285714em;
+      inset-inline: 0 auto;
     }
 
     .sitedir-ltr &,
     .sitedir-rtl .mw-content-ltr & {
-      padding-left: 1em;
-      padding-right: 0;
-
       > .oo-ui-iconElement-icon {
         transform: none;
-        left: 0;
-        right: auto;
       }
     }
 
     .sitedir-rtl &,
     .sitedir-ltr .mw-content-rtl & {
-      padding-left: 0;
-      padding-right: 1em;
-
       > .oo-ui-iconElement-icon {
         transform: scaleX(-1);
-        left: auto;
-        right: 0;
       }
     }
   }
-
-  .rtl & {
-    direction: rtl;
-  }
 }
 
-// Override OOUI default 32px
+// Override OOUI default `32px`
 .cd-button-ooui.cd-button-ooui.oo-ui-buttonElement > .oo-ui-buttonElement-button {
   min-height: unset;
 }
@@ -137,7 +109,7 @@ ol > .cd-replyButtonWrapper:not(.cd-replyButtonWrapper-hasCommentForm) {
 // `#cd-notExistingId` is used to override other possibly set `display` properties.
 .cd-hidden:not(#cd-notExistingId),
 
-// `cd-hide` and `cd-show` classes are supposed to be used by users to mark elements on wiki pages
+// `.cd-hide` and `.cd-show` classes are supposed to be used by users to mark elements on wiki pages
 // that should be hidden/shown in CD (for example, texts in edit intros that are irrelevant/relevant
 // for CD).
 .action-view .cd-hide {
@@ -163,31 +135,24 @@ ol > .cd-replyButtonWrapper:not(.cd-replyButtonWrapper-hasCommentForm) {
   position: fixed;
   bottom: 0;
   width: 10em;
+  inset-inline-start: 0;
 
   // `z-index` of OOUI windows + 10
   z-index: 111;
 
+  // A bit more complex logic here than just flipping left/right
   .sitedir-ltr.ltr & {
-    left: 0;
     direction: ltr;
   }
 
   .sitedir-ltr.rtl &,
   .sitedir-rtl & {
-    right: 0;
     direction: rtl;
   }
 
   .skin-vector-2022 & {
     width: 0;
-  }
-
-  .sitedir-ltr.skin-vector-2022 & {
-    margin-left: 2em;
-  }
-
-  .sitedir-rtl.skin-vector-2022 & {
-    margin-right: 2em;
+    margin-inline-start: 2em;
   }
 
   &-logo {
@@ -248,15 +213,8 @@ ol > .cd-replyButtonWrapper:not(.cd-replyButtonWrapper-hasCommentForm) {
   }
 
   &-nextDiffLink {
-    .ltr & {
-      float: right;
-      margin-left: 1em;
-    }
-
-    .rtl & {
-      float: left;
-      margin-right: 1em;
-    }
+    margin-inline-start: 1em;
+    float: var(--cd-float-user-end);
   }
 }
 
@@ -284,20 +242,6 @@ ol > .cd-replyButtonWrapper:not(.cd-replyButtonWrapper-hasCommentForm) {
   margin: 0.5em auto;
 }
 
-// Reset the default. There can be navboxes in discussion threads.
-.mw-collapsible-toggle {
-  li &,
-  .mw-content-ltr li &,
-  .mw-content-rtl .mw-content-ltr li & {
-    float: right;
-  }
-
-  .mw-content-rtl li &,
-  .mw-content-ltr .mw-content-rtl li & {
-    float: left;
-  }
-}
-
 .cd-skip {
   list-style-type: none;
 }
@@ -322,12 +266,8 @@ ol > .cd-replyButtonWrapper:not(.cd-replyButtonWrapper-hasCommentForm) {
   }
 
   &-newTopicsSubscription {
-    .skin-vector-2022.ltr & {
-      margin-right: 12px;
-    }
-
-    .skin-vector-2022.rtl & {
-      margin-left: 12px;
+    .skin-vector-2022 & {
+      margin-inline-end: 12px;
     }
   }
 }

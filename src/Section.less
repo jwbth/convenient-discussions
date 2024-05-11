@@ -8,7 +8,8 @@ ol .cd-section-button {
 }
 
 // Override the default styles to make the section menu appear correctly on RTL wikis with LTR
-// interface and vice versa.
+// interface and vice versa, when the `.mw-editsection` block stretches across multiple lines. TODO:
+// do it upstream.
 .mw-editsection::before {
   .sitedir-rtl.ltr & {
     content: '\200B\200E';
@@ -19,15 +20,14 @@ ol .cd-section-button {
   }
 }
 
+// Fix MediaWiki. TODO: do it upstream.
 .sitedir-rtl.ltr {
   .mw-editsection-bracket:first-of-type {
-    margin-right: 0.25em;
-    margin-left: 0;
+    margin-inline: 0.25em 0;
   }
 
   .mw-editsection-bracket:last-of-type {
-    margin-left: 0.25em;
-    margin-right: 0;
+    margin-inline: 0 0.25em;
   }
 }
 
@@ -45,6 +45,7 @@ ol .cd-section-button {
   margin: 0.25em 0 0.75em;
   display: flex;
   flex-wrap: wrap;
+  direction: var(--cd-direction-user);
 
   &-item {
     display: block;
@@ -68,24 +69,10 @@ ol .cd-section-button {
       cursor: default;
     }
 
-    .sitedir-ltr &,
-    .sitedir-rtl .mw-content-ltr & {
-      margin-left: 0;
-      margin-right: 1.5em;
+    margin-inline: 0 1.5em;
 
-      &:last-child {
-        margin-right: 0;
-      }
-    }
-
-    .sitedir-rtl &,
-    .sitedir-ltr .mw-content-rtl & {
-      margin-left: 1.5em;
-      margin-right: 0;
-
-      &:last-child {
-        margin-left: 0;
-      }
+    &:last-child {
+      margin-inline-end: 0;
     }
   }
 
@@ -139,20 +126,9 @@ ol .cd-section-button {
 .cd-section-actions {
   font-weight: normal;
   white-space: nowrap;
-
-  .sitedir-ltr &,
-  .sitedir-rtl .mw-content-ltr & {
-    margin-left: auto;
-    margin-right: -0.4615385em;
-    padding-left: 1.5em;
-  }
-
-  .sitedir-rtl &,
-  .sitedir-ltr .mw-content-rtl & {
-    margin-left: -0.4615385em;
-    margin-right: auto;
-    padding-right: 1.5em;
-  }
+  margin-inline-start: auto;
+  margin-inline-end: -0.4615385em;
+  padding-inline-start: 1.5em;
 }
 
 .cd-subsection-heading {

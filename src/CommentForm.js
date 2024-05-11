@@ -276,7 +276,7 @@ class CommentForm {
     if (!initialState || initialState.focus) {
       this.$element.cdScrollIntoView('center', true, () => {
         if (this.mode !== 'edit') {
-          (this.headlineInput || this.commentInput).cdFocus();
+          (this.headlineInput || this.commentInput).focus();
         }
       });
     }
@@ -1093,12 +1093,6 @@ class CommentForm {
         }
       });
 
-    // Fix a focus bug in Firefox 56.
-    if ($input.is(':focus')) {
-      $input.blur();
-      this.commentInput.cdFocus();
-    }
-
     // A hack to make the WikiEditor cookies related to active sections and pages saved correctly.
     $input.data('wikiEditor-context').instance = 5;
     $.wikiEditor.instances = Array(5);
@@ -1220,7 +1214,7 @@ class CommentForm {
 
       operation.close();
 
-      this.commentInput.cdFocus();
+      this.commentInput.focus();
       this.preview();
     } catch (e) {
       if (e instanceof CdError) {
@@ -1373,7 +1367,7 @@ class CommentForm {
 
       operation.close();
 
-      (this.headlineInput || this.commentInput).cdFocus();
+      (this.headlineInput || this.commentInput).focus();
       this.preview();
     } catch (e) {
       if (e instanceof CdError) {
@@ -2030,11 +2024,11 @@ class CommentForm {
       const value = this.summaryInput.getValue();
       const match = value.match(/^.+?\*\/ */);
       this.summaryInput
-        .cdFocus()
+        .focus()
         .selectRange(match ? match[0].length : 0, value.length);
     } else {
       this.$advanced.hide();
-      this.commentInput.cdFocus();
+      this.commentInput.focus();
     }
   }
 
@@ -2726,7 +2720,7 @@ class CommentForm {
           'top' :
           'bottom'
       );
-      this.commentInput.cdFocus();
+      this.commentInput.focus();
     }
   }
 
@@ -2815,7 +2809,7 @@ class CommentForm {
         'top' :
         'bottom'
     );
-    this.commentInput.cdFocus();
+    this.commentInput.focus();
   }
 
   /**
@@ -2920,7 +2914,7 @@ class CommentForm {
 
     for (const check of checks) {
       if (check.condition && !check.confirmation()) {
-        this.commentInput.cdFocus();
+        this.commentInput.focus();
         return false;
       }
     }
@@ -3211,7 +3205,7 @@ class CommentForm {
     if (controller.isPageOverlayOn() || this.isBeingSubmitted()) return;
 
     if (confirmClose && !this.confirmClose()) {
-      this.commentInput.cdFocus();
+      this.commentInput.focus();
       return;
     }
 
@@ -3838,7 +3832,7 @@ class CommentForm {
   goTo() {
     this.getParentComment()?.expandAllThreadsDownTo();
     this.$element.cdScrollIntoView('center');
-    this.commentInput.cdFocus();
+    this.commentInput.focus();
   }
 
   /**

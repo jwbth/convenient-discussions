@@ -1053,7 +1053,7 @@ class Section extends SectionSkeleton {
 
     if (this.addSubsectionForm) {
       this.addSubsectionForm.$element.cdScrollIntoView('center');
-      this.addSubsectionForm.headlineInput.cdFocus();
+      this.addSubsectionForm.headlineInput.focus();
     } else {
       /**
        * "Add subsection" form related to the section.

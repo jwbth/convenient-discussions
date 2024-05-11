@@ -5,8 +5,7 @@
   display: inline-block;
 
   &-before {
-    // Don't divide into ltr/rtl, because both `margin-right` and `margin-left` will work here
-    margin-right: 0.75em;
+    margin-inline-end: 0.75em;
   }
 }
 
@@ -25,8 +24,7 @@
   background-size: 14px 14px;
 
   &-before {
-    // Don't divide into ltr/rtl, because both `margin-right` and `margin-left` will work here
-    margin-right: 0.75em;
+    margin-inline-end: 0.75em;
   }
 }
 
@@ -34,7 +32,7 @@
   .cd-toc-newCommentList,
   .cd-toc-addedCommentList {
     margin-top: 0;
-    margin-left: 20px;
+    margin-inline-start: 20px;
   }
 
   .cd-toc-addedCommentList {
@@ -60,17 +58,11 @@
 }
 
 .cd-toc-bullet {
+  padding-inline-end: 0.5em;
+
   // Override `.vector-toc .vector-toc-numb`
   &.vector-toc-numb {
     display: inline;
-  }
-
-  .ltr & {
-    padding-right: 0.5em;
-  }
-
-  .rtl & {
-    padding-left: 0.5em;
   }
 }
 

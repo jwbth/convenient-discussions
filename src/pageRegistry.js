@@ -811,7 +811,7 @@ export class Page {
       this.addSectionForm.$element.cdScrollIntoView('center');
 
       // Headline input may be missing if the `nosummary` preload parameter is truthy.
-      (this.addSectionForm.headlineInput || this.addSectionForm.commentInput).cdFocus();
+      (this.addSectionForm.headlineInput || this.addSectionForm.commentInput).focus();
     } else {
       /**
        * "Add section" form.

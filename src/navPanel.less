@@ -5,6 +5,8 @@
   width: 2.1875rem;
   background-color: #fff;
   border: 1px solid #a2a9b1;
+  inset-inline-start: 0;
+  border-inline-start-width: 0;
 
   // Enough to make it pass AA level for contrast ratio on Vector in case of
   // .cd-navPanel-refreshButton-relevant (#7d00cc).
@@ -70,29 +72,12 @@
     }
   }
 
-  .ltr & {
-    left: 0;
-    border-left-width: 0;
-  }
-
-  .rtl & {
-    right: 0;
-    border-right-width: 0;
-  }
-
   @media screen and (max-width: 999px) {
-    .skin-vector-2022.ltr & {
-      left: auto;
-      right: 0;
-      border-left-width: 1px;
-      border-right-width: 0;
-    }
-
-    .skin-vector-2022.rtl & {
-      left: 0;
-      right: auto;
-      border-left-width: 0;
-      border-right-width: 1px;
+    .skin-vector-2022 & {
+      inset-inline-start: auto;
+      inset-inline-end: 0;
+      border-inline-start-width: 1px;
+      border-inline-end-width: 0;
     }
   }
 }

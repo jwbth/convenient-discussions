@@ -1031,10 +1031,10 @@ class Comment extends CommentSkeleton {
       const leftStretched = left - offsets.startMargin - 2;
       const rightStretched = right + offsets.startMargin + 2;
 
-      this.isStartStretched = this.getTextDirection() === 'ltr' ?
+      this.isStartStretched = this.getDirection() === 'ltr' ?
         leftStretched <= offsets.start :
         rightStretched >= offsets.start;
-      this.isEndStretched = this.getTextDirection() === 'ltr' ?
+      this.isEndStretched = this.getDirection() === 'ltr' ?
         rightStretched >= offsets.end :
         leftStretched <= offsets.end;
     }
@@ -1148,8 +1148,8 @@ class Comment extends CommentSkeleton {
    *
    * @returns {string}
    */
-  getTextDirection() {
-    if (!this.textDirection) {
+  getDirection() {
+    if (!this.direction) {
       if (controller.areThereLtrRtlMixes()) {
         // Take the last element because the first one may be the section heading which can have
         // another direction.
@@ -1157,13 +1157,13 @@ class Comment extends CommentSkeleton {
           .closest('.mw-content-ltr, .mw-content-rtl')
           .classList
           .contains('mw-content-ltr');
-        this.textDirection = isLtr ? 'ltr' : 'rtl';
+        this.direction = isLtr ? 'ltr' : 'rtl';
       } else {
-        this.textDirection = cd.g.contentTextDirection;
+        this.direction = cd.g.contentDirection;
       }
     }
 
-    return this.textDirection;
+    return this.direction;
   }
 
   /**
@@ -1200,7 +1200,7 @@ class Comment extends CommentSkeleton {
           this.offset &&
           anchorElement.parentNode.parentNode.classList.contains('cd-commentLevel')
         ) {
-          const prop = this.getTextDirection() === 'ltr' ? 'left' : 'right';
+          const prop = this.getDirection() === 'ltr' ? 'left' : 'right';
           startMargin = (
             Math.abs(this.offset[prop] - anchorElement.parentNode.getBoundingClientRect()[prop]) - 1
           );
@@ -1213,8 +1213,8 @@ class Comment extends CommentSkeleton {
       controller.getContentColumnOffsets().startMargin :
       cd.g.commentFallbackSideMargin;
 
-    const left = this.getTextDirection() === 'ltr' ? startMargin : endMargin;
-    const right = this.getTextDirection() === 'ltr' ? endMargin : startMargin;
+    const left = this.getDirection() === 'ltr' ? startMargin : endMargin;
+    const right = this.getDirection() === 'ltr' ? endMargin : startMargin;
 
     return { left, right };
   }
@@ -1454,12 +1454,6 @@ class Comment extends CommentSkeleton {
     if (wereJustCreated) {
       if (this.isLineGapped) {
         this.line.classList.add('cd-comment-overlay-line-gapCloser');
-      }
-      if (this.isStartStretched) {
-        this.overlay.classList.add('cd-comment-overlay-stretchedStart');
-      }
-      if (this.isEndStretched) {
-        this.overlay.classList.add('cd-comment-overlay-stretchedEnd');
       }
     }
   }
@@ -2912,9 +2906,10 @@ class Comment extends CommentSkeleton {
         $outermostElement = commentForm.$element;
       }
 
-      // We insert the form before the comment so that if the comment ends on a wrong level, the form
-      // is on a right one. The exception is comments that open a section (otherwise a bug will be
-      // introduced that will manifest when opening an "Add subsection" form of the previous section).
+      // We insert the form before the comment so that if the comment ends on a wrong level, the
+      // form is on a right one. The exception is comments that open a section (otherwise a bug will
+      // be introduced that will manifest when opening an "Add subsection" form of the previous
+      // section).
       if (this.isOpeningSection) {
         this.$elements.last().after($outermostElement);
       } else {

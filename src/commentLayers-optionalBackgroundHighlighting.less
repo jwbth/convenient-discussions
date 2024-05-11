@@ -8,13 +8,7 @@
 }
 
 .cd-comment-overlay-new .cd-comment-overlay-gradient {
-  .ltr & {
-    background-image: linear-gradient(to left, var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0));
-  }
-
-  .rtl & {
-    background-image: linear-gradient(to right, var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0));
-  }
+  background-image: linear-gradient(var(--cd-gradient-user-start), var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0));
 }
 
 .cd-comment-underlay-own {
@@ -27,11 +21,5 @@
 }
 
 .cd-comment-overlay-own .cd-comment-overlay-gradient {
-  .ltr & {
-    background-image: linear-gradient(to left, var(--cd-comment-own-hovered-background-color), rgba(255, 255, 255, 0));
-  }
-
-  .rtl & {
-    background-image: linear-gradient(to right, var(--cd-comment-own-hovered-background-color), rgba(255, 255, 255, 0));
-  }
+  background-image: linear-gradient(var(--cd-gradient-user-start), var(--cd-comment-own-hovered-background-color), rgba(255, 255, 255, 0));
 }

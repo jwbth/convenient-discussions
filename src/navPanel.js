@@ -409,7 +409,7 @@ export default {
         tooltipText += '\n' + cd.s('navpanel-markasread', cd.g.cmdModifier);
       }
       const bullet = removeWikiMarkup(cd.s('bullet'));
-      const rtlMarkOrNot = cd.g.contentTextDirection === 'rtl' ? '\u200f' : '';
+      const rtlMarkOrNot = cd.g.contentDirection === 'rtl' ? '\u200f' : '';
       commentsBySection.forEach((comments, section) => {
         const headline = section?.headline;
         tooltipText += headline ? `\n\n${headline}` : '\n';

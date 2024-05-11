@@ -659,6 +659,13 @@ export default {
     const contentStartMargin = controller.getContentColumnOffsets().startMargin;
     const sidebarTransparentColor = transparentize(sidebarColor);
 
+    // `float: inline-start` is too new: it appeared in Chrome in October 2023.
+    const floatContentStart = cd.g.contentDirection === 'ltr' ? 'left' : 'right';
+    const floatContentEnd = cd.g.contentDirection === 'ltr' ? 'right' : 'left';
+    const floatUserStart = cd.g.userDirection === 'ltr' ? 'left' : 'right';
+    const floatUserEnd = cd.g.userDirection === 'ltr' ? 'right' : 'left';
+    const gradientUserStart = cd.g.userDirection === 'ltr' ? 'to left' : 'to right';
+
     mw.loader.addStyleTag(`:root {
   --cd-comment-hovered-background-color: #f8f9fa;
   --cd-comment-target-marker-color: #fc3;
@@ -681,6 +688,13 @@ export default {
   --cd-content-metadata-font-size: ${metadataFontSize}rem;
   --cd-sidebar-color: ${sidebarColor};
   --cd-sidebar-transparent-color: ${sidebarTransparentColor};
+  --cd-direction-user: ${cd.g.userDirection};
+  --cd-direction-content: ${cd.g.contentDirection};
+  --cd-float-user-start: ${floatUserStart};
+  --cd-float-user-end: ${floatUserEnd};
+  --cd-float-content-start: ${floatContentStart};
+  --cd-float-content-end: ${floatContentEnd};
+  --cd-gradient-user-start: ${gradientUserStart};
 }`);
     if (cd.config.outdentClass) {
       mw.loader.addStyleTag(`.cd-parsed .${cd.config.outdentClass} {

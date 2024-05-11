@@ -30,6 +30,12 @@
 }
 
 .cd-comment-button {
+  margin-inline: 1em 0;
+
+  &:first-child {
+    margin-inline: 0;
+  }
+
   &-label.cd-comment-button-label.cd-comment-button-label {
     color: #54595d;
     text-decoration: none;
@@ -75,33 +81,11 @@
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%23faa700'%3E%3Cpath d='M10 15L2 5h16z'/%3E%3C/g%3E%3C/svg%3E");
     }
   }
-
-  .sitedir-ltr &,
-  .sitedir-rtl .mw-content-ltr & {
-    margin-left: 1em;
-    margin-right: 0;
-
-    &:first-child {
-      margin-left: 0;
-      margin-right: 0;
-    }
-  }
-
-  .sitedir-rtl &,
-  .sitedir-ltr .mw-content-rtl & {
-    margin-right: 1em;
-    margin-left: 0;
-
-    &:first-child {
-      margin-right: 0;
-      margin-left: 0;
-    }
-  }
 }
 
-// Comment buttons should inherit the text direction, not matter the interface language. If the
-// "mw-content-rtl" class would be thrown away one day, then use [dir="rtl"]? (Don't specify styles
-// for [dir="ltr"] as they could be expensive.)
+// Comment buttons should inherit the text direction, no matter the interface language. If the
+// `.mw-content-rtl` class will be thrown away one day, then use `[dir="rtl"]`. (Don't specify
+// styles for `[dir="ltr"]` as they could be expensive.)
 .mw-content-rtl {
   .cd-comment-menu .cd-comment-button,
   .cd-comment-header .cd-comment-author-wrapper a {
@@ -153,37 +137,20 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
   margin: 0;
 }
 
-// We use "mw-content-" classes to account for cases with LTR content in RTL wikis and vice versa.
-// For example:
+// Note cases with LTR content in RTL wikis and vice versa. For example:
 // https://he.wikipedia.org/w/index.php?title=ויקיפדיה:חדשות&oldid=32116639#Desktop_improvements._A_new_change!
-.sitedir-ltr .cd-commentLevel:not(ol) > li,
-.sitedir-ltr .cd-commentLevel:not(ol) > dd,
-.sitedir-rtl .mw-content-ltr .cd-commentLevel:not(ol) > li,
-.sitedir-rtl .mw-content-ltr .cd-commentLevel:not(ol) > dd {
-  padding-left: 1em;
-  padding-right: 0;
-  margin-left: 1em;
-  margin-right: 0;
-  border-left: 1px solid #c8ccd1;
-  border-right: 0;
-}
-
-.sitedir-rtl .cd-commentLevel:not(ol) > li,
-.sitedir-rtl .cd-commentLevel:not(ol) > dd,
-.sitedir-ltr .mw-content-rtl .cd-commentLevel:not(ol) > li,
-.sitedir-ltr .mw-content-rtl .cd-commentLevel:not(ol) > dd {
-  padding-left: 0;
-  padding-right: 1em;
-  margin-left: 0;
-  margin-right: 1em;
-  border-left: 0;
-  border-right: 1px solid #c8ccd1;
+.cd-commentLevel:not(ol) > li,
+.cd-commentLevel:not(ol) > dd {
+  padding-inline: 1em 0;
+  margin-inline: 1em 0;
+  border-inline-start: 1px solid #c8ccd1;
+  border-inline-end: 0;
 }
 
 // Workaround for close a visual gap to the previous item. The unfortunate reason for it is that we
-// need to avoid wrapping the contents of almost every comment in a <div> (so that its reply comment
-// form is not included in the comment) which would increase the parsing time significantly. Four
-// times to override
+// need to avoid wrapping the contents of almost every comment in a `<div>` (so that its reply
+// comment form is not included in the comment) which would increase the parsing time significantly.
+// Four times to override
 // `.cd-thread-button-container.cd-thread-button-container.cd-thread-button-container`.
 .cd-connectToPreviousItem.cd-connectToPreviousItem.cd-connectToPreviousItem.cd-connectToPreviousItem {
   margin-top: -0.5em;
@@ -252,31 +219,15 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
 
   .cd-reformattedComments & {
     font-size: 100%;
-  }
-
-  .cd-reformattedComments .mw-content-ltr &,
-  .cd-reformattedComments .mw-content-rtl .mw-content-ltr & {
-    margin-left: 1em;
-    margin-right: auto;
-  }
-
-  .cd-reformattedComments .mw-content-rtl &,
-  .cd-reformattedComments .mw-content-ltr .mw-content-rtl & {
-    margin-left: auto;
-    margin-right: 1em;
+    margin-inline: 1em auto;
   }
 
   &-before {
-    .sitedir-ltr &,
-    .sitedir-rtl .mw-content-ltr & {
-      margin-left: auto;
-      margin-right: 0.75em;
-    }
-
-    .sitedir-rtl &,
-    .sitedir-ltr .mw-content-rtl & {
-      margin-left: 0.75em;
-      margin-right: auto;
-    }
+    margin-inline: auto 0.75em;
   }
+}
+
+// Reset the default. There can be navboxes in discussion threads.
+.cd-commentLevel .mw-collapsible-toggle {
+  float: var(--cd-float-content-end);
 }

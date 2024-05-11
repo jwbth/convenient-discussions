@@ -511,7 +511,7 @@ export default {
         date = cd.s('navpanel-newcomments-unknowndate');
       }
 
-      const rtlMarkOrNot = cd.g.contentTextDirection === 'rtl' ? '\u200f' : '';
+      const rtlMarkOrNot = cd.g.contentDirection === 'rtl' ? '\u200f' : '';
       const dateOrNot = settings.get('timestampFormat') === 'default' ? date : '';
       const text = names + rtlMarkOrNot + cd.mws('comma-separator') + dateOrNot;
 

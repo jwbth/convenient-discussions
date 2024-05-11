@@ -35,22 +35,10 @@ class TextInputWidget extends OO.ui.TextInputWidget {
    * @returns {TextInputWidget}
    */
   cdInsertContent(text) {
-    this.cdFocus();
+    this.focus();
     if (!document.execCommand('insertText', false, text)) {
       this.insertContent(text);
     }
-
-    return this;
-  }
-
-  /**
-   * Get around the bug of Firefox 56 and probably some other browsers where the caret doesn't
-   * appear in the input after focusing.
-   *
-   * @returns {TextInputWidget}
-   */
-  cdFocus() {
-    this.$input[0].focus();
 
     return this;
   }
