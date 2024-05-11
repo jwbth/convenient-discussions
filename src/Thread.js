@@ -844,6 +844,7 @@ class Thread {
     this.treeWalker = new ElementsTreeWalker(undefined, controller.rootElement);
     commentRegistry.getAll().forEach((rootComment) => {
       try {
+        rootComment.thread?.expand(true);
         rootComment.thread = new Thread(rootComment);
       } catch {
         // Empty
