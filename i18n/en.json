@@ -482,5 +482,6 @@
   "loading-ellipsis": "Loading…",
   "addtopic": "Add topic",
   "addtopicbutton-tooltip": "Open in a new tab to create a new topic using the standard page, not Convenient Discussions",
-  "pseudolink-tooltip": "Click to insert"
+  "pseudolink-tooltip": "Click to insert",
+  "copy": "Copy"
 }

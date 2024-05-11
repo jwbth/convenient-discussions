@@ -31,6 +31,7 @@ export class User {
    */
   constructor(name, options = {}) {
     this.name = name;
+    this.muted = false;
     Object.keys(options).forEach((name) => {
       this.options.set(name, options[name]);
     });
@@ -199,7 +200,7 @@ export default {
    */
   loadMuted() {
     const userIdList = mw.user.options.get('echo-notifications-blacklist');
-    if (!userIdList) return;
+    if (!userIdList || !cd.g.useGlobalPreferences) return;
 
     const userIds = userIdList.split('\n');
     const mutedUsersStorage = new StorageItem('mutedUsers');

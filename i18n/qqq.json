@@ -450,5 +450,6 @@
 	"loading-ellipsis": "Text displayed in various OOUI process dialogs while their content is loading.",
 	"addtopic": "Label of the button at the end of the page. It opens an \"Add topic\" form.",
 	"addtopicbutton-tooltip": "Text of the tooltip for buttons (interface-standard or not) used to add a topic. Since their main function becomes to open an \"Add topic\" form provided by Conveneint Discussion, we instruct the user how to create a topic the standard way.",
-	"pseudolink-tooltip": "Text of the tooltip for links that insert some text into text inputs (like the \"charinsert\" tag)"
+	"pseudolink-tooltip": "Text of the tooltip for links that insert some text into text inputs (like the \"charinsert\" tag)",
+	"copy": "Label of the buttons in the copy link dialog.\n\n{{identical|Copy}}"
 }

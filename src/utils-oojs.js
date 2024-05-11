@@ -4,6 +4,7 @@
  * @module utilsOoui
  */
 
+import cd from './cd';
 import controller from './controller';
 
 /**
@@ -374,21 +375,41 @@ export function createRadioField({ label, selected, help, options }) {
  * @param {object} [options.disabled]
  * @param {object} [options.help]
  * @param {object} options.copyCallback
- * @returns {external:OO.ui.CopyTextLayout}
+ * @returns {external:OO.ui.CopyTextLayout|external:OO.ui.ActionFieldLayout}
  */
 export function createCopyTextField({ label, value, disabled = false, help, copyCallback }) {
-  const field = new OO.ui.CopyTextLayout({
-    align: 'top',
-    label,
-    copyText: value,
-    button: { disabled },
-    textInput: { disabled },
-    help,
-    helpInline: Boolean(help),
-  });
-  field.on('copy', (successful) => {
-    copyCallback(successful, field);
-  });
+  let field;
+  if (OO.ui.CopyTextLayout) {
+    field = new OO.ui.CopyTextLayout({
+      align: 'top',
+      label,
+      copyText: value,
+      button: { disabled },
+      textInput: { disabled },
+      help,
+      helpInline: Boolean(help),
+    });
+    field.on('copy', (successful) => {
+      copyCallback(successful, field);
+    });
+  } else {
+    // Older MediaWiki versions
+    const input = new OO.ui.TextInputWidget({ value, disabled });
+    const button = new OO.ui.ButtonWidget({
+      label: cd.s('copy'),
+      icon: 'copy',
+      disabled,
+    });
+    button.on('click', () => {
+      copyCallback(input.getValue());
+    });
+    field = new OO.ui.ActionFieldLayout(input, button, {
+      align: 'top',
+      label,
+      help,
+      helpInline: Boolean(help),
+    });
+  }
   return field;
 }
 

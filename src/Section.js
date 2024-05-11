@@ -977,12 +977,33 @@ class Section extends SectionSkeleton {
 
     if (this.level !== 2) return;
 
-    const subscribeId = controller.getDtSubscribableThreads()
+    let subscribeId = controller.getDtSubscribableThreads()
       ?.find((thread) => (
         thread.id === this.hElement.dataset.mwThreadId ||
         thread.id === this.headlineElement.dataset.mwThreadId
       ))
       ?.name;
+
+    if (!subscribeId) {
+      // Older versions of MediaWiki
+      if (cd.g.isDtTopicSubscriptionEnabled) {
+        if (this.headingElement.querySelector('.ext-discussiontools-init-section-subscribe-link')) {
+          const headlineJson = this.headlineElement.dataset.mwComment;
+          try {
+            subscribeId = JSON.parse(headlineJson).name;
+          } catch {
+            // Empty
+          }
+        }
+      } else {
+        for (let n = this.headingElement.firstChild; n; n = n.nextSibling) {
+          if (n.nodeType === Node.COMMENT_NODE && n.textContent.includes('__DTSUBSCRIBELINK__')) {
+            [, subscribeId] = n.textContent.match('__DTSUBSCRIBELINK__(.+)') || [];
+            break;
+          }
+        }
+      }
+    }
 
     // Filter out sections with no comments, therefore no meaningful ID
     this.subscribeId = subscribeId === 'h-' ? undefined : subscribeId;

@@ -276,7 +276,7 @@ export default {
         this.windowManagers[name].clearWindows();
       });
 
-      $(OO.ui.getTeleportTarget()).append(this.windowManagers[name].$element);
+      $(OO.ui.getTeleportTarget?.() || document.body).append(this.windowManagers[name].$element);
     }
 
     return this.windowManagers[name];
