@@ -122,6 +122,7 @@
 	"es-move-to": "verplaatsen naar [[$1]]",
 	"cf-headline-topic": "Onderwerp",
 	"cf-headline-subsection": "Onderwerp voor de subsectie van \"$1\"",
+	"cf-comment-placeholder": "Tekst",
 	"cf-comment-placeholder-replytosection": "Reageren op “$1”",
 	"cf-comment-placeholder-replytocomment": "Reageren op {{gender:$2|}} $1",
 	"cf-summary-placeholder": "Bewerkingssamenvatting",
@@ -210,7 +211,7 @@
 	"dn-confirm-yes": "Ja",
 	"dn-confirm-no": "Nee",
 	"dn-grantpermission": "Een toestemming aan de site geven.",
-	"dn-grantpermission-again": "U hebt bureaubladmeldingen ingeschakeld in de instellingen van “Handige discussies”, maar de site heeft geen toestemming om ze te tonen. In de pop-up die verschijnt kunt u toestemming verlenen aan de site om meldingen te ontvangen. Als u toestemming weigert, verschijnt dit bericht niet opnieuw.",
+	"dn-grantpermission-again": "U hebt bureaubladmeldingen ingeschakeld in de instellingen van “Handige discussies”, maar de site heeft geen toestemming om ze te tonen. In de pop-up die verschijnt kunt u die toestemming verlenen aan de site. Als u dat weigert, verschijnt dit bericht niet opnieuw.",
 	"deadanchor-section-lead": "De sectie “$1” is niet aangetroffen op de pagina.",
 	"deadanchor-section-exactmatch": "De sectie “$1” is blijkbaar gearchiveerd. <b>[[$2|Bekijk de gearchiveerde sectie]]</b> (of [$3 doorzoek het archief]).",
 	"deadanchor-section-inexactmatch": "De sectie \"$1\" is blijkbaar gearchiveerd. [$2 Doorzoek het archief].",
@@ -254,7 +255,7 @@
 	"popup-manyForms-title": "Wist u dat?",
 	"popup-manyForms-text": "In Handige discussies kunt u veel reacties tegelijk typen in afzonderlijke formulieren en ze vervolgens één voor één verzenden. De tekst in andere formulieren gaat niet verloren wanneer u een van de formulieren indient. Probeer het eens!",
 	"popup-upload-title": "Nieuwe functie",
-	"popup-upload-text": "U kunt nu met drie klikken scherm- en andere afbeeldingen uploaden naar Commons! Plak of sleep een afbeelding in de reactie-invoer, kies de voorinstelling en klik op “{{int:convenient-discussions-ud-uploadandsave}}”.",
+	"popup-upload-text": "U kunt nu met drie klikken schermafbeeldingen uploaden naar Commons! Plak of sleep de afbeelding in de reactie-invoer, kies de voorinstelling en klik op “{{int:convenient-discussions-ud-uploadandsave}}”.",
 	"navpanel-refresh": "Pagina herladen",
 	"navpanel-previous": "Ga naar de vorige nieuwe reactie",
 	"navpanel-next": "Ga naar de volgende nieuwe reactie",
@@ -440,5 +441,6 @@
 	"loading-ellipsis": "Bezig met laden…",
 	"addtopic": "Onderwerp toevoegen",
 	"addtopicbutton-tooltip": "Open dit op een nieuw tabblad om een nieuw onderwerp aan te maken met behulp van de standaardpagina, niet via Handige discussies",
-	"pseudolink-tooltip": "Klik om in te voegen"
+	"pseudolink-tooltip": "Klik om in te voegen",
+	"copy": "Kopiëren"
 }

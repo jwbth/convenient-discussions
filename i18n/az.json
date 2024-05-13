@@ -446,5 +446,6 @@
 	"loading-ellipsis": "Yüklənir...",
 	"addtopic": "Mövzu əlavə et",
 	"addtopicbutton-tooltip": "Convenient Discussions-dan deyil, standart səhifədən istifadə edərək yeni mövzu yaratmaq üçün yeni vərəqədə açın",
-	"pseudolink-tooltip": "Daxil etmək üçün klikləyin"
+	"pseudolink-tooltip": "Daxil etmək üçün klikləyin",
+	"copy": "Kopyala"
 }

@@ -275,5 +275,6 @@
 	"dot-separator": "&nbsp;<b>·</b>&#32;",
 	"ellipsis": "…",
 	"loading-ellipsis": "جارٍ التحميل…",
-	"addtopic": "أضِف موضوعًا"
+	"addtopic": "أضِف موضوعًا",
+	"copy": "نسخ"
 }

@@ -193,5 +193,6 @@
 	"lp-comment-toyou": "kommentti on osoitettu sinulle",
 	"loading-ellipsis": "Ladataan…",
 	"addtopic": "Uusi keskustelu",
-	"addtopicbutton-tooltip": "Avaa uudessa välilehdessä luodaksesi keskusteluketjun tavaliselle sivulle Kätevät Keskustelut -sivun sijasta"
+	"addtopicbutton-tooltip": "Avaa uudessa välilehdessä luodaksesi keskusteluketjun tavaliselle sivulle Kätevät Keskustelut -sivun sijasta",
+	"copy": "Kopioi"
 }

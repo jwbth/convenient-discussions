@@ -380,5 +380,6 @@
 	"ellipsis": "...",
 	"loading-ellipsis": "Načítava sa…",
 	"addtopic": "Pridať tému",
-	"addtopicbutton-tooltip": "Otvoriť na novej karte pre vytvorenie novej témy na štandardnej stránke, nie v Pohodlných diskusiách"
+	"addtopicbutton-tooltip": "Otvoriť na novej karte pre vytvorenie novej témy na štandardnej stránke, nie v Pohodlných diskusiách",
+	"copy": "Kopírovať"
 }

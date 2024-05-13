@@ -363,5 +363,6 @@
 	"dot-separator": "&nbsp;<b>·</b>&#32;",
 	"loading-ellipsis": "Carregando…",
 	"addtopic": "Adicionar tópico",
-	"addtopicbutton-tooltip": "Abra em uma nova guia para criar um novo tópico na página padrão, não em Discussões convenientes"
+	"addtopicbutton-tooltip": "Abra em uma nova guia para criar um novo tópico na página padrão, não em Discussões convenientes",
+	"copy": "Copiar"
 }

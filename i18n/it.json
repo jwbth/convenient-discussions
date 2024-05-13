@@ -112,5 +112,6 @@
 	"lp-comment": "commento",
 	"dot-separator": "&nbsp;<b>·</b>&#32;",
 	"loading-ellipsis": "Caricamento...",
-	"addtopic": "Aggiungi argomento"
+	"addtopic": "Aggiungi argomento",
+	"copy": "Copia"
 }

@@ -404,5 +404,6 @@
 	"ellipsis": "…",
 	"loading-ellipsis": "Đang tải…",
 	"addtopic": "Thêm đề tài",
-	"addtopicbutton-tooltip": "{{int:Tooltip-ca-addsection}}. Nhấp chuột phải vào đây rồi chọn “Mở trong thẻ mới” để tạo chủ đề mới trên trang thông thường nhưng không dùng Thảo luận tiện lợi"
+	"addtopicbutton-tooltip": "{{int:Tooltip-ca-addsection}}. Nhấp chuột phải vào đây rồi chọn “Mở trong thẻ mới” để tạo chủ đề mới trên trang thông thường nhưng không dùng Thảo luận tiện lợi",
+	"copy": "Sao chép"
 }

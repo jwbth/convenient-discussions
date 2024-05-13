@@ -425,5 +425,6 @@
 	"loading-ellipsis": "読み込み中…",
 	"addtopic": "話題を追加",
 	"addtopicbutton-tooltip": "Convenient Discussionsではなく標準ページで新しい話題を作成する場合、新しいタブで開いてください。",
-	"pseudolink-tooltip": "クリックして挿入"
+	"pseudolink-tooltip": "クリックして挿入",
+	"copy": "コピー"
 }

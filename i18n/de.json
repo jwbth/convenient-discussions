@@ -350,5 +350,6 @@
 	"dot-separator": "&nbsp;<b>·</b>&#32;",
 	"ellipsis": "…",
 	"loading-ellipsis": "Lädt...",
-	"addtopic": "Thema hinzufügen"
+	"addtopic": "Thema hinzufügen",
+	"copy": "Kopieren"
 }

@@ -374,5 +374,6 @@
 	"ellipsis": "…",
 	"loading-ellipsis": "Įkeliama...",
 	"addtopic": "Pridėti temą",
-	"addtopicbutton-tooltip": "Atidarykite naujame skirtuke, kad sukurtumėte naują temą standartiniame puslapyje, o ne Patogiose diskusijose"
+	"addtopicbutton-tooltip": "Atidarykite naujame skirtuke, kad sukurtumėte naują temą standartiniame puslapyje, o ne Patogiose diskusijose",
+	"copy": "Kopijuoti"
 }
