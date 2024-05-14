@@ -2501,8 +2501,14 @@ class CommentForm {
     let commentCode;
     try {
       ({ contextCode, commentCode } = this.target.source.modifyContext({
-        commentCode: this.inputToCode(action),
+        // Ugly solution to avoid overcomplication of code: for replies, we need to get
+        // CommentSource#isReplyOutdented set for `action === 'reply'` which we don't have so far.
+        // So let CommentSource#modifyContext compute it. In the rest of cases just get the comment
+        // code.
+        commentCode: this.mode === 'reply' ? undefined : this.inputToCode(action),
+
         action: this.mode,
+        formAction: action,
         doDelete: this.deleteCheckbox?.isSelected(),
         commentForm: this,
       }));
