@@ -4,15 +4,15 @@
   "description": "A JavaScript shell for wiki talk pages.",
   "scripts": {
     "build": "node buildConfigs && node buildI18n && webpack",
-    "start": "node buildConfigs && node buildI18n && cross-env NODE_OPTIONS=--max-old-space-size=2048 webpack serve --env dev",
-    "serve": "cross-env NODE_OPTIONS=--max-old-space-size=2048 webpack serve --env dev",
+    "start": "node buildConfigs && node buildI18n && cross-env NODE_OPTIONS=--max-old-space-size=2048 NODE_OPTIONS=--openssl-legacy-provider webpack serve --env dev",
+    "serve": "cross-env NODE_OPTIONS=--max-old-space-size=2048 NODE_OPTIONS=--openssl-legacy-provider webpack serve --env dev",
     "configs": "node buildConfigs",
     "deploy": "node --unhandled-rejections=strict deploy",
     "docs": "rimraf dist/docs && jsdoc --configure jsdoc/config.js --readme jsdoc/home.md",
     "i18n": "node buildI18n",
     "mirror": "git push --mirror https://gerrit.wikimedia.org/r/mediawiki/gadgets/ConvenientDiscussions",
     "webpack": "webpack",
-    "single": "node buildConfigs && node buildI18n && cross-env NODE_OPTIONS=--max-old-space-size=2048 webpack serve --env single",
+    "single": "node buildConfigs && node buildI18n && cross-env NODE_OPTIONS=--max-old-space-size=2048 NODE_OPTIONS=--openssl-legacy-provider webpack serve --env single",
     "test": "jest"
   },
   "browser": "src/app.js",
