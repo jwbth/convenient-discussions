@@ -786,7 +786,10 @@ class Section extends SectionSkeleton {
     }
 
     const actionsElement = document.createElement(this.level === 2 ? 'div' : 'span');
-    actionsElement.className = 'cd-section-actions';
+    actionsElement.className = [
+      'cd-section-actions',
+      this.level === 2 ? 'cd-topic-actions' : 'cd-subsection-actions',
+    ].filter(defined).join(' ');
     actionsElement.append(
       ...[copyLinkButton, moreMenuSelectDummy]
         .filter(defined)

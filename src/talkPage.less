@@ -10,13 +10,14 @@
   }
 }
 
-.cd-section-button.cd-section-button,
-.cd-thread-button.cd-thread-button {
-  vertical-align: baseline;
+.cd-section-button.cd-section-button.cd-section-button,
+.cd-thread-button.cd-thread-button.cd-thread-button.cd-thread-button {
+  direction: var(--cd-direction-user);
+  display: block;
+  margin-inline-start: -1px;
 
   > .oo-ui-buttonElement-button {
     white-space: normal;
-    vertical-align: baseline;
   }
 }
 
@@ -53,20 +54,12 @@ ol > .cd-thread-button-container > .cd-thread-button {
   }
 }
 
-// Compensation for the 1px border
-.cd-section-button.cd-section-button.cd-section-button,
-.cd-thread-button.cd-thread-button.cd-thread-button.cd-thread-button {
-  margin-inline-start: -1px;
-}
-
 .cd-thread-button-invisible {
   visibility: hidden;
 }
 
 // Need to override `.cd-thread-button.cd-thread-button.cd-thread-button.cd-thread-button`
 .cd-button-expandNote.cd-button-expandNote.cd-button-expandNote.cd-button-expandNote {
-  direction: var(--cd-direction-user);
-
   > .oo-ui-buttonElement-button {
     padding-inline: 1em 0;
 
@@ -77,20 +70,19 @@ ol > .cd-thread-button-container > .cd-thread-button {
       background-size: 7px 12px;
       background-position: 0 0.285714em;
       inset-inline: 0 auto;
-    }
 
-    .sitedir-ltr &,
-    .sitedir-rtl .mw-content-ltr & {
-      > .oo-ui-iconElement-icon {
+      .ltr & {
         transform: none;
       }
-    }
 
-    .sitedir-rtl &,
-    .sitedir-ltr .mw-content-rtl & {
-      > .oo-ui-iconElement-icon {
+      .rtl & {
         transform: scaleX(-1);
       }
+    }
+
+    > .oo-ui-labelElement-label {
+      direction: var(--cd-direction-user);
+      unicode-bidi: embed;
     }
   }
 }

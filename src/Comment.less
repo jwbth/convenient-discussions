@@ -1,18 +1,22 @@
-.cd-comment-header {
+.cd-comment-header,
+.cd-comment-menu {
   font-size: 0.9285714em;
+  line-height: 1.6153846;
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 1em;
+  align-items: baseline;
+  direction: var(--cd-direction-user);
+}
+
+.cd-comment-header {
   margin-bottom: 0.2307692em;
 }
 
 .cd-comment-menu {
-  font-size: 0.9285714em;
   margin-top: 0.3076923em;
   -webkit-user-select: none;
   user-select: none;
-}
-
-.cd-comment-header,
-.cd-comment-menu {
-  line-height: 1.6153846;
 }
 
 .cd-comment-author {
@@ -30,12 +34,6 @@
 }
 
 .cd-comment-button {
-  margin-inline: 1em 0;
-
-  &:first-child {
-    margin-inline: 0;
-  }
-
   &-label.cd-comment-button-label.cd-comment-button-label {
     color: #54595d;
     text-decoration: none;
@@ -51,7 +49,7 @@
 
   &-icon {
     display: inline-block;
-    vertical-align: text-bottom;
+    align-self: center;
     margin-bottom: -1px;
     width: 16px;
     height: 16px;
@@ -80,20 +78,6 @@
     &:active {
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%23faa700'%3E%3Cpath d='M10 15L2 5h16z'/%3E%3C/g%3E%3C/svg%3E");
     }
-  }
-}
-
-// Comment buttons should inherit the text direction, no matter the interface language. If the
-// `.mw-content-rtl` class will be thrown away one day, then use `[dir="rtl"]`. (Don't specify
-// styles for `[dir="ltr"]` as they could be expensive.)
-.mw-content-rtl {
-  .cd-comment-menu .cd-comment-button,
-  .cd-comment-header .cd-comment-author-wrapper a {
-    unicode-bidi: isolate;
-  }
-
-  .cd-comment-timestamp {
-    unicode-bidi: plaintext;
   }
 }
 

@@ -9,25 +9,30 @@ ol .cd-section-button {
 
 // Override the default styles to make the section menu appear correctly on RTL wikis with LTR
 // interface and vice versa, when the `.mw-editsection` block stretches across multiple lines. TODO:
-// do it upstream.
+// do it upstream?
 .mw-editsection::before {
-  .sitedir-rtl.ltr & {
+  .ltr.sitedir-rtl & {
     content: '\200B\200E';
   }
 
-  .sitedir-ltr.rtl & {
+  .rtl.sitedir-ltr & {
     content: '\200B\200F';
   }
 }
 
-// Fix MediaWiki. TODO: do it upstream.
-.sitedir-rtl.ltr {
+// Fix MediaWiki. `margin-inline` seems to be inapplicable here, because we don't have the right
+// `direction` value here (and `content` is used with `::before` for the same reason). TODO: do it
+// upstream. This already exists in VisualEditor.
+.ltr.sitedir-rtl,
+.rtl.sitedir-ltr {
   .mw-editsection-bracket:first-of-type {
-    margin-inline: 0.25em 0;
+    margin-right: 0.25em;
+    margin-left: 0;
   }
 
   .mw-editsection-bracket:last-of-type {
-    margin-inline: 0 0.25em;
+    margin-left: 0.25em;
+    margin-right: 0;
   }
 }
 
@@ -47,6 +52,10 @@ ol .cd-section-button {
   flex-wrap: wrap;
   direction: var(--cd-direction-user);
 
+  .ext-discussiontools-visualenhancements-enabled .ext-discussiontools-init-section + & {
+    margin-top: -10px;
+  }
+
   &-item {
     display: block;
 
@@ -63,6 +72,8 @@ ol .cd-section-button {
     line-height: 1.42857143em;
 
     white-space: nowrap;
+
+    // To have "+7 new" rendered correctly in English on RTL sites
     unicode-bidi: plaintext;
 
     &-authorCount-innerWrapper {
@@ -98,15 +109,12 @@ ol .cd-section-button {
   &-moremenu > .oo-ui-buttonElement-button > .oo-ui-iconElement-icon.oo-ui-iconElement-icon {
     background-size: 16px 16px;
   }
-
-  .ext-discussiontools-visualenhancements-enabled .ext-discussiontools-init-section + & {
-    margin-top: -10px;
-  }
 }
 
 .cd-section-metadata {
   display: flex;
   flex-wrap: wrap;
+  direction: var(--cd-direction-user);
 
   &-authorsPopup {
     font-size: 0.8125rem;
@@ -124,11 +132,33 @@ ol .cd-section-button {
 }
 
 .cd-section-actions {
-  font-weight: normal;
   white-space: nowrap;
+  direction: var(--cd-direction-user);
+}
+
+.cd-topic-actions {
   margin-inline-start: auto;
   margin-inline-end: -0.4615385em;
   padding-inline-start: 1.5em;
+}
+
+// `margin-inline` and `padding-inline` are inapplicable here.
+.cd-subsection-actions {
+  font-weight: normal;
+
+  .sitedir-ltr &,
+  .sitedir-rtl .mw-content-ltr & {
+    margin-left: auto;
+    margin-right: -0.4615385em;
+    padding-left: 1.5em;
+  }
+
+  .sitedir-rtl &,
+  .sitedir-ltr .mw-content-rtl & {
+    margin-left: -0.4615385em;
+    margin-right: auto;
+    padding-right: 1.5em;
+  }
 }
 
 .cd-subsection-heading {

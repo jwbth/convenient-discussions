@@ -369,7 +369,8 @@ class Comment extends CommentSkeleton {
   replaceSignatureWithHeader() {
     const pagesToCheckExistence = [];
 
-    this.headerElement = this.constructor.prototypes.get('headerElement');
+    const headerWrapper = this.constructor.prototypes.get('headerWrapperElement');
+    this.headerElement = headerWrapper.firstChild;
     const authorWrapper = this.headerElement.firstChild;
     const authorLink = authorWrapper.firstChild;
     const authorLinksWrapper = authorLink.nextElementSibling;
@@ -473,7 +474,7 @@ class Comment extends CommentSkeleton {
 
     this.rewrapHighlightables();
 
-    this.highlightables[0].insertBefore(this.headerElement, this.highlightables[0].firstChild);
+    this.highlightables[0].insertBefore(headerWrapper, this.highlightables[0].firstChild);
 
     if (!this.extraSignatures.length) {
       this.cleanUpSignature();
@@ -506,7 +507,12 @@ class Comment extends CommentSkeleton {
     this.addThankButton();
     this.addGoToParentButton();
 
-    this.highlightables[this.highlightables.length - 1].appendChild(this.menuElement);
+    // We need a wrapper to ensure correct positioning in LTR-in-RTL situations and vice versa.
+    const menuWrapper = document.createElement('div');
+    menuWrapper.className = 'cd-comment-menu-wrapper';
+    menuWrapper.appendChild(this.menuElement);
+
+    this.highlightables[this.highlightables.length - 1].appendChild(menuWrapper);
   }
 
   /**
@@ -3691,7 +3697,12 @@ class Comment extends CommentSkeleton {
       authorLinksWrapper.append(cd.mws('parentheses-end'));
       authorWrapper.append(' ', authorLinksWrapper);
 
-      this.prototypes.add('headerElement', headerElement);
+      // We need a wrapper to ensure correct positioning in LTR-in-RTL situations and vice versa.
+      const headerWrapper = document.createElement('div');
+      headerWrapper.className = 'cd-comment-header-wrapper';
+      headerWrapper.appendChild(headerElement);
+
+      this.prototypes.add('headerWrapperElement', headerWrapper);
     }
 
     /* OOUI buttons. Creating every OOUI button using the constructor takes 15 times longer than
