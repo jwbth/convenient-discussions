@@ -600,18 +600,17 @@ class CommentSource {
   }
 
   /**
-   * Determine an offset in the code to insert a reply to the comment into.
-   *
-   * @param {string} contextCode
-   * @returns {string}
-   * @private
+   * _For internal use._ Determine an offset in the code to insert a reply to the comment into and
+   * set it to the instance.
    */
-  findProperPlaceForReply(contextCode) {
+  findProperPlaceForReply() {
     let currentIndex = this.endIndex;
 
     const adjustedChunkCodeAfter = this.constructor.getAdjustedChunkCodeAfter(
       currentIndex,
-      contextCode
+      this.isInSectionContext ?
+        this.comment.section.presumedCode :
+        this.comment.getSourcePage().code
     );
     if (/^ +\x02/.test(adjustedChunkCodeAfter)) {
       throw new CdError({
@@ -665,7 +664,7 @@ class CommentSource {
 
     currentIndex += adjustedCodeBetween.length;
 
-    return currentIndex;
+    this.replyIndex = currentIndex;
   }
 
   /**
@@ -673,39 +672,30 @@ class CommentSource {
    *
    * @param {object} options
    * @param {'reply'|'edit'} options.action
-   * @param {'submit'|'viewChanged'|'preview'} options.formAction
    * @param {string} [options.commentCode] Comment code, including trailing newlines, indentation
    *   characters, and the signature.
    * @param {boolean} [options.doDelete] Whether to delete the comment.
    * @param {string} [options.contextCode] Code that has the comment. Usually not needed; provide it
    *   only if you need to perform operations on some code that is not the code of a section or
    *   page).
-   * @param {import('./CommentForm').default} [options.commentForm] Comment form that has the code.
-   *   Can be not set if `commentCode` is set or `action` is `'edit'`.
    * @returns {object}
    * @throws {CdError}
    */
   modifyContext({
     action,
-    formAction,
     commentCode,
     contextCode: originalContextCode = this.isInSectionContext ?
       this.comment.section.presumedCode :
       this.comment.getSourcePage().code,
     doDelete,
-    commentForm,
   }) {
     let contextCode;
     switch (action) {
       case 'reply': {
-        // This also sets .isReplyOutdented which CommentForm#inputToCode will need.
-        const currentIndex = this.findProperPlaceForReply(originalContextCode);
-
-        commentCode ??= commentForm.inputToCode(formAction);
         contextCode = (
-          originalContextCode.slice(0, currentIndex) +
+          originalContextCode.slice(0, this.replyIndex) +
           commentCode +
-          originalContextCode.slice(currentIndex)
+          originalContextCode.slice(this.replyIndex)
         );
         break;
       }
@@ -746,7 +736,6 @@ class CommentSource {
             }
           }
 
-          commentCode ??= commentForm.inputToCode(formAction);
           contextCode = originalContextCode.slice(0, startIndex) + originalContextCode.slice(endIndex);
         } else {
           contextCode = (

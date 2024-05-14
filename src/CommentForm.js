@@ -2391,6 +2391,10 @@ class CommentForm {
     let code = this.commentInput.getValue();
     code = cd.config.preTransformCode?.(code, this) || code;
 
+    if (this.mode === 'reply') {
+      this.target.source?.findProperPlaceForReply();
+    }
+
     const transformer = new CommentFormInputTransformer(code, this, action);
 
     /**
@@ -2501,14 +2505,8 @@ class CommentForm {
     let commentCode;
     try {
       ({ contextCode, commentCode } = this.target.source.modifyContext({
-        // Ugly solution to avoid overcomplication of code: for replies, we need to get
-        // CommentSource#isReplyOutdented set for `action === 'reply'` which we don't have so far.
-        // So let CommentSource#modifyContext compute it. In the rest of cases just get the comment
-        // code.
-        commentCode: this.mode === 'reply' ? undefined : this.inputToCode(action),
-
+        commentCode: this.inputToCode(action),
         action: this.mode,
-        formAction: action,
         doDelete: this.deleteCheckbox?.isSelected(),
         commentForm: this,
       }));
