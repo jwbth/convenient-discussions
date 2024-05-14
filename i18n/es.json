@@ -366,5 +366,6 @@
 	"ellipsis": "…",
 	"loading-ellipsis": "Cargando…",
 	"addtopic": "Añadir tema",
-	"addtopicbutton-tooltip": "Abre en una nueva pestaña para crear un nuevo tema en la página estándar, fuera de Discusiones Prácticas"
+	"addtopicbutton-tooltip": "Abre en una nueva pestaña para crear un nuevo tema en la página estándar, fuera de Discusiones Prácticas",
+	"copy": "Copiar"
 }

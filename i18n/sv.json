@@ -402,5 +402,6 @@
 	"ellipsis": "…",
 	"loading-ellipsis": "Läser in...",
 	"addtopic": "Lägg till ämne",
-	"addtopicbutton-tooltip": "Öppna i en flik för att skapa ett nytt ämne på den vanliga sidan, inte i Angenäma diskussioner"
+	"addtopicbutton-tooltip": "Öppna i en flik för att skapa ett nytt ämne på den vanliga sidan, inte i Angenäma diskussioner",
+	"copy": "Kopiera"
 }

@@ -45,6 +45,7 @@
 	"es-move-from": "[[$1]] کنوں ٹورو",
 	"es-move-to": "[[$1]] تے ٹورو",
 	"cf-headline-topic": "موضوع",
+	"cf-comment-placeholder": "عبارت",
 	"cf-summary-placeholder": "تبدیلی دا خلاصہ",
 	"cf-save": "بچاؤ",
 	"cf-save-short": "بچاؤ",
@@ -115,5 +116,6 @@
 	"dot-separator": "&nbsp;<b>·</b>&#32;",
 	"ellipsis": "…",
 	"loading-ellipsis": "لوڈ تھین٘دا پئے۔۔۔",
-	"addtopic": "موضوع شامل کرو"
+	"addtopic": "موضوع شامل کرو",
+	"copy": "نقل کرو"
 }

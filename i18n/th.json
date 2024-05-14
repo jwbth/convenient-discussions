@@ -164,5 +164,6 @@
 	"lp-comment-watchedsection": "คุณสมัครรับในส่วนนี้",
 	"loading-ellipsis": "กำลังโหลด…",
 	"addtopic": "เพิ่มหัวข้อ",
-	"addtopicbutton-tooltip": "เปิดในแท็บใหม่เพื่อสร้างหัวข้อใหม่บนหน้ามาตรฐาน ไม่ใช่ใน Convenient Discussions"
+	"addtopicbutton-tooltip": "เปิดในแท็บใหม่เพื่อสร้างหัวข้อใหม่บนหน้ามาตรฐาน ไม่ใช่ใน Convenient Discussions",
+	"copy": "คัดลอก"
 }

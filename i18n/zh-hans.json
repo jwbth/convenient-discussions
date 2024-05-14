@@ -461,5 +461,6 @@
 	"loading-ellipsis": "正在加载…",
 	"addtopic": "添加话题",
 	"addtopicbutton-tooltip": "在新选项卡中打开以使用标准页面而非快捷讨论来创建新话题",
-	"pseudolink-tooltip": "点击插入"
+	"pseudolink-tooltip": "点击插入",
+	"copy": "复制"
 }

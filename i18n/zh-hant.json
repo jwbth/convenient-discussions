@@ -449,5 +449,6 @@
 	"loading-ellipsis": "載入中…",
 	"addtopic": "新增話題",
 	"addtopicbutton-tooltip": "在新分頁中開啟以使用標準頁面而非快捷討論來建立新主題",
-	"pseudolink-tooltip": "點選插入"
+	"pseudolink-tooltip": "點選插入",
+	"copy": "複製"
 }

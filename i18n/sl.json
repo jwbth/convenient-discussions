@@ -115,6 +115,7 @@
 	"es-move-to": "prestavljeno na [[$1]]",
 	"cf-headline-topic": "Zadeva",
 	"cf-headline-subsection": "Zadeva podrazdelka »$1«",
+	"cf-comment-placeholder": "Besedilo",
 	"cf-comment-placeholder-replytosection": "Odgovor na »$1«",
 	"cf-comment-placeholder-replytocomment": "Odgovor na {{gender:$2|}}$1",
 	"cf-summary-placeholder": "Povzetek urejanja",
@@ -201,7 +202,7 @@
 	"dn-confirm-yes": "Da",
 	"dn-confirm-no": "Ne",
 	"dn-grantpermission": "Podeli dovoljenje mestu.",
-	"dn-grantpermission-again": "V nastavitvah Priročnih razprav imate vklopljena namizna obvestila, vendar jih mesto ne sme pošiljati. Podelite mestu dovoljenje za prejemanje obvestil ali to zavrnite, da preprečite ponovni prikaz tega sporočila.",
+	"dn-grantpermission-again": "V nastavitvah Priročnih razprav imate vklopljena namizna obvestila, vendar jih mesto ne sme pošiljati. Podelite mestu dovoljenje v pojavnem oknu ali to zavrnite, da preprečite ponovni prikaz tega sporočila.",
 	"deadanchor-section-lead": "Razdelka »$1« na strani ni bilo mogoče najti.",
 	"deadanchor-section-exactmatch": "Videti je, da je razdelek »$1« arhiviran. <b>[[$2|Oglejte si arhivirani razdelek]]</b> (ali [$3 ga poiščite v arhivu]).",
 	"deadanchor-section-inexactmatch": "Videti je, da je razdelek »$1« arhiviran. [$2 Poiščite ga v arhivu].",
@@ -228,6 +229,7 @@
 	"newtopicssubscription-popup-text": "Zdaj se lahko naročite na pogovorne strani. Če se boste naročili na stran, boste prejemali obvestila, ko se bodo na strani začnejo nove teme. Če se želite naročiti na stran, kliknite »{{int:discussiontools-newtopicssubscription-button-subscribe-label}}« v meniju dejanj strani.",
 	"popup-manyForms-title": "Ste vedeli?",
 	"popup-manyForms-text": "V Priročnih razpravah lahko vnesete več komentarjev hkrati v ločene obrazce in jih nato pošljete enega za drugim. Besedilo v drugih obrazcih ne bo izgubljeno, ko oddate enega od obrazcev. Poskusite!",
+	"popup-upload-text": "Zdaj lahko zaslonske posnetke nalagate v Zbirko s tremi kliki! Samo prilepite ali povlecite sliko v vnos komentarja, izberite prednastavitev in kliknite »{{int:convenient-discussions-ud-uploadandsave}}«.",
 	"navpanel-refresh": "Osveži stran",
 	"navpanel-previous": "Pojdi na prejšnji nov komentar",
 	"navpanel-next": "Pojdi na naslednji nov komentar",
@@ -397,5 +399,6 @@
 	"ellipsis": "…",
 	"loading-ellipsis": "Nalaganje ...",
 	"addtopic": "Dodaj temo",
-	"addtopicbutton-tooltip": "Odprite v novem zavihku, da ustvarite novo temo na standardni strani, ne v Priročnih razpravah"
+	"addtopicbutton-tooltip": "Odprite v novem zavihku, da ustvarite novo temo na standardni strani, ne v Priročnih razpravah",
+	"copy": "Kopiraj"
 }

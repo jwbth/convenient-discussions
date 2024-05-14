@@ -199,5 +199,6 @@
 	"lp-comment-tooltip": "Przejdź do komentarza",
 	"loading-ellipsis": "Wczytywanie…",
 	"addtopic": "Dodaj temat",
-	"addtopicbutton-tooltip": "Otwórz w nowej karcie, aby utworzyć nowy temat na standardowej stronie, a nie w wygodnych dyskusjach"
+	"addtopicbutton-tooltip": "Otwórz w nowej karcie, aby utworzyć nowy temat na standardowej stronie, a nie w wygodnych dyskusjach",
+	"copy": "Kopiuj"
 }

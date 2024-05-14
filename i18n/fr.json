@@ -423,5 +423,6 @@
 	"loading-ellipsis": "Chargement en cours...",
 	"addtopic": "Ajouter un sujet",
 	"addtopicbutton-tooltip": "Ouvrir dans un nouvel onglet pour créer un nouveau sujet sur la page standard, et pas dans les Discussions pratiques.",
-	"pseudolink-tooltip": "Cliquer pour insérer"
+	"pseudolink-tooltip": "Cliquer pour insérer",
+	"copy": "Copier"
 }
