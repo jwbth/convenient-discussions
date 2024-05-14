@@ -454,7 +454,12 @@ export default {
    */
   configureClosePageConfirmation() {
     controller.addPreventUnloadCondition('commentForms', () => {
-      this.saveSession(true);
+      // Check for altered comment forms - if there are none, don't save the session to decrease the
+      // chance of the situation where a user had two same pages in different tabs and lost a form
+      // in other tab after saving nothing in this tab.
+      if (this.getLastActiveAltered()) {
+        this.saveSession(true);
+      }
       return (
         mw.user.options.get('useeditwarning') &&
         (
