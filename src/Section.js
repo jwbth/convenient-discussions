@@ -171,8 +171,10 @@ class Section extends SectionSkeleton {
     }
 
     // Don't set more DOM properties to help performance. We don't need them in practice.
+    const element = this.constructor.prototypes.get('replyButton');
     const button = new Button({
-      element: this.constructor.prototypes.get('replyButton'),
+      element: element,
+      buttonElement: element.firstChild,
       action: () => {
         this.reply();
       },
@@ -229,6 +231,7 @@ class Section extends SectionSkeleton {
     const element = this.constructor.prototypes.get('addSubsectionButton');
     const button = new Button({
       element,
+      buttonElement: element.firstChild,
       labelElement: element.querySelector('.oo-ui-labelElement-label'),
       label: cd.s('section-addsubsection-to', this.headline),
       action: () => {

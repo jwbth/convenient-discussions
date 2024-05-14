@@ -404,12 +404,13 @@ class Thread {
    * @private
    */
   addExpandNode(loadUserGendersPromise) {
-    const expandButton = this.constructor.prototypes.get('expandButton');
+    const element = this.constructor.prototypes.get('expandButton');
     const button = new Button({
       tooltip: cd.s('thread-expand-tooltip', cd.g.cmdModifier),
       action: this.onExpandNoteClick.bind(this),
-      element: expandButton,
-      labelElement: expandButton.querySelector('.oo-ui-labelElement-label'),
+      element: element,
+      buttonElement: element.firstChild,
+      labelElement: element.querySelector('.oo-ui-labelElement-label'),
     });
     const usersInThread = this.getUsersInThread();
     const userList = usersInThread
