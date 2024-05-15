@@ -642,13 +642,17 @@ class Thread {
   updateLine({ elementsToAdd, threadsToUpdate, scrollX, scrollY, floatingRects }) {
     const getLeft = (rectOrOffset, commentMargins, dir) => {
       let offset;
+
+      // Don't round - we need a subpixel-precise value
+      const centerOffset = (lineWidth - 1) / 2 / cd.g.pixelDeviationRatio;
+
       if (dir === 'ltr') {
-        offset = rectOrOffset.left;
+        offset = rectOrOffset.left - centerOffset;
         if (commentMargins) {
           offset -= commentMargins.left + 1;
         }
       } else {
-        offset = rectOrOffset.right - lineWidth;
+        offset = rectOrOffset.right - lineWidth + centerOffset;
         if (commentMargins) {
           offset += commentMargins.right + 1;
         }

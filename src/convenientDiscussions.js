@@ -555,6 +555,14 @@ Object.assign(cd.g, {
     typeof window.orientation !== 'undefined'
   ),
 
+  // Some users increase the font size (zoom), which leads to some short distances jumping between
+  // 3px and 4px and similar. With the help of this value, we can make all widths look the same by
+  // using a variable that stores deviation from standard values.
+  pixelDeviationRatio: window.devicePixelRatio >= 4 ? window.devicePixelRatio / 4 :
+    window.devicePixelRatio >= 3 ? window.devicePixelRatio / 3 :
+      window.devicePixelRatio >= 2 ? window.devicePixelRatio / 2 :
+        window.devicePixelRatio / 1,
+
   isDtReplyToolEnabled: bodyClassList.contains('ext-discussiontools-replytool-enabled'),
   isDtNewTopicToolEnabled: bodyClassList.contains('ext-discussiontools-newtopictool-enabled'),
   isDtTopicSubscriptionEnabled: bodyClassList

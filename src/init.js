@@ -695,6 +695,7 @@ export default {
   --cd-float-content-start: ${floatContentStart};
   --cd-float-content-end: ${floatContentEnd};
   --cd-gradient-user-start: ${gradientUserStart};
+  --cd-pixel-deviation-ratio: ${cd.g.pixelDeviationRatio};
 }`);
     if (cd.config.outdentClass) {
       mw.loader.addStyleTag(`.cd-parsed .${cd.config.outdentClass} {
@@ -713,7 +714,7 @@ export default {
     require('./Comment.less');
     require('./CommentForm.less');
     require('./Section.less');
-    require('./commentLayers.less');
+    require('./Comment.layers.less');
     require('./navPanel.less');
     require('./pageNav.less');
     require('./skins.less');
@@ -998,7 +999,7 @@ export default {
     patterns();
     prototypes();
     if (settings.get('useBackgroundHighlighting')) {
-      require('./commentLayers-optionalBackgroundHighlighting.less');
+      require('./Comment.layers.optionalBackgroundHighlighting.less');
     }
     $.fn.extend(jqueryExtensions);
     initDayjs();

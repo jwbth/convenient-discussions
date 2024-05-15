@@ -57,7 +57,7 @@
 .cd-comment-overlay-marker {
   position: absolute;
   top: 0;
-  width: 3px;
+  width: calc(3px / var(--cd-pixel-deviation-ratio));
   height: 100%;
 
   .cd-comment-overlay-new &,
@@ -76,14 +76,6 @@
   .cd-comment-overlay-target.cd-comment-overlay-target & {
     background-color: var(--cd-comment-target-marker-color);
   }
-}
-
-.cd-comment-overlay-line-gapCloser {
-  position: absolute;
-  top: 0;
-  width: 1px;
-  height: 100%;
-  background-color: #c8ccd1;
 }
 
 .cd-comment-overlay-innerWrapper {
@@ -144,7 +136,16 @@
 
 .cd-comment-overlay-marker,
 .cd-comment-overlay-line {
+  inset-inline-start: calc(-1px - (1px / var(--cd-pixel-deviation-ratio)));
+}
+
+.cd-comment-overlay-line-gapCloser {
+  position: absolute;
+  top: 0;
   inset-inline-start: -1px;
+  width: calc(1px / var(--cd-pixel-deviation-ratio));
+  height: 100%;
+  background-color: #c8ccd1;
 }
 
 .cd-comment-button-ooui.cd-comment-button-ooui {
