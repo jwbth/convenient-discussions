@@ -208,7 +208,6 @@ export async function showConfirmDialog(message, options = {}) {
  * @param {string} [options.classes]
  * @param {string} [options.maxLength]
  * @param {string} [options.help]
- * @param {string} [options.title]
  * @returns {CreateTextFieldReturn}
  */
 export function createTextField({
@@ -218,7 +217,6 @@ export function createTextField({
   classes,
   label,
   help,
-  title,
 }) {
   const input = new (require('./TextInputWidget').default)({ value, maxLength, required, classes });
   const field = new OO.ui.FieldLayout(input, {
@@ -226,7 +224,6 @@ export function createTextField({
     align: 'top',
     help,
     helpInline: true,
-    title,
   });
   return { field, input };
 }
@@ -247,7 +244,6 @@ export function createTextField({
  * @param {string} [options.max]
  * @param {string} [options.buttonStep]
  * @param {string} [options.help]
- * @param {string} [options.title]
  * @param {string[]} [options.classes]
  * @returns {CreateNumberFieldReturn}
  */
@@ -258,7 +254,6 @@ export function createNumberField({
   max,
   buttonStep = 1,
   help,
-  title,
   classes,
 }) {
   const input = new OO.ui.NumberInputWidget({
@@ -274,7 +269,6 @@ export function createNumberField({
     align: 'top',
     help,
     helpInline: true,
-    title,
     classes,
   });
   return { field, input };
@@ -296,7 +290,6 @@ export function createNumberField({
  * @param {boolean} [options.disabled]
  * @param {string} [options.help]
  * @param {string} [options.tabIndex]
- * @param {string} [options.title]
  * @param {string[]} [options.classes]
  * @returns {CreateCheckboxFieldReturn}
  */
@@ -307,7 +300,6 @@ export function createCheckboxField({
   label,
   help,
   tabIndex,
-  title,
   classes,
 }) {
   const input = new (require('./CheckboxInputWidget').default)({
@@ -321,7 +313,6 @@ export function createCheckboxField({
     align: 'inline',
     help,
     helpInline: true,
-    title,
     classes,
   });
   return { field, input };

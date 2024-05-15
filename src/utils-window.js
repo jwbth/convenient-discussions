@@ -8,7 +8,7 @@ import Button from './Button';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import Parser from './Parser';
 import cd from './cd';
-import { parseWikiUrl, isInline, removeFromArrayIfPresent } from './utils-general';
+import { parseWikiUrl, isInline, removeFromArrayIfPresent, defined } from './utils-general';
 
 /**
  * @typedef {object} WrapCallbacks
@@ -64,10 +64,11 @@ export function wrapHtml(html, options = {}) {
  * @returns {string}
  */
 export function wrapDiffBody(body) {
-  const className = ['diff']
-    .concat(mw.user.options.get('editfont') === 'monospace' ? 'diff-editfont-monospace' : [])
-    .concat('diff-contentalign-' + (cd.g.contentDirection === 'ltr' ? 'left' : 'right'))
-    .join(' ');
+  const className = [
+    'diff',
+    mw.user.options.get('editfont') === 'monospace' ? 'diff-editfont-monospace' : undefined,
+    'diff-contentalign-' + (cd.g.contentDirection === 'ltr' ? 'left' : 'right'),
+  ].filter(defined).join(' ');
   return (
     `<table class="${className}">` +
     '<col class="diff-marker"><col class="diff-content">' +
