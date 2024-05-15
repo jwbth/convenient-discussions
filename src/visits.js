@@ -9,7 +9,7 @@ import { mixEventEmitterIntoObject } from './utils-oojs';
 
 export default {
   init() {
-    // Do it here because `OO.EventEmitter` can be unavailable when this module is first imported.
+    // Do it here because OO.EventEmitter can be unavailable when this module is first imported.
     mixEventEmitterIntoObject(this);
   },
 
@@ -28,7 +28,7 @@ export default {
     if (!cd.user.isRegistered()) return;
 
     try {
-      // `mw.user.options` is not used even on first run because it appears to be cached sometimes
+      // mw.user.options is not used even on first run because it appears to be cached sometimes
       // which can be critical for determining subscriptions.
       this.unpack(await getUserInfo(reuse).then(({ visits }) => visits));
     } catch (e) {
@@ -72,7 +72,7 @@ export default {
     // * another comment should be added at the same minute as our visit but later.
     //
     // We could decide that not marking unseen comments as seen is an absolute priority and remove
-    // the `timeConflict` stuff.
+    // the timeConflict stuff.
     this.currentPageData.push(String(currentTime + timeConflict * 60));
 
     this.save();
@@ -101,7 +101,7 @@ export default {
         this.currentPageData[i] < currentTime - 60 * settings.get('highlightNewInterval') ||
 
         // Add this condition for rare cases when the time of the previous visit is later than the
-        // current time (see `timeConflict`). In that case, when `highlightNewInterval` is set to 0,
+        // current time (see timeConflict). In that case, when highlightNewInterval is set to 0,
         // the user shouldn't get comments highlighted again all of a sudden.
         !settings.get('highlightNewInterval') ||
 

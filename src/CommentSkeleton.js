@@ -256,7 +256,7 @@ class CommentSkeleton {
 
       // Cases when the comment has no wrapper that contains only that comment (for example,
       // https://ru.wikipedia.org/wiki/Project:Форум/Архив/Технический/2020/10#202010140847_AndreiK).
-      // The second parameter of `.getElementsByClassName()` is an optimization for the worker
+      // The second parameter of .getElementsByClassName() is an optimization for the worker
       // context.
       farthestInlineAncestor.parentNode.getElementsByClassName('cd-signature', 2).length > 1 ||
 
@@ -376,7 +376,7 @@ class CommentSkeleton {
     return (
       element.tagName === 'UL' &&
 
-      // Portal boxes of https://en.wikipedia.org/wiki/Template:Portal have `role="navigation"`
+      // Portal boxes of https://en.wikipedia.org/wiki/Template:Portal have role="navigation"
       (element.classList.contains('gallery') || element.getAttribute('role') === 'navigation')
     );
   }
@@ -428,10 +428,10 @@ class CommentSkeleton {
     // "tagName !== 'OL'" helps in cases like
     // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202005161120_Example.
     if (checkNextElement && !result && nextElement && tagName !== 'OL') {
-      // Cases like https://en.wikipedia.org/?diff=1042059387 where, due to use of `::` in reply to
-      // a `*` comment, Space4Time3Continuum2x could be interpreted as the author of the SPECIFICO's
-      // comment. (Currently, to test this, you will need to remove timestamps from the SPECIFICO's
-      // comment.)
+      // Cases like https://en.wikipedia.org/?diff=1042059387 where, due to the use of `::` in reply
+      // to a `*` comment, Space4Time3Continuum2x could be interpreted as the author of the
+      // SPECIFICO's comment. (Currently, to test this, you will need to remove timestamps from the
+      // SPECIFICO's comment.)
       const elementLevelsPassed = this.parser.getTopElementsWithText(element).levelsPassed;
       const nextElementLevelsPassed = this.parser.getTopElementsWithText(nextElement).levelsPassed;
       result = (
@@ -498,9 +498,9 @@ class CommentSkeleton {
    * @returns {boolean}
    */
   isIntro({ step, stage, node, nextNode, lastPartNode, previousPart }) {
-    // Only the first `stage` code (in `CommentSkeleton#traverseDom()`) covers cases when there is
+    // Only the first `stage` code (in CommentSkeleton#traverseDom()) covers cases when there is
     // only one comment part eventually (a list item, for example), and only the second `stage` code
-    // (in `CommentSkeleton#filterParts()`) fully covers comments indented with `:`).
+    // (in CommentSkeleton#filterParts()) fully covers comments indented with `:`).
 
     return (
       step === 'back' &&
@@ -543,7 +543,7 @@ class CommentSkeleton {
       ) &&
 
       // Exceptions like https://ru.wikipedia.org/w/index.php?diff=105007602#202002071806_G2ii2g.
-      // Supplying `true` as the second parameter to `this.isIntroList()` at stage 1 is costly so we
+      // Supplying `true` as the second parameter to this.isIntroList() at stage 1 is costly so we
       // do it only at stage 2.
       !(
         (
@@ -582,7 +582,7 @@ class CommentSkeleton {
       part.step !== 'back' ||
       part.node.tagName !== 'LI' ||
 
-      // Here we, in fact, hardcode `wgDiscussionToolsReplyIndentation` = `'bullet'` for ruwiki.
+      // Here we, in fact, hardcode wgDiscussionToolsReplyIndentation = 'bullet' for ruwiki.
       cd.g.serverName === 'ru.wikipedia.org'
     ) {
       return false;
@@ -677,7 +677,7 @@ class CommentSkeleton {
         isHeading = isHeadingNode(node);
         hasCurrentSignature = node.contains(this.signatureElement);
 
-        // The second parameter of `.getElementsByClassName()` is an optimization for the worker
+        // The second parameter of .getElementsByClassName() is an optimization for the worker
         // context.
         const signatureCount = node
           .getElementsByClassName('cd-signature', Number(hasCurrentSignature) + 1)
@@ -709,9 +709,9 @@ class CommentSkeleton {
           )
         );
 
-        // A trace from `~~~` at the end of the line most likely means an incorrectly signed
-        // comment. This is a pretty weak mechanism, effective in a very narrow range of cases, so
-        // we might drop it.
+        // A trace from ~~~ at the end of a line most likely means an incorrectly signed comment.
+        // This is a pretty weak mechanism, effective in a very narrow range of cases, so we might
+        // drop it.
         if (
           !hasCurrentSignature &&
           !isInline(node) &&
@@ -859,7 +859,7 @@ class CommentSkeleton {
   filterParts() {
     this.parts = this.parts.filter((part) => !part.hasForeignComponents && !part.isTextNode);
 
-    // `<style>` and `<link>` tags at the beginning. Also `<references>` tags and `{{reflist-talk}}`
+    // <style> and <link> tags at the beginning. Also <references> tags and {{reflist-talk}}
     // templates (will need to generalize this, possibly via wiki configuration, if other wikis
     // employ a differently named class).
     for (let i = this.parts.length - 1; i >= 1; i--) {
@@ -885,7 +885,7 @@ class CommentSkeleton {
         // https://ru.wikipedia.org/wiki/Википедия:Заявки_на_статус_администратора/Wikisaurus#c-Khidistavi-20240209164000-Против)
         this.parser.noSignatureElements.some((el) => el.contains(node)) ||
 
-        // In most cases outdent template will be filtered by `this.parser.rejectClasses`
+        // In most cases outdent template will be filtered by this.parser.rejectClasses
         (
           this.parts[i].step !== 'up' &&
           this.parser.context.areThereOutdents() &&
@@ -898,7 +898,7 @@ class CommentSkeleton {
       }
     }
 
-    // When the first comment part starts with `<br>`
+    // When the first comment part starts with <br>
     const firstNode = this.parts[this.parts.length - 1]?.node;
     if (firstNode.tagName === 'P') {
       if (firstNode.firstChild?.tagName === 'BR') {
@@ -1086,7 +1086,7 @@ class CommentSkeleton {
         // 0 or 1
         const currentSignatureCount = Number(parent.contains(this.signatureElement));
 
-        // A foreign signature can be found with just `.cd-signature` search; example:
+        // A foreign signature can be found with just .cd-signature search; example:
         // https://commons.wikimedia.org/?diff=566673258.
         if (parent.getElementsByClassName('cd-signature').length - currentSignatureCount === 0) {
           const listItems = this.parts.filter((part) => part.node.parentNode === parent);
@@ -1180,8 +1180,8 @@ class CommentSkeleton {
         // semantic correctness of the markup.
         (this.highlightables.length > 1 && el.tagName === 'LI' && el.parentNode.tagName === 'OL') ||
 
-        // This can run a second time from `.updateLevels()` → `.reviewDives()` →
-        // `.updateHighlightables()`, so the might have added the wrapper already.
+        // This can run a second time from .updateLevels() → .reviewDives() →
+        // .updateHighlightables(), so the might have added the wrapper already.
         (el.className && el.className !== 'cd-comment-replacedPart') ||
         el.getAttribute('style')
       ))
@@ -1454,7 +1454,7 @@ class CommentSkeleton {
    * @returns {?CommentSkeleton}
    */
   getParent(visual = false) {
-    // Note: `this.cachedParent.logicalLevel` can be overriden in `.processOutdents()`.
+    // Note: this.cachedParent.logicalLevel can be overriden in .processOutdents().
 
     const prop = visual ? 'level' : 'logicalLevel';
     this.cachedParent ||= {};
@@ -1672,9 +1672,9 @@ class CommentSkeleton {
 
           // Update levels for following comments.
           cd.comments.slice(commentIndex).some((comment) => {
-            // Since we traverse templates from the last to the first, `childComment.level` at
-            // this stage is the same as `childComment.logicalLevel` before we traverse the child
-            // comments. The same for `parentComment`.
+            // Since we traverse templates from the last to the first, childComment.level at
+            // this stage is the same as childComment.logicalLevel before we traverse the child
+            // comments. The same for parentComment.
             if (
               comment.section !== parentComment.section ||
               comment.logicalLevel < childComment.level ||

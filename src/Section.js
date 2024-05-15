@@ -480,9 +480,9 @@ class Section extends SectionSkeleton {
         // level.
         !nextSameLevelSection ||
 
-        // If the next section of the same level has another nesting level (e.g., is inside a
-        // `<div>` with a specific style), don't add the "Add subsection" button - it would appear
-        // in a wrong place.
+        // If the next section of the same level has another nesting level (e.g., is inside a <div>
+        // with a specific style), don't add the "Add subsection" button - it would appear in a
+        // wrong place.
         nextSameLevelSection.headingNestingLevel === this.headingNestingLevel
       )
     );
@@ -1787,7 +1787,7 @@ class Section extends SectionSkeleton {
       id: this.id,
 
       // We cache ancestors when saving the session, so this call will return the right value,
-      // despite the fact that `sectionRegistry.items` has already changed.
+      // despite the fact that sectionRegistry.items has already changed.
       ancestors: this.getAncestors().map((section) => section.headline),
     })?.section || null;
   }

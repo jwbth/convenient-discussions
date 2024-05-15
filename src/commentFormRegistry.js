@@ -29,7 +29,7 @@ export default {
    * _For internal use._ Initialize the registry.
    */
   init() {
-    // Do it here because `OO.EventEmitter` can be unavailable when this module is first imported.
+    // Do it here because OO.EventEmitter can be unavailable when this module is first imported.
     mixEventEmitterIntoObject(this);
 
     this.configureClosePageConfirmation();

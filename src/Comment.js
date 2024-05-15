@@ -1526,9 +1526,9 @@ class Comment extends CommentSkeleton {
    * layers.
    */
   updateLayersOffset() {
-    // The underlay can be absent if called from `commentRegistry.maybeRedrawLayers()` with
-    // `redrawAll` set to `true`. `layersOffset` can be absent in some rare cases when the comment
-    // became invisible.
+    // The underlay can be absent if called from commentRegistry.maybeRedrawLayers() with redrawAll
+    // set to `true`. layersOffset can be absent in some rare cases when the comment became
+    // invisible.
     if (!this.underlay || !this.layersOffset) return;
 
     this.underlay.style.top = this.overlay.style.top = this.layersOffset.top + 'px';
@@ -1545,7 +1545,7 @@ class Comment extends CommentSkeleton {
 
     this.$animatedBackground?.add(this.$marker).stop(true, true);
 
-    // TODO: add add/remove methods to `commentRegistry.underlays`
+    // TODO: add add/remove methods to commentRegistry.underlays
     removeFromArrayIfPresent(commentRegistry.underlays, this.underlay);
 
     this.dontHideMenu();
@@ -2188,7 +2188,7 @@ class Comment extends CommentSkeleton {
     }
 
     // Layers are supposed to be updated (deleted comments background, repositioning) separately,
-    // see `updateChecker~checkForNewChanges()`, for example.
+    // see updateChecker~checkForNewChanges(), for example.
   }
 
   /**
@@ -2207,7 +2207,7 @@ class Comment extends CommentSkeleton {
       case 'deleted':
         this.isDeleted = false;
 
-        // `commentRegistry.maybeRedrawLayers()`, that is called on DOM updates, could circumvent
+        // commentRegistry.maybeRedrawLayers(), that is called on DOM updates, could circumvent
         // this comment if it has no property signalling that it should be highlighted, so we update
         // its styles manually.
         this.updateLayersStyles();
@@ -2480,7 +2480,7 @@ class Comment extends CommentSkeleton {
    */
   async findDiffMatches(compareBodies, revisions) {
     // Only analyze added lines except for headings. `diff-empty` is not always present, so we stick
-    // to `colspan="2"` as an indicator.
+    // to colspan="2" as an indicator.
     const regexp = /<td [^>]*colspan="2" class="[^"]*\bdiff-side-deleted\b[^"]*"[^>]*>\s*<\/td>\s*<td [^>]*class="[^"]*\bdiff-marker\b[^"]*"[^>]*>\s*<\/td>\s*<td [^>]*class="[^"]*\bdiff-addedline\b[^"]*"[^>]*>\s*<div[^>]*>(?!=)(.+?)<\/div>\s*<\/td>/g;
 
     const commentFullText = this.getText(false) + ' ' + this.signatureText;
@@ -3153,7 +3153,7 @@ class Comment extends CommentSkeleton {
         (
           this.timestamp === sig.timestamp ||
 
-          // `.startsWith()` to account for cases where you can ignore the timezone string in
+          // .startsWith() to account for cases where you can ignore the timezone string in
           // "unsigned" templates (it may be present and may be not), but it appears on the page.
           (this.timestamp && this.timestamp.startsWith(sig.timestamp))
         )
@@ -3518,7 +3518,7 @@ class Comment extends CommentSkeleton {
     const commentTime = Math.floor(this.date.getTime() / 1000);
 
     // Add 60 seconds to the comment time because it doesn't have seconds whereas the visit time
-    // has. See also `timeConflict` in `BootProcess#processVisits()`.
+    // has. See also timeConflict in BootProcess#processVisits().
     this.isNew = Boolean(commentTime + 60 > currentPageVisits[0] || isUnseenStatePassed);
     this.isSeen = Boolean(
       (commentTime + 60 <= currentPageVisits[currentPageVisits.length - 1] || this.isOwn) &&
@@ -3642,7 +3642,7 @@ class Comment extends CommentSkeleton {
   }
 
   static {
-    // Doesn't account for cases when the section headline ends with `-[number]`.
+    // Doesn't account for cases when the section headline ends with -<number>.
     const newDtTimestampPattern = '(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})\\d{2}';
     const oldDtTimestampPattern = '(\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{3}Z)';
 

@@ -150,7 +150,7 @@ class SettingsDialog extends ProcessDialog {
         return;
       }
 
-      // `this.settings` can be empty after removing the data using the relevant functionality in
+      // this.settings can be empty after removing the data using the relevant functionality in the
       // UI.
       if (!Object.keys(this.settings).length) {
         this.settings = settings.get();

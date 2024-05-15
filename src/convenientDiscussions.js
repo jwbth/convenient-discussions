@@ -52,7 +52,7 @@ Object.assign(cd, {
     let options = {};
     let lastParam = params[params.length - 1];
 
-    // `lastParam.options` is a `mw.user`-like object to provide to `{{gender:}}`
+    // lastParam.options is a mw.user-like object to provide to {{gender:}}
     if (typeof lastParam === 'object' && !lastParam.options) {
       options = lastParam;
       params.splice(params.length - 1);
@@ -248,7 +248,7 @@ Object.assign(cd, {
 Object.assign(cd.g, {
   // These are properties known from the beginning. We assume that there is no point to make them
   // subject to change by site administrators although this may be disputable. Some of them are
-  // extensible in the configuration file (such as `noHighlightClasses`).
+  // extensible in the configuration file (such as noHighlightClasses).
 
   /**
    * A replacement for
@@ -534,7 +534,7 @@ Object.assign(cd.g, {
   namespaceNumber: mw.config.get('wgNamespaceNumber'),
   pageAction: mw.config.get('wgAction'),
 
-  // Check for `mw.user.isNamed()` to treat temporary accounts as unregistered (we can't save
+  // Check for mw.user.isNamed() to treat temporary accounts as unregistered (we can't save
   // options for them anyway). `<unregistered>` is a workaround for anonymous users (there are
   // such!).
   userName: (

@@ -169,9 +169,9 @@ class Autocomplete {
             );
 
             if (makeRequest) {
-              // Logically, either `matched` or `this.mentions.cache` should have a zero length (a
+              // Logically, either `matched` or this.mentions.cache should have a zero length (a
               // request is made only if there are no matches in the section; if there are,
-              // `this.mentions.cache` is an empty array).
+              // this.mentions.cache is an empty array).
               if (!matches.length) {
                 values.push(...this.mentions.cache);
               }

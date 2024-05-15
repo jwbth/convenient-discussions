@@ -157,7 +157,7 @@ async function go() {
 
   require('./convenientDiscussions');
 
-  // Don't run again if `go()` runs the second time (see `maybeAddFooterSwitcher()`).
+  // Don't run again if go() runs the second time (see maybeAddFooterSwitcher()).
   if (cd.g.pageWhitelistRegexp === undefined) {
     /**
      * Script configuration. The default configuration is in {@link module:defaultConfig}.
@@ -210,9 +210,9 @@ function setLanguages() {
   cd.g.userLanguage = languageOrFallback(mw.config.get('wgUserLanguage'));
 
   // Should we use a fallback for the content language? Maybe, but in case of MediaWiki messages
-  // used for signature parsing we have to use the real content language (see
-  // `init.loadSiteData()`). As a result, we use `cd.g.contentLanguage` only for the script's own
-  // messages, not the native MediaWiki messages.
+  // used for signature parsing we have to use the real content language (see init.loadSiteData()).
+  // As a result, we use cd.g.contentLanguage only for the script's own messages, not the native
+  // MediaWiki messages.
   cd.g.contentLanguage = languageOrFallback(mw.config.get('wgContentLanguage'));
 
   return !(
@@ -337,7 +337,7 @@ async function app() {
   const getStringsPromise = areLanguageFallbacksEmployed ?
     getStrings() :
 
-    // `cd.getStringsPromise` may be set in the configuration file.
+    // cd.getStringsPromise may be set in the configuration file.
     !cd.i18n && (cd.getStringsPromise || getStrings());
 
   try {

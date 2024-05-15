@@ -135,7 +135,7 @@ export default {
     if (!this.isPresent()) return;
 
     // Ensure the bell icons are added after the TOC is updated and the comment counts are added in
-    // `visits#process()`.
+    // visits#process().
     await Promise.all([this.visitsPromise, this.updateTocSectionsPromise]);
 
     sectionRegistry
@@ -515,7 +515,7 @@ export default {
       const dateOrNot = settings.get('timestampFormat') === 'default' ? date : '';
       const text = names + rtlMarkOrNot + cd.mws('comma-separator') + dateOrNot;
 
-      // If there are `itemLimit` comments or less, show all of them. If there are more, show
+      // If there are itemLimit comments or less, show all of them. If there are more, show
       // `itemLimit - 1` and "N more". (Because showing `itemLimit - 1` and then "1 more" is
       // stupid.)
       if (addAsItem) {

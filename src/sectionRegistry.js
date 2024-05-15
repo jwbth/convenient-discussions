@@ -66,7 +66,7 @@ export default {
       section.maybeAddReplyButton();
     });
 
-    // Run this after running `section.addReplyButton()` for each section because reply buttons must
+    // Run this after running section.addReplyButton() for each section because reply buttons must
     // be in place for this.
     this.items
       .filter((section) => section.addSubsectionButton)
@@ -346,7 +346,7 @@ export default {
       !this.items.length ||
       !controller.isLongPage() ||
 
-      // When the document has no focus, all sections are visible (see `.maybeUnhideAll()`).
+      // When the document has no focus, all sections are visible (see .maybeUnhideAll()).
       !document.hasFocus()
     ) {
       return;
@@ -370,7 +370,7 @@ export default {
             getVisibilityByRects(rect) &&
             rect.top >= threeScreens &&
 
-            // Is in a different `blockSize`-pixel block than the viewport top. (`threeScreens` is
+            // Is in a different `blockSize`-pixel block than the viewport top. (threeScreens is
             // subtracted from its position to reduce the frequency of CSS manipulations, so in
             // practice the blocks are positioned somewhat like this: 0 - 12500, 12500 - 22500,
             // 22500 - 32500, etc.)

@@ -47,10 +47,10 @@ class CommentSource {
       .withText((code) => {
         if (this.comment.level === 0) {
           // Collapse random line breaks that do not affect text rendering but would otherwise
-          // transform into `<br>` on posting. `\x01` and `\x02` mean the beginning and ending of
-          // sensitive code except for tables. `\x03` and `\x04` mean the beginning and ending of a
+          // transform into <br> on posting. \x01 and \x02 mean the beginning and ending of
+          // sensitive code except for tables. \x03 and \x04 mean the beginning and ending of a
           // table. Note: This should be kept coordinated with the reverse transformation code in
-          // `CommentForm#inputToCode`. Some more comments are there.
+          // CommentForm#inputToCode. Some more comments are there.
           const entireLineRegexp = /^(?:\x01\d+_(block|template)\x02) *$/;
 
           const fileRegexp = new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$`, 'i');
@@ -84,7 +84,7 @@ class CommentSource {
         }
 
         code = brsToNewlines(code, '\x01\n')
-          // Templates occupying a whole line with `<br>` at the end get a special treatment.
+          // Templates occupying a whole line with <br> at the end get a special treatment.
           .replace(/^((?:\x01\d+_template.*\x02) *)\x01$/gm, (s, m1) => m1 + '<br>')
 
           // Two templates in a row is likely a paragraph template + other template. This is a
@@ -152,7 +152,7 @@ class CommentSource {
 
       // Try to edit the first comment at
       // https://ru.wikipedia.org/wiki/Википедия:Голосования/Отметки_статусных_статей_в_навигационных_шаблонах#Да
-      // to see the bug happening if we don't check for `this.comment.isOpeningSection`.
+      // to see the bug happening if we don't check for this.comment.isOpeningSection.
       this.lineStartIndex = this.comment.isOpeningSection ?
         this.headingStartIndex :
         this.startIndex;
@@ -164,8 +164,8 @@ class CommentSource {
       });
 
       // Exclude the text of the previous comment that is ended with 3 or 5 tildes instead of 4 and
-      // foreign timestamps. The foreign timestamp part can be moved out of the `!headingMatch`
-      // condition together with `cd.g.badCommentBeginnings` check to allow to apply to cases like
+      // foreign timestamps. The foreign timestamp part can be moved out of the !headingMatch
+      // condition together with cd.g.badCommentBeginnings check to allow to apply to cases like
       // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Start_of_section,_comment_with_timestamp_but_without_author,_newline_inside_comment,_HTML_comments_before_reply,
       // but this can create problems with removing stuff from the opening comment.
       [cd.g.signatureEndingRegexp, areThereForeignTimestamps ? null : cd.g.timezoneRegexp]
@@ -308,7 +308,7 @@ class CommentSource {
   adjust() {
     this.lineStartIndex = this.startIndex;
 
-    // Ignore heading markup inside `<nowiki>`, `<syntaxhighlight>`, etc.
+    // Ignore heading markup inside <nowiki>, <syntaxhighlight>, etc.
     this.code = (new TextMasker(this.code))
       .maskSensitiveCode()
       .withText((text, textMasker) => {
@@ -413,7 +413,7 @@ class CommentSource {
         // Cases where indentation characters on the first line don't denote a comment level but
         // serve some other purposes. Examples: https://en.wikipedia.org/?diff=998431486,
         // https://ru.wikipedia.org/w/index.php?diff=105978713 (this one is actually handled by
-        // `replaceIndentation()` in `.excludeIndentationAndIntro()`).
+        // replaceIndentation() in .excludeIndentationAndIntro()).
         if (replyIndentation.length < this.originalIndentation.length) {
           // TODO: restore the original space or its absence here?
           const spaceOrNot = cd.config.spaceAfterIndentationChars ? ' ' : '';
@@ -529,17 +529,17 @@ class CommentSource {
       '.*' +
       (cd.g.unsignedTemplatesPattern ? `|${cd.g.unsignedTemplatesPattern}.*` : '') +
 
-      // `\x01` is from hiding closed discussions and HTML comments. TODO: Line can start with a
+      // \x01 is from hiding closed discussions and HTML comments. TODO: Line can start with a
       // HTML comment in a <pre> tag, that doesn't mean we can put a comment after it. We perhaps
-      // need to change `wikitext.maskDistractingCode`.
+      // need to change wikitext.maskDistractingCode.
       '|(?:^|\\n)\\x01.+)\\n)\\n*'
     );
     const maxIndentationLength = this.replyIndentation.length - 1;
     const endOfThreadPattern = (
       '(' +
 
-      // `\n` is here to prevent putting the reply on a casual empty line. `\x01` is from hiding
-      // closed discussions.
+      // \n is here to prevent putting the reply on a casual empty line. \x01 is from hiding closed
+      // discussions.
       '(?![:*#\\x01\\n])' +
 
       /*
@@ -589,8 +589,8 @@ class CommentSource {
         } else if ((outdentIndentation || '').length <= this.replyIndentation.length) {
           const nextLineRegexp = new RegExp(anySignaturePattern);
 
-          // If `adjustedChunkCodeAfter` matched `properPlaceRegexp`, it should match
-          // `nextLineRegexp` too.
+          // If adjustedChunkCodeAfter matched properPlaceRegexp, it should match
+          // nextLineRegexp too.
           [, adjustedCodeBetween] = adjustedChunkCodeAfter.match(nextLineRegexp) || [];
         }
       }
@@ -639,7 +639,7 @@ class CommentSource {
     }
 
     // If the comment is to be put after a comment with different indentation characters, use these,
-    // unless it's a 1-level comment; then, there are options if `indentationCharMode` is `unify`.
+    // unless it's a 1-level comment; then, there are options if indentationCharMode is `unify`.
     const manyCharsPart = (
       this.replyIndentation.length === 1 &&
       cd.config.indentationCharMode === 'unify'
@@ -715,7 +715,7 @@ class CommentSource {
           let startIndex;
           let endIndex;
           if (this.comment.isOpeningSection && this.headingStartIndex !== undefined) {
-            // Usually, `source` is set in `CommentForm#buildSource()`.
+            // Usually, `source` is set in CommentForm#buildSource().
             if (!this.comment.section.source) {
               this.comment.section.locateInCode();
             }
@@ -795,7 +795,7 @@ class CommentSource {
         'g'
       );
 
-      // `\x01` are later used in `CommentSource#matchProperPlaceRegexps`. `\x02` is not used, it's
+      // \x01 are later used in CommentSource#matchProperPlaceRegexps. \x02 is not used, it's
       // just for consistency
       const makeIndentationMarkers = (indentationLength, totalLength) => (
         '\x01'.repeat(indentationLength) + ' '.repeat(totalLength - indentationLength - 1) + '\x02'
@@ -815,7 +815,7 @@ class CommentSource {
 
           // Fill the space that the first met template occupies with spaces, and put the specified
           // number of marker characters at the first positions. This will be later used in
-          // `CommentSource#matchProperPlaceRegexps`.
+          // CommentSource#matchProperPlaceRegexps.
           (new TextMasker(adjustedCode.slice(match.index)))
             .maskTemplatesRecursively(undefined, true)
             .withText((code) => (

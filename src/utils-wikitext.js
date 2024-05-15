@@ -67,7 +67,7 @@ export function findFirstTimestamp(code) {
  */
 export function removeWikiMarkup(code) {
   // Ideally, only text from images in the "thumb" format should be captured, because in the
-  // standard format the text is not displayed. See `img_thumbnail` in
+  // standard format the text is not displayed. See img_thumbnail in
   // https://ru.wikipedia.org/w/api.php?action=query&meta=siteinfo&siprop=magicwords&formatversion=2.
   // Unfortunately, that would add like 100ms to the server's response time. So, we use it if it is
   // present in the config file.
@@ -230,16 +230,16 @@ function extractRegularSignatures(adjustedCode, code) {
   const ending = `(?:\\n*|$)`;
   const afterTimestamp = `(?!["»])(?:\\}\\}|</small>)?`;
 
-  // Use `(?:^|[^=])` to filter out timestamps in a parameter (in quote templates)
+  // Use (?:^|[^=]) to filter out timestamps in a parameter (in quote templates)
   const timestampRegexp = new RegExp(
     `^((.*?(?:^|[^=]))(${cd.g.contentTimestampRegexp.source})${afterTimestamp}).*${ending}`,
     'igm'
   );
 
-  // After capturing the first signature with `.*?` we make another capture (with
-  // `authorLinkRegexp`) to make sure we take the first link to the same author as the author in the
-  // last link. 251 is not arbitrary: it's 255 (maximum allowed signature length) minus
-  // `'[[u:a'.length` plus `' '.length` (the space before the timestamp).
+  // After capturing the first signature with `.*?` we make another capture (with authorLinkRegexp)
+  // to make sure we take the first link to the same author as the author in the last link. 251 is
+  // not arbitrary: it's 255 (maximum allowed signature length) minus `'[[u:a'.length` plus
+  // `' '.length` (the space before the timestamp).
   const signatureScanLimit = 251;
   const signatureRegexp = new RegExp(
     /*
@@ -300,7 +300,7 @@ function extractRegularSignatures(adjustedCode, code) {
       // probably having something to do with difference between regular length and byte length.
       if (!lastAuthorLink) continue;
 
-      // `require()` to avoid circular dependency
+      // require() to avoid circular dependency
       const userRegistry = require('./userRegistry').default;
 
       author = userRegistry.get(decodeHtmlEntities(lastAuthorLink));
@@ -350,7 +350,7 @@ function extractUnsigneds(adjustedCode, code, signatures) {
     return [];
   }
 
-  // `require()` to avoid circular dependency
+  // require() to avoid circular dependency
   const userRegistry = require('./userRegistry').default;
 
   const unsigneds = [];
@@ -389,7 +389,7 @@ function extractUnsigneds(adjustedCode, code, signatures) {
     const nextCommentStartIndex = match.index + match[0].length;
 
     // `[5 tildes] {{unsigned|...}}` cases. In these cases, both the signature and
-    // `{{unsigned|...}}` are considered signatures and added to the array. We could combine them
+    // {{unsigned|...}} are considered signatures and added to the array. We could combine them
     // but that would need corresponding code in Parser.js which could be tricky, so for now we just
     // remove the duplicate. That still allows to reply to the comment.
     const relevantSignatureIndex = (

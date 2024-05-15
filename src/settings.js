@@ -72,7 +72,7 @@ export default {
       'allowEditOthersComments': false,
       'alwaysExpandAdvanced': false,
 
-      // The order should coincide with the order of checkboxes in the `autocompleteTypes` setting -
+      // The order should coincide with the order of checkboxes in the autocompleteTypes setting -
       // otherwise the "Save" and "Reset" buttons in the settings dialog won't work properly.
       'autocompleteTypes': ['mentions', 'commentLinks', 'wikilinks', 'templates', 'tags'],
 
@@ -447,7 +447,7 @@ export default {
         {},
         this.scheme.default,
 
-        // Settings in global variables like `cdAllowEditOthersComments` used before server-stored
+        // Settings in global variables like cdAllowEditOthersComments used before server-stored
         // settings were implemented and used for undocumented settings now.
         this.getSettingPropertiesOfObject(window, 'cd'),
 
@@ -729,9 +729,9 @@ export default {
     if (typeof Notification === 'undefined') return;
 
     if (this.get('desktopNotifications') === 'unknown' && Notification.permission !== 'denied') {
-      // Avoid using the setting kept in `mw.user.options`, as it may be outdated. Also don't reuse
+      // Avoid using the setting kept in mw.user.options, as it may be outdated. Also don't reuse
       // the previous settings request, as the settings might be changed in
-      // `this.maybeSuggestEnableCommentReformatting()`.
+      // this.maybeSuggestEnableCommentReformatting().
       const { desktopNotifications } = await this.load();
       if (['unknown', undefined].includes(desktopNotifications)) {
         const actions = [

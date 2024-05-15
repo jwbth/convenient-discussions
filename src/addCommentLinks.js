@@ -32,7 +32,7 @@ const prototypes = new PrototypeRegistry();
  * @private
  */
 async function initialize() {
-  // This could have been executed from `init.talkPage()` already.
+  // This could have been executed from init.talkPage() already.
   init.globals();
   await settings.init();
 

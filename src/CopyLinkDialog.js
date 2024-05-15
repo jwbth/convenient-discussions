@@ -46,7 +46,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   initialize(...args) {
     super.initialize(...args);
 
-    // By default, the whole message is wrapped in a `<label>` element. We don't want that behavior
+    // By default, the whole message is wrapped in a <label> element. We don't want that behavior
     // and revert it.
     this.message.$element.remove();
     this.message = new DivLabelWidget({ classes: ['oo-ui-messageDialog-message'] });

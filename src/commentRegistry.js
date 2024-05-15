@@ -57,7 +57,7 @@ export default {
       .on('mouseMove', this.maybeHighlightHovered.bind(this))
       .on('popState', (fragment) => {
         // Don't jump to the comment if the user pressed "Back"/"Forward" in the browser or if
-        // `history.pushState()` is called from `Comment#scrollTo()` (after clicks on added (gray)
+        // history.pushState() is called from Comment#scrollTo() (after clicks on added (gray)
         // items in the TOC). A marginal state of this happening is when a page with a comment ID in
         // the fragment is opened and then a link with the same fragment is clicked.
         if (!Comment.isAnyId(fragment) || history.state?.cdJumpedToComment) return;
@@ -86,9 +86,9 @@ export default {
     visits
       .on('process', this.registerSeen.bind(this));
     updateChecker
-      // If the layers of deleted comments have been configured in `Comment#unmarkAsChanged()`, they
+      // If the layers of deleted comments have been configured in Comment#unmarkAsChanged(), they
       // will prevent layers before them from being updated due to the "stop at the first three
-      // unmoved comments" optimization in `.maybeRedrawLayers()`. So we just do the whole job here.
+      // unmoved comments" optimization in .maybeRedrawLayers(). So we just do the whole job here.
       .on('newChanges', this.maybeRedrawLayers.bind(this, true));
     commentFormRegistry
       .on('teardown', this.registerSeen.bind(this));
@@ -100,7 +100,7 @@ export default {
    */
   setup() {
     // This can be updated after an in-script page reload if the user agrees to this setting in the
-    // onboarding popup (`settings.maybeSuggestEnableCommentReformatting()`).
+    // onboarding popup (settings.maybeSuggestEnableCommentReformatting()).
     this.reformatCommentsSetting = settings.get('reformatComments');
 
     this.reformatTimestamps();
@@ -339,7 +339,7 @@ export default {
    * @returns {?Comment}
    */
   findInViewport(findClosestDirection) {
-    // Reset the `roughOffset` property. It is used only within this method.
+    // Reset the roughOffset property. It is used only within this method.
     this.items.forEach((comment) => {
       delete comment.roughOffset;
     });
@@ -942,15 +942,16 @@ export default {
           const firstElementChild = currentBottomElement.firstElementChild;
 
           /*
-            Avoid collapsing adjacent LIs and DDs if we deal with a structure like this:
-            <li>
-              <div>Comment</div>
-              <ul>Replies</ul>
-            </li>
-            <li>
-              <div>Comment</div>
-              <ul>Replies</ul>
-            </li>
+            Avoid collapsing adjacent <li>s and <dd>s if we deal with a structure like this:
+
+              <li>
+                <div>Comment</div>
+                <ul>Replies</ul>
+              </li>
+              <li>
+                <div>Comment</div>
+                <ul>Replies</ul>
+              </li>
           */
           if (['DL', 'DD', 'UL', 'LI'].includes(firstElementChild.tagName)) {
             while (currentBottomElement.childNodes.length) {
@@ -1009,7 +1010,7 @@ export default {
       newElement.setAttribute(attribute.name, attribute.value);
     });
 
-    // If this element is a part of a comment, replace it in the `Comment` object instance.
+    // If this element is a part of a comment, replace it in the Comment object instance.
     const commentIndex = element.getAttribute('data-cd-comment-index');
     if (commentIndex !== null) {
       this.items[Number(commentIndex)].replaceElement(element, newElement);
@@ -1055,8 +1056,9 @@ export default {
       });
 
     if (controller.areThereOutdents()) {
-      // Outdent templates. We could instead merge adjacent LI's, but if there is a `{{outdent|0}}`
-      // template and the whole LI of the parent is considered a comment part, then we can't do that.
+      // Outdent templates. We could instead merge adjacent <li>s, but if there is a {{outdent|0}}
+      // template and the whole <li> of the parent is considered a comment part, then we can't do
+      // that.
       controller.rootElement
         .querySelectorAll(`.cd-commentLevel > li + li > .${cd.config.outdentClass}, .cd-commentLevel > dd + dd > .${cd.config.outdentClass}`)
         .forEach((el) => {

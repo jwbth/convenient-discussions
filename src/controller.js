@@ -57,15 +57,15 @@ export default {
       $(document.body).addClass('cd-mobile');
     }
 
-    // Not constants: `go()` may run a second time, see `app~maybeAddFooterSwitcher()`.
+    // Not constants: go() may run a second time, see app~maybeAddFooterSwitcher().
     const isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
     const isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);
 
-    // See `.isDefinitelyTalkPage()`
+    // See .isDefinitelyTalkPage()
     this.definitelyTalkPage = Boolean(
       isEnabledInQuery ||
 
-      // `.cd-talkPage` is used as a last resort way to make CD parse the page, as opposed to using
+      // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
       // the list of supported namespaces and page white/black list in the configuration. With this
       // method, there won't be "comment" links for edits on pages that list revisions such as the
       // watchlist.
@@ -77,7 +77,7 @@ export default {
       )
     );
 
-    // See `.isArticlePageTalkPage()`
+    // See .isArticlePageTalkPage()
     this.articlePageTalkPage = (
       (!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
       !this.$content.find('.cd-notTalkPage').length &&
@@ -87,7 +87,7 @@ export default {
       !(typeof cdOnlyRunByFooterLink !== 'undefined' && window.cdOnlyRunByFooterLink)
     );
 
-    // See `.isDiffPage()`
+    // See .isDiffPage()
     this.diffPage = /[?&]diff=[^&]/.test(location.search);
 
     this.talkPage = Boolean(
@@ -106,7 +106,7 @@ export default {
    * @param {string} pageHtml HTML to update the page with.
    */
   setup(pageHtml) {
-    // RevisionSlider replaces the `#mw-content-text` element.
+    // RevisionSlider replaces the #mw-content-text element.
     if (!this.$content[0]?.parentNode) {
       this.$content = $('#mw-content-text');
     }
@@ -117,7 +117,7 @@ export default {
       this.rootElement = div.firstChild;
       this.$root = $(this.rootElement);
     } else {
-      // There can be more than one `.mw-parser-output` child, e.g. on talk pages of IP editors.
+      // There can be more than one .mw-parser-output child, e.g. on talk pages of IP editors.
       this.$root = this.$content.children('.mw-parser-output').first();
 
       // 404 pages
@@ -129,9 +129,8 @@ export default {
     }
 
     // Add the class immediately to prevent the issue when any unexpected error prevents this from
-    // being executed and then `this.handleWikipageContentHookFirings()` is called with
-    // `#mw-content-text` element for some reason, and the page goes into an infinite reloading
-    // loop.
+    // being executed and then this.handleWikipageContentHookFirings() is called with
+    // #mw-content-text element for some reason, and the page goes into an infinite reloading loop.
     this.$root.addClass('cd-parse-started');
   },
 
@@ -337,7 +336,7 @@ export default {
       };
 
       // This is set only on window resize event. The initial value is set in
-      // `init.addTalkPageCss()` through a style tag.
+      // init.addTalkPageCss() through a style tag.
       if (reset) {
         $(document.documentElement).css('--cd-content-start-margin', startMargin + 'px');
       }
@@ -352,10 +351,10 @@ export default {
    * @returns {boolean}
    */
   isCurrentRevision() {
-    // RevisionSlider may show a revision newer than the revision in `wgCurRevisionId` due to a bug
+    // RevisionSlider may show a revision newer than the revision in wgCurRevisionId due to a bug
     // (when navigating forward, at least twice, from a revision older than the revision in
-    // `wgCurRevisionId` after some revisions were added). Unfortunately, it doesn't update the
-    // `wgCurRevisionId` value.
+    // wgCurRevisionId after some revisions were added). Unfortunately, it doesn't update the
+    // wgCurRevisionId value.
     return mw.config.get('wgRevisionId') >= mw.config.get('wgCurRevisionId');
   },
 
@@ -757,7 +756,7 @@ export default {
     OO.ui.throttle(() => {
       // We just list everything we know that can stand between the user and the content area where
       // comments reside. This is a very ugly method I resorted to because I honestly don't know the
-      // alternatives. We can't put any element out there to check `:hover` on it because the
+      // alternatives. We can't put any element out there to check :hover on it because the
       // absence of such an element for comments is the reason why we need to check for obstructing
       // elements in the first place. On the other hand, if this incorrectly returns `false`, this
       // doesn't really affect anything important. It's just for better visual effects. Use vanilla
@@ -794,7 +793,7 @@ export default {
    * @private
    */
   async handleWindowResize() {
-    // `sleep()`, because it seems like sometimes it doesn't have time to update.
+    // sleep(), because it seems like sometimes it doesn't have time to update.
     await sleep(cd.g.skin === 'vector-2022' ? 100 : 0);
 
     this.getContentColumnOffsets(true);
@@ -894,7 +893,7 @@ export default {
 
     this.emit('mutate');
 
-    // Could also run `this.handleScroll()` here, but not sure, as it would double the execution
+    // Could also run this.handleScroll() here, but not sure, as it would double the execution
     // time with rare effect.
   },
 
@@ -1004,7 +1003,7 @@ export default {
   async tryExecuteBootProcess(isReload) {
     this.booting = true;
 
-    // We could say "let it crash", but, well, unforeseen errors in `BootProcess#execute()` are just
+    // We could say "let it crash", but, well, unforeseen errors in BootProcess#execute() are just
     // too likely to go without a safeguard.
     try {
       await this.bootProcess.execute(isReload);
@@ -1059,7 +1058,7 @@ export default {
     if (mw.loader.getState('mediawiki.api') === 'ready') {
       siteDataRequests = init.getSiteData();
 
-      // We are _not_ calling `getUserInfo()` here to avoid losing visit data updates from some
+      // We are _not_ calling getUserInfo() here to avoid losing visit data updates from some
       // pages if several pages are opened simultaneously. In this situation, visits could be
       // requested for multiple pages; updated and then saved for each of them with losing the
       // updates from the rest.
@@ -1096,13 +1095,13 @@ export default {
         undefined,
     ].filter(defined);
 
-    // `mw.loader.using` delays the execution even if all modules are ready (if CD is used as a
+    // mw.loader.using() delays the execution even if all modules are ready (if CD is used as a
     // gadget with preloaded dependencies, for example), so we use this trick.
     let modulesRequest;
     if (modules.every((module) => mw.loader.getState(module) === 'ready')) {
       // If there is no data to load and, therefore, no period of time within which a reflow (layout
       // thrashing) could happen without impeding performance, we cache the value so that it could
-      // be used in `.saveRelativeScrollPosition()` without causing a reflow.
+      // be used in .saveRelativeScrollPosition() without causing a reflow.
       if (siteDataRequests.every((request) => request.state() === 'resolved')) {
         this.bootProcess.passedData = { scrollY: window.scrollY };
       }
@@ -1113,7 +1112,7 @@ export default {
     this.showLoadingOverlay();
     Promise.all([modulesRequest, ...siteDataRequests]).then(
       async () => {
-        // Do it here because `OO.EventEmitter` can be unavailable before.
+        // Do it here because OO.EventEmitter can be unavailable before.
         mixEventEmitterIntoObject(this);
 
         await this.tryExecuteBootProcess();
@@ -1223,7 +1222,7 @@ export default {
 
     this.emit('startReload');
 
-    // Just submitted "Add section" form (it is outside of the `.$root` element). Forms that should
+    // Just submitted "Add section" form (it is outside of the .$root element). Forms that should
     // stay are detached above.
     this.$addSectionButtonContainer?.remove();
     $('.cd-commentForm-addSection').remove();
@@ -1314,7 +1313,7 @@ export default {
       // above a comment but not above any comment parts (for example, as a result of scrolling).
       // The benefit may be low compared to the performance cost, but it's unexpected when the user
       // scrolls a comment and it suddenly stops being highlighted because the cursor is between
-      // neighboring `<p>`'s.
+      // neighboring <p>s.
       $(document).on('mousemove mouseover', this.handleMouseMove.bind(this));
     }
 
@@ -1329,8 +1328,8 @@ export default {
       .on('resize orientationchange', this.handleWindowResize.bind(this))
       .on('popstate', this.handlePopState.bind(this));
 
-    // Should be above `mw.hook('wikipage.content').fire` so that it runs for the whole page content
-    // as opposed to `$('.cd-comment-author-wrapper')`.
+    // Should be above mw.hook('wikipage.content').fire so that it runs for the whole page content
+    // as opposed to $('.cd-comment-author-wrapper').
     mw.hook('wikipage.content').add(
       this.connectToCommentLinks.bind(this),
       this.highlightMentions.bind(this)

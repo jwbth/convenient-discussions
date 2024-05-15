@@ -121,7 +121,7 @@ class CommentFormInputTransformer extends TextMasker {
       this.areThereTagsAroundListMarkup = matches.some((match) => /\n[:*#;]/.test(match));
     }
 
-    // If the user wrapped the comment in `<small></small>`, remove the tags to later wrap the
+    // If the user wrapped the comment in <small></small>, remove the tags to later wrap the
     // comment together with the signature into the tags and possibly ensure the correct line
     // spacing.
     this.wrapInSmall = false;
@@ -342,7 +342,7 @@ class CommentFormInputTransformer extends TextMasker {
         '' :
         '<br>';
 
-      // Current line can match `galleryRegexp` only if the comment will not be indented.
+      // Current line can match galleryRegexp only if the comment will not be indented.
       const newlineOrNot = this.indentation && !this.constructor.galleryRegexp.test(nextLine) ?
         '' :
         '\n';

@@ -171,7 +171,7 @@ export async function showConfirmDialog(message, options = {}) {
       {
         message,
 
-        // `OO.ui.MessageDialog` standard
+        // OO.ui.MessageDialog standard
         actions: [
           {
             action: 'accept',

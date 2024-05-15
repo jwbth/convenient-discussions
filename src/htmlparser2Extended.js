@@ -91,8 +91,8 @@ Object.defineProperty(Element.prototype, 'textContent', {
   get: function () {
     let returnValue = '';
 
-    // This runs pretty often, so we microoptimize it. Using `DomUtils.textContent` or `Array#map` +
-    // `Array#join` would take longer.
+    // This runs pretty often, so we microoptimize it. Using DomUtils.textContent or Array#map() +
+    // Array#join() would take longer.
     this.childNodes.forEach((node) => {
       returnValue += node.textContent;
     });

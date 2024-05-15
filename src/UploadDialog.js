@@ -79,8 +79,8 @@ class UploadDialog extends mw.Upload.Dialog {
    * @ignore
    */
   getSetupProcess(data) {
-    // This script is optional and used to improve description fields by using correct project
-    // names and prefixes. With it, `wikt:fr:` will translate into "French Wiktionary" and
+    // This script is optional and used to improve description fields by using correct project names
+    // and prefixes. With it, `wikt:fr:` will translate into `French Wiktionary` and
     // `fr.wiktionary.org` will translate into `wikt:fr:`.
     mw.loader.load('https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/getUrlFromInterwikiLink.js&action=raw&ctype=text/javascript');
 
@@ -171,7 +171,7 @@ class UploadDialog extends mw.Upload.Dialog {
       }
       return process;
     } else if (action === 'cancelupload') {
-      // The upstream dialog calls `.initialize()` here which clears all inputs including the file.
+      // The upstream dialog calls .initialize() here which clears all inputs including the file.
       // We don't want that.
       return new OO.ui.Process(this.uploadBooklet.cancelUpload());
     }
@@ -789,8 +789,8 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * @protected
    */
   clear() {
-    // No idea how `.setValidityFlag(true)` is helpful; borrowed it from
-    // `mw.Upload.BookletLayout.prototype.clear`. When we clear the fields that were filled in (e.g.
+    // No idea how .setValidityFlag(true) is helpful; borrowed it from
+    // mw.Upload.BookletLayout.prototype.clear. When we clear the fields that were filled in (e.g.
     // by choosing the "Own work" preset, pressing "Upload", then pressing "Back", then choosing "No
     // preset", then pressing "Upload" again), they end up invalid anyway.
     this.progressBarWidget.setProgress(0);
@@ -802,7 +802,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
     }
 
     // Clear the fields we added as well. We add them on the "setup" step, so they aren't there
-    // when `.clear()` initially runs.
+    // when .clear() initially runs.
     this.controls?.source.input.setValue(null).setValidityFlag(true);
     this.controls?.author.input.setValue(null).setValidityFlag(true);
     this.controls?.license.input.setValue(null).setValidityFlag(true);

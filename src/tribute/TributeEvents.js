@@ -138,7 +138,7 @@ class TributeEvents {
       return;
     }
 
-    // jwbth: Added this block (search for `dropMenu` for the explanation).
+    // jwbth: Added this block (search for dropMenu for the explanation).
     if (tribute.dropMenu || tribute.current.mentionText === undefined) {
       tribute.isActive = false;
       tribute.hideMenu();
@@ -147,8 +147,8 @@ class TributeEvents {
     }
 
     if (!tribute.isActive) {
-      // jwbth: Removed the block and made `trigger` be filled from `tribute.current.triggerChar`
-      // to account for triggers with the same first character.
+      // jwbth: Removed the block and made `trigger` be filled from tribute.current.triggerChar to
+      // account for triggers with the same first character.
       let trigger = tribute.current.triggerChar;
 
       if (typeof trigger !== "undefined") {
@@ -193,7 +193,7 @@ class TributeEvents {
     return false;
   }
 
-  // jwbth: Removed `getKeyCode` as it is redundant.
+  // jwbth: Removed getKeyCode as it is redundant.
 
   updateSelection(el) {
     this.tribute.current.element = el;
@@ -204,7 +204,7 @@ class TributeEvents {
       this.tribute.current.mentionText = info.mentionText;
       this.tribute.current.selectedOffset = info.mentionSelectedOffset;
 
-      // jwbth: Added this line to use this property in `keyup()`.
+      // jwbth: Added this line to use this property in keyup().
       this.tribute.current.triggerChar = info.mentionTriggerChar;
 
       const current = this.tribute.current;
@@ -222,7 +222,7 @@ class TributeEvents {
   }
 
   callbacks() {
-    // jwbth: Removed `delete` and `space` keys from here, see `keys()`.
+    // jwbth: Removed `delete` and `space` keys from here, see keys().
     return {
       triggerChar: (e, el, trigger) => {
         let tribute = this.tribute;

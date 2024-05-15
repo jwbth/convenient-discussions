@@ -162,7 +162,7 @@ class Parser {
       node.nextSibling.remove();
     }
 
-    // Don't have `Node#replaceChild` in the worker.
+    // Don't have Node#replaceChild() in the worker.
     node.parentNode.insertBefore(span, node);
     node.remove();
   }
@@ -669,7 +669,7 @@ class Parser {
           }
           authorData.talkLink = link;
         } else if (['contribs', 'contribsForeign'].includes(linkType)) {
-          // `authorData.contribsNotForeignLink` is used only to make sure there are no two contribs
+          // authorData.contribsNotForeignLink is used only to make sure there are no two contribs
           // links to the current hostname in a signature.
           if (authorData.contribsNotForeignLink && (authorData.link || authorData.talkLink)) {
             return false;

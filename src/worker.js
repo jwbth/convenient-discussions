@@ -217,8 +217,8 @@ function filterCommentContent(comment) {
       if (headlineElement) {
         headlineElement.getElementsByClassName('mw-headline-number', 1)[0]?.remove();
 
-        // Use `[...]`, as `childNodes` is a live collection, and when element is removed or moved,
-        // indexes will change.
+        // Use `[...iterable]`, as childNodes is a live collection, and when an element is removed
+        // or moved, indexes will change.
         [...element.childNodes].forEach((el) => {
           el.remove();
         });

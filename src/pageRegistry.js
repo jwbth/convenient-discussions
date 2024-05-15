@@ -220,8 +220,8 @@ export class Page {
     }
 
     // This is not reevaluated after page reloads. Since archive settings we need rarely change, the
-    // reevaluation is unlikely to make any difference. `$root?` because the `$root` can not be set
-    // when it runs from the `addCommentLinks` module.
+    // reevaluation is unlikely to make any difference. `$root?` because the $root can not be set
+    // when it runs from the addCommentLinks module.
     this.$archivingInfo ||= controller.$root?.find('.cd-archivingInfo');
 
     return this.$archivingInfo;
@@ -762,7 +762,7 @@ export class Page {
         }).$element
       )
 
-      // If appending to `this.rootElement`, it can land on a wrong place, like on 404 pages with
+      // If appending to this.rootElement, it can land on a wrong place, like on 404 pages with
       // New Topic Tool enabled.
       .insertAfter(controller.$root);
   }

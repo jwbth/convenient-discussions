@@ -211,7 +211,7 @@ function loadSiteData() {
       .filter((name) => !cd.g.contentLanguageMessages[name]);
     for (const nextNames of splitIntoBatches(contentLanguageMessagesToRequest)) {
       const request = controller.getApi().getMessages(nextNames, {
-        // `cd.g.contentLanguage` is not used here for the reasons described in app.js where it is
+        // cd.g.contentLanguage is not used here for the reasons described in app.js where it is
         // declared.
         amlang: mw.config.get('wgContentLanguage'),
       }).then(setContentLanguageMessages);
@@ -290,11 +290,11 @@ function patterns() {
     Object.keys(nsIds)
       .filter((key) => ids.includes(nsIds[key]))
 
-      // Sometimes `wgNamespaceIds` has a string that doesn't transform into one of the keys of
-      // `wgFormattedNamespaces` when converting the first letter to uppercase, like in Azerbaijani
-      // Wikipedia (compare `Object.keys(mw.config.get('wgNamespaceIds'))[4]` = `'i̇stifadəçi'` with
-      // `mw.config.get('wgFormattedNamespaces')[2]` = `'İstifadəçi'`). We simply add the
-      // `wgFormattedNamespaces` name separately.
+      // Sometimes wgNamespaceIds has a string that doesn't transform into one of the keys of
+      // wgFormattedNamespaces when converting the first letter to uppercase, like in Azerbaijani
+      // Wikipedia (compare Object.keys(mw.config.get('wgNamespaceIds'))[4] = 'i̇stifadəçi' with
+      // mw.config.get('wgFormattedNamespaces')[2] = 'İstifadəçi'). We simply add the
+      // wgFormattedNamespaces name separately.
       .concat(ids.map((id) => nss[id]))
 
       .map(anySpace)
@@ -753,7 +753,7 @@ export default {
      */
     cd.user = userRegistry.getCurrent();
 
-    // Is there `{{gender:}}` with at least two pipes in the selection of affected strings?
+    // Is there {{gender:}} with at least two pipes in the selection of affected strings?
     cd.g.genderAffectsUserString = /\{\{ *gender *:[^}]+?\|[^} ]+?\|/i.test(
       Object.entries(mw.messages.get())
         .filter(([key]) => key.startsWith('convenient-discussions'))
@@ -882,7 +882,7 @@ export default {
        * @memberof convenientDiscussions.g
        */
       cd.g.parseTimestampContentRegexp = new RegExp(
-        // `\b` only captures Latin, so we also need `' '`.
+        // \b only captures Latin, so we also need `' '`.
         `^([^]*(?:^|[^=])(?:\\b| ))(${cd.g.contentTimestampRegexp.source})(?!["»])`
       );
 
@@ -988,10 +988,10 @@ export default {
    */
   async talkPage() {
     // In most cases the site data is already loaded after being requested in
-    // `controller.loadToTalkPage()`.
+    // controller.loadToTalkPage().
     await Promise.all(this.getSiteData());
 
-    // This could have been executed from `addCommentLinks.prepare()` already.
+    // This could have been executed from addCommentLinks.prepare() already.
     this.globals();
     await settings.init();
 

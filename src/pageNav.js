@@ -278,7 +278,7 @@ export default {
 
     const scrollY = window.scrollY;
 
-    // `afterLeadOffset` is the top position of the TOC or the first section.
+    // afterLeadOffset is the top position of the TOC or the first section.
     const { afterLeadOffset, firstSectionTop } = this.getRelativeOffsets(scrollY);
 
     this.createOrUpdateSkeleton(afterLeadOffset, scrollY);

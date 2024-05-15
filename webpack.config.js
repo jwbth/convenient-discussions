@@ -192,7 +192,7 @@ module.exports = (env) => {
 
           // We can't use BannerWebpackPlugin for both the code to prepend and append, because if we
           // add the code to prepend with BannerWebpackPlugin, the source maps would break.
-          // `webpack.BannerPlugin`, on the other hand, handles this, but doesn't have an option for
+          // webpack.BannerPlugin, on the other hand, handles this, but doesn't have an option for
           // the code to append to the build (this code doesn't break the source maps).
           new BannerWebpackPlugin({
             chunks: {

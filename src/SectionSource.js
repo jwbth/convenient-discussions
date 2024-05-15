@@ -61,7 +61,7 @@ class SectionSource {
             if (
               !lastComment.source.indentation.startsWith('#') ||
 
-              // For now we use the workaround with `commentForm.getContainerListType()` to make
+              // For now we use the workaround with commentForm.getContainerListType() to make
               // sure `#` is a part of comments organized in a numbered list, not of a numbered list
               // _in_ the target comment.
               commentForm.getContainerListType() === 'ol'

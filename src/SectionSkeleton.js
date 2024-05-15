@@ -82,8 +82,8 @@ class SectionSkeleton {
 
     const editLink = [
       ...(
-        // Get menu links. Use two calls because our improvised `.querySelectorAll()` in
-        // `htmlparser2Extended` doesn't support composite selectors.
+        // Get menu links. Use two calls because our improvised .querySelectorAll() in
+        // htmlparser2Extended doesn't support composite selectors.
         this.parser.context.getElementByClassName(this.headingElement, 'mw-editsection')
           ?.getElementsByTagName('a') ||
         []

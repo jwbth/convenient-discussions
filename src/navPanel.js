@@ -293,7 +293,7 @@ export default {
       comment.scrollTo({
         flash: null,
         callback: () => {
-          // The default `controller.handleScroll()` callback is executed in `$#cdScrollTo`, but
+          // The default controller.handleScroll() callback is executed in $#cdScrollTo, but
           // that happens after a 300ms timeout, so we have a chance to have our callback executed
           // first.
           comment.registerSeen(direction, true);
@@ -327,7 +327,7 @@ export default {
     comment?.scrollTo({
       flash: null,
       callback: () => {
-        // The default `controller.handleScroll()` callback is executed in `$#cdScrollTo`, but
+        // The default controller.handleScroll() callback is executed in $#cdScrollTo, but
         // that happens after a 300ms timeout, so we have a chance to have our callback executed
         // first.
         comment.registerSeen('forward', true);
@@ -430,7 +430,7 @@ export default {
       });
 
       // When timestamps are relative, we need to update the tooltip manually every minute. When
-      // `improved` timestamps are used, timestamps are updated in `LiveTimestamp.updateImproved()`.
+      // `improved` timestamps are used, timestamps are updated in LiveTimestamp.updateImproved().
       if (this.timestampFormat === 'relative') {
         this.utirbtTimeout = setTimeout(
           this.updateTimestampsInRefreshButtonTooltip.bind(this),

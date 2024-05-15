@@ -49,14 +49,14 @@ export function handleApiReject(code, resp) {
  */
 export function splitIntoBatches(arr) {
   // Current user's rights are only set on an `userinfo` request which is performed late (see "We
-  // are _not_ calling..." in `controller#loadToTalkPage()`). For example, `getDtSubscriptions()`
-  // runs earlier than that. In addition to that, `cd.g.phpCharToUpper` is empty until we make sure
-  // the `mediawiki.Title` module is loaded.
+  // are _not_ calling..." in controller#loadToTalkPage()). For example, getDtSubscriptions() runs
+  // earlier than that. In addition to that, cd.g.phpCharToUpper is empty until we make sure the
+  // mediawiki.Title module is loaded.
   let currentUserRights;
   try {
     currentUserRights = cd.user.getRights();
   } catch {
-    // Can throw a error when `cd.g.phpCharToUpper` is undefined, because it's set when the modules
+    // Can throw a error when cd.g.phpCharToUpper is undefined, because it's set when the modules
     // are ready.
   }
   const limit = (
@@ -170,7 +170,7 @@ export function getUserInfo(reuse = false) {
       try {
         cd.user.setRights(rights);
       } catch {
-        // Can throw a error when `cd.g.phpCharToUpper` is undefined, because it's set when the
+        // Can throw a error when cd.g.phpCharToUpper is undefined, because it's set when the
         // modules are ready
       }
 
@@ -289,11 +289,11 @@ export async function saveLocalOption(name, value) {
  */
 export async function saveGlobalOption(name, value) {
   if (!cd.config.useGlobalPreferences) {
-    // Normally, this won't run if `cd.config.useGlobalPreferences` is false. But it will run as
-    // part of `SettingsDialog#removeData()` in `settings.showDialog()`, removing the option if it
-    // existed, which may have a benificial effect if `cd.config.useGlobalPreferences` was true at
-    // some stage and a local setting with `cd.g.settingsOptionName` name was created instead of a
-    // global one, thus inviting the need to remove it upon removing all data.
+    // Normally, this won't run if cd.config.useGlobalPreferences is false. But it will run as part
+    // of SettingsDialog#removeData() in settings.showDialog(), removing the option if it existed,
+    // which may have a benificial effect if cd.config.useGlobalPreferences was true at some stage
+    // and a local setting with cd.g.settingsOptionName name was created instead of a global one,
+    // thus inviting the need to remove it upon removing all data.
     await saveLocalOption(name, value);
 
     return;

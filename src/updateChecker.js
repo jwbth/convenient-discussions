@@ -19,7 +19,7 @@ import { mixEventEmitterIntoObject } from './utils-oojs';
 import visits from './visits';
 
 // FIXME: Make this into a singleton (object) without inner module variables, so that it emits with
-// `this.emit()`. Move worker-related stuff to controller.
+// this.emit(). Move worker-related stuff to controller.
 
 const revisionData = {};
 const resolvers = {};
@@ -101,7 +101,7 @@ async function processPage(revisionToParseId) {
 
   revisionData[message.revisionId] ??= message;
 
-  // Clean up `revisionData` from values that can't be reused as it may grow really big. (The newest
+  // Clean up revisionData from values that can't be reused as it may grow really big. (The newest
   // revision could be reused as the current revision; the current revision could be reused as the
   // previous visit revision.)
   Object.keys(revisionData).forEach((key) => {
@@ -337,7 +337,7 @@ async function checkForUpdates() {
         const { comments: currentComments } = await processPage(currentRevisionId);
 
         // We set the value here, not after the first `await`, so that we are sure that
-        // `lastCheckedRevisionId` corresponds to the versions of comments that are currently
+        // lastCheckedRevisionId corresponds to the versions of comments that are currently
         // rendered.
         lastCheckedRevisionId = revisionId;
         updateChecker.emit('check', lastCheckedRevisionId);
@@ -491,8 +491,8 @@ function checkForNewChanges(currentComments) {
         if (!comment.htmlToCompare || comment.htmlToCompare !== newComment.htmlToCompare) {
           const updateSuccess = comment.update(currentComment, newComment);
 
-          // It is above the `Comment#markAsChanged()` call, because it's used in
-          // `Comment#flashChanged()` called indirectly by `Comment#markAsChanged()`.
+          // It is above the Comment#markAsChanged() call, because it's used in
+          // Comment#flashChanged() called indirectly by Comment#markAsChanged().
           comment.htmlToCompare = newComment.htmlToCompare;
 
           comment.markAsChanged('changed', updateSuccess, lastCheckedRevisionId, commentsData);
@@ -574,7 +574,7 @@ async function processComments(comments, currentComments, currentRevisionId) {
   const newComments = comments
     .filter((comment) => comment.id && !currentComments.some((mcc) => mcc.match === comment))
 
-    // Detach comments in the `newComments` object from those in the `comments` object (so that the
+    // Detach comments in the newComments object from those in the `comments` object (so that the
     // last isn't polluted when it is reused).
     .map((comment) => {
       const newComment = Object.assign({}, comment);

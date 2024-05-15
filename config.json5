@@ -1,10 +1,10 @@
 {
   protocol: 'https',
 
-  // No ending slash, as in `mw.config.get('wgScriptPath')`
+  // No ending slash, as in mw.config.get('wgScriptPath')
   scriptPath: '/w',
 
-  // With a placeholder, as in `mw.config.get('wgArticlePath')`
+  // With a placeholder, as in mw.config.get('wgArticlePath')
   articlePath: '/wiki/$1',
 
   main: {

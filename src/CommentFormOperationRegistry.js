@@ -43,8 +43,8 @@ class CommentFormOperationRegistry {
    * Close all registered operations.
    */
   closeAll() {
-    // Use `.slice()` because `CommentFormOperation#close` also removes the operation from the
-    // operation registry, this disrupting `.forEach()`.
+    // Use .slice() because CommentFormOperationRegistry#close() also removes the operation from the
+    // operation registry, this disrupting .forEach().
     this.items.slice().forEach((op) => op.close());
   }
 
@@ -152,8 +152,8 @@ class CommentFormOperation {
 
   /**
    * Check for conflicts of the operation with other pending operations, and if there are such,
-   * {@link CommentFormOperation#close close} the operation and return `true` to abort it. The rules
-   * are the following:
+   * {@link CommentFormOperationRegistry#close close} the operation and return `true` to abort it.
+   * The rules are the following:
    * - `preview` and `viewChanges` operations can be overriden with other of one of these types
    *   (every new request replaces the old, although a new automatic preview request cannot be made
    *   while the old is pending).

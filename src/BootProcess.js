@@ -260,13 +260,13 @@ class BootProcess {
 
       visits.init();
 
-      // A little dirty code here - `sectionRegistry.init()` is placed above `toc.init()` and
-      // `commentRegistry.init()`, to add event handlers for its methods quicker than
+      // A little dirty code here - sectionRegistry.init() is placed above toc.init() and
+      // commentRegistry.init(), to add event handlers for its methods quicker than
       // `sectionRegistry` and `toc` do for theirs:
-      // 1. `sectionRegistry.updateNewCommentsData()` sets `Section#newComments` that is later used
-      //    in `toc.addCommentCount()`.
-      // 2. `sectionRegistry.updateNewCommentsData()` must set `Section#newComments` before
-      //    `commentRegistry.registerSeen()` registers them as seen (= not new, in section's
+      // 1. sectionRegistry.updateNewCommentsData() sets Section#newComments that is later used in
+      //    toc.addCommentCount().
+      // 2. sectionRegistry.updateNewCommentsData() must set Section#newComments before
+      //    commentRegistry.registerSeen() registers them as seen (= not new, in section's
       //    terminology).
       sectionRegistry.init(this.subscriptions);
 
@@ -475,7 +475,7 @@ class BootProcess {
     $comment.textSelection('setContents', '');
 
     // DT's comment form produces errors after opening a CD's comment form because of hard code in
-    // WikiEditor that relies on `$('#wpTextbox1')`. We can't simply delete DT's dummy textarea
+    // WikiEditor that relies on $('#wpTextbox1'). We can't simply delete DT's dummy textarea
     // because it can show up unexpectedly right before WikiEditor's code is executed where it's
     // hard for us to wedge in.
     if ($('#wpTextbox1').length) {
@@ -524,7 +524,7 @@ class BootProcess {
         .map((id) => commentRegistry.getById(id))
         .filter(definedAndNotNull);
       if (comments.length) {
-        // `sleep()` for Firefox, as above
+        // sleep() for Firefox, as above
         sleep().then(() => {
           // A tricky case with flashing is when a comment is in a collapsed thread. In this case,
           // we must use Comment#scrollTo to make sure it is flashed when the thread is uncollapsed
@@ -547,7 +547,7 @@ class BootProcess {
           history.pushState(history.state, '', `#${section.id}`);
         }
 
-        // `sleep()` for Firefox, as above
+        // sleep() for Firefox, as above
         sleep().then(() => {
           section.$heading.cdScrollTo('top', false);
         });
@@ -689,8 +689,8 @@ class BootProcess {
 
     debug.stopTimer('main code');
 
-    // Operations that need reflow, such as `getBoundingClientRect()`, and those dependent on them
-    // go in this section.
+    // Operations that need reflow, such as getBoundingClientRect(), and those dependent on them go
+    // in this section.
     debug.startTimer('final code and rendering');
 
     // This should be done on rendering stage (would have resulted in unnecessary reflows were it
@@ -703,8 +703,8 @@ class BootProcess {
     // This updates some styles, shifting the offsets.
     controller.$root.addClass('cd-parsed');
 
-    // Should be below `navPanel.setup()` as `commentFormRegistry.restoreSession()` indirectly calls
-    // `navPanel.updateCommentFormButton()` which depends on the navigation panel being mounted.
+    // Should be below navPanel.setup() as commentFormRegistry.restoreSession() indirectly calls
+    // navPanel.updateCommentFormButton() which depends on the navigation panel being mounted.
     if (cd.page.isCommentable()) {
       if (this.firstRun) {
         cd.page.addAddTopicButton();
@@ -725,7 +725,7 @@ class BootProcess {
       // viewport position restoration as it may shift the layout (if the viewport position
       // restoration relies on elements that are made hidden when threads are collapsed, the
       // algorithm finds the expand note). Should better be above comment highlighting
-      // (`commentRegistry.configureAndAddLayers()`, `visits#process()`) to avoid spending time on
+      // (commentRegistry.configureAndAddLayers(), visits#process()) to avoid spending time on
       // comments in collapsed threads.
       Thread.init();
 
@@ -740,7 +740,7 @@ class BootProcess {
         c.isLineGapped
       ));
 
-      // Should be below `Thread.init()` as these functions may want to scroll to a comment in a
+      // Should be below Thread.init() as these functions may want to scroll to a comment in a
       // collapsed thread.
       if (this.firstRun) {
         this.deactivateDtHighlight();
@@ -758,12 +758,12 @@ class BootProcess {
         controller.addEventListeners();
       }
 
-      // We set up the mutation observer at every reload because `controller.$content` may change
+      // We set up the mutation observer at every reload because controller.$content may change
       // (e.g. RevisionSlider replaces it).
       controller.setupMutationObserver();
 
       if (settings.get('reformatComments') && commentRegistry.getCount()) {
-        // Using the `wikipage.content` hook could theoretically disrupt code that needs to process
+        // Using the wikipage.content hook could theoretically disrupt code that needs to process
         // the whole page content, if it runs later than CD. But typically CD runs relatively late.
         mw.hook(cd.config.hookToFireWithAuthorWrappers).fire($('.cd-comment-author-wrapper'));
       }

@@ -143,9 +143,9 @@ class Thread {
     } else {
       // We could improve the positioning of the thread line to exclude the vertical space next to
       // an outdent template placed at a non-0 level by taking the first element as the start
-      // element. But then we need to fix `areTopAndBottomAligned()` (calculate the last comment's
-      // margins instead of using the first comment's) and `utils-window.getRangeContents()` (come
-      // up with a treatment for the situation when the end element includes the start element).
+      // element. But then we need to fix areTopAndBottomAligned() (calculate the last comment's
+      // margins instead of using the first comment's) and utilsWindow.getRangeContents() (come up
+      // with a treatment for the situation when the end element includes the start element).
       startElement = (
         this.constructor.findItemElement(
           firstNotHeadingElement,
@@ -693,7 +693,7 @@ class Thread {
 
     const rectOrOffset = rectTop || comment.getOffset({ floatingRects });
 
-    // Should be below `comment.getOffset()` as `Comment#isStartStretched` is set inside that call.
+    // Should be below comment.getOffset() as Comment#isStartStretched is set inside that call.
     const commentMargins = needCalculateMargins ? comment.getMargins() : undefined;
 
     let top;
@@ -890,7 +890,7 @@ class Thread {
 
     const comments = [];
 
-    // FIXME: Leave only `data.collapsedThreads` after June 2024
+    // FIXME: Leave only data.collapsedThreads after June 2024
     (data.collapsedThreads || data.threads)?.forEach((thread) => {
       const comment = commentRegistry.getById(thread.id);
       if (comment?.thread) {
@@ -911,14 +911,14 @@ class Thread {
         }
       } else {
         // Remove IDs that have no corresponding comments or threads from the data. FIXME: Leave
-        // only `data.collapsedThreads` after June 2024
+        // only data.collapsedThreads after June 2024
         removeFromArrayIfPresent(data.collapsedThreads || data.threads, thread);
       }
     });
 
     if (this.collapseThreadsLevel !== 0) {
-      // Don't precisely target comments of level `this.collapseThreadsLevel` in case there is a
-      // gap, for example between the `(this.collapseThreadsLevel - 1)` level and the
+      // Don't precisely target comments of level this.collapseThreadsLevel in case there is a gap,
+      // for example between the `(this.collapseThreadsLevel - 1)` level and the
       // `(this.collapseThreadsLevel + 1)` level (the user muse have replied to a comment at the
       // `(this.collapseThreadsLevel - 1)` level but inserted `::` instead of `:`).
       for (let i = 0; i < commentRegistry.getCount(); i++) {

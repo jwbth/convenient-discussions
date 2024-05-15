@@ -9,7 +9,7 @@
  * @module utilsTimestamp
  */
 
-// Note: `cd.settings` is used in this module instead of imported "settings" to prevent adding that
+// Note: cd.settings is used in this module instead of imported "settings" to prevent adding that
 // module to the worker build (and a lot of others together with it).
 
 import { formatDistanceToNowStrict } from 'date-fns';
@@ -129,7 +129,7 @@ export function getDateFromTimestampMatch(match, timezone) {
       case 'xg':
       case 'F':
       case 'M': {
-        // The worker context doesn't have `mw.msg`, but `isContentLanguage` should be always `true`
+        // The worker context doesn't have mw.msg(), but isContentLanguage should be always `true`
         // there.
         const messages = isContentLanguage ?
           getContentLanguageMessages(dateTokenToMessageNames[code]) :

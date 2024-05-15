@@ -41,7 +41,7 @@ class TributeRange {
 
             if (scrollTo) this.scrollIntoView()
 
-            // jwbth: Removed `setTimeout` part entirely as it seems to have no effect after other
+            // jwbth: Removed setTimeout part entirely as it seems to have no effect after other
             // changes.
         } else {
             this.tribute.menu.style.cssText = 'display: none'
@@ -149,7 +149,7 @@ class TributeRange {
             myField.selectionStart = startPos
             myField.selectionEnd = endPos
 
-            // jwbth: Made alterations to make the `keepAsEnd` config value work.
+            // jwbth: Made alterations to make the keepAsEnd config value work.
             if (context.collection.keepAsEnd) {
                 const [end] = ending.match(context.collection.keepAsEnd) || []
                 if (end) {
@@ -238,7 +238,7 @@ class TributeRange {
                 if (
                     idx > mostRecentTriggerCharPos ||
 
-                    // jwbth: Added this lines, as well as the `mostRecentTriggerCharLength`
+                    // jwbth: Added this lines, as well as the mostRecentTriggerCharLength
                     // variable and operations with it, to have triggers like "[[#" be used instead
                     // of triggers like "[[" if both are present.
                     (
@@ -431,18 +431,17 @@ class TributeRange {
             style[prop] = computed[prop]
         })
 
-        // jwbth: replaced `parseInt` with `parseFloat`: `parseInt` can result in a wrongly
-        // positioned menu due to a line break (have seen an example when edited
-        // [[:en:Wikipedia:Village pump (proposals)#Allow fair use non-freely licensed photos of
-        // politicians]]). Removed `isFirefox` condition as it was calculated incorrectly and was
-        // always `true`.
+        // jwbth: replaced parseInt with parseFloat: parseInt can result in a wrongly positioned
+        // menu due to a line break (have seen an example when edited [[:en:Wikipedia:Village pump
+        // (proposals)#Allow fair use non-freely licensed photos of politicians]]). Removed
+        // isFirefox condition as it was calculated incorrectly and was always `true`.
         style.width = `${parseFloat(computed.width)}px`
         if (element.scrollHeight > parseFloat(computed.height))
             style.overflowY = 'scroll'
 
         div.textContent = element.value.substring(0, position)
 
-        // jwbth: Removed replacing "\s" with ' ' as its function is unclear and negative effects
+        // jwbth: Removed replacing `\s` with `' '` as its function is unclear and negative effects
         // are likely (say, when replacing the tab character with the space that has different
         // width).
 
@@ -458,8 +457,8 @@ class TributeRange {
 
         let doc = document.documentElement
 
-        // jwbth: Replaced `window.innerWidth` with `document.documentElement.clientWidth` here and
-        // in other places to have the scrollbars counted.
+        // jwbth: Replaced window.innerWidth with document.documentElement.clientWidth here and in
+        // other places to have the scrollbars counted.
         let windowWidth = doc.clientWidth
         let windowHeight = doc.clientHeight
 
@@ -505,8 +504,8 @@ class TributeRange {
         }
 
         if (menuIsOffScreen.bottom) {
-            // jwbth: Removed the block setting `coordinates.bottom` as a reference point as well as
-            // the `parentHeight` variable, added the block setting the height for the menu.
+            // jwbth: Removed the block setting coordinates.bottom as a reference point as well as
+            // the parentHeight variable, added the block setting the height for the menu.
             const height = windowTop + windowHeight - coordinates.top -
                 parseFloat(getComputedStyle(element).paddingTop) - 3
             coordinates.additionalStyles = `height: ${height}px; overflow-y: scroll;`

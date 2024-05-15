@@ -8,7 +8,7 @@ ol .cd-section-button {
 }
 
 // Override the default styles to make the section menu appear correctly on RTL wikis with LTR
-// interface and vice versa, when the `.mw-editsection` block stretches across multiple lines. TODO:
+// interface and vice versa, when the .mw-editsection block stretches across multiple lines. TODO:
 // do it upstream?
 .mw-editsection::before {
   .ltr.sitedir-rtl & {
@@ -21,7 +21,7 @@ ol .cd-section-button {
 }
 
 // Fix MediaWiki. `margin-inline` seems to be inapplicable here, because we don't have the right
-// `direction` value here (and `content` is used with `::before` for the same reason). TODO: do it
+// `direction` value here (and `content` is used with ::before for the same reason). TODO: do it
 // upstream. This already exists in VisualEditor.
 .ltr.sitedir-rtl,
 .rtl.sitedir-ltr {

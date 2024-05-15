@@ -51,7 +51,7 @@ export default async function processFragment() {
   }
 
   if (comment) {
-    // `sleep()` is for Firefox - for some reason, without it Firefox positions the underlay
+    // sleep() is for Firefox - for some reason, without it Firefox positions the underlay
     // incorrectly. (TODO: does it still? Need to check.)
     sleep().then(() => {
       comment.scrollTo({

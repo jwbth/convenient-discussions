@@ -56,7 +56,7 @@ class CommentForm {
    * @fires commentFormCustomModulesReady
    */
   constructor({ mode, target, initialState, preloadConfig, newTopicOnTop }) {
-    // Do it here because `OO.EventEmitter` can be unavailable when this module is first imported.
+    // Do it here because OO.EventEmitter can be unavailable when this module is first imported.
     OO.mixinClass(CommentForm, OO.EventEmitter);
 
     // Mixin constructor
@@ -183,8 +183,8 @@ class CommentForm {
     this.lastKeyPresses = [];
 
     if (this.mode === 'addSection') {
-      // This is above `this.createContents()` as that function is time-costly and would delay the
-      // requests made in `this.addEditNotices()`.
+      // This is above this.createContents() as that function is time-costly and would delay the
+      // requests made in this.addEditNotices().
       this.addEditNotices();
     }
 
@@ -879,7 +879,7 @@ class CommentForm {
       this.$advanced.hide();
     }
 
-    // `.mw-body-content` for 404 pages
+    // .mw-body-content for 404 pages
     /**
      * The area where comment previews and changes are displayed.
      *
@@ -1308,7 +1308,7 @@ class CommentForm {
       .parent()
       .remove();
 
-    // We mirror the functionality of the `ext.charinsert` module to keep the undo/redo
+    // We mirror the functionality of the ext.charinsert module to keep the undo/redo
     // functionality.
     this.$messageArea
       .find('.mw-charinsert-item')
@@ -2994,8 +2994,8 @@ class CommentForm {
             message = captchaMessage.$element;
           }
 
-          // FIXME: We don't pass `apiResp` to prevent the message for `missingtitle` to be
-          // overriden, which is hacky.
+          // FIXME: We don't pass apiResp to prevent the message for `missingtitle` to be overriden,
+          // which is hacky.
           this.handleError({
             type,
             message,
@@ -3148,10 +3148,10 @@ class CommentForm {
 
     const editTimestamp = await this.editPage(contextCode, operation, suppressTag);
 
-    // The operation is closed inside `CommentForm#editPage`.
+    // The operation is closed inside CommentForm#editPage().
     if (!editTimestamp) return;
 
-    // Here we use a trick where we pass, in `bootData`, the name of the section that was set to be
+    // Here we use a trick where we pass, in bootData, the name of the section that was set to be
     // be watched/unwatched using a checkbox in a form just sent. The server doesn't manage to
     // update the value quickly enough, so it returns the old value, but we must display the new
     // one.
@@ -3879,8 +3879,8 @@ class CommentForm {
       head: true,
       $floatableContainer: this.commentInput.$element,
 
-      // Not `$root` - add section form is outside it. Not `$content` either - it's the same as
-      // `$root` on 404 pages.
+      // Not $root - add section form is outside it. Not $content either - it's the same as $root on
+      // 404 pages.
       $container: controller.$root.parent(),
 
       position: (
@@ -3934,8 +3934,8 @@ class CommentForm {
       head: true,
       $floatableContainer: this.commentInput.$element,
 
-      // Not `$root` - add section form is outside it. Not `$content` either - it's the same as
-      // `$root` on 404 pages.
+      // Not $root - add section form is outside it. Not $content either - it's the same as $root on
+      // 404 pages.
       $container: controller.$root.parent(),
 
       position: (

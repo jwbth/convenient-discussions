@@ -28,7 +28,7 @@ class LegacySubscriptions extends Subscriptions {
     if (!cd.user.isRegistered()) return;
 
     try {
-      // `mw.user.options` is not used even on first run because it appears to be cached sometimes
+      // mw.user.options is not used even on first run because it appears to be cached sometimes
       // which can be critical for determining subscriptions.
       this.unpack(await getUserInfo(reuse).then(({ subscriptions }) => subscriptions));
     } catch (e) {

@@ -14,7 +14,7 @@ class Subscriptions {
    * {@link controller.getSubscriptionsInstance}.
    */
   constructor() {
-    // Do it here because `OO.EventEmitter` can be unavailable when this module is first imported.
+    // Do it here because OO.EventEmitter can be unavailable when this module is first imported.
     OO.mixinClass(Subscriptions, OO.EventEmitter);
 
     // Mixin constructor
@@ -51,7 +51,7 @@ class Subscriptions {
   updateLocally(subscribeId, subscribe) {
     if (subscribeId === undefined) return;
 
-    // `this.data` can be not set on newly created pages with DT subscriptions enabled.
+    // this.data can be not set on newly created pages with DT subscriptions enabled.
     this.data ||= {};
 
     this.data[subscribeId] = Boolean(subscribe);

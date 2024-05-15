@@ -64,7 +64,7 @@ export default {
   cdScrollTo(alignment = 'top', smooth = true, callback) {
     let $elements = this.cdRemoveNonElementNodes();
 
-    // Filter out elements like those having `class="mw-empty-elt"`.
+    // Filter out elements like those having class="mw-empty-elt".
     const findFirstVisibleElementOffset = (direction) => {
       const elements = $elements.get();
       if (direction === 'backward') {
@@ -173,7 +173,7 @@ export default {
       callback?.();
     } else {
       if (callback) {
-        // Add `sleep()` for a more smooth animation in case there is `.focus()` in the callback.
+        // Add sleep() for a more smooth animation in case there is .focus() in the callback.
         sleep().then(() => {
           this.cdScrollTo(alignment, smooth, callback);
         });
