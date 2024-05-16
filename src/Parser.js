@@ -112,8 +112,17 @@ class Parser {
         el.hasAttribute('data-mw-comment-start') ||
         el.hasAttribute('data-mw-comment-end') ||
 
-        // This, in fact, targets the one span at the top of the page, out of sections
-        (el.tagName === 'SPAN' && el.hasAttribute('data-mw-thread-id'))
+        // This, in fact, targets the one span at the top of the page, out of sections which makes
+        // comments taller (example:
+        // https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house/CD_test_page&oldid=876639400).
+        // Check for classes and content because in older DT versions, `data-mw-thread-id` was on
+        // the .mw-headline element.
+        (
+          el.tagName === 'SPAN' &&
+          el.hasAttribute('data-mw-thread-id') &&
+          !el.classList.length &&
+          !el.textContent
+        )
       ))
       .concat(
         [...this.context.rootElement.getElementsByClassName('ext-discussiontools-init-replylink-buttons')]
