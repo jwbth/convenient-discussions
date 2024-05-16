@@ -590,7 +590,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
             cd.g.serverName,
             'commons.wikimedia.org'
           );
-          projectNameOrPageName = `[[${prefix}${pageName}]]`;
+          projectNameOrPageName = `[[:${prefix}${pageName}]]`;
         } else {
           projectNameOrPageName = pageNameOrProjectName;
         }
