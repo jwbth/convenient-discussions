@@ -513,10 +513,17 @@ class Parser {
    * @returns {object[]}
    */
   findHeadings() {
-    return [...this.context.rootElement.querySelectorAll('.mw-heading, h1, h2, h3, h4, h5, h6')]
+    return [...this.context.rootElement.querySelectorAll('h1, h2, h3, h4, h5, h6')]
+      .map((element) => {
+        for (let el = element; el && el !== this.context.rootElement; el = el.parentNode) {
+          if (el.classList.contains('mw-heading')) {
+            return el;
+          }
+        }
+        return element;
+      })
       .filter((el) => (
         el.getAttribute('id') !== 'mw-toc-heading' &&
-        !isHeadingNode(el.parentNode) &&
         !this.noSignatureElements.some((noSigEl) => noSigEl.contains(el))
       ))
       .map((element) => ({
