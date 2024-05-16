@@ -554,11 +554,11 @@ function processHistory($content) {
  * @private
  */
 function processDiff($diff) {
-  // Filter out cases when "wikipage.diff" was fired for the native MediaWiki's diff at the top of
+  // Filter out cases when wikipage.diff was fired for the native MediaWiki's diff at the top of
   // the page that is a diff page (unless only a diff, and no content, is displayed - if
-  // mw.user.options.get('diffonly') or the "diffonly" URL parameter is true). We parse that diff on
-  // "convenientDiscussions.pageReady" instead.
-  if (controller.isTalkPage() && $diff?.parent().is(controller.$content)) return;
+  // mw.user.options.get('diffonly') or the `diffonly` URL parameter is true). We parse that diff on
+  // convenientDiscussions.pageReady hook instead.
+  if ($diff?.parent().is(controller.$content) && controller.$root) return;
 
   if (!cd.g.uiTimestampRegexp) {
     init.timestampParsingTools('user');
