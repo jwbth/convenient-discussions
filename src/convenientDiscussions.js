@@ -279,6 +279,15 @@ Object.assign(cd.g, {
   threadLineSideMargin: 3,
 
   /**
+   * Width (thickness) of thread lines when you hover over them. Should be an odd number - otherwise
+   * the browser will render 1 pixel more on one side, and for each comment differently.
+   *
+   * @type {number}
+   * @memberof convenientDiscussions.g
+   */
+  threadLineWidth: 3,
+
+  /**
    * Number of seconds between checks for new comments when the tab is not hidden.
    *
    * @type {number}

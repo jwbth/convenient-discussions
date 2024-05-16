@@ -681,6 +681,7 @@ export default {
   --cd-comment-deleted-background-color: #fee7e6;
   --cd-comment-deleted-hovered-background-color: #fddbd9;
   --cd-comment-fallback-side-margin: ${cd.g.commentFallbackSideMargin}px;
+  --cd-thread-line-width: ${cd.g.threadLineWidth}px;
   --cd-thread-line-side-margin: ${cd.g.threadLineSideMargin}px;
   --cd-content-background-color: ${contentBackgroundColor};
   --cd-content-start-margin: ${contentStartMargin}px;

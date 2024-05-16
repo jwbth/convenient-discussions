@@ -644,7 +644,7 @@ class Thread {
       let offset;
 
       // Don't round - we need a subpixel-precise value
-      const centerOffset = (lineWidth - 1) / 2 / cd.g.pixelDeviationRatio;
+      const centerOffset = ((cd.g.threadLineWidth - 1) / 2) / cd.g.pixelDeviationRatio;
 
       if (dir === 'ltr') {
         offset = rectOrOffset.left - centerOffset;
@@ -652,7 +652,7 @@ class Thread {
           offset -= commentMargins.left + 1;
         }
       } else {
-        offset = rectOrOffset.right - lineWidth + centerOffset;
+        offset = rectOrOffset.right - (cd.g.threadLineWidth / cd.g.pixelDeviationRatio) + centerOffset;
         if (commentMargins) {
           offset += commentMargins.right + 1;
         }
@@ -660,7 +660,7 @@ class Thread {
       if (rectOrOffset instanceof DOMRect) {
         offset += scrollX;
       }
-      return offset - lineSideMargin;
+      return offset - cd.g.threadLineSideMargin;
     };
     const getTop = (rectOrOffset) => (
       rectOrOffset instanceof DOMRect ?
@@ -668,8 +668,6 @@ class Thread {
         rectOrOffset.top
     );
 
-    const lineWidth = 3;
-    const lineSideMargin = cd.g.threadLineSideMargin;
     const comment = this.rootComment;
 
     if (comment.isCollapsed && !this.isCollapsed) {
