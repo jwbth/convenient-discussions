@@ -268,10 +268,10 @@ export default {
 
         // Nested containers shouldn't count, the offset of layers inside them may be OK, unlike the
         // layers preceding them.
-        } else if (!comment.getLayersContainer().cdIsTopLayersContainer) {
+        } else if (comment.getLayersContainer().cdIsTopLayersContainer) {
           // isMoved === false
           notMovedCount++;
-          if (notMovedCount === 4) {
+          if (notMovedCount === 2) {
             return true;
           }
         }
