@@ -479,6 +479,12 @@ describe('Tags and templates', () => {
     firstCommentReplyForm
   );
   testWithData(
+    '<syntaxhighlight> at the end of a line with a newline after (common when editing)',
+    'Text.<syntaxhighlight lang="javascript">\nif (a) {\n\tdoSmth();\n}\n</syntaxhighlight>\nEnd.',
+    ': Text.<syntaxhighlight lang="javascript">\nif (a) {\n\tdoSmth();\n}\n</syntaxhighlight>End. ~~~~\n',
+    firstCommentReplyForm
+  );
+  testWithData(
     '<nowiki>',
     'Text.\n<nowiki>  {{template}}  </nowiki>',
     ': Text.<br><nowiki>  {{template}}  </nowiki> ~~~~\n',
