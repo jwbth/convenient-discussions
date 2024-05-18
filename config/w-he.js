@@ -317,7 +317,7 @@ export default {
    * @type {number}
    * @default 50
    */
-  // summaryCommentTextLengthLimit: 50,
+  // commentToSummaryLengthLimit: 50,
 
   /**
    * Regular expression matching the names of the pages where an sending empty comment shouldn't be

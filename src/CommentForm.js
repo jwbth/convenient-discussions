@@ -3328,7 +3328,7 @@ class CommentForm {
         .replace(/\[\[:?(?:([^|[\]<>\n]+)\|)?(.+?)\]\]/g, (s, wikilink, text) => (
           cd.g.userLinkRegexp.test(wikilink) ? text : s
         ));
-      if (commentText && commentText.length <= cd.config.summaryCommentTextLengthLimit) {
+      if (commentText && commentText.length <= cd.config.commentToSummaryLengthLimit) {
         optionalText = `: ${commentText} (-)`;
       }
     } else if (this.mode === 'addSubsection') {

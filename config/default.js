@@ -624,12 +624,12 @@ export default {
   bytesToDeemComment: 50,
 
   /**
-   * Upper limit of the length of a comment to put its whole content in the edit summary.
+   * The maximum length of a comment at which its whole content is copied into the edit summary.
    *
    * @type {number}
    * @default 50
    */
-  summaryCommentTextLengthLimit: 50,
+  commentToSummaryLengthLimit: 50,
 
   /**
    * Regular expression matching the names of the pages where an sending empty comment shouldn't be
