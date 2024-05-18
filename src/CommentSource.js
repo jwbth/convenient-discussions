@@ -746,7 +746,6 @@ class CommentSource {
             }
           }
 
-          commentCode ??= commentForm.inputToCode(formAction);
           contextCode = (
             originalContextCode.slice(0, startIndex) +
             originalContextCode.slice(endIndex)
