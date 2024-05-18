@@ -215,7 +215,7 @@ export default {
   /**
    * Check if the navigation panel is mounted. Is equivalent to checking the existence of
    * {@link module:navPanel.$element}, and for most practical purposes, does the same as the
-   * {@link module:Page#isActive} check.
+   * {@link module:pageRegistry.Page#isActive} check.
    *
    * @returns {boolean}
    */

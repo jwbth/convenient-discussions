@@ -6,7 +6,7 @@ import { calculateWordOverlap, countOccurrences, defined, definedAndNotNull, gen
 import { brsToNewlines, extractSignatures, maskDistractingCode, normalizeCode, removeWikiMarkup } from './utils-wikitext';
 
 /**
- * Class that keeps the methods and data related to the comment's source code. Also used for comment
+ * Class that keeps the methods and data related to a comment's source code. Also used for comment
  * source match candidates before a single match is chosen among them.
  */
 class CommentSource {
@@ -16,7 +16,7 @@ class CommentSource {
    * @param {Comment} comment Comment.
    * @param {object} signature Data about the source code of the signature.
    * @param {string} contextCode Wikitext used as a reference point for the indexes.
-   * @param {boolean} isInSectionContext Is the section source code used.
+   * @param {boolean} isInSectionContext Is the source code of the section (not page) used.
    */
   constructor(comment, signature, contextCode, isInSectionContext) {
     this.comment = comment;
@@ -747,7 +747,10 @@ class CommentSource {
           }
 
           commentCode ??= commentForm.inputToCode(formAction);
-          contextCode = originalContextCode.slice(0, startIndex) + originalContextCode.slice(endIndex);
+          contextCode = (
+            originalContextCode.slice(0, startIndex) +
+            originalContextCode.slice(endIndex)
+          );
         } else {
           contextCode = (
             originalContextCode.slice(0, this.lineStartIndex) +

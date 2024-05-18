@@ -151,12 +151,11 @@ export class Page {
    * Check whether the current page is an active talk page: existing, the current revision, not an
    * archive page.
    *
-   * This value isn't static:
-   *   1. A 404 page doesn't have an ID and is considered inactive, but if the user adds a topic to
-   *      it, it will become active and get an ID.
-   *   2. The user may switch to another revision using RevisionSlider.
-   *   3. On a really rare occasion, an active page may become inactive if it becomes identified as
-   *      an archive page. This possibility is currently switched off.
+   * This value is constant in most cases, but there are exceptions:
+   *   1. The user may switch to another revision using
+   *      {@link https://www.mediawiki.org/wiki/Extension:RevisionSlider RevisionSlider}.
+   *   2. On a really rare occasion, an active page may become inactive if it becomes identified as
+   *      an archive page. This was switched off when I wrote this.
    *
    * @returns {?boolean}
    */
@@ -838,7 +837,7 @@ export class Page {
   }
 
   /**
-   * Add a comment form targeted at this page to the page.
+   * Add a comment form {@link CommentForm#getTarget targeted} at this page to the page.
    *
    * @param {string} mode
    * @param {import('./CommentForm').default} commentForm
@@ -852,7 +851,7 @@ export class Page {
   }
 
   /**
-   * Remove a comment form targeted at this page from the page.
+   * Remove a comment form {@link CommentForm#getTarget targeted} at this page from the page.
    */
   removeCommentFormFromPage() {
     if (!this.exists()) {
@@ -1010,7 +1009,8 @@ class PageSource {
   }
 
   /**
-   * Modify a page code string in accordance with an action. The `'addSection'` action is presumed.
+   * Modify the page code string in accordance with an action. The `'addSection'` action is
+   * presumed.
    *
    * @param {object} options
    * @param {string} options.commentCode Comment code, including trailing newlines and the

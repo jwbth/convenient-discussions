@@ -727,7 +727,6 @@ class Parser {
    */
   getNestingLevel(element) {
     const treeWalker = new ElementsTreeWalker(element, this.context.rootElement);
-
     let nestingLevel = 0;
     while (treeWalker.parentNode()) {
       nestingLevel++;

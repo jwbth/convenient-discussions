@@ -1075,7 +1075,7 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Add a comment form targeted at this section to the page.
+   * Add a comment form {@link CommentForm#getTarget targeted} at this section to the page.
    *
    * @param {string} mode
    * @param {import('./CommentForm').default} commentForm
@@ -1104,7 +1104,7 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Remove a comment form targeted at this section from the page.
+   * Remove a comment form {@link CommentForm#getTarget targeted} at this section from the page.
    *
    * @param {string} mode
    */

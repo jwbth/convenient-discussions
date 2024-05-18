@@ -184,6 +184,7 @@ class Button {
    *
    * @param {Function} action
    * @param {Event} e
+   * @protected
    */
   maybeExecuteAction(action, e) {
     if (

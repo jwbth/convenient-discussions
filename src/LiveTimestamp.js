@@ -155,7 +155,7 @@ class LiveTimestamp {
   }
 
   /**
-   * Reset all the live timestamps on the page (this is run at every page load).
+   * Reset the list of live timestamps on the page (this is run at every page load).
    */
   static reset() {
     this.updateTimeouts.forEach(clearTimeout);

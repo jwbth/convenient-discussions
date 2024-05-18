@@ -29,7 +29,7 @@ class SectionSkeleton {
     const returnNodeIfHNode = (node) => isHeadingNode(node, true) ? node : null;
 
     /**
-     * `H1...6' element.
+     * `H1...6` element.
      *
      * @type {Element|external:Element}
      */
@@ -37,7 +37,8 @@ class SectionSkeleton {
       returnNodeIfHNode(this.headingElement) ||
       returnNodeIfHNode(this.headingElement.firstElementChild) ||
 
-      // Precaution in case something in MediaWiki changes
+      // Russian Wikivoyage and anything with .mw-h2section (not to be confused with .mw-heading2).
+      // Also, a precaution in case something in MediaWiki changes.
       this.headingElement.querySelectorAll('h1, h2, h3, h4, h5, h6')[0]
     );
 

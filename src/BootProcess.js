@@ -118,7 +118,7 @@ function processAndRemoveDtElements(elements, bootProcess) {
  * Data passed from the previous page state.
  *
  * @typedef {object} PassedData
- * @property {string} [html] HTML code of the page content to replace the current content with.
+ * @property {string} [parseData] Response to the parse request from the API.
  * @property {string} [commentId] ID of a comment to scroll to.
  * @property {string} [sectionId] ID of a section to scroll to.
  * @property {string} [pushState] Whether to replace the URL in the address bar adding the comment
@@ -500,8 +500,8 @@ class BootProcess {
     // Don't outright remove the element so that DT has time to save the draft as empty.
     $dtNewTopicForm.hide();
 
-    // This looks like it regulates adding a new topic form on DT init. This is for future page
-    // refreshes.
+    // wgDiscussionToolsStartNewTopicTool looks like it regulates adding a new topic form on DT
+    // init. This disables it for future page refreshes.
     mw.config.set('wgDiscussionToolsStartNewTopicTool', false);
 
     return {

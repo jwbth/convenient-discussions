@@ -1,5 +1,5 @@
 /**
- * Class representing a list of the comment's subitems. There can be two types of subitems
+ * Class representing the list of a comment's subitems. There can be two types of subitems
  * currently: comment forms and "new replies" notes. They are managed with this class to handle the
  * removal of their parent list properly.
  */
@@ -49,7 +49,7 @@ class CommentSubitemList {
   }
 
   /**
-   * Get a subitem with the provided name.
+   * Get the subitem with the provided name.
    *
    * @param {string} name
    * @returns {?external:jQuery}

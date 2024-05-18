@@ -22,7 +22,7 @@ export default {
    * Each special page can have either an array of alias strings or an alias string.
    *
    * @type {object}
-   * @default []
+   * @default {}
    */
   specialPageAliases: {},
 
@@ -124,6 +124,7 @@ export default {
    * we can't get this using API, see {@link https://phabricator.wikimedia.org/T204610}.
    *
    * @type {?UserNamespacesByGender}
+   * @default null
    * @example
    * // If only the female form differs from the standard name
    * {
@@ -137,6 +138,7 @@ export default {
    * gender-neutral, specify it here.
    *
    * @type {?string}
+   * @default null
    * @example
    * // Russian Wikipedia
    * 'У'
@@ -155,22 +157,22 @@ export default {
    *   `$1`, `$2`, etc. Regular expressions for these tokens, if any, should be defined in the
    *   `replacements` array.
    * @property {string} archive Archive prefix. Should use the same tokens as in `source`.
-   * @property {RegExp[]} [replacements] Array of replacements for `$1`, `$2` tokens in
-   *   `source` and `archive`. Note that the regexp should, if put into the `archive` pattern,
-   *   capture only the part that is common for the source page and the archive page<u>s</u>. E.g.,
-   *   in "Wikipedia:Village pump/Archive/General/2020/07", it should capture "General", but not
+   * @property {RegExp[]} [replacements] Array of replacements for `$1`, `$2` tokens in `source` and
+   *   `archive`. Note that the regexp, if put into the `archive` pattern, should capture only the
+   *   part that is shared by both the source page and the archive page<u>s</u>. E.g., in
+   *   "Wikipedia:Village pump/Archive/General/2020/07", it should capture "General", but not
    *   "General/2020/07". So, you shouldn't use `/.+/` here and use, for example, `/[^/]+/` instead.
    */
 
   /**
    * Collection of archive paths, (sometimes) with correspondent source pages paths. It is used in
    * multiple purposes:
-   * - to identify pages that will be considered inactive, i.e. no replies can be left on them;
-   * - to suggest to search in the archive if the section/comment by a given fragment is not found
-   *   on the page;
+   * - to identify inactive pages, i.e. no replies can be left on them;
+   * - to suggest to search in the archive if a section/comment by a given fragment is not found on
+   *   the page;
    * - to make diff/thank links work on archive pages.
    *
-   * Each of the array elements can be an object with defined structure (see
+   * Each of the array elements can be an object with the defined structure (see
    * {@link ArchivePathEntry} for details) or a regexp. In the latter case, if a page name matches
    * the regexp, it will be considered an archive page, and the name of the source page for that
    * page will be obtained by removing everything that starts with the pattern in the page name
@@ -240,6 +242,7 @@ export default {
    * use it for the comment independent of this value.
    *
    * @type {'mimic'|'unify'}
+   * @default 'mimic'
    */
   indentationCharMode: 'mimic',
 
@@ -248,6 +251,7 @@ export default {
    * the beginning if it is needed.
    *
    * @type {string}
+   * @default ' '
    */
   defaultSignaturePrefix: ' ',
 
@@ -262,7 +266,7 @@ export default {
    * ```html
    * ''Reply in italics.'' [signature]
    * ```
-   * Here, `''` is not a part of the signature.
+   * Here, the second `''` is not a part of the signature.
    *
    * `(?:\s[-–−—―]+\xa0?[A-Z][A-Za-z-_]*)?` is for cases like
    * {@link https://en.wikipedia.org/?diff=1033395227}.
@@ -287,8 +291,8 @@ export default {
   signatureEndingRegexp: null,
 
   /**
-   * Convenient Discussions tag according to Special:Tags. Needs to be added manually. Set to `null`
-   * of there is no tag.
+   * Convenient Discussions tag according to Special:Tags. Needs to be added manually by a local
+   * admin. Set to `null` of there is no tag.
    *
    * @type {?string}
    * @default null
@@ -350,6 +354,7 @@ export default {
    * Name of the class that the unsigned templates set to its container element.
    *
    * @type {string}
+   * @default 'autosigned'
    */
   unsignedClass: 'autosigned',
 
@@ -403,6 +408,7 @@ export default {
    * Name of the class that the outdent templates set to its container element.
    *
    * @type {string}
+   * @default 'outdent-template'
    */
   outdentClass: 'outdent-template',
 
@@ -411,6 +417,7 @@ export default {
    * {@link https://en.wikipedia.org/wiki/Template:Clear}.
    *
    * @type {string[]}
+   * @default []
    */
   clearTemplates: [],
 
@@ -418,14 +425,17 @@ export default {
    * Character used to trigger user mention (ping) autocomplete.
    *
    * @type {string}
+   * @default '@'
    */
   mentionCharacter: '@',
 
   /**
    * Should there be a leading space (or other punctuation) before
    * {@link module:defaultConfig.mentionCharacter the mention character} to trigger autocomplete.
+   * This is for languages where spaces are used less.
    *
    * @type {boolean}
+   * @default true
    */
   mentionRequiresLeadingSpace: true,
 
@@ -507,8 +517,8 @@ export default {
    * @example
    * [
    *   /^<!--[^]*?--> *\n+/,
-   *   // ...But comments are cut out of comment beginnings by default, so you don't need to specify
-   *   // it.
+   *   // ...But HTML comments are cut out of comment beginnings by default, so you don't need to
+   *   // specify it.
    * ]
    */
   badCommentBeginnings: [],

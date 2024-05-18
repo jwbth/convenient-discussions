@@ -582,7 +582,7 @@ class CommentSkeleton {
       part.step !== 'back' ||
       part.node.tagName !== 'LI' ||
 
-      // Here we, in fact, hardcode wgDiscussionToolsReplyIndentation = 'bullet' for ruwiki.
+      // Here we, in fact, hardcode PHP's wgDiscussionToolsReplyIndentation = 'bullet' for ruwiki.
       cd.g.serverName === 'ru.wikipedia.org'
     ) {
       return false;

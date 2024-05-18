@@ -4,7 +4,7 @@ import { calculateWordOverlap } from './utils-general';
 import { endWithTwoNewlines, extractSignatures, normalizeCode, removeWikiMarkup } from './utils-wikitext';
 
 /**
- * Class that keeps the methods and data related to the section's source code. Also used for section
+ * Class that keeps the methods and data related to a section's source code. Also used for section
  * source match candidates before a single match is chosen among them.
  */
 class SectionSource {

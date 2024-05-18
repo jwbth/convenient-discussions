@@ -2892,7 +2892,7 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Add a comment form targeted at this comment to the page.
+   * Add a comment form {@link CommentForm#getTarget targeted} at this comment to the page.
    *
    * @param {string} mode
    * @param {import('./CommentForm').default} commentForm
@@ -2925,7 +2925,7 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Remove a comment form targeted at this comment from the page.
+   * Remove a comment form {@link CommentForm#getTarget targeted} at this comment from the page.
    *
    * @param {string} mode
    * @param {import('./CommentForm').default} commentForm

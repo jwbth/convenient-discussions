@@ -99,7 +99,7 @@ class CommentFormOperation {
   /**
    * Mark the operation as open (run after its creation).
    *
-   * @param {boolean} clearMessages Whether to clear messages above the comment form.
+   * @param {boolean} clearMessages Whether to clear the messages above the comment form.
    */
   open(clearMessages) {
     this.date = new Date();
