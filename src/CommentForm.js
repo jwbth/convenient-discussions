@@ -286,7 +286,7 @@ class CommentForm {
   }
 
   /**
-   * Set the `target`, `targetSection`, `targetComment`, and `targetPage` properties.
+   * Set the `target`, `targetSection`, `parentComment`, and `targetPage` properties.
    *
    * @param {Comment|import('./Section').default|import('./pageRegistry').Page} target
    * @private
@@ -3836,7 +3836,16 @@ class CommentForm {
    * {@link Comment#expandAllThreadsDownTo Expand all threads} that this form is inside.
    */
   goTo() {
-    this.getParentComment()?.expandAllThreadsDownTo();
+    let visuallyTargetComment;
+    if (['reply', 'edit'].includes(this.mode)) {
+      visuallyTargetComment = this.target;
+    } else if (this.mode === 'replyInSection') {
+      visuallyTargetComment = this.targetSection.commentsInFirstChunk
+        .slice()
+        .reverse()
+        .find((c) => c.level === 0);
+    }
+    visuallyTargetComment?.expandAllThreadsDownTo();
     this.$element.cdScrollIntoView('center');
     this.commentInput.focus();
   }
