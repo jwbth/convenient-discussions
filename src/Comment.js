@@ -916,7 +916,7 @@ class Comment extends CommentSkeleton {
       this.offset = offset;
 
       // This is to determine if the element is moved in future checks.
-      this.firstHighlightableWidth = this.highlightables[0].offsetWidth;
+      this.firstHighlightableWidth = options.firstElement.offsetWidth;
     } else {
       /**
        * The comment's rough coordinates (without taking into account floating elements around the
@@ -1078,10 +1078,17 @@ class Comment extends CommentSkeleton {
     options.considerFloating ??= Boolean(options.floatingRects);
     options.set ??= false;
 
-    let rectTop = this.constructor.getCommentPartRect(this.highlightables[0]);
+    if (this.editForm) {
+      options.firstElement = options.lastElement = this.editForm.getOutermostElement();
+    } else {
+      options.firstElement = this.highlightables[0];
+      options.lastElement = this.highlightables[this.highlightables.length - 1];
+    }
+
+    let rectTop = this.constructor.getCommentPartRect(options.firstElement);
     let rectBottom = this.elements.length === 1 ?
       rectTop :
-      this.constructor.getCommentPartRect(this.highlightables[this.highlightables.length - 1]);
+      this.constructor.getCommentPartRect(options.lastElement);
 
     if (!getVisibilityByRects(rectTop, rectBottom)) {
       this.setOffset(null, options);
@@ -2835,7 +2842,6 @@ class Comment extends CommentSkeleton {
     // We use a class here because there can be elements in the comment that are hidden from the
     // beginning and should stay so when reshowing the comment.
     this.$elements.addClass('cd-hidden');
-    this.removeLayers();
     if (this.isOpeningSection) {
       $(this.section.barElement).addClass('cd-hidden');
     }

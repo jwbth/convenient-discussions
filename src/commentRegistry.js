@@ -232,7 +232,6 @@ export default {
     this.items.slice().reverse().some((comment) => {
       const shouldBeHighlighted = (
         !comment.isCollapsed &&
-        !comment.editForm &&
         (
           comment.isNew ||
           comment.isOwn ||

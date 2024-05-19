@@ -3953,6 +3953,16 @@ class CommentForm {
     });
   }
 
+  /**
+   * Get the outermost element of the form (`$element` or its outer wrapper if present).
+   *
+   * @returns {Element}
+   */
+  getOutermostElement() {
+    const el = this.$element[0];
+    return el.parentNode.classList.contains('cd-commentForm-outerWrapper') ? el.parentNode : el;
+  }
+
   static counter = 0;
   static allowedFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'];
 
