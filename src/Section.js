@@ -513,16 +513,7 @@ class Section extends SectionSkeleton {
               $('<a>')
                 .text(author.getName())
                 .attr('href', `#${comments[0].dtId || comments[0].id}`)
-                .on('click', () => {
-                  // Scroll to the first comment in the list, but highlight all of them.
-                  comments[0].scrollTo({
-                    flash: false,
-                    pushState: true,
-                    callback: () => {
-                      comments.forEach((comment) => comment.flashTarget());
-                    },
-                  });
-                })[0],
+                .on('click', Comment.scrollToFirstHighlightAll.bind(Comment, comments))[0],
               i === arr.length - 1 ? undefined : document.createTextNode(cd.mws('comma-separator')),
             ]))
         )),
@@ -912,10 +903,7 @@ class Section extends SectionSkeleton {
    */
   scrollToNewComments(e) {
     e.preventDefault();
-    this.newComments[0].scrollTo({
-      flash: false,
-      pushState: true,
-    });
+    Comment.scrollToFirstHighlightAll(this.newComments);
   }
 
   /**

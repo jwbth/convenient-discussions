@@ -3922,6 +3922,21 @@ class Comment extends CommentSkeleton {
 
     return { author, date, parentAuthor, parentDate, sectionIdBeginning, index };
   }
+
+  /**
+   * Scroll to the first comment in the list, but highlight all of them.
+   *
+   * @param {Comment[]} comments
+   */
+  static scrollToFirstHighlightAll(comments) {
+    comments[0].scrollTo({
+      flash: false,
+      pushState: true,
+      callback: () => {
+        comments.forEach((comment) => comment.flashTarget());
+      },
+    });
+  }
 }
 
 export default Comment;
