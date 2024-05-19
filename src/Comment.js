@@ -2839,13 +2839,6 @@ class Comment extends CommentSkeleton {
     // button to call it from CD when the form is displayed).
     if (this.editForm) return;
 
-    // We use a class here because there can be elements in the comment that are hidden from the
-    // beginning and should stay so when reshowing the comment.
-    this.$elements.addClass('cd-hidden');
-    if (this.isOpeningSection) {
-      $(this.section.barElement).addClass('cd-hidden');
-    }
-
     /**
      * Edit form related to the comment.
      *
@@ -2907,6 +2900,15 @@ class Comment extends CommentSkeleton {
       const { $wrappingItem, $outerWrapper } = this.addSubitem('replyForm', 'top');
       ($wrappingItem || $outerWrapper).append(commentForm.$element);
     } else if (mode === 'edit') {
+      // We use a class here because there can be elements in the comment that are hidden from the
+      // beginning and should stay so when reshowing the comment.
+      this.$elements
+        .addClass('cd-hidden')
+        .data('cd-comment-form', commentForm);
+      if (this.isOpeningSection) {
+        $(this.section.barElement).addClass('cd-hidden');
+      }
+
       let $outermostElement;
       const $first = this.$elements.first();
       if ($first.is('dd, li')) {
@@ -2941,7 +2943,9 @@ class Comment extends CommentSkeleton {
       this.scrollIntoView('top');
     } else if (mode === 'edit') {
       commentForm.$element.parent('.cd-commentForm-outerWrapper').remove();
-      this.$elements.removeClass('cd-hidden');
+      this.$elements
+        .removeClass('cd-hidden')
+        .removeData('cd-comment-form');
       if (this.isOpeningSection) {
         $(this.section.barElement).removeClass('cd-hidden');
       }

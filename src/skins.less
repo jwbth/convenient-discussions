@@ -134,6 +134,15 @@
   .mw-body h2 {
     margin-bottom: 0.25em;
   }
+
+  // Reset `.mw-body dd { margin-bottom: 1em }`
+  .cd-commentLevel:not(ol) > dd {
+    margin-bottom: 0.5em;
+  }
+
+  &.cd-reformattedComments .cd-commentLevel:not(ol) > dd {
+    margin-bottom: 0.75em;
+  }
 }
 
 .skin-modern {

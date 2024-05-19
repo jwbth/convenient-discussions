@@ -118,7 +118,8 @@ export default {
   },
 
   /**
-   * Get all comments on the page ordered the same way as in the DOM.
+   * Get all comments on the page ordered the same way as in the DOM. It returns the original array,
+   * so use `.slice()` when changing it.
    *
    * @returns {Comment[]}
    */

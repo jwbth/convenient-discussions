@@ -321,7 +321,8 @@ class Thread {
   }
 
   /**
-   * Revise the end element of the thread based on {@link Comment#subitemList comment subitems}.
+   * Get the end element of the thread, revising it based on
+   * {@link Comment#subitemList comment subitems}.
    *
    * @param {boolean} visual Use the visual thread end.
    * @returns {?Element} Logically, should never return `null`, unless something extraordinary
@@ -358,6 +359,10 @@ class Thread {
       }
       if (!getVisibilityByRects(endElement.getBoundingClientRect())) {
         endElement = this.visualEndElementFallback;
+
+        if (!getVisibilityByRects(endElement.getBoundingClientRect()) && this.rootComment.editForm) {
+          endElement = this.rootComment.editForm.getOutermostElement();
+        }
       }
     } else {
       lastComment = this.lastComment;
@@ -383,6 +388,24 @@ class Thread {
     return $lastSubitem?.is(':visible') ?
       this.constructor.findItemElement($lastSubitem[0], this.rootComment.level) :
       endElement;
+  }
+
+  /**
+   * Get the top element of the thread or its replacement.
+   *
+   * @returns {Element}
+   * @private
+   */
+  getAdjustedStartElement() {
+    if (this.isCollapsed) {
+      return this.expandNote;
+    }
+
+    if (this.startElement.classList.contains('cd-hidden') && this.rootComment.editForm) {
+      return this.rootComment.editForm.getOutermostElement();
+    }
+
+    return this.startElement;
   }
 
   /**
@@ -505,7 +528,7 @@ class Thread {
      * @private
      */
     this.collapsedRange = getRangeContents(
-      this.startElement,
+      this.getAdjustedStartElement(),
       this.getAdjustedEndElement(),
       controller.rootElement
     );
@@ -571,7 +594,7 @@ class Thread {
       const roots = $el.data('cd-collapsed-thread-root-comments') || [];
       removeFromArrayIfPresent(roots, this.rootComment);
       $el.data('cd-collapsed-thread-root-comments', roots);
-      if (!roots.length) {
+      if (!roots.length && !$el.data('cd-comment-form')) {
         el.classList.remove('cd-hidden');
       }
     });
@@ -679,15 +702,16 @@ class Thread {
       comment.level === 0 ||
       comment.containerListType === 'ol' ||
 
-      // Occurs when a part of a comment that is not in the thread is next to the start
-      // element, for example
-      // https://ru.wikipedia.org/wiki/Project:Запросы_к_администраторам/Архив/2021/04#202104081533_Macuser.
+      // Occurs when part of a comment that is not in the thread is next to the start element, for
+      // example
+      // https://ru.wikipedia.org/wiki/Project:Запросы_к_администраторам/Архив/2021/04#202104081533_Macuser
+      // - the next comment is not in the thread.
       this.startElement.tagName === 'DIV'
     );
 
-    const rectTop = needCalculateMargins && !this.isCollapsed ?
-      undefined :
-      this[this.isCollapsed ? 'expandNote' : 'startElement'].getBoundingClientRect();
+    const rectTop = this.isCollapsed || !needCalculateMargins ?
+      this.getAdjustedStartElement().getBoundingClientRect() :
+      undefined;
 
     const rectOrOffset = rectTop || comment.getOffset({ floatingRects });
 
