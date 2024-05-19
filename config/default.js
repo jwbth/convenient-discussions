@@ -275,7 +275,7 @@ export default {
    * @default
    * /(?:\s[-–−—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─~⁓/→⇒\s\u200e\u200f\u2060]|&amp;\w+;|&amp;#\d+;)*(?:\s+\()?$/
    */
-  signaturePrefixRegexp: /(?:\s[-–−—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─~⁓/→⇒\s\u200e\u200f\u2060]|&\w+;|&#\d+;)*(?:\s+\()?$/,
+  signaturePrefixRegexp: /(?:\s[-–−—―]+\xa0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─~⁓/→⇒\s\u200d\u200e\u200f\u2060]|&\w+;|&#\d+;)*(?:\s+\()?$/,
 
   /**
    * Unchangable text (usually a user talk page link) at the end of Mediawiki:Signature (visible
