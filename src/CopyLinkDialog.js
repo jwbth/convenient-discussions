@@ -161,6 +161,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
         scrollable: true,
       });
       this.stackLayout.addItems([this.diffPanel]);
+      mw.hook('wikipage.content').fire(this.content.$diffView);
     } catch (e) {
       if (e instanceof CdError) {
         const { type } = e.data;
@@ -175,10 +176,6 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 
     this.diffOptionWidget.setDisabled(errorText);
     this.diffOptionWidget.setTitle(errorText || '');
-
-    if (this.content.$diffView) {
-      mw.hook('wikipage.content').fire(this.content.$diffView);
-    }
   }
 
   /**

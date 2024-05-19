@@ -164,7 +164,7 @@ import controller from './controller';
 export async function showConfirmDialog(message, options = {}) {
   const dialog = new OO.ui.MessageDialog({ classes: ['cd-dialog-confirm'] });
   controller.getWindowManager().addWindows([dialog]);
-  const windowInstance = controller.getWindowManager().openWindow(
+  const win = controller.getWindowManager().openWindow(
     dialog,
     Object.assign(
       // Default options
@@ -188,8 +188,13 @@ export async function showConfirmDialog(message, options = {}) {
       options
     )
   );
+  win.opened.then(() => {
+    if (message instanceof $) {
+      mw.hook('wikipage.content').fire(message);
+    }
+  });
 
-  return (await windowInstance.closed)?.action;
+  return (await win.closed)?.action;
 }
 
 /**
