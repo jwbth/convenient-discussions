@@ -98,14 +98,26 @@ ol > .cd-replyButtonWrapper:not(.cd-replyButtonWrapper-hasCommentForm) {
   list-style-type: none;
 }
 
-// #cd-notExistingId is used to override other possibly set `display` properties.
-.cd-hidden:not(#cd-notExistingId),
+// #cd-dummyId is used to override other possibly set `display` properties.
+.cd-hidden:not(#cd-dummyId),
 
 // .cd-hide and .cd-show classes are supposed to be used by users to mark elements on wiki pages
 // that should be hidden/shown in CD (for example, texts in edit intros that are irrelevant/relevant
 // for CD).
 .action-view .cd-hide {
   display: none !important;
+}
+
+// Allow headings to have the top pixel visible to make active section highlighting in the TOC
+// work
+.mw-heading.cd-hidden:not(#cd-dummyId) {
+  display: block !important;
+  height: 0;
+
+  // For Timeless
+  > * {
+    visibility: hidden;
+  }
 }
 
 .cd-show {
