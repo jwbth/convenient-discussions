@@ -275,10 +275,10 @@ export default {
   ],
 
   // eslint-disable-next-line no-unused-vars
-  quoteFormatting: function (useBlockFormatting, author, timestamp, dtId) {
+  quoteFormatting: function (mentionSource, author, timestamp, dtId) {
     var pre = '{{цс|1=';
     var post = '';
-    if (useBlockFormatting) {
+    if (mentionSource) {
       if (author) {
         post += '|2=' + author;
       }

@@ -3529,10 +3529,10 @@ class CommentForm {
    * @param {boolean} allowEmptySelection Insert markup (with a placeholder text) even if the
    *   selection is empty.
    * @param {Comment} [comment] Quoted comment.
-   * @param {boolean} useBlockFormatting Whether to use a template with block formatting, if
-   *   available.
+   * @param {boolean} [mentionSource] Whether to mention the source of the quote (author, timestamp,
+   *   link), if available. This makes sense when quoting a comment other than the one you reply to.
    */
-  async quote(allowEmptySelection, comment, useBlockFormatting) {
+  async quote(allowEmptySelection, comment, mentionSource) {
     let selection;
     if (isInputFocused()) {
       const activeElement = document.activeElement;
@@ -3561,7 +3561,7 @@ class CommentForm {
 
       const [pre, post] = typeof cd.config.quoteFormatting === 'function' ?
         cd.config.quoteFormatting(
-          useBlockFormatting,
+          mentionSource ?? (comment && comment !== this.parentComment),
           comment?.author.getName(),
           comment?.timestamp,
           comment?.dtId

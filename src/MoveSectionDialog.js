@@ -166,14 +166,13 @@ class MoveSectionDialog extends ProcessDialog {
         align: 'top',
       });
 
-      this.controls.title.input.connect(this, {
-        change: 'onTitleInputChange',
-        enter: () => {
+      this.controls.title.input
+        .on('change', this.onTitleInputChange.bind(this))
+        .on('enter', () => {
           if (!this.actions.get({ actions: 'move' })[0].isDisabled()) {
             this.executeAction('move');
           }
-        },
-      });
+        });
 
       if (cd.config.getMoveSourcePageCode || cd.config.getMoveTargetPageCode) {
         this.controls.keepLink = createCheckboxField({
@@ -212,6 +211,7 @@ class MoveSectionDialog extends ProcessDialog {
 
       this.stackLayout.setItem(this.movePanel);
       this.controls.title.input.focus();
+      this.onTitleInputChange();
       this.actions.setAbilities({ close: true });
 
       // A dirty workaround to avoid a scrollbar appearing when the window is loading. Couldn't

@@ -443,7 +443,7 @@ export default {
    * Function to use in the {@link module:defaultConfig.quoteFormatting} config value.
    *
    * @typedef {Function} QuoteFormattingFunction
-   * @property {string} isMultiline Is the selected text multiline.
+   * @property {string} mentionSource Whether to mention the source of the quote.
    * @property {string} [author] Quote author.
    * @property {string} [timestamp] Quote timestamp.
    * @property {string} [dtId] Comment's DiscussionTools ID.
@@ -453,14 +453,14 @@ export default {
   /**
    * Array of two strings to insert before and after the selection when quote function is activated
    * (by the toolbar button or Ctrl+Alt+Q / Q). You may also specify a function that takes the
-   * following parameters: is the selected text multiline, author, date and DiscussionTools ID, and
-   * returns the said array.
+   * following parameters: whether to mention the source of the quote, author, date and
+   * DiscussionTools ID, and returns the said array.
    *
    * If you add template markup, you should perhaps use `1=` before the parameter content to allow
    * the `=` character inside a quotation, for example `['{{tq|1=', '}}']`.
    *
-   * If you specify a function, you might want to use different templates for single line and
-   * multiline quotations by checking the first argument.
+   * If you specify a function, you might want to use different templates for quotations with the
+   * source mentioned and not, by checking the first argument.
    *
    * @type {string[]|QuoteFormattingFunction}
    * @default ["> ''", "''\n"]

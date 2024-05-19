@@ -210,10 +210,10 @@ export default {
   ],
 
   // eslint-disable-next-line no-unused-vars
-  quoteFormatting: function (useBlockFormatting, author, timestamp, dtId) {
+  quoteFormatting: function (mentionSource, author, timestamp, dtId) {
     var pre = '';
     var post = '';
-    if (useBlockFormatting) {
+    if (mentionSource) {
       pre = '{{tqb|text=';
       if (author) {
         post += '|by=' + author;
