@@ -225,4 +225,15 @@ export default {
 
     return this;
   },
+
+  /**
+   * Remove the close button from the element.
+   *
+   * @returns {external:jQuery}
+   * @memberof external:jQuery.fn
+   */
+  cdRemoveCloseButton() {
+    this.find('.cd-closeButton').remove();
+    return this;
+  },
 };

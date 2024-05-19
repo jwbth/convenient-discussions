@@ -2197,6 +2197,9 @@ class CommentForm {
     if ($info.length) {
       $info.remove();
     }
+    if (this.$messageArea.children().length === 1) {
+      this.$messageArea.cdRemoveCloseButton();
+    }
   }
 
   /**
