@@ -68,7 +68,7 @@ export default async function processFragment() {
     });
   }
 
-  if (decodedValue && !cd.page.isArchivePage()) {
+  if (decodedValue && !cd.page.isArchive()) {
     const escapedValue = $.escapeSelector(value);
     const escapedDecodedValue = decodedValue && $.escapeSelector(decodedValue);
     const isTargetFound = (

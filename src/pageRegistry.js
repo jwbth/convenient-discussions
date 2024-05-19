@@ -168,7 +168,7 @@ export class Page {
       controller.isTalkPage() &&
       this.exists() &&
       controller.isCurrentRevision() &&
-      !this.isArchivePage()
+      !this.isArchive()
     );
   }
 
@@ -178,7 +178,7 @@ export class Page {
    * @returns {boolean}
    */
   isCurrentArchive() {
-    return controller.isCurrentRevision() && this.isArchivePage();
+    return controller.isCurrentRevision() && this.isArchive();
   }
 
   /**
@@ -242,7 +242,7 @@ export class Page {
    *
    * @returns {boolean}
    */
-  isArchivePage() {
+  isArchive() {
     let result = this.findArchivingInfoElement()?.data('isArchivePage');
     if (result === undefined || result === null) {
       result = false;
@@ -267,7 +267,7 @@ export class Page {
    * @returns {?boolean}
    */
   canHaveArchives() {
-    if (this.isArchivePage()) {
+    if (this.isArchive()) {
       return false;
     }
     let result = this.findArchivingInfoElement()?.data('canHaveArchives');

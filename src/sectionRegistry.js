@@ -241,7 +241,7 @@ export default {
    * @private
    */
   addSubscribeButtons() {
-    if (cd.page.isArchivePage() || !cd.user.isRegistered()) return;
+    if (!cd.user.isRegistered()) return;
 
     controller.saveRelativeScrollPosition();
     this.items.forEach((section) => {
