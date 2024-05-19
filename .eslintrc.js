@@ -9,6 +9,7 @@ module.exports = {
   "globals": {
     "$": "readonly",
     "CONFIG_FILE_NAME": "readonly",
+    "IS_DEV": "readonly",
     "IS_TEST": "readonly",
     "IS_SINGLE": "readonly",
     "LANG_CODE": "readonly",

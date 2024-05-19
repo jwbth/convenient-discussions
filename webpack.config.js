@@ -170,6 +170,7 @@ module.exports = (env) => {
     plugins: [
       new webpack.DefinePlugin({
         IS_TEST: test,
+        IS_DEV: dev,
         IS_SINGLE: single,
         CONFIG_FILE_NAME: single ? JSON.stringify(wiki) : null,
         LANG_CODE: single ? JSON.stringify(lang) : null,

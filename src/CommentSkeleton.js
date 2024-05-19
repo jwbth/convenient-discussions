@@ -50,6 +50,27 @@ class CommentSkeleton {
      */
     this.signatureText = signature.element.textContent;
 
+    /**
+     * Comment date.
+     *
+     * @type {?Date}
+     */
+    this.date = signature.date || null;
+
+    /**
+     * _For internal use._ Comment author name.
+     *
+     * @type {string}
+     */
+    this.authorName = signature.authorName;
+
+    /**
+     * Comment ID.
+     *
+     * @type {?string}
+     */
+    this.id = CommentSkeleton.generateId(this.date, this.authorName, parser.existingCommentIds);
+
     // Identify all comment nodes and save a path to them.
     this.collectParts(precedingHeadingElement);
 
@@ -79,13 +100,6 @@ class CommentSkeleton {
      */
     this.index = cd.comments.length;
 
-    /**
-     * Comment date.
-     *
-     * @type {?Date}
-     */
-    this.date = signature.date || null;
-
     // Double spaces are from removed dir marks.
     /**
      * Comment timestamp as originally present on the page.
@@ -93,13 +107,6 @@ class CommentSkeleton {
      * @type {string}
      */
     this.timestamp = signature.timestampText?.replace(/ {2,}/g, ' ');
-
-    /**
-     * _For internal use._ Comment author name.
-     *
-     * @type {string}
-     */
-    this.authorName = signature.authorName;
 
     /**
      * _For internal use._ Comment timestamp element.
@@ -135,13 +142,6 @@ class CommentSkeleton {
      * @type {boolean}
      */
     this.isOwn = this.authorName === cd.g.userName;
-
-    /**
-     * Comment ID.
-     *
-     * @type {?string}
-     */
-    this.id = CommentSkeleton.generateId(this.date, this.authorName, parser.existingCommentIds);
 
     /**
      * Is the comment unsigned or not properly signed (an unsigned template class is present).

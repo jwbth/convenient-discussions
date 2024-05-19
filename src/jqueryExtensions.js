@@ -10,8 +10,8 @@ import { defined, isMetadataNode, sleep } from './utils-general';
 
 /**
  * Merge many jQuery objects into one. Works like {@link https://api.jquery.com/add/ .add()}, but
- * accepts many parameters and is faster. Only accepts jQuery objects though and doesn't reorder
- * elements based on their relative position in the DOM.
+ * accepts many parameters and is faster. Unlike `.add()`, only accepts jQuery objects though and
+ * doesn't reorder elements based on their relative position in the DOM.
  *
  * @param {Array.<external:jQuery|undefined>} arrayOfJquery jQuery objects. Undefined values will be
  *   omitted.

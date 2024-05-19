@@ -9,7 +9,7 @@ import cd from './cd';
 import controller from './controller';
 import debug from './debug';
 import pageRegistry from './pageRegistry';
-import { buildEditSummary, underlinesToSpaces } from './utils-general';
+import { buildEditSummary, getQueryParamBooleanValue, underlinesToSpaces } from './utils-general';
 import { wrapDiffBody, wrapHtml } from './utils-window';
 
 const mwStringsCache = {};
@@ -250,6 +250,8 @@ Object.assign(cd.g, {
   // subject to change by site administrators although this may be disputable. Some of them are
   // extensible in the configuration file (such as noHighlightClasses).
 
+  debug: getQueryParamBooleanValue('cddebug') ?? Boolean(IS_DEV),
+
   /**
    * A replacement for
    * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Unicode_Property_Escapes unicode property escapes}
@@ -348,6 +350,7 @@ Object.assign(cd.g, {
    *
    * @type {string[]}
    * @default []
+   * @memberof convenientDiscussions.g
    */
   noSignatureClasses: ['mw-notalk', 'cd-moveMark'],
 
@@ -585,3 +588,7 @@ Object.assign(cd.g, {
     .filter((node) => node.nodeType === Node.COMMENT_NODE)
     .some((c) => c.textContent.startsWith('Parsoid')),
 });
+
+if (cd.g.debug) {
+  window.cd = cd;
+}

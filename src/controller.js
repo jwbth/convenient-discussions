@@ -27,7 +27,7 @@ import settings from './settings';
 import toc from './toc';
 import updateChecker from './updateChecker';
 import { getUserInfo } from './utils-api';
-import { defined, definedAndNotNull, flat, getLastArrayElementOrSelf, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
+import { defined, definedAndNotNull, flat, getLastArrayElementOrSelf, getQueryParamBooleanValue, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
 import { mixEventEmitterIntoObject } from './utils-oojs';
 import { copyText, getVisibilityByRects, skin$, wrapHtml } from './utils-window';
 import Worker from './worker-gate';
@@ -58,8 +58,8 @@ export default {
     }
 
     // Not constants: go() may run a second time, see app~maybeAddFooterSwitcher().
-    const isEnabledInQuery = /[?&]cdtalkpage=(1|true|yes|y)(?=&|$)/.test(location.search);
-    const isDisabledInQuery = /[?&]cdtalkpage=(0|false|no|n)(?=&|$)/.test(location.search);
+    const isEnabledInQuery = getQueryParamBooleanValue('cdtalkpage') === true;
+    const isDisabledInQuery = getQueryParamBooleanValue('cdtalkpage') === false;
 
     // See .isDefinitelyTalkPage()
     this.definitelyTalkPage = Boolean(
@@ -1592,6 +1592,7 @@ export default {
       '/' +
       mw.config.get('wgRevisionId')
     );
+    const type = object instanceof Comment ? 'comment' : 'section';
     const content = {
       fragment,
       wikilink: `[[${cd.page.name}#${fragment}]]`,
@@ -1603,10 +1604,14 @@ export default {
         success: cd.s('copylink-copied'),
         fail: cd.s('copylink-error'),
       },
+      jsCall: type === 'comment' ?
+        `let c = convenientDiscussions.api.getCommentById('${object.id}');` :
+        `let s = convenientDiscussions.api.getSectionById('${object.id}');`,
+      jsBreakpoint: `this.id === '${object.id}'`,
     };
 
     // Undocumented feature allowing to copy a link of a default type without opening a dialog.
-    const relevantSetting = object instanceof Comment ?
+    const relevantSetting = type === 'comment' ?
       settings.get('defaultCommentLinkType') :
       settings.get('defaultSectionLinkType');
     if (!e.shiftKey && relevantSetting) {
@@ -1621,7 +1626,7 @@ export default {
       return;
     }
 
-    const dialog = new (require('./CopyLinkDialog').default)(object, content);
+    const dialog = new (require('./CopyLinkDialog').default)(object, type, content);
     this.getWindowManager().addWindows([dialog]);
     this.getWindowManager().openWindow(dialog);
   },

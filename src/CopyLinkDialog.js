@@ -1,5 +1,4 @@
 import CdError from './CdError';
-import Comment from './Comment';
 import DivLabelWidget from './DivLabelWidget';
 import cd from './cd';
 import { createCopyTextField, tweakUserOoUiClass } from './utils-oojs';
@@ -22,17 +21,18 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   /**
    * Create a "Copy link" dialog.
    *
-   * @param {Comment|import('./Section').default} object
+   * @param {import('./Comment').default|import('./Section').default} object
+   * @param {'comment' | 'section'} type
    * @param {object} content
    */
-  constructor(object, content) {
+  constructor(object, type, content) {
     super({
       classes: ['cd-dialog-copyLink'],
     });
 
     this.object = object;
+    this.type = type;
     this.content = content;
-    this.isComment = this.object instanceof Comment;
   }
 
   /**
@@ -52,7 +52,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
     this.message = new DivLabelWidget({ classes: ['oo-ui-messageDialog-message'] });
     this.text.$element.append(this.message.$element);
 
-    if (this.isComment) {
+    if (this.type === 'comment') {
       this.anchorOptionWidget = new OO.ui.ButtonOptionWidget({
         data: 'anchor',
         label: cd.s('cld-select-anchor'),
@@ -86,7 +86,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       expanded: false,
     });
 
-    if (this.isComment) {
+    if (this.type === 'comment') {
       this.createDiffPanel();
     }
   }
@@ -103,14 +103,16 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    */
   getSetupProcess(data) {
     return super.getSetupProcess(data).next(() => {
-      this.title.setLabel(this.isComment ? cd.s('cld-title-comment') : cd.s('cld-title-section'));
+      this.title.setLabel(
+        this.type === 'comment' ? cd.s('cld-title-comment') : cd.s('cld-title-section')
+      );
       this.message.setLabel(
         $.cdMerge(
           this.buttonSelectWidget?.$element,
           this.stackLayout.$element,
         )
       );
-      this.size = this.isComment ? 'larger' : 'large';
+      this.size = this.type === 'comment' ? 'larger' : 'large';
       this.stackLayout.setItem(this.anchorPanel);
     });
   }
@@ -189,7 +191,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
     // Doesn't apply to DT IDs.
     let helpOnlyCd;
     let helpNotOnlyCd;
-    if (this.isComment && this.content.fragment === this.object.id) {
+    if (this.type === 'comment' && this.content.fragment === this.object.id) {
       helpOnlyCd = cd.s('cld-help-onlycd');
       helpNotOnlyCd = wrapHtml(cd.sParse('cld-help-notonlycd'));
     }
@@ -232,12 +234,30 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       help: helpOnlyCd,
     });
 
+    let jsCall;
+    let jsBreakpoint;
+    if (cd.g.debug) {
+      jsCall = createCopyTextField({
+        value: this.content.jsCall,
+        label: 'JS call',
+        copyCallback,
+      });
+
+      jsBreakpoint = createCopyTextField({
+        value: this.content.jsBreakpoint,
+        label: 'JS conditional breakpoint',
+        copyCallback,
+      });
+    }
+
     return $.cdMerge(
       wikilinkField.$element,
       currentPageWikilinkField.$element,
       permanentWikilinkField.$element,
       linkField.$element,
       permanentLinkField.$element,
+      jsCall?.$element,
+      jsBreakpoint?.$element,
     );
   }
 

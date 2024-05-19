@@ -803,3 +803,19 @@ export function parseWikiUrl(url) {
 export function canonicalUrlToPageName(url) {
   return decodeURIComponent(url.slice(url.indexOf('/wiki/') + 6)).replace(/_/g, ' ');
 }
+
+/**
+ * Check if a URL query parameter is `true` (`1`, `yes`, `y`) or `false` (`0`, `no`, `n`).
+ *
+ * @param {string} param
+ * @returns {?boolean}
+ */
+export function getQueryParamBooleanValue(param) {
+  const value = location.search.match(new RegExp('[?&]' + param + '=([^&]+)')) || [];
+  if (/1|true|yes|y/.test(value)) {
+    return true;
+  } else if (/0|false|no|n/.test(value)) {
+    return false;
+  }
+  return null;
+}
