@@ -2909,6 +2909,8 @@ class Comment extends CommentSkeleton {
         $(this.section.barElement).addClass('cd-hidden');
       }
 
+      commentForm.$element.toggleClass('cd-commentForm-highlighted', this.isNew || this.isOwn);
+
       let $outermostElement;
       const $first = this.$elements.first();
       if ($first.is('dd, li')) {
