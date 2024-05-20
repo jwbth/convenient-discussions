@@ -1038,6 +1038,13 @@ export default {
         }
       });
 
+    // When editing https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)/Archive_212#c-PrimeHunter-20240509091500-2605:A601:AAF7:3700:A1D7:26C1:E273:28CF-20240509055600
+    controller.rootElement
+      .querySelectorAll('dd.cd-comment-part + dd > .cd-comment-part:first-child, li.cd-comment-part + li > .cd-comment-part:first-child')
+      .forEach((el) => {
+        items.push(el.parentNode);
+      });
+
     // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202009202110_Example
     controller.rootElement
       .querySelectorAll('.cd-comment-replacedPart.cd-comment-part-last')

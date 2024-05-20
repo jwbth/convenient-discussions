@@ -1610,7 +1610,7 @@ class Comment extends CommentSkeleton {
       while (treeWalker.parentNode()) {
         const node = treeWalker.currentNode;
 
-        // These elements have "position: relative" for the purpose we know.
+        // These elements have `position: relative` for the purpose we know.
         if (node.classList.contains('cd-connectToPreviousItem')) continue;
 
         let style = node.cdStyle;

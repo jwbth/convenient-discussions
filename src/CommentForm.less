@@ -1,12 +1,17 @@
 .cd-commentForm {
   display: flow-root;
-  margin: 0.5em 0;
   font-weight: normal;
   text-align: start;
 
   // The form may sometimes get inside a `<div dir="...">` element, so we need to reset the text
   // direction.
   direction: var(--cd-direction-user);
+
+  margin: 0.5em 0;
+
+  .cd-reformattedComments & {
+    margin-block: 0.75em;
+  }
 
   .oo-ui-textInputWidget {
     max-width: none;

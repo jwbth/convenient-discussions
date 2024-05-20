@@ -160,6 +160,19 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
       }
     }
   }
+
+  // Spacing after the edit form
+  > .cd-hidden:first-child + * {
+    margin-top: 0;
+
+    > :first-child {
+      margin-top: 0;
+
+      > :first-child {
+        margin-top: 0;
+      }
+    }
+  }
 }
 
 .cd-thread-clickArea {
