@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"1917 Ekim Devrimi",
+			"GolyatGeri",
 			"Jack who built the house",
 			"Mirzali",
 			"Orbot707"
@@ -24,7 +25,14 @@
 	"sm-addsubsection-tooltip": "Nê letey re yew leteyo bınên cı kerê",
 	"sm-move": "bıkırışe",
 	"sm-move-tooltip": "Mewzuy bıkırêşê yewbina pela",
+	"sm-subscribe": "Abone bıbe",
+	"sm-unsubscribe": "Aboneyiye ra veciye",
 	"sm-copylink-tooltip": "Yew gıreyi kopya ke",
+	"sm-more": "Zêde weçenegi",
+	"comment-timestamp-today": "[Noroz], h:mm A",
+	"comment-timestamp-yesterday": "[Vızêr], h:mm A",
+	"comment-timestamp-currentyear": "D MMMM, h:mm A",
+	"comment-timestamp-other": "D MMMM YYYY, h:mm A",
 	"comment-author-talk": "werênayış",
 	"comment-author-contribs": "iştıraki",
 	"comment-changed": "Haydarkerdış vurriya.",
@@ -33,7 +41,8 @@
 	"comment-diff": "Ferq",
 	"comment-diff-error": "Ferq nêvıraziya",
 	"comment-changedsince": "Haydarkerdış ziyaretê şımayo peyên ra nat vurriya.",
-	"comment-deleted": "Haydarkerdış vurriya ya zi reyna imza bi.",
+	"comment-deleted": "Vatış esteriya.",
+	"comment-deleted-short": "Esteriya",
 	"section-reply": "Cewab bıde era qısımi",
 	"section-addsubsection-to": "\"$1\" ya leteyo bınên cı ke",
 	"cld-diff": "Ferqê linki",

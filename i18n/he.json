@@ -432,7 +432,7 @@
 	"error-anoneditwatning": "<strong>לא החתברת לחשבון.</strong> כתובת ה־IP שלך תוצג במקרה של עריכות כלשהן.",
 	"warning-performance-title": "בעיות ביצועים?",
 	"warning-performance": "מערכת דיונים נוחים יכולה לנסות לפתור אותן באמצעות ההגדרה \"{{int:convenient-discussions-sd-improveperformance}}\". <span class=\"cd-notification-talkPageSettings\">[[$1|פתיחת תיבת הדו־שיח של ההגדרות]]</span>.",
-	"discussiontools-incompatible": "מערכת דיונים נוחים רוב הזמן אינה תואמת למערכת כלי שיחה. נא <b><span class=\"cd-notification-disabledt\">[[$1|לכבות]]</span></b> (או <b><span class=\"cd-notification-disableDtGlobally\">[[$2|לכבות גלובלית]]</span></b>) את כלי שיחה כדי לאפשר לדיונים נוחים לפעול כראוי.",
+	"discussiontools-incompatible": "מערכת דיונים נוחים רוב הזמן אינה תואמת למערכת כלי שיחה. נא <b><span class=\"cd-notification-disabledt\">[[$1|לכבות]]</span></b> <span class=\"cd-notification-disableDtGlobally-wrapper\">(או <b><span class=\"cd-notification-disableDtGlobally\">[[$2|לכבות גלובלית]]</span></b>)</span> את כלי שיחה כדי לאפשר לדיונים נוחים לפעול כראוי.",
 	"discussiontools-disabled": "כלי שיחה כובו בהצלחה. <span class=\"cd-notification-refresh\">[[$1|לרענן את הדף]]</span>.",
 	"wl-button-switchrelevant-tooltip": "להציג רק תגובות בנושאים שאני {{GENDER:$1|מנוי|מנויה}} עליהם ותגובות המיועדות לי. (לתשומת ליבך: הזיהוי מבוסס על תקצירי עריכה, כך שייתכן שחלק מהעריכות יתפספסו)",
 	"wl-button-editwatchedsections-tooltip": "לערוך את רשימת הנושאים שאני {{GENDER:$1|מנוי|מנויה}} עליהם",
