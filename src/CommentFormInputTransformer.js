@@ -471,7 +471,7 @@ class CommentFormInputTransformer extends TextMasker {
    * @private
    */
   addOutdent() {
-    if (!this.target.source?.isReplyOutdented) {
+    if (this.action === 'preview' || !this.target.source?.isReplyOutdented) {
       return this;
     }
 
