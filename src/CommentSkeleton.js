@@ -645,11 +645,15 @@ class CommentSkeleton {
           }
           step = 'dive';
         }
-        if (step !== 'dive') break;
+        if (step !== 'dive') {
+          break;
+        }
       } else if (treeWalker.previousSibling()) {
         step = 'back';
       } else {
-        if (!treeWalker.parentNode()) break;
+        if (!treeWalker.parentNode()) {
+          break;
+        }
         step = 'up';
       }
 
@@ -672,7 +676,9 @@ class CommentSkeleton {
       let hasCurrentSignature = null;
       let hasForeignComponents = null;
       if (!isTextNode) {
-        if (!this.isElementEligible(node, treeWalker, step)) break;
+        if (!this.isElementEligible(node, treeWalker, step)) {
+          break;
+        }
 
         isHeading = isHeadingNode(node);
         hasCurrentSignature = node.contains(this.signatureElement);
@@ -725,7 +731,9 @@ class CommentSkeleton {
       // We save all data related to the nodes on the path to reuse it.
       parts.push({ node, isTextNode, isHeading, hasCurrentSignature, hasForeignComponents, step });
 
-      if (isHeading) break;
+      if (isHeading) {
+        break;
+      }
     }
 
     return parts;
