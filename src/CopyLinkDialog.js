@@ -33,6 +33,8 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
     this.object = object;
     this.type = type;
     this.content = content;
+
+    this.readyDeferred = $.Deferred();
   }
 
   /**
@@ -118,6 +120,22 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   }
 
   /**
+   * OOUI native method that returns a "ready" process which is used to ready a window for use in a
+   * particular context, based on the `data` argument.
+   *
+   * @param {object} data Window opening data
+   * @returns {external:OO.ui.Process}
+   * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getReadyProcess
+   * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
+   * @ignore
+   */
+  getReadyProcess(data) {
+    return super.getReadyProcess(data).next(() => {
+      this.readyDeferred.resolve();
+    });
+  }
+
+  /**
    * Callback for copying text.
    *
    * @param {boolean} successful
@@ -161,7 +179,9 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
         scrollable: true,
       });
       this.stackLayout.addItems([this.diffPanel]);
-      mw.hook('wikipage.content').fire(this.content.$diffView);
+      this.readyDeferred.then(() => {
+        mw.hook('wikipage.content').fire(this.content.$diffView);
+      });
     } catch (e) {
       if (e instanceof CdError) {
         const { type } = e.data;
