@@ -503,9 +503,12 @@ class CommentForm {
         tabIndex: this.getTabIndex(21),
       }));
 
+      const subscribableSection = this.useTopicSubscription ?
+        this.targetSection?.getBase(true) :
+        this.targetSection;
       if (
-        (this.targetSection?.subscribeId || this.mode === 'addSection') &&
-        (!controller.isSubscribingDisabled() || this.targetSection?.subscriptionState)
+        (subscribableSection?.subscribeId || this.mode === 'addSection') &&
+        (!controller.isSubscribingDisabled() || subscribableSection?.subscriptionState)
       ) {
         /**
          * Subscribe checkbox field.
@@ -533,18 +536,17 @@ class CommentForm {
             initialState?.subscribe ??
             (
               (this.subscribeOnReply && this.mode !== 'edit') ||
-              (
-                this.useTopicSubscription ?
-                  this.targetSection?.getBase(true)?.subscriptionState :
-                  this.targetSection?.subscriptionState
-              )
+              subscribableSection?.subscriptionState
             )
           ),
           label: (
             this.useTopicSubscription ||
             (
-              this.mode !== 'addSubsection' &&
-              ((this.targetSection && this.targetSection.level <= 2) || this.mode === 'addSection')
+              this.mode === 'addSection' ||
+              (
+                this.mode !== 'addSubsection' &&
+                ((this.targetSection && this.targetSection.level <= 2))
+              )
             )
           ) ?
             cd.s('cf-watchsection-topic') :
