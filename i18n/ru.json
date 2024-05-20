@@ -329,7 +329,7 @@
 	"sd-autocompletetypes-wikilinks": "вики-ссылок",
 	"sd-autocompletetypes-templates": "шаблонов",
 	"sd-autocompletetypes-tags": "тегов",
-	"sd-autopreview": "Предпросматривать сообщение во время набора текста",
+	"sd-autopreview": "Предпросматривать сообщение по мере набора",
 	"sd-collapsethreadslevel": "Автоматически сворачивать ветки, начиная с уровня",
 	"sd-collapsethreadslevel-help": "Установите значение 0, чтобы не сворачивать ветки автоматически.",
 	"sd-desktopnotifications": "Уведомления на рабочий стол",
