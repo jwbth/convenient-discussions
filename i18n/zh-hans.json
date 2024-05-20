@@ -448,7 +448,7 @@
 	"error-anoneditwatning": "<strong>您没有登录。</strong>如果您做出任何编辑，您的IP地址将会公开可见。",
 	"warning-performance-title": "性能问题？",
 	"warning-performance": "快捷讨论可以尝试通过“{{int:convenient-discussions-sd-improveperformance}}”设置来解决此问题。 <span class=\"cd-notification-talkPageSettings\">[[$1|打开设置对话框]]</span> .",
-	"discussiontools-incompatible": "多数情况下，快捷讨论与讨论工具不兼容。请<b><span class=\"cd-notification-disabledt\">[[$1|禁用]]</span></b> （或<b><span class=\"cd-notification-disableDtGlobally\">[[$2|全域禁用]]</span></b>）讨论工具以使便捷讨论正常工作。",
+	"discussiontools-incompatible": "多数情况下，快捷讨论与讨论工具不兼容。请<b><span class=\"cd-notification-disabledt\">[[$1|禁用]]</span></b> <span class=\"cd-notification-disableDtGlobally-wrapper\">（或<b><span class=\"cd-notification-disableDtGlobally\">[[$2|全域禁用]]</span></b>）</span>讨论工具以使便捷讨论正常工作。",
 	"discussiontools-disabled": "讨论工具已成功禁用。 <span class=\"cd-notification-refresh\">[[$1|刷新页面]]</span>",
 	"wl-button-switchrelevant-tooltip": "仅显示我{{gender: $1 |订阅}}的主题中的评论以及发送给我的评论。 （注：检测基于编辑摘要，因此可能会丢失某些编辑内容）",
 	"wl-button-editwatchedsections-tooltip": "编辑我{{gender:$1|订阅}}的话题列表",
