@@ -31,6 +31,39 @@ if (server.startsWith('//')) {
 }
 const bodyClassList = document.body.classList;
 
+// Some users increase the font size (zoom), which leads to some short distances jumping between 3
+// and 4 physical pixels and similar. With the help of pixelDeviationRatio, we can make all widths
+// look the same by using a variable that stores deviation from standard values. Also unround device
+// pixel ratios (like 1.75) may have the same effect (not sure; need to confirm). We can use a
+// formula here of course, but that would be less readable :)
+const devicePixelRatioToDivisor = [
+  // Thread lines are 4 or more physical pixels, comment markers are 12 or more physical pixels, 4 or more from each side
+  [4, 4],
+
+  // Thread lines are 3 physical pixels, comment markers are 11 physical pixels, 4 from each side
+  [3.3333333, 3.6666666],
+
+  // Thread lines are 3 physical pixels, comment markers are 9 physical pixels, 3 from each side
+  [3, 3],
+
+  // Thread lines are 2 physical pixels, comment markers are 8 physical pixels, 3 from each side
+  [2.3333333, 2.6666666],
+
+  // Thread lines are 2 physical pixels, comment markers are 6 physical pixels, 2 from each side
+  [2, 2],
+
+  // Thread lines are 1 physical pixel, comment markers are 5 physical pixels, 2 from each side
+  [1.3333333, 1.6666666],
+
+  // Thread lines are 1 physical pixel, comment markers are 3 physical pixels, 1 from each side (default)
+  [0, 1],
+];
+
+const pixelDeviationRatio = devicePixelRatioToDivisor.reduce((value, [dpr, divisor]) => (
+  value ||
+  (window.devicePixelRatio >= dpr ? window.devicePixelRatio / divisor : value)
+), undefined);
+
 Object.assign(cd, {
   /**
    * Get a language string.
@@ -289,6 +322,8 @@ Object.assign(cd.g, {
    * @memberof convenientDiscussions.g
    */
   commentMarkerWidth: 3,
+
+  pixelDeviationRatio,
 
   /**
    * Number of seconds between checks for new comments when the tab is not hidden.
@@ -567,25 +602,6 @@ Object.assign(cd.g, {
     /Mobi|Android/i.test(navigator.userAgent) ||
     typeof window.orientation !== 'undefined'
   ),
-
-  // Some users increase the font size (zoom), which leads to some short distances jumping between
-  // 3px and 4px and similar. With the help of this value, we can make all widths look the same by
-  // using a variable that stores deviation from standard values.
-  pixelDeviationRatio:
-    // Thread lines are 4 physical pixels, comment markers are 12 physical pixels, 4 from each side
-    window.devicePixelRatio >= 4 ? window.devicePixelRatio / 4 :
-      // Thread lines are 3 physical pixels, comment markers are 11 physical pixels, 4 from each side
-      window.devicePixelRatio >= 3.3333333 ? window.devicePixelRatio / 3.6666666 :
-        // Thread lines are 3 physical pixels, comment markers are 9 physical pixels, 3 from each side
-        window.devicePixelRatio >= 3 ? window.devicePixelRatio / 3 :
-          // Thread lines are 2 physical pixels, comment markers are 8 physical pixels, 3 from each side
-          window.devicePixelRatio >= 2.3333333 ? window.devicePixelRatio / 2.6666666 :
-            // Thread lines are 2 physical pixels, comment markers are 6 physical pixels, 2 from each side
-            window.devicePixelRatio >= 2 ? window.devicePixelRatio / 2 :
-              // Thread lines are 1 physical pixel, comment markers are 5 physical pixels, 2 from each side
-              window.devicePixelRatio >= 1.3333333 ? window.devicePixelRatio / 1.6666666 :
-                // Thread lines are 1 physical pixel, comment markers are 3 physical pixels, 1 from each side
-                window.devicePixelRatio / 1,
 
   isDtReplyToolEnabled: bodyClassList.contains('ext-discussiontools-replytool-enabled'),
   isDtNewTopicToolEnabled: bodyClassList.contains('ext-discussiontools-newtopictool-enabled'),
