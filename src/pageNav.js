@@ -82,7 +82,7 @@ export default {
     const left = controller.$contentColumn.offset().left - $(window).scrollLeft();
 
     // 18px padding + 1px comment markers / thread lines
-    const deductable = 18 + ((cd.g.threadLineWidth - 1) / 2);
+    const deductable = 18 + ((cd.g.commentMarkerWidth - 1) / 2);
 
     let width = cd.g.userDirection === 'ltr' ?
       left - deductable :
