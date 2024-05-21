@@ -667,7 +667,7 @@ class Thread {
       let offset;
 
       // Don't round - we need a subpixel-precise value
-      const centerOffset = ((cd.g.threadLineWidth - 1) / 2) / cd.g.pixelDeviationRatio;
+      const centerOffset = ((cd.g.commentMarkerWidth - 1) / 2) / cd.g.pixelDeviationRatio;
 
       if (dir === 'ltr') {
         offset = rectOrOffset.left - centerOffset;
@@ -675,7 +675,11 @@ class Thread {
           offset -= commentMargins.left + 1;
         }
       } else {
-        offset = rectOrOffset.right - (cd.g.threadLineWidth / cd.g.pixelDeviationRatio) + centerOffset;
+        offset = (
+          rectOrOffset.right -
+          (cd.g.commentMarkerWidth / cd.g.pixelDeviationRatio) +
+          centerOffset
+        );
         if (commentMargins) {
           offset += commentMargins.right + 1;
         }
@@ -683,7 +687,7 @@ class Thread {
       if (rectOrOffset instanceof DOMRect) {
         offset += scrollX;
       }
-      return offset - cd.g.threadLineSideMargin;
+      return offset - cd.g.threadLineSidePadding;
     };
     const getTop = (rectOrOffset) => (
       rectOrOffset instanceof DOMRect ?

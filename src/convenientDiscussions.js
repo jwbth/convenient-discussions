@@ -273,21 +273,22 @@ Object.assign(cd.g, {
   commentFallbackSideMargin: 10,
 
   /**
-   * Left and right margins of thread lines.
+   * Left and right padding of thread lines.
    *
    * @type {number}
    * @memberof convenientDiscussions.g
    */
-  threadLineSideMargin: 3,
+  threadLineSidePadding: 3,
 
   /**
-   * Width (thickness) of thread lines when you hover over them. Should be an odd number - otherwise
-   * the browser will render 1 pixel more on one side, and for each comment differently.
+   * Width (thickness) of comment markers and thread lines when you hover over them. Should be an
+   * odd number - otherwise the browser will render 1 pixel more on one side, and for each comment
+   * differently. See also pixelDeviationRatio that helps achieve this evenness.
    *
    * @type {number}
    * @memberof convenientDiscussions.g
    */
-  threadLineWidth: 3,
+  commentMarkerWidth: 3,
 
   /**
    * Number of seconds between checks for new comments when the tab is not hidden.
@@ -570,10 +571,21 @@ Object.assign(cd.g, {
   // Some users increase the font size (zoom), which leads to some short distances jumping between
   // 3px and 4px and similar. With the help of this value, we can make all widths look the same by
   // using a variable that stores deviation from standard values.
-  pixelDeviationRatio: window.devicePixelRatio >= 4 ? window.devicePixelRatio / 4 :
-    window.devicePixelRatio >= 3 ? window.devicePixelRatio / 3 :
-      window.devicePixelRatio >= 2 ? window.devicePixelRatio / 2 :
-        window.devicePixelRatio / 1,
+  pixelDeviationRatio:
+    // Thread lines are 4 physical pixels, comment markers are 12 physical pixels, 4 from each side
+    window.devicePixelRatio >= 4 ? window.devicePixelRatio / 4 :
+      // Thread lines are 3 physical pixels, comment markers are 11 physical pixels, 4 from each side
+      window.devicePixelRatio >= 3.3333333 ? window.devicePixelRatio / 3.6666666 :
+        // Thread lines are 3 physical pixels, comment markers are 9 physical pixels, 3 from each side
+        window.devicePixelRatio >= 3 ? window.devicePixelRatio / 3 :
+          // Thread lines are 2 physical pixels, comment markers are 8 physical pixels, 3 from each side
+          window.devicePixelRatio >= 2.3333333 ? window.devicePixelRatio / 2.6666666 :
+            // Thread lines are 2 physical pixels, comment markers are 6 physical pixels, 2 from each side
+            window.devicePixelRatio >= 2 ? window.devicePixelRatio / 2 :
+              // Thread lines are 1 physical pixel, comment markers are 5 physical pixels, 2 from each side
+              window.devicePixelRatio >= 1.3333333 ? window.devicePixelRatio / 1.6666666 :
+                // Thread lines are 1 physical pixel, comment markers are 3 physical pixels, 1 from each side
+                window.devicePixelRatio / 1,
 
   isDtReplyToolEnabled: bodyClassList.contains('ext-discussiontools-replytool-enabled'),
   isDtNewTopicToolEnabled: bodyClassList.contains('ext-discussiontools-newtopictool-enabled'),

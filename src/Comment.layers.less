@@ -57,7 +57,7 @@
 .cd-comment-overlay-marker {
   position: absolute;
   top: 0;
-  width: calc(var(--cd-thread-line-width) / var(--cd-pixel-deviation-ratio));
+  width: calc(var(--cd-comment-marker-width) / var(--cd-pixel-deviation-ratio));
   height: 100%;
 
   .cd-comment-overlay-new &,
@@ -136,7 +136,7 @@
 
 .cd-comment-overlay-marker,
 .cd-comment-overlay-line {
-  inset-inline-start: calc(-1px - (((var(--cd-thread-line-width) - 1px) / 2) / var(--cd-pixel-deviation-ratio)));
+  inset-inline-start: calc(-1px - (((var(--cd-comment-marker-width) - 1px) / 2) / var(--cd-pixel-deviation-ratio)));
 }
 
 .cd-comment-overlay-line-gapCloser {
