@@ -41,19 +41,19 @@ const devicePixelRatioToDivisor = [
   [4, 4],
 
   // Thread lines are 3 physical pixels, comment markers are 11 physical pixels, 4 from each side
-  [3.3333333, 3.6666666],
+  [3.6666666, 3.6666666],
 
   // Thread lines are 3 physical pixels, comment markers are 9 physical pixels, 3 from each side
   [3, 3],
 
   // Thread lines are 2 physical pixels, comment markers are 8 physical pixels, 3 from each side
-  [2.3333333, 2.6666666],
+  [2.6666666, 2.6666666],
 
   // Thread lines are 2 physical pixels, comment markers are 6 physical pixels, 2 from each side
   [2, 2],
 
   // Thread lines are 1 physical pixel, comment markers are 5 physical pixels, 2 from each side
-  [1.3333333, 1.6666666],
+  [1.6666666, 1.6666666],
 
   // Thread lines are 1 physical pixel, comment markers are 3 physical pixels, 1 from each side (default)
   [0, 1],
@@ -324,6 +324,10 @@ Object.assign(cd.g, {
   commentMarkerWidth: 3,
 
   pixelDeviationRatio,
+
+  pixelDeviationRatioFor1px: (
+    window.devicePixelRatio / Math.min(Math.floor(window.devicePixelRatio), 1)
+  ),
 
   /**
    * Number of seconds between checks for new comments when the tab is not hidden.
