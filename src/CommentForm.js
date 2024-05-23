@@ -1621,19 +1621,17 @@ class CommentForm {
   handlePasteDrop(e) {
     const data = e.originalEvent.clipboardData || e.originalEvent.dataTransfer;
 
-    if (data.types.includes('text/html')) {
+    const image = [...data.items].find((item) => (
+      this.constructor.allowedFileTypes.includes(item.type)
+    ));
+    if (image) {
+      e.preventDefault();
+      this.uploadImage(image.getAsFile());
+    } else if (data.types.includes('text/html')) {
       const html = data.getData('text/html');
       if (!isHtmlConvertibleToWikitext(html, this.commentInput.$element[0])) return;
 
       this.suggestConvertToWikitext(html, data.getData('text/plain')?.replace(/\r/g, ''));
-    } else {
-      const image = [...data.items].find((item) => (
-        this.constructor.allowedFileTypes.includes(item.type)
-      ));
-      if (image) {
-        e.preventDefault();
-        this.uploadImage(image.getAsFile());
-      }
     }
   }
 
