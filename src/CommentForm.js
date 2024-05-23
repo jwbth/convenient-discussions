@@ -1600,7 +1600,7 @@ class CommentForm {
             this.preview(true);
 
             this.encapsulateSelection({
-              pre: `[[${filename}|none]]`,
+              pre: `[[${filename}|frameless|none]]`,
             });
           } else {
             this.encapsulateSelection({
