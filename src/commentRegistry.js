@@ -13,7 +13,6 @@ import settings from './settings';
 import updateChecker from './updateChecker';
 import { getPagesExistence } from './utils-api';
 import { getCommonGender, reorderArray, unique } from './utils-general';
-import { mixEventEmitterIntoObject } from './utils-oojs';
 import { getExtendedRect, getHigherNodeAndOffsetInSelection } from './utils-window';
 import visits from './visits';
 
@@ -46,8 +45,6 @@ export default {
    * _For internal use._ Initialize the registry.
    */
   init() {
-    mixEventEmitterIntoObject(this);
-
     this.reformatCommentsSetting = settings.get('reformatComments');
 
     controller

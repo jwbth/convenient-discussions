@@ -11,7 +11,6 @@ import commentRegistry from './commentRegistry';
 import controller from './controller';
 import sectionRegistry from './sectionRegistry';
 import { defined, removeFromArrayIfPresent } from './utils-general';
-import { mixEventEmitterIntoObject } from './utils-oojs';
 import { isCmdModifierPressed, isInputFocused, keyCombination } from './utils-window';
 
 // TODO: make into a class extending a generic registry.
@@ -29,9 +28,6 @@ export default {
    * _For internal use._ Initialize the registry.
    */
   init() {
-    // Do it here because OO.EventEmitter can be unavailable when this module is first imported.
-    mixEventEmitterIntoObject(this);
-
     this.configureClosePageConfirmation();
 
     controller

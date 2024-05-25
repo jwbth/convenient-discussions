@@ -3,7 +3,6 @@ import dayjs from 'dayjs';
 import cd from './cd';
 import settings from './settings';
 import { removeFromArrayIfPresent } from './utils-general';
-import { mixEventEmitterIntoObject } from './utils-oojs';
 import { formatDate, relativeTimeThresholds } from './utils-timestamp';
 
 /**
@@ -109,13 +108,6 @@ class LiveTimestamp {
   static updateTimeouts = [];
   static improvedTimestampsInited = false;
   static improvedTimestamps = [];
-
-  /**
-   * Initialize the class (runs once).
-   */
-  static init() {
-    mixEventEmitterIntoObject(this);
-  }
 
   /**
    * _For internal use._ Initialize improved timestamps (when the timestamp format is set to

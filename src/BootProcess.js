@@ -2,7 +2,6 @@ import CdError from './CdError';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
 import CommentFormInputTransformer from './CommentFormInputTransformer';
-import LiveTimestamp from './LiveTimestamp';
 import Parser from './Parser';
 import Section from './Section';
 import Thread from './Thread';
@@ -256,9 +255,8 @@ class BootProcess {
     }
     this.subscriptions = controller.getSubscriptionsInstance();
     if (this.firstRun) {
-      // The order of the subsequent calls matter because modules depend on others in a certain way.
-
-      visits.init();
+      // The order of the subsequent calls matters because modules depend on others in a certain
+      // way.
 
       // A little dirty code here - sectionRegistry.init() is placed above toc.init() and
       // commentRegistry.init(), to add event handlers for its methods quicker than
@@ -274,7 +272,6 @@ class BootProcess {
       toc.init(this.subscriptions);
       commentFormRegistry.init();
       commentRegistry.init();
-      LiveTimestamp.init();
       CommentForm.init();
       CommentFormInputTransformer.init();
       notifications.init();

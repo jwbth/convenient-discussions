@@ -5,14 +5,8 @@ import cd from './cd';
 import commentRegistry from './commentRegistry';
 import settings from './settings';
 import { getUserInfo, saveLocalOption } from './utils-api';
-import { mixEventEmitterIntoObject } from './utils-oojs';
 
 export default {
-  init() {
-    // Do it here because OO.EventEmitter can be unavailable when this module is first imported.
-    mixEventEmitterIntoObject(this);
-  },
-
   /**
    * Request the pages visits data from the server.
    *

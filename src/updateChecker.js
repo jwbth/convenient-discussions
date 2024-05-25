@@ -15,7 +15,6 @@ import settings from './settings';
 import userRegistry from './userRegistry';
 import { loadUserGenders } from './utils-api';
 import { calculateWordOverlap, keepWorkerSafeValues } from './utils-general';
-import { mixEventEmitterIntoObject } from './utils-oojs';
 import visits from './visits';
 
 // FIXME: Make this into a singleton (object) without inner module variables, so that it emits with
@@ -658,8 +657,6 @@ const updateChecker = {
    * _For internal use._ Initialize the update checker.
    */
   init() {
-    mixEventEmitterIntoObject(this);
-
     visits
       .on('process', (currentPageData) => {
         const bootProcess = controller.getBootProcess();

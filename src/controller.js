@@ -12,6 +12,7 @@ import CommentForm from './CommentForm';
 import DtSubscriptions from './DtSubscriptions';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import LegacySubscriptions from './LegacySubscriptions';
+import LiveTimestamp from './LiveTimestamp';
 import Parser from './Parser';
 import addCommentLinks from './addCommentLinks';
 import cd from './cd';
@@ -30,6 +31,7 @@ import { getUserInfo } from './utils-api';
 import { defined, definedAndNotNull, flat, getLastArrayElementOrSelf, getQueryParamBooleanValue, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
 import { mixEventEmitterIntoObject } from './utils-oojs';
 import { copyText, getVisibilityByRects, skin$, wrapHtml } from './utils-window';
+import visits from './visits';
 import Worker from './worker-gate';
 
 export default {
@@ -1112,8 +1114,14 @@ export default {
     this.showLoadingOverlay();
     Promise.all([modulesRequest, ...siteDataRequests]).then(
       async () => {
-        // Do it here because OO.EventEmitter can be unavailable before.
+        // Do it here because OO.EventEmitter can be unavailable when these modules are first
+        // imported.
         mixEventEmitterIntoObject(this);
+        mixEventEmitterIntoObject(visits);
+        mixEventEmitterIntoObject(updateChecker);
+        mixEventEmitterIntoObject(LiveTimestamp);
+        mixEventEmitterIntoObject(commentFormRegistry);
+        mixEventEmitterIntoObject(commentRegistry);
 
         await this.tryExecuteBootProcess();
 
