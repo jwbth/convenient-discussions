@@ -407,7 +407,7 @@
 	"ud-configure": "Настроить содержимое всех полей",
 	"ud-source": "Источник",
 	"ud-author": "Автор",
-	"ud-license": "Шаблон лицензии",
+	"ud-license": "Лицензия, в формате вики-текста",
 	"ud-uploadandsave": "Загрузить и сохранить",
 	"error-loaddata": "{{int:convenient-discussions-script-name}}: не удалось загрузить данные, необходимые скрипту.",
 	"error-needreloadpage": "Ошибка API. Пожалуйста, <span class=\"cd-notification-reloadPage\">[[$1|перезагрузите страницу]]</span> и попробуйте снова.",

@@ -428,7 +428,7 @@
   "ud-configure": "Configure the contents of all the input fields",
   "ud-source": "Source",
   "ud-author": "Author",
-  "ud-license": "License template",
+  "ud-license": "License, in wikitext format",
   "ud-uploadandsave": "Upload and save",
 
   "error-loaddata": "{{int:convenient-discussions-script-name}}: Couldn't load the data required by the script.",
