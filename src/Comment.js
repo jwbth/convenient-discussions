@@ -2905,6 +2905,7 @@ class Comment extends CommentSkeleton {
       this.$elements
         .addClass('cd-hidden')
         .data('cd-comment-form', commentForm);
+      this.unhighlightHovered();
       if (this.isOpeningSection) {
         $(this.section.barElement).addClass('cd-hidden');
       }
