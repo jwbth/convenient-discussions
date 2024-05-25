@@ -594,16 +594,14 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
         } else {
           projectNameOrPageName = pageNameOrProjectName;
         }
-        const language = mw.config.get('wgContentLanguage');
-
         this.filenameWidget.setValue(`${filenameMainPart} ${filenameDate}`);
         this.descriptionWidget.setValue(`Screenshot of ${projectNameOrPageName}`);
         this.controls.source.input.setValue('Screenshot');
         this.controls.author.input.setValue(`${pageNameOrProjectName} authors${historyText}`);
         this.controls.license.input.setValue(
-          cd.g.serverName.endsWith('.wikipedia.org') && !hasIwPrefix ?
-            `{{Wikipedia-screenshot|1=${language}}}` :
-            '{{Wikimedia-screenshot}}'
+          hasIwPrefix ?
+            '{{Wikimedia-screenshot}}' :
+            this.constructor.getTemplateForHostname(cd.g.serverName)
         );
 
         // Load the English project name for the file name if we can
@@ -621,6 +619,9 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
                   throw [];
                 }
                 const hostname = new URL(url, cd.g.server).hostname;
+                this.controls.license.input.setValue(
+                  this.constructor.getTemplateForHostname(hostname)
+                );
                 const dbname = getDbnameForHostname(hostname);
                 return Promise.all([
                   controller.getApi().getMessages(`project-localized-name-${dbname}`, {
@@ -825,7 +826,39 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
       offset: generateFixedPosTimestamp(new Date(), zeroPad(new Date().getUTCSeconds(), 2)),
     });
     const link = `https://${hostname}${path}`;
-    return `, see the [${link} history]`;
+    return `, see the [${link} page history]`;
+  }
+
+  /**
+   * Get the template markup for the hostname of a screenshot.
+   *
+   * @param {string} hostname
+   * @returns {string}
+   */
+  static getTemplateForHostname(hostname) {
+    let template;
+    [
+      [/^(.+)\.wikipedia.org$/, `{{Wikipedia-screenshot%s}}`],
+
+      // Language codes aren't supported on most templates, but they may become supported at some
+      // point
+      [/^(.+)\.wiktionary.org$/, `{{Wiktionary-screenshot%s}}`],
+      [/^(.+)\.wikiquote.org$/, `{{Wikiquote-screenshot%s}}`],
+      [/^(.+)\.wikiversity.org$/, `{{Wikiversity-screenshot%s}}`],
+
+      // https://wikisource.org/ exists, so the subdomain is not necessary
+      [/^(?:(.+)\.)?wikisource.org$/, `{{Wikisource-screenshot%s}}`],
+
+      [/^(.+)\.wikivoyage.org$/, `{{Wikivoyage-screenshot%s}}`],
+    ].some(([regexp, format]) => {
+      const match = hostname.match(regexp);
+      if (match) {
+        template = format.replace('%s', match[1] ? '|' + match[1] : '')
+        return true;
+      }
+      return false;
+    });
+    return template || '{{Wikimedia-screenshot}}';
   }
 }
 
