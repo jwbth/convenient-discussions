@@ -3653,6 +3653,24 @@ class Comment extends CommentSkeleton {
     return null;
   }
 
+  /**
+   * _For internal use._ Change the selected state of the comment: is text in it selected or not.
+   *
+   * @param {boolean} selected
+   */
+  setSelected(selected) {
+    if (selected) {
+      if (this.isActionable) {
+        this.isSelected = true;
+        this.configureLayers();
+        this.replyButton.setLabel(cd.s('cm-quote'));
+      }
+    } else {
+      this.isSelected = false;
+      this.replyButton.setLabel(cd.s('cm-reply'));
+    }
+  }
+
   static {
     // Doesn't account for cases when the section headline ends with -<number>.
     const newDtTimestampPattern = '(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})\\d{2}';

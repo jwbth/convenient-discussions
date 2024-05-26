@@ -58,6 +58,9 @@ export default {
         }
       })
       .on('resize', this.adjustLabels.bind(this));
+    commentRegistry
+      .on('selected', this.toggleQuoteButtonsHighlighting.bind(this, true))
+      .on('unselected', this.toggleQuoteButtonsHighlighting.bind(this, false));
   },
 
   /**
@@ -471,4 +474,15 @@ export default {
       );
     });
   },
+
+  /**
+   * Highlight or unhighlight the quote buttons of all comment forms.
+   *
+   * @param {boolean} highlight
+   */
+  toggleQuoteButtonsHighlighting(highlight) {
+    this.items.forEach((item) => {
+      item.highlightQuoteButton(highlight);
+    });
+  }
 };

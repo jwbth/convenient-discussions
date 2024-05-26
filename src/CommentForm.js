@@ -3975,6 +3975,17 @@ class CommentForm {
     return el.parentNode.classList.contains('cd-commentForm-outerWrapper') ? el.parentNode : el;
   }
 
+  /**
+   * Highlight or unhighlight the quote button.
+   *
+   * @param {boolean} highlight
+   */
+  highlightQuoteButton(highlight) {
+    if (!this.showToolbar) return;
+
+    this.$element.find('.tool-button[rel="quote"]').toggleClass('highlight', highlight);
+  }
+
   static counter = 0;
   static allowedFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'];
 

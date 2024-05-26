@@ -774,8 +774,8 @@ export default {
   resetSelectedComment() {
     const comment = this.items.find((comment) => comment.isSelected);
     if (comment) {
-      comment.isSelected = false;
-      comment.replyButton.setLabel(cd.s('cm-reply'));
+      comment.setSelected(false);
+      this.emit('unselected', comment);
     }
   },
 
@@ -797,11 +797,14 @@ export default {
       } while (commentIndex === undefined && treeWalker.parentNode());
       if (commentIndex !== undefined) {
         comment = this.items[commentIndex];
-        this.resetSelectedComment();
-        if (comment?.isActionable) {
-          comment.isSelected = true;
-          comment.configureLayers();
-          comment.replyButton.setLabel(cd.s('cm-quote'));
+        if (comment) {
+          if (!comment.isSelected) {
+            this.resetSelectedComment();
+            comment.setSelected(true);
+            this.emit('selected', comment);
+          }
+        } else {
+          this.resetSelectedComment();
         }
       } else {
         this.resetSelectedComment();
