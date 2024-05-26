@@ -2292,18 +2292,13 @@ class CommentForm {
   }) {
     switch (type) {
       case 'parse': {
-        const editUrl = ['locateComment', 'findPlace', 'locateSection'].includes(code) ?
-          cd.page.getUrl({
-            action: 'edit',
-            ...(this.targetSection ? {} : { section: 0 }),
-          }) :
-          undefined;
+        const editUrl = cd.g.server + cd.page.getUrl({ action: 'edit' });
         switch (code) {
           case 'locateComment':
-            message = cd.sParse('error-locatecomment', editUrl);
+            message = cd.sParse('error-locatecomment', editUrl, cd.page.name);
             break;
           case 'locateSection':
-            message = cd.sParse('error-locatesection', editUrl);
+            message = cd.sParse('error-locatesection', editUrl, cd.page.name);
             break;
           case 'numberedList':
             message = cd.sParse('cf-error-numberedlist');

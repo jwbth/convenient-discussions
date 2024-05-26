@@ -191,7 +191,7 @@
 	"error-settings-load": "{{int:convenient-discussions-script-name}}: Nie udało się pobrać ustawień z serwera.",
 	"error-reloadpage-saved": "Strona została zapisana, ale nie udało się jej ponownie załadować.",
 	"error-network": "Sprawdź swoje połączenie sieciowe.",
-	"error-locatecomment": "Nie udało się znaleźć komentarza w kodzie źródłowym. Może to być spowodowane złożonością kodu komentarza, wadą skryptu lub faktem, że komentarz został usunięty lub mocno zredagowany. Możesz spróbować <span class=\"cd-message-editSection\">[$1 edytować źródło w standardowy sposób]</span> lub <span class=\"cd-message-reloadPage\">[[$1|odświeżyć stronę]]</span> .",
+	"error-locatecomment": "Nie udało się znaleźć komentarza w kodzie źródłowym. Może to być spowodowane złożonością kodu komentarza, wadą skryptu lub faktem, że komentarz został usunięty lub mocno zredagowany. Możesz spróbować <span class=\"cd-message-editSection\">[$1 edytować źródło w standardowy sposób]</span> lub <span class=\"cd-message-reloadPage\">[[$2|odświeżyć stronę]]</span> .",
 	"error-pagedeleted": "Strona została usunięta.",
 	"discussiontools-incompatible": "Convenient Discussions jest niezgodny z narzędziami dyskusji. Proszę <b><span class=\"cd-notification-disabledt\">[[$1|wyłączyć]]</span></b> (lub <b><span class=\"cd-notification-disableDtGlobally\">[[$2|globalnie wyłączyć]]</span></b> ) narzędzia dyskusji, aby Convenient Discussions działał poprawnie.",
 	"discussiontools-disabled": "Narzędzia dyskusji zostały pomyślnie wyłączone. <span class=\"cd-notification-refresh\">[[$1|Odśwież stronę]]</span>.",
