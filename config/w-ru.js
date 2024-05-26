@@ -298,7 +298,7 @@ export default {
   noSignatureClasses: [
     'ambox',
     'NavHead',
-    'raaf',
+    'raaf',  // [[Википедия:Запросы к администраторам/Быстрые]]
   ],
 
   noSignatureTemplates: [

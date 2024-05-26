@@ -9,7 +9,7 @@
   * Quoting comments with formatting preserved
   * Autofilling the edit summary with indication of the addressee of the comment
   * Saving comment drafts to restore the forms' content after unexpected events such as browser crashes
-  * Uploading images to Wikimedia Commons in three clicks
+  * Uploading screenshots to Wikimedia Commons in three clicks
 * Creating topics and subsections
 * Redesigned talk pages, with author and date displayed on top of comments (opt-in) and thin lines denoting threads
 * Handling "outdent" templates

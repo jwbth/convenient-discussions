@@ -235,28 +235,28 @@ class SettingsDialog extends ProcessDialog {
               value: name,
               selected: settingValues[name],
             }, data));
-            controls[name].input.on('change', this.updateStates.bind(this));
+            controls[name].input.on('change', this.updateAbilities.bind(this));
             break;
 
           case 'radio':
             controls[name] = createRadioField(Object.assign({
               selected: settingValues[name],
             }, data));
-            controls[name].select.on('select', this.updateStates.bind(this));
+            controls[name].select.on('select', this.updateAbilities.bind(this));
             break;
 
           case 'text':
             controls[name] = createTextField(Object.assign({
               value: settingValues[name],
             }, data));
-            controls[name].input.on('change', this.updateStates.bind(this));
+            controls[name].input.on('change', this.updateAbilities.bind(this));
             break;
 
           case 'number':
             controls[name] = createNumberField(Object.assign({
               value: settingValues[name],
             }, data));
-            controls[name].input.on('change', this.updateStates.bind(this));
+            controls[name].input.on('change', this.updateAbilities.bind(this));
             break;
 
           case 'multicheckbox':
@@ -271,7 +271,7 @@ class SettingsDialog extends ProcessDialog {
               )),
               classes: data.classes,
             });
-            controls[name].multiselect.on('select', this.updateStates.bind(this));
+            controls[name].multiselect.on('select', this.updateAbilities.bind(this));
             controls[name].field = new OO.ui.FieldLayout(controls[name].multiselect, {
               label: data.label,
               align: 'top',
@@ -287,7 +287,7 @@ class SettingsDialog extends ProcessDialog {
               tagLimit: data.tagLimit,
               selected: (data.dataToUi || ((val) => val)).call(null, settingValues[name]),
             });
-            controls[name].multiselect.on('change', this.updateStates.bind(this));
+            controls[name].multiselect.on('change', this.updateAbilities.bind(this));
             controls[name].field = new OO.ui.FieldLayout(controls[name].multiselect, {
               label: data.label,
               align: 'top',
@@ -326,7 +326,7 @@ class SettingsDialog extends ProcessDialog {
         setupOutlineItem() {
           this.outlineItem.setLabel(pageData.label);
         }
-      }))(this);
+      }))();
     });
 
     controls.removeData.button.connect(this, { click: 'removeData' });
@@ -355,7 +355,7 @@ class SettingsDialog extends ProcessDialog {
     this.bookletLayout.addPages(this.createPages(settingValues));
     this.settingsPanel.$element.empty().append(this.bookletLayout.$element);
 
-    this.updateStates();
+    this.updateAbilities();
   }
 
   /**
@@ -431,7 +431,7 @@ class SettingsDialog extends ProcessDialog {
    *
    * @protected
    */
-  async updateStates() {
+  async updateAbilities() {
     const controls = this.controls;
 
     controls.collapseThreadsLevel.input.setDisabled(!controls.enableThreads.input.isSelected());
