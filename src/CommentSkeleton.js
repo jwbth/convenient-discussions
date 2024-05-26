@@ -604,6 +604,7 @@ class CommentSkeleton {
    * @param {Element|external:Element} firstForeignComponentAfter
    * @param {Element|external:Element} precedingHeadingElement
    * @returns {object[]}
+   * @throws {CdError}
    * @private
    */
   traverseDom(parts, treeWalker, firstForeignComponentAfter, precedingHeadingElement) {
@@ -678,6 +679,14 @@ class CommentSkeleton {
       if (!isTextNode) {
         if (!this.isElementEligible(node, treeWalker, step)) {
           break;
+        }
+
+        // Weird cases with multiple signatures on different nesting levels, e.g.
+        // https://he.wikipedia.org/w/index.php?title=Template:%D7%9C%D7%90_%D7%97%D7%AA%D7%9D&oldid=36579655
+        // creates a class="autosigned" element and a hidden element with a signature after. Halt
+        // the search completely.
+        if (step === 'up' && node.classList.contains('cd-comment-part')) {
+          throw new CdError();
         }
 
         isHeading = isHeadingNode(node);
