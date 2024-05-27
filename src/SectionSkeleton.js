@@ -49,7 +49,12 @@ class SectionSkeleton {
      */
     this.headlineElement = cd.g.isParsoidUsed ?
       this.hElement :
-      this.parser.context.getElementByClassName(this.hElement, 'mw-headline');
+
+      // Presence of .mw-heading doesn't guarantee we have the new HTML for headings
+      // (https://www.mediawiki.org/wiki/Heading_HTML_changes). We should test for the existence of
+      // .mw-headline to make sure it's not there. (Could also check that .mw-editsection follows
+      // hN.)
+      (this.parser.context.getElementByClassName(this.hElement, 'mw-headline') || this.hElement);
 
     if (!this.headlineElement) {
       throw new CdError();
