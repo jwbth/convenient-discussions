@@ -18,7 +18,7 @@ import userRegistry from './userRegistry';
 import { handleApiReject, parseCode } from './utils-api';
 import { buildEditSummary, defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './utils-general';
 import { createCheckboxField } from './utils-oojs';
-import { escapePipesOutsideLinks, generateTagsRegexp, removeWikiMarkup } from './utils-wikitext';
+import { escapePipesOutsideLinks, generateTagsRegexp, hasWikiMarkup, removeWikiMarkup } from './utils-wikitext';
 import { isCmdModifierPressed, isHtmlConvertibleToWikitext, isInputFocused, keyCombination, wrapDiffBody, wrapHtml } from './utils-window';
 
 /**
@@ -1620,6 +1620,7 @@ class CommentForm {
    */
   handlePasteDrop(e) {
     const data = e.originalEvent.clipboardData || e.originalEvent.dataTransfer;
+    const plainText = data.getData('text/plain');
 
     const image = [...data.items].find((item) => (
       this.constructor.allowedFileTypes.includes(item.type)
@@ -1627,8 +1628,8 @@ class CommentForm {
     if (image) {
       e.preventDefault();
       this.uploadImage(image.getAsFile());
-    } else if (data.types.includes('text/html')) {
-      const html = data.getData('text/html');
+    } else if (data.types.includes('text/html') || (plainText && hasWikiMarkup(plainText))) {
+      const html = data.getData('text/html') || plainText;
       if (!isHtmlConvertibleToWikitext(html, this.commentInput.$element[0])) return;
 
       this.suggestConvertToWikitext(html, data.getData('text/plain')?.replace(/\r/g, ''));

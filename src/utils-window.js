@@ -9,6 +9,7 @@ import ElementsTreeWalker from './ElementsTreeWalker';
 import Parser from './Parser';
 import cd from './cd';
 import { parseWikiUrl, isInline, removeFromArrayIfPresent, defined } from './utils-general';
+import { hasWikiMarkup } from './utils-wikitext';
 
 /**
  * @typedef {object} WrapCallbacks
@@ -255,8 +256,11 @@ export function copyText(text, { success, fail }) {
  */
 export function isHtmlConvertibleToWikitext(html, containerElement) {
   return isElementConvertibleToWikitext(
-    cleanUpPasteDom(getElementFromPasteHtml(html), containerElement).element
-  )
+    cleanUpPasteDom(
+      getElementFromPasteHtml(html),
+      containerElement
+    ).element
+  );
 }
 
 /**
@@ -267,13 +271,18 @@ export function isHtmlConvertibleToWikitext(html, containerElement) {
  */
 export function isElementConvertibleToWikitext(element) {
   return Boolean(
-    element.childElementCount &&
-    !(
-      [...element.querySelectorAll('*')].length === 1 &&
-      element.childNodes.length === 1 &&
-      ['P', 'LI', 'DD'].includes(element.children[0].tagName)
-    ) &&
-    ![...element.querySelectorAll('*')].every((el) => el.tagName === 'BR')
+    (
+      element.childElementCount &&
+      !(
+        [...element.querySelectorAll('*')].length === 1 &&
+        element.childNodes.length === 1 &&
+        ['P', 'LI', 'DD'].includes(element.children[0].tagName)
+      ) &&
+      ![...element.querySelectorAll('*')].every((el) => el.tagName === 'BR')
+    ) ||
+
+    // <nowiki> is likely used here
+    hasWikiMarkup(element.textContent)
   );
 }
 
