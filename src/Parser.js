@@ -739,7 +739,9 @@ class Parser {
    * Initialize the class.
    */
   static init() {
-    this.punctuationRegexp = new RegExp(`(?:^|[${cd.g.letterPattern}])[.!?…] `);
+    // Parenthesis for the case `smth). ~~~~`
+    // https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Новости&oldid=138050961#c-Lesless-20240526055500-Deinocheirus-20240525165500
+    this.punctuationRegexp = new RegExp(`(?:^|[${cd.g.letterPattern}])[)\\]]*[.!?…]+ `);
   }
 }
 
