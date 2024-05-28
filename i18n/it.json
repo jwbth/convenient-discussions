@@ -105,6 +105,7 @@
 	"sd-useuitime": "Mostra le date dei commenti espresse nel fuso orario impostato [[$1|nelle mie preferenze wiki]]",
 	"ewsd-save": "Salva",
 	"msd-move": "Sposta",
+	"ud-license": "Licenza, in formato wikitesto",
 	"error-api": "Errore API: $1.",
 	"error-editconflict": "Conflitto di modifiche.",
 	"error-pagedeleted": "La pagina è stata cancellata.",

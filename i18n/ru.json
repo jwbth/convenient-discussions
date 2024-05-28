@@ -399,7 +399,7 @@
 	"ud-preset": "Выберите пресет",
 	"ud-preset-projectscreenshot": "Это скриншот проекта $1 или другого проекта Викимедиа",
 	"ud-preset-projectscreenshot-help": "Он не должен содержать несвободных изображений. Для свободных изображений должны быть поставлены ссылки на их авторов.",
-	"ud-preset-projectscreenshot-title": "Заскриншоченная страница",
+	"ud-preset-projectscreenshot-title": "Страница на скриншоте",
 	"ud-preset-projectscreenshot-title-help": "Если это скриншот другого проекта, используйте полный интервики-префикс, например <code>wikt:fr:mot</code>.",
 	"ud-preset-mediawikiscreenshot": "Это скриншот ПО MediaWiki (например, пользовательского интерфейса)",
 	"ud-preset-ownwork": "Это моя собственная работа",

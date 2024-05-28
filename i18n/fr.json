@@ -130,6 +130,7 @@
 	"es-move-to": "déplacer vers [[$1]]",
 	"cf-headline-topic": "Sujet",
 	"cf-headline-subsection": "Sujet de la sous-section de « $1 »",
+	"cf-comment-placeholder": "Texte",
 	"cf-comment-placeholder-replytosection": "Répondre à « $1 »",
 	"cf-comment-placeholder-replytocomment": "Répondre à {{GENDER:$2|}}$1",
 	"cf-summary-placeholder": "Résumé des modifications",
