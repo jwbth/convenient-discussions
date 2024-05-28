@@ -23,7 +23,6 @@ class Thread {
    */
   constructor(rootComment) {
     this.documentMouseMoveHandler = this.handleDocumentMouseMove.bind(this);
-    this.blockScrollingHandler = this.blockScroll.bind(this);
 
     /**
      * Root comment of the thread.
@@ -104,7 +103,6 @@ class Thread {
     this.isCollapsed = false;
 
     this.navMode = false;
-    this.scrollBlocking = false;
   }
 
   /**
@@ -277,6 +275,7 @@ class Thread {
 
     // Middle button
     if (!this.rootComment.isCollapsed && e.button === 1) {
+      e.preventDefault();
       this.navMode = true;
       this.navFromY = e.clientY;
 
@@ -285,7 +284,8 @@ class Thread {
 
       $(document)
         .on('mousemove.cd', this.documentMouseMoveHandler)
-        .one('mouseup.cd mousedown.cd', this.quitScrollMode.bind(this));
+        .on('mouseup.cd mousedown.cd', this.quitNavMode.bind(this));
+      $(document.body).addClass('cd-threadNavMode');
     }
   }
 
@@ -296,26 +296,12 @@ class Thread {
    * @private
    */
   handleDocumentMouseMove(e) {
-    const saveNavTargetY = () => {
-      if (this.scrollBlocking) {
-        this.navTargetY = window.scrollY;
-      }
-    };
-
-    if (e.clientY - this.navFromY < -15) {
-      this.quitNavMode();
-      this.enableScrollBlocking();
-      this.rootComment.scrollTo({
-        alignment: 'top',
-        callback: saveNavTargetY,
-      });
-    } else if (e.clientY - this.navFromY > 15) {
-      this.quitNavMode();
-      this.enableScrollBlocking();
-      this.lastComment.scrollTo({
-        alignment: 'bottom',
-        callback: saveNavTargetY,
-      });
+    if (e.clientY - this.navFromY < -15 && this.navScrolledTo !== 'root') {
+      this.rootComment.scrollTo({ alignment: 'top' });
+      this.navScrolledTo = 'root';
+    } else if (e.clientY - this.navFromY > 15 && this.navScrolledTo !== 'last') {
+      this.lastComment.scrollTo({ alignment: 'bottom' });
+      this.navScrolledTo = 'last';
     }
   }
 
@@ -327,56 +313,9 @@ class Thread {
   quitNavMode() {
     this.navMode = false;
     delete this.navFromY;
+    delete this.navScrolledTo;
     $(document).off('mousemove.cd', this.documentMouseMoveHandler);
-  }
-
-  /**
-   * When we scrolled to the root/last comment of the thread / next thread, we want to disable
-   * scrolling so that moving the mouse with pressed middle button has no effect until it is
-   * released and pressed again.
-   *
-   * @private
-   */
-  enableScrollBlocking() {
-    $(document).on('scroll.cd', this.blockScrollingHandler);
-    this.scrollBlocking = true;
-  }
-
-  /**
-   * Disable scroll blocking that was previously enabled.
-   *
-   * @private
-   */
-  disableScrollBlocking() {
-    $(document).off('scroll.cd', this.blockScrollingHandler);
-    delete this.navTargetY;
-    this.scrollBlocking = false;
-  }
-
-  /**
-   * Return the scrolling position to the initial position to effectively prevent scrolling while
-   * the user holds the mouse button.
-   *
-   * @private
-   */
-  blockScroll() {
-    if (this.navTargetY !== undefined) {
-      window.scrollTo(window.scrollX, this.navTargetY);
-    }
-  }
-
-  /**
-   * Handle the event when the user unpresses the middle mouse button to quit the scrolling mode or
-   * presses any other button which leads to the same effect.
-   *
-   * @private
-   */
-  quitScrollMode() {
-    this.quitNavMode();
-    if (this.scrollBlocking) {
-      // Handle one last time before disableing scroll blocking. 20ms is an eyeballed value.
-      setTimeout(this.disableScrollBlocking.bind(this), 20);
-    }
+    $(document.body).removeClass('cd-threadNavMode');
   }
 
   /**
