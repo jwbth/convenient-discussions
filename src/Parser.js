@@ -315,7 +315,19 @@ class Parser {
             // outside of links or even tags, and this is much work for little gain. This is the
             // cost of us not relying on a DOM -> wikitext correspondence and processing these parts
             // separately.
-            (!node.tagName && this.constructor.punctuationRegexp.test(node.textContent))
+            (!node.tagName && this.constructor.punctuationRegexp.test(node.textContent)) ||
+
+            (
+              node.tagName &&
+
+              (
+                // Invisible pings, like
+                // https://he.wikipedia.org/w/index.php?title=שיחה:שפת_אמת&oldid=38365117#c-אייל-20240205174400-אייל-20240205172600
+                /display: *none/.test(node.getAttribute('style')) ||
+
+                this.noSignatureElements.some((noSigEl) => noSigEl === node)
+              )
+            )
           )
         ) ||
         (
