@@ -741,7 +741,9 @@ class Parser {
   static init() {
     // Parenthesis for the case `smth). ~~~~`
     // https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Новости&oldid=138050961#c-Lesless-20240526055500-Deinocheirus-20240525165500
-    this.punctuationRegexp = new RegExp(`(?:^|[${cd.g.letterPattern}])[)\\]]*[.!?…]+ `);
+    // Non-Latin punctuation is collected manually from https://en.wikipedia.org/wiki/Full_stop and
+    // other sources.
+    this.punctuationRegexp = new RegExp(`(?:^|[${cd.g.letterPattern}])[)\\]]*(?:[.!?…।։။۔]+ |[。！？]+)`);
   }
 }
 
