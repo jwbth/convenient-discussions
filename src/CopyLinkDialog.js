@@ -253,6 +253,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 
     let jsCall;
     let jsBreakpoint;
+    let jsBreakpointTimestamp;
     if (cd.g.debug) {
       jsCall = createCopyTextField({
         value: this.content.jsCall,
@@ -265,6 +266,14 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
         label: 'JS conditional breakpoint',
         copyCallback,
       });
+
+      if (this.type === 'comment') {
+        jsBreakpointTimestamp = createCopyTextField({
+          value: this.content.jsBreakpointTimestamp,
+          label: 'JS conditional breakpoint (timestamp)',
+          copyCallback,
+        });
+      }
     }
 
     return $.cdMerge(
@@ -275,6 +284,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       permanentLinkField.$element,
       jsCall?.$element,
       jsBreakpoint?.$element,
+      jsBreakpointTimestamp?.$element,
     );
   }
 

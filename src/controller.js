@@ -1617,6 +1617,9 @@ export default {
         `let c = convenientDiscussions.api.getCommentById('${object.id}');` :
         `let s = convenientDiscussions.api.getSectionById('${object.id}');`,
       jsBreakpoint: `this.id === '${object.id}'`,
+      jsBreakpointTimestamp: type === 'comment' ?
+        `timestamp.element.textContent === '${object.timestampText}'` :
+        undefined,
     };
 
     // Undocumented feature allowing to copy a link of a default type without opening a dialog.

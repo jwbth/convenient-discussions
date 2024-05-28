@@ -108,6 +108,9 @@ class CommentSkeleton {
      */
     this.timestamp = signature.timestampText?.replace(/ {2,}/g, ' ');
 
+    // For debugging
+    this.timestampText = signature.timestampText;
+
     /**
      * _For internal use._ Comment timestamp element.
      *
