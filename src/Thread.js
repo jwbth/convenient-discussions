@@ -22,6 +22,9 @@ class Thread {
    * @param {import('./Comment').default} rootComment Root comment of the thread.
    */
   constructor(rootComment) {
+    this.documentMouseMoveHandler = this.handleDocumentMouseMove.bind(this);
+    this.blockScrollingHandler = this.blockScroll.bind(this);
+
     /**
      * Root comment of the thread.
      *
@@ -99,6 +102,9 @@ class Thread {
      * @type {boolean}
      */
     this.isCollapsed = false;
+
+    this.navMode = false;
+    this.scrollBlocking = false;
   }
 
   /**
@@ -271,9 +277,105 @@ class Thread {
 
     // Middle button
     if (!this.rootComment.isCollapsed && e.button === 1) {
-      e.preventDefault();
-      this.handleClickAreaUnhover();
-      this.rootComment.scrollTo({ alignment: 'top' });
+      this.navMode = true;
+      this.navFromY = e.clientY;
+
+      // Prevent hitting document's mousedown.cd listener added below.
+      e.stopPropagation();
+
+      $(document)
+        .on('mousemove.cd', this.documentMouseMoveHandler)
+        .one('mouseup.cd mousedown.cd', this.quitScrollMode.bind(this));
+    }
+  }
+
+  /**
+   * Handle the `mousemove` event when the navigation mode is active.
+   *
+   * @param {Event} e
+   * @private
+   */
+  handleDocumentMouseMove(e) {
+    const saveNavTargetY = () => {
+      if (this.scrollBlocking) {
+        this.navTargetY = window.scrollY;
+      }
+    };
+
+    if (e.clientY - this.navFromY < -15) {
+      this.quitNavMode();
+      this.enableScrollBlocking();
+      this.rootComment.scrollTo({
+        alignment: 'top',
+        callback: saveNavTargetY,
+      });
+    } else if (e.clientY - this.navFromY > 15) {
+      this.quitNavMode();
+      this.enableScrollBlocking();
+      this.lastComment.scrollTo({
+        alignment: 'bottom',
+        callback: saveNavTargetY,
+      });
+    }
+  }
+
+  /**
+   * Quit navigation mode and remove its traces.
+   *
+   * @private
+   */
+  quitNavMode() {
+    this.navMode = false;
+    delete this.navFromY;
+    $(document).off('mousemove.cd', this.documentMouseMoveHandler);
+  }
+
+  /**
+   * When we scrolled to the root/last comment of the thread / next thread, we want to disable
+   * scrolling so that moving the mouse with pressed middle button has no effect until it is
+   * released and pressed again.
+   *
+   * @private
+   */
+  enableScrollBlocking() {
+    $(document).on('scroll.cd', this.blockScrollingHandler);
+    this.scrollBlocking = true;
+  }
+
+  /**
+   * Disable scroll blocking that was previously enabled.
+   *
+   * @private
+   */
+  disableScrollBlocking() {
+    $(document).off('scroll.cd', this.blockScrollingHandler);
+    delete this.navTargetY;
+    this.scrollBlocking = false;
+  }
+
+  /**
+   * Return the scrolling position to the initial position to effectively prevent scrolling while
+   * the user holds the mouse button.
+   *
+   * @private
+   */
+  blockScroll() {
+    if (this.navTargetY !== undefined) {
+      window.scrollTo(window.scrollX, this.navTargetY);
+    }
+  }
+
+  /**
+   * Handle the event when the user unpresses the middle mouse button to quit the scrolling mode or
+   * presses any other button which leads to the same effect.
+   *
+   * @private
+   */
+  quitScrollMode() {
+    this.quitNavMode();
+    if (this.scrollBlocking) {
+      // Handle one last time before disableing scroll blocking. 20ms is an eyeballed value.
+      setTimeout(this.disableScrollBlocking.bind(this), 20);
     }
   }
 
@@ -285,6 +387,7 @@ class Thread {
   handleClickAreaClick() {
     if (!this.clickArea.classList.contains('cd-thread-clickArea-hovered')) return;
 
+    this.quitNavMode();
     this.toggle();
   }
 
@@ -309,8 +412,8 @@ class Thread {
     this.clickArea.onmouseenter = this.handleClickAreaHover.bind(this);
     this.clickArea.onmouseleave = this.handleClickAreaUnhover.bind(this);
 
-    this.clickArea.onmousedown = this.handleClickAreaMouseDown.bind(this);
     this.clickArea.onclick = this.handleClickAreaClick.bind(this);
+    this.clickArea.onmousedown = this.handleClickAreaMouseDown.bind(this);
 
     /**
      * Thread line.
@@ -868,18 +971,20 @@ class Thread {
       return;
     }
 
+    this.updateLinesHandler = this.updateLines.bind(this);
+
     if (!this.isInited) {
       controller
-        .on('resize', this.updateLines.bind(this))
+        .on('resize', this.updateLinesHandler)
         .on('mutate', () => {
-          // Update only on mouse move to prevent short freezings of a page when there is a
-          // comment form in the beginning of a very long page and the input is changed so that
-          // everything below the form shifts vertically.
+          // Update only on mouse move to prevent short freezings of a page when there is a comment
+          // form in the beginning of a very long page and the input is changed so that everything
+          // below the form shifts vertically.
           $(document)
-            .off('mousemove.cd')
-            .one('mousemove.cd', this.updateLines.bind(this));
+            .off('mousemove.cd', this.updateLinesHandler)
+            .one('mousemove.cd', this.updateLinesHandler);
         });
-      $(document).on('visibilitychange', this.updateLines.bind(this));
+      $(document).on('visibilitychange', this.updateLinesHandler);
       updateChecker
         // Start and end elements of threads may be replaced, so we need to restart threads.
         .on('newChanges', this.init.bind(this, false));

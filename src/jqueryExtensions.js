@@ -62,9 +62,10 @@ export default {
    * @memberof external:jQuery.fn
    */
   cdScrollTo(alignment = 'top', smooth = true, callback) {
+    const defaultScrollPaddingTop = 7;
     let $elements = this.cdRemoveNonElementNodes();
 
-    // Filter out elements like those having class="mw-empty-elt".
+    // Filter out elements like .mw-empty-elt
     const findFirstVisibleElementOffset = (direction) => {
       const elements = $elements.get();
       if (direction === 'backward') {
@@ -105,9 +106,9 @@ export default {
         offsetFirst.top + ((offsetBottom - offsetFirst.top) * 0.5) - $(window).height() * 0.5
       );
     } else if (alignment === 'bottom') {
-      top = offsetBottom - $(window).height();
+      top = offsetBottom - $(window).height() + defaultScrollPaddingTop;
     } else {
-      top = offsetFirst.top - cd.g.bodyScrollPaddingTop;
+      top = offsetFirst.top - (cd.g.bodyScrollPaddingTop || defaultScrollPaddingTop);
     }
 
     controller.toggleAutoScrolling(true);
