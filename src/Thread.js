@@ -261,11 +261,28 @@ class Thread {
   }
 
   /**
+   * Handle the `mousedown` event on the click area.
+   *
+   * @param {Event} e
+   * @private
+   */
+  handleClickAreaMouseDown(e) {
+    if (!this.clickArea.classList.contains('cd-thread-clickArea-hovered')) return;
+
+    // Middle button
+    if (!this.rootComment.isCollapsed && e.button === 1) {
+      e.preventDefault();
+      this.handleClickAreaUnhover();
+      this.rootComment.scrollTo({ alignment: 'top' });
+    }
+  }
+
+  /**
    * Handle the `click` event on the click area.
    *
    * @private
    */
-  handleToggleClick() {
+  handleClickAreaClick() {
     if (!this.clickArea.classList.contains('cd-thread-clickArea-hovered')) return;
 
     this.toggle();
@@ -292,7 +309,8 @@ class Thread {
     this.clickArea.onmouseenter = this.handleClickAreaHover.bind(this);
     this.clickArea.onmouseleave = this.handleClickAreaUnhover.bind(this);
 
-    this.clickArea.onclick = this.handleToggleClick.bind(this);
+    this.clickArea.onmousedown = this.handleClickAreaMouseDown.bind(this);
+    this.clickArea.onclick = this.handleClickAreaClick.bind(this);
 
     /**
      * Thread line.

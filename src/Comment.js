@@ -2338,7 +2338,7 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Scroll to the comment if it is not in the viewport.
+   * Scroll to the comment if it is not in the viewport. See also {@link Comment#scrollTo}.
    *
    * @param {'top'|'center'|'bottom'} alignment Where should the element be positioned relative to
    *   the viewport.
@@ -2348,7 +2348,8 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Scroll to the comment and (by default) flash it as a target.
+   * Scroll to the comment and (by default) flash it as a target. See also
+   * {@link Comment#scrollIntoView}.
    *
    * @param {object} [options]
    * @param {boolean} [options.smooth=true] Use a smooth animation.
@@ -2358,6 +2359,8 @@ class Comment extends CommentSkeleton {
    * @param {boolean} [options.pushState=false] Whether to push a state to the history with the
    *   comment ID as a fragment.
    * @param {Function} [options.callback] Callback to run after the animation has completed.
+   * @param {'top'|'center'|'bottom'} [options.alignment] Where should the element be positioned
+   *   relative to the viewport.
    */
   scrollTo({
     smooth = true,
@@ -2365,6 +2368,7 @@ class Comment extends CommentSkeleton {
     flash = true,
     pushState = false,
     callback,
+    alignment,
   } = {}) {
     if (expandThreads) {
       this.expandAllThreadsDownTo();
@@ -2377,7 +2381,7 @@ class Comment extends CommentSkeleton {
     }
 
     if (this.isCollapsed) {
-      this.getVisibleExpandNote().cdScrollTo('top', smooth, callback);
+      this.getVisibleExpandNote().cdScrollTo(alignment || 'top', smooth, callback);
       const notification = mw.notification.notify(
         wrapHtml(cd.sParse('navpanel-firstunseen-hidden'), {
           callbacks: {
@@ -2398,13 +2402,16 @@ class Comment extends CommentSkeleton {
     } else {
       const offset = this.getOffset({ considerFloating: true });
       (this.editForm?.$element || this.$elements).cdScrollIntoView(
+        alignment ||
         (
-          this.isOpeningSection ||
-          this.editForm ||
-          (offset && offset.bottom !== offset.bottomForVisibility)
-        ) ?
-          'top' :
-          'center',
+          (
+            this.isOpeningSection ||
+            this.editForm ||
+            (offset && offset.bottom !== offset.bottomForVisibility)
+          ) ?
+            'top' :
+            'center'
+        ),
         smooth,
         callback
       );
