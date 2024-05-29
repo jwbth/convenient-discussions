@@ -271,6 +271,7 @@ class CommentSource {
       this.indentation = adjustedChars;
       this.lineStartIndex = this.startIndex + before.length;
       this.startIndex += startIndexShift;
+      this.indentationSpacing = after;
       return remainder;
     };
 
@@ -415,10 +416,10 @@ class CommentSource {
         // https://ru.wikipedia.org/w/index.php?diff=105978713 (this one is actually handled by
         // replaceIndentation() in .excludeIndentationAndIntro()).
         if (replyIndentation.length < this.originalIndentation.length) {
-          // TODO: restore the original space or its absence here?
-          const spaceOrNot = cd.config.spaceAfterIndentationChars ? ' ' : '';
-
-          const prefix = this.originalIndentation.slice(replyIndentation.length) + spaceOrNot;
+          const prefix = (
+            this.originalIndentation.slice(replyIndentation.length) +
+            this.indentationSpacing
+          );
           this.code = prefix + this.code;
           this.indentation = this.originalIndentation = this.originalIndentation
             .slice(0, replyIndentation.length);
