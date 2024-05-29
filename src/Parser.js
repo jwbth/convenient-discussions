@@ -334,6 +334,7 @@ class Parser {
           node.tagName &&
           (
             node.classList.contains('cd-timestamp') ||
+            node.classList.contains('cd-signature') ||
 
             // Workaround for cases like https://en.wikipedia.org/?diff=1042059387 (those should be
             // extremely rare).
