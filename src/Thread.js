@@ -246,12 +246,22 @@ class Thread {
   /**
    * Handle the `mouseenter` event on the click area.
    *
+   * @param {Event} e
+   * @param {boolean} [force=false]
    * @private
    */
-  handleClickAreaHover() {
-    this.highlightTimeout = setTimeout(() => {
+  handleClickAreaHover(e, force = false) {
+    if (this.constructor.navMode && !force) return;
+
+    const highlight = () => {
       this.clickArea?.classList.add('cd-thread-clickArea-hovered');
-    }, 75);
+    };
+
+    if (force) {
+      highlight();
+    } else {
+      this.highlightTimeout = setTimeout(highlight, 75);
+    }
   }
 
   /**
@@ -276,16 +286,42 @@ class Thread {
     // Middle button
     if (!this.rootComment.isCollapsed && e.button === 1) {
       e.preventDefault();
-      this.navMode = true;
+      this.handleClickAreaUnhover();
+      this.constructor.navMode = this.navMode = true;
       this.navFromY = e.clientY;
+      this.navFromX = e.clientX;
 
       // Prevent hitting document's mousedown.cd listener added below.
       e.stopPropagation();
 
       $(document)
         .on('mousemove.cd', this.documentMouseMoveHandler)
-        .on('mouseup.cd mousedown.cd', this.quitNavMode.bind(this));
-      $(document.body).addClass('cd-threadNavMode');
+        .one('mouseup.cd mousedown.cd', this.quitNavMode.bind(this));
+      $(window)
+        .one('blur.cd', this.quitNavMode.bind(this));
+      $(document.body).addClass('cd-thread-navMode-updown');
+    }
+  }
+
+  /**
+   * Handle the `mouseup` event on the click area.
+   *
+   * @param {Event} e
+   * @private
+   */
+  handleClickAreaMouseUp(e) {
+    // Middle button
+    if (e.button === 1) {
+      this.handleClickAreaHover(undefined, true);
+
+      if (
+        this.navMode &&
+
+        // The mouse hasn't moved significantly
+        (Math.abs(e.clientY - this.navFromY) < 5 && Math.abs(e.clientX - this.navFromX) < 5)
+      ) {
+        this.rootComment.scrollTo({ alignment: 'top' });
+      }
     }
   }
 
@@ -296,13 +332,90 @@ class Thread {
    * @private
    */
   handleDocumentMouseMove(e) {
-    if (e.clientY - this.navFromY < -15 && this.navScrolledTo !== 'root') {
-      this.rootComment.scrollTo({ alignment: 'top' });
-      this.navScrolledTo = 'root';
-    } else if (e.clientY - this.navFromY > 15 && this.navScrolledTo !== 'last') {
-      this.lastComment.scrollTo({ alignment: 'bottom' });
-      this.navScrolledTo = 'last';
+    const delta = e.clientY - this.navFromY;
+    this.updateCursor(delta);
+    const target = this.getNavTarget(delta);
+    if (target && this.navScrolledTo !== target) {
+      target.scrollTo({
+        alignment: target.logicalLevel === this.rootComment.logicalLevel ? 'top' : 'bottom',
+      });
+      this.navScrolledTo = target;
     }
+  }
+
+  /**
+   * Update the document cursor based on its position relative to the initial position in navigation
+   * mode.
+   *
+   * @param {number} delta
+   * @private
+   */
+  updateCursor(delta) {
+    $(document.body)
+      .toggleClass('cd-thread-navMode-up', delta <= -15)
+      .toggleClass('cd-thread-navMode-updown', -15 < delta && delta < 15)
+      .toggleClass('cd-thread-navMode-down', 15 <= delta);
+  }
+
+  /**
+   * Given the cursor position relative to the initial position, return the target comment to
+   * navigate to.
+   *
+   * @param {number} delta
+   * @returns {?import('./Comment').default}
+   * @private
+   */
+  getNavTarget(delta) {
+    const stepSize = 100;
+
+    if (!this.navStepsShift) {
+      if (-15 < delta && delta < 15) {
+        return null;
+      }
+
+      if (Math.abs(delta / stepSize) < 1) {
+        if (delta < 0) {
+          return this.rootComment;
+        }
+        return this.lastComment;
+      }
+    }
+
+    const steps = (
+      Math.sign(delta) *
+      (Math.floor(Math.abs(delta / stepSize)) + Number(Math.sign(delta) === this.navStepsShift))
+    );
+    const comments = commentRegistry.getAll();
+    let target = this.rootComment;
+    for (
+      let i = this.rootComment.index + Math.sign(delta), step = 0;
+      i >= 0 && i < comments.length && step !== steps;
+      i += Math.sign(delta)
+    ) {
+      const comment = comments[i];
+      if (
+        // We need to check the logical level too, because there can be comments with no parents on
+        // logical levels other than 0.
+        this.rootComment.logicalLevel === comment.logicalLevel &&
+        this.rootComment.getParent() === comment.getParent()
+      ) {
+        target = comment;
+        step += Math.sign(delta);
+      } else if (steps > 0 && comment === target.thread?.lastComment) {
+        // Use the last comment of the last sibling thread as a fallback when scrolling down
+        target = comment;
+      }
+    }
+
+    if (target !== this.rootComment && !this.navStepsShift) {
+      // If we scrolled to another thread once, don't scroll to the last comment of this thread
+      // again and shift the pixels so that 0 steps is now 0...stepSize or 0...-stepSize and not
+      // -stepSize...stepSize (so that the mouse is moved evenly and not "100 pixels, 100 pixels,
+      // 200 pixels, 100 pixels, ...").
+      this.navStepsShift = Math.sign(steps) * -1;
+    }
+
+    return target;
   }
 
   /**
@@ -311,11 +424,13 @@ class Thread {
    * @private
    */
   quitNavMode() {
-    this.navMode = false;
+    this.constructor.navMode = this.navMode = false;
     delete this.navFromY;
+    delete this.navFromX;
     delete this.navScrolledTo;
+    delete this.navStepsShift;
     $(document).off('mousemove.cd', this.documentMouseMoveHandler);
-    $(document.body).removeClass('cd-threadNavMode');
+    $(document.body).removeClass('cd-thread-navMode-updown cd-thread-navMode-up cd-thread-navMode-down');
   }
 
   /**
@@ -326,7 +441,6 @@ class Thread {
   handleClickAreaClick() {
     if (!this.clickArea.classList.contains('cd-thread-clickArea-hovered')) return;
 
-    this.quitNavMode();
     this.toggle();
   }
 
@@ -353,6 +467,7 @@ class Thread {
 
     this.clickArea.onclick = this.handleClickAreaClick.bind(this);
     this.clickArea.onmousedown = this.handleClickAreaMouseDown.bind(this);
+    this.clickArea.onmouseup = this.handleClickAreaMouseUp.bind(this);
 
     /**
      * Thread line.
@@ -864,6 +979,7 @@ class Thread {
   }
 
   static isInited = false;
+  static navMode = false;
 
   /**
    * _For internal use._ Create element prototypes to reuse them instead of creating new elements
