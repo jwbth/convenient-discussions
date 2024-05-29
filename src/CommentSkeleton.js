@@ -1221,9 +1221,6 @@ class CommentSkeleton {
    * @protected
    */
   addAttributes() {
-    [this.signatureElement, ...this.extraSignatures.map((sig) => sig.element)].forEach((el) => {
-      el.classList.add('cd-signature-timestamp');
-    });
     this.elements.forEach((el) => {
       el.classList.add('cd-comment-part');
       el.setAttribute('data-cd-comment-index', this.index);
