@@ -333,7 +333,6 @@ class Thread {
    */
   handleDocumentMouseMove(e) {
     const delta = e.clientY - this.navFromY;
-    this.updateCursor(delta);
     const target = this.getNavTarget(delta);
     if (target && this.navScrolledTo !== target) {
       target.scrollTo({
@@ -347,19 +346,19 @@ class Thread {
    * Update the document cursor based on its position relative to the initial position in navigation
    * mode.
    *
-   * @param {number} delta
+   * @param {-1|0|1} direction
    * @private
    */
-  updateCursor(delta) {
+  updateCursor(direction) {
     $(document.body)
-      .toggleClass('cd-thread-navMode-up', delta <= -15)
-      .toggleClass('cd-thread-navMode-updown', -15 < delta && delta < 15)
-      .toggleClass('cd-thread-navMode-down', 15 <= delta);
+      .toggleClass('cd-thread-navMode-up', direction === -1)
+      .toggleClass('cd-thread-navMode-updown', direction === 0)
+      .toggleClass('cd-thread-navMode-down', direction === 1);
   }
 
   /**
    * Given the cursor position relative to the initial position, return the target comment to
-   * navigate to.
+   * navigate to. Also update the cursor look.
    *
    * @param {number} delta
    * @returns {?import('./Comment').default}
@@ -368,22 +367,29 @@ class Thread {
   getNavTarget(delta) {
     const stepSize = 100;
 
-    if (!this.navStepsShift) {
+    if (!this.navInitialDirection) {
       if (-15 < delta && delta < 15) {
+        this.updateCursor(0);
         return null;
       }
 
       if (Math.abs(delta / stepSize) < 1) {
         if (delta < 0) {
+          this.updateCursor(-1);
           return this.rootComment;
         }
+
+        this.updateCursor(1);
         return this.lastComment;
       }
     }
 
     const steps = (
       Math.sign(delta) *
-      (Math.floor(Math.abs(delta / stepSize)) + Number(Math.sign(delta) === this.navStepsShift))
+      (
+        Math.floor(Math.abs(delta / stepSize)) +
+        Number(Math.sign(delta) === -this.navInitialDirection
+      ))
     );
     const comments = commentRegistry.getAll();
     let target = this.rootComment;
@@ -407,13 +413,15 @@ class Thread {
       }
     }
 
-    if (target !== this.rootComment && !this.navStepsShift) {
+    if (target !== this.rootComment && !this.navInitialDirection) {
       // If we scrolled to another thread once, don't scroll to the last comment of this thread
       // again and shift the pixels so that 0 steps is now 0...stepSize or 0...-stepSize and not
       // -stepSize...stepSize (so that the mouse is moved evenly and not "100 pixels, 100 pixels,
       // 200 pixels, 100 pixels, ...").
-      this.navStepsShift = Math.sign(steps) * -1;
+      this.navInitialDirection = Math.sign(steps);
     }
+
+    this.updateCursor(target === this.rootComment ? 0 : Math.sign(steps));
 
     return target;
   }
@@ -428,7 +436,7 @@ class Thread {
     delete this.navFromY;
     delete this.navFromX;
     delete this.navScrolledTo;
-    delete this.navStepsShift;
+    delete this.navInitialDirection;
     $(document).off('mousemove.cd', this.documentMouseMoveHandler);
     $(document.body).removeClass('cd-thread-navMode-updown cd-thread-navMode-up cd-thread-navMode-down');
   }
