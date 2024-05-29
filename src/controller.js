@@ -1786,7 +1786,7 @@ export default {
 
       const notification = notifications.add(
         wrapHtml(html),
-        { tag: 'convenient-discussions-new-comments' },
+        { tag: 'cd-newComments' },
         { comments: filteredComments }
       );
       notification.$notification.on('click', () => {
@@ -1876,7 +1876,7 @@ export default {
 
       // We use a tag so that there aren't duplicate notifications when the same page is opened in
       // two tabs. (Seems it doesn't work? :-/)
-      tag: 'convenient-discussions-' + filteredComments[filteredComments.length - 1].id,
+      tag: 'cd-' + filteredComments[filteredComments.length - 1].id,
     });
     notification.onclick = () => {
       parent.focus();

@@ -2397,7 +2397,10 @@ class Comment extends CommentSkeleton {
             },
           },
         }),
-        { title: cd.s('navpanel-firstunseen-hidden-title') }
+        {
+          title: cd.s('navpanel-firstunseen-hidden-title'),
+          tag: 'cd-commentInCollapsedThread',
+        }
       );
     } else {
       const offset = this.getOffset({ considerFloating: true });

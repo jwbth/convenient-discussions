@@ -88,7 +88,9 @@ export default {
         $elements = $firstVisibleAncestor;
         offsetFirst = findFirstVisibleElementOffset();
         offsetLast = findFirstVisibleElementOffset('backward');
-        mw.notify(cd.s('error-elementhidden-container'), { tag: 'cd-elementhidden-container' });
+        mw.notify(cd.s('error-elementhidden-container'), {
+          tag: 'cd-elementhidden-container',
+        });
       } else {
         mw.notify(cd.s('error-elementhidden'), {
           type: 'error',
