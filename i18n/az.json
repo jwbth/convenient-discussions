@@ -30,7 +30,6 @@
 	"cm-reply-outdented-tooltip": "Abzası köçürülən şərhə cavab vermək mümkün deyil",
 	"cm-quote": "Sitat",
 	"thread-tooltip": "Mövzu aç/bağla",
-	"thread-tooltip-count": "Mövzu aç/bağla ($1 {{plural:$1|rəy}})",
 	"thread-expand-label-genderless": "Müzakirəni genişləndir ({{plural:$2|1=|}}$3 adlı istifadəçilərdən $1 {{plural:$1|rəy}})",
 	"thread-expand-label": "Müzakirəni genişləndir ({{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}}$3 adlı istifadəçilərdən $1 {{plural:$1|rəy}})",
 	"thread-expand-tooltip": "Səhifədəki bütün mövzuları genişləndirmək üçün $1 düyməsini basılı saxlayın",

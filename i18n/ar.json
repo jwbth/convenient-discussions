@@ -29,7 +29,6 @@
 	"cm-reply-outdented-tooltip": "لا يمكن الرد على تعليق حصل على ردود سابقا",
 	"cm-quote": "اقتباس",
 	"thread-tooltip": "طي/توسيع الموضوع",
-	"thread-tooltip-count": "طي / توسيع الموضوع ( $1 {{plural:$1 | تعليقا | تعليق واحد|تعليق |تعليقات |تعليقا }})",
 	"thread-expand-tooltip": "اضغط مع الاستمرار على $1 لتوسيع جميع سلاسل الرسائل على الصفحة",
 	"sm-editopeningcomment": "تعديل مُقدمة التعليق",
 	"sm-editopeningcomment-tooltip": "تعديل مُقدمة التعليق للقسم",

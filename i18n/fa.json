@@ -23,7 +23,6 @@
 	"cm-edit": "ویرایش",
 	"cm-reply": "پاسخ",
 	"thread-tooltip": "نهفتن/نمایش ریسه",
-	"thread-tooltip-count": "نهفتن/نمایش ریسه ($1 {{plural:$1|نظر}})",
 	"thread-expand-label-genderless": "گسترش موضوع ($1 {{plural:$1|نظر|نظرات}} توسط {{plural:$2|1=|}} $3)",
 	"thread-expand-label": "گسترش بحث ($1 {{plural:$1|نظر|نظرات}} توسط {{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}} $3)",
 	"thread-expand-tooltip": "برای گسترش تمام مبحث‌ها در صفحه، کلید Ctrl را نگه‌دارید",

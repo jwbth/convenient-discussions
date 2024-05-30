@@ -36,7 +36,6 @@
 	"cm-reply-outdented-tooltip": "לא ניתן להשיב לתגובה שיש לה תשובות עם הזחה מבוטלת",
 	"cm-quote": "לצטט",
 	"thread-tooltip": "כיווץ/הרחבת השרשור",
-	"thread-tooltip-count": "כיווץ/הרחבת השרשור ({{PLURAL:$1|תגובה אחת|$1 תגובות}})",
 	"thread-expand-label-genderless": "הרחבת השרשור ({{plural:$1|תגובה אחת|$1 תגובות}} מאת {{plural:$2|1=|}} $3)",
 	"thread-expand-label": "הרחבת השרשור ({{plural:$1|תגובה אחת|$1 תגובות}} מאת {{plural:$2|{{gender:$4|}}}} $3)",
 	"thread-expand-tooltip": "יש להחזיק $1 כדי להרחיב את כל השרשורים בדף",
