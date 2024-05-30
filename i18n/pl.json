@@ -27,7 +27,6 @@
 	"cm-reply": "Odpowiedz",
 	"cm-quote": "Cytuj",
 	"thread-tooltip": "Zwiń/rozwiń wątek",
-	"thread-tooltip-count": "Zwiń/rozwiń wątek ($1 {{plural:$1|komentarz|komentarze}})",
 	"thread-expand-label": "Rozwiń wątek ($1 {{plural:$1|komentarz|komentarze/y}}: {{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}} $3)",
 	"thread-expand-tooltip": "Przytrzymaj Ctrl aby rozwinąć wszystkie wątki na stronie",
 	"sm-editopeningcomment": "Edytuj pierwszy wpis",

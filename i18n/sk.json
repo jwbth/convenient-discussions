@@ -18,7 +18,6 @@
 	"cm-reply": "Odpovedať",
 	"cm-quote": "Citovať",
 	"thread-tooltip": "Zbaliť/rozbaliť vlákno",
-	"thread-tooltip-count": "Zbaliť/rozbaliť vlákno ( $1 {{plural: $1 |komentár|komentáre|komentov}})",
 	"thread-expand-label-genderless": "Rozšíriť vlákno ($1 {{plural:$1|komentára|komentárov}} o {{plural:$2|1=|}} $3)",
 	"thread-expand-label": "Rozšíriť vlákno ($1 {{plural:$1|komentára|komentárov}} o {{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}} $3)",
 	"thread-expand-tooltip": "Pre rozšírenie všetkých vlákien na stránke podržte Ctrl",

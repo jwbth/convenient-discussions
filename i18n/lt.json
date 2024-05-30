@@ -23,7 +23,6 @@
 	"cm-reply-outdented-tooltip": "Negalima atsakyti į komentarą, kuris turi pašaltinos įtraukos atsakymus",
 	"cm-quote": "Citata",
 	"thread-tooltip": "Sutraukti/išskleisti sąrašą",
-	"thread-tooltip-count": "Sutraukti/išskleisti sąrašą ($1 {{plural:$1|komentaras|komentarai}})",
 	"thread-expand-tooltip": "Laikykite $1, kad išskleistumėte visas puslapio sąrašus",
 	"sm-editopeningcomment": "Redaguoti pradinį komentarą",
 	"sm-editopeningcomment-tooltip": "Redaguoti skyriaus pradinį komentarą",

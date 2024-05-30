@@ -37,7 +37,6 @@
 	"cm-reply-outdented-tooltip": "No se puede responder a un comentario que tiene respuestas anuladas",
 	"cm-quote": "Citar",
 	"thread-tooltip": "Colapsar/expandir el hilo",
-	"thread-tooltip-count": "Contraer/expandir el hilo ($1 {{plural:$1|comentario|comentarios}})",
 	"sm-editopeningcomment": "editar comentario de apertura",
 	"sm-editopeningcomment-tooltip": "Editar el comentario que inicia la sección",
 	"sm-addsubsection": "añadir sección anidada",
