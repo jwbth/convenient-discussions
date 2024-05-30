@@ -23,6 +23,7 @@ class Thread {
    */
   constructor(rootComment) {
     this.documentMouseMoveHandler = this.handleDocumentMouseMove.bind(this);
+    this.quitNavModeHandler = this.quitNavMode.bind(this);
 
     /**
      * Root comment of the thread.
@@ -103,6 +104,7 @@ class Thread {
     this.isCollapsed = false;
 
     this.navMode = false;
+    this.blockClickEvent = false;
   }
 
   /**
@@ -281,25 +283,35 @@ class Thread {
    * @private
    */
   handleClickAreaMouseDown(e) {
-    if (!this.clickArea.classList.contains('cd-thread-clickArea-hovered')) return;
+    if (this.navMode) return;
 
     // Middle button
-    if (!this.rootComment.isCollapsed && e.button === 1) {
-      e.preventDefault();
-      this.handleClickAreaUnhover();
-      this.constructor.navMode = this.navMode = true;
-      this.navFromY = e.clientY;
-      this.navFromX = e.clientX;
+    if (!this.rootComment.isCollapsed) {
+      if (e.button === 1) {
+        e.preventDefault();
 
-      // Prevent hitting document's mousedown.cd listener added below.
-      e.stopPropagation();
+        // Prevent hitting document's mousedown.cd listener we add in .enterNavMode().
+        e.stopPropagation();
 
-      $(document)
-        .on('mousemove.cd', this.documentMouseMoveHandler)
-        .one('mouseup.cd mousedown.cd', this.quitNavMode.bind(this));
-      $(window)
-        .one('blur.cd', this.quitNavMode.bind(this));
-      $(document.body).addClass('cd-thread-navMode-updown');
+        this.enterNavMode(e.clientX, e.clientY);
+      }
+
+      // We also need the left button for touchpads, but need to wait until the user moves the
+      // mouse.
+      if (e.button === 0) {
+        e.preventDefault();
+        this.navFromY = e.clientY;
+        this.navFromX = e.clientX;
+
+        $(document).one('mouseup.cd', (e) => {
+          e.preventDefault();
+          delete this.navFromY;
+          delete this.navFromX;
+          $(document).off('mousemove.cd', this.documentMouseMoveHandler);
+        });
+
+        $(document).on('mousemove.cd', this.documentMouseMoveHandler);
+      }
     }
   }
 
@@ -310,19 +322,48 @@ class Thread {
    * @private
    */
   handleClickAreaMouseUp(e) {
-    // Middle button
-    if (e.button === 1) {
-      this.handleClickAreaHover(undefined, true);
-
-      if (
-        this.navMode &&
-
-        // The mouse hasn't moved significantly
-        (Math.abs(e.clientY - this.navFromY) < 5 && Math.abs(e.clientX - this.navFromX) < 5)
-      ) {
-        this.rootComment.scrollTo({ alignment: 'top' });
-      }
+    if (this.navMode && e.button === 0) {
+      // `mouseup` event comes before `click`, so we need to block collapsing the thread is the user
+      // clicked the left button to navigate threads.
+      this.blockClickEvent = true;
     }
+
+    // Middle or left button.
+    if (e.button === 1 || e.button === 0) {
+      this.handleClickAreaHover(undefined, true);
+    }
+
+    if (
+      // Middle button
+      e.button === 1 &&
+
+      this.navMode &&
+
+      // The mouse hasn't moved significantly
+      (Math.abs(e.clientX - this.navFromX) < 5 && Math.abs(e.clientY - this.navFromY) < 5)
+    ) {
+      this.rootComment.scrollTo({ alignment: 'top' });
+    }
+  }
+
+  /**
+   * Enter the navigation mode.
+   *
+   * @param {number} fromX
+   * @param {number} fromY
+   */
+  enterNavMode(fromX, fromY) {
+    this.handleClickAreaUnhover();
+    this.constructor.navMode = this.navMode = true;
+    this.navFromY = fromY;
+    this.navFromX = fromX;
+
+    $(document)
+      .on('mousemove.cd', this.documentMouseMoveHandler)
+      .one('mouseup.cd mousedown.cd', this.quitNavModeHandler);
+    $(window)
+      .one('blur.cd', this.quitNavModeHandler);
+    $(document.body).addClass('cd-thread-navMode-updown');
   }
 
   /**
@@ -332,6 +373,16 @@ class Thread {
    * @private
    */
   handleDocumentMouseMove(e) {
+    if (!this.navMode) {
+      // This implies `this.navFromX !== undefined`, .navFromX set in .handleClickAreaMouseDown()
+
+      if (Math.abs(e.clientX - this.navFromX) >= 5 || Math.abs(e.clientY - this.navFromY) >= 5) {
+        $(document).off('mousemove.cd', this.documentMouseMoveHandler);
+        this.enterNavMode(this.navFromX, this.navFromY);
+      }
+      return;
+    }
+
     const delta = e.clientY - this.navFromY;
     const target = this.getNavTarget(delta);
     if (target && this.navScrolledTo !== target) {
@@ -437,7 +488,9 @@ class Thread {
     delete this.navFromX;
     delete this.navScrolledTo;
     delete this.navInitialDirection;
-    $(document).off('mousemove.cd', this.documentMouseMoveHandler);
+    $(document)
+      .off('mousemove.cd', this.documentMouseMoveHandler)
+      .off('mouseup.cd mousedown.cd', this.quitNavModeHandler);
     $(document.body).removeClass('cd-thread-navMode-updown cd-thread-navMode-up cd-thread-navMode-down');
   }
 
@@ -447,6 +500,11 @@ class Thread {
    * @private
    */
   handleClickAreaClick() {
+    if (this.blockClickEvent) {
+      this.blockClickEvent = false;
+      return;
+    }
+
     if (!this.clickArea.classList.contains('cd-thread-clickArea-hovered')) return;
 
     this.toggle();
