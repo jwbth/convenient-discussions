@@ -767,7 +767,7 @@ class Thread {
   /**
    * Expand the thread.
    *
-   * @param {boolean} [auto=false]
+   * @param {boolean} [auto=false] Automatic expand - don't save collapsed threads.
    */
   expand(auto = false) {
     if (!this.isCollapsed) return;

@@ -67,7 +67,7 @@ class Button {
     }
 
     /**
-     * Main element which can be the same as the {@link Button#button link element} or a wrapper
+     * Main element. It can be the same as the {@link Button#button link element} or a wrapper
      * around it.
      *
      * @type {Element}
@@ -75,7 +75,7 @@ class Button {
     this.element = element;
 
     /**
-     * Button element (an `'a'` element by default) which can be the same as the
+     * Button element (an `'a'` element by default). It can be the same as the
      * {@link Button#element main element} or its descendant.
      *
      * @type {Element}
@@ -83,8 +83,8 @@ class Button {
     this.buttonElement = buttonElement || element;
 
     /**
-     * Button label element which can be the same as the {@link Button#buttonElement link element}
-     * or its descendant.
+     * Button label element. It can be the same as the {@link Button#buttonElement link element} or
+     * its descendant.
      *
      * @type {Element}
      */

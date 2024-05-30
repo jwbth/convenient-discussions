@@ -1,5 +1,5 @@
 /**
- * Main module.
+ * Module that serves as an entry point.
  *
  * @module app
  */

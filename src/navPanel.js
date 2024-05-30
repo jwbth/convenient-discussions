@@ -1,6 +1,5 @@
 /**
- * Singleton related to the navigation panel. It also contains new comments-related functions and
- * configuration.
+ * Singleton related to the navigation panel.
  *
  * @module navPanel
  */
@@ -337,7 +336,7 @@ export default {
 
   /**
    * Go to the next comment form out of sight, or just the next comment form, if `inSight` is set to
-   * true.
+   * `true`.
    *
    * @param {boolean} [inSight=false]
    */
@@ -357,8 +356,7 @@ export default {
   },
 
   /**
-   * _For internal use._ Update the refresh button to show the number of comments added to the page
-   * since it was loaded.
+   * Update the refresh button to show the number of comments added to the page since it was loaded.
    *
    * @param {number} commentCount
    * @param {Map} commentsBySection

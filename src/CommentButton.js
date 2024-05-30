@@ -22,7 +22,9 @@ class CommentButton extends Button {
    *
    * @param {object} config Button config, see the details at {@link Button}.
    * @param {Function} [config.widgetConstructor] Function that creates an OOUI widget that is the
-   *   original source of this button (for OOUI buttons).
+   *   original source of this button (for OOUI buttons). It is run when we need to "hydrate" the
+   *   button that is originally created by cloning a prototype, bringing some original behaviors to
+   *   it.
    */
   constructor(config) {
     // OOUI button

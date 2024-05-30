@@ -1,7 +1,7 @@
 /**
  * Singleton related to the block displaying the current section tree according to the scroll
- * position, along with the page top and table of contents links. The bottom block also displays the
- * page bottom link.
+ * position, along with the page top and table of contents links. It is not mounted in Vector 2022,
+ * because Vector 2022 has sticky TOC. The bottom block also displays the page bottom link.
  *
  * @module pageNav
  */
@@ -13,28 +13,20 @@ import sectionRegistry from './sectionRegistry';
 import toc from './toc';
 import { getVisibilityByRects } from './utils-window';
 
-const htmlElement = document.documentElement;
-
-let currentSection;
-let $sectionWithBackLink;
-let $backLinkContainer;
-let backLinkLocation;
-
 export default {
   /**
    * _For internal use._ Setup the page navigation block (mount or update).
    */
   setup() {
-    if (!this.isMounted()) {
-      this.mount();
-    } else {
+    if (this.isMounted()) {
       this.update();
+    } else {
+      this.mount();
     }
   },
 
   /**
-   * Render the page navigation block. This is done when the page is first
-   * loaded.
+   * Render the page navigation block. This is done when the page is first loaded.
    *
    * @private
    */
@@ -139,7 +131,7 @@ export default {
   createOrUpdateSkeleton(afterLeadOffset, scrollY) {
     if (
       (afterLeadOffset !== null && afterLeadOffset < cd.g.bodyScrollPaddingTop + 1) ||
-      backLinkLocation === 'top'
+      this.backLinkLocation === 'top'
     ) {
       if (!this.$linksOnTop) {
         this.$linksOnTop = $('<ul>')
@@ -190,8 +182,11 @@ export default {
     }
 
     if (
-      (sectionRegistry.getCount() && scrollY + window.innerHeight < htmlElement.scrollHeight) ||
-      backLinkLocation === 'bottom'
+      (
+        sectionRegistry.getCount() &&
+        scrollY + window.innerHeight < document.documentElement.scrollHeight
+      ) ||
+      this.backLinkLocation === 'bottom'
     ) {
       if (!this.$bottomLink) {
         const bottomLink = new Button({
@@ -199,7 +194,7 @@ export default {
           classes: ['cd-pageNav-link'],
           label: cd.s('pagenav-pagebottom'),
           action: () => {
-            this.jump(htmlElement.scrollHeight - window.innerHeight, this.$bottomLink);
+            this.jump(document.documentElement.scrollHeight - window.innerHeight, this.$bottomLink);
           },
         });
         this.$bottomLink = $('<li>')
@@ -226,27 +221,30 @@ export default {
     // works better for Monobook for some reason (scroll to the first section using the page
     // navigation to see the difference).
     if (firstSectionTop === null || firstSectionTop >= cd.g.bodyScrollPaddingTop + 1) {
-      if (currentSection) {
+      if (this.currentSection) {
         this.resetSections();
       }
       return;
     }
 
     const updatedCurrentSection = sectionRegistry.getCurrentSection();
-    if (!updatedCurrentSection || updatedCurrentSection === currentSection) return;
+    if (!updatedCurrentSection || updatedCurrentSection === this.currentSection) return;
 
-    currentSection = updatedCurrentSection;
+    this.currentSection = updatedCurrentSection;
 
     // Keep the data
-    $sectionWithBackLink?.detach();
+    this.$sectionWithBackLink?.detach();
 
     this.$currentSection.empty();
-    [currentSection, ...currentSection.getAncestors()]
+    [this.currentSection, ...this.currentSection.getAncestors()]
       .reverse()
       .forEach((sectionInTree, level) => {
         let $item;
-        if ($sectionWithBackLink && $sectionWithBackLink.data('section') === sectionInTree) {
-          $item = $sectionWithBackLink;
+        if (
+          this.$sectionWithBackLink &&
+          this.$sectionWithBackLink.data('section') === sectionInTree
+        ) {
+          $item = this.$sectionWithBackLink;
         } else {
           const button = new Button({
             href: sectionInTree.getUrl(),
@@ -274,7 +272,7 @@ export default {
     if (!this.isMounted()) return;
 
     // Vertical scrollbar disappeared
-    if (htmlElement.scrollHeight === htmlElement.clientHeight) {
+    if (document.documentElement.scrollHeight === document.documentElement.clientHeight) {
       this.reset();
       return;
     }
@@ -297,11 +295,11 @@ export default {
   reset(part) {
     if (!part || part === 'top') {
       // Keep the data
-      $sectionWithBackLink?.detach();
+      this.$sectionWithBackLink?.detach();
 
       this.$topElement.empty();
       this.$linksOnTop = this.$topLink = this.$tocLink = this.$currentSection = null;
-      currentSection = null;
+      this.currentSection = null;
     }
     if (!part || part === 'bottom') {
       this.$bottomElement.empty();
@@ -315,9 +313,9 @@ export default {
    * @private
    */
   resetSections() {
-    $sectionWithBackLink?.detach();
+    this.$sectionWithBackLink?.detach();
     this.$currentSection.empty();
-    currentSection = null;
+    this.currentSection = null;
   },
 
   /**
@@ -334,11 +332,11 @@ export default {
       $elementOrOffset;
     if (!isBackLink && Math.abs(offset - window.scrollY) < 1) return;
 
-    if (backLinkLocation) {
-      backLinkLocation = null;
-      $backLinkContainer.prev().removeClass('cd-pageNav-link-inline');
-      $backLinkContainer.remove();
-      $backLinkContainer = $sectionWithBackLink = null;
+    if (this.backLinkLocation) {
+      this.backLinkLocation = null;
+      this.$backLinkContainer.prev().removeClass('cd-pageNav-link-inline');
+      this.$backLinkContainer.remove();
+      this.$backLinkContainer = this.$sectionWithBackLink = null;
     }
     if (!isBackLink) {
       const scrollY = window.scrollY;
@@ -352,20 +350,20 @@ export default {
           this.jump(scrollY, $item, true);
         },
       });
-      $backLinkContainer = $('<span>')
+      this.$backLinkContainer = $('<span>')
         .addClass('cd-pageNav-backLinkContainer')
         .append(cd.sParse('dot-separator'), backLink.element)
         .appendTo($item);
-      $backLinkContainer.prev().addClass('cd-pageNav-link-inline');
+      this.$backLinkContainer.prev().addClass('cd-pageNav-link-inline');
       if ($item.parent().is('#cd-pageNav-currentSection')) {
-        $sectionWithBackLink = $item;
+        this.$sectionWithBackLink = $item;
       }
       if ($item === this.$topLink || $item === this.$tocLink) {
-        backLinkLocation = 'top';
+        this.backLinkLocation = 'top';
       } else if ($item === this.$bottomLink) {
-        backLinkLocation = 'bottom';
+        this.backLinkLocation = 'bottom';
       } else {
-        backLinkLocation = 'section';
+        this.backLinkLocation = 'section';
       }
     }
 
