@@ -351,12 +351,15 @@ class Thread {
    *
    * @param {number} fromX
    * @param {number} fromY
+   * @param {boolean} grab Grab mode - reverse up and down (on touchpads).
+   * @private
    */
-  enterNavMode(fromX, fromY) {
+  enterNavMode(fromX, fromY, grab = false) {
     this.handleClickAreaUnhover();
     this.constructor.navMode = this.navMode = true;
     this.navFromY = fromY;
     this.navFromX = fromX;
+    this.navGrab = grab;
 
     $(document)
       .on('mousemove.cd', this.documentMouseMoveHandler)
@@ -378,7 +381,7 @@ class Thread {
 
       if (Math.abs(e.clientX - this.navFromX) >= 5 || Math.abs(e.clientY - this.navFromY) >= 5) {
         $(document).off('mousemove.cd', this.documentMouseMoveHandler);
-        this.enterNavMode(this.navFromX, this.navFromY);
+        this.enterNavMode(this.navFromX, this.navFromY, true);
       }
       return;
     }
@@ -417,6 +420,10 @@ class Thread {
    */
   getNavTarget(delta) {
     const stepSize = 100;
+
+    if (this.navGrab) {
+      delta *= -1;
+    }
 
     if (!this.navInitialDirection) {
       if (-15 < delta && delta < 15) {
@@ -488,6 +495,7 @@ class Thread {
     delete this.navFromX;
     delete this.navScrolledTo;
     delete this.navInitialDirection;
+    delete this.navGrab;
     $(document)
       .off('mousemove.cd', this.documentMouseMoveHandler)
       .off('mouseup.cd mousedown.cd', this.quitNavModeHandler);
