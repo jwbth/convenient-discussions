@@ -479,7 +479,7 @@ class Thread {
       this.navInitialDirection = Math.sign(steps);
     }
 
-    this.updateCursor(target === this.rootComment ? 0 : Math.sign(steps));
+    this.updateCursor(Math.sign(steps));
 
     return target;
   }
