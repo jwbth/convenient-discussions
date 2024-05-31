@@ -400,7 +400,7 @@ class Thread {
    * Update the document cursor based on its position relative to the initial position in navigation
    * mode.
    *
-   * @param {-1|0|1} direction
+   * @param {number} direction `-1`, `0`, or `1`.
    * @private
    */
   updateCursor(direction) {
