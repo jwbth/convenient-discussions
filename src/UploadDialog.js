@@ -818,7 +818,12 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * @protected
    */
   static generateHistoryText(hostname, pageName) {
-    if (!pageName) {
+    if (
+      !pageName ||
+
+      // Don't link the history page for Special pages
+      (hostname === location.hostname && mw.Title.newFromText(pageName)?.getNamespaceId() === -1)
+    ) {
       return '';
     }
     const path = mw.util.getUrl(pageName, {
