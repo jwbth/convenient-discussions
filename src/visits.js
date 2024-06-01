@@ -51,7 +51,7 @@ export default {
     this.update(currentTime, markAsReadRequested);
 
     const timeConflict = this.currentPageData.length ?
-      commentRegistry.initNewAndSeen(this.currentPageData, currentTime) :
+      commentRegistry.initNewAndSeen(this.currentPageData, currentTime, markAsReadRequested) :
       false;
 
     // (Nearly) eliminate the possibility that we will wrongfully mark a seen comment as unseen/new

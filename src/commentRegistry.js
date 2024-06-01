@@ -163,19 +163,28 @@ export default {
     this.items = [];
   },
 
-  initNewAndSeen(currentPageData, currentTime) {
+  /**
+   * Set the {@link Comment#isNew} and {@link Comment#isSeen} properties to comments.
+   *
+   * @param {object} currentPageData Visits data for the current page.
+   * @param {number} currentTime Unix timestamp.
+   * @param {boolean} markAsReadRequested Have the user requested to mark all shown comments as
+   *   read.
+   * @returns {boolean} Whether there is a time conflict.
+   */
+  initNewAndSeen(currentPageData, currentTime, markAsReadRequested) {
     let timeConflict = false;
     const unseenCommentIds = controller.getBootProcess().passedData.unseenCommentIds;
-    this.items.forEach((c) => {
-      const commentTimeConflict = c.initNewAndSeen(
+    this.items.forEach((comment) => {
+      const commentTimeConflict = comment.initNewAndSeen(
         currentPageData,
         currentTime,
-        unseenCommentIds?.some((id) => id === c.id) || false
+        markAsReadRequested ? false : unseenCommentIds?.some((id) => id === comment.id) || false
       );
       timeConflict ||= commentTimeConflict;
     });
 
-    this.configureAndAddLayers((c) => c.isNew);
+    this.configureAndAddLayers((comment) => comment.isNew);
 
     return timeConflict;
   },
