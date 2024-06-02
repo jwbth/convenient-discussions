@@ -78,6 +78,7 @@ export default {
 
       'autopreview': true,
       'collapseThreadsLevel': 10,
+      'countEditsAsNewComments': false,
       'desktopNotifications': 'unknown',
       'enableThreads': true,
       'hideTimezone': false,
@@ -182,10 +183,15 @@ export default {
             name: 'highlightNewInterval',
             type: 'number',
             min: 0,
-            max: 99999999,
+            max: 9999999,
             buttonStep: 5,
             label: cd.s('sd-highlightnewinterval'),
             help: cd.s('sd-highlightnewinterval-help'),
+          },
+          {
+            name: 'countEditsAsNewComments',
+            type: 'checkbox',
+            label: cd.s('sd-counteditsasnewcomments'),
           },
           {
             name: 'improvePerformance',

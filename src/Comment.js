@@ -44,6 +44,7 @@ class Comment extends CommentSkeleton {
     this.hideTimezone = settings.get('hideTimezone');
     this.timestampFormat = settings.get('timestampFormat');
     this.useUiTime = settings.get('useUiTime');
+    this.countEditsAsNewComments = settings.get('countEditsAsNewComments');
 
     /**
      * Comment author user object.
@@ -2006,34 +2007,17 @@ class Comment extends CommentSkeleton {
    * @private
    */
   async showDiff(comparedRevisionId, commentsData) {
-    let revisionIdLesser = Math.min(mw.config.get('wgRevisionId'), comparedRevisionId);
-    let revisionIdGreater = Math.max(mw.config.get('wgRevisionId'), comparedRevisionId);
+    const revisionIdLesser = Math.min(mw.config.get('wgRevisionId'), comparedRevisionId);
+    const revisionIdGreater = Math.max(mw.config.get('wgRevisionId'), comparedRevisionId);
 
-    const revisionsRequest = controller.getApi().post({
-      action: 'query',
-      revids: [revisionIdLesser, revisionIdGreater],
-      prop: 'revisions',
-      rvslots: 'main',
-      rvprop: ['ids', 'content'],
-      redirects: !mw.config.get('wgIsRedirect'),
-    }).catch(handleApiReject);
-
-    const compareRequest = controller.getApi().post({
-      action: 'compare',
-      fromtitle: this.getSourcePage().name,
-      fromrev: revisionIdLesser,
-      torev: revisionIdGreater,
-      prop: ['diff'],
-    }).catch(handleApiReject);
-
-    let [revisionsResp, compareResp] = await Promise.all([
-      revisionsRequest,
-      compareRequest,
+    let [revisions, body] = await Promise.all([
+      this.getSourcePage().getRevisions({
+        revids: [revisionIdLesser, revisionIdGreater],
+        rvprop: ['content'],
+      }),
+      this.getSourcePage().compareRevisions(revisionIdLesser, revisionIdGreater),
       mw.loader.using(['mediawiki.diff', 'mediawiki.diff.styles']),
     ]);
-
-    const revisions = revisionsResp.query?.pages?.[0]?.revisions;
-    const body = compareResp?.compare?.body;
     if (!revisions || body === undefined) {
       throw new CdError({
         type: 'api',
@@ -2057,29 +2041,31 @@ class Comment extends CommentSkeleton {
           .addClass('cd-commentDiffView-below')
           .append(
             $('<a>')
-              .attr('href', this.getSourcePage().getUrl({
+              .attr('href', cd.page.getUrl({
                 oldid: revisionIdLesser,
                 diff: revisionIdGreater,
               }))
               .attr('target', '_blank')
 
-              // Make it work in https://ru.wikipedia.org/wiki/User:Serhio_Magpie/instantDiffs.js
+              // Make it work in https://commons.wikimedia.org/wiki/User:Serhio_Magpie/instantDiffs.js
               .attr('data-instantdiffs-link', 'link')
 
               .text(cd.s('comment-diff-full')),
             cd.sParse('dot-separator'),
             $('<a>')
-              .attr('href', this.getSourcePage().getUrl({ action: 'history' }))
+              .attr('href', cd.page.getUrl({ action: 'history' }))
               .attr('target', '_blank')
               .text(cd.s('comment-diff-history'))
           )
       )
       .children();
-    mw.hook('wikipage.content').fire($message);
     OO.ui.alert($message, {
       title: cd.s('comment-diff-title'),
       size: 'larger',
     });
+
+    // FIXME: "wikipage.content hook should not be fired on unattached content".
+    mw.hook('wikipage.content').fire($message);
   }
 
   /**
@@ -2087,13 +2073,21 @@ class Comment extends CommentSkeleton {
    * been changed or deleted, and change the comment's styling if it has been.
    *
    * @param {'changed'|'changedSince'|'deleted'} type Type of the mark.
-   * @param {boolean} [isNewVersionRendered] Has the new version of the comment been rendered.
+   * @param {boolean} [isNewVersionRendered] Is the new version of the comment rendered
+   *   (successfully updated or, for `changedSince` type, has been a new one from the beginning).
    * @param {number} [comparedRevisionId] ID of the revision to compare with when the user clicks to
    *   see the diff.
    * @param {object} [commentsData] Data of the comments as of the current revision and the revision
    *   to compare with.
+   * @param {boolean} [showDiffLink=true] Whether to show the diff link if it makes sense.
    */
-  markAsChanged(type, isNewVersionRendered, comparedRevisionId, commentsData) {
+  async markAsChanged(
+    type,
+    isNewVersionRendered,
+    comparedRevisionId,
+    commentsData,
+    showDiffLink = true
+  ) {
     let stringName;
     switch (type) {
       case 'changed':
@@ -2122,8 +2116,7 @@ class Comment extends CommentSkeleton {
         },
       });
 
-    const diffLink = type === 'deleted' || this.getSourcePage() !== cd.page ?
-      undefined :
+    const diffLink = showDiffLink && this.getSourcePage().isCurrent() && type !== 'deleted' ?
       new Button({
         label: cd.s('comment-diff'),
         action: async () => {
@@ -2140,11 +2133,12 @@ class Comment extends CommentSkeleton {
                 text += ' ' + cd.sParse('error-network');
               }
             }
-            mw.notify(wrapHtml(text), { type: e.data?.code === 'emptyDiff'? 'info' : 'error' });
+            mw.notify(wrapHtml(text), { type: e.data?.code === 'emptyDiff' ? 'info' : 'error' });
           }
           diffLink.setPending(false);
         },
-      });
+      }) :
+      undefined;
 
     let refreshLinkSeparator;
     let diffLinkSeparator;
@@ -2192,6 +2186,10 @@ class Comment extends CommentSkeleton {
 
     if (isNewVersionRendered) {
       this.flashChangedOnSight();
+    }
+
+    if (this.countEditsAsNewComments && (type === 'changed' || type === 'changedSince')) {
+      this.isSeen = false;
     }
 
     // Layers are supposed to be updated (deleted comments background, repositioning) separately,

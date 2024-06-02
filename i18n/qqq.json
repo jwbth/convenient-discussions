@@ -329,6 +329,7 @@
 	"sd-autopreview": "Label of the checkbox in the settings dialog.",
 	"sd-collapsethreadslevel": "The number input follows the label (for example, \"Autocollapse threads at level... 10\"). The user is supposed to set the level of comments.\n\n----\nLabel of the number input in the settings dialog.",
 	"sd-collapsethreadslevel-help": "It means \"Set the setting value to 0 to never autocollapse comment threads\".\n\nHelp text for the number input labeled with the {{msg-wm|Convenient-discussions-sd-collapsethreadslevel}} message in the script settings dialog.",
+	"sd-counteditsasnewcomments": "\"Include\" here is [[wikt:imperfective aspect|imperfective]]: include each time.\n\n----\nLabel of the checkbox in the settings dialog.",
 	"sd-desktopnotifications": "Label of the radio select in the settings dialog.",
 	"sd-desktopnotifications-radio-all": "Label of the item of the radio select labeled with the {{msg-wm|Convenient-discussions-sd-desktopnotifications}} message in the settings dialog.\n\n* $1 (optional): [[mw:Manual:Messages API#GENDER in JavaScript|the user object]], for use with <nowiki>{{gender:}}</nowiki> (<code><nowiki>{{gender:</nowiki>$2|''male text''|''female text''|''text for unspecified''}}</code>).",
 	"sd-desktopnotifications-radio-tome": "Label of the item of the radio select labeled with the {{msg-wm|Convenient-discussions-sd-desktopnotifications}} message in the settings dialog.",

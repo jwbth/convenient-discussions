@@ -345,7 +345,7 @@ async function checkForUpdates() {
           mapSections(sections);
           mapComments(currentComments, newComments);
 
-          updateChecker.emit('sectionsUpdate', sections)
+          updateChecker.emit('sectionsUpdate', sections);
 
           // We check for changes before notifying about new comments to notify about changes in a
           // renamed section if it is watched.
@@ -406,6 +406,7 @@ function checkForChangesSincePreviousVisit(currentComments, submittedCommentId) 
   const seen = seenStorageItem.get(mw.config.get('wgArticleId'));
 
   const changeList = [];
+  const markAsChangedData = [];
   currentComments.forEach((currentComment) => {
     if (currentComment.id === submittedCommentId) return;
 
@@ -427,7 +428,12 @@ function checkForChangesSincePreviousVisit(currentComments, submittedCommentId) 
           1: currentComment,
         };
 
-        comment.markAsChanged('changedSince', true, previousVisitRevisionId, commentsData);
+        markAsChangedData.push({
+          comment,
+          isNewRevisionRendered: true,
+          comparedRevisionId: previousVisitRevisionId,
+          commentsData,
+        });
 
         if (comment.isOpeningSection) {
           comment.section?.resubscribeIfRenamed(currentComment, oldComment);
@@ -437,6 +443,13 @@ function checkForChangesSincePreviousVisit(currentComments, submittedCommentId) 
       }
     }
   });
+
+  markCommentsAsChanged(
+    'changedSince',
+    markAsChangedData,
+    previousVisitRevisionId,
+    mw.config.get('wgRevisionId')
+  );
 
   if (changeList.length) {
     /**
@@ -464,12 +477,13 @@ function checkForChangesSincePreviousVisit(currentComments, submittedCommentId) 
  */
 function checkForNewChanges(currentComments) {
   const changeList = [];
+  const markAsChangedData = [];
   currentComments.forEach((currentComment) => {
     const newComment = currentComment.match;
     let comment;
     const events = {};
 
-    // Different indexes to supply one object both to the event and Comment#markAsChanged.
+    // Different indexes to supply one object both to the event and Comment#markAsChanged().
     const commentsData = {
       current: currentComment,
       new: newComment,
@@ -494,7 +508,12 @@ function checkForNewChanges(currentComments) {
           // Comment#flashChanged() called indirectly by Comment#markAsChanged().
           comment.htmlToCompare = newComment.htmlToCompare;
 
-          comment.markAsChanged('changed', updateSuccess, lastCheckedRevisionId, commentsData);
+          markAsChangedData.push({
+            comment,
+            isNewRevisionRendered: updateSuccess,
+            comparedRevisionId: lastCheckedRevisionId,
+            commentsData,
+          });
           events.changed = { updateSuccess };
         }
       } else if (comment.isChanged) {
@@ -514,6 +533,13 @@ function checkForNewChanges(currentComments) {
       changeList.push({ comment, events, commentsData });
     }
   });
+
+  markCommentsAsChanged(
+    'changed',
+    markAsChangedData,
+    mw.config.get('wgRevisionId'),
+    lastCheckedRevisionId
+  );
 
   if (changeList.length) {
     updateChecker.emit('newChanges', changeList);
@@ -535,6 +561,69 @@ function checkForNewChanges(currentComments) {
      */
     mw.hook('convenientDiscussions.newChanges').fire(changeList);
   }
+}
+
+/**
+ * Data needed to mark the comment as changed
+ *
+ * @typedef {object} MarkAsChangedData
+ * @property {import('./Comment').default} comment
+ * @property {boolean} updateSuccess
+ * @property {object} commentsData
+ * @private
+ */
+
+/**
+ * Mark comments as changed, verifying diffs if possible to decide whether to show the diff link.
+ *
+ * @param {'changed'|'changedSince'|'deleted'} type
+ * @param {MarkAsChangedData[]} data
+ * @param {number} revisionIdLesser
+ * @param {number} revisionIdGreater
+ */
+async function markCommentsAsChanged(type, data, revisionIdLesser, revisionIdGreater) {
+  if (!data.length) return;
+
+  const currentRevisionId = mw.config.get('wgRevisionId');
+
+  // Don't process >20 diffs, that's too much and probably means something is broken
+  const verifyDiffs = (
+    data.length <= 20 &&
+    data.some(({ comment }) => comment.getSourcePage().isCurrent())
+  );
+
+  let revisions;
+  let compareBody;
+  if (verifyDiffs) {
+    try {
+      revisions = await cd.page.getRevisions({
+        revids: [revisionIdLesser, revisionIdGreater],
+        rvprop: ['content'],
+      });
+      compareBody = await cd.page.compareRevisions(revisionIdLesser, revisionIdGreater);
+    } catch {
+      // Empty
+    }
+  }
+  if (!isPageStillAtRevision(currentRevisionId)) return;
+
+  data.forEach(({ comment, isNewRevisionRendered, comparedRevisionId, commentsData }) => {
+    comment.markAsChanged(
+      type,
+      isNewRevisionRendered,
+      comparedRevisionId,
+      commentsData,
+      verifyDiffs && compareBody !== undefined && revisions !== undefined ?
+        Boolean(
+          comment.scrubDiff(compareBody, revisions, commentsData)
+            .find('.diff-deletedline, .diff-addedline')
+            .length
+        ) :
+        true
+    );
+  });
+
+  commentRegistry.emit('registerSeen');
 }
 
 /**

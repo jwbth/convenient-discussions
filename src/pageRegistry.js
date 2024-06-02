@@ -525,7 +525,7 @@ export class Page {
   async getRevisions(customOptions = {}, inBackground = false) {
     const options = Object.assign({}, {
       action: 'query',
-      titles: this.name,
+      titles: customOptions.revids ? undefined : this.name,
       rvslots: 'main',
       prop: 'revisions',
       redirects: !(this.isCurrent() && mw.config.get('wgIsRedirect')),
@@ -925,6 +925,23 @@ export class Page {
    */
   findNewSelf() {
     return this;
+  }
+
+  /**
+   * Get a diff between two revisions of the page.
+   *
+   * @param {number} revisionIdFrom
+   * @param {number} revisionIdTo
+   * @returns {Promise.<string>}
+   */
+  async compareRevisions(revisionIdFrom, revisionIdTo) {
+    return (await controller.getApi().post({
+      action: 'compare',
+      fromtitle: this.name,
+      fromrev: revisionIdFrom,
+      torev: revisionIdTo,
+      prop: ['diff'],
+    }).catch(handleApiReject))?.compare?.body;
   }
 
   /**
