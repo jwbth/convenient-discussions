@@ -575,7 +575,7 @@ class CommentSkeleton {
 
   /**
    * Check whether the element is an unsigned item of a bulleted or numbered list, in cases like
-   * {@link https://de.wikipedia.org/w/index.php?title=Portal:Comic/Treffen_2024&oldid=242740035 this}.
+   * {@link https://de.wikipedia.org/w/index.php?title=Portal:Comic/Treffen_2024&oldid=242740035#Interessierte this}.
    *
    * @param {object} part
    * @returns {boolean}
@@ -592,7 +592,13 @@ class CommentSkeleton {
     }
 
     const link = part.node.querySelectorAll('a')[0];
-    if (!link) {
+    if (
+      !link ||
+
+      // False positives like the first part in
+      // https://en.wikipedia.org/w/index.php?title=Project:Village_pump_(policy)&diff=prev&oldid=1226668615
+      part.node.querySelectorAll('ul, ol, dl').length
+    ) {
       return false;
     }
 
