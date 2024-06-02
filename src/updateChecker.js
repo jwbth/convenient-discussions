@@ -661,8 +661,8 @@ const updateChecker = {
       .on('process', (currentPageData) => {
         const bootProcess = controller.getBootProcess();
         this.setup(
-          currentPageData.length >= 1 ?
-            Number(currentPageData[currentPageData.length - 1]) :
+          currentPageData.length >= 2 ?
+            Number(currentPageData[currentPageData.length - 2]) :
             undefined,
           (
             (
