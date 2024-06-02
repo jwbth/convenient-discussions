@@ -191,4 +191,16 @@ export default {
     });
     this.data = visits;
   },
+
+  /**
+   * For tests: set the last visit to a number of days before the current date. Use via
+   * `cd.tests.visits.rollBackDays()`, then refresh the page.
+   *
+   * @param {number} [days=1]
+   */
+  rollBackDays(days = 1) {
+    this.currentPageData.splice(1);
+    this.currentPageData[0] = ((Date.now() - cd.g.msInDay * days) / 1000).toFixed();
+    this.save();
+  },
 };
