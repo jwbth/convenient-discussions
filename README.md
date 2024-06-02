@@ -14,7 +14,7 @@
 * Redesigned talk pages, with author and date displayed on top of comments (opt-in) and thin lines denoting threads
 * Handling "outdent" templates
 * Collapsible (and autocollapsible) threads
-* Navigating sibling threads by holding the middle button
+* Navigating sibling threads by holding the middle mouse button
 * Comment timestamps in local time and arbitrary format, including relative
 * Highlighting and navigating new comments (via the navigation panel or the table of contents)
 * Highlighting own comments

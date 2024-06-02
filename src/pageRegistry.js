@@ -37,11 +37,11 @@ import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
 /**
  * Class representing a wiki page (a page for which the
  * {@link https://www.mediawiki.org/wiki/Manual:Interface/JavaScript#All_pages_(user/page-specific) wgIsArticle}
- * config value is `true`) in both of its facets – a rendered instance (for the current page) and
- * an entry in the database with data and content.
+ * config value is `true`) in both of its facets – a rendered instance (for the current page) and an
+ * entry in the database with data and content.
  *
- * To access the constructor, use {@link module:pageRegistry.get} (it is only exported for means of
- * code completion).
+ * To create an instance, use {@link module:pageRegistry.get} (the constructor is only exported for
+ * means of code completion).
  */
 export class Page {
   /**

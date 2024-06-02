@@ -503,7 +503,8 @@ function onMessageFromWindow(e) {
   }
 
   if (message.type === 'parse') {
-    debug.startTimer('worker');
+    const timerLabel = `worker: processing revision ${message.revisionId}`;
+    debug.startTimer(timerLabel);
 
     cd.g = message.g;
     cd.config = message.config;
@@ -528,7 +529,7 @@ function onMessageFromWindow(e) {
       sections: cd.sections,
     });
 
-    debug.stopTimer('worker');
+    debug.stopTimer(timerLabel);
     debug.logAndResetEverything();
   }
 }

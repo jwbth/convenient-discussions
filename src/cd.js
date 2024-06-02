@@ -13,4 +13,21 @@
  */
 self.convenientDiscussions ||= {};
 
-export default self.convenientDiscussions;
+// Idk how do I make VS Code understand that the export of this module maps to the
+// convenientDiscussions namespace. JSDoc generates the contents of that namespace correctly, but VS
+// Code doesn't infer types from it. So I just manually type (again) the types of a limited number
+// of properties here.
+
+/**
+ * @typedef ConvenientDiscussions
+ * @property {import('./pageRegistry').Page} page
+ * @property {import('./userRegistry').User} user
+ * @private
+ */
+
+/**
+ * @type {ConvenientDiscussions}
+ */
+const convenientDiscussions = self.convenientDiscussions;
+
+export default convenientDiscussions;
