@@ -319,6 +319,7 @@
 	"sd-autopreview": "De reactie voorvertonen tijdens het typen",
 	"sd-collapsethreadslevel": "Discussies automatisch samenvouwen vanaf niveau",
 	"sd-collapsethreadslevel-help": "0 om nooit automatisch samen te vouwen.",
+	"sd-counteditsasnewcomments": "Bewerkingen aan bestaande reacties meenemen in het aantal ongeziene reacties in het navigatiepaneel",
 	"sd-desktopnotifications": "Bureaubladmeldingen",
 	"sd-desktopnotifications-radio-all": "Melding tonen bij antwoorden op mijn reacties en reacties op onderwerpen waarop ik {{gender:$1|geabonneerd ben}}",
 	"sd-desktopnotifications-radio-tome": "Alleen melding tonen bij antwoorden op mijn reacties",
