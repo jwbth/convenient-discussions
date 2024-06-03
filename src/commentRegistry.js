@@ -181,7 +181,7 @@ export default {
         currentPageData,
         currentTime,
         markAsReadRequested ? undefined : unseenComment,
-        unseenComment?.$changeNote
+        unseenComment?.isChangedSincePreviousVisit ? unseenComment.$changeNote : undefined
       );
       timeConflict ||= commentTimeConflict;
     });

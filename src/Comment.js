@@ -2121,11 +2121,8 @@ class Comment extends CommentSkeleton {
           diffLink.setPending(true);
           try {
             await this.showDiff(
-              // Use currentRevisionId or mw.config.get('wgRevisionId') depending on which one we
-              // need if the page is refreshed and the change mark put back.
               type === 'changedSince' ? comparedRevisionId : currentRevisionId,
-              Math.max(mw.config.get('wgRevisionId'), comparedRevisionId),
-
+              type === 'changedSince' ? currentRevisionId : comparedRevisionId,
               commentsData
             );
           } catch (e) {
@@ -2161,11 +2158,7 @@ class Comment extends CommentSkeleton {
       .addClass('cd-changeNote')
       .text(cd.s(stringName));
     if (refreshLink) {
-      $changeNote.append(
-        $('<span>')
-          .addClass('cd-changeNote-refreshLinkWrapper')
-          .append(refreshLinkSeparator, refreshLink.element)
-      );
+      $changeNote.append(refreshLinkSeparator, refreshLink.element);
     } else {
       $changeNote.addClass('cd-changeNote-newVersionRendered');
     }
@@ -3580,12 +3573,10 @@ class Comment extends CommentSkeleton {
     );
 
     if ($changeNote) {
-      $changeNote.find('.cd-changeNote-refreshLinkWrapper').remove();
       this.addChangeNote($changeNote);
       if (unseenComment.willFlashChangedOnSight) {
         this.flashChangedOnSight();
       }
-      // But don't set .isChanged - it's intended for changes within one page load.
     }
 
     return commentTime <= currentTime && currentTime < commentTime + 60;
