@@ -1905,7 +1905,7 @@ class Comment extends CommentSkeleton {
   flashChanged() {
     this.willFlashChangedOnSight = false;
 
-    // Use the "changed" type, not "new", to get the "cd-comment-underlay-changed" class that helps
+    // Use the `changed` type, not `new`, to get the `cd-comment-underlay-changed` class that helps
     // to set background if the user has switched off background highlighting for new comments.
     this.flash('changed', 1000);
 
@@ -2155,9 +2155,7 @@ class Comment extends CommentSkeleton {
       diffLinkSeparator = refreshLink ? cd.sParse('dot-separator') : ' ';
     }
 
-    $(this.highlightables)
-      .find('.cd-changeNote')
-      .remove();
+    this.$changeNote?.remove();
 
     const $changeNote = $('<span>')
       .addClass('cd-changeNote')
@@ -2182,7 +2180,9 @@ class Comment extends CommentSkeleton {
     }
 
     if (this.countEditsAsNewComments && (type === 'changed' || type === 'changedSince')) {
+      this.isSeenBeforeChanged ??= this.isSeen;
       this.isSeen = false;
+      commentRegistry.emit('registerSeen');
     }
 
     // Layers are supposed to be updated (deleted comments background, repositioning) separately,
@@ -2241,10 +2241,17 @@ class Comment extends CommentSkeleton {
         break;
     }
 
-    this.$elements
-      .last()
-      .find('.cd-changeNote')
-      .remove();
+    this.$changeNote.remove();
+
+    if (
+      this.countEditsAsNewComments &&
+      this.isSeen === false &&
+      this.isSeenBeforeChanged === true
+    ) {
+      this.isSeen = this.isSeenBeforeChanged;
+      delete this.isSeenBeforeChanged;
+      commentRegistry.emit('registerSeen');
+    }
 
     if (type === 'changed') {
       // The change was reverted and the user hasn't seen the change - no need to flash the comment.
@@ -2274,6 +2281,8 @@ class Comment extends CommentSkeleton {
    * @returns {boolean} Was the update successful.
    */
   update(currentComment, newComment) {
+    this.htmlToCompare = newComment.htmlToCompare;
+
     const elementNames = [...this.$elements].map((el) => el.tagName);
     const elementClassNames = [...this.$elements].map((el) => el.className);
 
@@ -3576,6 +3585,7 @@ class Comment extends CommentSkeleton {
       if (unseenComment.willFlashChangedOnSight) {
         this.flashChangedOnSight();
       }
+      // But don't set .isChanged - it's intended for changes within one page load.
     }
 
     return commentTime <= currentTime && currentTime < commentTime + 60;

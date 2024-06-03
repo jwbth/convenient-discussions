@@ -380,7 +380,7 @@ async function checkForUpdates() {
  * @private
  */
 function hasCommentChanged(olderComment, newerComment) {
-  return (
+  return Boolean(
     newerComment.textHtmlToCompare !== olderComment.textHtmlToCompare ||
     (
       newerComment.headingHtmlToCompare &&
@@ -503,11 +503,6 @@ function checkForNewChanges(currentComments) {
         // The comment may have already been updated previously.
         if (!comment.htmlToCompare || comment.htmlToCompare !== newComment.htmlToCompare) {
           const updateSuccess = comment.update(currentComment, newComment);
-
-          // It is above the Comment#markAsChanged() call, because it's used in
-          // Comment#flashChanged() called indirectly by Comment#markAsChanged().
-          comment.htmlToCompare = newComment.htmlToCompare;
-
           markAsChangedData.push({
             comment,
             isNewRevisionRendered: updateSuccess,
@@ -622,8 +617,6 @@ async function markCommentsAsChanged(type, data, olderRevisionId, newerRevisionI
         true
     );
   });
-
-  commentRegistry.emit('registerSeen');
 }
 
 /**
