@@ -470,3 +470,20 @@ export function escapePipesOutsideLinks(code, maskedTexts) {
     .unmask(maskedTexts ? 'link' : undefined)
     .getText();
 }
+
+/**
+ * Extract a number from a string using a set of digits.
+ *
+ * @param {string} s
+ * @param {string} [digits='0123456789']
+ * @returns {number}
+ */
+export function extractArabicNumeral(s, digits = '0123456789') {
+  const digitsRegExp = new RegExp(`[${digits}]`, 'g');
+  const notDigitsRegExp = new RegExp(`[^${digits}]`, 'g');
+  return Number(
+    s
+      .replace(notDigitsRegExp, '')
+      .replace(digitsRegExp, (s) => digits.indexOf(s))
+  );
+}

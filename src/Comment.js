@@ -19,7 +19,7 @@ import { handleApiReject, loadUserGenders, parseCode } from './utils-api';
 import { addToArrayIfAbsent, areObjectsEqual, calculateWordOverlap, countOccurrences, decodeHtmlEntities, defined, getHeadingLevel, isInline, removeFromArrayIfPresent, sleep, underlinesToSpaces, unique } from './utils-general';
 import { showConfirmDialog } from './utils-oojs';
 import { formatDate, formatDateNative } from './utils-timestamp';
-import { extractSignatures, removeWikiMarkup } from './utils-wikitext';
+import { extractArabicNumeral, extractSignatures, removeWikiMarkup } from './utils-wikitext';
 import { getExtendedRect, getHigherNodeAndOffsetInSelection, getVisibilityByRects, wrapDiffBody, wrapHtml } from './utils-window';
 
 /**
@@ -1971,8 +1971,7 @@ class Comment extends CommentSkeleton {
       const $tr = $(tr);
       const $lineNumbers = $tr.children('.diff-lineno');
       for (let j = 0; j < $lineNumbers.length; j++) {
-        const match = $lineNumbers.eq(j).text().match(/\d+/);
-        currentLineNumbers[j] = Number((match || [])[0]);
+        currentLineNumbers[j] = extractArabicNumeral($lineNumbers.eq(j).text(), cd.g.uiDigits);
         if (!currentLineNumbers[j]) {
           throw new CdError({
             type: 'parse',
