@@ -49,7 +49,7 @@
 	"cm-reply": "回复",
 	"cm-reply-outdented-tooltip": "由于该评论下方存在反向缩进模板，本工具无法回复该评论",
 	"cm-quote": "引用",
-	"thread-tooltip": "折叠/展开讨论串",
+	"thread-tooltip": "折叠/展开讨论串。按住中键以导航讨论串。",
 	"thread-expand-label-genderless": "展开讨论串（$1{{plural:$1|条}}由{{plural:$2|1=|}}$3发布的评论）",
 	"thread-expand-label": "展开讨论串（$1{{plural:$1|条}}由{{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}}$3发布的评论）",
 	"thread-expand-tooltip": "按住$1以展开页面上所有的讨论串",
