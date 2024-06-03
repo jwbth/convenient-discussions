@@ -19,6 +19,60 @@ import visits from './visits';
 
 export default {
   /**
+   * Navigation panel element.
+   *
+   * @type {external:jQuery}
+   * @memberof module:navPanel
+   */
+  $element: undefined,
+
+  /**
+   * Refresh button.
+   *
+   * @type {Button|undefined}
+   * @memberof module:navPanel
+   * @private
+   */
+  refreshButton: undefined,
+
+  /**
+   * "Go to the previous new comment" button element.
+   *
+   * @type {Button|undefined}
+   * @memberof module:navPanel
+   * @private
+   */
+  previousButton: undefined,
+
+  /**
+   * "Go to the next new comment" button element.
+   *
+   * @type {Button|undefined}
+   * @memberof module:navPanel
+   * @private
+   */
+  nextButton: undefined,
+
+  /**
+   * "Go to the first unseen comment" button element.
+   *
+   * @type {Button}
+   * @memberof module:navPanel
+   * @private
+   */
+  firstUnseenButton: undefined,
+
+  /**
+   * "Go to the next comment form out of sight" button element.
+   *
+   * @name commentFormButton
+   * @type {Button|undefined}
+   * @memberof module:navPanel
+   * @private
+   */
+  commentFormButton: undefined,
+
+  /**
    * _For internal use._ Mount, unmount or reset the navigation panel based on the context.
    */
   setup() {
@@ -90,25 +144,10 @@ export default {
    * @private
    */
   mount() {
-    /**
-     * Navigation panel element.
-     *
-     * @name $element
-     * @type {external:jQuery}
-     * @memberof module:navPanel
-     */
     this.$element = $('<div>')
       .attr('id', 'cd-navPanel')
       .appendTo(document.body);
 
-    /**
-     * Refresh button.
-     *
-     * @name refreshButton
-     * @type {Button|undefined}
-     * @memberof module:navPanel
-     * @private
-     */
     this.refreshButton = new Button({
       tagName: 'div',
       classes: ['cd-navPanel-button'],
@@ -120,14 +159,6 @@ export default {
 
     this.updateRefreshButtonTooltip(0);
 
-    /**
-     * "Go to the previous new comment" button element.
-     *
-     * @name previousButton
-     * @type {Button|undefined}
-     * @memberof module:navPanel
-     * @private
-     */
     this.previousButton = new Button({
       tagName: 'div',
       classes: ['cd-navPanel-button'],
@@ -138,14 +169,6 @@ export default {
       },
     }).hide();
 
-    /**
-     * "Go to the next new comment" button element.
-     *
-     * @name nextButton
-     * @type {Button|undefined}
-     * @memberof module:navPanel
-     * @private
-     */
     this.nextButton = new Button({
       tagName: 'div',
       classes: ['cd-navPanel-button'],
@@ -156,14 +179,6 @@ export default {
       },
     }).hide();
 
-    /**
-     * "Go to the first unseen comment" button element.
-     *
-     * @name firstUnseenButton
-     * @type {Button|undefined}
-     * @memberof module:navPanel
-     * @private
-     */
     this.firstUnseenButton = new Button({
       tagName: 'div',
       classes: ['cd-navPanel-button'],
@@ -174,14 +189,6 @@ export default {
       },
     }).hide();
 
-    /**
-     * "Go to the next comment form out of sight" button element.
-     *
-     * @name commentFormButton
-     * @type {Button|undefined}
-     * @memberof module:navPanel
-     * @private
-     */
     this.commentFormButton = new Button({
       tagName: 'div',
       classes: ['cd-navPanel-button'],
@@ -465,7 +472,7 @@ export default {
     if (!this.isMounted()) return;
 
     const unseenCommentCount = commentRegistry.query((c) => c.isSeen === false).length;
-    this.firstUnseenButton.toggle(unseenCommentCount).setLabel(unseenCommentCount);
+    this.firstUnseenButton.toggle(Boolean(unseenCommentCount)).setLabel(unseenCommentCount);
   },
 
   /**

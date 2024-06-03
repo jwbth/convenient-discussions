@@ -446,7 +446,7 @@ class Section extends SectionSkeleton {
         sectionRegistry.getByIndex(this.index + 1).headingNestingLevel === this.headingNestingLevel
       ) &&
 
-      // If the section buried in a table.
+      // Is the section buried in a table.
       // https://ru.wikipedia.org/wiki/Project:Запросы_к_администраторам/Быстрые
       !['TR', 'TD', 'TH'].includes(this.lastElementInFirstChunk.tagName)
     );

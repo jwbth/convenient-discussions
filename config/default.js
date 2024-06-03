@@ -753,7 +753,7 @@ export default {
 
   /**
    * Function that returns `true` for nodes that are not parts of comments and should terminate the
-   * comment part collecting. These rules often need correspoding rules in
+   * collecting of comment parts. These rules often need correspoding rules in
    * {@link module:defaultConfig.badCommentBeginnings}.
    *
    * The second parameter is a "context", i.e., a collection of classes, functions, elements, and

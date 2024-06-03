@@ -863,6 +863,8 @@ export default {
     if (language === 'content') {
       const mainPartPattern = getTimestampMainPartPattern('content');
       const utcPattern = mw.util.escapeRegExp(mw.message('(content)timezone-utc').parse());
+
+      // Do we need non-Arabic digits here?
       const timezonePattern = '\\((?:' + utcPattern + '|[A-Z]{1,5}|[+-]\\d{0,4})\\)';
 
       /**

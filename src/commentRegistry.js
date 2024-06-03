@@ -320,7 +320,7 @@ export default {
         comment.registerSeen();
         return false;
       } else if (isInViewport === false) {
-        // isInViewport could also be null.
+        // isInViewport could also be `null`.
         return true;
       }
     };

@@ -193,14 +193,20 @@ export default {
   },
 
   /**
-   * For tests: set the last visit to a number of days before the current date. Use via
-   * `cd.tests.visits.rollBackDays()`, then refresh the page.
+   * For tests: set the last visit to a date or a number of days before the current date. Use via
+   * `cd.tests.visits.rollBack()`, then refresh the page.
    *
-   * @param {number} [days=1]
+   * @param {Date|number} [dateOrDays=1]
    */
-  rollBackDays(days = 1) {
+  rollBack(dateOrDays = 1) {
     this.currentPageData.splice(1);
-    this.currentPageData[0] = ((Date.now() - cd.g.msInDay * days) / 1000).toFixed();
+    this.currentPageData[0] = (
+      (
+        typeof dateOrDays === 'object' ?
+          dateOrDays.getTime() :
+          (Date.now() - cd.g.msInDay * dateOrDays)
+      ) / 1000
+    ).toFixed();
     this.save();
   },
 };
