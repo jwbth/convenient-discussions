@@ -419,7 +419,7 @@ class Thread {
    * @private
    */
   getNavTarget(delta) {
-    const stepSize = 100;
+    const stepSize = 80;
 
     if (this.navGrab) {
       delta *= -1;
