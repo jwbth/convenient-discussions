@@ -425,6 +425,8 @@ export default {
       ],
       size: 'large',
     });
+
+    this.saveSession();
   },
 
   /**
