@@ -578,10 +578,10 @@ function checkForNewChanges(currentComments) {
  *
  * @param {'changed'|'changedSince'|'deleted'} type
  * @param {MarkAsChangedData[]} data
- * @param {number} revisionIdLesser
- * @param {number} revisionIdGreater
+ * @param {number} olderRevisionId
+ * @param {number} newerRevisionId
  */
-async function markCommentsAsChanged(type, data, revisionIdLesser, revisionIdGreater) {
+async function markCommentsAsChanged(type, data, olderRevisionId, newerRevisionId) {
   if (!data.length) return;
 
   const currentRevisionId = mw.config.get('wgRevisionId');
@@ -597,10 +597,10 @@ async function markCommentsAsChanged(type, data, revisionIdLesser, revisionIdGre
   if (verifyDiffs) {
     try {
       revisions = await cd.page.getRevisions({
-        revids: [revisionIdLesser, revisionIdGreater],
+        revids: [olderRevisionId, newerRevisionId],
         rvprop: ['content'],
       });
-      compareBody = await cd.page.compareRevisions(revisionIdLesser, revisionIdGreater);
+      compareBody = await cd.page.compareRevisions(olderRevisionId, newerRevisionId);
     } catch {
       // Empty
     }

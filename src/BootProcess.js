@@ -123,7 +123,7 @@ function processAndRemoveDtElements(elements, bootProcess) {
  * @property {string} [pushState] Whether to replace the URL in the address bar adding the comment
  *   ID to it if it's specified.
  * @property {number} [scrollY] Page's Y offset.
- * @property {object[]} [unseenCommentIds] IDs of unseen comments on this page.
+ * @property {Comment[]} [unseenComments] Unseen comments on this page.
  * @property {string} [justWatchedSection] Section just watched so that there could be not enough
  *   time for it to be saved to the server.
  * @property {string} [justUnwatchedSection] Section just unwatched so that there could be not

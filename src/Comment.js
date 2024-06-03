@@ -2000,21 +2000,19 @@ class Comment extends CommentSkeleton {
   /**
    * Show a diff of changes in the comment between the current revision ID and the provided one.
    *
-   * @param {number} comparedRevisionId
+   * @param {number} olderRevisionId
+   * @param {number} newerRevisionId
    * @param {object} commentsData
    * @throws {CdError}
    * @private
    */
-  async showDiff(comparedRevisionId, commentsData) {
-    const revisionIdLesser = Math.min(mw.config.get('wgRevisionId'), comparedRevisionId);
-    const revisionIdGreater = Math.max(mw.config.get('wgRevisionId'), comparedRevisionId);
-
+  async showDiff(olderRevisionId, newerRevisionId, commentsData) {
     let [revisions, body] = await Promise.all([
       this.getSourcePage().getRevisions({
-        revids: [revisionIdLesser, revisionIdGreater],
+        revids: [olderRevisionId, newerRevisionId],
         rvprop: ['content'],
       }),
-      this.getSourcePage().compareRevisions(revisionIdLesser, revisionIdGreater),
+      this.getSourcePage().compareRevisions(olderRevisionId, newerRevisionId),
       mw.loader.using(['mediawiki.diff', 'mediawiki.diff.styles']),
     ]);
     if (!revisions || body === undefined) {
@@ -2041,8 +2039,8 @@ class Comment extends CommentSkeleton {
           .append(
             $('<a>')
               .attr('href', cd.page.getUrl({
-                oldid: revisionIdLesser,
-                diff: revisionIdGreater,
+                oldid: olderRevisionId,
+                diff: newerRevisionId,
               }))
               .attr('target', '_blank')
 
@@ -2115,13 +2113,21 @@ class Comment extends CommentSkeleton {
         },
       });
 
+    const currentRevisionId = mw.config.get('wgRevisionId');
     const diffLink = showDiffLink && this.getSourcePage().isCurrent() && type !== 'deleted' ?
       new Button({
         label: cd.s('comment-diff'),
         action: async () => {
           diffLink.setPending(true);
           try {
-            await this.showDiff(comparedRevisionId, commentsData);
+            await this.showDiff(
+              // Use currentRevisionId or mw.config.get('wgRevisionId') depending on which one we
+              // need if the page is refreshed and the change mark put back.
+              type === 'changedSince' ? comparedRevisionId : currentRevisionId,
+              Math.max(mw.config.get('wgRevisionId'), comparedRevisionId),
+
+              commentsData
+            );
           } catch (e) {
             let text = cd.sParse('comment-diff-error');
             if (e instanceof CdError) {
@@ -2150,38 +2156,26 @@ class Comment extends CommentSkeleton {
     }
 
     $(this.highlightables)
-      .find('.cd-changeMark')
+      .find('.cd-changeNote')
       .remove();
 
-    const $changeMark = $('<span>')
-      .addClass('cd-changeMark')
+    const $changeNote = $('<span>')
+      .addClass('cd-changeNote')
       .text(cd.s(stringName));
     if (refreshLink) {
-      $changeMark.append(refreshLinkSeparator, refreshLink.element);
+      $changeNote.append(
+        $('<span>')
+          .addClass('cd-changeNote-refreshLinkWrapper')
+          .append(refreshLinkSeparator, refreshLink.element)
+      );
     } else {
-      $changeMark.addClass('cd-changeMark-newVersionRendered');
+      $changeNote.addClass('cd-changeNote-newVersionRendered');
     }
     if (diffLink) {
-      $changeMark.append(diffLinkSeparator, diffLink.element);
+      $changeNote.append(diffLinkSeparator, diffLink.element);
     }
 
-    if (this.isReformatted) {
-      this.$header.append($changeMark);
-    } else {
-      // Add the mark to the last block element, going as many nesting levels down as needed to
-      // avoid it appearing after a block element.
-      let $last;
-      let $tested = $(this.highlightables).last();
-      do {
-        $last = $tested;
-        $tested = $last.children().last();
-      } while ($tested.length && !isInline($tested[0]));
-
-      if (!$last.find('.cd-changeMark-before').length) {
-        $last.append(' ', $('<span>').addClass('cd-changeMark-before'));
-      }
-      $last.append($changeMark);
-    }
+    this.addChangeNote($changeNote);
 
     if (isNewVersionRendered) {
       this.flashChangedOnSight();
@@ -2193,6 +2187,34 @@ class Comment extends CommentSkeleton {
 
     // Layers are supposed to be updated (deleted comments background, repositioning) separately,
     // see updateChecker~checkForNewChanges(), for example.
+  }
+
+  /**
+   * Add a note that the comment has been changed.
+   *
+   * @param {external:jQuery} $changeNote
+   * @private
+   */
+  addChangeNote($changeNote) {
+    this.$changeNote = $changeNote;
+
+    if (this.isReformatted) {
+      this.$header.append(this.$changeNote);
+    } else {
+      // Add the mark to the last block element, going as many nesting levels down as needed to
+      // avoid it appearing after a block element.
+      let $last;
+      let $tested = $(this.highlightables).last();
+      do {
+        $last = $tested;
+        $tested = $last.children().last();
+      } while ($tested.length && !isInline($tested[0]));
+
+      if (!$last.find('.cd-changeNote-before').length) {
+        $last.append(' ', $('<span>').addClass('cd-changeNote-before'));
+      }
+      $last.append($changeNote);
+    }
   }
 
   /**
@@ -2221,7 +2243,7 @@ class Comment extends CommentSkeleton {
 
     this.$elements
       .last()
-      .find('.cd-changeMark')
+      .find('.cd-changeNote')
       .remove();
 
     if (type === 'changed') {
@@ -2279,6 +2301,8 @@ class Comment extends CommentSkeleton {
       areStyleTagsKept &&
       areObjectsEqual(elementNames, newComment.elementNames)
     ) {
+      // TODO: support non-Arabic digits (e.g. fa.wikipedia.org). Also not sure square brackets are
+      // the same everywhere.
       const match = this.$elements.find('.autonumber').text().match(/\d+/);
       let currentAutonumber = match ? match[0] : 1;
       newComment.elementHtmls.forEach((html, i) => {
@@ -3100,7 +3124,7 @@ class Comment extends CommentSkeleton {
       const $dummy = $('<div>').append($clone);
       const selectorParts = [
         '.cd-signature',
-        '.cd-changeMark',
+        '.cd-changeNote',
         '.noprint',
         '.cd-comment-header',
         '.cd-comment-menu'
@@ -3521,10 +3545,11 @@ class Comment extends CommentSkeleton {
    *
    * @param {number[]} currentPageVisits
    * @param {number} currentTime
-   * @param {boolean} isUnseenStatePassed
+   * @param {Comment} unseenComment
+   * @param {external:jQuery} $changeNote
    * @returns {boolean} Whether there is a time conflict.
    */
-  initNewAndSeen(currentPageVisits, currentTime, isUnseenStatePassed) {
+  initNewAndSeen(currentPageVisits, currentTime, unseenComment, $changeNote) {
     // Let's take 3 minutes as tolerable time discrepancy.
     const isDateInFuture = this.date && this.date.getTime() > Date.now() + cd.g.msInMin * 3;
 
@@ -3537,12 +3562,21 @@ class Comment extends CommentSkeleton {
     const commentTime = Math.floor(this.date.getTime() / 1000);
 
     // Add 60 seconds to the comment time because it doesn't have seconds whereas the visit time
-    // has. See also timeConflict in BootProcess#processVisits().
-    this.isNew = Boolean(commentTime + 60 > currentPageVisits[0] || isUnseenStatePassed);
+    // has. See also timeConflict in BootProcess#processVisits(). Unseen comment might be not new if
+    // it's a changed old comment.
+    this.isNew = Boolean(commentTime + 60 > currentPageVisits[0] || unseenComment?.isNew);
     this.isSeen = Boolean(
       (commentTime + 60 <= currentPageVisits[currentPageVisits.length - 1] || this.isOwn) &&
-      !isUnseenStatePassed
+      !unseenComment
     );
+
+    if ($changeNote) {
+      $changeNote.find('.cd-changeNote-refreshLinkWrapper').remove();
+      this.addChangeNote($changeNote);
+      if (unseenComment.willFlashChangedOnSight) {
+        this.flashChangedOnSight();
+      }
+    }
 
     return commentTime <= currentTime && currentTime < commentTime + 60;
   }

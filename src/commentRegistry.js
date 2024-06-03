@@ -174,12 +174,14 @@ export default {
    */
   initNewAndSeen(currentPageData, currentTime, markAsReadRequested) {
     let timeConflict = false;
-    const unseenCommentIds = controller.getBootProcess().passedData.unseenCommentIds;
+    const unseenComments = controller.getBootProcess().passedData.unseenComments;
     this.items.forEach((comment) => {
+      const unseenComment = unseenComments?.find((c) => c.id === comment.id);
       const commentTimeConflict = comment.initNewAndSeen(
         currentPageData,
         currentTime,
-        markAsReadRequested ? false : unseenCommentIds?.some((id) => id === comment.id) || false
+        markAsReadRequested ? undefined : unseenComment,
+        unseenComment?.$changeNote
       );
       timeConflict ||= commentTimeConflict;
     });

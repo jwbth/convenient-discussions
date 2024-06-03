@@ -1173,7 +1173,7 @@ export default {
    * Reload the page via Ajax.
    *
    * @param {import('./BootProcess').PassedData} [passedData={}] Data passed from the previous page
-   *   state. See {@link PassedData} for the list of possible properties. `html`, `unseenCommentIds`
+   *   state. See {@link PassedData} for the list of possible properties. `html`, `unseenComments`
    *   properties are set in this function.
    * @throws {import('./CdError').default|Error}
    */
@@ -1221,9 +1221,8 @@ export default {
 
     // Get IDs of unseen comments. This is used to arrange that they will still be there after
     // replying on or refreshing the page.
-    bootProcess.passedData.unseenCommentIds = commentRegistry
-      .query((comment) => comment.isSeen === false)
-      .map((comment) => comment.id);
+    bootProcess.passedData.unseenComments = commentRegistry
+      .query((comment) => comment.isSeen === false);
 
     // At this point, the boot process can't be interrupted, so we can remove all traces of the
     // current page state.
