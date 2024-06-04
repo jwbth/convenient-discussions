@@ -274,7 +274,6 @@ export default {
     '-',
   ],
 
-  // eslint-disable-next-line no-unused-vars
   quoteFormatting: function (mentionSource, author, timestamp, dtId) {
     var pre = '{{цс|1=';
     var post = '';

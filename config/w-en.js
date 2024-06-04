@@ -209,7 +209,6 @@ export default {
     'Absatz',
   ],
 
-  // eslint-disable-next-line no-unused-vars
   quoteFormatting: function (mentionSource, author, timestamp, dtId) {
     var pre = '';
     var post = '';

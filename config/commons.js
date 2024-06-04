@@ -124,7 +124,27 @@ export default {
     'Clr',
     '-',
   ],
-  quoteFormatting: ["{{tq|1=", "}}<br>"],
+  quoteFormatting: function (mentionSource, author, timestamp, dtId) {
+    var pre = '';
+    var post = '';
+    if (mentionSource) {
+      pre = '{{tqb|text=';
+      if (author) {
+        post += '|by=' + author;
+      }
+      if (timestamp) {
+        post += '|ts=' + timestamp;
+      }
+      if (dtId) {
+        post += '|id=' + dtId;
+      }
+      post += '}}';
+    } else {
+      pre = '{{tq|1='
+      post += '}}<br>';
+    }
+    return [pre, post];
+  },
   noSignatureClasses: [
     'collapsibleheader',
   ],
