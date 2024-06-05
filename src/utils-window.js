@@ -343,11 +343,7 @@ export function cleanUpPasteDom(element, containerElement) {
   [...element.querySelectorAll('*')]
     // Need to keep non-breaking spaces.
     .filter((el) => (
-      (
-        !['BR', 'HR'].includes(el.tagName) ||
-        el.classList.contains('Apple-interchange-newline')
-      ) &&
-      !isInline(el) &&
+      (!isInline(el) || el.classList.contains('Apple-interchange-newline')) &&
       !el.textContent.replace(/[ \n]+/g, ''))
     )
 
@@ -408,8 +404,13 @@ export function cleanUpPasteDom(element, containerElement) {
 
     .forEach(replaceWithChildren);
 
+  getAllTextNodes(element).forEach((node) => {
+    // Firefox adds newlines of unclear nature
+    node.textContent = node.textContent.replace(/\n/g, ' ');
+  });
+
   // Need to do it before removing the element; if we do it later, the literal textual content of
-  // the elements will be used instead of the rendered appearance.
+  // the elements equivalent to .textContent will be used instead of the rendered appearance.
   const text = element.innerText;
 
   element.remove();
@@ -515,4 +516,21 @@ export function getRangeContents(start, end, rootElement) {
   }
 
   return rangeContents;
+}
+
+/**
+ * Get all text nodes under the root element in the window (not worker) context.
+ *
+ * @param {Element} rootNode
+ * @returns {Node[]}
+ * @private
+ */
+export function getAllTextNodes(rootNode) {
+  const treeWalker = document.createNodeIterator(rootNode, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  let node;
+  while ((node = treeWalker.nextNode())) {
+    nodes.push(node);
+  }
+  return nodes;
 }

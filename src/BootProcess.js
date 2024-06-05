@@ -22,7 +22,7 @@ import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
 import { handleApiReject, saveOptions } from './utils-api';
 import { definedAndNotNull, sleep } from './utils-general';
-import { wrapHtml } from './utils-window';
+import { getAllTextNodes, wrapHtml } from './utils-window';
 import visits from './visits';
 
 /**
@@ -31,14 +31,8 @@ import visits from './visits';
  * @returns {Node[]}
  * @private
  */
-function getAllTextNodes() {
-  const treeWalker = document.createNodeIterator(controller.rootElement, NodeFilter.SHOW_TEXT);
-  const nodes = [];
-  let node;
-  while ((node = treeWalker.nextNode())) {
-    nodes.push(node);
-  }
-  return nodes;
+function getAllTextNodesUnderRoot() {
+  return getAllTextNodes(controller.rootElement);
 }
 
 /**
@@ -314,7 +308,7 @@ class BootProcess {
       follows: (el1, el2) => Boolean(
         el2.compareDocumentPosition(el1) & Node.DOCUMENT_POSITION_FOLLOWING
       ),
-      getAllTextNodes,
+      getAllTextNodes: getAllTextNodesUnderRoot,
       getElementByClassName: (el, className) => el.querySelector(`.${className}`),
       rootElement: controller.rootElement,
       areThereOutdents: controller.areThereOutdents.bind(controller),

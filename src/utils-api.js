@@ -425,7 +425,7 @@ export async function convertHtmlToWikitext(html, syntaxHighlightLanguages) {
       .trim();
     wikitext = (new TextMasker(wikitext))
       .maskSensitiveCode()
-      .withText(brsToNewlines)
+      .withText((text) => brsToNewlines(text))
       .unmask()
       .getText();
   } catch {
