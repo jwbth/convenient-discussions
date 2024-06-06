@@ -133,6 +133,19 @@ class TextMasker {
         // Get back to the wrapper
         left = stack.pop();
 
+        // Handle unclosed `{{` and unopened `}}`
+        if (typeof left === 'undefined') {
+          if (right === -1) {
+            pos += 2;
+            continue;
+          } else {
+            left = 0;
+          }
+        }
+        if (right === -1) {
+          right = this.text.length;
+        }
+
         // Mask the template
         right += 2;
         let template = this.text.substring(left, right);
