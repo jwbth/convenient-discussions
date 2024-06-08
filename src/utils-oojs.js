@@ -454,7 +454,7 @@ export function mixinUserOoUiClass(targetClass, originClass) {
  *
  * @param {object} obj
  */
-export function mixEventEmitterIntoObject(obj) {
+export function mixEventEmitterInObject(obj) {
   const dummy = { prototype: {} };
   OO.mixinClass(dummy, OO.EventEmitter);
   Object.assign(obj, dummy.prototype);

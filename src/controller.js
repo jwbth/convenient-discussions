@@ -14,6 +14,7 @@ import ElementsTreeWalker from './ElementsTreeWalker';
 import LegacySubscriptions from './LegacySubscriptions';
 import LiveTimestamp from './LiveTimestamp';
 import Parser from './Parser';
+import Subscriptions from './Subscriptions';
 import addCommentLinks from './addCommentLinks';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
@@ -29,8 +30,8 @@ import toc from './toc';
 import updateChecker from './updateChecker';
 import { getUserInfo } from './utils-api';
 import { defined, definedAndNotNull, flat, getLastArrayElementOrSelf, getQueryParamBooleanValue, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
-import { mixEventEmitterIntoObject } from './utils-oojs';
 import { copyText, getVisibilityByRects, skin$, wrapHtml } from './utils-window';
+import { mixEventEmitterInObject } from './utils-oojs';
 import visits from './visits';
 import Worker from './worker-gate';
 
@@ -1117,12 +1118,14 @@ export default {
       async () => {
         // Do it here because OO.EventEmitter can be unavailable when these modules are first
         // imported.
-        mixEventEmitterIntoObject(this);
-        mixEventEmitterIntoObject(visits);
-        mixEventEmitterIntoObject(updateChecker);
-        mixEventEmitterIntoObject(LiveTimestamp);
-        mixEventEmitterIntoObject(commentFormRegistry);
-        mixEventEmitterIntoObject(commentRegistry);
+        mixEventEmitterInObject(this);
+        mixEventEmitterInObject(visits);
+        mixEventEmitterInObject(updateChecker);
+        mixEventEmitterInObject(LiveTimestamp);
+        mixEventEmitterInObject(commentFormRegistry);
+        mixEventEmitterInObject(commentRegistry);
+        OO.mixinClass(Subscriptions, OO.EventEmitter);
+        OO.mixinClass(CommentForm, OO.EventEmitter);
 
         await this.tryExecuteBootProcess();
 

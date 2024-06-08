@@ -14,9 +14,6 @@ class Subscriptions {
    * {@link controller.getSubscriptionsInstance}.
    */
   constructor() {
-    // Do it here because OO.EventEmitter can be unavailable when this module is first imported.
-    OO.mixinClass(Subscriptions, OO.EventEmitter);
-
     // Mixin constructor
     OO.EventEmitter.call(this);
   }

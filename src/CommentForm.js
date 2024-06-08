@@ -56,9 +56,6 @@ class CommentForm {
    * @fires commentFormCustomModulesReady
    */
   constructor({ mode, target, initialState, preloadConfig, newTopicOnTop }) {
-    // Do it here because OO.EventEmitter can be unavailable when this module is first imported.
-    OO.mixinClass(CommentForm, OO.EventEmitter);
-
     // Mixin constructor
     OO.EventEmitter.call(this);
 
@@ -73,7 +70,7 @@ class CommentForm {
     this.manyFormsOnboarded = settings.get('manyForms-onboarded');
     this.uploadOnboarded = settings.get('upload-onboarded');
 
-    this.uploadToCommons = convenientDiscussions.g.isProbablyWmfSulWiki;
+    this.uploadToCommons = cd.g.isProbablyWmfSulWiki;
 
     /**
      * Form mode.
@@ -1458,7 +1455,7 @@ class CommentForm {
         width: `${parseFloat(computedStyle.width)}px`,
 
         // Transfer the element's properties to the div.
-        ...convenientDiscussions.g.inputPropsAffectingCoords.reduce((props, propName) => {
+        ...cd.g.inputPropsAffectingCoords.reduce((props, propName) => {
           props[propName] = computedStyle[propName];
           return props;
         }, {}),
