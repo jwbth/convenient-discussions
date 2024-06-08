@@ -1231,7 +1231,7 @@ class Thread {
     }
 
     const loadUserGendersPromise = cd.g.genderAffectsUserString ?
-      loadUserGenders(comments.flatMap((comment) => comment.thread.getUsersInThread())) :
+      loadUserGenders(comments.flatMap((comment) => comment.thread.getUsers())) :
       undefined;
 
     // The reverse order is used for threads to be expanded correctly.
