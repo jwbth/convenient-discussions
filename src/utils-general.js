@@ -230,18 +230,6 @@ export function reorderArray(arr, startIndex, reverse = false) {
 }
 
 /**
- * Alternative to
- * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat Array#flat(1)}.
- * That method is not yet supported by major browsers.
- *
- * @param {Array.<*>} arr
- * @returns {Array.<*>}
- */
-export function flat(arr) {
-  return [].concat(...arr);
-}
-
-/**
  * Transforms underlines to spaces in a string.
  *
  * @param {string} string

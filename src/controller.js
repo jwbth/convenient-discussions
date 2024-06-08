@@ -29,7 +29,7 @@ import settings from './settings';
 import toc from './toc';
 import updateChecker from './updateChecker';
 import { getUserInfo } from './utils-api';
-import { defined, definedAndNotNull, flat, getLastArrayElementOrSelf, getQueryParamBooleanValue, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
+import { defined, definedAndNotNull, getLastArrayElementOrSelf, getQueryParamBooleanValue, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
 import { mixEventEmitterInObject } from './utils-oojs';
 import { copyText, createSvg, getVisibilityByRects, skin$, wrapHtml } from './utils-window';
 import visits from './visits';
@@ -1376,9 +1376,7 @@ export default {
 
     $content
       .find(`a[href^="#"]`)
-      .filter(function () {
-        return !this.onclick && Comment.isAnyId($(this).attr('href').slice(1));
-      })
+      .filter((i, el) => !el.onclick && Comment.isAnyId($(el).attr('href').slice(1)))
       .on('click', function (e) {
         e.preventDefault();
         commentRegistry.getByAnyId($(this).attr('href').slice(1), true)?.scrollTo({
@@ -2017,8 +2015,8 @@ export default {
         .concat(cd.config.addTopicButtonSelectors)
         .join(', ')
     )
-      .filter(function () {
-        const $button = $(this);
+      .filter((i, el) => {
+        const $button = $(el);
 
         // When DT's new topic tool is enabled
         if (
@@ -2080,13 +2078,10 @@ export default {
       .off('click')
 
       .on('click.cd', this.handleAddTopicButtonClick.bind(this))
-      .filter(function () {
-        const $button = $(this);
-        return (
-          !cd.g.isDtNewTopicToolEnabled &&
-          !($button.is('a') && Number(mw.util.getParamValue('cdaddtopic', $button.attr('href'))))
-        );
-      })
+      .filter((i, el) => (
+        !cd.g.isDtNewTopicToolEnabled &&
+        !($(el).is('a') && Number(mw.util.getParamValue('cdaddtopic', $(el).attr('href'))))
+      ))
       .attr('title', cd.s('addtopicbutton-tooltip'));
 
     $('#ca-addsection a').updateTooltipAccessKeys();
@@ -2109,11 +2104,9 @@ export default {
   getDtSubscribableThreads() {
     this.dtSubscribableThreads ||= mw.config.get('wgDiscussionToolsPageThreads')
       ?.concat(
-        flat(
-          mw.config.get('wgDiscussionToolsPageThreads')
-            .filter((thread) => thread.headingLevel === 1)
-            .map((thread) => thread.replies)
-        )
+        mw.config.get('wgDiscussionToolsPageThreads')
+          .filter((thread) => thread.headingLevel === 1)
+          .flatMap((thread) => thread.replies)
       )
       .filter((thread) => thread.headingLevel === 2);
 

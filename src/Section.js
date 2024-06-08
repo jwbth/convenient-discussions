@@ -13,7 +13,7 @@ import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import toc from './toc';
 import { handleApiReject } from './utils-api';
-import { defined, flat, getHeadingLevel, underlinesToSpaces, unique } from './utils-general';
+import { defined, getHeadingLevel, underlinesToSpaces, unique } from './utils-general';
 import { formatDate } from './utils-timestamp';
 import { encodeWikilink, maskDistractingCode, normalizeCode } from './utils-wikitext';
 import { getRangeContents } from './utils-window';
@@ -503,20 +503,20 @@ class Section extends SectionSkeleton {
        * @type {external:OO.ui.PopupWidget|undefined}
        */
       this.authorsPopup = new OO.ui.PopupWidget({
-        $content: $(flat(
+        $content: $(
           this.comments
             .map((comment) => comment.author)
             .filter(unique)
             .sort((author1, author2) => author2.getName() > author1.getName() ? -1 : 1)
             .map((author) => [author, this.comments.filter((comment) => comment.author === author)])
-            .map(([author, comments], i, arr) => ([
+            .flatMap(([author, comments], i, arr) => ([
               $('<a>')
                 .text(author.getName())
                 .attr('href', `#${comments[0].dtId || comments[0].id}`)
                 .on('click', Comment.scrollToFirstHighlightAll.bind(Comment, comments))[0],
               i === arr.length - 1 ? undefined : document.createTextNode(cd.mws('comma-separator')),
             ]))
-        )),
+        ),
         head: false,
         padded: true,
         autoClose: true,

@@ -47,9 +47,7 @@ export default {
    * @memberof external:jQuery.fn
    */
   cdRemoveNonElementNodes: function () {
-    return this.filter(function () {
-      return this.tagName && !isMetadataNode(this);
-    });
+    return this.filter((i, el) => el.tagName && !isMetadataNode(el));
   },
 
   /**

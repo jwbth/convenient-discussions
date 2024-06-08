@@ -9,7 +9,7 @@ import controller from './controller';
 import settings from './settings';
 import updateChecker from './updateChecker';
 import { loadUserGenders } from './utils-api';
-import { defined, flat, getCommonGender, isHeadingNode, removeFromArrayIfPresent, unique } from './utils-general';
+import { defined, getCommonGender, isHeadingNode, removeFromArrayIfPresent, unique } from './utils-general';
 import { getExtendedRect, getRangeContents, getVisibilityByRects, isCmdModifierPressed } from './utils-window';
 
 /**
@@ -663,7 +663,7 @@ class Thread {
    * @returns {import('./userRegistry').User[]}
    * @private
    */
-  getUsersInThread() {
+  getUsers() {
     return [this.rootComment, ...this.rootComment.getChildren(true)]
       .map((comment) => comment.author)
       .filter(unique);
@@ -684,7 +684,7 @@ class Thread {
       buttonElement: element.firstChild,
       labelElement: element.querySelector('.oo-ui-labelElement-label'),
     });
-    const usersInThread = this.getUsersInThread();
+    const usersInThread = this.getUsers();
     const userList = usersInThread
       .map((author) => author.getName())
       .join(cd.mws('comma-separator'));
@@ -1231,7 +1231,7 @@ class Thread {
     }
 
     const loadUserGendersPromise = cd.g.genderAffectsUserString ?
-      loadUserGenders(flat(comments.map((comment) => comment.thread.getUsersInThread()))) :
+      loadUserGenders(comments.flatMap((comment) => comment.thread.getUsersInThread())) :
       undefined;
 
     // The reverse order is used for threads to be expanded correctly.
