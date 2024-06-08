@@ -312,6 +312,7 @@
 	"sd-autopreview": "Previsualisar le commento como io lo scribe",
 	"sd-collapsethreadslevel": "Contraher automaticamente le filos al nivello",
 	"sd-collapsethreadslevel-help": "0 pro nunquam contraher automaticamente.",
+	"sd-counteditsasnewcomments": "Includer modificationes de commentos existente in le numero de commentos non vidite in le pannello de navigation",
 	"sd-desktopnotifications": "Notificationes de scriptorio",
 	"sd-desktopnotifications-radio-all": "Notificar me sur responsas a mi commentos e sur commentos in topicos al quales io es {{gender:$1|subscribite}}",
 	"sd-desktopnotifications-radio-tome": "Notificar me solmente sur responsas a mi commentos",

@@ -313,6 +313,7 @@
 	"sd-autopreview": "Previsualisé ël coment antramentre ch'i scrivo",
 	"sd-collapsethreadslevel": "Sgnaché an automàtich ij fij al livel",
 	"sd-collapsethreadslevel-help": "0 pr'ësgnaché mai an automàtich.",
+	"sd-counteditsasnewcomments": "A anclud le modifiche ai coment esistent ant ël nùmer ëd coment nen vist ant ël panel ëd navigassion",
 	"sd-desktopnotifications": "Notìfiche da scrivanìa",
 	"sd-desktopnotifications-radio-all": "Aviseme dle rispòste ai mè coment e dij coment an sj'argoment ai quaj i son abonà {{gender:$1|}}",
 	"sd-desktopnotifications-radio-tome": "Aviseme mach dle rispòste ai mè coment",
