@@ -725,7 +725,7 @@ class Comment extends CommentSkeleton {
         tooltip: cd.s('cm-gotochild-tooltip'),
         classes: ['cd-comment-button-icon', 'cd-comment-button-goToChild', 'cd-icon'],
       });
-      $(this.goToParentButton.element).append(
+      $(this.goToChildButton.element). append(
         createSvg(16, 16, 20, 20).html(
           `<path d="M10 15L2 5h16z" />`
         )
