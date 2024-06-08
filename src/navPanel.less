@@ -3,8 +3,10 @@
   top: 41.5%;
   z-index: 3;
   width: 2.1875rem;
-  background-color: #fff;
-  border: 1px solid #a2a9b1;
+  background-color: var(--background-color-base, #fff);
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--border-color-base, #a2a9b1);
   inset-inline-start: 0;
   border-inline-start-width: 0;
 
@@ -14,7 +16,7 @@
 
   font-size: 0.875rem;
   line-height: 1.2;
-  color: #000;
+  color: var(--color-emphasized, #000);
   -moz-user-select: none;
   -webkit-user-select: none;
   user-select: none;
@@ -30,46 +32,14 @@
     // area (otherwise there can be a gap when the default font size is changed).
     height: 1.625rem;
 
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M15.65 4.35A8 8 0 1 0 17.4 13h-2.22a6 6 0 1 1-1-7.22L11 9h7V2z'/%3E%3C/svg%3E");
-    background-size: 1.25rem 1.25rem;
-
-    &:not(:empty) {
-      background-image: none;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+    &.cd-navPanel-addedCommentCount {
       font-weight: bold;
     }
-  }
-
-  &-previousButton {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M1 13.75l1.5 1.5 7.5-7.5 7.5 7.5 1.5-1.5-9-9-9 9z'/%3E%3C/svg%3E");
-    background-size: 1rem 1rem;
-  }
-
-  &-nextButton {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M19 6.25l-1.5-1.5-7.5 7.5-7.5-7.5L1 6.25l9 9 9-9z'/%3E%3C/svg%3E");
-    background-size: 1rem 1rem;
   }
 
   &-firstUnseenButton {
     height: 1.0625rem;
     padding: 0.4375rem 0;
-  }
-
-  &-commentFormButton {
-    background-size: 1rem 1rem;
-
-    // ~1px lower
-    background-position-y: 54%;
-
-    .sitedir-ltr & {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M18 0H2a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM5 9.06a1.39 1.39 0 1 1 1.37-1.39A1.39 1.39 0 0 1 5 9.06zm5.16 0a1.39 1.39 0 1 1 1.39-1.39 1.39 1.39 0 0 1-1.42 1.39zm5.16 0a1.39 1.39 0 1 1 1.39-1.39 1.39 1.39 0 0 1-1.42 1.39z'/%3E%3C/svg%3E");
-    }
-
-    .sitedir-rtl & {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M0 2v12c0 1.1.9 2 2 2h14l4 4V2c0-1.1-.9-2-2-2H2C.9 0 0 .9 0 2zm13.6 5.7c0-.8.6-1.4 1.4-1.4.8 0 1.4.6 1.4 1.4s-.6 1.4-1.4 1.4c-.8-.1-1.4-.7-1.4-1.4zM9.9 9.1s-.1 0 0 0c-.8 0-1.4-.6-1.4-1.4 0-.8.6-1.4 1.4-1.4.8 0 1.4.6 1.4 1.4s-.7 1.4-1.4 1.4zm-5.2 0c-.8 0-1.4-.6-1.4-1.4 0-.8.6-1.4 1.4-1.4.8 0 1.4.6 1.4 1.4 0 .7-.7 1.4-1.4 1.4z'/%3E%3C/svg%3E");
-    }
   }
 
   @media screen and (max-width: 999px) {
@@ -83,10 +53,9 @@
 }
 
 .cd-navPanel-button {
-  display: block;
-  text-align: center;
-  background-position: center center;
-  background-repeat: no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
   height: 1.9375rem;
 
@@ -94,7 +63,7 @@
   box-sizing: content-box;
 
   &:hover {
-    background-color: #eaecf0;
+    background-color: var(--background-color-interactive, #eaecf0);
   }
 
   &:not(:first-child) {
@@ -108,7 +77,9 @@
       margin: 0 auto 1px;
       width: 1.625rem;
       height: 0;
-      border-top: 1px solid #a2a9b1;
+      border-top-width: 1px;
+      border-top-style: solid;
+      border-top-color: var(--border-color-base, #a2a9b1);
       content: "";
     }
   }
@@ -116,4 +87,8 @@
 
 .cd-navPanel-refreshButton-relevant {
   color: #7d00cc;
+
+  html.skin-theme-clientpref-night & {
+    color: #f0def7;
+  }
 }

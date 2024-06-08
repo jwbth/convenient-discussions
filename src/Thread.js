@@ -1075,6 +1075,7 @@ class Thread {
           'cd-button-expandNote',
           'cd-thread-button',
           'cd-thread-button-invisible',
+          'cd-icon',
         ],
       })).$element[0]
     );

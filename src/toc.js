@@ -13,6 +13,7 @@ import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import updateChecker from './updateChecker';
 import { formatDate, formatDateNative } from './utils-timestamp';
+import { createSvg } from './utils-window';
 import visits from './visits';
 
 export default {
@@ -776,7 +777,12 @@ class TocItem {
         .append(
           $('<span>').addClass('cd-toc-subscriptionIcon-before'),
           $('<span>')
-            .addClass('cd-toc-subscriptionIcon')
+            .addClass('cd-toc-subscriptionIcon cd-icon')
+            .append(
+              createSvg(14, 14, 20, 20).html(
+                `<path d="M16 7a5.38 5.38 0 0 0-4.46-4.85C11.6 1.46 11.53 0 10 0S8.4 1.46 8.46 2.15A5.38 5.38 0 0 0 4 7v6l-2 2v1h16v-1l-2-2zm-6 13a3 3 0 0 0 3-3H7a3 3 0 0 0 3 3z" />`
+              )
+            )
             .attr('title', cd.s('toc-watched'))
         );
     } else {

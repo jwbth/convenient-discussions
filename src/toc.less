@@ -1,5 +1,7 @@
 .cd-toc-commentCount {
-  color: #72777d;
+  // Should be --color-base--subtle, but it's not in dark mode yet
+  color: var(--color-placeholder, #72777d);
+
   text-decoration: inherit;
   user-select: none;
   display: inline-block;
@@ -18,10 +20,7 @@
   vertical-align: middle;
   position: relative;
   top: -0.0625rem;
-  width: 14px;
-  height: 14px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%2372777d'%3E%3Cpath d='M16 7a5.38 5.38 0 0 0-4.46-4.85C11.6 1.46 11.53 0 10 0S8.4 1.46 8.46 2.15A5.38 5.38 0 0 0 4 7v6l-2 2v1h16v-1l-2-2zm-6 13a3 3 0 0 0 3-3H7a3 3 0 0 0 3 3z'/%3E%3C/g%3E%3C/svg%3E");
-  background-size: 14px 14px;
+  color: var(--color-placeholder, #72777d);
 
   &-before {
     margin-inline-end: 0.75em;
@@ -36,7 +35,12 @@
   }
 
   .cd-toc-addedCommentList {
-    list-style-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='13'%3E%3Ccircle cx='2.5' cy='9' r='2.5' fill='%2372777d'/%3E%3C/svg%3E");
+    list-style-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="5" height="13" viewBox="0 0 5 13"%3E%3Ccircle cx="2.5" cy="9" r="2.5" fill="%2372777d"/%3E%3C/svg%3E');
+
+    html.skin-theme-clientpref-night & {
+      // TODO: update the color if it changes after https://phabricator.wikimedia.org/T366861
+      list-style-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="5" height="13" viewBox="0 0 5 13"%3E%3Ccircle cx="2.5" cy="9" r="2.5" fill="%23c8ccd1"/%3E%3C/svg%3E');
+    }
   }
 }
 
@@ -46,7 +50,8 @@
 // Need to override `.vector-toc .vector-toc-link`
 .cd-toc-addedCommentList.cd-toc-addedCommentList.cd-toc-addedCommentList a,
 .cd-toc-addedSection.cd-toc-addedSection.cd-toc-addedSection a {
-  color: #72777d;
+  // Should be --color-base--subtle, but it's not in dark mode yet
+  color: var(--color-placeholder, #72777d);
 }
 
 .cd-toc-more {

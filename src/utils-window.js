@@ -519,6 +519,24 @@ export function getRangeContents(start, end, rootElement) {
 }
 
 /**
+ * Create a `<svg>` element.
+ *
+ * @param {number} width
+ * @param {number} height
+ * @param {number} [viewBoxWidth=width]
+ * @param {number} [viewBoxHeight=height]
+ * @returns {external:jQuery}
+ */
+export function createSvg(width, height, viewBoxWidth = width, viewBoxHeight = height) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  return $(svg)
+    .attr('width', width)
+    .attr('height', height)
+    .attr('viewBox', `0 0 ${viewBoxWidth} ${viewBoxHeight}`)
+    .attr('aria-hidden', 'true');
+}
+
+/**
  * Get all text nodes under the root element in the window (not worker) context.
  *
  * @param {Element} rootNode

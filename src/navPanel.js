@@ -14,7 +14,7 @@ import settings from './settings';
 import { reorderArray } from './utils-general';
 import { formatDate } from './utils-timestamp';
 import { removeWikiMarkup } from './utils-wikitext';
-import { isCmdModifierPressed, isInputFocused, keyCombination } from './utils-window';
+import { createSvg, isCmdModifierPressed, isInputFocused, keyCombination } from './utils-window';
 import visits from './visits';
 
 export default {
@@ -156,28 +156,37 @@ export default {
         this.refreshClick(isCmdModifierPressed(e));
       },
     });
-
-    this.updateRefreshButtonTooltip(0);
+    this.updateRefreshButton(0);
 
     this.previousButton = new Button({
       tagName: 'div',
-      classes: ['cd-navPanel-button'],
+      classes: ['cd-navPanel-button', 'cd-icon'],
       id: 'cd-navPanel-previousButton',
       tooltip: `${cd.s('navpanel-previous')} ${cd.mws('parentheses', 'W')}`,
       action: () => {
         this.goToPreviousNewComment();
       },
     }).hide();
+    $(this.previousButton.element).append(
+      createSvg(16, 16, 20, 20).html(
+        `<path d="M1 13.75l1.5 1.5 7.5-7.5 7.5 7.5 1.5-1.5-9-9-9 9z" />`
+      )
+    );
 
     this.nextButton = new Button({
       tagName: 'div',
-      classes: ['cd-navPanel-button'],
+      classes: ['cd-navPanel-button', 'cd-icon'],
       id: 'cd-navPanel-nextButton',
       tooltip: `${cd.s('navpanel-next')} ${cd.mws('parentheses', 'S')}`,
       action: () => {
         this.goToNextNewComment();
       },
     }).hide();
+    $(this.nextButton.element).append(
+      createSvg(16, 16, 20, 20).html(
+        `<path d="M19 6.25l-1.5-1.5-7.5 7.5-7.5-7.5L1 6.25l9 9 9-9z" />`
+      )
+    );
 
     this.firstUnseenButton = new Button({
       tagName: 'div',
@@ -191,13 +200,20 @@ export default {
 
     this.commentFormButton = new Button({
       tagName: 'div',
-      classes: ['cd-navPanel-button'],
+      classes: ['cd-navPanel-button', 'cd-icon'],
       id: 'cd-navPanel-commentFormButton',
       tooltip: `${cd.s('navpanel-commentform')} ${cd.mws('parentheses', 'C')}`,
       action: () => {
         this.goToNextCommentForm();
       },
     }).hide();
+    $(this.commentFormButton.element).append(
+      createSvg(16, 16, 20, 20).html(
+        cd.g.contentDirection === 'ltr' ?
+          `<path d="M18 0H2a2 2 0 00-2 2v18l4-4h14a2 2 0 002-2V2a2 2 0 00-2-2zM5 9.06a1.39 1.39 0 111.37-1.39A1.39 1.39 0 015 9.06zm5.16 0a1.39 1.39 0 111.39-1.39 1.39 1.39 0 01-1.42 1.39zm5.16 0a1.39 1.39 0 111.39-1.39 1.39 1.39 0 01-1.42 1.39z" />` :
+          `<path d="M0 2v12c0 1.1.9 2 2 2h14l4 4V2c0-1.1-.9-2-2-2H2C.9 0 0 .9 0 2zm13.6 5.7c0-.8.6-1.4 1.4-1.4.8 0 1.4.6 1.4 1.4s-.6 1.4-1.4 1.4c-.8-.1-1.4-.7-1.4-1.4zM9.9 9.1s-.1 0 0 0c-.8 0-1.4-.6-1.4-1.4 0-.8.6-1.4 1.4-1.4.8 0 1.4.6 1.4 1.4s-.7 1.4-1.4 1.4zm-5.2 0c-.8 0-1.4-.6-1.4-1.4 0-.8.6-1.4 1.4-1.4.8 0 1.4.6 1.4 1.4 0 .7-.7 1.4-1.4 1.4z" />`
+      )
+    );
 
     this.$element.append(
       this.refreshButton.element,
@@ -236,8 +252,7 @@ export default {
    * @private
    */
   reset() {
-    this.refreshButton.setLabel('');
-    this.updateRefreshButtonTooltip(0);
+    this.updateRefreshButton(0);
     this.previousButton.hide();
     this.nextButton.hide();
     this.firstUnseenButton.hide();
@@ -366,23 +381,28 @@ export default {
    * Update the refresh button to show the number of comments added to the page since it was loaded.
    *
    * @param {number} commentCount
-   * @param {Map} commentsBySection
-   * @param {boolean} areThereRelevant
+   * @param {Map} [commentsBySection]
+   * @param {boolean} [areThereRelevant = false]
    * @private
    */
-  updateRefreshButton(commentCount, commentsBySection, areThereRelevant) {
-    this.refreshButton.setLabel('');
-    this.updateRefreshButtonTooltip(commentCount, commentsBySection);
-    if (commentCount) {
-      $('<span>')
-        // Can't set the attribute to the button as its tooltip may have another direction.
-        .attr('dir', 'ltr')
+  updateRefreshButton(commentCount, commentsBySection, areThereRelevant = false) {
+    $(this.refreshButton.element)
+      .empty()
+      .append(
+        commentCount ?
+          $('<span>')
+            // Can't set the attribute to the button as its tooltip may have another direction.
+            .attr('dir', 'ltr')
 
-        .text(`+${commentCount}`)
-        .appendTo(this.refreshButton.element);
-    }
-    this.refreshButton.element.classList
-      .toggle('cd-navPanel-refreshButton-relevant', areThereRelevant);
+            .text(`+${commentCount}`) :
+          createSvg(20, 20).html(
+            `<path d="M15.65 4.35A8 8 0 1017.4 13h-2.22a6 6 0 11-1-7.22L11 9h7V2z" />`
+          )
+      )
+      .toggleClass('cd-navPanel-addedCommentCount', Boolean(commentCount))
+      .toggleClass('cd-icon', !commentCount)
+      .toggleClass('cd-navPanel-refreshButton-relevant', areThereRelevant);
+    this.updateRefreshButtonTooltip(commentCount, commentsBySection);
   },
 
   /**
@@ -472,7 +492,9 @@ export default {
     if (!this.isMounted()) return;
 
     const unseenCommentCount = commentRegistry.query((c) => c.isSeen === false).length;
-    this.firstUnseenButton.toggle(Boolean(unseenCommentCount)).setLabel(unseenCommentCount);
+    this.firstUnseenButton
+      .toggle(Boolean(unseenCommentCount))
+      .setLabel(unseenCommentCount);
   },
 
   /**

@@ -139,14 +139,16 @@
   }
 
   .wikiEditor-ui-top {
-    border: 1px solid #a2a9b1;
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--border-color-base, #a2a9b1);
     border-bottom-width: 0;
   }
 
   &.oo-ui-textInputWidget.oo-ui-widget-disabled {
     .wikiEditor-ui-top,
     + .cd-insertButtons {
-      border-color: #c8ccd1;
+      border-color: var(--border-color-disabled, #c8ccd1);
       pointer-events: none;
     }
   }
@@ -174,7 +176,7 @@
   display: flow-root;
   margin-top: 0.5em;
   padding: 0.5em 0.75em;
-  background-color: #f8f9fa;
+  background-color: var(--background-color-interactive-subtle, #f8f9fa);
 
   > .mw-parser-output {
     > *:first-child {
@@ -206,7 +208,7 @@
   }
 
   .cd-closeButton {
-    background-color: #f8f9fa;
+    background-color: var(--background-color-interactive-subtle, #f8f9fa);
   }
 
   &:empty {
@@ -221,7 +223,9 @@
   }
 
   &-label {
-    color: #72777d;
+    // Should be --color-base--subtle, but it's not in dark mode yet
+    color: var(--color-placeholder, #72777d);
+
     margin-bottom: 0.5em;
   }
 
@@ -276,9 +280,6 @@
   top: 1px;
   inset-inline-end: 1px;
 
-  width: 20px;
-  height: 20px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cpath d='M4.34 2.93l12.73 12.73-1.41 1.41L2.93 4.35z'/%3E%3Cpath d='M17.07 4.34L4.34 17.07l-1.41-1.41L15.66 2.93z'/%3E%3C/svg%3E");
   opacity: 0;
   transition: opacity 0.2s ease-in;
 
@@ -321,8 +322,8 @@
 }
 
 .cd-insertButtons {
-  background-color: #f8f9fa;
-  border-color: #a2a9b1;
+  background-color: var(--background-color-interactive-subtle, #f8f9fa);
+  border-color: var(--border-color-base, #a2a9b1);
   border-width: 0 1px 1px;
   border-style: solid;
   font-size: 0.928571em;
@@ -340,7 +341,7 @@
   }
 
   &-button {
-    color: #222;
+    color: var(--color-base, #202122);
     padding: 2px 0.5em 3px;
     white-space: nowrap;
     display: block;
@@ -349,17 +350,17 @@
     &:hover,
     &:focus {
       text-decoration: none;
-      color: #222;
+      color: var(--color-base, #202122);
 
-      // As with toolbar buttons
-      background-color: rgba(0, 23, 70, 0.086);
+      // --background-color-interactive indistinguishable in dark mode
+      background-color: var(--background-color-disabled-subtle, #eaecf0);
     }
   }
 }
 
 .cd-toolbarPlaceholder {
-  background-color: #f8f9fa;
-  border-color: #a2a9b1;
+  background-color: var(--background-color-interactive-subtle, #f8f9fa);
+  border-color: var(--border-color-base, #a2a9b1);
   border-width: 1px 1px 0;
   border-style: solid;
   height: 2.2857143em;
@@ -367,7 +368,7 @@
 
   .cd-commentForm-pending & {
     // To match the color of the rest of the borders while the form is the pending state.
-    border-color: #c8ccd1;
+    border-color: var(--border-color-disabled, #c8ccd1);
   }
 }
 
@@ -397,7 +398,7 @@
 }
 
 .cd-input-acceptFile.cd-input-acceptFile textarea {
-  background-color: #eaf3ff;
+  background-color: var(--background-color-progressive-subtle, #eaf3ff);
 }
 
 .cd-uploadDialog-typeFieldset {
@@ -414,5 +415,5 @@
 }
 
 .tool-button.highlight:not(:hover) {
-  background-color: #eaf3ff;
+  background-color: var(--background-color-progressive-subtle, #eaf3ff);
 }

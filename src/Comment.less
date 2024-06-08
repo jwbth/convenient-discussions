@@ -39,7 +39,7 @@
 
 .cd-comment-button {
   &-label.cd-comment-button-label.cd-comment-button-label {
-    color: #54595d;
+    color: var(--color-subtle, #54595d);
     text-decoration: none;
 
     &:hover {
@@ -55,32 +55,19 @@
     display: inline-block;
     align-self: center;
     margin-bottom: -1px;
-    width: 16px;
-    height: 16px;
-    background-size: 16px 16px;
   }
 
-  &-goToParent {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%23a2a9b1'%3E%3Cpath d='M10 5l8 10H2z'/%3E%3C/g%3E%3C/svg%3E");
-
-    &:hover {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%230645ad'%3E%3Cpath d='M10 5l8 10H2z'/%3E%3C/g%3E%3C/svg%3E");
-    }
-
-    &:active {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%23faa700'%3E%3Cpath d='M10 5l8 10H2z'/%3E%3C/g%3E%3C/svg%3E");
-    }
-  }
-
+  &-goToParent,
   &-goToChild {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%23a2a9b1'%3E%3Cpath d='M10 15L2 5h16z'/%3E%3C/g%3E%3C/svg%3E");
+    color: var(--border-color-base, #a2a9b1);
 
     &:hover {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%230645ad'%3E%3Cpath d='M10 15L2 5h16z'/%3E%3C/g%3E%3C/svg%3E");
+      color: var(--color-progressive, #36c);
     }
 
     &:active {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Cg fill='%23faa700'%3E%3Cpath d='M10 15L2 5h16z'/%3E%3C/g%3E%3C/svg%3E");
+      // TODO: replace with a CSS variable once it becomes available
+      color: #faa700;
     }
   }
 }
@@ -131,7 +118,9 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
 .cd-commentLevel:not(ol) > dd {
   padding-inline: 1em 0;
   margin-inline: 1em 0;
-  border-inline-start: 1px solid #c8ccd1;
+  border-inline-start-color: var(--border-color-subtle, #c8ccd1);
+  border-inline-start-style: solid;
+  border-inline-start-width: 1px;
   border-inline-end: 0;
 }
 
@@ -189,12 +178,12 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
     cursor: pointer;
 
     .cd-thread-line {
-      background-color: #72777d;
+      background-color: var(--border-color-interactive, #72777d);
       opacity: 1;
       transition: opacity 0.2s ease-in;
 
       &-extended::after {
-        background-image: linear-gradient(to bottom, #72777d, transparent);
+        background-image: linear-gradient(to bottom, var(--border-color-interactive, #72777d), transparent);
       }
     }
   }
@@ -216,7 +205,7 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
 
 .cd-changeNote {
   font-size: 85%;
-  color: #54595d;
+  color: var(--color-subtle, #54595d);
 
   .cd-reformattedComments & {
     font-size: 100%;
@@ -233,5 +222,5 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
 }
 
 .cd-signature .cd-timestamp {
-  color: #54595d;
+  color: var(--color-subtle, #54595d);
 }

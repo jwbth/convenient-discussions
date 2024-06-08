@@ -667,19 +667,6 @@ export default {
     const gradientUserStart = cd.g.userDirection === 'ltr' ? 'to left' : 'to right';
 
     mw.loader.addStyleTag(`:root {
-  --cd-comment-hovered-background-color: #f8f9fa;
-  --cd-comment-target-marker-color: #fc3;
-  --cd-comment-target-background-color: #fef6e7;
-  --cd-comment-target-hovered-background-color: #fef2db;
-  --cd-comment-new-marker-color: #00af89;
-  --cd-comment-new-background-color: #edffed;
-  --cd-comment-new-hovered-background-color: #e4ffe4;
-  --cd-comment-own-marker-color: #9f33cc;
-  --cd-comment-own-background-color: #faf3fc;
-  --cd-comment-own-hovered-background-color: #f7edfb;
-  --cd-comment-deleted-marker-color: #d33;
-  --cd-comment-deleted-background-color: #fee7e6;
-  --cd-comment-deleted-hovered-background-color: #fddbd9;
   --cd-comment-fallback-side-margin: ${cd.g.commentFallbackSideMargin}px;
   --cd-comment-marker-width: ${cd.g.commentMarkerWidth}px;
   --cd-thread-line-side-padding: ${cd.g.threadLineSidePadding}px;

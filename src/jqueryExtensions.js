@@ -7,6 +7,7 @@
 import cd from './cd';
 import controller from './controller';
 import { defined, isMetadataNode, sleep } from './utils-general';
+import { createSvg } from './utils-window';
 
 /**
  * Merge many jQuery objects into one. Works like {@link https://api.jquery.com/add/ .add()}, but
@@ -21,7 +22,7 @@ import { defined, isMetadataNode, sleep } from './utils-general';
  */
 $.cdMerge = function (...arrayOfJquery) {
   return $($.map(arrayOfJquery.filter(defined), ($object) => $object.get()));
-}
+};
 
 /**
  * jQuery. See {@link external:jQuery.fn jQuery.fn} for extensions.
@@ -220,7 +221,12 @@ export default {
 
     const $closeButton = $('<a>')
       .attr('title', cd.s('cf-block-close'))
-      .addClass('cd-closeButton')
+      .append(
+        createSvg(20, 20).html(
+          `<path d="M4.34 2.93l12.73 12.73-1.41 1.41L2.93 4.35z" /><path d="M17.07 4.34L4.34 17.07l-1.41-1.41L15.66 2.93z" />
+        `)
+      )
+      .addClass('cd-closeButton cd-icon')
       .on('click', () => {
         this.empty();
       });

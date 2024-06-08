@@ -7,6 +7,33 @@
   }
 }
 
+:root {
+  --cd-comment-hovered-background-color: var(--background-color-interactive-subtle, #f8f9fa);
+  --cd-comment-target-marker-color: var(--color-warning, #edab00);
+  --cd-comment-target-background-color: var(--background-color-warning-subtle, #fef6e7);
+  --cd-comment-target-hovered-background-color: #fdf0d8;
+  --cd-comment-new-marker-color: #00af89;
+  --cd-comment-new-background-color: #edffed;
+  --cd-comment-new-hovered-background-color: #dcffdc;
+  --cd-comment-own-marker-color: #9f33cc;
+  --cd-comment-own-background-color: #faf3fc;
+  --cd-comment-own-hovered-background-color: #f6eafa;
+  --cd-comment-deleted-marker-color: var(--color-destructive, #d73333);
+  --cd-comment-deleted-background-color: var(--background-color-destructive-subtle, #fee7e6);
+  --cd-comment-deleted-hovered-background-color: #fddbd9;
+}
+
+html.skin-theme-clientpref-night {
+  --cd-comment-target-hovered-background-color: #3d2500;
+  --cd-comment-new-marker-color: #008000;
+  --cd-comment-new-background-color: #002600;
+  --cd-comment-new-hovered-background-color: #003000;
+  // --cd-comment-own-marker-color: #9f33cc;
+  --cd-comment-own-background-color: #2e0d38;
+  --cd-comment-own-hovered-background-color: #3c1149;
+  --cd-comment-deleted-hovered-background-color: #521615;
+}
+
 /*
   The hierarchy of layer types (starting with the highest priority):
   1. Target
@@ -145,7 +172,7 @@
   inset-inline-start: -1px;
   width: calc(1px / var(--cd-pixel-deviation-ratio-for-1px));
   height: 100%;
-  background-color: #c8ccd1;
+  background-color: var(--border-color-subtle, #c8ccd1);
 }
 
 .cd-comment-button-ooui.cd-comment-button-ooui {

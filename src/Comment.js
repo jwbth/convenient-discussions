@@ -21,7 +21,7 @@ import { addToArrayIfAbsent, areObjectsEqual, buildEditSummary, calculateWordOve
 import { showConfirmDialog } from './utils-oojs';
 import { formatDate, formatDateNative } from './utils-timestamp';
 import { extractArabicNumeral, extractSignatures, removeWikiMarkup } from './utils-wikitext';
-import { getExtendedRect, getHigherNodeAndOffsetInSelection, getVisibilityByRects, wrapDiffBody, wrapHtml } from './utils-window';
+import { createSvg, getExtendedRect, getHigherNodeAndOffsetInSelection, getVisibilityByRects, wrapDiffBody, wrapHtml } from './utils-window';
 
 /**
  * Class representing a comment (any signed, and in some cases unsigned, text on a wiki talk page).
@@ -688,9 +688,14 @@ class Comment extends CommentSkeleton {
        */
       this.goToParentButton = new CommentButton({
         tooltip: cd.s('cm-gotoparent-tooltip'),
-        classes: ['cd-comment-button-icon', 'cd-comment-button-goToParent'],
+        classes: ['cd-comment-button-icon', 'cd-comment-button-goToParent', 'cd-icon'],
         action,
       });
+      $(this.goToParentButton.element).append(
+        createSvg(16, 16, 20, 20).html(
+          `<path d="M10 5l8 10H2z" />`
+        )
+      );
 
       this.headerElement.appendChild(this.goToParentButton.element);
     } else {
@@ -718,8 +723,13 @@ class Comment extends CommentSkeleton {
        */
       this.goToChildButton = new CommentButton({
         tooltip: cd.s('cm-gotochild-tooltip'),
-        classes: ['cd-comment-button-icon', 'cd-comment-button-goToChild'],
+        classes: ['cd-comment-button-icon', 'cd-comment-button-goToChild', 'cd-icon'],
       });
+      $(this.goToParentButton.element).append(
+        createSvg(16, 16, 20, 20).html(
+          `<path d="M10 15L2 5h16z" />`
+        )
+      );
 
       const referenceNode = this.headerElement.lastChild;
       this.headerElement.insertBefore(this.goToChildButton.element, referenceNode?.nextSibling);
