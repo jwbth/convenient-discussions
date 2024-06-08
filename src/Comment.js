@@ -1,6 +1,7 @@
 import Button from './Button';
 import CdError from './CdError';
 import CommentButton from './CommentButton';
+import CommentForm from './CommentForm';
 import CommentSkeleton from './CommentSkeleton';
 import CommentSource from './CommentSource';
 import CommentSubitemList from './CommentSubitemList';
@@ -16,7 +17,7 @@ import controller from './controller';
 import settings from './settings';
 import userRegistry from './userRegistry';
 import { handleApiReject, loadUserGenders, parseCode } from './utils-api';
-import { addToArrayIfAbsent, areObjectsEqual, calculateWordOverlap, countOccurrences, decodeHtmlEntities, defined, getHeadingLevel, isInline, removeFromArrayIfPresent, sleep, underlinesToSpaces, unique } from './utils-general';
+import { addToArrayIfAbsent, areObjectsEqual, buildEditSummary, calculateWordOverlap, countOccurrences, decodeHtmlEntities, defined, getHeadingLevel, isInline, removeFromArrayIfPresent, sleep, underlinesToSpaces, unique } from './utils-general';
 import { showConfirmDialog } from './utils-oojs';
 import { formatDate, formatDateNative } from './utils-timestamp';
 import { extractArabicNumeral, extractSignatures, removeWikiMarkup } from './utils-wikitext';
@@ -2800,7 +2801,15 @@ class Comment extends CommentSkeleton {
     }
 
     if (commentRegistry.getByIndex(this.index + 1)?.isOutdented && this.section) {
-      this.section.reply({ outdentNotice: true });
+      this.section.reply({
+        outdentNotice: true,
+        summary: buildEditSummary({
+          text: CommentForm.prototype.generateStaticSummaryText('reply', this),
+          section: this.getRelevantSection()?.headline,
+          addPostfix: false,
+        }),
+        summaryAltered: true,
+      });
       let selection = window.getSelection();
       if (selection.type !== 'Range') {
         const range = document.createRange();

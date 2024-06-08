@@ -3349,24 +3349,25 @@ class CommentForm {
   }
 
   /**
-   * Generate the _static_ part of the automatic text for the edit summary, excluding the section
-   * headline.
+   * _For internal use._ Generate the _static_ part of the automatic text for the edit summary,
+   * excluding the section headline.
    *
+   * @param {string} [mode=this.mode]
+   * @param {Comment|import('./Section').default|import('./pageRegistry').Page} [target=this.target]
    * @returns {string}
-   * @private
    */
-  generateStaticSummaryText() {
+  generateStaticSummaryText(mode = this.mode, target = this.target) {
     // FIXME: distribute this across the classes of targets? Not sure this belongs here.
-    switch (this.mode) {
+    switch (mode) {
       case 'reply': {
-        if (this.target.isOpeningSection) {
+        if (target.isOpeningSection) {
           return cd.s('es-reply');
         } else {
-          this.target.maybeRequestAuthorGender(this.updateAutoSummary.bind(this));
-          return this.target.isOwn ?
+          target.maybeRequestAuthorGender(this.updateAutoSummary.bind(this));
+          return target.isOwn ?
             cd.s('es-addition') :
             removeDoubleSpaces(
-              cd.s('es-reply-to', this.target.author.getName(), this.target.author)
+              cd.s('es-reply-to', target.author.getName(), target.author)
             );
         }
       }
@@ -3376,9 +3377,9 @@ class CommentForm {
         // an umbrella function.
         const editOrDeleteText = (action) => {
           let subject;
-          let realTarget = this.target;
-          if (this.target.isOwn) {
-            const targetParent = this.target.getParent();
+          let realTarget = target;
+          if (target.isOwn) {
+            const targetParent = target.getParent();
             if (targetParent) {
               if (targetParent.level === 0) {
                 subject = 'reply';
@@ -3388,17 +3389,17 @@ class CommentForm {
                 realTarget = targetParent;
               }
             } else {
-              if (this.target.isOpeningSection) {
+              if (target.isOpeningSection) {
                 subject = this.targetSection.getParent() ? 'subsection' : 'topic';
               } else {
                 subject = 'comment';
               }
             }
           } else {
-            if (this.target.isOpeningSection) {
+            if (target.isOpeningSection) {
               subject = this.targetSection.getParent() ? 'subsection' : 'topic';
             } else {
-              this.target.maybeRequestAuthorGender(this.updateAutoSummary.bind(this));
+              target.maybeRequestAuthorGender(this.updateAutoSummary.bind(this));
               subject = 'comment-by';
             }
           }
