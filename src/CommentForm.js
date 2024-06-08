@@ -1950,6 +1950,21 @@ class CommentForm {
     }
     let defaultUserNames = commentsInSection
       .map((comment) => comment.author)
+      .concat(
+        // User links in the section
+        commentsInSection.flatMap((comment) => (
+          comment.$elements
+            .find('a')
+            .filter((i, el) => (
+              cd.g.userLinkRegexp.test(el.title) &&
+              !el.closest(settings.get('reformatComments') ? '.cd-comment-author' : '.cd-signature')
+            ))
+            .get()
+            .map((el) => Parser.processLink(el)?.userName)
+            .filter(defined)
+            .map((userName) => userRegistry.get(userName))
+        ))
+      )
       .concat(pageOwner)
       .filter(defined)
       .sort((u1, u2) => u2.isRegistered() - u1.isRegistered() || (u2.name > u1.name ? -1 : 1))
