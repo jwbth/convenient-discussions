@@ -333,6 +333,7 @@
 	"sd-autopreview": "Afficher un aperçu du commentaire pendant la saisie.",
 	"sd-collapsethreadslevel": "Réduire automatiquement les fils au niveau",
 	"sd-collapsethreadslevel-help": "0 pour ne jamais réduire automatiquement.",
+	"sd-counteditsasnewcomments": "Inclure les modifications apportées aux commentaires existants dans le nombre de commentaires invisibles dans le panneau de navigation",
 	"sd-desktopnotifications": "Notifications de bureau",
 	"sd-desktopnotifications-radio-all": "Me notifier des réponses à mes commentaires et à ceux sur des sujets auxquels je suis abonné{{GENDER:$1||e}}.",
 	"sd-desktopnotifications-radio-tome": "Me notifier des réponses à mes commentaires seulement.",
