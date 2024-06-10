@@ -425,7 +425,7 @@
   "ud-preset-mediawikiscreenshot": "This is a screenshot of the MediaWiki software (e.g. user interface)",
   "ud-preset-ownwork": "This is my own work",
   "ud-preset-no": "No preset",
-  "ud-configure": "Configure the contents of all the input fields",
+  "ud-configure": "Configure the contents of all input fields",
   "ud-source": "Source",
   "ud-author": "Author",
   "ud-license": "License, in wikitext format",
