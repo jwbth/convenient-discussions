@@ -721,10 +721,10 @@ class CommentSkeleton {
 
               !(
                 // Cases like the table added at https://ru.wikipedia.org/?diff=115822931
-                node.tagName !== 'TABLE' ||
+                node.tagName === 'TABLE' ||
 
                 // Cases like the welcome template at https://en.wikipedia.org/wiki/User_talk:Carver1889
-                node.getAttribute('style').includes('background-')
+                node.getAttribute('style')?.includes('background-')
               )
             ) ||
 
