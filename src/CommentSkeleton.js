@@ -719,8 +719,13 @@ class CommentSkeleton {
               firstForeignComponentAfter &&
               node.contains(firstForeignComponentAfter) &&
 
-              // Cases like the table added at https://ru.wikipedia.org/?diff=115822931
-              node.tagName !== 'TABLE'
+              !(
+                // Cases like the table added at https://ru.wikipedia.org/?diff=115822931
+                node.tagName !== 'TABLE' ||
+
+                // Cases like the welcome template at https://en.wikipedia.org/wiki/User_talk:Carver1889
+                node.getAttribute('style').includes('background-')
+              )
             ) ||
 
             // A heading can be wrapped into an element, like at
