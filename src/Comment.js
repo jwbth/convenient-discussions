@@ -14,6 +14,7 @@ import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
+import navPanel from './navPanel';
 import settings from './settings';
 import userRegistry from './userRegistry';
 import { handleApiReject, loadUserGenders, parseCode } from './utils-api';
@@ -29,6 +30,12 @@ import { createSvg, getExtendedRect, getHigherNodeAndOffsetInSelection, getVisib
  * @augments CommentSkeleton
  */
 class Comment extends CommentSkeleton {
+  // For autocomplete
+  /**
+   * @type {import('./Thread').default}
+   */
+  thread;
+
   /**
    * Create a comment object.
    *
@@ -2416,26 +2423,35 @@ class Comment extends CommentSkeleton {
 
     if (this.isCollapsed) {
       this.getVisibleExpandNote().cdScrollTo(alignment || 'top', smooth, callback);
-      const notification = mw.notification.notify(
-        wrapHtml(cd.sParse('navpanel-firstunseen-hidden'), {
-          callbacks: {
-            'cd-notification-expandThread': () => {
-              this.scrollTo({
-                smooth,
-                expandThreads: true,
-                flash,
-                pushState,
-                callback,
-              });
-              notification.close();
-            },
+      const $message = wrapHtml(cd.sParse('navpanel-firstunseen-hidden', '$1', cd.s('dot-separator')), {
+        callbacks: {
+          'cd-notification-expandThread': () => {
+            this.scrollTo({
+              smooth,
+              expandThreads: true,
+              flash,
+              pushState,
+              callback,
+            });
+            notification.close();
           },
-        }),
-        {
-          title: cd.s('navpanel-firstunseen-hidden-title'),
-          tag: 'cd-commentInCollapsedThread',
-        }
-      );
+          'cd-notification-markThreadAsRead': () => {
+            this.thread.getComments().forEach((c) => {
+              c.isSeen = true;
+            });
+            commentRegistry.emit('registerSeen');
+            notification.close();
+            navPanel.goToFirstUnseenComment();
+          },
+        },
+      });
+      if (this.isSeen) {
+        $message.find('.cd-notification-markThreadAsRead-wrapper').remove();
+      }
+      const notification = mw.notification.notify($message, {
+        title: cd.s('navpanel-firstunseen-hidden-title'),
+        tag: 'cd-commentInCollapsedThread',
+      });
     } else {
       const offset = this.getOffset({ considerFloating: true });
       (this.editForm?.$element || this.$elements).cdScrollIntoView(

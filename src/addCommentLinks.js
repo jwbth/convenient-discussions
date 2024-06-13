@@ -638,6 +638,7 @@ function processDiff($diff) {
             comment.scrollTo({
               smooth: false,
               pushState: true,
+              expandThreads: true,
             });
           };
         }

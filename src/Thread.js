@@ -1052,6 +1052,15 @@ class Thread {
     this.clickArea = this.clickAreaOffset = this.line = null;
   }
 
+  /**
+   * Get all comments in the thread.
+   *
+   * @returns {import('./Comment').default[]}
+   */
+  getComments() {
+    return commentRegistry.getAll().slice(this.rootComment.index, this.lastComment.index + 1);
+  }
+
   static isInited = false;
   static navMode = false;
 
