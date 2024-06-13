@@ -430,11 +430,18 @@ class BootProcess {
    * @private
    */
   deactivateDtHighlight() {
-    const highlighter = mw.loader.moduleRegistry['ext.discussionTools.init']
-      ?.packageExports['highlighter.js'];
-    if (highlighter) {
-      highlighter.highlightTargetComment = () => { };
-      highlighter.clearHighlightTargetComment = () => { };
+    const deactivate = () => {
+      const highlighter = mw.loader.moduleRegistry['ext.discussionTools.init']
+        ?.packageExports['highlighter.js'];
+      if (highlighter) {
+        highlighter.highlightTargetComment = () => {};
+        highlighter.clearHighlightTargetComment = () => {};
+      }
+    };
+    if (mw.loader.getState('ext.discussionTools.init') === 'loading') {
+      mw.loader.using('ext.discussionTools.init').then(deactivate);
+    } else {
+      deactivate();
     }
   }
 
