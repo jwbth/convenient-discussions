@@ -416,7 +416,7 @@
 	"error-nodata": "בתגובת השרת חסרים הנתונים המבוקשים.",
 	"error-unknown": "שגיאה לא ידועה.",
 	"error-javascript": "אירעה שגיאת JavaScript. ר' פרטים על מסוף ה־JavaScipt (‏F12 ← מסוף ''או'' Console).",
-	"error-locatecomment": "לא ניתן למצוא את התגובה בקוד. זה יכול לקרות בגלל סיבוך בקוד המקור, בעיה בסקריפט, או כי התגובה נמחקה או נערכה בצורה משמעותית. ניתן לנסות <span class=\"cd-message-editSection\">[$1 לערוך את המקור בדרך הרגילה]</span> או <span class=\"cd-message-reloadPage\">[[$2|לרענן את הדף]]</span>.",
+	"error-locatecomment": "לא ניתן למצוא את התגובה בקוד. זה יכול לקרות בגלל סיבוך בקוד המקור, בגלל בעיה בסקריפט או כי התגובה נמחקה או נערכה בצורה משמעותית. ניתן לנסות <span class=\"cd-message-editSection\">[$1 לערוך את המקור בדרך הרגילה]</span> או <span class=\"cd-message-reloadPage\">[[$2|לרענן את הדף]]</span>.",
 	"error-locatesection": "לא ניתן למצוא את התגובה בקוד. זה יכול לקרות בגלל סיבוך בקוד המקור, בעיה בסקריפט, או כי התגובה נמחקה. ניתן לנסות <span class=\"cd-message-editPage\">[$1 לערוך את קוד המקור של הדף בדרך הרגילה]</span> או <span class=\"cd-message-reloadPage\">[[$2|לרענן את הדף]]</span>.",
 	"error-spamblacklist": "ניסיון להוסיף קישור חיצוני לאתר $1 מהרשימה השחורה. הדף לא נערך.",
 	"error-titleblacklist": "שם הדף נמצא ברשימה השחורה. הדף לא נערך.",
