@@ -41,7 +41,7 @@ export function wrapHtml(html, options = {}) {
       if (/\$\d$/.test($link.attr('href'))) {
         // Handle dummy links we put into strings for translation so that translators understand
         // this will be a link.
-        $link.attr('href', '').removeAttr('title');
+        $link.removeAttr('href').removeAttr('title');
       } else if (!$link.length) {
         $link = $linkWrapper.wrapInner('<a>').children().first();
       }
