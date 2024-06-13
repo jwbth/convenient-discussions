@@ -862,8 +862,8 @@ export default {
    * @private
    */
   handlePopState() {
-    // Use `popstate`, not `hashchange`, because we need to handle cases when the user clicks a
-    // link with the same fragment as is in the URL.
+    // Use `popstate`, not `hashchange`, because we need to handle cases when the user clicks a link
+    // with the same fragment as is in the URL.
     try {
       this.emit('popState', decodeURIComponent(location.hash.slice(1)));
     } catch (e) {

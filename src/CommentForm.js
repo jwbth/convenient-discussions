@@ -679,7 +679,12 @@ class CommentForm {
       popup: {
         head: false,
         $content: wrapHtml(
-          cd.sParse('cf-help-content', cd.config.mentionCharacter, cd.g.cmdModifier),
+          cd.sParse(
+            'cf-help-content',
+            cd.config.mentionCharacter,
+            cd.g.cmdModifier,
+            cd.s('dot-separator')
+          ),
           {
             tagName: 'div',
             targetBlank: true,
