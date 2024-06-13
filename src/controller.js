@@ -1372,14 +1372,23 @@ export default {
    * @private
    */
   connectToCommentLinks($content) {
-    if (!$content.is('#mw-content-text, .cd-commentForm-preview')) return;
+    if (!$content.is('#mw-content-text, .cd-commentForm-previewArea')) return;
 
+    const goToCommentUrl = mw.util.getUrl('Special:GoToComment/');
+    const extractCommentId = (el) => (
+      $(el).attr('href').replace(mw.util.escapeRegExp(goToCommentUrl), '#').slice(1)
+    );
     $content
-      .find(`a[href^="#"]`)
-      .filter((i, el) => !el.onclick && Comment.isAnyId($(el).attr('href').slice(1)))
+      .find(`a[href^="#"], a[href^="${goToCommentUrl}"]`)
+      .filter((i, el) => (
+        // Added by us in other places
+        !el.onclick &&
+
+        commentRegistry.getByAnyId(extractCommentId(el), true)
+      ))
       .on('click', function (e) {
         e.preventDefault();
-        commentRegistry.getByAnyId($(this).attr('href').slice(1), true)?.scrollTo({
+        commentRegistry.getByAnyId(extractCommentId(this), true)?.scrollTo({
           expandThreads: true,
           pushState: true,
         });
