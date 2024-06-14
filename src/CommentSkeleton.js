@@ -649,7 +649,13 @@ class CommentSkeleton {
             !treeWalker.currentNode.textContent.trim() &&
             treeWalker.previousSibling()
           );
-          if (isInline(treeWalker.currentNode, true)) {
+          if (
+            isInline(treeWalker.currentNode, true) ||
+
+            // Cases like
+            // https://en.wikipedia.org/w/index.php?title=User_talk:MBHbot&oldid=1228999533#c-1AmNobody24-20240614071000-June_2024
+            previousPart.node.getAttribute('style')?.includes('background-')
+          ) {
             treeWalker.currentNode = parentNode;
             break;
           }
