@@ -13,7 +13,14 @@
 .cd-section-button.cd-section-button.cd-section-button,
 .cd-thread-button.cd-thread-button.cd-thread-button.cd-thread-button {
   direction: var(--cd-direction-user);
-  display: block;
+
+  // Use `flex`, not `block`, to prevent overlapping with floating elements, e.g. with the year list
+  // in https://ru.wikipedia.org/w/index.php?title=Обсуждение_проекта:Музыка&oldid=138075138. An
+  // alternative would be to set `overflow: hidden` or `display: flow-root` to
+  // .cd-section-button-container and .cd-replyButtonWrapper (just as like for
+  // .cd-thread-button-container), but need to deal with disappeared margin collapsing then.
+  display: flex;
+
   margin-inline-start: -1px;
 
   > .oo-ui-buttonElement-button {
