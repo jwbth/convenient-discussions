@@ -533,7 +533,10 @@ export function createSvg(width, height, viewBoxWidth = width, viewBoxHeight = h
     .attr('width', width)
     .attr('height', height)
     .attr('viewBox', `0 0 ${viewBoxWidth} ${viewBoxHeight}`)
-    .attr('aria-hidden', 'true');
+    .attr('aria-hidden', 'true')
+
+    // https://en.wikipedia.org/wiki/Project:Dark_mode_(gadget)
+    .addClass('mw-invert');
 }
 
 /**
