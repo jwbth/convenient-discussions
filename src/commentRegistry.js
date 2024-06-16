@@ -755,7 +755,9 @@ export default {
     Object.keys(pagesExistence).forEach((name) => {
       pageNamesToLinks[name].forEach((link) => {
         link.title = pagesExistence[name].normalized;
-        if (!pagesExistence[name].exists) {
+        if (pagesExistence[name].exists) {
+          link.href = mw.util.getUrl(pagesExistence[name].normalized);
+        } else {
           link.classList.add('new');
           link.href = mw.util.getUrl(name, {
             action: 'edit',
