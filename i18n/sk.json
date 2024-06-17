@@ -339,7 +339,6 @@
 	"move-sourcepagecode": "Presunuté do [[$1]]. $2",
 	"move-targetpagecode": "Presunuté z [[$1]]. $2",
 	"error-loaddata": "{{int:convenient-discussions-script-name}}: Nepodarilo sa načítať údaje potrebné pre skript.",
-	"error-needreloadpage": "Chyba API. Prosím <span class=\"cd-notification-reloadPage\">načítajte stránku znova</span> a skúste zase.",
 	"error-processpage": "{{int:convenient-discussions-script-name}}: Nepodarilo sa spracovať stránku. Pozrite si detaily v konzole JavaScript (F12 pre konzolu).",
 	"error-settings-load": "{{int:convenient-discussions-script-name}}: Nepodarilo sa načítať nastavenia zo servera.",
 	"error-settings-save": "{{int:convenient-discussions-script-name}}: Nepodarilo sa uložiť nastavenia na server.",

@@ -201,7 +201,6 @@
 	"msd-bottom": "উইন্ডোটি নিষ্ক্রিয় থাকার সময়, পাতায় কোনও হালনাগাদ করা হলে কোডটি ভিন্ন হতে পারে।",
 	"move-targetpagecode": "''[[$1]] থেকে আনা হয়েছে। $2''",
 	"error-loaddata": "{{int:convenient-discussions-script-name}}: স্ক্রিপ্টের জন্য প্রয়োজনীয় উপাত্ত লোড করা যায়নি।",
-	"error-needreloadpage": "এপিআই ত্রুটি। অনুগ্রহ করে <span class=\"cd-notification-reloadPage\">[[$1|পাতাটি পুনরায় লোড করুন]]</span> এবং আবার চেষ্টা করুন।",
 	"error-processpage": "{{int:convenient-discussions-script-name}}: পাতাটি প্রক্রিয়াকরণ করা যায়নি। জাভাস্ক্রিপ্ট কনসোলে বিস্তারিত দেখুন (F12 → কনসোল)।",
 	"error-settings-load": "সার্ভার থেকে সেটিংস লোড করা যায়নি।",
 	"error-settings-save": "সেটিংস সার্ভারে সংরক্ষণ করা যায়নি।",

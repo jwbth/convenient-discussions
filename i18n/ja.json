@@ -382,7 +382,6 @@
 	"move-sourcepagecode": "''この話題は[[$1]]へ移動されました。$2''",
 	"move-targetpagecode": "''この話題は[[$1]]から移動されました。$2''",
 	"error-loaddata": "{{int:convenient-discussions-script-name}}: スクリプトが要求したデータを読み込めませんでした。",
-	"error-needreloadpage": "APIエラーが発生しました。<span class=\"cd-notification-reloadPage\">[[$1|ページをリロード]]</span>し、再度お試しください。",
 	"error-processpage": "{{int:convenient-discussions-script-name}}: ページを処理できませんでした。ブラウザコンソールで詳細を確認できます。(F12 → Console)",
 	"error-settings-load": "{{int:convenient-discussions-script-name}}: サーバーから設定を取得できませんでした。",
 	"error-settings-save": "{{int:convenient-discussions-script-name}}: 設定をサーバーに保存できませんでした。",

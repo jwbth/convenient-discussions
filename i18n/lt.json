@@ -335,7 +335,6 @@
 	"msd-bottom": "Kodas gali skirtis, jei puslapis būtų atnaujintas, kai langas neveikia.",
 	"move-sourcepagecode": "''Perkelta į [[$1]]. $2''",
 	"move-targetpagecode": "''Perkelta iš [[$1]]. $2''",
-	"error-needreloadpage": "API klaida. Prašome <span class=\"cd-notification-reloadPage\">[[$1|iš naujo įkelti puslapį]]</span> ir bandyti dar kartą.",
 	"error-processpage": "{{int:convenient-discussions-script-name}}: Nepavyko apdoroti puslapio. Išsamią informaciją žiūrėkite „JavaScript“ konsolėje (F12 → Konsolė).",
 	"error-settings-load": "{{int:convenient-discussions-script-name}}: Nepavyko įkelti nustatymų iš serverio.",
 	"error-settings-save": "{{int:convenient-discussions-script-name}}: Nepavyko išsaugoti nustatymų serveryje.",

@@ -419,7 +419,6 @@
 	"ud-license": "许可协议，wikitext格式",
 	"ud-uploadandsave": "上传并保存",
 	"error-loaddata": "{{int:convenient-discussions-script-name}}：无法加载脚本所需的数据。",
-	"error-needreloadpage": "API错误。请<span class=\"cd-notification-reloadPage\">[[$1|重新加载页面]]</span>并重试。",
 	"error-processpage": "{{int:convenient-discussions-script-name}}：无法处理页面。请在 JavaScript 控制台查看详细信息（F12 → 控制台）。",
 	"error-settings-load": "{{int:convenient-discussions-script-name}}：无法加载来自服务器的设置。",
 	"error-settings-save": "{{int:convenient-discussions-script-name}}：无法将设置保存到服务器。",

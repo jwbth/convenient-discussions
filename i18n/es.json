@@ -330,7 +330,6 @@
 	"ud-configure": "Configurar el contenido de todos los campos de entrada.",
 	"ud-license": "Plantilla de licencia",
 	"error-loaddata": "{{int:convenient-discussions-script-name}}: No se pudieron cargar los datos solicitados por el script.",
-	"error-needreloadpage": "Error de la API. <span class=\"cd-notification-reloadPage\">Recarga la página</span> e inténtalo de nuevo.",
 	"error-processpage": "{{int:convenient-discussions-script-name}}: No pudo procesar la página. Ve los detalles en la consola JavaScript (F12 → Consola)",
 	"error-settings-load": "No se pudieron cargar las configuraciones desde el servidor.",
 	"error-settings-save": "No se pudieron guardar las configuraciones en el servidor.",

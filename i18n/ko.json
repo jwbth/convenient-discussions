@@ -202,7 +202,6 @@
 	"msd-error-editingsourcepage": "원본 문서를 편집하지 못했습니다. 수동으로 편집해야 합니다.",
 	"msd-moved": "주제가 성공적으로 이동되었습니다. [[$1|주제가 이동된 문서]]로 방문할 수 있습니다.",
 	"ud-author": "저자",
-	"error-needreloadpage": "API 오류입니다. <span class=\"cd-notification-reloadPage\">문서를 다시 불러온</span> 다음 다시 시도하십시오.",
 	"error-settings-load": "{{int:convenient-discussions-script-name}}: 서버로부터 설정을 로드하지 못했습니다.",
 	"error-settings-save": "{{int:convenient-discussions-script-name}}: 서버로 설정을 저장하지 못했습니다.",
 	"error-reloadpage": "문서를 다시 불러오지 못했습니다.",

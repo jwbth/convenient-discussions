@@ -301,7 +301,6 @@
 	"move-sourcepagecode": "''[[$1]] ile taşı. $2''",
 	"move-targetpagecode": "''[[$1]] üzerinden taşı. $2''",
 	"error-loaddata": "{{int:convenient-discussions-script-name}}: Betiğin gerektirdiği veriler yüklenemedi.",
-	"error-needreloadpage": "API hatası. Lütfen <span class=\"cd-notification-reloadPage\">sayfayı yeniden yükleyin</span> ve tekrar deneyin.",
 	"error-processpage": "{{int:convenient-discussions-script-name}}: Sayfa işlenemedi. JavaScript konsolundaki ayrıntılara bakın (F12 → Console).",
 	"error-settings-load": "Ayarlar sunucudan yüklenemedi.",
 	"error-settings-save": "Ayarlar sunucuya kaydedilemedi.",

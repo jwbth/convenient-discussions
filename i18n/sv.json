@@ -361,7 +361,6 @@
 	"move-sourcepagecode": "''Flyttades till [[$1]]. $2''",
 	"move-targetpagecode": "''Flyttades till [[$1]]. $2''",
 	"error-loaddata": "{{int:convenient-discussions-script-name}}: Kunde inte ladda in datan som skriptet kräver.",
-	"error-needreloadpage": "API-fel. <span class=\"cd-notification-reloadPage\">[[$1|Ladda om sidan]]</span> och försök igen.",
 	"error-processpage": "{{int:convenient-discussions-script-name}}: Kunde inte bearbeta sidan. Se detaljer i JavaScript-konsolen (F12 → Konsol).",
 	"error-settings-load": "{{int:convenient-discussions-script-name}}: Kunde inte ladda in inställningarna från servern.",
 	"error-settings-save": "{{int:convenient-discussions-script-name}}: Kunde inte spara inställningarna till servern.",

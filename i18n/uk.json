@@ -343,7 +343,6 @@
 	"move-sourcepagecode": "''Переміщено на [[$1]]. $2''",
 	"move-targetpagecode": "''Переміщено від [[$1]]. $2''",
 	"error-loaddata": "{{int:convenient-discussions-script-name}}: Не вдалося завантажити дані, необхідні для скрипту.",
-	"error-needreloadpage": "Помилка API. <span class=\"cd-notification-reloadPage\">Перезавантажте сторінку</span> та спробуйте знову.",
 	"error-processpage": "{{int:convenient-discussions-script-name}}: Не вдалося обробити сторінку. Детальніше див. у консолі JavaScript (F12 → Консоль).",
 	"error-settings-load": "Не вдалося завантажити налаштування з сервера.",
 	"error-settings-save": "Не вдалося зберегти налаштування на сервері.",

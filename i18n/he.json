@@ -405,7 +405,6 @@
 	"ud-license": "רישיון, בקוד ויקי",
 	"ud-uploadandsave": "העלאה ושמירה",
 	"error-loaddata": "{{int:convenient-discussions-script-name}}: לא ניתן לטעון את הנתונים שהסקריפט דורש.",
-	"error-needreloadpage": "שגיאת API. נא <span class=\"cd-notification-reloadPage\">[[$1|לרענן את הדף]]</span> ולנסות שוב.",
 	"error-processpage": "{{int:convenient-discussions-script-name}}: לא ניתן לעבד עת הדף. ר' פרטים על מסוף ה־JavaScipt (‏F12 ← מסוף ''או'' Console).",
 	"error-settings-load": "{{int:convenient-discussions-script-name}}: לא ניתן לטעון את ההעדפות מהשרת.",
 	"error-settings-save": "{{int:convenient-discussions-script-name}}: לא ניתן לשמור את ההעדפות בשרת.",

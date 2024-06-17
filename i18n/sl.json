@@ -358,7 +358,6 @@
 	"move-sourcepagecode": "''Prestavljeno na [[$1]]. $2''",
 	"move-targetpagecode": "''Prestavljeno iz [[$1]]. $2''",
 	"error-loaddata": "{{int:convenient-discussions-script-name}}: Podatkov skripta ni bilo mogoče naložiti.",
-	"error-needreloadpage": "Napaka API-ja. <span class=\"cd-notification-reloadPage\">[[$1|Znova naložite stran]]</span> in poskusite znova.",
 	"error-processpage": "{{int:convenient-discussions-script-name}}: Strani ni bilo mogoče obdelati. Glejte podrobnosti v konzoli JavaScripta (F12 → Console).",
 	"error-settings-load": "{{int:convenient-discussions-script-name}}: Nastavitev ni bilo mogoče naložiti iz strežnika.",
 	"error-settings-save": "{{int:convenient-discussions-script-name}}: Nastavitev ni bilo mogoče shraniti v strežnik.",
