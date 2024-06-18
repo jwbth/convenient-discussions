@@ -326,7 +326,6 @@
 	"move-sourcepagecode": "''Movido para [[$1]]. $2''",
 	"move-targetpagecode": "''Movido de [[$1]]. $2''",
 	"error-loaddata": "{{int:convenient-discussions-script-name}}: Não foi possível carregar os dados exigidos pelo script.",
-	"error-needreloadpage": "Erro de API. Por favor <span class=\"cd-notification-reloadPage\">recarregue a página</span> e tente novamente.",
 	"error-processpage": "{{int:convenient-discussions-script-name}}: Não foi possível processar a página. Veja os detalhes no console do JavaScript (F12 → Console).",
 	"error-settings-load": "{{int:convenient-discussions-script-name}}: Não foi possível carregar as configurações do servidor.",
 	"error-settings-save": "{{int:convenient-discussions-script-name}}: Não foi possível salvar as configurações no servidor.",

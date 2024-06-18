@@ -73,6 +73,8 @@
 	"es-edit-addition": "edytuj dodatek",
 	"es-edit-topic": "edycja pierwszego wpisu",
 	"es-edit-subsection": "edycja pierwszego wpisu",
+	"es-edit-comment": "edycja komentarza",
+	"es-edit-comment-by": "edycja komentarza {{gender:$2|}} $1",
 	"es-delete-reply": "usuń odpowiedź",
 	"es-delete-reply-to": "usunięto odpowiedź dla {{gender:$2|}} $1",
 	"es-delete-addition": "usuń dodatek",

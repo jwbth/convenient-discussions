@@ -363,7 +363,6 @@
 	"move-sourcepagecode": "''Đã chuyển sang [[$1]]. $2''",
 	"move-targetpagecode": "''Được chuyển từ [[$1]]. $2''",
 	"error-loaddata": "{{int:convenient-discussions-script-name}}: Không thể tải dữ liệu theo yêu cầu của công cụ.",
-	"error-needreloadpage": "Lỗi API. Xin hãy <span class=\"cd-notification-reloadPage\">[[$1|tải lại trang]]</span> và thử lại.",
 	"error-processpage": "{{int:convenient-discussions-script-name}}: Không thể xử lý trang. Xem chi tiết trong bảng điều khiển JavaScript (F12 → Console).",
 	"error-settings-load": "Không thể tải cài đặt từ máy chủ.",
 	"error-settings-save": "Không thể lưu cài đặt vào máy chủ.",

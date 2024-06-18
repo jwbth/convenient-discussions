@@ -346,7 +346,6 @@
 	"move-sourcepagecode": "[[$1]] पर स्थानांतरित किया। $2",
 	"move-targetpagecode": "[[$1]] से स्थानांतरित किया। $2",
 	"error-loaddata": "{{int:convenient-discussions-script-name}}: स्क्रिप्ट द्वारा अनुरोधित डेटा को लोड न किया जा सका।",
-	"error-needreloadpage": "API त्रुटि। <span class=\"cd-notification-reloadPage\">[[$1|पृष्ठ को पुनः लोड करें]]</span> और पुनः प्रयास करें।",
 	"error-processpage": "{{int:convenient-discussions-script-name}}: पृष्ठ को प्रोसेस न किया जा सका। जावास्क्रिप्ट कंसोल में विस्तार देखें (F12 → Console)।",
 	"error-settings-load": "{{int:convenient-discussions-script-name}}: सर्वर से सेटिंग्स को लोड न किया जा सका।",
 	"error-settings-save": "{{int:convenient-discussions-script-name}}: सर्वर पर सेटिंग्स को सहेजा न जा सका।",

@@ -304,7 +304,6 @@
 	"move-sourcepagecode": "''[[$1]] కు తరలించారు. $2''",
 	"move-targetpagecode": "''[[$1]] నుండి తరలించారు. $2''",
 	"error-loaddata": "{{int:convenient-discussions-script-name}}: స్క్రిప్టుకు అవసరమైన డేటాను లోడు చెయ్యలేకపోయాం.",
-	"error-needreloadpage": "API లోపం. <span class=\"cd-notification-reloadPage\">పేజీని రీలోడు చేసి</span> మళ్ళీ ప్రయత్నించండి.",
 	"error-processpage": "{{int:convenient-discussions-script-name}}: పేజీని ప్రాసెస్ చెయ్యలేకపోయాం. వివరాలను జావాస్క్రిప్టు కన్సోల్‌లో చూడండి (F12 → కన్సోల్).",
 	"error-settings-load": "సర్వరు నుండి సెట్టింగులను లోడు చెయ్యలేకపోయాం.",
 	"error-settings-save": "సెట్టింగులను సర్వరులో భద్రపరచలేకపోయాం.",

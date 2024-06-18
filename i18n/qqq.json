@@ -408,7 +408,6 @@
 	"ud-license": "Label of the text input in the upload dialog.",
 	"ud-uploadandsave": "<b>This message should the combine the messages {{msg-mw|upload-dialog-button-upload}} and {{msg-mw|upload-dialog-button-save}} (in lowercase) into one with the \"and\" conjunction.</b>\n\nLabel of the button in the upload dialog.",
 	"error-loaddata": "Text of the error notification when trying to load the required data on the script load.",
-	"error-needreloadpage": "Text of an error notification that appears when page reload is required for some feature to function.",
 	"error-processpage": "Text of the error notification when trying to process the page the first time.",
 	"error-settings-load": "Text of an error notification. Used as an error message in the move topic dialog.",
 	"error-settings-save": "Text of an error notification. Used as an error message in the move topic dialog.",

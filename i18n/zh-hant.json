@@ -405,7 +405,6 @@
 	"ud-license": "授權條款，以 wikitext 格式",
 	"ud-uploadandsave": "上傳並儲存",
 	"error-loaddata": "{{int:convenient-discussions-script-name}}：無法載入腳本所需要的資料。",
-	"error-needreloadpage": "API 錯誤。請<span class=\"cd-notification-reloadPage\">[[ $1 |重新加載頁面]]</span>並重試。",
 	"error-processpage": "{{int:convenient-discussions-script-name}}：無法處理頁面。要查看更多資訊請開啟 JavaScript 主控台（按 F12 鍵後 → 在 Console 分頁裡）。",
 	"error-settings-load": "{{int:convenient-discussions-script-name}}：無法從服務器加載設置。",
 	"error-settings-save": "{{int:convenient-discussions-script-name}}：無法將設置保存到服務器。",
