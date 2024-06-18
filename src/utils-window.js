@@ -360,11 +360,16 @@ export function cleanUpPasteDom(element, containerElement) {
   }
 
   [...element.querySelectorAll('code.mw-highlight')].forEach((el) => {
+    // eslint-disable-next-line no-self-assign
     el.textContent = el.textContent;
   });
 
   const syntaxHighlightLanguages = [...element.querySelectorAll('pre, code')].map((el) => (
-    (el.parentNode.className.match('mw-highlight-lang-([0-9a-z_-]+)') || [])[1]
+    (
+      (el.tagName === 'PRE' ? el.parentNode : el).className
+        .match('mw-highlight-lang-([0-9a-z_-]+)') ||
+      []
+    )[1]
   ));
 
   [...element.querySelectorAll('div, span, h1, h2, h3, h4, h5, h6')]
