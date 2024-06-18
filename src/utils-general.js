@@ -269,13 +269,13 @@ export function removeDoubleSpaces(string) {
  *
  * @param {string} string
  * @param {number} offset
- * @param {boolean} backwards
+ * @param {boolean} [backwards=false]
  * @returns {string}
  * @author Bartosz Dziewoński <matma.rex@gmail.com>
  * @license MIT
  * @private
  */
-function charAt(string, offset, backwards) {
+function charAt(string, offset, backwards = false) {
   const maybePair = backwards ?
     string.slice(offset - 1, offset + 1) :
     string.slice(offset, offset + 2);
