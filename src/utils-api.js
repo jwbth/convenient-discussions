@@ -410,17 +410,22 @@ export async function convertHtmlToWikitext(html, syntaxHighlightLanguages) {
       wikitext = await requestTransformApi('https://en.wikipedia.org/api/rest_v1/transform/html/to/wikitext', html);
     }
     wikitext = wikitext
-      .replace(/(?:^ .*(?:\n|$))+/gm, (s) => {
-        const lang = syntaxHighlightLanguages.shift() || 'wikitext';
-        return (
-          `<syntaxhighlight lang="${lang}">\n` +
-          s
-            .replace(/^ /gm, '')
-            .replace(/[^\n]$/, '$0\n')
-            .replace(/<nowiki>(.*?)<\/nowiki>/g, '$1') +
-          '</syntaxhighlight>'
-        );
-      })
+      .replace(
+        /(?:^ .*(?:\n|$))+|<code dir="(?:ltr|rtl)">([^]*?)<\/code>/gm,
+        (s, inlineCode) => {
+          const lang = syntaxHighlightLanguages.shift() || 'wikitext';
+          const code = (
+            inlineCode === undefined ?
+              '\n' +
+              s
+                .replace(/^ /gm, '')
+                .replace(/[^\n]$/, '$0\n') :
+              inlineCode
+          ).replace(/<nowiki>([^]*?)<\/nowiki>/g, '$1');
+          const inlineOrNot = inlineCode === undefined ? '' : ' inline';
+          return `<syntaxhighlight lang="${lang}"${inlineOrNot}>${code}</syntaxhighlight>`;
+        }
+      )
       .replace(/<br \/>/g, '<br>')
       .trim();
     wikitext = (new TextMasker(wikitext))

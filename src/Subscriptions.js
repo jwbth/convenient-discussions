@@ -142,7 +142,7 @@ class Subscriptions {
   /**
    * Update the page subscription button label and tooltip.
    *
-   * @private
+   * @protected
    */
   updatePageSubscribeButton() {
     this.pageSubscribeButton

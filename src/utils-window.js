@@ -359,7 +359,11 @@ export function cleanUpPasteDom(element, containerElement) {
     element.append(...topElements);
   }
 
-  const syntaxHighlightLanguages = [...element.querySelectorAll('pre')].map((el) => (
+  [...element.querySelectorAll('code.mw-highlight')].forEach((el) => {
+    el.textContent = el.textContent;
+  });
+
+  const syntaxHighlightLanguages = [...element.querySelectorAll('pre, code')].map((el) => (
     (el.parentNode.className.match('mw-highlight-lang-([0-9a-z_-]+)') || [])[1]
   ));
 
@@ -404,10 +408,12 @@ export function cleanUpPasteDom(element, containerElement) {
 
     .forEach(replaceWithChildren);
 
-  getAllTextNodes(element).forEach((node) => {
-    // Firefox adds newlines of unclear nature
-    node.textContent = node.textContent.replace(/\n/g, ' ');
-  });
+  getAllTextNodes(element)
+    .filter((node) => !node.parentNode.tagName === 'PRE')
+    .forEach((node) => {
+      // Firefox adds newlines of unclear nature
+      node.textContent = node.textContent.replace(/\n/g, ' ');
+    });
 
   // Need to do it before removing the element; if we do it later, the literal textual content of
   // the elements equivalent to .textContent will be used instead of the rendered appearance.
