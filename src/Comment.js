@@ -255,9 +255,10 @@ class Comment extends CommentSkeleton {
    * Process a possible signature node or a node that contains text which is part of a signature.
    *
    * @param {Node} n
+   * @param {boolean} [isSpaced=false] Was the previously removed node start with a space.
    * @private
    */
-  processPossibleSignatureNode(n) {
+  processPossibleSignatureNode(n, isSpaced = false) {
     if (!n) return;
 
     // Remove text at the end of the element that looks like a part of the signature.
@@ -273,7 +274,8 @@ class Comment extends CommentSkeleton {
       n.textContent.length < 30 &&
       (
         (
-          ['SUP', 'SUB'].includes(n.tagName) &&
+          !isSpaced &&
+          (n.getAttribute('style') || ['SUP', 'SUB'].includes(n.tagName)) &&
 
           // Templates like "citation needed" or https://ru.wikipedia.org/wiki/Template:-:
           !n.classList.length
@@ -319,6 +321,12 @@ class Comment extends CommentSkeleton {
     }
 
     const previousPreviousNode = previousNode?.previousSibling;
+
+    // Use this to tell the cases where a styled element should be kept
+    // https://commons.wikimedia.org/?diff=850489596 from cases where it should be removed
+    // https://en.wikipedia.org/?diff=1229675944
+    const isPpnSpaced = previousNode?.textContent.startsWith(' ');
+
     this.processPossibleSignatureNode(previousNode);
     if (
       previousNode &&
@@ -326,11 +334,12 @@ class Comment extends CommentSkeleton {
       (!previousNode.parentNode || !previousNode.textContent.trim())
     ) {
       const previousPreviousPreviousNode = previousPreviousNode.previousSibling;
-      this.processPossibleSignatureNode(previousPreviousNode);
+      const isPppnSpaced = previousPreviousNode?.textContent.startsWith(' ');
+      this.processPossibleSignatureNode(previousPreviousNode, isPpnSpaced);
 
       // Rare cases like https://en.wikipedia.org/?diff=1022471527
       if (!previousPreviousNode.parentNode) {
-        this.processPossibleSignatureNode(previousPreviousPreviousNode);
+        this.processPossibleSignatureNode(previousPreviousPreviousNode, isPppnSpaced);
       }
     }
   }
