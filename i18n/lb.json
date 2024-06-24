@@ -167,6 +167,7 @@
 	"move-sourcepagecode": "\"Geréckelt op [[$1]]. $2\"",
 	"move-targetpagecode": "\"Geréckelt vum [[$1]]. $2\"",
 	"ud-preset-ownwork": "Dëst ass mäin eegent Wierk",
+	"ud-license": "Lizenz, am Wikitext-Format",
 	"error-processpage": "{{int:convenient-discussions-script-name}}: D'Säit konnt net verschafft ginn. Kuckt d'Detailer an der JavaScript Konsole (F12 → Console).",
 	"error-settings-load": "{{int:convenient-discussions-script-name}}: D'Astellunge konnten net vum Server geluede ginn.",
 	"error-settings-save": "{{int:convenient-discussions-script-name}}: D'Astellunge konnten net um Server gespäichert ginn.",
