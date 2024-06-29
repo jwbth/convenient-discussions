@@ -741,7 +741,7 @@ class Comment extends CommentSkeleton {
         tooltip: cd.s('cm-gotochild-tooltip'),
         classes: ['cd-comment-button-icon', 'cd-comment-button-goToChild', 'cd-icon'],
       });
-      $(this.goToChildButton.element). append(
+      $(this.goToChildButton.element).append(
         createSvg(16, 16, 20, 20).html(
           `<path d="M10 15L2 5h16z" />`
         )
@@ -876,11 +876,13 @@ class Comment extends CommentSkeleton {
    * @private
    */
   replyButtonClick() {
-    if (this.replyForm && this.isSelected) {
-      this.fixSelection();
-      this.replyForm.quote(true, this);
-    } else if (this.replyForm) {
-      this.replyForm.cancel();
+    if (this.replyForm) {
+      if (this.isSelected) {
+        this.fixSelection();
+        this.replyForm.quote(true, this);
+      } else {
+        this.replyForm.cancel();
+      }
     } else {
       this.reply();
     }
@@ -2034,7 +2036,7 @@ class Comment extends CommentSkeleton {
    * @private
    */
   async showDiff(olderRevisionId, newerRevisionId, commentsData) {
-    let [revisions, body] = await Promise.all([
+    const [revisions, body] = await Promise.all([
       this.getSourcePage().getRevisions({
         revids: [olderRevisionId, newerRevisionId],
         rvprop: ['content'],

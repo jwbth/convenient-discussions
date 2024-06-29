@@ -12,7 +12,7 @@ import { getUserInfo, saveGlobalOption, saveLocalOption } from './utils-api';
 import { areObjectsEqual, defined, definedAndNotNull, ucFirst } from './utils-general';
 import { showConfirmDialog } from './utils-oojs';
 import { formatDateImproved, formatDateNative, formatDateRelative } from './utils-timestamp';
-import { getFooter, wrapHtml } from './utils-window';
+import { createSvg, getFooter, wrapHtml } from './utils-window';
 
 export default {
   /**
@@ -662,17 +662,6 @@ export default {
       return false;
     }
 
-    const actions = [
-      {
-        label: cd.s('rc-suggestion-yes'),
-        action: 'accept',
-        flags: 'primary',
-      },
-      {
-        label: cd.s('rc-suggestion-no'),
-        action: 'reject',
-      },
-    ];
     const action = await showConfirmDialog(
       $('<div>')
         .append(
@@ -681,11 +670,13 @@ export default {
             .attr('height', 67)
             .attr('src', '//upload.wikimedia.org/wikipedia/commons/0/08/Convenient_Discussions_comment_-_old_format.png')
             .addClass('cd-rcnotice-img'),
-          $('<img>')
-            .attr('width', 30)
-            .attr('height', 30)
-            .attr('src', "data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.58 8.59L11 14.17L11 2L9 2L9 14.17L3.41 8.59L2 10L10 18L18 10L16.58 8.59Z' fill='black'/%3E%3C/svg%3E")
-            .addClass('cd-rcnotice-img cd-rcnotice-arrow'),
+          $('<div>')
+            .addClass('cd-rcnotice-img cd-rcnotice-arrow cd-icon')
+            .append(
+              createSvg(30, 30, 20, 20).html(
+                `<path d="M16.58 8.59L11 14.17L11 2L9 2L9 14.17L3.41 8.59L2 10L10 18L18 10L16.58 8.59Z" />`
+              )
+            ),
           $('<img>')
             .attr('width', 626)
             .attr('height', 118)
@@ -706,7 +697,17 @@ export default {
         .children(),
       {
         size: 'large',
-        actions,
+        actions: [
+          {
+            label: cd.s('rc-suggestion-yes'),
+            action: 'accept',
+            flags: 'primary',
+          },
+          {
+            label: cd.s('rc-suggestion-no'),
+            action: 'reject',
+          },
+        ],
       }
     );
 
@@ -740,20 +741,19 @@ export default {
       // this.maybeSuggestEnableCommentReformatting().
       const { desktopNotifications } = await this.load();
       if (['unknown', undefined].includes(desktopNotifications)) {
-        const actions = [
-          {
-            label: cd.s('dn-confirm-yes'),
-            action: 'accept',
-            flags: 'primary',
-          },
-          {
-            label: cd.s('dn-confirm-no'),
-            action: 'reject',
-          },
-        ];
         const action = await showConfirmDialog(cd.s('dn-confirm'), {
           size: 'medium',
-          actions,
+          actions: [
+            {
+              label: cd.s('dn-confirm-yes'),
+              action: 'accept',
+              flags: 'primary',
+            },
+            {
+              label: cd.s('dn-confirm-no'),
+              action: 'reject',
+            },
+          ],
         });
         let promise;
         if (action === 'accept') {

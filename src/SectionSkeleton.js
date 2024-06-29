@@ -265,6 +265,8 @@ class SectionSkeleton {
     } else {
       lastElement = this.parser.context.rootElement.lastElementChild;
     }
+
+    // Some wrappers that include the section heading added by users
     while (lastElement.contains(this.headingElement) && lastElement !== this.headingElement) {
       lastElement = lastElement.lastElementChild;
     }

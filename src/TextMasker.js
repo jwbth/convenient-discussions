@@ -11,7 +11,7 @@ import { generateTagsRegexp } from './utils-wikitext';
  * 1. Use {@link TextMasker#withText} to make further transformations to the text, unmask it using
  *    {@link TextMasker#unmask} (as opposed to {@link TextMasker#unmaskText}), and get the result
  *    using {@link TextMasker#getText}.
- * 2. Get the text using {@link TextMasker#getText}, work with it, and, in the end, unmask it using
+ * 2. Get the text using {@link TextMasker#getText}, work with it, and in the end, unmask it using
  *    {@link TextMasker#unmaskText}.
  *
  * Note that the methods support chaining, so you can sometimes successfully fit all transformations
@@ -22,7 +22,7 @@ class TextMasker {
    * Create a text masker.
    *
    * @param {string} text
-   * @param {string[]} maskedTexts Array of masked texts to reuse. Use this when you are using the
+   * @param {string[]} [maskedTexts] Array of masked texts to reuse. Use this when you are using the
    *   class with a string that already has masked parts, or you will run into problems.
    */
   constructor(text, maskedTexts) {
@@ -45,7 +45,7 @@ class TextMasker {
    * Replace text matched by a regexp with placeholders.
    *
    * @param {RegExp} regexp
-   * @param {string} type Should consist only of alphanumeric characters.
+   * @param {string} [type] Should consist only of alphanumeric characters.
    * @param {boolean} [useGroups=false] Use the first two capturing groups in the regexp as the
    *   `preText` and `textToMask` parameters. (Used for processing table code.)
    * @returns {TextMasker}
@@ -181,7 +181,7 @@ class TextMasker {
    * @returns {TextMasker}
    */
   maskTags(tags, type) {
-    return this.mask(generateTagsRegexp(tags, false), type);
+    return this.mask(generateTagsRegexp(tags), type);
   }
 
   /**

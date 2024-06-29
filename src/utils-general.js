@@ -776,7 +776,7 @@ export function parseWikiUrl(url) {
     .replace(/_/g, ' ');
   try {
     pageName = decodeURIComponent(pageName);
-  } catch (e) {
+  } catch {
     return null;
   }
   return { pageName, hostname, fragment };

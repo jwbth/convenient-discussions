@@ -25,7 +25,7 @@ if (IS_SINGLE) {
     // Empty
   }
 
-  // Copy of the function in misc/utils.js. If altering it, make sure they are synchronized.
+  // A copy of the function in misc/utils.js. If altering it, make sure they are synchronized.
   const replaceEntities = (string) => (
     string
       .replace(/&nbsp;/g, '\xa0')

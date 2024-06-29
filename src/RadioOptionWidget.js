@@ -1,4 +1,4 @@
-const { tweakUserOoUiClass } = require('./utils-oojs');
+import { tweakUserOoUiClass } from './utils-oojs';
 
 /**
  * Class that extends {@link external:OO.ui.RadioOptionWidget OO.ui.RadioOptionWidget} and allows to

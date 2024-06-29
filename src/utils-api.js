@@ -298,6 +298,7 @@ export async function saveGlobalOption(name, value) {
 
     return;
   }
+
   try {
     await saveOptions({ [name]: value }, true);
   } catch (e) {

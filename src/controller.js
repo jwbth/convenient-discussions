@@ -54,7 +54,7 @@ export default {
    * known from the beginning - and run the boot process (on talk page or comment links page).
    */
   init() {
-    this.$content ||= $('#mw-content-text');
+    this.$content = $('#mw-content-text');
 
     if (cd.g.isMobile) {
       $(document.body).addClass('cd-mobile');
@@ -104,7 +104,7 @@ export default {
   },
 
   /**
-   * Setup the controller for use in the current boot process. (Executed at every page reload.)
+   * Set up the controller for use in the current boot process. (Executed at every page reload.)
    *
    * @param {string} pageHtml HTML to update the page with.
    */
@@ -1009,8 +1009,8 @@ export default {
   async tryExecuteBootProcess(isReload) {
     this.booting = true;
 
-    // We could say "let it crash", but, well, unforeseen errors in BootProcess#execute() are just
-    // too likely to go without a safeguard.
+    // We could say "let it crash", but unforeseen errors in BootProcess#execute() are just too
+    // likely to go without a safeguard.
     try {
       await this.bootProcess.execute(isReload);
       if (isReload) {
@@ -1064,10 +1064,10 @@ export default {
     if (mw.loader.getState('mediawiki.api') === 'ready') {
       siteDataRequests = init.getSiteData();
 
-      // We are _not_ calling getUserInfo() here to avoid losing visit data updates from some
-      // pages if several pages are opened simultaneously. In this situation, visits could be
-      // requested for multiple pages; updated and then saved for each of them with losing the
-      // updates from the rest.
+      // We are _not_ calling getUserInfo() here to avoid losing visit data updates from some pages
+      // if several pages are opened simultaneously. In this situation, visits could be requested
+      // for multiple pages; updated and then saved for each of them with losing the updates from
+      // the rest.
     }
 
     const modules = [
@@ -1144,8 +1144,6 @@ export default {
       }
     );
 
-    // https://phabricator.wikimedia.org/T68598 "mw.loader state of module stuck at "loading" if
-    // request was aborted"
     sleep(15000).then(() => {
       if (this.booting) {
         this.hideLoadingOverlay();
@@ -1167,8 +1165,8 @@ export default {
       2. Run operations dependent on rendering, such as window.getComputedStyle() and jQuery's
          .css() (below). Normally they would initiate a reflow, but, as we haven't changed the
          layout or added CSS yet, there is nothing to update.
-      3. Run operations that create prerequisites for a reflow, such as adding CSS. Thanks to the
-         fact that the network requests, if any, are already pending, we don't lose time.
+      3. Run operations that create prerequisites for a reflow, such as adding CSS (below). Thanks
+         to the fact that the network requests, if any, are already pending, we don't waste time.
      */
     init.memorizeCssValues();
     init.addTalkPageCss();

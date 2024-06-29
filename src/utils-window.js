@@ -102,6 +102,10 @@ export function transparentize(color) {
  * @returns {boolean}
  */
 export function isInputFocused() {
+  if (!document.activeElement) {
+    return false;
+  }
+
   const $active = $(document.activeElement);
   return $active.is(':input') || $active.prop('isContentEditable');
 }

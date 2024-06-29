@@ -1120,13 +1120,17 @@ class CommentForm {
    * @private
    */
   addInsertButton(snippet, label) {
+    // Mask escaped characters
     const textMasker = new TextMasker(snippet).mask(/\\[+;\\]/g);
+
     let [, pre, post] = textMasker.getText().match(/^(.*?)(?:\+(.*))?$/) || [];
     if (!pre) return;
 
     pre = pre.replace(/\\n/g, '\n');
     post ||= '';
     post = post.replace(/\\n/g, '\n');
+
+    // Unmask escaped characters
     const unescape = (snippet) => snippet.replace(/\\([+;\\])/g, '$1');
     pre = unescape(textMasker.unmaskText(pre));
     post = unescape(textMasker.unmaskText(post));

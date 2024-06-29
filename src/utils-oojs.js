@@ -335,7 +335,7 @@ export function createCheckboxField({
  *
  * @param {object} options
  * @param {string} options.label
- * @param {boolean} [options.selected]
+ * @param {string} [options.selected]
  * @param {string} [options.help]
  * @param {object[]} options.options
  * @returns {CreateRadioFieldReturn}
