@@ -2583,10 +2583,6 @@ class CommentForm {
         this.willCommentBeIndented
       );
 
-    Parser.prototype.replaceTimestampLinksWithSpans.apply({
-      context: { rootElement: this.$previewArea[0] },
-    });
-
     /**
      * A comment preview has been rendered.
      *

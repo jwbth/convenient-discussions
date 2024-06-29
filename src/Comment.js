@@ -3757,6 +3757,16 @@ class Comment extends CommentSkeleton {
     }
   }
 
+  /**
+   * _For internal use._ Remove DT's event listener from its comment link and attach ours.
+   */
+  handleDtTimestampClick() {
+    this.$elements
+      .find('.ext-discussiontools-init-timestamplink')
+      .off()
+      .on('click', this.copyLink.bind(this));
+  }
+
   static {
     // Doesn't account for cases when the section headline ends with -<number>.
     const newDtTimestampPattern = '(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})\\d{2}';

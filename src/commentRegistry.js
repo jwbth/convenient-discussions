@@ -103,6 +103,7 @@ export default {
     this.reformatTimestamps();
     this.findAndUpdateTableComments();
     this.adjustDom();
+    this.handleDtTimestampsClick();
   },
 
   /**
@@ -912,6 +913,19 @@ export default {
 
     this.items.slice(1).forEach((comment) => {
       comment.maybeSplitParent();
+    });
+  },
+
+  /**
+   * Remove DT's event listener from its comment links and attach ours.
+   *
+   * @private
+   */
+  handleDtTimestampsClick() {
+    if (this.reformatCommentsSetting) return;
+
+    this.items.forEach((comment) => {
+      comment.handleDtTimestampClick();
     });
   },
 

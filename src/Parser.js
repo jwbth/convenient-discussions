@@ -130,21 +130,6 @@ class Parser {
       .filter(unique);
     this.context.processAndRemoveDtElements(elements, bootProcess);
     this.context.removeDtButtonHtmlComments();
-    this.replaceTimestampLinksWithSpans();
-  }
-
-  /**
-   * Replace timestamp links added by DiscussionTools with `<span>` elements, keeping their content.
-   *
-   * @private
-   */
-  replaceTimestampLinksWithSpans() {
-    [
-      ...this.context.rootElement.getElementsByClassName('ext-discussiontools-init-timestamplink')
-    ].forEach((link) => {
-      link.parentNode.insertBefore(document.createTextNode(link.textContent), link);
-      link.remove();
-    });
   }
 
   /**
