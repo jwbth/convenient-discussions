@@ -66,7 +66,7 @@
   "section-newcomments": "{{plural:$1|There is a new comment|There are $1 new comments}} in this section (outside of threads) from {{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}} $3. Click to refresh the page.",
   "section-unwatch-stillwatched": "<strong>Note:</strong> you are still subscribed to this section as it is included in the section \"$1\" that you are subscribed to.",
   "section-watch-openpages": "(You will only get notifications while this tab is open.)",
-  "section-watch-pagenotwatched": "<strong>Note:</strong> you subscribed to the section but you don't watch the page. In order for new comments to be highlighted on your watchlist page, add the page to the watchlist.",
+  "section-watch-pagenotwatched": "<strong>Note:</strong> you subscribed to the section but you aren't watching the page. In order for new comments to be highlighted on your watchlist page, add the page to the watchlist.",
   "section-watch-error-maxsize": "Couldn't update the settings: the size of the subscription list exceeds the maximum size. <span class=\"cd-notification-editWatchedSections\">[[$1|Edit the subscription list]]</span> to fix this.",
   "section-metadata-commentcount-authorcount": "$1 {{plural:$1|comment|comments}}<span class=\"cd-section-metadata-authorcount\"> from <span class=\"cd-section-metadata-authorcount-link\">$2 {{plural:$2|person|people}}</span></span>",
   "section-metadata-newcommentcount": "+$1 {{plural:$1|new}}",

@@ -12,6 +12,7 @@
 			"דגש",
 			"דגש חזק",
 			"חיים",
+			"יוסף בן מלמד",
 			"מגזין יהלום"
 		]
 	},
@@ -150,7 +151,7 @@
 	"cf-cancel-short": "ביטול",
 	"cf-advanced": "מתקדם",
 	"cf-settings-tooltip": "העדפות של דיונים נוחים",
-	"cf-help-content": "<ul>\n<li>ניתן להקליד <code>$1</code> ולבחור משתמש כדי [[mw:Special:MyLanguage/Help:Notifications/Mention|לתייג]].</li>\n<li>ניתן להחזיק <b>$2</b> בעת בחירת משתמש כדי להוסיף סימני פיסוק אחרי השם.</li>\n<li>ניתן להקליד <code><nowiki>[[#</nowiki></code> כדי לקשר תגובה בנושא הזה.</li>\n<li>ניתן להחזיק <b>Shift</b> בעת בחירת השלמה אוטומטית לשינוי הטקסט המוצג (למשל, <code><nowiki>[[ערך|</nowiki><var>טקסט</var><nowiki>]]</nowiki></code>).</li>\n<li>ניתן להחזיק <b>Alt</b> בעת בחירת השלמה אוטומטית כדי לקבוע את הטקסט אחרי הסמן כטקסט שיוצג.</li>\n<li class=\"cd-helpPopup-hideForReformattedComments\">אם תפריט התגובה מסתיר קישורים מאחוריו, ניתן ללחוץ עליו לחיצה ארוכה והוא ייעלם.</li>\n</ul>\n<p>מקשי קיצור:</p>\n<ul>\n<li><b>$2+Enter</b> — פרסום</li>\n<li><b>Esc</b> — ביטול</li>\n<li>כדי לראות את קיצורי המקלדת של כפתורי הסרגל, תעבירו מעליהם עכבר.</li>\n</ul>\n<p>[[mw:c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions|תיעוד הסקריפט]] <b>·</b> [[mw:c:User talk:Jack who built the house/Convenient Discussions|משוב]]</p>",
+	"cf-help-content": "<ul>\n<li>ניתן להקליד <code>$1</code> ולבחור משתמש כדי [[mw:Special:MyLanguage/Help:Notifications/Mention|לתייג]].</li>\n<li>ניתן להחזיק <b>$2</b> בעת בחירת משתמש כדי להוסיף סימני פיסוק אחרי השם.</li>\n<li>ניתן להקליד <code><nowiki>[[#</nowiki></code> כדי לקשר תגובה בנושא הזה.</li>\n<li>ניתן להחזיק <b>Shift</b> בעת בחירת השלמה אוטומטית לשינוי הטקסט המוצג (למשל, <code><nowiki>[[ערך|</nowiki><var>טקסט</var><nowiki>]]</nowiki></code>).</li>\n<li>ניתן להחזיק <b>Alt</b> בעת בחירת השלמה אוטומטית כדי לקבוע את הטקסט אחרי הסמן כטקסט שיוצג.</li>\n<li class=\"cd-helpPopup-hideForReformattedComments\">אם תפריט התגובה מסתיר קישורים מאחוריו, ניתן ללחוץ עליו לחיצה ארוכה והוא ייעלם.</li>\n</ul>\n<p>מקשי קיצור:</p>\n<ul>\n<li><b>$2+Enter</b> — פרסום</li>\n<li><b>Esc</b> — ביטול</li>\n<li>כדי לראות את קיצורי המקלדת של כפתורי הסרגל, תעבירו מעליהם עכבר.</li>\n</ul>\n<p>[[mw:c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions|תיעוד הסקריפט]]$3[[mw:c:User talk:Jack who built the house/Convenient Discussions|משוב]]</p>",
 	"cf-strikethrough-tooltip": "קו חוצה",
 	"cf-strikethrough-placeholder": "טקסט עם קו חוצה",
 	"cf-code-tooltip": "קוד",
@@ -266,7 +267,7 @@
 	"navpanel-next": "לעבור לתגובה החדשה הבאה",
 	"navpanel-firstunseen": "לעבור לתגובה ראשונה שלא נקראה",
 	"navpanel-firstunseen-hidden-title": "התגובה נמצאת בשרשור המכווץ",
-	"navpanel-firstunseen-hidden": "בוצעה גלילה לשרשור. <span class=\"cd-notification-expandThread\">[[$1|נא לפתוח את השרשור ולגלול לתגובה]]</span>.",
+	"navpanel-firstunseen-hidden": "גלילה לשרשור. <span class=\"cd-notification-expandThread\">[[ $1 |הרחב את השרשור וגלול לתגובה]]</span> <span class=\"cd-notification-markThreadAsRead-wrapper\">$2 <span class=\"cd-notification-markThreadAsRead\">[[ $3 |סמן את השרשור כקריאה וגלול להערה הבאה שלא נקראה]]</span></span> .",
 	"navpanel-commentform": "לעבור לתגובה הבאה מחוץ למסך",
 	"navpanel-newcomments-count": "{{plural:$1|תגובה חדשה אחת|$1 תגובות חדשות}}.",
 	"navpanel-newcomments-names": "$1 ← $2",

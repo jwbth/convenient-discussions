@@ -267,7 +267,7 @@
 	"popup-manyForms-title": "Le saviez-vous ?",
 	"popup-manyForms-text": "Grace aux Discussions pratiques, vous pouvez taper de nombreux commentaires simultanément dans des formulaires séparés, puis les envoyer un par un. Le texte des autres formulaires ne sera pas perdu lorsque vous soumettez l’un des formulaires. Essayez !",
 	"popup-upload-title": "Nouvelle fonctionnalité",
-	"popup-upload-text": "Vous pouvez désormais télécharger des captures d’écran sur Commons en trois clics ! Collez ou faites simplement glisser l'image dans la saisie du commentaire, choisissez le préréglage et cliquez sur « {{int:convenient-discussions-ud-uploadandsave}} ».",
+	"popup-upload-text": "Vous pouvez désormais téléverser des captures d’écran sur Commons en trois clics ! Collez ou faites simplement glisser l'image dans la saisie du commentaire, choisissez le préréglage et cliquez sur « {{int:convenient-discussions-ud-uploadandsave}} ».",
 	"navpanel-refresh": "Rafraîchir la page",
 	"navpanel-previous": "Aller au nouveau commentaire précédent",
 	"navpanel-next": "Aller au nouveau commentaire suivant",
