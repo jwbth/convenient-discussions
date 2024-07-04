@@ -344,15 +344,25 @@ function patterns() {
     );
   }
 
-  const clearTemplatesPattern = cd.config.clearTemplates.length ?
-    cd.config.clearTemplates.map(generatePageNamePattern).join('|') :
-    undefined;
+  const clearTemplatesPattern = (
+    cd.config.clearTemplates.map(generatePageNamePattern).join('|') ||
+    undefined
+  );
+  const reflistTalkTemplatesPattern = (
+    cd.config.reflistTalkTemplates.map(generatePageNamePattern).join('|') ||
+    undefined
+  );
 
   cd.g.keepInSectionEnding = cd.config.keepInSectionEnding
     .slice()
     .concat(
       clearTemplatesPattern ?
         new RegExp(`\\n+\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\}\\s*$`) :
+        []
+    )
+    .concat(
+      reflistTalkTemplatesPattern ?
+        new RegExp(`\\n+\\{\\{ *(?:${reflistTalkTemplatesPattern}) *\\}\\}.*\\s*$`) :
         []
     );
 

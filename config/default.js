@@ -422,6 +422,24 @@ export default {
   clearTemplates: [],
 
   /**
+   * Names of the templates that are analogs of
+   * {@link https://en.wikipedia.org/wiki/Template:Reflist-talk}.
+   *
+   * @type {string[]}
+   * @default []
+   */
+  reflistTalkTemplates: [],
+
+  /**
+   * Classes that the wrapper elements of the templates listed in
+   * {@link module:defaultConfig.reflistTalkTemplates} have.
+   *
+   * @type {string[]}
+   * @default []
+   */
+  reflistTalkClasses: [],
+
+  /**
    * Character used to trigger user mention (ping) autocomplete.
    *
    * @type {string}

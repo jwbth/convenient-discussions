@@ -270,6 +270,11 @@ class SectionSkeleton {
     while (lastElement.contains(this.headingElement) && lastElement !== this.headingElement) {
       lastElement = lastElement.lastElementChild;
     }
+
+    if (cd.config.reflistTalkClasses.some((name) => lastElement.classList?.contains(name))) {
+      lastElement = lastElement.previousElementSibling;
+    }
+
     return lastElement;
   }
 

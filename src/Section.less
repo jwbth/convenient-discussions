@@ -1,6 +1,14 @@
-.cd-section-button-container {
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
+.cd-section-button-container,
+
+// Override `.skin-vector .cd-parsed dd`
+.cd-replyButtonWrapper.cd-replyButtonWrapper.cd-replyButtonWrapper {
+  margin-block: 0.5em;
+}
+
+// Don't show a number in front of the button in a numbered list if there is no comment form inside
+// the list item.
+ol > .cd-replyButtonWrapper:not(.cd-replyButtonWrapper-hasCommentForm) {
+  list-style-type: none;
 }
 
 ol .cd-section-button {
