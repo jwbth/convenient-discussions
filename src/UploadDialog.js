@@ -162,11 +162,12 @@ class UploadDialog extends mw.Upload.Dialog {
       let process = new OO.ui.Process(this.uploadBooklet.uploadFile());
       if (this.autosave) {
         process = process.next(() => {
-          this.actions.setAbilities({ save: false });
-          return this.executeAction('save').fail(() => {
+          const promise = this.executeAction('save').fail(() => {
             // Reset the ability
             this.uploadBooklet.onInfoFormChange();
           });
+          this.actions.setAbilities({ save: false });
+          return promise;
         });
       }
       return process;
