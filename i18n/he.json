@@ -267,7 +267,7 @@
 	"navpanel-next": "לעבור לתגובה החדשה הבאה",
 	"navpanel-firstunseen": "לעבור לתגובה ראשונה שלא נקראה",
 	"navpanel-firstunseen-hidden-title": "התגובה נמצאת בשרשור המכווץ",
-	"navpanel-firstunseen-hidden": "גלילה לשרשור. <span class=\"cd-notification-expandThread\">[[ $1 |הרחב את השרשור וגלול לתגובה]]</span> <span class=\"cd-notification-markThreadAsRead-wrapper\">$2 <span class=\"cd-notification-markThreadAsRead\">[[ $3 |סמן את השרשור כקריאה וגלול להערה הבאה שלא נקראה]]</span></span> .",
+	"navpanel-firstunseen-hidden": "נעשתה גלילה לשרשור. <span class=\"cd-notification-expandThread\">[[$1|הרחב את השרשור וגלול לתגובה]]</span> <span class=\"cd-notification-markThreadAsRead-wrapper\">$2 <span class=\"cd-notification-markThreadAsRead\">[[$3|לסמן את השרשור בתור שרשור שנקרא ולגלול להערה הבאה שלא נקראה]]</span></span>.",
 	"navpanel-commentform": "לעבור לתגובה הבאה מחוץ למסך",
 	"navpanel-newcomments-count": "{{plural:$1|תגובה חדשה אחת|$1 תגובות חדשות}}.",
 	"navpanel-newcomments-names": "$1 ← $2",
