@@ -121,16 +121,6 @@ export function removeWikiMarkup(code) {
 }
 
 /**
- * Check whether text contains wiki markup.
- *
- * @param {string} text
- * @returns {boolean}
- */
-export function hasWikiMarkup(text) {
-  return removeWikiMarkup(text) !== text.trim();
-}
-
-/**
  * Replace HTML entities with corresponding characters. Also replace different kinds of spaces,
  * including multiple, with one normal space.
  *

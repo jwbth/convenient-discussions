@@ -9,7 +9,6 @@ import ElementsTreeWalker from './ElementsTreeWalker';
 import Parser from './Parser';
 import cd from './cd';
 import { parseWikiUrl, isInline, removeFromArrayIfPresent, defined } from './utils-general';
-import { hasWikiMarkup } from './utils-wikitext';
 
 /**
  * @typedef {object} WrapCallbacks
@@ -275,18 +274,13 @@ export function isHtmlConvertibleToWikitext(html, containerElement) {
  */
 export function isElementConvertibleToWikitext(element) {
   return Boolean(
-    (
-      element.childElementCount &&
-      !(
-        [...element.querySelectorAll('*')].length === 1 &&
-        element.childNodes.length === 1 &&
-        ['P', 'LI', 'DD'].includes(element.children[0].tagName)
-      ) &&
-      ![...element.querySelectorAll('*')].every((el) => el.tagName === 'BR')
-    ) ||
-
-    // <nowiki> is likely used here
-    hasWikiMarkup(element.textContent)
+    element.childElementCount &&
+    !(
+      [...element.querySelectorAll('*')].length === 1 &&
+      element.childNodes.length === 1 &&
+      ['P', 'LI', 'DD'].includes(element.children[0].tagName)
+    ) &&
+    ![...element.querySelectorAll('*')].every((el) => el.tagName === 'BR')
   );
 }
 
