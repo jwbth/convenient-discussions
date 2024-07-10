@@ -275,7 +275,7 @@ function filterCommentContent(comment) {
  */
 function addCompareHelperProperties(comment) {
   /*
-    One of the reasons for the existing of this function is that we can't use `outerHTML` for
+    One of the reasons for the existence of this function is that we can't use `outerHTML` for
     comparing comment revisions as the difference may be in <div> vs. <dd> (<li>) tags in this case:
 
     This creates a <dd> tag:
@@ -294,6 +294,10 @@ function addCompareHelperProperties(comment) {
   comment.headingHtmlToCompare = '';
   comment.elements.forEach((el) => {
     let htmlToCompare;
+    el.getElementsByClassName?.('ext-discussiontools-init-timestamplink').forEach((link) => {
+      // The link may change
+      link.removeAttribute('href');
+    });
     if (el.tagName === 'DIV' && !el.classList.contains('mw-heading')) {
       // Workaround the bug where the {{smalldiv}} output (or any <div> wrapper around the
       // comment) is treated differently depending on whether there are replies to that comment.
