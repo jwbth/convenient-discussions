@@ -1725,7 +1725,7 @@ class CommentForm {
         this.commentInput.$element.addClass('cd-input-acceptFile');
         e.preventDefault();
       })
-      .on('dragleave dragend drop blur', () => {
+      .on('dragleave drop blur', () => {
         this.commentInput.$element.removeClass('cd-input-acceptFile');
       })
       .on('paste drop', this.handlePasteDrop.bind(this))
