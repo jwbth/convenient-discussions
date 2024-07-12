@@ -95,7 +95,7 @@ function maybeAddFooterSwitcher() {
   const enable = !controller.isTalkPage();
   const url = new URL(location.href);
   url.searchParams.set('cdtalkpage', enable ? '1' : '0');
-  const $li = $('<li>').attr('id', 'footer-places-togglecd');
+  const $li = $('<li>').attr('id', 'footer-togglecd');
   const $a = $('<a>')
     .attr('href', url.toString())
     .addClass('noprint')

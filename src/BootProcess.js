@@ -415,7 +415,7 @@ class BootProcess {
 
     controller.setTalkPageness(false);
 
-    const $disableLink = $('#footer-places-togglecd a');
+    const $disableLink = $('#footer-togglecd a');
     $disableLink
       .attr('href', $disableLink.attr('href').replace(/0$/, '1'))
       .text(cd.s('footer-runcd'));

@@ -7,21 +7,20 @@ module.exports = {
   },
   "extends": "eslint:recommended",
   "globals": {
-    "$": "readonly",
     "CONFIG_FILE_NAME": "readonly",
     "IS_DEV": "readonly",
     "IS_TEST": "readonly",
     "IS_SINGLE": "readonly",
     "LANG_CODE": "readonly",
-    "OO": "readonly",
-    "convenientDiscussions": "readonly",
-    "jest": "readonly",
-    "expect": "readonly",
+
     "mw": "readonly",
-    "require": "readonly",
-    "getUrlFromInterwikiLink": "readonly",  // en:User:Jack who built the house/getUrlFromInterwikiLink.js
+    "$": "readonly",
+    "OO": "readonly",
+
+    "convenientDiscussions": "readonly",
     "getInterwikiPrefixForHostname": "readonly",  // en:User:Jack who built the house/getUrlFromInterwikiLink.js
     "getInterwikiPrefixForHostnameSync": "readonly",  // en:User:Jack who built the house/getUrlFromInterwikiLink.js
+    "getUrlFromInterwikiLink": "readonly",  // en:User:Jack who built the house/getUrlFromInterwikiLink.js
   },
   "ignorePatterns": ["dist/**", "misc/**", "*.json5", "w-he.js"],
   "overrides": [

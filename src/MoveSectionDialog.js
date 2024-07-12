@@ -527,8 +527,8 @@ class MoveSectionDialog extends ProcessDialog {
         starttimestamp: source.page.queryTimestamp,
       });
     } catch (e) {
-      // Errors when editing the target page are recoverable, because we haven't performed any
-      // actions yet. Errors when editing the source page are not recoverable, because we have
+      // Errors when editing the target page are recoverable because we haven't performed any
+      // actions yet. Errors when editing the source page are not recoverable because we have
       // already edited the source page.
       const genericMessage = cd.sParse('msd-error-editingsourcepage');
       if (e instanceof CdError) {

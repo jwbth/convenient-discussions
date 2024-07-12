@@ -165,7 +165,7 @@ export default {
    */
 
   /**
-   * Collection of archive paths, (sometimes) with correspondent source pages paths. It is used in
+   * Collection of archive paths, (sometimes) with correspondent source pages paths. It is used for
    * multiple purposes:
    * - to identify inactive pages, i.e. no replies can be left on them;
    * - to suggest to search in the archive if a section/comment by a given fragment is not found on
@@ -461,7 +461,8 @@ export default {
    * Function to use in the {@link module:defaultConfig.quoteFormatting} config value.
    *
    * @typedef {Function} QuoteFormattingFunction
-   * @property {string} mentionSource Whether to mention the source of the quote.
+   * @property {string} mentionSource Whether it's appropriate to mention the source of the quote
+   *   (e.g. when quoting a different comment than the user is replying to).
    * @property {string} [author] Quote author.
    * @property {string} [timestamp] Quote timestamp.
    * @property {string} [dtId] Comment's DiscussionTools ID.
@@ -471,14 +472,16 @@ export default {
   /**
    * Array of two strings to insert before and after the selection when quote function is activated
    * (by the toolbar button or Ctrl+Alt+Q / Q). You may also specify a function that takes the
-   * following parameters: whether to mention the source of the quote, author, date and
-   * DiscussionTools ID, and returns the said array.
+   * following parameters: whether it's appropriate to mention the source of the quote (e.g. when
+   * quoting a different comment than the user is replying to), author, date and DiscussionTools ID,
+   * and returns the said array.
    *
    * If you add template markup, you should perhaps use `1=` before the parameter content to allow
-   * the `=` character inside a quotation, for example `['{{tq|1=', '}}']`.
+   * the `=` character inside the quotation, for example `['{{tq|1=', '}}']`.
    *
    * If you specify a function, you might want to use different templates for quotations with the
-   * source mentioned and not, by checking the first argument.
+   * source mentioned and not, depending on the first argument. See
+   * {@link https://github.com/jwbth/convenient-discussions/blob/31a1c1bdf3d92f60cbd1b5bf8b6d8fcddca1e046/config/w-en.js#L251 the example of English Wikipedia configuration}.
    *
    * @type {string[]|QuoteFormattingFunction}
    * @default ["> ''", "''\n"]

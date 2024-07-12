@@ -20,7 +20,7 @@ class Autocomplete {
    * @param {object} options
    * @param {Array.<'mentions'|'commentLinks'|'wikilinks'|'templates'|'tags'>} options.types Which
    *   values should be autocompleted.
-   * @param {external:TextInputWidget[]} options.inputs Inputs to attach the autocomplete to. Please
+   * @param {external:OO.ui.TextInputWidget[]} options.inputs Inputs to attach the autocomplete to. Please
    *   note that these should be CD's {@link TextInputWidget}s, not
    *   {@link external:OO.ui.TextInputWidget OO.ui.TextInputWidget}s, since we use CD's method
    *   {@link TextInputWidget#cdInsertContent} on the inputs here. This is not essential, so if you

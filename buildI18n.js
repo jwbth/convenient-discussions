@@ -251,8 +251,8 @@ fs.readdirSync('./i18n/')
 const i18nWithFallbacks = {};
 
 if (Object.keys(i18n).length) {
-  // Use language fallbacks data to fill missing messages. When fallbacks need to be updated, they
-  // can be collected using
+  // Use language fallbacks data to fill missing messages. When the fallbacks need to be updated,
+  // they can be collected using
   // https://phabricator.wikimedia.org/source/mediawiki/browse/master/languages/messages/?grep=fallback%20%3D.
   const fallbackData = require('./data/languageFallbacks.json');
   Object.keys(i18n).forEach((lang) => {

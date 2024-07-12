@@ -46,7 +46,7 @@ class UploadDialog extends mw.Upload.Dialog {
    * particular context, based on the `data` argument.
    *
    * We load some stuff in here and modify the booklet's behavior (we can't do that in
-   * {@link ForeignStructuredUploadBookletLayout#initialize}, because we need some data loaded
+   * {@link ForeignStructuredUploadBookletLayout#initialize} because we need some data loaded
    * first).
    *
    * @param {object} data Dialog opening data
@@ -56,8 +56,8 @@ class UploadDialog extends mw.Upload.Dialog {
    * @ignore
    */
   getSetupProcess(data) {
-    // This script is optional and used to improve description fields by using correct project names
-    // and prefixes. With it, `wikt:fr:` will translate into `French Wiktionary` and
+    // This script is optional and used to improve description field values by using correct project
+    // names and prefixes. With it, `wikt:fr:` will translate into `French Wiktionary` and
     // `fr.wiktionary.org` will translate into `wikt:fr:`.
     mw.loader.load('https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/getUrlFromInterwikiLink.js&action=raw&ctype=text/javascript');
 
