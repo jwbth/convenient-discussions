@@ -249,6 +249,7 @@ export default {
           .map((commentForm) => ({
             mode: commentForm.getMode(),
             targetData: commentForm.getTarget().getIdentifyingData(),
+            targetWithOutdentedRepliesData: commentForm.getTargetWithOutdentedReplies()?.getIdentifyingData(),
             preloadConfig: commentForm.getPreloadConfig(),
             newTopicOnTop: commentForm.isNewTopicOnTop(),
             headline: commentForm.headlineInput?.getValue(),
@@ -309,6 +310,9 @@ export default {
         ?.commentForms
         .map((data) => {
           const target = this.getTargetByData(data.targetData);
+          if (data.targetWithOutdentedRepliesData) {
+            data.targetWithOutdentedReplies = this.getTargetByData(data.targetWithOutdentedRepliesData);
+          }
           if (
             target?.isActionable &&
             (!target.canBeReplied || target.canBeReplied()) &&

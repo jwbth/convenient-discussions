@@ -138,6 +138,15 @@ class CommentForm {
     this.omitSignatureCheckboxAltered = initialState?.omitSignatureCheckboxAltered ?? false;
 
     /**
+     * If the user replies to a comment with outdented replies (in which case the form is created
+     * like a regular section reply), this is that target comment.
+     *
+     * @type {Comment|undefined}
+     * @private
+     */
+    this.targetWithOutdentedReplies = initialState?.targetWithOutdentedReplies || undefined;
+
+    /**
      * Is section opening comment edited.
      *
      * @type {boolean}
@@ -234,7 +243,7 @@ class CommentForm {
          */
         this.lastFocused = new Date(initialState.lastFocused);
       }
-      if (initialState.outdentNotice) {
+      if (initialState.targetWithOutdentedReplies) {
         this.showMessage(
           wrapHtml(
             cd.sParse(
@@ -3311,7 +3320,7 @@ class CommentForm {
   }
 
   /**
-   * Update the automatic text for the edit summary.
+   * _For internal use._ Update the automatic text for the edit summary.
    *
    * @param {boolean} [set=true] Whether to actually set the input value, or just save the auto
    *   summary to a property (e.g. to later tell if it was altered).
@@ -3325,7 +3334,10 @@ class CommentForm {
 
     this.summaryAutopreviewBlocked = blockAutopreview;
 
-    const text = this.generateStaticSummaryText();
+    const text = this.generateStaticSummaryText(
+      this.targetWithOutdentedReplies ? 'reply' : undefined,
+      this.targetWithOutdentedReplies
+    );
     const section = this.headlineInput && this.mode !== 'addSubsection' ?
       removeWikiMarkup(this.headlineInput.getValue()) :
       this.target.getRelevantSection()?.headline;
@@ -3371,6 +3383,7 @@ class CommentForm {
    * @param {string} [mode=this.mode]
    * @param {Comment|import('./Section').default|import('./pageRegistry').Page} [target=this.target]
    * @returns {string}
+   * @private
    */
   generateStaticSummaryText(mode = this.mode, target = this.target) {
     // FIXME: distribute this across the classes of targets? Not sure this belongs here.
@@ -3754,6 +3767,15 @@ class CommentForm {
    */
   getTarget() {
     return this.target;
+  }
+
+  /**
+   * Get the target comment if it has outdented replies and the reply is therefore to the section.
+   *
+   * @returns {Comment|undefined}
+   */
+  getTargetWithOutdentedReplies() {
+    return this.targetWithOutdentedReplies;
   }
 
   /**
