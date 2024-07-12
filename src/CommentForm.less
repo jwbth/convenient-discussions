@@ -410,6 +410,30 @@
   }
 }
 
-.tool-button.highlight:not(:hover) {
-  background-color: var(--background-color-progressive-subtle, #eaf3ff);
+.cd-tool-button-wrapper {
+  display: flex;
+
+  &.cd-highlight:not(:hover) {
+    background-color: var(--background-color-progressive-subtle, #eaf3ff);
+  }
+}
+
+html.skin-theme-clientpref-night a.tool:not(.mw-no-invert) {
+  color-scheme: light;
+  filter: invert(1) hue-rotate(180deg);
+}
+
+@media (prefers-color-scheme: dark) {
+  html.skin-theme-clientpref-os {
+    color-scheme: light;
+    filter: invert(1) hue-rotate(180deg);
+  }
+}
+
+.cd-helpPopup var {
+  // Closest to what we need
+  background-color: var(--border-color-notice, #54595d);
+
+  color: var(--color-inverted, #fff);
+  font-style: normal;
 }

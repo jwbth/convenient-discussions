@@ -1106,6 +1106,10 @@ class CommentForm {
         }
       });
 
+    this.$element
+      .find('.tool[rel="quote"]')
+      .wrap($('<span>').addClass('cd-tool-button-wrapper'));
+
     // A hack to make the WikiEditor cookies related to active sections and pages saved correctly.
     $input.data('wikiEditor-context').instance = 5;
     $.wikiEditor.instances = Array(5);
@@ -4018,7 +4022,10 @@ class CommentForm {
   highlightQuoteButton(highlight) {
     if (!this.showToolbar) return;
 
-    this.$element.find('.tool-button[rel="quote"]').toggleClass('highlight', highlight);
+    this.$element
+      .find('.tool-button[rel="quote"]')
+      .closest('.cd-tool-button-wrapper')
+      .toggleClass('cd-highlight', highlight);
   }
 
   static counter = 0;
