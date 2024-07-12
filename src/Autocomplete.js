@@ -7,7 +7,7 @@ import settings from './settings';
 import Tribute from './tribute/Tribute';
 import userRegistry from './userRegistry';
 import { handleApiReject } from './utils-api';
-import { defined, removeDoubleSpaces, sleep, ucFirst, underlinesToSpaces, unique } from './utils-general';
+import { charAt, defined, phpCharToUpper, removeDoubleSpaces, sleep, ucFirst, underlinesToSpaces, unique } from './utils-general';
 
 /**
  * Autocomplete dropdown class.
@@ -722,6 +722,31 @@ class Autocomplete {
   }
 
   /**
+   * Given a query and a case-insensitively matching result, replace the first character of the
+   * result with the first character of in the query. E.g., the query "huma" finds the article
+   * "Human", but we restore the first "h".
+   *
+   * @param {string} result
+   * @param {string} query
+   * @returns {string}
+   */
+  static useOriginalFirstCharCase(result, query) {
+    const firstChar = charAt(query, 0);
+    const firstCharUpperCase = phpCharToUpper(firstChar);
+    const firstCharPattern = firstCharUpperCase !== firstChar ?
+      '[' + firstCharUpperCase + firstChar + ']' :
+      mw.util.escapeRegExp(firstChar);
+
+    // But ignore cases with all caps in the first word like ABBA
+    const firstWord = result.split(' ')[0];
+    if (firstWord.length > 1 && firstWord.toUpperCase() === firstWord) {
+      return result;
+    }
+
+    return result.replace(new RegExp('^' + firstCharPattern), firstChar);
+  }
+
+  /**
    * Get a list of 10 page names matching the specified search text. Page names are sorted as
    * {@link https://www.mediawiki.org/wiki/API:Opensearch OpenSearch} sorts them. Redirects are not
    * resolved.
@@ -754,12 +779,21 @@ class Autocomplete {
           limit: 10,
         }).then(
           (resp) => {
-            const regexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
-            const pages = resp[1]?.map((name) => (
-              name
-                .replace(regexp, () => text[0])
-                .replace(/^/, colonPrefix ? ':' : '')
-            ));
+            const pages = resp[1]
+              ?.map((name) => {
+                if (mw.config.get('wgCaseSensitiveNamespaces').length) {
+                  const title = mw.Title.newFromText(name);
+                  if (
+                    !title ||
+                    !mw.config.get('wgCaseSensitiveNamespaces').includes(title.getNamespaceId())
+                  ) {
+                    name = this.useOriginalFirstCharCase(name, text);
+                  }
+                } else {
+                  name = this.useOriginalFirstCharCase(name, text);
+                }
+                return name.replace(/^/, colonPrefix ? ':' : '');
+              });
 
             resolve(pages);
           },
@@ -803,11 +837,16 @@ class Autocomplete {
           limit: 10,
         }).then(
           (resp) => {
-            const regexp = new RegExp('^' + mw.util.escapeRegExp(text[0]), 'i');
+            cd.debug.startTimer('getRelevantTemplateNames');
             const templates = resp[1]
-              ?.filter((name) => !/(\/doc|\.css)$/.test(name))
+              ?.filter((name) => !/(\/doc(?:umentation)?|\.css)$/.test(name))
               .map((name) => text.startsWith(':') ? name : name.slice(name.indexOf(':') + 1))
-              .map((name) => name.replace(regexp, () => text[0]));
+              .map((name) => (
+                mw.config.get('wgCaseSensitiveNamespaces').includes(10) ?
+                  name :
+                  this.useOriginalFirstCharCase(name, text)
+              ));
+            cd.debug.logAndResetEverything();
 
             resolve(templates);
           },

@@ -129,11 +129,11 @@ export function generatePageNamePattern(string) {
   // Could be issues, probably not very serious, resulting from the difference of PHP's
   // mb_strtoupper and JavaScript's String#toUpperCase, see ucFirst() and
   // https://phabricator.wikimedia.org/T141723#2513800.
-  const fcPattern = firstCharUpperCase !== firstCharLowerCase ?
+  const firstCharPattern = firstCharUpperCase !== firstCharLowerCase ?
     '[' + firstCharUpperCase + firstCharLowerCase + ']' :
     mw.util.escapeRegExp(firstChar);
 
-  return fcPattern + mw.util.escapeRegExp(string.slice(1)).replace(/[ _]+/g, '[ _]+');
+  return firstCharPattern + mw.util.escapeRegExp(string.slice(1)).replace(/[ _]+/g, '[ _]+');
 }
 
 /**
@@ -275,7 +275,7 @@ export function removeDoubleSpaces(string) {
  * @license MIT
  * @private
  */
-function charAt(string, offset, backwards = false) {
+export function charAt(string, offset, backwards = false) {
   const maybePair = backwards ?
     string.slice(offset - 1, offset + 1) :
     string.slice(offset, offset + 2);
@@ -291,7 +291,7 @@ function charAt(string, offset, backwards = false) {
  * @returns {string}
  * @private
  */
-function phpCharToUpper(char) {
+export function phpCharToUpper(char) {
   if (cd.g.phpCharToUpper[char] === 0) {
     return char;
   }
