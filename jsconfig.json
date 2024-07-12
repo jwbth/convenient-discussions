@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "types": [
+      "./node_modules/types-mediawiki",
+      "./node_modules/@types/oojs",
+      "./node_modules/@types/oojs-ui",
+      "./node_modules/@types/jquery"
+    ]
+  }
+}
