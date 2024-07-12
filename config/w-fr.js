@@ -125,6 +125,12 @@ export default {
 	'clearTemplates': [
 		'Clear'
 	],
+	'reflistTalkTemplates': [
+		'Références discussion',
+		'Reflist-talk',
+		'Reflist talk',
+	],
+	'reflistTalkClasses': ['references-discussion'],
 	'noSignatureClasses': [
 		'NavFrame',
   ],

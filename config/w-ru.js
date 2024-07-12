@@ -315,6 +315,12 @@ export default {
     'Скопировано на',
   ],
 
+  reflistTalkTemplates: [
+    'Reflist-talk',
+  ],
+
+  reflistTalkClasses: ['reflist-talk'],
+
   commentAntipatterns: [
     /--\xa0?\[\[Участник:DimaBot\|DimaBot\]\]/,
   ],

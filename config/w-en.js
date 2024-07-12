@@ -244,6 +244,12 @@ export default {
     'Talkpageref',
     'Section reflist',
     'Talkrefs',
+    'Notelist-talk',
+    'Tnote',
+    'Talk notelist',
+    'Notelist talk',
+    'Talknote',
+    'Nlt',
   ],
 
   reflistTalkClasses: ['reflist-talk'],

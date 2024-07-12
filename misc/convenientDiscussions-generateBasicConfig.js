@@ -142,6 +142,7 @@ mw.loader.using([
     Q5841554: 'outdent',
     Q5411705: 'clear',
     Q11501008: 'reflistTalk',
+    Q25733334: 'notelistTalk',
   };
 
   const foreignApi = new mw.ForeignApi('https://www.wikidata.org/w/api.php', {
@@ -223,7 +224,12 @@ mw.loader.using([
 
   config.clearTemplates = titles.clear?.map(getTitleText);
 
-  config.reflistTalkTemplates = titles.reflistTalk?.map(getTitleText);
+  config.reflistTalkTemplates = (
+    (titles.reflistTalk || titles.notelistTalk) &&
+    (titles.reflistTalk || [])
+      .concat(titles.notelistTalk || [])
+      .map(getTitleText)
+  );
 
   config.noSignatureClasses = [];
 
