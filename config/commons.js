@@ -189,3 +189,13 @@ export default {
     }
   },
 };
+
+if (Number(mw.user.options.get('gadget-ThreadedDiscussions')) === 1) {
+  mw.notify(
+    convenientDiscussions.api.wrapHtml('Convenient Discussions is incompatible with Threaded Discussions gadget you have enabled. Please disable Threaded Discussions in <a href="https://commons.wikimedia.org/wiki/Special:Preferences#mw-prefsection-gadgets" target="_blank">gadget preferences</a>.'),
+    {
+      type: 'warn',
+      autoHide: false,
+    }
+  );
+}
