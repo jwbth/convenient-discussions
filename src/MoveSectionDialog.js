@@ -1,6 +1,7 @@
 import Autocomplete from './Autocomplete';
 import CdError from './CdError';
 import ProcessDialog from './ProcessDialog';
+import PseudoLink from './Pseudolink';
 import TextInputWidget from './TextInputWidget';
 import cd from './cd';
 import controller from './controller';
@@ -174,6 +175,17 @@ class MoveSectionDialog extends ProcessDialog {
           }
         });
 
+      const archivePrefix = cd.page.isArchive() ? undefined : cd.page.getArchivePrefix(true);
+      if (archivePrefix) {
+        this.insertArchivePageButton = new PseudoLink({
+          label: archivePrefix,
+          input: this.controls.title.input,
+        });
+        $(this.insertArchivePageButton.element).on('click', () => {
+          this.controls.keepLink?.input.setSelected(false);
+        });
+      }
+
       if (cd.config.getMoveSourcePageCode || cd.config.getMoveTargetPageCode) {
         this.controls.keepLink = createCheckboxField({
           value: 'keepLink',
@@ -199,7 +211,8 @@ class MoveSectionDialog extends ProcessDialog {
 
       this.movePanel.$element.append(
         this.controls.title.field.$element,
-        this.controls.keepLink.field?.$element,
+        this.insertArchivePageButton?.element,
+        this.controls.keepLink?.field.$element,
         $('<pre>')
           .addClass('cd-dialog-moveSection-code')
           .text(sectionCode.slice(0, 300) + (sectionCode.length >= 300 ? '...' : '')),

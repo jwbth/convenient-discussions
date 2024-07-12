@@ -1,36 +1,13 @@
 /* global moment */
 
-import Button from './Button';
 import CdError from './CdError';
 import ProcessDialog from './ProcessDialog';
+import PseudoLink from './Pseudolink';
 import cd from './cd';
 import controller from './controller';
 import { canonicalUrlToPageName, defined, generateFixedPosTimestamp, getDbnameForHostname, zeroPad } from './utils-general';
 import { createCheckboxField, createRadioField, createTextField, mixinUserOoUiClass, tweakUserOoUiClass } from './utils-oojs';
 import { wrapHtml } from './utils-window';
-
-/**
- * Button that inserts text in an input by click and looks like a link with dashed underline.
- *
- * @private
- */
-class PseudoLink extends Button {
-  /**
-   * Create a pseudolink.
-   *
-   * @param {object} config
-   */
-  constructor(config) {
-    super({
-      classes: ['cd-pseudolink'],
-      tooltip: cd.s('pseudolink-tooltip'),
-      label: config.label,
-      action: () => {
-        config.input.setValue(config.text || config.label).focus();
-      },
-    });
-  }
-}
 
 /**
  * @class Upload

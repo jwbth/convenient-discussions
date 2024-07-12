@@ -283,9 +283,10 @@ export class Page {
    * `cd-archivingInfo` and attribute `data-archive-prefix`, returns the current page's name. If the
    * page is an archive page or can't have archives, returns `null`.
    *
+   * @param {boolean} [onlyExplicit=false]
    * @returns {?string}
    */
-  getArchivePrefix() {
+  getArchivePrefix(onlyExplicit = false) {
     if (!this.canHaveArchives()) {
       return null;
     }
@@ -301,7 +302,7 @@ export class Page {
       }
     }
 
-    return result ? String(result) : name + '/';
+    return result ? String(result) : (onlyExplicit ? null : name + '/');
   }
 
   /**
