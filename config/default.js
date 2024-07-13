@@ -170,7 +170,8 @@ export default {
    * - to identify inactive pages, i.e. no replies can be left on them;
    * - to suggest to search in the archive if a section/comment by a given fragment is not found on
    *   the page;
-   * - to make diff/thank links work on archive pages.
+   * - to make diff/thank links work on archive pages;
+   * - to suggest page names for archiving and unarchiving a section when moving it.
    *
    * Each of the array elements can be an object with the defined structure (see
    * {@link ArchivePathEntry} for details) or a regexp. In the latter case, if a page name matches

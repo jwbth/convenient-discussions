@@ -84,7 +84,13 @@ export default {
   },
   timezone: 'UTC',
   useGlobalPreferences: true,
-  archivePaths: [/\/Archive/],
+  archivePaths: [
+    {
+      source: "Commons:Undeletion requests/Current requests",
+      archive: "Commons:Undeletion requests/Archive",
+    },
+    /\/Archive/,
+  ],
   signatureEndingRegexp: / \(talk\)$/,
   tagName: 'convenient-discussions',
   hookToFireWithAuthorWrappers: 'global.userlinks',
