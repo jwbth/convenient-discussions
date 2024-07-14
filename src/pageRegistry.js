@@ -830,7 +830,7 @@ export class Page {
       }
       $('#ca-addsection').addClass('selected');
       $('#ca-view').removeClass('selected');
-      this.addSectionForm.on('unregister', () => {
+      this.addSectionForm.on('teardown', () => {
         $('#ca-addsection').removeClass('selected');
         $('#ca-view').addClass('selected');
       });
@@ -838,7 +838,8 @@ export class Page {
   }
 
   /**
-   * Add a comment form {@link CommentForm#getTarget targeted} at this page to the page.
+   * Clean up traces of a comment form {@link CommentForm#getTarget targeted} at this page to the
+   * page.
    *
    * @param {string} mode
    * @param {import('./CommentForm').default} commentForm
@@ -854,7 +855,7 @@ export class Page {
   /**
    * Remove a comment form {@link CommentForm#getTarget targeted} at this page from the page.
    */
-  removeCommentFormFromPage() {
+  cleanUpCommentFormTraces() {
     if (!this.exists()) {
       controller.$content
         // In case DT's new topic tool is enabled. This is responsible for correct styles being set.

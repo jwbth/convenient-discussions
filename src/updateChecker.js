@@ -748,7 +748,7 @@ const updateChecker = {
             undefined,
           (
             (
-              bootProcess.passedData.wasCommentFormSubmitted &&
+              bootProcess.passedData.submittedCommentForm &&
               bootProcess.passedData.commentIds?.[0]
             ) ||
             undefined

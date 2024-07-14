@@ -3066,7 +3066,8 @@ class CommentForm {
       // Add the created section to the subscription list or change the headline for legacy
       // subscriptions.
       if (
-        // FIXME: sections added with no headline (actually comments added to the preceding section)
+        // FIXME: fix behavior for sections added with no headline (that are, in fact, comments
+        // added to the preceding section)
         this.mode === 'addSection' ||
         (
           !this.useTopicSubscription &&
@@ -3183,7 +3184,7 @@ class CommentForm {
     // be watched/unwatched using a checkbox in a form just sent. The server doesn't manage to
     // update the value quickly enough, so it returns the old value, but we must display the new
     // one.
-    const bootData = { wasCommentFormSubmitted: true };
+    const bootData = { submittedCommentForm: this };
 
     if (this.subscribeCheckbox) {
       this.updateSubscriptionStatus(editTimestamp, commentCode, bootData);
@@ -3205,9 +3206,7 @@ class CommentForm {
     if (!doDelete) {
       // Generate an ID for the comment to jump to.
       bootData.commentIds = [
-        this.mode === 'edit' ?
-          this.target.id :
-          this.generateFutureCommentId(editTimestamp)
+        this.mode === 'edit' ? this.target.id : this.generateFutureCommentId(editTimestamp),
       ];
     }
 
@@ -3250,13 +3249,13 @@ class CommentForm {
    * Remove the comment form elements and restore the page elements that were hidden. Remove
    * properties of other objects related to the form. Close all form operations and remove all
    * references to the form.
-   *
-   * @private
    */
   teardown() {
     this.operations.closeAll();
-    this.target.removeCommentFormFromPage(this.mode, this);
-    this.$element.remove();
+    if (this.$element[0].isConnected) {
+      this.target.cleanUpCommentFormTraces(this.mode, this);
+      this.$element.remove();
+    }
     this.unregister();
     this.emit('teardown');
     this.torndown = true;
@@ -3265,12 +3264,13 @@ class CommentForm {
   /**
    * Remove all outside references to the form and unload it from the session data thus making it
    * not appear after a page reload. A form may be unregistered without being torn down (but not
-   * vice versa); for example, submitted forms and forms that can't be restored after a page reload
-   * for whatever reason.
+   * vice versa) - when it is submitted.
    *
    * @private
    */
   unregister() {
+    if (!this.registered) return;
+
     this.constructor.forgetOnTarget(this.target, this.mode);
 
     // Popups can be placed outside the form element, so they need to be torn down whenever the form
@@ -3864,7 +3864,7 @@ class CommentForm {
    * @returns {object}
    */
   rescue() {
-    this.unregister();
+    this.teardown();
 
     return {
       headline: this.headlineInput?.getValue(),

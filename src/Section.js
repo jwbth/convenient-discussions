@@ -1092,11 +1092,12 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Remove a comment form {@link CommentForm#getTarget targeted} at this section from the page.
+   * Clean up traces of a comment form {@link CommentForm#getTarget targeted} at this section from
+   * the page.
    *
    * @param {string} mode
    */
-  removeCommentFormFromPage(mode) {
+  cleanUpCommentFormTraces(mode) {
     if (mode === 'replyInSection') {
       this.replyButton.show();
       this.$replyButtonWrapper.removeClass('cd-replyButtonWrapper-hasCommentForm');
@@ -1690,7 +1691,7 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Get the section used to subscribe to if available.
+   * Get the section used to subscribe to new comments in this section if available.
    *
    * @returns {?Section}
    */

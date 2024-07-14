@@ -1213,7 +1213,7 @@ export default {
       bootProcess.passedData.parseData = await cd.page.parse(null, false, true);
     } catch (e) {
       this.hideLoadingOverlay();
-      if (bootProcess.passedData.wasCommentFormSubmitted) {
+      if (bootProcess.passedData.submittedCommentForm) {
         throw e;
       } else {
         mw.notify(cd.s('error-reloadpage'), { type: 'error' });
@@ -1221,6 +1221,14 @@ export default {
         return;
       }
     }
+
+    mw.loader.load(bootProcess.passedData.parseData.modules);
+    mw.loader.load(bootProcess.passedData.parseData.modulestyles);
+
+    // It would be perhaps more correct to set the config variables in
+    // controller.updatePageContents(), but we need wgDiscussionToolsPageThreads from there before
+    // that.
+    mw.config.set(bootProcess.passedData.parseData.jsconfigvars);
 
     // Get IDs of unseen comments. This is used to arrange that they will still be there after
     // replying on or refreshing the page.
@@ -1233,10 +1241,11 @@ export default {
 
     this.emit('startReload');
 
-    // Just submitted "Add section" form (it is outside of the .$root element). Forms that should
-    // stay are detached above.
-    this.$addSectionButtonContainer?.remove();
-    $('.cd-commentForm-addSection').remove();
+    // Just submitted "Add section" form (it is outside of the .$root element, so we must remove it
+    // here). Forms that should stay are detached above.
+    if (bootProcess.passedData.submittedCommentForm?.getMode() === 'addSection') {
+      bootProcess.passedData.submittedCommentForm.teardown();
+    }
 
     this.reset();
 
@@ -1272,9 +1281,6 @@ export default {
       wgRevisionId: parseData.revid,
       wgCurRevisionId: parseData.revid,
     });
-    mw.loader.load(parseData.modules);
-    mw.loader.load(parseData.modulestyles);
-    mw.config.set(parseData.jsconfigvars);
   },
 
   /**

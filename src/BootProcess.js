@@ -122,7 +122,7 @@ function processAndRemoveDtElements(elements, bootProcess) {
  *   time for it to be saved to the server.
  * @property {string} [justUnwatchedSection] Section just unwatched so that there could be not
  *   enough time for it to be saved to the server.
- * @property {boolean} [wasCommentFormSubmitted] Did the user just submit a comment form.
+ * @property {CommentForm} [submittedCommentForm] Comment form the user just submitted.
  */
 
 /**
@@ -525,9 +525,12 @@ class BootProcess {
         // sleep() for Firefox, as above
         sleep().then(() => {
           // A tricky case with flashing is when a comment is in a collapsed thread. In this case,
-          // we must use Comment#scrollTo to make sure it is flashed when the thread is uncollapsed
-          // by clicking a link in the notification.
-          const flashOne = this.passedData.wasCommentFormSubmitted || this.passedData.pushState;
+          // we must use Comment#scrollTo() to make sure it is flashed when the thread is
+          // uncollapsed by clicking a link in the notification.
+          const flashOne = Boolean(
+            this.passedData.submittedCommentForm ||
+            this.passedData.pushState
+          );
           comments[0].scrollTo({
             smooth: false,
             pushState: this.passedData.pushState,

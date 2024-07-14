@@ -3012,12 +3012,13 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Remove a comment form {@link CommentForm#getTarget targeted} at this comment from the page.
+   * Clean up traces of a comment form {@link CommentForm#getTarget targeted} at this comment from
+   * the page.
    *
    * @param {string} mode
    * @param {import('./CommentForm').default} commentForm
    */
-  removeCommentFormFromPage(mode, commentForm) {
+  cleanUpCommentFormTraces(mode, commentForm) {
     if (mode === 'reply') {
       this.subitemList.remove('replyForm');
       this.scrollIntoView('top');
