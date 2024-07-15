@@ -341,7 +341,7 @@
 	"sd-improveperformance-help": "如果您在長頁面上發表評論時出現滯後，請啟用此功能。已知這會發生在 Chromium 瀏覽器中。該腳本將延遲頁面底部的呈現，直到您滾動到它為止。",
 	"sd-insertbuttons": "文字插入按鈕",
 	"sd-insertbuttons-multiselect-placeholder": "新增按鈕",
-	"sd-insertbuttons-help": "<ul>\n<li>使用<code>+</code>來指定插入文字後插入符號應放置的位置，例如：<code><nowiki>{{+}}</nowiki></code>。 </li>\n<li>如果您想要讓顯示的文字與插入的文字不同，請使用<code>;</code>，例如：<code><nowiki><code>+</code>;<code /></ nowiki></code>。 </li>\n<li>在<code>;</code>之前使用<code>\\\\n</code>可建立一個新行。 </li>\n<li>在上述字元之前使用<code><nowiki>\\</nowiki></code>來原樣插入它們；例如，<code><nowiki>2\\+2</nowiki></code>。 </li>\n</ul>\n\n按鈕可被拖放。",
+	"sd-insertbuttons-help": "<ul>\n<li>使用<code>+</code>來指定插入文字後插入符號應放置的位置，例如：<code><nowiki>{{+}}</nowiki></code>。 </li>\n<li>如果您想要讓顯示的文字與插入的文字不同，請使用<code>;</code>，例如：<code><nowiki><code>+</code>;<code /></ nowiki></code>。 </li>\n<li>在<code>;</code>字首前使用<code>\\\\n</code>可以產生一個換行。</li>\n<li>在上述字元之前使用<code><nowiki>\\</nowiki></code>來原樣插入它們；例如，<code><nowiki>2\\+2</nowiki></code>。 </li>\n</ul>\n\n按鈕可被拖放。",
 	"sd-modifytoc": "在目錄中顯示新評論和章節",
 	"sd-outdentlevel": "[$1 取消縮排]我的回覆在層級為",
 	"sd-outdentlevel-help": "0 表示從不取消縮排。",
