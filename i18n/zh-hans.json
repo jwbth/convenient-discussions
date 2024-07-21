@@ -356,7 +356,7 @@
 	"sd-improveperformance-help": "如果您在长页面上发表评论时出现延迟，请启用此功能。已知Chromium浏览器中会发生这种情况。该脚本将延迟页面底部的渲染，在您滚动到底部时才会开始渲染。",
 	"sd-insertbuttons": "文本插入按钮",
 	"sd-insertbuttons-multiselect-placeholder": "添加按钮",
-	"sd-insertbuttons-help": "<ul>\n<li>使用<code>+</code>来指定插入文本后插入符号应放置的位置，例如：<code><nowiki>{{+}}</nowiki></code>。</li>\n<li>如果您想让显示的文本与插入的文本不同，请使用<code>;</code>，例如：<code><nowiki><code>+</code>;<code /></nowiki></code>。</li>\n<li>在<code>;</code>之前使用<code>\\\\n</code>可创建一个新行。</li>\n<li>在上述字符之前使用<code><nowiki>\\</nowiki></code>来按原样插入它们；例如，<code><nowiki>2\\+2</nowiki></code>。</li>\n</ul>\n\n按钮可被拖放。",
+	"sd-insertbuttons-help": "<ul>\n<li>使用<code>+</code>来指定插入文本后插入符号应放置的位置，例如：<code><nowiki>{{+}}</nowiki></code>。</li>\n<li>如果您想让显示的文本与插入的文本不同，请使用<code>;</code>，例如：<code><nowiki><code>+</code>;<code /></nowiki></code>。</li>\n<li>在<code>;</code>之前的部分中使用<code>\\\\n</code>可创建一个新行。</li>\n<li>在上述字符之前使用<code><nowiki>\\</nowiki></code>来按原样插入它们；例如，<code><nowiki>2\\+2</nowiki></code>。</li>\n</ul>\n\n按钮可被拖放。",
 	"sd-modifytoc": "在目录中显示新评论和章节",
 	"sd-outdentlevel": "[$1 取消缩进]我的回复的起始级别为",
 	"sd-outdentlevel-help": "0代表不取消缩进。",

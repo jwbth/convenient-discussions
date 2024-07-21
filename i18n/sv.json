@@ -183,7 +183,7 @@
 	"cf-error-couldntedit": "Sidan kanske inte har redigerats.",
 	"cf-error-pagedoesntexist": "Sidan finns inte.",
 	"cf-error-formconflict": "Det finns redan ett \"Lägg till ämne\"-formulär med en annan typ på sidan. Stäng formuläret för att öppna detta.",
-	"cf-error-othersubmitted": "Kan inte skicka in formuläret eftersom ett annat formulär skickas in precis nu.",
+	"cf-error-othersubmitted": "Kan inte skicka in formuläret eftersom ett annat formulär skickas in just nu.",
 	"cf-confirm-noheadline-topic": "Du skrev inte in ämnet. Kommentaren kommer att läggas till i föregående avsnitt utan en rubrik.",
 	"cf-confirm-noheadline-subsection": "Du skrev inte in avsnittets ämne. Kommentaren kommer att läggas till i föregående avsnitt utan en rubrik.",
 	"cf-confirm-noheadline-question": "Är du säker på att du vill publicera kommentaren?",
