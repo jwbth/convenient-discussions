@@ -110,7 +110,7 @@ module.exports = (env) => {
       minimizer: [
         new TerserPlugin({
           terserOptions: {
-            // This provides better debugging (less places where you can't set a breakpoint) while
+            // This provides better debugging (more places where you can set a breakpoint) while
             // costing not so much size.
             compress: {
               // + 0.3% to the file size
@@ -137,19 +137,21 @@ module.exports = (env) => {
 
             filename: (filename) => `${filename}.LICENSE.js`,
 
-            banner: (licenseFile) => licenseFile.includes('worker') ?
-              // A really messed up hack to include source maps for a web worker (works with
-              // ".map.json" extension for webpack.SourceMapDevToolPlugin's "filename" property,
-              // doesn't work with ".map" for some reason).
-              `//# sourceMappingURL=${config.sourceMapsBaseUrl}convenientDiscussions.worker.js.map.json` :
+            banner: (licenseFile) => (
+              licenseFile.includes('worker') ?
+                // A really messed up hack to include source maps for a web worker (works with
+                // .map.json extension for webpack.SourceMapDevToolPlugin's `filename` property,
+                // doesn't work with .map for some reason).
+                `//# sourceMappingURL=${config.sourceMapsBaseUrl}convenientDiscussions.worker.js.map.json` :
 
-              `
- * For documentation and feedback, see the script's homepage:
- * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions
- *
- * For license information, see
- * ${getUrl(config.main.server, config.main.rootPath + '/' + licenseFile)}
-`,
+                `
+* For documentation and feedback, see the script's homepage:
+* https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions
+*
+* For license information, see
+* ${getUrl(config.main.server, config.main.rootPath + '/' + licenseFile)}
+`
+            ),
           },
           sourceMap: true,
         }),

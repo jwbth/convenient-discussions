@@ -1115,6 +1115,8 @@ class Section extends SectionSkeleton {
     const dialog = new MoveSectionDialog(this);
     controller.getWindowManager().addWindows([dialog]);
     controller.getWindowManager().openWindow(dialog);
+
+    cd.tests.moveSectionDialog = dialog;
   }
 
   /**

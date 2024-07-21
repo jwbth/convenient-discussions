@@ -771,8 +771,10 @@ export default {
       );
     }
 
+    // We don't need it now. Keep it for now for compatibility with s-ru config
     cd.g.clientProfile = $.client.profile();
-    cd.g.cmdModifier = cd.g.clientProfile.platform === 'mac' ? 'Cmd' : 'Ctrl';
+
+    cd.g.cmdModifier = $.client.profile().platform === 'mac' ? 'Cmd' : 'Ctrl';
 
     cd.g.isIPv6Address = mw.util.isIPv6Address;
 

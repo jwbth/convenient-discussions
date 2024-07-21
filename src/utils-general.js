@@ -753,7 +753,8 @@ export function getDbnameForHostname(hostname) {
  */
 
 /**
- * Get a page name, host name and fragment from a URL.
+ * Get the page name, host name and fragment from a URL in one of the standard formats (based on the
+ * wgArticlePath and wgScript config values).
  *
  * @param {string} url
  * @returns {?ParsedWikiUrl}
@@ -783,7 +784,7 @@ export function parseWikiUrl(url) {
 }
 
 /**
- * Get a page name from a URL in the canonical format (`.../wiki/Page`).
+ * Get the page name from a URL in the canonical format (`.../wiki/Page`).
  *
  * @param {string} url
  * @returns {string}

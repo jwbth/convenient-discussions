@@ -158,7 +158,7 @@ export function keyCombination(e, keyCode, modifiers = []) {
     removeFromArrayIfPresent(modifiers, 'cmd');
     // In Chrome on Windows, e.metaKey corresponds to the Windows key, so we better check for a
     // platform.
-    modifiers.push(cd.g.clientProfile.platform === 'mac' ? 'meta' : 'ctrl');
+    modifiers.push($.client.profile().platform === 'mac' ? 'meta' : 'ctrl');
   }
   return (
     e.keyCode === keyCode &&
@@ -176,7 +176,7 @@ export function keyCombination(e, keyCode, modifiers = []) {
 export function isCmdModifierPressed(e) {
   // In Chrome on Windows, e.metaKey corresponds to the Windows key, so we better check for a
   // platform.
-  return cd.g.clientProfile.platform === 'mac' ? e.metaKey : e.ctrlKey;
+  return $.client.profile().platform === 'mac' ? e.metaKey : e.ctrlKey;
 }
 
 /**

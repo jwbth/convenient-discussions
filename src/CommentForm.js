@@ -910,7 +910,7 @@ class CommentForm {
         .prependTo(this.$element);
     }
 
-    if (this.containerListType === 'ol' && cd.g.clientProfile.layout !== 'webkit') {
+    if (this.containerListType === 'ol' && $.client.profile().layout !== 'webkit') {
       // Dummy element for forms inside a numbered list so that the number is placed in front of
       // that area, not in some silly place. Note that in Chrome, the number is placed in front of
       // the textarea, so we don't need this in that browser.
@@ -1773,7 +1773,7 @@ class CommentForm {
     // "Performance issues?" hint
     if (
       controller.isLongPage() &&
-      cd.g.clientProfile.layout === 'webkit' &&
+      $.client.profile().layout === 'webkit' &&
       !this.improvePerformance &&
       !this.haveSuggestedToImprovePerformanceRecently()
     ) {
@@ -2210,12 +2210,14 @@ class CommentForm {
       .append(
         isRaw ?
           htmlOrJquery :
-          (new OO.ui.MessageWidget({
-            type,
-            inline: true,
-            label: htmlOrJquery instanceof $ ? htmlOrJquery : wrapHtml(htmlOrJquery),
-            classes: ['cd-message', name ? `cd-message-${name}` : undefined].filter(defined),
-          })).$element
+          (
+            new OO.ui.MessageWidget({
+              type,
+              inline: true,
+              label: htmlOrJquery instanceof $ ? htmlOrJquery : wrapHtml(htmlOrJquery),
+              classes: ['cd-message', name ? `cd-message-${name}` : undefined].filter(defined),
+            })
+          ).$element
       )
       .cdAddCloseButton()
       .cdScrollIntoView('top');
