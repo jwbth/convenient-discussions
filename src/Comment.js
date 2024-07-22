@@ -2346,13 +2346,10 @@ class Comment extends CommentSkeleton {
             className: elementClassNames[i],
           })
         ) {
-          const $headline = this.$elements.eq(i).find('.mw-headline');
+          const $headline = this.$elements.eq(i).find('.mw-headline, :header');
           if ($headline.length) {
-            const $headlineNumber = $headline.find('.mw-headline-number');
             const $html = $(html);
-            $headline
-              .html($html.html())
-              .prepend($headlineNumber);
+            $headline.html($html.html());
             this.section?.update($html);
           }
         } else {

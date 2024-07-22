@@ -251,7 +251,6 @@ export default {
   addSection(section, currentTree, $topUl, newSectionTocIds) {
     let item = section.match?.getTocItem();
     if (!item) {
-      const headline = section.headline;
       const level = section.tocLevel;
       const currentLevelMatch = currentTree[level - 1];
       const upperLevelMatch = currentLevelMatch ? undefined : currentTree[currentTree.length - 1];
@@ -287,13 +286,13 @@ export default {
       if (this.isInSidebar()) {
         const textDiv = document.createElement('div');
         textDiv.className = 'vector-toc-text';
-        textDiv.appendChild(document.createTextNode(headline));
+        textDiv.appendChild(document.createTextNode(section.headline));
         a.appendChild(textDiv);
         li.appendChild(a);
       } else {
         const textSpan = document.createElement('span');
         textSpan.className = 'toctext';
-        textSpan.textContent = headline;
+        textSpan.textContent = section.headline;
         a.appendChild(textSpan);
         li.appendChild(a);
       }
@@ -326,9 +325,6 @@ export default {
       }
 
       item = {
-        // Doesn't seem to be currently used anywhere.
-        headline,
-
         level,
         number,
         $element: $(li),
@@ -434,7 +430,7 @@ export default {
       if (section.match) {
         $sectionLink = section.match.getTocItem()?.$link;
       } else {
-        const id = $.escapeSelector(section.id);
+        const id = CSS.escape(section.id);
         $sectionLink = this.$element.find(`.cd-toc-addedSection a[href="#${id}"]`);
       }
 
@@ -697,7 +693,6 @@ class TocItem {
       throw ['Couldn\'t find text for a link', a];
     }
 
-    const headline = textSpan.textContent;
     const id = a.getAttribute('href').slice(1);
     const li = a.parentNode;
     const level = Number(
@@ -713,16 +708,24 @@ class TocItem {
     }
 
     /**
-     * Link jQuery element.
+     * Section link jQuery element.
      *
      * @name $link
      * @type {external:jQuery}
-     * @memberof TocItem
+     * @memberof import('./toc')~TocItem
+     * @instance
+     */
+
+    /**
+     * Section text jQuery element (including the title, number, and other possible additions).
+     *
+     * @name $text
+     * @type {external:jQuery}
+     * @memberof import('./toc')~TocItem
      * @instance
      */
 
     Object.assign(this, {
-      headline,
       id,
       level,
       number,
@@ -741,25 +744,36 @@ class TocItem {
   replaceText($headline) {
     if (!this.canBeModified) return;
 
-    const html = $headline
-      .clone()
-      .find('*')
-      .each((i, el) => {
-        if (['B', 'EM', 'I', 'S', 'STRIKE', 'STRONG', 'SUB', 'SUP'].includes(el.tagName)) {
-          [...el.attributes].forEach((attr) => {
-            el.removeAttribute(attr.name);
-          });
-        } else {
-          [...el.childNodes].forEach((child) => {
-            el.parentNode.insertBefore(child, el);
-          });
-          el.remove();
-        }
-      })
-      .end()
-      .html();
-    this.$text.html(html);
-    this.headline = this.$text.text().trim();
+    const titleNodes = this.$text
+      .contents()
+      .filter((i, node) => (
+        node.nodeType === Node.TEXT_NODE
+        || (node.tagName && ![...node.classList].some((name) => name.match(/^(cd-|vector-)/)))
+      ))
+      .get();
+    titleNodes[titleNodes.length - 1].after(
+      ...$headline
+        .clone()
+        .find('*')
+        .each((i, el) => {
+          if (['B', 'EM', 'I', 'S', 'STRIKE', 'STRONG', 'SUB', 'SUP'].includes(el.tagName)) {
+            [...el.attributes].forEach((attr) => {
+              el.removeAttribute(attr.name);
+            });
+          } else {
+            [...el.childNodes].forEach((child) => {
+              el.parentNode.insertBefore(child, el);
+            });
+            el.remove();
+          }
+        })
+        .end()
+        .contents()
+        .get()
+    );
+    titleNodes.forEach((node) => {
+      node.remove();
+    });
   }
 
   /**

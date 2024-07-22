@@ -213,8 +213,12 @@ function filterCommentContent(comment) {
   comment.elementHtmls = comment.elements.map((element) => {
     if (isHeadingNode(element)) {
       // Keep only the headline, as other elements contain dynamic identifiers.
-      const headlineElement = element.getElementsByClassName('mw-headline', 1)[0];
+      let headlineElement = element.getElementsByClassName('mw-headline', 1)[0];
+      if (!headlineElement) {
+        headlineElement = element.querySelectorAll('h1, h2, h3, h4, h5, h6')[0];
+      }
       if (headlineElement) {
+        // Was removed in 2021, see T284921. Keep this for some time.
         headlineElement.getElementsByClassName('mw-headline-number', 1)[0]?.remove();
 
         // Use `[...iterable]`, as childNodes is a live collection, and when an element is removed
@@ -298,28 +302,24 @@ function addCompareHelperProperties(comment) {
       // The link may change
       link.removeAttribute('href');
     });
-    if (el.tagName === 'DIV') {
-      if (el.classList.contains('mw-heading')) {
-        htmlToCompare = comment.elements[0].children[0].innerHTML;
+    if (el.tagName === 'DIV' && !el.classList.contains('mw-heading')) {
+      // Workaround the bug where the {{smalldiv}} output (or any <div> wrapper around the
+      // comment) is treated differently depending on whether there are replies to that comment.
+      // When there are no, a <li>/<dd> element containing the <div> wrapper is the only comment
+      // part; when there are, the <div> wrapper is.
+      el.classList.remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last');
+      if (!el.getAttribute('class')) {
+        el.removeAttribute('class');
+      }
+      if (Object.keys(el.attribs).length) {
+        // https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Правила&oldid=125661313#c-Vladimir_Solovjev-20220921144700-D6194c-1cc-20220919200300
+        // without children has no trailing newline, while with children it has.
+        if (el.lastChild?.data === '\n') {
+          el.lastChild.remove();
+        }
+        htmlToCompare = el.outerHTML;
       } else {
-        // Workaround the bug where the {{smalldiv}} output (or any <div> wrapper around the
-        // comment) is treated differently depending on whether there are replies to that comment.
-        // When there are no, a <li>/<dd> element containing the <div> wrapper is the only comment
-        // part; when there are, the <div> wrapper is.
-        el.classList.remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last');
-        if (!el.getAttribute('class')) {
-          el.removeAttribute('class');
-        }
-        if (Object.keys(el.attribs).length) {
-          // https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Правила&oldid=125661313#c-Vladimir_Solovjev-20220921144700-D6194c-1cc-20220919200300
-          // without children has no trailing newline, while with children it has.
-          if (el.lastChild?.data === '\n') {
-            el.lastChild.remove();
-          }
-          htmlToCompare = el.outerHTML;
-        } else {
-          htmlToCompare = el.innerHTML;
-        }
+        htmlToCompare = el.innerHTML;
       }
     } else {
       htmlToCompare = el.innerHTML || el.textContent;
