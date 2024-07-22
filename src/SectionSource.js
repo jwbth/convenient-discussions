@@ -157,7 +157,7 @@ class SectionSource {
         // Any next heading.
         '={1,6}' +
 
-        '[^=].*=+[ \\t\\x01\\x02]*\n'
+        '[^=].*=+[ \\t\\x01\\x02]*\\n'
       )) ||
       adjustedCodeFromSection.match(new RegExp(
         '(' +

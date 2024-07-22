@@ -284,7 +284,12 @@ class SectionSkeleton {
    */
   parseHeadline() {
     const classesToFilter = [
+      // Was removed in 2021, see T284921. Keep this for some time.
       'mw-headline-number',
+
+      // https://www.mediawiki.org/wiki/Topic:Y90udqpc29ehe599
+      'tpl-autonum-num',
+
       'mw-editsection-like',
       ...cd.config.excludeFromHeadlineClasses,
     ];

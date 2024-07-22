@@ -76,8 +76,11 @@ module.exports = {
     "jsdoc/valid-types": "off",
     "jsdoc/no-undefined-types": "off",
 
-    "no-constant-condition": ["error", { "checkLoops": false }],
+    // We use them for text masking
     "no-control-regex": "off",
+
+    "no-constant-condition": ["error", { "checkLoops": false }],
+
     "import/order": ["warn", {
       "alphabetize": {
         caseInsensitive: false,

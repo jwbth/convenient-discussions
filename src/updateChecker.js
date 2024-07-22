@@ -347,8 +347,8 @@ async function checkForUpdates() {
 
           updateChecker.emit('sectionsUpdate', sections);
 
-          // We check for changes before notifying about new comments to notify about changes in a
-          // renamed section if it is watched.
+          // We check for changes before notifying about new comments to notify about changes in
+          // renamed sections if any were watched.
           checkForNewChanges(currentComments);
 
           await processComments(newComments, currentComments, currentRevisionId);

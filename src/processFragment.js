@@ -69,8 +69,8 @@ export default async function processFragment() {
   }
 
   if (decodedValue && !cd.page.isArchive()) {
-    const escapedValue = $.escapeSelector(value);
-    const escapedDecodedValue = decodedValue && $.escapeSelector(decodedValue);
+    const escapedValue = CSS.escape(value);
+    const escapedDecodedValue = decodedValue && CSS.escape(decodedValue);
     const isTargetFound = (
       comment ||
       cd.config.idleFragments.some((regexp) => decodedValue.match(regexp)) ||
