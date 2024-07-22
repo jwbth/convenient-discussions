@@ -1317,8 +1317,7 @@ class CommentForm {
       return;
     }
 
-    const $editNotices = $(result.html.replace(/<div class="cd-editnotice"><\/div>/g, ''))
-      .find('.mw-parser-output');
+    const $editNotices = $(result.html.replace(/<div class="cd-editnotice"><\/div>/g, ''));
     if (!$editNotices.children().length && !$editNotices.text()) return;
 
     const mediaWikiNamespace = mw.config.get('wgFormattedNamespaces')[8];
