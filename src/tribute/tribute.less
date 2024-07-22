@@ -1,3 +1,5 @@
+@import '../variables.less';
+
 .tribute-container {
   position: absolute;
   top: 0;
@@ -45,5 +47,17 @@
 }
 
 .tribute-label {
-  color: var(--color-subtle, #54595d);
+  color: @color-subtler;
+
+  html.skin-theme-clientpref-night & {
+    color: @color-subtler-darkmode;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  html.skin-theme-clientpref-os {
+    .tribute-label {
+      color: @color-subtler-darkmode;
+    }
+  }
 }

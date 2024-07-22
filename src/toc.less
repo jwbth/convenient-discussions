@@ -1,7 +1,7 @@
-.cd-toc-commentCount {
-  // Should be --color-base--subtle, but it's not in dark mode yet
-  color: var(--color-subtle, #54595d);
+@import 'variables.less';
 
+.cd-toc-commentCount {
+  color: @color-subtler;
   text-decoration: inherit;
   -moz-user-select: none;
   user-select: none;
@@ -9,6 +9,10 @@
 
   &-before {
     margin-inline-end: 0.75em;
+  }
+
+  html.skin-theme-clientpref-night & {
+    color: @color-subtler-darkmode;
   }
 }
 
@@ -21,10 +25,14 @@
   vertical-align: middle;
   position: relative;
   top: -0.0625rem;
-  color: var(--color-subtle, #54595d);
+  color: @color-subtler;
 
   &-before {
     margin-inline-end: 0.75em;
+  }
+
+  html.skin-theme-clientpref-night & {
+    color: @color-subtler-darkmode;
   }
 }
 
@@ -46,8 +54,15 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  html.skin-theme-clientpref-os .vector-toc .cd-toc-addedCommentList {
-    list-style-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="5" height="13" viewBox="0 0 5 13"%3E%3Ccircle cx="2.5" cy="9" r="2.5" fill="%23c8ccd1"/%3E%3C/svg%3E');
+  html.skin-theme-clientpref-os {
+    .cd-toc-commentCount,
+    .cd-toc-subscriptionIcon {
+      color: @color-subtler-darkmode;
+    }
+
+    .vector-toc .cd-toc-addedCommentList {
+      list-style-image: url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="5" height="13" viewBox="0 0 5 13"%3E%3Ccircle cx="2.5" cy="9" r="2.5" fill="%23c8ccd1"/%3E%3C/svg%3E');
+    }
   }
 }
 
@@ -57,7 +72,7 @@
 // Need to override `.vector-toc .vector-toc-link`
 .cd-toc-addedCommentList.cd-toc-addedCommentList.cd-toc-addedCommentList a,
 .cd-toc-addedSection.cd-toc-addedSection.cd-toc-addedSection a {
-  color: var(--color-subtle, #54595d);
+  color: @color-subtler;
 }
 
 .cd-toc-more {

@@ -1,3 +1,5 @@
+@import 'variables.less';
+
 .cd-commentForm {
   display: flow-root;
   font-weight: normal;
@@ -194,7 +196,8 @@
     }
   }
 
-  // Numbers appear when there is more than one header in the preview.
+  // Numbers appeared before T284921 (October 2021) when there was more than one header in the
+  // preview.
   .mw-headline-number,
 
   .diff-lineno {
@@ -217,9 +220,12 @@
   }
 
   &-label {
-    color: var(--color-subtle, #54595d);
-
+    color: @color-subtler;
     margin-bottom: 0.5em;
+
+    html.skin-theme-clientpref-night & {
+      color: @color-subtler-darkmode;
+    }
   }
 
   &-indentedComment > .mw-parser-output > dl {
@@ -420,8 +426,14 @@ html.skin-theme-clientpref-night a.tool:not(.mw-no-invert) {
 
 @media (prefers-color-scheme: dark) {
   html.skin-theme-clientpref-os {
-    color-scheme: light;
-    filter: invert(1) hue-rotate(180deg);
+    a.tool:not(.mw-no-invert) {
+      color-scheme: light;
+      filter: invert(1) hue-rotate(180deg);
+    }
+
+    .cd-commentForm-previewArea-label {
+      color: @color-subtler-darkmode;
+    }
   }
 }
 
