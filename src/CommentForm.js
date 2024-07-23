@@ -2568,7 +2568,7 @@ class CommentForm {
    * @returns {boolean}
    */
   isBeingSubmitted() {
-    return this.operations.areThere('submit');
+    return Boolean(this.operations.filterByType('submit').length);
   }
 
   /**
@@ -2577,7 +2577,7 @@ class CommentForm {
    * @returns {boolean}
    */
   isContentBeingLoaded() {
-    return this.operations.areThere('load');
+    return Boolean(this.operations.filterByType('load').length);
   }
 
   /**

@@ -59,16 +59,6 @@ class CommentFormOperationRegistry {
   }
 
   /**
-   * Check if there are operations of the specified type in the registry.
-   *
-   * @param {'load'|'preview'|'viewChanges'|'submit'} type Operation type.
-   * @returns {boolean}
-   */
-  areThere(type) {
-    return Boolean(this.filterByType(type).length);
-  }
-
-  /**
    * Find operations for which the specified callback returns a truthy value.
    *
    * @param {Function} callback

@@ -119,7 +119,7 @@ async function maybeNotifyNotFound() {
     if (sectionMatch) {
       guessedSectionText = (
         ' ' +
-        cd.sParse('deadanchor-section-similar', '#' + sectionMatch.id, sectionMatch.getHeadline())
+        cd.sParse('deadanchor-section-similar', '#' + sectionMatch.id, sectionMatch.headline)
       )
         // Until https://phabricator.wikimedia.org/T288415 is online on most wikis.
         .replace(cd.g.articlePathRegexp, '$1');
