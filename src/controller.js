@@ -1077,7 +1077,10 @@ export default {
       'mediawiki.Uri',
       'mediawiki.api',
       'mediawiki.cookie',
+
+      // span.comment
       'mediawiki.interface.helpers.styles',
+
       'mediawiki.jqueryMsg',
       'mediawiki.notification',
       'mediawiki.storage',

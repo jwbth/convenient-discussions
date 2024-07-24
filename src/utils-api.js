@@ -120,7 +120,7 @@ export function requestInBackground(params, method = 'post') {
  * @param {object} [customOptions]
  * @returns {external:jQueryPromise.<object>}
  */
-export function parseCode(code, customOptions) {
+export async function parseCode(code, customOptions) {
   const defaultOptions = {
     action: 'parse',
     text: code,
@@ -133,17 +133,15 @@ export function parseCode(code, customOptions) {
     preview: true,
   };
   const options = Object.assign({}, defaultOptions, customOptions);
-  return controller.getApi().post(options).then(
-    (resp) => {
-      mw.loader.load(resp.parse.modules);
-      mw.loader.load(resp.parse.modulestyles);
-      return {
-        html: resp.parse.text,
-        parsedSummary: resp.parse.parsedsummary,
-      };
-    },
-    handleApiReject
-  );
+  const resp = await controller.getApi().post(options).catch(handleApiReject);
+
+  mw.loader.load(resp.parse.modules);
+  mw.loader.load(resp.parse.modulestyles);
+
+  return {
+    html: resp.parse.text,
+    parsedSummary: resp.parse.parsedsummary,
+  };
 }
 
 /**

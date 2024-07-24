@@ -584,7 +584,11 @@ export function getHeadingLevel(node) {
 
   return (
     Number(
-      (node.tagName.match(/^H([1-6])$/) || node.className.match(/\bmw-heading([1-6])\b/) || [])[1]
+      (
+        node.tagName.match(/^H([1-6])$/) ||
+        node.className.match(/\bmw-heading([1-6])\b/) ||
+        []
+      )[1]
     ) ||
     null
   );

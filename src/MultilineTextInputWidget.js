@@ -1,5 +1,5 @@
 import TextInputWidget from './TextInputWidget';
-import { mixinUserOoUiClass } from './utils-oojs';
+import { mixinUserOoUiClass, tweakUserOoUiClass } from './utils-oojs';
 
 /**
  * OOUI multiline text input widget.
@@ -17,6 +17,8 @@ import { mixinUserOoUiClass } from './utils-oojs';
  * @augments external:OO.ui.MultilineTextInputWidget
  */
 class MultilineTextInputWidget extends OO.ui.MultilineTextInputWidget {}
+
+tweakUserOoUiClass(MultilineTextInputWidget);
 
 // We can't make OO.ui.MultilineTextInputWidget extend our TextInputWidget, but we can mixin
 // TextInputWidget into a class that extends OO.ui.MultilineTextInputWidget.

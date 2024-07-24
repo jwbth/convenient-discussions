@@ -2624,8 +2624,7 @@ class CommentForm {
   async preview(isAuto = true, operation) {
     if (
       this.isContentBeingLoaded() ||
-      (isAuto && !this.autopreview) ||
-      (!this.autopreview && this.isBeingSubmitted())
+      (!this.autopreview && (isAuto || this.isBeingSubmitted()))
     ) {
       operation?.close();
       return;
@@ -2737,7 +2736,7 @@ class CommentForm {
           document.createTextNode(cd.mws('colon-separator')),
           $('<span>')
             .addClass('comment')
-            .append(parsedSummary),
+            .html(parsedSummary),
         );
       }
     }
