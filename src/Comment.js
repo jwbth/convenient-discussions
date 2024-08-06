@@ -1195,11 +1195,14 @@ class Comment extends CommentSkeleton {
       if (controller.areThereLtrRtlMixes()) {
         // Take the last element because the first one may be the section heading which can have
         // another direction.
-        const isLtr = this.elements.slice(-1)[0]
-          .closest('.mw-content-ltr, .mw-content-rtl')
-          .classList
-          .contains('mw-content-ltr');
-        this.direction = isLtr ? 'ltr' : 'rtl';
+        this.direction = (
+          this.elements.slice(-1)[0]
+            .closest('.mw-content-ltr, .mw-content-rtl')
+            .classList
+            .contains('mw-content-ltr')
+        ) ?
+          'ltr' :
+          'rtl';
       } else {
         this.direction = cd.g.contentDirection;
       }

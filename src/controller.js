@@ -104,67 +104,382 @@ export default {
   },
 
   /**
-   * Set up the controller for use in the current boot process. (Executed at every page reload.)
-   *
-   * @param {string} pageHtml HTML to update the page with.
-   */
-  setup(pageHtml) {
-    // RevisionSlider replaces the #mw-content-text element.
-    if (!this.$content[0]?.parentNode) {
-      this.$content = $('#mw-content-text');
-    }
-
-    if (pageHtml) {
-      const div = document.createElement('div');
-      div.innerHTML = pageHtml;
-      this.rootElement = div.firstChild;
-      this.$root = $(this.rootElement);
-    } else {
-      // There can be more than one .mw-parser-output child, e.g. on talk pages of IP editors.
-      this.$root = this.$content.children('.mw-parser-output').first();
-
-      // 404 pages
-      if (!this.$root.length) {
-        this.$root = this.$content;
-      }
-
-      this.rootElement = this.$root[0];
-    }
-
-    // Add the class immediately to prevent the issue when any unexpected error prevents this from
-    // being executed and then this.handleWikipageContentHookFirings() is called with
-    // #mw-content-text element for some reason, and the page goes into an infinite reloading loop.
-    this.$root.addClass('cd-parse-started');
-  },
-
-  /**
-   * Reset the controller data and state. (Executed between page loads.)
+   * Load the data required for the script to run on a talk page and execute the
+   * {@link BootProcess boot process}.
    *
    * @private
    */
-  reset() {
-    this.cleanUpUrlAndDom();
-    this.mutationObserver?.disconnect();
-    commentRegistry.reset();
-    sectionRegistry.reset();
-    CommentForm.forgetOnTarget(cd.page, 'addSection');
-    this.$emulatedAddTopicButton?.remove();
-    delete this.$addTopicButtons;
-    this.content = {};
-    this.addedCommentCount = 0;
-    this.areRelevantCommentsAdded = false;
-    this.relevantAddedCommentIds = null;
-    delete this.dtSubscribableThreads;
-    this.updatePageTitle();
+  bootOnTalkPage() {
+    if (!this.isTalkPage()) return;
+
+    debug.stopTimer('start');
+    debug.startTimer('load data');
+
+    /**
+     * Last boot process.
+     *
+     * @type {BootProcess|undefined}
+     * @private
+     */
+    this.bootProcess = new BootProcess();
+
+    let siteDataRequests = [];
+
+    // Make some requests in advance if the API module is ready in order not to make 2 requests
+    // sequentially. We don't make a `userinfo` request, because if there is more than one tab in
+    // the background, this request is made and the execution stops at mw.loader.using, which
+    // results in overriding the renewed visits setting of one tab by another tab (the visits are
+    // loaded by one tab, then another tab, then written by one tab, then by another tab).
+    if (mw.loader.getState('mediawiki.api') === 'ready') {
+      siteDataRequests = init.getSiteData();
+
+      // We are _not_ calling getUserInfo() here to avoid losing visit data updates from some pages
+      // if several pages are opened simultaneously. In this situation, visits could be requested
+      // for multiple pages; updated and then saved for each of them with losing the updates from
+      // the rest.
+    }
+
+    const modules = [
+      'jquery.client',
+      'jquery.ui',
+      'mediawiki.Title',
+      'mediawiki.Uri',
+      'mediawiki.api',
+      'mediawiki.cookie',
+
+      // span.comment
+      'mediawiki.interface.helpers.styles',
+
+      'mediawiki.jqueryMsg',
+      'mediawiki.notification',
+      'mediawiki.storage',
+      'mediawiki.user',
+      'mediawiki.util',
+      'mediawiki.widgets.visibleLengthLimit',
+      'oojs',
+      'oojs-ui-core',
+      'oojs-ui-widgets',
+      'oojs-ui-windows',
+      'oojs-ui.styles.icons-alerts',
+      'oojs-ui.styles.icons-content',
+      'oojs-ui.styles.icons-editing-advanced',
+      'oojs-ui.styles.icons-editing-citation',
+      'oojs-ui.styles.icons-editing-core',
+      'oojs-ui.styles.icons-interactions',
+      'oojs-ui.styles.icons-movement',
+      'user.options',
+      mw.loader.getState('ext.confirmEdit.CaptchaInputWidget') ?
+        'ext.confirmEdit.CaptchaInputWidget' :
+        undefined,
+    ].filter(defined);
+
+    // mw.loader.using() delays the execution even if all modules are ready (if CD is used as a
+    // gadget with preloaded dependencies, for example), so we use this trick.
+    let modulesRequest;
+    if (modules.every((module) => mw.loader.getState(module) === 'ready')) {
+      // If there is no data to load and, therefore, no period of time within which a reflow (layout
+      // thrashing) could happen without impeding performance, we cache the value so that it could
+      // be used in .saveRelativeScrollPosition() without causing a reflow.
+      if (siteDataRequests.every((request) => request.state() === 'resolved')) {
+        this.bootProcess.passedData = { scrollY: window.scrollY };
+      }
+    } else {
+      modulesRequest = mw.loader.using(modules);
+    }
+
+    this.showLoadingOverlay();
+    Promise.all([modulesRequest, ...siteDataRequests]).then(
+      async () => {
+        // Do it here because OO.EventEmitter can be unavailable when these modules are first
+        // imported.
+        mixEventEmitterInObject(this);
+        mixEventEmitterInObject(visits);
+        mixEventEmitterInObject(updateChecker);
+        mixEventEmitterInObject(LiveTimestamp);
+        mixEventEmitterInObject(commentFormRegistry);
+        mixEventEmitterInObject(commentRegistry);
+        OO.mixinClass(Subscriptions, OO.EventEmitter);
+        OO.mixinClass(CommentForm, OO.EventEmitter);
+
+        await this.tryExecuteBootProcess();
+
+        updateChecker
+          .on('check', (revisionId) => {
+            this.lastCheckedRevisionId = revisionId;
+          })
+          .on('commentsUpdate', this.updateAddedComments.bind(this));
+      },
+      (e) => {
+        mw.notify(cd.s('error-loaddata'), { type: 'error' });
+        console.error(e);
+        this.hideLoadingOverlay();
+      }
+    );
+
+    sleep(15000).then(() => {
+      if (this.booting) {
+        this.hideLoadingOverlay();
+        console.warn('The loading overlay stays for more than 15 seconds; removing it.');
+      }
+    });
+
+    this.$contentColumn = skin$({
+      timeless: '#mw-content',
+      minerva: '#bodyContent',
+      default: '#content',
+    });
+
+    /*
+      Additions of CSS set a stage for a future reflow which delays operations dependent on
+      rendering, so we run them now, not after the requests are fulfilled, to save time. The overall
+      order is like this:
+      1. Make network requests (above).
+      2. Run operations dependent on rendering, such as window.getComputedStyle() and jQuery's
+         .css() (below). Normally they would initiate a reflow, but, as we haven't changed the
+         layout or added CSS yet, there is nothing to update.
+      3. Run operations that create prerequisites for a reflow, such as adding CSS (below). Thanks
+         to the fact that the network requests, if any, are already pending, we don't waste time.
+     */
+    init.memorizeCssValues();
+    init.addTalkPageCss();
   },
 
   /**
-   * Set whether the current page is a talk page.
-   *
-   * @param {boolean} value
+   * @class Api
+   * @memberof external:mw
+   * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Api
    */
-  setTalkPageness(value) {
-    this.talkPage = Boolean(value);
+
+  /**
+   * Get a
+   * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Api mw.Api} instance.
+   *
+   * @returns {external:mw.Api}
+   */
+  getApi() {
+    this.api ||= new mw.Api(cd.getApiConfig());
+
+    return this.api;
+  },
+
+  /**
+   * _For internal use._ Get the worker object.
+   *
+   * @returns {Worker}
+   */
+  getWorker() {
+    this.worker ||= new Worker();
+
+    return this.worker;
+  },
+
+  /**
+   * Create an OOUI window manager or return an existing one.
+   *
+   * @param {string} [name='default'] Name of the window manager. We may need more than one if we,
+   *   for some reason, want to have more than one window open at any moment.
+   * @returns {external:OO.ui.WindowManager}
+   */
+  getWindowManager(name = 'default') {
+    this.windowManagers ||= {};
+
+    if (!this.windowManagers[name]) {
+      const windowManager = new OO.ui.WindowManager();
+      windowManager.on('closing', async (win, closed) => {
+        // We don't have windows that can be reused.
+        await closed;
+        windowManager.clearWindows();
+      });
+
+      $(OO.ui.getTeleportTarget?.() || document.body).append(windowManager.$element);
+      this.windowManagers[name] = windowManager;
+    }
+
+    return this.windowManagers[name];
+  },
+
+  /**
+   * Get the popup overlay used for OOUI components.
+   *
+   * @returns {external:jQuery}
+   */
+  getPopupOverlay() {
+    this.$popupOverlay ??= $('<div>')
+      .addClass('cd-popupOverlay')
+      .appendTo(document.body);
+    return this.$popupOverlay;
+  },
+
+  /**
+   * Show the loading overlay (a logo in the corner of the page).
+   *
+   * @private
+   */
+  showLoadingOverlay() {
+    if (window.cdShowLoadingOverlay === false) return;
+
+    if (!this.$loadingPopup) {
+      this.$loadingPopup = $('<div>')
+        .addClass('cd-loadingPopup')
+        .append(
+          $('<div>')
+            .addClass('cd-loadingPopup-logo cd-icon')
+            .append(
+              $('<div>').addClass('cd-loadingPopup-logo-partBackground'),
+              createSvg(55, 55, 50, 50).html(
+                `<path fill-rule="evenodd" clip-rule="evenodd" d="M42.5 10H45C46.3261 10 47.5979 10.5268 48.5355 11.4645C49.4732 12.4021 50 13.6739 50 15V50L40 40H15C13.6739 40 12.4021 39.4732 11.4645 38.5355C10.5268 37.5979 10 36.3261 10 35V32.5H37.5C38.8261 32.5 40.0979 31.9732 41.0355 31.0355C41.9732 30.0979 42.5 28.8261 42.5 27.5V10ZM5 3.05176e-05H35C36.3261 3.05176e-05 37.5979 0.526815 38.5355 1.4645C39.4732 2.40218 40 3.67395 40 5.00003V25C40 26.3261 39.4732 27.5979 38.5355 28.5355C37.5979 29.4732 36.3261 30 35 30H10L0 40V5.00003C0 3.67395 0.526784 2.40218 1.46447 1.4645C2.40215 0.526815 3.67392 3.05176e-05 5 3.05176e-05ZM19.8 23C14.58 23 10.14 21.66 8.5 17H31.1C29.46 21.66 25.02 23 19.8 23ZM13.4667 7.50561C12.9734 7.17597 12.3933 7.00002 11.8 7.00002C11.0043 7.00002 10.2413 7.31609 9.6787 7.8787C9.11607 8.44131 8.8 9.20437 8.8 10C8.8 10.5934 8.97595 11.1734 9.30559 11.6667C9.6352 12.1601 10.1038 12.5446 10.6519 12.7717C11.2001 12.9987 11.8033 13.0581 12.3853 12.9424C12.9672 12.8266 13.5018 12.5409 13.9213 12.1213C14.3409 11.7018 14.6266 11.1672 14.7424 10.5853C14.8581 10.0033 14.7987 9.40015 14.5716 8.85197C14.3446 8.30379 13.9601 7.83526 13.4667 7.50561ZM27.8 7.00002C28.3933 7.00002 28.9734 7.17597 29.4667 7.50561C29.9601 7.83526 30.3446 8.30379 30.5716 8.85197C30.7987 9.40015 30.8581 10.0033 30.7424 10.5853C30.6266 11.1672 30.3409 11.7018 29.9213 12.1213C29.5018 12.5409 28.9672 12.8266 28.3853 12.9424C27.8033 13.0581 27.2001 12.9987 26.6519 12.7717C26.1038 12.5446 25.6352 12.1601 25.3056 11.6667C24.9759 11.1734 24.8 10.5934 24.8 10C24.8 9.20437 25.1161 8.44131 25.6787 7.8787C26.2413 7.31609 27.0043 7.00002 27.8 7.00002Z" />`
+              )
+            )
+        );
+      $(document.body).append(this.$loadingPopup);
+    } else {
+      this.$loadingPopup.show();
+    }
+  },
+
+  /**
+   * Hide the loading overlay.
+   *
+   * @private
+   */
+  hideLoadingOverlay() {
+    if (!this.$loadingPopup || window.cdShowLoadingOverlay === false) return;
+
+    this.$loadingPopup.hide();
+  },
+
+  /**
+   * Is there any kind of a page overlay present, like the OOUI modal overlay or CD loading overlay.
+   * This runs very frequently.
+   *
+   * @returns {boolean}
+   */
+  isPageOverlayOn() {
+    return document.body.classList.contains('oo-ui-windowManager-modal-active') || this.booting;
+  },
+
+  /**
+   * Run the {@link BootProcess boot process} and catch errors.
+   *
+   * @param {boolean} isReload Is the page reloaded.
+   * @private
+   */
+  async tryExecuteBootProcess(isReload) {
+    this.booting = true;
+
+    // We could say "let it crash", but unforeseen errors in BootProcess#execute() are just too
+    // likely to go without a safeguard.
+    try {
+      await this.bootProcess.execute(isReload);
+      if (isReload) {
+        mw.hook('wikipage.content').fire(this.$content);
+      }
+    } catch (e) {
+      mw.notify(cd.s('error-processpage'), { type: 'error' });
+      console.error(e);
+      this.hideLoadingOverlay();
+    }
+
+    this.booting = false;
+  },
+
+  /**
+   * Get the offset data related to `.$contentColumn`.
+   *
+   * @param {boolean} reset Whether to bypass cache.
+   * @returns {object}
+   */
+  getContentColumnOffsets(reset) {
+    if (!this.contentColumnOffsets || reset) {
+      const prop = cd.g.contentDirection === 'ltr' ? 'padding-left' : 'padding-right';
+      let startMargin = Math.max(parseFloat(this.$contentColumn.css(prop)), cd.g.contentFontSize);
+
+      // The content column in Timeless has no _borders_ as such, so it's wrong to penetrate the
+      // surrounding area from the design point of view.
+      if (cd.g.skin === 'timeless') {
+        startMargin--;
+      }
+
+      const left = this.$contentColumn.offset().left;
+      const width = this.$contentColumn.outerWidth();
+      this.contentColumnOffsets = {
+        startMargin,
+        start: cd.g.contentDirection === 'ltr' ? left : left + width,
+        end: cd.g.contentDirection === 'ltr' ? left + width : left,
+      };
+
+      // This is set only on window resize event. The initial value is set in
+      // init.addTalkPageCss() through a style tag.
+      if (reset) {
+        $(document.documentElement).css('--cd-content-start-margin', startMargin + 'px');
+      }
+    }
+
+    return this.contentColumnOffsets;
+  },
+
+  /**
+   * Load the data required for the script to process the page as a log page and
+   * {@link module:addCommentLinks process it}.
+   *
+   * @private
+   */
+  bootOnCommentLinksPage() {
+    if (
+      !this.isWatchlistPage() &&
+      !this.isContributionsPage() &&
+      !this.isHistoryPage() &&
+      !(this.isDiffPage() && this.isArticlePageTalkPage()) &&
+
+      // Instant Diffs script can be called on talk pages as well
+      !this.isTalkPage()
+    ) {
+      return;
+    }
+
+    // Make some requests in advance if the API module is ready in order not to make 2 requests
+    // sequentially.
+    if (mw.loader.getState('mediawiki.api') === 'ready') {
+      init.getSiteData();
+
+      // Loading user info on diff pages could lead to problems with saving visits when many pages
+      // are opened, but not yet focused, simultaneously.
+      if (!this.isTalkPage()) {
+        getUserInfo(true).catch((e) => {
+          console.warn(e);
+        });
+      }
+    }
+
+    mw.loader.using([
+      'jquery.client',
+      'mediawiki.Title',
+      'mediawiki.api',
+      'mediawiki.jqueryMsg',
+      'mediawiki.user',
+      'mediawiki.util',
+      'oojs',
+      'oojs-ui-core',
+      'oojs-ui-widgets',
+      'oojs-ui-windows',
+      'oojs-ui.styles.icons-alerts',
+      'oojs-ui.styles.icons-editing-list',
+      'oojs-ui.styles.icons-interactions',
+      'user.options',
+    ]).then(
+      () => {
+        addCommentLinks();
+
+        // See the comment above: "Additions of CSS...".
+        require('./global.less');
+
+        require('./logPages.less');
+      },
+      (e) => {
+        mw.notify(cd.s('error-loaddata'), { type: 'error' });
+        console.error(e);
+      }
+    );
   },
 
   /**
@@ -241,111 +556,64 @@ export default {
   },
 
   /**
-   * Set whether the viewport is currently automatically scrolled to some position. To get that
-   * state, use {@link module:controller.isAutoScrolling}.
-   *
-   * @param {boolean} value
-   */
-  toggleAutoScrolling(value) {
-    this.autoScrolling = Boolean(value);
-  },
-
-  /**
-   * Check whether the viewport is currently automatically scrolled to some position. To set that
-   * state, use {@link module:controller.toggleAutoScrolling}.
+   * Is the page loading (the loading overlay is on).
    *
    * @returns {boolean}
    */
-  isAutoScrolling() {
-    return this.autoScrolling;
+  isBooting() {
+    return this.booting;
   },
 
   /**
-   * Create an OOUI window manager or return an existing one.
+   * Get the current (or last available) boot process.
    *
-   * @param {string} [name='default'] Name of the window manager. We may need more than one if we,
-   *   for some reason, want to have more than one window open at any moment.
-   * @returns {external:OO.ui.WindowManager}
+   * @returns {?BootProcess}
    */
-  getWindowManager(name = 'default') {
-    this.windowManagers ||= {};
+  getBootProcess() {
+    return this.bootProcess || null;
+  },
 
-    if (!this.windowManagers[name]) {
-      this.windowManagers[name] = new OO.ui.WindowManager();
-      this.windowManagers[name].on('closing', async (win, closed) => {
-        // We don't have windows that can be reused.
-        await closed;
-        this.windowManagers[name].clearWindows();
-      });
-
-      $(OO.ui.getTeleportTarget?.() || document.body).append(this.windowManagers[name].$element);
+  /**
+   * Set up the controller for use in the current boot process. (Executed at every page load.)
+   *
+   * @param {string} pageHtml HTML to update the page with.
+   */
+  setup(pageHtml) {
+    // RevisionSlider replaces the #mw-content-text element.
+    if (!this.$content[0]?.parentNode) {
+      this.$content = $('#mw-content-text');
     }
 
-    return this.windowManagers[name];
-  },
+    if (pageHtml) {
+      const div = document.createElement('div');
+      div.innerHTML = pageHtml;
+      this.rootElement = div.firstChild;
+      this.$root = $(this.rootElement);
+    } else {
+      // There can be more than one .mw-parser-output child, e.g. on talk pages of IP editors.
+      this.$root = this.$content.children('.mw-parser-output').first();
 
-  /**
-   * @class Api
-   * @memberof external:mw
-   * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Api
-   */
-
-  /**
-   * Get a
-   * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Api mw.Api} instance.
-   *
-   * @returns {external:mw.Api}
-   */
-  getApi() {
-    this.api ||= new mw.Api(cd.getApiConfig());
-
-    return this.api;
-  },
-
-  /**
-   * _For internal use._ Get the worker object.
-   *
-   * @returns {Worker}
-   */
-  getWorker() {
-    this.worker ||= new Worker();
-
-    return this.worker;
-  },
-
-  /**
-   * Get the offset data related to `.$contentColumn`.
-   *
-   * @param {boolean} reset Whether to bypass cache.
-   * @returns {object}
-   */
-  getContentColumnOffsets(reset) {
-    if (!this.contentColumnOffsets || reset) {
-      const prop = cd.g.contentDirection === 'ltr' ? 'padding-left' : 'padding-right';
-      let startMargin = Math.max(parseFloat(this.$contentColumn.css(prop)), cd.g.contentFontSize);
-
-      // The content column in Timeless has no _borders_ as such, so it's wrong to penetrate the
-      // surrounding area from the design point of view.
-      if (cd.g.skin === 'timeless') {
-        startMargin--;
+      // 404 pages
+      if (!this.$root.length) {
+        this.$root = this.$content;
       }
 
-      const left = this.$contentColumn.offset().left;
-      const width = this.$contentColumn.outerWidth();
-      this.contentColumnOffsets = {
-        startMargin,
-        start: cd.g.contentDirection === 'ltr' ? left : left + width,
-        end: cd.g.contentDirection === 'ltr' ? left + width : left,
-      };
-
-      // This is set only on window resize event. The initial value is set in
-      // init.addTalkPageCss() through a style tag.
-      if (reset) {
-        $(document.documentElement).css('--cd-content-start-margin', startMargin + 'px');
-      }
+      this.rootElement = this.$root[0];
     }
 
-    return this.contentColumnOffsets;
+    // Add the class immediately to prevent the issue when any unexpected error prevents this from
+    // being executed and then this.handleWikipageContentHookFirings() is called with
+    // #mw-content-text element for some reason, and the page goes into an infinite reloading loop.
+    this.$root.addClass('cd-parse-started');
+  },
+
+  /**
+   * Set whether the current page is a talk page.
+   *
+   * @param {boolean} value
+   */
+  setTalkPageness(value) {
+    this.talkPage = Boolean(value);
   },
 
   /**
@@ -563,69 +831,6 @@ export default {
   },
 
   /**
-   * Extract and memorize the classes mentioned in the TemplateStyles tags on the page.
-   *
-   * @private
-   */
-  extractTemplateStylesSelectors() {
-    this.content.tsSelectorsFloating = [];
-    this.content.tsSelectorsHidden = [];
-    const extractSelectors = (rule) => {
-      if (rule instanceof CSSStyleRule) {
-        const style = rule.style;
-        if (style.float === 'left' || style.float === 'right') {
-          this.content.tsSelectorsFloating.push(rule.selectorText);
-        }
-        if (style.display === 'none') {
-          this.content.tsSelectorsHidden.push(rule.selectorText);
-        }
-      } else if (rule instanceof CSSMediaRule) {
-        [...rule.cssRules].forEach(extractSelectors);
-      }
-    };
-    [...document.styleSheets]
-      .filter((sheet) => sheet.href?.includes('site.styles'))
-      .forEach((el) => {
-        try {
-          [...el.cssRules].forEach(extractSelectors);
-        } catch {
-          // CSS rules on other domains can be inaccessible
-        }
-      });
-    [...this.rootElement.querySelectorAll('style')].forEach((el) => {
-      [...el.sheet.cssRules].forEach(extractSelectors);
-    });
-  },
-
-  /**
-   * Get the selectors for floating elements mentioned in the TemplateStyles tags on the page.
-   *
-   * @returns {string[]}
-   * @private
-   */
-  getTsFloatingElementSelectors() {
-    if (!this.content.tsSelectorsFloating) {
-      this.extractTemplateStylesSelectors();
-    }
-
-    return this.content.tsSelectorsFloating;
-  },
-
-  /**
-   * Get the selectors for hidden elements mentioned in the TemplateStyles tags on the page.
-   *
-   * @returns {string[]}
-   * @private
-   */
-  getTsHiddenElementSelectors() {
-    if (!this.content.tsSelectorsHidden) {
-      this.extractTemplateStylesSelectors();
-    }
-
-    return this.content.tsSelectorsHidden;
-  },
-
-  /**
    * Find floating elements on the page.
    *
    * @returns {Element[]}
@@ -678,27 +883,78 @@ export default {
   },
 
   /**
+   * Get the selectors for floating elements mentioned in the TemplateStyles tags on the page.
+   *
+   * @returns {string[]}
+   * @private
+   */
+  getTsFloatingElementSelectors() {
+    if (!this.content.tsSelectorsFloating) {
+      this.extractTemplateStylesSelectors();
+    }
+
+    return this.content.tsSelectorsFloating;
+  },
+
+  /**
+   * Get the selectors for hidden elements mentioned in the TemplateStyles tags on the page.
+   *
+   * @returns {string[]}
+   * @private
+   */
+  getTsHiddenElementSelectors() {
+    if (!this.content.tsSelectorsHidden) {
+      this.extractTemplateStylesSelectors();
+    }
+
+    return this.content.tsSelectorsHidden;
+  },
+
+  /**
+   * Extract and memorize the classes mentioned in the TemplateStyles tags on the page.
+   *
+   * @private
+   */
+  extractTemplateStylesSelectors() {
+    this.content.tsSelectorsFloating = [];
+    this.content.tsSelectorsHidden = [];
+    const extractSelectors = (rule) => {
+      if (rule instanceof CSSStyleRule) {
+        const style = rule.style;
+        if (style.float === 'left' || style.float === 'right') {
+          this.content.tsSelectorsFloating.push(rule.selectorText);
+        }
+        if (style.display === 'none') {
+          this.content.tsSelectorsHidden.push(rule.selectorText);
+        }
+      } else if (rule instanceof CSSMediaRule) {
+        [...rule.cssRules].forEach(extractSelectors);
+      }
+    };
+    [...document.styleSheets]
+      .filter((sheet) => sheet.href?.includes('site.styles'))
+      .forEach((el) => {
+        try {
+          [...el.cssRules].forEach(extractSelectors);
+        } catch {
+          // CSS rules on other domains can be inaccessible
+        }
+      });
+    [...this.rootElement.querySelectorAll('style')].forEach((el) => {
+      [...el.sheet.cssRules].forEach(extractSelectors);
+    });
+  },
+
+  /**
    * Check whether there is "LTR inside RTL" or "RTL inside LTR" nesting on the page.
    *
    * @returns {boolean}
    */
   areThereLtrRtlMixes() {
     this.content.areThereLtrRtlMixes ??= Boolean(
-      document.querySelector('.sitedir-ltr .mw-content-rtl, .sitedir-rtl .mw-content-ltr')
+      document.querySelector('.mw-content-ltr .mw-content-rtl, .mw-content-rtl .mw-content-ltr')
     );
     return this.content.areThereLtrRtlMixes;
-  },
-
-  /**
-   * Get the popup overlay used for OOUI components.
-   *
-   * @returns {external:jQuery}
-   */
-  getPopupOverlay() {
-    this.$popupOverlay ??= $('<div>')
-      .addClass('cd-popupOverlay')
-      .appendTo(document.body);
-    return this.$popupOverlay;
   },
 
   /**
@@ -944,235 +1200,135 @@ export default {
   },
 
   /**
-   * Is the page loading (the loading overlay is on).
-   *
-   * @returns {boolean}
+   * _For internal use._ Add event listeners to `window`, `document`, hooks.
    */
-  isBooting() {
-    return this.booting;
-  },
-
-  /**
-   * Is there any kind of a page overlay present, like the OOUI modal overlay or CD loading overlay.
-   * This runs very frequently.
-   *
-   * @returns {boolean}
-   */
-  isPageOverlayOn() {
-    return document.body.classList.contains('oo-ui-windowManager-modal-active') || this.booting;
-  },
-
-  /**
-   * Show the loading overlay (a logo in the corner of the page).
-   *
-   * @private
-   */
-  showLoadingOverlay() {
-    if (window.cdShowLoadingOverlay === false) return;
-
-    if (!this.$loadingPopup) {
-      this.$loadingPopup = $('<div>')
-        .addClass('cd-loadingPopup')
-        .append(
-          $('<div>')
-            .addClass('cd-loadingPopup-logo cd-icon')
-            .append(
-              $('<div>').addClass('cd-loadingPopup-logo-partBackground'),
-              createSvg(55, 55, 50, 50).html(
-                `<path fill-rule="evenodd" clip-rule="evenodd" d="M42.5 10H45C46.3261 10 47.5979 10.5268 48.5355 11.4645C49.4732 12.4021 50 13.6739 50 15V50L40 40H15C13.6739 40 12.4021 39.4732 11.4645 38.5355C10.5268 37.5979 10 36.3261 10 35V32.5H37.5C38.8261 32.5 40.0979 31.9732 41.0355 31.0355C41.9732 30.0979 42.5 28.8261 42.5 27.5V10ZM5 3.05176e-05H35C36.3261 3.05176e-05 37.5979 0.526815 38.5355 1.4645C39.4732 2.40218 40 3.67395 40 5.00003V25C40 26.3261 39.4732 27.5979 38.5355 28.5355C37.5979 29.4732 36.3261 30 35 30H10L0 40V5.00003C0 3.67395 0.526784 2.40218 1.46447 1.4645C2.40215 0.526815 3.67392 3.05176e-05 5 3.05176e-05ZM19.8 23C14.58 23 10.14 21.66 8.5 17H31.1C29.46 21.66 25.02 23 19.8 23ZM13.4667 7.50561C12.9734 7.17597 12.3933 7.00002 11.8 7.00002C11.0043 7.00002 10.2413 7.31609 9.6787 7.8787C9.11607 8.44131 8.8 9.20437 8.8 10C8.8 10.5934 8.97595 11.1734 9.30559 11.6667C9.6352 12.1601 10.1038 12.5446 10.6519 12.7717C11.2001 12.9987 11.8033 13.0581 12.3853 12.9424C12.9672 12.8266 13.5018 12.5409 13.9213 12.1213C14.3409 11.7018 14.6266 11.1672 14.7424 10.5853C14.8581 10.0033 14.7987 9.40015 14.5716 8.85197C14.3446 8.30379 13.9601 7.83526 13.4667 7.50561ZM27.8 7.00002C28.3933 7.00002 28.9734 7.17597 29.4667 7.50561C29.9601 7.83526 30.3446 8.30379 30.5716 8.85197C30.7987 9.40015 30.8581 10.0033 30.7424 10.5853C30.6266 11.1672 30.3409 11.7018 29.9213 12.1213C29.5018 12.5409 28.9672 12.8266 28.3853 12.9424C27.8033 13.0581 27.2001 12.9987 26.6519 12.7717C26.1038 12.5446 25.6352 12.1601 25.3056 11.6667C24.9759 11.1734 24.8 10.5934 24.8 10C24.8 9.20437 25.1161 8.44131 25.6787 7.8787C26.2413 7.31609 27.0043 7.00002 27.8 7.00002Z" />`
-              )
-            )
-        );
-      $(document.body).append(this.$loadingPopup);
-    } else {
-      this.$loadingPopup.show();
-    }
-  },
-
-  /**
-   * Hide the loading overlay.
-   *
-   * @private
-   */
-  hideLoadingOverlay() {
-    if (!this.$loadingPopup || window.cdShowLoadingOverlay === false) return;
-
-    this.$loadingPopup.hide();
-  },
-
-  /**
-   * Run the {@link BootProcess boot process} and catch errors.
-   *
-   * @param {boolean} isReload Is the page reloaded.
-   * @private
-   */
-  async tryExecuteBootProcess(isReload) {
-    this.booting = true;
-
-    // We could say "let it crash", but unforeseen errors in BootProcess#execute() are just too
-    // likely to go without a safeguard.
-    try {
-      await this.bootProcess.execute(isReload);
-      if (isReload) {
-        mw.hook('wikipage.content').fire(this.$content);
-      }
-    } catch (e) {
-      mw.notify(cd.s('error-processpage'), { type: 'error' });
-      console.error(e);
-      this.hideLoadingOverlay();
+  addEventListeners() {
+    if (!settings.get('reformatComments')) {
+      // The `mouseover` event allows to capture the state when the cursor is not moving but ends up
+      // above a comment but not above any comment parts (for example, as a result of scrolling).
+      // The benefit may be low compared to the performance cost, but it's unexpected when the user
+      // scrolls a comment and it suddenly stops being highlighted because the cursor is between
+      // neighboring <p>s.
+      $(document).on('mousemove mouseover', this.handleMouseMove.bind(this));
     }
 
-    this.booting = false;
-  },
+    // We need the `visibilitychange` event because many things may move while the document is
+    // hidden, and movements are not processed when the document is hidden.
+    $(document)
+      .on('scroll visibilitychange', this.handleScroll.bind(this))
+      .on('horizontalscroll.cd visibilitychange', this.handleHorizontalScroll.bind(this))
+      .on('selectionchange', this.handleSelectionChange.bind(this));
 
-  /**
-   * Get the current (or last available) boot process.
-   *
-   * @returns {?BootProcess}
-   */
-  getBootProcess() {
-    return this.bootProcess || null;
-  },
+    $(window)
+      .on('resize orientationchange', this.handleWindowResize.bind(this))
+      .on('popstate', this.handlePopState.bind(this));
 
-  /**
-   * Load the data required for the script to run on a talk page and execute the
-   * {@link BootProcess boot process}.
-   *
-   * @private
-   */
-  bootOnTalkPage() {
-    if (!this.talkPage) return;
-
-    debug.stopTimer('start');
-    debug.startTimer('load data');
-
-    /**
-     * Last boot process.
-     *
-     * @type {BootProcess|undefined}
-     * @private
-     */
-    this.bootProcess = new BootProcess();
-
-    let siteDataRequests = [];
-
-    // Make some requests in advance if the API module is ready in order not to make 2 requests
-    // sequentially. We don't make a `userinfo` request, because if there is more than one tab in
-    // the background, this request is made and the execution stops at mw.loader.using, which
-    // results in overriding the renewed visits setting of one tab by another tab (the visits are
-    // loaded by one tab, then another tab, then written by one tab, then by another tab).
-    if (mw.loader.getState('mediawiki.api') === 'ready') {
-      siteDataRequests = init.getSiteData();
-
-      // We are _not_ calling getUserInfo() here to avoid losing visit data updates from some pages
-      // if several pages are opened simultaneously. In this situation, visits could be requested
-      // for multiple pages; updated and then saved for each of them with losing the updates from
-      // the rest.
-    }
-
-    const modules = [
-      'jquery.client',
-      'jquery.ui',
-      'mediawiki.Title',
-      'mediawiki.Uri',
-      'mediawiki.api',
-      'mediawiki.cookie',
-
-      // span.comment
-      'mediawiki.interface.helpers.styles',
-
-      'mediawiki.jqueryMsg',
-      'mediawiki.notification',
-      'mediawiki.storage',
-      'mediawiki.user',
-      'mediawiki.util',
-      'mediawiki.widgets.visibleLengthLimit',
-      'oojs',
-      'oojs-ui-core',
-      'oojs-ui-widgets',
-      'oojs-ui-windows',
-      'oojs-ui.styles.icons-alerts',
-      'oojs-ui.styles.icons-content',
-      'oojs-ui.styles.icons-editing-advanced',
-      'oojs-ui.styles.icons-editing-citation',
-      'oojs-ui.styles.icons-editing-core',
-      'oojs-ui.styles.icons-interactions',
-      'oojs-ui.styles.icons-movement',
-      'user.options',
-      mw.loader.getState('ext.confirmEdit.CaptchaInputWidget') ?
-        'ext.confirmEdit.CaptchaInputWidget' :
-        undefined,
-    ].filter(defined);
-
-    // mw.loader.using() delays the execution even if all modules are ready (if CD is used as a
-    // gadget with preloaded dependencies, for example), so we use this trick.
-    let modulesRequest;
-    if (modules.every((module) => mw.loader.getState(module) === 'ready')) {
-      // If there is no data to load and, therefore, no period of time within which a reflow (layout
-      // thrashing) could happen without impeding performance, we cache the value so that it could
-      // be used in .saveRelativeScrollPosition() without causing a reflow.
-      if (siteDataRequests.every((request) => request.state() === 'resolved')) {
-        this.bootProcess.passedData = { scrollY: window.scrollY };
-      }
-    } else {
-      modulesRequest = mw.loader.using(modules);
-    }
-
-    this.showLoadingOverlay();
-    Promise.all([modulesRequest, ...siteDataRequests]).then(
-      async () => {
-        // Do it here because OO.EventEmitter can be unavailable when these modules are first
-        // imported.
-        mixEventEmitterInObject(this);
-        mixEventEmitterInObject(visits);
-        mixEventEmitterInObject(updateChecker);
-        mixEventEmitterInObject(LiveTimestamp);
-        mixEventEmitterInObject(commentFormRegistry);
-        mixEventEmitterInObject(commentRegistry);
-        OO.mixinClass(Subscriptions, OO.EventEmitter);
-        OO.mixinClass(CommentForm, OO.EventEmitter);
-
-        await this.tryExecuteBootProcess();
-
-        updateChecker
-          .on('check', (revisionId) => {
-            this.lastCheckedRevisionId = revisionId;
-          })
-          .on('commentsUpdate', this.updateAddedComments.bind(this));
-      },
-      (e) => {
-        mw.notify(cd.s('error-loaddata'), { type: 'error' });
-        console.error(e);
-        this.hideLoadingOverlay();
-      }
+    // Should be above mw.hook('wikipage.content').fire so that it runs for the whole page content
+    // as opposed to $('.cd-comment-author-wrapper').
+    mw.hook('wikipage.content').add(
+      this.connectToCommentLinks.bind(this),
+      this.highlightMentions.bind(this)
     );
+    mw.hook('convenientDiscussions.previewReady').add(this.connectToCommentLinks.bind(this));
 
-    sleep(15000).then(() => {
-      if (this.booting) {
-        this.hideLoadingOverlay();
-        console.warn('The loading overlay stays for more than 15 seconds; removing it.');
-      }
-    });
+    // Mutation observer doesn't follow all possible comment position changes (for example,
+    // initiated with adding new CSS) unfortunately.
+    setInterval(this.handlePageMutate.bind(this), 1000);
 
-    this.$contentColumn = skin$({
-      timeless: '#mw-content',
-      minerva: '#bodyContent',
-      default: '#content',
-    });
+    if (cd.page.isCommentable()) {
+      $(document).on('keydown', this.handleGlobalKeyDown.bind(this));
+    }
 
-    /*
-      Additions of CSS set a stage for a future reflow which delays operations dependent on
-      rendering, so we run them now, not after the requests are fulfilled, to save time. The overall
-      order is like this:
-      1. Make network requests (above).
-      2. Run operations dependent on rendering, such as window.getComputedStyle() and jQuery's
-         .css() (below). Normally they would initiate a reflow, but, as we haven't changed the
-         layout or added CSS yet, there is nothing to update.
-      3. Run operations that create prerequisites for a reflow, such as adding CSS (below). Thanks
-         to the fact that the network requests, if any, are already pending, we don't waste time.
-     */
-    init.memorizeCssValues();
-    init.addTalkPageCss();
+    mw.hook('wikipage.content').add(this.handleWikipageContentHookFirings.bind(this));
+  },
+
+  /**
+   * Bind a click handler to comment links to make them work as in-script comment links.
+   *
+   * This method exists in addition to {@link module:controller.handlePopState}. It's preferable to
+   * have click events handled by this method instead of `.handlePopState()` because that method, if
+   * encounters `cdJumpedToComment` in the history state, doesn't scroll to the comment which is a
+   * wrong behavior when the user clicks a link.
+   *
+   * @param {external:jQuery} $content
+   * @private
+   */
+  connectToCommentLinks($content) {
+    if (!$content.is('#mw-content-text, .cd-commentForm-previewArea')) return;
+
+    const goToCommentUrl = mw.util.getUrl('Special:GoToComment/');
+    const extractCommentId = (el) => (
+      $(el).attr('href').replace(mw.util.escapeRegExp(goToCommentUrl), '#').slice(1)
+    );
+    $content
+      .find(`a[href^="#"], a[href^="${goToCommentUrl}"]`)
+      .filter((i, el) => (
+        // Added by us in other places
+        !el.onclick &&
+
+        commentRegistry.getByAnyId(extractCommentId(el), true)
+      ))
+      .on('click', function (e) {
+        e.preventDefault();
+        commentRegistry.getByAnyId(extractCommentId(this), true)?.scrollTo({
+          expandThreads: true,
+          pushState: true,
+        });
+      });
+  },
+
+  /**
+   * Highlight mentions of the current user.
+   *
+   * @param {external:jQuery} $content
+   * @private
+   */
+  highlightMentions($content) {
+    if (!$content.is('#mw-content-text, .cd-comment-part')) return;
+
+    const currentUserName = cd.user.getName();
+    const excludeSelector = [
+      settings.get('reformatComments') ?
+        'cd-comment-author' :
+        'cd-signature'
+    ]
+      .concat(cd.config.noSignatureClasses)
+      .map((name) => `.${name}`)
+      .join(', ');
+    $content
+      .find(
+        $content.hasClass('cd-comment-part') ?
+          `a[title$=":${currentUserName}"], a[title*=":${currentUserName} ("]` :
+          `.cd-comment-part a[title$=":${currentUserName}"], .cd-comment-part a[title*=":${currentUserName} ("]`
+      )
+      .filter(function () {
+        return (
+          cd.g.userLinkRegexp.test(this.title) &&
+          !this.closest(excludeSelector) &&
+          Parser.processLink(this)?.userName === cd.user.getName()
+        );
+      })
+      .each((i, link) => {
+        link.classList.add('cd-currentUserLink');
+      });
+  },
+
+  /**
+   * Handle firings of the hook
+   * {@link https://doc.wikimedia.org/mediawiki-core/master/js/Hooks.html#~event:'wikipage.content' wikipage.content}
+   * (by using `mw.hook('wikipage.content').fire()`). This is performed by some user scripts, such
+   * as QuickEdit.
+   *
+   * @param {external:jQuery} $content
+   * @private
+   */
+  handleWikipageContentHookFirings($content) {
+    if (!$content.is('#mw-content-text')) return;
+
+    const $root = $content.children('.mw-parser-output');
+    if ($root.length && !$root.hasClass('cd-parse-started')) {
+      this.reload({ isPageReloadedExternally: true });
+    }
   },
 
   /**
@@ -1287,137 +1443,35 @@ export default {
   },
 
   /**
-   * Highlight mentions of the current user.
+   * Reset the controller data and state. (Executed between page loads.)
    *
-   * @param {external:jQuery} $content
    * @private
    */
-  highlightMentions($content) {
-    if (!$content.is('#mw-content-text, .cd-comment-part')) return;
-
-    const currentUserName = cd.user.getName();
-    const excludeSelector = [
-      settings.get('reformatComments') ?
-        'cd-comment-author' :
-        'cd-signature'
-    ]
-      .concat(cd.config.noSignatureClasses)
-      .map((name) => `.${name}`)
-      .join(', ');
-    $content
-      .find(
-        $content.hasClass('cd-comment-part') ?
-          `a[title$=":${currentUserName}"], a[title*=":${currentUserName} ("]` :
-          `.cd-comment-part a[title$=":${currentUserName}"], .cd-comment-part a[title*=":${currentUserName} ("]`
-      )
-      .filter(function () {
-        return (
-          cd.g.userLinkRegexp.test(this.title) &&
-          !this.closest(excludeSelector) &&
-          Parser.processLink(this)?.userName === cd.user.getName()
-        );
-      })
-      .each((i, link) => {
-        link.classList.add('cd-currentUserLink');
-      });
+  reset() {
+    this.cleanUpUrlAndDom();
+    this.mutationObserver?.disconnect();
+    commentRegistry.reset();
+    sectionRegistry.reset();
+    CommentForm.forgetOnTarget(cd.page, 'addSection');
+    this.$emulatedAddTopicButton?.remove();
+    delete this.$addTopicButtons;
+    this.content = {};
+    this.addedCommentCount = 0;
+    this.areRelevantCommentsAdded = false;
+    this.relevantAddedCommentIds = null;
+    delete this.dtSubscribableThreads;
+    this.updatePageTitle();
   },
 
   /**
-   * Add event listeners to `window`, `document`, hooks.
-   *
-   * @private
+   * Remove fragment and revision parameters from the URL; remove DOM elements related to the diff.
    */
-  addEventListeners() {
-    if (!settings.get('reformatComments')) {
-      // The `mouseover` event allows to capture the state when the cursor is not moving but ends up
-      // above a comment but not above any comment parts (for example, as a result of scrolling).
-      // The benefit may be low compared to the performance cost, but it's unexpected when the user
-      // scrolls a comment and it suddenly stops being highlighted because the cursor is between
-      // neighboring <p>s.
-      $(document).on('mousemove mouseover', this.handleMouseMove.bind(this));
-    }
+  cleanUpUrlAndDom() {
+    if (this.bootProcess.passedData.isRevisionSliderRunning) return;
 
-    // We need the `visibilitychange` event because many things may move while the document is
-    // hidden, and movements are not processed when the document is hidden.
-    $(document)
-      .on('scroll visibilitychange', this.handleScroll.bind(this))
-      .on('horizontalscroll.cd visibilitychange', this.handleHorizontalScroll.bind(this))
-      .on('selectionchange', this.handleSelectionChange.bind(this));
-
-    $(window)
-      .on('resize orientationchange', this.handleWindowResize.bind(this))
-      .on('popstate', this.handlePopState.bind(this));
-
-    // Should be above mw.hook('wikipage.content').fire so that it runs for the whole page content
-    // as opposed to $('.cd-comment-author-wrapper').
-    mw.hook('wikipage.content').add(
-      this.connectToCommentLinks.bind(this),
-      this.highlightMentions.bind(this)
-    );
-    mw.hook('convenientDiscussions.previewReady').add(this.connectToCommentLinks.bind(this));
-
-    // Mutation observer doesn't follow all possible comment position changes (for example,
-    // initiated with adding new CSS) unfortunately.
-    setInterval(this.handlePageMutate.bind(this), 1000);
-
-    if (cd.page.isCommentable()) {
-      $(document).on('keydown', this.handleGlobalKeyDown.bind(this));
-    }
-
-    mw.hook('wikipage.content').add(this.handleWikipageContentHookFirings.bind(this));
-  },
-
-  /**
-   * Bind a click handler to comment links to make them work as in-script comment links.
-   *
-   * This method exists in addition to {@link module:controller.handlePopState}. It's preferable to
-   * have click events handled by this method instead of `.handlePopState()` because that method, if
-   * encounters `cdJumpedToComment` in the history state, doesn't scroll to the comment which is a
-   * wrong behavior when the user clicks a link.
-   *
-   * @param {external:jQuery} $content
-   * @private
-   */
-  connectToCommentLinks($content) {
-    if (!$content.is('#mw-content-text, .cd-commentForm-previewArea')) return;
-
-    const goToCommentUrl = mw.util.getUrl('Special:GoToComment/');
-    const extractCommentId = (el) => (
-      $(el).attr('href').replace(mw.util.escapeRegExp(goToCommentUrl), '#').slice(1)
-    );
-    $content
-      .find(`a[href^="#"], a[href^="${goToCommentUrl}"]`)
-      .filter((i, el) => (
-        // Added by us in other places
-        !el.onclick &&
-
-        commentRegistry.getByAnyId(extractCommentId(el), true)
-      ))
-      .on('click', function (e) {
-        e.preventDefault();
-        commentRegistry.getByAnyId(extractCommentId(this), true)?.scrollTo({
-          expandThreads: true,
-          pushState: true,
-        });
-      });
-  },
-
-  /**
-   * Handle firings of the hook
-   * {@link https://doc.wikimedia.org/mediawiki-core/master/js/Hooks.html#~event:'wikipage.content' wikipage.content}
-   * (by using `mw.hook('wikipage.content').fire()`). This is performed by some user scripts, such
-   * as QuickEdit.
-   *
-   * @param {external:jQuery} $content
-   * @private
-   */
-  handleWikipageContentHookFirings($content) {
-    if (!$content.is('#mw-content-text')) return;
-
-    const $root = $content.children('.mw-parser-output');
-    if ($root.length && !$root.hasClass('cd-parse-started')) {
-      this.reload({ isPageReloadedExternally: true });
-    }
+    const { searchParams } = new URL(location.href);
+    this.cleanUpDom(searchParams);
+    this.cleanUpUrl(searchParams);
   },
 
   /**
@@ -1493,77 +1547,35 @@ export default {
   },
 
   /**
-   * Remove fragment and revision parameters from the URL; remove DOM elements related to the diff.
+   * _For internal use._ Update the page title to show:
+   * - What state the page is in according to the user's action (replying, editing, starting a
+   *   section or subsection, or none).
+   * - The number of comments added to the page since it was loaded. If used without parameters,
+   *   restore the previous value (if could be changed by the browser when the "Back" button is
+   *   clicked).
    */
-  cleanUpUrlAndDom() {
-    if (this.bootProcess.passedData.isRevisionSliderRunning) return;
-
-    const { searchParams } = new URL(location.href);
-    this.cleanUpDom(searchParams);
-    this.cleanUpUrl(searchParams);
-  },
-
-  /**
-   * Load the data required for the script to process the page as a log page and
-   * {@link module:addCommentLinks process it}.
-   *
-   * @private
-   */
-  bootOnCommentLinksPage() {
-    if (
-      !this.isWatchlistPage() &&
-      !this.isContributionsPage() &&
-      !this.isHistoryPage() &&
-      !(this.diffPage && this.articlePageTalkPage) &&
-
-      // Instant Diffs script can be called on talk pages as well
-      !this.talkPage
-    ) {
-      return;
+  updatePageTitle() {
+    let title = this.originalPageTitle;
+    const lastActiveCommentForm = commentFormRegistry.getLastActive();
+    if (lastActiveCommentForm) {
+      const ending = lastActiveCommentForm
+        .getTarget()
+        .getCommentFormMethodName(lastActiveCommentForm.getMode())
+        .toLowerCase();
+      title = cd.s(`page-title-${ending}`, title);
     }
 
-    // Make some requests in advance if the API module is ready in order not to make 2 requests
-    // sequentially.
-    if (mw.loader.getState('mediawiki.api') === 'ready') {
-      init.getSiteData();
-
-      // Loading user info on diff pages could lead to problems with saving visits when many pages
-      // are opened, but not yet focused, simultaneously.
-      if (!this.talkPage) {
-        getUserInfo(true).catch((e) => {
-          console.warn(e);
-        });
-      }
+    if (this.addedCommentCount === 0) {
+      // A hack for Chrome (at least) for cases when the "Back" button of the browser is clicked.
+      document.title = '';
     }
 
-    mw.loader.using([
-      'jquery.client',
-      'mediawiki.Title',
-      'mediawiki.api',
-      'mediawiki.jqueryMsg',
-      'mediawiki.user',
-      'mediawiki.util',
-      'oojs',
-      'oojs-ui-core',
-      'oojs-ui-widgets',
-      'oojs-ui-windows',
-      'oojs-ui.styles.icons-alerts',
-      'oojs-ui.styles.icons-editing-list',
-      'oojs-ui.styles.icons-interactions',
-      'user.options',
-    ]).then(
-      () => {
-        addCommentLinks();
-
-        // See the comment above: "Additions of CSS...".
-        require('./global.less');
-
-        require('./logPages.less');
-      },
-      (e) => {
-        mw.notify(cd.s('error-loaddata'), { type: 'error' });
-        console.error(e);
-      }
+    const relevantMark = this.areRelevantCommentsAdded ? '*' : '';
+    document.title = title.replace(
+      /^(?:\(\d+\*?\) )?/,
+      this.addedCommentCount ?
+        `(${this.addedCommentCount}${relevantMark}) ` :
+        ''
     );
   },
 
@@ -1686,6 +1698,26 @@ export default {
       window.scrollTo(window.scrollX, y);
       onComplete();
     }
+  },
+
+  /**
+   * Set whether the viewport is currently automatically scrolled to some position. To get that
+   * state, use {@link module:controller.isAutoScrolling}.
+   *
+   * @param {boolean} value
+   */
+  toggleAutoScrolling(value) {
+    this.autoScrolling = Boolean(value);
+  },
+
+  /**
+   * Check whether the viewport is currently automatically scrolled to some position. To set that
+   * state, use {@link module:controller.toggleAutoScrolling}.
+   *
+   * @returns {boolean}
+   */
+  isAutoScrolling() {
+    return this.autoScrolling;
   },
 
   /**
@@ -1940,39 +1972,6 @@ export default {
     this.showRegularNotification(commentsToNotifyAbout);
     this.showDesktopNotification(commentsToNotifyAbout);
     this.commentsNotifiedAbout.push(...commentsToNotifyAbout);
-  },
-
-  /**
-   * _For internal use._ Update the page title to show:
-   * - What state the page is in according to the user's action (replying, editing, starting a
-   *   section or subsection, or none).
-   * - The number of comments added to the page since it was loaded. If used without parameters,
-   *   restore the previous value (if could be changed by the browser when the "Back" button is
-   *   clicked).
-   */
-  updatePageTitle() {
-    let title = this.originalPageTitle;
-    const lastActiveCommentForm = commentFormRegistry.getLastActive();
-    if (lastActiveCommentForm) {
-      const ending = lastActiveCommentForm
-        .getTarget()
-        .getCommentFormMethodName(lastActiveCommentForm.getMode())
-        .toLowerCase();
-      title = cd.s(`page-title-${ending}`, title);
-    }
-
-    if (this.addedCommentCount === 0) {
-      // A hack for Chrome (at least) for cases when the "Back" button of the browser is clicked.
-      document.title = '';
-    }
-
-    const relevantMark = this.areRelevantCommentsAdded ? '*' : '';
-    document.title = title.replace(
-      /^(?:\(\d+\*?\) )?/,
-      this.addedCommentCount ?
-        `(${this.addedCommentCount}${relevantMark}) ` :
-        ''
-    );
   },
 
   /**

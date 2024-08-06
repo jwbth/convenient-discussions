@@ -4103,7 +4103,7 @@ class CommentForm {
   }
 
   /**
-   * Remove references to the "Add section" form (after it was unregistered).
+   * Remove references to a comment form on its target object (after it was unregistered).
    *
    * @param {Comment|import('./Section').default|import('./pageRegistry').Page} target
    * @param {string} mode

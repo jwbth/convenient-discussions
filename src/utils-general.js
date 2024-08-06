@@ -683,7 +683,9 @@ export function countOccurrences(string, regexp) {
  * @returns {Promise}
  */
 export function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 }
 
 /**

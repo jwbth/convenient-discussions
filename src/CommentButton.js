@@ -1,16 +1,6 @@
 import Button from './Button';
 
 /**
- * Stop propagation of an event.
- *
- * @param {Event} e
- * @private
- */
-function stopPropagation(e) {
-  e.stopPropagation();
-}
-
-/**
  * Class representing a comment button, be it a simple link or an OOUI button depending on user
  * settings.
  *
@@ -36,7 +26,7 @@ class CommentButton extends Button {
 
     // Don't hide the menu on right button click.
     if (config.href) {
-      this.buttonElement.oncontextmenu = stopPropagation;
+      this.buttonElement.oncontextmenu = this.constructor.stopPropagation;
     }
 
     if (config.element) {
@@ -82,7 +72,7 @@ class CommentButton extends Button {
       this.buttonWidget.setHref(originalHref);
 
       // Don't hide the menu on right button click.
-      this.buttonElement.oncontextmenu = stopPropagation;
+      this.buttonElement.oncontextmenu = this.constructor.stopPropagation;
     }
   }
 
@@ -198,6 +188,16 @@ class CommentButton extends Button {
     return !this.widgetConstructor ?
       super.isPending() :
       Boolean(this.buttonWidget?.isPending());
+  }
+
+  /**
+   * Stop propagation of an event.
+   *
+   * @param {Event} e
+   * @private
+   */
+  static stopPropagation(e) {
+    e.stopPropagation();
   }
 }
 

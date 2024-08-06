@@ -1,26 +1,5 @@
 import { isCmdModifierPressed } from './utils-window';
 
-const prototypes = {};
-
-/**
- * Clone a button prototype (a skeleton with few properties set) without recreating it if it already
- * exists. When these buttons are created en masse, this is marginally faster than creating a new
- * one from scratch.
- *
- * @param {string} tagName Tag name.
- * @returns {Element}
- * @private
- */
-function cloneButtonPrototype(tagName) {
-  if (!prototypes[tagName]) {
-    const prototype = document.createElement(tagName);
-    prototype.tabIndex = 0;
-    prototype.setAttribute('role', 'button');
-    prototypes[tagName] = prototype;
-  }
-  return prototypes[tagName].cloneNode(true);
-}
-
 /**
  * Class representing a generic button.
  */
@@ -57,7 +36,7 @@ class Button {
     flags,
     action,
   } = {}) {
-    element ||= cloneButtonPrototype(tagName);
+    element ||= this.constructor.cloneButtonPrototype(tagName);
 
     if (id) {
       element.id = id;
@@ -192,6 +171,7 @@ class Button {
       ((!isCmdModifierPressed(e) && !e.shiftKey) || !this.buttonElement.href)
     ) {
       e.preventDefault();
+      e.stopPropagation();
       action(e, this);
     }
   }
@@ -282,6 +262,27 @@ class Button {
    */
   setIconProgressive() {
     this.iconElement?.classList.add('oo-ui-image-progressive');
+  }
+
+  static prototypes = {};
+
+  /**
+   * Clone a button prototype (a skeleton with few properties set) without recreating it if it already
+   * exists. When these buttons are created en masse, this is marginally faster than creating a new
+   * one from scratch.
+   *
+   * @param {string} tagName Tag name.
+   * @returns {Element}
+   * @private
+   */
+  static cloneButtonPrototype(tagName) {
+    if (!this.prototypes[tagName]) {
+      const prototype = document.createElement(tagName);
+      prototype.tabIndex = 0;
+      prototype.setAttribute('role', 'button');
+      this.prototypes[tagName] = prototype;
+    }
+    return this.prototypes[tagName].cloneNode(true);
   }
 }
 

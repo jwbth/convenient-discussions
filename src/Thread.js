@@ -333,17 +333,21 @@ class Thread {
       this.handleClickAreaHover(undefined, true);
     }
 
-    if (
-      // Middle button
-      e.button === 1 &&
-
-      this.navMode &&
-
-      // The mouse hasn't moved significantly
-      (Math.abs(e.clientX - this.navFromX) < 5 && Math.abs(e.clientY - this.navFromY) < 5)
-    ) {
+    // Middle button
+    if (e.button === 1 && this.navMode && !this.hasMouseMoved(e)) {
       this.rootComment.scrollTo({ alignment: 'top' });
     }
+  }
+
+  /**
+   * Has the mouse moved enough to consider it a navigation gesture and not a click with an
+   * insignificant mouse movement between pressing and releasing a button.
+   *
+   * @param {MouseEvent} e
+   * @returns {boolean}
+   */
+  hasMouseMoved(e) {
+    return Math.abs(e.clientX - this.navFromX) >= 5 || Math.abs(e.clientY - this.navFromY) >= 5;
   }
 
   /**
@@ -379,7 +383,7 @@ class Thread {
     if (!this.navMode) {
       // This implies `this.navFromX !== undefined`, .navFromX set in .handleClickAreaMouseDown()
 
-      if (Math.abs(e.clientX - this.navFromX) >= 5 || Math.abs(e.clientY - this.navFromY) >= 5) {
+      if (this.hasMouseMoved(e)) {
         $(document).off('mousemove.cd', this.documentMouseMoveHandler);
         this.enterNavMode(this.navFromX, this.navFromY, true);
       }

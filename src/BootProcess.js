@@ -141,100 +141,224 @@ class BootProcess {
   }
 
   /**
-   * Add a comment ID to the registry.
+   * _For internal use._ Execute the process.
    *
-   * @param {string} id
-   * @private
+   * @param {boolean} isReload Is the page reloaded.
+   * @fires beforeParse
+   * @fires commentsReady
+   * @fires sectionsReady
+   * @fires pageReady
+   * @fires pageReadyFirstTime
    */
-  addDtCommentId(id) {
-    this.dtCommentIds.push(id);
-  }
+  async execute(isReload) {
+    this.firstRun = !isReload;
+    if (this.firstRun) {
+      debug.stopTimer('load data');
+    }
 
-  /**
-   * Check if the page processed for the first time after it was loaded (i.e., not reloaded using
-   * the script's refresh functionality).
-   *
-   * @returns {boolean}
-   */
-  isFirstRun() {
-    return this.firstRun;
-  }
+    debug.startTimer('preparations');
+    await this.setup();
+    debug.stopTimer('preparations');
 
-  /**
-   * Disable DT with a method supplied in a parameter.
-   *
-   * @param {boolean} globally
-   * @param {import('./Button').default} button
-   * @param {import('./notifications').Notification} notification
-   * @private
-   */
-  async disableDt(globally, button, notification) {
-    button.setPending(true);
-    try {
-      const options = {
-        'discussiontools-replytool': 0,
-        'discussiontools-newtopictool': 0,
-        'discussiontools-topicsubscription': 0,
-        'discussiontools-visualenhancements': 0,
-      };
-      if (globally) {
-        await saveOptions(options, true).catch(handleApiReject);
-      } else {
-        await controller.getApi().saveOptions({
-          'discussiontools-topicsubscription': 1,
-        }).catch(handleApiReject);
+    debug.startTimer('main code');
+
+    if (this.firstRun) {
+      controller.saveRelativeScrollPosition(undefined, this.passedData.scrollY);
+
+      userRegistry.loadMuted();
+    }
+
+    /*
+      To make things systematized, we have 4 possible assessments of page activeness as a talk page,
+      sorted by the scope of enabled features. Each level includes the next ones; 3 is the
+      intersection of 2.1 and 2.2.
+        1. The page is a wikitext (article) page.
+        2. The page is likely a talk page. controller.isTalkPage() reflects that. We may reevaluate
+           page as being not a talk page (see BootProcess#retractTalkPageness()) if we don't find
+           any comments on it and several other criteria are not met. Likely talk pages are divided
+           into two categories:
+        2.1. The page is eligible to create comment forms on. (This includes 404 pages where the
+             user could create a section, but excludes archive pages and old revisions.)
+             cd.page.isCommentable() reflects this level.
+        2.2. The page exists (not a 404 page). cd.page.exists() shows this. (This includes archive
+             pages and old revisions, which are not eligible to create comment forms on.) Such pages
+             are parsed, the page navigation block is added to them.
+        3. The page is active. This means, it's not a 404 page, not an archive page, and not an old
+           revision. cd.page.isActive() is true when the page is of this level. The navigation panel
+           is added to such pages, new comments are highlighted.
+
+      We need to be accurate regarding which functionality should be turned on on which level. We
+      should also make sure we only add this functionality once.
+    */
+
+    if (cd.page.exists()) {
+      if (cd.page.isActive()) {
+        visits.load(this, true);
       }
-    } catch (e) {
-      mw.notify(wrapHtml(cd.sParse('error-settings-save')));
+
+      if (this.subscriptions.getType() === 'legacy') {
+        this.subscriptions.loadToTalkPage(this, true);
+      }
+
+      /**
+       * The script is going to parse the page for comments, sections, etc.
+       *
+       * @event beforeParse
+       * @param {object} cd {@link convenientDiscussions} object.
+       */
+      mw.hook('convenientDiscussions.beforeParse').fire(cd);
+
+      debug.startTimer('process comments');
+      this.findTargets();
+      this.processComments();
+      debug.stopTimer('process comments');
+    }
+
+    if (this.firstRun && !controller.isDefinitelyTalkPage() && !commentRegistry.getCount()) {
+      this.retractTalkPageness();
       return;
-    } finally {
-      button.setPending(false);
     }
-    notification.$notification.hide();
-    mw.notify(
-      wrapHtml(cd.sParse('discussiontools-disabled'), {
-        callbacks: {
-          'cd-notification-refresh': () => {
-            location.reload();
-          },
-        },
-      })
-    );
-  }
 
-  /**
-   * Show a notification informing the user that CD is incompatible with DiscussionTools and
-   * suggesting to disable DiscussionTools.
-   *
-   * @private
-   */
-  maybeSuggestDisableDt() {
-    if (!cd.g.isDtReplyToolEnabled) return;
-
-    const $message = wrapHtml(
-      cd.sParse(
-        'discussiontools-incompatible',
-        'Special:Preferences#mw-prefsection-editing-discussion',
-        'Special:GlobalPreferences#mw-prefsection-editing-discussion',
-      ),
-      {
-        callbacks: {
-          'cd-notification-disabledt': (e, button) => {
-            this.disableDt(false, button, notification);
-          },
-          'cd-notification-disableDtGlobally': (e, button) => {
-            this.disableDt(true, button, notification);
-          },
-        },
+    if (cd.page.exists()) {
+      debug.startTimer('process sections');
+      this.processSections();
+      debug.stopTimer('process sections');
+    } else {
+      if (this.subscriptions.getType() === 'dt') {
+        this.subscriptions.loadToTalkPage(this);
       }
-    );
-    if (!cd.config.useGlobalPreferences) {
-      $message.find('.cd-notification-disableDtGlobally-wrapper').remove();
     }
-    const notification = mw.notification.notify($message, {
-      type: 'warn',
-      autoHide: false,
-    });
+
+    if (this.passedData.parseData?.text) {
+      debug.startTimer('update page contents');
+      controller.updatePageContents(this.passedData.parseData);
+      debug.stopTimer('update page contents');
+    }
+
+    navPanel.setup();
+
+    debug.stopTimer('main code');
+
+    // Operations that need reflow, such as getBoundingClientRect(), and those dependent on them go
+    // in this section.
+    debug.startTimer('final code and rendering');
+
+    // This should be done on rendering stage (would have resulted in unnecessary reflows were it
+    // done earlier). Should be above all code that deals with highlightable elements of comments
+    // and comment levels as this may alter that.
+    commentRegistry.reviewHighlightables();
+
+    commentRegistry.reformatComments();
+
+    // This updates some styles, shifting the offsets.
+    controller.$root.addClass('cd-parsed');
+
+    // Should be below navPanel.setup() as commentFormRegistry.restoreSession() indirectly calls
+    // navPanel.updateCommentFormButton() which depends on the navigation panel being mounted.
+    if (cd.page.isCommentable()) {
+      if (this.firstRun) {
+        cd.page.addAddTopicButton();
+      }
+      controller.connectToAddTopicButtons();
+
+      // If the viewport position restoration relies on elements that are made hidden during this
+      // (when editing a comment), it can't be restored properly, but this is relatively minor
+      // detail.
+      commentFormRegistry.restoreSession(this.firstRun || this.passedData.isPageReloadedExternally);
+
+      cd.page.autoAddSection(this.hideDtNewTopicForm());
+    }
+
+    if (cd.page.exists()) {
+      // Should be below the comment form restoration for threads to be expanded correctly and also
+      // to avoid repositioning threads after the addition of comment forms. Should be above the
+      // viewport position restoration as it may shift the layout (if the viewport position
+      // restoration relies on elements that are made hidden when threads are collapsed, the
+      // algorithm finds the expand note). Should better be above comment highlighting
+      // (commentRegistry.configureAndAddLayers(), visits#process()) to avoid spending time on
+      // comments in collapsed threads.
+      Thread.init();
+
+      // Should better be below the comment form restoration to avoid repositioning of layers
+      // after the addition of comment forms.
+      commentRegistry.configureAndAddLayers((c) => (
+        c.isOwn ||
+
+        // Need to generate a gray line to close the gaps between adjacent list item elements. Do it
+        // here, not after processing comments, to group all operations requiring reflow
+        // together for performance reasons.
+        c.isLineGapped
+      ));
+
+      // Should be below Thread.init() as these functions may want to scroll to a comment in a
+      // collapsed thread.
+      if (this.firstRun) {
+        this.deactivateDtHighlight();
+        processFragment();
+      }
+      this.processPassedTargets();
+
+      if (!cd.page.isActive()) {
+        toc.addCommentCount();
+      }
+
+      pageNav.setup(this);
+
+      if (this.firstRun) {
+        controller.addEventListeners();
+      }
+
+      // We set up the mutation observer at every reload because controller.$content may change
+      // (e.g. RevisionSlider replaces it).
+      controller.setupMutationObserver();
+
+      if (settings.get('reformatComments') && commentRegistry.getCount()) {
+        // Using the wikipage.content hook could theoretically disrupt code that needs to process
+        // the whole page content, if it runs later than CD. But typically CD runs relatively late.
+        mw.hook(cd.config.hookToFireWithAuthorWrappers).fire($('.cd-comment-author-wrapper'));
+      }
+    }
+
+    if (this.firstRun) {
+      // Restore the initial viewport position in terms of visible elements, which is how the user
+      // sees it.
+      controller.restoreRelativeScrollPosition();
+
+      settings.addLinkToFooter();
+    }
+
+    /**
+     * The script has processed the page.
+     *
+     * @event pageReady
+     * @param {object} cd {@link convenientDiscussions} object.
+     */
+    mw.hook('convenientDiscussions.pageReady').fire(cd);
+
+    if (this.firstRun) {
+      /**
+       * The script has processed the page for the first time since the page load. Use this hook
+       * for operations that should run only once.
+       *
+       * @event pageReadyFirstTime
+       * @param {object} cd {@link convenientDiscussions} object.
+       */
+      mw.hook('convenientDiscussions.pageReadyFirstTime').fire(cd);
+    }
+
+    controller.hideLoadingOverlay();
+
+    // This is needed to calculate the rendering time: it won't complete until everything gets
+    // rendered.
+    controller.rootElement.getBoundingClientRect();
+
+    debug.stopTimer('final code and rendering');
+
+    this.debugLog();
+
+    if (this.firstRun && cd.page.isActive() && cd.user.isRegistered()) {
+      this.showPopups();
+    }
   }
 
   /**
@@ -245,11 +369,11 @@ class BootProcess {
    */
   async setup() {
     if (this.firstRun) {
-      await init.talkPage();
+      await init.initTalkPage();
     }
     this.subscriptions = controller.getSubscriptionsInstance();
     if (this.firstRun) {
-      // The order of the subsequent calls matters because modules depend on others in a certain
+      // The order of the subsequent calls matters because the modules depend on others in a certain
       // way.
 
       // A little dirty code here - sectionRegistry.init() is placed above toc.init() and
@@ -592,224 +716,100 @@ class BootProcess {
   }
 
   /**
-   * _For internal use._ Execute the process.
+   * Show a notification informing the user that CD is incompatible with DiscussionTools and
+   * suggesting to disable DiscussionTools.
    *
-   * @param {boolean} isReload Is the page reloaded.
-   * @fires beforeParse
-   * @fires commentsReady
-   * @fires sectionsReady
-   * @fires pageReady
-   * @fires pageReadyFirstTime
+   * @private
    */
-  async execute(isReload) {
-    this.firstRun = !isReload;
-    if (this.firstRun) {
-      debug.stopTimer('load data');
-    }
+  maybeSuggestDisableDt() {
+    if (!cd.g.isDtReplyToolEnabled) return;
 
-    debug.startTimer('preparations');
-    await this.setup();
-    debug.stopTimer('preparations');
-
-    debug.startTimer('main code');
-
-    if (this.firstRun) {
-      controller.saveRelativeScrollPosition(undefined, this.passedData.scrollY);
-
-      userRegistry.loadMuted();
-    }
-
-    /*
-      To make things systematized, we have 4 possible assessments of page activeness as a talk page,
-      sorted by the scope of enabled features. Each level includes the next ones; 3 is the
-      intersection of 2.1 and 2.2.
-        1. The page is a wikitext (article) page.
-        2. The page is likely a talk page. controller.isTalkPage() reflects that. We may reevaluate
-           page as being not a talk page (see BootProcess#retractTalkPageness()) if we don't find
-           any comments on it and several other criteria are not met. Likely talk pages are divided
-           into two categories:
-        2.1. The page is eligible to create comment forms on. (This includes 404 pages where the
-             user could create a section, but excludes archive pages and old revisions.)
-             cd.page.isCommentable() reflects this level.
-        2.2. The page exists (not a 404 page). cd.page.exists() shows this. (This includes archive
-             pages and old revisions, which are not eligible to create comment forms on.) Such pages
-             are parsed, the page navigation block is added to them.
-        3. The page is active. This means, it's not a 404 page, not an archive page, and not an old
-           revision. cd.page.isActive() is true when the page is of this level. The navigation panel
-           is added to such pages, new comments are highlighted.
-
-      We need to be accurate regarding which functionality should be turned on on which level. We
-      should also make sure we only add this functionality once.
-    */
-
-    if (cd.page.exists()) {
-      if (cd.page.isActive()) {
-        visits.load(this, true);
+    const $message = wrapHtml(
+      cd.sParse(
+        'discussiontools-incompatible',
+        'Special:Preferences#mw-prefsection-editing-discussion',
+        'Special:GlobalPreferences#mw-prefsection-editing-discussion',
+      ),
+      {
+        callbacks: {
+          'cd-notification-disabledt': (e, button) => {
+            this.disableDt(false, button, notification);
+          },
+          'cd-notification-disableDtGlobally': (e, button) => {
+            this.disableDt(true, button, notification);
+          },
+        },
       }
-
-      if (this.subscriptions.getType() === 'legacy') {
-        this.subscriptions.loadToTalkPage(this, true);
-      }
-
-      /**
-       * The script is going to parse the page for comments, sections, etc.
-       *
-       * @event beforeParse
-       * @param {object} cd {@link convenientDiscussions} object.
-       */
-      mw.hook('convenientDiscussions.beforeParse').fire(cd);
-
-      debug.startTimer('process comments');
-      this.findTargets();
-      this.processComments();
-      debug.stopTimer('process comments');
+    );
+    if (!cd.config.useGlobalPreferences) {
+      $message.find('.cd-notification-disableDtGlobally-wrapper').remove();
     }
+    const notification = mw.notification.notify($message, {
+      type: 'warn',
+      autoHide: false,
+    });
+  }
 
-    if (this.firstRun && !controller.isDefinitelyTalkPage() && !commentRegistry.getCount()) {
-      this.retractTalkPageness();
+  /**
+   * Disable DT with a method supplied in a parameter.
+   *
+   * @param {boolean} globally
+   * @param {import('./Button').default} button
+   * @param {import('./notifications').Notification} notification
+   * @private
+   */
+  async disableDt(globally, button, notification) {
+    button.setPending(true);
+    try {
+      const options = {
+        'discussiontools-replytool': 0,
+        'discussiontools-newtopictool': 0,
+        'discussiontools-topicsubscription': 0,
+        'discussiontools-visualenhancements': 0,
+      };
+      if (globally) {
+        await saveOptions(options, true).catch(handleApiReject);
+      } else {
+        await controller.getApi().saveOptions({
+          'discussiontools-topicsubscription': 1,
+        }).catch(handleApiReject);
+      }
+    } catch (e) {
+      mw.notify(wrapHtml(cd.sParse('error-settings-save')));
       return;
+    } finally {
+      button.setPending(false);
     }
+    notification.$notification.hide();
+    mw.notify(
+      wrapHtml(cd.sParse('discussiontools-disabled'), {
+        callbacks: {
+          'cd-notification-refresh': () => {
+            location.reload();
+          },
+        },
+      })
+    );
+  }
 
-    if (cd.page.exists()) {
-      debug.startTimer('process sections');
-      this.processSections();
-      debug.stopTimer('process sections');
-    } else {
-      if (this.subscriptions.getType() === 'dt') {
-        this.subscriptions.loadToTalkPage(this);
-      }
-    }
+  /**
+   * Check if the page processed for the first time after it was loaded (i.e., not reloaded using
+   * the script's refresh functionality).
+   *
+   * @returns {boolean}
+   */
+  isFirstRun() {
+    return this.firstRun;
+  }
 
-    if (this.passedData.parseData?.text) {
-      debug.startTimer('update page contents');
-      controller.updatePageContents(this.passedData.parseData);
-      debug.stopTimer('update page contents');
-    }
-
-    navPanel.setup();
-
-    debug.stopTimer('main code');
-
-    // Operations that need reflow, such as getBoundingClientRect(), and those dependent on them go
-    // in this section.
-    debug.startTimer('final code and rendering');
-
-    // This should be done on rendering stage (would have resulted in unnecessary reflows were it
-    // done earlier). Should be above all code that deals with highlightable elements of comments
-    // and comment levels as this may alter that.
-    commentRegistry.reviewHighlightables();
-
-    commentRegistry.reformatComments();
-
-    // This updates some styles, shifting the offsets.
-    controller.$root.addClass('cd-parsed');
-
-    // Should be below navPanel.setup() as commentFormRegistry.restoreSession() indirectly calls
-    // navPanel.updateCommentFormButton() which depends on the navigation panel being mounted.
-    if (cd.page.isCommentable()) {
-      if (this.firstRun) {
-        cd.page.addAddTopicButton();
-      }
-      controller.connectToAddTopicButtons();
-
-      // If the viewport position restoration relies on elements that are made hidden during this
-      // (when editing a comment), it can't be restored properly, but this is relatively minor
-      // detail.
-      commentFormRegistry.restoreSession(this.firstRun || this.passedData.isPageReloadedExternally);
-
-      cd.page.autoAddSection(this.hideDtNewTopicForm());
-    }
-
-    if (cd.page.exists()) {
-      // Should be below the comment form restoration for threads to be expanded correctly and also
-      // to avoid repositioning threads after the addition of comment forms. Should be above the
-      // viewport position restoration as it may shift the layout (if the viewport position
-      // restoration relies on elements that are made hidden when threads are collapsed, the
-      // algorithm finds the expand note). Should better be above comment highlighting
-      // (commentRegistry.configureAndAddLayers(), visits#process()) to avoid spending time on
-      // comments in collapsed threads.
-      Thread.init();
-
-      // Should better be below the comment form restoration to avoid repositioning of layers
-      // after the addition of comment forms.
-      commentRegistry.configureAndAddLayers((c) => (
-        c.isOwn ||
-
-        // Need to generate a gray line to close the gaps between adjacent list item elements. Do it
-        // here, not after processing comments, to group all operations requiring reflow
-        // together for performance reasons.
-        c.isLineGapped
-      ));
-
-      // Should be below Thread.init() as these functions may want to scroll to a comment in a
-      // collapsed thread.
-      if (this.firstRun) {
-        this.deactivateDtHighlight();
-        processFragment();
-      }
-      this.processPassedTargets();
-
-      if (!cd.page.isActive()) {
-        toc.addCommentCount();
-      }
-
-      pageNav.setup(this);
-
-      if (this.firstRun) {
-        controller.addEventListeners();
-      }
-
-      // We set up the mutation observer at every reload because controller.$content may change
-      // (e.g. RevisionSlider replaces it).
-      controller.setupMutationObserver();
-
-      if (settings.get('reformatComments') && commentRegistry.getCount()) {
-        // Using the wikipage.content hook could theoretically disrupt code that needs to process
-        // the whole page content, if it runs later than CD. But typically CD runs relatively late.
-        mw.hook(cd.config.hookToFireWithAuthorWrappers).fire($('.cd-comment-author-wrapper'));
-      }
-    }
-
-    if (this.firstRun) {
-      // Restore the initial viewport position in terms of visible elements, which is how the user
-      // sees it.
-      controller.restoreRelativeScrollPosition();
-
-      settings.addLinkToFooter();
-    }
-
-    /**
-     * The script has processed the page.
-     *
-     * @event pageReady
-     * @param {object} cd {@link convenientDiscussions} object.
-     */
-    mw.hook('convenientDiscussions.pageReady').fire(cd);
-
-    if (this.firstRun) {
-      /**
-       * The script has processed the page for the first time since the page load. Use this hook
-       * for operations that should run only once.
-       *
-       * @event pageReadyFirstTime
-       * @param {object} cd {@link convenientDiscussions} object.
-       */
-      mw.hook('convenientDiscussions.pageReadyFirstTime').fire(cd);
-    }
-
-    controller.hideLoadingOverlay();
-
-    // This is needed to calculate the rendering time: it won't complete until everything gets
-    // rendered.
-    controller.rootElement.getBoundingClientRect();
-
-    debug.stopTimer('final code and rendering');
-
-    this.debugLog();
-
-    if (this.firstRun && cd.page.isActive() && cd.user.isRegistered()) {
-      this.showPopups();
-    }
+  /**
+   * Add a comment ID to the registry.
+   *
+   * @param {string} id
+   * @private
+   */
+  addDtCommentId(id) {
+    this.dtCommentIds.push(id);
   }
 }
 

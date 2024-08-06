@@ -33,7 +33,7 @@ const prototypes = new PrototypeRegistry();
  */
 async function initialize() {
   // This could have been executed from init.talkPage() already.
-  init.globals();
+  init.initGlobals();
   await settings.init();
 
   const requests = [...init.getSiteData()];
@@ -414,7 +414,7 @@ function processWatchlist($content) {
  * @private
  */
 function processContributions($content) {
-  init.timestampParsingTools('user');
+  init.initTimestampParsingTools('user');
   if (cd.g.uiTimezone === null) return;
 
   [
@@ -479,7 +479,7 @@ function processContributions($content) {
  * @private
  */
 function processHistory($content) {
-  init.timestampParsingTools('user');
+  init.initTimestampParsingTools('user');
   if (cd.g.uiTimezone === null) return;
 
   const link = cd.page.getUrl();
@@ -561,7 +561,7 @@ function processDiff($diff) {
   if ($diff?.parent().is(controller.$content) && controller.$root) return;
 
   if (!cd.g.uiTimestampRegexp) {
-    init.timestampParsingTools('user');
+    init.initTimestampParsingTools('user');
   }
   if (cd.g.uiTimezone === null) return;
 

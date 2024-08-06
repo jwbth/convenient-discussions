@@ -30,8 +30,6 @@ import { dateTokenToMessageNames, initDayjs } from './utils-timestamp';
 import { skin$, transparentize } from './utils-window';
 import visits from './visits';
 
-let defaultFontSize;
-
 /**
  * Set the global variables related to date format.
  *
@@ -273,7 +271,7 @@ function loadSiteData() {
  *
  * @private
  */
-function patterns() {
+function initPatterns() {
   const signatureEndingRegexp = cd.config.signatureEndingRegexp;
   cd.g.signatureEndingRegexp = signatureEndingRegexp ?
     new RegExp(
@@ -457,7 +455,7 @@ function patterns() {
  *
  * @private
  */
-function prototypes() {
+function initPrototypes() {
   Comment.initPrototypes();
   Section.initPrototypes();
   Thread.initPrototypes();
@@ -641,7 +639,7 @@ export default {
   memorizeCssValues() {
     cd.g.contentLineHeight = parseFloat(controller.$content.css('line-height'));
     cd.g.contentFontSize = parseFloat(controller.$content.css('font-size'));
-    defaultFontSize = parseFloat($(document.documentElement).css('font-size'));
+    cd.g.defaultFontSize = parseFloat($(document.documentElement).css('font-size'));
 
     // For Timeless, Vector-2022 skins
     cd.g.bodyScrollPaddingTop = parseFloat($('html, body').css('scroll-padding-top')) || 0;
@@ -665,7 +663,7 @@ export default {
       'vector-2022': '.mw-page-container',
       default: 'body',
     }).css('background-color');
-    const metadataFontSize = parseFloat((cd.g.contentFontSize / defaultFontSize).toFixed(7));
+    const metadataFontSize = parseFloat((cd.g.contentFontSize / cd.g.defaultFontSize).toFixed(7));
     const contentStartMargin = controller.getContentColumnOffsets().startMargin;
     const sidebarTransparentColor = transparentize(sidebarColor);
 
@@ -724,7 +722,7 @@ export default {
   /**
    * _For internal use._ Set a number of {@link convenientDiscussions global object} properties.
    */
-  globals() {
+  initGlobals() {
     if (cd.page) return;
 
     cd.g.phpCharToUpper = (
@@ -858,7 +856,7 @@ export default {
    *
    * @param {string} language
    */
-  timestampParsingTools(language) {
+  initTimestampParsingTools(language) {
     if (language === 'content') {
       const mainPartPattern = getTimestampMainPartPattern('content');
       const utcPattern = mw.util.escapeRegExp(mw.message('(content)timezone-utc').parse());
@@ -989,18 +987,18 @@ export default {
    * {@link external:jQuery.fn jQuery.fn}) properties and methods that are needed for processing a
    * talk page. Executed on the first run.
    */
-  async talkPage() {
+  async initTalkPage() {
     // In most cases the site data is already loaded after being requested in
     // controller.loadToTalkPage().
     await Promise.all(this.getSiteData());
 
     // This could have been executed from addCommentLinks.prepare() already.
-    this.globals();
+    this.initGlobals();
     await settings.init();
 
-    this.timestampParsingTools('content');
-    patterns();
-    prototypes();
+    this.initTimestampParsingTools('content');
+    initPatterns();
+    initPrototypes();
     if (settings.get('useBackgroundHighlighting')) {
       require('./Comment.layers.optionalBackgroundHighlighting.less');
     }

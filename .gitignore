@@ -1,6 +1,7 @@
-dist/
-docs/
-node_modules/
 *.sublime-workspace
 credentials.*
+dist/
+docs/
 i18nList.json
+node_modules/
+sandbox/
