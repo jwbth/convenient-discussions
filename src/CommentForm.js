@@ -3333,7 +3333,7 @@ class CommentForm {
    *   in the comment – that change would initiate its own request).
    * @private
    */
-  updateAutoSummary(set = true, blockAutopreview = false) {
+  updateAutoSummary = (set = true, blockAutopreview = false) => {
     if (this.summaryAltered) return;
 
     this.summaryAutopreviewBlocked = blockAutopreview;
@@ -3378,7 +3378,7 @@ class CommentForm {
     if (set) {
       this.summaryInput.setValue(this.autoSummary);
     }
-  }
+  };
 
   /**
    * _For internal use._ Generate the _static_ part of the automatic text for the edit summary,
@@ -3396,7 +3396,7 @@ class CommentForm {
         if (target.isOpeningSection) {
           return cd.s('es-reply');
         } else {
-          target.maybeRequestAuthorGender(this.updateAutoSummary.bind(this));
+          target.maybeRequestAuthorGender(this.updateAutoSummary);
           return target.isOwn ?
             cd.s('es-addition') :
             removeDoubleSpaces(
@@ -3417,7 +3417,7 @@ class CommentForm {
               if (targetParent.level === 0) {
                 subject = 'reply';
               } else {
-                targetParent.maybeRequestAuthorGender(this.updateAutoSummary.bind(this));
+                targetParent.maybeRequestAuthorGender(this.updateAutoSummary);
                 subject = targetParent.isOwn ? 'addition' : 'reply-to';
                 realTarget = targetParent;
               }
@@ -3432,7 +3432,7 @@ class CommentForm {
             if (target.isOpeningSection) {
               subject = this.targetSection.getParent() ? 'subsection' : 'topic';
             } else {
-              target.maybeRequestAuthorGender(this.updateAutoSummary.bind(this));
+              target.maybeRequestAuthorGender(this.updateAutoSummary);
               subject = 'comment-by';
             }
           }
