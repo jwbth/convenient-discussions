@@ -112,24 +112,24 @@ class CommentSource {
             return '\n' + newChars;
           });
 
+        if (cd.config.paragraphTemplates.length) {
+          const paragraphTemplatesPattern = cd.config.paragraphTemplates
+            .map(generatePageNamePattern)
+            .join('|');
+          const pattern = `\\{\\{(?:${paragraphTemplatesPattern})\\}\\}`;
+          const regexp = new RegExp(pattern, 'g');
+          const lineRegexp = new RegExp(`^(?![:*#]).*${pattern}`, 'gm');
+          code = code.replace(lineRegexp, (s) => s.replace(regexp, '\n\n'));
+        }
+
+        if (this.comment.level !== 0) {
+          code = code.replace(/\n\n+/g, '\n\n');
+        }
+
         return code;
       })
       .unmask()
       .getText();
-
-    if (cd.config.paragraphTemplates.length) {
-      const paragraphTemplatesPattern = cd.config.paragraphTemplates
-        .map(generatePageNamePattern)
-        .join('|');
-      const pattern = `\\{\\{(?:${paragraphTemplatesPattern})\\}\\}`;
-      const regexp = new RegExp(pattern, 'g');
-      const lineRegexp = new RegExp(`^(?![:*#]).*${pattern}`, 'gm');
-      code = code.replace(lineRegexp, (s) => s.replace(regexp, '\n\n'));
-    }
-
-    if (this.comment.level !== 0) {
-      code = code.replace(/\n\n+/g, '\n\n');
-    }
 
     return code.trim();
   }
