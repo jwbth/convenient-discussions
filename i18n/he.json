@@ -341,7 +341,7 @@
 	"sd-improveperformance-help": "כדאי להפעיל את זה אם יש לך עיכובים בעת כתיבת תגובות בדפים ארוכים. ידוע שזה קורה בדפדפני כרומיום. הסקריפט יעכב את העיבוד של החלק התחתון של הדף עד {{GENDER:|שתגלול|שתגללי}} אליו.",
 	"sd-insertbuttons": "כפתורים להכנסת טקסט",
 	"sd-insertbuttons-multiselect-placeholder": "להוסיף כפתור",
-	"sd-insertbuttons-help": "<ul>\n<li>יש להשתמש בתו <code>+</code> לציון מקום מדויק שהסמן יוצב בו לאחר הכנסת הטקסט. למשל, <code dir=ltr><nowiki>{{+}}</nowiki></code>.</li>\n<li>יש להשתמש בתו <code>;</code> לציון העובדה שהטקסט המוצג על הכפתור שונה מזה המוכנס. למשל, <code dir=ltr><nowiki><code>+</code>;<code /></nowiki></code>. </li>\n<li>יש להשתמש בתווים <code>\\\\n</code> לפני <code>;</code> להצגת מעבר שורה.</li>\n<li>יש להשתמש בתו <code><nowiki>\\</nowiki></code> לפני תווים שיש להכניס ללא שינוי. למשל, <code><nowiki>2\\+2</nowiki></code>.</li>\n</ul>\n\nניתן לגרור ולשחרר את הכפתורים.",
+	"sd-insertbuttons-help": "<ul>\n<li>יש להשתמש בתו <code>+</code> לציון מקום מדויק שהסמן יוצב בו לאחר הכנסת הטקסט. למשל, <code dir=ltr><nowiki>{{+}}</nowiki></code>.</li>\n<li>יש להשתמש בתו <code>;</code> לציון העובדה שהטקסט המוצג על הכפתור שונה מזה המוכנס. למשל, <code dir=ltr><nowiki><code>+</code>;<code /></nowiki></code>. </li>\n<li>יש להשתמש בתווים <code>\\\\n</code> בחלק שלפני <code>;</code> להצגת מעבר שורה.</li>\n<li>יש להשתמש בתו <code><nowiki>\\</nowiki></code> לפני תווים שיש להכניס ללא שינוי. למשל, <code><nowiki>2\\+2</nowiki></code>.</li>\n</ul>\n\nניתן לגרור ולשחרר את הכפתורים.",
 	"sd-modifytoc": "הצגת תגובות חדשות ופרקים חדשים בתוכן העניינים",
 	"sd-outdentlevel": "[$1 לבטל] את הזחת התגובות שלי ברמה",
 	"sd-outdentlevel-help": "0 כדי לעולם לא לבטל הזחה.",

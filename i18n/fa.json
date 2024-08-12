@@ -267,7 +267,7 @@
 	"sd-error-removedata": "ناتوان در حذف داده‌ها از روی سرور.",
 	"sd-localsetting": "<i>این تنظیمات برای هر ویکی متفاوت است.</i>",
 	"sd-alloweditotherscomments": "نمایش پیوندی برای ویرایش نظرات کاربران دیگر",
-	"sd-alwaysexpandadvanced": "گسترش بخش «{{int:convenient-discussions-cf-advanced}}» در زمان پاسخ‌دادن",
+	"sd-alwaysexpandadvanced": "گسترش بخش «{{int:convenient-discussions-cf-advanced}}» در زمان پاسخ دادن",
 	"sd-autocompletetypes": "فعال‌سازی تکمیل خودکار برای",
 	"sd-autocompletetypes-mentions": "اشاره‌ها",
 	"sd-autocompletetypes-commentlinks": "پیوند به نظرها",
