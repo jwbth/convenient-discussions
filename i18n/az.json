@@ -6,6 +6,7 @@
 			"NMW03",
 			"Nemoralis",
 			"Toghrul Rahimli",
+			"Wertuose",
 			"Şeyx Şamil"
 		]
 	},
@@ -61,7 +62,7 @@
 	"comment-diff-title": "Şərh fərqi",
 	"comment-diff-full": "Tam fərq",
 	"comment-diff-history": "Redaktə tarixçəsi",
-	"comment-changedsince": "Sonuncu ziyarətinizdən sonra şərh dəyişdirilib.",
+	"comment-changedsince": "Sizin sonuncu ziyarətinizdən sonra şərh dəyişdirilib.",
 	"comment-changedsince-short": "Son dəfə nəzər keçirəndən sonra dəyişib",
 	"comment-deleted": "Şərh silinib.",
 	"comment-deleted-short": "Silindi",
@@ -100,7 +101,7 @@
 	"thank-error": "Təşəkkür göndərmək mümkün olmadı.",
 	"thank-success": "\"Təşəkkür\" bildirişi göndərildi.",
 	"es-reply": "cavabla",
-	"es-reply-to": "{{gender:$2|}}$1 adlı istifadəçiyə cavab ver",
+	"es-reply-to": "{{gender:$2|}}$1 adlı istifadəçiyə cavab",
 	"es-addition": "əlavə",
 	"es-edit-reply": "cavab redaktə olundu",
 	"es-edit-reply-to": "{{gender:$2|}} $1 adlı istifadəçiyə verilən cavab redaktə olundu",
