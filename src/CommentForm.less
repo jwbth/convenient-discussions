@@ -1,5 +1,3 @@
-@import 'variables.less';
-
 .cd-commentForm {
   display: flow-root;
   font-weight: normal;
@@ -220,12 +218,8 @@
   }
 
   &-label {
-    color: @color-subtler;
+    color: var(--cd-color-subtler);
     margin-bottom: 0.5em;
-
-    html.skin-theme-clientpref-night & {
-      color: @color-subtler-darkmode;
-    }
   }
 
   &-indentedComment > .mw-parser-output > dl {
@@ -419,21 +413,22 @@
   }
 }
 
-html.skin-theme-clientpref-night a.tool:not(.mw-no-invert) {
-  color-scheme: light;
-  filter: invert(1) hue-rotate(180deg);
+.darkTheme-invertTools() {
+  a.tool:not(.mw-no-invert) {
+    color-scheme: light;
+    filter: invert(1) hue-rotate(180deg);
+  }
+}
+
+@media screen {
+  html.skin-theme-clientpref-night {
+    .darkTheme-invertTools();
+  }
 }
 
 @media (prefers-color-scheme: dark) {
   html.skin-theme-clientpref-os {
-    a.tool:not(.mw-no-invert) {
-      color-scheme: light;
-      filter: invert(1) hue-rotate(180deg);
-    }
-
-    .cd-commentForm-previewArea-label {
-      color: @color-subtler-darkmode;
-    }
+    .darkTheme-invertTools();
   }
 }
 

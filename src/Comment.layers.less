@@ -23,7 +23,7 @@
   --cd-comment-deleted-hovered-background-color: #fddbd9;
 }
 
-html.skin-theme-clientpref-night {
+.darkTheme-commentVars() {
   --cd-comment-target-hovered-background-color: #3d2500;
   --cd-comment-new-marker-color: #008000;
   --cd-comment-new-background-color: #002600;
@@ -34,16 +34,15 @@ html.skin-theme-clientpref-night {
   --cd-comment-deleted-hovered-background-color: #521615;
 }
 
+@media screen {
+  html.skin-theme-clientpref-night {
+    .darkTheme-commentVars();
+  }
+}
+
 @media (prefers-color-scheme: dark) {
   html.skin-theme-clientpref-os {
-    --cd-comment-target-hovered-background-color: #3d2500;
-    --cd-comment-new-marker-color: #008000;
-    --cd-comment-new-background-color: #002600;
-    --cd-comment-new-hovered-background-color: #003000;
-    // --cd-comment-own-marker-color: #9f33cc;
-    --cd-comment-own-background-color: #2e0d38;
-    --cd-comment-own-hovered-background-color: #3c1149;
-    --cd-comment-deleted-hovered-background-color: #521615;
+    .darkTheme-commentVars();
   }
 }
 

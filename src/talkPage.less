@@ -74,10 +74,6 @@ ol > .cd-thread-button-container > .cd-thread-button {
       // More thick icon
       background-image: url('data:image/svg+xml,%3Csvg width="7" height="12" viewBox="0 0 7 12" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M1.27273 -4.13261e-07L-4.66255e-07 1.33333L4.45455 6L-5.82819e-08 10.6667L1.27273 12L7 6L1.27273 -4.13261e-07Z" fill="%23202122" /%3E%3C/svg%3E');
 
-      html.skin-theme-clientpref-night & {
-        background-image: url('data:image/svg+xml,%3Csvg width="7" height="12" viewBox="0 0 7 12" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M1.27273 -4.13261e-07L-4.66255e-07 1.33333L4.45455 6L-5.82819e-08 10.6667L1.27273 12L7 6L1.27273 -4.13261e-07Z" fill="%23f8f9fa" /%3E%3C/svg%3E');
-      }
-
       background-size: 7px 12px;
       background-position: 0 0.285714em;
       inset-inline: 0 auto;
@@ -230,21 +226,27 @@ ol > .cd-thread-button-container > .cd-thread-button {
 
 .cd-currentUserLink {
   background-color: #f0def7;
+}
 
-  html.skin-theme-clientpref-night & {
+.darkTheme-talkPage() {
+  .cd-button-expandNote.cd-button-expandNote.cd-button-expandNote.cd-button-expandNote > .oo-ui-iconElement-icon {
+    background-image: url('data:image/svg+xml,%3Csvg width="7" height="12" viewBox="0 0 7 12" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M1.27273 -4.13261e-07L-4.66255e-07 1.33333L4.45455 6L-5.82819e-08 10.6667L1.27273 12L7 6L1.27273 -4.13261e-07Z" fill="%23f8f9fa" /%3E%3C/svg%3E');
+  }
+
+  .cd-currentUserLink {
     background-color: #7d00cc;
+  }
+}
+
+@media screen {
+  html.skin-theme-clientpref-night {
+    .darkTheme-talkPage();
   }
 }
 
 @media (prefers-color-scheme: dark) {
   html.skin-theme-clientpref-os {
-    .cd-button-expandNote.cd-button-expandNote.cd-button-expandNote.cd-button-expandNote > .oo-ui-iconElement-icon {
-      background-image: url('data:image/svg+xml,%3Csvg width="7" height="12" viewBox="0 0 7 12" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M1.27273 -4.13261e-07L-4.66255e-07 1.33333L4.45455 6L-5.82819e-08 10.6667L1.27273 12L7 6L1.27273 -4.13261e-07Z" fill="%23f8f9fa" /%3E%3C/svg%3E');
-    }
-
-    .cd-currentUserLink {
-      background-color: #7d00cc;
-    }
+    .darkTheme-talkPage();
   }
 }
 

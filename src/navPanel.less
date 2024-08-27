@@ -82,16 +82,22 @@
 
 .cd-navPanel-refreshButton-relevant {
   color: #7d00cc;
+}
 
-  html.skin-theme-clientpref-night & {
-    color: #f0def7;
+.darkTheme-refreshButton() {
+  .cd-navPanel-refreshButton-relevant {
+    color: #d799ff;
+  }
+}
+
+@media screen {
+  html.skin-theme-clientpref-night {
+    .darkTheme-refreshButton();
   }
 }
 
 @media (prefers-color-scheme: dark) {
   html.skin-theme-clientpref-os {
-    .cd-navPanel-refreshButton-relevant {
-      color: #f0def7;
-    }
+    .darkTheme-refreshButton();
   }
 }

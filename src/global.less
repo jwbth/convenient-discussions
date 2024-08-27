@@ -1,3 +1,5 @@
+@import 'variables.less';
+
 // For skins that lack such a rule, such as Timeless.
 a:not([href]) {
   cursor: pointer;
@@ -78,4 +80,20 @@ a:not([href]) {
 // For skins that don't have it
 a:not([href]) {
   cursor: pointer;
+}
+
+:root {
+  --cd-color-subtler: @color-subtler;
+}
+
+@media screen {
+  html.skin-theme-clientpref-night {
+    --cd-color-subtler: @color-subtler-darktheme;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  html.skin-theme-clientpref-os {
+    --cd-color-subtler: @color-subtler-darktheme;
+  }
 }
