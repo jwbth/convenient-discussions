@@ -174,7 +174,17 @@
 
 .cd-comment-overlay-marker,
 .cd-comment-overlay-line {
-  inset-inline-start: calc(-1px - (((var(--cd-comment-marker-width) - 1px) / 2) / var(--cd-pixel-deviation-ratio)));
+  // This calculation is the same as in Thread#updateLine() but with -1px.
+  inset-inline-start: calc(
+    -1px -
+    (
+      (
+        (var(--cd-comment-marker-width) / var(--cd-pixel-deviation-ratio)) -
+        (1px / var(--cd-pixel-deviation-ratio-for-1px))
+      )
+      / 2
+    )
+  );
 }
 
 .cd-comment-overlay-line-gapCloser {

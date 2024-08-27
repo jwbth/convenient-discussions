@@ -919,18 +919,25 @@ class Thread {
     const getLeft = (rectOrOffset, commentMargins, dir) => {
       let offset;
 
-      // Don't round - we need a subpixel-precise value
-      const centerOffset = ((cd.g.commentMarkerWidth - 1) / 2) / cd.g.pixelDeviationRatio;
+      // This calculation is the same as in .cd-comment-overlay-marker, but without -1px - we don't
+      // need it. Don't round - we need a subpixel-precise value.
+      const centerOffset = -(
+        (
+          (cd.g.commentMarkerWidth / cd.g.pixelDeviationRatio) -
+          (1 / cd.g.pixelDeviationRatioFor1px)
+        )
+        / 2
+      );
 
       if (dir === 'ltr') {
-        offset = rectOrOffset.left - centerOffset;
+        offset = rectOrOffset.left + centerOffset;
         if (commentMargins) {
           offset -= commentMargins.left + 1;
         }
       } else {
         offset = (
           rectOrOffset.right -
-          (cd.g.commentMarkerWidth / cd.g.pixelDeviationRatio) +
+          (cd.g.commentMarkerWidth / cd.g.pixelDeviationRatio) -
           centerOffset
         );
         if (commentMargins) {
