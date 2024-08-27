@@ -326,7 +326,7 @@ Object.assign(cd.g, {
   pixelDeviationRatio,
 
   pixelDeviationRatioFor1px: (
-    window.devicePixelRatio / Math.min(Math.floor(window.devicePixelRatio), 1)
+    window.devicePixelRatio / Math.max(Math.floor(window.devicePixelRatio), 1)
   ),
 
   /**
