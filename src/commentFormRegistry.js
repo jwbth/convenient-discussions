@@ -308,10 +308,12 @@ export default {
         .save()
         .get(mw.config.get('wgPageName'))
         ?.commentForms
-        .map((data) => {
+        .filter((data) => {
           const target = this.getTargetByData(data.targetData);
           if (data.targetWithOutdentedRepliesData) {
-            data.targetWithOutdentedReplies = this.getTargetByData(data.targetWithOutdentedRepliesData);
+            data.targetWithOutdentedReplies = this.getTargetByData(
+              data.targetWithOutdentedRepliesData
+            );
           }
           if (
             target?.isActionable &&
@@ -330,13 +332,14 @@ export default {
               haveRestored = true;
             } catch (e) {
               console.warn(e);
-              return data;
+              return true;
             }
           } else {
-            return data;
+            return true;
           }
+
+          return false;
         })
-        .filter(defined)
     );
 
     if (haveRestored) {

@@ -74,7 +74,8 @@ async function initialize() {
     .append($spanRegularPrototype)
     .prepend(' ');
   prototypes.add('wrapperRegular', $wrapperRegularPrototype[0]);
-  prototypes.add('wrapperRelevant',
+  prototypes.add(
+    'wrapperRelevant',
     $wrapperRegularPrototype
       .clone()
       .addClass('cd-commentLink-relevant')[0]
