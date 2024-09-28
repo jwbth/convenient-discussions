@@ -1220,7 +1220,7 @@ class CommentSkeleton {
         // This can run a second time from .updateLevels() → .reviewDives() →
         // .updateHighlightables(), so the might have added the wrapper already.
         (el.className && el.className !== 'cd-comment-replacedPart') ||
-        el.getAttribute('style')
+        (el.getAttribute('style') && el.tagName !== 'LI')
       ))
       .forEach((el) => {
         const wrapper = document.createElement('div');
