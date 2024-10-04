@@ -1624,21 +1624,30 @@ export default {
     e.preventDefault();
 
     const fragment = object.getWikilinkFragment();
-    const permalinkSpecialPageName = (
+    const type = object instanceof Comment ? 'comment' : 'section';
+    const permalinkSpecialPagePrefix = (
       mw.config.get('wgFormattedNamespaces')[-1] +
       ':' +
-      cd.g.specialPageAliases.PermanentLink[0] +
-      '/' +
-      mw.config.get('wgRevisionId')
+      (
+        type === 'comment' ?
+          'GoToComment/' :
+          cd.g.specialPageAliases.PermanentLink[0] + '/' + mw.config.get('wgRevisionId') + '#'
+      )
     );
-    const type = object instanceof Comment ? 'comment' : 'section';
     const content = {
       fragment,
       wikilink: `[[${cd.page.name}#${fragment}]]`,
       currentPageWikilink: `[[#${fragment}]]`,
-      permanentWikilink: `[[${permalinkSpecialPageName}#${fragment}]]`,
+      permanentWikilink: `[[${permalinkSpecialPagePrefix}${fragment}]]`,
       link: object.getUrl(),
-      permanentLink: object.getUrl(true),
+      permanentLink: type === 'comment' ?
+        pageRegistry.get(
+          mw.config.get('wgFormattedNamespaces')[-1] +
+          ':' +
+          'GoToComment/'
+          + fragment
+        ).getDecodedUrlWithFragment() :
+        object.getUrl(true),
       copyMessages: {
         success: cd.s('copylink-copied'),
         fail: cd.s('copylink-error'),
