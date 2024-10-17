@@ -55,6 +55,8 @@
 	"comment-changedsince-short": "Zmieniono od ostatniej wizyty",
 	"section-reply": "Odpowiedz do sekcji",
 	"section-addsubsection-to": "Dodaj podsekcję do \"$1\"",
+	"section-newcomments": "{{plural:$1|Dodano nowy komentarz|Dodano $1 nowe komentarze|Dodano $1 nowych komentarzy}} w tej sekcji (poza wątkami) od {{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}} $3. Kliknij, aby odświeżyć stronę.",
+	"section-watch-pagenotwatched": "<strong>Uwaga:</strong> subskrybujesz sekcję, ale nie obserwujesz strony. Aby nowe komentarze były wyróżniane na stronie listy obserwowanych, dodaj stronę do listy obserwowanych.",
 	"section-metadata-commentcount-authorcount": "$1 {{plural:$1|komentarz|komentarze|komentarzy}} <span class=\"cd-section-metadata-authorcount\"> od <span class=\"cd-section-metadata-authorcount-link\">$2 {{plural:$2|osoby|osób}} </span></span>",
 	"section-metadata-newcommentcount": "+$1 {{plural:$1|nowy|nowe|nowych}}",
 	"section-metadata-lastcomment": "Ostatni komentarz:",
