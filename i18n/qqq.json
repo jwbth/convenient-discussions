@@ -12,6 +12,7 @@
 			"Nike",
 			"Pacha Tchernof",
 			"Robby",
+			"Stjn",
 			"Verdy p"
 		]
 	},
@@ -269,7 +270,7 @@
 	"navpanel-next": "Text of the tooltip for the button in the navigation panel that scrolls the page to the next new comment.",
 	"navpanel-firstunseen": "Text of the tooltip for the button in the navigation panel that scrolls the page to the first unseen comment.",
 	"navpanel-firstunseen-hidden-title": "Title of the notification that appears when the user tries to scroll to a comment, but it is hidden inside a collapsed thread.\n\nSee also the text: {{msg-wm|Convenient-discussions-navpanel-firstunseen-hidden}}",
-	"navpanel-firstunseen-hidden": "Text of the notification that appears when the user tries to scroll to a comment, but it is hidden inside a collapsed thread.\n\n$1: ignore this.\n$2: {{msg-wm|dot-separator}} message.\n$3: ignore this.\n\nSee also the title: {{msg-wm|Convenient-discussions-navpanel-firstunseen-hidden-title}}",
+	"navpanel-firstunseen-hidden": "Text of the notification that appears when the user tries to scroll to a comment, but it is hidden inside a collapsed thread.\n\n$1: ignore this.\n$2: {{msg-wm|Convenient-discussions-dot-separator}} message.\n$3: ignore this.\n\nSee also the title: {{msg-wm|Convenient-discussions-navpanel-firstunseen-hidden-title}}",
 	"navpanel-commentform": "Text of the tooltip for the button in the navigation panel that scrolls the page to the next comment form out of sight.",
 	"navpanel-newcomments-count": "First part of the text of the tooltip for the \"reload\" button in the navigation panel when there are new comments on the page.\n\n$1: the number of new comments.",
 	"navpanel-newcomments-names": "The author ($1) and the addressee ($2) of the comment displayed in the list of new comments. This list appears in the tooltip for the \"Refresh\" button in the navigation panel when there are new, not yet loaded, comments on the page.",
