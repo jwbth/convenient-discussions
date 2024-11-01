@@ -1910,12 +1910,6 @@ class CommentForm {
             this.encapsulateSelection(this.constructor.encapsulateOptions.underline);
             e.preventDefault();
           }
-
-          // Ctrk+K
-          if (keyCombination(e, 75, ['cmd'])) {
-            this.commentInput.$element.find('.tool[rel="link"] a')[0]?.click();
-            e.preventDefault();
-          }
         }
 
         // Ctrk+Shift+5
