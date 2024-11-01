@@ -233,13 +233,12 @@ export default {
     let floatingRects;
     const comments = [];
     const rootBottom = controller.$root[0].getBoundingClientRect().bottom + window.scrollY;
-    let notMovedCount = 0;
 
     // We go from the end and stop at the first _three_ comments that have not been misplaced. A
     // quirky reason for this is that the mouse could be over some comment making its underlay to be
     // repositioned immediately and therefore not appearing as misplaced to this procedure. Three
     // comments threshold should be more reliable.
-    this.items.slice().reverse().some((comment) => {
+    this.items.slice().reverse().forEach((comment) => {
       const shouldBeHighlighted = (
         !comment.isCollapsed &&
         (
@@ -270,22 +269,14 @@ export default {
           floatingRects,
         });
         if (isMoved || redrawAll) {
-          notMovedCount = 0;
           comments.push(comment);
         } else if (isMoved === null) {
           comment.removeLayers();
 
         // Nested containers shouldn't count, the offset of layers inside them may be OK, unlike the
         // layers preceding them.
-        } else if (comment.getLayersContainer().cdIsTopLayersContainer) {
-          // isMoved === false
-          notMovedCount++;
-          if (notMovedCount === 2) {
-            return true;
-          }
         }
       }
-      return false;
     });
 
     // It's faster to update the offsets separately in one sequence.
