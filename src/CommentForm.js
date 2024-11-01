@@ -1882,36 +1882,40 @@ class CommentForm {
           this.cancel();
         }
 
-        // Ctrl+B
-        if (keyCombination(e, 66, ['cmd'])) {
-          this.encapsulateSelection({
-            pre: "'''",
-            peri: mw.msg('wikieditor-toolbar-tool-bold-example'),
-            post: "'''",
-          });
-          e.preventDefault();
-        }
+        // WikiEditor started supporting these in October 2024
+        // https://phabricator.wikimedia.org/T62928
+        if (!this.showToolbar) {
+          // Ctrl+B
+          if (keyCombination(e, 66, ['cmd'])) {
+            this.encapsulateSelection({
+              pre: "'''",
+              peri: mw.msg('wikieditor-toolbar-tool-bold-example'),
+              post: "'''",
+            });
+            e.preventDefault();
+          }
 
-        // Ctrl+I
-        if (keyCombination(e, 73, ['cmd'])) {
-          this.encapsulateSelection({
-            pre: "''",
-            peri: mw.msg('wikieditor-toolbar-tool-italic-example'),
-            post: "''",
-          });
-          e.preventDefault();
-        }
+          // Ctrl+I
+          if (keyCombination(e, 73, ['cmd'])) {
+            this.encapsulateSelection({
+              pre: "''",
+              peri: mw.msg('wikieditor-toolbar-tool-italic-example'),
+              post: "''",
+            });
+            e.preventDefault();
+          }
 
-        // Ctrl+U
-        if (keyCombination(e, 85, ['cmd'])) {
-          this.encapsulateSelection(this.constructor.encapsulateOptions.underline);
-          e.preventDefault();
-        }
+          // Ctrl+U
+          if (keyCombination(e, 85, ['cmd'])) {
+            this.encapsulateSelection(this.constructor.encapsulateOptions.underline);
+            e.preventDefault();
+          }
 
-        // Ctrk+K
-        if (keyCombination(e, 75, ['cmd'])) {
-          this.commentInput.$element.find('.tool[rel="link"] a')[0]?.click();
-          e.preventDefault();
+          // Ctrk+K
+          if (keyCombination(e, 75, ['cmd'])) {
+            this.commentInput.$element.find('.tool[rel="link"] a')[0]?.click();
+            e.preventDefault();
+          }
         }
 
         // Ctrk+Shift+5
