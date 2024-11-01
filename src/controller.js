@@ -601,9 +601,10 @@ export default {
       this.rootElement = this.$root[0];
     }
 
-    // Add the class immediately to prevent the issue when any unexpected error prevents this from
-    // being executed and then this.handleWikipageContentHookFirings() is called with
-    // #mw-content-text element for some reason, and the page goes into an infinite reloading loop.
+    // Add the class immediately, not at the end of the boot process, to prevent the issue when any
+    // unexpected error prevents this from being executed. Then, when
+    // this.handleWikipageContentHookFirings() is called with #mw-content-text element for some
+    // reason, the page can go into an infinite reloading loop.
     this.$root.addClass('cd-parse-started');
   },
 

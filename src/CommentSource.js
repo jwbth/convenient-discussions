@@ -314,11 +314,9 @@ class CommentSource {
       .maskSensitiveCode()
       .withText((text, textMasker) => {
         this.headingMatch = text.match(/(^[^]*(?:^|\n))((=+)(.*)\3[ \t\x01\x02]*\n)/);
-        if (this.headingMatch) {
-          this.headingMatch.forEach((group, i) => {
-            this.headingMatch[i] = textMasker.unmaskText(group);
-          });
-        }
+        this.headingMatch?.forEach((group, i) => {
+          this.headingMatch[i] = textMasker.unmaskText(group);
+        });
         return text;
       })
       .unmask()

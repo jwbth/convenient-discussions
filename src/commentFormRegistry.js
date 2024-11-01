@@ -59,8 +59,8 @@ export default {
       })
       .on('resize', this.adjustLabels.bind(this));
     commentRegistry
-      .on('selected', this.toggleQuoteButtonsHighlighting.bind(this, true))
-      .on('unselected', this.toggleQuoteButtonsHighlighting.bind(this, false));
+      .on('select', this.toggleQuoteButtonsHighlighting.bind(this, true))
+      .on('unselect', this.toggleQuoteButtonsHighlighting.bind(this, false));
   },
 
   /**

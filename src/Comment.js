@@ -926,6 +926,116 @@ class Comment extends CommentSkeleton {
    */
 
   /**
+   * Get the coordinates of the comment. Optionally set them as the `offset` or `roughOffset`
+   * property. Also set the {@link Comment#isStartStretched isStartStretched} and
+   * {@link Comment#isEndStretched isEndStretched} properties (if `options.considerFloating` is
+   * `true`).
+   *
+   * Note that comment coordinates are not static, obviously, but we need to recalculate them only
+   * occasionally.
+   *
+   * @param {object} [options={}]
+   * @param {object[]} [options.floatingRects]
+   *   {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect Element#getBoundingClientRect}
+   *   results for floating elements from `convenientDiscussions.g.floatingElements`. It may be
+   *   calculated in advance for many elements in one sequence to save time.
+   * @param {boolean} [options.considerFloating] Whether to take floating elements around the
+   *   comment into account. Deemed `true` if `options.floatingRects` is set.
+   * @param {boolean} [options.set=false] Whether to set the offset to the `offset` (if
+   *   `options.considerFloating` is `true`) or `roughOffset` (if `options.considerFloating` is
+   *   `false`) property. If `true`, the function will return a boolean value indicating if the
+   *   comment is moved instead of the offset. (This value can be used to stop recalculating comment
+   *   offsets if a number of comments in a row have not moved for optimization purposes.) Setting
+   *   the `offset` property implies that the layers offset will be updated afterwards - otherwise,
+   *   the next attempt to call this method to update the layers offset will return `false` meaning
+   *   the comment isn't moved, and the layers offset will stay wrong.
+   * @returns {?(CommentOffset|boolean)} Offset object. If the comment is not visible, returns
+   *   `null`. If `options.set` is `true`, returns a boolean value indicating if the comment is
+   *   moved instead of the offset.
+   */
+  getOffset(options = {}) {
+    options.considerFloating ??= Boolean(options.floatingRects);
+    options.set ??= false;
+
+    if (this.editForm) {
+      options.firstElement = options.lastElement = this.editForm.getOutermostElement();
+    } else {
+      options.firstElement = this.highlightables[0];
+      options.lastElement = this.highlightables[this.highlightables.length - 1];
+    }
+
+    let rectTop = this.constructor.getCommentPartRect(options.firstElement);
+    let rectBottom = this.elements.length === 1 ?
+      rectTop :
+      this.constructor.getCommentPartRect(options.lastElement);
+
+    if (!getVisibilityByRects(rectTop, rectBottom)) {
+      this.setOffset(null, options);
+      return null;
+    }
+
+    // Seems like caching this value significantly helps performance at least in Chrome. But need to
+    // be sure the viewport can't jump higher when it is at the bottom point of the page after some
+    // content starts to occupy less space.
+    const scrollY = window.scrollY;
+
+    const isMoved = this.offset ?
+      // This value will be `true` wrongly if the comment is around floating elements. But that
+      // doesn't hurt much.
+      (
+        // Has the top changed. With scale other than 100% values of less than 0.001 appear in
+        // Chrome and Firefox.
+        !(Math.abs(scrollY + rectTop.top - this.offset.top) < 0.01) ||
+
+        // Has the height changed
+        !(Math.abs((rectBottom.bottom - rectTop.top) - (this.offset.bottom - this.offset.top)) < 0.01) ||
+
+        // Has the width of the first highlightable changed
+        !(Math.abs(this.highlightables[0].offsetWidth - this.firstHighlightableWidth) < 0.01)
+      ) :
+      true;
+    if (!isMoved) {
+      // If floating elements aren't supposed to be taken into account but the comment isn't moved,
+      // we still set/return the offset with floating elements taken into account because that
+      // shouldn't do any harm.
+      if (options.set && !options.considerFloating) {
+        this.roughOffset = this.offset;
+      }
+
+      return options.set ? false : this.offset;
+    }
+
+    const top = scrollY + rectTop.top;
+    const bottom = scrollY + rectBottom.bottom;
+
+    if (options.considerFloating) {
+      [
+        rectTop,
+        rectBottom,
+      ] = this.getAdjustedRects(rectTop, rectBottom, bottom, options.floatingRects);
+    }
+
+    const scrollX = window.scrollX;
+    const left = scrollX + Math.min(rectTop.left, rectBottom.left);
+    const right = scrollX + Math.max(rectTop.right, rectBottom.right);
+
+    if (options.considerFloating) {
+      this.updateStretched(left, right);
+    }
+
+    // A solution for comments that have the height bigger than the viewport height. In Chrome, the
+    // scrolling step is 100 pixels.
+    const bottomForVisibility = bottom - top > (window.innerHeight - 250) ?
+      top + (window.innerHeight - 250) :
+      bottom;
+
+    const offset = { top, bottom, left, right, bottomForVisibility };
+    this.setOffset(offset, options);
+
+    return options.set ? true : offset;
+  }
+
+  /**
    * If `options.set` is `true`, set the offset to the `offset` (if `options.considerFloating` is
    * `true`) or `roughOffset` (if `options.considerFloating` is `false`) property.
    *
@@ -1076,114 +1186,6 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get the coordinates of the comment. Optionally set them as the `offset` or `roughOffset`
-   * property. Also set the {@link Comment#isStartStretched isStartStretched} and
-   * {@link Comment#isEndStretched isEndStretched} properties (if `options.considerFloating` is
-   * `true`).
-   *
-   * Note that comment coordinates are not static, obviously, but we need to recalculate them only
-   * occasionally.
-   *
-   * @param {object} [options={}]
-   * @param {object[]} [options.floatingRects]
-   *   {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect Element#getBoundingClientRect}
-   *   results for floating elements from `convenientDiscussions.g.floatingElements`. It may be
-   *   calculated in advance for many elements in one sequence to save time.
-   * @param {boolean} [options.considerFloating] Whether to take floating elements around the
-   *   comment into account. Deemed `true` if `options.floatingRects` is set.
-   * @param {boolean} [options.set=false] Whether to set the offset to the `offset` (if
-   *   `options.considerFloating` is `true`) or `roughOffset` (if `options.considerFloating` is
-   *   `false`) property. If `true`, the function will return a boolean value indicating if the
-   *   comment is moved instead of the offset. (This value can be used to stop recalculating comment
-   *   offsets if a number of comments in a row have not moved for optimization purposes.) Setting
-   *   the `offset` property implies that the layers offset will be updated afterwards - otherwise,
-   *   the next attempt to call this method to update the layers offset will return `false` meaning
-   *   the comment isn't moved, and the layers offset will stay wrong.
-   * @returns {?(CommentOffset|boolean)} Offset object. If the comment is not visible, returns
-   *   `null`. If `options.set` is `true`, returns a boolean value indicating if the comment is
-   *   moved instead of the offset.
-   */
-  getOffset(options = {}) {
-    options.considerFloating ??= Boolean(options.floatingRects);
-    options.set ??= false;
-
-    if (this.editForm) {
-      options.firstElement = options.lastElement = this.editForm.getOutermostElement();
-    } else {
-      options.firstElement = this.highlightables[0];
-      options.lastElement = this.highlightables[this.highlightables.length - 1];
-    }
-
-    let rectTop = this.constructor.getCommentPartRect(options.firstElement);
-    let rectBottom = this.elements.length === 1 ?
-      rectTop :
-      this.constructor.getCommentPartRect(options.lastElement);
-
-    if (!getVisibilityByRects(rectTop, rectBottom)) {
-      this.setOffset(null, options);
-      return null;
-    }
-
-    // Seems like caching this value significantly helps performance at least in Chrome. But need to
-    // be sure the viewport can't jump higher when it is at the bottom point of the page after some
-    // content starts to occupy less space.
-    const scrollY = window.scrollY;
-
-    const isMoved = this.offset ?
-      // This value will be `true` wrongly if the comment is around floating elements. But that
-      // doesn't hurt much.
-      (
-        // Has the top changed. With scale other than 100% values of less than 0.001 appear in
-        // Chrome and Firefox.
-        !(Math.abs(scrollY + rectTop.top - this.offset.top) < 0.01) ||
-
-        // Has the height changed
-        !(Math.abs((rectBottom.bottom - rectTop.top) - (this.offset.bottom - this.offset.top)) < 0.01) ||
-
-        // Has the width of the first highlightable changed
-        !(Math.abs(this.highlightables[0].offsetWidth - this.firstHighlightableWidth) < 0.01)
-      ) :
-      true;
-    if (!isMoved) {
-      // If floating elements aren't supposed to be taken into account but the comment isn't moved,
-      // we still set/return the offset with floating elements taken into account because that
-      // shouldn't do any harm.
-      if (options.set && !options.considerFloating) {
-        this.roughOffset = this.offset;
-      }
-
-      return options.set ? false : this.offset;
-    }
-
-    const top = scrollY + rectTop.top;
-    const bottom = scrollY + rectBottom.bottom;
-
-    if (options.considerFloating) {
-      [rectTop, rectBottom] = this
-        .getAdjustedRects(rectTop, rectBottom, bottom, options.floatingRects);
-    }
-
-    const scrollX = window.scrollX;
-    const left = scrollX + Math.min(rectTop.left, rectBottom.left);
-    const right = scrollX + Math.max(rectTop.right, rectBottom.right);
-
-    if (options.considerFloating) {
-      this.updateStretched(left, right);
-    }
-
-    // A solution for comments that have the height bigger than the viewport height. In Chrome, the
-    // scrolling step is 100 pixels.
-    const bottomForVisibility = bottom - top > (window.innerHeight - 250) ?
-      top + (window.innerHeight - 250) :
-      bottom;
-
-    const offset = { top, bottom, left, right, bottomForVisibility };
-    this.setOffset(offset, options);
-
-    return options.set ? true : offset;
-  }
-
-  /**
    * Get the comment's text direction. It can be different from the text direction of the site's
    * content language on pages with text marked with the class `mw-content-ltr` or `mw-content-rtl`
    * inside the content.
@@ -1265,6 +1267,52 @@ class Comment extends CommentSkeleton {
   }
 
   /**
+   * Add the underlay and overlay if they are missing, update their styles, recalculate their offset
+   * and redraw if the comment has been moved or do nothing if everything is right.
+   *
+   * @param {object} [options={}]
+   * @param {boolean} [options.add=true] Add the layers in case they are created. If set to `false`,
+   *   it is expected that the layers created during this procedure, if any, will be added
+   *   afterwards (otherwise there would be layers without a parent element which would lead to
+   *   bugs).
+   * @param {boolean} [options.update=true] Update the layers' offset in case the comment is moved.
+   *   If set to `false`, it is expected that the offset will be updated afterwards.
+   * @param {object[]} [options.floatingRects]
+   *   {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect Element#getBoundingClientRect}
+   *   results for floating elements from `convenientDiscussions.g.floatingElements`. It may be
+   *   calculated in advance for many elements in one sequence to save time.
+   * @param {boolean} [options.considerFloating] Whether to take floating elements around the
+   *   comment into account. Deemed `true` if `options.floatingRects` is set.
+   * @returns {?boolean} Is the comment moved or created. `null` if we couldn't determine (for
+   *   example, if the element is invisible).
+   */
+  configureLayers(options = {}) {
+    options.add ??= true;
+    options.update ??= true;
+
+    const isMoved = this.computeLayersOffset(options);
+    if (isMoved === null) {
+      return null;
+    }
+
+    // Configure the layers only if they were unexistent or the comment position has changed, to
+    // save time.
+    if (this.underlay) {
+      this.updateLayersStyles();
+      if (isMoved && options.update) {
+        this.updateLayersOffset();
+      }
+      return isMoved;
+    } else {
+      this.createLayers();
+      if (options.add) {
+        this.addLayers();
+      }
+      return true;
+    }
+  }
+
+  /**
    * Calculate the underlay and overlay offset and set it to the `layersOffset` property.
    *
    * @param {object} [options={}]
@@ -1300,37 +1348,124 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Hide the comment menu (in fact, the comment overlay's inner wrapper).
-   *
-   * @param {Event} [e]
-   * @private
+   * @typedef {object} LayersContainerOffset
+   * @property {number} top Top offset.
+   * @property {number} left Left offset.
+   * @memberof Comment
+   * @inner
    */
-  hideMenu(e) {
-    e?.preventDefault();
-    this.overlayInnerWrapper.style.display = 'none';
-    this.wasMenuHidden = true;
+
+  /**
+   * _For internal use._ Get the top and left offset of the layers container.
+   *
+   * @returns {?LayersContainerOffset}
+   */
+  getLayersContainerOffset() {
+    const container = this.getLayersContainer();
+    let top = container.cdCachedLayersContainerTop;
+    let left = container.cdCachedLayersContainerLeft;
+    if (top === undefined || container.cdCouldHaveMoved) {
+      const rect = container.getBoundingClientRect();
+      if (!getVisibilityByRects(rect)) {
+        return null;
+      }
+      top = rect.top + window.scrollY;
+      left = rect.left + window.scrollX;
+      container.cdCouldHaveMoved = false;
+      container.cdCachedLayersContainerTop = top;
+      container.cdCachedLayersContainerLeft = left;
+    }
+    return { top, left };
   }
 
   /**
-   * Set a timeout for hiding the menu.
+   * _For internal use._ Get and sometimes create the container for the comment's underlay and
+   * overlay.
    *
-   * @param {Event} e
-   * @private
+   * @returns {Element}
    */
-  deferHideMenu(e) {
-    // Ignore other than left button clicks.
-    if (e.which !== 1) return;
+  getLayersContainer() {
+    if (this.layersContainer === undefined) {
+      let offsetParent;
 
-    this.hideMenuTimeout = setTimeout(this.hideMenu.bind(this), 1200);
-  }
+      const treeWalker = new TreeWalker(
+        document.body,
+        null,
+        true,
 
-  /**
-   * Remove timeout for hiding the menu set in {@link Comment#deferHideMenu}.
-   *
-   * @private
-   */
-  dontHideMenu() {
-    clearTimeout(this.hideMenuTimeout);
+        // Start with the first or last element dependent on which is higher in the DOM hierarchy in
+        // terms of nesting level. There were issues with RTL in LTR (and vice versa) when we
+        // started with the first element, see
+        // https://github.com/jwbth/convenient-discussions/commit/9fcad9226a7019d6a643d7b17f1e824657302ebd.
+        // On the other hand, if we start with the first/last element, we get can in trouble when
+        // the start/end of the comment is inside a container while the end/start is not. A good
+        // example that combines both cases (press "up" on the "comments" "These images are too
+        // monochrome" and "So my suggestion is just, to..."):
+        // https://en.wikipedia.org/w/index.php?title=Wikipedia:Village_pump_(technical)&oldid=1217857130#c-Example-20240401111100-Indented_tables.
+        // This is a error, of course, that quoted comments are treated as real, but we can't do
+        // anything here.
+        (
+          (
+            this.elements.length === 1 ||
+            (
+              this.parser.getNestingLevel(this.elements[0]) <=
+              this.parser.getNestingLevel(this.elements.slice(-1)[0])
+            )
+          ) ?
+            this.elements[0] :
+            this.elements.slice(-1)[0]
+        )
+      );
+
+      while (treeWalker.parentNode()) {
+        const node = treeWalker.currentNode;
+
+        // These elements have `position: relative` for the purpose we know.
+        if (node.classList.contains('cd-connectToPreviousItem')) continue;
+
+        let style = node.cdStyle;
+        if (!style) {
+          // window.getComputedStyle is expensive, so we save the result to the node's property.
+          style = window.getComputedStyle(node);
+          node.cdStyle = style;
+        }
+        const classList = Array.from(node.classList);
+        if (
+          ['absolute', 'relative'].includes(style.position) ||
+          (
+            node !== controller.$content[0] &&
+            (classList.includes('mw-content-ltr') || classList.includes('mw-content-rtl'))
+          )
+        ) {
+          offsetParent = node;
+        }
+        if (
+          style.backgroundColor.includes('rgb(') ||
+          style.backgroundImage !== 'none' &&
+          !offsetParent
+        ) {
+          offsetParent = node;
+          offsetParent.classList.add('cd-commentLayersContainer-parent-relative');
+        }
+        if (offsetParent) break;
+      }
+      offsetParent ||= document.body;
+      offsetParent.classList.add('cd-commentLayersContainer-parent');
+      let container = offsetParent.firstElementChild;
+      if (!container.classList.contains('cd-commentLayersContainer')) {
+        container = document.createElement('div');
+        container.classList.add('cd-commentLayersContainer');
+        offsetParent.insertBefore(container, offsetParent.firstChild);
+
+        container.cdIsTopLayersContainer = !container.parentNode.parentNode
+          .closest('.cd-commentLayersContainer-parent');
+      }
+      this.layersContainer = container;
+
+      addToArrayIfAbsent(commentRegistry.layersContainers, container);
+    }
+
+    return this.layersContainer;
   }
 
   /**
@@ -1462,25 +1597,37 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Set classes to the underlay, overlay, and other elements according to a type.
+   * Set a timeout for hiding the menu.
    *
-   * @param {string} type
-   * @param {*} add
+   * @param {Event} e
    * @private
    */
-  updateClassesForType(type, add) {
-    add = Boolean(add);
-    if (this.underlay.classList.contains(`cd-comment-underlay-${type}`) === add) return;
+  deferHideMenu(e) {
+    // Ignore other than left button clicks.
+    if (e.which !== 1) return;
 
-    this.underlay.classList.toggle(`cd-comment-underlay-${type}`, add);
-    this.overlay.classList.toggle(`cd-comment-overlay-${type}`, add);
+    this.hideMenuTimeout = setTimeout(this.hideMenu.bind(this), 1200);
+  }
 
-    if (type === 'deleted') {
-      this.replyButton?.setDisabled(add);
-      this.editButton?.setDisabled(add);
-    } else if (type === 'hovered' && !add) {
-      this.overlayInnerWrapper.style.display = '';
-    }
+  /**
+   * Hide the comment menu (in fact, the comment overlay's inner wrapper).
+   *
+   * @param {Event} [e]
+   * @private
+   */
+  hideMenu(e) {
+    e?.preventDefault();
+    this.overlayInnerWrapper.style.display = 'none';
+    this.wasMenuHidden = true;
+  }
+
+  /**
+   * Remove timeout for hiding the menu set in {@link Comment#deferHideMenu}.
+   *
+   * @private
+   */
+  dontHideMenu() {
+    clearTimeout(this.hideMenuTimeout);
   }
 
   /**
@@ -1503,49 +1650,27 @@ class Comment extends CommentSkeleton {
     }
   }
 
+
+
   /**
-   * Add the underlay and overlay if they are missing, update their styles, recalculate their offset
-   * and redraw if the comment has been moved or do nothing if everything is right.
+   * Set classes to the underlay, overlay, and other elements according to a type.
    *
-   * @param {object} [options={}]
-   * @param {boolean} [options.add=true] Add the layers in case they are created. If set to `false`,
-   *   it is expected that the layers created during this procedure, if any, will be added
-   *   afterwards (otherwise there would be layers without a parent element which would lead to
-   *   bugs).
-   * @param {boolean} [options.update=true] Update the layers' offset in case the comment is moved.
-   *   If set to `false`, it is expected that the offset will be updated afterwards.
-   * @param {object[]} [options.floatingRects]
-   *   {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect Element#getBoundingClientRect}
-   *   results for floating elements from `convenientDiscussions.g.floatingElements`. It may be
-   *   calculated in advance for many elements in one sequence to save time.
-   * @param {boolean} [options.considerFloating] Whether to take floating elements around the
-   *   comment into account. Deemed `true` if `options.floatingRects` is set.
-   * @returns {?boolean} Is the comment moved or created. `null` if we couldn't determine (for
-   *   example, if the element is invisible).
+   * @param {string} type
+   * @param {*} add
+   * @private
    */
-  configureLayers(options = {}) {
-    options.add ??= true;
-    options.update ??= true;
+  updateClassesForType(type, add) {
+    add = Boolean(add);
+    if (this.underlay.classList.contains(`cd-comment-underlay-${type}`) === add) return;
 
-    const isMoved = this.computeLayersOffset(options);
-    if (isMoved === null) {
-      return null;
-    }
+    this.underlay.classList.toggle(`cd-comment-underlay-${type}`, add);
+    this.overlay.classList.toggle(`cd-comment-overlay-${type}`, add);
 
-    // Configure the layers only if they were unexistent or the comment position has changed, to
-    // save time.
-    if (this.underlay) {
-      this.updateLayersStyles();
-      if (isMoved && options.update) {
-        this.updateLayersOffset();
-      }
-      return isMoved;
-    } else {
-      this.createLayers();
-      if (options.add) {
-        this.addLayers();
-      }
-      return true;
+    if (type === 'deleted') {
+      this.replyButton?.setDisabled(add);
+      this.editButton?.setDisabled(add);
+    } else if (type === 'hovered' && !add) {
+      this.overlayInnerWrapper.style.display = '';
     }
   }
 
@@ -1598,127 +1723,6 @@ class Comment extends CommentSkeleton {
     this.$overlay = null;
 
     this.isHovered = false;
-  }
-
-  /**
-   * _For internal use._ Get and sometimes create the container for the comment's underlay and
-   * overlay.
-   *
-   * @returns {Element}
-   */
-  getLayersContainer() {
-    if (this.layersContainer === undefined) {
-      let offsetParent;
-
-      const treeWalker = new TreeWalker(
-        document.body,
-        null,
-        true,
-
-        // Start with the first or last element dependent on which is higher in the DOM hierarchy in
-        // terms of nesting level. There were issues with RTL in LTR (and vice versa) when we
-        // started with the first element, see
-        // https://github.com/jwbth/convenient-discussions/commit/9fcad9226a7019d6a643d7b17f1e824657302ebd.
-        // On the other hand, if we start with the first/last element, we get can in trouble when
-        // the start/end of the comment is inside a container while the end/start is not. A good
-        // example that combines both cases (press "up" on the "comments" "These images are too
-        // monochrome" and "So my suggestion is just, to..."):
-        // https://en.wikipedia.org/w/index.php?title=Wikipedia:Village_pump_(technical)&oldid=1217857130#c-Example-20240401111100-Indented_tables.
-        // This is a error, of course, that quoted comments are treated as real, but we can't do
-        // anything here.
-        (
-          (
-            this.elements.length === 1 ||
-            (
-              this.parser.getNestingLevel(this.elements[0]) <=
-              this.parser.getNestingLevel(this.elements.slice(-1)[0])
-            )
-          ) ?
-            this.elements[0] :
-            this.elements.slice(-1)[0]
-        )
-      );
-
-      while (treeWalker.parentNode()) {
-        const node = treeWalker.currentNode;
-
-        // These elements have `position: relative` for the purpose we know.
-        if (node.classList.contains('cd-connectToPreviousItem')) continue;
-
-        let style = node.cdStyle;
-        if (!style) {
-          // window.getComputedStyle is expensive, so we save the result to the node's property.
-          style = window.getComputedStyle(node);
-          node.cdStyle = style;
-        }
-        const classList = Array.from(node.classList);
-        if (
-          ['absolute', 'relative'].includes(style.position) ||
-          (
-            node !== controller.$content[0] &&
-            (classList.includes('mw-content-ltr') || classList.includes('mw-content-rtl'))
-          )
-        ) {
-          offsetParent = node;
-        }
-        if (
-          style.backgroundColor.includes('rgb(') ||
-          style.backgroundImage !== 'none' &&
-          !offsetParent
-        ) {
-          offsetParent = node;
-          offsetParent.classList.add('cd-commentLayersContainer-parent-relative');
-        }
-        if (offsetParent) break;
-      }
-      offsetParent ||= document.body;
-      offsetParent.classList.add('cd-commentLayersContainer-parent');
-      let container = offsetParent.firstElementChild;
-      if (!container.classList.contains('cd-commentLayersContainer')) {
-        container = document.createElement('div');
-        container.classList.add('cd-commentLayersContainer');
-        offsetParent.insertBefore(container, offsetParent.firstChild);
-
-        container.cdIsTopLayersContainer = !container.parentNode.parentNode
-          .closest('.cd-commentLayersContainer-parent');
-      }
-      this.layersContainer = container;
-
-      addToArrayIfAbsent(commentRegistry.layersContainers, container);
-    }
-
-    return this.layersContainer;
-  }
-
-  /**
-   * @typedef {object} LayersContainerOffset
-   * @property {number} top Top offset.
-   * @property {number} left Left offset.
-   * @memberof Comment
-   * @inner
-   */
-
-  /**
-   * _For internal use._ Get the top and left offset of the layers container.
-   *
-   * @returns {?LayersContainerOffset}
-   */
-  getLayersContainerOffset() {
-    const container = this.getLayersContainer();
-    let top = container.cdCachedLayersContainerTop;
-    let left = container.cdCachedLayersContainerLeft;
-    if (top === undefined || container.cdCouldHaveMoved) {
-      const rect = container.getBoundingClientRect();
-      if (!getVisibilityByRects(rect)) {
-        return null;
-      }
-      top = rect.top + window.scrollY;
-      left = rect.left + window.scrollX;
-      container.cdCouldHaveMoved = false;
-      container.cdCachedLayersContainerTop = top;
-      container.cdCachedLayersContainerLeft = left;
-    }
-    return { top, left };
   }
 
   /**

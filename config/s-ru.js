@@ -75,18 +75,18 @@ export default {
 		'discussiontools-newtopicssubscription-notify-subscribed-body': '{{GENDER:|Вы}} будете получать уведомления о создании новых тем на этой странице.',
 		'discussiontools-newtopicssubscription-notify-unsubscribed-title': '{{GENDER:|Вы}} отписались.',
 		'discussiontools-newtopicssubscription-notify-unsubscribed-body': '{{GENDER:|Вы}} больше не будете получать уведомления о создании новых тем на этой странице.',
-		'visualeditor-educationpopup-dismiss': 'Окей, понятно'
+		'visualeditor-educationpopup-dismiss': 'Окей, понятно',
 	},
 
 	specialPageAliases: {
 		'Contributions': 'Вклад',
 		'Diff': 'Изменения',
-		'PermanentLink': 'Постоянная_ссылка'
+		'PermanentLink': 'Постоянная_ссылка',
 	},
 
 	substAliases: [
 		'подстановка:',
-		'подст:'
+		'подст:',
 	],
 
 	timezone: 'UTC',
@@ -96,44 +96,44 @@ export default {
 	unsignedTemplates: [
 		'Нет подписи',
 		'Unsigned',
-		'UnsignedIP'
+		'UnsignedIP',
 	],
 
 	pairQuoteTemplates: [
 		[
-			'Начало цитаты'
+			'Начало цитаты',
 		],
 		[
-			'Конец цитаты'
-		]
+			'Конец цитаты',
+		],
 	],
 
 	paragraphTemplates: [
 		'pb',
 		'Абзац',
-		'Paragraph break'
+		'Paragraph break',
 	],
 
 	outdentTemplates: [
 		'od',
-		'Outdent'
+		'Outdent',
 	],
 
 	clearTemplates: [
-		'Clear'
+		'Clear',
 	],
 
 	noSignatureTemplates: [
 		'Перенесено с',
-		'Перенесено на'
+		'Перенесено на',
 	],
 
 	closedDiscussionTemplates: [
 		[
 			'Закрыто',
-			'Closed'
+			'Closed',
 		],
-		[]
+		[],
 	],
 	signatureEndingRegexp: / \(обсуждение\)/,
 

@@ -17,7 +17,7 @@ import { loadUserGenders } from './utils-api';
 import { calculateWordOverlap, keepWorkerSafeValues } from './utils-general';
 import visits from './visits';
 
-// TODO: Make this into a singleton (object) without inner module variables, so that it emits with
+// TODO: Make this into a singleton (object) without module-scope variables so that it emits with
 // this.emit(). Move worker-related stuff to controller.
 
 const revisionData = {};

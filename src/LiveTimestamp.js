@@ -143,7 +143,7 @@ class LiveTimestamp {
     this.improvedTimestamps.forEach((timestamp) => {
       timestamp.update();
     });
-    this.emit('updateimproved');
+    this.emit('updateImproved');
   }
 
   /**

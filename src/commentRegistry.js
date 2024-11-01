@@ -806,7 +806,7 @@ export default {
           if (!comment.isSelected) {
             this.resetSelectedComment();
             comment.setSelected(true);
-            this.emit('selected', comment);
+            this.emit('select', comment);
           }
         } else {
           this.resetSelectedComment();

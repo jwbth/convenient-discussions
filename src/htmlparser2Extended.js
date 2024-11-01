@@ -16,16 +16,16 @@ self.Node = {
  *
  * @param {external:Node} base
  * @param {Function} callback
- * @param {boolean} checkSelf
+ * @param {boolean} [checkSelf=false]
  * @returns {boolean}
  * @private
  */
-function walkThroughSubtree(base, callback, checkSelf) {
+function traverseSubtree(base, callback, checkSelf = false) {
   if (checkSelf && callback(base)) {
     return true;
   }
   for (let n = base.firstChild; n; n = n.nextSibling) {
-    if (walkThroughSubtree(n, callback, true)) {
+    if (traverseSubtree(n, callback, true)) {
       return true;
     }
   }
@@ -315,7 +315,7 @@ Object.defineProperty(Element.prototype, 'className', {
 
 Element.prototype.filterRecursively = function (func, limit) {
   const nodes = [];
-  walkThroughSubtree(this, (node) => {
+  traverseSubtree(this, (node) => {
     if (func(node)) {
       nodes.push(node);
       if (limit && nodes.length === limit) {
@@ -393,4 +393,4 @@ Document.prototype.querySelectorAll = Element.prototype.querySelectorAll;
 
 self.Document = Document;
 
-export { walkThroughSubtree, parseDocument };
+export { traverseSubtree, parseDocument };

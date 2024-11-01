@@ -15,7 +15,7 @@ import Parser from './Parser';
 import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
 import debug from './debug';
-import { parseDocument, walkThroughSubtree } from './htmlparser2Extended';
+import { parseDocument, traverseSubtree } from './htmlparser2Extended';
 import { isHeadingNode, isMetadataNode } from './utils-general';
 
 let isFirstRun = true;
@@ -48,7 +48,7 @@ function setAlarm(interval) {
  */
 function getAllTextNodes() {
   let nodes = [];
-  walkThroughSubtree(rootElement, (node) => {
+  traverseSubtree(rootElement, (node) => {
     if (node.nodeType === Node.TEXT_NODE) {
       nodes.push(node);
     }

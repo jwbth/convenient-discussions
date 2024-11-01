@@ -122,7 +122,7 @@ export default {
           .on('add', this.updateCommentFormButton.bind(this))
           .on('remove', this.updateCommentFormButton.bind(this));
         LiveTimestamp
-          .on('updateimproved', this.updateTimestampsInRefreshButtonTooltip.bind(this));
+          .on('updateImproved', this.updateTimestampsInRefreshButtonTooltip.bind(this));
         visits
           .on('process', this.fill.bind(this));
         commentRegistry

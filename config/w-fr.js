@@ -75,12 +75,12 @@ export default {
 		'discussiontools-newtopicssubscription-notify-subscribed-body': '{{GENDER:|}}Vous recevrez des notifications lorsque de nouveaux sujets seront lancés sur cette page.',
 		'discussiontools-newtopicssubscription-notify-unsubscribed-title': 'Vous êtes désabonné{{GENDER:||e}}.',
 		'discussiontools-newtopicssubscription-notify-unsubscribed-body': '{{GENDER:|}}Vous ne recevrez plus de notifications lorsque de nouveaux sujets sont lancés sur cette page.',
-		'visualeditor-educationpopup-dismiss': 'C’est bon, allons-y'
+		'visualeditor-educationpopup-dismiss': 'C’est bon, allons-y',
 	},
 	'specialPageAliases': {
 		'Contributions': 'Contributions',
 		'Diff': 'Diff',
-		'PermanentLink': 'Lien_permanent'
+		'PermanentLink': 'Lien_permanent',
 	},
 	'thumbAliases': [
 		'мини',
@@ -99,19 +99,19 @@ export default {
 		'NS',
 		'Non signé2',
 		'Non signé 2',
-		'Unsigned2'
+		'Unsigned2',
 	],
 	'pairQuoteTemplates': [
 		[
 			'Début citation bloc',
 			'Début de citation',
 			'Citation début',
-			'Début citation'
+			'Début citation',
 		],
 		[
 			'Fin citation bloc',
 			'Fin de citation',
-			'Fin citation'
+			'Fin citation',
 		]
 	],
 	'outdentTemplates': [
@@ -120,10 +120,10 @@ export default {
 		'Retour chariot',
 		'RI:',
 		'Ri',
-		'Outdent'
+		'Outdent',
 	],
 	'clearTemplates': [
-		'Clear'
+		'Clear',
 	],
 	'reflistTalkTemplates': [
 		'Références discussion',
@@ -134,7 +134,7 @@ export default {
 	'noSignatureClasses': [
 		'NavFrame',
   ],
-	'signatureEndingRegexp': / \(discuter\)/
+	'signatureEndingRegexp': / \(discuter\)/,
 };
 
 let styles;
