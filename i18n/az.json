@@ -217,7 +217,7 @@
 	"dn-grantpermission-again": "Rahat Müzakirələr parametrlərində iş masası bildirişlərini aktivləşdirdiniz, lakin saytın onları göndərməsinə icazə verilmir. Bu mesajın yenidən görünməsinin qarşısını almaq üçün çıxacaq popapda sayta bildirişlər almaq və ya rədd etmək icazəsi verin.",
 	"deadanchor-section-lead": "Səhifədə \"$1\" bölməsini tapmaq mümkün olmadı.",
 	"deadanchor-section-exactmatch": "Deyəsən \"$1\" bölməsi arxivləşdirilib. <b>[[$2|Arxivlənmiş bölməyə bax]]</b> (və ya [$3 arxivdə axtar]).",
-	"deadanchor-section-inexactmatch": "Deyəsən \"$1\" bölməsi arxivləşdirilib. [[$2|Arxivlənmiş bölməyə bax]]",
+	"deadanchor-section-inexactmatch": "Deyəsən \"$1\" bölməsi arxivləşdirilib. [$2 Arxivlənmiş bölməyə bax]",
 	"deadanchor-section-notfound": "[$1 Arxivdəki axtarış] da heç bir nəticə vermədi.",
 	"deadanchor-section-reason": "O, silinmiş və ya adı dəyişdirilmiş ola bilər və ya səhv linki izləmiş ola bilərsiniz.",
 	"deadanchor-section-similar": "Bununla belə, səhifədə oxşar adda \"<b>[[$1|$2]]</b>\" bölməsi tapıldı.",
