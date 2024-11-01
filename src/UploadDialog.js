@@ -561,21 +561,24 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
         const filenameMainPart = `${projectName} ${pageName}`
           .trim()
           .replace(new RegExp('[' + mw.config.get('wgIllegalFileChars', '') + ']', 'g'), '-');
-        const pageNameOrProjectName = projectName || `[[${pageName}]]`;
-        let projectNameOrPageName;
+        const projectNameOrPageLink = (
+          projectName ||
+          (hasIwPrefix && !pageName.startsWith(':') ? `[[:${pageName}]]` : `[[${pageName}]]`)
+        );
+        let pageNameOrProjectName;
         if (!hasIwPrefix && pageName && getInterwikiPrefixForHostnameSync) {
           const prefix = getInterwikiPrefixForHostnameSync(
             cd.g.serverName,
             'commons.wikimedia.org'
           );
-          projectNameOrPageName = `[[:${prefix}${pageName}]]`;
+          pageNameOrProjectName = `[[:${prefix}${pageName}]]`;
         } else {
-          projectNameOrPageName = pageNameOrProjectName;
+          pageNameOrProjectName = projectNameOrPageLink;
         }
         this.filenameWidget.setValue(`${filenameMainPart} ${filenameDate}`);
-        this.descriptionWidget.setValue(`Screenshot of ${projectNameOrPageName}`);
+        this.descriptionWidget.setValue(`Screenshot of ${pageNameOrProjectName}`);
         this.controls.source.input.setValue('Screenshot');
-        this.controls.author.input.setValue(`${pageNameOrProjectName} authors${historyText}`);
+        this.controls.author.input.setValue(`${projectNameOrPageLink} authors${historyText}`);
         this.controls.license.input.setValue(
           hasIwPrefix ?
             '{{Wikimedia-screenshot}}' :
