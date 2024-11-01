@@ -296,10 +296,10 @@ async function getConfigsEdits() {
     ))
   )).forEach((content, i) => {
     const asset = assetsWithGadgetsDefinition[i];
-    const modulesString = asset.modules.join(',');
+    const modulesString = asset.modules.join(', ');
 
     // Make sure we don't break anything in MediaWiki:Gadgets-definition.
-    const illegalMatch = modulesString.match(/[^a-z.,-]/ig);
+    const illegalMatch = modulesString.match(/[^a-z., -]/ig);
     if (illegalMatch) {
       const matchesString = illegalMatch.map((char) => code(char)).join(' ');
       error(`Modules string for ${keyword(asset.target)} contains illegal characters: ${matchesString}`);
