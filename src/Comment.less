@@ -7,6 +7,10 @@
   column-gap: 1em;
   align-items: baseline;
   direction: var(--cd-direction-user);
+
+  // Prevent overlapping floating elements, e.g.
+  // https://en.wikipedia.org/wiki/Project:Village_pump_(WMF)#c-Valereee-20241103105700-Contacted_by_one_of_the_editors
+  min-width: min-content;
 }
 
 .cd-comment-header {
