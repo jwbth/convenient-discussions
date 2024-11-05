@@ -407,7 +407,7 @@ describe('Tags and templates', () => {
     addSectionForm
   );
   testWithData(
-    'Template',
+    'Template fully occupying a line',
     'Quote:\n{{quote|Text.}}\nEnd.',
     ': Quote:{{quote|Text.}}End. ~~~~\n',
     firstCommentReplyForm
@@ -496,7 +496,23 @@ describe('Alternative config', () => {
   testWithData(
     'Paragraph (no template)',
     'Start.\n\nEnd.',
-    ': Start.<br>End. ~~~~\n',
+    ': Start.\n: End. ~~~~\n',
+    firstCommentReplyForm,
+    undefined,
+    { paragraphTemplates: [] }
+  );
+  testWithData(
+    'Paragraph (no template, comment wrapped in a tag)',
+    '<div>Start.\n\nEnd.</div>',
+    ': <div>Start.<br>End.</div> ~~~~\n',
+    firstCommentReplyForm,
+    undefined,
+    { paragraphTemplates: [] }
+  );
+  testWithData(
+    'Paragraph (no template, various tricky markup)',
+    'Start.\nNew line\n\nEnd.\n\nList:\n* Item 1.\n* Item 2.\n* Item 3.\nContinuation.\n\n\nThree newlines.\nQuote 1:\n\n{{quote|Text.}}\n\nQuote 2:\n{{quote|Text.}}\nEnd',
+    ': Start.<br>New line\n: End.\n: List:\n:* Item 1.\n:* Item 2.\n:* Item 3.\n: Continuation.\n: Three newlines.<br>Quote 1:\n: {{quote|Text.}}\n: Quote 2:{{quote|Text.}}End ~~~~\n',
     firstCommentReplyForm,
     undefined,
     { paragraphTemplates: [] }

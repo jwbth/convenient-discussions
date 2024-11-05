@@ -118,6 +118,7 @@ class CommentFormInputTransformer extends TextMasker {
       const tagMatches = this.text.match(generateTagsRegexp(['[a-z]+'])) || [];
       const quoteMatches = this.text.match(cd.g.quoteRegexp) || [];
       const matches = tagMatches.concat(quoteMatches);
+      this.areThereTagsAroundMultipleLines = matches.some((match) => match.includes('\n'));
       this.areThereTagsAroundListMarkup = matches.some((match) => /\n[:*#;]/.test(match));
     }
 
@@ -204,11 +205,6 @@ class CommentFormInputTransformer extends TextMasker {
     // Remove spaces at the beginning of lines.
     code = code.replace(/^ +/gm, '');
 
-    // Remove paragraphs if the wiki has no paragraph template.
-    if (!cd.config.paragraphTemplates.length) {
-      code = code.replace(/\n\n+/g, '\n');
-    }
-
     // Replace list markup (`:*#;`) with respective tags if otherwise layout will be broken.
     if (/^[:*#;]/m.test(code) && (isWrapped || this.restLinesIndentation === '#')) {
       code = this.listMarkupToTags(code);
@@ -275,12 +271,19 @@ class CommentFormInputTransformer extends TextMasker {
       )
     );
 
-    const paragraphCode = cd.config.paragraphTemplates.length ?
-      `$1{{${cd.config.paragraphTemplates[0]}}}\n` :
-
-      // Should be unreachable.
-      `$1<br>\n`;
-    code = code.replace(/^(.*)\n\n+(?!:)/gm, paragraphCode);
+    // We we only check for `:` here, not other markup, because we only add `:` in those places.
+    code = code.replace(
+      /^(.*)\n\n+(?!:)/gm,
+      cd.config.paragraphTemplates.length ?
+        `$1{{${cd.config.paragraphTemplates[0]}}}\n` :
+        (
+          this.areThereTagsAroundMultipleLines ?
+            `$1<br>\n` :
+            (s, m1) => (
+              m1 + '\n' + this.constructor.prependIndentationToLine(this.restLinesIndentation, '')
+            )
+        )
+    );
 
     return code;
   }
@@ -320,10 +323,14 @@ class CommentFormInputTransformer extends TextMasker {
       /^(.+)\n(?![:#])(?=(.*))/gm :
       /^((?![:*#; ]).+)\n(?![\n:*#; \x03])(?=(.*))/gm;
     code = code.replace(newlinesRegexp, (s, currentLine, nextLine) => {
+      // Remove if it is confirmed that this isn't happening (November 2024)
+      if (this.indentation && !cd.config.paragraphTemplates.length) {
+        console.error(`Convenient Discussions: Processing a newline in "${s}" which should be unreachable. You shouldn't be seeing this. If you do, please report to https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/Convenient_Discussions.`)
+      }
+
       const lineBreakOrNot = (
         entireLineRegexp.test(currentLine) ||
         entireLineRegexp.test(nextLine) ||
-
         (
           !this.indentation &&
           (entireLineFromStartRegexp.test(currentLine) || entireLineFromStartRegexp.test(nextLine))
