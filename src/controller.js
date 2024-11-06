@@ -1736,9 +1736,10 @@ export default {
    * instance to handle page mutations.
    */
   async setupMutationObserver() {
-    // Create the mutation observer in the next event cycle - let most DOM changes by CD and scripts
-    // attached to the hooks to be made first to reduce the number of times it runs in vain. But if
-    // we set a long delay, users will see comment backgrounds mispositioned for some time.
+    // Create the mutation observer in the next event loop iteration - let most DOM changes by CD
+    // and scripts attached to the hooks to be made first to reduce the number of times it runs in
+    // vain. But if we set a long delay, users will see comment backgrounds mispositioned for some
+    // time.
     await sleep();
 
     this.mutationObserver = new MutationObserver((records) => {
@@ -1751,6 +1752,17 @@ export default {
       attributes: true,
       childList: true,
       subtree: true,
+    });
+
+    // A workaround to fight the bug in Chromium where comments layers are misplaced after sending a
+    // comment (also after the initial page load?). I could establish the cause of it - comment
+    // positions are rechecked on events and also periodically, and if a comment is moved, it's
+    // layers are redrawn. But then these positions are cached, and if nothing seems to be changed,
+    // we don't recheck _all_ comment positions every time. Probably there is some misalignment
+    // between how the browser renders the positions and how it reports the changes (e.g. it updates
+    // the positions of elements at the top and bottom of the page separately).
+    sleep(2000).then(() => {
+      commentRegistry.maybeRedrawLayers(true);
     });
   },
 
