@@ -152,14 +152,14 @@ function processSections(parser, targets) {
 }
 
 /**
- * Remove the element's attributes whose names start with "data-".
+ * Remove the element's attributes whose names start with `data-` and IDs added by Parsoid.
  *
  * @param {external:Element} element
  * @private
  */
-function removeDataAttributes(element) {
+function removeDataAndParsoidAttributes(element) {
   Object.keys(element.attribs).forEach((name) => {
-    if (/^data-/.test(name)) {
+    if (/^data-/.test(name) || (name === 'id' && /^mw.{2,3}$/.test(element.attribs[name]))) {
       element.removeAttribute(name);
     }
   });
@@ -232,8 +232,8 @@ function filterCommentContent(comment) {
 
     // Data attributes may include dynamic components, for example
     // https://ru.wikipedia.org/wiki/Проект:Знаете_ли_вы/Подготовка_следующего_выпуска.
-    removeDataAttributes(element);
-    element.getElementsByAttribute(/^data-/).forEach(removeDataAttributes);
+    removeDataAndParsoidAttributes(element);
+    element.getElementsByAttribute(/^data-|^id$/).forEach(removeDataAndParsoidAttributes);
 
     // Empty comment anchors, in most cases added by the script.
     element.getElementsByTagName('span')
