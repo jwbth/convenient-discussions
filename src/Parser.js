@@ -202,13 +202,13 @@ class Parser {
   }
 
   /**
-   * Collect nodes related to signatures starting from timestamp nodes.
+   * Collect nodes related to a signature starting from a timestamp node.
    *
    * @param {object} timestamp
    * @returns {?object}
    * @private
    */
-  convertTimestampToSignature(timestamp) {
+  getSignatureFromTimestamp(timestamp) {
     let unsignedElement;
     let el = timestamp.element;
     while (!unsignedElement && (el = el.parentNode) && isInline(el)) {
@@ -426,7 +426,7 @@ class Parser {
     const signatures = this.context.getAllTextNodes()
       .map(this.findTimestamp.bind(this))
       .filter(definedAndNotNull)
-      .map(this.convertTimestampToSignature.bind(this))
+      .map(this.getSignatureFromTimestamp.bind(this))
       .filter(definedAndNotNull)
       .concat(this.findUnsigneds());
 

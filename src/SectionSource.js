@@ -277,7 +277,11 @@ class SectionSource {
       // There's no comments neither in the code nor on the page.
       !sectionOldestComment;
 
-    let oldestCommentWordOverlap = Number(!this.section.oldestComment && !oldestSig);
+    // Multiply by 0.5 to avoid situations like
+    // https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house&oldid=956309089#Unwanted_pings_on_en.wikipedia,
+    // even though they are not CD's fault
+    let oldestCommentWordOverlap = Number(!this.section.oldestComment && !oldestSig) * 0.5;
+
     if (this.section.oldestComment && oldestSig) {
       // Use the comment text overlap factor due to this error
       // https://www.wikidata.org/w/index.php?diff=1410718962. The comment's source code is

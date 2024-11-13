@@ -110,12 +110,15 @@ class SectionSkeleton {
       this.editUrl = new URL(cd.g.server + editLink.getAttribute('href'));
 
       if (this.editUrl) {
-        const sectionNumber = this.editUrl.searchParams.get('section');
-        if (sectionNumber.startsWith('T-')) {
+        const sectionParam = this.editUrl.searchParams.get('section');
+        if (sectionParam.startsWith('T-')) {
           this.sourcePageName = this.editUrl.searchParams.get('title');
-          this.sectionNumber = Number(sectionNumber.match(/\d+/)[0]);
+          this.sectionNumber = Number(sectionParam.match(/\d+/)[0]);
         } else {
-          this.sectionNumber = Number(sectionNumber);
+          this.sectionNumber = Number(sectionParam);
+        }
+        if (Number.isNaN(this.sectionNumber)) {
+          this.sectionNumber = null;
         }
         this.editUrl = this.editUrl.href;
       }
