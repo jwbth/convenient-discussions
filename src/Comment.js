@@ -1989,7 +1989,12 @@ class Comment extends CommentSkeleton {
     const lineNumbers = [[], []];
     revisions.forEach((revision, i) => {
       const pageCode = revision.slots.main.content;
-      const source = this.locateInCode(false, pageCode, commentsData[i]);
+      let source;
+      try {
+        source = this.locateInCode(false, pageCode, commentsData[i]);
+      } catch {
+        return;
+      }
       const startLineNumber = countOccurrences(pageCode.slice(0, source.lineStartIndex), /\n/g) + 1;
       const endLineNumber = (
         startLineNumber +
