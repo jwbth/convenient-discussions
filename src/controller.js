@@ -1753,17 +1753,6 @@ export default {
       childList: true,
       subtree: true,
     });
-
-    // A workaround to fight the bug in Chromium where comments layers are misplaced after sending a
-    // comment (also after the initial page load?). I could establish the cause of it - comment
-    // positions are rechecked on events and also periodically, and if a comment is moved, it's
-    // layers are redrawn. But then these positions are cached, and if nothing seems to be changed,
-    // we don't recheck _all_ comment positions every time. Probably there is some misalignment
-    // between how the browser renders the positions and how it reports the changes (e.g. it updates
-    // the positions of elements at the top and bottom of the page separately).
-    sleep(2000).then(() => {
-      commentRegistry.maybeRedrawLayers(true);
-    });
   },
 
   /**
