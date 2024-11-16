@@ -194,10 +194,11 @@ class CommentFormInputTransformer extends TextMasker {
    *
    * @param {string} code
    * @param {boolean} isWrapped Is the code wrapped.
+   * @param {boolean} isInTemplate
    * @returns {string}
    * @private
    */
-  handleIndentedComment(code, isWrapped) {
+  handleIndentedComment(code, isWrapped, isInTemplate) {
     if (!this.indentation) {
       return code;
     }
@@ -207,6 +208,14 @@ class CommentFormInputTransformer extends TextMasker {
 
     // Replace list markup (`:*#;`) with respective tags if otherwise layout will be broken.
     if (/^[:*#;]/m.test(code) && (isWrapped || this.restLinesIndentation === '#')) {
+      if (isInTemplate) {
+        // Handle cases with no newline before a parameter's content that has a list. This can give
+        // rare false positives when there is simultaneously a list and a parameter starting with
+        // `[:^#;]` of a different nature in a template, e.g.
+        // `{{quote|link=#Section|1=* Item 1.\n* Item 2.\n}}`. Putting that parameter at the end
+        // will work.
+        code = code.replace(/\|(?:[^|=}]*=)?(?=[:*#;])/, '$&\n');
+      }
       code = this.listMarkupToTags(code);
     }
 
@@ -369,7 +378,11 @@ class CommentFormInputTransformer extends TextMasker {
    * @private
    */
   processCode(code, isInTemplate) {
-    code = this.handleIndentedComment(code, isInTemplate || this.areThereTagsAroundListMarkup);
+    code = this.handleIndentedComment(
+      code,
+      isInTemplate || this.areThereTagsAroundListMarkup,
+      isInTemplate
+    );
     code = this.processNewlines(code, isInTemplate);
     return code;
   }

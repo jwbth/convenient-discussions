@@ -461,6 +461,18 @@ describe('Tags and templates', () => {
     firstCommentReplyForm
   );
   testWithData(
+    'List in a template without a newline before a named parameter\'s content',
+    'Quoted list:\n{{quote|1=* Item 1.\n** Subitem 1.\n* Item 2.\n}}\nEnd.',
+    ': Quoted list:{{quote|1=<ul><li>Item 1.<ul><li>Subitem 1.</li></ul></li><li>Item 2.</li></ul>}}End. ~~~~\n',
+    firstCommentReplyForm
+  );
+  testWithData(
+    'List in a template without a newline before a unnamed parameter\'s content',
+    'Quoted list:\n{{quote|1=* Item 1.\n** Subitem 1.\n* Item 2.\n}}\nEnd.',
+    ': Quoted list:{{quote|1=<ul><li>Item 1.<ul><li>Subitem 1.</li></ul></li><li>Item 2.</li></ul>}}End. ~~~~\n',
+    firstCommentReplyForm
+  );
+  testWithData(
     'Gallery tag',
     'Start.\n<gallery>\nGallery.\n</gallery>\nEnd.',
     ': Start.\n<gallery>\nGallery.\n</gallery>\n: End. ~~~~\n',
