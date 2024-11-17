@@ -668,6 +668,24 @@ class Comment extends CommentSkeleton {
   }
 
   /**
+   * Create a {@link Comment#copyLinkButton copy link button} and add it to the comment menu
+   * ({@link Comment#$overlayMenu}).
+   *
+   * @private
+   */
+  addCopyLinkButton() {
+    if (!this.id || this.isReformatted) return;
+
+    this.copyLinkButton = new CommentButton({
+      element: this.constructor.prototypes.get('copyLinkButton'),
+      action: this.copyLink.bind(this),
+      widgetConstructor: this.constructor.prototypes.getWidget('copyLinkButton'),
+      href: this.dtId ? '#' + this.dtId : undefined,
+    });
+    this.overlayMenu.appendChild(this.copyLinkButton.element);
+  }
+
+  /**
    * Create a {@link Comment#goToParentButton go to parent button} and add it to the comment header
    * ({@link Comment#$header} or {@link Comment#$overlayMenu}).
    *
@@ -1523,6 +1541,7 @@ class Comment extends CommentSkeleton {
       this.overlayInnerWrapper.onmouseup = this.dontHideMenu.bind(this);
 
       this.addGoToParentButton();
+      this.addCopyLinkButton();
       this.addThankButton();
       this.addEditButton();
       this.addReplyButton();
@@ -3847,6 +3866,17 @@ class Comment extends CommentSkeleton {
           title: cd.s('cm-thank-tooltip'),
           framed: false,
           classes: ['cd-button-ooui', 'cd-comment-button-ooui'],
+        })
+      ));
+
+      this.prototypes.addWidget('copyLinkButton', () => (
+        new OO.ui.ButtonWidget({
+          label: cd.s('cm-copylink'),
+          icon: 'link',
+          title: cd.s('cm-copylink-tooltip'),
+          framed: false,
+          invisibleLabel: true,
+          classes: ['cd-button-ooui', 'cd-comment-button-ooui', 'cd-comment-button-ooui-icon'],
         })
       ));
 
