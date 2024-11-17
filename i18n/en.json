@@ -293,7 +293,7 @@
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 {{plural:$1|comment|comments}}",
 	"toc-commentcount-new-full": "$1 {{plural:$1|comment|comments}} +$2 {{plural:$2|new}}",
-	"toc-more": "…$1 more",
+	"toc-more": "$1 more",
 	"toc-watched": "You are subscribed to this topic",
 
 	"pagenav-pagetop": "Page top",
