@@ -114,7 +114,10 @@ export default {
     this.reformatTimestamps();
     this.findAndUpdateTableComments();
     this.adjustDom();
-    this.handleDtTimestampsClick();
+
+    // Our handler may run earlier than DT's (e.g. in Chrome if the page was loaded in a background
+    // tab). This hack seems to work better than adding and removing a `wikipage.content` hook.
+    $(this.handleDtTimestampsClick.bind(this));
   },
 
   /**
