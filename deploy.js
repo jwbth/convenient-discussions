@@ -199,7 +199,7 @@ function getLastDeployedCommit(revisions) {
       .slice(0, newCommitsCount)
       .map((commit) => commit.subject)
       .filter((commit) => (
-        !/^(Merge branch|Merge pull request|Localisation updates|deploy:|build:|configs?:|tests?:|jsdoc:|chore:|docs:|i18n:)/.test(commit)
+        !/^(Merge branch|Merge pull request|Localisation updates|Bump |deploy:|build:|configs?:|tests?:|jsdoc:|chore:|docs:|i18n:)/.test(commit)
       ));
     newCommitsCount = newCommitsSubjects.length;
   }
