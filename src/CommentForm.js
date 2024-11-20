@@ -2960,11 +2960,11 @@ class CommentForm {
    * @param {string} code Code to save.
    * @param {import('./CommentFormOperationRegistry').CommentFormOperation} operation Operation the
    *   form is undergoing.
-   * @param {boolean} [suppressTag]
+   * @param {boolean} [suppressTag=false]
    * @returns {Promise.<object|null>}
    * @private
    */
-  async editPage(code, operation, suppressTag) {
+  async editPage(code, operation, suppressTag = false) {
     let result;
     try {
       const options = {
@@ -2988,7 +2988,7 @@ class CommentForm {
       options.baserevid = sectionOrPage?.revisionId;
       options.starttimestamp = sectionOrPage?.queryTimestamp;
       if (suppressTag) {
-        options.tag = undefined;
+        options.tags = undefined;
       }
       result = await this.targetPage.edit(options);
     } catch (e) {
