@@ -269,7 +269,7 @@
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 {{plural:$1|reactie|reacties}}",
 	"toc-commentcount-new-full": "$1 {{plural:$1|reactie|reacties}} +$2 {{plural:$2|nieuwe}}",
-	"toc-more": "…nog $1",
+	"toc-more": "nog $1",
 	"toc-watched": "U bent geabonneerd op dit onderwerp",
 	"pagenav-pagetop": "Naar begin pagina",
 	"pagenav-toc": "Inhoudsopgave",

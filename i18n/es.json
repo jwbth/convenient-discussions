@@ -265,7 +265,7 @@
 	"navpanel-markasread": "Mantenga presionada la tecla $1 para marcar todos los comentarios como leídos",
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 {{PLURAL:$1|comentario|comentarios}}",
-	"toc-more": "…$1 más",
+	"toc-more": "$1 más",
 	"toc-watched": "Estás suscrito a esta sección",
 	"pagenav-pagetop": "Inicio de página",
 	"pagenav-toc": "Índice",

@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"Eleassar",
+			"Jack who built the house",
 			"Upwinxp"
 		]
 	},
@@ -243,7 +244,7 @@
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 {{plural:$1|komentar|komentarja|komentarji|komentarjev}}",
 	"toc-commentcount-new-full": "$1 {{plural:$1|komentar|komentarja|komentarji|komentarjev}} +$2 {{plural:$2|nov|nova|novi|novih}}",
-	"toc-more": "... še $1",
+	"toc-more": "še $1",
 	"toc-watched": "Na to temo ste naročeni",
 	"pagenav-pagetop": "Vrh strani",
 	"pagenav-toc": "Kazalo",

@@ -228,7 +228,7 @@
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 {{plural:$1|نظر}}",
 	"toc-commentcount-new-full": "$1 {{plural:$1|نظر}} +$2 {{plural:$2|جدید}}",
-	"toc-more": "...$1 مورد بیشتر",
+	"toc-more": "$1 مورد بیشتر",
 	"toc-watched": "شما این بخش را پی‌گیری کرده‌اید",
 	"pagenav-pagetop": "بالای صفحه",
 	"pagenav-toc": "جعبهٔ محتویات",

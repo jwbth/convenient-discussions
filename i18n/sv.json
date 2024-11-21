@@ -267,7 +267,7 @@
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 {{plural:$1|kommentar|kommentarer}}",
 	"toc-commentcount-new-full": "$1 {{plural:$1|kommentar|kommentarer}} +$2 {{plural:$2|ny|nya}}",
-	"toc-more": "…$1 till",
+	"toc-more": "$1 till",
 	"toc-watched": "Du prenumererar på detta avsnitt",
 	"pagenav-pagetop": "Toppen på sidan",
 	"pagenav-toc": "Innehållsförteckning",

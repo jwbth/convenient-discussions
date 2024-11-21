@@ -292,7 +292,7 @@
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1{{plural:$1|条评论}}",
 	"toc-commentcount-new-full": "$1{{plural:$1|条评论}} + $2{{plural:$2|条新评论}}",
-	"toc-more": "…更多$1条",
+	"toc-more": "更多$1条",
 	"toc-watched": "您已订阅此话题",
 	"pagenav-pagetop": "页面顶部",
 	"pagenav-toc": "目录",

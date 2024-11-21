@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"Jack who built the house",
 			"Nokeoo",
 			"Pavel1513"
 		]
@@ -254,7 +255,7 @@
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 {{plural:$1|komentaras|komentarai}}",
 	"toc-commentcount-new-full": "$1 {{plural:$1|komentaras|komentarai}} +$2 {{plural:$2|naujas}}",
-	"toc-more": "...dar $1",
+	"toc-more": "dar $1",
 	"toc-watched": "Esate užsiprenumeravę šią temą",
 	"pagenav-pagetop": "Puslapio viršus",
 	"pagenav-toc": "Turinys",
