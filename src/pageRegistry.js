@@ -204,7 +204,7 @@ export class Page {
         ...(permanent ? { oldid: mw.config.get('wgRevisionId') } : {})
       })
     );
-    return `${cd.g.server}${decodedPageUrl}#${fragment}`;
+    return cd.g.server + decodedPageUrl + (fragment ? `#${fragment}` : '');
   }
 
   /**
