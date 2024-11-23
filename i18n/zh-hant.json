@@ -277,7 +277,7 @@
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 個{{plural:$1|意見}}",
 	"toc-commentcount-new-full": "$1 個{{plural:$1|意見}} +$2 個{{plural:$2|新的}}",
-	"toc-more": "…更多 $1 個",
+	"toc-more": "更多 $1 個",
 	"toc-watched": "您已訂閱該主題",
 	"pagenav-pagetop": "頁面頂端",
 	"pagenav-toc": "目錄",

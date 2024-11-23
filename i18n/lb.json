@@ -133,7 +133,7 @@
 	"navpanel-newcomments-unknowndate": "onbekannten Datum",
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 {{plural:$1|Bemierkung|Bemierkungen}}",
-	"toc-more": "...$1 méi",
+	"toc-more": "$1 méi",
 	"toc-watched": "Dir sidd op dëst Theema abonnéiert",
 	"pagenav-back": "Zréck",
 	"notification-reload": "Klickt fir d'Säit $1 nei ze lueden,",

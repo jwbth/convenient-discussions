@@ -262,7 +262,7 @@
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 commento{{plural:$1||s}}",
 	"toc-commentcount-new-full": "$1 commento{{plural:$1||s}} +$2 nove{{plural:$2||s}}",
-	"toc-more": "…$1 alteres",
+	"toc-more": "$1 alteres",
 	"toc-watched": "Tu es subscribite a iste topico",
 	"pagenav-pagetop": "Alto del pagina",
 	"pagenav-toc": "Tabula de contento",

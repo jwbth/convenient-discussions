@@ -233,7 +233,7 @@
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 {{plural:$1|टिप्पणी|टिप्पणियाँ}}",
 	"toc-commentcount-new-full": "$1 {{plural:$1|टिप्पणी|टिप्पणियाँ}} +$2 {{plural:$2|नई}}",
-	"toc-more": "…$1 अधिक",
+	"toc-more": "$1 अधिक",
 	"toc-watched": "आपने इस विषय पर सदस्यता ली",
 	"pagenav-pagetop": "पृष्ठ का शीर्ष",
 	"pagenav-toc": "विषयसूची",

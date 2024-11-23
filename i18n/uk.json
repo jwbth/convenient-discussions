@@ -236,7 +236,7 @@
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 {{plural:$1|коментар|коментарі|коментарів}}",
 	"toc-commentcount-new-full": "$1 {{plural:$1|коментар|коментарі|коментарів}} +$2 {{plural:$2|новий}}",
-	"toc-more": "…ще $1",
+	"toc-more": "ще $1",
 	"toc-watched": "Ви підписані на цей розділ",
 	"pagenav-pagetop": "Верх сторінки",
 	"pagenav-toc": "Зміст",

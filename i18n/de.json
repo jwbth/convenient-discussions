@@ -267,7 +267,7 @@
 	"navpanel-markasread": "Halte $1 gedrückt, um alle angezeigten Kommentare als gelesen zu markieren.",
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 {{plural:$1|Kommentar|Kommentare}}",
-	"toc-more": "...$1 weitere",
+	"toc-more": "$1 weitere",
 	"toc-watched": "Du hast diesen Abschnitt abonniert",
 	"pagenav-pagetop": "Seitenanfang",
 	"pagenav-toc": "Inhaltsverzeichnis",

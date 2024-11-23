@@ -2,6 +2,7 @@
 	"@metadata": {
 		"authors": [
 			"Ekminarin",
+			"Jack who built the house",
 			"Patsagorn Y.",
 			"Thas Tayapongsak",
 			"Thastp"
@@ -135,7 +136,7 @@
 	"rd-close": "ปิด",
 	"navpanel-refresh": "รีเฟรชหน้า",
 	"navpanel-newcomments-unknowndate": "ไม่ทราบวันที่",
-	"toc-more": "...$1 เพิ่มเติม",
+	"toc-more": "$1 เพิ่มเติม",
 	"pagenav-toc": "สารบัญ",
 	"pagenav-back": "ย้อนกลับ",
 	"sd-save": "บันทึก",

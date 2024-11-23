@@ -268,7 +268,7 @@
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 {{plural:$1|коментар|коментари}}",
 	"toc-commentcount-new-full": "$1 {{plural:$1|коментар|коментари}} +$2 {{plural:$2|нов|нови}}",
-	"toc-more": "…уште $1",
+	"toc-more": "уште $1",
 	"toc-watched": "Претплатени сте на темава",
 	"pagenav-pagetop": "Врв на страницата",
 	"pagenav-toc": "Содржина",

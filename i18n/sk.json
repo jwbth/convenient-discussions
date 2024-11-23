@@ -227,7 +227,7 @@
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 {{plural:$1|komentár|komentáre|komentárov}}",
 	"toc-commentcount-new-full": "$1 {{plural:$1|komentár|komentáre|komentárov}} +$2 {{plural:$2|nový|nové|nových}}",
-	"toc-more": "...$1 viac",
+	"toc-more": "$1 viac",
 	"toc-watched": "Túto tému sledujete",
 	"pagenav-pagetop": "Vrch stránky",
 	"pagenav-toc": "Obsah",

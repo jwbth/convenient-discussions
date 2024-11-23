@@ -212,7 +212,7 @@
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 {{plural:$1|వ్యాఖ్య|వ్యాఖ్యలు}}",
 	"toc-commentcount-new-full": "$1 {{plural:$1|వ్యాఖ్య|వ్యాఖ్యలు}} +$2 {{plural:$2|కొత్త}}",
-	"toc-more": "…మరో $1",
+	"toc-more": "మరో $1",
 	"pagenav-pagetop": "పేజీకి పైన",
 	"pagenav-toc": "విషయ సూచిక",
 	"pagenav-pagebottom": "పేజీ అడుగు",

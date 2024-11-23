@@ -238,7 +238,7 @@
 	"navpanel-markasread": "Segure Ctrl para marcar todos os comentários mostrados como lidos",
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 {{plural:$1|comentário|comentários}}",
-	"toc-more": "… $1 a mais",
+	"toc-more": "$1 a mais",
 	"toc-watched": "Você vigiou essa seção",
 	"pagenav-pagetop": "Topo da página",
 	"pagenav-toc": "Índice",

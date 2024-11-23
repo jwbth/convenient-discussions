@@ -284,7 +284,7 @@
 	"toc-commentcount-new": "$1 +$2",
 	"toc-commentcount-full": "$1 commentaire{{PLURAL:$1||s}}",
 	"toc-commentcount-new-full": "$1 commentaire{{PLURAL:$1||s}} +$2 nouveau{{PLURAL:$2||x}}",
-	"toc-more": "... $1 de plus",
+	"toc-more": "$1 de plus",
 	"toc-watched": "Vous êtes abonné à ce sujet",
 	"pagenav-pagetop": "Haut de la page",
 	"pagenav-toc": "Table des matières",
