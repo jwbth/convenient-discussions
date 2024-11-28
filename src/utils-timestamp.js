@@ -133,7 +133,7 @@ export function getDateFromTimestampMatch(match, timezone) {
         // there.
         const messages = isContentLanguage ?
           getContentLanguageMessages(dateTokenToMessageNames[code]) :
-          dateTokenToMessageNames[code].map(mw.msg);
+          dateTokenToMessageNames[code].map((token) => mw.msg(token));
         monthIdx = messages.indexOf(text);
         break;
       }
@@ -315,14 +315,14 @@ export function formatDateNative(date, addTimezone = false, timezone) {
       case 'xg':
       case 'F':
       case 'M':
-        string += dateTokenToMessageNames[code].map(mw.msg)[monthIdx];
+        string += dateTokenToMessageNames[code].map((token) => mw.msg(token))[monthIdx];
         break;
       case 'd':
         string += zeroPad(day, 2);
         break;
       case 'D':
       case 'l': {
-        string += dateTokenToMessageNames[code].map(mw.msg)[dayOfWeek];
+        string += dateTokenToMessageNames[code].map((token) => mw.msg(token))[dayOfWeek];
         break;
       }
       case 'j':

@@ -506,7 +506,7 @@ function getTimestampMainPartPattern(language) {
       case 'M': {
         const messages = isContentLanguage ?
           getContentLanguageMessages(dateTokenToMessageNames[code]) :
-          dateTokenToMessageNames[code].map(mw.msg);
+          dateTokenToMessageNames[code].map((token) => mw.msg(token));
         string += regexpAlternateGroup(messages);
         break;
       }
