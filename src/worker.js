@@ -311,9 +311,15 @@ function addCompareHelperProperties(comment) {
       if (!el.getAttribute('class')) {
         el.removeAttribute('class');
       }
-      if (Object.keys(el.attribs).length) {
+      if (
+        Object.keys(el.attribs).length
+
+        // Fix comments with {{smalldiv}} ({{block-small}}) when they get replies, like after
+        // https://ru.wikipedia.org/?diff=141768916
+        && el.className !== 'cd-comment-replacedPart'
+      ) {
         // https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Правила&oldid=125661313#c-Vladimir_Solovjev-20220921144700-D6194c-1cc-20220919200300
-        // without children has no trailing newline, while with children it has.
+        // without children has no trailing newline, while, with children, it has.
         if (el.lastChild?.data === '\n') {
           el.lastChild.remove();
         }
