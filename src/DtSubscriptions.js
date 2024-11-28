@@ -84,7 +84,7 @@ class DtSubscriptions extends Subscriptions {
    * @private
    */
   async addPageSubscribeButton() {
-    if (!cd.user.isRegistered() || cd.page.isArchive()) return;
+    if (!cd.user.isRegistered() || cd.page.isArchive() || $('#ca-dt-page-subscribe').length) return;
 
     this.pageSubscribeButton = new Button({
       element: mw.util.addPortletLink(
