@@ -895,7 +895,7 @@ class CommentSkeleton {
   filterParts() {
     this.parts = this.parts.filter((part) => !part.hasForeignComponents && !part.isTextNode);
 
-    // <style> and <link> tags at the beginning. Also <references> tags and {{reflist-talk}}
+    // <style>, <link>, and <hr> tags at the beginning. Also <references> tags and {{reflist-talk}}
     // templates (will need to generalize this, possibly via wiki configuration, if other wikis
     // employ a differently named class).
     for (let i = this.parts.length - 1; i >= 1; i--) {
@@ -906,6 +906,7 @@ class CommentSkeleton {
           !node.textContent.trim() &&
           [...node[this.parser.context.childElementsProp]].every((child) => child.tagName === 'BR')
         ) ||
+        node.tagName === 'HR' ||
         isMetadataNode(node) ||
         Array.from(node.classList).some((name => ['references', 'reflist-talk'].includes(name))) ||
 
