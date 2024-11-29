@@ -90,7 +90,9 @@ export default {
         // positions are cached, and if nothing seems to be changed, we don't recheck _all_ comment
         // positions every time. Probably there is some misalignment between how the browser renders
         // the positions and how it reports the changes (e.g. it updates the positions of elements
-        // at the top and bottom of the page separately).
+        // at the top and bottom of the page separately). UPDATE: the cause could be just below: the
+        // event handler of updateChecker's newChanges event ran earlier than the handler attached
+        // in Thread.init(). So, threads were collapsed just after comment layers were redrawn.
         await sleep(2000);
         this.maybeRedrawLayers(true);
       });
@@ -98,7 +100,12 @@ export default {
       // If the layers of deleted comments have been configured in Comment#unmarkAsChanged(), they
       // will prevent layers before them from being updated due to the "stop at the first three
       // unmoved comments" optimization in .maybeRedrawLayers(). So we just do the whole job here.
-      .on('newChanges', this.maybeRedrawLayers.bind(this, true));
+      .on('newChanges', async () => {
+        // This should run after Thread.init() that also reacts to the newChanges event.
+        await sleep();
+
+        this.maybeRedrawLayers(true);
+      });
     commentFormRegistry
       .on('teardown', this.registerSeen.bind(this));
     Thread
