@@ -174,7 +174,7 @@ class DtSubscriptions extends Subscriptions {
   onboardOntoPageSubscription() {
     if (
       settings.get('newTopicsSubscription-onboarded') ||
-      !this.pageSubscribeButton.element ||
+      !this.pageSubscribeButton.isConnected() ||
 
       // Buggy
       (cd.g.skin.startsWith('vector') && window.scrollY > 70) ||

@@ -92,7 +92,8 @@ export default {
         // the positions and how it reports the changes (e.g. it updates the positions of elements
         // at the top and bottom of the page separately). UPDATE: the cause could be just below: the
         // event handler of updateChecker's newChanges event ran earlier than the handler attached
-        // in Thread.init(). So, threads were collapsed just after comment layers were redrawn.
+        // in Thread.init(). So, threads were being collapsed just after comment layers were
+        // redrawn.
         await sleep(2000);
         this.maybeRedrawLayers(true);
       });

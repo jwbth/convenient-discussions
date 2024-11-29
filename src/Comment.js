@@ -524,6 +524,12 @@ class Comment extends CommentSkeleton {
     this.addThankButton();
     this.addGoToParentButton();
 
+    // The menu may be re-added (after a comment's content is updated). We need to restore
+    // something.
+    if (this.targetChild) {
+      this.addGoToChildButton(this.targetChild);
+    }
+
     // We need a wrapper to ensure correct positioning in LTR-in-RTL situations and vice versa.
     const menuWrapper = document.createElement('div');
     menuWrapper.className = 'cd-comment-menu-wrapper';
@@ -725,36 +731,49 @@ class Comment extends CommentSkeleton {
    * Create a {@link Comment#goToChildButton "Go to child" button} and add it to the comment header
    * ({@link Comment#$header} or {@link Comment#$overlayMenu}).
    *
+   * @param {Comment} child Child comment to go to.
    * @private
    */
-  addGoToChildButton() {
-    if (this.isReformatted) {
-      /**
-       * "Go to the child comment" button.
-       *
-       * @type {CommentButton}
-       */
-      this.goToChildButton = new CommentButton({
-        tooltip: cd.s('cm-gotochild-tooltip'),
-        classes: ['cd-comment-button-icon', 'cd-comment-button-goToChild', 'cd-icon'],
-      });
-      $(this.goToChildButton.element).append(
-        createSvg(16, 16, 20, 20).html(
-          `<path d="M10 15L2 5h16z" />`
-        )
-      );
+  addGoToChildButton(child) {
+    this.targetChild = child;
 
-      this.headerElement.insertBefore(
-        this.goToChildButton.element,
-        (this.toggleChildThreadsButton?.element || this.headerElement.lastChild?.nextSibling)
-      );
-    } else if (this.$overlayMenu) {
-      const element = this.constructor.prototypes.get('goToChildButton');
-      this.goToChildButton = new CommentButton({
-        element,
-        widgetConstructor: this.constructor.prototypes.getWidget('goToChildButton'),
-      });
-      this.$overlayMenu.prepend(element);
+    this.configureLayers();
+
+    if (!this.goToChildButton?.isConnected()) {
+      const action = () => {
+        this.targetChild.scrollTo({ pushState: true });
+      };
+
+      if (this.isReformatted) {
+        /**
+         * "Go to the child comment" button.
+         *
+         * @type {CommentButton}
+         */
+        this.goToChildButton = new CommentButton({
+          tooltip: cd.s('cm-gotochild-tooltip'),
+          classes: ['cd-comment-button-icon', 'cd-comment-button-goToChild', 'cd-icon'],
+          action,
+        });
+        $(this.goToChildButton.element).append(
+          createSvg(16, 16, 20, 20).html(
+            `<path d="M10 15L2 5h16z" />`
+          )
+        );
+
+        this.headerElement.insertBefore(
+          this.goToChildButton.element,
+          (this.goToParentButton?.element || this.timestampElement)?.nextSibling
+        );
+      } else if (this.$overlayMenu) {
+        const element = this.constructor.prototypes.get('goToChildButton');
+        this.goToChildButton = new CommentButton({
+          element,
+          widgetConstructor: this.constructor.prototypes.getWidget('goToChildButton'),
+          action,
+        });
+        this.$overlayMenu.prepend(element);
+      }
     }
   }
 
@@ -769,7 +788,7 @@ class Comment extends CommentSkeleton {
     if (
       !this.isReformatted ||
       !this.getChildren().some((child) => child.thread) ||
-      this.toggleChildThreadsButton
+      (this.toggleChildThreadsButton?.isConnected())
     ) {
       return;
     }
@@ -786,7 +805,10 @@ class Comment extends CommentSkeleton {
     });
     this.updateToggleChildThreadsButton();
 
-    this.headerElement.appendChild(this.toggleChildThreadsButton.element);
+    this.headerElement.insertBefore(
+      this.toggleChildThreadsButton.element,
+      this.$changeNote?.[0]
+    );
   }
 
   /**
@@ -796,12 +818,9 @@ class Comment extends CommentSkeleton {
     if (!this.toggleChildThreadsButton) return;
 
     const childrenCollapsed = this.areChildThreadsCollapsed();
-    if (childrenCollapsed === this.childrenCollapsed) return;
-
-    this.childrenCollapsed = childrenCollapsed;
     this.toggleChildThreadsButton.element.innerHTML = '';
     this.toggleChildThreadsButton.element.appendChild(
-      this.childrenCollapsed ?
+      childrenCollapsed ?
         this.constructor.prototypes.get('expandChildThreadsButtonSvg') :
         this.constructor.prototypes.get('collapseChildThreadsButtonSvg')
     );
@@ -2283,7 +2302,7 @@ class Comment extends CommentSkeleton {
     if (this.countEditsAsNewComments && (type === 'changed' || type === 'changedSince')) {
       this.isSeenBeforeChanged ??= this.isSeen;
       this.isSeen = false;
-      commentRegistry.emit('registerSeen');
+      commentRegistry.registerSeen();
     }
 
     // Layers are supposed to be updated (deleted comments background, repositioning) separately,
@@ -2342,14 +2361,15 @@ class Comment extends CommentSkeleton {
         break;
     }
 
-    this.$changeNote.remove();
+    this.$changeNote?.remove();
+    delete this.$changeNote;
 
     if (
       this.countEditsAsNewComments &&
       this.isSeen === false &&
       this.isSeenBeforeChanged === true
     ) {
-      this.isSeen = this.isSeenBeforeChanged;
+      this.isSeen = true;
       delete this.isSeenBeforeChanged;
       commentRegistry.emit('registerSeen');
     }
@@ -2451,9 +2471,6 @@ class Comment extends CommentSkeleton {
         this.signatureElement = this.$elements.find('.cd-signature')[0];
         this.replaceSignatureWithHeader();
         this.addMenu();
-
-        // This will be set again after newChanges event triggers Thread.init().
-        this.toggleChildThreadsButton = undefined;
       } else {
         this.timestampElement = this.$elements.find('.cd-signature .cd-timestamp')[0];
         this.reformatTimestamp();
@@ -2462,6 +2479,8 @@ class Comment extends CommentSkeleton {
       mw.hook('wikipage.content').fire(this.$elements);
 
       delete this.cachedText;
+      delete this.$changeNote;
+
       return true;
     } else {
       return false;
@@ -2579,14 +2598,7 @@ class Comment extends CommentSkeleton {
     }
 
     parent.scrollTo({ pushState: true });
-    parent.configureLayers();
-
-    if (!parent.goToChildButton) {
-      parent.addGoToChildButton();
-    }
-    parent.goToChildButton?.setAction(() => {
-      this.scrollTo({ pushState: true });
-    });
+    parent.addGoToChildButton(this);
   }
 
   /**

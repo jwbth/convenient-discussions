@@ -257,6 +257,15 @@ class Button {
   }
 
   /**
+   * Check whether the button's element is connected to the document.
+   *
+   * @returns {boolean}
+   */
+  isConnected() {
+    return Boolean(this.element?.isConnected);
+  }
+
+  /**
    * Set the class to an OOUI icon to make it look like icons with the "progressive" flag do. Somehow
    * OOUI doesn't set it at the building stage.
    */
