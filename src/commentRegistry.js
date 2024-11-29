@@ -5,6 +5,7 @@
  */
 
 import Comment from './Comment';
+import Thread from './Thread';
 import TreeWalker from './TreeWalker';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
@@ -100,6 +101,8 @@ export default {
       .on('newChanges', this.maybeRedrawLayers.bind(this, true));
     commentFormRegistry
       .on('teardown', this.registerSeen.bind(this));
+    Thread
+      .on('init', this.addToggleChildThreadsButtons.bind(this))
   },
 
   /**
@@ -719,7 +722,7 @@ export default {
       // Update the collapsed range for the thread.
       if (parent.thread?.isCollapsed) {
         parent.thread.expand();
-        parent.thread.collapse(null, true);
+        parent.thread.collapse(true);
       }
     } else if (type === 'thread' && parent.$replyButtonWrapper) {
       button.$element.addClass('cd-thread-button');
@@ -1123,4 +1126,13 @@ export default {
       item.classList.add('cd-connectToPreviousItem');
     });
   },
+
+  /**
+   * _For internal use._ Add "Toggle children threads" buttons to comments.
+   */
+  addToggleChildThreadsButtons() {
+    this.items.forEach((comment) => {
+      comment.addToggleChildThreadsButton();
+    });
+  }
 };

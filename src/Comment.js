@@ -746,8 +746,10 @@ class Comment extends CommentSkeleton {
         )
       );
 
-      const referenceNode = this.headerElement.lastChild;
-      this.headerElement.insertBefore(this.goToChildButton.element, referenceNode?.nextSibling);
+      this.headerElement.insertBefore(
+        this.goToChildButton.element,
+        (this.toggleChildThreadsButton?.element || this.headerElement.lastChild?.nextSibling)
+      );
     } else if (this.$overlayMenu) {
       const element = this.constructor.prototypes.get('goToChildButton');
       this.goToChildButton = new CommentButton({
@@ -756,6 +758,65 @@ class Comment extends CommentSkeleton {
       });
       this.$overlayMenu.prepend(element);
     }
+  }
+
+  /**
+   * Create a {@link Comment#toggleChildThreadsButton "Toggle child threads" button} and add it to
+   * the comment header. Don't add to the overlay menu of the classic design - it occupies valuable
+   * space there. The user may use Shift+click on a thread line instead.
+   *
+   * @private
+   */
+  addToggleChildThreadsButton() {
+    if (
+      !this.isReformatted ||
+      !this.getChildren().some((child) => child.thread) ||
+      this.toggleChildThreadsButton
+    ) {
+      return;
+    }
+
+    /**
+     * "Toggle children comments" button.
+     *
+     * @type {CommentButton}
+     */
+    this.toggleChildThreadsButton = new CommentButton({
+      tooltip: cd.s('cm-togglechildthreads-tooltip'),
+      classes: ['cd-comment-button-icon', 'cd-comment-button-toggleChildThreads', 'cd-icon'],
+      action: this.toggleChildThreadsButtonClick.bind(this),
+    });
+    this.updateToggleChildThreadsButton();
+
+    this.headerElement.appendChild(this.toggleChildThreadsButton.element);
+  }
+
+  /**
+   * Update the look of the "Toggle children" button.
+   */
+  updateToggleChildThreadsButton() {
+    if (!this.toggleChildThreadsButton) return;
+
+    const childrenCollapsed = this.areChildThreadsCollapsed();
+    if (childrenCollapsed === this.childrenCollapsed) return;
+
+    this.childrenCollapsed = childrenCollapsed;
+    this.toggleChildThreadsButton.element.innerHTML = '';
+    this.toggleChildThreadsButton.element.appendChild(
+      this.childrenCollapsed ?
+        this.constructor.prototypes.get('expandChildThreadsButtonSvg') :
+        this.constructor.prototypes.get('collapseChildThreadsButtonSvg')
+    );
+  }
+
+  /**
+   * Check whether all child comments' threads are collapsed.
+   *
+   * @returns {boolean}
+   * @private
+   */
+  areChildThreadsCollapsed() {
+    return this.getChildren().every((child) => !child.thread || child.thread.isCollapsed);
   }
 
   /**
@@ -912,6 +973,15 @@ class Comment extends CommentSkeleton {
    */
   goToParentButtonClick() {
     this.goToParent();
+  }
+
+  /**
+   * Handle the "Toggle child threads" button click.
+   *
+   * @private
+   */
+  toggleChildThreadsButtonClick() {
+    this.toggleChildThreads();
   }
 
   /**
@@ -2383,6 +2453,9 @@ class Comment extends CommentSkeleton {
         this.signatureElement = this.$elements.find('.cd-signature')[0];
         this.replaceSignatureWithHeader();
         this.addMenu();
+
+        // This will be set again after newChanges event triggers Thread.init().
+        this.toggleChildThreadsButton = undefined;
       } else {
         this.timestampElement = this.$elements.find('.cd-signature .cd-timestamp')[0];
         this.reformatTimestamp();
@@ -2513,6 +2586,14 @@ class Comment extends CommentSkeleton {
     parent.goToChildButton?.setAction(() => {
       this.scrollTo({ pushState: true });
     });
+  }
+
+  /**
+   * Collapse children comments' threads if they are expanded (at least one of them); expand if
+   * collapsed.
+   */
+  toggleChildThreads() {
+    this.getChildren()[0].thread.toggleWithSiblings();
   }
 
   /**
@@ -3777,6 +3858,26 @@ class Comment extends CommentSkeleton {
       .on('click', this.copyLink.bind(this));
   }
 
+  /**
+   * Get the sibling comments - all children of a parent, whether the parent is a comment or
+   * section.
+   *
+   * @returns {Comment[]}
+   */
+  getSiblingsAndSelf() {
+    let comments = this.getParent()?.getChildren();
+    if (!comments) {
+      if (this.section) {
+        comments = this.section.commentsInFirstChunk.filter((comment) => !comment.getParent());
+      } else {
+        // Parentless comments in the lead section
+        comments = commentRegistry.query((comment) => !comment.section && !comment.getParent());
+      }
+    }
+
+    return comments;
+  }
+
   static {
     // Doesn't account for cases when the section headline ends with -<number>.
     const newDtTimestampPattern = '(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})\\d{2}';
@@ -3839,6 +3940,15 @@ class Comment extends CommentSkeleton {
       headerWrapper.appendChild(headerElement);
 
       this.prototypes.add('headerWrapperElement', headerWrapper);
+
+      this.prototypes.add(
+        'collapseChildThreadsButtonSvg',
+        createSvg(16, 16, 20, 20).html(`<path d="M4 9h12v2H4z" />`)[0]
+      );
+      this.prototypes.add(
+        'expandChildThreadsButtonSvg',
+        createSvg(16, 16, 20, 20).html(`<path d="M11 9V4H9v5H4v2h5v5h2v-5h5V9z" />`)[0]
+      );
     }
 
     /* OOUI buttons. Creating every OOUI button using the constructor takes 15 times longer than

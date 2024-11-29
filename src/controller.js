@@ -15,6 +15,7 @@ import LegacySubscriptions from './LegacySubscriptions';
 import LiveTimestamp from './LiveTimestamp';
 import Parser from './Parser';
 import Subscriptions from './Subscriptions';
+import Thread from './Thread';
 import addCommentLinks from './addCommentLinks';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
@@ -198,6 +199,7 @@ export default {
         mixEventEmitterInObject(LiveTimestamp);
         mixEventEmitterInObject(commentFormRegistry);
         mixEventEmitterInObject(commentRegistry);
+        mixEventEmitterInObject(Thread);
         OO.mixinClass(Subscriptions, OO.EventEmitter);
         OO.mixinClass(CommentForm, OO.EventEmitter);
 

@@ -21,8 +21,9 @@
 	"cm-reply": "Reply",
 	"cm-reply-outdented-tooltip": "Can't reply to a comment that has outdented replies",
 	"cm-quote": "Quote",
+	"cm-togglechildthreads-tooltip": "Collapse/expand the replies to this comment",
 
-	"thread-tooltip": "Collapse/expand the thread. Hold the middle button to navigate threads",
+	"thread-tooltip": "Collapse/expand the thread. Hold the middle button to navigate threads. Hold Alt to collapse/expand all sibling threads as well",
 	"thread-expand-label-genderless": "Expand the thread ($1 {{plural:$1|comment|comments}} by {{plural:$2|1=|}} $3)",
 	"thread-expand-label": "Expand the thread ($1 {{plural:$1|comment|comments}} by {{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}} $3)",
 	"thread-expand-tooltip": "Hold $1 to expand all threads on the page",

@@ -509,9 +509,10 @@ class Thread {
   /**
    * Handle the `click` event on the click area.
    *
+   * @param {MouseEvent} event
    * @private
    */
-  handleClickAreaClick() {
+  handleClickAreaClick(event) {
     if (this.blockClickEvent) {
       this.blockClickEvent = false;
       return;
@@ -519,7 +520,11 @@ class Thread {
 
     if (!this.clickArea.classList.contains('cd-thread-clickArea-hovered')) return;
 
-    this.toggle();
+    if (event.altKey) {
+      this.toggleWithSiblings(true);
+    } else {
+      this.toggle();
+    }
   }
 
   /**
@@ -754,9 +759,7 @@ class Thread {
   onExpandNoteClick(e) {
     if (isCmdModifierPressed(e)) {
       commentRegistry.getAll().slice().reverse().forEach((comment) => {
-        if (comment.thread?.isCollapsed) {
-          comment.thread.expand();
-        }
+        comment.thread?.expand();
       });
       this.comments[0].scrollTo();
     } else {
@@ -767,11 +770,13 @@ class Thread {
   /**
    * Collapse the thread.
    *
-   * @param {Promise.<undefined>} [loadUserGendersPromise]
    * @param {boolean} [auto=false] Automatic collapse - don't scroll anywhere and don't save
    *   collapsed threads.
+   * @param {boolean} [isBatchOperation=auto] Is this called as part of some batch operation (so, no
+   *   scrolling or updating the parent comment's "Toggle child threads" button look).
+   * @param {Promise.<undefined>} [loadUserGendersPromise]
    */
-  collapse(loadUserGendersPromise, auto = false) {
+  collapse(auto = false, isBatchOperation = auto, loadUserGendersPromise) {
     if (this.isCollapsed) return;
 
     /**
@@ -807,8 +812,9 @@ class Thread {
 
     this.addExpandNode(loadUserGendersPromise);
 
-    if (!auto) {
+    if (!isBatchOperation) {
       this.$expandNote.cdScrollIntoView();
+      this.rootComment.getParent()?.updateToggleChildThreadsButton();
     }
 
     if (this.rootComment.isOpeningSection) {
@@ -838,8 +844,10 @@ class Thread {
    * Expand the thread.
    *
    * @param {boolean} [auto=false] Automatic expand - don't save collapsed threads.
+   * @param {boolean} [isBatchOperation=auto] Is this called as part of some batch operation (so, no
+   *   scrolling or updating the parent comment's "Toggle child threads" button look).
    */
-  expand(auto = false) {
+  expand(auto = false, isBatchOperation = auto) {
     if (!this.isCollapsed) return;
 
     this.collapsedRange.forEach((el) => {
@@ -874,6 +882,10 @@ class Thread {
       }
     }
 
+    if (!isBatchOperation) {
+      this.rootComment.getParent()?.updateToggleChildThreadsButton();
+    }
+
     if (this.endElement !== this.visualEndElement && areOutdentedCommentsShown) {
       for (let c = this.rootComment; c; c = c.getParent()) {
         const thread = c.thread;
@@ -900,6 +912,27 @@ class Thread {
       this.expand();
     } else {
       this.collapse();
+    }
+  }
+
+  /**
+   * Expand the thread if it's collapsed and collapse if it's expanded.
+   *
+   * @param {boolean} [clickedThread=false]
+   * @private
+   */
+  toggleWithSiblings(clickedThread = false) {
+    const wasCollapsed = clickedThread ?
+      this.isCollapsed :
+      this.rootComment.getParent().areChildThreadsCollapsed();
+    this.rootComment.getSiblingsAndSelf().forEach((sibling) => (
+      wasCollapsed ?
+        sibling.thread?.expand(undefined, true) :
+        sibling.thread?.collapse(undefined, true)
+    ));
+    this.rootComment.getParent()?.updateToggleChildThreadsButton();
+    if (clickedThread && !wasCollapsed) {
+      this.$expandNote.cdScrollIntoView();
     }
   }
 
@@ -1170,6 +1203,7 @@ class Thread {
       this.autocollapseThreads();
     }
     this.isInited = true;
+    this.emit('init');
   }
 
   /**
@@ -1258,7 +1292,7 @@ class Thread {
     comments
       .sort((c1, c2) => c1.index - c2.index)
       .forEach((comment) => {
-        comment.thread.collapse(loadUserGendersPromise, true);
+        comment.thread.collapse(true, undefined, loadUserGendersPromise);
       });
 
     if (controller.isCurrentRevision()) {
