@@ -686,8 +686,8 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Create a {@link Comment#goToParentButton go to parent button} and add it to the comment header
-   * ({@link Comment#$header} or {@link Comment#$overlayMenu}).
+   * Create a {@link Comment#goToParentButton "Go to parent" button} and add it to the comment
+   * header ({@link Comment#$header} or {@link Comment#$overlayMenu}).
    *
    * @private
    */
@@ -706,10 +706,9 @@ class Comment extends CommentSkeleton {
         classes: ['cd-comment-button-icon', 'cd-comment-button-goToParent', 'cd-icon'],
         action,
       });
-      $(this.goToParentButton.element).append(
-        createSvg(16, 16, 20, 20).html(
-          `<path d="M10 5l8 10H2z" />`
-        )
+
+      this.goToParentButton.element.appendChild(
+        this.constructor.prototypes.get('goToParentButtonSvg')
       );
 
       this.headerElement.appendChild(this.goToParentButton.element);
@@ -724,7 +723,7 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Create a {@link Comment#goToChildButton go to child button} and add it to the comment header
+   * Create a {@link Comment#goToChildButton "Go to child" button} and add it to the comment header
    * ({@link Comment#$header} or {@link Comment#$overlayMenu}).
    *
    * @private
@@ -2515,28 +2514,31 @@ class Comment extends CommentSkeleton {
 
     if (this.isCollapsed) {
       this.getVisibleExpandNote().cdScrollTo(alignment || 'top', smooth, callback);
-      const $message = wrapHtml(cd.sParse('navpanel-firstunseen-hidden', '$1', cd.s('dot-separator')), {
-        callbacks: {
-          'cd-notification-expandThread': () => {
-            this.scrollTo({
-              smooth,
-              expandThreads: true,
-              flash,
-              pushState,
-              callback,
-            });
-            notification.close();
+      const $message = wrapHtml(
+        cd.sParse('navpanel-firstunseen-hidden', '$1', cd.s('dot-separator')),
+        {
+          callbacks: {
+            'cd-notification-expandThread': () => {
+              this.scrollTo({
+                smooth,
+                expandThreads: true,
+                flash,
+                pushState,
+                callback,
+              });
+              notification.close();
+            },
+            'cd-notification-markThreadAsRead': () => {
+              this.thread.getComments().forEach((c) => {
+                c.isSeen = true;
+              });
+              commentRegistry.emit('registerSeen');
+              notification.close();
+              navPanel.goToFirstUnseenComment();
+            },
           },
-          'cd-notification-markThreadAsRead': () => {
-            this.thread.getComments().forEach((c) => {
-              c.isSeen = true;
-            });
-            commentRegistry.emit('registerSeen');
-            notification.close();
-            navPanel.goToFirstUnseenComment();
-          },
-        },
-      });
+        }
+      );
       if (this.isSeen) {
         $message.find('.cd-notification-markThreadAsRead-wrapper').remove();
       }
@@ -3941,6 +3943,10 @@ class Comment extends CommentSkeleton {
 
       this.prototypes.add('headerWrapperElement', headerWrapper);
 
+      this.prototypes.add(
+        'goToParentButtonSvg',
+        createSvg(16, 16, 20, 20).html(`<path d="M10 5l8 10H2z" />`)[0]
+      );
       this.prototypes.add(
         'collapseChildThreadsButtonSvg',
         createSvg(16, 16, 20, 20).html(`<path d="M4 9h12v2H4z" />`)[0]

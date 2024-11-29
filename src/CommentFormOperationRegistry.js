@@ -74,6 +74,7 @@ class CommentFormOperationRegistry {
  */
 class CommentFormOperation {
   /**
+   * Create a comment form operation.
    *
    * @param {CommentFormOperationRegistry} registry Operation registry.
    * @param {'load'|'preview'|'viewChanges'|'submit'} type Operation type.

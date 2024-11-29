@@ -2593,10 +2593,7 @@ class CommentForm {
           .text(cd.s('cf-block-preview'))
       )
       .cdAddCloseButton()
-      .toggleClass(
-        'cd-commentForm-previewArea-indentedComment',
-        this.willCommentBeIndented
-      );
+      .toggleClass('cd-commentForm-previewArea-indentedComment', this.willCommentBeIndented);
 
     /**
      * A comment preview has been rendered.

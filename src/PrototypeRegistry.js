@@ -37,6 +37,7 @@ class PrototypeRegistry {
   }
 
   /**
+   * Get a widget.
    *
    * @param {string} id
    * @returns {?Function}
