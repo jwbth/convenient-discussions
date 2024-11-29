@@ -210,8 +210,7 @@ export default {
       userIds.some((id) => !mutedUsersData.users[id]) ||
 
       // Users can be renamed, so we can cache for a week max.
-      // FIXME: Remove `([keep] || mutedUsersData.saveUnixTime)` after June 2024
-      (mutedUsersData.saveTime || mutedUsersData.saveUnixTime) < Date.now() - 7 * cd.g.msInDay
+      mutedUsersData.saveTime < Date.now() - 7 * cd.g.msInDay
     ) {
       this.getUsersByGlobalId(userIds).then(
         (users) => {

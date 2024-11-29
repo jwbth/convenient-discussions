@@ -1217,15 +1217,13 @@ class Thread {
     const collapsedThreadsStorageItem = (new StorageItem('collapsedThreads'))
       .cleanUp((entry) => (
         !(entry.collapsedThreads || entry.threads)?.length ||
-        // FIXME: Remove `([keep] || entry.saveUnixTime)` after June 2024
-        (entry.saveTime || entry.saveUnixTime) < Date.now() - 60 * cd.g.msInDay
+        entry.saveTime < Date.now() - 60 * cd.g.msInDay
       ));
     const data = collapsedThreadsStorageItem.get(mw.config.get('wgArticleId')) || {};
 
     const comments = [];
 
-    // FIXME: Leave only data.collapsedThreads after June 2024
-    (data.collapsedThreads || data.threads)?.forEach((thread) => {
+    data.collapsedThreads?.forEach((thread) => {
       const comment = commentRegistry.getById(thread.id);
       if (comment?.thread) {
         if (thread.collapsed) {
@@ -1244,9 +1242,8 @@ class Thread {
           comment.thread.wasManuallyExpanded = true;
         }
       } else {
-        // Remove IDs that have no corresponding comments or threads from the data. FIXME: Leave
-        // only data.collapsedThreads after June 2024
-        removeFromArrayIfPresent(data.collapsedThreads || data.threads, thread);
+        // Remove IDs that have no corresponding comments or threads from the data
+        removeFromArrayIfPresent(data.collapsedThreads, thread);
       }
     });
 

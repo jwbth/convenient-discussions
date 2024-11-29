@@ -399,8 +399,7 @@ function hasCommentChanged(olderComment, newerComment) {
 function checkForChangesSincePreviousVisit(currentComments, submittedCommentId) {
   const seenStorageItem = (new StorageItem('seenRenderedChanges'))
     .cleanUp((entry) => (
-      // FIXME: Remove `|| data.seenUnixTime` after June 2024
-      (Math.min(...Object.values(entry).map((data) => data.seenTime || data.seenUnixTime)) || 0) <
+      (Math.min(...Object.values(entry).map((data) => data.seenTime)) || 0) <
       Date.now() - 60 * cd.g.msInDay
     ));
   const seen = seenStorageItem.get(mw.config.get('wgArticleId'));

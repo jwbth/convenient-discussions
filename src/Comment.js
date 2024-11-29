@@ -630,8 +630,7 @@ class Comment extends CommentSkeleton {
     if (!cd.user.isRegistered() || !this.author.isRegistered() || !this.date || this.isOwn) return;
 
     this.constructor.thanksStorage ||= (new StorageItem('thanks'))
-      // FIXME: Remove `|| entry.thankUnixTime` after June 2024
-      .cleanUp((entry) => (entry.thankTime || entry.thankUnixTime || 0) < Date.now() - 60 * cd.g.msInDay)
+      .cleanUp((entry) => (entry.thankTime || 0) < Date.now() - 60 * cd.g.msInDay)
       .save();
     const isThanked = Object.values(this.constructor.thanksStorage.getAll()).some((thank) => (
       this.dtId === thank.id ||

@@ -302,8 +302,7 @@ export default {
       (new StorageItem('commentForms'))
         .cleanUp((entry) =>
           !entry.commentForms?.length ||
-          // FIXME: Remove `([keep] || entry.saveUnixTime)` after June 2024
-          (entry.saveTime || entry.saveUnixTime) < Date.now() - 60 * cd.g.msInDay
+          entry.saveTime < Date.now() - 60 * cd.g.msInDay
         )
         .save()
         .get(mw.config.get('wgPageName'))
