@@ -1171,7 +1171,7 @@ class Thread {
         .on('visibilitychange', this.updateLinesHandler);
       updateChecker
         // Start and end elements of threads may be replaced, so we need to restart threads.
-        .on('newChanges', this.init.bind(this, false));
+        .on('newChanges', this.init.bind(this));
     }
 
     this.collapseThreadsLevel = settings.get('collapseThreadsLevel');
