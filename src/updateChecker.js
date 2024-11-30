@@ -602,11 +602,7 @@ async function markCommentsAsChanged(type, data, olderRevisionId, newerRevisionI
   if (!isPageStillAtRevision(currentRevisionId)) return;
 
   data.forEach(({ comment, isNewRevisionRendered, comparedRevisionId, commentsData }) => {
-    comment.markAsChanged(
-      type,
-      isNewRevisionRendered,
-      comparedRevisionId,
-      commentsData,
+    if (
       verifyDiffs && compareBody !== undefined && revisions !== undefined ?
         Boolean(
           comment.scrubDiff(compareBody, revisions, commentsData)
@@ -614,7 +610,14 @@ async function markCommentsAsChanged(type, data, olderRevisionId, newerRevisionI
             .length
         ) :
         true
-    );
+    ) {
+      comment.markAsChanged(
+        type,
+        isNewRevisionRendered,
+        comparedRevisionId,
+        commentsData
+      );
+    }
   });
 }
 

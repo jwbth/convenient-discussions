@@ -2193,7 +2193,7 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Update the comment's properties, add a small text next to the signature saying the comment has
+   * Update the comment's properties, add a small note next to the signature saying the comment has
    * been changed or deleted, and change the comment's styling if it has been.
    *
    * @param {'changed'|'changedSince'|'deleted'} type Type of the mark.
@@ -2203,15 +2203,8 @@ class Comment extends CommentSkeleton {
    *   see the diff.
    * @param {object} [commentsData] Data of the comments as of the current revision and the revision
    *   to compare with.
-   * @param {boolean} [showDiffLink=true] Whether to show the diff link if it makes sense.
    */
-  async markAsChanged(
-    type,
-    isNewVersionRendered,
-    comparedRevisionId,
-    commentsData,
-    showDiffLink = true
-  ) {
+  async markAsChanged(type, isNewVersionRendered, comparedRevisionId, commentsData) {
     let stringName;
     switch (type) {
       case 'changed':
@@ -2241,7 +2234,7 @@ class Comment extends CommentSkeleton {
       });
 
     const currentRevisionId = mw.config.get('wgRevisionId');
-    const diffLink = showDiffLink && this.getSourcePage().isCurrent() && type !== 'deleted' ?
+    const diffLink = this.getSourcePage().isCurrent() && type !== 'deleted' ?
       new Button({
         label: cd.s('comment-diff'),
         action: async () => {
