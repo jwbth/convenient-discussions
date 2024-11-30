@@ -814,7 +814,7 @@ export default {
     const comment = this.items.find((comment) => comment.isSelected);
     if (comment) {
       comment.setSelected(false);
-      this.emit('unselected', comment);
+      this.emit('unselect', comment);
     }
   },
 
