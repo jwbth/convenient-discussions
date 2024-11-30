@@ -82,6 +82,24 @@ a:not([href]) {
   cursor: pointer;
 }
 
+.cd-hlist {
+  margin: 0;
+  padding: 0;
+
+  li {
+    margin: 0;
+    display: inline;
+  }
+
+  li::after {
+    content: ", ";
+  }
+
+  li:last-child::after {
+    content: none;
+  }
+}
+
 :root {
   --cd-color-subtler: @color-subtler;
 }

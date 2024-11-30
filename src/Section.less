@@ -123,16 +123,27 @@ ol .cd-section-button {
   display: flex;
   flex-wrap: wrap;
   direction: var(--cd-direction-user);
+}
 
-  &-authorsPopup {
-    font-size: 0.8125rem;
+.cd-popup-authors {
+  font-size: 0.8125rem;
 
-    > .oo-ui-popupWidget-popup > .oo-ui-popupWidget-body {
-      width: max-content !important;
-      max-width: 30em !important;
-    }
+  > .oo-ui-popupWidget-popup > .oo-ui-popupWidget-body {
+    // Need to override the `style` attribute
+    width: max-content !important;
+    max-width: 30em !important;
+
+    // Make sure the buttons fit
+    min-width: min-content;
+  }
+
+  &-sort {
+    display: flex;
+    justify-content: center;
+    margin: 0.5em 0;
   }
 }
+
 
 .cd-section-actions {
   white-space: nowrap;

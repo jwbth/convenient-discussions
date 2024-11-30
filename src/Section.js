@@ -503,32 +503,97 @@ class Section extends SectionSkeleton {
        * @type {external:OO.ui.PopupWidget|undefined}
        */
       this.authorsPopup = new OO.ui.PopupWidget({
-        $content: $(
-          this.comments
-            .map((comment) => comment.author)
-            .filter(unique)
-            .sort((author1, author2) => author2.getName() > author1.getName() ? -1 : 1)
-            .map((author) => [author, this.comments.filter((comment) => comment.author === author)])
-            .flatMap(([author, comments], i, arr) => ([
-              $('<a>')
-                .text(author.getName())
-                .attr('href', `#${comments[0].dtId || comments[0].id}`)
-                .on('click', Comment.scrollToFirstHighlightAll.bind(Comment, comments))[0],
-              i === arr.length - 1 ? undefined : document.createTextNode(cd.mws('comma-separator')),
-            ]))
-        ),
+        $content: this.createAuthorsPopupContent(),
         head: false,
         padded: true,
         autoClose: true,
-        $autoCloseIgnore: $(this.authorCountWrapper),
+        $autoCloseIgnore: $(this.authorCountButton.element),
         position: 'above',
-        $floatableContainer: $(this.authorCountWrapper),
-        classes: ['cd-section-metadata-authorsPopup'],
+        $floatableContainer: $(this.authorCountButton.element),
+        classes: ['cd-popup-authors'],
       });
       $(controller.getPopupOverlay()).append(this.authorsPopup.$element);
     }
 
     this.authorsPopup.toggle();
+  }
+
+  /**
+   * Create content for {@link Section#authorsPopup} popup.
+   *
+   * @returns {JQuery}
+   * @private
+   */
+  createAuthorsPopupContent() {
+    const data = this.comments
+      .map((comment) => comment.author)
+      .filter(unique)
+      .map((author) => [author, this.comments.filter((comment) => comment.author === author)])
+      .flatMap(([author, comments]) => ({
+        name: author.getName(),
+        count: comments.length,
+        $link: $('<a>')
+          .text(author.getName())
+          .attr('href', `#${comments[0].dtId || comments[0].id}`)
+          .on('click', Comment.scrollToFirstHighlightAll.bind(Comment, comments))
+      }));
+
+    const sortSelect = new OO.ui.ButtonSelectWidget({
+      items: [
+        new OO.ui.ButtonOptionWidget({
+          data: 'abc',
+          label: cd.s('section-authors-sort-abc'),
+          selected: settings.get('authorsSort') === 'abc',
+        }),
+        new OO.ui.ButtonOptionWidget({
+          data: 'count',
+          label: cd.s('section-authors-sort-count'),
+          selected: settings.get('authorsSort') === 'count',
+        }),
+      ],
+      classes: ['cd-popup-authors-sort'],
+    });
+    sortSelect.on('choose', (item) => {
+      stack.setItem(item.getData() === 'abc' ? abcPanel : countPanel);
+      settings.saveSettingOnTheFly('authorsSort', item.getData());
+    });
+
+    const abcPanel = new OO.ui.PanelLayout({
+      $content: $('<ul>')
+        .addClass('cd-hlist')
+        .append(
+          data
+            .sort((d1, d2) => d2.name > d1.name ? -1 : 1)
+            .map((d) => $('<li>').append(d.$link.clone()))
+        ),
+      padded: false,
+      expanded: false,
+    });
+    const countPanel = new OO.ui.PanelLayout({
+      $content: $('<ul>')
+        .addClass('cd-hlist')
+        .append(
+          data
+            .sort((d1, d2) => d2.count - d1.count)
+            .map((d) => (
+              $('<li>').append(
+                d.$link.clone(),
+                cd.mws('word-separator') + cd.mws('parentheses', d.count)
+              )
+            ))
+        ),
+      padded: false,
+      expanded: false,
+    });
+    const stack = new OO.ui.StackLayout({
+      items: [abcPanel, countPanel],
+      expanded: false,
+    });
+    stack.setItem(settings.get('authorsSort') === 'abc' ? abcPanel : countPanel);
+
+    return $()
+      .add(sortSelect.$element)
+      .add(stack.$element);
   }
 
   /**
@@ -553,7 +618,7 @@ class Section extends SectionSkeleton {
 
     let latestCommentWrapper;
     let commentCountWrapper;
-    let authorCountWrapper;
+    let authorCountButton;
     let metadataElement;
     if (this.level === 2 && this.comments.length) {
       if (latestComment) {
@@ -581,10 +646,16 @@ class Section extends SectionSkeleton {
 
       const span = commentCountWrapper.querySelector('.cd-section-metadata-authorcount-link');
       if (span) {
-        authorCountWrapper = document.createElement('a');
-        authorCountWrapper.textContent = span.textContent;
-        authorCountWrapper.onclick = this.toggleAuthors.bind(this);
-        span.firstChild.replaceWith(authorCountWrapper);
+        authorCountButton = new Button({
+          label: span.textContent,
+          action: this.toggleAuthors.bind(this),
+        })
+
+        // `role` changes the link color, making it different from the color of neighboring links,
+        // and I think it doesn't really give any benefit.
+        authorCountButton.element.removeAttribute('role');
+
+        span.firstChild.replaceWith(authorCountButton.element);
       }
 
       metadataElement = document.createElement('div');
@@ -616,12 +687,12 @@ class Section extends SectionSkeleton {
     this.commentCountWrapper = commentCountWrapper;
 
     /**
-     * Author count wrapper element in the {@link Section#metadataElement metadata element}.
+     * Author count button in the {@link Section#metadataElement metadata element}.
      *
-     * @type {Element|undefined}
+     * @type {Button|undefined}
      * @private
      */
-    this.authorCountWrapper = authorCountWrapper;
+    this.authorCountButton = authorCountButton;
 
     /**
      * Latest comment date wrapper element in the {@link Section#metadataElement metadata element}.
@@ -646,12 +717,14 @@ class Section extends SectionSkeleton {
      */
     this.$commentCountWrapper = $(commentCountWrapper);
 
-    /**
-     * Author count wrapper element in the {@link Section#$metadata metadata element}.
-     *
-     * @type {external:jQuery|undefined}
-     */
-    this.$authorCountWrapper = $(authorCountWrapper);
+    if (authorCountButton) {
+      /**
+       * Author count button element in the {@link Section#$metadata metadata element}.
+       *
+       * @type {external:jQuery|undefined}
+       */
+      this.$authorCountButton = $(authorCountButton.element);
+    }
 
     /**
      * Latest comment date wrapper element in the {@link Section#$metadata metadata element}.
