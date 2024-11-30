@@ -491,11 +491,12 @@ class Section extends SectionSkeleton {
   /**
    * Show or hide a popup with the list of users who have posted in the section.
    *
-   * @param {Event} e
+   * @param {Event} event
    * @private
    */
-  toggleAuthors(e) {
-    e.preventDefault();
+  toggleAuthors(event) {
+    event.preventDefault();
+
     if (!this.authorsPopup) {
       /**
        * Popup with the list of users who have posted in the section.
@@ -599,11 +600,11 @@ class Section extends SectionSkeleton {
   /**
    * Scroll to the latest comment in the section.
    *
-   * @param {Event} e
+   * @param {Event} event
    * @private
    */
-  scrollToLatestComment(e) {
-    e.preventDefault();
+  scrollToLatestComment(event) {
+    event.preventDefault();
     this.latestComment.scrollTo({ pushState: true });
   }
 
@@ -971,11 +972,11 @@ class Section extends SectionSkeleton {
   /**
    * Highlight the unseen comments in the section and scroll to the first one of them.
    *
-   * @param {Event} e
+   * @param {Event} event
    * @private
    */
-  scrollToNewComments(e) {
-    e.preventDefault();
+  scrollToNewComments(event) {
+    event.preventDefault();
     Comment.scrollToFirstHighlightAll(this.newComments);
   }
 
@@ -1373,10 +1374,10 @@ class Section extends SectionSkeleton {
   /**
    * Copy a link to the section or open a copy link dialog.
    *
-   * @param {Event} e
+   * @param {Event} event
    */
-  copyLink(e) {
-    controller.showCopyLinkDialog(this, e);
+  copyLink(event) {
+    controller.showCopyLinkDialog(this, event);
   }
 
   /**

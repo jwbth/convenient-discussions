@@ -55,24 +55,24 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
     this.text.$element.append(this.message.$element);
 
     if (this.type === 'comment') {
-      this.anchorOptionWidget = new OO.ui.ButtonOptionWidget({
+      this.anchorOption = new OO.ui.ButtonOptionWidget({
         data: 'anchor',
         label: cd.s('cld-select-anchor'),
         selected: true,
       });
-      this.diffOptionWidget = new OO.ui.ButtonOptionWidget({
+      this.diffOption = new OO.ui.ButtonOptionWidget({
         data: 'diff',
         label: cd.s('cld-select-diff'),
         disabled: true,
         title: cd.s('loading-ellipsis'),
         classes: ['cd-dialog-copyLink-diffButton'],
       });
-      this.buttonSelectWidget = (new OO.ui.ButtonSelectWidget({
-        items: [this.anchorOptionWidget, this.diffOptionWidget],
+      this.linkTypeSelect = new OO.ui.ButtonSelectWidget({
+        items: [this.anchorOption, this.diffOption],
         classes: ['cd-dialog-copyLink-linkTypeSelect'],
-      })).on('choose', (item) => {
-        const panel = item === this.anchorOptionWidget ? this.anchorPanel : this.diffPanel;
-        this.stackLayout.setItem(panel);
+      });
+      this.linkTypeSelect.on('choose', (item) => {
+        this.contentStack.setItem(item === this.anchorOption ? this.anchorPanel : this.diffPanel);
         this.updateSize();
       });
     }
@@ -83,7 +83,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       expanded: false,
       scrollable: true,
     });
-    this.stackLayout = new OO.ui.StackLayout({
+    this.contentStack = new OO.ui.StackLayout({
       items: [this.anchorPanel],
       expanded: false,
     });
@@ -110,12 +110,12 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       );
       this.message.setLabel(
         $.cdMerge(
-          this.buttonSelectWidget?.$element,
-          this.stackLayout.$element,
+          this.linkTypeSelect?.$element,
+          this.contentStack.$element,
         )
       );
       this.size = this.type === 'comment' ? 'larger' : 'large';
-      this.stackLayout.setItem(this.anchorPanel);
+      this.contentStack.setItem(this.anchorPanel);
     });
   }
 
@@ -178,7 +178,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
         expanded: false,
         scrollable: true,
       });
-      this.stackLayout.addItems([this.diffPanel]);
+      this.contentStack.addItems([this.diffPanel]);
       this.readyDeferred.then(() => {
         mw.hook('wikipage.content').fire(this.content.$diffView);
       });
@@ -194,8 +194,8 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       }
     }
 
-    this.diffOptionWidget.setDisabled(errorText);
-    this.diffOptionWidget.setTitle(errorText || '');
+    this.diffOption.setDisabled(errorText);
+    this.diffOption.setTitle(errorText || '');
   }
 
   /**

@@ -90,10 +90,10 @@ class MoveSectionDialog extends ProcessDialog {
       expanded: false,
     });
 
-    this.stackLayout = new OO.ui.StackLayout({
+    this.stack = new OO.ui.StackLayout({
       items: [this.loadingPanel, this.movePanel, this.successPanel],
     });
-    this.$body.append(this.stackLayout.$element);
+    this.$body.append(this.stack.$element);
   }
 
   /**
@@ -108,7 +108,7 @@ class MoveSectionDialog extends ProcessDialog {
    */
   getSetupProcess(data) {
     return super.getSetupProcess(data).next(() => {
-      this.stackLayout.setItem(this.loadingPanel);
+      this.stack.setItem(this.loadingPanel);
       this.actions.setMode('move');
     });
   }
@@ -222,7 +222,7 @@ class MoveSectionDialog extends ProcessDialog {
         this.controls.summaryEnding.field.$element,
       );
 
-      this.stackLayout.setItem(this.movePanel);
+      this.stack.setItem(this.movePanel);
       this.controls.title.input.focus();
       this.onTitleInputChange();
       this.actions.setAbilities({ close: true });
@@ -283,7 +283,7 @@ class MoveSectionDialog extends ProcessDialog {
           sectionId: this.controls.keepLink.input.isSelected() ? this.section.id : undefined,
         });
 
-        this.stackLayout.setItem(this.successPanel);
+        this.stack.setItem(this.successPanel);
         this.actions.setMode('success');
         this.popPending();
       });

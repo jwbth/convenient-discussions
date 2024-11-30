@@ -84,11 +84,11 @@ class EditSubscriptionsDialog extends ProcessDialog {
       expanded: false,
     });
 
-    this.stackLayout = new OO.ui.StackLayout({
+    this.stack = new OO.ui.StackLayout({
       items: [this.loadingPanel, this.sectionsPanel],
     });
 
-    this.$body.append(this.stackLayout.$element);
+    this.$body.append(this.stack.$element);
   }
 
   /**
@@ -103,7 +103,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
    */
   getSetupProcess(data) {
     return super.getSetupProcess(data).next(() => {
-      this.stackLayout.setItem(this.loadingPanel);
+      this.stack.setItem(this.loadingPanel);
       this.actions.setMode('edit');
     });
   }
@@ -155,7 +155,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
 
       this.sectionsPanel.$element.append(this.input.$element);
 
-      this.stackLayout.setItem(this.sectionsPanel);
+      this.stack.setItem(this.sectionsPanel);
       this.input.focus();
       this.actions.setAbilities({ close: true });
 

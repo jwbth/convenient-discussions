@@ -107,11 +107,11 @@ class SettingsDialog extends ProcessDialog {
     });
     this.dataDeletedPanel.$element.append($('<p>').text(cd.s('sd-dataremoved')));
 
-    this.stackLayout = new OO.ui.StackLayout({
+    this.stack = new OO.ui.StackLayout({
       items: [this.loadingPanel, this.settingsPanel, this.reloadPanel, this.dataDeletedPanel],
     });
 
-    this.$body.append(this.stackLayout.$element);
+    this.$body.append(this.stack.$element);
   }
 
   /**
@@ -126,7 +126,7 @@ class SettingsDialog extends ProcessDialog {
    */
   getSetupProcess(data) {
     return super.getSetupProcess(data).next(() => {
-      this.stackLayout.setItem(this.loadingPanel);
+      this.stack.setItem(this.loadingPanel);
       this.actions.setMode('settings');
     });
   }
@@ -158,7 +158,7 @@ class SettingsDialog extends ProcessDialog {
 
       this.renderControls(this.settings);
 
-      this.stackLayout.setItem(this.settingsPanel);
+      this.stack.setItem(this.settingsPanel);
       this.bookletLayout.setPage(this.initialPageName || settings.scheme.ui[0].name);
       this.actions.setAbilities({ close: true });
 
@@ -190,7 +190,7 @@ class SettingsDialog extends ProcessDialog {
 
         controller.removePreventUnloadCondition('dialog');
 
-        this.stackLayout.setItem(this.reloadPanel);
+        this.stack.setItem(this.reloadPanel);
         this.actions.setMode('reload');
 
         this.popPending();
@@ -522,7 +522,7 @@ class SettingsDialog extends ProcessDialog {
       (new StorageItem('collapsedThreads')).removeItem();
       (new StorageItem('mutedUsers')).removeItem();
 
-      this.stackLayout.setItem(this.dataDeletedPanel);
+      this.stack.setItem(this.dataDeletedPanel);
       this.actions.setMode('dataRemoved');
 
       this.popPending();
