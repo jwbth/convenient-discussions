@@ -1782,6 +1782,8 @@ export default {
       }
     }
 
+    const wordSeparator = cd.mws('word-separator');
+
     if (filteredComments.length) {
       let html;
       const reloadHtml = cd.sParse(
@@ -1789,7 +1791,7 @@ export default {
 
         // Note about the form data
         commentFormRegistry.getAll().some((cf) => cf.isAltered()) ?
-          ' ' + cd.mws('parentheses', cd.s('notification-formdata')) :
+          wordSeparator + cd.mws('parentheses', cd.s('notification-formdata')) :
           ''
       );
       if (filteredComments.length === 1) {
@@ -1797,13 +1799,13 @@ export default {
         if (comment.isToMe) {
           const where = comment.sectionSubscribedTo ?
             (
-              cd.mws('word-separator') +
+              wordSeparator +
               cd.s('notification-part-insection', comment.sectionSubscribedTo.headline)
             ) :
-            cd.mws('word-separator') + cd.s('notification-part-onthispage');
+            wordSeparator + cd.s('notification-part-onthispage');
           html = (
             cd.sParse('notification-toyou', comment.author.getName(), comment.author, where) +
-            ' ' +
+            wordSeparator +
             reloadHtml
           );
         } else {
@@ -1814,7 +1816,7 @@ export default {
               comment.author,
               comment.sectionSubscribedTo.headline
             ) +
-            ' ' +
+            wordSeparator +
             reloadHtml
           );
         }
@@ -1824,7 +1826,7 @@ export default {
         ));
         const section = isCommonSection ? filteredComments[0].sectionSubscribedTo : undefined;
         const where = (
-          cd.mws('word-separator') +
+          wordSeparator +
           (
             section ?
               cd.s('notification-part-insection', section.headline) :
@@ -1833,7 +1835,7 @@ export default {
         );
         let mayBeRelevantString = cd.s('notification-newcomments-mayberelevant');
         if (!mayBeRelevantString.startsWith(cd.mws('comma-separator'))) {
-          mayBeRelevantString = cd.mws('word-separator') + mayBeRelevantString;
+          mayBeRelevantString = wordSeparator + mayBeRelevantString;
         }
 
         // "that may be relevant to you" text is not needed when the section is watched and the user
@@ -1842,7 +1844,7 @@ export default {
 
         html = (
           cd.sParse('notification-newcomments', filteredComments.length, where, mayBeRelevant) +
-          ' ' +
+          wordSeparator +
           reloadHtml
         );
       }
@@ -1881,13 +1883,15 @@ export default {
       return;
     }
 
+    const wordSeparator = cd.mws('word-separator');
+
     let body;
     const comment = filteredComments[0];
     const currentPageName = cd.page.name;
     if (filteredComments.length === 1) {
       if (comment.isToMe) {
         const where = comment.section?.headline ?
-          cd.mws('word-separator') + cd.s('notification-part-insection', comment.section.headline) :
+          wordSeparator + cd.s('notification-part-insection', comment.section.headline) :
           '';
         body = cd.s(
           'notification-toyou-desktop',
@@ -1914,11 +1918,11 @@ export default {
         section = filteredComments[0].sectionSubscribedTo;
       }
       const where = section ?
-        cd.mws('word-separator') + cd.s('notification-part-insection', section.headline) :
+        wordSeparator + cd.s('notification-part-insection', section.headline) :
         '';
       let mayBeRelevantString = cd.s('notification-newcomments-mayberelevant');
       if (!mayBeRelevantString.startsWith(cd.mws('comma-separator'))) {
-        mayBeRelevantString = cd.mws('word-separator') + mayBeRelevantString;
+        mayBeRelevantString = wordSeparator + mayBeRelevantString;
       }
 
       // "that may be relevant to you" text is not needed when the section is watched and the user
