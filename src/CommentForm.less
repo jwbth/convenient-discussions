@@ -407,13 +407,15 @@
 
 .cd-tool-button-wrapper {
   display: flex;
-
-  &.cd-highlight:not(:hover) {
-    background-color: var(--background-color-progressive-subtle, #eaf3ff);
-  }
 }
 
-.darkTheme-invertTools() {
+.cd-highlight > .tool-button:not(:hover) {
+  // blue100 by
+  // https://github.com/wikimedia/design-codex/blob/main/packages/codex-design-tokens/src/themes/wikimedia-ui.json
+  background-color: #dce3f9;
+}
+
+.darkTheme-commentForm() {
   a.tool:not(.mw-no-invert) {
     color-scheme: light;
     filter: invert(1) hue-rotate(180deg);
@@ -422,13 +424,13 @@
 
 @media screen {
   html.skin-theme-clientpref-night {
-    .darkTheme-invertTools();
+    .darkTheme-commentForm();
   }
 }
 
 @media screen and (prefers-color-scheme: dark) {
   html.skin-theme-clientpref-os {
-    .darkTheme-invertTools();
+    .darkTheme-commentForm();
   }
 }
 
