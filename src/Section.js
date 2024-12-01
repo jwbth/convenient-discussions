@@ -491,12 +491,9 @@ class Section extends SectionSkeleton {
   /**
    * Show or hide a popup with the list of users who have posted in the section.
    *
-   * @param {Event} event
    * @private
    */
-  toggleAuthors(event) {
-    event.preventDefault();
-
+  toggleAuthors() {
     if (!this.authorsPopup) {
       /**
        * Popup with the list of users who have posted in the section.
@@ -647,10 +644,14 @@ class Section extends SectionSkeleton {
 
       const span = commentCountWrapper.querySelector('.cd-section-metadata-authorcount-link');
       if (span) {
+        // A tiny bit slower on long pages than direct element creation, but at least this can be
+        // triggered by Enter.
         authorCountButton = new Button({
           label: span.textContent,
-          action: this.toggleAuthors.bind(this),
-        })
+          action: () => {
+            this.toggleAuthors();
+          },
+        });
 
         // `role` changes the link color, making it different from the color of neighboring links,
         // and I think it doesn't really give any benefit.

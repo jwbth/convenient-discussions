@@ -281,8 +281,6 @@ export default {
    * @private
    */
   refreshClick(markAsRead) {
-    // There was reload confirmation here, but after session restore was introduced, the
-    // confirmation seems to be no longer needed.
     controller.reload({
       commentIds: controller.getRelevantAddedCommentIds(),
       markAsRead,

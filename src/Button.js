@@ -291,6 +291,7 @@ class Button {
       prototype.setAttribute('role', 'button');
       this.prototypes[tagName] = prototype;
     }
+
     return this.prototypes[tagName].cloneNode(true);
   }
 }

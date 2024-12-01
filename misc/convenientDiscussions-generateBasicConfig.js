@@ -108,7 +108,7 @@ mw.loader.using([
 
   const signatureMessage = (await api.getMessages('Signature', {
     amlang: mw.config.get('wgContentLanguage'),
-    amincludelocal: 1
+    amincludelocal: 1,
   })).Signature;
   const parsedSignature = await api.parse(signatureMessage, { disablelimitreport: true });
   if (!parsedSignature.includes('{{')) {

@@ -316,23 +316,23 @@ class Thread {
   /**
    * Handle the `mouseup` event on the click area.
    *
-   * @param {Event} e
+   * @param {Event} event
    * @private
    */
-  handleClickAreaMouseUp(e) {
-    if (this.navMode && e.button === 0) {
+  handleClickAreaMouseUp(event) {
+    if (this.navMode && event.button === 0) {
       // `mouseup` event comes before `click`, so we need to block collapsing the thread is the user
       // clicked the left button to navigate threads.
       this.blockClickEvent = true;
     }
 
     // Middle or left button.
-    if (e.button === 1 || e.button === 0) {
+    if (event.button === 1 || event.button === 0) {
       this.handleClickAreaHover(undefined, true);
     }
 
     // Middle button
-    if (e.button === 1 && this.navMode && !this.hasMouseMoved(e)) {
+    if (event.button === 1 && this.navMode && !this.hasMouseMoved(event)) {
       this.rootComment.scrollTo({ alignment: 'top' });
     }
   }
@@ -341,11 +341,13 @@ class Thread {
    * Has the mouse moved enough to consider it a navigation gesture and not a click with an
    * insignificant mouse movement between pressing and releasing a button.
    *
-   * @param {MouseEvent} e
+   * @param {MouseEvent} event
    * @returns {boolean}
    */
-  hasMouseMoved(e) {
-    return Math.abs(e.clientX - this.navFromX) >= 5 || Math.abs(e.clientY - this.navFromY) >= 5;
+  hasMouseMoved(event) {
+    return (
+      Math.abs(event.clientX - this.navFromX) >= 5 || Math.abs(event.clientY - this.navFromY) >= 5
+    );
   }
 
   /**
@@ -374,22 +376,21 @@ class Thread {
   /**
    * Handle the `mousemove` event when the navigation mode is active.
    *
-   * @param {Event} e
+   * @param {Event} event
    * @private
    */
-  handleDocumentMouseMove(e) {
+  handleDocumentMouseMove(event) {
     if (!this.navMode) {
       // This implies `this.navFromX !== undefined`, .navFromX set in .handleClickAreaMouseDown()
 
-      if (this.hasMouseMoved(e)) {
+      if (this.hasMouseMoved(event)) {
         $(document).off('mousemove.cd', this.documentMouseMoveHandler);
         this.enterNavMode(this.navFromX, this.navFromY, true);
       }
       return;
     }
 
-    const delta = e.clientY - this.navFromY;
-    const target = this.getNavTarget(delta);
+    const target = this.getNavTarget(event.clientY - this.navFromY);
     if (target && this.navScrolledTo !== target) {
       target.scrollTo({
         alignment: target.logicalLevel === this.rootComment.logicalLevel ? 'top' : 'bottom',
