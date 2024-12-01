@@ -279,39 +279,37 @@ class Thread {
   /**
    * Handle the `mousedown` event on the click area.
    *
-   * @param {Event} e
+   * @param {Event} event
    * @private
    */
-  handleClickAreaMouseDown(e) {
+  handleClickAreaMouseDown(event) {
     if (this.navMode) return;
 
     // Middle button
-    if (!this.rootComment.isCollapsed) {
-      if (e.button === 1) {
-        e.preventDefault();
+    if (event.button === 1) {
+      event.preventDefault();
 
-        // Prevent hitting document's mousedown.cd listener we add in .enterNavMode().
-        e.stopPropagation();
+      // Prevent hitting document's mousedown.cd listener we add in .enterNavMode().
+      event.stopPropagation();
 
-        this.enterNavMode(e.clientX, e.clientY);
-      }
+      this.enterNavMode(event.clientX, event.clientY);
+    }
 
-      // We also need the left button for touchpads, but need to wait until the user moves the
-      // mouse.
-      if (e.button === 0) {
-        e.preventDefault();
-        this.navFromY = e.clientY;
-        this.navFromX = e.clientX;
+    // We also need the left button for touchpads, but need to wait until the user moves the
+    // mouse.
+    if (event.button === 0) {
+      event.preventDefault();
+      this.navFromY = event.clientY;
+      this.navFromX = event.clientX;
 
-        $(document).one('mouseup.cd', (e) => {
-          e.preventDefault();
-          delete this.navFromY;
-          delete this.navFromX;
-          $(document).off('mousemove.cd', this.documentMouseMoveHandler);
-        });
+      $(document).one('mouseup.cd', (event) => {
+        event.preventDefault();
+        delete this.navFromY;
+        delete this.navFromX;
+        $(document).off('mousemove.cd', this.documentMouseMoveHandler);
+      });
 
-        $(document).on('mousemove.cd', this.documentMouseMoveHandler);
-      }
+      $(document).on('mousemove.cd', this.documentMouseMoveHandler);
     }
   }
 
