@@ -463,7 +463,11 @@ class Thread {
         // We need to check the logical level too, because there can be comments with no parents on
         // logical levels other than 0.
         this.rootComment.logicalLevel === comment.logicalLevel &&
-        this.rootComment.getParent() === comment.getParent()
+        this.rootComment.getParent() === comment.getParent() &&
+        (
+          comment.logicalLevel === 0 ||
+          this.rootComment.section?.getBase() === comment.section?.getBase()
+        )
       ) {
         target = comment;
         step += Math.sign(delta);
