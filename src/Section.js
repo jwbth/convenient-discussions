@@ -536,7 +536,7 @@ class Section extends SectionSkeleton {
         $link: $('<a>')
           .text(author.getName())
           .attr('href', `#${comments[0].dtId || comments[0].id}`)
-          .on('click', Comment.scrollToFirstHighlightAll.bind(Comment, comments))
+          .on('click', Comment.scrollToFirstFlashAll.bind(Comment, comments))
       }));
 
     const sortSelect = new OO.ui.ButtonSelectWidget({
@@ -970,14 +970,14 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Highlight the unseen comments in the section and scroll to the first one of them.
+   * Flash the unseen comments in the section and scroll to the first one of them.
    *
    * @param {Event} event
    * @private
    */
   scrollToNewComments(event) {
     event.preventDefault();
-    Comment.scrollToFirstHighlightAll(this.newComments);
+    Comment.scrollToFirstFlashAll(this.newComments);
   }
 
   /**

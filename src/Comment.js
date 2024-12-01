@@ -4181,17 +4181,19 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Scroll to the first comment in the list, but highlight all of them.
+   * Scroll to the first comment in the list, but flash all of them.
    *
    * @param {Comment[]} comments
+   * @param {object} [scrollToConfig]
    */
-  static scrollToFirstHighlightAll(comments) {
+  static scrollToFirstFlashAll(comments, scrollToConfig) {
     comments[0].scrollTo({
       flash: false,
       pushState: true,
       callback: () => {
         comments.forEach((comment) => comment.flashTarget());
       },
+      ...scrollToConfig,
     });
   }
 }

@@ -112,8 +112,8 @@ function processAndRemoveDtElements(elements, bootProcess) {
  *
  * @typedef {object} PassedData
  * @property {string} [parseData] Response to the parse request from the API.
- * @property {string} [commentId] ID of a comment to scroll to.
- * @property {string} [sectionId] ID of a section to scroll to.
+ * @property {string} [commentIds] ID of a comment to scroll to.
+ * @property {string} [sectionIds] ID of a section to scroll to.
  * @property {string} [pushState] Whether to replace the URL in the address bar adding the comment
  *   ID to it if it's specified.
  * @property {number} [scrollY] Page's Y offset.
@@ -648,21 +648,10 @@ class BootProcess {
       if (comments.length) {
         // sleep() for Firefox, as above
         sleep().then(() => {
-          // A tricky case with flashing is when a comment is in a collapsed thread. In this case,
-          // we must use Comment#scrollTo() to make sure it is flashed when the thread is
-          // uncollapsed by clicking a link in the notification.
-          const flashOne = Boolean(
-            this.passedData.submittedCommentForm ||
-            this.passedData.pushState
-          );
-          comments[0].scrollTo({
+          Comment.scrollToFirstFlashAll(comments, {
             smooth: false,
             pushState: this.passedData.pushState,
-            flash: flashOne,
           });
-          if (!flashOne) {
-            comments.forEach((comment) => comment.flashTarget());
-          }
         });
       }
     } else if (this.passedData.sectionId) {
