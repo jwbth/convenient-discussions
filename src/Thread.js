@@ -522,11 +522,7 @@ class Thread {
 
     if (!this.clickArea.classList.contains('cd-thread-clickArea-hovered')) return;
 
-    if (event.altKey) {
-      this.toggleWithSiblings(true);
-    } else {
-      this.toggle();
-    }
+    this.onToggleClick(event);
   }
 
   /**
@@ -543,7 +539,7 @@ class Thread {
      */
     this.clickArea = this.constructor.prototypes.get('clickArea');
 
-    this.clickArea.title = cd.s('thread-tooltip');
+    this.clickArea.title = cd.s('thread-tooltip', cd.g.cmdModifier);
 
     // Add some debouncing so that the user is not annoyed by the cursor changing its form when
     // moving across thread lines.
@@ -686,11 +682,11 @@ class Thread {
    * @param {Promise.<undefined>} [loadUserGendersPromise]
    * @private
    */
-  addExpandNode(loadUserGendersPromise) {
+  addExpandNote(loadUserGendersPromise) {
     const element = this.constructor.prototypes.get('expandButton');
     const button = new Button({
       tooltip: cd.s('thread-expand-tooltip', cd.g.cmdModifier),
-      action: this.onExpandNoteClick.bind(this),
+      action: this.onToggleClick.bind(this),
       element: element,
       buttonElement: element.firstChild,
       labelElement: element.querySelector('.oo-ui-labelElement-label'),
@@ -755,17 +751,16 @@ class Thread {
   /**
    * Handle clicking the expand note.
    *
-   * @param {Event} e
+   * @param {Event} event
    * @private
    */
-  onExpandNoteClick(e) {
-    if (isCmdModifierPressed(e)) {
-      commentRegistry.getAll().slice().reverse().forEach((comment) => {
-        comment.thread?.expand();
-      });
-      this.comments[0].scrollTo();
+  onToggleClick(event) {
+    if (isCmdModifierPressed(event)) {
+      this.toggleAll();
+    } else if (event.altKey) {
+      this.toggleWithSiblings(true);
     } else {
-      this.expand();
+      this.toggle();
     }
   }
 
@@ -812,7 +807,7 @@ class Thread {
       i = commentRegistry.getByIndex(i).collapse(this) ?? i;
     }
 
-    this.addExpandNode(loadUserGendersPromise);
+    this.addExpandNote(loadUserGendersPromise);
 
     if (!isBatchOperation) {
       this.$expandNote.cdScrollIntoView();
@@ -1105,6 +1100,19 @@ class Thread {
    */
   getComments() {
     return commentRegistry.getAll().slice(this.rootComment.index, this.lastComment.index + 1);
+  }
+
+  /**
+   * Expand or collapse all threads on the page. On expand, scroll to the root comment of this
+   * thread.
+   */
+  toggleAll() {
+    if (this.isCollapsed) {
+      commentRegistry.expandAllThreads();
+      this.comments[0].scrollTo();
+    } else {
+      commentRegistry.collapseAllThreads();
+    }
   }
 
   static isInited = false;

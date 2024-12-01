@@ -23,10 +23,10 @@
 	"cm-quote": "Quote",
 	"cm-togglechildthreads-tooltip": "Collapse/expand the replies to this comment. You can also hold Alt when clicking a reply's thread line for that effect",
 
-	"thread-tooltip": "Collapse/expand the thread. Hold the middle button to navigate threads. Hold Alt to collapse/expand all sibling threads as well",
+	"thread-tooltip": "Collapse/expand the thread. Hold the middle button to navigate threads. Hold Alt to collapse/expand all sibling threads as well. Hold $1 to collapse/expand all threads on the page",
 	"thread-expand-label-genderless": "Expand the thread ($1 {{plural:$1|comment|comments}} by {{plural:$2|1=|}} $3)",
 	"thread-expand-label": "Expand the thread ($1 {{plural:$1|comment|comments}} by {{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}} $3)",
-	"thread-expand-tooltip": "Hold $1 to expand all threads on the page",
+	"thread-expand-tooltip": "Hold Alt to expand/collapse all sibling threads as well. Hold $1 to expand/collapse all threads on the page",
 	"thread-newcomments": "{{plural:$1|There is a new comment|There are $1 new comments}} in this thread from {{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}} $3. Click to refresh the page.",
 
 	"sm-editopeningcomment": "Edit opening comment",

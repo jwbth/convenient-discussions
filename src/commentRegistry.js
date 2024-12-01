@@ -1142,5 +1142,29 @@ export default {
     this.items.forEach((comment) => {
       comment.addToggleChildThreadsButton();
     });
-  }
+  },
+
+  /**
+   * Expand all threads on the page.
+   */
+  expandAllThreads() {
+    this.items.slice().reverse().forEach((comment) => {
+      comment.thread?.expand(undefined, true);
+    });
+    this.items.forEach((comment) => {
+      comment.updateToggleChildThreadsButton();
+    });
+  },
+
+  /**
+   * Collapse all threads on the page.
+   */
+  collapseAllThreads() {
+    this.items.slice().reverse().forEach((comment) => {
+      comment.thread?.collapse(undefined, true);
+    });
+    this.items.forEach((comment) => {
+      comment.updateToggleChildThreadsButton();
+    });
+  },
 };
