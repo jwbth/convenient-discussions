@@ -57,6 +57,7 @@
 	"section-watch-openpages": "(이 탭이 열려 있을 때만 알림을 받습니다)",
 	"section-watch-error-maxsize": "설정을 업데이트하지 못했습니다: 구독 목록의 크기가 최대 크기를 초과합니다. 이 문제를 해결하려면 <span class=\"cd-notification-editWatchedSections\">목록의 크기를 줄이십시오</span>.",
 	"section-metadata-lastcomment": "마지막 의견:",
+	"section-authors-sort-abc": "알파벳순",
 	"cld-title-comment": "의견 링크 복사",
 	"cld-title-section": "문단 링크 복사",
 	"cld-select-anchor": "앵커 링크",
