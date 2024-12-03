@@ -589,7 +589,7 @@ mw.hook('convenientDiscussions.commentFormToolbarReady').add(function (commentFo
           wikificator: {
             label: 'Викификатор — автоматический обработчик текста (Ctrl+Alt+W)',
             type: 'button',
-            icon: 'https://upload.wikimedia.org/wikipedia/commons/0/06/Wikify-toolbutton.png',
+            icon: 'https://upload.wikimedia.org/wikipedia/commons/4/41/Wikificator_VE_icon.svg',
             action: {
               type: 'callback',
               execute: function () {
@@ -613,7 +613,7 @@ mw.hook('convenientDiscussions.commentFormToolbarReady').add(function (commentFo
         urlDecoder: {
           label: 'Раскодировать URL перед курсором или все URL в выделенном тексте',
           type: 'button',
-          icon: 'https://upload.wikimedia.org/wikipedia/commons/0/01/Link_go_remake.png',
+          icon: 'https://upload.wikimedia.org/wikipedia/commons/3/3d/URL_decoder_VE_icon.svg',
           action: {
             type: 'callback',
             execute: function () {
