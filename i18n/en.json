@@ -23,7 +23,7 @@
 	"cm-quote": "Quote",
 	"cm-togglechildthreads-tooltip": "Collapse/expand the replies to this comment. You can also hold Alt when clicking a reply's thread line for that effect",
 
-	"thread-tooltip": "Collapse/expand the thread. Hold the middle button to navigate threads. Hold Alt to collapse/expand all sibling threads as well. Hold $1 to collapse/expand all threads on the page",
+	"thread-tooltip": "Collapse/expand the thread. Hold Alt to collapse/expand all sibling threads as well. Hold $1 to collapse/expand all threads on the page. Hold the middle button and move the mouse to navigate threads",
 	"thread-expand-label-genderless": "Expand the thread ($1 {{plural:$1|comment|comments}} by {{plural:$2|1=|}} $3)",
 	"thread-expand-label": "Expand the thread ($1 {{plural:$1|comment|comments}} by {{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}} $3)",
 	"thread-expand-tooltip": "Hold Alt to expand/collapse all sibling threads as well. Hold $1 to expand/collapse all threads on the page",
@@ -285,7 +285,7 @@
 	"navpanel-next": "Go to the next new comment",
 	"navpanel-firstunseen": "Go to the first unseen comment",
 	"navpanel-firstunseen-hidden-title": "The comment is in a collapsed thread",
-	"navpanel-firstunseen-hidden": "Scrolled to the thread. <span class=\"cd-notification-expandThread\">[[$1|Expand the thread and scroll to the comment]]</span><span class=\"cd-notification-markThreadAsRead-wrapper\">$2<span class=\"cd-notification-markThreadAsRead\">[[$3|Mark the thread as read and scroll to the next unread comment]]</span></span>.",
+	"navpanel-firstunseen-hidden": "Scrolled to the thread.\n<ul>\n<li class=\"cd-notification-expandThread\">[[$1|Expand the thread and scroll to the comment]]</li>\n<li class=\"cd-notification-markThreadAsRead\">[[$2|Mark the thread as read and scroll to the next unread comment]]</li>\n</ul>",
 	"navpanel-commentform": "Go to the next comment form out of sight",
 	"navpanel-newcomments-count": "$1 new {{plural:$1|comment|comments}}.",
 	"navpanel-newcomments-names": "$1 → $2",

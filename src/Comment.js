@@ -2551,7 +2551,7 @@ class Comment extends CommentSkeleton {
         }
       );
       if (this.isSeen) {
-        $message.find('.cd-notification-markThreadAsRead-wrapper').remove();
+        $message.find('.cd-notification-markThreadAsRead').remove();
       }
       const notification = mw.notification.notify($message, {
         title: cd.s('navpanel-firstunseen-hidden-title'),
