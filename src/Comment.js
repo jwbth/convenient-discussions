@@ -2524,9 +2524,9 @@ class Comment extends CommentSkeleton {
     }
 
     if (this.isCollapsed) {
-      this.getVisibleExpandNote().cdScrollTo(alignment || 'top', smooth, callback);
+      this.getVisibleExpandNote().cdScrollIntoView(alignment || 'top', smooth, callback);
       const $message = wrapHtml(
-        cd.sParse('navpanel-firstunseen-hidden', '$1', cd.s('dot-separator')),
+        cd.sParse('navpanel-firstunseen-hidden', '$1'),
         {
           callbacks: {
             'cd-notification-expandThread': () => {
