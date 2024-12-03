@@ -287,7 +287,7 @@ class CommentFormInputTransformer extends TextMasker {
         `$1{{${cd.config.paragraphTemplates[0]}}}\n` :
         (
           this.areThereTagsAroundMultipleLines ?
-            `$1<br>\n` :
+            `$1<br> \n` :
             (s, m1) => (
               m1 + '\n' + this.constructor.prependIndentationToLine(this.restLinesIndentation, '')
             )
@@ -298,7 +298,7 @@ class CommentFormInputTransformer extends TextMasker {
   }
 
   /**
-   * Process newlines by adding or not adding `<br> ` and keeping or not keeping the newline. `\x01`
+   * Process newlines by adding or not adding `<br>` and keeping or not keeping the newline. `\x01`
    * and `\x02` mean the beginning and ending of sensitive code except for tables. `\x03` and `\x04`
    * mean the beginning and ending of a table. Note: This should be kept coordinated with the
    * reverse transformation code in {@link CommentSource#toInput}.
@@ -356,7 +356,7 @@ class CommentFormInputTransformer extends TextMasker {
         nextLineBeginningRegexp.test(nextLine)
       ) ?
         '' :
-        '<br> ';
+        '<br>' + (this.indentation ? ' ' : '');
 
       // Current line can match galleryRegexp only if the comment will not be indented.
       const newlineOrNot = this.indentation && !this.constructor.galleryRegexp.test(nextLine) ?

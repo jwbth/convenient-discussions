@@ -286,7 +286,7 @@ describe('Tricky markup', () => {
   testWithData(
     'File markup',
     'Start.\n[[File:Example.png]]\nEnd.',
-    ': Start.<br>[[File:Example.png]]<br>End. ~~~~\n',
+    ': Start.<br> [[File:Example.png]]<br> End. ~~~~\n',
     firstCommentReplyForm
   );
   testWithData(
@@ -298,7 +298,7 @@ describe('Tricky markup', () => {
   testWithData(
     'Line break',
     'Start.\nEnd.',
-    ': Start.<br>End. ~~~~\n',
+    ': Start.<br> End. ~~~~\n',
     firstCommentReplyForm
   );
   testWithData(
@@ -379,7 +379,7 @@ describe('Tags and templates', () => {
   testWithData(
     'Inline tag',
     'Text.\n<span>Text.</span>',
-    ': Text.<br><span>Text.</span> ~~~~\n',
+    ': Text.<br> <span>Text.</span> ~~~~\n',
     firstCommentReplyForm
   );
   testWithData(
@@ -397,7 +397,7 @@ describe('Tags and templates', () => {
   testWithData(
     'Whole comment in <small>, horizontal lines',
     '<small>[[Link|Label]]\n|\n<nowiki>|</nowiki>\nEnd.</small>',
-    ': {{smalldiv|1=[[Link|Label]]<br>{{!}}<br><nowiki>|</nowiki><br>End. ~~~~}}\n',
+    ': {{smalldiv|1=[[Link|Label]]<br> {{!}}<br> <nowiki>|</nowiki><br> End. ~~~~}}\n',
     firstCommentReplyForm
   );
   testWithData(
@@ -432,14 +432,14 @@ describe('Tags and templates', () => {
   );
   testWithData(
     'Newlines in a template',
-    '{{tq|1=\nLine 1.\n\nLine 2.\nLine 3.\n}}<br>Text.',
-    ': {{tq|1=Line 1.{{pb}}Line 2.<br>Line 3.}}<br>Text. ~~~~\n',
+    '{{tq|1=\nLine 1.\n\nLine 2.\nLine 3.\n}}<br> Text.',
+    ': {{tq|1=Line 1.{{pb}}Line 2.<br> Line 3.}}<br> Text. ~~~~\n',
     firstCommentReplyForm
   );
   testWithData(
     'Newlines in a template, add section',
-    '{{tq|1=\n\nLine 1.\n\nLine 2.\nLine 3.\n}}<br>Text.',
-    '{{tq|1=\n\nLine 1.\n\nLine 2.<br>\nLine 3.\n}}<br>Text. ~~~~\n',
+    '{{tq|1=\n\nLine 1.\n\nLine 2.\nLine 3.\n}}<br> Text.',
+    '{{tq|1=\n\nLine 1.\n\nLine 2.<br>\nLine 3.\n}}<br> Text. ~~~~\n',
     addSectionForm
   );
   testWithData(
@@ -499,7 +499,7 @@ describe('Tags and templates', () => {
   testWithData(
     '<nowiki>',
     'Text.\n<nowiki>  {{template}}  </nowiki>',
-    ': Text.<br><nowiki>  {{template}}  </nowiki> ~~~~\n',
+    ': Text.<br> <nowiki>  {{template}}  </nowiki> ~~~~\n',
     firstCommentReplyForm
   );
 });
@@ -516,7 +516,7 @@ describe('Alternative config', () => {
   testWithData(
     'Paragraph (no template, comment wrapped in a tag)',
     '<div>Start.\n\nEnd.</div>',
-    ': <div>Start.<br>End.</div> ~~~~\n',
+    ': <div>Start.<br> End.</div> ~~~~\n',
     firstCommentReplyForm,
     undefined,
     { paragraphTemplates: [] }
@@ -524,7 +524,7 @@ describe('Alternative config', () => {
   testWithData(
     'Paragraph (no template, various tricky markup)',
     'Start.\nNew line\n\nEnd.\n\nList:\n* Item 1.\n* Item 2.\n* Item 3.\nContinuation.\n\n\nThree newlines.\nQuote 1:\n\n{{quote|Text.}}\n\nQuote 2:\n{{quote|Text.}}\nEnd',
-    ': Start.<br>New line\n: End.\n: List:\n:* Item 1.\n:* Item 2.\n:* Item 3.\n: Continuation.\n: Three newlines.<br>Quote 1:\n: {{quote|Text.}}\n: Quote 2:{{quote|Text.}}End ~~~~\n',
+    ': Start.<br> New line\n: End.\n: List:\n:* Item 1.\n:* Item 2.\n:* Item 3.\n: Continuation.\n: Three newlines.<br> Quote 1:\n: {{quote|Text.}}\n: Quote 2:{{quote|Text.}}End ~~~~\n',
     firstCommentReplyForm,
     undefined,
     { paragraphTemplates: [] }
