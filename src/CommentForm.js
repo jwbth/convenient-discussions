@@ -1320,11 +1320,10 @@ class CommentForm {
     const $editNotices = $(result.html.replace(/<div class="cd-editnotice"><\/div>/g, ''));
     if (!$editNotices.children().length && !$editNotices.text()) return;
 
-    const mediaWikiNamespace = mw.config.get('wgFormattedNamespaces')[8];
     this.$messageArea
       .append($editNotices)
       .cdAddCloseButton()
-      .find(`.cd-editnotice > a.new[title^="${mediaWikiNamespace}:Editnotice-"]`)
+      .find(`:is(.cd-editnotice, .cd-editintro) > a.new:first-child:last-child`)
       .parent()
       .remove();
 
