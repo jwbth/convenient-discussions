@@ -42,6 +42,7 @@
 	"section-reply": "Äntweren op den Abschnitt",
 	"section-newcomments": "Et gëtt {{plural:$1|eng nei Bemierkung|$1 nei Bemierkungen}} an dësem Abschnitt (ausserhalb vun de Threads) vum {{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}} $3. Klickt hei fir d'Säit z'aktualiséieren.",
 	"section-metadata-lastcomment": "Lescht Bemierkung:",
+	"section-authors-sort-abc": "Alphabetesch",
 	"cld-summary": "Resumé vun der Ännerung",
 	"cld-diff": "Link op den Ënnerscheed",
 	"cld-diff-error": "Gouf net fonnt",
