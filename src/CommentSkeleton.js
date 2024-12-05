@@ -849,7 +849,7 @@ class CommentSkeleton {
 
         // We should only enclose if there is a need: there is at least one inline or non-empty text
         // node in the sequence. Trimming is needed for cases like
-        // https://en.wikipedia.org/wiki/Special:GoToComment/c-Tazerdadog-20241102185300-Ratnahastin-20241102181500#undefined
+        // https://en.wikipedia.org/w/index.php?title=Project:Village_pump_(WMF)&oldid=1256060662#c-Tazerdadog-20241102185300-Ratnahastin-20241102181500
         // where the parser leaves <s> </s> (<span> </span> for Parsoid) between <dd> tags.
         if (!encloseThis && isInline(part.node, true) && part.node.textContent.trim()) {
           encloseThis = true;

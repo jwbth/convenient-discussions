@@ -1257,38 +1257,36 @@ class Thread {
       }
     });
 
-    if (this.collapseThreadsLevel !== 0) {
-      // Don't precisely target comments of level this.collapseThreadsLevel in case there is a gap,
-      // for example between the `(this.collapseThreadsLevel - 1)` level and the
-      // `(this.collapseThreadsLevel + 1)` level (the user muse have replied to a comment at the
-      // `(this.collapseThreadsLevel - 1)` level but inserted `::` instead of `:`).
-      for (let i = 0; i < commentRegistry.getCount(); i++) {
-        const comment = commentRegistry.getByIndex(i);
-        if (!comment.thread) continue;
+    // Don't precisely target comments of level this.collapseThreadsLevel in case there is a gap,
+    // for example between the `(this.collapseThreadsLevel - 1)` level and the
+    // `(this.collapseThreadsLevel + 1)` level (the user muse have replied to a comment at the
+    // `(this.collapseThreadsLevel - 1)` level but inserted `::` instead of `:`).
+    for (let i = 0; i < commentRegistry.getCount(); i++) {
+      const comment = commentRegistry.getByIndex(i);
+      if (!comment.thread) continue;
 
-        if (comment.level >= this.collapseThreadsLevel) {
-          // Exclude threads where the user participates at any level up and down the tree or that
-          // the user has specifically expanded.
-          if (![...comment.getAncestors(), ...comment.thread.comments].some((c) => c.isOwn)) {
-            /**
-             * Should the thread be automatically collapsed on page load if taking only comment
-             * level into account and not remembering the user's previous actions.
-             *
-             * @name isAutocollapseTarget
-             * @type {boolean}
-             * @memberof Thread
-             * @instance
-             * @private
-             */
-            comment.thread.isAutocollapseTarget = true;
+      if (comment.level >= this.collapseThreadsLevel) {
+        // Exclude threads where the user participates at any level up and down the tree or that
+        // the user has specifically expanded.
+        if (![...comment.getAncestors(), ...comment.thread.comments].some((c) => c.isOwn)) {
+          /**
+           * Should the thread be automatically collapsed on page load if taking only comment
+           * level into account and not remembering the user's previous actions.
+           *
+           * @name isAutocollapseTarget
+           * @type {boolean}
+           * @memberof Thread
+           * @instance
+           * @private
+           */
+          comment.thread.isAutocollapseTarget = true;
 
-            if (!comment.thread.wasManuallyExpanded) {
-              comments.push(comment);
-            }
+          if (!comment.thread.wasManuallyExpanded) {
+            comments.push(comment);
           }
-
-          i = comment.thread.lastComment.index;
         }
+
+        i = comment.thread.lastComment.index;
       }
     }
 

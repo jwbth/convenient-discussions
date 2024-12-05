@@ -79,6 +79,7 @@ export default {
       'autocompleteTypes': ['mentions', 'commentLinks', 'wikilinks', 'templates', 'tags'],
 
       'autopreview': true,
+      'collapseThreads': true,
       'collapseThreadsLevel': 10,
       'countEditsAsNewComments': false,
       'desktopNotifications': 'unknown',
@@ -95,6 +96,7 @@ export default {
       'notifications': 'all',
       'notifyCollapsedThreads': false,
       'notificationsBlacklist': [],
+      'outdent': true,
       'outdentLevel': 15,
       'reformatComments': null,
       'showContribsLink': false,
@@ -123,9 +125,6 @@ export default {
     const outdentTemplateUrl = cd.config.outdentTemplates.length ?
       pageRegistry.get(`Template:${cd.config.outdentTemplates[0]}`).getUrl() :
       'https://en.wikipedia.org/wiki/Template:Outdent';
-    const noOutdentTemplateNote = cd.config.outdentTemplates.length ?
-      '' :
-      ' ' + cd.sParse('sd-outdentlevel-help-notemplate');
 
     const fortyThreeMinutesAgo = new Date(Date.now() - cd.g.msInMin * 43);
     const threeDaysAgo = new Date(Date.now() - cd.g.msInDay * 3.3);
@@ -163,13 +162,17 @@ export default {
             label: cd.s('sd-enablethreads'),
           },
           {
+            name: 'collapseThreads',
+            type: 'checkbox',
+            label: cd.s('sd-collapsethreadslevel'),
+            classes: ['cd-setting-indented'],
+          },
+          {
             name: 'collapseThreadsLevel',
             type: 'number',
             min: 0,
             max: 999,
-            label: cd.s('sd-collapsethreadslevel'),
-            help: cd.s('sd-collapsethreadslevel-help'),
-            classes: ['cd-setting-indented'],
+            classes: ['cd-setting-indented-twice'],
           },
           {
             name: 'modifyToc',
@@ -234,12 +237,19 @@ export default {
             label: cd.s('sd-alwaysexpandadvanced'),
           },
           {
+            name: 'outdent',
+            type: 'checkbox',
+            label: wrapHtml(cd.sParse('sd-outdentlevel', outdentTemplateUrl), {
+              targetBlank: true,
+            }),
+          },
+          {
             name: 'outdentLevel',
             type: 'number',
             min: 0,
             max: 999,
-            label: wrapHtml(cd.sParse('sd-outdentlevel', outdentTemplateUrl), { targetBlank: true }),
-            help: wrapHtml(cd.sParse('sd-outdentlevel-help') + noOutdentTemplateNote),
+            help: wrapHtml(cd.sParse('sd-outdentlevel-help-notemplate')),
+            classes: ['cd-setting-indented'],
           },
           {
             name: 'autocompleteTypes',
@@ -282,10 +292,9 @@ export default {
             tagLimit: 100,
             label: cd.s('sd-insertbuttons'),
             help: wrapHtml(cd.sParse('sd-insertbuttons-help') + ' ' + cd.sParse('sd-localsetting')),
-            dataToUi: (value) => (
-              value.map((button) => Array.isArray(button) ? button.join(';') : button)
-            ),
-            uiToData: (value) => (
+            dataToUi: (value) =>
+              value.map((button) => (Array.isArray(button) ? button.join(';') : button)),
+            uiToData: (value) =>
               value
                 .map((value) => {
                   const textMasker = new TextMasker(value).mask(/\\[+;\\]/g);
@@ -296,15 +305,16 @@ export default {
                   label &&= textMasker.unmaskText(label);
                   return [snippet, label].filter(defined);
                 })
-                .filter(defined)
-            ),
+                .filter(defined),
           },
           {
             name: 'signaturePrefix',
             type: 'text',
             maxLength: 100,
             label: cd.s('sd-signatureprefix'),
-            help: wrapHtml(cd.sParse('sd-signatureprefix-help') + ' ' + cd.sParse('sd-localsetting')),
+            help: wrapHtml(
+              cd.sParse('sd-signatureprefix-help') + ' ' + cd.sParse('sd-localsetting')
+            ),
           },
         ],
       },
@@ -451,16 +461,15 @@ export default {
         omitLocal: true,
       });
 
-      this.set(Object.assign(
-        {},
-        this.scheme.default,
+      this.set({
+        ...this.scheme.default,
 
         // Settings in global variables like cdAllowEditOthersComments used before server-stored
         // settings were implemented and used for undocumented settings now.
-        this.getSettingPropertiesOfObject(window, 'cd'),
+        ...this.getSettingPropertiesOfObject(window, 'cd'),
 
-        remoteSettings,
-      ));
+        ...remoteSettings,
+      });
 
       // If the user has never changed the insert buttons configuration, it should change with the
       // default configuration change.
@@ -469,6 +478,19 @@ export default {
         JSON.stringify(this.values.insertButtons) !== JSON.stringify(cd.config.defaultInsertButtons)
       ) {
         this.values.insertButtons = cd.config.defaultInsertButtons;
+      }
+
+      // Migrate users to the new schema where 0 doesn't mean autocollapse for collapseThreadsLevel
+      // and outdentLevel. Instead, you need to check a box.
+      if (remoteSettings.outdent === undefined) {
+        if (this.values.outdentLevel === 0) {
+          this.values.outdentLevel = this.scheme.default.outdentLevel;
+          this.values.outdent = false;
+        }
+        if (this.values.collapseThreadsLevel === 0) {
+          this.values.collapseThreadsLevel = this.scheme.default.collapseThreadsLevel;
+          this.values.collapseThreads = false;
+        }
       }
 
       if (!areObjectsEqual(this.values, remoteSettings)) {

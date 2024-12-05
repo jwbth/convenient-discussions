@@ -29,6 +29,10 @@ a:not([href]) {
   margin-inline-start: calc(1.4285714em + 6px);
 }
 
+.cd-setting-indented-twice {
+  margin-inline-start: calc((1.4285714em + 6px) * 2);
+}
+
 .oo-ui-windowManager-modal > .oo-ui-dialog {
   // Make the value in other skins the same as in Vector. The default 5 is too low and causes modal
   // windows to be obstructed by interface elements created by CD.
@@ -67,6 +71,21 @@ a:not([href]) {
   &:hover,
   &:focus {
     text-decoration: none;
+  }
+}
+
+// Need to override
+// `.cd-dialog-settings .oo-ui-fieldLayout-header > .oo-ui-labelElement-label:first-child`
+.cd-field-no-label.cd-field-no-label.cd-field-no-label.cd-field-no-label {
+  margin-top: 0;
+
+  label {
+    display: none;
+  }
+
+  // Make the same space as occurs when labels (or help messages) are present
+  > .oo-ui-fieldLayout-body > .oo-ui-fieldLayout-header {
+    padding-bottom: 4px;
   }
 }
 

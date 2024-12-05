@@ -434,7 +434,11 @@ class SettingsDialog extends ProcessDialog {
   async updateAbilities() {
     const controls = this.controls;
 
-    controls.collapseThreadsLevel.input.setDisabled(!controls.enableThreads.input.isSelected());
+    const threadsEnabled = controls.enableThreads.input.isSelected();
+    controls.collapseThreads.input.setDisabled(!threadsEnabled);
+    controls.collapseThreadsLevel.input.setDisabled(
+      !threadsEnabled || !controls.collapseThreads.input.isSelected()
+    );
     controls.hideTimezone.input.setDisabled(
       controls.timestampFormat.select.findSelectedItem()?.getData() === 'relative'
     );
@@ -442,6 +446,7 @@ class SettingsDialog extends ProcessDialog {
       controls.desktopNotifications.select.findSelectedItem()?.getData() === 'none' &&
       controls.notifications.select.findSelectedItem()?.getData() === 'none'
     );
+    controls.outdentLevel.input.setDisabled(!controls.outdent.input.isSelected());
     controls.showContribsLink.input.setDisabled(!controls.reformatComments.input.isSelected());
     controls.useTemplateData.input.setDisabled(
       !controls.autocompleteTypes.multiselect.findItemFromData('templates').isSelected()

@@ -230,6 +230,7 @@ export function createTextField({
     help,
     helpInline: true,
   });
+
   return { field, input };
 }
 
@@ -244,7 +245,7 @@ export function createTextField({
  *
  * @param {object} options
  * @param {string} options.value
- * @param {string} options.label
+ * @param {string} [options.label]
  * @param {string} [options.min]
  * @param {string} [options.max]
  * @param {string} [options.buttonStep]
@@ -276,6 +277,10 @@ export function createNumberField({
     helpInline: true,
     classes,
   });
+  if (!label) {
+    field.$element.addClass('cd-field-no-label');
+  }
+
   return { field, input };
 }
 
@@ -320,6 +325,7 @@ export function createCheckboxField({
     helpInline: true,
     classes,
   });
+
   return { field, input };
 }
 
