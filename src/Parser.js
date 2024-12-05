@@ -250,8 +250,9 @@ class Parser {
     // Unsigned template may be of the "undated" kind - containing a timestamp but no author name,
     // so we need to walk the tree anyway.
     let node = treeWalker.currentNode;
+    let text = node.textContent;
     do {
-      length += node.textContent.length;
+      length += text.length;
       if (node.tagName) {
         authorData.isLastLinkAuthorLink = false;
 
@@ -280,10 +281,11 @@ class Parser {
         length = 0;
         signatureNodes = [];
       }
+      text = node?.textContent;
     } while (
+      length < cd.config.signatureScanLimit &&
       node &&
       isInline(node, true) &&
-      length < cd.config.signatureScanLimit &&
       !(
         (
           authorData.name &&
@@ -291,7 +293,7 @@ class Parser {
             // Users may cross out the text ended with their signature and sign again
             // (https://ru.wikipedia.org/?diff=114726134). The strike element shouldn't be
             // considered a part of the signature then.
-            (node.tagName && ['S', 'STRIKE', 'DEL'].includes(node.tagName)) ||
+            ['S', 'STRIKE', 'DEL'].includes(node.tagName) ||
 
             // Cases with a talk page link at the end of comment's text like
             // https://ru.wikipedia.org/wiki/Википедия:Заявки_на_статус_администратора/Obersachse_3#c-Obersachse-2012-03-11T08:03:00.000Z-Итог
@@ -300,7 +302,7 @@ class Parser {
             // outside of links or even tags, and this is much work for little gain. This is the
             // cost of us not relying on a DOM -> wikitext correspondence and processing these parts
             // separately.
-            (!node.tagName && this.constructor.punctuationRegexp.test(node.textContent)) ||
+            (!node.tagName && this.constructor.punctuationRegexp.test(text)) ||
 
             (
               node.tagName &&
@@ -323,7 +325,11 @@ class Parser {
 
             // Workaround for cases like https://en.wikipedia.org/?diff=1042059387 (those should be
             // extremely rare).
-            (['S', 'STRIKE', 'DEL'].includes(node.tagName) && length >= 30)
+            (['S', 'STRIKE', 'DEL'].includes(node.tagName) && text.length >= 30) ||
+
+            // Cases like
+            // https://ru.wikipedia.org/?diff=141883529#c-Супер-Вики-Патруль-20241204140000-Stjn-20241204123400
+            text.length >= cd.config.signatureScanLimit
           )
         )
       )
