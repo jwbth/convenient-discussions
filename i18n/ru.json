@@ -264,8 +264,6 @@
 	"newtopicssubscription-notify-subscribed-body": "{{GENDER:|Вы}} будете получать уведомления о создании новых тем на этой странице.",
 	"newtopicssubscription-notify-unsubscribed-title": "{{GENDER:|Вы}} отписались.",
 	"newtopicssubscription-notify-unsubscribed-body": "{{GENDER:|Вы}} больше не будете получать уведомления о создании новых тем на этой странице.",
-	"newtopicssubscription-popup-title": "Новая функция",
-	"newtopicssubscription-popup-text": "Теперь можно подписываться на страницы обсуждения. Если вы подпишетесь на страницу, вы будете получать уведомления, когда на странице будут начинать новые темы. Чтобы подписаться на страницу, кликните \"{{int:discussiontools-newtopicssubscription-button-subscribe-label}}\" в меню действий со страницей.",
 	"popup-manyForms-title": "Знаете ли вы?",
 	"popup-manyForms-text": "В «Удобных обсуждениях» вы можете вводить несколько сообщений одновременно в отдельных формах и затем отправлять их одно за другим. Текст в других формах не будет потерян, когда вы отправите одну из форм. Попробуйте!",
 	"popup-upload-title": "Новая функция",

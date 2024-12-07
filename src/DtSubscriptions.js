@@ -4,7 +4,6 @@ import Subscriptions from './Subscriptions';
 import cd from './cd';
 import controller from './controller';
 import sectionRegistry from './sectionRegistry';
-import settings from './settings';
 import { handleApiReject, splitIntoBatches } from './utils-api';
 import { spacesToUnderlines, unique } from './utils-general';
 
@@ -110,7 +109,6 @@ class DtSubscriptions extends Subscriptions {
       },
     });
     this.updatePageSubscribeButton();
-    this.onboardOntoPageSubscription();
   }
 
   /**
@@ -164,62 +162,6 @@ class DtSubscriptions extends Subscriptions {
    */
   actuallyUnsubscribe(subscribeId, id) {
     return this.changeSubscription(subscribeId, id, false);
-  }
-
-  /**
-   * Show an popup onboarding onto the new topics subscription feature.
-   *
-   * @private
-   */
-  onboardOntoPageSubscription() {
-    if (
-      settings.get('newTopicsSubscription-onboarded') ||
-      !this.pageSubscribeButton.isConnected() ||
-
-      // Buggy
-      (cd.g.skin.startsWith('vector') && window.scrollY > 70) ||
-
-      // Left column hidden in Timeless
-      (cd.g.skin === 'timeless' && window.innerWidth < 1100)
-    ) {
-      return;
-    }
-
-    const button = new OO.ui.ButtonWidget({
-      label: cd.mws('visualeditor-educationpopup-dismiss'),
-      flags: ['progressive', 'primary'],
-    });
-    button.on('click', () => {
-      popup.toggle(false);
-    });
-    let $floatableContainer;
-    const $vectorToolsDropdown = $('.vector-page-tools-dropdown');
-    if (cd.g.skin === 'vector') {
-      $floatableContainer = $('#p-cactions');
-    } else if ($vectorToolsDropdown.is(':visible')) {
-      $floatableContainer = $vectorToolsDropdown;
-    } else {
-      $floatableContainer = $(this.pageSubscribeButton.element);
-    }
-    const popup = new OO.ui.PopupWidget({
-      icon: 'newspaper',
-      label: cd.s('newtopicssubscription-popup-title'),
-      $content: $.cdMerge(
-        $('<p>').text(cd.s('newtopicssubscription-popup-text')),
-        $('<p>').append(button.$element),
-      ),
-      head: true,
-      $floatableContainer,
-      $container: $(document.body),
-      position: cd.g.skin === 'vector-2022' ? 'before' : 'below',
-      padded: true,
-      classes: ['cd-popup-onboarding', 'cd-popup-onboarding-newTopicsSubscription'],
-    });
-    $(document.body).append(popup.$element);
-    popup.toggle(true);
-    popup.on('closing', () => {
-      settings.saveSettingOnTheFly('newTopicsSubscription-onboarded', true);
-    });
   }
 }
 
