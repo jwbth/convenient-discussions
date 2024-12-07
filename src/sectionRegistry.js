@@ -62,19 +62,17 @@ export default {
        */
       section.isLastSection = section.index === this.items.length - 1;
 
-      section.maybeAddAddSubsectionButton();
+      // This should be above adding reply buttons so that the order is right.
+      section.maybeAddAddSubsectionButtons();
+
       section.maybeAddReplyButton();
     });
 
     // Run this after running section.addReplyButton() for each section because reply buttons must
     // be in place for this.
-    this.items
-      .filter((section) => section.addSubsectionButton)
-      .forEach((section) => {
-        // Section with the last reply button
-        (section.getChildren(true).slice(-1)[0] || section)
-          .showAddSubsectionButtonOnReplyButtonHover(section);
-      });
+    this.items.forEach((section) => {
+      section.showAddSubsectionButtonsOnReplyButtonHover();
+    });
   },
 
   /**

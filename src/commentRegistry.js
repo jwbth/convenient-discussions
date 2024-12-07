@@ -748,8 +748,8 @@ export default {
       )
         .addClass('cd-thread-button-container cd-thread-newCommentsNote')
         .insertAfter(
-          parent.$addSubsectionButtonContainer && !parent.getChildren().length ?
-            parent.$addSubsectionButtonContainer :
+          parent.$addSubsectionButtonsContainer && !parent.getChildren().length ?
+            parent.$addSubsectionButtonsContainer :
             parent.$replyButtonContainer || parent.lastElementInFirstChunk
         );
     }

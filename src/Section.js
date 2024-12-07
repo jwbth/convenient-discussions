@@ -222,15 +222,79 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * _For internal use._ Add an {@link Section#addSubsectionButton "Add subsection" button} that
+   * _For internal use._ Add
+   * {@link Section#addSubsectionButtonLastDescendant "Add subsection to <i>topic</i>"} and
+   * {@link Section#addSubsectionButton "Add subsection to <i>section</i>"} buttons that
    * appears when hovering over a {@link Section#replyButton "Reply in section" button}.
    */
-  maybeAddAddSubsectionButton() {
-    if (this.level !== 2 || !this.canBeSubsectioned()) return;
+  maybeAddAddSubsectionButtons() {
+    if (!this.canBeReplied()) return;
 
+    /*
+      "Add subsection" buttons of sections are structured like this:
+
+        == 1 ==
+        button of 1
+
+        === 2 ===
+        button of 2
+        last descendant button of 1
+
+      So, all sections have a button under their first chunks, but only 2-level sections have a
+      topic button under their last descendant.
+     */
+
+    const button = this.canBeSubsectioned() ? this.createAddSubsectionButton() : undefined;
+
+    const baseSection = this.getBase(true);
+    const lastDescendantButton =
+      this === baseSection?.getLastDescendant() && baseSection.canBeSubsectioned()
+        ? baseSection.createAddSubsectionButton()
+        : undefined;
+
+    const container = document.createElement('div');
+    container.className = 'cd-section-button-container cd-addSubsectionButton-container';
+    container.style.display = 'none';
+    container.append(...[button?.element, lastDescendantButton?.element].filter(defined));
+
+    this.lastElementInFirstChunk.parentNode.insertBefore(
+      container,
+      this.lastElementInFirstChunk.nextElementSibling
+    );
+
+    /**
+     * "Add subsection to <i>topic</i>" button at the end of the section (under the reply button of
+     * the last descendant section; shows up on hover of the reply button).
+     *
+     * @type {Button|undefined}
+     */
+    baseSection.addSubsectionButtonLastDescendant = lastDescendantButton;
+
+    /**
+     * "Add subsection to <i>section</i>" button at the end of the first chunk of the section (shows
+     * up on hover of the reply button).
+     *
+     * @type {Button|undefined}
+     */
+    this.addSubsectionButton = button;
+
+    /**
+     * "Add subsection" buttons container.
+     *
+     * @type {external:jQuery|undefined}
+     */
+    this.$addSubsectionButtonsContainer = $(container);
+  }
+
+  /**
+   * Create an "Add subsection" button (any kind).
+   *
+   * @returns {Button}
+   */
+  createAddSubsectionButton() {
     const element = this.constructor.prototypes.get('addSubsectionButton');
     const button = new Button({
-      element,
+      element: element,
       buttonElement: element.firstChild,
       labelElement: element.querySelector('.oo-ui-labelElement-label'),
       label: cd.s('section-addsubsection-to', this.headline),
@@ -241,26 +305,16 @@ class Section extends SectionSkeleton {
     button.buttonElement.onmouseenter = this.resetHideAddSubsectionButtonTimeout.bind(this);
     button.buttonElement.onmouseleave = this.deferAddSubsectionButtonHide.bind(this);
 
-    const container = document.createElement('div');
-    container.className = 'cd-section-button-container cd-addSubsectionButton-container';
-    container.style.display = 'none';
-    container.append(button.element);
+    return button;
+  }
 
-    this.lastElement.parentNode.insertBefore(container, this.lastElement.nextElementSibling);
-
-    /**
-     * "Add subsection" button at the end of the section.
-     *
-     * @type {Button|undefined}
-     */
-    this.addSubsectionButton = button;
-
-    /**
-     * "Add subsection" button container.
-     *
-     * @type {external:jQuery|undefined}
-     */
-    this.$addSubsectionButtonContainer = $(container);
+  /**
+   * Get the last descendant section of the section.
+   *
+   * @returns {Section|null}
+   */
+  getLastDescendant() {
+    return this.getChildren(true).slice(-1)[0] || null;
   }
 
   /**
@@ -292,7 +346,7 @@ class Section extends SectionSkeleton {
     if (this.hideAddSubsectionButtonTimeout) return;
 
     this.hideAddSubsectionButtonTimeout = setTimeout(() => {
-      this.$addSubsectionButtonContainer.hide();
+      this.$addSubsectionButtonsContainer.hide();
     }, 1000);
   }
 
@@ -302,14 +356,12 @@ class Section extends SectionSkeleton {
    * @private
    */
   handleReplyButtonHover() {
-    if (this.addSubsectionForm) return;
-
     this.resetHideAddSubsectionButtonTimeout();
 
     if (this.showAddSubsectionButtonTimeout) return;
 
     this.showAddSubsectionButtonTimeout = setTimeout(() => {
-      this.$addSubsectionButtonContainer.show();
+      this.$addSubsectionButtonsContainer.show();
     }, 1000);
   }
 
@@ -319,23 +371,19 @@ class Section extends SectionSkeleton {
    * @private
    */
   handleReplyButtonUnhover() {
-    if (this.addSubsectionForm) return;
-
     this.resetShowAddSubsectionButtonTimeout();
     this.deferAddSubsectionButtonHide();
   }
 
   /**
    * _For internal use._ Make it so that when the user hovers over a reply button at the end of the
-   * section for a second, an "Add subsection" button shows up under it.
-   *
-   * @param {Section} baseSection
+   * section for a second, "Add subsection" button(s) show up under it.
    */
-  showAddSubsectionButtonOnReplyButtonHover(baseSection) {
+  showAddSubsectionButtonsOnReplyButtonHover() {
     if (!this.replyButton) return;
 
-    this.replyButton.buttonElement.onmouseenter = baseSection.handleReplyButtonHover.bind(baseSection);
-    this.replyButton.buttonElement.onmouseleave = baseSection.handleReplyButtonUnhover.bind(baseSection);
+    this.replyButton.buttonElement.onmouseenter = this.handleReplyButtonHover.bind(this);
+    this.replyButton.buttonElement.onmouseleave = this.handleReplyButtonUnhover.bind(this);
   }
 
   /**
@@ -467,7 +515,7 @@ class Section extends SectionSkeleton {
       this.level >= 2 &&
       this.level <= 5 &&
 
-      // Not closed
+      // Is closed
       !(
         this.comments[0] &&
         this.comments[0].level === 0 &&
@@ -1100,11 +1148,9 @@ class Section extends SectionSkeleton {
       this.replyButton.hide();
     }
 
-    const baseSection = this.getBase();
-    if (baseSection.$addSubsectionButtonContainer) {
-      baseSection.$addSubsectionButtonContainer.hide();
-      clearTimeout(baseSection.showAddSubsectionButtonTimeout);
-      baseSection.showAddSubsectionButtonTimeout = null;
+    if (this.$addSubsectionButtonsContainer) {
+      this.$addSubsectionButtonsContainer.hide();
+      this.resetShowAddSubsectionButtonTimeout();
     }
   }
 
@@ -1120,6 +1166,8 @@ class Section extends SectionSkeleton {
       throw new CdError();
     }
 
+    this.$addSubsectionButtonsContainer?.hide();
+
     if (this.addSubsectionForm) {
       this.addSubsectionForm.$element.cdScrollIntoView('center');
       this.addSubsectionForm.headlineInput.focus();
@@ -1133,7 +1181,22 @@ class Section extends SectionSkeleton {
         mode: 'addSubsection',
       }, initialState, commentForm);
 
-      this.$addSubsectionButtonContainer?.hide();
+      this.addSubsectionButtonLastDescendant?.hide();
+
+      // The last descendant is under which the "Add subsection" form is placed.
+      const lastDescendant = this.getLastDescendant();
+
+      lastDescendant?.$addSubsectionButtonsContainer?.hide();
+
+      // Hide the button only if it's directly above the form
+      if (!lastDescendant) {
+        this.addSubsectionButton?.hide();
+      }
+
+      this.addSubsectionForm.on('teardown', () => {
+        this.addSubsectionButtonLastDescendant?.show();
+        this.addSubsectionButton?.show();
+      });
     }
   }
 
@@ -1612,11 +1675,12 @@ class Section extends SectionSkeleton {
    * section itself if it is of level 2 (even if there is a level 1 section) or if there is no
    * higher level section (the current section may be of level 3 or 1, for example).
    *
-   * @param {boolean} [force2Level=false] Guarantee a 2-level section is returned.
+   * @param {boolean} [forceLevel2=false] Guarantee a 2-level section is returned.
    * @returns {?Section}
    */
-  getBase(force2Level = false) {
-    const defaultValue = force2Level && this.level !== 2 ? null : this;
+  getBase(forceLevel2 = false) {
+    const defaultValue = forceLevel2 && this.level !== 2 ? null : this;
+
     return this.level <= 2 ?
       defaultValue :
       (
@@ -1651,10 +1715,11 @@ class Section extends SectionSkeleton {
           if (indirect || section.level === this.level + 1 || !haveMetDirect) {
             children.push(section);
           }
+
           return false;
-        } else {
-          return true;
         }
+
+        return true;
       });
 
     return children;
@@ -1829,7 +1894,7 @@ class Section extends SectionSkeleton {
         0,
         (
           // Section above the reply
-          (commentForm.getMode() === 'addSubsection' && this.getChildren(true).slice(-1)[0]) || this
+          (commentForm.getMode() === 'addSubsection' && this.getLastDescendant()) || this
         ).index + 1
       )
       .reverse()
