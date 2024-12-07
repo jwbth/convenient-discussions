@@ -14,7 +14,7 @@ import settings from './settings';
 import updateChecker from './updateChecker';
 import { getPagesExistence } from './utils-api';
 import { getCommonGender, reorderArray, sleep, unique } from './utils-general';
-import { getExtendedRect, getHigherNodeAndOffsetInSelection } from './utils-window';
+import { getExtendedRect, getHigherNodeAndOffsetInSelection, wrapHtml } from './utils-window';
 import visits from './visits';
 
 // TODO: make into a class extending a generic registry.
@@ -1142,6 +1142,7 @@ export default {
     this.items.forEach((comment) => {
       comment.addToggleChildThreadsButton();
     });
+    this.onboardOntoToggleChildThreads();
   },
 
   /**
@@ -1167,4 +1168,55 @@ export default {
       comment.updateToggleChildThreadsButton();
     });
   },
+
+  /**
+   * Show an popup onboarding onto the "Toggle child threads" feature.
+   *
+   * @private
+   */
+  onboardOntoToggleChildThreads() {
+    if (settings.get('toggleChildThreads-onboarded') || this.toggleChildThreadsPopup) return;
+
+    const suitableElement = this.items.find((c) => c.toggleChildThreadsButton && c.getOffset())
+      ?.toggleChildThreadsButton
+      .element;
+    if (!suitableElement) return;
+
+    const button = new OO.ui.ButtonWidget({
+      label: cd.mws('visualeditor-educationpopup-dismiss'),
+      flags: ['progressive', 'primary'],
+    });
+    button.on('click', () => {
+      this.toggleChildThreadsPopup.toggle(false);
+    });
+    this.toggleChildThreadsPopup = new OO.ui.PopupWidget({
+      icon: 'newspaper',
+      label: cd.s('togglechildthreads-popup-title'),
+      $content: $.cdMerge(
+        wrapHtml(cd.sParse('togglechildthreads-popup-text'), {
+          callbacks: {
+            'cd-notification-settings': () => {
+              settings.showDialog('talkPage', '.cd-setting-collapseThreadsLevel input');
+            },
+          },
+        }).children(),
+        $('<p>').append(button.$element),
+      ),
+      head: true,
+      $floatableContainer: $(suitableElement),
+      $container: $(document.body),
+      position: 'below',
+      padded: true,
+      classes: ['cd-popup-onboarding'],
+    });
+    $(document.body).append(this.toggleChildThreadsPopup.$element);
+    this.toggleChildThreadsPopup.toggle(true);
+    this.toggleChildThreadsPopup.on('closing', () => {
+      settings.saveSettingOnTheFly('toggleChildThreads-onboarded', true);
+    });
+    controller.on('startReload', () => {
+      this.toggleChildThreadsPopup.$element.remove();
+      this.toggleChildThreadsPopup = undefined;
+    });
+  }
 };

@@ -50,10 +50,12 @@ class SettingsDialog extends ProcessDialog {
    * Create a settings dialog.
    *
    * @param {string} [initialPageName]
+   * @param {string} focusSelector
    */
-  constructor(initialPageName) {
+  constructor(initialPageName, focusSelector) {
     super({ classes: ['cd-dialog-settings'] });
     this.initialPageName = initialPageName;
+    this.focusSelector = focusSelector;
   }
 
   /**
@@ -160,6 +162,7 @@ class SettingsDialog extends ProcessDialog {
 
       this.stack.setItem(this.settingsPanel);
       this.bookletLayout.setPage(this.initialPageName || settings.scheme.ui[0].name);
+      this.$body.find(this.focusSelector).focus();
       this.actions.setAbilities({ close: true });
 
       this.popPending();

@@ -54,6 +54,7 @@ export default {
       'improvePerformance-lastSuggested',
       'manyForms-onboarded',
       'notificationsBlacklist',
+      'toggleChildThreads-onboarded',
       'upload-onboarded',
     ],
 
@@ -91,6 +92,7 @@ export default {
       'insertButtons-altered': false,
       'manyForms-onboarded': false,
       'modifyToc': true,
+      'toggleChildThreads-onboarded': false,
       'notifications': 'all',
       'notifyCollapsedThreads': false,
       'notificationsBlacklist': [],
@@ -147,7 +149,7 @@ export default {
             name: 'showContribsLink',
             type: 'checkbox',
             label: cd.s('sd-showcontribslink'),
-            classes: ['cd-setting-indented'],
+            classes: ['cd-setting--indented'],
           },
           {
             name: 'allowEditOthersComments',
@@ -163,14 +165,14 @@ export default {
             name: 'collapseThreads',
             type: 'checkbox',
             label: cd.s('sd-collapsethreadslevel'),
-            classes: ['cd-setting-indented'],
+            classes: ['cd-setting--indented'],
           },
           {
             name: 'collapseThreadsLevel',
             type: 'number',
             min: 0,
             max: 999,
-            classes: ['cd-setting-indented-twice'],
+            classes: ['cd-setting--indented-twice', 'cd-setting-collapseThreadsLevel'],
           },
           {
             name: 'modifyToc',
@@ -247,7 +249,7 @@ export default {
             min: 0,
             max: 999,
             help: wrapHtml(cd.sParse('sd-outdentlevel-help-notemplate')),
-            classes: ['cd-setting-indented'],
+            classes: ['cd-setting--indented'],
           },
           {
             name: 'autocompleteTypes',
@@ -657,11 +659,12 @@ export default {
    * Show a settings dialog.
    *
    * @param {string} [initalPageName]
+   * @param {string} [focusSelector]
    */
-  showDialog(initalPageName) {
+  showDialog(initalPageName, focusSelector) {
     if ($('.cd-dialog-settings').length) return;
 
-    const dialog = new (require('./SettingsDialog').default)(initalPageName);
+    const dialog = new (require('./SettingsDialog').default)(initalPageName, focusSelector);
     controller.getWindowManager('settings').addWindows([dialog]);
     controller.getWindowManager('settings').openWindow(dialog);
 

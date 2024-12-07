@@ -62,6 +62,9 @@
 	"comment-deleted": "The comment was deleted.",
 	"comment-deleted-short": "Deleted",
 
+	"togglechildthreads-popup-title": "New feature",
+	"togglechildthreads-popup-text": "<p>You can now collapse/expand replies to comments by clicking −/+. You can also hold Alt when clicking a reply's thread line for that effect.</p>\n\n<p>An idea! Set the setting \"<span class=\"cd-notification-settings\">[[$1|{{int:convenient-discussions-sd-collapsethreadslevel}}]]</span>\" to 2 so that only direct replies to topics are visible by default.</p>",
+
 	"section-reply": "Reply to section",
 	"section-addsubsection-to": "Add subsection to \"$1\"",
 	"section-newcomments": "{{plural:$1|There is a new comment|There are $1 new comments}} in this section (outside of threads) from {{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}} $3. Click to refresh the page.",

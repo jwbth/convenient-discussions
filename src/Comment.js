@@ -805,10 +805,7 @@ class Comment extends CommentSkeleton {
     });
     this.updateToggleChildThreadsButton();
 
-    this.headerElement.insertBefore(
-      this.toggleChildThreadsButton.element,
-      this.$changeNote?.[0]
-    );
+    this.headerElement.insertBefore(this.toggleChildThreadsButton.element, this.$changeNote?.[0]);
   }
 
   /**
