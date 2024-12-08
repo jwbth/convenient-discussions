@@ -834,8 +834,9 @@ class Thread {
     if (!auto) {
       this.constructor.saveCollapsedThreads();
     }
-    this.constructor.updateLines();
-    controller.handleScroll();
+    if (!isBatchOperation) {
+      this.constructor.emit('toggle');
+    }
   }
 
   /**
@@ -896,8 +897,9 @@ class Thread {
     if (!auto) {
       this.constructor.saveCollapsedThreads();
     }
-    this.constructor.updateLines();
-    controller.handleScroll();
+    if (!isBatchOperation) {
+      this.constructor.emit('toggle');
+    }
   }
 
   /**
@@ -928,6 +930,7 @@ class Thread {
         sibling.thread?.expand(undefined, true) :
         sibling.thread?.collapse(undefined, true)
     ));
+    this.constructor.emit('toggle');
     this.rootComment.getParent()?.updateToggleChildThreadsButton();
     if (clickedThread && !wasCollapsed) {
       this.$expandNote.cdScrollIntoView();
@@ -1168,6 +1171,8 @@ class Thread {
     this.updateLinesHandler = this.updateLines.bind(this);
 
     if (!this.isInited) {
+      this
+        .on('toggle', this.updateLines.bind(this));
       controller
         .on('resize', this.updateLinesHandler)
         .on('mutate', () => {
@@ -1301,6 +1306,7 @@ class Thread {
       .forEach((comment) => {
         comment.thread.collapse(true, undefined, loadUserGendersPromise);
       });
+    this.emit('toggle');
 
     if (controller.isCurrentRevision()) {
       collapsedThreadsStorageItem

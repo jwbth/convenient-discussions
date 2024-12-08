@@ -110,7 +110,7 @@ export default {
     commentFormRegistry
       .on('teardown', this.registerSeen.bind(this));
     Thread
-      .on('init', this.addToggleChildThreadsButtons.bind(this))
+      .on('init', this.addToggleChildThreadsButtons.bind(this));
   },
 
   /**
@@ -678,6 +678,8 @@ export default {
       }
     });
 
+    Thread.emit('toggle');
+
     controller.restoreRelativeScrollPosition();
   },
 
@@ -1164,6 +1166,7 @@ export default {
     this.items.slice().reverse().forEach((comment) => {
       comment.thread?.collapse(undefined, true);
     });
+    Thread.emit('toggle');
     this.items.forEach((comment) => {
       comment.updateToggleChildThreadsButton();
     });

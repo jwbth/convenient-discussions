@@ -204,12 +204,6 @@ export default {
         OO.mixinClass(CommentForm, OO.EventEmitter);
 
         await this.tryExecuteBootProcess();
-
-        updateChecker
-          .on('check', (revisionId) => {
-            this.lastCheckedRevisionId = revisionId;
-          })
-          .on('commentsUpdate', this.updateAddedComments.bind(this));
       },
       (e) => {
         mw.notify(cd.s('error-loaddata'), { type: 'error' });
@@ -1243,6 +1237,15 @@ export default {
     }
 
     mw.hook('wikipage.content').add(this.handleWikipageContentHookFirings.bind(this));
+
+    updateChecker
+      .on('check', (revisionId) => {
+        this.lastCheckedRevisionId = revisionId;
+      })
+      .on('commentsUpdate', this.updateAddedComments.bind(this));
+
+    Thread
+      .on('toggle', this.handleScroll.bind(this));
   },
 
   /**
