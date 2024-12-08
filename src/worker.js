@@ -298,6 +298,10 @@ function addCompareHelperProperties(comment) {
   comment.headingHtmlToCompare = '';
   comment.elements.forEach((el) => {
     let htmlToCompare;
+    el.getElementsByTagName?.('svg').forEach((svg) => {
+      // Extension:Charts uses dynamically generated class names
+      svg.remove();
+    });
     el.getElementsByClassName?.('ext-discussiontools-init-timestamplink').forEach((link) => {
       // The link may change
       link.removeAttribute('href');
