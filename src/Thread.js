@@ -786,7 +786,8 @@ class Thread {
     this.collapsedRange = getRangeContents(
       this.getAdjustedStartElement(),
       this.getAdjustedEndElement(),
-      controller.rootElement
+      controller.rootElement,
+      controller.content.closedDiscussions
     );
 
     this.collapsedRange.forEach((el) => {
