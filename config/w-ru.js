@@ -298,6 +298,7 @@ export default {
     'ambox',
     'NavHead',
     'raaf',  // [[Википедия:Запросы к администраторам/Быстрые]]
+    'ts-Скрытый_блок-title',  // https://ru.wikipedia.org/?diff=141825627
   ],
 
   noSignatureTemplates: [
@@ -625,3 +626,9 @@ mw.hook('convenientDiscussions.commentFormToolbarReady').add(function (commentFo
     });
   }
 });
+
+mw.util.addCSS('\
+  .ts-Закрыто > .cd-commentLevel:not(ol) {\
+    margin-left: -1em;\
+  }\
+');
