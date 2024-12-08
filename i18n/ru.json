@@ -168,6 +168,7 @@
 	"cf-code-placeholder": "Код",
 	"cf-codeblock-tooltip": "Блок кода",
 	"cf-codeblock-placeholder": "Блок кода",
+	"cf-commentlink-tooltip": "Добавить ссылку на сообщение или раздел",
 	"cf-quote-tooltip": "Цитировать выделенный текст",
 	"cf-quote-placeholder": "Цитируемый текст",
 	"cf-mention-tooltip": "Упомянуть участника(-цу). Удерживайте $1, чтобы упомянуть адресата сообщения, если доступно",

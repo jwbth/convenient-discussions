@@ -115,7 +115,7 @@ class TributeRange {
             data.content = (
                 (
                     !(
-                        data.skipContentCheck?.(data) &&
+                        data.usePipeTrickCheck?.(data) &&
                         !(originalEvent.shiftKey || originalEvent.altKey)
                     ) &&
                     data.content

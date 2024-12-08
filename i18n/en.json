@@ -162,6 +162,7 @@
 	"cf-code-placeholder": "Code",
 	"cf-codeblock-tooltip": "Code block",
 	"cf-codeblock-placeholder": "Code block",
+	"cf-commentlink-tooltip": "Add a comment or section link",
 	"cf-quote-tooltip": "Quote the selected text",
 	"cf-quote-placeholder": "Quoted text",
 	"cf-mention-tooltip": "Mention a user. Hold $1 to mention the comment's addressee if available",

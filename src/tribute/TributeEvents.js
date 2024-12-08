@@ -178,22 +178,7 @@ class TributeEvents {
     }
   }
 
-  shouldDeactivate(event) {
-    if (!this.tribute.isActive) return false;
-
-    if (this.tribute.current.mentionText.length === 0) {
-      let eventKeyPressed = false;
-      TributeEvents.keys().forEach(o => {
-        if (event.keyCode === o.key) eventKeyPressed = true;
-      });
-
-      return !eventKeyPressed;
-    }
-
-    return false;
-  }
-
-  // jwbth: Removed getKeyCode as it is redundant.
+  // jwbth: Removed shouldDeactivate, getKeyCode as it is redundant.
 
   updateSelection(el) {
     this.tribute.current.element = el;

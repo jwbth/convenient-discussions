@@ -8,7 +8,7 @@ import Button from './Button';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import Parser from './Parser';
 import cd from './cd';
-import { parseWikiUrl, isInline, removeFromArrayIfPresent, defined } from './utils-general';
+import { parseWikiUrl, isInline, removeFromArrayIfPresent, defined, spacesToUnderlines } from './utils-general';
 
 /**
  * @typedef {object} WrapCallbacks
@@ -563,4 +563,25 @@ export function getAllTextNodes(rootNode) {
     nodes.push(node);
   }
   return nodes;
+}
+
+/**
+ * Check if an anchor is existent on the page (in an element ID or the `name` of an `<a>` element).
+ *
+ * @param {string} anchor
+ * @param {boolean} [isWikilink=false] The anchor is part of a wikilink string (e.g. [[#test
+ *   test]]). If so, we will replace spaces with underlines.
+ * @returns {?boolean}
+ */
+export function isExistentAnchor(anchor, isWikilink = false) {
+  if (!anchor) {
+    return null;
+  }
+
+  if (isWikilink) {
+    anchor = spacesToUnderlines(anchor);
+  }
+  const escaped = CSS.escape(anchor);
+
+  return Boolean($(`*[id="${escaped}"], a[name="${escaped}"]`).length);
 }

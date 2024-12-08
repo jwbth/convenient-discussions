@@ -548,7 +548,7 @@ class Autocomplete {
               start: `@[[${pageName}|`,
               end: name.match(/[(,]/) ? `${name}]]` : ']]',
               content: name,
-              skipContentCheck: (data) => !data.start.includes('/'),
+              usePipeTrickCheck: (data) => !data.start.includes('/'),
               cmdModify: function () {
                 this.end += cd.mws('colon-separator', { language: 'content' });
               },

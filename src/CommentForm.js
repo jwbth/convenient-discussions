@@ -19,7 +19,7 @@ import { handleApiReject, parseCode } from './utils-api';
 import { buildEditSummary, defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './utils-general';
 import { createCheckboxField } from './utils-oojs';
 import { escapePipesOutsideLinks, generateTagsRegexp, removeWikiMarkup } from './utils-wikitext';
-import { isCmdModifierPressed, isHtmlConvertibleToWikitext, isInputFocused, keyCombination, wrapDiffBody, wrapHtml } from './utils-window';
+import { isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, isInputFocused, keyCombination, wrapDiffBody, wrapHtml } from './utils-window';
 
 /**
  * Class representing a comment form.
@@ -1013,17 +1013,27 @@ class CommentForm {
           icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-user&image=userAvatar&lang=${lang}&skin=vector`,
           action: {
             type: 'callback',
-            execute: () => {},
+            execute: () => {
+              // Use deprecated window.event to avoid removing and adding a listener
+              this.mention(isCmdModifierPressed(window.event));
+            },
+          },
+        },
+        commentLink: {
+          label: `${cd.s('cf-commentlink-tooltip')}`,
+          type: 'button',
+          icon: cd.g.userDirection === 'ltr' ?
+            `'data:image/svg+xml, %3Csvg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M3 2C2.46957 2 1.96086 2.21071 1.58579 2.58579C1.21071 2.96086 1 3.46957 1 4V20L5 16H17C17.5304 16 18.0391 15.7893 18.4142 15.4142C18.7893 15.0391 19 14.5304 19 14V4C19 3.46957 18.7893 2.96086 18.4142 2.58579C18.0391 2.21071 17.5304 2 17 2H3Z" /%3E%3C/svg%3E'` :
+            `'data:image/svg+xml, %3Csvg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M17 2C17.5304 2 18.0391 2.21071 18.4142 2.58579C18.7893 2.96086 19 3.46957 19 4V20L15 16H3C2.46957 16 1.96086 15.7893 1.58579 15.4142C1.21071 15.0391 1 14.5304 1 14V4C1 3.46957 1.21071 2.96086 1.58579 2.58579C1.96086 2.21071 2.46957 2 3 2H17Z" /%3E%3C/svg%3E'`,
+          action: {
+            type: 'callback',
+            execute: () => {
+              this.insertCommentLink();
+            },
           },
         },
       },
     });
-    this.$element
-      .find('.tool-button[rel="mention"]')
-      .off('click')
-      .on('click', (e) => {
-        this.mention(isCmdModifierPressed(e));
-      });
 
     $input.wikiEditor('addToToolbar', {
       section: 'advanced',
@@ -3514,40 +3524,46 @@ class CommentForm {
    *   the addressee to the beginning of the comment input.
    */
   mention(mentionAddressee) {
+    const range = this.commentInput.getRange();
+
     if (mentionAddressee && this.parentComment) {
       const data = Autocomplete.getConfig('mentions').transform(
         this.parentComment.author.getName()
       );
-      if (data.skipContentCheck(data)) {
+      if (data.usePipeTrickCheck(data)) {
         data.content = '';
       }
       data.cmdModify();
       const text = data.start + data.content + data.end;
-      const range = this.commentInput.getRange();
       this.commentInput
         .selectRange(0)
         .cdInsertContent(text)
+
+        // Restore the selection
         .selectRange(range.from + text.length, range.to + text.length);
+
       return;
     }
 
-    const caretIndex = this.commentInput.getRange().to;
+    const selection = this.commentInput.getValue().substring(range.from, range.to);
+    if (
+      selection &&
+      mw.Title.newFromText(selection) &&
+      !selection.includes('/') &&
+      selection.length <= 85
+    ) {
+      // Valid username
 
-    // Prevent removal of text
-    if (this.commentInput.getRange().from !== caretIndex) {
-      this.commentInput.selectRange(caretIndex);
+      const data = Autocomplete.getConfig('mentions').transform(selection);
+      if (data.usePipeTrickCheck(data)) {
+        data.content = '';
+      }
+      this.commentInput.cdInsertContent(data.start + data.content + data.end);
+
+      return;
     }
 
-    // Insert a space if the preceding text doesn't end with one
-    if (caretIndex && !/\s/.test(this.commentInput.getValue().substr(caretIndex - 1, 1))) {
-      this.commentInput.cdInsertContent(' ');
-    }
-
-    this.autocomplete.tribute.showMenuForCollection(
-      this.commentInput.$input[0],
-      this.autocomplete.tribute.collection
-        .findIndex((collection) => collection.trigger === cd.config.mentionCharacter)
-    );
+    this.insertContentAfter(cd.config.mentionCharacter);
   }
 
   /**
@@ -3576,14 +3592,13 @@ class CommentForm {
     if (selection || allowEmptySelection) {
       const isCommentInputFocused = this.commentInput.$input.is(':focus');
       const range = this.commentInput.getRange();
-      const caretIndex = range.to;
       let rangeStart = Math.min(range.to, range.from);
       let rangeEnd = Math.max(range.to, range.from);
 
       // Reset the selection if the input is not focused to prevent losing text.
       if (!isCommentInputFocused && rangeStart !== rangeEnd) {
-        this.commentInput.selectRange(caretIndex);
-        rangeStart = rangeEnd = caretIndex;
+        this.commentInput.selectRange(range.to);
+        rangeStart = rangeEnd = range.to;
       }
 
       const [pre, post] = typeof cd.config.quoteFormatting === 'function' ?
@@ -3610,6 +3625,47 @@ class CommentForm {
   }
 
   /**
+   * Insert markup for a comment or section link.
+   */
+  insertCommentLink() {
+    const range = this.commentInput.getRange();
+    const selection = this.commentInput.getValue().substring(range.from, range.to);
+    if (selection && (commentRegistry.getByAnyId(selection) || isExistentAnchor(selection, true))) {
+      // Valid ID
+
+      this.commentInput.cdInsertContent(`[[#${selection}]]`);
+
+      return;
+    }
+
+    this.insertContentAfter('[[#');
+  }
+
+  /**
+   * Insert some content after the caret, making sure it's separated with a space and the selected
+   * text is not removed.
+   *
+   * @param {string} content
+   * @private
+   */
+  insertContentAfter(content) {
+    const range = this.commentInput.getRange();
+    const rangeEnd = Math.max(range.to, range.from);
+
+    // Prevent removal of text
+    if (range.from !== range.to) {
+      this.commentInput.selectRange(rangeEnd);
+    }
+
+    // Insert a space if the preceding text doesn't end with one
+    if (rangeEnd && !/\s/.test(this.commentInput.getValue().substr(rangeEnd - 1, 1))) {
+      this.commentInput.cdInsertContent(' ');
+    }
+
+    this.encapsulateSelection({ pre: content });
+  }
+
+  /**
    * Wrap the selected text in the comment input with other text, optionally falling back to the
    * provided value if no text is selected.
    *
@@ -3618,8 +3674,8 @@ class CommentForm {
    * @param {string} [options.peri=''] Fallback value used instead of a selection and selected
    *   afterwards.
    * @param {string} [options.post=''] Text to insert after the caret/selection.
-   * @param {string} [options.replace=false] If there is a selection, replace it with pre, peri,
-   *   post instead of leaving it alone.
+   * @param {string} [options.replace=false] If there is a selection, replace it with `pre`, `peri`,
+   *   `post` instead of leaving it alone.
    * @param {string} [options.selection] Selected text. Use if the selection is outside of the
    *   input.
    * @param {boolean} [options.ownline=false] Put the inserted text on a line of its own.
@@ -3633,24 +3689,24 @@ class CommentForm {
     ownline = false,
   }) {
     const range = this.commentInput.getRange();
-    const selectionStartPos = Math.min(range.from, range.to);
-    const selectionEndPos = Math.max(range.from, range.to);
+    const selectionStartIndex = Math.min(range.from, range.to);
+    const selectionEndIndex = Math.max(range.from, range.to);
     const value = this.commentInput.getValue();
     const addLeadingNewLine = (
       ownline &&
-      !/(^|\n)$/.test(value.slice(0, selectionStartPos)) &&
+      !/(^|\n)$/.test(value.slice(0, selectionStartIndex)) &&
       !/^\n/.test(peri)
     );
     const leadingNewline = addLeadingNewLine ? '\n' : '';
     const addTrailingNewLine = (
       ownline &&
-      !/^\n/.test(value.slice(selectionEndPos)) &&
+      !/^\n/.test(value.slice(selectionEndIndex)) &&
       !/\n$/.test(post)
     );
     const trailingNewline = addTrailingNewLine ? '\n' : '';
-    let periStartPos;
+    let periStartIndex;
     if (!selection && !replace) {
-      periStartPos = selectionStartPos + leadingNewline.length + pre.length;
+      periStartIndex = selectionStartIndex + leadingNewline.length + pre.length;
       selection = value.substring(range.from, range.to);
     } else {
       selection ||= '';
@@ -3672,7 +3728,7 @@ class CommentForm {
 
     this.commentInput.cdInsertContent(text);
     if (!selection && !replace) {
-      this.commentInput.selectRange(periStartPos, periStartPos + peri.length);
+      this.commentInput.selectRange(periStartIndex, periStartIndex + peri.length);
     }
   }
 

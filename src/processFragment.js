@@ -14,7 +14,7 @@ import sectionRegistry from './sectionRegistry';
 import { defined, sleep, underlinesToSpaces } from './utils-general';
 import { formatDateNative } from './utils-timestamp';
 import { removeWikiMarkup } from './utils-wikitext';
-import { wrapHtml } from './utils-window';
+import { isExistentAnchor, wrapHtml } from './utils-window';
 
 let decodedValue;
 let date;
@@ -69,19 +69,20 @@ export default async function processFragment() {
   }
 
   if (decodedValue && !cd.page.isArchive()) {
-    const escapedValue = CSS.escape(value);
-    const escapedDecodedValue = decodedValue && CSS.escape(decodedValue);
-    const isTargetFound = (
-      comment ||
-      cd.config.idleFragments.some((regexp) => decodedValue.match(regexp)) ||
+    if (
+      // Try to find the target
+      !(
+        comment ||
+        cd.config.idleFragments.some((regexp) => decodedValue.match(regexp)) ||
 
-      // `/media/` is from MediaViewer, `noticeApplied` is from RedWarn
-      /^\/media\/|^noticeApplied-|^h-/.test(decodedValue) ||
+        // `/media/` is from MediaViewer, `noticeApplied` is from RedWarn
+        /^\/media\/|^noticeApplied-|^h-/.test(decodedValue) ||
 
-      $(':target').length ||
-      $(`*[id="${escapedDecodedValue}"], a[name="${escapedDecodedValue}"], *[id="${escapedValue}"], a[name="${escapedValue}"]`).length
-    );
-    if (!isTargetFound) {
+        $(':target').length ||
+        isExistentAnchor(value) ||
+        isExistentAnchor(decodedValue)
+      )
+    ) {
       await maybeNotifyNotFound();
     }
   }
