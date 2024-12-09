@@ -365,6 +365,10 @@ class Thread {
     this.navFromX = fromX;
     this.navGrab = grab;
 
+    delete this.navScrolledTo;
+    this.navDeltaForDelta = 0;
+    this.navCurrentThreadEscapeDirection = 0;
+
     $(document)
       .on('mousemove.cd', this.documentMouseMoveHandler)
       .one('mouseup.cd mousedown.cd', this.quitNavModeHandler);
@@ -381,12 +385,13 @@ class Thread {
    */
   handleDocumentMouseMove(event) {
     if (!this.navMode) {
-      // This implies `this.navFromX !== undefined`, .navFromX set in .handleClickAreaMouseDown()
+      // This implies `this.navFromX !== undefined`; .navFromX is set in .handleClickAreaMouseDown()
 
       if (this.hasMouseMoved(event)) {
         $(document).off('mousemove.cd', this.documentMouseMoveHandler);
         this.enterNavMode(this.navFromX, this.navFromY, true);
       }
+
       return;
     }
 
@@ -423,41 +428,66 @@ class Thread {
    */
   getNavTarget(delta) {
     const stepSize = 80;
+    const clearanceSize = 15;
 
     if (this.navGrab) {
       delta *= -1;
     }
 
-    if (!this.navInitialDirection) {
-      if (-15 < delta && delta < 15) {
-        this.updateCursor(0);
-        return null;
-      }
+    /*
+      After a button is pressed, the mouse should leave the initial range to navigate to a comment.
+      If clearanceSize is 15, it's -15...15. Once it is left, if stepSize is 100, the ranges of
+      position deltas for scroll steps ("windows") become (by setting this.navDeltaForDelta to 15 or
+      -15):
 
-      if (Math.abs(delta / stepSize) < 1) {
-        if (delta < 0) {
-          this.updateCursor(-1);
-          return this.rootComment;
-        }
+      * if scrolled up: -225...-115 (previous thread), -115...-15 (current thread), -15...85 (next
+        thread / end of current thread);
+      * if scrolled down: -85...15 (previous thread), 15...115 (current thread), 115...225 (next
+        thread / end of current thread).
 
-        this.updateCursor(1);
-        return this.lastComment;
-      }
+      This way the windows are even and the user experience is smooth. Also, once the target comment
+      is one outside of the thread we started with, we stop scrolling to the end of the current
+      thread and start switching between root comments of threads (unless it's the last thread in
+      the sequence). This is to satisfy two usages: navigating to the start/end of the current
+      thread, and navigating between threads. Compromises like this are often not good, but I'm not
+      currently sure whether we should keep only one usage and which one.
+     */
+
+    if (!this.navCurrentThreadEscapeDirection && -clearanceSize < delta && delta < clearanceSize) {
+      this.updateCursor(0);
+
+      return null;
     }
 
-    const steps = (
-      Math.sign(delta) *
-      (
-        Math.floor(Math.abs(delta / stepSize)) +
-        Number(Math.sign(delta) === -this.navInitialDirection
-      ))
-    );
+    const adjustedDelta = delta - this.navDeltaForDelta;
+    const direction = Math.sign(adjustedDelta);
+
+    // Shift windows (see above: "Initially, ..."). 0.5 so that adjustedDelta is never 0, thus "in
+    // between" threads.
+    this.navDeltaForDelta ||= direction * (clearanceSize - 0.5);
+
+    const absoluteSteps = Math.abs(adjustedDelta / stepSize);
+    if (!this.navCurrentThreadEscapeDirection && absoluteSteps < 1) {
+      if (adjustedDelta < 0) {
+        this.updateCursor(-1);
+
+        return this.rootComment;
+      }
+
+      this.updateCursor(1);
+
+      return this.lastComment;
+    }
+
+    const steps =
+      direction *
+      Math[direction === -this.navCurrentThreadEscapeDirection ? 'ceil' : 'floor'](absoluteSteps);
     const comments = commentRegistry.getAll();
     let target = this.rootComment;
     for (
-      let i = this.rootComment.index + Math.sign(delta), step = 0;
+      let i = this.rootComment.index + direction, step = 0;
       i >= 0 && i < comments.length && step !== steps;
-      i += Math.sign(delta)
+      i += direction
     ) {
       const comment = comments[i];
       if (
@@ -471,22 +501,18 @@ class Thread {
         )
       ) {
         target = comment;
-        step += Math.sign(delta);
+        step += direction;
       } else if (steps > 0 && comment === target.thread?.lastComment) {
         // Use the last comment of the last sibling thread as a fallback when scrolling down
         target = comment;
       }
     }
 
-    if (target !== this.rootComment && !this.navInitialDirection) {
-      // If we scrolled to another thread once, don't scroll to the last comment of this thread
-      // again and shift the pixels so that 0 steps is now 0...stepSize or 0...-stepSize and not
-      // -stepSize...stepSize (so that the mouse is moved evenly and not "100 pixels, 100 pixels,
-      // 200 pixels, 100 pixels, ...").
-      this.navInitialDirection = Math.sign(steps);
-    }
-
     this.updateCursor(Math.sign(steps));
+
+    if (!this.navCurrentThreadEscapeDirection && target !== this.rootComment) {
+      this.navCurrentThreadEscapeDirection = Math.sign(steps);
+    }
 
     return target;
   }
@@ -500,9 +526,6 @@ class Thread {
     this.constructor.navMode = this.navMode = false;
     delete this.navFromY;
     delete this.navFromX;
-    delete this.navScrolledTo;
-    delete this.navInitialDirection;
-    delete this.navGrab;
     $(document)
       .off('mousemove.cd', this.documentMouseMoveHandler)
       .off('mouseup.cd mousedown.cd', this.quitNavModeHandler);
