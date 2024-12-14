@@ -262,13 +262,15 @@ class Section extends SectionSkeleton {
       this.lastElementInFirstChunk.nextElementSibling
     );
 
-    /**
-     * "Add subsection to <i>topic</i>" button at the end of the section (under the reply button of
-     * the last descendant section; shows up on hover of the reply button).
-     *
-     * @type {Button|undefined}
-     */
-    baseSection.addSubsectionButtonLastDescendant = lastDescendantButton;
+    if (lastDescendantButton) {
+      /**
+       * "Add subsection to <i>topic</i>" button at the end of the section (under the reply button of
+       * the last descendant section; shows up on hover of the reply button).
+       *
+       * @type {Button|undefined}
+       */
+      baseSection.addSubsectionButtonLastDescendant = lastDescendantButton;
+    }
 
     /**
      * "Add subsection to <i>section</i>" button at the end of the first chunk of the section (shows
