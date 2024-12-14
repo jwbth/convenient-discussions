@@ -352,6 +352,37 @@ export async function getNativePromiseState(promise) {
 }
 
 /**
+ * Check if the argument is a primitive or convertible to a primitive.
+ *
+ * @param {*} val
+ * @returns {boolean}
+ */
+function isConvertibleToPrimitiveValue(val) {
+  return (
+    val === null ||
+    typeof val !== 'object' ||
+    (
+      val instanceof RegExp ||
+      val instanceof Date ||
+
+      // This can be used in the worker context, where Node is an object and Worker is undefined.
+      (typeof Node === 'function' && val instanceof Node) ||
+      (typeof Worker === 'function' && val instanceof Worker)
+    )
+  );
+}
+
+/**
+ * Convert an object to a primitive if possible.
+ *
+ * @param {*} val
+ * @returns {*}
+ */
+function toPrimitive(val) {
+  return val instanceof RegExp || val instanceof Date ? val.toString() : val;
+}
+
+/**
  * Check if two objects are identical by value. Doesn't handle complex cases. `undefined` values are
  * treated as unexistent (this helps to compare values retrieved from the local storage as JSON:
  * `JSON.stringify()` removes all `undefined` values as well).
@@ -361,32 +392,17 @@ export async function getNativePromiseState(promise) {
  * @returns {boolean}
  */
 export function areObjectsEqual(object1, object2) {
-  const isMultipartObject = (val) => (
-    val !== null &&
-    typeof val === 'object' &&
-    !(
-      val instanceof RegExp ||
-      val instanceof Date ||
-
-      // This can be used in the worker context, where Node is an object and Worker is undefined.
-      (typeof Node === 'function' && val instanceof Node) ||
-      (typeof Worker === 'function' && val instanceof Worker)
-    )
-  );
-  const toPrimitiveValue = (val) => (
-    val instanceof RegExp || val instanceof Date ?
-      val.toString() :
-      val
-  );
-
-  if (!isMultipartObject(object1) || !isMultipartObject(object2)) {
-    return toPrimitiveValue(object1) === toPrimitiveValue(object2);
+  if (isConvertibleToPrimitiveValue(object1) || isConvertibleToPrimitiveValue(object2)) {
+    return toPrimitive(object1) === toPrimitive(object2);
   }
 
   const keys1 = Object.keys(object1).filter((key) => object1[key] !== undefined);
   const keys2 = Object.keys(object2).filter((key) => object2[key] !== undefined);
 
   return (
+    // To avoid results where {} is equal to `new Map(['a', 1])`
+    object1.constructor === object2.constructor &&
+
     keys1.length === keys2.length &&
     keys1.every((key) => areObjectsEqual(object1[key], object2[key]))
   );
