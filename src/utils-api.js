@@ -37,6 +37,10 @@ export function handleApiReject(code, resp) {
       type: 'api',
       code: 'error',
       apiResp: resp,
+
+      // `error` or `errors` is chosen by the API depending on `errorformat` being ''html'` in
+      // requests.
+      apiError: resp?.error?.code || resp?.errors?.[0].code,
     });
 }
 
@@ -299,12 +303,12 @@ export async function saveGlobalOption(name, value) {
 
   try {
     await saveOptions({ [name]: value }, true);
-  } catch (e) {
+  } catch (error) {
     // The site doesn't support global preferences.
-    if (e instanceof CdError && e.data.apiResp?.error.code === 'badvalue') {
+    if (error instanceof CdError && error.data.apiError === 'badvalue') {
       await saveLocalOption(name, value);
     } else {
-      throw e;
+      throw error;
     }
   }
 }

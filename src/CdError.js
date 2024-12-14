@@ -20,8 +20,8 @@ class CdError extends Error {
       if (data.code) {
         message += `/${data.code}`;
       }
-      if (data.apiResp?.error?.code) {
-        message += `/${data.apiResp.error.code}`;
+      if (data.apiError) {
+        message += `/${data.apiError}`;
       }
     } else {
       message = '';
