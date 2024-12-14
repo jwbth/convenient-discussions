@@ -392,7 +392,7 @@ const globalProperties = {
    * @default []
    * @memberof convenientDiscussions.g
    */
-  noSignatureClasses: ['mw-notalk', 'cd-moveMark'],
+  noSignatureClasses: ['mw-notalk', 'ext-discussiontools-emptystate', 'cd-moveMark'],
 
   /**
    * Names of elements that shouldn't be the first or last highlightable element. CD wraps these
