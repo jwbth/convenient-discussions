@@ -1189,8 +1189,13 @@ export default {
    *
    * @private
    */
-  onboardOntoToggleChildThreads() {
+  async onboardOntoToggleChildThreads() {
     if (settings.get('toggleChildThreads-onboarded') || this.toggleChildThreadsPopup) return;
+
+    // Wait for jumpy stuff on the page to jump to prevent repositioning (e.g. the subscribe
+    // button). This is only to mitigate; too tricky to track all possible events here, and it's not
+    // critical.
+    await sleep(1000);
 
     const suitableElement = this.items.find((c) => c.toggleChildThreadsButton && c.getOffset())
       ?.toggleChildThreadsButton
@@ -1229,7 +1234,7 @@ export default {
     this.toggleChildThreadsPopup.on('closing', () => {
       settings.saveSettingOnTheFly('toggleChildThreads-onboarded', true);
     });
-    controller.on('startReload', () => {
+    controller.once('startReload', () => {
       this.toggleChildThreadsPopup.$element.remove();
       this.toggleChildThreadsPopup = undefined;
     });
