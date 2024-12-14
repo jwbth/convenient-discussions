@@ -184,6 +184,35 @@ export default {
     /^Проект:Кандидаты в добротные статьи\//,
   ],
 
+  archivingConfig: {
+    subpages: ['Архивация'],
+    areArchivesSorted: true,
+    templates: [
+      {
+        name: 'User:ClaymoreBot/Архивация',
+        relativePathParam: ['формат', 'страница'],
+        absolutePathPair: ['абсолютный путь', /^да$/],
+        replacements: new Map([
+          [
+            /%\(год\)/,
+            ({ date }, match) =>
+              date === null ? match[0] : String(date.getFullYear()).padStart(Number(2), '0')
+          ],
+          [
+            /%\(месяц\)/,
+            ({ date }, match) =>
+              date === null ? match[0] : String(date.getMonth() + 1).padStart(Number(2), '0')
+          ],
+          [
+            /%\(полугодие\)/,
+            ({ date }, match) =>
+              date === null ? match[0] : String(date.getMonth() < 6 ? 1 : 2)
+          ],
+        ]),
+      },
+    ]
+  },
+
   idleFragments: [/^Преамбула$/],
 
   defaultIndentationChar: '*',

@@ -389,6 +389,7 @@
 	"msd-move": "Label of the button in the move topic dialog.\n\n{{identical|Move}}",
 	"msd-targetpage": "Label of the page name input in the move topic dialog.",
 	"msd-keeplink": "Label of the checkbox in the move topic dialog.",
+	"msd-chronologicalorder": "Label of the checkbox in the move topic dialog.",
 	"msd-summaryending": "Label of the edit summary input in the move topic dialog.",
 	"msd-error-wrongpage": "Error message that appears in the move topic dialog. It means the page name is valid but not allowed here (compare to {{msg-wm|Convenient-discussions-msd-error-invalidpagename}}).",
 	"msd-error-sourcepagedeleted": "Error message that appears in the move topic dialog.",

@@ -647,71 +647,6 @@ export class Page {
   }
 
   /**
-   * Enrich the page instance with the properties regarding whether new topics go on top on this
-   * page (based on various factors) and, if new topics are on top, the start index of the first
-   * section.
-   *
-   * @throws {CdError}
-   */
-  guessNewTopicPlacement() {
-    if (this.code === undefined) {
-      throw new CdError('Can\'t analyze the new topics placement: Page#code is undefined.');
-    }
-
-    let areNewTopicsOnTop = cd.config.areNewTopicsOnTop?.(this.name, this.code) || null;
-
-    const adjustedCode = maskDistractingCode(this.code);
-    const sectionHeadingRegexp = /^==[^=].*?==[ \t\x01\x02]*\n/gm;
-    let firstSectionStartIndex;
-    let sectionHeadingMatch;
-
-    // Search for the first section's index. If areNewTopicsOnTop is false, we don't need it.
-    if (areNewTopicsOnTop !== false) {
-      sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedCode);
-      firstSectionStartIndex = sectionHeadingMatch?.index;
-      sectionHeadingRegexp.lastIndex = 0;
-    }
-
-    if (areNewTopicsOnTop === null) {
-      // Detect the topic order: newest first or newest last.
-      let previousDate;
-      let difference = 0;
-      while ((sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedCode))) {
-        const timestamp = findFirstTimestamp(this.code.slice(sectionHeadingMatch.index));
-        const { date } = timestamp && parseTimestamp(timestamp) || {};
-        if (date) {
-          if (previousDate) {
-            difference += date > previousDate ? -1 : 1;
-          }
-          previousDate = date;
-        }
-      }
-      areNewTopicsOnTop = difference === 0 ? this.namespaceId % 2 === 0 : difference > 0;
-    }
-
-    /**
-     * Whether new topics go on top on this page. Filled upon running
-     * {@link Page#guessNewTopicPlacement}.
-     *
-     * @name areNewTopicsOnTop
-     * @type {boolean|undefined}
-     * @memberof module:pageRegistry.Page
-     * @instance
-     */
-
-    /**
-     * The start index of the first section, if new topics are on top on this page. Filled upon
-     * running {@link Page#guessNewTopicPlacement}.
-     *
-     * @name firstSectionStartIndex
-     * @type {number|undefined}
-     * @memberof module:pageRegistry.Page
-     * @instance
-     */
-    Object.assign(this, { areNewTopicsOnTop, firstSectionStartIndex });
-  }
-
-  /**
    * {@link https://www.mediawiki.org/wiki/Manual:Purge Purge cache} of the page.
    */
   async purge() {
@@ -947,6 +882,61 @@ export class Page {
   }
 
   /**
+   * Get the code of the first translusion of a certain template.
+   *
+   * @param {Page[]} pages Template pages
+   * @returns {Map<Page, object>}
+   */
+  async getFirstTemplateTransclusion(pages) {
+    let data;
+    try {
+      data = await controller.getApi().post({
+        action: 'parse',
+        prop: 'parsetree',
+        page: this.name,
+      }).catch(handleApiReject);
+    } catch (error) {
+      if (
+        error instanceof CdError &&
+        ['missingtitle', 'notwikitext'].includes(error.data.apiError)
+      ) {
+        return new Map();
+      } else {
+        throw error;
+      }
+    }
+
+    const $templates = $($.parseXML(data.parse.parsetree)).find('template');
+
+    return pages.reduce((map, page) => {
+      const parameters = $templates
+        // Find the first <template> with a <title> child equal to the name
+        .filter((_, template) =>
+          pageRegistry.get($(template).children('title').text().trim()) === page
+        )
+        .first()
+        .find('comment')
+          .remove()
+        .end()
+
+        // Process all <part> children to extract <name> and <value>
+        .children('part')
+        .get()
+        ?.reduce((obj, part) => {
+          const $name = $(part).children('name');
+          const value = $(part).children('value').text().trim();
+          obj[$name.text().trim() || $name.attr('index')] = value;
+          return obj;
+        }, {});
+      if (parameters) {
+        map.set(page, parameters);
+      }
+
+      return map;
+    }, new Map());
+  }
+
+  /**
    * Set some map object variables related to archive pages.
    *
    * @private
@@ -1061,6 +1051,123 @@ class PageSource {
     }
 
     return { contextCode, commentCode };
+  }
+
+  /**
+   * Enrich the page instance with the properties regarding whether new topics go on top on this
+   * page (based on various factors) and, if new topics are on top, the start index of the first
+   * section.
+   *
+   * @throws {CdError}
+   * @private
+   */
+  guessNewTopicPlacement() {
+    const page = this.page;
+
+    if (page.code === undefined) {
+      throw new CdError('Can\'t analyze the new topics placement: Page#code is undefined.');
+    }
+
+    let areNewTopicsOnTop = cd.config.areNewTopicsOnTop?.(page.name, page.code) || null;
+
+    const adjustedCode = maskDistractingCode(page.code);
+    const sectionHeadingRegexp = this.constructor.getTopicHeadingRegexp();
+    let sectionHeadingMatch;
+    let firstSectionStartIndex;
+
+    // Search for the first section's index. If areNewTopicsOnTop is false, we don't need it.
+    if (areNewTopicsOnTop !== false) {
+      sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedCode);
+      firstSectionStartIndex = sectionHeadingMatch?.index;
+      sectionHeadingRegexp.lastIndex = 0;
+    }
+
+    if (areNewTopicsOnTop === null) {
+      // Detect the topic order: newest first or newest last.
+      let previousDate;
+      let difference = 0;
+      while ((sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedCode))) {
+        const timestamp = findFirstTimestamp(page.code.slice(sectionHeadingMatch.index));
+        const { date } = timestamp && parseTimestamp(timestamp) || {};
+        if (date) {
+          if (previousDate) {
+            difference += date > previousDate ? -1 : 1;
+          }
+          previousDate = date;
+        }
+      }
+      areNewTopicsOnTop = difference === 0 && mw.config.get('wgServerName') === 'ru.wikipedia.org' ?
+        page.namespaceId % 2 === 0 :
+        difference > 0;
+    }
+
+    /**
+     * Whether new topics go on top on this page. Filled upon running
+     * {@link PageSource#guessNewTopicPlacement}.
+     *
+     * @name areNewTopicsOnTop
+     * @type {boolean|undefined}
+     * @memberof module:pageRegistry~PageSource
+     * @instance
+     */
+
+    /**
+     * The start index of the first section, if new topics are on top on this page. Filled upon
+     * running {@link PageSource#guessNewTopicPlacement}.
+     *
+     * @name firstSectionStartIndex
+     * @type {number|undefined}
+     * @memberof module:pageRegistry~PageSource
+     * @instance
+     */
+    Object.assign(page, { areNewTopicsOnTop, firstSectionStartIndex });
+  }
+
+  /**
+   * Determine an offset in the code to insert a new/moved section into. If `referenceDate` is
+   * specified, will take into account chronological order.
+   *
+   * @param {Date} [referenceDate=new Date()]
+   * @returns {?number}
+   */
+  findProperPlaceForSection(referenceDate = new Date()) {
+    this.guessNewTopicPlacement();
+
+    const page = this.page;
+
+    if (!referenceDate) {
+      return this.areNewTopicsOnTop ? this.firstSectionStartIndex : page.code.length;
+    }
+
+    const adjustedCode = maskDistractingCode(page.code);
+    const sectionHeadingRegexp = this.constructor.getTopicHeadingRegexp();
+    let sectionHeadingMatch;
+    const sections = [];
+    while ((sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedCode))) {
+      const timestamp = findFirstTimestamp(page.code.slice(sectionHeadingMatch.index));
+      const { date } = timestamp && parseTimestamp(timestamp) || {};
+      sections.push({
+        date,
+        index: sectionHeadingMatch.index,
+      });
+    }
+
+    const properPlaceIndex = sections.find(({ date }) =>
+      // If `date` is `undefined`, both comparisons will be false
+      (page.areNewTopicsOnTop && date < referenceDate) ||
+      (!page.areNewTopicsOnTop && date > referenceDate)
+    )?.index;
+
+    return properPlaceIndex || page.code.length;
+  }
+
+  /**
+   * Get the regexp for traversing topic headings.
+   *
+   * @returns {RegExp}
+   */
+  static getTopicHeadingRegexp() {
+    return /^==[^=].*?==[ \t\x01\x02]*\n/gm;
   }
 }
 

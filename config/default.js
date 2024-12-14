@@ -211,6 +211,70 @@ export default {
   pagesWithoutArchives: [],
 
   /**
+   * Object that describes the configuration parameters of an archiving template like
+   * https://en.wikipedia.org/wiki/User:MiszaBot/config.
+   *
+   * @typedef {object} ArchivingTemplateEntry
+   * @property {string} name Template name.
+   * @property {string} [configSubpage] If the configuration
+   * @property {string|string[]} [pathParam] Names of the parameter(s) that store(s) absolute paths
+   *   to the archive. Either `pathParam` or `relativePathParam` needs to be set.
+   * @property {string|string[]} [relativePathParam] Names of the parameter(s) that store(s)
+   *   relative paths, i.e. subpath or subpage names. The full name of the archive is supposed to be
+   *   "<page name>/<relativePathParam>". Either `pathParam` or `relativePathParam` needs to be set.
+   * @property {string} counterParam Name of the parameter that stores the current counter value
+   *   (when archiving using it).
+   * @property {[string, RegExp]} absolutePathPair A tuple with the first element: the name of the
+   *   parameter that turns `relativePathParam` into a parameter that works like `pathParam` (when
+   *   archiving using it), and the second element: a regexp that, if matches the value, enables
+   *   that parameter (e.g. `['absolute_path', /^yes$/]`).
+   * @property {Map<RegExp, ({ counter: string | null, date: Date | null }, string[]) => string>}
+   *   [replacements]
+   *   {@https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map Map}
+   *   of replacements where keys are RegExps and values are functions that take a data object and
+   *   return a replacement string.
+   * @property {boolean} [areArchivesSorted=false] Set to `true` if the archived topic should be
+   *   placed so that topics are sorted by date (e.g. in between other topics).
+   */
+
+  /**
+   * Object that describes archiving configuration, including templates with configuration for
+   * automatic archiving, subpages, and sorting settings.
+   *
+   * @typedef {object} ArchivingConfig
+   * @property {string} [configSubpage]
+   * @property {ArchivingTemplateEntry[]} [templates]
+   */
+
+  /**
+   * Collection of templates used for auto-archiving, like
+   * https://en.wikipedia.org/wiki/User:MiszaBot/config.
+   *
+   * @type {ArchivingConfig}
+   * @default {}
+   * @example
+   * {
+   *   templates: [
+   *     {
+   *       name: 'User:MiszaBot/config',
+   *       pathParam: 'archive',
+   *       counterParam: 'counter',
+   *       replacements: new Map([
+   *         [/%\(counter\)(0\d)?d/, ({ counter }, match) => {
+   *           if (counter === null) {
+   *             return match[0];
+   *           }
+   *           const padding = match[1] ? match[1].slice(1) : '';
+   *           return padding ? String(counter).padStart(Number(padding), '0') : String(counter);
+   *         }],
+   *       ]),
+   *     },
+   *   ],
+   * }
+   */
+  archivingConfig: {},
+
+  /**
    * Regexps for fragments that shouldn't trigger the "Section not found" notification.
    *
    * @type {RegExp[]}

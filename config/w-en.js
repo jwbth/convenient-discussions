@@ -98,6 +98,65 @@ export default {
     /\/Archive(?![a-rt-z])/,
   ],
 
+  archivingConfig: {
+    templates: [
+      {
+        name: 'User:MiszaBot/config',
+        pathParam: 'archive',
+        counterParam: 'counter',
+        replacements: new Map([
+          [/%\(counter\)(0\d)?d/, ({ counter }, match) => {
+            if (counter === null) {
+              return match[0];
+            }
+            const padding = match[1] ? match[1].slice(1) : '';
+            return padding ? String(counter).padStart(Number(padding), '0') : String(counter);
+          }],
+
+          [/%\(year\)(0\d)?d/, ({ date }, match) => {
+            if (date === null) {
+              return match[0];
+            }
+            const padding = match[1] ? match[1].slice(1) : '';
+            const year = date.getFullYear();
+            return padding ? String(year).padStart(Number(padding), '0') : String(year);
+          }],
+
+          [/%\(month\)(0\d)?d/, ({ date }, match) => {
+            if (date === null) {
+              return match[0];
+            }
+            const padding = match[1] ? match[1].slice(1) : '';
+            const month = date.getMonth() + 1;
+            return padding ? String(month).padStart(Number(padding), '0') : String(month);
+          }],
+
+          [/%\(monthname\)s/, ({ date }, match) => {
+            if (date === null) {
+              return match[0];
+            }
+            const monthNames = [
+              'January', 'February', 'March', 'April', 'May', 'June',
+              'July', 'August', 'September', 'October', 'November', 'December'
+            ];
+            return monthNames[date.getMonth()];
+          }],
+
+          [/%\(monthnameshort\)s/, ({ date }, match) => {
+            if (date === null) {
+              return match[0];
+            }
+            const monthNamesShort = [
+              'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+              'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+            ];
+            return monthNamesShort[date.getMonth()];
+          }]
+        ]),
+      },
+    ],
+  },
+
   /*pageWhitelist: [
     /^Wikipedia:/,
     /^Help:/,

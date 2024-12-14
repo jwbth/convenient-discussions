@@ -573,6 +573,16 @@ export function getLastArrayElementOrSelf(value) {
 }
 
 /**
+ * If the argument is an array, return it. Otherwise, return an array containing the argument.
+ *
+ * @param {*|*[]} value
+ * @returns {*[]}
+ */
+export function ensureArray(value) {
+  return Array.isArray(value) ? value : [value];
+}
+
+/**
  * Check whether the provided node is a heading node (`.mw-heading` or `<h1>` - `<h6>`).
  *
  * @param {Node} node
@@ -829,4 +839,16 @@ export function getQueryParamBooleanValue(param) {
     return false;
   }
   return null;
+}
+
+/**
+ * Merge
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map Map}
+ * objects.
+ *
+ * @param {Map[]} maps
+ * @returns {Map}
+ */
+export function mergeMaps(maps) {
+  return new Map(maps.flatMap((map) => [...map]));
 }

@@ -6,7 +6,7 @@ import TextInputWidget from './TextInputWidget';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
-import { buildEditSummary, sleep } from './utils-general';
+import { buildEditSummary, definedAndNotNull, mergeMaps, ensureArray, sleep } from './utils-general';
 import { createCheckboxField, tweakUserOoUiClass } from './utils-oojs';
 import { encodeWikilink, endWithTwoNewlines, findFirstTimestamp } from './utils-wikitext';
 import { wrapHtml } from './utils-window';
@@ -69,9 +69,26 @@ class MoveSectionDialog extends ProcessDialog {
 
     this.pushPending();
 
+    const sourcePage = this.section.getSourcePage();
+    const archivingConfigPages = [];
+    if (sourcePage.canHaveArchives()) {
+      archivingConfigPages.push(
+        sourcePage,
+        ...(cd.config.archivingConfig.subpages || [])
+          .map((subpage) => pageRegistry.get(sourcePage.name + '/' + subpage))
+          .filter(definedAndNotNull)
+      );
+    }
+    const templatePages = (cd.config.archivingConfig.templates || [])
+      .map((template) => pageRegistry.get(template.name))
+      .filter(definedAndNotNull);
+
     this.initRequests = [
-      this.section.getSourcePage().loadCode(),
+      sourcePage.loadCode(),
       mw.loader.using('mediawiki.widgets'),
+      Promise.all(
+        archivingConfigPages.map((page) => page.getFirstTemplateTransclusion(templatePages))
+      ).then((transclusions) => this.guessArchiveConfig(mergeMaps(transclusions)), () => {}),
     ];
 
     this.loadingPanel = new OO.ui.PanelLayout({
@@ -125,8 +142,9 @@ class MoveSectionDialog extends ProcessDialog {
    */
   getReadyProcess(data) {
     return super.getReadyProcess(data).next(async () => {
+      let archiveConfig;
       try {
-        await Promise.all(this.initRequests);
+        [, , archiveConfig] = await Promise.all(this.initRequests);
       } catch (e) {
         this.abort(cd.sParse('cf-error-getpagecode'), false);
         return;
@@ -146,7 +164,6 @@ class MoveSectionDialog extends ProcessDialog {
         }
         return;
       }
-      const sectionCode = this.section.source.code;
 
       this.controls = {};
       this.controls.title = {},
@@ -175,14 +192,17 @@ class MoveSectionDialog extends ProcessDialog {
           }
         });
 
-      const archivePrefix = cd.page.isArchive() ? undefined : cd.page.getArchivePrefix(true);
-      if (archivePrefix) {
+      const archivePath =
+        archiveConfig?.path ||
+        (cd.page.isArchive() ? undefined : cd.page.getArchivePrefix(true));
+      if (archivePath) {
         this.insertArchivePageButton = new PseudoLink({
-          label: archivePrefix,
+          label: archivePath,
           input: this.controls.title.input,
         });
         $(this.insertArchivePageButton.buttonElement).on('click', () => {
           this.controls.keepLink?.input.setSelected(false);
+          this.controls.chronologicalOrder.input.setSelected(archiveConfig?.isSorted || false);
         });
       }
 
@@ -193,6 +213,11 @@ class MoveSectionDialog extends ProcessDialog {
           label: cd.s('msd-keeplink'),
         });
       }
+      this.controls.chronologicalOrder = createCheckboxField({
+        value: 'chronoologicalOrder',
+        selected: false,
+        label: cd.s('msd-chronologicalorder'),
+      });
 
       this.controls.summaryEnding = {};
       this.controls.summaryEnding.input = new TextInputWidget({
@@ -213,12 +238,7 @@ class MoveSectionDialog extends ProcessDialog {
         this.controls.title.field.$element,
         this.insertArchivePageButton?.element,
         this.controls.keepLink?.field.$element,
-        $('<pre>')
-          .addClass('cd-dialog-moveSection-code')
-          .text(sectionCode.slice(0, 300) + (sectionCode.length >= 300 ? '...' : '')),
-        $('<p>')
-          .addClass('cd-dialog-moveSection-code-note')
-          .text(cd.s('msd-bottom')),
+        this.controls.chronologicalOrder.field.$element,
         this.controls.summaryEnding.field.$element,
       );
 
@@ -391,10 +411,13 @@ class MoveSectionDialog extends ProcessDialog {
       }
     }
 
-    targetPage.guessNewTopicPlacement();
-
     return {
       page: targetPage,
+      targetIndex: targetPage.source.findProperPlaceForSection(
+        this.controls.chronologicalOrder.input.isSelected()
+          ? this.section.oldestComment?.date
+          : undefined
+      ),
       sectionWikilink: `${targetPage.realName}#${encodeWikilink(this.section.headline)}`,
     };
   }
@@ -437,27 +460,16 @@ class MoveSectionDialog extends ProcessDialog {
       codeEnding
     );
 
-    let newCode;
-    const pageCode = target.page.code;
-    if (target.page.areNewTopicsOnTop) {
-      // If the page has no sections, we add to the bottom.
-      const firstSectionStartIndex = target.page.firstSectionStartIndex ?? pageCode.length;
-
-      newCode = (
-        endWithTwoNewlines(pageCode.slice(0, firstSectionStartIndex)) +
-        newSectionCode +
-        pageCode.slice(firstSectionStartIndex)
-      );
-    } else {
-      newCode = pageCode + (pageCode ? '\n' : '') + newSectionCode;
-    }
-
     let summaryEnding = this.controls.summaryEnding.input.getValue();
     summaryEnding &&= cd.mws('colon-separator', { language: 'content' }) + summaryEnding;
 
     try {
       await target.page.edit({
-        text: newCode,
+        text: (
+          endWithTwoNewlines(target.page.code.slice(0, target.targetIndex)) +
+          newSectionCode +
+          target.page.code.slice(target.targetIndex)
+        ),
         summary: buildEditSummary({
           text: cd.s('es-move-from', source.sectionWikilink) + summaryEnding,
           section: this.section.headline,
@@ -583,6 +595,74 @@ class MoveSectionDialog extends ProcessDialog {
 
     this.updateSize();
     this.popPending();
+  }
+
+  /**
+   * Provided parameters of archiving templates present on the page, guess the archive path and
+   * other configuration for the section.
+   *
+   * @param {Map<Page, object>} templateToParameters
+   * @returns {?object}
+   */
+  guessArchiveConfig(templateToParameters) {
+    return Array.from(templateToParameters).reduce((config, [page, parameters]) => {
+      if (config) {
+        return config;
+      }
+
+      const templateConfig = (cd.config.archivingConfig.templates || []).find(
+        (template) => pageRegistry.get(template.name) === page
+      );
+
+      /**
+       * Find a parameter mentioned in the template config in the list of actual template
+       * parameters, do the regexp transformations, and return the result.
+       *
+       * @param {string} prop
+       * @returns {?string}
+       */
+      const findPresentParamAndReplaceAll = (prop) => {
+        const replaceAll = (value) =>
+          Array.from(templateConfig.replacements).reduce(
+            (v, [regexp, replacer]) => {
+              return v.replace(regexp, (...match) =>
+                replacer(
+                  {
+                    counter: parameters[templateConfig.counterParam] || null,
+                    date: this.section.oldestComment?.date || null,
+                  },
+
+                  // Basically get all string matches. Use a complex expression in case JavaScript
+                  // evolves in the future to add more arguments.
+                  match.slice(0, match.findIndex((el) => typeof el !== 'string'))
+                ),
+              );
+            },
+            value
+          );
+
+        const pathParams = ensureArray(templateConfig[prop]);
+        const presentPathParam = pathParams.find((param) => parameters[param]);
+
+        return presentPathParam ? replaceAll(parameters[presentPathParam]) : null;
+      };
+
+      let path = findPresentParamAndReplaceAll('pathParam');
+      if (!path) {
+        path = findPresentParamAndReplaceAll('relativePathParam');
+        if (path) {
+          const [absolutePairKey, absolutePairValue] = templateConfig.absolutePathPair || [];
+          if (!(absolutePairKey && parameters[absolutePairKey]?.match(absolutePairValue))) {
+            path = mw.config.get('wgPageName') + '/' + path;
+          }
+        }
+      }
+
+      return {
+        path,
+        isSorted: cd.config.archivingConfig.areArchivesSorted || false,
+      };
+    }, null);
   }
 }
 

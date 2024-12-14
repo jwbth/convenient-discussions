@@ -407,6 +407,7 @@
 	"msd-move": "Move",
 	"msd-targetpage": "Enter the name of the discussion page to move the topic to:",
 	"msd-keeplink": "Leave a link to the new location",
+	"msd-chronologicalorder": "Choose the place based on chronological order",
 	"msd-summaryending": "Edit summary (will be added to the standard one)",
 	"msd-error-wrongpage": "Wrong page.",
 	"msd-error-sourcepagedeleted": "The current page was deleted.",
@@ -415,7 +416,6 @@
 	"msd-error-editingtargetpage": "Couldn't edit the target page.",
 	"msd-error-editingsourcepage": "Couldn't edit the source page. You will have to edit it manually.",
 	"msd-moved": "The topic has been successfully moved. You may go to [[$1|the page where the topic was moved to]].",
-	"msd-bottom": "The code may be different if the page would be updated while the window is idle.",
 
 	"move-sourcepagecode": "''Moved to [[$1]]. $2''",
 	"move-targetpagecode": "''Moved from [[$1]]. $2''",
