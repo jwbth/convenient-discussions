@@ -788,6 +788,20 @@ class Thread {
     }
   }
 
+
+  /**
+   * Expand the thread if it's collapsed and collapse if it's expanded.
+   *
+   * @private
+   */
+  toggle() {
+    if (this.isCollapsed) {
+      this.expand();
+    } else {
+      this.collapse();
+    }
+  }
+
   /**
    * Collapse the thread.
    *
@@ -809,22 +823,11 @@ class Thread {
     this.collapsedRange = getRangeContents(
       this.getAdjustedStartElement(),
       this.getAdjustedEndElement(),
-      controller.rootElement,
-      controller.content.closedDiscussions
+      controller.rootElement
     );
 
-    this.collapsedRange.forEach((el) => {
-      // We use a class here because there can be elements in the comment that are hidden from the
-      // beginning and should stay so when reshowing the comment.
-      el.classList.add('cd-hidden');
-
-      // An element can be in more than one collapsed range. So, we need to show it when expanding
-      // a range only if no active collapsed ranges are left.
-      const $el = $(el);
-      const roots = $el.data('cd-collapsed-thread-root-comments') || [];
-      roots.push(this.rootComment);
-      $el.data('cd-collapsed-thread-root-comments', roots);
-    });
+    this.collapsedRange.forEach(this.hideElement.bind(this));
+    this.updateEndOfCollapsedRange(controller.content.closedDiscussions);
 
     this.isCollapsed = true;
 
@@ -873,15 +876,7 @@ class Thread {
   expand(auto = false, isBatchOperation = auto) {
     if (!this.isCollapsed) return;
 
-    this.collapsedRange.forEach((el) => {
-      const $el = $(el);
-      const roots = $el.data('cd-collapsed-thread-root-comments') || [];
-      removeFromArrayIfPresent(roots, this.rootComment);
-      $el.data('cd-collapsed-thread-root-comments', roots);
-      if (!roots.length && !$el.data('cd-comment-form')) {
-        el.classList.remove('cd-hidden');
-      }
-    });
+    this.collapsedRange.forEach(this.maybeUnhideElement.bind(this));
 
     this.expandNote.remove();
     this.expandNote = null;
@@ -927,23 +922,46 @@ class Thread {
   }
 
   /**
-   * Expand the thread if it's collapsed and collapse if it's expanded.
+   * Hide an element when collapsing a thread.
    *
+   * @param {Element} element
    * @private
    */
-  toggle() {
-    if (this.isCollapsed) {
-      this.expand();
-    } else {
-      this.collapse();
+  hideElement(element) {
+    // We use a class here because there can be elements in the comment that are hidden from the
+    // beginning and should stay so when reshowing the comment.
+    element.classList.add('cd-hidden');
+
+    // An element can be in more than one collapsed range. So, we need to show the element when
+    // expanding a range only if no active collapsed ranges are left.
+    const $el = $(element);
+    const roots = $el.data('cd-collapsed-thread-root-comments') || [];
+    roots.push(this.rootComment);
+    $el.data('cd-collapsed-thread-root-comments', roots);
+  }
+
+  /**
+   * Unhide (if appropriate) an element when expanding a thread.
+   *
+   * @param {Element} element
+   * @private
+   */
+  maybeUnhideElement(element) {
+    const $element = $(element);
+    const roots = $element.data('cd-collapsed-thread-root-comments') || [];
+    removeFromArrayIfPresent(roots, this.rootComment);
+    $element.data('cd-collapsed-thread-root-comments', roots);
+    if (!roots.length && !$element.data('cd-comment-form')) {
+      element.classList.remove('cd-hidden');
     }
   }
 
   /**
-   * Expand the thread if it's collapsed and collapse if it's expanded.
+   * Update the collapsed range, taking into account closed discussions. (We can't do it before,
+   * because we need the elements to be hidden and rendered to access the innerText property with
+   * the new value).
    *
-   * @param {boolean} [clickedThread=false]
-   * @private
+   * @param {Element[]} closedDiscussions
    */
   toggleWithSiblings(clickedThread = false) {
     const wasCollapsed = clickedThread ?
@@ -958,6 +976,44 @@ class Thread {
     this.rootComment.getParent()?.updateToggleChildThreadsButton();
     if (clickedThread && !wasCollapsed) {
       this.$expandNote.cdScrollIntoView();
+  updateEndOfCollapsedRange(closedDiscussions) {
+    let end = this.collapsedRange.slice(-1)[0];
+
+    // Include a closed discussion template if the entirety of its contents is included but not the
+    // start.
+    const discussion = closedDiscussions?.find((el) => el.contains(end));
+
+    const isFinalChild = (parent, child) =>
+      parent &&
+      child &&
+      (
+        parent.lastElementChild === child ||
+        (
+          parent.lastElementChild === child.nextElementSibling &&
+          child.nextElementSibling.classList.contains('mw-notalk')
+        )
+      );
+    const getParentIfItsFinalChild = (el) =>
+      el && isFinalChild(el.parentNode?.parentNode, el.parentNode) ? el.parentNode : null;
+    const isFinalDescendant = (ancestor, descendant, maxDepth) =>
+      maxDepth > 0 &&
+      (
+        isFinalChild(ancestor, descendant) ||
+        isFinalDescendant(ancestor, getParentIfItsFinalChild(descendant), maxDepth - 1)
+      );
+
+    if (
+      discussion &&
+      !discussion.contains(this.collapsedRange[0]) &&
+
+      // Catch cases like the closed discussion template at the end of this thread:
+      // https://ru.wikipedia.org/wiki/Служебная:GoToComment/c-Stjn-20241201145700-Oleg_Yunakov-20241201143800
+      // Caution: innerText causes a reflow. We do it because this part of code is rarely reached.
+      (isFinalDescendant(discussion, end, 3) || !discussion.innerText)
+    ) {
+      this.maybeUnhideElement(end);
+      this.collapsedRange.splice(-1, 1, discussion);
+      this.hideElement(discussion);
     }
   }
 

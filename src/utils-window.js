@@ -448,10 +448,9 @@ export function getElementFromPasteHtml(html) {
  * @param {Element} start
  * @param {Element} end
  * @param {Element} rootElement
- * @param {Element[]} [closedDiscussions]
  * @returns {?Element[]}
  */
-export function getRangeContents(start, end, rootElement, closedDiscussions) {
+export function getRangeContents(start, end, rootElement) {
   // It makes more sense to place this function in the `utils` module, but we can't import
   // `controller` there because of issues with the worker build and a cyclic dependency that
   // emerges.
@@ -513,23 +512,6 @@ export function getRangeContents(start, end, rootElement, closedDiscussions) {
     // if you collapse its thread.
     while (end.parentNode.lastChild === end && treeWalker.currentNode.contains(end.parentNode)) {
       end = end.parentNode;
-    }
-
-    // Include a closed discussion template if the entirety of its contents is included but not the
-    // start.
-    const closedDiscussion = closedDiscussions?.find((el) => end.parentNode === el);
-    if (
-      closedDiscussion &&
-      !closedDiscussion.contains(start) &&
-      (
-        closedDiscussion.lastElementChild === closedDiscussion ||
-        (
-          closedDiscussion.lastElementChild === end.nextElementSibling &&
-          end.nextElementSibling.classList.contains('mw-notalk')
-        )
-      )
-    ) {
-      end = closedDiscussion;
     }
 
     while (treeWalker.currentNode !== end) {
