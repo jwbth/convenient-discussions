@@ -45,7 +45,7 @@ export function wrapHtml(html, options = {}) {
         $link = $linkWrapper.wrapInner('<a>').children().first();
       }
       new Button({
-        element: $link[0],
+        buttonElement: $link[0],
         action: options.callbacks[className],
       });
     });

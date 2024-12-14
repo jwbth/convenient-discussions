@@ -181,7 +181,7 @@ class MoveSectionDialog extends ProcessDialog {
           label: archivePrefix,
           input: this.controls.title.input,
         });
-        $(this.insertArchivePageButton.element).on('click', () => {
+        $(this.insertArchivePageButton.buttonElement).on('click', () => {
           this.controls.keepLink?.input.setSelected(false);
         });
       }

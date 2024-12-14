@@ -8,15 +8,16 @@ class Button {
    * Create a button.
    *
    * @param {object} [config]
-   * @param {Element} [config.element] Pre-created {@link Button#element element} (usually provided
-   *   instead of config).
-   * @param {Element} [config.buttonElement] Pre-created {@link Button#buttonElement link element}.
+   * @param {Element} [config.element] Pre-created {@link Button#element element}.
+   * @param {Element} [config.buttonElement] Pre-created {@link Button#buttonElement button element}
+   *   (can be provided instead of config).
    * @param {Element} [config.labelElement] Pre-created {@link Button#labelElement label element}.
    * @param {Element} [config.iconElement] Pre-created {@link Button#iconElement icon element}.
    * @param {string} [config.tagName='a'] Tag name of the button element.
-   * @param {string[]} [config.classes=[]] List of classes to add to the button element.
+   * @param {string[]} [config.classes=[]] List of classes to add to the main element.
+   * @param {string[]} [config.buttonClasses=[]] List of classes to add to the button element.
    * @param {string} [config.id] ID attribute of the button.
-   * @param {string} [config.href] Value of the `href` parameter to add to the link element.
+   * @param {string} [config.href] Value of the `href` parameter to add to the button element.
    * @param {string} [config.label] Label of the button.
    * @param {string} [config.tooltip] Tooltip for the button.
    * @param {string[]} [config.flags] Flags to apply to an OOUI button.
@@ -29,6 +30,7 @@ class Button {
     iconElement,
     tagName = 'a',
     classes = [],
+    buttonClasses = [],
     id,
     href,
     label,
@@ -36,22 +38,26 @@ class Button {
     flags,
     action,
   } = {}) {
-    element ||= this.constructor.cloneButtonPrototype(tagName);
-
-    if (id) {
-      element.id = id;
-    }
-    if (classes.length) {
-      element.classList.add(...classes);
+    if (!buttonElement) {
+      buttonElement = this.constructor.cloneButtonPrototype(tagName);
+      element?.append(buttonElement);
     }
 
     /**
-     * Main element. It can be the same as the {@link Button#button link element} or a wrapper
+     * Main element. It can be the same as the {@link Button#button button element} or a wrapper
      * around it.
      *
      * @type {Element}
      */
-    this.element = element;
+    this.element = element || buttonElement;
+
+    if (id) {
+      this.element.id = id;
+    }
+    if (classes.length) {
+      this.element.classList.add(...classes);
+    }
+
 
     /**
      * Button element (an `'a'` element by default). It can be the same as the
@@ -59,18 +65,22 @@ class Button {
      *
      * @type {Element}
      */
-    this.buttonElement = buttonElement || element;
+    this.buttonElement = buttonElement;
+
+    if (buttonClasses.length) {
+      this.buttonElement.classList.add(...buttonClasses);
+    }
 
     /**
-     * Button label element. It can be the same as the {@link Button#buttonElement link element} or
-     * its descendant.
+     * Button label element. It can be the same as the {@link Button#buttonElement button element}
+     * or its descendant.
      *
      * @type {Element}
      */
-    this.labelElement = labelElement || element;
+    this.labelElement = labelElement || buttonElement;
 
     /**
-     * Button icon element, a descendant of the {@link Button#buttonElement link element}.
+     * Button icon element, a descendant of the {@link Button#buttonElement button element}.
      *
      * @type {Element|undefined}
      */

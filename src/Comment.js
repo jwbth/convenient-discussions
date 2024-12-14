@@ -563,7 +563,7 @@ class Comment extends CommentSkeleton {
       this.menuElement.appendChild(this.replyButton.element);
     } else {
       this.replyButton = new CommentButton({
-        element: this.constructor.prototypes.get('replyButton'),
+        buttonElement: this.constructor.prototypes.get('replyButton'),
         action,
         widgetConstructor: this.constructor.prototypes.getWidget('replyButton'),
       });
@@ -618,7 +618,7 @@ class Comment extends CommentSkeleton {
       this.menuElement.appendChild(this.editButton.element);
     } else {
       this.editButton = new CommentButton({
-        element: this.constructor.prototypes.get('editButton'),
+        buttonElement: this.constructor.prototypes.get('editButton'),
         action,
         widgetConstructor: this.constructor.prototypes.getWidget('editButton'),
       });
@@ -660,7 +660,7 @@ class Comment extends CommentSkeleton {
       this.menuElement.appendChild(this.thankButton.element);
     } else {
       this.thankButton = new CommentButton({
-        element: this.constructor.prototypes.get('thankButton'),
+        buttonElement: this.constructor.prototypes.get('thankButton'),
         action,
         widgetConstructor: this.constructor.prototypes.getWidget('thankButton'),
       });
@@ -682,7 +682,7 @@ class Comment extends CommentSkeleton {
     if (!this.id || this.isReformatted) return;
 
     this.copyLinkButton = new CommentButton({
-      element: this.constructor.prototypes.get('copyLinkButton'),
+      buttonElement: this.constructor.prototypes.get('copyLinkButton'),
       action: this.copyLink.bind(this),
       widgetConstructor: this.constructor.prototypes.getWidget('copyLinkButton'),
       href: this.dtId ? '#' + this.dtId : undefined,
@@ -719,7 +719,7 @@ class Comment extends CommentSkeleton {
       this.headerElement.appendChild(this.goToParentButton.element);
     } else {
       this.goToParentButton = new CommentButton({
-        element: this.constructor.prototypes.get('goToParentButton'),
+        buttonElement: this.constructor.prototypes.get('goToParentButton'),
         action,
         widgetConstructor: this.constructor.prototypes.getWidget('goToParentButton'),
       });
@@ -766,13 +766,13 @@ class Comment extends CommentSkeleton {
           (this.goToParentButton?.element || this.timestampElement)?.nextSibling
         );
       } else if (this.$overlayMenu) {
-        const element = this.constructor.prototypes.get('goToChildButton');
+        const buttonElement = this.constructor.prototypes.get('goToChildButton');
         this.goToChildButton = new CommentButton({
-          element,
+          element: buttonElement,
           widgetConstructor: this.constructor.prototypes.getWidget('goToChildButton'),
           action,
         });
-        this.$overlayMenu.prepend(element);
+        this.$overlayMenu.prepend(buttonElement);
       }
     }
   }

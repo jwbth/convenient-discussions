@@ -896,6 +896,7 @@ class Section extends SectionSkeleton {
       const element = this.constructor.prototypes.get('moreMenuSelect');
       moreMenuSelectDummy = new Button({
         element,
+        buttonElement: element.firstChild,
         action: () => {
           this.createAndClickMoreMenuSelect();
         },

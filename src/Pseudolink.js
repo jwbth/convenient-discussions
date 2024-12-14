@@ -14,7 +14,9 @@ class PseudoLink extends Button {
    */
   constructor(config) {
     super({
-      classes: ['cd-pseudolink'],
+      element: document.createElement('div'),
+      classes: ['cd-pseudolink-wrapper'],
+      buttonClasses: ['cd-pseudolink'],
       tooltip: cd.s('pseudolink-tooltip'),
       label: config.label,
       action: () => {
