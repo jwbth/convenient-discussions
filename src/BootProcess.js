@@ -558,7 +558,12 @@ class BootProcess {
       const highlighter = mw.loader.moduleRegistry['ext.discussionTools.init']
         ?.packageExports['highlighter.js'];
       if (highlighter) {
-        highlighter.highlightTargetComment = () => {};
+        // Fake return value
+        highlighter.highlightTargetComment = () => ({
+          highlighted: [undefined],
+          requested: [undefined],
+        });
+
         highlighter.clearHighlightTargetComment = () => {};
       }
     };
