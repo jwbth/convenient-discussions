@@ -274,10 +274,10 @@ export default {
     '-',
   ],
 
-  quoteFormatting: function (mentionSource, author, timestamp, dtId) {
+  quoteFormatting: function (useBlockFormatting, author, timestamp, dtId) {
     var pre = '{{цс|1=';
     var post = '';
-    if (mentionSource) {
+    if (useBlockFormatting) {
       if (author) {
         post += '|2=' + author;
       }
@@ -462,6 +462,7 @@ export default {
     } else if (/^Википедия:(?:К восстановлению|К объединению|К переименованию|К разделению|К удалению|К улучшению)/.test(title)) {
       return false;
     }
+
     return null;
   },
 

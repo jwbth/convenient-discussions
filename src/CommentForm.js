@@ -3607,11 +3607,11 @@ class CommentForm {
       }
 
       const [pre, post] = typeof cd.config.quoteFormatting === 'function' ?
-        cd.config.quoteFormatting(
-          mentionSource ?? (comment && comment !== this.parentComment),
-          comment?.author.getName(),
-          comment?.timestamp,
-          comment?.dtId
+        cd.config.quoteFormatting.apply(
+          null,
+          comment && (mentionSource ?? comment !== this.parentComment) ?
+            [true, comment.author.getName(), comment.timestamp, comment.dtId] :
+            [selection.match(new RegExp(`<${cd.g.pniePattern}\\b|(^|\n)[:*#;]`, 'i'))]
         ) :
         cd.config.quoteFormatting;
 

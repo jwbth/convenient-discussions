@@ -110,10 +110,10 @@ export default {
     'Clear',
     'Br',
   ],
-  quoteFormatting: function (mentionSource, author, timestamp, dtId) {
+  quoteFormatting: function (useBlockFormatting, author, timestamp, dtId) {
     var pre = '';
     var post = '';
-    if (mentionSource) {
+    if (useBlockFormatting) {
       pre = '{{tqb|text=';
       if (author) {
         post += '|by=' + author;
