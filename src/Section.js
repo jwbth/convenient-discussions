@@ -827,7 +827,7 @@ class Section extends SectionSkeleton {
       .on('choose', (option) => {
         switch (option.getData()) {
           case 'editOpeningComment':
-            this.comments[0].edit();
+            this.comments[0].edit({ focusHeadline: true });
             break;
           case 'move':
             this.move();

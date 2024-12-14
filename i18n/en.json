@@ -29,8 +29,8 @@
 	"thread-expand-tooltip": "Hold Alt to expand/collapse all sibling threads as well. Hold $1 to expand/collapse all threads of this level on the page",
 	"thread-newcomments": "{{plural:$1|There is a new comment|There are $1 new comments}} in this thread from {{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}} $3. Click to refresh the page.",
 
-	"sm-editopeningcomment": "Edit opening comment",
-	"sm-editopeningcomment-tooltip": "Edit the opening comment of the section",
+	"sm-editopeningcomment": "Edit subject",
+	"sm-editopeningcomment-tooltip": "Edit the subject of the section",
 	"sm-addsubsection": "Add subsection",
 	"sm-addsubsection-tooltip": "Add a subsection to this section",
 	"sm-move": "Move",

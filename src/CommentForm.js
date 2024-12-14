@@ -49,13 +49,13 @@ class CommentForm {
    * @param {'reply'|'replyInSection'|'edit'|'addSubsection'|'addSection'} config.mode
    * @param {Comment|import('./Section').default|import('./pageRegistry').Page} config.target
    *   Comment, section, or page that the form is related to.
-   * @param {object} [config.initialState] Initial state of the form (data saved in the previous
-   *   session, quoted text, data transferred from DT's new topic form, etc.).
+   * @param {object} [config.initialState = {}] Initial state of the form (data saved in the
+   *   previous session, quoted text, data transferred from DT's new topic form, etc.).
    * @param {PreloadConfig} [config.preloadConfig] Configuration to preload data into the form.
-   * @param {boolean} [config.newTopicOnTop] When adding a topic, whether it should be on top.
+   * @param {boolean} [config.newTopicOnTop=false] When adding a topic, whether it should be on top.
    * @fires commentFormCustomModulesReady
    */
-  constructor({ mode, target, initialState, preloadConfig, newTopicOnTop }) {
+  constructor({ mode, target, initialState = {}, preloadConfig, newTopicOnTop = false }) {
     // Mixin constructor
     OO.EventEmitter.call(this);
 
@@ -127,7 +127,7 @@ class CommentForm {
      * @type {boolean}
      * @private
      */
-    this.summaryAltered = initialState?.summaryAltered ?? false;
+    this.summaryAltered = initialState.summaryAltered ?? false;
 
     /**
      * Was the omit signature checkbox altered manually.
@@ -135,7 +135,7 @@ class CommentForm {
      * @type {boolean}
      * @private
      */
-    this.omitSignatureCheckboxAltered = initialState?.omitSignatureCheckboxAltered ?? false;
+    this.omitSignatureCheckboxAltered = initialState.omitSignatureCheckboxAltered ?? false;
 
     /**
      * If the user replies to a comment with outdented replies (in which case the form is created
@@ -144,7 +144,7 @@ class CommentForm {
      * @type {Comment|undefined}
      * @private
      */
-    this.targetWithOutdentedReplies = initialState?.targetWithOutdentedReplies || undefined;
+    this.targetWithOutdentedReplies = initialState.targetWithOutdentedReplies || undefined;
 
     /**
      * Is section opening comment edited.
@@ -219,9 +219,9 @@ class CommentForm {
   /**
    * Setup the form after it is added to the page for the first time (not after a page reload).
    *
-   * @param {object} initialState
+   * @param {object} [initialState={}]
    */
-  setup(initialState) {
+  setup(initialState = {}) {
     this.adjustLabels();
 
     if (!cd.user.isRegistered() && !mw.user.isTemp?.()) {
@@ -231,55 +231,59 @@ class CommentForm {
       });
     }
 
-    if (initialState) {
+    if (this.mode === 'edit') {
+      this.loadComment(initialState);
+    } else if (initialState.originalComment !== undefined) {
       this.originalComment = initialState.originalComment || '';
       this.originalHeadline = initialState.originalHeadline || '';
-      if (initialState.lastFocused) {
-        /**
-         * The date when the comment form was focused last time.
-         *
-         * @type {Date|undefined}
-         * @private
-         */
-        this.lastFocused = new Date(initialState.lastFocused);
-      }
-      if (initialState.targetWithOutdentedReplies) {
-        this.showMessage(
-          wrapHtml(
-            cd.sParse(
-              'cf-notice-outdent',
-              (new mw.Title(cd.config.outdentTemplates[0], 10)).toString()
-            ),
-            { targetBlank: true }
-          ),
-          {
-            type: 'notice',
-            name: 'outdent',
-          }
-        );
-      }
     } else {
-      if (this.mode === 'edit') {
-        this.loadComment();
+      if (this.preloadConfig?.commentTemplate) {
+        this.preloadTemplate();
       } else {
-        if (this.preloadConfig?.commentTemplate) {
-          this.preloadTemplate();
-        } else {
-          this.originalComment = '';
+        this.originalComment = '';
+      }
+
+      if (this.headlineInput) {
+        if (this.preloadConfig.headline) {
+          this.headlineInput.setValue(this.preloadConfig.headline);
         }
 
-        if (this.headlineInput) {
-          this.headlineInput.setValue(this.preloadConfig?.headline || '');
-          this.originalHeadline = this.preloadConfig?.headline || '';
-        }
+        // The headline may be set from initialState.headline at this point
+        this.originalHeadline = this.headlineInput.getValue();
       }
+    }
+
+    if (initialState.lastFocused) {
+      /**
+       * The date when the comment form was focused last time.
+       *
+       * @type {Date|undefined}
+       * @private
+       */
+      this.lastFocused = new Date(initialState.lastFocused);
+    }
+
+    if (initialState.targetWithOutdentedReplies) {
+      this.showMessage(
+        wrapHtml(
+          cd.sParse(
+            'cf-notice-outdent',
+            (new mw.Title(cd.config.outdentTemplates[0], 10)).toString()
+          ),
+          { targetBlank: true }
+        ),
+        {
+          type: 'notice',
+          name: 'outdent',
+        }
+      );
     }
 
     if (this.mode !== 'addSection' && this.mode !== 'edit') {
       this.checkCode();
     }
 
-    if (!initialState || initialState.focus) {
+    if (!initialState.originalComment && initialState.focus !== false) {
       this.$element.cdScrollIntoView('center', true, () => {
         if (this.mode !== 'edit') {
           (this.headlineInput || this.commentInput).focus();
@@ -374,7 +378,7 @@ class CommentForm {
        * @type {external:OO.ui.TextInputWidget|undefined}
        */
       this.headlineInput = new (require('./TextInputWidget').default)({
-        value: initialState?.headline ?? '',
+        value: initialState.headline ?? '',
         placeholder: this.headlineInputPlaceholder,
         classes: ['cd-commentForm-headlineInput'],
         tabIndex: this.getTabIndex(11),
@@ -411,7 +415,7 @@ class CommentForm {
      * @type {import('./MultilineTextInputWidget').default}
      */
     this.commentInput = new (require('./MultilineTextInputWidget').default)({
-      value: initialState?.comment ?? '',
+      value: initialState.comment ?? '',
       placeholder: commentInputPlaceholder,
       rows: this.headlineInput ? 5 : 3,
       autosize: true,
@@ -427,7 +431,7 @@ class CommentForm {
      * @type {external:OO.ui.TextInputWidget}
      */
     this.summaryInput = new (require('./TextInputWidget').default)({
-      value: initialState?.summary ?? '',
+      value: initialState.summary ?? '',
       maxLength: cd.g.summaryLengthLimit,
       placeholder: cd.s('cf-summary-placeholder'),
       classes: ['cd-commentForm-summaryInput'],
@@ -435,7 +439,7 @@ class CommentForm {
     });
     this.summaryInput.$input.codePointLimit(cd.g.summaryLengthLimit);
     mw.widgets.visibleCodePointLimit(this.summaryInput, cd.g.summaryLengthLimit);
-    this.updateAutoSummary(!initialState?.summary);
+    this.updateAutoSummary(!initialState.summary);
   }
 
   /**
@@ -469,7 +473,7 @@ class CommentForm {
           input: this.minorCheckbox,
         } = createCheckboxField({
           value: 'minor',
-          selected: initialState?.minor ?? true,
+          selected: initialState.minor ?? true,
           label: cd.s('cf-minor'),
           tabIndex: this.getTabIndex(20),
         }));
@@ -498,7 +502,7 @@ class CommentForm {
       } = createCheckboxField({
         value: 'watch',
         selected: (
-          initialState?.watch ??
+          initialState.watch ??
           (
             (this.watchOnReply && this.mode !== 'edit') ||
             $('.mw-watchlink a[href*="action=unwatch"]').length ||
@@ -539,7 +543,7 @@ class CommentForm {
         } = createCheckboxField({
           value: 'subscribe',
           selected: (
-            initialState?.subscribe ??
+            initialState.subscribe ??
             (
               (this.subscribeOnReply && this.mode !== 'edit') ||
               subscribableSection?.subscriptionState
@@ -585,7 +589,7 @@ class CommentForm {
       input: this.omitSignatureCheckbox,
     } = createCheckboxField({
       value: 'omitSignature',
-      selected: initialState?.omitSignature ?? false,
+      selected: initialState.omitSignature ?? false,
       label: cd.s('cf-omitsignature'),
       title: cd.s('cf-omitsignature-tooltip'),
       tabIndex: this.getTabIndex(25),
@@ -626,7 +630,7 @@ class CommentForm {
         input: this.deleteCheckbox,
       } = createCheckboxField({
         value: 'delete',
-        selected: initialState?.delete ?? false,
+        selected: initialState.delete ?? false,
         label: cd.s('cf-delete'),
         tabIndex: this.getTabIndex(26),
       }));
@@ -1224,9 +1228,10 @@ class CommentForm {
   /**
    * Load the edited comment to the comment form.
    *
+   * @param {object} initialState
    * @private
    */
-  async loadComment() {
+  async loadComment(initialState) {
     const operation = this.operations.add('load');
     try {
       await this.target.loadCode(this);
@@ -1245,7 +1250,7 @@ class CommentForm {
 
       operation.close();
 
-      this.commentInput.focus();
+      (initialState.focusHeadline && this.headlineInput || this.commentInput).focus();
       this.preview();
     } catch (e) {
       if (e instanceof CdError) {
