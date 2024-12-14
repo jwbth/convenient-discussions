@@ -18,10 +18,15 @@ self.convenientDiscussions ||= {};
 // Code doesn't infer types from it. So I just manually type (again) the types of a limited number
 // of properties here.
 
+/** @import DefaultConfig from '../config/default' */
+/** @import { globalProperties as GlobalProperties } from './convenientDiscussions' */
+
 /**
- * @typedef ConvenientDiscussions
+ * @typedef {object} ConvenientDiscussions
  * @property {import('./pageRegistry').Page} page
  * @property {import('./userRegistry').User} user
+ * @property {DefaultConfig} config
+ * @property {GlobalProperties} g
  * @private
  */
 

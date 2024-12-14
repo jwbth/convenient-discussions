@@ -278,7 +278,7 @@ Object.assign(cd, {
  * @namespace g
  * @memberof convenientDiscussions
  */
-Object.assign(cd.g, {
+const globalProperties = {
   // These are properties known from the beginning. We assume that there is no point to make them
   // subject to change by site administrators although this may be disputable. Some of them are
   // extensible in the configuration file (such as noHighlightClasses).
@@ -619,8 +619,30 @@ Object.assign(cd.g, {
     .get()
     .filter((node) => node.nodeType === Node.COMMENT_NODE)
     .some((c) => c.textContent.startsWith('Parsoid')),
-});
+
+  /**
+   * @typedef {object} ApiErrorFormatHtml
+   * @property {string} errorformat
+   * @property {any} errorlang
+   * @property {boolean} errorsuselocal
+   */
+
+  /**
+   * A replacement for
+   * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Unicode_Property_Escapes unicode property escapes}
+   * while they are not supported in major browsers. {@link https://github.com/slevithan/xregexp}
+   * can be used also.
+   *
+   * @type {ApiErrorFormatHtml|undefined}
+   * @memberof convenientDiscussions.g
+   */
+  apiErrorFormatHtml: undefined,
+};
+
+Object.assign(cd.g, globalProperties);
 
 if (cd.g.debug) {
   window.cd = cd;
 }
+
+export { globalProperties };
