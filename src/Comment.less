@@ -72,6 +72,14 @@
   }
 }
 
+// Paragraph-like margins
+li.cd-comment-part:not(.cd-comment-part-last) + .cd-comment-part,
+dd.cd-comment-part:not(.cd-comment-part-last) + .cd-comment-part,
+li.cd-comment-part:not(.cd-comment-part-last) + .cd-connectToPreviousItem > .cd-comment-part,
+dd.cd-comment-part:not(.cd-comment-part-last) + .cd-connectToPreviousItem > .cd-comment-part {
+  margin-top: 0.5em;
+}
+
 .cd-comment-part-first {
   margin-top: 0.5em;
 
@@ -138,7 +146,10 @@ ol > li > .cd-comment-part-first.cd-comment-part-first:first-child {
     padding-top: 0.75em;
   }
 
-  > :first-child {
+  // As for :not(.cd-comment-part), see
+  // `li.cd-comment-part:not(.cd-comment-part-last) + .cd-connectToPreviousItem > .cd-comment-part`
+  // above
+  > :first-child:not(.cd-comment-part) {
     margin-top: 0;
 
     > :first-child {
