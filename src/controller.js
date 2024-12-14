@@ -2073,22 +2073,21 @@ export default {
             .closest('form')
             .find('input[name="title"][type="hidden"]')
             .val();
-        } else {
+        }
+        if (!pageName) {
           return false;
         }
-        let page;
-        try {
-          page = pageRegistry.get(pageName);
-        } catch (e) {
+
+        const page = pageRegistry.get(pageName);
+        if (!page || page !== cd.page) {
           return false;
         }
-        if (page !== cd.page) {
-          return false;
-        }
+
         if ($button.is('a')) {
           url.searchParams.set('dtenable', 0);
           $button.attr('href', url);
         }
+
         return true;
       });
 

@@ -1082,12 +1082,16 @@ const pageRegistry = {
    * @param {string|external:mw.Title} nameOrMwTitle
    * @param {boolean} [isGendered=true] Used to keep the gendered namespace name (if `nameOrMwTitle`
    *   is a string).
-   * @returns {Page}
+   * @returns {?Page}
    */
   get(nameOrMwTitle, isGendered) {
     const title = nameOrMwTitle instanceof mw.Title ?
       nameOrMwTitle :
-      new mw.Title(nameOrMwTitle);
+      mw.Title.newFromText(nameOrMwTitle);
+    if (!title) {
+      return null;
+    }
+
     const name = title.getPrefixedText();
     if (!this.items[name]) {
       this.items[name] = new Page(title, isGendered ? nameOrMwTitle : undefined);
