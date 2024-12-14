@@ -3717,7 +3717,7 @@ class CommentForm {
       selection ||= '';
     }
 
-    // Wrap the text moving the leading and trailing spaces to the sides of the resulting text.
+    // Wrap the text, moving the leading and trailing spaces to the sides of the resulting text.
     const [leadingSpace] = selection.match(/^ */);
     const [trailingSpace] = selection.match(/ *$/);
     const middleText = selection || peri;

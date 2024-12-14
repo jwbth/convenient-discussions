@@ -36,7 +36,7 @@ export default {
         this.saveSession();
       })
       .on('startReload', this.detach.bind(this))
-      .on('keydown', (e) => {
+      .on('keyDown', (e) => {
         if (
           // Ctrl+Alt+Q
           keyCombination(e, 81, ['cmd', 'alt']) ||

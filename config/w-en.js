@@ -95,6 +95,8 @@ export default {
       source: "Wikipedia:Administrators' noticeboard/Edit warring",
       archive: "Wikipedia:Administrators' noticeboard/3RRArchive",
     },
+
+    // Exclude paths "User talk:Σ/Testing facility/Archiver"
     /\/Archive(?![a-rt-z])/,
   ],
 

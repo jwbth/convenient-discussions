@@ -86,7 +86,7 @@ export default {
         this.mount();
         controller
           .on('scroll', this.updateCommentFormButton.bind(this))
-          .on('keydown', (e) => {
+          .on('keyDown', (e) => {
             if (isInputFocused()) return;
 
             // R

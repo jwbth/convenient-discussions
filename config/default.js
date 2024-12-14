@@ -901,7 +901,8 @@ export default {
   afterAuthorLinkParse: null,
 
   /**
-   * Function that returns `true` if new topics are placed on top of the page.
+   * Function that returns `true` if new topics are placed on top of the page specified in the
+   * parameter.
    *
    * @type {?Function}
    * @kind function

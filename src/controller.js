@@ -370,6 +370,7 @@ export default {
       if (isReload) {
         mw.hook('wikipage.content').fire(this.$content);
       }
+      this.emit('boot');
     } catch (e) {
       mw.notify(cd.s('error-processpage'), { type: 'error' });
       console.error(e);
@@ -1067,7 +1068,7 @@ export default {
   handleGlobalKeyDown(e) {
     if (this.isPageOverlayOn()) return;
 
-    this.emit('keydown', e);
+    this.emit('keyDown', e);
   },
 
   /**

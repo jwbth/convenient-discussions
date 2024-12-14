@@ -867,10 +867,7 @@ class ForeignStructuredUpload extends mw.ForeignStructuredUpload {
    * @param {string} target
    */
   constructor(target) {
-    super(target, {
-      ...cd.getApiConfig(),
-      ...cd.g.apiErrorFormatHtml,
-    });
+    super(target, { ...cd.getApiConfig(), ...cd.g.apiErrorFormatHtml });
   }
 
   /**

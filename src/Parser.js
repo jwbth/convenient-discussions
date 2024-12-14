@@ -589,7 +589,7 @@ class Parser {
   }
 
   /**
-   * @typedef {string[]} ProcessLinkReturn
+   * @typedef {object} ProcessLinkReturn
    * @property {string} userName User name.
    * @property {?string} linkType Link type (`user`, `userTalk`, `contribs`, `userSubpage`,
    *   `userTalkSubpage`, or any of this `Foreign` at the end).

@@ -755,18 +755,18 @@ class TocItem {
       ...$headline
         .clone()
         .find('*')
-        .each((i, el) => {
-          if (['B', 'EM', 'I', 'S', 'STRIKE', 'STRONG', 'SUB', 'SUP'].includes(el.tagName)) {
-            [...el.attributes].forEach((attr) => {
-              el.removeAttribute(attr.name);
-            });
-          } else {
-            [...el.childNodes].forEach((child) => {
-              el.parentNode.insertBefore(child, el);
-            });
-            el.remove();
-          }
-        })
+          .each((i, el) => {
+            if (['B', 'EM', 'I', 'S', 'STRIKE', 'STRONG', 'SUB', 'SUP'].includes(el.tagName)) {
+              [...el.attributes].forEach((attr) => {
+                el.removeAttribute(attr.name);
+              });
+            } else {
+              [...el.childNodes].forEach((child) => {
+                el.parentNode.insertBefore(child, el);
+              });
+              el.remove();
+            }
+          })
         .end()
         .contents()
         .get()

@@ -264,8 +264,8 @@ class Section extends SectionSkeleton {
 
     if (lastDescendantButton) {
       /**
-       * "Add subsection to <i>topic</i>" button at the end of the section (under the reply button of
-       * the last descendant section; shows up on hover of the reply button).
+       * "Add subsection to <i>topic</i>" button at the end of the section (under the reply button
+       * of the last descendant section; shows up on hover of the reply button).
        *
        * @type {Button|undefined}
        */
@@ -1156,6 +1156,10 @@ class Section extends SectionSkeleton {
     // Check for existence in case replying is called from a script of some kind (there is no button
     // to call it from CD).
     if (!this.replyForm) {
+      // Hide the reply button before setupping the comming form so that IME selector is positioned
+      // correctly
+      this.replyButton.hide();
+
       /**
        * Reply form related to the section.
        *
@@ -1164,8 +1168,6 @@ class Section extends SectionSkeleton {
       this.replyForm = commentFormRegistry.setupCommentForm(this, {
         mode: 'replyInSection',
       }, initialState, commentForm);
-
-      this.replyButton.hide();
     }
 
     if (this.$addSubsectionButtonsContainer) {

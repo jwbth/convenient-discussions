@@ -3001,7 +3001,7 @@ class Comment extends CommentSkeleton {
   /**
    * Create an {@link Comment#editForm edit form} for the comment.
    *
-   * @param {object} [initialState]
+   * @param {object} [initialState] See {@link CommentForm}'s constructor.
    * @param {import('./CommentForm').default} [commentForm]
    */
   edit(initialState, commentForm) {

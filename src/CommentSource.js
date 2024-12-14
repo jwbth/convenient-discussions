@@ -543,20 +543,20 @@ class CommentSource {
 
       /*
         This excludes cases where:
-        1) `#` is starting a numbered list inside a comment (reply put in a wrong place:
+        1. `#` is starting a numbered list inside a comment (reply put in a wrong place:
            https://ru.wikipedia.org/w/index.php?diff=110482717). Can't do that to `*` as well since
            `*` can be an indentation character at a position other than 0 whereas `#` at such
            position can't be an indentation character; it can only start a line.
-        2) An indentation character is followed by a newline (`\\n` removed).
+        2. An indentation character is followed by a newline (`\\n` removed).
        */
       (maxIndentationLength > 0 ? `|[:*#\\x01]{1,${maxIndentationLength}}(?![:*\\x01])` : '') +
       ')'
     );
 
-    const properPlaceRegexp = new RegExp(anySignaturePattern + endOfThreadPattern);
-    const match = adjustedChunkCodeAfter.match(properPlaceRegexp) || [];
-    let adjustedCodeBetween = match[1] ?? adjustedChunkCodeAfter;
-    let indentationAfter = match[match.length - 1];
+    const properPlaceMatch =
+      adjustedChunkCodeAfter.match(new RegExp(anySignaturePattern + endOfThreadPattern)) || [];
+    let adjustedCodeBetween = properPlaceMatch[1] ?? adjustedChunkCodeAfter;
+    let indentationAfter = properPlaceMatch[properPlaceMatch.length - 1];
     let isNextLine = countOccurrences(adjustedCodeBetween, /\n/g) === 1;
 
     if (cd.config.outdentTemplates.length) {
@@ -572,12 +572,11 @@ class CommentSource {
         * If the outdent template is right next to the comment replied to, we throw an error.
         * If not, we insert the reply on the next line after the target comment.
        */
-      const [, outdentIndentation] = (
+      const [, outdentIndentation] =
         adjustedChunkCodeAfter
           .slice(adjustedCodeBetween.length)
           .match(outdentTemplatesRegexp) ||
-        []
-      );
+        [];
       if (outdentIndentation !== undefined) {
         if (isNextLine) {
           // Can't insert a reply before an "outdent" template.
@@ -586,11 +585,12 @@ class CommentSource {
             code: 'findPlace',
           });
         } else if ((outdentIndentation || '').length <= this.replyIndentation.length) {
-          const nextLineRegexp = new RegExp(anySignaturePattern);
-
-          // If adjustedChunkCodeAfter matched properPlaceRegexp, it should match
-          // nextLineRegexp too.
-          [, adjustedCodeBetween] = adjustedChunkCodeAfter.match(nextLineRegexp) || [];
+          // Matches code up to the next newline, to insert the reply in violation of chronological
+          // order. If there was a properPlaceMatch, there should be a match here too.
+          [, adjustedCodeBetween] = (
+            adjustedChunkCodeAfter.match(new RegExp(anySignaturePattern)) ||
+            []
+          );
         }
       }
     }
