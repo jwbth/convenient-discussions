@@ -780,7 +780,7 @@ class Thread {
    */
   onToggleClick(event) {
     if (isCmdModifierPressed(event)) {
-      this.toggleAll();
+      this.toggleAllOflevel();
     } else if (event.altKey) {
       this.toggleWithSiblings(true);
     } else {
@@ -788,6 +788,40 @@ class Thread {
     }
   }
 
+  /**
+   * Expand or collapse all threads on the page. On expand, scroll to the root comment of this
+   * thread.
+   */
+  toggleAllOflevel() {
+    if (this.isCollapsed) {
+      commentRegistry.expandAllThreadsOfLevel(this.rootComment.level);
+      this.comments[0].scrollTo();
+    } else {
+      commentRegistry.collapseAllThreadsOfLevel(this.rootComment.level);
+    }
+  }
+
+  /**
+   * Expand the thread if it's collapsed and collapse if it's expanded.
+   *
+   * @param {boolean} [clickedThread=false]
+   * @private
+   */
+  toggleWithSiblings(clickedThread = false) {
+    const wasCollapsed = clickedThread ?
+      this.isCollapsed :
+      this.rootComment.getParent().areChildThreadsCollapsed();
+    this.rootComment.getSiblingsAndSelf().forEach((sibling) => (
+      wasCollapsed ?
+        sibling.thread?.expand(undefined, true) :
+        sibling.thread?.collapse(undefined, true)
+    ));
+    this.constructor.emit('toggle');
+    this.rootComment.getParent()?.updateToggleChildThreadsButton();
+    if (clickedThread && !wasCollapsed) {
+      this.$expandNote.cdScrollIntoView();
+    }
+  }
 
   /**
    * Expand the thread if it's collapsed and collapse if it's expanded.
@@ -963,19 +997,6 @@ class Thread {
    *
    * @param {Element[]} closedDiscussions
    */
-  toggleWithSiblings(clickedThread = false) {
-    const wasCollapsed = clickedThread ?
-      this.isCollapsed :
-      this.rootComment.getParent().areChildThreadsCollapsed();
-    this.rootComment.getSiblingsAndSelf().forEach((sibling) => (
-      wasCollapsed ?
-        sibling.thread?.expand(undefined, true) :
-        sibling.thread?.collapse(undefined, true)
-    ));
-    this.constructor.emit('toggle');
-    this.rootComment.getParent()?.updateToggleChildThreadsButton();
-    if (clickedThread && !wasCollapsed) {
-      this.$expandNote.cdScrollIntoView();
   updateEndOfCollapsedRange(closedDiscussions) {
     let end = this.collapsedRange.slice(-1)[0];
 
@@ -1184,19 +1205,6 @@ class Thread {
    */
   getComments() {
     return commentRegistry.getAll().slice(this.rootComment.index, this.lastComment.index + 1);
-  }
-
-  /**
-   * Expand or collapse all threads on the page. On expand, scroll to the root comment of this
-   * thread.
-   */
-  toggleAll() {
-    if (this.isCollapsed) {
-      commentRegistry.expandAllThreads();
-      this.comments[0].scrollTo();
-    } else {
-      commentRegistry.collapseAllThreads();
-    }
   }
 
   static isInited = false;

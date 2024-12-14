@@ -1148,24 +1148,36 @@ export default {
   },
 
   /**
-   * Expand all threads on the page.
+   * Expand all threads of a certain level (and higher, i.e. shallower) on the page.
+   *
+   * @param {number} level
    */
-  expandAllThreads() {
-    this.items.slice().reverse().forEach((comment) => {
-      comment.thread?.expand(undefined, true);
-    });
+  expandAllThreadsOfLevel(level) {
+    this.items
+      .slice()
+      .reverse()
+      .filter((comment) => comment.level <= level)
+      .forEach((comment) => {
+        comment.thread?.expand(undefined, true);
+      });
     this.items.forEach((comment) => {
       comment.updateToggleChildThreadsButton();
     });
   },
 
   /**
-   * Collapse all threads on the page.
+   * Collapse all threads of a certain level on the page.
+   *
+   * @param {number} level
    */
-  collapseAllThreads() {
-    this.items.slice().reverse().forEach((comment) => {
-      comment.thread?.collapse(undefined, true);
-    });
+  collapseAllThreadsOfLevel(level) {
+    this.items
+      .slice()
+      .reverse()
+      .filter((comment) => comment.level === level)
+      .forEach((comment) => {
+        comment.thread?.collapse(undefined, true);
+      });
     Thread.emit('toggle');
     this.items.forEach((comment) => {
       comment.updateToggleChildThreadsButton();
