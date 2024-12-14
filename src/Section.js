@@ -578,64 +578,81 @@ class Section extends SectionSkeleton {
       .flatMap(([author, comments]) => ({
         name: author.getName(),
         count: comments.length,
+        newestCommentDate: Comment.getNewest(comments)?.date,
         $link: $('<a>')
           .text(author.getName())
           .attr('href', `#${comments[0].dtId || comments[0].id}`)
           .on('click', Comment.scrollToFirstFlashAll.bind(Comment, comments))
       }));
 
+    const getPanelByName = (name) =>
+      name === 'name' ? namePanel : name === 'count' ? countPanel : datePanel;
+
+    const authorsSortSetting = settings.get('authorsSort');
     const sortSelect = new OO.ui.ButtonSelectWidget({
       items: [
         new OO.ui.ButtonOptionWidget({
-          data: 'abc',
-          label: cd.s('section-authors-sort-abc'),
-          selected: settings.get('authorsSort') === 'abc',
+          data: 'name',
+          label: cd.s('section-authors-sort-name'),
+          selected: authorsSortSetting === 'name',
         }),
         new OO.ui.ButtonOptionWidget({
           data: 'count',
           label: cd.s('section-authors-sort-count'),
-          selected: settings.get('authorsSort') === 'count',
+          selected: authorsSortSetting === 'count',
+        }),
+        new OO.ui.ButtonOptionWidget({
+          data: 'date',
+          label: cd.s('section-authors-sort-date'),
+          selected: authorsSortSetting === 'date',
         }),
       ],
       classes: ['cd-popup-authors-sort'],
     });
     sortSelect.on('choose', (item) => {
-      stack.setItem(item.getData() === 'abc' ? abcPanel : countPanel);
+      stack.setItem(getPanelByName(item.getData()));
       settings.saveSettingOnTheFly('authorsSort', item.getData());
     });
 
-    const abcPanel = new OO.ui.PanelLayout({
-      $content: $('<ul>')
-        .addClass('cd-hlist')
-        .append(
-          data
-            .sort((d1, d2) => d2.name > d1.name ? -1 : 1)
-            .map((d) => $('<li>').append(d.$link.clone()))
-        ),
+    const wrapInHlist = ($content) => $('<ul>').addClass('cd-hlist').append($content);
+
+    const namePanel = new OO.ui.PanelLayout({
+      $content: wrapInHlist(
+        data
+          .sort((d1, d2) => d2.name > d1.name ? -1 : 1)
+          .map((d) => $('<li>').append(d.$link.clone()))
+      ),
       padded: false,
       expanded: false,
     });
     const countPanel = new OO.ui.PanelLayout({
-      $content: $('<ul>')
-        .addClass('cd-hlist')
-        .append(
-          data
-            .sort((d1, d2) => d2.count - d1.count)
-            .map((d) => (
-              $('<li>').append(
-                d.$link.clone(),
-                cd.mws('word-separator') + cd.mws('parentheses', d.count)
-              )
-            ))
-        ),
+      $content: wrapInHlist(
+        data
+          .sort((d1, d2) => d2.count - d1.count)
+          .map((d) => (
+            $('<li>').append(
+              d.$link.clone(),
+              cd.mws('word-separator') + cd.mws('parentheses', d.count)
+            )
+          ))
+      ),
+      padded: false,
+      expanded: false,
+    });
+    const datePanel = new OO.ui.PanelLayout({
+      $content: wrapInHlist(
+        data
+          .sort((d1, d2) => (d2.newestCommentDate || 0) - (d1.newestCommentDate || 0))
+          .map((d) => $('<li>').append(d.$link.clone()))
+      ),
       padded: false,
       expanded: false,
     });
     const stack = new OO.ui.StackLayout({
-      items: [abcPanel, countPanel],
+      items: [namePanel, countPanel, datePanel],
       expanded: false,
     });
-    stack.setItem(settings.get('authorsSort') === 'abc' ? abcPanel : countPanel);
+    stack.setItem(getPanelByName(authorsSortSetting));
 
     return $()
       .add(sortSelect.$element)
@@ -660,7 +677,7 @@ class Section extends SectionSkeleton {
    */
   createMetadataElement() {
     const authorCount = this.comments.map((comment) => comment.author).filter(unique).length;
-    const latestComment = Comment.getLatest(this.comments);
+    const latestComment = Comment.getNewest(this.comments, true);
 
     let latestCommentWrapper;
     let commentCountWrapper;

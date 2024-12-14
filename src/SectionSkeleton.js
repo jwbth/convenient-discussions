@@ -1,4 +1,5 @@
 import CdError from './CdError';
+import CommentSkeleton from './CommentSkeleton';
 import TreeWalker from './TreeWalker';
 import cd from './cd';
 import { defined, isHeadingNode, isMetadataNode } from './utils-general';
@@ -210,19 +211,12 @@ class SectionSkeleton {
      */
     this.commentsInFirstChunk = targetsToComments(targets.slice(headingIndex, nextHeadingIndex));
 
-    this.comments.forEach((comment) => {
-      if (
-        !this.oldestComment ||
-        (comment.date && (!this.oldestComment.date || this.oldestComment.date > comment.date))
-      ) {
-        /**
-         * Oldest comment in the section.
-         *
-         * @type {import('./CommentSkeleton').default}
-         */
-        this.oldestComment = comment;
-      }
-    });
+    /**
+     * Oldest comment in the section.
+     *
+     * @type {?import('./CommentSkeleton').default}
+     */
+    this.oldestComment = CommentSkeleton.getOldest(this.comments);
 
     this.comments ||= [];
 

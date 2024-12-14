@@ -75,8 +75,9 @@
 	"section-metadata-commentcount-authorcount": "$1 {{plural:$1|comment|comments}}<span class=\"cd-section-metadata-authorcount\"> from <span class=\"cd-section-metadata-authorcount-link\">$2 {{plural:$2|person|people}}</span></span>",
 	"section-metadata-newcommentcount": "+$1 {{plural:$1|new}}",
 	"section-metadata-lastcomment": "Latest comment:",
-	"section-authors-sort-abc": "Alphabetically",
+	"section-authors-sort-name": "By username",
 	"section-authors-sort-count": "By comment count",
+	"section-authors-sort-date": "By latest date",
 
 	"cld-title-comment": "Copy comment link",
 	"cld-title-section": "Copy section link",

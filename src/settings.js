@@ -72,7 +72,7 @@ export default {
     this.scheme.default = {
       'allowEditOthersComments': false,
       'alwaysExpandAdvanced': false,
-      'authorsSort': 'abc',
+      'authorsSort': 'name',
 
       // The order should coincide with the order of checkboxes in the autocompleteTypes setting -
       // otherwise the "Save" and "Reset" buttons in the settings dialog won't work properly.

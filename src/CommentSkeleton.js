@@ -1726,6 +1726,59 @@ class CommentSkeleton {
         }
       });
   }
+
+  /**
+   * Get the oldest comment in a list.
+   *
+   * @param {CommentSkeleton[]|CommentSkeletonLike[]} comments
+   * @returns {?(CommentSkeleton|CommentSkeletonLike)}
+   */
+  static getOldest(comments) {
+    return this.getOldestOrNewest(comments, 'oldest');
+  }
+
+  /**
+   * Get the oldest comment in a list.
+   *
+   * @param {CommentSkeleton[]|CommentSkeletonLike[]} comments
+   * @param {boolean} allowDateless
+   * @returns {?(CommentSkeleton|CommentSkeletonLike)}
+   */
+  static getNewest(comments, allowDateless) {
+    return this.getOldestOrNewest(comments, 'newest', allowDateless);
+  }
+
+  /**
+   * Get the oldest or newest comment in a list.
+   *
+   * @param {CommentSkeleton[]|CommentSkeletonLike[]} comments
+   * @param {'oldest'|'newest'} which
+   * @param {boolean} allowDateless
+   * @returns {?(CommentSkeleton|CommentSkeletonLike)}
+   * @private
+   */
+  static getOldestOrNewest(comments, which, allowDateless) {
+    return comments.reduce(
+      (oldestComment, comment) =>
+        (
+          ((comment.date || allowDateless) && !oldestComment) ||
+          (
+            comment.date &&
+            (
+              !oldestComment.date ||
+              (
+                which === 'oldest' ?
+                  comment.date < oldestComment.date :
+                  comment.date > oldestComment.date
+              )
+            )
+          )
+        ) ?
+          comment :
+          oldestComment,
+      null
+    );
+  }
 }
 
 /**
