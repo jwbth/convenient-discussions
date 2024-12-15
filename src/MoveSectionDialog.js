@@ -653,7 +653,7 @@ class MoveSectionDialog extends ProcessDialog {
         if (path) {
           const [absolutePairKey, absolutePairValue] = templateConfig.absolutePathPair || [];
           if (!(absolutePairKey && parameters[absolutePairKey]?.match(absolutePairValue))) {
-            path = mw.config.get('wgPageName') + '/' + path;
+            path = cd.page.name + '/' + path;
           }
         }
       }
