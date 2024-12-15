@@ -122,7 +122,7 @@ export function requestInBackground(params, method = 'post') {
  * @async
  * @param {string} code
  * @param {object} [customOptions]
- * @returns {external:jQueryPromise.<object>}
+ * @returns {JQueryPromise.<object>}
  */
 export async function parseCode(code, customOptions) {
   const defaultOptions = {

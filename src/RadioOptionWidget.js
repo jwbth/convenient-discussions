@@ -25,7 +25,7 @@ class RadioOptionWidget extends OO.ui.RadioOptionWidget {
    * Create a help element.
    *
    * @param {string} text
-   * @returns {external:jQuery}
+   * @returns {JQuery}
    */
   createHelpElement(text) {
     const helpWidget = new (require('./DivLabelWidget').default)({

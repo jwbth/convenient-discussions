@@ -1,7 +1,12 @@
+import { Document as DocumentClass, Element, Node as NodeClass, NodeWithChildren, Text } from 'domhandler';
 import { DomUtils, parseDocument } from 'htmlparser2';
 
 import { decodeHtmlEntities } from './utils-general';
 
+/** @type {DedicatedWorkerGlobalScope} */
+const self = this;
+
+self.Document = DocumentClass;
 self.Node = {
   ELEMENT_NODE: 1,
   TEXT_NODE: 3,
@@ -14,7 +19,7 @@ self.Node = {
  * Returns `true` to stop walking through subtree (after founding the required amounts for elements,
  * for instance).
  *
- * @param {external:Node} base
+ * @param {import('domhandler').Node} base
  * @param {Function} callback
  * @param {boolean} [checkSelf=false]
  * @returns {boolean}
@@ -24,20 +29,17 @@ function traverseSubtree(base, callback, checkSelf = false) {
   if (checkSelf && callback(base)) {
     return true;
   }
-  for (let n = base.firstChild; n; n = n.nextSibling) {
-    if (traverseSubtree(n, callback, true)) {
-      return true;
+
+  if (base instanceof NodeWithChildren) {
+    for (let n = base.firstChild; n; n = n.nextSibling) {
+      if (traverseSubtree(n, callback, true)) {
+        return true;
+      }
     }
   }
+
   return false;
 }
-
-const dummyDocument = parseDocument('<a>a</a>');
-const Document = dummyDocument.constructor;
-const firstElement = dummyDocument.childNodes[0];
-const Element = firstElement.constructor;
-const Text = firstElement.childNodes[0].constructor;
-const NodeConstructor = Object.getPrototypeOf(Object.getPrototypeOf(Text));
 
 // Note that the Element class already has the "children" property containing all child nodes, which
 // differs from what this property stands for in the browser DOM representation (only child nodes
@@ -132,6 +134,7 @@ Element.prototype.getAttribute = function (name) {
       .replace(/&amp;/g, '&')
       .replace(/&quot;/g, '"');
   }
+
   return value;
 };
 
@@ -182,52 +185,6 @@ Element.prototype.contains = function (node) {
     }
   }
   return false;
-};
-
-Element.prototype.follows = function (node) {
-  // This optimization is based on the assumption that elements existing in the document from the
-  // beginning will never swap positions.
-  if (this.startIndex && node.startIndex) {
-    return this.startIndex > node.startIndex;
-  }
-
-  if (this === node) {
-    return false;
-  }
-
-  const thisTree = [];
-  const nodeTree = [];
-  let sharedParent;
-  let thisSharedParentChild;
-  let nodeSharedParentChild;
-
-  for (let current = this; current; current = current.parentNode) {
-    if (current === node) {
-      return true;
-    }
-    thisTree.unshift(current);
-  }
-  for (let current = node; current; current = current.parentNode) {
-    nodeTree.unshift(current);
-    if (thisTree.includes(current)) {
-      sharedParent = current;
-      thisSharedParentChild = thisTree[thisTree.indexOf(current) + 1];
-
-      // nodeTree must have at least 2 elements; this is guaranteed by the check "current === node"
-      // above.
-      nodeSharedParentChild = nodeTree[1];
-
-      break;
-    }
-  }
-  const returnValue = (
-    !sharedParent ||
-    (
-      sharedParent.childNodes.indexOf(thisSharedParentChild) >
-      sharedParent.childNodes.indexOf(nodeSharedParentChild)
-    )
-  );
-  return returnValue;
 };
 
 Object.defineProperty(Element.prototype, 'tagName', {
@@ -374,23 +331,77 @@ Object.defineProperty(Text.prototype, 'textContent', {
   },
 });
 
-NodeConstructor.prototype.remove = function () {
+/**
+ * Check whether the element follows a node in the document (like
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/Node/compareDocumentPosition} checks).
+ *
+ * @param {NodeClass} node
+ * @returns {boolean}
+ */
+NodeClass.prototype.follows = function (node) {
+  // This optimization is based on the assumption that elements existing in the document from the
+  // beginning will never swap positions.
+  if (this.startIndex && node.startIndex) {
+    return this.startIndex > node.startIndex;
+  }
+
+  if (this === node) {
+    return false;
+  }
+
+  const thisTree = [];
+  const nodeTree = [];
+  let sharedParent;
+
+  let thisSharedParentChild;
+  let nodeSharedParentChild;
+
+  for (let current = this; current; current = current.parentNode) {
+    if (current === node) {
+      return true;
+    }
+
+    thisTree.unshift(current);
+  }
+  for (let current = node; current; current = current.parentNode) {
+    nodeTree.unshift(current);
+    if (thisTree.includes(current)) {
+      sharedParent = current;
+      thisSharedParentChild = thisTree[thisTree.indexOf(current) + 1];
+
+      // nodeTree must have at least 2 elements; this is guaranteed by the check "current === node"
+      // above.
+      nodeSharedParentChild = nodeTree[1];
+
+      break;
+    }
+  }
+  const returnValue = (
+    !sharedParent ||
+    !(sharedParent instanceof NodeWithChildren) ||
+    (
+      sharedParent.childNodes.indexOf(thisSharedParentChild) >
+      sharedParent.childNodes.indexOf(nodeSharedParentChild)
+    )
+  );
+  return returnValue;
+};
+
+NodeClass.prototype.remove = function () {
   DomUtils.removeElement(this);
 };
 
 // We need the "Document" class to imitate window.document for the code to be more easily ported to
 // other library if needed.
-Document.prototype.createElement = (name) => {
+DocumentClass.prototype.createElement = (name) => {
   return new Element(name, {});
 };
 
-Document.prototype.createTextNode = (content) => {
+DocumentClass.prototype.createTextNode = (content) => {
   return new Text(content || '');
 };
 
-Document.prototype.getElementsByClassName = Element.prototype.getElementsByClassName;
-Document.prototype.querySelectorAll = Element.prototype.querySelectorAll;
+DocumentClass.prototype.getElementsByClassName = Element.prototype.getElementsByClassName;
+DocumentClass.prototype.querySelectorAll = Element.prototype.querySelectorAll;
 
-self.Document = Document;
-
-export { traverseSubtree, parseDocument };
+export { parseDocument, traverseSubtree };

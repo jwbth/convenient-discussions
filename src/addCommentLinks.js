@@ -295,7 +295,7 @@ function isInSection(summary, name) {
 /**
  * Add comment links to a watchlist or a recent changes page. Add a watchlist menu to the watchlist.
  *
- * @param {external:jQuery} $content
+ * @param {JQuery} $content
  * @private
  */
 function processWatchlist($content) {
@@ -411,7 +411,7 @@ function processWatchlist($content) {
 /**
  * Add comment links to a contributions page.
  *
- * @param {external:jQuery} $content
+ * @param {JQuery} $content
  * @private
  */
 function processContributions($content) {
@@ -476,7 +476,7 @@ function processContributions($content) {
 /**
  * Add comment links to a history page.
  *
- * @param {external:jQuery} $content
+ * @param {JQuery} $content
  * @private
  */
 function processHistory($content) {
@@ -550,7 +550,7 @@ function processHistory($content) {
 /**
  * Add a comment link to a diff view.
  *
- * @param {external:jQuery} [$diff]
+ * @param {JQuery} [$diff]
  * @fires commentLinksAdded
  * @private
  */
@@ -655,7 +655,7 @@ function processDiff($diff) {
    * Comments links have been added to the revisions listed on the page.
    *
    * @event commentLinksAdded
-   * @param {external:jQuery} $root Root element of content to which the comment links were added.
+   * @param {JQuery} $root Root element of content to which the comment links were added.
    * @param {object} cd {@link convenientDiscussions} object.
    * @global
    */
@@ -666,7 +666,7 @@ function processDiff($diff) {
  * Add comment links to the revisions listed on the page that is a revision list page (not a diff
  * page, for instance).
  *
- * @param {external:jQuery} $content
+ * @param {JQuery} $content
  * @private
  */
 function processRevisionListPage($content) {

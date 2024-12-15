@@ -503,7 +503,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    *
    * @see
    * https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html#uploadFile
-   * @returns {external:jQueryPromise}
+   * @returns {JQueryPromise}
    * @protected
    */
   uploadFile() {
@@ -731,7 +731,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * {@link mw.Upload.ForeignStructuredUpload#getFilename getFilename}, and
    * {@link ForeignStructuredUpload#getText getText} to get details from the form.
    *
-   * @returns {external:jQueryPromise}
+   * @returns {JQueryPromise}
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html#saveFile
    * @protected

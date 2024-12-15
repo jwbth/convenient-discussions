@@ -21,7 +21,7 @@ export default {
   /**
    * Navigation panel element.
    *
-   * @type {external:jQuery}
+   * @type {JQuery}
    * @memberof module:navPanel
    */
   $element: undefined,

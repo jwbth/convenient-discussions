@@ -1,5 +1,5 @@
 /**
- * jQuery extensions. See {@link external:jQuery.fn jQuery.fn}.
+ * jQuery extensions. See {@link JQuery.fn jQuery.fn}.
  *
  * @module jqueryExtensions
  */
@@ -14,18 +14,18 @@ import { createSvg } from './utils-window';
  * accepts many parameters and is faster. Unlike `.add()`, only accepts jQuery objects though and
  * doesn't reorder elements based on their relative position in the DOM.
  *
- * @param {Array.<external:jQuery|undefined>} arrayOfJquery jQuery objects. Undefined values will be
+ * @param {Array.<JQuery|undefined>} arrayOfJquery jQuery objects. Undefined values will be
  *   omitted.
- * @returns {external:JQuery} jQuery
+ * @returns {JQuery} jQuery
  * @name cdMerge
- * @memberof external:jQuery
+ * @memberof JQuery
  */
 $.cdMerge = function (...arrayOfJquery) {
   return $($.map(arrayOfJquery.filter(defined), ($object) => $object.get()));
 };
 
 /**
- * jQuery. See {@link external:jQuery.fn jQuery.fn} for extensions.
+ * jQuery. See {@link JQuery.fn jQuery.fn} for extensions.
  *
  * @external jQuery
  * @type {object}
@@ -37,14 +37,14 @@ $.cdMerge = function (...arrayOfJquery) {
  * jQuery extensions.
  *
  * @namespace fn
- * @memberof external:jQuery
+ * @memberof JQuery
  */
 export default {
   /**
    * Remove non-element nodes and metadata elements (`'STYLE'`, `'LINK'`) from a jQuery collection.
    *
-   * @returns {external:jQuery}
-   * @memberof external:jQuery.fn
+   * @returns {JQuery}
+   * @memberof JQuery.fn
    */
   cdRemoveNonElementNodes: function () {
     return this.filter((i, el) => el.tagName && !isMetadataNode(el));
@@ -57,8 +57,8 @@ export default {
    *   relative to the viewport.
    * @param {boolean} [smooth=true] Whether to use a smooth animation.
    * @param {Function} [callback] Callback to run after the animation has completed.
-   * @returns {external:jQuery}
-   * @memberof external:jQuery.fn
+   * @returns {JQuery}
+   * @memberof JQuery.fn
    */
   cdScrollTo(alignment = 'top', smooth = true, callback) {
     const defaultScrollPaddingTop = 7;
@@ -127,7 +127,7 @@ export default {
    *
    * @param {boolean} partially Return `true` even if only a part of the element is in the viewport.
    * @returns {?boolean}
-   * @memberof external:jQuery.fn
+   * @memberof JQuery.fn
    */
   cdIsInViewport(partially = false) {
     const $elements = this.cdRemoveNonElementNodes();
@@ -167,8 +167,8 @@ export default {
    *   relative to the viewport.
    * @param {boolean} [smooth=true] Whether to use a smooth animation.
    * @param {Function} [callback] Callback to run after the animation has completed.
-   * @returns {external:jQuery}
-   * @memberof external:jQuery.fn
+   * @returns {JQuery}
+   * @memberof JQuery.fn
    */
   cdScrollIntoView(alignment = 'top', smooth = true, callback) {
     if (this.cdIsInViewport()) {
@@ -192,7 +192,7 @@ export default {
    * taken into account. **This function is expensive.**
    *
    * @returns {string}
-   * @memberof external:jQuery.fn
+   * @memberof JQuery.fn
    */
   cdGetText() {
     let text;
@@ -209,8 +209,8 @@ export default {
   /**
    * Add a close button to the element.
    *
-   * @returns {external:jQuery}
-   * @memberof external:jQuery.fn
+   * @returns {JQuery}
+   * @memberof JQuery.fn
    */
   cdAddCloseButton() {
     if (this.find('.cd-closeButton').length) {
@@ -236,8 +236,8 @@ export default {
   /**
    * Remove the close button from the element.
    *
-   * @returns {external:jQuery}
-   * @memberof external:jQuery.fn
+   * @returns {JQuery}
+   * @memberof JQuery.fn
    */
   cdRemoveCloseButton() {
     this.find('.cd-closeButton').remove();

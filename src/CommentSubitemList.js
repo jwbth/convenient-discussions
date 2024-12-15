@@ -20,7 +20,7 @@ class CommentSubitemList {
    * Add a subitem to the list.
    *
    * @param {string} name
-   * @param {external:jQuery} $element
+   * @param {JQuery} $element
    */
   add(name, $element) {
     this.content[name] = $element;
@@ -52,7 +52,7 @@ class CommentSubitemList {
    * Get the subitem with the provided name.
    *
    * @param {string} name
-   * @returns {?external:jQuery}
+   * @returns {?JQuery}
    */
   get(name) {
     return this.content[name] || null;

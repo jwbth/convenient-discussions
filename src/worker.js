@@ -43,7 +43,7 @@ function setAlarm(interval) {
 /**
  * Get all text nodes under the root element.
  *
- * @returns {external:Node[]}
+ * @returns {import('domhandler').Node[]}
  * @private
  */
 function getAllTextNodes() {

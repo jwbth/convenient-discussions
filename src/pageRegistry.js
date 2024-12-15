@@ -210,7 +210,7 @@ export class Page {
   /**
    * Find an archiving info element on the page.
    *
-   * @returns {?external:jQuery}
+   * @returns {?JQuery}
    * @private
    */
   findArchivingInfoElement() {

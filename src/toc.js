@@ -244,7 +244,7 @@ export default {
    *
    * @param {import('./SectionSkeleton').SectionSkeletonLike} section
    * @param {object[]} currentTree
-   * @param {external:jQuery} $topUl
+   * @param {JQuery} $topUl
    * @param {string[]} newSectionTocIds
    * @private
    */
@@ -711,7 +711,7 @@ class TocItem {
      * Section link jQuery element.
      *
      * @name $link
-     * @type {external:jQuery}
+     * @type {JQuery}
      * @memberof import('./toc')~TocItem
      * @instance
      */
@@ -720,7 +720,7 @@ class TocItem {
      * Section text jQuery element (including the title, number, and other possible additions).
      *
      * @name $text
-     * @type {external:jQuery}
+     * @type {JQuery}
      * @memberof import('./toc')~TocItem
      * @instance
      */
@@ -739,7 +739,7 @@ class TocItem {
    * _For internal use._ Generate HTML to use it in the TOC for the section. Only a limited number
    * of HTML elements is allowed in TOC.
    *
-   * @param {external:jQuery} $headline
+   * @param {JQuery} $headline
    */
   replaceText($headline) {
     if (!this.canBeModified) return;

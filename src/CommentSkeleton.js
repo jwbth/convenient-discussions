@@ -13,6 +13,16 @@ import { generateFixedPosTimestamp, isHeadingNode, isInline, isMetadataNode, spa
  */
 class CommentSkeleton {
   /**
+   * @typedef {object} HiddenElementData
+   * @property {string} type
+   * @property {string} tagName
+   * @property {string} html
+   */
+
+  /** @type {HiddenElementData[]|undefined} */
+  hiddenElementsData = undefined;
+
+  /**
    * Create a comment skeleton instance.
    *
    * @param {import('./Parser').default} parser

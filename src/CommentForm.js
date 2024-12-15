@@ -806,7 +806,7 @@ class CommentForm {
     /**
      * The main form element.
      *
-     * @type {external:jQuery}
+     * @type {JQuery}
      */
     this.$element = $('<div>').addClass([
       `cd-commentForm cd-commentForm-${this.mode}`,
@@ -824,21 +824,21 @@ class CommentForm {
     /**
      * The area where service messages are displayed.
      *
-     * @type {external:jQuery}
+     * @type {JQuery}
      */
     this.$messageArea = $('<div>').addClass('cd-commentForm-messageArea');
 
     /**
      * The area where edit summary preview is displayed.
      *
-     * @type {external:jQuery}
+     * @type {JQuery}
      */
     this.$summaryPreview = $('<div>').addClass('cd-summaryPreview');
 
     /**
      * Advanced section container.
      *
-     * @type {external:jQuery}
+     * @type {JQuery}
      */
     this.$advanced = $('<div>')
       .addClass('cd-commentForm-advanced')
@@ -851,7 +851,7 @@ class CommentForm {
     /**
      * Start (left on LTR wikis, right on RTL wikis) form buttons container.
      *
-     * @type {external:jQuery}
+     * @type {JQuery}
      */
     this.$buttonsStart = $('<div>')
       .addClass('cd-commentForm-buttons-start')
@@ -864,7 +864,7 @@ class CommentForm {
     /**
      * End (right on LTR wikis, left on RTL wikis) form buttons container.
      *
-     * @type {external:jQuery}
+     * @type {JQuery}
      */
     this.$buttonsEnd = $('<div>')
       .addClass('cd-commentForm-buttons-end')
@@ -878,7 +878,7 @@ class CommentForm {
     /**
      * Form buttons container.
      *
-     * @type {external:jQuery}
+     * @type {JQuery}
      */
     this.$buttons = $('<div>')
       .addClass('cd-commentForm-buttons')
@@ -900,7 +900,7 @@ class CommentForm {
     /**
      * The area where comment previews and changes are displayed.
      *
-     * @type {external:jQuery}
+     * @type {JQuery}
      */
     this.$previewArea = $('<div>').addClass('cd-commentForm-previewArea mw-body-content');
 
@@ -1186,7 +1186,7 @@ class CommentForm {
     /**
      * Text insert buttons.
      *
-     * @type {external:jQuery|undefined}
+     * @type {JQuery|undefined}
      */
     this.$insertButtons = $('<div>')
       .addClass('cd-insertButtons')
@@ -1274,7 +1274,7 @@ class CommentForm {
   /**
    * Test if a target comment or section exists in the wikitext.
    *
-   * @returns {external:jQueryPromise}
+   * @returns {JQueryPromise}
    * @private
    */
   checkCode() {
@@ -1283,7 +1283,7 @@ class CommentForm {
        * Request to test if a comment or section exists in the code made by
        * {@link CommentForm#checkCode}.
        *
-       * @type {external:jQueryPromise|undefined}
+       * @type {JQueryPromise|undefined}
        */
       this.checkCodeRequest = this.target.loadCode(this).catch((e) => {
         this.$messageArea.empty();
@@ -1470,7 +1470,7 @@ class CommentForm {
    * Get a dummy "floatable container" to attach a popup to so that the popup is at the caret
    * position.
    *
-   * @returns {external:jQuery}
+   * @returns {JQuery}
    * @private
    */
   getCommentInputDummyFloatableContainer() {
@@ -2201,7 +2201,7 @@ class CommentForm {
   /**
    * Show a service message above the form.
    *
-   * @param {string|external:jQuery} htmlOrJquery
+   * @param {string|JQuery} htmlOrJquery
    * @param {object} [options]
    * @param {'notice'|'error'|'warning'|'success'} [options.type='notice'] See the
    *   {@link https://doc.wikimedia.org/oojs-ui/master/demos/?page=widgets&theme=wikimediaui&direction=ltr&platform=desktop#MessageWidget-type-notice-inline-true OOUI Demos}.
@@ -2251,7 +2251,7 @@ class CommentForm {
    * Abort the operation the form is undergoing and show an error message.
    *
    * @param {object} options
-   * @param {string|external:jQuery} options.message Message visible to the user.
+   * @param {string|JQuery} options.message Message visible to the user.
    * @param {'error'|'notice'|'warning'} [options.messageType='error'] Message type if not
    *   `'error'`.
    * @param {boolean} [options.isRawMessage=false] Show the message as it is, without icons and
@@ -2611,7 +2611,7 @@ class CommentForm {
      * A comment preview has been rendered.
      *
      * @event previewReady
-     * @param {external:jQuery} $previewArea {@link CommentForm#$previewArea} object.
+     * @param {JQuery} $previewArea {@link CommentForm#$previewArea} object.
      * @param {object} cd {@link convenientDiscussions} object.
      */
     mw.hook('convenientDiscussions.previewReady').fire(this.$previewArea, cd);

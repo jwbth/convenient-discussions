@@ -63,7 +63,7 @@ class Comment extends CommentSkeleton {
     /**
      * Comment signature element.
      *
-     * @type {external:jQuery}
+     * @type {JQuery}
      */
     this.$signature = $(this.signatureElement);
 
@@ -485,7 +485,7 @@ class Comment extends CommentSkeleton {
     /**
      * Comment header. Used when comment reformatting is enabled.
      *
-     * @type {external:jQuery|undefined}
+     * @type {JQuery|undefined}
      */
     this.$header = $(this.headerElement);
 
@@ -515,7 +515,7 @@ class Comment extends CommentSkeleton {
      * Comment menu. Used when comment reformatting is enabled; otherwise
      * {@link Comment#$overlayMenu} is used.
      *
-     * @type {external:jQuery|undefined}
+     * @type {JQuery|undefined}
      */
     this.$menu = $(this.menuElement);
 
@@ -1634,21 +1634,21 @@ class Comment extends CommentSkeleton {
     /**
      * Comment's underlay.
      *
-     * @type {?(external:jQuery|undefined)}
+     * @type {?(JQuery|undefined)}
      */
     this.$underlay = $(this.underlay);
 
     /**
      * Comment's overlay.
      *
-     * @type {?(external:jQuery|undefined)}
+     * @type {?(JQuery|undefined)}
      */
     this.$overlay = $(this.overlay);
 
     /**
      * Comment's side marker.
      *
-     * @type {external:jQuery|undefined}
+     * @type {JQuery|undefined}
      */
     this.$marker = $(this.marker);
 
@@ -1656,14 +1656,14 @@ class Comment extends CommentSkeleton {
       /**
        * Menu element in the comment's overlay.
        *
-       * @type {external:jQuery|undefined}
+       * @type {JQuery|undefined}
        */
       this.$overlayMenu = $(this.overlayMenu);
 
       /**
        * Gradient element in the comment's overlay.
        *
-       * @type {external:jQuery|undefined}
+       * @type {JQuery|undefined}
        */
       this.$overlayGradient = $(this.overlayGradient);
     }
@@ -1990,7 +1990,7 @@ class Comment extends CommentSkeleton {
     /**
      * Comment underlay and menu, whose colors are animated in some events.
      *
-     * @type {external:jQuery|undefined}
+     * @type {JQuery|undefined}
      */
     this.$animatedBackground = this.$underlay.add(this.$overlayMenu);
 
@@ -2064,7 +2064,7 @@ class Comment extends CommentSkeleton {
    * @param {string} body
    * @param {object[]} revisions
    * @param {object[]} commentsData
-   * @returns {external:jQuery}
+   * @returns {JQuery}
    * @private
    */
   scrubDiff(body, revisions, commentsData) {
@@ -2300,7 +2300,7 @@ class Comment extends CommentSkeleton {
   /**
    * Add a note that the comment has been changed.
    *
-   * @param {external:jQuery} $changeNote
+   * @param {JQuery} $changeNote
    * @private
    */
   addChangeNote($changeNote) {
@@ -2601,7 +2601,7 @@ class Comment extends CommentSkeleton {
    * _For internal use._ Generate a JQuery object containing an edit summary, diff body, and link to
    * the next diff.
    *
-   * @returns {Promise.<external:jQuery>}
+   * @returns {Promise.<JQuery>}
    */
   async generateDiffView() {
     const edit = await this.findEdit();
@@ -3193,7 +3193,7 @@ class Comment extends CommentSkeleton {
    * example with {@link Comment#replaceElement}. Using a getter also allows to save a little time
    * on running `$()`, although that alone is perhaps not enough to create it.
    *
-   * @type {external:jQuery}
+   * @type {JQuery}
    */
   get $elements() {
     this.cached$elements ??= $(this.elements);
@@ -3209,7 +3209,7 @@ class Comment extends CommentSkeleton {
   /**
    * Replace an element that is one of the comment's elements with another element or HTML string.
    *
-   * @param {Element|external:jQuery} element Element to replace. Provide a native element only if
+   * @param {Element|JQuery} element Element to replace. Provide a native element only if
    *   we're in the page processing phase (and {@link Comment#$elements} has not been requested,
    *   hence cached yet).
    * @param {Element|string} newElementOrHtml Element or HTML string to replace with.
@@ -3442,7 +3442,7 @@ class Comment extends CommentSkeleton {
    * nested, so there can be a number of invisible collapsed notes for a comment.) If the visible
    * collapsed note is unavailable, return the top invisible collapsed note.
    *
-   * @returns {?external:jQuery}
+   * @returns {?JQuery}
    * @private
    */
   getVisibleExpandNote() {
@@ -3470,9 +3470,9 @@ class Comment extends CommentSkeleton {
 
   /**
    * @typedef {object} AddSubitemReturn
-   * @property {external:jQuery} $wrappingItem
-   * @property {external:jQuery} [$wrappingList]
-   * @property {external:jQuery} [$outerWrapper]
+   * @property {JQuery} $wrappingItem
+   * @property {JQuery} [$wrappingList]
+   * @property {JQuery} [$outerWrapper]
    * @memberof Comment
    * @inner
    */
@@ -3684,7 +3684,7 @@ class Comment extends CommentSkeleton {
    * @param {number[]} currentPageVisits
    * @param {number} currentTime
    * @param {Comment} unseenComment
-   * @param {external:jQuery} $changeNote
+   * @param {JQuery} $changeNote
    * @returns {boolean} Whether there is a time conflict.
    */
   initNewAndSeen(currentPageVisits, currentTime, unseenComment, $changeNote) {

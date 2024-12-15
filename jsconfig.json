@@ -1,13 +1,15 @@
 {
   "compilerOptions": {
     "allowJs": true,
-    "checkJs": false,
+    "checkJs": true,
     "noEmit": true,
+    "lib": ["ES2016", "DOM", "WebWorker"],
     "types": [
       "./node_modules/types-mediawiki",
       "./node_modules/@types/oojs",
       "./node_modules/@types/oojs-ui",
       "./node_modules/@types/jquery"
     ]
-  }
+  },
+  "include": ["src/**/*"]
 }

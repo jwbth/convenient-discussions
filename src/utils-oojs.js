@@ -157,7 +157,7 @@ import controller from './controller';
  * action string, not a boolean (which helps to differentiate between more than two types of answer
  * and also a window close by pressing Esc).
  *
- * @param {external:jQuery|string} message
+ * @param {JQuery|string} message
  * @param {object} [options={}]
  * @returns {Promise.<Array>}
  */

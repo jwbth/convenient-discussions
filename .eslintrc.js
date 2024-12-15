@@ -43,6 +43,18 @@ module.exports = {
     "import",
   ],
   "rules": {
+    // We use them for text masking
+    "no-control-regex": "off",
+
+    "no-constant-condition": ["error", { "checkLoops": false }],
+    "import/order": ["warn", {
+      "alphabetize": {
+        caseInsensitive: false,
+        order: "asc",
+      },
+      "newlines-between": "always",
+    }],
+
     "jsdoc/check-alignment": "warn",
     "jsdoc/check-param-names": "warn",
     "jsdoc/check-tag-names": "warn",
@@ -71,22 +83,5 @@ module.exports = {
         startLines: 1,
       },
     ],
-
-    // Produces a lot of strange errors, doesn't support `external:`
-    "jsdoc/valid-types": "off",
-    "jsdoc/no-undefined-types": "off",
-
-    // We use them for text masking
-    "no-control-regex": "off",
-
-    "no-constant-condition": ["error", { "checkLoops": false }],
-
-    "import/order": ["warn", {
-      "alphabetize": {
-        caseInsensitive: false,
-        order: "asc",
-      },
-      "newlines-between": "always",
-    }],
   },
 };

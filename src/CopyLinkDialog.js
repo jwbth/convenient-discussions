@@ -201,7 +201,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   /**
    * Create the content of the "Anchor" panel in the dialog.
    *
-   * @returns {external:jQuery}
+   * @returns {JQuery}
    * @protected
    */
   createAnchorPanelContent() {
@@ -291,7 +291,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   /**
    * Create the content of the "Diff" panel in the dialog.
    *
-   * @returns {external:jQuery}
+   * @returns {JQuery}
    * @protected
    */
   createDiffPanelContent() {

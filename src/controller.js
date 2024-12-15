@@ -297,7 +297,7 @@ export default {
   /**
    * Get the popup overlay used for OOUI components.
    *
-   * @returns {external:jQuery}
+   * @returns {JQuery}
    */
   getPopupOverlay() {
     this.$popupOverlay ??= $('<div>')
@@ -1257,7 +1257,7 @@ export default {
    * encounters `cdJumpedToComment` in the history state, doesn't scroll to the comment which is a
    * wrong behavior when the user clicks a link.
    *
-   * @param {external:jQuery} $content
+   * @param {JQuery} $content
    * @private
    */
   connectToCommentLinks($content) {
@@ -1287,7 +1287,7 @@ export default {
   /**
    * Highlight mentions of the current user.
    *
-   * @param {external:jQuery} $content
+   * @param {JQuery} $content
    * @private
    */
   highlightMentions($content) {
@@ -1326,7 +1326,7 @@ export default {
    * (by using `mw.hook('wikipage.content').fire()`). This is performed by some user scripts, such
    * as QuickEdit.
    *
-   * @param {external:jQuery} $content
+   * @param {JQuery} $content
    * @private
    */
   handleWikipageContentHookFirings($content) {

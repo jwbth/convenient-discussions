@@ -21,14 +21,14 @@ import { parseWikiUrl, isInline, removeFromArrayIfPresent, defined, spacesToUnde
  * {@link https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.HtmlSnippet.html OO.ui.HtmlSnippet}, but
  * works not only with OOUI widgets. Optionally, attach callback functions and `target="_blank"`
  * attribute to links with the provided class names. See also
- * {@link external:jQuery.cdMerge jQuery.cdMerge}.
+ * {@link JQuery.cdMerge jQuery.cdMerge}.
  *
  * @param {string} html
  * @param {object} [options={}]
  * @param {WrapCallbacks} [options.callbacks]
  * @param {string} [options.tagName='span']
  * @param {boolean} [options.targetBlank]
- * @returns {external:jQuery}
+ * @returns {JQuery}
  */
 export function wrapHtml(html, options = {}) {
   const tagName = options.tagName || 'span';
@@ -184,7 +184,7 @@ export function isCmdModifierPressed(e) {
  * keys and selectors as values. If no value for the skin is provided, the `default` value is used.
  *
  * @param {object} selectors
- * @returns {external:jQuery}
+ * @returns {JQuery}
  */
 export function skin$(selectors) {
   return $(selectors[cd.g.skin] || selectors.default || selectors.vector);
@@ -193,7 +193,7 @@ export function skin$(selectors) {
 /**
  * Get the footer element.
  *
- * @returns {external:jQuery}
+ * @returns {JQuery}
  */
 export function getFooter() {
   return skin$({
@@ -231,8 +231,8 @@ export function getHigherNodeAndOffsetInSelection(selection) {
  *
  * @param {string} text Text to copy.
  * @param {object} messages
- * @param {string|external:jQuery} messages.success Success message.
- * @param {string|external:jQuery} messages.fail Fail message.
+ * @param {string|JQuery} messages.success Success message.
+ * @param {string|JQuery} messages.fail Fail message.
  * @private
  */
 export function copyText(text, { success, fail }) {
@@ -534,7 +534,7 @@ export function getRangeContents(start, end, rootElement) {
  * @param {number} height
  * @param {number} [viewBoxWidth=width]
  * @param {number} [viewBoxHeight=height]
- * @returns {external:jQuery}
+ * @returns {JQuery}
  */
 export function createSvg(width, height, viewBoxWidth = width, viewBoxHeight = height) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');

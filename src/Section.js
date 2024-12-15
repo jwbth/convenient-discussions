@@ -35,7 +35,7 @@ class Section extends SectionSkeleton {
    * @throws {CdError}
    */
   constructor(parser, heading, targets, subscriptions) {
-    super(parser, heading, targets, subscriptions);
+    super(parser, heading, targets);
 
     this.subscriptions = subscriptions;
 
@@ -100,14 +100,14 @@ class Section extends SectionSkeleton {
     /**
      * Headline element as a jQuery object.
      *
-     * @type {external:jQuery}
+     * @type {JQuery}
      */
     this.$headline = $(this.headlineElement);
 
     /**
      * Heading element as a jQuery element.
      *
-     * @type {external:jQuery}
+     * @type {JQuery}
      */
     this.$heading = $(this.headingElement);
 
@@ -206,7 +206,7 @@ class Section extends SectionSkeleton {
     /**
      * Reply button wrapper and part-time reply comment form wrapper, an item element.
      *
-     * @type {external:jQuery|undefined}
+     * @type {JQuery|undefined}
      */
     this.$replyButtonWrapper = $(wrapper);
 
@@ -216,7 +216,7 @@ class Section extends SectionSkeleton {
      * created by the script only when there is no suitable element that already exists. If there
      * is, it can contain other elements (and comments) too.
      *
-     * @type {external:jQuery|undefined}
+     * @type {JQuery|undefined}
      */
     this.$replyButtonContainer = $(container);
   }
@@ -247,6 +247,7 @@ class Section extends SectionSkeleton {
     const button = this.canBeSubsectioned() ? this.createAddSubsectionButton() : undefined;
 
     const baseSection = this.getBase(true);
+
     const lastDescendantButton =
       this === baseSection?.getLastDescendant() && baseSection.canBeSubsectioned()
         ? baseSection.createAddSubsectionButton(this)
@@ -283,7 +284,7 @@ class Section extends SectionSkeleton {
     /**
      * "Add subsection" buttons container.
      *
-     * @type {external:jQuery|undefined}
+     * @type {JQuery|undefined}
      */
     this.$addSubsectionButtonsContainer = $(container);
   }
@@ -777,14 +778,14 @@ class Section extends SectionSkeleton {
     /**
      * Metadata element in the {@link Section#$bar bar element}.
      *
-     * @type {external:jQuery|undefined}
+     * @type {JQuery|undefined}
      */
     this.$metadata = $(metadataElement);
 
     /**
      * Comment count wrapper element in the {@link Section#$metadata metadata element}.
      *
-     * @type {external:jQuery|undefined}
+     * @type {JQuery|undefined}
      * @private
      */
     this.$commentCountWrapper = $(commentCountWrapper);
@@ -793,7 +794,7 @@ class Section extends SectionSkeleton {
       /**
        * Author count button element in the {@link Section#$metadata metadata element}.
        *
-       * @type {external:jQuery|undefined}
+       * @type {JQuery|undefined}
        */
       this.$authorCountButton = $(authorCountButton.element);
     }
@@ -801,7 +802,7 @@ class Section extends SectionSkeleton {
     /**
      * Latest comment date wrapper element in the {@link Section#$metadata metadata element}.
      *
-     * @type {external:jQuery|undefined}
+     * @type {JQuery|undefined}
      */
     this.$latestCommentWrapper = $(latestCommentWrapper);
   }
@@ -949,7 +950,7 @@ class Section extends SectionSkeleton {
      * Actions element under the 2-level section heading _or_ to the right of headings of other
      * levels.
      *
-     * @type {external:jQuery}
+     * @type {JQuery}
      */
     this.$actions = $(actionsElement);
 
@@ -1010,7 +1011,7 @@ class Section extends SectionSkeleton {
     /**
      * Bar element under a 2-level section heading.
      *
-     * @type {external:jQuery|undefined}
+     * @type {JQuery|undefined}
      */
     this.$bar = $(barElement);
   }
@@ -1447,7 +1448,7 @@ class Section extends SectionSkeleton {
    * _For internal use._ When the section's headline is live-updated in {@link Comment#update}, also
    * update some aspects of the section.
    *
-   * @param {external:jQuery} $html
+   * @param {JQuery} $html
    */
   update($html) {
     const originalHeadline = this.headline;
