@@ -104,7 +104,7 @@ class CommentForm {
      * @type {number}
      * @private
      */
-    this.index = this.constructor.counter++;
+    this.index = CommentForm.counter++;
 
     /**
      * Is the comment form registered ({@link CommentForm#unregister .unregister()} hasn't been run
@@ -1049,7 +1049,7 @@ class CommentForm {
           icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=code&lang=${lang}&skin=vector`,
           action: {
             type: 'encapsulate',
-            options: this.constructor.encapsulateOptions.code,
+            options: CommentForm.encapsulateOptions.code,
           },
         },
         codeBlock: {
@@ -1071,7 +1071,7 @@ class CommentForm {
           icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-styling&image=underline&lang=${lang}&skin=vector`,
           action: {
             type: 'encapsulate',
-            options: this.constructor.encapsulateOptions.underline,
+            options: CommentForm.encapsulateOptions.underline,
           },
         },
         strikethrough: {
@@ -1080,7 +1080,7 @@ class CommentForm {
           icon: `${scriptPath}/load.php?modules=oojs-ui.styles.icons-editing-styling&image=strikethrough&lang=${lang}&skin=vector`,
           action: {
             type: 'encapsulate',
-            options: this.constructor.encapsulateOptions.strikethrough,
+            options: CommentForm.encapsulateOptions.strikethrough,
           },
         },
       },
@@ -1653,9 +1653,7 @@ class CommentForm {
   handlePasteDrop(e) {
     const data = e.originalEvent.clipboardData || e.originalEvent.dataTransfer;
 
-    const image = [...data.items].find((item) => (
-      this.constructor.allowedFileTypes.includes(item.type)
-    ));
+    const image = [...data.items].find((item) => CommentForm.allowedFileTypes.includes(item.type));
     if (image) {
       e.preventDefault();
       this.uploadImage(image.getAsFile());
@@ -1743,7 +1741,7 @@ class CommentForm {
       .on('dragover', (e) => {
         if (
           ![...e.originalEvent.dataTransfer.items].some(((item) => (
-            this.constructor.allowedFileTypes.includes(item.type)
+            CommentForm.allowedFileTypes.includes(item.type)
           )))
         ) {
           return;
@@ -1921,20 +1919,20 @@ class CommentForm {
 
           // Ctrl+U
           if (keyCombination(e, 85, ['cmd'])) {
-            this.encapsulateSelection(this.constructor.encapsulateOptions.underline);
+            this.encapsulateSelection(CommentForm.encapsulateOptions.underline);
             e.preventDefault();
           }
         }
 
         // Ctrk+Shift+5
         if (keyCombination(e, 53, ['cmd', 'shift'])) {
-          this.encapsulateSelection(this.constructor.encapsulateOptions.strikethrough);
+          this.encapsulateSelection(CommentForm.encapsulateOptions.strikethrough);
           e.preventDefault();
         }
 
         // Ctrk+Shift+6
         if (keyCombination(e, 54, ['cmd', 'shift'])) {
-          this.encapsulateSelection(this.constructor.encapsulateOptions.code);
+          this.encapsulateSelection(CommentForm.encapsulateOptions.code);
           e.preventDefault();
         }
 
@@ -2511,7 +2509,7 @@ class CommentForm {
    * @private
    */
   async buildSource(action, operation) {
-    const commentIds = this.constructor.extractCommentIds(this.commentInput.getValue());
+    const commentIds = CommentForm.extractCommentIds(this.commentInput.getValue());
 
     this.newSectionApi = Boolean(
       this.mode === 'addSection' &&
@@ -3280,7 +3278,7 @@ class CommentForm {
   unregister() {
     if (!this.registered) return;
 
-    this.constructor.forgetOnTarget(this.target, this.mode);
+    CommentForm.forgetOnTarget(this.target, this.mode);
 
     // Popups can be placed outside the form element, so they need to be torn down whenever the form
     // is unregistered (even if the form itself is not torn down).

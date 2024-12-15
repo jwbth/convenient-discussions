@@ -52,13 +52,13 @@ class LiveTimestamp {
    */
   init() {
     if (this.format === 'improved') {
-      if (!this.constructor.improvedTimestampsInited) {
+      if (!LiveTimestamp.improvedTimestampsInited) {
         // Timestamps of the "improved" format are updated all together, at the boundaries of days.
         // So, we only need to initiate the timeouts once.
-        this.constructor.initImproved();
+        LiveTimestamp.initImproved();
       }
-      if (this.date.getTime() > this.constructor.yesterdayStart) {
-        this.constructor.improvedTimestamps.push(this);
+      if (this.date.getTime() > LiveTimestamp.yesterdayStart) {
+        LiveTimestamp.improvedTimestamps.push(this);
       }
     } else if (this.format === 'relative') {
       this.setUpdateTimeout();
@@ -87,11 +87,11 @@ class LiveTimestamp {
         boundary += threshold.step * cd.g.msInMin
       ) {
         if (difference < boundary) {
-          removeFromArrayIfPresent(this.constructor.updateTimeouts, this.updateTimeout);
+          removeFromArrayIfPresent(LiveTimestamp.updateTimeouts, this.updateTimeout);
           this.updateTimeout = setTimeout(() => {
             this.setUpdateTimeout(true);
           }, boundary - difference);
-          this.constructor.updateTimeouts.push(this.updateTimeout);
+          LiveTimestamp.updateTimeouts.push(this.updateTimeout);
           break;
         }
       }

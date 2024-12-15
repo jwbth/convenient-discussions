@@ -257,14 +257,14 @@ class Parser {
         authorData.isLastLinkAuthorLink = false;
 
         if (node.tagName === 'A') {
-          if (!this.constructor.processLinkData(node, authorData)) break;
+          if (!Parser.processLinkData(node, authorData)) break;
         } else {
           const links = [...node.getElementsByTagName('a')].reverse();
           for (const link of links) {
             // https://en.wikipedia.org/wiki/Template:Talkback and similar cases
             if (link.classList.contains('external')) continue;
 
-            this.constructor.processLinkData(link, authorData);
+            Parser.processLinkData(link, authorData);
           }
         }
 
@@ -302,7 +302,7 @@ class Parser {
             // outside of links or even tags, and this is much work for little gain. This is the
             // cost of us not relying on a DOM -> wikitext correspondence and processing these parts
             // separately.
-            (!node.tagName && this.constructor.punctuationRegexp.test(text)) ||
+            (!node.tagName && Parser.punctuationRegexp.test(text)) ||
 
             (
               node.tagName &&
@@ -395,7 +395,7 @@ class Parser {
       })
       .forEach((element) => {
         [...element.getElementsByTagName('a')].some((link) => {
-          const { userName: authorName, linkType } = this.constructor.processLink(link) || {};
+          const { userName: authorName, linkType } = Parser.processLink(link) || {};
           if (authorName) {
             let authorLink;
             let authorTalkLink;

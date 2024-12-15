@@ -13,7 +13,7 @@ import commentRegistry from './commentRegistry';
 import controller from './controller';
 import sectionRegistry from './sectionRegistry';
 import { handleApiReject, requestInBackground } from './utils-api';
-import { areObjectsEqual, isProbablyTalkPage, mergeRegexps } from './utils-general';
+import { areObjectsEqual, definedAndNotNull, isProbablyTalkPage, mergeRegexps } from './utils-general';
 import { parseTimestamp } from './utils-timestamp';
 import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
 
@@ -247,7 +247,7 @@ export class Page {
     if (result === undefined || result === null) {
       result = false;
       const name = this.realName || this.name;
-      for (const sourceRegexp of this.constructor.getSourcePagesMap().keys()) {
+      for (const sourceRegexp of Page.getSourcePagesMap().keys()) {
         if (sourceRegexp.test(name)) {
           result = true;
           break;
@@ -294,7 +294,7 @@ export class Page {
     let result = this.findArchivingInfoElement()?.data('archivePrefix');
     const name = this.realName || this.name;
     if (!result) {
-      for (const [sourceRegexp, replacement] of this.constructor.getArchivePagesMap().entries()) {
+      for (const [sourceRegexp, replacement] of Page.getArchivePagesMap().entries()) {
         if (sourceRegexp.test(name)) {
           result = name.replace(sourceRegexp, replacement);
           break;
@@ -317,7 +317,7 @@ export class Page {
     let result = this.findArchivingInfoElement()?.data('archivedPage');
     if (!result) {
       const name = this.realName || this.name;
-      for (const [archiveRegexp, replacement] of this.constructor.getSourcePagesMap().entries()) {
+      for (const [archiveRegexp, replacement] of Page.getSourcePagesMap().entries()) {
         if (archiveRegexp.test(name)) {
           result = name.replace(archiveRegexp, replacement);
           break;
@@ -908,32 +908,33 @@ export class Page {
 
     const $templates = $($.parseXML(data.parse.parsetree)).find('template');
 
-    return pages.reduce((map, page) => {
-      const parameters = $templates
-        // Find the first <template> with a <title> child equal to the name
-        .filter((_, template) =>
-          pageRegistry.get($(template).children('title').text().trim()) === page
-        )
-        .first()
-        .find('comment')
-          .remove()
-        .end()
+    return new Map(
+      pages
+        .map((page) => {
+          const parameters = $templates
+            // Find the first <template> with a <title> child equal to the name
+            .filter((_, template) =>
+              pageRegistry.get($(template).children('title').text().trim()) === page
+            )
+            .first()
+            .find('comment')
+              .remove()
+            .end()
 
-        // Process all <part> children to extract <name> and <value>
-        .children('part')
-        .get()
-        ?.reduce((obj, part) => {
-          const $name = $(part).children('name');
-          const value = $(part).children('value').text().trim();
-          obj[$name.text().trim() || $name.attr('index')] = value;
-          return obj;
-        }, {});
-      if (parameters) {
-        map.set(page, parameters);
-      }
+            // Process all <part> children to extract <name> and <value>
+            .children('part')
+            .get()
+            ?.map(part => {
+              const $name = $(part).children('name');
+              const value = $(part).children('value').text().trim();
+              const key = $name.text().trim() || $name.attr('index');
+              return [key, value];
+            });
 
-      return map;
-    }, new Map());
+          return parameters ? [page, Object.fromEntries(parameters)] : null;
+        })
+        .filter(definedAndNotNull)
+    );
   }
 
   /**
@@ -1071,7 +1072,7 @@ class PageSource {
     let areNewTopicsOnTop = cd.config.areNewTopicsOnTop?.(page.name, page.code) || null;
 
     const adjustedCode = maskDistractingCode(page.code);
-    const sectionHeadingRegexp = this.constructor.getTopicHeadingRegexp();
+    const sectionHeadingRegexp = PageSource.getTopicHeadingRegexp();
     let sectionHeadingMatch;
     let firstSectionStartIndex;
 
@@ -1140,7 +1141,7 @@ class PageSource {
     }
 
     const adjustedCode = maskDistractingCode(page.code);
-    const sectionHeadingRegexp = this.constructor.getTopicHeadingRegexp();
+    const sectionHeadingRegexp = PageSource.getTopicHeadingRegexp();
     let sectionHeadingMatch;
     const sections = [];
     while ((sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedCode))) {

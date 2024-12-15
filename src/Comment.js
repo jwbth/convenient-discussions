@@ -386,7 +386,7 @@ class Comment extends CommentSkeleton {
   replaceSignatureWithHeader() {
     const pagesToCheckExistence = [];
 
-    const headerWrapper = this.constructor.prototypes.get('headerWrapperElement');
+    const headerWrapper = Comment.prototypes.get('headerWrapperElement');
     this.headerElement = headerWrapper.firstChild;
     const authorWrapper = this.headerElement.firstChild;
     const authorLink = authorWrapper.firstChild;
@@ -563,9 +563,9 @@ class Comment extends CommentSkeleton {
       this.menuElement.appendChild(this.replyButton.element);
     } else {
       this.replyButton = new CommentButton({
-        buttonElement: this.constructor.prototypes.get('replyButton'),
+        buttonElement: Comment.prototypes.get('replyButton'),
         action,
-        widgetConstructor: this.constructor.prototypes.getWidget('replyButton'),
+        widgetConstructor: Comment.prototypes.getWidget('replyButton'),
       });
       this.overlayMenu.appendChild(this.replyButton.element);
     }
@@ -618,9 +618,9 @@ class Comment extends CommentSkeleton {
       this.menuElement.appendChild(this.editButton.element);
     } else {
       this.editButton = new CommentButton({
-        buttonElement: this.constructor.prototypes.get('editButton'),
+        buttonElement: Comment.prototypes.get('editButton'),
         action,
-        widgetConstructor: this.constructor.prototypes.getWidget('editButton'),
+        widgetConstructor: Comment.prototypes.getWidget('editButton'),
       });
       this.overlayMenu.appendChild(this.editButton.element);
     }
@@ -635,10 +635,10 @@ class Comment extends CommentSkeleton {
   addThankButton() {
     if (!cd.user.isRegistered() || !this.author.isRegistered() || !this.date || this.isOwn) return;
 
-    this.constructor.thanksStorage ||= (new StorageItem('thanks'))
+    Comment.thanksStorage ||= (new StorageItem('thanks'))
       .cleanUp((entry) => (entry.thankTime || 0) < Date.now() - 60 * cd.g.msInDay)
       .save();
-    const isThanked = Object.values(this.constructor.thanksStorage.getAll()).some((thank) => (
+    const isThanked = Object.values(Comment.thanksStorage.getAll()).some((thank) => (
       this.dtId === thank.id ||
       this.id === thank.id
     ));
@@ -660,9 +660,9 @@ class Comment extends CommentSkeleton {
       this.menuElement.appendChild(this.thankButton.element);
     } else {
       this.thankButton = new CommentButton({
-        buttonElement: this.constructor.prototypes.get('thankButton'),
+        buttonElement: Comment.prototypes.get('thankButton'),
         action,
-        widgetConstructor: this.constructor.prototypes.getWidget('thankButton'),
+        widgetConstructor: Comment.prototypes.getWidget('thankButton'),
       });
       this.overlayMenu.appendChild(this.thankButton.element);
     }
@@ -682,9 +682,9 @@ class Comment extends CommentSkeleton {
     if (!this.id || this.isReformatted) return;
 
     this.copyLinkButton = new CommentButton({
-      buttonElement: this.constructor.prototypes.get('copyLinkButton'),
+      buttonElement: Comment.prototypes.get('copyLinkButton'),
       action: this.copyLink.bind(this),
-      widgetConstructor: this.constructor.prototypes.getWidget('copyLinkButton'),
+      widgetConstructor: Comment.prototypes.getWidget('copyLinkButton'),
       href: this.dtId ? '#' + this.dtId : undefined,
     });
     this.overlayMenu.appendChild(this.copyLinkButton.element);
@@ -712,16 +712,14 @@ class Comment extends CommentSkeleton {
         action,
       });
 
-      this.goToParentButton.element.appendChild(
-        this.constructor.prototypes.get('goToParentButtonSvg')
-      );
+      this.goToParentButton.element.appendChild(Comment.prototypes.get('goToParentButtonSvg'));
 
       this.headerElement.appendChild(this.goToParentButton.element);
     } else {
       this.goToParentButton = new CommentButton({
-        buttonElement: this.constructor.prototypes.get('goToParentButton'),
+        buttonElement: Comment.prototypes.get('goToParentButton'),
         action,
-        widgetConstructor: this.constructor.prototypes.getWidget('goToParentButton'),
+        widgetConstructor: Comment.prototypes.getWidget('goToParentButton'),
       });
       this.overlayMenu.appendChild(this.goToParentButton.element);
     }
@@ -766,10 +764,10 @@ class Comment extends CommentSkeleton {
           (this.goToParentButton?.element || this.timestampElement)?.nextSibling
         );
       } else if (this.$overlayMenu) {
-        const buttonElement = this.constructor.prototypes.get('goToChildButton');
+        const buttonElement = Comment.prototypes.get('goToChildButton');
         this.goToChildButton = new CommentButton({
           element: buttonElement,
-          widgetConstructor: this.constructor.prototypes.getWidget('goToChildButton'),
+          widgetConstructor: Comment.prototypes.getWidget('goToChildButton'),
           action,
         });
         this.$overlayMenu.prepend(buttonElement);
@@ -818,8 +816,8 @@ class Comment extends CommentSkeleton {
     this.toggleChildThreadsButton.element.innerHTML = '';
     this.toggleChildThreadsButton.element.appendChild(
       childrenCollapsed ?
-        this.constructor.prototypes.get('expandChildThreadsButtonSvg') :
-        this.constructor.prototypes.get('collapseChildThreadsButtonSvg')
+        Comment.prototypes.get('expandChildThreadsButtonSvg') :
+        Comment.prototypes.get('collapseChildThreadsButtonSvg')
     );
   }
 
@@ -1048,10 +1046,10 @@ class Comment extends CommentSkeleton {
       options.lastElement = this.highlightables[this.highlightables.length - 1];
     }
 
-    let rectTop = this.constructor.getCommentPartRect(options.firstElement);
+    let rectTop = Comment.getCommentPartRect(options.firstElement);
     let rectBottom = this.elements.length === 1 ?
       rectTop :
-      this.constructor.getCommentPartRect(options.lastElement);
+      Comment.getCommentPartRect(options.lastElement);
 
     if (!getVisibilityByRects(rectTop, rectBottom)) {
       this.setOffset(null, options);
@@ -1200,10 +1198,10 @@ class Comment extends CommentSkeleton {
         el.style.overflow = 'hidden';
       });
 
-      rectTop = this.constructor.getCommentPartRect(this.highlightables[0]);
+      rectTop = Comment.getCommentPartRect(this.highlightables[0]);
       rectBottom = this.elements.length === 1 ?
         rectTop :
-        this.constructor.getCommentPartRect(this.highlightables[this.highlightables.length - 1]);
+        Comment.getCommentPartRect(this.highlightables[this.highlightables.length - 1]);
 
       // If the comment intersects more than one floating block, we better keep `overflow: hidden`
       // to avoid bugs like where there are two floating blocks to the right with different
@@ -1564,7 +1562,7 @@ class Comment extends CommentSkeleton {
      *
      * @type {?(Element|undefined)}
      */
-    this.underlay = this.constructor.prototypes.get('underlay');
+    this.underlay = Comment.prototypes.get('underlay');
 
     commentRegistry.underlays.push(this.underlay);
 
@@ -1574,7 +1572,7 @@ class Comment extends CommentSkeleton {
      * @type {?(Element|undefined)}
      * @private
      */
-    this.overlay = this.constructor.prototypes.get('overlay');
+    this.overlay = Comment.prototypes.get('overlay');
 
     /**
      * Line element in comment's overlay.
@@ -2891,7 +2889,7 @@ class Comment extends CommentSkeleton {
       mw.notify(cd.s('thank-success'));
       this.setThanked();
 
-      this.constructor.thanksStorage
+      Comment.thanksStorage
         .init()
         .set(edit.revid, {
           id: this.dtId || this.id,

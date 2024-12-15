@@ -39,7 +39,7 @@ class Button {
     action,
   } = {}) {
     if (!buttonElement) {
-      buttonElement = this.constructor.cloneButtonPrototype(tagName);
+      buttonElement = Button.cloneButtonPrototype(tagName);
       element?.append(buttonElement);
     }
 
@@ -172,17 +172,17 @@ class Button {
    * Execute a pre-defined action if the button is conditions are met.
    *
    * @param {Function} action
-   * @param {Event} e
+   * @param {Event} event
    * @protected
    */
-  maybeExecuteAction(action, e) {
+  maybeExecuteAction(action, event) {
     if (
       !this.isDisabled() &&
-      ((!isCmdModifierPressed(e) && !e.shiftKey) || !this.buttonElement.href)
+      ((!isCmdModifierPressed(event) && !event.shiftKey) || !this.buttonElement.href)
     ) {
-      e.preventDefault();
-      e.stopPropagation();
-      action(e, this);
+      event.preventDefault();
+      event.stopPropagation();
+      action(event, this);
     }
   }
 

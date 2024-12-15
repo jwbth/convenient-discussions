@@ -171,7 +171,7 @@ class Section extends SectionSkeleton {
     }
 
     // Don't set more DOM properties to help performance. We don't need them in practice.
-    const element = this.constructor.prototypes.get('replyButton');
+    const element = Section.prototypes.get('replyButton');
     const button = new Button({
       element: element,
       buttonElement: element.firstChild,
@@ -294,7 +294,7 @@ class Section extends SectionSkeleton {
    * @returns {Button}
    */
   createAddSubsectionButton() {
-    const element = this.constructor.prototypes.get('addSubsectionButton');
+    const element = Section.prototypes.get('addSubsectionButton');
     const button = new Button({
       element: element,
       buttonElement: element.firstChild,
@@ -810,7 +810,7 @@ class Section extends SectionSkeleton {
    * @private
    */
   createMoreMenuSelect() {
-    const moreMenuSelect = this.constructor.prototypes.getWidget('moreMenuSelect')();
+    const moreMenuSelect = Section.prototypes.getWidget('moreMenuSelect')();
 
     const editOpeningCommentOption = this.canFirstCommentBeEdited() ?
       new OO.ui.MenuOptionWidget({
@@ -895,7 +895,7 @@ class Section extends SectionSkeleton {
   createActionsElement() {
     let moreMenuSelectDummy;
     if (this.canFirstCommentBeEdited() || this.canBeMoved() || this.canBeSubsectioned()) {
-      const element = this.constructor.prototypes.get('moreMenuSelect');
+      const element = Section.prototypes.get('moreMenuSelect');
       moreMenuSelectDummy = new Button({
         element,
         buttonElement: element.firstChild,
@@ -908,7 +908,7 @@ class Section extends SectionSkeleton {
 
     let copyLinkButton;
     if (this.headline) {
-      const element = this.constructor.prototypes.get('copyLinkButton');
+      const element = Section.prototypes.get('copyLinkButton');
       copyLinkButton = new Button({
         element,
         buttonElement: element.firstChild,

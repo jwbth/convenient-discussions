@@ -127,24 +127,16 @@ class Thread {
 
     if (this.rootComment.level === 0) {
       startElement = firstNotHeadingElement;
-      visualEndElement = this.constructor.findEndElement(
+      visualEndElement = Thread.findEndElement(
         startElement,
         visualHighlightables,
         nextForeignElement
       );
       visualEndElementFallback = this.visualLastComment === this.visualLastCommentFallback ?
         visualEndElement :
-        this.constructor.findEndElement(
-          startElement,
-          visualHighlightablesFallback,
-          nextForeignElement
-        );
+        Thread.findEndElement(startElement, visualHighlightablesFallback, nextForeignElement);
       endElement = this.hasOutdents ?
-        this.constructor.findEndElement(
-          startElement,
-          highlightables,
-          nextForeignElement
-        ) :
+        Thread.findEndElement(startElement, highlightables, nextForeignElement) :
         visualEndElement;
     } else {
       // We could improve the positioning of the thread line to exclude the vertical space next to
@@ -153,7 +145,7 @@ class Thread {
       // margins instead of using the first comment's) and utilsWindow.getRangeContents() (come up
       // with a treatment for the situation when the end element includes the start element).
       startElement = (
-        this.constructor.findItemElement(
+        Thread.findItemElement(
           firstNotHeadingElement,
           this.rootComment.level,
           nextForeignElement
@@ -168,32 +160,32 @@ class Thread {
           .reverse()
           .find((comment) => comment.isOutdented);
         endElement = lastOutdentedComment.level === 0 ?
-          this.constructor.findEndElement(
+          Thread.findEndElement(
             startElement,
             highlightables,
             nextForeignElement
           ) :
-          this.constructor.findItemElement(
+          Thread.findItemElement(
             lastHighlightable,
             Math.min(lastOutdentedComment.level, this.rootComment.level),
             nextForeignElement
           );
 
-        visualEndElement = this.constructor.findItemElement(
+        visualEndElement = Thread.findItemElement(
           visualHighlightables[visualHighlightables.length - 1],
           this.rootComment.level,
           nextForeignElement
         );
         visualEndElementFallback = this.visualLastComment === this.visualLastCommentFallback ?
           visualEndElement :
-          this.constructor.findItemElement(
+          Thread.findItemElement(
             visualHighlightablesFallback[visualHighlightablesFallback.length - 1],
             this.rootComment.level,
             nextForeignElement
           );
       } else {
         endElement = (
-          this.constructor.findItemElement(
+          Thread.findItemElement(
             lastHighlightable,
             this.rootComment.level,
             nextForeignElement
@@ -253,7 +245,7 @@ class Thread {
    * @private
    */
   handleClickAreaHover(e, force = false) {
-    if (this.constructor.navMode && !force) return;
+    if (Thread.navMode && !force) return;
 
     const highlight = () => {
       this.clickArea?.classList.add('cd-thread-clickArea-hovered');
@@ -360,7 +352,7 @@ class Thread {
    */
   enterNavMode(fromX, fromY, grab = false) {
     this.handleClickAreaUnhover();
-    this.constructor.navMode = this.navMode = true;
+    Thread.navMode = this.navMode = true;
     this.navFromY = fromY;
     this.navFromX = fromX;
     this.navGrab = grab;
@@ -523,7 +515,7 @@ class Thread {
    * @private
    */
   quitNavMode() {
-    this.constructor.navMode = this.navMode = false;
+    Thread.navMode = this.navMode = false;
     delete this.navFromY;
     delete this.navFromX;
     $(document)
@@ -561,7 +553,7 @@ class Thread {
      * @type {Element}
      * @private
      */
-    this.clickArea = this.constructor.prototypes.get('clickArea');
+    this.clickArea = Thread.prototypes.get('clickArea');
 
     this.clickArea.title = cd.s('thread-tooltip', cd.g.cmdModifier);
 
@@ -666,7 +658,7 @@ class Thread {
     );
 
     return $lastSubitem?.is(':visible') ?
-      this.constructor.findItemElement($lastSubitem[0], this.rootComment.level) :
+      Thread.findItemElement($lastSubitem[0], this.rootComment.level) :
       endElement;
   }
 
@@ -707,7 +699,7 @@ class Thread {
    * @private
    */
   addExpandNote(loadUserGendersPromise) {
-    const element = this.constructor.prototypes.get('expandButton');
+    const element = Thread.prototypes.get('expandButton');
     const button = new Button({
       tooltip: cd.s('thread-expand-tooltip', cd.g.cmdModifier),
       action: this.onToggleClick.bind(this),
@@ -816,7 +808,7 @@ class Thread {
         sibling.thread?.expand(undefined, true) :
         sibling.thread?.collapse(undefined, true)
     ));
-    this.constructor.emit('toggle');
+    Thread.emit('toggle');
     this.rootComment.getParent()?.updateToggleChildThreadsButton();
     if (clickedThread && !wasCollapsed) {
       this.$expandNote.cdScrollIntoView();
@@ -893,10 +885,10 @@ class Thread {
     }
 
     if (!auto) {
-      this.constructor.saveCollapsedThreads();
+      Thread.saveCollapsedThreads();
     }
     if (!isBatchOperation) {
-      this.constructor.emit('toggle');
+      Thread.emit('toggle');
     }
   }
 
@@ -948,10 +940,10 @@ class Thread {
     }
 
     if (!auto) {
-      this.constructor.saveCollapsedThreads();
+      Thread.saveCollapsedThreads();
     }
     if (!isBatchOperation) {
-      this.constructor.emit('toggle');
+      Thread.emit('toggle');
     }
   }
 

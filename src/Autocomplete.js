@@ -76,10 +76,10 @@ class Autocomplete {
       this.tribute.attach(element);
       element.cdInput = input;
       element.addEventListener('tribute-active-true', () => {
-        this.constructor.activeMenu = this.tribute.menu;
+        Autocomplete.activeMenu = this.tribute.menu;
       });
       element.addEventListener('tribute-active-false', () => {
-        delete this.constructor.activeMenu;
+        delete Autocomplete.activeMenu;
       });
       if (input instanceof OO.ui.MultilineTextInputWidget) {
         input.on('resize', () => {
@@ -156,7 +156,7 @@ class Autocomplete {
           if (this.mentions.byText[text]) {
             callback(prepareValues(this.mentions.byText[text], this.mentions));
           } else {
-            const matches = this.constructor.search(text, this.mentions.default);
+            const matches = Autocomplete.search(text, this.mentions.default);
             let values = matches.slice();
 
             const makeRequest = (
@@ -175,7 +175,7 @@ class Autocomplete {
               if (!matches.length) {
                 values.push(...this.mentions.cache);
               }
-              values = this.constructor.search(text, values);
+              values = Autocomplete.search(text, values);
 
               // Make the typed text always appear on the last, 10th place.
               values[9] = text.trim();
@@ -186,7 +186,7 @@ class Autocomplete {
             if (makeRequest && !matches.length) {
               let values;
               try {
-                values = await this.constructor.getRelevantUserNames(text);
+                values = await Autocomplete.getRelevantUserNames(text);
               } catch {
                 return;
               }
@@ -305,7 +305,7 @@ class Autocomplete {
             );
             if (valid) {
               values.push(...this.wikilinks.cache);
-              values = this.constructor.search(text, values);
+              values = Autocomplete.search(text, values);
 
               // Make the typed text always appear on the last, 10th place.
               values[9] = text.trim();
@@ -316,7 +316,7 @@ class Autocomplete {
             if (valid) {
               let values;
               try {
-                values = await this.constructor.getRelevantPageNames(text);
+                values = await Autocomplete.getRelevantPageNames(text);
               } catch {
                 return;
               }
@@ -454,7 +454,7 @@ class Autocomplete {
             );
             if (makeRequest) {
               values.push(...this.templates.cache);
-              values = this.constructor.search(text, values);
+              values = Autocomplete.search(text, values);
 
               // Make the typed text always appear on the last, 10th place.
               values[9] = text.trim();
@@ -465,7 +465,7 @@ class Autocomplete {
             if (makeRequest) {
               let values;
               try {
-                values = await this.constructor.getRelevantTemplateNames(text);
+                values = await Autocomplete.getRelevantTemplateNames(text);
               } catch {
                 return;
               }
@@ -513,7 +513,7 @@ class Autocomplete {
       commentLinks: comments,
     };
     const collections = types.map((type) => {
-      this[type] = this.constructor.getConfig(type, params[type]);
+      this[type] = Autocomplete.getConfig(type, params[type]);
       return collectionsByType[type];
     });
 

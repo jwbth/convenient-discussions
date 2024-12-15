@@ -26,7 +26,7 @@ class CommentButton extends Button {
 
     // Don't hide the menu on right button click.
     if (config.href) {
-      this.buttonElement.oncontextmenu = this.constructor.stopPropagation;
+      this.buttonElement.oncontextmenu = CommentButton.stopPropagation;
     }
 
     if (config.element) {
@@ -72,7 +72,7 @@ class CommentButton extends Button {
       this.buttonWidget.setHref(originalHref);
 
       // Don't hide the menu on right button click.
-      this.buttonElement.oncontextmenu = this.constructor.stopPropagation;
+      this.buttonElement.oncontextmenu = CommentButton.stopPropagation;
     }
   }
 
@@ -193,11 +193,11 @@ class CommentButton extends Button {
   /**
    * Stop propagation of an event.
    *
-   * @param {Event} e
+   * @param {Event} event
    * @private
    */
-  static stopPropagation(e) {
-    e.stopPropagation();
+  static stopPropagation(event) {
+    event.stopPropagation();
   }
 }
 
