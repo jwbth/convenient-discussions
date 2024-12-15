@@ -1630,13 +1630,13 @@ class CommentSkeleton {
   }
 
   /**
-   * Update the width of the outdent template to match our thread style changes. Doesn't run in the
-   * worker.
+   * Update the width and border color of the outdent template to match our thread style changes.
+   * Doesn't run in the worker.
    *
    * @param {Element|external:Element} element
    * @param {import('./Parser').default} parser
    */
-  static updateOutdentWidth(element, parser) {
+  static updateOutdentStyle(element, parser) {
     if (cd.isWorker) return;
 
     [...element.childNodes].forEach((child) => {
@@ -1646,6 +1646,7 @@ class CommentSkeleton {
         if (number) {
           // 1.25 = 2em / 1.6em, where 2em is our margin and 1.6em is the default margin.
           child.style.width = `calc(${number * 1.25}${unit} + ${number * 1.25 / 2}px)`;
+          child.style.borderColor = `var(--border-color-subtle, #c8ccd1)`;
         }
       } else if (
         !child[parser.context.childElementsProp]?.length &&
@@ -1699,7 +1700,7 @@ class CommentSkeleton {
             childComment.cachedParent.logicalLevel = parentComment;
           }
 
-          this.updateOutdentWidth(element, parser);
+          this.updateOutdentStyle(element, parser);
 
           childComment.isOutdented = true;
           childComment.elements[0].classList.add('cd-comment-outdented');
