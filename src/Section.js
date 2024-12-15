@@ -249,11 +249,11 @@ class Section extends SectionSkeleton {
     const baseSection = this.getBase(true);
     const lastDescendantButton =
       this === baseSection?.getLastDescendant() && baseSection.canBeSubsectioned()
-        ? baseSection.createAddSubsectionButton()
+        ? baseSection.createAddSubsectionButton(this)
         : undefined;
 
     const container = document.createElement('div');
-    container.className = 'cd-section-button-container cd-addSubsectionButton-container';
+    container.className = 'cd-section-button-container cd-addSubsectionButtons-container';
     container.style.display = 'none';
     container.append(...[button?.element, lastDescendantButton?.element].filter(defined));
 
@@ -291,9 +291,10 @@ class Section extends SectionSkeleton {
   /**
    * Create an "Add subsection" button (any kind).
    *
+   * @param {Section} [buttonsContainerInstance=this]
    * @returns {Button}
    */
-  createAddSubsectionButton() {
+  createAddSubsectionButton(buttonsContainerInstance = this) {
     const element = Section.prototypes.get('addSubsectionButton');
     const button = new Button({
       element: element,
@@ -304,8 +305,10 @@ class Section extends SectionSkeleton {
         this.addSubsection();
       },
     });
-    button.buttonElement.onmouseenter = this.resetHideAddSubsectionButtonTimeout.bind(this);
-    button.buttonElement.onmouseleave = this.deferAddSubsectionButtonHide.bind(this);
+    button.buttonElement.onmouseenter = buttonsContainerInstance.resetHideAddSubsectionButtonTimeout
+      .bind(buttonsContainerInstance);
+    button.buttonElement.onmouseleave = buttonsContainerInstance.deferAddSubsectionButtonHide
+      .bind(buttonsContainerInstance);
 
     return button;
   }
