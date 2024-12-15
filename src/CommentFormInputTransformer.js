@@ -179,7 +179,7 @@ class CommentFormInputTransformer extends TextMasker {
    * @private
    */
   listMarkupToTags(code) {
-    return this.constructor.listToTags(this.constructor.linesToLists(
+    return CommentFormInputTransformer.listToTags(CommentFormInputTransformer.linesToLists(
       code
         .split('\n')
         .map((line) => ({
@@ -222,7 +222,7 @@ class CommentFormInputTransformer extends TextMasker {
     code = code.replace(
       // Lines with the list and table markup as well as lines wholly occupied by the file markup
       new RegExp(
-        `(\\n+)([:*#;\\x03]|${this.constructor.filePatternEnd})`,
+        `(\\n+)([:*#;\\x03]|${CommentFormInputTransformer.filePatternEnd})`,
         'gmi'
       ),
 
@@ -235,7 +235,7 @@ class CommentFormInputTransformer extends TextMasker {
         // as they will have been removed above.
         (newlines.length > 1 ? '\n\n\n' : '\n') +
 
-        this.constructor.prependIndentationToLine(this.restLinesIndentation, nextLine)
+        CommentFormInputTransformer.prependIndentationToLine(this.restLinesIndentation, nextLine)
       )
     );
 
@@ -253,7 +253,7 @@ class CommentFormInputTransformer extends TextMasker {
     }
 
     if (this.restLinesIndentation === '#') {
-      if (this.constructor.galleryRegexp.test(code)) {
+      if (CommentFormInputTransformer.galleryRegexp.test(code)) {
         throw new CdError({
           type: 'parse',
           code: 'numberedList',
@@ -269,7 +269,7 @@ class CommentFormInputTransformer extends TextMasker {
       (s, previousLine, newlines) => (
         previousLine +
         '\n' +
-        this.constructor.prependIndentationToLine(
+        CommentFormInputTransformer.prependIndentationToLine(
           this.restLinesIndentation,
 
           // Newline sequences will be replaced with a paragraph template below. If there is no
@@ -289,7 +289,9 @@ class CommentFormInputTransformer extends TextMasker {
           this.areThereTagsAroundMultipleLines ?
             `$1<br> \n` :
             (s, m1) => (
-              m1 + '\n' + this.constructor.prependIndentationToLine(this.restLinesIndentation, '')
+              m1 +
+              '\n' +
+              CommentFormInputTransformer.prependIndentationToLine(this.restLinesIndentation, '')
             )
         )
     );
@@ -310,7 +312,7 @@ class CommentFormInputTransformer extends TextMasker {
   processNewlines(code, isInTemplate = false) {
     const entireLineRegexp = new RegExp(/^\x01\d+_(block|template)\x02 *$/);
     const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/;
-    const fileRegexp = new RegExp('^' + this.constructor.filePatternEnd, 'i');
+    const fileRegexp = new RegExp('^' + CommentFormInputTransformer.filePatternEnd, 'i');
 
     let currentLineInTemplates = '';
     let nextLineInTemplates = '';
@@ -346,8 +348,8 @@ class CommentFormInputTransformer extends TextMasker {
         ) ||
         fileRegexp.test(currentLine) ||
         fileRegexp.test(nextLine) ||
-        this.constructor.galleryRegexp.test(currentLine) ||
-        this.constructor.galleryRegexp.test(nextLine) ||
+        CommentFormInputTransformer.galleryRegexp.test(currentLine) ||
+        CommentFormInputTransformer.galleryRegexp.test(nextLine) ||
 
         // Removing <br>s after block elements is not a perfect solution as there would be no
         // newlines when editing such a comment, but this way we would avoid empty lines in cases
@@ -359,7 +361,10 @@ class CommentFormInputTransformer extends TextMasker {
         '<br>' + (this.indentation ? ' ' : '');
 
       // Current line can match galleryRegexp only if the comment will not be indented.
-      const newlineOrNot = this.indentation && !this.constructor.galleryRegexp.test(nextLine) ?
+      const newlineOrNot = (
+        this.indentation &&
+        !CommentFormInputTransformer.galleryRegexp.test(nextLine)
+      ) ?
         '' :
         '\n';
 
@@ -533,13 +538,13 @@ class CommentFormInputTransformer extends TextMasker {
     }
 
     if (this.action !== 'preview') {
-      this.text = this.constructor.prependIndentationToLine(this.indentation, this.text);
+      this.text = CommentFormInputTransformer.prependIndentationToLine(this.indentation, this.text);
 
       if (this.mode === 'addSubsection') {
         this.text += '\n';
       }
     } else if (this.action === 'preview' && this.indentation && this.initialText) {
-      this.text = this.constructor.prependIndentationToLine(':', this.text);
+      this.text = CommentFormInputTransformer.prependIndentationToLine(':', this.text);
     }
 
     return this;

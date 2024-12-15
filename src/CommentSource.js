@@ -608,7 +608,7 @@ class CommentSource {
   findProperPlaceForReply(contextCode) {
     let currentIndex = this.endIndex;
 
-    const adjustedChunkCodeAfter = this.constructor.getAdjustedChunkCodeAfter(
+    const adjustedChunkCodeAfter = CommentSource.getAdjustedChunkCodeAfter(
       currentIndex,
       contextCode
     );

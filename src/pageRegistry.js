@@ -247,7 +247,7 @@ export class Page {
     if (result === undefined || result === null) {
       result = false;
       const name = this.realName || this.name;
-      for (const sourceRegexp of this.constructor.getSourcePagesMap().keys()) {
+      for (const sourceRegexp of Page.getSourcePagesMap().keys()) {
         if (sourceRegexp.test(name)) {
           result = true;
           break;
@@ -294,7 +294,7 @@ export class Page {
     let result = this.findArchivingInfoElement()?.data('archivePrefix');
     const name = this.realName || this.name;
     if (!result) {
-      for (const [sourceRegexp, replacement] of this.constructor.getArchivePagesMap().entries()) {
+      for (const [sourceRegexp, replacement] of Page.getArchivePagesMap().entries()) {
         if (sourceRegexp.test(name)) {
           result = name.replace(sourceRegexp, replacement);
           break;
@@ -317,7 +317,7 @@ export class Page {
     let result = this.findArchivingInfoElement()?.data('archivedPage');
     if (!result) {
       const name = this.realName || this.name;
-      for (const [archiveRegexp, replacement] of this.constructor.getSourcePagesMap().entries()) {
+      for (const [archiveRegexp, replacement] of Page.getSourcePagesMap().entries()) {
         if (archiveRegexp.test(name)) {
           result = name.replace(archiveRegexp, replacement);
           break;
@@ -1071,7 +1071,7 @@ class PageSource {
     let areNewTopicsOnTop = cd.config.areNewTopicsOnTop?.(page.name, page.code) || null;
 
     const adjustedCode = maskDistractingCode(page.code);
-    const sectionHeadingRegexp = this.constructor.getTopicHeadingRegexp();
+    const sectionHeadingRegexp = PageSource.getTopicHeadingRegexp();
     let sectionHeadingMatch;
     let firstSectionStartIndex;
 
@@ -1140,7 +1140,7 @@ class PageSource {
     }
 
     const adjustedCode = maskDistractingCode(page.code);
-    const sectionHeadingRegexp = this.constructor.getTopicHeadingRegexp();
+    const sectionHeadingRegexp = PageSource.getTopicHeadingRegexp();
     let sectionHeadingMatch;
     const sections = [];
     while ((sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedCode))) {
