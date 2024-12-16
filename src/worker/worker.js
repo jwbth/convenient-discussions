@@ -9,6 +9,10 @@
  * @module worker
  */
 
+import './extendDomHandler';
+
+import { parseDocument } from 'htmlparser2';
+
 import CdError from '../CdError';
 import CommentSkeleton from '../CommentSkeleton';
 import Parser from '../Parser';
@@ -16,8 +20,6 @@ import SectionSkeleton from '../SectionSkeleton';
 import cd from '../cd';
 import debug from '../debug';
 import { isHeadingNode, isMetadataNode } from '../utils-general';
-
-import { parseDocument, traverseSubtree } from './htmlparser2Extended';
 
 let isFirstRun = true;
 let alarmTimeout;
@@ -49,7 +51,7 @@ function setAlarm(interval) {
  */
 function getAllTextNodes() {
   let nodes = [];
-  traverseSubtree(rootElement, (node) => {
+  rootElement.traverseSubtree((node) => {
     if (node.nodeType === Node.TEXT_NODE) {
       nodes.push(node);
     }

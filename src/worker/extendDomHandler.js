@@ -1,5 +1,5 @@
 import { Document as DocumentClass, Element, Node as NodeClass, NodeWithChildren, Text } from 'domhandler';
-import { DomUtils, parseDocument } from 'htmlparser2';
+import { DomUtils } from 'htmlparser2';
 
 import { decodeHtmlEntities } from '../utils-general';
 
@@ -9,34 +9,6 @@ self.Node = {
   TEXT_NODE: 3,
   COMMENT_NODE: 8,
 };
-
-/**
- * Iterate over child nodes, testing the node using the provided callback.
- *
- * Returns `true` to stop walking through subtree (after founding the required amounts for elements,
- * for instance).
- *
- * @param {import('domhandler').Node} base
- * @param {Function} callback
- * @param {boolean} [checkSelf=false]
- * @returns {boolean}
- * @private
- */
-function traverseSubtree(base, callback, checkSelf = false) {
-  if (checkSelf && callback(base)) {
-    return true;
-  }
-
-  if (base instanceof NodeWithChildren) {
-    for (let n = base.firstChild; n; n = n.nextSibling) {
-      if (traverseSubtree(n, callback, true)) {
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
 
 // Note that the Element class already has the "children" property containing all child nodes, which
 // differs from what this property stands for in the browser DOM representation (only child nodes
@@ -196,64 +168,64 @@ Object.defineProperty(Element.prototype, 'classList', {
   get: function () {
     if (this._classList) {
       return this._classList;
-    } else {
-      this._classList = [];
-      this._classList.movedFromClassAttr = false;
-      this._classList.moveFromClassAttr = (classAttr) => {
-        this._classList.push(...(classAttr || '').split(' '));
-        this._classList.movedFromClassAttr = true;
-      };
-      this._classList.add = (...names) => {
-        names.forEach((name) => {
-          let classAttr = this.getAttribute('class') || '';
-          if (classAttr) {
-            classAttr += ' ';
-          }
-          classAttr += name;
+    }
+
+    this._classList = [];
+    this._classList.movedFromClassAttr = false;
+    this._classList.moveFromClassAttr = (/** @type {string} */ classAttr) => {
+      this._classList.push(...(classAttr || '').split(' '));
+      this._classList.movedFromClassAttr = true;
+    };
+    this._classList.add = (/** @type {string[]} */ ...names) => {
+      names.forEach((name) => {
+        let classAttr = this.getAttribute('class') || '';
+        if (classAttr) {
+          classAttr += ' ';
+        }
+        classAttr += name;
+        this.setAttribute('class', classAttr);
+        if (this._classList.movedFromClassAttr) {
+          this._classList.push(name);
+        } else {
+          this._classList.moveFromClassAttr(classAttr);
+        }
+      });
+    };
+    this._classList.remove = (/** @type {string[]} */...names) => {
+      names.forEach((name) => {
+        let classAttr = this.getAttribute('class') || '';
+        const index = ` ${classAttr} `.indexOf(` ${name} `);
+        if (index !== -1) {
+          classAttr = (
+            classAttr.slice(0, index) + classAttr.slice(index + name.length + 1)
+          ).trim();
           this.setAttribute('class', classAttr);
           if (this._classList.movedFromClassAttr) {
             this._classList.push(name);
           } else {
             this._classList.moveFromClassAttr(classAttr);
           }
-        });
-      };
-      this._classList.remove = (...names) => {
-        names.forEach((name) => {
-          let classAttr = this.getAttribute('class') || '';
-          const index = ` ${classAttr} `.indexOf(` ${name} `);
-          if (index !== -1) {
-            classAttr = (
-              classAttr.slice(0, index) + classAttr.slice(index + name.length + 1)
-            ).trim();
-            this.setAttribute('class', classAttr);
-            if (this._classList.movedFromClassAttr) {
-              this._classList.splice(name, this._classList.indexOf(name), 1);
-            } else {
-              this._classList.moveFromClassAttr(classAttr);
-            }
-          }
-        });
-      };
-      this._classList.contains = (name) => {
-        const classAttr = this.getAttribute('class');
-        if (!classAttr) {
-          return false;
         }
-        if (!this._classList.movedFromClassAttr) {
-          this._classList.moveFromClassAttr(classAttr);
-        }
+      });
+    };
+    this._classList.contains = (/** @type {string} */ name) => {
+      const classAttr = this.getAttribute('class');
+      if (!classAttr) {
+        return false;
+      }
 
-        // This can run tens of thousand times, so we microoptimize it (don't use template strings
-        // and String#includes).
-        const returnValue = (
-          Boolean(this._classList.length) &&
-          this._classList.indexOf(name) !== -1
-        );
-        return returnValue;
-      };
-      return this._classList;
-    }
+      if (!this._classList.movedFromClassAttr) {
+        this._classList.moveFromClassAttr(classAttr);
+      }
+
+      // This can run tens of thousand times, so we microoptimize it (don't use template strings and
+      // String#includes()).
+      const returnValue = Boolean(this._classList.length) && this._classList.indexOf(name) !== -1;
+
+      return returnValue;
+    };
+
+    return this._classList;
   },
 });
 
@@ -269,7 +241,7 @@ Object.defineProperty(Element.prototype, 'className', {
 
 Element.prototype.filterRecursively = function (func, limit) {
   const nodes = [];
-  traverseSubtree(this, (node) => {
+  this.traverseSubtree((node) => {
     if (func(node)) {
       nodes.push(node);
       if (limit && nodes.length === limit) {
@@ -277,21 +249,34 @@ Element.prototype.filterRecursively = function (func, limit) {
       }
     }
   });
+
   return nodes;
 };
 
+/**
+ * @param {string} name
+ * @param {number} limit
+ * @returns {NodeClass[]}
+ */
 Element.prototype.getElementsByClassName = function (name, limit) {
-  return this.filterRecursively((node) => node.tagName && node.classList.contains(name), limit);
+  return this.filterRecursively(
+    (node) => node instanceof Element && node.classList.contains(name),
+    limit
+  );
 };
 
-Element.prototype.getElementsByAttribute = function (regexp) {
-  return this.filterRecursively((node) => (
-    node.tagName &&
-    Object.keys(node.attribs).some((name) => regexp.test(name))
-  ));
+Element.prototype.getElementsByAttribute = function (/** @type {RegExp} */ regexp) {
+  return this.filterRecursively(
+    (node) => node instanceof Element && Object.keys(node.attribs).some((name) => regexp.test(name))
+  );
 };
 
-// Supports only classes and tags
+/**
+ * Supports only classes and tags.
+ *
+ * @param {string} selector
+ * @returns {Element[]}
+ */
 Element.prototype.querySelectorAll = function (selector) {
   const tokens = selector.split(/ *, */);
   const tagNames = tokens
@@ -300,8 +285,9 @@ Element.prototype.querySelectorAll = function (selector) {
   const classNames = tokens
     .filter((token) => token.startsWith('.'))
     .map((name) => name.slice(1));
-  return this.filterRecursively((node) => (
-    node.tagName &&
+
+  return /** @type {Element[]} */ (this.filterRecursively((node) =>
+    node instanceof Element &&
     (
       tagNames.includes(node.tagName) ||
       classNames.some((name) => node.classList.contains(name))
@@ -321,6 +307,31 @@ Object.defineProperty(Text.prototype, 'textContent', {
     this.data = value;
   },
 });
+
+/**
+ * Iterate over child nodes, testing the node using the provided callback.
+ *
+ * Returns `true` to stop walking through subtree (after founding the required amounts for elements,
+ * for instance).
+ *
+ * @param {(node: NodeClass) => boolean} callback
+ * @param {boolean} [checkSelf=false]
+ * @returns {boolean}
+ * @private
+ */
+NodeWithChildren.prototype.traverseSubtree = function (callback, checkSelf = false) {
+ if (checkSelf && callback(this)) {
+   return true;
+ }
+
+  for (let n = this.firstChild; n; n = n.nextSibling) {
+    if (n instanceof NodeWithChildren && n.traverseSubtree(callback, true)) {
+      return true;
+    }
+  }
+
+ return false;
+};
 
 /**
  * Check whether the element follows a node in the document (like
@@ -384,15 +395,13 @@ NodeClass.prototype.remove = function () {
 
 // We need the Document class to imitate window.document for the code to be more easily ported to
 // other library if needed.
-DocumentClass.prototype.createElement = (name) => {
+DocumentClass.prototype.createElement = function (name) {
   return new Element(name, {});
 };
 
-DocumentClass.prototype.createTextNode = (content) => {
+DocumentClass.prototype.createTextNode = function (content) {
   return new Text(content || '');
 };
 
 DocumentClass.prototype.getElementsByClassName = Element.prototype.getElementsByClassName;
 DocumentClass.prototype.querySelectorAll = Element.prototype.querySelectorAll;
-
-export { parseDocument, traverseSubtree };

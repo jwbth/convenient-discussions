@@ -54,6 +54,7 @@ module.exports = {
       },
       "newlines-between": "always",
     }],
+    "no-unused-vars": "warn",
 
     "jsdoc/check-alignment": "warn",
     "jsdoc/check-param-names": "warn",
