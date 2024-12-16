@@ -375,7 +375,7 @@ class CommentForm {
       /**
        * Headline input.
        *
-       * @type {external:OO.ui.TextInputWidget|undefined}
+       * @type {OO.ui.TextInputWidget|undefined}
        */
       this.headlineInput = new (require('./TextInputWidget').default)({
         value: initialState.headline ?? '',
@@ -428,7 +428,7 @@ class CommentForm {
     /**
      * Edit summary input.
      *
-     * @type {external:OO.ui.TextInputWidget}
+     * @type {OO.ui.TextInputWidget}
      */
     this.summaryInput = new (require('./TextInputWidget').default)({
       value: initialState.summary ?? '',
@@ -455,7 +455,7 @@ class CommentForm {
          * Minor change checkbox field.
          *
          * @name minorField
-         * @type {external:OO.ui.FieldLayout|undefined}
+         * @type {OO.ui.FieldLayout|undefined}
          * @memberof CommentForm
          * @instance
          */
@@ -483,7 +483,7 @@ class CommentForm {
        * Watch page checkbox field.
        *
        * @name watchField
-       * @type {external:OO.ui.FieldLayout}
+       * @type {OO.ui.FieldLayout}
        * @memberof CommentForm
        * @instance
        */
@@ -524,7 +524,7 @@ class CommentForm {
          * Subscribe checkbox field.
          *
          * @name subscribeField
-         * @type {external:OO.ui.FieldLayout|undefined}
+         * @type {OO.ui.FieldLayout|undefined}
          * @memberof CommentForm
          * @instance
          */
@@ -571,7 +571,7 @@ class CommentForm {
      * Omit signature checkbox field.
      *
      * @name omitSignatureField
-     * @type {external:OO.ui.FieldLayout|undefined}
+     * @type {OO.ui.FieldLayout|undefined}
      * @memberof CommentForm
      * @instance
      */
@@ -612,7 +612,7 @@ class CommentForm {
        * Delete checkbox field.
        *
        * @name deleteField
-       * @type {external:OO.ui.FieldLayout|undefined}
+       * @type {OO.ui.FieldLayout|undefined}
        * @memberof CommentForm
        * @instance
        */
@@ -639,7 +639,7 @@ class CommentForm {
     /**
      * Checkboxes area.
      *
-     * @type {external:OO.ui.HorizontalLayout}
+     * @type {OO.ui.HorizontalLayout}
      */
     this.checkboxesLayout = new OO.ui.HorizontalLayout({
       classes: ['cd-commentForm-checkboxes'],
@@ -671,7 +671,7 @@ class CommentForm {
     /**
      * Toggle advanced section button.
      *
-     * @type {external:OO.ui.ButtonWidget}
+     * @type {OO.ui.ButtonWidget}
      */
     this.advancedButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-advanced'),
@@ -683,7 +683,7 @@ class CommentForm {
     /**
      * Help button.
      *
-     * @type {external:OO.ui.PopupButtonWidget}
+     * @type {OO.ui.PopupButtonWidget}
      */
     this.helpPopupButton = new OO.ui.PopupButtonWidget({
       label: cd.s('cf-help'),
@@ -716,7 +716,7 @@ class CommentForm {
       /**
        * Script settings button.
        *
-       * @type {external:OO.ui.ButtonWidget}
+       * @type {OO.ui.ButtonWidget}
        */
       this.settingsButton = new OO.ui.ButtonWidget({
         framed: false,
@@ -732,7 +732,7 @@ class CommentForm {
     /**
      * Cancel button.
      *
-     * @type {external:OO.ui.ButtonWidget}
+     * @type {OO.ui.ButtonWidget}
      */
     this.cancelButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-cancel'),
@@ -745,7 +745,7 @@ class CommentForm {
     /**
      * View changes button.
      *
-     * @type {external:OO.ui.ButtonWidget}
+     * @type {OO.ui.ButtonWidget}
      */
     this.viewChangesButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-viewchanges'),
@@ -757,7 +757,7 @@ class CommentForm {
     /**
      * Preview button.
      *
-     * @type {external:OO.ui.ButtonWidget}
+     * @type {OO.ui.ButtonWidget}
      */
     this.previewButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-preview'),
@@ -772,7 +772,7 @@ class CommentForm {
     /**
      * Submit button.
      *
-     * @type {external:OO.ui.ButtonWidget}
+     * @type {OO.ui.ButtonWidget}
      */
     this.submitButton = new OO.ui.ButtonWidget({
       label: this.submitButtonLabelStandard,
@@ -1559,7 +1559,7 @@ class CommentForm {
     /**
      * Popup that appears when pasting text that has rich formatting available.
      *
-     * @type {external:OO.ui.PopupWidget|undefined}
+     * @type {OO.ui.PopupWidget|undefined}
      */
     this.richFormattingPopup = new OO.ui.PopupWidget({
       icon: 'wikiText',

@@ -5,16 +5,16 @@ import { mixinUserOoUiClass, tweakUserOoUiClass } from './utils-oojs';
  * OOUI multiline text input widget.
  *
  * @class MultilineTextInputWidget
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.MultilineTextInputWidget
  */
 
 /**
  * Class that we use instead of
- * {@link external:OO.ui.MultilineTextInputWidget OO.ui.MultilineTextInputWidget} to include our
+ * {@link OO.ui.MultilineTextInputWidget OO.ui.MultilineTextInputWidget} to include our
  * mixin.
  *
- * @augments external:OO.ui.MultilineTextInputWidget
+ * @augments OO.ui.MultilineTextInputWidget
  */
 class MultilineTextInputWidget extends OO.ui.MultilineTextInputWidget {}
 

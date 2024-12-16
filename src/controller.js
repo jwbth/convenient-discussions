@@ -34,7 +34,7 @@ import { defined, definedAndNotNull, getLastArrayElementOrSelf, getQueryParamBoo
 import { mixEventEmitterInObject } from './utils-oojs';
 import { copyText, createSvg, getVisibilityByRects, skin$, wrapHtml } from './utils-window';
 import visits from './visits';
-import Worker from './worker-gate';
+import WebpackWorker from './worker/worker-gate';
 
 export default {
   content: {},
@@ -250,7 +250,7 @@ export default {
    * Get a
    * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Api mw.Api} instance.
    *
-   * @returns {external:mw.Api}
+   * @returns {mw.Api}
    */
   getApi() {
     this.api ||= new mw.Api(cd.getApiConfig());
@@ -264,7 +264,9 @@ export default {
    * @returns {Worker}
    */
   getWorker() {
-    this.worker ||= new Worker();
+    if (!this.worker) {
+      this.worker = /** @type {Worker} */ (new WebpackWorker());
+    }
 
     return this.worker;
   },
@@ -274,7 +276,7 @@ export default {
    *
    * @param {string} [name='default'] Name of the window manager. We may need more than one if we,
    *   for some reason, want to have more than one window open at any moment.
-   * @returns {external:OO.ui.WindowManager}
+   * @returns {OO.ui.WindowManager}
    */
   getWindowManager(name = 'default') {
     this.windowManagers ||= {};

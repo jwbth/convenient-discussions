@@ -4,10 +4,10 @@ import controller from './controller';
 import { tweakUserOoUiClass } from './utils-oojs';
 
 /**
- * Our class that extends {@link external:OO.ui.ProcessDialog OO.ui.ProcessDialog}, adding a couple
+ * Our class that extends {@link OO.ui.ProcessDialog OO.ui.ProcessDialog}, adding a couple
  * of methods to it.
  *
- * @augments external:OO.ui.ProcessDialog
+ * @augments OO.ui.ProcessDialog
  */
 class ProcessDialog extends OO.ui.ProcessDialog {
   /**

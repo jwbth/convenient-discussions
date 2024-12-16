@@ -35,7 +35,7 @@ import controller from './controller';
  * OOUI window manager.
  *
  * @class WindowManager
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.WindowManager
  */
 
@@ -43,7 +43,7 @@ import controller from './controller';
  * OOUI field layout.
  *
  * @class FieldLayout
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.FieldLayout
  */
 
@@ -51,7 +51,7 @@ import controller from './controller';
  * OOUI checkbox input widget.
  *
  * @class CheckboxInputWidget
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.CheckboxInputWidget
  */
 
@@ -59,7 +59,7 @@ import controller from './controller';
  * OOUI radio select widget.
  *
  * @class RadioSelectWidget
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.RadioSelectWidget
  */
 
@@ -67,7 +67,7 @@ import controller from './controller';
  * OOUI radio option widget.
  *
  * @class RadioOptionWidget
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.RadioOptionWidget
  */
 
@@ -75,7 +75,7 @@ import controller from './controller';
  * OOUI copy text layout.
  *
  * @class CopyTextLayout
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.CopyTextLayout
  */
 
@@ -83,7 +83,7 @@ import controller from './controller';
  * OOUI text input widget.
  *
  * @class TextInputWidget
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.TextInputWidget
  */
 
@@ -91,7 +91,7 @@ import controller from './controller';
  * OOUI process dialog.
  *
  * @class ProcessDialog
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ProcessDialog
  */
 
@@ -99,7 +99,7 @@ import controller from './controller';
  * OOUI process.
  *
  * @class Process
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.Process
  */
 
@@ -107,7 +107,7 @@ import controller from './controller';
  * OOUI page layout.
  *
  * @class PageLayout
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PageLayout
  */
 
@@ -115,7 +115,7 @@ import controller from './controller';
  * OOUI horizontal layout.
  *
  * @class HorizontalLayout
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.HorizontalLayout
  */
 
@@ -123,7 +123,7 @@ import controller from './controller';
  * OOUI button widget.
  *
  * @class ButtonWidget
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ButtonWidget
  */
 
@@ -131,7 +131,7 @@ import controller from './controller';
  * OOUI popup button widget.
  *
  * @class PopupButtonWidget
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PopupButtonWidget
  */
 
@@ -139,7 +139,7 @@ import controller from './controller';
  * OOUI popup widget.
  *
  * @class PopupWidget
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.PopupWidget
  */
 
@@ -147,7 +147,7 @@ import controller from './controller';
  * OOUI button menu select widget.
  *
  * @class ButtonMenuSelectWidget
- * @memberof external:OO.ui
+ * @memberof OO.ui
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.ButtonMenuSelectWidget
  */
 
@@ -199,8 +199,8 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {object} CreateTextFieldReturn
- * @property {external:OO.ui.FieldLayout} field
- * @property {external:OO.ui.TextInputWidget} input
+ * @property {OO.ui.FieldLayout} field
+ * @property {OO.ui.TextInputWidget} input
  */
 
 /**
@@ -236,8 +236,8 @@ export function createTextField({
 
 /**
  * @typedef {object} CreateNumberFieldReturn
- * @property {external:OO.ui.FieldLayout} field
- * @property {external:OO.ui.TextInputWidget} input
+ * @property {OO.ui.FieldLayout} field
+ * @property {OO.ui.TextInputWidget} input
  */
 
 /**
@@ -286,7 +286,7 @@ export function createNumberField({
 
 /**
  * @typedef {object} CreateCheckboxFieldReturn
- * @property {external:OO.ui.FieldLayout} field
+ * @property {OO.ui.FieldLayout} field
  * @property {import('./CheckboxInputWidget').default} input
  */
 
@@ -331,8 +331,8 @@ export function createCheckboxField({
 
 /**
  * @typedef {object} CreateRadioFieldReturn
- * @property {external:OO.ui.FieldLayout} field
- * @property {external:OO.ui.RadioSelectWidget} select
+ * @property {OO.ui.FieldLayout} field
+ * @property {OO.ui.RadioSelectWidget} select
  * @property {RadioOptionWidget[]} items
  */
 
@@ -377,7 +377,7 @@ export function createRadioField({ label, selected, help, options }) {
  * @param {object} [options.disabled]
  * @param {object} [options.help]
  * @param {object} options.copyCallback
- * @returns {external:OO.ui.CopyTextLayout|external:OO.ui.ActionFieldLayout}
+ * @returns {OO.ui.CopyTextLayout|OO.ui.ActionFieldLayout}
  */
 export function createCopyTextField({ label, value, disabled = false, help, copyCallback }) {
   let field;

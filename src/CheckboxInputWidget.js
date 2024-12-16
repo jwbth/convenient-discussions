@@ -1,8 +1,8 @@
 /**
- * Class that extends {@link external:OO.ui.CheckboxInputWidget OO.ui.CheckboxInputWidget} and emits
+ * Class that extends {@link OO.ui.CheckboxInputWidget OO.ui.CheckboxInputWidget} and emits
  * `manualChange` event when the input changes by user action.
  *
- * @augments external:OO.ui.CheckboxInputWidget
+ * @augments OO.ui.CheckboxInputWidget
  */
 class CheckboxInputWidget extends OO.ui.CheckboxInputWidget {
   // eslint-disable-next-line jsdoc/require-jsdoc

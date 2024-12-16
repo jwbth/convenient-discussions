@@ -50,7 +50,7 @@ class UploadDialog extends mw.Upload.Dialog {
    * first).
    *
    * @param {object} data Dialog opening data
-   * @returns {external:OO.ui.Process}
+   * @returns {OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getSetupProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
    * @ignore
@@ -113,7 +113,7 @@ class UploadDialog extends mw.Upload.Dialog {
    *
    * We focus the title input here.
    *
-   * @returns {external:OO.ui.Process}
+   * @returns {OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getReadyProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
    * @ignore
@@ -130,7 +130,7 @@ class UploadDialog extends mw.Upload.Dialog {
    * We alter the handling of the `'upload'` and `'cancelupload'` actions.
    *
    * @param {string} action Symbolic name of the action.
-   * @returns {external:OO.ui.Process}
+   * @returns {OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getActionProcess
    * @ignore
    */
@@ -189,7 +189,7 @@ class UploadDialog extends mw.Upload.Dialog {
 
   /**
    * @class Error
-   * @memberof external:OO.ui
+   * @memberof OO.ui
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.Error.html
    */
 
@@ -199,7 +199,7 @@ class UploadDialog extends mw.Upload.Dialog {
    * Here we use a hack to hide the second identical error message that can appear since we execute
    * two actions, not one ("Upload and save").
    *
-   * @param {external:OO.ui.Error} errors
+   * @param {OO.ui.Error} errors
    * @protected
    */
   showErrors(errors) {

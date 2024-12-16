@@ -9,10 +9,10 @@ import { getElementFromPasteHtml, cleanUpPasteDom, isElementConvertibleToWikitex
  */
 
 /**
- * Class that extends {@link external:OO.ui.TextInputWidget OO.ui.TextInputWidget} and adds some
+ * Class that extends {@link OO.ui.TextInputWidget OO.ui.TextInputWidget} and adds some
  * features we need.
  *
- * @augments external:OO.ui.TextInputWidget
+ * @augments OO.ui.TextInputWidget
  */
 class TextInputWidget extends OO.ui.TextInputWidget {
   /**

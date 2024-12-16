@@ -96,7 +96,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
    * particular context, based on the `data` argument.
    *
    * @param {object} [data] Dialog opening data
-   * @returns {external:OO.ui.Process}
+   * @returns {OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getSetupProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
    * @ignore
@@ -113,7 +113,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
    * particular context, based on the `data` argument.
    *
    * @param {object} data Window opening data
-   * @returns {external:OO.ui.Process}
+   * @returns {OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getReadyProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
    * @ignore
@@ -177,7 +177,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
    * OOUI native method that returns a process for taking action.
    *
    * @param {string} action Symbolic name of the action.
-   * @returns {external:OO.ui.Process}
+   * @returns {OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getActionProcess
    * @ignore
    */

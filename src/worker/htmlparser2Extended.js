@@ -1,10 +1,7 @@
 import { Document as DocumentClass, Element, Node as NodeClass, NodeWithChildren, Text } from 'domhandler';
 import { DomUtils, parseDocument } from 'htmlparser2';
 
-import { decodeHtmlEntities } from './utils-general';
-
-/** @type {DedicatedWorkerGlobalScope} */
-const self = this;
+import { decodeHtmlEntities } from '../utils-general';
 
 self.Document = DocumentClass;
 self.Node = {
@@ -316,12 +313,6 @@ Element.prototype.getElementsByTagName = function (name) {
   return DomUtils.getElementsByTagName(name, this);
 };
 
-Element.prototype.cloneNode = function () {
-  const clone = document.createElement(this.tagName);
-  clone.attribs = Object.assign({}, this.attribs);
-  return clone;
-};
-
 Object.defineProperty(Text.prototype, 'textContent', {
   get: function () {
     return decodeHtmlEntities(this.data);
@@ -391,7 +382,7 @@ NodeClass.prototype.remove = function () {
   DomUtils.removeElement(this);
 };
 
-// We need the "Document" class to imitate window.document for the code to be more easily ported to
+// We need the Document class to imitate window.document for the code to be more easily ported to
 // other library if needed.
 DocumentClass.prototype.createElement = (name) => {
   return new Element(name, {});

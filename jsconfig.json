@@ -1,15 +1,14 @@
 {
+  "extends": "./jsconfig-base.json",
   "compilerOptions": {
-    "allowJs": true,
-    "checkJs": true,
-    "noEmit": true,
-    "lib": ["ES2016", "DOM", "WebWorker"],
+    "lib": ["ES2016", "DOM"],
     "types": [
-      "./node_modules/types-mediawiki",
-      "./node_modules/@types/oojs",
-      "./node_modules/@types/oojs-ui",
-      "./node_modules/@types/jquery"
+      "oojs",
+      "oojs-ui",
+      "jquery",
+      "./node_modules/types-mediawiki"
     ]
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "exclude": ["src/worker/**/*"]
 }

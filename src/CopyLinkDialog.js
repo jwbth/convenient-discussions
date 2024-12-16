@@ -7,7 +7,7 @@ import { wrapHtml } from './utils-window';
 /**
  * Class used to create a "Copy link" dialog.
  *
- * @augments external:OO.ui.MessageDialog
+ * @augments OO.ui.MessageDialog
  */
 class CopyLinkDialog extends OO.ui.MessageDialog {
   static name = 'copyLinkDialog';
@@ -98,7 +98,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    * particular context, based on the `data` argument.
    *
    * @param {object} [data] Dialog opening data
-   * @returns {external:OO.ui.Process}
+   * @returns {OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.Dialog.html#getSetupProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
    * @ignore
@@ -124,7 +124,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    * particular context, based on the `data` argument.
    *
    * @param {object} data Window opening data
-   * @returns {external:OO.ui.Process}
+   * @returns {OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getReadyProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
    * @ignore
@@ -139,7 +139,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    * Callback for copying text.
    *
    * @param {boolean} successful
-   * @param {external:OO.ui.CopyTextLayout} field
+   * @param {OO.ui.CopyTextLayout} field
    * @protected
    */
   async copyCallback(successful, field) {

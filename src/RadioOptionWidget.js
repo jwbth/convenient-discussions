@@ -1,10 +1,10 @@
 import { tweakUserOoUiClass } from './utils-oojs';
 
 /**
- * Class that extends {@link external:OO.ui.RadioOptionWidget OO.ui.RadioOptionWidget} and allows to
+ * Class that extends {@link OO.ui.RadioOptionWidget OO.ui.RadioOptionWidget} and allows to
  * add help notes to radio options widgets.
  *
- * @augments external:OO.ui.RadioOptionWidget
+ * @augments OO.ui.RadioOptionWidget
  */
 class RadioOptionWidget extends OO.ui.RadioOptionWidget {
   /**

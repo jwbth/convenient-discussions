@@ -1,0 +1,7 @@
+{
+  "extends": "../../jsconfig-base.json",
+  "compilerOptions": {
+    "lib": ["ES2016", "WebWorker"]
+  },
+  "include": ["."]
+}

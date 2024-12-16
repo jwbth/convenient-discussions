@@ -9,14 +9,15 @@
  * @module worker
  */
 
-import CdError from './CdError';
-import CommentSkeleton from './CommentSkeleton';
-import Parser from './Parser';
-import SectionSkeleton from './SectionSkeleton';
-import cd from './cd';
-import debug from './debug';
+import CdError from '../CdError';
+import CommentSkeleton from '../CommentSkeleton';
+import Parser from '../Parser';
+import SectionSkeleton from '../SectionSkeleton';
+import cd from '../cd';
+import debug from '../debug';
+import { isHeadingNode, isMetadataNode } from '../utils-general';
+
 import { parseDocument, traverseSubtree } from './htmlparser2Extended';
-import { isHeadingNode, isMetadataNode } from './utils-general';
 
 let isFirstRun = true;
 let alarmTimeout;
@@ -58,6 +59,7 @@ function getAllTextNodes() {
       node.remove();
     }
   });
+
   return nodes;
 }
 
@@ -69,30 +71,6 @@ function getAllTextNodes() {
 function removeDtButtonHtmlComments() {
   // See getAllTextNodes()
 }
-
-/**
- * DomHandler's node.
- *
- * @external Node
- * @see
- *   https://github.com/fb55/domhandler/blob/c3232247c2350566cb6a0cba45d5e34177b3b811/src/node.ts#L18
- */
-
-/**
- * DomHandler's data node.
- *
- * @external DataNode
- * @see
- *   https://github.com/fb55/domhandler/blob/c3232247c2350566cb6a0cba45d5e34177b3b811/src/node.ts#L84
- */
-
-/**
- * DomHandler's element.
- *
- * @external Element
- * @see
- *   https://github.com/fb55/domhandler/blob/c3232247c2350566cb6a0cba45d5e34177b3b811/src/node.ts#L200
- */
 
 /**
  * Find comment signatures and section headings on the page.
@@ -154,7 +132,7 @@ function processSections(parser, targets) {
 /**
  * Remove the element's attributes whose names start with `data-` and IDs added by Parsoid.
  *
- * @param {external:Element} element
+ * @param {import('domhandler').Element} element
  * @private
  */
 function removeDataAndParsoidAttributes(element) {
@@ -168,9 +146,9 @@ function removeDataAndParsoidAttributes(element) {
 /**
  * Replace a comment element with a marker.
  *
- * @param {external:Element} el
+ * @param {import('domhandler').Element} el
  * @param {CommentSkeleton} comment
- * @returns {?external:DataNode}
+ * @returns {?import('domhandler').DataNode}
  * @private
  */
 function hideElement(el, comment) {

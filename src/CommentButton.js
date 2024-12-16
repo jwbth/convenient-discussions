@@ -57,7 +57,7 @@ class CommentButton extends Button {
      * performance reasons (every other button is just cloned as an element). When their state is
      * changed anyhow, the widget is created.
      *
-     * @type {external:OO.ui.ButtonWidget}
+     * @type {OO.ui.ButtonWidget}
      */
     this.buttonWidget = this.widgetConstructor();
 

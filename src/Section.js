@@ -413,7 +413,7 @@ class Section extends SectionSkeleton {
     /**
      * Subscribe button widget in the {@link Section#actionsElement actions element}.
      *
-     * @type {external:OO.ui.ButtonMenuSelectWidget}
+     * @type {OO.ui.ButtonMenuSelectWidget}
      */
     this.actions.subscribeButton = new OO.ui.ButtonWidget({
       framed: false,
@@ -552,7 +552,7 @@ class Section extends SectionSkeleton {
       /**
        * Popup with the list of users who have posted in the section.
        *
-       * @type {external:OO.ui.PopupWidget|undefined}
+       * @type {OO.ui.PopupWidget|undefined}
        */
       this.authorsPopup = new OO.ui.PopupWidget({
         $content: this.createAuthorsPopupContent(),
@@ -866,7 +866,7 @@ class Section extends SectionSkeleton {
      * that it is created only when the user hovers over or clicks a dummy button, which fires a
      * {@link Section#moreMenuSelectCreated moreMenuSelectCreated hook}.
      *
-     * @type {external:OO.ui.ButtonMenuSelectWidget|undefined}
+     * @type {OO.ui.ButtonMenuSelectWidget|undefined}
      */
     this.actions.moreMenuSelect = moreMenuSelect;
 
@@ -964,7 +964,7 @@ class Section extends SectionSkeleton {
       /**
        * Copy link button widget in the {@link Section#actionsElement actions element}.
        *
-       * @type {external:OO.ui.ButtonWidget|undefined}
+       * @type {OO.ui.ButtonWidget|undefined}
        */
       copyLinkButton,
 

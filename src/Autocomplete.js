@@ -20,12 +20,12 @@ class Autocomplete {
    * @param {object} options
    * @param {Array.<'mentions'|'commentLinks'|'wikilinks'|'templates'|'tags'>} options.types Which
    *   values should be autocompleted.
-   * @param {external:OO.ui.TextInputWidget[]} options.inputs Inputs to attach the autocomplete to. Please
+   * @param {OO.ui.TextInputWidget[]} options.inputs Inputs to attach the autocomplete to. Please
    *   note that these should be CD's {@link TextInputWidget}s, not
-   *   {@link external:OO.ui.TextInputWidget OO.ui.TextInputWidget}s, since we use CD's method
+   *   {@link OO.ui.TextInputWidget OO.ui.TextInputWidget}s, since we use CD's method
    *   {@link TextInputWidget#cdInsertContent} on the inputs here. This is not essential, so if you
    *   borrow the source code, you can replace it with native
-   *   {@link external:OO.ui.TextInputWidget#insertContent OO.ui.TextInputWidget#insertContent}.
+   *   {@link OO.ui.TextInputWidget#insertContent OO.ui.TextInputWidget#insertContent}.
    * @param {string[]} [options.comments] List of comments in the section for the mentions and
    *   comment links autocomplete.
    * @param {string[]} [options.defaultUserNames] Default list of user names for the mentions
@@ -59,7 +59,7 @@ class Autocomplete {
     /**
      * Inputs that have the autocomplete attached.
      *
-     * @type {external:OO.ui.TextInputWidget[]}
+     * @type {OO.ui.TextInputWidget[]}
      * @private
      */
     this.inputs = inputs;
