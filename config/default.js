@@ -228,8 +228,7 @@ export default {
    *   parameter that turns `relativePathParam` into a parameter that works like `pathParam` (when
    *   archiving using it), and the second element: a regexp that, if matches the value, enables
    *   that parameter (e.g. `['absolute_path', /^yes$/]`).
-   * @property {Map<RegExp, ({ counter: string | null, date: Date | null }, string[]) => string>}
-   *   [replacements]
+   * @property {Map<RegExp, (data: { counter: string | null, date: Date | null }, match: string[]) => string>} [replacements]
    *   {@https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map Map}
    *   of replacements where keys are RegExps and values are functions that take a data object and
    *   return a replacement string.
@@ -854,7 +853,7 @@ export default {
    *
    * @type {?Function}
    * @kind function
-   * @param {Node|external:Node} node
+   * @param {Node|import('domhandler').Node} node
    * @param {import('./../src/Parser').Context} context
    * @returns {boolean}
    * @default null

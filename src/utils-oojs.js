@@ -19,7 +19,7 @@ import controller from './controller';
  * Namespace for all classes, static methods and static properties of OOUI.
  *
  * @namespace ui
- * @memberof external:OO
+ * @memberof OO
  * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui
  */
 
@@ -27,7 +27,7 @@ import controller from './controller';
  * OOjs event emitter.
  *
  * @namespace EventEmitter
- * @memberof external:OO
+ * @memberof OO
  * @see https://doc.wikimedia.org/oojs/master/OO.EventEmitter.html
  */
 
@@ -454,9 +454,9 @@ export function mixinUserOoUiClass(targetClass, originClass) {
 }
 
 /**
- * Add {@link external:OO.EventEmitter OO.EventEmitter}'s methods to an arbitrary object itself, not
- * its prototype. Can be used for singletons or classes. In the latter case, the methods will be
- * added as static.
+ * Add {@link OO.EventEmitter OO.EventEmitter}'s methods to an arbitrary object itself, not its
+ * prototype. Can be used for singletons or classes. In the latter case, the methods will be added
+ * as static.
  *
  * @param {object} obj
  */

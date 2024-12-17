@@ -9,8 +9,8 @@ class ElementsTreeWalker extends TreeWalker {
   /**
    * Create an elements {@link TreeWalker tree walker}.
    *
-   * @param {Node|external:Node} [startNode]
-   * @param {Node|external:Node} [root]
+   * @param {Node|import('domhandler').Node} [startNode]
+   * @param {Node|import('domhandler').Node} [root]
    */
   constructor(startNode, root) {
     super(root, null, true);

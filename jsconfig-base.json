@@ -2,6 +2,8 @@
   "compilerOptions": {
     "allowJs": true,
     "checkJs": true,
-    "noEmit": true
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "downlevelIteration": true
   }
 }

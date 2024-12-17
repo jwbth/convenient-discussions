@@ -95,7 +95,8 @@ export default {
           type: 'error',
           tag: 'cd-elementhidden',
         });
-        return this;
+
+        return /** @type {JQuery} */ (/** @type {unknown} */ (this));
       }
     }
     const offsetBottom = offsetLast.top + $elements.last().outerHeight();
@@ -115,7 +116,7 @@ export default {
     controller.toggleAutoScrolling(true);
     controller.scrollToY(top, smooth, callback);
 
-    return this;
+    return /** @type {JQuery} */ (/** @type {unknown} */ (this));
   },
 
   /**
@@ -184,7 +185,7 @@ export default {
       }
     }
 
-    return this;
+    return /** @type {JQuery} */ (/** @type {unknown} */ (this));
   },
 
   /**
@@ -214,7 +215,7 @@ export default {
    */
   cdAddCloseButton() {
     if (this.find('.cd-closeButton').length) {
-      return this;
+      return /** @type {JQuery} */ (/** @type {unknown} */ (this));
     }
 
     const $closeButton = $('<a>')
@@ -230,7 +231,7 @@ export default {
       });
     this.prepend($closeButton);
 
-    return this;
+    return /** @type {JQuery} */ (/** @type {unknown} */ (this));
   },
 
   /**
@@ -241,6 +242,7 @@ export default {
    */
   cdRemoveCloseButton() {
     this.find('.cd-closeButton').remove();
-    return this;
+
+    return /** @type {JQuery} */ (/** @type {unknown} */ (this));
   },
 };

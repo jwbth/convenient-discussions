@@ -11,18 +11,18 @@ import { wrapHtml } from './utils-window';
 
 /**
  * @class Upload
- * @memberof external:mw
+ * @memberof mw
  * @see https://doc.wikimedia.org/mediawiki-core/master/js/mw.Upload.html
  */
 
 /**
  * @class Dialog
- * @memberof external:mw.Upload
+ * @memberof mw.Upload
  * @see https://doc.wikimedia.org/mediawiki-core/master/js/mw.Upload.Dialog.html
  */
 
 /**
- * Class that extends {@link external:mw.Upload.Dialog} and adds some logic we need. Uses
+ * Class that extends {@link mw.Upload.Dialog} and adds some logic we need. Uses
  * {@link ForeignStructuredUploadBookletLayout}, which in turn uses {@link ForeignStructuredUpload}.
  */
 class UploadDialog extends mw.Upload.Dialog {
@@ -211,17 +211,17 @@ class UploadDialog extends mw.Upload.Dialog {
 
 /**
  * @class BookletLayout
- * @memberof external:mw.ForeignStructuredUpload
+ * @memberof mw.ForeignStructuredUpload
  * @see https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html
  */
 
 /**
  * Class extending
- * {@link external:mw.ForeignStructuredUpload.BookletLayout mw.ForeignStructuredUpload.BookletLayout}
- * and adding more details to the process of uploading a file using the
- * {@link ForeignStructuredUpload} model. See {@link UploadDialog} for the dialog itself.
+ * {@link mw.ForeignStructuredUpload.BookletLayout mw.ForeignStructuredUpload.BookletLayout} and
+ * adding more details to the process of uploading a file using the {@link ForeignStructuredUpload}
+ * model. See {@link UploadDialog} for the dialog itself.
  *
- * @augments external:mw.ForeignStructuredUpload.BookletLayout
+ * @augments mw.ForeignStructuredUpload.BookletLayout
  */
 class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.BookletLayout {
   /**

@@ -1,14 +1,14 @@
-import { Document as DocumentClass } from 'domhandler';
+import { Document } from 'domhandler';
 
 declare global {
   interface WorkerGlobalScope {
-    Document: typeof DocumentClass;
+    Document: typeof Document;
     Node: {
       ELEMENT_NODE: 1;
       TEXT_NODE: 3;
       COMMENT_NODE: 8;
     };
-    document: Document | undefined;
+    document?: Document;
   }
 
   const Document: WorkerGlobalScope['Document'];

@@ -844,7 +844,6 @@ class Thread {
      * Nodes that are collapsed. These can change, at least due to comment forms showing up.
      *
      * @type {Node[]|undefined}
-     * @private
      */
     this.collapsedRange = getRangeContents(
       this.getAdjustedStartElement(),

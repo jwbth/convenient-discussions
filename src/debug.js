@@ -141,9 +141,9 @@ export default {
   /**
    * Log and reset all timers, as well as counters and other collected values.
    *
-   * @param {boolean} sort Whether to sort timers and counters alphabetically.
+   * @param {boolean} [sort=false] Whether to sort timers and counters alphabetically.
    */
-  logAndResetEverything(sort) {
+  logAndResetEverything(sort = false) {
     const timerLabels = Object.keys(this.timerTotal);
     if (sort) {
       timerLabels.sort();

@@ -1321,7 +1321,9 @@ class Comment extends CommentSkeleton {
     } else if (this.isStartStretched) {
       startMargin = controller.getContentColumnOffsets().startMargin;
     } else {
-      const anchorElement = this.isCollapsed ? this.thread.expandNote : this.anchorHighlightable;
+      const anchorElement = this.isCollapsed
+        ? this.thread.$expandNote[0]
+        : this.anchorHighlightable;
       if (anchorElement.parentNode.classList.contains('cd-commentLevel')) {
         startMargin = -1;
       } else {

@@ -64,7 +64,7 @@ const pixelDeviationRatio = devicePixelRatioToDivisor.reduce((value, [dpr, divis
   (window.devicePixelRatio >= dpr ? window.devicePixelRatio / divisor : value)
 ), undefined);
 
-Object.assign(cd, {
+const convenientDiscussions = {
   /**
    * Get a language string.
    *
@@ -85,7 +85,7 @@ Object.assign(cd, {
     let options = {};
     let lastParam = params[params.length - 1];
 
-    // lastParam.options is a mw.user-like object to provide to {{gender:}}
+    // lastParam.options is a `mw.user`-like object to provide to {{gender:}}
     if (typeof lastParam === 'object' && !lastParam.options) {
       options = lastParam;
       params.splice(params.length - 1);
@@ -181,6 +181,18 @@ Object.assign(cd, {
   },
 
   /**
+   * Checks whether the current execution context is a web worker.
+   *
+   * @returns {boolean}
+   */
+  isWorker() {
+    return (
+      'WorkerGlobalScope' in self &&
+      self instanceof /** @type {any} */ (self.WorkerGlobalScope)
+    );
+  },
+
+  /**
    * Reference to the {@link module:debug debug} module.
    *
    * @memberof convenientDiscussions
@@ -260,16 +272,9 @@ Object.assign(cd, {
      */
     wrapDiffBody,
   },
+};
 
-  /**
-   * Is the code running in the worker context.
-   *
-   * @name isWorker
-   * @type {boolean}
-   * @memberof convenientDiscussions
-   */
-  isWorker: false,
-});
+Object.assign(cd, convenientDiscussions);
 
 /**
  * Collection of properties accessible from anywhere in the script that are not grouped in any other
@@ -645,4 +650,4 @@ if (cd.g.debug) {
   window.cd = cd;
 }
 
-export { globalProperties };
+export { convenientDiscussions, globalProperties };

@@ -36,7 +36,7 @@ export default {
    * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.html#.notify mw.notify()} or
    * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.notification.html#.notify mw.notification.notify()}).
    *
-   * @param {string|external:Query} message Message text.
+   * @param {string|JQuery} message Message text.
    * @param {object} [options]
    * @param {object} [data={}] Additional data related to the notification.
    * @returns {Notification}

@@ -1,27 +1,44 @@
 import { isCmdModifierPressed } from './utils-window';
 
 /**
+ * @callback Action
+ * @param {MouseEvent | KeyboardEvent} event
+ * @param {Button} [button]
+ * @returns {void}
+ */
+
+/**
+ * @typedef {object} ButtonConfig
+ * @property {HTMLElement} [element] Pre-created {@link Button#element element}.
+ * @property {HTMLElement} [buttonElement] Pre-created {@link Button#buttonElement button element}
+ *   (can be provided instead of config).
+ * @property {HTMLElement} [labelElement] Pre-created {@link Button#labelElement label element}.
+ * @property {HTMLElement} [iconElement] Pre-created {@link Button#iconElement icon element}.
+ * @property {string} [tagName='a'] Tag name of the button element.
+ * @property {string[]} [classes=[]] List of classes to add to the main element.
+ * @property {string[]} [buttonClasses=[]] List of classes to add to the button element.
+ * @property {string} [id] ID attribute of the button.
+ * @property {string} [href] Value of the `href` parameter to add to the button element.
+ * @property {string} [label] Label of the button.
+ * @property {string} [tooltip] Tooltip for the button.
+ * @property {string[]} [flags] Flags to apply to an OOUI button.
+ * @property {Action} [action] Function to execute on click or Enter press.
+ */
+
+/**
  * Class representing a generic button.
  */
 class Button {
   /**
+   * @type {((event: MouseEvent | KeyboardEvent) => void) | undefined}
+   * @private
+   */
+  callback = undefined;
+
+  /**
    * Create a button.
    *
-   * @param {object} [config]
-   * @param {Element} [config.element] Pre-created {@link Button#element element}.
-   * @param {Element} [config.buttonElement] Pre-created {@link Button#buttonElement button element}
-   *   (can be provided instead of config).
-   * @param {Element} [config.labelElement] Pre-created {@link Button#labelElement label element}.
-   * @param {Element} [config.iconElement] Pre-created {@link Button#iconElement icon element}.
-   * @param {string} [config.tagName='a'] Tag name of the button element.
-   * @param {string[]} [config.classes=[]] List of classes to add to the main element.
-   * @param {string[]} [config.buttonClasses=[]] List of classes to add to the button element.
-   * @param {string} [config.id] ID attribute of the button.
-   * @param {string} [config.href] Value of the `href` parameter to add to the button element.
-   * @param {string} [config.label] Label of the button.
-   * @param {string} [config.tooltip] Tooltip for the button.
-   * @param {string[]} [config.flags] Flags to apply to an OOUI button.
-   * @param {Function} [config.action] Function to execute on click or Enter press.
+   * @param {ButtonConfig} [config]
    */
   constructor({
     element,
@@ -47,7 +64,7 @@ class Button {
      * Main element. It can be the same as the {@link Button#button button element} or a wrapper
      * around it.
      *
-     * @type {Element}
+     * @type {HTMLElement}
      */
     this.element = element || buttonElement;
 
@@ -63,7 +80,7 @@ class Button {
      * Button element (an `'a'` element by default). It can be the same as the
      * {@link Button#element main element} or its descendant.
      *
-     * @type {Element}
+     * @type {HTMLElement}
      */
     this.buttonElement = buttonElement;
 
@@ -75,14 +92,14 @@ class Button {
      * Button label element. It can be the same as the {@link Button#buttonElement button element}
      * or its descendant.
      *
-     * @type {Element}
+     * @type {HTMLElement}
      */
     this.labelElement = labelElement || buttonElement;
 
     /**
      * Button icon element, a descendant of the {@link Button#buttonElement button element}.
      *
-     * @type {Element|undefined}
+     * @type {HTMLElement|undefined}
      */
     this.iconElement = iconElement;
 
@@ -112,7 +129,7 @@ class Button {
   setDisabled(disabled) {
     disabled = Boolean(disabled);
     this.element.classList.toggle('cd-button-disabled', disabled);
-    this.buttonElement.ariaDisabled = disabled;
+    this.buttonElement.ariaDisabled = String(disabled);
     this.buttonElement.tabIndex = disabled ? -1 : 0;
 
     return this;
@@ -139,7 +156,9 @@ class Button {
    * @returns {Button} This button.
    */
   setHref(href) {
-    this.buttonElement.href = href;
+    if ('href' in this.buttonElement) {
+      this.buttonElement.href = href;
+    }
 
     return this;
   }
@@ -171,14 +190,17 @@ class Button {
   /**
    * Execute a pre-defined action if the button is conditions are met.
    *
-   * @param {Function} action
-   * @param {Event} event
+   * @param {Action} action
+   * @param {MouseEvent | KeyboardEvent} event
    * @protected
    */
   maybeExecuteAction(action, event) {
     if (
       !this.isDisabled() &&
-      ((!isCmdModifierPressed(event) && !event.shiftKey) || !this.buttonElement.href)
+      (
+        (!isCmdModifierPressed(event) && !event.shiftKey) ||
+        !(this.buttonElement instanceof HTMLAnchorElement && this.buttonElement.href)
+      )
     ) {
       event.preventDefault();
       event.stopPropagation();
@@ -189,23 +211,28 @@ class Button {
   /**
    * Set the action of the button. It will be executed on click or Enter press.
    *
-   * @param {?Function} action
+   * @param {?Action} action
    * @returns {Button} This button.
    */
   setAction(action) {
-    this.buttonElement.onclick = action ?
-      (e) => {
-        this.maybeExecuteAction(action, e);
-      } :
-      action;
-    this.buttonElement.onkeydown = action ?
-      (e) => {
-        // Enter, Space
-        if ([13, 32].includes(e.keyCode)) {
-          this.maybeExecuteAction(action, e);
+    if (this.callback) {
+      this.buttonElement.removeEventListener('click', this.callback);
+      this.buttonElement.removeEventListener('keydown', this.callback);
+      this.callback = undefined;
+    }
+
+    if (action) {
+      this.callback = (event) => {
+        if (
+          !(event instanceof KeyboardEvent)
+          || [OO.ui.Keys.ENTER, OO.ui.Keys.SPACE].includes(event.keyCode)
+        ) {
+          this.maybeExecuteAction(action, event);
         }
-      } :
-      action;
+      };
+      this.buttonElement.addEventListener('click', this.callback);
+      this.buttonElement.addEventListener('keydown', this.callback);
+    }
 
     return this;
   }
@@ -291,7 +318,7 @@ class Button {
    * one from scratch.
    *
    * @param {string} tagName Tag name.
-   * @returns {Element}
+   * @returns {HTMLElement}
    * @private
    */
   static cloneButtonPrototype(tagName) {

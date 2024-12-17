@@ -9,7 +9,7 @@
  * @module worker
  */
 
-import './extendDomHandler';
+import './domHandlerExtended';
 
 import { parseDocument } from 'htmlparser2';
 
@@ -171,7 +171,7 @@ function hideElement(el, comment) {
     html: el.outerHTML,
   });
   const textNode = document.createTextNode(`\x01${num}_${type}\x02`);
-  el.parentNode.insertBefore(textNode, el);
+  textNode.before(el);
   el.remove();
 
   if (comment.elements.includes(el)) {
@@ -481,11 +481,25 @@ function restoreFunc(code) {
 /**
  * Callback for messages from the window.
  *
- * @param {Event} e
+ * @param {MessageEvent} event
  * @private
  */
-function onMessageFromWindow(e) {
-  const message = e.data;
+function onMessageFromWindow(event) {
+  /**
+   * @typedef {object} Message
+   * @property {string} type
+   * @property {string} [revisionId]
+   * @property {number} [resolverId]
+   * @property {string} [text]
+   * @property {import('../cd').ConvenientDiscussions['g']} [g]
+   * @property {import('../cd').ConvenientDiscussions['config']} [config]
+   * @property {number} [interval]
+   */
+
+  /**
+   * @type {Message}
+   */
+  const message = event.data;
 
   if (isFirstRun) {
     console.debug('Convenient Discussions\' web worker has been successfully loaded. Click the link with the file name and line number to open the source code in your debug tool.');

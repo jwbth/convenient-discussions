@@ -242,7 +242,7 @@ export default {
 
   /**
    * @class Api
-   * @memberof external:mw
+   * @memberof mw
    * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Api
    */
 
@@ -385,10 +385,10 @@ export default {
   /**
    * Get the offset data related to `.$contentColumn`.
    *
-   * @param {boolean} reset Whether to bypass cache.
+   * @param {boolean} [reset=false] Whether to bypass cache.
    * @returns {object}
    */
-  getContentColumnOffsets(reset) {
+  getContentColumnOffsets(reset = false) {
     if (!this.contentColumnOffsets || reset) {
       const prop = cd.g.contentDirection === 'ltr' ? 'padding-left' : 'padding-right';
       let startMargin = Math.max(parseFloat(this.$contentColumn.css(prop)), cd.g.contentFontSize);

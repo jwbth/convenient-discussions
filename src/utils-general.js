@@ -74,7 +74,7 @@ export function unique(el, i, arr) {
  * Check if a node is an element with `display: inline` or `display: inline-block` in the default
  * browser styles. As an option, it can also treat text nodes as inline elements.
  *
- * @param {Node|external:Node} node
+ * @param {Node|import('domhandler').Node} node
  * @param {boolean} [countTextNodesAsInline=false]
  * @returns {?boolean}
  */

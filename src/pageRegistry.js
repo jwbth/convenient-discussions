@@ -27,7 +27,7 @@ import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
 
 /**
  * @class Title
- * @memberof external:mw
+ * @memberof mw
  * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Title
  */
 
@@ -47,7 +47,7 @@ export class Page {
   /**
    * Create a page instance.
    *
-   * @param {external:mw.Title} mwTitle
+   * @param {mw.Title} mwTitle
    * @param {string} [genderedName]
    * @throws {CdError} If the string in the first parameter is not a valid title.
    */
@@ -58,7 +58,7 @@ export class Page {
     }
 
     /**
-     * Page's {@link external:mw.Title mw.Title} object.
+     * Page's {@link mw.Title mw.Title} object.
      */
     this.mwTitle = mwTitle;
 
@@ -106,7 +106,6 @@ export class Page {
    * Check whether the page is the one the user is visiting.
    *
    * @returns {boolean}
-   * @private
    */
   isCurrent() {
     return this.name === cd.g.pageName;
@@ -1187,7 +1186,7 @@ const pageRegistry = {
   /**
    * Get a page object for a page with the specified name (either a new one or already existing).
    *
-   * @param {string|external:mw.Title} nameOrMwTitle
+   * @param {string|mw.Title} nameOrMwTitle
    * @param {boolean} [isGendered=true] Used to keep the gendered namespace name (if `nameOrMwTitle`
    *   is a string).
    * @returns {?Page}

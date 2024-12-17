@@ -9,8 +9,8 @@ class ElementsAndTextTreeWalker extends TreeWalker {
   /**
    * Create an elements and text {@link TreeWalker tree walker}.
    *
-   * @param {Node|external:Node} [startNode]
-   * @param {Node|external:Node} [root]
+   * @param {Node|import('domhandler').Node} [startNode]
+   * @param {Node|import('domhandler').Node} [root]
    */
   constructor(startNode, root) {
     super(root, (node) => node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE);

@@ -22,6 +22,27 @@ class CommentSkeleton {
   /** @type {HiddenElementData[]|undefined} */
   hiddenElementsData = undefined;
 
+  /** @type {string[]|undefined} */
+  elementHtmls = undefined;
+
+  /** @type {string|undefined} */
+  htmlToCompare = undefined;
+
+  /** @type {string|undefined} */
+  textHtmlToCompare = undefined;
+
+  /** @type {string|undefined} */
+  headingHtmlToCompare = undefined;
+
+  /** @type {string|undefined} */
+  text = undefined;
+
+  /** @type {string[]|undefined} */
+  elementNames = undefined;
+
+  /** @type {string[]|undefined} */
+  elementClassNames = undefined;
+
   /**
    * Create a comment skeleton instance.
    *
@@ -49,7 +70,7 @@ class CommentSkeleton {
     /**
      * _For internal use._ Comment signature element.
      *
-     * @type {Element|external:Element}
+     * @type {Element|import('domhandler').Element}
      */
     this.signatureElement = signature.element;
 
@@ -124,7 +145,7 @@ class CommentSkeleton {
     /**
      * _For internal use._ Comment timestamp element.
      *
-     * @type {Element|external:Element}
+     * @type {Element|import('domhandler').Element}
      */
     this.timestampElement = signature.timestampElement;
 
@@ -138,14 +159,14 @@ class CommentSkeleton {
     /**
      * _For internal use._ User page (in the "User" namespace) link element.
      *
-     * @type {Element|external:Element}
+     * @type {Element|import('domhandler').Element}
      */
     this.authorLink = signature.authorLink;
 
     /**
      * _For internal use._ User talk page (in the "User talk" namespace) link element.
      *
-     * @type {Element|external:Element}
+     * @type {Element|import('domhandler').Element}
      */
     this.authorTalkLink = signature.authorTalkLink;
 
@@ -168,7 +189,7 @@ class CommentSkeleton {
     /**
      * _For internal use._ Elements containing all parts of the comment.
      *
-     * @type {Element[]|external:Element[]}
+     * @type {Element[]|import('domhandler').Element[]}
      */
     this.elements = this.parts.map((part) => part.node);
 
@@ -318,7 +339,7 @@ class CommentSkeleton {
   /**
    * Determine whether the provided element is a cell of a table containing multiple signatures.
    *
-   * @param {Element|external:Element} element
+   * @param {Element|import('domhandler').Element} element
    * @returns {boolean}
    * @private
    */
@@ -338,7 +359,7 @@ class CommentSkeleton {
   /**
    * Check if an element is eligible to be a comment part.
    *
-   * @param {Element|external:Element} element
+   * @param {Element|import('domhandler').Element} element
    * @param {ElementsAndTextTreeWalker} treeWalker
    * @param {string} step
    * @returns {boolean}
@@ -382,7 +403,7 @@ class CommentSkeleton {
    * Check whether the element is an other kind of list than a comment thread, like a gallery
    * created by the `<gallery>` tag.
    *
-   * @param {Element|external:Element} element
+   * @param {Element|import('domhandler').Element} element
    * @returns {boolean}
    */
   isOtherKindOfList(element) {
@@ -398,7 +419,7 @@ class CommentSkeleton {
    * Check whether the element is a node that contains introductory text (or other foreign entity,
    * like a gallery) despite being a list element.
    *
-   * @param {Element|external:Element} element
+   * @param {Element|import('domhandler').Element} element
    * @param {boolean} checkNextElement
    * @param {boolean} [lastPartNode]
    * @returns {boolean}
@@ -467,7 +488,7 @@ class CommentSkeleton {
    * Given a comment part (a node), tell if it is a part of a bulleted or unbulleted (but not
    * numbered) list.
    *
-   * @param {Element|external:Element} node
+   * @param {Element|import('domhandler').Element} node
    * @param {boolean} isDefinitionListOnly
    * @returns {boolean}
    */
@@ -504,10 +525,10 @@ class CommentSkeleton {
    * @param {object} options
    * @param {string} options.step
    * @param {number} options.stage
-   * @param {Element|external:Element} options.node
-   * @param {Element|external:Element} options.nextNode
-   * @param {Element|external:Element} [options.lastPartNode]
-   * @param {Element|external:Element} [options.previousPart]
+   * @param {Element|import('domhandler').Element} options.node
+   * @param {Element|import('domhandler').Element} options.nextNode
+   * @param {Element|import('domhandler').Element} [options.lastPartNode]
+   * @param {Element|import('domhandler').Element} [options.previousPart]
    * @returns {boolean}
    */
   isIntro({ step, stage, node, nextNode, lastPartNode, previousPart }) {
@@ -620,8 +641,8 @@ class CommentSkeleton {
    *
    * @param {object[]} parts
    * @param {ElementsAndTextTreeWalker} treeWalker
-   * @param {Element|external:Element} firstForeignComponentAfter
-   * @param {Element|external:Element} precedingHeadingElement
+   * @param {Element|import('domhandler').Element} firstForeignComponentAfter
+   * @param {Element|import('domhandler').Element} precedingHeadingElement
    * @returns {object[]}
    * @throws {CdError}
    * @private
@@ -781,7 +802,7 @@ class CommentSkeleton {
   /**
    * _For internal use._ Collect the parts of the comment given a signature element.
    *
-   * @param {Element|external:Element} precedingHeadingElement
+   * @param {Element|import('domhandler').Element} precedingHeadingElement
    */
   collectParts(precedingHeadingElement) {
     const treeWalker = new ElementsAndTextTreeWalker(
@@ -994,7 +1015,7 @@ class CommentSkeleton {
    * a gallery.
    *
    * @param {number} i Current part index.
-   * @param {Node|external:Node} lastPartNode Node of the last part.
+   * @param {Node|import('domhandler').Node} lastPartNode Node of the last part.
    * @returns {boolean}
    * @private
    */
@@ -1197,7 +1218,7 @@ class CommentSkeleton {
      * Keep in mind that elements may be replaced, and property values will need to be updated. See
      * {@link Comment#replaceElement}.
      *
-     * @type {Element[]|external:Element[]}
+     * @type {Element[]|import('domhandler').Element[]}
      */
     this.highlightables = this.elements.filter(isHighlightable);
 
@@ -1260,9 +1281,9 @@ class CommentSkeleton {
    * _For internal use._ Get list elements up the DOM tree. They will then be assigned the class
    * `cd-commentLevel`.
    *
-   * @param {Element|external:Element} initialElement
+   * @param {Element|import('domhandler').Element} initialElement
    * @param {boolean} [includeFirstMatch=false]
-   * @returns {Element[]|external:Element[]}
+   * @returns {Element[]|import('domhandler').Element[]}
    */
   getListsUpTree(initialElement, includeFirstMatch = false) {
     const listElements = [];
@@ -1407,7 +1428,7 @@ class CommentSkeleton {
    * * Item 3. [signature]
    * ```
    *
-   * @param {Array.<Element>|Array.<external:Element>} levelElements
+   * @param {Array.<Element>|Array.<import('domhandler').Element>} levelElements
    * @private
    */
   fixEndLevel(levelElements) {
@@ -1643,11 +1664,11 @@ class CommentSkeleton {
    * Update the width and border color of the outdent template to match our thread style changes.
    * Doesn't run in the worker.
    *
-   * @param {Element|external:Element} element
+   * @param {Element|import('domhandler').Element} element
    * @param {import('./Parser').default} parser
    */
   static updateOutdentStyle(element, parser) {
-    if (cd.isWorker) return;
+    if (cd.isWorker()) return;
 
     [...element.childNodes].forEach((child) => {
       const width = child.style?.width;

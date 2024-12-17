@@ -9,14 +9,14 @@ import { parseTimestamp } from './utils-timestamp';
 
 /**
  * @typedef {object} Context
- * @property {Function} CommentClass
- * @property {Function} SectionClass
+ * @property {Class} CommentClass
+ * @property {Class} SectionClass
  * @property {string} childElementsProp
  * @property {Function} follows
  * @property {Function} getAllTextNodes
  * @property {Function} getElementByClassName
- * @property {Element|external:Element} rootElement
- * @property {boolean} areThereOutdents
+ * @property {Element|import('domhandler').Element} rootElement
+ * @property {() => boolean} areThereOutdents
  * @property {Function} processAndRemoveDtElements
  * @property {Function} removeDtButtonHtmlComments
  */
@@ -39,9 +39,7 @@ class Parser {
   }
 
   /**
-   * Set some properties and find some elements required for parsing.
-   *
-   * @private
+   * _For internal use._ Set some properties and find some elements required for parsing.
    */
   init() {
     this.rejectClasses = [
@@ -75,7 +73,7 @@ class Parser {
   /**
    * Create a comment instance.
    *
-   * @param {Element|external:Element} signature
+   * @param {Element|import('domhandler').Element} signature
    * @param {object[]} targets
    * @returns {*}
    */
@@ -88,7 +86,7 @@ class Parser {
    *
    * @param {object} heading
    * @param {object[]} targets
-   * @param {import('./Subscriptions').default} subscriptions
+   * @param {import('./Subscriptions').default} [subscriptions]
    * @returns {*}
    */
   createSection(heading, targets, subscriptions) {
@@ -137,7 +135,7 @@ class Parser {
    * {@link https://en.wikipedia.org/wiki/User:Alexis_Jazz/Factotum Factotum}.
    *
    * @param {string} text
-   * @param {Node|external:Node} node
+   * @param {Node|import('domhandler').Node} node
    * @private
    */
   handleFactotumOutdents(text, node) {
@@ -163,7 +161,7 @@ class Parser {
 
   /**
    * @typedef {object} Timestamp
-   * @property {Element|external:Element} element
+   * @property {Element|import('domhandler').Element} element
    * @property {Date} date
    * @property {object} [match]
    * @memberof Parser
@@ -477,7 +475,7 @@ class Parser {
    * {@link https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Общий&oldid=103760740#201912010211_Mikhail_Ryazanov})
    * It has a branchy structure that requires a tricky algorithm to be parsed correctly.
    *
-   * @param {Element|external:Element} element
+   * @param {Element|import('domhandler').Element} element
    * @param {boolean} [onlyChildrenWithoutCommentLevel=false]
    * @returns {object}
    */
@@ -571,8 +569,8 @@ class Parser {
    * by splitting the parent node of the given node, moving all the following nodes into the second
    * node resulting from the split. If there is no following nodes, don't perform the split.
    *
-   * @param {Element|external:Element} node Reference node.
-   * @returns {Array.<Element|external:Element>} The parent nodes resultant from the split (at least
+   * @param {Element|import('domhandler').Element} node Reference node.
+   * @returns {Array.<Element|import('domhandler').Element>} The parent nodes resultant from the split (at least
    *   one).
    */
   splitParentAfterNode(node) {
@@ -600,7 +598,7 @@ class Parser {
   /**
    * _For internal use._ Get a user name from a link, along with some other data about a page name.
    *
-   * @param {Element|external:Element} element
+   * @param {Element|import('domhandler').Element} element
    * @returns {?ProcessLinkReturn}
    */
   static processLink(element) {
@@ -660,7 +658,7 @@ class Parser {
    * Given a link node, enrich the author data and return a boolean denoting whether the node is a
    * part of the signature.
    *
-   * @param {Element|external:Element} link
+   * @param {Element|import('domhandler').Element} link
    * @param {object} authorData
    * @returns {boolean}
    * @private

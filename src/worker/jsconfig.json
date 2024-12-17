@@ -1,7 +1,7 @@
 {
   "extends": "../../jsconfig-base.json",
   "compilerOptions": {
-    "lib": ["ES2016", "WebWorker"]
+    "lib": ["ESNext", "WebWorker"]
   },
-  "include": ["."]
+  "include": [".", "../domhandler.d.ts"]
 }

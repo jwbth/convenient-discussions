@@ -747,7 +747,6 @@ class Section extends SectionSkeleton {
      * Metadata element in the {@link Section#barElement bar element}.
      *
      * @type {Element|undefined}
-     * @private
      */
     this.metadataElement = metadataElement;
 
@@ -1004,7 +1003,6 @@ class Section extends SectionSkeleton {
      * Bar element under a 2-level section heading.
      *
      * @type {Element|undefined}
-     * @private
      */
     this.barElement = barElement;
 

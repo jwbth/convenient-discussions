@@ -1,14 +1,12 @@
 {
   "extends": "./jsconfig-base.json",
   "compilerOptions": {
-    "lib": ["ES2016", "DOM"],
-    "types": [
-      "oojs",
-      "oojs-ui",
-      "jquery",
-      "./node_modules/types-mediawiki"
-    ]
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": ["oojs", "oojs-ui", "jquery"]
   },
-  "include": ["src/**/*"],
-  "exclude": ["src/worker/**/*"]
+  "include": ["src/**/*", "node_modules/types-mediawiki"],
+  "exclude": ["src/worker/**/*"],
+
+  // Exception for `exclude`
+  "files": ["src/worker/domhandler.d.ts"]
 }

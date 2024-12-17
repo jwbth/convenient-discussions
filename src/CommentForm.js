@@ -142,7 +142,6 @@ class CommentForm {
      * like a regular section reply), this is that target comment.
      *
      * @type {Comment|undefined}
-     * @private
      */
     this.targetWithOutdentedReplies = initialState.targetWithOutdentedReplies || undefined;
 
@@ -152,7 +151,8 @@ class CommentForm {
      * @type {boolean}
      * @private
      */
-    this.sectionOpeningCommentEdited = this.mode === 'edit' && this.target.isOpeningSection;
+    this.sectionOpeningCommentEdited =
+      this.mode === 'edit' && this.target instanceof Comment && this.target.isOpeningSection;
 
     /**
      * Whether a new section will be added on submit using a dedicated API request. (Filled upon

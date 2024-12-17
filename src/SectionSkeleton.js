@@ -23,7 +23,7 @@ class SectionSkeleton {
     /**
      * Heading element (`.mw-heading` or `<h1>` - `<h6>`).
      *
-     * @type {Element|external:Element}
+     * @type {Element|import('domhandler').Element}
      */
     this.headingElement = heading.element;
 
@@ -32,7 +32,7 @@ class SectionSkeleton {
     /**
      * `H1...6` element.
      *
-     * @type {Element|external:Element}
+     * @type {Element|import('domhandler').Element}
      */
     this.hElement = (
       returnNodeIfHNode(this.headingElement) ||
@@ -46,7 +46,7 @@ class SectionSkeleton {
     /**
      * Headline element.
      *
-     * @type {Element|external:Element}
+     * @type {Element|import('domhandler').Element}
      */
     this.headlineElement = cd.g.isParsoidUsed ?
       this.hElement :
@@ -175,7 +175,7 @@ class SectionSkeleton {
     /**
      * Last element in the section.
      *
-     * @type {Element|external:Element}
+     * @type {Element|import('domhandler').Element}
      */
     this.lastElement = this.getLastElement(nextNotDescendantHeadingElement, treeWalker);
 
@@ -183,7 +183,7 @@ class SectionSkeleton {
      * Last element in the first chunk of the section, i.e. all elements up to the first subheading
      * if it is present or just all elements if it is not.
      *
-     * @type {Element|external:Element}
+     * @type {Element|import('domhandler').Element}
      */
     this.lastElementInFirstChunk = nextHeadingElement === nextNotDescendantHeadingElement ?
       this.lastElement :
@@ -247,9 +247,9 @@ class SectionSkeleton {
    * In this case, section 1 has paragraphs 1 and 2 as the first and last, and section 2 has
    * paragraphs 3 and 4 as such. Our code must capture that.
    *
-   * @param {Element|external:Element|undefined} followingHeadingElement
+   * @param {Element|import('domhandler').Element|undefined} followingHeadingElement
    * @param {import('./TreeWalker').TreeWalker} treeWalker
-   * @returns {Element|external:Element}
+   * @returns {Element|import('domhandler').Element}
    */
   getLastElement(followingHeadingElement, treeWalker) {
     let lastElement;

@@ -43,7 +43,7 @@ function getAllTextNodesUnderRoot() {
 function removeDtButtonHtmlComments() {
   const treeWalker = document.createNodeIterator(controller.rootElement, NodeFilter.SHOW_COMMENT);
   let node;
-  while ((node = treeWalker.nextNode())) {
+  while ((node = /** @type {globalThis.Comment} */ (treeWalker.nextNode()))) {
     if (node.textContent.startsWith('__DTREPLYBUTTONS__')) {
       node.remove();
     }
@@ -53,7 +53,7 @@ function removeDtButtonHtmlComments() {
 /**
  * Deal with (remove or move in the DOM) the markup added to the page by DiscussionTools.
  *
- * @param {Element[]|external:Element[]} elements
+ * @param {Element[]|import('domhandler').Element[]} elements
  * @param {import('./BootProcess').default} [bootProcess]
  *
  * @private
@@ -112,8 +112,8 @@ function processAndRemoveDtElements(elements, bootProcess) {
  *
  * @typedef {object} PassedData
  * @property {string} [parseData] Response to the parse request from the API.
- * @property {string} [commentIds] ID of a comment to scroll to.
- * @property {string} [sectionIds] ID of a section to scroll to.
+ * @property {string} [commentIds] ID of comments to highlight and/or scroll to.
+ * @property {string} [sectionId] ID of a section to scroll to.
  * @property {string} [pushState] Whether to replace the URL in the address bar adding the comment
  *   ID to it if it's specified.
  * @property {number} [scrollY] Page's Y offset.
@@ -797,10 +797,9 @@ class BootProcess {
   }
 
   /**
-   * Add a comment ID to the registry.
+   * _For internal use._ Add a comment ID to the registry.
    *
    * @param {string} id
-   * @private
    */
   addDtCommentId(id) {
     this.dtCommentIds.push(id);

@@ -8,4 +8,4 @@ Some specifics:
 * Private methods and properties are not on the website, but many of them are documented in the code.
 * Protected methods _are_ on the website.
 * Public methods that are not intended for external use are marked with the comment "_For internal use_".
-* Internal events emitted by {@link external:OO.EventEmitter OO.EventEmitter} are not documented – only the ones fired on {@link https://doc.wikimedia.org/mediawiki-core/master/js/Hooks.html mw.hook}.
+* Internal events emitted by {@link OO.EventEmitter} are not documented – only the ones fired on {@link https://doc.wikimedia.org/mediawiki-core/master/js/Hooks.html mw.hook}.

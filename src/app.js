@@ -26,7 +26,7 @@ if (IS_SINGLE) {
   }
 
   // A copy of the function in misc/utils.js. If altering it, make sure they are synchronized.
-  const replaceEntities = (string) => (
+  const replaceEntities = (/** @type {string} */ string) => (
     string
       .replace(/&nbsp;/g, '\xa0')
       .replace(/&#32;/g, ' ')
@@ -142,7 +142,7 @@ function maybeTweakAddTopicButton() {
       url.searchParams.delete('section');
       url.searchParams.set('cdaddtopic', 1);
     }
-    $button.attr('href', url);
+    $button.attr('href', url.toString());
   }
 }
 
@@ -235,8 +235,8 @@ function getConfig() {
     }
     const configUrl = configUrls[key] || configUrls[mw.config.get('wgServerName')];
     if (configUrl) {
-      const rejectWithMsg = (e) => {
-        reject(['Convenient Discussions can\'t run: couldn\'t load the configuration.', e]);
+      const rejectWithMsg = (error) => {
+        reject(['Convenient Discussions can\'t run: couldn\'t load the configuration.', error]);
       };
 
       const [, gadgetName] = configUrl.match(/modules=ext.gadget.([^?&]+)/) || [];

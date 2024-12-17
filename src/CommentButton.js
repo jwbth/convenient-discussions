@@ -1,6 +1,15 @@
 import Button from './Button';
 
 /**
+ * @typedef {object} CommentButtonConfig
+ * @augments import('./Button').ButtonConfig
+ * @property {Function} [config.widgetConstructor] Function that creates an OOUI widget that is the
+ *   original source of this button (for OOUI buttons). It is run when we need to "hydrate" the
+ *   button that is originally created by cloning a prototype, bringing some original behaviors to
+ *   it.
+ */
+
+/**
  * Class representing a comment button, be it a simple link or an OOUI button depending on user
  * settings.
  *
@@ -10,16 +19,12 @@ class CommentButton extends Button {
   /**
    * Create a comment button.
    *
-   * @param {object} config Button config, see the details at {@link Button}.
-   * @param {Function} [config.widgetConstructor] Function that creates an OOUI widget that is the
-   *   original source of this button (for OOUI buttons). It is run when we need to "hydrate" the
-   *   button that is originally created by cloning a prototype, bringing some original behaviors to
-   *   it.
+   * @param {CommentButtonConfig} config Button config, see the details at {@link Button}.
    */
   constructor(config) {
     // OOUI button
     if (config.element) {
-      config.buttonElement = config.element.firstChild;
+      config.buttonElement = /** @type {HTMLElement} */ (config.element.firstChild);
     }
 
     super(config);
@@ -64,7 +69,7 @@ class CommentButton extends Button {
     const element = this.buttonWidget.$element[0];
     this.element.parentNode.replaceChild(element, this.element);
     this.element = element;
-    this.buttonElement = element.firstChild;
+    this.buttonElement = /** @type {HTMLElement} */ (element.firstChild);
     if (this.action) {
       this.setAction(this.action);
     }
@@ -149,7 +154,7 @@ class CommentButton extends Button {
   /**
    * Set the action of the button. It will be executed on click or Enter press.
    *
-   * @param {?Function} action
+   * @param {?import('./Button').Action} action
    * @returns {Button} This button.
    */
   setAction(action) {
@@ -160,7 +165,7 @@ class CommentButton extends Button {
     /**
      * Function executed by clicking or pressing Enter on the button.
      *
-     * @type {Function}
+     * @type {import('./Button').Action}
      * @private
      */
     this.action = action;
@@ -174,20 +179,7 @@ class CommentButton extends Button {
    * @returns {boolean}
    */
   isDisabled() {
-    return !this.widgetConstructor ?
-      super.isDisabled() :
-      Boolean(this.buttonWidget?.isDisabled());
-  }
-
-  /**
-   * Check whether the button is pending.
-   *
-   * @returns {boolean}
-   */
-  isPending() {
-    return !this.widgetConstructor ?
-      super.isPending() :
-      Boolean(this.buttonWidget?.isPending());
+    return this.widgetConstructor ? Boolean(this.buttonWidget?.isDisabled()) : super.isDisabled();
   }
 
   /**
