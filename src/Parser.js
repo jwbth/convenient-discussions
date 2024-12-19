@@ -4,7 +4,7 @@ import CommentSkeleton from './CommentSkeleton';
 import ElementsAndTextTreeWalker from './ElementsAndTextTreeWalker';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import cd from './cd';
-import { getHeadingLevel, parseWikiUrl, isHeadingNode, isInline, isMetadataNode, ucFirst, underlinesToSpaces, definedAndNotNull, unique } from './utils-general';
+import { getHeadingLevel, parseWikiUrl, isHeadingNode, isInline, isMetadataNode, ucFirst, underlinesToSpaces, definedAndNotNull, unique, isDomHandlerNode, isDomHandlerElement, isElement } from './utils-general';
 import { parseTimestamp } from './utils-timestamp';
 
 /**
@@ -12,13 +12,41 @@ import { parseTimestamp } from './utils-timestamp';
  * @property {Class} CommentClass
  * @property {Class} SectionClass
  * @property {string} childElementsProp
- * @property {Function} follows
- * @property {Function} getAllTextNodes
- * @property {Function} getElementByClassName
- * @property {Element|import('domhandler').Element} rootElement
+ * @property {(el1: NodeLike, el2: NodeLike) => boolean} follows
+ * @property {() => TextLike[]} getAllTextNodes
+ * @property {(el: ElementLike, className: string) => ?ElementLike} getElementByClassName
+ * @property {ElementLike} rootElement
  * @property {() => boolean} areThereOutdents
- * @property {Function} processAndRemoveDtElements
- * @property {Function} removeDtButtonHtmlComments
+ * @property {(elements: ElementLike[], bootProcess?: import('./BootProcess').default) => void} processAndRemoveDtElements
+ * @property {() => void} removeDtButtonHtmlComments
+ */
+
+/**
+ * @typedef {object} HeadingTarget
+ * @property {'heading'} type
+ * @property {boolean} isWrapper
+ * @property {number} level
+ * @property {ElementLike} element
+ */
+
+/**
+ * @typedef {object} SignatureTarget
+ * @property {'signature'} type
+ * @property {ElementLike} element
+ * @property {ElementLike} element
+ * @property {ElementLike} timestampElement
+ * @property {string} timestampText
+ * @property {Date} date
+ * @property {ElementLike} authorLink
+ * @property {ElementLike} authorTalkLink
+ * @property {string} authorName
+ * @property {boolean} isUnsigned
+ * @property {boolean} isExtraSignature
+ * @property {ElementLike[]} extraSignatures
+ */
+
+/**
+ * @typedef {HeadingTarget|SignatureTarget} Target
  */
 
 /**
@@ -27,6 +55,15 @@ import { parseTimestamp } from './utils-timestamp';
  * related to wikitext parsing go in {@link module:wikitext}.
  */
 class Parser {
+  /** @type {RegExp} */
+  static punctuationRegexp;
+
+  /** @type {ElementLike[]} */
+  noSignatureElements;
+
+  /** @type {string[]} */
+  rejectClasses;
+
   /**
    * Create a page parser in the provided context.
    *
@@ -73,8 +110,8 @@ class Parser {
   /**
    * Create a comment instance.
    *
-   * @param {Element|import('domhandler').Element} signature
-   * @param {object[]} targets
+   * @param {SignatureTarget} signature
+   * @param {Target[]} targets
    * @returns {*}
    */
   createComment(signature, targets) {
@@ -84,8 +121,8 @@ class Parser {
   /**
    * Create a section instance.
    *
-   * @param {object} heading
-   * @param {object[]} targets
+   * @param {HeadingTarget} heading
+   * @param {Target[]} targets
    * @param {import('./Subscriptions').default} [subscriptions]
    * @returns {*}
    */
@@ -135,14 +172,14 @@ class Parser {
    * {@link https://en.wikipedia.org/wiki/User:Alexis_Jazz/Factotum Factotum}.
    *
    * @param {string} text
-   * @param {Node|import('domhandler').Node} node
+   * @param {TextLike} node
    * @private
    */
   handleFactotumOutdents(text, node) {
     if (
       !/^┌─*┘$/.test(text) ||
-      node.parentNode.classList.contains(cd.config.outdentClass) ||
-      node.parentNode.parentNode.classList.contains(cd.config.outdentClass)
+      node.parentElement?.classList.contains(cd.config.outdentClass) ||
+      node.parentElement?.parentElement?.classList.contains(cd.config.outdentClass)
     ) {
       return;
     }
@@ -150,18 +187,18 @@ class Parser {
     const span = document.createElement('span');
     span.className = cd.config.outdentClass;
     span.textContent = text;
-    if (node.nextSibling?.tagName === 'BR') {
+    if (isElement(node.nextSibling) && node.nextSibling.tagName === 'BR') {
       node.nextSibling.remove();
     }
 
     // Don't have Node#replaceChild() in the worker.
-    node.parentNode.insertBefore(span, node);
+    node.parentElement?.insertBefore(span, node);
     node.remove();
   }
 
   /**
    * @typedef {object} Timestamp
-   * @property {Element|import('domhandler').Element} element
+   * @property {ElementLike} element
    * @property {Date} date
    * @property {object} [match]
    * @memberof Parser
@@ -171,7 +208,7 @@ class Parser {
   /**
    * Find a timestamp in a text node.
    *
-   * @param {Node} node
+   * @param {TextLike} node
    * @returns {?Timestamp}
    * @private
    */
@@ -192,10 +229,11 @@ class Parser {
     const remainedText = node.textContent.slice(match.index + match[0].length);
     const afterNode = remainedText ? document.createTextNode(remainedText) : undefined;
     node.textContent = match[1];
-    node.parentNode.insertBefore(element, node.nextSibling);
+    node.parentElement?.insertBefore(element, node.nextSibling);
     if (afterNode) {
-      node.parentNode.insertBefore(afterNode, element.nextSibling);
+      node.parentElement?.insertBefore(afterNode, element.nextSibling);
     }
+
     return { element, date };
   }
 
@@ -220,7 +258,7 @@ class Parser {
     // last. There is no point for us to parse them as distinct comments as a reply posted using our
     // script will go below all of them anyway.
     let isExtraSignature = false;
-    const elementsTreeWalker = new ElementsTreeWalker(timestamp.element, this.context.rootElement);
+    const elementsTreeWalker = new ElementsTreeWalker(this.context.rootElement, timestamp.element);
     while (
       elementsTreeWalker.previousNode() &&
       (isInline(elementsTreeWalker.currentNode) || isMetadataNode(elementsTreeWalker.currentNode))
@@ -232,7 +270,7 @@ class Parser {
     }
 
     const startElement = unsignedElement || timestamp.element;
-    const treeWalker = new ElementsAndTextTreeWalker(startElement, this.context.rootElement);
+    const treeWalker = new ElementsAndTextTreeWalker(this.context.rootElement, startElement);
     const authorData = {};
 
     let length = 0;
@@ -247,11 +285,11 @@ class Parser {
 
     // Unsigned template may be of the "undated" kind - containing a timestamp but no author name,
     // so we need to walk the tree anyway.
-    let node = treeWalker.currentNode;
-    let text = node.textContent;
+    let /** @type {?(ElementLike|TextLike)} */ node = treeWalker.currentNode;
+    let text = /** @type {ElementLike|TextLike} */ (node).textContent;
     do {
       length += text.length;
-      if (node.tagName) {
+      if (isElement(node)) {
         authorData.isLastLinkAuthorLink = false;
 
         if (node.tagName === 'A') {
@@ -276,6 +314,7 @@ class Parser {
       if (!node && !firstSignatureElement) {
         node = treeWalker.parentNode();
         if (!node || !isInline(node)) break;
+
         length = 0;
         signatureNodes = [];
       }
@@ -291,7 +330,7 @@ class Parser {
             // Users may cross out the text ended with their signature and sign again
             // (https://ru.wikipedia.org/?diff=114726134). The strike element shouldn't be
             // considered a part of the signature then.
-            ['S', 'STRIKE', 'DEL'].includes(node.tagName) ||
+            (isElement(node) && ['S', 'STRIKE', 'DEL'].includes(node.tagName)) ||
 
             // Cases with a talk page link at the end of comment's text like
             // https://ru.wikipedia.org/wiki/Википедия:Заявки_на_статус_администратора/Obersachse_3#c-Obersachse-2012-03-11T08:03:00.000Z-Итог
@@ -300,10 +339,10 @@ class Parser {
             // outside of links or even tags, and this is much work for little gain. This is the
             // cost of us not relying on a DOM -> wikitext correspondence and processing these parts
             // separately.
-            (!node.tagName && Parser.punctuationRegexp.test(text)) ||
+            (!isElement(node) && Parser.punctuationRegexp.test(text)) ||
 
             (
-              node.tagName &&
+              isElement(node) &&
 
               (
                 // Invisible pings, like
@@ -316,7 +355,7 @@ class Parser {
           )
         ) ||
         (
-          node.tagName &&
+          isElement(node) &&
           (
             node.classList.contains('cd-timestamp') ||
             node.classList.contains('cd-signature') ||
@@ -424,7 +463,7 @@ class Parser {
    *
    * Characters before the author link, like "—", aren't considered a part of the signature.
    *
-   * @returns {object[]}
+   * @returns {SignatureTarget[]}
    */
   findSignatures() {
     const signatures = this.context.getAllTextNodes()
@@ -437,6 +476,7 @@ class Parser {
     // Move extra signatures (additional signatures for a comment, if there is more than one) to an
     // array which then assign to a relevant signature (the one which goes first).
     let extraSignatures = [];
+
     return signatures
       .slice()
       .reverse()
@@ -475,7 +515,7 @@ class Parser {
    * {@link https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Общий&oldid=103760740#201912010211_Mikhail_Ryazanov})
    * It has a branchy structure that requires a tricky algorithm to be parsed correctly.
    *
-   * @param {Element|import('domhandler').Element} element
+   * @param {ElementLike} element
    * @param {boolean} [onlyChildrenWithoutCommentLevel=false]
    * @returns {object}
    */
@@ -521,7 +561,7 @@ class Parser {
   /**
    * _For internal use._ Get all headings on the page.
    *
-   * @returns {object[]}
+   * @returns {Target[]}
    */
   findHeadings() {
     return [...this.context.rootElement.querySelectorAll('h1, h2, h3, h4, h5, h6')]
@@ -569,21 +609,34 @@ class Parser {
    * by splitting the parent node of the given node, moving all the following nodes into the second
    * node resulting from the split. If there is no following nodes, don't perform the split.
    *
-   * @param {Element|import('domhandler').Element} node Reference node.
-   * @returns {Array.<Element|import('domhandler').Element>} The parent nodes resultant from the split (at least
-   *   one).
+   * @param {NodeLike} node Reference node.
+   * @returns {{
+   *   parent: ElementLike,
+   *   clone: ElementLike,
+   * }} The parent nodes resultant from the split (at least one).
    */
   splitParentAfterNode(node) {
-    const parent = node.parentNode;
-    const clone = parent.cloneNode();
+    const parent = /** @type {ElementLike} */ (node.parentElement);
+
+    // TypeScript things...
+    const clone = isDomHandlerElement(parent) ? parent.cloneNode() : /** @type {Element} */ (parent.cloneNode());
+
     let lastChild;
     while ((lastChild = parent.lastChild) && lastChild !== node) {
-      clone.insertBefore(lastChild, clone.firstChild);
+      const firstChild = /** @type {NodeLike} */ (clone.firstChild);
+      clone.insertBefore(lastChild, firstChild);
+
+      // if (isDomHandlerNode(clone) && isDomHandlerNode(lastChild) && isDomHandlerNode(firstChild)) {
+      //   clone.insertBefore(lastChild, firstChild);
+      // } else if (!isDomHandlerNode(clone) && !isDomHandlerNode(firstChild) && !isDomHandlerNode(lastChild)) {
+      //   clone.insertBefore(lastChild, firstChild);
+      // }
     }
     if (clone[this.context.childElementsProp].length > 0) {
-      parent.parentNode.insertBefore(clone, parent.nextSibling);
+      parent.parentElement?.insertBefore(clone, parent.nextSibling);
     }
-    return [parent, clone];
+
+    return { parent, clone };
   }
 
   /**
@@ -598,7 +651,7 @@ class Parser {
   /**
    * _For internal use._ Get a user name from a link, along with some other data about a page name.
    *
-   * @param {Element|import('domhandler').Element} element
+   * @param {ElementLike} element
    * @returns {?ProcessLinkReturn}
    */
   static processLink(element) {
@@ -658,7 +711,7 @@ class Parser {
    * Given a link node, enrich the author data and return a boolean denoting whether the node is a
    * part of the signature.
    *
-   * @param {Element|import('domhandler').Element} link
+   * @param {ElementLike} link
    * @param {object} authorData
    * @returns {boolean}
    * @private
@@ -724,11 +777,11 @@ class Parser {
   /**
    * Get a nesting level of an element relative to the root element.
    *
-   * @param {Element} element
+   * @param {ElementLike} element
    * @returns {number}
    */
   getNestingLevel(element) {
-    const treeWalker = new ElementsTreeWalker(element, this.context.rootElement);
+    const treeWalker = new ElementsTreeWalker(this.context.rootElement, element);
     let nestingLevel = 0;
     while (treeWalker.parentNode()) {
       nestingLevel++;

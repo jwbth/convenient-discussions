@@ -310,6 +310,9 @@ class Button {
     this.iconElement?.classList.add('oo-ui-image-progressive');
   }
 
+  /**
+   * @type {Record<string, HTMLElement>}
+   */
   static prototypes = {};
 
   /**
@@ -329,7 +332,7 @@ class Button {
       this.prototypes[tagName] = prototype;
     }
 
-    return this.prototypes[tagName].cloneNode(true);
+    return /** @type {HTMLElement} */ (this.prototypes[tagName].cloneNode(true));
   }
 }
 

@@ -1,5 +1,3 @@
-/* global moment */
-
 import CdError from './CdError';
 import ProcessDialog from './ProcessDialog';
 import PseudoLink from './Pseudolink';
@@ -225,6 +223,16 @@ class UploadDialog extends mw.Upload.Dialog {
  */
 class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.BookletLayout {
   /**
+   * @type {{
+   *   [key: string]: {
+   *     field: OO.ui.FieldLayout;
+   *     [controlType: string]: any;
+   *   };
+   * }}
+   */
+  controls;
+
+  /**
    * Create a booklet layout for foreign structured upload.
    *
    * @param  {...any} args
@@ -301,34 +309,43 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
       ],
     });
 
-    this.controls.title = {};
-    this.controls.title.input = new mw.widgets.TitleInputWidget({
+    const input = new mw.widgets.TitleInputWidget({
       $overlay: this.$overlay,
       showMissing: false,
       showSuggestionsOnFocus: false,
       value: '',
     });
-    this.insertSubjectPageButton = new PseudoLink({
-      label: cd.page.mwTitle.getSubjectPage().getPrefixedText(),
-      input: this.controls.title.input,
-    });
+    const subjectPage = cd.page.mwTitle.getSubjectPage();
+    if (subjectPage) {
+      this.insertSubjectPageButton = new PseudoLink({
+        label: subjectPage.getPrefixedText(),
+        input: input,
+      });
+    }
     if (cd.page.mwTitle.isTalkPage()) {
       this.insertTalkPageButton = new PseudoLink({
         label: cd.page.name,
-        input: this.controls.title.input,
+        input: input,
       });
     }
-    this.controls.title.field = new OO.ui.FieldLayout(this.controls.title.input, {
-      label: cd.s('ud-preset-projectscreenshot-title'),
-      help: $.cdMerge(
-        $('<div>').append(this.insertSubjectPageButton.element),
-        this.insertTalkPageButton ? $('<div>').append(this.insertTalkPageButton.element) : undefined,
-        $('<div>').html(cd.sParse('ud-preset-projectscreenshot-title-help')),
-      ),
-      align: 'top',
-      helpInline: true,
-      classes: ['cd-uploadDialog-fieldLayout-internal'],
-    });
+    this.controls.title = {
+      input,
+      field: new OO.ui.FieldLayout(input, {
+        label: cd.s('ud-preset-projectscreenshot-title'),
+        help: $.cdMerge(
+          this.insertSubjectPageButton
+            ? $('<div>').append(this.insertSubjectPageButton.element)
+            : undefined,
+          this.insertTalkPageButton
+            ? $('<div>').append(this.insertTalkPageButton.element)
+            : undefined,
+          $('<div>').html(cd.sParse('ud-preset-projectscreenshot-title-help'))
+        ),
+        align: 'top',
+        helpInline: true,
+        classes: ['cd-uploadDialog-fieldLayout-internal'],
+      }),
+    }
     const projectScreenshotItem = this.controls.preset.select.findItemFromData('projectScreenshot');
     projectScreenshotItem.$label.append(this.controls.title.field.$element);
 
@@ -381,7 +398,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
     const preset = this.controls.preset.select.findSelectedItem().getData();
     const titleInputDisabled = preset !== 'projectScreenshot';
     this.controls.title.input.setDisabled(titleInputDisabled);
-    this.insertSubjectPageButton.setDisabled(titleInputDisabled);
+    this.insertSubjectPageButton?.setDisabled(titleInputDisabled);
     this.insertTalkPageButton?.setDisabled(titleInputDisabled);
 
     if (typeof itemOrSelected !== 'boolean') {
@@ -484,8 +501,8 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
   }
 
   /**
-   * Returns a {@link external:mw.ForeignStructuredUpload mw.ForeignStructuredUpload} with the
-   * target specified in config.
+   * Returns a {@link mw.ForeignStructuredUpload mw.ForeignStructuredUpload} with the target
+   * specified in config.
    *
    * @returns {ForeignStructuredUpload}
    * @protected
@@ -497,7 +514,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 
   /**
    * Native methods that uploads the file that was added in the upload form. Uses
-   * {@link external:mw.Upload.BookletLayout#getFile getFile} to get the HTML5 file object.
+   * {@link mw.Upload.BookletLayout#getFile getFile} to get the HTML5 file object.
    *
    * We add logic that changes the information form according to the user input in the upload form.
    *
@@ -712,7 +729,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 
   /**
    * Native method that gets the page text from the
-   * {@link external:mw.ForeignStructuredUpload.BookletLayout#infoForm information form}.
+   * {@link mw.ForeignStructuredUpload.BookletLayout#infoForm information form}.
    *
    * @returns {string}
    * @see
@@ -850,15 +867,15 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 
 /**
  * @class ForeignStructuredUpload
- * @memberof external:mw
+ * @memberof mw
  * @see https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.html
  */
 
 /**
- * Class extending {@link external:mw.ForeignStructuredUpload mw.ForeignStructuredUpload} and
- * allowing to get and set additional fields. See {@link UploadDialog} for the dialog.
+ * Class extending {@link mw.ForeignStructuredUpload mw.ForeignStructuredUpload} and allowing to get
+ * and set additional fields. See {@link UploadDialog} for the dialog.
  *
- * @augments external:mw.ForeignStructuredUpload
+ * @augments mw.ForeignStructuredUpload
  */
 class ForeignStructuredUpload extends mw.ForeignStructuredUpload {
   /**

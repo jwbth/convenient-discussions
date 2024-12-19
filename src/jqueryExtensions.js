@@ -50,16 +50,6 @@ export default {
     return this.filter((i, el) => el.tagName && !isMetadataNode(el));
   },
 
-  /**
-   * Scroll to the element.
-   *
-   * @param {'top'|'center'|'bottom'} [alignment='top'] Where should the element be positioned
-   *   relative to the viewport.
-   * @param {boolean} [smooth=true] Whether to use a smooth animation.
-   * @param {Function} [callback] Callback to run after the animation has completed.
-   * @returns {JQuery}
-   * @memberof JQuery.fn
-   */
   cdScrollTo(alignment = 'top', smooth = true, callback) {
     const defaultScrollPaddingTop = 7;
     let $elements = this.cdRemoveNonElementNodes();

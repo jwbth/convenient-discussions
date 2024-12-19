@@ -16,6 +16,7 @@ module.exports = {
     "mw": "readonly",
     "$": "readonly",
     "OO": "readonly",
+    "moment": "readonly",
 
     "convenientDiscussions": "readonly",
     "getInterwikiPrefixForHostname": "readonly",  // en:User:Jack who built the house/getUrlFromInterwikiLink.js

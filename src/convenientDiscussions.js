@@ -69,18 +69,15 @@ const convenientDiscussions = {
    * Get a language string.
    *
    * @param {string} name String name.
-   * @param {...*} [params] String parameters (substituted strings, also
+   * @param {...*} params String parameters (substituted strings, also
    *   {@link module:userRegistry.User User} objects for use in `{{gender:}}`). The last parameter
    *   can be an object that can have a boolean property `parse` (should the message be returned in
    *   a parsed form). In the `parse` form, wikilinks are replaced with HTML tags, the code is
    *   sanitized. Use this for strings that have their raw HTML inserted into the page.
-   * @returns {?string}
+   * @returns {string}
    * @memberof convenientDiscussions
    */
   s(name, ...params) {
-    if (!name) {
-      return null;
-    }
     const fullName = `convenient-discussions-${name}`;
     let options = {};
     let lastParam = params[params.length - 1];
@@ -107,7 +104,7 @@ const convenientDiscussions = {
    * @param {string} name String name.
    * @param {...*} [params] String parameters (substituted strings, also
    *   {@link module:userRegistry.User User} objects for use in `{{gender:}}`).
-   * @returns {?string}
+   * @returns {string}
    * @memberof convenientDiscussions
    */
   sParse(name, ...params) {
@@ -191,6 +188,13 @@ const convenientDiscussions = {
       self instanceof /** @type {any} */ (self.WorkerGlobalScope)
     );
   },
+
+  /**
+   * Current page's object.
+   *
+   * @type {import('./pageRegistry').Page}
+   */
+  page: undefined,
 
   /**
    * Reference to the {@link module:debug debug} module.

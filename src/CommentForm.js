@@ -26,6 +26,20 @@ import { isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, is
  */
 class CommentForm {
   /**
+   * Comment input.
+   *
+   * @type {import('./MultilineTextInputWidget').default}
+   */
+  commentInput;
+
+  /**
+   * Edit summary input.
+   *
+   * @type {OO.ui.TextInputWidget}
+   */
+  summaryInput;
+
+  /**
    * Object specifying configuration to preload data into the comment form. It is extracted from the
    * "Add section" link/button target.
    *
@@ -409,11 +423,6 @@ class CommentForm {
       commentInputPlaceholder = cd.s('cf-comment-placeholder');
     }
 
-    /**
-     * Comment input.
-     *
-     * @type {import('./MultilineTextInputWidget').default}
-     */
     this.commentInput = new (require('./MultilineTextInputWidget').default)({
       value: initialState.comment ?? '',
       placeholder: commentInputPlaceholder,
@@ -425,11 +434,6 @@ class CommentForm {
     });
     this.commentInput.$input.addClass('ime-position-inside');
 
-    /**
-     * Edit summary input.
-     *
-     * @type {OO.ui.TextInputWidget}
-     */
     this.summaryInput = new (require('./TextInputWidget').default)({
       value: initialState.summary ?? '',
       maxLength: cd.g.summaryLengthLimit,
@@ -1106,7 +1110,9 @@ class CommentForm {
       .find('.tool[rel="link"] a, .tool[rel="file"] a')
       .on('click', (e) => {
         // Fix text being inserted in a wrong textarea.
-        const rel = e.currentTarget.parentNode.getAttribute('rel');
+        const rel = e.currentTarget.parentElement?.getAttribute('rel');
+        if (!rel) return;
+
         const $dialog = $(`#wikieditor-toolbar-${rel}-dialog`);
         if ($dialog.length) {
           const context = $dialog.data('context');
@@ -4060,11 +4066,14 @@ class CommentForm {
   /**
    * Get the outermost element of the form (`$element` or its outer wrapper if present).
    *
-   * @returns {Element}
+   * @returns {HTMLElement}
    */
   getOutermostElement() {
     const el = this.$element[0];
-    return el.parentNode.classList.contains('cd-commentForm-outerWrapper') ? el.parentNode : el;
+
+    return el.parentElement?.classList.contains('cd-commentForm-outerWrapper') ?
+      /** @type {HTMLElement} */ (el.parentNode) :
+      el;
   }
 
   /**

@@ -664,8 +664,8 @@ export default {
         this.rootElement.getBoundingClientRect().top <= cd.g.bodyScrollPaddingTop
       ) {
         const treeWalker = new ElementsTreeWalker(
+          this.rootElement,
           this.rootElement.firstElementChild,
-          this.rootElement
         );
         while (true) {
           const node = treeWalker.currentNode;
@@ -1431,7 +1431,7 @@ export default {
   /**
    * _For internal use._ Update the page's HTML and certain configuration values.
    *
-   * @param {object} parseData
+   * @param {import('./pageRegistry').ParseData} parseData
    */
   updatePageContents(parseData) {
     this.$content.children('.mw-parser-output').first().replaceWith(this.$root);

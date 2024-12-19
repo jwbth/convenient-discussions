@@ -30,20 +30,20 @@ class PrototypeRegistry {
    * Get a prototype or an instance of a widget.
    *
    * @param {string} id
-   * @returns {?*}
+   * @returns {HTMLElement}
    */
   get(id) {
-    return this.elements[id]?.cloneNode(true) || this.widgets[id]?.().$element[0] || null;
+    return this.elements[id].cloneNode(true) || this.widgets[id]().$element[0];
   }
 
   /**
    * Get a widget.
    *
    * @param {string} id
-   * @returns {?Function}
+   * @returns {Function}
    */
   getWidget(id) {
-    return this.widgets[id] || null;
+    return this.widgets[id];
   }
 }
 

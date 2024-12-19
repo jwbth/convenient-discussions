@@ -11,9 +11,10 @@ class CdError extends Error {
    * @param {'network'|'api'|'parse'|'internal'} data.type Grouping of the error.
    * @param {string} [data.code] Error code.
    * @param {object} [data.apiResp] API response.
+   * @param {object} [data.apiError] API error code.
    * @param {object} [data.details] Additional details.
    */
-  constructor(data = {}) {
+  constructor(data = { type: 'internal' }) {
     let message;
     if (data) {
       message = data.type;

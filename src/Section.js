@@ -24,6 +24,14 @@ import { getRangeContents } from './utils-window';
  * @augments SectionSkeleton
  */
 class Section extends SectionSkeleton {
+  static prototypes = new PrototypeRegistry();
+
+  /** @type {HTMLElement} */
+  headlineElement;
+
+  /** @type {HTMLElement} */
+  headingElement;
+
   /**
    * Create a section object.
    *
@@ -63,7 +71,7 @@ class Section extends SectionSkeleton {
      * @type {import('./pageRegistry').Page}
      */
     this.sourcePage = this.sourcePageName ?
-      pageRegistry.get(this.sourcePageName) :
+      /** @type {import('./pageRegistry').Page} */ (pageRegistry.get(this.sourcePageName)) :
       cd.page;
 
     delete this.sourcePageName;
@@ -83,7 +91,7 @@ class Section extends SectionSkeleton {
      *
      * @type {boolean}
      */
-    this.isActionable = (
+    this.isActionable = Boolean(
       cd.page.isActive() &&
       !controller.getClosedDiscussions().some((el) => el.contains(this.headingElement)) &&
       !this.isTranscludedFromTemplate
@@ -118,6 +126,7 @@ class Section extends SectionSkeleton {
      * @type {boolean}
      */
     this.isHidden = false;
+    this.presumedCode = undefined;
   }
 
   /**
@@ -1962,8 +1971,6 @@ class Section extends SectionSkeleton {
    * elements from scratch (which is more expensive).
    */
   static initPrototypes() {
-    this.prototypes = new PrototypeRegistry();
-
     this.prototypes.add(
       'replyButton',
       new OO.ui.ButtonWidget({

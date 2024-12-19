@@ -74,7 +74,7 @@ export function unique(el, i, arr) {
  * Check if a node is an element with `display: inline` or `display: inline-block` in the default
  * browser styles. As an option, it can also treat text nodes as inline elements.
  *
- * @param {Node|import('domhandler').Node} node
+ * @param {NodeLike} node
  * @param {boolean} [countTextNodesAsInline=false]
  * @returns {?boolean}
  */
@@ -189,8 +189,9 @@ export function isUndo(summary) {
  * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter Array#filter}
  * to keep only defined values in an array.
  *
- * @param {*} el
- * @returns {boolean}
+ * @template T
+ * @param {?(T | undefined)} el
+ * @returns {el is T}
  */
 export function defined(el) {
   return el !== undefined;
@@ -201,8 +202,9 @@ export function defined(el) {
  * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter Array#filter}
  * to keep only defined and not `null` values in an array.
  *
- * @param {*} el
- * @returns {boolean}
+ * @template T
+ * @param {?(T | undefined)} el
+ * @returns {el is T}
  */
 export function definedAndNotNull(el) {
   return el !== undefined && el !== null;
@@ -621,13 +623,57 @@ export function getHeadingLevel(node) {
 }
 
 /**
+ * Checks if the given node is a text node.
+ *
+ * @param {?NodeLike} n
+ * @returns {n is TextLike}
+ */
+export function isText(n) {
+  return Boolean(n && n.nodeType === Node.TEXT_NODE);
+}
+
+/**
+ * Checks if the given node is an element.
+ *
+ * @param {?NodeLike} n
+ * @returns {n is ElementLike}
+ */
+export function isElement(n) {
+  return Boolean(n && n.nodeType === Node.ELEMENT_NODE);
+}
+
+/** @typedef {import('domhandler').Element} DomHandlerNode */
+
+/**
+ * Checks if the given node is a node from the `domhandler` library.
+ *
+ * @param {NodeLike} node
+ * @returns {node is import('domhandler').Node}
+ */
+// eslint-disable-next-line no-unused-vars
+export function isDomHandlerNode(node) {
+  return cd.isWorker();
+}
+
+/**
+ * Checks if the given node is a node from the `domhandler` library.
+ *
+ * @param {ElementLike} element
+ * @returns {element is import('domhandler').Element}
+ */
+// eslint-disable-next-line no-unused-vars
+export function isDomHandlerElement(element) {
+  return cd.isWorker();
+}
+
+/**
  * Check whether the provided node is a metadata node (`<style>`, `<link>`).
  *
- * @param {Node} node
+ * @param {NodeLike} node
  * @returns {boolean}
  */
 export function isMetadataNode(node) {
-  return ['STYLE', 'LINK'].includes(node.tagName);
+  return isElement(node) && ['STYLE', 'LINK'].includes(node.tagName);
 }
 
 /**

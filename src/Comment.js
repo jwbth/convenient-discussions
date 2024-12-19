@@ -29,11 +29,147 @@ import { createSvg, getExtendedRect, getHigherNodeAndOffsetInSelection, getVisib
  * @augments CommentSkeleton
  */
 class Comment extends CommentSkeleton {
-  // For autocomplete
+  /** @type {HTMLSpanElement} */
+  signatureElement;
+
+  /** @type {HTMLSpanElement} */
+  timestampElement;
+
+  /** @type {HTMLAnchorElement} */
+  authorLink;
+
+  /** @type {HTMLAnchorElement} */
+  authorTalkLink;
+
+  /** @type {HTMLElement[]} */
+  elements;
+
+  /** @type {HTMLElement[]} */
+  highlightables;
+
   /**
-   * @type {import('./Thread').default}
+     * Is the comment new. Is set to boolean only on active pages (not archived, not old diffs)
+     * excluding pages that are visited for the first time.
+     *
+     * @type {?boolean}
+     */
+  isNew = null;
+
+  /**
+   * Has the comment been seen if it is new. Is set only on active pages (not archived, not old
+   * diffs) excluding pages that are visited for the first time. Check using `=== false` if you
+   * need to know if the comment is highlighted as new and unseen.
+   *
+   * @type {?boolean}
    */
+  isSeen = null;
+
+  /**
+   * Is the comment currently highlighted as a target comment.
+   *
+   * @type {boolean}
+   */
+  isTarget = false;
+
+  /**
+   * Is the comment currently hovered.
+   *
+   * @type {boolean}
+   */
+  isHovered = false;
+
+  /**
+   * Has the comment changed since the previous visit.
+   *
+   * @type {?boolean}
+   */
+  isChangedSincePreviousVisit = null;
+
+  /**
+   * Has the comment changed while the page was idle. (The new version may be rendered and may be
+   * not, if the layout is too complex.)
+   *
+   * @type {?boolean}
+   */
+  isChanged = null;
+
+  /**
+   * Was the comment deleted while the page was idle.
+   *
+   * @type {?boolean}
+   */
+  isDeleted = null;
+
+  /**
+   * Should the comment be flashed as changed when it appears in sight.
+   *
+   * @type {?boolean}
+   */
+  willFlashChangedOnSight = false;
+
+  /**
+   * Is the comment (or its signature) inside a table containing only one comment.
+   *
+   * @type {boolean}
+   */
+  isTableComment = false;
+
+  /**
+   * Is the comment a part of a collapsed thread.
+   *
+   * @type {boolean}
+   */
+  isCollapsed = false;
+
+  /**
+   * If the comment is collapsed, that's the closest collapsed thread that this comment is related
+   * to.
+   *
+   * @type {?import('./Thread').default}
+   */
+  collapsedThread = null;
+
+  /**
+   * List of the comment's {@link CommentSubitemList subitems}.
+   *
+   * @type {CommentSubitemList}
+   */
+  subitemList = new CommentSubitemList();
+
+  wasMenuHidden = false;
+
+  /** @type {Promise[]} */
+  genderRequestCallbacks = [];
+
+  /**
+   * Is there a "gap" in the comment between {@link Comment#highlightable highlightables} that needs
+   * to be closed visually so that the comment looks like one comment and not several.
+   *
+   * @type {?boolean}
+   */
+  isLineGapped = null;
+
+  /**
+   * Has the comment been seen before it was changed.
+   *
+   * @type {?boolean}
+   * @private
+   */
+  isSeenBeforeChanged = null;
+
+  /** @type {import('./Thread').default} */
   thread;
+
+  /** @type {string|undefined} */
+  dtId;
+
+  static prototypes = new PrototypeRegistry();
+
+  /** @type {StorageItem} */
+  static thanksStorage;
+
+  /** @type {boolean} */
+  static isReformatted;
 
   /**
    * Create a comment object.
@@ -74,7 +210,7 @@ class Comment extends CommentSkeleton {
      *
      * @type {boolean}
      */
-    this.isActionable = (
+    this.isActionable = Boolean(
       cd.page.isActive() &&
       !controller.getClosedDiscussions().some((el) => el.contains(this.elements[0]))
     );
@@ -89,7 +225,7 @@ class Comment extends CommentSkeleton {
     this.updateAnchorHighlightable();
 
     const getContainerListType = (el) => {
-      const treeWalker = new ElementsTreeWalker(el, controller.rootElement);
+      const treeWalker = new ElementsTreeWalker(controller.rootElement, el);
       while (treeWalker.parentNode()) {
         if (treeWalker.currentNode.classList.contains('cd-commentLevel')) {
           return treeWalker.currentNode.tagName.toLowerCase();
@@ -106,105 +242,12 @@ class Comment extends CommentSkeleton {
        */
       this.containerListType = getContainerListType(this.highlightables[0]);
 
-      this.ahContainerListType = getContainerListType(this.anchorHighlightable);
+      this.ahContainerListType = getContainerListType(this.marginHighlightable);
     }
-
-    /**
-     * Is the comment new. Is set to boolean only on active pages (not archived, not old diffs)
-     * excluding pages that are visited for the first time.
-     *
-     * @type {?boolean}
-     */
-    this.isNew = null;
-
-    /**
-     * Has the comment been seen if it is new. Is set only on active pages (not archived, not old
-     * diffs) excluding pages that are visited for the first time. Check using `=== false` if you
-     * need to know if the comment is highlighted as new and unseen.
-     *
-     * @type {?boolean}
-     */
-    this.isSeen = null;
-
-    /**
-     * Is the comment currently highlighted as a target comment.
-     *
-     * @type {boolean}
-     */
-    this.isTarget = false;
-
-    /**
-     * Is the comment currently hovered.
-     *
-     * @type {boolean}
-     */
-    this.isHovered = false;
-
-    /**
-     * Has the comment changed since the previous visit.
-     *
-     * @type {?boolean}
-     */
-    this.isChangedSincePreviousVisit = null;
-
-    /**
-     * Has the comment changed while the page was idle. (The new version may be rendered and may be
-     * not, if the layout is too complex.)
-     *
-     * @type {?boolean}
-     */
-    this.isChanged = null;
-
-    /**
-     * Was the comment deleted while the page was idle.
-     *
-     * @type {?boolean}
-     */
-    this.isDeleted = null;
-
-    /**
-     * Should the comment be flashed as changed when it appears in sight.
-     *
-     * @type {?boolean}
-     */
-    this.willFlashChangedOnSight = false;
-
-    /**
-     * Is the comment (or its signature) inside a table containing only one comment.
-     *
-     * @type {boolean}
-     */
-    this.isTableComment = false;
-
-    /**
-     * Is the comment a part of a collapsed thread.
-     *
-     * @type {boolean}
-     */
-    this.isCollapsed = false;
-
-    /**
-     * If the comment is collapsed, that's the closest collapsed thread that this comment related
-     * to.
-     *
-     * @type {import('./Thread').default}
-     */
-    this.collapsedThread = null;
-
-    /**
-     * List of the comment's {@link CommentSubitemList subitems}.
-     *
-     * @type {CommentSubitemList}
-     */
-    this.subitemList = new CommentSubitemList();
-
-    this.wasMenuHidden = false;
-
-    this.genderRequestCallbacks = [];
   }
 
   /**
-   * Set the {@link Comment#anchorHighlightable} element.
+   * Set the {@link Comment#marginHighlightable} element.
    *
    * @private
    */
@@ -217,7 +260,7 @@ class Comment extends CommentSkeleton {
         this.highlightables[this.highlightables.length - 1],
       ];
       firstAndLastHighlightable.forEach((highlightable, i) => {
-        const treeWalker = new ElementsTreeWalker(highlightable, controller.rootElement);
+        const treeWalker = new ElementsTreeWalker(controller.rootElement, highlightable);
         nestingLevels[i] = 0;
         while (treeWalker.parentNode()) {
           nestingLevels[i]++;
@@ -227,13 +270,13 @@ class Comment extends CommentSkeleton {
         }
       });
       const minNestingLevel = Math.min(...nestingLevels);
-      let anchorHighlightableIndex;
+      let marginHighlightableIndex;
       for (let i = 0; i < 2; i++) {
         if (
-          (nestingLevels[i] === minNestingLevel && anchorHighlightableIndex === undefined) ||
-          (closestListTypes[anchorHighlightableIndex] === 'ol' && closestListTypes[i] !== 'ol')
+          (nestingLevels[i] === minNestingLevel && marginHighlightableIndex === undefined) ||
+          (closestListTypes[marginHighlightableIndex] === 'ol' && closestListTypes[i] !== 'ol')
         ) {
-          anchorHighlightableIndex = i;
+          marginHighlightableIndex = i;
         }
       }
 
@@ -241,59 +284,59 @@ class Comment extends CommentSkeleton {
        * A special {@link Comment#highlightables highlightable} used to
        * {@link Comment#getLayersMargins determine layers margins}.
        *
-       * @type {Element}
+       * @type {HTMLElement}
        * @private
        */
-      this.anchorHighlightable = firstAndLastHighlightable[anchorHighlightableIndex];
+      this.marginHighlightable = firstAndLastHighlightable[marginHighlightableIndex];
     } else {
-      this.anchorHighlightable = this.highlightables[0];
+      this.marginHighlightable = this.highlightables[0];
     }
   }
 
   /**
    * Process a possible signature node or a node that contains text which is part of a signature.
    *
-   * @param {Node} n
+   * @param {?Node} node
    * @param {boolean} [isSpaced=false] Was the previously removed node start with a space.
    * @private
    */
-  processPossibleSignatureNode(n, isSpaced = false) {
-    if (!n) return;
+  processPossibleSignatureNode(node, isSpaced = false) {
+    if (!node) return;
 
     // Remove text at the end of the element that looks like a part of the signature.
-    if (n.nodeType === Node.TEXT_NODE || !n.children.length) {
-      n.textContent = n.textContent
+    if (node instanceof Text || (node instanceof Element && !node.children.length)) {
+      node.textContent = node.textContent
         .replace(cd.config.signaturePrefixRegexp, '')
         .replace(cd.config.signaturePrefixRegexp, '');
     }
 
     // Remove the entire element.
     if (
-      n.tagName &&
-      n.textContent.length < 30 &&
+      node instanceof Element &&
+      node.textContent.length < 30 &&
       (
         (
           !isSpaced &&
-          (n.getAttribute('style') || ['SUP', 'SUB'].includes(n.tagName)) &&
+          (node.getAttribute('style') || ['SUP', 'SUB'].includes(node.tagName)) &&
 
           // Templates like "citation needed" or https://ru.wikipedia.org/wiki/Template:-:
-          !n.classList.length
+          !node.classList.length
         ) ||
 
         // Cases like https://ru.wikipedia.org/?diff=119667594
         (
           (
             // https://ru.wikipedia.org/wiki/Обсуждение_участника:Adamant.pwn/Архив/2023#c-Adamant.pwn-20230722131600-Rampion-20230722130800
-            n.getAttribute('style') ||
+            node.getAttribute('style') ||
 
             // https://en.wikipedia.org/?oldid=1220458782#c-Dxneo-20240423211700-Dilettante-20240423210300
-            ['B', 'STRONG'].includes(n.tagName)
+            ['B', 'STRONG'].includes(node.tagName)
           ) &&
-          n.textContent.toLowerCase() === this.author.getName().toLowerCase()
+          node.textContent.toLowerCase() === this.author.getName().toLowerCase()
         )
       )
     ) {
-      n.remove();
+      node.remove();
     }
   }
 
@@ -307,10 +350,10 @@ class Comment extends CommentSkeleton {
 
     // Cases like https://ru.wikipedia.org/?diff=117350706
     if (!previousNode) {
-      const parentNode = this.signatureElement.parentNode;
-      const parentPreviousNode = parentNode.previousSibling;
+      const parentElement = this.signatureElement.parentElement;
+      const parentPreviousNode = parentElement?.previousSibling;
       if (parentPreviousNode && isInline(parentPreviousNode, true)) {
-        const parentPreviousElementNode = parentNode.previousElementSibling;
+        const parentPreviousElementNode = parentElement?.previousElementSibling;
 
         // Make sure we don't erase some blockquote with little content.
         if (!parentPreviousElementNode || isInline(parentPreviousElementNode)) {
@@ -354,7 +397,7 @@ class Comment extends CommentSkeleton {
       .filter(unique)
       .filter((el) => (
         cd.g.badHighlightableElements.includes(el.tagName) ||
-        (this.highlightables.length > 1 && el.tagName === 'LI' && el.parentNode.tagName === 'OL') ||
+        (this.highlightables.length > 1 && el.tagName === 'LI' && el.parentElement?.tagName === 'OL') ||
         Array.from(el.classList).some((name) => !name.startsWith('cd-'))
       ))
       .forEach((el) => {
@@ -372,7 +415,7 @@ class Comment extends CommentSkeleton {
   /**
    * @typedef {object[]} ReplaceSignatureWithHeaderReturn
    * @property {string} pageName
-   * @property {Element} link
+   * @property {HTMLAnchorElement} link
    * @memberof Comment
    * @inner
    */
@@ -406,7 +449,7 @@ class Comment extends CommentSkeleton {
       // Move the existing author link to the header.
 
       if (this.extraSignatures.length) {
-        this.authorLink = this.authorLink.cloneNode(true);
+        this.authorLink = /** @type {HTMLAnchorElement} */ (this.authorLink.cloneNode(true));
       }
 
       const beforeAuthorLinkParseReturn = cd.config.beforeAuthorLinkParse?.(
@@ -439,7 +482,7 @@ class Comment extends CommentSkeleton {
     if (this.authorTalkLink) {
       // Move the existing author talk link to the header.
       if (this.extraSignatures.length) {
-        this.authorTalkLink = this.authorTalkLink.cloneNode(true);
+        this.authorTalkLink = /** @type {HTMLAnchorElement} */ (this.authorTalkLink.cloneNode(true));
       }
       authorTalkLink.parentNode.replaceChild(this.authorTalkLink, authorTalkLink);
       this.authorTalkLink.textContent = cd.s('comment-author-talk');
@@ -479,7 +522,9 @@ class Comment extends CommentSkeleton {
 
       this.headerElement.appendChild(this.copyLinkButton.element);
       this.timestampElement = this.copyLinkButton.labelElement;
-      (new LiveTimestamp(this.timestampElement, this.date, !this.hideTimezone)).init();
+      if (this.date) {
+        (new LiveTimestamp(this.timestampElement, this.date, !this.hideTimezone)).init();
+      }
     }
 
     /**
@@ -776,11 +821,10 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Create a {@link Comment#toggleChildThreadsButton "Toggle child threads" button} and add it to
-   * the comment header. Don't add to the overlay menu of the classic design - it occupies valuable
+   * _For internal use._ Create a
+   * {@link Comment#toggleChildThreadsButton "Toggle child threads" button} and add it to the
+   * comment header. Don't add to the overlay menu of the classic design - it occupies valuable
    * space there. The user may use Shift+click on a thread line instead.
-   *
-   * @private
    */
   addToggleChildThreadsButton() {
     if (
@@ -887,7 +931,7 @@ class Comment extends CommentSkeleton {
    * Bind the standard events to a comment part. Executed on comment object creation and DOM
    * modifications affecting comment parts.
    *
-   * @param {Element} element
+   * @param {HTMLElement} element
    * @private
    */
   bindEvents(element) {
@@ -910,7 +954,7 @@ class Comment extends CommentSkeleton {
         .some((name) => !name.startsWith('cd-') || name === 'cd-comment-replacedPart');
       if (areThereClassedElements) {
         const isReplacement = i === 0 && el.classList.contains('cd-comment-replacedPart');
-        const testElement = isReplacement ? el.firstChild : el;
+        const testElement = /** @type {HTMLElement} */ (isReplacement ? el.firstChild : el);
 
         // Node that we could use window.getComputerStyle here, but avoid it to avoid the reflow.
         if (
@@ -997,6 +1041,24 @@ class Comment extends CommentSkeleton {
   }
 
   /**
+   * @typedef {object} GetOffsetOptions
+   * @property {object[]} [options.floatingRects]
+   *   {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect Element#getBoundingClientRect}
+   *   results for floating elements from `convenientDiscussions.g.floatingElements`. It may be
+   *   calculated in advance for many elements in one sequence to save time.
+   * @property {boolean} [options.considerFloating] Whether to take floating elements around the
+   *   comment into account. Deemed `true` if `options.floatingRects` is set.
+   * @property {boolean} [options.set=false] Whether to set the offset to the `offset` (if
+   *   `options.considerFloating` is `true`) or `roughOffset` (if `options.considerFloating` is
+   *   `false`) property. If `true`, the function will return a boolean value indicating if the
+   *   comment is moved instead of the offset. (This value can be used to stop recalculating comment
+   *   offsets if a number of comments in a row have not moved for optimization purposes.) Setting
+   *   the `offset` property implies that the layers offset will be updated afterwards - otherwise,
+   *   the next attempt to call this method to update the layers offset will return `false` meaning
+   *   the comment isn't moved, and the layers offset will stay wrong.
+   */
+
+  /**
    * @typedef {object} CommentOffset
    * @property {number} top
    * @property {number} bottom
@@ -1016,21 +1078,7 @@ class Comment extends CommentSkeleton {
    * Note that comment coordinates are not static, obviously, but we need to recalculate them only
    * occasionally.
    *
-   * @param {object} [options={}]
-   * @param {object[]} [options.floatingRects]
-   *   {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect Element#getBoundingClientRect}
-   *   results for floating elements from `convenientDiscussions.g.floatingElements`. It may be
-   *   calculated in advance for many elements in one sequence to save time.
-   * @param {boolean} [options.considerFloating] Whether to take floating elements around the
-   *   comment into account. Deemed `true` if `options.floatingRects` is set.
-   * @param {boolean} [options.set=false] Whether to set the offset to the `offset` (if
-   *   `options.considerFloating` is `true`) or `roughOffset` (if `options.considerFloating` is
-   *   `false`) property. If `true`, the function will return a boolean value indicating if the
-   *   comment is moved instead of the offset. (This value can be used to stop recalculating comment
-   *   offsets if a number of comments in a row have not moved for optimization purposes.) Setting
-   *   the `offset` property implies that the layers offset will be updated afterwards - otherwise,
-   *   the next attempt to call this method to update the layers offset will return `false` meaning
-   *   the comment isn't moved, and the layers offset will stay wrong.
+   * @param {GetOffsetOptions} [options={}]
    * @returns {?(CommentOffset|boolean)} Offset object. If the comment is not visible, returns
    *   `null`. If `options.set` is `true`, returns a boolean value indicating if the comment is
    *   moved instead of the offset.
@@ -1039,20 +1087,20 @@ class Comment extends CommentSkeleton {
     options.considerFloating ??= Boolean(options.floatingRects);
     options.set ??= false;
 
+    let firstElement;
+    let lastElement;
     if (this.editForm) {
-      options.firstElement = options.lastElement = this.editForm.getOutermostElement();
+      firstElement = lastElement = this.editForm.getOutermostElement();
     } else {
-      options.firstElement = this.highlightables[0];
-      options.lastElement = this.highlightables[this.highlightables.length - 1];
+      firstElement = this.highlightables[0];
+      lastElement = this.highlightables[this.highlightables.length - 1];
     }
 
-    let rectTop = Comment.getCommentPartRect(options.firstElement);
-    let rectBottom = this.elements.length === 1 ?
-      rectTop :
-      Comment.getCommentPartRect(options.lastElement);
+    let rectTop = Comment.getCommentPartRect(firstElement);
+    let rectBottom = this.elements.length === 1 ? rectTop : Comment.getCommentPartRect(lastElement);
 
     if (!getVisibilityByRects(rectTop, rectBottom)) {
-      this.setOffset(null, options);
+      this.setOffset(null, options, firstElement);
       return null;
     }
 
@@ -1112,7 +1160,7 @@ class Comment extends CommentSkeleton {
       bottom;
 
     const offset = { top, bottom, left, right, bottomForVisibility };
-    this.setOffset(offset, options);
+    this.setOffset(offset, options, firstElement);
 
     return options.set ? true : offset;
   }
@@ -1122,10 +1170,11 @@ class Comment extends CommentSkeleton {
    * `true`) or `roughOffset` (if `options.considerFloating` is `false`) property.
    *
    * @param {?object} offset
-   * @param {object} options
+   * @param {GetOffsetOptions} options
+   * @param {HTMLElement} firstElement
    * @private
    */
-  setOffset(offset, options) {
+  setOffset(offset, options, firstElement) {
     if (!options.set) return;
 
     if (options.considerFloating) {
@@ -1137,7 +1186,7 @@ class Comment extends CommentSkeleton {
       this.offset = offset;
 
       // This is to determine if the element is moved in future checks.
-      this.firstHighlightableWidth = options.firstElement.offsetWidth;
+      this.firstHighlightableWidth = firstElement.offsetWidth;
     } else {
       /**
        * The comment's rough coordinates (without taking into account floating elements around the
@@ -1153,9 +1202,9 @@ class Comment extends CommentSkeleton {
    * Get the top and bottom rectangles of a comment while taking into account floating elements
    * around the comment.
    *
-   * @param {object} rectTop Top rectangle that was got without taking into account floating
+   * @param {DOMRect} rectTop Top rectangle that was got without taking into account floating
    *   elements around the comment.
-   * @param {object} rectBottom Bottom rectangle that was got without taking into account floating
+   * @param {DOMRect} rectBottom Bottom rectangle that was got without taking into account floating
    *   elements around the comment.
    * @param {number} bottom Bottom coordonate of the comment (calculated without taking floating
    *   elements into account).
@@ -1282,11 +1331,11 @@ class Comment extends CommentSkeleton {
         this.direction = (
           this.elements.slice(-1)[0]
             .closest('.mw-content-ltr, .mw-content-rtl')
-            .classList
-            .contains('mw-content-ltr')
+            ?.classList
+            .contains('mw-content-rtl')
         ) ?
-          'ltr' :
-          'rtl';
+          'rtl' :
+          'ltr';
       } else {
         this.direction = cd.g.contentDirection;
       }
@@ -1321,19 +1370,17 @@ class Comment extends CommentSkeleton {
     } else if (this.isStartStretched) {
       startMargin = controller.getContentColumnOffsets().startMargin;
     } else {
-      const anchorElement = this.isCollapsed
-        ? this.thread.$expandNote[0]
-        : this.anchorHighlightable;
-      if (anchorElement.parentNode.classList.contains('cd-commentLevel')) {
+      const marginElement = this.thread.$expandNote?.[0] || this.marginHighlightable;
+      if (marginElement.parentElement?.classList.contains('cd-commentLevel')) {
         startMargin = -1;
       } else {
         if (
           this.offset &&
-          anchorElement.parentNode.parentNode.classList.contains('cd-commentLevel')
+          marginElement.parentElement?.parentElement?.classList.contains('cd-commentLevel')
         ) {
           const prop = this.getDirection() === 'ltr' ? 'left' : 'right';
           startMargin = (
-            Math.abs(this.offset[prop] - anchorElement.parentNode.getBoundingClientRect()[prop]) - 1
+            Math.abs(this.offset[prop] - marginElement.parentElement?.getBoundingClientRect()[prop]) - 1
           );
         } else {
           startMargin = this.level === 0 ? cd.g.commentFallbackSideMargin : cd.g.contentFontSize;
@@ -1474,7 +1521,7 @@ class Comment extends CommentSkeleton {
 
       const treeWalker = new TreeWalker(
         document.body,
-        null,
+        undefined,
         true,
 
         // Start with the first or last element dependent on which is higher in the DOM hierarchy in
@@ -1562,7 +1609,7 @@ class Comment extends CommentSkeleton {
     /**
      * _For internal use._ Comment's underlay as a native (non-jQuery) element.
      *
-     * @type {?(Element|undefined)}
+     * @type {?(HTMLElement|undefined)}
      */
     this.underlay = Comment.prototypes.get('underlay');
 
@@ -1571,7 +1618,7 @@ class Comment extends CommentSkeleton {
     /**
      * Comment's overlay.
      *
-     * @type {?(Element|undefined)}
+     * @type {?(HTMLElement|undefined)}
      * @private
      */
     this.overlay = Comment.prototypes.get('overlay');
@@ -1579,15 +1626,15 @@ class Comment extends CommentSkeleton {
     /**
      * Line element in comment's overlay.
      *
-     * @type {Element|undefined}
+     * @type {HTMLElement|undefined}
      * @private
      */
-    this.line = this.overlay.firstChild;
+    this.line = /** @type {HTMLElement} */ this.overlay.firstChild;
 
     /**
      * Comment's side marker.
      *
-     * @type {Element|undefined}
+     * @type {HTMLElement|undefined}
      * @private
      */
     this.marker = this.overlay.firstChild.nextSibling;
@@ -1596,7 +1643,7 @@ class Comment extends CommentSkeleton {
       /**
        * Inner wrapper in comment's overlay.
        *
-       * @type {Element|undefined}
+       * @type {HTMLElement|undefined}
        * @private
        */
       this.overlayInnerWrapper = this.overlay.lastChild;
@@ -1604,7 +1651,7 @@ class Comment extends CommentSkeleton {
       /**
        * Gradient element in comment's overlay.
        *
-       * @type {Element|undefined}
+       * @type {HTMLElement|undefined}
        * @private
        */
       this.overlayGradient = this.overlayInnerWrapper.firstChild;
@@ -1612,7 +1659,7 @@ class Comment extends CommentSkeleton {
       /**
        * Menu element in comment's overlay.
        *
-       * @type {Element|undefined}
+       * @type {HTMLElement|undefined}
        * @private
        */
       this.overlayMenu = this.overlayInnerWrapper.lastChild;
@@ -2061,13 +2108,12 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Keep only those lines of a diff that are related to the comment.
+   * _For internal use._ Keep only those lines of a diff that are related to the comment.
    *
    * @param {string} body
    * @param {object[]} revisions
    * @param {object[]} commentsData
    * @returns {JQuery}
-   * @private
    */
   scrubDiff(body, revisions, commentsData) {
     const lineNumbers = [[], []];
@@ -3242,8 +3288,8 @@ class Comment extends CommentSkeleton {
       this.highlightables.splice(this.highlightables.indexOf(nativeElement), 1, newElement);
       this.bindEvents(newElement);
     }
-    if (this.anchorHighlightable === nativeElement) {
-      this.anchorHighlightable = newElement;
+    if (this.marginHighlightable === nativeElement) {
+      this.marginHighlightable = newElement;
     }
 
     return newElement;
@@ -3457,6 +3503,7 @@ class Comment extends CommentSkeleton {
       $note = t.$expandNote;
       if ($note.is(':visible')) break;
     }
+
     return $note;
   }
 
@@ -3748,19 +3795,23 @@ class Comment extends CommentSkeleton {
    * second one. This fixes the thread feature behavior among other things.
    */
   maybeSplitParent() {
-    const previousComment = commentRegistry.getByIndex(this.index - 1);
+    if (this.index === 0) return;
+
+    const previousComment = /** @type {Comment} */ (commentRegistry.getByIndex(this.index - 1));
     if (this.level !== previousComment.level) return;
 
-    const previousCommentLastElement = previousComment
-      .elements[previousComment.elements.length - 1];
+    const previousCommentLastElement = previousComment.elements.slice(-1)[0];
     const potentialElement = previousCommentLastElement.nextElementSibling;
     if (
-      ['DD', 'LI'].includes(previousCommentLastElement.parentNode.tagName) &&
+      previousCommentLastElement.parentElement &&
+      ['DD', 'LI'].includes(previousCommentLastElement.parentElement.tagName) &&
       previousCommentLastElement.tagName === 'DIV' &&
       potentialElement === this.elements[0] &&
       potentialElement.tagName === 'DIV'
     ) {
-      previousComment.parser.splitParentAfterNode(potentialElement.previousSibling);
+      previousComment.parser.splitParentAfterNode(
+        /** @type {Node} */ (potentialElement.previousSibling)
+      );
     }
   }
 
@@ -3881,6 +3932,18 @@ class Comment extends CommentSkeleton {
     return comments;
   }
 
+  /**
+   * Get all replies to the comment.
+   *
+   * @param {boolean} [indirect]
+   * @param {boolean} [visual]
+   * @param {boolean} [allowSiblings]
+   * @returns {Comment[]}
+   */
+  getChildren(indirect, visual, allowSiblings) {
+    return /** @type {Comment[]} */ (super.getChildren(indirect, visual, allowSiblings));
+  }
+
   static {
     // Doesn't account for cases when the section headline ends with -<number>.
     const newDtTimestampPattern = '(\\d{4})(\\d{2})(\\d{2})(\\d{2})(\\d{2})\\d{2}';
@@ -3899,8 +3962,6 @@ class Comment extends CommentSkeleton {
    * from scratch (which is more expensive).
    */
   static initPrototypes() {
-    this.prototypes = new PrototypeRegistry();
-
     /* Comment header element */
     if (this.isReformatted !== false) {  // true, null
       const headerElement = document.createElement('div');

@@ -730,14 +730,6 @@ export default {
       {}
     );
 
-    /**
-     * Current page's object.
-     *
-     * @see module:pageRegistry.getCurrent
-     * @name page
-     * @type {import('./pageRegistry').Page}
-     * @memberof convenientDiscussions
-     */
     cd.page = pageRegistry.getCurrent();
 
     /**

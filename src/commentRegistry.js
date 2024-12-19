@@ -265,7 +265,7 @@ export default {
     // repositioned immediately and therefore not appearing as misplaced to this procedure. Three
     // comments threshold should be more reliable.
     this.items.slice().reverse().some((comment) => {
-      const shouldBeHighlighted = (
+      const shouldBeHighlighted = Boolean(
         !comment.isCollapsed &&
         (
           comment.isNew ||
@@ -938,7 +938,7 @@ export default {
       console.warn('.cd-commentLevel adjacencies have left.');
     }
 
-    this.items.slice(1).forEach((comment) => {
+    this.items.forEach((comment) => {
       comment.maybeSplitParent();
     });
   },

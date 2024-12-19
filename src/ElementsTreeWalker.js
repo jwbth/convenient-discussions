@@ -6,17 +6,30 @@ import TreeWalker from './TreeWalker';
  * @augments TreeWalker
  */
 class ElementsTreeWalker extends TreeWalker {
+  /** @type {ElementLike} */
+  currentNode;
+
   /**
-   * Create an elements {@link TreeWalker tree walker}.
+   * Create an {@link TreeWalker tree walker} that walks elements.
    *
-   * @param {Node|import('domhandler').Node} [startNode]
-   * @param {Node|import('domhandler').Node} [root]
+   * @param {ElementLike} root
+   * @param {ElementLike} [startElement]
    */
-  constructor(startNode, root) {
-    super(root, null, true);
-    if (startNode) {
-      this.currentNode = startNode;
+  constructor(root, startElement) {
+    super(root, undefined, true);
+    if (startElement) {
+      this.currentNode = startElement;
     }
+  }
+
+  /**
+   * Go to the parent node.
+   *
+   * @override
+   * @returns {?ElementLike}
+   */
+  parentNode() {
+    return /** @type {?ElementLike} */ (super.parentNode());
   }
 }
 

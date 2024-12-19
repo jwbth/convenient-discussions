@@ -210,27 +210,24 @@ class SectionSource {
       firstChunkContentEndIndex -= placeholderMatch[1].length;
     }
 
-    Object.assign(this, {
-      startIndex,
-      endIndex,
-      code,
-      contentStartIndex,
-      contentEndIndex,
-      relativeContentStartIndex: contentStartIndex - startIndex,
-      firstChunkEndIndex,
-      firstChunkContentEndIndex,
-      firstChunkCode,
-      headline: normalizeCode(removeWikiMarkup(sectionHeadingMatch[3])),
-    });
+    this.startIndex = startIndex;
+    this.endIndex = endIndex;
+    this.code = code;
+    this.contentStartIndex = contentStartIndex;
+    this.contentEndIndex = contentEndIndex;
+    this.relativeContentStartIndex = contentStartIndex - startIndex
+    this.firstChunkEndIndex = firstChunkEndIndex;
+    this.firstChunkContentEndIndex = firstChunkContentEndIndex;
+    this.firstChunkCode = firstChunkCode;
+    this.headline = normalizeCode(removeWikiMarkup(sectionHeadingMatch[3]));
   }
 
   /**
-   * Calculate and set a score for the match.
+   * _For internal use._ Calculate and set a score for the match.
    *
    * @param {number} sectionIndex
    * @param {string} thisHeadline
    * @param {string[]} headlines
-   * @private
    */
   calculateMatchScore(sectionIndex, thisHeadline, headlines) {
     const doesHeadlineMatch = thisHeadline.includes('{{') ? 0.5 : this.headline === thisHeadline;

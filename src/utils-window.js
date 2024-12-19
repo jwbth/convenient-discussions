@@ -11,8 +11,7 @@ import cd from './cd';
 import { parseWikiUrl, isInline, removeFromArrayIfPresent, defined, spacesToUnderlines } from './utils-general';
 
 /**
- * @typedef {object} WrapCallbacks
- * @property {Function} *
+ * @typedef {Record<string, () => void>} WrapCallbacks
  */
 
 /**
@@ -287,8 +286,8 @@ export function isElementConvertibleToWikitext(element) {
 /**
  * Clean up the contents of an element created based on the HTML code of a paste.
  *
- * @param {Element} element
- * @param {Element} containerElement
+ * @param {HTMLElement} element
+ * @param {HTMLElement} containerElement
  * @returns {object}
  */
 export function cleanUpPasteDom(element, containerElement) {
@@ -299,7 +298,7 @@ export function cleanUpPasteDom(element, containerElement) {
   containerElement.appendChild(element);
 
   [...element.querySelectorAll('[style]:not(pre [style])')]
-    .forEach((el) => {
+    .forEach((/** @type {HTMLElement} */ el) => {
       if (el.style.textDecoration === 'underline' && !['U', 'INS', 'A'].includes(el.tagName)) {
         $(el).wrapInner('<u>');
       }
@@ -315,8 +314,8 @@ export function cleanUpPasteDom(element, containerElement) {
       el.removeAttribute('style');
     });
 
-  const removeElement = (el) => el.remove();
-  const replaceWithChildren = (el) => {
+  const removeElement = (/** @type {Element} */ el) => el.remove();
+  const replaceWithChildren = (/** @type {Element} */ el) => {
     if (
       ['DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'DD'].includes(el.tagName) &&
       (
@@ -350,8 +349,11 @@ export function cleanUpPasteDom(element, containerElement) {
   [...element.querySelectorAll('style')]
     .forEach(removeElement);
 
-  const topElements = new Parser({ childElementsProp: 'children' })
-    .getTopElementsWithText(element, true).nodes;
+  const topElements = Parser.prototype.getTopElementsWithText.call(
+    { context: { childElementsProp: 'children' } },
+    element,
+    true
+  ).nodes;
   if (topElements[0] !== element) {
     element.innerHTML = '';
     element.append(...topElements);
@@ -492,7 +494,7 @@ export function getRangeContents(start, end, rootElement) {
   // The start container could contain the end container and be different from it in the case with
   // adjusted end items.
   if (!start.contains(end)) {
-    const treeWalker = new ElementsTreeWalker(start, rootElement);
+    const treeWalker = new ElementsTreeWalker(rootElement, start);
 
     while (treeWalker.currentNode.parentNode !== commonAncestor) {
       while (treeWalker.nextSibling()) {
@@ -552,16 +554,17 @@ export function createSvg(width, height, viewBoxWidth = width, viewBoxHeight = h
  * Get all text nodes under the root element in the window (not worker) context.
  *
  * @param {Element} rootNode
- * @returns {Node[]}
+ * @returns {Text[]}
  * @private
  */
 export function getAllTextNodes(rootNode) {
   const treeWalker = document.createNodeIterator(rootNode, NodeFilter.SHOW_TEXT);
   const nodes = [];
   let node;
-  while ((node = treeWalker.nextNode())) {
+  while ((node = /** @type {?Text} */ (treeWalker.nextNode()))) {
     nodes.push(node);
   }
+
   return nodes;
 }
 

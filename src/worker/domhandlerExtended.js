@@ -3,12 +3,11 @@ import { DomUtils } from 'htmlparser2';
 
 import { decodeHtmlEntities } from '../utils-general';
 
-self.Document = Document;
+self.Node = Node;
 
 Node.ELEMENT_NODE = 1;
 Node.TEXT_NODE = 3;
 Node.COMMENT_NODE = 8;
-self.Node = Node;
 
 /**
  * @param {Node} referenceNode
@@ -91,6 +90,16 @@ Object.defineProperty(Node.prototype, 'textContent', {
   },
 });
 
+Object.defineProperty(Node.prototype, 'parentElement', {
+  /**
+   * @this {Node}
+   * @returns {?Element}
+   */
+  get() {
+    return this.parentNode instanceof Element ? this.parentNode : null;
+  },
+});
+
 Object.defineProperty(DataNode.prototype, 'textContent', {
   /**
    * @this {DataNode}
@@ -139,14 +148,14 @@ NodeWithChildren.prototype.traverseSubtree = function (callback, checkSelf = fal
     }
   }
 
- return false;
+  return false;
 };
 
 /**
  * @param {(node: Node) => boolean} callback Callback function that takes a node and returns true if
  *   it should be included in the result.
  * @param {number} [limit] Maximum number of nodes to include in the result.
- * @returns {import('domhandler').Node[]} Array of nodes that passed the callback function.
+ * @returns {Node[]} Array of nodes that passed the callback function.
  */
 NodeWithChildren.prototype.filterRecursively = function (callback, limit) {
   const nodes = [];
@@ -163,14 +172,14 @@ NodeWithChildren.prototype.filterRecursively = function (callback, limit) {
 };
 
 /**
- * @param {import('domhandler').Node} node
+ * @param {Node} node
  */
 Element.prototype.appendChild = function (node) {
   DomUtils.appendChild(this, node);
 };
 
 /**
- * @param {import('domhandler').Node} node
+ * @param {Node} node
  */
 Element.prototype.removeChild = function (node) {
   if (node.parentNode === this) {
@@ -179,8 +188,9 @@ Element.prototype.removeChild = function (node) {
 };
 
 /**
- * @param {import('domhandler').Node} node
- * @param {import('domhandler').Node} [referenceNode]
+ * @param {Node} node
+ * @param {?Node} referenceNode
+ * @returns {Node}
  */
 Element.prototype.insertBefore = function (node, referenceNode) {
   if (referenceNode) {
@@ -188,6 +198,8 @@ Element.prototype.insertBefore = function (node, referenceNode) {
   } else {
     this.appendChild(node);
   }
+
+  return node;
 };
 
 Element.prototype.getElementsByClassName = function (name, limit) {
@@ -431,69 +443,87 @@ Object.defineProperty(Element.prototype, 'tagName', {
 // We have to create a getter as there is no way to access an object from a method of that object's
 // property (Element#classList.add() and such in this case).
 Object.defineProperty(Element.prototype, 'classList', {
+  /**
+   * Retrieves or initializes the `_classList` property for the element. The `_classList` is an
+   * array that manages the class names of the element, providing methods to add, remove, and check
+   * for class names. If `_classList` is not already initialized, it sets up the methods:
+   *   - `moveFromClassAttr`: Moves class names from the `class` attribute to `_classList`.
+   *   - `add`: Adds one or more class names to the element.
+   *   - `remove`: Removes one or more class names from the element.
+   *   - `contains`: Checks if a class name exists in the element's class list.
+   *
+   * @this {Element}
+   * @returns {import('domhandler').TokenList} The `_classList` array with methods for class
+   * manipulation.
+   */
   get() {
-    if (this._classList) {
-      return this._classList;
-    }
+    if (!this._classList) {
+      /**
+       * @type {import('domhandler').TokenList|undefined}
+       * @private
+       */
+      this._classList = /** @type {import('domhandler').TokenList} */ ([]);
 
-    this._classList = [];
-    this._classList.movedFromClassAttr = false;
+      this._classList
 
-    this._classList.moveFromClassAttr = (/** @type {string} */ classAttr) => {
-      this._classList.push(...(classAttr || '').split(' '));
-      this._classList.movedFromClassAttr = true;
-    };
+      this._classList.movedFromClassAttr = false;
 
-    this._classList.add = (/** @type {string[]} */ ...names) => {
-      names.forEach((name) => {
-        let classAttr = this.getAttribute('class') || '';
-        if (classAttr) {
-          classAttr += ' ';
-        }
-        classAttr += name;
-        this.setAttribute('class', classAttr);
-        if (this._classList.movedFromClassAttr) {
-          this._classList.push(name);
-        } else {
-          this._classList.moveFromClassAttr(classAttr);
-        }
-      });
-    };
+      this._classList.moveFromClassAttr = (/** @type {string|undefined} */ classAttr) => {
+        this._classList.push(...(classAttr || '').split(' '));
+        this._classList.movedFromClassAttr = true;
+      };
 
-    this._classList.remove = (/** @type {string[]} */...names) => {
-      names.forEach((name) => {
-        let classAttr = this.getAttribute('class') || '';
-        const index = ` ${classAttr} `.indexOf(` ${name} `);
-        if (index !== -1) {
-          classAttr = (
-            classAttr.slice(0, index) + classAttr.slice(index + name.length + 1)
-          ).trim();
+      this._classList.add = (/** @type {string[]} */ ...names) => {
+        names.forEach((name) => {
+          let classAttr = this.getAttribute('class') || '';
+          if (classAttr) {
+            classAttr += ' ';
+          }
+          classAttr += name;
           this.setAttribute('class', classAttr);
           if (this._classList.movedFromClassAttr) {
             this._classList.push(name);
           } else {
             this._classList.moveFromClassAttr(classAttr);
           }
+        });
+      };
+
+      this._classList.remove = (/** @type {string[]} */...names) => {
+        names.forEach((name) => {
+          let classAttr = this.getAttribute('class') || '';
+          const index = ` ${classAttr} `.indexOf(` ${name} `);
+          if (index !== -1) {
+            classAttr = (
+              classAttr.slice(0, index) + classAttr.slice(index + name.length + 1)
+            ).trim();
+            this.setAttribute('class', classAttr);
+            if (this._classList.movedFromClassAttr) {
+              this._classList.push(name);
+            } else {
+              this._classList.moveFromClassAttr(classAttr);
+            }
+          }
+        });
+      };
+
+      this._classList.contains = (/** @type {string} */ name) => {
+        const classAttr = this.getAttribute('class');
+        if (!classAttr) {
+          return false;
         }
-      });
-    };
 
-    this._classList.contains = (/** @type {string} */ name) => {
-      const classAttr = this.getAttribute('class');
-      if (!classAttr) {
-        return false;
-      }
+        if (!this._classList.movedFromClassAttr) {
+          this._classList.moveFromClassAttr(classAttr);
+        }
 
-      if (!this._classList.movedFromClassAttr) {
-        this._classList.moveFromClassAttr(classAttr);
-      }
+        // This can run tens of thousand times, so we microoptimize it (don't use template strings
+        // and String#includes()).
+        const returnValue = Boolean(this._classList.length) && this._classList.indexOf(name) !== -1;
 
-      // This can run tens of thousand times, so we microoptimize it (don't use template strings and
-      // String#includes()).
-      const returnValue = Boolean(this._classList.length) && this._classList.indexOf(name) !== -1;
-
-      return returnValue;
-    };
+        return returnValue;
+      };
+    }
 
     return this._classList;
   },

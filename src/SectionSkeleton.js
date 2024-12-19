@@ -10,6 +10,31 @@ import { defined, isHeadingNode, isMetadataNode } from './utils-general';
  * only one used in the worker context for sections.
  */
 class SectionSkeleton {
+  /** @type {?string} */
+  sourcePageName = null;
+
+  /**
+   * Nesting level of the heading relative to the root element.
+   *
+   * @type {number}
+   * @protected
+   */
+  headingNestingLevel;
+
+  /**
+   * Last element in the section.
+   *
+   * @type {ElementLike}
+   */
+  lastElement;
+
+  /**
+   * Comments contained in the section.
+   *
+   * @type {import('./Comment').default[]}
+   */
+  comments;
+
   /**
    * Create a section skeleton instance.
    *
@@ -23,7 +48,7 @@ class SectionSkeleton {
     /**
      * Heading element (`.mw-heading` or `<h1>` - `<h6>`).
      *
-     * @type {Element|import('domhandler').Element}
+     * @type {ElementLike}
      */
     this.headingElement = heading.element;
 
@@ -32,7 +57,7 @@ class SectionSkeleton {
     /**
      * `H1...6` element.
      *
-     * @type {Element|import('domhandler').Element}
+     * @type {ElementLike}
      */
     this.hElement = (
       returnNodeIfHNode(this.headingElement) ||
@@ -46,7 +71,7 @@ class SectionSkeleton {
     /**
      * Headline element.
      *
-     * @type {Element|import('domhandler').Element}
+     * @type {ElementLike}
      */
     this.headlineElement = cd.g.isParsoidUsed ?
       this.hElement :
@@ -66,11 +91,9 @@ class SectionSkeleton {
      *
      * @type {string}
      */
-    this.id = this.headlineElement.getAttribute('id');
+    this.id = /** @type {string} */ (this.headlineElement.getAttribute('id'));
 
     this.parseHeadline();
-
-    const levelMatch = this.hElement.tagName.match(/^H([1-6])$/);
 
     /**
      * Section level. A level is a number representing the number of `=` characters in the section
@@ -78,7 +101,9 @@ class SectionSkeleton {
      *
      * @type {number}
      */
-    this.level = levelMatch && Number(levelMatch[1]);
+    this.level = Number(
+      /** @type {RegExpMatchArray} */ (this.hElement.tagName.match(/^H([1-6])$/))[1]
+    );
 
     /**
      * Sequental number of the section at the time of the page load.
@@ -103,25 +128,25 @@ class SectionSkeleton {
 
     if (editLink) {
       // `href` property with the full URL is not available in the worker context.
-      /**
-       * URL to edit the section.
-       *
-       * @type {string}
-       */
-      this.editUrl = new URL(cd.g.server + editLink.getAttribute('href'));
-
-      if (this.editUrl) {
-        const sectionParam = this.editUrl.searchParams.get('section');
-        if (sectionParam.startsWith('T-')) {
-          this.sourcePageName = this.editUrl.searchParams.get('title');
-          this.sectionNumber = Number(sectionParam.match(/\d+/)[0]);
+      const editUrl = new URL(cd.g.server + editLink.getAttribute('href'));
+      if (editUrl) {
+        const sectionParam = editUrl.searchParams.get('section');
+        if (sectionParam && sectionParam.startsWith('T-')) {
+          this.sourcePageName = editUrl.searchParams.get('title');
+          this.sectionNumber = Number((sectionParam.match(/\d+/) || [])[0]);
         } else {
           this.sectionNumber = Number(sectionParam);
         }
         if (Number.isNaN(this.sectionNumber)) {
           this.sectionNumber = null;
         }
-        this.editUrl = this.editUrl.href;
+
+        /**
+         * URL to edit the section.
+         *
+         * @type {string}
+         */
+        this.editUrl = editUrl.href;
       }
     }
 
@@ -148,42 +173,42 @@ class SectionSkeleton {
 
     // Find the next heading element
     const headingIndex = targets.indexOf(heading);
-    let nextHeadingIndex = targets
+    let /** @type {number|undefined} */ nextHeadingIndex = targets
       .findIndex((target, i) => i > headingIndex && target.type === 'heading');
+    let nextHeadingElement;
     if (nextHeadingIndex === -1) {
       nextHeadingIndex = undefined;
+    } else {
+      nextHeadingElement = targets[nextHeadingIndex]?.element;
     }
-    const nextHeadingElement = targets[nextHeadingIndex]?.element;
 
     // Find the next heading element whose section is not a descendant of this section
-    let nndheIndex = targets.findIndex((target, i) => (
+    let /** @type {number|undefined} */ nndheIndex = targets.findIndex((target, i) => (
       i > headingIndex &&
       target.type === 'heading' &&
       target.level <= this.level
     ));
+    let nextNotDescendantHeadingElement;
     if (nndheIndex === -1) {
       nndheIndex = undefined;
+    } else {
+      nextNotDescendantHeadingElement = targets[nndheIndex]?.element;
     }
-    const nextNotDescendantHeadingElement = targets[nndheIndex]?.element;
 
     const treeWalker = new TreeWalker(
       this.parser.context.rootElement,
-      (node) => !isMetadataNode(node) && !node.classList.contains('cd-section-button-container'),
+      (node) =>
+        !isMetadataNode(node) && !node.classList.contains('cd-section-button-container'),
       true
     );
 
-    /**
-     * Last element in the section.
-     *
-     * @type {Element|import('domhandler').Element}
-     */
     this.lastElement = this.getLastElement(nextNotDescendantHeadingElement, treeWalker);
 
     /**
      * Last element in the first chunk of the section, i.e. all elements up to the first subheading
      * if it is present or just all elements if it is not.
      *
-     * @type {Element|import('domhandler').Element}
+     * @type {ElementLike}
      */
     this.lastElementInFirstChunk = nextHeadingElement === nextNotDescendantHeadingElement ?
       this.lastElement :
@@ -196,11 +221,6 @@ class SectionSkeleton {
         .filter(defined)
     );
 
-    /**
-     * Comments contained in the section.
-     *
-     * @type {import('./Comment').default[]}
-     */
     this.comments = targetsToComments(targets.slice(headingIndex, nndheIndex));
 
     /**
@@ -247,9 +267,9 @@ class SectionSkeleton {
    * In this case, section 1 has paragraphs 1 and 2 as the first and last, and section 2 has
    * paragraphs 3 and 4 as such. Our code must capture that.
    *
-   * @param {Element|import('domhandler').Element|undefined} followingHeadingElement
-   * @param {import('./TreeWalker').TreeWalker} treeWalker
-   * @returns {Element|import('domhandler').Element}
+   * @param {ElementLike|undefined} followingHeadingElement
+   * @param {import('./TreeWalker').default<true>} treeWalker
+   * @returns {ElementLike}
    */
   getLastElement(followingHeadingElement, treeWalker) {
     let lastElement;
@@ -260,16 +280,20 @@ class SectionSkeleton {
       }
       lastElement = treeWalker.currentNode;
     } else {
-      lastElement = this.parser.context.rootElement.lastElementChild;
+      lastElement = /** @type {ElementLike} */ (this.parser.context.rootElement.lastElementChild);
     }
 
     // Some wrappers that include the section heading added by users
-    while (lastElement.contains(this.headingElement) && lastElement !== this.headingElement) {
-      lastElement = lastElement.lastElementChild;
+    while (
+      lastElement &&
+      lastElement.contains(this.headingElement) &&
+      lastElement !== this.headingElement
+    ) {
+      lastElement = /** @type {ElementLike} */ (lastElement.lastElementChild);
     }
 
     if (cd.config.reflistTalkClasses.some((name) => lastElement.classList?.contains(name))) {
-      lastElement = lastElement.previousElementSibling;
+      lastElement = /** @type {ElementLike} */ (lastElement.previousElementSibling);
     }
 
     return lastElement;

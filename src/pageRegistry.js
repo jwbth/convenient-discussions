@@ -18,6 +18,15 @@ import { parseTimestamp } from './utils-timestamp';
 import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
 
 /**
+ * @typedef {object} ParseData
+ * @property {string} text Text for the page.
+ * @property {boolean} hidetoc Hide the table of contents.
+ * @property {string} subtitle HTML for the page's subtitle (it comes with last comment data from
+ *   DT).
+ * @property {string} categorieshtml HTML for the page's categories.
+ */
+
+/**
  * Main MediaWiki object.
  *
  * @external mw
@@ -362,13 +371,11 @@ export class Page {
     }
 
     if (page.missing) {
-      Object.assign(this, {
-        code: '',
-        revisionId: undefined,
-        redirectTarget: undefined,
-        realName: this.name,
-        queryTimestamp,
-      });
+      this.code = '';
+      this.revisionId = undefined;
+      this.redirectTarget = undefined;
+      this.realName = this.name;
+      this.queryTimestamp = queryTimestamp;
 
       if (tolerateMissing) {
         return;
@@ -471,7 +478,7 @@ export class Page {
    * @param {boolean} [inBackground=false] Make a request that won't set the process on hold when
    *   the tab is in the background.
    * @param {boolean} [markAsRead=false] Mark the current page as read in the watchlist.
-   * @returns {Promise.<object>}
+   * @returns {Promise.<ParseData>}
    * @throws {CdError}
    */
   async parse(customOptions, inBackground = false, markAsRead = false) {

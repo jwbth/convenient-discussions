@@ -1,8 +1,9 @@
 import CdError from './CdError';
 import ElementsAndTextTreeWalker from './ElementsAndTextTreeWalker';
 import ElementsTreeWalker from './ElementsTreeWalker';
+import Parser from './Parser';
 import cd from './cd';
-import { generateFixedPosTimestamp, isHeadingNode, isInline, isMetadataNode, spacesToUnderlines, unique } from './utils-general';
+import { generateFixedPosTimestamp, isElement, isHeadingNode, isInline, isMetadataNode, isText, spacesToUnderlines, unique } from './utils-general';
 
 /**
  * Class containing the main properties of a comment and building it from a signature (we should
@@ -13,6 +14,32 @@ import { generateFixedPosTimestamp, isHeadingNode, isInline, isMetadataNode, spa
  */
 class CommentSkeleton {
   /**
+   * Comment parts. They are not guaranteed to match the elements after some point (due to
+   * `CommentSkeleton#wrapHighlightables`, `CommentSkeleton#fixEndLevel`) calls.
+   *
+   * @type {CommentPart[]}
+   */
+  parts;
+
+  /**
+   * Comment elements that are highlightable.
+   *
+   * Keep in mind that elements may be replaced, and property values will need to be updated. See
+   * {@link Comment#replaceElement}.
+   *
+   * @type {Element[]|import('domhandler').Element[]}
+   */
+  highlightables;
+
+  /**
+   * Comment level. A level is a number representing the number of indentation characters
+   * preceding the comment (no indentation means zeroth level).
+   *
+   * @type {number}
+   */
+  level;
+
+  /**
    * @typedef {object} HiddenElementData
    * @property {string} type
    * @property {string} tagName
@@ -20,28 +47,39 @@ class CommentSkeleton {
    */
 
   /** @type {HiddenElementData[]|undefined} */
-  hiddenElementsData = undefined;
+  hiddenElementsData;
 
   /** @type {string[]|undefined} */
-  elementHtmls = undefined;
+  elementHtmls;
 
   /** @type {string|undefined} */
-  htmlToCompare = undefined;
+  htmlToCompare;
 
   /** @type {string|undefined} */
-  textHtmlToCompare = undefined;
+  textHtmlToCompare;
 
   /** @type {string|undefined} */
-  headingHtmlToCompare = undefined;
+  headingHtmlToCompare;
 
   /** @type {string|undefined} */
-  text = undefined;
+  text;
 
   /** @type {string[]|undefined} */
-  elementNames = undefined;
+  elementNames;
 
   /** @type {string[]|undefined} */
-  elementClassNames = undefined;
+  elementClassNames;
+
+  /**
+   * @type {{
+   *   level?: ?CommentSkeleton;
+   *   logicalLevel?: ?CommentSkeleton;
+   * }}
+   */
+  cachedParent = {
+    level: undefined,
+    logicalLevel: undefined,
+  };
 
   /**
    * Create a comment skeleton instance.
@@ -70,7 +108,7 @@ class CommentSkeleton {
     /**
      * _For internal use._ Comment signature element.
      *
-     * @type {Element|import('domhandler').Element}
+     * @type {ElementLike}
      */
     this.signatureElement = signature.element;
 
@@ -145,7 +183,7 @@ class CommentSkeleton {
     /**
      * _For internal use._ Comment timestamp element.
      *
-     * @type {Element|import('domhandler').Element}
+     * @type {ElementLike}
      */
     this.timestampElement = signature.timestampElement;
 
@@ -159,14 +197,14 @@ class CommentSkeleton {
     /**
      * _For internal use._ User page (in the "User" namespace) link element.
      *
-     * @type {Element|import('domhandler').Element}
+     * @type {ElementLike}
      */
     this.authorLink = signature.authorLink;
 
     /**
      * _For internal use._ User talk page (in the "User talk" namespace) link element.
      *
-     * @type {Element|import('domhandler').Element}
+     * @type {ElementLike}
      */
     this.authorTalkLink = signature.authorTalkLink;
 
@@ -189,9 +227,9 @@ class CommentSkeleton {
     /**
      * _For internal use._ Elements containing all parts of the comment.
      *
-     * @type {Element[]|import('domhandler').Element[]}
+     * @type {ElementLike[]}
      */
-    this.elements = this.parts.map((part) => part.node);
+    this.elements = this.parts.map((part) => /** @type {ElementLike} */ (part.node));
 
     this.updateHighlightables();
     this.updateLevels();
@@ -233,15 +271,27 @@ class CommentSkeleton {
     signature.comment = this;
   }
 
+  /** @typedef {'start'|'back'|'up'|'dive'|'replaced'} Step */
+
+  /**
+   * @typedef {object} CommentPart
+   * @property {NodeLike} node
+   * @property {boolean} isTextNode
+   * @property {boolean} isHeading
+   * @property {boolean} hasCurrentSignature
+   * @property {boolean} hasForeignComponents
+   * @property {Step} step
+   */
+
   /**
    * Get nodes to start the traversal from.
    *
    * @param {ElementsAndTextTreeWalker} treeWalker
-   * @returns {Array.<object[]|Element>}
+   * @returns {[CommentPart[], Element]}
    * @private
    */
   getStartNodes(treeWalker) {
-    while (isInline(treeWalker.currentNode.parentNode)) {
+    while (isInline(/** @type {HTMLElement} */ (treeWalker.currentNode.parentElement))) {
       treeWalker.parentNode();
     }
     const farthestInlineAncestor = treeWalker.currentNode;
@@ -269,7 +319,10 @@ class CommentSkeleton {
       while (
         (
           !treeWalker.currentNode.nextSibling ||
-          ![Node.ELEMENT_NODE, Node.TEXT_NODE].includes(treeWalker.currentNode.nextSibling.nodeType)
+          !(
+            isElement(treeWalker.currentNode.nextSibling) ||
+            isText(treeWalker.currentNode.nextSibling)
+          )
         ) &&
         treeWalker.parentNode()
       );
@@ -308,7 +361,7 @@ class CommentSkeleton {
         if (isInline(treeWalker.currentNode, true) || isMetadataNode(treeWalker.currentNode)) {
           parts.push({
             node: treeWalker.currentNode,
-            isTextNode: treeWalker.currentNode.nodeType === Node.TEXT_NODE,
+            isTextNode: isText(treeWalker.currentNode),
             isHeading: false,
             hasCurrentSignature: false,
             hasForeignComponents: false,
@@ -322,7 +375,9 @@ class CommentSkeleton {
 
       treeWalker.currentNode = farthestInlineAncestor;
     } else {
-      treeWalker.currentNode = farthestInlineAncestor.parentNode;
+      treeWalker.currentNode = /** @type {ElementLike|TextLike} */ (
+        farthestInlineAncestor.parentElement
+      );
     }
     parts.push({
       node: treeWalker.currentNode,
@@ -339,7 +394,7 @@ class CommentSkeleton {
   /**
    * Determine whether the provided element is a cell of a table containing multiple signatures.
    *
-   * @param {Element|import('domhandler').Element} element
+   * @param {ElementLike} element
    * @returns {boolean}
    * @private
    */
@@ -359,7 +414,7 @@ class CommentSkeleton {
   /**
    * Check if an element is eligible to be a comment part.
    *
-   * @param {Element|import('domhandler').Element} element
+   * @param {ElementLike} element
    * @param {ElementsAndTextTreeWalker} treeWalker
    * @param {string} step
    * @returns {boolean}
@@ -403,7 +458,7 @@ class CommentSkeleton {
    * Check whether the element is an other kind of list than a comment thread, like a gallery
    * created by the `<gallery>` tag.
    *
-   * @param {Element|import('domhandler').Element} element
+   * @param {ElementLike} element
    * @returns {boolean}
    */
   isOtherKindOfList(element) {
@@ -419,7 +474,7 @@ class CommentSkeleton {
    * Check whether the element is a node that contains introductory text (or other foreign entity,
    * like a gallery) despite being a list element.
    *
-   * @param {Element|import('domhandler').Element} element
+   * @param {ElementLike} element
    * @param {boolean} checkNextElement
    * @param {boolean} [lastPartNode]
    * @returns {boolean}
@@ -488,7 +543,7 @@ class CommentSkeleton {
    * Given a comment part (a node), tell if it is a part of a bulleted or unbulleted (but not
    * numbered) list.
    *
-   * @param {Element|import('domhandler').Element} node
+   * @param {ElementLike} node
    * @param {boolean} isDefinitionListOnly
    * @returns {boolean}
    */
@@ -506,7 +561,14 @@ class CommentSkeleton {
     if (!isDefinitionListOnly) {
       tagNames.push('LI', 'UL');
     }
-    return node && (tagNames.includes(node.tagName) || tagNames.includes(node.parentNode.tagName));
+
+    return (
+      node &&
+      (
+        tagNames.includes(node.tagName) ||
+        (node.parentElement && tagNames.includes(node.parentElement.tagName))
+      )
+    );
   }
 
   /**
@@ -525,10 +587,10 @@ class CommentSkeleton {
    * @param {object} options
    * @param {string} options.step
    * @param {number} options.stage
-   * @param {Element|import('domhandler').Element} options.node
-   * @param {Element|import('domhandler').Element} options.nextNode
-   * @param {Element|import('domhandler').Element} [options.lastPartNode]
-   * @param {Element|import('domhandler').Element} [options.previousPart]
+   * @param {Node|import('domhandler').Node} options.node
+   * @param {Node|import('domhandler').Node} options.nextNode
+   * @param {Node|import('domhandler').Node} [options.lastPartNode]
+   * @param {ElementLike} [options.previousPart]
    * @returns {boolean}
    */
   isIntro({ step, stage, node, nextNode, lastPartNode, previousPart }) {
@@ -633,7 +695,7 @@ class CommentSkeleton {
       return false;
     }
 
-    return Boolean(this.parser.constructor.processLink(link)?.userName);
+    return Boolean(Parser.processLink(link)?.userName);
   }
 
   /**
@@ -641,9 +703,9 @@ class CommentSkeleton {
    *
    * @param {object[]} parts
    * @param {ElementsAndTextTreeWalker} treeWalker
-   * @param {Element|import('domhandler').Element} firstForeignComponentAfter
-   * @param {Element|import('domhandler').Element} precedingHeadingElement
-   * @returns {object[]}
+   * @param {ElementLike} firstForeignComponentAfter
+   * @param {ElementLike} precedingHeadingElement
+   * @returns {CommentPart[]}
    * @throws {CdError}
    * @private
    */
@@ -802,12 +864,12 @@ class CommentSkeleton {
   /**
    * _For internal use._ Collect the parts of the comment given a signature element.
    *
-   * @param {Element|import('domhandler').Element} precedingHeadingElement
+   * @param {ElementLike} precedingHeadingElement
    */
   collectParts(precedingHeadingElement) {
     const treeWalker = new ElementsAndTextTreeWalker(
+      this.parser.context.rootElement,
       this.signatureElement,
-      this.parser.context.rootElement
     );
     let [parts, firstForeignComponentAfter] = this.getStartNodes(treeWalker);
     parts = this.traverseDom(
@@ -817,12 +879,6 @@ class CommentSkeleton {
       precedingHeadingElement
     );
 
-    /**
-     * Comment parts. They are not guaranteed to match the elements after some point (due to
-     * `CommentSkeleton#wrapHighlightables`, `CommentSkeleton#fixEndLevel`) calls.
-     *
-     * @type {object[]}
-     */
     this.parts = parts;
   }
 
@@ -1212,15 +1268,7 @@ class CommentSkeleton {
       !/float: *(?:left|right)|display: *none/.test(el.getAttribute('style'))
     );
 
-    /**
-     * Comment elements that are highlightable.
-     *
-     * Keep in mind that elements may be replaced, and property values will need to be updated. See
-     * {@link Comment#replaceElement}.
-     *
-     * @type {Element[]|import('domhandler').Element[]}
-     */
-    this.highlightables = this.elements.filter(isHighlightable);
+    this.highlightables = /** @type {ElementLike} */ (this.elements.filter(isHighlightable));
 
     // There shouldn't be comments without highlightables.
     if (!this.highlightables.length) {
@@ -1246,7 +1294,7 @@ class CommentSkeleton {
 
         // Cases such as https://en.wikipedia.org/?diff=998431486. TODO: Do something with the
         // semantic correctness of the markup.
-        (this.highlightables.length > 1 && el.tagName === 'LI' && el.parentNode.tagName === 'OL') ||
+        (this.highlightables.length > 1 && el.tagName === 'LI' && el.parentElement?.tagName === 'OL') ||
 
         // This can run a second time from .updateLevels() → .reviewDives() →
         // .updateHighlightables(), so the might have added the wrapper already.
@@ -1281,13 +1329,13 @@ class CommentSkeleton {
    * _For internal use._ Get list elements up the DOM tree. They will then be assigned the class
    * `cd-commentLevel`.
    *
-   * @param {Element|import('domhandler').Element} initialElement
+   * @param {ElementLike} initialElement
    * @param {boolean} [includeFirstMatch=false]
    * @returns {Element[]|import('domhandler').Element[]}
    */
   getListsUpTree(initialElement, includeFirstMatch = false) {
     const listElements = [];
-    const treeWalker = new ElementsTreeWalker(initialElement, this.parser.context.rootElement);
+    const treeWalker = new ElementsTreeWalker(this.parser.context.rootElement, initialElement);
     while (treeWalker.parentNode()) {
       const el = treeWalker.currentNode;
       if (['DL', 'UL', 'OL'].includes(el.tagName)) {
@@ -1443,7 +1491,7 @@ class CommentSkeleton {
       // Split parent elements until we reach the level element.
       let parent = this.highlightables[this.highlightables.length - 1];
       while (parent !== closestLevelElement) {
-        parent = this.parser.splitParentAfterNode(parent)[0];
+        parent = this.parser.splitParentAfterNode(parent).parent;
       }
 
       let firstItemIndex = this.elements.length - 1;
@@ -1479,12 +1527,6 @@ class CommentSkeleton {
     // like
     // https://ru.wikipedia.org/wiki/Википедия:К_удалению/17_марта_2021#Анжуйские_короли_Англии.
 
-    /**
-     * Comment level. A level is a number representing the number of indentation characters
-     * preceding the comment (no indentation means zeroth level).
-     *
-     * @type {number}
-     */
     this.level = Math.min(levelElements[0].length, levelElements[levelElements.length - 1].length);
 
     /**
@@ -1522,7 +1564,6 @@ class CommentSkeleton {
     // Note: this.cachedParent.logicalLevel can be overriden in .processOutdents().
 
     const prop = visual ? 'level' : 'logicalLevel';
-    this.cachedParent ||= {};
     if (this.cachedParent[prop] === undefined) {
       // This can run many times during page load, so we better optimize.
       this.cachedParent[prop] = null;
@@ -1635,7 +1676,7 @@ class CommentSkeleton {
   /**
    * Generate a comment ID from a date and author.
    *
-   * @param {Date} [date]
+   * @param {?Date} date
    * @param {string} [author]
    * @param {string[]} [existingIds] IDs that collide with IDs in the array will get a `_<number>`
    *   postfix. The array will be appended to in that case.
@@ -1664,7 +1705,7 @@ class CommentSkeleton {
    * Update the width and border color of the outdent template to match our thread style changes.
    * Doesn't run in the worker.
    *
-   * @param {Element|import('domhandler').Element} element
+   * @param {ElementLike} element
    * @param {import('./Parser').default} parser
    */
   static updateOutdentStyle(element, parser) {
@@ -1703,7 +1744,7 @@ class CommentSkeleton {
       .forEach((element) => {
         let childComment;
         let parentComment;
-        const treeWalker = new ElementsTreeWalker(element, parser.context.rootElement);
+        const treeWalker = new ElementsTreeWalker(parser.context.rootElement, element);
         while (treeWalker.nextNode() && !childComment) {
           let commentIndex = treeWalker.currentNode.getAttribute('data-cd-comment-index');
           if (commentIndex === '0') break;

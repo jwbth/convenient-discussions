@@ -6,13 +6,16 @@ import TreeWalker from './TreeWalker';
  * @augments TreeWalker
  */
 class ElementsAndTextTreeWalker extends TreeWalker {
+  /** @type {ElementLike|TextLike} */
+  currentNode;
+
   /**
    * Create an elements and text {@link TreeWalker tree walker}.
    *
-   * @param {Node|import('domhandler').Node} [startNode]
-   * @param {Node|import('domhandler').Node} [root]
+   * @param {ElementLike|TextLike} root
+   * @param {ElementLike|TextLike} [startNode]
    */
-  constructor(startNode, root) {
+  constructor(root, startNode) {
     super(root, (node) => node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE);
     if (startNode) {
       this.currentNode = startNode;

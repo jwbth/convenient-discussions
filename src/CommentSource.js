@@ -430,12 +430,11 @@ class CommentSource {
   }
 
   /**
-   * Calculate and set a score for the match.
+   * _For internal use._ Calculate and set a score for the match.
    *
    * @param {object} commentData Data about the comment.
    * @param {CommentSource[]} sources List of all matches.
    * @param {object[]} signatures List of signatures extracted from wikitext.
-   * @private
    */
   calculateMatchScore(commentData, sources, signatures) {
     const doesIndexMatch = commentData.index === this.index;

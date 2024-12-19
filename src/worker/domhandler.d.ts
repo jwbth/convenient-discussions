@@ -2,9 +2,9 @@ import 'domhandler';
 
 declare module 'domhandler' {
   namespace Node {
-    export var ELEMENT_NODE: 1;
-    export var TEXT_NODE: 3;
-    export var COMMENT_NODE: 8;
+    export readonly var ELEMENT_NODE: 1;
+    export readonly var TEXT_NODE: 3;
+    export readonly var COMMENT_NODE: 8;
   }
 
   interface Node {
@@ -29,13 +29,16 @@ declare module 'domhandler' {
      * checks).
      */
     follows(node: Node): boolean;
-  }
 
-  interface DataNode {
     /**
      * The content of the text node, with HTML entities decoded.
      */
     textContent: string;
+
+    /**
+     * The parent element of the node.
+     */
+    parentElement: Element | null;
   }
 
   interface NodeWithChildren {
@@ -91,7 +94,7 @@ declare module 'domhandler' {
      *
      * If the reference node is null, the node is appended to the element's child nodes.
      */
-    insertBefore(node: Node, referenceNode?: Node): void;
+    insertBefore(node: Node, referenceNode?: Node): Node;
 
     /**
      * Check if the element has an attribute with the given name.
@@ -149,14 +152,18 @@ declare module 'domhandler' {
 
     classList: TokenList;
     className: string;
+
+    private _classList: TokenList;
   }
 
-  interface TokenList {
+  interface TokenList extends Array<string> {
     contains(name: string): boolean;
     add(...names: string[]): void;
     remove(...names: string[]): void;
+
+    private moveFromClassAttr(classAttr?: string): void;
+    private movedFromClassAttr: boolean;
   }
 }
 
 export {};
-

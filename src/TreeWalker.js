@@ -2,25 +2,41 @@
  * Generalization and simplification of the
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/TreeWalker TreeWalker web API} for the
  * normal and worker contexts.
+ *
+ * @template {boolean} [T=false]
  */
 class TreeWalker {
+  /** @type {T extends true ? ElementLike : NodeLike} */
+  currentNode;
+
+  /** @type {'firstElementChild'|'firstChild'} */
+  firstChildProp;
+
+  /** @type {'lastElementChild'|'lastChild'} */
+  lastChildProp;
+
+  /** @type {'previousElementSibling'|'previousSibling'} */
+  previousSiblingProp;
+
+  /** @type {'nextElementSibling'|'nextSibling'} */
+  nextSiblingProp;
+
   /**
    * Create a tree walker.
    *
-   * @param {Node|import('domhandler').Node} root Node that limits where the tree walker can go
-   *   within this document's tree: only the root node and its descendants.
-   * @param {Function} [acceptNode] Function that returns `true` if the tree walker should accept
-   *   the node and `false` if it should reject.
-   * @param {boolean} [onlyElementNodes=false] Walk only on element nodes, ignoring nodes of other
-   *   types.
-   * @param {Node|import('domhandler').Node} [startNode=root] Node to set as a current node.
+   * @param {NodeLike} root Node that limits where the tree walker can go within this document's
+   *   tree: only the root node and its descendants.
+   * @param {(node: T extends true ? ElementLike : NodeLike) => boolean} [acceptNode] Function that
+   *   returns `true` if the tree walker should accept the node and `false` if it should reject.
+   * @param {T} [onlyElements] Walk only on element nodes, ignoring nodes of other types.
+   * @param {NodeLike} [startNode=root] Node to set as the current node.
    */
-  constructor(root, acceptNode, onlyElementNodes = false, startNode = root) {
+  constructor(root, acceptNode, onlyElements, startNode = root) {
     this.acceptNode = acceptNode;
     this.root = root;
-    this.currentNode = startNode;
+    this.currentNode = /** @type {T extends true ? ElementLike : NodeLike} */ (startNode);
 
-    if (onlyElementNodes) {
+    if (onlyElements) {
       this.firstChildProp = 'firstElementChild';
       this.lastChildProp = 'lastElementChild';
       this.previousSiblingProp = 'previousElementSibling';
@@ -37,7 +53,7 @@ class TreeWalker {
    * Try changing the current node to a node specified by the property.
    *
    * @param {string} prop
-   * @returns {?Node}
+   * @returns {?NodeLike}
    * @protected
    */
   tryMove(prop) {
@@ -51,13 +67,14 @@ class TreeWalker {
     if (node) {
       this.currentNode = node;
     }
+
     return node || null;
   }
 
   /**
    * Go to the parent node.
    *
-   * @returns {?Node}
+   * @returns {?NodeLike}
    */
   parentNode() {
     return this.tryMove('parentNode');
@@ -66,7 +83,7 @@ class TreeWalker {
   /**
    * Go to the first child node.
    *
-   * @returns {?Node}
+   * @returns {?NodeLike}
    */
   firstChild() {
     return this.tryMove(this.firstChildProp);
@@ -75,7 +92,7 @@ class TreeWalker {
   /**
    * Go to the last child node.
    *
-   * @returns {?Node}
+   * @returns {?NodeLike}
    */
   lastChild() {
     return this.tryMove(this.lastChildProp);
@@ -84,7 +101,7 @@ class TreeWalker {
   /**
    * Go to the previous sibling node.
    *
-   * @returns {?Node}
+   * @returns {?NodeLike}
    */
   previousSibling() {
     return this.tryMove(this.previousSiblingProp);
@@ -93,7 +110,7 @@ class TreeWalker {
   /**
    * Go to the next sibling node.
    *
-   * @returns {?Node}
+   * @returns {?NodeLike}
    */
   nextSibling() {
     return this.tryMove(this.nextSiblingProp);
@@ -102,7 +119,7 @@ class TreeWalker {
   /**
    * Go to the next node (don't confuse with the next sibling).
    *
-   * @returns {?Node}
+   * @returns {?NodeLike}
    */
   nextNode() {
     let node = this.currentNode;
@@ -125,7 +142,7 @@ class TreeWalker {
   /**
    * Go to the previous node (don't confuse with the previous sibling).
    *
-   * @returns {?Node}
+   * @returns {?NodeLike}
    */
   previousNode() {
     let node = this.currentNode;

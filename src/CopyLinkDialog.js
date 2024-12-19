@@ -163,12 +163,10 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   async createDiffPanel() {
     let errorText;
     try {
-      Object.assign(this.content, {
-        diffStandard: await this.object.getDiffLink('standard'),
-        diffShort: await this.object.getDiffLink('short'),
-        diffWikilink: await this.object.getDiffLink('wikilink'),
-        $diffView: await this.object.generateDiffView(),
-      });
+      this.diffStandard = await this.object.getDiffLink('standard');
+      this.diffShort = await this.object.getDiffLink('short');
+      this.diffWikilink = await this.object.getDiffLink('wikilink');
+      this.$diffView = await this.object.generateDiffView();
 
       await mw.loader.using(['mediawiki.diff', 'mediawiki.diff.styles']);
 
@@ -194,7 +192,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       }
     }
 
-    this.diffOption.setDisabled(errorText);
+    this.diffOption.setDisabled(Boolean(errorText));
     this.diffOption.setTitle(errorText || '');
   }
 

@@ -209,10 +209,10 @@ export async function showConfirmDialog(message, options = {}) {
  * @param {object} options
  * @param {string} [options.value]
  * @param {string} options.label
- * @param {string} [options.required]
- * @param {string} [options.classes]
- * @param {string} [options.maxLength]
- * @param {string} [options.help]
+ * @param {boolean} [options.required]
+ * @param {string[]} [options.classes]
+ * @param {number} [options.maxLength]
+ * @param {string|JQuery} [options.help]
  * @returns {CreateTextFieldReturn}
  */
 export function createTextField({

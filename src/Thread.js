@@ -16,6 +16,22 @@ import { getExtendedRect, getRangeContents, getVisibilityByRects, isCmdModifierP
  * Class representing a comment thread object.
  */
 class Thread {
+  static prototypes = new PrototypeRegistry();
+
+  /** @type {HTMLDivElement|undefined} */
+  static threadLinesContainer;
+
+  /**
+   * @private
+   * @type {?HTMLElement}
+   */
+  expandNote = null;
+
+  /**
+   * @type {?JQuery}
+   */
+  $expandNote = null;
+
   /**
    * Create a comment thread object.
    *
@@ -29,14 +45,13 @@ class Thread {
      * Root comment of the thread.
      *
      * @type {import('./Comment').default}
-     * @private
      */
     this.rootComment = rootComment;
 
     /**
      * List of comments in the thread (logically, not visually).
      *
-     * @type {import('./Comment').default}
+     * @type {import('./Comment').default[]}
      * @private
      */
     this.comments = [rootComment, ...rootComment.getChildren(true)];
@@ -45,7 +60,6 @@ class Thread {
      * Last comment of the thread (logically, not visually).
      *
      * @type {import('./Comment').default}
-     * @private
      */
     this.lastComment = this.comments.slice(-1)[0];
 
@@ -119,7 +133,9 @@ class Thread {
     let endElement;
     let visualEndElement;
     let visualEndElementFallback;
-    const firstNotHeadingElement = this.rootComment.elements.find((el) => !isHeadingNode(el));
+    const firstNotHeadingElement = /** @type {HTMLElement} */ (this.rootComment.elements.find(
+      (el) => !isHeadingNode(el)
+    ));
     const highlightables = this.lastComment.highlightables;
     const visualHighlightables = this.visualLastComment.highlightables;
     const visualHighlightablesFallback = this.visualLastCommentFallback.highlightables;
@@ -127,16 +143,20 @@ class Thread {
 
     if (this.rootComment.level === 0) {
       startElement = firstNotHeadingElement;
-      visualEndElement = Thread.findEndElement(
+      visualEndElement = Thread.findEndElementOfZeroLevelThread(
         startElement,
         visualHighlightables,
         nextForeignElement
       );
-      visualEndElementFallback = this.visualLastComment === this.visualLastCommentFallback ?
-        visualEndElement :
-        Thread.findEndElement(startElement, visualHighlightablesFallback, nextForeignElement);
+      visualEndElementFallback = this.visualLastComment === this.visualLastCommentFallback
+          ? visualEndElement
+          : Thread.findEndElementOfZeroLevelThread(
+              startElement,
+              visualHighlightablesFallback,
+              nextForeignElement
+            );
       endElement = this.hasOutdents ?
-        Thread.findEndElement(startElement, highlightables, nextForeignElement) :
+        Thread.findEndElementOfZeroLevelThread(startElement, highlightables, nextForeignElement) :
         visualEndElement;
     } else {
       // We could improve the positioning of the thread line to exclude the vertical space next to
@@ -160,7 +180,7 @@ class Thread {
           .reverse()
           .find((comment) => comment.isOutdented);
         endElement = lastOutdentedComment.level === 0 ?
-          Thread.findEndElement(
+          Thread.findEndElementOfZeroLevelThread(
             startElement,
             highlightables,
             nextForeignElement
@@ -204,7 +224,7 @@ class Thread {
     /**
      * Top element of the thread.
      *
-     * @type {Element}
+     * @type {HTMLElement}
      * @private
      */
     this.startElement = startElement;
@@ -212,7 +232,7 @@ class Thread {
     /**
      * Bottom element of the thread (logically, not visually).
      *
-     * @type {Element}
+     * @type {HTMLElement}
      * @private
      */
     this.endElement = endElement;
@@ -221,7 +241,7 @@ class Thread {
      * Bottom element of the thread _visually_, not logically (differs from
      * {@link Thread#endElement} if there are `{{outdent}}` templates in the thread).
      *
-     * @type {Element}
+     * @type {HTMLElement}
      * @private
      */
     this.visualEndElement = visualEndElement;
@@ -231,7 +251,7 @@ class Thread {
      * collapsing the thread. That usually means `Thread#visualEndElement` has the
      * `cd-connectToPreviousItem` class.
      *
-     * @type {Element}
+     * @type {HTMLElement}
      * @private
      */
     this.visualEndElementFallback = visualEndElementFallback;
@@ -240,11 +260,11 @@ class Thread {
   /**
    * Handle the `mouseenter` event on the click area.
    *
-   * @param {Event} e
+   * @param {Event} event
    * @param {boolean} [force=false]
    * @private
    */
-  handleClickAreaHover(e, force = false) {
+  handleClickAreaHover(event, force = false) {
     if (Thread.navMode && !force) return;
 
     const highlight = () => {
@@ -271,7 +291,7 @@ class Thread {
   /**
    * Handle the `mousedown` event on the click area.
    *
-   * @param {Event} event
+   * @param {MouseEvent} event
    * @private
    */
   handleClickAreaMouseDown(event) {
@@ -308,7 +328,7 @@ class Thread {
   /**
    * Handle the `mouseup` event on the click area.
    *
-   * @param {Event} event
+   * @param {MouseEvent} event
    * @private
    */
   handleClickAreaMouseUp(event) {
@@ -550,7 +570,7 @@ class Thread {
     /**
      * Click area of the thread line.
      *
-     * @type {Element}
+     * @type {HTMLElement}
      * @private
      */
     this.clickArea = Thread.prototypes.get('clickArea');
@@ -569,15 +589,15 @@ class Thread {
     /**
      * Thread line.
      *
-     * @type {Element}
+     * @type {HTMLElement}
      * @private
      */
-    this.line = this.clickArea.firstChild;
+    this.line = /** @type {HTMLElement} */ (this.clickArea.firstChild);
 
     if (this.endElement !== this.visualEndElement) {
       let areOutdentedCommentsShown = false;
       for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
-        const comment = commentRegistry.getByIndex(i);
+        const comment = /** @type {import('./Comment').default} */ (commentRegistry.getByIndex(i));
         if (comment.isOutdented) {
           areOutdentedCommentsShown = true;
         }
@@ -597,7 +617,7 @@ class Thread {
    * {@link Comment#subitemList comment subitems}.
    *
    * @param {boolean} visual Use the visual thread end.
-   * @returns {?Element} Logically, should never return `null`, unless something extraordinary
+   * @returns {?HTMLElement} Logically, should never return `null`, unless something extraordinary
    *   happens that makes the return value of `Thread.findItemElement()` `null`.
    * @private
    */
@@ -665,7 +685,7 @@ class Thread {
   /**
    * Get the top element of the thread or its replacement.
    *
-   * @returns {Element}
+   * @returns {HTMLElement}
    * @private
    */
   getAdjustedStartElement() {
@@ -751,7 +771,7 @@ class Thread {
     /**
      * Note in place of a collapsed thread that has a button to expand the thread.
      *
-     * @type {Element|undefined}
+     * @type {?HTMLElement}
      * @private
      */
     this.expandNote = expandNote;
@@ -759,7 +779,7 @@ class Thread {
     /**
      * Note in place of a collapsed thread that has a button to expand the thread.
      *
-     * @type {JQuery|undefined}
+     * @type {?JQuery}
      */
     this.$expandNote = $(expandNote);
   }
@@ -905,6 +925,7 @@ class Thread {
 
     this.expandNote.remove();
     this.expandNote = null;
+    this.$expandNote = null;
     this.expandNoteContainer?.remove();
     this.expandNoteContainer = null;
 
@@ -949,7 +970,7 @@ class Thread {
   /**
    * Hide an element when collapsing a thread.
    *
-   * @param {Element} element
+   * @param {HTMLElement} element
    * @private
    */
   hideElement(element) {
@@ -968,7 +989,7 @@ class Thread {
   /**
    * Unhide (if appropriate) an element when expanding a thread.
    *
-   * @param {Element} element
+   * @param {HTMLElement} element
    * @private
    */
   maybeUnhideElement(element) {
@@ -986,7 +1007,7 @@ class Thread {
    * because we need the elements to be hidden and rendered to access the innerText property with
    * the new value).
    *
-   * @param {Element[]} closedDiscussions
+   * @param {HTMLElement[]} closedDiscussions
    */
   updateEndOfCollapsedRange(closedDiscussions) {
     let end = this.collapsedRange.slice(-1)[0];
@@ -1033,7 +1054,7 @@ class Thread {
    * Calculate the offset of the thread line.
    *
    * @param {object} options
-   * @param {Element[]} options.elementsToAdd
+   * @param {HTMLElement[]} options.elementsToAdd
    * @param {Thread[]} options.threadsToUpdate
    * @param {number} options.scrollX
    * @param {number} options.scrollY
@@ -1206,8 +1227,6 @@ class Thread {
    * from scratch (which is more expensive).
    */
   static initPrototypes() {
-    this.prototypes = new PrototypeRegistry();
-
     this.prototypes.add(
       'expandButton',
       (new OO.ui.ButtonWidget({
@@ -1270,7 +1289,7 @@ class Thread {
     }
 
     this.collapseThreadsLevel = settings.get('collapseThreadsLevel');
-    this.treeWalker = new ElementsTreeWalker(undefined, controller.rootElement);
+    this.treeWalker = new ElementsTreeWalker(controller.rootElement);
     commentRegistry.getAll().forEach((rootComment) => {
       try {
         rootComment.thread?.expand(true);
@@ -1397,10 +1416,10 @@ class Thread {
   /**
    * Find the closest item element (`<li>`, `<dd>`) for an element.
    *
-   * @param {Element} element
+   * @param {HTMLElement} element
    * @param {number} level
-   * @param {Element} nextForeignElement
-   * @returns {?Element}
+   * @param {HTMLElement} nextForeignElement
+   * @returns {?HTMLElement}
    * @private
    */
   static findItemElement(element, level, nextForeignElement) {
@@ -1433,26 +1452,26 @@ class Thread {
   }
 
   /**
-   * Find the thread's end element for a comment at the 0th level.
+   * Find the thread's end element given the root comment is at the 0th level.
    *
-   * @param {Element} startElement
-   * @param {Element[]} highlightables
-   * @param {Element} nextForeignElement
-   * @returns {Element}
+   * @param {HTMLElement} startElement
+   * @param {HTMLElement[]} highlightables
+   * @param {HTMLElement} [nextForeignElement]
+   * @returns {HTMLElement}
    * @private
    */
-  static findEndElement(startElement, highlightables, nextForeignElement) {
-    let commonAncestor = startElement;
-    const lastHighlightable = highlightables[highlightables.length - 1];
+  static findEndElementOfZeroLevelThread(startElement, highlightables, nextForeignElement) {
+    let /** @type {?HTMLElement} */ commonAncestor = startElement;
+    const lastHighlightable = highlightables.slice(-1)[0];
     do {
-      commonAncestor = commonAncestor.parentNode;
-    } while (!commonAncestor.contains(lastHighlightable));
+      commonAncestor = /** @type {HTMLElement} */ (commonAncestor).parentElement;
+    } while (commonAncestor && !commonAncestor.contains(lastHighlightable));
 
     let endElement = lastHighlightable;
     for (
-      let n = endElement.parentNode;
-      n !== commonAncestor && !(nextForeignElement && n.contains(nextForeignElement));
-      n = n.parentNode
+      let n = endElement.parentElement;
+      n && n !== commonAncestor && !(nextForeignElement && n?.contains(nextForeignElement));
+      n = n.parentElement
     ) {
       endElement = n;
     }
@@ -1463,7 +1482,7 @@ class Thread {
       n && n.tagName === 'DL' && n.classList.contains('cd-section-button-container');
       n = n.nextElementSibling
     ) {
-      endElement = n;
+      endElement = /** @type {HTMLElement} */ (n);
     }
 
     return endElement;
@@ -1501,7 +1520,7 @@ class Thread {
     });
 
     if (elementsToAdd.length) {
-      this.threadLinesContainer.append(...elementsToAdd);
+      /** @type {HTMLDivElement} */ (this.threadLinesContainer).append(...elementsToAdd);
     }
   }
 

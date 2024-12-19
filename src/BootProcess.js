@@ -28,7 +28,7 @@ import visits from './visits';
 /**
  * Get all text nodes under the root element in the window (not worker) context.
  *
- * @returns {Node[]}
+ * @returns {Text[]}
  * @private
  */
 function getAllTextNodesUnderRoot() {
@@ -53,9 +53,8 @@ function removeDtButtonHtmlComments() {
 /**
  * Deal with (remove or move in the DOM) the markup added to the page by DiscussionTools.
  *
- * @param {Element[]|import('domhandler').Element[]} elements
- * @param {import('./BootProcess').default} [bootProcess]
- *
+ * @param {ElementLike[]} elements
+ * @param {import('./BootProcess').default} bootProcess
  * @private
  */
 function processAndRemoveDtElements(elements, bootProcess) {
@@ -111,8 +110,9 @@ function processAndRemoveDtElements(elements, bootProcess) {
  * Data passed from the previous page state.
  *
  * @typedef {object} PassedData
- * @property {string} [parseData] Response to the parse request from the API.
- * @property {string} [commentIds] ID of comments to highlight and/or scroll to.
+ * @property {import('./pageRegistry').ParseData} [parseData] Response to the parse request from the
+ *   API.
+ * @property {string[]} [commentIds] ID of comments to highlight and/or scroll to.
  * @property {string} [sectionId] ID of a section to scroll to.
  * @property {string} [pushState] Whether to replace the URL in the address bar adding the comment
  *   ID to it if it's specified.
@@ -123,6 +123,8 @@ function processAndRemoveDtElements(elements, bootProcess) {
  * @property {string} [justUnwatchedSection] Section just unwatched so that there could be not
  *   enough time for it to be saved to the server.
  * @property {CommentForm} [submittedCommentForm] Comment form the user just submitted.
+ * @property {boolean} [isPageReloadedExternally] Whether the page was reloaded externally (e.g. by
+ *   some script).
  */
 
 /**
@@ -130,6 +132,18 @@ function processAndRemoveDtElements(elements, bootProcess) {
  * is a (re-)builder for {@link module:controller controller}.
  */
 class BootProcess {
+  /** @type {boolean} */
+  firstRun;
+
+  /** @type {Parser} */
+  parser;
+
+  /** @type {import('./Parser').Target[]} */
+  targets;
+
+  /** @type {import('./Subscriptions').default} */
+  subscriptions;
+
   /**
    * Create a boot process.
    *
@@ -264,7 +278,9 @@ class BootProcess {
       // If the viewport position restoration relies on elements that are made hidden during this
       // (when editing a comment), it can't be restored properly, but this is relatively minor
       // detail.
-      commentFormRegistry.restoreSession(this.firstRun || this.passedData.isPageReloadedExternally);
+      commentFormRegistry.restoreSession(
+        Boolean(this.firstRun || this.passedData.isPageReloadedExternally)
+      );
 
       cd.page.autoAddSection(this.hideDtNewTopicForm());
     }
@@ -302,7 +318,7 @@ class BootProcess {
         toc.addCommentCount();
       }
 
-      pageNav.setup(this);
+      pageNav.setup();
 
       if (this.firstRun) {
         controller.addEventListeners();
@@ -429,11 +445,13 @@ class BootProcess {
       CommentClass: Comment,
       SectionClass: Section,
       childElementsProp: 'children',
-      follows: (el1, el2) => Boolean(
-        el2.compareDocumentPosition(el1) & Node.DOCUMENT_POSITION_FOLLOWING
-      ),
+
+      follows: (/** @type {Node} */ n1, /** @type {Node} */ n2) =>
+        Boolean(n2.compareDocumentPosition(n1) & Node.DOCUMENT_POSITION_FOLLOWING),
+
       getAllTextNodes: getAllTextNodesUnderRoot,
-      getElementByClassName: (el, className) => el.querySelector(`.${className}`),
+      getElementByClassName: (/** @type {Element} */ el, className) =>
+        el.querySelector(`.${className}`),
       rootElement: controller.rootElement,
       areThereOutdents: controller.areThereOutdents.bind(controller),
       processAndRemoveDtElements,
@@ -541,7 +559,7 @@ class BootProcess {
 
     const $disableLink = $('#footer-togglecd a');
     $disableLink
-      .attr('href', $disableLink.attr('href').replace(/0$/, '1'))
+      .attr('href', /** @type {string} */ ($disableLink.attr('href')).replace(/0$/, '1'))
       .text(cd.s('footer-runcd'));
 
     controller.hideLoadingOverlay();
@@ -765,7 +783,7 @@ class BootProcess {
         await saveOptions(options, true).catch(handleApiReject);
       } else {
         await controller.getApi().saveOptions({
-          'discussiontools-topicsubscription': 1,
+          'discussiontools-topicsubscription': '1',
         }).catch(handleApiReject);
       }
     } catch (e) {

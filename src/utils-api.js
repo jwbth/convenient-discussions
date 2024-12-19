@@ -19,14 +19,17 @@ let cachedUserInfoRequest;
 /**
  * Callback used in the `.catch()` parts of API requests.
  *
- * @param {string|Array} code
- * @param {object} resp
+ * @param {string|[string, object]} codeOrArr
+ * @param {object} [resp]
  * @throws {CdError}
  */
-export function handleApiReject(code, resp) {
+export function handleApiReject(codeOrArr, resp) {
   // Native promises support only one parameter when `reject()`ing.
-  if (Array.isArray(code)) {
-    [code, resp] = code;
+  let code;
+  if (Array.isArray(codeOrArr)) {
+    [code, resp] = codeOrArr;
+  } else {
+    code = codeOrArr;
   }
 
   // See the parameters with which mw.Api() rejects:
