@@ -320,9 +320,11 @@ export async function saveGlobalOption(name, value) {
  * Request genders of a list of users and assign them as properties. A gender may be `'male'`,
  * `'female'`, or `'unknown'`.
  *
- * @param {import('./userRegistry').User[]} users
+ * @template {import('./userRegistry').User[]} T
+ * @param {T} users
  * @param {boolean} [doRequestInBackground=false] Make a request that won't set the process on hold
  *   when the tab is in the background.
+ * @returns {Promise.<T>}
  */
 export async function loadUserGenders(users, doRequestInBackground = false) {
   const usersToRequest = users
@@ -345,6 +347,8 @@ export async function loadUserGenders(users, doRequestInBackground = false) {
         userRegistry.get(user.name).setGender(user.gender);
       });
   }
+
+  return users;
 }
 
 /**

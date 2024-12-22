@@ -16,6 +16,8 @@ declare global {
   const convenientDiscussions: Window['convenientDiscussions'];
   const cd: Window['cd'] | undefined;
 
+  const cdOnlyRunByFooterLink: boolean | undefined;
+
   interface WindowOrWorkerGlobalScope {
     convenientDiscussions: ConvenientDiscussions;
     cd?: Window['convenientDiscussions'];
@@ -41,9 +43,9 @@ declare global {
      * @param {'top'|'center'|'bottom'} [alignment='top'] Where should the element be positioned
      *   relative to the viewport.
      * @param {boolean} [smooth=true] Whether to use a smooth animation.
-     * @param {(() => void) | undefined} [callback] Callback to run after the animation has
+     * @param {(() => void)} [callback] Callback to run after the animation has
      * completed.
-     * @returns {JQuery}
+     * @returns {this}
      * @memberof JQuery.fn
      */
     cdScrollTo(
@@ -51,8 +53,20 @@ declare global {
       smooth = true,
       callback?: () => void,
     ): this;
+
     cdIsInViewport(partially = false): boolean;
-    cdScrollIntoView(alignment = 'top', smooth = true, callback): this;
+
+    /**
+     * Scroll to the element if it is not in the viewport.
+     *
+     * @param {'top'|'center'|'bottom'} [alignment='tops'] Where should the element be positioned
+     *   relative to the viewport.
+     * @param {boolean} [smooth=true] Whether to use a smooth animation.
+     * @param {() => void} [callback] Callback to run after the animation has completed.
+     * @returns {this}
+     */
+    cdScrollIntoView(alignment: 'top'|'center'|'bottom' = 'top', smooth = true, callback?: () => void): this;
+
     cdGetText(): string;
     cdAddCloseButton(): this;
     cdRemoveCloseButton(): this;

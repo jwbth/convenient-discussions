@@ -20,7 +20,7 @@ class PrototypeRegistry {
    * Add a widget intended for creation of an object with certain characteristics (e.g. OOUI).
    *
    * @param {string} id
-   * @param {Function} widget
+   * @param {() => OO.ui.Widget} widget
    */
   addWidget(id, widget) {
     this.widgets[id] = widget;
@@ -40,7 +40,7 @@ class PrototypeRegistry {
    * Get a widget.
    *
    * @param {string} id
-   * @returns {Function}
+   * @returns {() => OO.ui.Widget}
    */
   getWidget(id) {
     return this.widgets[id];

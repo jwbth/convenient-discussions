@@ -1,12 +1,15 @@
 import Button from './Button';
 
 /**
- * @typedef {object} CommentButtonConfig
- * @augments import('./Button').ButtonConfig
- * @property {Function} [config.widgetConstructor] Function that creates an OOUI widget that is the
- *   original source of this button (for OOUI buttons). It is run when we need to "hydrate" the
- *   button that is originally created by cloning a prototype, bringing some original behaviors to
- *   it.
+ * @typedef {object} ButtonExtension
+ * @property {() => OO.ui.ButtonWidget} [widgetConstructor] Function that creates an OOUI widget
+ *   that is the original source of this button (for OOUI buttons). It is run when we need to
+ *   "hydrate" the button that is originally created by cloning a prototype, bringing some original
+ *   behaviors to it.
+ */
+
+/**
+ * @typedef {import('./Button').ButtonConfig & ButtonExtension} CommentButtonConfig
  */
 
 /**
@@ -34,17 +37,12 @@ class CommentButton extends Button {
       this.buttonElement.oncontextmenu = CommentButton.stopPropagation;
     }
 
-    if (config.element) {
-      // Not used
-      delete this.labelElement;
-    }
-
     this.element.classList.add('cd-comment-button');
 
     /**
      * Constructor for the button's OOUI widget (if that's an OOUI button).
      *
-     * @type {Function}
+     * @type {(() => OO.ui.ButtonWidget) | undefined}
      */
     this.widgetConstructor = config.widgetConstructor;
   }
@@ -52,6 +50,7 @@ class CommentButton extends Button {
   /**
    * Create an OOUI widget (for an OOUI button) using {@link CommentButton#widgetConstructor}.
    *
+   * @returns {OO.ui.ButtonWidget}
    * @private
    */
   createWidget() {
@@ -67,7 +66,7 @@ class CommentButton extends Button {
     this.buttonWidget = this.widgetConstructor();
 
     const element = this.buttonWidget.$element[0];
-    this.element.parentNode.replaceChild(element, this.element);
+    this.element.replaceWith(element);
     this.element = element;
     this.buttonElement = /** @type {HTMLElement} */ (element.firstChild);
     if (this.action) {
@@ -79,6 +78,8 @@ class CommentButton extends Button {
       // Don't hide the menu on right button click.
       this.buttonElement.oncontextmenu = CommentButton.stopPropagation;
     }
+
+    return this.buttonWidget;
   }
 
   /**
@@ -92,13 +93,19 @@ class CommentButton extends Button {
     if (!this.widgetConstructor) {
       super.setDisabled(disabled);
     } else {
-      if (!this.buttonWidget) {
-        this.createWidget();
-      }
-      this.buttonWidget.setDisabled(disabled);
+      this.getButtonWidget().setDisabled(disabled);
     }
 
     return this;
+  }
+
+  /**
+   * Get the widget for the OOUI button, creating it if it doesn't exist.
+   *
+   * @returns {OO.ui.ButtonWidget}
+   */
+  getButtonWidget() {
+    return this.buttonWidget || this.createWidget();
   }
 
   /**
@@ -123,10 +130,7 @@ class CommentButton extends Button {
     if (!this.widgetConstructor) {
       super.setLabel(label);
     } else {
-      if (!this.buttonWidget) {
-        this.createWidget();
-      }
-      this.buttonWidget.setLabel(label);
+      this.getButtonWidget().setLabel(label);
     }
 
     return this;
@@ -142,10 +146,7 @@ class CommentButton extends Button {
     if (!this.widgetConstructor) {
       super.setTooltip(tooltip);
     } else {
-      if (!this.buttonWidget) {
-        this.createWidget();
-      }
-      this.buttonWidget.setTitle(tooltip);
+      this.getButtonWidget().setTitle(tooltip);
     }
 
     return this;

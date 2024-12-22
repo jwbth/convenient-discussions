@@ -13,11 +13,11 @@ import { parseTimestamp } from './utils-timestamp';
  * @property {Class} SectionClass
  * @property {string} childElementsProp
  * @property {(el1: NodeLike, el2: NodeLike) => boolean} follows
- * @property {() => TextLike[]} getAllTextNodes
+ * @property {() => TextLikeArray} getAllTextNodes
  * @property {(el: ElementLike, className: string) => ?ElementLike} getElementByClassName
  * @property {ElementLike} rootElement
  * @property {() => boolean} areThereOutdents
- * @property {(elements: ElementLike[], bootProcess?: import('./BootProcess').default) => void} processAndRemoveDtElements
+ * @property {(elements: ElementLikeArray, bootProcess?: import('./BootProcess').default) => void} processAndRemoveDtElements
  * @property {() => void} removeDtButtonHtmlComments
  */
 
@@ -42,7 +42,7 @@ import { parseTimestamp } from './utils-timestamp';
  * @property {string} authorName
  * @property {boolean} isUnsigned
  * @property {boolean} isExtraSignature
- * @property {ElementLike[]} extraSignatures
+ * @property {ElementLikeArray} extraSignatures
  */
 
 /**
@@ -58,7 +58,7 @@ class Parser {
   /** @type {RegExp} */
   static punctuationRegexp;
 
-  /** @type {ElementLike[]} */
+  /** @type {ElementLikeArray} */
   noSignatureElements;
 
   /** @type {string[]} */
@@ -561,7 +561,7 @@ class Parser {
   /**
    * _For internal use._ Get all headings on the page.
    *
-   * @returns {Target[]}
+   * @returns {HeadingTarget[]}
    */
   findHeadings() {
     return [...this.context.rootElement.querySelectorAll('h1, h2, h3, h4, h5, h6')]
@@ -573,9 +573,9 @@ class Parser {
         }
         return element;
       })
-      .filter((el) => (
-        el.getAttribute('id') !== 'mw-toc-heading' &&
-        !this.noSignatureElements.some((noSigEl) => noSigEl.contains(el))
+      .filter((element) => (
+        element.getAttribute('id') !== 'mw-toc-heading' &&
+        !this.noSignatureElements.some((noSigEl) => noSigEl.contains(element))
       ))
       .map((element) => ({
         type: 'heading',

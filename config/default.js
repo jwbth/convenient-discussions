@@ -853,7 +853,7 @@ export default {
    *
    * @type {?Function}
    * @kind function
-   * @param {Node|import('domhandler').Node} node
+   * @param {NodeLike} node
    * @param {import('./../src/Parser').Context} context
    * @returns {boolean}
    * @default null

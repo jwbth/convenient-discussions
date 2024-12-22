@@ -53,7 +53,7 @@ function removeDtButtonHtmlComments() {
 /**
  * Deal with (remove or move in the DOM) the markup added to the page by DiscussionTools.
  *
- * @param {ElementLike[]} elements
+ * @param {Element[]} elements
  * @param {import('./BootProcess').default} bootProcess
  * @private
  */
@@ -293,7 +293,7 @@ class BootProcess {
       // algorithm finds the expand note). Should better be above comment highlighting
       // (commentRegistry.configureAndAddLayers(), visits#process()) to avoid spending time on
       // comments in collapsed threads.
-      Thread.init();
+      Thread.reset();
 
       // Should better be below the comment form restoration to avoid repositioning of layers
       // after the addition of comment forms.

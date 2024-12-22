@@ -16,21 +16,96 @@ import { getExtendedRect, getRangeContents, getVisibilityByRects, isCmdModifierP
  * Class representing a comment thread object.
  */
 class Thread {
-  static prototypes = new PrototypeRegistry();
-
-  /** @type {HTMLDivElement|undefined} */
-  static threadLinesContainer;
+  /**
+   * Click area of the thread line.
+   *
+   * @type {?HTMLElement}
+   * @private
+   */
+  clickArea;
 
   /**
+   * Thread line.
+   *
+   * @type {?HTMLElement}
+   * @private
+   */
+  line;
+
+  /**
+   * Note in place of a collapsed thread that has a button to expand the thread.
+   *
    * @private
    * @type {?HTMLElement}
    */
   expandNote = null;
 
   /**
+   * Note in place of a collapsed thread that has a button to expand the thread.
+   *
    * @type {?JQuery}
    */
   $expandNote = null;
+
+  /**
+   * Top element of the thread.
+   *
+   * @type {HTMLElement}
+   * @private
+   */
+  startElement;
+
+  /**
+   * Bottom element of the thread (logically, not visually).
+   *
+   * @type {HTMLElement}
+   * @private
+   */
+  endElement;
+
+  /**
+   * Bottom element of the thread _visually_, not logically (differs from
+   * {@link Thread#endElement} if there are `{{outdent}}` templates in the thread).
+   *
+   * @type {HTMLElement}
+   * @private
+   */
+  visualEndElement;
+
+  /**
+   * Fallback visual end element. Used when `Thread#visualEndElement` may be hidden without
+   * collapsing the thread. That usually means `Thread#visualEndElement` has the
+   * `cd-connectToPreviousItem` class.
+   *
+   * @type {HTMLElement}
+   * @private
+   */
+  visualEndElementFallback;
+
+  /**
+   * Nodes that are collapsed. These can change, at least due to comment forms showing up.
+   *
+   * @type {?(HTMLElement[])}
+   */
+  collapsedRange = null;
+
+  /**
+   * Whether the thread should have been autocollapsed, but haven't been because the user
+   * expanded it manually in previous sessions.
+   *
+   * @type {boolean}
+   * @private
+   */
+  wasManuallyExpanded = false;
+
+  /**
+   * Should the thread be automatically collapsed on page load if taking only comment
+   * level into account and not remembering the user's previous actions.
+   *
+   * @type {boolean}
+   * @private
+   */
+  isAutocollapseTarget = false;
 
   /**
    * Create a comment thread object.
@@ -174,11 +249,15 @@ class Thread {
       );
       const lastHighlightable = highlightables[highlightables.length - 1];
 
-      if (this.hasOutdents) {
-        const lastOutdentedComment = commentRegistry.getAll()
+      const lastOutdentedComment = (
+        this.hasOutdents &&
+        commentRegistry
+          .getAll()
           .slice(0, this.lastComment.index + 1)
           .reverse()
-          .find((comment) => comment.isOutdented);
+          .find((comment) => comment.isOutdented)
+      );
+      if (lastOutdentedComment) {
         endElement = lastOutdentedComment.level === 0 ?
           Thread.findEndElementOfZeroLevelThread(
             startElement,
@@ -221,46 +300,16 @@ class Thread {
       throw new CdError();
     }
 
-    /**
-     * Top element of the thread.
-     *
-     * @type {HTMLElement}
-     * @private
-     */
     this.startElement = startElement;
-
-    /**
-     * Bottom element of the thread (logically, not visually).
-     *
-     * @type {HTMLElement}
-     * @private
-     */
     this.endElement = endElement;
-
-    /**
-     * Bottom element of the thread _visually_, not logically (differs from
-     * {@link Thread#endElement} if there are `{{outdent}}` templates in the thread).
-     *
-     * @type {HTMLElement}
-     * @private
-     */
     this.visualEndElement = visualEndElement;
-
-    /**
-     * Fallback visual end element. Used when `Thread#visualEndElement` may be hidden without
-     * collapsing the thread. That usually means `Thread#visualEndElement` has the
-     * `cd-connectToPreviousItem` class.
-     *
-     * @type {HTMLElement}
-     * @private
-     */
     this.visualEndElementFallback = visualEndElementFallback;
   }
 
   /**
    * Handle the `mouseenter` event on the click area.
    *
-   * @param {Event} event
+   * @param {MouseEvent} [event]
    * @param {boolean} [force=false]
    * @private
    */
@@ -358,7 +407,8 @@ class Thread {
    */
   hasMouseMoved(event) {
     return (
-      Math.abs(event.clientX - this.navFromX) >= 5 || Math.abs(event.clientY - this.navFromY) >= 5
+      Math.abs(event.clientX - this.navFromX) >= 5 ||
+      Math.abs(event.clientY - this.navFromY) >= 5
     );
   }
 
@@ -392,12 +442,13 @@ class Thread {
   /**
    * Handle the `mousemove` event when the navigation mode is active.
    *
-   * @param {Event} event
+   * @param {MouseEvent} event
    * @private
    */
   handleDocumentMouseMove(event) {
     if (!this.navMode) {
-      // This implies `this.navFromX !== undefined`; .navFromX is set in .handleClickAreaMouseDown()
+      // This implies `this.navFromX !== undefined`; .navFromX is set in
+      // .handleClickAreaMouseDown().
 
       if (this.hasMouseMoved(event)) {
         $(document).off('mousemove.cd', this.documentMouseMoveHandler);
@@ -556,7 +607,9 @@ class Thread {
       return;
     }
 
-    if (!this.clickArea.classList.contains('cd-thread-clickArea-hovered')) return;
+    if (!/** @type {HTMLElement} */ (
+      this.clickArea
+    ).classList.contains('cd-thread-clickArea-hovered')) return;
 
     this.onToggleClick(event);
   }
@@ -567,12 +620,6 @@ class Thread {
    * @private
    */
   createLine() {
-    /**
-     * Click area of the thread line.
-     *
-     * @type {HTMLElement}
-     * @private
-     */
     this.clickArea = Thread.prototypes.get('clickArea');
 
     this.clickArea.title = cd.s('thread-tooltip', cd.g.cmdModifier);
@@ -586,12 +633,6 @@ class Thread {
     this.clickArea.onmousedown = this.handleClickAreaMouseDown.bind(this);
     this.clickArea.onmouseup = this.handleClickAreaMouseUp.bind(this);
 
-    /**
-     * Thread line.
-     *
-     * @type {HTMLElement}
-     * @private
-     */
     this.line = /** @type {HTMLElement} */ (this.clickArea.firstChild);
 
     if (this.endElement !== this.visualEndElement) {
@@ -616,12 +657,12 @@ class Thread {
    * Get the end element of the thread, revising it based on
    * {@link Comment#subitemList comment subitems}.
    *
-   * @param {boolean} visual Use the visual thread end.
+   * @param {boolean} [visual=false] Use the visual thread end.
    * @returns {?HTMLElement} Logically, should never return `null`, unless something extraordinary
    *   happens that makes the return value of `Thread.findItemElement()` `null`.
    * @private
    */
-  getAdjustedEndElement(visual) {
+  getAdjustedEndElement(visual = false) {
     /*
       In a structure like this:
 
@@ -647,7 +688,7 @@ class Thread {
         endElement.classList.contains('cd-hidden') &&
         endElement.previousElementSibling?.classList.contains('cd-thread-expandNote')
       ) {
-        endElement = endElement.previousElementSibling;
+        endElement = /** @type {HTMLElement} */ (endElement.previousElementSibling);
       }
       if (!getVisibilityByRects(endElement.getBoundingClientRect())) {
         endElement = this.visualEndElementFallback;
@@ -663,16 +704,18 @@ class Thread {
 
     const $lastSubitem = (
       (
-        this.rootComment.level >= 1 ||
+        (
+          this.rootComment.level >= 1 ||
 
-        // Catch special cases when a section has no "Reply in section" and "There are new comments
-        // in this thread" button or the thread isn't the last thread starting with a 0-level
-        // comment in the section.
-        !endElement.classList.contains('cd-section-button-container')
-      ) &&
-      (
-        this.rootComment.subitemList.get('newCommentsNote') ||
-        (this.rootComment === lastComment && this.rootComment.subitemList.get('replyForm'))
+          // Catch special cases when a section has no "Reply in section" and "There are new comments
+          // in this thread" button or the thread isn't the last thread starting with a 0-level
+          // comment in the section.
+          !endElement.classList.contains('cd-section-button-container')
+        ) &&
+        (
+          this.rootComment.subitemList.get('newCommentsNote') ||
+          (this.rootComment === lastComment && this.rootComment.subitemList.get('replyForm'))
+        )
       ) ||
       undefined
     );
@@ -715,7 +758,7 @@ class Thread {
   /**
    * Add an expand note when collapsing a thread.
    *
-   * @param {Promise.<undefined>} [loadUserGendersPromise]
+   * @param {Promise.<void>} [loadUserGendersPromise]
    * @private
    */
   addExpandNote(loadUserGendersPromise) {
@@ -724,8 +767,8 @@ class Thread {
       tooltip: cd.s('thread-expand-tooltip', cd.g.cmdModifier),
       action: this.onToggleClick.bind(this),
       element: element,
-      buttonElement: element.firstChild,
-      labelElement: element.querySelector('.oo-ui-labelElement-label'),
+      buttonElement: /** @type {HTMLElement} */ (element.firstChild),
+      labelElement: /** @type {HTMLElement} */ (element.querySelector('.oo-ui-labelElement-label')),
     });
     const usersInThread = this.getUsers();
     const userList = usersInThread
@@ -750,7 +793,7 @@ class Thread {
       setLabel();
     }
 
-    const firstElement = this.collapsedRange[0];
+    const firstElement = /** @type {HTMLElement[]} */ (this.collapsedRange)[0];
     const tagName = ['LI', 'DD'].includes(firstElement.tagName) ? firstElement.tagName : 'DIV';
     const expandNote = document.createElement(tagName);
     expandNote.className = 'cd-thread-button-container cd-thread-expandNote';
@@ -758,14 +801,15 @@ class Thread {
       expandNote.className += ' cd-connectToPreviousItem';
     }
     expandNote.appendChild(button.element);
-    if (firstElement.parentNode.tagName === 'OL' && this.rootComment.ahContainerListType !== 'ol') {
+    const parentElement = /** @type {HTMLElement} */ (firstElement.parentElement);
+    if (parentElement.tagName === 'OL' && this.rootComment.mhContainerListType !== 'ol') {
       const container = document.createElement('ul');
       container.className = 'cd-commentLevel';
       container.appendChild(expandNote);
-      firstElement.parentNode.parentNode.insertBefore(container, firstElement.parentNode);
+      container.before(parentElement);
       this.expandNoteContainer = container;
     } else {
-      firstElement.parentNode.insertBefore(expandNote, firstElement);
+      firstElement.before(expandNote);
     }
 
     /**
@@ -787,7 +831,7 @@ class Thread {
   /**
    * Handle clicking the expand note.
    *
-   * @param {Event} event
+   * @param {MouseEvent | KeyboardEvent} event
    * @private
    */
   onToggleClick(event) {
@@ -817,12 +861,11 @@ class Thread {
    * Expand the thread if it's collapsed and collapse if it's expanded.
    *
    * @param {boolean} [clickedThread=false]
-   * @private
    */
   toggleWithSiblings(clickedThread = false) {
     const wasCollapsed = clickedThread ?
       this.isCollapsed :
-      this.rootComment.getParent().areChildThreadsCollapsed();
+      (this.rootComment.getParent()?.areChildThreadsCollapsed());
     this.rootComment.getSiblingsAndSelf().forEach((sibling) => (
       wasCollapsed ?
         sibling.thread?.expand(undefined, true) :
@@ -855,21 +898,17 @@ class Thread {
    *   collapsed threads.
    * @param {boolean} [isBatchOperation=auto] Is this called as part of some batch operation (so, no
    *   scrolling or updating the parent comment's "Toggle child threads" button look).
-   * @param {Promise.<undefined>} [loadUserGendersPromise]
+   * @param {Promise.<void>} [loadUserGendersPromise]
    */
   collapse(auto = false, isBatchOperation = auto, loadUserGendersPromise) {
     if (this.isCollapsed) return;
 
-    /**
-     * Nodes that are collapsed. These can change, at least due to comment forms showing up.
-     *
-     * @type {Node[]|undefined}
-     */
     this.collapsedRange = getRangeContents(
       this.getAdjustedStartElement(),
       this.getAdjustedEndElement(),
       controller.rootElement
     );
+    if (!this.collapsedRange) return;
 
     this.collapsedRange.forEach(this.hideElement.bind(this));
     this.updateEndOfCollapsedRange(controller.content.closedDiscussions);
@@ -877,25 +916,31 @@ class Thread {
     this.isCollapsed = true;
 
     for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
-      i = commentRegistry.getByIndex(i).collapse(this) ?? i;
+      i =
+        /** @type {import('./Comment').default} */ (commentRegistry.getByIndex(i)).collapse(this) ??
+        i;
     }
 
     this.addExpandNote(loadUserGendersPromise);
 
     if (!isBatchOperation) {
-      this.$expandNote.cdScrollIntoView();
+      /** @type {JQuery} */ (this.$expandNote).cdScrollIntoView();
       this.rootComment.getParent()?.updateToggleChildThreadsButton();
     }
 
     if (this.rootComment.isOpeningSection) {
-      this.rootComment.section.actions.moreMenuSelect
+      /** @type {import('./Section').default} */ (this.rootComment.section).actions.moreMenuSelect
         ?.getMenu()
         .findItemFromData('editOpeningComment')
         ?.setDisabled(true);
     }
 
     if (this.endElement !== this.visualEndElement) {
-      for (let c = this.rootComment; c; c = c.getParent(true)) {
+      for (
+        let c = /** @type {?import('./Comment').default} */ (this.rootComment);
+        c;
+        c = c.getParent(true)
+      ) {
         const thread = c.thread;
         if (thread && thread.endElement !== thread.visualEndElement) {
           thread.line?.classList.remove('cd-thread-line-extended');
@@ -921,16 +966,16 @@ class Thread {
   expand(auto = false, isBatchOperation = auto) {
     if (!this.isCollapsed) return;
 
-    this.collapsedRange.forEach(this.maybeUnhideElement.bind(this));
+    /** @type {HTMLElement[]} */ (this.collapsedRange).forEach(this.maybeUnhideElement.bind(this));
 
-    this.expandNote.remove();
+    /** @type {HTMLElement} */ (this.expandNote).remove();
     this.expandNote = null;
     this.$expandNote = null;
     this.expandNoteContainer?.remove();
     this.expandNoteContainer = null;
 
     if (this.rootComment.isOpeningSection) {
-      this.rootComment.section.actions.moreMenuSelect
+      /** @type {import('./Section').default} */ (this.rootComment.section).actions.moreMenuSelect
         ?.getMenu()
         .findItemFromData('editOpeningComment')
         ?.setDisabled(false);
@@ -939,7 +984,7 @@ class Thread {
     this.isCollapsed = false;
     let areOutdentedCommentsShown = false;
     for (let i = this.rootComment.index; i <= this.lastComment.index; i++) {
-      const comment = commentRegistry.getByIndex(i);
+      const comment = /** @type {import('./Comment').default} */ (commentRegistry.getByIndex(i));
       i = comment.expand() ?? i;
       if (comment.isOutdented) {
         areOutdentedCommentsShown = true;
@@ -1204,7 +1249,7 @@ class Thread {
    * @private
    */
   removeLine() {
-    if (!this.line) return;
+    if (!this.line || !this.clickArea) return;
 
     this.clickArea.remove();
     this.clickArea = this.clickAreaOffset = this.line = null;
@@ -1219,8 +1264,36 @@ class Thread {
     return commentRegistry.getAll().slice(this.rootComment.index, this.lastComment.index + 1);
   }
 
+  /**
+   * @private
+   */
+  static prototypes = new PrototypeRegistry();
+
+  /**
+   * @type {HTMLDivElement|undefined}
+   * @private
+   */
+  static threadLinesContainer;
+
+  /**
+   * Whether threads have been initialized on first run.
+   *
+   * @private
+   */
   static isInited = false;
+
+  /**
+   * Whether the thread is in the navigation move (when the user holds the middle or left mouse
+   * button and moves the cursor up or down).
+   */
   static navMode = false;
+
+  /**
+   * Elements tree walker used during initialization.
+   *
+   * @type {ElementsTreeWalker}
+   */
+  static treeWalker;
 
   /**
    * _For internal use._ Create element prototypes to reuse them instead of creating new elements
@@ -1259,7 +1332,7 @@ class Thread {
    * @param {boolean} [autocollapse=true] Autocollapse threads according to the settings and restore
    *   collapsed threads from the local storage.
    */
-  static init(autocollapse = true) {
+  static reset(autocollapse = true) {
     this.enabled = settings.get('enableThreads');
     if (!this.enabled) {
       (new StorageItem('collapsedThreads')).removeItem();
@@ -1285,7 +1358,7 @@ class Thread {
         .on('visibilitychange', this.updateLinesHandler);
       updateChecker
         // Start and end elements of threads may be replaced, so we need to restart threads.
-        .on('newChanges', this.init.bind(this));
+        .on('newChanges', this.reset.bind(this));
     }
 
     this.collapseThreadsLevel = settings.get('collapseThreadsLevel');
@@ -1343,16 +1416,6 @@ class Thread {
         if (thread.collapsed) {
           comments.push(comment);
         } else {
-          /**
-           * Whether the thread should have been autocollapsed, but haven't been because the user
-           * expanded it manually in previous sessions.
-           *
-           * @name wasManuallyExpanded
-           * @type {boolean}
-           * @memberof Thread
-           * @instance
-           * @private
-           */
           comment.thread.wasManuallyExpanded = true;
         }
       } else {
@@ -1366,23 +1429,13 @@ class Thread {
     // `(this.collapseThreadsLevel + 1)` level (the user muse have replied to a comment at the
     // `(this.collapseThreadsLevel - 1)` level but inserted `::` instead of `:`).
     for (let i = 0; i < commentRegistry.getCount(); i++) {
-      const comment = commentRegistry.getByIndex(i);
+      const comment = /** @type {import('./Comment').default} */ (commentRegistry.getByIndex(i));
       if (!comment.thread) continue;
 
       if (comment.level >= this.collapseThreadsLevel) {
         // Exclude threads where the user participates at any level up and down the tree or that
         // the user has specifically expanded.
         if (![...comment.getAncestors(), ...comment.thread.comments].some((c) => c.isOwn)) {
-          /**
-           * Should the thread be automatically collapsed on page load if taking only comment
-           * level into account and not remembering the user's previous actions.
-           *
-           * @name isAutocollapseTarget
-           * @type {boolean}
-           * @memberof Thread
-           * @instance
-           * @private
-           */
           comment.thread.isAutocollapseTarget = true;
 
           if (!comment.thread.wasManuallyExpanded) {
@@ -1408,7 +1461,7 @@ class Thread {
 
     if (controller.isCurrentRevision()) {
       collapsedThreadsStorageItem
-        .setWithTime(mw.config.get('wgArticleId'), data.collapsedThreads)
+        .setWithTime(String(mw.config.get('wgArticleId')), data.collapsedThreads)
         .save();
     }
   }
@@ -1418,7 +1471,7 @@ class Thread {
    *
    * @param {HTMLElement} element
    * @param {number} level
-   * @param {HTMLElement} nextForeignElement
+   * @param {HTMLElement} [nextForeignElement]
    * @returns {?HTMLElement}
    * @private
    */
@@ -1494,8 +1547,8 @@ class Thread {
   static updateLines() {
     if (!this.enabled || document.hidden) return;
 
-    const elementsToAdd = [];
-    const threadsToUpdate = [];
+    const elementsToAdd = /** @type {HTMLElement[]} */ ([]);
+    const threadsToUpdate = /** @type {Thread[]} */ ([]);
     const scrollX = window.scrollX;
     const scrollY = window.scrollY;
 
@@ -1538,7 +1591,7 @@ class Thread {
         commentRegistry
           .query((comment) => (
             comment.thread &&
-            comment.thread.isCollapsed !== Boolean(comment.thread.isAutocollapseTarget)
+            comment.thread.isCollapsed !== comment.thread.isAutocollapseTarget
           ))
           .map((comment) => ({
             id: comment.id,

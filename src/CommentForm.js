@@ -22,9 +22,63 @@ import { escapePipesOutsideLinks, generateTagsRegexp, removeWikiMarkup } from '.
 import { isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, isInputFocused, keyCombination, wrapDiffBody, wrapHtml } from './utils-window';
 
 /**
+ * @typedef {'reply'|'replyInSection'|'edit'|'addSubsection'|'addSection'} CommentFormMode
+ */
+
+/**
  * Class representing a comment form.
+ *
+ * @template {CommentFormMode} Mode
  */
 class CommentForm {
+  /**
+   * Target object.
+   *
+   * @type {CommentFormTarget}
+   * @private
+   */
+  target;
+
+  /**
+   * Target section.
+   *
+   * @type {CommentFormTargetSection}
+   * @private
+   */
+  targetSection;
+
+  /**
+   * Wiki page that has the source code of the target object (may be different from the current
+   * page if the section is transcluded from another page).
+   *
+   * @type {import('./pageRegistry').Page}
+   * @private
+   */
+  targetPage;
+
+  /**
+   * Parent comment. This is the comment the user replies to, if any, or the comment opening the
+   * section.
+   *
+   * @type {?Comment}
+   * @private
+   */
+  parentComment;
+
+  /**
+   * The main form element.
+   *
+   * @type {JQuery}
+   */
+  $element;
+
+  /**
+   * Headline input.
+   *
+   * @type {OO.ui.TextInputWidget|undefined}
+   */
+  headlineInput;
+
   /**
    * Comment input.
    *
@@ -38,6 +92,229 @@ class CommentForm {
    * @type {OO.ui.TextInputWidget}
    */
   summaryInput;
+
+  /**
+   * Minor change checkbox field.
+   *
+   * @type {OO.ui.FieldLayout|undefined}
+   * @memberof CommentForm
+   * @instance
+   */
+  minorField;
+
+  /**
+   * Minor change checkbox.
+   *
+   * @type {import('./CheckboxInputWidget').default|undefined}
+   * @memberof CommentForm
+   * @instance
+   */
+  minorCheckbox;
+
+  /**
+   * Watch page checkbox field.
+   *
+   * @type {OO.ui.FieldLayout}
+   * @memberof CommentForm
+   * @instance
+   */
+  watchField;
+
+  /**
+   * Watch page checkbox.
+   *
+   * @type {import('./CheckboxInputWidget').default}
+   * @memberof CommentForm
+   * @instance
+   */
+  watchCheckbox;
+
+  /**
+   * Subscribe checkbox field.
+   *
+   * @type {OO.ui.FieldLayout|undefined}
+   * @memberof CommentForm
+   * @instance
+   */
+  subscribeField;
+
+  /**
+   * Subscribe checkbox.
+   *
+   * @type {import('./CheckboxInputWidget').default|undefined}
+   * @memberof CommentForm
+   * @instance
+   */
+  subscribeCheckbox;
+
+  /**
+   * Omit signature checkbox field.
+   *
+   * @type {OO.ui.FieldLayout|undefined}
+   * @memberof CommentForm
+   * @instance
+   */
+  omitSignatureField;
+
+  /**
+   * Omit signature checkbox.
+   *
+   * @type {import('./CheckboxInputWidget').default|undefined}
+   * @memberof CommentForm
+   * @instance
+   */
+  omitSignatureCheckbox;
+
+  /**
+   * Delete checkbox field.
+   *
+   * @type {OO.ui.FieldLayout|undefined}
+   * @memberof CommentForm
+   * @instance
+   */
+  deleteField;
+
+  /**
+   * Delete checkbox.
+   *
+   * @type {import('./CheckboxInputWidget').default|undefined}
+   * @memberof CommentForm
+   * @instance
+   */
+  deleteCheckbox;
+
+  /**
+   * Checkboxes area.
+   *
+   * @type {OO.ui.HorizontalLayout}
+   */
+  checkboxesLayout;
+
+  /** @type {string} */
+  submitButtonLabelStandard;
+
+  /** @type {string} */
+  submitButtonLabelShort;
+
+  /**
+   * Toggle advanced section button.
+   *
+   * @type {OO.ui.ButtonWidget}
+   */
+  advancedButton;
+
+  /**
+   * Help button.
+   *
+   * @type {OO.ui.PopupButtonWidget}
+   */
+  helpPopupButton;
+
+  /**
+   * Script settings button.
+   *
+   * @type {OO.ui.ButtonWidget}
+   */
+  settingsButton;
+
+  /**
+   * Cancel button.
+   *
+   * @type {OO.ui.ButtonWidget}
+   */
+  cancelButton;
+
+  /**
+   * View changes button.
+   *
+   * @type {OO.ui.ButtonWidget}
+   */
+  viewChangesButton;
+
+  /**
+   * Preview button.
+   *
+   * @type {OO.ui.ButtonWidget}
+   */
+  previewButton;
+
+  /**
+   * Submit button.
+   *
+   * @type {OO.ui.ButtonWidget}
+   */
+  submitButton;
+
+  /**
+   * The area where service messages are displayed.
+   *
+   * @type {JQuery}
+   */
+  $messageArea;
+
+  /**
+   * The area where edit summary preview is displayed.
+   *
+   * @type {JQuery}
+   */
+  $summaryPreview;
+
+  /**
+   * Advanced section container.
+   *
+   * @type {JQuery}
+   */
+  $advanced;
+
+  /**
+   * Start (left on LTR wikis, right on RTL wikis) form buttons container.
+   *
+   * @type {JQuery}
+   */
+  $buttonsStart;
+
+  /**
+   * End (right on LTR wikis, left on RTL wikis) form buttons container.
+   *
+   * @type {JQuery}
+   */
+  $buttonsEnd;
+
+  /**
+   * Form buttons container.
+   *
+   * @type {JQuery}
+   */
+  $buttons;
+
+  /**
+   * The area where comment previews and changes are displayed.
+   *
+   * @type {JQuery}
+   */
+  $previewArea;
+
+  /**
+   * Name of the tag of the list that this comment form is an item of.
+   *
+   * @type {?('dl'|'ul'|'ol')}
+   * @private
+   */
+  containerListType = null;
+
+  /**
+   * @typedef {(
+   *   Mode extends 'reply' | 'edit' ?
+   *     Comment :
+   *     Mode extends 'replyInSection' | 'addSubsection' ?
+   *       import('./Section').default :
+   *       import('./pageRegistry').Page
+   * )} CommentFormTarget
+   */
+
+  /**
+   * @typedef {Mode extends 'addSection' ? null : import('./Section').default} CommentFormTargetSection
+   */
 
   /**
    * Object specifying configuration to preload data into the comment form. It is extracted from the
@@ -60,8 +337,8 @@ class CommentForm {
    * Create a comment form.
    *
    * @param {object} config
-   * @param {'reply'|'replyInSection'|'edit'|'addSubsection'|'addSection'} config.mode
-   * @param {Comment|import('./Section').default|import('./pageRegistry').Page} config.target
+   * @param {Mode} config.mode
+   * @param {CommentFormTarget} config.target
    *   Comment, section, or page that the form is related to.
    * @param {object} [config.initialState = {}] Initial state of the form (data saved in the
    *   previous session, quoted text, data transferred from DT's new topic form, etc.).
@@ -89,7 +366,7 @@ class CommentForm {
     /**
      * Form mode.
      *
-     * @type {'reply'|'replyInSection'|'edit'|'addSubsection'|'addSection'}
+     * @type {Mode}
      * @private
      */
     this.mode = mode;
@@ -99,7 +376,7 @@ class CommentForm {
     /**
      * Configuration to preload data into the form.
      *
-     * @type {PreloadConfig}
+     * @type {PreloadConfig|undefined}
      * @private
      */
     this.preloadConfig = preloadConfig;
@@ -155,9 +432,9 @@ class CommentForm {
      * If the user replies to a comment with outdented replies (in which case the form is created
      * like a regular section reply), this is that target comment.
      *
-     * @type {Comment|undefined}
+     * @type {?Comment}
      */
-    this.targetWithOutdentedReplies = initialState.targetWithOutdentedReplies || undefined;
+    this.targetWithOutdentedReplies = initialState.targetWithOutdentedReplies || null;
 
     /**
      * Is section opening comment edited.
@@ -258,7 +535,7 @@ class CommentForm {
       }
 
       if (this.headlineInput) {
-        if (this.preloadConfig.headline) {
+        if (this.preloadConfig?.headline) {
           this.headlineInput.setValue(this.preloadConfig.headline);
         }
 
@@ -312,58 +589,29 @@ class CommentForm {
   /**
    * Set the `target`, `targetSection`, `parentComment`, and `targetPage` properties.
    *
-   * @param {Comment|import('./Section').default|import('./pageRegistry').Page} target
+   * @param {CommentFormTarget} target
    * @private
    */
   setTargets(target) {
-    /**
-     * Target object.
-     *
-     * @type {Comment|import('./Section').default|import('./pageRegistry').Page}
-     * @private
-     */
     this.target = target;
-
-    /**
-     * Target section.
-     *
-     * @type {?import('./Section').default}
-     * @private
-     */
-    this.targetSection = this.target.getRelevantSection();
-
-    /**
-     * Parent comment. This is the comment the user replies to, if any, or the comment opening the
-     * section.
-     *
-     * @type {?Comment}
-     * @private
-     */
-    this.parentComment = ['reply', 'replyInSection'].includes(this.mode) ?
-      this.target.getRelevantComment() :
-      null;
-
-    /**
-     * Wiki page that has the source code of the target object (may be different from the current
-     * page if the section is transcluded from another page).
-     *
-     * @type {import('./pageRegistry').Page}
-     * @private
-     */
+    this.targetSection = /** @type {CommentFormTargetSection} */ (this.target.getRelevantSection());
     this.targetPage = this.targetSection ?
       this.targetSection.getSourcePage() :
       cd.page;
+    this.parentComment = ['reply', 'replyInSection'].includes(this.mode) ?
+      this.target.getRelevantComment() :
+      null;
   }
 
   /**
    * Compose a tab index for an element from the form's index and the supplied element index.
    *
    * @param {number} elementIndex
-   * @returns {string}
+   * @returns {number}
    * @private
    */
   getTabIndex(elementIndex) {
-    return String(this.index) + String(elementIndex);
+    return Number(String(this.index) + String(elementIndex));
   }
 
   /**
@@ -377,20 +625,7 @@ class CommentForm {
       (['addSection', 'addSubsection'].includes(this.mode) && !this.preloadConfig?.noHeadline) ||
       this.sectionOpeningCommentEdited
     ) {
-      const parentSection = this.targetSection?.getParent();
-      this.headlineInputPlaceholder = this.mode === 'addSubsection' ?
-        cd.s('cf-headline-subsection', this.targetSection.headline) :
-        (
-          this.mode === 'edit' && parentSection ?
-            cd.s('cf-headline-subsection', parentSection.headline) :
-            cd.s('cf-headline-topic')
-        );
-
-      /**
-       * Headline input.
-       *
-       * @type {OO.ui.TextInputWidget|undefined}
-       */
+      this.headlineInputPlaceholder = this.target.getCommentFormHeadlineInputPlaceholder(this.mode);
       this.headlineInput = new (require('./TextInputWidget').default)({
         value: initialState.headline ?? '',
         placeholder: this.headlineInputPlaceholder,
@@ -399,33 +634,21 @@ class CommentForm {
       });
     }
 
-    let commentInputPlaceholder;
-    if (this.mode === 'replyInSection' || (this.mode === 'reply' && this.target.isOpeningSection)) {
-      commentInputPlaceholder = cd.s(
-        'cf-comment-placeholder-replytosection',
-        this.targetSection.headline
-      );
-    } else if (this.mode === 'reply') {
-      // If there is a need to make a request to get the user gender, we don't show any
-      // placeholder text at the beginning to avoid drawing the user's attention to the changing
-      // of the text.
-      this.target.maybeRequestAuthorGender(() => {
-        this.commentInput.$input.attr(
-          'placeholder',
-          removeDoubleSpaces(cd.s(
-            'cf-comment-placeholder-replytocomment',
-            this.target.author.getName(),
-            this.target.author
-          ))
-        );
-      }, true);
-    } else if (this.mode === 'addSection' || this.mode === 'addSubsection') {
-      commentInputPlaceholder = cd.s('cf-comment-placeholder');
-    }
-
     this.commentInput = new (require('./MultilineTextInputWidget').default)({
       value: initialState.comment ?? '',
-      placeholder: commentInputPlaceholder,
+      placeholder: this.target.getCommentFormCommentInputPlaceholder(
+        this.mode,
+        ([commentAuthor]) => {
+          this.commentInput.$input.attr(
+            'placeholder',
+            removeDoubleSpaces(cd.s(
+              'cf-comment-placeholder-replytocomment',
+              commentAuthor.getName(),
+              commentAuthor
+            ))
+          )
+        }
+      ) || undefined,
       rows: this.headlineInput ? 5 : 3,
       autosize: true,
       maxRows: 9999,
@@ -455,23 +678,6 @@ class CommentForm {
   createCheckboxes(initialState) {
     if (cd.user.isRegistered()) {
       if (this.mode === 'edit') {
-        /**
-         * Minor change checkbox field.
-         *
-         * @name minorField
-         * @type {OO.ui.FieldLayout|undefined}
-         * @memberof CommentForm
-         * @instance
-         */
-
-        /**
-         * Minor change checkbox.
-         *
-         * @name minorCheckbox
-         * @type {import('./CheckboxInputWidget').default|undefined}
-         * @memberof CommentForm
-         * @instance
-         */
          ({
           field: this.minorField,
           input: this.minorCheckbox,
@@ -483,23 +689,6 @@ class CommentForm {
         }));
       }
 
-      /**
-       * Watch page checkbox field.
-       *
-       * @name watchField
-       * @type {OO.ui.FieldLayout}
-       * @memberof CommentForm
-       * @instance
-       */
-
-      /**
-       * Watch page checkbox.
-       *
-       * @name watchCheckbox
-       * @type {import('./CheckboxInputWidget').default}
-       * @memberof CommentForm
-       * @instance
-       */
       ({
         field: this.watchField,
         input: this.watchCheckbox,
@@ -524,23 +713,6 @@ class CommentForm {
         (subscribableSection?.subscribeId || this.mode === 'addSection') &&
         (!controller.isSubscribingDisabled() || subscribableSection?.subscriptionState)
       ) {
-        /**
-         * Subscribe checkbox field.
-         *
-         * @name subscribeField
-         * @type {OO.ui.FieldLayout|undefined}
-         * @memberof CommentForm
-         * @instance
-         */
-
-        /**
-         * Subscribe checkbox.
-         *
-         * @name subscribeCheckbox
-         * @type {import('./CheckboxInputWidget').default|undefined}
-         * @memberof CommentForm
-         * @instance
-         */
         ({
           field: this.subscribeField,
           input: this.subscribeCheckbox,
@@ -571,23 +743,6 @@ class CommentForm {
       }
     }
 
-    /**
-     * Omit signature checkbox field.
-     *
-     * @name omitSignatureField
-     * @type {OO.ui.FieldLayout|undefined}
-     * @memberof CommentForm
-     * @instance
-     */
-
-    /**
-     * Omit signature checkbox.
-     *
-     * @name omitSignatureCheckbox
-     * @type {import('./CheckboxInputWidget').default|undefined}
-     * @memberof CommentForm
-     * @instance
-     */
     ({
       field: this.omitSignatureField,
       input: this.omitSignatureCheckbox,
@@ -606,33 +761,9 @@ class CommentForm {
 
     if (
       this.mode === 'edit' &&
-      (
-        this.target.isOpeningSection ?
-          this.targetSection.comments.length === 1 :
-          !this.target.getChildren().length
-      )
+      /** @type {import('./Comment').default} */ (this.target).isDeletable()
     ) {
-      /**
-       * Delete checkbox field.
-       *
-       * @name deleteField
-       * @type {OO.ui.FieldLayout|undefined}
-       * @memberof CommentForm
-       * @instance
-       */
-
-      /**
-       * Delete checkbox.
-       *
-       * @name deleteCheckbox
-       * @type {import('./CheckboxInputWidget').default|undefined}
-       * @memberof CommentForm
-       * @instance
-       */
-      ({
-        field: this.deleteField,
-        input: this.deleteCheckbox,
-      } = createCheckboxField({
+      ({ field: this.deleteField, input: this.deleteCheckbox } = createCheckboxField({
         value: 'delete',
         selected: initialState.delete ?? false,
         label: cd.s('cf-delete'),
@@ -640,11 +771,6 @@ class CommentForm {
       }));
     }
 
-    /**
-     * Checkboxes area.
-     *
-     * @type {OO.ui.HorizontalLayout}
-     */
     this.checkboxesLayout = new OO.ui.HorizontalLayout({
       classes: ['cd-commentForm-checkboxes'],
       items: [
@@ -663,7 +789,7 @@ class CommentForm {
    * @private
    */
   createButtons() {
-    const modeToSubmitButtonMessageName = {
+    const /** @type {{[key: string]: string}} */ modeToSubmitButtonMessageName = {
       edit: 'save',
       addSection: 'addtopic',
       addSubsection: 'addsubsection',
@@ -672,11 +798,6 @@ class CommentForm {
     this.submitButtonLabelStandard = cd.s(`cf-${submitButtonMessageName}`);
     this.submitButtonLabelShort = cd.s(`cf-${submitButtonMessageName}-short`);
 
-    /**
-     * Toggle advanced section button.
-     *
-     * @type {OO.ui.ButtonWidget}
-     */
     this.advancedButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-advanced'),
       framed: false,
@@ -684,11 +805,6 @@ class CommentForm {
       tabIndex: this.getTabIndex(30),
     });
 
-    /**
-     * Help button.
-     *
-     * @type {OO.ui.PopupButtonWidget}
-     */
     this.helpPopupButton = new OO.ui.PopupButtonWidget({
       label: cd.s('cf-help'),
       framed: false,
@@ -717,11 +833,6 @@ class CommentForm {
     });
 
     if (cd.user.isRegistered()) {
-      /**
-       * Script settings button.
-       *
-       * @type {OO.ui.ButtonWidget}
-       */
       this.settingsButton = new OO.ui.ButtonWidget({
         framed: false,
         icon: 'settings',
@@ -733,11 +844,6 @@ class CommentForm {
       });
     }
 
-    /**
-     * Cancel button.
-     *
-     * @type {OO.ui.ButtonWidget}
-     */
     this.cancelButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-cancel'),
       flags: 'destructive',
@@ -746,11 +852,6 @@ class CommentForm {
       tabIndex: this.getTabIndex(33),
     });
 
-    /**
-     * View changes button.
-     *
-     * @type {OO.ui.ButtonWidget}
-     */
     this.viewChangesButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-viewchanges'),
       classes: ['cd-commentForm-viewChangesButton'],
@@ -758,11 +859,6 @@ class CommentForm {
     });
     this.viewChangesButton.on('toggle', this.adjustLabels.bind(this));
 
-    /**
-     * Preview button.
-     *
-     * @type {OO.ui.ButtonWidget}
-     */
     this.previewButton = new OO.ui.ButtonWidget({
       label: cd.s('cf-preview'),
       classes: ['cd-commentForm-previewButton'],
@@ -773,11 +869,6 @@ class CommentForm {
     }
     this.previewButton.on('toggle', this.adjustLabels.bind(this));
 
-    /**
-     * Submit button.
-     *
-     * @type {OO.ui.ButtonWidget}
-     */
     this.submitButton = new OO.ui.ButtonWidget({
       label: this.submitButtonLabelStandard,
       flags: ['progressive', 'primary'],
@@ -794,24 +885,15 @@ class CommentForm {
    */
   createElements() {
     if (this.mode === 'reply') {
-      /**
-       * Name of the tag of the list that this comment form is an item of.
-       *
-       * @type {'dl'|'ul'|'ol'|undefined}
-       * @private
-       */
       this.containerListType = 'dl';
     } else if (this.mode === 'edit') {
-      this.containerListType = this.target.containerListType;
+      this.containerListType = /** @type {Comment} */ (this.target).containerListType;
     } else if (this.mode === 'replyInSection') {
-      this.containerListType = this.target.$replyButtonContainer.prop('tagName').toLowerCase();
+      this.containerListType = /** @type {import('./Section').default} */ (
+        this.target
+      ).$replyButtonContainer.prop('tagName').toLowerCase();
     }
 
-    /**
-     * The main form element.
-     *
-     * @type {JQuery}
-     */
     this.$element = $('<div>').addClass([
       `cd-commentForm cd-commentForm-${this.mode}`,
       this.containerListType === 'ol' ?
@@ -825,25 +907,10 @@ class CommentForm {
         undefined,
     ].filter(defined));
 
-    /**
-     * The area where service messages are displayed.
-     *
-     * @type {JQuery}
-     */
     this.$messageArea = $('<div>').addClass('cd-commentForm-messageArea');
 
-    /**
-     * The area where edit summary preview is displayed.
-     *
-     * @type {JQuery}
-     */
     this.$summaryPreview = $('<div>').addClass('cd-summaryPreview');
 
-    /**
-     * Advanced section container.
-     *
-     * @type {JQuery}
-     */
     this.$advanced = $('<div>')
       .addClass('cd-commentForm-advanced')
       .append(
@@ -852,11 +919,6 @@ class CommentForm {
         this.checkboxesLayout.$element,
       );
 
-    /**
-     * Start (left on LTR wikis, right on RTL wikis) form buttons container.
-     *
-     * @type {JQuery}
-     */
     this.$buttonsStart = $('<div>')
       .addClass('cd-commentForm-buttons-start')
       .append(
@@ -865,11 +927,6 @@ class CommentForm {
         this.settingsButton?.$element,
       );
 
-    /**
-     * End (right on LTR wikis, left on RTL wikis) form buttons container.
-     *
-     * @type {JQuery}
-     */
     this.$buttonsEnd = $('<div>')
       .addClass('cd-commentForm-buttons-end')
       .append(
@@ -879,11 +936,6 @@ class CommentForm {
         this.submitButton.$element,
       );
 
-    /**
-     * Form buttons container.
-     *
-     * @type {JQuery}
-     */
     this.$buttons = $('<div>')
       .addClass('cd-commentForm-buttons')
       .append(this.$buttonsStart, this.$buttonsEnd);
@@ -900,12 +952,7 @@ class CommentForm {
       this.$advanced.hide();
     }
 
-    // .mw-body-content for 404 pages
-    /**
-     * The area where comment previews and changes are displayed.
-     *
-     * @type {JQuery}
-     */
+    // .mw-body-content is for 404 pages
     this.$previewArea = $('<div>').addClass('cd-commentForm-previewArea mw-body-content');
 
     if (this.autopreview) {
@@ -1744,23 +1791,23 @@ class CommentForm {
       .on('change', emitChange);
 
     this.commentInput.$input
-      .on('dragover', (e) => {
+      .on('dragover', (event) => {
         if (
-          ![...e.originalEvent.dataTransfer.items].some(((item) => (
+          ![...event.originalEvent.dataTransfer.items].some(((item) => (
             CommentForm.allowedFileTypes.includes(item.type)
           )))
         ) {
           return;
         }
         this.commentInput.$element.addClass('cd-input-acceptFile');
-        e.preventDefault();
+        event.preventDefault();
       })
       .on('dragleave drop blur', () => {
         this.commentInput.$element.removeClass('cd-input-acceptFile');
       })
       .on('paste drop', this.handlePasteDrop.bind(this))
-      .on('tribute-replaced', (e) => {
-        if (e.originalEvent.detail.instance.trigger === cd.config.mentionCharacter) {
+      .on('tribute-replaced', (event) => {
+        if (event.originalEvent.detail.instance.trigger === cd.config.mentionCharacter) {
           if (this.mode === 'edit') {
             this.showMessage(
               wrapHtml(cd.sParse('cf-reaction-mention-edit'), { targetBlank: true }),
@@ -2086,7 +2133,7 @@ class CommentForm {
    * shrink.
    */
   adjustLabels() {
-    const formWidth = this.$element.width();
+    const formWidth = /** @type {number} */ (this.$element.width());
     const additive = 7;
 
     if (this.$element.hasClass('cd-commentForm-short')) {
@@ -3891,7 +3938,7 @@ class CommentForm {
   /**
    * Get the name of the tag of the list that this form is an item of.
    *
-   * @returns {'dl'|'ul'|'ol'|undefined}
+   * @returns {?('dl'|'ul'|'ol')}
    */
   getContainerListType() {
     return this.containerListType;
@@ -4157,7 +4204,7 @@ class CommentForm {
    * Get the name of the target's property that can contain a comment form with the specified mode.
    *
    * @param {Comment|import('./Section').default|import('./pageRegistry').Page} target
-   * @param {string} mode
+   * @param {import('./CommentForm').CommentFormMode} mode
    * @returns {string}
    */
   static getPropertyNameOnTarget(target, mode) {
@@ -4168,7 +4215,7 @@ class CommentForm {
    * Remove references to a comment form on its target object (after it was unregistered).
    *
    * @param {Comment|import('./Section').default|import('./pageRegistry').Page} target
-   * @param {string} mode
+   * @param {import('./CommentForm').CommentFormMode} mode
    */
   static forgetOnTarget(target, mode) {
     delete target[this.getPropertyNameOnTarget(target, mode)];

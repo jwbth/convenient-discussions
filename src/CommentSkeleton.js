@@ -27,7 +27,7 @@ class CommentSkeleton {
    * Keep in mind that elements may be replaced, and property values will need to be updated. See
    * {@link Comment#replaceElement}.
    *
-   * @type {Element[]|import('domhandler').Element[]}
+   * @type {ElementLikeArray}
    */
   highlightables;
 
@@ -227,9 +227,9 @@ class CommentSkeleton {
     /**
      * _For internal use._ Elements containing all parts of the comment.
      *
-     * @type {ElementLike[]}
+     * @type {ElementLikeArray}
      */
-    this.elements = this.parts.map((part) => /** @type {ElementLike} */ (part.node));
+    this.elements = /** @type {ElementLikeArray} */ (this.parts.map((part) => part.node));
 
     this.updateHighlightables();
     this.updateLevels();
@@ -239,17 +239,13 @@ class CommentSkeleton {
       this.elements.shift();
     }
 
-    if (this.parts[0].isHeading) {
-      /**
-       * Does the comment open a section (has a heading as the first element and is placed at the
-       * zeroth level).
-       *
-       * @type {boolean}
-       */
-      this.isOpeningSection = true;
-    } else {
-      this.isOpeningSection = false;
-    }
+    /**
+     * Does the comment open a section (has a heading as the first element and is placed at the
+     * zeroth level).
+     *
+     * @type {boolean}
+     */
+    this.isOpeningSection = this.parts[0].isHeading;
 
     this.addAttributes();
 
@@ -587,9 +583,9 @@ class CommentSkeleton {
    * @param {object} options
    * @param {string} options.step
    * @param {number} options.stage
-   * @param {Node|import('domhandler').Node} options.node
-   * @param {Node|import('domhandler').Node} options.nextNode
-   * @param {Node|import('domhandler').Node} [options.lastPartNode]
+   * @param {NodeLike} options.node
+   * @param {NodeLike} options.nextNode
+   * @param {NodeLike} [options.lastPartNode]
    * @param {ElementLike} [options.previousPart]
    * @returns {boolean}
    */
@@ -1071,7 +1067,7 @@ class CommentSkeleton {
    * a gallery.
    *
    * @param {number} i Current part index.
-   * @param {Node|import('domhandler').Node} lastPartNode Node of the last part.
+   * @param {NodeLike} lastPartNode Node of the last part.
    * @returns {boolean}
    * @private
    */
@@ -1331,7 +1327,7 @@ class CommentSkeleton {
    *
    * @param {ElementLike} initialElement
    * @param {boolean} [includeFirstMatch=false]
-   * @returns {Element[]|import('domhandler').Element[]}
+   * @returns {ElementLikeArray}
    */
   getListsUpTree(initialElement, includeFirstMatch = false) {
     const listElements = [];
@@ -1476,7 +1472,7 @@ class CommentSkeleton {
    * * Item 3. [signature]
    * ```
    *
-   * @param {Array.<Element>|Array.<import('domhandler').Element>} levelElements
+   * @param {ElementLikeArray} levelElements
    * @private
    */
   fixEndLevel(levelElements) {
@@ -1746,11 +1742,11 @@ class CommentSkeleton {
         let parentComment;
         const treeWalker = new ElementsTreeWalker(parser.context.rootElement, element);
         while (treeWalker.nextNode() && !childComment) {
-          let commentIndex = treeWalker.currentNode.getAttribute('data-cd-comment-index');
-          if (commentIndex === '0') break;
-          if (commentIndex === null) continue;
+          let commentIndexAttr = treeWalker.currentNode.getAttribute('data-cd-comment-index');
+          if (commentIndexAttr === '0') break;
+          if (commentIndexAttr === null) continue;
 
-          commentIndex = Number(commentIndex);
+          const commentIndex = Number(commentIndexAttr);
           childComment = cd.comments[commentIndex];
 
           // Find an _actual_ parent of the comment in case the previous one is newer than the
@@ -1858,7 +1854,7 @@ class CommentSkeleton {
  * Object with the same basic structure as {@link CommentSkeleton} has. (It comes from a web
  * worker so its constructor is lost.)
  *
- * @typedef {object} CommentSkeletonLike
+ * @typedef {CommentSkeleton} CommentSkeletonLike
  */
 
 export default CommentSkeleton;

@@ -2,6 +2,5 @@
   "extends": "../../jsconfig-base.json",
   "compilerOptions": {
     "lib": ["ESNext", "WebWorker"]
-  },
-  "include": [".", "../domhandler.d.ts"]
+  }
 }

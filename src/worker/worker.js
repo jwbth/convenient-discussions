@@ -9,7 +9,7 @@
  * @module worker
  */
 
-import './domHandlerExtended';
+import './domhandlerExtended';
 
 import { parseDocument } from 'htmlparser2';
 
@@ -19,7 +19,7 @@ import Parser from '../Parser';
 import SectionSkeleton from '../SectionSkeleton';
 import cd from '../cd';
 import debug from '../debug';
-import { isHeadingNode, isMetadataNode } from '../utils-general';
+import { isDomHandlerElement, isHeadingNode, isMetadataNode } from '../utils-general';
 
 let isFirstRun = true;
 let alarmTimeout;
@@ -84,7 +84,7 @@ function removeDtButtonHtmlComments() {
 function findTargets(parser) {
   parser.init();
   parser.processAndRemoveDtMarkup();
-  return parser.findHeadings()
+  return /** @type {import('../Parser').Target[]} */ (parser.findHeadings())
     .concat(parser.findSignatures())
     .sort((t1, t2) => parser.context.follows(t1.element, t2.element) ? 1 : -1);
 }
@@ -190,64 +190,65 @@ function hideElement(el, comment) {
  */
 function filterCommentContent(comment) {
   comment.hiddenElementsData = [];
-  comment.elementHtmls = comment.elements.map((element) => {
-    if (isHeadingNode(element)) {
-      // Keep only the headline, as other elements contain dynamic identifiers.
-      let headlineElement = element.getElementsByClassName('mw-headline', 1)[0];
-      if (!headlineElement) {
-        headlineElement = element.querySelectorAll('h1, h2, h3, h4, h5, h6')[0];
-      }
-      if (headlineElement) {
-        // Was removed in 2021, see T284921. Keep this for some time.
-        headlineElement.getElementsByClassName('mw-headline-number', 1)[0]?.remove();
+  comment.elementHtmls = comment.elements
+    .map((/** @type {import('domhandler').Element} */ element) => {
+      if (isHeadingNode(element)) {
+        // Keep only the headline, as other elements contain dynamic identifiers.
+        let headlineElement = element.getElementsByClassName('mw-headline', 1)[0];
+        if (!headlineElement) {
+          headlineElement = element.querySelectorAll('h1, h2, h3, h4, h5, h6')[0];
+        }
+        if (headlineElement) {
+          // Was removed in 2021, see T284921. Keep this for some time.
+          headlineElement.getElementsByClassName('mw-headline-number', 1)[0]?.remove();
 
-        // Use `[...iterable]`, as childNodes is a live collection, and when an element is removed
-        // or moved, indexes will change.
-        [...element.childNodes].forEach((el) => {
+          // Use `[...iterable]`, as childNodes is a live collection, and when an element is removed
+          // or moved, indexes will change.
+          [...element.childNodes].forEach((el) => {
+            el.remove();
+          });
+          [...headlineElement.childNodes].forEach(element.appendChild.bind(element));
+        }
+      }
+
+      // Data attributes may include dynamic components, for example
+      // https://ru.wikipedia.org/wiki/Проект:Знаете_ли_вы/Подготовка_следующего_выпуска.
+      removeDataAndParsoidAttributes(element);
+      element.getElementsByAttribute(/^data-|^id$/).forEach(removeDataAndParsoidAttributes);
+
+      // Empty comment anchors, in most cases added by the script.
+      element.getElementsByTagName('span')
+        .filter((el) => el.attribs.id && Object.keys(el.attribs).length === 1 && !el.textContent)
+        .forEach((el) => {
           el.remove();
         });
-        [...headlineElement.childNodes].forEach(element.appendChild.bind(element));
-      }
-    }
 
-    // Data attributes may include dynamic components, for example
-    // https://ru.wikipedia.org/wiki/Проект:Знаете_ли_вы/Подготовка_следующего_выпуска.
-    removeDataAndParsoidAttributes(element);
-    element.getElementsByAttribute(/^data-|^id$/).forEach(removeDataAndParsoidAttributes);
-
-    // Empty comment anchors, in most cases added by the script.
-    element.getElementsByTagName('span')
-      .filter((el) => el.attribs.id && Object.keys(el.attribs).length === 1 && !el.textContent)
-      .forEach((el) => {
-        el.remove();
-      });
-
-    element
-      .filterRecursively((node) => node.nodeType === Node.COMMENT_NODE)
-      .forEach((node) => {
-        node.remove();
-      });
-
-    if (element.classList.contains('references') || isMetadataNode(element)) {
-      return hideElement(element, comment).textContent;
-    } else {
       element
-        .filterRecursively((node) => (
-          node.tagName &&
-          (
-            ['autonumber', 'reference', 'references']
-              .some((name) => node.classList.contains(name)) ||
-
-            // Note that filterRecursively's range includes the root element.
-            isMetadataNode(node)
-          )
-        ))
-        .forEach((el) => {
-          hideElement(el, comment);
+        .filterRecursively((node) => node.nodeType === Node.COMMENT_NODE)
+        .forEach((node) => {
+          node.remove();
         });
-      return element.outerHTML;
-    }
-  });
+
+      if (element.classList.contains('references') || isMetadataNode(element)) {
+        return hideElement(element, comment).textContent;
+      } else {
+        element
+          .filterRecursively((node) => (
+            isDomHandlerElement(node) &&
+            (
+              ['autonumber', 'reference', 'references']
+                .some((name) => node.classList.contains(name)) ||
+
+              // Note that filterRecursively()'s range includes the root element.
+              isMetadataNode(node)
+            )
+          ))
+          .forEach((/** @type {import('domhandler').Element} */ el) => {
+            hideElement(el, comment);
+          });
+        return element.outerHTML;
+      }
+    });
 }
 
 /**
@@ -434,7 +435,7 @@ function parse() {
       );
       return areThereOutdents;
     },
-    processAndRemoveDtElements: (elements) => {
+    processAndRemoveDtElements: (/** @type {import('domhandler').Element[]} */ elements) => {
       elements.forEach((el) => {
         el.remove();
       });

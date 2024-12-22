@@ -125,7 +125,7 @@ async function processPage(revisionToParseId) {
  * `checkForChangesSincePreviousVisit()`.
  *
  * @param {number} previousVisitTime
- * @param {number} [submittedCommentId]
+ * @param {string} [submittedCommentId]
  * @private
  */
 async function maybeProcessRevisionsAtLoad(previousVisitTime, submittedCommentId) {
@@ -393,7 +393,7 @@ function hasCommentChanged(olderComment, newerComment) {
  * Check if there are changes made to the currently displayed comments since the previous visit.
  *
  * @param {import('./CommentSkeleton').CommentSkeletonLike[]} currentComments
- * @param {number} submittedCommentId
+ * @param {string} submittedCommentId
  * @private
  */
 function checkForChangesSincePreviousVisit(currentComments, submittedCommentId) {
@@ -565,6 +565,10 @@ function checkForNewChanges(currentComments) {
  * @property {boolean} updateSuccess
  * @property {object} commentsData
  * @private
+ */
+
+/**
+ * @typedef {'changed'|'changedSince'|'deleted'} ChangeType
  */
 
 /**
@@ -762,8 +766,8 @@ const updateChecker = {
   /**
    * _For internal use._ Set up the update checker. Executed on each page reload.
    *
-   * @param {string} previousVisitTime
-   * @param {number} submittedCommentId
+   * @param {number} [previousVisitTime]
+   * @param {string} [submittedCommentId]
    */
   async setup(previousVisitTime, submittedCommentId) {
     isBackgroundCheckArranged = false;

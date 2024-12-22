@@ -422,7 +422,7 @@ export default {
    *
    * @type {?Function}
    * @kind function
-   * @param {Node|import('domhandler').Node} node
+   * @param {NodeLike} node
    * @param {object} context
    * @returns {boolean}
    * @default null

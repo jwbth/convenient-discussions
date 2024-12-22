@@ -1,9 +1,10 @@
 import TreeWalker from './TreeWalker';
+import { isElement, isText } from './utils-general';
 
 /**
  * Tree walker that walks on both element and text nodes.
  *
- * @augments TreeWalker
+ * @augments TreeWalker<ElementLike|TextLike>
  */
 class ElementsAndTextTreeWalker extends TreeWalker {
   /** @type {ElementLike|TextLike} */
@@ -16,7 +17,7 @@ class ElementsAndTextTreeWalker extends TreeWalker {
    * @param {ElementLike|TextLike} [startNode]
    */
   constructor(root, startNode) {
-    super(root, (node) => node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE);
+    super(root, (node) => isText(node) || isElement(node));
     if (startNode) {
       this.currentNode = startNode;
     }

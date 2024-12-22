@@ -32,11 +32,13 @@ import { parseWikiUrl, isInline, removeFromArrayIfPresent, defined, spacesToUnde
 export function wrapHtml(html, options = {}) {
   const tagName = options.tagName || 'span';
   const $wrapper = $($.parseHTML(html)).wrapAll(`<${tagName}>`).parent();
-  if (options.callbacks) {
-    Object.keys(options.callbacks).forEach((className) => {
+  const callbacks = options.callbacks;
+  if (callbacks) {
+    Object.keys(callbacks).forEach((className) => {
       const $linkWrapper = $wrapper.find(`.${className}`);
-      let $link = $linkWrapper.find('a');
-      if (/\$\d$/.test($link.attr('href'))) {
+      let $link = /** @type {JQuery} */ ($linkWrapper.find('a'));
+      const href = $link.attr('href');
+      if (href && /\$\d$/.test(href)) {
         // Handle dummy links we put into strings for translation so that translators understand
         // this will be a link.
         $link.removeAttr('href').removeAttr('title');
@@ -45,15 +47,15 @@ export function wrapHtml(html, options = {}) {
       }
       new Button({
         buttonElement: $link[0],
-        action: options.callbacks[className],
+        action: callbacks[className],
       });
     });
   }
   if (options.targetBlank) {
     $wrapper.find('a[href]').attr('target', '_blank');
   }
-  return $wrapper;
 
+  return $wrapper;
 }
 
 /**
@@ -447,10 +449,13 @@ export function getElementFromPasteHtml(html) {
  * Get all nodes between the two specified, including them. This works equally well if they are at
  * different nesting levels. Descendants of nodes that are already included are not included.
  *
- * @param {Element} start
- * @param {Element} end
- * @param {Element} rootElement
- * @returns {?Element[]}
+ * For simplicity, consider the results `HTMLElement`s – we have yet to encounter a case where one
+ * of the elements in a range is simply an `Element`.
+ *
+ * @param {HTMLElement} start
+ * @param {?HTMLElement} end
+ * @param {HTMLElement} rootElement
+ * @returns {?HTMLElement[]}
  */
 export function getRangeContents(start, end, rootElement) {
   // It makes more sense to place this function in the `utils` module, but we can't import
@@ -458,12 +463,12 @@ export function getRangeContents(start, end, rootElement) {
   // emerges.
 
   // Fight infinite loops
-  if (start.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_PRECEDING) {
+  if (!end || (start.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_PRECEDING)) {
     return null;
   }
 
   let commonAncestor;
-  for (let el = start; el; el = el.parentNode) {
+  for (let el = /** @type {?HTMLElement} */ (start); el; el = el.parentElement) {
     if (el.contains(end)) {
       commonAncestor = el;
       break;
@@ -512,8 +517,11 @@ export function getRangeContents(start, end, rootElement) {
     // expand note of the comment
     // https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house/CD_test_page&oldid=678031044#c-Example-2021-10-02T05:14:00.000Z-Example-2021-10-02T05:13:00.000Z
     // if you collapse its thread.
-    while (end.parentNode.lastChild === end && treeWalker.currentNode.contains(end.parentNode)) {
-      end = end.parentNode;
+    while (
+      end.parentElement.lastChild === end &&
+      treeWalker.currentNode.contains(end.parentElement)
+    ) {
+      end = /** @type {HTMLElement} */ (end.parentElement);
     }
 
     while (treeWalker.currentNode !== end) {
@@ -536,10 +544,11 @@ export function getRangeContents(start, end, rootElement) {
  * @param {number} height
  * @param {number} [viewBoxWidth=width]
  * @param {number} [viewBoxHeight=height]
- * @returns {JQuery}
+ * @returns {JQuery<SVGElement>}
  */
 export function createSvg(width, height, viewBoxWidth = width, viewBoxHeight = height) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+
   return $(svg)
     .attr('width', width)
     .attr('height', height)

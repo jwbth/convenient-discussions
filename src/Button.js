@@ -33,7 +33,7 @@ class Button {
    * @type {((event: MouseEvent | KeyboardEvent) => void) | undefined}
    * @private
    */
-  callback = undefined;
+  callback;
 
   /**
    * Create a button.
@@ -91,6 +91,8 @@ class Button {
     /**
      * Button label element. It can be the same as the {@link Button#buttonElement button element}
      * or its descendant.
+     *
+     * May be removed if it's not used.
      *
      * @type {HTMLElement}
      */
@@ -170,6 +172,7 @@ class Button {
    * @returns {Button} This button.
    */
   setLabel(label) {
+    this.labelElement ||= this.buttonElement;
     this.labelElement.textContent = label;
 
     return this;

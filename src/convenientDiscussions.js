@@ -59,10 +59,13 @@ const devicePixelRatioToDivisor = [
   [0, 1],
 ];
 
-const pixelDeviationRatio = devicePixelRatioToDivisor.reduce((value, [dpr, divisor]) => (
-  value ||
-  (window.devicePixelRatio >= dpr ? window.devicePixelRatio / divisor : value)
-), undefined);
+const pixelDeviationRatio = /** @type {number} */ (
+  devicePixelRatioToDivisor
+    .reduce((value, [dpr, divisor]) => (
+    value ||
+    (window.devicePixelRatio >= dpr ? window.devicePixelRatio / divisor : value)
+  ), undefined)
+);
 
 const convenientDiscussions = {
   /**
@@ -102,7 +105,7 @@ const convenientDiscussions = {
    * sanitized. Use this for strings that have their raw HTML inserted into the page.
    *
    * @param {string} name String name.
-   * @param {...*} [params] String parameters (substituted strings, also
+   * @param {...*} params String parameters (substituted strings, also
    *   {@link module:userRegistry.User User} objects for use in `{{gender:}}`).
    * @returns {string}
    * @memberof convenientDiscussions
@@ -126,7 +129,7 @@ const convenientDiscussions = {
    * function would sanitize the value.
    *
    * @param {string} name String name.
-   * @param {...*} [params] String parameters (substituted strings, also
+   * @param {...*} params String parameters (substituted strings, also
    *   {@link module:userRegistry.User User} objects for use in {{gender:}}). The last parameter can
    *   be an object that can have a string property `language`. If `language` is `'content'`, the
    *   returned message will be in the content langage (not the interface language).
@@ -188,13 +191,6 @@ const convenientDiscussions = {
       self instanceof /** @type {any} */ (self.WorkerGlobalScope)
     );
   },
-
-  /**
-   * Current page's object.
-   *
-   * @type {import('./pageRegistry').Page}
-   */
-  page: undefined,
 
   /**
    * Reference to the {@link module:debug debug} module.
@@ -309,28 +305,25 @@ const globalProperties = {
    * Left and right margins of comment layers used as a fallback (when a comment is placed
    * somewhere where we don't know how to position the layers).
    *
-   * @type {number}
    * @memberof convenientDiscussions.g
    */
-  commentFallbackSideMargin: 10,
+  commentFallbackSideMargin: /** @type {const} */ (10),
 
   /**
    * Left and right padding of thread lines.
    *
-   * @type {number}
    * @memberof convenientDiscussions.g
    */
-  threadLineSidePadding: 3,
+  threadLineSidePadding: /** @type {const} */ (3),
 
   /**
    * Width (thickness) of comment markers and thread lines when you hover over them. Should be an
    * odd number - otherwise the browser will render 1 pixel more on one side, and for each comment
    * differently. See also pixelDeviationRatio that helps achieve this evenness.
    *
-   * @type {number}
    * @memberof convenientDiscussions.g
    */
-  commentMarkerWidth: 3,
+  commentMarkerWidth: /** @type {const} */ (3),
 
   pixelDeviationRatio,
 
@@ -341,34 +334,30 @@ const globalProperties = {
   /**
    * Number of seconds between checks for new comments when the tab is not hidden.
    *
-   * @type {number}
    * @memberof convenientDiscussions.g
    */
-  updateCheckInterval: 15,
+  updateCheckInterval: /** @type {const} */ (15),
 
   /**
    * Number of seconds between new comments checks when the tab is hidden.
    *
-   * @type {number}
    * @memberof convenientDiscussions.g
    */
-  backgroundUpdateCheckInterval: 60,
+  backgroundUpdateCheckInterval: /** @type {const} */ (60),
 
   /**
    * Number of milliseconds in a minute.
    *
-   * @type {number}
    * @memberof convenientDiscussions.g
    */
-  msInMin: 1000 * 60,
+  msInMin: /** @type {const} */ (60000),
 
   /**
    * Number of milliseconds in a day.
    *
-   * @type {number}
    * @memberof convenientDiscussions.g
    */
-  msInDay: 1000 * 60 * 60 * 24,
+  msInDay: /** @type {const} */ (86400000),
 
   /**
    * Popular elements that can be met in page content and don't have the `display: inline` property
@@ -584,10 +573,10 @@ const globalProperties = {
     'wordSpacing',
   ],
 
-  settingsOptionName: 'userjs-convenientDiscussions-settings',
-  localSettingsOptionName: `userjs-${localOptionsPrefix}-localSettings`,
-  visitsOptionName: `userjs-${localOptionsPrefix}-visits`,
-  subscriptionsOptionName: `userjs-${localOptionsPrefix}-${subscriptionsOptionNameEnding}`,
+  settingsOptionName: /** @type {const} */ ('userjs-convenientDiscussions-settings'),
+  localSettingsOptionName: /** @type {const} */ (`userjs-${localOptionsPrefix}-localSettings`),
+  visitsOptionName: /** @type {const} */ (`userjs-${localOptionsPrefix}-visits`),
+  subscriptionsOptionName: /** @type {const} */ (`userjs-${localOptionsPrefix}-${subscriptionsOptionNameEnding}`),
   server,
   serverName,
   pageName: underlinesToSpaces(mw.config.get('wgPageName')),
@@ -626,26 +615,9 @@ const globalProperties = {
   isParsoidUsed: $('#mw-content-text > .mw-parser-output')
     .contents()
     .get()
-    .filter((node) => node.nodeType === Node.COMMENT_NODE)
+    // NB: not _our_ Comment, the global one
+    .filter((node) => node instanceof window.Comment)
     .some((c) => c.textContent.startsWith('Parsoid')),
-
-  /**
-   * @typedef {object} ApiErrorFormatHtml
-   * @property {string} errorformat
-   * @property {any} errorlang
-   * @property {boolean} errorsuselocal
-   */
-
-  /**
-   * A replacement for
-   * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Unicode_Property_Escapes unicode property escapes}
-   * while they are not supported in major browsers. {@link https://github.com/slevithan/xregexp}
-   * can be used also.
-   *
-   * @type {ApiErrorFormatHtml|undefined}
-   * @memberof convenientDiscussions.g
-   */
-  apiErrorFormatHtml: undefined,
 };
 
 Object.assign(cd.g, globalProperties);

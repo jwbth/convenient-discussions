@@ -26,13 +26,14 @@ import { createSvg, getExtendedRect, getHigherNodeAndOffsetInSelection, getVisib
 /**
  * Class representing a comment (any signed, and in some cases unsigned, text on a wiki talk page).
  *
+ * @template Reformatted
  * @augments CommentSkeleton
  */
 class Comment extends CommentSkeleton {
-  /** @type {HTMLSpanElement} */
+  /** @type {HTMLElement} */
   signatureElement;
 
-  /** @type {HTMLSpanElement} */
+  /** @type {HTMLElement} */
   timestampElement;
 
   /** @type {HTMLAnchorElement} */
@@ -48,11 +49,122 @@ class Comment extends CommentSkeleton {
   highlightables;
 
   /**
-     * Is the comment new. Is set to boolean only on active pages (not archived, not old diffs)
-     * excluding pages that are visited for the first time.
-     *
-     * @type {?boolean}
-     */
+   * A special {@link Comment#highlightables highlightable} used to
+   * {@link Comment#getLayersMargins determine layers margins}.
+   *
+   * @type {HTMLElement}
+   * @private
+   */
+  marginHighlightable;
+
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  headerElement;
+
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  menuElement;
+
+  /**
+   * _For internal use._ Comment's underlay as a native (non-jQuery) element.
+   *
+   * @type {?HTMLElement}
+   */
+  underlay;
+
+  /**
+   * Comment's overlay.
+   *
+   * @type {?HTMLElement}
+   * @private
+   */
+  overlay;
+
+  /**
+   * Line element in comment's overlay.
+   *
+   * @type {HTMLElement}
+   * @private
+   */
+  line;
+
+  /**
+   * Comment's side marker.
+   *
+   * @type {HTMLElement}
+   * @private
+   */
+  marker;
+
+  /**
+   * Inner wrapper in comment's overlay.
+   *
+   * @type {HTMLElement}
+   * @private
+   */
+  overlayInnerWrapper;
+
+  /**
+   * Gradient element in comment's overlay.
+   *
+   * @type {HTMLElement}
+   * @private
+   */
+  overlayGradient;
+
+  /**
+   * Menu element in comment's overlay.
+   *
+   * @type {HTMLElement}
+   * @private
+   */
+  overlayMenu;
+
+  /**
+   * Comment's underlay.
+   *
+   * @type {?JQuery}
+   */
+  $underlay;
+
+  /**
+   * Comment's overlay.
+   *
+   * @type {?JQuery}
+   */
+  $overlay;
+
+  /**
+   * Comment's side marker.
+   *
+   * @type {JQuery}
+   */
+  $marker;
+
+  /**
+   * Menu element in the comment's overlay.
+   *
+   * @type {JQuery}
+   */
+  $overlayMenu;
+
+  /**
+   * Gradient element in the comment's overlay.
+   *
+   * @type {JQuery}
+   */
+  $overlayGradient;
+
+  /**
+   * Is the comment new. Is set to boolean only on active pages (not archived, not old diffs)
+   * excluding pages that are visited for the first time.
+   *
+   * @type {?boolean}
+   */
   isNew = null;
 
   /**
@@ -145,9 +257,9 @@ class Comment extends CommentSkeleton {
    * Is there a "gap" in the comment between {@link Comment#highlightable highlightables} that needs
    * to be closed visually so that the comment looks like one comment and not several.
    *
-   * @type {?boolean}
+   * @type {boolean}
    */
-  isLineGapped = null;
+  isLineGapped;
 
   /**
    * Has the comment been seen before it was changed.
@@ -163,13 +275,20 @@ class Comment extends CommentSkeleton {
   /** @type {string|undefined} */
   dtId;
 
-  static prototypes = new PrototypeRegistry();
+  /**
+   * The comment's coordinates.
+   *
+   * @type {?CommentOffset}
+   */
+  offset;
 
-  /** @type {StorageItem} */
-  static thanksStorage;
-
-  /** @type {boolean} */
-  static isReformatted;
+  /**
+   * The comment's rough coordinates (without taking into account floating elements around the
+   * comment).
+   *
+   * @type {?CommentOffset}
+   */
+  roughOffset;
 
   /**
    * Create a comment object.
@@ -222,8 +341,16 @@ class Comment extends CommentSkeleton {
 
     this.highlightables.forEach(this.bindEvents.bind(this));
 
-    this.updateAnchorHighlightable();
+    this.updateMarginHighlightable();
 
+  /**
+   * Get the type of the list that `el` is an item of. This function traverses the ancestors of `el`
+   * and returns the tag name of the first ancestor that has the class `cd-commentLevel`.
+   *
+   * @param {Element} el
+   * @returns {?string} `dl`, `ul`, `ol`, or `undefined`.
+   * @private
+   */
     const getContainerListType = (el) => {
       const treeWalker = new ElementsTreeWalker(controller.rootElement, el);
       while (treeWalker.parentNode()) {
@@ -231,18 +358,20 @@ class Comment extends CommentSkeleton {
           return treeWalker.currentNode.tagName.toLowerCase();
         }
       }
+
+      return null;
     };
 
     if (this.level !== 0) {
       /**
        * Name of the tag of the list that this comment is an item of. `'dl'`, `'ul'`, `'ol'`, or
-       * `undefined`.
+       * `null`.
        *
-       * @type {string|undefined}
+       * @type {?string}
        */
       this.containerListType = getContainerListType(this.highlightables[0]);
 
-      this.ahContainerListType = getContainerListType(this.marginHighlightable);
+      this.mhContainerListType = getContainerListType(this.marginHighlightable);
     }
   }
 
@@ -251,7 +380,7 @@ class Comment extends CommentSkeleton {
    *
    * @private
    */
-  updateAnchorHighlightable() {
+  updateMarginHighlightable() {
     if (this.highlightables.length > 1) {
       const nestingLevels = [];
       const closestListTypes = [];
@@ -273,21 +402,16 @@ class Comment extends CommentSkeleton {
       let marginHighlightableIndex;
       for (let i = 0; i < 2; i++) {
         if (
-          (nestingLevels[i] === minNestingLevel && marginHighlightableIndex === undefined) ||
-          (closestListTypes[marginHighlightableIndex] === 'ol' && closestListTypes[i] !== 'ol')
+          marginHighlightableIndex === undefined ?
+            nestingLevels[i] === minNestingLevel :
+            (closestListTypes[marginHighlightableIndex] === 'ol' && closestListTypes[i] !== 'ol')
         ) {
           marginHighlightableIndex = i;
         }
       }
 
-      /**
-       * A special {@link Comment#highlightables highlightable} used to
-       * {@link Comment#getLayersMargins determine layers margins}.
-       *
-       * @type {HTMLElement}
-       * @private
-       */
-      this.marginHighlightable = firstAndLastHighlightable[marginHighlightableIndex];
+      this.marginHighlightable =
+        firstAndLastHighlightable[/** @type {number} */ (marginHighlightableIndex)];
     } else {
       this.marginHighlightable = this.highlightables[0];
     }
@@ -430,17 +554,17 @@ class Comment extends CommentSkeleton {
     const pagesToCheckExistence = [];
 
     const headerWrapper = Comment.prototypes.get('headerWrapperElement');
-    this.headerElement = headerWrapper.firstChild;
-    const authorWrapper = this.headerElement.firstChild;
-    const authorLink = authorWrapper.firstChild;
-    const authorLinksWrapper = authorLink.nextElementSibling;
-    const bdiElement = authorLink.firstChild;
-    const authorTalkLink = authorLinksWrapper.firstElementChild;
+    this.headerElement = /** @type {HTMLElement} */ (headerWrapper.firstChild);
+    const authorWrapper = /** @type {HTMLElement} */ (this.headerElement.firstChild);
+    const authorLink = /** @type {HTMLAnchorElement} */ (authorWrapper.firstChild);
+    const authorLinksWrapper = /** @type {HTMLElement} */ (authorLink.nextElementSibling);
+    const bdiElement = /** @type {HTMLElement} */ (authorLink.firstChild);
+    const authorTalkLink = /** @type {HTMLAnchorElement} */ (authorLinksWrapper.firstElementChild);
     let contribsLink;
     if (this.showContribsLink) {
-      contribsLink = authorLinksWrapper.lastElementChild;
+      contribsLink = /** @type {HTMLAnchorElement} */ (authorLinksWrapper.lastElementChild);
       if (!this.author.isRegistered()) {
-        contribsLink.previousSibling.remove();
+        /** @type {HTMLElement} */ (contribsLink.previousSibling).remove();
         contribsLink.remove();
       }
     }
@@ -456,7 +580,7 @@ class Comment extends CommentSkeleton {
         this.authorLink,
         authorLink
       );
-      authorLink.parentNode.replaceChild(this.authorLink, authorLink);
+      authorLink.replaceWith(this.authorLink);
       this.authorLink.classList.add('cd-comment-author');
       this.authorLink.innerHTML = '';
       this.authorLink.appendChild(bdiElement);
@@ -484,7 +608,7 @@ class Comment extends CommentSkeleton {
       if (this.extraSignatures.length) {
         this.authorTalkLink = /** @type {HTMLAnchorElement} */ (this.authorTalkLink.cloneNode(true));
       }
-      authorTalkLink.parentNode.replaceChild(this.authorTalkLink, authorTalkLink);
+      authorTalkLink.replaceWith(this.authorTalkLink);
       this.authorTalkLink.textContent = cd.s('comment-author-talk');
     } else {
       // Use the bootstrap author talk link.
@@ -500,7 +624,7 @@ class Comment extends CommentSkeleton {
 
     bdiElement.textContent = this.author.getName();
 
-    if (this.showContribsLink && this.author.isRegistered()) {
+    if (contribsLink && this.author.isRegistered()) {
       const pageName = `${cd.g.contribsPages[0]}/${this.author.getName()}`;
       contribsLink.title = pageName;
       contribsLink.href = mw.util.getUrl(pageName);
@@ -521,7 +645,7 @@ class Comment extends CommentSkeleton {
       });
 
       this.headerElement.appendChild(this.copyLinkButton.element);
-      this.timestampElement = this.copyLinkButton.labelElement;
+      this.timestampElement = /** @type {HTMLElement} */ (this.copyLinkButton.labelElement);
       if (this.date) {
         (new LiveTimestamp(this.timestampElement, this.date, !this.hideTimezone)).init();
       }
@@ -610,7 +734,9 @@ class Comment extends CommentSkeleton {
       this.replyButton = new CommentButton({
         buttonElement: Comment.prototypes.get('replyButton'),
         action,
-        widgetConstructor: Comment.prototypes.getWidget('replyButton'),
+        widgetConstructor: /** @type {() => OO.ui.ButtonWidget} */ (
+          Comment.prototypes.getWidget('replyButton')
+        ),
       });
       this.overlayMenu.appendChild(this.replyButton.element);
     }
@@ -665,7 +791,9 @@ class Comment extends CommentSkeleton {
       this.editButton = new CommentButton({
         buttonElement: Comment.prototypes.get('editButton'),
         action,
-        widgetConstructor: Comment.prototypes.getWidget('editButton'),
+        widgetConstructor: /** @type {() => OO.ui.ButtonWidget} */ (
+          Comment.prototypes.getWidget('editButton')
+        ),
       });
       this.overlayMenu.appendChild(this.editButton.element);
     }
@@ -691,7 +819,7 @@ class Comment extends CommentSkeleton {
     const action = this.thankButtonClick.bind(this);
     if (this.isReformatted) {
       /**
-       * Edit button.
+       * Thank button.
        *
        * @type {CommentButton}
        */
@@ -707,7 +835,9 @@ class Comment extends CommentSkeleton {
       this.thankButton = new CommentButton({
         buttonElement: Comment.prototypes.get('thankButton'),
         action,
-        widgetConstructor: Comment.prototypes.getWidget('thankButton'),
+        widgetConstructor: /** @type {() => OO.ui.ButtonWidget} */ (
+          Comment.prototypes.getWidget('thankButton')
+        ),
       });
       this.overlayMenu.appendChild(this.thankButton.element);
     }
@@ -729,7 +859,9 @@ class Comment extends CommentSkeleton {
     this.copyLinkButton = new CommentButton({
       buttonElement: Comment.prototypes.get('copyLinkButton'),
       action: this.copyLink.bind(this),
-      widgetConstructor: Comment.prototypes.getWidget('copyLinkButton'),
+      widgetConstructor: /** @type {() => OO.ui.ButtonWidget} */ (
+        Comment.prototypes.getWidget('copyLinkButton')
+      ),
       href: this.dtId ? '#' + this.dtId : undefined,
     });
     this.overlayMenu.appendChild(this.copyLinkButton.element);
@@ -764,7 +896,9 @@ class Comment extends CommentSkeleton {
       this.goToParentButton = new CommentButton({
         buttonElement: Comment.prototypes.get('goToParentButton'),
         action,
-        widgetConstructor: Comment.prototypes.getWidget('goToParentButton'),
+        widgetConstructor: /** @type {() => OO.ui.ButtonWidget} */ (
+          Comment.prototypes.getWidget('goToParentButton')
+        ),
       });
       this.overlayMenu.appendChild(this.goToParentButton.element);
     }
@@ -784,7 +918,7 @@ class Comment extends CommentSkeleton {
 
     if (!this.goToChildButton?.isConnected()) {
       const action = () => {
-        this.targetChild.scrollTo({ pushState: true });
+        /** @type {Comment} */ (this.targetChild).scrollTo({ pushState: true });
       };
 
       if (this.isReformatted) {
@@ -812,7 +946,9 @@ class Comment extends CommentSkeleton {
         const buttonElement = Comment.prototypes.get('goToChildButton');
         this.goToChildButton = new CommentButton({
           element: buttonElement,
-          widgetConstructor: Comment.prototypes.getWidget('goToChildButton'),
+          widgetConstructor: /** @type {() => OO.ui.ButtonWidget} */ (
+            Comment.prototypes.getWidget('goToChildButton')
+          ),
           action,
         });
         this.$overlayMenu.prepend(buttonElement);
@@ -847,7 +983,10 @@ class Comment extends CommentSkeleton {
     });
     this.updateToggleChildThreadsButton();
 
-    this.headerElement.insertBefore(this.toggleChildThreadsButton.element, this.$changeNote?.[0]);
+    this.headerElement.insertBefore(
+      this.toggleChildThreadsButton.element,
+      this.$changeNote?.[0] || null
+    );
   }
 
   /**
@@ -869,7 +1008,6 @@ class Comment extends CommentSkeleton {
    * Check whether all child comments' threads are collapsed.
    *
    * @returns {boolean}
-   * @private
    */
   areChildThreadsCollapsed() {
     return this.getChildren().every((child) => !child.thread || child.thread.isCollapsed);
@@ -978,7 +1116,7 @@ class Comment extends CommentSkeleton {
           this.highlightables.splice(i, 1);
           i--;
           this.updateLevels(false);
-          this.updateAnchorHighlightable();
+          this.updateMarginHighlightable();
 
           // Update this.ahContainerListType here as well?
         }
@@ -1041,6 +1179,7 @@ class Comment extends CommentSkeleton {
   }
 
   /**
+   * @template {boolean} [Set=false]
    * @typedef {object} GetOffsetOptions
    * @property {object[]} [options.floatingRects]
    *   {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect Element#getBoundingClientRect}
@@ -1048,14 +1187,15 @@ class Comment extends CommentSkeleton {
    *   calculated in advance for many elements in one sequence to save time.
    * @property {boolean} [options.considerFloating] Whether to take floating elements around the
    *   comment into account. Deemed `true` if `options.floatingRects` is set.
-   * @property {boolean} [options.set=false] Whether to set the offset to the `offset` (if
+   * @property {Set} [options.set] Whether to set the offset to the `offset` (if
    *   `options.considerFloating` is `true`) or `roughOffset` (if `options.considerFloating` is
    *   `false`) property. If `true`, the function will return a boolean value indicating if the
    *   comment is moved instead of the offset. (This value can be used to stop recalculating comment
    *   offsets if a number of comments in a row have not moved for optimization purposes.) Setting
-   *   the `offset` property implies that the layers offset will be updated afterwards - otherwise,
-   *   the next attempt to call this method to update the layers offset will return `false` meaning
-   *   the comment isn't moved, and the layers offset will stay wrong.
+   *   the `offset` property implies that the layers offset will be updated afterwards (see
+   *   {@link Comment#updateLayersOffset}) - otherwise, the next attempt to call this method to
+   *   update the layers offset will return `false` meaning the comment isn't moved, and the layers
+   *   offset will stay wrong.
    */
 
   /**
@@ -1064,9 +1204,24 @@ class Comment extends CommentSkeleton {
    * @property {number} bottom
    * @property {number} left
    * @property {number} right
-   * @property {number} bottomForVisibility
+   * @property {number} bottomForVisibility A solution for comments that have the height bigger than
+   *   the viewport height. In Chrome, the scrolling step is 100 pixels.
+   * @property {number} firstHighlightableWidth First highlightable's width to determine if the
+   *   element is moved in future checks.
    * @memberof Comment
    * @inner
+   */
+
+  /**
+   * @overload
+   * @param {GetOffsetOptions} [options]
+   * @returns {?CommentOffset}
+   */
+
+  /**
+   * @overload
+   * @param {GetOffsetOptions<true>} [options]
+   * @returns {?boolean}
    */
 
   /**
@@ -1078,7 +1233,7 @@ class Comment extends CommentSkeleton {
    * Note that comment coordinates are not static, obviously, but we need to recalculate them only
    * occasionally.
    *
-   * @param {GetOffsetOptions} [options={}]
+   * @param {GetOffsetOptions<boolean>} [options={}]
    * @returns {?(CommentOffset|boolean)} Offset object. If the comment is not visible, returns
    *   `null`. If `options.set` is `true`, returns a boolean value indicating if the comment is
    *   moved instead of the offset.
@@ -1100,7 +1255,7 @@ class Comment extends CommentSkeleton {
     let rectBottom = this.elements.length === 1 ? rectTop : Comment.getCommentPartRect(lastElement);
 
     if (!getVisibilityByRects(rectTop, rectBottom)) {
-      this.setOffset(null, options, firstElement);
+      this.setOffset(null, options);
       return null;
     }
 
@@ -1121,7 +1276,7 @@ class Comment extends CommentSkeleton {
         !(Math.abs((rectBottom.bottom - rectTop.top) - (this.offset.bottom - this.offset.top)) < 0.01) ||
 
         // Has the width of the first highlightable changed
-        !(Math.abs(this.highlightables[0].offsetWidth - this.firstHighlightableWidth) < 0.01)
+        !(Math.abs(this.highlightables[0].offsetWidth - this.offset.firstHighlightableWidth) < 0.01)
       ) :
       true;
     if (!isMoved) {
@@ -1139,10 +1294,8 @@ class Comment extends CommentSkeleton {
     const bottom = scrollY + rectBottom.bottom;
 
     if (options.considerFloating) {
-      [
-        rectTop,
-        rectBottom,
-      ] = this.getAdjustedRects(rectTop, rectBottom, bottom, options.floatingRects);
+      [rectTop, rectBottom] =
+        this.getAdjustedRects(rectTop, rectBottom, top, bottom, options.floatingRects);
     }
 
     const scrollX = window.scrollX;
@@ -1153,14 +1306,17 @@ class Comment extends CommentSkeleton {
       this.updateStretched(left, right);
     }
 
-    // A solution for comments that have the height bigger than the viewport height. In Chrome, the
-    // scrolling step is 100 pixels.
-    const bottomForVisibility = bottom - top > (window.innerHeight - 250) ?
-      top + (window.innerHeight - 250) :
-      bottom;
-
-    const offset = { top, bottom, left, right, bottomForVisibility };
-    this.setOffset(offset, options, firstElement);
+    const offset = {
+      top,
+      bottom,
+      left,
+      right,
+      bottomForVisibility: bottom - top > (window.innerHeight - 250) ?
+        top + (window.innerHeight - 250) :
+        bottom,
+      firstHighlightableWidth: firstElement.offsetWidth,
+    };
+    this.setOffset(offset, options);
 
     return options.set ? true : offset;
   }
@@ -1169,31 +1325,16 @@ class Comment extends CommentSkeleton {
    * If `options.set` is `true`, set the offset to the `offset` (if `options.considerFloating` is
    * `true`) or `roughOffset` (if `options.considerFloating` is `false`) property.
    *
-   * @param {?object} offset
-   * @param {GetOffsetOptions} options
-   * @param {HTMLElement} firstElement
+   * @param {?CommentOffset} offset
+   * @param {GetOffsetOptions<boolean>} options
    * @private
    */
-  setOffset(offset, options, firstElement) {
+  setOffset(offset, options) {
     if (!options.set) return;
 
     if (options.considerFloating) {
-      /**
-       * The comment's coordinates.
-       *
-       * @type {?CommentOffset}
-       */
       this.offset = offset;
-
-      // This is to determine if the element is moved in future checks.
-      this.firstHighlightableWidth = firstElement.offsetWidth;
     } else {
-      /**
-       * The comment's rough coordinates (without taking into account floating elements around the
-       * comment).
-       *
-       * @type {?CommentOffset}
-       */
       this.roughOffset = offset;
     }
   }
@@ -1206,6 +1347,8 @@ class Comment extends CommentSkeleton {
    *   elements around the comment.
    * @param {DOMRect} rectBottom Bottom rectangle that was got without taking into account floating
    *   elements around the comment.
+   * @param {number} top Top coordonate of the comment (calculated without taking floating elements
+   *   into account).
    * @param {number} bottom Bottom coordonate of the comment (calculated without taking floating
    *   elements into account).
    * @param {object[]} [floatingRects=controller.getFloatingElements().map(getExtendedRect)]
@@ -1218,6 +1361,7 @@ class Comment extends CommentSkeleton {
   getAdjustedRects(
     rectTop,
     rectBottom,
+    top,
     bottom,
     floatingRects = controller.getFloatingElements().map(getExtendedRect)
   ) {
@@ -1361,7 +1505,7 @@ class Comment extends CommentSkeleton {
    */
   getMargins() {
     let startMargin;
-    if (this.ahContainerListType === 'ol') {
+    if (this.mhContainerListType === 'ol') {
       // `this.highlightables.length === 1` is a workaround for cases such as
       // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202005160930_Example.
       startMargin = this.highlightables.length === 1 ?
@@ -1582,14 +1726,15 @@ class Comment extends CommentSkeleton {
       }
       offsetParent ||= document.body;
       offsetParent.classList.add('cd-commentLayersContainer-parent');
-      let container = offsetParent.firstElementChild;
+      let container = /** @type {HTMLElement} */ (offsetParent.firstElementChild);
       if (!container.classList.contains('cd-commentLayersContainer')) {
         container = document.createElement('div');
         container.classList.add('cd-commentLayersContainer');
         offsetParent.insertBefore(container, offsetParent.firstChild);
 
-        container.cdIsTopLayersContainer = !container.parentNode.parentNode
-          .closest('.cd-commentLayersContainer-parent');
+        container.cdIsTopLayersContainer = !container.parentElement?.parentElement?.closest(
+          '.cd-commentLayersContainer-parent'
+        );
       }
       this.layersContainer = container;
 
@@ -1606,63 +1751,19 @@ class Comment extends CommentSkeleton {
    * @private
    */
   createLayers() {
-    /**
-     * _For internal use._ Comment's underlay as a native (non-jQuery) element.
-     *
-     * @type {?(HTMLElement|undefined)}
-     */
     this.underlay = Comment.prototypes.get('underlay');
-
     commentRegistry.underlays.push(this.underlay);
 
-    /**
-     * Comment's overlay.
-     *
-     * @type {?(HTMLElement|undefined)}
-     * @private
-     */
     this.overlay = Comment.prototypes.get('overlay');
-
-    /**
-     * Line element in comment's overlay.
-     *
-     * @type {HTMLElement|undefined}
-     * @private
-     */
-    this.line = /** @type {HTMLElement} */ this.overlay.firstChild;
-
-    /**
-     * Comment's side marker.
-     *
-     * @type {HTMLElement|undefined}
-     * @private
-     */
-    this.marker = this.overlay.firstChild.nextSibling;
+    this.line = /** @type {HTMLElement} */ (this.overlay.firstChild);
+    this.marker = /** @type {HTMLElement} */ (
+      /** @type {HTMLElement} */ (this.overlay.firstChild).nextSibling
+    );
 
     if (!this.isReformatted) {
-      /**
-       * Inner wrapper in comment's overlay.
-       *
-       * @type {HTMLElement|undefined}
-       * @private
-       */
-      this.overlayInnerWrapper = this.overlay.lastChild;
-
-      /**
-       * Gradient element in comment's overlay.
-       *
-       * @type {HTMLElement|undefined}
-       * @private
-       */
-      this.overlayGradient = this.overlayInnerWrapper.firstChild;
-
-      /**
-       * Menu element in comment's overlay.
-       *
-       * @type {HTMLElement|undefined}
-       * @private
-       */
-      this.overlayMenu = this.overlayInnerWrapper.lastChild;
+      this.overlayInnerWrapper = /** @type {HTMLElement} */ (this.overlay.lastChild);
+      this.overlayGradient = /** @type {HTMLElement} */ (this.overlayInnerWrapper.firstChild);
+      this.overlayMenu = /** @type {HTMLElement} */ (this.overlayInnerWrapper.lastChild);
 
       // Hide the overlay on right click. It can block clicking the author page link.
       this.overlayInnerWrapper.oncontextmenu = this.hideMenu.bind(this);
@@ -1678,26 +1779,28 @@ class Comment extends CommentSkeleton {
       this.addReplyButton();
     }
 
+    this.overlayInnerWrapper
+
     this.updateLayersStyles(true);
 
     /**
      * Comment's underlay.
      *
-     * @type {?(JQuery|undefined)}
+     * @type {?JQuery}
      */
     this.$underlay = $(this.underlay);
 
     /**
      * Comment's overlay.
      *
-     * @type {?(JQuery|undefined)}
+     * @type {?JQuery}
      */
     this.$overlay = $(this.overlay);
 
     /**
      * Comment's side marker.
      *
-     * @type {JQuery|undefined}
+     * @type {JQuery}
      */
     this.$marker = $(this.marker);
 
@@ -1705,14 +1808,14 @@ class Comment extends CommentSkeleton {
       /**
        * Menu element in the comment's overlay.
        *
-       * @type {JQuery|undefined}
+       * @type {JQuery}
        */
       this.$overlayMenu = $(this.overlayMenu);
 
       /**
        * Gradient element in the comment's overlay.
        *
-       * @type {JQuery|undefined}
+       * @type {JQuery}
        */
       this.$overlayGradient = $(this.overlayGradient);
     }
@@ -1730,12 +1833,12 @@ class Comment extends CommentSkeleton {
   /**
    * Set a timeout for hiding the menu.
    *
-   * @param {Event} e
+   * @param {MouseEvent} event
    * @private
    */
-  deferHideMenu(e) {
+  deferHideMenu(event) {
     // Ignore other than left button clicks.
-    if (e.which !== 1) return;
+    if (event.which !== 1) return;
 
     this.hideMenuTimeout = setTimeout(this.hideMenu.bind(this), 1200);
   }
@@ -1743,11 +1846,11 @@ class Comment extends CommentSkeleton {
   /**
    * Hide the comment menu (in fact, the comment overlay's inner wrapper).
    *
-   * @param {Event} [e]
+   * @param {MouseEvent} [event]
    * @private
    */
-  hideMenu(e) {
-    e?.preventDefault();
+  hideMenu(event) {
+    event?.preventDefault();
     this.overlayInnerWrapper.style.display = 'none';
     this.wasMenuHidden = true;
   }
@@ -1791,11 +1894,13 @@ class Comment extends CommentSkeleton {
    * @private
    */
   updateClassesForType(type, add) {
+    if (!this.underlay) return;
+
     add = Boolean(add);
     if (this.underlay.classList.contains(`cd-comment-underlay-${type}`) === add) return;
 
     this.underlay.classList.toggle(`cd-comment-underlay-${type}`, add);
-    this.overlay.classList.toggle(`cd-comment-overlay-${type}`, add);
+    /** @type {HTMLElement} */ (this.overlay).classList.toggle(`cd-comment-overlay-${type}`, add);
 
     if (type === 'deleted') {
       this.replyButton?.setDisabled(add);
@@ -1813,7 +1918,7 @@ class Comment extends CommentSkeleton {
 
     this.updateLayersOffset();
     this.getLayersContainer().appendChild(this.underlay);
-    this.getLayersContainer().appendChild(this.overlay);
+    this.getLayersContainer().appendChild(/** @type {HTMLElement} */ (this.overlay));
   }
 
   /**
@@ -1826,10 +1931,14 @@ class Comment extends CommentSkeleton {
     // invisible.
     if (!this.underlay || !this.layersOffset) return;
 
-    this.underlay.style.top = this.overlay.style.top = this.layersOffset.top + 'px';
-    this.underlay.style.left = this.overlay.style.left = this.layersOffset.left + 'px';
-    this.underlay.style.width = this.overlay.style.width = this.layersOffset.width + 'px';
-    this.underlay.style.height = this.overlay.style.height = this.layersOffset.height + 'px';
+    this.underlay.style.top = /** @type {HTMLElement} */ (this.overlay).style.top =
+      this.layersOffset.top + 'px';
+    this.underlay.style.left = /** @type {HTMLElement} */ (this.overlay).style.left =
+      this.layersOffset.left + 'px';
+    this.underlay.style.width = /** @type {HTMLElement} */ (this.overlay).style.width =
+      this.layersOffset.width + 'px';
+    this.underlay.style.height = /** @type {HTMLElement} */ (this.overlay).style.height =
+      this.layersOffset.height + 'px';
   }
 
   /**
@@ -1849,7 +1958,7 @@ class Comment extends CommentSkeleton {
     this.underlay = null;
     this.$underlay = null;
 
-    this.overlay.remove();
+    /** @type {HTMLElement} */ (this.overlay).remove();
     this.overlay = null;
     this.$overlay = null;
 
@@ -1859,10 +1968,10 @@ class Comment extends CommentSkeleton {
   /**
    * _For internal use._ Update the comment's hover state based on a `mousemove` event.
    *
-   * @param {Event} e
+   * @param {MouseEvent} event
    * @param {boolean} isObstructingElementHovered
    */
-  updateHoverState(e, isObstructingElementHovered) {
+  updateHoverState(event, isObstructingElementHovered) {
     const layersOffset = this.layersOffset;
     const layersContainerOffset = this.getLayersContainerOffset();
     if (!layersOffset || !layersContainerOffset) {
@@ -1872,10 +1981,10 @@ class Comment extends CommentSkeleton {
     }
     if (
       !isObstructingElementHovered &&
-      e.pageY >= layersOffset.top + layersContainerOffset.top &&
-      e.pageY <= layersOffset.top + layersOffset.height + layersContainerOffset.top &&
-      e.pageX >= layersOffset.left + layersContainerOffset.left &&
-      e.pageX <= layersOffset.left + layersOffset.width + layersContainerOffset.left
+      event.pageY >= layersOffset.top + layersContainerOffset.top &&
+      event.pageY <= layersOffset.top + layersOffset.height + layersContainerOffset.top &&
+      event.pageX >= layersOffset.left + layersContainerOffset.left &&
+      event.pageX <= layersOffset.left + layersOffset.width + layersContainerOffset.left
     ) {
       this.highlightHovered();
     } else {
@@ -1886,12 +1995,12 @@ class Comment extends CommentSkeleton {
   /**
    * Highlight the comment when it is hovered.
    *
-   * @param {Event} e
+   * @param {MouseEvent | TouchEvent} [event]
    */
-  highlightHovered(e) {
+  highlightHovered(event) {
     if (this.isHovered || controller.isPageOverlayOn() || this.isReformatted) return;
 
-    if (e && e.type === 'touchstart') {
+    if (event?.type === 'touchstart') {
       if (this.wasMenuHidden) {
         this.wasMenuHidden = false;
         return;
@@ -1943,7 +2052,7 @@ class Comment extends CommentSkeleton {
    * @private
    */
   animateToColors(markerColor, backgroundColor, callback) {
-    const generateProperties = (backgroundColor) => {
+    const generateProperties = (/** @type {string} */ backgroundColor) => {
       const properties = { backgroundColor };
 
       // jquery.color module can't animate to the transparent color.
@@ -1964,11 +2073,12 @@ class Comment extends CommentSkeleton {
     });
 
     const comment = this;
-    this.$animatedBackground.animate(generateProperties(backgroundColor), 400, 'swing', function () {
-      if (this !== comment.$animatedBackground.get(-1)) return;
+    const $background = /** @type {JQuery} */ (this.$animatedBackground);
+    $background.animate(generateProperties(backgroundColor), 400, 'swing', function () {
+      if (this !== $background.get(-1)) return;
 
       callback?.();
-      comment.$animatedBackground.add(comment.$overlayGradient).css(propertyDefaults);
+      $background.add(comment.$overlayGradient).css(propertyDefaults);
     });
   }
 
@@ -1980,8 +2090,6 @@ class Comment extends CommentSkeleton {
    * @private
    */
   animateBack(type, callback) {
-    this.animateBackBound = null;
-
     if (!this.$underlay?.parent().length) {
       callback?.();
       return;
@@ -2022,18 +2130,13 @@ class Comment extends CommentSkeleton {
    *
    * @param {string} type
    * @param {number} delay
-   * @param {Function} callback
+   * @param {Function} [callback]
    */
   flash(type, delay, callback) {
     this.configureLayers();
     if (!this.$underlay) {
       callback?.();
       return;
-    }
-
-    if (this.animateBackBound) {
-      clearTimeout(this.unhighlightTimeout);
-      this.animateBackBound();
     }
 
     /**
@@ -2048,8 +2151,12 @@ class Comment extends CommentSkeleton {
 
     this.updateClassesForType(type, true);
 
-    this.animateBackBound = this.animateBack.bind(this, type, callback);
-    this.unhighlightTimeout = setTimeout(this.animateBackBound, delay);
+    // If there was an animation scheduled, run it first
+    this.unhighlightDeferred?.resolve();
+
+    this.unhighlightDeferred = $.Deferred();
+    this.unhighlightDeferred.then(this.animateBack.bind(this, type, callback));
+    sleep(delay).then(this.unhighlightDeferred.resolve);
   }
 
   /**
@@ -2075,15 +2182,15 @@ class Comment extends CommentSkeleton {
     // to set background if the user has switched off background highlighting for new comments.
     this.flash('changed', 1000);
 
-    if (this.isChanged) {
+    if (this.isChanged && this.id) {
       const seenStorageItem = new StorageItem('seenRenderedChanges');
-      const seen = seenStorageItem.get(mw.config.get('wgArticleId')) || {};
+      const seen = seenStorageItem.get(String(mw.config.get('wgArticleId'))) || {};
       seen[this.id] = {
         htmlToCompare: this.htmlToCompare,
         seenTime: Date.now(),
       };
       seenStorageItem
-        .set(mw.config.get('wgArticleId'), seen)
+        .set(String(mw.config.get('wgArticleId')), seen)
         .save();
     }
 
@@ -2112,7 +2219,7 @@ class Comment extends CommentSkeleton {
    *
    * @param {string} body
    * @param {object[]} revisions
-   * @param {object[]} commentsData
+   * @param {import('./CommentSkeleton').CommentSkeletonLike[]} commentsData
    * @returns {JQuery}
    */
   scrubDiff(body, revisions, commentsData) {
@@ -2236,10 +2343,23 @@ class Comment extends CommentSkeleton {
   }
 
   /**
+   * @overload
+   * @param {'changed'|'changedSince'} type
+   * @param {boolean} isNewVersionRendered
+   * @param {number} comparedRevisionId
+   * @param {object} commentsData
+   */
+
+  /**
+   * @overload
+   * @param {'deleted'} type
+   */
+
+  /**
    * Update the comment's properties, add a small note next to the signature saying the comment has
    * been changed or deleted, and change the comment's styling if it has been.
    *
-   * @param {'changed'|'changedSince'|'deleted'} type Type of the mark.
+   * @param {import('./updateChecker').ChangeType} type Type of the mark.
    * @param {boolean} [isNewVersionRendered] Is the new version of the comment rendered
    *   (successfully updated or, for `changedSince` type, has been a new one from the beginning).
    * @param {number} [comparedRevisionId] ID of the revision to compare with when the user clicks to
@@ -2272,7 +2392,7 @@ class Comment extends CommentSkeleton {
       new Button({
         label: cd.s('comment-changed-refresh'),
         action: () => {
-          controller.reload(type === 'deleted' ? {} : { commentIds: [this.id] });
+          controller.reload(type === 'deleted' || !this.id ? {} : { commentIds: [this.id] });
         },
       });
 
@@ -2281,26 +2401,30 @@ class Comment extends CommentSkeleton {
       new Button({
         label: cd.s('comment-diff'),
         action: async () => {
-          diffLink.setPending(true);
+          /** @type {Button} */ (diffLink).setPending(true);
           try {
             await this.showDiff(
-              type === 'changedSince' ? comparedRevisionId : currentRevisionId,
-              type === 'changedSince' ? currentRevisionId : comparedRevisionId,
+              /** @type {number} */ (
+                type === 'changedSince' ? comparedRevisionId : currentRevisionId
+              ),
+              /** @type {number} */ (
+                type === 'changedSince' ? currentRevisionId : comparedRevisionId
+              ),
               commentsData
             );
-          } catch (e) {
+          } catch (error) {
             let text = cd.sParse('comment-diff-error');
-            if (e instanceof CdError) {
-              const { type, message } = e.data;
+            if (error instanceof CdError) {
+              const { type, message } = error.data;
               if (message) {
                 text = message;
               } else if (type === 'network') {
                 text += ' ' + cd.sParse('error-network');
               }
             }
-            mw.notify(wrapHtml(text), { type: e.data?.code === 'emptyDiff' ? 'info' : 'error' });
+            mw.notify(wrapHtml(text), { type: error.data?.code === 'emptyDiff' ? 'info' : 'error' });
           }
-          diffLink.setPending(false);
+          /** @type {Button} */ (diffLink).setPending(false);
         },
       }) :
       undefined;
@@ -2406,7 +2530,7 @@ class Comment extends CommentSkeleton {
       this.isSeenBeforeChanged === true
     ) {
       this.isSeen = true;
-      delete this.isSeenBeforeChanged;
+      this.isSeenBeforeChanged = null;
       commentRegistry.emit('registerSeen');
     }
 
@@ -2417,10 +2541,10 @@ class Comment extends CommentSkeleton {
         controller.maybeMarkPageAsRead();
       } else {
         const seenStorageItem = new StorageItem('seenRenderedChanges');
-        const seen = seenStorageItem.get(mw.config.get('wgArticleId')) || {};
+        const seen = seenStorageItem.get(String(mw.config.get('wgArticleId'))) || {};
         delete seen[this.id];
         seenStorageItem
-          .set(mw.config.get('wgArticleId'), seen)
+          .set(String(mw.config.get('wgArticleId')), seen)
           .save();
 
         this.flashChangedOnSight();
@@ -2470,7 +2594,7 @@ class Comment extends CommentSkeleton {
       // TODO: support non-Arabic digits (e.g. fa.wikipedia.org). Also not sure square brackets are
       // the same everywhere.
       const match = this.$elements.find('.autonumber').text().match(/\d+/);
-      let currentAutonumber = match ? match[0] : 1;
+      let currentAutonumber = match ? Number(match[0]) : 1;
       newComment.elementHtmls.forEach((html, i) => {
         html = html.replace(
           /\x01(\d+)_\w+\x02/g,
@@ -2544,7 +2668,7 @@ class Comment extends CommentSkeleton {
    * @param {boolean} [options.flash] Whether to flash the comment as target.
    * @param {boolean} [options.pushState=false] Whether to push a state to the history with the
    *   comment ID as a fragment.
-   * @param {Function} [options.callback] Callback to run after the animation has completed.
+   * @param {() => void} [options.callback] Callback to run after the animation has completed.
    * @param {'top'|'center'|'bottom'} [options.alignment] Where should the element be positioned
    *   relative to the viewport.
    */
@@ -2567,32 +2691,33 @@ class Comment extends CommentSkeleton {
     }
 
     if (this.isCollapsed) {
-      this.getVisibleExpandNote().cdScrollIntoView(alignment || 'top', smooth, callback);
-      const $message = wrapHtml(
-        cd.sParse('navpanel-firstunseen-hidden', '$1'),
-        {
-          callbacks: {
-            'cd-notification-expandThread': () => {
-              this.scrollTo({
-                smooth,
-                expandThreads: true,
-                flash,
-                pushState,
-                callback,
-              });
-              notification.close();
-            },
-            'cd-notification-markThreadAsRead': () => {
-              this.thread.getComments().forEach((c) => {
-                c.isSeen = true;
-              });
-              commentRegistry.emit('registerSeen');
-              notification.close();
-              navPanel.goToFirstUnseenComment();
-            },
-          },
-        }
+      /** @type {JQuery} */ (this.getVisibleExpandNote()).cdScrollIntoView(
+        alignment || 'top',
+        smooth,
+        callback
       );
+      const $message = wrapHtml(cd.sParse('navpanel-firstunseen-hidden', '$1'), {
+        callbacks: {
+          'cd-notification-expandThread': () => {
+            this.scrollTo({
+              smooth,
+              expandThreads: true,
+              flash,
+              pushState,
+              callback,
+            });
+            notification.close();
+          },
+          'cd-notification-markThreadAsRead': () => {
+            this.thread.getComments().forEach((c) => {
+              c.isSeen = true;
+            });
+            commentRegistry.emit('registerSeen');
+            notification.close();
+            navPanel.goToFirstUnseenComment();
+          },
+        },
+      });
       if (this.isSeen) {
         $message.find('.cd-notification-markThreadAsRead').remove();
       }
@@ -2688,11 +2813,18 @@ class Comment extends CommentSkeleton {
   }
 
   /**
+   * @typedef {object} DiffMatch
+   * @property {object} revision
+   * @property {number} wordOverlap
+   * @property {number} dateProximity
+   */
+
+  /**
    * Find matches of the comment with diffs that might have added it.
    *
    * @param {string[]} compareBodies
    * @param {object[]} revisions
-   * @returns {object}
+   * @returns {Promise.<DiffMatch[]>}
    */
   async findDiffMatches(compareBodies, revisions) {
     // Only analyze added lines except for headings. `diff-empty` is not always present, so we stick
@@ -2762,6 +2894,12 @@ class Comment extends CommentSkeleton {
    */
   async findEdit() {
     if (!this.addingEdit) {
+      if (!this.date) {
+        throw new CdError({
+          type: 'internal',
+        })
+      }
+
       // Search for the edit in the range of 10 minutes before (in case the comment was edited with
       // timestamp replaced) to 3 minutes after (a rare occasion where the diff timestamp is newer
       // than the comment timestamp).
@@ -2817,17 +2955,19 @@ class Comment extends CommentSkeleton {
     const edit = await this.findEdit();
     if (format === 'standard') {
       const urlEnding = decodeURI(cd.page.getArchivedPage().getUrl({ diff: edit.revid }));
+
       return `${cd.g.server}${urlEnding}`;
     } else if (format === 'short') {
       return `${cd.g.server}/?diff=${edit.revid}`;
-    } else if (format === 'wikilink') {
-      const specialPageName = (
-        mw.config.get('wgFormattedNamespaces')[-1] +
-        ':' +
-        cd.g.specialPageAliases.Diff[0]
-      );
-      return `[[${specialPageName}/${edit.revid}]]`;
     }
+
+    const specialPageName = (
+      mw.config.get('wgFormattedNamespaces')[-1] +
+      ':' +
+      cd.g.specialPageAliases.Diff[0]
+    );
+
+    return `[[${specialPageName}/${edit.revid}]]`;
   }
 
   /**
@@ -2846,11 +2986,11 @@ class Comment extends CommentSkeleton {
   /**
    * Process thank error.
    *
-   * @param {CdError|Error} e
+   * @param {CdError|Error} error
    * @private
    */
-  thankFail(e) {
-    const { type, code } = e.data;
+  thankFail(error) {
+    const { type, code } = error.data;
     let text;
     switch (type) {
       case 'parse': {
@@ -2870,7 +3010,7 @@ class Comment extends CommentSkeleton {
           );
         } else {
           text = cd.sParse('thank-error');
-          console.warn(e);
+          console.warn(error);
         }
         break;
       }
@@ -2976,14 +3116,15 @@ class Comment extends CommentSkeleton {
     }
 
     if (commentRegistry.getByIndex(this.index + 1)?.isOutdented && this.section) {
-      if (this.section.replyForm && this.section.replyForm.targetWithOutdentedReplies === this) {
-        this.section.replyForm.$element.cdScrollIntoView('center');
-        this.section.replyForm.commentInput.focus();
+      let replyForm = this.section.replyForm;
+      if (replyForm && replyForm.targetWithOutdentedReplies === this) {
+        replyForm.$element.cdScrollIntoView('center');
+        replyForm.commentInput.focus();
       } else {
-        if (!this.section.replyForm) {
-          this.section.reply({ targetWithOutdentedReplies: this });
+        if (!replyForm) {
+          replyForm = this.section.reply({ targetWithOutdentedReplies: this });
         }
-        let selection = window.getSelection();
+        let selection = /** @type {Selection} */ (window.getSelection());
         if (selection.type !== 'Range') {
           const range = document.createRange();
           if (this.isReformatted) {
@@ -2996,12 +3137,12 @@ class Comment extends CommentSkeleton {
           } else {
             range.setEnd(this.signatureElement, 0);
           }
-          selection = window.getSelection();
           selection.removeAllRanges();
           selection.addRange(range);
         }
-        this.section.replyForm.quote(true, this, true);
+        replyForm.quote(true, this, true);
       }
+
       return;
     }
 
@@ -3049,20 +3190,23 @@ class Comment extends CommentSkeleton {
    *
    * @param {object} [initialState] See {@link CommentForm}'s constructor.
    * @param {import('./CommentForm').default} [commentForm]
+   * @returns {import('./CommentForm').default}
    */
   edit(initialState, commentForm) {
     // Check for existence in case the editing is initiated from a script of some kind (there is no
     // button to call it from CD when the form is displayed).
-    if (this.editForm) return;
+    if (!this.editForm) {
+      /**
+       * Edit form related to the comment.
+       *
+       * @type {import('./CommentForm').default|undefined}
+       */
+      this.editForm = commentFormRegistry.setupCommentForm(this, {
+        mode: 'edit',
+      }, initialState, commentForm);
+    }
 
-    /**
-     * Edit form related to the comment.
-     *
-     * @type {import('./CommentForm').default|undefined}
-     */
-    this.editForm = commentFormRegistry.setupCommentForm(this, {
-      mode: 'edit',
-    }, initialState, commentForm);
+    return this.editForm;
   }
 
   /**
@@ -3081,12 +3225,13 @@ class Comment extends CommentSkeleton {
           this.section.locateInCode(true);
           this.locateInCode(true);
           commentForm?.setSectionSubmitted(true);
-        } catch (e) {
+        } catch (error) {
           if (!(
-            e instanceof CdError &&
-            ['noSuchSection', 'locateSection', 'locateComment'].includes(e.data.code)
+            error instanceof CdError &&
+            error.data.code &&
+            ['noSuchSection', 'locateSection', 'locateComment'].includes(error.data.code)
           )) {
-            throw e;
+            throw error;
           }
         }
       }
@@ -3108,7 +3253,7 @@ class Comment extends CommentSkeleton {
   /**
    * Add a comment form {@link CommentForm#getTarget targeted} at this comment to the page.
    *
-   * @param {string} mode
+   * @param {import('./CommentForm').CommentFormMode} mode
    * @param {import('./CommentForm').default} commentForm
    */
   addCommentFormToPage(mode, commentForm) {
@@ -3123,7 +3268,7 @@ class Comment extends CommentSkeleton {
         .data('cd-comment-form', commentForm);
       this.unhighlightHovered();
       if (this.isOpeningSection) {
-        $(this.section.barElement).addClass('cd-hidden');
+        this.section.hideBar();
       }
 
       commentForm.$element.toggleClass('cd-commentForm-highlighted', this.isNew || this.isOwn);
@@ -3154,7 +3299,7 @@ class Comment extends CommentSkeleton {
    * Clean up traces of a comment form {@link CommentForm#getTarget targeted} at this comment from
    * the page.
    *
-   * @param {string} mode
+   * @param {import('./CommentForm').CommentFormMode} mode
    * @param {import('./CommentForm').default} commentForm
    */
   cleanUpCommentFormTraces(mode, commentForm) {
@@ -3257,14 +3402,14 @@ class Comment extends CommentSkeleton {
   /**
    * Replace an element that is one of the comment's elements with another element or HTML string.
    *
-   * @param {Element|JQuery} element Element to replace. Provide a native element only if
-   *   we're in the page processing phase (and {@link Comment#$elements} has not been requested,
-   *   hence cached yet).
-   * @param {Element|string} newElementOrHtml Element or HTML string to replace with.
-   * @returns {Element}
+   * @param {HTMLElement|JQuery} element Element to replace. Provide a native element only if we're
+   *   in the page processing phase (and {@link Comment#$elements} has not been requested, hence
+   *   cached yet).
+   * @param {HTMLElement|string} newElementOrHtml Element or HTML string to replace with.
+   * @returns {HTMLElement}
    */
   replaceElement(element, newElementOrHtml) {
-    const nativeElement = element instanceof $ ? element[0] : element;
+    const nativeElement = element instanceof HTMLElement ? element : element[0];
     let newElement;
     if (typeof newElementOrHtml === 'string') {
       const index = [...nativeElement.parentNode.children].indexOf(nativeElement);
@@ -3276,12 +3421,12 @@ class Comment extends CommentSkeleton {
       nativeElement.parentNode.replaceChild(newElement, element);
     }
 
-    if (element instanceof $) {
+    if (element instanceof HTMLElement) {
+      this.elements.splice(this.elements.indexOf(element[0]), 1, newElementOrHtml);
+    } else {
       this.$elements = this.$elements
         .not(nativeElement)
         .add(newElement);
-    } else {
-      this.elements.splice(this.elements.indexOf(element), 1, newElementOrHtml);
     }
 
     if (this.highlightables.includes(nativeElement)) {
@@ -3343,12 +3488,12 @@ class Comment extends CommentSkeleton {
    * Search for the comment in the source code and return possible matches.
    *
    * @param {string} contextCode
-   * @param {string} commentData
-   * @param {boolean} isInSectionContext
+   * @param {import('./CommentSkeleton').CommentSkeletonLike} [commentData]
+   * @param {boolean} [isInSectionContext=false]
    * @returns {CommentSource}
    * @private
    */
-  searchInCode(contextCode, commentData, isInSectionContext) {
+  searchInCode(contextCode, commentData, isInSectionContext = false) {
     let thisData;
     if (commentData) {
       thisData = {
@@ -3408,7 +3553,8 @@ class Comment extends CommentSkeleton {
    *   code, to locate the comment in.
    * @param {string} [code] Wikitext that should have the comment (provided only if we need to
    *   perform operations on some code that is not the code of a section or page).
-   * @param {string} [commentData] Comment data for comparison (can be set together with `code`).
+   * @param {import('./CommentSkeleton').CommentSkeletonLike} [commentData] Comment data for
+   *   comparison (can be set together with `code`).
    * @returns {CommentSource|undefined}
    * @throws {CdError}
    */
@@ -3498,9 +3644,9 @@ class Comment extends CommentSkeleton {
       return null;
     }
 
-    let $note;
-    for (let t = this.collapsedThread; t; t = t.rootComment.getParent()?.collapsedThread) {
-      $note = t.$expandNote;
+    let $note = null;
+    for (let t = this.collapsedThread; t; t = t.rootComment.getParent()?.collapsedThread || null) {
+      $note = /** @type {JQuery} */ (t.$expandNote);
       if ($note.is(':visible')) break;
     }
 
@@ -3510,11 +3656,13 @@ class Comment extends CommentSkeleton {
   /**
    * Get a link to the comment with Unicode sequences decoded.
    *
-   * @param {boolean} permanent Get a permanent URL.
-   * @returns {string}
+   * @param {boolean} [permanent=false] Get a permanent URL.
+   * @returns {?string}
    */
-  getUrl(permanent) {
-    return cd.page.getDecodedUrlWithFragment(this.dtId || this.id, permanent);
+  getUrl(permanent = false) {
+    const id = this.dtId || this.id;
+
+    return id ? cd.page.getDecodedUrlWithFragment(id, permanent) : null;
   }
 
   /**
@@ -3737,7 +3885,7 @@ class Comment extends CommentSkeleton {
    * @returns {boolean} Whether there is a time conflict.
    */
   initNewAndSeen(currentPageVisits, currentTime, unseenComment, $changeNote) {
-    // Let's take 3 minutes as tolerable time discrepancy.
+    // Let's take 3 minutes as a tolerable time discrepancy.
     const isDateInFuture = this.date && this.date.getTime() > Date.now() + cd.g.msInMin * 3;
 
     if (!this.date || isDateInFuture) {
@@ -3842,7 +3990,7 @@ class Comment extends CommentSkeleton {
    * Get the name of the comment's method creating a comment form with the specified mode. Used for
    * polymorphism with {@link Section}.
    *
-   * @param {string} mode
+   * @param {import('./CommentForm').CommentFormMode} mode
    * @returns {string}
    */
   getCommentFormMethodName(mode) {
@@ -3933,6 +4081,61 @@ class Comment extends CommentSkeleton {
   }
 
   /**
+   * Get the placeholder for the comment form's headline input.
+   *
+   * Used for polymorphism with {@link Section#getCommentFormHeadlineInputPlaceholder} and
+   * {@link Page#getCommentFormHeadlineInputPlaceholder}.
+   *
+   * @param {import('./CommentForm').CommentFormMode} mode
+   * @returns {string}
+   */
+  getCommentFormHeadlineInputPlaceholder(mode) {
+    const parentSection = this.section?.getParent();
+    if (mode === 'edit' && parentSection) {
+      return cd.s('cf-headline-subsection', parentSection.headline);
+    }
+
+    return cd.s('cf-headline-topic');
+  }
+
+  /**
+   * Get the placeholder for the comment form's comment input.
+   *
+   * Used for polymorphism with {@link Section#getCommentFormCommentInputPlaceholder} and
+   * {@link Page#getCommentFormCommentInputPlaceholder}.
+   *
+   * @param {import('./CommentForm').CommentFormMode} mode
+   * @param {(users: import('./userRegistry').User[]) => void} callback
+   * @returns {?string}
+   */
+  getCommentFormCommentInputPlaceholder(mode, callback) {
+    if (mode === 'edit') {
+      return '';
+    }
+
+    if (this.isOpeningSection) {
+      return cd.s(
+        'cf-comment-placeholder-replytosection',
+        /** @type {import('./Section').default} */ (this.section).headline
+      );
+    }
+
+    this.maybeRequestAuthorGender(callback, true);
+
+    return null;
+  }
+
+  /**
+   * Get the parent comment of the comment.
+   *
+   * @param {boolean} [visual]
+   * @returns {?Comment}
+   */
+  getParent(visual) {
+    return /** @type {?Comment} */ (super.getParent(visual));
+  }
+
+  /**
    * Get all replies to the comment.
    *
    * @param {boolean} [indirect]
@@ -3943,6 +4146,22 @@ class Comment extends CommentSkeleton {
   getChildren(indirect, visual, allowSiblings) {
     return /** @type {Comment[]} */ (super.getChildren(indirect, visual, allowSiblings));
   }
+
+  /**
+   * Check if the comment is deletable.
+   *
+   * @returns {boolean}
+   */
+  isDeletable() {
+    return this.isOpeningSection ?
+      /** @type {import('./Section').default} */ (this.section).comments.length === 1 :
+      !this.getChildren().length
+  }
+
+  static prototypes = new PrototypeRegistry();
+
+  /** @type {StorageItem} */
+  static thanksStorage;
 
   static {
     // Doesn't account for cases when the section headline ends with -<number>.
@@ -3963,7 +4182,7 @@ class Comment extends CommentSkeleton {
    */
   static initPrototypes() {
     /* Comment header element */
-    if (this.isReformatted !== false) {  // true, null
+    if (settings.get('reformatComments') !== false) {  // true, null
       const headerElement = document.createElement('div');
       headerElement.className = 'cd-comment-header';
 
@@ -4021,7 +4240,7 @@ class Comment extends CommentSkeleton {
 
     /* OOUI buttons. Creating every OOUI button using the constructor takes 15 times longer than
     cloning */
-    if (this.isReformatted !== true) {
+    if (settings.get('reformatComments') !== true) {
       this.prototypes.addWidget('replyButton', () => (
         new OO.ui.ButtonWidget({
           label: cd.s('cm-reply'),
@@ -4096,7 +4315,7 @@ class Comment extends CommentSkeleton {
     overlayMarker.className = 'cd-comment-overlay-marker';
     commentOverlay.appendChild(overlayMarker);
 
-    if (!this.isReformatted) {
+    if (!settings.get('reformatComments')) {
       const overlayInnerWrapper = document.createElement('div');
       overlayInnerWrapper.className = 'cd-comment-overlay-innerWrapper';
       commentOverlay.appendChild(overlayInnerWrapper);

@@ -159,7 +159,8 @@ import controller from './controller';
  *
  * @param {JQuery|string} message
  * @param {object} [options={}]
- * @returns {Promise.<Array>}
+ * @returns {Promise.<'accept' | 'reject' | undefined>} `undefined` is possible when pressing Esc, I
+ *   think.
  */
 export async function showConfirmDialog(message, options = {}) {
   const dialog = new OO.ui.MessageDialog({ classes: ['cd-dialog-confirm'] });
@@ -299,7 +300,7 @@ export function createNumberField({
  * @param {boolean} [options.selected]
  * @param {boolean} [options.disabled]
  * @param {string} [options.help]
- * @param {string} [options.tabIndex]
+ * @param {number} [options.tabIndex]
  * @param {string[]} [options.classes]
  * @returns {CreateCheckboxFieldReturn}
  */

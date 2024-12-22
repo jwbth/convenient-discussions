@@ -24,6 +24,7 @@ import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
  * @property {string} subtitle HTML for the page's subtitle (it comes with last comment data from
  *   DT).
  * @property {string} categorieshtml HTML for the page's categories.
+ * @property {object} sections Section data for the page.
  */
 
 /**
@@ -53,6 +54,11 @@ import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
  * means of code completion).
  */
 export class Page {
+  /**
+   * User for polymorphism with Comment.
+   */
+  isOpeningSection = null;
+
   /**
    * Create a page instance.
    *
@@ -734,6 +740,7 @@ export class Page {
    * @param {import('./CommentForm').default} [commentForm]
    * @param {object} [preloadConfig={@link CommentForm.getDefaultPreloadConfig CommentForm.getDefaultPreloadConfig()}]
    * @param {boolean} [newTopicOnTop=false]
+   * @returns {?import('./CommentForm').default}
    */
   addSection(
     initialState,
@@ -746,7 +753,8 @@ export class Page {
       // forms with different content.
       if (!areObjectsEqual(preloadConfig, this.addSectionForm.getPreloadConfig())) {
         mw.notify(cd.s('cf-error-formconflict'), { type: 'error' });
-        return;
+
+        return null;
       }
 
       this.addSectionForm.$element.cdScrollIntoView('center');
@@ -776,13 +784,15 @@ export class Page {
         $('#ca-view').addClass('selected');
       });
     }
+
+    return this.addSectionForm;
   }
 
   /**
    * Clean up traces of a comment form {@link CommentForm#getTarget targeted} at this page to the
    * page.
    *
-   * @param {string} mode
+   * @param {import('./CommentForm').CommentFormMode} mode
    * @param {import('./CommentForm').default} commentForm
    */
   addCommentFormToPage(mode, commentForm) {
@@ -813,7 +823,7 @@ export class Page {
    * Get the name of the page's method creating a comment form with the specified mode. Used for
    * polymorphism with {@link Section}.
    *
-   * @param {string} mode
+   * @param {import('./CommentForm').CommentFormMode} mode
    * @returns {string}
    */
   getCommentFormMethodName(mode) {
@@ -941,6 +951,30 @@ export class Page {
         })
         .filter(definedAndNotNull)
     );
+  }
+
+  /**
+   * Get the placeholder for the comment form's headline input.
+   *
+   * Used for polymorphism with {@link Comment#getCommentFormHeadlineInputPlaceholder} and
+   * {@link Section#getCommentFormHeadlineInputPlaceholder}.
+   *
+   * @returns {string}
+   */
+  getCommentFormHeadlineInputPlaceholder() {
+    return cd.s('cf-headline-topic');
+  }
+
+  /**
+   * Get the placeholder for the comment form's comment input.
+   *
+   * Used for polymorphism with {@link Comment#getCommentFormCommentInputPlaceholder} and
+   * {@link Section#getCommentFormCommentInputPlaceholder}.
+   *
+   * @returns {string}
+   */
+  getCommentFormCommentInputPlaceholder() {
+    return cd.s('cf-comment-placeholder');
   }
 
   /**

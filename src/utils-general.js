@@ -83,7 +83,7 @@ export function isInline(node, countTextNodesAsInline = false) {
     return true;
   }
 
-  if (node.nodeType !== Node.ELEMENT_NODE) {
+  if (!isElement(node)) {
     return null;
   }
 
@@ -492,10 +492,10 @@ function calculateArrayOverlap(arr1, arr2) {
  *
  * @param {string} s1
  * @param {string} s2
- * @param {boolean} caseInsensitive
+ * @param {boolean} [caseInsensitive=false]
  * @returns {number}
  */
-export function calculateWordOverlap(s1, s2, caseInsensitive) {
+export function calculateWordOverlap(s1, s2, caseInsensitive = false) {
   const regexp = new RegExp(`[${cd.g.letterPattern}]{2,}`, 'g');
   const strToArr = (s) => (
     ((caseInsensitive ? s.toLowerCase() : s).match(regexp) || []).filter(unique)
@@ -587,14 +587,17 @@ export function ensureArray(value) {
 /**
  * Check whether the provided node is a heading node (`.mw-heading` or `<h1>` - `<h6>`).
  *
- * @param {Node} node
+ * @param {NodeLike} node
  * @param {boolean} [onlyHElements=false]
  * @returns {boolean}
  */
 export function isHeadingNode(node, onlyHElements = false) {
   return (
-    (!onlyHElements && node.classList?.contains('mw-heading')) ||
-    ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(node.tagName)
+    isElement(node) &&
+    (
+      (!onlyHElements && node.classList.contains('mw-heading')) ||
+      ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(node.tagName)
+    )
   );
 }
 
@@ -602,7 +605,8 @@ export function isHeadingNode(node, onlyHElements = false) {
  * Get the level of a {@link module:util.isHeadingNode heading node} (`.mw-heading` or `<h1>` -
  * `<h6>`).
  *
- * @param {Node|object} node Node or object with `tagName` and `className` properties.
+ * @param {ElementLike|{ tagName: string; className: string }} node Element or object with `tagName`
+ * and `className` properties.
  * @returns {?number}
  */
 export function getHeadingLevel(node) {
@@ -623,47 +627,54 @@ export function getHeadingLevel(node) {
 }
 
 /**
- * Checks if the given node is a text node.
+ * Checks if the argument is a text node.
  *
- * @param {?NodeLike} n
- * @returns {n is TextLike}
+ * @param {?NodeLike} node
+ * @returns {node is TextLike}
  */
-export function isText(n) {
-  return Boolean(n && n.nodeType === Node.TEXT_NODE);
+export function isText(node) {
+  return Boolean(node && node.nodeType === Node.TEXT_NODE);
 }
 
 /**
- * Checks if the given node is an element.
+ * Checks if the argument is an element.
  *
- * @param {?NodeLike} n
- * @returns {n is ElementLike}
+ * @param {?NodeLike} node
+ * @returns {node is ElementLike}
  */
-export function isElement(n) {
-  return Boolean(n && n.nodeType === Node.ELEMENT_NODE);
+export function isElement(node) {
+  return Boolean(node && node.nodeType === Node.ELEMENT_NODE);
 }
 
-/** @typedef {import('domhandler').Element} DomHandlerNode */
+/**
+ * Checks if the argument is a node.
+ *
+ * @param {?NodeLike} node
+ * @returns {node is NodeLike}
+ */
+export function isNode(node) {
+  return Boolean(node);
+}
+
+/**
+ * Checks if the argument is a node from the `domhandler` library.
+ *
+ * @param {NodeLike} node
+ * @returns {node is import('./worker/domhandlerExtended').Node}
+ */
+export function isDomHandlerNode(node) {
+  return 'type' in node && 'parent' in node;
+}
 
 /**
  * Checks if the given node is a node from the `domhandler` library.
  *
  * @param {NodeLike} node
- * @returns {node is import('domhandler').Node}
+ * @returns {node is import('./worker/domhandlerExtended').Element}
  */
 // eslint-disable-next-line no-unused-vars
-export function isDomHandlerNode(node) {
-  return cd.isWorker();
-}
-
-/**
- * Checks if the given node is a node from the `domhandler` library.
- *
- * @param {ElementLike} element
- * @returns {element is import('domhandler').Element}
- */
-// eslint-disable-next-line no-unused-vars
-export function isDomHandlerElement(element) {
-  return cd.isWorker();
+export function isDomHandlerElement(node) {
+  return 'type' in node && 'attribs' in node;
 }
 
 /**

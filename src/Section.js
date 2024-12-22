@@ -33,6 +33,18 @@ class Section extends SectionSkeleton {
   headingElement;
 
   /**
+   * User for polymorphism with Comment.
+   */
+  isOpeningSection = null;
+
+  /**
+   *
+   */
+  presumedCode;
+
+  elements;
+
+  /**
    * Create a section object.
    *
    * @param {import('./Parser').default} parser
@@ -126,7 +138,6 @@ class Section extends SectionSkeleton {
      * @type {boolean}
      */
     this.isHidden = false;
-    this.presumedCode = undefined;
   }
 
   /**
@@ -1162,6 +1173,7 @@ class Section extends SectionSkeleton {
    *
    * @param {object} [initialState]
    * @param {import('./CommentForm').default} [commentForm]
+   * @returns {import('./CommentForm').default}
    */
   reply(initialState, commentForm) {
     // Check for existence in case replying is called from a script of some kind (there is no button
@@ -1185,6 +1197,8 @@ class Section extends SectionSkeleton {
       this.$addSubsectionButtonsContainer.hide();
       this.resetShowAddSubsectionButtonTimeout();
     }
+
+    return this.replyForm;
   }
 
   /**
@@ -1192,6 +1206,7 @@ class Section extends SectionSkeleton {
    *
    * @param {object} [initialState]
    * @param {import('./CommentForm').default} [commentForm]
+   * @returns {import('./CommentForm').default}
    * @throws {CdError}
    */
   addSubsection(initialState, commentForm) {
@@ -1231,12 +1246,14 @@ class Section extends SectionSkeleton {
         this.addSubsectionButton?.show();
       });
     }
+
+    return this.addSubsectionForm;
   }
 
   /**
    * Add a comment form {@link CommentForm#getTarget targeted} at this section to the page.
    *
-   * @param {string} mode
+   * @param {import('./CommentForm').CommentFormMode} mode
    * @param {import('./CommentForm').default} commentForm
    */
   addCommentFormToPage(mode, commentForm) {
@@ -1266,7 +1283,7 @@ class Section extends SectionSkeleton {
    * Clean up traces of a comment form {@link CommentForm#getTarget targeted} at this section from
    * the page.
    *
-   * @param {string} mode
+   * @param {import('./CommentForm').CommentFormMode} mode
    */
   cleanUpCommentFormTraces(mode) {
     if (mode === 'replyInSection') {
@@ -1565,14 +1582,13 @@ class Section extends SectionSkeleton {
      * @memberof Section
      * @instance
      */
-    Object.assign(this, {
-      // It's more convenient to unify regexps to have `\n` as the last character of anything, not
-      // `(?:\n|$)`, and it doesn't seem to affect anything substantially.
-      presumedCode: content + '\n',
 
-      revisionId: revision.revid,
-      queryTimestamp,
-    });
+    // It's more convenient to unify regexps to have `\n` as the last character of anything, not
+    // `(?:\n|$)`, and it doesn't seem to affect anything substantially.
+    this.presumedCode = content + '\n',
+
+    this.revisionId = revision.revid;
+    this.queryTimestamp = queryTimestamp;
 
     Object.assign(cd.page, {
       redirectTarget,
@@ -1797,10 +1813,10 @@ class Section extends SectionSkeleton {
   /**
    * Get a link to the section with Unicode sequences decoded.
    *
-   * @param {boolean} permanent Get a permanent URL.
+   * @param {boolean} [permanent=false] Get a permanent URL.
    * @returns {string}
    */
-  getUrl(permanent) {
+  getUrl(permanent = false) {
     return cd.page.getDecodedUrlWithFragment(this.id, permanent);
   }
 
@@ -1819,7 +1835,7 @@ class Section extends SectionSkeleton {
    * section. (Used for polymorphism with {@link Comment#getRelevantComment} and
    * {@link Page#getRelevantComment}.)
    *
-   * @returns {?Section}
+   * @returns {?Comment}
    */
   getRelevantComment() {
     return this.comments[0]?.isOpeningSection ? this.comments[0] : null;
@@ -1877,8 +1893,8 @@ class Section extends SectionSkeleton {
   /**
    * Find the last element of the section including
    *
-   * @param {Function} [additionalCondition]
-   * @returns {Element}
+   * @param {(el: HTMLElement) => boolean} [additionalCondition]
+   * @returns {HTMLElement}
    */
   findRealLastElement(additionalCondition) {
     let realLastElement;
@@ -1893,6 +1909,7 @@ class Section extends SectionSkeleton {
         (!additionalCondition || additionalCondition(lastElement))
       )
     );
+
     return realLastElement;
   }
 
@@ -1959,11 +1976,42 @@ class Section extends SectionSkeleton {
   /**
    * Get the name of the section's method creating a comment form with the specified mode.
    *
-   * @param {string} mode
+   * @param {import('./CommentForm').CommentFormMode} mode
    * @returns {string}
    */
   getCommentFormMethodName(mode) {
     return mode === 'replyInSection' ? 'reply' : mode;
+  }
+
+  /**
+   * Get the placeholder for the comment form's headline input.
+   *
+   * Used for polymorphism with {@link Comment#getCommentFormHeadlineInputPlaceholder} and
+   * {@link Page#getCommentFormHeadlineInputPlaceholder}.
+   *
+   * @returns {string}
+   */
+  getCommentFormHeadlineInputPlaceholder() {
+    return cd.s('cf-headline-subsection', this.headline);
+  }
+
+  /**
+   * Get the placeholder for the comment form's comment input.
+   *
+   * Used for polymorphism with {@link Comment#getCommentFormCommentInputPlaceholder} and
+   * {@link Page#getCommentFormCommentInputPlaceholder}.
+   *
+   * @param {import('./CommentForm').CommentFormMode} mode
+   * @returns {string}
+   */
+  getCommentFormCommentInputPlaceholder(mode) {
+    return mode === 'replyInSection' ?
+      cd.s('cf-comment-placeholder-replytosection', this.headline) :
+      cd.s('cf-comment-placeholder');
+  }
+
+  hideBar() {
+    this.$bar.addClass('cd-hidden');
   }
 
   /**

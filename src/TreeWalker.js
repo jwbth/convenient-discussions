@@ -1,42 +1,80 @@
+import CdError from './CdError';
+import { isElement, isNode } from './utils-general';
+
+/**
+ * @typedef {'firstElementChild'|'firstChild'} FirstChildProp
+ */
+
+/**
+ * @typedef {'lastElementChild'|'lastChild'} LastChildProp
+ */
+
+/**
+ * @typedef {'previousElementSibling'|'previousSibling'} PreviousSiblingProp
+ */
+
+/**
+ * @typedef {'nextElementSibling'|'nextSibling'} NextSiblingProp
+ */
+
 /**
  * Generalization and simplification of the
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/TreeWalker TreeWalker web API} for the
  * normal and worker contexts.
  *
- * @template {boolean} [T=false]
+ * @template {NodeLike} [AcceptedNode=NodeLike]
  */
 class TreeWalker {
-  /** @type {T extends true ? ElementLike : NodeLike} */
+  /** @type {AcceptedNode} */
   currentNode;
 
-  /** @type {'firstElementChild'|'firstChild'} */
+  /** @type {FirstChildProp} */
   firstChildProp;
 
-  /** @type {'lastElementChild'|'lastChild'} */
+  /** @type {LastChildProp} */
   lastChildProp;
 
-  /** @type {'previousElementSibling'|'previousSibling'} */
+  /** @type {PreviousSiblingProp} */
   previousSiblingProp;
 
-  /** @type {'nextElementSibling'|'nextSibling'} */
+  /** @type {NextSiblingProp} */
   nextSiblingProp;
+
+  /**
+   * @typedef {(node: NodeLike) => node is AcceptedNode} AcceptNode
+   */
 
   /**
    * Create a tree walker.
    *
    * @param {NodeLike} root Node that limits where the tree walker can go within this document's
    *   tree: only the root node and its descendants.
-   * @param {(node: T extends true ? ElementLike : NodeLike) => boolean} [acceptNode] Function that
-   *   returns `true` if the tree walker should accept the node and `false` if it should reject.
-   * @param {T} [onlyElements] Walk only on element nodes, ignoring nodes of other types.
-   * @param {NodeLike} [startNode=root] Node to set as the current node.
+   * @param {AcceptNode} [acceptNode] Function that returns `true` if the tree walker should accept
+   *   the node and `false` if it should reject.
+   * @param {boolean} [elementsOnly=false] Walk only on element nodes, ignoring nodes of other
+   *   types.
+   * @param {AcceptedNode} [startNode] Node to set as the current node. The current node is set to
+   *   `root` if not specified and `root` node is accepted. Otherwise the current node is set to the
+   *   first accepted node under the root. If such node is not found, an error is thrown. (This is
+   *   to have `currentNode` never be `null` to simplify type checking.)
+   * @throws {Error}
    */
-  constructor(root, acceptNode, onlyElements, startNode = root) {
-    this.acceptNode = acceptNode;
-    this.root = root;
-    this.currentNode = /** @type {T extends true ? ElementLike : NodeLike} */ (startNode);
+  constructor(root, acceptNode, elementsOnly = false, startNode) {
+    this.acceptNode = acceptNode || /** @type {AcceptNode} */ (elementsOnly ? isElement : isNode);
 
-    if (onlyElements) {
+    this.root = root;
+    let currentNode =
+      startNode ||
+      (elementsOnly && isElement(root) && this.acceptNode(root) ? root : null);
+    if (!currentNode) {
+      currentNode = this.nextNode(root);
+    }
+    if (!currentNode) {
+      throw new Error('Cannot create TreeWalker without a start node.');
+    }
+    this.currentNode = currentNode;
+
+    if (elementsOnly) {
       this.firstChildProp = 'firstElementChild';
       this.lastChildProp = 'lastElementChild';
       this.previousSiblingProp = 'previousElementSibling';
@@ -52,18 +90,20 @@ class TreeWalker {
   /**
    * Try changing the current node to a node specified by the property.
    *
-   * @param {string} prop
-   * @returns {?NodeLike}
+   * @param {FirstChildProp | LastChildProp | PreviousSiblingProp | NextSiblingProp | 'parentNode'} prop
+   * @returns {?AcceptedNode}
    * @protected
    */
   tryMove(prop) {
+    /** @type {NodeLike | null} */
     let node = this.currentNode;
     if (node === this.root && !prop.includes('Child')) {
       return null;
     }
+
     do {
       node = node[prop];
-    } while (node && this.acceptNode && !this.acceptNode(node));
+    } while (node && !this.acceptNode(node));
     if (node) {
       this.currentNode = node;
     }
@@ -74,7 +114,7 @@ class TreeWalker {
   /**
    * Go to the parent node.
    *
-   * @returns {?NodeLike}
+   * @returns {?AcceptedNode}
    */
   parentNode() {
     return this.tryMove('parentNode');
@@ -83,7 +123,7 @@ class TreeWalker {
   /**
    * Go to the first child node.
    *
-   * @returns {?NodeLike}
+   * @returns {?AcceptedNode}
    */
   firstChild() {
     return this.tryMove(this.firstChildProp);
@@ -92,7 +132,7 @@ class TreeWalker {
   /**
    * Go to the last child node.
    *
-   * @returns {?NodeLike}
+   * @returns {?AcceptedNode}
    */
   lastChild() {
     return this.tryMove(this.lastChildProp);
@@ -101,7 +141,7 @@ class TreeWalker {
   /**
    * Go to the previous sibling node.
    *
-   * @returns {?NodeLike}
+   * @returns {?AcceptedNode}
    */
   previousSibling() {
     return this.tryMove(this.previousSiblingProp);
@@ -110,7 +150,7 @@ class TreeWalker {
   /**
    * Go to the next sibling node.
    *
-   * @returns {?NodeLike}
+   * @returns {?AcceptedNode}
    */
   nextSibling() {
     return this.tryMove(this.nextSiblingProp);
@@ -119,10 +159,13 @@ class TreeWalker {
   /**
    * Go to the next node (don't confuse with the next sibling).
    *
-   * @returns {?NodeLike}
+   * @param {NodeLike} [startNode]
+   * @returns {?AcceptedNode}
    */
-  nextNode() {
-    let node = this.currentNode;
+  nextNode(startNode) {
+    /** @type {NodeLike | null} */
+    let node = startNode || this.currentNode;
+
     do {
       if (node[this.firstChildProp]) {
         node = node[this.firstChildProp];
@@ -132,36 +175,41 @@ class TreeWalker {
         }
         node &&= node[this.nextSiblingProp];
       }
-    } while (node && this.acceptNode && !this.acceptNode(node));
+    } while (node && !this.acceptNode(node));
     if (node) {
       this.currentNode = node;
     }
+
     return node;
   }
 
   /**
    * Go to the previous node (don't confuse with the previous sibling).
    *
-   * @returns {?NodeLike}
+   * @returns {?AcceptedNode}
    */
   previousNode() {
+    /** @type {NodeLike | null} */
     let node = this.currentNode;
     if (node === this.root) {
       return null;
     }
+
     do {
-      if (node[this.previousSiblingProp]) {
-        node = node[this.previousSiblingProp];
-        while (node[this.lastChildProp]) {
-          node = node[this.lastChildProp];
+      let test = /** @type {NodeLike | null} */ (node[this.previousSiblingProp]);
+      if (test) {
+        node = test;
+        while ((test = node[this.lastChildProp])) {
+          node = test;
         }
       } else {
         node = node.parentNode;
       }
-    } while (node && this.acceptNode && !this.acceptNode(node));
+    } while (node && !this.acceptNode(node));
     if (node) {
       this.currentNode = node;
     }
+
     return node;
   }
 }

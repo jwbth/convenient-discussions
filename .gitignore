@@ -6,4 +6,4 @@ docs/
 i18nList.json
 node_modules/
 sandbox/
-**/test.ts
+**/test.*

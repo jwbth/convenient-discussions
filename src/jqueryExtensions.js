@@ -50,7 +50,7 @@ export default {
     return this.filter((i, el) => el.tagName && !isMetadataNode(el));
   },
 
-  cdScrollTo(alignment = 'top', smooth = true, callback) {
+  cdScrollTo(alignment = 'top', smooth = true, /** @type {() => void} */ callback) {
     const defaultScrollPaddingTop = 7;
     let $elements = this.cdRemoveNonElementNodes();
 
@@ -157,7 +157,7 @@ export default {
    * @param {'top'|'center'|'bottom'} [alignment='top'] Where should the element be positioned
    *   relative to the viewport.
    * @param {boolean} [smooth=true] Whether to use a smooth animation.
-   * @param {Function} [callback] Callback to run after the animation has completed.
+   * @param {() => void} [callback] Callback to run after the animation has completed.
    * @returns {JQuery}
    * @memberof JQuery.fn
    */

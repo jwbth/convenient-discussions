@@ -10,7 +10,21 @@ import { defined, isHeadingNode, isMetadataNode } from './utils-general';
  * only one used in the worker context for sections.
  */
 class SectionSkeleton {
-  /** @type {?string} */
+  /**
+   * Section headline as it appears on the page.
+   *
+   * Foreign elements can get there, add the classes of these elements to
+   * {@link module:defaultConfig.excludeFromHeadlineClasses} to filter them out.
+   *
+   * @type {string}
+   */
+  headline;
+
+  /**
+   * The name of the page the section is on in terms of wikitext.
+   *
+   * @type {?string}
+   */
   sourcePageName = null;
 
   /**
@@ -39,8 +53,8 @@ class SectionSkeleton {
    * Create a section skeleton instance.
    *
    * @param {import('./Parser').default} parser
-   * @param {object} heading
-   * @param {object[]} targets
+   * @param {import('./Parser').HeadingTarget} heading
+   * @param {import('./Parser').Target[]} targets
    */
   constructor(parser, heading, targets) {
     this.parser = parser;
@@ -52,7 +66,7 @@ class SectionSkeleton {
      */
     this.headingElement = heading.element;
 
-    const returnNodeIfHNode = (node) => isHeadingNode(node, true) ? node : null;
+    const returnNodeIfHNode = (/** @type {ElementLike} */ node) => isHeadingNode(node, true) ? node : null;
 
     /**
      * `H1...6` element.
@@ -312,14 +326,6 @@ class SectionSkeleton {
       ...cd.config.excludeFromHeadlineClasses,
     ];
 
-    /**
-     * Section headline as it appears on the page.
-     *
-     * Foreign elements can get there, add the classes of these elements to
-     * {@link module:defaultConfig.excludeFromHeadlineClasses} to filter them out.
-     *
-     * @type {string}
-     */
     this.headline = [...this.headlineElement.childNodes]
       .filter((node) => (
         node.nodeType === Node.TEXT_NODE ||

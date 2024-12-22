@@ -155,7 +155,7 @@ export default {
   /**
    * Get comment forms by a condition.
    *
-   * @param {Function} condition
+   * @param {(commentForm: CommentForm) => boolean} condition
    * @returns {CommentForm[]}
    */
   query(condition) {

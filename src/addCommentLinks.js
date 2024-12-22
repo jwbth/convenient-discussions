@@ -220,7 +220,7 @@ function addWatchlistMenu() {
  * @private
  */
 function isWikidataItem(linkElement) {
-  return (
+  return Boolean(
     cd.g.serverName === 'www.wikidata.org' &&
     linkElement.firstElementChild?.classList.contains('wb-itemlink')
   )

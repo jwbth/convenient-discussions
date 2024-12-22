@@ -175,7 +175,7 @@ export default {
   /**
    * Get comments by a condition.
    *
-   * @param {Function} condition
+   * @param {(comment: Comment) => boolean} condition
    * @returns {Comment[]}
    */
   query(condition) {
@@ -212,7 +212,7 @@ export default {
       timeConflict ||= commentTimeConflict;
     });
 
-    this.configureAndAddLayers((comment) => comment.isNew);
+    this.configureAndAddLayers((comment) => Boolean(comment.isNew));
 
     return timeConflict;
   },
@@ -220,7 +220,7 @@ export default {
   /**
    * Configure and add layers for a group of comments.
    *
-   * @param {Function} condition
+   * @param {(comment: Comment) => boolean} condition
    */
   configureAndAddLayers(condition) {
     const comments = this.items.filter(condition);

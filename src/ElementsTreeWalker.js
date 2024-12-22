@@ -3,33 +3,18 @@ import TreeWalker from './TreeWalker';
 /**
  * Tree walker that walks only on element nodes.
  *
- * @augments TreeWalker
+ * @augments TreeWalker<AcceptedNode>
+ * @template {ElementLike} [AcceptedNode=ElementLike]
  */
 class ElementsTreeWalker extends TreeWalker {
-  /** @type {ElementLike} */
-  currentNode;
-
   /**
    * Create an {@link TreeWalker tree walker} that walks elements.
    *
-   * @param {ElementLike} root
-   * @param {ElementLike} [startElement]
+   * @param {NodeLike} root
+   * @param {AcceptedNode} [startNode]
    */
-  constructor(root, startElement) {
-    super(root, undefined, true);
-    if (startElement) {
-      this.currentNode = startElement;
-    }
-  }
-
-  /**
-   * Go to the parent node.
-   *
-   * @override
-   * @returns {?ElementLike}
-   */
-  parentNode() {
-    return /** @type {?ElementLike} */ (super.parentNode());
+  constructor(root, startNode) {
+    super(root, undefined, true, startNode);
   }
 }
 

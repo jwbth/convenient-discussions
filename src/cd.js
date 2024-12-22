@@ -22,7 +22,29 @@ context.convenientDiscussions ||= /** @type {ConvenientDiscussions} */ ({});
 // of properties here.
 
 /**
- * @typedef {typeof import('./convenientDiscussions').convenientDiscussions} ConvenientDiscussions
+ * @typedef {object} ApiErrorFormatHtml
+ * @property {string} errorformat
+ * @property {any} errorlang
+ * @property {boolean} errorsuselocal
+ */
+
+/**
+ * @typedef {object} ConvenientDiscussionsExtension
+ * @property {import('./pageRegistry').Page} page Current page's object.
+ * @property {import('./userRegistry').User} user Current user's object.
+ * @property {typeof import('../config/default').default} config
+ * @property {typeof import('./convenientDiscussions').globalProperties} g
+ * @property {ApiErrorFormatHtml} apiErrorFormatHtml A replacement for
+ * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Unicode_Property_Escapes unicode property escapes}
+ * while they are not supported in major browsers. {@link https://github.com/slevithan/xregexp}
+ * can be used also.
+ */
+
+/**
+ * @typedef {(
+ *   & typeof import('./convenientDiscussions').convenientDiscussions
+ *   & ConvenientDiscussionsExtension
+ * )} ConvenientDiscussions
  */
 
 const convenientDiscussions = context.convenientDiscussions;

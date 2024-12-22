@@ -115,7 +115,7 @@ class StorageItem {
   /**
    * Clean up entries (e.g. old ones), if callback returns `true` for an entry.
    *
-   * @param {Function} removeCondition
+   * @param {(data: *) => boolean} removeCondition
    * @returns {StorageItem}
    */
   cleanUp(removeCondition) {

@@ -88,7 +88,7 @@ export default {
       (isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber) || this.definitelyTalkPage) &&
 
       // Undocumented setting
-      !(typeof cdOnlyRunByFooterLink !== 'undefined' && window.cdOnlyRunByFooterLink)
+      !(typeof cdOnlyRunByFooterLink !== 'undefined' && cdOnlyRunByFooterLink)
     );
 
     // See .isDiffPage()
@@ -566,16 +566,18 @@ export default {
   /**
    * Get the current (or last available) boot process.
    *
-   * @returns {?BootProcess}
+   * For simpler type checking, assume it's always set.
+   *
+   * @returns {BootProcess}
    */
   getBootProcess() {
-    return this.bootProcess || null;
+    return this.bootProcess;
   },
 
   /**
    * Set up the controller for use in the current boot process. (Executed at every page load.)
    *
-   * @param {string} pageHtml HTML to update the page with.
+   * @param {string} [pageHtml] HTML to update the page with.
    */
   setup(pageHtml) {
     // RevisionSlider replaces the #mw-content-text element.
@@ -668,10 +670,10 @@ export default {
           this.rootElement.firstElementChild,
         );
         while (true) {
-          const node = treeWalker.currentNode;
+          const el = treeWalker.currentNode;
 
-          if (!isInline(node) && !this.getFloatingElements().includes(node)) {
-            const rect = node.getBoundingClientRect();
+          if (!isInline(el) && !this.getFloatingElements().includes(el)) {
+            const rect = el.getBoundingClientRect();
 
             // By default, in a conversation between two people, replies are nested and there is no
             // way to isolate the parent comment from the child, which would be desirable to find a
@@ -686,13 +688,13 @@ export default {
             if (
               rect.top > cd.g.bodyScrollPaddingTop + cd.g.contentFontSize &&
               this.scrollData.element &&
-              !isHeadingNode(node)
+              !isHeadingNode(el)
             ) {
               break;
             }
 
             if (rect.height !== 0 && rect.bottom >= cd.g.bodyScrollPaddingTop) {
-              this.scrollData.element = node;
+              this.scrollData.element = el;
               this.scrollData.elementTop = rect.top;
               if (treeWalker.firstChild()) {
                 continue;
@@ -961,15 +963,16 @@ export default {
    * Add a condition preventing page unload.
    *
    * @param {string} name
-   * @param {Function} condition
+   * @param {() => boolean} condition
    */
   addPreventUnloadCondition(name, condition) {
     this.beforeUnloadHandlers ||= {};
-    this.beforeUnloadHandlers[name] = (e) => {
+    this.beforeUnloadHandlers[name] = (/** @type {Event} */ event) => {
       if (!condition()) return;
 
-      e.preventDefault();
-      e.returnValue = '';
+      event.preventDefault();
+      // @ts-ignore
+      event.returnValue = '1';
       return '';
     };
     $(window).on('beforeunload', this.beforeUnloadHandlers[name]);
@@ -1160,13 +1163,13 @@ export default {
   /**
    * Handle a click on an "Add topic" button excluding those added by the script.
    *
-   * @param {Event} e
+   * @param {MouseEvent | KeyboardEvent} event
    * @private
    */
-  handleAddTopicButtonClick(e) {
-    if (e.ctrlKey || e.shiftKey || e.metaKey) return;
+  handleAddTopicButtonClick(event) {
+    if (event.ctrlKey || event.shiftKey || event.metaKey) return;
 
-    const $button = $(e.currentTarget);
+    const $button = $(/** @type {EventTarget} */ (event.currentTarget));
     let preloadConfig;
     let newTopicOnTop = false;
     if ($button.is('a')) {
@@ -1188,14 +1191,17 @@ export default {
         editIntro: $form.find('input[name="editintro"]').val(),
         commentTemplate: $form.find('input[name="preload"]').val(),
         headline: $form.find('input[name="preloadtitle"]').val(),
-        params: $form.find('input[name="preloadparams[]"]').get().map((el) => el.value),
+        params: $form
+          .find('input[name="preloadparams[]"]')
+          .get()
+          .map((/** @type {HTMLInputElement} */ el) => el.value),
         summary: $form.find('input[name="summary"]').val(),
         noHeadline: Boolean($form.find('input[name="nosummary"]').val()),
         omitSignature: false,
       };
     }
 
-    e.preventDefault();
+    event.preventDefault();
     cd.page.addSection(undefined, undefined, preloadConfig, newTopicOnTop);
   },
 

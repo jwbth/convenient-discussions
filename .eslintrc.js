@@ -22,6 +22,8 @@ module.exports = {
     "getInterwikiPrefixForHostname": "readonly",  // en:User:Jack who built the house/getUrlFromInterwikiLink.js
     "getInterwikiPrefixForHostnameSync": "readonly",  // en:User:Jack who built the house/getUrlFromInterwikiLink.js
     "getUrlFromInterwikiLink": "readonly",  // en:User:Jack who built the house/getUrlFromInterwikiLink.js
+
+    "cdOnlyRunByFooterLink": "readonly",
   },
   "ignorePatterns": ["dist/**", "misc/**", "*.json5", "w-he.js"],
   "overrides": [

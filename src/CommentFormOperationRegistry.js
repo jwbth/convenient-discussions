@@ -6,13 +6,17 @@ import { removeFromArrayIfPresent } from './utils-general';
  */
 class CommentFormOperationRegistry {
   /**
+   * @type {CommentFormOperation[]}
+   */
+  items = [];
+
+  /**
    * Create an operation registry.
    *
    * @param {import('./CommentForm').default} commentForm
    */
   constructor(commentForm) {
     this.commentForm = commentForm;
-    this.items = [];
   }
 
   /**
@@ -61,10 +65,10 @@ class CommentFormOperationRegistry {
   /**
    * Find operations for which the specified callback returns a truthy value.
    *
-   * @param {Function} callback
+   * @param {(operation: CommentFormOperation) => boolean} callback
    * @returns {CommentFormOperation[]}
    */
-  filter(callback) {
+  query(callback) {
     return this.items.filter(callback);
   }
 }
@@ -163,7 +167,7 @@ class CommentFormOperation {
     }
 
     const lastRelevantOperation = this.registry
-      .filter((op) => (
+      .query((op) => (
         ['preview', 'viewChanges'].includes(op.getType()) &&
 
         // If we delete this line, then, with autopreview enabled, preview will be updated only when
