@@ -20,7 +20,7 @@ class MultilineTextInputWidget extends OO.ui.MultilineTextInputWidget {}
 
 tweakUserOoUiClass(MultilineTextInputWidget);
 
-// We can't make OO.ui.MultilineTextInputWidget extend our TextInputWidget, but we can mixin
+// We can't make OO.ui.MultilineTextInputWidget extend our TextInputWidget, but we can mix
 // TextInputWidget into a class that extends OO.ui.MultilineTextInputWidget.
 mixinUserOoUiClass(MultilineTextInputWidget, TextInputWidget);
 

@@ -592,8 +592,10 @@ const globalProperties = {
     '<unregistered>'
   ),
 
-  contentDirection: bodyClassList.contains('sitedir-rtl') ? 'rtl' : 'ltr',
-  userDirection: bodyClassList.contains('rtl') ? 'rtl' : 'ltr',
+  contentDirection: /** @type {Direction} */ (
+    bodyClassList.contains('sitedir-rtl') ? 'rtl' : 'ltr'
+  ),
+  userDirection: /** @type {Direction} */ (bodyClassList.contains('rtl') ? 'rtl' : 'ltr'),
   skin: mw.config.get('skin'),
 
   // Quite a rough check for mobile browsers, a mix of what is advised at

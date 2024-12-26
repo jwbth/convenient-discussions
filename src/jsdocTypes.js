@@ -1,4 +1,8 @@
 /**
+ * @typedef {'ltr'|'rtl'} Direction
+ */
+
+/**
  * @typedef {Element|import('./worker/domhandlerExtended').Element} ElementLike
  */
 
@@ -18,4 +22,8 @@
 
 /**
  * @typedef {Text[]|import('./worker/domhandlerExtended').Text[]} TextLikeArray
+ */
+
+/**
+ * @typedef {'dl'|'ul'|'ol'} ListType
  */

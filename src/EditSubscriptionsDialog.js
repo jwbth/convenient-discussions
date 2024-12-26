@@ -13,6 +13,7 @@ import { tweakUserOoUiClass } from './utils-oojs';
  * @augments ProcessDialog
  */
 class EditSubscriptionsDialog extends ProcessDialog {
+  // @ts-ignore: https://phabricator.wikimedia.org/T358416
   static name = 'editSubscriptionsDialog';
   static title = cd.s('ewsd-title');
   static actions = [
@@ -32,6 +33,9 @@ class EditSubscriptionsDialog extends ProcessDialog {
   ];
   static size = 'large';
   static cdKey = 'ewsd';
+
+  /** @type {OO.ui.StackLayout} */
+  stack;
 
   /**
    * Create an "Edit subscriptions" dialog.
@@ -61,13 +65,12 @@ class EditSubscriptionsDialog extends ProcessDialog {
   /**
    * OOUI native method that initializes window contents.
    *
-   * @param {...*} [args]
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#initialize
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
    * @ignore
    */
-  initialize(...args) {
-    super.initialize(...args);
+  initialize() {
+    super.initialize();
 
     this.pushPending();
 
@@ -89,6 +92,8 @@ class EditSubscriptionsDialog extends ProcessDialog {
     });
 
     this.$body.append(this.stack.$element);
+
+    return this;
   }
 
   /**

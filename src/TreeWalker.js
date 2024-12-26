@@ -1,4 +1,3 @@
-import CdError from './CdError';
 import { isElement, isNode } from './utils-general';
 
 /**

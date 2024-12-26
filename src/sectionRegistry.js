@@ -52,14 +52,6 @@ export default {
    */
   setup() {
     this.items.forEach((section) => {
-      /**
-       * Is the section the last section on the page.
-       *
-       * @name isLastSection
-       * @type {boolean}
-       * @memberof Section
-       * @instance
-       */
       section.isLastSection = section.index === this.items.length - 1;
 
       // This should be above adding reply buttons so that the order is right.
@@ -118,7 +110,7 @@ export default {
   /**
    * Get sections by a condition.
    *
-   * @param {Function} condition
+   * @param {(section: import('./Section').default) => boolean} condition
    * @returns {import('./Section').default[]}
    */
   query(condition) {
@@ -193,8 +185,11 @@ export default {
    * @param {string} options.headline
    * @param {string} options.id
    * @param {string[]} options.ancestors
-   * @param {string} options.oldestCommentId
-   * @returns {?import('./Section').default}
+   * @param {?string} [options.oldestCommentId]
+   * @returns {?{
+   *   section: import('./Section').default;
+   *   score: number;
+   * }}
    */
   search({ index, headline, id, ancestors, oldestCommentId }) {
     const matches = [];
@@ -207,11 +202,11 @@ export default {
         false;
       const doesOldestCommentMatch = section.oldestComment?.id === oldestCommentId;
       const score = (
-        doesHeadlineMatch * 1 +
-        doAncestorsMatch * 1 +
-        doesOldestCommentMatch * 1 +
-        doesIdMatch * 0.5 +
-        doesIndexMatch * 0.001
+        Number(doesHeadlineMatch) * 1 +
+        Number(doAncestorsMatch) * 1 +
+        Number(doesOldestCommentMatch) * 1 +
+        Number(doesIdMatch) * 0.5 +
+        Number(doesIndexMatch) * 0.001
       );
       if (score >= 2) {
         matches.push({ section, score });
@@ -230,6 +225,7 @@ export default {
         bestMatch = match;
       }
     });
+
     return bestMatch || null;
   },
 
@@ -292,20 +288,19 @@ export default {
       return null;
     }
 
-    let top;
-    this.items.some((section) => {
+    return this.items.reduce((result, section) => {
+      if (result !== null) {
+        return result;
+      }
+
       const rect = getExtendedRect(section.headingElement);
 
       // The third check to exclude the possibility that the first section is above the TOC, like
       // at https://commons.wikimedia.org/wiki/Project:Graphic_Lab/Illustration_workshop.
-      if (getVisibilityByRects(rect) && (!tocOffset || rect.outerTop > tocOffset)) {
-        top = rect.outerTop;
-      }
-
-      return top !== undefined;
-    });
-
-    return top;
+      return getVisibilityByRects(rect) && (!tocOffset || rect.outerTop > tocOffset) ?
+        rect.outerTop :
+        null;
+    }, /** @type {?number} */ (null));
   },
 
   /**
@@ -315,6 +310,7 @@ export default {
    */
   getCurrentSection() {
     const firstSectionTop = this.getFirstSectionRelativeTopOffset();
+
     return (
       firstSectionTop !== null &&
       firstSectionTop < cd.g.bodyScrollPaddingTop + 1 &&

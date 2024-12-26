@@ -25,6 +25,10 @@ import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
  *   DT).
  * @property {string} categorieshtml HTML for the page's categories.
  * @property {object} sections Section data for the page.
+ * @property {number} revid
+ * @property {string[]} modules
+ * @property {string[]} modulestyles
+ * @property {{ [name: string]: any }} jsconfigvars
  */
 
 /**
@@ -198,7 +202,7 @@ export class Page {
   /**
    * Get the URL of the page with the specified parameters.
    *
-   * @param {object} parameters
+   * @param {object} [parameters]
    * @returns {string}
    */
   getUrl(parameters) {
@@ -349,12 +353,13 @@ export class Page {
    * the `realName` property that indicates either the redirect target if it's present or the page
    * name.
    *
+   * @param {CommentForm} [_] Not used.
    * @param {boolean} [tolerateMissing=true] Assign `''` to the `code` property if the page is
    *   missing instead of throwing an error.
    *
    * @throws {CdError}
    */
-  async loadCode(tolerateMissing = true) {
+  async loadCode(_, tolerateMissing = true) {
     const { query, curtimestamp: queryTimestamp } = await controller.getApi().post({
       action: 'query',
       titles: this.name,
@@ -480,7 +485,7 @@ export class Page {
   /**
    * Make a parse request (see {@link https://www.mediawiki.org/wiki/API:Parsing_wikitext}).
    *
-   * @param {boolean} [customOptions]
+   * @param {object} [customOptions]
    * @param {boolean} [inBackground=false] Make a request that won't set the process on hold when
    *   the tab is in the background.
    * @param {boolean} [markAsRead=false] Mark the current page as read in the watchlist.
@@ -501,18 +506,17 @@ export class Page {
       parsoid: cd.g.isParsoidUsed,
       ...cd.g.apiErrorFormatHtml,
     };
-    const options = Object.assign({}, defaultOptions, customOptions);
+    const options = { ...defaultOptions, ...customOptions };
 
     // `page` and `oldid` can not be used together.
     if (customOptions?.oldid) {
       delete options.page;
     }
 
-    const { parse } = await (
-      inBackground ?
-        requestInBackground(options) :
-        controller.getApi().post(options)
-    ).catch(handleApiReject);
+    const request = inBackground ?
+      requestInBackground(options) :
+      controller.getApi().post(options);
+    const { parse } = await request.catch(handleApiReject);
     if (parse?.text === undefined) {
       throw new CdError({
         type: 'api',
@@ -544,13 +548,11 @@ export class Page {
       redirects: !(this.isCurrent() && mw.config.get('wgIsRedirect')),
     }, customOptions);
 
-    const revisions = (
-      await (
-        inBackground ?
-          requestInBackground(options) :
-          controller.getApi().post(options)
-      ).catch(handleApiReject)
-    ).query?.pages?.[0]?.revisions;
+    const request = inBackground ?
+      requestInBackground(options) :
+      controller.getApi().post(options);
+    const resp = await request.catch(handleApiReject);
+    const revisions = resp.query?.pages?.[0]?.revisions;
     if (!revisions) {
       throw new CdError({
         type: 'api',
@@ -975,6 +977,18 @@ export class Page {
    */
   getCommentFormCommentInputPlaceholder() {
     return cd.s('cf-comment-placeholder');
+  }
+
+  /**
+   * Get the comment that is visually a target of the comment form that has the page as target.
+   *
+   * Used for polymorphism with {@link Comment#getCommentFormTargetComment} and
+   * {@link Section#getCommentFormTargetComment}.
+   *
+   * @returns {null}
+   */
+  getCommentFormTargetComment() {
+    return null;
   }
 
   /**

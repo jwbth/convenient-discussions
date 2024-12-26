@@ -60,7 +60,7 @@ class StorageItem {
   /**
    * Get an entry of the storage item by key.
    *
-   * @param {string} key
+   * @param {string|number} key
    * @returns {*}
    */
   get(key) {
@@ -79,7 +79,7 @@ class StorageItem {
   /**
    * Set an entry of the storage item.
    *
-   * @param {string} key
+   * @param {string|number} key
    * @param {*} value
    * @returns {StorageItem}
    */
@@ -92,7 +92,7 @@ class StorageItem {
   /**
    * Remove an entry of the storage item.
    *
-   * @param {string} key
+   * @param {string|number} key
    * @returns {StorageItem}
    */
   remove(key) {
@@ -115,7 +115,7 @@ class StorageItem {
   /**
    * Clean up entries (e.g. old ones), if callback returns `true` for an entry.
    *
-   * @param {(data: *) => boolean} removeCondition
+   * @param {(data: any) => boolean} removeCondition
    * @returns {StorageItem}
    */
   cleanUp(removeCondition) {
@@ -131,11 +131,12 @@ class StorageItem {
   /**
    * Update a storage entry by page key (be it an article ID or page name): set and add a UNIX time.
    *
-   * @param {string} pageKey
-   * @param {*} pageData
+   * @param {string|number} pageKey
+   * @param {any} pageData
    * @returns {StorageItem}
    */
   setWithTime(pageKey, pageData) {
+    pageKey = String(pageKey);
     const isEmpty = !(
       Array.isArray(pageData) ?
         pageData.length :

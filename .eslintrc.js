@@ -24,6 +24,7 @@ module.exports = {
     "getUrlFromInterwikiLink": "readonly",  // en:User:Jack who built the house/getUrlFromInterwikiLink.js
 
     "cdOnlyRunByFooterLink": "readonly",
+    "cdShowLoadingOverlay": "readonly",
   },
   "ignorePatterns": ["dist/**", "misc/**", "*.json5", "w-he.js"],
   "overrides": [
@@ -58,6 +59,9 @@ module.exports = {
       "newlines-between": "always",
     }],
     "no-unused-vars": "warn",
+
+    // Enabled in TypeScript with strictNullChecks
+    "no-unsafe-optional-chaining": "off",
 
     "jsdoc/check-alignment": "warn",
     "jsdoc/check-param-names": "warn",

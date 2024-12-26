@@ -23,6 +23,9 @@ import { ucFirst, underlinesToSpaces } from './utils-general';
 export class User {
   options = new mw.Map();
 
+  /** @type {boolean} */
+  registered;
+
   /**
    * Create a user object.
    *
@@ -42,7 +45,7 @@ export class User {
    * {@link https://www.mediawiki.org/wiki/Help:Temporary_accounts Temporary accounts} are
    * considered registered users.
    *
-   * @type {boolean}
+   * @returns {boolean}
    */
   isRegistered() {
     if (this.name === '<unregistered>') {
@@ -93,7 +96,7 @@ export class User {
   /**
    * Get the user's rights (must be obtained using {@link module:utilsApi.getUserInfo}).
    *
-   * @type {?(string[])}
+   * @returns {?(string[])}
    */
   getRights() {
     return this.rights?.slice() || null;
@@ -118,10 +121,10 @@ export class User {
   /**
    * Get the user's global ID according to the database if it was set before.
    *
-   * @returns {number}
+   * @returns {?number}
    */
   getGlobalId() {
-    return this.globalId;
+    return this.globalId || null;
   }
 
   /**
@@ -220,7 +223,7 @@ export default {
           mutedUsersStorage
             .set('mutedUsers', {
               users: Object.assign({}, ...users.map((user) => ({
-                [user.getGlobalId()]: user.getName(),
+                [/** @type {number} */ (user.getGlobalId())]: user.getName(),
               }), {})),
               saveTime: Date.now(),
             })

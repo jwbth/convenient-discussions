@@ -21,7 +21,42 @@ import { addToArrayIfAbsent, areObjectsEqual, calculateWordOverlap, countOccurre
 import { showConfirmDialog } from './utils-oojs';
 import { formatDate, formatDateNative } from './utils-timestamp';
 import { extractArabicNumeral, extractSignatures, removeWikiMarkup } from './utils-wikitext';
-import { createSvg, getExtendedRect, getHigherNodeAndOffsetInSelection, getVisibilityByRects, wrapDiffBody, wrapHtml } from './utils-window';
+import { createSvg, getExtendedRect, getHigherNodeAndOffsetInSelection, getVisibilityByRects, mergeJquery, wrapDiffBody, wrapHtml } from './utils-window';
+
+/**
+ * @typedef {object} CommentOffset
+ * @property {number} top
+ * @property {number} bottom
+ * @property {number} left
+ * @property {number} right
+ * @property {number} bottomForVisibility A solution for comments that have the height bigger than
+ *   the viewport height. In Chrome, the scrolling step is 100 pixels.
+ * @property {number} firstHighlightableWidth First highlightable's width to determine if the
+ *   element is moved in future checks.
+ * @memberof Comment
+ * @inner
+ */
+
+/**
+ * @typedef {object} CommentMargins
+ * @property {number} left Left margin.
+ * @property {number} right Right margin.
+ * @memberof Comment
+ * @inner
+ */
+
+/**
+ * @typedef {object} ScrollToConfig
+ * @property {boolean} [smooth=true] Use a smooth animation.
+ * @property {boolean} [expandThreads=false] Whether to expand the threads down to the
+ *   comment (to avoid the notification "The comment is in a collapsed thread").
+ * @property {boolean} [flash] Whether to flash the comment as target.
+ * @property {boolean} [pushState=false] Whether to push a state to the history with the
+ *   comment ID as a fragment.
+ * @property {() => void} [callback] Callback to run after the animation has completed.
+ * @property {'top'|'center'|'bottom'} [alignment] Where should the element be positioned
+ *   relative to the viewport.
+ */
 
 /**
  * Class representing a comment (any signed, and in some cases unsigned, text on a wiki talk page).
@@ -47,6 +82,9 @@ class Comment extends CommentSkeleton {
 
   /** @type {HTMLElement[]} */
   highlightables;
+
+  /** @type {Direction} */
+  direction;
 
   /**
    * A special {@link Comment#highlightables highlightable} used to
@@ -290,6 +328,9 @@ class Comment extends CommentSkeleton {
    */
   roughOffset;
 
+  /** @type {?import('./Section').default} */
+  section;
+
   /**
    * Create a comment object.
    *
@@ -348,14 +389,14 @@ class Comment extends CommentSkeleton {
    * and returns the tag name of the first ancestor that has the class `cd-commentLevel`.
    *
    * @param {Element} el
-   * @returns {?string} `dl`, `ul`, `ol`, or `undefined`.
+   * @returns {?ListType}
    * @private
    */
     const getContainerListType = (el) => {
       const treeWalker = new ElementsTreeWalker(controller.rootElement, el);
       while (treeWalker.parentNode()) {
         if (treeWalker.currentNode.classList.contains('cd-commentLevel')) {
-          return treeWalker.currentNode.tagName.toLowerCase();
+          return /** @type {ListType} */ (treeWalker.currentNode.tagName.toLowerCase());
         }
       }
 
@@ -367,7 +408,7 @@ class Comment extends CommentSkeleton {
        * Name of the tag of the list that this comment is an item of. `'dl'`, `'ul'`, `'ol'`, or
        * `null`.
        *
-       * @type {?string}
+       * @type {?ListType}
        */
       this.containerListType = getContainerListType(this.highlightables[0]);
 
@@ -1181,7 +1222,7 @@ class Comment extends CommentSkeleton {
   /**
    * @template {boolean} [Set=false]
    * @typedef {object} GetOffsetOptions
-   * @property {object[]} [options.floatingRects]
+   * @property {import('./utils-window').ExtendedDOMRect[]} [options.floatingRects]
    *   {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect Element#getBoundingClientRect}
    *   results for floating elements from `convenientDiscussions.g.floatingElements`. It may be
    *   calculated in advance for many elements in one sequence to save time.
@@ -1196,20 +1237,6 @@ class Comment extends CommentSkeleton {
    *   {@link Comment#updateLayersOffset}) - otherwise, the next attempt to call this method to
    *   update the layers offset will return `false` meaning the comment isn't moved, and the layers
    *   offset will stay wrong.
-   */
-
-  /**
-   * @typedef {object} CommentOffset
-   * @property {number} top
-   * @property {number} bottom
-   * @property {number} left
-   * @property {number} right
-   * @property {number} bottomForVisibility A solution for comments that have the height bigger than
-   *   the viewport height. In Chrome, the scrolling step is 100 pixels.
-   * @property {number} firstHighlightableWidth First highlightable's width to determine if the
-   *   element is moved in future checks.
-   * @memberof Comment
-   * @inner
    */
 
   /**
@@ -1343,10 +1370,10 @@ class Comment extends CommentSkeleton {
    * Get the top and bottom rectangles of a comment while taking into account floating elements
    * around the comment.
    *
-   * @param {DOMRect} rectTop Top rectangle that was got without taking into account floating
-   *   elements around the comment.
-   * @param {DOMRect} rectBottom Bottom rectangle that was got without taking into account floating
-   *   elements around the comment.
+   * @param {import('./utils-window').AnyDOMRect} rectTop Top rectangle that was got without taking
+   *   into account floating elements around the comment.
+   * @param {import('./utils-window').AnyDOMRect} rectBottom Bottom rectangle that was got without
+   *   taking into account floating elements around the comment.
    * @param {number} top Top coordonate of the comment (calculated without taking floating elements
    *   into account).
    * @param {number} bottom Bottom coordonate of the comment (calculated without taking floating
@@ -1355,7 +1382,7 @@ class Comment extends CommentSkeleton {
    *   {@link https://developer.mozilla.org/en-US/docs/Web/API/Element/getBoundingClientRect Element#getBoundingClientRect}
    *   results for floating elements from `convenientDiscussions.g.floatingElements`. It may be
    *   calculated in advance for many elements in one sequence to save time.
-   * @returns {object[]}
+   * @returns {[import('./utils-window').AnyDOMRect, import('./utils-window').AnyDOMRect]}
    * @private
    */
   getAdjustedRects(
@@ -1465,36 +1492,24 @@ class Comment extends CommentSkeleton {
    * content language on pages with text marked with the class `mw-content-ltr` or `mw-content-rtl`
    * inside the content.
    *
-   * @returns {string}
+   * @returns {Direction}
    */
   getDirection() {
     if (!this.direction) {
-      if (controller.areThereLtrRtlMixes()) {
-        // Take the last element because the first one may be the section heading which can have
-        // another direction.
-        this.direction = (
-          this.elements.slice(-1)[0]
+      this.direction = controller.areThereLtrRtlMixes()
+        ? this.elements
+            // Take the last element because the first one may be the section heading which can have
+            // another direction.
+            .slice(-1)[0]
             .closest('.mw-content-ltr, .mw-content-rtl')
-            ?.classList
-            .contains('mw-content-rtl')
-        ) ?
-          'rtl' :
-          'ltr';
-      } else {
-        this.direction = cd.g.contentDirection;
-      }
+            ?.classList.contains('mw-content-rtl')
+          ? 'rtl'
+          : 'ltr'
+        : cd.g.contentDirection;
     }
 
     return this.direction;
   }
-
-  /**
-   * @typedef {object} CommentMargins
-   * @property {number} left Left margin.
-   * @property {number} right Right margin.
-   * @memberof Comment
-   * @inner
-   */
 
   /**
    * Get the left and right margins of the comment layers or the expand note.
@@ -1590,7 +1605,7 @@ class Comment extends CommentSkeleton {
   /**
    * Calculate the underlay and overlay offset and set it to the `layersOffset` property.
    *
-   * @param {object} [options={}]
+   * @param {GetOffsetOptions} [options={}]
    * @returns {?boolean} Is the comment moved. `null` if it is invisible.
    * @private
    */
@@ -1600,12 +1615,11 @@ class Comment extends CommentSkeleton {
       return null;
     }
 
-    const isMoved = this.getOffset(
-      Object.assign({}, options, {
-        considerFloating: true,
-        set: true,
-      })
-    );
+    const isMoved = this.getOffset({
+      ...options,
+      considerFloating: true,
+      set: true,
+    });
 
     if (this.offset) {
       const margins = this.getMargins();
@@ -1931,14 +1945,11 @@ class Comment extends CommentSkeleton {
     // invisible.
     if (!this.underlay || !this.layersOffset) return;
 
-    this.underlay.style.top = /** @type {HTMLElement} */ (this.overlay).style.top =
-      this.layersOffset.top + 'px';
-    this.underlay.style.left = /** @type {HTMLElement} */ (this.overlay).style.left =
-      this.layersOffset.left + 'px';
-    this.underlay.style.width = /** @type {HTMLElement} */ (this.overlay).style.width =
-      this.layersOffset.width + 'px';
-    this.underlay.style.height = /** @type {HTMLElement} */ (this.overlay).style.height =
-      this.layersOffset.height + 'px';
+    const overlay = /** @type {HTMLElement} */ (this.overlay);
+    this.underlay.style.top = overlay.style.top = this.layersOffset.top + 'px';
+    this.underlay.style.left = overlay.style.left = this.layersOffset.left + 'px';
+    this.underlay.style.width = overlay.style.width = this.layersOffset.width + 'px';
+    this.underlay.style.height = overlay.style.height = this.layersOffset.height + 'px';
   }
 
   /**
@@ -2118,7 +2129,7 @@ class Comment extends CommentSkeleton {
       backgroundColor: initialMarkerColor,
       opacity: 1,
     });
-    this.$animatedBackground.css({ backgroundColor: initialBackgroundColor })
+    /** @type {JQuery} */ (this.$animatedBackground).css({ backgroundColor: initialBackgroundColor });
     this.$overlayGradient?.css({ backgroundImage: 'none' });
 
     this.animateToColors(finalMarkerColor, finalBackgroundColor, callback);
@@ -2184,13 +2195,13 @@ class Comment extends CommentSkeleton {
 
     if (this.isChanged && this.id) {
       const seenStorageItem = new StorageItem('seenRenderedChanges');
-      const seen = seenStorageItem.get(String(mw.config.get('wgArticleId'))) || {};
+      const seen = seenStorageItem.get(mw.config.get('wgArticleId')) || {};
       seen[this.id] = {
         htmlToCompare: this.htmlToCompare,
         seenTime: Date.now(),
       };
       seenStorageItem
-        .set(String(mw.config.get('wgArticleId')), seen)
+        .set(mw.config.get('wgArticleId'), seen)
         .save();
     }
 
@@ -2223,6 +2234,9 @@ class Comment extends CommentSkeleton {
    * @returns {JQuery}
    */
   scrubDiff(body, revisions, commentsData) {
+    /**
+     * @type {number[][]}
+     */
     const lineNumbers = [[], []];
     revisions.forEach((revision, i) => {
       const pageCode = revision.slots.main.content;
@@ -2479,7 +2493,7 @@ class Comment extends CommentSkeleton {
     this.$changeNote = $changeNote;
 
     if (this.isReformatted) {
-      this.$header.append(this.$changeNote);
+      /** @type {JQuery} */ (this.$header).append(this.$changeNote);
     } else {
       // Add the mark to the last block element, going as many nesting levels down as needed to
       // avoid it appearing after a block element.
@@ -2539,12 +2553,12 @@ class Comment extends CommentSkeleton {
       if (this.willFlashChangedOnSight) {
         this.willFlashChangedOnSight = false;
         controller.maybeMarkPageAsRead();
-      } else {
+      } else if (this.id) {
         const seenStorageItem = new StorageItem('seenRenderedChanges');
-        const seen = seenStorageItem.get(String(mw.config.get('wgArticleId'))) || {};
+        const seen = seenStorageItem.get(mw.config.get('wgArticleId')) || {};
         delete seen[this.id];
         seenStorageItem
-          .set(String(mw.config.get('wgArticleId')), seen)
+          .set(mw.config.get('wgArticleId'), seen)
           .save();
 
         this.flashChangedOnSight();
@@ -2661,16 +2675,7 @@ class Comment extends CommentSkeleton {
    * Scroll to the comment and (by default) flash it as a target. See also
    * {@link Comment#scrollIntoView}.
    *
-   * @param {object} [options]
-   * @param {boolean} [options.smooth=true] Use a smooth animation.
-   * @param {boolean} [options.expandThreads=false] Whether to expand the threads down to the
-   *   comment (to avoid the notification "The comment is in a collapsed thread").
-   * @param {boolean} [options.flash] Whether to flash the comment as target.
-   * @param {boolean} [options.pushState=false] Whether to push a state to the history with the
-   *   comment ID as a fragment.
-   * @param {() => void} [options.callback] Callback to run after the animation has completed.
-   * @param {'top'|'center'|'bottom'} [options.alignment] Where should the element be positioned
-   *   relative to the viewport.
+   * @param {ScrollToConfig} [options]
    */
   scrollTo({
     smooth = true,
@@ -2859,7 +2864,7 @@ class Comment extends CommentSkeleton {
 
       revision.diffBody = diffBody;
       const timestamp = new Date(revision.timestamp).setSeconds(0);
-      const dateProximity = Math.abs(this.date.getTime() - timestamp);
+      const dateProximity = Math.abs(/** @type {Date} */ (this.date).getTime() - timestamp);
       let wordOverlap = Math.max(
         calculateWordOverlap(diffText, commentFullText),
         bestDiffPartWordOverlap
@@ -2897,7 +2902,7 @@ class Comment extends CommentSkeleton {
       if (!this.date) {
         throw new CdError({
           type: 'internal',
-        })
+        });
       }
 
       // Search for the edit in the range of 10 minutes before (in case the comment was edited with
@@ -2912,14 +2917,24 @@ class Comment extends CommentSkeleton {
         rvlimit: 500,
       });
 
-      const compareRequests = revisions.map((revision) => controller.getApi().post({
-        action: 'compare',
-        fromtitle: this.getSourcePage().getArchivedPage().name,
-        fromrev: revision.revid,
-        torelative: 'prev',
-        prop: ['diff'],
-      }).catch(handleApiReject));
-      const compareBodies = (await Promise.all(compareRequests)).map((resp) => resp.compare.body);
+      /**
+       * @typedef {object} ApiResponseCompare
+       * @property {object} compare
+       * @property {string} compare.body
+       */
+      const compareRequests = revisions.map((revision) => {
+        const request = controller.getApi().post({
+          action: 'compare',
+          fromtitle: this.getSourcePage().getArchivedPage().name,
+          fromrev: revision.revid,
+          torelative: 'prev',
+          prop: ['diff'],
+        });
+
+        return request.catch(handleApiReject);
+      });
+      const response = /** @type {ApiResponseCompare[]} */ (await Promise.all(compareRequests))
+      const compareBodies = response.map((resp) => resp.compare.body);
       const matches = (await this.findDiffMatches(compareBodies, revisions)).sort((m1, m2) => (
         m1.wordOverlap === m2.wordOverlap ?
           m1.dateProximity - m2.dateProximity :
@@ -2976,7 +2991,7 @@ class Comment extends CommentSkeleton {
    * @private
    */
   setThanked() {
-    this.thankButton
+    /** @type {import('./CommentButton').default} */ (this.thankButton)
       .setPending(false)
       .setDisabled(true)
       .setLabel(cd.s('cm-thanked'))
@@ -2990,7 +3005,7 @@ class Comment extends CommentSkeleton {
    * @private
    */
   thankFail(error) {
-    const { type, code } = error.data;
+    const { type, code } = error instanceof CdError ? error.data : {};
     let text;
     switch (type) {
       case 'parse': {
@@ -3021,7 +3036,7 @@ class Comment extends CommentSkeleton {
       }
     }
     mw.notify(wrapHtml(text, { targetBlank: true }), { type: 'error' });
-    this.thankButton.setPending(false);
+    /** @type {import('./CommentButton').default} */ (this.thankButton).setPending(false);
   }
 
   /**
@@ -3029,7 +3044,7 @@ class Comment extends CommentSkeleton {
    * notification.
    */
   async thank() {
-    this.thankButton.setPending(true);
+    /** @type {import('./CommentButton').default} */ (this.thankButton).setPending(true);
 
     const genderRequest = cd.g.genderAffectsUserString && this.author.isRegistered() ?
       loadUserGenders([this.author]) :
@@ -3060,7 +3075,7 @@ class Comment extends CommentSkeleton {
       }
     );
     $question.find('a').attr('data-instantdiffs-link', 'link');
-    const $content = $.cdMerge($question, await this.generateDiffView());
+    const $content = mergeJquery($question, await this.generateDiffView());
 
     if (await showConfirmDialog($content, { size: 'larger' }) === 'accept') {
       try {
@@ -3078,7 +3093,6 @@ class Comment extends CommentSkeleton {
       this.setThanked();
 
       Comment.thanksStorage
-        .init()
         .set(edit.revid, {
           id: this.dtId || this.id,
           thankTime: Date.now(),
@@ -3093,7 +3107,7 @@ class Comment extends CommentSkeleton {
         // anything
       }
     } else {
-      this.thankButton.setPending(false);
+      /** @type {import('./CommentButton').default} */ (this.thankButton).setPending(false);
     }
   }
 
@@ -3124,7 +3138,7 @@ class Comment extends CommentSkeleton {
         if (!replyForm) {
           replyForm = this.section.reply({ targetWithOutdentedReplies: this });
         }
-        let selection = /** @type {Selection} */ (window.getSelection());
+        let selection = window.getSelection();
         if (selection.type !== 'Range') {
           const range = document.createRange();
           if (this.isReformatted) {
@@ -3168,7 +3182,7 @@ class Comment extends CommentSkeleton {
   fixSelection() {
     let endBoundary;
     if (this.isReformatted) {
-      endBoundary = this.$menu[0];
+      endBoundary = this.menuElement;
     } else {
       endBoundary = document.createElement('span');
       this.$elements.last().append(endBoundary);
@@ -3239,13 +3253,14 @@ class Comment extends CommentSkeleton {
         await this.getSourcePage().loadCode();
         this.locateInCode(false);
       }
-    } catch (e) {
-      if (e instanceof CdError) {
-        throw new CdError(
-          Object.assign({}, { message: cd.sParse('cf-error-getpagecode') }, e.data)
-        );
+    } catch (error) {
+      if (error instanceof CdError) {
+        throw new CdError({
+          message: cd.sParse('cf-error-getpagecode'),
+          ...error.data,
+        });
       } else {
-        throw e;
+        throw error;
       }
     }
   }
@@ -3268,7 +3283,7 @@ class Comment extends CommentSkeleton {
         .data('cd-comment-form', commentForm);
       this.unhighlightHovered();
       if (this.isOpeningSection) {
-        this.section.hideBar();
+        /** @type {import('./Section').default} */ (this.section).hideBar();
       }
 
       commentForm.$element.toggleClass('cd-commentForm-highlighted', this.isNew || this.isOwn);
@@ -3312,7 +3327,9 @@ class Comment extends CommentSkeleton {
         .removeClass('cd-hidden')
         .removeData('cd-comment-form');
       if (this.isOpeningSection) {
-        $(this.section.barElement).removeClass('cd-hidden');
+        /** @type {JQuery} */ (
+          /** @type {import('./Section').default} */ (this.section).$bar
+        ).removeClass('cd-hidden');
       }
 
       // Wait until the comment form is removed - its presence can e.g. affect the presence of a
@@ -3329,7 +3346,7 @@ class Comment extends CommentSkeleton {
    * offset.
    *
    * @param {boolean} partially Return `true` even if only a part of the comment is in the viewport.
-   * @param {object} [offset={@link Comment#getOffset this.getOffset()}] Prefetched offset.
+   * @param {object} [offset=this.getOffset()] Prefetched offset.
    * @returns {?boolean}
    */
   isInViewport(partially = false, offset = this.getOffset()) {
@@ -3390,6 +3407,7 @@ class Comment extends CommentSkeleton {
    */
   get $elements() {
     this.cached$elements ??= $(this.elements);
+
     return this.cached$elements;
   }
 
@@ -3398,6 +3416,18 @@ class Comment extends CommentSkeleton {
     this.cached$elements = value;
     this.elements = value.get();
   }
+
+  /**
+   * @overload
+   * @param {HTMLElement} element
+   * @param {HTMLElement} newElementOrHtml
+   */
+
+  /**
+   * @overload
+   * @param {JQuery} element
+   * @param {HTMLElement|string} newElementOrHtml
+   */
 
   /**
    * Replace an element that is one of the comment's elements with another element or HTML string.
@@ -3412,17 +3442,24 @@ class Comment extends CommentSkeleton {
     const nativeElement = element instanceof HTMLElement ? element : element[0];
     let newElement;
     if (typeof newElementOrHtml === 'string') {
-      const index = [...nativeElement.parentNode.children].indexOf(nativeElement);
-      const parentNode = nativeElement.parentNode;
+      const index = [.../** @type {HTMLElement} */ (nativeElement.parentElement).children].indexOf(
+        nativeElement
+      );
+      const parentElement = /** @type {HTMLElement} */ (nativeElement.parentElement);
       nativeElement.outerHTML = newElementOrHtml;
-      newElement = parentNode.children[index];
+      newElement = /** @type {HTMLElement} */ (parentElement.children[index]);
     } else {
       newElement = newElementOrHtml;
-      nativeElement.parentNode.replaceChild(newElement, element);
+      /** @type {HTMLElement} */ (nativeElement.parentElement).replaceChild(
+        newElement,
+        /** @type {HTMLElement} */ (element)
+      );
     }
 
+    // When we set .$elements, the setter automatically sets .elements. But not vice versa except
+    // when .$elements is not ready yet.
     if (element instanceof HTMLElement) {
-      this.elements.splice(this.elements.indexOf(element[0]), 1, newElementOrHtml);
+      this.elements.splice(this.elements.indexOf(element[0]), 1, newElement);
     } else {
       this.$elements = this.$elements
         .not(nativeElement)
@@ -3488,7 +3525,7 @@ class Comment extends CommentSkeleton {
    * Search for the comment in the source code and return possible matches.
    *
    * @param {string} contextCode
-   * @param {import('./CommentSkeleton').CommentSkeletonLike} [commentData]
+   * @param {import('./updateChecker').CommentWorkerEnrichied} [commentData]
    * @param {boolean} [isInSectionContext=false]
    * @returns {CommentSource}
    * @private
@@ -3507,7 +3544,9 @@ class Comment extends CommentSkeleton {
         commentText: commentData.text,
       };
     } else {
-      const comments = isInSectionContext ? this.section.comments : commentRegistry.getAll();
+      const comments = isInSectionContext
+        ? /** @type {import('./Section').default} */ (this.section).comments
+        : commentRegistry.getAll();
       const index = comments.indexOf(this);
       thisData = {
         index,
@@ -3523,23 +3562,37 @@ class Comment extends CommentSkeleton {
     const signatures = extractSignatures(contextCode);
     return signatures
       .filter((sig) => (
-        (sig.author === this.author || sig.author === '<undated>') &&
+        (sig.author === this.author || sig.author?.getName() === '<undated>') &&
         (
           this.timestamp === sig.timestamp ||
 
           // .startsWith() to account for cases where you can ignore the timezone string in
           // "unsigned" templates (it may be present and may be not), but it appears on the page.
-          (this.timestamp && this.timestamp.startsWith(sig.timestamp))
+          (this.timestamp && sig.timestamp && this.timestamp.startsWith(sig.timestamp))
         )
       ))
       .map((signature) => new CommentSource(this, signature, contextCode, isInSectionContext))
-      .map((source, i, sources) => {
+      .map((source, _, sources) => {
         source.calculateMatchScore(thisData, sources, signatures);
+
         return source;
       })
       .filter((source) => source.score > 2.5)
       .sort((s1, s2) => s2.score - s1.score)[0];
   }
+
+  /**
+   * @overload
+   * @param {boolean} useSectionCode
+   */
+
+  /**
+   * @overload
+   * @param {boolean} useSectionCode
+   * @param {string} code
+   * @param {import('./CommentSkeleton').CommentSkeletonLike} [commentData]
+   * @returns {CommentSource}
+   */
 
   /**
    * Locate the comment in the section or page source code and, if no `codeOrUseSectionCode` is
@@ -3553,15 +3606,17 @@ class Comment extends CommentSkeleton {
    *   code, to locate the comment in.
    * @param {string} [code] Wikitext that should have the comment (provided only if we need to
    *   perform operations on some code that is not the code of a section or page).
-   * @param {import('./CommentSkeleton').CommentSkeletonLike} [commentData] Comment data for
+   * @param {import('./updateChecker').CommentWorkerEnrichied} [commentData] Comment data for
    *   comparison (can be set together with `code`).
-   * @returns {CommentSource|undefined}
+   * @returns {CommentSource|undefined} Returns a {@link CommentSource} object if `code` is passed.
    * @throws {CdError}
    */
   locateInCode(useSectionCode, code, commentData) {
     const codePassed = typeof code === 'string';
     if (!codePassed) {
-      code = useSectionCode ? this.section.presumedCode : this.getSourcePage().code;
+      code = useSectionCode
+        ? /** @type {import('./Section').default} */ (this.section).presumedCode
+        : this.getSourcePage().code;
       this.source = null;
     }
 
@@ -3843,10 +3898,10 @@ class Comment extends CommentSkeleton {
   /**
    * Get the fragment for use in a comment wikilink.
    *
-   * @returns {string}
+   * @returns {?string}
    */
   getWikilinkFragment() {
-    return this.dtId || this.id;
+    return this.dtId || this.id || null;
   }
 
   /**
@@ -3856,11 +3911,12 @@ class Comment extends CommentSkeleton {
    */
   getAncestors() {
     const ancestors = [];
-    let comment = this;
-    while ((comment = comment.getParent())) {
+    let comment;
+    for (comment = this; comment; comment = comment.getParent()) {
       ancestors.push(comment);
     }
-    return ancestors;
+
+    return ancestors.slice(1);
   }
 
   /**
@@ -3880,8 +3936,8 @@ class Comment extends CommentSkeleton {
    *
    * @param {number[]} currentPageVisits
    * @param {number} currentTime
-   * @param {Comment} unseenComment
-   * @param {JQuery} $changeNote
+   * @param {Comment} [unseenComment]
+   * @param {JQuery} [$changeNote]
    * @returns {boolean} Whether there is a time conflict.
    */
   initNewAndSeen(currentPageVisits, currentTime, unseenComment, $changeNote) {
@@ -4042,11 +4098,11 @@ class Comment extends CommentSkeleton {
       if (this.isActionable) {
         this.isSelected = true;
         this.configureLayers();
-        this.replyButton.setLabel(cd.s('cm-quote'));
+        this.replyButton?.setLabel(cd.s('cm-quote'));
       }
     } else {
       this.isSelected = false;
-      this.replyButton.setLabel(cd.s('cm-reply'));
+      this.replyButton?.setLabel(cd.s('cm-reply'));
     }
   }
 
@@ -4156,6 +4212,18 @@ class Comment extends CommentSkeleton {
     return this.isOpeningSection ?
       /** @type {import('./Section').default} */ (this.section).comments.length === 1 :
       !this.getChildren().length
+  }
+
+  /**
+   * Get the comment that is visually a target of the comment form that has the comment as target.
+   *
+   * Used for polymorphism with {@link Section#getCommentFormTargetComment} and
+   * {@link Page#getCommentFormTargetComment}.
+   *
+   * @returns {?this}
+   */
+  getCommentFormTargetComment() {
+    return this;
   }
 
   static prototypes = new PrototypeRegistry();
@@ -4338,7 +4406,7 @@ class Comment extends CommentSkeleton {
    * Get the bounding client rectangle for a comment part.
    *
    * @param {Element} el
-   * @returns {object}
+   * @returns {import('./utils-window').AnyDOMRect}
    * @private
    */
   static getCommentPartRect(el) {
@@ -4352,6 +4420,7 @@ class Comment extends CommentSkeleton {
     } else {
       rect = el.getBoundingClientRect();
     }
+
     return rect;
   }
 
@@ -4444,7 +4513,7 @@ class Comment extends CommentSkeleton {
    * Scroll to the first comment in the list, but flash all of them.
    *
    * @param {Comment[]} comments
-   * @param {object} [scrollToConfig]
+   * @param {ScrollToConfig} [scrollToConfig]
    */
   static scrollToFirstFlashAll(comments, scrollToConfig) {
     comments[0].scrollTo({

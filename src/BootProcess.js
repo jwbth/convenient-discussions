@@ -114,7 +114,7 @@ function processAndRemoveDtElements(elements, bootProcess) {
  *   API.
  * @property {string[]} [commentIds] ID of comments to highlight and/or scroll to.
  * @property {string} [sectionId] ID of a section to scroll to.
- * @property {string} [pushState] Whether to replace the URL in the address bar adding the comment
+ * @property {boolean} [pushState] Whether to replace the URL in the address bar adding the comment
  *   ID to it if it's specified.
  * @property {number} [scrollY] Page's Y offset.
  * @property {Comment[]} [unseenComments] Unseen comments on this page.
@@ -125,6 +125,10 @@ function processAndRemoveDtElements(elements, bootProcess) {
  * @property {CommentForm} [submittedCommentForm] Comment form the user just submitted.
  * @property {boolean} [isPageReloadedExternally] Whether the page was reloaded externally (e.g. by
  *   some script).
+ * @property {boolean} [markAsRead] Whether to mark all previously shown comments on the page as
+ *   read.
+ * @property {boolean} [isRevisionSliderRunning] Whether RevisionSlider is currently active.
+ * @property {boolean} [closeNotificationsSmoothly=true] Whether to close notifications smoothly.
  */
 
 /**
@@ -459,7 +463,7 @@ class BootProcess {
     });
     this.parser.init();
     this.parser.processAndRemoveDtMarkup(this);
-    this.targets = this.parser.findHeadings()
+    this.targets = /** @type {import('./Parser').Target[]} */ (this.parser.findHeadings())
       .concat(this.parser.findSignatures())
       .sort((t1, t2) => this.parser.context.follows(t1.element, t2.element) ? 1 : -1);
   }

@@ -36,18 +36,59 @@ import { copyText, createSvg, getVisibilityByRects, skin$, wrapHtml } from './ut
 import visits from './visits';
 import WebpackWorker from './worker/worker-gate';
 
+// mutationObserver
+// $emulatedAddTopicButton
+// $addTopicButtons
+// addedCommentCount
+// areRelevantCommentsAdded
+// relevantAddedCommentIds
+// dtSubscribableThreads
+// rootElement
+// $root
+
 export default {
+  /**
+   * @type {{
+   *   closedDiscussions?: HTMLElement[];
+   *   areThereOutdents?: boolean;
+   *   floatingElements?: HTMLElement[];
+   *   tsSelectorsFloating?: string[];
+   *   tsSelectorsHidden?: string[];
+   *   areThereLtrRtlMixes?: boolean;
+   *   longPage?: boolean;
+   * }}
+   */
   content: {},
+
+  /**
+   * @type {{
+   *   offset: ?number;
+   *   element?: ?Element;
+   *   elementTop?: ?number;
+   *   touchesBottom?: boolean;
+   *   offsetBottom?: ?number;
+   *   tocHeight?: ?number;
+   * }}
+   */
   scrollData: { offset: null },
+
   autoScrolling: false,
   isUpdateThreadLinesHandlerAttached: false,
   lastScrollX: 0,
   originalPageTitle: document.title,
+
+  /** @type {?number} */
   lastCheckedRevisionId: null,
+
   addedCommentCount: 0,
   areRelevantCommentsAdded: false,
+
+  /** @type {?(string[])} */
   relevantAddedCommentIds: null,
+
+  /** @type {import('./CommentSkeleton').CommentSkeletonLike[]} */
   commentsNotifiedAbout: [],
+
   isObstructingElementHoveredCached: false,
 
   /**
@@ -88,7 +129,7 @@ export default {
       (isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber) || this.definitelyTalkPage) &&
 
       // Undocumented setting
-      !(typeof cdOnlyRunByFooterLink !== 'undefined' && cdOnlyRunByFooterLink)
+      !window.cdOnlyRunByFooterLink
     );
 
     // See .isDiffPage()
@@ -203,11 +244,11 @@ export default {
         OO.mixinClass(Subscriptions, OO.EventEmitter);
         OO.mixinClass(CommentForm, OO.EventEmitter);
 
-        await this.tryExecuteBootProcess();
+        await this.tryExecuteBootProcess(false);
       },
-      (e) => {
+      (error) => {
         mw.notify(cd.s('error-loaddata'), { type: 'error' });
-        console.error(e);
+        console.error(error);
         this.hideLoadingOverlay();
       }
     );
@@ -497,7 +538,9 @@ export default {
    * @returns {boolean}
    */
   isWatchlistPage() {
-    return ['Recentchanges', 'Watchlist'].includes(mw.config.get('wgCanonicalSpecialPageName'));
+    return ['Recentchanges', 'Watchlist'].includes(
+      mw.config.get('wgCanonicalSpecialPageName') || ''
+    );
   },
 
   /**
@@ -723,23 +766,33 @@ export default {
       if (this.scrollData.touchesBottom && window.scrollY !== 0) {
         window.scrollTo(
           0,
-          document.documentElement.scrollHeight - window.innerHeight - this.scrollData.offsetBottom
+          document.documentElement.scrollHeight -
+            window.innerHeight -
+            /** @type {number} */ (this.scrollData.offsetBottom)
         );
       } else if (this.scrollData.element) {
         const rect = this.scrollData.element.getBoundingClientRect();
         if (getVisibilityByRects(rect)) {
-          window.scrollTo(0, window.scrollY + rect.top - this.scrollData.elementTop);
+          window.scrollTo(
+            0,
+            window.scrollY + rect.top - /** @type {number} */ (this.scrollData.elementTop)
+          );
         } else {
           // In a collapsed thread?
-          const closestHidden = this.scrollData.element.closest('.cd-hidden');
+          const closestHidden = /** @type {?HTMLElement} */ (
+            this.scrollData.element.closest('.cd-hidden')
+          );
           if (closestHidden) {
-            commentRegistry.getAll()
-              .map((comment) => comment.thread)
-              .filter(defined)
-              .filter((thread) => thread.isCollapsed)
-              .find((thread) => thread.collapsedRange.includes(closestHidden))
-              ?.$expandNote
-              .cdScrollTo('top', false);
+            /** @type {JQuery} */ (
+              commentRegistry.getAll()
+                .map((comment) => comment.thread)
+                .filter(defined)
+                .filter((thread) => thread.isCollapsed)
+                .find((thread) =>
+                  /** @type {HTMLElement[]} */ (thread.collapsedRange).includes(closestHidden)
+                )
+                ?.$expandNote
+            ).cdScrollTo('top', false);
           }
         }
       }
@@ -809,14 +862,14 @@ export default {
    * @returns {Element[]}
    */
   getClosedDiscussions() {
-    this.content.closedDiscussions ||= this.$root
+    this.content.closedDiscussions ||= /** @type {HTMLElement[]} */ (this.$root
       .find(
         cd.config.closedDiscussionClasses
           .concat('mw-archivedtalk')
           .map((name) => `.${name}`)
           .join(', ')
       )
-      .get();
+      .get());
 
     return this.content.closedDiscussions;
   },
@@ -895,7 +948,7 @@ export default {
       this.extractTemplateStylesSelectors();
     }
 
-    return this.content.tsSelectorsFloating;
+    return /** @type {string[]} */ (this.content.tsSelectorsFloating);
   },
 
   /**
@@ -909,7 +962,7 @@ export default {
       this.extractTemplateStylesSelectors();
     }
 
-    return this.content.tsSelectorsHidden;
+    return /** @type {string[]} */ (this.content.tsSelectorsHidden);
   },
 
   /**
@@ -918,16 +971,16 @@ export default {
    * @private
    */
   extractTemplateStylesSelectors() {
-    this.content.tsSelectorsFloating = [];
-    this.content.tsSelectorsHidden = [];
+    const floating = [];
+    const hidden = [];
     const extractSelectors = (rule) => {
       if (rule instanceof CSSStyleRule) {
         const style = rule.style;
         if (style.float === 'left' || style.float === 'right') {
-          this.content.tsSelectorsFloating.push(rule.selectorText);
+          floating.push(rule.selectorText);
         }
         if (style.display === 'none') {
-          this.content.tsSelectorsHidden.push(rule.selectorText);
+          hidden.push(rule.selectorText);
         }
       } else if (rule instanceof CSSMediaRule) {
         [...rule.cssRules].forEach(extractSelectors);
@@ -945,6 +998,9 @@ export default {
     [...this.rootElement.querySelectorAll('style')].forEach((el) => {
       [...el.sheet.cssRules].forEach(extractSelectors);
     });
+
+    this.content.tsSelectorsFloating = floating;
+    this.content.tsSelectorsHidden = hidden;
   },
 
   /**
@@ -956,6 +1012,7 @@ export default {
     this.content.areThereLtrRtlMixes ??= Boolean(
       document.querySelector('.mw-content-ltr .mw-content-rtl, .mw-content-rtl .mw-content-ltr')
     );
+
     return this.content.areThereLtrRtlMixes;
   },
 
@@ -973,6 +1030,7 @@ export default {
       event.preventDefault();
       // @ts-ignore
       event.returnValue = '1';
+
       return '';
     };
     $(window).on('beforeunload', this.beforeUnloadHandlers[name]);
@@ -1272,19 +1330,21 @@ export default {
     if (!$content.is('#mw-content-text, .cd-commentForm-previewArea')) return;
 
     const goToCommentUrl = mw.util.getUrl('Special:GoToComment/');
-    const extractCommentId = (el) => (
-      $(el).attr('href').replace(mw.util.escapeRegExp(goToCommentUrl), '#').slice(1)
-    );
+    const extractCommentId = (/** @type {HTMLAnchorElement} */ el) =>
+      /** @type {string} */ ($(el).attr('href'))
+      .replace(mw.util.escapeRegExp(goToCommentUrl), '#')
+      .slice(1);
     $content
       .find(`a[href^="#"], a[href^="${goToCommentUrl}"]`)
-      .filter((i, el) => (
-        // Added by us in other places
-        !el.onclick &&
-
-        commentRegistry.getByAnyId(extractCommentId(el), true)
-      ))
-      .on('click', function (e) {
-        e.preventDefault();
+      .filter((_, /** @type {HTMLAnchorElement} */ el) =>
+        Boolean(
+          // `onclick` and `cdCallback` may be added by us in other places
+          !el.onclick && !el.cdCallback && commentRegistry.getByAnyId(extractCommentId(el), true)
+        )
+      )
+      // eslint-disable-next-line jsdoc/require-param
+      .on('click', /** @this {HTMLAnchorElement} */ function (event) {
+        event.preventDefault();
         commentRegistry.getByAnyId(extractCommentId(this), true)?.scrollTo({
           expandThreads: true,
           pushState: true,
@@ -1384,7 +1444,7 @@ export default {
     });
 
     try {
-      bootProcess.passedData.parseData = await cd.page.parse(null, false, true);
+      bootProcess.passedData.parseData = await cd.page.parse(undefined, false, true);
     } catch (e) {
       this.hideLoadingOverlay();
       if (bootProcess.passedData.submittedCommentForm) {
@@ -1602,6 +1662,7 @@ export default {
    */
   isLongPage() {
     this.content.longPage ??= $(document).height() > 15000;
+
     return this.content.longPage;
   },
 
@@ -1983,9 +2044,9 @@ export default {
     this.addedCommentCount = all.length;
     this.areRelevantCommentsAdded = Boolean(relevant.length);
     if (relevant.length) {
-      this.relevantAddedCommentIds = relevant.map((comment) => comment.id);
+      this.relevantAddedCommentIds = relevant.map((comment) => comment.id).filter(definedAndNotNull);
     } else if (all.length) {
-      this.relevantAddedCommentIds = all.map((comment) => comment.id);
+      this.relevantAddedCommentIds = all.map((comment) => comment.id).filter(definedAndNotNull);
     }
 
     this.emit('addedCommentsUpdate', {
@@ -2006,7 +2067,7 @@ export default {
   /**
    * Get the IDs of the comments that should be jumped to after reloading the page.
    *
-   * @type {?(string[])}
+   * @returns {?(string[])}
    */
   getRelevantAddedCommentIds() {
     return this.relevantAddedCommentIds;

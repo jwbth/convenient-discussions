@@ -297,6 +297,7 @@ export function createNumberField({
  * @param {object} options
  * @param {string} options.value
  * @param {string} options.label
+ * @param {string} options.title
  * @param {boolean} [options.selected]
  * @param {boolean} [options.disabled]
  * @param {string} [options.help]
@@ -309,6 +310,7 @@ export function createCheckboxField({
   selected,
   disabled,
   label,
+  title,
   help,
   tabIndex,
   classes,
@@ -321,6 +323,7 @@ export function createCheckboxField({
   });
   const field = new OO.ui.FieldLayout(input, {
     label,
+    title,
     align: 'inline',
     help,
     helpInline: true,
@@ -334,7 +337,7 @@ export function createCheckboxField({
  * @typedef {object} CreateRadioFieldReturn
  * @property {OO.ui.FieldLayout} field
  * @property {OO.ui.RadioSelectWidget} select
- * @property {RadioOptionWidget[]} items
+ * @property {import('./RadioOptionWidget').default[]} items
  */
 
 /**
@@ -382,7 +385,7 @@ export function createRadioField({ label, selected, help, options }) {
  */
 export function createCopyTextField({ label, value, disabled = false, help, copyCallback }) {
   let field;
-  if (OO.ui.CopyTextLayout) {
+  if ('CopyTextLayout' in OO.ui) {
     field = new OO.ui.CopyTextLayout({
       align: 'top',
       label,
@@ -462,7 +465,8 @@ export function mixinUserOoUiClass(targetClass, originClass) {
  * @param {object} obj
  */
 export function mixEventEmitterInObject(obj) {
-  const dummy = { prototype: {} };
+  const dummy = () => {};
+  dummy.prototype = {};
   OO.mixinClass(dummy, OO.EventEmitter);
   Object.assign(obj, dummy.prototype);
   OO.EventEmitter.call(obj);

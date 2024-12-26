@@ -151,7 +151,7 @@ async function maybeProcessRevisionsAtLoad(previousVisitTime, submittedCommentId
 /**
  * Map sections obtained from a revision to the sections present on the page.
  *
- * @param {import('./SectionSkeleton').SectionSkeletonLike[]} otherSections
+ * @param {SectionWorkerEnrichied[]} otherSections
  * @private
  */
 function mapSections(otherSections) {
@@ -165,14 +165,17 @@ function mapSections(otherSections) {
   });
 
   otherSections.forEach((otherSection) => {
-    const { section, score } = sectionRegistry.search(otherSection) || {};
-    if (section && (!section.match || score > section.matchScore)) {
-      if (section.match) {
-        delete section.match.match;
+    const match = sectionRegistry.search(otherSection);
+    if (match) {
+      const { section, score } = match;
+      if ((!section.matchScore || match.score > section.matchScore)) {
+        if (section.match) {
+          delete section.match.match;
+        }
+        section.match = otherSection;
+        section.matchScore = score;
+        otherSection.match = section;
       }
-      section.match = otherSection;
-      section.matchScore = score;
-      otherSection.match = section;
     }
   });
 
@@ -188,10 +191,13 @@ function mapSections(otherSections) {
 /**
  * Sort comments by match score, removing comments with score of 1.66 or less.
  *
- * @param {import('./CommentSkeleton').CommentSkeletonLike[]} candidates
- * @param {import('./CommentSkeleton').CommentSkeletonLike} target
+ * @param {CommentWorkerEnrichied[]} candidates
+ * @param {CommentWorkerEnrichied} target
  * @param {boolean} isTotalCountEqual
- * @returns {import('./CommentSkeleton').CommentSkeletonLike[]}
+ * @returns {Array<{
+ *   comment: CommentWorkerEnrichied;
+ *   score: number;
+ * }>}
  * @private
  */
 function sortCommentsByMatchScore(candidates, target, isTotalCountEqual) {
@@ -214,12 +220,13 @@ function sortCommentsByMatchScore(candidates, target, isTotalCountEqual) {
         1 :
         calculateWordOverlap(candidate.text, target.text);
       const score = (
-        doesParentIdMatch * (candidate.parent?.id ? 1 : 0.75) +
-        doesHeadlineMatch * 1 +
+        Number(doesParentIdMatch) * (candidate.parent?.id ? 1 : 0.75) +
+        Number(doesHeadlineMatch) * 1 +
         partsMatchedProportion +
         overlap +
-        doesIndexMatch * 0.25
+        Number(doesIndexMatch) * 0.25
       );
+
       return {
         comment: candidate,
         score,
@@ -235,8 +242,8 @@ function sortCommentsByMatchScore(candidates, target, isTotalCountEqual) {
  * `hasPoorMatch` property to comments that have possible matches that are not good enough to
  * confidently state a match.
  *
- * @param {import('./CommentSkeleton').CommentSkeletonLike[]} currentComments
- * @param {import('./CommentSkeleton').CommentSkeletonLike[]} otherComments
+ * @param {CommentWorkerEnrichied[]} currentComments
+ * @param {CommentWorkerEnrichied[]} otherComments
  * @private
  */
 function mapComments(currentComments, otherComments) {
@@ -276,7 +283,7 @@ function mapComments(currentComments, otherComments) {
       sortCommentsByMatchScore(ccFiltered, otherComment, isTotalCountEqual).forEach((match) => {
         // If the current comment already has a match (from a previous iteration of the
         // otherComments cycle), compare their scores.
-        if (!found && (!match.comment.match || match.comment.matchScore < match.score)) {
+        if (!found && (!match.comment.matchScore || match.comment.matchScore < match.score)) {
           match.comment.match = otherComment;
           match.comment.matchScore = match.score;
           delete match.comment.hasPoorMatch;
@@ -374,8 +381,8 @@ async function checkForUpdates() {
  * `headingHtmlToCompare` properties (the comment may lose its heading because technical comment is
  * added between it and the heading).
  *
- * @param {import('./CommentSkeleton').CommentSkeletonLike[]} olderComment
- * @param {import('./CommentSkeleton').CommentSkeletonLike[]} newerComment
+ * @param {CommentWorkerEnrichied} olderComment
+ * @param {CommentWorkerEnrichied} newerComment
  * @returns {boolean}
  * @private
  */
@@ -392,8 +399,8 @@ function hasCommentChanged(olderComment, newerComment) {
 /**
  * Check if there are changes made to the currently displayed comments since the previous visit.
  *
- * @param {import('./CommentSkeleton').CommentSkeletonLike[]} currentComments
- * @param {string} submittedCommentId
+ * @param {CommentWorkerEnrichied[]} currentComments
+ * @param {string} [submittedCommentId]
  * @private
  */
 function checkForChangesSincePreviousVisit(currentComments, submittedCommentId) {
@@ -411,7 +418,7 @@ function checkForChangesSincePreviousVisit(currentComments, submittedCommentId) 
 
     const oldComment = currentComment.match;
     if (oldComment) {
-      const seenHtmlToCompare = seen?.[currentComment.id]?.htmlToCompare;
+      const seenHtmlToCompare = currentComment.id && seen?.[currentComment.id]?.htmlToCompare;
       if (
         hasCommentChanged(oldComment, currentComment) &&
         seenHtmlToCompare !== currentComment.htmlToCompare
@@ -471,7 +478,7 @@ function checkForChangesSincePreviousVisit(currentComments, submittedCommentId) 
 /**
  * Check if there are changes made to the currently displayed comments since they were rendered.
  *
- * @param {import('./CommentSkeleton').CommentSkeletonLike[]} currentComments
+ * @param {CommentWorkerEnrichied[]} currentComments
  * @private
  */
 function checkForNewChanges(currentComments) {
@@ -562,7 +569,8 @@ function checkForNewChanges(currentComments) {
  *
  * @typedef {object} MarkAsChangedData
  * @property {import('./Comment').default} comment
- * @property {boolean} updateSuccess
+ * @property {boolean} isNewRevisionRendered
+ * @property {number} comparedRevisionId
  * @property {object} commentsData
  * @private
  */
@@ -574,7 +582,7 @@ function checkForNewChanges(currentComments) {
 /**
  * Mark comments as changed, verifying diffs if possible to decide whether to show the diff link.
  *
- * @param {'changed'|'changedSince'|'deleted'} type
+ * @param {'changed'|'changedSince'} type
  * @param {MarkAsChangedData[]} data
  * @param {number} olderRevisionId
  * @param {number} newerRevisionId
@@ -641,12 +649,39 @@ function isPageStillAtRevision(revisionId) {
 }
 
 /**
+ * @typedef {object} CommentWorkerExtension
+ * @property {import('./userRegistry').User} author
+ * @property {SectionWorkerEnrichied} [section]
+ * @property {CommentWorkerEnrichied} [match]
+ * @property {import('./Comment').default} [parentMatch]
+ * @property {number} [matchScore]
+ * @property {boolean} [hasPoorMatch]
+ * @property {CommentWorkerExtension} parent
+ * @property {CommentWorkerEnrichied[]} children
+ * @property {CommentWorkerEnrichied[]} previousComments
+ * @property {import('./Section').default} sectionSubscribedTo
+ */
+
+/**
+ * @typedef {import('./worker/CommentWorker').default & CommentWorkerExtension} CommentWorkerEnrichied
+ */
+
+/**
+ * @typedef {object} SectionWorkerExtension
+ * @property {import('./Section').default} [match]
+ * @property {number} [matchScore]
+ */
+
+/**
+ * @typedef {import('./worker/SectionWorker').default & SectionWorkerExtension} SectionWorkerEnrichied
+ */
+
+/**
  * Process the comments retrieved by a web worker.
  *
- * @param {import('./CommentSkeleton').CommentSkeletonLike[]} comments Comments in the recent
- *   revision.
- * @param {import('./CommentSkeleton').CommentSkeletonLike[]} currentComments Comments in the
- *   currently shown revision mapped to the comments in the recent revision.
+ * @param {CommentWorkerEnrichied[]} comments Comments in the recent revision.
+ * @param {CommentWorkerEnrichied[]} currentComments Comments in the currently shown revision mapped
+ *   to the comments in the recent revision.
  * @param {number} currentRevisionId ID of the revision that can be seen on the page.
  * @private
  */
@@ -668,7 +703,7 @@ async function processComments(comments, currentComments, currentRevisionId) {
       if (comment.parent) {
         const parentMatch = currentComments.find((mcc) => mcc.match === comment.parent);
         if (parentMatch?.id) {
-          newComment.parentMatch = commentRegistry.getById(parentMatch.id);
+          newComment.parentMatch = commentRegistry.getById(parentMatch.id) || undefined;
         }
       }
       return newComment;
@@ -701,10 +736,12 @@ async function processComments(comments, currentComments, currentRevisionId) {
         const closestSectionSubscribedTo = section.getClosestSectionSubscribedTo(true);
         if (closestSectionSubscribedTo) {
           comment.sectionSubscribedTo = closestSectionSubscribedTo;
+
           return true;
         }
       }
     }
+
     return false;
   });
 
@@ -720,11 +757,11 @@ async function processComments(comments, currentComments, currentRevisionId) {
 /**
  * Callback for messages from the worker.
  *
- * @param {Event} e
+ * @param {MessageEvent} event
  * @private
  */
-async function onMessageFromWorker(e) {
-  const message = e.data;
+async function onMessageFromWorker(event) {
+  const message = event.data;
 
   if (message.type === 'wakeUp') {
     checkForUpdates();
@@ -746,7 +783,7 @@ const updateChecker = {
    */
   init() {
     visits
-      .on('process', (currentPageData) => {
+      .on('process', (/** @type {number[]} */ currentPageData) => {
         const bootProcess = controller.getBootProcess();
         this.setup(
           currentPageData.length >= 2 ?

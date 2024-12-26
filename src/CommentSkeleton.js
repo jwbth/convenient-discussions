@@ -39,36 +39,8 @@ class CommentSkeleton {
    */
   level;
 
-  /**
-   * @typedef {object} HiddenElementData
-   * @property {string} type
-   * @property {string} tagName
-   * @property {string} html
-   */
-
-  /** @type {HiddenElementData[]|undefined} */
-  hiddenElementsData;
-
-  /** @type {string[]|undefined} */
-  elementHtmls;
-
-  /** @type {string|undefined} */
-  htmlToCompare;
-
-  /** @type {string|undefined} */
-  textHtmlToCompare;
-
-  /** @type {string|undefined} */
-  headingHtmlToCompare;
-
-  /** @type {string|undefined} */
-  text;
-
-  /** @type {string[]|undefined} */
-  elementNames;
-
-  /** @type {string[]|undefined} */
-  elementClassNames;
+  /** @type {?import('./SectionSkeleton').default} */
+  section;
 
   /**
    * @type {{
@@ -85,8 +57,9 @@ class CommentSkeleton {
    * Create a comment skeleton instance.
    *
    * @param {import('./Parser').default} parser
-   * @param {object} signature Signature object returned by {@link Parser#findSignatures}.
-   * @param {object[]} targets
+   * @param {import('./Parser').SignatureTarget} signature Signature object returned by
+   *   {@link Parser#findSignatures}.
+   * @param {import('./Parser').Target[]} targets
    * @throws {CdError}
    */
   constructor(parser, signature, targets) {
@@ -253,7 +226,7 @@ class CommentSkeleton {
      * Section that the comment is directly in (the section with lowest level / the biggest level
      * number).
      *
-     * @type {?import('./Section').default}
+     * @type {?import('./SectionSkeleton').default}
      */
     this.section = null;
 
@@ -699,8 +672,8 @@ class CommentSkeleton {
    *
    * @param {object[]} parts
    * @param {ElementsAndTextTreeWalker} treeWalker
-   * @param {ElementLike} firstForeignComponentAfter
-   * @param {ElementLike} precedingHeadingElement
+   * @param {ElementLike} [firstForeignComponentAfter]
+   * @param {ElementLike} [precedingHeadingElement]
    * @returns {CommentPart[]}
    * @throws {CdError}
    * @private
@@ -860,7 +833,7 @@ class CommentSkeleton {
   /**
    * _For internal use._ Collect the parts of the comment given a signature element.
    *
-   * @param {ElementLike} precedingHeadingElement
+   * @param {ElementLike} [precedingHeadingElement]
    */
   collectParts(precedingHeadingElement) {
     const treeWalker = new ElementsAndTextTreeWalker(
@@ -1472,7 +1445,7 @@ class CommentSkeleton {
    * * Item 3. [signature]
    * ```
    *
-   * @param {ElementLikeArray} levelElements
+   * @param {AtLeastOne<ElementLikeArray>} levelElements
    * @private
    */
   fixEndLevel(levelElements) {
@@ -1755,7 +1728,7 @@ class CommentSkeleton {
           for (let i = commentIndex - 1; i >= 0; i--) {
             const comment = cd.comments[i];
             if (comment.section !== childComment.section) break;
-            if (childComment.date >= comment.date) {
+            if (childComment.date && comment.date && childComment.date >= comment.date) {
               parentComment = comment;
               break;
             }

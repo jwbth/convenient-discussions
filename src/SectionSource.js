@@ -85,7 +85,10 @@ class SectionSource {
    * @param {'replyInSection'|'addSubsection'} options.action
    * @param {string} options.commentCode Comment code, including trailing newlines and the
    *   signature.
-   * @returns {object}
+   * @returns {{
+   *   contextCode: string;
+   *   commentCode: string;
+   * }}
    */
   modifyContext({ action, commentCode }) {
     const originalContextCode = this.isInSectionContext ?

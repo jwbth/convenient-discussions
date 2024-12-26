@@ -13,8 +13,8 @@ import controller from './controller';
 import settings from './settings';
 import updateChecker from './updateChecker';
 import { getPagesExistence } from './utils-api';
-import { getCommonGender, reorderArray, sleep, unique } from './utils-general';
-import { getExtendedRect, getHigherNodeAndOffsetInSelection, wrapHtml } from './utils-window';
+import { definedAndNotNull, getCommonGender, reorderArray, sleep, unique } from './utils-general';
+import { getExtendedRect, getHigherNodeAndOffsetInSelection, mergeJquery, wrapHtml } from './utils-window';
 import visits from './visits';
 
 // TODO: make into a class extending a generic registry.
@@ -194,8 +194,8 @@ export default {
    *
    * @param {object} currentPageData Visits data for the current page.
    * @param {number} currentTime Unix timestamp.
-   * @param {boolean} markAsReadRequested Have the user requested to mark all shown comments as
-   *   read.
+   * @param {boolean} markAsReadRequested Whether to mark all previously shown comments on the page
+   *   as read.
    * @returns {boolean} Whether there is a time conflict.
    */
   initNewAndSeen(currentPageData, currentTime, markAsReadRequested) {
@@ -368,14 +368,14 @@ export default {
   /**
    * Find any one comment inside the viewport.
    *
-   * @param {string} [findClosestDirection] If there is no comment in the viewport, find the closest
-   *   comment in the specified direction.
+   * @param {'forward' | 'backward'} [findClosestDirection] If there is no comment in the viewport,
+   *   find the closest comment in the specified direction.
    * @returns {?Comment}
    */
   findInViewport(findClosestDirection) {
     // Reset the roughOffset property. It is used only within this method.
     this.items.forEach((comment) => {
-      delete comment.roughOffset;
+      comment.roughOffset = null;
     });
 
     const viewportTop = window.scrollY + cd.g.bodyScrollPaddingTop;
@@ -383,19 +383,25 @@ export default {
 
     // Visibility is checked in the sense that an element is visible on the page, not necessarily in
     // the viewport.
-    const isVisible = (comment) => {
+    const isVisible = (/** @type {Comment} */ comment) => {
       comment.getOffset({ set: true });
+
       return Boolean(comment.roughOffset);
     };
-    const findVisible = (direction, startIndex = 0, endIndex) => {
+    const findVisible = (
+      /** @type {'forward' | 'backward'} */ direction,
+      startIndex = 0,
+      /** @type {number} */ endIndex
+    ) => {
       let comments = reorderArray(this.items, startIndex, direction === 'backward');
       if (endIndex !== undefined) {
-        comments = comments.filter((comment) => (
-          direction === 'forward' ?
-            comment.index >= startIndex && comment.index < endIndex :
-            comment.index <= startIndex && comment.index > endIndex
-        ));
+        comments = comments.filter((comment) =>
+          direction === 'forward'
+            ? comment.index >= startIndex && comment.index < endIndex
+            : comment.index <= startIndex && comment.index > endIndex
+        );
       }
+
       return comments.find(isVisible) || null;
     };
 
@@ -407,19 +413,23 @@ export default {
 
     let searchArea = {
       top: firstVisibleComment,
-      bottom: lastVisibleComment,
+      bottom: /** @type {Comment} */ (lastVisibleComment),
     };
     let comment = searchArea.top;
     let foundComment;
 
-    const findClosest = (direction, searchArea, reverse = false) => (
-      direction ?
-        findVisible(
-          direction,
-          searchArea[(direction === 'forward' ? reverse : !reverse) ? 'top' : 'bottom'].index
-        ) :
-        null
-    );
+    const findClosest = (
+      /** @type {'forward' | 'backward' | undefined} */ direction,
+      /** @type {typeof searchArea} */ currentSearchArea,
+      reverse = false
+    ) =>
+      direction
+        ? findVisible(
+            direction,
+            currentSearchArea[(direction === 'forward' ? reverse : !reverse) ? 'top' : 'bottom']
+              .index
+          )
+        : null;
 
     // Here, we don't iterate over this.items as it may look like. We perform a so-called
     // interpolation search: narrow the search region by getting a proportion of the distance
@@ -432,11 +442,13 @@ export default {
       if (!comment.roughOffset) {
         comment.getOffset({ set: true });
         if (!comment.roughOffset) {
-          comment = (
+          const commentCandidate = (
             findVisible('forward', comment.index, searchArea.bottom.index) ||
             findVisible('backward', comment.index, searchArea.top.index)
           );
-          if (!comment) {
+          if (commentCandidate) {
+            comment = commentCandidate;
+          } else {
             foundComment = findClosest(findClosestDirection, searchArea);
             break;
           }
@@ -476,7 +488,11 @@ export default {
       if (comment === firstVisibleComment) {
         comment = searchArea.bottom;
       } else {
-        searchArea[viewportTop > comment.roughOffset.top ? 'top' : 'bottom'] = comment;
+        searchArea[
+          viewportTop > /** @type {import('./Comment').CommentOffset} */ (comment.roughOffset).top
+            ? 'top'
+            : 'bottom'
+        ] = comment;
 
         // There's not a single comment in the viewport.
         if (searchArea.bottom.index - searchArea.top.index <= 1) {
@@ -485,8 +501,12 @@ export default {
         }
 
         // Determine the ID of the next comment to check.
-        const higherTop = searchArea.top.roughOffset.top;
-        const lowerBottom = searchArea.bottom.roughOffset.bottomForVisibility;
+        const higherTop = /** @type {import('./Comment').CommentOffset} */ (
+          searchArea.top.roughOffset
+        ).top;
+        const lowerBottom = /** @type {import('./Comment').CommentOffset} */ (
+          searchArea.bottom.roughOffset
+        ).bottomForVisibility;
         const proportion = (
           (viewportTop - higherTop) /
           ((lowerBottom - viewportBottom) + (viewportTop - higherTop))
@@ -515,23 +535,23 @@ export default {
    * cursor is between comment parts, not over them. (An event handler for comment part elements
    * wouldn't be able to handle this space between.)
    *
-   * @param {Event} e
+   * @param {MouseEvent} event
    */
-  maybeHighlightHovered(e) {
+  maybeHighlightHovered(event) {
     if (this.reformatCommentsSetting) return;
 
     const isObstructingElementHovered = controller.isObstructingElementHovered();
     this.items
       .filter((comment) => comment.underlay)
       .forEach((comment) => {
-        comment.updateHoverState(e, isObstructingElementHovered);
+        comment.updateHoverState(event, isObstructingElementHovered);
       });
   },
 
   /**
    * Get a comment by ID in the CD format.
    *
-   * @param {string} id
+   * @param {?string} id
    * @param {boolean} [impreciseDate=false] Comment date is inferred from the edit date (but these
    *   may be different). If `true`, we allow the time on the page to be 1-3 minutes less than the
    *   edit time.
@@ -542,15 +562,18 @@ export default {
       return null;
     }
 
-    const findById = (id) => this.items.find((comment) => comment.id === id);
+    const findById = (/** @type {string | null} */ id) =>
+      this.items.find((comment) => comment.id === id);
 
     let comment = findById(id);
     if (!comment && impreciseDate) {
       const { date, author } = Comment.parseId(id) || {};
-      for (let gap = 1; !comment && gap <= 3; gap++) {
-        comment = findById(
-          Comment.generateId(new Date(date.getTime() - cd.g.msInMin * gap), author)
-        );
+      if (date) {
+        for (let gap = 1; !comment && gap <= 3; gap++) {
+          comment = findById(
+            Comment.generateId(new Date(date.getTime() - cd.g.msInMin * gap), author)
+          );
+        }
       }
     }
 
@@ -627,7 +650,7 @@ export default {
   /**
    * _For internal use._ Add new comments notifications to threads and sections.
    *
-   * @param {Map} newComments
+   * @param {import('./updateChecker').CommentWorkerEnrichied[]} newComments
    */
   addNewCommentsNotes(newComments) {
     controller.saveRelativeScrollPosition();
@@ -686,10 +709,10 @@ export default {
   /**
    * Add an individual new comments notification to a thread or section.
    *
-   * @param {import('./Comment').default|import('./Section').default} parent
-   * @param {import('./CommentSkeleton').default[]} childComments
+   * @param {Comment|import('./Section').default} parent
+   * @param {import('./CommentSkeleton').CommentSkeletonLike[]} childComments
    * @param {'thread'|'section'} type
-   * @param {import('./CommentSkeleton').default[]} newCommentIndexes
+   * @param {number[]} newCommentIndexes
    * @private
    */
   addNewCommentsNote(parent, childComments, type, newCommentIndexes) {
@@ -717,7 +740,7 @@ export default {
     });
     button.on('click', () => {
       controller.reload({
-        commentIds: descendantComments.map((comment) => comment.id),
+        commentIds: descendantComments.map((comment) => comment.id).filter(definedAndNotNull),
         pushState: true,
       });
     });
@@ -736,7 +759,8 @@ export default {
       }
     } else if (type === 'thread' && parent.$replyButtonWrapper) {
       button.$element.addClass('cd-thread-button');
-      const tagName = parent.$replyButtonContainer.prop('tagName') === 'DL' ? 'dd' : 'li';
+      const tagName =
+        /** @type {JQuery} */ (parent.$replyButtonContainer).prop('tagName') === 'DL' ? 'dd' : 'li';
       $(`<${tagName}>`)
         .addClass('cd-thread-button-container cd-thread-newCommentsNote')
         .append(button.$element)
@@ -1212,7 +1236,7 @@ export default {
     this.toggleChildThreadsPopup = new OO.ui.PopupWidget({
       icon: 'newspaper',
       label: cd.s('togglechildthreads-popup-title'),
-      $content: $.cdMerge(
+      $content: mergeJquery(
         wrapHtml(cd.sParse('togglechildthreads-popup-text'), {
           callbacks: {
             'cd-notification-settings': () => {

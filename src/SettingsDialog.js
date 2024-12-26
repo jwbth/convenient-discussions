@@ -13,6 +13,7 @@ import { createCheckboxField, createNumberField, createRadioField, createTextFie
  * @augments ProcessDialog
  */
 class SettingsDialog extends ProcessDialog {
+  // @ts-ignore: https://phabricator.wikimedia.org/T358416
   static name = 'settingsDialog';
   static title = cd.s('sd-title');
   static actions = [
@@ -46,11 +47,14 @@ class SettingsDialog extends ProcessDialog {
   static size = 'large';
   static cdKey = 'sd';
 
+  /** @type {OO.ui.StackLayout} */
+  stack;
+
   /**
    * Create a settings dialog.
    *
    * @param {string} [initialPageName]
-   * @param {string} focusSelector
+   * @param {string} [focusSelector]
    */
   constructor(initialPageName, focusSelector) {
     super({ classes: ['cd-dialog-settings'] });
@@ -72,13 +76,12 @@ class SettingsDialog extends ProcessDialog {
   /**
    * OOUI native method that initializes window contents.
    *
-   * @param {...*} [args]
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#initialize
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
    * @ignore
    */
-  initialize(...args) {
-    super.initialize(...args);
+  initialize() {
+    super.initialize();
 
     this.pushPending();
 
@@ -114,6 +117,8 @@ class SettingsDialog extends ProcessDialog {
     });
 
     this.$body.append(this.stack.$element);
+
+    return this;
   }
 
   /**

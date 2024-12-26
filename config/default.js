@@ -242,6 +242,8 @@ export default {
    *
    * @typedef {object} ArchivingConfig
    * @property {string} [configSubpage]
+   * @property {string[]} [subpages]
+   * @property {boolean} [areArchivesSorted]
    * @property {ArchivingTemplateEntry[]} [templates]
    */
 

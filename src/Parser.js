@@ -4,7 +4,7 @@ import CommentSkeleton from './CommentSkeleton';
 import ElementsAndTextTreeWalker from './ElementsAndTextTreeWalker';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import cd from './cd';
-import { getHeadingLevel, parseWikiUrl, isHeadingNode, isInline, isMetadataNode, ucFirst, underlinesToSpaces, definedAndNotNull, unique, isDomHandlerNode, isDomHandlerElement, isElement } from './utils-general';
+import { getHeadingLevel, parseWikiUrl, isHeadingNode, isInline, isMetadataNode, ucFirst, underlinesToSpaces, definedAndNotNull, unique, isDomHandlerElement, isElement } from './utils-general';
 import { parseTimestamp } from './utils-timestamp';
 
 /**
@@ -43,6 +43,7 @@ import { parseTimestamp } from './utils-timestamp';
  * @property {boolean} isUnsigned
  * @property {boolean} isExtraSignature
  * @property {ElementLikeArray} extraSignatures
+ * @property {CommentSkeleton} [comment]
  */
 
 /**
@@ -619,7 +620,9 @@ class Parser {
     const parent = /** @type {ElementLike} */ (node.parentElement);
 
     // TypeScript things...
-    const clone = isDomHandlerElement(parent) ? parent.cloneNode() : /** @type {Element} */ (parent.cloneNode());
+    const clone = isDomHandlerElement(parent)
+      ? parent.cloneNode()
+      : /** @type {Element} */ (parent.cloneNode());
 
     let lastChild;
     while ((lastChild = parent.lastChild) && lastChild !== node) {

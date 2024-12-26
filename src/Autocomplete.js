@@ -10,6 +10,27 @@ import { handleApiReject } from './utils-api';
 import { charAt, defined, phpCharToUpper, removeDoubleSpaces, sleep, ucFirst, underlinesToSpaces, unique } from './utils-general';
 
 /**
+ * @typedef {object} AutocompleteConfig
+ * @property {{ [text: string]: string }} byText
+ * @property {} cache
+ * @property {} default
+ * @property {} transform
+ * @property {} comments
+ */
+
+/**
+ * @typedef {object} AutocompleteCollection
+ * @property {string} label
+ * @property {string} trigger
+ * @property {} searchOpts
+ * @property {boolean} requireLeadingSpace
+ * @property {} selectTemplate
+ * @property {} values
+ * @property {RegExp} keepAsEnd
+ * @property {} selectTemplate
+ */
+
+/**
  * Autocomplete dropdown class.
  */
 class Autocomplete {
@@ -104,7 +125,7 @@ class Autocomplete {
    * @param {string[]} types
    * @param {string[]} comments
    * @param {string[]} defaultUserNames
-   * @returns {object[]}
+   * @returns {AutocompleteCollection[]}
    * @private
    */
   getCollections(types, comments, defaultUserNames) {
@@ -522,12 +543,15 @@ class Autocomplete {
 
   static delay = 100;
 
+  /** @type {HTMLElement|undefined} */
+  static activeMenu;
+
   /**
    * _For internal use._ Get an autocomplete configuration for the specified type.
    *
    * @param {string} type
    * @param {...*} args
-   * @returns {object}
+   * @returns {AutocompleteConfig}
    */
   static getConfig(type, ...args) {
     let config;
@@ -576,7 +600,7 @@ class Autocomplete {
         config = {
           byText: {},
           cache: [],
-          transform: (name) => {
+          transform: (/** @type {string} */ name) => {
             name = name.trim();
             return {
               start: '[[' + name,
@@ -630,9 +654,9 @@ class Autocomplete {
           ['syntaxhighlight', '<syntaxhighlight>\n', '\n</syntaxhighlight>'],
           ['templatestyles', '<templatestyles src="', '" />'],
         ];
-        const defaultTags = cd.g.allowedTags.filter((tagString) => !(
-          tagAdditions.find((tagArray) => tagArray[0] === tagString)
-        ));
+        const defaultTags = cd.g.allowedTags.filter((tagString) =>
+          !tagAdditions.find((tagArray) => tagArray[0] === tagString)
+        );
 
         config = {
           default: defaultTags.concat(tagAdditions),
@@ -657,7 +681,7 @@ class Autocomplete {
   /**
    * Get the active autocomplete menu element.
    *
-   * @returns {Element}
+   * @returns {Element|undefined}
    */
   static getActiveMenu() {
     return this.activeMenu;

@@ -76,7 +76,7 @@ class CommentFormOperationRegistry {
 /**
  * Class representing a single comment form operation.
  */
-class CommentFormOperation {
+export class CommentFormOperation {
   /**
    * Create a comment form operation.
    *

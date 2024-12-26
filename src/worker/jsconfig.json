@@ -1,6 +1,7 @@
 {
   "extends": "../../jsconfig-base.json",
   "compilerOptions": {
-    "lib": ["ESNext", "WebWorker"]
-  }
+    "lib": ["ES2021", "WebWorker"]
+  },
+  "include": ["**/*", "../src/cd.js"]
 }

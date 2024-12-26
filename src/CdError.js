@@ -1,33 +1,34 @@
 /**
+ * @typedef {object} ErrorData
+ * @param {'network'|'api'|'parse'|'internal'} type Grouping of the error.
+ * @param {string} [code] Error code.
+ * @param {object} [apiResp] API response.
+ * @param {object} [apiError] API error code.
+ * @param {object} [details] Additional details.
+ * @param {string} [message] Error message for the user.
+ */
+
+/**
  * Script's custom error class.
  *
  * @augments Error
  */
 class CdError extends Error {
+  /** @type {ErrorData} */
+  data;
+
   /**
    * Create a custom error.
    *
-   * @param {object} [data]
-   * @param {'network'|'api'|'parse'|'internal'} data.type Grouping of the error.
-   * @param {string} [data.code] Error code.
-   * @param {object} [data.apiResp] API response.
-   * @param {object} [data.apiError] API error code.
-   * @param {object} [data.details] Additional details.
+   * @param {ErrorData} [data={ type: 'internal' }]
    */
   constructor(data = { type: 'internal' }) {
-    let message;
-    if (data) {
-      message = data.type;
-      if (data.code) {
-        message += `/${data.code}`;
-      }
-      if (data.apiError) {
-        message += `/${data.apiError}`;
-      }
-    } else {
-      message = '';
-    }
-    super(message);
+    super(
+      data.type +
+      (data.code ? `/${data.code}` : '') +
+      (data.apiError ? `/${data.apiError}` : '') +
+      (data.message ? `: ${data.message}` : '')
+    );
     this.name = 'CdError';
     this.data = data;
   }

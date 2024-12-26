@@ -10,10 +10,19 @@ import { brsToNewlines, extractSignatures, maskDistractingCode, normalizeCode, r
  * source match candidates before a single match is chosen among them.
  */
 class CommentSource {
+  /** @type {number} */
+  lineStartIndex;
+
+  /** @type {string} */
+  originalIndentation;
+
+  /** @type {string} */
+  indentation;
+
   /**
    * Create a comment's source object.
    *
-   * @param {Comment} comment Comment.
+   * @param {import('./Comment').default} comment Comment.
    * @param {object} signature Data about the source code of the signature.
    * @param {string} contextCode Wikitext used as a reference point for the indexes.
    * @param {boolean} isInSectionContext Is the source code of the section (not page) used.
@@ -35,103 +44,33 @@ class CommentSource {
   }
 
   /**
-   * Convert the comment's source code to code to set as a value of an input (practically, to the
-   * {@link CommentForm#commentInput comment form's input}).
+   * While locating the comment in the source code, adjust the data related to the comment's source
+   * code.
    *
-   * @returns {string}
+   * @private
    */
-  toInput() {
-    const originalIndentationLength = this.originalIndentation.length;
-    let code = new TextMasker(this.code)
+  adjust() {
+    this.lineStartIndex = this.startIndex;
+
+    // Ignore heading markup inside <nowiki>, <syntaxhighlight>, etc.
+    this.code = (new TextMasker(this.code))
       .maskSensitiveCode()
-      .withText((code) => {
-        if (this.comment.level === 0) {
-          // Collapse random line breaks that do not affect text rendering but would otherwise
-          // transform into <br> on posting. \x01 and \x02 mean the beginning and ending of
-          // sensitive code except for tables. \x03 and \x04 mean the beginning and ending of a
-          // table. Note: This should be kept coordinated with the reverse transformation code in
-          // CommentForm#inputToCode. Some more comments are there.
-          const entireLineRegexp = /^(?:\x01\d+_(block|template)\x02) *$/;
-
-          const fileRegexp = new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$`, 'i');
-          const currentLineEndingRegexp = new RegExp(
-            `(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x04) *$`,
-            'i'
-          );
-          const nextLineBeginningRegexp = new RegExp(
-            `^(?:<\\/${cd.g.pniePattern}>|<${cd.g.pniePattern}|\\||!)`,
-            'i'
-          );
-          const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/;
-          code = code.replace(
-            /^((?![:*#; ]).+)\n(?![\n:*#; \x03])(?=(.*))/gm,
-            (s, currentLine, nextLine) => {
-              const newlineOrSpace = (
-                entireLineRegexp.test(currentLine) ||
-                entireLineRegexp.test(nextLine) ||
-                fileRegexp.test(currentLine) ||
-                fileRegexp.test(nextLine) ||
-                entireLineFromStartRegexp.test(currentLine) ||
-                entireLineFromStartRegexp.test(nextLine) ||
-                currentLineEndingRegexp.test(currentLine) ||
-                nextLineBeginningRegexp.test(nextLine)
-              ) ?
-                '\n' :
-                ' ';
-              return currentLine + newlineOrSpace;
-            }
-          );
-        }
-
-        code = brsToNewlines(code, '\x01\n')
-          // Templates occupying a whole line with <br> at the end get a special treatment.
-          .replace(/^((?:\x01\d+_template.*\x02) *)\x01$/gm, (s, m1) => m1 + '<br>')
-
-          // Two templates in a row is likely a paragraph template + other template. This is a
-          // workaround; may need to look specifically for paragraph templates and mark them as
-          // such.
-          .replace(
-            /((?:\x01\d+_template.*\x02){2} *)\x01/g,
-            (s, m1) => cd.config.paragraphTemplates.length ? m1 + '<br>' : s
-          )
-
-          // Replace the temporary marker.
-          .replace(/\x01\n/g, '\n')
-
-          // Remove indentation characters
-          .replace(/\n([:*#]*)([ \t]*)/g, (s, chars, spacing) => {
-            let newChars;
-            if (chars.length >= originalIndentationLength) {
-              newChars = chars.slice(originalIndentationLength);
-              if (chars.length > originalIndentationLength) {
-                newChars += spacing;
-              }
-            } else {
-              newChars = chars + spacing;
-            }
-            return '\n' + newChars;
-          });
-
-        if (cd.config.paragraphTemplates.length) {
-          const paragraphTemplatesPattern = cd.config.paragraphTemplates
-            .map(generatePageNamePattern)
-            .join('|');
-          const pattern = `\\{\\{(?:${paragraphTemplatesPattern})\\}\\}`;
-          const regexp = new RegExp(pattern, 'g');
-          const lineRegexp = new RegExp(`^(?![:*#]).*${pattern}`, 'gm');
-          code = code.replace(lineRegexp, (s) => s.replace(regexp, '\n\n'));
-        }
-
-        if (this.comment.level !== 0) {
-          code = code.replace(/\n\n+/g, '\n\n');
-        }
-
-        return code;
+      .withText((text, textMasker) => {
+        this.headingMatch = text.match(/(^[^]*(?:^|\n))((=+)(.*)\3[ \t\x01\x02]*\n)/);
+        this.headingMatch?.forEach((group, i) => {
+          /** @type {RegExpMatchArray} */ (this.headingMatch)[i] = textMasker.unmaskText(group);
+        });
+        return text;
       })
       .unmask()
       .getText();
+    this.originalIndentation = '';
+    this.indentation = '';
 
-    return code.trim();
+    this.excludeBadBeginnings();
+    this.excludeIndentationAndIntro();
+    this.adjustSignature();
+    this.adjustIndentation();
   }
 
   /**
@@ -301,36 +240,6 @@ class CommentSource {
   }
 
   /**
-   * While locating the comment in the source code, adjust the data related to the comment's source
-   * code.
-   *
-   * @private
-   */
-  adjust() {
-    this.lineStartIndex = this.startIndex;
-
-    // Ignore heading markup inside <nowiki>, <syntaxhighlight>, etc.
-    this.code = (new TextMasker(this.code))
-      .maskSensitiveCode()
-      .withText((text, textMasker) => {
-        this.headingMatch = text.match(/(^[^]*(?:^|\n))((=+)(.*)\3[ \t\x01\x02]*\n)/);
-        this.headingMatch?.forEach((group, i) => {
-          this.headingMatch[i] = textMasker.unmaskText(group);
-        });
-        return text;
-      })
-      .unmask()
-      .getText();
-    this.originalIndentation = '';
-    this.indentation = '';
-
-    this.excludeBadBeginnings();
-    this.excludeIndentationAndIntro();
-    this.adjustSignature();
-    this.adjustIndentation();
-  }
-
-  /**
    * While {@link CommentSource#adjust adjusting the comment's source code data}, adjust the
    * signature code.
    *
@@ -471,7 +380,7 @@ class CommentSource {
 
     isPreviousCommentsDataEqual = Boolean(isPreviousCommentsDataEqual);
     if (commentData.followsHeading) {
-      doesHeadlineMatch = this.headingMatch ?
+      doesHeadlineMatch = this.headlineCode !== undefined ?
         (
           normalizeCode(removeWikiMarkup(this.headlineCode)) ===
           normalizeCode(commentData.sectionHeadline)
@@ -484,7 +393,7 @@ class CommentSource {
     const wordOverlap = calculateWordOverlap(commentData.commentText, removeWikiMarkup(this.code));
     this.score = (
       // This condition _must_ be true.
-      (
+      Number(
         sources.length === 1 ||
         wordOverlap > 0.5 ||
 
@@ -502,10 +411,108 @@ class CommentSource {
       ) * 2 +
 
       wordOverlap +
-      doesHeadlineMatch * 1 +
-      doesPreviousCommentsDataMatch * 0.5 +
-      doesIndexMatch * 0.0001
+      Number(doesHeadlineMatch) * 1 +
+      Number(doesPreviousCommentsDataMatch) * 0.5 +
+      Number(doesIndexMatch) * 0.0001
     );
+  }/**
+   * Convert the comment's source code to code to set as a value of an input (practically, to the
+   * {@link CommentForm#commentInput comment form's input}).
+   *
+   * @returns {string}
+   */
+  toInput() {
+    const originalIndentationLength = this.originalIndentation.length;
+    let code = new TextMasker(this.code)
+      .maskSensitiveCode()
+      .withText((code) => {
+        if (this.comment.level === 0) {
+          // Collapse random line breaks that do not affect text rendering but would otherwise
+          // transform into <br> on posting. \x01 and \x02 mean the beginning and ending of
+          // sensitive code except for tables. \x03 and \x04 mean the beginning and ending of a
+          // table. Note: This should be kept coordinated with the reverse transformation code in
+          // CommentForm#inputToCode. Some more comments are there.
+          const entireLineRegexp = /^(?:\x01\d+_(block|template)\x02) *$/;
+
+          const fileRegexp = new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\]\\]$`, 'i');
+          const currentLineEndingRegexp = new RegExp(
+            `(?:<${cd.g.pniePattern}(?: [\\w ]+?=[^<>]+?| ?\\/?)>|<\\/${cd.g.pniePattern}>|\\x04) *$`,
+            'i'
+          );
+          const nextLineBeginningRegexp = new RegExp(
+            `^(?:<\\/${cd.g.pniePattern}>|<${cd.g.pniePattern}|\\||!)`,
+            'i'
+          );
+          const entireLineFromStartRegexp = /^(=+).*\1[ \t]*$|^----/;
+          code = code.replace(
+            /^((?![:*#; ]).+)\n(?![\n:*#; \x03])(?=(.*))/gm,
+            (s, currentLine, nextLine) => {
+              const newlineOrSpace = (
+                entireLineRegexp.test(currentLine) ||
+                entireLineRegexp.test(nextLine) ||
+                fileRegexp.test(currentLine) ||
+                fileRegexp.test(nextLine) ||
+                entireLineFromStartRegexp.test(currentLine) ||
+                entireLineFromStartRegexp.test(nextLine) ||
+                currentLineEndingRegexp.test(currentLine) ||
+                nextLineBeginningRegexp.test(nextLine)
+              ) ?
+                '\n' :
+                ' ';
+              return currentLine + newlineOrSpace;
+            }
+          );
+        }
+
+        code = brsToNewlines(code, '\x01\n')
+          // Templates occupying a whole line with <br> at the end get a special treatment.
+          .replace(/^((?:\x01\d+_template.*\x02) *)\x01$/gm, (s, m1) => m1 + '<br>')
+
+          // Two templates in a row is likely a paragraph template + other template. This is a
+          // workaround; may need to look specifically for paragraph templates and mark them as
+          // such.
+          .replace(
+            /((?:\x01\d+_template.*\x02){2} *)\x01/g,
+            (s, m1) => cd.config.paragraphTemplates.length ? m1 + '<br>' : s
+          )
+
+          // Replace the temporary marker.
+          .replace(/\x01\n/g, '\n')
+
+          // Remove indentation characters
+          .replace(/\n([:*#]*)([ \t]*)/g, (s, chars, spacing) => {
+            let newChars;
+            if (chars.length >= originalIndentationLength) {
+              newChars = chars.slice(originalIndentationLength);
+              if (chars.length > originalIndentationLength) {
+                newChars += spacing;
+              }
+            } else {
+              newChars = chars + spacing;
+            }
+            return '\n' + newChars;
+          });
+
+        if (cd.config.paragraphTemplates.length) {
+          const paragraphTemplatesPattern = cd.config.paragraphTemplates
+            .map(generatePageNamePattern)
+            .join('|');
+          const pattern = `\\{\\{(?:${paragraphTemplatesPattern})\\}\\}`;
+          const regexp = new RegExp(pattern, 'g');
+          const lineRegexp = new RegExp(`^(?![:*#]).*${pattern}`, 'gm');
+          code = code.replace(lineRegexp, (s) => s.replace(regexp, '\n\n'));
+        }
+
+        if (this.comment.level !== 0) {
+          code = code.replace(/\n\n+/g, '\n\n');
+        }
+
+        return code;
+      })
+      .unmask()
+      .getText();
+
+    return code.trim();
   }
 
   /**
@@ -601,7 +608,7 @@ class CommentSource {
    * Determine an offset in the code to insert a reply to the comment into.
    *
    * @param {string} contextCode
-   * @returns {string}
+   * @returns {number}
    * @private
    */
   findProperPlaceForReply(contextCode) {
@@ -667,11 +674,55 @@ class CommentSource {
   }
 
   /**
+   * @overload
+   * @param {object} options
+   * @param {'reply'|'edit'} options.action
+   * @param {string} [options.commentCode] Comment code, including trailing newlines, indentation
+   *   characters, and the signature.
+   * @param {boolean} [options.doDelete] Whether to delete the comment.
+   * @param {string} [options.contextCode] Code that has the comment. Usually not needed; provide it
+   *   only if you need to perform operations on some code that is not the code of a section or
+   *   page).
+   * @param {import('./CommentForm').default} options.commentForm Comment form that has the code.
+   *   Can be not set if `commentCode` is set or `action` is `'edit'`.
+   * @param {import('./CommentForm').CommentFormAction} options.commentFormAction
+   * @returns {{
+   *   contextCode: string;
+   *   commentCode: string;
+   * }}
+   */
+
+  /**
+   * @overload
+   * @param {object} options
+   * @param {'edit'} options.action
+   * @param {string} [options.commentCode]
+   * @param {boolean} [options.doDelete]
+   * @param {string} [options.contextCode]
+   * @returns {{
+   *   contextCode: string;
+   *   commentCode: string;
+   * }}
+   */
+
+  /**
+   * @overload
+   * @param {object} options
+   * @param {'reply'} options.action
+   * @param {string} options.commentCode
+   * @param {boolean} [options.doDelete]
+   * @param {string} [options.contextCode]
+   * @returns {{
+   *   contextCode: string;
+   *   commentCode: string;
+   * }}
+   */
+
+  /**
    * Modify the code of a whole section or page related to the comment in accordance with an action.
    *
    * @param {object} options
    * @param {'reply'|'edit'} options.action
-   * @param {'submit'|'viewChanged'|'preview'} options.formAction
    * @param {string} [options.commentCode] Comment code, including trailing newlines, indentation
    *   characters, and the signature.
    * @param {boolean} [options.doDelete] Whether to delete the comment.
@@ -680,16 +731,23 @@ class CommentSource {
    *   page).
    * @param {import('./CommentForm').default} [options.commentForm] Comment form that has the code.
    *   Can be not set if `commentCode` is set or `action` is `'edit'`.
-   * @returns {object}
+   * @param {import('./CommentForm').CommentFormAction} [options.commentFormAction] Comment form
+   *   action. Can be not set if `commentCode` is set or `action` is `'edit'`.
+   * @returns {{
+   *   contextCode: string;
+   *   commentCode: string;
+   * }}
    * @throws {CdError}
    */
   modifyContext({
     action,
-    formAction,
+    commentFormAction,
     commentCode,
-    contextCode: originalContextCode = this.isInSectionContext ?
-      this.comment.section.presumedCode :
-      this.comment.getSourcePage().code,
+    contextCode: originalContextCode = this.isInSectionContext
+      ? /** @type {string} */ (
+          /** @type {import('./Section').default} */ (this.comment.section).presumedCode
+        )
+      : /** @type {string} */ (this.comment.getSourcePage().code),
     doDelete,
     commentForm,
   }) {
@@ -699,7 +757,9 @@ class CommentSource {
         // This also sets .isReplyOutdented which CommentForm#inputToCode will need.
         const currentIndex = this.findProperPlaceForReply(originalContextCode);
 
-        commentCode ??= commentForm.inputToCode(formAction);
+        commentCode ??= /** @type {import('./CommentForm').default} */ (commentForm).inputToCode(
+          /** @type {import('./CommentForm').CommentFormAction} */ (commentFormAction)
+        );
         contextCode = (
           originalContextCode.slice(0, currentIndex) +
           commentCode +
@@ -713,12 +773,12 @@ class CommentSource {
           let startIndex;
           let endIndex;
           if (this.comment.isOpeningSection && this.headingStartIndex !== undefined) {
-            // Usually, `source` is set in CommentForm#buildSource().
-            if (!this.comment.section.source) {
-              this.comment.section.locateInCode();
-            }
+            // Usually, `.source` is set in CommentForm#buildSource(), but sometimes it's not.
+            const source = /** @type {import('./Section').default} */ (
+              this.comment.section
+            ).getSource();
 
-            if (extractSignatures(this.comment.section.source.code).length > 1) {
+            if (extractSignatures(source.code).length > 1) {
               throw new CdError({
                 type: 'parse',
                 code: 'delete-repliesInSection',
@@ -726,7 +786,7 @@ class CommentSource {
             } else {
               // Deleting the whole section is safer as we don't want to leave any content in the
               // end anyway.
-              ({ startIndex, contentEndIndex: endIndex } = this.comment.section.source);
+              ({ startIndex, contentEndIndex: endIndex } = source);
             }
           } else {
             endIndex = this.signatureEndIndex + 1;

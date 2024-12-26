@@ -46,7 +46,7 @@ class TextInputWidget extends OO.ui.TextInputWidget {
   /**
    * Given a selection, get its content as wikitext.
    *
-   * @returns {Promise.<string>}
+   * @returns {string}
    */
   getWikitextFromSelection() {
     const div = document.createElement('div');
@@ -55,6 +55,7 @@ class TextInputWidget extends OO.ui.TextInputWidget {
       div.appendChild(window.getSelection().getRangeAt(0).cloneContents());
       return this.maybeConvertElementToWikitext(cleanUpPasteDom(div, this.$element[0]));
     }
+
     return '';
   }
 
@@ -78,7 +79,7 @@ class TextInputWidget extends OO.ui.TextInputWidget {
    * @param {Element} data.element
    * @param {string} data.text
    * @param {Array.<string|undefined>} [data.syntaxHighlightLanguages]
-   * @returns {string}
+   * @returns {Promise<string>}
    */
   async maybeConvertElementToWikitext({ element, text, syntaxHighlightLanguages }) {
     if (!isElementConvertibleToWikitext(element)) {
@@ -90,6 +91,19 @@ class TextInputWidget extends OO.ui.TextInputWidget {
     this.popPending().setDisabled(false);
 
     return wikitext;
+  }
+
+  /**
+   * @typedef {object} NonNullRange
+   * @property {number} from
+   * @property {number} to
+   */
+
+  /**
+   * @returns {NonNullRange}
+   */
+  getRange() {
+    return /** @type {NonNullRange} */ (super.getRange());
   }
 }
 

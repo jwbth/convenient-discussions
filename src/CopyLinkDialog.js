@@ -2,7 +2,7 @@ import CdError from './CdError';
 import DivLabelWidget from './DivLabelWidget';
 import cd from './cd';
 import { createCopyTextField, tweakUserOoUiClass } from './utils-oojs';
-import { wrapHtml } from './utils-window';
+import { mergeJquery, wrapHtml } from './utils-window';
 
 /**
  * Class used to create a "Copy link" dialog.
@@ -10,6 +10,7 @@ import { wrapHtml } from './utils-window';
  * @augments OO.ui.MessageDialog
  */
 class CopyLinkDialog extends OO.ui.MessageDialog {
+  // @ts-ignore: https://phabricator.wikimedia.org/T358416
   static name = 'copyLinkDialog';
   static actions = [
     {
@@ -40,13 +41,13 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   /**
    * OOUI native method that initializes window contents.
    *
-   * @param {...*} [args]
+   * @returns {this}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.MessageDialog.html#initialize
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
    * @ignore
    */
-  initialize(...args) {
-    super.initialize(...args);
+  initialize() {
+    super.initialize();
 
     // By default, the whole message is wrapped in a <label> element. We don't want that behavior
     // and revert it.
@@ -91,6 +92,8 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
     if (this.type === 'comment') {
       this.createDiffPanel();
     }
+
+    return this;
   }
 
   /**
@@ -109,7 +112,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
         this.type === 'comment' ? cd.s('cld-title-comment') : cd.s('cld-title-section')
       );
       this.message.setLabel(
-        $.cdMerge(
+        mergeJquery(
           this.linkTypeSelect?.$element,
           this.contentStack.$element,
         )
@@ -274,7 +277,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       }
     }
 
-    return $.cdMerge(
+    return mergeJquery(
       wikilinkField.$element,
       currentPageWikilinkField.$element,
       permanentWikilinkField.$element,
@@ -316,7 +319,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       copyCallback,
     });
 
-    return $.cdMerge(
+    return mergeJquery(
       standardField.$element,
       shortField.$element,
       wikilinkField.$element,

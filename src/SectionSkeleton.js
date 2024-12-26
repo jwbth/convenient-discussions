@@ -43,9 +43,32 @@ class SectionSkeleton {
   lastElement;
 
   /**
+   * Last element in the first chunk of the section, i.e. all elements up to the first subheading
+   * if it is present or just all elements if it is not.
+   *
+   * @type {ElementLike}
+   */
+  lastElementInFirstChunk;
+
+  /**
+   * Comments contained in the first chunk of the section, i.e. all elements up to the first
+   * subheading if it is present, or all elements if it is not.
+   *
+   * @type {import('./CommentSkeleton').default[]}
+   */
+  commentsInFirstChunk;
+
+  /**
+   * Oldest comment in the section.
+   *
+   * @type {?import('./CommentSkeleton').default}
+   */
+  oldestComment;
+
+  /**
    * Comments contained in the section.
    *
-   * @type {import('./Comment').default[]}
+   * @type {import('./CommentSkeleton').default[]}
    */
   comments;
 
@@ -209,26 +232,22 @@ class SectionSkeleton {
       nextNotDescendantHeadingElement = targets[nndheIndex]?.element;
     }
 
+    /** @typedef {ElementLike} TreeWalkerAcceptedNode */
     const treeWalker = new TreeWalker(
       this.parser.context.rootElement,
-      (node) =>
-        !isMetadataNode(node) && !node.classList.contains('cd-section-button-container'),
+      /** @type {(node: ElementLike) => node is TreeWalkerAcceptedNode} */ (node) =>
+        !isMetadataNode(node) &&
+        !node.classList.contains('cd-section-button-container'),
       true
     );
 
     this.lastElement = this.getLastElement(nextNotDescendantHeadingElement, treeWalker);
 
-    /**
-     * Last element in the first chunk of the section, i.e. all elements up to the first subheading
-     * if it is present or just all elements if it is not.
-     *
-     * @type {ElementLike}
-     */
     this.lastElementInFirstChunk = nextHeadingElement === nextNotDescendantHeadingElement ?
       this.lastElement :
       this.getLastElement(nextHeadingElement, treeWalker);
 
-    const targetsToComments = (targets) => (
+    const targetsToComments = (/** @type {import('./Parser').Target[]} */ targets) => (
       targets
         .filter((target) => target.type === 'signature')
         .map((target) => target.comment)
@@ -236,24 +255,9 @@ class SectionSkeleton {
     );
 
     this.comments = targetsToComments(targets.slice(headingIndex, nndheIndex));
-
-    /**
-     * Comments contained in the first chunk of the section, i.e. all elements up to the first
-     * subheading if it is present, or all elements if it is not.
-     *
-     * @type {import('./Comment').default[]}
-     */
     this.commentsInFirstChunk = targetsToComments(targets.slice(headingIndex, nextHeadingIndex));
-
-    /**
-     * Oldest comment in the section.
-     *
-     * @type {?import('./CommentSkeleton').default}
-     */
     this.oldestComment = CommentSkeleton.getOldest(this.comments);
-
     this.comments ||= [];
-
     this.commentsInFirstChunk ||= this.comments;
     this.commentsInFirstChunk.forEach((comment) => {
       comment.section = this;
@@ -282,7 +286,7 @@ class SectionSkeleton {
    * paragraphs 3 and 4 as such. Our code must capture that.
    *
    * @param {ElementLike|undefined} followingHeadingElement
-   * @param {import('./TreeWalker').default<true>} treeWalker
+   * @param {import('./TreeWalker').default<ElementLike>} treeWalker
    * @returns {ElementLike}
    */
   getLastElement(followingHeadingElement, treeWalker) {

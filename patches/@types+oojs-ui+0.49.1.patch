@@ -1,0 +1,155 @@
+diff --git a/node_modules/@types/oojs-ui/CopyTextLayout.d.ts b/node_modules/@types/oojs-ui/CopyTextLayout.d.ts
+new file mode 100644
+index 0000000..723481a
+--- /dev/null
++++ b/node_modules/@types/oojs-ui/CopyTextLayout.d.ts
+@@ -0,0 +1,121 @@
++declare namespace OO.ui {
++    /**
++     * CopyTextLayout is an action field layout containing some readonly text
++     * and a button to copy it to the clipboard.
++     *
++     * ResourceLoader module: `oojs-ui-widgets`
++     *
++     * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.CopyTextLayout
++     */
++    interface CopyTextLayout extends CopyTextLayout.Props, CopyTextLayout.Prototype {}
++
++    namespace CopyTextLayout {
++        interface EventMap extends FieldLayout.EventMap {
++            /**
++             * When the user has executed a copy command.
++             *
++             * @param success Whether the copy command succeeded
++             */
++            copy: [success: boolean];
++        }
++
++        interface ConfigOptions extends ActionFieldLayout.ConfigOptions {
++            /** Text to copy, can also be provided as `textInput.value` */
++            copyText?: string;
++            /** Config for the text input widget */
++            textInput?: TextInputWidget.ConfigOptions | MultilineTextInputWidget.ConfigOptions;
++            /** Config for the button widget */
++            button?: ButtonWidget.ConfigOptions;
++            /** Whether to use a multiline text input */
++            multiline?: boolean;
++        }
++
++        interface Static extends ActionFieldLayout.Static {}
++
++        interface Props extends ActionFieldLayout.Props {
++            /** Text input widget used in the layout */
++            textInput: TextInputWidget | MultilineTextInputWidget;
++            /** Button widget used in the layout */
++            button: ButtonWidget;
++        }
++
++        interface Prototype extends ActionFieldLayout.Prototype {
++            /**
++             * Handle button click events.
++             *
++             * @fires copy
++             */
++            onButtonClick(): void;
++
++            /**
++             * Handle text widget focus events.
++             */
++            onInputFocus(): void;
++
++            /**
++             * Select the text to copy.
++             */
++            selectText(): void;
++
++            // #region EventEmitter overloads
++            on<K extends keyof EventMap, A extends ArgTuple = [], C = null>(
++                event: K,
++                method: EventHandler<C, (this: C, ...args: [...A, ...EventMap[K]]) => void>,
++                args?: A,
++                context?: C
++            ): this;
++            on<K extends string, C = null>(
++                event: K extends keyof EventMap ? never : K,
++                method: EventHandler<C>,
++                args?: any[],
++                context?: C
++            ): this;
++
++            once<K extends keyof EventMap>(event: K, listener: (this: null, ...args: EventMap[K]) => void): this;
++            once<K extends string>(
++                event: K extends keyof EventMap ? never : K,
++                listener: (this: null, ...args: any[]) => void
++            ): this;
++
++            off<K extends keyof EventMap, C = null>(
++                event: K,
++                method?: EventHandler<C, (this: C, ...args: EventMap[K]) => void>,
++                context?: C
++            ): this;
++            off<K extends string, C = null>(
++                event: K extends keyof EventMap ? never : K,
++                method?: EventHandler<C>,
++                context?: C
++            ): this;
++
++            emit<K extends keyof EventMap>(event: K, ...args: EventMap[K]): boolean;
++            emit<K extends string>(event: K extends keyof EventMap ? never : K, ...args: any[]): boolean;
++
++            emitThrow<K extends keyof EventMap>(event: K, ...args: EventMap[K]): boolean;
++            emitThrow<K extends string>(event: K extends keyof EventMap ? never : K, ...args: any[]): boolean;
++
++            connect<T extends Partial<Record<keyof EventMap, any>>, C>(
++                context: C,
++                methods: EventConnectionMap<T, C, EventMap>
++            ): this;
++
++            disconnect<T extends Partial<Record<keyof EventMap, any>>, C>(
++                context: C,
++                methods?: EventConnectionMap<T, C, EventMap>
++            ): this;
++            // #endregion
++        }
++
++        interface Constructor {
++            /** @param config Configuration options */
++            new(config?: ConfigOptions): CopyTextLayout;
++            prototype: Prototype;
++            static: Static;
++            super: ActionFieldLayout.Constructor;
++            /** @deprecated Use `super` instead */
++            parent: ActionFieldLayout.Constructor;
++        }
++    }
++
++    const CopyTextLayout: CopyTextLayout.Constructor;
++}
+diff --git a/node_modules/@types/oojs-ui/ProcessDialog.d.ts b/node_modules/@types/oojs-ui/ProcessDialog.d.ts
+index 6de242c..c9e1067 100644
+--- a/node_modules/@types/oojs-ui/ProcessDialog.d.ts
++++ b/node_modules/@types/oojs-ui/ProcessDialog.d.ts
+@@ -65,9 +65,9 @@ declare namespace OO.ui {
+ 
+         type Static = Dialog.Static;
+ 
+-        type Props = Dialog.Props;
++        interface Props extends Dialog.Props {}
+ 
+-        type Prototype = Dialog.Prototype;
++        interface Prototype extends Dialog.Prototype {}
+ 
+         interface Constructor {
+             /** @param config Configuration options */
+diff --git a/node_modules/@types/oojs-ui/index.d.ts b/node_modules/@types/oojs-ui/index.d.ts
+index 45e24b4..6f42d75 100644
+--- a/node_modules/@types/oojs-ui/index.d.ts
++++ b/node_modules/@types/oojs-ui/index.d.ts
+@@ -20,6 +20,7 @@
+ /// <reference path="CheckboxMultiselectInputWidget.d.ts" />
+ /// <reference path="CheckboxMultiselectWidget.d.ts" />
+ /// <reference path="ComboBoxInputWidget.d.ts" />
++/// <reference path="CopyTextLayout.d.ts" />
+ /// <reference path="DecoratedOptionWidget.d.ts" />
+ /// <reference path="Dialog.d.ts" />
+ /// <reference path="DropdownInputWidget.d.ts" />

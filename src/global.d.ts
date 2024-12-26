@@ -1,3 +1,5 @@
+/// <reference types="types-mediawiki" />
+
 import { Document as DomHandlerDocument, Node as DomHandlerNode, Element as DomHandlerElement } from 'domhandler';
 import { ConvenientDiscussions } from './cd';
 
@@ -16,7 +18,14 @@ declare global {
   const convenientDiscussions: Window['convenientDiscussions'];
   const cd: Window['cd'] | undefined;
 
-  const cdOnlyRunByFooterLink: boolean | undefined;
+  interface Window {
+    // Basically we don't have a situation where getSelection() can return `null`, judging by
+    // https://developer.mozilla.org/en-US/docs/Web/API/Window/getSelection.
+    getSelection(): Selection;
+
+    cdOnlyRunByFooterLink?: boolean;
+    cdShowLoadingOverlay?: boolean;
+  }
 
   interface WindowOrWorkerGlobalScope {
     convenientDiscussions: ConvenientDiscussions;
@@ -83,6 +92,11 @@ declare global {
     cdCachedLayersContainerTop: number;
     cdCachedLayersContainerLeft: number;
     cdCouldHaveMoved: boolean;
+    cdMarginTop: number;
+    cdMarginBottom: number;
+    cdMarginLeft: number;
+    cdMarginRight: number;
+    cdCallback?: Function;
 
     // Exclude `null` which is not done in the native lib
     textContent: string;
@@ -101,6 +115,53 @@ declare global {
   interface ChildNode {
     // Exclude `null` which is not done in the native lib
     textContent: string;
+  }
+
+  namespace mw {
+    const thanks: {
+      thanked: number[];
+    };
+
+    namespace libs {
+      namespace confirmEdit {
+        class CaptchaInputWidget extends OO.ui.TextInputWidget {
+          new (config?: captchaData);
+        }
+      }
+    }
+
+    namespace widgets {
+      function visibleCodePointLimit(textInputWidget: OO.ui.TextInputWidget, limit?: number, filterFunction?: Function): void;
+
+      interface TitleInputWidget
+        extends OO.ui.TitleInputWidget,
+          mw.widgets.TitleWidget,
+          OO.ui.mixin.LookupElement {
+        new (config: OO.ui.TitleInputWidget);
+      }
+    }
+  }
+
+  namespace OO.ui.Window {
+    interface Props {
+      $body: JQuery;
+    }
+  }
+
+  namespace OO.ui.Dialog {
+    interface Props {
+      actions: ActionSet;
+    }
+  }
+
+  namespace OO.ui.ProcessDialog {
+    interface Prototype {
+      showErrors(errors: OO.ui.Error[] | OO.ui.Error): void;
+    }
+
+    interface Props {
+      $errors: JQuery;
+    }
   }
 }
 

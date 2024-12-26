@@ -32,17 +32,62 @@ class Section extends SectionSkeleton {
   /** @type {HTMLElement} */
   headingElement;
 
+  /** @type {HTMLElement} */
+  lastElement;
+
+  /** @type {HTMLElement} */
+  lastElementInFirstChunk;
+
   /**
    * User for polymorphism with Comment.
    */
   isOpeningSection = null;
 
   /**
+   * Is the section the last section on the page.
    *
+   * @type {boolean}
+   */
+  isLastSection;
+
+  /**
+   * Code of the section as of the time of the last request.
+   *
+   * @type {string|undefined}
    */
   presumedCode;
 
+  /**
+   * Sections contents as HTML elements.
+   *
+   * @type {HTMLElement[]}
+   */
   elements;
+
+  /** @type {import('./Comment').default[]} */
+  commentsInFirstChunk;
+
+  /** @type {?import('./Comment').default} */
+  oldestComment;
+
+  /** @type {import('./Comment').default[]} */
+  comments;
+
+  /**
+   * When checking for updates, this has the match of the section to the section analyzed in the
+   * worker scope.
+   *
+   * @type {import('./updateChecker').SectionWorkerEnrichied|undefined}
+   */
+  match;
+
+  /**
+   * When checking for updates, this has the score of the {@link Section#match} of the section to
+   * the section analyzed in the worker scope.
+   *
+   * @type {number|undefined}
+   */
+  matchScore;
 
   /**
    * Create a section object.
@@ -209,7 +254,10 @@ class Section extends SectionSkeleton {
     if (createList) {
       container = document.createElement('dl');
       container.className = 'cd-commentLevel cd-commentLevel-1 cd-section-button-container';
-      lastElement.parentNode.insertBefore(container, lastElement.nextElementSibling);
+      /** @type {HTMLElement} */ (lastElement.parentElement).insertBefore(
+        container,
+        lastElement.nextElementSibling
+      );
     } else {
       container = lastElement;
       container.classList.add('cd-section-button-container');
@@ -921,7 +969,7 @@ class Section extends SectionSkeleton {
       const element = Section.prototypes.get('moreMenuSelect');
       moreMenuSelectDummy = new Button({
         element,
-        buttonElement: element.firstChild,
+        buttonElement: /** @type {HTMLElement} */ (element.firstChild),
         action: () => {
           this.createAndClickMoreMenuSelect();
         },
@@ -934,8 +982,8 @@ class Section extends SectionSkeleton {
       const element = Section.prototypes.get('copyLinkButton');
       copyLinkButton = new Button({
         element,
-        buttonElement: element.firstChild,
-        iconElement: element.querySelector('.oo-ui-iconElement-icon'),
+        buttonElement: /** @type {HTMLElement} */ (element.firstChild),
+        iconElement: /** @type {HTMLElement} */ (element.querySelector('.oo-ui-iconElement-icon')),
         href: `${cd.page.getUrl()}#${this.id}`,
         action: (e) => {
           this.copyLink(e);
@@ -1007,7 +1055,7 @@ class Section extends SectionSkeleton {
     if (cd.g.isDtVisualEnhancementsEnabled) {
       this.headingElement.querySelector('.ext-discussiontools-init-section-bar')?.remove();
     }
-    this.headingElement.parentNode.insertBefore(
+    /** @type {HTMLElement} */ (this.headingElement.parentElement).insertBefore(
       barElement,
       this.headingElement.nextElementSibling
     );
@@ -1022,7 +1070,7 @@ class Section extends SectionSkeleton {
     /**
      * Bar element under a 2-level section heading.
      *
-     * @type {Element|undefined}
+     * @type {Element}
      */
     this.barElement = barElement;
 
@@ -1600,7 +1648,7 @@ class Section extends SectionSkeleton {
    * Load the section wikitext. See also {@link Section#requestCode}.
    *
    * @param {import('./CommentForm').default} [commentForm] Comment form, if it is submitted or code
-   * changes are viewed.
+   *   changes are viewed.
    * @throws {CdError|Error}
    */
   async loadCode(commentForm) {
@@ -1611,9 +1659,14 @@ class Section extends SectionSkeleton {
           await this.requestCode();
           this.locateInCode(true);
           commentForm?.setSectionSubmitted(true);
-        } catch (e) {
-          if (!(e instanceof CdError && ['noSuchSection', 'locateSection'].includes(e.data.code))) {
-            throw e;
+        } catch (error) {
+          if (
+            !(
+              error instanceof CdError &&
+              ['noSuchSection', 'locateSection'].includes(error.data.code)
+            )
+          ) {
+            throw error;
           }
         }
       }
@@ -1621,13 +1674,13 @@ class Section extends SectionSkeleton {
         await this.getSourcePage().loadCode();
         this.locateInCode(false);
       }
-    } catch (e) {
-      if (e instanceof CdError) {
+    } catch (error) {
+      if (error instanceof CdError) {
         throw new CdError(Object.assign({}, {
           message: cd.sParse('cf-error-getpagecode'),
-        }, e.data));
+        }, error.data));
       } else {
-        throw e;
+        throw error;
       }
     }
   }
@@ -1659,7 +1712,6 @@ class Section extends SectionSkeleton {
         isInSectionContext,
       });
       source.calculateMatchScore(sectionIndex, thisHeadline, headlines);
-
       if (!source.code || !source.firstChunkCode || source.score <= 1) continue;
 
       sources.push(source);
@@ -1678,11 +1730,11 @@ class Section extends SectionSkeleton {
    * It is expected that the section or page code is loaded (using {@link Page#loadCode}) before
    * this method is called. Otherwise, the method will throw an error.
    *
-   * @param {boolean} useSectionCode Is the section code available to locate the section in instead
+   * @param {boolean} [useSectionCode] Is the section code available to locate the section in instead
    *   of the page code.
    * @throws {CdError}
    */
-  locateInCode(useSectionCode) {
+  locateInCode(useSectionCode = false) {
     this.source = null;
 
     const code = useSectionCode ? this.presumedCode : this.getSourcePage().code;
@@ -1717,6 +1769,19 @@ class Section extends SectionSkeleton {
    */
   getSourcePage() {
     return this.sourcePage;
+  }
+
+  /**
+   * Get the section source, locating it in code if necessary.
+   *
+   * @returns {SectionSource}
+   */
+  getSource() {
+    if (!this.source) {
+      this.locateInCode();
+    }
+
+    return /** @type {SectionSource} */ (this.source);
   }
 
   /**
@@ -1936,22 +2001,22 @@ class Section extends SectionSkeleton {
    * If this section is replied to, get the comment that will end up directly above the reply.
    *
    * @param {import('./CommentForm').default} commentForm
-   * @returns {Comment}
+   * @returns {?Comment}
    */
   getCommentAboveReply(commentForm) {
-    return sectionRegistry.getAll()
+    return sectionRegistry
+      .getAll()
       .slice(
         0,
-        (
-          // Section above the reply
-          (commentForm.getMode() === 'addSubsection' && this.getLastDescendant()) || this
-        ).index + 1
+
+        // Section above the reply
+        ((commentForm.getMode() === 'addSubsection' && this.getLastDescendant()) || this).index + 1
       )
       .reverse()
-      .reduce((comment, section) => (
-        comment ||
-        section.commentsInFirstChunk[section.commentsInFirstChunk.length - 1]
-      ));
+      .reduce(
+        (comment, section) => comment || section.commentsInFirstChunk.slice(-1)[0],
+        /** @type {?Comment} */ (null)
+      );
   }
 
   /**
@@ -2012,6 +2077,24 @@ class Section extends SectionSkeleton {
 
   hideBar() {
     this.$bar.addClass('cd-hidden');
+  }
+
+  /**
+   * Get the comment that is visually a target of the comment form that has the section as target.
+   *
+   * Used for polymorphism with {@link Comment#getCommentFormTargetComment} and
+   * {@link Page#getCommentFormTargetComment}.
+   *
+   * @returns {?import('./Comment').default}
+   */
+  getCommentFormTargetComment() {
+    return (
+      this.commentsInFirstChunk
+        .slice()
+        .reverse()
+        .find((c) => c.level === 0) ||
+      null
+    );
   }
 
   /**

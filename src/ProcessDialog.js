@@ -24,7 +24,7 @@ class ProcessDialog extends OO.ui.ProcessDialog {
    * Confirm closing the dialog.
    */
   confirmClose() {
-    if (!this.isUnsaved(this) || confirm(cd.s(`${this.constructor.cdKey}-close-confirm`))) {
+    if (!this.isUnsaved() || confirm(cd.s(`${this.constructor.cdKey}-close-confirm`))) {
       this.close({ action: 'close' });
       controller.removePreventUnloadCondition('dialog');
     }

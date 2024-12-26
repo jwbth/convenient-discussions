@@ -25,6 +25,8 @@ class LegacySubscriptions extends Subscriptions {
    * @returns {Promise.<undefined>}
    */
   async load(bootProcess, reuse = false) {
+    super.load();
+
     if (!cd.user.isRegistered()) return;
 
     try {

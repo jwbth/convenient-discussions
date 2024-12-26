@@ -190,7 +190,7 @@ export function isUndo(summary) {
  * to keep only defined values in an array.
  *
  * @template T
- * @param {?(T | undefined)} el
+ * @param {T | undefined} el
  * @returns {el is T}
  */
 export function defined(el) {
@@ -215,10 +215,11 @@ export function definedAndNotNull(el) {
  * 1]`) and optionally reversed while keeping the start index (`[0, 1, 2, 3]` can be transformed
  * into `[2, 1, 0, 3]`).
  *
- * @param {Array.<*>} arr
+ * @template T
+ * @param {T[]} arr
  * @param {number} startIndex
  * @param {boolean} [reverse=false]
- * @returns {Array.<*>}
+ * @returns {T[]}
  */
 export function reorderArray(arr, startIndex, reverse = false) {
   return reverse ?
@@ -416,10 +417,11 @@ export function areObjectsEqual(object1, object2) {
  * after →/← in edit summaries.
  *
  * @param {string} text Text to alter.
- * @param {boolean} replaceWithSpace Replace direction marks with a space instead of removing.
+ * @param {boolean} [replaceWithSpace=false] Replace direction marks with a space instead of
+ *   removing.
  * @returns {string}
  */
-export function removeDirMarks(text, replaceWithSpace) {
+export function removeDirMarks(text, replaceWithSpace = false) {
   return text.replace(/[\u200e\u200f]/g, replaceWithSpace ? ' ' : '');
 }
 

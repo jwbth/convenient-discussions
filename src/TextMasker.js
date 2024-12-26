@@ -93,7 +93,7 @@ class TextMasker {
   /**
    * Replace placeholders added by {@link TextMasker#mask} with their text.
    *
-   * @param {string} type
+   * @param {string} [type]
    * @returns {TextMasker}
    */
   unmask(type) {
@@ -205,12 +205,12 @@ class TextMasker {
   /**
    * Run a certain function for the text.
    *
-   * @param {Function} func Function that should accept and return a string. It can also accept the
-   *   {@link TextMasker} object as a second parameter.
+   * @param {(text: string, masker: this) => string} func
    * @returns {TextMasker}
    */
   withText(func) {
     this.text = func(this.text, this);
+
     return this;
   }
 

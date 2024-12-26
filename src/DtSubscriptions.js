@@ -5,7 +5,7 @@ import cd from './cd';
 import controller from './controller';
 import sectionRegistry from './sectionRegistry';
 import { handleApiReject, splitIntoBatches } from './utils-api';
-import { spacesToUnderlines, unique } from './utils-general';
+import { definedAndNotNull, spacesToUnderlines, unique } from './utils-general';
 
 /**
  * Class implementing DiscussionTools' topic subscriptions.
@@ -15,10 +15,13 @@ import { spacesToUnderlines, unique } from './utils-general';
 class DtSubscriptions extends Subscriptions {
   type = 'dt';
 
+  /** @type {string} */
+  pageSubscribeId;
+
   /**
    * Request the subscription list from the server and assign it to the instance.
    *
-   * @returns {Promise.<undefined>}
+   * @returns {Promise.<void>}
    */
   async load() {
     if (!cd.user.isRegistered()) return;
@@ -27,8 +30,9 @@ class DtSubscriptions extends Subscriptions {
     this.pageSubscribeId ||= `p-topics-${cd.g.namespaceNumber}:${title}`;
     this.data = await this.getSubscriptions(
       sectionRegistry
-        .query((section) => section.subscribeId)
+        .getAll()
         .map((section) => section.subscribeId)
+        .filter(definedAndNotNull)
         .filter(unique)
         .concat(this.pageSubscribeId || [])
     );
@@ -45,7 +49,7 @@ class DtSubscriptions extends Subscriptions {
       this.addPageSubscribeButton();
     }
 
-    super.processOnTalkPage(bootProcess);
+    super.processOnTalkPage();
   }
 
   /**
@@ -74,6 +78,7 @@ class DtSubscriptions extends Subscriptions {
         }).catch(handleApiReject)).subscriptions
       );
     }
+
     return subscriptions;
   }
 

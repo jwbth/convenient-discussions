@@ -17,6 +17,7 @@ import { wrapHtml } from './utils-window';
  * @augments ProcessDialog
  */
 class MoveSectionDialog extends ProcessDialog {
+  // @ts-ignore: https://phabricator.wikimedia.org/T358416
   static name = 'moveSectionDialog';
   static title = cd.s('msd-title');
   static actions = [
@@ -34,6 +35,9 @@ class MoveSectionDialog extends ProcessDialog {
       disabled: true,
     },
   ];
+
+  /** @type {OO.ui.StackLayout} */
+  stack;
 
   /**
    * Create a move section dialog.
@@ -59,13 +63,12 @@ class MoveSectionDialog extends ProcessDialog {
   /**
    * OOUI native method that initializes window contents.
    *
-   * @param {...*} [args]
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#initialize
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
    * @ignore
    */
-  initialize(...args) {
-    super.initialize(...args);
+  initialize() {
+    super.initialize();
 
     this.pushPending();
 
@@ -111,6 +114,8 @@ class MoveSectionDialog extends ProcessDialog {
       items: [this.loadingPanel, this.movePanel, this.successPanel],
     });
     this.$body.append(this.stack.$element);
+
+    return this;
   }
 
   /**
@@ -152,14 +157,14 @@ class MoveSectionDialog extends ProcessDialog {
 
       try {
         this.section.locateInCode();
-      } catch (e) {
-        if (e instanceof CdError) {
-          const { data } = e.data;
-          const messageName = data === 'locateSection' ? 'error-locatesection' : 'error-unknown';
+      } catch (error) {
+        if (error instanceof CdError) {
+          const { code } = error.data;
+          const messageName = code === 'locateSection' ? 'error-locatesection' : 'error-unknown';
           const message = cd.sParse(messageName);
           this.abort(message, false);
         } else {
-          console.warn(e);
+          console.warn(error);
           this.abort(cd.sParse('error-javascript'), false);
         }
         return;

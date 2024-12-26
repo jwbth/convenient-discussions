@@ -5,7 +5,7 @@ import cd from './cd';
 import controller from './controller';
 import { canonicalUrlToPageName, defined, generateFixedPosTimestamp, getDbnameForHostname, zeroPad } from './utils-general';
 import { createCheckboxField, createRadioField, createTextField, mixinUserOoUiClass, tweakUserOoUiClass } from './utils-oojs';
-import { wrapHtml } from './utils-window';
+import { mergeJquery, wrapHtml } from './utils-window';
 
 /**
  * @class Upload
@@ -332,7 +332,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
       input,
       field: new OO.ui.FieldLayout(input, {
         label: cd.s('ud-preset-projectscreenshot-title'),
-        help: $.cdMerge(
+        help: mergeJquery(
           this.insertSubjectPageButton
             ? $('<div>').append(this.insertSubjectPageButton.element)
             : undefined,

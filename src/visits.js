@@ -7,6 +7,9 @@ import settings from './settings';
 import { getUserInfo, saveLocalOption } from './utils-api';
 
 export default {
+  /** @type {{ [articleId: number]: string[] }} */
+  data: {},
+
   /**
    * Request the pages visits data from the server.
    *
@@ -15,7 +18,7 @@ export default {
    * loaded. In fact, when the page is loaded in a background tab, it can be throttled until it is
    * focused, so an indefinite amount of time can pass.
    *
-   * @param {import('./BootProcess').default} [bootProcess]
+   * @param {import('./BootProcess').default} bootProcess
    * @param {boolean} [reuse=false] Whether to reuse a cached userinfo request.
    */
   async load(bootProcess, reuse = false) {
@@ -31,11 +34,10 @@ export default {
     }
 
     const articleId = mw.config.get('wgArticleId');
-    this.data ||= {};
     this.data[articleId] ||= [];
     this.currentPageData = this.data[articleId];
 
-    this.process(bootProcess.passedData.markAsRead);
+    this.process(bootProcess.passedData.markAsRead || false);
   },
 
   /**
@@ -67,7 +69,7 @@ export default {
     //
     // We could decide that not marking unseen comments as seen is an absolute priority and remove
     // the timeConflict stuff.
-    this.currentPageData.push(String(currentTime + timeConflict * 60));
+    this.currentPageData.push(String(currentTime + Number(timeConflict) * 60));
 
     this.save();
 
@@ -137,10 +139,12 @@ export default {
     if (!compressed) return;
 
     const string = LZString.decompressFromEncodedURIComponent(compressed);
-    const regexp = /^(\d+),(.+)$/gm;
-    let match;
-    while ((match = regexp.exec(string))) {
-      this.data[match[1]] = match[2].split(',');
+    if (string) {
+      const regexp = /^(\d+),(.+)$/gm;
+      let match;
+      while ((match = regexp.exec(string))) {
+        this.data[match[1]] = match[2].split(',');
+      }
     }
   },
 
@@ -156,17 +160,17 @@ export default {
 
     try {
       await saveLocalOption(cd.g.visitsOptionName, compressed);
-    } catch (e) {
-      if (e instanceof CdError) {
-        const { type, code } = e.data;
+    } catch (error) {
+      if (error instanceof CdError) {
+        const { type, code } = error.data;
         if (type === 'internal' && code === 'sizeLimit') {
           this.cleanUp(0.1);
           this.save();
         } else {
-          console.error(e);
+          console.error(error);
         }
       } else {
-        console.error(e);
+        console.error(error);
       }
     }
   },
@@ -174,17 +178,17 @@ export default {
   /**
    * Remove the oldest `share`% of visits when the size limit is hit.
    *
-   * @param {number} share
+   * @param {number} [share=0.1]
    * @private
    */
   cleanUp(share = 0.1) {
-    const visits = Object.assign({}, this.data);
+    const visits = { ...this.data };
     const timestamps = Object.keys(visits)
-      .reduce((acc, key) => acc.concat(visits[key]), [])
+      .reduce((acc, key) => acc.concat(Number(visits[key])), /** @type {number[]} */ ([]))
       .sort((a, b) => a - b);
     const boundary = timestamps[Math.floor(timestamps.length * share)];
     Object.keys(visits).forEach((key) => {
-      visits[key] = visits[key].filter((visit) => visit >= boundary);
+      visits[key] = visits[key].filter((/** @type {number} */ visit) => visit >= boundary);
       if (!visits[key].length) {
         delete visits[key];
       }

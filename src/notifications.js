@@ -43,7 +43,7 @@ export default {
    */
   add(message, options, data = {}) {
     const notification = mw.notification.notify(message, options);
-    this.data.push(Object.assign(data, { notification }));
+    this.data.push({ ...data, notification });
     return notification;
   },
 
@@ -63,11 +63,11 @@ export default {
    * @param {boolean} [smooth] Don't use a smooth animation.
    */
   close(smooth = true) {
-    this.data.forEach((data) => {
+    this.data.forEach((datum) => {
       if (!smooth) {
-        data.notification.$notification.hide();
+        datum.notification.$notification.hide();
       }
-      data.notification.close();
+      datum.notification.close();
     });
     this.data = [];
   },

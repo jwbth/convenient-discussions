@@ -8,7 +8,7 @@ import Button from './Button';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import Parser from './Parser';
 import cd from './cd';
-import { parseWikiUrl, isInline, removeFromArrayIfPresent, defined, spacesToUnderlines } from './utils-general';
+import { parseWikiUrl, isInline, defined, spacesToUnderlines } from './utils-general';
 
 /**
  * @typedef {Record<string, () => void>} WrapCallbacks
@@ -111,11 +111,27 @@ export function isInputFocused() {
 }
 
 /**
+ * @typedef {object} ExtendedDOMRect
+ * @property {number} top
+ * @property {number} bottom
+ * @property {number} left
+ * @property {number} right
+ * @property {number} outerTop
+ * @property {number} outerBottom
+ * @property {number} outerLeft
+ * @property {number} outerRight
+ */
+
+/**
+ * @typedef {DOMRect|ExtendedDOMRect} AnyDOMRect
+ */
+
+/**
  * Get the bounding client rectangle of an element, setting values that include margins to the
  * `outerTop`, `outerBottom`, `outerLeft`, and `outerRight` properties. The margins are cached.
  *
  * @param {Element} el
- * @returns {object}
+ * @returns {ExtendedDOMRect}
  */
 export function getExtendedRect(el) {
   if (el.cdMarginTop === undefined) {
@@ -127,6 +143,7 @@ export function getExtendedRect(el) {
   }
   const rect = el.getBoundingClientRect();
   const isVisible = getVisibilityByRects(rect);
+
   return $.extend({
     outerTop: rect.top - (isVisible ? el.cdMarginTop : 0),
     outerBottom: rect.bottom + (isVisible ? el.cdMarginBottom : 0),
@@ -149,21 +166,28 @@ export function getVisibilityByRects(...rects) {
 /**
  * Check if the provided key combination is pressed given an event.
  *
- * @param {Event} e
+ * @param {KeyboardEvent} event
  * @param {number} keyCode
- * @param {Array.<'cmd'|'shift'|'alt'|'meta'>} [modifiers=[]] Use `'cmd'` instead of `'ctrl'`.
+ * @param {Array.<'cmd' | 'shift' | 'alt' | 'meta' | 'ctrl'>} [modifiers=[]] Use `'cmd'` instead of
+ *   `'ctrl'` to capture both Windows and Mac machines.
  * @returns {boolean}
  */
-export function keyCombination(e, keyCode, modifiers = []) {
+export function keyCombination(event, keyCode, modifiers = []) {
   if (modifiers.includes('cmd')) {
-    removeFromArrayIfPresent(modifiers, 'cmd');
-    // In Chrome on Windows, e.metaKey corresponds to the Windows key, so we better check for a
-    // platform.
-    modifiers.push($.client.profile().platform === 'mac' ? 'meta' : 'ctrl');
+    modifiers.splice(
+      modifiers.indexOf('cmd'),
+      1,
+
+      // In Chrome on Windows, e.metaKey corresponds to the Windows key, so we better check for a
+      // platform.
+      $.client.profile().platform === 'mac' ? 'meta' : 'ctrl'
+    );
   }
   return (
-    e.keyCode === keyCode &&
-    ['ctrl', 'shift', 'alt', 'meta'].every((mod) => modifiers.includes(mod) === e[mod + 'Key'])
+    event.keyCode === keyCode &&
+    ['ctrl', 'shift', 'alt', 'meta'].every(
+      (/** @type {keyof modifiers} */ mod) => modifiers.includes(mod) === event[mod + 'Key']
+    )
   );
 }
 
@@ -171,13 +195,13 @@ export function keyCombination(e, keyCode, modifiers = []) {
  * Whether a command modifier is pressed. On Mac, this means the Cmd key. On Windows, this means the
  * Ctrl key.
  *
- * @param {Event} e
+ * @param {MouseEvent | KeyboardEvent} event
  * @returns {boolean}
  */
-export function isCmdModifierPressed(e) {
+export function isCmdModifierPressed(event) {
   // In Chrome on Windows, e.metaKey corresponds to the Windows key, so we better check for a
   // platform.
-  return $.client.profile().platform === 'mac' ? e.metaKey : e.ctrlKey;
+  return $.client.profile().platform === 'mac' ? event.metaKey : event.ctrlKey;
 }
 
 /**
@@ -596,4 +620,17 @@ export function isExistentAnchor(anchor, isWikilink = false) {
   const escaped = CSS.escape(anchor);
 
   return Boolean($(`*[id="${escaped}"], a[name="${escaped}"]`).length);
+}
+
+/**
+ * Merge many jQuery objects into one. Works like {@link https://api.jquery.com/add/ .add()}, but
+ * accepts many parameters and is faster. Unlike `.add()`, only accepts jQuery objects though and
+ * doesn't reorder elements based on their relative position in the DOM.
+ *
+ * @param {Array.<JQuery|undefined>} arrayOfJquery jQuery objects. Undefined values will be
+ *   omitted.
+ * @returns {JQuery} jQuery
+ */
+export function mergeJquery(...arrayOfJquery) {
+  return $($.map(arrayOfJquery.filter(defined), ($object) => $object.get()));
 }

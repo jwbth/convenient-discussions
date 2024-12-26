@@ -733,7 +733,7 @@ class Thread {
    */
   getAdjustedStartElement() {
     if (this.isCollapsed) {
-      return this.expandNote;
+      return /** @type {HTMLElement} */ (this.expandNote);
     }
 
     if (this.startElement.classList.contains('cd-hidden') && this.rootComment.editForm) {
@@ -858,23 +858,27 @@ class Thread {
   }
 
   /**
-   * Expand the thread if it's collapsed and collapse if it's expanded.
+   * Expand the thread if it's collapsed and collapse if it's expanded, together with its sibling
+   * threads.
    *
-   * @param {boolean} [clickedThread=false]
+   * @param {boolean} [clickedThread=false] Clicked the thread rather than a parent comment's
+   *   button.
    */
   toggleWithSiblings(clickedThread = false) {
     const wasCollapsed = clickedThread ?
       this.isCollapsed :
-      (this.rootComment.getParent()?.areChildThreadsCollapsed());
-    this.rootComment.getSiblingsAndSelf().forEach((sibling) => (
-      wasCollapsed ?
-        sibling.thread?.expand(undefined, true) :
-        sibling.thread?.collapse(undefined, true)
-    ));
+      Boolean(this.rootComment.getParent()?.areChildThreadsCollapsed());
+    this.rootComment.getSiblingsAndSelf().forEach((sibling) => {
+      if (wasCollapsed) {
+        sibling.thread?.expand(undefined, true);
+      } else {
+        sibling.thread?.collapse(undefined, true);
+      }
+    });
     Thread.emit('toggle');
     this.rootComment.getParent()?.updateToggleChildThreadsButton();
     if (clickedThread && !wasCollapsed) {
-      this.$expandNote.cdScrollIntoView();
+      /** @type {JQuery} */ (this.$expandNote).cdScrollIntoView();
     }
   }
 
@@ -898,7 +902,7 @@ class Thread {
    *   collapsed threads.
    * @param {boolean} [isBatchOperation=auto] Is this called as part of some batch operation (so, no
    *   scrolling or updating the parent comment's "Toggle child threads" button look).
-   * @param {Promise.<void>} [loadUserGendersPromise]
+   * @param {Promise.<any>} [loadUserGendersPromise]
    */
   collapse(auto = false, isBatchOperation = auto, loadUserGendersPromise) {
     if (this.isCollapsed) return;
@@ -996,7 +1000,11 @@ class Thread {
     }
 
     if (this.endElement !== this.visualEndElement && areOutdentedCommentsShown) {
-      for (let c = this.rootComment; c; c = c.getParent()) {
+      for (
+        let c = /** @type {?import('./Comment').default} */ (this.rootComment);
+        c;
+        c = c.getParent()
+      ) {
         const thread = c.thread;
         if (thread && thread.endElement !== thread.visualEndElement) {
           thread.line?.classList.add('cd-thread-line-extended');
@@ -1055,7 +1063,8 @@ class Thread {
    * @param {HTMLElement[]} closedDiscussions
    */
   updateEndOfCollapsedRange(closedDiscussions) {
-    let end = this.collapsedRange.slice(-1)[0];
+    const collapsedRange = /** @type {HTMLElement[]} */ (this.collapsedRange);
+    let end = collapsedRange.slice(-1)[0];
 
     // Include a closed discussion template if the entirety of its contents is included but not the
     // start.
@@ -1082,7 +1091,7 @@ class Thread {
 
     if (
       discussion &&
-      !discussion.contains(this.collapsedRange[0]) &&
+      !discussion.contains(collapsedRange[0]) &&
 
       // Catch cases like the closed discussion template at the end of this thread:
       // https://ru.wikipedia.org/wiki/Служебная:GoToComment/c-Stjn-20241201145700-Oleg_Yunakov-20241201143800
@@ -1090,7 +1099,7 @@ class Thread {
       (isFinalDescendant(discussion, end, 3) || !discussion.innerText)
     ) {
       this.maybeUnhideElement(end);
-      this.collapsedRange.splice(-1, 1, discussion);
+      collapsedRange.splice(-1, 1, discussion);
       this.hideElement(discussion);
     }
   }
@@ -1103,22 +1112,23 @@ class Thread {
    * @param {Thread[]} options.threadsToUpdate
    * @param {number} options.scrollX
    * @param {number} options.scrollY
-   * @param {object[]} options.floatingRects
+   * @param {import('./utils-window').ExtendedDOMRect[]} options.floatingRects
    * @returns {boolean}
    * @private
    */
   updateLine({ elementsToAdd, threadsToUpdate, scrollX, scrollY, floatingRects }) {
-    const getLeft = (rectOrOffset, commentMargins, dir) => {
+    const getLeft = (
+      /** @type {DOMRect|import('./Comment').CommentOffset} */ rectOrOffset,
+      /** @type {import('./Comment').CommentMargins=} */ commentMargins,
+      /** @type {'rtl'|'ltr'} */ dir
+    ) => {
       let offset;
 
       // This calculation is the same as in .cd-comment-overlay-marker, but without -1px - we don't
       // need it. Don't round - we need a subpixel-precise value.
       const centerOffset = -(
-        (
-          (cd.g.commentMarkerWidth / cd.g.pixelDeviationRatio) -
-          (1 / cd.g.pixelDeviationRatioFor1px)
-        )
-        / 2
+        (cd.g.commentMarkerWidth / cd.g.pixelDeviationRatio - 1 / cd.g.pixelDeviationRatioFor1px) /
+        2
       );
 
       if (dir === 'ltr') {
@@ -1141,7 +1151,7 @@ class Thread {
       }
       return offset - cd.g.threadLineSidePadding;
     };
-    const getTop = (rectOrOffset) => (
+    const getTop = (/** @type {DOMRect|import('./Comment').CommentOffset} */ rectOrOffset) => (
       rectOrOffset instanceof DOMRect ?
         scrollY + rectOrOffset.top :
         rectOrOffset.top
@@ -1189,7 +1199,7 @@ class Thread {
     const areTopAndBottomAligned = () => {
       // FIXME: We use the first comment part's margins for the bottom rectangle which can lead to
       // errors (need to check).
-      const bottomLeft = getLeft(rectBottom, commentMargins, dir);
+      const bottomLeft = getLeft(/** @type {DOMRect} */ (rectBottom), commentMargins, dir);
 
       return dir === 'ltr' ? bottomLeft >= left : bottomLeft <= left;
     };
@@ -1225,8 +1235,9 @@ class Thread {
     }
 
     threadsToUpdate.push(this);
-    if (!this.clickArea.parentNode) {
-      elementsToAdd.push(this.clickArea);
+    const clickArea = /** @type {HTMLElement} */ (this.clickArea);
+    if (!clickArea.isConnected) {
+      elementsToAdd.push(clickArea);
     }
 
     return false;
@@ -1238,9 +1249,10 @@ class Thread {
    * @private
    */
   updateClickAreaOffset() {
-    this.clickArea.style.left = this.clickAreaOffset.left + 'px';
-    this.clickArea.style.top = this.clickAreaOffset.top + 'px';
-    this.clickArea.style.height = this.clickAreaOffset.height + 'px';
+    const clickArea = /** @type {HTMLElement} */ (this.clickArea);
+    clickArea.style.left = this.clickAreaOffset.left + 'px';
+    clickArea.style.top = this.clickAreaOffset.top + 'px';
+    clickArea.style.height = this.clickAreaOffset.height + 'px';
   }
 
   /**
@@ -1291,7 +1303,7 @@ class Thread {
   /**
    * Elements tree walker used during initialization.
    *
-   * @type {ElementsTreeWalker}
+   * @type {ElementsTreeWalker<HTMLElement>}
    */
   static treeWalker;
 
@@ -1343,7 +1355,7 @@ class Thread {
 
     if (!this.isInited) {
       this
-        .on('toggle', this.updateLines.bind(this));
+        .on('toggle', this.updateLinesHandler);
       controller
         .on('resize', this.updateLinesHandler)
         .on('mutate', () => {
@@ -1461,7 +1473,7 @@ class Thread {
 
     if (controller.isCurrentRevision()) {
       collapsedThreadsStorageItem
-        .setWithTime(String(mw.config.get('wgArticleId')), data.collapsedThreads)
+        .setWithTime(mw.config.get('wgArticleId'), data.collapsedThreads)
         .save();
     }
   }
@@ -1481,13 +1493,14 @@ class Thread {
     let item;
     let previousNode = element;
     do {
-      if (this.treeWalker.currentNode.classList.contains('cd-commentLevel')) {
-        const className = this.treeWalker.currentNode.getAttribute('class');
+      const currentNode = this.treeWalker.currentNode;
+      if (currentNode.classList.contains('cd-commentLevel')) {
+        const className = /** @type {string} */ (currentNode.getAttribute('class'));
         const match = className.match(/cd-commentLevel-(\d+)/);
         if (match && Number(match[1]) === (level || 1)) {
           // If the level is 0 (outdented comment or subitem of a 0-level comment), we need the list
           // element, not the item element.
-          item = level === 0 ? this.treeWalker.currentNode : previousNode;
+          item = level === 0 ? currentNode : previousNode;
 
           // The element can contain parts of a comment that is not in the thread, for example
           // https://ru.wikipedia.org/wiki/Википедия:К_оценке_источников#202104120830_RosssW_2.
@@ -1498,7 +1511,7 @@ class Thread {
           break;
         }
       }
-      previousNode = this.treeWalker.currentNode;
+      previousNode = currentNode;
     } while (this.treeWalker.parentNode());
 
     return item || null;

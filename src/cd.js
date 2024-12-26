@@ -35,9 +35,11 @@ context.convenientDiscussions ||= /** @type {ConvenientDiscussions} */ ({});
  * @property {typeof import('../config/default').default} config
  * @property {typeof import('./convenientDiscussions').globalProperties} g
  * @property {ApiErrorFormatHtml} apiErrorFormatHtml A replacement for
- * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Unicode_Property_Escapes unicode property escapes}
- * while they are not supported in major browsers. {@link https://github.com/slevithan/xregexp}
- * can be used also.
+ *   {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Unicode_Property_Escapes unicode property escapes}
+ *   while they are not supported in major browsers. {@link https://github.com/slevithan/xregexp}
+ *   can be used also.
+ * @property {import('./Comment').default[]} comments
+ * @property {import('./Section').default[]} section
  */
 
 /**

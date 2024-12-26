@@ -66,7 +66,7 @@ export function findFirstTimestamp(code) {
  * @returns {string}
  */
 export function removeWikiMarkup(code) {
-  // Ideally, only text from images in the "thumb" format should be captured, because in the
+  // Ideally, only text from images in the `thumb` format should be captured, because in the
   // standard format the text is not displayed. See img_thumbnail in
   // https://ru.wikipedia.org/w/api.php?action=query&meta=siteinfo&siprop=magicwords&formatversion=2.
   // Unfortunately, that would add like 100ms to the server's response time. So, we use it if it is
@@ -150,14 +150,46 @@ export function encodeWikilink(link) {
     .replace(/\s+/g, ' ');
 }
 
+// author, timestamp, startIndex, endIndex, dirtyCode, nextCommentStartIndex
+/**
+ * The object returned from `extractSignatures()`.
+ *
+ * @typedef {object} SignatureInWikitext
+ * @property {import('./userRegistry').User} [author] The author name.
+ * @property {number} index The array index of the signature (not the index of the signature's text
+ *   in the code - excuse me the ambiguity here).
+ * @property {string} [timestamp] The timestamp of the signature.
+ * @property {Date} [date] The timestamp parsed to a Date object.
+ * @property {number} startIndex The start index of the signature in the code.
+ * @property {number} endIndex The end index of the signature in the code.
+ * @property {number} commentStartIndex The start index of the signature's comment in the code.
+ * @property {number} [nextCommentStartIndex] The start index of the next signature's comment in the
+ *   code. This is temporary and deleted in `extractSignatures()`.
+ * @property {string} dirtyCode The whole signature with all the wikitext.
+ */
+
+/**
+ * @typedef {(
+ *   Expand<
+ *     MakeRequired<
+ *       Pick<
+ *         SignatureInWikitext,
+ *         'author' | 'timestamp' | 'startIndex' | 'endIndex' | 'dirtyCode' | 'nextCommentStartIndex'
+ *       >,
+ *       'nextCommentStartIndex'
+ *     >
+ *   >
+ * )} SignatureInWikitextTemp
+ */
+
 /**
  * Extract signatures from wikitext.
  *
  * Only basic signature parsing is performed here; more precise signature text identification is
- * performed in `CommentSource#adjustSignature`. See also `CommentSource#adjust`.
+ * performed in `CommentSource#adjustSignature()`. See also `CommentSource#adjust()`.
  *
  * @param {string} code Code to extract signatures from.
- * @returns {object[]}
+ * @returns {SignatureInWikitext[]}
  */
 export function extractSignatures(code) {
   // TODO: Instead of removing only lines containing antipatterns from wikitext, hide entire
@@ -181,32 +213,41 @@ export function extractSignatures(code) {
   const adjustedCode = maskDistractingCode(code)
     .replace(
       cd.g.quoteRegexp,
-      (s, beginning, content, ending) => beginning + ' '.repeat(content.length) + ending
+      (_, beginning, content, ending) => beginning + ' '.repeat(content.length) + ending
     )
     .replace(commentAntipatternsRegexp, (s) => ' '.repeat(s.length));
 
-  let signatures = extractRegularSignatures(adjustedCode, code);
-  const unsigneds = extractUnsigneds(adjustedCode, code, signatures);
-  signatures.push(...unsigneds);
+  let signaturesTemp = extractRegularSignatures(adjustedCode, code);
+  const unsigneds = extractUnsigneds(adjustedCode, code, signaturesTemp);
+  signaturesTemp.push(...unsigneds);
 
-  // This is for the procedure adding anchors to comments linked from the comment, see
-  // CommentForm#prepareNewPageCode.
+  // This is for the procedure adding anchors to comments linked from the comment in
+  // CommentForm#addAnchorsToComments().
   const signatureIndex = adjustedCode.indexOf(cd.g.signCode);
   if (signatureIndex !== -1) {
-    signatures.push({
-      author: cd.user.getName(),
+    // Dummy signature
+    signaturesTemp.push({
+      author: cd.user,
       startIndex: signatureIndex,
       nextCommentStartIndex: signatureIndex + adjustedCode.slice(signatureIndex).indexOf('\n') + 1,
+
+      // These are not used. Purely for the sake of type checking.
+      endIndex: signatureIndex + cd.g.signCode.length,
+      dirtyCode: cd.g.signCode,
+      timestamp: '',
     });
   }
 
   if (unsigneds.length || signatureIndex !== -1) {
-    signatures.sort((sig1, sig2) => sig1.startIndex > sig2.startIndex ? 1 : -1);
+    signaturesTemp.sort((sig1, sig2) => sig1.startIndex > sig2.startIndex ? 1 : -1);
   }
 
-  signatures = signatures.filter((sig) => sig.author);
+  const signatures = /** @type {SignatureInWikitext[]} */ (
+    signaturesTemp.filter((sig) => sig.author)
+  );
   signatures.forEach((sig, i) => {
-    sig.commentStartIndex = i === 0 ? 0 : signatures[i - 1].nextCommentStartIndex;
+    sig.commentStartIndex =
+      i === 0 ? 0 : /** @type {number} */ (signatures[i - 1].nextCommentStartIndex);
   });
   signatures.forEach((sig, i) => {
     const { date } = sig.timestamp && parseTimestamp(sig.timestamp) || {};
@@ -223,7 +264,7 @@ export function extractSignatures(code) {
  *
  * @param {string} adjustedCode Adjusted page code.
  * @param {string} code Page code.
- * @returns {object[]}
+ * @returns {SignatureInWikitextTemp[]}
  * @private
  */
 function extractRegularSignatures(adjustedCode, code) {
@@ -341,8 +382,8 @@ function extractRegularSignatures(adjustedCode, code) {
  *
  * @param {string} adjustedCode Adjusted page code.
  * @param {string} code Page code.
- * @param {object[]} signatures Existing signatures.
- * @returns {object[]}
+ * @param {SignatureInWikitextTemp[]} signatures Existing signatures.
+ * @returns {SignatureInWikitextTemp[]}
  * @private
  */
 function extractUnsigneds(adjustedCode, code, signatures) {
@@ -353,22 +394,21 @@ function extractUnsigneds(adjustedCode, code, signatures) {
   // require() to avoid circular dependency
   const userRegistry = require('./userRegistry').default;
 
-  const unsigneds = [];
+  const unsigneds = /** @type {SignatureInWikitextTemp[]} */ ([]);
   const unsignedTemplatesRegexp = new RegExp(cd.g.unsignedTemplatesPattern + '.*\\n', 'g');
   let match;
   while ((match = unsignedTemplatesRegexp.exec(adjustedCode))) {
-    let author;
+    let authorString;
     let timestamp;
     if (cd.g.contentTimestampNoTzRegexp.test(match[2])) {
       timestamp = match[2];
-      author = match[3];
+      authorString = match[3];
     } else if (cd.g.contentTimestampNoTzRegexp.test(match[3])) {
       timestamp = match[3];
-      author = match[2];
+      authorString = match[2];
     } else {
-      author = match[2];
+      authorString = match[2];
     }
-    author &&= userRegistry.get(decodeHtmlEntities(author));
 
     // Append "(UTC)" to the `timestamp` of templates that allow to omit the timezone. The timezone
     // could be not UTC, but currently the timezone offset is taken from the wiki configuration, so
@@ -377,8 +417,10 @@ function extractUnsigneds(adjustedCode, code, signatures) {
       timestamp += ' (UTC)';
 
       // Workaround for "undated" templates
-      author ||= '<undated>';
+      authorString ||= '<undated>';
     }
+
+    const author = authorString ? userRegistry.get(decodeHtmlEntities(authorString)) : undefined;
 
     // Double spaces
     timestamp = timestamp?.replace(/ +/g, ' ');

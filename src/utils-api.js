@@ -21,6 +21,7 @@ let cachedUserInfoRequest;
  *
  * @param {string|[string, object]} codeOrArr
  * @param {object} [resp]
+ * @returns {never}
  * @throws {CdError}
  */
 export function handleApiReject(codeOrArr, resp) {

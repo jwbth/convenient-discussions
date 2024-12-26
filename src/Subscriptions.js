@@ -22,12 +22,20 @@ class Subscriptions {
    * Do everything {@link .load} does and also perform manipulations with the talk page.
    *
    * @param {import('./BootProcess').default} [bootProcess]
-   * @param {...*} [args]
+   * @param {...*} args
    */
   async loadToTalkPage(bootProcess, ...args) {
     await this.load(bootProcess, ...args);
 
-    this.processOnTalkPage(bootProcess);
+    this.processOnTalkPage();
+  }
+
+  /**
+   * @param {...*} args
+   */
+  // eslint-disable-next-line no-unused-vars
+  async load(...args) {
+    // This method is defined in subclasses.
   }
 
   /**

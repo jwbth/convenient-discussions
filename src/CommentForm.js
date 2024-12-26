@@ -19,10 +19,14 @@ import { handleApiReject, parseCode } from './utils-api';
 import { buildEditSummary, defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './utils-general';
 import { createCheckboxField } from './utils-oojs';
 import { escapePipesOutsideLinks, generateTagsRegexp, removeWikiMarkup } from './utils-wikitext';
-import { isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, isInputFocused, keyCombination, wrapDiffBody, wrapHtml } from './utils-window';
+import { isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, isInputFocused, keyCombination, mergeJquery, wrapDiffBody, wrapHtml } from './utils-window';
 
 /**
  * @typedef {'reply'|'replyInSection'|'edit'|'addSubsection'|'addSection'} CommentFormMode
+ */
+
+/**
+ * @typedef {'submit'|'viewChanges'|'preview'} CommentFormAction
  */
 
 /**
@@ -297,7 +301,7 @@ class CommentForm {
   /**
    * Name of the tag of the list that this comment form is an item of.
    *
-   * @type {?('dl'|'ul'|'ol')}
+   * @type {?ListType}
    * @private
    */
   containerListType = null;
@@ -634,21 +638,22 @@ class CommentForm {
       });
     }
 
+    // @ts-ignore
     this.commentInput = new (require('./MultilineTextInputWidget').default)({
       value: initialState.comment ?? '',
-      placeholder: this.target.getCommentFormCommentInputPlaceholder(
-        this.mode,
-        ([commentAuthor]) => {
+      placeholder:
+        this.target.getCommentFormCommentInputPlaceholder(this.mode, ([commentAuthor]) => {
           this.commentInput.$input.attr(
             'placeholder',
-            removeDoubleSpaces(cd.s(
-              'cf-comment-placeholder-replytocomment',
-              commentAuthor.getName(),
-              commentAuthor
-            ))
-          )
-        }
-      ) || undefined,
+            removeDoubleSpaces(
+              cd.s(
+                'cf-comment-placeholder-replytocomment',
+                commentAuthor.getName(),
+                commentAuthor
+              )
+            )
+          );
+        }) || undefined,
       rows: this.headlineInput ? 5 : 3,
       autosize: true,
       maxRows: 9999,
@@ -1288,35 +1293,34 @@ class CommentForm {
     const operation = this.operations.add('load');
     try {
       await this.target.loadCode(this);
-      let commentInputValue = this.target.source.toInput();
-      if (this.target.source.inSmallFont) {
+      const source = /** @type {import('./CommentSource').default} */ (this.target.source);
+      let commentInputValue = source.toInput();
+      if (source.inSmallFont) {
         commentInputValue = `<small>${commentInputValue}</small>`;
       }
-      const headline = this.target.source.headlineCode;
 
       this.commentInput.setValue(commentInputValue);
       this.originalComment = commentInputValue;
       if (this.headlineInput) {
-        this.headlineInput.setValue(headline);
-        this.originalHeadline = headline;
+        this.headlineInput.setValue(source.headlineCode);
+        this.originalHeadline = source.headlineCode;
       }
 
       operation.close();
 
       (initialState.focusHeadline && this.headlineInput || this.commentInput).focus();
       this.preview();
-    } catch (e) {
-      if (e instanceof CdError) {
-        this.handleError(
-          Object.assign({}, e.data, {
-            cancel: true,
-            operation,
-          })
-        );
+    } catch (error) {
+      if (error instanceof CdError) {
+        this.handleError({
+          ...error.data,
+          cancel: true,
+          operation,
+        });
       } else {
         this.handleError({
           type: 'javascript',
-          logMessage: e,
+          logMessage: error,
           cancel: true,
           operation,
         });
@@ -1338,15 +1342,15 @@ class CommentForm {
        *
        * @type {JQueryPromise|undefined}
        */
-      this.checkCodeRequest = this.target.loadCode(this).catch((e) => {
+      this.checkCodeRequest = this.target.loadCode(this).catch((error) => {
         this.$messageArea.empty();
         this.checkCodeRequest = null;
-        if (e instanceof CdError) {
-          this.handleError(Object.assign({}, e.data));
+        if (error instanceof CdError) {
+          this.handleError(Object.assign({}, error.data));
         } else {
           this.handleError({
             type: 'javascript',
-            logMessage: e,
+            logMessage: error,
           });
         }
       });
@@ -1456,10 +1460,10 @@ class CommentForm {
 
       (this.headlineInput || this.commentInput).focus();
       this.preview();
-    } catch (e) {
-      if (e instanceof CdError) {
+    } catch (error) {
+      if (error instanceof CdError) {
         this.handleError(
-          Object.assign({}, e.data, {
+          Object.assign({}, error.data, {
             cancel: true,
             operation,
           })
@@ -1467,7 +1471,7 @@ class CommentForm {
       } else {
         this.handleError({
           type: 'javascript',
-          logMessage: e,
+          logMessage: error,
           cancel: true,
           operation,
         });
@@ -1527,7 +1531,7 @@ class CommentForm {
    * @private
    */
   getCommentInputDummyFloatableContainer() {
-    const element = this.commentInput.$input[0];
+    const element = /** @type {HTMLInputElement} */ (this.commentInput.$input[0]);
     const computedStyle = window.getComputedStyle(element);
     const $span = $('<span>');
     const $div = $('<div>')
@@ -1594,7 +1598,7 @@ class CommentForm {
     button.on('click', async () => {
       // The input is made disabled, so the content can't be changed by the user during the
       // loading stage.
-      const text = await this.commentInput.getWikitextFromPaste(html, controller.rootElement);
+      const text = this.commentInput.getWikitextFromPaste(html);
 
       this.commentInput
         .selectRange(position - insertedText.length, position)
@@ -2332,13 +2336,14 @@ class CommentForm {
     }
 
     if (cancel) {
-      notifications.add(message instanceof $ ? message : wrapHtml(message), {
+      notifications.add(typeof message === 'string' ? wrapHtml(message) : message, {
         type: 'error',
         autoHideSeconds: 'long',
       });
       this.cancel(false);
     } else {
       if (!this.registered) return;
+
       if (!(operation && operation.getType() === 'preview' && operation.getOption('isAuto'))) {
         this.showMessage(message, {
           type: messageType,
@@ -2476,7 +2481,7 @@ class CommentForm {
   /**
    * Convert the comment form input to wikitext.
    *
-   * @param {'submit'|'viewChanges'|'preview'} action
+   * @param {CommentFormAction} action
    * @returns {string}
    * @throws {CdError}
    */
@@ -2573,19 +2578,19 @@ class CommentForm {
 
     if (!this.newSectionApi) {
       try {
-        await this.target.loadCode(this.mode === 'addSection' ? !cd.page.exists() : this);
-      } catch (e) {
-        if (e instanceof CdError) {
+        await this.target.loadCode(this, !cd.page.exists());
+      } catch (error) {
+        if (error instanceof CdError) {
           this.handleError(
             Object.assign({
               message: cd.sParse('cf-error-getpagecode'),
               operation,
-            }, e.data)
+            }, error.data)
           );
         } else {
           this.handleError({
             type: 'javascript',
-            logMessage: e,
+            logMessage: error,
             operation,
           });
         }
@@ -2604,18 +2609,18 @@ class CommentForm {
         commentCode: this.mode === 'reply' ? undefined : this.inputToCode(action),
 
         action: this.mode,
-        formAction: action,
         doDelete: this.deleteCheckbox?.isSelected(),
         commentForm: this,
+        commentFormAction: action,
       }));
       contextCode = this.addAnchorsToComments(contextCode, commentIds);
-    } catch (e) {
-      if (e instanceof CdError) {
-        this.handleError(Object.assign(e.data, { operation }));
+    } catch (error) {
+      if (error instanceof CdError) {
+        this.handleError(Object.assign(error.data, { operation }));
       } else {
         this.handleError({
           type: 'javascript',
-          logMessage: e,
+          logMessage: error,
           operation,
         });
       }
@@ -2744,10 +2749,10 @@ class CommentForm {
         title: this.targetPage.name,
         summary: buildEditSummary({ text: this.summaryInput.getValue() }),
       }));
-    } catch (e) {
-      if (e instanceof CdError) {
+    } catch (error) {
+      if (error instanceof CdError) {
         this.handleError(
-          Object.assign({}, e.data, {
+          Object.assign({}, error.data, {
             message: cd.sParse('cf-error-preview'),
             operation,
           })
@@ -2755,7 +2760,7 @@ class CommentForm {
       } else {
         this.handleError({
           type: 'javascript',
-          logMessage: e,
+          logMessage: error,
           operation,
         });
       }
@@ -2854,10 +2859,10 @@ class CommentForm {
         // Beneficial when sending long unicode texts, which is what we do here.
         contentType: 'multipart/form-data',
       }).catch(handleApiReject);
-    } catch (e) {
-      if (e instanceof CdError) {
+    } catch (error) {
+      if (error instanceof CdError) {
         this.handleError(
-          Object.assign({}, e.data, {
+          Object.assign({}, error.data, {
             message: cd.sParse('cf-error-viewchanges'),
             operation,
           })
@@ -2865,7 +2870,7 @@ class CommentForm {
       } else {
         this.handleError({
           type: 'javascript',
-          logMessage: e,
+          logMessage: error,
           operation,
         });
       }
@@ -2931,10 +2936,10 @@ class CommentForm {
 
     try {
       await controller.reload(bootData);
-    } catch (e) {
-      if (e instanceof CdError) {
+    } catch (error) {
+      if (error instanceof CdError) {
         this.handleError(
-          Object.assign({}, e.data, {
+          Object.assign({}, error.data, {
             message: cd.sParse('error-reloadpage-saved'),
             cancel: true,
             operation,
@@ -2943,7 +2948,7 @@ class CommentForm {
       } else {
         this.handleError({
           type: 'javascript',
-          logMessage: e,
+          logMessage: error,
           cancel: true,
           operation,
         });
@@ -3053,11 +3058,11 @@ class CommentForm {
         options.tags = undefined;
       }
       result = await this.targetPage.edit(options);
-    } catch (e) {
+    } catch (error) {
       delete this.captchaInput;
 
-      if (e instanceof CdError) {
-        const { type, details, apiResp } = e.data;
+      if (error instanceof CdError) {
+        const { type, details, apiResp } = error.data;
         if (type === 'network') {
           this.handleError({
             type,
@@ -3065,7 +3070,7 @@ class CommentForm {
             operation,
           });
         } else {
-          let messageType;
+          let /** @type {'notice'|undefined} */ messageType;
           let { code, message, isRawMessage, logMessage } = details;
           if (code === 'editconflict') {
             message += ' ' + cd.sParse('cf-notice-editconflict-retrying');
@@ -3103,7 +3108,7 @@ class CommentForm {
       } else {
         this.handleError({
           type: 'javascript',
-          logMessage: e,
+          logMessage: error,
           operation,
         });
       }
@@ -3730,8 +3735,8 @@ class CommentForm {
    * @param {string} [options.peri=''] Fallback value used instead of a selection and selected
    *   afterwards.
    * @param {string} [options.post=''] Text to insert after the caret/selection.
-   * @param {string} [options.replace=false] If there is a selection, replace it with `pre`, `peri`,
-   *   `post` instead of leaving it alone.
+   * @param {boolean} [options.replace=false] If there is a selection, replace it with `pre`,
+   *   `peri`, `post` instead of leaving it alone.
    * @param {string} [options.selection] Selected text. Use if the selection is outside of the
    *   input.
    * @param {boolean} [options.ownline=false] Put the inserted text on a line of its own.
@@ -3769,8 +3774,8 @@ class CommentForm {
     }
 
     // Wrap the text, moving the leading and trailing spaces to the sides of the resulting text.
-    const [leadingSpace] = selection.match(/^ */);
-    const [trailingSpace] = selection.match(/ *$/);
+    const [leadingSpace] = /** @type {RegExpMatchArray} */ (selection.match(/^ */));
+    const [trailingSpace] = /** @type {RegExpMatchArray} */ (selection.match(/ *$/));
     const middleText = selection || peri;
     const text = (
       leadingNewline +
@@ -3783,7 +3788,7 @@ class CommentForm {
     );
 
     this.commentInput.cdInsertContent(text);
-    if (!selection && !replace) {
+    if (periStartIndex !== undefined) {
       this.commentInput.selectRange(periStartIndex, periStartIndex + peri.length);
     }
   }
@@ -3938,7 +3943,7 @@ class CommentForm {
   /**
    * Get the name of the tag of the list that this form is an item of.
    *
-   * @returns {?('dl'|'ul'|'ol')}
+   * @returns {?ListType}
    */
   getContainerListType() {
     return this.containerListType;
@@ -3984,16 +3989,7 @@ class CommentForm {
    * {@link Comment#expandAllThreadsDownTo Expand all threads} that this form is inside.
    */
   goTo() {
-    let visuallyTargetComment;
-    if (['reply', 'edit'].includes(this.mode)) {
-      visuallyTargetComment = this.target;
-    } else if (this.mode === 'replyInSection') {
-      visuallyTargetComment = this.targetSection.commentsInFirstChunk
-        .slice()
-        .reverse()
-        .find((c) => c.level === 0);
-    }
-    visuallyTargetComment?.expandAllThreadsDownTo();
+    this.target.getCommentFormTargetComment()?.expandAllThreadsDownTo();
     this.$element.cdScrollIntoView('center');
     this.commentInput.focus();
   }
@@ -4029,7 +4025,7 @@ class CommentForm {
     this.manyFormsPopup = new OO.ui.PopupWidget({
       icon: 'lightbulb',
       label: cd.s('popup-manyForms-title'),
-      $content: $.cdMerge(
+      $content: mergeJquery(
         $('<p>').text(cd.s('popup-manyForms-text')),
         $('<p>').append(button.$element),
       ),
@@ -4084,7 +4080,7 @@ class CommentForm {
     this.uploadPopup = new OO.ui.PopupWidget({
       icon: 'lightbulb',
       label: cd.s('popup-upload-title'),
-      $content: $.cdMerge(
+      $content: mergeJquery(
         $('<p>').text(cd.s('popup-upload-text')),
         $('<p>').append(button.$element),
       ),
@@ -4171,7 +4167,7 @@ class CommentForm {
    * @private
    */
   static extractCommentIds(code) {
-    // Russian Wikipedia's Wikificator might mangle these links, replacing "_" with " ", so we search
+    // Russian Wikipedia's Wikificator may mangle these links, replacing `_` with ` `, so we search
     // for both characters.
     const idRegexp = /\[\[#(\d{12}[_ ][^|\]]+)/g;
 
@@ -4180,6 +4176,7 @@ class CommentForm {
     while ((match = idRegexp.exec(code))) {
       ids.push(match[1]);
     }
+
     return ids;
   }
 

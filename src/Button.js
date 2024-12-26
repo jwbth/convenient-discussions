@@ -221,6 +221,7 @@ class Button {
     if (this.callback) {
       this.buttonElement.removeEventListener('click', this.callback);
       this.buttonElement.removeEventListener('keydown', this.callback);
+      this.buttonElement.cdCallback = undefined;
       this.callback = undefined;
     }
 
@@ -235,6 +236,7 @@ class Button {
       };
       this.buttonElement.addEventListener('click', this.callback);
       this.buttonElement.addEventListener('keydown', this.callback);
+      this.buttonElement.cdCallback = this.callback;
     }
 
     return this;
@@ -314,7 +316,7 @@ class Button {
   }
 
   /**
-   * @type {Record<string, HTMLElement>}
+   * @type {{ [name: string]: HTMLElement }}
    */
   static prototypes = {};
 
