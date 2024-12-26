@@ -7,7 +7,8 @@
 			"Nemoralis",
 			"Toghrul Rahimli",
 			"Wertuose",
-			"Şeyx Şamil"
+			"Şeyx Şamil",
+			"Əkrəm Cəfər"
 		]
 	},
 	"script-name": "Rahat müzakirələr",
@@ -20,8 +21,8 @@
 	"cm-gotoparent-tooltip": "Üst şərhə get",
 	"cm-gotochild": "Alt şərhə qayıt",
 	"cm-gotochild-tooltip": "Alt şərhə get",
-	"cm-copylink": "Keçidi kopyala",
-	"cm-copylink-tooltip": "Linki kopyala",
+	"cm-copylink": "Keçidi kopiyala",
+	"cm-copylink-tooltip": "Linki kopiyala",
 	"cm-thank": "Təşəkkür",
 	"cm-thank-tooltip": "Bu redaktəyə görə təşəkkür et",
 	"cm-thanked": "Təşəkkür edildi",
@@ -45,7 +46,7 @@
 	"sm-subscribe": "Abunə ol",
 	"sm-unsubscribe": "Abunəlikdən çıx",
 	"sm-copylink": "Copy link",
-	"sm-copylink-tooltip": "Linki kopyala",
+	"sm-copylink-tooltip": "Linki kopiyala",
 	"sm-more": "Daha çox parametrlər",
 	"comment-timestamp-today": "[Bugün] h:mm A",
 	"comment-timestamp-yesterday": "[Dünən] h:mm A",
@@ -80,7 +81,7 @@
 	"section-authors-sort-abc": "Əlifba sırası ilə",
 	"section-authors-sort-count": "Şərh sayına görə",
 	"cld-title-comment": "Şərhin keçidini kopyala",
-	"cld-title-section": "Bölmənin keçidini kopyala",
+	"cld-title-section": "Bölmənin keçidini kopiyala",
 	"cld-select-anchor": "Ankor keçidi",
 	"cld-select-diff": "Fərq keçidi",
 	"cld-summary": "Dəyişiklik izahı",
@@ -450,5 +451,5 @@
 	"addtopic": "Mövzu əlavə et",
 	"addtopicbutton-tooltip": "Convenient Discussions-dan deyil, standart səhifədən istifadə edərək yeni mövzu yaratmaq üçün yeni vərəqədə açın",
 	"pseudolink-tooltip": "Daxil etmək üçün klikləyin",
-	"copy": "Kopyala"
+	"copy": "Kopiyala"
 }
