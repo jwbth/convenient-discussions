@@ -64,6 +64,63 @@ export class Page {
   isOpeningSection = null;
 
   /**
+   * Page ID on the wiki. Filled upon running {@link Page#loadCode} or {@link Page#edit}. In the
+   * latter case, it is useful for newly created pages.
+   *
+   * @name pageId
+   * @type {number|undefined}
+   */
+  pageId;
+
+  /**
+   * Page's source code (wikitext), ending with `\n`. Filled upon running {@link Page#loadCode}.
+   *
+   * @name code
+   * @type {string|undefined}
+   */
+  code;
+
+  /**
+   * ID of the revision that has {@link Page#code}. Filled upon running {@link Page#loadCode}.
+   *
+   * @name revisionId
+   * @type {number|undefined}
+   */
+  revisionId;
+
+  /**
+   * Page where {@link Page#name} redirects. Filled upon running {@link Page#loadCode}.
+   *
+   * @name redirectTarget
+   * @type {?(string|undefined)}
+   */
+  redirectTarget;
+
+  /**
+   * If {@link Page#name} redirects to some other page, the value is that page. If not, the value is
+   * the same as {@link Page#name}. Filled upon running {@link Page#loadCode}.
+   *
+   * @name realName
+   * @type {string|undefined}
+   */
+  realName;
+
+  /**
+   * Time when {@link Page#code} was queried (as the server reports it). Filled upon running
+   * {@link Page#loadCode}.
+   *
+   * @name queryTimestamp
+   * @type {string|undefined}
+   */
+  queryTimestamp;
+
+  /**
+   * @type {JQuery}
+   * @private
+   */
+  $archivingInfo;
+
+  /**
    * Create a page instance.
    *
    * @param {mw.Title} mwTitle
@@ -118,7 +175,7 @@ export class Page {
      *
      * @type {boolean}
      */
-    this.isActionable = this.isCurrent() ? this.isCommentable() : false;
+    this.isActionable = Boolean(this.isCommentable());
   }
 
   /**
@@ -155,7 +212,7 @@ export class Page {
   /**
    * Check whether the current page exists (is not 404).
    *
-   * @returns {boolean}
+   * @returns {?boolean}
    */
   exists() {
     if (!this.isCurrent()) {
@@ -356,7 +413,7 @@ export class Page {
    * @param {CommentForm} [_] Not used.
    * @param {boolean} [tolerateMissing=true] Assign `''` to the `code` property if the page is
    *   missing instead of throwing an error.
-   *
+   * @returns {Promise<?string>}
    * @throws {CdError}
    */
   async loadCode(_, tolerateMissing = true) {
@@ -389,7 +446,7 @@ export class Page {
       this.queryTimestamp = queryTimestamp;
 
       if (tolerateMissing) {
-        return;
+        return null;
       } else {
         throw new CdError({
           type: 'api',
@@ -413,73 +470,16 @@ export class Page {
 
     const redirectTarget = query.redirects?.[0]?.to || null;
 
-    /**
-     * Page ID on the wiki. Filled upon running {@link Page#loadCode} or {@link Page#edit}. In the
-     * latter case, it is useful for newly created pages.
-     *
-     * @name pageId
-     * @type {number|undefined}
-     * @memberof module:pageRegistry.Page
-     * @instance
-     */
+    // It's more convenient to unify regexps to have \n as the last character of anything, not
+    // (?:\n|$), and it doesn't seem to affect anything substantially.
+    this.code = content + '\n';
 
-    /**
-     * Page's source code (wikitext), ending with `\n`. Filled upon running {@link Page#loadCode}.
-     *
-     * @name code
-     * @type {string|undefined}
-     * @memberof module:pageRegistry.Page
-     * @instance
-     */
+    this.revisionId =  revision.revid;
+    this.redirectTarget = redirectTarget;
+    this.realName =  redirectTarget || this.name;
+    this.queryTimestamp = queryTimestamp;
 
-    /**
-     * ID of the revision that has {@link Page#code}. Filled upon running {@link Page#loadCode}.
-     *
-     * @name revisionId
-     * @type {number|undefined}
-     * @memberof module:pageRegistry.Page
-     * @instance
-     */
-
-    /**
-     * Page where {@link Page#name} redirects. Filled upon running {@link Page#loadCode}.
-     *
-     * @name redirectTarget
-     * @type {?(string|undefined)}
-     * @memberof module:pageRegistry.Page
-     * @instance
-     */
-
-    /**
-     * If {@link Page#name} redirects to some other page, the value is that page. If not, the value
-     * is the same as {@link Page#name}. Filled upon running {@link Page#loadCode}.
-     *
-     * @name realName
-     * @type {string|undefined}
-     * @memberof module:pageRegistry.Page
-     * @instance
-     */
-
-    /**
-     * Time when {@link Page#code} was queried (as the server reports it). Filled upon running
-     * {@link Page#loadCode}.
-     *
-     * @name queryTimestamp
-     * @type {string|undefined}
-     * @memberof module:pageRegistry.Page
-     * @instance
-     */
-
-    Object.assign(this, {
-      // It's more convenient to unify regexps to have \n as the last character of anything, not
-      // (?:\n|$), and it doesn't seem to affect anything substantially.
-      code: content + '\n',
-
-      revisionId: revision.revid,
-      redirectTarget,
-      realName: redirectTarget || this.name,
-      queryTimestamp,
-    });
+    return this.code;
   }
 
   /**
@@ -574,21 +574,20 @@ export class Page {
    *   has changed.
    */
   async edit(customOptions) {
-    const options = controller.getApi().assertCurrentUser(
-      Object.assign({}, {
-        action: 'edit',
+    const options = controller.getApi().assertCurrentUser({
+      action: 'edit',
 
-        // If we know that this page is a redirect, use its target. Otherwise, use the regular name.
-        title: this.realName || this.name,
+      // If we know that this page is a redirect, use its target. Otherwise, use the regular name.
+      title: this.realName || this.name,
 
-        notminor: !customOptions.minor,
+      notminor: !customOptions.minor,
 
-        // Should be `undefined` instead of `null`, otherwise will be interepreted as a string.
-        tags: cd.user.isRegistered() && cd.config.tagName || undefined,
+      // Should be `undefined` instead of `null`, otherwise will be interepreted as a string.
+      tags: cd.user.isRegistered() && cd.config.tagName || undefined,
 
-        ...cd.g.apiErrorFormatHtml,
-      }, customOptions)
-    );
+      ...cd.g.apiErrorFormatHtml,
+      ...customOptions,
+    });
 
     let resp;
     try {
@@ -992,6 +991,16 @@ export class Page {
   }
 
   /**
+   * Set the {@link Page#redirectTarget} and {@link Page#realName} properties.
+   *
+   * @param {string | null | undefined} redirectTarget
+   */
+  setRedirectTarget(redirectTarget) {
+    this.redirectTarget = redirectTarget;
+    this.realName = redirectTarget || this.name;
+  }
+
+  /**
    * Set some map object variables related to archive pages.
    *
    * @private
@@ -1062,7 +1071,7 @@ export class Page {
 /**
  * Class that keeps the methods and data related to the page's source code.
  */
-class PageSource {
+export class PageSource {
   /**
    * Create a comment's source object.
    *
@@ -1077,13 +1086,22 @@ class PageSource {
    * presumed.
    *
    * @param {object} options
-   * @param {string} options.commentCode Comment code, including trailing newlines and the
-   *   signature.
+   * @param {string} [options.commentCode] Comment code, including trailing newlines and the
+   *   signature. It is required (set to optional for polymorphism with CommentSource and
+   *   SectionSource).
    * @param {CommentForm} options.commentForm Comment form that has the code.
-   * @returns {object}
+   * @returns {{ contextCode: string; commentCode?: string;
+   * }}
    */
   modifyContext({ commentCode, commentForm }) {
     const originalContextCode = this.page.code;
+    if (!originalContextCode) {
+      throw new CdError({
+        type: 'internal',
+        message: 'Context (page) code is not set.',
+      });
+    }
+
     let contextCode;
     if (commentForm.isNewTopicOnTop()) {
       const firstSectionStartIndex = maskDistractingCode(originalContextCode)

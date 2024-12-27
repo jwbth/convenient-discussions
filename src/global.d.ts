@@ -1,7 +1,7 @@
 /// <reference types="types-mediawiki" />
 
 import { Document as DomHandlerDocument, Node as DomHandlerNode, Element as DomHandlerElement } from 'domhandler';
-import { ConvenientDiscussions } from './cd';
+import { ConvenientDiscussions, ConvenientDiscussionsWorker } from './cd';
 
 declare global {
   const IS_TEST: boolean;
@@ -28,7 +28,7 @@ declare global {
   }
 
   interface WindowOrWorkerGlobalScope {
-    convenientDiscussions: ConvenientDiscussions;
+    convenientDiscussions: ConvenientDiscussions | ConvenientDiscussionsWorker;
     cd?: Window['convenientDiscussions'];
   }
 
@@ -41,6 +41,19 @@ declare global {
       TEXT_NODE: number;
       COMMENT_NODE: number;
     };
+  }
+
+  // https://stackoverflow.com/a/71104272
+  interface String {
+    /**
+     * Gets a substring beginning at the specified location and having the specified length.
+     * (Deprecation removed.)
+     *
+     * @param from The starting position of the desired substring. The index of the first character
+     *   in the string is zero.
+     * @param length The number of characters to include in the returned substring.
+     */
+    substr(from: number, length?: number): string;
   }
 
   interface JQuery {
@@ -79,6 +92,8 @@ declare global {
     cdGetText(): string;
     cdAddCloseButton(): this;
     cdRemoveCloseButton(): this;
+
+    wikiEditor(funcName: 'addModule' | 'addToToolbar' | 'removeFromToolbar' | 'addDialog' | 'openDialog' | 'closeDialog', data: any): this;
   }
 
   interface Node {

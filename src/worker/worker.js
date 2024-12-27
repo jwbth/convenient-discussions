@@ -26,13 +26,7 @@ let isFirstRun = true;
 let alarmTimeout;
 let rootElement;
 
-/**
- * @typedef {object} CdWorkerExtension
- * @property {import('./CommentWorker').default[]} comments
- * @property {import('./SectionWorker').default[]} sections
- */
-
-/** @type {Omit<import('../cd').ConvenientDiscussions, 'comments' | 'sections'> & CdWorkerExtension} */
+/** @type {import('../cd').ConvenientDiscussionsWorker} */
 const cd = cdTemp;
 
 cd.debug = debug;

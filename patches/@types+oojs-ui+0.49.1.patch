@@ -1,130 +1,199 @@
 diff --git a/node_modules/@types/oojs-ui/CopyTextLayout.d.ts b/node_modules/@types/oojs-ui/CopyTextLayout.d.ts
 new file mode 100644
-index 0000000..723481a
+index 0000000..2e31402
 --- /dev/null
 +++ b/node_modules/@types/oojs-ui/CopyTextLayout.d.ts
-@@ -0,0 +1,121 @@
+@@ -0,0 +1,147 @@
 +declare namespace OO.ui {
-+    /**
-+     * CopyTextLayout is an action field layout containing some readonly text
-+     * and a button to copy it to the clipboard.
-+     *
-+     * ResourceLoader module: `oojs-ui-widgets`
-+     *
-+     * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.CopyTextLayout
-+     */
-+    interface CopyTextLayout extends CopyTextLayout.Props, CopyTextLayout.Prototype {}
++	/**
++	 * CopyTextLayout is an action field layout containing some readonly text
++	 * and a button to copy it to the clipboard.
++	 *
++	 * ResourceLoader module: `oojs-ui-widgets`
++	 *
++	 * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.CopyTextLayout
++	 */
++	interface CopyTextLayout<
++		T extends TextInputWidget | MultilineTextInputWidget =
++			| TextInputWidget
++			| MultilineTextInputWidget
++	> extends CopyTextLayout.Props, CopyTextLayout.Prototype<T>
++	{}
 +
-+    namespace CopyTextLayout {
-+        interface EventMap extends FieldLayout.EventMap {
-+            /**
-+             * When the user has executed a copy command.
-+             *
-+             * @param success Whether the copy command succeeded
-+             */
-+            copy: [success: boolean];
-+        }
++	namespace CopyTextLayout {
++		interface EventMap extends mixin.LabelElement.EventMap {
++			/**
++			 * When the user has executed a copy command.
++			 *
++			 * @param success Whether the copy command succeeded
++			 */
++			copy: [success: boolean];
++		}
 +
-+        interface ConfigOptions extends ActionFieldLayout.ConfigOptions {
-+            /** Text to copy, can also be provided as `textInput.value` */
-+            copyText?: string;
-+            /** Config for the text input widget */
-+            textInput?: TextInputWidget.ConfigOptions | MultilineTextInputWidget.ConfigOptions;
-+            /** Config for the button widget */
-+            button?: ButtonWidget.ConfigOptions;
-+            /** Whether to use a multiline text input */
-+            multiline?: boolean;
-+        }
++		interface ConfigOptions<M extends boolean | undefined> extends ActionFieldLayout.ConfigOptions {
++			/** Text to copy, can also be provided as `textInput.value` */
++			copyText?: string;
++			/** Config for the text input widget */
++			textInput?: M extends true
++				? MultilineTextInputWidget.ConfigOptions
++				: TextInputWidget.ConfigOptions;
++			/** Config for the button widget */
++			button?: ButtonWidget.ConfigOptions;
++			/** Whether to use a multiline text input */
++			multiline?: M;
++		}
 +
-+        interface Static extends ActionFieldLayout.Static {}
++		type Static = ActionFieldLayout.Static;
 +
-+        interface Props extends ActionFieldLayout.Props {
-+            /** Text input widget used in the layout */
-+            textInput: TextInputWidget | MultilineTextInputWidget;
-+            /** Button widget used in the layout */
-+            button: ButtonWidget;
-+        }
++		interface Props extends ActionFieldLayout.Props {
++			/** Text input widget used in the layout */
++			textInput: TextInputWidget | MultilineTextInputWidget;
++			/** Button widget used in the layout */
++			button: ButtonWidget;
++		}
 +
-+        interface Prototype extends ActionFieldLayout.Prototype {
-+            /**
-+             * Handle button click events.
-+             *
-+             * @fires copy
-+             */
-+            onButtonClick(): void;
++		interface Prototype<
++			T extends TextInputWidget | MultilineTextInputWidget =
++				| TextInputWidget
++				| MultilineTextInputWidget
++		> extends FieldLayout.Prototype<T> {
++			/**
++			 * Handle button click events.
++			 *
++			 * @fires copy
++			 */
++			onButtonClick(): void;
 +
-+            /**
-+             * Handle text widget focus events.
-+             */
-+            onInputFocus(): void;
++			/**
++			 * Handle text widget focus events.
++			 */
++			onInputFocus(): void;
 +
-+            /**
-+             * Select the text to copy.
-+             */
-+            selectText(): void;
++			/**
++			 * Select the text to copy.
++			 */
++			selectText(): void;
 +
-+            // #region EventEmitter overloads
-+            on<K extends keyof EventMap, A extends ArgTuple = [], C = null>(
-+                event: K,
-+                method: EventHandler<C, (this: C, ...args: [...A, ...EventMap[K]]) => void>,
-+                args?: A,
-+                context?: C
-+            ): this;
-+            on<K extends string, C = null>(
-+                event: K extends keyof EventMap ? never : K,
-+                method: EventHandler<C>,
-+                args?: any[],
-+                context?: C
-+            ): this;
++			/**
++			 * Get the widget contained by the field.
++			 *
++			 * @return Field widget
++			 */
++			getField(): T;
 +
-+            once<K extends keyof EventMap>(event: K, listener: (this: null, ...args: EventMap[K]) => void): this;
-+            once<K extends string>(
-+                event: K extends keyof EventMap ? never : K,
-+                listener: (this: null, ...args: any[]) => void
-+            ): this;
++			// #region EventEmitter overloads
++			on<K extends keyof EventMap, A extends ArgTuple = [], C = null>(
++				event: K,
++				method: EventHandler<C, (this: C, ...args: [...A, ...EventMap[K]]) => void>,
++				args?: A,
++				context?: C
++			): this;
++			on<K extends string, C = null>(
++				event: K extends keyof EventMap ? never : K,
++				method: EventHandler<C>,
++				args?: any[],
++				context?: C
++			): this;
 +
-+            off<K extends keyof EventMap, C = null>(
-+                event: K,
-+                method?: EventHandler<C, (this: C, ...args: EventMap[K]) => void>,
-+                context?: C
-+            ): this;
-+            off<K extends string, C = null>(
-+                event: K extends keyof EventMap ? never : K,
-+                method?: EventHandler<C>,
-+                context?: C
-+            ): this;
++			once<K extends keyof EventMap>(
++				event: K,
++				listener: (this: null, ...args: EventMap[K]) => void
++			): this;
++			once<K extends string>(
++				event: K extends keyof EventMap ? never : K,
++				listener: (this: null, ...args: any[]) => void
++			): this;
 +
-+            emit<K extends keyof EventMap>(event: K, ...args: EventMap[K]): boolean;
-+            emit<K extends string>(event: K extends keyof EventMap ? never : K, ...args: any[]): boolean;
++			off<K extends keyof EventMap, C = null>(
++				event: K,
++				method?: EventHandler<C, (this: C, ...args: EventMap[K]) => void>,
++				context?: C
++			): this;
++			off<K extends string, C = null>(
++				event: K extends keyof EventMap ? never : K,
++				method?: EventHandler<C>,
++				context?: C
++			): this;
 +
-+            emitThrow<K extends keyof EventMap>(event: K, ...args: EventMap[K]): boolean;
-+            emitThrow<K extends string>(event: K extends keyof EventMap ? never : K, ...args: any[]): boolean;
++			emit<K extends keyof EventMap>(event: K, ...args: EventMap[K]): boolean;
++			emit<K extends string>(event: K extends keyof EventMap ? never : K, ...args: any[]): boolean;
 +
-+            connect<T extends Partial<Record<keyof EventMap, any>>, C>(
-+                context: C,
-+                methods: EventConnectionMap<T, C, EventMap>
-+            ): this;
++			emitThrow<K extends keyof EventMap>(event: K, ...args: EventMap[K]): boolean;
++			emitThrow<K extends string>(
++				event: K extends keyof EventMap ? never : K,
++				...args: any[]
++			): boolean;
 +
-+            disconnect<T extends Partial<Record<keyof EventMap, any>>, C>(
-+                context: C,
-+                methods?: EventConnectionMap<T, C, EventMap>
-+            ): this;
-+            // #endregion
-+        }
++			connect<T extends Partial<Record<keyof EventMap, any>>, C>( // eslint-disable-line @definitelytyped/no-unnecessary-generics
++				context: C,
++				methods: EventConnectionMap<T, C, EventMap>
++			): this;
 +
-+        interface Constructor {
-+            /** @param config Configuration options */
-+            new(config?: ConfigOptions): CopyTextLayout;
-+            prototype: Prototype;
-+            static: Static;
-+            super: ActionFieldLayout.Constructor;
-+            /** @deprecated Use `super` instead */
-+            parent: ActionFieldLayout.Constructor;
-+        }
-+    }
++			disconnect<T extends Partial<Record<keyof EventMap, any>>, C>( // eslint-disable-line @definitelytyped/no-unnecessary-generics
++				context: C,
++				methods?: EventConnectionMap<T, C, EventMap>
++			): this;
++			// #endregion
++		}
 +
-+    const CopyTextLayout: CopyTextLayout.Constructor;
++		interface Constructor {
++			/** @param config Configuration options */
++			new <M extends boolean | undefined = undefined>(config: ConfigOptions<M>): CopyTextLayout<
++				M extends true ? MultilineTextInputWidget : TextInputWidget
++			>;
++			prototype: Prototype;
++			static: Static;
++			super: ActionFieldLayout.Constructor;
++			/** @deprecated Use `super` instead */
++			parent: ActionFieldLayout.Constructor;
++		}
++	}
++
++	const CopyTextLayout: CopyTextLayout.Constructor;
 +}
+diff --git a/node_modules/@types/oojs-ui/MultilineTextInputWidget.d.ts b/node_modules/@types/oojs-ui/MultilineTextInputWidget.d.ts
+index b9e1230..9ad53f6 100644
+--- a/node_modules/@types/oojs-ui/MultilineTextInputWidget.d.ts
++++ b/node_modules/@types/oojs-ui/MultilineTextInputWidget.d.ts
+@@ -22,6 +22,11 @@ declare namespace OO.ui {
+     interface MultilineTextInputWidget extends MultilineTextInputWidget.Props, MultilineTextInputWidget.Prototype {}
+ 
+     namespace MultilineTextInputWidget {
++        interface NonNullRange {
++            from: number;
++            to: number;
++        }
++
+         interface EventMap extends TextInputWidget.EventMap {
+             resize: [];
+         }
+@@ -68,6 +73,13 @@ declare namespace OO.ui {
+              */
+             isAutosizing(): boolean;
+ 
++            /**
++             * Get an object describing the current selection range in a directional manner
++             *
++             * @return Object containing 'from' and 'to' offsets
++             */
++            getRange(): NonNullRange;
++
+             // #region EventEmitter overloads
+             on<K extends keyof EventMap, A extends ArgTuple = [], C = null>(
+                 event: K,
+diff --git a/node_modules/@types/oojs-ui/PopupWidget.d.ts b/node_modules/@types/oojs-ui/PopupWidget.d.ts
+index 064097e..3d93e45 100644
+--- a/node_modules/@types/oojs-ui/PopupWidget.d.ts
++++ b/node_modules/@types/oojs-ui/PopupWidget.d.ts
+@@ -97,7 +97,7 @@ declare namespace OO.ui {
+             containerPadding?: number;
+ 
+             /** Content to append to the popup's body */
+-            $content?: JQuery;
++            $content?: JQuery<any>;
+ 
+             /** Content to append to the popup's footer */
+             $footer?: JQuery;
 diff --git a/node_modules/@types/oojs-ui/ProcessDialog.d.ts b/node_modules/@types/oojs-ui/ProcessDialog.d.ts
 index 6de242c..c9e1067 100644
 --- a/node_modules/@types/oojs-ui/ProcessDialog.d.ts

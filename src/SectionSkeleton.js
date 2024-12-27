@@ -348,12 +348,13 @@ class SectionSkeleton {
    *
    * @param {boolean} [ignoreFirstLevel=true] Don't consider sections of the first level parent
    *   sections; stop at second level sections.
-   * @returns {?SectionSkeleton}
+   * @returns {?this}
    */
   getParent(ignoreFirstLevel = true) {
     if (ignoreFirstLevel && this.level <= 2) {
       return null;
     }
+
     return (
       cd.sections
         .slice(0, this.index)
@@ -370,16 +371,17 @@ class SectionSkeleton {
    * if running .slice() on the array slows anything down. To be clear – this method is run very
    * frequently.)
    *
-   * @returns {SectionSkeleton[]}
+   * @returns {this[]}
    */
   getAncestors() {
     if (!this.cachedAncestors) {
-      this.cachedAncestors = [];
-      let section = this;
-      while ((section = section.getParent(false))) {
+      this.cachedAncestors = /** @type {this[]} */ ([]);
+      let section;
+      for (section = this.getParent(); section; section = section.getParent()) {
         this.cachedAncestors.push(section);
       }
     }
+
     return this.cachedAncestors;
   }
 }
@@ -388,7 +390,7 @@ class SectionSkeleton {
  * Object with the same basic structure as {@link SectionSkeleton} has. (It comes from a web
  * worker so its constructor is lost.)
  *
- * @typedef {object} SectionSkeletonLike
+ * @typedef {SectionSkeleton} SectionSkeletonLike
  */
 
 export default SectionSkeleton;

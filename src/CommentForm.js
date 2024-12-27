@@ -77,6 +77,13 @@ class CommentForm {
   $element;
 
   /**
+   * Text insert buttons.
+   *
+   * @type {JQuery|undefined}
+   */
+  $insertButtons;
+
+  /**
    * Headline input.
    *
    * @type {OO.ui.TextInputWidget|undefined}
@@ -194,10 +201,16 @@ class CommentForm {
    */
   checkboxesLayout;
 
-  /** @type {string} */
+  /**
+   * @type {string}
+   * @private
+   */
   submitButtonLabelStandard;
 
-  /** @type {string} */
+  /**
+   * @type {string}
+   * @private
+   */
   submitButtonLabelShort;
 
   /**
@@ -307,6 +320,14 @@ class CommentForm {
   containerListType = null;
 
   /**
+   * Request to test if a comment or section exists in the code made by
+   * {@link CommentForm#checkCode}.
+   *
+   * @type {Promise|undefined}
+   */
+  checkCodeRequest;
+
+  /**
    * @typedef {(
    *   Mode extends 'reply' | 'edit' ?
    *     Comment :
@@ -346,11 +367,11 @@ class CommentForm {
    *   Comment, section, or page that the form is related to.
    * @param {object} [config.initialState = {}] Initial state of the form (data saved in the
    *   previous session, quoted text, data transferred from DT's new topic form, etc.).
-   * @param {PreloadConfig} [config.preloadConfig] Configuration to preload data into the form.
+   * @param {PreloadConfig} [config.preloadConfig = {}] Configuration to preload data into the form.
    * @param {boolean} [config.newTopicOnTop=false] When adding a topic, whether it should be on top.
    * @fires commentFormCustomModulesReady
    */
-  constructor({ mode, target, initialState = {}, preloadConfig, newTopicOnTop = false }) {
+  constructor({ mode, target, initialState = {}, preloadConfig = {}, newTopicOnTop = false }) {
     // Mixin constructor
     OO.EventEmitter.call(this);
 
@@ -380,7 +401,7 @@ class CommentForm {
     /**
      * Configuration to preload data into the form.
      *
-     * @type {PreloadConfig|undefined}
+     * @type {PreloadConfig}
      * @private
      */
     this.preloadConfig = preloadConfig;
@@ -532,14 +553,14 @@ class CommentForm {
       this.originalComment = initialState.originalComment || '';
       this.originalHeadline = initialState.originalHeadline || '';
     } else {
-      if (this.preloadConfig?.commentTemplate) {
+      if (this.preloadConfig.commentTemplate) {
         this.preloadTemplate();
       } else {
         this.originalComment = '';
       }
 
       if (this.headlineInput) {
-        if (this.preloadConfig?.headline) {
+        if (this.preloadConfig.headline) {
           this.headlineInput.setValue(this.preloadConfig.headline);
         }
 
@@ -626,7 +647,7 @@ class CommentForm {
    */
   createTextInputs(initialState) {
     if (
-      (['addSection', 'addSubsection'].includes(this.mode) && !this.preloadConfig?.noHeadline) ||
+      (['addSection', 'addSubsection'].includes(this.mode) && !this.preloadConfig.noHeadline) ||
       this.sectionOpeningCommentEdited
     ) {
       this.headlineInputPlaceholder = this.target.getCommentFormHeadlineInputPlaceholder(this.mode);
@@ -638,7 +659,6 @@ class CommentForm {
       });
     }
 
-    // @ts-ignore
     this.commentInput = new (require('./MultilineTextInputWidget').default)({
       value: initialState.comment ?? '',
       placeholder:
@@ -646,11 +666,7 @@ class CommentForm {
           this.commentInput.$input.attr(
             'placeholder',
             removeDoubleSpaces(
-              cd.s(
-                'cf-comment-placeholder-replytocomment',
-                commentAuthor.getName(),
-                commentAuthor
-              )
+              cd.s('cf-comment-placeholder-replytocomment', commentAuthor.getName(), commentAuthor)
             )
           );
         }) || undefined,
@@ -907,7 +923,7 @@ class CommentForm {
       this.sectionOpeningCommentEdited ?
         'cd-commentForm-sectionOpeningComment' :
         undefined,
-      this.mode === 'addSubsection' ?
+      this.isTargetTypeSection() && this.mode === 'addSubsection' ?
         `cd-commentForm-addSubsection-${this.target.level}` :
         undefined,
     ].filter(defined));
@@ -945,13 +961,13 @@ class CommentForm {
       .addClass('cd-commentForm-buttons')
       .append(this.$buttonsStart, this.$buttonsEnd);
 
-    this.$element.append(
+    this.$element.append([
       this.$messageArea,
       this.headlineInput?.$element,
       this.commentInput.$element,
       this.$advanced,
       this.$buttons,
-    );
+    ].filter(defined));
 
     if (this.mode !== 'edit' && !this.alwaysExpandAdvanced) {
       this.$advanced.hide();
@@ -1063,7 +1079,7 @@ class CommentForm {
           action: {
             type: 'callback',
             execute: () => {
-              this.quote(true, commentRegistry.getSelectedComment());
+              this.quote(true, commentRegistry.getSelectedComment() || undefined);
             },
           },
         },
@@ -1074,7 +1090,7 @@ class CommentForm {
           action: {
             type: 'callback',
             execute: () => {
-              // Use deprecated window.event to avoid removing and adding a listener
+              // @ts-ignore: Use deprecated window.event to avoid removing and adding a listener
               this.mention(isCmdModifierPressed(window.event));
             },
           },
@@ -1184,6 +1200,7 @@ class CommentForm {
 
     // A hack to make the WikiEditor cookies related to active sections and pages saved correctly.
     $input.data('wikiEditor-context').instance = 5;
+    // @ts-ignore
     $.wikiEditor.instances = Array(5);
 
     /**
@@ -1195,6 +1212,31 @@ class CommentForm {
      * @param {object} cd {@link convenientDiscussions} object.
      */
     mw.hook('convenientDiscussions.commentFormToolbarReady').fire(this, cd);
+  }
+
+  /**
+   * Add the insert buttons block under the comment input.
+   *
+   * @private
+   */
+  addInsertButtons() {
+    if (!this.insertButtons.length) return;
+
+    this.$insertButtons = $('<div>')
+      .addClass('cd-insertButtons')
+      .insertAfter(this.commentInput.$element);
+
+    this.insertButtons.forEach((button) => {
+      let snippet;
+      let label;
+      if (Array.isArray(button)) {
+        snippet = button[0];
+        label = button[1];
+      } else {
+        snippet = button;
+      }
+      this.addInsertButton(snippet, label);
+    });
   }
 
   /**
@@ -1216,12 +1258,12 @@ class CommentForm {
     post = post.replace(/\\n/g, '\n');
 
     // Unmask escaped characters
-    const unescape = (snippet) => snippet.replace(/\\([+;\\])/g, '$1');
+    const unescape = (/** @type {string} */ snippet) => snippet.replace(/\\([+;\\])/g, '$1');
     pre = unescape(textMasker.unmaskText(pre));
     post = unescape(textMasker.unmaskText(post));
     label = label ? unescape(label) : pre + post;
 
-    this.$insertButtons.append(
+    /** @type {JQuery} */ (this.$insertButtons).append(
       new Button({
         label,
         classes: ['cd-insertButtons-button'],
@@ -1231,36 +1273,6 @@ class CommentForm {
       }).element,
       ' ',
     );
-  }
-
-  /**
-   * Add the insert buttons block under the comment input.
-   *
-   * @private
-   */
-  addInsertButtons() {
-    if (!this.insertButtons.length) return;
-
-    /**
-     * Text insert buttons.
-     *
-     * @type {JQuery|undefined}
-     */
-    this.$insertButtons = $('<div>')
-      .addClass('cd-insertButtons')
-      .insertAfter(this.commentInput.$element);
-
-    this.insertButtons.forEach((button) => {
-      let snippet;
-      let label;
-      if (Array.isArray(button)) {
-        snippet = button[0];
-        label = button[1];
-      } else {
-        snippet = button;
-      }
-      this.addInsertButton(snippet, label);
-    });
   }
 
   /**
@@ -1292,8 +1304,7 @@ class CommentForm {
   async loadComment(initialState) {
     const operation = this.operations.add('load');
     try {
-      await this.target.loadCode(this);
-      const source = /** @type {import('./CommentSource').default} */ (this.target.source);
+      const source = await /** @type {Comment} */ (this.target).loadCode(this);
       let commentInputValue = source.toInput();
       if (source.inSmallFont) {
         commentInputValue = `<small>${commentInputValue}</small>`;
@@ -1331,20 +1342,14 @@ class CommentForm {
   /**
    * Test if a target comment or section exists in the wikitext.
    *
-   * @returns {JQueryPromise}
+   * @returns {Promise}
    * @private
    */
   checkCode() {
     if (!this.checkCodeRequest) {
-      /**
-       * Request to test if a comment or section exists in the code made by
-       * {@link CommentForm#checkCode}.
-       *
-       * @type {JQueryPromise|undefined}
-       */
       this.checkCodeRequest = this.target.loadCode(this).catch((error) => {
         this.$messageArea.empty();
-        this.checkCodeRequest = null;
+        delete this.checkCodeRequest;
         if (error instanceof CdError) {
           this.handleError(Object.assign({}, error.data));
         } else {
@@ -1355,6 +1360,7 @@ class CommentForm {
         }
       });
     }
+
     return this.checkCodeRequest;
   }
 
@@ -1374,7 +1380,7 @@ class CommentForm {
       result = await parseCode(
         (
           (
-            this.preloadConfig?.editIntro ?
+            this.preloadConfig.editIntro ?
               `<div class="cd-editintro">{{${this.preloadConfig.editIntro}}}</div>\n` :
               ''
           ) +
@@ -1426,10 +1432,12 @@ class CommentForm {
    */
   async preloadTemplate() {
     const operation = this.operations.add('load', { affectsHeadline: false });
-    const preloadPage = pageRegistry.get(this.preloadConfig.commentTemplate);
+    const preloadPage = pageRegistry.get(/** @type {string} */ (this.preloadConfig.commentTemplate));
+    if (!preloadPage) return;
+
     try {
-      await preloadPage.loadCode();
-      let code = preloadPage.code;
+      let code = await preloadPage.loadCode();
+      if (!code) return;
 
       const regexp = generateTagsRegexp(['onlyinclude']);
       let match;
@@ -1445,11 +1453,17 @@ class CommentForm {
       code = code
         .replace(generateTagsRegexp(['includeonly']), '$3')
         .replace(generateTagsRegexp(['noinclude']), '')
-        .replace(/\$(\d+)/g, (m, s) => this.preloadConfig.params[s - 1] ?? m);
+        .replace(
+          /\$(\d+)/g,
+          (m, s) =>
+            this.preloadConfig.params !== undefined ? (this.preloadConfig.params[s - 1] ?? m) : m
+        );
       code = code.trim();
 
       if (code.includes(cd.g.signCode) || this.preloadConfig.omitSignature) {
-        this.omitSignatureCheckbox.setSelected(true);
+        /** @type {import('./CheckboxInputWidget').default} */ (
+          this.omitSignatureCheckbox
+        ).setSelected(true);
         this.omitSignatureCheckboxAltered = true;
       }
 
@@ -1598,7 +1612,7 @@ class CommentForm {
     button.on('click', async () => {
       // The input is made disabled, so the content can't be changed by the user during the
       // loading stage.
-      const text = this.commentInput.getWikitextFromPaste(html);
+      const text = await this.commentInput.getWikitextFromPaste(html);
 
       this.commentInput
         .selectRange(position - insertedText.length, position)
@@ -1639,11 +1653,11 @@ class CommentForm {
   /**
    * Upload an image and insert its markup to the comment form.
    *
-   * @param {File} file File to upload.
-   * @param {boolean} openInsertFileDialogAfterwards Whether to open the WikiEditor's "Insert file"
-   *   dialog after the "Upload file" dialog is closed with success.
+   * @param {File} [file] File to upload.
+   * @param {boolean} [openInsertFileDialogAfterwards=false] Whether to open the WikiEditor's
+   *   "Insert file" dialog after the "Upload file" dialog is closed with success.
    */
-  async uploadImage(file, openInsertFileDialogAfterwards) {
+  async uploadImage(file, openInsertFileDialogAfterwards = false) {
     if (this.uploadDialog || this.commentInput.isPending() || !this.uploadToCommons) return;
 
     this.pushPending();
@@ -1940,14 +1954,14 @@ class CommentForm {
 
     this.$element
       // Hotkeys
-      .on('keydown', (e) => {
+      .on('keydown', (event) => {
         // Ctrl+Enter
-        if (keyCombination(e, 13, ['cmd'])) {
+        if (keyCombination(event, 13, ['cmd'])) {
           this.submit();
         }
 
         // Esc
-        if (keyCombination(e, 27)) {
+        if (keyCombination(event, 27)) {
           this.cancel();
         }
 
@@ -1955,48 +1969,48 @@ class CommentForm {
         // https://phabricator.wikimedia.org/T62928
         if (!this.showToolbar) {
           // Ctrl+B
-          if (keyCombination(e, 66, ['cmd'])) {
+          if (keyCombination(event, 66, ['cmd'])) {
             this.encapsulateSelection({
               pre: "'''",
               peri: mw.msg('wikieditor-toolbar-tool-bold-example'),
               post: "'''",
             });
-            e.preventDefault();
+            event.preventDefault();
           }
 
           // Ctrl+I
-          if (keyCombination(e, 73, ['cmd'])) {
+          if (keyCombination(event, 73, ['cmd'])) {
             this.encapsulateSelection({
               pre: "''",
               peri: mw.msg('wikieditor-toolbar-tool-italic-example'),
               post: "''",
             });
-            e.preventDefault();
+            event.preventDefault();
           }
 
           // Ctrl+U
-          if (keyCombination(e, 85, ['cmd'])) {
+          if (keyCombination(event, 85, ['cmd'])) {
             this.encapsulateSelection(CommentForm.encapsulateOptions.underline);
-            e.preventDefault();
+            event.preventDefault();
           }
         }
 
         // Ctrk+Shift+5
-        if (keyCombination(e, 53, ['cmd', 'shift'])) {
+        if (keyCombination(event, 53, ['cmd', 'shift'])) {
           this.encapsulateSelection(CommentForm.encapsulateOptions.strikethrough);
-          e.preventDefault();
+          event.preventDefault();
         }
 
         // Ctrk+Shift+6
-        if (keyCombination(e, 54, ['cmd', 'shift'])) {
+        if (keyCombination(event, 54, ['cmd', 'shift'])) {
           this.encapsulateSelection(CommentForm.encapsulateOptions.code);
-          e.preventDefault();
+          event.preventDefault();
         }
 
         // Ctrk+Shift+8
-        if (keyCombination(e, 56, ['cmd', 'shift'])) {
+        if (keyCombination(event, 56, ['cmd', 'shift'])) {
           this.commentInput.$element.find('.tool[rel="ulist"] a')[0]?.click();
-          e.preventDefault();
+          event.preventDefault();
         }
       })
 
@@ -2601,18 +2615,21 @@ class CommentForm {
     let contextCode;
     let commentCode;
     try {
-      ({ contextCode, commentCode } = this.target.source.modifyContext({
-        // Ugly solution to avoid overcomplication of code: for replies, we need to get
-        // CommentSource#isReplyOutdented set for `action === 'reply'` which we don't have so far.
-        // So let CommentSource#modifyContext compute it. In the rest of cases just get the comment
-        // code.
-        commentCode: this.mode === 'reply' ? undefined : this.inputToCode(action),
+      ({ contextCode, commentCode } =
+        /** @type {import('./CommentSource').default|import('./SectionSource').default|import('./pageRegistry').PageSource} */ (
+          this.target.source
+        ).modifyContext({
+          // Ugly solution to avoid overcomplication of code: for replies, we need to get
+          // CommentSource#isReplyOutdented set for `action === 'reply'` which we don't have so far.
+          // So let CommentSource#modifyContext compute it. In the rest of cases just get the comment
+          // code.
+          commentCode: this.mode === 'reply' ? undefined : this.inputToCode(action),
 
-        action: this.mode,
-        doDelete: this.deleteCheckbox?.isSelected(),
-        commentForm: this,
-        commentFormAction: action,
-      }));
+          action: this.mode,
+          doDelete: this.deleteCheckbox?.isSelected(),
+          commentForm: this,
+          commentFormAction: action,
+        }));
       contextCode = this.addAnchorsToComments(contextCode, commentIds);
     } catch (error) {
       if (error instanceof CdError) {
@@ -3645,7 +3662,7 @@ class CommentForm {
         activeElement.selectionEnd
       );
     } else {
-      selection = await this.commentInput.getWikitextFromSelection(controller.rootElement);
+      selection = await this.commentInput.getWikitextFromSelection();
     }
     selection = selection.trim();
 
@@ -3815,7 +3832,7 @@ class CommentForm {
   /**
    * Get the configuration to preload data into the form.
    *
-   * @returns {object}
+   * @returns {PreloadConfig}
    */
   getPreloadConfig() {
     return this.preloadConfig;
@@ -3824,7 +3841,7 @@ class CommentForm {
   /**
    * Get whether the form will add a topic on top.
    *
-   * @returns {boolean}
+   * @returns {boolean|undefined}
    */
   isNewTopicOnTop() {
     return this.newTopicOnTop;
@@ -3869,7 +3886,7 @@ class CommentForm {
   /**
    * Get the date when the form was focused last time.
    *
-   * @returns {boolean}
+   * @returns {Date|undefined}
    */
   getLastFocused() {
     return this.lastFocused;
@@ -3878,16 +3895,34 @@ class CommentForm {
   /**
    * Get the {@link CommentForm#target target} object of the form.
    *
-   * @returns {Comment|import('./Section').default|import('./pageRegistry').Page}
+   * @returns {CommentFormTarget}
    */
   getTarget() {
     return this.target;
   }
 
   /**
+   * Check whether the form's {@link CommentForm#target target} is a comment.
+   *
+   * @returns {this is CommentForm<'reply' | 'edit'>}
+   */
+  isTargetTypeComment() {
+    return ['reply', 'edit'].includes(this.mode);
+  }
+
+  /**
+   * Check whether the form's {@link CommentForm#target target} is a section.
+   *
+   * @returns {this is CommentForm<'replyInSection' | 'addSubsection'>}
+   */
+  isTargetTypeSection() {
+    return ['replyInSection', 'addSubsection'].includes(this.mode);
+  }
+
+  /**
    * Get the target comment if it has outdented replies and the reply is therefore to the section.
    *
-   * @returns {Comment|undefined}
+   * @returns {?Comment}
    */
   getTargetWithOutdentedReplies() {
     return this.targetWithOutdentedReplies;
@@ -4134,7 +4169,20 @@ class CommentForm {
   }
 
   static counter = 0;
+
   static allowedFileTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml'];
+
+  /**
+   * @type {{
+   *   [key: string]: {
+   *     pre: string;
+   *     peri: string;
+   *     post: string;
+   *   };
+   * }}
+   * @private
+   */
+  static encapsulateOptions;
 
   /**
    * Initialize the class.

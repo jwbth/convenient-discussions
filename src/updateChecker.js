@@ -168,7 +168,7 @@ function mapSections(otherSections) {
     const match = sectionRegistry.search(otherSection);
     if (match) {
       const { section, score } = match;
-      if ((!section.matchScore || match.score > section.matchScore)) {
+      if ((section.matchScore === undefined || match.score > section.matchScore)) {
         if (section.match) {
           delete section.match.match;
         }

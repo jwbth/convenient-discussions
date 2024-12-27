@@ -6,7 +6,7 @@ import TextInputWidget from './TextInputWidget';
 import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
-import { buildEditSummary, definedAndNotNull, mergeMaps, ensureArray, sleep } from './utils-general';
+import { buildEditSummary, definedAndNotNull, mergeMaps, ensureArray, sleep, defined } from './utils-general';
 import { createCheckboxField, tweakUserOoUiClass } from './utils-oojs';
 import { encodeWikilink, endWithTwoNewlines, findFirstTimestamp } from './utils-wikitext';
 import { wrapHtml } from './utils-window';
@@ -38,6 +38,15 @@ class MoveSectionDialog extends ProcessDialog {
 
   /** @type {OO.ui.StackLayout} */
   stack;
+
+  /** @type {OO.ui.PanelLayout} */
+  loadingPanel;
+
+  /** @type {OO.ui.PanelLayout} */
+  movePanel;
+
+  /** @type {OO.ui.PanelLayout} */
+  successPanel;
 
   /**
    * Create a move section dialog.
@@ -239,13 +248,13 @@ class MoveSectionDialog extends ProcessDialog {
         align: 'top',
       });
 
-      this.movePanel.$element.append(
+      this.movePanel.$element.append([
         this.controls.title.field.$element,
         this.insertArchivePageButton?.element,
         this.controls.keepLink?.field.$element,
         this.controls.chronologicalOrder.field.$element,
         this.controls.summaryEnding.field.$element,
-      );
+      ].filter(defined));
 
       this.stack.setItem(this.movePanel);
       this.controls.title.input.focus();

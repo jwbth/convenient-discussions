@@ -840,7 +840,7 @@ export function getDbnameForHostname(hostname) {
  * @typedef {object} ParsedWikiUrl
  * @property {string} pageName
  * @property {string} hostname
- * @property {string} fragment
+ * @property {string} [fragment]
  */
 
 /**
@@ -856,6 +856,7 @@ export function parseWikiUrl(url) {
   let pageName = url
     .replace(/^(?:https?:)?\/\/([^/]+)/, (s, m1) => {
       hostname = m1;
+
       return '';
     })
     .replace(cd.g.articlePathRegexp, '$1')
@@ -863,6 +864,7 @@ export function parseWikiUrl(url) {
     .replace(/&action=edit.*/, '')
     .replace(/#(.*)/, (s, m1) => {
       fragment = m1;
+
       return '';
     })
     .replace(/_/g, ' ');
@@ -871,6 +873,7 @@ export function parseWikiUrl(url) {
   } catch {
     return null;
   }
+
   return { pageName, hostname, fragment };
 }
 

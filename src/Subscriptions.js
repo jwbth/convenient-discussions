@@ -32,6 +32,7 @@ class Subscriptions {
 
   /**
    * @param {...*} args
+   * @abstract
    */
   // eslint-disable-next-line no-unused-vars
   async load(...args) {

@@ -1,4 +1,5 @@
 import cd from './cd';
+import CdError from './CdError';
 import sectionRegistry from './sectionRegistry';
 import { calculateWordOverlap } from './utils-general';
 import { endWithTwoNewlines, extractSignatures, normalizeCode, removeWikiMarkup } from './utils-wikitext';
@@ -8,6 +9,80 @@ import { endWithTwoNewlines, extractSignatures, normalizeCode, removeWikiMarkup 
  * source match candidates before a single match is chosen among them.
  */
 class SectionSource {
+  /**
+   * Index of the first character of the section code.
+   *
+   * @type {number}
+   */
+  startIndex;
+
+  /**
+   * Index of the last character of the section code.
+   *
+   * @type {number}
+   */
+  endIndex;
+
+  /**
+   * Section code.
+   *
+   * @type {string}
+   */
+  code;
+
+  /**
+   * Index of the first character of the section content (i.e., everything after the section
+   * heading).
+   *
+   * @type {number}
+   */
+  contentStartIndex;
+
+  /**
+   * Index of the last character of the section content, before the code that we intentionally keep
+   * in section endings (see {@link convenientDiscussions.g.keepInSectionEnding}).
+   *
+   * @type {number}
+   */
+  contentEndIndex;
+
+  /**
+   * Index of the first character of the section content relative to the section code start.
+   *
+   * @type {number}
+   */
+  relativeContentStartIndex;
+
+  /**
+   * Index of the last character of the first chunk of the section code (i.e., everything before
+   * the first section subdivision).
+   *
+   * @type {number}
+   */
+  firstChunkEndIndex;
+
+  /**
+   * Index of the last character of the first chunk of the section content (i.e., everything
+   * before the first section subdivision).
+   *
+   * @type {number}
+   */
+  firstChunkContentEndIndex;
+
+  /**
+   * First chunk of the section code (i.e., everything before the first section subdivision).
+   *
+   * @type {string}
+   */
+  firstChunkCode;
+
+  /**
+   * Normalized section heading.
+   *
+   * @type {string}
+   */
+  headline;
+
   /**
    * Create a section's source object.
    *
@@ -82,9 +157,11 @@ class SectionSource {
    * Modify a whole section or page code string related to the section in accordance with an action.
    *
    * @param {object} options
-   * @param {'replyInSection'|'addSubsection'} options.action
-   * @param {string} options.commentCode Comment code, including trailing newlines and the
-   *   signature.
+   * @param {import('./CommentForm').CommentFormMode} options.action `'replyInSection'` or
+   *   `'addSubsection'`.
+   * @param {string} [options.commentCode] Comment code, including trailing newlines and the
+   *   signature. It is required (set to optional for polymorphism with CommentSource and
+   *   PageSource).
    * @returns {{
    *   contextCode: string;
    *   commentCode: string;
@@ -94,6 +171,13 @@ class SectionSource {
     const originalContextCode = this.isInSectionContext ?
       this.section.presumedCode :
       this.section.getSourcePage().code;
+    if (!originalContextCode) {
+      throw new CdError({
+        type: 'internal',
+        message: 'Context (section or page) code is not set.',
+      });
+    }
+
     let contextCode;
     switch (action) {
       case 'replyInSection': {
@@ -115,7 +199,10 @@ class SectionSource {
       }
     }
 
-    return { contextCode, commentCode };
+    return {
+      contextCode: /** @type {string} */ (contextCode),
+      commentCode: /** @type {string} */ (commentCode),
+    };
   }
 
   /**
@@ -147,7 +234,7 @@ class SectionSource {
       ))
     );
 
-    // To simplify the workings of the "replyInSection" mode we don't consider terminating line
+    // To simplify the workings of the `replyInSection` mode we don't consider terminating line
     // breaks to be a part of the first chunk of the section (i.e., the section subdivision before
     // the first heading).
     const firstChunkMatch = (
@@ -218,7 +305,7 @@ class SectionSource {
     this.code = code;
     this.contentStartIndex = contentStartIndex;
     this.contentEndIndex = contentEndIndex;
-    this.relativeContentStartIndex = contentStartIndex - startIndex
+    this.relativeContentStartIndex = contentStartIndex - startIndex;
     this.firstChunkEndIndex = firstChunkEndIndex;
     this.firstChunkContentEndIndex = firstChunkContentEndIndex;
     this.firstChunkCode = firstChunkCode;
@@ -231,6 +318,10 @@ class SectionSource {
    * @param {number} sectionIndex
    * @param {string} thisHeadline
    * @param {string[]} headlines
+   * @returns {{
+   *   source: SectionSource,
+   *   score: number,
+   * }}
    */
   calculateMatchScore(sectionIndex, thisHeadline, headlines) {
     const doesHeadlineMatch = thisHeadline.includes('{{') ? 0.5 : this.headline === thisHeadline;
@@ -260,7 +351,7 @@ class SectionSource {
 
     let oldestSig;
     extractSignatures(this.code).forEach((sig) => {
-      if (!oldestSig || (!oldestSig.date && sig.date) || oldestSig.date > sig.date) {
+      if (!oldestSig || (!oldestSig.date && sig.date) || (sig.date && oldestSig.date > sig.date)) {
         oldestSig = sig;
       }
     });
@@ -294,15 +385,18 @@ class SectionSource {
     }
 
     // If changing this, change the maximal possible score in Section#searchInCode
-    this.score = (
-      doesOldestCommentMatch * 1 +
-      oldestCommentWordOverlap +
-      doesHeadlineMatch * 1 +
-      doesSectionIndexMatch * 0.5 +
+    return {
+      source: this,
+      score: (
+        Number(doesOldestCommentMatch) * 1 +
+        oldestCommentWordOverlap +
+        Number(doesHeadlineMatch) * 1 +
+        Number(doesSectionIndexMatch) * 0.5 +
 
-      // Shouldn't give too high a weight to this factor as it is true for every first section.
-      doPreviousHeadlinesMatch * 0.25
-    );
+        // Shouldn't give too high a weight to this factor as it is true for every first section.
+        Number(doPreviousHeadlinesMatch) * 0.25
+      ),
+    };
   }
 }
 

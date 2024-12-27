@@ -113,20 +113,16 @@ export function requestInBackground(params, method = 'post') {
 }
 
 /**
- * jQuery promise.
- *
- * @external jQueryPromise
- * @see https://api.jquery.com/Types/#Promise
- */
-
-/**
  * Make a parse request with arbitrary code. We assume that if something is parsed, it will be
  * shown, so we automatically load modules.
  *
  * @async
  * @param {string} code
  * @param {object} [customOptions]
- * @returns {JQueryPromise.<object>}
+ * @returns {Promise<{
+ *   html: string;
+ *   parsedSummary: string;
+ * }>}
  */
 export async function parseCode(code, customOptions) {
   const defaultOptions = {
@@ -140,7 +136,7 @@ export async function parseCode(code, customOptions) {
     disableeditsection: true,
     preview: true,
   };
-  const options = Object.assign({}, defaultOptions, customOptions);
+  const options = { ...defaultOptions, ...customOptions };
   const resp = await controller.getApi().post(options).catch(handleApiReject);
 
   mw.loader.load(resp.parse.modules);
@@ -342,7 +338,8 @@ export async function loadUserGenders(users, doRequestInBackground = false) {
     const request = doRequestInBackground ?
       requestInBackground(options) :
       controller.getApi().post(options);
-    (await request.catch(handleApiReject)).query.users
+    const resp = await request.catch(handleApiReject);
+    resp.query.users
       .filter((user) => user.gender)
       .forEach((user) => {
         userRegistry.get(user.name).setGender(user.gender);

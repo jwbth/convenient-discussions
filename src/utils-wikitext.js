@@ -155,7 +155,7 @@ export function encodeWikilink(link) {
  * The object returned from `extractSignatures()`.
  *
  * @typedef {object} SignatureInWikitext
- * @property {import('./userRegistry').User} [author] The author name.
+ * @property {import('./userRegistry').User} author The author name.
  * @property {number} index The array index of the signature (not the index of the signature's text
  *   in the code - excuse me the ambiguity here).
  * @property {string} [timestamp] The timestamp of the signature.

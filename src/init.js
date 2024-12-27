@@ -25,7 +25,7 @@ import settings from './settings';
 import { processPage } from './updateChecker';
 import userRegistry from './userRegistry';
 import { splitIntoBatches } from './utils-api';
-import { generatePageNamePattern, getContentLanguageMessages, unique } from './utils-general';
+import { defined, generatePageNamePattern, getContentLanguageMessages, unique } from './utils-general';
 import { dateTokenToMessageNames, initDayjs } from './utils-timestamp';
 import { skin$, transparentize } from './utils-window';
 import visits from './visits';
@@ -44,40 +44,9 @@ function initFormats() {
   const contentLanguage = languageOrFallback(mw.config.get('wgContentLanguage'));
   const userLanguage = languageOrFallback(mw.config.get('wgUserLanguage'));
 
-  /**
-   * Format of date in content language, as used by MediaWiki.
-   *
-   * @name contentDateFormat
-   * @type {string}
-   * @memberof convenientDiscussions.g
-   */
   cd.g.contentDateFormat = dateFormats[contentLanguage];
-
-  /**
-   * Format of date in user (interface) language, as used by MediaWiki.
-   *
-   * @name uiDateFormat
-   * @type {string}
-   * @memberof convenientDiscussions.g
-   */
   cd.g.uiDateFormat = dateFormats[userLanguage];
-
-  /**
-   * Regular expression matching a single digit in content language, e.g. `[0-9]`.
-   *
-   * @name contentDigits
-   * @type {string}
-   * @memberof convenientDiscussions.g
-   */
   cd.g.contentDigits = mw.config.get('wgTranslateNumerals') ? digitsData[contentLanguage] : null;
-
-  /**
-   * Regular expression matching a single digit in user (interface) language, e.g. `[0-9]`.
-   *
-   * @name uiDigits
-   * @type {string}
-   * @memberof convenientDiscussions.g
-   */
   cd.g.uiDigits = mw.config.get('wgTranslateNumerals') ? digitsData[userLanguage] : null;
 }
 
@@ -112,7 +81,7 @@ function getUsedDateTokens(format) {
 /**
  * Load messages needed to parse and generate timestamps as well as some site data.
  *
- * @returns {Promise[]} There should be at least one promise in the array.
+ * @returns {JQuery.Promise[]} There should be at least one promise in the array.
  * @private
  */
 function loadSiteData() {
@@ -173,21 +142,23 @@ function loadSiteData() {
   // We need this object to pass it to the web worker.
   cd.g.contentLanguageMessages = {};
 
-  const setContentLanguageMessages = (messages) => {
+  const setContentLanguageMessages = (/** @type {{ [name: string]: string }} */ messages) => {
     Object.keys(messages).forEach((name) => {
       mw.messages.set('(content)' + name, messages[name]);
       cd.g.contentLanguageMessages[name] = messages[name];
     });
   };
 
-  const filterAndSetContentLanguageMessages = (obj) => {
-    const messages = {};
-    Object.keys(obj)
+  const filterAndSetContentLanguageMessages = (
+    /** @type {{ [name: string]: string }} */ messages
+  ) => {
+    const contentLanguageMessages = /** @type {{ [name: string]: string }} */ ({});
+    Object.keys(messages)
       .filter((name) => contentLanguageMessageNames.includes(name))
       .forEach((name) => {
-        messages[name] = obj[name];
+        contentLanguageMessages[name] = messages[name];
       });
-    setContentLanguageMessages(messages);
+    setContentLanguageMessages(contentLanguageMessages);
   };
   filterAndSetContentLanguageMessages(cd.config.messages);
 
@@ -221,13 +192,6 @@ function loadSiteData() {
     requests.push(userLanguageMessagesRequest);
   }
 
-  /**
-   * Some special page aliases in the wiki's language.
-   *
-   * @name specialPageAliases
-   * @type {string[]}
-   * @memberof convenientDiscussions.g
-   */
   cd.g.specialPageAliases = Object.assign({}, cd.config.specialPageAliases);
 
   Object.entries(cd.g.specialPageAliases).forEach(([key, value]) => {
@@ -236,13 +200,6 @@ function loadSiteData() {
     }
   });
 
-  /**
-   * Timezone of the wiki.
-   *
-   * @name contentTimezone
-   * @type {?string}
-   * @memberof convenientDiscussions.g
-   */
   cd.g.contentTimezone = cd.config.timezone;
 
   const specialPages = ['Contributions', 'Diff', 'PermanentLink'];
@@ -310,13 +267,6 @@ function initPatterns() {
   cd.g.userTalkLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):([^/]+)$`, 'i');
   cd.g.userTalkSubpageLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):.+?/`, 'i');
 
-  /**
-   * Contributions page local name.
-   *
-   * @name contribsPage
-   * @type {string[]}
-   * @memberof convenientDiscussions.g
-   */
   cd.g.contribsPages = cd.g.specialPageAliases.Contributions.map((alias) => `${nss[-1]}:${alias}`);
 
   const contribsPagesLinkPattern = cd.g.contribsPages.join('|');
@@ -335,34 +285,27 @@ function initPatterns() {
       .join('|')
   );
 
-  if (cd.config.unsignedTemplates.length) {
-    const pattern = cd.config.unsignedTemplates.map(generatePageNamePattern).join('|');
-    cd.g.unsignedTemplatesPattern = (
-      `(\\{\\{ *(?:${pattern}) *\\| *([^}|]+?) *(?:\\| *([^}]+?) *)?\\}\\})`
-    );
-  }
+  const unsignedTemplatesPattern = cd.config.unsignedTemplates
+    .map(generatePageNamePattern)
+    .join('|');
+  cd.g.unsignedTemplatesPattern = unsignedTemplatesPattern ?
+    `(\\{\\{ *(?:${unsignedTemplatesPattern}) *\\| *([^}|]+?) *(?:\\| *([^}]+?) *)?\\}\\})`
+    : null;
 
-  const clearTemplatesPattern = (
-    cd.config.clearTemplates.map(generatePageNamePattern).join('|') ||
-    undefined
-  );
-  const reflistTalkTemplatesPattern = (
-    cd.config.reflistTalkTemplates.map(generatePageNamePattern).join('|') ||
-    undefined
-  );
+  const clearTemplatesPattern = cd.config.clearTemplates.map(generatePageNamePattern).join('|');
+  const reflistTalkTemplatesPattern = cd.config.reflistTalkTemplates
+    .map(generatePageNamePattern)
+    .join('|');
 
-  cd.g.keepInSectionEnding = cd.config.keepInSectionEnding
-    .slice()
-    .concat(
-      clearTemplatesPattern ?
-        new RegExp(`\\n+\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\}\\s*$`) :
-        []
-    )
-    .concat(
-      reflistTalkTemplatesPattern ?
-        new RegExp(`\\n+\\{\\{ *(?:${reflistTalkTemplatesPattern}) *\\}\\}.*\\s*$`) :
-        []
-    );
+  cd.g.keepInSectionEnding = [
+    ...cd.config.keepInSectionEnding,
+    clearTemplatesPattern
+      ? new RegExp(`\\n+\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\}\\s*$`)
+      : undefined,
+    reflistTalkTemplatesPattern
+      ? new RegExp(`\\n+\\{\\{ *(?:${reflistTalkTemplatesPattern}) *\\}\\}.*\\s*$`)
+      : undefined,
+  ].filter(defined);
 
   cd.g.userSignature = settings.get('signaturePrefix') + cd.g.signCode;
 
@@ -370,19 +313,19 @@ function initPatterns() {
   const authorInSignatureMatch = signatureContent.match(
     new RegExp(cd.g.captureUserNamePattern, 'i')
   );
-  if (authorInSignatureMatch) {
-    /*
-      Extract signature contents before the user name - in order to cut it out from comment
-      endings when editing.
+  /*
+    Extract signature contents before the user name - in order to cut it out from comment
+    endings when editing.
 
-      Use the signature prefix only if it is other than `' '` (the default value).
-      * If it is `' '`, the prefix in real life may as well be `\n` or `--` if the user created some
-        specific comment using the native editor instead of CD. So we would want to remove the
-        signature from such comments correctly. The space would be included in the signature anyway
-        using `cd.config.signaturePrefixRegexp`.
-      * If it is other than `' '`, it is unpredictable, so it is safer to include it in the pattern.
-    */
-    cd.g.userSignaturePrefixRegexp = new RegExp(
+    Use the signature prefix only if it is other than `' '` (the default value).
+    * If it is `' '`, the prefix in real life may as well be `\n` or `--` if the user created some
+      specific comment using the native editor instead of CD. So we would want to remove the
+      signature from such comments correctly. The space would be included in the signature anyway
+      using `cd.config.signaturePrefixRegexp`.
+    * If it is other than `' '`, it is unpredictable, so it is safer to include it in the pattern.
+  */
+  cd.g.userSignaturePrefixRegexp = authorInSignatureMatch ?
+    new RegExp(
       (
         settings.get('signaturePrefix') === ' ' ?
           '' :
@@ -390,8 +333,8 @@ function initPatterns() {
       ) +
       mw.util.escapeRegExp(signatureContent.slice(0, authorInSignatureMatch.index)) +
       '$'
-    );
-  }
+    ) :
+    null;
 
   const pieJoined = cd.g.popularInlineElements.join('|');
   cd.g.piePattern = `(?:${pieJoined})`;
@@ -427,14 +370,14 @@ function initPatterns() {
   const colonNssPattern = joinNsNames(6, 14);
   cd.g.colonNamespacesPrefixRegexp = new RegExp(`^:(?:${colonNssPattern}):`, 'i');
 
-  cd.g.badCommentBeginnings = cd.g.badCommentBeginnings
-    .concat(new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\n+(?=[*:#])`, 'i'))
-    .concat(cd.config.badCommentBeginnings)
-    .concat(
-      clearTemplatesPattern ?
-        new RegExp(`^\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\} *\\n+`, 'i') :
-        []
-    );
+  cd.g.badCommentBeginnings = [
+    ...cd.g.badCommentBeginnings,
+    new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\n+(?=[*:#])`, 'i'),
+    ...cd.config.badCommentBeginnings,
+    clearTemplatesPattern ?
+      new RegExp(`^\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\} *\\n+`, 'i') :
+      undefined,
+  ].filter(defined);
 
   cd.g.pipeTrickRegexp = /(\[\[:?(?:[^|[\]<>\n:]+:)?([^|[\]<>\n]+)\|)(\]\])/g;
 
@@ -489,7 +432,7 @@ function getTimestampMainPartPattern(language) {
   let string = '';
 
   for (let p = 0; p < format.length; p++) {
-    let num = false;
+    let num = /** @type {string|false} */ (false);
     let code = format[p];
     if ((code === 'x' && p < format.length - 1) || (code === 'xk' && p < format.length - 1)) {
       code += format[++p];
@@ -725,10 +668,15 @@ export default {
   initGlobals() {
     if (cd.page) return;
 
-    cd.g.phpCharToUpper = (
-      mw.loader.moduleRegistry['mediawiki.Title'].script.files['phpCharToUpper.json'] ||
-      {}
-    );
+    const script = mw.loader.moduleRegistry['mediawiki.Title'].script;
+    cd.g.phpCharToUpper =
+      (
+        script &&
+        typeof script === 'object' &&
+        'files' in script &&
+        script.files['phpCharToUpper.json']
+      ) ||
+      {};
 
     cd.page = pageRegistry.getCurrent();
 
@@ -854,96 +802,24 @@ export default {
       const utcPattern = mw.util.escapeRegExp(mw.message('(content)timezone-utc').parse());
 
       // Do we need non-Arabic digits here?
-      const timezonePattern = '\\((?:' + utcPattern + '|[A-Z]{1,5}|[+-]\\d{0,4})\\)';
+      const timezonePattern = `\\((?:${utcPattern}|[A-Z]{1,5}|[+-]\\d{0,4})\\)`;
 
-      /**
-       * Regular expression for matching timestamps in content.
-       *
-       * ` +` to account for RTL and LTR marks replaced with a space.
-       *
-       * @name contentTimestampRegexp
-       * @type {RegExp}
-       * @memberof convenientDiscussions.g
-       */
       cd.g.contentTimestampRegexp = new RegExp(mainPartPattern + ' +' + timezonePattern);
-
-      /**
-       * Regular expression for parsing timestamps in content.
-       *
-       * @name parseTimestampContentRegexp
-       * @type {RegExp}
-       * @memberof convenientDiscussions.g
-       */
       cd.g.parseTimestampContentRegexp = new RegExp(
         // \b only captures Latin, so we also need `' '`.
         `^([^]*(?:^|[^=])(?:\\b| ))(${cd.g.contentTimestampRegexp.source})(?!["»])`
       );
-
-      /**
-       * Regular expression for matching timestamps in content with no timezone at the end.
-       *
-       * @name contentTimestampNoTzRegexp
-       * @type {RegExp}
-       * @memberof convenientDiscussions.g
-       */
       cd.g.contentTimestampNoTzRegexp = new RegExp(mainPartPattern);
-
-      /**
-       * Codes of date (in content language) components for the timestamp parser function.
-       *
-       * @name contentTimestampMatchingGroups
-       * @type {string[]}
-       * @memberof convenientDiscussions.g
-       */
       cd.g.contentTimestampMatchingGroups = getMatchingGroups(cd.g.contentDateFormat);
-
-      /**
-       * Regular expression for matching timezone, with the global flag.
-       *
-       * @name timezoneRegexp
-       * @type {RegExp}
-       * @memberof convenientDiscussions.g
-       */
       cd.g.timezoneRegexp = new RegExp(timezonePattern, 'g');
     } else {
-      /**
-       * Regular expression for matching timestamps in the interface with no timezone at the end.
-       *
-       * @name uiTimestampRegexp
-       * @type {RegExp}
-       * @memberof convenientDiscussions.g
-       */
       cd.g.uiTimestampRegexp = new RegExp(getTimestampMainPartPattern('user'));
-
-      /**
-       * Regular expression for parsing timestamps in the interface.
-       *
-       * @name parseTimestampUiRegexp
-       * @type {RegExp}
-       * @memberof convenientDiscussions.g
-       */
       cd.g.parseTimestampUiRegexp = new RegExp(`^([^]*)(${cd.g.uiTimestampRegexp.source})`);
-
-      /**
-       * Codes of date (in interface language) components for the timestamp parser function.
-       *
-       * @name uiTimestampMatchingGroups
-       * @type {string[]}
-       * @memberof convenientDiscussions.g
-       */
       cd.g.uiTimestampMatchingGroups = getMatchingGroups(cd.g.uiDateFormat);
     }
 
     const timezoneParts = mw.user.options.get('timecorrection')?.split('|');
 
-    /**
-     * Timezone per user preferences: standard timezone name or offset in minutes. `'UTC'` is always
-     * used instead of `0`.
-     *
-     * @name uiTimezone
-     * @type {?(string|number)}
-     * @memberof convenientDiscussions.g
-     */
     cd.g.uiTimezone = ((timezoneParts && timezoneParts[2]) || Number(timezoneParts[1])) ?? null;
     if (cd.g.uiTimezone === 0) {
       cd.g.uiTimezone = 'UTC';
@@ -958,14 +834,7 @@ export default {
     }
 
     if (language === 'content') {
-      /**
-       * Whether comment timestamps are altered somehow.
-       *
-       * @name areTimestampsAltered
-       * @type {boolean|undefined}
-       * @memberof convenientDiscussions.g
-       */
-      cd.g.areTimestampsAltered = (
+      cd.g.areTimestampsDefault = !(
         (settings.get('useUiTime') && cd.g.contentTimezone !== cd.g.uiTimezone) ||
         settings.get('timestampFormat') !== 'default' ||
         mw.config.get('wgContentLanguage') !== cd.g.userLanguage ||

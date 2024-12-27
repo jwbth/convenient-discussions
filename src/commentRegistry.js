@@ -206,8 +206,7 @@ export default {
       const commentTimeConflict = comment.initNewAndSeen(
         currentPageData,
         currentTime,
-        markAsReadRequested ? undefined : unseenComment,
-        unseenComment?.isChangedSincePreviousVisit ? unseenComment.$changeNote : undefined
+        markAsReadRequested ? undefined : unseenComment
       );
       timeConflict ||= commentTimeConflict;
     });
@@ -824,7 +823,7 @@ export default {
    * _For internal use._ Change the format of the comment timestamps according to the settings.
    */
   reformatTimestamps() {
-    if (!cd.g.areTimestampsAltered) return;
+    if (cd.g.areTimestampsDefault) return;
 
     this.items.forEach((comment) => {
       comment.reformatTimestamp();

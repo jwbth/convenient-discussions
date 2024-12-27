@@ -238,7 +238,7 @@ export function createTextField({
 /**
  * @typedef {object} CreateNumberFieldReturn
  * @property {OO.ui.FieldLayout} field
- * @property {OO.ui.TextInputWidget} input
+ * @property {OO.ui.NumberInputWidget} input
  */
 
 /**
@@ -247,9 +247,9 @@ export function createTextField({
  * @param {object} options
  * @param {string} options.value
  * @param {string} [options.label]
- * @param {string} [options.min]
- * @param {string} [options.max]
- * @param {string} [options.buttonStep]
+ * @param {number} [options.min]
+ * @param {number} [options.max]
+ * @param {number} [options.buttonStep]
  * @param {string} [options.help]
  * @param {string[]} [options.classes]
  * @returns {CreateNumberFieldReturn}
@@ -271,6 +271,7 @@ export function createNumberField({
     max,
     classes: ['cd-numberInput'],
   });
+  // @ts-ignore: https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/71513
   const field = new OO.ui.FieldLayout(input, {
     label,
     align: 'top',
@@ -297,7 +298,7 @@ export function createNumberField({
  * @param {object} options
  * @param {string} options.value
  * @param {string} options.label
- * @param {string} options.title
+ * @param {string} [options.title]
  * @param {boolean} [options.selected]
  * @param {boolean} [options.disabled]
  * @param {string} [options.help]

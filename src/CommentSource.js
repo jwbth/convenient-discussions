@@ -23,7 +23,8 @@ class CommentSource {
    * Create a comment's source object.
    *
    * @param {import('./Comment').default} comment Comment.
-   * @param {object} signature Data about the source code of the signature.
+   * @param {import('./utils-wikitext').SignatureInWikitext} signature Data about the source code of
+   *   the signature.
    * @param {string} contextCode Wikitext used as a reference point for the indexes.
    * @param {boolean} isInSectionContext Is the source code of the section (not page) used.
    */
@@ -249,6 +250,7 @@ class CommentSource {
     const movePartToSignature = (s) => {
       this.signatureDirtyCode = s + this.signatureDirtyCode;
       this.endIndex -= s.length;
+
       return '';
     };
     const movePartsToSignature = (regexps) => {
@@ -271,7 +273,7 @@ class CommentSource {
       new RegExp(`<small class="${cd.config.unsignedClass}">.*$`),
       /<!-- *Template:Unsigned.*$/,
       cd.config.signaturePrefixRegexp,
-    ].filter(defined));
+    ].filter(definedAndNotNull));
 
     // Exclude <small></small> and template wrappers from the strings
     const smallWrappers = [{
@@ -339,11 +341,25 @@ class CommentSource {
   }
 
   /**
+   * @typedef {object} CommentData
+   * @property {number} index
+   * @property {import('./CommentSkeleton').CommentSkeletonLike[]} previousComments
+   * @property {boolean} followsHeading
+   * @property {string} [sectionHeadline]
+   * @property {string} commentText
+   */
+
+  /**
    * _For internal use._ Calculate and set a score for the match.
    *
-   * @param {object} commentData Data about the comment.
+   * @param {CommentData} commentData Data about the comment.
    * @param {CommentSource[]} sources List of all matches.
-   * @param {object[]} signatures List of signatures extracted from wikitext.
+   * @param {import('./utils-wikitext').SignatureInWikitext[]} signatures List of signatures
+   *   extracted from wikitext.
+   * @returns {{
+   *   source: CommentSource,
+   *   score: number,
+   * }}
    */
   calculateMatchScore(commentData, sources, signatures) {
     const doesIndexMatch = commentData.index === this.index;
@@ -391,31 +407,36 @@ class CommentSource {
     }
 
     const wordOverlap = calculateWordOverlap(commentData.commentText, removeWikiMarkup(this.code));
-    this.score = (
-      // This condition _must_ be true.
-      Number(
-        sources.length === 1 ||
-        wordOverlap > 0.5 ||
+    return {
+      source: this,
+      score: (
+        // This condition _must_ be true.
+        Number(
+          sources.length === 1 ||
+          wordOverlap > 0.5 ||
 
-        // There are always problems with first comments as there are no previous comments to
-        // compare the signatures of and it's harder to tell the match, so we use a bit ugly
-        // solution here, although it should be quite reliable: the comment's firstness, matching
-        // author, date, and headline. A false negative will take place when the comment is no
-        // longer first. Another option is to look for next comments, not for previous.
-        (commentData.index === 0 && doesPreviousCommentsDataMatch && doesHeadlineMatch) ||
+          // There are always problems with first comments as there are no previous comments to
+          // compare the signatures of and it's harder to tell the match, so we use a bit ugly
+          // solution here, although it should be quite reliable: the comment's firstness, matching
+          // author, date, and headline. A false negative will take place when the comment is no
+          // longer first. Another option is to look for next comments, not for previous.
+          (commentData.index === 0 && doesPreviousCommentsDataMatch && doesHeadlineMatch) ||
 
-        // The reserve method, if for some reason the text is not overlapping: by this and
-        // previous two dates and authors. If all dates and authors are the same, that shouldn't
-        // count (see [[Википедия:К удалению/22 сентября 2020#202009221158_Facenapalm_17]]).
-        (commentData.index !== 0 && doesPreviousCommentsDataMatch && !isPreviousCommentsDataEqual)
-      ) * 2 +
+          // The reserve method, if for some reason the text is not overlapping: by this and
+          // previous two dates and authors. If all dates and authors are the same, that shouldn't
+          // count (see [[Википедия:К удалению/22 сентября 2020#202009221158_Facenapalm_17]]).
+          (commentData.index !== 0 && doesPreviousCommentsDataMatch && !isPreviousCommentsDataEqual)
+        ) * 2 +
 
-      wordOverlap +
-      Number(doesHeadlineMatch) * 1 +
-      Number(doesPreviousCommentsDataMatch) * 0.5 +
-      Number(doesIndexMatch) * 0.0001
-    );
-  }/**
+        wordOverlap +
+        Number(doesHeadlineMatch) * 1 +
+        Number(doesPreviousCommentsDataMatch) * 0.5 +
+        Number(doesIndexMatch) * 0.0001
+      ),
+    };
+  }
+
+  /**
    * Convert the comment's source code to code to set as a value of an input (practically, to the
    * {@link CommentForm#commentInput comment form's input}).
    *
@@ -676,39 +697,7 @@ class CommentSource {
   /**
    * @overload
    * @param {object} options
-   * @param {'reply'|'edit'} options.action
-   * @param {string} [options.commentCode] Comment code, including trailing newlines, indentation
-   *   characters, and the signature.
-   * @param {boolean} [options.doDelete] Whether to delete the comment.
-   * @param {string} [options.contextCode] Code that has the comment. Usually not needed; provide it
-   *   only if you need to perform operations on some code that is not the code of a section or
-   *   page).
-   * @param {import('./CommentForm').default} options.commentForm Comment form that has the code.
-   *   Can be not set if `commentCode` is set or `action` is `'edit'`.
-   * @param {import('./CommentForm').CommentFormAction} options.commentFormAction
-   * @returns {{
-   *   contextCode: string;
-   *   commentCode: string;
-   * }}
-   */
-
-  /**
-   * @overload
-   * @param {object} options
    * @param {'edit'} options.action
-   * @param {string} [options.commentCode]
-   * @param {boolean} [options.doDelete]
-   * @param {string} [options.contextCode]
-   * @returns {{
-   *   contextCode: string;
-   *   commentCode: string;
-   * }}
-   */
-
-  /**
-   * @overload
-   * @param {object} options
-   * @param {'reply'} options.action
    * @param {string} options.commentCode
    * @param {boolean} [options.doDelete]
    * @param {string} [options.contextCode]
@@ -719,12 +708,51 @@ class CommentSource {
    */
 
   /**
+   * @overload
+   * @param {object} options
+   * @param {'edit'} options.action
+   * @param {true} options.doDelete
+   * @param {string} [options.contextCode]
+   * @returns {{
+   *   contextCode: string;
+   * }}
+   */
+
+  /**
+   * @overload
+   * @param {object} options
+   * @param {'reply'} options.action
+   * @param {string} [options.commentCode]
+   * @param {string} [options.contextCode]
+   * @returns {{
+   *   contextCode: string;
+   *   commentCode: string;
+   * }}
+   */
+
+  /**
+   * @overload
+   * @param {object} options
+   * @param {import('./CommentForm').CommentFormMode} options.action
+   * @param {string} [options.commentCode]
+   * @param {boolean} [options.doDelete]
+   * @param {string} [options.contextCode]
+   * @param {import('./CommentForm').default} options.commentForm
+   * @param {import('./CommentForm').CommentFormAction} options.commentFormAction
+   * @returns {{
+   *   contextCode: string;
+   *   commentCode: string;
+   * }}
+   */
+
+  /**
    * Modify the code of a whole section or page related to the comment in accordance with an action.
    *
    * @param {object} options
-   * @param {'reply'|'edit'} options.action
+   * @param {import('./CommentForm').CommentFormMode} options.action `'reply'` or `'edit'`.
    * @param {string} [options.commentCode] Comment code, including trailing newlines, indentation
-   *   characters, and the signature.
+   *   characters, and the signature. Omit when `doDelete` is `true`. Can omit when `action` is
+   *   `'reply'` and `commentForm` and `commentFormAction` are set.
    * @param {boolean} [options.doDelete] Whether to delete the comment.
    * @param {string} [options.contextCode] Code that has the comment. Usually not needed; provide it
    *   only if you need to perform operations on some code that is not the code of a section or
@@ -735,7 +763,7 @@ class CommentSource {
    *   action. Can be not set if `commentCode` is set or `action` is `'edit'`.
    * @returns {{
    *   contextCode: string;
-   *   commentCode: string;
+   *   commentCode?: string;
    * }}
    * @throws {CdError}
    */
@@ -744,13 +772,18 @@ class CommentSource {
     commentFormAction,
     commentCode,
     contextCode: originalContextCode = this.isInSectionContext
-      ? /** @type {string} */ (
-          /** @type {import('./Section').default} */ (this.comment.section).presumedCode
-        )
-      : /** @type {string} */ (this.comment.getSourcePage().code),
+      ? /** @type {import('./Section').default} */ (this.comment.section).presumedCode
+      : this.comment.getSourcePage().code,
     doDelete,
     commentForm,
   }) {
+    if (!originalContextCode) {
+      throw new CdError({
+        type: 'internal',
+        message: 'Context (section or page) code is not set.',
+      });
+    }
+
     let contextCode;
     switch (action) {
       case 'reply': {

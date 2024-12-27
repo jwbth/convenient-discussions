@@ -39,6 +39,13 @@ class CommentSkeleton {
    */
   level;
 
+  /**
+   * {@link Comment#level Comment level} that takes into account `{{outdent}}` templates.
+   *
+   * @type {number}
+   */
+  logicalLevel;
+
   /** @type {?import('./SectionSkeleton').default} */
   section;
 
@@ -1309,7 +1316,9 @@ class CommentSkeleton {
       const el = treeWalker.currentNode;
       if (['DL', 'UL', 'OL'].includes(el.tagName)) {
         if (el.classList.contains('cd-commentLevel')) {
-          const match = el.getAttribute('class').match(/cd-commentLevel-(\d+)/);
+          const match = /** @type {string} */ (el.getAttribute('class')).match(
+            /cd-commentLevel-(\d+)/
+          );
           if (match) {
             const elementsToAdd = Array(Number(match[1]));
             if (includeFirstMatch) {
@@ -1317,12 +1326,14 @@ class CommentSkeleton {
             }
             listElements.unshift(...elementsToAdd);
           }
+
           return listElements;
         } else {
           listElements.unshift(el);
         }
       }
     }
+
     return listElements;
   }
 
@@ -1497,12 +1508,6 @@ class CommentSkeleton {
     // https://ru.wikipedia.org/wiki/Википедия:К_удалению/17_марта_2021#Анжуйские_короли_Англии.
 
     this.level = Math.min(levelElements[0].length, levelElements[levelElements.length - 1].length);
-
-    /**
-     * {@link Comment#level Comment level} that takes into account `{{outdent}}` templates.
-     *
-     * @type {number}
-     */
     this.logicalLevel = this.level;
 
     if (fixMarkup) {
@@ -1527,7 +1532,7 @@ class CommentSkeleton {
    *
    * @param {boolean} [visual=false] Get the visual parent (according to the
    *   {@link Comment#level level} property, not {@link Comment#logicalLevel logicalLevel}).
-   * @returns {?CommentSkeleton}
+   * @returns {?this}
    */
   getParent(visual = false) {
     // Note: this.cachedParent.logicalLevel can be overriden in .processOutdents().
@@ -1552,7 +1557,7 @@ class CommentSkeleton {
       }
     }
 
-    return this.cachedParent[prop];
+    return /** @type {this} */ (this.cachedParent[prop]);
   }
 
   /**
@@ -1563,10 +1568,10 @@ class CommentSkeleton {
    * @param {boolean} [visual=false] Whether to use visual levels instead of logical.
    * @param {boolean} [allowSiblings=true] When `visual` is `true`, allow comments of the same
    *   level to be considered children (if they are outdented).
-   * @returns {CommentSkeleton[]}
+   * @returns {this[]}
    */
   getChildren(indirect = false, visual = false, allowSiblings = true) {
-    const children = [];
+    const children = /** @type {this[]} */ ([]);
     const prop = visual ? 'level' : 'logicalLevel';
     cd.comments
       .slice(this.index + 1)
@@ -1615,31 +1620,31 @@ class CommentSkeleton {
   /**
    * Check if a string is a comment ID in the CD format.
    *
-   * @param {string} [string]
+   * @param {any} [value]
    * @returns {boolean}
    */
-  static isId(string) {
-    return /^\d{12}_.+$/.test(string);
+  static isId(value) {
+    return Boolean(value && /^\d{12}_.+$/.test(value));
   }
 
   /**
    * Check whether a string is a comment ID in the DiscussionTools format.
    *
-   * @param {string} [string]
+   * @param {any} [value]
    * @returns {boolean}
    */
-  static isDtId(string) {
-    return Boolean(string?.startsWith('c-'));
+  static isDtId(value) {
+    return Boolean(value?.startsWith('c-'));
   }
 
   /**
    * Check whether a string is a comment ID in the CD or DiscussionTools format.
    *
-   * @param {string} [string]
+   * @param {any} [value]
    * @returns {boolean}
    */
-  static isAnyId(string) {
-    return this.isId(string) || this.isDtId(string);
+  static isAnyId(value) {
+    return this.isId(value) || this.isDtId(value);
   }
 
   /**

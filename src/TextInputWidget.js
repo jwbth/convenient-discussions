@@ -46,14 +46,14 @@ class TextInputWidget extends OO.ui.TextInputWidget {
   /**
    * Given a selection, get its content as wikitext.
    *
-   * @returns {string}
+   * @returns {Promise<string>}
    */
-  getWikitextFromSelection() {
+  async getWikitextFromSelection() {
     const div = document.createElement('div');
     const selection = window.getSelection();
     if (selection.type === 'Range') {
       div.appendChild(window.getSelection().getRangeAt(0).cloneContents());
-      return this.maybeConvertElementToWikitext(cleanUpPasteDom(div, this.$element[0]));
+      return await this.maybeConvertElementToWikitext(cleanUpPasteDom(div, this.$element[0]));
     }
 
     return '';
@@ -63,7 +63,7 @@ class TextInputWidget extends OO.ui.TextInputWidget {
    * Convert HTML code of a paste into wikitext.
    *
    * @param {string} html Pasted HTML.
-   * @returns {string}
+   * @returns {Promise<string>}
    */
   getWikitextFromPaste(html) {
     return this.maybeConvertElementToWikitext(
@@ -91,19 +91,6 @@ class TextInputWidget extends OO.ui.TextInputWidget {
     this.popPending().setDisabled(false);
 
     return wikitext;
-  }
-
-  /**
-   * @typedef {object} NonNullRange
-   * @property {number} from
-   * @property {number} to
-   */
-
-  /**
-   * @returns {NonNullRange}
-   */
-  getRange() {
-    return /** @type {NonNullRange} */ (super.getRange());
   }
 }
 

@@ -643,10 +643,13 @@ class Parser {
   }
 
   /**
+   * @typedef {'user' | 'userTalk' | 'contribs' | 'userSubpage' | 'userTalkSubpage' | 'userForeign' | 'userTalkForeign' | 'contribsForeign' | 'userSubpageForeign' | 'userTalkSubpageForeign'} LinkType
+   */
+
+  /**
    * @typedef {object} ProcessLinkReturn
    * @property {string} userName User name.
-   * @property {?string} linkType Link type (`user`, `userTalk`, `contribs`, `userSubpage`,
-   *   `userTalkSubpage`, or any of this `Foreign` at the end).
+   * @property {LinkType} [linkType] Link type.
    * @memberof Parser
    * @inner
    */
@@ -660,7 +663,8 @@ class Parser {
   static processLink(element) {
     const href = element.getAttribute('href');
     let userName;
-    let linkType = null;
+    /** @type {LinkType|undefined} */
+    let linkType;
     if (href) {
       const { pageName, hostname, fragment } = parseWikiUrl(href) || {};
       if (!pageName || CommentSkeleton.isAnyId(fragment)) {
@@ -690,6 +694,7 @@ class Parser {
         linkType = 'contribs';
       }
       if (hostname !== cd.g.serverName) {
+        // @ts-ignore
         linkType += 'Foreign';
       }
       userName &&= ucFirst(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();

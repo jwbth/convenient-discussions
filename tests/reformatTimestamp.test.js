@@ -114,7 +114,7 @@ function testWithSettings(
     settings.set('timestampFormat', timestampFormat);
     settings.set('useUiTime', useUiTime);
     settings.set('hideTimezone', hideTimezone);
-    cd.g.areTimestampsAltered = (
+    cd.g.areTimestampsDefault = !(
       (settings.get('useUiTime') && 'UTC' !== cd.g.uiTimezone) ||
       settings.get('timestampFormat') !== 'default' ||
       mw.config.get('wgContentLanguage') !== cd.g.userLanguage ||

@@ -288,7 +288,7 @@ class Comment extends CommentSkeleton {
 
   wasMenuHidden = false;
 
-  /** @type {Promise[]} */
+  /** @type {Array<() => void>} */
   genderRequestCallbacks = [];
 
   /**
@@ -1064,7 +1064,7 @@ class Comment extends CommentSkeleton {
   formatTimestamp(date, originalTimestamp) {
     let timestamp;
     let title = '';
-    if (cd.g.areTimestampsAltered) {
+    if (!cd.g.areTimestampsDefault) {
       timestamp = formatDate(date, !this.hideTimezone);
     }
 
@@ -3228,16 +3228,19 @@ class Comment extends CommentSkeleton {
    *
    * @param {import('./CommentForm').default} [commentForm] Comment form, if it is submitted or code
    * changes are viewed.
+   * @returns {Promise<CommentSource>}
    * @throws {CdError|Error}
    */
   async loadCode(commentForm) {
+    let source;
+
     commentForm?.setSectionSubmitted(false);
     try {
       if (commentForm && this.section && this.section.liveSectionNumber !== null) {
         try {
           await this.section.requestCode();
           this.section.locateInCode(true);
-          this.locateInCode(true);
+          source = this.locateInCode(true);
           commentForm?.setSectionSubmitted(true);
         } catch (error) {
           if (!(
@@ -3251,7 +3254,7 @@ class Comment extends CommentSkeleton {
       }
       if (!commentForm?.isSectionSubmitted()) {
         await this.getSourcePage().loadCode();
-        this.locateInCode(false);
+        source = this.locateInCode(false);
       }
     } catch (error) {
       if (error instanceof CdError) {
@@ -3263,6 +3266,8 @@ class Comment extends CommentSkeleton {
         throw error;
       }
     }
+
+    return source;
   }
 
   /**
@@ -3527,7 +3532,7 @@ class Comment extends CommentSkeleton {
    * @param {string} contextCode
    * @param {import('./updateChecker').CommentWorkerEnrichied} [commentData]
    * @param {boolean} [isInSectionContext=false]
-   * @returns {CommentSource}
+   * @returns {CommentSource|undefined}
    * @private
    */
   searchInCode(contextCode, commentData, isInSectionContext = false) {
@@ -3562,7 +3567,7 @@ class Comment extends CommentSkeleton {
     const signatures = extractSignatures(contextCode);
     return signatures
       .filter((sig) => (
-        (sig.author === this.author || sig.author?.getName() === '<undated>') &&
+        (sig.author === this.author || sig.author.getName() === '<undated>') &&
         (
           this.timestamp === sig.timestamp ||
 
@@ -3572,13 +3577,10 @@ class Comment extends CommentSkeleton {
         )
       ))
       .map((signature) => new CommentSource(this, signature, contextCode, isInSectionContext))
-      .map((source, _, sources) => {
-        source.calculateMatchScore(thisData, sources, signatures);
-
-        return source;
-      })
-      .filter((source) => source.score > 2.5)
-      .sort((s1, s2) => s2.score - s1.score)[0];
+      .map((source, _, sources) => source.calculateMatchScore(thisData, sources, signatures))
+      .filter((sourcesWithScores) => sourcesWithScores.score > 2.5)
+      .sort((s1, s2) => s2.score - s1.score)[0]
+      ?.source;
   }
 
   /**
@@ -3608,7 +3610,7 @@ class Comment extends CommentSkeleton {
    *   perform operations on some code that is not the code of a section or page).
    * @param {import('./updateChecker').CommentWorkerEnrichied} [commentData] Comment data for
    *   comparison (can be set together with `code`).
-   * @returns {CommentSource|undefined} Returns a {@link CommentSource} object if `code` is passed.
+   * @returns {CommentSource}
    * @throws {CdError}
    */
   locateInCode(useSectionCode, code, commentData) {
@@ -3635,9 +3637,7 @@ class Comment extends CommentSkeleton {
       });
     }
 
-    if (codePassed) {
-      return source;
-    } else {
+    if (!codePassed) {
       /**
        * Comment's source code object.
        *
@@ -3645,13 +3645,15 @@ class Comment extends CommentSkeleton {
        */
       this.source = source;
     }
+
+    return source;
   }
 
   /**
    * Request the gender of the comment's author if it is absent and affects the user mention string
    * and do something when it's received.
    *
-   * @param {Function} callback
+   * @param {(user?: import('./userRegistry').User[]) => void} callback
    * @param {boolean} [runAlways=false] Whether to execute the callback even if the gender request
    *   is not needed.
    */
@@ -3660,8 +3662,8 @@ class Comment extends CommentSkeleton {
       let errorCallback;
       if (!this.genderRequest) {
         this.genderRequest = loadUserGenders([this.author]);
-        errorCallback = (e) => {
-          console.warn(`Couldn't get the gender of user ${this.author.getName()}.`, e);
+        errorCallback = (error) => {
+          console.warn(`Couldn't get the gender of user ${this.author.getName()}.`, error);
         };
       }
       if (!this.genderRequestCallbacks.includes(callback)) {
@@ -3763,10 +3765,6 @@ class Comment extends CommentSkeleton {
             Wrapping item element (`<li>`) - in cases 1, 2, and 3.
      */
 
-    let wrappingItemTag = 'dd';
-    let createList = true;
-    let outerWrapperTag;
-
     let $lastOfTarget = this.$elements.last();
     let $existingWrappingList;
 
@@ -3789,6 +3787,10 @@ class Comment extends CommentSkeleton {
         }
       }
     }
+
+    let wrappingItemTag = 'dd';
+    let createList = true;
+    let outerWrapperTag;
 
     let $anchor = $existingWrappingList || $lastOfTarget.next();
     const $anchorFirstChild = $anchor.children().first();
@@ -3823,7 +3825,7 @@ class Comment extends CommentSkeleton {
         $outerWrapper.addClass('cd-connectToPreviousItem');
       }
 
-      $wrappingList.appendTo($outerWrapper);
+      /** @type {JQuery} */ ($wrappingList).appendTo($outerWrapper);
     }
 
     if ($outerWrapper) {
@@ -3889,7 +3891,7 @@ class Comment extends CommentSkeleton {
    * Get the data identifying the comment when restoring a comment form. (Used for polymorphism with
    * {@link Section#getIdentifyingData} and {@link Page#getIdentifyingData}.)
    *
-   * @returns {object}
+   * @returns {{ [key: string]: any }}
    */
   getIdentifyingData() {
     return { id: this.id };
@@ -3936,11 +3938,10 @@ class Comment extends CommentSkeleton {
    *
    * @param {number[]} currentPageVisits
    * @param {number} currentTime
-   * @param {Comment} [unseenComment]
-   * @param {JQuery} [$changeNote]
+   * @param {Comment} [unseenComment] Unseen comment passed from the previous session.
    * @returns {boolean} Whether there is a time conflict.
    */
-  initNewAndSeen(currentPageVisits, currentTime, unseenComment, $changeNote) {
+  initNewAndSeen(currentPageVisits, currentTime, unseenComment) {
     // Let's take 3 minutes as a tolerable time discrepancy.
     const isDateInFuture = this.date && this.date.getTime() > Date.now() + cd.g.msInMin * 3;
 
@@ -3961,8 +3962,8 @@ class Comment extends CommentSkeleton {
       !unseenComment
     );
 
-    if ($changeNote) {
-      this.addChangeNote($changeNote);
+    if (unseenComment?.isChangedSincePreviousVisit && unseenComment.$changeNote) {
+      this.addChangeNote(unseenComment.$changeNote);
       if (unseenComment.willFlashChangedOnSight) {
         this.flashChangedOnSight();
       }
@@ -4123,7 +4124,7 @@ class Comment extends CommentSkeleton {
    * @returns {Comment[]}
    */
   getSiblingsAndSelf() {
-    let comments = this.getParent()?.getChildren();
+    let comments = /** @type {Comment[]|undefined} */ (this.getParent()?.getChildren());
     if (!comments) {
       if (this.section) {
         comments = this.section.commentsInFirstChunk.filter((comment) => !comment.getParent());
@@ -4182,28 +4183,6 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Get the parent comment of the comment.
-   *
-   * @param {boolean} [visual]
-   * @returns {?Comment}
-   */
-  getParent(visual) {
-    return /** @type {?Comment} */ (super.getParent(visual));
-  }
-
-  /**
-   * Get all replies to the comment.
-   *
-   * @param {boolean} [indirect]
-   * @param {boolean} [visual]
-   * @param {boolean} [allowSiblings]
-   * @returns {Comment[]}
-   */
-  getChildren(indirect, visual, allowSiblings) {
-    return /** @type {Comment[]} */ (super.getChildren(indirect, visual, allowSiblings));
-  }
-
-  /**
    * Check if the comment is deletable.
    *
    * @returns {boolean}
@@ -4230,6 +4209,9 @@ class Comment extends CommentSkeleton {
 
   /** @type {StorageItem} */
   static thanksStorage;
+
+  /** @type {RegExp} */
+  static dtIdRegexp;
 
   static {
     // Doesn't account for cases when the section headline ends with -<number>.
@@ -4428,16 +4410,19 @@ class Comment extends CommentSkeleton {
    * Turn a comment array into an object with sections or their IDs as keys.
    *
    * @param {import('./CommentSkeleton').CommentSkeletonLike[]|Comment[]} comments
-   * @returns {Map}
+   * @returns {Map<import('./SectionSkeleton').SectionSkeletonLike | null, import('./CommentSkeleton').CommentSkeletonLike[]>}
    */
   static groupBySection(comments) {
-    return comments.reduce((map, comment) => {
-      if (!map.get(comment.section)) {
+    const map = new Map();
+
+    for (const comment of comments) {
+      if (!map.has(comment.section)) {
         map.set(comment.section, []);
       }
       map.get(comment.section).push(comment);
-      return map;
-    }, new Map());
+    }
+
+    return map;
   }
 
   /**

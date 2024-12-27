@@ -14,12 +14,7 @@ const context = self;
  * @namespace convenientDiscussions
  * @global
  */
-context.convenientDiscussions ||= /** @type {ConvenientDiscussions} */ ({});
-
-// Idk how do I make VS Code understand that the export of this module maps to the
-// convenientDiscussions namespace. JSDoc generates the contents of that namespace correctly, but VS
-// Code doesn't infer types from it. So I just manually type (again) the types of a limited number
-// of properties here.
+context.convenientDiscussions ||= /** @type {ConvenientDiscussions | ConvenientDiscussionsWorker} */ ({});
 
 /**
  * @typedef {object} ApiErrorFormatHtml
@@ -29,24 +24,102 @@ context.convenientDiscussions ||= /** @type {ConvenientDiscussions} */ ({});
  */
 
 /**
+ * @typedef {object} GlobalPropertiesExtension
+ * @property {string} contentDateFormat Format of date in content language, as used by MediaWiki.
+ * @property {string} uiDateFormat Format of date in user (interface) language, as used by
+ *   MediaWiki.
+ * @property {string} contentDigits Regular expression matching a single digit in content language,
+ *   e.g. `[0-9]`.
+ * @property {string} uiDigits Regular expression matching a single digit in user (interface)
+ *   language, e.g. `[0-9]`.
+ * @property {{ [name: string]: string }} contentLanguageMessages
+ * @property {{ [name: string]: string[] }} specialPageAliases Some special page aliases in the
+ *   wiki's language.
+ * @property {?string} contentTimezone Timezone of the wiki.
+ * @property {?RegExp} signatureEndingRegexp
+ * @property {RegExp} userNamespacesRegexp
+ * @property {RegExp} userLinkRegexp
+ * @property {RegExp} userSubpageLinkRegexp
+ * @property {RegExp} userTalkLinkRegexp
+ * @property {RegExp} userTalkSubpageLinkRegexp
+ * @property {string[]} contribsPages Contributions page local name.
+ * @property {RegExp} contribsPageLinkRegexp
+ * @property {string} captureUserNamePattern
+ * @property {RegExp} isThumbRegexp
+ * @property {?string} unsignedTemplatesPattern
+ * @property {RegExp[]} keepInSectionEnding
+ * @property {string} userSignature
+ * @property {?RegExp} userSignaturePrefixRegexp
+ * @property {string} piePattern
+ * @property {string} pniePattern
+ * @property {RegExp} articlePathRegexp
+ * @property {RegExp} startsWithScriptTitleRegexp
+ * @property {RegExp} quoteRegexp
+ * @property {string} filePrefixPattern
+ * @property {RegExp} colonNamespacesPrefixRegexp
+ * @property {RegExp[]} badCommentBeginnings
+ * @property {RegExp} pipeTrickRegexp
+ * @property {boolean} isProbablyWmfSulWiki
+ * @property {number} contentLineHeight
+ * @property {number} contentFontSize
+ * @property {number} defaultFontSize
+ * @property {number} bodyScrollPaddingTop
+ * @property {{ [char: string]: string }} phpCharToUpper
+ * @property {boolean} genderAffectsUserString
+ * @property {string} summaryPostfix
+ * @property {number} summaryLengthLimit
+ * @property {'Ctrl' | 'Cmd'} cmdModifier
+ * @property {Function} isIPv6Address
+ * @property {ApiErrorFormatHtml} apiErrorFormatHtml
+ * @property {RegExp} contentTimestampRegexp Regular expression for matching timestamps in content.
+ *   ` +` to account for RTL and LTR marks replaced with a space.
+ * @property {RegExp} parseTimestampContentRegexp Regular expression for parsing timestamps in
+ *   content.
+ * @property {RegExp} contentTimestampNoTzRegexp Regular expression for matching timestamps in
+ *   content with no timezone at the end.
+ * @property {string[]} contentTimestampMatchingGroups Codes of date (in content language)
+ *   components for the timestamp parser function.
+ * @property {RegExp} timezoneRegexp Regular expression for matching timezone, with the global flag.
+ * @property {RegExp} uiTimestampRegexp Regular expression for matching timestamps in the interface
+ *   with no timezone at the end.
+ * @property {RegExp} parseTimestampUiRegexp Regular expression for parsing timestamps in the
+ *   interface.
+ * @property {string[]} uiTimestampMatchingGroups Codes of date (in interface language) components
+ *   for the timestamp parser function.
+ * @property {?(string|number)} uiTimezone Timezone per user preferences: standard timezone name or
+ *   offset in minutes. `'UTC'` is always used instead of `0`.
+ * @property {boolean} areUiAndLocalTimezoneSame
+ * @property {boolean|undefined} areTimestampsDefault Whether timestamps in the default format are
+ *   shown to the user.
+ */
+
+/**
  * @typedef {object} ConvenientDiscussionsExtension
  * @property {import('./pageRegistry').Page} page Current page's object.
  * @property {import('./userRegistry').User} user Current user's object.
  * @property {typeof import('../config/default').default} config
- * @property {typeof import('./convenientDiscussions').globalProperties} g
- * @property {ApiErrorFormatHtml} apiErrorFormatHtml A replacement for
- *   {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions/Unicode_Property_Escapes unicode property escapes}
- *   while they are not supported in major browsers. {@link https://github.com/slevithan/xregexp}
- *   can be used also.
- * @property {import('./Comment').default[]} comments
- * @property {import('./Section').default[]} section
+ * @property {typeof import('./convenientDiscussions').globalProperties & GlobalPropertiesExtension} g
+ * @property {import('./CommentSkeleton').default[]} comments
+ * @property {import('./SectionSkeleton').default[]} section
  */
 
 /**
  * @typedef {(
  *   & typeof import('./convenientDiscussions').convenientDiscussions
  *   & ConvenientDiscussionsExtension
- * )} ConvenientDiscussions
+ * )} ConvenientDiscussionsBase
+ */
+
+/**
+ * @typedef {ConvenientDiscussionsBase} ConvenientDiscussions
+ * @property {import('./Comment').default[]} comments
+ * @property {import('./Section').default[]} section
+ */
+
+/**
+ * @typedef {ConvenientDiscussionsBase} ConvenientDiscussionsWorker
+ * @property {import('./CommentWorker').default[]} comments
+ * @property {import('./SectionWorker').default[]} section
  */
 
 const convenientDiscussions = context.convenientDiscussions;

@@ -51,11 +51,29 @@ class Section extends SectionSkeleton {
   isLastSection;
 
   /**
-   * Code of the section as of the time of the last request.
+   * Code of the section as of the time of the last request. Filled upon running
+   * {@link Section#loadCode}.
    *
    * @type {string|undefined}
    */
   presumedCode;
+
+  /**
+   * ID of the revision that has {@link Section#code}. Filled upon running {@link Section#loadCode}.
+   *
+   * @name revisionId
+   * @type {number|undefined}
+   */
+  revisionId;
+
+  /**
+   * Time when {@link Section#code} was queried (as the server reports it). Filled upon running
+   * {@link Section#loadCode}.
+   *
+   * @name queryTimestamp
+   * @type {string|undefined}
+   */
+  queryTimestamp;
 
   /**
    * Sections contents as HTML elements.
@@ -1553,7 +1571,7 @@ class Section extends SectionSkeleton {
       action: 'query',
       titles: this.getSourcePage().name,
       prop: 'revisions',
-      rvsection: this.liveSectionNumber,
+      rvsection: this.liveSectionNumber || undefined,
       rvslots: 'main',
       rvprop: ['ids', 'content'],
       redirects: !mw.config.get('wgIsRedirect'),
@@ -1600,37 +1618,6 @@ class Section extends SectionSkeleton {
       });
     }
 
-    const redirectTarget = query.redirects?.[0]?.to || null;
-
-    /**
-     * Section code. Filled upon running {@link Section#loadCode}.
-     *
-     * @name code
-     * @type {string|undefined}
-     * @memberof Section
-     * @instance
-     */
-
-    /**
-     * ID of the revision that has {@link Section#code}. Filled upon running
-     * {@link Section#loadCode}.
-     *
-     * @name revisionId
-     * @type {number|undefined}
-     * @memberof Section
-     * @instance
-     */
-
-    /**
-     * Time when {@link Section#code} was queried (as the server reports it). Filled upon running
-     * {@link Section#loadCode}.
-     *
-     * @name queryTimestamp
-     * @type {string|undefined}
-     * @memberof Section
-     * @instance
-     */
-
     // It's more convenient to unify regexps to have `\n` as the last character of anything, not
     // `(?:\n|$)`, and it doesn't seem to affect anything substantially.
     this.presumedCode = content + '\n',
@@ -1638,10 +1625,7 @@ class Section extends SectionSkeleton {
     this.revisionId = revision.revid;
     this.queryTimestamp = queryTimestamp;
 
-    Object.assign(cd.page, {
-      redirectTarget,
-      realName: redirectTarget || this.name,
-    });
+    this.getSourcePage().setRedirectTarget(query.redirects?.[0]?.to || null);
   }
 
   /**
@@ -1649,15 +1633,18 @@ class Section extends SectionSkeleton {
    *
    * @param {import('./CommentForm').default} [commentForm] Comment form, if it is submitted or code
    *   changes are viewed.
+   * @returns {Promise<SectionSource>}
    * @throws {CdError|Error}
    */
   async loadCode(commentForm) {
+    let source;
+
     commentForm?.setSectionSubmitted(false);
     try {
       if (commentForm && this.liveSectionNumber !== null) {
         try {
           await this.requestCode();
-          this.locateInCode(true);
+          source = this.locateInCode(true);
           commentForm?.setSectionSubmitted(true);
         } catch (error) {
           if (
@@ -1672,7 +1659,7 @@ class Section extends SectionSkeleton {
       }
       if (!commentForm?.isSectionSubmitted()) {
         await this.getSourcePage().loadCode();
-        this.locateInCode(false);
+        source = this.locateInCode(false);
       }
     } catch (error) {
       if (error instanceof CdError) {
@@ -1683,6 +1670,8 @@ class Section extends SectionSkeleton {
         throw error;
       }
     }
+
+    return source;
   }
 
   /**
@@ -1690,7 +1679,7 @@ class Section extends SectionSkeleton {
    *
    * @param {string} contextCode
    * @param {boolean} isInSectionContext
-   * @returns {SectionSource}
+   * @returns {SectionSource|undefined}
    * @private
    */
   searchInCode(contextCode, isInSectionContext) {
@@ -1698,7 +1687,7 @@ class Section extends SectionSkeleton {
     const adjustedContextCode = maskDistractingCode(contextCode);
     const sectionHeadingRegexp = /^((=+)(.*)\2[ \t\x01\x02]*)\n/gm;
 
-    const sources = [];
+    const sourcesWithScores = [];
     const headlines = [];
     let sectionIndex = -1;
     let sectionHeadingMatch;
@@ -1711,16 +1700,16 @@ class Section extends SectionSkeleton {
         adjustedContextCode,
         isInSectionContext,
       });
-      source.calculateMatchScore(sectionIndex, thisHeadline, headlines);
-      if (!source.code || !source.firstChunkCode || source.score <= 1) continue;
+      const sourceWithScore = source.calculateMatchScore(sectionIndex, thisHeadline, headlines);
+      if (sourceWithScore.score <= 1) continue;
 
-      sources.push(source);
+      sourcesWithScores.push(sourceWithScore);
 
       // Maximal possible score
-      if (source.score === 3.75) break;
+      if (sourceWithScore.score === 3.75) break;
     }
 
-    return sources.sort((m1, m2) => m2.score - m1.score)[0];
+    return sourcesWithScores.sort((m1, m2) => m2.score - m1.score)[0]?.source;
   }
 
   /**
@@ -1730,8 +1719,9 @@ class Section extends SectionSkeleton {
    * It is expected that the section or page code is loaded (using {@link Page#loadCode}) before
    * this method is called. Otherwise, the method will throw an error.
    *
-   * @param {boolean} [useSectionCode] Is the section code available to locate the section in instead
-   *   of the page code.
+   * @param {boolean} [useSectionCode] Is the section code available to locate the section in
+   *   instead of the page code.
+   * @returns {SectionSource}
    * @throws {CdError}
    */
   locateInCode(useSectionCode = false) {
@@ -1759,6 +1749,8 @@ class Section extends SectionSkeleton {
      * @type {?(SectionSource|undefined)}
      */
     this.source = source;
+
+    return source;
   }
 
   /**
@@ -1774,14 +1766,11 @@ class Section extends SectionSkeleton {
   /**
    * Get the section source, locating it in code if necessary.
    *
+   * @throws {CdError}
    * @returns {SectionSource}
    */
   getSource() {
-    if (!this.source) {
-      this.locateInCode();
-    }
-
-    return /** @type {SectionSource} */ (this.source);
+    return this.source || this.locateInCode();
   }
 
   /**
@@ -1910,7 +1899,7 @@ class Section extends SectionSkeleton {
    * Get the data identifying the section when restoring a comment form. (Used for polymorphism with
    * {@link Comment#getRelevantComment} and {@link Page#getIdentifyingData}.)
    *
-   * @returns {object}
+   * @returns {{ [key: string]: any }}
    */
   getIdentifyingData() {
     return {
@@ -2004,8 +1993,7 @@ class Section extends SectionSkeleton {
    * @returns {?Comment}
    */
   getCommentAboveReply(commentForm) {
-    return sectionRegistry
-      .getAll()
+    return sectionRegistry.getAll()
       .slice(
         0,
 
@@ -2026,16 +2014,19 @@ class Section extends SectionSkeleton {
    * @returns {?Section}
    */
   findNewSelf() {
-    return sectionRegistry.search({
-      headline: this.headline,
-      oldestCommentId: this.oldestComment?.id,
-      index: this.index,
-      id: this.id,
+    return (
+      sectionRegistry.search({
+        headline: this.headline,
+        oldestCommentId: this.oldestComment?.id,
+        index: this.index,
+        id: this.id,
 
-      // We cache ancestors when saving the session, so this call will return the right value,
-      // despite the fact that sectionRegistry.items has already changed.
-      ancestors: this.getAncestors().map((section) => section.headline),
-    })?.section || null;
+        // We cache ancestors when saving the session, so this call will return the right value,
+        // despite the fact that sectionRegistry.items has already changed.
+        ancestors: this.getAncestors().map((section) => section.headline),
+      })?.section ||
+      null
+    );
   }
 
   /**

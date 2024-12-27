@@ -20,7 +20,7 @@ import { parseWikiUrl, isInline, defined, spacesToUnderlines } from './utils-gen
  * {@link https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.HtmlSnippet.html OO.ui.HtmlSnippet}, but
  * works not only with OOUI widgets. Optionally, attach callback functions and `target="_blank"`
  * attribute to links with the provided class names. See also
- * {@link JQuery.cdMerge jQuery.cdMerge}.
+ * {@link mergeJquery}.
  *
  * @param {string} html
  * @param {object} [options={}]
@@ -166,7 +166,7 @@ export function getVisibilityByRects(...rects) {
 /**
  * Check if the provided key combination is pressed given an event.
  *
- * @param {KeyboardEvent} event
+ * @param {JQuery.KeyDownEvent|KeyboardEvent} event
  * @param {number} keyCode
  * @param {Array.<'cmd' | 'shift' | 'alt' | 'meta' | 'ctrl'>} [modifiers=[]] Use `'cmd'` instead of
  *   `'ctrl'` to capture both Windows and Mac machines.
@@ -242,9 +242,10 @@ export function getHigherNodeAndOffsetInSelection(selection) {
   }
 
   const isAnchorHigher = (
-    selection.anchorNode.compareDocumentPosition(selection.focusNode) &
+    selection.anchorNode.compareDocumentPosition(/** @type {Node} */ (selection.focusNode)) &
     Node.DOCUMENT_POSITION_FOLLOWING
   );
+
   return {
     higherNode: isAnchorHigher ? selection.anchorNode : selection.focusNode,
     higherOffset: isAnchorHigher ? selection.anchorOffset : selection.focusOffset,
@@ -279,7 +280,7 @@ export function copyText(text, { success, fail }) {
  * Check whether there is something in the HTML that can be converted to wikitext.
  *
  * @param {string} html
- * @param {Element} containerElement
+ * @param {HTMLElement} containerElement
  * @returns {boolean}
  */
 export function isHtmlConvertibleToWikitext(html, containerElement) {
@@ -310,11 +311,18 @@ export function isElementConvertibleToWikitext(element) {
 }
 
 /**
+ * @typedef {object} CleanUpPasteDomReturn
+ * @property {HTMLElement} element
+ * @property {string} text
+ * @property {(string|undefined)[]} syntaxHighlightLanguages
+ */
+
+/**
  * Clean up the contents of an element created based on the HTML code of a paste.
  *
  * @param {HTMLElement} element
  * @param {HTMLElement} containerElement
- * @returns {object}
+ * @returns {CleanUpPasteDomReturn}
  */
 export function cleanUpPasteDom(element, containerElement) {
   // Get all styles (such as `user-select: none`) from classes applied when the element is added
@@ -392,7 +400,7 @@ export function cleanUpPasteDom(element, containerElement) {
 
   const syntaxHighlightLanguages = [...element.querySelectorAll('pre, code')].map((el) => (
     (
-      (el.tagName === 'PRE' ? el.parentNode : el).className
+      (el.tagName === 'PRE' ? /** @type {HTMLElement} */ (el.parentElement) : el).className
         .match('mw-highlight-lang-([0-9a-z_-]+)') ||
       []
     )[1]
@@ -411,7 +419,10 @@ export function cleanUpPasteDom(element, containerElement) {
   [...element.querySelectorAll('a')]
     .filter((el) => el.classList.contains('new'))
     .forEach((el) => {
-      const urlData = parseWikiUrl(el.getAttribute('href'))
+      const href = el.getAttribute('href');
+      if (!href) return;
+
+      const urlData = parseWikiUrl(href);
       if (urlData && urlData.hostname === location.hostname) {
         el.setAttribute('href', mw.util.getUrl(urlData.pageName));
       }
@@ -440,7 +451,7 @@ export function cleanUpPasteDom(element, containerElement) {
     .forEach(replaceWithChildren);
 
   getAllTextNodes(element)
-    .filter((node) => !node.parentNode.tagName === 'PRE')
+    .filter((node) => /** @type {HTMLElement} */ (node.parentElement).tagName !== 'PRE')
     .forEach((node) => {
       // Firefox adds newlines of unclear nature
       node.textContent = node.textContent.replace(/\n/g, ' ');
@@ -459,7 +470,7 @@ export function cleanUpPasteDom(element, containerElement) {
  * Turn HTML code of a paste into an element.
  *
  * @param {string} html
- * @returns {Element}
+ * @returns {HTMLElement}
  */
 export function getElementFromPasteHtml(html) {
   const div = document.createElement('div');

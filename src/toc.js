@@ -12,6 +12,7 @@ import controller from './controller';
 import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import updateChecker from './updateChecker';
+import { isElement, isText } from './utils-general';
 import { formatDate, formatDateNative } from './utils-timestamp';
 import { createSvg } from './utils-window';
 import visits from './visits';
@@ -101,7 +102,7 @@ export default {
    * Get a TOC item by ID.
    *
    * @param {string} id
-   * @returns {?import('./toc')~TocItem}
+   * @returns {?TocItem}
    */
   getItem(id) {
     if (!this.isPresent()) {
@@ -411,8 +412,7 @@ export default {
   /**
    * Get the element to add a comment list after for a section.
    *
-   * @param {import('./SectionSkeleton').SectionSkeletonLike[]} section Section.
-   * @param {boolean} areCommentsRendered Whether the comments are rendered (visible on the page).
+   * @param {import('./SectionSkeleton').SectionSkeletonLike} section Section.
    * @returns {?object}
    * @private
    */
@@ -577,14 +577,14 @@ export default {
       ul.appendChild(li);
     }
 
-    target.parentNode.insertBefore(ul, target.nextSibling);
+    /** @type {HTMLElement} */ (target.parentElement).insertBefore(ul, target.nextSibling);
   },
 
   /**
    * Add links to new comments (either already displayed or loaded in the background) to the table
    * of contents.
    *
-   * @param {Map} commentsBySection
+   * @param {Map<import('./SectionSkeleton').SectionSkeletonLike | null, import('./CommentSkeleton').CommentSkeletonLike[]} commentsBySection
    * @param {import('./BootProcess').default} [bootProcess]
    * @private
    */
@@ -593,21 +593,19 @@ export default {
 
     await this.updateTocSectionsPromise;
     this.$element.find('.cd-toc-addedCommentList').remove();
-    const firstComment = commentsBySection.values().next().value?.[0];
-    if (!firstComment) return;
-
-    const areCommentsRendered = !$.isPlainObject(firstComment);
     if (!this.isInSidebar()) {
       controller.saveRelativeScrollPosition(
-        // When unrendered (in gray) comments are added. (Boot process is also not specified at
-        // those times.)
-        !areCommentsRendered ||
+        Boolean(
+          // When unrendered (in gray) comments are added. (Boot process is also not specified at
+          // those times.)
+          !bootProcess ||
 
-        bootProcess.isFirstRun() ||
+          bootProcess.isFirstRun() ||
 
-        // When the comment or section is opened by a link from the TOC
-        bootProcess.passedData.commentIds ||
-        bootProcess.passedData.sectionId
+          // When the comment or section is opened by a link from the TOC
+          bootProcess.passedData.commentIds ||
+          bootProcess.passedData.sectionId
+        )
       );
     }
 
@@ -616,8 +614,8 @@ export default {
 
       this.addCommentList(
         comments,
-        this.getTargetElementForSection(section, areCommentsRendered),
-        areCommentsRendered
+        this.getTargetElementForSection(section, Boolean(bootProcess)),
+        Boolean(bootProcess)
       );
     });
 
@@ -676,7 +674,21 @@ export default {
 /**
  * Class representing an item of the table of contents.
  */
-class TocItem {
+export class TocItem {
+  /**
+   * Section link jQuery element.
+   *
+   * @type {JQuery}
+   */
+  $link;
+
+  /**
+   * Section text jQuery element (including the title, number, and other possible additions).
+   *
+   * @type {JQuery}
+   */
+  $text;
+
   /**
    * Create a table of contents item object.
    *
@@ -707,32 +719,12 @@ class TocItem {
       number = '?';
     }
 
-    /**
-     * Section link jQuery element.
-     *
-     * @name $link
-     * @type {JQuery}
-     * @memberof import('./toc')~TocItem
-     * @instance
-     */
-
-    /**
-     * Section text jQuery element (including the title, number, and other possible additions).
-     *
-     * @name $text
-     * @type {JQuery}
-     * @memberof import('./toc')~TocItem
-     * @instance
-     */
-
-    Object.assign(this, {
-      id,
-      level,
-      number,
-      $element: $(li),
-      $link: $(a),
-      $text: $(textSpan),
-    });
+    this.id = id;
+    this.level = level;
+    this.number = number;
+    this.$element = $(li);
+    this.$link = $(a);
+    this.$text = $(textSpan);
   }
 
   /**
@@ -744,13 +736,13 @@ class TocItem {
   replaceText($headline) {
     if (!this.canBeModified) return;
 
-    const titleNodes = this.$text
+    const titleNodes = /** @type {Array<Text|HTMLElement>} */ (this.$text
       .contents()
       .filter((i, node) => (
-        node.nodeType === Node.TEXT_NODE
-        || (node.tagName && ![...node.classList].some((name) => name.match(/^(cd-|vector-)/)))
+        isText(node)
+        || (isElement(node) && ![...node.classList].some((name) => name.match(/^(cd-|vector-)/)))
       ))
-      .get();
+      .get());
     titleNodes[titleNodes.length - 1].after(
       ...$headline
         .clone()
@@ -762,7 +754,7 @@ class TocItem {
               });
             } else {
               [...el.childNodes].forEach((child) => {
-                el.parentNode.insertBefore(child, el);
+                el.before(child);
               });
               el.remove();
             }
