@@ -1497,7 +1497,7 @@ export default {
   /**
    * _For internal use._ Update the page's HTML and certain configuration values.
    *
-   * @param {import('./pageRegistry').ParseData} parseData
+   * @param {import('./utils-api').ApiResponseParseContent} parseData
    */
   updatePageContents(parseData) {
     this.$content.children('.mw-parser-output').first().replaceWith(this.$root);
@@ -1506,7 +1506,7 @@ export default {
     mw.util.addSubtitle?.(parseData.subtitle);
 
     if ($('#catlinks').length) {
-      const $categories = $($.parseHTML(parseData.categorieshtml));
+      const $categories = $(parseData.categorieshtml);
       mw.hook('wikipage.categories').fire($categories);
       $('#catlinks').replaceWith($categories);
     }
@@ -1661,7 +1661,7 @@ export default {
    * @returns {boolean}
    */
   isLongPage() {
-    this.content.longPage ??= $(document).height() > 15000;
+    this.content.longPage ??= /** @type {number} */ ($(document).height()) > 15000;
 
     return this.content.longPage;
   },
@@ -1692,12 +1692,12 @@ export default {
    * Show a copy link dialog.
    *
    * @param {Comment|import('./Section').default} object Comment or section to copy a link to.
-   * @param {Event} e
+   * @param {MouseEvent | KeyboardEvent} event
    */
-  showCopyLinkDialog(object, e) {
+  showCopyLinkDialog(object, event) {
     if (this.isPageOverlayOn()) return;
 
-    e.preventDefault();
+    event.preventDefault();
 
     const fragment = object.getWikilinkFragment();
     const type = object instanceof Comment ? 'comment' : 'section';
@@ -1717,12 +1717,9 @@ export default {
       permanentWikilink: `[[${permalinkSpecialPagePrefix}${fragment}]]`,
       link: object.getUrl(),
       permanentLink: type === 'comment' ?
-        pageRegistry.get(
-          mw.config.get('wgFormattedNamespaces')[-1] +
-          ':' +
-          'GoToComment/'
-          + fragment
-        ).getDecodedUrlWithFragment() :
+        /** @type {import('./pageRegistry').Page} */ (pageRegistry.get(
+          mw.config.get('wgFormattedNamespaces')[-1] + ':' + 'GoToComment/' + fragment
+        )).getDecodedUrlWithFragment() :
         object.getUrl(true),
       copyMessages: {
         success: cd.s('copylink-copied'),
@@ -1741,7 +1738,7 @@ export default {
     const relevantSetting = type === 'comment' ?
       settings.get('defaultCommentLinkType') :
       settings.get('defaultSectionLinkType');
-    if (!e.shiftKey && relevantSetting) {
+    if (!event.shiftKey && relevantSetting) {
       switch (relevantSetting) {
         case 'wikilink':
           copyText(content.wikilink, content.copyMessages);

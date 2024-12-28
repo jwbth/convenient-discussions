@@ -110,8 +110,8 @@ function processAndRemoveDtElements(elements, bootProcess) {
  * Data passed from the previous page state.
  *
  * @typedef {object} PassedData
- * @property {import('./pageRegistry').ParseData} [parseData] Response to the parse request from the
- *   API.
+ * @property {import('./utils-api').ApiResponseParseContent} [parseData] Response to the parse
+ *   request from the API.
  * @property {string[]} [commentIds] ID of comments to highlight and/or scroll to.
  * @property {string} [sectionId] ID of a section to scroll to.
  * @property {boolean} [pushState] Whether to replace the URL in the address bar adding the comment

@@ -61,10 +61,16 @@ import { createSvg, getExtendedRect, getHigherNodeAndOffsetInSelection, getVisib
 /**
  * Class representing a comment (any signed, and in some cases unsigned, text on a wiki talk page).
  *
- * @template Reformatted
+ * @template {boolean} Reformatted
  * @augments CommentSkeleton
  */
 class Comment extends CommentSkeleton {
+  /** @readonly */
+  TYPE = 'comment';
+
+  /** @type {Reformatted} */
+  reformatted;
+
   /** @type {HTMLElement} */
   signatureElement;
 
@@ -96,16 +102,39 @@ class Comment extends CommentSkeleton {
   marginHighlightable;
 
   /**
-   * @type {HTMLElement}
+   * @typedef {this extends Comment<true> ? HTMLElement : undefined} HTMLElementIfReformatted
+   */
+
+  /**
+   * @type {HTMLElementIfReformatted}
    * @private
    */
   headerElement;
 
   /**
-   * @type {HTMLElement}
+   * @type {HTMLElementIfReformatted}
    * @private
    */
   menuElement;
+
+  /**
+   * @typedef {this extends Comment<true> ? JQuery<HTMLElementIfReformatted> : undefined} JQueryIfReformatted
+   */
+
+  /**
+   * Comment header. Used when comment reformatting is enabled.
+   *
+   * @type {JQueryIfReformatted}
+   */
+  $header;
+
+  /**
+   * Comment menu. Used when comment reformatting is enabled; otherwise
+   * {@link Comment#$overlayMenu} is used.
+   *
+   * @type {JQueryIfReformatted}
+   */
+  $menu;
 
   /**
    * _For internal use._ Comment's underlay as a native (non-jQuery) element.
@@ -342,7 +371,7 @@ class Comment extends CommentSkeleton {
   constructor(parser, signature, targets) {
     super(parser, signature, targets);
 
-    this.isReformatted = settings.get('reformatComments');
+    this.reformatted = settings.get('reformatComments');
     this.showContribsLink = settings.get('showContribsLink');
     this.hideTimezone = settings.get('hideTimezone');
     this.timestampFormat = settings.get('timestampFormat');
@@ -414,6 +443,15 @@ class Comment extends CommentSkeleton {
 
       this.mhContainerListType = getContainerListType(this.marginHighlightable);
     }
+  }
+
+  /**
+   * Check if the comment is reformatted.
+   *
+   * @returns {this is Comment<true>}
+   */
+  isReformatted() {
+    return this.reformatted;
   }
 
   /**
@@ -590,12 +628,17 @@ class Comment extends CommentSkeleton {
    * signature unless there is more than one of them.
    *
    * @returns {ReplaceSignatureWithHeaderReturn} Pages to check existence of.
+   * @throws {CdError}
    */
   replaceSignatureWithHeader() {
+    if (!this.isReformatted()) {
+      throw new CdError();
+    }
+
     const pagesToCheckExistence = [];
 
     const headerWrapper = Comment.prototypes.get('headerWrapperElement');
-    this.headerElement = /** @type {HTMLElement} */ (headerWrapper.firstChild);
+    this.headerElement = /** @type {HTMLElementIfReformatted} */ (headerWrapper.firstChild);
     const authorWrapper = /** @type {HTMLElement} */ (this.headerElement.firstChild);
     const authorLink = /** @type {HTMLAnchorElement} */ (authorWrapper.firstChild);
     const authorLinksWrapper = /** @type {HTMLElement} */ (authorLink.nextElementSibling);
@@ -692,15 +735,9 @@ class Comment extends CommentSkeleton {
       }
     }
 
-    /**
-     * Comment header. Used when comment reformatting is enabled.
-     *
-     * @type {JQuery|undefined}
-     */
-    this.$header = $(this.headerElement);
+    this.$header = /** @type {JQueryIfReformatted} */ ($(this.headerElement));
 
     this.rewrapHighlightables();
-
     this.highlightables[0].insertBefore(headerWrapper, this.highlightables[0].firstChild);
 
     if (!this.extraSignatures.length) {
@@ -715,19 +752,18 @@ class Comment extends CommentSkeleton {
    * _For internal use._ Add a menu to the bottom highlightable element of the comment and fill it
    * with buttons. Used when comment reformatting is enabled; otherwise `Comment#createLayers` is
    * used.
+   *
+   * @throws {CdError}
    */
   addMenu() {
-    const menuElement = document.createElement('div');
-    menuElement.className = 'cd-comment-menu';
-    this.menuElement = menuElement;
+    if (!this.isReformatted()) {
+      throw new CdError();
+    }
 
-    /**
-     * Comment menu. Used when comment reformatting is enabled; otherwise
-     * {@link Comment#$overlayMenu} is used.
-     *
-     * @type {JQuery|undefined}
-     */
-    this.$menu = $(this.menuElement);
+    const menuElement = /** @type {HTMLElement} */ (document.createElement('div'));
+    menuElement.className = 'cd-comment-menu';
+    this.menuElement = /** @type {HTMLElementIfReformatted} */ (menuElement);
+    this.$menu = /** @type {JQueryIfReformatted} */ ($(menuElement));
 
     this.addReplyButton();
     this.addEditButton();
@@ -758,7 +794,7 @@ class Comment extends CommentSkeleton {
     if (!this.isActionable) return;
 
     const action = this.replyButtonClick.bind(this);
-    if (this.isReformatted) {
+    if (this.isReformatted()) {
       /**
        * Reply button.
        *
@@ -815,7 +851,7 @@ class Comment extends CommentSkeleton {
     if (!this.isEditable) return;
 
     const action = this.editButtonClick.bind(this);
-    if (this.isReformatted) {
+    if (this.isReformatted()) {
       /**
        * Edit button.
        *
@@ -858,7 +894,7 @@ class Comment extends CommentSkeleton {
     ));
 
     const action = this.thankButtonClick.bind(this);
-    if (this.isReformatted) {
+    if (this.isReformatted()) {
       /**
        * Thank button.
        *
@@ -895,7 +931,7 @@ class Comment extends CommentSkeleton {
    * @private
    */
   addCopyLinkButton() {
-    if (!this.id || this.isReformatted) return;
+    if (!this.id || this.isReformatted()) return;
 
     this.copyLinkButton = new CommentButton({
       buttonElement: Comment.prototypes.get('copyLinkButton'),
@@ -918,7 +954,7 @@ class Comment extends CommentSkeleton {
     if (!this.getParent()) return;
 
     const action = this.goToParentButtonClick.bind(this);
-    if (this.isReformatted) {
+    if (this.isReformatted()) {
       /**
        * "Go to the parent comment" button.
        *
@@ -932,7 +968,7 @@ class Comment extends CommentSkeleton {
 
       this.goToParentButton.element.appendChild(Comment.prototypes.get('goToParentButtonSvg'));
 
-      this.headerElement.appendChild(this.goToParentButton.element);
+      //this.headerElement.appendChild(this.goToParentButton.element);
     } else {
       this.goToParentButton = new CommentButton({
         buttonElement: Comment.prototypes.get('goToParentButton'),
@@ -962,7 +998,7 @@ class Comment extends CommentSkeleton {
         /** @type {Comment} */ (this.targetChild).scrollTo({ pushState: true });
       };
 
-      if (this.isReformatted) {
+      if (this.isReformatted()) {
         /**
          * "Go to the child comment" button.
          *
@@ -979,10 +1015,10 @@ class Comment extends CommentSkeleton {
           )
         );
 
-        this.headerElement.insertBefore(
-          this.goToChildButton.element,
-          (this.goToParentButton?.element || this.timestampElement)?.nextSibling
-        );
+        // this.headerElement.insertBefore(
+        //   this.goToChildButton.element,
+        //   (this.goToParentButton?.element || this.timestampElement)?.nextSibling
+        // );
       } else if (this.$overlayMenu) {
         const buttonElement = Comment.prototypes.get('goToChildButton');
         this.goToChildButton = new CommentButton({
@@ -1005,7 +1041,7 @@ class Comment extends CommentSkeleton {
    */
   addToggleChildThreadsButton() {
     if (
-      !this.isReformatted ||
+      !this.isReformatted() ||
       !this.getChildren().some((child) => child.thread) ||
       (this.toggleChildThreadsButton?.isConnected())
     ) {
@@ -1024,10 +1060,10 @@ class Comment extends CommentSkeleton {
     });
     this.updateToggleChildThreadsButton();
 
-    this.headerElement.insertBefore(
-      this.toggleChildThreadsButton.element,
-      this.$changeNote?.[0] || null
-    );
+    // this.headerElement.insertBefore(
+    //   this.toggleChildThreadsButton.element,
+    //   this.$changeNote?.[0] || null
+    // );
   }
 
   /**
@@ -1092,7 +1128,7 @@ class Comment extends CommentSkeleton {
     if (timestamp) {
       this.reformattedTimestamp = timestamp;
       this.timestampTitle = title;
-      if (!this.isReformatted || this.extraSignatures.length) {
+      if (!this.isReformatted() || this.extraSignatures.length) {
         this.timestampElement.textContent = timestamp;
         this.timestampElement.title = title;
         (new LiveTimestamp(this.timestampElement, this.date, !this.hideTimezone)).init();
@@ -1114,7 +1150,7 @@ class Comment extends CommentSkeleton {
    * @private
    */
   bindEvents(element) {
-    if (this.isReformatted) return;
+    if (this.isReformatted()) return;
 
     element.onmouseenter = this.highlightHovered.bind(this);
     element.onmouseleave = this.unhighlightHovered.bind(this);
@@ -1774,7 +1810,7 @@ class Comment extends CommentSkeleton {
       /** @type {HTMLElement} */ (this.overlay.firstChild).nextSibling
     );
 
-    if (!this.isReformatted) {
+    if (!this.isReformatted()) {
       this.overlayInnerWrapper = /** @type {HTMLElement} */ (this.overlay.lastChild);
       this.overlayGradient = /** @type {HTMLElement} */ (this.overlayInnerWrapper.firstChild);
       this.overlayMenu = /** @type {HTMLElement} */ (this.overlayInnerWrapper.lastChild);
@@ -1818,7 +1854,7 @@ class Comment extends CommentSkeleton {
      */
     this.$marker = $(this.marker);
 
-    if (!this.isReformatted) {
+    if (!this.isReformatted()) {
       /**
        * Menu element in the comment's overlay.
        *
@@ -2009,7 +2045,7 @@ class Comment extends CommentSkeleton {
    * @param {MouseEvent | TouchEvent} [event]
    */
   highlightHovered(event) {
-    if (this.isHovered || controller.isPageOverlayOn() || this.isReformatted) return;
+    if (this.isHovered || controller.isPageOverlayOn() || this.isReformatted()) return;
 
     if (event?.type === 'touchstart') {
       if (this.wasMenuHidden) {
@@ -2042,7 +2078,7 @@ class Comment extends CommentSkeleton {
    * Unhighlight the comment when it has lost focus.
    */
   unhighlightHovered() {
-    if (!this.isHovered || this.isReformatted) return;
+    if (!this.isHovered || this.isReformatted()) return;
 
     // Animation will be directed to wrong properties if we keep it going.
     this.$animatedBackground?.stop(true, true);
@@ -2445,7 +2481,7 @@ class Comment extends CommentSkeleton {
 
     let refreshLinkSeparator;
     let diffLinkSeparator;
-    if (this.isReformatted) {
+    if (this.isReformatted()) {
       stringName += '-short';
       refreshLinkSeparator = diffLinkSeparator = cd.sParse('dot-separator');
     } else {
@@ -2492,7 +2528,7 @@ class Comment extends CommentSkeleton {
   addChangeNote($changeNote) {
     this.$changeNote = $changeNote;
 
-    if (this.isReformatted) {
+    if (this.isReformatted()) {
       /** @type {JQuery} */ (this.$header).append(this.$changeNote);
     } else {
       // Add the mark to the last block element, going as many nesting levels down as needed to
@@ -2641,7 +2677,7 @@ class Comment extends CommentSkeleton {
       });
       this.$elements.attr('data-cd-comment-index', this.index);
 
-      if (this.isReformatted) {
+      if (this.isReformatted()) {
         this.signatureElement = this.$elements.find('.cd-signature')[0];
         this.replaceSignatureWithHeader();
         this.addMenu();
@@ -2811,10 +2847,10 @@ class Comment extends CommentSkeleton {
   /**
    * Open a copy link dialog (rarely, copy a link to the comment without opening a dialog).
    *
-   * @param {Event} e
+   * @param {MouseEvent | KeyboardEvent} event
    */
-  async copyLink(e) {
-    controller.showCopyLinkDialog(this, e);
+  async copyLink(event) {
+    controller.showCopyLinkDialog(this, event);
   }
 
   /**
@@ -3141,12 +3177,12 @@ class Comment extends CommentSkeleton {
         let selection = window.getSelection();
         if (selection.type !== 'Range') {
           const range = document.createRange();
-          if (this.isReformatted) {
-            range.setStart(this.headerElement, this.headerElement.childNodes.length);
+          if (this.isReformatted()) {
+            //range.setStart(this.headerElement, this.headerElement.childNodes.length);
           } else {
             range.setStart(this.elements[0], 0);
           }
-          if (this.isReformatted) {
+          if (this.isReformatted()) {
             range.setEnd(this.menuElement, 0);
           } else {
             range.setEnd(this.signatureElement, 0);
@@ -3181,7 +3217,7 @@ class Comment extends CommentSkeleton {
    */
   fixSelection() {
     let endBoundary;
-    if (this.isReformatted) {
+    if (this.isReformatted()) {
       endBoundary = this.menuElement;
     } else {
       endBoundary = document.createElement('span');
@@ -3194,7 +3230,7 @@ class Comment extends CommentSkeleton {
       selection.setBaseAndExtent(higherNode, higherOffset, endBoundary, 0);
     }
 
-    if (!this.isReformatted) {
+    if (!this.isReformatted()) {
       endBoundary.remove();
     }
   }
@@ -4203,6 +4239,15 @@ class Comment extends CommentSkeleton {
    */
   getCommentFormTargetComment() {
     return this;
+  }
+
+  /**
+   * Type checking helper.
+   *
+   * @returns {this is Comment}
+   */
+  isComment() {
+    return true;
   }
 
   static prototypes = new PrototypeRegistry();

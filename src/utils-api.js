@@ -14,6 +14,25 @@ import userRegistry from './userRegistry';
 import { unique } from './utils-general';
 import { brsToNewlines } from './utils-wikitext';
 
+/**
+ * @typedef {object} ApiResponseParseContent
+ * @property {string} text Text for the page.
+ * @property {boolean} hidetoc Hide the table of contents.
+ * @property {string} subtitle HTML for the page's subtitle (it comes with last comment data from
+ *   DT).
+ * @property {string} categorieshtml HTML for the page's categories.
+ * @property {object} sections Section data for the page.
+ * @property {number} revid
+ * @property {string[]} modules
+ * @property {string[]} modulestyles
+ * @property {{ [name: string]: any }} jsconfigvars
+ */
+
+/**
+ * @typedef {object} ApiResponseParse
+ * @property {ApiResponseParseContent} [parse]
+ */
+
 let cachedUserInfoRequest;
 
 /**
@@ -70,7 +89,10 @@ export function splitIntoBatches(arr) {
   const limit = (
     currentUserRights ?
       currentUserRights.includes('apihighlimits') :
-      mw.config.get('wgUserGroups').includes('sysop')
+      // No idea why wgUserGroups is said to be `null` for non-logged-in users on
+      // https://www.mediawiki.org/wiki/Manual:Interface/JavaScript#mw.config. I see it always
+      // containing ['*'].
+      (mw.config.get('wgUserGroups') || []).includes('sysop')
   ) ?
     500 :
     50;
@@ -86,7 +108,7 @@ export function splitIntoBatches(arr) {
  * Make a request that won't set the process on hold when the tab is in the background.
  *
  * @param {object} params
- * @param {string} [method='post']
+ * @param {'get'|'post'|'postWithEditToken'} [method='post']
  * @returns {Promise.<object>}
  */
 export function requestInBackground(params, method = 'post') {
@@ -123,6 +145,7 @@ export function requestInBackground(params, method = 'post') {
  *   html: string;
  *   parsedSummary: string;
  * }>}
+ * @throws {CdError}
  */
 export async function parseCode(code, customOptions) {
   const defaultOptions = {
@@ -137,7 +160,7 @@ export async function parseCode(code, customOptions) {
     preview: true,
   };
   const options = { ...defaultOptions, ...customOptions };
-  const resp = await controller.getApi().post(options).catch(handleApiReject);
+  const resp = /** @type {ApiResponseParse} */ (await controller.getApi().post(options).catch(handleApiReject));
 
   mw.loader.load(resp.parse.modules);
   mw.loader.load(resp.parse.modulestyles);
@@ -154,6 +177,7 @@ export async function parseCode(code, customOptions) {
  * @param {boolean} [reuse=false] Whether to reuse a cached request.
  * @returns {Promise.<object>} Promise for an object containing the full options object, visits,
  *   subscription list, and rights.
+ * @throws {CdError}
  */
 export function getUserInfo(reuse = false) {
   if (reuse && cachedUserInfoRequest) {
@@ -189,18 +213,16 @@ export function getUserInfo(reuse = false) {
  *
  * @param {number[]} pageIds
  * @returns {Promise.<object[]>}
+ * @throws {CdError}
  */
 export async function getPageTitles(pageIds) {
   const pages = [];
   for (const nextPageIds of splitIntoBatches(pageIds)) {
-    pages.push(
-      ...(
-        await controller.getApi().post({
-          action: 'query',
-          pageids: nextPageIds,
-        }).catch(handleApiReject)
-      ).query.pages
-    );
+    const request = await controller.getApi().post({
+      action: 'query',
+      pageids: nextPageIds,
+    }).catch(handleApiReject);
+    pages.push(...request.query.pages);
   }
 
   return pages;
@@ -211,6 +233,7 @@ export async function getPageTitles(pageIds) {
  *
  * @param {string[]} titles
  * @returns {Promise.<object[]>}
+ * @throws {CdError}
  */
 export async function getPageIds(titles) {
   const normalized = [];
@@ -385,14 +408,14 @@ export async function getPagesExistence(titles) {
 }
 
 /**
- * Request a REST API to transform HTML to wikitext.
+ * Make a request to a REST API to transform HTML to wikitext.
  *
  * @param {string} url URL of the API.
  * @param {string} html HTML to transform.
- * @returns {Promise.<string>}
+ * @returns {JQuery.jqXHR.<string>}
  * @private
  */
-function requestTransformApi(url, html) {
+function callTransformApi(url, html) {
   return $.post(url, {
     html,
     scrub_wikitext: true,
@@ -404,7 +427,7 @@ function requestTransformApi(url, html) {
  *
  * @param {string} html
  * @param {Array.<string|undefined>} syntaxHighlightLanguages
- * @returns {Promise.<string>}
+ * @returns {Promise.<?string>}
  */
 export async function convertHtmlToWikitext(html, syntaxHighlightLanguages) {
   let wikitext;
@@ -413,9 +436,9 @@ export async function convertHtmlToWikitext(html, syntaxHighlightLanguages) {
       if (!cd.g.isProbablyWmfSulWiki) {
         throw undefined;
       }
-      wikitext = await requestTransformApi('/api/rest_v1/transform/html/to/wikitext', html);
+      wikitext = await callTransformApi('/api/rest_v1/transform/html/to/wikitext', html);
     } catch {
-      wikitext = await requestTransformApi('https://en.wikipedia.org/api/rest_v1/transform/html/to/wikitext', html);
+      wikitext = await callTransformApi('https://en.wikipedia.org/api/rest_v1/transform/html/to/wikitext', html);
     }
     wikitext = wikitext
       .replace(
@@ -445,5 +468,5 @@ export async function convertHtmlToWikitext(html, syntaxHighlightLanguages) {
     // Empty
   }
 
-  return wikitext;
+  return wikitext || null;
 }

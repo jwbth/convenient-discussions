@@ -18,20 +18,6 @@ import { parseTimestamp } from './utils-timestamp';
 import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
 
 /**
- * @typedef {object} ParseData
- * @property {string} text Text for the page.
- * @property {boolean} hidetoc Hide the table of contents.
- * @property {string} subtitle HTML for the page's subtitle (it comes with last comment data from
- *   DT).
- * @property {string} categorieshtml HTML for the page's categories.
- * @property {object} sections Section data for the page.
- * @property {number} revid
- * @property {string[]} modules
- * @property {string[]} modulestyles
- * @property {{ [name: string]: any }} jsconfigvars
- */
-
-/**
  * Main MediaWiki object.
  *
  * @external mw
@@ -269,11 +255,11 @@ export class Page {
   /**
    * Get a decoded URL with a fragment identifier.
    *
-   * @param {string} fragment
-   * @param {boolean} permanent Get a permanent URL.
+   * @param {?string} [fragment]
+   * @param {boolean} [permanent=false] Get a permanent URL.
    * @returns {string}
    */
-  getDecodedUrlWithFragment(fragment, permanent) {
+  getDecodedUrlWithFragment(fragment, permanent = false) {
     const decodedPageUrl = decodeURI(
       this.getUrl({
         ...(permanent ? { oldid: mw.config.get('wgRevisionId') } : {})
@@ -400,7 +386,7 @@ export class Page {
       }
     }
 
-    return result ? pageRegistry.get(String(result)) : this;
+    return (result && pageRegistry.get(String(result))) || this;
   }
 
   /**
@@ -489,7 +475,7 @@ export class Page {
    * @param {boolean} [inBackground=false] Make a request that won't set the process on hold when
    *   the tab is in the background.
    * @param {boolean} [markAsRead=false] Mark the current page as read in the watchlist.
-   * @returns {Promise.<ParseData>}
+   * @returns {Promise.<import('./utils-api').ApiResponseParseContent>}
    * @throws {CdError}
    */
   async parse(customOptions, inBackground = false, markAsRead = false) {

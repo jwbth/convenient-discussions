@@ -178,6 +178,13 @@ declare global {
       $errors: JQuery;
     }
   }
+
+  namespace OO.ui.MessageDialog {
+    interface Props {
+      text: PanelLayout;
+      title: OO.ui.LabelWidget;
+    }
+  }
 }
 
 export {};

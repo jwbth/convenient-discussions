@@ -579,8 +579,8 @@ export function getLastArrayElementOrSelf(value) {
 /**
  * If the argument is an array, return it. Otherwise, return an array containing the argument.
  *
- * @param {*|*[]} value
- * @returns {*[]}
+ * @param {any|any[]} value
+ * @returns {any[]}
  */
 export function ensureArray(value) {
   return Array.isArray(value) ? value : [value];

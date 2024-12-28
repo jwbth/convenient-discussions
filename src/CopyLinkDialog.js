@@ -1,4 +1,5 @@
 import CdError from './CdError';
+import Comment from './Comment';
 import DivLabelWidget from './DivLabelWidget';
 import cd from './cd';
 import { createCopyTextField, tweakUserOoUiClass } from './utils-oojs';
@@ -8,6 +9,7 @@ import { mergeJquery, wrapHtml } from './utils-window';
  * Class used to create a "Copy link" dialog.
  *
  * @augments OO.ui.MessageDialog
+ * @template {import('./Comment').default|import('./Section').default} T
  */
 class CopyLinkDialog extends OO.ui.MessageDialog {
   // @ts-ignore: https://phabricator.wikimedia.org/T358416
@@ -19,23 +21,53 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
     },
   ];
 
+  /** @type {DivLabelWidget} */
+  message;
+
+  /** @type {OO.ui.ButtonOptionWidget} */
+  anchorOption;
+
+  /** @type {OO.ui.ButtonOptionWidget} */
+  diffOption;
+
+  /** @type {OO.ui.ButtonSelectWidget} */
+  linkTypeSelect;
+
+  /** @type {OO.ui.PanelLayout} */
+  anchorPanel;
+
+  /** @type {OO.ui.StackLayout} */
+  contentStack;
+
+  /**
+   * @typedef {T extends import('./Comment').default ? import('./Comment').default : import('./Section').default} CommentOrSection
+   */
+
   /**
    * Create a "Copy link" dialog.
    *
-   * @param {import('./Comment').default|import('./Section').default} object
-   * @param {'comment' | 'section'} type
+   * @param {CommentOrSection} object
    * @param {object} content
    */
-  constructor(object, type, content) {
+  constructor(object, content) {
     super({
       classes: ['cd-dialog-copyLink'],
     });
 
+    /** @type {CommentOrSection} */
     this.object = object;
-    this.type = type;
     this.content = content;
 
     this.readyDeferred = $.Deferred();
+  }
+
+  /**
+   * Check if the dialog is for a comment.
+   *
+   * @returns {this is CopyLinkDialog<Comment>}
+   */
+  isComment() {
+    return this.object.TYPE === 'comment';
   }
 
   /**
@@ -55,11 +87,10 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
     this.message = new DivLabelWidget({ classes: ['oo-ui-messageDialog-message'] });
     this.text.$element.append(this.message.$element);
 
-    if (this.type === 'comment') {
+    if (this.isComment()) {
       this.anchorOption = new OO.ui.ButtonOptionWidget({
         data: 'anchor',
         label: cd.s('cld-select-anchor'),
-        selected: true,
       });
       this.diffOption = new OO.ui.ButtonOptionWidget({
         data: 'diff',
@@ -89,7 +120,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       expanded: false,
     });
 
-    if (this.type === 'comment') {
+    if (this.isComment()) {
       this.createDiffPanel();
     }
 
@@ -108,16 +139,14 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    */
   getSetupProcess(data) {
     return super.getSetupProcess(data).next(() => {
-      this.title.setLabel(
-        this.type === 'comment' ? cd.s('cld-title-comment') : cd.s('cld-title-section')
-      );
+      this.title.setLabel(this.isComment() ? cd.s('cld-title-comment') : cd.s('cld-title-section'));
       this.message.setLabel(
         mergeJquery(
           this.linkTypeSelect?.$element,
           this.contentStack.$element,
         )
       );
-      this.size = this.type === 'comment' ? 'larger' : 'large';
+      this.size = this.isComment() ? 'larger' : 'large';
       this.contentStack.setItem(this.anchorPanel);
     });
   }
@@ -162,8 +191,13 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    * Create the "Diff" panel in the dialog.
    *
    * @protected
+   * @throws {CdError}
    */
   async createDiffPanel() {
+    if (!this.isClosing() || !this.object.isComment()) {
+      throw new CdError();
+    }
+
     let errorText;
     try {
       this.diffStandard = await this.object.getDiffLink('standard');
@@ -183,15 +217,15 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       this.readyDeferred.then(() => {
         mw.hook('wikipage.content').fire(this.content.$diffView);
       });
-    } catch (e) {
-      if (e instanceof CdError) {
-        const { type } = e.data;
+    } catch (error) {
+      if (error instanceof CdError) {
+        const { type } = error.data;
         errorText = type === 'network' ?
           cd.s('cld-diff-error-network') :
           cd.s('cld-diff-error');
       } else {
         errorText = cd.s('cld-diff-error-unknown');
-        console.warn(e);
+        console.warn(error);
       }
     }
 
@@ -209,7 +243,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
     // Doesn't apply to DT IDs.
     let helpOnlyCd;
     let helpNotOnlyCd;
-    if (this.type === 'comment' && this.content.fragment === this.object.id) {
+    if (this.isComment() && this.content.fragment === this.object.id) {
       helpOnlyCd = cd.s('cld-help-onlycd');
       helpNotOnlyCd = wrapHtml(cd.sParse('cld-help-notonlycd'));
     }
@@ -268,7 +302,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
         copyCallback,
       });
 
-      if (this.type === 'comment') {
+      if (this.isComment()) {
         jsBreakpointTimestamp = createCopyTextField({
           value: this.content.jsBreakpointTimestamp,
           label: 'JS conditional breakpoint (timestamp)',

@@ -151,6 +151,19 @@ index 0000000..2e31402
 +
 +	const CopyTextLayout: CopyTextLayout.Constructor;
 +}
+diff --git a/node_modules/@types/oojs-ui/MessageDialog.d.ts b/node_modules/@types/oojs-ui/MessageDialog.d.ts
+index 8edb265..071162a 100644
+--- a/node_modules/@types/oojs-ui/MessageDialog.d.ts
++++ b/node_modules/@types/oojs-ui/MessageDialog.d.ts
+@@ -58,7 +58,7 @@ declare namespace OO.ui {
+             message: JQuery | Deferrable<string> | null;
+         }
+ 
+-        type Props = Dialog.Props;
++        interface Props extends Dialog.Props {}
+ 
+         interface Prototype extends Dialog.Prototype {
+             getSetupProcess(data?: SetupDataMap & Record<string, any>): Process;
 diff --git a/node_modules/@types/oojs-ui/MultilineTextInputWidget.d.ts b/node_modules/@types/oojs-ui/MultilineTextInputWidget.d.ts
 index b9e1230..9ad53f6 100644
 --- a/node_modules/@types/oojs-ui/MultilineTextInputWidget.d.ts

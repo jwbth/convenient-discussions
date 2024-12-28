@@ -24,7 +24,8 @@ import { getRangeContents } from './utils-window';
  * @augments SectionSkeleton
  */
 class Section extends SectionSkeleton {
-  static prototypes = new PrototypeRegistry();
+  /** @readonly */
+  TYPE = 'section';
 
   /** @type {HTMLElement} */
   headlineElement;
@@ -1554,7 +1555,7 @@ class Section extends SectionSkeleton {
   /**
    * Copy a link to the section or open a copy link dialog.
    *
-   * @param {Event} event
+   * @param {MouseEvent | KeyboardEvent} event
    */
   copyLink(event) {
     controller.showCopyLinkDialog(this, event);
@@ -1567,7 +1568,7 @@ class Section extends SectionSkeleton {
    * @throws {CdError}
    */
   async requestCode() {
-    const { query, curtimestamp: queryTimestamp } = await controller.getApi().post({
+    const request = controller.getApi().post({
       action: 'query',
       titles: this.getSourcePage().name,
       prop: 'revisions',
@@ -1576,7 +1577,8 @@ class Section extends SectionSkeleton {
       rvprop: ['ids', 'content'],
       redirects: !mw.config.get('wgIsRedirect'),
       curtimestamp: true,
-    }).catch(handleApiReject);
+    });
+    const { query, curtimestamp: queryTimestamp } = /** @type {} */ (await request.catch(handleApiReject));
 
     const page = query?.pages?.[0];
     const revision = page?.revisions?.[0];
@@ -2087,6 +2089,17 @@ class Section extends SectionSkeleton {
       null
     );
   }
+
+  /**
+   * Type checking helper.
+   *
+   * @returns {this is Comment}
+   */
+  isComment() {
+    return false;
+  }
+
+  static prototypes = new PrototypeRegistry();
 
   /**
    * _For internal use._ Create element and widget prototypes to reuse them instead of creating new

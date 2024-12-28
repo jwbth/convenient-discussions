@@ -78,7 +78,7 @@ class TextInputWidget extends OO.ui.TextInputWidget {
    * @param {object} data Return value of {@link module:utilsWindow.cleanUpPasteDom}.
    * @param {Element} data.element
    * @param {string} data.text
-   * @param {Array.<string|undefined>} [data.syntaxHighlightLanguages]
+   * @param {Array.<string|undefined>} data.syntaxHighlightLanguages
    * @returns {Promise<string>}
    */
   async maybeConvertElementToWikitext({ element, text, syntaxHighlightLanguages }) {
@@ -90,7 +90,7 @@ class TextInputWidget extends OO.ui.TextInputWidget {
     const wikitext = await convertHtmlToWikitext(element.innerHTML, syntaxHighlightLanguages);
     this.popPending().setDisabled(false);
 
-    return wikitext;
+    return wikitext ?? text;
   }
 }
 
