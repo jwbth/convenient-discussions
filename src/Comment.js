@@ -939,7 +939,7 @@ class Comment extends CommentSkeleton {
       widgetConstructor: /** @type {() => OO.ui.ButtonWidget} */ (
         Comment.prototypes.getWidget('copyLinkButton')
       ),
-      href: this.dtId ? '#' + this.dtId : undefined,
+      href: this.dtId && '#' + this.dtId,
     });
     this.overlayMenu.appendChild(this.copyLinkButton.element);
   }
@@ -968,7 +968,7 @@ class Comment extends CommentSkeleton {
 
       this.goToParentButton.element.appendChild(Comment.prototypes.get('goToParentButtonSvg'));
 
-      //this.headerElement.appendChild(this.goToParentButton.element);
+      this.headerElement.appendChild(this.goToParentButton.element);
     } else {
       this.goToParentButton = new CommentButton({
         buttonElement: Comment.prototypes.get('goToParentButton'),
@@ -1015,10 +1015,10 @@ class Comment extends CommentSkeleton {
           )
         );
 
-        // this.headerElement.insertBefore(
-        //   this.goToChildButton.element,
-        //   (this.goToParentButton?.element || this.timestampElement)?.nextSibling
-        // );
+        this.headerElement.insertBefore(
+          this.goToChildButton.element,
+          (this.goToParentButton?.element || this.timestampElement)?.nextSibling
+        );
       } else if (this.$overlayMenu) {
         const buttonElement = Comment.prototypes.get('goToChildButton');
         this.goToChildButton = new CommentButton({
@@ -1060,10 +1060,10 @@ class Comment extends CommentSkeleton {
     });
     this.updateToggleChildThreadsButton();
 
-    // this.headerElement.insertBefore(
-    //   this.toggleChildThreadsButton.element,
-    //   this.$changeNote?.[0] || null
-    // );
+    this.headerElement.insertBefore(
+      this.toggleChildThreadsButton.element,
+      this.$changeNote?.[0] || null
+    );
   }
 
   /**
@@ -3178,7 +3178,7 @@ class Comment extends CommentSkeleton {
         if (selection.type !== 'Range') {
           const range = document.createRange();
           if (this.isReformatted()) {
-            //range.setStart(this.headerElement, this.headerElement.childNodes.length);
+            range.setStart(this.headerElement, this.headerElement.childNodes.length);
           } else {
             range.setStart(this.elements[0], 0);
           }
@@ -4147,6 +4147,8 @@ class Comment extends CommentSkeleton {
    * _For internal use._ Remove DT's event listener from its comment link and attach ours.
    */
   handleDtTimestampClick() {
+    if (!this.id) return;
+
     this.$elements
       .find('.ext-discussiontools-init-timestamplink')
       .off()

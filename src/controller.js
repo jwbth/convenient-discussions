@@ -46,7 +46,7 @@ import WebpackWorker from './worker/worker-gate';
 // rootElement
 // $root
 
-export default {
+const controller = {
   /**
    * @type {{
    *   closedDiscussions?: HTMLElement[];
@@ -1700,42 +1700,45 @@ export default {
     event.preventDefault();
 
     const fragment = object.getWikilinkFragment();
-    const type = object instanceof Comment ? 'comment' : 'section';
     const permalinkSpecialPagePrefix = (
       mw.config.get('wgFormattedNamespaces')[-1] +
       ':' +
       (
-        type === 'comment' ?
+        object instanceof Comment ?
           'GoToComment/' :
           cd.g.specialPageAliases.PermanentLink[0] + '/' + mw.config.get('wgRevisionId') + '#'
       )
     );
     const content = {
-      fragment,
-      wikilink: `[[${cd.page.name}#${fragment}]]`,
-      currentPageWikilink: `[[#${fragment}]]`,
-      permanentWikilink: `[[${permalinkSpecialPagePrefix}${fragment}]]`,
-      link: object.getUrl(),
-      permanentLink: type === 'comment' ?
-        /** @type {import('./pageRegistry').Page} */ (pageRegistry.get(
-          mw.config.get('wgFormattedNamespaces')[-1] + ':' + 'GoToComment/' + fragment
-        )).getDecodedUrlWithFragment() :
-        object.getUrl(true),
       copyMessages: {
         success: cd.s('copylink-copied'),
         fail: cd.s('copylink-error'),
       },
-      jsCall: type === 'comment' ?
+      fragment,
+      wikilink: `[[${cd.page.name}#${fragment}]]`,
+      currentPageWikilink: `[[#${fragment}]]`,
+      permanentWikilink: `[[${permalinkSpecialPagePrefix}${fragment}]]`,
+
+      // This dialog should be shown only for comments that have a timestamp; therefore a date;
+      // therefore an ID. In that case Comment#getUrl() returns a string.
+      link: /** @type {string} */ (object.getUrl()),
+
+      permanentLink: object instanceof Comment ?
+        /** @type {import('./pageRegistry').Page} */ (pageRegistry.get(
+          mw.config.get('wgFormattedNamespaces')[-1] + ':' + 'GoToComment/' + fragment
+        )).getDecodedUrlWithFragment() :
+        object.getUrl(true),
+      jsCall: object instanceof Comment ?
         `let c = convenientDiscussions.api.getCommentById('${object.id}');` :
         `let s = convenientDiscussions.api.getSectionById('${object.id}');`,
       jsBreakpoint: `this.id === '${object.id}'`,
-      jsBreakpointTimestamp: type === 'comment' ?
+      jsBreakpointTimestamp: object instanceof Comment ?
         `timestamp.element.textContent === '${object.timestampText}'` :
         undefined,
     };
 
     // Undocumented feature allowing to copy a link of a default type without opening a dialog.
-    const relevantSetting = type === 'comment' ?
+    const relevantSetting = object instanceof Comment ?
       settings.get('defaultCommentLinkType') :
       settings.get('defaultSectionLinkType');
     if (!event.shiftKey && relevantSetting) {
@@ -1750,7 +1753,7 @@ export default {
       return;
     }
 
-    const dialog = new (require('./CopyLinkDialog').default)(object, type, content);
+    const dialog = new (require('./CopyLinkDialog').default)(object, content, object instanceof Comment ? 'comment' : 'section');
     this.getWindowManager().addWindows([dialog]);
     this.getWindowManager().openWindow(dialog);
   },
@@ -2224,3 +2227,8 @@ export default {
     return cd.page.isOwnTalkPage() && !['all', 'toMe'].includes(settings.get('desktopNotifications'));
   },
 };
+
+/** @type {typeof controller & OO.EventEmitter} */
+const controllerExtended = controller;
+
+export default controllerExtended;

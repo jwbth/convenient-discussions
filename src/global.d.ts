@@ -155,34 +155,66 @@ declare global {
         new (config: OO.ui.TitleInputWidget);
       }
     }
-  }
 
-  namespace OO.ui.Window {
-    interface Props {
-      $body: JQuery;
+    namespace Upload {
+      interface DialogConfig {
+        bookletClass?: typeof mw.Upload.BookletLayout;
+        booklet?: object;
+      }
+
+      class Dialog extends OO.ui.ProcessDialog {
+        static name: string;
+        static title: string | Function;
+        static actions: Array<{
+          flags: string | string[];
+          action: string;
+          label: string;
+          modes: string | string[];
+        }>;
+
+        constructor(config?: DialogConfig);
+
+        protected createUploadBooklet(): mw.Upload.BookletLayout;
+        protected onUploadBookletSet(page: OO.ui.PageLayout): void;
+        protected onUploadValid(isValid: boolean): void;
+        protected onInfoValid(isValid: boolean): void;
+
+        protected bookletClass: typeof mw.Upload.BookletLayout;
+        protected bookletConfig: object;
+        protected uploadBooklet: mw.Upload.BookletLayout;
+      }
     }
   }
 
-  namespace OO.ui.Dialog {
-    interface Props {
-      actions: ActionSet;
-    }
-  }
-
-  namespace OO.ui.ProcessDialog {
-    interface Prototype {
-      showErrors(errors: OO.ui.Error[] | OO.ui.Error): void;
+  namespace OO.ui {
+    namespace Window {
+      interface Props {
+        $body: JQuery;
+      }
     }
 
-    interface Props {
-      $errors: JQuery;
+    namespace Dialog {
+      interface Props {
+        actions: ActionSet;
+      }
     }
-  }
 
-  namespace OO.ui.MessageDialog {
-    interface Props {
-      text: PanelLayout;
-      title: OO.ui.LabelWidget;
+    namespace ProcessDialog {
+      interface Prototype {
+        showErrors(errors: OO.ui.Error[] | OO.ui.Error): void;
+        hideErrors(): void;
+      }
+
+      interface Props {
+        $errors: JQuery;
+      }
+    }
+
+    namespace MessageDialog {
+      interface Props {
+        text: PanelLayout;
+        title: OO.ui.LabelWidget;
+      }
     }
   }
 }

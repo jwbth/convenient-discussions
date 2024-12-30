@@ -1,5 +1,4 @@
 import CdError from './CdError';
-import Comment from './Comment';
 import DivLabelWidget from './DivLabelWidget';
 import cd from './cd';
 import { createCopyTextField, tweakUserOoUiClass } from './utils-oojs';
@@ -9,7 +8,7 @@ import { mergeJquery, wrapHtml } from './utils-window';
  * Class used to create a "Copy link" dialog.
  *
  * @augments OO.ui.MessageDialog
- * @template {import('./Comment').default|import('./Section').default} T
+ * @template {'comment' | 'section'} T
  */
 class CopyLinkDialog extends OO.ui.MessageDialog {
   // @ts-ignore: https://phabricator.wikimedia.org/T358416
@@ -40,7 +39,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   contentStack;
 
   /**
-   * @typedef {T extends import('./Comment').default ? import('./Comment').default : import('./Section').default} CommentOrSection
+   * @typedef {T extends 'comment' ? import('./Comment').default : import('./Section').default} CommentOrSection
    */
 
   /**
@@ -48,8 +47,9 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    *
    * @param {CommentOrSection} object
    * @param {object} content
+   * @param {T} type
    */
-  constructor(object, content) {
+  constructor(object, content, type) {
     super({
       classes: ['cd-dialog-copyLink'],
     });
@@ -64,7 +64,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   /**
    * Check if the dialog is for a comment.
    *
-   * @returns {this is CopyLinkDialog<Comment>}
+   * @returns {this is CopyLinkDialog<'comment'>}
    */
   isComment() {
     return this.object.TYPE === 'comment';

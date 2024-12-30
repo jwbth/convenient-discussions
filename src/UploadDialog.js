@@ -20,10 +20,51 @@ import { mergeJquery, wrapHtml } from './utils-window';
  */
 
 /**
+ * @typedef {{
+ *   new (...args: any[]): ProcessDialog;
+ *   prototype: ProcessDialog;
+ * }} ProcessDialogMixin
+ */
+
+/**
+ * @template {Constructor} TBase
+ * @param {TBase} Base
+ * @returns {TBase & ProcessDialogMixin}
+ */
+function ProcessDialogMixin(Base) {
+  // eslint-disable-next-line jsdoc/require-jsdoc
+  class Class extends Base {}
+  OO.mixinClass(Class, ProcessDialog);
+  return (/** @type {TBase & ProcessDialogMixin} */ (Class));
+}
+
+/**
+ * @template {Constructor} TBase
+ * @template {Constructor} TMixin
+ * @param {TBase} Base
+ * @param {TMixin} Mixin
+ * @returns {TBase & MixinType}
+ */
+function mixinClass(Base, Mixin) {
+  /**
+   * @typedef {{
+   *   new (...args: any[]): InstanceType<TMixin>;
+   *   prototype: InstanceType<TMixin>;
+   * }} MixinType
+   */
+
+  // eslint-disable-next-line jsdoc/require-jsdoc
+  class Class extends Base {}
+  OO.mixinClass(Class, Mixin);
+
+  return /** @type {TBase & MixinType} */ (Class);
+}
+
+/**
  * Class that extends {@link mw.Upload.Dialog} and adds some logic we need. Uses
  * {@link ForeignStructuredUploadBookletLayout}, which in turn uses {@link ForeignStructuredUpload}.
  */
-class UploadDialog extends mw.Upload.Dialog {
+export class UploadDialog extends mixinClass(mw.Upload.Dialog, ProcessDialog) {
   /**
    * Create an upload dialog.
    *
@@ -198,7 +239,6 @@ class UploadDialog extends mw.Upload.Dialog {
    * two actions, not one ("Upload and save").
    *
    * @param {OO.ui.Error} errors
-   * @protected
    */
   showErrors(errors) {
     this.hideErrors();

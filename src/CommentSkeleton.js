@@ -3,7 +3,7 @@ import ElementsAndTextTreeWalker from './ElementsAndTextTreeWalker';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import Parser from './Parser';
 import cd from './cd';
-import { generateFixedPosTimestamp, isElement, isHeadingNode, isInline, isMetadataNode, isText, spacesToUnderlines, unique } from './utils-general';
+import { generateFixedPosTimestamp, genericGetOldestOrNewestByDateProp, isElement, isHeadingNode, isInline, isMetadataNode, isText, spacesToUnderlines, unique } from './utils-general';
 
 /**
  * Class containing the main properties of a comment and building it from a signature (we should
@@ -153,7 +153,7 @@ class CommentSkeleton {
     /**
      * Comment timestamp as originally present on the page.
      *
-     * @type {string}
+     * @type {string|undefined}
      */
     this.timestamp = signature.timestampText?.replace(/ {2,}/g, ' ');
 
@@ -263,7 +263,7 @@ class CommentSkeleton {
    * Get nodes to start the traversal from.
    *
    * @param {ElementsAndTextTreeWalker} treeWalker
-   * @returns {[CommentPart[], Element]}
+   * @returns {[CommentPart[], ElementLike | undefined]}
    * @private
    */
   getStartNodes(treeWalker) {
@@ -303,31 +303,30 @@ class CommentSkeleton {
         treeWalker.parentNode()
       );
       if (!treeWalker.nextSibling()) break;
+
       if (!isInline(treeWalker.currentNode, true) && !isMetadataNode(treeWalker.currentNode)) {
-        firstForeignComponentAfter = treeWalker.currentNode;
+        firstForeignComponentAfter = /** @type {ElementLike} */ (treeWalker.currentNode);
       }
     }
 
     // As an optimization, avoid adding every text node of the comment to the array of its parts if
     // possible. Add their common container instead.
     const parts = [];
+    const fiaParentNode = farthestInlineAncestor.parentNode;
     if (
-      (
-        firstForeignComponentAfter &&
-        farthestInlineAncestor.parentNode.contains(firstForeignComponentAfter)
-      ) ||
+      (firstForeignComponentAfter && fiaParentNode.contains(firstForeignComponentAfter)) ||
 
       // Cases when the comment has no wrapper that contains only that comment (for example,
       // https://ru.wikipedia.org/wiki/Project:Форум/Архив/Технический/2020/10#202010140847_AndreiK).
       // The second parameter of .getElementsByClassName() is an optimization for the worker
       // context.
-      farthestInlineAncestor.parentNode.getElementsByClassName('cd-signature', 2).length > 1 ||
+      fiaParentNode.getElementsByClassName('cd-signature', 2).length > 1 ||
 
-      !this.isElementEligible(farthestInlineAncestor.parentNode, treeWalker, 'start') ||
+      !this.isElementEligible(fiaParentNode, treeWalker, 'start') ||
 
       // Outdent templates in the same item element. TODO: add a test for this case (e.g.
       // https://ru.wikipedia.org/wiki/Википедия:Голосования/Срочное_включение_нового_Vector#c-Iniquity-20240204205500-AndyVolykhov-20240204201000)
-      [...farthestInlineAncestor.parentNode[this.parser.context.childElementsProp]].some((child) => (
+      [...fiaParentNode[this.parser.context.childElementsProp]].some((child) => (
         this.parser.rejectClasses.some((name) => child.classList.contains(name))
       ))
     ) {
@@ -1777,60 +1776,28 @@ class CommentSkeleton {
   /**
    * Get the oldest comment in a list.
    *
-   * @param {CommentSkeleton[]|CommentSkeletonLike[]} comments
-   * @returns {?(CommentSkeleton|CommentSkeletonLike)}
+   * @param {CommentSkeleton[]} comments
+   * @returns {?CommentSkeleton}
    */
   static getOldest(comments) {
-    return this.getOldestOrNewest(comments, 'oldest');
+    return genericGetOldestOrNewestByDateProp(comments, 'oldest', false);
   }
 
   /**
    * Get the oldest comment in a list.
    *
-   * @param {CommentSkeleton[]|CommentSkeletonLike[]} comments
+   * @param {CommentSkeleton[]} comments
    * @param {boolean} allowDateless
-   * @returns {?(CommentSkeleton|CommentSkeletonLike)}
+   * @returns {?CommentSkeleton}
    */
   static getNewest(comments, allowDateless) {
-    return this.getOldestOrNewest(comments, 'newest', allowDateless);
-  }
-
-  /**
-   * Get the oldest or newest comment in a list.
-   *
-   * @param {CommentSkeleton[]|CommentSkeletonLike[]} comments
-   * @param {'oldest'|'newest'} which
-   * @param {boolean} allowDateless
-   * @returns {?(CommentSkeleton|CommentSkeletonLike)}
-   * @private
-   */
-  static getOldestOrNewest(comments, which, allowDateless) {
-    return comments.reduce(
-      (oldestComment, comment) =>
-        (
-          ((comment.date || allowDateless) && !oldestComment) ||
-          (
-            comment.date &&
-            (
-              !oldestComment.date ||
-              (
-                which === 'oldest' ?
-                  comment.date < oldestComment.date :
-                  comment.date > oldestComment.date
-              )
-            )
-          )
-        ) ?
-          comment :
-          oldestComment,
-      null
-    );
+    return genericGetOldestOrNewestByDateProp(comments, 'newest', allowDateless);
   }
 }
 
 /**
- * Object with the same basic structure as {@link CommentSkeleton} has. (It comes from a web
- * worker so its constructor is lost.)
+ * Object with the same basic structure as {@link CommentSkeleton} has. (It comes from a web worker
+ * so its constructor is lost.)
  *
  * @typedef {CommentSkeleton} CommentSkeletonLike
  */

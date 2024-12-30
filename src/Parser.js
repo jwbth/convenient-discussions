@@ -9,8 +9,8 @@ import { parseTimestamp } from './utils-timestamp';
 
 /**
  * @typedef {object} Context
- * @property {Class} CommentClass
- * @property {Class} SectionClass
+ * @property {Constructor} CommentClass
+ * @property {Constructor} SectionClass
  * @property {string} childElementsProp
  * @property {(el1: NodeLike, el2: NodeLike) => boolean} follows
  * @property {() => TextLikeArray} getAllTextNodes
@@ -220,7 +220,10 @@ class Parser {
     this.handleFactotumOutdents(text, node);
 
     const { date, match } = parseTimestamp(text) || {};
-    if (!date || this.noSignatureElements.some((el) => el.contains(node))) {
+    if (
+      !date ||
+      this.noSignatureElements.some((/** @type {ElementLike} */ el) => el.contains(node))
+    ) {
       return null;
     }
 
@@ -241,8 +244,8 @@ class Parser {
   /**
    * Collect nodes related to a signature starting from a timestamp node.
    *
-   * @param {object} timestamp
-   * @returns {?object}
+   * @param {Timestamp} timestamp
+   * @returns {?Omit<SignatureTarget, 'type' | 'extraSignatures'>}
    * @private
    */
   getSignatureFromTimestamp(timestamp) {
@@ -405,11 +408,12 @@ class Parser {
   }
 
   /**
-   * Find outputs of unsigned templates.
+   * Find outputs of unsigned templates that we weren't able to find using the standard procedure
+   * (in which case they are treated as normal signatures).
    *
-   * @returns {object[]}
+   * @returns {Partial<SignatureTarget>[]}
    */
-  findUnsigneds() {
+  findRemainingUnsigneds() {
     if (!cd.config.unsignedClass) {
       return [];
     }
@@ -423,7 +427,11 @@ class Parser {
         }
 
         // Cases like https://ru.wikipedia.org/?diff=84883816
-        for (let el = element; el && el !== this.context.rootElement; el = el.parentNode) {
+        for (
+          let el = /** @type {ElementLike | null} */ (element);
+          el && el !== this.context.rootElement;
+          el = el.parentElement
+        ) {
           if (el.classList.contains('cd-signature')) {
             return false;
           }
@@ -443,16 +451,18 @@ class Parser {
               authorTalkLink = link;
             }
             element.classList.add('cd-signature');
-            const isUnsigned = true;
             unsigneds.push({
               element,
               authorName,
-              isUnsigned,
+              isUnsigned: true,
               authorLink,
               authorTalkLink,
             });
+
             return true;
           }
+
+          return false;
         });
       });
 
@@ -472,7 +482,7 @@ class Parser {
       .filter(definedAndNotNull)
       .map(this.getSignatureFromTimestamp.bind(this))
       .filter(definedAndNotNull)
-      .concat(this.findUnsigneds());
+      .concat(this.findRemainingUnsigneds());
 
     // Move extra signatures (additional signatures for a comment, if there is more than one) to an
     // array which then assign to a relevant signature (the one which goes first).
@@ -488,7 +498,8 @@ class Parser {
           sig.extraSignatures = extraSignatures;
           extraSignatures = [];
         }
-        return Object.assign({ type: 'signature' }, sig);
+
+        return { type: 'signature', ...sig };
       })
       .filter((sig) => !sig.isExtraSignature);
   }

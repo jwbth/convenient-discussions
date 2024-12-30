@@ -34,26 +34,26 @@ class ProcessDialog extends OO.ui.ProcessDialog {
    * Handle a error, displaying a message with the provided name and popping the pending state. If
    * the error is not recoverable, the dialog is closed on "Dismiss".
    *
-   * @param {CdError|Error} e
+   * @param {CdError|Error} error
    * @param {string} messageName
    * @param {boolean} recoverable
    * @protected
    */
-  handleError(e, messageName, recoverable) {
-    let error;
-    if (e instanceof CdError) {
-      const { type } = e.data;
+  handleError(error, messageName, recoverable) {
+    let errorInstance;
+    if (error instanceof CdError) {
+      const { type } = error.data;
       let message = cd.s(messageName);
       if (type === 'network') {
         message += ' ' + cd.s('error-network');
       }
-      error = new OO.ui.Error(message, { recoverable });
+      errorInstance = new OO.ui.Error(message, { recoverable });
     } else {
-      error = new OO.ui.Error(cd.s('error-javascript'), { recoverable: false });
+      errorInstance = new OO.ui.Error(cd.s('error-javascript'), { recoverable: false });
     }
 
-    this.showErrors(error);
-    console.warn(e);
+    this.showErrors(errorInstance);
+    console.warn(error);
     this.$errors
       .find('.oo-ui-buttonElement:not(.oo-ui-flaggedElement-primary) > .oo-ui-buttonElement-button')
       .on('click', () => {

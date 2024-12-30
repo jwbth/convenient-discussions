@@ -914,3 +914,37 @@ export function getQueryParamBooleanValue(param) {
 export function mergeMaps(maps) {
   return new Map(maps.flatMap((map) => [...map]));
 }
+
+/**
+ * @typedef {object} PossiblyWithDate
+ * @property {?Date} [date]
+ */
+
+/**
+ * Get the oldest or newest item by the `date` property that is implied to exist.
+ *
+ * @template {PossiblyWithDate} T
+ * @param {T[]} items
+ * @param {'oldest'|'newest'} which
+ * @param {boolean} allowDateless
+ * @returns {?T}
+ */
+export function genericGetOldestOrNewestByDateProp(items, which, allowDateless) {
+  return items.reduce(
+    (candidate, item) =>
+      (
+        ((item.date || allowDateless) && !candidate) ||
+        (
+          candidate &&
+          item.date &&
+          (
+            !candidate.date ||
+            (which === 'oldest' ? item.date < candidate.date : item.date > candidate.date)
+          )
+        )
+      ) ?
+        item :
+        candidate,
+    /** @type {?T} */ (null)
+  );
+}

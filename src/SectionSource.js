@@ -1,7 +1,7 @@
 import cd from './cd';
 import CdError from './CdError';
 import sectionRegistry from './sectionRegistry';
-import { calculateWordOverlap } from './utils-general';
+import { calculateWordOverlap, genericGetOldestOrNewestByDateProp } from './utils-general';
 import { endWithTwoNewlines, extractSignatures, normalizeCode, removeWikiMarkup } from './utils-wikitext';
 
 /**
@@ -349,12 +349,11 @@ class SectionSource {
 
     headlines.push(this.headline);
 
-    let oldestSig;
-    extractSignatures(this.code).forEach((sig) => {
-      if (!oldestSig || (!oldestSig.date && sig.date) || (sig.date && oldestSig.date > sig.date)) {
-        oldestSig = sig;
-      }
-    });
+    const oldestSig = genericGetOldestOrNewestByDateProp(
+      extractSignatures(this.code),
+      'oldest',
+      true
+    );
     const sectionOldestComment = this.section.oldestComment;
     const doesOldestCommentMatch = oldestSig ?
       Boolean(

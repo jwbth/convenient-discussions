@@ -16,7 +16,7 @@ import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
 import { handleApiReject, parseCode } from './utils-api';
-import { buildEditSummary, defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './utils-general';
+import { buildEditSummary, defined, definedAndNotNull, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './utils-general';
 import { createCheckboxField } from './utils-oojs';
 import { escapePipesOutsideLinks, generateTagsRegexp, removeWikiMarkup } from './utils-wikitext';
 import { isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, isInputFocused, keyCombination, mergeJquery, wrapDiffBody, wrapHtml } from './utils-window';
@@ -86,7 +86,7 @@ class CommentForm {
   /**
    * Headline input.
    *
-   * @type {OO.ui.TextInputWidget|undefined}
+   * @type {import('./TextInputWidget').default|undefined}
    */
   headlineInput;
 
@@ -100,7 +100,7 @@ class CommentForm {
   /**
    * Edit summary input.
    *
-   * @type {OO.ui.TextInputWidget}
+   * @type {import('./TextInputWidget').default}
    */
   summaryInput;
 
@@ -141,7 +141,7 @@ class CommentForm {
   watchCheckbox;
 
   /**
-   * Subscribe checkbox field.
+   * Topic subscribe checkbox field.
    *
    * @type {OO.ui.FieldLayout|undefined}
    * @memberof CommentForm
@@ -150,7 +150,7 @@ class CommentForm {
   subscribeField;
 
   /**
-   * Subscribe checkbox.
+   * Topic subscribe checkbox.
    *
    * @type {import('./CheckboxInputWidget').default|undefined}
    * @memberof CommentForm
@@ -327,6 +327,12 @@ class CommentForm {
    */
   checkCodeRequest;
 
+  /** @type {string} */
+  originalComment;
+
+  /** @type {string} */
+  originalHeadline;
+
   /**
    * @typedef {(
    *   Mode extends 'reply' | 'edit' ?
@@ -462,15 +468,6 @@ class CommentForm {
     this.targetWithOutdentedReplies = initialState.targetWithOutdentedReplies || null;
 
     /**
-     * Is section opening comment edited.
-     *
-     * @type {boolean}
-     * @private
-     */
-    this.sectionOpeningCommentEdited =
-      this.mode === 'edit' && this.target instanceof Comment && this.target.isOpeningSection;
-
-    /**
      * Whether a new section will be added on submit using a dedicated API request. (Filled upon
      * submitting or viewing changes.)
      *
@@ -504,7 +501,7 @@ class CommentForm {
      */
     this.lastKeyPresses = [];
 
-    if (this.mode === 'addSection') {
+    if (this.isAddSectionMode()) {
       // This is above this.createContents() as that function is time-costly and would delay the
       // requests made in this.addEditNotices().
       this.addEditNotices();
@@ -547,7 +544,7 @@ class CommentForm {
       });
     }
 
-    if (this.mode === 'edit') {
+    if (this.isEditMode()) {
       this.loadComment(initialState);
     } else if (initialState.originalComment !== undefined) {
       this.originalComment = initialState.originalComment || '';
@@ -560,6 +557,7 @@ class CommentForm {
       }
 
       if (this.headlineInput) {
+        this.headlineInput
         if (this.preloadConfig.headline) {
           this.headlineInput.setValue(this.preloadConfig.headline);
         }
@@ -595,13 +593,13 @@ class CommentForm {
       );
     }
 
-    if (this.mode !== 'addSection' && this.mode !== 'edit') {
+    if (!this.isAddSectionMode() && !this.isEditMode()) {
       this.checkCode();
     }
 
     if (!initialState.originalComment && initialState.focus !== false) {
       this.$element.cdScrollIntoView('center', true, () => {
-        if (this.mode !== 'edit') {
+        if (!this.isEditMode()) {
           (this.headlineInput || this.commentInput).focus();
         }
       });
@@ -620,10 +618,8 @@ class CommentForm {
   setTargets(target) {
     this.target = target;
     this.targetSection = /** @type {CommentFormTargetSection} */ (this.target.getRelevantSection());
-    this.targetPage = this.targetSection ?
-      this.targetSection.getSourcePage() :
-      cd.page;
-    this.parentComment = ['reply', 'replyInSection'].includes(this.mode) ?
+    this.targetPage = this.targetSection ? this.targetSection.getSourcePage() : cd.page;
+    this.parentComment = this.isReplyMode() || this.isReplyInSectionMode() ?
       this.target.getRelevantComment() :
       null;
   }
@@ -647,16 +643,16 @@ class CommentForm {
    */
   createTextInputs(initialState) {
     if (
-      (['addSection', 'addSubsection'].includes(this.mode) && !this.preloadConfig.noHeadline) ||
-      this.sectionOpeningCommentEdited
+      ((this.isAddSectionMode() || this.isAddSubsectionMode()) && !this.preloadConfig.noHeadline) ||
+      this.isSectionOpeningCommentEdited()
     ) {
       this.headlineInputPlaceholder = this.target.getCommentFormHeadlineInputPlaceholder(this.mode);
-      this.headlineInput = new (require('./TextInputWidget').default)({
+      this.headlineInput = (new (require('./TextInputWidget').default)({
         value: initialState.headline ?? '',
         placeholder: this.headlineInputPlaceholder,
         classes: ['cd-commentForm-headlineInput'],
         tabIndex: this.getTabIndex(11),
-      });
+      }));
     }
 
     this.commentInput = new (require('./MultilineTextInputWidget').default)({
@@ -698,7 +694,7 @@ class CommentForm {
    */
   createCheckboxes(initialState) {
     if (cd.user.isRegistered()) {
-      if (this.mode === 'edit') {
+      if (this.isEditMode()) {
          ({
           field: this.minorField,
           input: this.minorCheckbox,
@@ -718,7 +714,7 @@ class CommentForm {
         selected: (
           initialState.watch ??
           (
-            (this.watchOnReply && this.mode !== 'edit') ||
+            (this.watchOnReply && !this.isEditMode()) ||
             $('.mw-watchlink a[href*="action=unwatch"]').length ||
             mw.user.options.get(cd.page.exists() ? 'watchdefault' : 'watchcreations')
           )
@@ -731,7 +727,7 @@ class CommentForm {
         this.targetSection?.getBase(true) :
         this.targetSection;
       if (
-        (subscribableSection?.subscribeId || this.mode === 'addSection') &&
+        (subscribableSection?.subscribeId || this.isAddSectionMode()) &&
         (!controller.isSubscribingDisabled() || subscribableSection?.subscriptionState)
       ) {
         ({
@@ -742,16 +738,16 @@ class CommentForm {
           selected: (
             initialState.subscribe ??
             (
-              (this.subscribeOnReply && this.mode !== 'edit') ||
+              (this.subscribeOnReply && !this.isEditMode()) ||
               subscribableSection?.subscriptionState
             )
           ),
           label: (
             this.useTopicSubscription ||
             (
-              this.mode === 'addSection' ||
+              this.isAddSectionMode() ||
               (
-                this.mode !== 'addSubsection' &&
+                !this.isAddSubsectionMode() &&
                 ((this.targetSection && this.targetSection.level <= 2))
               )
             )
@@ -774,14 +770,14 @@ class CommentForm {
       title: cd.s('cf-omitsignature-tooltip'),
       tabIndex: this.getTabIndex(25),
     }));
-    if (!['addSection', 'addSubsection'].includes(this.mode)) {
+    if (!this.isAddSectionMode() && !this.isAddSubsectionMode()) {
       // The checkbox works (for cases like https://en.wikipedia.org/wiki/Template:3ORshort) but is
       // hidden.
       this.omitSignatureField.toggle(false);
     }
 
     if (
-      this.mode === 'edit' &&
+      this.isEditMode() &&
       /** @type {import('./Comment').default} */ (this.target).isDeletable()
     ) {
       ({ field: this.deleteField, input: this.deleteCheckbox } = createCheckboxField({
@@ -905,14 +901,15 @@ class CommentForm {
    * @private
    */
   createElements() {
-    if (this.mode === 'reply') {
+    if (this.isReplyMode()) {
       this.containerListType = 'dl';
-    } else if (this.mode === 'edit') {
+    } else if (this.isEditMode()) {
       this.containerListType = /** @type {Comment} */ (this.target).containerListType;
-    } else if (this.mode === 'replyInSection') {
-      this.containerListType = /** @type {import('./Section').default} */ (
-        this.target
-      ).$replyButtonContainer.prop('tagName').toLowerCase();
+    } else if (this.isReplyInSectionMode()) {
+      // If the user managed to open the form, there should be a reply button container.
+      this.containerListType = /** @type {JQuery} */ (this.target.$replyButtonContainer)
+        .prop('tagName')
+        .toLowerCase();
     }
 
     this.$element = $('<div>').addClass([
@@ -920,10 +917,10 @@ class CommentForm {
       this.containerListType === 'ol' ?
         'cd-commentForm-inNumberedList' :
         undefined,
-      this.sectionOpeningCommentEdited ?
+        this.isSectionOpeningCommentEdited() ?
         'cd-commentForm-sectionOpeningComment' :
         undefined,
-      this.isTargetTypeSection() && this.mode === 'addSubsection' ?
+      this.isTargetTypeSection() && this.isAddSubsectionMode() ?
         `cd-commentForm-addSubsection-${this.target.level}` :
         undefined,
     ].filter(defined));
@@ -969,7 +966,7 @@ class CommentForm {
       this.$buttons,
     ].filter(defined));
 
-    if (this.mode !== 'edit' && !this.alwaysExpandAdvanced) {
+    if (!this.isEditMode() && !this.alwaysExpandAdvanced) {
       this.$advanced.hide();
     }
 
@@ -1036,7 +1033,7 @@ class CommentForm {
     this.commentInput.$element
       .find('.tool[rel="redirect"], .tool[rel="signature"], .tool[rel="newline"], .tool[rel="reference"], .option[rel="heading-2"]')
       .remove();
-    if (!['addSection', 'addSubsection'].includes(this.mode)) {
+    if (!this.isAddSectionMode() && !this.isAddSubsectionMode()) {
       this.commentInput.$element.find('.group-heading').remove();
     }
 
@@ -1826,7 +1823,7 @@ class CommentForm {
       .on('paste drop', this.handlePasteDrop.bind(this))
       .on('tribute-replaced', (event) => {
         if (event.originalEvent.detail.instance.trigger === cd.config.mentionCharacter) {
-          if (this.mode === 'edit') {
+          if (this.isEditMode()) {
             this.showMessage(
               wrapHtml(cd.sParse('cf-reaction-mention-edit'), { targetBlank: true }),
               {
@@ -2034,11 +2031,11 @@ class CommentForm {
     let commentsInSection = [];
     if (this.targetSection) {
       commentsInSection = this.targetSection.getBase().comments;
-    } else if (this.mode !== 'addSection') {
+    } else if (!this.isAddSectionMode()) {
       // Comments in the lead section
       commentsInSection = commentRegistry.query((comment) => !comment.section);
     }
-    if (this.mode === 'edit') {
+    if (this.isEditMode()) {
       commentsInSection = commentsInSection.filter((comment) => comment !== this.target);
     }
 
@@ -2584,7 +2581,7 @@ class CommentForm {
     const commentIds = CommentForm.extractCommentIds(this.commentInput.getValue());
 
     this.newSectionApi = Boolean(
-      this.mode === 'addSection' &&
+      this.isAddSectionMode() &&
       !this.newTopicOnTop &&
       this.headlineInput?.getValue().trim() &&
       !commentIds.length
@@ -2623,7 +2620,7 @@ class CommentForm {
           // CommentSource#isReplyOutdented set for `action === 'reply'` which we don't have so far.
           // So let CommentSource#modifyContext compute it. In the rest of cases just get the comment
           // code.
-          commentCode: this.mode === 'reply' ? undefined : this.inputToCode(action),
+          commentCode: this.isReplyMode() ? undefined : this.inputToCode(action),
 
           action: this.mode,
           doDelete: this.deleteCheckbox?.isSelected(),
@@ -2744,7 +2741,7 @@ class CommentForm {
         (if the mode is 'edit' and the comment has not been loaded, this method would halt after
         looking for an unclosed 'load' operation above).
      */
-    if (this.mode !== 'addSection' && !this.target.source) {
+    if (!this.isAddSectionMode() && !this.target.source) {
       await this.checkCode();
       if (!this.target.source) {
         operation.close();
@@ -3017,7 +3014,7 @@ class CommentForm {
         condition: (
           !doDelete &&
           /^==[^=]/m.test(this.commentInput.getValue()) &&
-          this.mode !== 'edit' &&
+          !this.isEditMode() &&
           !this.preloadConfig?.commentTemplate
         ),
         confirmation: () => confirm(cd.s('cf-confirm-secondlevelheading')),
@@ -3150,10 +3147,10 @@ class CommentForm {
       if (
         // FIXME: fix behavior for sections added with no headline (that are, in fact, comments
         // added to the preceding section)
-        this.mode === 'addSection' ||
+        this.isAddSectionMode() ||
         (
           !this.useTopicSubscription &&
-          (this.mode === 'addSubsection' || this.sectionOpeningCommentEdited)
+          (this.isAddSubsectionMode() || this.isSectionOpeningCommentEdited())
         )
       ) {
         let rawHeadline;
@@ -3161,7 +3158,7 @@ class CommentForm {
         if (this.headlineInput) {
           rawHeadline = this.headlineInput.getValue().trim();
         }
-        if (!this.sectionOpeningCommentEdited && !rawHeadline) {
+        if (!this.isSectionOpeningCommentEdited() && !rawHeadline) {
           [, rawHeadline] = commentCode.match(/^==(.*?)==[ \t]*$/m) || [];
         }
         headline = rawHeadline && removeWikiMarkup(rawHeadline);
@@ -3173,7 +3170,7 @@ class CommentForm {
           subscribeId = sectionRegistry.generateDtSubscriptionId(cd.user.getName(), editTimestamp);
         } else {
           subscribeId = headline;
-          if (this.sectionOpeningCommentEdited) {
+          if (this.isSectionOpeningCommentEdited()) {
             originalHeadline = removeWikiMarkup(this.originalHeadline);
             isHeadlineAltered = subscribeId !== originalHeadline;
           }
@@ -3219,17 +3216,21 @@ class CommentForm {
     // Timestamps on the page (and therefore anchors) have no seconds.
     date.setSeconds(0);
 
-    return Comment.generateId(
+    const commentaboveReplyIndex = this.target.getCommentAboveReply(this)?.index;
+
+    return /** @type {string} */ (Comment.generateId(
       date,
       cd.user.getName(),
-      commentRegistry.getAll()
-        .slice(0, this.target.getCommentAboveReply(this)?.index + 1 ?? 0)
-        .filter((comment) => (
-          comment.author === cd.user &&
-          comment.date?.getTime() === date.getTime()
-        ))
-        .map((comment) => comment.id)
-    );
+      commentaboveReplyIndex ?
+        commentRegistry.getAll()
+          .slice(0, commentaboveReplyIndex + 1)
+          .filter((comment) => (
+            comment.author === cd.user &&
+            comment.date?.getTime() === date.getTime()
+          ))
+          .map((comment) => /** @type {string} */ (comment.id)) :
+        undefined
+    ));
   }
 
   /**
@@ -3288,7 +3289,7 @@ class CommentForm {
     if (!doDelete) {
       // Generate an ID for the comment to jump to.
       bootData.commentIds = [
-        this.mode === 'edit' ? this.target.id : this.generateFutureCommentId(editTimestamp),
+        this.isEditMode() ? this.target.id : this.generateFutureCommentId(editTimestamp),
       ];
     }
 
@@ -3420,16 +3421,15 @@ class CommentForm {
 
     this.summaryAutopreviewBlocked = blockAutopreview;
 
-    const text = this.generateStaticSummaryText(
-      this.targetWithOutdentedReplies ? 'reply' : undefined,
-      this.targetWithOutdentedReplies
-    );
-    const section = this.headlineInput && this.mode !== 'addSubsection' ?
-      removeWikiMarkup(this.headlineInput.getValue()) :
+    const text = this.generateStaticSummaryText(this.targetWithOutdentedReplies || undefined);
+    const section = this.headlineInput && !this.isAddSubsectionMode() ?
+      // Unclear why `this` becomes `never` here without a type hint
+      removeWikiMarkup(/** @type {this} */ (this).headlineInput.getValue()) :
+
       this.target.getRelevantSection()?.headline;
 
     let optionalText;
-    if (['reply', 'replyInSection'].includes(this.mode)) {
+    if (this.isReplyMode() || this.isReplyInSectionMode()) {
       const commentText = this.commentInput.getValue()
         .trim()
         .replace(/\s+/g, ' ')
@@ -3444,7 +3444,7 @@ class CommentForm {
       if (commentText && commentText.length <= cd.config.commentToSummaryLengthLimit) {
         optionalText = `: ${commentText} (-)`;
       }
-    } else if (this.mode === 'addSubsection') {
+    } else if (this.isAddSubsectionMode()) {
       const subsection = removeWikiMarkup(this.headlineInput.getValue());
       if (subsection) {
         optionalText = `: /* ${subsection} */`;
@@ -3466,84 +3466,84 @@ class CommentForm {
    * _For internal use._ Generate the _static_ part of the automatic text for the edit summary,
    * excluding the section headline.
    *
-   * @param {string} [mode=this.mode]
-   * @param {Comment|import('./Section').default|import('./pageRegistry').Page} [target=this.target]
+   * @param {Comment} [substituteTarget=this.target]
    * @returns {string}
    * @private
    */
-  generateStaticSummaryText(mode = this.mode, target = this.target) {
+  generateStaticSummaryText(substituteTarget) {
     // FIXME: distribute this across the classes of targets? Not sure this belongs here.
-    switch (mode) {
-      case 'reply': {
-        if (target.isOpeningSection) {
-          return cd.s('es-reply');
-        } else {
-          target.maybeRequestAuthorGender(this.updateAutoSummary);
-          return target.isOwn ?
-            cd.s('es-addition') :
-            removeDoubleSpaces(
-              cd.s('es-reply-to', target.author.getName(), target.author)
-            );
-        }
-      }
+    if (this.isReplyMode() || substituteTarget) {
+      const target = substituteTarget || /** @type {Comment} */ (this.target);
+      if (target.isOpeningSection) {
+        return cd.s('es-reply');
+      } else {
+        target.maybeRequestAuthorGender(this.updateAutoSummary);
 
-      case 'edit': {
-        // The codes for generating "edit" and "delete" descriptions are equivalent, so we provide
-        // an umbrella function.
-        const editOrDeleteText = (action) => {
-          let subject;
-          let realTarget = target;
-          if (target.isOwn) {
-            const targetParent = target.getParent();
-            if (targetParent) {
-              if (targetParent.level === 0) {
-                subject = 'reply';
-              } else {
-                targetParent.maybeRequestAuthorGender(this.updateAutoSummary);
-                subject = targetParent.isOwn ? 'addition' : 'reply-to';
-                realTarget = targetParent;
-              }
+        return target.isOwn ?
+          cd.s('es-addition') :
+          removeDoubleSpaces(
+            cd.s('es-reply-to', target.author.getName(), target.author)
+          );
+      }
+    }
+
+    if (this.isEditMode()) {
+      // The codes for generating "edit" and "delete" descriptions are equivalent, so we provide
+      // an umbrella function.
+      const editOrDeleteText = (/** @type {'edit'|'delete'} */ action) => {
+        let subject;
+        let realTarget = this.target;
+        if (this.target.isOwn) {
+          const targetParent = this.target.getParent();
+          if (targetParent) {
+            if (targetParent.level === 0) {
+              subject = 'reply';
             } else {
-              if (target.isOpeningSection) {
-                subject = this.targetSection.getParent() ? 'subsection' : 'topic';
-              } else {
-                subject = 'comment';
-              }
+              targetParent.maybeRequestAuthorGender(this.updateAutoSummary);
+              subject = targetParent.isOwn ? 'addition' : 'reply-to';
+              realTarget = targetParent;
             }
           } else {
-            if (target.isOpeningSection) {
+            if (this.target.isOpeningSection) {
               subject = this.targetSection.getParent() ? 'subsection' : 'topic';
             } else {
-              target.maybeRequestAuthorGender(this.updateAutoSummary);
-              subject = 'comment-by';
+              subject = 'comment';
             }
           }
-          const authorName = realTarget.author.getName();
-          return removeDoubleSpaces(
-            cd.s(
-              `es-${action}-${subject}`,
-              subject === 'comment-by' && realTarget.author.isRegistered() ?
-                `[[${realTarget.author.getNamespaceAlias()}:${authorName}|${authorName}]]` :
-                authorName,
-              realTarget.author
-            )
-          );
-        };
+        } else {
+          if (this.target.isOpeningSection) {
+            subject = this.targetSection.getParent() ? 'subsection' : 'topic';
+          } else {
+            this.target.maybeRequestAuthorGender(this.updateAutoSummary);
+            subject = 'comment-by';
+          }
+        }
+        const authorName = realTarget.author.getName();
 
-        return editOrDeleteText(this.deleteCheckbox?.isSelected() ? 'delete' : 'edit');
-      }
+        return removeDoubleSpaces(
+          cd.s(
+            `es-${action}-${subject}`,
+            subject === 'comment-by' && realTarget.author.isRegistered() ?
+              `[[${realTarget.author.getNamespaceAlias()}:${authorName}|${authorName}]]` :
+              authorName,
+            realTarget.author
+          )
+        );
+      };
 
-      case 'replyInSection': {
-        return cd.s('es-reply');
-      }
+      return editOrDeleteText(this.deleteCheckbox?.isSelected() ? 'delete' : 'edit');
+    }
 
-      case 'addSection': {
-        return this.preloadConfig?.summary || cd.s('es-new-topic');
-      }
+    if (this.isReplyInSectionMode()) {
+      return cd.s('es-reply');
+    }
 
-      case 'addSubsection': {
-        return cd.s('es-new-subsection');
-      }
+    if (this.isAddSectionMode()) {
+      return this.preloadConfig?.summary || cd.s('es-new-topic');
+    }
+
+    if (this.isAddSubsectionMode()) {
+      return cd.s('es-new-subsection');
     }
   }
 
@@ -3826,7 +3826,7 @@ class CommentForm {
    * @private
    */
   getModeTargetProperty() {
-    return this.mode === 'replyInSection' ? 'reply' : this.mode;
+    return this.isReplyInSectionMode() ? 'reply' : this.mode;
   }
 
   /**
@@ -4166,6 +4166,61 @@ class CommentForm {
       .find('.tool-button[rel="quote"]')
       .closest('.cd-tool-button-wrapper')
       .toggleClass('cd-highlight', highlight);
+  }
+
+  /**
+   * Check if the form is in the reply mode (i.e., the user is replying to a comment).
+   *
+   * @returns {this is CommentForm<'reply'>}
+   */
+  isReplyMode() {
+    return this.mode === 'reply';
+  }
+
+  /**
+   * Check if the form is in the edit mode (i.e., the user is editing a comment).
+   *
+   * @returns {this is CommentForm<'edit'>}
+   */
+  isEditMode() {
+    return this.mode === 'edit';
+  }
+
+  /**
+   * Check if the form is in the "Reply in section" mode (i.e., the user is replying to a section).
+   *
+   * @returns {this is CommentForm<'replyInSection'>}
+   */
+  isReplyInSectionMode() {
+    return this.mode === 'replyInSection';
+  }
+
+  /**
+   * Check if the form is in the "Add subsection" mode (i.e., the user is adding a subsection).
+   *
+   * @returns {this is CommentForm<'addSubsection'>}
+   */
+  isAddSubsectionMode() {
+    return this.mode === 'addSubsection';
+  }
+
+  /**
+   * Check if the form is in the "Add section" mode (i.e., the user is adding a section).
+   *
+   * @returns {this is CommentForm<'addSection'>}
+   */
+  isAddSectionMode() {
+    return this.mode === 'addSection';
+  }
+
+  /**
+   * Check whether the target is a comment opening a section and it is is edited.
+   *
+   * @returns {this is CommentForm<'edit'>}
+   * @private
+   */
+  isSectionOpeningCommentEdited() {
+    return this.isEditMode() && this.target.isOpeningSection;
   }
 
   static counter = 0;

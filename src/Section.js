@@ -1004,8 +1004,8 @@ class Section extends SectionSkeleton {
         buttonElement: /** @type {HTMLElement} */ (element.firstChild),
         iconElement: /** @type {HTMLElement} */ (element.querySelector('.oo-ui-iconElement-icon')),
         href: `${cd.page.getUrl()}#${this.id}`,
-        action: (e) => {
-          this.copyLink(e);
+        action: (event) => {
+          this.copyLink(event);
         },
         flags: ['progressive'],
       });
