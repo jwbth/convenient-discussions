@@ -603,13 +603,14 @@ class CommentFormInputTransformer extends TextMasker {
   /**
    * Transform line objects, turning lines that contain lists into list objects.
    *
-   * @param {Line[]} lines
-   * @param {boolean} [areItems=false]
+   * @template {boolean} [AreItems=false]
+   * @param {AreItems extends true ? Item[] : Line[]} lines
+   * @param {AreItems} [areItems]
    * @returns {Array<Line|List>}
    * @private
    */
-  static linesToLists(lines, areItems = false) {
-    let accumulatedList = { items: /** @type {Line[]} */ ([]) };
+  static linesToLists(lines, areItems) {
+    let accumulatedList = { items: /** @type {Item[]} */ ([]) };
     for (let i = 0; i <= lines.length; i++) {
       if (i === lines.length) {
         // When at the end of code, finalize the list that we accumulated, if any.
@@ -661,13 +662,14 @@ class CommentFormInputTransformer extends TextMasker {
    * Replace several line objects, ending with index `i`, with a list object. Recursively do the
    * same with the lines of that list object.
    *
-   * @param {Array<Line|List>} linesAndLists
+   * @template {boolean} [AreItems=false]
+   * @param {AreItems extends true ? Array<Item|List> : Array<Line|List>} linesAndLists
    * @param {number} i
    * @param {List} list
-   * @param {boolean} [areItems=false]
+   * @param {AreItems} [areItems]
    * @private
    */
-  static linesToList(linesAndLists, i, list, areItems = false) {
+  static linesToList(linesAndLists, i, list, areItems) {
     if (areItems) {
       const previousItemIndex = i - list.items.length - 1;
       if (previousItemIndex >= 0) {
