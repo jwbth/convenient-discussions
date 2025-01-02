@@ -361,6 +361,13 @@ class Comment extends CommentSkeleton {
   section;
 
   /**
+   * Comment's source code object.
+   *
+   * @type {?CommentSource|undefined}
+   */
+  source;
+
+  /**
    * Create a comment object.
    *
    * @param {import('./Parser').default} parser
@@ -3622,6 +3629,7 @@ class Comment extends CommentSkeleton {
   /**
    * @overload
    * @param {boolean} useSectionCode
+   * @returns {CommentSource}
    */
 
   /**
@@ -3674,11 +3682,6 @@ class Comment extends CommentSkeleton {
     }
 
     if (!codePassed) {
-      /**
-       * Comment's source code object.
-       *
-       * @type {?(CommentSource|undefined)}
-       */
       this.source = source;
     }
 

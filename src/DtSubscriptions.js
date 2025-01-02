@@ -90,16 +90,19 @@ class DtSubscriptions extends Subscriptions {
   async addPageSubscribeButton() {
     if (!cd.user.isRegistered() || cd.page.isArchive() || $('#ca-dt-page-subscribe').length) return;
 
+    const portletLink = mw.util.addPortletLink(
+      'p-cactions',
+      mw.util.getUrl(cd.g.pageName, {
+        action: this.getState(this.pageSubscribeId) ? 'dtunsubscribe' : 'dtsubscribe',
+        commentname: this.pageSubscribeId,
+      }),
+      '',
+      'ca-cd-page-subscribe'
+    );
+    if (!portletLink) return;
+
     this.pageSubscribeButton = new Button({
-      element: mw.util.addPortletLink(
-        'p-cactions',
-        mw.util.getUrl(cd.g.pageName, {
-          action: this.getState(this.pageSubscribeId) ? 'dtunsubscribe' : 'dtsubscribe',
-          commentname: this.pageSubscribeId,
-        }),
-        '',
-        'ca-cd-page-subscribe'
-      )?.firstElementChild,
+      buttonElement: /** @type {HTMLElement} */ (portletLink.firstElementChild),
       action: async () => {
         this.pageSubscribeButton.setPending(true);
         try {
@@ -150,7 +153,7 @@ class DtSubscriptions extends Subscriptions {
    *
    * @param {string} subscribeId
    * @param {string} id Unused.
-   * @returns {Promise.<undefined>}
+   * @returns {Promise.<void>}
    * @protected
    */
   actuallySubscribe(subscribeId, id) {
@@ -162,7 +165,7 @@ class DtSubscriptions extends Subscriptions {
    *
    * @param {string} subscribeId
    * @param {string} id Unused.
-   * @returns {Promise.<undefined>}
+   * @returns {Promise.<void>}
    * @protected
    */
   actuallyUnsubscribe(subscribeId, id) {

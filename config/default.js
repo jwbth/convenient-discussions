@@ -2,6 +2,22 @@
  * @module defaultConfig
  */
 
+/**
+ * Object specifying messages to be displayed when the user enters text that matches a regular
+ * expression.
+ *
+ * @typedef {object} Reaction
+ * @property {RegExp} regexp Regular expression to match.
+ * @property {string} message Message displayed to the user.
+ * @property {string} name Latin letters, digits, `-`.
+ * @property {'headline'|'comment'|'all'} [target] Which field to look for the regexp. `'all'` by
+ *   default.
+ * @property {'notice'|'error'|'warning'|'success'} [type='notice'] One of
+ *   {@link https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.MessageWidget.html#MessageWidget OO.ui.MessageWidget}'s
+ *   types.
+ * @property {Function} [checkFunc] If this function returns `false`, no message is displayed.
+ */
+
 export default {
   /**
    * Object with the names and texts of the messages required by the script as keys and values. Used
@@ -757,20 +773,6 @@ export default {
    * @default []
    */
   undoTexts: [],
-
-  /**
-   * Object specifying messages to be displayed when the user enters text that matches a regular
-   * expression.
-   *
-   * @typedef {object} Reaction
-   * @property {RegExp} regexp Regular expression to match.
-   * @property {string} message Message displayed to the user.
-   * @property {string} name Latin letters, digits, `-`.
-   * @property {'notice'|'error'|'warning'|'success'} [type='notice'] One of
-   *   {@link https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.MessageWidget.html#MessageWidget OO.ui.MessageWidget}'s
-   *   types.
-   * @property {Function} [checkFunc] If this function returns `false`, no message is displayed.
-   */
 
   /**
    * Custom {@link Reaction reactions}.

@@ -1,0 +1,39 @@
+diff --git a/node_modules/types-mediawiki/mw/config.d.ts b/node_modules/types-mediawiki/mw/config.d.ts
+index c28faf2..4409ef1 100644
+--- a/node_modules/types-mediawiki/mw/config.d.ts
++++ b/node_modules/types-mediawiki/mw/config.d.ts
+@@ -2,6 +2,25 @@ import { ExtensibleMap } from "./Map";
+ 
+ declare global {
+     namespace mw {
++        interface DiscussionToolsPageThreads {
++            headingLevel: number;
++            name: string;
++            type: 'heading' | 'comment';
++            level: number;
++            id: string;
++            replies: Reply[];
++        }
++
++        interface Reply {
++            timestamp: string;
++            author: string;
++            type: 'comment';
++            level: number;
++            id: string;
++            replies: Reply[];
++            displayName?: string;
++        }
++
+         /**
+          * Map of configuration values.
+          *
+@@ -360,6 +379,8 @@ declare global {
+              * @see https://www.mediawiki.org/wiki/Special:MyLanguage/Manual:Interface/JavaScript#wgDiffNewId
+              */
+             wgDiffNewId?: number;
++
++            wgDiscussionToolsPageThreads: DiscussionToolsPageThreads[];
+         }>;
+     }
+ }

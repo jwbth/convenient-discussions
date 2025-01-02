@@ -7,21 +7,26 @@ import { escapePipesOutsideLinks, generateTagsRegexp } from './utils-wikitext';
  * Class that processes the comment form input and prepares the wikitext to insert into the page.
  *
  * @augments TextMasker
+ * @template {import('./CommentForm').CommentFormMode} Mode
  */
 class CommentFormInputTransformer extends TextMasker {
+  /**
+   * @typedef {import('./CommentForm').default<Mode>['target']['source']} SourceType
+   */
+
   /**
    * Create a comment form input processor.
    *
    * @param {string} text
-   * @param {import('./CommentForm').default} commentForm
+   * @param {import('./CommentForm').default<Mode>} commentForm
    * @param {string} action
    */
   constructor(text, commentForm, action) {
     super(text.trim());
     this.initialText = this.text;
     this.commentForm = commentForm;
-    this.target = commentForm.getTarget();
     this.action = action;
+    this.source = /** @type {SourceType} */ (commentForm.getTarget().source);
 
     this.initIndentationData();
   }
@@ -32,29 +37,22 @@ class CommentFormInputTransformer extends TextMasker {
    * @private
    */
   initIndentationData() {
-    const targetSource = this.target.source;
-    switch (this.commentForm.getMode()) {
-      case 'reply': {
-        this.indentation = targetSource.replyIndentation;
-        break;
-      }
-      case 'edit': {
-        this.indentation = targetSource.indentation;
-        break;
-      }
-      case 'replyInSection': {
-        const lastCommentIndentation = targetSource.extractLastCommentIndentation(this.commentForm);
-        this.indentation = (
-          lastCommentIndentation &&
-          (lastCommentIndentation[0] === '#' || cd.config.indentationCharMode === 'mimic')
-        ) ?
-          lastCommentIndentation[0] :
-          cd.config.defaultIndentationChar;
-        break;
-      }
-      default: {
-        this.indentation = '';
-      }
+    if (this.commentForm.isReplyMode()) {
+      this.indentation = /** @type {import('./CommentSource').default} */ (this.source).replyIndentation;
+    } else if (this.commentForm.isEditMode()) {
+      this.indentation = /** @type {import('./CommentSource').default} */ (this.source).indentation;
+    } else if (this.commentForm.isReplyInSectionMode()) {
+      const lastCommentIndentation = /** @type {import('./SectionSource').default} */ (
+        this.source
+      ).extractLastCommentIndentation(this.commentForm);
+      this.indentation = (
+        lastCommentIndentation &&
+        (lastCommentIndentation[0] === '#' || cd.config.indentationCharMode === 'mimic')
+      ) ?
+        lastCommentIndentation[0] :
+        cd.config.defaultIndentationChar;
+    } else {
+      this.indentation = '';
     }
 
     if (this.indentation) {
@@ -99,11 +97,11 @@ class CommentFormInputTransformer extends TextMasker {
    * Process (with {@link CommentFormInputTransformer#processCode}) and mask sensitive code,
    * updating {@link CommentFormInputTransformer#text}.
    *
-   * @returns {CommentFormInputTransformer}
+   * @returns {this}
    * @private
    */
   processAndMaskSensitiveCode() {
-    return this.maskSensitiveCode((code) => this.processCode(code, true));
+    return /** @type {this} */ (this.maskSensitiveCode((code) => this.processCode(code, true)));
   }
 
   /**
@@ -115,7 +113,9 @@ class CommentFormInputTransformer extends TextMasker {
   findWrappers() {
     // Find tags around potential markup.
     if (this.indentation) {
-      const tagMatches = this.text.match(generateTagsRegexp(['[a-z]+'])) || [];
+      const tagMatches = /** @type {string[]} */ (
+        this.text.match(generateTagsRegexp(['[a-z]+'])) || []
+      );
       const quoteMatches = this.text.match(cd.g.quoteRegexp) || [];
       const matches = tagMatches.concat(quoteMatches);
       this.areThereTagsAroundMultipleLines = matches.some((match) => match.includes('\n'));
@@ -150,9 +150,10 @@ class CommentFormInputTransformer extends TextMasker {
     if (this.commentForm.omitSignatureCheckbox?.isSelected()) {
       this.signature = '';
     } else {
-      this.signature = this.commentForm.getMode() === 'edit' ?
-        this.target.source.signatureCode :
-        cd.g.userSignature;
+      this.signature = this.commentForm.isEditMode()
+        ? /** @type {import('./CommentSource').default} */ (this.commentForm.getTarget().source)
+            .signatureCode
+        : cd.g.userSignature;
     }
 
     // Make so that the signature doesn't turn out to be at the end of the last item of the list if
@@ -161,7 +162,7 @@ class CommentFormInputTransformer extends TextMasker {
       this.signature &&
 
       // The existing signature doesn't start with a newline.
-      !(this.commentForm.getMode() == 'edit' && /^[ \t]*\n/.test(this.signature)) &&
+      !(this.commentForm.isEditMode() && /^[ \t]*\n/.test(this.signature)) &&
 
       /(^|\n)[:*#;].*$/.test(this.text)
     ) {
@@ -172,21 +173,20 @@ class CommentFormInputTransformer extends TextMasker {
   }
 
   /**
-   * Replace list markup (`:*#;`) with respective tags.
+   * Replace list markup (`:*#;`) inside code with respective tags.
    *
    * @param {string} code
    * @returns {string}
    * @private
    */
   listMarkupToTags(code) {
-    return CommentFormInputTransformer.listToTags(CommentFormInputTransformer.linesToLists(
-      code
-        .split('\n')
-        .map((line) => ({
-          type: '',
+    return CommentFormInputTransformer.listsToTags(
+      CommentFormInputTransformer.linesToLists(
+        code.split('\n').map((line) => ({
           text: line,
         }))
-    ));
+      )
+    );
   }
 
   /**
@@ -281,19 +281,14 @@ class CommentFormInputTransformer extends TextMasker {
     );
 
     // We we only check for `:` here, not other markup, because we only add `:` in those places.
-    code = code.replace(
-      /^(.*)\n\n+(?!:)/gm,
-      cd.config.paragraphTemplates.length ?
-        `$1{{${cd.config.paragraphTemplates[0]}}}\n` :
-        (
-          this.areThereTagsAroundMultipleLines ?
-            `$1<br> \n` :
-            (s, m1) => (
-              m1 +
-              '\n' +
-              CommentFormInputTransformer.prependIndentationToLine(this.restLinesIndentation, '')
-            )
-        )
+    code = code.replace(/^(.*)\n\n+(?!:)/gm, (_, m1) =>
+      cd.config.paragraphTemplates.length
+        ? `$1{{${cd.config.paragraphTemplates[0]}}}\n`
+        : this.areThereTagsAroundMultipleLines
+        ? `$1<br> \n`
+        : m1 +
+          '\n' +
+          CommentFormInputTransformer.prependIndentationToLine(this.restLinesIndentation, '')
     );
 
     return code;
@@ -378,14 +373,14 @@ class CommentFormInputTransformer extends TextMasker {
    * Make the core code transformations.
    *
    * @param {string} code
-   * @param {boolean} isInTemplate Is the code in a template.
+   * @param {boolean} [isInTemplate=false] Is the code in a template.
    * @returns {string}
    * @private
    */
-  processCode(code, isInTemplate) {
+  processCode(code, isInTemplate = false) {
     code = this.handleIndentedComment(
       code,
-      isInTemplate || this.areThereTagsAroundListMarkup,
+      Boolean(isInTemplate || this.areThereTagsAroundListMarkup),
       isInTemplate
     );
     code = this.processNewlines(code, isInTemplate);
@@ -416,12 +411,17 @@ class CommentFormInputTransformer extends TextMasker {
     }
 
     let level;
-    if (this.commentForm.getMode() === 'addSection') {
+    if (this.commentForm.isAddSectionMode()) {
       level = 2;
-    } else if (this.commentForm.getMode() === 'addSubsection') {
-      level = this.target.level + 1;
+    } else if (this.commentForm.isAddSubsectionMode()) {
+      level = this.commentForm.getTarget().level + 1;
     } else {  // 'edit'
-      level = this.target.source.headingLevel;
+      // See CommentForm#loadComment(): I think a situation where the headline input is present and
+      // but not in the source or vice versa is impossible, but need to recheck.
+      level = /** @type {number} */ (
+        /** @type {import('./CommentSource').default} */ (this.commentForm.getTarget().source)
+          .headingLevel
+      );
     }
     const equalSigns = '='.repeat(level);
 
@@ -430,9 +430,11 @@ class CommentFormInputTransformer extends TextMasker {
 
       // To have pretty diffs.
       (
-        this.commentForm.getMode() === 'edit' &&
+        this.commentForm.isEditMode() &&
         this.commentForm.getTarget().isOpeningSection &&
-        /^\n/.test(this.target.source.code)
+        /^\n/.test(
+          /** @type {import('./CommentSource').default} */ (this.commentForm.getTarget().source).code
+        )
       )
     ) {
       this.text = '\n' + this.text;
@@ -496,11 +498,11 @@ class CommentFormInputTransformer extends TextMasker {
    * @private
    */
   addOutdent() {
-    if (this.action === 'preview' || !this.target.source?.isReplyOutdented) {
+    if (this.action === 'preview' || !this.commentForm.target.source.isReplyOutdented) {
       return this;
     }
 
-    const outdentDifference = this.target.level - this.target.source.replyIndentation.length;
+    const outdentDifference = this.commentForm.target.level - this.commentForm.target.source.replyIndentation.length;
     this.text = (
       `{{${cd.config.outdentTemplates[0]}|${outdentDifference}}}` +
       (/^[:*#]+/.test(this.text) ? '\n' : ' ') +
@@ -540,7 +542,7 @@ class CommentFormInputTransformer extends TextMasker {
     if (this.action !== 'preview') {
       this.text = CommentFormInputTransformer.prependIndentationToLine(this.indentation, this.text);
 
-      if (this.mode === 'addSubsection') {
+      if (this.commentForm.isAddSubsectionMode()) {
         this.text += '\n';
       }
     } else if (this.action === 'preview' && this.indentation && this.initialText) {
@@ -552,18 +554,18 @@ class CommentFormInputTransformer extends TextMasker {
 
   static galleryRegexp = /^\x01\d+_gallery\x02$/m;
 
-  static listTags = {
+  static listTags = /** @type {const} */ ({
     ':': 'dl',
     ';': 'dl',
     '*': 'ul',
     '#': 'ol',
-  };
-  static itemTags = {
+  });
+  static itemTags = /** @type {const} */ ({
     ':': 'dd',
     ';': 'dt',
     '*': 'li',
     '#': 'li',
-  };
+  });
 
   /**
    * Initialize the class.
@@ -573,103 +575,148 @@ class CommentFormInputTransformer extends TextMasker {
   }
 
   /**
-   * Transform line objects so that they represent lists.
+   * @typedef {'dl'|'ul'|'ol'} ListType
+   */
+
+  /**
+   * @typedef {'dd'|'dt'|'li'} ItemType
+   */
+
+  /**
+   * @typedef {object} Line
+   * @property {ItemType} [type]
+   * @property {string} text
+   * @property {Item[]} [items] Only present if the line is transformed into a list.
+   */
+
+  /**
+   * @typedef {object} List
+   * @property {ListType} type
+   * @property {Array<Line|List>} items
+   */
+
+  /**
+   * @typedef {object} Item
+   * @property {ItemType} type
+   * @property {string} text
+   */
+
+  /**
+   * Transform line objects, turning lines that contain lists into list objects.
    *
-   * @param {object[]} lines
+   * @param {Line[]} lines
    * @param {boolean} [isNested=false]
-   * @returns {object[]}
+   * @returns {Array<Line|List>}
    * @private
    */
   static linesToLists(lines, isNested = false) {
-    let list = { items: [] };
+    let accumulatedList = { items: /** @type {Line[]} */ ([]) };
     for (let i = 0; i <= lines.length; i++) {
       if (i === lines.length) {
-        if (list.type) {
-          this.lineToList(lines, i, list, isNested);
+        // When at the end of code, finalize the list that we accumulated, if any.
+        if (this.isList(accumulatedList)) {
+          this.linesToList(lines, i, accumulatedList, isNested);
         }
       } else {
         const text = lines[i].text;
         const firstChar = text[0] || '';
-        const listType = this.listTags[firstChar];
-        if (list.type && listType !== list.type) {
-          const itemsCount = list.items.length;
-          this.lineToList(lines, i, list, isNested);
+        const listType = /** @type {ListType|undefined} */ (this.listTags[firstChar]);
+        if (
+          this.isList(accumulatedList) &&
+
+          // Met another list markup, so finalize the currently accumulated one.
+          listType !== accumulatedList.type
+        ) {
+          const itemsCount = accumulatedList.items.length;
+          this.linesToList(lines, i, accumulatedList, isNested);
+
+          // Shift the current index and start accumulating a new list.
           i -= itemsCount - 1;
-          list = { items: [] };
+          accumulatedList = { items: [] };
         }
         if (listType) {
-          list.type = listType;
-          list.items.push({
+          // Start accumulating a list.
+          accumulatedList.type = listType;
+          accumulatedList.items.push({
             type: this.itemTags[firstChar],
             text: text.slice(1),
           });
         }
       }
     }
-    return lines;
+
+    return /** @type {Array<Line|List>} */ (lines);
   }
 
   /**
-   * Transform one line object, indexed `i`, so that it represents a list. Recursively do the same
-   * with the lines of that list.
+   * Check whether an object is a finalized list.
    *
-   * @param {object[]} lines
+   * @param {object} obj
+   * @returns {obj is List}
+   */
+  static isList(obj) {
+    return 'type' in obj && 'items' in obj;
+  }
+
+  /**
+   * Replace several line objects, ending with index `i`, with a list object. Recursively do the
+   * same with the lines of that list object.
+   *
+   * @param {Array<Line|List>} lines
    * @param {number} i
-   * @param {object} list
+   * @param {List} list
    * @param {boolean} [isNested=false]
    * @private
    */
-  static lineToList(lines, i, list, isNested = false) {
+  static linesToList(lines, i, list, isNested = false) {
     if (isNested) {
       const previousItemIndex = i - list.items.length - 1;
       if (previousItemIndex >= 0) {
-        const item = {
-          type: lines[previousItemIndex].type,
+        lines.splice(previousItemIndex, list.items.length + 1, {
+          type: /** @type {ListType} */ (lines[previousItemIndex].type),
           items: [lines[previousItemIndex], list],
-        };
-        lines.splice(previousItemIndex, list.items.length + 1, item);
+        });
       } else {
-        const item = {
-          type: lines[0].type,
+        lines.splice(i - list.items.length, list.items.length, {
+          type: /** @type {ListType} */ (lines[0].type),
           items: [list],
-        };
-        lines.splice(i - list.items.length, list.items.length, item);
+        });
       }
     } else {
       lines.splice(i - list.items.length, list.items.length, list);
     }
-    this.linesToLists(list.items, true);
+    this.linesToLists(/** @type {Line[]} */ (list.items), true);
   }
 
   /**
-   * Convert a list object to a string with HTML tags.
+   * Convert an array of line and list objects to a string with HTML tags.
    *
-   * @param {object[]} lines
+   * @param {Array<Line|List>} linesAndLists
    * @param {boolean} [isNested=false]
    * @returns {string}
    * @private
    */
-  static listToTags(lines, isNested = false) {
-    let text = '';
-    lines.forEach((line, i) => {
-      if (line.text === undefined) {
-        const itemsText = line.items
+  static listsToTags(linesAndLists, isNested = false) {
+    return linesAndLists.reduce((text, lineOrList, i) => {
+      if (this.isList(lineOrList)) {
+        const itemsText = lineOrList.items
           .map((item) => {
-            const itemText = item.text === undefined ?
-              this.listToTags(item.items, true) :
+            const itemText = this.isList(item) ?
+              this.listsToTags(item.items, true) :
               item.text.trim();
             return item.type ? `<${item.type}>${itemText}</${item.type}>` : itemText;
           })
           .join('');
-        text += `<${line.type}>${itemsText}</${line.type}>`;
+        text += `<${lineOrList.type}>${itemsText}</${lineOrList.type}>`;
       } else {
-        text += isNested ? line.text.trim() : line.text;
+        text += isNested ? lineOrList.text.trim() : lineOrList.text;
       }
-      if (i !== lines.length - 1) {
+      if (i !== linesAndLists.length - 1) {
         text += '\n';
       }
-    });
-    return text;
+
+      return text;
+    }, '');
   }
 
   /**

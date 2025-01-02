@@ -34,7 +34,7 @@ import { isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, is
  *
  * @template {CommentFormMode} Mode
  */
-class CommentForm {
+class CommentForm extends OO.EventEmitter {
   /**
    * Target object.
    *
@@ -334,13 +334,16 @@ class CommentForm {
   originalHeadline;
 
   /**
-   * @typedef {(
-   *   Mode extends 'reply' | 'edit' ?
-   *     Comment :
-   *     Mode extends 'replyInSection' | 'addSubsection' ?
-   *       import('./Section').default :
-   *       import('./pageRegistry').Page
-   * )} CommentFormTarget
+   * @typedef {object} CommentFormTargetMap
+   * @property {Comment} reply
+   * @property {Comment} edit
+   * @property {import('./Section').default} replyInSection
+   * @property {import('./Section').default} addSubsection
+   * @property {import('./pageRegistry').Page} addSection
+   */
+
+  /**
+   * @typedef {CommentFormTargetMap[Mode]} CommentFormTarget
    */
 
   /**
@@ -378,8 +381,7 @@ class CommentForm {
    * @fires commentFormCustomModulesReady
    */
   constructor({ mode, target, initialState = {}, preloadConfig = {}, newTopicOnTop = false }) {
-    // Mixin constructor
-    OO.EventEmitter.call(this);
+    super();
 
     this.watchOnReply = settings.get('watchOnReply');
     this.subscribeOnReply = settings.get('subscribeOnReply');
@@ -1023,7 +1025,9 @@ class CommentForm {
     const dialogsDefaultConfig = dialogsConfig.getDefaultConfig();
     if (this.uploadToCommons) {
       const commentForm = this;
-      dialogsDefaultConfig.dialogs['insert-file'].dialog.buttons['wikieditor-toolbar-tool-file-upload'] = function () {
+      dialogsDefaultConfig.dialogs['insert-file'].dialog.buttons[
+        'wikieditor-toolbar-tool-file-upload'
+      ] = /** @this {HTMLElement} */ function () {
         $(this).dialog('close');
         commentForm.uploadImage(undefined, true);
       };
@@ -1309,7 +1313,10 @@ class CommentForm {
 
       this.commentInput.setValue(commentInputValue);
       this.originalComment = commentInputValue;
-      if (this.headlineInput) {
+
+      // I think a situation where the headline input is present and but not in the source or vice
+      // versa is impossible, but need to recheck.
+      if (this.headlineInput && source.headlineCode) {
         this.headlineInput.setValue(source.headlineCode);
         this.originalHeadline = source.headlineCode;
       }
@@ -1682,8 +1689,14 @@ class CommentForm {
       delete this.uploadDialog;
     });
 
-    this.uploadDialog.uploadBooklet.on('fileSaved', (imageInfo) => {
-      this.uploadDialog.close();
+    /**
+     * @typedef {object} ImageInfo
+     * @property {string} canonicaltitle
+     * @property {string} url
+     */
+
+    this.uploadDialog.uploadBooklet.on('fileSaved', (/** @type {ImageInfo} */ imageInfo) => {
+      /** @type {import('./UploadDialog').default} */ (this.uploadDialog).close();
       win.closed.then(() => {
         if (openInsertFileDialogAfterwards) {
           $.wikiEditor.modules.dialogs.api.openDialog(this, 'insert-file');
@@ -1716,15 +1729,17 @@ class CommentForm {
   /**
    * Handle `paste` and `drop` events.
    *
-   * @param {event} e
+   * @param {JQuery.DropEvent | JQuery.TriggeredEvent<ClipboardEvent>} event
    */
-  handlePasteDrop(e) {
-    const data = e.originalEvent.clipboardData || e.originalEvent.dataTransfer;
+  handlePasteDrop(event) {
+    const originalEvent = /** @type {ClipboardEvent | DragEvent} */ (event.originalEvent);
+    const data = 'clipboardData' in originalEvent ? originalEvent.clipboardData : originalEvent.dataTransfer;
+    if (!data) return;
 
     const image = [...data.items].find((item) => CommentForm.allowedFileTypes.includes(item.type));
     if (image) {
-      e.preventDefault();
-      this.uploadImage(image.getAsFile());
+      event.preventDefault();
+      this.uploadImage(image.getAsFile() || undefined);
     } else if (data.types.includes('text/html')) {
       const html = data.getData('text/html');
       if (!isHtmlConvertibleToWikitext(html, this.commentInput.$element[0])) return;
@@ -1742,7 +1757,7 @@ class CommentForm {
    */
   addEventListenersToTextInputs(emitChange, preview) {
     const substAliasesString = ['subst:'].concat(cd.config.substAliases).join('|');
-    const textReactions = [
+    const textReactions = /** @type {import('../config/default').Reaction[]} */ ([
       {
         regexp: new RegExp(cd.g.signCode + '\\s*$'),
         message: cd.sParse('cf-reaction-signature', cd.g.signCode),
@@ -1768,7 +1783,8 @@ class CommentForm {
         target: 'headline',
         checkFunc: () => !this.preloadConfig?.headline,
       },
-    ].concat(cd.config.textReactions);
+      ...cd.config.textReactions,
+    ]);
 
     if (this.headlineInput) {
       this.headlineInput
@@ -2503,7 +2519,7 @@ class CommentForm {
     let code = this.commentInput.getValue();
     code = cd.config.preTransformCode?.(code, this) || code;
 
-    const transformer = new CommentFormInputTransformer(code, this, action);
+    const transformer = new CommentFormInputTransformer(code, this, action, this.mode);
 
     /**
      * Will the comment be indented (is a reply or an edited reply).
@@ -3917,6 +3933,15 @@ class CommentForm {
    */
   isTargetTypeSection() {
     return ['replyInSection', 'addSubsection'].includes(this.mode);
+  }
+
+  /**
+   * Check whether the form's {@link CommentForm#target target} is a page.
+   *
+   * @returns {this is CommentForm<'addSection'>}
+   */
+  isTargetTypePage() {
+    return ['addSection'].includes(this.mode);
   }
 
   /**

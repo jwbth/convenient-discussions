@@ -217,6 +217,11 @@ declare global {
       }
     }
   }
+
+  interface JQueryStatic {
+    _data(element: Element, key: string): any;
+    wikiEditor: any;
+  }
 }
 
 export {};

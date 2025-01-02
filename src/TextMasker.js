@@ -107,7 +107,7 @@ class TextMasker {
    * Borrowed from
    * https://ru.wikipedia.org/w/index.php?title=MediaWiki:Gadget-wikificator.js&oldid=102530721
    *
-   * @param {Function} [handler] Function that processes the template code.
+   * @param {(code: string) => string} [handler] Function that processes the template code.
    * @param {boolean} [addLengths=false] Add lengths of the masked templates to markers.
    * @returns {TextMasker}
    * @author Putnik
@@ -127,19 +127,19 @@ class TextMasker {
       } else {
         // Nothing more found _inside_ the wrapper; time to go up the hierarchy
 
-        // No wrappers left - we're at the outermost level
-        if (!stack.length) break;
-
         // Get back to the wrapper
-        left = stack.pop();
+        let stackLeft = stack.pop();
+
+        // No wrappers left - we're at the outermost level
+        if (stackLeft === undefined) break;
 
         // Handle unclosed `{{` and unopened `}}`
-        if (typeof left === 'undefined') {
+        if (typeof stackLeft === 'undefined') {
           if (right === -1) {
             pos += 2;
             continue;
           } else {
-            left = 0;
+            stackLeft = 0;
           }
         }
         if (right === -1) {
@@ -148,7 +148,7 @@ class TextMasker {
 
         // Mask the template
         right += 2;
-        let template = this.text.substring(left, right);
+        let template = this.text.substring(stackLeft, right);
         if (handler) {
           template = handler(template);
         }
@@ -156,7 +156,7 @@ class TextMasker {
           '_' + template.replace(/\x01\d+_template_(\d+)\x02/g, (m, n) => ' '.repeat(n)).length :
           '';
         this.text = (
-          this.text.substring(0, left) +
+          this.text.substring(0, stackLeft) +
           '\x01' +
           this.maskedTexts.push(template) +
           '_template' +
@@ -187,7 +187,7 @@ class TextMasker {
   /**
    * Replace code, that should not be modified when processing it, with placeholders.
    *
-   * @param {Function} [templateHandler]
+   * @param {(code: string) => string} [templateHandler]
    * @returns {TextMasker}
    */
   maskSensitiveCode(templateHandler) {

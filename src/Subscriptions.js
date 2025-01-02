@@ -8,16 +8,7 @@ import { wrapHtml } from './utils-window';
  * {@link DtSubscriptions DisussionTools' topic subscription} and
  * {@link LegacySubscriptions CD's legacy section watching}.
  */
-class Subscriptions {
-  /**
-   * Create a subscriptions instance. It is supposed to be used as a singleton returned by
-   * {@link controller.getSubscriptionsInstance}.
-   */
-  constructor() {
-    // Mixin constructor
-    OO.EventEmitter.call(this);
-  }
-
+class Subscriptions extends OO.EventEmitter {
   /**
    * Do everything {@link .load} does and also perform manipulations with the talk page.
    *
@@ -36,6 +27,26 @@ class Subscriptions {
    */
   // eslint-disable-next-line no-unused-vars
   async load(...args) {
+    // This method is defined in subclasses.
+  }
+
+  /**
+   * @param {...*} args
+   * @abstract
+   * @protected
+   */
+  // eslint-disable-next-line no-unused-vars
+  async actuallySubscribe(...args) {
+    // This method is defined in subclasses.
+  }
+
+  /**
+   * @param {...*} args
+   * @abstract
+   * @protected
+   */
+  // eslint-disable-next-line no-unused-vars
+  async actuallyUnsubscribe(...args) {
     // This method is defined in subclasses.
   }
 
@@ -79,7 +90,7 @@ class Subscriptions {
       let body = subscribeId.startsWith('p-') ?
         cd.mws('discussiontools-newtopicssubscription-notify-subscribed-body') :
         cd.mws('discussiontools-topicsubscription-notify-subscribed-body');
-      let autoHideSeconds;
+      let /** @type {'long'|'short'|undefined} */ autoHideSeconds;
       if (!settings.get('useTopicSubscription')) {
         body += ' ' + cd.sParse('section-watch-openpages');
         if ($('#ca-watch').length) {
@@ -116,7 +127,7 @@ class Subscriptions {
       let body = subscribeId.startsWith('p-') ?
         cd.mws('discussiontools-newtopicssubscription-notify-unsubscribed-body') :
         cd.mws('discussiontools-topicsubscription-notify-unsubscribed-body');
-      let autoHideSeconds;
+      let /** @type {'long'|'short'|undefined} */ autoHideSeconds;
       if (ancestorSubscribedTo) {
         body += ' ' + cd.sParse('section-unwatch-stillwatched', ancestorSubscribedTo.headline);
         autoHideSeconds = 'long';

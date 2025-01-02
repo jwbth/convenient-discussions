@@ -131,17 +131,17 @@ class SectionSource {
           (commentForm.getContainerListType() === 'ol' || cd.config.indentationCharMode === 'mimic')
         ) {
           try {
-            lastComment.locateInCode(commentForm.isSectionSubmitted());
+            const source = lastComment.locateInCode(commentForm.isSectionSubmitted());
 
             if (
-              !lastComment.source.indentation.startsWith('#') ||
+              !source.indentation.startsWith('#') ||
 
               // For now we use the workaround with commentForm.getContainerListType() to make
               // sure `#` is a part of comments organized in a numbered list, not of a numbered list
               // _in_ the target comment.
               commentForm.getContainerListType() === 'ol'
             ) {
-              this.lastCommentIndentation = lastComment.source.indentation;
+              this.lastCommentIndentation = source.indentation;
             }
           } catch {
             // Empty

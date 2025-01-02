@@ -28,6 +28,9 @@ class Section extends SectionSkeleton {
   TYPE = 'section';
 
   /** @type {HTMLElement} */
+  hElement;
+
+  /** @type {HTMLElement} */
   headlineElement;
 
   /** @type {HTMLElement} */
@@ -109,6 +112,19 @@ class Section extends SectionSkeleton {
   matchScore;
 
   /**
+   * @inheritdoc
+   * @type {?string}
+   */
+  sourcePageName;
+
+  /**
+   * Section's source code object.
+   *
+   * @type {?SectionSource|undefined}
+   */
+  source;
+
+  /**
    * Create a section object.
    *
    * @param {import('./Parser').default} parser
@@ -150,7 +166,7 @@ class Section extends SectionSkeleton {
       /** @type {import('./pageRegistry').Page} */ (pageRegistry.get(this.sourcePageName)) :
       cd.page;
 
-    delete this.sourcePageName;
+    this.sourcePageName = null;
 
     /**
      * Is the section transcluded from a template (usually, that template in turn transludes
@@ -1215,10 +1231,12 @@ class Section extends SectionSkeleton {
       if (cd.g.isDtTopicSubscriptionEnabled) {
         if (this.headingElement.querySelector('.ext-discussiontools-init-section-subscribe-link')) {
           const headlineJson = this.headlineElement.dataset.mwComment;
-          try {
-            subscribeId = JSON.parse(headlineJson).name;
-          } catch {
-            // Empty
+          if (headlineJson) {
+            try {
+              subscribeId = JSON.parse(headlineJson).name;
+            } catch {
+              // Empty
+            }
           }
         }
       } else {
@@ -1745,11 +1763,6 @@ class Section extends SectionSkeleton {
       });
     }
 
-    /**
-     * Section's source code object.
-     *
-     * @type {?(SectionSource|undefined)}
-     */
     this.source = source;
 
     return source;

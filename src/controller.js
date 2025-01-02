@@ -1,10 +1,3 @@
-/**
- * Singleton that stores and changes the overall state of the page, initiating boot processes and
- * reacting to events.
- *
- * @module controller
- */
-
 import Autocomplete from './Autocomplete';
 import BootProcess from './BootProcess';
 import Comment from './Comment';
@@ -46,7 +39,149 @@ import WebpackWorker from './worker/worker-gate';
 // rootElement
 // $root
 
-const controller = {
+/**
+ * Singleton that stores and changes the overall state of the page, initiating boot processes and
+ * reacting to events.
+ */
+class Controller extends OO.EventEmitter {
+  /**
+   * Is the page loading (the loading overlay is on).
+   *
+   * @private
+   */
+  booting = false;
+
+  /**
+   * @type {BootProcess}
+   * @private
+   */
+  bootProcess;
+
+  /**
+   * @type {JQuery}
+   */
+  $content;
+
+  /**
+   * @type {JQuery}
+   */
+  $contentColumn;
+
+  /**
+   * @type {JQuery}
+   * @private
+   */
+  $loadingPopup;
+
+  /**
+   * @type {JQuery}
+   */
+  $root;
+
+  /**
+   * @type {HTMLElement}
+   */
+  rootElement;
+
+  /**
+   * @type {JQuery}
+   * @private
+   */
+  $popupOverlay;
+
+  /**
+   * @type {{
+   *   startMargin: number;
+   *   start: number;
+   *   end: number;
+   * }}
+   * @private
+   */
+  contentColumnOffsets;
+
+  /**
+   * @type {MutationObserver|undefined}
+   * @private
+   */
+  mutationObserver;
+
+  /**
+   * @type {{
+   *   [key: string]: (event: JQuery.Event) => '' | undefined;
+   * }}
+   * @private
+   */
+  beforeUnloadHandlers = {};
+
+  /**
+   * @type {{
+   *  [key: string]: OO.ui.WindowManager;
+   * }}
+   * @private
+   */
+  windowManagers = {};
+
+  /**
+   * @type {JQuery|undefined}
+   * @private
+   */
+  $addTopicButtons;
+
+  /**
+   * @type {JQuery<HTMLLIElement>|undefined}
+   * @private
+   */
+  $emulatedAddTopicButton;
+
+  /**
+   * @type {import('./Subscriptions').default}
+   * @private
+   */
+  subscriptionsInstance;
+
+  /**
+   * @typedef {object} DiscussionToolsThread
+   * @property {'heading' | 'comment'} type
+   * @property {number} level
+   * @property {string} id
+   */
+
+  /**
+   * @type {DiscussionToolsThread[]|undefined}
+   * @private
+   */
+  dtSubscribableThreads;
+
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  notificationArea;
+
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  tocButton;
+
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  stickyHeader;
+
+  /**
+   * @type {HTMLElement}
+   * @private
+   */
+  tocContent;
+
+  /**
+   * @type {mw.Api}
+   * @private
+   */
+  api = new mw.Api(cd.getApiConfig());
+
   /**
    * @type {{
    *   closedDiscussions?: HTMLElement[];
@@ -58,7 +193,43 @@ const controller = {
    *   longPage?: boolean;
    * }}
    */
-  content: {},
+  content = {};
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  definitelyTalkPage;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  talkPage;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  articlePageTalkPage;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  diffPage;
+
+  /**
+   * @type {() => void}
+   * @private
+   */
+  throttledHandleScroll;
+
+  /**
+   * @type {() => void}
+   * @private
+   */
+  throttledHandleSelectionChange;
 
   /**
    * @type {{
@@ -70,26 +241,26 @@ const controller = {
    *   tocHeight?: ?number;
    * }}
    */
-  scrollData: { offset: null },
+  scrollData = { offset: null };
 
-  autoScrolling: false,
-  isUpdateThreadLinesHandlerAttached: false,
-  lastScrollX: 0,
-  originalPageTitle: document.title,
+  autoScrolling = false;
+  isUpdateThreadLinesHandlerAttached = false;
+  lastScrollX = 0;
+  originalPageTitle = document.title;
 
   /** @type {?number} */
-  lastCheckedRevisionId: null,
+  lastCheckedRevisionId = null;
 
-  addedCommentCount: 0,
-  areRelevantCommentsAdded: false,
+  addedCommentCount = 0;
+  areRelevantCommentsAdded = false;
 
   /** @type {?(string[])} */
-  relevantAddedCommentIds: null,
+  relevantAddedCommentIds = null;
 
   /** @type {import('./CommentSkeleton').CommentSkeletonLike[]} */
-  commentsNotifiedAbout: [],
+  commentsNotifiedAbout = [];
 
-  isObstructingElementHoveredCached: false,
+  isObstructingElementHoveredCached = false;
 
   /**
    * _For internal use._ Assign some properties required by the controller - those which are not
@@ -143,7 +314,7 @@ const controller = {
 
     this.bootOnTalkPage();
     this.bootOnCommentLinksPage();
-  },
+  }
 
   /**
    * Load the data required for the script to run on a talk page and execute the
@@ -157,14 +328,7 @@ const controller = {
     debug.stopTimer('start');
     debug.startTimer('load data');
 
-    /**
-     * Last boot process.
-     *
-     * @type {BootProcess|undefined}
-     * @private
-     */
     this.bootProcess = new BootProcess();
-
     let siteDataRequests = [];
 
     // Make some requests in advance if the API module is ready in order not to make 2 requests
@@ -279,7 +443,7 @@ const controller = {
      */
     init.memorizeCssValues();
     init.addTalkPageCss();
-  },
+  }
 
   /**
    * @class Api
@@ -294,10 +458,8 @@ const controller = {
    * @returns {mw.Api}
    */
   getApi() {
-    this.api ||= new mw.Api(cd.getApiConfig());
-
     return this.api;
-  },
+  }
 
   /**
    * _For internal use._ Get the worker object.
@@ -310,7 +472,7 @@ const controller = {
     }
 
     return this.worker;
-  },
+  }
 
   /**
    * Create an OOUI window manager or return an existing one.
@@ -320,8 +482,6 @@ const controller = {
    * @returns {OO.ui.WindowManager}
    */
   getWindowManager(name = 'default') {
-    this.windowManagers ||= {};
-
     if (!this.windowManagers[name]) {
       const windowManager = new OO.ui.WindowManager();
       windowManager.on('closing', async (win, closed) => {
@@ -335,7 +495,7 @@ const controller = {
     }
 
     return this.windowManagers[name];
-  },
+  }
 
   /**
    * Get the popup overlay used for OOUI components.
@@ -347,7 +507,7 @@ const controller = {
       .addClass('cd-popupOverlay')
       .appendTo(document.body);
     return this.$popupOverlay;
-  },
+  }
 
   /**
    * Show the loading overlay (a logo in the corner of the page).
@@ -374,7 +534,7 @@ const controller = {
     } else {
       this.$loadingPopup.show();
     }
-  },
+  }
 
   /**
    * Hide the loading overlay.
@@ -385,7 +545,7 @@ const controller = {
     if (!this.$loadingPopup || window.cdShowLoadingOverlay === false) return;
 
     this.$loadingPopup.hide();
-  },
+  }
 
   /**
    * Is there any kind of a page overlay present, like the OOUI modal overlay or CD loading overlay.
@@ -395,7 +555,7 @@ const controller = {
    */
   isPageOverlayOn() {
     return document.body.classList.contains('oo-ui-windowManager-modal-active') || this.booting;
-  },
+  }
 
   /**
    * Run the {@link BootProcess boot process} and catch errors.
@@ -421,7 +581,7 @@ const controller = {
     }
 
     this.booting = false;
-  },
+  }
 
   /**
    * Get the offset data related to `.$contentColumn`.
@@ -440,8 +600,8 @@ const controller = {
         startMargin--;
       }
 
-      const left = this.$contentColumn.offset().left;
-      const width = this.$contentColumn.outerWidth();
+      const left = /** @type {JQuery.Coordinates} */ (this.$contentColumn.offset()).left;
+      const width = /** @type {number} */ (this.$contentColumn.outerWidth());
       this.contentColumnOffsets = {
         startMargin,
         start: cd.g.contentDirection === 'ltr' ? left : left + width,
@@ -456,7 +616,7 @@ const controller = {
     }
 
     return this.contentColumnOffsets;
-  },
+  }
 
   /**
    * Load the data required for the script to process the page as a log page and
@@ -520,17 +680,17 @@ const controller = {
         console.error(e);
       }
     );
-  },
+  }
 
   /**
    * Check whether the current page is likely a talk page. See
-   * {@link module:controller.isDefinitelyTalkPage} for the most strict criteria.
+   * {@link Controller#isDefinitelyTalkPage} for the most strict criteria.
    *
    * @returns {boolean}
    */
   isTalkPage() {
     return this.talkPage;
-  },
+  }
 
   /**
    * Check whether the current page is a watchlist or recent changes page.
@@ -541,7 +701,7 @@ const controller = {
     return ['Recentchanges', 'Watchlist'].includes(
       mw.config.get('wgCanonicalSpecialPageName') || ''
     );
-  },
+  }
 
   /**
    * Check whether the current page is a contributions page.
@@ -550,7 +710,7 @@ const controller = {
    */
   isContributionsPage() {
     return mw.config.get('wgCanonicalSpecialPageName') === 'Contributions';
-  },
+  }
 
   /**
    * Check whether the current page is a history page.
@@ -559,7 +719,7 @@ const controller = {
    */
   isHistoryPage() {
     return cd.g.pageAction === 'history' && isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber);
-  },
+  }
 
   /**
    * Check whether the current page is a diff page.
@@ -573,17 +733,17 @@ const controller = {
    */
   isDiffPage() {
     return this.diffPage;
-  },
+  }
 
   /**
    * Check whether the current page meets strict criteria for classifying as a talk page. See
-   * {@link module:controller.isTalkPage} for approximate criteria.
+   * {@link Controller#isTalkPage} for approximate criteria.
    *
    * @returns {boolean}
    */
   isDefinitelyTalkPage() {
     return this.definitelyTalkPage;
-  },
+  }
 
   /**
    * Check if the _article_ page (the one with `wgIsArticle` being true) of the current page is a
@@ -595,7 +755,7 @@ const controller = {
    */
   isArticlePageTalkPage() {
     return this.articlePageTalkPage;
-  },
+  }
 
   /**
    * Is the page loading (the loading overlay is on).
@@ -604,18 +764,18 @@ const controller = {
    */
   isBooting() {
     return this.booting;
-  },
+  }
 
   /**
    * Get the current (or last available) boot process.
    *
-   * For simpler type checking, assume it's always set.
+   * For simpler type checking, assume it's always set (we don't use it when it's not).
    *
    * @returns {BootProcess}
    */
   getBootProcess() {
     return this.bootProcess;
-  },
+  }
 
   /**
    * Set up the controller for use in the current boot process. (Executed at every page load.)
@@ -631,7 +791,7 @@ const controller = {
     if (pageHtml) {
       const div = document.createElement('div');
       div.innerHTML = pageHtml;
-      this.rootElement = div.firstChild;
+      this.rootElement = /** @type {HTMLElement} */ (div.firstChild);
       this.$root = $(this.rootElement);
     } else {
       // There can be more than one .mw-parser-output child, e.g. on talk pages of IP editors.
@@ -650,7 +810,7 @@ const controller = {
     // this.handleWikipageContentHookFirings() is called with #mw-content-text element for some
     // reason, the page can go into an infinite reloading loop.
     this.$root.addClass('cd-parse-started');
-  },
+  }
 
   /**
    * Set whether the current page is a talk page.
@@ -659,7 +819,7 @@ const controller = {
    */
   setTalkPageness(value) {
     this.talkPage = Boolean(value);
-  },
+  }
 
   /**
    * Is the displayed revision the current (last known) revision of the page.
@@ -672,7 +832,7 @@ const controller = {
     // wgCurRevisionId after some revisions were added). Unfortunately, it doesn't update the
     // wgCurRevisionId value.
     return mw.config.get('wgRevisionId') >= mw.config.get('wgCurRevisionId');
-  },
+  }
 
   /**
    * Save the scroll position relative to the first element in the viewport looking from the top of
@@ -680,7 +840,7 @@ const controller = {
    *
    * @param {?boolean} [switchToAbsolute=null] If this value is `true` or `false` and the viewport
    *   is above the bottom of the table of contents, then use
-   *   {@link module:controller.saveScrollPosition} (this allows for better precision).
+   *   {@link Controller#saveScrollPosition} (this allows for better precision).
    * @param {number} scrollY Cached horizontal scroll value used to avoid reflow.
    */
   saveRelativeScrollPosition(switchToAbsolute = null, scrollY = window.scrollY) {
@@ -710,7 +870,7 @@ const controller = {
       ) {
         const treeWalker = new ElementsTreeWalker(
           this.rootElement,
-          this.rootElement.firstElementChild,
+          this.rootElement.firstElementChild || undefined,
         );
         while (true) {
           const el = treeWalker.currentNode;
@@ -750,14 +910,14 @@ const controller = {
         }
       }
     }
-  },
+  }
 
   /**
-   * Restore the scroll position saved in {@link module:controller.saveRelativeScrollPosition}.
+   * Restore the scroll position saved in {@link Controller#saveRelativeScrollPosition}.
    *
    * @param {boolean} [switchToAbsolute=false] Restore the absolute position using
-   *   {@link module:controller.restoreScrollPosition} if
-   *   {@link module:controller.saveScrollPosition} was previously used for saving the position.
+   *   {@link Controller#restoreScrollPosition} if
+   *   {@link Controller#saveScrollPosition} was previously used for saving the position.
    */
   restoreRelativeScrollPosition(switchToAbsolute = false) {
     if (switchToAbsolute && this.scrollData.offset !== null) {
@@ -797,7 +957,7 @@ const controller = {
         }
       }
     }
-  },
+  }
 
   /**
    * _For internal use._ Replace the element used for restoring saved relative scroll position with
@@ -811,11 +971,11 @@ const controller = {
     if (this.scrollData.element && element === this.scrollData.element) {
       this.scrollData.element = newElement;
     }
-  },
+  }
 
   /**
    * Save the scroll position to restore it later with
-   * {@link module:controller.restoreScrollPosition}.
+   * {@link Controller#restoreScrollPosition}.
    *
    * @param {boolean} [saveTocHeight=true] `false` is used for more fine control of scroll behavior
    *   when visits are loaded after a page reload.
@@ -834,10 +994,10 @@ const controller = {
     ) ?
       toc.$element.outerHeight() :
       null;
-  },
+  }
 
   /**
-   * Restore the scroll position saved in {@link module:controller.saveScrollPosition}.
+   * Restore the scroll position saved in {@link Controller#saveScrollPosition}.
    *
    * @param {boolean} [resetTocHeight=true] `false` is used for more fine control of scroll behavior
    *   after page reloads.
@@ -854,7 +1014,7 @@ const controller = {
     if (resetTocHeight) {
       this.scrollData.tocHeight = null;
     }
-  },
+  }
 
   /**
    * Find closed discussions on the page.
@@ -872,7 +1032,7 @@ const controller = {
       .get());
 
     return this.content.closedDiscussions;
-  },
+  }
 
   /**
    * Check whether there is at least one outdent template on the page. (If there is no, we don't
@@ -883,7 +1043,7 @@ const controller = {
   areThereOutdents() {
     this.content.areThereOutdents ??= Boolean(this.$root.find('.' + cd.config.outdentClass).length);
     return this.content.areThereOutdents;
-  },
+  }
 
   /**
    * Find floating elements on the page.
@@ -913,13 +1073,15 @@ const controller = {
       // Can't use jQuery here anyway, as .find() doesn't take into account ancestor elements, such
       // as .mw-parser-output, in selectors. Remove all known elements that never intersect comments
       // from the collection.
-      this.content.floatingElements = [
-        ...this.rootElement.querySelectorAll(floatingElementSelector)
-      ].filter((el) => !el.classList.contains('cd-ignoreFloating'));
+      this.content.floatingElements = /** @type {HTMLElement[]} */ (
+        [...this.rootElement.querySelectorAll(floatingElementSelector)].filter(
+          (el) => !el.classList.contains('cd-ignoreFloating')
+        )
+      );
     }
 
     return this.content.floatingElements;
-  },
+  }
 
   /**
    * Find floating and hidden (`display: none`) elements on the page.
@@ -935,7 +1097,7 @@ const controller = {
     }
 
     return this.hiddenElements;
-  },
+  }
 
   /**
    * Get the selectors for floating elements mentioned in the TemplateStyles tags on the page.
@@ -949,7 +1111,7 @@ const controller = {
     }
 
     return /** @type {string[]} */ (this.content.tsSelectorsFloating);
-  },
+  }
 
   /**
    * Get the selectors for hidden elements mentioned in the TemplateStyles tags on the page.
@@ -963,7 +1125,7 @@ const controller = {
     }
 
     return /** @type {string[]} */ (this.content.tsSelectorsHidden);
-  },
+  }
 
   /**
    * Extract and memorize the classes mentioned in the TemplateStyles tags on the page.
@@ -996,12 +1158,12 @@ const controller = {
         }
       });
     [...this.rootElement.querySelectorAll('style')].forEach((el) => {
-      [...el.sheet.cssRules].forEach(extractSelectors);
+      [...(el.sheet?.cssRules || [])].forEach(extractSelectors);
     });
 
     this.content.tsSelectorsFloating = floating;
     this.content.tsSelectorsHidden = hidden;
-  },
+  }
 
   /**
    * Check whether there is "LTR inside RTL" or "RTL inside LTR" nesting on the page.
@@ -1014,7 +1176,7 @@ const controller = {
     );
 
     return this.content.areThereLtrRtlMixes;
-  },
+  }
 
   /**
    * Add a condition preventing page unload.
@@ -1023,8 +1185,7 @@ const controller = {
    * @param {() => boolean} condition
    */
   addPreventUnloadCondition(name, condition) {
-    this.beforeUnloadHandlers ||= {};
-    this.beforeUnloadHandlers[name] = (/** @type {Event} */ event) => {
+    this.beforeUnloadHandlers[name] = (/** @type {JQuery.Event} */ event) => {
       if (!condition()) return;
 
       event.preventDefault();
@@ -1034,7 +1195,7 @@ const controller = {
       return '';
     };
     $(window).on('beforeunload', this.beforeUnloadHandlers[name]);
-  },
+  }
 
   /**
    * Remove a condition preventing page unload.
@@ -1044,9 +1205,9 @@ const controller = {
   removePreventUnloadCondition(name) {
     if (!this.beforeUnloadHandlers[name]) return;
 
-    $(window).off('beforeunload', this.beforeUnloadHandlers[name]);
+    $(window).off('beforeunload', (this.beforeUnloadHandlers[name]));
     delete this.beforeUnloadHandlers[name];
-  },
+  }
 
   /**
    * _For internal use._ Handle a mouse move event (including `mousemove` and `mouseover`).
@@ -1059,7 +1220,7 @@ const controller = {
     // Don't throttle. Without throttling, performance is generally OK, while the "frame rate" is
     // about 50 (so, the reaction time is about 20ms). Lower values would be less comfortable.
     this.emit('mouseMove', e);
-  },
+  }
 
   /**
    * _For internal use._ Are there elements obstructing the content area, like popups or windows.
@@ -1106,7 +1267,7 @@ const controller = {
     }, 100)();
 
     return this.isObstructingElementHoveredCached;
-  },
+  }
 
   /**
    * Handles the window `resize` event as well as `orientationchange`.
@@ -1120,7 +1281,7 @@ const controller = {
     this.getContentColumnOffsets(true);
     this.emit('resize');
     this.handleScroll();
-  },
+  }
 
   /**
    * Handles `keydown` event on the document.
@@ -1132,7 +1293,7 @@ const controller = {
     if (this.isPageOverlayOn()) return;
 
     this.emit('keyDown', e);
-  },
+  }
 
   /**
    * _For internal use._ Handle a document's `scroll` event: Register seen comments, update the
@@ -1162,16 +1323,16 @@ const controller = {
       $(document).trigger('horizontalscroll.cd');
     }
     this.lastScrollX = window.scrollX;
-  },
+  }
 
   /**
-   * Handle a `horizontalscroll` event, triggered from {@link module:controller.handleScroll}.
+   * Handle a `horizontalscroll` event, triggered from {@link Controller#handleScroll}.
    *
    * @private
    */
   handleHorizontalScroll() {
     this.emit('horizontalScroll');
-  },
+  }
 
   /**
    * Handle a `popstate` event, including clicks on links pointing to comment anchors.
@@ -1190,7 +1351,7 @@ const controller = {
     // Make sure the title has no incorrect new comment count when the user presses the "Back"
     // button after an (internal) page reload.
     this.updatePageTitle();
-  },
+  }
 
   /**
    * Handle a `selectionchange` event.
@@ -1202,7 +1363,7 @@ const controller = {
       this.emit('selectionChange');
     }, 200);
     this.throttledHandleSelectionChange();
-  },
+  }
 
   /**
    * Handle page (content area) mutations.
@@ -1216,7 +1377,7 @@ const controller = {
 
     // Could also run this.handleScroll() here, but not sure, as it would double the execution
     // time with rare effect.
-  },
+  }
 
   /**
    * Handle a click on an "Add topic" button excluding those added by the script.
@@ -1261,7 +1422,7 @@ const controller = {
 
     event.preventDefault();
     cd.page.addSection(undefined, undefined, preloadConfig, newTopicOnTop);
-  },
+  }
 
   /**
    * _For internal use._ Add event listeners to `window`, `document`, hooks.
@@ -1313,12 +1474,12 @@ const controller = {
 
     Thread
       .on('toggle', this.handleScroll.bind(this));
-  },
+  }
 
   /**
    * Bind a click handler to comment links to make them work as in-script comment links.
    *
-   * This method exists in addition to {@link module:controller.handlePopState}. It's preferable to
+   * This method exists in addition to {@link Controller#handlePopState}. It's preferable to
    * have click events handled by this method instead of `.handlePopState()` because that method, if
    * encounters `cdJumpedToComment` in the history state, doesn't scroll to the comment which is a
    * wrong behavior when the user clicks a link.
@@ -1350,7 +1511,7 @@ const controller = {
           pushState: true,
         });
       });
-  },
+  }
 
   /**
    * Highlight mentions of the current user.
@@ -1386,7 +1547,7 @@ const controller = {
       .each((i, link) => {
         link.classList.add('cd-currentUserLink');
       });
-  },
+  }
 
   /**
    * Handle firings of the hook
@@ -1404,7 +1565,7 @@ const controller = {
     if ($root.length && !$root.hasClass('cd-parse-started')) {
       this.reload({ isPageReloadedExternally: true });
     }
-  },
+  }
 
   /**
    * Reload the page via Ajax.
@@ -1492,7 +1653,7 @@ const controller = {
     if (!bootProcess.passedData.commentIds && !bootProcess.passedData.sectionId) {
       this.restoreScrollPosition(false);
     }
-  },
+  }
 
   /**
    * _For internal use._ Update the page's HTML and certain configuration values.
@@ -1515,7 +1676,7 @@ const controller = {
       wgRevisionId: parseData.revid,
       wgCurRevisionId: parseData.revid,
     });
-  },
+  }
 
   /**
    * Reset the controller data and state. (Executed between page loads.)
@@ -1536,7 +1697,7 @@ const controller = {
     this.relevantAddedCommentIds = null;
     delete this.dtSubscribableThreads;
     this.updatePageTitle();
-  },
+  }
 
   /**
    * Remove fragment and revision parameters from the URL; remove DOM elements related to the diff.
@@ -1547,7 +1708,7 @@ const controller = {
     const { searchParams } = new URL(location.href);
     this.cleanUpDom(searchParams);
     this.cleanUpUrl(searchParams);
-  },
+  }
 
   /**
    * Remove diff-related DOM elements.
@@ -1569,7 +1730,7 @@ const controller = {
     $('#firstHeading').text(cd.page.name);
     document.title = cd.mws('pagetitle', cd.page.name);
     this.originalPageTitle = document.title;
-  },
+  }
 
   /**
    * Remove fragment and revision parameters from the URL.
@@ -1619,7 +1780,7 @@ const controller = {
     if (methodName) {
       history[methodName](history.state, '', cd.page.getUrl(newQuery));
     }
-  },
+  }
 
   /**
    * _For internal use._ Update the page title to show:
@@ -1652,7 +1813,7 @@ const controller = {
         `(${this.addedCommentCount}${relevantMark}) ` :
         ''
     );
-  },
+  }
 
   /**
    * _For internal use._ Check whether the page qualifies to be considered a long page (which
@@ -1664,7 +1825,7 @@ const controller = {
     this.content.longPage ??= /** @type {number} */ ($(document).height()) > 15000;
 
     return this.content.longPage;
-  },
+  }
 
   /**
    * Get the content root element (`.mw-parser-output` or `#mw-content-text`). Supposed to be used
@@ -1675,7 +1836,7 @@ const controller = {
    */
   getRootElement() {
     return this.rootElement;
-  },
+  }
 
   /**
    * Show an edit subscriptions dialog.
@@ -1686,7 +1847,7 @@ const controller = {
     const dialog = new (require('./EditSubscriptionsDialog').default)();
     this.getWindowManager().addWindows([dialog]);
     this.getWindowManager().openWindow(dialog);
-  },
+  }
 
   /**
    * Show a copy link dialog.
@@ -1756,7 +1917,7 @@ const controller = {
     const dialog = new (require('./CopyLinkDialog').default)(object, content, object instanceof Comment ? 'comment' : 'section');
     this.getWindowManager().addWindows([dialog]);
     this.getWindowManager().openWindow(dialog);
-  },
+  }
 
   /**
    * Scroll to a specified position vertically.
@@ -1783,27 +1944,27 @@ const controller = {
       window.scrollTo(window.scrollX, y);
       onComplete();
     }
-  },
+  }
 
   /**
    * Set whether the viewport is currently automatically scrolled to some position. To get that
-   * state, use {@link module:controller.isAutoScrolling}.
+   * state, use {@link Controller#isAutoScrolling}.
    *
    * @param {boolean} value
    */
   toggleAutoScrolling(value) {
     this.autoScrolling = Boolean(value);
-  },
+  }
 
   /**
    * Check whether the viewport is currently automatically scrolled to some position. To set that
-   * state, use {@link module:controller.toggleAutoScrolling}.
+   * state, use {@link Controller#toggleAutoScrolling}.
    *
    * @returns {boolean}
    */
   isAutoScrolling() {
     return this.autoScrolling;
-  },
+  }
 
   /**
    * Set up a
@@ -1819,7 +1980,13 @@ const controller = {
 
     this.mutationObserver = new MutationObserver((records) => {
       const layerClassRegexp = /^cd-comment(-underlay|-overlay|Layers)/;
-      if (records.every((record) => layerClassRegexp.test(record.target.className))) return;
+      if (
+        records.every(
+          (record) =>
+            record.target instanceof HTMLElement && layerClassRegexp.test(record.target.className)
+        )
+      )
+        return;
 
       this.handlePageMutate();
     });
@@ -1828,12 +1995,12 @@ const controller = {
       childList: true,
       subtree: true,
     });
-  },
+  }
 
   /**
    * Show a regular notification (`mw.notification`) to the user.
    *
-   * @param {import('./CommentSkeleton').CommentSkeletonLike[]} comments
+   * @param {import('./updateChecker').CommentWorkerEnrichied[]} comments
    * @private
    */
   showRegularNotification(comments) {
@@ -1931,12 +2098,12 @@ const controller = {
         this.reload({ commentIds: filteredComments.map((comment) => comment.id) });
       });
     }
-  },
+  }
 
   /**
    * Show a desktop notification to the user.
    *
-   * @param {import('./CommentSkeleton').CommentSkeletonLike[]} comments
+   * @param {import('./updateChecker').CommentWorkerEnrichied[]} comments
    * @private
    */
   showDesktopNotification(comments) {
@@ -2031,14 +2198,14 @@ const controller = {
         closeNotificationsSmoothly: false,
       });
     };
-  },
+  }
 
   /**
    * Update the data about added comments (new comments added while the page was idle), update page
    * components accordingly, show notifications.
    *
-   * @param {import('./CommentSkeleton').CommentSkeletonLike[]} all
-   * @param {import('./CommentSkeleton').CommentSkeletonLike[]} relevant
+   * @param {import('./updateChecker').CommentWorkerEnrichied[]} all
+   * @param {import('./updateChecker').CommentWorkerEnrichied[]} relevant
    */
   updateAddedComments(all, relevant) {
     this.addedCommentCount = all.length;
@@ -2062,7 +2229,7 @@ const controller = {
     this.showRegularNotification(commentsToNotifyAbout);
     this.showDesktopNotification(commentsToNotifyAbout);
     this.commentsNotifiedAbout.push(...commentsToNotifyAbout);
-  },
+  }
 
   /**
    * Get the IDs of the comments that should be jumped to after reloading the page.
@@ -2071,7 +2238,7 @@ const controller = {
    */
   getRelevantAddedCommentIds() {
     return this.relevantAddedCommentIds;
-  },
+  }
 
   /**
    * _For internal use._ If every changed comment on the page has been seen and there are no new
@@ -2085,7 +2252,7 @@ const controller = {
     ) {
       cd.page.markAsRead(this.lastCheckedRevisionId);
     }
-  },
+  }
 
   /**
    * Create an appropriate {@link Subscriptions} singleton based on the user settings.
@@ -2098,7 +2265,7 @@ const controller = {
     )();
 
     return this.subscriptionsInstance;
-  },
+  }
 
   /**
    * _For internal use._ Bind a click handler to every known "Add topic" button out of our
@@ -2133,16 +2300,16 @@ const controller = {
         }
 
         let pageName;
-        let url;
+        let /** @type {URL|undefined} */ url;
         if ($button.is('a')) {
           url = new URL($button.prop('href'));
           pageName = getLastArrayElementOrSelf(url.searchParams.getAll('title'))
             ?.replace(/^Special:NewSection\//i, '');
         } else if ($button.is('input')) {
-          pageName = $button
+          pageName = /** @type {string} */ ($button
             .closest('form')
             .find('input[name="title"][type="hidden"]')
-            .val();
+            .val());
         }
         if (!pageName) {
           return false;
@@ -2153,26 +2320,26 @@ const controller = {
           return false;
         }
 
-        if ($button.is('a')) {
-          url.searchParams.set('dtenable', 0);
-          $button.attr('href', url);
+        if (url) {
+          url.searchParams.set('dtenable', '0');
+          $button.attr('href', url.toString());
         }
 
         return true;
       });
 
     if (!$('#ca-addsection a').length && this.$addTopicButtons.length === 1) {
-      this.$emulatedAddTopicButton = $(mw.util.addPortletLink(
+      this.$emulatedAddTopicButton = $(/** @type {HTMLLIElement} */ (mw.util.addPortletLink(
         'p-views',
-        this.$addTopicButtons.attr('href'),
+        this.$addTopicButtons.attr('href') || '#',
         cd.s('addtopic'),
         'ca-addsection',
         cd.s('addtopicbutton-tooltip'),
         '+',
         '#ca-history'
-      ));
+      )));
       this.$addTopicButtons = this.$addTopicButtons.add(
-        this.$emulatedAddTopicButton.children()
+        /** @type {JQuery} */ (this.$emulatedAddTopicButton).children()
       );
     }
 
@@ -2191,31 +2358,31 @@ const controller = {
     $('#ca-addsection a').updateTooltipAccessKeys();
 
     // In case DT's new topic tool is enabled, remove the handler of the "Add topic" button.
-    const dtHandler = $._data(document.body).events?.click
+    const dtHandler = $._data(document.body, 'events').click
       ?.find((event) => event.selector?.includes('data-mw-comment'))
       ?.handler;
     if (dtHandler) {
       $(document.body).off('click', dtHandler);
     }
-  },
+  }
 
   /**
    * Get the list of DiscussionTools threads that are related to subscribable (2-level) threads.
    * This is updated on page reload.
    *
-   * @returns {object[]}
+   * @returns {DiscussionToolsThread[]}
    */
   getDtSubscribableThreads() {
-    this.dtSubscribableThreads ||= mw.config.get('wgDiscussionToolsPageThreads')
+    this.dtSubscribableThreads ||= /** @type {DiscussionToolsThread[]} */ (mw.config.get('wgDiscussionToolsPageThreads'))
       ?.concat(
-        mw.config.get('wgDiscussionToolsPageThreads')
+        /** @type {mw.DiscussionToolsPageThreads[]} */ (mw.config.get('wgDiscussionToolsPageThreads'))
           .filter((thread) => thread.headingLevel === 1)
           .flatMap((thread) => thread.replies)
       )
-      .filter((thread) => thread.headingLevel === 2);
+      .filter((thread) => 'headingLevel' in thread && thread.headingLevel === 2);
 
     return this.dtSubscribableThreads;
-  },
+  }
 
   /**
    * Check whether subscribing is disabled on this page despite it being an active page (because
@@ -2225,10 +2392,7 @@ const controller = {
    */
   isSubscribingDisabled() {
     return cd.page.isOwnTalkPage() && !['all', 'toMe'].includes(settings.get('desktopNotifications'));
-  },
-};
+  }
+}
 
-/** @type {typeof controller & OO.EventEmitter} */
-const controllerExtended = controller;
-
-export default controllerExtended;
+export default new Controller();
