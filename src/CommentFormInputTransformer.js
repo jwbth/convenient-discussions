@@ -592,7 +592,7 @@ class CommentFormInputTransformer extends TextMasker {
   /**
    * @typedef {object} List
    * @property {ListType} type
-   * @property {Array<Line|List>} items
+   * @property {Array<Item|List>} items
    */
 
   /**
@@ -604,18 +604,19 @@ class CommentFormInputTransformer extends TextMasker {
   /**
    * Transform line objects, turning lines that contain lists into list objects.
    *
-   * @param {Line[]} lines
-   * @param {boolean} [isNested=false]
+   * @template {boolean} [AreItems=false]
+   * @param {AreItems extends true ? Item[] : Line[]} lines
+   * @param {AreItems} [areItems]
    * @returns {Array<Line|List>}
    * @private
    */
-  static linesToLists(lines, isNested = false) {
+  static linesToLists(lines, areItems) {
     let accumulatedList = { items: /** @type {Line[]} */ ([]) };
     for (let i = 0; i <= lines.length; i++) {
       if (i === lines.length) {
         // When at the end of code, finalize the list that we accumulated, if any.
         if (this.isList(accumulatedList)) {
-          this.linesToList(lines, i, accumulatedList, isNested);
+          this.linesToList(lines, i, accumulatedList, areItems);
         }
       } else {
         const text = lines[i].text;
@@ -628,7 +629,7 @@ class CommentFormInputTransformer extends TextMasker {
           listType !== accumulatedList.type
         ) {
           const itemsCount = accumulatedList.items.length;
-          this.linesToList(lines, i, accumulatedList, isNested);
+          this.linesToList(lines, i, accumulatedList, areItems);
 
           // Shift the current index and start accumulating a new list.
           i -= itemsCount - 1;
@@ -662,19 +663,20 @@ class CommentFormInputTransformer extends TextMasker {
    * Replace several line objects, ending with index `i`, with a list object. Recursively do the
    * same with the lines of that list object.
    *
-   * @param {Array<Line|List>} lines
+   * @template {boolean} [AreItems=false]
+   * @param {AreItems extends true ? Array<Item|List> : Array<Line|List>} lines
    * @param {number} i
    * @param {List} list
-   * @param {boolean} [isNested=false]
+   * @param {AreItems} [areItems]
    * @private
    */
-  static linesToList(lines, i, list, isNested = false) {
-    if (isNested) {
+  static linesToList(lines, i, list, areItems) {
+    if (areItems) {
       const previousItemIndex = i - list.items.length - 1;
       if (previousItemIndex >= 0) {
         lines.splice(previousItemIndex, list.items.length + 1, {
           type: /** @type {ListType} */ (lines[previousItemIndex].type),
-          items: [lines[previousItemIndex], list],
+          items: [/** @type {List} */ (lines[previousItemIndex]), list],
         });
       } else {
         lines.splice(i - list.items.length, list.items.length, {
@@ -685,7 +687,7 @@ class CommentFormInputTransformer extends TextMasker {
     } else {
       lines.splice(i - list.items.length, list.items.length, list);
     }
-    this.linesToLists(/** @type {Line[]} */ (list.items), true);
+    this.linesToLists(/** @type {Item[]} */ (list.items), true);
   }
 
   /**
