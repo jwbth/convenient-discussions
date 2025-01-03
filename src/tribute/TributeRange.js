@@ -415,7 +415,7 @@ class TributeRange {
         document.body.appendChild(div)
 
         let style = div.style
-        let computed = window.getComputedStyle ? getComputedStyle(element) : element.currentStyle
+        let computed = 'getComputedStyle' in window ? getComputedStyle(element) : element.currentStyle
 
         style.whiteSpace = 'pre-wrap'
         if (element.nodeName !== 'INPUT') {

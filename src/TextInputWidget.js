@@ -53,6 +53,7 @@ class TextInputWidget extends OO.ui.TextInputWidget {
     const selection = window.getSelection();
     if (selection.type === 'Range') {
       div.appendChild(window.getSelection().getRangeAt(0).cloneContents());
+
       return await this.maybeConvertElementToWikitext(cleanUpPasteDom(div, this.$element[0]));
     }
 

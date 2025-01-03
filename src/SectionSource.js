@@ -131,7 +131,10 @@ class SectionSource {
           (commentForm.getContainerListType() === 'ol' || cd.config.indentationCharMode === 'mimic')
         ) {
           try {
-            const source = lastComment.locateInCode(commentForm.isSectionSubmitted());
+            // TODO: get rid of "action at a distance" that causes the type cast to be needed here
+            const source = lastComment.locateInCode(
+              /** @type {boolean} */ (commentForm.isSectionSubmitted())
+            );
 
             if (
               !source.indentation.startsWith('#') ||

@@ -538,8 +538,6 @@ class Controller extends OO.EventEmitter {
 
   /**
    * Hide the loading overlay.
-   *
-   * @private
    */
   hideLoadingOverlay() {
     if (!this.$loadingPopup || window.cdShowLoadingOverlay === false) return;

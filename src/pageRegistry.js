@@ -44,6 +44,9 @@ import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
  * means of code completion).
  */
 export class Page {
+  /** @readonly */
+  TYPE = 'page';
+
   /**
    * User for polymorphism with Comment.
    */

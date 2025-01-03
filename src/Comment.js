@@ -1286,9 +1286,7 @@ class Comment extends CommentSkeleton {
    * @overload
    * @param {GetOffsetOptions} [options]
    * @returns {?CommentOffset}
-   */
-
-  /**
+   *
    * @overload
    * @param {GetOffsetOptions<true>} [options]
    * @returns {?boolean}
@@ -2405,9 +2403,7 @@ class Comment extends CommentSkeleton {
    * @param {boolean} isNewVersionRendered
    * @param {number} comparedRevisionId
    * @param {object} commentsData
-   */
-
-  /**
+   *
    * @overload
    * @param {'deleted'} type
    */
@@ -3469,9 +3465,7 @@ class Comment extends CommentSkeleton {
    * @overload
    * @param {HTMLElement} element
    * @param {HTMLElement} newElementOrHtml
-   */
-
-  /**
+   *
    * @overload
    * @param {JQuery} element
    * @param {HTMLElement|string} newElementOrHtml
@@ -3630,9 +3624,7 @@ class Comment extends CommentSkeleton {
    * @overload
    * @param {boolean} useSectionCode
    * @returns {CommentSource}
-   */
-
-  /**
+   *
    * @overload
    * @param {boolean} useSectionCode
    * @param {string} code

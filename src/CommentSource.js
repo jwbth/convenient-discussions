@@ -19,6 +19,9 @@ class CommentSource {
   /** @type {string} */
   indentation;
 
+  /** @type {string} */
+  replyIndentation;
+
   /**
    * Create a comment's source object.
    *
@@ -705,9 +708,7 @@ class CommentSource {
    *   contextCode: string;
    *   commentCode: string;
    * }}
-   */
-
-  /**
+   *
    * @overload
    * @param {object} options
    * @param {'edit'} options.action
@@ -716,9 +717,7 @@ class CommentSource {
    * @returns {{
    *   contextCode: string;
    * }}
-   */
-
-  /**
+   *
    * @overload
    * @param {object} options
    * @param {'reply'} options.action
@@ -728,9 +727,7 @@ class CommentSource {
    *   contextCode: string;
    *   commentCode: string;
    * }}
-   */
-
-  /**
+   *
    * @overload
    * @param {object} options
    * @param {import('./CommentForm').CommentFormMode} options.action
@@ -787,7 +784,8 @@ class CommentSource {
     let contextCode;
     switch (action) {
       case 'reply': {
-        // This also sets .isReplyOutdented which CommentForm#inputToCode will need.
+        // This also sets .isReplyOutdented which CommentForm#inputToCode() will need. TODO:
+        // refactor this "action at a distance".
         const currentIndex = this.findProperPlaceForReply(originalContextCode);
 
         commentCode ??= /** @type {import('./CommentForm').default} */ (commentForm).inputToCode(

@@ -1789,6 +1789,17 @@ class Section extends SectionSkeleton {
   }
 
   /**
+   * @overload
+   * @param {true} forceLevel2 Guarantee a 2-level section is returned.
+   * @returns {Section|null} The base section, or `null` if no level 2 section is found.
+   *
+   * @overload
+   * @param {false} [forceLevel2=false] Return the closest level 2 ancestor, or the section itself if no
+   * such ancestor exists or if it is already level 2.
+   * @returns {Section} The base section.
+   */
+
+  /**
    * Get the base section, i.e. a section of level 2 that is an ancestor of the section, or the
    * section itself if it is of level 2 (even if there is a level 1 section) or if there is no
    * higher level section (the current section may be of level 3 or 1, for example).

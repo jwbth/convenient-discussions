@@ -11,8 +11,23 @@ import { escapePipesOutsideLinks, generateTagsRegexp } from './utils-wikitext';
  */
 class CommentFormInputTransformer extends TextMasker {
   /**
-   * @typedef {import('./CommentForm').default<Mode>['target']['source']} SourceType
+   * @typedef {object} CommentFormTargetExtension
+   * @property {NonNullable<import('./CommentForm').default<Mode>['target']['source']>} source When
+   *   {@link CommentFormInputTransformer} is instantiated, `source` is never `null`.
    */
+
+  /**
+   * @typedef {import('./CommentForm').CommentFormTargetMap[Mode] & CommentFormTargetExtension} CommentFormTarget
+   */
+
+  /** @type {CommentFormTarget} */
+  target;
+
+  /** @type {string} */
+  indentation;
+
+  /** @type {string|undefined} */
+  restLinesIndentation;
 
   /**
    * Create a comment form input processor.
@@ -25,10 +40,51 @@ class CommentFormInputTransformer extends TextMasker {
     super(text.trim());
     this.initialText = this.text;
     this.commentForm = commentForm;
+    this.target = /** @type {CommentFormTarget} */ (commentForm.getTarget());
     this.action = action;
-    this.source = /** @type {SourceType} */ (commentForm.getTarget().source);
 
     this.initIndentationData();
+  }
+
+  /**
+   * Check whether the form's {@link CommentForm#target target} is a comment.
+   *
+   * @param {CommentFormTarget} target
+   * @returns {target is import('./Comment').default}
+   */
+  isCommentTarget(target) {
+    return target.TYPE === 'comment';
+  }
+
+  /**
+   * Check whether the form's {@link CommentForm#target target} is a section.
+   *
+   * @param {CommentFormTarget} target
+   * @returns {target is import('./Section').default}
+   */
+  isSectionTarget(target) {
+    return target.TYPE === 'section';
+  }
+
+  /**
+   * Check whether the form's {@link CommentForm#target target} is a page.
+   *
+   * @param {CommentFormTarget} target
+   * @returns {target is import('./pageRegistry').Page}
+   */
+  isPageTarget(target) {
+    return target.TYPE === 'page';
+  }
+
+  /**
+   * Check if the form is in the specified mode. (Used for type guards.)
+   *
+   * @template {import('./CommentForm').CommentFormMode} M
+   * @param {M} mode
+   * @returns {this is CommentFormInputTransformer<M>}
+   */
+  isMode(mode) {
+    return this.commentForm.getMode() === mode;
   }
 
   /**
@@ -37,14 +93,14 @@ class CommentFormInputTransformer extends TextMasker {
    * @private
    */
   initIndentationData() {
-    if (this.commentForm.isReplyMode()) {
-      this.indentation = /** @type {import('./CommentSource').default} */ (this.source).replyIndentation;
-    } else if (this.commentForm.isEditMode()) {
-      this.indentation = /** @type {import('./CommentSource').default} */ (this.source).indentation;
-    } else if (this.commentForm.isReplyInSectionMode()) {
-      const lastCommentIndentation = /** @type {import('./SectionSource').default} */ (
-        this.source
-      ).extractLastCommentIndentation(this.commentForm);
+    if (this.isMode('reply')) {
+      this.indentation = this.target.source.replyIndentation;
+    } else if (this.isMode('edit')) {
+      this.indentation = this.target.source.indentation;
+    } else if (this.isMode('replyInSection')) {
+      const lastCommentIndentation = this.target.source.extractLastCommentIndentation(
+        this.commentForm
+      );
       this.indentation = (
         lastCommentIndentation &&
         (lastCommentIndentation[0] === '#' || cd.config.indentationCharMode === 'mimic')
@@ -55,7 +111,7 @@ class CommentFormInputTransformer extends TextMasker {
       this.indentation = '';
     }
 
-    if (this.indentation) {
+    if (this.isIndented()) {
       // In the preview mode, imitate a list so that the user will see where it would break on a
       // real page. This pseudolist's margin is made invisible by CSS.
       this.restLinesIndentation = this.action === 'preview' ?
@@ -67,7 +123,7 @@ class CommentFormInputTransformer extends TextMasker {
   /**
    * Check whether the comment will be indented.
    *
-   * @returns {boolean}
+   * @returns {this is { restLinesIndentation: string }}
    */
   isIndented() {
     return Boolean(this.indentation);
@@ -107,12 +163,12 @@ class CommentFormInputTransformer extends TextMasker {
   /**
    * Find tags in the code and do something about them.
    *
-   * @returns {CommentFormInputTransformer}
+   * @returns {this}
    * @private
    */
   findWrappers() {
     // Find tags around potential markup.
-    if (this.indentation) {
+    if (this.isIndented()) {
       const tagMatches = /** @type {string[]} */ (
         this.text.match(generateTagsRegexp(['[a-z]+'])) || []
       );
@@ -133,6 +189,7 @@ class CommentFormInputTransformer extends TextMasker {
           return s;
         }
         this.wrapInSmall = true;
+
         return content;
       });
     }
@@ -143,16 +200,15 @@ class CommentFormInputTransformer extends TextMasker {
   /**
    * Set the `signature` property. Also fix the code according to it.
    *
-   * @returns {CommentFormInputTransformer}
+   * @returns {this}
    * @private
    */
   initSignatureAndFixCode() {
     if (this.commentForm.omitSignatureCheckbox?.isSelected()) {
       this.signature = '';
     } else {
-      this.signature = this.commentForm.isEditMode()
-        ? /** @type {import('./CommentSource').default} */ (this.commentForm.getTarget().source)
-            .signatureCode
+      this.signature = this.commentForm.isMode('edit')
+        ? /** @type {import('./CommentSource').default} */ (this.target.source).signatureCode
         : cd.g.userSignature;
     }
 
@@ -162,7 +218,7 @@ class CommentFormInputTransformer extends TextMasker {
       this.signature &&
 
       // The existing signature doesn't start with a newline.
-      !(this.commentForm.isEditMode() && /^[ \t]*\n/.test(this.signature)) &&
+      !(this.commentForm.isMode('edit') && /^[ \t]*\n/.test(this.signature)) &&
 
       /(^|\n)[:*#;].*$/.test(this.text)
     ) {
@@ -199,7 +255,7 @@ class CommentFormInputTransformer extends TextMasker {
    * @private
    */
   handleIndentedComment(code, isWrapped, isInTemplate) {
-    if (!this.indentation) {
+    if (!this.isIndented()) {
       return code;
     }
 
@@ -325,12 +381,12 @@ class CommentFormInputTransformer extends TextMasker {
       'i'
     );
 
-    const newlinesRegexp = this.indentation ?
+    const newlinesRegexp = this.isIndented() ?
       /^(.+)\n(?![:#])(?=(.*))/gm :
       /^((?![:*#; ]).+)\n(?![\n:*#; \x03])(?=(.*))/gm;
     code = code.replace(newlinesRegexp, (s, currentLine, nextLine) => {
       // Remove if it is confirmed that this isn't happening (November 2024)
-      if (this.indentation && !cd.config.paragraphTemplates.length) {
+      if (this.isIndented() && !cd.config.paragraphTemplates.length) {
         console.error(`Convenient Discussions: Processing a newline in "${s}" which should be unreachable. You shouldn't be seeing this. If you do, please report to https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/Convenient_Discussions.`)
       }
 
@@ -338,7 +394,7 @@ class CommentFormInputTransformer extends TextMasker {
         entireLineRegexp.test(currentLine) ||
         entireLineRegexp.test(nextLine) ||
         (
-          !this.indentation &&
+          !this.isIndented() &&
           (entireLineFromStartRegexp.test(currentLine) || entireLineFromStartRegexp.test(nextLine))
         ) ||
         fileRegexp.test(currentLine) ||
@@ -353,11 +409,11 @@ class CommentFormInputTransformer extends TextMasker {
         nextLineBeginningRegexp.test(nextLine)
       ) ?
         '' :
-        '<br>' + (this.indentation ? ' ' : '');
+        '<br>' + (this.isIndented() ? ' ' : '');
 
       // Current line can match galleryRegexp only if the comment will not be indented.
       const newlineOrNot = (
-        this.indentation &&
+        this.isIndented() &&
         !CommentFormInputTransformer.galleryRegexp.test(nextLine)
       ) ?
         '' :
@@ -390,7 +446,7 @@ class CommentFormInputTransformer extends TextMasker {
   /**
    * Make the core code transformations with all code.
    *
-   * @returns {CommentFormInputTransformer}
+   * @returns {this}
    * @private
    */
   processAllCode() {
@@ -401,7 +457,7 @@ class CommentFormInputTransformer extends TextMasker {
   /**
    * Add the headline to the code.
    *
-   * @returns {CommentFormInputTransformer}
+   * @returns {this}
    * @private
    */
   addHeadline() {
@@ -411,31 +467,24 @@ class CommentFormInputTransformer extends TextMasker {
     }
 
     let level;
-    if (this.commentForm.isAddSectionMode()) {
+    if (this.isMode('addSection')) {
       level = 2;
-    } else if (this.commentForm.isAddSubsectionMode()) {
-      level = this.commentForm.getTarget().level + 1;
-    } else {  // 'edit'
+    } else if (this.isMode('addSubsection')) {
+      level = this.target.level + 1;
+    } else if (this.isMode('edit')) {
       // See CommentForm#loadComment(): I think a situation where the headline input is present and
       // but not in the source or vice versa is impossible, but need to recheck.
-      level = /** @type {number} */ (
-        /** @type {import('./CommentSource').default} */ (this.commentForm.getTarget().source)
-          .headingLevel
-      );
+      level = /** @type {number} */ (this.target.source.headingLevel);
     }
-    const equalSigns = '='.repeat(level);
+
+    // TypeScript can't do exhaustiveness checking here
+    const equalSigns = '='.repeat(/** @type {number} */ (level));
 
     if (
-      this.commentForm.getMode() === 'addSection' ||
+      this.isMode('addSection') ||
 
       // To have pretty diffs.
-      (
-        this.commentForm.isEditMode() &&
-        this.commentForm.getTarget().isOpeningSection &&
-        /^\n/.test(
-          /** @type {import('./CommentSource').default} */ (this.commentForm.getTarget().source).code
-        )
-      )
+      (this.isMode('edit') && this.target.isOpeningSection && /^\n/.test(this.target.source.code))
     ) {
       this.text = '\n' + this.text;
     }
@@ -447,7 +496,7 @@ class CommentFormInputTransformer extends TextMasker {
   /**
    * Add the signature to the code.
    *
-   * @returns {CommentFormInputTransformer}
+   * @returns {this}
    * @private
    */
   addSignature() {
@@ -461,7 +510,7 @@ class CommentFormInputTransformer extends TextMasker {
     }
 
     // A space in the beggining of the last line, creating <pre>, or a heading.
-    if (!this.indentation && /(^|\n)[ =].*$/.test(this.text)) {
+    if (!this.isIndented() && /(^|\n)[ =].*$/.test(this.text)) {
       this.text += '\n';
     }
 
@@ -473,7 +522,7 @@ class CommentFormInputTransformer extends TextMasker {
     // Process the small font wrappers, add the signature.
     if (this.wrapInSmall) {
       const before = /^[:*#; ]/.test(this.text) ?
-        '\n' + (this.indentation ? this.restLinesIndentation : '') :
+        '\n' + (this.isIndented() ? this.restLinesIndentation : '') :
         '';
       if (cd.config.smallDivTemplates.length && !/^[:*#;]/m.test(this.text)) {
         const escapedCodeWithSignature = (
@@ -494,15 +543,20 @@ class CommentFormInputTransformer extends TextMasker {
   /**
    * Add an outdent template to the beginning of the comment.
    *
-   * @returns {CommentFormInputTransformer}
+   * @returns {this}
    * @private
    */
   addOutdent() {
-    if (this.action === 'preview' || !this.commentForm.target.source.isReplyOutdented) {
+    const target = this.target;
+    if (
+      this.action === 'preview' ||
+      !this.isCommentTarget(target) ||
+      !target.source.isReplyOutdented
+    ) {
       return this;
     }
 
-    const outdentDifference = this.commentForm.target.level - this.commentForm.target.source.replyIndentation.length;
+    const outdentDifference = target.level - target.source.replyIndentation.length;
     this.text = (
       `{{${cd.config.outdentTemplates[0]}|${outdentDifference}}}` +
       (/^[:*#]+/.test(this.text) ? '\n' : ' ') +
@@ -515,11 +569,11 @@ class CommentFormInputTransformer extends TextMasker {
   /**
    * Add a newline to the code.
    *
-   * @returns {CommentFormInputTransformer}
+   * @returns {this}
    * @private
    */
   addTrailingNewline() {
-    if (this.commentForm.getMode() !== 'edit') {
+    if (!this.isMode('edit')) {
       this.text += '\n';
     }
 
@@ -529,23 +583,23 @@ class CommentFormInputTransformer extends TextMasker {
   /**
    * Add the indentation characters to the code.
    *
-   * @returns {CommentFormInputTransformer}
+   * @returns {this}
    * @private
    */
   addIntentationChars() {
     // If the comment starts with a list or table, replace all asterisks in the indentation
     // characters with colons to have the comment HTML generated correctly.
-    if (this.indentation && this.action !== 'preview' && /^[*#;\x03]/.test(this.text)) {
+    if (this.isIndented() && this.action !== 'preview' && /^[*#;\x03]/.test(this.text)) {
       this.indentation = this.restLinesIndentation;
     }
 
     if (this.action !== 'preview') {
       this.text = CommentFormInputTransformer.prependIndentationToLine(this.indentation, this.text);
 
-      if (this.commentForm.isAddSubsectionMode()) {
+      if (this.isMode('addSubsection')) {
         this.text += '\n';
       }
-    } else if (this.action === 'preview' && this.indentation && this.initialText) {
+    } else if (this.action === 'preview' && this.isIndented() && this.initialText) {
       this.text = CommentFormInputTransformer.prependIndentationToLine(':', this.text);
     }
 
@@ -609,7 +663,7 @@ class CommentFormInputTransformer extends TextMasker {
    * @private
    */
   static linesToLists(lines, areItems = false) {
-    let accumulatedList = { items: /** @type {Line[]} */ ([]) };
+    let accumulatedList = { items: /** @type {Item[]} */ ([]) };
     for (let i = 0; i <= lines.length; i++) {
       if (i === lines.length) {
         // When at the end of code, finalize the list that we accumulated, if any.
