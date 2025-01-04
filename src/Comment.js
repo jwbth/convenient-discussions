@@ -3085,15 +3085,11 @@ class Comment extends CommentSkeleton {
   async thank() {
     /** @type {import('./CommentButton').default} */ (this.thankButton).setPending(true);
 
-    const genderRequest = cd.g.genderAffectsUserString && this.author.isRegistered() ?
-      loadUserGenders([this.author]) :
-      undefined;
-
     let edit;
     try {
       ([edit] = await Promise.all([
         this.findEdit(),
-        genderRequest,
+        cd.g.genderAffectsUserString ? loadUserGenders([this.author]) : undefined,
         mw.loader.using(['mediawiki.diff', 'mediawiki.diff.styles']),
       ].filter(defined)));
     } catch (e) {
@@ -3698,7 +3694,7 @@ class Comment extends CommentSkeleton {
         };
       }
       if (!this.genderRequestCallbacks.includes(callback)) {
-        this.genderRequest.then(() => callback, errorCallback);
+        this.genderRequest.then(callback, errorCallback);
         this.genderRequestCallbacks.push(callback);
       }
     } else {
@@ -4195,7 +4191,7 @@ class Comment extends CommentSkeleton {
    * {@link Page#getCommentFormCommentInputPlaceholder}.
    *
    * @param {import('./CommentForm').CommentFormMode} mode
-   * @param {(users: import('./userRegistry').User[]) => void} callback
+   * @param {() => void} callback
    * @returns {?string}
    */
   getCommentFormCommentInputPlaceholder(mode, callback) {

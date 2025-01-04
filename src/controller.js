@@ -1911,7 +1911,7 @@ class Controller extends OO.EventEmitter {
       return;
     }
 
-    const dialog = new (require('./CopyLinkDialog').default)(object, content, object instanceof Comment ? 'comment' : 'section');
+    const dialog = new (require('./CopyLinkDialog').default)(object, content);
     this.getWindowManager().addWindows([dialog]);
     this.getWindowManager().openWindow(dialog);
   }

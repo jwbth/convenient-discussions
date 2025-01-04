@@ -552,11 +552,14 @@ export function getRangeContents(start, end, rootElement) {
     // expand note of the comment
     // https://commons.wikimedia.org/w/index.php?title=User_talk:Jack_who_built_the_house/CD_test_page&oldid=678031044#c-Example-2021-10-02T05:14:00.000Z-Example-2021-10-02T05:13:00.000Z
     // if you collapse its thread.
+    let parent;
     while (
-      end.parentElement.lastChild === end &&
-      treeWalker.currentNode.contains(end.parentElement)
+      (parent = end.parentElement) &&
+      parent &&
+      parent.lastChild === end &&
+      treeWalker.currentNode.contains(parent)
     ) {
-      end = /** @type {HTMLElement} */ (end.parentElement);
+      end = parent;
     }
 
     while (treeWalker.currentNode !== end) {

@@ -2,7 +2,7 @@ import CdError from './CdError';
 import TextMasker from './TextMasker';
 import cd from './cd';
 import settings from './settings';
-import { calculateWordOverlap, countOccurrences, defined, definedAndNotNull, generatePageNamePattern } from './utils-general';
+import { calculateWordOverlap, countOccurrences, definedAndNotNull, generatePageNamePattern } from './utils-general';
 import { brsToNewlines, extractSignatures, maskDistractingCode, normalizeCode, removeWikiMarkup } from './utils-wikitext';
 
 /**

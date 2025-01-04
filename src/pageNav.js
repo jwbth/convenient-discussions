@@ -71,14 +71,18 @@ export default {
   updateWidth() {
     if (!this.isMounted() || !controller.$contentColumn.length) return;
 
-    const left = controller.$contentColumn.offset().left - $(window).scrollLeft();
+    const left =
+      /** @type {JQuery.Coordinates} */ (controller.$contentColumn.offset()).left -
+      /** @type {number} */ ($(window).scrollLeft());
 
     // 18px padding + 1px comment markers / thread lines
     const deductable = 18 + ((cd.g.commentMarkerWidth - 1) / 2);
 
-    let width = cd.g.userDirection === 'ltr' ?
-      left - deductable :
-      $(window).width() - (left + controller.$contentColumn.outerWidth()) - deductable;
+    let width = cd.g.userDirection === 'ltr'
+      ? left - deductable
+      : /** @type {number} */ ($(window).width()) -
+        (left + /** @type {number} */ (controller.$contentColumn.outerWidth())) -
+        deductable;
     if (cd.g.skin === 'minerva') {
       width -= controller.getContentColumnOffsets().startMargin;
     }
@@ -323,10 +327,10 @@ export default {
    *
    * @param {JQuery|number} $elementOrOffset Element or top offset to jump to.
    * @param {JQuery} $item Navigation item that initiated the jump.
-   * @param {boolean} isBackLink Was the jump initiated by a back link.
+   * @param {boolean} [isBackLink=false] Was the jump initiated by a back link.
    * @private
    */
-  jump($elementOrOffset, $item, isBackLink) {
+  jump($elementOrOffset, $item, isBackLink = false) {
     const offset = typeof $elementOrOffset === 'number' ?
       $elementOrOffset :
       /** @type {JQuery.Coordinates} */ ($elementOrOffset.offset()).top - cd.g.bodyScrollPaddingTop;

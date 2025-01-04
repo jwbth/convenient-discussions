@@ -775,13 +775,15 @@ class Thread {
       .map((author) => author.getName())
       .join(cd.mws('comma-separator'));
     const setLabel = (genderless) => {
-      button.setLabel(cd.s(
-        genderless ? 'thread-expand-label-genderless' : 'thread-expand-label',
-        this.commentCount,
-        usersInThread.length,
-        userList,
-        getCommonGender(usersInThread)
-      ));
+      button.setLabel(
+        cd.s(
+          genderless ? 'thread-expand-label-genderless' : 'thread-expand-label',
+          this.commentCount,
+          usersInThread.length,
+          userList,
+          getCommonGender(usersInThread)
+        )
+      );
       button.element.classList.remove('cd-thread-button-invisible');
     };
     if (cd.g.genderAffectsUserString) {
@@ -902,7 +904,7 @@ class Thread {
    *   collapsed threads.
    * @param {boolean} [isBatchOperation=auto] Is this called as part of some batch operation (so, no
    *   scrolling or updating the parent comment's "Toggle child threads" button look).
-   * @param {Promise.<any>} [loadUserGendersPromise]
+   * @param {Promise.<void>} [loadUserGendersPromise]
    */
   collapse(auto = false, isBatchOperation = auto, loadUserGendersPromise) {
     if (this.isCollapsed) return;

@@ -691,11 +691,12 @@ class CommentForm extends OO.EventEmitter {
     this.commentInput = new (require('./MultilineTextInputWidget').default)({
       value: initialState.comment ?? '',
       placeholder:
-        this.target.getCommentFormCommentInputPlaceholder(this.mode, ([commentAuthor]) => {
+        this.target.getCommentFormCommentInputPlaceholder(this.mode, () => {
+          const target = /** @type {Comment} */ (this.target);
           this.commentInput.$input.attr(
             'placeholder',
             removeDoubleSpaces(
-              cd.s('cf-comment-placeholder-replytocomment', commentAuthor.getName(), commentAuthor)
+              cd.s('cf-comment-placeholder-replytocomment', target.author.getName(), target.author)
             )
           );
         }) || undefined,

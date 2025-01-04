@@ -99,6 +99,19 @@ import { brsToNewlines } from './utils-wikitext';
  * @property {string} body
  */
 
+/**
+ * @typedef {object} ApiResponseUsers
+ * @property {object} query
+ * @property {ApiResponseUser[]} query.users
+ */
+
+/**
+ * @typedef {object} ApiResponseUser
+ * @property {number} userid
+ * @property {string} name
+ * @property {'male' | 'female' | 'unknown'} gender
+ */
+
 let cachedUserInfoRequest;
 
 /**
@@ -430,11 +443,10 @@ export async function saveGlobalOption(name, value) {
  * Request genders of a list of users and assign them as properties. A gender may be `'male'`,
  * `'female'`, or `'unknown'`.
  *
- * @template {import('./userRegistry').User[]} T
- * @param {T} users
+ * @param {import('./userRegistry').User[]} users
  * @param {boolean} [doRequestInBackground=false] Make a request that won't set the process on hold
  *   when the tab is in the background.
- * @returns {Promise.<T>}
+ * @returns {Promise.<void>}
  */
 export async function loadUserGenders(users, doRequestInBackground = false) {
   const usersToRequest = users
@@ -449,38 +461,48 @@ export async function loadUserGenders(users, doRequestInBackground = false) {
       usprop: 'gender',
     };
     const request = doRequestInBackground ?
-      requestInBackground(options) :
-      controller.getApi().post(options);
-    const resp = await request.catch(handleApiReject);
-    resp.query.users
+      requestInBackground(options).catch(handleApiReject) :
+      controller.getApi().post(options).catch(handleApiReject);
+    const response = /** @type {ApiResponseUsers} */ (await request);
+    response.query.users
       .filter((user) => user.gender)
       .forEach((user) => {
         userRegistry.get(user.name).setGender(user.gender);
       });
   }
-
-  return users;
 }
 
 /**
  * Get existence of a list of pages by title.
  *
  * @param {string[]} titles Titles to check existence of.
- * @returns {Promise.<object>}
+ * @returns {Promise.<Results>}
  */
 export async function getPagesExistence(titles) {
-  const results = {};
+  /**
+   * @typedef {{
+   *   [title: string]: {
+   *     exists: boolean;
+   *     normalized: string;
+   *   };
+   * }} Results
+   */
+
+  const results = /** @type {Results} */ ({});
   const normalized = [];
   const pages = [];
   for (const nextTitles of splitIntoBatches(titles)) {
-    const resp = await controller.getApi().post({
+    const request = controller.getApi().post({
       action: 'query',
       titles: nextTitles,
     }).catch(handleApiReject);
+    const response = /** @type {ApiResponseQuery} */ (await request);
 
-    const query = resp.query;
+    const query = response.query;
+    if (!query) break;
+
     normalized.push(...query.normalized || []);
-    pages.push(...query.pages);
+    pages.push(...query.pages || []);
   }
 
   const normalizedToOriginal = {};

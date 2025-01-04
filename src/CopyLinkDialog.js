@@ -8,7 +8,7 @@ import { mergeJquery, wrapHtml } from './utils-window';
  * Class used to create a "Copy link" dialog.
  *
  * @augments OO.ui.MessageDialog
- * @template {'comment' | 'section'} T
+ * @template {import('./Comment').default|import('./Section').default} T
  */
 class CopyLinkDialog extends OO.ui.MessageDialog {
   // @ts-ignore: https://phabricator.wikimedia.org/T358416
@@ -39,32 +39,24 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   contentStack;
 
   /**
-   * @typedef {T extends 'comment' ? import('./Comment').default : import('./Section').default} CommentOrSection
-   */
-
-  /**
    * Create a "Copy link" dialog.
    *
-   * @param {CommentOrSection} object
+   * @param {T} object
    * @param {object} content
-   * @param {T} type
    */
-  constructor(object, content, type) {
+  constructor(object, content) {
     super({
       classes: ['cd-dialog-copyLink'],
     });
-
-    /** @type {CommentOrSection} */
     this.object = object;
     this.content = content;
-
     this.readyDeferred = $.Deferred();
   }
 
   /**
    * Check if the dialog is for a comment.
    *
-   * @returns {this is CopyLinkDialog<'comment'>}
+   * @returns {this is CopyLinkDialog<import('./Comment').default>}
    */
   isComment() {
     return this.object.TYPE === 'comment';
@@ -105,7 +97,11 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
         classes: ['cd-dialog-copyLink-linkTypeSelect'],
       });
       this.linkTypeSelect.on('choose', (item) => {
-        this.contentStack.setItem(item === this.anchorOption ? this.anchorPanel : this.diffPanel);
+        this.contentStack.setItem(
+          item === this.anchorOption
+            ? this.anchorPanel
+            : /** @type {OO.ui.PanelLayout} */ (this.diffPanel)
+        );
         this.updateSize();
       });
     }

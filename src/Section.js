@@ -2110,8 +2110,11 @@ class Section extends SectionSkeleton {
       cd.s('cf-comment-placeholder');
   }
 
+  /**
+   * Hide the bar element.
+   */
   hideBar() {
-    this.$bar.addClass('cd-hidden');
+    this.$bar?.addClass('cd-hidden');
   }
 
   /**
