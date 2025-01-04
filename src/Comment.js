@@ -2283,7 +2283,7 @@ class Comment extends CommentSkeleton {
       const pageCode = revision.slots.main.content;
       let source;
       try {
-        source = this.locateInCode(false, pageCode, commentsData[i]);
+        source = this.locateInCode(undefined, pageCode, commentsData[i]);
       } catch {
         return;
       }
@@ -3266,21 +3266,21 @@ class Comment extends CommentSkeleton {
    * Load the comment's source code.
    *
    * @param {import('./CommentForm').default} [commentForm] Comment form, if it is submitted or code
-   * changes are viewed.
+   *   changes are viewed.
    * @returns {Promise<CommentSource>}
    * @throws {CdError|Error}
    */
   async loadCode(commentForm) {
     let source;
 
-    commentForm?.setSectionSubmitted(false);
+    let isSectionSubmitted = false;
     try {
       if (commentForm && this.section && this.section.liveSectionNumber !== null) {
         try {
-          await this.section.requestCode();
-          this.section.locateInCode(true);
-          source = this.locateInCode(true);
-          commentForm?.setSectionSubmitted(true);
+          const sectionCode = await this.section.requestCode();
+          this.section.locateInCode(sectionCode);
+          source = this.locateInCode(sectionCode);
+          isSectionSubmitted = true;
         } catch (error) {
           if (!(
             error instanceof CdError &&
@@ -3291,9 +3291,9 @@ class Comment extends CommentSkeleton {
           }
         }
       }
-      if (!commentForm?.isSectionSubmitted()) {
+      if (!isSectionSubmitted) {
         await this.getSourcePage().loadCode();
-        source = this.locateInCode(false);
+        source = this.locateInCode();
       }
     } catch (error) {
       if (error instanceof CdError) {
@@ -3305,6 +3305,7 @@ class Comment extends CommentSkeleton {
         throw error;
       }
     }
+    commentForm?.setSectionSubmitted(isSectionSubmitted);
 
     return source;
   }
@@ -3622,11 +3623,11 @@ class Comment extends CommentSkeleton {
 
   /**
    * @overload
-   * @param {boolean} useSectionCode
+   * @param {string|undefined} [sectionCode]
    * @returns {CommentSource}
    *
    * @overload
-   * @param {boolean} useSectionCode
+   * @param {undefined} [sectionCode]
    * @param {string} code
    * @param {import('./CommentSkeleton').CommentSkeletonLike} [commentData]
    * @returns {CommentSource}
@@ -3640,21 +3641,20 @@ class Comment extends CommentSkeleton {
    * It is expected that the section or page code is loaded (using {@link Page#loadCode}) before
    * this method is called. Otherwise, the method will throw an error.
    *
-   * @param {boolean} useSectionCode Whether to use the (prefetched) section code, not the page
-   *   code, to locate the comment in.
+   * @param {string|undefined} [sectionCode] Section code to use instead of the page code, to locate
+   *   the comment in.
    * @param {string} [code] Wikitext that should have the comment (provided only if we need to
-   *   perform operations on some code that is not the code of a section or page).
+   *   perform operations on some code that is not the code of a section or page). Implies
+   *   `sectionCode` is not set.
    * @param {import('./updateChecker').CommentWorkerEnrichied} [commentData] Comment data for
    *   comparison (can be set together with `code`).
    * @returns {CommentSource}
    * @throws {CdError}
    */
-  locateInCode(useSectionCode, code, commentData) {
+  locateInCode(sectionCode, code, commentData) {
     const codePassed = typeof code === 'string';
     if (!codePassed) {
-      code = useSectionCode
-        ? /** @type {import('./Section').default} */ (this.section).presumedCode
-        : this.getSourcePage().code;
+      code = sectionCode || this.getSourcePage().code;
       this.source = null;
     }
 
@@ -3665,7 +3665,7 @@ class Comment extends CommentSkeleton {
       });
     }
 
-    const source = this.searchInCode(code, commentData, useSectionCode);
+    const source = this.searchInCode(code, commentData, Boolean(sectionCode));
     if (!source) {
       throw new CdError({
         type: 'parse',
@@ -3684,7 +3684,7 @@ class Comment extends CommentSkeleton {
    * Request the gender of the comment's author if it is absent and affects the user mention string
    * and do something when it's received.
    *
-   * @param {(user?: import('./userRegistry').User[]) => void} callback
+   * @param {() => void} callback
    * @param {boolean} [runAlways=false] Whether to execute the callback even if the gender request
    *   is not needed.
    */
@@ -3693,12 +3693,12 @@ class Comment extends CommentSkeleton {
       let errorCallback;
       if (!this.genderRequest) {
         this.genderRequest = loadUserGenders([this.author]);
-        errorCallback = (error) => {
+        errorCallback = (/** @type {Error} */ error) => {
           console.warn(`Couldn't get the gender of user ${this.author.getName()}.`, error);
         };
       }
       if (!this.genderRequestCallbacks.includes(callback)) {
-        this.genderRequest.then(callback, errorCallback);
+        this.genderRequest.then(() => callback, errorCallback);
         this.genderRequestCallbacks.push(callback);
       }
     } else {

@@ -91,6 +91,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       this.anchorOption = new OO.ui.ButtonOptionWidget({
         data: 'anchor',
         label: cd.s('cld-select-anchor'),
+        selected: true,
       });
       this.diffOption = new OO.ui.ButtonOptionWidget({
         data: 'diff',

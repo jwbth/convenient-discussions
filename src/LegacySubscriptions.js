@@ -14,8 +14,13 @@ import { wrapHtml } from './utils-window';
  * @augments Subscriptions
  */
 class LegacySubscriptions extends Subscriptions {
-  type = 'legacy';
   subscribePromise = Promise.resolve();
+
+  /** @type {{ [pageId: number]: import('./Subscriptions').SubscriptionsData }} */
+  allPagesData;
+
+  /** @type {string[]|undefined} */
+  originalList;
 
   /**
    * Request the subscription list from the server and assign it to the instance.
@@ -31,8 +36,8 @@ class LegacySubscriptions extends Subscriptions {
       // mw.user.options is not used even on first run because it appears to be cached sometimes
       // which can be critical for determining subscriptions.
       this.unpack(await getUserInfo(reuse).then(({ subscriptions }) => subscriptions));
-    } catch (e) {
-      console.warn('Convenient Discussions: Couldn\'t load the settings from the server.', e);
+    } catch (error) {
+      console.warn('Convenient Discussions: Couldn\'t load the settings from the server.', error);
       return;
     }
 
@@ -59,15 +64,13 @@ class LegacySubscriptions extends Subscriptions {
   /**
    * Process subscriptions when they are
    * {@link LegacySubscriptions#loadToTalkPage loaded to a talk page}.
-   *
-   * @param {...*} [args]
    */
-  processOnTalkPage(...args) {
+  processOnTalkPage() {
     if (cd.page.exists()) {
       this.cleanUp();
     }
 
-    super.processOnTalkPage(...args);
+    super.processOnTalkPage();
   }
 
   /**
@@ -83,20 +86,20 @@ class LegacySubscriptions extends Subscriptions {
    * Add a section present on the current page to the subscription list.
    *
    * @param {string} headline
-   * @param {string} id Unused.
+   * @param {string} _id Unused.
    * @param {string} [unsubscribeHeadline] Headline of section to unsubscribe from (used when a
    *   section is renamed on the fly in {@link Comment#update} or {@link CommentForm#submit}).
-   * @returns {Promise.<undefined>}
+   * @returns {Promise.<void>}
    * @throws {CdError}
    * @protected
    */
-  actuallySubscribe(headline, id, unsubscribeHeadline) {
+  actuallySubscribe(headline, _id, unsubscribeHeadline) {
     const subscribe = async () => {
       try {
         await this.load();
-      } catch (e) {
+      } catch (error) {
         mw.notify(cd.s('error-settings-load'), { type: 'error' });
-        throw e;
+        throw error;
       }
 
       // We save the full subscription list, so we need to update the data first.
@@ -106,10 +109,10 @@ class LegacySubscriptions extends Subscriptions {
 
       try {
         await this.save();
-      } catch (e) {
+      } catch (error) {
         this.data = currentPageDataBackup;
-        if (e instanceof CdError) {
-          const { type, code } = e.data;
+        if (error instanceof CdError) {
+          const { type, code } = error.data;
           if (type === 'internal' && code === 'sizeLimit') {
             const $body = wrapHtml(cd.sParse('section-watch-error-maxsize'), {
               callbacks: {
@@ -129,7 +132,7 @@ class LegacySubscriptions extends Subscriptions {
         } else {
           mw.notify(cd.s('error-settings-save'), { type: 'error' });
         }
-        throw e;
+        throw error;
       }
     };
 
@@ -143,17 +146,17 @@ class LegacySubscriptions extends Subscriptions {
    * Remove a section present on the current page from the subscription list.
    *
    * @param {string} headline
-   * @returns {Promise.<undefined>}
+   * @returns {Promise.<void>}
    * @throws {CdError}
-   * @private
+   * @protected
    */
   actuallyUnsubscribe(headline) {
     const unsubscribe = async () => {
       try {
         await this.load();
-      } catch (e) {
+      } catch (error) {
         mw.notify(cd.s('error-settings-load'), { type: 'error' });
-        throw e;
+        throw error;
       }
 
       const currentPageDataBackup = Object.assign({}, this.data);
@@ -161,10 +164,10 @@ class LegacySubscriptions extends Subscriptions {
 
       try {
         await this.save();
-      } catch (e) {
+      } catch (error) {
         this.data = currentPageDataBackup;
         mw.notify(cd.s('error-settings-save'), { type: 'error' });
-        throw e;
+        throw error;
       }
     };
 
@@ -177,7 +180,7 @@ class LegacySubscriptions extends Subscriptions {
   /**
    * Save the subscription list to the server as a user option.
    *
-   * @param {object} allPagesData
+   * @param {object} [allPagesData]
    */
   async save(allPagesData) {
     await saveLocalOption(
@@ -213,13 +216,14 @@ class LegacySubscriptions extends Subscriptions {
     this.allPagesData = {};
     if (!compressed) return;
 
-    // Page IDs alternating with section lists
-    const pages = LZString.decompressFromEncodedURIComponent(compressed)
-      .split(/(?:^|\n )(\d+) /)
-      .slice(1);
+    const string = LZString.decompressFromEncodedURIComponent(compressed);
+    if (string) {
+      // Page IDs alternating with section lists
+      const pages = string.split(/(?:^|\n )(\d+) /).slice(1);
 
-    for (let i = 1; i < pages.length; i += 2) {
-      this.allPagesData[pages[i - 1]] = this.itemsToKeys(pages[i].split('\n'));
+      for (let i = 1; i < pages.length; i += 2) {
+        this.allPagesData[pages[i - 1]] = this.itemsToKeys(pages[i].split('\n'));
+      }
     }
   }
 
@@ -229,14 +233,14 @@ class LegacySubscriptions extends Subscriptions {
    * @returns {number[]}
    */
   getPageIds() {
-    return Object.keys(this.allPagesData);
+    return Object.keys(this.allPagesData).map(Number);
   }
 
   /**
    * Get the subscription list for a page.
    *
    * @param {number} pageId
-   * @returns {?(object[])}
+   * @returns {string[]}
    */
   getForPageId(pageId) {
     return Object.keys(this.allPagesData[pageId] || {});
@@ -255,7 +259,7 @@ class LegacySubscriptions extends Subscriptions {
    * Check whether the user was subscribed to a section when the page was loaded.
    *
    * @param {string} headline Headline.
-   * @returns {boolean}
+   * @returns {boolean|undefined}
    */
   getOriginalState(headline) {
     return this.originalList?.includes(headline);
@@ -286,16 +290,28 @@ class LegacySubscriptions extends Subscriptions {
    * Update the subscription list by adding or removing a subscription. It's a local operation -
    * nothing is saved to the server.
    *
-   * @param {string} subscribeId Section's subscribe ID (modern or legacy format).
-   * @param {boolean} subscribe Subscribe or unsubscribe.
+   * @param {string} [subscribeId] Section's subscribe ID (modern or legacy format).
+   * @param {boolean} [subscribe=false] Subscribe or unsubscribe.
    * @protected
    */
-  updateLocally(subscribeId, subscribe) {
+  updateLocally(subscribeId, subscribe = false) {
+    if (subscribeId === undefined) return;
+
     super.updateLocally(subscribeId, subscribe);
 
     if (!subscribe) {
       delete this.data[subscribeId];
     }
+  }
+
+  /**
+   * Type guard for this class.
+   *
+   * @param {object} obj
+   * @returns {obj is LegacySubscriptions}
+   */
+  static isInstance(obj) {
+    return obj instanceof LegacySubscriptions;
   }
 }
 

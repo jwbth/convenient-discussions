@@ -327,9 +327,9 @@ export default {
    * @private
    */
   jump($elementOrOffset, $item, isBackLink) {
-    const offset = $elementOrOffset instanceof $ ?
-      $elementOrOffset.offset().top - cd.g.bodyScrollPaddingTop :
-      $elementOrOffset;
+    const offset = typeof $elementOrOffset === 'number' ?
+      $elementOrOffset :
+      /** @type {JQuery.Coordinates} */ ($elementOrOffset.offset()).top - cd.g.bodyScrollPaddingTop;
     if (!isBackLink && Math.abs(offset - window.scrollY) < 1) return;
 
     if (this.backLinkLocation) {

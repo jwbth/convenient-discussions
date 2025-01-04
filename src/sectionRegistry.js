@@ -248,7 +248,7 @@ export default {
    * Generate an DiscussionTools ID for a section.
    *
    * @param {string} author Author name.
-   * @param {Date} timestamp Oldest comment date.
+   * @param {string} timestamp Oldest comment date.
    * @returns {string}
    */
   generateDtSubscriptionId(author, timestamp) {

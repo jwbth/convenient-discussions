@@ -30,6 +30,10 @@ import { isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, is
  */
 
 /**
+ * @typedef {NonNullable<CommentForm['target']['source']>} DefinedSource
+ */
+
+/**
  * @typedef {object} CommentFormTargetMap
  * @property {Comment} reply
  * @property {Comment} edit
@@ -52,11 +56,11 @@ class CommentForm extends OO.EventEmitter {
    */
   target;
 
+  // Making this private harms type checking.
   /**
    * Target section.
    *
    * @type {CommentFormTargetSection}
-   * @private
    */
   targetSection;
 
@@ -343,11 +347,32 @@ class CommentForm extends OO.EventEmitter {
   originalHeadline;
 
   /**
+   * Autocomplete object for the comment input.
+   *
+   * @type {Autocomplete}
+   */
+  autocomplete;
+
+  /**
+   * Autocomplete object for the headline input.
+   *
+   * @type {Autocomplete|undefined}
+   */
+  headlineAutocomplete;
+
+  /**
+   * Autocomplete object for the summary input.
+   *
+   * @type {Autocomplete}
+   */
+  summaryAutocomplete;
+
+  /**
    * @typedef {CommentFormTargetMap[Mode]} CommentFormTarget
    */
 
   /**
-   * @typedef {Mode extends 'addSection' ? null : import('./Section').default} CommentFormTargetSection
+   * @typedef {Mode extends 'addSection' ? null : import('./Section').default | null} CommentFormTargetSection
    */
 
   /**
@@ -478,12 +503,12 @@ class CommentForm extends OO.EventEmitter {
      */
     this.newSectionApi = null;
 
+    // Making this private harms type checking.
     /**
      * Whether the wikitext of a section will be submitted to the server instead of a page. (Filled
      * upon submitting or viewing changes.)
      *
      * @type {?boolean}
-     * @private
      */
     this.sectionSubmitted = null;
 
@@ -620,7 +645,7 @@ class CommentForm extends OO.EventEmitter {
   setTargets(target) {
     this.target = target;
     this.targetSection = /** @type {CommentFormTargetSection} */ (this.target.getRelevantSection());
-    this.targetPage = this.targetSection ? this.targetSection.getSourcePage() : cd.page;
+    this.targetPage = this.targetSection?.getSourcePage() || cd.page;
     if (this.isMode('reply')) {
       this.target
     }
@@ -2100,23 +2125,16 @@ class CommentForm extends OO.EventEmitter {
       .map((u) => u.name);
 
     // Move the addressee to the beginning of the user list
-    if (this.parentComment) {
-      for (let с = this.parentComment; с; с = с.getParent()) {
-        if (с.author !== cd.user) {
-          if (!с.author.isRegistered()) break;
-          defaultUserNames.unshift(с.author.getName());
-          break;
-        }
+    for (let с = this.parentComment; с; с = с.getParent()) {
+      if (с.author !== cd.user) {
+        if (!с.author.isRegistered()) break;
+        defaultUserNames.unshift(с.author.getName());
+        break;
       }
     }
 
     defaultUserNames = defaultUserNames.filter(unique);
 
-    /**
-     * Autocomplete object for the comment input.
-     *
-     * @type {Autocomplete}
-     */
     this.autocomplete = new Autocomplete({
       types: ['mentions', 'wikilinks', 'templates', 'tags', 'commentLinks'],
       inputs: [this.commentInput],
@@ -2126,11 +2144,6 @@ class CommentForm extends OO.EventEmitter {
     this.autocomplete.init();
 
     if (this.headlineInput) {
-      /**
-       * Autocomplete object for the headline input.
-       *
-       * @type {Autocomplete|undefined}
-       */
       this.headlineAutocomplete = new Autocomplete({
         types: ['mentions', 'wikilinks', 'tags'],
         inputs: [this.headlineInput],
@@ -2140,11 +2153,6 @@ class CommentForm extends OO.EventEmitter {
       this.headlineAutocomplete.init();
     }
 
-    /**
-     * Autocomplete object for the summary input.
-     *
-     * @type {Autocomplete}
-     */
     this.summaryAutocomplete = new Autocomplete({
       types: ['mentions', 'wikilinks'],
       inputs: [this.summaryInput],
@@ -2321,7 +2329,7 @@ class CommentForm extends OO.EventEmitter {
             new OO.ui.MessageWidget({
               type,
               inline: true,
-              label: htmlOrJquery instanceof $ ? htmlOrJquery : wrapHtml(htmlOrJquery),
+              label: typeof htmlOrJquery === 'string' ? wrapHtml(htmlOrJquery) : htmlOrJquery,
               classes: ['cd-message', name ? `cd-message-${name}` : undefined].filter(defined),
             })
           ).$element
@@ -2349,7 +2357,7 @@ class CommentForm extends OO.EventEmitter {
    * Abort the operation the form is undergoing and show an error message.
    *
    * @param {object} options
-   * @param {string|JQuery} options.message Message visible to the user.
+   * @param {JQuery} options.$message Message visible to the user.
    * @param {'error'|'notice'|'warning'} [options.messageType='error'] Message type if not
    *   `'error'`.
    * @param {boolean} [options.isRawMessage=false] Show the message as it is, without icons and
@@ -2361,7 +2369,7 @@ class CommentForm extends OO.EventEmitter {
    * @private
    */
   abort({
-    message,
+    $message,
     messageType = 'error',
     isRawMessage = false,
     logMessage,
@@ -2377,7 +2385,7 @@ class CommentForm extends OO.EventEmitter {
     }
 
     if (cancel) {
-      notifications.add(typeof message === 'string' ? wrapHtml(message) : message, {
+      notifications.add($message, {
         type: 'error',
         autoHideSeconds: 'long',
       });
@@ -2386,7 +2394,7 @@ class CommentForm extends OO.EventEmitter {
       if (!this.registered) return;
 
       if (!(operation && operation.getType() === 'preview' && operation.getOption('isAuto'))) {
-        this.showMessage(message, {
+        this.showMessage($message, {
           type: messageType,
           isRaw: isRawMessage,
         });
@@ -2416,7 +2424,7 @@ class CommentForm extends OO.EventEmitter {
    *   should be specified.)
    * @param {'error'|'notice'|'warning'} [options.messageType='error'] Message type if not
    *   `'error'`.
-   * @param {string} [options.logMessage] Data or text to display in the browser console.
+   * @param {any} [options.logMessage] Data or text to display in the browser console.
    * @param {boolean} [options.cancel=false] Cancel the form and show the message as a notification.
    * @param {boolean} [options.isRawMessage=false] Show the message as it is, without OOUI framing.
    * @param {import('./CommentFormOperationRegistry').CommentFormOperation} [options.operation]
@@ -2434,6 +2442,7 @@ class CommentForm extends OO.EventEmitter {
     isRawMessage = false,
     operation,
   }) {
+    let /** @type {JQuery|undefined} */ $message;
     switch (type) {
       case 'parse': {
         const editUrl = cd.g.server + cd.page.getUrl({ action: 'edit' });
@@ -2470,15 +2479,6 @@ class CommentForm extends OO.EventEmitter {
             message = cd.sParse('cf-error-commentlinks-commentnotfound', details.id);
             break;
         }
-        message = wrapHtml(message, {
-          callbacks: {
-            'cd-message-reloadPage': async () => {
-              if (this.confirmClose()) {
-                this.reloadPage();
-              }
-            },
-          },
-        });
         break;
       }
 
@@ -2503,8 +2503,6 @@ class CommentForm extends OO.EventEmitter {
           }
         }
 
-        message = wrapHtml(message);
-        message.find('.mw-parser-output').css('display', 'inline');
         logMessage ||= [code, apiResp];
         break;
       }
@@ -2515,8 +2513,20 @@ class CommentForm extends OO.EventEmitter {
         break;
       }
     }
+    if (!message) return;
 
-    this.abort({ message, messageType, isRawMessage, logMessage, cancel, operation });
+    $message = wrapHtml(message, {
+      callbacks: {
+        'cd-message-reloadPage': async () => {
+          if (this.confirmClose()) {
+            this.reloadPage();
+          }
+        },
+      },
+    });
+    $message.find('.mw-parser-output').css('display', 'inline');
+
+    this.abort({ $message, messageType, isRawMessage, logMessage, cancel, operation });
   }
 
   /**
@@ -2533,7 +2543,7 @@ class CommentForm extends OO.EventEmitter {
     let code = this.commentInput.getValue();
     code = cd.config.preTransformCode?.(code, this) || code;
 
-    const transformer = new CommentFormInputTransformer(code, this, action, this.mode);
+    const transformer = new CommentFormInputTransformer(code, this, action);
 
     /**
      * Will the comment be indented (is a reply or an edited reply).
@@ -2565,7 +2575,7 @@ class CommentForm extends OO.EventEmitter {
     commentIds.forEach((id) => {
       const comment = commentRegistry.getById(id);
       if (comment) {
-        const commentSource = comment.locateInCode(false, contextCode);
+        const commentSource = comment.locateInCode(undefined, contextCode);
         const anchorCode = cd.config.getAnchorCode(id);
         if (commentSource.code.includes(anchorCode)) return;
 
@@ -2573,7 +2583,9 @@ class CommentForm extends OO.EventEmitter {
           commentSource.indentation,
           commentSource.code
         );
-        const commentTextIndex = commentCodePart.match(/^[:*#]* */)[0].length;
+        const commentTextIndex = /** @type {RegExpMatchArray} */ (
+          commentCodePart.match(/^[:*#]* */)
+        )[0].length;
         ({ contextCode } = commentSource.modifyContext({
           action: 'edit',
           commentCode: (
@@ -2610,14 +2622,16 @@ class CommentForm extends OO.EventEmitter {
   async buildSource(action, operation) {
     const commentIds = CommentForm.extractCommentIds(this.commentInput.getValue());
 
-    this.newSectionApi = Boolean(
-      this.isMode('addSection') &&
-      !this.newTopicOnTop &&
-      this.headlineInput?.getValue().trim() &&
-      !commentIds.length
+    this.setNewSectionApi(
+      Boolean(
+        this.isMode('addSection') &&
+        !this.newTopicOnTop &&
+        this.headlineInput?.getValue().trim() &&
+        !commentIds.length
+      )
     );
 
-    if (!this.newSectionApi) {
+    if (!this.isNewSectionApi()) {
       try {
         await this.target.loadCode(this, !cd.page.exists());
       } catch (error) {
@@ -2643,13 +2657,11 @@ class CommentForm extends OO.EventEmitter {
     let commentCode;
     try {
       ({ contextCode, commentCode } =
-        /** @type {import('./CommentSource').default|import('./SectionSource').default|import('./pageRegistry').PageSource} */ (
-          this.target.source
-        ).modifyContext({
+        /** @type {DefinedSource} */ (this.target.source).modifyContext({
           // Ugly solution to avoid overcomplication of code: for replies, we need to get
           // CommentSource#isReplyOutdented set for `action === 'reply'` which we don't have so far.
-          // So let CommentSource#modifyContext compute it. In the rest of cases just get the comment
-          // code.
+          // So let CommentSource#modifyContext() compute it. In the rest of cases just get the
+          // comment code.
           commentCode: this.isMode('reply') ? undefined : this.inputToCode(action),
 
           action: this.mode,
@@ -2742,22 +2754,26 @@ class CommentForm extends OO.EventEmitter {
     operation ||= this.operations.add('preview', { isAuto });
 
     if (isAuto) {
-      const isTooEarly = Date.now() - this.lastPreviewTimestamp < 1000;
-      if (
-        isTooEarly ||
-        this.operations.filterByType('preview').some((op) => op !== operation)
-      ) {
-        if (this.previewTimeout) {
-          operation.close();
-        } else {
-          operation.delay();
-          this.previewTimeout = setTimeout(() => {
-            this.previewTimeout = null;
-            this.preview(true, operation);
-          }, isTooEarly ? 1000 - (Date.now() - this.lastPreviewTimestamp) : 100);
+      const lastPreviewTimestamp = this.lastPreviewTimestamp;
+      if (lastPreviewTimestamp) {
+        const isTooEarly = Date.now() - lastPreviewTimestamp < 1000;
+        if (
+          isTooEarly ||
+          this.operations.filterByType('preview').some((op) => op !== operation)
+        ) {
+          if (this.previewTimeout) {
+            operation.close();
+          } else {
+            operation.delay();
+            this.previewTimeout = setTimeout(() => {
+              this.previewTimeout = null;
+              this.preview(true, operation);
+            }, isTooEarly ? 1000 - (Date.now() - lastPreviewTimestamp) : 100);
+          }
+          return;
         }
-        return;
       }
+
       operation.undelay();
       this.lastPreviewTimestamp = Date.now();
     }
@@ -2880,29 +2896,34 @@ class CommentForm extends OO.EventEmitter {
 
     mw.loader.load('mediawiki.diff.styles');
 
-    let resp;
+    let response;
     try {
-      const options = {
-        action: 'compare',
-        totitle: this.targetPage.name,
-        toslots: 'main',
+      const options = /** @type {import('types-mediawiki/api_params').ApiComparePagesParams} */ ({
+        'action': 'compare',
+        'totitle': this.targetPage.name,
+        'toslots': 'main',
         'totext-main': contextCode,
-        topst: true,
-        prop: 'diff',
+        'topst': true,
+        'prop': 'diff',
         ...cd.g.apiErrorFormatHtml,
-      };
+      });
 
       if (this.sectionSubmitted || this.newSectionApi || !this.targetPage.revisionId) {
         options.fromslots = 'main';
-        options['fromtext-main'] = this.sectionSubmitted ? this.targetSection.presumedCode : '';
+        options['fromtext-main'] = this.isSectionSubmitted() ? this.targetSection.presumedCode : '';
       } else {
         options.fromrev = this.targetPage.revisionId;
       }
 
-      resp = await controller.getApi().post(options, {
-        // Beneficial when sending long unicode texts, which is what we do here.
-        contentType: 'multipart/form-data',
-      }).catch(handleApiReject);
+      const request = controller
+        .getApi()
+        .post(/** @type {import('types-mediawiki/mw/Api').UnknownApiParams} */ (options), {
+          // Beneficial when sending long unicode texts, which is what we do here.
+          contentType: 'multipart/form-data',
+        });
+      response = /** @type {import('./utils-api').APIResponseCompare} */ (
+        await request.catch(handleApiReject)
+      );
     } catch (error) {
       if (error instanceof CdError) {
         this.handleError(
@@ -2923,7 +2944,7 @@ class CommentForm extends OO.EventEmitter {
 
     if (operation.maybeClose()) return;
 
-    let html = resp.compare?.body;
+    let html = response.compare?.body;
     if (html) {
       this.$previewArea
         .html(wrapDiffBody(html))
@@ -3007,7 +3028,7 @@ class CommentForm extends OO.EventEmitter {
    *
    * @param {object} options
    * @param {boolean} options.doDelete
-   * @returns {Promise.<boolean>}
+   * @returns {boolean}
    * @private
    */
   runChecks({ doDelete }) {
@@ -3087,10 +3108,10 @@ class CommentForm extends OO.EventEmitter {
         captchaword: this.captchaInput?.getCaptchaWord(),
       };
       let sectionOrPage;
-      if (this.newSectionApi) {
+      if (this.isNewSectionApi()) {
         options.sectiontitle = this.headlineInput.getValue().trim();
         options.section = 'new';
-      } else if (this.sectionSubmitted) {
+      } else if (this.isSectionSubmitted()) {
         options.section = this.targetSection.liveSectionNumber;
         sectionOrPage = this.targetSection;
       } else {
@@ -3171,6 +3192,8 @@ class CommentForm extends OO.EventEmitter {
    * @private
    */
   updateSubscriptionStatus(editTimestamp, commentCode, bootData) {
+    if (!this.subscribeCheckbox) return;
+
     if (this.subscribeCheckbox.isSelected()) {
       // Add the created section to the subscription list or change the headline for legacy
       // subscriptions.
@@ -3183,15 +3206,11 @@ class CommentForm extends OO.EventEmitter {
           (this.isMode('addSubsection') || this.isSectionOpeningCommentEdited())
         )
       ) {
-        let rawHeadline;
-        let headline;
-        if (this.headlineInput) {
-          rawHeadline = this.headlineInput.getValue().trim();
-        }
-        if (!this.isSectionOpeningCommentEdited() && !rawHeadline) {
+        let rawHeadline = this.headlineInput?.getValue().trim();
+        if (!rawHeadline && !this.isSectionOpeningCommentEdited()) {
           [, rawHeadline] = commentCode.match(/^==(.*?)==[ \t]*$/m) || [];
         }
-        headline = rawHeadline && removeWikiMarkup(rawHeadline);
+        const headline = rawHeadline && removeWikiMarkup(rawHeadline);
 
         let subscribeId;
         let originalHeadline;
@@ -3212,7 +3231,7 @@ class CommentForm extends OO.EventEmitter {
             bootData.justUnsubscribedFromSection = originalHeadline;
           }
           controller.getSubscriptionsInstance()
-            .subscribe(subscribeId, headline, originalHeadline, true);
+            .subscribe(subscribeId, headline, true, originalHeadline);
         }
       } else {
         const section = this.targetSection?.getSectionSubscribedTo();
@@ -3270,7 +3289,7 @@ class CommentForm extends OO.EventEmitter {
    * @param {boolean} [suppressTag=false]
    */
   async submit(clearMessages = true, suppressTag = false) {
-    const doDelete = this.deleteCheckbox?.isSelected();
+    const doDelete = Boolean(this.deleteCheckbox?.isSelected());
     if (this.isBeingSubmitted() || this.isContentBeingLoaded() || !this.runChecks({ doDelete })) {
       return;
     }
@@ -3299,9 +3318,7 @@ class CommentForm extends OO.EventEmitter {
     // one.
     const bootData = { submittedCommentForm: this };
 
-    if (this.subscribeCheckbox) {
-      this.updateSubscriptionStatus(editTimestamp, commentCode, bootData);
-    }
+    this.updateSubscriptionStatus(editTimestamp, commentCode, bootData);
 
     if (this.watchCheckbox?.isSelected() && $('#ca-watch').length) {
       $('#ca-watch')
@@ -3407,7 +3424,7 @@ class CommentForm extends OO.EventEmitter {
   isAltered() {
     // In case of the comment being edited some properties would be undefined if its code was not
     // located in the source.
-    return (
+    return Boolean(
       (
         this.originalComment !== undefined &&
         this.originalComment !== this.commentInput.getValue()
@@ -3474,7 +3491,7 @@ class CommentForm extends OO.EventEmitter {
       if (commentText && commentText.length <= cd.config.commentToSummaryLengthLimit) {
         optionalText = `: ${commentText} (-)`;
       }
-    } else if (this.isMode('addSubsection')) {
+    } else if (this.isMode('addSubsection') && this.headlineInput) {
       const subsection = removeWikiMarkup(this.headlineInput.getValue());
       if (subsection) {
         optionalText = `: /* ${subsection} */`;
@@ -3520,7 +3537,7 @@ class CommentForm extends OO.EventEmitter {
       // an umbrella function.
       const editOrDeleteText = (/** @type {'edit'|'delete'} */ action) => {
         let subject;
-        let realTarget = this.target;
+        let realTarget = /** @type {Comment} */ (this.target);
         if (this.target.isOwn) {
           const targetParent = this.target.getParent();
           if (targetParent) {
@@ -3532,14 +3549,14 @@ class CommentForm extends OO.EventEmitter {
               realTarget = targetParent;
             }
           } else {
-            if (this.target.isOpeningSection) {
+            if (this.isTargetOpeningSection()) {
               subject = this.targetSection.getParent() ? 'subsection' : 'topic';
             } else {
               subject = 'comment';
             }
           }
         } else {
-          if (this.target.isOpeningSection) {
+          if (this.isTargetOpeningSection()) {
             subject = this.targetSection.getParent() ? 'subsection' : 'topic';
           } else {
             this.target.maybeRequestAuthorGender(this.updateAutoSummary);
@@ -3986,10 +4003,10 @@ class CommentForm extends OO.EventEmitter {
   /**
    * Check whether a new section will be added on submit using a dedicated API request.
    *
-   * @returns {?boolean}
+   * @returns {this is { headlineInput: import('./TextInputWidget').default }}
    */
   isNewSectionApi() {
-    return this.newSectionApi;
+    return Boolean(this.newSectionApi);
   }
 
   /**
@@ -4004,10 +4021,10 @@ class CommentForm extends OO.EventEmitter {
   /**
    * Check whether the section code will be sent on submit, not the whole page code.
    *
-   * @returns {?boolean}
+   * @returns {this is { sectionSubmitted: true; targetSection: import('./Section').default }}
    */
   isSectionSubmitted() {
-    return this.sectionSubmitted;
+    return Boolean(this.sectionSubmitted);
   }
 
   /**
@@ -4221,7 +4238,17 @@ class CommentForm extends OO.EventEmitter {
    * @private
    */
   isSectionOpeningCommentEdited() {
-    return this.isMode('edit') && this.target.isOpeningSection;
+    return this.isMode('edit') && this.isTargetOpeningSection();
+  }
+
+  /**
+   * Check whether the target is a comment opening a section.
+   *
+   * @returns {this is { targetSection: import('./Section').default }}
+   * @private
+   */
+  isTargetOpeningSection() {
+    return Boolean(this.target.isOpeningSection);
   }
 
   static counter = 0;

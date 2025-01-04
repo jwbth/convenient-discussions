@@ -4,11 +4,21 @@ import settings from './settings';
 import { wrapHtml } from './utils-window';
 
 /**
+ * @typedef {{ [sectionId: string]: boolean }} SubscriptionsData
+ */
+
+/**
  * Implementation of the subscriptions feature in general terms. It is extended by
  * {@link DtSubscriptions DisussionTools' topic subscription} and
  * {@link LegacySubscriptions CD's legacy section watching}.
  */
 class Subscriptions extends OO.EventEmitter {
+  /** @type {SubscriptionsData} */
+  data;
+
+  /** @type {string|undefined} */
+  type;
+
   /**
    * Do everything {@link .load} does and also perform manipulations with the talk page.
    *
@@ -28,6 +38,17 @@ class Subscriptions extends OO.EventEmitter {
   // eslint-disable-next-line no-unused-vars
   async load(...args) {
     // This method is defined in subclasses.
+  }
+
+  /**
+   * @param {...*} args
+   * @abstract
+   * @returns {boolean}
+   */
+  // eslint-disable-next-line no-unused-vars
+  areLoaded(...args) {
+    // This method is defined in subclasses.
+    return true;
   }
 
   /**
@@ -66,8 +87,6 @@ class Subscriptions extends OO.EventEmitter {
    * @protected
    */
   updateLocally(subscribeId, subscribe) {
-    if (subscribeId === undefined) return;
-
     // this.data can be not set on newly created pages with DT subscriptions enabled.
     this.data ||= {};
 
@@ -78,12 +97,12 @@ class Subscriptions extends OO.EventEmitter {
    * Subscribe to a section.
    *
    * @param {string} subscribeId Section's DiscussionTools ID.
-   * @param {string} id Section's ID.
+   * @param {string} [id] Section's ID. Not required for DiscussionTools subscriptions.
+   * @param {boolean} [quiet=false] Don't show a success notification.
    * @param {string} [unsubscribeHeadline] Headline of a section to unsubscribe from (at the same
    * time).
-   * @param {boolean} [quiet=false] Don't show a success notification.
    */
-  async subscribe(subscribeId, id, unsubscribeHeadline, quiet = false) {
+  async subscribe(subscribeId, id, quiet = false, unsubscribeHeadline) {
     await this.actuallySubscribe(subscribeId, id, unsubscribeHeadline);
 
     if (!quiet) {
@@ -111,7 +130,7 @@ class Subscriptions extends OO.EventEmitter {
    * Unsubscribe from a section.
    *
    * @param {string} subscribeId Section's DiscussionTools ID.
-   * @param {string} id Section's ID.
+   * @param {string} [id] Section's ID. Not required for DiscussionTools subscriptions.
    * @param {boolean} [quiet=false] Don't show a success notification.
    * @param {import('./Section').default} [section] Section being unsubscribed from, if any, for
    *   legacy subscriptions.
@@ -160,25 +179,6 @@ class Subscriptions extends OO.EventEmitter {
   }
 
   /**
-   * Update the page subscription button label and tooltip.
-   *
-   * @protected
-   */
-  updatePageSubscribeButton() {
-    this.pageSubscribeButton
-      .setLabel(
-        this.getState(this.pageSubscribeId) ?
-          cd.mws('discussiontools-newtopicssubscription-button-unsubscribe-label') :
-          cd.mws('discussiontools-newtopicssubscription-button-subscribe-label')
-      )
-      .setTooltip(
-        this.getState(this.pageSubscribeId) ?
-          cd.mws('discussiontools-newtopicssubscription-button-unsubscribe-tooltip') :
-          cd.mws('discussiontools-newtopicssubscription-button-subscribe-tooltip')
-      );
-  }
-
-  /**
    * _For internal use._ Convert the subscription list to the standard format, with section IDs as
    * keys instead of array elements, to store it.
    *
@@ -187,15 +187,6 @@ class Subscriptions extends OO.EventEmitter {
    */
   itemsToKeys(arr) {
     return Object.assign({}, ...arr.map((page) => ({ [page]: true })));
-  }
-
-  /**
-   * Get the subscriptions type. In practice, returns `'dt'` or `'legacy'` based on the used class.
-   *
-   * @returns {string}
-   */
-  getType() {
-    return this.type;
   }
 }
 

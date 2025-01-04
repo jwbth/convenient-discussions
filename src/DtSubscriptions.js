@@ -13,8 +13,6 @@ import { definedAndNotNull, spacesToUnderlines, unique } from './utils-general';
  * @augments Subscriptions
  */
 class DtSubscriptions extends Subscriptions {
-  type = 'dt';
-
   /** @type {string} */
   pageSubscribeId;
 
@@ -65,18 +63,29 @@ class DtSubscriptions extends Subscriptions {
    * Get a list of subscriptions for a list of section IDs from the server.
    *
    * @param {string[]} ids List of section IDs.
-   * @returns {Promise.<object>}
+   * @returns {Promise.<import('./Subscriptions').SubscriptionsData>}
    */
   async getSubscriptions(ids) {
-    const subscriptions = {};
+    if (!ids.length) {
+      return {};
+    }
+
+    /**
+     * @typedef {object} ApiDtSubscriptions
+     * @property {{ [id: string]: 0 | 1 }} subscriptions
+     */
+
+    const intValuesToBoolean = (/** @type {ApiDtSubscriptions['subscriptions']} */ obj) =>
+      Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, Boolean(value)]));
+
+    const subscriptions = /** @type {import('./Subscriptions').SubscriptionsData} */ ({});
     for (const nextIds of splitIntoBatches(ids)) {
-      Object.assign(
-        subscriptions,
-        (await controller.getApi().post({
-          action: 'discussiontoolsgetsubscriptions',
-          commentname: nextIds,
-        }).catch(handleApiReject)).subscriptions
-      );
+      const request = controller.getApi().post({
+        action: 'discussiontoolsgetsubscriptions',
+        commentname: nextIds,
+      }).catch(handleApiReject);
+      const response = /** @type {ApiDtSubscriptions} */ (await request);
+      Object.assign(subscriptions, intValuesToBoolean(response.subscriptions));
     }
 
     return subscriptions;
@@ -106,10 +115,11 @@ class DtSubscriptions extends Subscriptions {
       action: async () => {
         this.pageSubscribeButton.setPending(true);
         try {
-          await this[this.getState(this.pageSubscribeId) ? 'unsubscribe' : 'subscribe'](
-            this.pageSubscribeId,
-            null
-          );
+          if (this.getState(this.pageSubscribeId)) {
+            await this.unsubscribe(this.pageSubscribeId);
+          } else {
+            await this.subscribe(this.pageSubscribeId);
+          }
           this.updatePageSubscribeButton();
         } finally {
           this.pageSubscribeButton.setPending(false);
@@ -123,7 +133,7 @@ class DtSubscriptions extends Subscriptions {
    * Subscribe to or unsubscribe from a topic.
    *
    * @param {string} subscribeId Section's DiscussionTools ID.
-   * @param {string} id Section's ID.
+   * @param {string|undefined} id Section's ID.
    * @param {boolean} subscribe Subscribe or unsubscribe.
    * @throws {CdError}
    * @private
@@ -140,9 +150,9 @@ class DtSubscriptions extends Subscriptions {
         commentname: subscribeId,
         subscribe,
       }).catch(handleApiReject);
-    } catch (e) {
+    } catch (error) {
       mw.notify(cd.s('error-settings-save'), { type: 'error' });
-      throw e;
+      throw error;
     }
 
     this.updateLocally(subscribeId, subscribe);
@@ -152,7 +162,7 @@ class DtSubscriptions extends Subscriptions {
    * Add a section present on the current page to the subscription list.
    *
    * @param {string} subscribeId
-   * @param {string} id Unused.
+   * @param {string} [id]
    * @returns {Promise.<void>}
    * @protected
    */
@@ -164,12 +174,31 @@ class DtSubscriptions extends Subscriptions {
    * Remove a section present on the current page from the subscription list.
    *
    * @param {string} subscribeId
-   * @param {string} id Unused.
+   * @param {string} [id]
    * @returns {Promise.<void>}
    * @protected
    */
   actuallyUnsubscribe(subscribeId, id) {
     return this.changeSubscription(subscribeId, id, false);
+  }
+
+  /**
+   * Update the page subscription button label and tooltip.
+   *
+   * @protected
+   */
+  updatePageSubscribeButton() {
+    this.pageSubscribeButton
+      .setLabel(
+        this.getState(this.pageSubscribeId) ?
+          cd.mws('discussiontools-newtopicssubscription-button-unsubscribe-label') :
+          cd.mws('discussiontools-newtopicssubscription-button-subscribe-label')
+      )
+      .setTooltip(
+        this.getState(this.pageSubscribeId) ?
+          cd.mws('discussiontools-newtopicssubscription-button-unsubscribe-tooltip') :
+          cd.mws('discussiontools-newtopicssubscription-button-subscribe-tooltip')
+      );
   }
 }
 

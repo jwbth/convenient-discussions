@@ -12,7 +12,7 @@ import { escapePipesOutsideLinks, generateTagsRegexp } from './utils-wikitext';
 class CommentFormInputTransformer extends TextMasker {
   /**
    * @typedef {object} CommentFormTargetExtension
-   * @property {NonNullable<import('./CommentForm').default<Mode>['target']['source']>} source When
+   * @property {import('./CommentForm').DefinedSource} source When
    *   {@link CommentFormInputTransformer} is instantiated, `source` is never `null`.
    */
 
@@ -49,31 +49,10 @@ class CommentFormInputTransformer extends TextMasker {
   /**
    * Check whether the form's {@link CommentForm#target target} is a comment.
    *
-   * @param {CommentFormTarget} target
-   * @returns {target is import('./Comment').default}
+   * @returns {this is { target: import('./Comment').default }}
    */
-  isCommentTarget(target) {
-    return target.TYPE === 'comment';
-  }
-
-  /**
-   * Check whether the form's {@link CommentForm#target target} is a section.
-   *
-   * @param {CommentFormTarget} target
-   * @returns {target is import('./Section').default}
-   */
-  isSectionTarget(target) {
-    return target.TYPE === 'section';
-  }
-
-  /**
-   * Check whether the form's {@link CommentForm#target target} is a page.
-   *
-   * @param {CommentFormTarget} target
-   * @returns {target is import('./pageRegistry').Page}
-   */
-  isPageTarget(target) {
-    return target.TYPE === 'page';
+  isCommentTarget() {
+    return this.target.TYPE === 'comment';
   }
 
   /**
@@ -547,16 +526,15 @@ class CommentFormInputTransformer extends TextMasker {
    * @private
    */
   addOutdent() {
-    const target = this.target;
     if (
       this.action === 'preview' ||
-      !this.isCommentTarget(target) ||
-      !target.source.isReplyOutdented
+      !this.isCommentTarget() ||
+      !this.target.source.isReplyOutdented
     ) {
       return this;
     }
 
-    const outdentDifference = target.level - target.source.replyIndentation.length;
+    const outdentDifference = this.target.level - this.target.source.replyIndentation.length;
     this.text = (
       `{{${cd.config.outdentTemplates[0]}|${outdentDifference}}}` +
       (/^[:*#]+/.test(this.text) ? '\n' : ' ') +

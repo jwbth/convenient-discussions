@@ -15,12 +15,60 @@ import { unique } from './utils-general';
 import { brsToNewlines } from './utils-wikitext';
 
 /**
+ * Represents the content of a single page in an API response query.
+ *
+ * @typedef {object} ApiResponseQueryContentPage
+ * @property {string} title The title of the page.
+ * @property {boolean} [known] Whether the page is known.
+ * @property {boolean} [missing] Whether the page is missing.
+ * @property {object} [thumbnail] Thumbnail information for the page.
+ * @property {string} thumbnail.source The URL of the thumbnail.
+ * @property {number} thumbnail.width The width of the thumbnail in pixels.
+ * @property {number} thumbnail.height The height of the thumbnail in pixels.
+ * @property {object} [pageprops] Additional properties for the page.
+ * @property {''} [pageprops.disambiguation] Indicates if the page is a disambiguation page.
+ * @property {{ [key: string]: unknown }} [pageprops] Additional properties.
+ * @property {string} [description] A description of the page.
+ * @property {number} ns The namespace of the page.
+ * @property {string} [normalizedTitle] The normalized title of the page.
+ * @property {number} [index] The index of the page in the query.
+ * @property {string} contentmodel The content model of the page.
+ * @property {{title: string}[]} [redirects] List of redirects for the page.
+ */
+
+/**
+ * Represents a mapping between two titles or fragments.
+ *
+ * @typedef {object} FromTo
+ * @property {string} from The original title or fragment.
+ * @property {string} to The target title or fragment.
+ * @property {string} [tofragment] The target fragment, if applicable.
+ * @property {number} index The index of the mapping.
+ */
+
+/**
+ * Represents the structure of an API response query.
+ *
+ * @typedef {object} ApiResponseQuery
+ * @property {object} [query] The main query object.
+ * @property {ApiResponseQueryContentPage[]} [query.pages] List of pages in the query.
+ * @property {FromTo[]} [query.redirects] List of redirects in the query.
+ * @property {FromTo[]} [query.normalized] List of normalized titles in the query.
+ * @property {boolean} [batchcomplete] Indicates if the batch is complete.
+ * @property {object} [continue] Continuation information for the query.
+ * @property {'gpsoffset||'} [continue.continue] The continuation token.
+ * @property {number} [continue.gpsoffset] The offset for GPS continuation.
+ * @property {string} [continue.rdcontinue] The continuation token for redirects.
+ */
+
+/**
  * @typedef {object} ApiResponseParseContent
  * @property {string} text Text for the page.
  * @property {boolean} hidetoc Hide the table of contents.
  * @property {string} subtitle HTML for the page's subtitle (it comes with last comment data from
  *   DT).
  * @property {string} categorieshtml HTML for the page's categories.
+ * @property {string} [parsedsummary] HTML for the summary that was supplied.
  * @property {object} sections Section data for the page.
  * @property {number} revid
  * @property {string[]} modules
@@ -31,6 +79,24 @@ import { brsToNewlines } from './utils-wikitext';
 /**
  * @typedef {object} ApiResponseParse
  * @property {ApiResponseParseContent} [parse]
+ */
+
+/**
+ * @typedef {object} APIResponseCompare
+ * @property {Compare} compare
+ */
+
+/**
+ * @typedef {object} Compare
+ * @property {number} fromid
+ * @property {number} fromrevid
+ * @property {number} fromns
+ * @property {string} fromtitle
+ * @property {number} toid
+ * @property {number} torevid
+ * @property {number} tons
+ * @property {string} totitle
+ * @property {string} body
  */
 
 let cachedUserInfoRequest;
@@ -160,22 +226,33 @@ export async function parseCode(code, customOptions) {
     preview: true,
   };
   const options = { ...defaultOptions, ...customOptions };
-  const resp = /** @type {ApiResponseParse} */ (await controller.getApi().post(options).catch(handleApiReject));
+  const request = controller.getApi().post(options).catch(handleApiReject);
+  const response = /** @type {ApiResponseParse} */ (await request);
+  if (!response.parse) {
+    throw new CdError('No parse data returned.');
+  }
 
-  mw.loader.load(resp.parse.modules);
-  mw.loader.load(resp.parse.modulestyles);
+  mw.loader.load(response.parse.modules);
+  mw.loader.load(response.parse.modulestyles);
 
   return {
-    html: resp.parse.text,
-    parsedSummary: resp.parse.parsedsummary,
+    html: response.parse.text,
+    parsedSummary: /** @type {string} */ (response.parse.parsedsummary),
   };
 }
+
+/**
+ * @typedef {object} Userinfo
+ * @property {{ [key: string]: any }} options
+ * @property {string} visits
+ * @property {string} subscriptions
+ */
 
 /**
  * Make a userinfo request (see {@link https://www.mediawiki.org/wiki/API:Userinfo}).
  *
  * @param {boolean} [reuse=false] Whether to reuse a cached request.
- * @returns {Promise.<object>} Promise for an object containing the full options object, visits,
+ * @returns {JQuery.Promise.<Userinfo>} Promise for an object containing the full options object, visits,
  *   subscription list, and rights.
  * @throws {CdError}
  */
@@ -212,27 +289,39 @@ export function getUserInfo(reuse = false) {
  * Get page titles for an array of page IDs.
  *
  * @param {number[]} pageIds
- * @returns {Promise.<object[]>}
+ * @returns {Promise.<ApiResponseQueryContentPage[]>}
  * @throws {CdError}
  */
 export async function getPageTitles(pageIds) {
+  if (!pageIds.length) {
+    return [];
+  }
+
   const pages = [];
   for (const nextPageIds of splitIntoBatches(pageIds)) {
-    const request = await controller.getApi().post({
+    const request = controller.getApi().post({
       action: 'query',
       pageids: nextPageIds,
     }).catch(handleApiReject);
-    pages.push(...request.query.pages);
+    const response = /** @type {ApiResponseQuery} */ (await request);
+    pages.push(...response.query?.pages || []);
   }
 
   return pages;
 }
 
 /**
- * Get page IDs for an array of page titles.
+ * @typedef {object} PageIds
+ * @property {FromTo[]} normalized
+ * @property {FromTo[]} redirects
+ * @property {ApiResponseQueryContentPage[]} pages
+ */
+
+/**
+ * Get page IDs for an array of page titles, along with the lists of normalizations and redirects.
  *
  * @param {string[]} titles
- * @returns {Promise.<object[]>}
+ * @returns {Promise.<PageIds>}
  * @throws {CdError}
  */
 export async function getPageIds(titles) {
@@ -240,15 +329,16 @@ export async function getPageIds(titles) {
   const redirects = [];
   const pages = [];
   for (const nextTitles of splitIntoBatches(titles)) {
-    const { query } = await controller.getApi().post({
+    const { query } = /** @type {ApiResponseQuery} */ (await controller.getApi().post({
       action: 'query',
       titles: nextTitles,
       redirects: true,
-    }).catch(handleApiReject);
+    }).catch(handleApiReject));
+    if (!query) break;
 
     normalized.push(...query.normalized || []);
     redirects.push(...query.redirects || []);
-    pages.push(...query.pages);
+    pages.push(...query.pages || []);
   }
 
   return { normalized, redirects, pages };

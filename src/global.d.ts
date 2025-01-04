@@ -141,6 +141,8 @@ declare global {
       namespace confirmEdit {
         class CaptchaInputWidget extends OO.ui.TextInputWidget {
           new (config?: captchaData);
+          getCaptchaId(): string;
+          getCaptchaWord(): string;
         }
       }
     }
@@ -207,6 +209,7 @@ declare global {
 
       interface Props {
         $errors: JQuery;
+        $errorItems: JQuery;
       }
     }
 
@@ -215,6 +218,20 @@ declare global {
         text: PanelLayout;
         title: OO.ui.LabelWidget;
       }
+    }
+
+    interface Process {
+      next<C = null>(step: Process.StepOverride<C>, context?: C): this;
+    }
+
+    // Add native Promise since it seems to work and we use it
+    namespace Process {
+      type StepOverride<C> =
+          | number
+          | JQuery.Promise<void>
+          | Promise<void>
+          // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+          | ((this: C) => boolean | number | JQuery.Promise<void> | Promise<void> | Error | [Error] | void);
     }
   }
 

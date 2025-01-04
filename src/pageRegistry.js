@@ -393,6 +393,27 @@ export class Page {
   }
 
   /**
+   * @overload
+   * @param {CommentForm} [_] Not used.
+   * @param {true} [tolerateMissing=true] Return `null` if the page is missing instead of throwing
+   *   an error.
+   * @returns {Promise<?string>} A promise resolving to the wikitext of the page, or `null` if the
+   * page is missing.
+   *
+   * @overload
+   * @param {CommentForm} [_] Not used.
+   * @param {false} tolerateMissing Return `null` if the page is missing instead of throwing an
+   *   error.
+   * @returns {Promise<string>} A promise resolving to the wikitext of the page.
+   *
+   * @overload
+   * @param {CommentForm} [_] Not used.
+   * @param {boolean} [tolerateMissing=true] Return `null` if the page is missing instead of
+   *   throwing an error.
+   * @returns {Promise<string>} A promise resolving to the wikitext of the page.
+   */
+
+  /**
    * Make a revision request (see {@link https://www.mediawiki.org/wiki/API:Revisions}) to load the
    * wikitext of the page, together with a few revision properties: the timestamp, redirect target,
    * and query timestamp (`curtimestamp`). Enrich the page instance with those properties. Also set
@@ -400,8 +421,8 @@ export class Page {
    * name.
    *
    * @param {CommentForm} [_] Not used.
-   * @param {boolean} [tolerateMissing=true] Assign `''` to the `code` property if the page is
-   *   missing instead of throwing an error.
+   * @param {boolean} [tolerateMissing=true] Return `null` if the page is missing instead of
+   *   throwing an error.
    * @returns {Promise<?string>}
    * @throws {CdError}
    */
@@ -1107,7 +1128,7 @@ export class PageSource {
       );
     } else {
       contextCode = (
-        (commentForm.isNewSectionApi() ? '' : (originalContextCode + '\n').trimLeft()) +
+        (commentForm.isNewSectionApi() ? '' : (originalContextCode + '\n').trimStart()) +
         commentCode
       );
     }

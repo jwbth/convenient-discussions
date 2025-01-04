@@ -118,10 +118,10 @@ function processAndRemoveDtElements(elements, bootProcess) {
  *   ID to it if it's specified.
  * @property {number} [scrollY] Page's Y offset.
  * @property {Comment[]} [unseenComments] Unseen comments on this page.
- * @property {string} [justWatchedSection] Section just watched so that there could be not enough
- *   time for it to be saved to the server.
- * @property {string} [justUnwatchedSection] Section just unwatched so that there could be not
+ * @property {string} [justSubscribedToSection] Section just watched so that there could be not
  *   enough time for it to be saved to the server.
+ * @property {string} [justUnsubscribedFromSection] Section just unwatched so that there could be
+ *   not enough time for it to be saved to the server.
  * @property {CommentForm} [submittedCommentForm] Comment form the user just submitted.
  * @property {boolean} [isPageReloadedExternally] Whether the page was reloaded externally (e.g. by
  *   some script).
@@ -214,7 +214,7 @@ class BootProcess {
         visits.load(this, true);
       }
 
-      if (this.subscriptions.getType() === 'legacy') {
+      if (controller.isLegacySubscriptions(this.subscriptions)) {
         this.subscriptions.loadToTalkPage(this, true);
       }
 
@@ -242,7 +242,7 @@ class BootProcess {
       this.processSections();
       debug.stopTimer('process sections');
     } else {
-      if (this.subscriptions.getType() === 'dt') {
+      if (controller.isDtSubscriptions(this.subscriptions)) {
         this.subscriptions.loadToTalkPage(this);
       }
     }
@@ -521,7 +521,7 @@ class BootProcess {
         }
       });
 
-    if (this.subscriptions.getType() === 'dt') {
+    if (controller.isDtSubscriptions(this.subscriptions)) {
       // Can't do it earlier: we don't have section DT IDs until now.
       this.subscriptions.loadToTalkPage(this);
     }

@@ -135,7 +135,6 @@ class Controller extends OO.EventEmitter {
 
   /**
    * @type {import('./Subscriptions').default}
-   * @private
    */
   subscriptionsInstance;
 
@@ -2263,6 +2262,26 @@ class Controller extends OO.EventEmitter {
     )();
 
     return this.subscriptionsInstance;
+  }
+
+  /**
+   * Type guard for the {@link DtSubscriptions} class.
+   *
+   * @param {object} obj
+   * @returns {obj is DtSubscriptions}
+   */
+  isDtSubscriptions(obj) {
+    return obj instanceof DtSubscriptions;
+  }
+
+  /**
+   * Type guard for the {@link LegacySubscriptions} class.
+   *
+   * @param {object} obj
+   * @returns {obj is LegacySubscriptions}
+   */
+  isLegacySubscriptions(obj) {
+    return obj instanceof LegacySubscriptions;
   }
 
   /**

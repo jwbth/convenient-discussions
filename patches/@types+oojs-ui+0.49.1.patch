@@ -194,6 +194,22 @@ index b9e1230..9ad53f6 100644
              // #region EventEmitter overloads
              on<K extends keyof EventMap, A extends ArgTuple = [], C = null>(
                  event: K,
+diff --git a/node_modules/@types/oojs-ui/OptionWidget.d.ts b/node_modules/@types/oojs-ui/OptionWidget.d.ts
+index 1e44dbf..ef64a82 100644
+--- a/node_modules/@types/oojs-ui/OptionWidget.d.ts
++++ b/node_modules/@types/oojs-ui/OptionWidget.d.ts
+@@ -21,7 +21,10 @@ declare namespace OO.ui {
+                 mixin.FlaggedElement.ConfigOptions,
+                 mixin.AccessKeyedElement.ConfigOptions,
+                 mixin.TitledElement.ConfigOptions
+-        {}
++        {
++            /** Whether this option should be selected initially. */
++            selected?: boolean;
++        }
+ 
+         interface Static
+             extends
 diff --git a/node_modules/@types/oojs-ui/PopupWidget.d.ts b/node_modules/@types/oojs-ui/PopupWidget.d.ts
 index 064097e..3d93e45 100644
 --- a/node_modules/@types/oojs-ui/PopupWidget.d.ts

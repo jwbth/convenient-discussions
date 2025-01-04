@@ -131,9 +131,10 @@ class SectionSource {
           (commentForm.getContainerListType() === 'ol' || cd.config.indentationCharMode === 'mimic')
         ) {
           try {
-            // TODO: get rid of "action at a distance" that causes the type cast to be needed here
+            // TODO: get rid of "action at a distance" with the use of
+            // commentForm.isSectionSubmitted()
             const source = lastComment.locateInCode(
-              /** @type {boolean} */ (commentForm.isSectionSubmitted())
+              commentForm.isSectionSubmitted() ? this.section.presumedCode : undefined
             );
 
             if (

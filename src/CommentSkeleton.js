@@ -312,7 +312,7 @@ class CommentSkeleton {
     // As an optimization, avoid adding every text node of the comment to the array of its parts if
     // possible. Add their common container instead.
     const parts = [];
-    const fiaParentNode = farthestInlineAncestor.parentNode;
+    const fiaParentNode = /** @type {ElementLike} */ (farthestInlineAncestor.parentElement);
     if (
       (firstForeignComponentAfter && fiaParentNode.contains(firstForeignComponentAfter)) ||
 

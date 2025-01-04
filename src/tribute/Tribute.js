@@ -160,7 +160,7 @@ class Tribute {
 
     // Check if it is a jQuery collection
     if (typeof $ !== "undefined" && el instanceof $) {
-      el = el.get();
+      el = /** @type {JQuery} */ (el).get();
     }
 
     // Is el an Array/Array-like object?
@@ -475,7 +475,7 @@ class Tribute {
 
     // Check if it is a jQuery collection
     if (typeof $ !== "undefined" && el instanceof $) {
-      el = el.get();
+      el = /** @type {JQuery} */ (el).get();
     }
 
     // Is el an Array/Array-like object?

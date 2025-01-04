@@ -37,13 +37,21 @@ class EditSubscriptionsDialog extends ProcessDialog {
   /** @type {OO.ui.StackLayout} */
   stack;
 
+  /** @type {OO.ui.PanelLayout} */
+  loadingPanel;
+
+  /** @type {OO.ui.PanelLayout} */
+  sectionsPanel;
+
   /**
    * Create an "Edit subscriptions" dialog.
    */
   constructor() {
     super();
 
-    this.subscriptions = controller.getSubscriptionsInstance();
+    this.subscriptions = /** @type {import('./LegacySubscriptions').default} */ (
+      controller.getSubscriptionsInstance()
+    );
   }
 
   /**
@@ -129,8 +137,8 @@ class EditSubscriptionsDialog extends ProcessDialog {
       try {
         await this.initPromise;
         pages = await getPageTitles(this.subscriptions.getPageIds());
-      } catch (e) {
-        this.handleError(e, 'ewsd-error-processing', false);
+      } catch (error) {
+        this.handleError(error, 'ewsd-error-processing', false);
         return;
       }
 
@@ -229,8 +237,8 @@ class EditSubscriptionsDialog extends ProcessDialog {
     let pages;
     try {
       ({ normalized, redirects, pages } = await getPageIds(pageTitles) || {});
-    } catch (e) {
-      this.handleError(e, 'ewsd-error-processing', true);
+    } catch (error) {
+      this.handleError(error, 'ewsd-error-processing', true);
       return;
     }
 
@@ -260,16 +268,16 @@ class EditSubscriptionsDialog extends ProcessDialog {
 
     try {
       this.subscriptions.save(allPagesData);
-    } catch (e) {
-      if (e instanceof CdError) {
-        const { type, code } = e.data;
+    } catch (error) {
+      if (error instanceof CdError) {
+        const { type, code } = error.data;
         if (type === 'internal' && code === 'sizeLimit') {
-          this.handleError(e, 'ewsd-error-maxsize', false);
+          this.handleError(error, 'ewsd-error-maxsize', false);
         } else {
-          this.handleError(e, 'ewsd-error-processing', true);
+          this.handleError(error, 'ewsd-error-processing', true);
         }
       } else {
-        this.handleError(e);
+        this.handleError(error);
       }
       this.actions.setAbilities({ save: true });
       return;

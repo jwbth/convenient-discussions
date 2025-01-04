@@ -125,6 +125,14 @@ class Section extends SectionSkeleton {
   source;
 
   /**
+   * Subscription state of the section. Currently, `true` stands for "subscribed", `false` for
+   * "unsubscribed", `null` for n/a.
+   *
+   * @type {?boolean}
+   */
+  subscriptionState;
+
+  /**
    * Create a section object.
    *
    * @param {import('./Parser').default} parser
@@ -274,7 +282,7 @@ class Section extends SectionSkeleton {
     const element = Section.prototypes.get('replyButton');
     const button = new Button({
       element: element,
-      buttonElement: element.firstChild,
+      buttonElement: /** @type {HTMLElement} */ (element.firstChild),
       action: () => {
         this.reply();
       },
@@ -361,7 +369,7 @@ class Section extends SectionSkeleton {
     container.style.display = 'none';
     container.append(...[button?.element, lastDescendantButton?.element].filter(defined));
 
-    this.lastElementInFirstChunk.parentNode.insertBefore(
+    /** @type {HTMLElement} */ (this.lastElementInFirstChunk.parentElement).insertBefore(
       container,
       this.lastElementInFirstChunk.nextElementSibling
     );
@@ -402,8 +410,8 @@ class Section extends SectionSkeleton {
     const element = Section.prototypes.get('addSubsectionButton');
     const button = new Button({
       element: element,
-      buttonElement: element.firstChild,
-      labelElement: element.querySelector('.oo-ui-labelElement-label'),
+      buttonElement: /** @type {HTMLElement} */ (element.firstChild),
+      labelElement: /** @type {HTMLElement} */ (element.querySelector('.oo-ui-labelElement-label')),
       label: cd.s('section-addsubsection-to', this.headline),
       action: () => {
         this.addSubsection();
@@ -420,7 +428,7 @@ class Section extends SectionSkeleton {
   /**
    * Get the last descendant section of the section.
    *
-   * @returns {Section|null}
+   * @returns {?Section}
    */
   getLastDescendant() {
     return this.getChildren(true).slice(-1)[0] || null;
@@ -503,14 +511,7 @@ class Section extends SectionSkeleton {
   addSubscribeButton() {
     if (!this.subscribeId) return;
 
-    /**
-     * Subscription state of the section. Currently, `true` stands for "subscribed", `false` for
-     * "unsubscribed", `null` for n/a.
-     *
-     * @type {?boolean}
-     */
     this.subscriptionState = this.subscriptions.getState(this.subscribeId);
-
     if (controller.isSubscribingDisabled() && !this.subscriptionState) return;
 
     /**
@@ -683,15 +684,21 @@ class Section extends SectionSkeleton {
     const data = this.comments
       .map((comment) => comment.author)
       .filter(unique)
-      .map((author) => [author, this.comments.filter((comment) => comment.author === author)])
+      .map(
+        (author) =>
+          /** @type {[import('./userRegistry').User, Comment[]]} */ ([
+            author,
+            this.comments.filter((comment) => comment.author === author),
+          ])
+      )
       .flatMap(([author, comments]) => ({
         name: author.getName(),
         count: comments.length,
-        newestCommentDate: Comment.getNewest(comments)?.date,
+        newestCommentDate: Comment.getNewest(comments, true)?.date,
         $link: $('<a>')
           .text(author.getName())
           .attr('href', `#${comments[0].dtId || comments[0].id}`)
-          .on('click', Comment.scrollToFirstFlashAll.bind(Comment, comments))
+          .on('click', Comment.scrollToFirstFlashAll.bind(Comment, comments)),
       }));
 
     const getPanelByName = (name) =>
@@ -718,12 +725,14 @@ class Section extends SectionSkeleton {
       ],
       classes: ['cd-popup-authors-sort'],
     });
+    sortSelect
     sortSelect.on('choose', (item) => {
       stack.setItem(getPanelByName(item.getData()));
       settings.saveSettingOnTheFly('authorsSort', item.getData());
     });
 
-    const wrapInHlist = ($content) => $('<ul>').addClass('cd-hlist').append($content);
+    const wrapInHlist = (/** @type {JQuery[]} */ content) =>
+      $('<ul>').addClass('cd-hlist').append(content);
 
     const namePanel = new OO.ui.PanelLayout({
       $content: wrapInHlist(
@@ -751,7 +760,10 @@ class Section extends SectionSkeleton {
     const datePanel = new OO.ui.PanelLayout({
       $content: wrapInHlist(
         data
-          .sort((d1, d2) => (d2.newestCommentDate || 0) - (d1.newestCommentDate || 0))
+          .sort(
+            (d1, d2) =>
+              (d2.newestCommentDate?.getTime() || 0) - (d1.newestCommentDate?.getTime() || 0)
+          )
           .map((d) => $('<li>').append(d.$link.clone()))
       ),
       padded: false,
@@ -842,7 +854,7 @@ class Section extends SectionSkeleton {
     /**
      * Latest comment in a 2-level section.
      *
-     * @type {?(import('./Comment').default|undefined)}
+     * @type {import('./Comment').default|null|undefined}
      */
     this.latestComment = latestComment;
 
@@ -1452,11 +1464,11 @@ class Section extends SectionSkeleton {
     this.subscriptions.subscribe(
       this.subscribeId,
       this.id,
+      !!mode,
       // Unsubscribe from
       renamedFrom && !sectionRegistry.getBySubscribeId(renamedFrom).length ?
         renamedFrom :
         undefined,
-      !!mode
     )
       .then(() => {
         // TODO: this condition seems a bad idea because when we could update the subscriptions but
@@ -1540,14 +1552,16 @@ class Section extends SectionSkeleton {
 
     const oldHeadingHtml = oldCommentData.elementHtmls[0].replace(
       /\x01(\d+)_\w+\x02/g,
-      (s, num) => currentCommentData.hiddenElementsData[num - 1].html
+      (_, /** @type {string} */ num) => currentCommentData.hiddenElementsData[Number(num) - 1].html
     );
     const oldSectionDummy = { headlineElement: $('<span>').html($(oldHeadingHtml).html())[0] };
     sectionRegistry.prototype.parseHeadline.call(oldSectionDummy);
     if (
       this.headline &&
       oldSectionDummy.headline !== this.headline &&
-      this.subscriptions.getOriginalState(oldSectionDummy.headline)
+      /** @type {import('./LegacySubscriptions').default} */ (this.subscriptions).getOriginalState(
+        oldSectionDummy.headline
+      )
     ) {
       this.subscribe('quiet', oldSectionDummy.headline);
     }
@@ -1583,6 +1597,7 @@ class Section extends SectionSkeleton {
    * Request the wikitext of the section by its number using the API and set some properties of the
    * section (and also the page). {@link Section#loadCode} is a more general method.
    *
+   * @returns {Promise<string>}
    * @throws {CdError}
    */
   async requestCode() {
@@ -1596,7 +1611,7 @@ class Section extends SectionSkeleton {
       redirects: !mw.config.get('wgIsRedirect'),
       curtimestamp: true,
     });
-    const { query, curtimestamp: queryTimestamp } = /** @type {} */ (await request.catch(handleApiReject));
+    const { query, curtimestamp: queryTimestamp } = await request.catch(handleApiReject);
 
     const page = query?.pages?.[0];
     const revision = page?.revisions?.[0];
@@ -1646,6 +1661,8 @@ class Section extends SectionSkeleton {
     this.queryTimestamp = queryTimestamp;
 
     this.getSourcePage().setRedirectTarget(query.redirects?.[0]?.to || null);
+
+    return this.presumedCode;
   }
 
   /**
@@ -1659,13 +1676,13 @@ class Section extends SectionSkeleton {
   async loadCode(commentForm) {
     let source;
 
-    commentForm?.setSectionSubmitted(false);
+    let isSectionSubmitted = false;
     try {
       if (commentForm && this.liveSectionNumber !== null) {
         try {
-          await this.requestCode();
-          source = this.locateInCode(true);
-          commentForm?.setSectionSubmitted(true);
+          const sectionCode = await this.requestCode();
+          source = this.locateInCode(sectionCode);
+          isSectionSubmitted = true;
         } catch (error) {
           if (
             !(
@@ -1677,9 +1694,9 @@ class Section extends SectionSkeleton {
           }
         }
       }
-      if (!commentForm?.isSectionSubmitted()) {
+      if (!isSectionSubmitted) {
         await this.getSourcePage().loadCode();
-        source = this.locateInCode(false);
+        source = this.locateInCode();
       }
     } catch (error) {
       if (error instanceof CdError) {
@@ -1690,6 +1707,7 @@ class Section extends SectionSkeleton {
         throw error;
       }
     }
+    commentForm?.setSectionSubmitted(isSectionSubmitted);
 
     return source;
   }
@@ -1739,15 +1757,15 @@ class Section extends SectionSkeleton {
    * It is expected that the section or page code is loaded (using {@link Page#loadCode}) before
    * this method is called. Otherwise, the method will throw an error.
    *
-   * @param {boolean} [useSectionCode] Is the section code available to locate the section in
-   *   instead of the page code.
+   * @param {string|undefined} [sectionCode] Section code to use instead of the page code, to locate
+   *   the section in.
    * @returns {SectionSource}
    * @throws {CdError}
    */
-  locateInCode(useSectionCode = false) {
+  locateInCode(sectionCode) {
     this.source = null;
 
-    const code = useSectionCode ? this.presumedCode : this.getSourcePage().code;
+    const code = sectionCode || this.getSourcePage().code;
     if (code === undefined) {
       throw new CdError({
         type: 'parse',
@@ -1755,7 +1773,7 @@ class Section extends SectionSkeleton {
       });
     }
 
-    const source = this.searchInCode(code, useSectionCode);
+    const source = this.searchInCode(code, Boolean(sectionCode));
     if (!source) {
       throw new CdError({
         type: 'parse',
@@ -1794,8 +1812,8 @@ class Section extends SectionSkeleton {
    * @returns {Section|null} The base section, or `null` if no level 2 section is found.
    *
    * @overload
-   * @param {false} [forceLevel2=false] Return the closest level 2 ancestor, or the section itself if no
-   * such ancestor exists or if it is already level 2.
+   * @param {false} [forceLevel2=false] Return the closest level 2 ancestor, or the section itself
+   *   if no such ancestor exists or if it is already level 2.
    * @returns {Section} The base section.
    */
 
