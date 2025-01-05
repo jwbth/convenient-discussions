@@ -5,9 +5,7 @@ import CommentForm from './CommentForm';
 import DtSubscriptions from './DtSubscriptions';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import LegacySubscriptions from './LegacySubscriptions';
-import LiveTimestamp from './LiveTimestamp';
 import Parser from './Parser';
-import Subscriptions from './Subscriptions';
 import Thread from './Thread';
 import addCommentLinks from './addCommentLinks';
 import cd from './cd';
@@ -26,18 +24,7 @@ import { getUserInfo } from './utils-api';
 import { defined, definedAndNotNull, getLastArrayElementOrSelf, getQueryParamBooleanValue, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
 import { mixEventEmitterInObject } from './utils-oojs';
 import { copyText, createSvg, getVisibilityByRects, skin$, wrapHtml } from './utils-window';
-import visits from './visits';
 import WebpackWorker from './worker/worker-gate';
-
-// mutationObserver
-// $emulatedAddTopicButton
-// $addTopicButtons
-// addedCommentCount
-// areRelevantCommentsAdded
-// relevantAddedCommentIds
-// dtSubscribableThreads
-// rootElement
-// $root
 
 /**
  * Singleton that stores and changes the overall state of the page, initiating boot processes and
@@ -139,14 +126,7 @@ class Controller extends OO.EventEmitter {
   subscriptionsInstance;
 
   /**
-   * @typedef {object} DiscussionToolsThread
-   * @property {'heading' | 'comment'} type
-   * @property {number} level
-   * @property {string} id
-   */
-
-  /**
-   * @type {DiscussionToolsThread[]|undefined}
+   * @type {mw.DiscussionToolsHeading[]|undefined}
    * @private
    */
   dtSubscribableThreads;
@@ -191,6 +171,7 @@ class Controller extends OO.EventEmitter {
    *   areThereLtrRtlMixes?: boolean;
    *   longPage?: boolean;
    * }}
+   * @private
    */
   content = {};
 
@@ -395,17 +376,9 @@ class Controller extends OO.EventEmitter {
     this.showLoadingOverlay();
     Promise.all([modulesRequest, ...siteDataRequests]).then(
       async () => {
-        // Do it here because OO.EventEmitter can be unavailable when these modules are first
-        // imported.
-        mixEventEmitterInObject(this);
-        mixEventEmitterInObject(visits);
         mixEventEmitterInObject(updateChecker);
-        mixEventEmitterInObject(LiveTimestamp);
         mixEventEmitterInObject(commentFormRegistry);
         mixEventEmitterInObject(commentRegistry);
-        mixEventEmitterInObject(Thread);
-        OO.mixinClass(Subscriptions, OO.EventEmitter);
-        OO.mixinClass(CommentForm, OO.EventEmitter);
 
         await this.tryExecuteBootProcess(false);
       },
@@ -1016,17 +989,17 @@ class Controller extends OO.EventEmitter {
   /**
    * Find closed discussions on the page.
    *
-   * @returns {Element[]}
+   * @returns {HTMLElement[]}
    */
   getClosedDiscussions() {
-    this.content.closedDiscussions ||= /** @type {HTMLElement[]} */ (this.$root
+    this.content.closedDiscussions ||= this.$root
       .find(
         cd.config.closedDiscussionClasses
           .concat('mw-archivedtalk')
           .map((name) => `.${name}`)
           .join(', ')
       )
-      .get());
+      .get();
 
     return this.content.closedDiscussions;
   }
@@ -2387,12 +2360,15 @@ class Controller extends OO.EventEmitter {
    * Get the list of DiscussionTools threads that are related to subscribable (2-level) threads.
    * This is updated on page reload.
    *
-   * @returns {DiscussionToolsThread[]}
+   * @returns {mw.DiscussionToolsHeading[]}
    */
   getDtSubscribableThreads() {
-    this.dtSubscribableThreads ||= /** @type {DiscussionToolsThread[]} */ (mw.config.get('wgDiscussionToolsPageThreads'))
+    const threads = /** @type {mw.DiscussionToolsHeading[]} */ (
+      mw.config.get('wgDiscussionToolsPageThreads')
+    );
+    this.dtSubscribableThreads ||= threads
       ?.concat(
-        /** @type {mw.DiscussionToolsPageThreads[]} */ (mw.config.get('wgDiscussionToolsPageThreads'))
+        threads
           .filter((thread) => thread.headingLevel === 1)
           .flatMap((thread) => thread.replies)
       )

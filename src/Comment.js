@@ -3600,14 +3600,14 @@ class Comment extends CommentSkeleton {
 
     const signatures = extractSignatures(contextCode);
     return signatures
-      .filter((sig) => (
-        (sig.author === this.author || sig.author.getName() === '<undated>') &&
+      .filter((signature) => (
+        (signature.author === this.author || signature.author.getName() === '<undated>') &&
         (
-          this.timestamp === sig.timestamp ||
+          this.timestamp === signature.timestamp ||
 
           // .startsWith() to account for cases where you can ignore the timezone string in
           // "unsigned" templates (it may be present and may be not), but it appears on the page.
-          (this.timestamp && sig.timestamp && this.timestamp.startsWith(sig.timestamp))
+          (this.timestamp && signature.timestamp && this.timestamp.startsWith(signature.timestamp))
         )
       ))
       .map((signature) => new CommentSource(this, signature, contextCode, isInSectionContext))

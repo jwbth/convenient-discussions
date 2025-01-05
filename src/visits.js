@@ -6,9 +6,15 @@ import commentRegistry from './commentRegistry';
 import settings from './settings';
 import { getUserInfo, saveLocalOption } from './utils-api';
 
-export default {
+/**
+ * Class implementing loading, processing, storing, and saving of page visits.
+ */
+class Visits extends OO.EventEmitter {
   /** @type {{ [articleId: number]: string[] }} */
-  data: {},
+  data = {};
+
+  /** @type {string[]} */
+  currentPageData;
 
   /**
    * Request the pages visits data from the server.
@@ -38,7 +44,7 @@ export default {
     this.currentPageData = this.data[articleId];
 
     this.process(bootProcess.passedData.markAsRead || false);
-  },
+  }
 
   /**
    * Process the visits data and emit events.
@@ -72,7 +78,6 @@ export default {
     this.currentPageData.push(String(currentTime + Number(timeConflict) * 60));
 
     this.save();
-
     this.emit('process', this.currentPageData);
 
     /**
@@ -82,7 +87,7 @@ export default {
      * @param {object} cd {@link convenientDiscussions} object.
      */
     mw.hook('convenientDiscussions.newCommentsHighlighted').fire(cd);
-  },
+  }
 
   /**
    * Remove timestamps that we don't need anymore from the visits array.
@@ -94,7 +99,7 @@ export default {
   update(currentTime, markAsReadRequested) {
     for (let i = this.currentPageData.length - 1; i >= 0; i--) {
       if (
-        this.currentPageData[i] < currentTime - 60 * settings.get('highlightNewInterval') ||
+        Number(this.currentPageData[i]) < currentTime - 60 * settings.get('highlightNewInterval') ||
 
         // Add this condition for rare cases when the time of the previous visit is later than the
         // current time (see timeConflict). In that case, when highlightNewInterval is set to 0,
@@ -109,7 +114,7 @@ export default {
         break;
       }
     }
-  },
+  }
 
   /**
    * Convert a visits object into an optimized string and compress it.
@@ -126,7 +131,7 @@ export default {
         .join('')
         .trim()
     );
-  },
+  }
 
   /**
    * Unpack a compressed visits string into a visits object.
@@ -146,7 +151,7 @@ export default {
         this.data[match[1]] = match[2].split(',');
       }
     }
-  },
+  }
 
   /**
    * Save the pages visits data to the server.
@@ -173,7 +178,7 @@ export default {
         console.error(error);
       }
     }
-  },
+  }
 
   /**
    * Remove the oldest `share`% of visits when the size limit is hit.
@@ -194,7 +199,7 @@ export default {
       }
     });
     this.data = visits;
-  },
+  }
 
   /**
    * For tests: set the last visit to a date or a number of days before the current date. Use via
@@ -212,5 +217,7 @@ export default {
       ) / 1000
     ).toFixed();
     this.save();
-  },
-};
+  }
+}
+
+export default new Visits();

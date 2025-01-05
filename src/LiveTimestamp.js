@@ -3,13 +3,19 @@ import dayjs from 'dayjs';
 import cd from './cd';
 import settings from './settings';
 import { removeFromArrayIfPresent } from './utils-general';
+import { mixInObject } from './utils-oojs';
 import { formatDate, relativeTimeThresholds } from './utils-timestamp';
+
+/**
+ * @typedef {'default'|'improved'|'relative'} TimestampFormat
+ */
 
 /**
  * Class representing an element that has contains an automatically updated timestamp with relative
  * (dependent on the current date and time somehow) date and time.
  */
-class LiveTimestamp {
+// eslint-disable-next-line jsdoc/require-jsdoc
+class LiveTimestamp extends mixInObject(class {}, OO.EventEmitter) {
   /**
    * Create a live timestamp.
    *
@@ -18,6 +24,8 @@ class LiveTimestamp {
    * @param {boolean} addTimezone Whether to add a timezone to the timestamp.
    */
   constructor(element, date, addTimezone) {
+    super();
+
     /**
      * Element that has the timestamp.
      *

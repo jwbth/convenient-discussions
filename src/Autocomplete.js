@@ -10,6 +10,10 @@ import { handleApiReject } from './utils-api';
 import { charAt, defined, phpCharToUpper, removeDoubleSpaces, sleep, ucFirst, underlinesToSpaces, unique } from './utils-general';
 
 /**
+ * @typedef {'mentions'|'commentLinks'|'wikilinks'|'templates'|'tags'} AutocompleteType
+ */
+
+/**
  * @typedef {object} AutocompleteConfig
  * @property {{ [text: string]: string }} byText
  * @property {} cache
@@ -39,8 +43,7 @@ class Autocomplete {
    * settings apply.
    *
    * @param {object} options
-   * @param {Array.<'mentions'|'commentLinks'|'wikilinks'|'templates'|'tags'>} options.types Which
-   *   values should be autocompleted.
+   * @param {AutocompleteType[]} options.types Which values should be autocompleted.
    * @param {OO.ui.TextInputWidget[]} options.inputs Inputs to attach the autocomplete to. Please
    *   note that these should be CD's {@link TextInputWidget}s, not
    *   {@link OO.ui.TextInputWidget OO.ui.TextInputWidget}s, since we use CD's method

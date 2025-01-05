@@ -15,29 +15,41 @@ import { unique } from './utils-general';
 import { brsToNewlines } from './utils-wikitext';
 
 /**
- * Represents the content of a single page in an API response query.
+ * @typedef {object} Revision
+ * @property {number} revid
+ * @property {number} parentid
+ * @property {object} [slots]
+ * @property {object} slots.main
+ * @property {string} slots.main.contentmodel
+ * @property {string} slots.main.contentformat
+ * @property {string} slots.main.content
+ */
+
+/**
+ * Represents the content of a single page in a `query` API response.
  *
  * @typedef {object} ApiResponseQueryContentPage
  * @property {string} title The title of the page.
  * @property {boolean} [known] Whether the page is known.
  * @property {boolean} [missing] Whether the page is missing.
+ * @property {boolean} [invalid]
  * @property {object} [thumbnail] Thumbnail information for the page.
  * @property {string} thumbnail.source The URL of the thumbnail.
  * @property {number} thumbnail.width The width of the thumbnail in pixels.
  * @property {number} thumbnail.height The height of the thumbnail in pixels.
  * @property {object} [pageprops] Additional properties for the page.
  * @property {''} [pageprops.disambiguation] Indicates if the page is a disambiguation page.
- * @property {{ [key: string]: unknown }} [pageprops] Additional properties.
  * @property {string} [description] A description of the page.
  * @property {number} ns The namespace of the page.
  * @property {string} [normalizedTitle] The normalized title of the page.
- * @property {number} [index] The index of the page in the query.
+ * @property {number} [index] The index of the page in the list.
  * @property {string} contentmodel The content model of the page.
- * @property {{title: string}[]} [redirects] List of redirects for the page.
+ * @property {Array<{ title: string }>} [redirects] List of redirects to the page.
+ * @property {Revision[]} revisions
  */
 
 /**
- * Represents a mapping between two titles or fragments.
+ * Represents a mapping between two titles.
  *
  * @typedef {object} FromTo
  * @property {string} from The original title or fragment.
@@ -47,18 +59,16 @@ import { brsToNewlines } from './utils-wikitext';
  */
 
 /**
- * Represents the structure of an API response query.
+ * Represents the structure of a `query` API response.
  *
  * @typedef {object} ApiResponseQuery
  * @property {object} [query] The main query object.
  * @property {ApiResponseQueryContentPage[]} [query.pages] List of pages in the query.
  * @property {FromTo[]} [query.redirects] List of redirects in the query.
  * @property {FromTo[]} [query.normalized] List of normalized titles in the query.
+ * @property {string} [curtimestamp]
  * @property {boolean} [batchcomplete] Indicates if the batch is complete.
  * @property {object} [continue] Continuation information for the query.
- * @property {'gpsoffset||'} [continue.continue] The continuation token.
- * @property {number} [continue.gpsoffset] The offset for GPS continuation.
- * @property {string} [continue.rdcontinue] The continuation token for redirects.
  */
 
 /**
@@ -118,15 +128,15 @@ let cachedUserInfoRequest;
  * Callback used in the `.catch()` parts of API requests.
  *
  * @param {string|[string, object]} codeOrArr
- * @param {object} [resp]
+ * @param {object} [response]
  * @returns {never}
  * @throws {CdError}
  */
-export function handleApiReject(codeOrArr, resp) {
+export function handleApiReject(codeOrArr, response) {
   // Native promises support only one parameter when `reject()`ing.
   let code;
   if (Array.isArray(codeOrArr)) {
-    [code, resp] = codeOrArr;
+    [code, response] = codeOrArr;
   } else {
     code = codeOrArr;
   }
@@ -138,11 +148,11 @@ export function handleApiReject(codeOrArr, resp) {
     new CdError({
       type: 'api',
       code: 'error',
-      apiResp: resp,
+      apiResponse: response,
 
       // `error` or `errors` is chosen by the API depending on `errorformat` being ''html'` in
       // requests.
-      apiError: resp?.error?.code || resp?.errors?.[0].code,
+      apiError: response?.error?.code || response?.errors?.[0].code,
     });
 }
 

@@ -709,7 +709,7 @@ export default {
    * Add an individual new comments notification to a thread or section.
    *
    * @param {Comment|import('./Section').default} parent
-   * @param {import('./CommentSkeleton').CommentSkeletonLike[]} childComments
+   * @param {import('./updateChecker').CommentWorkerEnrichied[]} childComments
    * @param {'thread'|'section'} type
    * @param {number[]} newCommentIndexes
    * @private
@@ -717,11 +717,12 @@ export default {
   addNewCommentsNote(parent, childComments, type, newCommentIndexes) {
     if (!childComments.length) return;
 
-    const descendantComments = parent instanceof Comment ?
-      childComments.reduce((arr, child) => (
-        this.searchForNewCommentsInSubtree(child, arr, newCommentIndexes)
-      ), []) :
-      childComments;
+    const descendantComments = parent instanceof Comment
+      ? childComments.reduce(
+          (arr, child) => this.searchForNewCommentsInSubtree(child, arr, newCommentIndexes),
+          []
+        )
+      : childComments;
 
     const authors = descendantComments
       .map((comment) => comment.author)
@@ -946,6 +947,7 @@ export default {
     childComment.children.forEach((childComment) => {
       this.searchForNewCommentsInSubtree(childComment, newCommentsInSubtree, newCommentIndexes);
     });
+
     return newCommentsInSubtree;
   },
 

@@ -10,12 +10,14 @@ import settings from './settings';
 import updateChecker from './updateChecker';
 import { loadUserGenders } from './utils-api';
 import { defined, getCommonGender, isHeadingNode, removeFromArrayIfPresent, unique } from './utils-general';
+import { mixInObject } from './utils-oojs';
 import { getExtendedRect, getRangeContents, getVisibilityByRects, isCmdModifierPressed } from './utils-window';
 
 /**
  * Class representing a comment thread object.
  */
-class Thread {
+// eslint-disable-next-line jsdoc/require-jsdoc
+class Thread extends mixInObject(class {}, OO.EventEmitter) {
   /**
    * Click area of the thread line.
    *
@@ -113,6 +115,7 @@ class Thread {
    * @param {import('./Comment').default} rootComment Root comment of the thread.
    */
   constructor(rootComment) {
+    super();
     this.documentMouseMoveHandler = this.handleDocumentMouseMove.bind(this);
     this.quitNavModeHandler = this.quitNavMode.bind(this);
 
@@ -917,7 +920,7 @@ class Thread {
     if (!this.collapsedRange) return;
 
     this.collapsedRange.forEach(this.hideElement.bind(this));
-    this.updateEndOfCollapsedRange(controller.content.closedDiscussions);
+    this.updateEndOfCollapsedRange(controller.getClosedDiscussions());
 
     this.isCollapsed = true;
 

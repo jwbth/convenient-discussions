@@ -1,7 +1,7 @@
 import CdError from './CdError';
 import cd from './cd';
 import controller from './controller';
-import { tweakUserOoUiClass } from './utils-oojs';
+import { es6ClassToOoJsClass } from './utils-oojs';
 
 /**
  * Our class that extends {@link OO.ui.ProcessDialog OO.ui.ProcessDialog}, adding a couple
@@ -71,6 +71,6 @@ class ProcessDialog extends OO.ui.ProcessDialog {
   }
 }
 
-tweakUserOoUiClass(ProcessDialog);
+es6ClassToOoJsClass(ProcessDialog);
 
 export default ProcessDialog;

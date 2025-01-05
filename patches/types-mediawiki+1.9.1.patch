@@ -12,41 +12,42 @@ index ffbe4d0..f970036 100644
  export type ApiResponse = Record<string, any>; // it will always be a JSON object, the rest is uncertain ...
  
 diff --git a/node_modules/types-mediawiki/mw/config.d.ts b/node_modules/types-mediawiki/mw/config.d.ts
-index c28faf2..48552ba 100644
+index c28faf2..eab787d 100644
 --- a/node_modules/types-mediawiki/mw/config.d.ts
 +++ b/node_modules/types-mediawiki/mw/config.d.ts
-@@ -2,6 +2,25 @@ import { ExtensibleMap } from "./Map";
+@@ -2,6 +2,26 @@ import { ExtensibleMap } from "./Map";
  
  declare global {
      namespace mw {
-+        export interface DiscussionToolsPageThreads {
-+            headingLevel: number;
-+            name: string;
++        export interface DiscussionToolsPageThread {
 +            type: 'heading' | 'comment';
 +            level: number;
 +            id: string;
 +            replies: Reply[];
 +        }
 +
-+        export interface Reply {
++        export interface DiscussionToolsHeading extends DiscussionToolsPageThread {
++            type: 'heading';
++            headingLevel: number;
++            name: string;
++        }
++
++        export interface DiscussionToolsReply extends DiscussionToolsPageThread {
++            type: 'comment';
 +            timestamp: string;
 +            author: string;
-+            type: 'comment';
-+            level: number;
-+            id: string;
-+            replies: Reply[];
 +            displayName?: string;
 +        }
 +
          /**
           * Map of configuration values.
           *
-@@ -360,6 +379,8 @@ declare global {
+@@ -360,6 +380,8 @@ declare global {
               * @see https://www.mediawiki.org/wiki/Special:MyLanguage/Manual:Interface/JavaScript#wgDiffNewId
               */
              wgDiffNewId?: number;
 +
-+            wgDiscussionToolsPageThreads?: DiscussionToolsPageThreads[];
++            wgDiscussionToolsPageThreads?: DiscussionToolsPageThread[];
          }>;
      }
  }

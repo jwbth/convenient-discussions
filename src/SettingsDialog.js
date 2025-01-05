@@ -5,7 +5,7 @@ import controller from './controller';
 import settings from './settings';
 import { saveGlobalOption, saveLocalOption } from './utils-api';
 import { areObjectsEqual } from './utils-general';
-import { createCheckboxField, createNumberField, createRadioField, createTextField, tweakUserOoUiClass } from './utils-oojs';
+import { createCheckboxField, createNumberField, createRadioField, createTextField, es6ClassToOoJsClass } from './utils-oojs';
 
 /**
  * Class used to create a settings dialog.
@@ -323,7 +323,7 @@ class SettingsDialog extends ProcessDialog {
       });
 
       // eslint-disable-next-line jsdoc/require-jsdoc
-      return new (tweakUserOoUiClass(class extends OO.ui.PageLayout {
+      return new (es6ClassToOoJsClass(class extends OO.ui.PageLayout {
         // eslint-disable-next-line jsdoc/require-jsdoc
         constructor() {
           super(pageData.name);
@@ -543,6 +543,6 @@ class SettingsDialog extends ProcessDialog {
   }
 }
 
-tweakUserOoUiClass(SettingsDialog);
+es6ClassToOoJsClass(SettingsDialog);
 
 export default SettingsDialog;

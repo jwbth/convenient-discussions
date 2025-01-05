@@ -7,7 +7,7 @@ import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
 import { buildEditSummary, definedAndNotNull, mergeMaps, ensureArray, sleep, defined } from './utils-general';
-import { createCheckboxField, tweakUserOoUiClass } from './utils-oojs';
+import { createCheckboxField, es6ClassToOoJsClass } from './utils-oojs';
 import { encodeWikilink, endWithTwoNewlines, findFirstTimestamp } from './utils-wikitext';
 import { wrapHtml } from './utils-window';
 
@@ -680,6 +680,6 @@ class MoveSectionDialog extends ProcessDialog {
   }
 }
 
-tweakUserOoUiClass(MoveSectionDialog);
+es6ClassToOoJsClass(MoveSectionDialog);
 
 export default MoveSectionDialog;

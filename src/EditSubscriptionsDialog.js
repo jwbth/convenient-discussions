@@ -5,7 +5,7 @@ import cd from './cd';
 import controller from './controller';
 import { getPageIds, getPageTitles } from './utils-api';
 import { sleep, unique } from './utils-general';
-import { tweakUserOoUiClass } from './utils-oojs';
+import { es6ClassToOoJsClass } from './utils-oojs';
 
 /**
  * Class used to create an "Edit subscriptions" dialog.
@@ -289,6 +289,6 @@ class EditSubscriptionsDialog extends ProcessDialog {
   }
 }
 
-tweakUserOoUiClass(EditSubscriptionsDialog);
+es6ClassToOoJsClass(EditSubscriptionsDialog);
 
 export default EditSubscriptionsDialog;

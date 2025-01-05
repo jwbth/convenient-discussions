@@ -9,7 +9,7 @@ import { getUserInfo, saveLocalOption } from './utils-api';
 import { wrapHtml } from './utils-window';
 
 /**
- * Class implementing CD's legacy section watching.
+ * Class implementing legacy section watching.
  *
  * @augments Subscriptions
  */

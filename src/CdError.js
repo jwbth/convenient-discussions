@@ -2,7 +2,7 @@
  * @typedef {object} ErrorData
  * @param {'network'|'api'|'parse'|'internal'} type Grouping of the error.
  * @param {string} [code] Error code.
- * @param {object} [apiResp] API response.
+ * @param {object} [apiResponse] API response.
  * @param {object} [apiError] API error code.
  * @param {object} [details] Additional details.
  * @param {string} [message] Error message for the user.

@@ -712,7 +712,7 @@ export default {
   /**
    * Default collection of insert buttons displayed under the comment input in comment forms.
    *
-   * @type {Array.<string|Array>}
+   * @type {Array.<string|string[]>}
    * @default []
    */
   defaultInsertButtons: [],

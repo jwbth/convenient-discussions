@@ -95,6 +95,7 @@ export default {
     if (index < 0) {
       index = this.items.length + index;
     }
+
     return this.items[index] || null;
   },
 

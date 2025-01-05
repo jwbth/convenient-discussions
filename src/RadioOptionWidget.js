@@ -1,4 +1,4 @@
-import { tweakUserOoUiClass } from './utils-oojs';
+import { es6ClassToOoJsClass } from './utils-oojs';
 
 /**
  * Class that extends {@link OO.ui.RadioOptionWidget OO.ui.RadioOptionWidget} and allows to
@@ -37,6 +37,6 @@ class RadioOptionWidget extends OO.ui.RadioOptionWidget {
   }
 }
 
-tweakUserOoUiClass(RadioOptionWidget);
+es6ClassToOoJsClass(RadioOptionWidget);
 
 export default RadioOptionWidget;

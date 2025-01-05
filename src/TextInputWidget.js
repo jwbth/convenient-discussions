@@ -1,5 +1,5 @@
 import { convertHtmlToWikitext } from './utils-api';
-import { tweakUserOoUiClass } from './utils-oojs';
+import { es6ClassToOoJsClass } from './utils-oojs';
 import { getElementFromPasteHtml, cleanUpPasteDom, isElementConvertibleToWikitext } from './utils-window';
 
 /**
@@ -95,6 +95,6 @@ class TextInputWidget extends OO.ui.TextInputWidget {
   }
 }
 
-tweakUserOoUiClass(TextInputWidget);
+es6ClassToOoJsClass(TextInputWidget);
 
 export default TextInputWidget;

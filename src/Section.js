@@ -133,6 +133,21 @@ class Section extends SectionSkeleton {
   subscriptionState;
 
   /**
+   * "Add subsection to <i>topic</i>" button at the end of the section (under the reply button of
+   * the last descendant section; shows up on hover of the reply button).
+   *
+   * @type {Button|undefined}
+   */
+  addSubsectionButtonLastDescendant;
+
+  /**
+   * Popup with the list of users who have posted in the section.
+   *
+   * @type {OO.ui.PopupWidget|undefined}
+   */
+  authorsPopup;
+
+  /**
    * Create a section object.
    *
    * @param {import('./Parser').default} parser
@@ -358,31 +373,24 @@ class Section extends SectionSkeleton {
     const button = this.canBeSubsectioned() ? this.createAddSubsectionButton() : undefined;
 
     const baseSection = this.getBase(true);
-
-    const lastDescendantButton =
-      this === baseSection?.getLastDescendant() && baseSection.canBeSubsectioned()
-        ? baseSection.createAddSubsectionButton(this)
-        : undefined;
+    if (baseSection) {
+      baseSection.addSubsectionButtonLastDescendant =
+        this === baseSection.getLastDescendant() && baseSection.canBeSubsectioned()
+          ? baseSection.createAddSubsectionButton(this)
+          : undefined;
+    }
 
     const container = document.createElement('div');
     container.className = 'cd-section-button-container cd-addSubsectionButtons-container';
     container.style.display = 'none';
-    container.append(...[button?.element, lastDescendantButton?.element].filter(defined));
+    container.append(
+      ...[button?.element, baseSection?.addSubsectionButtonLastDescendant?.element].filter(defined)
+    );
 
     /** @type {HTMLElement} */ (this.lastElementInFirstChunk.parentElement).insertBefore(
       container,
       this.lastElementInFirstChunk.nextElementSibling
     );
-
-    if (lastDescendantButton) {
-      /**
-       * "Add subsection to <i>topic</i>" button at the end of the section (under the reply button
-       * of the last descendant section; shows up on hover of the reply button).
-       *
-       * @type {Button|undefined}
-       */
-      baseSection.addSubsectionButtonLastDescendant = lastDescendantButton;
-    }
 
     /**
      * "Add subsection to <i>section</i>" button at the end of the first chunk of the section (shows
@@ -441,7 +449,7 @@ class Section extends SectionSkeleton {
    */
   resetShowAddSubsectionButtonTimeout() {
     clearTimeout(this.showAddSubsectionButtonTimeout);
-    this.showAddSubsectionButtonTimeout = null;
+    delete this.showAddSubsectionButtonTimeout;
   }
 
   /**
@@ -451,7 +459,7 @@ class Section extends SectionSkeleton {
    */
   resetHideAddSubsectionButtonTimeout() {
     clearTimeout(this.hideAddSubsectionButtonTimeout);
-    this.hideAddSubsectionButtonTimeout = null;
+    delete this.hideAddSubsectionButtonTimeout;
   }
 
   /**
@@ -463,7 +471,7 @@ class Section extends SectionSkeleton {
     if (this.hideAddSubsectionButtonTimeout) return;
 
     this.hideAddSubsectionButtonTimeout = setTimeout(() => {
-      this.$addSubsectionButtonsContainer.hide();
+      /** @type {JQuery} */ (this.$addSubsectionButtonsContainer).hide();
     }, 1000);
   }
 
@@ -478,7 +486,7 @@ class Section extends SectionSkeleton {
     if (this.showAddSubsectionButtonTimeout) return;
 
     this.showAddSubsectionButtonTimeout = setTimeout(() => {
-      this.$addSubsectionButtonsContainer.show();
+      /** @type {JQuery} */ (this.$addSubsectionButtonsContainer).show();
     }, 1000);
   }
 
@@ -653,19 +661,15 @@ class Section extends SectionSkeleton {
    */
   toggleAuthors() {
     if (!this.authorsPopup) {
-      /**
-       * Popup with the list of users who have posted in the section.
-       *
-       * @type {OO.ui.PopupWidget|undefined}
-       */
+      const $button = $(/** @type {Button} */ (this.authorCountButton).element);
       this.authorsPopup = new OO.ui.PopupWidget({
         $content: this.createAuthorsPopupContent(),
         head: false,
         padded: true,
         autoClose: true,
-        $autoCloseIgnore: $(this.authorCountButton.element),
+        $autoCloseIgnore: $button,
         position: 'above',
-        $floatableContainer: $(this.authorCountButton.element),
+        $floatableContainer: $button,
         classes: ['cd-popup-authors'],
       });
       $(controller.getPopupOverlay()).append(this.authorsPopup.$element);

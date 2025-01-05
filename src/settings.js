@@ -1,9 +1,3 @@
-/**
- * Singleton for settings-related methods and data.
- *
- * @module settings
- */
-
 import TextMasker from './TextMasker';
 import cd from './cd';
 import controller from './controller';
@@ -14,26 +8,81 @@ import { showConfirmDialog } from './utils-oojs';
 import { formatDateImproved, formatDateNative, formatDateRelative } from './utils-timestamp';
 import { createSvg, getFooter, wrapHtml } from './utils-window';
 
-export default {
+/**
+ * @typedef {object} SettingsValues
+ * @property {boolean} allowEditOthersComments
+ * @property {boolean} alwaysExpandAdvanced
+ * @property {'name'|'count'|'date'} authorsSort
+ * @property {import('./Autocomplete').AutocompleteType[]} autocompleteTypes
+ * @property {boolean} autopreview
+ * @property {boolean} collapseThreads
+ * @property {number} collapseThreadsLevel
+ * @property {boolean} countEditsAsNewComments
+ * @property {'all'|'toMe'|'none'|'unknown'} desktopNotifications
+ * @property {boolean} enableThreads
+ * @property {boolean} hideTimezone
+ * @property {number} highlightNewInterval
+ * @property {boolean} improvePerformance
+ * @property {number|null} improvePerformance-lastSuggested
+ * @property {string[]} insertButtons
+ * @property {boolean} insertButtons-altered
+ * @property {boolean} manyForms-onboarded
+ * @property {boolean} modifyToc
+ * @property {boolean} toggleChildThreads-onboarded
+ * @property {'all'|'toMe'|'none'} notifications
+ * @property {boolean} notifyCollapsedThreads
+ * @property {boolean} outdent
+ * @property {number} outdentLevel
+ * @property {boolean|null} reformatComments
+ * @property {boolean} showContribsLink
+ * @property {boolean} showToolbar
+ * @property {string} signaturePrefix
+ * @property {boolean} subscribeOnReply
+ * @property {import('./LiveTimestamp').TimestampFormat} timestampFormat
+ * @property {boolean} upload-onboarded
+ * @property {boolean} useBackgroundHighlighting
+ * @property {boolean} useTemplateData
+ * @property {boolean} useTopicSubscription
+ * @property {boolean} useUiTime
+ * @property {boolean} watchOnReply
+ * @property {'wikilink'|'link'|null} defaultCommentLinkType Undocumented setting.
+ * @property {'wikilink'|'link'|null} defaultSectionLinkType Undocumented setting.
+ * @property {boolean} showLoadingOverlay Undocumented setting.
+ */
+
+/**
+ * @typedef {keyof SettingsValues} SettingName
+ */
+
+/**
+ * Singleton for settings-related methods and data.
+ */
+class Settings {
   /**
-   * Settings scheme.
-   *
-   * @property {object} default Default value for each property.
-   * @property {string[]} local List of local setting names. Local settings are settings set for the
-   *   current wiki only.
-   * @property {object} undocumented Undocumented settings with their defaults. Undocumented
-   *   settings are settings not shown in the settings dialog and not saved to the server.
-   * @property {object} aliases List of aliases for each property for seamless transition when
-   *   changing a setting name.
+   * @typedef {object} Scheme
+   * @property {Partial<SettingsValues>} default Default value for each property.
+   * @property {SettingName[]} local List of local setting names. Local settings are settings set
+   *   for the current wiki only.
+   * @property {Partial<SettingsValues>} undocumented Undocumented settings with their defaults.
+   *   Undocumented settings are settings not shown in the settings dialog and not saved to the
+   *   server.
+   * @property {{ [name: string]: string[] }} aliases List of aliases for each property for seamless
+   *   transition when changing a setting name.
    * @property {string[]} states List of state setting names. States are values to be remembered, or
    *   settings to be removed if the time comes. It is, in fact, user data, despite that we don't
    *   have much of it.
-   * @property {object} resetsTo For settings that are resetted not to their default values, those
-   *   non-default values are specified here (used to determine whether the "Reset" button should be
-   *   enabled).
+   * @property {Partial<SettingsValues>} resetsTo For settings that are resetted not to their
+   *   default values, those non-default values are specified here (used to determine whether the
+   *   "Reset" button should be enabled).
    * @property {object[]} ui List of pages of the settings dialog, each with its control objects.
    */
-  scheme: {
+
+  /**
+   * Settings scheme.
+   *
+   * @type {Partial<Scheme>}
+   */
+  scheme = {
     local: ['insertButtons-altered', 'insertButtons', 'signaturePrefix'],
 
     undocumented: {
@@ -45,7 +94,7 @@ export default {
     aliases: {
       'insertButtons-altered': ['haveInsertButtonsBeenAltered'],
       'improvePerformance-lastSuggested': ['improvePerformanceLastSuggested'],
-      subscribeOnReply: ['watchSectionOnReply'],
+      'subscribeOnReply': ['watchSectionOnReply'],
     },
 
     states: [
@@ -53,7 +102,6 @@ export default {
       'insertButtons-altered',
       'improvePerformance-lastSuggested',
       'manyForms-onboarded',
-      'notificationsBlacklist',
       'toggleChildThreads-onboarded',
       'upload-onboarded',
     ],
@@ -61,7 +109,7 @@ export default {
     resetsTo: {
       reformatComments: false,
     },
-  },
+  }
 
   /**
    * Set the default settings to the settings scheme object.
@@ -95,7 +143,6 @@ export default {
       'toggleChildThreads-onboarded': false,
       'notifications': 'all',
       'notifyCollapsedThreads': false,
-      'notificationsBlacklist': [],
       'outdent': true,
       'outdentLevel': 15,
       'reformatComments': null,
@@ -114,7 +161,7 @@ export default {
       // alternative to keep track of discussions.
       'watchOnReply': !mw.loader.getState('ext.discussionTools.init'),
     };
-  },
+  }
 
   /**
    * _For internal use._ Initialize the configuration of the UI for the
@@ -122,8 +169,11 @@ export default {
    * because some content is date-dependent.
    */
   initUi() {
-    const outdentTemplateUrl = cd.config.outdentTemplates.length ?
-      pageRegistry.get(`Template:${cd.config.outdentTemplates[0]}`).getUrl() :
+    const outdentTemplateUrl =
+      (
+        cd.config.outdentTemplates.length &&
+        pageRegistry.get(`Template:${cd.config.outdentTemplates[0]}`)?.getUrl()
+      ) ||
       'https://en.wikipedia.org/wiki/Template:Outdent';
 
     const fortyThreeMinutesAgo = new Date(Date.now() - cd.g.msInMin * 43);
@@ -437,7 +487,7 @@ export default {
         ],
       },
     ];
-  },
+  }
 
   /**
    * _For internal use._ Initialize user settings, returning a promise, or return an existing one.
@@ -510,7 +560,7 @@ export default {
     })();
 
     return this.initPromise;
-  },
+  }
 
   /**
    * Request the settings from the server, or extract the settings from the existing options
@@ -553,7 +603,7 @@ export default {
       this.getSettingPropertiesOfObject(localSettings),
       omitLocal ? this.getLocalOverrides() : {},
     );
-  },
+  }
 
   /**
    * Get the properties of an object corresponding to settings with an optional prefix.
@@ -577,7 +627,7 @@ export default {
         });
       return target;
     }, {});
-  },
+  }
 
   /**
    * Get settings set in common.js that are meant to override native settings.
@@ -587,29 +637,53 @@ export default {
    */
   getLocalOverrides() {
     return this.getSettingPropertiesOfObject(window, 'cdLocal');
-  },
+  }
+
+  /**
+   * @overload
+   * @param {string} name
+   * @param {any} value
+   *
+   * @overload
+   * @param {object} values
+   * @returns {void}
+   */
 
   /**
    * Change the value of a setting or a set of settings at once without saving to the server.
    *
    * @param {string|object} name
-   * @param {string} value
+   * @param {string} [value]
    * @private
    */
   set(name, value) {
     this.values ||= {};
     Object.assign(this.values, typeof name === 'string' ? { [name]: value } : name);
-  },
+  }
+
+  /**
+   * @overload
+   * @returns {SettingsValues} An object containing all settings.
+   *
+   * @overload
+   * @param {Name} name The name of the setting.
+   * @returns {SettingsValues[Name]} The value of the setting.
+   *
+   * @overload
+   * @param {string} name The name of the setting.
+   * @returns {undefined} If the setting is not found.
+   */
 
   /**
    * Get the value of a setting without loading from the server.
    *
-   * @param {string} name
-   * @returns {*}
+   * @template {SettingName} Name
+   * @param {Name} [name]
+   * @returns {SettingsValues[Name]|SettingsValues|undefined}
    */
   get(name) {
     return name ? this.values[name] ?? null : this.values;
-  },
+  }
 
   /**
    * Save the settings to the server. This function will split the settings into the global and
@@ -638,7 +712,7 @@ export default {
     } else {
       await saveLocalOption(cd.g.localSettingsOptionName, JSON.stringify(settings));
     }
-  },
+  }
 
   /**
    * Update a setting value, saving it to the server and changing it for the current session as
@@ -653,7 +727,7 @@ export default {
     const settings = await this.load();
     settings[key] = value;
     return this.save(settings);
-  },
+  }
 
   /**
    * Show a settings dialog.
@@ -669,7 +743,7 @@ export default {
     controller.getWindowManager('settings').openWindow(dialog);
 
     cd.tests.settingsDialog = dialog;
-  },
+  }
 
   /**
    * Show a popup asking the user if they want to enable the new comment formatting. Save the
@@ -749,7 +823,7 @@ export default {
       mw.notify(cd.s('error-settings-save'), { type: 'error' });
       console.warn(e);
     }
-  },
+  }
 
   /**
    * Show a popup asking the user if they want to receive desktop notifications, or ask for a
@@ -815,7 +889,7 @@ export default {
       await OO.ui.alert(cd.s('dn-grantpermission-again'), { title: cd.s('script-name') });
       Notification.requestPermission();
     }
-  },
+  }
 
   /**
    * Add a settings link to the page footer.
@@ -830,5 +904,7 @@ export default {
           })
       )
     );
-  },
-};
+  }
+}
+
+export default new Settings();

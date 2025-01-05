@@ -31,9 +31,22 @@ import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
  * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Title
  */
 
+/**
+ * @typedef {object} ApiResponseEdit
+ * @property {object} edit
+ * @property {string} edit.result
+ * @property {number} edit.pageid
+ * @property {string} edit.title
+ * @property {string} edit.contentmodel
+ * @property {number} [edit.oldrevid]
+ * @property {number} [edit.newrevid]
+ * @property {string} [edit.newtimestamp]
+ * @property {boolean} [edit.nochange]
+ * @property {object} [edit.captcha]
+ */
+
 // Export for the sake of VS Code IntelliSense. FIXME: make the class of the current page extend the
 // page's class? The current page has more methods effectively.
-
 /**
  * Class representing a wiki page (a page for which the
  * {@link https://www.mediawiki.org/wiki/Manual:Interface/JavaScript#All_pages_(user/page-specific) wgIsArticle}
@@ -427,7 +440,7 @@ export class Page {
    * @throws {CdError}
    */
   async loadCode(_, tolerateMissing = true) {
-    const { query, curtimestamp: queryTimestamp } = await controller.getApi().post({
+    const request = controller.getApi().post({
       action: 'query',
       titles: this.name,
       prop: 'revisions',
@@ -436,6 +449,8 @@ export class Page {
       redirects: !(this.isCurrent() && mw.config.get('wgIsRedirect')),
       curtimestamp: true,
     }).catch(handleApiReject);
+    const { query, curtimestamp: queryTimestamp } =
+      /** @type {import('./utils-api').ApiResponseQuery} */ (await request);
 
     const page = query?.pages?.[0];
     const revision = page?.revisions?.[0];
@@ -487,7 +502,7 @@ export class Page {
     this.revisionId =  revision.revid;
     this.redirectTarget = redirectTarget;
     this.realName =  redirectTarget || this.name;
-    this.queryTimestamp = queryTimestamp;
+    this.queryTimestamp = /** @type {string} */ (queryTimestamp);
 
     return this.code;
   }
@@ -524,9 +539,9 @@ export class Page {
     }
 
     const request = inBackground ?
-      requestInBackground(options) :
-      controller.getApi().post(options);
-    const { parse } = await request.catch(handleApiReject);
+      requestInBackground(options).catch(handleApiReject) :
+      controller.getApi().post(options).catch(handleApiReject);
+    const { parse } = /** @type {import('./utils-api').ApiResponseParse} */ (await request);
     if (parse?.text === undefined) {
       throw new CdError({
         type: 'api',
@@ -559,10 +574,10 @@ export class Page {
     }, customOptions);
 
     const request = inBackground ?
-      requestInBackground(options) :
-      controller.getApi().post(options);
-    const resp = await request.catch(handleApiReject);
-    const revisions = resp.query?.pages?.[0]?.revisions;
+      requestInBackground(options).catch(handleApiReject) :
+      controller.getApi().post(options).catch(handleApiReject);
+    const response = /** @type {import('./utils-api').ApiResponseQuery} */ (await request);
+    const revisions = response.query?.pages?.[0]?.revisions;
     if (!revisions) {
       throw new CdError({
         type: 'api',
@@ -599,19 +614,20 @@ export class Page {
       ...customOptions,
     });
 
-    let resp;
+    let response;
     try {
-      resp = await controller.getApi().postWithEditToken(options, {
+      const request = controller.getApi().postWithEditToken(options, {
         // Beneficial when sending long unicode texts, which is what we do here.
         contentType: 'multipart/form-data',
       }).catch(handleApiReject);
-    } catch (e) {
-      if (e instanceof CdError) {
-        const { type, apiResp } = e.data;
+      response = /** @type {ApiResponseEdit} */ (await request);
+    } catch (error) {
+      if (error instanceof CdError) {
+        const { type, apiResponse } = error.data;
         if (type === 'network') {
-          throw e;
+          throw error;
         } else {
-          const error = apiResp?.errors[0];
+          const error = apiResponse?.errors[0];
           let message;
           let isRawMessage = false;
           let logMessage;
@@ -635,38 +651,38 @@ export class Page {
               }
             }
 
-            logMessage = [code, apiResp];
+            logMessage = [code, apiResponse];
           } else {
-            logMessage = apiResp;
+            logMessage = apiResponse;
           }
 
           throw new CdError({
             type: 'api',
             code: 'error',
-            apiResp: resp,
+            apiResponse: response,
             details: { code, message, isRawMessage, logMessage },
           });
         }
       } else {
-        throw e;
+        throw error;
       }
     }
 
-    if (resp.edit.result !== 'Success') {
-      const code = resp.edit.captcha ? 'captcha' : undefined;
+    if (response.edit.result !== 'Success') {
+      const code = response.edit.captcha ? 'captcha' : undefined;
       throw new CdError({
         type: 'api',
         code: 'error',
-        apiResp: resp,
+        apiResponse: response,
         details: {
           code,
           isRawMessage: true,
-          logMessage: [code, resp],
+          logMessage: [code, response],
         },
       })
     }
 
-    return resp.edit.newtimestamp || 'nochange';
+    return response.edit.newtimestamp || 'nochange';
   }
 
   /**
@@ -807,8 +823,9 @@ export class Page {
    * @param {import('./CommentForm').default} commentForm
    */
   addCommentFormToPage(mode, commentForm) {
-    if (commentForm.isNewTopicOnTop() && sectionRegistry.getByIndex(0)) {
-      sectionRegistry.getByIndex(0).$heading.before(commentForm.$element);
+    const firstSection = sectionRegistry.getByIndex(0);
+    if (firstSection && commentForm.isNewTopicOnTop()) {
+      firstSection.$heading.before(commentForm.$element);
     } else {
       controller.$root.after(commentForm.$element);
     }
@@ -899,13 +916,16 @@ export class Page {
    * @returns {Promise.<string>}
    */
   async compareRevisions(revisionIdFrom, revisionIdTo) {
-    return (await controller.getApi().post({
+    const request = controller.getApi().post({
       action: 'compare',
       fromtitle: this.name,
       fromrev: revisionIdFrom,
       torev: revisionIdTo,
       prop: ['diff'],
-    }).catch(handleApiReject))?.compare?.body;
+    }).catch(handleApiReject);
+    const response = /** @type {import('./utils-api').APIResponseCompare} */ (await request);
+
+    return response?.compare?.body;
   }
 
   /**
@@ -917,11 +937,12 @@ export class Page {
   async getFirstTemplateTransclusion(pages) {
     let data;
     try {
-      data = await controller.getApi().post({
+      const request = controller.getApi().post({
         action: 'parse',
         prop: 'parsetree',
         page: this.name,
       }).catch(handleApiReject);
+      data = /** @type {import('./utils-api').ApiResponseParse} */ (await request);
     } catch (error) {
       if (
         error instanceof CdError &&

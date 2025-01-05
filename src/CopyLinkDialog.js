@@ -1,7 +1,7 @@
 import CdError from './CdError';
 import DivLabelWidget from './DivLabelWidget';
 import cd from './cd';
-import { createCopyTextField, tweakUserOoUiClass } from './utils-oojs';
+import { createCopyTextField, es6ClassToOoJsClass } from './utils-oojs';
 import { mergeJquery, wrapHtml } from './utils-window';
 
 /**
@@ -359,6 +359,6 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   }
 }
 
-tweakUserOoUiClass(CopyLinkDialog);
+es6ClassToOoJsClass(CopyLinkDialog);
 
 export default CopyLinkDialog;

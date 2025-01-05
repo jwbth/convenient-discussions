@@ -421,41 +421,39 @@ export function createCopyTextField({ label, value, disabled = false, help, copy
 }
 
 /**
- * Add some properties to the inheritor class that the (ES5)
- * {@link https://www.mediawiki.org/wiki/OOjs/Inheritance OOUI inheritance mechanism} uses. It
- * partly replicates the operations made in
- * {@link https://doc.wikimedia.org/oojs/master/OO.html#.inheritClass OO.inheritClass}.
- *
- * @param {Function} targetClass Inheritor class.
- * @returns {Function}
+ * @typedef {object} OoJsClassSpecificProps
+ * @property {OO.ConstructorLike} [parent] The parent constructor.
+ * @property {OO.ConstructorLike} [super] The super constructor.
+ * @property {object} static An object containing static properties.
  */
-export function tweakUserOoUiClass(targetClass) {
-  const originClass = Object.getPrototypeOf(targetClass);
-  OO.initClass(originClass);
-  targetClass.static = Object.create(originClass.static);
-  Object.keys(targetClass)
-    .filter((key) => key !== 'static')
-    .forEach((key) => {
-      targetClass.static[key] = targetClass[key];
-    });
-  targetClass.parent = targetClass.super = originClass;
-  return targetClass;
-}
 
 /**
- * Mix in a user class into a target OOUI class.
- *
- * @param {Function} targetClass
- * @param {Function} originClass
+ * @typedef {Constructor & OoJsClassSpecificProps} OoJsClassLike
  */
-export function mixinUserOoUiClass(targetClass, originClass) {
-  OO.mixinClass(targetClass, originClass);
 
-  Object.getOwnPropertyNames(originClass.prototype)
-    .filter((key) => key !== 'constructor')
+/**
+ * Make a class conform to the structure used by OOjs' ES5-based classes, with its
+ * {@link https://www.mediawiki.org/wiki/OOjs/Inheritance inheritance mechanism} and peculiar way to
+ * store static properties. It partly replicates the operations made in
+ * {@link https://doc.wikimedia.org/oojs/master/OO.html#.inheritClass OO.inheritClass}.
+ *
+ * @template {OoJsClassLike} T
+ * @param {T} TargetClass
+ * @returns {T}
+ */
+export function es6ClassToOoJsClass(TargetClass) {
+  const OriginClass = Object.getPrototypeOf(TargetClass);
+  TargetClass.parent = TargetClass.super = OriginClass;
+
+  OO.initClass(OriginClass);
+  TargetClass.static = Object.create(OriginClass.static);
+  Object.keys(TargetClass)
+    .filter((key) => !['parent', 'super', 'static'].includes(key))
     .forEach((key) => {
-      targetClass.prototype[key] = originClass.prototype[key];
+      TargetClass.static[key] = TargetClass[key];
     });
+
+  return TargetClass;
 }
 
 /**
@@ -471,4 +469,48 @@ export function mixEventEmitterInObject(obj) {
   OO.mixinClass(dummy, OO.EventEmitter);
   Object.assign(obj, dummy.prototype);
   OO.EventEmitter.call(obj);
+}
+
+/**
+ * Mix in a class into a target class.
+ *
+ * @template {Constructor} TBase
+ * @template {Constructor} TMixin
+ * @param {TBase} Base
+ * @param {TMixin} Mixin
+ * @returns {TBase & MixinType}
+ */
+export function mixInClass(Base, Mixin) {
+  /**
+   * @typedef {{
+   *   new (...args: any[]): InstanceType<TMixin>;
+   *   prototype: InstanceType<TMixin>;
+   * }} MixinType
+   */
+
+  // eslint-disable-next-line jsdoc/require-jsdoc
+  class Class extends Base {}
+  OO.mixinClass(Class, Mixin);
+
+  return /** @type {TBase & MixinType} */ (Class);
+}
+
+/**
+ * Add a mixin's (e.g. {@link OO.EventEmitter OO.EventEmitter}) methods to an arbitrary object
+ * itself (the static side), not its prototype.
+ *
+ * @template {{}} TBase
+ * @template {Constructor} TMixin
+ * @param {TBase} obj
+ * @param {TMixin} Mixin
+ * @returns {TBase & InstanceType<Mixin>}
+ */
+export function mixInObject(obj, Mixin) {
+  const dummy = () => {};
+  dummy.prototype = /** @type {InstanceType<Mixin>} */ ({});
+  OO.mixinClass(dummy, Mixin);
+  Object.assign(obj, {});
+  Mixin.call(obj);
+
+  return /** @type {TBase & InstanceType<Mixin>} */ (obj);
 }

@@ -2416,13 +2416,13 @@ class CommentForm extends OO.EventEmitter {
    *   * `'network'` for network errors defined in the script,
    *   * `'javascript'` for JavaScript errors,
    *   * `'ui'` for UI errors.
-   * @param {string} [options.code] Code of the error. (Either `code`, `apiResp`, or `message`
+   * @param {string} [options.code] Code of the error. (Either `code`, `apiResponse`, or `message`
    *   should be specified.)
    * @param {object} [options.details] Additional details about the error.
-   * @param {object} [options.apiResp] Data object received from the MediaWiki server. (Either
-   *   `code`, `apiResp`, or `message` should be specified.)
-   * @param {string} [options.message] Text of the error. (Either `code`, `apiResp`, or `message`
-   *   should be specified.)
+   * @param {object} [options.apiResponse] Data object received from the MediaWiki server. (Either
+   *   `code`, `apiResponse`, or `message` should be specified.)
+   * @param {string} [options.message] Text of the error. (Either `code`, `apiResponse`, or
+   *   `message` should be specified.)
    * @param {'error'|'notice'|'warning'} [options.messageType='error'] Message type if not
    *   `'error'`.
    * @param {any} [options.logMessage] Data or text to display in the browser console.
@@ -2435,7 +2435,7 @@ class CommentForm extends OO.EventEmitter {
     type,
     code,
     details,
-    apiResp,
+    apiResponse,
     message,
     messageType = 'error',
     logMessage,
@@ -2492,7 +2492,7 @@ class CommentForm extends OO.EventEmitter {
           }
 
           case 'error': {
-            const error = apiResp.errors[0];
+            const error = apiResponse.errors[0];
             switch (error.code) {
               case 'missingtitle':
                 message = cd.sParse('cf-error-pagedoesntexist');
@@ -2504,7 +2504,7 @@ class CommentForm extends OO.EventEmitter {
           }
         }
 
-        logMessage ||= [code, apiResp];
+        logMessage ||= [code, apiResponse];
         break;
       }
 
@@ -3128,7 +3128,7 @@ class CommentForm extends OO.EventEmitter {
       delete this.captchaInput;
 
       if (error instanceof CdError) {
-        const { type, details, apiResp } = error.data;
+        const { type, details, apiResponse } = error.data;
         if (type === 'network') {
           this.handleError({
             type,
@@ -3142,7 +3142,7 @@ class CommentForm extends OO.EventEmitter {
             message += ' ' + cd.sParse('cf-notice-editconflict-retrying');
             messageType = 'notice';
           } else if (code === 'captcha' && mw.libs.confirmEdit) {
-            this.captchaInput = new mw.libs.confirmEdit.CaptchaInputWidget(apiResp.edit.captcha);
+            this.captchaInput = new mw.libs.confirmEdit.CaptchaInputWidget(apiResponse.edit.captcha);
             this.captchaInput.on('enter', () => {
               this.submit();
             });
@@ -3153,8 +3153,8 @@ class CommentForm extends OO.EventEmitter {
             message = captchaMessage.$element;
           }
 
-          // FIXME: We don't pass apiResp to prevent the message for `missingtitle` to be overriden,
-          // which is hacky.
+          // FIXME: We don't pass apiResponse to prevent the message for `missingtitle` to be
+          // overriden, which is hacky.
           this.handleError({
             type,
             message,

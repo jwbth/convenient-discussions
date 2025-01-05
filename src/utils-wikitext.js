@@ -169,17 +169,13 @@ export function encodeWikilink(link) {
  */
 
 /**
- * @typedef {(
- *   Expand<
- *     MakeRequired<
- *       Pick<
- *         SignatureInWikitext,
- *         'author' | 'timestamp' | 'startIndex' | 'endIndex' | 'dirtyCode' | 'nextCommentStartIndex'
- *       >,
- *       'nextCommentStartIndex'
- *     >
- *   >
- * )} SignatureInWikitextTemp
+ * @typedef {object} SignatureInWikitextTemp
+ * @property {import("./userRegistry").User} [author]
+ * @property {string} [timestamp]
+ * @property {number} startIndex
+ * @property {number} endIndex
+ * @property {string} dirtyCode
+ * @property {number} nextCommentStartIndex
  */
 
 /**
@@ -416,10 +412,17 @@ function extractUnsigneds(adjustedCode, code, signatures) {
     if (timestamp && !cd.g.contentTimestampRegexp.test(timestamp)) {
       timestamp += ' (UTC)';
 
-      // Workaround for "undated" templates
+      // Workaround for "undated" templates. I think (need to recheck) in most cases that signature
+      // would qualify as a regular signature, not an unsigned one, just with the timestamp in a
+      // template. But when there is no author, we need to fill the author field.
       authorString ||= '<undated>';
     }
 
+    // A situation is also possible when we couldn't parse neither the author nor the timestamp. (If
+    // we could parse the timestamp, the author becomes `<undated>`). Let's assume that the template
+    // still contains a signature and is not a "stray" template and still include it (we'll filter
+    // out authorless signatures later anyway, but we need them now to figure out where comments
+    // start).
     const author = authorString ? userRegistry.get(decodeHtmlEntities(authorString)) : undefined;
 
     // Double spaces
@@ -516,6 +519,6 @@ export function extractArabicNumeral(s, digits = '0123456789') {
   return Number(
     s
       .replace(notDigitsRegExp, '')
-      .replace(digitsRegExp, (s) => digits.indexOf(s))
+      .replace(digitsRegExp, (s) => String(digits.indexOf(s)))
   );
 }

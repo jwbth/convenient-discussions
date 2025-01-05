@@ -4,7 +4,7 @@ import PseudoLink from './Pseudolink';
 import cd from './cd';
 import controller from './controller';
 import { canonicalUrlToPageName, defined, generateFixedPosTimestamp, getDbnameForHostname, zeroPad } from './utils-general';
-import { createCheckboxField, createRadioField, createTextField, mixinUserOoUiClass, tweakUserOoUiClass } from './utils-oojs';
+import { createCheckboxField, createRadioField, createTextField, mixInClass, es6ClassToOoJsClass } from './utils-oojs';
 import { mergeJquery, wrapHtml } from './utils-window';
 
 /**
@@ -39,32 +39,10 @@ function ProcessDialogMixin(Base) {
 }
 
 /**
- * @template {Constructor} TBase
- * @template {Constructor} TMixin
- * @param {TBase} Base
- * @param {TMixin} Mixin
- * @returns {TBase & MixinType}
- */
-function mixinClass(Base, Mixin) {
-  /**
-   * @typedef {{
-   *   new (...args: any[]): InstanceType<TMixin>;
-   *   prototype: InstanceType<TMixin>;
-   * }} MixinType
-   */
-
-  // eslint-disable-next-line jsdoc/require-jsdoc
-  class Class extends Base {}
-  OO.mixinClass(Class, Mixin);
-
-  return /** @type {TBase & MixinType} */ (Class);
-}
-
-/**
  * Class that extends {@link mw.Upload.Dialog} and adds some logic we need. Uses
  * {@link ForeignStructuredUploadBookletLayout}, which in turn uses {@link ForeignStructuredUpload}.
  */
-export class UploadDialog extends mixinClass(mw.Upload.Dialog, ProcessDialog) {
+export class UploadDialog extends mixInClass(mw.Upload.Dialog, ProcessDialog) {
   /**
    * Create an upload dialog.
    *
@@ -991,9 +969,8 @@ class ForeignStructuredUpload extends mw.ForeignStructuredUpload {
   }
 }
 
-tweakUserOoUiClass(UploadDialog);
-tweakUserOoUiClass(ForeignStructuredUploadBookletLayout)
-tweakUserOoUiClass(ForeignStructuredUpload);
-mixinUserOoUiClass(UploadDialog, ProcessDialog);
+es6ClassToOoJsClass(UploadDialog);
+es6ClassToOoJsClass(ForeignStructuredUploadBookletLayout)
+es6ClassToOoJsClass(ForeignStructuredUpload);
 
 export default UploadDialog;
