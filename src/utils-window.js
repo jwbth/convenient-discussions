@@ -253,15 +253,31 @@ export function getHigherNodeAndOffsetInSelection(selection) {
 }
 
 /**
+ * @typedef {object} SuccessAndFailMessages
+ * @property {string|JQuery} messages.success Success message.
+ * @property {string|JQuery} messages.fail Fail message.
+ */
+
+/**
+ * @overload
+ * @param {string} text Text to copy.
+ * @param {SuccessAndFailMessages} messages
+ * @returns {void}
+ *
+ * @overload
+ * @param {string} text Text to copy.
+ * @returns {boolean}
+ */
+
+/**
  * Copy text and notify whether the operation was successful.
  *
  * @param {string} text Text to copy.
- * @param {object} messages
- * @param {string|JQuery} messages.success Success message.
- * @param {string|JQuery} messages.fail Fail message.
+ * @param {SuccessAndFailMessages} [messages]
+ * @returns {boolean|undefined}
  * @private
  */
-export function copyText(text, { success, fail }) {
+export function copyText(text, messages) {
   const $textarea = $('<textarea>')
     .val(text)
     .appendTo(document.body)
@@ -269,10 +285,14 @@ export function copyText(text, { success, fail }) {
   const successful = document.execCommand('copy');
   $textarea.remove();
 
-  if (text && successful) {
-    mw.notify(success);
+  if (messages) {
+    if (text && successful) {
+      mw.notify(messages.success);
+    } else {
+      mw.notify(messages.fail, { type: 'error' });
+    }
   } else {
-    mw.notify(fail, { type: 'error' });
+    return successful;
   }
 }
 

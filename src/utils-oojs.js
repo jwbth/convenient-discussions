@@ -431,7 +431,7 @@ export function createCopyTextField({ label, value, disabled = false, help, copy
       disabled,
     });
     button.on('click', () => {
-      copyCallback(input.getValue());
+      copyCallback(copyText(input.getValue()), /** @type {OO.ui.TextInputWidget} */ field);
     });
     field = new OO.ui.ActionFieldLayout(input, button, {
       align: 'top',
