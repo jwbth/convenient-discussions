@@ -241,12 +241,15 @@ export class UploadDialog extends mixInClass(mw.Upload.Dialog, ProcessDialog) {
  */
 class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.BookletLayout {
   /**
-   * @type {{
-   *   [key: string]: {
-   *     field: OO.ui.FieldLayout;
-   *     [controlType: string]: any;
-   *   };
-   * }}
+   * See https://github.com/microsoft/TypeScript/issues/3841#issuecomment-337560146.
+   *
+   * @type {typeof ForeignStructuredUploadBookletLayout}
+   * @readonly
+   */
+  ['constructor'];
+
+  /**
+   * @type {ControlsByName}
    */
   controls;
 

@@ -27,7 +27,7 @@ class LegacySubscriptions extends Subscriptions {
    *
    * @param {import('./BootProcess').default} [bootProcess]
    * @param {boolean} [reuse=false] Reuse the existing request.
-   * @returns {Promise.<undefined>}
+   * @returns {Promise.<void>}
    */
   async load(bootProcess, reuse = false) {
     if (!cd.user.isRegistered()) return;

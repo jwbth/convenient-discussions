@@ -3,7 +3,7 @@ import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
 import { getUserInfo, saveGlobalOption, saveLocalOption } from './utils-api';
-import { areObjectsEqual, defined, definedAndNotNull, ucFirst } from './utils-general';
+import { areObjectsEqual, defined, definedAndNotNull, typedKeysOf, ucFirst } from './utils-general';
 import { showConfirmDialog } from './utils-oojs';
 import { formatDateImproved, formatDateNative, formatDateRelative } from './utils-timestamp';
 import { createSvg, getFooter, wrapHtml } from './utils-window';
@@ -24,7 +24,7 @@ import { createSvg, getFooter, wrapHtml } from './utils-window';
  * @property {number} highlightNewInterval
  * @property {boolean} improvePerformance
  * @property {number|null} improvePerformance-lastSuggested
- * @property {string[]} insertButtons
+ * @property {Array.<string|[string, string]>} insertButtons
  * @property {boolean} insertButtons-altered
  * @property {boolean} manyForms-onboarded
  * @property {boolean} modifyToc
@@ -55,34 +55,72 @@ import { createSvg, getFooter, wrapHtml } from './utils-window';
  */
 
 /**
+ * @typedef {{ name: SettingName } & (
+ *   | Omit<import('./utils-oojs').TextFieldType, 'value'>
+ *   | Omit<import('./utils-oojs').NumberFieldType, 'value'>
+ *   | Omit<import('./utils-oojs').CheckboxFieldType, 'value' | 'selected'>
+ *   | Omit<import('./utils-oojs').RadioFieldType, 'selected'>
+ *   | Omit<import('./utils-oojs').MultilineTextFieldType, 'value'>
+ *   | Omit<import('./utils-oojs').TagMultiselectFieldType, 'selected'>
+ * )} UiControl
+ */
+
+/**
+ * @typedef {object} UiPage
+ * @property {string} name
+ * @property {string} label
+ * @property {UiControl[]} controls
+ */
+
+/**
  * Singleton for settings-related methods and data.
  */
 class Settings {
   /**
+   * @type {SettingsValues}
+   * @private
+   */
+  values = /** @type {SettingsValues} */ ({});
+
+  /**
+   * @type {Promise<void>}
+   * @private
+   */
+  initPromise;
+
+  /**
+   * @typedef {'defaultCommentLinkType'|'defaultSectionLinkType'|'showLoadingOverlay'} UndocumentedSettingName
+   */
+
+  /**
+   * @typedef {Omit<SettingsValues, UndocumentedSettingName>} DocumentedSettingsValues
+   */
+
+  /**
    * @typedef {object} Scheme
-   * @property {Partial<SettingsValues>} default Default value for each property.
+   * @property {DocumentedSettingsValues} default Default value for each property.
    * @property {SettingName[]} local List of local setting names. Local settings are settings set
    *   for the current wiki only.
-   * @property {Partial<SettingsValues>} undocumented Undocumented settings with their defaults.
-   *   Undocumented settings are settings not shown in the settings dialog and not saved to the
-   *   server.
-   * @property {{ [name: string]: string[] }} aliases List of aliases for each property for seamless
-   *   transition when changing a setting name.
-   * @property {string[]} states List of state setting names. States are values to be remembered, or
-   *   settings to be removed if the time comes. It is, in fact, user data, despite that we don't
-   *   have much of it.
+   * @property {Pick<SettingsValues, UndocumentedSettingName>} undocumented Undocumented settings
+   *   with their defaults. Undocumented settings are settings not shown in the settings dialog and
+   *   not saved to the server.
+   * @property {{ [name in keyof Partial<SettingsValues>]: string[] }} aliases List of aliases for
+   *   each property for seamless transition when changing a setting name.
+   * @property {SettingName[]} states List of state setting names. States are values to be
+   *   remembered, or settings to be removed if the time comes. It is, in fact, user data, despite
+   *   that we don't have much of it.
    * @property {Partial<SettingsValues>} resetsTo For settings that are resetted not to their
    *   default values, those non-default values are specified here (used to determine whether the
    *   "Reset" button should be enabled).
-   * @property {object[]} ui List of pages of the settings dialog, each with its control objects.
+   * @property {UiPage[]} ui List of pages of the settings dialog, each with its control objects.
    */
 
   /**
    * Settings scheme.
    *
-   * @type {Partial<Scheme>}
+   * @type {Scheme}
    */
-  scheme = {
+  scheme = ({
     local: ['insertButtons-altered', 'insertButtons', 'signaturePrefix'],
 
     undocumented: {
@@ -109,7 +147,10 @@ class Settings {
     resetsTo: {
       reformatComments: false,
     },
-  }
+
+    default: /** @type {DocumentedSettingsValues} */ ({}),
+    ui: [],
+  });
 
   /**
    * Set the default settings to the settings scheme object.
@@ -337,7 +378,7 @@ class Settings {
           },
           {
             name: 'insertButtons',
-            type: 'multitag',
+            type: 'tags',
             placeholder: cd.s('sd-insertbuttons-multiselect-placeholder'),
             tagLimit: 100,
             label: cd.s('sd-insertbuttons'),
@@ -492,7 +533,7 @@ class Settings {
   /**
    * _For internal use._ Initialize user settings, returning a promise, or return an existing one.
    *
-   * @returns {Promise.<undefined>}
+   * @returns {Promise.<void>}
    */
   init() {
     this.initPromise ||= (async () => {
@@ -657,14 +698,11 @@ class Settings {
    * @private
    */
   set(name, value) {
-    this.values ||= {};
     Object.assign(this.values, typeof name === 'string' ? { [name]: value } : name);
   }
 
   /**
-   * @overload
-   * @returns {SettingsValues} An object containing all settings.
-   *
+   * @template {SettingName} Name
    * @overload
    * @param {Name} name The name of the setting.
    * @returns {SettingsValues[Name]} The value of the setting.
@@ -672,24 +710,26 @@ class Settings {
    * @overload
    * @param {string} name The name of the setting.
    * @returns {undefined} If the setting is not found.
+   *
+   * @overload
+   * @returns {SettingsValues} An object containing all settings.
    */
 
   /**
    * Get the value of a setting without loading from the server.
    *
-   * @template {SettingName} Name
-   * @param {Name} [name]
-   * @returns {SettingsValues[Name]|SettingsValues|undefined}
+   * @param {string} [name]
+   * @returns {SettingsValues[SettingName]|undefined|SettingsValues}
    */
   get(name) {
-    return name ? this.values[name] ?? null : this.values;
+    return name ? ((name in this.values) ? this.values[name] : undefined) : this.values;
   }
 
   /**
    * Save the settings to the server. This function will split the settings into the global and
    * local ones and make two respective requests.
    *
-   * @param {object} [settings=this.values] Settings to save.
+   * @param {DocumentedSettingsValues} [settings=this.values] Settings to save.
    */
   async save(settings = this.values) {
     if (!cd.user.isRegistered()) return;
@@ -697,7 +737,7 @@ class Settings {
     if (cd.config.useGlobalPreferences) {
       const globalSettings = {};
       const localSettings = {};
-      Object.keys(settings).forEach((key) => {
+      typedKeysOf(settings).forEach((key) => {
         if (this.scheme.local.includes(key)) {
           localSettings[key] = settings[key];
         } else {
@@ -720,13 +760,14 @@ class Settings {
    *
    * @param {string} key The key of the settings to save.
    * @param {*} value The value to set.
-   * @returns {Promise.<undefined>}
+   * @returns {Promise.<void>}
    */
   async saveSettingOnTheFly(key, value) {
     this.set(key, value);
     const settings = await this.load();
     settings[key] = value;
-    return this.save(settings);
+
+    this.save(settings);
   }
 
   /**
@@ -815,14 +856,14 @@ class Settings {
       return false;
     }
 
+    const accepted = action === 'accept';
     try {
-      const reformatComments = action === 'accept';
-      await this.saveSettingOnTheFly('reformatComments', reformatComments);
-      return reformatComments;
+      await this.saveSettingOnTheFly('reformatComments', accepted);
     } catch (e) {
       mw.notify(cd.s('error-settings-save'), { type: 'error' });
       console.warn(e);
     }
+    return accepted;
   }
 
   /**

@@ -6,6 +6,7 @@
 
 import cd from './cd';
 import controller from './controller';
+import { copyText } from './utils-window';
 
 /**
  * OOjs namespace.
@@ -158,45 +159,97 @@ import controller from './controller';
  * and also a window close by pressing Esc).
  *
  * @param {JQuery|string} message
- * @param {object} [options={}]
+ * @param {{ [key: string]: any }} [options={}]
  * @returns {Promise.<'accept' | 'reject' | undefined>} `undefined` is possible when pressing Esc, I
  *   think.
  */
 export async function showConfirmDialog(message, options = {}) {
   const dialog = new OO.ui.MessageDialog({ classes: ['cd-dialog-confirm'] });
   controller.getWindowManager().addWindows([dialog]);
-  const win = controller.getWindowManager().openWindow(
-    dialog,
-    Object.assign(
-      // Default options
-      {
-        message,
-
-        // OO.ui.MessageDialog standard
-        actions: [
-          {
-            action: 'accept',
-            label: OO.ui.deferMsg('ooui-dialog-message-accept'),
-            flags: 'primary',
-          },
-          {
-            action: 'reject',
-            label: OO.ui.deferMsg('ooui-dialog-message-reject'),
-            flags: 'safe',
-          },
-        ],
-      },
-      options
-    )
-  );
+  const win = controller.getWindowManager().openWindow(dialog, { message, ...options });
   win.opened.then(() => {
     if (message instanceof $) {
       mw.hook('wikipage.content').fire(message);
     }
   });
+  const closeData = await win.closed;
 
-  return (await win.closed)?.action;
+  return closeData?.action;
 }
+
+/**
+ * @typedef {object} CommonWidgetConfigProps
+ * @property {string|JQuery} [label]
+ * @property {string|JQuery} [help]
+ * @property {string[]} [classes]
+ * @property {boolean} [required]
+ * @property {boolean} [disabled]
+ */
+
+/**
+ * @typedef {CommonWidgetConfigProps & {
+ *   type: 'text';
+ *   value: string;
+ *   maxLength: number;
+ * }} TextFieldType
+ */
+
+/**
+ * @typedef {CommonWidgetConfigProps & {
+ *   type: 'number';
+ *   value: string;
+ *   min: number;
+ *   max: number;
+ *   buttonStep?: number;
+ * }} NumberFieldType
+ */
+
+/**
+ * @typedef {CommonWidgetConfigProps & {
+ *   type: 'checkbox';
+ *   value: string;
+ *   selected: boolean;
+ *   title?: string;
+ *   tabIndex?: number;
+ * }} CheckboxFieldType
+ */
+
+/**
+ * @typedef {CommonWidgetConfigProps & {
+ *   type: 'radio';
+ *   selected?: string;
+ *   options: Array<{
+ *     data: any;
+ *     label: string
+ *   }>;
+ * }} RadioFieldType
+ */
+
+/**
+ * @typedef {CommonWidgetConfigProps & {
+ *   type: 'multiline';
+ *   value: string;
+ *   maxLength: number;
+ *   rows?: number;
+ * }} MultilineTextFieldType
+ */
+
+/**
+ * @typedef {CommonWidgetConfigProps & {
+ *   type: 'tags';
+ *   selected: string[];
+ *   tagLimit: number;
+ *   placeholder?: string;
+ *   validate?: (...args: any[]) => any;
+ * }} TagMultiselectFieldType
+ */
+
+/**
+ * @typedef {CommonWidgetConfigProps & {
+ *   value: string;
+ *   copyCallback: (successful: boolean, field: OO.ui.CopyTextLayout) => void;
+ * }} CopyTextFieldType
+ */
 
 /**
  * @typedef {object} CreateTextFieldReturn
@@ -207,13 +260,7 @@ export async function showConfirmDialog(message, options = {}) {
 /**
  * Create a text input field.
  *
- * @param {object} options
- * @param {string} [options.value]
- * @param {string} options.label
- * @param {boolean} [options.required]
- * @param {string[]} [options.classes]
- * @param {number} [options.maxLength]
- * @param {string|JQuery} [options.help]
+ * @param {TextFieldType} options
  * @returns {CreateTextFieldReturn}
  */
 export function createTextField({
@@ -244,14 +291,7 @@ export function createTextField({
 /**
  * Create a number input field.
  *
- * @param {object} options
- * @param {string} options.value
- * @param {string} [options.label]
- * @param {number} [options.min]
- * @param {number} [options.max]
- * @param {number} [options.buttonStep]
- * @param {string} [options.help]
- * @param {string[]} [options.classes]
+ * @param {NumberFieldType} options
  * @returns {CreateNumberFieldReturn}
  */
 export function createNumberField({
@@ -295,15 +335,7 @@ export function createNumberField({
 /**
  * Create a checkbox field.
  *
- * @param {object} options
- * @param {string} options.value
- * @param {string} options.label
- * @param {string} [options.title]
- * @param {boolean} [options.selected]
- * @param {boolean} [options.disabled]
- * @param {string} [options.help]
- * @param {number} [options.tabIndex]
- * @param {string[]} [options.classes]
+ * @param {CheckboxFieldType} options
  * @returns {CreateCheckboxFieldReturn}
  */
 export function createCheckboxField({
@@ -344,11 +376,7 @@ export function createCheckboxField({
 /**
  * Create a radio select field.
  *
- * @param {object} options
- * @param {string} options.label
- * @param {string} [options.selected]
- * @param {string} [options.help]
- * @param {object[]} options.options
+ * @param {RadioFieldType} options
  * @returns {CreateRadioFieldReturn}
  */
 export function createRadioField({ label, selected, help, options }) {
@@ -376,12 +404,7 @@ export function createRadioField({ label, selected, help, options }) {
 /**
  * Create an action field for copying text from an input.
  *
- * @param {object} options
- * @param {object} options.label
- * @param {object} options.value
- * @param {object} [options.disabled]
- * @param {object} [options.help]
- * @param {object} options.copyCallback
+ * @param {CopyTextFieldType} options
  * @returns {OO.ui.CopyTextLayout|OO.ui.ActionFieldLayout}
  */
 export function createCopyTextField({ label, value, disabled = false, help, copyCallback }) {
@@ -397,7 +420,7 @@ export function createCopyTextField({ label, value, disabled = false, help, copy
       helpInline: Boolean(help),
     });
     field.on('copy', (successful) => {
-      copyCallback(successful, field);
+      copyCallback(successful, /** @type {OO.ui.CopyTextLayout} */ field);
     });
   } else {
     // Older MediaWiki versions
@@ -417,6 +440,7 @@ export function createCopyTextField({ label, value, disabled = false, help, copy
       helpInline: Boolean(help),
     });
   }
+
   return field;
 }
 
@@ -503,14 +527,14 @@ export function mixInClass(Base, Mixin) {
  * @template {Constructor} TMixin
  * @param {TBase} obj
  * @param {TMixin} Mixin
- * @returns {TBase & InstanceType<Mixin>}
+ * @returns {TBase & InstanceType<TMixin>}
  */
 export function mixInObject(obj, Mixin) {
   const dummy = () => {};
-  dummy.prototype = /** @type {InstanceType<Mixin>} */ ({});
+  dummy.prototype = /** @type {InstanceType<TMixin>} */ ({});
   OO.mixinClass(dummy, Mixin);
   Object.assign(obj, {});
   Mixin.call(obj);
 
-  return /** @type {TBase & InstanceType<Mixin>} */ (obj);
+  return /** @type {TBase & InstanceType<TMixin>} */ (obj);
 }

@@ -50,6 +50,24 @@ class SettingsDialog extends ProcessDialog {
   /** @type {OO.ui.StackLayout} */
   stack;
 
+  /** @type {OO.ui.PanelLayout} */
+  loadingPanel;
+
+  /** @type {OO.ui.PanelLayout} */
+  settingsPanel;
+
+  /** @type {OO.ui.PanelLayout} */
+  reloadPanel;
+
+  /** @type {OO.ui.PanelLayout} */
+  dataDeletedPanel;
+
+  /** @type {OO.ui.BookletLayout} */
+  bookletLayout;
+
+  /** @type {ControlsByName} */
+  controls;
+
   /**
    * Create a settings dialog.
    *
@@ -151,7 +169,7 @@ class SettingsDialog extends ProcessDialog {
   getReadyProcess(data) {
     return super.getReadyProcess(data).next(async () => {
       try {
-        [this.settings] = await this.initPromise;
+        [this.loadedSettings] = await this.initPromise;
       } catch (e) {
         this.handleError(e, 'error-settings-load', false);
         return;
@@ -159,11 +177,11 @@ class SettingsDialog extends ProcessDialog {
 
       // this.settings can be empty after removing the data using the relevant functionality in the
       // UI.
-      if (!Object.keys(this.settings).length) {
-        this.settings = settings.get();
+      if (!Object.keys(this.loadedSettings).length) {
+        this.loadedSettings = settings.get();
       }
 
-      this.renderControls(this.settings);
+      this.renderControls(this.loadedSettings);
 
       this.stack.setItem(this.settingsPanel);
       this.bookletLayout.setPage(this.initialPageName || settings.scheme.ui[0].name);
@@ -215,7 +233,7 @@ class SettingsDialog extends ProcessDialog {
     } else if (action === 'reset') {
       return new OO.ui.Process(() => {
         if (confirm(cd.s('sd-reset-confirm'))) {
-          const currentPageName = this.bookletLayout.getCurrentPageName();
+          const currentPageName = /** @type {string} */ (this.bookletLayout.getCurrentPageName());
           this.renderControls(settings.scheme.default);
           this.bookletLayout.setPage(currentPageName);
         }
@@ -239,31 +257,35 @@ class SettingsDialog extends ProcessDialog {
         const name = data.name;
         switch (data.type) {
           case 'checkbox':
-            controls[name] = createCheckboxField(Object.assign({
+            controls[name] = createCheckboxField({
               value: name,
               selected: settingValues[name],
-            }, data));
+              ...data,
+            });
             controls[name].input.on('change', this.updateAbilities.bind(this));
             break;
 
           case 'radio':
-            controls[name] = createRadioField(Object.assign({
+            controls[name] = createRadioField({
               selected: settingValues[name],
-            }, data));
+              ...data,
+            });
             controls[name].select.on('select', this.updateAbilities.bind(this));
             break;
 
           case 'text':
-            controls[name] = createTextField(Object.assign({
+            controls[name] = createTextField({
               value: settingValues[name],
-            }, data));
+              ...data,
+            });
             controls[name].input.on('change', this.updateAbilities.bind(this));
             break;
 
           case 'number':
-            controls[name] = createNumberField(Object.assign({
+            controls[name] = createNumberField({
               value: settingValues[name],
-            }, data));
+              ...data,
+            });
             controls[name].input.on('change', this.updateAbilities.bind(this));
             break;
 
@@ -286,7 +308,7 @@ class SettingsDialog extends ProcessDialog {
             });
             break;
 
-          case 'multitag':
+          case 'tags':
             controls[name] = {};
             controls[name].multiselect = new OO.ui.TagMultiselectWidget({
               placeholder: data.placeholder,
@@ -332,7 +354,7 @@ class SettingsDialog extends ProcessDialog {
 
         // eslint-disable-next-line jsdoc/require-jsdoc
         setupOutlineItem() {
-          this.outlineItem.setLabel(pageData.label);
+          /** @type {OO.ui.OutlineOptionWidget} */ (this.outlineItem).setLabel(pageData.label);
         }
       }))();
     });
@@ -360,7 +382,7 @@ class SettingsDialog extends ProcessDialog {
     this.bookletLayout = new OO.ui.BookletLayout({
       outlined: true,
     });
-    this.bookletLayout.addPages(this.createPages(settingValues));
+    this.bookletLayout.addPages(this.createPages(settingValues), 0);
     this.settingsPanel.$element.empty().append(this.bookletLayout.$element);
 
     this.updateAbilities();
@@ -374,7 +396,7 @@ class SettingsDialog extends ProcessDialog {
    */
   getStateSettings() {
     return settings.scheme.states.reduce((obj, state) => {
-      obj[state] = this.settings[state];
+      obj[state] = this.loadedSettings[state];
       return obj;
     }, {});
   }
@@ -410,7 +432,7 @@ class SettingsDialog extends ProcessDialog {
           case 'multicheckbox':
             collectedSettings[name] = controls[name].multiselect.findSelectedItemsData();
             break;
-          case 'multitag':
+          case 'tags':
             collectedSettings[name] = (data.uiToData || ((val) => val)).call(
               null,
               controls[name].multiselect.getValue()
@@ -463,11 +485,13 @@ class SettingsDialog extends ProcessDialog {
     let areInputsValid = true;
     await Promise.all(
       []
-        .concat(...settings.scheme.ui.map((pageData) => (
-          pageData.controls
-            .filter((data) => data.type === 'number')
-            .map((data) => data.name)
-        )))
+        .concat(
+          ...settings.scheme.ui.map((pageData) => (
+            pageData.controls
+              .filter((data) => data.type === 'number')
+              .map((data) => data.name)
+          ))
+        )
         .map((name) => controls[name].input.getValidity())
     )
       .catch(() => {
@@ -476,7 +500,7 @@ class SettingsDialog extends ProcessDialog {
 
     const collectedSettings = this.collectSettings();
     this.actions.setAbilities({
-      save: !areObjectsEqual(collectedSettings, this.settings) && areInputsValid,
+      save: !areObjectsEqual(collectedSettings, this.loadedSettings) && areInputsValid,
       reset: !areObjectsEqual(
         Object.assign({}, collectedSettings),
         Object.assign(
@@ -498,7 +522,7 @@ class SettingsDialog extends ProcessDialog {
   onDesktopNotificationsSelectChange(option) {
     if (typeof Notification === 'undefined') return;
 
-    if (option.data !== 'none' && Notification.permission !== 'granted') {
+    if (option.getData() !== 'none' && Notification.permission !== 'granted') {
       OO.ui.alert(cd.s('dn-grantpermission'));
       Notification.requestPermission((permission) => {
         if (permission !== 'granted') {

@@ -20,11 +20,11 @@ class CdError extends Error {
   /**
    * Create a custom error.
    *
-   * @param {ErrorData} [data={ type: 'internal' }]
+   * @param {ErrorData} [data={}]
    */
-  constructor(data = { type: 'internal' }) {
+  constructor(data = {}) {
     super(
-      data.type +
+      (data.type || 'internal') +
       (data.code ? `/${data.code}` : '') +
       (data.apiError ? `/${data.apiError}` : '') +
       (data.message ? `: ${data.message}` : '')

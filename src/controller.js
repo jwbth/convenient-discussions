@@ -1012,6 +1012,7 @@ class Controller extends OO.EventEmitter {
    */
   areThereOutdents() {
     this.content.areThereOutdents ??= Boolean(this.$root.find('.' + cd.config.outdentClass).length);
+
     return this.content.areThereOutdents;
   }
 

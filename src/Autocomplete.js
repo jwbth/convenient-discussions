@@ -15,7 +15,7 @@ import { charAt, defined, phpCharToUpper, removeDoubleSpaces, sleep, ucFirst, un
 
 /**
  * @typedef {object} AutocompleteConfig
- * @property {{ [text: string]: string }} byText
+ * @property {StringsByKey} byText
  * @property {} cache
  * @property {} default
  * @property {} transform

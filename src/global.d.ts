@@ -227,11 +227,32 @@ declare global {
     // Add native Promise since it seems to work and we use it
     namespace Process {
       type StepOverride<C> =
-          | number
-          | JQuery.Promise<void>
-          | Promise<void>
-          // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-          | ((this: C) => boolean | number | JQuery.Promise<void> | Promise<void> | Error | [Error] | void);
+        | number
+        | JQuery.Promise<void>
+        | Promise<void>
+        // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+        | ((this: C) => boolean | number | JQuery.Promise<void> | Promise<void> | Error | [Error] | void);
+
+      interface Constructor {
+        /**
+         * @param step Number of milliseconds to wait before proceeding,
+         * promise that must be resolved before proceeding, or a function to execute.
+         * See {@link Process.first first} for more information.
+         * @param context Execution context of the function. The context is ignored if the step
+         * is a number or promise.
+         */
+        new<C = null>(step: StepOverride<C>, context?: C): Process;
+      }
+    }
+
+    namespace PageLayout {
+      interface Props {
+        outlineItem: OutlineOptionWidget | null;
+      }
+
+      interface Prototype {
+        setupOutlineItem(): void;
+      }
     }
   }
 

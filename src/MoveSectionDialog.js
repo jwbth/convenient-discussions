@@ -48,6 +48,12 @@ class MoveSectionDialog extends ProcessDialog {
   /** @type {OO.ui.PanelLayout} */
   successPanel;
 
+  /** @type {Array<Promise|JQuery.Promise>} */
+  initRequests;
+
+  /** @type {ControlsByName} */
+  controls;
+
   /**
    * Create a move section dialog.
    *
@@ -94,7 +100,6 @@ class MoveSectionDialog extends ProcessDialog {
     const templatePages = (cd.config.archivingConfig.templates || [])
       .map((template) => pageRegistry.get(template.name))
       .filter(definedAndNotNull);
-
     this.initRequests = [
       sourcePage.loadCode(),
       mw.loader.using('mediawiki.widgets'),
@@ -159,7 +164,7 @@ class MoveSectionDialog extends ProcessDialog {
       let archiveConfig;
       try {
         [, , archiveConfig] = await Promise.all(this.initRequests);
-      } catch (e) {
+      } catch (error) {
         this.abort(cd.sParse('cf-error-getpagecode'), false);
         return;
       }
@@ -180,7 +185,7 @@ class MoveSectionDialog extends ProcessDialog {
       }
 
       this.controls = {};
-      this.controls.title = {},
+      this.controls.title = /** @type {Control} */ ({});
       this.controls.title.input = new mw.widgets.TitleInputWidget({
         $overlay: this.$overlay,
         excludeCurrentPage: true,
@@ -190,6 +195,7 @@ class MoveSectionDialog extends ProcessDialog {
         validate: () => {
           const title = this.controls.title.input.getMWTitle();
           const page = title && pageRegistry.get(title);
+
           return page && page !== this.section.getSourcePage();
         },
       });
@@ -233,7 +239,7 @@ class MoveSectionDialog extends ProcessDialog {
         label: cd.s('msd-chronologicalorder'),
       });
 
-      this.controls.summaryEnding = {};
+      this.controls.summaryEnding = /** @type {Control} */ ({});
       this.controls.summaryEnding.input = new TextInputWidget({
         // TODO: Take into account the whole summary length, updating the maximum value dynamically.
         maxLength: 250,
@@ -287,7 +293,9 @@ class MoveSectionDialog extends ProcessDialog {
         this.pushPending();
         this.controls.title.input.$input.blur();
 
-        let targetPage = pageRegistry.get(this.controls.title.input.getMWTitle());
+        let targetPage = /** @type {import('./pageRegistry').Page} */ (
+          pageRegistry.get(this.controls.title.input.getMWTitle())
+        );
 
         // Should be ruled out by making the button disabled.
         if (targetPage === this.section.getSourcePage()) {
@@ -304,8 +312,12 @@ class MoveSectionDialog extends ProcessDialog {
           ]);
           await this.editTargetPage(source, target);
           await this.editSourcePage(source, target);
-        } catch (e) {
-          this.abort(...e);
+        } catch (error) {
+          if (error instanceof CdError) {
+            this.abort(.../** @type {Parameters<MoveSectionDialog['abort']>} */ (error.data));
+          } else {
+            throw error;
+          }
           return;
         }
 
@@ -345,50 +357,56 @@ class MoveSectionDialog extends ProcessDialog {
   /**
    * Load the source page code.
    *
-   * @returns {object}
+   * @returns {Promise<{
+   *   page: import('./pageRegistry').Page;
+   *   sectionSource: import('./SectionSource').default;
+   *   sectionWikilink: string;
+   * }>}
    * @throws {Array.<string|boolean>}
    * @protected
    */
   async loadSourcePage() {
     try {
-      await this.section.getSourcePage().loadCode(false);
-    } catch (e) {
-      if (e instanceof CdError) {
-        const { type, code } = e.data;
+      await this.section.getSourcePage().loadCode(undefined, false);
+    } catch (error) {
+      if (error instanceof CdError) {
+        const { type, code } = error.data;
         if (type === 'api') {
           if (code === 'missing') {
-            throw [cd.sParse('msd-error-sourcepagedeleted'), true];
+            throw new CdError({ data: [cd.sParse('msd-error-sourcepagedeleted'), true] });
           } else {
-            throw [cd.sParse('error-api', code), true];
+            throw new CdError({ data: [cd.sParse('error-api', code), true] });
           }
         } else if (type === 'network') {
-          throw [cd.sParse('error-network'), true];
+          throw new CdError({ data: [cd.sParse('error-network'), true] });
         }
       } else {
-        console.warn(e);
-        throw [cd.sParse('error-javascript'), false];
+        console.warn(error);
+        throw new CdError({ data: [cd.sParse('error-javascript'), false] });
       }
     }
 
+    let sectionSource;
     try {
-      this.section.locateInCode();
-    } catch (e) {
-      if (e instanceof CdError) {
-        const { code } = e.data;
+      sectionSource = this.section.locateInCode();
+    } catch (error) {
+      if (error instanceof CdError) {
+        const { code } = error.data;
         const messageName = code === 'locateSection' ? 'error-locatesection' : 'error-unknown';
         const message = cd.sParse(messageName);
-        throw [message, true];
+        throw new CdError({ data: [message, true] });
       } else {
-        console.warn(e);
-        throw [cd.sParse('error-javascript'), false];
+        console.warn(error);
+        throw new CdError({ data: [cd.sParse('error-javascript'), false] });
       }
     }
 
     const pageName = this.section.getSourcePage().name;
     const headlineEncoded = encodeWikilink(this.section.headline);
+
     return {
       page: this.section.getSourcePage(),
-      sectionSource: this.section.source,
+      sectionSource,
       sectionWikilink: this.controls.keepLink.input.isSelected() ?
         `${pageName}#${headlineEncoded}` :
         pageName,
@@ -399,29 +417,33 @@ class MoveSectionDialog extends ProcessDialog {
    * Load the target page code.
    *
    * @param {import('./pageRegistry').Page} targetPage
-   * @returns {object}
+   * @returns {Promise<{
+   *   page: import('./pageRegistry').Page;
+   *   targetIndex: number | null;
+   *   sectionWikilink: string;
+   * }>}
    * @throws {Array.<string|boolean>}
    * @protected
    */
   async loadTargetPage(targetPage) {
     try {
       await targetPage.loadCode();
-    } catch (e) {
-      if (e instanceof CdError) {
-        const { type, code } = e.data;
+    } catch (error) {
+      if (error instanceof CdError) {
+        const { type, code } = error.data;
         if (type === 'api') {
           if (code === 'invalid') {
             // Should be filtered before submit anyway.
-            throw [cd.sParse('msd-error-invalidpagename'), false];
+            throw new CdError({ data: [cd.sParse('msd-error-invalidpagename'), false] });
           } else {
-            throw [cd.sParse('error-api', code), true];
+            throw new CdError({ data: [cd.sParse('error-api', code), true] });
           }
         } else if (type === 'network') {
-          throw [cd.sParse('error-network'), true];
+          throw new CdError({ data: [cd.sParse('error-network'), true] });
         }
       } else {
-        console.warn(e);
-        throw [cd.sParse('error-javascript'), false];
+        console.warn(error);
+        throw new CdError({ data: [cd.sParse('error-javascript'), false] });
       }
     }
 
@@ -429,7 +451,7 @@ class MoveSectionDialog extends ProcessDialog {
       page: targetPage,
       targetIndex: targetPage.source.findProperPlaceForSection(
         this.controls.chronologicalOrder.input.isSelected()
-          ? this.section.oldestComment?.date
+          ? (this.section.oldestComment?.date || undefined)
           : undefined
       ),
       sectionWikilink: `${targetPage.realName}#${encodeWikilink(this.section.headline)}`,
@@ -441,7 +463,6 @@ class MoveSectionDialog extends ProcessDialog {
    *
    * @param {object} source
    * @param {object} target
-   * @returns {object}
    * @throws {Array.<string|boolean>}
    * @protected
    */
@@ -491,23 +512,23 @@ class MoveSectionDialog extends ProcessDialog {
         baserevid: target.page.revisionId,
         starttimestamp: target.page.queryTimestamp,
       });
-    } catch (e) {
+    } catch (error) {
       const genericMessage = cd.sParse('msd-error-editingtargetpage');
-      if (e instanceof CdError) {
-        const { type, details } = e.data;
+      if (error instanceof CdError) {
+        const { type, details } = error.data;
         if (type === 'network') {
-          throw [genericMessage + ' ' + cd.sParse('error-network'), true];
+          throw new CdError({ data: [genericMessage + ' ' + cd.sParse('error-network'), true] });
         } else {
           let { code, message, logMessage } = details;
           if (code === 'editconflict') {
             message += ' ' + cd.sParse('msd-error-editconflict-retry');
           }
           console.warn(logMessage);
-          throw [genericMessage + ' ' + message, true];
+          throw new CdError({ data: [genericMessage + ' ' + message, true] });
         }
       } else {
-        console.warn(e);
-        throw [genericMessage + ' ' + cd.sParse('error-javascript'), false];
+        console.warn(error);
+        throw new CdError({ data: [genericMessage + ' ' + cd.sParse('error-javascript'), false] });
       }
     }
   }
@@ -517,7 +538,6 @@ class MoveSectionDialog extends ProcessDialog {
    *
    * @param {object} source
    * @param {object} target
-   * @returns {object}
    * @throws {Array.<string|boolean>}
    */
   async editSourcePage(source, target) {
@@ -552,23 +572,25 @@ class MoveSectionDialog extends ProcessDialog {
         baserevid: source.page.revisionId,
         starttimestamp: source.page.queryTimestamp,
       });
-    } catch (e) {
+    } catch (error) {
       // Errors when editing the target page are recoverable because we haven't performed any
       // actions yet. Errors when editing the source page are not recoverable because we have
       // already edited the source page.
       const genericMessage = cd.sParse('msd-error-editingsourcepage');
-      if (e instanceof CdError) {
-        const { type, details } = e.data;
+      if (error instanceof CdError) {
+        const { type, details } = error.data;
         if (type === 'network') {
-          throw [genericMessage + ' ' + cd.sParse('error-network'), false, true];
+          throw new CdError({
+            data: [genericMessage + ' ' + cd.sParse('error-network'), false, true],
+          });
         } else {
           const { message, logMessage } = details;
           console.warn(logMessage);
-          throw [genericMessage + ' ' + message, false, true];
+          throw new CdError({ data: [genericMessage + ' ' + message, false, true] });
         }
       } else {
-        console.warn(e);
-        throw [genericMessage + ' ' + cd.sParse('error-javascript'), false, true];
+        console.warn(error);
+        throw new CdError({ data: [genericMessage + ' ' + cd.sParse('error-javascript'), false, true] });
       }
     }
   }
@@ -615,8 +637,11 @@ class MoveSectionDialog extends ProcessDialog {
    * Provided parameters of archiving templates present on the page, guess the archive path and
    * other configuration for the section.
    *
-   * @param {Map<Page, object>} templateToParameters
-   * @returns {?object}
+   * @param {Map<import('./pageRegistry').Page, StringsByKey>} templateToParameters
+   * @returns {?{
+   *   path: ?string;
+   *   isSorted: boolean;
+   * }}
    */
   guessArchiveConfig(templateToParameters) {
     return Array.from(templateToParameters).reduce((config, [page, parameters]) => {
@@ -624,8 +649,10 @@ class MoveSectionDialog extends ProcessDialog {
         return config;
       }
 
-      const templateConfig = (cd.config.archivingConfig.templates || []).find(
-        (template) => pageRegistry.get(template.name) === page
+      const templateConfig = /** @type {import('../config/default').ArchivingTemplateEntry} */ (
+        (cd.config.archivingConfig.templates || []).find(
+          (template) => pageRegistry.get(template.name) === page
+        )
       );
 
       /**
@@ -636,8 +663,8 @@ class MoveSectionDialog extends ProcessDialog {
        * @returns {?string}
        */
       const findPresentParamAndReplaceAll = (prop) => {
-        const replaceAll = (value) =>
-          Array.from(templateConfig.replacements).reduce(
+        const replaceAll = (/** @type {string} */ value) =>
+          Array.from(templateConfig.replacements || []).reduce(
             (v, [regexp, replacer]) => {
               return v.replace(regexp, (...match) =>
                 replacer(

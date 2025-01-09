@@ -778,10 +778,10 @@ class BootProcess {
     button.setPending(true);
     try {
       const options = {
-        'discussiontools-replytool': 0,
-        'discussiontools-newtopictool': 0,
-        'discussiontools-topicsubscription': 0,
-        'discussiontools-visualenhancements': 0,
+        'discussiontools-replytool': '0',
+        'discussiontools-newtopictool': '0',
+        'discussiontools-topicsubscription': '0',
+        'discussiontools-visualenhancements': '0',
       };
       if (globally) {
         await saveOptions(options, true).catch(handleApiReject);

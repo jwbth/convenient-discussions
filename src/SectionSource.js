@@ -1,5 +1,5 @@
-import cd from './cd';
 import CdError from './CdError';
+import cd from './cd';
 import sectionRegistry from './sectionRegistry';
 import { calculateWordOverlap, genericGetOldestOrNewestByDateProp } from './utils-general';
 import { endWithTwoNewlines, extractSignatures, normalizeCode, removeWikiMarkup } from './utils-wikitext';
@@ -103,9 +103,10 @@ class SectionSource {
     this.section = section;
     this.isInSectionContext = isInSectionContext;
 
-    this.collectMatchData(sectionHeadingMatch, contextCode, adjustedContextCode);
-    if (!this.code || !this.firstChunkCode) {
-      console.warn(`Couldn't read the "${this.headline}" section contents.`);
+    try {
+      this.collectMatchData(sectionHeadingMatch, contextCode, adjustedContextCode);
+    } catch (error) {
+      console.warn(`Couldn't read the "${this.headline}" section contents.`, error);
       return;
     }
   }
@@ -215,6 +216,7 @@ class SectionSource {
    * @param {object} sectionHeadingMatch
    * @param {string} contextCode
    * @param {string} adjustedContextCode
+   * @throws {CdError}
    * @private
    */
   collectMatchData(sectionHeadingMatch, contextCode, adjustedContextCode) {
@@ -222,20 +224,26 @@ class SectionSource {
     const equalSignsPattern = `={1,${sectionHeadingMatch[2].length}}`;
     const codeFromSection = contextCode.slice(sectionHeadingMatch.index);
     const adjustedCodeFromSection = adjustedContextCode.slice(sectionHeadingMatch.index);
+
+    // Logically, should match since sectionHeadingMatch matched
     const sectionMatch = (
-      adjustedCodeFromSection.match(new RegExp(
-        // Will fail at "===" or the like.
-        '(' +
-        mw.util.escapeRegExp(fullHeadingMatch) +
-        '[^]*?\\n)' +
-        equalSignsPattern +
-        '[^=].*=+[ \\t\\x01\\x02]*\\n'
-      )) ||
-      adjustedCodeFromSection.match(new RegExp(
-        '(' +
-        mw.util.escapeRegExp(fullHeadingMatch) +
-        '[^]*$)'
-      ))
+      adjustedCodeFromSection.match(
+        new RegExp(
+          // Will fail at `===` or the like.
+          '(' +
+          mw.util.escapeRegExp(fullHeadingMatch) +
+          '[^]*?\\n)' +
+          equalSignsPattern +
+          '[^=].*=+[ \\t\\x01\\x02]*\\n'
+        )
+      ) ||
+      adjustedCodeFromSection.match(
+        new RegExp(
+          '(' +
+          mw.util.escapeRegExp(fullHeadingMatch) +
+          '[^]*$)'
+        )
+      )
     );
 
     // To simplify the workings of the `replyInSection` mode we don't consider terminating line
@@ -259,11 +267,17 @@ class SectionSource {
         '[^]*$)'
       ))
     );
+    if (!sectionMatch || !firstChunkMatch) {
+      throw new CdError();
+    }
 
-    const code = sectionMatch && codeFromSection.substr(sectionMatch.index, sectionMatch[1].length);
-    const firstChunkCode = (
-      firstChunkMatch &&
-      codeFromSection.substr(firstChunkMatch.index, firstChunkMatch[1].length)
+    const code = codeFromSection.substr(
+      /** @type {number} */ (sectionMatch.index),
+      sectionMatch[1].length
+    );
+    const firstChunkCode = codeFromSection.substr(
+      /** @type {number} */ (firstChunkMatch.index),
+      firstChunkMatch[1].length
     );
 
     const startIndex = sectionHeadingMatch.index;

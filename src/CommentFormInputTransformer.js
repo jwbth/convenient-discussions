@@ -12,8 +12,8 @@ import { escapePipesOutsideLinks, generateTagsRegexp } from './utils-wikitext';
 class CommentFormInputTransformer extends TextMasker {
   /**
    * @typedef {object} CommentFormTargetExtension
-   * @property {import('./CommentForm').DefinedSource} source When
-   *   {@link CommentFormInputTransformer} is instantiated, `source` is never `null`.
+   * @property {import('./CommentForm').AnySource} source When {@link CommentFormInputTransformer}
+   *   is instantiated, `source` is never `null`.
    */
 
   /**
@@ -186,9 +186,9 @@ class CommentFormInputTransformer extends TextMasker {
     if (this.commentForm.omitSignatureCheckbox?.isSelected()) {
       this.signature = '';
     } else {
-      this.signature = this.commentForm.isMode('edit')
-        ? /** @type {import('./CommentSource').default} */ (this.target.source).signatureCode
-        : cd.g.userSignature;
+      this.signature = this.isCommentTarget() ?
+        this.target.source.signatureCode :
+        cd.g.userSignature;
     }
 
     // Make so that the signature doesn't turn out to be at the end of the last item of the list if

@@ -48,7 +48,7 @@ class TextMasker {
    * @param {string} [type] Should consist only of alphanumeric characters.
    * @param {boolean} [useGroups=false] Use the first two capturing groups in the regexp as the
    *   `preText` and `textToMask` parameters. (Used for processing table code.)
-   * @returns {TextMasker}
+   * @returns {this}
    */
   mask(regexp, type, useGroups = false) {
     if (type && !type.match(/^\w+$/)) {
@@ -94,7 +94,7 @@ class TextMasker {
    * Replace placeholders added by {@link TextMasker#mask} with their text.
    *
    * @param {string} [type]
-   * @returns {TextMasker}
+   * @returns {this}
    */
   unmask(type) {
     this.text = this.unmaskText(this.text, type);
@@ -109,7 +109,7 @@ class TextMasker {
    *
    * @param {(code: string) => string} [handler] Function that processes the template code.
    * @param {boolean} [addLengths=false] Add lengths of the masked templates to markers.
-   * @returns {TextMasker}
+   * @returns {this}
    * @author Putnik
    * @author Jack who built the house
    */
@@ -178,7 +178,7 @@ class TextMasker {
    *
    * @param {string[]} tags
    * @param {string} type
-   * @returns {TextMasker}
+   * @returns {this}
    */
   maskTags(tags, type) {
     return this.mask(generateTagsRegexp(tags), type);
@@ -188,7 +188,7 @@ class TextMasker {
    * Replace code, that should not be modified when processing it, with placeholders.
    *
    * @param {(code: string) => string} [templateHandler]
-   * @returns {TextMasker}
+   * @returns {this}
    */
   maskSensitiveCode(templateHandler) {
     return this
@@ -206,7 +206,7 @@ class TextMasker {
    * Run a certain function for the text.
    *
    * @param {(text: string, masker: this) => string} func
-   * @returns {TextMasker}
+   * @returns {this}
    */
   withText(func) {
     this.text = func(this.text, this);

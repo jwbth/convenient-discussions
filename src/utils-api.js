@@ -23,6 +23,7 @@ import { brsToNewlines } from './utils-wikitext';
  * @property {string} slots.main.contentmodel
  * @property {string} slots.main.contentformat
  * @property {string} slots.main.content
+ * @property {boolean} slots.main.nosuchsection
  */
 
 /**
@@ -30,6 +31,7 @@ import { brsToNewlines } from './utils-wikitext';
  *
  * @typedef {object} ApiResponseQueryContentPage
  * @property {string} title The title of the page.
+ * @property {number} pageid The ID of the page.
  * @property {boolean} [known] Whether the page is known.
  * @property {boolean} [missing] Whether the page is missing.
  * @property {boolean} [invalid]
@@ -88,7 +90,13 @@ import { brsToNewlines } from './utils-wikitext';
 
 /**
  * @typedef {object} ApiResponseParse
- * @property {ApiResponseParseContent} [parse]
+ * @property {ApiResponseParseContent} parse
+ */
+
+/**
+ * @typedef {object} ApiResponseParseTree
+ * @property {object} parse
+ * @property {object} parse.parsetree
  */
 
 /**
@@ -370,7 +378,7 @@ export async function getPageIds(titles) {
 /**
  * Generic function for saving user options to the server.
  *
- * @param {object} options Name-value pairs.
+ * @param {{ [key: string]: ?string }} options Name-value pairs.
  * @param {boolean} [isGlobal=false] Whether to save the options globally (using
  *   {@link https://www.mediawiki.org/wiki/Extension:GlobalPreferences Extension:GlobalPreferences}).
  * @throws {CdError}
@@ -411,7 +419,7 @@ export async function saveOptions(options, isGlobal = false) {
  * Save an option value to the server. See {@link https://www.mediawiki.org/wiki/API:Options}.
  *
  * @param {string} name
- * @param {string} value
+ * @param {?string} value
  */
 export async function saveLocalOption(name, value) {
   await saveOptions({ [name]: value });
@@ -422,7 +430,7 @@ export async function saveLocalOption(name, value) {
  * {@link https://www.mediawiki.org/wiki/Extension:GlobalPreferences/API}.
  *
  * @param {string} name
- * @param {string} value
+ * @param {?string} value
  * @throws {CdError}
  */
 export async function saveGlobalOption(name, value) {

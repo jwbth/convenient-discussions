@@ -64,7 +64,7 @@ context.convenientDiscussions ||= /** @type {ConvenientDiscussions | ConvenientD
  * @property {number} contentFontSize
  * @property {number} defaultFontSize
  * @property {number} bodyScrollPaddingTop
- * @property {{ [char: string]: string }} phpCharToUpper
+ * @property {{ [char: string]: string | 0 }} phpCharToUpper
  * @property {boolean} genderAffectsUserString
  * @property {string} summaryPostfix
  * @property {number} summaryLengthLimit
@@ -100,7 +100,7 @@ context.convenientDiscussions ||= /** @type {ConvenientDiscussions | ConvenientD
  * @property {typeof import('../config/default').default} config
  * @property {typeof import('./convenientDiscussions').globalProperties & GlobalPropertiesExtension} g
  * @property {import('./CommentSkeleton').default[]} comments
- * @property {import('./SectionSkeleton').default[]} section
+ * @property {import('./SectionSkeleton').default[]} sections
  */
 
 /**
@@ -111,15 +111,23 @@ context.convenientDiscussions ||= /** @type {ConvenientDiscussions | ConvenientD
  */
 
 /**
- * @typedef {ConvenientDiscussionsBase} ConvenientDiscussions
+ * @typedef {object} ConvenientDiscussionsWindowExtension
  * @property {import('./Comment').default[]} comments
- * @property {import('./Section').default[]} section
+ * @property {import('./Section').default[]} sections
  */
 
 /**
- * @typedef {ConvenientDiscussionsBase} ConvenientDiscussionsWorker
- * @property {import('./CommentWorker').default[]} comments
- * @property {import('./SectionWorker').default[]} section
+ * @typedef {object} ConvenientDiscussionsWorkerExtension
+ * @property {import('./worker/CommentWorker').default[]} comments
+ * @property {import('./worker/SectionWorker').default[]} sections
+ */
+
+/**
+ * @typedef {ConvenientDiscussionsBase & ConvenientDiscussionsWindowExtension} ConvenientDiscussions
+ */
+
+/**
+ * @typedef {ConvenientDiscussionsBase & ConvenientDiscussionsWorkerExtension} ConvenientDiscussionsWorker
  */
 
 const convenientDiscussions = context.convenientDiscussions;

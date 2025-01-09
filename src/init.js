@@ -142,17 +142,15 @@ function loadSiteData() {
   // We need this object to pass it to the web worker.
   cd.g.contentLanguageMessages = {};
 
-  const setContentLanguageMessages = (/** @type {{ [name: string]: string }} */ messages) => {
+  const setContentLanguageMessages = (/** @type {StringsByKey} */ messages) => {
     Object.keys(messages).forEach((name) => {
       mw.messages.set('(content)' + name, messages[name]);
       cd.g.contentLanguageMessages[name] = messages[name];
     });
   };
 
-  const filterAndSetContentLanguageMessages = (
-    /** @type {{ [name: string]: string }} */ messages
-  ) => {
-    const contentLanguageMessages = /** @type {{ [name: string]: string }} */ ({});
+  const filterAndSetContentLanguageMessages = (/** @type {StringsByKey} */ messages) => {
+    const contentLanguageMessages = /** @type {StringsByKey} */ ({});
     Object.keys(messages)
       .filter((name) => contentLanguageMessageNames.includes(name))
       .forEach((name) => {

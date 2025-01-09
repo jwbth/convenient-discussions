@@ -202,15 +202,23 @@ export default {
    * @fires mutedUsers
    */
   loadMuted() {
-    const userIdList = mw.user.options.get('echo-notifications-blacklist');
+    const userIdList = /** @type {string} */ (mw.user.options.get('echo-notifications-blacklist'));
     if (!userIdList || !cd.g.useGlobalPreferences) return;
 
+    /**
+     * @typedef {object} MutedUsersData
+     * @property {StringsByKey} users
+     * @property {number} saveTime
+     */
+
     const userIds = userIdList.split('\n');
-    const mutedUsersStorage = new StorageItem('mutedUsers');
+    const mutedUsersStorage = /** @type {StorageItem<MutedUsersData, 'mutedUsers'>} */ (
+      new StorageItem('mutedUsers')
+    );
     const mutedUsersData = mutedUsersStorage.getAll();
     if (
       !mutedUsersData.users ||
-      userIds.some((id) => !mutedUsersData.users[id]) ||
+      userIds.some((id) => !(id in mutedUsersData.users)) ||
 
       // Users can be renamed, so we can cache for a week max.
       mutedUsersData.saveTime < Date.now() - 7 * cd.g.msInDay
@@ -222,9 +230,9 @@ export default {
           });
           mutedUsersStorage
             .set('mutedUsers', {
-              users: Object.assign({}, ...users.map((user) => ({
+              users: /** @type {StringsByKey} */ (Object.assign({}, ...users.map((user) => ({
                 [/** @type {number} */ (user.getGlobalId())]: user.getName(),
-              }), {})),
+              }), {}))),
               saveTime: Date.now(),
             })
             .save();
@@ -263,8 +271,8 @@ export default {
         guiid: id,
       }).catch(handleApiReject)
     ));
-    return (await Promise.all(requests)).map((resp) => {
-      const userInfo = resp.query.globaluserinfo;
+    return (await Promise.all(requests)).map((response) => {
+      const userInfo = response.query.globaluserinfo;
       const user = this.get(userInfo.name);
       user.setGlobalId(userInfo.id);
       return user;

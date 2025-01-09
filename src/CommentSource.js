@@ -398,7 +398,7 @@ class CommentSource {
     }
 
     isPreviousCommentsDataEqual = Boolean(isPreviousCommentsDataEqual);
-    if (commentData.followsHeading) {
+    if (commentData.sectionHeadline !== undefined) {
       doesHeadlineMatch = this.headlineCode !== undefined ?
         (
           normalizeCode(removeWikiMarkup(this.headlineCode)) ===
@@ -782,7 +782,7 @@ class CommentSource {
     }
 
     let contextCode;
-    switch (action) {
+    switch (/** @type {'reply' | 'edit'} */ (action)) {
       case 'reply': {
         // This also sets .isReplyOutdented which CommentForm#inputToCode() will need. TODO:
         // refactor this "action at a distance".
@@ -922,8 +922,14 @@ class CommentSource {
     }
 
     const adjustedCodeAfter = adjustedCode.slice(currentIndex);
-    const nextSectionHeadingMatch = adjustedCodeAfter.match(/\n+(=+).*\1[ \t\x01\x02]*\n|$/);
-    let chunkCodeAfterEndIndex = currentIndex + nextSectionHeadingMatch.index + 1;
+
+    // Logically, there should always be a match
+    const nextSectionHeadingMatchIndex = /** @type {number} */ (
+      /** @type {RegExpMatchArray} */ (adjustedCodeAfter.match(/\n+(=+).*\1[ \t\x01\x02]*\n|$/))
+        .index
+    );
+
+    let chunkCodeAfterEndIndex = currentIndex + nextSectionHeadingMatchIndex + 1;
     const chunkCodeAfter = contextCode.slice(currentIndex, chunkCodeAfterEndIndex);
     cd.g.keepInSectionEnding.forEach((regexp) => {
       const match = chunkCodeAfter.match(regexp);

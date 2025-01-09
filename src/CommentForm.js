@@ -30,7 +30,7 @@ import { isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, is
  */
 
 /**
- * @typedef {NonNullable<CommentForm['target']['source']>} DefinedSource
+ * @typedef {import('./CommentSource').default|import('./SectionSource').default|import('./pageRegistry').PageSource} AnySource
  */
 
 /**
@@ -368,7 +368,19 @@ class CommentForm extends OO.EventEmitter {
   summaryAutocomplete;
 
   /**
-   * @typedef {CommentFormTargetMap[Mode]} CommentFormTarget
+   * @typedef {(
+   *   Mode extends 'replyInSection'
+   *     ? {
+   *         replyButton: Button;
+   *         $replyButtonWrapper: JQuery;
+   *         $replyButtonContainer: JQuery;
+   *       }
+   *     : {}
+   * )} CommentFormTargetMapExtension
+   */
+
+  /**
+   * @typedef {CommentFormTargetMap[Mode] & CommentFormTargetMapExtension} CommentFormTarget
    */
 
   /**
@@ -937,8 +949,7 @@ class CommentForm extends OO.EventEmitter {
     } else if (this.isMode('edit')) {
       this.containerListType = this.target.containerListType;
     } else if (this.isMode('replyInSection')) {
-      // If the user managed to open the form, there should be a reply button container.
-      this.containerListType = /** @type {JQuery} */ (this.target.$replyButtonContainer)
+      this.containerListType = this.target.$replyButtonContainer
         .prop('tagName')
         .toLowerCase();
     }
@@ -1527,50 +1538,6 @@ class CommentForm extends OO.EventEmitter {
   }
 
   /**
-   * Check whether we recently suggested the user to enable the "Improve performance" setting via a
-   * warn notification.
-   *
-   * @returns {boolean}
-   */
-  haveSuggestedToImprovePerformanceRecently() {
-    return getDayTimestamp() - settings.get('improvePerformance-lastSuggested') < 14;
-  }
-
-  /**
-   * Used as a callback for `keydown` events - check whether there are performance issues based on
-   * the rate of the last `keypressCount` keypresses. If there are such, show a notification.
-   *
-   * @param {Event} e
-   * @param {number} keypressCount
-   * @param {number} rateLimit
-   * @private
-   */
-  checkForPerformanceIssues(e, keypressCount, rateLimit) {
-    if (this.haveSuggestedToImprovePerformanceRecently()) return;
-
-    this.lastKeyPresses.push(e.timeStamp);
-    this.lastKeyPresses.splice(0, this.lastKeyPresses.length - keypressCount);
-    if (
-      this.lastKeyPresses[keypressCount - 1] - this.lastKeyPresses[0] <
-      keypressCount * rateLimit
-    ) {
-      const $body = wrapHtml(cd.sParse('warning-performance'), {
-        callbacks: {
-          'cd-notification-talkPageSettings': () => {
-            settings.showDialog('talkPage');
-          },
-        },
-      });
-      mw.notify($body, {
-        title: cd.s('warning-performance-title'),
-        type: 'warn',
-        autoHideSeconds: 'long',
-      });
-      settings.saveSettingOnTheFly('improvePerformance-lastSuggested', getDayTimestamp());
-    }
-  }
-
-  /**
    * Get a dummy "floatable container" to attach a popup to so that the popup is at the caret
    * position.
    *
@@ -1779,6 +1746,92 @@ class CommentForm extends OO.EventEmitter {
   }
 
   /**
+   * Add event listeners to form elements.
+   *
+   * @private
+   */
+  addEventListeners() {
+    const emitChange = () => {
+      this.emit('change');
+    };
+    const preview = () => {
+      this.preview();
+    };
+
+    this.$element
+      // Hotkeys
+      .on('keydown', (event) => {
+        // Ctrl+Enter
+        if (keyCombination(event, 13, ['cmd'])) {
+          this.submit();
+        }
+
+        // Esc
+        if (keyCombination(event, 27)) {
+          this.cancel();
+        }
+
+        // WikiEditor started supporting these in October 2024
+        // https://phabricator.wikimedia.org/T62928
+        if (!this.showToolbar) {
+          // Ctrl+B
+          if (keyCombination(event, 66, ['cmd'])) {
+            this.encapsulateSelection({
+              pre: "'''",
+              peri: mw.msg('wikieditor-toolbar-tool-bold-example'),
+              post: "'''",
+            });
+            event.preventDefault();
+          }
+
+          // Ctrl+I
+          if (keyCombination(event, 73, ['cmd'])) {
+            this.encapsulateSelection({
+              pre: "''",
+              peri: mw.msg('wikieditor-toolbar-tool-italic-example'),
+              post: "''",
+            });
+            event.preventDefault();
+          }
+
+          // Ctrl+U
+          if (keyCombination(event, 85, ['cmd'])) {
+            this.encapsulateSelection(CommentForm.encapsulateOptions.underline);
+            event.preventDefault();
+          }
+        }
+
+        // Ctrk+Shift+5
+        if (keyCombination(event, 53, ['cmd', 'shift'])) {
+          this.encapsulateSelection(CommentForm.encapsulateOptions.strikethrough);
+          event.preventDefault();
+        }
+
+        // Ctrk+Shift+6
+        if (keyCombination(event, 54, ['cmd', 'shift'])) {
+          this.encapsulateSelection(CommentForm.encapsulateOptions.code);
+          event.preventDefault();
+        }
+
+        // Ctrk+Shift+8
+        if (keyCombination(event, 56, ['cmd', 'shift'])) {
+          this.commentInput.$element.find('.tool[rel="ulist"] a')[0]?.click();
+          event.preventDefault();
+        }
+      })
+
+      // "focusin" is "focus" that bubbles, i.e. propagates up the node tree.
+      .on('focusin', () => {
+        this.lastFocused = new Date();
+        controller.updatePageTitle();
+      });
+
+    this.addEventListenersToTextInputs(emitChange, preview);
+    this.addEventListenersToCheckboxes(emitChange, preview);
+    this.addEventListenersToButtons();
+  }
+
+  /**
    * Add event listeners to the text inputs.
    *
    * @param {() => void} emitChange
@@ -1914,7 +1967,7 @@ class CommentForm extends OO.EventEmitter {
     ) {
       const keypressCount = 10;
       const rateLimit = 50;
-      const checkForPerformanceIssues = (e) => {
+      const checkForPerformanceIssues = (/** @type {JQuery.Event} */ e) => {
         this.checkForPerformanceIssues(e, keypressCount, rateLimit);
       };
       this.commentInput.$input.on('input', checkForPerformanceIssues);
@@ -1935,6 +1988,52 @@ class CommentForm extends OO.EventEmitter {
 
     this.summaryInput
       .on('enter', this.submit.bind(this));
+  }
+
+  /**
+   * Check whether we recently suggested the user to enable the "Improve performance" setting via a
+   * warn notification.
+   *
+   * @returns {boolean}
+   */
+  haveSuggestedToImprovePerformanceRecently() {
+    const lastSuggested = settings.get('improvePerformance-lastSuggested');
+
+    return Boolean(lastSuggested && getDayTimestamp() - lastSuggested < 14);
+  }
+
+  /**
+   * Used as a callback for `keydown` events - check whether there are performance issues based on
+   * the rate of the last `keypressCount` keypresses. If there are such, show a notification.
+   *
+   * @param {JQuery.Event} event
+   * @param {number} keypressCount
+   * @param {number} rateLimit
+   * @private
+   */
+  checkForPerformanceIssues(event, keypressCount, rateLimit) {
+    if (this.haveSuggestedToImprovePerformanceRecently()) return;
+
+    this.lastKeyPresses.push(event.timeStamp);
+    this.lastKeyPresses.splice(0, this.lastKeyPresses.length - keypressCount);
+    if (
+      this.lastKeyPresses[keypressCount - 1] - this.lastKeyPresses[0] <
+      keypressCount * rateLimit
+    ) {
+      const $body = wrapHtml(cd.sParse('warning-performance'), {
+        callbacks: {
+          'cd-notification-talkPageSettings': () => {
+            settings.showDialog('talkPage');
+          },
+        },
+      });
+      mw.notify($body, {
+        title: cd.s('warning-performance-title'),
+        type: 'warn',
+        autoHideSeconds: 'long',
+      });
+      settings.saveSettingOnTheFly('improvePerformance-lastSuggested', getDayTimestamp());
+    }
   }
 
   /**
@@ -1990,92 +2089,6 @@ class CommentForm extends OO.EventEmitter {
     this.submitButton.on('click', () => {
       this.submit();
     });
-  }
-
-  /**
-   * Add event listeners to form elements.
-   *
-   * @private
-   */
-  addEventListeners() {
-    const emitChange = () => {
-      this.emit('change');
-    };
-    const preview = () => {
-      this.preview();
-    };
-
-    this.$element
-      // Hotkeys
-      .on('keydown', (event) => {
-        // Ctrl+Enter
-        if (keyCombination(event, 13, ['cmd'])) {
-          this.submit();
-        }
-
-        // Esc
-        if (keyCombination(event, 27)) {
-          this.cancel();
-        }
-
-        // WikiEditor started supporting these in October 2024
-        // https://phabricator.wikimedia.org/T62928
-        if (!this.showToolbar) {
-          // Ctrl+B
-          if (keyCombination(event, 66, ['cmd'])) {
-            this.encapsulateSelection({
-              pre: "'''",
-              peri: mw.msg('wikieditor-toolbar-tool-bold-example'),
-              post: "'''",
-            });
-            event.preventDefault();
-          }
-
-          // Ctrl+I
-          if (keyCombination(event, 73, ['cmd'])) {
-            this.encapsulateSelection({
-              pre: "''",
-              peri: mw.msg('wikieditor-toolbar-tool-italic-example'),
-              post: "''",
-            });
-            event.preventDefault();
-          }
-
-          // Ctrl+U
-          if (keyCombination(event, 85, ['cmd'])) {
-            this.encapsulateSelection(CommentForm.encapsulateOptions.underline);
-            event.preventDefault();
-          }
-        }
-
-        // Ctrk+Shift+5
-        if (keyCombination(event, 53, ['cmd', 'shift'])) {
-          this.encapsulateSelection(CommentForm.encapsulateOptions.strikethrough);
-          event.preventDefault();
-        }
-
-        // Ctrk+Shift+6
-        if (keyCombination(event, 54, ['cmd', 'shift'])) {
-          this.encapsulateSelection(CommentForm.encapsulateOptions.code);
-          event.preventDefault();
-        }
-
-        // Ctrk+Shift+8
-        if (keyCombination(event, 56, ['cmd', 'shift'])) {
-          this.commentInput.$element.find('.tool[rel="ulist"] a')[0]?.click();
-          event.preventDefault();
-        }
-      })
-
-      // "focusin" is "focus" that bubbles, i.e. propagates up the node tree.
-      .on('focusin', () => {
-        this.lastFocused = new Date();
-        controller.updatePageTitle();
-      });
-
-    this.addEventListenersToTextInputs(emitChange, preview);
-    this.addEventListenersToCheckboxes(emitChange, preview);
-    this.addEventListenersToButtons();
   }
 
   /**
@@ -2657,19 +2670,18 @@ class CommentForm extends OO.EventEmitter {
     let contextCode;
     let commentCode;
     try {
-      ({ contextCode, commentCode } =
-        /** @type {DefinedSource} */ (this.target.source).modifyContext({
-          // Ugly solution to avoid overcomplication of code: for replies, we need to get
-          // CommentSource#isReplyOutdented set for `action === 'reply'` which we don't have so far.
-          // So let CommentSource#modifyContext() compute it. In the rest of cases just get the
-          // comment code.
-          commentCode: this.isMode('reply') ? undefined : this.inputToCode(action),
+      ({ contextCode, commentCode } = /** @type {AnySource} */ (this.target.source).modifyContext({
+        // Ugly solution to avoid overcomplication of code: for replies, we need to get
+        // CommentSource#isReplyOutdented set for `action === 'reply'` which we don't have so far.
+        // So let CommentSource#modifyContext() compute it. In the rest of cases just get the
+        // comment code.
+        commentCode: this.isMode('reply') ? undefined : this.inputToCode(action),
 
-          action: this.mode,
-          doDelete: this.deleteCheckbox?.isSelected(),
-          commentForm: this,
-          commentFormAction: action,
-        }));
+        action: this.mode,
+        doDelete: this.deleteCheckbox?.isSelected(),
+        commentForm: this,
+        commentFormAction: action,
+      }));
       contextCode = this.addAnchorsToComments(contextCode, commentIds);
     } catch (error) {
       if (error instanceof CdError) {

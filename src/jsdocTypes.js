@@ -27,3 +27,22 @@
 /**
  * @typedef {'dl'|'ul'|'ol'} ListType
  */
+
+/**
+ * @typedef {{
+ *   field: OO.ui.FieldLayout;
+ *   [controlType: string]: any;
+ * }} Control
+ */
+
+/**
+ * @typedef {{ [key: string]: Control }} ControlsByName
+ */
+
+/**
+ * @typedef {{ [key: string]: string }} StringsByKey
+ */
+
+/**
+ * @typedef {string|number} ValidKey
+ */

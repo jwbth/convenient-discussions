@@ -371,14 +371,14 @@ class Comment extends CommentSkeleton {
    * Create a comment object.
    *
    * @param {import('./Parser').default} parser
-   * @param {object} signature Signature object returned by {@link Parser#findSignatures}.
-   * @param {object[]} targets Sorted target objects returned by  {@link Parser#findSignatures} +
+   * @param {import('./Parser').SignatureTarget} signature Signature object returned by {@link Parser#findSignatures}.
+   * @param {import('./Parser').Target[]} targets Sorted target objects returned by  {@link Parser#findSignatures} +
    *   {@link Parser#findHeadings}.
    */
   constructor(parser, signature, targets) {
     super(parser, signature, targets);
 
-    this.reformatted = settings.get('reformatComments');
+    this.reformatted = /** @type {Reformatted} */ (settings.get('reformatComments') || false);
     this.showContribsLink = settings.get('showContribsLink');
     this.hideTimezone = settings.get('hideTimezone');
     this.timestampFormat = settings.get('timestampFormat');
@@ -736,7 +736,7 @@ class Comment extends CommentSkeleton {
       });
 
       this.headerElement.appendChild(this.copyLinkButton.element);
-      this.timestampElement = /** @type {HTMLElement} */ (this.copyLinkButton.labelElement);
+      this.timestampElement = this.copyLinkButton.labelElement;
       if (this.date) {
         (new LiveTimestamp(this.timestampElement, this.date, !this.hideTimezone)).init();
       }
@@ -3303,7 +3303,7 @@ class Comment extends CommentSkeleton {
     }
     commentForm?.setSectionSubmitted(isSectionSubmitted);
 
-    return source;
+    return /** @type {CommentSource} */ (source);
   }
 
   /**
@@ -3648,8 +3648,8 @@ class Comment extends CommentSkeleton {
    * @throws {CdError}
    */
   locateInCode(sectionCode, code, commentData) {
-    const codePassed = typeof code === 'string';
-    if (!codePassed) {
+    const customCodePassed = typeof code === 'string';
+    if (!customCodePassed) {
       code = sectionCode || this.getSourcePage().code;
       this.source = null;
     }
@@ -3669,7 +3669,7 @@ class Comment extends CommentSkeleton {
       });
     }
 
-    if (!codePassed) {
+    if (!customCodePassed) {
       this.source = source;
     }
 

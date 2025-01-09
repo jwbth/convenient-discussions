@@ -98,7 +98,7 @@ export function isInline(node, countTextNodesAsInline = false) {
     return false;
   } else {
     // This can be called from a worker.
-    if (typeof window !== 'undefined') {
+    if (!isDomHandlerNode(node)) {
       console.warn('Convenient Discussions: Expensive operation: isInline() called for:', node);
 
       // This is very expensive. Avoid by any means.
@@ -165,7 +165,7 @@ export function isProbablyTalkPage(pageName, namespaceNumber) {
  * @returns {boolean}
  */
 export function isCommentEdit(summary) {
-  return (
+  return Boolean(
     summary &&
     (
       summary.includes(`${cd.s('es-edit')} ${cd.s('es-reply-genitive')}`) ||
@@ -181,7 +181,7 @@ export function isCommentEdit(summary) {
  * @returns {boolean}
  */
 export function isUndo(summary) {
-  return summary && cd.config.undoTexts.some((text) => summary.includes(text));
+  return Boolean(summary && cd.config.undoTexts.some((text) => summary.includes(text)));
 }
 
 /**
@@ -298,6 +298,7 @@ export function phpCharToUpper(char) {
   if (cd.g.phpCharToUpper[char] === 0) {
     return char;
   }
+
   return cd.g.phpCharToUpper[char] || char.toUpperCase();
 }
 
@@ -631,7 +632,7 @@ export function getHeadingLevel(node) {
 /**
  * Checks if the argument is a text node.
  *
- * @param {?NodeLike} node
+ * @param {?NodeLike} [node]
  * @returns {node is TextLike}
  */
 export function isText(node) {
@@ -641,7 +642,7 @@ export function isText(node) {
 /**
  * Checks if the argument is an element.
  *
- * @param {?NodeLike} node
+ * @param {?NodeLike} [node]
  * @returns {node is ElementLike}
  */
 export function isElement(node) {
@@ -651,7 +652,7 @@ export function isElement(node) {
 /**
  * Checks if the argument is a node.
  *
- * @param {?NodeLike} node
+ * @param {?NodeLike} [node]
  * @returns {node is NodeLike}
  */
 export function isNode(node) {
@@ -661,22 +662,22 @@ export function isNode(node) {
 /**
  * Checks if the argument is a node from the `domhandler` library.
  *
- * @param {NodeLike} node
+ * @param {NodeLike} [node]
  * @returns {node is import('./worker/domhandlerExtended').Node}
  */
 export function isDomHandlerNode(node) {
-  return 'type' in node && 'parent' in node;
+  return Boolean(node && 'type' in node && 'parent' in node);
 }
 
 /**
  * Checks if the given node is a node from the `domhandler` library.
  *
- * @param {NodeLike} node
+ * @param {NodeLike} [node]
  * @returns {node is import('./worker/domhandlerExtended').Element}
  */
 // eslint-disable-next-line no-unused-vars
 export function isDomHandlerElement(node) {
-  return 'type' in node && 'attribs' in node;
+  return Boolean(node && 'type' in node && 'attribs' in node);
 }
 
 /**
@@ -894,12 +895,15 @@ export function canonicalUrlToPageName(url) {
  * @returns {?boolean}
  */
 export function getQueryParamBooleanValue(param) {
-  const value = location.search.match(new RegExp('[?&]' + param + '=([^&]+)')) || [];
-  if (/1|true|yes|y/.test(value)) {
-    return true;
-  } else if (/0|false|no|n/.test(value)) {
-    return false;
+  const match = location.search.match(new RegExp('[?&]' + param + '=([^&]+)'));
+  if (match) {
+    if (/1|true|yes|y/.test(match[1])) {
+      return true;
+    } else if (/0|false|no|n/.test(match[1])) {
+      return false;
+    }
   }
+
   return null;
 }
 
@@ -908,11 +912,12 @@ export function getQueryParamBooleanValue(param) {
  * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map Map}
  * objects.
  *
- * @param {Map[]} maps
- * @returns {Map}
+ * @template {Map} M
+ * @param {M[]} maps
+ * @returns {M}
  */
 export function mergeMaps(maps) {
-  return new Map(maps.flatMap((map) => [...map]));
+  return /** @type {M} */ (new Map(maps.flatMap((map) => [...map])));
 }
 
 /**
@@ -924,13 +929,14 @@ export function mergeMaps(maps) {
  * Get the oldest or newest item by the `date` property that is implied to exist.
  *
  * @template {PossiblyWithDate} T
+ * @template {boolean} AD
  * @param {T[]} items
  * @param {'oldest'|'newest'} which
- * @param {boolean} allowDateless
- * @returns {?T}
+ * @param {AD} allowDateless
+ * @returns {?(T & (AD extends false ? { date: Date } : {}))}
  */
 export function genericGetOldestOrNewestByDateProp(items, which, allowDateless) {
-  return items.reduce(
+  return /** @type {?(T & (AD extends false ? { date: Date } : {}))} */ (items.reduce(
     (candidate, item) =>
       (
         ((item.date || allowDateless) && !candidate) ||
@@ -946,5 +952,19 @@ export function genericGetOldestOrNewestByDateProp(items, which, allowDateless) 
         item :
         candidate,
     /** @type {?T} */ (null)
-  );
+  ));
+}
+
+/**
+ * Get the keys of an object as an array of its own enumerable properties, with the keys properly
+ * typed.
+ *
+ * @template {{}} T
+ * @param {T} obj The object whose keys are to be retrieved.
+ * @returns {(keyof T)[]} The keys of the object, typed as `keyof T`.
+ */
+export function typedKeysOf(obj) {
+  // Why this isn't in the native Object.keys type:
+  // https://stackoverflow.com/questions/55012174/why-doesnt-object-keys-return-a-keyof-type-in-typescript
+  return /** @type {(keyof T)[]} */ (Object.keys(obj));
 }

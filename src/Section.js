@@ -27,13 +27,22 @@ class Section extends SectionSkeleton {
   /** @readonly */
   TYPE = 'section';
 
-  /** @type {HTMLElement} */
+  /**
+   * @type {HTMLElement}
+   * @protected
+   */
   hElement;
 
-  /** @type {HTMLElement} */
+  /**
+   * @type {HTMLElement}
+   * @protected
+   */
   headlineElement;
 
-  /** @type {HTMLElement} */
+  /**
+   * @type {HTMLElement}
+   * @protected
+   */
   headingElement;
 
   /** @type {HTMLElement} */
@@ -55,8 +64,8 @@ class Section extends SectionSkeleton {
   isLastSection;
 
   /**
-   * Code of the section as of the time of the last request. Filled upon running
-   * {@link Section#loadCode}.
+   * Presumed code of the section (based on the section ID) as of the time of the last request.
+   * Filled upon running {@link Section#loadCode}.
    *
    * @type {string|undefined}
    */
@@ -146,6 +155,9 @@ class Section extends SectionSkeleton {
    * @type {OO.ui.PopupWidget|undefined}
    */
   authorsPopup;
+
+  /** @type {HTMLElement} */
+  actionsElement;
 
   /**
    * Create a section object.
@@ -578,7 +590,7 @@ class Section extends SectionSkeleton {
    */
   canBeMoved() {
     return (
-      this.level === 2 &&
+      this.isTopic() &&
       !this.isTranscludedFromTemplate &&
       (cd.page.isActive() || cd.page.isCurrentArchive())
     );
@@ -587,9 +599,16 @@ class Section extends SectionSkeleton {
   /**
    * Check whether the user should get the affordance to add a reply to the section.
    *
-   * @returns {boolean}
+   * @returns {this is {
+   *   isActionable: true;
+   *   replyButton: Button;
+   *   $replyButtonWrapper: JQuery;
+   *   $replyButtonContainer: JQuery;
+   * }}
    */
   canBeReplied() {
+    const nextSection = sectionRegistry.getByIndex(this.index + 1);
+
     return Boolean(
       this.isActionable &&
 
@@ -607,10 +626,7 @@ class Section extends SectionSkeleton {
       ) &&
 
       // May mean complex formatting, so we better keep out
-      (
-        !sectionRegistry.getByIndex(this.index + 1) ||
-        sectionRegistry.getByIndex(this.index + 1).headingNestingLevel === this.headingNestingLevel
-      ) &&
+      (!nextSection || nextSection.headingNestingLevel === this.headingNestingLevel) &&
 
       // Is the section buried in a table.
       // https://ru.wikipedia.org/wiki/Project:Запросы_к_администраторам/Быстрые
@@ -705,7 +721,11 @@ class Section extends SectionSkeleton {
           .on('click', Comment.scrollToFirstFlashAll.bind(Comment, comments)),
       }));
 
-    const getPanelByName = (name) =>
+    /**
+     * @typedef {'name'|'count'|'date'} PanelName
+     */
+
+    const getPanelByName = (/** @type {PanelName} */ name) =>
       name === 'name' ? namePanel : name === 'count' ? countPanel : datePanel;
 
     const authorsSortSetting = settings.get('authorsSort');
@@ -731,7 +751,7 @@ class Section extends SectionSkeleton {
     });
     sortSelect
     sortSelect.on('choose', (item) => {
-      stack.setItem(getPanelByName(item.getData()));
+      stack.setItem(getPanelByName(/** @type {PanelName} */ (item.getData())));
       settings.saveSettingOnTheFly('authorsSort', item.getData());
     });
 
@@ -792,7 +812,7 @@ class Section extends SectionSkeleton {
    */
   scrollToLatestComment(event) {
     event.preventDefault();
-    this.latestComment.scrollTo({ pushState: true });
+    /** @type {Comment} */ (this.latestComment).scrollTo({ pushState: true });
   }
 
   /**
@@ -800,15 +820,17 @@ class Section extends SectionSkeleton {
    *
    * @private
    */
-  createMetadataElement() {
+  maybeCreateMetadataElement() {
+    if (!this.isTopic()) return;
+
     const authorCount = this.comments.map((comment) => comment.author).filter(unique).length;
-    const latestComment = Comment.getNewest(this.comments, true);
+    const latestComment = Comment.getNewest(this.comments, false);
 
     let latestCommentWrapper;
     let commentCountWrapper;
     let authorCountButton;
     let metadataElement;
-    if (this.level === 2 && this.comments.length) {
+    if (this.comments.length) {
       if (latestComment) {
         const latestCommentLink = document.createElement('a');
         latestCommentLink.href = `#${latestComment.dtId || latestComment.id}`;
@@ -832,6 +854,7 @@ class Section extends SectionSkeleton {
         commentCountWrapper.querySelector('.cd-section-metadata-authorcount')?.remove();
       }
 
+      // This element comes from translation strings
       const span = commentCountWrapper.querySelector('.cd-section-metadata-authorcount-link');
       if (span) {
         // A tiny bit slower on long pages than direct element creation, but at least this can be
@@ -847,10 +870,10 @@ class Section extends SectionSkeleton {
         // and I think it doesn't really give any benefit.
         authorCountButton.element.removeAttribute('role');
 
-        span.firstChild.replaceWith(authorCountButton.element);
+        /** @type {HTMLElement} */ (span.firstChild).replaceWith(authorCountButton.element);
       }
 
-      metadataElement = document.createElement('div');
+      metadataElement = /** @type {HTMLElement} */ (document.createElement('div'));
       metadataElement.className = 'cd-section-metadata';
       metadataElement.append(...[commentCountWrapper, latestCommentWrapper].filter(defined));
     }
@@ -865,15 +888,15 @@ class Section extends SectionSkeleton {
     /**
      * Metadata element in the {@link Section#barElement bar element}.
      *
-     * @type {Element|undefined}
+     * @type {HTMLElement|undefined}
      */
     this.metadataElement = metadataElement;
 
     /**
      * Comment count wrapper element in the {@link Section#metadataElement metadata element}.
      *
-     * @type {Element|undefined}
-     * @private
+     * @type {HTMLElement|undefined}
+     * @protected
      */
     this.commentCountWrapper = commentCountWrapper;
 
@@ -881,7 +904,7 @@ class Section extends SectionSkeleton {
      * Author count button in the {@link Section#metadataElement metadata element}.
      *
      * @type {Button|undefined}
-     * @private
+     * @protected
      */
     this.authorCountButton = authorCountButton;
 
@@ -889,24 +912,28 @@ class Section extends SectionSkeleton {
      * Latest comment date wrapper element in the {@link Section#metadataElement metadata element}.
      *
      * @type {Element|undefined}
-     * @private
+     * @protected
      */
     this.latestCommentWrapper = latestCommentWrapper;
 
-    /**
-     * Metadata element in the {@link Section#$bar bar element}.
-     *
-     * @type {JQuery|undefined}
-     */
-    this.$metadata = $(metadataElement);
+    if (metadataElement) {
+      /**
+       * Metadata element in the {@link Section#$bar bar element}.
+       *
+       * @type {JQuery|undefined}
+       */
+      this.$metadata = $(metadataElement);
+    }
 
-    /**
-     * Comment count wrapper element in the {@link Section#$metadata metadata element}.
-     *
-     * @type {JQuery|undefined}
-     * @private
-     */
-    this.$commentCountWrapper = $(commentCountWrapper);
+    if (commentCountWrapper) {
+      /**
+       * Comment count wrapper element in the {@link Section#$metadata metadata element}.
+       *
+       * @type {JQuery|undefined}
+       * @protected
+       */
+      this.$commentCountWrapper = $(commentCountWrapper);
+    }
 
     if (authorCountButton) {
       /**
@@ -917,12 +944,14 @@ class Section extends SectionSkeleton {
       this.$authorCountButton = $(authorCountButton.element);
     }
 
-    /**
-     * Latest comment date wrapper element in the {@link Section#$metadata metadata element}.
-     *
-     * @type {JQuery|undefined}
-     */
-    this.$latestCommentWrapper = $(latestCommentWrapper);
+    if (latestCommentWrapper) {
+      /**
+       * Latest comment date wrapper element in the {@link Section#$metadata metadata element}.
+       *
+       * @type {JQuery|undefined}
+       */
+      this.$latestCommentWrapper = $(latestCommentWrapper);
+    }
   }
 
   /**
@@ -932,7 +961,9 @@ class Section extends SectionSkeleton {
    * @private
    */
   createMoreMenuSelect() {
-    const moreMenuSelect = Section.prototypes.getWidget('moreMenuSelect')();
+    const moreMenuSelect = /** @type {OO.ui.ButtonMenuSelectWidget} */ (
+      Section.prototypes.getWidget('moreMenuSelect')()
+    );
 
     const editOpeningCommentOption = this.canFirstCommentBeEdited() ?
       new OO.ui.MenuOptionWidget({
@@ -1044,10 +1075,10 @@ class Section extends SectionSkeleton {
       copyLinkButton.buttonElement.classList.add('mw-selflink-fragment');
     }
 
-    const actionsElement = document.createElement(this.level === 2 ? 'div' : 'span');
+    const actionsElement = document.createElement(this.isTopic() ? 'div' : 'span');
     actionsElement.className = [
       'cd-section-actions',
-      this.level === 2 ? 'cd-topic-actions' : 'cd-subsection-actions',
+      this.isTopic() ? 'cd-topic-actions' : 'cd-subsection-actions',
     ].filter(defined).join(' ');
     actionsElement.append(
       ...[copyLinkButton, moreMenuSelectDummy]
@@ -1059,7 +1090,7 @@ class Section extends SectionSkeleton {
      * Actions element under the 2-level section heading _or_ to the right of headings of other
      * levels.
      *
-     * @type {Element}
+     * @type {HTMLElement}
      * @private
      */
     this.actionsElement = actionsElement;
@@ -1082,7 +1113,7 @@ class Section extends SectionSkeleton {
       /**
        * Copy link button widget in the {@link Section#actionsElement actions element}.
        *
-       * @type {OO.ui.ButtonWidget|undefined}
+       * @type {Button|undefined}
        */
       copyLinkButton,
 
@@ -1095,7 +1126,9 @@ class Section extends SectionSkeleton {
    *
    * @private
    */
-  addBarElement() {
+  maybeAddBarElement() {
+    if (!this.isTopic()) return;
+
     const barElement = document.createElement('div');
     barElement.className = 'cd-section-bar';
     if (!this.metadataElement) {
@@ -1151,12 +1184,18 @@ class Section extends SectionSkeleton {
    */
   addMetadataAndActions() {
     this.createActionsElement();
-    if (this.level === 2) {
-      this.createMetadataElement();
-      this.addBarElement();
-    } else {
-      this.addActionsElement();
-    }
+    this.maybeCreateMetadataElement();
+    this.maybeAddBarElement();
+    this.addActionsElement();
+  }
+
+  /**
+   * Check whether the section is a topic (and should have the metadata element and so on).
+   *
+   * @returns {this is { level: 2 }}
+   */
+  isTopic() {
+    return this.level === 2;
   }
 
   /**
@@ -1167,16 +1206,24 @@ class Section extends SectionSkeleton {
    */
   scrollToNewComments(event) {
     event.preventDefault();
-    Comment.scrollToFirstFlashAll(this.newComments);
+    Comment.scrollToFirstFlashAll(/** @type {Comment[]} */ (this.newComments));
   }
 
+
   /**
-   * Add the new comment count to the metadata element. ("New" actually means "unseen at the moment
-   * of load".)
+   * _For internal use._ Update the new comments data for the section and add the new comment count
+   * to the metadata element. ("New" actually means "unseen at the moment of load".).
    */
-  addNewCommentCountMetadata() {
+  updateNewCommentsData() {
+    /**
+     * List of new comments in the section. ("New" actually means "unseen at the moment of load".)
+     *
+     * @type {import('./Comment').default[]|undefined}
+     */
+    this.newComments = this.comments.filter((comment) => comment.isSeen === false);
+
     if (
-      this.level !== 2 ||
+      !this.isTopic() ||
       !this.newComments.length ||
       this.newComments.length === this.comments.length
     ) {
@@ -1194,27 +1241,13 @@ class Section extends SectionSkeleton {
     newCommentCountWrapper.className = 'cd-section-bar-item';
     newCommentCountWrapper.append(newLink || newText);
 
-    this.metadataElement.insertBefore(
+    /** @type {HTMLElement} */ (this.metadataElement).insertBefore(
       newCommentCountWrapper,
-      this.commentCountWrapper.nextSibling || null
+      /** @type {HTMLElement} */ (this.commentCountWrapper).nextSibling || null
     );
 
     this.newCommentCountWrapper = newCommentCountWrapper;
     this.$newCommentCountWrapper = $(newCommentCountWrapper);
-  }
-
-  /**
-   * _For internal use._ Update the new comments data for the section and render the updates.
-   */
-  updateNewCommentsData() {
-    /**
-     * List of new comments in the section. ("New" actually means "unseen at the moment of load".)
-     *
-     * @type {import('./Comment').default[]}
-     */
-    this.newComments = this.comments.filter((comment) => comment.isSeen === false);
-
-    this.addNewCommentCountMetadata();
   }
 
   /**
@@ -1233,7 +1266,7 @@ class Section extends SectionSkeleton {
       return;
     }
 
-    if (this.level !== 2) return;
+    if (!this.isTopic()) return;
 
     let subscribeId = controller.getDtSubscribableThreads()
       ?.find((thread) => (
@@ -1282,7 +1315,7 @@ class Section extends SectionSkeleton {
     if (!this.replyForm) {
       // Hide the reply button before setupping the comming form so that IME selector is positioned
       // correctly
-      this.replyButton.hide();
+      /** @type {Button} */ (this.replyButton).hide();
 
       /**
        * Reply form related to the section.
@@ -1319,7 +1352,7 @@ class Section extends SectionSkeleton {
 
     if (this.addSubsectionForm) {
       this.addSubsectionForm.$element.cdScrollIntoView('center');
-      this.addSubsectionForm.headlineInput.focus();
+      this.addSubsectionForm.headlineInput?.focus();
     } else {
       /**
        * "Add subsection" form related to the section.
@@ -1358,7 +1391,7 @@ class Section extends SectionSkeleton {
    * @param {import('./CommentForm').default} commentForm
    */
   addCommentFormToPage(mode, commentForm) {
-    if (mode === 'replyInSection') {
+    if (mode === 'replyInSection' && this.canBeReplied()) {
       this.$replyButtonWrapper
         .append(commentForm.$element)
         .addClass('cd-replyButtonWrapper-hasCommentForm');
@@ -1387,7 +1420,7 @@ class Section extends SectionSkeleton {
    * @param {import('./CommentForm').CommentFormMode} mode
    */
   cleanUpCommentFormTraces(mode) {
-    if (mode === 'replyInSection') {
+    if (mode === 'replyInSection' && this.canBeReplied()) {
       this.replyButton.show();
       this.$replyButtonWrapper.removeClass('cd-replyButtonWrapper-hasCommentForm');
     }
@@ -1448,6 +1481,8 @@ class Section extends SectionSkeleton {
    *   the current headline if there are no other coinciding headlines on the page.
    */
   subscribe(mode, renamedFrom) {
+    if (!this.subscribeId) return;
+
     // That's a mechanism mainly for legacy subscriptions but can be used for DT subscriptions as
     // well, for which `sections` will have more than one section when there is more than one
     // section created by a certain user at a certain moment in time.
@@ -1497,6 +1532,8 @@ class Section extends SectionSkeleton {
    *   an error, it will be displayed though.
    */
   unsubscribe(mode) {
+    if (!this.subscribeId) return;
+
     const sections = sectionRegistry.getBySubscribeId(this.subscribeId);
     let finallyCallback;
     if (mode !== 'silent') {
@@ -1605,24 +1642,29 @@ class Section extends SectionSkeleton {
    * @throws {CdError}
    */
   async requestCode() {
-    const request = controller.getApi().post({
-      action: 'query',
-      titles: this.getSourcePage().name,
-      prop: 'revisions',
-      rvsection: this.liveSectionNumber || undefined,
-      rvslots: 'main',
-      rvprop: ['ids', 'content'],
-      redirects: !mw.config.get('wgIsRedirect'),
-      curtimestamp: true,
-    });
-    const { query, curtimestamp: queryTimestamp } = await request.catch(handleApiReject);
+    const request = controller.getApi().post(
+      /** @type {import('types-mediawiki/mw/Api').UnknownApiParams} */ (
+        /** @type {import('types-mediawiki/api_params').ApiQueryRevisionsParams} */ ({
+          action: 'query',
+          titles: this.getSourcePage().name,
+          prop: 'revisions',
+          rvsection: this.liveSectionNumber || undefined,
+          rvslots: 'main',
+          rvprop: ['ids', 'content'],
+          redirects: !mw.config.get('wgIsRedirect'),
+          curtimestamp: true,
+        }
+      )
+    )).catch(handleApiReject);
+    const { query, curtimestamp: queryTimestamp } =
+      /** @type {import('./utils-api').ApiResponseQuery} */ (await request);
 
     const page = query?.pages?.[0];
     const revision = page?.revisions?.[0];
     const main = revision?.slots?.main;
     const content = main?.content;
 
-    if (!query || !page) {
+    if (!query || !page || !main) {
       throw new CdError({
         type: 'api',
         code: 'noData',
@@ -1713,7 +1755,7 @@ class Section extends SectionSkeleton {
     }
     commentForm?.setSectionSubmitted(isSectionSubmitted);
 
-    return source;
+    return /** @type {SectionSource} */ (source);
   }
 
   /**
@@ -1830,7 +1872,7 @@ class Section extends SectionSkeleton {
    * @returns {?Section}
    */
   getBase(forceLevel2 = false) {
-    const defaultValue = forceLevel2 && this.level !== 2 ? null : this;
+    const defaultValue = forceLevel2 && !this.isTopic() ? null : this;
 
     return this.level <= 2 ?
       defaultValue :
@@ -1979,7 +2021,7 @@ class Section extends SectionSkeleton {
 
     this.subscribeId = sectionRegistry.generateDtSubscriptionId(
       cd.user.getName(),
-      this.oldestComment || editTimestamp
+      this.oldestComment?.date?.toISOString() || editTimestamp
     );
   }
 
@@ -1993,24 +2035,27 @@ class Section extends SectionSkeleton {
   }
 
   /**
-   * Find the last element of the section including
+   * Find the last element of the section including buttons and other.
    *
    * @param {(el: HTMLElement) => boolean} [additionalCondition]
    * @returns {HTMLElement}
    */
   findRealLastElement(additionalCondition) {
-    let realLastElement;
-    let lastElement = this.lastElement;
-    do {
-      realLastElement = lastElement;
-      lastElement = lastElement.nextElementSibling;
-    } while (
-      lastElement &&
+    let realLastElement = this.lastElement;
+
+    for (
+      let lastElement = /** @type {HTMLElement|Element|null} */ (
+        this.lastElement.nextElementSibling
+      );
+      lastElement instanceof HTMLElement &&
       (
         lastElement.matches('.cd-section-button-container') ||
-        (!additionalCondition || additionalCondition(lastElement))
-      )
-    );
+        (additionalCondition && additionalCondition(lastElement))
+      );
+      lastElement = lastElement.nextElementSibling
+    ) {
+      realLastElement = lastElement;
+    }
 
     return realLastElement;
   }
@@ -2023,11 +2068,11 @@ class Section extends SectionSkeleton {
   updateVisibility(show) {
     if (Boolean(show) !== this.isHidden) return;
 
-    this.elements ||= getRangeContents(
+    this.elements ||= /** @type {HTMLElement[]} */ (getRangeContents(
       this.headingElement,
       this.findRealLastElement(),
       controller.rootElement
-    );
+    ));
     this.isHidden = !show;
     this.elements.forEach((el) => {
       el.classList.toggle('cd-section-hidden', !show);
@@ -2146,6 +2191,19 @@ class Section extends SectionSkeleton {
    */
   isComment() {
     return false;
+  }
+
+  /**
+   * Clean up data related to the live content of the section.
+   *
+   * @param {number} lastCheckedRevisionId
+   */
+  cleanUpLiveData(lastCheckedRevisionId) {
+    this.liveSectionNumber = this.match?.sectionNumber ?? null;
+    this.liveSectionNumberRevisionId = lastCheckedRevisionId;
+    delete this.presumedCode;
+    delete this.revisionId;
+    delete this.queryTimestamp;
   }
 
   static prototypes = new PrototypeRegistry();

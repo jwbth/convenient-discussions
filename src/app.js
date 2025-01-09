@@ -224,7 +224,7 @@ function setLanguages() {
 /**
  * Load and execute the configuration script if available.
  *
- * @returns {Promise.<undefined>}
+ * @returns {Promise.<void>}
  * @private
  */
 function getConfig() {
@@ -264,7 +264,7 @@ function getConfig() {
  * Load and add localization strings to the `cd.i18n` object. Use fallback languages if default
  * languages are unavailable.
  *
- * @returns {Promise.<undefined>}
+ * @returns {Promise.<any[]|void>}
  * @private
  */
 function getStrings() {
@@ -273,6 +273,7 @@ function getStrings() {
     .filter((lang) => lang !== 'en' && !cd.i18n?.[lang])
     .map((lang) => {
       const url = `https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js&action=raw&ctype=text/javascript`;
+
       return mw.loader.getScript(url);
     });
 

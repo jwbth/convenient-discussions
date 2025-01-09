@@ -311,7 +311,7 @@ class CommentSkeleton {
 
     // As an optimization, avoid adding every text node of the comment to the array of its parts if
     // possible. Add their common container instead.
-    const parts = [];
+    const parts = /** @type {CommentPart[]} */ ([]);
     const fiaParentNode = /** @type {ElementLike} */ (farthestInlineAncestor.parentElement);
     if (
       (firstForeignComponentAfter && fiaParentNode.contains(firstForeignComponentAfter)) ||
@@ -425,7 +425,7 @@ class CommentSkeleton {
         this.parser.context.getElementByClassName(element.previousElementSibling, 'cd-signature')
       ) ||
 
-      cd.config.rejectNode?.(element, this.context)
+      cd.config.rejectNode?.(element, this.parser.context)
     );
   }
 
@@ -451,7 +451,7 @@ class CommentSkeleton {
    *
    * @param {ElementLike} element
    * @param {boolean} checkNextElement
-   * @param {boolean} [lastPartNode]
+   * @param {ElementLike} [lastPartNode]
    * @returns {boolean}
    * @private
    */
@@ -463,8 +463,12 @@ class CommentSkeleton {
 
     const previousElement = element.previousElementSibling;
     const nextElement = element.nextElementSibling;
-    let result = (
-      (tagName === 'DL' && element.firstChild && element.firstChild.tagName === 'DT') ||
+    let result =
+      (
+        tagName === 'DL' &&
+        element.firstElementChild &&
+        element.firstElementChild.tagName === 'DT'
+      ) ||
 
       // Cases like the first comment at
       // https://ru.wikipedia.org/wiki/Project:Выборы_арбитров/Лето_2021/Форум/Кандидаты#Abiyoyo.
@@ -485,9 +489,7 @@ class CommentSkeleton {
         // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202110061810_Example
         !this.parser.context.getElementByClassName(element, 'cd-signature')
       ) ||
-
-      this.isOtherKindOfList(element)
-    );
+      this.isOtherKindOfList(element);
 
     // "tagName !== 'OL'" helps in cases like
     // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202005161120_Example.
@@ -518,11 +520,11 @@ class CommentSkeleton {
    * Given a comment part (a node), tell if it is a part of a bulleted or unbulleted (but not
    * numbered) list.
    *
-   * @param {ElementLike} node
-   * @param {boolean} isDefinitionListOnly
+   * @param {NodeLike} [node]
+   * @param {boolean} [isDefinitionListOnly=false]
    * @returns {boolean}
    */
-  isPartOfList(node, isDefinitionListOnly) {
+  isPartOfList(node, isDefinitionListOnly = false) {
     /*
       * The checks for DD help in cases like
         https://ru.wikipedia.org/wiki/Project:Форум/Архив/Общий/2019/11#201911201924_Vcohen
@@ -537,8 +539,8 @@ class CommentSkeleton {
       tagNames.push('LI', 'UL');
     }
 
-    return (
-      node &&
+    return Boolean(
+      isElement(node) &&
       (
         tagNames.includes(node.tagName) ||
         (node.parentElement && tagNames.includes(node.parentElement.tagName))
@@ -565,7 +567,7 @@ class CommentSkeleton {
    * @param {NodeLike} options.node
    * @param {NodeLike} options.nextNode
    * @param {NodeLike} [options.lastPartNode]
-   * @param {ElementLike} [options.previousPart]
+   * @param {CommentPart} [options.previousPart]
    * @returns {boolean}
    */
   isIntro({ step, stage, node, nextNode, lastPartNode, previousPart }) {
@@ -577,7 +579,7 @@ class CommentSkeleton {
       step === 'back' &&
       (!previousPart || previousPart.step === 'up') &&
       (
-        !['DD', 'LI'].includes(node.parentNode.tagName) ||
+        !['DD', 'LI'].includes(/** @type {ElementLike} */ (node.parentNode).tagName) ||
 
         // Cases like
         // https://en.wikipedia.org/w/index.php?title=Wikipedia:Arbitration/Requests/Case/SmallCat_dispute/Proposed_decision&oldid=1172525361#c-Wugapodes-20230822205500-Purpose_of_Wikipedia
@@ -1269,7 +1271,11 @@ class CommentSkeleton {
 
         // Cases such as https://en.wikipedia.org/?diff=998431486. TODO: Do something with the
         // semantic correctness of the markup.
-        (this.highlightables.length > 1 && el.tagName === 'LI' && el.parentElement?.tagName === 'OL') ||
+        (
+          this.highlightables.length > 1 &&
+          el.tagName === 'LI' &&
+          el.parentElement?.tagName === 'OL'
+        ) ||
 
         // This can run a second time from .updateLevels() → .reviewDives() →
         // .updateHighlightables(), so the might have added the wrapper already.
@@ -1279,7 +1285,7 @@ class CommentSkeleton {
       .forEach((el) => {
         const wrapper = document.createElement('div');
         wrapper.className = 'cd-comment-replacedPart';
-        el.parentNode.insertBefore(wrapper, el);
+        /** @type {ElementLike} */ (el.parentNode).insertBefore(wrapper, el);
         this.elements.splice(this.elements.indexOf(el), 1, wrapper);
         this.highlightables.splice(this.highlightables.indexOf(el), 1, wrapper);
         wrapper.appendChild(el);
@@ -1776,19 +1782,24 @@ class CommentSkeleton {
   /**
    * Get the oldest comment in a list.
    *
-   * @param {CommentSkeleton[]} comments
-   * @returns {?CommentSkeleton}
+   * @template {CommentSkeleton} T
+   * @template {boolean} AD
+   * @param {T[]} comments
+   * @param {AD} allowDateless
+   * @returns {?T & (AD extends false ? { date: Date } : {})}
    */
-  static getOldest(comments) {
-    return genericGetOldestOrNewestByDateProp(comments, 'oldest', false);
+  static getOldest(comments, allowDateless) {
+    return genericGetOldestOrNewestByDateProp(comments, 'oldest', allowDateless);
   }
 
   /**
    * Get the oldest comment in a list.
    *
-   * @param {CommentSkeleton[]} comments
-   * @param {boolean} allowDateless
-   * @returns {?CommentSkeleton}
+   * @template {CommentSkeleton} T
+   * @template {boolean} AD
+   * @param {T[]} comments
+   * @param {AD} allowDateless
+   * @returns {?T & (AD extends false ? { date: Date } : {})}
    */
   static getNewest(comments, allowDateless) {
     return genericGetOldestOrNewestByDateProp(comments, 'newest', allowDateless);

@@ -208,7 +208,7 @@ export function isCmdModifierPressed(event) {
  * Get elements using the right selector for the current skin given an object with skin names as
  * keys and selectors as values. If no value for the skin is provided, the `default` value is used.
  *
- * @param {{ [skin: string]: string }} selectors
+ * @param {StringsByKey} selectors
  * @returns {JQuery}
  */
 export function skin$(selectors) {

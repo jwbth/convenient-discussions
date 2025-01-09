@@ -43,6 +43,9 @@ class EditSubscriptionsDialog extends ProcessDialog {
   /** @type {OO.ui.PanelLayout} */
   sectionsPanel;
 
+  /** @type {OO.ui.MultilineTextInputWidget} */
+  input;
+
   /**
    * Create an "Edit subscriptions" dialog.
    */

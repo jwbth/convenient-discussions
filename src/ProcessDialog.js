@@ -11,6 +11,20 @@ import { es6ClassToOoJsClass } from './utils-oojs';
  */
 class ProcessDialog extends OO.ui.ProcessDialog {
   /**
+   * See https://github.com/microsoft/TypeScript/issues/3841#issuecomment-337560146.
+   *
+   * @type {typeof ProcessDialog}
+   * @readonly
+   */
+  ['constructor'];
+
+  /**
+   * @type {string}
+   * @abstract
+   */
+  static cdKey;
+
+  /**
    * Check if there are unsaved changes.
    *
    * @returns {boolean}
@@ -35,15 +49,15 @@ class ProcessDialog extends OO.ui.ProcessDialog {
    * the error is not recoverable, the dialog is closed on "Dismiss".
    *
    * @param {CdError|Error} error
-   * @param {string} messageName
-   * @param {boolean} recoverable
+   * @param {string} [messageName]
+   * @param {boolean} [recoverable]
    * @protected
    */
   handleError(error, messageName, recoverable) {
     let errorInstance;
     if (error instanceof CdError) {
       const { type } = error.data;
-      let message = cd.s(messageName);
+      let message = cd.s(/** @type {string} */ (messageName));
       if (type === 'network') {
         message += ' ' + cd.s('error-network');
       }

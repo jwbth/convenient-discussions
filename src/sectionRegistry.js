@@ -255,6 +255,7 @@ export default {
   generateDtSubscriptionId(author, timestamp) {
     const date = new Date(timestamp);
     date.setSeconds(0);
+
     return `h-${spacesToUnderlines(author)}-${generateFixedPosTimestamp(date, '00')}`;
   },
 

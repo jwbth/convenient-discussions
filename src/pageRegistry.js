@@ -13,7 +13,7 @@ import commentRegistry from './commentRegistry';
 import controller from './controller';
 import sectionRegistry from './sectionRegistry';
 import { handleApiReject, requestInBackground } from './utils-api';
-import { areObjectsEqual, definedAndNotNull, isProbablyTalkPage, mergeRegexps } from './utils-general';
+import { areObjectsEqual, defined, isProbablyTalkPage, mergeRegexps } from './utils-general';
 import { parseTimestamp } from './utils-timestamp';
 import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
 
@@ -130,7 +130,7 @@ export class Page {
    * @throws {CdError} If the string in the first parameter is not a valid title.
    */
   constructor(mwTitle, genderedName) {
-    // TODO: remove after outside uses are replaced.
+    // TODO: remove after uses by foreign scripts are replaced.
     if (!(mwTitle instanceof mw.Title)) {
       mwTitle = new mw.Title(mwTitle);
     }
@@ -565,17 +565,21 @@ export class Page {
    * @returns {Promise.<Array>}
    */
   async getRevisions(customOptions = {}, inBackground = false) {
-    const options = Object.assign({}, {
+    const options = /** @type {import('types-mediawiki/api_params').ApiQueryRevisionsParams} */ ({
       action: 'query',
       titles: customOptions.revids ? undefined : this.name,
       rvslots: 'main',
       prop: 'revisions',
       redirects: !(this.isCurrent() && mw.config.get('wgIsRedirect')),
-    }, customOptions);
+      ...customOptions,
+    });
 
-    const request = inBackground ?
-      requestInBackground(options).catch(handleApiReject) :
-      controller.getApi().post(options).catch(handleApiReject);
+    const request = inBackground
+      ? requestInBackground(options).catch(handleApiReject)
+      : controller
+          .getApi()
+          .post(/** @type {import('types-mediawiki/mw/Api').UnknownApiParams} */ (options))
+          .catch(handleApiReject);
     const response = /** @type {import('./utils-api').ApiResponseQuery} */ (await request);
     const revisions = response.query?.pages?.[0]?.revisions;
     if (!revisions) {
@@ -765,7 +769,8 @@ export class Page {
    *
    * @param {object} [initialState]
    * @param {import('./CommentForm').default} [commentForm]
-   * @param {object} [preloadConfig={@link CommentForm.getDefaultPreloadConfig CommentForm.getDefaultPreloadConfig()}]
+   * @param {object} [preloadConfig=CommentForm.getDefaultPreloadConfig()] See
+   *   {@link CommentForm.getDefaultPreloadConfig}.
    * @param {boolean} [newTopicOnTop=false]
    * @returns {?import('./CommentForm').default}
    */
@@ -932,7 +937,7 @@ export class Page {
    * Get the code of the first translusion of a certain template.
    *
    * @param {Page[]} pages Template pages
-   * @returns {Map<Page, object>}
+   * @returns {Promise<Map<Page, StringsByKey>>}
    */
   async getFirstTemplateTransclusion(pages) {
     let data;
@@ -942,7 +947,7 @@ export class Page {
         prop: 'parsetree',
         page: this.name,
       }).catch(handleApiReject);
-      data = /** @type {import('./utils-api').ApiResponseParse} */ (await request);
+      data = /** @type {import('./utils-api').ApiResponseParseTree} */ (await request);
     } catch (error) {
       if (
         error instanceof CdError &&
@@ -975,13 +980,16 @@ export class Page {
             ?.map(part => {
               const $name = $(part).children('name');
               const value = $(part).children('value').text().trim();
-              const key = $name.text().trim() || $name.attr('index');
+              const key = /** @type {string} */ ($name.text().trim() || $name.attr('index'));
+
               return [key, value];
             });
 
-          return parameters ? [page, Object.fromEntries(parameters)] : null;
+          return parameters
+            ? /** @type {[Page, StringsByKey]} */ ([page, Object.fromEntries(parameters)])
+            : undefined;
         })
-        .filter(definedAndNotNull)
+        .filter(defined)
     );
   }
 
@@ -1032,70 +1040,85 @@ export class Page {
   }
 
   /**
+   * @typedef {object} PagesMap
+   * @property {Map<RegExp, string>} source
+   * @property {Map<RegExp, string>} archive
+   */
+
+  /**
+   * @type {PagesMap}
+   */
+  static pagesMaps;
+
+  /**
    * Set some map object variables related to archive pages.
    *
    * @private
+   * @returns {PagesMap}
    */
-  static initArchivePagesMaps() {
-    this.archivePagesMap = new Map();
-    this.sourcePagesMap = new Map();
-    const pathToRegexp = (s, replacements, isArchivePath) => (
+  static getArchivePagesMaps() {
+    const pagesMaps = {
+      archive: new Map(),
+      source: new Map(),
+    };
+    const pathToRegexp = (
+      /** @type {string} */ s,
+      /** @type {RegExp[]|undefined} */ replacements,
+      /** @type {boolean} */ isArchivePath
+    ) =>
       new RegExp(
-        (new TextMasker(s))
+        new TextMasker(s)
           .mask(/\\[$\\]/g)
           .withText((pattern) => {
             pattern = mw.util.escapeRegExp(pattern);
             if (replacements) {
-              pattern = pattern
-                .replace(/\\\$/, '$')
-                .replace(/\$(\d+)/, (s, n) => {
-                  const replacement = replacements[n - 1];
-                  return replacement ? `(${replacement.source})` : s;
-                });
+              pattern = pattern.replace(/\\\$/, '$').replace(/\$(\d+)/, (s, n) => {
+                const replacement = replacements[n - 1];
+
+                return replacement ? `(${replacement.source})` : s;
+              });
             }
             pattern = '^' + pattern + (isArchivePath ? '.*' : '') + '$';
+
             return pattern;
           })
           .unmask()
           .getText()
-      )
-    );
+      );
     cd.config.archivePaths.forEach((entry) => {
       if (entry instanceof RegExp) {
-        this.sourcePagesMap.set(new RegExp(entry.source + '.*'), '');
+        pagesMaps.source.set(new RegExp(entry.source + '.*'), '');
       } else {
-        this.archivePagesMap.set(pathToRegexp(entry.source, entry.replacements), entry.archive);
-        this.sourcePagesMap.set(pathToRegexp(entry.archive, entry.replacements, true), entry.source);
+        pagesMaps.archive.set(pathToRegexp(entry.source, entry.replacements), entry.archive);
+        pagesMaps.source.set(pathToRegexp(entry.archive, entry.replacements, true), entry.source);
       }
     });
+
+    return pagesMaps;
   }
 
   /**
    * Lazy initialization for archive pages map.
    *
-   * @returns {Map}
+   * @returns {Map<RegExp, string>}
    * @private
    */
   static getArchivePagesMap() {
-    if (!this.archivePagesMap) {
-      this.initArchivePagesMaps();
-    }
+    this.pagesMaps ||= this.getArchivePagesMaps();
 
-    return this.archivePagesMap;
+    return this.pagesMaps.archive;
   }
 
   /**
    * Lazy initialization for source pages map.
    *
-   * @returns {Map}
+   * @returns {Map<RegExp, string>}
    * @private
    */
   static getSourcePagesMap() {
-    if (!this.sourcePagesMap) {
-      this.initArchivePagesMaps();
-    }
+    this.pagesMaps ||= this.getArchivePagesMaps();
 
-    return this.sourcePagesMap;
+    return this.pagesMaps.source;
   }
 }
 
@@ -1103,6 +1126,22 @@ export class Page {
  * Class that keeps the methods and data related to the page's source code.
  */
 export class PageSource {
+  /**
+   * Whether new topics go on top on this page. Filled upon running
+   * {@link PageSource#guessNewTopicPlacement}.
+   *
+   * @type {boolean|undefined}
+   */
+  areNewTopicsOnTop;
+
+  /**
+   * The start index of the first section, if new topics are on top on this page. Filled upon
+   * running {@link PageSource#guessNewTopicPlacement}.
+   *
+   * @type {number|undefined}
+   */
+  firstSectionStartIndex;
+
   /**
    * Create a comment's source object.
    *
@@ -1162,6 +1201,10 @@ export class PageSource {
    * page (based on various factors) and, if new topics are on top, the start index of the first
    * section.
    *
+   * @returns {{
+   *   areNewTopicsOnTop: boolean;
+   *   firstSectionStartIndex: number | undefined;
+   * }}
    * @throws {CdError}
    * @private
    */
@@ -1176,20 +1219,12 @@ export class PageSource {
 
     const adjustedCode = maskDistractingCode(page.code);
     const sectionHeadingRegexp = PageSource.getTopicHeadingRegexp();
-    let sectionHeadingMatch;
-    let firstSectionStartIndex;
-
-    // Search for the first section's index. If areNewTopicsOnTop is false, we don't need it.
-    if (areNewTopicsOnTop !== false) {
-      sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedCode);
-      firstSectionStartIndex = sectionHeadingMatch?.index;
-      sectionHeadingRegexp.lastIndex = 0;
-    }
 
     if (areNewTopicsOnTop === null) {
       // Detect the topic order: newest first or newest last.
       let previousDate;
       let difference = 0;
+      let sectionHeadingMatch;
       while ((sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedCode))) {
         const timestamp = findFirstTimestamp(page.code.slice(sectionHeadingMatch.index));
         const { date } = timestamp && parseTimestamp(timestamp) || {};
@@ -1205,50 +1240,37 @@ export class PageSource {
         difference > 0;
     }
 
-    /**
-     * Whether new topics go on top on this page. Filled upon running
-     * {@link PageSource#guessNewTopicPlacement}.
-     *
-     * @name areNewTopicsOnTop
-     * @type {boolean|undefined}
-     * @memberof module:pageRegistry~PageSource
-     * @instance
-     */
+    return {
+      areNewTopicsOnTop,
 
-    /**
-     * The start index of the first section, if new topics are on top on this page. Filled upon
-     * running {@link PageSource#guessNewTopicPlacement}.
-     *
-     * @name firstSectionStartIndex
-     * @type {number|undefined}
-     * @memberof module:pageRegistry~PageSource
-     * @instance
-     */
-    Object.assign(page, { areNewTopicsOnTop, firstSectionStartIndex });
+      // We only need the first section's index when new topics are on top.
+      firstSectionStartIndex: areNewTopicsOnTop
+        ? sectionHeadingRegexp.exec(adjustedCode)?.index
+        : undefined,
+    };
   }
 
   /**
    * Determine an offset in the code to insert a new/moved section into. If `referenceDate` is
-   * specified, will take into account chronological order.
+   * specified, will take chronological order into account.
    *
    * @param {Date} [referenceDate=new Date()]
-   * @returns {?number}
+   * @returns {number}
    */
   findProperPlaceForSection(referenceDate = new Date()) {
-    this.guessNewTopicPlacement();
-
-    const page = this.page;
+    const { areNewTopicsOnTop, firstSectionStartIndex } = this.guessNewTopicPlacement();
+    const code = /** @type {string} */ (this.page.code);
 
     if (!referenceDate) {
-      return this.areNewTopicsOnTop ? this.firstSectionStartIndex : page.code.length;
+      return areNewTopicsOnTop ? firstSectionStartIndex || 0 : code.length;
     }
 
-    const adjustedCode = maskDistractingCode(page.code);
+    const adjustedCode = maskDistractingCode(code);
     const sectionHeadingRegexp = PageSource.getTopicHeadingRegexp();
     let sectionHeadingMatch;
     const sections = [];
     while ((sectionHeadingMatch = sectionHeadingRegexp.exec(adjustedCode))) {
-      const timestamp = findFirstTimestamp(page.code.slice(sectionHeadingMatch.index));
+      const timestamp = findFirstTimestamp(code.slice(sectionHeadingMatch.index));
       const { date } = timestamp && parseTimestamp(timestamp) || {};
       sections.push({
         date,
@@ -1257,12 +1279,11 @@ export class PageSource {
     }
 
     const properPlaceIndex = sections.find(({ date }) =>
-      // If `date` is `undefined`, both comparisons will be false
-      (page.areNewTopicsOnTop && date < referenceDate) ||
-      (!page.areNewTopicsOnTop && date > referenceDate)
+      (areNewTopicsOnTop && date && date < referenceDate) ||
+      (!areNewTopicsOnTop && date && date > referenceDate)
     )?.index;
 
-    return properPlaceIndex || page.code.length;
+    return properPlaceIndex || code.length;
   }
 
   /**
@@ -1288,11 +1309,23 @@ const pageRegistry = {
   items: {},
 
   /**
+   * @overload
+   * @param {string} nameOrMwTitle
+   * @param {true} [isGendered=true]
+   * @returns {?Page}
+   *
+   * @overload
+   * @param {string|mw.Title} nameOrMwTitle
+   * @param {false} isGendered
+   * @returns {?Page}
+   */
+
+  /**
    * Get a page object for a page with the specified name (either a new one or already existing).
    *
-   * @param {string|mw.Title} nameOrMwTitle
-   * @param {boolean} [isGendered=true] Used to keep the gendered namespace name (if `nameOrMwTitle`
-   *   is a string).
+   * @param {string | mw.Title} nameOrMwTitle
+   * @param {boolean} [isGendered=true] Used to keep the gendered namespace name (`nameOrMwTitle`
+   *   should be a string).
    * @returns {?Page}
    */
   get(nameOrMwTitle, isGendered) {
@@ -1305,7 +1338,10 @@ const pageRegistry = {
 
     const name = title.getPrefixedText();
     if (!this.items[name]) {
-      this.items[name] = new Page(title, isGendered ? nameOrMwTitle : undefined);
+      this.items[name] = new Page(
+        title,
+        isGendered ? /** @type {string} */ (nameOrMwTitle) : undefined
+      );
     } else if (isGendered) {
       this.items[name].name = nameOrMwTitle;
     }
@@ -1319,7 +1355,7 @@ const pageRegistry = {
    * @returns {Page}
    */
   getCurrent() {
-    return this.get(cd.g.pageName, true);
+    return /** @type {Page} */ (this.get(cd.g.pageName, true));
   },
 };
 

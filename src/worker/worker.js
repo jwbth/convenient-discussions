@@ -11,6 +11,7 @@
 
 import './domhandlerExtended';
 
+import { isComment, isText } from 'domhandler';
 import { parseDocument } from 'htmlparser2';
 
 import CdError from '../CdError';
@@ -53,13 +54,13 @@ function setAlarm(interval) {
  */
 function getAllTextNodes() {
   let nodes = [];
-  rootElement.traverseSubtree((node) => {
-    if (node.nodeType === Node.TEXT_NODE) {
+  rootElement.traverseSubtree((/** @type {import('domhandler').Node} */ node) => {
+    if (isText(node)) {
       nodes.push(node);
     }
 
     // Remove DT reply button html comments as well to optimize.
-    if (node.nodeType === Node.COMMENT_NODE && node.data.startsWith('__DTREPLYBUTTONS__')) {
+    if (isComment(node) && node.data.startsWith('__DTREPLYBUTTONS__')) {
       node.remove();
     }
   });
