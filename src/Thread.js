@@ -3,13 +3,14 @@ import CdError from './CdError';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import PrototypeRegistry from './PrototypeRegistry';
 import StorageItem from './StorageItem';
+import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime';
 import cd from './cd';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
 import settings from './settings';
 import updateChecker from './updateChecker';
 import { loadUserGenders } from './utils-api';
-import { defined, getCommonGender, isHeadingNode, removeFromArrayIfPresent, unique } from './utils-general';
+import { defined, getCommonGender, isHeadingNode, removeFromArrayIfPresent, subtractDaysFromNow, unique } from './utils-general';
 import { mixInObject } from './utils-oojs';
 import { getExtendedRect, getRangeContents, getVisibilityByRects, isCmdModifierPressed } from './utils-window';
 
@@ -410,8 +411,8 @@ class Thread extends mixInObject(class {}, OO.EventEmitter) {
    */
   hasMouseMoved(event) {
     return (
-      Math.abs(event.clientX - this.navFromX) >= 5 ||
-      Math.abs(event.clientY - this.navFromY) >= 5
+      Math.abs(event.clientX - /** @type {number} */ (this.navFromX)) >= 5 ||
+      Math.abs(event.clientY - /** @type {number} */ (this.navFromY)) >= 5
     );
   }
 
@@ -455,13 +456,17 @@ class Thread extends mixInObject(class {}, OO.EventEmitter) {
 
       if (this.hasMouseMoved(event)) {
         $(document).off('mousemove.cd', this.documentMouseMoveHandler);
-        this.enterNavMode(this.navFromX, this.navFromY, true);
+        this.enterNavMode(
+          /** @type {number} */ (this.navFromX),
+          /** @type {number} */ (this.navFromY),
+          true
+        );
       }
 
       return;
     }
 
-    const target = this.getNavTarget(event.clientY - this.navFromY);
+    const target = this.getNavTarget(event.clientY - /** @type {number} */ (this.navFromY));
     if (target && this.navScrolledTo !== target) {
       target.scrollTo({
         alignment: target.logicalLevel === this.rootComment.logicalLevel ? 'top' : 'bottom',
@@ -525,7 +530,7 @@ class Thread extends mixInObject(class {}, OO.EventEmitter) {
       return null;
     }
 
-    const adjustedDelta = delta - this.navDeltaForDelta;
+    const adjustedDelta = delta - /** @type {number} */ (this.navDeltaForDelta);
     const direction = Math.sign(adjustedDelta);
 
     // Shift windows (see above: "Initially, ..."). 0.5 so that adjustedDelta is never 0, thus "in
@@ -1418,11 +1423,19 @@ class Thread extends mixInObject(class {}, OO.EventEmitter) {
    * @private
    */
   static autocollapseThreads() {
-    const collapsedThreadsStorageItem = (new StorageItem('collapsedThreads'))
-      .cleanUp((entry) => (
-        !(entry.collapsedThreads || entry.threads)?.length ||
-        entry.saveTime < Date.now() - 60 * cd.g.msInDay
-      ));
+    /**
+     * @typedef {object} CollapsedThreadsStorageItem
+     * @property {string} id
+     * @property {boolean} collapsed
+     * @property {boolean} wasManuallyExpanded
+     */
+
+    const collapsedThreadsStorageItem =
+      /** @type {StorageItemWithKeysAndSaveTime<CollapsedThreadsStorageItem[]>} */ (
+        new StorageItemWithKeysAndSaveTime('collapsedThreads').cleanUp(
+          (entry) => !entry.collapsedThreads.length || entry.saveTime < subtractDaysFromNow(60)
+        )
+      );
     const data = collapsedThreadsStorageItem.get(mw.config.get('wgArticleId')) || {};
 
     const comments = [];
@@ -1449,7 +1462,7 @@ class Thread extends mixInObject(class {}, OO.EventEmitter) {
       const comment = /** @type {import('./Comment').default} */ (commentRegistry.getByIndex(i));
       if (!comment.thread) continue;
 
-      if (comment.level >= this.collapseThreadsLevel) {
+      if (comment.level >= /** @type {number} */ (this.collapseThreadsLevel)) {
         // Exclude threads where the user participates at any level up and down the tree or that
         // the user has specifically expanded.
         if (![...comment.getAncestors(), ...comment.thread.comments].some((c) => c.isOwn)) {

@@ -337,6 +337,7 @@ class CommentForm extends OO.EventEmitter {
    * {@link CommentForm#checkCode}.
    *
    * @type {Promise|undefined}
+   * @private
    */
   checkCodeRequest;
 
@@ -652,7 +653,6 @@ class CommentForm extends OO.EventEmitter {
    * Set the `target`, `targetSection`, `parentComment`, and `targetPage` properties.
    *
    * @param {CommentFormTarget} target
-   * @private
    */
   setTargets(target) {
     this.target = target;
@@ -2670,18 +2670,21 @@ class CommentForm extends OO.EventEmitter {
     let contextCode;
     let commentCode;
     try {
-      ({ contextCode, commentCode } = /** @type {AnySource} */ (this.target.source).modifyContext({
-        // Ugly solution to avoid overcomplication of code: for replies, we need to get
-        // CommentSource#isReplyOutdented set for `action === 'reply'` which we don't have so far.
-        // So let CommentSource#modifyContext() compute it. In the rest of cases just get the
-        // comment code.
-        commentCode: this.isMode('reply') ? undefined : this.inputToCode(action),
+      ({ contextCode, commentCode } =
+        /** @type {AnySource} */ (
+          this.target.source
+        ).modifyContext({
+          // Ugly solution to avoid overcomplication of code: for replies, we need to get
+          // CommentSource#isReplyOutdented set for `action === 'reply'` which we don't have so far.
+          // So let CommentSource#modifyContext() compute it. In the rest of cases just get the
+          // comment code.
+          commentCode: this.isMode('reply') ? undefined : this.inputToCode(action),
 
-        action: this.mode,
-        doDelete: this.deleteCheckbox?.isSelected(),
-        commentForm: this,
-        commentFormAction: action,
-      }));
+          action: this.mode,
+          doDelete: this.deleteCheckbox?.isSelected(),
+          commentForm: this,
+          commentFormAction: action,
+        }));
       contextCode = this.addAnchorsToComments(contextCode, commentIds);
     } catch (error) {
       if (error instanceof CdError) {
@@ -3426,6 +3429,14 @@ class CommentForm extends OO.EventEmitter {
 
     this.registered = false;
     this.emit('unregister');
+  }
+
+  /**
+   * Detach the comment form from the page when reloading the page and reset some properties.
+   */
+  detach() {
+    this.$element.detach();
+    delete this.checkCodeRequest;
   }
 
   /**

@@ -8,6 +8,7 @@ import ElementsTreeWalker from './ElementsTreeWalker';
 import LiveTimestamp from './LiveTimestamp';
 import PrototypeRegistry from './PrototypeRegistry';
 import StorageItem from './StorageItem';
+import StorageItemWithKeys from './StorageItemWithKeys';
 import TreeWalker from './TreeWalker';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
@@ -17,7 +18,7 @@ import navPanel from './navPanel';
 import settings from './settings';
 import userRegistry from './userRegistry';
 import { handleApiReject, loadUserGenders, parseCode } from './utils-api';
-import { addToArrayIfAbsent, areObjectsEqual, calculateWordOverlap, countOccurrences, decodeHtmlEntities, defined, getHeadingLevel, isInline, removeFromArrayIfPresent, sleep, underlinesToSpaces, unique } from './utils-general';
+import { addToArrayIfAbsent, areObjectsEqual, calculateWordOverlap, countOccurrences, decodeHtmlEntities, defined, getHeadingLevel, isInline, removeFromArrayIfPresent, sleep, subtractDaysFromNow, underlinesToSpaces, unique } from './utils-general';
 import { showConfirmDialog } from './utils-oojs';
 import { formatDate, formatDateNative } from './utils-timestamp';
 import { extractArabicNumeral, extractSignatures, removeWikiMarkup } from './utils-wikitext';
@@ -892,10 +893,7 @@ class Comment extends CommentSkeleton {
   addThankButton() {
     if (!cd.user.isRegistered() || !this.author.isRegistered() || !this.date || this.isOwn) return;
 
-    Comment.thanksStorage ||= (new StorageItem('thanks'))
-      .cleanUp((entry) => (entry.thankTime || 0) < Date.now() - 60 * cd.g.msInDay)
-      .save();
-    const isThanked = Object.values(Comment.thanksStorage.getAll()).some((thank) => (
+    const isThanked = Object.values(Comment.thanksStorage.getData()).some((thank) => (
       this.dtId === thank.id ||
       this.id === thank.id
     ));
@@ -2234,8 +2232,16 @@ class Comment extends CommentSkeleton {
     // to set background if the user has switched off background highlighting for new comments.
     this.flash('changed', 1000);
 
+    /**
+     * @typedef {object} SeenRenderedChange
+     * @property {StringsByKey} users
+     * @property {number} saveTime
+     */
+
     if (this.isChanged && this.id) {
-      const seenStorageItem = new StorageItem('seenRenderedChanges');
+      const seenStorageItem = /** @type {StorageItemWithKeys<SeenRenderedChange>} */ (
+        new StorageItemWithKeys('seenRenderedChanges')
+      );
       const seen = seenStorageItem.get(mw.config.get('wgArticleId')) || {};
       seen[this.id] = {
         htmlToCompare: this.htmlToCompare,
@@ -2593,7 +2599,7 @@ class Comment extends CommentSkeleton {
         this.willFlashChangedOnSight = false;
         controller.maybeMarkPageAsRead();
       } else if (this.id) {
-        const seenStorageItem = new StorageItem('seenRenderedChanges');
+        const seenStorageItem = new StorageItemWithKeys('seenRenderedChanges');
         const seen = seenStorageItem.get(mw.config.get('wgArticleId')) || {};
         delete seen[this.id];
         seenStorageItem
@@ -3129,7 +3135,7 @@ class Comment extends CommentSkeleton {
 
       Comment.thanksStorage
         .set(edit.revid, {
-          id: this.dtId || this.id,
+          id: /** @type {string} */ (this.dtId || this.id),
           thankTime: Date.now(),
         })
         .save();
@@ -4243,10 +4249,27 @@ class Comment extends CommentSkeleton {
     return true;
   }
 
+  /**
+   * Check whether the command has a date.
+   *
+   * @returns {this is { date: Date }}
+   */
+  hasDate() {
+    return Boolean(this.date);
+  }
+
   static prototypes = new PrototypeRegistry();
 
-  /** @type {StorageItem} */
-  static thanksStorage;
+  /**
+   * @typedef {object} ThanksData
+   * @property {string} id
+   * @property {number} thankTime
+   */
+
+  /** @type {StorageItemWithKeys<ThanksData>} */
+  static thanksStorage = (new StorageItemWithKeys('thanks'))
+    .cleanUp((entry) => (entry.thankTime || 0) < subtractDaysFromNow(60))
+    .save();
 
   /** @type {RegExp} */
   static dtIdRegexp;

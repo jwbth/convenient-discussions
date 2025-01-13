@@ -47,11 +47,11 @@ import { brsToNewlines } from './utils-wikitext';
  * @property {number} [index] The index of the page in the list.
  * @property {string} contentmodel The content model of the page.
  * @property {Array<{ title: string }>} [redirects] List of redirects to the page.
- * @property {Revision[]} revisions
+ * @property {Revision[]} [revisions]
  */
 
 /**
- * Represents a mapping between two titles.
+ * Represents a mapping between two titles in the `query` API response.
  *
  * @typedef {object} FromTo
  * @property {string} from The original title or fragment.
@@ -61,9 +61,10 @@ import { brsToNewlines } from './utils-wikitext';
  */
 
 /**
- * Represents the structure of a `query` API response.
+ * Represents the general structure of a `query` API response when `revisions` property is
+ * requested.
  *
- * @typedef {object} ApiResponseQuery
+ * @typedef {object} ApiResponseQueryRevisions
  * @property {object} [query] The main query object.
  * @property {ApiResponseQueryContentPage[]} [query.pages] List of pages in the query.
  * @property {FromTo[]} [query.redirects] List of redirects in the query.
@@ -71,6 +72,17 @@ import { brsToNewlines } from './utils-wikitext';
  * @property {string} [curtimestamp]
  * @property {boolean} [batchcomplete] Indicates if the batch is complete.
  * @property {object} [continue] Continuation information for the query.
+ */
+
+/**
+ * @typedef {object} APIResponseGlobalUserInfo
+ * @property {object} [query] The query object.
+ * @property {object} query.globaluserinfo The global user information object.
+ * @property {string} query.globaluserinfo.home The home wiki of the global user.
+ * @property {number} query.globaluserinfo.id The ID of the global user.
+ * @property {string} query.globaluserinfo.registration The registration date of the global user.
+ * @property {string} query.globaluserinfo.name The name of the global user.
+ * @property {boolean} [batchcomplete] Indicates whether the batch is complete.
  */
 
 /**
@@ -334,7 +346,7 @@ export async function getPageTitles(pageIds) {
       action: 'query',
       pageids: nextPageIds,
     }).catch(handleApiReject);
-    const response = /** @type {ApiResponseQuery} */ (await request);
+    const response = /** @type {ApiResponseQueryRevisions} */ (await request);
     pages.push(...response.query?.pages || []);
   }
 
@@ -360,7 +372,7 @@ export async function getPageIds(titles) {
   const redirects = [];
   const pages = [];
   for (const nextTitles of splitIntoBatches(titles)) {
-    const { query } = /** @type {ApiResponseQuery} */ (await controller.getApi().post({
+    const { query } = /** @type {ApiResponseQueryRevisions} */ (await controller.getApi().post({
       action: 'query',
       titles: nextTitles,
       redirects: true,
@@ -514,7 +526,7 @@ export async function getPagesExistence(titles) {
       action: 'query',
       titles: nextTitles,
     }).catch(handleApiReject);
-    const response = /** @type {ApiResponseQuery} */ (await request);
+    const response = /** @type {ApiResponseQueryRevisions} */ (await request);
 
     const query = response.query;
     if (!query) break;

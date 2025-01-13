@@ -450,7 +450,7 @@ export class Page {
       curtimestamp: true,
     }).catch(handleApiReject);
     const { query, curtimestamp: queryTimestamp } =
-      /** @type {import('./utils-api').ApiResponseQuery} */ (await request);
+      /** @type {import('./utils-api').ApiResponseQueryRevisions} */ (await request);
 
     const page = query?.pages?.[0];
     const revision = page?.revisions?.[0];
@@ -580,7 +580,7 @@ export class Page {
           .getApi()
           .post(/** @type {import('types-mediawiki/mw/Api').UnknownApiParams} */ (options))
           .catch(handleApiReject);
-    const response = /** @type {import('./utils-api').ApiResponseQuery} */ (await request);
+    const response = /** @type {import('./utils-api').ApiResponseQueryRevisions} */ (await request);
     const revisions = response.query?.pages?.[0]?.revisions;
     if (!revisions) {
       throw new CdError({

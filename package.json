@@ -83,7 +83,7 @@
     "yargs": "^15.4.1"
   },
   "sideEffects": [
-    "./src/worker.js"
+    "./src/worker/worker.js"
   ],
   "browserslist": [
     "> 1%",

@@ -1657,7 +1657,7 @@ class Section extends SectionSkeleton {
       )
     )).catch(handleApiReject);
     const { query, curtimestamp: queryTimestamp } =
-      /** @type {import('./utils-api').ApiResponseQuery} */ (await request);
+      /** @type {import('./utils-api').ApiResponseQueryRevisions} */ (await request);
 
     const page = query?.pages?.[0];
     const revision = page?.revisions?.[0];

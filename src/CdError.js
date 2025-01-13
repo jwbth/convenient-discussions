@@ -5,7 +5,7 @@
  * @param {object} [apiResponse] API response.
  * @param {object} [apiError] API error code.
  * @param {object} [details] Additional details.
- * @param {string} [message] Error message for the user.
+ * @param {string} [message] Error message for the user if they will see it.
  */
 
 /**

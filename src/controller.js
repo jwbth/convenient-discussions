@@ -22,15 +22,42 @@ import toc from './toc';
 import updateChecker from './updateChecker';
 import { getUserInfo } from './utils-api';
 import { defined, definedAndNotNull, getLastArrayElementOrSelf, getQueryParamBooleanValue, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
-import { mixEventEmitterInObject } from './utils-oojs';
+import { EventEmitter, mixEventEmitterInObject } from './utils-oojs';
 import { copyText, createSvg, getVisibilityByRects, skin$, wrapHtml } from './utils-window';
 import WebpackWorker from './worker/worker-gate';
 
 /**
+ * @typedef {object} AddedComments
+ * @property {import('./updateChecker').CommentWorkerEnrichied[]} all
+ * @property {import('./updateChecker').CommentWorkerEnrichied[]} relevant
+ * @property {Map<import('./SectionSkeleton').default | null, import('./CommentSkeleton').default[]>} bySection
+ */
+
+/**
+ * @typedef {object} EventMap
+ * @property {[]} boot
+ * @property {[event: MouseEvent]} mouseMove
+ * @property {[]} resize
+ * @property {[event: KeyboardEvent]} keyDown
+ * @property {[]} scroll
+ * @property {[]} horizontalScroll
+ * @property {[fragment: string]} popState
+ * @property {[]} selectionChange
+ * @property {[]} mutate
+ * @property {[passedData: import('./BootProcess').PassedData]} beforeReload
+ * @property {[]} startReload
+ * @property {[]} reload
+ * @property {[]} desktopNotificationClick
+ * @property {[addedComments: AddedComments]} addedCommentsUpdate
+ */
+
+/**
  * Singleton that stores and changes the overall state of the page, initiating boot processes and
  * reacting to events.
+ *
+ * @augments EventEmitter<EventMap>
  */
-class Controller extends OO.EventEmitter {
+class Controller extends EventEmitter {
   /**
    * Is the page loading (the loading overlay is on).
    *
@@ -935,7 +962,6 @@ class Controller extends OO.EventEmitter {
    *
    * @param {Element} element
    * @param {Element} newElement
-   * @private
    */
   replaceScrollAnchorElement(element, newElement) {
     if (this.scrollData.element && element === this.scrollData.element) {
@@ -1183,14 +1209,14 @@ class Controller extends OO.EventEmitter {
   /**
    * _For internal use._ Handle a mouse move event (including `mousemove` and `mouseover`).
    *
-   * @param {Event} e
+   * @param {MouseEvent} event
    */
-  handleMouseMove(e) {
+  handleMouseMove(event) {
     if (this.mouseMoveBlocked || this.isAutoScrolling() || this.isPageOverlayOn()) return;
 
     // Don't throttle. Without throttling, performance is generally OK, while the "frame rate" is
     // about 50 (so, the reaction time is about 20ms). Lower values would be less comfortable.
-    this.emit('mouseMove', e);
+    this.emit('mouseMove', event);
   }
 
   /**
@@ -1257,13 +1283,13 @@ class Controller extends OO.EventEmitter {
   /**
    * Handles `keydown` event on the document.
    *
-   * @param {Event} e
+   * @param {KeyboardEvent} event
    * @private
    */
-  handleGlobalKeyDown(e) {
+  handleGlobalKeyDown(event) {
     if (this.isPageOverlayOn()) return;
 
-    this.emit('keyDown', e);
+    this.emit('keyDown', event);
   }
 
   /**
@@ -2187,12 +2213,6 @@ class Controller extends OO.EventEmitter {
       this.relevantAddedCommentIds = all.map((comment) => comment.id).filter(definedAndNotNull);
     }
 
-    this.emit('addedCommentsUpdate', {
-      all,
-      relevant,
-      bySection: Comment.groupBySection(all),
-    });
-
     this.updatePageTitle();
 
     const commentsToNotifyAbout = relevant
@@ -2385,8 +2405,40 @@ class Controller extends OO.EventEmitter {
    * @returns {boolean}
    */
   isSubscribingDisabled() {
-    return cd.page.isOwnTalkPage() && !['all', 'toMe'].includes(settings.get('desktopNotifications'));
+    return (
+      cd.page.isOwnTalkPage() && !['all', 'toMe'].includes(settings.get('desktopNotifications'))
+    );
   }
+
+  // /**
+  //  * @template {keyof EventMap} K
+  //  * @template {any[]} [A=[]]
+  //  * @template [C=null]
+  //  * @param {K} event
+  //  * @param {OO.EventHandler<C, (this: C, ...args: [...A, ...EventMap[K]]) => void>} method
+  //  * @param {A} [args]
+  //  * @param {C} [context]
+  //  * @returns {any}
+  //  * @override
+  //  */
+  // on(event, method, args, context) {
+  //   return super.on(
+  //     /** @type {string} */ (event),
+  //     /** @type {OO.EventHandler<C>} */ (method),
+  //     args,
+  //     context
+  //   );
+  // }
+
+  // /**
+  //  * @template {keyof EventMap} K
+  //  * @param {K} event
+  //  * @param {EventMap[K]} args
+  //  * @returns {boolean}
+  //  */
+  // emit(event, ...args) {
+  //   return super.emit(event, ...args);
+  // }
 }
 
 export default new Controller();

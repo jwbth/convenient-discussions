@@ -3,7 +3,7 @@ import cd from './cd';
 import controller from './controller';
 import pageRegistry from './pageRegistry';
 import { getUserInfo, saveGlobalOption, saveLocalOption } from './utils-api';
-import { areObjectsEqual, defined, definedAndNotNull, typedKeysOf, ucFirst } from './utils-general';
+import { areObjectsEqual, defined, definedAndNotNull, subtractDaysFromNow, typedKeysOf, ucFirst } from './utils-general';
 import { showConfirmDialog } from './utils-oojs';
 import { formatDateImproved, formatDateNative, formatDateRelative } from './utils-timestamp';
 import { createSvg, getFooter, wrapHtml } from './utils-window';
@@ -55,13 +55,14 @@ import { createSvg, getFooter, wrapHtml } from './utils-window';
  */
 
 /**
- * @typedef {{ name: SettingName } & (
+ * @typedef {{ name: SettingName | 'removeData' } & (
  *   | Omit<import('./utils-oojs').TextFieldType, 'value'>
  *   | Omit<import('./utils-oojs').NumberFieldType, 'value'>
  *   | Omit<import('./utils-oojs').CheckboxFieldType, 'value' | 'selected'>
  *   | Omit<import('./utils-oojs').RadioFieldType, 'selected'>
  *   | Omit<import('./utils-oojs').MultilineTextFieldType, 'value'>
  *   | Omit<import('./utils-oojs').TagMultiselectFieldType, 'selected'>
+ *   | import('./utils-oojs').ButtonFieldType
  * )} UiControl
  */
 
@@ -218,7 +219,7 @@ class Settings {
       'https://en.wikipedia.org/wiki/Template:Outdent';
 
     const fortyThreeMinutesAgo = new Date(Date.now() - cd.g.msInMin * 43);
-    const threeDaysAgo = new Date(Date.now() - cd.g.msInDay * 3.3);
+    const threeDaysAgo = new Date(subtractDaysFromNow(3.3));
 
     const exampleDefault = formatDateNative(fortyThreeMinutesAgo);
     const exampleImproved1 = formatDateImproved(fortyThreeMinutesAgo);
@@ -394,6 +395,7 @@ class Settings {
 
                   snippet = textMasker.unmaskText(snippet);
                   label &&= textMasker.unmaskText(label);
+
                   return [snippet, label].filter(defined);
                 })
                 .filter(defined),
@@ -775,13 +777,29 @@ class Settings {
    *
    * @param {string} [initalPageName]
    * @param {string} [focusSelector]
+   * @returns {Promise.<void>}
    */
-  showDialog(initalPageName, focusSelector) {
-    if ($('.cd-dialog-settings').length) return;
+  async showDialog(initalPageName, focusSelector) {
+    if (this.dialogPromise) return;
+
+    this.dialogPromise = Promise.all([
+      this.load({ omitLocal: true }),
+    ]);
+
+    let loadedSettings;
+    try {
+      loadedSettings = await this.dialogPromise;
+    } catch {
+      mw.notify(cd.s('error-settings-load'), { type: 'error' });
+      return;
+    } finally {
+      delete this.dialogPromise;
+    }
 
     const dialog = new (require('./SettingsDialog').default)(initalPageName, focusSelector);
-    controller.getWindowManager('settings').addWindows([dialog]);
-    controller.getWindowManager('settings').openWindow(dialog);
+    const windowManager = controller.getWindowManager('settings');
+    windowManager.addWindows([dialog]);
+    windowManager.openWindow(dialog, { loadedSettings });
 
     cd.tests.settingsDialog = dialog;
   }

@@ -72,7 +72,7 @@ const convenientDiscussions = {
    * Get a language string.
    *
    * @param {string} name String name.
-   * @param {...*} params String parameters (substituted strings, also
+   * @param {...(string | object)} params String parameters (substituted strings, also
    *   {@link module:userRegistry.User User} objects for use in `{{gender:}}`). The last parameter
    *   can be an object that can have a boolean property `parse` (should the message be returned in
    *   a parsed form). In the `parse` form, wikilinks are replaced with HTML tags, the code is
@@ -82,7 +82,7 @@ const convenientDiscussions = {
    */
   s(name, ...params) {
     const fullName = `convenient-discussions-${name}`;
-    let options = {};
+    let options = /** @type {{ parse: boolean }} */ ({});
     let lastParam = params[params.length - 1];
 
     // lastParam.options is a `mw.user`-like object to provide to {{gender:}}

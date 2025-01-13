@@ -636,7 +636,7 @@ export default {
 
   /**
    * _For internal use._ Filter out floating and hidden elements from all the comments'
-   * {@link CommentSkeleton#highlightables highlightables}, change their attributes, and update the
+   * {@link Comment#highlightables highlightables}, change their attributes, and update the
    * comments' level and parent elements' level classes.
    */
   reviewHighlightables() {
@@ -855,7 +855,7 @@ export default {
     let comment;
     if (selectionText) {
       const { higherNode } = getHigherNodeAndOffsetInSelection(selection);
-      const treeWalker = new TreeWalker(controller.rootElement, null, false, higherNode);
+      const treeWalker = new TreeWalker(controller.rootElement, undefined, false, higherNode);
       let commentIndex;
       do {
         commentIndex = treeWalker.currentNode.dataset?.cdCommentIndex;
@@ -890,9 +890,9 @@ export default {
    */
   findPriorComment(date, author) {
     return this.items
+      .filter((comment) => comment.hasDate())
       .filter((comment) => (
         comment.author.getName() === author &&
-        comment.date &&
         comment.date < date &&
         comment.date.getTime() > date.getTime() - cd.g.msInDay
       ))
@@ -923,7 +923,8 @@ export default {
     controller.rootElement
       .querySelectorAll('table.cd-comment-part .cd-signature, .cd-comment-part > table .cd-signature')
       .forEach((signature) => {
-        const index = signature.closest('.cd-comment-part').dataset.cdCommentIndex;
+        const index = /** @type {HTMLElement} */ (signature.closest('.cd-comment-part')).dataset
+          .cdCommentIndex;
         if (index !== undefined) {
           this.items[index].isTableComment = true;
         }
@@ -934,10 +935,10 @@ export default {
    * Add comment's children, including indirect, into an array, if they are in the array of all new
    * comments.
    *
-   * @param {import('./CommentSkeleton').default} childComment
-   * @param {import('./CommentSkeleton').default[]} newCommentsInSubtree
+   * @param {import('./updateChecker').CommentWorkerEnrichied} childComment
+   * @param {import('./updateChecker').CommentWorkerEnrichied[]} newCommentsInSubtree
    * @param {number[]} newCommentIndexes
-   * @returns {import('./CommentSkeleton').default[]}
+   * @returns {import('./updateChecker').CommentWorkerEnrichied[]}
    * @private
    */
   searchForNewCommentsInSubtree(childComment, newCommentsInSubtree, newCommentIndexes) {
@@ -988,26 +989,34 @@ export default {
    * @private
    */
   mergeAdjacentCommentLevels() {
-    const levels = controller.rootElement
-      .querySelectorAll('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)');
+    const levels = controller.rootElement.querySelectorAll(
+      '.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)'
+    );
     if (!levels.length) return;
 
-    const isOrHasCommentLevel = (el) => (
-      (el.classList.contains('cd-commentLevel') && el.tagName !== 'OL') ||
-      el.querySelector('.cd-commentLevel:not(ol)')
-    );
+    const isOrHasCommentLevel = (/** @type {Element} */ el) =>
+      Boolean(
+        (el.classList.contains('cd-commentLevel') && el.tagName !== 'OL') ||
+        el.querySelector('.cd-commentLevel:not(ol)')
+      );
 
     [...levels].forEach((bottomElement) => {
       const topElement = bottomElement.previousElementSibling;
 
-      // If the previous element was removed in this cycle. (Or it could be absent for some other
-      // reason? I can confirm that I witnessed a case where the element was absent, but didn't pay
-      // attention why unfortunately.)
+      // If the previous element was removed in this cycle
       if (!topElement) return;
 
-      let currentTopElement = topElement;
-      let currentBottomElement = bottomElement;
-      do {
+      for (
+        let currentTopElement = /** @type {HTMLElement | undefined} */ (topElement),
+          currentBottomElement = /** @type {HTMLElement | undefined} */ (bottomElement),
+          firstMoved;
+        currentTopElement && currentBottomElement && isOrHasCommentLevel(currentBottomElement);
+        currentBottomElement = firstMoved,
+          currentTopElement =
+            /** @type {HTMLElement | null} */ (firstMoved?.previousElementSibling) ||
+            undefined,
+          firstMoved = undefined
+      ) {
         const topTag = currentTopElement.tagName;
         const bottomInnerTags = {};
         if (topTag === 'UL') {
@@ -1016,9 +1025,10 @@ export default {
           bottomInnerTags.LI = 'DD';
         }
 
-        let firstMoved;
         if (isOrHasCommentLevel(currentTopElement)) {
-          const firstElementChild = currentBottomElement.firstElementChild;
+          const firstElementChild = /** @type {HTMLElement} */ (
+            currentBottomElement.firstElementChild
+          );
 
           /*
             Avoid collapsing adjacent <li>s and <dd>s if we deal with a structure like this:
@@ -1034,14 +1044,14 @@ export default {
           */
           if (['DL', 'DD', 'UL', 'LI'].includes(firstElementChild.tagName)) {
             while (currentBottomElement.childNodes.length) {
-              let child = currentBottomElement.firstChild;
+              let child = /** @type {HTMLElement} */ (currentBottomElement.firstChild);
               if (child.tagName) {
                 if (bottomInnerTags[child.tagName]) {
                   child = this.changeElementType(child, bottomInnerTags[child.tagName]);
                 }
                 firstMoved ??= child;
               } else if (firstMoved === undefined && child.textContent.trim()) {
-                // Don't fill the "firstMoved" variable which is used further to merge elements if
+                // Don't fill the firstMoved variable which is used further to merge elements if
                 // there is a non-empty text node between. (An example that is now fixed:
                 // https://ru.wikipedia.org/wiki/Википедия:Форум/Архив/Викиданные/2018/1_полугодие#201805032155_NBS,
                 // but other can be on the loose.) Instead, wrap the text node into an element to
@@ -1049,7 +1059,7 @@ export default {
                 // elements. This could be seen only as an additional precaution, since it doesn't
                 // fix the source of the problem: the fact that a bare text node is (probably) a
                 // part of the reply. It shouldn't be happening.
-                firstMoved = null;
+                firstMoved = undefined;
                 const newChild = document.createElement('span');
                 newChild.appendChild(child);
                 child = newChild;
@@ -1059,14 +1069,7 @@ export default {
             currentBottomElement.remove();
           }
         }
-
-        currentBottomElement = firstMoved;
-        currentTopElement = firstMoved?.previousElementSibling;
-      } while (
-        currentTopElement &&
-        currentBottomElement &&
-        isOrHasCommentLevel(currentBottomElement)
-      );
+      }
     });
   },
 
@@ -1076,9 +1079,9 @@ export default {
    * and properties to this element. Unfortunately, we can't just change the element's `tagName` to
    * do that.
    *
-   * @param {Element} element
+   * @param {HTMLElement} element
    * @param {string} newType
-   * @returns {Element}
+   * @returns {HTMLElement}
    */
   changeElementType(element, newType) {
     const newElement = document.createElement(newType);
@@ -1094,7 +1097,7 @@ export default {
     if (commentIndex !== null) {
       this.items[Number(commentIndex)].replaceElement(element, newElement);
     } else {
-      element.parentNode.replaceChild(newElement, element);
+      /** @type {HTMLElement} */ (element.parentElement).replaceChild(newElement, element);
     }
 
     controller.replaceScrollAnchorElement(element, newElement);
@@ -1121,14 +1124,14 @@ export default {
     controller.rootElement
       .querySelectorAll('dd.cd-comment-part:not(.cd-comment-part-last) + dd > .cd-comment-part:first-child, li.cd-comment-part:not(.cd-comment-part-last) + li > .cd-comment-part:first-child')
       .forEach((el) => {
-        items.push(el.parentNode);
+        items.push(el.parentElement);
       });
 
     // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202009202110_Example
     controller.rootElement
       .querySelectorAll('.cd-comment-replacedPart.cd-comment-part-last')
       .forEach((el) => {
-        const possibleItem = el.parentNode.nextElementSibling;
+        const possibleItem = /** @type {HTMLElement} */ (el.parentElement).nextElementSibling;
         if (possibleItem?.firstElementChild?.classList.contains('cd-commentLevel')) {
           items.push(possibleItem);
         }
@@ -1148,7 +1151,7 @@ export default {
       controller.rootElement
         .querySelectorAll(`.cd-commentLevel > li + li > .${cd.config.outdentClass}, .cd-commentLevel > dd + dd > .${cd.config.outdentClass}`)
         .forEach((el) => {
-          items.push(el.parentNode);
+          items.push(el.parentElement);
         });
       controller.rootElement
         .querySelectorAll(`.cd-commentLevel > li + .cd-comment-outdented, .cd-commentLevel > dd + .cd-comment-outdented`)

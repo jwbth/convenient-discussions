@@ -4,11 +4,12 @@
  * @module userRegistry
  */
 
+import CdError from './CdError';
 import StorageItem from './StorageItem';
 import cd from './cd';
 import controller from './controller';
 import { handleApiReject } from './utils-api';
-import { ucFirst, underlinesToSpaces } from './utils-general';
+import { subtractDaysFromNow, ucFirst, underlinesToSpaces } from './utils-general';
 
 /**
  * Class representing a user. Is made similar to
@@ -206,22 +207,20 @@ export default {
     if (!userIdList || !cd.g.useGlobalPreferences) return;
 
     /**
-     * @typedef {object} MutedUsersData
+     * @typedef {object} MutedUsers
      * @property {StringsByKey} users
      * @property {number} saveTime
      */
 
     const userIds = userIdList.split('\n');
-    const mutedUsersStorage = /** @type {StorageItem<MutedUsersData, 'mutedUsers'>} */ (
-      new StorageItem('mutedUsers')
-    );
-    const mutedUsersData = mutedUsersStorage.getAll();
+    const mutedUsersStorage = /** @type {StorageItem<MutedUsers>} */ (new StorageItem('mutedUsers'));
+    const mutedUsers = mutedUsersStorage.getData();
     if (
-      !mutedUsersData.users ||
-      userIds.some((id) => !(id in mutedUsersData.users)) ||
+      !mutedUsers.users ||
+      userIds.some((id) => !(id in mutedUsers.users)) ||
 
       // Users can be renamed, so we can cache for a week max.
-      mutedUsersData.saveTime < Date.now() - 7 * cd.g.msInDay
+      mutedUsers.saveTime < subtractDaysFromNow(7)
     ) {
       this.getUsersByGlobalId(userIds).then(
         (users) => {
@@ -229,7 +228,7 @@ export default {
             user.setMuted(true);
           });
           mutedUsersStorage
-            .set('mutedUsers', {
+            .setData({
               users: /** @type {StringsByKey} */ (Object.assign({}, ...users.map((user) => ({
                 [/** @type {number} */ (user.getGlobalId())]: user.getName(),
               }), {}))),
@@ -246,12 +245,12 @@ export default {
            */
           mw.hook('convenientDiscussions.mutedUsers').fire(users);
         },
-        (e) => {
-          console.error('Couldn\'t load the names of the muted users.', e);
+        (error) => {
+          console.error('Couldn\'t load the names of the muted users.', error);
         }
       );
     } else {
-      const users = Object.entries(mutedUsersData.users).map(([, name]) => this.get(name));
+      const users = Object.entries(mutedUsers.users).map(([, name]) => this.get(name));
       users.forEach((user) => user.setMuted(true));
       mw.hook('convenientDiscussions.mutedUsers').fire(users);
     }
@@ -260,7 +259,7 @@ export default {
   /**
    * Given a list of user IDs, return a list of users.
    *
-   * @param {number[]|string[]} userIds List of user IDs.
+   * @param {(number|string)[]} userIds List of user IDs.
    * @returns {Promise.<import('./userRegistry').User[]>}
    */
   async getUsersByGlobalId(userIds) {
@@ -271,10 +270,23 @@ export default {
         guiid: id,
       }).catch(handleApiReject)
     ));
-    return (await Promise.all(requests)).map((response) => {
-      const userInfo = response.query.globaluserinfo;
+    const responses = /** @type {import('./utils-api').APIResponseGlobalUserInfo[]} */ (
+      await Promise.all(requests)
+    );
+
+    return responses.map((response) => {
+      const userInfo = response.query?.globaluserinfo;
+      if (!userInfo) {
+        throw new CdError({
+          type: 'api',
+          code: 'noData',
+          apiData: response,
+        });
+      }
+
       const user = this.get(userInfo.name);
       user.setGlobalId(userInfo.id);
+
       return user;
     });
   },

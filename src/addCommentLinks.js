@@ -22,7 +22,7 @@ let goToCommentToYou;
 let goToCommentWatchedSection;
 let currentUserRegexp;
 let switchRelevantButton;
-let subscriptions;
+let /** @type {import('./LegacySubscriptions').default} */ subscriptions;
 
 const prototypes = new PrototypeRegistry();
 
@@ -40,7 +40,9 @@ async function initialize() {
   if (cd.user.isRegistered() && !settings.get('useTopicSubscription')) {
     // Loading the subscriptions is not critical, as opposed to messages, so we catch the possible
     // error, not letting it be caught by the try/catch block.
-    subscriptions = controller.getSubscriptionsInstance();
+    subscriptions = /** @type {import('./LegacySubscriptions').default} */ (
+      controller.getSubscriptionsInstance()
+    );
     requests.push(subscriptions.load(undefined, true).catch(() => {}));
   }
 
@@ -249,6 +251,20 @@ function extractAuthor(line) {
 }
 
 /**
+ * Given a wrapper element of any known kind, change an attribute on its link element.
+ *
+ * @param {HTMLElement} wrapper
+ * @param {string} attr
+ * @param {string} value
+ */
+function setWrapperLinkAttr(wrapper, attr, value) {
+  const linkElement = /** @type {HTMLAnchorElement} */ (
+    /** @type {HTMLElement} */ (wrapper.lastChild).lastChild
+  );
+  linkElement.setAttribute(attr, value);
+}
+
+/**
  * Check by an edit summary if an edit is probably a move performed by our script.
  *
  * @param {string} summary
@@ -329,13 +345,21 @@ function processWatchlist($content) {
   //   non-JavaScript interface")
   const lines = $content[0].querySelectorAll('.mw-changeslist-line[data-mw-revid]');
   lines.forEach((lineOrBareTr) => {
-    const line = lineOrBareTr.className ? lineOrBareTr : lineOrBareTr.parentNode.parentNode;
+    const line = lineOrBareTr.className
+      ? lineOrBareTr
+      : /** @type {HTMLElement} */ (
+          /** @type {HTMLElement} */ (lineOrBareTr.parentElement).parentElement
+        );
     const nsMatch = line.className.match(/mw-changeslist-ns(\d+)/);
     const nsNumber = nsMatch && Number(nsMatch[1]);
     if (nsNumber === null) return;
 
     const isNested = line.tagName === 'TR';
-    const linkElement = (isNested ? line.parentNode : line).querySelector('.mw-changeslist-title');
+    const linkElement = /** @type {HTMLAnchorElement} */ (
+      (isNested ? /** @type {HTMLElement} */ (line.parentNode) : line).querySelector(
+        '.mw-changeslist-title'
+      )
+    );
     if (!linkElement || isWikidataItem(linkElement)) return;
 
     const pageName = linkElement.textContent;
@@ -370,9 +394,8 @@ function processWatchlist($content) {
     let wrapper;
     if (summary && currentUserRegexp.test(` ${summary} `)) {
       wrapper = prototypes.get('wrapperRelevant');
-      wrapper.lastChild.lastChild.title = goToCommentToYou;
+      setWrapperLinkAttr(wrapper, 'title', goToCommentToYou);
     } else {
-      let isWatched = false;
       if (summary) {
         const curLink = (
           // Expanded watchlist
@@ -381,30 +404,32 @@ function processWatchlist($content) {
           // Non-expanded watchlist
           line.querySelector('.mw-changeslist-history')
         );
-        const curIdMatch = curLink?.href?.match(/[&?]curid=(\d+)/);
+        const curIdMatch =
+          curLink instanceof HTMLAnchorElement ? curLink.href.match(/[&?]curid=(\d+)/) : undefined;
         const curId = curIdMatch && Number(curIdMatch[1]);
         if (curId) {
-          const watchedSectionHeadlines = subscriptions?.getForPageId(curId) || [];
-          if (watchedSectionHeadlines.length) {
-            isWatched = watchedSectionHeadlines.find((headline) => isInSection(summary, headline));
-            if (isWatched) {
-              wrapper = prototypes.get('wrapperRelevant');
-              wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
-            }
+          if (
+            (subscriptions?.getForPageId(curId) || []).find((headline) =>
+              isInSection(summary, headline)
+            )
+          ) {
+            wrapper = prototypes.get('wrapperRelevant');
+            setWrapperLinkAttr(wrapper, 'title', goToCommentWatchedSection);
           }
         }
       }
-      if (!isWatched) {
-        wrapper = prototypes.get('wrapperRegular');
-      }
+      wrapper ||= prototypes.get('wrapperRegular');
     }
 
-    wrapper.lastChild.lastChild.href = `${link}#${id}`;
+    setWrapperLinkAttr(wrapper, 'href', `${link}#${id}`);
 
     const destination = line.querySelector('.comment') || line.querySelector('.mw-usertoollinks');
     if (!destination) return;
 
-    destination.parentNode.insertBefore(wrapper, destination.nextSibling);
+    /** @type {HTMLElement} */ (destination.parentElement).insertBefore(
+      wrapper,
+      destination.nextSibling
+    );
   });
 }
 
@@ -421,12 +446,14 @@ function processContributions($content) {
   [
     ...$content[0].querySelectorAll('.mw-contributions-list > li:not(.mw-tag-mw-new-redirect)')
   ].forEach((line) => {
-    const linkElement = line.querySelector('.mw-contributions-title');
+    const linkElement = /** @type {HTMLAnchorElement} */ (
+      line.querySelector('.mw-contributions-title')
+    );
     if (!linkElement || isWikidataItem(linkElement)) return;
 
     const pageName = linkElement.textContent;
     const page = pageRegistry.get(pageName);
-    if (!page.isProbablyTalkPage()) return;
+    if (!page || !page.isProbablyTalkPage()) return;
 
     const link = linkElement.href;
     if (!link) return;
@@ -449,27 +476,32 @@ function processContributions($content) {
     const dateElement = line.querySelector('.mw-changeslist-date');
     if (!dateElement) return;
 
-    const { date } = parseTimestamp(dateElement.textContent, cd.g.uiTimezone) || {};
+    const { date } = parseTimestamp(dateElement.textContent, cd.g.uiTimezone || undefined) || {};
     if (!date) return;
 
-    const id = Comment.generateId(date, mw.config.get('wgRelevantUserName'));
+    const id = Comment.generateId(date, mw.config.get('wgRelevantUserName') || undefined);
 
     let wrapper;
     if (summary && currentUserRegexp.test(` ${summary} `)) {
       wrapper = prototypes.get('wrapperRelevant');
-      wrapper.lastChild.lastChild.title = goToCommentToYou;
+      setWrapperLinkAttr(wrapper, 'title', goToCommentToYou);
     } else {
       // We have no place to extract the article ID from :-(
       wrapper = prototypes.get('wrapperRegular');
     }
-    wrapper.lastChild.lastChild.href = `${link}#${id}`;
+    setWrapperLinkAttr(wrapper, 'href', `${link}#${id}`);
 
     let destination = line.querySelector('.comment');
     if (!destination) {
       destination = linkElement;
-      destination.nextSibling.textContent = destination.nextSibling.textContent.replace(/^\s/, '');
+      if (destination.nextSibling) {
+        destination.nextSibling.textContent = destination.nextSibling.textContent.replace(/^\s/, '');
+      }
     }
-    destination.parentNode.insertBefore(wrapper, destination.nextSibling);
+    /** @type {HTMLElement} */ (destination.parentElement).insertBefore(
+      wrapper,
+      destination.nextSibling
+    );
   });
 }
 
@@ -506,7 +538,7 @@ function processHistory($content) {
     const dateElement = line.querySelector('.mw-changeslist-date');
     if (!dateElement) return;
 
-    const { date } = parseTimestamp(dateElement.textContent, cd.g.uiTimezone) || {};
+    const { date } = parseTimestamp(dateElement.textContent, cd.g.uiTimezone || undefined) || {};
     if (!date) return;
 
     const author = extractAuthor(line);
@@ -517,24 +549,21 @@ function processHistory($content) {
     let wrapper;
     if (summary && currentUserRegexp.test(` ${summary} `)) {
       wrapper = prototypes.get('wrapperRelevant');
-      wrapper.lastChild.lastChild.title = goToCommentToYou;
+      setWrapperLinkAttr(wrapper, 'title', goToCommentToYou);
     } else {
-      let isWatched = false;
       if (summary) {
-        const watchedSectionHeadlines = subscriptions?.getForCurrentPage() || [];
-        if (watchedSectionHeadlines.length) {
-          isWatched = watchedSectionHeadlines.find((headline) => isInSection(summary, headline));
-          if (isWatched) {
-            wrapper = prototypes.get('wrapperRelevant');
-            wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
-          }
+        if (
+          (subscriptions?.getForCurrentPage() || []).find((headline) =>
+            isInSection(summary, headline)
+          )
+        ) {
+          wrapper = prototypes.get('wrapperRelevant');
+          setWrapperLinkAttr(wrapper, 'title', goToCommentWatchedSection);
         }
       }
-      if (!isWatched) {
-        wrapper = prototypes.get('wrapperRegular');
-      }
+      wrapper ||= prototypes.get('wrapperRegular');
     }
-    wrapper.lastChild.lastChild.href = `${link}#${id}`;
+    setWrapperLinkAttr(wrapper, 'href', `${link}#${id}`);
 
     let destination = line.querySelector('.comment');
     if (!destination) {
@@ -543,7 +572,10 @@ function processHistory($content) {
     }
     if (!destination) return;
 
-    destination.parentNode.insertBefore(wrapper, destination.nextSibling);
+    /** @type {HTMLElement} */ (destination.parentElement).insertBefore(
+      wrapper,
+      destination.nextSibling
+    );
   });
 }
 
@@ -586,10 +618,12 @@ function processDiff($diff) {
         return;
       }
 
-      const dateElement = area.querySelector('#mw-diff-otitle1 a, #mw-diff-ntitle1 a');
-      if (!dateElement) return;
+      const dateElement = /** @type {HTMLAnchorElement | null} */ (
+        area.querySelector('#mw-diff-otitle1 a, #mw-diff-ntitle1 a')
+      );
+      if (!(dateElement)) return;
 
-      const { date } = parseTimestamp(dateElement.textContent, cd.g.uiTimezone) || {};
+      const { date } = parseTimestamp(dateElement.textContent, cd.g.uiTimezone || undefined) || {};
       if (!date) return;
 
       const author = extractAuthor(area);
@@ -600,32 +634,37 @@ function processDiff($diff) {
       let comment;
       let page;
       if ($diff) {
-        page = pageRegistry.get((new URL(dateElement.href)).searchParams.get('title'));
+        const title = (new URL(dateElement.href)).searchParams.get('title');
+        if (!title) return;
+
+        page = pageRegistry.get(title);
+        if (!page) return;
       } else {
         comment = commentRegistry.getById(id, true);
       }
-      if (comment || ($diff && page.isProbablyTalkPage())) {
+      if (comment || page?.isProbablyTalkPage()) {
         let wrapper;
         if (summary && currentUserRegexp.test(` ${summary} `)) {
           wrapper = prototypes.get('wrapperRelevant');
-          wrapper.lastChild.lastChild.title = goToCommentToYou;
+          setWrapperLinkAttr(wrapper, 'title', goToCommentToYou);
         } else {
-          let isWatched = false;
-          const watchedSectionHeadlines = subscriptions?.getForCurrentPage() || [];
-          if (!$diff && summary && watchedSectionHeadlines.length) {
-            isWatched = watchedSectionHeadlines.find((headline) => isInSection(summary, headline));
-            if (isWatched) {
-              wrapper = prototypes.get('wrapperRelevant');
-              wrapper.lastChild.lastChild.title = goToCommentWatchedSection;
-            }
+          if (
+            !$diff &&
+            summary &&
+            (subscriptions?.getForCurrentPage() || []).find((headline) =>
+              isInSection(summary, headline)
+            )
+          ) {
+            wrapper = prototypes.get('wrapperRelevant');
+            setWrapperLinkAttr(wrapper, 'title', goToCommentWatchedSection);
           }
-          if (!isWatched) {
-            wrapper = prototypes.get('wrapperRegular');
-          }
+          wrapper ||= prototypes.get('wrapperRegular');
         }
 
-        const linkElement = wrapper.lastChild.lastChild;
-        if ($diff) {
+        const linkElement = /** @type {HTMLAnchorElement} */ (
+          /** @type {HTMLElement} */ (wrapper.lastChild).lastChild
+        );
+        if (page) {
           linkElement.href = page.getUrl() + '#' + id;
 
           // Non-diff pages that have a diff, like with Serhio Magpie's Instant Diffs.

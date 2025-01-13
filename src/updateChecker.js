@@ -6,6 +6,7 @@
 
 import CdError from './CdError';
 import StorageItem from './StorageItem';
+import StorageItemWithKeys from './StorageItemWithKeys';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
@@ -14,7 +15,7 @@ import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import userRegistry from './userRegistry';
 import { loadUserGenders } from './utils-api';
-import { calculateWordOverlap, keepWorkerSafeValues } from './utils-general';
+import { calculateWordOverlap, keepWorkerSafeValues, subtractDaysFromNow } from './utils-general';
 import visits from './visits';
 
 // TODO: Make this into a singleton (object) without module-scope variables so that it emits with
@@ -400,10 +401,10 @@ function hasCommentChanged(olderComment, newerComment) {
  * @private
  */
 function checkForChangesSincePreviousVisit(currentComments, submittedCommentId) {
-  const seenStorageItem = (new StorageItem('seenRenderedChanges'))
+  const seenStorageItem = (new StorageItemWithKeys('seenRenderedChanges'))
     .cleanUp((entry) => (
       (Math.min(...Object.values(entry).map((data) => data.seenTime)) || 0) <
-      Date.now() - 60 * cd.g.msInDay
+      subtractDaysFromNow(60)
     ));
   const seen = seenStorageItem.get(mw.config.get('wgArticleId'));
 
@@ -659,7 +660,10 @@ function isPageStillAtRevision(revisionId) {
  */
 
 /**
- * @typedef {import('./worker/CommentWorker').default & CommentWorkerExtension} CommentWorkerEnrichied
+ * @typedef {(
+ *   & Omit<import('./worker/CommentWorker').default, 'children' | 'previousComments'>
+ *   & CommentWorkerExtension
+ * )} CommentWorkerEnrichied
  */
 
 /**

@@ -968,3 +968,13 @@ export function typedKeysOf(obj) {
   // https://stackoverflow.com/questions/55012174/why-doesnt-object-keys-return-a-keyof-type-in-typescript
   return /** @type {(keyof T)[]} */ (Object.keys(obj));
 }
+
+/**
+ * Get the UNIX time of the moment that is `number` of days before now.
+ *
+ * @param {number} number
+ * @returns {number}
+ */
+export function subtractDaysFromNow(number) {
+  return Date.now() - number * cd.g.msInDay;
+}

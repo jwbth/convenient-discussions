@@ -5,6 +5,7 @@ import cd from './cd';
 import commentRegistry from './commentRegistry';
 import settings from './settings';
 import { getUserInfo, saveLocalOption } from './utils-api';
+import { subtractDaysFromNow } from './utils-general';
 
 /**
  * Class implementing loading, processing, storing, and saving of page visits.
@@ -210,11 +211,8 @@ class Visits extends OO.EventEmitter {
   rollBack(dateOrDays = 1) {
     this.currentPageData.splice(1);
     this.currentPageData[0] = (
-      (
-        typeof dateOrDays === 'object' ?
-          dateOrDays.getTime() :
-          (Date.now() - cd.g.msInDay * dateOrDays)
-      ) / 1000
+      (typeof dateOrDays === 'object' ? dateOrDays.getTime() : subtractDaysFromNow(dateOrDays)) /
+      1000
     ).toFixed();
     this.save();
   }

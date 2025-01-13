@@ -5,12 +5,12 @@
  */
 
 import CommentForm from './CommentForm';
-import StorageItem from './StorageItem';
+import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime';
 import cd from './cd';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
 import sectionRegistry from './sectionRegistry';
-import { defined, removeFromArrayIfPresent } from './utils-general';
+import { defined, removeFromArrayIfPresent, subtractDaysFromNow } from './utils-general';
 import { isCmdModifierPressed, isInputFocused, keyCombination } from './utils-window';
 
 // TODO: make into a class extending a generic registry.
@@ -36,22 +36,22 @@ export default {
         this.saveSession();
       })
       .on('startReload', this.detach.bind(this))
-      .on('keyDown', (e) => {
+      .on('keyDown', (event) => {
         if (
           // Ctrl+Alt+Q
-          keyCombination(e, 81, ['cmd', 'alt']) ||
+          keyCombination(event, 81, ['cmd', 'alt']) ||
 
           // Q
-          (keyCombination(e, 81) && !isInputFocused())
+          (keyCombination(event, 81) && !isInputFocused())
         ) {
           const lastActiveCommentForm = this.getLastActive();
           const comment = commentRegistry.getSelectedComment();
           if (lastActiveCommentForm) {
-            e.preventDefault();
-            lastActiveCommentForm.quote(isCmdModifierPressed(e), comment);
+            event.preventDefault();
+            lastActiveCommentForm.quote(isCmdModifierPressed(event), comment || undefined);
           } else {
             if (comment?.isActionable) {
-              e.preventDefault();
+              event.preventDefault();
               comment.reply();
             }
           }
@@ -206,13 +206,13 @@ export default {
    * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort Array#sort()}
    * for comment forms.
    *
-   * @param {CommentForm} commentForm1
-   * @param {CommentForm} commentForm2
+   * @param {CommentForm} cf1
+   * @param {CommentForm} cf2
    * @returns {number}
    * @private
    */
-  lastFocused(commentForm1, commentForm2) {
-    return (commentForm2.lastFocused || new Date(0)) - (commentForm1.lastFocused || new Date(0));
+  lastFocused(cf1, cf2) {
+    return (cf2.getLastFocused()?.getTime() || 0) - (cf1.getLastFocused()?.getTime() || 0);
   },
 
   /**
@@ -230,8 +230,7 @@ export default {
    */
   detach() {
     this.items.forEach((commentForm) => {
-      commentForm.$element.detach();
-      commentForm.checkCodeRequest = null;
+      commentForm.detach();
     });
   },
 
@@ -241,7 +240,7 @@ export default {
    * @private
    */
   actuallySaveSession() {
-    (new StorageItem('commentForms'))
+    (new StorageItemWithKeysAndSaveTime('commentForms'))
       .setWithTime(
         mw.config.get('wgPageName'),
         this.items
@@ -299,11 +298,8 @@ export default {
     let haveRestored = false;
 
     this.maybeShowRescueDialog(
-      (new StorageItem('commentForms'))
-        .cleanUp((entry) =>
-          !entry.commentForms?.length ||
-          entry.saveTime < Date.now() - 60 * cd.g.msInDay
-        )
+      (new StorageItemWithKeysAndSaveTime('commentForms'))
+        .cleanUp((entry) => !entry.commentForms?.length || entry.saveTime < subtractDaysFromNow(60))
         .save()
         .get(mw.config.get('wgPageName'))
         ?.commentForms
@@ -329,8 +325,8 @@ export default {
                 data.newTopicOnTop
               );
               haveRestored = true;
-            } catch (e) {
-              console.warn(e);
+            } catch (error) {
+              console.warn(error);
               return true;
             }
           } else {

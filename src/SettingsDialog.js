@@ -103,10 +103,6 @@ class SettingsDialog extends ProcessDialog {
 
     this.pushPending();
 
-    this.initPromise = Promise.all([
-      settings.load({ omitLocal: true }),
-    ]);
-
     this.loadingPanel = new OO.ui.PanelLayout({
       padded: true,
       expanded: false,
@@ -143,16 +139,18 @@ class SettingsDialog extends ProcessDialog {
    * OOUI native method that returns a "setup" process which is used to set up a window for use in a
    * particular context, based on the `data` argument.
    *
-   * @param {object} [data] Dialog opening data
+   * @param {object} data Dialog opening data
+   * @param {object} data.loadedSettings Loaded settings
    * @returns {OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getSetupProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
    * @ignore
    */
-  getSetupProcess(data) {
-    return super.getSetupProcess(data).next(() => {
+  getSetupProcess({ loadedSettings }) {
+    return super.getSetupProcess().next(() => {
       this.stack.setItem(this.loadingPanel);
       this.actions.setMode('settings');
+      this.loadedSettings = loadedSettings;
     });
   }
 
@@ -160,21 +158,13 @@ class SettingsDialog extends ProcessDialog {
    * OOUI native method that returns a "ready" process which is used to ready a window for use in a
    * particular context, based on the `data` argument.
    *
-   * @param {object} data Window opening data
    * @returns {OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getReadyProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
    * @ignore
    */
-  getReadyProcess(data) {
-    return super.getReadyProcess(data).next(async () => {
-      try {
-        [this.loadedSettings] = await this.initPromise;
-      } catch (e) {
-        this.handleError(e, 'error-settings-load', false);
-        return;
-      }
-
+  getReadyProcess() {
+    return super.getReadyProcess().next(async () => {
       // this.settings can be empty after removing the data using the relevant functionality in the
       // UI.
       if (!Object.keys(this.loadedSettings).length) {
@@ -185,7 +175,9 @@ class SettingsDialog extends ProcessDialog {
 
       this.stack.setItem(this.settingsPanel);
       this.bookletLayout.setPage(this.initialPageName || settings.scheme.ui[0].name);
-      this.$body.find(this.focusSelector).focus();
+      if (this.focusSelector) {
+        this.$body.find(this.focusSelector).focus();
+      }
       this.actions.setAbilities({ close: true });
 
       this.popPending();
@@ -209,8 +201,8 @@ class SettingsDialog extends ProcessDialog {
 
         try {
           await settings.save(this.collectSettings());
-        } catch (e) {
-          this.handleError(e, 'error-settings-save', true);
+        } catch (error) {
+          this.handleError(error, 'error-settings-save', true);
           return;
         }
 
@@ -482,25 +474,18 @@ class SettingsDialog extends ProcessDialog {
       !controls.autocompleteTypes.multiselect.findItemFromData('templates').isSelected()
     );
 
-    let areInputsValid = true;
+    let valid = true;
     await Promise.all(
-      []
-        .concat(
-          ...settings.scheme.ui.map((pageData) => (
-            pageData.controls
-              .filter((data) => data.type === 'number')
-              .map((data) => data.name)
-          ))
-        )
-        .map((name) => controls[name].input.getValidity())
-    )
-      .catch(() => {
-        areInputsValid = false;
-      });
+      Object.values(controls)
+        .filter((control) => control.type === 'number')
+        .map((control) => control.input.getValidity())
+    ).catch(() => {
+      valid = false;
+    });
 
     const collectedSettings = this.collectSettings();
     this.actions.setAbilities({
-      save: !areObjectsEqual(collectedSettings, this.loadedSettings) && areInputsValid,
+      save: !areObjectsEqual(collectedSettings, this.loadedSettings) && valid,
       reset: !areObjectsEqual(
         Object.assign({}, collectedSettings),
         Object.assign(
@@ -548,8 +533,8 @@ class SettingsDialog extends ProcessDialog {
           saveLocalOption(cd.g.subscriptionsOptionName, null),
           saveGlobalOption(cd.g.settingsOptionName, null),
         ]);
-      } catch (e) {
-        this.handleError(e, 'sd-error-removedata', false);
+      } catch (error) {
+        this.handleError(error, 'sd-error-removedata', false);
         return;
       }
 
