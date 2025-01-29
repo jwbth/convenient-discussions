@@ -145,7 +145,7 @@ async function maybeNotifyNotFound() {
  */
 async function searchForNotFoundItem() {
   token = date ?
-    formatDateNative(date, false, cd.g.contentTimezone) :
+    formatDateNative(date, false, cd.g.contentTimezone || undefined) :
     sectionName.replace(/"/g, '');
   searchQuery = `"${token}"`;
 
@@ -170,7 +170,7 @@ async function searchForNotFoundItem() {
       const adjustedToken = formatDateNative(
         new Date(date.getTime() - cd.g.msInMin * gap),
         false,
-        cd.g.contentTimezone
+        cd.g.contentTimezone || undefined
       );
       searchQuery += ` OR "${adjustedToken}"`;
     }

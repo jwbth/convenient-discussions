@@ -114,6 +114,7 @@ context.convenientDiscussions ||= /** @type {ConvenientDiscussions | ConvenientD
  * @typedef {object} ConvenientDiscussionsWindowExtension
  * @property {import('./Comment').default[]} comments
  * @property {import('./Section').default[]} sections
+ * @property {import('./settings').default} settings
  */
 
 /**

@@ -264,7 +264,7 @@ class Controller extends EventEmitter {
   /** @type {?(string[])} */
   relevantAddedCommentIds = null;
 
-  /** @type {import('./CommentSkeleton').CommentSkeletonLike[]} */
+  /** @type {import('./updateChecker').CommentWorkerEnrichied[]} */
   commentsNotifiedAbout = [];
 
   isObstructingElementHoveredCached = false;

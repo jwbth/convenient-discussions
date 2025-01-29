@@ -112,6 +112,7 @@ declare global {
     cdMarginLeft: number;
     cdMarginRight: number;
     cdCallback?: Function;
+    cdInput?: OO.ui.TextInputWidget;
 
     // Exclude `null` which is not done in the native lib
     textContent: string;

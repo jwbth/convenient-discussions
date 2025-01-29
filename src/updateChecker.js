@@ -5,7 +5,6 @@
  */
 
 import CdError from './CdError';
-import StorageItem from './StorageItem';
 import StorageItemWithKeys from './StorageItemWithKeys';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';

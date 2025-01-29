@@ -41,7 +41,6 @@ class Section extends SectionSkeleton {
 
   /**
    * @type {HTMLElement}
-   * @protected
    */
   headingElement;
 
@@ -1657,7 +1656,7 @@ class Section extends SectionSkeleton {
       )
     )).catch(handleApiReject);
     const { query, curtimestamp: queryTimestamp } =
-      /** @type {import('./utils-api').ApiResponseQueryRevisions} */ (await request);
+      /** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (await request);
 
     const page = query?.pages?.[0];
     const revision = page?.revisions?.[0];

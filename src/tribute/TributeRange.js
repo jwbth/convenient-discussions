@@ -115,7 +115,7 @@ class TributeRange {
             data.content = (
                 (
                     !(
-                        data.usePipeTrickCheck?.(data) &&
+                        data.usePipeTrickCheck?.() &&
                         !(originalEvent.shiftKey || originalEvent.altKey)
                     ) &&
                     data.content
@@ -176,7 +176,7 @@ class TributeRange {
             // jwbth: Start offset is calculated from the start position of the inserted text.
             // Absent value means the selection start position should match with the end position
             // (i.e., no text should be selected).
-            if (originalEvent.shiftKey || (data.typeContent && !data.content)) {
+            if (originalEvent.shiftKey || (data.enterContent && !data.content)) {
                 myField.selectionEnd = startPos + text.length - data.end.length
                 myField.selectionStart = startPos + data.start.length
             } else {

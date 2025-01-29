@@ -270,7 +270,7 @@ export default {
         guiid: id,
       }).catch(handleApiReject)
     ));
-    const responses = /** @type {import('./utils-api').APIResponseGlobalUserInfo[]} */ (
+    const responses = /** @type {ApiResponseQuery<ApiResponseQueryContentGlobalUserInfo[]>} */ (
       await Promise.all(requests)
     );
 

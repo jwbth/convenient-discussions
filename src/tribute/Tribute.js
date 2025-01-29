@@ -33,8 +33,85 @@ import TributeMenuEvents from "./TributeMenuEvents";
 import TributeRange from "./TributeRange";
 import TributeSearch from "./TributeSearch";
 
+/**
+ * @typedef {object} SearchOptions
+ * @property {string} [pre]
+ * @property {string} [post]
+ * @property {boolean} [skip]
+ */
+
+/**
+ * @typedef {object} TransformData
+ * @property {string} start
+ * @property {string} end
+ * @property {string} [content]
+ * @property {string} [name]
+ * @property {() => boolean} [usePipeTrickCheck]
+ * @property {() => void} [cmdModify]
+ * @property {() => void} [shiftModify]
+ * @property {boolean} [enterContent]
+ */
+
+/**
+ * @typedef {object} ValuesReturn
+ * @property {string} key
+ * @property {any} item
+ * @property {(value: any) => TransformData} transform
+ */
+
+/**
+ * @typedef {object} TributeItem
+ * @property {string} string
+ * @property {number} score
+ * @property {number} index
+ * @property {any} original
+ */
+
+/**
+ * @typedef {object} TributeCollection
+ * @property {string} label
+ * @property {(
+ *   text: string,
+ *   callback: (arr: any[]) => ValuesReturn[]
+ * ) => void} values
+ * @property {string} [trigger]
+ * @property {SearchOptions} [searchOpts]
+ * @property {boolean} [requireLeadingSpace]
+ * @property {(item: TributeItem) => string} [selectTemplate]
+ * @property {RegExp} [keepAsEnd]
+ * @property {boolean} [replaceEnd]
+ * @property {string} [selectClass]
+ * @property {string} [containerClass]
+ * @property {string} [itemClass]
+ * @property {(item: TributeItem) => string} [menuItemTemplate]
+ * @property {string} [lookup]
+ * @property {string} [fillAttr]
+ * @property {number|null} [menuItemLimit]
+ * @property {number} [menuShowMinLength]
+ */
+
+/**
+ * @typedef {object} TributeConfig
+ * @property {string} [selectClass='highlight']
+ * @property {string} [containerClass='tribute-container']
+ * @property {string} [itemClass='']
+ * @property {string} [trigger='@']
+ * @property {string} [lookup='key']
+ * @property {string} [fillAttr='value']
+ * @property {TributeCollection[]|null} [collection=null]
+ * @property {HTMLElement|null} [menuContainer=null]
+ * @property {string|((value: string) => string | null)|null} [noMatchTemplate=null]
+ * @property {boolean} [allowSpaces=false]
+ * @property {string|null} [replaceTextSuffix=null]
+ * @property {boolean} [positionMenu=true]
+ * @property {object} [searchOpts={}]
+ * @property {number|null} [menuItemLimit=null]
+ * @property {number} [menuShowMinLength=0]
+ * @property {'ltr'|'rtl'} [direction='ltr']
+ */
+
 class Tribute {
-  constructor({
+  constructor(/** @type {TributeConfig} */ {
     selectClass = "highlight",
     containerClass = "tribute-container",
     itemClass = "",

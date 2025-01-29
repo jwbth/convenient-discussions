@@ -1225,9 +1225,10 @@ export default {
     // critical.
     await sleep(1000);
 
-    const suitableElement = this.items.find((c) => c.toggleChildThreadsButton && c.getOffset())
-      ?.toggleChildThreadsButton
-      .element;
+    const suitableElement = /** @type {import('./CommentButton').default} */ (
+      this.items.find((c) => 'toggleChildThreadsButton' in c && c.getOffset())
+        ?.toggleChildThreadsButton
+    ).element;
     if (!suitableElement) return;
 
     const button = new OO.ui.ButtonWidget({

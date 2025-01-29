@@ -86,7 +86,7 @@ export default {
       commentForm
         .on('change', this.saveSession.bind(this))
         .on('unregister', () => {
-          this.remove(commentForm);
+          this.remove(/** @type {CommentForm} */ (commentForm));
         })
         .on('teardown', () => {
           controller.updatePageTitle();

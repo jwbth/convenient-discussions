@@ -15,29 +15,44 @@ import { charAt, defined, phpCharToUpper, removeDoubleSpaces, sleep, ucFirst, un
 
 /**
  * @typedef {object} AutocompleteConfig
- * @property {StringsByKey} byText
- * @property {} cache
- * @property {} default
- * @property {} transform
- * @property {} comments
- */
-
-/**
- * @typedef {object} AutocompleteCollection
- * @property {string} label
- * @property {string} trigger
- * @property {} searchOpts
- * @property {boolean} requireLeadingSpace
- * @property {} selectTemplate
- * @property {} values
- * @property {RegExp} keepAsEnd
- * @property {} selectTemplate
+ * @property {{ [key: string]: string[] }} [byText]
+ * @property {string[]} [cache]
+ * @property {any[]} [default]
+ * @property {(value: any) => import('./tribute/Tribute').TransformData} [transform]
+ * @property {import('./Comment').default[]} [comments]
+ * @property {string} [snapshot]
+ * @property {any} [item]
  */
 
 /**
  * Autocomplete dropdown class.
  */
 class Autocomplete {
+  /**
+   * @type {AutocompleteConfig}
+   */
+  mentions;
+
+  /**
+   * @type {AutocompleteConfig}
+   */
+  commentLinks;
+
+  /**
+   * @type {AutocompleteConfig}
+   */
+  wikilinks;
+
+  /**
+   * @type {AutocompleteConfig}
+   */
+  templates;
+
+  /**
+   * @type {AutocompleteConfig}
+   */
+  tags;
+
   /**
    * Create an autocomplete instance. An instance is a set of settings and inputs to which these
    * settings apply.
@@ -50,12 +65,12 @@ class Autocomplete {
    *   {@link TextInputWidget#cdInsertContent} on the inputs here. This is not essential, so if you
    *   borrow the source code, you can replace it with native
    *   {@link OO.ui.TextInputWidget#insertContent OO.ui.TextInputWidget#insertContent}.
-   * @param {string[]} [options.comments] List of comments in the section for the mentions and
-   *   comment links autocomplete.
+   * @param {import('./Comment').default[]} [options.comments] List of comments in the section for
+   *   the mentions and comment links autocomplete.
    * @param {string[]} [options.defaultUserNames] Default list of user names for the mentions
    *   autocomplete.
    */
-  constructor({ types, inputs, comments, defaultUserNames }) {
+  constructor({ types, inputs, comments: comments, defaultUserNames }) {
     this.types = settings.get('autocompleteTypes');
     this.useTemplateData = settings.get('useTemplateData');
 
@@ -63,15 +78,13 @@ class Autocomplete {
     // not, we will suppress it specifically.
     types = types.filter((type) => this.types.includes(type) || type === 'mentions');
 
-    const collections = this.getCollections(types, comments, defaultUserNames);
-
     /**
      * {@link https://github.com/zurb/tribute Tribute} object.
      *
      * @type {Tribute}
      */
     this.tribute = new Tribute({
-      collection: collections,
+      collection: this.getCollections(types, comments, defaultUserNames),
       allowSpaces: true,
       menuItemLimit: 10,
       noMatchTemplate: () => null,
@@ -107,6 +120,7 @@ class Autocomplete {
       });
       if (input instanceof OO.ui.MultilineTextInputWidget) {
         input.on('resize', () => {
+          // @ts-ignore
           this.tribute.menuEvents.windowResizeEvent?.();
         });
       }
@@ -125,40 +139,48 @@ class Autocomplete {
   /**
    * Get the list of collections of specified types.
    *
-   * @param {string[]} types
-   * @param {string[]} comments
-   * @param {string[]} defaultUserNames
-   * @returns {AutocompleteCollection[]}
+   * @param {AutocompleteType[]} types
+   * @param {import('./Comment').default[]} [comments]
+   * @param {string[]} [defaultUserNames]
+   * @returns {import('./tribute/Tribute').TributeCollection[]}
    * @private
    */
   getCollections(types, comments, defaultUserNames) {
-    const selectTemplate = (item) => item ? item.original.transform(item.original.item) : '';
-    const prepareValues = (arr, config) => (
+    const selectTemplate = (/** @type {import('./tribute/Tribute').TributeItem} */ item) =>
+      item ? item.original.transform() : '';
+    const prepareValues = (/** @type {any[]} */ arr, /** @type {AutocompleteConfig} */ config) =>
       arr
         .filter(defined)
         .filter(unique)
         .map((item) => {
-          let key;
+          let /** @type {string} */ key;
           if (Array.isArray(item)) {
             // Tags
             key = item[0];
-          } else if (item.key) {
+          } else if ('key' in item) {
             // Comment links
             key = item.key;
           } else {
             // The rest
             key = item;
           }
-          const transform = config.transform;
-          return { key, item, transform };
-        })
-    );
+
+          return {
+            key,
+            item,
+            transform: config.transform,
+          };
+        });
 
     const spacesRegexp = new RegExp(cd.mws('word-separator', { language: 'content' }), 'g');
     const allNssPattern = Object.keys(mw.config.get('wgNamespaceIds')).filter((ns) => ns).join('|');
     const allNamespacesRegexp = new RegExp(`^:?(?:${allNssPattern}):`, 'i');
 
-    const collectionsByType = {
+    /**
+     * @typedef {{ [key in AutocompleteType]: import('./tribute/Tribute').TributeCollection }} CollectionsByType
+     */
+
+    const collectionsByType = /** @type {CollectionsByType} */ ({
       mentions: {
         label: cd.s('cf-autocomplete-mentions-label'),
         trigger: cd.config.mentionCharacter,
@@ -166,13 +188,11 @@ class Autocomplete {
         requireLeadingSpace: cd.config.mentionRequiresLeadingSpace,
         selectTemplate,
         values: async (text, callback) => {
-          if (!this.types.includes('mentions') && !this.tribute.current.externalTrigger) {
-            return;
-          }
+          if (!this.types.includes('mentions') && !this.tribute.current.externalTrigger) return;
 
           text = removeDoubleSpaces(text);
 
-          if (!text.startsWith(this.mentions.snapshot)) {
+          if (this.mentions.snapshot && !text.startsWith(this.mentions.snapshot)) {
             this.mentions.cache = [];
           }
           this.mentions.snapshot = text;
@@ -180,7 +200,10 @@ class Autocomplete {
           if (this.mentions.byText[text]) {
             callback(prepareValues(this.mentions.byText[text], this.mentions));
           } else {
-            const matches = Autocomplete.search(text, this.mentions.default);
+            const matches = Autocomplete.search(
+              text,
+              /** @type {string[]} */ (this.mentions.default)
+            );
             let values = matches.slice();
 
             const makeRequest = (
@@ -267,7 +290,9 @@ class Autocomplete {
               }
               const colon = cd.mws('colon-separator', { language: 'content' });
               const key = authorTimestamp + colon + snippet;
-              this.commentLinks.default.push({
+              /** @type {NonNullable<typeof this.commentLinks.default>} */ (
+                this.commentLinks.default
+              ).push({
                 key,
                 id: dtId || id,
                 author: author.getName(),
@@ -275,7 +300,9 @@ class Autocomplete {
               });
             });
             sectionRegistry.getAll().forEach((section) => {
-              this.commentLinks.default.push({
+              /** @type {NonNullable<typeof this.commentLinks.default>} */ (
+                this.commentLinks.default
+              ).push({
                 key: underlinesToSpaces(section.id),
                 id: underlinesToSpaces(section.id),
                 headline: section.headline,
@@ -286,8 +313,11 @@ class Autocomplete {
           text = removeDoubleSpaces(text);
           if (/[#<>[\]|{}]/.test(text)) {
             callback([]);
+
             return;
           }
+
+          // @ts-ignore
           const matches = this.tribute.search
             .filter(text, this.commentLinks.default, { extract: (el) => el.key })
             .map((match) => match.original);
@@ -304,7 +334,7 @@ class Autocomplete {
         values: async (text, callback) => {
           text = removeDoubleSpaces(text);
 
-          if (!text.startsWith(this.wikilinks.snapshot)) {
+          if (this.wikilinks.snapshot && !text.startsWith(this.wikilinks.snapshot)) {
             this.wikilinks.cache = [];
           }
           this.wikilinks.snapshot = text;
@@ -446,7 +476,7 @@ class Autocomplete {
               });
             }
 
-            return item.original.transform(item.original.item);
+            return item.original.transform();
           } else {
             return '';
           }
@@ -454,7 +484,7 @@ class Autocomplete {
         values: async (text, callback) => {
           text = removeDoubleSpaces(text);
 
-          if (!text.startsWith(this.templates.snapshot)) {
+          if (this.templates.snapshot && !text.startsWith(this.templates.snapshot)) {
             this.templates.cache = [];
           }
           this.templates.snapshot = text;
@@ -524,24 +554,28 @@ class Autocomplete {
           const regexp = new RegExp('^' + mw.util.escapeRegExp(text), 'i');
           if (!text || !/^[a-z]+$/i.test(text)) {
             callback([]);
+
             return;
           }
-          const matches = this.tags.default.filter((tag) => regexp.test(tag));
+
+          const matches = /** @type {string[]} */ (this.tags.default).filter((tag) =>
+            regexp.test(tag)
+          );
           callback(prepareValues(matches, this.tags));
         },
       },
-    };
+    });
 
     const params = {
       mentions: defaultUserNames,
       commentLinks: comments,
     };
-    const collections = types.map((type) => {
+
+    return types.map((type) => {
       this[type] = Autocomplete.getConfig(type, params[type]);
+
       return collectionsByType[type];
     });
-
-    return collections;
   }
 
   static delay = 100;
@@ -552,90 +586,102 @@ class Autocomplete {
   /**
    * _For internal use._ Get an autocomplete configuration for the specified type.
    *
-   * @param {string} type
+   * @param {AutocompleteType} type
    * @param {...*} args
    * @returns {AutocompleteConfig}
    */
   static getConfig(type, ...args) {
-    let config;
     switch (type) {
       case 'mentions': {
-        config = {
+        return {
           byText: {},
           cache: [],
           default: args[0],
-          transform: (item) => {
-            const name = item.trim();
+          transform() {
+            const name = /** @type {string} */ (this.item).trim();
             const user = userRegistry.get(name);
             const userNamespace = user.getNamespaceAlias();
             const pageName = user.isRegistered() ?
               `${userNamespace}:${name}` :
               `${cd.g.contribsPages[0]}/${name}`;
+
             return {
               start: `@[[${pageName}|`,
               end: name.match(/[(,]/) ? `${name}]]` : ']]',
               content: name,
-              usePipeTrickCheck: (data) => !data.start.includes('/'),
-              cmdModify: function () {
+              usePipeTrickCheck() {
+                return !this.start.includes('/');
+              },
+              cmdModify() {
                 this.end += cd.mws('colon-separator', { language: 'content' });
               },
             };
           },
         };
-        break;
       }
 
       case 'commentLinks': {
-        config = {
+        return {
           comments: args[0] || [],
-          transform: ({ id, author, timestamp, headline }) => ({
-            start: `[[#${id}|`,
-            end: ']]',
-            content: timestamp ?
-              cd.s('cf-autocomplete-commentlinks-text', author, timestamp) :
-              headline,
-          }),
+          transform() {
+            /**
+             * @typedef {object} CommentLinksItemType
+             * @property {string} key
+             * @property {string} [id]
+             * @property {string} [author]
+             * @property {string} [timestamp]
+             * @property {string} [headline]
+             */
+            const object = /** @type {CommentLinksItemType} */ (this.item);
+
+            return {
+              start: `[[#${object.id}|`,
+              end: ']]',
+              content: 'timestamp' in object ?
+                cd.s('cf-autocomplete-commentlinks-text', object.author, object.timestamp) :
+                object.headline,
+            };
+          },
         };
-        break;
       }
 
       case 'wikilinks': {
-        config = {
+        return {
           byText: {},
           cache: [],
-          transform: (/** @type {string} */ name) => {
-            name = name.trim();
+          transform() {
+            const name = /** @type {string} */ (this.item).trim();
+
             return {
               start: '[[' + name,
               end: ']]',
               name,
-              shiftModify: function () {
+              shiftModify() {
                 this.start += '|';
                 this.content = this.name;
               },
             };
           },
         };
-        break;
       }
 
       case 'templates': {
-        config = {
+        return {
           byText: {},
           cache: [],
-          transform: (name) => {
-            name = name.trim();
+          transform() {
+            const name = /** @type {string} */ (this.item).trim();
+
             return {
               start: '{{' + name,
               end: '}}',
               name,
-              shiftModify: function () {
+              shiftModify() {
                 this.start += '|';
               },
             };
           },
         };
-        break;
       }
 
       case 'tags': {
@@ -657,28 +703,34 @@ class Autocomplete {
           ['syntaxhighlight', '<syntaxhighlight>\n', '\n</syntaxhighlight>'],
           ['templatestyles', '<templatestyles src="', '" />'],
         ];
-        const defaultTags = cd.g.allowedTags.filter((tagString) =>
-          !tagAdditions.find((tagArray) => tagArray[0] === tagString)
+        const defaultTags = /** @type {Array<string|string[]>} */ (
+          cd.g.allowedTags.filter(
+            (tagString) => !tagAdditions.find((tagArray) => tagArray[0] === tagString)
+          )
         );
 
-        config = {
+        const config = {
           default: defaultTags.concat(tagAdditions),
-          transform: (item) => ({
-            start: Array.isArray(item) ? item[1] : `<${item}>`,
-            end: Array.isArray(item) ? item[2] : `</${item}>`,
-            typeContent: true,
-          }),
+          transform() {
+            const item = /** @type {string | [string, string, string]} */ (this.item);
+
+            return {
+              start: Array.isArray(item) ? item[1] : `<${item}>`,
+              end: Array.isArray(item) ? item[2] : `</${item}>`,
+              enterContent: true,
+            };
+          },
         };
         config.default.sort((item1, item2) => {
           const s1 = typeof item1 === 'string' ? item1 : item1[0];
           const s2 = typeof item2 === 'string' ? item2 : item2[0];
-          return s1 > s2;
+
+          return s1 > s2 ? 1 : -1;
         });
-        break;
+
+        return config;
       }
     }
-
-    return config;
   }
 
   /**
@@ -711,17 +763,22 @@ class Autocomplete {
           throw new CdError();
         }
 
+        /**
+         * @typedef {[string, string[], string[], string[]]} OpenSearchResults
+         */
+
         // First, try to use the search to get only users that have talk pages. Most legitimate
         // users do, while spammers don't.
-        const resp = await controller.getApi().get({
+        const request = controller.getApi().get({
           action: 'opensearch',
           search: text,
           namespace: 3,
           redirects: 'resolve',
           limit: 10,
         }).catch(handleApiReject);
+        const response = /** @type {OpenSearchResults} */ (await request);
 
-        const users = resp[1]
+        const users = response[1]
           ?.map((name) => (name.match(cd.g.userNamespacesRegexp) || [])[1])
           .filter(defined)
           .filter((name) => !name.includes('/'));
@@ -730,13 +787,17 @@ class Autocomplete {
           resolve(users);
         } else {
           // If we didn't succeed with search, try the entire users database.
-          const resp = await controller.getApi().get({
+          const request = controller.getApi().get({
             action: 'query',
             list: 'allusers',
             auprefix: text,
           }).catch(handleApiReject);
+          const response = /** @type {ApiResponseQuery<ApiResponseQueryContentAllUsers>} */ (
+            await request
+          );
+          if (!response.query) return;
 
-          const users = resp.query.allusers.map((user) => user.name);
+          const users = response.query.allusers.map((user) => user.name);
           resolve(users);
         }
       } catch (e) {
@@ -903,7 +964,10 @@ class Autocomplete {
     const startsWithRegexp = new RegExp('^' + mw.util.escapeRegExp(string), 'i');
     return list
       .filter((item) => containsRegexp.test(item))
-      .sort((item1, item2) => startsWithRegexp.test(item2) - startsWithRegexp.test(item1));
+      .sort(
+        (item1, item2) =>
+          Number(startsWithRegexp.test(item2)) - Number(startsWithRegexp.test(item1))
+      );
   }
 }
 

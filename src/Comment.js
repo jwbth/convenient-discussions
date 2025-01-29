@@ -7,7 +7,6 @@ import CommentSubitemList from './CommentSubitemList';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import LiveTimestamp from './LiveTimestamp';
 import PrototypeRegistry from './PrototypeRegistry';
-import StorageItem from './StorageItem';
 import StorageItemWithKeys from './StorageItemWithKeys';
 import TreeWalker from './TreeWalker';
 import cd from './cd';
@@ -3631,7 +3630,7 @@ class Comment extends CommentSkeleton {
    * @overload
    * @param {undefined} [sectionCode]
    * @param {string} code
-   * @param {import('./CommentSkeleton').CommentSkeletonLike} [commentData]
+   * @param {import('./updateChecker').CommentWorkerEnrichied} [commentData]
    * @returns {CommentSource}
    */
 

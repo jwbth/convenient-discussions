@@ -2122,14 +2122,14 @@ class CommentForm extends OO.EventEmitter {
         commentsInSection.flatMap((comment) => (
           comment.$elements
             .find('a')
-            .filter((i, el) => (
+            .filter((_, /** @type {HTMLAnchorElement} */ el) => (
               cd.g.userLinkRegexp.test(el.title) &&
               !el.closest(settings.get('reformatComments') ? '.cd-comment-author' : '.cd-signature')
             ))
             .get()
-            .map((el) => Parser.processLink(el)?.userName)
+            .map((/** @type {HTMLAnchorElement} */ el) => Parser.processLink(el)?.userName)
             .filter(defined)
-            .map((userName) => userRegistry.get(userName))
+            .map((/** @type {string} */ userName) => userRegistry.get(userName))
         ))
       )
       .concat(pageOwner)
@@ -3671,7 +3671,7 @@ class CommentForm extends OO.EventEmitter {
       const data = Autocomplete.getConfig('mentions').transform(
         this.parentComment.author.getName()
       );
-      if (data.usePipeTrickCheck(data)) {
+      if (data.usePipeTrickCheck()) {
         data.content = '';
       }
       data.cmdModify();
@@ -3696,7 +3696,7 @@ class CommentForm extends OO.EventEmitter {
       // Valid username
 
       const data = Autocomplete.getConfig('mentions').transform(selection);
-      if (data.usePipeTrickCheck(data)) {
+      if (data.usePipeTrickCheck()) {
         data.content = '';
       }
       this.commentInput.cdInsertContent(data.start + data.content + data.end);

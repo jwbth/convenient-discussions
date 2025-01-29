@@ -2,7 +2,6 @@ import Button from './Button';
 import CdError from './CdError';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import PrototypeRegistry from './PrototypeRegistry';
-import StorageItem from './StorageItem';
 import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime';
 import cd from './cd';
 import commentRegistry from './commentRegistry';
@@ -1357,7 +1356,7 @@ class Thread extends mixInObject(class {}, OO.EventEmitter) {
   static reset(autocollapse = true) {
     this.enabled = settings.get('enableThreads');
     if (!this.enabled) {
-      (new StorageItem('collapsedThreads')).removeItem();
+      (new StorageItemWithKeysAndSaveTime('collapsedThreads')).removeItem();
       return;
     }
 
@@ -1616,7 +1615,7 @@ class Thread extends mixInObject(class {}, OO.EventEmitter) {
   static saveCollapsedThreads() {
     if (!controller.isCurrentRevision()) return;
 
-    (new StorageItem('collapsedThreads'))
+    (new StorageItemWithKeysAndSaveTime('collapsedThreads'))
       .setWithTime(
         mw.config.get('wgArticleId'),
         commentRegistry

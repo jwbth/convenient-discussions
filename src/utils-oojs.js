@@ -188,7 +188,7 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {CommonWidgetConfigProps & {
- *   type: 'text';
+ *   type?: 'text';
  *   value: string;
  *   maxLength: number;
  * }} TextFieldType
@@ -196,7 +196,7 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {CommonWidgetConfigProps & {
- *   type: 'number';
+ *   type?: 'number';
  *   value: string;
  *   min: number;
  *   max: number;
@@ -206,7 +206,7 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {CommonWidgetConfigProps & {
- *   type: 'checkbox';
+ *   type?: 'checkbox';
  *   value: string;
  *   selected: boolean;
  *   title?: string;
@@ -216,7 +216,7 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {CommonWidgetConfigProps & {
- *   type: 'radio';
+ *   type?: 'radio';
  *   selected?: string;
  *   options: Array<{
  *     data: any;
@@ -227,7 +227,7 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {CommonWidgetConfigProps & {
- *   type: 'multiline';
+ *   type?: 'multiline';
  *   value: string;
  *   maxLength: number;
  *   rows?: number;
@@ -236,7 +236,7 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {CommonWidgetConfigProps & {
- *   type: 'tags';
+ *   type?: 'tags';
  *   selected: string[];
  *   tagLimit: number;
  *   placeholder?: string;
@@ -248,7 +248,7 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {CommonWidgetConfigProps & {
- *   type: 'button';
+ *   type?: 'button';
  *   flags: string[];
  *   fieldLabel: string;
  * }} ButtonFieldType
@@ -729,7 +729,7 @@ export class EventEmitter extends OO.EventEmitter {
   /**
    * Connect event handlers to an object.
    *
-   * @template {Partial<Record<keyof EventMap, any>>} T
+   * @template {Partial<{ [key in keyof EventMap]: any }>} T
    * @template C
    * @param {C} context Object to call methods on when events occur.
    * @param {OO.EventConnectionMap<T, C, EventMap>} methods List of event bindings keyed by event
@@ -745,7 +745,7 @@ export class EventEmitter extends OO.EventEmitter {
   /**
    * Disconnect event handlers from an object.
    *
-   * @template {Partial<Record<keyof EventMap, any>>} T
+   * @template {Partial<{ [key in keyof EventMap]: any }>} T
    * @template C
    * @param {C} context Object to disconnect methods from
    * @param {OO.EventConnectionMap<T, C, EventMap>} [methods] List of event bindings keyed by event

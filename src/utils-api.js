@@ -15,77 +15,6 @@ import { unique } from './utils-general';
 import { brsToNewlines } from './utils-wikitext';
 
 /**
- * @typedef {object} Revision
- * @property {number} revid
- * @property {number} parentid
- * @property {object} [slots]
- * @property {object} slots.main
- * @property {string} slots.main.contentmodel
- * @property {string} slots.main.contentformat
- * @property {string} slots.main.content
- * @property {boolean} slots.main.nosuchsection
- */
-
-/**
- * Represents the content of a single page in a `query` API response.
- *
- * @typedef {object} ApiResponseQueryContentPage
- * @property {string} title The title of the page.
- * @property {number} pageid The ID of the page.
- * @property {boolean} [known] Whether the page is known.
- * @property {boolean} [missing] Whether the page is missing.
- * @property {boolean} [invalid]
- * @property {object} [thumbnail] Thumbnail information for the page.
- * @property {string} thumbnail.source The URL of the thumbnail.
- * @property {number} thumbnail.width The width of the thumbnail in pixels.
- * @property {number} thumbnail.height The height of the thumbnail in pixels.
- * @property {object} [pageprops] Additional properties for the page.
- * @property {''} [pageprops.disambiguation] Indicates if the page is a disambiguation page.
- * @property {string} [description] A description of the page.
- * @property {number} ns The namespace of the page.
- * @property {string} [normalizedTitle] The normalized title of the page.
- * @property {number} [index] The index of the page in the list.
- * @property {string} contentmodel The content model of the page.
- * @property {Array<{ title: string }>} [redirects] List of redirects to the page.
- * @property {Revision[]} [revisions]
- */
-
-/**
- * Represents a mapping between two titles in the `query` API response.
- *
- * @typedef {object} FromTo
- * @property {string} from The original title or fragment.
- * @property {string} to The target title or fragment.
- * @property {string} [tofragment] The target fragment, if applicable.
- * @property {number} index The index of the mapping.
- */
-
-/**
- * Represents the general structure of a `query` API response when `revisions` property is
- * requested.
- *
- * @typedef {object} ApiResponseQueryRevisions
- * @property {object} [query] The main query object.
- * @property {ApiResponseQueryContentPage[]} [query.pages] List of pages in the query.
- * @property {FromTo[]} [query.redirects] List of redirects in the query.
- * @property {FromTo[]} [query.normalized] List of normalized titles in the query.
- * @property {string} [curtimestamp]
- * @property {boolean} [batchcomplete] Indicates if the batch is complete.
- * @property {object} [continue] Continuation information for the query.
- */
-
-/**
- * @typedef {object} APIResponseGlobalUserInfo
- * @property {object} [query] The query object.
- * @property {object} query.globaluserinfo The global user information object.
- * @property {string} query.globaluserinfo.home The home wiki of the global user.
- * @property {number} query.globaluserinfo.id The ID of the global user.
- * @property {string} query.globaluserinfo.registration The registration date of the global user.
- * @property {string} query.globaluserinfo.name The name of the global user.
- * @property {boolean} [batchcomplete] Indicates whether the batch is complete.
- */
-
-/**
  * @typedef {object} ApiResponseParseContent
  * @property {string} text Text for the page.
  * @property {boolean} hidetoc Hide the table of contents.
@@ -332,7 +261,7 @@ export function getUserInfo(reuse = false) {
  * Get page titles for an array of page IDs.
  *
  * @param {number[]} pageIds
- * @returns {Promise.<ApiResponseQueryContentPage[]>}
+ * @returns {Promise.<ApiResponseQueryPage[]>}
  * @throws {CdError}
  */
 export async function getPageTitles(pageIds) {
@@ -346,7 +275,7 @@ export async function getPageTitles(pageIds) {
       action: 'query',
       pageids: nextPageIds,
     }).catch(handleApiReject);
-    const response = /** @type {ApiResponseQueryRevisions} */ (await request);
+    const response = /** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (await request);
     pages.push(...response.query?.pages || []);
   }
 
@@ -357,7 +286,7 @@ export async function getPageTitles(pageIds) {
  * @typedef {object} PageIds
  * @property {FromTo[]} normalized
  * @property {FromTo[]} redirects
- * @property {ApiResponseQueryContentPage[]} pages
+ * @property {ApiResponseQueryPage[]} pages
  */
 
 /**
@@ -372,11 +301,12 @@ export async function getPageIds(titles) {
   const redirects = [];
   const pages = [];
   for (const nextTitles of splitIntoBatches(titles)) {
-    const { query } = /** @type {ApiResponseQueryRevisions} */ (await controller.getApi().post({
+    const request = controller.getApi().post({
       action: 'query',
       titles: nextTitles,
       redirects: true,
-    }).catch(handleApiReject));
+    }).catch(handleApiReject);
+    const { query } = /** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (await request);
     if (!query) break;
 
     normalized.push(...query.normalized || []);
@@ -526,7 +456,7 @@ export async function getPagesExistence(titles) {
       action: 'query',
       titles: nextTitles,
     }).catch(handleApiReject);
-    const response = /** @type {ApiResponseQueryRevisions} */ (await request);
+    const response = /** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (await request);
 
     const query = response.query;
     if (!query) break;
