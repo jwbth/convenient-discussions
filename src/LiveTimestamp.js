@@ -51,7 +51,6 @@ class LiveTimestamp extends mixInObject(class {}, OO.EventEmitter) {
     this.addTimezone = addTimezone;
 
     this.format = settings.get('timestampFormat');
-    this.useUiTime = settings.get('useUiTime');
   }
 
   /**
@@ -113,9 +112,16 @@ class LiveTimestamp extends mixInObject(class {}, OO.EventEmitter) {
     this.element.textContent = formatDate(this.date, this.addTimezone);
   }
 
+  /** @type {number[]} */
   static updateTimeouts = [];
+
   static improvedTimestampsInited = false;
+
+  /** @type {LiveTimestamp[]} */
   static improvedTimestamps = [];
+
+   /** @type {number} */
+  static yesterdayStart;
 
   /**
    * _For internal use._ Initialize improved timestamps (when the timestamp format is set to
@@ -123,10 +129,10 @@ class LiveTimestamp extends mixInObject(class {}, OO.EventEmitter) {
    */
   static initImproved() {
     let date = dayjs();
-    if (this.useUiTime && !['UTC', 0].includes(cd.g.uiTimezone)) {
+    if (settings.get('useUiTime') && !['UTC', 0, null].includes(cd.g.uiTimezone)) {
       date = typeof cd.g.uiTimezone === 'number' ?
         date.utcOffset(cd.g.uiTimezone) :
-        date.tz(cd.g.uiTimezone);
+        date.tz(/** @type {string} */ (cd.g.uiTimezone));
     } else {
       date = date.utc();
     }

@@ -53,13 +53,6 @@ import TributeSearch from "./TributeSearch";
  */
 
 /**
- * @typedef {object} ValuesReturn
- * @property {string} key
- * @property {any} item
- * @property {(value: any) => TransformData} transform
- */
-
-/**
  * @typedef {object} TributeItem
  * @property {string} string
  * @property {number} score
@@ -70,14 +63,11 @@ import TributeSearch from "./TributeSearch";
 /**
  * @typedef {object} TributeCollection
  * @property {string} label
- * @property {(
- *   text: string,
- *   callback: (arr: any[]) => ValuesReturn[]
- * ) => void} values
+ * @property {( text: string, callback: (arr: any[]) => void) => void} values
  * @property {string} [trigger]
  * @property {SearchOptions} [searchOpts]
  * @property {boolean} [requireLeadingSpace]
- * @property {(item: TributeItem) => string} [selectTemplate]
+ * @property {(item: TributeItem, event: KeyboardEvent | MouseEvent) => string} [selectTemplate]
  * @property {RegExp} [keepAsEnd]
  * @property {boolean} [replaceEnd]
  * @property {string} [selectClass]

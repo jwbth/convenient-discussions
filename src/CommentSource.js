@@ -346,7 +346,7 @@ class CommentSource {
   /**
    * @typedef {object} CommentData
    * @property {number} index
-   * @property {import('./CommentSkeleton').CommentSkeletonLike[]} previousComments
+   * @property {import('./updateChecker').CommentWorkerEnrichied[]|import('./Comment').default[]} previousComments
    * @property {boolean} followsHeading
    * @property {string} [sectionHeadline]
    * @property {string} commentText

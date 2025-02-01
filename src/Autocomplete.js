@@ -14,6 +14,10 @@ import { charAt, defined, phpCharToUpper, removeDoubleSpaces, sleep, ucFirst, un
  */
 
 /**
+ * @typedef {NonNullable<Autocomplete.config>} AutocompleteStaticConfig
+ */
+
+/**
  * @typedef {object} AutocompleteConfig
  * @property {{ [key: string]: string[] }} [byText]
  * @property {string[]} [cache]
@@ -29,27 +33,27 @@ import { charAt, defined, phpCharToUpper, removeDoubleSpaces, sleep, ucFirst, un
  */
 class Autocomplete {
   /**
-   * @type {AutocompleteConfig}
+   * @type {AutocompleteConfig & AutocompleteStaticConfig['mentions']}
    */
   mentions;
 
   /**
-   * @type {AutocompleteConfig}
+   * @type {AutocompleteConfig & AutocompleteStaticConfig['commentLinks']}
    */
   commentLinks;
 
   /**
-   * @type {AutocompleteConfig}
+   * @type {AutocompleteConfig & AutocompleteStaticConfig['wikilinks']}
    */
   wikilinks;
 
   /**
-   * @type {AutocompleteConfig}
+   * @type {AutocompleteConfig & AutocompleteStaticConfig['templates']}
    */
   templates;
 
   /**
-   * @type {AutocompleteConfig}
+   * @type {AutocompleteConfig & AutocompleteStaticConfig['tags']}
    */
   tags;
 
@@ -137,6 +141,18 @@ class Autocomplete {
   }
 
   /**
+   * @typedef {{ [key in AutocompleteType]: import('./tribute/Tribute').TributeCollection }} CollectionsByType
+   */
+
+  /**
+   * @template {any} [T=any]
+   * @typedef {object} Value
+   * @property {string} key
+   * @property {T} item
+   * @property {(() => import('./tribute/Tribute').TransformData) | undefined} transform
+   */
+
+  /**
    * Get the list of collections of specified types.
    *
    * @param {AutocompleteType[]} types
@@ -165,22 +181,18 @@ class Autocomplete {
             key = item;
           }
 
-          return {
+          return /** @type {Value} */ ({
             key,
             item,
-            transform: config.transform,
-          };
+            transform: config.transform?.bind(config),
+          });
         });
 
     const spacesRegexp = new RegExp(cd.mws('word-separator', { language: 'content' }), 'g');
     const allNssPattern = Object.keys(mw.config.get('wgNamespaceIds')).filter((ns) => ns).join('|');
     const allNamespacesRegexp = new RegExp(`^:?(?:${allNssPattern}):`, 'i');
 
-    /**
-     * @typedef {{ [key in AutocompleteType]: import('./tribute/Tribute').TributeCollection }} CollectionsByType
-     */
-
-    const collectionsByType = /** @type {CollectionsByType} */ ({
+    const collectionsByType = /** @satisfies {CollectionsByType} */ ({
       mentions: {
         label: cd.s('cf-autocomplete-mentions-label'),
         trigger: cd.config.mentionCharacter,
@@ -342,7 +354,7 @@ class Autocomplete {
           if (this.wikilinks.byText[text]) {
             callback(prepareValues(this.wikilinks.byText[text], this.wikilinks));
           } else {
-            let values = [];
+            let values = /** @type {string[]} */ ([]);
             const valid = (
               text &&
               text !== ':' &&
@@ -497,7 +509,7 @@ class Autocomplete {
           if (this.templates.byText[text]) {
             callback(prepareValues(this.templates.byText[text], this.templates));
           } else {
-            let values = [];
+            let values = /** @type {string[]} */ ([]);
             const makeRequest = (
               text &&
               text.length <= 255 &&
@@ -566,16 +578,16 @@ class Autocomplete {
       },
     });
 
-    const params = {
-      mentions: defaultUserNames,
-      commentLinks: comments,
-    };
-
-    return types.map((type) => {
-      this[type] = Autocomplete.getConfig(type, params[type]);
-
-      return collectionsByType[type];
+    types.forEach((type) => {
+      /** @type {typeof this[type]} */ (this[type]) = /** @type {typeof this[type]} */ (
+        OO.copy(/** @type {NonNullable<Autocomplete.config>} */ (Autocomplete.config)[type])
+      );
     });
+
+    this.mentions.default = defaultUserNames;
+    this.commentLinks.comments = comments || [];
+
+    return types.map((type) => collectionsByType[type]);
   }
 
   static delay = 100;
@@ -584,153 +596,164 @@ class Autocomplete {
   static activeMenu;
 
   /**
-   * _For internal use._ Get an autocomplete configuration for the specified type.
-   *
-   * @param {AutocompleteType} type
-   * @param {...*} args
-   * @returns {AutocompleteConfig}
+   * @typedef {object} CommentLinksItemType
+   * @property {string} key
+   * @property {string} [id]
+   * @property {string} [author]
+   * @property {string} [timestamp]
+   * @property {string} [headline]
    */
-  static getConfig(type, ...args) {
-    switch (type) {
-      case 'mentions': {
-        return {
-          byText: {},
-          cache: [],
-          default: args[0],
-          transform() {
-            const name = /** @type {string} */ (this.item).trim();
-            const user = userRegistry.get(name);
-            const userNamespace = user.getNamespaceAlias();
-            const pageName = user.isRegistered() ?
-              `${userNamespace}:${name}` :
-              `${cd.g.contribsPages[0]}/${name}`;
 
-            return {
-              start: `@[[${pageName}|`,
-              end: name.match(/[(,]/) ? `${name}]]` : ']]',
-              content: name,
-              usePipeTrickCheck() {
-                return !this.start.includes('/');
-              },
-              cmdModify() {
-                this.end += cd.mws('colon-separator', { language: 'content' });
-              },
-            };
-          },
-        };
-      }
+  static {
+    const tagAdditions = [
+      // An element can be an array of a string to display and strings to insert before and after
+      // the caret.
+      ['br', '<br>'],
+      ['codenowiki', '<code><nowiki>', '</'.concat('nowiki></code>')],
+      ['hr', '<hr>'],
+      ['wbr', '<wbr>'],
+      ['gallery', '<gallery>\n', '\n</gallery>'],
+      ['references', '<references />'],
+      ['section', '<section />'],
+      ['syntaxhighlight lang=""', '<syntaxhighlight lang="', '">\n\n</syntaxhighlight>'],
+      [
+        'syntaxhighlight inline lang=""',
+        '<syntaxhighlight inline lang="', '"></syntaxhighlight>',
+      ],
+      ['syntaxhighlight', '<syntaxhighlight>\n', '\n</syntaxhighlight>'],
+      ['templatestyles', '<templatestyles src="', '" />'],
+    ];
+    const defaultTags = /** @type {Array<string|string[]>} */ (cd.g.allowedTags)
+      .filter(
+        (tagString) => !tagAdditions.find((tagArray) => tagArray[0] === tagString)
+      )
+      .concat(tagAdditions)
+      .sort((item1, item2) => {
+        const s1 = typeof item1 === 'string' ? item1 : item1[0];
+        const s2 = typeof item2 === 'string' ? item2 : item2[0];
 
-      case 'commentLinks': {
-        return {
-          comments: args[0] || [],
-          transform() {
-            /**
-             * @typedef {object} CommentLinksItemType
-             * @property {string} key
-             * @property {string} [id]
-             * @property {string} [author]
-             * @property {string} [timestamp]
-             * @property {string} [headline]
-             */
-            const object = /** @type {CommentLinksItemType} */ (this.item);
+        return s1 > s2 ? 1 : -1;
+      });
 
-            return {
-              start: `[[#${object.id}|`,
-              end: ']]',
-              content: 'timestamp' in object ?
-                cd.s('cf-autocomplete-commentlinks-text', object.author, object.timestamp) :
-                object.headline,
-            };
-          },
-        };
-      }
+    /**
+     * Autocomplete configurations for every type.
+     */
+    this.config = /** @satisfies {{ [key in AutocompleteType]: AutocompleteConfig }} */ ({
+      mentions: {
+        byText: {},
+        cache: /** @type {string[]} */ ([]),
 
-      case 'wikilinks': {
-        return {
-          byText: {},
-          cache: [],
-          transform() {
-            const name = /** @type {string} */ (this.item).trim();
+        /**
+         * @this {Value<string>}
+         * @returns {import('./tribute/Tribute').TransformData}
+         */
+        transform() {
+          const name = this.item.trim();
+          const user = userRegistry.get(name);
+          const userNamespace = user.getNamespaceAlias();
+          const pageName = user.isRegistered()
+            ? `${userNamespace}:${name}`
+            : `${cd.g.contribsPages[0]}/${name}`;
 
-            return {
-              start: '[[' + name,
-              end: ']]',
-              name,
-              shiftModify() {
-                this.start += '|';
-                this.content = this.name;
-              },
-            };
-          },
-        };
-      }
+          return {
+            start: `@[[${pageName}|`,
+            end: name.match(/[(,]/) ? `${name}]]` : ']]',
+            content: name,
+            usePipeTrickCheck() {
+              return !this.start.includes('/');
+            },
+            cmdModify() {
+              this.end += cd.mws('colon-separator', { language: 'content' });
+            },
+          };
+        },
+      },
 
-      case 'templates': {
-        return {
-          byText: {},
-          cache: [],
-          transform() {
-            const name = /** @type {string} */ (this.item).trim();
+      commentLinks: {
+        comments: /** @type {import('./Comment').default[]} */ ([]),
+        default: /** @type {CommentLinksItemType[]|undefined} */ (undefined),
 
-            return {
-              start: '{{' + name,
-              end: '}}',
-              name,
-              shiftModify() {
-                this.start += '|';
-              },
-            };
-          },
-        };
-      }
+        /**
+         * @this {Value<CommentLinksItemType>}
+         * @returns {import('./tribute/Tribute').TransformData}
+         */
+        transform() {
+          const object = this.item;
 
-      case 'tags': {
-        const tagAdditions = [
-          // An element can be an array of a string to display and strings to insert before and
-          // after the caret.
-          ['br', '<br>'],
-          ['codenowiki', '<code><nowiki>', '</'.concat('nowiki></code>')],
-          ['hr', '<hr>'],
-          ['wbr', '<wbr>'],
-          ['gallery', '<gallery>\n', '\n</gallery>'],
-          ['references', '<references />'],
-          ['section', '<section />'],
-          ['syntaxhighlight lang=""', '<syntaxhighlight lang="', '">\n\n</syntaxhighlight>'],
-          [
-            'syntaxhighlight inline lang=""',
-            '<syntaxhighlight inline lang="', '"></syntaxhighlight>',
-          ],
-          ['syntaxhighlight', '<syntaxhighlight>\n', '\n</syntaxhighlight>'],
-          ['templatestyles', '<templatestyles src="', '" />'],
-        ];
-        const defaultTags = /** @type {Array<string|string[]>} */ (
-          cd.g.allowedTags.filter(
-            (tagString) => !tagAdditions.find((tagArray) => tagArray[0] === tagString)
-          )
-        );
+          return {
+            start: `[[#${object.id}|`,
+            end: ']]',
+            content:
+              'timestamp' in object
+                ? cd.s('cf-autocomplete-commentlinks-text', object.author, object.timestamp)
+                : object.headline,
+          };
+        },
+      },
 
-        const config = {
-          default: defaultTags.concat(tagAdditions),
-          transform() {
-            const item = /** @type {string | [string, string, string]} */ (this.item);
+      wikilinks: {
+        byText: {},
+        cache: /** @type {string[]} */ ([]),
 
-            return {
-              start: Array.isArray(item) ? item[1] : `<${item}>`,
-              end: Array.isArray(item) ? item[2] : `</${item}>`,
-              enterContent: true,
-            };
-          },
-        };
-        config.default.sort((item1, item2) => {
-          const s1 = typeof item1 === 'string' ? item1 : item1[0];
-          const s2 = typeof item2 === 'string' ? item2 : item2[0];
+        /**
+         * @this {Value<string>}
+         * @returns {import('./tribute/Tribute').TransformData}
+         */
+        transform() {
+          const name = this.item.trim();
 
-          return s1 > s2 ? 1 : -1;
-        });
+          return {
+            start: '[[' + name,
+            end: ']]',
+            name,
+            shiftModify() {
+              this.start += '|';
+              this.content = this.name;
+            },
+          };
+        },
+      },
 
-        return config;
-      }
-    }
+      templates: {
+        byText: {},
+        cache: /** @type {string[]} */ ([]),
+
+        /**
+         * @this {Value<string>}
+         * @returns {import('./tribute/Tribute').TransformData}
+         */
+        transform() {
+          const name = this.item.trim();
+
+          return {
+            start: '{{' + name,
+            end: '}}',
+            name,
+            shiftModify() {
+              this.start += '|';
+            },
+          };
+        },
+      },
+
+      tags: {
+        default: defaultTags,
+
+        /**
+         * @this {Value<string | [string, string, string]>}
+         * @returns {import('./tribute/Tribute').TransformData}
+         */
+        transform() {
+          const item = this.item;
+
+          return {
+            start: Array.isArray(item) ? item[1] : `<${item}>`,
+            end: Array.isArray(item) ? item[2] : `</${item}>`,
+            enterContent: true,
+          };
+        },
+      },
+    });
   }
 
   /**

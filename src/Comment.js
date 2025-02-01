@@ -2276,7 +2276,7 @@ class Comment extends CommentSkeleton {
    *
    * @param {string} body
    * @param {object[]} revisions
-   * @param {import('./CommentSkeleton').CommentSkeletonLike[]} commentsData
+   * @param {import('./updateChecker').CommentWorkerEnrichied[]} commentsData
    * @returns {JQuery}
    */
   scrubDiff(body, revisions, commentsData) {

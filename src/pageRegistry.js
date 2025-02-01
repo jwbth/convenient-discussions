@@ -580,7 +580,7 @@ export class Page {
           .getApi()
           .post(/** @type {import('types-mediawiki/mw/Api').UnknownApiParams} */ (options))
           .catch(handleApiReject);
-    const response = /** @type {import('./utils-api').ApiResponseQuery} */ (await request);
+    const response = /** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (await request);
     const revisions = response.query?.pages?.[0]?.revisions;
     if (!revisions) {
       throw new CdError({
