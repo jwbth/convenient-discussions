@@ -430,7 +430,8 @@ function getTimestampMainPartPattern(language) {
   let string = '';
 
   for (let p = 0; p < format.length; p++) {
-    let num = /** @type {string|false} */ (false);
+    /** @type {string|false} */
+    let num = false;
     let code = format[p];
     if ((code === 'x' && p < format.length - 1) || (code === 'xk' && p < format.length - 1)) {
       code += format[++p];

@@ -989,26 +989,27 @@ export default {
    * @private
    */
   mergeAdjacentCommentLevels() {
+    /** @type {NodeListOf<HTMLElement>} */
     const levels = controller.rootElement.querySelectorAll(
       '.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)'
     );
     if (!levels.length) return;
 
-    const isOrHasCommentLevel = (/** @type {Element} */ el) =>
+    const isOrHasCommentLevel = (/** @type {HTMLElement} */ el) =>
       Boolean(
         (el.classList.contains('cd-commentLevel') && el.tagName !== 'OL') ||
         el.querySelector('.cd-commentLevel:not(ol)')
       );
 
     [...levels].forEach((bottomElement) => {
-      const topElement = bottomElement.previousElementSibling;
+      const topElement = /** @type {HTMLElement} */ (bottomElement.previousElementSibling);
 
       // If the previous element was removed in this cycle
       if (!topElement) return;
 
       for (
-        let currentTopElement = /** @type {HTMLElement | undefined} */ (topElement),
-          currentBottomElement = /** @type {HTMLElement | undefined} */ (bottomElement),
+        let /** @type {HTMLElement | undefined} */ currentTopElement = topElement,
+          /** @type {HTMLElement | undefined} */ currentBottomElement = bottomElement,
           firstMoved;
         currentTopElement && currentBottomElement && isOrHasCommentLevel(currentBottomElement);
         currentBottomElement = firstMoved,
@@ -1044,12 +1045,12 @@ export default {
           */
           if (['DL', 'DD', 'UL', 'LI'].includes(firstElementChild.tagName)) {
             while (currentBottomElement.childNodes.length) {
-              let child = /** @type {HTMLElement} */ (currentBottomElement.firstChild);
-              if (child.tagName) {
+              let child = /** @type {ChildNode} */ (currentBottomElement.firstChild);
+              if (child instanceof HTMLElement) {
                 if (bottomInnerTags[child.tagName]) {
                   child = this.changeElementType(child, bottomInnerTags[child.tagName]);
                 }
-                firstMoved ??= child;
+                firstMoved ??= /** @type {HTMLElement} */ (child);
               } else if (firstMoved === undefined && child.textContent.trim()) {
                 // Don't fill the firstMoved variable which is used further to merge elements if
                 // there is a non-empty text node between. (An example that is now fixed:

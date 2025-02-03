@@ -354,7 +354,8 @@ class Autocomplete {
           if (this.wikilinks.byText[text]) {
             callback(prepareValues(this.wikilinks.byText[text], this.wikilinks));
           } else {
-            let values = /** @type {string[]} */ ([]);
+            /** @type {string[]} */
+            let values = [];
             const valid = (
               text &&
               text !== ':' &&
@@ -509,7 +510,8 @@ class Autocomplete {
           if (this.templates.byText[text]) {
             callback(prepareValues(this.templates.byText[text], this.templates));
           } else {
-            let values = /** @type {string[]} */ ([]);
+            /** @type {string[]} */
+            let values = [];
             const makeRequest = (
               text &&
               text.length <= 255 &&

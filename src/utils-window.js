@@ -523,7 +523,7 @@ export function getRangeContents(start, end, rootElement) {
   }
 
   let commonAncestor;
-  for (let el = /** @type {?HTMLElement} */ (start); el; el = el.parentElement) {
+  for (let /** @type {?HTMLElement} */ el = start; el; el = el.parentElement) {
     if (el.contains(end)) {
       commonAncestor = el;
       break;

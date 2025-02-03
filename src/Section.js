@@ -1574,8 +1574,8 @@ class Section extends SectionSkeleton {
   /**
    * Resubscribe to a renamed section if legacy topic subscriptions are used.
    *
-   * @param {object} currentCommentData
-   * @param {object} oldCommentData
+   * @param {import('./updateChecker').CommentWorkerEnrichied} currentCommentData
+   * @param {import('./updateChecker').CommentWorkerEnrichied} oldCommentData
    */
   resubscribeIfRenamed(currentCommentData, oldCommentData) {
     if (

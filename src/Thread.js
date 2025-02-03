@@ -950,7 +950,7 @@ class Thread extends mixInObject(class {}, OO.EventEmitter) {
 
     if (this.endElement !== this.visualEndElement) {
       for (
-        let c = /** @type {?import('./Comment').default} */ (this.rootComment);
+        let /** @type {?import('./Comment').default} */ c = this.rootComment;
         c;
         c = c.getParent(true)
       ) {
@@ -1010,7 +1010,7 @@ class Thread extends mixInObject(class {}, OO.EventEmitter) {
 
     if (this.endElement !== this.visualEndElement && areOutdentedCommentsShown) {
       for (
-        let c = /** @type {?import('./Comment').default} */ (this.rootComment);
+        let /** @type {?import('./Comment').default} */ c = this.rootComment;
         c;
         c = c.getParent()
       ) {

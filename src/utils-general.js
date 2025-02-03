@@ -79,7 +79,7 @@ export function unique(el, i, arr) {
  * @returns {?boolean}
  */
 export function isInline(node, countTextNodesAsInline = false) {
-  if (countTextNodesAsInline && node.nodeType === Node.TEXT_NODE) {
+  if (countTextNodesAsInline && isText(node)) {
     return true;
   }
 
@@ -609,14 +609,10 @@ export function isHeadingNode(node, onlyHElements = false) {
  * `<h6>`).
  *
  * @param {ElementLike|{ tagName: string; className: string }} node Element or object with `tagName`
- * and `className` properties.
+ *   and `className` properties.
  * @returns {?number}
  */
 export function getHeadingLevel(node) {
-  if (!node.tagName || node.className === undefined) {
-    return null;
-  }
-
   return (
     Number(
       (

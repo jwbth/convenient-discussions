@@ -103,9 +103,9 @@ class Parser {
 
     const classSelector = cd.g.noSignatureClasses.map((name) => `.${name}`).join(', ');
 
-    this.noSignatureElements = [
+    this.noSignatureElements = /** @type {ElementLikeArray} */ ([
       ...this.context.rootElement.querySelectorAll(`${tagSelector}, ${classSelector}`),
-    ];
+    ]);
   }
 
   /**
@@ -143,7 +143,7 @@ class Parser {
    * @param {import('./BootProcess').default} [bootProcess]
    */
   processAndRemoveDtMarkup(bootProcess) {
-    const elements = [...this.context.rootElement.getElementsByTagName('span')]
+    const elements = /** @type {ElementLikeArray} */ ([...this.context.rootElement.getElementsByTagName('span')]
       .filter((el) => (
         el.hasAttribute('data-mw-comment-start') ||
         el.hasAttribute('data-mw-comment-end') ||
@@ -163,7 +163,7 @@ class Parser {
       .concat(
         [...this.context.rootElement.getElementsByClassName('ext-discussiontools-init-replylink-buttons')]
       )
-      .filter(unique);
+      .filter(unique));
     this.context.processAndRemoveDtElements(elements, bootProcess);
     this.context.removeDtButtonHtmlComments();
   }
@@ -250,8 +250,8 @@ class Parser {
    */
   getSignatureFromTimestamp(timestamp) {
     let unsignedElement;
-    let el = timestamp.element;
-    while (!unsignedElement && (el = el.parentNode) && isInline(el)) {
+    let /** @type {?ElementLike} */ el = timestamp.element;
+    while (!unsignedElement && (el = el.parentElement) && isInline(el)) {
       if (el.classList.contains(cd.config.unsignedClass)) {
         unsignedElement = el;
       }
@@ -279,6 +279,7 @@ class Parser {
 
     let length = 0;
     let firstSignatureElement;
+    /** @type {NodeLike[]} */
     let signatureNodes = [];
     if (unsignedElement) {
       firstSignatureElement = startElement;
@@ -290,9 +291,8 @@ class Parser {
     // Unsigned template may be of the "undated" kind - containing a timestamp but no author name,
     // so we need to walk the tree anyway.
     let /** @type {?(ElementLike|TextLike)} */ node = treeWalker.currentNode;
-    let text = /** @type {ElementLike|TextLike} */ (node).textContent;
     do {
-      length += text.length;
+      length += node.textContent.length;
       if (isElement(node)) {
         authorData.isLastLinkAuthorLink = false;
 
@@ -322,7 +322,6 @@ class Parser {
         length = 0;
         signatureNodes = [];
       }
-      text = node?.textContent;
     } while (
       length < cd.config.signatureScanLimit &&
       node &&
@@ -343,7 +342,7 @@ class Parser {
             // outside of links or even tags, and this is much work for little gain. This is the
             // cost of us not relying on a DOM -> wikitext correspondence and processing these parts
             // separately.
-            (!isElement(node) && Parser.punctuationRegexp.test(text)) ||
+            (!isElement(node) && Parser.punctuationRegexp.test(node.textContent)) ||
 
             (
               isElement(node) &&
@@ -351,9 +350,11 @@ class Parser {
               (
                 // Invisible pings, like
                 // https://he.wikipedia.org/w/index.php?title=שיחה:שפת_אמת&oldid=38365117#c-אייל-20240205174400-אייל-20240205172600
-                /display: *none/.test(node.getAttribute('style')) ||
+                /display: *none/.test(node.getAttribute('style') || '') ||
 
-                this.noSignatureElements.some((noSigEl) => noSigEl === node)
+                this.noSignatureElements.some(
+                  (/** @type {ElementLike} */ noSigEl) => noSigEl === node
+                )
               )
             )
           )
@@ -366,11 +367,11 @@ class Parser {
 
             // Workaround for cases like https://en.wikipedia.org/?diff=1042059387 (those should be
             // extremely rare).
-            (['S', 'STRIKE', 'DEL'].includes(node.tagName) && text.length >= 30) ||
+            (['S', 'STRIKE', 'DEL'].includes(node.tagName) && node.textContent.length >= 30) ||
 
             // Cases like
             // https://ru.wikipedia.org/?diff=141883529#c-Супер-Вики-Патруль-20241204140000-Stjn-20241204123400
-            text.length >= cd.config.signatureScanLimit
+            node.textContent.length >= cd.config.signatureScanLimit
           )
         )
       )
@@ -384,10 +385,10 @@ class Parser {
       signatureNodes = [startElement];
     }
 
-    const fseIndex = signatureNodes.indexOf(firstSignatureElement);
+    const fseIndex = firstSignatureElement ? signatureNodes.indexOf(firstSignatureElement) : -1;
     signatureNodes.splice(fseIndex === -1 ? 1 : fseIndex + 1);
 
-    const signatureContainer = signatureNodes[0].parentNode;
+    const signatureContainer = /** @type {ElementLike} */ (signatureNodes[0].parentNode);
     const startElementNextSibling = signatureNodes[0].nextSibling;
     const element = document.createElement('span');
     element.classList.add('cd-signature');
@@ -428,7 +429,7 @@ class Parser {
 
         // Cases like https://ru.wikipedia.org/?diff=84883816
         for (
-          let el = /** @type {ElementLike | null} */ (element);
+          let /** @type {ElementLike | null} */ el = element;
           el && el !== this.context.rootElement;
           el = el.parentElement
         ) {
@@ -529,7 +530,10 @@ class Parser {
    *
    * @param {ElementLike} element
    * @param {boolean} [onlyChildrenWithoutCommentLevel=false]
-   * @returns {object}
+   * @returns {{
+   *   nodes: ElementLike[];
+   *   levelsPassed: number;
+   * }}
    */
   getTopElementsWithText(element, onlyChildrenWithoutCommentLevel = false) {
     // We ignore all spaces as an easy way to ignore only whitespace text nodes between element
@@ -543,7 +547,7 @@ class Parser {
       nodes = children;
       children = nodes.reduce(
         (arr, element) => arr.concat([...element[this.context.childElementsProp]]),
-        []
+        /** @type {ElementLikeArray} */ ([])
       );
       if (['DL', 'UL', 'OL'].includes(nodes[0].tagName)) {
         levelsPassed++;
@@ -578,21 +582,29 @@ class Parser {
   findHeadings() {
     return [...this.context.rootElement.querySelectorAll('h1, h2, h3, h4, h5, h6')]
       .map((element) => {
-        for (let el = element; el && el !== this.context.rootElement; el = el.parentNode) {
+        for (
+          let /** @type {?ElementLike} */ el = element;
+          el && el !== this.context.rootElement;
+          el = el.parentElement
+        ) {
           if (el.classList.contains('mw-heading')) {
             return el;
           }
         }
+
         return element;
       })
-      .filter((element) => (
-        element.getAttribute('id') !== 'mw-toc-heading' &&
-        !this.noSignatureElements.some((noSigEl) => noSigEl.contains(element))
-      ))
+      .filter(
+        (element) =>
+          element.getAttribute('id') !== 'mw-toc-heading' &&
+          !this.noSignatureElements.some((/** @type {ElementLike} */ noSigEl) =>
+            noSigEl.contains(element)
+          )
+      )
       .map((element) => ({
         type: 'heading',
         isWrapper: !isHeadingNode(element, true),
-        level: getHeadingLevel(element),
+        level: /** @type {number} */ (getHeadingLevel(element)),
         element,
       }));
   }
@@ -654,13 +666,13 @@ class Parser {
   }
 
   /**
-   * @typedef {'user' | 'userTalk' | 'contribs' | 'userSubpage' | 'userTalkSubpage' | 'userForeign' | 'userTalkForeign' | 'contribsForeign' | 'userSubpageForeign' | 'userTalkSubpageForeign'} LinkType
+   * @typedef {'user' | 'userTalk' | 'contribs' | 'userSubpage' | 'userTalkSubpage' | 'userForeign' | 'userTalkForeign' | 'contribsForeign' | 'userSubpageForeign' | 'userTalkSubpageForeign' | 'unknown'} LinkType
    */
 
   /**
    * @typedef {object} ProcessLinkReturn
    * @property {string} userName User name.
-   * @property {LinkType} [linkType] Link type.
+   * @property {LinkType} linkType Link type.
    * @memberof Parser
    * @inner
    */
@@ -674,8 +686,8 @@ class Parser {
   static processLink(element) {
     const href = element.getAttribute('href');
     let userName;
-    /** @type {LinkType|undefined} */
-    let linkType;
+    /** @type {LinkType} */
+    let linkType = 'unknown';
     if (href) {
       const { pageName, hostname, fragment } = parseWikiUrl(href) || {};
       if (!pageName || CommentSkeleton.isAnyId(fragment)) {
@@ -705,10 +717,17 @@ class Parser {
         linkType = 'contribs';
       }
       if (hostname !== cd.g.serverName) {
-        // @ts-ignore
         linkType += 'Foreign';
+
+        // Some bug in type checking - can't do `linkType = /** @type {LinkType} */ (linkType +
+        // 'Foreign');`
+        linkType = /** @type {LinkType} */ (linkType);
       }
-      userName &&= ucFirst(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();
+      if (!userName) {
+        return null;
+      }
+
+      userName = ucFirst(underlinesToSpaces(userName.replace(/\/.*/, ''))).trim();
     } else {
       if (
         element.classList.contains('mw-selflink') &&
@@ -736,8 +755,9 @@ class Parser {
    * @private
    */
   static processLinkData(link, authorData) {
-    const { userName, linkType } = this.processLink(link) || {};
-    if (userName) {
+    const result = this.processLink(link);
+    if (result) {
+      const { userName, linkType } = result;
       authorData.name ||= userName;
       if (authorData.name === userName) {
         if (['user', 'userForeign'].includes(linkType)) {
@@ -790,6 +810,7 @@ class Parser {
         // Don't return false here in case the user mentioned a redirect to their user page here.
       }
     }
+
     return true;
   }
 

@@ -360,10 +360,10 @@ class SectionSkeleton {
     }
 
     return (
-      cd.sections
+      /** @type {this} */ (cd.sections
         .slice(0, this.index)
         .reverse()
-        .find((section) => section.level < this.level) ||
+        .find((section) => section.level < this.level)) ||
       null
     );
   }
