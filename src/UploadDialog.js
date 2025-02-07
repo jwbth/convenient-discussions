@@ -20,25 +20,6 @@ import { mergeJquery, wrapHtml } from './utils-window';
  */
 
 /**
- * @typedef {{
- *   new (...args: any[]): ProcessDialog;
- *   prototype: ProcessDialog;
- * }} ProcessDialogMixin
- */
-
-/**
- * @template {Constructor} TBase
- * @param {TBase} Base
- * @returns {TBase & ProcessDialogMixin}
- */
-function ProcessDialogMixin(Base) {
-  // eslint-disable-next-line jsdoc/require-jsdoc
-  class Class extends Base {}
-  OO.mixinClass(Class, ProcessDialog);
-  return (/** @type {TBase & ProcessDialogMixin} */ (Class));
-}
-
-/**
  * Class that extends {@link mw.Upload.Dialog} and adds some logic we need. Uses
  * {@link ForeignStructuredUploadBookletLayout}, which in turn uses {@link ForeignStructuredUpload}.
  */
@@ -252,6 +233,11 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * @type {ControlsByName}
    */
   controls;
+
+  /**
+   * @type {ForeignStructuredUpload}
+   */
+  upload;
 
   /**
    * Create a booklet layout for foreign structured upload.
