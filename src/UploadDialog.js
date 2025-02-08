@@ -23,20 +23,21 @@ import { mergeJquery, wrapHtml } from './utils-window';
  * Class that extends {@link mw.Upload.Dialog} and adds some logic we need. Uses
  * {@link ForeignStructuredUploadBookletLayout}, which in turn uses {@link ForeignStructuredUpload}.
  */
-export class UploadDialog extends mixInClass(mw.Upload.Dialog, ProcessDialog) {
+export class UploadDialog extends mixInClass(/** @type {typeof mw.Upload.Dialog<typeof ForeignStructuredUploadBookletLayout>} */ (mw.Upload.Dialog), ProcessDialog) {
   /**
    * Create an upload dialog.
    *
    * @param {object} [config={}]
    */
   constructor(config = {}) {
-    super(Object.assign({
+    super(/** @type {mw.Upload.Dialog.Config<typeof ForeignStructuredUploadBookletLayout>} */ ({
       bookletClass: ForeignStructuredUploadBookletLayout,
       booklet: {
         target: mw.config.get('wgServerName') === 'commons.wikimedia.org' ? 'local' : 'shared',
       },
       classes: ['cd-uploadDialog'],
-    }, config));
+      ...config,
+    }));
   }
 
   /**
@@ -134,11 +135,13 @@ export class UploadDialog extends mixInClass(mw.Upload.Dialog, ProcessDialog) {
    */
   getActionProcess(action) {
     if (action === 'upload') {
+      // @ts-ignore: We need this protected method here
       let process = new OO.ui.Process(this.uploadBooklet.uploadFile());
       if (this.autosave) {
         process = process.next(() => {
           const promise = this.executeAction('save').fail(() => {
             // Reset the ability
+            // @ts-ignore: We need this protected method here
             this.uploadBooklet.onInfoFormChange();
           });
           this.actions.setAbilities({ save: false });
@@ -149,7 +152,8 @@ export class UploadDialog extends mixInClass(mw.Upload.Dialog, ProcessDialog) {
     } else if (action === 'cancelupload') {
       // The upstream dialog calls .initialize() here which clears all inputs including the file.
       // We don't want that.
-      return new OO.ui.Process(this.uploadBooklet.cancelUpload());
+      this.uploadBooklet.cancelUpload()
+      return new OO.ui.Process();
     }
 
     return super.getActionProcess(action);
@@ -252,7 +256,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * Setup the booklet with some data. (This method is not in the parent class - it's our own.)
    *
    * @param {File} file
-   * @param {string} enProjectName
+   * @param {string} [enProjectName]
    */
   setup(file, enProjectName) {
     this.modifyUploadForm();
@@ -281,10 +285,10 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 
     this.controls = {};
 
-    const fieldset = this.uploadForm.items[0];
+    const fieldset = /** @type {OO.ui.FieldsetLayout} */ (this.uploadForm.getItems()[0]);
 
     // Hide everything related to the "own work" checkbox
-    fieldset.items.slice(1).forEach((layout) => {
+    /** @type {OO.ui.FieldLayout[]} */ (fieldset.getItems()).slice(1).forEach((layout) => {
       layout.toggle(false);
     });
 
@@ -384,6 +388,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    *
    * @see https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html#onUploadFormChange
    * @protected
+   * @override
    */
   async onUploadFormChange() {
     let valid = true;
@@ -398,7 +403,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
   /**
    * Handle events changing the preset.
    *
-   * @param {import('./utils-oojs')~RadioOptionWidget|boolean} itemOrSelected
+   * @param {OO.ui.RadioOptionWidget|boolean} [itemOrSelected]
    * @protected
    */
   onPresetChange(itemOrSelected) {
@@ -477,7 +482,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
     this.controls.license.input.on('change', this.onInfoFormChange.bind(this));
 
     // Add items to the fieldset
-    this.infoForm.items[1].addItems([
+    /** @type {OO.ui.FieldsetLayout} */ (this.infoForm.getItems()[1]).addItems([
       this.controls.source.field,
       this.controls.author.field,
       this.controls.license.field,
@@ -489,6 +494,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    *
    * @see https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html#onInfoFormChange
    * @protected
+   * @override
    */
   async onInfoFormChange() {
     let valid = true;
@@ -529,6 +535,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html#uploadFile
    * @returns {JQuery.Promise}
    * @protected
+   * @override
    */
   uploadFile() {
     const preset = this.controls.preset.select.findSelectedItem().getData();
@@ -554,7 +561,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
     let filenameDate;
     if (this.preset === 'projectScreenshot' || this.preset === 'mediawikiScreenshot') {
       filenameDate = (
-        this.getExactDateFromLastModified(this.getFile()) ||
+        this.getExactDateFromLastModified(/** @type {File} */ (this.getFile())) ||
         date.format('YYYY-MM-DD HH-mm-ss')
       );
 
@@ -711,6 +718,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html#getDateFromLastModified
    * @protected
+   * @override
    */
   getDateFromLastModified(file) {
     if (file?.lastModified) {
@@ -742,6 +750,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html#getText
    * @protected
+   * @override
    */
   getText() {
     this.upload.setSource(this.controls.source.input.getValue());
@@ -759,6 +768,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html#saveFile
    * @protected
+   * @override
    */
   saveFile() {
     this.categoriesWidget.addTag('Uploaded with Convenient Discussions');
@@ -776,8 +786,6 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 
   /**
    * Cancel the upload. (This method is not in the parent class - it's our own.)
-   *
-   * @protected
    */
   cancelUpload() {
     this.onUploadFormChange();
@@ -793,6 +801,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * @see
    *   https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html#clear
    * @protected
+   * @override
    */
   clear() {
     // No idea how .setValidityFlag(true) is helpful; borrowed it from
@@ -800,8 +809,8 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
     // by choosing the "Own work" preset, pressing "Upload", then pressing "Back", then choosing "No
     // preset", then pressing "Upload" again), they end up invalid anyway.
     this.progressBarWidget.setProgress(0);
-    this.filenameWidget.setValue(null).setValidityFlag(true);
-    this.descriptionWidget.setValue(null).setValidityFlag(true);
+    this.filenameWidget.setValue('').setValidityFlag(true);
+    this.descriptionWidget.setValue('').setValidityFlag(true);
     this.categoriesWidget.setValue([]);
     if (!this.dateWidget.getValue()) {
       this.dateWidget.setValidityFlag(true);
@@ -809,9 +818,9 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 
     // Clear the fields we added as well. We add them on the "setup" step, so they aren't there
     // when .clear() initially runs.
-    this.controls?.source.input.setValue(null).setValidityFlag(true);
-    this.controls?.author.input.setValue(null).setValidityFlag(true);
-    this.controls?.license.input.setValue(null).setValidityFlag(true);
+    this.controls?.source.input.setValue('').setValidityFlag(true);
+    this.controls?.author.input.setValue('').setValidityFlag(true);
+    this.controls?.license.input.setValue('').setValidityFlag(true);
   }
 
   /**
@@ -847,7 +856,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    */
   static getTemplateForHostname(hostname) {
     let template;
-    [
+    /** @type {Array<[RegExp, string]>} */ ([
       [/^(.+)\.wikipedia.org$/, `{{Wikipedia-screenshot%s}}`],
 
       // Language codes aren't supported on most templates, but they may become supported at some
@@ -860,7 +869,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
       [/^(?:(.+)\.)?wikisource.org$/, `{{Wikisource-screenshot%s}}`],
 
       [/^(.+)\.wikivoyage.org$/, `{{Wikivoyage-screenshot%s}}`],
-    ].some(([regexp, format]) => {
+    ]).some(([regexp, format]) => {
       const match = hostname.match(regexp);
       if (match) {
         template = format.replace('%s', match[1] ? '|' + match[1] : '')
@@ -888,7 +897,8 @@ class ForeignStructuredUpload extends mw.ForeignStructuredUpload {
   /**
    * Create a foreign structured upload.
    *
-   * @param {string} target
+   * @param {string} [target] Used to choose the target repository. If nothing is passed,
+   * `mw.ForeignUpload#target` will be used (`'local'`).
    */
   constructor(target) {
     super(target, { ...cd.getApiConfig(), ...cd.g.apiErrorFormatHtml });
@@ -925,18 +935,20 @@ class ForeignStructuredUpload extends mw.ForeignStructuredUpload {
    * Get the source.
    *
    * @returns {string}
+   * @override
    */
   getSource() {
-    return this.source;
+    return this.source ?? super.getSource();
   }
 
   /**
    * Get the author.
    *
    * @returns {string}
+   * @override
    */
   getUser() {
-    return this.user || this.getDefaultUser();
+    return this.user ?? this.getDefaultUser();
   }
 
   /**
@@ -952,9 +964,10 @@ class ForeignStructuredUpload extends mw.ForeignStructuredUpload {
    * Get the license.
    *
    * @returns {string}
+   * @override
    */
   getLicense() {
-    return this.license;
+    return this.license ?? super.getLicense();
   }
 }
 

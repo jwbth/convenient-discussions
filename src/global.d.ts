@@ -159,34 +159,34 @@ declare global {
       }
     }
 
-    namespace Upload {
-      interface DialogConfig {
-        bookletClass?: typeof mw.Upload.BookletLayout;
-        booklet?: object;
-      }
+    // namespace Upload {
+    //   interface DialogConfig {
+    //     bookletClass?: typeof mw.Upload.BookletLayout;
+    //     booklet?: object;
+    //   }
 
-      class Dialog extends OO.ui.ProcessDialog {
-        static name: string;
-        static title: string | Function;
-        static actions: Array<{
-          flags: string | string[];
-          action: string;
-          label: string;
-          modes: string | string[];
-        }>;
+    //   class Dialog extends OO.ui.ProcessDialog {
+    //     static name: string;
+    //     static title: string | Function;
+    //     static actions: Array<{
+    //       flags: string | string[];
+    //       action: string;
+    //       label: string;
+    //       modes: string | string[];
+    //     }>;
 
-        constructor(config?: DialogConfig);
+    //     constructor(config?: DialogConfig);
 
-        protected createUploadBooklet(): mw.Upload.BookletLayout;
-        protected onUploadBookletSet(page: OO.ui.PageLayout): void;
-        protected onUploadValid(isValid: boolean): void;
-        protected onInfoValid(isValid: boolean): void;
+    //     protected createUploadBooklet(): mw.Upload.BookletLayout;
+    //     protected onUploadBookletSet(page: OO.ui.PageLayout): void;
+    //     protected onUploadValid(isValid: boolean): void;
+    //     protected onInfoValid(isValid: boolean): void;
 
-        protected bookletClass: typeof mw.Upload.BookletLayout;
-        protected bookletConfig: object;
-        protected uploadBooklet: mw.Upload.BookletLayout;
-      }
-    }
+    //     protected bookletClass: typeof mw.Upload.BookletLayout;
+    //     protected bookletConfig: object;
+    //     protected uploadBooklet: mw.Upload.BookletLayout;
+    //   }
+    // }
   }
 
   namespace OO.ui {
@@ -242,7 +242,7 @@ declare global {
          * @param context Execution context of the function. The context is ignored if the step
          * is a number or promise.
          */
-        new<C = null>(step: StepOverride<C>, context?: C): Process;
+        new<C = null>(step?: StepOverride<C>, context?: C): Process;
       }
     }
 

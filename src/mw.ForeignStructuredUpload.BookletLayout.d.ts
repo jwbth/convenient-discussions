@@ -2,194 +2,197 @@ declare global {
   namespace mw {
     namespace ForeignStructuredUpload {
       /**
-       * Encapsulates the process of uploading a file to MediaWiki
-       * using the {@link mw.ForeignStructuredUpload} model.
+       * Encapsulates the process of uploading a file to MediaWiki using the
+       * {@link mw.ForeignStructuredUpload} model.
        *
-       * @example
-       * var uploadDialog = new mw.Upload.Dialog({
-       *   bookletClass: mw.ForeignStructuredUpload.BookletLayout,
-       *   booklet: {
-       *     target: 'local'
-       *   }
-       * });
-       * var windowManager = new OO.ui.WindowManager();
-       * $( document.body ).append( windowManager.$element );
-       * windowManager.addWindows([ uploadDialog ]);
-       *
-       * @class mw.ForeignStructuredUpload.BookletLayout
-       * @extends mw.Upload.BookletLayout
+       * @param {mw.ForeignStructuredUpload.BookletLayoutConfig} [config] Configuration options.
        */
-      interface BookletLayout extends BookletLayout.Props, BookletLayout.Prototype {}
+      class BookletLayout extends mw.Upload.BookletLayout {
+        constructor(config?: BookletLayout.ConfigOptions);
 
-      namespace BookletLayout {
-        interface EventMap extends mw.Upload.BookletLayout.EventMap {}
+        /**
+         * Used to choose the target repository.
+         */
+        target?: string;
 
-        interface ConfigOptions extends mw.Upload.BookletLayout.ConfigOptions {
-          /**
-           * Used to choose the target repository.
-           * If nothing is passed, the default from {@link mw.ForeignUpload#target} is used.
-           */
-          target?: string;
-        }
+        /* Additional properties set up by this subclass */
 
-        interface Props extends mw.Upload.BookletLayout.Props {
-          /**
-           * The underlying upload model.
-           */
-          override upload: mw.ForeignUpload;
-          /**
-           * The target repository.
-           */
-          target?: string;
-          /**
-           * jQuery element for the "own work" message.
-           */
-          $ownWorkMessage: JQuery;
-          /**
-           * jQuery element for the "not own work" message.
-           */
-          $notOwnWorkMessage: JQuery;
-          /**
-           * jQuery element for the "not own work local" message.
-           */
-          $notOwnWorkLocal: JQuery;
-          /**
-           * Checkbox widget for own work selection.
-           */
-          ownWorkCheckbox: OO.ui.CheckboxInputWidget;
-          /**
-           * Label widget for displaying messages.
-           */
-          messageLabel: OO.ui.LabelWidget;
-          /**
-           * Widget for selecting categories.
-           */
-          categoriesWidget: mw.widgets.CategoryMultiselectWidget;
-          /**
-           * Date input widget.
-           */
-          dateWidget: mw.widgets.DateInputWidget;
-          /**
-           * Field layout for the filename input.
-           */
-          filenameField: OO.ui.FieldLayout;
-          /**
-           * Field layout for the description input.
-           */
-          descriptionField: OO.ui.FieldLayout;
-          /**
-           * Field layout for the categories input.
-           */
-          categoriesField: OO.ui.FieldLayout;
-          /**
-           * Field layout for the date input.
-           */
-          dateField: OO.ui.FieldLayout;
-        }
+        /**
+         * A jQuery object representing the "own work" message element.
+         */
+        $ownWorkMessage: JQuery;
+        /**
+         * A jQuery object representing the "not own work" message element.
+         */
+        $notOwnWorkMessage: JQuery;
+        /**
+         * A jQuery object representing the "not own work (local)" message element.
+         */
+        $notOwnWorkLocal: JQuery;
+        /**
+         * A label widget for displaying messages.
+         */
+        messageLabel: OO.ui.LabelWidget;
+        /**
+         * A checkbox widget for selecting whether the work is owned.
+         */
+        ownWorkCheckbox: OO.ui.CheckboxInputWidget;
+        /**
+         * A widget for selecting categories.
+         */
+        categoriesWidget: mw.widgets.CategoryMultiselectWidget;
+        /**
+         * A date input widget.
+         */
+        dateWidget: mw.widgets.DateInputWidget;
+        /**
+         * A field layout wrapping the filename input widget.
+         */
+        filenameField: OO.ui.FieldLayout;
+        /**
+         * A field layout wrapping the description input widget.
+         */
+        descriptionField: OO.ui.FieldLayout;
+        /**
+         * A field layout wrapping the categories widget.
+         */
+        categoriesField: OO.ui.FieldLayout;
+        /**
+         * A field layout wrapping the date widget.
+         */
+        dateField: OO.ui.FieldLayout;
 
-        interface Prototype extends mw.Upload.BookletLayout.Prototype {
-          /**
-           * Initialize for a new upload.
-           *
-           * @returns A promise resolved when initialization is complete.
-           */
-          initialize(): JQuery.Promise<any>;
+        /* Methods */
 
-          /**
-           * Create a new upload model.
-           *
-           * @protected
-           * @returns The upload model.
-           */
-          createUpload(): mw.ForeignStructuredUpload;
+        /**
+         * Initializes the booklet layout for a new upload.
+         *
+         * This method extends the parent's initialize method by setting up
+         * additional fields (such as license messages and category widget API configuration)
+         * based on the target wiki’s configuration.
+         *
+         * @inheritdoc
+         * @return {JQuery.Promise<any>} A promise resolved when initialization is complete.
+         */
+        initialize(): JQuery.Promise<any>;
 
-          /**
-           * Renders and returns the upload form.
-           *
-           * @returns The upload form layout.
-           */
-          renderUploadForm(): OO.ui.FormLayout;
+        /**
+         * Returns a {@link mw.ForeignStructuredUpload} instance with the target specified in config.
+         *
+         * @return {mw.Upload} The upload model.
+         */
+        protected createUpload(): mw.Upload;
 
-          /**
-           * Handles change events on the upload form.
-           *
-           * @fires mw.ForeignStructuredUpload.BookletLayout#uploadValid
-           */
-          onUploadFormChange(): void;
+        /**
+         * Renders and returns the upload form.
+         *
+         * Sets up elements for file selection and "own work" confirmation.
+         *
+         * @inheritdoc
+         * @return {OO.ui.FormLayout} The upload form layout.
+         */
+        protected renderUploadForm(): OO.ui.FormLayout;
 
-          /**
-           * Renders and returns the information form for collecting metadata.
-           *
-           * @returns The info form layout.
-           */
-          renderInfoForm(): OO.ui.FormLayout;
+        /**
+         * Handles change events on the upload form.
+         *
+         * Determines form validity by ensuring a file is selected and the own work checkbox is selected,
+         * then emits the `uploadValid` event with a boolean indicating validity.
+         *
+         * @inheritdoc
+         */
+        protected onUploadFormChange(): void;
 
-          /**
-           * Handles change events on the info form.
-           *
-           * @fires mw.ForeignStructuredUpload.BookletLayout#infoValid
-           */
-          onInfoFormChange(): void;
+        /**
+         * Renders and returns the information form for collecting metadata.
+         *
+         * Sets up fields for filename, description, categories, and date.
+         *
+         * @inheritdoc
+         * @return {OO.ui.FormLayout} The information form layout.
+         */
+        protected renderInfoForm(): OO.ui.FormLayout;
 
-          /**
-           * Validates the filename by checking if the file already exists.
-           *
-           * @param filename - The mw.Title representing the filename.
-           * @returns A promise that resolves if the filename is valid,
-           *          or rejects with an OO.ui.Error.
-           */
-          validateFilename(filename: mw.Title): JQuery.Promise<void>;
+        /**
+         * Handles change events on the information form.
+         *
+         * Checks validity of the filename, description, and date fields and emits the `infoValid` event.
+         *
+         * @inheritdoc
+         */
+        protected onInfoFormChange(): void;
 
-          /**
-           * Saves the file.
-           *
-           * @returns A promise that resolves if the file is saved successfully.
-           */
-          saveFile(): JQuery.Promise<any>;
+        /**
+         * Validates the given filename by checking if a file page already exists.
+         *
+         * @param {mw.Title} filename The title object representing the filename.
+         * @return {JQuery.Promise<any>} A promise that resolves on success or rejects with an OO.ui.Error.
+         */
+        protected validateFilename(filename: mw.Title): JQuery.Promise<any>;
 
-          /**
-           * Gets the text of the file page.
-           *
-           * @returns The file page text.
-           */
-          getText(): string;
+        /**
+         * Saves the file.
+         *
+         * This method validates the filename before delegating to the parent saveFile method.
+         *
+         * @inheritdoc
+         * @return {JQuery.Promise<any>} A promise that resolves if the file is saved successfully.
+         */
+        protected saveFile(): JQuery.Promise<any>;
 
-          /**
-           * Extracts the date from EXIF data of the given file.
-           *
-           * @param file - The file object.
-           * @returns A promise that resolves with the date string.
-           */
-          getDateFromExif(file: File): JQuery.Promise<string>;
+        /**
+         * Gets the wikitext for the file page.
+         *
+         * Collects data from the description, date, and categories fields and
+         * returns the complete file page text.
+         *
+         * @inheritdoc
+         * @return {string} The wikitext for the file page.
+         */
+        protected getText(): string;
 
-          /**
-           * Gets the last modified date from the file.
-           *
-           * @param file - The file object.
-           * @returns The formatted date string, or undefined.
-           */
-          getDateFromLastModified(file: File): string | undefined;
+        /**
+         * Extracts the original date from EXIF data of the given file.
+         *
+         * @param {File} file The file from which to extract EXIF data.
+         * @return {JQuery.Promise<string>} A promise resolved with the date string in 'YYYY-MM-DD' format.
+         */
+        protected getDateFromExif(file: File): JQuery.Promise<string>;
 
-          /**
-           * Clears the values of all fields.
-           */
-          clear(): void;
-        }
+        /**
+         * Gets the last modified date from the file.
+         *
+         * @param {File} file The file from which to retrieve the last modified date.
+         * @return {string | undefined} The formatted date string in 'YYYY-MM-DD' format, or undefined.
+         */
+        protected getDateFromLastModified(file: File): string | undefined;
 
-        interface Constructor {
-          /**
-           * @param config - Configuration options.
-           */
-          new (config: ConfigOptions): BookletLayout;
-          prototype: Prototype;
-          static: any;
-          super: mw.Upload.BookletLayout.Constructor;
-          /** @deprecated Use `super` instead */
-          parent: mw.Upload.BookletLayout.Constructor;
-        }
+        /**
+         * Clears all fields in the booklet layout.
+         *
+         * Extends the parent's clear method by also clearing the own work checkbox,
+         * categories widget, and date widget.
+         *
+         * @inheritdoc
+         */
+        protected clear(): void;
       }
 
-      const BookletLayout: BookletLayout.Constructor;
+      namespace BookletLayout {
+        /**
+         * Configuration options for a ForeignStructuredUpload BookletLayout.
+         *
+         * @interface
+         * @extends mw.Upload.BookletLayoutConfig
+         */
+        interface ConfigOptions extends mw.Upload.BookletLayoutConfig {
+          /**
+           * Used to choose the target repository.
+           * If nothing is passed, the default target from mw.ForeignUpload is used.
+           */
+          target?: string;
+        }
+      }
     }
   }
 }

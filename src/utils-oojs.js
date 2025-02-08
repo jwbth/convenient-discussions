@@ -158,7 +158,7 @@ import { copyText } from './utils-window';
  * action string, not a boolean (which helps to differentiate between more than two types of answer
  * and also a window close by pressing Esc).
  *
- * @param {JQuery|string} message
+ * @param {string|JQuery} message
  * @param {{ [key: string]: any }} [options={}]
  * @returns {Promise.<'accept' | 'reject' | undefined>} `undefined` is possible when pressing Esc, I
  *   think.
@@ -189,8 +189,8 @@ export async function showConfirmDialog(message, options = {}) {
 /**
  * @typedef {CommonWidgetConfigProps & {
  *   type?: 'text';
- *   value: string;
- *   maxLength: number;
+ *   value?: string;
+ *   maxLength?: number;
  * }} TextFieldType
  */
 
@@ -208,7 +208,7 @@ export async function showConfirmDialog(message, options = {}) {
  * @typedef {CommonWidgetConfigProps & {
  *   type?: 'checkbox';
  *   value: string;
- *   selected: boolean;
+ *   selected?: boolean;
  *   title?: string;
  *   tabIndex?: number;
  * }} CheckboxFieldType
@@ -220,7 +220,9 @@ export async function showConfirmDialog(message, options = {}) {
  *   selected?: string;
  *   options: Array<{
  *     data: any;
- *     label: string
+ *     label: string;
+ *     help?: string|JQuery;
+ *     selected?: boolean;
  *   }>;
  * }} RadioFieldType
  */

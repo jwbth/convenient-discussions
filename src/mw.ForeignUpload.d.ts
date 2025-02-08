@@ -1,72 +1,64 @@
+import { Api, ApiResponse } from "./Api";
+
 declare global {
-	namespace mw {
-		/**
-		 * Upload to another MediaWiki site.
-		 *
-		 * Subclassed to upload to a foreign API, with no other goodies.
-		 * Use this for a generic foreign image repository on your wiki farm.
-		 *
-		 * Note: If the first argument is an object, it is treated as `apiconfig`
-		 * and the default target is assumed.
-		 *
-		 * @see https://www.mediawiki.org/wiki/API:Upload
-		 */
-		interface ForeignUpload extends ForeignUpload.Props, ForeignUpload.Prototype {}
+    namespace mw {
+        /**
+         * Upload to another MediaWiki site.
+         *
+         * Subclassed to upload to a foreign API, with no other goodies. Use
+         * this for a generic foreign image repository on your wiki farm.
+         *
+         * Note you can provide the `target` or not – if the first argument is
+         * an object, we assume you want the default, and treat it as apiconfig
+         * instead.
+         *
+         * @class mw.ForeignUpload
+         * @extends mw.Upload
+         *
+         * @constructor
+         * @description Used to represent an upload in progress on the frontend.
+         * @param {string|mw.Api.Options} [target] Used to set up the target
+         *     wiki. If not remote, this class behaves identically to mw.Upload (unless further subclassed).
+         *     Use the same names as set in $wgForeignFileRepos for this. Also,
+         *     make sure there is an entry in the $wgForeignUploadTargets array for this name.
+         * @param {mw.Api.Options} [apiconfig] Passed to the constructor of {@link mw.ForeignApi} or {@link mw.Api}, as needed.
+         */
+        class ForeignUpload extends Upload {
+            constructor(target?: string | Api.Options, apiconfig?: Api.Options);
 
-		namespace ForeignUpload {
-			interface EventMap extends Upload.EventMap {}
+            /**
+             * Used to specify the target repository of the upload.
+             *
+             * If you set this to something that isn't `'local'`, you must be sure to
+             * add that target to `$wgForeignUploadTargets` in LocalSettings, and the
+             * repository must be set up to use CORS and CentralAuth.
+             *
+             * Most wikis use `"shared"` to refer to Wikimedia Commons; we assume that
+             * in this class and in the messages linked to it.
+             *
+             * Defaults to the first available foreign upload target,
+             * or to local uploads if no foreign target is configured.
+             *
+             * @type {string}
+             */
+            target: string;
 
-			interface ConfigOptions extends Upload.ConfigOptions {}
+            /**
+             * @inheritdoc
+             */
+            getApi(): JQuery.Promise<Api>;
 
-			interface Static extends Upload.Static {}
+            /**
+             * @inheritdoc
+             */
+            upload(): JQuery.Promise<ApiResponse>;
 
-			interface Props extends Upload.Props {
-				/** Target repository name. */
-				target: string;
-				/** Promise resolving to an API instance. */
-				apiPromise: JQuery.Promise<mw.Api | mw.ForeignApi>;
-			}
-
-			interface Prototype extends Upload.Prototype {
-				/**
-				 * Get the API instance for this upload.
-				 *
-				 * @return Promise resolving to an API instance.
-				 */
-				getApi(): JQuery.Promise<mw.Api | mw.ForeignApi>;
-
-				/**
-				 * Override to ensure API info is available before upload.
-				 *
-				 * @inheritdoc
-				 */
-				upload(): JQuery.Promise<any>;
-
-				/**
-				 * Override to ensure API info is available before upload to stash.
-				 *
-				 * @inheritdoc
-				 */
-				uploadToStash(): JQuery.Promise<any>;
-			}
-
-			interface Constructor {
-				/**
-				 * @param target Used to set up the target wiki. If not provided,
-				 * it defaults to the first available foreign target or local uploads.
-				 * @param apiconfig Passed to the constructor of {@link mw.ForeignApi} or {@link mw.Api}, as needed.
-				 */
-				new(target?: string, apiconfig?: object): ForeignUpload;
-				prototype: Prototype;
-				static: Static;
-				super: Upload.Constructor;
-				/** @deprecated Use `super` instead. */
-				parent: Upload.Constructor;
-			}
-		}
-
-		const ForeignUpload: ForeignUpload.Constructor;
-	}
+            /**
+             * @inheritdoc
+             */
+            uploadToStash(): JQuery.Promise<ApiResponse>;
+        }
+    }
 }
 
 export {};
