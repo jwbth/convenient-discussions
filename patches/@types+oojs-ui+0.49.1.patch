@@ -1,6 +1,6 @@
 diff --git a/node_modules/@types/oojs-ui/CopyTextLayout.d.ts b/node_modules/@types/oojs-ui/CopyTextLayout.d.ts
 new file mode 100644
-index 0000000..2e31402
+index 0000000..d31006c
 --- /dev/null
 +++ b/node_modules/@types/oojs-ui/CopyTextLayout.d.ts
 @@ -0,0 +1,147 @@
@@ -138,7 +138,7 @@ index 0000000..2e31402
 +
 +		interface Constructor {
 +			/** @param config Configuration options */
-+			new <M extends boolean | undefined = undefined>(config: ConfigOptions<M>): CopyTextLayout<
++			new<M extends boolean | undefined = undefined>(config: ConfigOptions<M>): CopyTextLayout<
 +				M extends true ? MultilineTextInputWidget : TextInputWidget
 +			>;
 +			prototype: Prototype;
@@ -210,6 +210,19 @@ index 1e44dbf..ef64a82 100644
  
          interface Static
              extends
+diff --git a/node_modules/@types/oojs-ui/PageLayout.d.ts b/node_modules/@types/oojs-ui/PageLayout.d.ts
+index f028bd2..ed85114 100644
+--- a/node_modules/@types/oojs-ui/PageLayout.d.ts
++++ b/node_modules/@types/oojs-ui/PageLayout.d.ts
+@@ -24,7 +24,7 @@ declare namespace OO.ui {
+ 
+         type Static = PanelLayout.Static;
+ 
+-        type Props = PanelLayout.Props;
++        interface Props extends PanelLayout.Props {}
+ 
+         interface Prototype extends PanelLayout.Prototype {
+             /**
 diff --git a/node_modules/@types/oojs-ui/PopupWidget.d.ts b/node_modules/@types/oojs-ui/PopupWidget.d.ts
 index 064097e..3d93e45 100644
 --- a/node_modules/@types/oojs-ui/PopupWidget.d.ts
@@ -239,6 +252,110 @@ index 6de242c..c9e1067 100644
  
          interface Constructor {
              /** @param config Configuration options */
+diff --git a/node_modules/@types/oojs-ui/RadioOptionWidget.d.ts b/node_modules/@types/oojs-ui/RadioOptionWidget.d.ts
+index 39599da..44bfb2a 100644
+--- a/node_modules/@types/oojs-ui/RadioOptionWidget.d.ts
++++ b/node_modules/@types/oojs-ui/RadioOptionWidget.d.ts
+@@ -16,7 +16,7 @@ declare namespace OO.ui {
+ 
+         type Static = OptionWidget.Static;
+ 
+-        type Props = OptionWidget.Props;
++        interface Props extends OptionWidget.Props {}
+ 
+         type Prototype = OptionWidget.Prototype;
+ 
+diff --git a/node_modules/@types/oojs-ui/WindowInstance.d.ts b/node_modules/@types/oojs-ui/WindowInstance.d.ts
+index b62f0d1..3193df0 100644
+--- a/node_modules/@types/oojs-ui/WindowInstance.d.ts
++++ b/node_modules/@types/oojs-ui/WindowInstance.d.ts
+@@ -12,14 +12,20 @@ declare namespace OO.ui {
+      *
+      * @see https://doc.wikimedia.org/oojs-ui/master/js/#!/api/OO.ui.WindowInstance
+      */
+-    interface WindowInstance extends WindowInstance.Props, WindowInstance.Prototype {}
++    interface WindowInstance<A extends string | undefined = undefined>
++        extends WindowInstance.Props<A>, WindowInstance.Prototype
++    {}
+ 
+     namespace WindowInstance {
+-        interface Props {
+-            opening: JQuery.Promise<void>;
+-            opened: JQuery.Promise<void>;
+-            closing: JQuery.Promise<void>;
+-            closed: JQuery.Promise<void>;
++        // We can't just check for `string extends T`, because strings may be constant (e.g.
++        // 'accept')
++        type PromiseReturn<T> = Extract<T, string> extends never ? unknown : { action: T };
++
++        interface Props<A = undefined> {
++            opening: JQuery.Promise<unknown>;
++            opened: JQuery.Promise<unknown>;
++            closing: JQuery.Promise<PromiseReturn<A>>;
++            closed: JQuery.Promise<PromiseReturn<A>>;
+         }
+ 
+         interface Prototype {
+@@ -53,7 +59,7 @@ declare namespace OO.ui {
+         }
+ 
+         interface Constructor {
+-            new(): WindowInstance;
++            new<A extends string | undefined = string | undefined>(): WindowInstance<A>;
+             prototype: Prototype;
+             static: {};
+         }
+diff --git a/node_modules/@types/oojs-ui/WindowManager.d.ts b/node_modules/@types/oojs-ui/WindowManager.d.ts
+index 5549427..bcf0145 100644
+--- a/node_modules/@types/oojs-ui/WindowManager.d.ts
++++ b/node_modules/@types/oojs-ui/WindowManager.d.ts
+@@ -58,12 +58,17 @@ declare namespace OO.ui {
+             state: "hold" | "teardown";
+         }
+ 
+-        interface WindowOpeningData {
++        interface WindowOpeningData<A extends string = string> {
+             /**
+              * Element to which the window will return focus when closed. Defaults the current
+              * activeElement. If set to null, focus isn't changed on close.
+              */
+             $returnFocusTo?: JQuery | null;
++            actions?: Array<{
++                action: A;
++
++                [x: string]: any;
++            }>;
+ 
+             [x: string]: any;
+         }
+@@ -243,14 +248,22 @@ declare namespace OO.ui {
+              *  closing starts. This behaviour is deprecated and is not compatible with jQuery 3,
+              *  see T163510.
+              */
+-            openWindow(
+-                win: Window | string,
+-                data?: WindowOpeningData,
+-            ): WindowInstance & DeprecatedPromise<JQuery.Promise<void>, undefined | Error, WindowOpeningState, unknown>;
++            openWindow<D extends Window | string, A extends string = 'accept' | 'reject'>(
++                win: D,
++                data?: A[] extends WindowOpeningData['actions']
++                    ? WindowOpeningData<A>
++                    : WindowOpeningData,
++            // `undefined` accounts for when a window is closed by pressing Escape, without taking
++            // any action.
++            ):
++                & (D extends MessageDialog ? WindowInstance<A | undefined> : WindowInstance)
++                & DeprecatedPromise<JQuery.Promise<void>, undefined | Error, WindowOpeningState, unknown>;
+             openWindow<T>(
+                 win: Window | string,
+                 data?: T extends object ? never : T,
+-            ): WindowInstance & DeprecatedPromise<JQuery.Promise<void>, undefined | Error, WindowOpeningState, unknown>;
++            ):
++                & WindowInstance
++                & DeprecatedPromise<JQuery.Promise<void>, undefined | Error, WindowOpeningState, unknown>;
+ 
+             /**
+              * Close a window.
 diff --git a/node_modules/@types/oojs-ui/index.d.ts b/node_modules/@types/oojs-ui/index.d.ts
 index 45e24b4..6f42d75 100644
 --- a/node_modules/@types/oojs-ui/index.d.ts

@@ -1,4 +1,5 @@
 import Button from './Button';
+import CdError from './CdError';
 
 /**
  * @typedef {object} ButtonExtension
@@ -62,6 +63,10 @@ class CommentButton extends Button {
    * @private
    */
   createWidget() {
+    if (!this.widgetConstructor) {
+      throw new CdError();
+    }
+
     const originalHref = this.buttonElement.getAttribute('href');
 
     /**

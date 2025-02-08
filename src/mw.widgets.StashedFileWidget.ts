@@ -17,10 +17,11 @@ declare global {
        * widget.getValue(); // '12r9epfbnskk.knfiy7.1.jpg'
        * ```
        */
-      class StashedFileWidget extends OO.ui.Widget implements
-        OO.ui.mixin.IconElement,
-        OO.ui.mixin.LabelElement,
-        OO.ui.mixin.PendingElement
+      class StashedFileWidget extends OO.ui.Widget
+        implements
+          OO.ui.mixin.IconElement,
+          OO.ui.mixin.LabelElement,
+          OO.ui.mixin.PendingElement
       {
         constructor(config?: StashedFileWidget.ConfigOptions);
 
@@ -79,10 +80,13 @@ declare global {
         loadAndGetImageUrl(): JQuery.Promise<[string, string?]>;
       }
 
-      interface StashedFileWidget extends OO.ui.Widget,
-        OO.ui.mixin.IconElement,
-        OO.ui.mixin.LabelElement,
-        OO.ui.mixin.PendingElement {}
+      interface StashedFileWidget
+        extends
+          OO.ui.Widget,
+          OO.ui.mixin.IconElement,
+          OO.ui.mixin.LabelElement,
+          OO.ui.mixin.PendingElement
+      {}
 
       namespace StashedFileWidget {
         /**

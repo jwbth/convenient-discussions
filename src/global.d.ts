@@ -151,12 +151,12 @@ declare global {
     namespace widgets {
       function visibleCodePointLimit(textInputWidget: OO.ui.TextInputWidget, limit?: number, filterFunction?: Function): void;
 
-      interface TitleInputWidget
-        extends OO.ui.TitleInputWidget,
-          mw.widgets.TitleWidget,
-          OO.ui.mixin.LookupElement {
-        new (config: OO.ui.TitleInputWidget);
-      }
+      // interface TitleInputWidget
+      //   extends OO.ui.TitleInputWidget,
+      //     mw.widgets.TitleWidget,
+      //     OO.ui.mixin.LookupElement {
+      //   new (config: OO.ui.TitleInputWidget);
+      // }
     }
 
     // namespace Upload {
@@ -253,6 +253,12 @@ declare global {
 
       interface Prototype {
         setupOutlineItem(): void;
+      }
+    }
+
+    namespace RadioOptionWidget {
+      interface Props {
+        radio: OO.ui.RadioInputWidget;
       }
     }
   }
