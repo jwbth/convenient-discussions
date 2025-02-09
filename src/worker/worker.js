@@ -240,6 +240,15 @@ function restoreFunc(code) {
 }
 
 /**
+ * @typedef {object} MessageFromWorkerParse
+ * @property {string} type
+ * @property {number} revisionId
+ * @property {number} resolverId
+ * @property {CommentWorker[]} comments
+ * @property {SectionWorker[]} sections
+ */
+
+/**
  * Callback for messages from the window.
  *
  * @param {MessageEvent} event
@@ -247,9 +256,9 @@ function restoreFunc(code) {
  */
 function onMessageFromWindow(event) {
   /**
-   * @typedef {object} Message
+   * @typedef {object} MessageFromWindow
    * @property {string} type
-   * @property {string} [revisionId]
+   * @property {number} [revisionId]
    * @property {number} [resolverId]
    * @property {string} [text]
    * @property {import('../cd').ConvenientDiscussions['g']} [g]
@@ -258,7 +267,7 @@ function onMessageFromWindow(event) {
    */
 
   /**
-   * @type {Message}
+   * @type {MessageFromWindow}
    */
   const message = event.data;
 
@@ -298,13 +307,13 @@ function onMessageFromWindow(event) {
 
     parse();
 
-    postMessage({
+    postMessage(/** @type {MessageFromWorkerParse} */ ({
       type: message.type,
       revisionId: message.revisionId,
       resolverId: message.resolverId,
       comments: cd.comments,
       sections: cd.sections,
-    });
+    }));
 
     debug.stopTimer(timerLabel);
     debug.logAndResetEverything();

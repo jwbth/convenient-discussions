@@ -107,7 +107,7 @@ class Section extends SectionSkeleton {
    * When checking for updates, this has the match of the section to the section analyzed in the
    * worker scope.
    *
-   * @type {import('./updateChecker').SectionWorkerEnrichied|undefined}
+   * @type {import('./updateChecker').SectionWorkerEnriched|undefined}
    */
   match;
 
@@ -1574,8 +1574,8 @@ class Section extends SectionSkeleton {
   /**
    * Resubscribe to a renamed section if legacy topic subscriptions are used.
    *
-   * @param {import('./updateChecker').CommentWorkerEnrichied} currentCommentData
-   * @param {import('./updateChecker').CommentWorkerEnrichied} oldCommentData
+   * @param {import('./updateChecker').CommentWorkerEnriched} currentCommentData
+   * @param {import('./updateChecker').CommentWorkerEnriched} oldCommentData
    */
   resubscribeIfRenamed(currentCommentData, oldCommentData) {
     if (

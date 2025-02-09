@@ -649,7 +649,7 @@ export default {
   /**
    * _For internal use._ Add new comments notifications to threads and sections.
    *
-   * @param {import('./updateChecker').CommentWorkerEnrichied[]} newComments
+   * @param {import('./updateChecker').CommentWorkerEnriched[]} newComments
    */
   addNewCommentsNotes(newComments) {
     controller.saveRelativeScrollPosition();
@@ -709,7 +709,7 @@ export default {
    * Add an individual new comments notification to a thread or section.
    *
    * @param {Comment|import('./Section').default} parent
-   * @param {import('./updateChecker').CommentWorkerEnrichied[]} childComments
+   * @param {import('./updateChecker').CommentWorkerEnriched[]} childComments
    * @param {'thread'|'section'} type
    * @param {number[]} newCommentIndexes
    * @private
@@ -935,10 +935,10 @@ export default {
    * Add comment's children, including indirect, into an array, if they are in the array of all new
    * comments.
    *
-   * @param {import('./updateChecker').CommentWorkerEnrichied} childComment
-   * @param {import('./updateChecker').CommentWorkerEnrichied[]} newCommentsInSubtree
+   * @param {import('./updateChecker').CommentWorkerEnriched} childComment
+   * @param {import('./updateChecker').CommentWorkerEnriched[]} newCommentsInSubtree
    * @param {number[]} newCommentIndexes
-   * @returns {import('./updateChecker').CommentWorkerEnrichied[]}
+   * @returns {import('./updateChecker').CommentWorkerEnriched[]}
    * @private
    */
   searchForNewCommentsInSubtree(childComment, newCommentsInSubtree, newCommentIndexes) {

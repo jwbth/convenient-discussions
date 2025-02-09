@@ -28,8 +28,8 @@ import WebpackWorker from './worker/worker-gate';
 
 /**
  * @typedef {object} AddedComments
- * @property {import('./updateChecker').CommentWorkerEnrichied[]} all
- * @property {import('./updateChecker').CommentWorkerEnrichied[]} relevant
+ * @property {import('./updateChecker').CommentWorkerEnriched[]} all
+ * @property {import('./updateChecker').CommentWorkerEnriched[]} relevant
  * @property {Map<import('./SectionSkeleton').default | null, import('./CommentSkeleton').default[]>} bySection
  */
 
@@ -264,7 +264,7 @@ class Controller extends EventEmitter {
   /** @type {?(string[])} */
   relevantAddedCommentIds = null;
 
-  /** @type {import('./updateChecker').CommentWorkerEnrichied[]} */
+  /** @type {import('./updateChecker').CommentWorkerEnriched[]} */
   commentsNotifiedAbout = [];
 
   isObstructingElementHoveredCached = false;
@@ -1997,7 +1997,7 @@ class Controller extends EventEmitter {
   /**
    * Show a regular notification (`mw.notification`) to the user.
    *
-   * @param {import('./updateChecker').CommentWorkerEnrichied[]} comments
+   * @param {import('./updateChecker').CommentWorkerEnriched[]} comments
    * @private
    */
   showRegularNotification(comments) {
@@ -2100,7 +2100,7 @@ class Controller extends EventEmitter {
   /**
    * Show a desktop notification to the user.
    *
-   * @param {import('./updateChecker').CommentWorkerEnrichied[]} comments
+   * @param {import('./updateChecker').CommentWorkerEnriched[]} comments
    * @private
    */
   showDesktopNotification(comments) {
@@ -2201,8 +2201,8 @@ class Controller extends EventEmitter {
    * Update the data about added comments (new comments added while the page was idle), update page
    * components accordingly, show notifications.
    *
-   * @param {import('./updateChecker').CommentWorkerEnrichied[]} all
-   * @param {import('./updateChecker').CommentWorkerEnrichied[]} relevant
+   * @param {import('./updateChecker').CommentWorkerEnriched[]} all
+   * @param {import('./updateChecker').CommentWorkerEnriched[]} relevant
    */
   updateAddedComments(all, relevant) {
     this.addedCommentCount = all.length;

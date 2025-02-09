@@ -2255,7 +2255,7 @@ class Comment extends CommentSkeleton {
    *
    * @param {string} body
    * @param {object[]} revisions
-   * @param {import('./updateChecker').CommentWorkerEnrichied[]} commentsData
+   * @param {import('./updateChecker').CommentWorkerEnriched[]} commentsData
    * @returns {JQuery}
    */
   scrubDiff(body, revisions, commentsData) {
@@ -2600,9 +2600,9 @@ class Comment extends CommentSkeleton {
   /**
    * _For internal use._ Live-update the comment's content.
    *
-   * @param {import('./updateChecker').CommentWorkerEnrichied} currentComment Data about the comment
+   * @param {import('./updateChecker').CommentWorkerEnriched} currentComment Data about the comment
    *   in the current revision as delivered by the worker.
-   * @param {import('./updateChecker').CommentWorkerEnrichied} newComment Data about the comment in
+   * @param {import('./updateChecker').CommentWorkerEnriched} newComment Data about the comment in
    *   the new revision as delivered by the worker.
    * @returns {boolean} Was the update successful.
    */
@@ -3552,7 +3552,7 @@ class Comment extends CommentSkeleton {
    * Search for the comment in the source code and return possible matches.
    *
    * @param {string} contextCode
-   * @param {import('./updateChecker').CommentWorkerEnrichied} [commentData]
+   * @param {import('./updateChecker').CommentWorkerEnriched} [commentData]
    * @param {boolean} [isInSectionContext=false]
    * @returns {CommentSource|undefined}
    * @private
@@ -3610,7 +3610,7 @@ class Comment extends CommentSkeleton {
    * @overload
    * @param {undefined} [sectionCode]
    * @param {string} code
-   * @param {import('./updateChecker').CommentWorkerEnrichied} [commentData]
+   * @param {import('./updateChecker').CommentWorkerEnriched} [commentData]
    * @returns {CommentSource}
    */
 
@@ -3627,7 +3627,7 @@ class Comment extends CommentSkeleton {
    * @param {string} [code] Wikitext that should have the comment (provided only if we need to
    *   perform operations on some code that is not the code of a section or page). Implies
    *   `sectionCode` is not set.
-   * @param {import('./updateChecker').CommentWorkerEnrichied} [commentData] Comment data for
+   * @param {import('./updateChecker').CommentWorkerEnriched} [commentData] Comment data for
    *   comparison (can be set together with `code`).
    * @returns {CommentSource}
    * @throws {CdError}
