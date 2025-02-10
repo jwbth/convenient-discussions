@@ -186,9 +186,12 @@ class UpdateChecker extends OO.EventEmitter {
       const { comments: oldComments } = await this.processPage(this.previousVisitRevisionId);
       const { comments: currentComments } = await this.processPage(currentRevisionId);
       if (this.isPageStillAtRevision(currentRevisionId)) {
-        this.mapComments(currentComments, oldComments);
+        this.mapComments(
+          /** @type {CommentWorkerEnriched[]} */ (currentComments),
+          /** @type {CommentWorkerEnriched[]} */ (oldComments)
+        );
         this.checkForChangesSincePreviousVisit(
-          currentComments,
+          /** @type {CommentWorkerEnriched[]} */ (currentComments),
           this.previousVisitRevisionId,
           submittedCommentId
         );
@@ -204,6 +207,10 @@ class UpdateChecker extends OO.EventEmitter {
    * @private
    */
   mapSections(otherSections, lastCheckedRevisionId) {
+    // otherSections could contain simple SectionWorker types from
+    // import('./worker/SectionWorker').default, not SectionWorkerEnriched, but for simplicity let's
+    // treat them as SectionWorkerEnriched.
+
     // Reset values set in the previous run.
     sectionRegistry.getAll().forEach((section) => {
       delete section.match;
@@ -282,46 +289,36 @@ class UpdateChecker extends OO.EventEmitter {
   }
 
   /**
-   * Check if the comment instance received from a web worker was previously enriched by this class.
-   *
-   * @param {import('./worker/CommentWorker').default[] | CommentWorkerEnriched[]} comments
-   * @returns {comments is CommentWorkerEnriched[]}
-   */
-  areCommentsEnriched(comments) {
-    return 'match' in comments[0] || 'hasPoorMatch' in comments[0] || 'parentMatch' in comments[0];
-  }
-
-  /**
    * Map comments obtained from the current revision to comments obtained from another revision (newer
    * or older) by adding the `match` property to the first ones. The function also adds the
    * `hasPoorMatch` property to comments that have possible matches that are not good enough to
    * confidently state a match.
    *
-   * @param {import('./worker/CommentWorker').default[] | CommentWorkerEnriched[]} currentComments
-   * @param {import('./worker/CommentWorker').default[] | CommentWorkerEnriched[]} otherComments
+   * @param {CommentWorkerEnriched[]} currentComments
+   * @param {CommentWorkerEnriched[]} otherComments
    * @private
    */
   mapComments(currentComments, otherComments) {
-    // Reset values set in the previous run ("derich").
-    if (this.areCommentsEnriched(currentComments)) {
-      currentComments.forEach((comment) => {
-        delete comment.match;
-        delete comment.matchScore;
-        delete comment.hasPoorMatch;
-        delete comment.parentMatch;
-      });
-    }
+    // currentComments and otherComments could contain simple CommentWorker types from
+    // import('./worker/CommentWorker').default, not CommentWorkerEnriched, but for simplicity let's
+    // treat them as CommentWorkerEnriched.
 
-    if (this.areCommentsEnriched(otherComments)) {
-      otherComments.forEach((otherComment) => {
-        delete otherComment.match;
-      });
-    }
+    // Reset values set in the previous run ("derich").
+    currentComments.forEach((comment) => {
+      delete comment.match;
+      delete comment.matchScore;
+      delete comment.hasPoorMatch;
+      delete comment.parentMatch;
+    });
+
+    otherComments.forEach((otherComment) => {
+      delete otherComment.match;
+    });
 
     // We choose to traverse "other" (newer/older) comments in the top cycle, and current comments in
     // the bottom cycle, not vice versa.
-    /** @type {CommentWorkerEnriched[]} */ (otherComments).forEach((otherComment) => {
-      const ccFiltered = /** @type {CommentWorkerEnriched[]} */ (currentComments).filter(
+    otherComments.forEach((otherComment) => {
+      const ccFiltered = currentComments.filter(
         (currentComment) =>
           currentComment.authorName === otherComment.authorName &&
           currentComment.date &&
@@ -408,16 +405,26 @@ class UpdateChecker extends OO.EventEmitter {
           this.emit('check', revisionId);
 
           if (this.isPageStillAtRevision(currentRevisionId)) {
-            this.mapSections(sections, revisionId);
-            this.mapComments(currentComments, newComments);
+            this.mapSections(/** @type {SectionWorkerEnriched[]} */ (sections), revisionId);
+            this.mapComments(
+              /** @type {CommentWorkerEnriched[]} */ (currentComments),
+              /** @type {CommentWorkerEnriched[]} */ (newComments)
+            );
 
-            this.emit('sectionsUpdate', sections);
+            this.emit('sectionsUpdate', /** @type {SectionWorkerEnriched[]} */ (sections));
 
             // We check for changes before notifying about new comments to notify about changes in
             // renamed sections if any were watched.
-            this.checkForNewChanges(currentComments, revisionId);
+            this.checkForNewChanges(
+              /** @type {CommentWorkerEnriched[]} */ (currentComments),
+              revisionId
+            );
 
-            await this.processComments(newComments, currentComments, currentRevisionId);
+            await this.processComments(
+              /** @type {CommentWorkerEnriched[]} */ (newComments),
+              /** @type {CommentWorkerEnriched[]} */ (currentComments),
+              currentRevisionId
+            );
           }
         }
       }
