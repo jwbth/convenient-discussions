@@ -17,7 +17,7 @@ import { getExtendedRect, getRangeContents, getVisibilityByRects, isCmdModifierP
  * Class representing a comment thread object.
  */
 // eslint-disable-next-line jsdoc/require-jsdoc
-class Thread extends mixInObject(class {}, OO.EventEmitter) {
+class Thread extends mixInObject(class {}, EventEmitter) {
   /**
    * Click area of the thread line.
    *
@@ -863,6 +863,7 @@ class Thread extends mixInObject(class {}, OO.EventEmitter) {
       this.comments[0].scrollTo();
     } else {
       commentRegistry.collapseAllThreadsOfLevel(this.rootComment.level);
+      Thread.emit('toggle');
     }
   }
 
@@ -1353,33 +1354,33 @@ class Thread extends mixInObject(class {}, OO.EventEmitter) {
    * @param {boolean} [autocollapse=true] Autocollapse threads according to the settings and restore
    *   collapsed threads from the local storage.
    */
-  static reset(autocollapse = true) {
+  static reset = (autocollapse = true) => {
     this.enabled = settings.get('enableThreads');
     if (!this.enabled) {
       (new StorageItemWithKeysAndSaveTime('collapsedThreads')).removeItem();
       return;
     }
 
-    this.updateLinesHandler = this.updateLines.bind(this);
-
     if (!this.isInited) {
       this
-        .on('toggle', this.updateLinesHandler);
+        .on('toggle', this.updateLines);
       controller
-        .on('resize', this.updateLinesHandler)
+        .on('resize', this.updateLines)
         .on('mutate', () => {
           // Update only on mouse move to prevent short freezings of a page when there is a comment
           // form in the beginning of a very long page and the input is changed so that everything
           // below the form shifts vertically.
           $(document)
-            .off('mousemove.cd', this.updateLinesHandler)
-            .one('mousemove.cd', this.updateLinesHandler);
+            .off('mousemove.cd', this.updateLines)
+            .one('mousemove.cd', this.updateLines);
         });
       $(document)
-        .on('visibilitychange', this.updateLinesHandler);
+        .on('visibilitychange', this.updateLines);
       updateChecker
         // Start and end elements of threads may be replaced, so we need to restart threads.
-        .on('newChanges', this.reset.bind(this));
+        .on('newChanges', () => {
+          this.reset();
+        });
     }
 
     this.collapseThreadsLevel = settings.get('collapseThreadsLevel');
@@ -1413,7 +1414,7 @@ class Thread extends mixInObject(class {}, OO.EventEmitter) {
     }
     this.isInited = true;
     this.emit('init');
-  }
+  };
 
   /**
    * Autocollapse threads starting from some level according to the setting value and restore
@@ -1574,11 +1575,13 @@ class Thread extends mixInObject(class {}, OO.EventEmitter) {
   /**
    * _For internal use._ Calculate the offset and (if needed) add the thread lines to the container.
    */
-  static updateLines() {
+  static updateLines = () => {
     if (!this.enabled || document.hidden) return;
 
-    const elementsToAdd = /** @type {HTMLElement[]} */ ([]);
-    const threadsToUpdate = /** @type {Thread[]} */ ([]);
+    /** @type {HTMLElement[]} */
+    const elementsToAdd = [];
+    /** @type {Thread[]} */
+    const threadsToUpdate = [];
     const scrollX = window.scrollX;
     const scrollY = window.scrollY;
 
@@ -1605,7 +1608,7 @@ class Thread extends mixInObject(class {}, OO.EventEmitter) {
     if (elementsToAdd.length) {
       /** @type {HTMLDivElement} */ (this.threadLinesContainer).append(...elementsToAdd);
     }
-  }
+  };
 
   /**
    * Save collapsed threads to the local storage.

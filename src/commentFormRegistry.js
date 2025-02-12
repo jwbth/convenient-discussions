@@ -1,9 +1,3 @@
-/**
- * Singleton storing data about comment forms on the page and managing them.
- *
- * @module commentFormRegistry
- */
-
 import CommentForm from './CommentForm';
 import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime';
 import cd from './cd';
@@ -11,18 +5,36 @@ import commentRegistry from './commentRegistry';
 import controller from './controller';
 import sectionRegistry from './sectionRegistry';
 import { defined, removeFromArrayIfPresent, subtractDaysFromNow } from './utils-general';
+import { EventEmitter } from './utils-oojs';
 import { isCmdModifierPressed, isInputFocused, keyCombination } from './utils-window';
 
 // TODO: make into a class extending a generic registry.
 
-export default {
+/**
+ * @typedef {object} EventMap
+ * @property {[CommentForm]} teardown
+ * @property {[CommentForm]} add
+ * @property {[CommentForm]} remove
+ */
+
+/**
+ * Singleton storing data about comment forms on the page and managing them.
+ *
+ * @augments EventEmitter<EventMap>
+ */
+class CommentFormRegistry extends EventEmitter {
   /**
    * List of comment forms.
    *
    * @type {CommentForm[]}
    * @private
    */
-  items: [],
+  items = [];
+
+  /**
+   * @type {((...args: any[]) => any)|undefined}
+   */
+  throttledSaveSession;
 
   /**
    * _For internal use._ Initialize the registry.
@@ -61,7 +73,7 @@ export default {
     commentRegistry
       .on('select', this.toggleQuoteButtonsHighlighting.bind(this, true))
       .on('unselect', this.toggleQuoteButtonsHighlighting.bind(this, false));
-  },
+  }
 
   /**
    * Create a comment form and add it both to the registry and to the page. If it already exists,
@@ -108,7 +120,7 @@ export default {
     mw.hook('convenientDiscussions.commentFormCreated').fire(commentForm, cd);
 
     return commentForm;
-  },
+  }
 
   /**
    * Remove a comment form from the registry.
@@ -119,7 +131,7 @@ export default {
     removeFromArrayIfPresent(this.items, item);
     this.saveSession(true);
     this.emit('remove', item);
-  },
+  }
 
   /**
    * Get all comment forms.
@@ -128,7 +140,7 @@ export default {
    */
   getAll() {
     return this.items;
-  },
+  }
 
   /**
    * Get a comment form by index.
@@ -141,7 +153,7 @@ export default {
       index = this.items.length + index;
     }
     return this.items[index] || null;
-  },
+  }
 
   /**
    * Get the number of comment forms.
@@ -150,7 +162,7 @@ export default {
    */
   getCount() {
     return this.items.length;
-  },
+  }
 
   /**
    * Get comment forms by a condition.
@@ -160,7 +172,7 @@ export default {
    */
   query(condition) {
     return this.items.filter(condition);
-  },
+  }
 
   /**
    * Reset the comment form list.
@@ -169,7 +181,7 @@ export default {
    */
   reset() {
     this.items.length = 0;
-  },
+  }
 
   /**
    * Get the last active comment form.
@@ -183,7 +195,7 @@ export default {
         .sort(this.lastFocused)[0] ||
       null
     );
-  },
+  }
 
   /**
    * Get the last active comment form that has received an input. This includes altering text
@@ -199,7 +211,7 @@ export default {
         .find((commentForm) => commentForm.isAltered()) ||
       null
     );
-  },
+  }
 
   /**
    * Callback to be used in
@@ -213,7 +225,7 @@ export default {
    */
   lastFocused(cf1, cf2) {
     return (cf2.getLastFocused()?.getTime() || 0) - (cf1.getLastFocused()?.getTime() || 0);
-  },
+  }
 
   /**
    * Adjust the button labels of all comment forms according to the form width: if the form is too
@@ -223,7 +235,7 @@ export default {
     this.items.forEach((commentForm) => {
       commentForm.adjustLabels();
     });
-  },
+  }
 
   /**
    * Detach the comment forms keeping events. Also reset some of their properties.
@@ -232,7 +244,7 @@ export default {
     this.items.forEach((commentForm) => {
       commentForm.detach();
     });
-  },
+  }
 
   /**
    * The method that does the actual work for {@link module:commentFormRegistry.saveSession}.
@@ -267,7 +279,7 @@ export default {
           }))
       )
       .save();
-  },
+  }
 
   /**
    * _For internal use._ Save comment form data to the local storage.
@@ -282,10 +294,13 @@ export default {
       this.actuallySaveSession();
     } else {
       // Don't save more often than once per 5 seconds.
-      this.throttledSaveSession ||= OO.ui.throttle(this.actuallySaveSession.bind(this), 500);
+      this.throttledSaveSession ||= OO.ui.throttle(
+        /** @type {() => void} */ (this.actuallySaveSession.bind(this)),
+        500
+      );
       this.throttledSaveSession();
     }
-  },
+  }
 
   /**
    * Restore comment forms using the data saved in the local storage.
@@ -344,7 +359,7 @@ export default {
         this.items[0].goTo();
       });
     }
-  },
+  }
 
   /**
    * Given identifying data (created by e.g. {@link Comment#getIdentifyingData}), get a comment or
@@ -371,7 +386,7 @@ export default {
       // Page
       return cd.page;
     }
-  },
+  }
 
   /**
    * Restore comment forms using the data in {@link convenientDiscussions.commentForms}.
@@ -384,7 +399,7 @@ export default {
         .map((commentForm) => commentForm.restore())
         .filter(defined)
     );
-  },
+  }
 
   /**
    * Show a modal with content of comment forms that we were unable to restore to the page (because
@@ -429,7 +444,7 @@ export default {
     });
 
     this.saveSession();
-  },
+  }
 
   /**
    * Return saved comment forms to their places.
@@ -447,7 +462,7 @@ export default {
     } else {
       this.restoreSessionDirectly();
     }
-  },
+  }
 
   /**
    * Add a condition to show a confirmation when trying to close the page with active comment forms
@@ -477,7 +492,7 @@ export default {
         )
       );
     });
-  },
+  }
 
   /**
    * Highlight or unhighlight the quote buttons of all comment forms.
@@ -489,4 +504,6 @@ export default {
       item.highlightQuoteButton(highlight);
     });
   }
-};
+}
+
+export default new CommentFormRegistry();
