@@ -1,9 +1,3 @@
-/**
- * Singleton storing data about comments on the page and managing them.
- *
- * @module commentRegistry
- */
-
 import Comment from './Comment';
 import Thread from './Thread';
 import TreeWalker from './TreeWalker';
@@ -14,33 +8,46 @@ import settings from './settings';
 import updateChecker from './updateChecker';
 import { getPagesExistence } from './utils-api';
 import { definedAndNotNull, getCommonGender, reorderArray, sleep, unique } from './utils-general';
+import { EventEmitter } from './utils-oojs';
 import { getExtendedRect, getHigherNodeAndOffsetInSelection, mergeJquery, wrapHtml } from './utils-window';
 import visits from './visits';
 
-// TODO: make into a class extending a generic registry.
+// TODO: Make it extend a generic registry.
 
-export default {
+/**
+ * @typedef {object} EventMap
+ * @property {[]} registerSeen
+ * @property {[Comment]} unselect
+ * @property {[Comment]} select
+ */
+
+/**
+ * Singleton storing data about comments on the page and managing them.
+ *
+ * @augments EventEmitter<EventMap>
+ */
+class CommentRegistry extends EventEmitter {
   /**
    * List of comments.
    *
    * @type {Comment[]}
    * @private
    */
-  items: [],
+  items = [];
 
   /**
    * List of underlays.
    *
    * @type {Element[]}
    */
-  underlays: [],
+  underlays = [];
 
   /**
    * List of containers of layers.
    *
    * @type {Element[]}
    */
-  layersContainers: [],
+  layersContainers = [];
 
   /**
    * _For internal use._ Initialize the registry.
@@ -111,7 +118,7 @@ export default {
       .on('teardown', this.registerSeen.bind(this));
     Thread
       .on('init', this.addToggleChildThreadsButtons.bind(this));
-  },
+  }
 
   /**
    * _For internal use._ Perform some comment-related operations when the registry is filled, in
@@ -129,7 +136,7 @@ export default {
     // Our handler may run earlier than DT's (e.g. in Chrome if the page was loaded in a background
     // tab). This hack seems to work better than adding and removing a `wikipage.content` hook.
     $(this.handleDtTimestampsClick.bind(this));
-  },
+  }
 
   /**
    * Add a comment to the list.
@@ -138,7 +145,7 @@ export default {
    */
   add(item) {
     this.items.push(item);
-  },
+  }
 
   /**
    * Get all comments on the page ordered the same way as in the DOM. It returns the original array,
@@ -148,7 +155,7 @@ export default {
    */
   getAll() {
     return this.items;
-  },
+  }
 
   /**
    * Get a comment by index.
@@ -161,7 +168,7 @@ export default {
       index = this.items.length + index;
     }
     return this.items[index] || null;
-  },
+  }
 
   /**
    * Get the number of comments.
@@ -170,7 +177,7 @@ export default {
    */
   getCount() {
     return this.items.length;
-  },
+  }
 
   /**
    * Get comments by a condition.
@@ -180,14 +187,14 @@ export default {
    */
   query(condition) {
     return this.items.filter(condition);
-  },
+  }
 
   /**
    * Reset the comment list.
    */
   reset() {
     this.items = [];
-  },
+  }
 
   /**
    * Set the {@link Comment#isNew} and {@link Comment#isSeen} properties to comments.
@@ -214,7 +221,7 @@ export default {
     this.configureAndAddLayers((comment) => Boolean(comment.isNew));
 
     return timeConflict;
-  },
+  }
 
   /**
    * Configure and add layers for a group of comments.
@@ -239,7 +246,7 @@ export default {
     comments.forEach((comment) => {
       comment.addLayers();
     });
-  },
+  }
 
   /**
    * Recalculate the offset of the highlighted comments' (usually, new or own) layers and redraw if
@@ -316,7 +323,7 @@ export default {
     comments.forEach((comment) => {
       comment.updateLayersOffset();
     });
-  },
+  }
 
   /**
    * _For internal use._ Empty the underlay registry and the layers container elements. Done on page
@@ -327,7 +334,7 @@ export default {
     this.layersContainers.forEach((container) => {
       container.innerHTML = '';
     });
-  },
+  }
 
   /**
    * _For internal use._ Mark comments that are currently in the viewport as read, and also
@@ -362,7 +369,7 @@ export default {
       .some(registerIfInViewport);
 
     this.emit('registerSeen');
-  },
+  }
 
   /**
    * Find any one comment inside the viewport.
@@ -527,7 +534,7 @@ export default {
     }
 
     return foundComment || null;
-  },
+  }
 
   /**
    * Handles the `mousemove` and `mouseover` events and highlights hovered comments even when the
@@ -545,7 +552,7 @@ export default {
       .forEach((comment) => {
         comment.updateHoverState(event, isObstructingElementHovered);
       });
-  },
+  }
 
   /**
    * Get a comment by ID in the CD format.
@@ -577,7 +584,7 @@ export default {
     }
 
     return comment || null;
-  },
+  }
 
   /**
    * Get a comment by a comment ID in the DiscussionTools format.
@@ -617,7 +624,7 @@ export default {
     }
 
     return comment;
-  },
+  }
 
   /**
    * Get a comment by a comment ID in the CD or DiscussionTools format.
@@ -632,7 +639,7 @@ export default {
     return Comment.isId(id) ?
       this.getById(id, impreciseDate) :
       this.getByDtId(id);
-  },
+  }
 
   /**
    * _For internal use._ Filter out floating and hidden elements from all the comments'
@@ -644,7 +651,7 @@ export default {
       comment.reviewHighlightables();
       comment.isLineGapped = comment.highlightables.length > 1 && comment.level > 0;
     });
-  },
+  }
 
   /**
    * _For internal use._ Add new comments notifications to threads and sections.
@@ -703,7 +710,7 @@ export default {
     Thread.emit('toggle');
 
     controller.restoreRelativeScrollPosition();
-  },
+  }
 
   /**
    * Add an individual new comments notification to a thread or section.
@@ -779,7 +786,7 @@ export default {
             parent.$replyButtonContainer || parent.lastElementInFirstChunk
         );
     }
-  },
+  }
 
   /**
    * _For internal use._ Reformat the comments (moving the author and date up and links down) if the
@@ -791,6 +798,7 @@ export default {
     $(document.body).addClass('cd-reformattedComments');
     if (!cd.page.exists()) return;
 
+    /** @type {import('./Comment').ReplaceSignatureWithHeaderReturn} */
     const pagesToCheckExistence = [];
     this.items.forEach((comment) => {
       pagesToCheckExistence.push(...comment.replaceSignatureWithHeader());
@@ -818,7 +826,7 @@ export default {
         }
       });
     });
-  },
+  }
 
   /**
    * _For internal use._ Change the format of the comment timestamps according to the settings.
@@ -829,7 +837,7 @@ export default {
     this.items.forEach((comment) => {
       comment.reformatTimestamp();
     });
-  },
+  }
 
   /**
    * Change the state of all comments to unselected.
@@ -842,7 +850,7 @@ export default {
       comment.setSelected(false);
       this.emit('unselect', comment);
     }
-  },
+  }
 
   /**
    * Determine which comment on the page is selected.
@@ -878,7 +886,7 @@ export default {
       this.resetSelectedComment();
     }
     return comment || null;
-  },
+  }
 
   /**
    * Find a previous comment by time by the specified author within a 1-day window.
@@ -898,7 +906,7 @@ export default {
       ))
       .sort((c1, c2) => c1.date.getTime() - c2.date.getTime())
       .slice(-1)[0];
-  },
+  }
 
   /**
    * _For internal use._ Add available DiscussionTools IDs to respective comments.
@@ -912,7 +920,7 @@ export default {
         comment.dtId = id;
       }
     });
-  },
+  }
 
   /**
    * _For internal use._ Set the {@link Comment#isTableComment} property for each "table comment",
@@ -929,7 +937,7 @@ export default {
           this.items[index].isTableComment = true;
         }
       });
-  },
+  }
 
   /**
    * Add comment's children, including indirect, into an array, if they are in the array of all new
@@ -950,7 +958,7 @@ export default {
     });
 
     return newCommentsInSubtree;
-  },
+  }
 
   /**
    * _For internal use._ Perform some DOM-related tasks after parsing comments.
@@ -967,7 +975,7 @@ export default {
     this.items.forEach((comment) => {
       comment.maybeSplitParent();
     });
-  },
+  }
 
   /**
    * Remove DT's event listener from its comment links and attach ours.
@@ -980,7 +988,7 @@ export default {
     this.items.forEach((comment) => {
       comment.handleDtTimestampClick();
     });
-  },
+  }
 
   /**
    * Combine two adjacent `.cd-commentLevel` elements into one, recursively going deeper in terms of
@@ -1072,7 +1080,7 @@ export default {
         }
       }
     });
-  },
+  }
 
   /**
    * Replace an element with an identical one but with another tag name, i.e. move all child nodes,
@@ -1104,7 +1112,7 @@ export default {
     controller.replaceScrollAnchorElement(element, newElement);
 
     return newElement;
-  },
+  }
 
   /**
    * _For internal use._ Add the `'cd-connectToPreviousItem'` class to some item elements to
@@ -1164,7 +1172,7 @@ export default {
     items.forEach((item) => {
       item.classList.add('cd-connectToPreviousItem');
     });
-  },
+  }
 
   /**
    * _For internal use._ Add "Toggle children threads" buttons to comments.
@@ -1174,7 +1182,7 @@ export default {
       comment.addToggleChildThreadsButton();
     });
     this.onboardOntoToggleChildThreads();
-  },
+  }
 
   /**
    * Expand all threads of a certain level (and higher, i.e. shallower) on the page.
@@ -1192,7 +1200,7 @@ export default {
     this.items.forEach((comment) => {
       comment.updateToggleChildThreadsButton();
     });
-  },
+  }
 
   /**
    * Collapse all threads of a certain level on the page.
@@ -1207,11 +1215,11 @@ export default {
       .forEach((comment) => {
         comment.thread?.collapse(undefined, true);
       });
-    Thread.emit('toggle');
-    this.items.forEach((comment) => {
-      comment.updateToggleChildThreadsButton();
-    });
-  },
+    this.items
+      .forEach((comment) => {
+        comment.updateToggleChildThreadsButton();
+      });
+  }
 
   /**
    * Show an popup onboarding onto the "Toggle child threads" feature.
@@ -1237,7 +1245,7 @@ export default {
       flags: ['progressive', 'primary'],
     });
     button.on('click', () => {
-      this.toggleChildThreadsPopup.toggle(false);
+      /** @type {OO.ui.PopupWidget} */ (this.toggleChildThreadsPopup).toggle(false);
     });
     this.toggleChildThreadsPopup = new OO.ui.PopupWidget({
       icon: 'newspaper',
@@ -1265,8 +1273,10 @@ export default {
       settings.saveSettingOnTheFly('toggleChildThreads-onboarded', true);
     });
     controller.once('startReload', () => {
-      this.toggleChildThreadsPopup.$element.remove();
+      /** @type {OO.ui.PopupWidget} */ (this.toggleChildThreadsPopup).$element.remove();
       this.toggleChildThreadsPopup = undefined;
     });
   }
-};
+}
+
+export default new CommentRegistry();

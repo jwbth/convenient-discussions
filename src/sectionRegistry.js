@@ -1,9 +1,3 @@
-/**
- * Singleton storing data about sections on the page and managing them.
- *
- * @module sectionRegistry
- */
-
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
@@ -11,16 +5,19 @@ import { areObjectsEqual, calculateWordOverlap, generateFixedPosTimestamp, space
 import { getExtendedRect, getVisibilityByRects } from './utils-window';
 import visits from './visits';
 
-// TODO: make into a class extending a generic registry.
+// TODO: Make it extend a generic registry.
 
-export default {
+/**
+ * Singleton storing data about sections on the page and managing them.
+ */
+class SectionRegistry {
   /**
    * List of sections.
    *
    * @type {import('./Section').default[]}
    * @private
    */
-  items: [],
+  items = []
 
   /**
    * _For internal use._ Initialize the registry.
@@ -43,7 +40,7 @@ export default {
         .on('focus', this.maybeUpdateVisibility.bind(this))
         .on('blur', this.maybeUnhideAll.bind(this));
     }
-  },
+  }
 
   /**
    * _For internal use._ Perform some section-related operations when the registry is filled, in
@@ -65,7 +62,7 @@ export default {
     this.items.forEach((section) => {
       section.showAddSubsectionButtonsOnReplyButtonHover();
     });
-  },
+  }
 
   /**
    * Add a section to the list.
@@ -74,7 +71,7 @@ export default {
    */
   add(item) {
     this.items.push(item);
-  },
+  }
 
   /**
    * Get all sections on the page ordered the same way as in the DOM.
@@ -83,7 +80,7 @@ export default {
    */
   getAll() {
     return this.items;
-  },
+  }
 
   /**
    * Get a section by index.
@@ -97,7 +94,7 @@ export default {
     }
 
     return this.items[index] || null;
-  },
+  }
 
   /**
    * Get the number of sections.
@@ -106,7 +103,7 @@ export default {
    */
   getCount() {
     return this.items.length;
-  },
+  }
 
   /**
    * Get sections by a condition.
@@ -116,14 +113,14 @@ export default {
    */
   query(condition) {
     return this.items.filter(condition);
-  },
+  }
 
   /**
    * Reset the section list.
    */
   reset() {
     this.items = [];
-  },
+  }
 
   /**
    * Get a section by ID.
@@ -133,7 +130,7 @@ export default {
    */
   getById(id) {
     return id && this.items.find((section) => section.id === id) || null;
-  },
+  }
 
   /**
    * Get sections by headline.
@@ -143,7 +140,7 @@ export default {
    */
   getByHeadline(headline) {
     return this.items.filter((section) => section.headline === headline);
-  },
+  }
 
   /**
    * Get sections by {@link Section#subscribeId subscribe ID}.
@@ -153,7 +150,7 @@ export default {
    */
   getBySubscribeId(subscribeId) {
     return this.items.filter((section) => section.subscribeId === subscribeId);
-  },
+  }
 
   /**
    * Find a section with a similar name on the page (when the section with the exact name was not
@@ -174,7 +171,7 @@ export default {
         ?.section ||
       null
     );
-  },
+  }
 
   /**
    * Search for a section on the page based on several parameters: index, headline, id, ancestor
@@ -228,7 +225,7 @@ export default {
     });
 
     return bestMatch || null;
-  },
+  }
 
   /**
    * Add a "Subscribe" / "Unsubscribe" button to each section's actions element.
@@ -243,7 +240,7 @@ export default {
       section.addSubscribeButton();
     });
     controller.restoreRelativeScrollPosition();
-  },
+  }
 
   /**
    * Generate an DiscussionTools ID for a section.
@@ -257,7 +254,7 @@ export default {
     date.setSeconds(0);
 
     return `h-${spacesToUnderlines(author)}-${generateFixedPosTimestamp(date, '00')}`;
-  },
+  }
 
   /**
    * _For internal use._ Add the metadata and actions elements below or to the right of each section
@@ -267,7 +264,7 @@ export default {
     this.items.forEach((section) => {
       section.addMetadataAndActions();
     });
-  },
+  }
 
   /**
    * _For internal use._ Update the new comments data for sections and render the updates.
@@ -276,7 +273,7 @@ export default {
     this.items.forEach((section) => {
       section.updateNewCommentsData();
     });
-  },
+  }
 
   /**
    * _For internal use._ Get the top offset of the first section relative to the viewport.
@@ -303,7 +300,7 @@ export default {
         rect.outerTop :
         null;
     }, /** @type {?number} */ (null));
-  },
+  }
 
   /**
    * Get the section currently positioned at the top of the viewport.
@@ -328,7 +325,7 @@ export default {
         }) ||
       null
     );
-  },
+  }
 
   /**
    * Make sections visible or invisible to improve performance if the corresponding setting is
@@ -401,7 +398,7 @@ export default {
           !(firstSectionToHide && section.index >= firstSectionToHide.index)
         );
       });
-  },
+  }
 
   /**
    * _For internal use._ Unhide the sections.
@@ -415,5 +412,7 @@ export default {
     this.items.forEach((section) => {
       section.updateVisibility(true);
     });
-  },
-};
+  }
+}
+
+export default new SectionRegistry();

@@ -458,10 +458,7 @@ Object.defineProperty(Element.prototype, 'classList', {
    */
   get() {
     if (!this._classList) {
-      /**
-       * @type {import('domhandler').TokenList|undefined}
-       * @private
-       */
+      /** @private */
       this._classList = /** @type {import('domhandler').TokenList} */ ([]);
 
       this._classList

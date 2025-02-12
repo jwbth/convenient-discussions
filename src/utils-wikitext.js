@@ -390,7 +390,8 @@ function extractUnsigneds(adjustedCode, code, signatures) {
   // require() to avoid circular dependency
   const userRegistry = require('./userRegistry').default;
 
-  const unsigneds = /** @type {SignatureInWikitextTemp[]} */ ([]);
+  /** @type {SignatureInWikitextTemp[]} */
+  const unsigneds = [];
   const unsignedTemplatesRegexp = new RegExp(cd.g.unsignedTemplatesPattern + '.*\\n', 'g');
   let match;
   while ((match = unsignedTemplatesRegexp.exec(adjustedCode))) {
