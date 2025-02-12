@@ -643,8 +643,7 @@ class Autocomplete {
     this.config = /** @satisfies {{ [key in AutocompleteType]: AutocompleteConfig }} */ ({
       mentions: {
         byText: {},
-        /** @type {string[]} */
-        cache: [],
+        cache: /** @type {string[]} */ ([]),
 
         /**
          * @this {Value<string>}
@@ -673,10 +672,8 @@ class Autocomplete {
       },
 
       commentLinks: {
-        /** @type {import('./Comment').default[]} */
-        comments: [],
-        /** @type {CommentLinksItemType[]|undefined} */
-        default: undefined,
+        comments: /** @type {import('./Comment').default[]} */ ([]),
+        default: /** @type {CommentLinksItemType[]|undefined} */ (undefined),
 
         /**
          * @this {Value<CommentLinksItemType>}
@@ -698,8 +695,7 @@ class Autocomplete {
 
       wikilinks: {
         byText: {},
-        /** @type {string[]} */
-        cache: [],
+        cache: /** @type {string[]} */ ([]),
 
         /**
          * @this {Value<string>}
@@ -722,8 +718,7 @@ class Autocomplete {
 
       templates: {
         byText: {},
-        /** @type {string[]} */
-        cache: [],
+        cache: /** @type {string[]} */ ([]),
 
         /**
          * @this {Value<string>}

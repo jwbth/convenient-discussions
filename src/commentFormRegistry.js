@@ -1,3 +1,9 @@
+/**
+ * Singleton storing data about comment forms on the page and managing them.
+ *
+ * @module commentFormRegistry
+ */
+
 import CommentForm from './CommentForm';
 import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime';
 import cd from './cd';
@@ -5,36 +11,18 @@ import commentRegistry from './commentRegistry';
 import controller from './controller';
 import sectionRegistry from './sectionRegistry';
 import { defined, removeFromArrayIfPresent, subtractDaysFromNow } from './utils-general';
-import { EventEmitter } from './utils-oojs';
 import { isCmdModifierPressed, isInputFocused, keyCombination } from './utils-window';
 
 // TODO: make into a class extending a generic registry.
 
-/**
- * @typedef {object} EventMap
- * @property {[CommentForm]} teardown
- * @property {[CommentForm]} add
- * @property {[CommentForm]} remove
- */
-
-/**
- * Singleton storing data about comment forms on the page and managing them.
- *
- * @augments EventEmitter<EventMap>
- */
-class CommentFormRegistry extends EventEmitter {
+export default {
   /**
    * List of comment forms.
    *
    * @type {CommentForm[]}
    * @private
    */
-  items = [];
-
-  /**
-   * @type {((...args: any[]) => any)|undefined}
-   */
-  throttledSaveSession;
+  items: [],
 
   /**
    * _For internal use._ Initialize the registry.
@@ -73,7 +61,7 @@ class CommentFormRegistry extends EventEmitter {
     commentRegistry
       .on('select', this.toggleQuoteButtonsHighlighting.bind(this, true))
       .on('unselect', this.toggleQuoteButtonsHighlighting.bind(this, false));
-  }
+  },
 
   /**
    * Create a comment form and add it both to the registry and to the page. If it already exists,
@@ -120,7 +108,7 @@ class CommentFormRegistry extends EventEmitter {
     mw.hook('convenientDiscussions.commentFormCreated').fire(commentForm, cd);
 
     return commentForm;
-  }
+  },
 
   /**
    * Remove a comment form from the registry.
@@ -131,7 +119,7 @@ class CommentFormRegistry extends EventEmitter {
     removeFromArrayIfPresent(this.items, item);
     this.saveSession(true);
     this.emit('remove', item);
-  }
+  },
 
   /**
    * Get all comment forms.
@@ -140,7 +128,7 @@ class CommentFormRegistry extends EventEmitter {
    */
   getAll() {
     return this.items;
-  }
+  },
 
   /**
    * Get a comment form by index.
@@ -153,7 +141,7 @@ class CommentFormRegistry extends EventEmitter {
       index = this.items.length + index;
     }
     return this.items[index] || null;
-  }
+  },
 
   /**
    * Get the number of comment forms.
@@ -162,7 +150,7 @@ class CommentFormRegistry extends EventEmitter {
    */
   getCount() {
     return this.items.length;
-  }
+  },
 
   /**
    * Get comment forms by a condition.
@@ -172,7 +160,7 @@ class CommentFormRegistry extends EventEmitter {
    */
   query(condition) {
     return this.items.filter(condition);
-  }
+  },
 
   /**
    * Reset the comment form list.
@@ -181,7 +169,7 @@ class CommentFormRegistry extends EventEmitter {
    */
   reset() {
     this.items.length = 0;
-  }
+  },
 
   /**
    * Get the last active comment form.
@@ -195,7 +183,7 @@ class CommentFormRegistry extends EventEmitter {
         .sort(this.lastFocused)[0] ||
       null
     );
-  }
+  },
 
   /**
    * Get the last active comment form that has received an input. This includes altering text
@@ -211,7 +199,7 @@ class CommentFormRegistry extends EventEmitter {
         .find((commentForm) => commentForm.isAltered()) ||
       null
     );
-  }
+  },
 
   /**
    * Callback to be used in
@@ -225,7 +213,7 @@ class CommentFormRegistry extends EventEmitter {
    */
   lastFocused(cf1, cf2) {
     return (cf2.getLastFocused()?.getTime() || 0) - (cf1.getLastFocused()?.getTime() || 0);
-  }
+  },
 
   /**
    * Adjust the button labels of all comment forms according to the form width: if the form is too
@@ -235,7 +223,7 @@ class CommentFormRegistry extends EventEmitter {
     this.items.forEach((commentForm) => {
       commentForm.adjustLabels();
     });
-  }
+  },
 
   /**
    * Detach the comment forms keeping events. Also reset some of their properties.
@@ -244,7 +232,7 @@ class CommentFormRegistry extends EventEmitter {
     this.items.forEach((commentForm) => {
       commentForm.detach();
     });
-  }
+  },
 
   /**
    * The method that does the actual work for {@link module:commentFormRegistry.saveSession}.
@@ -279,7 +267,7 @@ class CommentFormRegistry extends EventEmitter {
           }))
       )
       .save();
-  }
+  },
 
   /**
    * _For internal use._ Save comment form data to the local storage.
@@ -294,13 +282,10 @@ class CommentFormRegistry extends EventEmitter {
       this.actuallySaveSession();
     } else {
       // Don't save more often than once per 5 seconds.
-      this.throttledSaveSession ||= OO.ui.throttle(
-        /** @type {() => void} */ (this.actuallySaveSession.bind(this)),
-        500
-      );
+      this.throttledSaveSession ||= OO.ui.throttle(this.actuallySaveSession.bind(this), 500);
       this.throttledSaveSession();
     }
-  }
+  },
 
   /**
    * Restore comment forms using the data saved in the local storage.
@@ -359,7 +344,7 @@ class CommentFormRegistry extends EventEmitter {
         this.items[0].goTo();
       });
     }
-  }
+  },
 
   /**
    * Given identifying data (created by e.g. {@link Comment#getIdentifyingData}), get a comment or
@@ -386,7 +371,7 @@ class CommentFormRegistry extends EventEmitter {
       // Page
       return cd.page;
     }
-  }
+  },
 
   /**
    * Restore comment forms using the data in {@link convenientDiscussions.commentForms}.
@@ -399,7 +384,7 @@ class CommentFormRegistry extends EventEmitter {
         .map((commentForm) => commentForm.restore())
         .filter(defined)
     );
-  }
+  },
 
   /**
    * Show a modal with content of comment forms that we were unable to restore to the page (because
@@ -444,7 +429,7 @@ class CommentFormRegistry extends EventEmitter {
     });
 
     this.saveSession();
-  }
+  },
 
   /**
    * Return saved comment forms to their places.
@@ -462,7 +447,7 @@ class CommentFormRegistry extends EventEmitter {
     } else {
       this.restoreSessionDirectly();
     }
-  }
+  },
 
   /**
    * Add a condition to show a confirmation when trying to close the page with active comment forms
@@ -492,7 +477,7 @@ class CommentFormRegistry extends EventEmitter {
         )
       );
     });
-  }
+  },
 
   /**
    * Highlight or unhighlight the quote buttons of all comment forms.
@@ -504,6 +489,4 @@ class CommentFormRegistry extends EventEmitter {
       item.highlightQuoteButton(highlight);
     });
   }
-}
-
-export default new CommentFormRegistry();
+};

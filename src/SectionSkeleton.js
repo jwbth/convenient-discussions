@@ -379,8 +379,7 @@ class SectionSkeleton {
    */
   getAncestors() {
     if (!this.cachedAncestors) {
-      /** @type {this[]} */
-      this.cachedAncestors = [];
+      this.cachedAncestors = /** @type {this[]} */ ([]);
       let section;
       for (section = this.getParent(); section; section = section.getParent()) {
         this.cachedAncestors.push(section);

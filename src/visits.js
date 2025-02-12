@@ -6,19 +6,11 @@ import commentRegistry from './commentRegistry';
 import settings from './settings';
 import { getUserInfo, saveLocalOption } from './utils-api';
 import { subtractDaysFromNow } from './utils-general';
-import { EventEmitter } from './utils-oojs';
-
-/**
- * @typedef {object} EventMap
- * @property {[string[]]} process
- */
 
 /**
  * Class implementing loading, processing, storing, and saving of page visits.
- *
- * @augments EventEmitter<EventMap>
  */
-class Visits extends EventEmitter {
+class Visits extends OO.EventEmitter {
   /** @type {{ [articleId: number]: string[] }} */
   data = {};
 

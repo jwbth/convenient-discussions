@@ -1,3 +1,9 @@
+/**
+ * Singleton storing data about sections on the page and managing them.
+ *
+ * @module sectionRegistry
+ */
+
 import cd from './cd';
 import controller from './controller';
 import settings from './settings';
@@ -5,19 +11,16 @@ import { areObjectsEqual, calculateWordOverlap, generateFixedPosTimestamp, space
 import { getExtendedRect, getVisibilityByRects } from './utils-window';
 import visits from './visits';
 
-// TODO: Make it extend a generic registry.
+// TODO: make into a class extending a generic registry.
 
-/**
- * Singleton storing data about sections on the page and managing them.
- */
-class SectionRegistry {
+export default {
   /**
    * List of sections.
    *
    * @type {import('./Section').default[]}
    * @private
    */
-  items = []
+  items: [],
 
   /**
    * _For internal use._ Initialize the registry.
@@ -40,7 +43,7 @@ class SectionRegistry {
         .on('focus', this.maybeUpdateVisibility.bind(this))
         .on('blur', this.maybeUnhideAll.bind(this));
     }
-  }
+  },
 
   /**
    * _For internal use._ Perform some section-related operations when the registry is filled, in
@@ -62,7 +65,7 @@ class SectionRegistry {
     this.items.forEach((section) => {
       section.showAddSubsectionButtonsOnReplyButtonHover();
     });
-  }
+  },
 
   /**
    * Add a section to the list.
@@ -71,7 +74,7 @@ class SectionRegistry {
    */
   add(item) {
     this.items.push(item);
-  }
+  },
 
   /**
    * Get all sections on the page ordered the same way as in the DOM.
@@ -80,7 +83,7 @@ class SectionRegistry {
    */
   getAll() {
     return this.items;
-  }
+  },
 
   /**
    * Get a section by index.
@@ -94,7 +97,7 @@ class SectionRegistry {
     }
 
     return this.items[index] || null;
-  }
+  },
 
   /**
    * Get the number of sections.
@@ -103,7 +106,7 @@ class SectionRegistry {
    */
   getCount() {
     return this.items.length;
-  }
+  },
 
   /**
    * Get sections by a condition.
@@ -113,14 +116,14 @@ class SectionRegistry {
    */
   query(condition) {
     return this.items.filter(condition);
-  }
+  },
 
   /**
    * Reset the section list.
    */
   reset() {
     this.items = [];
-  }
+  },
 
   /**
    * Get a section by ID.
@@ -130,7 +133,7 @@ class SectionRegistry {
    */
   getById(id) {
     return id && this.items.find((section) => section.id === id) || null;
-  }
+  },
 
   /**
    * Get sections by headline.
@@ -140,7 +143,7 @@ class SectionRegistry {
    */
   getByHeadline(headline) {
     return this.items.filter((section) => section.headline === headline);
-  }
+  },
 
   /**
    * Get sections by {@link Section#subscribeId subscribe ID}.
@@ -150,7 +153,7 @@ class SectionRegistry {
    */
   getBySubscribeId(subscribeId) {
     return this.items.filter((section) => section.subscribeId === subscribeId);
-  }
+  },
 
   /**
    * Find a section with a similar name on the page (when the section with the exact name was not
@@ -171,7 +174,7 @@ class SectionRegistry {
         ?.section ||
       null
     );
-  }
+  },
 
   /**
    * Search for a section on the page based on several parameters: index, headline, id, ancestor
@@ -225,7 +228,7 @@ class SectionRegistry {
     });
 
     return bestMatch || null;
-  }
+  },
 
   /**
    * Add a "Subscribe" / "Unsubscribe" button to each section's actions element.
@@ -240,7 +243,7 @@ class SectionRegistry {
       section.addSubscribeButton();
     });
     controller.restoreRelativeScrollPosition();
-  }
+  },
 
   /**
    * Generate an DiscussionTools ID for a section.
@@ -254,7 +257,7 @@ class SectionRegistry {
     date.setSeconds(0);
 
     return `h-${spacesToUnderlines(author)}-${generateFixedPosTimestamp(date, '00')}`;
-  }
+  },
 
   /**
    * _For internal use._ Add the metadata and actions elements below or to the right of each section
@@ -264,7 +267,7 @@ class SectionRegistry {
     this.items.forEach((section) => {
       section.addMetadataAndActions();
     });
-  }
+  },
 
   /**
    * _For internal use._ Update the new comments data for sections and render the updates.
@@ -273,7 +276,7 @@ class SectionRegistry {
     this.items.forEach((section) => {
       section.updateNewCommentsData();
     });
-  }
+  },
 
   /**
    * _For internal use._ Get the top offset of the first section relative to the viewport.
@@ -300,7 +303,7 @@ class SectionRegistry {
         rect.outerTop :
         null;
     }, /** @type {?number} */ (null));
-  }
+  },
 
   /**
    * Get the section currently positioned at the top of the viewport.
@@ -325,7 +328,7 @@ class SectionRegistry {
         }) ||
       null
     );
-  }
+  },
 
   /**
    * Make sections visible or invisible to improve performance if the corresponding setting is
@@ -398,7 +401,7 @@ class SectionRegistry {
           !(firstSectionToHide && section.index >= firstSectionToHide.index)
         );
       });
-  }
+  },
 
   /**
    * _For internal use._ Unhide the sections.
@@ -412,7 +415,5 @@ class SectionRegistry {
     this.items.forEach((section) => {
       section.updateVisibility(true);
     });
-  }
-}
-
-export default new SectionRegistry();
+  },
+};

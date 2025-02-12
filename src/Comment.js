@@ -59,12 +59,6 @@ import { createSvg, getExtendedRect, getHigherNodeAndOffsetInSelection, getVisib
  */
 
 /**
- * @typedef {object[]} ReplaceSignatureWithHeaderReturn
- * @property {string} pageName
- * @property {HTMLAnchorElement} link
- */
-
-/**
  * Class representing a comment (any signed, and in some cases unsigned, text on a wiki talk page).
  *
  * @template {boolean} Reformatted
@@ -616,6 +610,14 @@ class Comment extends CommentSkeleton {
         delete origEl.dataset.cdCommentIndex;
       });
   }
+
+  /**
+   * @typedef {object[]} ReplaceSignatureWithHeaderReturn
+   * @property {string} pageName
+   * @property {HTMLAnchorElement} link
+   * @memberof Comment
+   * @inner
+   */
 
   /**
    * _For internal use._ Add a comment header to the top highlightable element. Remove the comment
@@ -2403,7 +2405,7 @@ class Comment extends CommentSkeleton {
    * Update the comment's properties, add a small note next to the signature saying the comment has
    * been changed or deleted, and change the comment's styling if it has been.
    *
-   * @param {'changed'|'changedSince'|'deleted'} type Type of the mark.
+   * @param {import('./updateChecker').ChangeType} type Type of the mark.
    * @param {boolean} [isNewVersionRendered] Is the new version of the comment rendered
    *   (successfully updated or, for `changedSince` type, has been a new one from the beginning).
    * @param {number} [comparedRevisionId] ID of the revision to compare with when the user clicks to

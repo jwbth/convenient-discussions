@@ -17,7 +17,7 @@ import settings from './settings';
 import userRegistry from './userRegistry';
 import { handleApiReject, parseCode } from './utils-api';
 import { buildEditSummary, defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './utils-general';
-import { createCheckboxField, EventEmitter } from './utils-oojs';
+import { createCheckboxField } from './utils-oojs';
 import { escapePipesOutsideLinks, generateTagsRegexp, removeWikiMarkup } from './utils-wikitext';
 import { isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, isInputFocused, keyCombination, mergeJquery, wrapDiffBody, wrapHtml } from './utils-window';
 
@@ -43,19 +43,11 @@ import { isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, is
  */
 
 /**
- * @typedef {object} EventMap
- * @property {[]} change
- * @property {[]} teardown
- * @property {[]} unregister
- */
-
-/**
  * Class representing a comment form.
  *
  * @template {CommentFormMode} Mode
- * @augments EventEmitter<EventMap>
  */
-class CommentForm extends EventEmitter {
+class CommentForm extends OO.EventEmitter {
   /**
    * Target object.
    *

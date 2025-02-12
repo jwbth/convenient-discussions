@@ -9,7 +9,6 @@ import settings from './settings';
 import userRegistry from './userRegistry';
 import { loadUserGenders } from './utils-api';
 import { calculateWordOverlap, keepWorkerSafeValues, subtractDaysFromNow } from './utils-general';
-import { EventEmitter } from './utils-oojs';
 import visits from './visits';
 
 // TODO: Make this into a singleton (object) without module-scope variables so that it emits with
@@ -54,25 +53,9 @@ import visits from './visits';
  */
 
 /**
- * @typedef {object[]} ChangesList
- * @param {import('./Comment').default} comment
- * @param {object} commentsData
- */
-
-/**
- * @typedef {object} EventMap
- * @property {[number]} check
- * @property {[SectionWorkerEnriched[]]} sectionsUpdate
- * @property {[ChangesList]} newChanges
- * @property {[CommentWorkerEnriched[], CommentWorkerEnriched[]]} commentsUpdate
- */
-
-/**
  * Singleton responsible for polling for updates of the page in the background.
- *
- * @augments EventEmitter<EventMap>
  */
-class UpdateChecker extends EventEmitter {
+class UpdateChecker extends OO.EventEmitter {
   /** @type {Map<number, import('./worker/worker').MessageFromWorkerParse | RevisionData>} */
   revisionData = new Map();
 
@@ -203,7 +186,10 @@ class UpdateChecker extends EventEmitter {
       const { comments: oldComments } = await this.processPage(this.previousVisitRevisionId);
       const { comments: currentComments } = await this.processPage(currentRevisionId);
       if (this.isPageStillAtRevision(currentRevisionId)) {
-        this.mapComments(currentComments, oldComments);
+        this.mapComments(
+          /** @type {CommentWorkerEnriched[]} */ (currentComments),
+          /** @type {CommentWorkerEnriched[]} */ (oldComments)
+        );
         this.checkForChangesSincePreviousVisit(
           /** @type {CommentWorkerEnriched[]} */ (currentComments),
           this.previousVisitRevisionId,
@@ -216,13 +202,11 @@ class UpdateChecker extends EventEmitter {
   /**
    * Map sections obtained from a revision to the sections present on the page.
    *
-   * @param {import('./worker/SectionWorker').default[] | SectionWorkerEnriched[]} otherSections
+   * @param {SectionWorkerEnriched[]} otherSections
    * @param {number} lastCheckedRevisionId
    * @private
    */
   mapSections(otherSections, lastCheckedRevisionId) {
-    if (!this.areSectionsEnriched(otherSections)) return;
-
     // otherSections could contain simple SectionWorker types from
     // import('./worker/SectionWorker').default, not SectionWorkerEnriched, but for simplicity let's
     // treat them as SectionWorkerEnriched.
@@ -254,16 +238,6 @@ class UpdateChecker extends EventEmitter {
     sectionRegistry.getAll().forEach((section) => {
       section.cleanUpLiveData(lastCheckedRevisionId);
     });
-  }
-
-  /**
-   * Check if sections instances received from a web worker were previously enriched by this class.
-   *
-   * @param {import('./worker/SectionWorker').default[] | SectionWorkerEnriched[]} sections
-   * @returns {sections is SectionWorkerEnriched[]}
-   */
-  areSectionsEnriched(sections) {
-    return 'match' in sections[0];
   }
 
   /**
@@ -320,15 +294,11 @@ class UpdateChecker extends EventEmitter {
    * `hasPoorMatch` property to comments that have possible matches that are not good enough to
    * confidently state a match.
    *
-   * @param {import('./worker/CommentWorker').default[] | CommentWorkerEnriched[]} currentComments
-   * @param {import('./worker/CommentWorker').default[] | CommentWorkerEnriched[]} otherComments
+   * @param {CommentWorkerEnriched[]} currentComments
+   * @param {CommentWorkerEnriched[]} otherComments
    * @private
    */
   mapComments(currentComments, otherComments) {
-    if (!this.areCommentsEnriched(currentComments) || !this.areCommentsEnriched(otherComments)) {
-      return;
-    }
-
     // currentComments and otherComments could contain simple CommentWorker types from
     // import('./worker/CommentWorker').default, not CommentWorkerEnriched, but for simplicity let's
     // treat them as CommentWorkerEnriched.
@@ -386,16 +356,6 @@ class UpdateChecker extends EventEmitter {
   }
 
   /**
-   * Check if comment instances received from a web worker was previously enriched by this class.
-   *
-   * @param {import('./worker/CommentWorker').default[] | CommentWorkerEnriched[]} comments
-   * @returns {comments is CommentWorkerEnriched[]}
-   */
-  areCommentsEnriched(comments) {
-    return 'match' in comments[0] || 'hasPoorMatch' in comments[0] || 'parentMatch' in comments[0];
-  }
-
-  /**
    * Check for new comments in a web worker, update the navigation panel, and schedule the next check.
    *
    * @private
@@ -445,8 +405,11 @@ class UpdateChecker extends EventEmitter {
           this.emit('check', revisionId);
 
           if (this.isPageStillAtRevision(currentRevisionId)) {
-            this.mapSections(sections, revisionId);
-            this.mapComments(currentComments, newComments);
+            this.mapSections(/** @type {SectionWorkerEnriched[]} */ (sections), revisionId);
+            this.mapComments(
+              /** @type {CommentWorkerEnriched[]} */ (currentComments),
+              /** @type {CommentWorkerEnriched[]} */ (newComments)
+            );
 
             this.emit('sectionsUpdate', /** @type {SectionWorkerEnriched[]} */ (sections));
 
@@ -566,7 +529,9 @@ class UpdateChecker extends EventEmitter {
        * Existing comments have changed since the previous visit.
        *
        * @event changesSincePreviousVisit
-       * @param {ChangesList} changeList
+       * @param {object[]} changeList
+       * @param {import('./Comment').default} changeList.comment
+       * @param {object} changeList.commentsData
        * @global
        */
       mw.hook('convenientDiscussions.changesSincePreviousVisit').fire(changeList);
@@ -764,7 +729,6 @@ class UpdateChecker extends EventEmitter {
       }
     });
 
-    /** @type {CommentWorkerEnriched[]} */
     const newComments = comments
       .filter((comment) => comment.id && !currentComments.some((mcc) => mcc.match === comment))
       // Detach comments in the newComments object from those in the `comments` object.
@@ -780,7 +744,6 @@ class UpdateChecker extends EventEmitter {
       });
 
     // Extract relevant comments.
-    /** @type {CommentWorkerEnriched[]} */
     const relevantNewComments = newComments.filter((comment) => {
       if (!settings.get('notifyCollapsedThreads') && comment.logicalLevel !== 0) {
         let parentMatch;
@@ -847,7 +810,7 @@ class UpdateChecker extends EventEmitter {
    */
   init() {
     visits
-      .on('process', (/** @type {string[]} */ currentPageData) => {
+      .on('process', (/** @type {number[]} */ currentPageData) => {
         const bootProcess = controller.getBootProcess();
         this.setup(
           currentPageData.length >= 2 ?

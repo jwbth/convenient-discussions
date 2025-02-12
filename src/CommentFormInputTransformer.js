@@ -641,10 +641,7 @@ class CommentFormInputTransformer extends TextMasker {
    * @private
    */
   static linesToLists(lines, areItems = false) {
-    let accumulatedList = {
-      /** @type {Item[]} */
-      items: [],
-    };
+    let accumulatedList = { items: /** @type {Item[]} */ ([]) };
     for (let i = 0; i <= lines.length; i++) {
       if (i === lines.length) {
         // When at the end of code, finalize the list that we accumulated, if any.
