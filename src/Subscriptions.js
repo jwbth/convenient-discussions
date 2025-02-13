@@ -1,6 +1,7 @@
 import CdError from './CdError';
 import cd from './cd';
 import settings from './settings';
+import { EventEmitter } from './utils-oojs';
 import { wrapHtml } from './utils-window';
 
 /**
@@ -8,11 +9,18 @@ import { wrapHtml } from './utils-window';
  */
 
 /**
+ * @typedef {object} EventMap
+ * @property {[]} process
+ */
+
+/**
  * Implementation of the subscriptions feature in general terms. It is extended by
  * {@link DtSubscriptions DisussionTools' topic subscription} and
  * {@link LegacySubscriptions CD's legacy section watching}.
+ *
+ * @augments EventEmitter<EventMap>
  */
-class Subscriptions extends OO.EventEmitter {
+class Subscriptions extends EventEmitter {
   /** @type {SubscriptionsData} */
   data;
 

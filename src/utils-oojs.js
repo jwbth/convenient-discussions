@@ -493,21 +493,6 @@ export function es6ClassToOoJsClass(TargetClass) {
 }
 
 /**
- * Add {@link OO.EventEmitter OO.EventEmitter}'s methods to an arbitrary object itself, not its
- * prototype. Can be used for singletons or classes. In the latter case, the methods will be added
- * as static.
- *
- * @param {object} obj
- */
-export function mixEventEmitterInObject(obj) {
-  const dummy = () => {};
-  dummy.prototype = {};
-  OO.mixinClass(dummy, OO.EventEmitter);
-  Object.assign(obj, dummy.prototype);
-  OO.EventEmitter.call(obj);
-}
-
-/**
  * Mix in a class into a target class.
  *
  * @template {Constructor} TBase

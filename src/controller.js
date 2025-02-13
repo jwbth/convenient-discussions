@@ -22,7 +22,7 @@ import toc from './toc';
 import updateChecker from './updateChecker';
 import { getUserInfo } from './utils-api';
 import { defined, definedAndNotNull, getLastArrayElementOrSelf, getQueryParamBooleanValue, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
-import { EventEmitter, mixEventEmitterInObject } from './utils-oojs';
+import { EventEmitter } from './utils-oojs';
 import { copyText, createSvg, getVisibilityByRects, skin$, wrapHtml } from './utils-window';
 import WebpackWorker from './worker/worker-gate';
 
@@ -402,13 +402,7 @@ class Controller extends EventEmitter {
 
     this.showLoadingOverlay();
     Promise.all([modulesRequest, ...siteDataRequests]).then(
-      async () => {
-        mixEventEmitterInObject(updateChecker);
-        mixEventEmitterInObject(commentFormRegistry);
-        mixEventEmitterInObject(commentRegistry);
-
-        await this.tryExecuteBootProcess(false);
-      },
+      () => this.tryExecuteBootProcess(false),
       (error) => {
         mw.notify(cd.s('error-loaddata'), { type: 'error' });
         console.error(error);

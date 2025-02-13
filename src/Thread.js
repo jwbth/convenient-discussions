@@ -10,14 +10,23 @@ import settings from './settings';
 import updateChecker from './updateChecker';
 import { loadUserGenders } from './utils-api';
 import { defined, getCommonGender, isHeadingNode, removeFromArrayIfPresent, subtractDaysFromNow, unique } from './utils-general';
-import { mixInObject } from './utils-oojs';
+import { EventEmitter, mixInObject } from './utils-oojs';
 import { getExtendedRect, getRangeContents, getVisibilityByRects, isCmdModifierPressed } from './utils-window';
+
+/**
+ * @typedef {object} EventMap
+ * @property {[]} init
+ * @property {[]} toggle
+ */
 
 /**
  * Class representing a comment thread object.
  */
-// eslint-disable-next-line jsdoc/require-jsdoc
-class Thread extends mixInObject(class {}, EventEmitter) {
+class Thread extends mixInObject(
+  // eslint-disable-next-line jsdoc/require-jsdoc
+  class {},
+  /** @type {typeof EventEmitter<EventMap>} */ (EventEmitter)
+) {
   /**
    * Click area of the thread line.
    *

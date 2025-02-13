@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import cd from './cd';
 import settings from './settings';
 import { removeFromArrayIfPresent } from './utils-general';
-import { mixInObject } from './utils-oojs';
+import { EventEmitter, mixInObject } from './utils-oojs';
 import { formatDate, relativeTimeThresholds } from './utils-timestamp';
 
 /**
@@ -11,11 +11,19 @@ import { formatDate, relativeTimeThresholds } from './utils-timestamp';
  */
 
 /**
+ * @typedef {object} EventMap
+ * @property {[]} updateImproved
+ */
+
+/**
  * Class representing an element that has contains an automatically updated timestamp with relative
  * (dependent on the current date and time somehow) date and time.
  */
-// eslint-disable-next-line jsdoc/require-jsdoc
-class LiveTimestamp extends mixInObject(class {}, OO.EventEmitter) {
+class LiveTimestamp extends mixInObject(
+  // eslint-disable-next-line jsdoc/require-jsdoc
+  class {},
+  /** @type {typeof EventEmitter<EventMap>} */ (EventEmitter)
+) {
   /**
    * Create a live timestamp.
    *
