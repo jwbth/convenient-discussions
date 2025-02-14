@@ -18,7 +18,7 @@ import { getFooter } from './utils-window.js';
 
 let config;
 
-if (IS_SINGLE) {
+if (LANG_CODE) {
   try {
     config = require(`../config/${CONFIG_FILE_NAME}`).default;
   } catch {
@@ -66,6 +66,7 @@ function setStrings() {
   ];
 
   if (!IS_SINGLE) {
+    // @ts-ignore
     require('../dist/convenientDiscussions-i18n/en.js');
   }
   const strings = {};
@@ -135,12 +136,12 @@ function maybeTweakAddTopicButton() {
   if (href) {
     const url = new URL(href);
     if (dtCreatePage) {
-      url.searchParams.set('dtenable', 0);
+      url.searchParams.set('dtenable', '0');
     }
     if (!dtCreatePage || cd.g.pageAction !== 'view') {
       url.searchParams.delete('action');
       url.searchParams.delete('section');
-      url.searchParams.set('cdaddtopic', 1);
+      url.searchParams.set('cdaddtopic', '1');
     }
     $button.attr('href', url.toString());
   }
@@ -319,7 +320,7 @@ async function app() {
     cd.config = config;
   }
 
-  cd.g = {};
+  cd.g = /** @type {import('./cd').GlobalProps} */ ({});
 
   debug.init();
   debug.startTimer('total time');

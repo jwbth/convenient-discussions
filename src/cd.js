@@ -94,11 +94,15 @@ context.convenientDiscussions ||= /** @type {ConvenientDiscussions | ConvenientD
  */
 
 /**
+ * @typedef {typeof import('./convenientDiscussions').globalProperties & GlobalPropertiesExtension} GlobalProps
+ */
+
+/**
  * @typedef {object} ConvenientDiscussionsExtension
  * @property {import('./pageRegistry').Page} page Current page's object.
  * @property {import('./userRegistry').User} user Current user's object.
  * @property {typeof import('../config/default').default} config
- * @property {typeof import('./convenientDiscussions').globalProperties & GlobalPropertiesExtension} g
+ * @property {GlobalProps} g
  * @property {import('./CommentSkeleton').default[]} comments
  * @property {import('./SectionSkeleton').default[]} sections
  */

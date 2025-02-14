@@ -451,7 +451,6 @@ class CommentFormRegistry extends EventEmitter {
    *
    * @param {boolean} fromStorage Should the session be restored from the local storage instead of
    *   directly from {@link convenientDiscussions.commentForms}.
-   * @private
    */
   restoreSession(fromStorage) {
     if (fromStorage) {

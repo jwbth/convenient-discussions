@@ -4,6 +4,8 @@
  * @module utilsOoui
  */
 
+import OO from 'oojs';
+
 import cd from './cd';
 import controller from './controller';
 import { copyText } from './utils-window';

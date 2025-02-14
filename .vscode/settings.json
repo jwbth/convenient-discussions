@@ -4,7 +4,11 @@
   ],
   "editor.wordWrapColumn": 100,
   "editor.tabSize": 2,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
   "files.trimTrailingWhitespace": true,
+  "files.trimFinalNewlines": true,
   "javascript.preferences.quoteStyle": "single",
   "vs-docblockr.alignTags": false,
   "vs-docblockr.columnSpacing": 1,

@@ -369,7 +369,7 @@ class Controller extends EventEmitter {
       'mediawiki.user',
       'mediawiki.util',
       'mediawiki.widgets.visibleLengthLimit',
-      'oojs',
+      // 'oojs',
       'oojs-ui-core',
       'oojs-ui-widgets',
       'oojs-ui-windows',
@@ -565,9 +565,9 @@ class Controller extends EventEmitter {
         mw.hook('wikipage.content').fire(this.$content);
       }
       this.emit('boot');
-    } catch (e) {
+    } catch (error) {
       mw.notify(cd.s('error-processpage'), { type: 'error' });
-      console.error(e);
+      console.error(error);
       this.hideLoadingOverlay();
     }
 
@@ -636,8 +636,8 @@ class Controller extends EventEmitter {
       // Loading user info on diff pages could lead to problems with saving visits when many pages
       // are opened, but not yet focused, simultaneously.
       if (!this.isTalkPage()) {
-        getUserInfo(true).catch((e) => {
-          console.warn(e);
+        getUserInfo(true).catch((error) => {
+          console.warn(error);
         });
       }
     }
@@ -649,7 +649,7 @@ class Controller extends EventEmitter {
       'mediawiki.jqueryMsg',
       'mediawiki.user',
       'mediawiki.util',
-      'oojs',
+      // 'oojs',
       'oojs-ui-core',
       'oojs-ui-widgets',
       'oojs-ui-windows',
@@ -666,9 +666,9 @@ class Controller extends EventEmitter {
 
         require('./logPages.less');
       },
-      (e) => {
+      (error) => {
         mw.notify(cd.s('error-loaddata'), { type: 'error' });
-        console.error(e);
+        console.error(error);
       }
     );
   }
@@ -1335,8 +1335,8 @@ class Controller extends EventEmitter {
     // with the same fragment as is in the URL.
     try {
       this.emit('popState', decodeURIComponent(location.hash.slice(1)));
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
     }
 
     // Make sure the title has no incorrect new comment count when the user presses the "Back"
@@ -1591,19 +1591,19 @@ class Controller extends EventEmitter {
 
     // Save time by requesting the options in advance. This also resets the cache since the `reuse`
     // argument is `false`.
-    getUserInfo().catch((e) => {
-      console.warn(e);
+    getUserInfo().catch((error) => {
+      console.warn(error);
     });
 
     try {
       bootProcess.passedData.parseData = await cd.page.parse(undefined, false, true);
-    } catch (e) {
+    } catch (error) {
       this.hideLoadingOverlay();
       if (bootProcess.passedData.submittedCommentForm) {
-        throw e;
+        throw error;
       } else {
         mw.notify(cd.s('error-reloadpage'), { type: 'error' });
-        console.warn(e);
+        console.warn(error);
         return;
       }
     }
@@ -2403,36 +2403,6 @@ class Controller extends EventEmitter {
       cd.page.isOwnTalkPage() && !['all', 'toMe'].includes(settings.get('desktopNotifications'))
     );
   }
-
-  // /**
-  //  * @template {keyof EventMap} K
-  //  * @template {any[]} [A=[]]
-  //  * @template [C=null]
-  //  * @param {K} event
-  //  * @param {OO.EventHandler<C, (this: C, ...args: [...A, ...EventMap[K]]) => void>} method
-  //  * @param {A} [args]
-  //  * @param {C} [context]
-  //  * @returns {any}
-  //  * @override
-  //  */
-  // on(event, method, args, context) {
-  //   return super.on(
-  //     /** @type {string} */ (event),
-  //     /** @type {OO.EventHandler<C>} */ (method),
-  //     args,
-  //     context
-  //   );
-  // }
-
-  // /**
-  //  * @template {keyof EventMap} K
-  //  * @param {K} event
-  //  * @param {EventMap[K]} args
-  //  * @returns {boolean}
-  //  */
-  // emit(event, ...args) {
-  //   return super.emit(event, ...args);
-  // }
 }
 
 export default new Controller();
