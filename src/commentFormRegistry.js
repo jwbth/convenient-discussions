@@ -81,7 +81,8 @@ class CommentFormRegistry extends EventEmitter {
    *
    * @param {import('./Comment').default|import('./Section').default|import('./pageRegistry').Page} target
    * @param {object} config See {@link CommentForm}'s constructor.
-   * @param {object} [initialState] See {@link CommentForm}'s constructor.
+   * @param {import('./CommentForm').CommentFormInitialState} [initialState] See
+   *   {@link CommentForm}'s constructor.
    * @param {import('./CommentForm').default} [commentForm]
    * @returns {CommentForm}
    * @fires commentFormCreated
@@ -257,26 +258,7 @@ class CommentFormRegistry extends EventEmitter {
         mw.config.get('wgPageName'),
         this.items
           .filter((commentForm) => commentForm.isAltered())
-          .map((commentForm) => ({
-            mode: commentForm.getMode(),
-            targetData: commentForm.getTarget().getIdentifyingData(),
-            targetWithOutdentedRepliesData: commentForm.getTargetWithOutdentedReplies()?.getIdentifyingData(),
-            preloadConfig: commentForm.getPreloadConfig(),
-            newTopicOnTop: commentForm.isNewTopicOnTop(),
-            headline: commentForm.headlineInput?.getValue(),
-            comment: commentForm.commentInput.getValue(),
-            summary: commentForm.summaryInput.getValue(),
-            minor: commentForm.minorCheckbox?.isSelected(),
-            watch: commentForm.watchCheckbox?.isSelected(),
-            subscribe: commentForm.subscribeCheckbox?.isSelected(),
-            omitSignature: commentForm.omitSignatureCheckbox?.isSelected(),
-            delete: commentForm.deleteCheckbox?.isSelected(),
-            originalHeadline: commentForm.getOriginalHeadline(),
-            originalComment: commentForm.getOriginalComment(),
-            summaryAltered: commentForm.isSummaryAltered(),
-            omitSignatureCheckboxAltered: commentForm.isOmitSignatureCheckboxAltered(),
-            lastFocused: commentForm.getLastFocused(),
-          }))
+          .map((commentForm) => commentForm.getData())
       )
       .save();
   }
@@ -313,7 +295,9 @@ class CommentFormRegistry extends EventEmitter {
     let haveRestored = false;
 
     this.maybeShowRescueDialog(
-      (new StorageItemWithKeysAndSaveTime('commentForms'))
+      /** @type {StorageItemWithKeysAndSaveTime<import('./CommentForm').CommentFormData[], 'commentForms'>} */ (
+        new StorageItemWithKeysAndSaveTime('commentForms')
+      )
         .cleanUp((entry) => !entry.commentForms?.length || entry.saveTime < subtractDaysFromNow(60))
         .save()
         .get(mw.config.get('wgPageName'))
@@ -321,14 +305,15 @@ class CommentFormRegistry extends EventEmitter {
         .filter((data) => {
           const target = this.getTargetByData(data.targetData);
           if (data.targetWithOutdentedRepliesData) {
-            data.targetWithOutdentedReplies = this.getTargetByData(
-              data.targetWithOutdentedRepliesData
+            /** @type {import('./CommentForm').CommentFormInitialState} */ (
+              data
+            ).targetWithOutdentedReplies = /** @type {import('./Comment').default|undefined} */ (
+              this.getTargetByData(data.targetWithOutdentedRepliesData)
             );
           }
           if (
             target?.isActionable &&
-            (!target.canBeReplied || target.canBeReplied()) &&
-
+            (!('canBeReplied' in target) || target.canBeReplied()) &&
             // Check if there is another form already
             !target[CommentForm.getPropertyNameOnTarget(target, data.mode)]
           ) {
@@ -366,7 +351,7 @@ class CommentFormRegistry extends EventEmitter {
    * section on the page or the page itself.
    *
    * @param {object} targetData
-   * @returns {import('./Comment').default|import('./Section').default|import('./pageRegistry').default}
+   * @returns {import('./Comment').default|import('./Section').default|import('./pageRegistry').Page|undefined}
    * @private
    */
   getTargetByData(targetData) {
@@ -381,7 +366,7 @@ class CommentFormRegistry extends EventEmitter {
       })?.section;
     } else if (targetData?.id) {
       // Comment
-      return commentRegistry.getById(targetData.id);
+      return commentRegistry.getById(targetData.id) || undefined;
     } else {  // `data.mode === 'addSection'` or `targetData === null`
       // Page
       return cd.page;

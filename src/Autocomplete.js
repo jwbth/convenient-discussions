@@ -21,7 +21,7 @@ import { charAt, defined, phpCharToUpper, removeDoubleSpaces, sleep, ucFirst, un
  * @typedef {object} AutocompleteConfig
  * @property {{ [key: string]: string[] }} [byText]
  * @property {string[]} [cache]
- * @property {any[]} [default]
+ * @property {any[] | (() => any[])} [default]
  * @property {(value: any) => import('./tribute/Tribute').TransformData} [transform]
  * @property {import('./Comment').default[]} [comments]
  * @property {string} [snapshot]
@@ -331,8 +331,10 @@ class Autocomplete {
 
           // @ts-ignore
           const matches = this.tribute.search
-            .filter(text, this.commentLinks.default, { extract: (el) => el.key })
-            .map((match) => match.original);
+            .filter(text, this.commentLinks.default, {
+              extract: (/** @type {Value} */ el) => el.key,
+            })
+            .map((/** @type {import('./tribute/Tribute').TributeItem} */ match) => match.original);
           callback(prepareValues(matches, this.commentLinks));
         },
       },
@@ -625,17 +627,18 @@ class Autocomplete {
       ['syntaxhighlight', '<syntaxhighlight>\n', '\n</syntaxhighlight>'],
       ['templatestyles', '<templatestyles src="', '" />'],
     ];
-    const defaultTags = /** @type {Array<string|string[]>} */ (cd.g.allowedTags)
-      .filter(
-        (tagString) => !tagAdditions.find((tagArray) => tagArray[0] === tagString)
-      )
-      .concat(tagAdditions)
-      .sort((item1, item2) => {
-        const s1 = typeof item1 === 'string' ? item1 : item1[0];
-        const s2 = typeof item2 === 'string' ? item2 : item2[0];
+    const getDefaultTags = () =>
+      /** @type {Array<string|string[]>} */ (cd.g.allowedTags)
+        .filter(
+          (tagString) => !tagAdditions.find((tagArray) => tagArray[0] === tagString)
+        )
+        .concat(tagAdditions)
+        .sort((item1, item2) => {
+          const s1 = typeof item1 === 'string' ? item1 : item1[0];
+          const s2 = typeof item2 === 'string' ? item2 : item2[0];
 
-        return s1 > s2 ? 1 : -1;
-      });
+          return s1 > s2 ? 1 : -1;
+        });
 
     /**
      * Autocomplete configurations for every type.
@@ -739,7 +742,7 @@ class Autocomplete {
       },
 
       tags: {
-        default: defaultTags,
+        default: getDefaultTags,
 
         /**
          * @this {Value<string | [string, string, string]>}

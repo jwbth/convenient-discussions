@@ -1440,7 +1440,7 @@ class Thread extends mixInObject(
      */
 
     const collapsedThreadsStorageItem =
-      /** @type {StorageItemWithKeysAndSaveTime<CollapsedThreadsStorageItem[]>} */ (
+      /** @type {StorageItemWithKeysAndSaveTime<CollapsedThreadsStorageItem[], 'collapsedThreads'>} */ (
         new StorageItemWithKeysAndSaveTime('collapsedThreads').cleanUp(
           (entry) => !entry.collapsedThreads.length || entry.saveTime < subtractDaysFromNow(60)
         )

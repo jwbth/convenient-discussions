@@ -2,18 +2,31 @@ import StorageItem from './StorageItem';
 
 /**
  * @template {object} EntryType
- * @typedef {{ [key: ValidKey]: EntryType }} EntryTypeWithKey
+ * @typedef {{ [key: ValidKey]: EntryType }} EntryTypeByKey
  */
 
+// See StorageItemWithKeysAndSaveTime.js for the structure of storage items.
+
 /**
- * {@link StorageItem} with entries stored in keys.
+ * {@link StorageItem} with entries stored by key.
  *
  * @template {any} [EntryType = any]
- * @augments {StorageItem<EntryTypeWithKey<EntryType>>}
+ * @augments {StorageItem<EntryTypeByKey<EntryType>>}
  */
 class StorageItemWithKeys extends StorageItem {
-  /** @type {EntryTypeWithKey<EntryType>} */
-  data;
+  /**
+   * Create a storage item with entries stored in keys.
+   *
+   * @param {string} key Local storage Item key (will be prepended by {@link StorageItem.prefix}).
+   * @abstract
+   */
+  constructor(key) {
+    super(key);
+
+    // This is a no-op for type checking (this.data is set in the parent constructor).
+    /** @type {EntryTypeByKey<EntryType>} */
+    this.data ||= {};
+  }
 
   /**
    * Get an entry of the storage item by key.

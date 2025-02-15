@@ -4,7 +4,7 @@ import PseudoLink from './Pseudolink';
 import cd from './cd';
 import controller from './controller';
 import { canonicalUrlToPageName, defined, generateFixedPosTimestamp, getDbnameForHostname, zeroPad } from './utils-general';
-import { createCheckboxField, createRadioField, createTextField, mixInClass, es6ClassToOoJsClass } from './utils-oojs';
+import { createCheckboxField, createRadioField, createTextField, es6ClassToOoJsClass, mixInClass } from './utils-oojs';
 import { mergeJquery, wrapHtml } from './utils-window';
 
 /**
@@ -226,14 +226,6 @@ export class UploadDialog extends mixInClass(/** @type {typeof mw.Upload.Dialog<
  */
 class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.BookletLayout {
   /**
-   * See https://github.com/microsoft/TypeScript/issues/3841#issuecomment-337560146.
-   *
-   * @type {typeof ForeignStructuredUploadBookletLayout}
-   * @readonly
-   */
-  ['constructor'];
-
-  /**
    * @type {ControlsByName}
    */
   controls;
@@ -250,6 +242,9 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    */
   constructor(...args) {
     super(...args);
+
+    // Workaround to make this.constructor in methods to be type checked correctly
+    this.constructor = ForeignStructuredUploadBookletLayout;
   }
 
   /**

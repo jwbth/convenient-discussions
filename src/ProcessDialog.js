@@ -11,18 +11,20 @@ import { es6ClassToOoJsClass } from './utils-oojs';
  */
 class ProcessDialog extends OO.ui.ProcessDialog {
   /**
-   * See https://github.com/microsoft/TypeScript/issues/3841#issuecomment-337560146.
-   *
-   * @type {typeof ProcessDialog}
-   * @readonly
-   */
-  ['constructor'];
-
-  /**
    * @type {string}
    * @abstract
    */
   static cdKey;
+
+  /**
+   * Create a process dialog.
+   */
+  constructor() {
+    super();
+
+    // Workaround to make this.constructor in methods to be type checked correctly
+    this.constructor = ProcessDialog;
+  }
 
   /**
    * Check if there are unsaved changes.

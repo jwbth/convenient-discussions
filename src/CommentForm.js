@@ -50,6 +50,38 @@ import { isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, is
  */
 
 /**
+ * @typedef {object} CommentFormData
+ * @property {CommentFormMode} mode
+ * @property {{ [key: string]: any }|null} targetData
+ * @property {{ [key: string]: any }|undefined} targetWithOutdentedRepliesData
+ * @property {PreloadConfig} preloadConfig
+ * @property {boolean|undefined} newTopicOnTop
+ * @property {string|undefined} headline
+ * @property {string} comment
+ * @property {string} summary
+ * @property {boolean|undefined} minor
+ * @property {boolean} watch
+ * @property {boolean|undefined} subscribe
+ * @property {boolean|undefined} omitSignature
+ * @property {boolean|undefined} delete
+ * @property {string} originalHeadline
+ * @property {string} originalComment
+ * @property {boolean} summaryAltered
+ * @property {boolean} omitSignatureCheckboxAltered
+ * @property {Date|undefined} lastFocused
+ */
+
+/**
+ * @typedef {object} CommentFormInitialStateExtension
+ * @property {boolean} [focus]
+ * @property {Comment} [targetWithOutdentedReplies]
+ */
+
+/**
+ * @typedef {Partial<CommentFormData> & CommentFormInitialStateExtension} CommentFormInitialState
+ */
+
+/**
  * Class representing a comment form.
  *
  * @template {CommentFormMode} Mode
@@ -418,10 +450,9 @@ class CommentForm extends EventEmitter {
    *
    * @param {object} config
    * @param {Mode} config.mode
-   * @param {CommentFormTarget} config.target
-   *   Comment, section, or page that the form is related to.
-   * @param {object} [config.initialState = {}] Initial state of the form (data saved in the
-   *   previous session, quoted text, data transferred from DT's new topic form, etc.).
+   * @param {CommentFormTarget} config.target Comment, section, or page that the form is related to.
+   * @param {CommentFormInitialState} [config.initialState = {}] Initial state of the form (data
+   *   saved in the previous session, quoted text, data transferred from DT's new topic form, etc.).
    * @param {PreloadConfig} [config.preloadConfig = {}] Configuration to preload data into the form.
    * @param {boolean} [config.newTopicOnTop=false] When adding a topic, whether it should be on top.
    * @fires commentFormCustomModulesReady
@@ -4273,6 +4304,34 @@ class CommentForm extends EventEmitter {
    */
   isSectionOpeningCommentEdited() {
     return this.isMode('edit') && this.isTargetOpeningSection();
+  }
+
+  /**
+   * Get the data from the form to save it in the storage.
+   *
+   * @returns {CommentFormData}
+   */
+  getData() {
+    return {
+      mode: this.getMode(),
+      targetData: this.getTarget().getIdentifyingData(),
+      targetWithOutdentedRepliesData: this.getTargetWithOutdentedReplies()?.getIdentifyingData(),
+      preloadConfig: this.getPreloadConfig(),
+      newTopicOnTop: this.isNewTopicOnTop(),
+      headline: this.headlineInput?.getValue(),
+      comment: this.commentInput.getValue(),
+      summary: this.summaryInput.getValue(),
+      minor: this.minorCheckbox?.isSelected(),
+      watch: this.watchCheckbox?.isSelected(),
+      subscribe: this.subscribeCheckbox?.isSelected(),
+      omitSignature: this.omitSignatureCheckbox?.isSelected(),
+      delete: this.deleteCheckbox?.isSelected(),
+      originalHeadline: this.getOriginalHeadline(),
+      originalComment: this.getOriginalComment(),
+      summaryAltered: this.isSummaryAltered(),
+      omitSignatureCheckboxAltered: this.isOmitSignatureCheckboxAltered(),
+      lastFocused: this.getLastFocused(),
+    };
   }
 
   /**

@@ -532,8 +532,7 @@ export function mixInObject(obj, Mixin) {
   const dummy = () => {};
   dummy.prototype = /** @type {InstanceType<TMixin>} */ ({});
   OO.mixinClass(dummy, Mixin);
-  Object.assign(obj, {});
-  Mixin.call(obj);
+  Object.assign(obj, new Mixin());
 
   return /** @type {TBase & InstanceType<TMixin>} */ (obj);
 }

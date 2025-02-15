@@ -1,3 +1,5 @@
+// See StorageItemWithKeysAndSaveTime.js for the structure of storage items.
+
 /**
  * Class meant to facilitate communication with the
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage local storage}.
@@ -7,14 +9,6 @@
  * @template {{ [key: ValidKey]: any }} [EntryType = { [key: ValidKey]: any }]
  */
 class StorageItem {
-  /**
-   * See https://github.com/microsoft/TypeScript/issues/3841#issuecomment-337560146.
-   *
-   * @type {typeof StorageItem}
-   * @readonly
-   */
-  ['constructor'];
-
   /**
    * Prefix added to the name of the storage item.
    *
@@ -32,9 +26,12 @@ class StorageItem {
    * To reload the contents of the storage item after an idle period, run
    * {@link StorageItem#reload}. Note that the user may interact with the storage in other tabs.
    *
-   * @param {string} key Local storage Item key (will be prepended by {@link StorageItem.prefix}).
+   * @param {string} key Local storage item key (will be prepended by {@link StorageItem.prefix}).
    */
   constructor(key) {
+    // Workaround to make this.constructor in methods to be type checked correctly
+    this.constructor = StorageItem;
+
     this.key = key;
 
     this.reload();

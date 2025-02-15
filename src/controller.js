@@ -2,9 +2,7 @@ import Autocomplete from './Autocomplete';
 import BootProcess from './BootProcess';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
-import DtSubscriptions from './DtSubscriptions';
 import ElementsTreeWalker from './ElementsTreeWalker';
-import LegacySubscriptions from './LegacySubscriptions';
 import Parser from './Parser';
 import Thread from './Thread';
 import addCommentLinks from './addCommentLinks';
@@ -186,7 +184,7 @@ class Controller extends EventEmitter {
    * @type {mw.Api}
    * @private
    */
-  api = new mw.Api(cd.getApiConfig());
+  api;
 
   /**
    * @type {{
@@ -451,6 +449,8 @@ class Controller extends EventEmitter {
    * @returns {mw.Api}
    */
   getApi() {
+    this.api ||= new mw.Api(cd.getApiConfig());
+
     return this.api;
   }
 
@@ -2246,7 +2246,10 @@ class Controller extends EventEmitter {
    */
   getSubscriptionsInstance() {
     this.subscriptionsInstance ||= new (
-      settings.get('useTopicSubscription') ? DtSubscriptions : LegacySubscriptions
+      settings.get('useTopicSubscription')
+        // Use `require()`, not `import` to avoid a circular reference
+        ? require('./DtSubscriptions').default
+        : require('./LegacySubscriptions').default
     )();
 
     return this.subscriptionsInstance;
@@ -2259,7 +2262,8 @@ class Controller extends EventEmitter {
    * @returns {obj is DtSubscriptions}
    */
   isDtSubscriptions(obj) {
-    return obj instanceof DtSubscriptions;
+    // Use `require()`, not `import` to avoid a circular reference
+    return obj instanceof require('./DtSubscriptions').default;
   }
 
   /**
@@ -2269,7 +2273,8 @@ class Controller extends EventEmitter {
    * @returns {obj is LegacySubscriptions}
    */
   isLegacySubscriptions(obj) {
-    return obj instanceof LegacySubscriptions;
+    // Use `require()`, not `import` to avoid a circular reference
+    return obj instanceof require('./LegacySubscriptions').default;
   }
 
   /**

@@ -1,5 +1,29 @@
 import StorageItemWithKeys from './StorageItemWithKeys';
 
+/*
+  * StorageItemWithKeysAndSaveTime's storage item is structured like this:
+      {
+        [arbitrary key 1]: {
+          [key named as the storage key]: [entry 2],
+          saveTime: number,
+        },
+        [arbitrary key 1]: {
+          [key named as the storage key]: [entry 2],
+          saveTime: number,
+        },
+        // ...
+      }
+  * StorageItemWithKeys's storage item is structured like this:
+      {
+        [arbitrary key 1]: [entry 1],
+        [arbitrary key 2]: [entry 2],
+        // ...
+      }
+  * StorageItem's storage item is structured like this:
+      [entry]
+    (i.e. it's just an arbitrary value).
+ */
+
 /**
  * @template {object} EntryType
  * @template {string} Key
@@ -15,7 +39,7 @@ import StorageItemWithKeys from './StorageItemWithKeys';
  */
 class StorageItemWithKeysAndSaveTime extends StorageItemWithKeys {
   /**
-   * @param {Key} key Local storage Item key (will be prepended by {@link StorageItem.prefix}).
+   * @param {Key} key Local storage item key (will be prepended by {@link StorageItem.prefix}).
    * @abstract
    */
   constructor(key) {
