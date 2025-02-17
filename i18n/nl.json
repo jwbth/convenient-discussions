@@ -9,6 +9,7 @@
 			"McDutchie",
 			"Robin van der Vliet",
 			"Siebrand",
+			"Sjoerddebruin",
 			"Vistaus",
 			"Xbaked potatox"
 		]
@@ -73,7 +74,7 @@
 	"section-watch-openpages": "(U krijgt alleen meldingen zolang dit tabblad open staat.)",
 	"section-watch-pagenotwatched": "<strong>Let op:</strong> u bent geabonneerd op de sectie, maar u volgt de pagina niet. Als u nieuwe reacties uitgelicht wilt hebben op uw volglijstpagina, voeg de pagina dan toe aan de volglijst.",
 	"section-watch-error-maxsize": "Kan de instellingen niet bijwerken: de grootte van de abonneelijst overschrijdt de maximale grootte. <span class=\"cd-notification-editWatchedSections\">[[$1|Bewerk de abonneelijst]]</span> om dit op te lossen.",
-	"section-metadata-commentcount-authorcount": "$1 reactie{{plural:$1||s}}<span class=\"cd-section-metadata-authorcount\"> van <span class=\"cd-section-metadata-authorcount-link\">$2{{plural:$2|persoon|personen}}</span></span>",
+	"section-metadata-commentcount-authorcount": "$1 reactie{{plural:$1||s}}<span class=\"cd-section-metadata-authorcount\"> van <span class=\"cd-section-metadata-authorcount-link\">$2 {{plural:$2|persoon|personen}}</span></span>",
 	"section-metadata-newcommentcount": "+$1 {{plural:$1|nieuwe}}",
 	"section-metadata-lastcomment": "Nieuwste reactie:",
 	"section-authors-sort-abc": "Op alfabet",
