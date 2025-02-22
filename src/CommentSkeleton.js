@@ -1841,11 +1841,4 @@ class CommentSkeleton {
   }
 }
 
-/**
- * Object with the same basic structure as {@link CommentSkeleton} has. (It comes from a web worker
- * so its constructor is lost.)
- *
- * @typedef {CommentSkeleton} CommentSkeletonLike
- */
-
 export default CommentSkeleton;

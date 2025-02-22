@@ -107,7 +107,7 @@ class Section extends SectionSkeleton {
    * When checking for updates, this has the match of the section to the section analyzed in the
    * worker scope.
    *
-   * @type {import('./updateChecker').SectionWorkerEnriched|undefined}
+   * @type {import('./updateChecker').SectionWorkerMatched|undefined}
    */
   match;
 
@@ -1574,8 +1574,8 @@ class Section extends SectionSkeleton {
   /**
    * Resubscribe to a renamed section if legacy topic subscriptions are used.
    *
-   * @param {import('./updateChecker').CommentWorkerEnriched} currentCommentData
-   * @param {import('./updateChecker').CommentWorkerEnriched} oldCommentData
+   * @param {import('./updateChecker').CommentWorkerMatched} currentCommentData
+   * @param {import('./updateChecker').CommentWorkerMatched} oldCommentData
    */
   resubscribeIfRenamed(currentCommentData, oldCommentData) {
     if (
@@ -1595,7 +1595,7 @@ class Section extends SectionSkeleton {
       (_, /** @type {string} */ num) => currentCommentData.hiddenElementsData[Number(num) - 1].html
     );
     const oldSectionDummy = { headlineElement: $('<span>').html($(oldHeadingHtml).html())[0] };
-    sectionRegistry.prototype.parseHeadline.call(oldSectionDummy);
+    this.parseHeadline.call(oldSectionDummy);
     if (
       this.headline &&
       oldSectionDummy.headline !== this.headline &&

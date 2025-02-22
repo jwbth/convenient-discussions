@@ -1,4 +1,5 @@
 import CdError from './CdError';
+import Comment from './Comment';
 import StorageItemWithKeys from './StorageItemWithKeys';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
@@ -18,39 +19,41 @@ import visits from './visits';
 /**
  * @typedef {object} CommentWorkerExtension
  * @property {import('./userRegistry').User} author
- * @property {SectionWorkerEnriched} [section]
- * @property {CommentWorkerEnriched} [match]
+ * @property {SectionWorkerMatched} [section]
+ * @property {CommentWorkerMatched} [match]
  * @property {import('./Comment').default} [parentMatch]
  * @property {number} [matchScore]
  * @property {boolean} [hasPoorMatch]
- * @property {CommentWorkerExtension} parent
- * @property {CommentWorkerEnriched[]} children
- * @property {CommentWorkerEnriched[]} previousComments
+ * @property {CommentWorkerMatched} parent
+ * @property {CommentWorkerMatched[]} children
+ * @property {CommentWorkerMatched[]} previousComments
  * @property {import('./Section').default} sectionSubscribedTo
  */
 
 /**
  * @typedef {(
- *   & Omit<import('./worker/CommentWorker').default, 'children' | 'previousComments'>
+ *   & Omit<RemoveMethods<import('./worker/CommentWorker').default>, 'children' | 'previousComments'>
  *   & CommentWorkerExtension
- * )} CommentWorkerEnriched
+ * )} CommentWorkerMatched
  */
 
 /**
  * @typedef {object} SectionWorkerExtension
  * @property {import('./Section').default} [match]
  * @property {number} [matchScore]
+ * @property {number} [tocLevel]
+ * @property {import('./worker/SectionWorker').default|SectionWorkerMatched} [parent]
  */
 
 /**
- * @typedef {import('./worker/SectionWorker').default & SectionWorkerExtension} SectionWorkerEnriched
+ * @typedef {RemoveMethods<import('./worker/SectionWorker').default> & SectionWorkerExtension} SectionWorkerMatched
  */
 
 /**
  * @typedef {object} RevisionData
  * @property {number} revisionId
- * @property {CommentWorkerEnriched[]} comments
- * @property {SectionWorkerEnriched[]} sections
+ * @property {CommentWorkerMatched[]} comments
+ * @property {SectionWorkerMatched[]} sections
  */
 
 /**
@@ -60,11 +63,18 @@ import visits from './visits';
  */
 
 /**
+ * @typedef {object} AddedComments
+ * @property {import('./updateChecker').CommentWorkerMatched[]} all
+ * @property {import('./updateChecker').CommentWorkerMatched[]} relevant
+ * @property {Map<import('./updateChecker').SectionWorkerMatched | null, AtLeastOne<import('./updateChecker').CommentWorkerMatched>>} bySection
+ */
+
+/**
  * @typedef {object} EventMap
  * @property {[number]} check
- * @property {[SectionWorkerEnriched[]]} sectionsUpdate
+ * @property {[SectionWorkerMatched[]]} sectionsUpdate
  * @property {[ChangesList]} newChanges
- * @property {[CommentWorkerEnriched[], CommentWorkerEnriched[]]} commentsUpdate
+ * @property {[AddedComments]} commentsUpdate
  */
 
 /**
@@ -203,9 +213,9 @@ class UpdateChecker extends EventEmitter {
       const { comments: oldComments } = await this.processPage(this.previousVisitRevisionId);
       const { comments: currentComments } = await this.processPage(currentRevisionId);
       if (this.isPageStillAtRevision(currentRevisionId)) {
-        this.mapComments(currentComments, oldComments);
+        this.mapWorkerCommentsToWorkerComments(currentComments, oldComments);
         this.checkForChangesSincePreviousVisit(
-          /** @type {CommentWorkerEnriched[]} */ (currentComments),
+          /** @type {CommentWorkerMatched[]} */ (currentComments),
           this.previousVisitRevisionId,
           submittedCommentId
         );
@@ -214,13 +224,14 @@ class UpdateChecker extends EventEmitter {
   }
 
   /**
-   * Map sections obtained from a revision to the sections present on the page.
+   * Map sections obtained from a revision to the sections present on the page. (Contrast with
+   * `updateChecker#mapComments` which maps CommentWorker objects together.)
    *
-   * @param {import('./worker/SectionWorker').default[] | SectionWorkerEnriched[]} otherSections
+   * @param {import('./worker/SectionWorker').default[] | SectionWorkerMatched[]} otherSections
    * @param {number} lastCheckedRevisionId
    * @private
    */
-  mapSections(otherSections, lastCheckedRevisionId) {
+  mapWorkerSectionsToSections(otherSections, lastCheckedRevisionId) {
     if (!this.areSectionsEnriched(otherSections)) return;
 
     // otherSections could contain simple SectionWorker types from
@@ -259,8 +270,8 @@ class UpdateChecker extends EventEmitter {
   /**
    * Check if sections instances received from a web worker were previously enriched by this class.
    *
-   * @param {import('./worker/SectionWorker').default[] | SectionWorkerEnriched[]} sections
-   * @returns {sections is SectionWorkerEnriched[]}
+   * @param {import('./worker/SectionWorker').default[] | SectionWorkerMatched[]} sections
+   * @returns {sections is SectionWorkerMatched[]}
    */
   areSectionsEnriched(sections) {
     return 'match' in sections[0];
@@ -269,11 +280,11 @@ class UpdateChecker extends EventEmitter {
   /**
    * Sort comments by match score, removing comments with score of 1.66 or less.
    *
-   * @param {CommentWorkerEnriched[]} candidates
-   * @param {CommentWorkerEnriched} target
+   * @param {CommentWorkerMatched[]} candidates
+   * @param {CommentWorkerMatched} target
    * @param {boolean} isTotalCountEqual
    * @returns {Array<{
-   *   comment: CommentWorkerEnriched;
+   *   comment: CommentWorkerMatched;
    *   score: number;
    * }>}
    * @private
@@ -315,16 +326,18 @@ class UpdateChecker extends EventEmitter {
   }
 
   /**
-   * Map comments obtained from the current revision to comments obtained from another revision (newer
-   * or older) by adding the `match` property to the first ones. The function also adds the
-   * `hasPoorMatch` property to comments that have possible matches that are not good enough to
-   * confidently state a match.
+   * Map comments obtained from the current revision to comments obtained from another revision
+   * (newer or older) by adding the `match` property to the first ones. (Contrast with
+   * `updateChecker#mapSections` which maps SectionWorker objects to actual sections on the page.)
    *
-   * @param {import('./worker/CommentWorker').default[] | CommentWorkerEnriched[]} currentComments
-   * @param {import('./worker/CommentWorker').default[] | CommentWorkerEnriched[]} otherComments
+   * The function also adds the `hasPoorMatch` property to comments that have possible matches that
+   * are not good enough to confidently state a match.
+   *
+   * @param {import('./worker/CommentWorker').default[] | CommentWorkerMatched[]} currentComments
+   * @param {import('./worker/CommentWorker').default[] | CommentWorkerMatched[]} otherComments
    * @private
    */
-  mapComments(currentComments, otherComments) {
+  mapWorkerCommentsToWorkerComments(currentComments, otherComments) {
     if (!this.areCommentsEnriched(currentComments) || !this.areCommentsEnriched(otherComments)) {
       return;
     }
@@ -388,8 +401,8 @@ class UpdateChecker extends EventEmitter {
   /**
    * Check if comment instances received from a web worker was previously enriched by this class.
    *
-   * @param {import('./worker/CommentWorker').default[] | CommentWorkerEnriched[]} comments
-   * @returns {comments is CommentWorkerEnriched[]}
+   * @param {import('./worker/CommentWorker').default[] | CommentWorkerMatched[]} comments
+   * @returns {comments is CommentWorkerMatched[]}
    */
   areCommentsEnriched(comments) {
     return 'match' in comments[0] || 'hasPoorMatch' in comments[0] || 'parentMatch' in comments[0];
@@ -445,21 +458,21 @@ class UpdateChecker extends EventEmitter {
           this.emit('check', revisionId);
 
           if (this.isPageStillAtRevision(currentRevisionId)) {
-            this.mapSections(sections, revisionId);
-            this.mapComments(currentComments, newComments);
+            this.mapWorkerSectionsToSections(sections, revisionId);
+            this.mapWorkerCommentsToWorkerComments(currentComments, newComments);
 
-            this.emit('sectionsUpdate', /** @type {SectionWorkerEnriched[]} */ (sections));
+            this.emit('sectionsUpdate', /** @type {SectionWorkerMatched[]} */ (sections));
 
             // We check for changes before notifying about new comments to notify about changes in
             // renamed sections if any were watched.
             this.checkForNewChanges(
-              /** @type {CommentWorkerEnriched[]} */ (currentComments),
+              /** @type {CommentWorkerMatched[]} */ (currentComments),
               revisionId
             );
 
             await this.processComments(
-              /** @type {CommentWorkerEnriched[]} */ (newComments),
-              /** @type {CommentWorkerEnriched[]} */ (currentComments),
+              /** @type {CommentWorkerMatched[]} */ (newComments),
+              /** @type {CommentWorkerMatched[]} */ (currentComments),
               currentRevisionId
             );
           }
@@ -484,8 +497,8 @@ class UpdateChecker extends EventEmitter {
    * `headingHtmlToCompare` properties (the comment may lose its heading because technical comment is
    * added between it and the heading).
    *
-   * @param {CommentWorkerEnriched} olderComment
-   * @param {CommentWorkerEnriched} newerComment
+   * @param {CommentWorkerMatched} olderComment
+   * @param {CommentWorkerMatched} newerComment
    * @returns {boolean}
    * @private
    */
@@ -502,7 +515,7 @@ class UpdateChecker extends EventEmitter {
   /**
    * Check if there are changes made to the currently displayed comments since the previous visit.
    *
-   * @param {CommentWorkerEnriched[]} currentComments
+   * @param {CommentWorkerMatched[]} currentComments
    * @param {number} previousVisitRevisionId
    * @param {string} [submittedCommentId]
    * @private
@@ -580,7 +593,7 @@ class UpdateChecker extends EventEmitter {
   /**
    * Check if there are changes made to the currently displayed comments since they were rendered.
    *
-   * @param {CommentWorkerEnriched[]} currentComments
+   * @param {CommentWorkerMatched[]} currentComments
    * @param {number} lastCheckedRevisionId
    * @private
    */
@@ -750,8 +763,8 @@ class UpdateChecker extends EventEmitter {
   /**
    * Process the comments retrieved by a web worker.
    *
-   * @param {CommentWorkerEnriched[]} comments Comments in the recent revision.
-   * @param {CommentWorkerEnriched[]} currentComments Comments in the currently shown revision mapped
+   * @param {CommentWorkerMatched[]} comments Comments in the recent revision.
+   * @param {CommentWorkerMatched[]} currentComments Comments in the currently shown revision mapped
    *   to the comments in the recent revision.
    * @param {number} currentRevisionId ID of the revision that can be seen on the page.
    * @private
@@ -764,7 +777,7 @@ class UpdateChecker extends EventEmitter {
       }
     });
 
-    const newComments = /** @type {CommentWorkerEnriched[]} */ (comments
+    const all = /** @type {CommentWorkerMatched[]} */ (comments
       .filter((comment) => comment.id && !currentComments.some((mcc) => mcc.match === comment))
       // Detach comments in the newComments object from those in the `comments` object.
       .map((comment) => {
@@ -778,47 +791,47 @@ class UpdateChecker extends EventEmitter {
         return newComment;
       }));
 
-    // Extract relevant comments.
-    const relevantNewComments = /** @type {CommentWorkerEnriched[]} */ (newComments
-      .filter((comment) => {
-        if (!settings.get('notifyCollapsedThreads') && comment.logicalLevel !== 0) {
-          let parentMatch;
-          for (let c = comment; c && !parentMatch; c = c.parent) {
-            parentMatch = c.parentMatch;
-          }
-          if (parentMatch?.isCollapsed) {
-            return false;
-          }
-        }
-        if (comment.isOwn || comment.author.isMuted()) {
-          return false;
-        }
-        if (comment.isToMe) {
-          return true;
-        }
-        if (comment.section) {
-          // Is this section subscribed to by means of an upper level section?
-          const section = comment.section.match;
-          if (section) {
-            const closestSectionSubscribedTo = section.getClosestSectionSubscribedTo(true);
-            if (closestSectionSubscribedTo) {
-              comment.sectionSubscribedTo = closestSectionSubscribedTo;
-
-              return true;
-            }
-          }
-        }
-
-        return false;
-      }));
-
     if (cd.g.genderAffectsUserString) {
-      await loadUserGenders(newComments.map((comment) => comment.author), true);
+      await loadUserGenders(all.map((comment) => comment.author), true);
     }
-
     if (!this.isPageStillAtRevision(currentRevisionId)) return;
 
-    this.emit('commentsUpdate', newComments, relevantNewComments);
+    this.emit('commentsUpdate', {
+      all,
+      relevant: /** @type {CommentWorkerMatched[]} */ (all
+        .filter((comment) => {
+          if (!settings.get('notifyCollapsedThreads') && comment.logicalLevel !== 0) {
+            let parentMatch;
+            for (let c = comment; c && !parentMatch; c = c.parent) {
+              parentMatch = c.parentMatch;
+            }
+            if (parentMatch?.isCollapsed) {
+              return false;
+            }
+          }
+          if (comment.isOwn || comment.author.isMuted()) {
+            return false;
+          }
+          if (comment.isToMe) {
+            return true;
+          }
+          if (comment.section) {
+            // Is this section subscribed to by means of an upper level section?
+            const section = comment.section.match;
+            if (section) {
+              const closestSectionSubscribedTo = section.getClosestSectionSubscribedTo(true);
+              if (closestSectionSubscribedTo) {
+                comment.sectionSubscribedTo = closestSectionSubscribedTo;
+
+                return true;
+              }
+            }
+          }
+
+          return false;
+        })),
+      bySection: Comment.groupBySection(all),
+    });
   }
 
   /**

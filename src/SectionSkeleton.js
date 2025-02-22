@@ -390,11 +390,4 @@ class SectionSkeleton {
   }
 }
 
-/**
- * Object with the same basic structure as {@link SectionSkeleton} has. (It comes from a web
- * worker so its constructor is lost.)
- *
- * @typedef {SectionSkeleton} SectionSkeletonLike
- */
-
 export default SectionSkeleton;

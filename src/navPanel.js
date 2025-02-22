@@ -11,6 +11,7 @@ import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
 import settings from './settings';
+import updateChecker from './updateChecker';
 import { reorderArray } from './utils-general';
 import { formatDate } from './utils-timestamp';
 import { removeWikiMarkup } from './utils-wikitext';
@@ -21,7 +22,7 @@ export default {
   /**
    * Navigation panel element.
    *
-   * @type {JQuery}
+   * @type {JQuery|undefined}
    * @memberof module:navPanel
    */
   $element: undefined,
@@ -115,7 +116,8 @@ export default {
               this.goToNextCommentForm(true);
             }
           })
-          .on('addedCommentsUpdate', ({ all, relevant, bySection }) => {
+        updateChecker
+          .on('commentsUpdate', ({ all, relevant, bySection }) => {
             this.updateRefreshButton(all.length, bySection, Boolean(relevant.length));
           });
         commentFormRegistry

@@ -4,8 +4,10 @@
  * @module toc
  */
 
+import CdError from './CdError';
 import Comment from './Comment';
 import LiveTimestamp from './LiveTimestamp';
+import SectionSkeleton from './SectionSkeleton';
 import cd from './cd';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
@@ -14,7 +16,7 @@ import settings from './settings';
 import updateChecker from './updateChecker';
 import { isElement, isText } from './utils-general';
 import { formatDate, formatDateNative } from './utils-timestamp';
-import { createSvg } from './utils-window';
+import { createSvg, getLinkedAnchor } from './utils-window';
 import visits from './visits';
 
 export default {
@@ -50,11 +52,11 @@ export default {
     subscriptions
       .on('process', this.markSubscriptions.bind(this));
     controller
-      .on('addedCommentsUpdate', ({ bySection }) => {
-        this.addNewComments(bySection);
-      })
       .on('reload', this.maybeHide.bind(this));
     updateChecker
+      .on('commentsUpdate', ({ bySection }) => {
+        this.addNewComments(bySection);
+      })
       .on('sectionsUpdate', this.addNewSections.bind(this));
   },
 
@@ -110,14 +112,15 @@ export default {
     }
 
     if (!this.items) {
-      const links = [...this.$element[0].querySelectorAll('li > a')]
-        .filter((link) => link.getAttribute('href') !== '#');
+      const links = [...this.$element[0].querySelectorAll('li > a')].filter(
+        (link) => link.getAttribute('href') !== '#'
+      );
       try {
         // It is executed first time before added (gray) sections are added to the TOC, so we use a
         // simple algorithm to obtain items.
         this.items = links.map((a) => new TocItem(a, this));
       } catch (e) {
-        console.error('Couldn\'t find an element of a table of contents item.', ...e);
+        console.error("Couldn't find an element of a table of contents item.", ...e);
         this.items = [];
 
         // Override the setting value - we better not touch the TOC if something is broken there.
@@ -179,7 +182,7 @@ export default {
           unseenCount
         );
       } else {
-        bdi.textContent = usedFullForm ? count : cd.s('toc-commentcount-full', count);
+        bdi.textContent = usedFullForm ? String(count) : cd.s('toc-commentcount-full', count);
       }
 
       span.appendChild(bdi);
@@ -196,13 +199,14 @@ export default {
   /**
    * Handle a click on an added section link.
    *
-   * @param {Event} e
+   * @param {MouseEvent|KeyboardEvent} event
    * @private
    */
-  handleSectionClick(e) {
-    e.preventDefault();
+  handleSectionClick(event) {
+    event.preventDefault();
     controller.reload({
-      sectionId: e.currentTarget.getAttribute('href').slice(1),
+      sectionId:
+        getLinkedAnchor(/** @type {HTMLAnchorElement} */ (event.currentTarget)) || undefined,
       pushState: true,
     });
   },
@@ -220,7 +224,8 @@ export default {
     // collapsed subsections with their help tend to zero, I believe, although this may
     // change.
     const button = document.createElement('button');
-    button.className = 'cdx-button cdx-button--weight-quiet cdx-button--icon-only vector-toc-toggle';
+    button.className =
+      'cdx-button cdx-button--weight-quiet cdx-button--icon-only vector-toc-toggle';
     button.setAttribute('ariaExpanded', 'true');
     button.setAttribute('ariaControls', ul.id);
 
@@ -241,26 +246,31 @@ export default {
   },
 
   /**
-   * Add a section to the TOC.
+   * Add a new, not yet rendered section (loaded in the background) section to the table of
+   * contents.
    *
-   * @param {import('./SectionSkeleton').SectionSkeletonLike} section
-   * @param {object[]} currentTree
+   * @param {import('./updateChecker').SectionWorkerMatched} section
+   * @param {TocItemCut[]} currentTree
    * @param {JQuery} $topUl
    * @param {string[]} newSectionTocIds
    * @private
    */
-  addSection(section, currentTree, $topUl, newSectionTocIds) {
-    let item = section.match?.getTocItem();
+  addNewSection(section, currentTree, $topUl, newSectionTocIds) {
+    /**
+     * @typedef {Pick<TocItem, 'level' | 'number' | '$element'>} TocItemCut
+     */
+
+    let item = /** @type {TocItemCut|undefined} */ (section.match?.getTocItem());
+    const level = /** @type {number} */ (section.tocLevel);
     if (!item) {
-      const level = section.tocLevel;
       const currentLevelMatch = currentTree[level - 1];
       const upperLevelMatch = currentLevelMatch ? undefined : currentTree[currentTree.length - 1];
 
       const li = document.createElement('li');
       li.id = `toc-${section.id}`;
-      const levelClass = this.isInSidebar() ?
-        `vector-toc-list-item vector-toc-level-${level}` :
-        `toclevel-${level}`;
+      const levelClass = this.isInSidebar()
+        ? `vector-toc-list-item vector-toc-level-${level}`
+        : `toclevel-${level}`;
       li.className = `${levelClass} cd-toc-addedSection`;
 
       const a = document.createElement('a');
@@ -332,8 +342,8 @@ export default {
       };
     }
 
-    currentTree[section.tocLevel - 1] = item;
-    currentTree.splice(section.tocLevel);
+    currentTree[level - 1] = item;
+    currentTree.splice(level);
   },
 
   /**
@@ -343,7 +353,7 @@ export default {
    * Note that this method may also add the `match` property to the section elements containing a
    * matched {@link Section} object.
    *
-   * @param {import('./SectionSkeleton').SectionSkeletonLike[]} sections All sections present on the
+   * @param {import('./updateChecker').SectionWorkerMatched[]} sections All sections present on the
    *   new revision of the page.
    * @private
    */
@@ -355,12 +365,12 @@ export default {
     }
 
     const $addedSections = this.$element.find('.cd-toc-addedSection');
-    const newSectionTocIds = this.isInSidebar() ?
-      $addedSections
-        .filter('.vector-toc-level-1')
-        .get()
-        .map((sectionElement) => sectionElement.id) :
-      undefined;
+    const newSectionTocIds = this.isInSidebar()
+      ? $addedSections
+          .filter('.vector-toc-level-1')
+          .get()
+          .map((sectionElement) => sectionElement.id)
+      : undefined;
     $addedSections.remove();
 
     /*
@@ -388,20 +398,22 @@ export default {
         1 Section
           1.1 Subsection
      */
-    sections.forEach((section, i) => {
-      section.parent = sections
-        .slice(0, i)
-        .reverse()
-        .find((otherSection) => otherSection.level < section.level);
+    sections.forEach((section) => {
+      // Update `parent` from SectionWorker to SectionWorkerMatched type
+      section.parent = SectionSkeleton.prototype.getParent.call(section, true, sections);
     });
     sections.forEach((section) => {
-      section.tocLevel = section.parent ? section.parent.tocLevel + 1 : 1;
+      section.tocLevel = section.parent
+        ? /** @type {number} */ (
+            /** @type {import('./updateChecker').SectionWorkerMatched} */ (section.parent).tocLevel
+          ) + 1
+        : 1;
     });
 
     const currentTree = [];
     const $topUl = this.$element.children('ul');
     sections.forEach((section) => {
-      this.addSection(section, currentTree, $topUl, newSectionTocIds);
+      this.addNewSection(section, currentTree, $topUl, newSectionTocIds);
     });
 
     if (!this.isInSidebar()) {
@@ -412,20 +424,17 @@ export default {
   /**
    * Get the element to add a comment list after for a section.
    *
-   * @param {import('./SectionSkeleton').SectionSkeletonLike} section Section.
+   * @param {import('./Section').default | import('./updateChecker').SectionWorkerMatched} section Section.
    * @returns {?object}
    * @private
    */
-  getTargetElementForSection(section, areCommentsRendered) {
+  getTargetElementForSection(section) {
     // There could be a collision of hrefs between the existing section and not yet rendered
     // section, so we compose the selector carefully.
     let $sectionLink;
     let $target;
-    if (areCommentsRendered) {
-      const item = section.getTocItem();
-      if (item) {
-        $target = $sectionLink = item.$link;
-      }
+    if ('getTocItem' in section) {
+      $target = $sectionLink = section.getTocItem()?.$link;
     } else {
       if (section.match) {
         $sectionLink = section.match.getTocItem()?.$link;
@@ -450,12 +459,16 @@ export default {
   /**
    * Handle a click on a comment link.
    *
-   * @param {Event} e
+   * @param {KeyboardEvent|MouseEvent} event
    * @private
    */
-  handleCommentClick(e) {
-    e.preventDefault();
-    const id = e.currentTarget.getAttribute('href').slice(1);
+  handleCommentClick(event) {
+    event.preventDefault();
+    const id = getLinkedAnchor(/** @type {HTMLAnchorElement} */ (event.currentTarget));
+    if (!id) {
+      throw new CdError();
+    }
+
     const comment = commentRegistry.getByAnyId(id);
     if (comment) {
       comment.scrollTo({
@@ -473,12 +486,12 @@ export default {
   /**
    * Add a comment list (an `ul` element) to a section.
    *
-   * @param {import('./CommentSkeleton').CommentSkeletonLike[]} comments Comment list.
+   * @template {boolean} Rendered
+   * @param {Rendered extends true ? AtLeastOne<import('./Comment').default> : AtLeastOne<import('./updateChecker').CommentWorkerMatched>} comments Comment list.
    * @param {Element} target Target element.
-   * @param {boolean} areCommentsRendered Whether the comments are rendered (visible on the page).
    * @private
    */
-  addCommentList(comments, target, areCommentsRendered) {
+  addCommentList(comments, target) {
     // Should never be the case
     if (!target) return;
 
@@ -487,84 +500,95 @@ export default {
 
     // jQuery is too expensive here given that very many comments may be added.
     const ul = document.createElement('ul');
-    ul.className = areCommentsRendered ? 'cd-toc-newCommentList' : 'cd-toc-addedCommentList';
+
+    // Check for the Section type without importing Section
+    ul.className = 'getParent' in comments[0] ? 'cd-toc-newCommentList' : 'cd-toc-addedCommentList';
 
     let moreTooltipText = '';
-    comments.forEach((comment, i) => {
-      const parent = areCommentsRendered ? comment.getParent() : comment.parent;
-      const names = parent?.author && comment.level > 1 ?
-        cd.s('navpanel-newcomments-names', comment.author.getName(), parent.author.getName()) :
-        comment.author.getName();
-      const addAsItem = i < itemLimit - 1 || comments.length === itemLimit;
+    comments.forEach(
+      (
+        /** @type {import('./updateChecker').CommentWorkerMatched|Comment} */ comment,
+        /** @type {number} */ i
+      ) => {
+        const parent = 'getParent' in comment ? comment.getParent() : comment.parent;
+        const names =
+          parent?.author && comment.level > 1
+            ? cd.s('navpanel-newcomments-names', comment.author.getName(), parent.author.getName())
+            : comment.author.getName();
+        const addAsItem = i < itemLimit - 1 || comments.length === itemLimit;
 
-      let date;
-      let nativeDate;
-      if (comment.date) {
-        nativeDate = formatDateNative(comment.date);
-        date = addAsItem && settings.get('timestampFormat') !== 'default' ?
-          formatDate(comment.date) :
-          nativeDate;
-      } else {
-        date = cd.s('navpanel-newcomments-unknowndate');
-      }
-
-      const rtlMarkOrNot = cd.g.contentDirection === 'rtl' ? '\u200f' : '';
-      const dateOrNot = settings.get('timestampFormat') === 'default' ? date : '';
-      const text = names + rtlMarkOrNot + cd.mws('comma-separator') + dateOrNot;
-
-      // If there are itemLimit comments or less, show all of them. If there are more, show
-      // `itemLimit - 1` and "N more". (Because showing `itemLimit - 1` and then "1 more" is
-      // stupid.)
-      if (addAsItem) {
-        const li = document.createElement('li');
-        ul.appendChild(li);
-
-        const a = document.createElement('a');
-        a.href = `#${comment.dtId || comment.id}`;
-        if (this.isInSidebar()) {
-          a.className = 'vector-toc-link cd-toc-link-sidebar';
-        }
-        a.onclick = this.handleCommentClick.bind(this);
-
-        let timestampSpan;
-        if (settings.get('timestampFormat') !== 'default') {
-          timestampSpan = document.createElement('span');
-          timestampSpan.textContent = date;
-          timestampSpan.title = nativeDate;
-          (new LiveTimestamp(timestampSpan, comment.date, false)).init();
-        }
-
-        if (this.isInSidebar()) {
-          const textDiv = document.createElement('div');
-          textDiv.className = 'vector-toc-text cd-toc-commentLinkText-sidebar';
-          textDiv.textContent = text;
-          if (timestampSpan) {
-            textDiv.appendChild(timestampSpan);
-          }
-          a.appendChild(textDiv);
-          li.appendChild(a);
+        let date;
+        let nativeDate;
+        if (comment.date) {
+          nativeDate = formatDateNative(comment.date);
+          date =
+            addAsItem && settings.get('timestampFormat') !== 'default'
+              ? formatDate(comment.date)
+              : nativeDate;
         } else {
-          const bulletSpan = document.createElement('span');
-          const numberClass = this.isInSidebar() ? 'vector-toc-numb' : 'tocnumber';
-          bulletSpan.className = `${numberClass} cd-toc-bullet`;
-          bulletSpan.innerHTML = cd.sParse('bullet');
-          li.appendChild(bulletSpan);
-
-          const textSpan = document.createElement('span');
-          textSpan.className = 'toctext';
-          a.textContent = text;
-          if (timestampSpan) {
-            a.appendChild(timestampSpan);
-          }
-          textSpan.appendChild(a);
-          li.appendChild(textSpan);
+          date = cd.s('navpanel-newcomments-unknowndate');
         }
-      } else {
-        // In a tooltip, always show the date in the default format — we won't be auto-updating
-        // relative dates there due to low benefit.
-        moreTooltipText += text + (dateOrNot ? '' : nativeDate) + '\n';
+
+        const rtlMarkOrNot = cd.g.contentDirection === 'rtl' ? '\u200f' : '';
+        const dateOrNot = settings.get('timestampFormat') === 'default' ? date : '';
+        const text = names + rtlMarkOrNot + cd.mws('comma-separator') + dateOrNot;
+
+        // If there are itemLimit comments or less, show all of them. If there are more, show
+        // `itemLimit - 1` and "N more". (Because showing `itemLimit - 1` and then "1 more" is
+        // stupid.)
+        if (addAsItem) {
+          const li = document.createElement('li');
+          ul.appendChild(li);
+
+          const a = document.createElement('a');
+          a.href = `#${'dtId' in comment ? comment.dtId : comment.id}`;
+          if (this.isInSidebar()) {
+            a.className = 'vector-toc-link cd-toc-link-sidebar';
+          }
+          a.onclick = this.handleCommentClick.bind(this);
+
+          let timestampSpan;
+          if (settings.get('timestampFormat') !== 'default' && comment.date) {
+            timestampSpan = document.createElement('span');
+            timestampSpan.textContent = date;
+            if (nativeDate) {
+              timestampSpan.title = nativeDate;
+            }
+            new LiveTimestamp(timestampSpan, comment.date, false).init();
+          }
+
+          if (this.isInSidebar()) {
+            const textDiv = document.createElement('div');
+            textDiv.className = 'vector-toc-text cd-toc-commentLinkText-sidebar';
+            textDiv.textContent = text;
+            if (timestampSpan) {
+              textDiv.appendChild(timestampSpan);
+            }
+            a.appendChild(textDiv);
+            li.appendChild(a);
+          } else {
+            const bulletSpan = document.createElement('span');
+            const numberClass = this.isInSidebar() ? 'vector-toc-numb' : 'tocnumber';
+            bulletSpan.className = `${numberClass} cd-toc-bullet`;
+            bulletSpan.innerHTML = cd.sParse('bullet');
+            li.appendChild(bulletSpan);
+
+            const textSpan = document.createElement('span');
+            textSpan.className = 'toctext';
+            a.textContent = text;
+            if (timestampSpan) {
+              a.appendChild(timestampSpan);
+            }
+            textSpan.appendChild(a);
+            li.appendChild(textSpan);
+          }
+        } else {
+          // In a tooltip, always show the date in the default format — we won't be auto-updating
+          // relative dates there due to low benefit.
+          moreTooltipText += text + (dateOrNot ? '' : nativeDate) + '\n';
+        }
       }
-    });
+    );
 
     if (comments.length > itemLimit) {
       const span = document.createElement('span');
@@ -584,7 +608,7 @@ export default {
    * Add links to new comments (either already displayed or loaded in the background) to the table
    * of contents.
    *
-   * @param {Map<import('./SectionSkeleton').SectionSkeletonLike | null, import('./CommentSkeleton').CommentSkeletonLike[]} commentsBySection
+   * @param {Map<import('./updateChecker').SectionWorkerMatched | import('./Section').default | null, AtLeastOne<import('./updateChecker').CommentWorkerMatched>>} commentsBySection
    * @param {import('./BootProcess').default} [bootProcess]
    * @private
    */
@@ -599,12 +623,10 @@ export default {
           // When unrendered (in gray) comments are added. (Boot process is also not specified at
           // those times.)
           !bootProcess ||
-
-          bootProcess.isFirstRun() ||
-
-          // When the comment or section is opened by a link from the TOC
-          bootProcess.passedData.commentIds ||
-          bootProcess.passedData.sectionId
+            bootProcess.isFirstRun() ||
+            // When the comment or section is opened by a link from the TOC
+            bootProcess.passedData.commentIds ||
+            bootProcess.passedData.sectionId
         )
       );
     }
@@ -612,11 +634,7 @@ export default {
     commentsBySection.forEach((comments, section) => {
       if (!section) return;
 
-      this.addCommentList(
-        comments,
-        this.getTargetElementForSection(section, Boolean(bootProcess)),
-        Boolean(bootProcess)
-      );
+      this.addCommentList(comments, this.getTargetElementForSection(section));
     });
 
     if (!this.isInSidebar()) {
@@ -644,8 +662,7 @@ export default {
   isFloating() {
     if (this.floating === null) {
       this.floating = Boolean(
-        !this.isInSidebar() &&
-        this.$element.closest($(controller.getFloatingElements())).length
+        !this.isInSidebar() && this.$element.closest($(controller.getFloatingElements())).length
       );
     }
 

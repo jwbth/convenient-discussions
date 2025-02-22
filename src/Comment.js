@@ -2253,7 +2253,7 @@ class Comment extends CommentSkeleton {
    *
    * @param {string} body
    * @param {object[]} revisions
-   * @param {import('./updateChecker').CommentWorkerEnriched[]} commentsData
+   * @param {import('./updateChecker').CommentWorkerMatched[]} commentsData
    * @returns {JQuery}
    */
   scrubDiff(body, revisions, commentsData) {
@@ -2598,9 +2598,9 @@ class Comment extends CommentSkeleton {
   /**
    * _For internal use._ Live-update the comment's content.
    *
-   * @param {import('./updateChecker').CommentWorkerEnriched} currentComment Data about the comment
+   * @param {import('./updateChecker').CommentWorkerMatched} currentComment Data about the comment
    *   in the current revision as delivered by the worker.
-   * @param {import('./updateChecker').CommentWorkerEnriched} newComment Data about the comment in
+   * @param {import('./updateChecker').CommentWorkerMatched} newComment Data about the comment in
    *   the new revision as delivered by the worker.
    * @returns {boolean} Was the update successful.
    */
@@ -3550,7 +3550,7 @@ class Comment extends CommentSkeleton {
    * Search for the comment in the source code and return possible matches.
    *
    * @param {string} contextCode
-   * @param {import('./updateChecker').CommentWorkerEnriched} [commentData]
+   * @param {import('./updateChecker').CommentWorkerMatched} [commentData]
    * @param {boolean} [isInSectionContext=false]
    * @returns {CommentSource|undefined}
    * @private
@@ -3608,7 +3608,7 @@ class Comment extends CommentSkeleton {
    * @overload
    * @param {undefined} [sectionCode]
    * @param {string} code
-   * @param {import('./updateChecker').CommentWorkerEnriched} [commentData]
+   * @param {import('./updateChecker').CommentWorkerMatched} [commentData]
    * @returns {CommentSource}
    */
 
@@ -3625,7 +3625,7 @@ class Comment extends CommentSkeleton {
    * @param {string} [code] Wikitext that should have the comment (provided only if we need to
    *   perform operations on some code that is not the code of a section or page). Implies
    *   `sectionCode` is not set.
-   * @param {import('./updateChecker').CommentWorkerEnriched} [commentData] Comment data for
+   * @param {import('./updateChecker').CommentWorkerMatched} [commentData] Comment data for
    *   comparison (can be set together with `code`).
    * @returns {CommentSource}
    * @throws {CdError}
@@ -4457,12 +4457,11 @@ class Comment extends CommentSkeleton {
   /**
    * Turn a comment array into an object with sections or their IDs as keys.
    *
-   * @param {import('./CommentSkeleton').CommentSkeletonLike[]|Comment[]} comments
-   * @returns {Map<import('./SectionSkeleton').SectionSkeletonLike | null, import('./CommentSkeleton').CommentSkeletonLike[]>}
+   * @param {import('./updateChecker').CommentWorkerMatched[]|Comment[]} comments
+   * @returns {Map<import('./updateChecker').SectionWorkerMatched | import('./Section').default | null, AtLeastOne<import('./updateChecker').CommentWorkerMatched>>}
    */
   static groupBySection(comments) {
     const map = new Map();
-
     for (const comment of comments) {
       if (!map.has(comment.section)) {
         map.set(comment.section, []);

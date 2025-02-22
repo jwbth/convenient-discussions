@@ -26,9 +26,9 @@ import WebpackWorker from './worker/worker-gate';
 
 /**
  * @typedef {object} AddedComments
- * @property {import('./updateChecker').CommentWorkerEnriched[]} all
- * @property {import('./updateChecker').CommentWorkerEnriched[]} relevant
- * @property {Map<import('./SectionSkeleton').default | null, import('./CommentSkeleton').default[]>} bySection
+ * @property {import('./updateChecker').CommentWorkerMatched[]} all
+ * @property {import('./updateChecker').CommentWorkerMatched[]} relevant
+ * @property {Map<import('./updateChecker').SectionWorkerMatched | null, import('./updateChecker').CommentWorkerMatched[]>} bySection
  */
 
 /**
@@ -262,7 +262,7 @@ class Controller extends EventEmitter {
   /** @type {?(string[])} */
   relevantAddedCommentIds = null;
 
-  /** @type {import('./updateChecker').CommentWorkerEnriched[]} */
+  /** @type {import('./updateChecker').CommentWorkerMatched[]} */
   commentsNotifiedAbout = [];
 
   isObstructingElementHoveredCached = false;
@@ -1991,7 +1991,7 @@ class Controller extends EventEmitter {
   /**
    * Show a regular notification (`mw.notification`) to the user.
    *
-   * @param {import('./updateChecker').CommentWorkerEnriched[]} comments
+   * @param {import('./updateChecker').CommentWorkerMatched[]} comments
    * @private
    */
   showRegularNotification(comments) {
@@ -2094,7 +2094,7 @@ class Controller extends EventEmitter {
   /**
    * Show a desktop notification to the user.
    *
-   * @param {import('./updateChecker').CommentWorkerEnriched[]} comments
+   * @param {import('./updateChecker').CommentWorkerMatched[]} comments
    * @private
    */
   showDesktopNotification(comments) {
@@ -2195,8 +2195,8 @@ class Controller extends EventEmitter {
    * Update the data about added comments (new comments added while the page was idle), update page
    * components accordingly, show notifications.
    *
-   * @param {import('./updateChecker').CommentWorkerEnriched[]} all
-   * @param {import('./updateChecker').CommentWorkerEnriched[]} relevant
+   * @param {import('./updateChecker').CommentWorkerMatched[]} all
+   * @param {import('./updateChecker').CommentWorkerMatched[]} relevant
    */
   updateAddedComments(all, relevant) {
     this.addedCommentCount = all.length;

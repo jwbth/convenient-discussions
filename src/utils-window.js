@@ -8,7 +8,7 @@ import Button from './Button';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import Parser from './Parser';
 import cd from './cd';
-import { parseWikiUrl, isInline, defined, spacesToUnderlines } from './utils-general';
+import { defined, isInline, parseWikiUrl, spacesToUnderlines } from './utils-general';
 
 /**
  * @typedef {Record<string, () => void>} WrapCallbacks
@@ -667,4 +667,17 @@ export function isExistentAnchor(anchor, isWikilink = false) {
  */
 export function mergeJquery(...arrayOfJquery) {
   return $($.map(arrayOfJquery.filter(defined), ($object) => $object.get()));
+}
+
+/**
+ * Get the name of the anchor in the `href` attribute of an anchor element. If anything is not
+ * right, returns `null`.
+ *
+ * @param {HTMLAnchorElement} element
+ * @returns {?string}
+ */
+export function getLinkedAnchor(element) {
+  const href = element.getAttribute('href');
+
+  return href?.startsWith('#') ? href.slice(1) : null;
 }

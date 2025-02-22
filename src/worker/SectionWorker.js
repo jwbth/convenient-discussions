@@ -6,7 +6,7 @@ import { keepSafeValues } from './worker';
  * Section class used in the worker scope.
  */
 export default class SectionWorker extends SectionSkeleton {
-  /** @type {SectionWorker} */
+  /** @type {SectionWorker|undefined} */
   parent;
 
   /** @type {string[]} */
