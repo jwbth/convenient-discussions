@@ -25,13 +25,6 @@ import { copyText, createSvg, getVisibilityByRects, skin$, wrapHtml } from './ut
 import WebpackWorker from './worker/worker-gate';
 
 /**
- * @typedef {object} AddedComments
- * @property {import('./updateChecker').CommentWorkerMatched[]} all
- * @property {import('./updateChecker').CommentWorkerMatched[]} relevant
- * @property {Map<import('./updateChecker').SectionWorkerMatched | null, import('./updateChecker').CommentWorkerMatched[]>} bySection
- */
-
-/**
  * @typedef {object} EventMap
  * @property {[]} boot
  * @property {[event: MouseEvent]} mouseMove
@@ -46,7 +39,6 @@ import WebpackWorker from './worker/worker-gate';
  * @property {[]} startReload
  * @property {[]} reload
  * @property {[]} desktopNotificationClick
- * @property {[addedComments: AddedComments]} addedCommentsUpdate
  */
 
 /**
@@ -2219,7 +2211,7 @@ class Controller extends EventEmitter {
   /**
    * Get the IDs of the comments that should be jumped to after reloading the page.
    *
-   * @returns {?(string[])}
+   * @returns {string[]|null}
    */
   getRelevantAddedCommentIds() {
     return this.relevantAddedCommentIds;

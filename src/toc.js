@@ -608,7 +608,7 @@ export default {
    * Add links to new comments (either already displayed or loaded in the background) to the table
    * of contents.
    *
-   * @param {Map<import('./updateChecker').SectionWorkerMatched | import('./Section').default | null, AtLeastOne<import('./updateChecker').CommentWorkerMatched>>} commentsBySection
+   * @param {import('./updateChecker').AddedComments['bySection']} commentsBySection
    * @param {import('./BootProcess').default} [bootProcess]
    * @private
    */

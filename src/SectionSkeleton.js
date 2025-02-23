@@ -2,7 +2,7 @@ import CdError from './CdError';
 import CommentSkeleton from './CommentSkeleton';
 import TreeWalker from './TreeWalker';
 import cd from './cd';
-import { defined, isHeadingNode, isMetadataNode } from './utils-general';
+import { defined, isElement, isHeadingNode, isMetadataNode, isText } from './utils-general';
 
 /**
  * Class containing the main properties of a section and building it from a heading (we should
@@ -336,9 +336,9 @@ class SectionSkeleton {
 
     this.headline = [...this.headlineElement.childNodes]
       .filter((node) => (
-        node.nodeType === Node.TEXT_NODE ||
+        isText(node) ||
         (
-          node.nodeType === Node.ELEMENT_NODE &&
+          isElement(node) &&
           !(isMetadataNode(node) || classesToFilter.some((name) => node.classList.contains(name)))
         )
       ))

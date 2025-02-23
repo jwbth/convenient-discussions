@@ -675,7 +675,13 @@ class CommentRegistry extends EventEmitter {
         key = comment.parentMatch;
       } else {
         // If there is no section match, use the ancestor sections' section match.
-        for (let s = comment.section; s && !key; s = s.parent) {
+        for (
+          let s = /** @type {import('./updateChecker').SectionWorkerMatched|undefined} */ (
+            comment.section
+          );
+          s && !key;
+          s = s.parent
+        ) {
           key = s.match;
         }
       }

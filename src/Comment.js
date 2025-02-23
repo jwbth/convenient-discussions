@@ -2716,7 +2716,7 @@ class Comment extends CommentSkeleton {
 
     const id = this.dtId || this.id;
     if (pushState && id) {
-      const newState = Object.assign({}, history.state, { cdJumpedToComment: true });
+      const newState = { ...history.state, cdJumpedToComment: true };
       history.pushState(newState, '', `#${id}`);
     }
 
@@ -2739,8 +2739,8 @@ class Comment extends CommentSkeleton {
             notification.close();
           },
           'cd-notification-markThreadAsRead': () => {
-            this.thread.getComments().forEach((c) => {
-              c.isSeen = true;
+            this.thread.getComments().forEach((comment) => {
+              comment.isSeen = true;
             });
             commentRegistry.emit('registerSeen');
             notification.close();
@@ -4458,7 +4458,7 @@ class Comment extends CommentSkeleton {
    * Turn a comment array into an object with sections or their IDs as keys.
    *
    * @param {import('./updateChecker').CommentWorkerMatched[]|Comment[]} comments
-   * @returns {Map<import('./updateChecker').SectionWorkerMatched | import('./Section').default | null, AtLeastOne<import('./updateChecker').CommentWorkerMatched>>}
+   * @returns {import('./updateChecker').AddedComments['bySection']}
    */
   static groupBySection(comments) {
     const map = new Map();

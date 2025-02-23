@@ -17,6 +17,18 @@ import visits from './visits';
 // this.emit(). Move worker-related stuff to controller.
 
 /**
+ * @typedef {object} SectionWorkerExtension
+ * @property {import('./Section').default} [match]
+ * @property {number} [matchScore]
+ * @property {number} [tocLevel]
+ * @property {import('./worker/SectionWorker').default|SectionWorkerMatched} [parent]
+ */
+
+/**
+ * @typedef {RemoveMethods<import('./worker/SectionWorker').default> & SectionWorkerExtension} SectionWorkerMatched
+ */
+
+/**
  * @typedef {object} CommentWorkerExtension
  * @property {import('./userRegistry').User} author
  * @property {SectionWorkerMatched} [section]
@@ -35,18 +47,6 @@ import visits from './visits';
  *   & Omit<RemoveMethods<import('./worker/CommentWorker').default>, 'children' | 'previousComments'>
  *   & CommentWorkerExtension
  * )} CommentWorkerMatched
- */
-
-/**
- * @typedef {object} SectionWorkerExtension
- * @property {import('./Section').default} [match]
- * @property {number} [matchScore]
- * @property {number} [tocLevel]
- * @property {import('./worker/SectionWorker').default|SectionWorkerMatched} [parent]
- */
-
-/**
- * @typedef {RemoveMethods<import('./worker/SectionWorker').default> & SectionWorkerExtension} SectionWorkerMatched
  */
 
 /**

@@ -57,7 +57,7 @@ export default {
   /**
    * "Go to the first unseen comment" button element.
    *
-   * @type {Button}
+   * @type {Button|undefined}
    * @memberof module:navPanel
    * @private
    */
@@ -232,8 +232,10 @@ export default {
    * @private
    */
   unmount() {
+    if (!this.isMounted()) return;
+
     this.$element.remove();
-    this.$element = null;
+    /** @type {{ $element: undefined }} */ (this).$element = undefined;
   },
 
   /**
@@ -241,7 +243,14 @@ export default {
    * {@link module:navPanel.$element}, and for most practical purposes, does the same as the
    * {@link module:pageRegistry.Page#isActive} check.
    *
-   * @returns {boolean}
+   * @returns {this is {
+   *   $element: JQuery;
+   *   refreshButton: Button;
+   *   previousButton: Button;
+   *   nextButton: Button;
+   *   firstUnseenButton: Button;
+   *   commentFormButton: Button;
+   * }}
    */
   isMounted() {
     return Boolean(this.$element);
@@ -254,6 +263,8 @@ export default {
    * @private
    */
   reset() {
+    if (!this.isMounted()) return;
+
     this.updateRefreshButton(0);
     this.previousButton.hide();
     this.nextButton.hide();
@@ -268,6 +279,8 @@ export default {
    * @private
    */
   fill() {
+    if (!this.isMounted()) return;
+
     if (commentRegistry.getAll().some((comment) => comment.isNew)) {
       this.updateRefreshButtonTooltip(0);
       this.previousButton.show();
@@ -279,12 +292,12 @@ export default {
   /**
    * Perform routines at the refresh button click.
    *
-   * @param {boolean} markAsRead Whether to mark all comments as read.
+   * @param {boolean} [markAsRead=false] Whether to mark all comments as read.
    * @private
    */
-  refreshClick(markAsRead) {
+  refreshClick(markAsRead = false) {
     controller.reload({
-      commentIds: controller.getRelevantAddedCommentIds(),
+      commentIds: controller.getRelevantAddedCommentIds() || undefined,
       markAsRead,
     });
   },
@@ -293,7 +306,7 @@ export default {
    * Generic function for {@link module:navPanel.goToPreviousNewComment} and
    * {@link module:navPanel.goToNextNewComment}.
    *
-   * @param {string} direction
+   * @param {'forward' | 'backward' | undefined} direction
    * @private
    */
   goToNewCommentInDirection(direction) {
@@ -312,7 +325,7 @@ export default {
     const comment = candidates.find((comment) => comment.isInViewport() === false) || candidates[0];
     if (comment) {
       comment.scrollTo({
-        flash: null,
+        flash: false,
         callback: () => {
           // The default controller.handleScroll() callback is executed in $#cdScrollTo, but
           // that happens after a 300ms timeout, so we have a chance to have our callback executed
@@ -346,7 +359,7 @@ export default {
     const candidates = commentRegistry.query((comment) => comment.isSeen === false);
     const comment = candidates.find((comment) => comment.isInViewport() === false) || candidates[0];
     comment?.scrollTo({
-      flash: null,
+      flash: false,
       callback: () => {
         // The default controller.handleScroll() callback is executed in $#cdScrollTo, but
         // that happens after a 300ms timeout, so we have a chance to have our callback executed
@@ -368,7 +381,7 @@ export default {
       .map((commentForm) => {
         let top = commentForm.$element[0].getBoundingClientRect().top;
         if (top < 0) {
-          top += $(document).height() * 2;
+          top += /** @type {number} */ ($(document).height()) * 2;
         }
         return { commentForm, top };
       })
@@ -386,6 +399,8 @@ export default {
    * @private
    */
   updateRefreshButton(commentCount, commentsBySection, areThereRelevant = false) {
+    if (!this.isMounted()) return;
+
     $(this.refreshButton.element)
       .empty()
       .append(
@@ -410,10 +425,12 @@ export default {
    * if there are such.
    *
    * @param {number} commentCount
-   * @param {Map} [commentsBySection]
+   * @param {import('./updateChecker').AddedComments['bySection']} [commentsBySection=new Map()]
    * @private
    */
-  updateRefreshButtonTooltip(commentCount, commentsBySection) {
+  updateRefreshButtonTooltip(commentCount, commentsBySection = new Map()) {
+    if (!this.isMounted()) return;
+
     // If the method was not called after a timeout and the timeout exists, clear it.
     clearTimeout(this.utirbtTimeout);
 
@@ -494,7 +511,7 @@ export default {
     const unseenCommentCount = commentRegistry.query((c) => c.isSeen === false).length;
     this.firstUnseenButton
       .toggle(Boolean(unseenCommentCount))
-      .setLabel(unseenCommentCount);
+      .setLabel(String(unseenCommentCount));
   },
 
   /**
@@ -506,8 +523,7 @@ export default {
   updateCommentFormButton() {
     if (!this.isMounted() || controller.isAutoScrolling()) return;
 
-    this.commentFormButton.toggle(
-      commentFormRegistry.getAll().some((cf) => !cf.$element.cdIsInViewport(true))
-    );
+    this.commentFormButton
+      .toggle(commentFormRegistry.getAll().some((cf) => !cf.$element.cdIsInViewport(true)));
   },
 };
