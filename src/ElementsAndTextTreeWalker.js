@@ -7,9 +7,6 @@ import { isElement, isText } from './utils-general';
  * @augments TreeWalker<ElementLike|TextLike>
  */
 class ElementsAndTextTreeWalker extends TreeWalker {
-  /** @type {ElementLike|TextLike} */
-  currentNode;
-
   /**
    * Create an elements and text {@link TreeWalker tree walker}.
    *
@@ -17,10 +14,7 @@ class ElementsAndTextTreeWalker extends TreeWalker {
    * @param {ElementLike|TextLike} [startNode]
    */
   constructor(root, startNode) {
-    super(root, (node) => isText(node) || isElement(node));
-    if (startNode) {
-      this.currentNode = startNode;
-    }
+    super(root, (node) => isText(node) || isElement(node), false, startNode);
   }
 }
 

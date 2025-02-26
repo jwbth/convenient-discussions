@@ -482,8 +482,20 @@ export function createCopyTextField({ label, value, disabled = false, help, copy
 export function es6ClassToOoJsClass(TargetClass) {
   const OriginClass = Object.getPrototypeOf(TargetClass);
   TargetClass.parent = TargetClass.super = OriginClass;
-
   OO.initClass(OriginClass);
+
+  Object.getOwnPropertyNames(OriginClass.prototype)
+    .filter((name) => name !== 'constructor')
+    .forEach((name) => {
+      Object.defineProperty(
+        TargetClass.prototype,
+        name,
+        /** @type {PropertyDescriptor} */ (
+          Object.getOwnPropertyDescriptor(OriginClass.prototype, name)
+        )
+      );
+    });
+
   TargetClass.static = Object.create(OriginClass.static);
   Object.keys(TargetClass)
     .filter((key) => !['parent', 'super', 'static'].includes(key))
@@ -532,7 +544,7 @@ export function mixInObject(obj, Mixin) {
   const dummy = () => {};
   dummy.prototype = /** @type {InstanceType<TMixin>} */ ({});
   OO.mixinClass(dummy, Mixin);
-  Object.assign(obj, new Mixin());
+  Object.assign(obj, dummy.prototype, new Mixin());
 
   return /** @type {TBase & InstanceType<TMixin>} */ (obj);
 }
@@ -750,3 +762,5 @@ export class EventEmitter extends OO.EventEmitter {
     return super.disconnect(context, methods);
   }
 }
+
+es6ClassToOoJsClass(EventEmitter);

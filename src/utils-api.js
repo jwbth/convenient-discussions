@@ -121,8 +121,8 @@ export function splitIntoBatches(arr) {
   try {
     currentUserRights = cd.user.getRights();
   } catch {
-    // Can throw a error when cd.g.phpCharToUpper is undefined, because it's set when the modules
-    // are ready.
+    // Can throw a error when cd.user or cd.g.phpCharToUpper is undefined, because they're set when
+    // the modules are ready.
   }
   const limit = (
     currentUserRights ?
@@ -134,10 +134,12 @@ export function splitIntoBatches(arr) {
   ) ?
     500 :
     50;
+
   return arr.reduce((result, item, index) => {
     const chunkIndex = Math.floor(index / limit);
     result[chunkIndex] ||= [];
     result[chunkIndex].push(item);
+
     return result;
   }, []);
 }
