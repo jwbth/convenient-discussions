@@ -22,11 +22,6 @@ class StorageItemWithKeys extends StorageItem {
    */
   constructor(key) {
     super(key);
-
-    // This is a no-op for type checking (this.data is set in the parent constructor).
-    /** @type {EntryTypeByKey<EntryType>} */
-    // eslint-disable-next-line no-self-assign
-    this.data = this.data;
   }
 
   /**

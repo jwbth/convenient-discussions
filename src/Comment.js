@@ -377,9 +377,10 @@ class Comment extends CommentSkeleton {
    * Create a comment object.
    *
    * @param {import('./Parser').default} parser
-   * @param {import('./Parser').SignatureTarget} signature Signature object returned by {@link Parser#findSignatures}.
-   * @param {import('./Parser').Target[]} targets Sorted target objects returned by  {@link Parser#findSignatures} +
-   *   {@link Parser#findHeadings}.
+   * @param {import('./Parser').SignatureTarget} signature Signature object returned by
+   *   {@link Parser#findSignatures}.
+   * @param {import('./Parser').Target[]} targets Sorted target objects returned by
+   *   {@link Parser#findSignatures} + {@link Parser#findHeadings}.
    */
   constructor(parser, signature, targets) {
     super(parser, signature, targets);
