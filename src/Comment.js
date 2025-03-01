@@ -371,8 +371,8 @@ class Comment extends CommentSkeleton {
      * @type {HTMLElement}
      * @see CommentSkeleton#signatureElement
      */
-   // @ts-ignore
-   this.signatureElement;
+    // @ts-ignore
+    this.signatureElement;
 
     /**
      * @type {HTMLElement}
@@ -429,7 +429,6 @@ class Comment extends CommentSkeleton {
      *
      * @type {JQuery}
      */
-    // @ts-ignore
     this.$signature = $(this.signatureElement);
 
     /**

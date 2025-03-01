@@ -29,18 +29,6 @@ class Section extends SectionSkeleton {
 
   /**
    * @type {HTMLElement}
-   * @protected
-   */
-  hElement;
-
-  /**
-   * @type {HTMLElement}
-   * @protected
-   */
-  headlineElement;
-
-  /**
-   * @type {HTMLElement}
    */
   headingElement;
 
@@ -170,6 +158,22 @@ class Section extends SectionSkeleton {
    */
   constructor(parser, heading, targets, subscriptions) {
     super(parser, heading, targets);
+
+    /**
+     * @type {HTMLElement}
+     * @protected
+     * @see SectionSkeleton#hElement
+     */
+    // @ts-ignore
+    this.hElement;
+
+    /**
+     * @type {HTMLElement}
+     * @protected
+     * @see SectionSkeleton#headlineElement
+     */
+    // @ts-ignore
+    this.headlineElement;
 
     this.subscriptions = subscriptions;
 

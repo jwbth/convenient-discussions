@@ -60,9 +60,6 @@ class CommentSkeleton {
     logicalLevel: undefined,
   };
 
-  /** @type {ElementLike} */
-  signatureElement;
-
   /**
    * Create a comment skeleton instance.
    *
