@@ -1,3 +1,4 @@
+/* eslint-disable no-self-assign */
 import Button from './Button';
 import CdError from './CdError';
 import CommentButton from './CommentButton';
@@ -77,24 +78,6 @@ class Comment extends CommentSkeleton {
   /** @type {Reformatted} */
   reformatted;
 
-  /** @type {HTMLElement} */
-  signatureElement;
-
-  /** @type {HTMLElement} */
-  timestampElement;
-
-  /** @type {HTMLAnchorElement} */
-  authorLink;
-
-  /** @type {HTMLAnchorElement} */
-  authorTalkLink;
-
-  /** @type {HTMLElement[]} */
-  elements;
-
-  /** @type {HTMLElement[]} */
-  highlightables;
-
   /** @type {Direction} */
   direction;
 
@@ -113,13 +96,11 @@ class Comment extends CommentSkeleton {
 
   /**
    * @type {HTMLElementIfReformatted}
-   * @private
    */
   headerElement;
 
   /**
    * @type {HTMLElementIfReformatted}
-   * @private
    */
   menuElement;
 
@@ -385,6 +366,50 @@ class Comment extends CommentSkeleton {
   constructor(parser, signature, targets) {
     super(parser, signature, targets);
 
+    // These are no-op workarounds to refine the type of overriden props of the parent class.
+    /**
+     * @type {HTMLElement}
+     * @see CommentSkeleton#signatureElement
+     */
+   // @ts-ignore
+   this.signatureElement;
+
+    /**
+     * @type {HTMLElement}
+     * @see CommentSkeleton#timestampElement
+     */
+    // @ts-ignore
+    this.timestampElement;
+
+    /**
+     * @type {HTMLAnchorElement}
+     * @see CommentSkeleton#authorLink
+     */
+    // @ts-ignore
+    this.authorLink;
+
+    /**
+     * @type {HTMLAnchorElement}
+     * @see CommentSkeleton#authorTalkLink
+     */
+    // @ts-ignore
+    this.authorTalkLink;
+
+    /**
+     * @type {HTMLElement[]}
+     * @see CommentSkeleton#elements
+     */
+    // @ts-ignore
+    this.elements;
+
+    /**
+     * @type {HTMLElement[]}
+     * @see CommentSkeleton#highlightables
+     */
+    // @ts-ignore
+    this.highlightables;
+
+
     this.reformatted = /** @type {Reformatted} */ (settings.get('reformatComments') || false);
     this.showContribsLink = settings.get('showContribsLink');
     this.hideTimezone = settings.get('hideTimezone');
@@ -404,6 +429,7 @@ class Comment extends CommentSkeleton {
      *
      * @type {JQuery}
      */
+    // @ts-ignore
     this.$signature = $(this.signatureElement);
 
     /**
@@ -420,6 +446,7 @@ class Comment extends CommentSkeleton {
 
     this.isEditable = this.isActionable && (this.isOwn || settings.get('allowEditOthersComments'));
 
+    // @ts-ignore
     this.highlightables.forEach(this.bindEvents.bind(this));
 
     this.updateMarginHighlightable();
@@ -450,6 +477,7 @@ class Comment extends CommentSkeleton {
        *
        * @type {?ListType}
        */
+      // @ts-ignore
       this.containerListType = getContainerListType(this.highlightables[0]);
 
       this.mhContainerListType = getContainerListType(this.marginHighlightable);
@@ -548,6 +576,7 @@ class Comment extends CommentSkeleton {
    *
    * @private
    */
+  // @ts-ignore
   cleanUpSignature() {
     let previousNode = this.signatureElement.previousSibling;
 
@@ -595,6 +624,7 @@ class Comment extends CommentSkeleton {
    *
    * @private
    */
+  // @ts-ignore
   rewrapHighlightables() {
     [this.highlightables[0], this.highlightables[this.highlightables.length - 1]]
       .filter(unique)
@@ -1237,6 +1267,7 @@ class Comment extends CommentSkeleton {
    *
    * @private
    */
+  // @ts-ignore
   toggleChildThreadsButtonClick() {
     this.toggleChildThreads();
   }
@@ -2283,6 +2314,7 @@ class Comment extends CommentSkeleton {
     let cleanDiffBody = '';
     $(wrapDiffBody(body))
       .find('tr')
+      // @ts-ignore
       .each((i, tr) => {
         const $tr = $(tr);
         const $lineNumbers = $tr.children('.diff-lineno');
@@ -2638,6 +2670,7 @@ class Comment extends CommentSkeleton {
       newComment.elementHtmls.forEach((html, i) => {
         html = html.replace(
           /\x01(\d+)_\w+\x02/g,
+          // @ts-ignore
           (s, num) => newComment.hiddenElementsData[num - 1].html
         );
         if (
@@ -2661,6 +2694,7 @@ class Comment extends CommentSkeleton {
           }
         }
       });
+      // @ts-ignore
       this.$elements.find('.autonumber').each((i, el) => {
         $(el).text(`[${currentAutonumber}]`);
         currentAutonumber++;
