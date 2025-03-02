@@ -19,7 +19,7 @@ import settings from './settings';
 import toc from './toc';
 import updateChecker from './updateChecker';
 import { getUserInfo } from './utils-api';
-import { defined, definedAndNotNull, getLastArrayElementOrSelf, getQueryParamBooleanValue, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
+import { defined, definedAndNotNull, getLastArrayElementOrSelf, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
 import { EventEmitter } from './utils-oojs';
 import { copyText, createSvg, getVisibilityByRects, skin$, wrapHtml } from './utils-window';
 import WebpackWorker from './worker/worker-gate';
@@ -270,47 +270,7 @@ class Controller extends EventEmitter {
       $(document.body).addClass('cd-mobile');
     }
 
-    // Not constants: go() may run a second time, see app~maybeAddFooterSwitcher().
-    const isEnabledInQuery = getQueryParamBooleanValue('cdtalkpage') === true;
-    const isDisabledInQuery = getQueryParamBooleanValue('cdtalkpage') === false;
-
-    // See .isDefinitelyTalkPage()
-    this.definitelyTalkPage = Boolean(
-      isEnabledInQuery ||
-
-      // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
-      // the list of supported namespaces and page white/black list in the configuration. With this
-      // method, there won't be "comment" links for edits on pages that list revisions such as the
-      // watchlist.
-      this.$content.find('.cd-talkPage').length ||
-
-      (
-        ($('#ca-addsection').length || cd.g.pageWhitelistRegexp?.test(cd.g.pageName)) &&
-        !cd.g.pageBlacklistRegexp?.test(cd.g.pageName)
-      )
-    );
-
-    // See .isArticlePageTalkPage()
-    this.articlePageTalkPage = (
-      (!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
-      !this.$content.find('.cd-notTalkPage').length &&
-      (isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber) || this.definitelyTalkPage) &&
-
-      // Undocumented setting
-      !window.cdOnlyRunByFooterLink
-    );
-
-    // See .isDiffPage()
-    this.diffPage = /[?&]diff=[^&]/.test(location.search);
-
-    this.talkPage = Boolean(
-      mw.config.get('wgIsArticle') &&
-      !isDisabledInQuery &&
-      (isEnabledInQuery || this.articlePageTalkPage)
-    );
-
-    this.bootOnTalkPage();
-    this.bootOnCommentLinksPage();
+    init.initController();
   }
 
   /**
@@ -2251,7 +2211,7 @@ class Controller extends EventEmitter {
    * Type guard for the {@link DtSubscriptions} class.
    *
    * @param {object} obj
-   * @returns {obj is DtSubscriptions}
+   * @returns {obj is import('./DtSubscriptions').default}
    */
   isDtSubscriptions(obj) {
     // Use `require()`, not `import` to avoid a circular reference
@@ -2262,7 +2222,7 @@ class Controller extends EventEmitter {
    * Type guard for the {@link LegacySubscriptions} class.
    *
    * @param {object} obj
-   * @returns {obj is LegacySubscriptions}
+   * @returns {obj is import('./LegacySubscriptions').default}
    */
   isLegacySubscriptions(obj) {
     // Use `require()`, not `import` to avoid a circular reference
