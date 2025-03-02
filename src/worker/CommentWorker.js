@@ -1,3 +1,4 @@
+/* eslint-disable no-self-assign */
 import { isText } from 'domhandler';
 
 import CommentSkeleton from '../CommentSkeleton';
@@ -9,9 +10,6 @@ import { keepSafeValues } from './worker';
  * Comment class used in the worker scope.
  */
 export default class CommentWorker extends CommentSkeleton {
-  /** @type {import('domhandler').Element[]} */
-  elements;
-
   /**
    * @typedef {object} HiddenElementData
    * @property {string} type
@@ -57,6 +55,21 @@ export default class CommentWorker extends CommentSkeleton {
 
   /** @type {?import('./SectionWorker').default} */
   section;
+
+  /**
+   * Create a comment worker instance.
+   *
+   * @param {import('../Parser').default} parser
+   * @param {import('../Parser').SignatureTarget} signature Signature object returned by
+   *   {@link Parser#findSignatures}.
+   * @param {import('../Parser').Target[]} targets
+   * @throws {CdError}
+   */
+  constructor(parser, signature, targets) {
+    super(parser, signature, targets);
+
+    this.elements = /** @type {import('domhandler').Element[]} */ (this.elements);
+  }
 
   /**
    * Remove unnecessary content, hide dynamic content in a comment.

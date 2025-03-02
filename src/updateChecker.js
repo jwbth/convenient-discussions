@@ -399,13 +399,16 @@ class UpdateChecker extends EventEmitter {
   }
 
   /**
-   * Check if comment instances received from a web worker was previously enriched by this class.
+   * Check if comment instances received from a web worker were previously enriched by this class.
    *
    * @param {import('./worker/CommentWorker').default[] | CommentWorkerMatched[]} comments
    * @returns {comments is CommentWorkerMatched[]}
    */
   areCommentsEnriched(comments) {
-    return 'match' in comments[0] || 'hasPoorMatch' in comments[0] || 'parentMatch' in comments[0];
+    return Boolean(
+      comments.length &&
+      ('match' in comments[0] || 'hasPoorMatch' in comments[0] || 'parentMatch' in comments[0])
+    );
   }
 
   /**

@@ -86,17 +86,16 @@ class SectionSkeleton {
      * Heading element (`.mw-heading` or `<h1>` - `<h6>`).
      *
      * @type {ElementLike}
-     * @protected
      */
     this.headingElement = heading.element;
 
     const returnNodeIfHNode = (/** @type {?ElementLike} */ node) =>
       node && isHeadingNode(node, true) ? node : null;
 
+
     /**
-     * `H1...6` element.
+     * `<hN>` element of the section (`<h1>`-`<h6>`).
      *
-     * @type {ElementLike}
      * @protected
      */
     this.hElement = (

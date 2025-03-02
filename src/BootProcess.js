@@ -1,4 +1,3 @@
-import CdError from './CdError';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
 import CommentFormInputTransformer from './CommentFormInputTransformer';
@@ -481,9 +480,7 @@ class BootProcess {
           try {
             commentRegistry.add(this.parser.createComment(signature, this.targets));
           } catch (e) {
-            if (!(e instanceof CdError)) {
-              console.error(e);
-            }
+            console.error(e);
           }
         });
 
@@ -515,9 +512,7 @@ class BootProcess {
         try {
           sectionRegistry.add(this.parser.createSection(heading, this.targets, this.subscriptions));
         } catch (e) {
-          if (!(e instanceof CdError)) {
-            console.error(e);
-          }
+          console.error(e);
         }
       });
 

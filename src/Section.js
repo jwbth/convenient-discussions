@@ -1,3 +1,4 @@
+/* eslint-disable no-self-assign */
 import Button from './Button';
 import CdError from './CdError';
 import Comment from './Comment';
@@ -26,17 +27,6 @@ import { getRangeContents } from './utils-window';
 class Section extends SectionSkeleton {
   /** @readonly */
   TYPE = 'section';
-
-  /**
-   * @type {HTMLElement}
-   */
-  headingElement;
-
-  /** @type {HTMLElement} */
-  lastElement;
-
-  /** @type {HTMLElement} */
-  lastElementInFirstChunk;
 
   /**
    * User for polymorphism with Comment.
@@ -82,15 +72,6 @@ class Section extends SectionSkeleton {
    */
   elements;
 
-  /** @type {import('./Comment').default[]} */
-  commentsInFirstChunk;
-
-  /** @type {?import('./Comment').default} */
-  oldestComment;
-
-  /** @type {import('./Comment').default[]} */
-  comments;
-
   /**
    * When checking for updates, this has the match of the section to the section analyzed in the
    * worker scope.
@@ -106,12 +87,6 @@ class Section extends SectionSkeleton {
    * @type {number|undefined}
    */
   matchScore;
-
-  /**
-   * @inheritdoc
-   * @type {?string}
-   */
-  sourcePageName;
 
   /**
    * Section's source code object.
@@ -159,21 +134,43 @@ class Section extends SectionSkeleton {
   constructor(parser, heading, targets, subscriptions) {
     super(parser, heading, targets);
 
+    // These are no-op workarounds to refine the type of overriden props of the parent class.
     /**
-     * @type {HTMLElement}
+     * @see SectionSkeleton#commentsInFirstChunk
+     */
+    this.commentsInFirstChunk = /** @type {import('./Comment').default[]} */ (this.commentsInFirstChunk);
+    /**
+     * @see SectionSkeleton#lastElement
+     */
+    this.lastElement = /** @type {HTMLElement} */ (this.lastElement);
+    /**
+     * @see SectionSkeleton#lastElementInFirstChunk
+     */
+    this.lastElementInFirstChunk = /** @type {HTMLElement} */ (this.lastElementInFirstChunk);
+    /**
+     * @see SectionSkeleton#comments
+     */
+    this.comments = /** @type {import('./Comment').default[]} */ (this.comments);
+    /**
+     * @see SectionSkeleton#oldestComment
+     */
+    this.oldestComment = /** @type {?import('./Comment').default} */ (this.oldestComment);
+    /**
+     * @see SectionSkeleton#headingElement
+     */
+    this.headingElement = /** @type {HTMLElement} */ (this.headingElement);
+
+    /**
      * @protected
      * @see SectionSkeleton#hElement
      */
-    // @ts-ignore
-    this.hElement;
+    this.hElement = /** @type {HTMLElement} */ (this.hElement);
 
     /**
-     * @type {HTMLElement}
      * @protected
      * @see SectionSkeleton#headlineElement
      */
-    // @ts-ignore
-    this.headlineElement;
+    this.headlineElement = /** @type {HTMLElement} */ (this.headlineElement);
 
     this.subscriptions = subscriptions;
 

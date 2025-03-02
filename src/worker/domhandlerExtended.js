@@ -82,11 +82,10 @@ Node.prototype.follows = function (node) {
 
 Object.defineProperty(Node.prototype, 'textContent', {
   /**
-   * @this {Node}
-   * @returns {string}
+   * @returns {''}
    */
   get() {
-    return this instanceof DataNode ? decodeHtmlEntities(this.data) : '';
+    return '';
   },
 });
 
@@ -101,6 +100,13 @@ Object.defineProperty(Node.prototype, 'parentElement', {
 });
 
 Object.defineProperty(DataNode.prototype, 'textContent', {
+  /**
+   * @returns {string}
+   */
+  get() {
+    return decodeHtmlEntities(this.data);
+  },
+
   /**
    * @this {DataNode}
    * @param {string} value

@@ -367,48 +367,21 @@ class Comment extends CommentSkeleton {
     super(parser, signature, targets);
 
     // These are no-op workarounds to refine the type of overriden props of the parent class.
-    /**
-     * @type {HTMLElement}
-     * @see CommentSkeleton#signatureElement
-     */
-    // @ts-ignore
-    this.signatureElement;
+    /** @see CommentSkeleton#signatureElement */
+    this.signatureElement = /** @type {HTMLElement} */ (this.signatureElement);
+    /** @see CommentSkeleton#timestampElement */
+    this.timestampElement = /** @type {HTMLElement} */ (this.timestampElement);
+    /** @see CommentSkeleton#authorLink */
+    this.authorLink = /** @type {HTMLAnchorElement} */ (this.authorLink);
+    /** @see CommentSkeleton#authorTalkLink */
+    this.authorTalkLink = /** @type {HTMLAnchorElement} */ (this.authorTalkLink);
+    /** @see CommentSkeleton#elements */
+    this.elements = /** @type {HTMLElement[]} */ (this.elements);
 
     /**
-     * @type {HTMLElement}
-     * @see CommentSkeleton#timestampElement
-     */
-    // @ts-ignore
-    this.timestampElement;
-
-    /**
-     * @type {HTMLAnchorElement}
-     * @see CommentSkeleton#authorLink
-     */
-    // @ts-ignore
-    this.authorLink;
-
-    /**
-     * @type {HTMLAnchorElement}
-     * @see CommentSkeleton#authorTalkLink
-     */
-    // @ts-ignore
-    this.authorTalkLink;
-
-    /**
-     * @type {HTMLElement[]}
-     * @see CommentSkeleton#elements
-     */
-    // @ts-ignore
-    this.elements;
-
-    /**
-     * @type {HTMLElement[]}
      * @see CommentSkeleton#highlightables
      */
-    // @ts-ignore
-    this.highlightables;
-
+    this.highlightables = /** @type {HTMLElement[]} */ (this.highlightables);
 
     this.reformatted = /** @type {Reformatted} */ (settings.get('reformatComments') || false);
     this.showContribsLink = settings.get('showContribsLink');

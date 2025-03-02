@@ -33,7 +33,7 @@ class PrototypeRegistry {
    * @returns {HTMLElement}
    */
   get(id) {
-    return this.elements[id].cloneNode(true) || this.widgets[id]().$element[0];
+    return id in this.elements ? this.elements[id].cloneNode(true) : this.widgets[id]().$element[0];
   }
 
   /**
