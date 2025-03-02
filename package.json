@@ -33,8 +33,7 @@
     "dayjs": "^1.10.5",
     "htmlparser2": "^6.1.0",
     "locutus": "^2.0.15",
-    "lz-string": "^1.4.4",
-    "oojs": "^7.0.1"
+    "lz-string": "^1.4.4"
   },
   "devDependencies": {
     "@babel/core": "^7.13.15",

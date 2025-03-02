@@ -75,6 +75,36 @@ class Comment extends CommentSkeleton {
   /** @readonly */
   TYPE = 'comment';
 
+  /**
+   * @override
+   * @type {HTMLElement}
+   */
+  signatureElement = this.signatureElement;
+
+  /**
+   * @override
+   * @type {HTMLElement}
+   */
+  timestampElement = this.timestampElement;
+
+  /**
+   * @override
+   * @type {HTMLAnchorElement}
+   */
+  authorLink = this.authorLink;
+
+  /**
+   * @override
+   * @type {HTMLAnchorElement}
+   */
+  authorTalkLink = this.authorTalkLink;
+
+  /**
+   * @override
+   * @type {HTMLElement[]}
+   */
+  elements = this.elements;
+
   /** @type {Reformatted} */
   reformatted;
 
@@ -365,18 +395,6 @@ class Comment extends CommentSkeleton {
    */
   constructor(parser, signature, targets) {
     super(parser, signature, targets);
-
-    // These are no-op workarounds to refine the type of overriden props of the parent class.
-    /** @see CommentSkeleton#signatureElement */
-    this.signatureElement = /** @type {HTMLElement} */ (this.signatureElement);
-    /** @see CommentSkeleton#timestampElement */
-    this.timestampElement = /** @type {HTMLElement} */ (this.timestampElement);
-    /** @see CommentSkeleton#authorLink */
-    this.authorLink = /** @type {HTMLAnchorElement} */ (this.authorLink);
-    /** @see CommentSkeleton#authorTalkLink */
-    this.authorTalkLink = /** @type {HTMLAnchorElement} */ (this.authorTalkLink);
-    /** @see CommentSkeleton#elements */
-    this.elements = /** @type {HTMLElement[]} */ (this.elements);
 
     /**
      * @see CommentSkeleton#highlightables
