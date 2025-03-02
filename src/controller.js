@@ -384,19 +384,19 @@ class Controller extends EventEmitter {
       modulesRequest = mw.loader.using(modules);
     }
 
-    this.showLoadingOverlay();
+    init.showLoadingOverlay();
     Promise.all([modulesRequest, ...siteDataRequests]).then(
       () => this.tryExecuteBootProcess(false),
       (error) => {
         mw.notify(cd.s('error-loaddata'), { type: 'error' });
         console.error(error);
-        this.hideLoadingOverlay();
+        init.hideLoadingOverlay();
       }
     );
 
     sleep(15000).then(() => {
       if (this.booting) {
-        this.hideLoadingOverlay();
+        init.hideLoadingOverlay();
         console.warn('The loading overlay stays for more than 15 seconds; removing it.');
       }
     });
@@ -420,24 +420,6 @@ class Controller extends EventEmitter {
      */
     init.memorizeCssValues();
     init.addTalkPageCss();
-  }
-
-  /**
-   * @class Api
-   * @memberof mw
-   * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Api
-   */
-
-  /**
-   * Get a
-   * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Api mw.Api} instance.
-   *
-   * @returns {mw.Api}
-   */
-  getApi() {
-    this.api ||= new mw.Api(cd.getApiConfig());
-
-    return this.api;
   }
 
   /**
@@ -508,7 +490,7 @@ class Controller extends EventEmitter {
     } catch (error) {
       mw.notify(cd.s('error-processpage'), { type: 'error' });
       console.error(error);
-      this.hideLoadingOverlay();
+      init.hideLoadingOverlay();
     }
 
     this.booting = false;
@@ -1144,7 +1126,7 @@ class Controller extends EventEmitter {
    * @param {MouseEvent} event
    */
   handleMouseMove(event) {
-    if (this.mouseMoveBlocked || this.isAutoScrolling() || this.isPageOverlayOn()) return;
+    if (this.mouseMoveBlocked || this.isAutoScrolling() || init.isPageOverlayOn()) return;
 
     // Don't throttle. Without throttling, performance is generally OK, while the "frame rate" is
     // about 50 (so, the reaction time is about 20ms). Lower values would be less comfortable.
@@ -1219,7 +1201,7 @@ class Controller extends EventEmitter {
    * @private
    */
   handleGlobalKeyDown(event) {
-    if (this.isPageOverlayOn()) return;
+    if (init.isPageOverlayOn()) return;
 
     this.emit('keyDown', event);
   }
@@ -1525,7 +1507,7 @@ class Controller extends EventEmitter {
     debug.startTimer('total time');
     debug.startTimer('get HTML');
 
-    this.showLoadingOverlay();
+    init.showLoadingOverlay();
 
     // Save time by requesting the options in advance. This also resets the cache since the `reuse`
     // argument is `false`.
@@ -1536,7 +1518,7 @@ class Controller extends EventEmitter {
     try {
       bootProcess.passedData.parseData = await cd.page.parse(undefined, false, true);
     } catch (error) {
-      this.hideLoadingOverlay();
+      init.hideLoadingOverlay();
       if (bootProcess.passedData.submittedCommentForm) {
         throw error;
       } else {
@@ -1771,7 +1753,7 @@ class Controller extends EventEmitter {
    * Show an edit subscriptions dialog.
    */
   showEditSubscriptionsDialog() {
-    if (this.isPageOverlayOn()) return;
+    if (init.isPageOverlayOn()) return;
 
     const dialog = new (require('./EditSubscriptionsDialog').default)();
     this.getWindowManager().addWindows([dialog]);
@@ -1785,7 +1767,7 @@ class Controller extends EventEmitter {
    * @param {MouseEvent | KeyboardEvent} event
    */
   showCopyLinkDialog(object, event) {
-    if (this.isPageOverlayOn()) return;
+    if (init.isPageOverlayOn()) return;
 
     event.preventDefault();
 

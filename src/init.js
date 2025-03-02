@@ -1,12 +1,3 @@
-/**
- * Singleton for initializing the script, both on talk pages and on log pages such as the watchlist.
- * Includes setting constants as properties of the {@link convenientDiscussions.g} object, adding
- * CSS, loading site data, such as MediaWiki messages and configuration, and setting date formats
- * based on it.
- *
- * @module init
- */
-
 import dateFormats from '../data/dateFormats.json';
 import digitsData from '../data/digits.json';
 import languageFallbacks from '../data/languageFallbacks.json';
@@ -33,548 +24,396 @@ import { createSvg, skin$, transparentize } from './utils-window';
 import visits from './visits';
 
 /**
- * Set the global variables related to date format.
+ * Singleton for initializing the script (and, partly, reloading the page), both on talk pages and
+ * on log pages such as the watchlist. The important detail about this module is that it is imported
+ * when modules such as OOUI are not yet available.
  *
- * @private
+ * Methods of the class set constants as properties of the {@link convenientDiscussions.g} object,
+ * add CSS, load site data, such as MediaWiki messages and configuration, and set date formats based
+ * on it.
  */
-function initFormats() {
-  const getFallbackLanguage = (lang) => (
-    (languageFallbacks[lang] || ['en']).find((fallback) => dateFormats[fallback])
-  );
-  const languageOrFallback = (lang) => dateFormats[lang] ? lang : getFallbackLanguage(lang);
-
-  const contentLanguage = languageOrFallback(mw.config.get('wgContentLanguage'));
-  const userLanguage = languageOrFallback(mw.config.get('wgUserLanguage'));
-
-  cd.g.contentDateFormat = dateFormats[contentLanguage];
-  cd.g.uiDateFormat = dateFormats[userLanguage];
-  cd.g.contentDigits = mw.config.get('wgTranslateNumerals') ? digitsData[contentLanguage] : null;
-  cd.g.uiDigits = mw.config.get('wgTranslateNumerals') ? digitsData[userLanguage] : null;
-}
 
 /**
- * Get date tokens used in a format (to load only needed tokens).
- *
- * @param {string} format
- * @returns {string[]}
- * @private
- * @author Bartosz Dziewoński <matma.rex@gmail.com>
- * @license MIT
+ * Class for initializing the script, both on talk pages and on log pages such as the watchlist.
+ * Includes setting constants as properties of the {@link convenientDiscussions.g} object, adding
+ * CSS, loading site data, such as MediaWiki messages and configuration, and setting date formats
+ * based on it.
  */
-function getUsedDateTokens(format) {
-  const tokens = [];
+class Init {
+  /** @type {JQuery} */
+  $content;
 
-  for (let p = 0; p < format.length; p++) {
-    let code = format[p];
-    if ((code === 'x' && p < format.length - 1) || (code === 'xk' && p < format.length - 1)) {
-      code += format[++p];
-    }
+  /** @type {JQuery} */
+  $contentColumn;
 
-    if (['xg', 'D', 'l', 'F', 'M'].includes(code)) {
-      tokens.push(code);
-    } else if (code === '\\' && p < format.length - 1) {
-      ++p;
-    }
-  }
+  /** @type {JQuery} */
+  $loadingPopup;
 
-  return tokens;
-}
+  /** @type {BootProcess} */
+  bootProcess;
 
-/**
- * Load messages needed to parse and generate timestamps as well as some site data.
- *
- * @returns {JQuery.Promise[]} There should be at least one promise in the array.
- * @private
- */
-function loadSiteData() {
-  initFormats();
+  /** @type {boolean} */
+  definitelyTalkPage;
 
-  const contentDateTokensMessageNames = getUsedDateTokens(cd.g.contentDateFormat)
-    .map((pattern) => dateTokenToMessageNames[pattern]);
-  const contentLanguageMessageNames = [
-    'word-separator', 'comma-separator', 'colon-separator', 'timezone-utc'
-  ].concat(...contentDateTokensMessageNames);
+  /** @type {boolean} */
+  articlePageTalkPage;
 
-  const uiDateTokensMessageNames = getUsedDateTokens(cd.g.uiDateFormat)
-    .map((pattern) => dateTokenToMessageNames[pattern]);
-  const userLanguageMessageNames = [
-    'parentheses', 'parentheses-start', 'parentheses-end', 'word-separator', 'comma-separator',
-    'colon-separator', 'nextdiff', 'timezone-utc', 'pagetitle',
-  ]
-    .concat(
-      mw.loader.getState('ext.discussionTools.init') ?
-        [
-          'discussiontools-topicsubscription-button-subscribe',
-          'discussiontools-topicsubscription-button-subscribe-tooltip',
-          'discussiontools-topicsubscription-button-unsubscribe',
-          'discussiontools-topicsubscription-button-unsubscribe-tooltip',
-          'discussiontools-topicsubscription-notify-subscribed-title',
-          'discussiontools-topicsubscription-notify-subscribed-body',
-          'discussiontools-topicsubscription-notify-unsubscribed-title',
-          'discussiontools-topicsubscription-notify-unsubscribed-body',
-          'discussiontools-newtopicssubscription-button-subscribe-label',
-          'discussiontools-newtopicssubscription-button-subscribe-tooltip',
-          'discussiontools-newtopicssubscription-button-unsubscribe-label',
-          'discussiontools-newtopicssubscription-button-unsubscribe-tooltip',
-          'discussiontools-newtopicssubscription-notify-subscribed-title',
-          'discussiontools-newtopicssubscription-notify-subscribed-body',
-          'discussiontools-newtopicssubscription-notify-unsubscribed-title',
-          'discussiontools-newtopicssubscription-notify-unsubscribed-body',
-        ] :
-        []
-    )
-    .concat(
-      mw.loader.getState('ext.visualEditor.core') ?
-        ['visualeditor-educationpopup-dismiss'] :
-        []
-    )
-    .concat(...uiDateTokensMessageNames);
+  /** @type {boolean} */
+  diffPage;
 
-  const areLanguagesEqual = mw.config.get('wgContentLanguage') === mw.config.get('wgUserLanguage');
-  if (areLanguagesEqual) {
-    const userLanguageConfigMessages = {};
-    Object.keys(cd.config.messages)
-      .filter((name) => userLanguageMessageNames.includes(name))
-      .forEach((name) => {
-        userLanguageConfigMessages[name] = cd.config.messages[name];
-      });
-    mw.messages.set(userLanguageConfigMessages);
-  }
+  /** @type {boolean} */
+  talkPage;
 
-  // We need this object to pass it to the web worker.
-  cd.g.contentLanguageMessages = {};
+  /** @type {Array<Promise|JQuery.Promise>} */
+  siteDataRequests;
 
-  const setContentLanguageMessages = (/** @type {StringsByKey} */ messages) => {
-    Object.keys(messages).forEach((name) => {
-      mw.messages.set('(content)' + name, messages[name]);
-      cd.g.contentLanguageMessages[name] = messages[name];
-    });
-  };
-
-  const filterAndSetContentLanguageMessages = (/** @type {StringsByKey} */ messages) => {
-    const contentLanguageMessages = /** @type {StringsByKey} */ ({});
-    Object.keys(messages)
-      .filter((name) => contentLanguageMessageNames.includes(name))
-      .forEach((name) => {
-        contentLanguageMessages[name] = messages[name];
-      });
-    setContentLanguageMessages(contentLanguageMessages);
-  };
-  filterAndSetContentLanguageMessages(cd.config.messages);
-
-  // I hope we won't be scolded too much for making two message requests in parallel (if the user
-  // and content language are different).
-  const requests = [];
-  if (areLanguagesEqual) {
-    const messagesToRequest = contentLanguageMessageNames
-      .concat(userLanguageMessageNames)
-      .filter(unique);
-    for (const nextNames of splitIntoBatches(messagesToRequest)) {
-      const request = controller.getApi().loadMessagesIfMissing(nextNames).then(() => {
-        filterAndSetContentLanguageMessages(mw.messages.get());
-      });
-      requests.push(request);
-    }
-  } else {
-    const contentLanguageMessagesToRequest = contentLanguageMessageNames
-      .filter((name) => !cd.g.contentLanguageMessages[name]);
-    for (const nextNames of splitIntoBatches(contentLanguageMessagesToRequest)) {
-      const request = controller.getApi().getMessages(nextNames, {
-        // cd.g.contentLanguage is not used here for the reasons described in app.js where it is
-        // declared.
-        amlang: mw.config.get('wgContentLanguage'),
-      }).then(setContentLanguageMessages);
-      requests.push(request);
-    }
-
-    const userLanguageMessagesRequest = controller.getApi()
-      .loadMessagesIfMissing(userLanguageMessageNames);
-    requests.push(userLanguageMessagesRequest);
-  }
-
-  cd.g.specialPageAliases = Object.assign({}, cd.config.specialPageAliases);
-
-  Object.entries(cd.g.specialPageAliases).forEach(([key, value]) => {
-    if (typeof value === 'string') {
-      cd.g.specialPageAliases[key] = [value];
-    }
-  });
-
-  cd.g.contentTimezone = cd.config.timezone;
-
-  const specialPages = ['Contributions', 'Diff', 'PermanentLink'];
-  if (specialPages.some((page) => !cd.g.specialPageAliases[page]?.length) || !cd.g.contentTimezone) {
-    const request = controller.getApi().get({
-      action: 'query',
-      meta: 'siteinfo',
-      siprop: ['specialpagealiases', 'general'],
-    }).then((resp) => {
-      resp.query.specialpagealiases
-        .filter((page) => specialPages.includes(page.realname))
-        .forEach((page) => {
-          cd.g.specialPageAliases[page.realname] = page.aliases
-            .slice(0, page.aliases.indexOf(page.realname) + 1);
-        });
-      cd.g.contentTimezone = resp.query.general.timezone;
-    });
-    requests.push(request);
-  }
-
-  return requests;
-}
-
-/**
- * Generate regexps, patterns (strings to be parts of regexps), selectors from config values.
- *
- * @private
- */
-function initPatterns() {
-  const signatureEndingRegexp = cd.config.signatureEndingRegexp;
-  cd.g.signatureEndingRegexp = signatureEndingRegexp ?
-    new RegExp(
-      signatureEndingRegexp.source + (signatureEndingRegexp.source.slice(-1) === '$' ? '' : '$'),
-      signatureEndingRegexp.flags
-    ) :
-    null;
-
-  const nss = mw.config.get('wgFormattedNamespaces');
-  const nsIds = mw.config.get('wgNamespaceIds');
-
-  const anySpace = (s) => s.replace(/[ _]/g, '[ _]+').replace(/:/g, '[ _]*:[ _]*');
-  const joinNsNames = (...ids) => (
-    Object.keys(nsIds)
-      .filter((key) => ids.includes(nsIds[key]))
-
-      // Sometimes wgNamespaceIds has a string that doesn't transform into one of the keys of
-      // wgFormattedNamespaces when converting the first letter to uppercase, like in Azerbaijani
-      // Wikipedia (compare Object.keys(mw.config.get('wgNamespaceIds'))[4] = 'i̇stifadəçi' with
-      // mw.config.get('wgFormattedNamespaces')[2] = 'İstifadəçi'). We simply add the
-      // wgFormattedNamespaces name separately.
-      .concat(ids.map((id) => nss[id]))
-
-      .map(anySpace)
-      .join('|')
-  );
-
-  const userNssAliasesPattern = joinNsNames(2, 3);
-  cd.g.userNamespacesRegexp = new RegExp(`(?:^|:)(?:${userNssAliasesPattern}):(.+)`, 'i');
-
-  const userNsAliasesPattern = joinNsNames(2);
-  cd.g.userLinkRegexp = new RegExp(`^:?(?:${userNsAliasesPattern}):([^/]+)$`, 'i');
-  cd.g.userSubpageLinkRegexp = new RegExp(`^:?(?:${userNsAliasesPattern}):.+?/`, 'i');
-
-  const userTalkNsAliasesPattern = joinNsNames(3);
-  cd.g.userTalkLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):([^/]+)$`, 'i');
-  cd.g.userTalkSubpageLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):.+?/`, 'i');
-
-  cd.g.contribsPages = cd.g.specialPageAliases.Contributions.map((alias) => `${nss[-1]}:${alias}`);
-
-  const contribsPagesLinkPattern = cd.g.contribsPages.join('|');
-  cd.g.contribsPageLinkRegexp = new RegExp(`^(?:${contribsPagesLinkPattern})/`);
-
-  const contribsPagesPattern = anySpace(contribsPagesLinkPattern);
-  cd.g.captureUserNamePattern = (
-    `\\[\\[[ _]*:?(?:\\w*:){0,2}(?:(?:${userNssAliasesPattern})[ _]*:[ _]*|` +
-    `(?:Special[ _]*:[ _]*Contributions|${contribsPagesPattern})\\/[ _]*)([^|\\]/]+)(/)?`
-  );
-
-  cd.g.isThumbRegexp = new RegExp(
-    ['thumb', 'thumbnail']
-      .concat(cd.config.thumbAliases)
-      .map((alias) => `\\| *${alias} *[|\\]]`)
-      .join('|')
-  );
-
-  const unsignedTemplatesPattern = cd.config.unsignedTemplates
-    .map(generatePageNamePattern)
-    .join('|');
-  cd.g.unsignedTemplatesPattern = unsignedTemplatesPattern ?
-    `(\\{\\{ *(?:${unsignedTemplatesPattern}) *\\| *([^}|]+?) *(?:\\| *([^}]+?) *)?\\}\\})`
-    : null;
-
-  const clearTemplatesPattern = cd.config.clearTemplates.map(generatePageNamePattern).join('|');
-  const reflistTalkTemplatesPattern = cd.config.reflistTalkTemplates
-    .map(generatePageNamePattern)
-    .join('|');
-
-  cd.g.keepInSectionEnding = [
-    ...cd.config.keepInSectionEnding,
-    clearTemplatesPattern
-      ? new RegExp(`\\n+\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\}\\s*$`)
-      : undefined,
-    reflistTalkTemplatesPattern
-      ? new RegExp(`\\n+\\{\\{ *(?:${reflistTalkTemplatesPattern}) *\\}\\}.*\\s*$`)
-      : undefined,
-  ].filter(defined);
-
-  cd.g.userSignature = settings.get('signaturePrefix') + cd.g.signCode;
-
-  const signatureContent = mw.user.options.get('nickname');
-  const authorInSignatureMatch = signatureContent.match(
-    new RegExp(cd.g.captureUserNamePattern, 'i')
-  );
-  /*
-    Extract signature contents before the user name - in order to cut it out from comment
-    endings when editing.
-
-    Use the signature prefix only if it is other than `' '` (the default value).
-    * If it is `' '`, the prefix in real life may as well be `\n` or `--` if the user created some
-      specific comment using the native editor instead of CD. So we would want to remove the
-      signature from such comments correctly. The space would be included in the signature anyway
-      using `cd.config.signaturePrefixRegexp`.
-    * If it is other than `' '`, it is unpredictable, so it is safer to include it in the pattern.
-  */
-  cd.g.userSignaturePrefixRegexp = authorInSignatureMatch ?
-    new RegExp(
-      (
-        settings.get('signaturePrefix') === ' ' ?
-          '' :
-          mw.util.escapeRegExp(settings.get('signaturePrefix'))
-      ) +
-      mw.util.escapeRegExp(signatureContent.slice(0, authorInSignatureMatch.index)) +
-      '$'
-    ) :
-    null;
-
-  const pieJoined = cd.g.popularInlineElements.join('|');
-  cd.g.piePattern = `(?:${pieJoined})`;
-
-  const pnieJoined = cd.g.popularNotInlineElements.join('|');
-  cd.g.pniePattern = `(?:${pnieJoined})`;
-
-  cd.g.articlePathRegexp = new RegExp(
-    '^' +
-    mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace('\\$1', '(.*)')
-  );
-  cd.g.startsWithScriptTitleRegexp = new RegExp(
-    '^' +
-    mw.util.escapeRegExp(mw.config.get('wgScript') + '?title=')
-  );
-
-  // Template names are not case-sensitive here for code simplicity.
-  const quoteTemplateToPattern = (tpl) => '\\{\\{ *' + anySpace(mw.util.escapeRegExp(tpl));
-  const quoteBeginningsPattern = ['<blockquote', '<q']
-    .concat(cd.config.pairQuoteTemplates?.[0].map(quoteTemplateToPattern) || [])
-    .join('|');
-  const quoteEndingsPattern = ['</blockquote>', '</q>']
-    .concat(cd.config.pairQuoteTemplates?.[1].map(quoteTemplateToPattern) || [])
-    .join('|');
-  cd.g.quoteRegexp = new RegExp(`(${quoteBeginningsPattern})([^]*?)(${quoteEndingsPattern})`, 'ig');
-
-  cd.g.noSignatureClasses.push(...cd.config.noSignatureClasses);
-  cd.g.noHighlightClasses.push(...cd.config.noHighlightClasses);
-
-  const fileNssPattern = joinNsNames(6);
-  cd.g.filePrefixPattern = `(?:${fileNssPattern}):`;
-
-  const colonNssPattern = joinNsNames(6, 14);
-  cd.g.colonNamespacesPrefixRegexp = new RegExp(`^:(?:${colonNssPattern}):`, 'i');
-
-  cd.g.badCommentBeginnings = [
-    ...cd.g.badCommentBeginnings,
-    new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\n+(?=[*:#])`, 'i'),
-    ...cd.config.badCommentBeginnings,
-    clearTemplatesPattern ?
-      new RegExp(`^\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\} *\\n+`, 'i') :
-      undefined,
-  ].filter(defined);
-
-  cd.g.pipeTrickRegexp = /(\[\[:?(?:[^|[\]<>\n:]+:)?([^|[\]<>\n]+)\|)(\]\])/g;
-
-  cd.g.isProbablyWmfSulWiki = (
-    // Isn't true on diff, editing, history, and special pages, see
-    // https://github.com/wikimedia/mediawiki-extensions-CentralNotice/blob/6100a9e9ef290fffe1edd0ccdb6f044440d41511/includes/CentralNoticeHooks.php#L398
-    $('link[rel="dns-prefetch"]').attr('href') === '//meta.wikimedia.org' ||
-
-    // Sites like wikitech.wikimedia.org, which is not a SUL wiki, will be included as well
-    ['mediawiki.org', 'wikibooks.org', 'wikidata.org', 'wikifunctions.org', 'wikimedia.org', 'wikinews.org', 'wikipedia.org', 'wikiquote.org', 'wikisource.org', 'wikiversity.org', 'wikivoyage.org', 'wiktionary.org'].includes(
-      mw.config.get('wgServerName').split('.').slice(-2).join('.')
-    )
-  );
-}
-
-/**
- * Initialize prototypes of elements and OOUI widgets.
- *
- * @private
- */
-function initPrototypes() {
-  Comment.initPrototypes();
-  Section.initPrototypes();
-  Thread.initPrototypes();
-}
-
-/**
- * Get a regexp that matches timestamps (without timezone at the end) generated using the given date
- * format.
- *
- * This only supports format characters that are used by the default date format in any of
- * MediaWiki's languages, namely: D, d, F, G, H, i, j, l, M, n, Y, xg, xkY (and escape characters),
- * and only dates when MediaWiki existed, let's say 2000 onwards (Thai dates before 1941 are
- * complicated).
- *
- * @param {'content'|'user'} language
- * @returns {string} Pattern to be a part of a regular expression.
- * @private
- * @author Bartosz Dziewoński <matma.rex@gmail.com>
- * @author Jack who built the house
- * @license MIT
- */
-function getTimestampMainPartPattern(language) {
-  const isContentLanguage = language === 'content';
-  const format = isContentLanguage ? cd.g.contentDateFormat : cd.g.uiDateFormat;
-  const digits = isContentLanguage ? cd.g.contentDigits : cd.g.uiDigits;
-  const digitsPattern = digits ? `[${digits}]` : '\\d';
-
-  const regexpGroup = (regexp) => '(' + regexp + ')';
-  const regexpAlternateGroup = (arr) => '(' + arr.map(mw.util.escapeRegExp).join('|') + ')';
-
-  let string = '';
-
-  for (let p = 0; p < format.length; p++) {
-    /** @type {string|false} */
-    let num = false;
-    let code = format[p];
-    if ((code === 'x' && p < format.length - 1) || (code === 'xk' && p < format.length - 1)) {
-      code += format[++p];
-    }
-
-    switch (code) {
-      case 'xx':
-        string += 'x';
-        break;
-      case 'xg':
-      case 'D':
-      case 'l':
-      case 'F':
-      case 'M': {
-        const messages = isContentLanguage ?
-          getContentLanguageMessages(dateTokenToMessageNames[code]) :
-          dateTokenToMessageNames[code].map((token) => mw.msg(token));
-        string += regexpAlternateGroup(messages);
-        break;
-      }
-      case 'd':
-      case 'H':
-      case 'i':
-        num = '2';
-        break;
-      case 'j':
-      case 'n':
-      case 'G':
-        num = '1,2';
-        break;
-      case 'Y':
-      case 'xkY':
-        num = '4';
-        break;
-      case '\\':
-        // Backslash escaping
-        if (p < format.length - 1) {
-          string += format[++p];
-        } else {
-          string += '\\';
-        }
-        break;
-      case '"':
-        // Quoted literal
-        if (p < format.length - 1) {
-          const endQuote = format.indexOf('"', p + 1)
-          if (endQuote === -1) {
-            // No terminating quote, assume literal "
-            string += '"';
-          } else {
-            string += format.substr(p + 1, endQuote - p - 1);
-            p = endQuote;
-          }
-        } else {
-          // Quote at end of string, assume literal "
-          string += '"';
-        }
-        break;
-      default:
-        string += mw.util.escapeRegExp(format[p]);
-    }
-    if (num !== false) {
-      string += regexpGroup(digitsPattern + '{' + num + '}');
-    }
-  }
-
-  return string;
-}
-
-/**
- * Get codes of date components for the function that parses timestamps in the local date format
- * based on the result of matching the regexp set by `setTimestampRegexps()`.
- *
- * @param {string} format
- * @returns {string[]}
- * @private
- * @author Bartosz Dziewoński <matma.rex@gmail.com>
- * @author Jack who built the house
- * @license MIT
- */
-function getMatchingGroups(format) {
-  const matchingGroups = [];
-  for (let p = 0; p < format.length; p++) {
-    let code = format[p];
-    if ((code === 'x' && p < format.length - 1) || (code === 'xk' && p < format.length - 1)) {
-      code += format[++p];
-    }
-
-    switch (code) {
-      case 'xx':
-        break;
-      case 'xg':
-      case 'd':
-      case 'j':
-      case 'D':
-      case 'l':
-      case 'F':
-      case 'M':
-      case 'n':
-      case 'Y':
-      case 'xkY':
-      case 'G':
-      case 'H':
-      case 'i':
-        matchingGroups.push(code);
-        break;
-      case '\\':
-        // Backslash escaping
-        if (p < format.length - 1) {
-          ++p;
-        }
-        break;
-      case '"':
-        // Quoted literal
-        if (p < format.length - 1) {
-          const endQuote = format.indexOf('"', p + 1)
-          if (endQuote !== -1) {
-            p = endQuote;
-          }
-        }
-        break;
-      default:
-        break;
-    }
-  }
-
-  return matchingGroups;
-}
-
-export default {
   /**
    * _For internal use._ Load messages needed to parse and generate timestamps as well as some site
    * data.
    *
-   * @returns {Promise[]} There should be at least one promise in the array.
+   * @returns {Array<Promise|JQuery.Promise>} There should be at least one promise in the array.
    */
   getSiteData() {
-    this.siteDataRequests ||= loadSiteData();
+    this.siteDataRequests ||= Init.loadSiteData();
 
     return this.siteDataRequests;
-  },
+  }
+
+  /**
+   * Load messages needed to parse and generate timestamps as well as some site data.
+   *
+   * @returns {JQuery.Promise[]} There should be at least one promise in the array.
+   * @private
+   */
+  static loadSiteData() {
+    Init.initFormats();
+
+    const contentDateTokensMessageNames = Init.getUsedDateTokens(cd.g.contentDateFormat)
+      .map((pattern) => dateTokenToMessageNames[pattern]);
+    const contentLanguageMessageNames = [
+      'word-separator', 'comma-separator', 'colon-separator', 'timezone-utc'
+    ].concat(...contentDateTokensMessageNames);
+
+    const uiDateTokensMessageNames = Init.getUsedDateTokens(cd.g.uiDateFormat)
+      .map((pattern) => dateTokenToMessageNames[pattern]);
+    const userLanguageMessageNames = [
+      'parentheses', 'parentheses-start', 'parentheses-end', 'word-separator', 'comma-separator',
+      'colon-separator', 'nextdiff', 'timezone-utc', 'pagetitle',
+    ]
+      .concat(
+        mw.loader.getState('ext.discussionTools.init') ?
+          [
+            'discussiontools-topicsubscription-button-subscribe',
+            'discussiontools-topicsubscription-button-subscribe-tooltip',
+            'discussiontools-topicsubscription-button-unsubscribe',
+            'discussiontools-topicsubscription-button-unsubscribe-tooltip',
+            'discussiontools-topicsubscription-notify-subscribed-title',
+            'discussiontools-topicsubscription-notify-subscribed-body',
+            'discussiontools-topicsubscription-notify-unsubscribed-title',
+            'discussiontools-topicsubscription-notify-unsubscribed-body',
+            'discussiontools-newtopicssubscription-button-subscribe-label',
+            'discussiontools-newtopicssubscription-button-subscribe-tooltip',
+            'discussiontools-newtopicssubscription-button-unsubscribe-label',
+            'discussiontools-newtopicssubscription-button-unsubscribe-tooltip',
+            'discussiontools-newtopicssubscription-notify-subscribed-title',
+            'discussiontools-newtopicssubscription-notify-subscribed-body',
+            'discussiontools-newtopicssubscription-notify-unsubscribed-title',
+            'discussiontools-newtopicssubscription-notify-unsubscribed-body',
+          ] :
+          []
+      )
+      .concat(
+        mw.loader.getState('ext.visualEditor.core') ?
+          ['visualeditor-educationpopup-dismiss'] :
+          []
+      )
+      .concat(...uiDateTokensMessageNames);
+
+    const areLanguagesEqual = mw.config.get('wgContentLanguage') === mw.config.get('wgUserLanguage');
+    if (areLanguagesEqual) {
+      const userLanguageConfigMessages = {};
+      Object.keys(cd.config.messages)
+        .filter((name) => userLanguageMessageNames.includes(name))
+        .forEach((name) => {
+          userLanguageConfigMessages[name] = cd.config.messages[name];
+        });
+      mw.messages.set(userLanguageConfigMessages);
+    }
+
+    // We need this object to pass it to the web worker.
+    cd.g.contentLanguageMessages = {};
+
+    const setContentLanguageMessages = (/** @type {StringsByKey} */ messages) => {
+      Object.keys(messages).forEach((name) => {
+        mw.messages.set('(content)' + name, messages[name]);
+        cd.g.contentLanguageMessages[name] = messages[name];
+      });
+    };
+
+    const filterAndSetContentLanguageMessages = (/** @type {StringsByKey} */ messages) => {
+      const contentLanguageMessages = /** @type {StringsByKey} */ ({});
+      Object.keys(messages)
+        .filter((name) => contentLanguageMessageNames.includes(name))
+        .forEach((name) => {
+          contentLanguageMessages[name] = messages[name];
+        });
+      setContentLanguageMessages(contentLanguageMessages);
+    };
+    filterAndSetContentLanguageMessages(cd.config.messages);
+
+    // I hope we won't be scolded too much for making two message requests in parallel (if the user
+    // and content language are different).
+    const requests = [];
+    if (areLanguagesEqual) {
+      const messagesToRequest = contentLanguageMessageNames
+        .concat(userLanguageMessageNames)
+        .filter(unique);
+      for (const nextNames of splitIntoBatches(messagesToRequest)) {
+        const request = controller.getApi().loadMessagesIfMissing(nextNames).then(() => {
+          filterAndSetContentLanguageMessages(mw.messages.get());
+        });
+        requests.push(request);
+      }
+    } else {
+      const contentLanguageMessagesToRequest = contentLanguageMessageNames
+        .filter((name) => !cd.g.contentLanguageMessages[name]);
+      for (const nextNames of splitIntoBatches(contentLanguageMessagesToRequest)) {
+        const request = controller.getApi().getMessages(nextNames, {
+          // cd.g.contentLanguage is not used here for the reasons described in app.js where it is
+          // declared.
+          amlang: mw.config.get('wgContentLanguage'),
+        }).then(setContentLanguageMessages);
+        requests.push(request);
+      }
+
+      const userLanguageMessagesRequest = controller.getApi()
+        .loadMessagesIfMissing(userLanguageMessageNames);
+      requests.push(userLanguageMessagesRequest);
+    }
+
+    cd.g.specialPageAliases = Object.assign({}, cd.config.specialPageAliases);
+
+    Object.entries(cd.g.specialPageAliases).forEach(([key, value]) => {
+      if (typeof value === 'string') {
+        cd.g.specialPageAliases[key] = [value];
+      }
+    });
+
+    cd.g.contentTimezone = cd.config.timezone;
+
+    const specialPages = ['Contributions', 'Diff', 'PermanentLink'];
+    if (specialPages.some((page) => !cd.g.specialPageAliases[page]?.length) || !cd.g.contentTimezone) {
+      const request = controller.getApi().get({
+        action: 'query',
+        meta: 'siteinfo',
+        siprop: ['specialpagealiases', 'general'],
+      }).then((resp) => {
+        resp.query.specialpagealiases
+          .filter((page) => specialPages.includes(page.realname))
+          .forEach((page) => {
+            cd.g.specialPageAliases[page.realname] = page.aliases
+              .slice(0, page.aliases.indexOf(page.realname) + 1);
+          });
+        cd.g.contentTimezone = resp.query.general.timezone;
+      });
+      requests.push(request);
+    }
+
+    return requests;
+  }
+
+  /**
+   * Get codes of date components for the function that parses timestamps in the local date format
+   * based on the result of matching the regexp set by `setTimestampRegexps()`.
+   *
+   * @param {string} format
+   * @returns {string[]}
+   * @private
+   * @author Bartosz Dziewoński <matma.rex@gmail.com>
+   * @author Jack who built the house
+   * @license MIT
+   */
+  static getMatchingGroups(format) {
+    const matchingGroups = [];
+    for (let p = 0; p < format.length; p++) {
+      let code = format[p];
+      if ((code === 'x' && p < format.length - 1) || (code === 'xk' && p < format.length - 1)) {
+        code += format[++p];
+      }
+
+      switch (code) {
+        case 'xx':
+          break;
+        case 'xg':
+        case 'd':
+        case 'j':
+        case 'D':
+        case 'l':
+        case 'F':
+        case 'M':
+        case 'n':
+        case 'Y':
+        case 'xkY':
+        case 'G':
+        case 'H':
+        case 'i':
+          matchingGroups.push(code);
+          break;
+        case '\\':
+          // Backslash escaping
+          if (p < format.length - 1) {
+            ++p;
+          }
+          break;
+        case '"':
+          // Quoted literal
+          if (p < format.length - 1) {
+            const endQuote = format.indexOf('"', p + 1)
+            if (endQuote !== -1) {
+              p = endQuote;
+            }
+          }
+          break;
+        default:
+          break;
+      }
+    }
+
+    return matchingGroups;
+  }
+
+  static getTimestampMainPartPattern(language) {
+    const isContentLanguage = language === 'content';
+    const format = isContentLanguage ? cd.g.contentDateFormat : cd.g.uiDateFormat;
+    const digits = isContentLanguage ? cd.g.contentDigits : cd.g.uiDigits;
+    const digitsPattern = digits ? `[${digits}]` : '\\d';
+
+    const regexpGroup = (regexp) => '(' + regexp + ')';
+    const regexpAlternateGroup = (arr) => '(' + arr.map(mw.util.escapeRegExp).join('|') + ')';
+
+    let string = '';
+
+    for (let p = 0; p < format.length; p++) {
+      /** @type {string|false} */
+      let num = false;
+      let code = format[p];
+      if ((code === 'x' && p < format.length - 1) || (code === 'xk' && p < format.length - 1)) {
+        code += format[++p];
+      }
+
+      switch (code) {
+        case 'xx':
+          string += 'x';
+          break;
+        case 'xg':
+        case 'D':
+        case 'l':
+        case 'F':
+        case 'M': {
+          const messages = isContentLanguage ?
+            getContentLanguageMessages(dateTokenToMessageNames[code]) :
+            dateTokenToMessageNames[code].map((token) => mw.msg(token));
+          string += regexpAlternateGroup(messages);
+          break;
+        }
+        case 'd':
+        case 'H':
+        case 'i':
+          num = '2';
+          break;
+        case 'j':
+        case 'n':
+        case 'G':
+          num = '1,2';
+          break;
+        case 'Y':
+        case 'xkY':
+          num = '4';
+          break;
+        case '\\':
+          // Backslash escaping
+          if (p < format.length - 1) {
+            string += format[++p];
+          } else {
+            string += '\\';
+          }
+          break;
+        case '"':
+          // Quoted literal
+          if (p < format.length - 1) {
+            const endQuote = format.indexOf('"', p + 1)
+            if (endQuote === -1) {
+              // No terminating quote, assume literal "
+              string += '"';
+            } else {
+              string += format.substr(p + 1, endQuote - p - 1);
+              p = endQuote;
+            }
+          } else {
+            // Quote at end of string, assume literal "
+            string += '"';
+          }
+          break;
+        default:
+          string += mw.util.escapeRegExp(format[p]);
+      }
+      if (num !== false) {
+        string += regexpGroup(digitsPattern + '{' + num + '}');
+      }
+    }
+
+    return string;
+  }
+
+  /**
+   * Set the global variables related to date format.
+   *
+   * @private
+   */
+  static initFormats() {
+    const getFallbackLanguage = (/** @type {string} */ lang) =>
+      (languageFallbacks[lang] || ['en']).find(
+        (/** @type {string} */ fallback) => dateFormats[fallback]
+      );
+    const languageOrFallback = (/** @type {string} */ lang) =>
+      dateFormats[lang] ? lang : getFallbackLanguage(lang);
+
+    const contentLanguage = languageOrFallback(mw.config.get('wgContentLanguage'));
+    const userLanguage = languageOrFallback(mw.config.get('wgUserLanguage'));
+
+    cd.g.contentDateFormat = dateFormats[contentLanguage];
+    cd.g.uiDateFormat = dateFormats[userLanguage];
+    cd.g.contentDigits = mw.config.get('wgTranslateNumerals') ? digitsData[contentLanguage] : null;
+    cd.g.uiDigits = mw.config.get('wgTranslateNumerals') ? digitsData[userLanguage] : null;
+  }
+
+  /**
+   * Get date tokens used in a format (to load only needed tokens).
+   *
+   * @param {string} format
+   * @returns {string[]}
+   * @private
+   * @author Bartosz Dziewoński <matma.rex@gmail.com>
+   * @license MIT
+   */
+  static getUsedDateTokens(format) {
+    const tokens = [];
+
+    for (let p = 0; p < format.length; p++) {
+      let code = format[p];
+      if ((code === 'x' && p < format.length - 1) || (code === 'xk' && p < format.length - 1)) {
+        code += format[++p];
+      }
+
+      if (['xg', 'D', 'l', 'F', 'M'].includes(code)) {
+        tokens.push(code);
+      } else if (code === '\\' && p < format.length - 1) {
+        ++p;
+      }
+    }
+
+    return tokens;
+  }
 
   /**
    * _For internal use._ Assign some important skin-specific values to the properties of the global
@@ -595,7 +434,7 @@ export default {
       // the TOC is wrong. Probably some mechanisms in the scripts or the browser are out of sync.
       cd.g.bodyScrollPaddingTop -= 1;
     }
-  },
+  }
 
   /**
    * _For internal use._ Set CSS for talk pages: set CSS variables, add static CSS.
@@ -661,7 +500,7 @@ export default {
     require('./skins.less');
     require('./talkPage.less');
     require('./toc.less');
-  },
+  }
 
   /**
    * _For internal use._ Set a number of {@link convenientDiscussions global object} properties.
@@ -789,7 +628,7 @@ export default {
      * @memberof convenientDiscussions.api
      */
     cd.api.getRootElement = controller.getRootElement.bind(controller);
-  },
+  }
 
   /**
    * _For internal use._ Set the {@link convenientDiscussions} properties related to timestamp
@@ -799,7 +638,7 @@ export default {
    */
   initTimestampParsingTools(language) {
     if (language === 'content') {
-      const mainPartPattern = getTimestampMainPartPattern('content');
+      const mainPartPattern = Init.getTimestampMainPartPattern('content');
       const utcPattern = mw.util.escapeRegExp(mw.message('(content)timezone-utc').parse());
 
       // Do we need non-Arabic digits here?
@@ -811,12 +650,12 @@ export default {
         `^([^]*(?:^|[^=])(?:\\b| ))(${cd.g.contentTimestampRegexp.source})(?!["»])`
       );
       cd.g.contentTimestampNoTzRegexp = new RegExp(mainPartPattern);
-      cd.g.contentTimestampMatchingGroups = getMatchingGroups(cd.g.contentDateFormat);
+      cd.g.contentTimestampMatchingGroups = Init.getMatchingGroups(cd.g.contentDateFormat);
       cd.g.timezoneRegexp = new RegExp(timezonePattern, 'g');
     } else {
-      cd.g.uiTimestampRegexp = new RegExp(getTimestampMainPartPattern('user'));
+      cd.g.uiTimestampRegexp = new RegExp(Init.getTimestampMainPartPattern('user'));
       cd.g.parseTimestampUiRegexp = new RegExp(`^([^]*)(${cd.g.uiTimestampRegexp.source})`);
-      cd.g.uiTimestampMatchingGroups = getMatchingGroups(cd.g.uiDateFormat);
+      cd.g.uiTimestampMatchingGroups = Init.getMatchingGroups(cd.g.uiDateFormat);
     }
 
     const timezoneParts = mw.user.options.get('timecorrection')?.split('|');
@@ -842,7 +681,7 @@ export default {
         settings.get('hideTimezone')
       );
     }
-  },
+  }
 
   /**
    * _For internal use._ Assign various global objects' ({@link convenientDiscussions},
@@ -859,8 +698,8 @@ export default {
     await settings.init();
 
     this.initTimestampParsingTools('content');
-    initPatterns();
-    initPrototypes();
+    Init.initPatterns();
+    Init.initPrototypes();
     if (settings.get('useBackgroundHighlighting')) {
       require('./Comment.layers.optionalBackgroundHighlighting.less');
     }
@@ -876,7 +715,7 @@ export default {
      * @memberof convenientDiscussions
      */
     cd.commentForms = commentFormRegistry.getAll();
-  },
+  }
 
   /**
    * Initialize the script - assign properties required by the controller and run the boot process
@@ -930,7 +769,7 @@ export default {
 
     this.bootOnTalkPage();
     this.bootOnCommentLinksPage();
-  },
+  }
 
   /**
    * Get the type of the page.
@@ -949,7 +788,7 @@ export default {
       diffPage: this.diffPage,
       talkPage: this.talkPage
     };
-  },
+  }
 
   /**
    * Load the data required for the script to run on a talk page and execute the
@@ -1041,12 +880,10 @@ export default {
       minerva: '#bodyContent',
       default: '#content',
     });
-  },
+  }
 
   /**
    * Show the loading overlay (a logo in the corner of the page).
-   *
-   * @private
    */
   showLoadingOverlay() {
     if (window.cdShowLoadingOverlay === false) return;
@@ -1068,7 +905,7 @@ export default {
     } else {
       this.$loadingPopup.show();
     }
-  },
+  }
 
   /**
    * Hide the loading overlay.
@@ -1077,7 +914,7 @@ export default {
     if (!this.$loadingPopup || window.cdShowLoadingOverlay === false) return;
 
     this.$loadingPopup.hide();
-  },
+  }
 
   /**
    * Is there any kind of a page overlay present, like the OOUI modal overlay or CD loading overlay.
@@ -1087,7 +924,7 @@ export default {
    */
   isPageOverlayOn() {
     return document.body.classList.contains('oo-ui-windowManager-modal-active') || this.booting;
-  },
+  }
 
   /**
    * Load the data required for the script to process the page as a log page and
@@ -1145,7 +982,7 @@ export default {
         console.error(error);
       }
     );
-  },
+  }
 
   /**
    * Is the displayed revision the current (last known) revision of the page.
@@ -1154,7 +991,7 @@ export default {
    */
   isCurrentRevision() {
     return mw.config.get('wgRevisionId') >= mw.config.get('wgCurRevisionId');
-  },
+  }
 
   /**
    * Check whether the current page is a watchlist or recent changes page.
@@ -1165,7 +1002,7 @@ export default {
     return ['Recentchanges', 'Watchlist'].includes(
       mw.config.get('wgCanonicalSpecialPageName') || ''
     );
-  },
+  }
 
   /**
    * Check whether the current page is a contributions page.
@@ -1174,7 +1011,7 @@ export default {
    */
   isContributionsPage() {
     return mw.config.get('wgCanonicalSpecialPageName') === 'Contributions';
-  },
+  }
 
   /**
    * Check whether the current page is a history page.
@@ -1183,5 +1020,192 @@ export default {
    */
   isHistoryPage() {
     return cd.g.pageAction === 'history' && isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber);
-  },
-};
+  }
+
+  /**
+   * Generate regexps, patterns (strings to be parts of regexps), selectors from config values.
+   *
+   * @private
+   * @static
+   */
+  static initPatterns() {
+    const signatureEndingRegexp = cd.config.signatureEndingRegexp;
+    cd.g.signatureEndingRegexp = signatureEndingRegexp ?
+      new RegExp(
+        signatureEndingRegexp.source + (signatureEndingRegexp.source.slice(-1) === '$' ? '' : '$'),
+        signatureEndingRegexp.flags
+      ) :
+      null;
+
+    const nss = mw.config.get('wgFormattedNamespaces');
+    const nsIds = mw.config.get('wgNamespaceIds');
+
+    const anySpace = (s) => s.replace(/[ _]/g, '[ _]+').replace(/:/g, '[ _]*:[ _]*');
+    const joinNsNames = (...ids) => (
+      Object.keys(nsIds)
+        .filter((key) => ids.includes(nsIds[key]))
+
+        // Sometimes wgNamespaceIds has a string that doesn't transform into one of the keys of
+        // wgFormattedNamespaces when converting the first letter to uppercase, like in Azerbaijani
+        // Wikipedia (compare Object.keys(mw.config.get('wgNamespaceIds'))[4] = 'i̇stifadəçi' with
+        // mw.config.get('wgFormattedNamespaces')[2] = 'İstifadəçi'). We simply add the
+        // wgFormattedNamespaces name separately.
+        .concat(ids.map((id) => nss[id]))
+
+        .map(anySpace)
+        .join('|')
+    );
+
+    const userNssAliasesPattern = joinNsNames(2, 3);
+    cd.g.userNamespacesRegexp = new RegExp(`(?:^|:)(?:${userNssAliasesPattern}):(.+)`, 'i');
+
+    const userNsAliasesPattern = joinNsNames(2);
+    cd.g.userLinkRegexp = new RegExp(`^:?(?:${userNsAliasesPattern}):([^/]+)$`, 'i');
+    cd.g.userSubpageLinkRegexp = new RegExp(`^:?(?:${userNsAliasesPattern}):.+?/`, 'i');
+
+    const userTalkNsAliasesPattern = joinNsNames(3);
+    cd.g.userTalkLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):([^/]+)$`, 'i');
+    cd.g.userTalkSubpageLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):.+?/`, 'i');
+
+    cd.g.contribsPages = cd.g.specialPageAliases.Contributions.map((alias) => `${nss[-1]}:${alias}`);
+
+    const contribsPagesLinkPattern = cd.g.contribsPages.join('|');
+    cd.g.contribsPageLinkRegexp = new RegExp(`^(?:${contribsPagesLinkPattern})/`);
+
+    const contribsPagesPattern = anySpace(contribsPagesLinkPattern);
+    cd.g.captureUserNamePattern = (
+      `\\[\\[[ _]*:?(?:\\w*:){0,2}(?:(?:${userNssAliasesPattern})[ _]*:[ _]*|` +
+      `(?:Special[ _]*:[ _]*Contributions|${contribsPagesPattern})\\/[ _]*)([^|\\]/]+)(/)?`
+    );
+
+    cd.g.isThumbRegexp = new RegExp(
+      ['thumb', 'thumbnail']
+        .concat(cd.config.thumbAliases)
+        .map((alias) => `\\| *${alias} *[|\\]]`)
+        .join('|')
+    );
+
+    const unsignedTemplatesPattern = cd.config.unsignedTemplates
+      .map(generatePageNamePattern)
+      .join('|');
+    cd.g.unsignedTemplatesPattern = unsignedTemplatesPattern ?
+      `(\\{\\{ *(?:${unsignedTemplatesPattern}) *\\| *([^}|]+?) *(?:\\| *([^}]+?) *)?\\}\\})`
+      : null;
+
+    const clearTemplatesPattern = cd.config.clearTemplates.map(generatePageNamePattern).join('|');
+    const reflistTalkTemplatesPattern = cd.config.reflistTalkTemplates
+      .map(generatePageNamePattern)
+      .join('|');
+
+    cd.g.keepInSectionEnding = [
+      ...cd.config.keepInSectionEnding,
+      clearTemplatesPattern
+        ? new RegExp(`\\n+\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\}\\s*$`)
+        : undefined,
+      reflistTalkTemplatesPattern
+        ? new RegExp(`\\n+\\{\\{ *(?:${reflistTalkTemplatesPattern}) *\\}\\}.*\\s*$`)
+        : undefined,
+    ].filter(defined);
+
+    cd.g.userSignature = settings.get('signaturePrefix') + cd.g.signCode;
+
+    const signatureContent = mw.user.options.get('nickname');
+    const authorInSignatureMatch = signatureContent.match(
+      new RegExp(cd.g.captureUserNamePattern, 'i')
+    );
+    /*
+      Extract signature contents before the user name - in order to cut it out from comment
+      endings when editing.
+
+      Use the signature prefix only if it is other than `' '` (the default value).
+      * If it is `' '`, the prefix in real life may as well be `\n` or `--` if the user created some
+        specific comment using the native editor instead of CD. So we would want to remove the
+        signature from such comments correctly. The space would be included in the signature anyway
+        using `cd.config.signaturePrefixRegexp`.
+      * If it is other than `' '`, it is unpredictable, so it is safer to include it in the pattern.
+    */
+    cd.g.userSignaturePrefixRegexp = authorInSignatureMatch ?
+      new RegExp(
+        (
+          settings.get('signaturePrefix') === ' ' ?
+            '' :
+            mw.util.escapeRegExp(settings.get('signaturePrefix'))
+        ) +
+        mw.util.escapeRegExp(signatureContent.slice(0, authorInSignatureMatch.index)) +
+        '$'
+      ) :
+      null;
+
+    const pieJoined = cd.g.popularInlineElements.join('|');
+    cd.g.piePattern = `(?:${pieJoined})`;
+
+    const pnieJoined = cd.g.popularNotInlineElements.join('|');
+    cd.g.pniePattern = `(?:${pnieJoined})`;
+
+    cd.g.articlePathRegexp = new RegExp(
+      '^' +
+      mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace('\\$1', '(.*)')
+    );
+    cd.g.startsWithScriptTitleRegexp = new RegExp(
+      '^' +
+      mw.util.escapeRegExp(mw.config.get('wgScript') + '?title=')
+    );
+
+    // Template names are not case-sensitive here for code simplicity.
+    const quoteTemplateToPattern = (tpl) => '\\{\\{ *' + anySpace(mw.util.escapeRegExp(tpl));
+    const quoteBeginningsPattern = ['<blockquote', '<q']
+      .concat(cd.config.pairQuoteTemplates?.[0].map(quoteTemplateToPattern) || [])
+      .join('|');
+    const quoteEndingsPattern = ['</blockquote>', '</q>']
+      .concat(cd.config.pairQuoteTemplates?.[1].map(quoteTemplateToPattern) || [])
+      .join('|');
+    cd.g.quoteRegexp = new RegExp(`(${quoteBeginningsPattern})([^]*?)(${quoteEndingsPattern})`, 'ig');
+
+    cd.g.noSignatureClasses.push(...cd.config.noSignatureClasses);
+    cd.g.noHighlightClasses.push(...cd.config.noHighlightClasses);
+
+    const fileNssPattern = joinNsNames(6);
+    cd.g.filePrefixPattern = `(?:${fileNssPattern}):`;
+
+    const colonNssPattern = joinNsNames(6, 14);
+    cd.g.colonNamespacesPrefixRegexp = new RegExp(`^:(?:${colonNssPattern}):`, 'i');
+
+    cd.g.badCommentBeginnings = [
+      ...cd.g.badCommentBeginnings,
+      new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\n+(?=[*:#])`, 'i'),
+      ...cd.config.badCommentBeginnings,
+      clearTemplatesPattern ?
+        new RegExp(`^\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\} *\\n+`, 'i') :
+        undefined,
+    ].filter(defined);
+
+    cd.g.pipeTrickRegexp = /(\[\[:?(?:[^|[\]<>\n:]+:)?([^|[\]<>\n]+)\|)(\]\])/g;
+
+    cd.g.isProbablyWmfSulWiki = (
+      // Isn't true on diff, editing, history, and special pages, see
+      // https://github.com/wikimedia/mediawiki-extensions-CentralNotice/blob/6100a9e9ef290fffe1edd0ccdb6f044440d41511/includes/CentralNoticeHooks.php#L398
+      $('link[rel="dns-prefetch"]').attr('href') === '//meta.wikimedia.org' ||
+
+      // Sites like wikitech.wikimedia.org, which is not a SUL wiki, will be included as well
+      ['mediawiki.org', 'wikibooks.org', 'wikidata.org', 'wikifunctions.org', 'wikimedia.org', 'wikinews.org', 'wikipedia.org', 'wikiquote.org', 'wikisource.org', 'wikiversity.org', 'wikivoyage.org', 'wiktionary.org'].includes(
+        mw.config.get('wgServerName').split('.').slice(-2).join('.')
+      )
+    );
+  }
+
+  /**
+   * Initialize prototypes of elements and OOUI widgets.
+   *
+   * @private
+   * @static
+   */
+  static initPrototypes() {
+    Comment.initPrototypes();
+    Section.initPrototypes();
+    Thread.initPrototypes();
+  }
+}
+
+// Export a singleton instance
+const init = new Init();
+export default init;

@@ -166,6 +166,18 @@ const convenientDiscussions = {
     return message;
   },
 
+  /**
+   * Get a
+   * {@link https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Api mw.Api} instance.
+   *
+   * @returns {mw.Api}
+   */
+  getApi() {
+    this.mwApi ||= new mw.Api(cd.getApiConfig());
+
+    return this.mwApi;
+  },
+
   getApiConfig() {
     return {
       parameters: {
