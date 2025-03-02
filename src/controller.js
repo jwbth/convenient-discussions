@@ -12,16 +12,15 @@ import commentRegistry from './commentRegistry';
 import debug from './debug';
 import init from './init';
 import navPanel from './navPanel';
-import notifications from './notifications';
 import pageRegistry from './pageRegistry';
 import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import toc from './toc';
 import updateChecker from './updateChecker';
 import { getUserInfo } from './utils-api';
-import { defined, definedAndNotNull, getLastArrayElementOrSelf, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
+import { defined, definedAndNotNull, getLastArrayElementOrSelf, getQueryParamBooleanValue, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
 import { EventEmitter } from './utils-oojs';
-import { copyText, createSvg, getVisibilityByRects, skin$, wrapHtml } from './utils-window';
+import { createSvg, getVisibilityByRects, skin$ } from './utils-window';
 import WebpackWorker from './worker/worker-gate';
 
 /**
@@ -40,6 +39,17 @@ import WebpackWorker from './worker/worker-gate';
  * @property {[]} reload
  * @property {[]} desktopNotificationClick
  */
+
+/**
+ * Initialize prototypes of elements and OOUI widgets.
+ *
+ * @private
+ */
+function initPrototypes() {
+  Comment.initPrototypes();
+  Section.initPrototypes();
+  Thread.initPrototypes();
+}
 
 /**
  * Singleton that stores and changes the overall state of the page, initiating boot processes and
@@ -196,25 +206,7 @@ class Controller extends EventEmitter {
    * @type {boolean}
    * @private
    */
-  definitelyTalkPage;
-
-  /**
-   * @type {boolean}
-   * @private
-   */
   talkPage;
-
-  /**
-   * @type {boolean}
-   * @private
-   */
-  articlePageTalkPage;
-
-  /**
-   * @type {boolean}
-   * @private
-   */
-  diffPage;
 
   /**
    * @type {() => void}
@@ -270,7 +262,47 @@ class Controller extends EventEmitter {
       $(document.body).addClass('cd-mobile');
     }
 
-    init.initController();
+    // Not constants: go() may run a second time, see app~maybeAddFooterSwitcher().
+    const isEnabledInQuery = getQueryParamBooleanValue('cdtalkpage') === true;
+    const isDisabledInQuery = getQueryParamBooleanValue('cdtalkpage') === false;
+
+    // See .isDefinitelyTalkPage()
+    this.definitelyTalkPage = Boolean(
+      isEnabledInQuery ||
+
+      // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
+      // the list of supported namespaces and page white/black list in the configuration. With this
+      // method, there won't be "comment" links for edits on pages that list revisions such as the
+      // watchlist.
+      this.$content.find('.cd-talkPage').length ||
+
+      (
+        ($('#ca-addsection').length || cd.g.pageWhitelistRegexp?.test(cd.g.pageName)) &&
+        !cd.g.pageBlacklistRegexp?.test(cd.g.pageName)
+      )
+    );
+
+    // See .isArticlePageTalkPage()
+    this.articlePageTalkPage = (
+      (!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
+      !this.$content.find('.cd-notTalkPage').length &&
+      (isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber) || this.definitelyTalkPage) &&
+
+      // Undocumented setting
+      !window.cdOnlyRunByFooterLink
+    );
+
+    // See .isDiffPage()
+    this.diffPage = /[?&]diff=[^&]/.test(location.search);
+
+    this.talkPage = Boolean(
+      mw.config.get('wgIsArticle') &&
+      !isDisabledInQuery &&
+      (isEnabledInQuery || this.articlePageTalkPage)
+    );
+
+    this.bootOnTalkPage();
+    this.bootOnCommentLinksPage();
   }
 
   /**
@@ -632,7 +664,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isTalkPage() {
-    return this.talkPage;
+    return init.getPageType().talkPage;
   }
 
   /**
@@ -641,9 +673,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isWatchlistPage() {
-    return ['Recentchanges', 'Watchlist'].includes(
-      mw.config.get('wgCanonicalSpecialPageName') || ''
-    );
+    return init.isWatchlistPage();
   }
 
   /**
@@ -652,7 +682,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isContributionsPage() {
-    return mw.config.get('wgCanonicalSpecialPageName') === 'Contributions';
+    return init.isContributionsPage();
   }
 
   /**
@@ -661,7 +691,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isHistoryPage() {
-    return cd.g.pageAction === 'history' && isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber);
+    return init.isHistoryPage();
   }
 
   /**
@@ -675,7 +705,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isDiffPage() {
-    return this.diffPage;
+    return init.getPageType().diffPage;
   }
 
   /**
@@ -685,7 +715,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isDefinitelyTalkPage() {
-    return this.definitelyTalkPage;
+    return init.getPageType().definitelyTalkPage;
   }
 
   /**
@@ -697,7 +727,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isArticlePageTalkPage() {
-    return this.articlePageTalkPage;
+    return init.getPageType().articlePageTalkPage;
   }
 
   /**

@@ -11,24 +11,21 @@ import dateFormats from '../data/dateFormats.json';
 import digitsData from '../data/digits.json';
 import languageFallbacks from '../data/languageFallbacks.json';
 
-import BootProcess from './BootProcess';
 import Comment from './Comment';
 import Section from './Section';
 import Thread from './Thread';
-import addCommentLinks from './addCommentLinks';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
-import debug from './debug';
 import jqueryExtensions from './jqueryExtensions';
 import pageRegistry from './pageRegistry';
 import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import { processPage } from './updateChecker';
 import userRegistry from './userRegistry';
-import { getUserInfo, splitIntoBatches } from './utils-api';
-import { defined, generatePageNamePattern, getContentLanguageMessages, getQueryParamBooleanValue, isProbablyTalkPage, sleep, unique } from './utils-general';
+import { splitIntoBatches } from './utils-api';
+import { defined, generatePageNamePattern, getContentLanguageMessages, unique } from './utils-general';
 import { dateTokenToMessageNames, initDayjs } from './utils-timestamp';
 import { skin$, transparentize } from './utils-window';
 import visits from './visits';
@@ -880,17 +877,29 @@ export default {
   },
 
   /**
-   * _For internal use._ Setup helper functions for initializing the script.
+   * Initialize the script - assign properties required by the controller and run the boot process
+   * (on talk page or comment links page).
    */
-  initController() {
+  init() {
+    this.$content = $('#mw-content-text');
+
+    if (cd.g.isMobile) {
+      $(document.body).addClass('cd-mobile');
+    }
+
+    // Not constants: go() may run a second time, see app~maybeAddFooterSwitcher().
+    const isEnabledInQuery = getQueryParamBooleanValue('cdtalkpage') === true;
+    const isDisabledInQuery = getQueryParamBooleanValue('cdtalkpage') === false;
+
+    // See .isDefinitelyTalkPage()
     this.definitelyTalkPage = Boolean(
-      this.isEnabledInQuery() ||
+      isEnabledInQuery ||
 
       // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
       // the list of supported namespaces and page white/black list in the configuration. With this
       // method, there won't be "comment" links for edits on pages that list revisions such as the
       // watchlist.
-      controller.$content.find('.cd-talkPage').length ||
+      this.$content.find('.cd-talkPage').length ||
 
       (
         ($('#ca-addsection').length || cd.g.pageWhitelistRegexp?.test(cd.g.pageName)) &&
@@ -900,8 +909,8 @@ export default {
 
     // See .isArticlePageTalkPage()
     this.articlePageTalkPage = (
-      (!mw.config.get('wgIsRedirect') || !controller.isCurrentRevision()) &&
-      !controller.$content.find('.cd-notTalkPage').length &&
+      (!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
+      !this.$content.find('.cd-notTalkPage').length &&
       (isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber) || this.definitelyTalkPage) &&
 
       // Undocumented setting
@@ -913,8 +922,8 @@ export default {
 
     this.talkPage = Boolean(
       mw.config.get('wgIsArticle') &&
-      !this.isDisabledInQuery() &&
-      (this.isEnabledInQuery() || this.articlePageTalkPage)
+      !isDisabledInQuery &&
+      (isEnabledInQuery || this.articlePageTalkPage)
     );
 
     this.bootOnTalkPage();
@@ -922,87 +931,22 @@ export default {
   },
 
   /**
-   * Check if CD Talk Page mode is explicitly enabled via URL parameter.
+   * Get the type of the page.
    *
-   * @returns {boolean}
-   * @private
+   * @returns {{
+   *   definitelyTalkPage: boolean;
+   *   articlePageTalkPage: boolean;
+   *   diffPage: boolean;
+   *   talkPage: boolean;
+   * }}
    */
-  isEnabledInQuery() {
-    return getQueryParamBooleanValue('cdtalkpage') === true;
-  },
-
-  /**
-   * Check if CD Talk Page mode is explicitly disabled via URL parameter.
-   *
-   * @returns {boolean}
-   * @private
-   */
-  isDisabledInQuery() {
-    return getQueryParamBooleanValue('cdtalkpage') === false;
-  },
-
-  /**
-   * Load the data required for the script to process the page as a log page and
-   * {@link module:addCommentLinks process it}.
-   *
-   * @private
-   */
-  bootOnCommentLinksPage() {
-    if (
-      !controller.isWatchlistPage() &&
-      !controller.isContributionsPage() &&
-      !controller.isHistoryPage() &&
-      !(controller.isDiffPage() && this.articlePageTalkPage) &&
-
-      // Instant Diffs script can be called on talk pages as well
-      !controller.isTalkPage()
-    ) {
-      return;
-    }
-
-    // Make some requests in advance if the API module is ready in order not to make 2 requests
-    // sequentially.
-    if (mw.loader.getState('mediawiki.api') === 'ready') {
-      this.getSiteData();
-
-      // Loading user info on diff pages could lead to problems with saving visits when many pages
-      // are opened, but not yet focused, simultaneously.
-      if (!controller.isTalkPage()) {
-        getUserInfo(true).catch((error) => {
-          console.warn(error);
-        });
-      }
-    }
-
-    mw.loader.using([
-      'jquery.client',
-      'mediawiki.Title',
-      'mediawiki.api',
-      'mediawiki.jqueryMsg',
-      'mediawiki.user',
-      'mediawiki.util',
-      // 'oojs',
-      'oojs-ui-core',
-      'oojs-ui-widgets',
-      'oojs-ui-windows',
-      'oojs-ui.styles.icons-alerts',
-      'oojs-ui.styles.icons-editing-list',
-      'oojs-ui.styles.icons-interactions',
-      'user.options',
-    ]).then(
-      () => {
-        addCommentLinks();
-
-        // See the comment above: "Additions of CSS...".
-        require('./global.less');
-
-        require('./logPages.less');
-      },
-      (error) => {
-        mw.notify(cd.s('error-loaddata'), { type: 'error' });
-        console.error(error);
-      }
-    );
+  getPageType() {
+    return {
+      definitelyTalkPage: this.definitelyTalkPage,
+      articlePageTalkPage: this.articlePageTalkPage,
+      diffPage: this.diffPage,
+      talkPage: this.talkPage
+    };
   },
 
   /**
@@ -1012,12 +956,12 @@ export default {
    * @private
    */
   bootOnTalkPage() {
-    if (!controller.isTalkPage()) return;
+    if (!this.talkPage) return;
 
     debug.stopTimer('start');
     debug.startTimer('load data');
 
-    controller.bootProcess = new BootProcess();
+    this.bootProcess = new BootProcess();
     let siteDataRequests = [];
 
     // Make some requests in advance if the API module is ready in order not to make 2 requests
@@ -1036,17 +980,13 @@ export default {
       'mediawiki.Uri',
       'mediawiki.api',
       'mediawiki.cookie',
-
-      // span.comment
       'mediawiki.interface.helpers.styles',
-
       'mediawiki.jqueryMsg',
       'mediawiki.notification',
       'mediawiki.storage',
       'mediawiki.user',
       'mediawiki.util',
       'mediawiki.widgets.visibleLengthLimit',
-      // 'oojs',
       'oojs-ui-core',
       'oojs-ui-widgets',
       'oojs-ui-windows',
@@ -1071,7 +1011,7 @@ export default {
       // thrashing) could happen without impeding performance, we cache the value so that it could
       // be used in .saveRelativeScrollPosition() without causing a reflow.
       if (siteDataRequests.every((request) => request.state() === 'resolved')) {
-        controller.bootProcess.passedData = { scrollY: window.scrollY };
+        this.bootProcess.passedData = { scrollY: window.scrollY };
       }
     } else {
       modulesRequest = mw.loader.using(modules);
@@ -1088,30 +1028,112 @@ export default {
     );
 
     sleep(15000).then(() => {
-      if (controller.booting) {
+      if (controller.isBooting()) {
         controller.hideLoadingOverlay();
         console.warn('The loading overlay stays for more than 15 seconds; removing it.');
       }
     });
 
-    controller.$contentColumn = skin$({
+    this.$contentColumn = skin$({
       timeless: '#mw-content',
       minerva: '#bodyContent',
       default: '#content',
     });
+  },
 
-    /*
-      Additions of CSS set a stage for a future reflow which delays operations dependent on
-      rendering, so we run them now, not after the requests are fulfilled, to save time. The overall
-      order is like this:
-      1. Make network requests (above).
-      2. Run operations dependent on rendering, such as window.getComputedStyle() and jQuery's
-         .css() (below). Normally they would initiate a reflow, but, as we haven't changed the
-         layout or added CSS yet, there is nothing to update.
-      3. Run operations that create prerequisites for a reflow, such as adding CSS (below). Thanks
-         to the fact that the network requests, if any, are already pending, we don't waste time.
-     */
-    this.memorizeCssValues();
-    this.addTalkPageCss();
+  /**
+   * Load the data required for the script to process the page as a log page and
+   * {@link module:addCommentLinks process it}.
+   *
+   * @private
+   */
+  bootOnCommentLinksPage() {
+    if (
+      !this.isWatchlistPage() &&
+      !this.isContributionsPage() &&
+      !this.isHistoryPage() &&
+      !(this.isDiffPage() && this.isArticlePageTalkPage()) &&
+      !this.talkPage
+    ) {
+      return;
+    }
+
+    // Make some requests in advance if the API module is ready in order not to make 2 requests
+    // sequentially.
+    if (mw.loader.getState('mediawiki.api') === 'ready') {
+      this.getSiteData();
+
+      // Loading user info on diff pages could lead to problems with saving visits when many pages
+      // are opened, but not yet focused, simultaneously.
+      if (!this.talkPage) {
+        getUserInfo(true).catch((error) => {
+          console.warn(error);
+        });
+      }
+    }
+
+    mw.loader.using([
+      'jquery.client',
+      'mediawiki.Title',
+      'mediawiki.api',
+      'mediawiki.jqueryMsg',
+      'mediawiki.user',
+      'mediawiki.util',
+      'oojs-ui-core',
+      'oojs-ui-widgets',
+      'oojs-ui-windows',
+      'oojs-ui.styles.icons-alerts',
+      'oojs-ui.styles.icons-editing-list',
+      'oojs-ui.styles.icons-interactions',
+      'user.options',
+    ]).then(
+      () => {
+        addCommentLinks();
+        require('./global.less');
+        require('./logPages.less');
+      },
+      (error) => {
+        mw.notify(cd.s('error-loaddata'), { type: 'error' });
+        console.error(error);
+      }
+    );
+  },
+
+  /**
+   * Is the displayed revision the current (last known) revision of the page.
+   *
+   * @returns {boolean}
+   */
+  isCurrentRevision() {
+    return mw.config.get('wgRevisionId') >= mw.config.get('wgCurRevisionId');
+  },
+
+  /**
+   * Check whether the current page is a watchlist or recent changes page.
+   *
+   * @returns {boolean}
+   */
+  isWatchlistPage() {
+    return ['Recentchanges', 'Watchlist'].includes(
+      mw.config.get('wgCanonicalSpecialPageName') || ''
+    );
+  },
+
+  /**
+   * Check whether the current page is a contributions page.
+   *
+   * @returns {boolean}
+   */
+  isContributionsPage() {
+    return mw.config.get('wgCanonicalSpecialPageName') === 'Contributions';
+  },
+
+  /**
+   * Check whether the current page is a history page.
+   *
+   * @returns {boolean}
+   */
+  isHistoryPage() {
+    return cd.g.pageAction === 'history' && isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber);
   },
 };
