@@ -73,6 +73,8 @@
 	"section-metadata-commentcount-authorcount": "$1 {{plural:$1|kommentar|kommentarer}}<span class=\"cd-section-metadata-authorcount\"> från <span class=\"cd-section-metadata-authorcount-link\">$2 {{plural:$2|person|personer}}</span></span>",
 	"section-metadata-newcommentcount": "+$1 {{plural:$1|ny|nya}}",
 	"section-metadata-lastcomment": "Senaste kommentaren:",
+	"section-authors-sort-abc": "Alfabetiskt",
+	"section-authors-sort-count": "Efter antal kommentarer",
 	"cld-title-comment": "Kopiera kommentarslänk",
 	"cld-title-section": "Kopiera avsnittslänk",
 	"cld-select-anchor": "Ankarlänk",
