@@ -80,7 +80,7 @@ class DtSubscriptions extends Subscriptions {
 
     const subscriptions = /** @type {import('./Subscriptions').SubscriptionsData} */ ({});
     for (const nextIds of splitIntoBatches(ids)) {
-      const request = controller.getApi().post({
+      const request = cd.getApi().post({
         action: 'discussiontoolsgetsubscriptions',
         commentname: nextIds,
       }).catch(handleApiReject);
@@ -144,7 +144,7 @@ class DtSubscriptions extends Subscriptions {
     }
 
     try {
-      await controller.getApi().postWithEditToken({
+      await cd.getApi().postWithEditToken({
         action: 'discussiontoolssubscribe',
         page: cd.page.name + (id ? `#${id}` : ''),
         commentname: subscribeId,

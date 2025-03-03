@@ -440,7 +440,7 @@ export class Page {
    * @throws {CdError}
    */
   async loadCode(_, tolerateMissing = true) {
-    const request = controller.getApi().post({
+    const request = cd.getApi().post({
       action: 'query',
       titles: this.name,
       prop: 'revisions',
@@ -540,7 +540,7 @@ export class Page {
 
     const request = inBackground ?
       requestInBackground(options).catch(handleApiReject) :
-      controller.getApi().post(options).catch(handleApiReject);
+      cd.getApi().post(options).catch(handleApiReject);
     const { parse } = /** @type {import('./utils-api').ApiResponseParse} */ (await request);
     if (parse?.text === undefined) {
       throw new CdError({
@@ -603,7 +603,7 @@ export class Page {
    *   has changed.
    */
   async edit(customOptions) {
-    const options = controller.getApi().assertCurrentUser({
+    const options = cd.getApi().assertCurrentUser({
       action: 'edit',
 
       // If we know that this page is a redirect, use its target. Otherwise, use the regular name.
@@ -620,7 +620,7 @@ export class Page {
 
     let response;
     try {
-      const request = controller.getApi().postWithEditToken(options, {
+      const request = cd.getApi().postWithEditToken(options, {
         // Beneficial when sending long unicode texts, which is what we do here.
         contentType: 'multipart/form-data',
       }).catch(handleApiReject);
@@ -693,7 +693,7 @@ export class Page {
    * {@link https://www.mediawiki.org/wiki/Manual:Purge Purge cache} of the page.
    */
   async purge() {
-    await controller.getApi().post({
+    await cd.getApi().post({
       action: 'purge',
       titles: this.name,
     }).catch(() => {
@@ -707,7 +707,7 @@ export class Page {
    * @param {number} revisionId Revision to mark as read (setting all newer revisions unread).
    */
   async markAsRead(revisionId) {
-    await controller.getApi().postWithEditToken({
+    await cd.getApi().postWithEditToken({
       action: 'setnotificationtimestamp',
       titles: this.name,
       newerthanrevid: revisionId,
@@ -921,7 +921,7 @@ export class Page {
    * @returns {Promise.<string>}
    */
   async compareRevisions(revisionIdFrom, revisionIdTo) {
-    const request = controller.getApi().post({
+    const request = cd.getApi().post({
       action: 'compare',
       fromtitle: this.name,
       fromrev: revisionIdFrom,
@@ -942,7 +942,7 @@ export class Page {
   async getFirstTemplateTransclusion(pages) {
     let data;
     try {
-      const request = controller.getApi().post({
+      const request = cd.getApi().post({
         action: 'parse',
         prop: 'parsetree',
         page: this.name,

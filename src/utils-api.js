@@ -9,7 +9,6 @@
 import CdError from './CdError';
 import TextMasker from './TextMasker';
 import cd from './cd';
-import controller from './controller';
 import userRegistry from './userRegistry';
 import { unique } from './utils-general';
 import { brsToNewlines } from './utils-wikitext';
@@ -153,7 +152,7 @@ export function splitIntoBatches(arr) {
  */
 export function requestInBackground(params, method = 'post') {
   return new Promise((resolve, reject) => {
-    controller.getApi()[method](params, {
+    cd.getApi()[method](params, {
       success: (resp) => {
         if (resp.error) {
           // Workaround for cases when an options request is made on an idle page whose tokens
@@ -200,7 +199,7 @@ export async function parseCode(code, customOptions) {
     preview: true,
   };
   const options = { ...defaultOptions, ...customOptions };
-  const request = controller.getApi().post(options).catch(handleApiReject);
+  const request = cd.getApi().post(options).catch(handleApiReject);
   const response = /** @type {ApiResponseParse} */ (await request);
   if (!response.parse) {
     throw new CdError('No parse data returned.');
@@ -235,7 +234,7 @@ export function getUserInfo(reuse = false) {
     return cachedUserInfoRequest;
   }
 
-  cachedUserInfoRequest = controller.getApi().post({
+  cachedUserInfoRequest = cd.getApi().post({
     action: 'query',
     meta: 'userinfo',
     uiprop: ['options', 'rights'],
@@ -273,7 +272,7 @@ export async function getPageTitles(pageIds) {
 
   const pages = [];
   for (const nextPageIds of splitIntoBatches(pageIds)) {
-    const request = controller.getApi().post({
+    const request = cd.getApi().post({
       action: 'query',
       pageids: nextPageIds,
     }).catch(handleApiReject);
@@ -303,7 +302,7 @@ export async function getPageIds(titles) {
   const redirects = [];
   const pages = [];
   for (const nextTitles of splitIntoBatches(titles)) {
-    const request = controller.getApi().post({
+    const request = cd.getApi().post({
       action: 'query',
       titles: nextTitles,
       redirects: true,
@@ -338,7 +337,7 @@ export async function saveOptions(options, isGlobal = false) {
   }
 
   const resp = await requestInBackground(
-    controller.getApi().assertCurrentUser({
+    cd.getApi().assertCurrentUser({
       action,
       change: (
         '\x1f' +
@@ -424,7 +423,7 @@ export async function loadUserGenders(users, doRequestInBackground = false) {
     };
     const request = doRequestInBackground ?
       requestInBackground(options).catch(handleApiReject) :
-      controller.getApi().post(options).catch(handleApiReject);
+      cd.getApi().post(options).catch(handleApiReject);
     const response = /** @type {ApiResponseUsers} */ (await request);
     response.query.users
       .filter((user) => user.gender)
@@ -454,7 +453,7 @@ export async function getPagesExistence(titles) {
   const normalized = [];
   const pages = [];
   for (const nextTitles of splitIntoBatches(titles)) {
-    const request = controller.getApi().post({
+    const request = cd.getApi().post({
       action: 'query',
       titles: nextTitles,
     }).catch(handleApiReject);

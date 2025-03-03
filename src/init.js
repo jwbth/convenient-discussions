@@ -169,7 +169,7 @@ class Init {
         .concat(userLanguageMessageNames)
         .filter(unique);
       for (const nextNames of splitIntoBatches(messagesToRequest)) {
-        const request = controller.getApi().loadMessagesIfMissing(nextNames).then(() => {
+        const request = cd.getApi().loadMessagesIfMissing(nextNames).then(() => {
           filterAndSetContentLanguageMessages(mw.messages.get());
         });
         requests.push(request);
@@ -178,7 +178,7 @@ class Init {
       const contentLanguageMessagesToRequest = contentLanguageMessageNames
         .filter((name) => !cd.g.contentLanguageMessages[name]);
       for (const nextNames of splitIntoBatches(contentLanguageMessagesToRequest)) {
-        const request = controller.getApi().getMessages(nextNames, {
+        const request = cd.getApi().getMessages(nextNames, {
           // cd.g.contentLanguage is not used here for the reasons described in app.js where it is
           // declared.
           amlang: mw.config.get('wgContentLanguage'),
@@ -186,7 +186,7 @@ class Init {
         requests.push(request);
       }
 
-      const userLanguageMessagesRequest = controller.getApi()
+      const userLanguageMessagesRequest = cd.getApi()
         .loadMessagesIfMissing(userLanguageMessageNames);
       requests.push(userLanguageMessagesRequest);
     }
@@ -203,7 +203,7 @@ class Init {
 
     const specialPages = ['Contributions', 'Diff', 'PermanentLink'];
     if (specialPages.some((page) => !cd.g.specialPageAliases[page]?.length) || !cd.g.contentTimezone) {
-      const request = controller.getApi().get({
+      const request = cd.getApi().get({
         action: 'query',
         meta: 'siteinfo',
         siprop: ['specialpagealiases', 'general'],
@@ -282,6 +282,22 @@ class Init {
     return matchingGroups;
   }
 
+  /**
+   * Get a regexp that matches timestamps (without timezone at the end) generated using the given
+   * date format.
+   *
+   * This only supports format characters that are used by the default date format in any of
+   * MediaWiki's languages, namely: D, d, F, G, H, i, j, l, M, n, Y, xg, xkY (and escape
+   * characters), and only dates when MediaWiki existed, let's say 2000 onwards (Thai dates before
+   * 1941 are complicated).
+   *
+   * @param {'content'|'user'} language
+   * @returns {string} Pattern to be a part of a regular expression.
+   * @private
+   * @author Bartosz Dziewoński <matma.rex@gmail.com>
+   * @author Jack who built the house
+   * @license MIT
+   */
   static getTimestampMainPartPattern(language) {
     const isContentLanguage = language === 'content';
     const format = isContentLanguage ? cd.g.contentDateFormat : cd.g.uiDateFormat;
@@ -420,8 +436,8 @@ class Init {
    * object.
    */
   memorizeCssValues() {
-    cd.g.contentLineHeight = parseFloat(controller.$content.css('line-height'));
-    cd.g.contentFontSize = parseFloat(controller.$content.css('font-size'));
+    cd.g.contentLineHeight = parseFloat(this.$content.css('line-height'));
+    cd.g.contentFontSize = parseFloat(this.$content.css('font-size'));
     cd.g.defaultFontSize = parseFloat($(document.documentElement).css('font-size'));
 
     // For Timeless, Vector-2022 skins
@@ -775,18 +791,18 @@ class Init {
    * Get the type of the page.
    *
    * @returns {{
-   *   definitelyTalkPage: boolean;
-   *   articlePageTalkPage: boolean;
-   *   diffPage: boolean;
-   *   talkPage: boolean;
+   *   definitelyTalk: boolean;
+   *   articlePageTalk: boolean;
+   *   diff: boolean;
+   *   talk: boolean;
    * }}
    */
   getPageType() {
     return {
-      definitelyTalkPage: this.definitelyTalkPage,
-      articlePageTalkPage: this.articlePageTalkPage,
-      diffPage: this.diffPage,
-      talkPage: this.talkPage
+      definitelyTalk: this.definitelyTalkPage,
+      articlePageTalk: this.articlePageTalkPage,
+      diff: this.diffPage,
+      talk: this.talkPage,
     };
   }
 
@@ -860,7 +876,9 @@ class Init {
 
     this.showLoadingOverlay();
     Promise.all([modulesRequest, ...siteDataRequests]).then(
-      () => controller.tryExecuteBootProcess(false),
+      () => {
+        return require('./controller').default.tryExecuteBootProcess(false)
+      },
       (error) => {
         mw.notify(cd.s('error-loaddata'), { type: 'error' });
         console.error(error);

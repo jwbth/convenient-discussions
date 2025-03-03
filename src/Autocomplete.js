@@ -1,7 +1,6 @@
 
 import CdError from './CdError';
 import cd from './cd';
-import controller from './controller';
 import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import Tribute from './tribute/Tribute';
@@ -424,7 +423,7 @@ class Autocomplete {
                   .setDisabled(true)
                   .pushPending();
 
-                controller.getApi().get({
+                cd.getApi().get({
                   action: 'templatedata',
                   titles: `Template:${item.original.key}`,
                   redirects: true,
@@ -797,7 +796,7 @@ class Autocomplete {
 
         // First, try to use the search to get only users that have talk pages. Most legitimate
         // users do, while spammers don't.
-        const request = controller.getApi().get({
+        const request = cd.getApi().get({
           action: 'opensearch',
           search: text,
           namespace: 3,
@@ -815,7 +814,7 @@ class Autocomplete {
           resolve(users);
         } else {
           // If we didn't succeed with search, try the entire users database.
-          const request = controller.getApi().get({
+          const request = cd.getApi().get({
             action: 'query',
             list: 'allusers',
             auprefix: text,
@@ -888,7 +887,7 @@ class Autocomplete {
           throw new CdError();
         }
 
-        controller.getApi().get({
+        cd.getApi().get({
           action: 'opensearch',
           search: text,
           redirects: 'return',
@@ -946,7 +945,7 @@ class Autocomplete {
           throw new CdError();
         }
 
-        controller.getApi().get({
+        cd.getApi().get({
           action: 'opensearch',
           search: text.startsWith(':') ? text.slice(1) : 'Template:' + text,
           redirects: 'return',

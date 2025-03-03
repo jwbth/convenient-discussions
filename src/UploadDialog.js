@@ -61,7 +61,7 @@ export class UploadDialog extends mixInClass(/** @type {typeof mw.Upload.Dialog<
     mw.loader.load('https://en.wikipedia.org/w/index.php?title=User:Jack_who_built_the_house/getUrlFromInterwikiLink.js&action=raw&ctype=text/javascript');
 
     const projectNameMsgName = 'project-localized-name-' + mw.config.get('wgDBname');
-    const messagesPromise = controller.getApi().loadMessagesIfMissing([
+    const messagesPromise = cd.getApi().loadMessagesIfMissing([
       projectNameMsgName,
 
       // "I agree to irrevocably release this file under CC BY-SA 4.0"
@@ -73,7 +73,7 @@ export class UploadDialog extends mixInClass(/** @type {typeof mw.Upload.Dialog<
     ]);
     const enProjectNamePromise = cd.g.userLanguage === 'en' ?
       undefined :
-      controller.getApi().getMessages(projectNameMsgName, { amlang: 'en' });
+      cd.getApi().getMessages(projectNameMsgName, { amlang: 'en' });
 
     return super.getSetupProcess(data)
       .next(async () => {
@@ -631,7 +631,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
                 );
                 const dbname = getDbnameForHostname(hostname);
                 return Promise.all([
-                  controller.getApi().getMessages(`project-localized-name-${dbname}`, {
+                  cd.getApi().getMessages(`project-localized-name-${dbname}`, {
                     amlang: 'en',
                   }),
                   canonicalUrlToPageName(url),

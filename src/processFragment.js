@@ -178,7 +178,7 @@ async function searchForNotFoundItem() {
   const archivePrefix = cd.page.getArchivePrefix();
   searchQuery += ` prefix:${archivePrefix}`;
 
-  const resp = await controller.getApi().get({
+  const resp = await cd.getApi().get({
     action: 'query',
     list: 'search',
     srsearch: searchQuery,

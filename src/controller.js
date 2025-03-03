@@ -474,7 +474,6 @@ class Controller extends EventEmitter {
    * Run the {@link BootProcess boot process} and catch errors.
    *
    * @param {boolean} isReload Is the page reloaded.
-   * @private
    */
   async tryExecuteBootProcess(isReload) {
     this.booting = true;
@@ -602,7 +601,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isTalkPage() {
-    return init.getPageType().talkPage;
+    return init.getPageType().talk;
   }
 
   /**
@@ -643,7 +642,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isDiffPage() {
-    return init.getPageType().diffPage;
+    return init.getPageType().diff;
   }
 
   /**
@@ -653,7 +652,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isDefinitelyTalkPage() {
-    return init.getPageType().definitelyTalkPage;
+    return init.getPageType().definitelyTalk;
   }
 
   /**
@@ -665,7 +664,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isArticlePageTalkPage() {
-    return init.getPageType().articlePageTalkPage;
+    return init.getPageType().articlePageTalk;
   }
 
   /**

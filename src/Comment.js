@@ -2972,7 +2972,7 @@ class Comment extends CommentSkeleton {
        * @property {string} compare.body
        */
       const compareRequests = revisions.map((revision) => {
-        const request = controller.getApi().post({
+        const request = cd.getApi().post({
           action: 'compare',
           fromtitle: this.getSourcePage().getArchivedPage().name,
           fromrev: revision.revid,
@@ -3121,7 +3121,7 @@ class Comment extends CommentSkeleton {
         await controller
           .getApi()
           .postWithEditToken(
-            controller.getApi().assertCurrentUser({
+            cd.getApi().assertCurrentUser({
               action: 'thank',
               rev: edit.revid,
               source: cd.config.scriptCodeName,

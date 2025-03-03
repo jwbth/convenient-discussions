@@ -264,7 +264,7 @@ export default {
    */
   async getUsersByGlobalId(userIds) {
     const requests = userIds.map((id) => (
-      controller.getApi().post({
+      cd.getApi().post({
         action: 'query',
         meta: 'globaluserinfo',
         guiid: id,

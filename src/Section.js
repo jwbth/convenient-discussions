@@ -1642,7 +1642,7 @@ class Section extends SectionSkeleton {
    * @throws {CdError}
    */
   async requestCode() {
-    const request = controller.getApi().post(
+    const request = cd.getApi().post(
       /** @type {import('types-mediawiki/mw/Api').UnknownApiParams} */ (
         /** @type {import('types-mediawiki/api_params').ApiQueryRevisionsParams} */ ({
           action: 'query',

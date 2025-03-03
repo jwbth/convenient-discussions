@@ -781,7 +781,7 @@ class BootProcess {
       if (globally) {
         await saveOptions(options, true).catch(handleApiReject);
       } else {
-        await controller.getApi().saveOptions({
+        await cd.getApi().saveOptions({
           'discussiontools-topicsubscription': '1',
         }).catch(handleApiReject);
       }
