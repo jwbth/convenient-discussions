@@ -80,11 +80,6 @@ class Controller extends EventEmitter {
 
   /**
    * @type {JQuery}
-   */
-  $contentColumn;
-
-  /**
-   * @type {JQuery}
    * @private
    */
   $loadingPopup;
@@ -401,7 +396,7 @@ class Controller extends EventEmitter {
       }
     });
 
-    this.$contentColumn = skin$({
+    init.$contentColumn = skin$({
       timeless: '#mw-content',
       minerva: '#bodyContent',
       default: '#content',
@@ -493,41 +488,6 @@ class Controller extends EventEmitter {
     }
 
     this.booting = false;
-  }
-
-  /**
-   * Get the offset data related to `.$contentColumn`.
-   *
-   * @param {boolean} [reset=false] Whether to bypass cache.
-   * @returns {object}
-   */
-  getContentColumnOffsets(reset = false) {
-    if (!this.contentColumnOffsets || reset) {
-      const prop = cd.g.contentDirection === 'ltr' ? 'padding-left' : 'padding-right';
-      let startMargin = Math.max(parseFloat(this.$contentColumn.css(prop)), cd.g.contentFontSize);
-
-      // The content column in Timeless has no _borders_ as such, so it's wrong to penetrate the
-      // surrounding area from the design point of view.
-      if (cd.g.skin === 'timeless') {
-        startMargin--;
-      }
-
-      const left = /** @type {JQuery.Coordinates} */ (this.$contentColumn.offset()).left;
-      const width = /** @type {number} */ (this.$contentColumn.outerWidth());
-      this.contentColumnOffsets = {
-        startMargin,
-        start: cd.g.contentDirection === 'ltr' ? left : left + width,
-        end: cd.g.contentDirection === 'ltr' ? left + width : left,
-      };
-
-      // This is set only on window resize event. The initial value is set in
-      // init.addTalkPageCss() through a style tag.
-      if (reset) {
-        $(document.documentElement).css('--cd-content-start-margin', startMargin + 'px');
-      }
-    }
-
-    return this.contentColumnOffsets;
   }
 
   /**
@@ -1188,7 +1148,7 @@ class Controller extends EventEmitter {
     // sleep(), because it seems like sometimes it doesn't have time to update.
     await sleep(cd.g.skin === 'vector-2022' ? 100 : 0);
 
-    this.getContentColumnOffsets(true);
+    init.getContentColumnOffsets(true);
     this.emit('resize');
     this.handleScroll();
   }

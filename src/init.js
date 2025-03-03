@@ -2,18 +2,11 @@ import dateFormats from '../data/dateFormats.json';
 import digitsData from '../data/digits.json';
 import languageFallbacks from '../data/languageFallbacks.json';
 
-import BootProcess from './BootProcess';
-import Comment from './Comment';
-import Section from './Section';
-import Thread from './Thread';
 import addCommentLinks from './addCommentLinks';
 import cd from './cd';
-import commentFormRegistry from './commentFormRegistry';
-import commentRegistry from './commentRegistry';
 import debug from './debug';
 import jqueryExtensions from './jqueryExtensions';
 import pageRegistry from './pageRegistry';
-import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import { processPage } from './updateChecker';
 import userRegistry from './userRegistry';
@@ -32,13 +25,6 @@ import visits from './visits';
  * add CSS, load site data, such as MediaWiki messages and configuration, and set date formats based
  * on it.
  */
-
-/**
- * Class for initializing the script, both on talk pages and on log pages such as the watchlist.
- * Includes setting constants as properties of the {@link convenientDiscussions.g} object, adding
- * CSS, loading site data, such as MediaWiki messages and configuration, and setting date formats
- * based on it.
- */
 class Init {
   /** @type {JQuery} */
   $content;
@@ -49,7 +35,7 @@ class Init {
   /** @type {JQuery} */
   $loadingPopup;
 
-  /** @type {BootProcess} */
+  /** @type {import('./BootProcess').default} */
   bootProcess;
 
   /** @type {boolean} */
@@ -74,7 +60,7 @@ class Init {
    * @returns {Array<Promise|JQuery.Promise>} There should be at least one promise in the array.
    */
   getSiteData() {
-    this.siteDataRequests ||= Init.loadSiteData();
+    this.siteDataRequests ||= this.loadSiteData();
 
     return this.siteDataRequests;
   }
@@ -85,16 +71,16 @@ class Init {
    * @returns {JQuery.Promise[]} There should be at least one promise in the array.
    * @private
    */
-  static loadSiteData() {
-    Init.initFormats();
+  loadSiteData() {
+    this.initFormats();
 
-    const contentDateTokensMessageNames = Init.getUsedDateTokens(cd.g.contentDateFormat)
+    const contentDateTokensMessageNames = this.getUsedDateTokens(cd.g.contentDateFormat)
       .map((pattern) => dateTokenToMessageNames[pattern]);
     const contentLanguageMessageNames = [
       'word-separator', 'comma-separator', 'colon-separator', 'timezone-utc'
     ].concat(...contentDateTokensMessageNames);
 
-    const uiDateTokensMessageNames = Init.getUsedDateTokens(cd.g.uiDateFormat)
+    const uiDateTokensMessageNames = this.getUsedDateTokens(cd.g.uiDateFormat)
       .map((pattern) => dateTokenToMessageNames[pattern]);
     const userLanguageMessageNames = [
       'parentheses', 'parentheses-start', 'parentheses-end', 'word-separator', 'comma-separator',
@@ -233,7 +219,7 @@ class Init {
    * @author Jack who built the house
    * @license MIT
    */
-  static getMatchingGroups(format) {
+  getMatchingGroups(format) {
     const matchingGroups = [];
     for (let p = 0; p < format.length; p++) {
       let code = format[p];
@@ -298,7 +284,7 @@ class Init {
    * @author Jack who built the house
    * @license MIT
    */
-  static getTimestampMainPartPattern(language) {
+  getTimestampMainPartPattern(language) {
     const isContentLanguage = language === 'content';
     const format = isContentLanguage ? cd.g.contentDateFormat : cd.g.uiDateFormat;
     const digits = isContentLanguage ? cd.g.contentDigits : cd.g.uiDigits;
@@ -386,7 +372,7 @@ class Init {
    *
    * @private
    */
-  static initFormats() {
+  initFormats() {
     const getFallbackLanguage = (/** @type {string} */ lang) =>
       (languageFallbacks[lang] || ['en']).find(
         (/** @type {string} */ fallback) => dateFormats[fallback]
@@ -412,7 +398,7 @@ class Init {
    * @author Bartosz Dziewoński <matma.rex@gmail.com>
    * @license MIT
    */
-  static getUsedDateTokens(format) {
+  getUsedDateTokens(format) {
     const tokens = [];
 
     for (let p = 0; p < format.length; p++) {
@@ -463,7 +449,7 @@ class Init {
       default: 'body',
     }).css('background-color');
     const metadataFontSize = parseFloat((cd.g.contentFontSize / cd.g.defaultFontSize).toFixed(7));
-    const contentStartMargin = controller.getContentColumnOffsets().startMargin;
+    const contentStartMargin = this.getContentColumnOffsets().startMargin;
     const sidebarTransparentColor = transparentize(sidebarColor);
 
     // `float: inline-start` is too new: it appeared in Chrome in October 2023.
@@ -516,6 +502,41 @@ class Init {
     require('./skins.less');
     require('./talkPage.less');
     require('./toc.less');
+  }
+
+  /**
+   * Get the offset data related to `.$contentColumn`.
+   *
+   * @param {boolean} [reset=false] Whether to bypass cache.
+   * @returns {object}
+   */
+  getContentColumnOffsets(reset = false) {
+    if (!this.contentColumnOffsets || reset) {
+      const prop = cd.g.contentDirection === 'ltr' ? 'padding-left' : 'padding-right';
+      let startMargin = Math.max(parseFloat(this.$contentColumn.css(prop)), cd.g.contentFontSize);
+
+      // The content column in Timeless has no _borders_ as such, so it's wrong to penetrate the
+      // surrounding area from the design point of view.
+      if (cd.g.skin === 'timeless') {
+        startMargin--;
+      }
+
+      const left = /** @type {JQuery.Coordinates} */ (this.$contentColumn.offset()).left;
+      const width = /** @type {number} */ (this.$contentColumn.outerWidth());
+      this.contentColumnOffsets = {
+        startMargin,
+        start: cd.g.contentDirection === 'ltr' ? left : left + width,
+        end: cd.g.contentDirection === 'ltr' ? left + width : left,
+      };
+
+      // This is set only on window resize event. The initial value is set in
+      // init.addTalkPageCss() through a style tag.
+      if (reset) {
+        $(document.documentElement).css('--cd-content-start-margin', startMargin + 'px');
+      }
+    }
+
+    return this.contentColumnOffsets;
   }
 
   /**
@@ -579,6 +600,21 @@ class Init {
     };
 
     cd.settings = settings;
+
+    const controller = require('./controller').default;
+    const commentRegistry = require('./commentRegistry').default;
+    const sectionRegistry = require('./sectionRegistry').default;
+    const commentFormRegistry = require('./commentFormRegistry').default;
+
+    /**
+     * Collection of all comment forms on the page in the order of their creation.
+     *
+     * @name commentForms
+     * @type {import('./CommentForm').default[]}
+     * @see module:commentFormRegistry.getAll
+     * @memberof convenientDiscussions
+     */
+    cd.commentForms = commentFormRegistry.getAll();
 
     cd.tests.processPageInBackground = processPage;
     cd.tests.showSettingsDialog = settings.showDialog.bind(settings);
@@ -654,7 +690,7 @@ class Init {
    */
   initTimestampParsingTools(language) {
     if (language === 'content') {
-      const mainPartPattern = Init.getTimestampMainPartPattern('content');
+      const mainPartPattern = this.getTimestampMainPartPattern('content');
       const utcPattern = mw.util.escapeRegExp(mw.message('(content)timezone-utc').parse());
 
       // Do we need non-Arabic digits here?
@@ -666,12 +702,12 @@ class Init {
         `^([^]*(?:^|[^=])(?:\\b| ))(${cd.g.contentTimestampRegexp.source})(?!["»])`
       );
       cd.g.contentTimestampNoTzRegexp = new RegExp(mainPartPattern);
-      cd.g.contentTimestampMatchingGroups = Init.getMatchingGroups(cd.g.contentDateFormat);
+      cd.g.contentTimestampMatchingGroups = this.getMatchingGroups(cd.g.contentDateFormat);
       cd.g.timezoneRegexp = new RegExp(timezonePattern, 'g');
     } else {
-      cd.g.uiTimestampRegexp = new RegExp(Init.getTimestampMainPartPattern('user'));
+      cd.g.uiTimestampRegexp = new RegExp(this.getTimestampMainPartPattern('user'));
       cd.g.parseTimestampUiRegexp = new RegExp(`^([^]*)(${cd.g.uiTimestampRegexp.source})`);
-      cd.g.uiTimestampMatchingGroups = Init.getMatchingGroups(cd.g.uiDateFormat);
+      cd.g.uiTimestampMatchingGroups = this.getMatchingGroups(cd.g.uiDateFormat);
     }
 
     const timezoneParts = mw.user.options.get('timecorrection')?.split('|');
@@ -714,23 +750,13 @@ class Init {
     await settings.init();
 
     this.initTimestampParsingTools('content');
-    Init.initPatterns();
-    Init.initPrototypes();
+    this.initPatterns();
+    this.initPrototypes();
     if (settings.get('useBackgroundHighlighting')) {
       require('./Comment.layers.optionalBackgroundHighlighting.less');
     }
     $.fn.extend(jqueryExtensions);
     initDayjs();
-
-    /**
-     * Collection of all comment forms on the page in the order of their creation.
-     *
-     * @name commentForms
-     * @type {import('./CommentForm').default[]}
-     * @see module:commentFormRegistry.getAll
-     * @memberof convenientDiscussions
-     */
-    cd.commentForms = commentFormRegistry.getAll();
   }
 
   /**
@@ -818,7 +844,6 @@ class Init {
     debug.stopTimer('start');
     debug.startTimer('load data');
 
-    this.bootProcess = new BootProcess();
     let siteDataRequests = [];
 
     // Make some requests in advance if the API module is ready in order not to make 2 requests
@@ -867,6 +892,7 @@ class Init {
       // If there is no data to load and, therefore, no period of time within which a reflow (layout
       // thrashing) could happen without impeding performance, we cache the value so that it could
       // be used in .saveRelativeScrollPosition() without causing a reflow.
+      this.bootProcess = new (require('./BootProcess').default)();
       if (siteDataRequests.every((request) => request.state() === 'resolved')) {
         this.bootProcess.passedData = { scrollY: window.scrollY };
       }
@@ -1044,9 +1070,8 @@ class Init {
    * Generate regexps, patterns (strings to be parts of regexps), selectors from config values.
    *
    * @private
-   * @static
    */
-  static initPatterns() {
+  initPatterns() {
     const signatureEndingRegexp = cd.config.signatureEndingRegexp;
     cd.g.signatureEndingRegexp = signatureEndingRegexp ?
       new RegExp(
@@ -1215,12 +1240,11 @@ class Init {
    * Initialize prototypes of elements and OOUI widgets.
    *
    * @private
-   * @static
    */
-  static initPrototypes() {
-    Comment.initPrototypes();
-    Section.initPrototypes();
-    Thread.initPrototypes();
+  initPrototypes() {
+    require('./Comment').default.initPrototypes();
+    require('./Section').default.initPrototypes();
+    require('./Thread').default.initPrototypes();
   }
 }
 
