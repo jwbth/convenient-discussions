@@ -5,12 +5,13 @@
  */
 
 import Comment from './Comment';
+import bootController from './bootController';
 import cd from './cd';
-import controller from './talkPageController';
 import debug from './debug';
 import pageRegistry from './pageRegistry';
 import { buildEditSummary, getQueryParamBooleanValue, underlinesToSpaces } from './utils-general';
 import { wrapDiffBody, wrapHtml } from './utils-window';
+import WebpackWorker from './worker/worker-gate';
 
 const mwStringsCache = {};
 let isQqxMode;
@@ -68,6 +69,14 @@ const pixelDeviationRatio = /** @type {number} */ (
 );
 
 const convenientDiscussions = {
+  /**
+   * @type {{
+   *   [key: string]: OO.ui.WindowManager;
+   * }}
+   * @private
+   */
+  windowManagers: {},
+
   /**
    * Get a language string.
    *
@@ -193,6 +202,42 @@ const convenientDiscussions = {
   },
 
   /**
+   * _For internal use._ Get the worker object.
+   *
+   * @returns {Worker}
+   */
+  getWorker() {
+    if (!this.worker) {
+      this.worker = /** @type {Worker} */ (new WebpackWorker());
+    }
+
+    return this.worker;
+  },
+
+  /**
+   * Create an OOUI window manager or return an existing one.
+   *
+   * @param {string} [name='default'] Name of the window manager. We may need more than one if we,
+   *   for some reason, want to have more than one window open at any moment.
+   * @returns {OO.ui.WindowManager}
+   */
+  getWindowManager(name = 'default') {
+    if (!this.windowManagers[name]) {
+      const windowManager = new OO.ui.WindowManager();
+      windowManager.on('closing', async (_, closed) => {
+        // We don't have windows that can be reused.
+        await closed;
+        windowManager.clearWindows();
+      });
+
+      $(OO.ui.getTeleportTarget?.() || document.body).append(windowManager.$element);
+      this.windowManagers[name] = windowManager;
+    }
+
+    return this.windowManagers[name];
+  },
+
+  /**
    * Checks whether the current execution context is a web worker.
    *
    * @returns {boolean}
@@ -212,9 +257,7 @@ const convenientDiscussions = {
    */
   debug,
 
-  // Kind of a temporary storage of objects of some script's features. Could be removed at any
-  // moment.
-  tests: { controller },
+  tests: {},
 
   /**
    * Script's publicly available API. Here there are some utilities that we believe should be
@@ -261,11 +304,11 @@ const convenientDiscussions = {
     buildEditSummary,
 
     /**
-     * @see module:controller.isPageOverlayOn
+     * @see module:bootController.isPageOverlayOn
      * @function isPageOverlayOn
      * @memberof convenientDiscussions.api
      */
-    isPageOverlayOn: controller.isPageOverlayOn.bind(controller),
+    isPageOverlayOn: bootController.isPageOverlayOn.bind(bootController),
 
     /**
      * @see module:util.wrapHtml

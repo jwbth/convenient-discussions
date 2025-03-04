@@ -1436,8 +1436,8 @@ class Section extends SectionSkeleton {
     const MoveSectionDialog = require('./MoveSectionDialog').default;
 
     const dialog = new MoveSectionDialog(this);
-    talkPageController.getWindowManager().addWindows([dialog]);
-    talkPageController.getWindowManager().openWindow(dialog);
+    cd.getWindowManager().addWindows([dialog]);
+    cd.getWindowManager().openWindow(dialog);
 
     cd.tests.moveSectionDialog = dialog;
   }

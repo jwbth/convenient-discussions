@@ -1,6 +1,6 @@
 import CdError from './CdError';
+import bootController from './bootController';
 import cd from './cd';
-import talkPageController from './talkPageController';
 import { es6ClassToOoJsClass } from './utils-oojs';
 
 /**
@@ -42,7 +42,7 @@ class ProcessDialog extends OO.ui.ProcessDialog {
   confirmClose() {
     if (!this.isUnsaved() || confirm(cd.s(`${this.constructor.cdKey}-close-confirm`))) {
       this.close({ action: 'close' });
-      talkPageController.removePreventUnloadCondition('dialog');
+      bootController.removePreventUnloadCondition('dialog');
     }
   }
 

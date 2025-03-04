@@ -901,7 +901,6 @@ class CommentRegistry extends EventEmitter {
    * @param {Date} date
    * @param {string} author
    * @returns {Comment}
-   * @private
    */
   findPriorComment(date, author) {
     return this.items

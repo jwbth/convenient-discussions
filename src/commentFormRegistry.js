@@ -1,5 +1,6 @@
 import CommentForm from './CommentForm';
 import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime';
+import bootController from './bootController';
 import cd from './cd';
 import commentRegistry from './commentRegistry';
 import sectionRegistry from './sectionRegistry';
@@ -407,8 +408,8 @@ class CommentFormRegistry extends EventEmitter {
       .join('\n\n----\n');
 
     const dialog = new OO.ui.MessageDialog();
-    talkPageController.getWindowManager().addWindows([dialog]);
-    talkPageController.getWindowManager().openWindow(dialog, {
+    cd.getWindowManager().addWindows([dialog]);
+    cd.getWindowManager().openWindow(dialog, {
       message: (new OO.ui.FieldLayout(
         new OO.ui.MultilineTextInputWidget({
           value: text,
@@ -455,7 +456,7 @@ class CommentFormRegistry extends EventEmitter {
    * @private
    */
   configureClosePageConfirmation() {
-    talkPageController.addPreventUnloadCondition('commentForms', () => {
+    bootController.addPreventUnloadCondition('commentForms', () => {
       // Check for altered comment forms - if there are none, don't save the session to decrease the
       // chance of the situation where a user had two same pages in different tabs and lost a form
       // in other tab after saving nothing in this tab.

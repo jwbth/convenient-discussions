@@ -1715,7 +1715,7 @@ class CommentForm extends EventEmitter {
     }
 
     this.uploadDialog = new (require('./UploadDialog').default)();
-    const windowManager = talkPageController.getWindowManager();
+    const windowManager = cd.getWindowManager();
     windowManager.addWindows([this.uploadDialog]);
     const win = windowManager.openWindow(this.uploadDialog, {
       file,

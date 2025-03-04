@@ -46,8 +46,8 @@ import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
  * @property {object} [edit.captcha]
  */
 
-// Export for the sake of VS Code IntelliSense. FIXME: make the class of the current page extend the
-// page's class? The current page has more methods effectively.
+// Export for the sake of types. FIXME: make the class of the current page extend the page's class?
+// The current page has more methods effectively.
 /**
  * Class representing a wiki page (a page for which the
  * {@link https://www.mediawiki.org/wiki/Manual:Interface/JavaScript#All_pages_(user/page-specific) wgIsArticle}
@@ -558,7 +558,8 @@ export class Page {
   }
 
   /**
-   * Get a list of revisions of the page (the `redirects` parameter is set to `true` by default).
+   * Get a list of revisions of the page (the `redirects` API parameter is set to `true` by
+   * default).
    *
    * @param {object} [customOptions={}]
    * @param {boolean} [inBackground=false] Make a request that won't set the process on hold when

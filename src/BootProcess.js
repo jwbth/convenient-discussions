@@ -131,8 +131,9 @@ function processAndRemoveDtElements(elements, bootProcess) {
  */
 
 /**
- * Class representing the process of loading or reloading CD onto an article page. In some sense, it
- * is a (re-)builder for {@link module:controller controller}.
+ * Class representing a single process of booting or rebooting CD onto a talk page. In some sense,
+ * it is a (re-)builder for {@link talkPageController}. On first run, it's a builder for
+ * {@link convenientDiscussions.g}.
  */
 class BootProcess {
   /** @type {boolean} */

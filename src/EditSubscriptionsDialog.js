@@ -1,6 +1,7 @@
 import CdError from './CdError';
 import MultilineTextInputWidget from './MultilineTextInputWidget';
 import ProcessDialog from './ProcessDialog';
+import bootController from './bootController';
 import cd from './cd';
 import talkPageController from './talkPageController';
 import { getPageIds, getPageTitles } from './utils-api';
@@ -185,7 +186,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
       this.updateSize();
       this.popPending();
 
-      talkPageController.addPreventUnloadCondition('dialog', () => this.isUnsaved());
+      bootController.addPreventUnloadCondition('dialog', () => this.isUnsaved());
     });
   }
 

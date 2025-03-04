@@ -19,7 +19,6 @@ import { getUserInfo } from './utils-api';
 import { defined, definedAndNotNull, getLastArrayElementOrSelf, isHeadingNode, isInline, sleep } from './utils-general';
 import { EventEmitter } from './utils-oojs';
 import { copyText, getVisibilityByRects, wrapHtml } from './utils-window';
-import WebpackWorker from './worker/worker-gate';
 
 /**
  * @typedef {object} EventMap
@@ -73,22 +72,6 @@ class TalkPageController extends EventEmitter {
   mutationObserver;
 
   /**
-   * @type {{
-   *   [key: string]: (event: JQuery.Event) => '' | undefined;
-   * }}
-   * @private
-   */
-  beforeUnloadHandlers = {};
-
-  /**
-   * @type {{
-   *  [key: string]: OO.ui.WindowManager;
-   * }}
-   * @private
-   */
-  windowManagers = {};
-
-  /**
    * @type {JQuery|undefined}
    * @private
    */
@@ -134,12 +117,6 @@ class TalkPageController extends EventEmitter {
    * @private
    */
   tocContent;
-
-  /**
-   * @type {mw.Api}
-   * @private
-   */
-  api;
 
   /**
    * @type {{
@@ -197,42 +174,6 @@ class TalkPageController extends EventEmitter {
   commentsNotifiedAbout = [];
 
   isObstructingElementHoveredCached = false;
-
-  /**
-   * _For internal use._ Get the worker object.
-   *
-   * @returns {Worker}
-   */
-  getWorker() {
-    if (!this.worker) {
-      this.worker = /** @type {Worker} */ (new WebpackWorker());
-    }
-
-    return this.worker;
-  }
-
-  /**
-   * Create an OOUI window manager or return an existing one.
-   *
-   * @param {string} [name='default'] Name of the window manager. We may need more than one if we,
-   *   for some reason, want to have more than one window open at any moment.
-   * @returns {OO.ui.WindowManager}
-   */
-  getWindowManager(name = 'default') {
-    if (!this.windowManagers[name]) {
-      const windowManager = new OO.ui.WindowManager();
-      windowManager.on('closing', async (_, closed) => {
-        // We don't have windows that can be reused.
-        await closed;
-        windowManager.clearWindows();
-      });
-
-      $(OO.ui.getTeleportTarget?.() || document.body).append(windowManager.$element);
-      this.windowManagers[name] = windowManager;
-    }
-
-    return this.windowManagers[name];
-  }
 
   /**
    * Get the popup overlay used for OOUI components.
@@ -640,37 +581,6 @@ class TalkPageController extends EventEmitter {
   }
 
   /**
-   * Add a condition preventing page unload.
-   *
-   * @param {string} name
-   * @param {() => boolean} condition
-   */
-  addPreventUnloadCondition(name, condition) {
-    this.beforeUnloadHandlers[name] = (/** @type {JQuery.Event} */ event) => {
-      if (!condition()) return;
-
-      event.preventDefault();
-      // @ts-ignore
-      event.returnValue = '1';
-
-      return '';
-    };
-    $(window).on('beforeunload', this.beforeUnloadHandlers[name]);
-  }
-
-  /**
-   * Remove a condition preventing page unload.
-   *
-   * @param {string} name
-   */
-  removePreventUnloadCondition(name) {
-    if (!this.beforeUnloadHandlers[name]) return;
-
-    $(window).off('beforeunload', (this.beforeUnloadHandlers[name]));
-    delete this.beforeUnloadHandlers[name];
-  }
-
-  /**
    * _For internal use._ Handle a mouse move event (including `mousemove` and `mouseover`).
    *
    * @param {MouseEvent} event
@@ -1031,6 +941,12 @@ class TalkPageController extends EventEmitter {
   /**
    * Reload the page via Ajax.
    *
+   * (This method could have mostly been part of {@link bootController} (apart from
+   * `saveScrollPosition()`, `restoreScrollPosition()`, and `reset()`), but is in
+   * `talkPageController` because we need it to emit events which `bootController` can't do due to
+   * the fact that `OO.EventEmitter` is not available before its module is loaded by
+   * `bootController` itself.)
+   *
    * @param {import('./BootProcess').PassedData} [passedData={}] Data passed from the previous page
    *   state. See {@link PassedData} for the list of possible properties. `html`, `unseenComments`
    *   properties are set in this function.
@@ -1043,14 +959,12 @@ class TalkPageController extends EventEmitter {
 
     this.emit('beforeReload', passedData);
 
-    const bootProcess = bootController.createBootProcess(passedData);
-
     // We reset the live timestamps only during the boot process, because we shouldn't dismount the
     // components of the current version of the page at least until a correct response to the parse
     // request is received. Otherwise, if the request fails, the user would be left with a
     // dysfunctional page.
 
-    if (!bootProcess.passedData.commentIds && !bootProcess.passedData.sectionId) {
+    if (!passedData.commentIds && !passedData.sectionId) {
       this.saveScrollPosition();
     }
 
@@ -1058,13 +972,14 @@ class TalkPageController extends EventEmitter {
     debug.startTimer('total time');
     debug.startTimer('get HTML');
 
-    bootController.showLoadingOverlay();
-
     // Save time by requesting the options in advance. This also resets the cache since the `reuse`
-    // argument is `false`.
+    // parameter is `false`.
     getUserInfo().catch((error) => {
       console.warn(error);
     });
+
+    bootController.showLoadingOverlay();
+    const bootProcess = bootController.createBootProcess(passedData);
 
     try {
       bootProcess.passedData.parseData = await cd.page.parse(undefined, false, true);
@@ -1225,8 +1140,8 @@ class TalkPageController extends EventEmitter {
     if (bootController.isPageOverlayOn()) return;
 
     const dialog = new (require('./EditSubscriptionsDialog').default)();
-    this.getWindowManager().addWindows([dialog]);
-    this.getWindowManager().openWindow(dialog);
+    cd.getWindowManager().addWindows([dialog]);
+    cd.getWindowManager().openWindow(dialog);
   }
 
   /**
@@ -1295,8 +1210,8 @@ class TalkPageController extends EventEmitter {
     }
 
     const dialog = new (require('./CopyLinkDialog').default)(object, content);
-    this.getWindowManager().addWindows([dialog]);
-    this.getWindowManager().openWindow(dialog);
+    cd.getWindowManager().addWindows([dialog]);
+    cd.getWindowManager().openWindow(dialog);
   }
 
   /**
@@ -1636,7 +1551,7 @@ class TalkPageController extends EventEmitter {
   getSubscriptionsInstance() {
     this.subscriptionsInstance ||= new (
       settings.get('useTopicSubscription')
-        // Use `require()`, not `import` to avoid a circular reference
+        // Use `require()`, not `import`, to avoid a circular reference
         ? require('./DtSubscriptions').default
         : require('./LegacySubscriptions').default
     )();
@@ -1794,7 +1709,8 @@ class TalkPageController extends EventEmitter {
    */
   isSubscribingDisabled() {
     return (
-      cd.page.isOwnTalkPage() && !['all', 'toMe'].includes(settings.get('desktopNotifications'))
+      cd.page.isOwnTalkPage() &&
+      !['all', 'toMe'].includes(settings.get('desktopNotifications'))
     );
   }
 }

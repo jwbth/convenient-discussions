@@ -7,7 +7,6 @@ import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
 import sectionRegistry from './sectionRegistry';
 import settings from './settings';
-import talkPageController from './talkPageController';
 import userRegistry from './userRegistry';
 import { loadUserGenders } from './utils-api';
 import { calculateWordOverlap, keepWorkerSafeValues, subtractDaysFromNow } from './utils-general';
@@ -112,7 +111,7 @@ class UpdateChecker extends EventEmitter {
   setAlarmViaWorker(interval) {
     if (Number.isNaN(Number(interval))) return;
 
-    talkPageController.getWorker().postMessage({
+    cd.getWorker().postMessage({
       type: 'setAlarm',
       interval,
     });
@@ -124,7 +123,7 @@ class UpdateChecker extends EventEmitter {
    * @private
    */
   removeAlarmViaWorker() {
-    talkPageController.getWorker().postMessage({
+    cd.getWorker().postMessage({
       type: 'removeAlarm',
     });
   }
@@ -139,7 +138,7 @@ class UpdateChecker extends EventEmitter {
   runWorkerTask(payload) {
     return new Promise((resolve) => {
       const resolverId = this.resolverCount++;
-      talkPageController.getWorker().postMessage(Object.assign(payload, { resolverId }));
+      cd.getWorker().postMessage(Object.assign(payload, { resolverId }));
       this.resolvers[resolverId] = resolve;
     });
   }
@@ -889,7 +888,7 @@ class UpdateChecker extends EventEmitter {
   async setup(previousVisitTime, submittedCommentId) {
     this.isBackgroundCheckArranged = false;
     this.previousVisitRevisionId = undefined;
-    const worker = talkPageController.getWorker();
+    const worker = cd.getWorker();
     if (worker.onmessage) {
       this.removeAlarmViaWorker();
     } else {

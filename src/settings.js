@@ -1,7 +1,6 @@
 import TextMasker from './TextMasker';
 import cd from './cd';
 import pageRegistry from './pageRegistry';
-import talkPageController from './talkPageController';
 import { getUserInfo, saveGlobalOption, saveLocalOption } from './utils-api';
 import { areObjectsEqual, defined, definedAndNotNull, subtractDaysFromNow, typedKeysOf, ucFirst } from './utils-general';
 import { showConfirmDialog } from './utils-oojs';
@@ -797,7 +796,7 @@ class Settings {
     }
 
     const dialog = new (require('./SettingsDialog').default)(initalPageName, focusSelector);
-    const windowManager = talkPageController.getWindowManager('settings');
+    const windowManager = cd.getWindowManager('settings');
     windowManager.addWindows([dialog]);
     windowManager.openWindow(dialog, { loadedSettings });
 

@@ -113,7 +113,7 @@ export function handleApiReject(codeOrArr, response) {
  */
 export function splitIntoBatches(arr) {
   // Current user's rights are only set on an `userinfo` request which is performed late (see "We
-  // are _not_ calling..." in controller#loadToTalkPage()). For example, getDtSubscriptions() runs
+  // are _not_ calling..." in BootController#initOnTalkPage()). For example, getDtSubscriptions() runs
   // earlier than that. In addition to that, cd.g.phpCharToUpper is empty until we make sure the
   // mediawiki.Title module is loaded.
   let currentUserRights;
@@ -215,7 +215,7 @@ export async function parseCode(code, customOptions) {
 }
 
 /**
- * @typedef {object} Userinfo
+ * @typedef {object} UserInfo
  * @property {{ [key: string]: any }} options
  * @property {string} visits
  * @property {string} subscriptions
@@ -225,8 +225,8 @@ export async function parseCode(code, customOptions) {
  * Make a userinfo request (see {@link https://www.mediawiki.org/wiki/API:Userinfo}).
  *
  * @param {boolean} [reuse=false] Whether to reuse a cached request.
- * @returns {JQuery.Promise.<Userinfo>} Promise for an object containing the full options object, visits,
- *   subscription list, and rights.
+ * @returns {JQuery.Promise.<UserInfo>} Promise for an object containing the full options object,
+ *   visits, subscription list, and rights.
  * @throws {CdError}
  */
 export function getUserInfo(reuse = false) {

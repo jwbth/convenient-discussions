@@ -17,13 +17,23 @@ import { createSvg, skin$, transparentize } from './utils-window';
 import visits from './visits';
 
 /**
- * Singleton for initializing the script, both on talk pages and on log pages such as the watchlist,
- * and controlling the reload (boot) process of talk pages. The important thing about this module is
- * that it is imported when modules such as OOUI are not yet available.
+ * Singleton for managing the booting, rebooting, and unbooting (unloading) of the page.
  *
- * Methods of the class set constants as properties of the {@link convenientDiscussions.g} object,
- * add CSS, load site data, such as MediaWiki messages and configuration, and set date formats based
- * on it.
+ * It
+ * * initializes the script, both on talk pages and on log pages such as the watchlist (TODO:
+ *   investigate whether these cases two should better be split between different classes). Methods
+ *   of the class set constants as properties of the {@link convenientDiscussions.g} object, add
+ *   CSS, load site data, such as MediaWiki messages and configuration, and set date formats based
+ *   on it;
+ * * controls the reload (boot) process of *talk* pages;
+ * * controls the behavior when the user tries to close the tab;
+ * * holds some state common for talk pages and pages with comment links (e.g. `$content`, `$root`)
+ *   that needs to be actualized on DOM updates. Global config (i.e. global data that doesn't change
+ *   unlike state) goes in the {@link convenientDiscussions.g} object, and global methods go in
+ *   {@link convenientDiscussions} itself.
+ *
+ * An important thing about this module is that it is imported when modules such as OOUI are not yet
+ * available.
  */
 class BootController {
   /** @type {JQuery} */
@@ -82,6 +92,14 @@ class BootController {
 
   /**
    * @type {{
+   *   [key: string]: (event: JQuery.Event) => '' | undefined;
+   * }}
+   * @private
+   */
+  beforeUnloadHandlers = {};
+
+  /**
+   * @type {{
    *   definitelyTalk: boolean;
    *   articleTalk: boolean;
    *   diff: boolean;
@@ -105,7 +123,7 @@ class BootController {
 
     /**
      * Is the _article_ page (the one with `wgIsArticle` being true) of the current page a talk page
-     * eligible for CD. It can be `true` on edit, history pages etc. Although the assessments may be
+     * eligible for CD. It can be `true` on edit, history pages etc. However, the assessments may be
      * different on a history page and on an article page of the same title, since the page can
      * contain elements with special classes that we can access only on the article page.
      */
@@ -710,6 +728,7 @@ class BootController {
      */
     cd.commentForms = commentFormRegistry.getAll();
 
+    cd.tests.controller = controller,
     cd.tests.processPageInBackground = processPage;
     cd.tests.showSettingsDialog = settings.showDialog.bind(settings);
     cd.tests.editSubscriptions = controller.showEditSubscriptionsDialog.bind(controller);
@@ -836,7 +855,7 @@ class BootController {
    */
   async initTalkPage() {
     // In most cases the site data is already loaded after being requested in
-    // controller.loadToTalkPage().
+    // BootController#initOnTalkPage().
     await Promise.all(this.getSiteData());
 
     // This could have been executed from addCommentLinks.prepare() already.
@@ -1512,6 +1531,37 @@ class BootController {
     require('./Comment').default.initPrototypes();
     require('./Section').default.initPrototypes();
     require('./Thread').default.initPrototypes();
+  }
+
+  /**
+   * Add a condition preventing page unload.
+   *
+   * @param {string} name
+   * @param {() => boolean} condition
+   */
+  addPreventUnloadCondition(name, condition) {
+    this.beforeUnloadHandlers[name] = (/** @type {JQuery.Event} */ event) => {
+      if (!condition()) return;
+
+      event.preventDefault();
+      // @ts-ignore
+      event.returnValue = '1';
+
+      return '';
+    };
+    $(window).on('beforeunload', this.beforeUnloadHandlers[name]);
+  }
+
+  /**
+   * Remove a condition preventing page unload.
+   *
+   * @param {string} name
+   */
+  removePreventUnloadCondition(name) {
+    if (!this.beforeUnloadHandlers[name]) return;
+
+    $(window).off('beforeunload', (this.beforeUnloadHandlers[name]));
+    delete this.beforeUnloadHandlers[name];
   }
 }
 
