@@ -1493,7 +1493,7 @@ class CommentForm extends EventEmitter {
     // functionality.
     this.$messageArea
       .find('.mw-charinsert-item')
-      .each((i, el) => {
+      .each((_, el) => {
         const $el = $(el);
         $el
           .on('click', () => {

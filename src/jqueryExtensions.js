@@ -32,7 +32,7 @@ export default {
    * @memberof JQuery.fn
    */
   cdRemoveNonElementNodes: function () {
-    return this.filter((i, el) => el.tagName && !isMetadataNode(el));
+    return this.filter((_, el) => el.tagName && !isMetadataNode(el));
   },
 
   cdScrollTo(alignment = 'top', smooth = true, /** @type {() => void} */ callback) {
@@ -51,6 +51,7 @@ export default {
           return offset;
         }
       }
+
       return null;
     }
 

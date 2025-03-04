@@ -48,8 +48,8 @@ async function initialize() {
 
   try {
     await Promise.all(requests);
-  } catch (e) {
-    throw ['Couldn\'t load the data required for the script.', e];
+  } catch (error) {
+    throw ['Couldn\'t load the data required for the script.', error];
   }
 
   mw.loader.addStyleTag(`:root {
@@ -668,13 +668,13 @@ function processDiff($diff) {
           linkElement.href = page.getUrl() + '#' + id;
 
           // Non-diff pages that have a diff, like with Serhio Magpie's Instant Diffs.
-          if (bootController.isTalkPage()) {
+          if (bootController.isPageOfType('talk')) {
             linkElement.target = '_blank';
           }
         } else {
           linkElement.href = '#' + id;
-          linkElement.onclick = (e) => {
-            e.preventDefault();
+          linkElement.onclick = (event) => {
+            event.preventDefault();
             comment.scrollTo({
               smooth: false,
               pushState: true,
@@ -715,11 +715,11 @@ function processRevisionListPage($content) {
   // function).
   if (!$content.parent().length) return;
 
-  if (controller.isWatchlistPage()) {
+  if (bootController.isPageOfType('watchlist')) {
     processWatchlist($content);
-  } else if (controller.isContributionsPage()) {
+  } else if (bootController.isPageOfType('contributions')) {
     processContributions($content);
-  } else if (controller.isHistoryPage()) {
+  } else if (bootController.isPageOfType('history')) {
     processHistory($content);
   }
 
@@ -732,12 +732,12 @@ function processRevisionListPage($content) {
 export default async function addCommentLinks() {
   try {
     await initialize();
-  } catch (e) {
-    console.warn(e);
+  } catch (error) {
+    console.warn(error);
     return;
   }
 
-  if (controller.isDiffPage()) {
+  if (bootController.isPageOfType('diff')) {
     mw.hook('convenientDiscussions.pageReady').add(() => {
       processDiff();
     });
@@ -762,7 +762,7 @@ export function addCommentLinksToSpecialSearch() {
     mw.loader.using('mediawiki.api').then(
       async () => {
         await Promise.all(bootController.getSiteData());
-        $('.mw-search-result-heading').each((i, el) => {
+        $('.mw-search-result-heading').each((_, el) => {
           const originalHref = $(el)
             .find('a')
             .first()

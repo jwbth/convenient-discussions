@@ -756,7 +756,7 @@ export class TocItem {
 
     const titleNodes = /** @type {Array<Text|HTMLElement>} */ (this.$text
       .contents()
-      .filter((i, node) => (
+      .filter((_, node) => (
         isText(node)
         || (isElement(node) && ![...node.classList].some((name) => name.match(/^(cd-|vector-)/)))
       ))
@@ -765,7 +765,7 @@ export class TocItem {
       ...$headline
         .clone()
         .find('*')
-          .each((i, el) => {
+          .each((_, el) => {
             if (['B', 'EM', 'I', 'S', 'STRIKE', 'STRONG', 'SUB', 'SUP'].includes(el.tagName)) {
               [...el.attributes].forEach((attr) => {
                 el.removeAttribute(attr.name);

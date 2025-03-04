@@ -257,65 +257,6 @@ class Controller extends EventEmitter {
   }
 
   /**
-   * Check whether the current page is likely a talk page. See
-   * {@link Controller#isDefinitelyTalkPage} for the most strict criteria.
-   *
-   * @returns {boolean}
-   */
-  isTalkPage() {
-    return bootController.isOfType('talk');
-  }
-
-  /**
-   * Check whether the current page is a watchlist or recent changes page.
-   *
-   * @returns {boolean}
-   */
-  isWatchlistPage() {
-    return bootController.isOfType('watchlist');
-  }
-
-  /**
-   * Check whether the current page is a contributions page.
-   *
-   * @returns {boolean}
-   */
-  isContributionsPage() {
-    return bootController.isOfType('contributions');
-  }
-
-  /**
-   * Check whether the current page is a history page.
-   *
-   * @returns {boolean}
-   */
-  isHistoryPage() {
-    return bootController.isOfType('history');
-  }
-
-  /**
-   * Check whether the current page meets strict criteria for classifying as a talk page. See
-   * {@link Controller#isTalkPage} for approximate criteria.
-   *
-   * @returns {boolean}
-   */
-  isDefinitelyTalkPage() {
-    return bootController.isOfType('definitelyTalk');
-  }
-
-  /**
-   * Check if the _article_ page (the one with `wgIsArticle` being true) of the current page is a
-   * talk page eligible for CD. It can be `true` on edit, history pages etc. Although the
-   * assessments may be different on a history page and on an article page of the same title, since
-   * the page can contain elements with special classes that we can access only on the article page.
-   *
-   * @returns {boolean}
-   */
-  isArticlePageTalkPage() {
-    return bootController.isOfType('articleTalk');
-  }
-
-  /**
    * Set up the controller for use in the current boot process. (Executed at every page load.)
    *
    * @param {string} [pageHtml] HTML to update the page with.
@@ -1073,7 +1014,7 @@ class Controller extends EventEmitter {
           Parser.processLink(this)?.userName === cd.user.getName()
         );
       })
-      .each((i, link) => {
+      .each((_, link) => {
         link.classList.add('cd-currentUserLink');
       });
   }
@@ -1754,7 +1695,7 @@ class Controller extends EventEmitter {
         .concat(cd.config.addTopicButtonSelectors)
         .join(', ')
     )
-      .filter((i, el) => {
+      .filter((_, el) => {
         const $button = $(el);
 
         // When DT's new topic tool is enabled
@@ -1816,7 +1757,7 @@ class Controller extends EventEmitter {
       .off('click')
 
       .on('click.cd', this.handleAddTopicButtonClick.bind(this))
-      .filter((i, el) => (
+      .filter((_, el) => (
         !cd.g.isDtNewTopicToolEnabled &&
         !($(el).is('a') && Number(mw.util.getParamValue('cdaddtopic', $(el).attr('href'))))
       ))

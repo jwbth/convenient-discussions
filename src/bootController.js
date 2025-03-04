@@ -17,9 +17,9 @@ import { createSvg, skin$, transparentize } from './utils-window';
 import visits from './visits';
 
 /**
- * Singleton for initializing the script (and, partly, reloading the page), both on talk pages and
- * on log pages such as the watchlist. The important detail about this module is that it is imported
- * when modules such as OOUI are not yet available.
+ * Singleton for initializing the script, both on talk pages and on log pages such as the watchlist,
+ * and controlling the reload (boot) process of talk pages. The important detail about this module
+ * is that it is imported when modules such as OOUI are not yet available.
  *
  * Methods of the class set constants as properties of the {@link convenientDiscussions.g} object,
  * add CSS, load site data, such as MediaWiki messages and configuration, and set date formats based
@@ -82,42 +82,59 @@ class BootController {
    * }}
    */
   pageTypes = {
-    definitelyTalk: false,
-    articleTalk: false,
-    diff: false,
+    /**
+     * Is the current page likely a talk page. See `definitelyTalk` for the most strict criteria.
+     */
     talk: false,
+
+    /**
+     * Does the current page meet strict criteria for classifying as a talk page. See `talk` for
+     * approximate criteria.
+     */
+    definitelyTalk: false,
+
+    /**
+     * Is the _article_ page (the one with `wgIsArticle` being true) of the current page a talk page
+     * eligible for CD. It can be `true` on edit, history pages etc. Although the assessments may be
+     * different on a history page and on an article page of the same title, since the page can
+     * contain elements with special classes that we can access only on the article page.
+     */
+    articleTalk: false,
+
+    /**
+     * Is the current page a diff page.
+     *
+     * This is not a constant: the diff may be removed from the page (and the URL updated, see
+     * `.cleanUpUrlAndDom()`) when it's for the last revision and the page is reloaded using the
+     * script. `wgIsArticle` config value is not taken into account: if the "Do not show page
+     * content below diffs" MediaWiki setting is on, `wgIsArticle` is false.
+     */
+    diff: false,
+
+    /**
+     * Is the current page a watchlist or recent changes page.
+     */
     watchlist: false,
+
+    /**
+     * Is the current page a contributions page.
+     */
     contributions: false,
+
+    /**
+     * Is the current page a history page.
+     */
     history: false,
   };
 
   /**
    * Check if the current page is of a specific type.
    *
-   * @param {'definitelyTalk'|'articleTalk'|'diff'|'talk'|'watchlist'|'contributions'|'history'} type
+   * @param {keyof BootController['pageTypes']} type
    * @returns {boolean}
    */
-  isOfType(type) {
+  isPageOfType(type) {
     return this.pageTypes[type];
-  }
-
-  /**
-   * Get the type of the page.
-   *
-   * @returns {{
-   *   definitelyTalk: boolean;
-   *   articleTalk: boolean;
-   *   diff: boolean;
-   *   talk: boolean;
-   * }}
-   */
-  getPageType() {
-    return {
-      definitelyTalk: this.pageTypes.definitelyTalk,
-      articleTalk: this.pageTypes.articleTalk,
-      diff: this.pageTypes.diff,
-      talk: this.pageTypes.talk,
-    };
   }
 
   /**
@@ -831,7 +848,7 @@ class BootController {
    * which are not known from the beginning - and run the boot process (on talk page or comment
    * links page).
    */
-  init() {
+  bootScript() {
     this.$content = $('#mw-content-text');
 
     if (cd.g.isMobile) {
@@ -878,8 +895,17 @@ class BootController {
     this.pageTypes.contributions = this.isContributionsPage();
     this.pageTypes.history = this.isHistoryPage();
 
-    this.bootOnTalkPage();
-    this.bootOnCommentLinksPage();
+    this.initOnTalkPage();
+    this.initOnCommentLinksPage();
+  }
+
+  /**
+   * Change the evaluation of whether the current page is a talk page.
+   *
+   * @param {boolean} value
+   */
+  setPageTypeTalk(value) {
+    this.pageTypes.talk = Boolean(value);
   }
 
   /**
@@ -888,7 +914,7 @@ class BootController {
    *
    * @private
    */
-  bootOnTalkPage() {
+  initOnTalkPage() {
     if (!this.pageTypes.talk) return;
 
     debug.stopTimer('start');
@@ -959,9 +985,7 @@ class BootController {
 
     this.showLoadingOverlay();
     Promise.all([modulesRequest, ...siteDataRequests]).then(
-      () => {
-        return this.tryBoot(false)
-      },
+      () => this.tryBoot(false),
       (error) => {
         mw.notify(cd.s('error-loaddata'), { type: 'error' });
         console.error(error);
@@ -1192,15 +1216,15 @@ class BootController {
    *
    * @private
    */
-  bootOnCommentLinksPage() {
+  initOnCommentLinksPage() {
     if (
-      !this.isOfType('watchlist') &&
-      !this.isOfType('contributions') &&
-      !this.isOfType('history') &&
-      !(this.isOfType('diff') && this.isOfType('articleTalk')) &&
+      !this.isPageOfType('watchlist') &&
+      !this.isPageOfType('contributions') &&
+      !this.isPageOfType('history') &&
+      !(this.isPageOfType('diff') && this.isPageOfType('articleTalk')) &&
 
       // Instant Diffs script can be called on talk pages as well
-      !this.isOfType('talk')
+      !this.isPageOfType('talk')
     ) {
       return;
     }
@@ -1212,7 +1236,7 @@ class BootController {
 
       // Loading user info on diff pages could lead to problems with saving visits when many pages
       // are opened, but not yet focused, simultaneously.
-      if (!this.isOfType('talk')) {
+      if (!this.isPageOfType('talk')) {
         getUserInfo(true).catch((error) => {
           console.warn(error);
         });

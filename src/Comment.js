@@ -2305,8 +2305,7 @@ class Comment extends CommentSkeleton {
     let cleanDiffBody = '';
     $(wrapDiffBody(body))
       .find('tr')
-      // @ts-ignore
-      .each((i, tr) => {
+      .each((_, tr) => {
         const $tr = $(tr);
         const $lineNumbers = $tr.children('.diff-lineno');
         for (let j = 0; j < $lineNumbers.length; j++) {
@@ -2686,7 +2685,7 @@ class Comment extends CommentSkeleton {
         }
       });
       // @ts-ignore
-      this.$elements.find('.autonumber').each((i, el) => {
+      this.$elements.find('.autonumber').each((_, el) => {
         $(el).text(`[${currentAutonumber}]`);
         currentAutonumber++;
       });

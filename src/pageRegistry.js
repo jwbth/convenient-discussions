@@ -209,7 +209,7 @@ export class Page {
       return null;
     }
 
-    return bootController.isTalkPage() && (this.isActive() || !this.exists());
+    return bootController.isPageOfType('talk') && (this.isActive() || !this.exists());
   }
 
   /**
@@ -243,7 +243,7 @@ export class Page {
     }
 
     return (
-      bootController.isTalkPage() &&
+      bootController.isPageOfType('talk') &&
       this.exists() &&
       controller.isCurrentRevision() &&
       !this.isArchive()

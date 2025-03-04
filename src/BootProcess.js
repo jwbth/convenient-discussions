@@ -191,7 +191,7 @@ class BootProcess {
       intersection of 2.1 and 2.2.
         1. The page is a wikitext (article) page.
         2. The page is likely a talk page. controller.isTalkPage() reflects that. We may reevaluate
-           page as being not a talk page (see BootProcess#retractTalkPageness()) if we don't find
+           page as being not a talk page (see BootProcess#retractTalkPageType()) if we don't find
            any comments on it and several other criteria are not met. Likely talk pages are divided
            into two categories:
         2.1. The page is eligible to create comment forms on. (This includes 404 pages where the
@@ -231,8 +231,12 @@ class BootProcess {
       debug.stopTimer('process comments');
     }
 
-    if (this.firstRun && !controller.isDefinitelyTalkPage() && !commentRegistry.getCount()) {
-      this.retractTalkPageness();
+    if (
+      this.firstRun &&
+      !bootController.isPageOfType('definitelyTalk') &&
+      !commentRegistry.getCount()
+    ) {
+      this.retractTalkPageType();
       return;
     }
 
@@ -551,10 +555,10 @@ class BootProcess {
    *
    * @private
    */
-  retractTalkPageness() {
+  retractTalkPageType() {
     debug.stopTimer('main code');
 
-    bootController.setTalkPageness(false);
+    bootController.setPageTypeTalk(false);
 
     const $disableLink = $('#footer-togglecd a');
     $disableLink
