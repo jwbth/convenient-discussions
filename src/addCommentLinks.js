@@ -6,10 +6,10 @@
 
 import Comment from './Comment';
 import PrototypeRegistry from './PrototypeRegistry';
+import bootController from './bootController';
 import cd from './cd';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
-import init from './init';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
 import { definedAndNotNull, generatePageNamePattern, isCommentEdit, isProbablyTalkPage, isUndo, removeDirMarks, spacesToUnderlines } from './utils-general';
@@ -33,10 +33,10 @@ const prototypes = new PrototypeRegistry();
  */
 async function initialize() {
   // This could have been executed from init.talkPage() already.
-  init.initGlobals();
+  bootController.initGlobals();
   await settings.init();
 
-  const requests = [...init.getSiteData()];
+  const requests = [...bootController.getSiteData()];
   if (cd.user.isRegistered() && !settings.get('useTopicSubscription')) {
     // Loading the subscriptions is not critical, as opposed to messages, so we catch the possible
     // error, not letting it be caught by the try/catch block.
@@ -440,7 +440,7 @@ function processWatchlist($content) {
  * @private
  */
 function processContributions($content) {
-  init.initTimestampParsingTools('user');
+  bootController.initTimestampParsingTools('user');
   if (cd.g.uiTimezone === null) return;
 
   [
@@ -512,7 +512,7 @@ function processContributions($content) {
  * @private
  */
 function processHistory($content) {
-  init.initTimestampParsingTools('user');
+  bootController.initTimestampParsingTools('user');
   if (cd.g.uiTimezone === null) return;
 
   const link = cd.page.getUrl();
@@ -594,7 +594,7 @@ function processDiff($diff) {
   if ($diff?.parent().is(controller.$content) && controller.$root) return;
 
   if (!cd.g.uiTimestampRegexp) {
-    init.initTimestampParsingTools('user');
+    bootController.initTimestampParsingTools('user');
   }
   if (cd.g.uiTimezone === null) return;
 
@@ -761,7 +761,7 @@ export function addCommentLinksToSpecialSearch() {
   if (commentId) {
     mw.loader.using('mediawiki.api').then(
       async () => {
-        await Promise.all(init.getSiteData());
+        await Promise.all(bootController.getSiteData());
         $('.mw-search-result-heading').each((i, el) => {
           const originalHref = $(el)
             .find('a')

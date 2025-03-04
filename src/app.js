@@ -10,6 +10,7 @@ import i18nList from '../data/i18nList.json';
 import languageFallbacks from '../data/languageFallbacks.json';
 
 import { addCommentLinksToSpecialSearch } from './addCommentLinks';
+import bootController from './bootController';
 import cd from './cd';
 import controller from './controller';
 import debug from './debug';
@@ -93,7 +94,7 @@ function setStrings() {
 function maybeAddFooterSwitcher() {
   if (!mw.config.get('wgIsArticle')) return;
 
-  const enable = !controller.isTalkPage();
+  const enable = !bootController.getPageType().TALK;
   const url = new URL(location.href);
   url.searchParams.set('cdtalkpage', enable ? '1' : '0');
   const $li = $('<li>').attr('id', 'footer-togglecd');
@@ -175,12 +176,12 @@ async function go() {
     setStrings();
   }
 
-  controller.init();
+  bootController.init();
   maybeAddFooterSwitcher();
   maybeTweakAddTopicButton();
   addCommentLinksToSpecialSearch();
 
-  if (!controller.isBooting()) {
+  if (!bootController.isBooting()) {
     debug.stopTimer('start');
   }
 

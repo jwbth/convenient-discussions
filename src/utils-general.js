@@ -856,6 +856,7 @@ export function parseWikiUrl(url) {
 
       return '';
     })
+    .replace(cd.g.startsWithEditActionPathRegexp || '', '$1')
     .replace(cd.g.articlePathRegexp, '$1')
     .replace(cd.g.startsWithScriptTitleRegexp, '')
     .replace(/&action=edit.*/, '')

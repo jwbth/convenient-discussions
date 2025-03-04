@@ -6,6 +6,7 @@ import LiveTimestamp from './LiveTimestamp';
 import PrototypeRegistry from './PrototypeRegistry';
 import SectionSkeleton from './SectionSkeleton';
 import SectionSource from './SectionSource';
+import bootController from './bootController';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import controller from './controller';
@@ -1430,7 +1431,7 @@ class Section extends SectionSkeleton {
    * Show a move section dialog.
    */
   move() {
-    if (controller.isPageOverlayOn()) return;
+    if (bootController.isPageOverlayOn()) return;
 
     const MoveSectionDialog = require('./MoveSectionDialog').default;
 

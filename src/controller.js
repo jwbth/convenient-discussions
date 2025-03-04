@@ -1,17 +1,13 @@
 import Autocomplete from './Autocomplete';
-import BootProcess from './BootProcess';
-import Comment from './Comment';
 import CommentForm from './CommentForm';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import Parser from './Parser';
-import Section from './Section';
 import Thread from './Thread';
-import addCommentLinks from './addCommentLinks';
+import bootController from './bootController';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
 import debug from './debug';
-import init from './init';
 import navPanel from './navPanel';
 import notifications from './notifications';
 import pageRegistry from './pageRegistry';
@@ -20,9 +16,9 @@ import settings from './settings';
 import toc from './toc';
 import updateChecker from './updateChecker';
 import { getUserInfo } from './utils-api';
-import { defined, definedAndNotNull, getLastArrayElementOrSelf, getQueryParamBooleanValue, isHeadingNode, isInline, isProbablyTalkPage, sleep } from './utils-general';
+import { defined, definedAndNotNull, getLastArrayElementOrSelf, isHeadingNode, isInline, sleep } from './utils-general';
 import { EventEmitter } from './utils-oojs';
-import { copyText, getVisibilityByRects, skin$, wrapHtml } from './utils-window';
+import { copyText, getVisibilityByRects, wrapHtml } from './utils-window';
 import WebpackWorker from './worker/worker-gate';
 
 /**
@@ -43,17 +39,6 @@ import WebpackWorker from './worker/worker-gate';
  */
 
 /**
- * Initialize prototypes of elements and OOUI widgets.
- *
- * @private
- */
-function initPrototypes() {
-  Comment.initPrototypes();
-  Section.initPrototypes();
-  Thread.initPrototypes();
-}
-
-/**
  * Singleton that stores and changes the overall state of the page, initiating boot processes and
  * reacting to events.
  *
@@ -61,28 +46,9 @@ function initPrototypes() {
  */
 class Controller extends EventEmitter {
   /**
-   * Is the page loading (the loading overlay is on).
-   *
-   * @private
-   */
-  booting = false;
-
-  /**
-   * @type {BootProcess}
-   * @private
-   */
-  bootProcess;
-
-  /**
    * @type {JQuery}
    */
   $content;
-
-  /**
-   * @type {JQuery}
-   * @private
-   */
-  $loadingPopup;
 
   /**
    * @type {JQuery}
@@ -249,175 +215,6 @@ class Controller extends EventEmitter {
   isObstructingElementHoveredCached = false;
 
   /**
-   * _For internal use._ Assign some properties required by the controller - those which are not
-   * known from the beginning - and run the boot process (on talk page or comment links page).
-   */
-  init() {
-    this.$content = $('#mw-content-text');
-
-    if (cd.g.isMobile) {
-      $(document.body).addClass('cd-mobile');
-    }
-
-    // Not constants: go() may run a second time, see app~maybeAddFooterSwitcher().
-    const isEnabledInQuery = getQueryParamBooleanValue('cdtalkpage') === true;
-    const isDisabledInQuery = getQueryParamBooleanValue('cdtalkpage') === false;
-
-    // See .isDefinitelyTalkPage()
-    this.definitelyTalkPage = Boolean(
-      isEnabledInQuery ||
-
-      // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
-      // the list of supported namespaces and page white/black list in the configuration. With this
-      // method, there won't be "comment" links for edits on pages that list revisions such as the
-      // watchlist.
-      this.$content.find('.cd-talkPage').length ||
-
-      (
-        ($('#ca-addsection').length || cd.g.pageWhitelistRegexp?.test(cd.g.pageName)) &&
-        !cd.g.pageBlacklistRegexp?.test(cd.g.pageName)
-      )
-    );
-
-    // See .isArticlePageTalkPage()
-    this.articlePageTalkPage = (
-      (!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
-      !this.$content.find('.cd-notTalkPage').length &&
-      (isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber) || this.definitelyTalkPage) &&
-
-      // Undocumented setting
-      !window.cdOnlyRunByFooterLink
-    );
-
-    // See .isDiffPage()
-    this.diffPage = /[?&]diff=[^&]/.test(location.search);
-
-    this.talkPage = Boolean(
-      mw.config.get('wgIsArticle') &&
-      !isDisabledInQuery &&
-      (isEnabledInQuery || this.articlePageTalkPage)
-    );
-
-    this.bootOnTalkPage();
-    this.bootOnCommentLinksPage();
-  }
-
-  /**
-   * Load the data required for the script to run on a talk page and execute the
-   * {@link BootProcess boot process}.
-   *
-   * @private
-   */
-  bootOnTalkPage() {
-    if (!this.isTalkPage()) return;
-
-    debug.stopTimer('start');
-    debug.startTimer('load data');
-
-    this.bootProcess = new BootProcess();
-    let siteDataRequests = [];
-
-    // Make some requests in advance if the API module is ready in order not to make 2 requests
-    // sequentially. We don't make a `userinfo` request, because if there is more than one tab in
-    // the background, this request is made and the execution stops at mw.loader.using, which
-    // results in overriding the renewed visits setting of one tab by another tab (the visits are
-    // loaded by one tab, then another tab, then written by one tab, then by another tab).
-    if (mw.loader.getState('mediawiki.api') === 'ready') {
-      siteDataRequests = init.getSiteData();
-
-      // We are _not_ calling getUserInfo() here to avoid losing visit data updates from some pages
-      // if several pages are opened simultaneously. In this situation, visits could be requested
-      // for multiple pages; updated and then saved for each of them with losing the updates from
-      // the rest.
-    }
-
-    const modules = [
-      'jquery.client',
-      'jquery.ui',
-      'mediawiki.Title',
-      'mediawiki.Uri',
-      'mediawiki.api',
-      'mediawiki.cookie',
-
-      // span.comment
-      'mediawiki.interface.helpers.styles',
-
-      'mediawiki.jqueryMsg',
-      'mediawiki.notification',
-      'mediawiki.storage',
-      'mediawiki.user',
-      'mediawiki.util',
-      'mediawiki.widgets.visibleLengthLimit',
-      // 'oojs',
-      'oojs-ui-core',
-      'oojs-ui-widgets',
-      'oojs-ui-windows',
-      'oojs-ui.styles.icons-alerts',
-      'oojs-ui.styles.icons-content',
-      'oojs-ui.styles.icons-editing-advanced',
-      'oojs-ui.styles.icons-editing-citation',
-      'oojs-ui.styles.icons-editing-core',
-      'oojs-ui.styles.icons-interactions',
-      'oojs-ui.styles.icons-movement',
-      'user.options',
-      mw.loader.getState('ext.confirmEdit.CaptchaInputWidget') ?
-        'ext.confirmEdit.CaptchaInputWidget' :
-        undefined,
-    ].filter(defined);
-
-    // mw.loader.using() delays the execution even if all modules are ready (if CD is used as a
-    // gadget with preloaded dependencies, for example), so we use this trick.
-    let modulesRequest;
-    if (modules.every((module) => mw.loader.getState(module) === 'ready')) {
-      // If there is no data to load and, therefore, no period of time within which a reflow (layout
-      // thrashing) could happen without impeding performance, we cache the value so that it could
-      // be used in .saveRelativeScrollPosition() without causing a reflow.
-      if (siteDataRequests.every((request) => request.state() === 'resolved')) {
-        this.bootProcess.passedData = { scrollY: window.scrollY };
-      }
-    } else {
-      modulesRequest = mw.loader.using(modules);
-    }
-
-    init.showLoadingOverlay();
-    Promise.all([modulesRequest, ...siteDataRequests]).then(
-      () => this.tryExecuteBootProcess(false),
-      (error) => {
-        mw.notify(cd.s('error-loaddata'), { type: 'error' });
-        console.error(error);
-        init.hideLoadingOverlay();
-      }
-    );
-
-    sleep(15000).then(() => {
-      if (this.booting) {
-        init.hideLoadingOverlay();
-        console.warn('The loading overlay stays for more than 15 seconds; removing it.');
-      }
-    });
-
-    init.$contentColumn = skin$({
-      timeless: '#mw-content',
-      minerva: '#bodyContent',
-      default: '#content',
-    });
-
-    /*
-      Additions of CSS set a stage for a future reflow which delays operations dependent on
-      rendering, so we run them now, not after the requests are fulfilled, to save time. The overall
-      order is like this:
-      1. Make network requests (above).
-      2. Run operations dependent on rendering, such as window.getComputedStyle() and jQuery's
-         .css() (below). Normally they would initiate a reflow, but, as we haven't changed the
-         layout or added CSS yet, there is nothing to update.
-      3. Run operations that create prerequisites for a reflow, such as adding CSS (below). Thanks
-         to the fact that the network requests, if any, are already pending, we don't waste time.
-     */
-    init.memorizeCssValues();
-    init.addTalkPageCss();
-  }
-
-  /**
    * _For internal use._ Get the worker object.
    *
    * @returns {Worker}
@@ -466,102 +263,13 @@ class Controller extends EventEmitter {
   }
 
   /**
-   * Run the {@link BootProcess boot process} and catch errors.
-   *
-   * @param {boolean} isReload Is the page reloaded.
-   */
-  async tryExecuteBootProcess(isReload) {
-    this.booting = true;
-
-    // We could say "let it crash", but unforeseen errors in BootProcess#execute() are just too
-    // likely to go without a safeguard.
-    try {
-      await this.bootProcess.execute(isReload);
-      if (isReload) {
-        mw.hook('wikipage.content').fire(this.$content);
-      }
-      this.emit('boot');
-    } catch (error) {
-      mw.notify(cd.s('error-processpage'), { type: 'error' });
-      console.error(error);
-      init.hideLoadingOverlay();
-    }
-
-    this.booting = false;
-  }
-
-  /**
-   * Load the data required for the script to process the page as a log page and
-   * {@link module:addCommentLinks process it}.
-   *
-   * @private
-   */
-  bootOnCommentLinksPage() {
-    if (
-      !this.isWatchlistPage() &&
-      !this.isContributionsPage() &&
-      !this.isHistoryPage() &&
-      !(this.isDiffPage() && this.isArticlePageTalkPage()) &&
-
-      // Instant Diffs script can be called on talk pages as well
-      !this.isTalkPage()
-    ) {
-      return;
-    }
-
-    // Make some requests in advance if the API module is ready in order not to make 2 requests
-    // sequentially.
-    if (mw.loader.getState('mediawiki.api') === 'ready') {
-      init.getSiteData();
-
-      // Loading user info on diff pages could lead to problems with saving visits when many pages
-      // are opened, but not yet focused, simultaneously.
-      if (!this.isTalkPage()) {
-        getUserInfo(true).catch((error) => {
-          console.warn(error);
-        });
-      }
-    }
-
-    mw.loader.using([
-      'jquery.client',
-      'mediawiki.Title',
-      'mediawiki.api',
-      'mediawiki.jqueryMsg',
-      'mediawiki.user',
-      'mediawiki.util',
-      // 'oojs',
-      'oojs-ui-core',
-      'oojs-ui-widgets',
-      'oojs-ui-windows',
-      'oojs-ui.styles.icons-alerts',
-      'oojs-ui.styles.icons-editing-list',
-      'oojs-ui.styles.icons-interactions',
-      'user.options',
-    ]).then(
-      () => {
-        addCommentLinks();
-
-        // See the comment above: "Additions of CSS...".
-        require('./global.less');
-
-        require('./logPages.less');
-      },
-      (error) => {
-        mw.notify(cd.s('error-loaddata'), { type: 'error' });
-        console.error(error);
-      }
-    );
-  }
-
-  /**
    * Check whether the current page is likely a talk page. See
    * {@link Controller#isDefinitelyTalkPage} for the most strict criteria.
    *
    * @returns {boolean}
    */
   isTalkPage() {
-    return init.getPageType().talk;
+    return bootController.getPageType().TALK;
   }
 
   /**
@@ -570,7 +278,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isWatchlistPage() {
-    return init.isWatchlistPage();
+    return bootController.isWatchlistPage();
   }
 
   /**
@@ -579,7 +287,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isContributionsPage() {
-    return init.isContributionsPage();
+    return bootController.isContributionsPage();
   }
 
   /**
@@ -588,7 +296,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isHistoryPage() {
-    return init.isHistoryPage();
+    return bootController.isHistoryPage();
   }
 
   /**
@@ -602,7 +310,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isDiffPage() {
-    return init.getPageType().diff;
+    return bootController.getPageType().DIFF;
   }
 
   /**
@@ -612,7 +320,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isDefinitelyTalkPage() {
-    return init.getPageType().definitelyTalk;
+    return bootController.getPageType().DEFINITELY_TALK;
   }
 
   /**
@@ -624,27 +332,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isArticlePageTalkPage() {
-    return init.getPageType().articlePageTalk;
-  }
-
-  /**
-   * Is the page loading (the loading overlay is on).
-   *
-   * @returns {boolean}
-   */
-  isBooting() {
-    return this.booting;
-  }
-
-  /**
-   * Get the current (or last available) boot process.
-   *
-   * For simpler type checking, assume it's always set (we don't use it when it's not).
-   *
-   * @returns {BootProcess}
-   */
-  getBootProcess() {
-    return this.bootProcess;
+    return bootController.getPageType().ARTICLE_TALK;
   }
 
   /**
@@ -1085,7 +773,7 @@ class Controller extends EventEmitter {
    * @param {MouseEvent} event
    */
   handleMouseMove(event) {
-    if (this.mouseMoveBlocked || this.isAutoScrolling() || init.isPageOverlayOn()) return;
+    if (this.mouseMoveBlocked || this.isAutoScrolling() || bootController.isPageOverlayOn()) return;
 
     // Don't throttle. Without throttling, performance is generally OK, while the "frame rate" is
     // about 50 (so, the reaction time is about 20ms). Lower values would be less comfortable.
@@ -1148,7 +836,7 @@ class Controller extends EventEmitter {
     // sleep(), because it seems like sometimes it doesn't have time to update.
     await sleep(cd.g.skin === 'vector-2022' ? 100 : 0);
 
-    init.getContentColumnOffsets(true);
+    bootController.getContentColumnOffsets(true);
     this.emit('resize');
     this.handleScroll();
   }
@@ -1160,7 +848,7 @@ class Controller extends EventEmitter {
    * @private
    */
   handleGlobalKeyDown(event) {
-    if (init.isPageOverlayOn()) return;
+    if (bootController.isPageOverlayOn()) return;
 
     this.emit('keyDown', event);
   }
@@ -1241,7 +929,7 @@ class Controller extends EventEmitter {
    * @private
    */
   handlePageMutate() {
-    if (this.booting) return;
+    if (bootController.isBooting()) return;
 
     this.emit('mutate');
 
@@ -1446,17 +1134,18 @@ class Controller extends EventEmitter {
    * @throws {import('./CdError').default|Error}
    */
   async reload(passedData = {}) {
-    if (this.booting) return;
+    if (bootController.isBooting()) return;
 
     passedData.isRevisionSliderRunning = Boolean(history.state?.sliderPos);
-    const bootProcess = new BootProcess(passedData);
+
+    this.emit('beforeReload', passedData);
+
+    const bootProcess = bootController.createBootProcess(passedData);
 
     // We reset the live timestamps only during the boot process, because we shouldn't dismount the
     // components of the current version of the page at least until a correct response to the parse
     // request is received. Otherwise, if the request fails, the user would be left with a
     // dysfunctional page.
-
-    this.emit('beforeReload', bootProcess.passedData);
 
     if (!bootProcess.passedData.commentIds && !bootProcess.passedData.sectionId) {
       this.saveScrollPosition();
@@ -1466,7 +1155,7 @@ class Controller extends EventEmitter {
     debug.startTimer('total time');
     debug.startTimer('get HTML');
 
-    init.showLoadingOverlay();
+    bootController.showLoadingOverlay();
 
     // Save time by requesting the options in advance. This also resets the cache since the `reuse`
     // argument is `false`.
@@ -1477,7 +1166,7 @@ class Controller extends EventEmitter {
     try {
       bootProcess.passedData.parseData = await cd.page.parse(undefined, false, true);
     } catch (error) {
-      init.hideLoadingOverlay();
+      bootController.hideLoadingOverlay();
       if (bootProcess.passedData.submittedCommentForm) {
         throw error;
       } else {
@@ -1502,7 +1191,7 @@ class Controller extends EventEmitter {
 
     // At this point, the boot process can't be interrupted, so we can remove all traces of the
     // current page state.
-    this.bootProcess = bootProcess;
+    bootController.setBootProcess(bootProcess);
 
     this.emit('startReload');
 
@@ -1516,7 +1205,7 @@ class Controller extends EventEmitter {
 
     debug.stopTimer('get HTML');
 
-    await this.tryExecuteBootProcess(true);
+    await bootController.tryBoot(true);
 
     this.emit('reload');
 
@@ -1554,7 +1243,8 @@ class Controller extends EventEmitter {
    * @private
    */
   reset() {
-    this.cleanUpUrlAndDom();
+    bootController.cleanUpUrlAndDom();
+    this.originalPageTitle = document.title;
     this.mutationObserver?.disconnect();
     commentRegistry.reset();
     sectionRegistry.reset();
@@ -1567,89 +1257,6 @@ class Controller extends EventEmitter {
     this.relevantAddedCommentIds = null;
     delete this.dtSubscribableThreads;
     this.updatePageTitle();
-  }
-
-  /**
-   * Remove fragment and revision parameters from the URL; remove DOM elements related to the diff.
-   */
-  cleanUpUrlAndDom() {
-    if (this.bootProcess.passedData.isRevisionSliderRunning) return;
-
-    const { searchParams } = new URL(location.href);
-    this.cleanUpDom(searchParams);
-    this.cleanUpUrl(searchParams);
-  }
-
-  /**
-   * Remove diff-related DOM elements.
-   *
-   * @param {URLSearchParams} searchParams
-   * @private
-   */
-  cleanUpDom(searchParams) {
-    if (!searchParams.has('diff') && !searchParams.has('oldid')) return;
-
-    // Diff pages
-    this.$content
-      .children('.mw-revslider-container, .mw-diff-table-prefix, .diff, .oo-ui-element-hidden, .diff-hr, .diff-currentversion-title')
-      .remove();
-
-    // Revision navigation
-    $('.mw-revision').remove();
-
-    $('#firstHeading').text(cd.page.name);
-    document.title = cd.mws('pagetitle', cd.page.name);
-    this.originalPageTitle = document.title;
-  }
-
-  /**
-   * Remove fragment and revision parameters from the URL.
-   *
-   * @param {URLSearchParams} searchParams
-   * @private
-   */
-  cleanUpUrl(searchParams) {
-    const newQuery = Object.fromEntries(searchParams.entries());
-
-    // `title` will be added automatically (after /wiki/ if possible, as a query parameter
-    // otherwise).
-    delete newQuery.title;
-
-    delete newQuery.curid;
-    delete newQuery.action;
-    delete newQuery.redlink;
-    delete newQuery.section;
-    delete newQuery.cdaddtopic;
-    delete newQuery.dtnewcommentssince;
-    delete newQuery.dtinthread;
-
-    let methodName;
-    if (newQuery.diff || newQuery.oldid) {
-      methodName = 'pushState';
-
-      delete newQuery.diff;
-      delete newQuery.oldid;
-      delete newQuery.diffmode;
-      delete newQuery.type;
-
-      // Make the "Back" browser button work.
-      $(window).on('popstate', () => {
-        const { searchParams } = new URL(location.href);
-        if (searchParams.has('diff') || searchParams.has('oldid')) {
-          location.reload();
-        }
-      });
-
-      this.diffPage = false;
-    } else if (!this.bootProcess.passedData.pushState) {
-      // Don't reset the fragment if it will be set in the boot process from a comment ID or a
-      // section ID, to avoid creating an extra history entry.
-      methodName = 'replaceState';
-    }
-
-    if (methodName) {
-      history[methodName](history.state, '', cd.page.getUrl(newQuery));
-    }
   }
 
   /**
@@ -1712,7 +1319,7 @@ class Controller extends EventEmitter {
    * Show an edit subscriptions dialog.
    */
   showEditSubscriptionsDialog() {
-    if (init.isPageOverlayOn()) return;
+    if (bootController.isPageOverlayOn()) return;
 
     const dialog = new (require('./EditSubscriptionsDialog').default)();
     this.getWindowManager().addWindows([dialog]);
@@ -1722,11 +1329,11 @@ class Controller extends EventEmitter {
   /**
    * Show a copy link dialog.
    *
-   * @param {Comment|import('./Section').default} object Comment or section to copy a link to.
+   * @param {import('./Comment').default|import('./Section').default} object Comment or section to copy a link to.
    * @param {MouseEvent | KeyboardEvent} event
    */
   showCopyLinkDialog(object, event) {
-    if (init.isPageOverlayOn()) return;
+    if (bootController.isPageOverlayOn()) return;
 
     event.preventDefault();
 
@@ -1735,7 +1342,7 @@ class Controller extends EventEmitter {
       mw.config.get('wgFormattedNamespaces')[-1] +
       ':' +
       (
-        object instanceof Comment ?
+        object.isComment() ?
           'GoToComment/' :
           cd.g.specialPageAliases.PermanentLink[0] + '/' + mw.config.get('wgRevisionId') + '#'
       )
@@ -1754,22 +1361,22 @@ class Controller extends EventEmitter {
       // therefore an ID. In that case Comment#getUrl() returns a string.
       link: /** @type {string} */ (object.getUrl()),
 
-      permanentLink: object instanceof Comment ?
+      permanentLink: object.isComment() ?
         /** @type {import('./pageRegistry').Page} */ (pageRegistry.get(
           mw.config.get('wgFormattedNamespaces')[-1] + ':' + 'GoToComment/' + fragment
         )).getDecodedUrlWithFragment() :
         object.getUrl(true),
-      jsCall: object instanceof Comment ?
+      jsCall: object.isComment() ?
         `let c = convenientDiscussions.api.getCommentById('${object.id}');` :
         `let s = convenientDiscussions.api.getSectionById('${object.id}');`,
       jsBreakpoint: `this.id === '${object.id}'`,
-      jsBreakpointTimestamp: object instanceof Comment ?
+      jsBreakpointTimestamp: object.isComment() ?
         `timestamp.element.textContent === '${object.timestampText}'` :
         undefined,
     };
 
     // Undocumented feature allowing to copy a link of a default type without opening a dialog.
-    const relevantSetting = object instanceof Comment ?
+    const relevantSetting = object.isComment() ?
       settings.get('defaultCommentLinkType') :
       settings.get('defaultSectionLinkType');
     if (!event.shiftKey && relevantSetting) {

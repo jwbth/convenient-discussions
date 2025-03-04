@@ -576,7 +576,7 @@ export class Page {
 
     const request = inBackground
       ? requestInBackground(options).catch(handleApiReject)
-      : controller
+      : cd
           .getApi()
           .post(/** @type {import('types-mediawiki/mw/Api').UnknownApiParams} */ (options))
           .catch(handleApiReject);

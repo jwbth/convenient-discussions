@@ -25,17 +25,27 @@ import visits from './visits';
  * add CSS, load site data, such as MediaWiki messages and configuration, and set date formats based
  * on it.
  */
-class Init {
+class BootController {
   /** @type {JQuery} */
   $content;
 
   /** @type {JQuery} */
   $contentColumn;
 
-  /** @type {JQuery} */
+  /**
+   * @type {JQuery}
+   * @private
+   */
   $loadingPopup;
 
-  /** @type {import('./BootProcess').default} */
+  /**
+   * The current (or last available) boot process.
+   *
+   * For simpler type checking, assume it's always set (we don't use it when it's not).
+   *
+   * @type {import('./BootProcess').default}
+   * @private
+   */
   bootProcess;
 
   /** @type {boolean} */
@@ -52,6 +62,13 @@ class Init {
 
   /** @type {Array<Promise|JQuery.Promise>} */
   siteDataRequests;
+
+  /**
+   * Is the page loading (the loading overlay is on).
+   *
+   * @private
+   */
+  booting = false;
 
   /**
    * _For internal use._ Load messages needed to parse and generate timestamps as well as some site
@@ -760,8 +777,9 @@ class Init {
   }
 
   /**
-   * Initialize the script - assign properties required by the controller and run the boot process
-   * (on talk page or comment links page).
+   * _For internal use._ Initialize the script: assign properties required by the controller - those
+   * which are not known from the beginning - and run the boot process (on talk page or comment
+   * links page).
    */
   init() {
     this.$content = $('#mw-content-text');
@@ -817,18 +835,18 @@ class Init {
    * Get the type of the page.
    *
    * @returns {{
-   *   definitelyTalk: boolean;
-   *   articlePageTalk: boolean;
-   *   diff: boolean;
-   *   talk: boolean;
+   *   DEFINITELY_TALK: boolean;
+   *   ARTICLE_TALK: boolean;
+   *   DIFF: boolean;
+   *   TALK: boolean;
    * }}
    */
   getPageType() {
     return {
-      definitelyTalk: this.definitelyTalkPage,
-      articlePageTalk: this.articlePageTalkPage,
-      diff: this.diffPage,
-      talk: this.talkPage,
+      DEFINITELY_TALK: this.definitelyTalkPage,
+      ARTICLE_TALK: this.articlePageTalkPage,
+      DIFF: this.diffPage,
+      TALK: this.talkPage,
     };
   }
 
@@ -853,6 +871,11 @@ class Init {
     // loaded by one tab, then another tab, then written by one tab, then by another tab).
     if (mw.loader.getState('mediawiki.api') === 'ready') {
       siteDataRequests = this.getSiteData();
+
+      // We are _not_ calling getUserInfo() here to avoid losing visit data updates from some pages
+      // if several pages are opened simultaneously. In this situation, visits could be requested
+      // for multiple pages; updated and then saved for each of them with losing the updates from
+      // the rest.
     }
 
     const modules = [
@@ -869,6 +892,7 @@ class Init {
       'mediawiki.user',
       'mediawiki.util',
       'mediawiki.widgets.visibleLengthLimit',
+      'oojs',
       'oojs-ui-core',
       'oojs-ui-widgets',
       'oojs-ui-windows',
@@ -892,10 +916,11 @@ class Init {
       // If there is no data to load and, therefore, no period of time within which a reflow (layout
       // thrashing) could happen without impeding performance, we cache the value so that it could
       // be used in .saveRelativeScrollPosition() without causing a reflow.
-      this.bootProcess = new (require('./BootProcess').default)();
-      if (siteDataRequests.every((request) => request.state() === 'resolved')) {
-        this.bootProcess.passedData = { scrollY: window.scrollY };
-      }
+      this.bootProcess = this.createBootProcess(
+        siteDataRequests.every((request) => request.state() === 'resolved')
+          ? { scrollY: window.scrollY }
+          : {}
+      );
     } else {
       modulesRequest = mw.loader.using(modules);
     }
@@ -903,7 +928,7 @@ class Init {
     this.showLoadingOverlay();
     Promise.all([modulesRequest, ...siteDataRequests]).then(
       () => {
-        return require('./controller').default.tryExecuteBootProcess(false)
+        return this.tryBoot(false)
       },
       (error) => {
         mw.notify(cd.s('error-loaddata'), { type: 'error' });
@@ -924,6 +949,165 @@ class Init {
       minerva: '#bodyContent',
       default: '#content',
     });
+
+      /*
+        Additions of CSS set a stage for a future reflow which delays operations dependent on
+        rendering, so we run them now, not after the requests are fulfilled, to save time. The overall
+        order is like this:
+        1. Make network requests (above).
+        2. Run operations dependent on rendering, such as window.getComputedStyle() and jQuery's
+          .css() (below). Normally they would initiate a reflow, but, as we haven't changed the
+          layout or added CSS yet, there is nothing to update.
+        3. Run operations that create prerequisites for a reflow, such as adding CSS (below). Thanks
+          to the fact that the network requests, if any, are already pending, we don't waste time.
+      */
+      this.memorizeCssValues();
+      this.addTalkPageCss();
+  }
+
+  /**
+   * Create a boot process.
+   *
+   * @param {import('./BootProcess').PassedData} [passedData={}]
+   * @returns {import('./BootProcess').default}
+   */
+  createBootProcess(passedData = {}) {
+    return new (require('./BootProcess').default)(passedData);
+  }
+
+  /**
+   * Set a boot process as the current boot process.
+   *
+   * @param {import('./BootProcess').default} bootProcess
+   */
+  setBootProcess(bootProcess) {
+    this.bootProcess = bootProcess;
+  }
+
+  /**
+   * Get the current (or last available) boot process.
+   *
+   * For simpler type checking, assume it's always set (we don't use it when it's not).
+   *
+   * @returns {import('./BootProcess').default}
+   */
+  getBootProcess() {
+    return this.bootProcess;
+  }
+
+  /**
+   * Run the {@link BootProcess current boot process} and catch errors.
+   *
+   * @param {boolean} isReload Is the page reloaded, not booted the first time.
+   */
+  async tryBoot(isReload) {
+    this.booting = true;
+
+    // We could say "let it crash", but unforeseen errors in BootProcess#execute() are just too
+    // likely to go without a safeguard.
+    try {
+      await this.bootProcess.execute(isReload);
+      if (isReload) {
+        mw.hook('wikipage.content').fire(this.$content);
+      }
+    } catch (error) {
+      mw.notify(cd.s('error-processpage'), { type: 'error' });
+      console.error(error);
+      bootController.hideLoadingOverlay();
+    }
+
+    this.booting = false;
+  }
+
+  /**
+   * Is the page loading (the loading overlay is on).
+   *
+   * @returns {boolean}
+   */
+  isBooting() {
+    return this.booting;
+  }
+
+  /**
+   * Remove fragment and revision parameters from the URL; remove DOM elements related to the diff.
+   */
+  cleanUpUrlAndDom() {
+    if (this.bootProcess.passedData.isRevisionSliderRunning) return;
+
+    const { searchParams } = new URL(location.href);
+    this.cleanUpDom(searchParams);
+    this.cleanUpUrl(searchParams);
+  }
+
+  /**
+   * Remove diff-related DOM elements.
+   *
+   * @param {URLSearchParams} searchParams
+   * @private
+   */
+  cleanUpDom(searchParams) {
+    if (!searchParams.has('diff') && !searchParams.has('oldid')) return;
+
+    // Diff pages
+    this.$content
+      .children('.mw-revslider-container, .mw-diff-table-prefix, .diff, .oo-ui-element-hidden, .diff-hr, .diff-currentversion-title')
+      .remove();
+
+    // Revision navigation
+    $('.mw-revision').remove();
+
+    $('#firstHeading').text(cd.page.name);
+    document.title = cd.mws('pagetitle', cd.page.name);
+  }
+
+  /**
+   * Remove fragment and revision parameters from the URL.
+   *
+   * @param {URLSearchParams} searchParams
+   * @private
+   */
+  cleanUpUrl(searchParams) {
+    const newQuery = Object.fromEntries(searchParams.entries());
+
+    // `title` will be added automatically (after /wiki/ if possible, as a query parameter
+    // otherwise).
+    delete newQuery.title;
+
+    delete newQuery.curid;
+    delete newQuery.action;
+    delete newQuery.redlink;
+    delete newQuery.section;
+    delete newQuery.cdaddtopic;
+    delete newQuery.dtnewcommentssince;
+    delete newQuery.dtinthread;
+
+    let methodName;
+    if (newQuery.diff || newQuery.oldid) {
+      methodName = 'pushState';
+
+      delete newQuery.diff;
+      delete newQuery.oldid;
+      delete newQuery.diffmode;
+      delete newQuery.type;
+
+      // Make the "Back" browser button work.
+      $(window).on('popstate', () => {
+        const { searchParams } = new URL(location.href);
+        if (searchParams.has('diff') || searchParams.has('oldid')) {
+          location.reload();
+        }
+      });
+
+      this.diffPage = false;
+    } else if (!this.bootProcess.passedData.pushState) {
+      // Don't reset the fragment if it will be set in the boot process from a comment ID or a
+      // section ID, to avoid creating an extra history entry.
+      methodName = 'replaceState';
+    }
+
+    if (methodName) {
+      history[methodName](history.state, '', cd.page.getUrl(newQuery));
+    }
   }
 
   /**
@@ -981,7 +1165,9 @@ class Init {
       !this.isWatchlistPage() &&
       !this.isContributionsPage() &&
       !this.isHistoryPage() &&
-      !(this.isDiffPage() && this.isArticlePageTalkPage()) &&
+      !(this.diffPage && this.articlePageTalkPage) &&
+
+      // Instant Diffs script can be called on talk pages as well
       !this.talkPage
     ) {
       return;
@@ -1008,6 +1194,7 @@ class Init {
       'mediawiki.jqueryMsg',
       'mediawiki.user',
       'mediawiki.util',
+      'oojs',
       'oojs-ui-core',
       'oojs-ui-widgets',
       'oojs-ui-windows',
@@ -1018,7 +1205,10 @@ class Init {
     ]).then(
       () => {
         addCommentLinks();
+
+        // See the comment above: "Additions of CSS...".
         require('./global.less');
+
         require('./logPages.less');
       },
       (error) => {
@@ -1193,16 +1383,27 @@ class Init {
       '^' +
       mw.util.escapeRegExp(mw.config.get('wgScript') + '?title=')
     );
+    const editActionpath = mw.config.get('wgActionPaths').edit;
+    if (editActionpath) {
+      cd.g.startsWithEditActionPathRegexp = new RegExp(
+        '^' +
+        mw.util.escapeRegExp(editActionpath).replace('\\$1', '(.*)')
+      );
+    }
 
     // Template names are not case-sensitive here for code simplicity.
-    const quoteTemplateToPattern = (tpl) => '\\{\\{ *' + anySpace(mw.util.escapeRegExp(tpl));
+    const quoteTemplateToPattern = (/** @type {string} */ tpl) =>
+      '\\{\\{ *' + anySpace(mw.util.escapeRegExp(tpl));
     const quoteBeginningsPattern = ['<blockquote', '<q']
       .concat(cd.config.pairQuoteTemplates?.[0].map(quoteTemplateToPattern) || [])
       .join('|');
     const quoteEndingsPattern = ['</blockquote>', '</q>']
       .concat(cd.config.pairQuoteTemplates?.[1].map(quoteTemplateToPattern) || [])
       .join('|');
-    cd.g.quoteRegexp = new RegExp(`(${quoteBeginningsPattern})([^]*?)(${quoteEndingsPattern})`, 'ig');
+    cd.g.quoteRegexp = new RegExp(
+      `(${quoteBeginningsPattern})([^]*?)(${quoteEndingsPattern})`,
+      'ig'
+    );
 
     cd.g.noSignatureClasses.push(...cd.config.noSignatureClasses);
     cd.g.noHighlightClasses.push(...cd.config.noHighlightClasses);
@@ -1249,5 +1450,5 @@ class Init {
 }
 
 // Export a singleton instance
-const init = new Init();
-export default init;
+const bootController = new BootController();
+export default bootController;

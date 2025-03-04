@@ -1,6 +1,7 @@
 import CdError from './CdError';
 import Comment from './Comment';
 import StorageItemWithKeys from './StorageItemWithKeys';
+import bootController from './bootController';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
@@ -417,7 +418,7 @@ class UpdateChecker extends EventEmitter {
    * @private
    */
   async checkForUpdates() {
-    if (!cd.page.isActive() || controller.isBooting()) return;
+    if (!cd.page.isActive() || bootController.isBooting()) return;
 
     // We need a value that wouldn't change during `await`s.
     const documentHidden = document.hidden;
@@ -758,7 +759,7 @@ class UpdateChecker extends EventEmitter {
   isPageStillAtRevision(revisionId) {
     return (
       revisionId === mw.config.get('wgRevisionId') &&
-      !controller.isBooting() &&
+      !bootController.isBooting() &&
       !commentFormRegistry.getAll().some((commentForm) => commentForm.isBeingSubmitted())
     );
   }
@@ -863,7 +864,7 @@ class UpdateChecker extends EventEmitter {
   init() {
     visits
       .on('process', (/** @type {string[]} */ currentPageData) => {
-        const bootProcess = controller.getBootProcess();
+        const bootProcess = bootController.getBootProcess();
         this.setup(
           currentPageData.length >= 2 ?
             Number(currentPageData[currentPageData.length - 2]) :

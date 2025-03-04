@@ -1,6 +1,7 @@
 import Comment from './Comment';
 import Thread from './Thread';
 import TreeWalker from './TreeWalker';
+import bootController from './bootController';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import controller from './controller';
@@ -207,7 +208,7 @@ class CommentRegistry extends EventEmitter {
    */
   initNewAndSeen(currentPageData, currentTime, markAsReadRequested) {
     let timeConflict = false;
-    const unseenComments = controller.getBootProcess().passedData.unseenComments;
+    const unseenComments = bootController.getBootProcess().passedData.unseenComments;
     this.items.forEach((comment) => {
       const unseenComment = unseenComments?.find((c) => c.id === comment.id);
       const commentTimeConflict = comment.initNewAndSeen(
@@ -255,7 +256,7 @@ class CommentRegistry extends EventEmitter {
    * @param {boolean} [redrawAll] Whether to redraw all layers and not stop at first three unmoved.
    */
   maybeRedrawLayers(redrawAll = false) {
-    if (controller.isBooting() || (document.hidden && !redrawAll)) return;
+    if (bootController.isBooting() || (document.hidden && !redrawAll)) return;
 
     this.layersContainers.forEach((container) => {
       container.cdCouldHaveMoved = true;

@@ -8,6 +8,7 @@ import CdError from './CdError';
 import Comment from './Comment';
 import LiveTimestamp from './LiveTimestamp';
 import SectionSkeleton from './SectionSkeleton';
+import bootController from './bootController';
 import cd from './cd';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
@@ -44,7 +45,7 @@ export default {
         ) {
           this.addNewComments(
             Comment.groupBySection(commentRegistry.query((c) => c.isSeen === false)),
-            controller.getBootProcess()
+            bootController.getBootProcess()
           );
         }
         this.addCommentCount();

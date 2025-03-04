@@ -6,6 +6,7 @@ import CommentFormInputTransformer from './CommentFormInputTransformer';
 import CommentFormOperationRegistry from './CommentFormOperationRegistry';
 import Parser from './Parser';
 import TextMasker from './TextMasker';
+import bootController from './bootController';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
@@ -2970,7 +2971,7 @@ class CommentForm extends EventEmitter {
         options.fromrev = this.targetPage.revisionId;
       }
 
-      const request = controller
+      const request = cd
         .getApi()
         .post(/** @type {import('types-mediawiki/mw/Api').UnknownApiParams} */ (options), {
           // Beneficial when sending long unicode texts, which is what we do here.
@@ -3073,7 +3074,7 @@ class CommentForm extends EventEmitter {
           operation,
         });
       }
-      controller.hideLoadingOverlay();
+      bootController.hideLoadingOverlay();
     }
   }
 
@@ -3420,7 +3421,7 @@ class CommentForm extends EventEmitter {
    * @param {boolean} [confirmClose=true] Whether to confirm form close.
    */
   async cancel(confirmClose = true) {
-    if (controller.isPageOverlayOn() || this.isBeingSubmitted()) return;
+    if (bootController.isPageOverlayOn() || this.isBeingSubmitted()) return;
 
     if (confirmClose && !this.confirmClose()) {
       this.commentInput.focus();

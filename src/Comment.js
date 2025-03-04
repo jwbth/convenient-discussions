@@ -10,6 +10,7 @@ import LiveTimestamp from './LiveTimestamp';
 import PrototypeRegistry from './PrototypeRegistry';
 import StorageItemWithKeys from './StorageItemWithKeys';
 import TreeWalker from './TreeWalker';
+import bootController from './bootController';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
@@ -1516,7 +1517,7 @@ class Comment extends CommentSkeleton {
     if (!this.getLayersContainer().cdIsTopLayersContainer) return;
 
     if (this.level === 0) {
-      const offsets = controller.getContentColumnOffsets();
+      const offsets = bootController.getContentColumnOffsets();
 
       // 2 instead of 1 for Timeless
       const leftStretched = left - offsets.startMargin - 2;
@@ -1574,7 +1575,7 @@ class Comment extends CommentSkeleton {
           ? cd.g.contentFontSize * 3.2
           : cd.g.contentFontSize * 2.2 - 1;
     } else if (this.isStartStretched) {
-      startMargin = controller.getContentColumnOffsets().startMargin;
+      startMargin = bootController.getContentColumnOffsets().startMargin;
     } else {
       const marginElement = this.thread.$expandNote?.[0] || this.marginHighlightable;
       if (marginElement.parentElement?.classList.contains('cd-commentLevel')) {
@@ -1595,7 +1596,7 @@ class Comment extends CommentSkeleton {
       }
     }
     const endMargin = this.isEndStretched
-      ? controller.getContentColumnOffsets().startMargin
+      ? bootController.getContentColumnOffsets().startMargin
       : cd.g.commentFallbackSideMargin;
 
     const left = this.getDirection() === 'ltr' ? startMargin : endMargin;
@@ -2046,7 +2047,7 @@ class Comment extends CommentSkeleton {
    * @param {MouseEvent | TouchEvent} [event]
    */
   highlightHovered(event) {
-    if (this.isHovered || controller.isPageOverlayOn() || this.isReformatted()) return;
+    if (this.isHovered || bootController.isPageOverlayOn() || this.isReformatted()) return;
 
     if (event?.type === 'touchstart') {
       if (this.wasMenuHidden) {
@@ -3118,7 +3119,7 @@ class Comment extends CommentSkeleton {
 
     if ((await showConfirmDialog($content, { size: 'larger' })) === 'accept') {
       try {
-        await controller
+        await cd
           .getApi()
           .postWithEditToken(
             cd.getApi().assertCurrentUser({

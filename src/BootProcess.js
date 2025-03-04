@@ -4,12 +4,12 @@ import CommentFormInputTransformer from './CommentFormInputTransformer';
 import Parser from './Parser';
 import Section from './Section';
 import Thread from './Thread';
+import bootController from './bootController';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
 import controller from './controller';
 import debug from './debug';
-import init from './init';
 import navPanel from './navPanel';
 import notifications from './notifications';
 import pageNav from './pageNav';
@@ -365,7 +365,7 @@ class BootProcess {
       mw.hook('convenientDiscussions.pageReadyFirstTime').fire(cd);
     }
 
-    controller.hideLoadingOverlay();
+    bootController.hideLoadingOverlay();
 
     // This is needed to calculate the rendering time: it won't complete until everything gets
     // rendered.
@@ -388,7 +388,7 @@ class BootProcess {
    */
   async setup() {
     if (this.firstRun) {
-      await init.initTalkPage();
+      await bootController.initTalkPage();
     }
     this.subscriptions = controller.getSubscriptionsInstance();
     if (this.firstRun) {
@@ -561,7 +561,7 @@ class BootProcess {
       .attr('href', /** @type {string} */ ($disableLink.attr('href')).replace(/0$/, '1'))
       .text(cd.s('footer-runcd'));
 
-    controller.hideLoadingOverlay();
+      bootController.hideLoadingOverlay();
     this.debugLog();
   }
 
