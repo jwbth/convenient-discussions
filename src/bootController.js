@@ -844,7 +844,13 @@ class BootController {
 
     this.pageTypes.definitelyTalk = Boolean(
       isEnabledInQuery ||
+
+      // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
+      // the list of supported namespaces and page white/black list in the configuration. With this
+      // method, there won't be "comment" links for edits on pages that list revisions such as the
+      // watchlist.
       this.$content.find('.cd-talkPage').length ||
+
       (
         ($('#ca-addsection').length || cd.g.pageWhitelistRegexp?.test(cd.g.pageName)) &&
         !cd.g.pageBlacklistRegexp?.test(cd.g.pageName)

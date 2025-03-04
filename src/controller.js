@@ -263,7 +263,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isTalkPage() {
-    return bootController.getPageType().talk;
+    return bootController.isOfType('talk');
   }
 
   /**
@@ -272,7 +272,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isWatchlistPage() {
-    return bootController.isWatchlistPage();
+    return bootController.isOfType('watchlist');
   }
 
   /**
@@ -281,7 +281,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isContributionsPage() {
-    return bootController.isContributionsPage();
+    return bootController.isOfType('contributions');
   }
 
   /**
@@ -290,21 +290,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isHistoryPage() {
-    return bootController.isHistoryPage();
-  }
-
-  /**
-   * Check whether the current page is a diff page.
-   *
-   * This is not a constant: the diff may be removed from the page (and the URL updated, see
-   * `.cleanUpUrlAndDom()`) when it's for the last revision and the page is reloaded using the
-   * script. `wgIsArticle` config value is not taken into account: if the "Do not show page content
-   * below diffs" MediaWiki setting is on, `wgIsArticle` is false.
-   *
-   * @returns {boolean}
-   */
-  isDiffPage() {
-    return bootController.getPageType().diff;
+    return bootController.isOfType('history');
   }
 
   /**
@@ -314,7 +300,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isDefinitelyTalkPage() {
-    return bootController.getPageType().definitelyTalk;
+    return bootController.isOfType('definitelyTalk');
   }
 
   /**
@@ -326,7 +312,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isArticlePageTalkPage() {
-    return bootController.getPageType().articleTalk;
+    return bootController.isOfType('articleTalk');
   }
 
   /**
@@ -840,7 +826,7 @@ class Controller extends EventEmitter {
 
   /**
    * _For internal use._ Handle a document's `scroll` event: Register seen comments, update the
-   * navigation panel's first unseen button, and update the current section block. Trigger the
+   * * navigation panel's first unseen button, and update the current section block. Trigger the
    * `horizontalscroll` event.
    */
   handleScroll() {
