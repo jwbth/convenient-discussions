@@ -71,6 +71,56 @@ class BootController {
   booting = false;
 
   /**
+   * @type {{
+   *   definitelyTalk: boolean;
+   *   articleTalk: boolean;
+   *   diff: boolean;
+   *   talk: boolean;
+   *   watchlist: boolean;
+   *   contributions: boolean;
+   *   history: boolean;
+   * }}
+   */
+  pageTypes = {
+    definitelyTalk: false,
+    articleTalk: false,
+    diff: false,
+    talk: false,
+    watchlist: false,
+    contributions: false,
+    history: false,
+  };
+
+  /**
+   * Check if the current page is of a specific type.
+   *
+   * @param {'definitelyTalk'|'articleTalk'|'diff'|'talk'|'watchlist'|'contributions'|'history'} type
+   * @returns {boolean}
+   */
+  isOfType(type) {
+    return this.pageTypes[type];
+  }
+
+  /**
+   * Get the type of the page.
+   *
+   * @returns {{
+   *   definitelyTalk: boolean;
+   *   articleTalk: boolean;
+   *   diff: boolean;
+   *   talk: boolean;
+   * }}
+   */
+  getPageType() {
+    return {
+      definitelyTalk: this.pageTypes.definitelyTalk,
+      articleTalk: this.pageTypes.articleTalk,
+      diff: this.pageTypes.diff,
+      talk: this.pageTypes.talk,
+    };
+  }
+
+  /**
    * _For internal use._ Load messages needed to parse and generate timestamps as well as some site
    * data.
    *
@@ -792,71 +842,38 @@ class BootController {
     const isEnabledInQuery = getQueryParamBooleanValue('cdtalkpage') === true;
     const isDisabledInQuery = getQueryParamBooleanValue('cdtalkpage') === false;
 
-    // See .isDefinitelyTalkPage()
-    this.definitelyTalkPage = Boolean(
+    this.pageTypes.definitelyTalk = Boolean(
       isEnabledInQuery ||
-
-      // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
-      // the list of supported namespaces and page white/black list in the configuration. With this
-      // method, there won't be "comment" links for edits on pages that list revisions such as the
-      // watchlist.
       this.$content.find('.cd-talkPage').length ||
-
       (
         ($('#ca-addsection').length || cd.g.pageWhitelistRegexp?.test(cd.g.pageName)) &&
         !cd.g.pageBlacklistRegexp?.test(cd.g.pageName)
       )
     );
 
-    // See .isArticlePageTalkPage()
-    this.articlePageTalkPage = (
+    this.pageTypes.articleTalk = (
       (!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
       !this.$content.find('.cd-notTalkPage').length &&
-      (isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber) || this.definitelyTalkPage) &&
+      (isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber) || this.pageTypes.definitelyTalk) &&
 
       // Undocumented setting
       !window.cdOnlyRunByFooterLink
     );
 
-    // See .isDiffPage()
-    this.diffPage = /[?&]diff=[^&]/.test(location.search);
+    this.pageTypes.diff = /[?&]diff=[^&]/.test(location.search);
 
-    this.talkPage = Boolean(
+    this.pageTypes.talk = Boolean(
       mw.config.get('wgIsArticle') &&
       !isDisabledInQuery &&
-      (isEnabledInQuery || this.articlePageTalkPage)
+      (isEnabledInQuery || this.pageTypes.articleTalk)
     );
+
+    this.pageTypes.watchlist = this.isWatchlistPage();
+    this.pageTypes.contributions = this.isContributionsPage();
+    this.pageTypes.history = this.isHistoryPage();
 
     this.bootOnTalkPage();
     this.bootOnCommentLinksPage();
-  }
-
-  /**
-   * Get the type of the page.
-   *
-   * @returns {{
-   *   definitelyTalk: boolean;
-   *   articleTalk: boolean;
-   *   diff: boolean;
-   *   talk: boolean;
-   * }}
-   */
-  getPageType() {
-    return {
-      definitelyTalk: this.definitelyTalkPage,
-      articleTalk: this.articlePageTalkPage,
-      diff: this.diffPage,
-      talk: this.talkPage,
-    };
-  }
-
-  /**
-   * Set whether the current page is a talk page.
-   *
-   * @param {boolean} value
-   */
-  setTalkPageness(value) {
-    this.talkPage = Boolean(value);
   }
 
   /**
@@ -866,7 +883,7 @@ class BootController {
    * @private
    */
   bootOnTalkPage() {
-    if (!this.talkPage) return;
+    if (!this.pageTypes.talk) return;
 
     debug.stopTimer('start');
     debug.startTimer('load data');
@@ -1107,7 +1124,7 @@ class BootController {
         }
       });
 
-      this.diffPage = false;
+      this.pageTypes.diff = false;
     } else if (!this.bootProcess.passedData.pushState) {
       // Don't reset the fragment if it will be set in the boot process from a comment ID or a
       // section ID, to avoid creating an extra history entry.
@@ -1171,13 +1188,13 @@ class BootController {
    */
   bootOnCommentLinksPage() {
     if (
-      !this.isWatchlistPage() &&
-      !this.isContributionsPage() &&
-      !this.isHistoryPage() &&
-      !(this.diffPage && this.articlePageTalkPage) &&
+      !this.isOfType('watchlist') &&
+      !this.isOfType('contributions') &&
+      !this.isOfType('history') &&
+      !(this.isOfType('diff') && this.isOfType('articleTalk')) &&
 
       // Instant Diffs script can be called on talk pages as well
-      !this.talkPage
+      !this.isOfType('talk')
     ) {
       return;
     }
@@ -1189,7 +1206,7 @@ class BootController {
 
       // Loading user info on diff pages could lead to problems with saving visits when many pages
       // are opened, but not yet focused, simultaneously.
-      if (!this.talkPage) {
+      if (!this.isOfType('talk')) {
         getUserInfo(true).catch((error) => {
           console.warn(error);
         });
