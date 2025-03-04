@@ -58,37 +58,13 @@ declare global {
 
   interface JQuery {
     cdRemoveNonElementNodes(): void;
-
-    /**
-     * Scroll to the element.
-     *
-     * @param {'top'|'center'|'bottom'} [alignment='top'] Where should the element be positioned
-     *   relative to the viewport.
-     * @param {boolean} [smooth=true] Whether to use a smooth animation.
-     * @param {(() => void)} [callback] Callback to run after the animation has
-     * completed.
-     * @returns {this}
-     * @memberof JQuery.fn
-     */
     cdScrollTo(
       alignment: 'top' | 'center' | 'bottom' = 'top',
       smooth = true,
       callback?: () => void,
     ): this;
-
     cdIsInViewport(partially = false): boolean;
-
-    /**
-     * Scroll to the element if it is not in the viewport.
-     *
-     * @param {'top'|'center'|'bottom'} [alignment='tops'] Where should the element be positioned
-     *   relative to the viewport.
-     * @param {boolean} [smooth=true] Whether to use a smooth animation.
-     * @param {() => void} [callback] Callback to run after the animation has completed.
-     * @returns {this}
-     */
     cdScrollIntoView(alignment: 'top'|'center'|'bottom' = 'top', smooth = true, callback?: () => void): this;
-
     cdGetText(): string;
     cdAddCloseButton(): this;
     cdRemoveCloseButton(): this;

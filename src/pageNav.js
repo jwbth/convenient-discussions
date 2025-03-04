@@ -7,9 +7,10 @@
  */
 
 import Button from './Button';
+import bootController from './bootController';
 import cd from './cd';
-import controller from './controller';
 import sectionRegistry from './sectionRegistry';
+import talkPageController from './talkPageController';
 import toc from './toc';
 import { getVisibilityByRects } from './utils-window';
 
@@ -48,7 +49,7 @@ export default {
     this.updateWidth();
     this.update();
 
-    controller
+    talkPageController
       .on('scroll', this.update.bind(this))
       .on('horizontalScroll', this.updateWidth.bind(this))
       .on('resize', this.updateWidth.bind(this));
@@ -69,10 +70,10 @@ export default {
    * @private
    */
   updateWidth() {
-    if (!this.isMounted() || !controller.$contentColumn.length) return;
+    if (!this.isMounted() || !bootController.$contentColumn.length) return;
 
     const left =
-      /** @type {JQuery.Coordinates} */ (controller.$contentColumn.offset()).left -
+      /** @type {JQuery.Coordinates} */ (bootController.$contentColumn.offset()).left -
       /** @type {number} */ ($(window).scrollLeft());
 
     // 18px padding + 1px comment markers / thread lines
@@ -81,10 +82,10 @@ export default {
     let width = cd.g.userDirection === 'ltr'
       ? left - deductable
       : /** @type {number} */ ($(window).width()) -
-        (left + /** @type {number} */ (controller.$contentColumn.outerWidth())) -
+        (left + /** @type {number} */ (bootController.$contentColumn.outerWidth())) -
         deductable;
     if (cd.g.skin === 'minerva') {
-      width -= controller.getContentColumnOffsets().startMargin;
+      width -= bootController.getContentColumnOffsets().startMargin;
     }
 
     // Some skins when the viewport is narrowed
@@ -347,9 +348,9 @@ export default {
       const backLink = new Button({
         classes: ['cd-pageNav-backLink'],
         label: cd.s('pagenav-back'),
-        action: (e) => {
+        action: (event) => {
           // When inside links without href
-          e.stopPropagation();
+          event.stopPropagation();
 
           this.jump(scrollY, $item, true);
         },
@@ -371,7 +372,7 @@ export default {
       }
     }
 
-    controller.toggleAutoScrolling(true);
-    controller.scrollToY(offset);
+    talkPageController.toggleAutoScrolling(true);
+    talkPageController.scrollToY(offset);
   },
 };

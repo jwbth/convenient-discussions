@@ -9,10 +9,10 @@ import SectionSource from './SectionSource';
 import bootController from './bootController';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
-import controller from './controller';
 import pageRegistry from './pageRegistry';
 import sectionRegistry from './sectionRegistry';
 import settings from './settings';
+import talkPageController from './talkPageController';
 import toc from './toc';
 import { handleApiReject } from './utils-api';
 import { defined, getHeadingLevel, underlinesToSpaces, unique } from './utils-general';
@@ -221,7 +221,7 @@ class Section extends SectionSkeleton {
      */
     this.isActionable = Boolean(
       cd.page.isActive() &&
-      !controller.getClosedDiscussions().some((el) => el.contains(this.headingElement)) &&
+      !talkPageController.getClosedDiscussions().some((el) => el.contains(this.headingElement)) &&
       !this.isTranscludedFromTemplate
     );
 
@@ -533,7 +533,7 @@ class Section extends SectionSkeleton {
     if (!this.subscribeId) return;
 
     this.subscriptionState = this.subscriptions.getState(this.subscribeId);
-    if (controller.isSubscribingDisabled() && !this.subscriptionState) return;
+    if (talkPageController.isSubscribingDisabled() && !this.subscriptionState) return;
 
     /**
      * Subscribe button widget in the {@link Section#actionsElement actions element}.
@@ -689,7 +689,7 @@ class Section extends SectionSkeleton {
         $floatableContainer: $button,
         classes: ['cd-popup-authors'],
       });
-      $(controller.getPopupOverlay()).append(this.authorsPopup.$element);
+      $(talkPageController.getPopupOverlay()).append(this.authorsPopup.$element);
     }
 
     this.authorsPopup.toggle();
@@ -1269,7 +1269,7 @@ class Section extends SectionSkeleton {
 
     if (!this.isTopic()) return;
 
-    let subscribeId = controller.getDtSubscribableThreads()
+    let subscribeId = talkPageController.getDtSubscribableThreads()
       ?.find((thread) => (
         thread.id === this.hElement.dataset.mwThreadId ||
         thread.id === this.headlineElement.dataset.mwThreadId
@@ -1436,8 +1436,8 @@ class Section extends SectionSkeleton {
     const MoveSectionDialog = require('./MoveSectionDialog').default;
 
     const dialog = new MoveSectionDialog(this);
-    controller.getWindowManager().addWindows([dialog]);
-    controller.getWindowManager().openWindow(dialog);
+    talkPageController.getWindowManager().addWindows([dialog]);
+    talkPageController.getWindowManager().openWindow(dialog);
 
     cd.tests.moveSectionDialog = dialog;
   }
@@ -1632,7 +1632,7 @@ class Section extends SectionSkeleton {
    * @param {MouseEvent | KeyboardEvent} event
    */
   copyLink(event) {
-    controller.showCopyLinkDialog(this, event);
+    talkPageController.showCopyLinkDialog(this, event);
   }
 
   /**
@@ -2072,7 +2072,7 @@ class Section extends SectionSkeleton {
     this.elements ||= /** @type {HTMLElement[]} */ (getRangeContents(
       this.headingElement,
       this.findRealLastElement(),
-      controller.rootElement
+      talkPageController.rootElement
     ));
     this.isHidden = !show;
     this.elements.forEach((el) => {

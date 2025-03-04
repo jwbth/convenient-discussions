@@ -103,10 +103,10 @@ function maybeAddFooterSwitcher() {
     .text(cd.s(enable ? 'footer-runcd' : 'footer-dontruncd'))
     .appendTo($li);
   if (enable) {
-    $a.on('click', (e) => {
-      if (e.ctrlKey || e.shiftKey || e.metaKey) return;
+    $a.on('click', (event) => {
+      if (event.ctrlKey || event.shiftKey || event.metaKey) return;
 
-      e.preventDefault();
+      event.preventDefault();
       history.pushState(history.state, '', url.toString());
       $li.remove();
       go();
@@ -345,8 +345,8 @@ async function app() {
 
   try {
     await Promise.all([!cd.config && getConfig(), getStringsPromise]);
-  } catch (e) {
-    console.error(e);
+  } catch (error) {
+    console.error(error);
     return;
   }
 

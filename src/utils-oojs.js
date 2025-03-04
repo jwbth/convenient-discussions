@@ -5,7 +5,7 @@
  */
 
 import cd from './cd';
-import controller from './controller';
+import talkPageController from './talkPageController';
 import { copyText } from './utils-window';
 
 /**
@@ -165,8 +165,8 @@ import { copyText } from './utils-window';
  */
 export async function showConfirmDialog(message, options = {}) {
   const dialog = new OO.ui.MessageDialog({ classes: ['cd-dialog-confirm'] });
-  controller.getWindowManager().addWindows([dialog]);
-  const win = controller.getWindowManager().openWindow(dialog, { message, ...options });
+  talkPageController.getWindowManager().addWindows([dialog]);
+  const win = talkPageController.getWindowManager().openWindow(dialog, { message, ...options });
   win.opened.then(() => {
     if (message instanceof $) {
       mw.hook('wikipage.content').fire(message);

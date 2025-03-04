@@ -10,11 +10,11 @@ import bootController from './bootController';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
-import controller from './controller';
 import notifications from './notifications';
 import pageRegistry from './pageRegistry';
 import sectionRegistry from './sectionRegistry';
 import settings from './settings';
+import talkPageController from './talkPageController';
 import userRegistry from './userRegistry';
 import { handleApiReject, parseCode } from './utils-api';
 import { buildEditSummary, defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './utils-general';
@@ -814,7 +814,7 @@ class CommentForm extends EventEmitter {
         this.targetSection;
       if (
         (subscribableSection?.subscribeId || this.isMode('addSection')) &&
-        (!controller.isSubscribingDisabled() || subscribableSection?.subscriptionState)
+        (!talkPageController.isSubscribingDisabled() || subscribableSection?.subscriptionState)
       ) {
         ({
           field: this.subscribeField,
@@ -928,7 +928,7 @@ class CommentForm extends EventEmitter {
         width: 400,
         classes: ['cd-helpPopup'],
       },
-      $overlay: controller.getPopupOverlay(),
+      $overlay: talkPageController.getPopupOverlay(),
       tabIndex: this.getTabIndex(31),
     });
 
@@ -1257,9 +1257,9 @@ class CommentForm extends EventEmitter {
 
     this.$element
       .find('.tool[rel="link"] a, .tool[rel="file"] a')
-      .on('click', (e) => {
+      .on('click', (event) => {
         // Fix text being inserted in a wrong textarea.
-        const rel = e.currentTarget.parentElement?.getAttribute('rel');
+        const rel = event.currentTarget.parentElement?.getAttribute('rel');
         if (!rel) return;
 
         const $dialog = $(`#wikieditor-toolbar-${rel}-dialog`);
@@ -1708,14 +1708,14 @@ class CommentForm extends EventEmitter {
         'mediawiki.ForeignStructuredUpload.BookletLayout',
         'mediawiki.widgets',
       ]);
-    } catch (e) {
+    } catch (error) {
       mw.notify(cd.s('cf-error-uploadimage'), { type: 'error' });
       this.popPending();
       return;
     }
 
     this.uploadDialog = new (require('./UploadDialog').default)();
-    const windowManager = controller.getWindowManager();
+    const windowManager = talkPageController.getWindowManager();
     windowManager.addWindows([this.uploadDialog]);
     const win = windowManager.openWindow(this.uploadDialog, {
       file,
@@ -1863,7 +1863,7 @@ class CommentForm extends EventEmitter {
       // "focusin" is "focus" that bubbles, i.e. propagates up the node tree.
       .on('focusin', () => {
         this.lastFocused = new Date();
-        controller.updatePageTitle();
+        talkPageController.updatePageTitle();
       });
 
     this.addEventListenersToTextInputs(emitChange, preview);
@@ -2000,7 +2000,7 @@ class CommentForm extends EventEmitter {
 
     // "Performance issues?" hint
     if (
-      controller.isLongPage() &&
+      talkPageController.isLongPage() &&
       $.client.profile().layout === 'webkit' &&
       !this.improvePerformance &&
       !this.haveSuggestedToImprovePerformanceRecently()
@@ -3056,7 +3056,7 @@ class CommentForm extends EventEmitter {
     }
 
     try {
-      await controller.reload(bootData);
+      await talkPageController.reload(bootData);
     } catch (error) {
       if (error instanceof CdError) {
         this.handleError(
@@ -3286,7 +3286,7 @@ class CommentForm extends EventEmitter {
           if (isHeadlineAltered) {
             bootData.justUnsubscribedFromSection = originalHeadline;
           }
-          controller.getSubscriptionsInstance()
+          talkPageController.getSubscriptionsInstance()
             .subscribe(subscribeId, headline, true, originalHeadline);
         }
       } else {
@@ -4112,8 +4112,8 @@ class CommentForm extends EventEmitter {
     if (newSelf?.isActionable) {
       try {
         newSelf[this.getModeTargetProperty()](undefined, this);
-      } catch (e) {
-        console.warn(e);
+      } catch (error) {
+        console.warn(error);
         return this.rescue();
       }
     } else {
@@ -4187,7 +4187,7 @@ class CommentForm extends EventEmitter {
 
       // Not $root - add section form is outside it. Not $content either - it's the same as $root on
       // 404 pages.
-      $container: controller.$root.parent(),
+      $container: talkPageController.$root.parent(),
 
       position: (
         $('#vector-main-menu-pinned-container, #vector-toc-pinned-container').is(':visible')
@@ -4242,7 +4242,7 @@ class CommentForm extends EventEmitter {
 
       // Not $root - add section form is outside it. Not $content either - it's the same as $root on
       // 404 pages.
-      $container: controller.$root.parent(),
+      $container: talkPageController.$root.parent(),
 
       position: (
         $('#vector-main-menu-pinned-container, #vector-toc-pinned-container').is(':visible')

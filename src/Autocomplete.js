@@ -827,8 +827,8 @@ class Autocomplete {
           const users = response.query.allusers.map((user) => user.name);
           resolve(users);
         }
-      } catch (e) {
-        reject(e);
+      } catch (error) {
+        reject(error);
       }
     });
     this.currentPromise = promise;
@@ -912,12 +912,12 @@ class Autocomplete {
 
             resolve(pages);
           },
-          (e) => {
-            handleApiReject(e);
+          (error) => {
+            handleApiReject(error);
           }
         );
-      } catch (e) {
-        reject(e);
+      } catch (error) {
+        reject(error);
       }
     });
     this.currentPromise = promise;
@@ -965,12 +965,12 @@ class Autocomplete {
 
             resolve(templates);
           },
-          (e) => {
-            handleApiReject(e);
+          (error) => {
+            handleApiReject(error);
           }
         );
-      } catch (e) {
-        reject(e);
+      } catch (error) {
+        reject(error);
       }
     });
     this.currentPromise = promise;

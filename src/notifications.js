@@ -7,7 +7,7 @@
  * @module notifications
  */
 
-import controller from './controller';
+import talkPageController from './talkPageController';
 
 /**
  * Notification object created by running
@@ -24,7 +24,7 @@ export default {
    * Initialize the singleton.
    */
   init() {
-    controller
+    talkPageController
       .on('beforeReload', (passedData) => {
         this.close(passedData.closeNotificationsSmoothly ?? true);
       });

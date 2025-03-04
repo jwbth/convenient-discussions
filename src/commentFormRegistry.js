@@ -2,8 +2,8 @@ import CommentForm from './CommentForm';
 import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime';
 import cd from './cd';
 import commentRegistry from './commentRegistry';
-import controller from './controller';
 import sectionRegistry from './sectionRegistry';
+import talkPageController from './talkPageController';
 import { defined, removeFromArrayIfPresent, subtractDaysFromNow } from './utils-general';
 import { EventEmitter } from './utils-oojs';
 import { isCmdModifierPressed, isInputFocused, keyCombination } from './utils-window';
@@ -42,7 +42,7 @@ class CommentFormRegistry extends EventEmitter {
   init() {
     this.configureClosePageConfirmation();
 
-    controller
+    talkPageController
       .on('beforeReload', () => {
         // In case checkboxes were changed programmatically
         this.saveSession();
@@ -102,12 +102,12 @@ class CommentFormRegistry extends EventEmitter {
           this.remove(/** @type {CommentForm} */ (commentForm));
         })
         .on('teardown', () => {
-          controller.updatePageTitle();
+          talkPageController.updatePageTitle();
           this.emit('teardown', commentForm);
         });
       this.emit('add', commentForm);
     }
-    controller.updatePageTitle();
+    talkPageController.updatePageTitle();
     this.saveSession();
 
     /**
@@ -270,7 +270,7 @@ class CommentFormRegistry extends EventEmitter {
    */
   saveSession(force) {
     // A check in light of the existence of RevisionSlider, see the method
-    if (!controller.isCurrentRevision()) return;
+    if (!talkPageController.isCurrentRevision()) return;
 
     if (force) {
       this.actuallySaveSession();
@@ -407,8 +407,8 @@ class CommentFormRegistry extends EventEmitter {
       .join('\n\n----\n');
 
     const dialog = new OO.ui.MessageDialog();
-    controller.getWindowManager().addWindows([dialog]);
-    controller.getWindowManager().openWindow(dialog, {
+    talkPageController.getWindowManager().addWindows([dialog]);
+    talkPageController.getWindowManager().openWindow(dialog, {
       message: (new OO.ui.FieldLayout(
         new OO.ui.MultilineTextInputWidget({
           value: text,
@@ -455,7 +455,7 @@ class CommentFormRegistry extends EventEmitter {
    * @private
    */
   configureClosePageConfirmation() {
-    controller.addPreventUnloadCondition('commentForms', () => {
+    talkPageController.addPreventUnloadCondition('commentForms', () => {
       // Check for altered comment forms - if there are none, don't save the session to decrease the
       // chance of the situation where a user had two same pages in different tabs and lost a form
       // in other tab after saving nothing in this tab.

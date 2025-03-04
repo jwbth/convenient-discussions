@@ -9,9 +9,9 @@ import PrototypeRegistry from './PrototypeRegistry';
 import bootController from './bootController';
 import cd from './cd';
 import commentRegistry from './commentRegistry';
-import controller from './controller';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
+import talkPageController from './talkPageController';
 import { definedAndNotNull, generatePageNamePattern, isCommentEdit, isProbablyTalkPage, isUndo, removeDirMarks, spacesToUnderlines } from './utils-general';
 import { initDayjs, parseTimestamp } from './utils-timestamp';
 
@@ -41,7 +41,7 @@ async function initialize() {
     // Loading the subscriptions is not critical, as opposed to messages, so we catch the possible
     // error, not letting it be caught by the try/catch block.
     subscriptions = /** @type {import('./LegacySubscriptions').default} */ (
-      controller.getSubscriptionsInstance()
+      talkPageController.getSubscriptionsInstance()
     );
     requests.push(subscriptions.load(undefined, true).catch(() => {}));
   }
@@ -99,9 +99,9 @@ function switchRelevant() {
   const isEnhanced = !$('.mw-changeslist').find('ul.special').length;
 
   // This is for many watchlist types at once.
-  const $collapsibles = controller.$content
+  const $collapsibles = talkPageController.$content
     .find('.mw-changeslist .mw-collapsible:not(.mw-changeslist-legend)');
-  const $lines = controller.$content.find('.mw-changeslist-line:not(table)');
+  const $lines = talkPageController.$content.find('.mw-changeslist-line:not(table)');
 
   if (switchRelevantButton.hasFlag('progressive')) {
     // Show all
@@ -189,7 +189,7 @@ function addWatchlistMenu() {
   };
   const editSubscriptionsButton = new OO.ui.ButtonWidget(editSubscriptionsButtonConfig);
   editSubscriptionsButton.on('click', () => {
-    controller.showEditSubscriptionsDialog();
+    talkPageController.showEditSubscriptionsDialog();
   });
   editSubscriptionsButton.$element.appendTo($menu);
 
@@ -208,10 +208,10 @@ function addWatchlistMenu() {
   settingsButton.$element.appendTo($menu);
 
   // New watchlist
-  controller.$content.find('.mw-rcfilters-ui-changesLimitAndDateButtonWidget').prepend($menu);
+  talkPageController.$content.find('.mw-rcfilters-ui-changesLimitAndDateButtonWidget').prepend($menu);
 
   // Old watchlist
-  controller.$content.find('#mw-watchlist-options .mw-changeslist-legend').after($menu);
+  talkPageController.$content.find('#mw-watchlist-options .mw-changeslist-legend').after($menu);
 }
 
 /**
@@ -317,7 +317,7 @@ function isInSection(summary, name) {
 function processWatchlist($content) {
   if (
     mw.config.get('wgCanonicalSpecialPageName') === 'Watchlist' &&
-    !controller.$content.find('.cd-watchlistMenu').length
+    !talkPageController.$content.find('.cd-watchlistMenu').length
   ) {
     if (mw.user.options.get('wlenhancedfilters-disable')) {
       addWatchlistMenu();
@@ -591,14 +591,14 @@ function processDiff($diff) {
   // the page that is a diff page (unless only a diff, and no content, is displayed - if
   // mw.user.options.get('diffonly') or the `diffonly` URL parameter is true). We parse that diff on
   // convenientDiscussions.pageReady hook instead.
-  if ($diff?.parent().is(controller.$content) && controller.$root) return;
+  if ($diff?.parent().is(talkPageController.$content) && talkPageController.$root) return;
 
   if (!cd.g.uiTimestampRegexp) {
     bootController.initTimestampParsingTools('user');
   }
   if (cd.g.uiTimezone === null) return;
 
-  const $root = $diff || controller.$content;
+  const $root = $diff || talkPageController.$content;
   const root = $root[0];
   [root.querySelector('.diff-otitle'), root.querySelector('.diff-ntitle')]
     .filter(definedAndNotNull)

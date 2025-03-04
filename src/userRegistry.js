@@ -7,7 +7,6 @@
 import CdError from './CdError';
 import StorageItem from './StorageItem';
 import cd from './cd';
-import controller from './controller';
 import { handleApiReject } from './utils-api';
 import { subtractDaysFromNow, ucFirst, underlinesToSpaces } from './utils-general';
 

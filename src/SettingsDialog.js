@@ -1,8 +1,8 @@
 import ProcessDialog from './ProcessDialog';
 import StorageItem from './StorageItem';
 import cd from './cd';
-import controller from './controller';
 import settings from './settings';
+import talkPageController from './talkPageController';
 import { saveGlobalOption, saveLocalOption } from './utils-api';
 import { areObjectsEqual } from './utils-general';
 import { createCheckboxField, createNumberField, createRadioField, createTextField, es6ClassToOoJsClass } from './utils-oojs';
@@ -182,7 +182,7 @@ class SettingsDialog extends ProcessDialog {
 
       this.popPending();
 
-      controller.addPreventUnloadCondition('dialog', () => this.isUnsaved());
+      talkPageController.addPreventUnloadCondition('dialog', () => this.isUnsaved());
     });
   }
 
@@ -206,7 +206,7 @@ class SettingsDialog extends ProcessDialog {
           return;
         }
 
-        controller.removePreventUnloadCondition('dialog');
+        talkPageController.removePreventUnloadCondition('dialog');
 
         this.stack.setItem(this.reloadPanel);
         this.actions.setMode('reload');

@@ -8,7 +8,6 @@ import bootController from './bootController';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
-import controller from './controller';
 import debug from './debug';
 import navPanel from './navPanel';
 import notifications from './notifications';
@@ -16,6 +15,7 @@ import pageNav from './pageNav';
 import processFragment from './processFragment';
 import sectionRegistry from './sectionRegistry';
 import settings from './settings';
+import talkPageController from './talkPageController';
 import toc from './toc';
 import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
@@ -31,7 +31,7 @@ import visits from './visits';
  * @private
  */
 function getAllTextNodesUnderRoot() {
-  return getAllTextNodes(controller.rootElement);
+  return getAllTextNodes(talkPageController.rootElement);
 }
 
 /**
@@ -40,7 +40,7 @@ function getAllTextNodesUnderRoot() {
  * @private
  */
 function removeDtButtonHtmlComments() {
-  const treeWalker = document.createNodeIterator(controller.rootElement, NodeFilter.SHOW_COMMENT);
+  const treeWalker = document.createNodeIterator(talkPageController.rootElement, NodeFilter.SHOW_COMMENT);
   let node;
   while ((node = /** @type {globalThis.Comment} */ (treeWalker.nextNode()))) {
     if (node.textContent.startsWith('__DTREPLYBUTTONS__')) {
@@ -68,20 +68,20 @@ function processAndRemoveDtElements(elements, bootProcess) {
   let dtMarkupHavenElement;
   if (moveNotRemove) {
     if (!bootProcess.isFirstRun()) {
-      dtMarkupHavenElement = controller.$content.children('.cd-dtMarkupHaven')[0];
+      dtMarkupHavenElement = talkPageController.$content.children('.cd-dtMarkupHaven')[0];
     }
     if (dtMarkupHavenElement) {
       dtMarkupHavenElement.innerHTML = '';
     } else {
       dtMarkupHavenElement = document.createElement('span');
       dtMarkupHavenElement.className = 'cd-dtMarkupHaven cd-hidden';
-      controller.$content.append(dtMarkupHavenElement);
+      talkPageController.$content.append(dtMarkupHavenElement);
     }
   }
 
   elements
     .concat(
-      [...controller.rootElement.getElementsByClassName('ext-discussiontools-init-highlight')]
+      [...talkPageController.rootElement.getElementsByClassName('ext-discussiontools-init-highlight')]
     )
     .forEach((el, i) => {
       if (el.hasAttribute('data-mw-comment-start') && Comment.isDtId(el.id)) {
@@ -99,7 +99,7 @@ function processAndRemoveDtElements(elements, bootProcess) {
       }
     });
   if (!moveNotRemove) {
-    [...controller.rootElement.getElementsByTagName('span[data-mw-comment]')].forEach((el) => {
+    [...talkPageController.rootElement.getElementsByTagName('span[data-mw-comment]')].forEach((el) => {
       el.removeAttribute('data-mw-comment');
     });
   }
@@ -180,7 +180,7 @@ class BootProcess {
     debug.startTimer('main code');
 
     if (this.firstRun) {
-      controller.saveRelativeScrollPosition(undefined, this.passedData.scrollY);
+      talkPageController.saveRelativeScrollPosition(undefined, this.passedData.scrollY);
 
       userRegistry.loadMuted();
     }
@@ -213,7 +213,7 @@ class BootProcess {
         visits.load(this, true);
       }
 
-      if (controller.isLegacySubscriptions(this.subscriptions)) {
+      if (talkPageController.isLegacySubscriptions(this.subscriptions)) {
         this.subscriptions.loadToTalkPage(this, true);
       }
 
@@ -245,14 +245,14 @@ class BootProcess {
       this.processSections();
       debug.stopTimer('process sections');
     } else {
-      if (controller.isDtSubscriptions(this.subscriptions)) {
+      if (talkPageController.isDtSubscriptions(this.subscriptions)) {
         this.subscriptions.loadToTalkPage(this);
       }
     }
 
     if (this.passedData.parseData?.text) {
       debug.startTimer('update page contents');
-      controller.updatePageContents(this.passedData.parseData);
+      talkPageController.updatePageContents(this.passedData.parseData);
       debug.stopTimer('update page contents');
     }
 
@@ -272,7 +272,7 @@ class BootProcess {
     commentRegistry.reformatComments();
 
     // This updates some styles, shifting the offsets.
-    controller.$root.addClass('cd-parsed');
+    talkPageController.$root.addClass('cd-parsed');
 
     // Should be below navPanel.setup() as commentFormRegistry.restoreSession() indirectly calls
     // navPanel.updateCommentFormButton() which depends on the navigation panel being mounted.
@@ -280,7 +280,7 @@ class BootProcess {
       if (this.firstRun) {
         cd.page.addAddTopicButton();
       }
-      controller.connectToAddTopicButtons();
+      talkPageController.connectToAddTopicButtons();
 
       // If the viewport position restoration relies on elements that are made hidden during this
       // (when editing a comment), it can't be restored properly, but this is relatively minor
@@ -328,12 +328,12 @@ class BootProcess {
       pageNav.setup();
 
       if (this.firstRun) {
-        controller.addEventListeners();
+        talkPageController.addEventListeners();
       }
 
       // We set up the mutation observer at every reload because controller.$content may change
       // (e.g. RevisionSlider replaces it).
-      controller.setupMutationObserver();
+      talkPageController.setupMutationObserver();
 
       if (settings.get('reformatComments') && commentRegistry.getCount()) {
         // Using the wikipage.content hook could theoretically disrupt code that needs to process
@@ -345,7 +345,7 @@ class BootProcess {
     if (this.firstRun) {
       // Restore the initial viewport position in terms of visible elements, which is how the user
       // sees it.
-      controller.restoreRelativeScrollPosition();
+      talkPageController.restoreRelativeScrollPosition();
 
       settings.addLinkToFooter();
     }
@@ -373,7 +373,7 @@ class BootProcess {
 
     // This is needed to calculate the rendering time: it won't complete until everything gets
     // rendered.
-    controller.rootElement.getBoundingClientRect();
+    talkPageController.rootElement.getBoundingClientRect();
 
     debug.stopTimer('final code and rendering');
 
@@ -394,7 +394,7 @@ class BootProcess {
     if (this.firstRun) {
       await bootController.initTalkPage();
     }
-    this.subscriptions = controller.getSubscriptionsInstance();
+    this.subscriptions = talkPageController.getSubscriptionsInstance();
     if (this.firstRun) {
       // The order of the subsequent calls matters because the modules depend on others in a certain
       // way.
@@ -418,7 +418,7 @@ class BootProcess {
       notifications.init();
       Parser.init();
     }
-    controller.setup(this.passedData.parseData?.text);
+    talkPageController.setup(this.passedData.parseData?.text);
     toc.setup(this.passedData.parseData?.sections, this.passedData.parseData?.hidetoc);
 
     /**
@@ -459,8 +459,8 @@ class BootProcess {
       getAllTextNodes: getAllTextNodesUnderRoot,
       getElementByClassName: (/** @type {Element} */ el, className) =>
         el.querySelector(`.${className}`),
-      rootElement: controller.rootElement,
-      areThereOutdents: controller.areThereOutdents.bind(controller),
+      rootElement: talkPageController.rootElement,
+      areThereOutdents: talkPageController.areThereOutdents.bind(talkPageController),
       processAndRemoveDtElements,
       removeDtButtonHtmlComments,
     });
@@ -483,14 +483,14 @@ class BootProcess {
         .forEach((signature) => {
           try {
             commentRegistry.add(this.parser.createComment(signature, this.targets));
-          } catch (e) {
-            console.error(e);
+          } catch (error) {
+            console.error(error);
           }
         });
 
       commentRegistry.setup();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
     }
 
     /**
@@ -515,12 +515,12 @@ class BootProcess {
       .forEach((heading) => {
         try {
           sectionRegistry.add(this.parser.createSection(heading, this.targets, this.subscriptions));
-        } catch (e) {
-          console.error(e);
+        } catch (error) {
+          console.error(error);
         }
       });
 
-    if (controller.isDtSubscriptions(this.subscriptions)) {
+    if (talkPageController.isDtSubscriptions(this.subscriptions)) {
       // Can't do it earlier: we don't have section DT IDs until now.
       this.subscriptions.loadToTalkPage(this);
     }
@@ -639,7 +639,7 @@ class BootProcess {
           observer.disconnect();
         }
       });
-      observer.observe(controller.$content[0], {
+      observer.observe(talkPageController.$content[0], {
         childList: true,
         subtree: true,
       });
@@ -726,7 +726,7 @@ class BootProcess {
     const didEnableCommentReformatting = await settings.maybeSuggestEnableCommentReformatting();
     await settings.maybeConfirmDesktopNotifications();
     if (didEnableCommentReformatting) {
-      controller.reload();
+      talkPageController.reload();
     }
   }
 
@@ -789,7 +789,7 @@ class BootProcess {
           'discussiontools-topicsubscription': '1',
         }).catch(handleApiReject);
       }
-    } catch (e) {
+    } catch (error) {
       mw.notify(wrapHtml(cd.sParse('error-settings-save')));
       return;
     } finally {

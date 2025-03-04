@@ -2,7 +2,6 @@ import Button from './Button';
 import CdError from './CdError';
 import Subscriptions from './Subscriptions';
 import cd from './cd';
-import controller from './controller';
 import sectionRegistry from './sectionRegistry';
 import { handleApiReject, splitIntoBatches } from './utils-api';
 import { definedAndNotNull, spacesToUnderlines, unique } from './utils-general';

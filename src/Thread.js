@@ -5,8 +5,8 @@ import PrototypeRegistry from './PrototypeRegistry';
 import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime';
 import cd from './cd';
 import commentRegistry from './commentRegistry';
-import controller from './controller';
 import settings from './settings';
+import talkPageController from './talkPageController';
 import updateChecker from './updateChecker';
 import { loadUserGenders } from './utils-api';
 import { defined, getCommonGender, isHeadingNode, removeFromArrayIfPresent, subtractDaysFromNow, unique } from './utils-general';
@@ -165,7 +165,7 @@ class Thread extends mixInObject(
      * @private
      */
     this.hasOutdents = (
-      controller.areThereOutdents() &&
+      talkPageController.areThereOutdents() &&
       this.comments.slice(1).some((comment) => comment.isOutdented)
     );
 
@@ -929,12 +929,12 @@ class Thread extends mixInObject(
     this.collapsedRange = getRangeContents(
       this.getAdjustedStartElement(),
       this.getAdjustedEndElement(),
-      controller.rootElement
+      talkPageController.rootElement
     );
     if (!this.collapsedRange) return;
 
     this.collapsedRange.forEach(this.hideElement.bind(this));
-    this.updateEndOfCollapsedRange(controller.getClosedDiscussions());
+    this.updateEndOfCollapsedRange(talkPageController.getClosedDiscussions());
 
     this.isCollapsed = true;
 
@@ -1373,7 +1373,7 @@ class Thread extends mixInObject(
     if (!this.isInited) {
       this
         .on('toggle', this.updateLines);
-      controller
+      talkPageController
         .on('resize', this.updateLines)
         .on('mutate', () => {
           // Update only on mouse move to prevent short freezings of a page when there is a comment
@@ -1393,7 +1393,7 @@ class Thread extends mixInObject(
     }
 
     this.collapseThreadsLevel = settings.get('collapseThreadsLevel');
-    this.treeWalker = new ElementsTreeWalker(controller.rootElement);
+    this.treeWalker = new ElementsTreeWalker(talkPageController.rootElement);
     commentRegistry.getAll().forEach((rootComment) => {
       try {
         rootComment.thread?.expand(true);
@@ -1498,7 +1498,7 @@ class Thread extends mixInObject(
       });
     this.emit('toggle');
 
-    if (controller.isCurrentRevision()) {
+    if (talkPageController.isCurrentRevision()) {
       collapsedThreadsStorageItem
         .setWithTime(mw.config.get('wgArticleId'), data.collapsedThreads)
         .save();
@@ -1594,7 +1594,7 @@ class Thread extends mixInObject(
     const scrollX = window.scrollX;
     const scrollY = window.scrollY;
 
-    const floatingRects = controller.getFloatingElements().map(getExtendedRect);
+    const floatingRects = talkPageController.getFloatingElements().map(getExtendedRect);
     commentRegistry.getAll()
       .slice()
       .reverse()
@@ -1625,7 +1625,7 @@ class Thread extends mixInObject(
    * @private
    */
   static saveCollapsedThreads() {
-    if (!controller.isCurrentRevision()) return;
+    if (!talkPageController.isCurrentRevision()) return;
 
     (new StorageItemWithKeysAndSaveTime('collapsedThreads'))
       .setWithTime(

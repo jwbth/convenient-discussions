@@ -43,8 +43,8 @@ class Visits extends EventEmitter {
       // mw.user.options is not used even on first run because it appears to be cached sometimes
       // which can be critical for determining subscriptions.
       this.unpack(await getUserInfo(reuse).then(({ visits }) => visits));
-    } catch (e) {
-      console.warn('Convenient Discussions: Couldn\'t load the settings from the server.', e);
+    } catch (error) {
+      console.warn('Convenient Discussions: Couldn\'t load the settings from the server.', error);
       return;
     }
 

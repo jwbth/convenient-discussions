@@ -2,7 +2,6 @@ import CdError from './CdError';
 import ProcessDialog from './ProcessDialog';
 import PseudoLink from './Pseudolink';
 import cd from './cd';
-import controller from './controller';
 import { canonicalUrlToPageName, defined, generateFixedPosTimestamp, getDbnameForHostname, zeroPad } from './utils-general';
 import { createCheckboxField, createRadioField, createTextField, es6ClassToOoJsClass, mixInClass } from './utils-oojs';
 import { mergeJquery, wrapHtml } from './utils-window';

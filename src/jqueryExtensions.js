@@ -5,7 +5,7 @@
  */
 
 import cd from './cd';
-import controller from './controller';
+import talkPageController from './talkPageController';
 import { isMetadataNode, sleep } from './utils-general';
 import { createSvg } from './utils-window';
 
@@ -35,31 +35,40 @@ export default {
     return this.filter((_, el) => el.tagName && !isMetadataNode(el));
   },
 
+  /**
+   * Scroll to the element.
+   *
+   * @param {'top'|'center'|'bottom'} [alignment='top'] Where should the element be positioned
+   *   relative to the viewport.
+   * @param {boolean} [smooth=true] Whether to use a smooth animation.
+   * @param {(() => void)} [callback] Callback to run after the animation has
+   * completed.
+   * @returns {JQuery}
+   * @memberof JQuery.fn
+   */
   cdScrollTo(alignment = 'top', smooth = true, /** @type {() => void} */ callback) {
     const defaultScrollPaddingTop = 7;
     let $elements = this.cdRemoveNonElementNodes();
 
     // Filter out elements like .mw-empty-elt
-    const findFirstVisibleElementOffset = (direction) => {
+    const findFirstVisibleElementOffset = (/** @type {'backward' | 'forward'} */ direction) => {
       const elements = $elements.get();
       if (direction === 'backward') {
         elements.reverse();
       }
       for (const el of elements) {
-        const offset = $(el).offset();
+        const offset = /** @type {JQuery.Coordinates} */ ($(el).offset());
         if (!(offset.top === 0 && offset.left === 0)) {
           return offset;
         }
       }
-
-      return null;
     }
 
     let offsetFirst = findFirstVisibleElementOffset();
     let offsetLast = findFirstVisibleElementOffset('backward');
     if (!offsetFirst || !offsetLast) {
       const $firstVisibleAncestor = $elements.first().closest(':visible');
-      if ($firstVisibleAncestor.length && !$firstVisibleAncestor.is(controller.$root)) {
+      if ($firstVisibleAncestor.length && !$firstVisibleAncestor.is(talkPageController.$root)) {
         $elements = $firstVisibleAncestor;
         offsetFirst = findFirstVisibleElementOffset();
         offsetLast = findFirstVisibleElementOffset('backward');
@@ -81,16 +90,16 @@ export default {
     if (alignment === 'center') {
       top = Math.min(
         offsetFirst.top,
-        offsetFirst.top + ((offsetBottom - offsetFirst.top) * 0.5) - $(window).height() * 0.5
+        offsetFirst.top + ((offsetBottom - offsetFirst.top) * 0.5) - /** @type {number} */ ($(window).height()) * 0.5
       );
     } else if (alignment === 'bottom') {
-      top = offsetBottom - $(window).height() + defaultScrollPaddingTop;
+      top = offsetBottom - /** @type {number} */ ($(window).height()) + defaultScrollPaddingTop;
     } else {
       top = offsetFirst.top - (cd.g.bodyScrollPaddingTop || defaultScrollPaddingTop);
     }
 
-    controller.toggleAutoScrolling(true);
-    controller.scrollToY(top, smooth, callback);
+    talkPageController__.toggleAutoScrolling(true);
+    talkPageController.scrollToY(top, smooth, callback);
 
     return /** @type {JQuery} */ (/** @type {unknown} */ (this));
   },
@@ -108,6 +117,9 @@ export default {
    */
   cdIsInViewport(partially = false) {
     const $elements = this.cdRemoveNonElementNodes();
+    if (!$elements.length) {
+      return null;
+    }
 
     // Workaround for hidden elements (use cases like checking if the add section form is in the
     // viewport).
@@ -116,8 +128,10 @@ export default {
       $elements.show();
     }
 
-    const elementTop = $elements.first().offset().top;
-    const elementBottom = $elements.last().offset().top + $elements.last().height();
+    const elementTop = /** @type {JQuery.Coordinates} */ ($elements.first().offset()).top;
+    const elementBottom =
+      /** @type {JQuery.Coordinates} */ ($elements.last().offset()).top +
+      /** @type {number} */ ($elements.last().height());
 
     // The element is hidden.
     if (elementTop === 0 && elementBottom === 0) {
@@ -128,9 +142,9 @@ export default {
       $elements.hide();
     }
 
-    const scrollTop = $(window).scrollTop();
+    const scrollTop = /** @type {number} */ ($(window).scrollTop());
     const viewportTop = scrollTop + cd.g.bodyScrollPaddingTop;
-    const viewportBottom = scrollTop + $(window).height();
+    const viewportBottom = scrollTop + /** @type {number} */ ($(window).height());
 
     return partially ?
       elementBottom > viewportTop && elementTop < viewportBottom :

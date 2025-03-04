@@ -6,7 +6,7 @@
 
 import Comment from './Comment';
 import cd from './cd';
-import controller from './controller';
+import controller from './talkPageController';
 import debug from './debug';
 import pageRegistry from './pageRegistry';
 import { buildEditSummary, getQueryParamBooleanValue, underlinesToSpaces } from './utils-general';

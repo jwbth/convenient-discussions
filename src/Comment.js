@@ -14,9 +14,9 @@ import bootController from './bootController';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
-import controller from './controller';
 import navPanel from './navPanel';
 import settings from './settings';
+import talkPageController from './talkPageController';
 import userRegistry from './userRegistry';
 import { handleApiReject, loadUserGenders, parseCode } from './utils-api';
 import { addToArrayIfAbsent, areObjectsEqual, calculateWordOverlap, countOccurrences, decodeHtmlEntities, defined, getHeadingLevel, isInline, removeFromArrayIfPresent, sleep, subtractDaysFromNow, underlinesToSpaces, unique } from './utils-general';
@@ -432,7 +432,7 @@ class Comment extends CommentSkeleton {
      */
     this.isActionable = Boolean(
       cd.page.isActive() &&
-        !controller.getClosedDiscussions().some((el) => el.contains(this.elements[0]))
+        !talkPageController.getClosedDiscussions().some((el) => el.contains(this.elements[0]))
     );
 
     this.isEditable = this.isActionable && (this.isOwn || settings.get('allowEditOthersComments'));
@@ -451,7 +451,7 @@ class Comment extends CommentSkeleton {
      * @private
      */
     const getContainerListType = (el) => {
-      const treeWalker = new ElementsTreeWalker(controller.rootElement, el);
+      const treeWalker = new ElementsTreeWalker(talkPageController.rootElement, el);
       while (treeWalker.parentNode()) {
         if (treeWalker.currentNode.classList.contains('cd-commentLevel')) {
           return /** @type {ListType} */ (treeWalker.currentNode.tagName.toLowerCase());
@@ -498,7 +498,7 @@ class Comment extends CommentSkeleton {
         this.highlightables[this.highlightables.length - 1],
       ];
       firstAndLastHighlightable.forEach((highlightable, i) => {
-        const treeWalker = new ElementsTreeWalker(controller.rootElement, highlightable);
+        const treeWalker = new ElementsTreeWalker(talkPageController.rootElement, highlightable);
         nestingLevels[i] = 0;
         while (treeWalker.parentNode()) {
           nestingLevels[i]++;
@@ -1185,8 +1185,8 @@ class Comment extends CommentSkeleton {
         if (
           // Currently we can't have comments with no highlightable elements.
           this.highlightables.length > 1 &&
-          (controller.getFloatingElements().includes(testElement) ||
-            controller.getHiddenElements().includes(testElement))
+          (talkPageController.getFloatingElements().includes(testElement) ||
+            talkPageController.getHiddenElements().includes(testElement))
         ) {
           if (el.classList.contains('cd-comment-part-first')) {
             el.classList.remove('cd-comment-part-first');
@@ -1434,7 +1434,7 @@ class Comment extends CommentSkeleton {
     rectBottom,
     top,
     bottom,
-    floatingRects = controller.getFloatingElements().map(getExtendedRect)
+    floatingRects = talkPageController.getFloatingElements().map(getExtendedRect)
   ) {
     // Check if the comment offset intersects the offsets of floating elements on the page. (Only
     // then would we need altering comment styles to get the correct offset which is an expensive
@@ -1479,7 +1479,7 @@ class Comment extends CommentSkeleton {
         // Prevent issues with comments like this:
         // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)#202107140040_SGrabarczuk_(WMF).
         this.highlightables.forEach((el, i) => {
-          if (controller.getFloatingElements().some((floatingEl) => el.contains(floatingEl))) {
+          if (talkPageController.getFloatingElements().some((floatingEl) => el.contains(floatingEl))) {
             el.style.overflow = initialOverflows[i];
           }
         });
@@ -1543,7 +1543,7 @@ class Comment extends CommentSkeleton {
    */
   getDirection() {
     if (!this.direction) {
-      this.direction = controller.areThereLtrRtlMixes()
+      this.direction = talkPageController.areThereLtrRtlMixes()
         ? this.elements
             // Take the last element because the first one may be the section heading which can have
             // another direction.
@@ -1764,7 +1764,7 @@ class Comment extends CommentSkeleton {
         const classList = Array.from(node.classList);
         if (
           ['absolute', 'relative'].includes(style.position) ||
-          (node !== controller.$content[0] &&
+          (node !== talkPageController.$content[0] &&
             (classList.includes('mw-content-ltr') || classList.includes('mw-content-rtl')))
         ) {
           offsetParent = node;
@@ -2251,7 +2251,7 @@ class Comment extends CommentSkeleton {
       seenStorageItem.set(mw.config.get('wgArticleId'), seen).save();
     }
 
-    controller.maybeMarkPageAsRead();
+    talkPageController.maybeMarkPageAsRead();
   }
 
   /**
@@ -2459,7 +2459,7 @@ class Comment extends CommentSkeleton {
       : new Button({
           label: cd.s('comment-changed-refresh'),
           action: () => {
-            controller.reload(type === 'deleted' || !this.id ? {} : { commentIds: [this.id] });
+            talkPageController.reload(type === 'deleted' || !this.id ? {} : { commentIds: [this.id] });
           },
         });
 
@@ -2606,7 +2606,7 @@ class Comment extends CommentSkeleton {
       // The change was reverted and the user hasn't seen the change - no need to flash the comment.
       if (this.willFlashChangedOnSight) {
         this.willFlashChangedOnSight = false;
-        controller.maybeMarkPageAsRead();
+        talkPageController.maybeMarkPageAsRead();
       } else if (this.id) {
         const seenStorageItem = new StorageItemWithKeys('seenRenderedChanges');
         const seen = seenStorageItem.get(mw.config.get('wgArticleId')) || {};
@@ -2860,7 +2860,7 @@ class Comment extends CommentSkeleton {
    * @param {MouseEvent | KeyboardEvent} event
    */
   async copyLink(event) {
-    controller.showCopyLinkDialog(this, event);
+    talkPageController.showCopyLinkDialog(this, event);
   }
 
   /**
@@ -3096,8 +3096,8 @@ class Comment extends CommentSkeleton {
           mw.loader.using(['mediawiki.diff', 'mediawiki.diff.styles']),
         ].filter(defined)
       );
-    } catch (e) {
-      this.thankFail(e);
+    } catch (error) {
+      this.thankFail(error);
       return;
     }
 
@@ -3128,8 +3128,8 @@ class Comment extends CommentSkeleton {
             })
           )
           .catch(handleApiReject);
-      } catch (e) {
-        this.thankFail(e);
+      } catch (error) {
+        this.thankFail(error);
         return;
       }
 

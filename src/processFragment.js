@@ -9,7 +9,6 @@
 import Comment from './Comment';
 import cd from './cd';
 import commentRegistry from './commentRegistry';
-import controller from './controller';
 import sectionRegistry from './sectionRegistry';
 import { defined, sleep, underlinesToSpaces } from './utils-general';
 import { formatDateNative } from './utils-timestamp';
@@ -38,8 +37,8 @@ export default async function processFragment() {
     if (Comment.isId(value)) {
       commentId = decodedValue;
     }
-  } catch (e) {
-    console.error(e);
+  } catch (error) {
+    console.error(error);
   }
 
   let comment;

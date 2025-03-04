@@ -3,8 +3,8 @@ import LZString from 'lz-string';
 import CdError from './CdError';
 import Subscriptions from './Subscriptions';
 import cd from './cd';
-import controller from './controller';
 import sectionRegistry from './sectionRegistry';
+import talkPageController from './talkPageController';
 import { getUserInfo, saveLocalOption } from './utils-api';
 import { wrapHtml } from './utils-window';
 
@@ -118,7 +118,7 @@ class LegacySubscriptions extends Subscriptions {
               callbacks: {
                 // An old class name is kept for compatibility with strings.
                 'cd-notification-editWatchedSections': () => {
-                  controller.showEditSubscriptionsDialog();
+                  talkPageController.showEditSubscriptionsDialog();
                 },
               },
             });

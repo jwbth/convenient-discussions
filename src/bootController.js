@@ -18,8 +18,8 @@ import visits from './visits';
 
 /**
  * Singleton for initializing the script, both on talk pages and on log pages such as the watchlist,
- * and controlling the reload (boot) process of talk pages. The important detail about this module
- * is that it is imported when modules such as OOUI are not yet available.
+ * and controlling the reload (boot) process of talk pages. The important thing about this module is
+ * that it is imported when modules such as OOUI are not yet available.
  *
  * Methods of the class set constants as properties of the {@link convenientDiscussions.g} object,
  * add CSS, load site data, such as MediaWiki messages and configuration, and set date formats based
@@ -31,6 +31,16 @@ class BootController {
 
   /** @type {JQuery} */
   $contentColumn;
+
+  /**
+   * @type {{
+   *   startMargin: number;
+   *   start: number;
+   *   end: number;
+   * }}
+   * @private
+   */
+  contentColumnOffsets;
 
   /**
    * @type {JQuery}
@@ -685,7 +695,7 @@ class BootController {
 
     cd.settings = settings;
 
-    const controller = require('./controller').default;
+    const controller = require('./talkPageController').default;
     const commentRegistry = require('./commentRegistry').default;
     const sectionRegistry = require('./sectionRegistry').default;
     const commentFormRegistry = require('./commentFormRegistry').default;

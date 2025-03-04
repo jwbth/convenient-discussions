@@ -1,6 +1,6 @@
 import cd from './cd';
-import controller from './controller';
 import settings from './settings';
+import talkPageController from './talkPageController';
 import { areObjectsEqual, calculateWordOverlap, generateFixedPosTimestamp, spacesToUnderlines } from './utils-general';
 import { getExtendedRect, getVisibilityByRects } from './utils-window';
 import visits from './visits';
@@ -27,7 +27,7 @@ class SectionRegistry {
   init(subscriptions) {
     this.improvePerformance = settings.get('improvePerformance');
 
-    controller
+    talkPageController
       .on('scroll', this.maybeUpdateVisibility.bind(this));
     subscriptions
       .on('process', this.addSubscribeButtons.bind(this));
@@ -235,11 +235,11 @@ class SectionRegistry {
   addSubscribeButtons() {
     if (!cd.user.isRegistered()) return;
 
-    controller.saveRelativeScrollPosition();
+    talkPageController.saveRelativeScrollPosition();
     this.items.forEach((section) => {
       section.addSubscribeButton();
     });
-    controller.restoreRelativeScrollPosition();
+    talkPageController.restoreRelativeScrollPosition();
   }
 
   /**
@@ -337,7 +337,7 @@ class SectionRegistry {
     if (
       !this.improvePerformance ||
       !this.items.length ||
-      !controller.isLongPage() ||
+      !talkPageController.isLongPage() ||
 
       // When the document has no focus, all sections are visible (see .maybeUnhideAll()).
       !document.hasFocus()
@@ -407,7 +407,7 @@ class SectionRegistry {
    * blurred.
    */
   maybeUnhideAll() {
-    if (!controller.isLongPage()) return;
+    if (!talkPageController.isLongPage()) return;
 
     this.items.forEach((section) => {
       section.updateVisibility(true);

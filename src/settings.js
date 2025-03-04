@@ -1,7 +1,7 @@
 import TextMasker from './TextMasker';
 import cd from './cd';
-import controller from './controller';
 import pageRegistry from './pageRegistry';
+import talkPageController from './talkPageController';
 import { getUserInfo, saveGlobalOption, saveLocalOption } from './utils-api';
 import { areObjectsEqual, defined, definedAndNotNull, subtractDaysFromNow, typedKeysOf, ucFirst } from './utils-general';
 import { showConfirmDialog } from './utils-oojs';
@@ -587,8 +587,8 @@ class Settings {
       }
 
       if (!areObjectsEqual(this.values, remoteSettings)) {
-        this.save().catch((e) => {
-          console.warn('Couldn\'t save the settings to the server.', e);
+        this.save().catch((error) => {
+          console.warn('Couldn\'t save the settings to the server.', error);
         });
       }
 
@@ -636,7 +636,7 @@ class Settings {
     let localSettings;
     try {
       localSettings = JSON.parse(options[cd.g.localSettingsOptionName]) || {};
-    } catch (e) {
+    } catch (error) {
       localSettings = {};
     }
 
@@ -797,7 +797,7 @@ class Settings {
     }
 
     const dialog = new (require('./SettingsDialog').default)(initalPageName, focusSelector);
-    const windowManager = controller.getWindowManager('settings');
+    const windowManager = talkPageController.getWindowManager('settings');
     windowManager.addWindows([dialog]);
     windowManager.openWindow(dialog, { loadedSettings });
 
@@ -877,9 +877,9 @@ class Settings {
     const accepted = action === 'accept';
     try {
       await this.saveSettingOnTheFly('reformatComments', accepted);
-    } catch (e) {
+    } catch (error) {
       mw.notify(cd.s('error-settings-save'), { type: 'error' });
-      console.warn(e);
+      console.warn(error);
     }
     return accepted;
   }
@@ -933,9 +933,9 @@ class Settings {
         if (promise) {
           try {
             await promise;
-          } catch (e) {
+          } catch (error) {
             mw.notify(cd.s('error-settings-save'), { type: 'error' })
-            console.warn(e);
+            console.warn(error);
           }
         }
       }

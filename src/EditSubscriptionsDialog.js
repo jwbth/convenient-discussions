@@ -2,7 +2,7 @@ import CdError from './CdError';
 import MultilineTextInputWidget from './MultilineTextInputWidget';
 import ProcessDialog from './ProcessDialog';
 import cd from './cd';
-import controller from './controller';
+import talkPageController from './talkPageController';
 import { getPageIds, getPageTitles } from './utils-api';
 import { sleep, unique } from './utils-general';
 import { es6ClassToOoJsClass } from './utils-oojs';
@@ -53,7 +53,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
     super();
 
     this.subscriptions = /** @type {import('./LegacySubscriptions').default} */ (
-      controller.getSubscriptionsInstance()
+      talkPageController.getSubscriptionsInstance()
     );
   }
 
@@ -185,7 +185,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
       this.updateSize();
       this.popPending();
 
-      controller.addPreventUnloadCondition('dialog', () => this.isUnsaved());
+      talkPageController.addPreventUnloadCondition('dialog', () => this.isUnsaved());
     });
   }
 

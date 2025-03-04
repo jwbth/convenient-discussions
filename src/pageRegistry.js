@@ -11,8 +11,8 @@ import bootController from './bootController';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
-import controller from './controller';
 import sectionRegistry from './sectionRegistry';
+import talkPageController from './talkPageController';
 import { handleApiReject, requestInBackground } from './utils-api';
 import { areObjectsEqual, defined, isProbablyTalkPage, mergeRegexps } from './utils-general';
 import { parseTimestamp } from './utils-timestamp';
@@ -245,7 +245,7 @@ export class Page {
     return (
       bootController.isPageOfType('talk') &&
       this.exists() &&
-      controller.isCurrentRevision() &&
+      talkPageController.isCurrentRevision() &&
       !this.isArchive()
     );
   }
@@ -256,7 +256,7 @@ export class Page {
    * @returns {boolean}
    */
   isCurrentArchive() {
-    return controller.isCurrentRevision() && this.isArchive();
+    return talkPageController.isCurrentRevision() && this.isArchive();
   }
 
   /**
@@ -299,7 +299,7 @@ export class Page {
     // This is not reevaluated after page reloads. Since archive settings we need rarely change, the
     // reevaluation is unlikely to make any difference. `$root?` because the $root can not be set
     // when it runs from the addCommentLinks module.
-    this.$archivingInfo ||= controller.$root?.find('.cd-archivingInfo');
+    this.$archivingInfo ||= talkPageController.$root?.find('.cd-archivingInfo');
 
     return this.$archivingInfo;
   }
@@ -743,7 +743,7 @@ export class Page {
 
       // If appending to this.rootElement, it can land on a wrong place, like on 404 pages with
       // New Topic Tool enabled.
-      .insertAfter(controller.$root);
+      .insertAfter(talkPageController.$root);
   }
 
   /**
@@ -808,7 +808,7 @@ export class Page {
 
       this.$addSectionButtonContainer?.hide();
       if (!this.exists()) {
-        controller.$content.children('.noarticletext, .warningbox').hide();
+        talkPageController.$content.children('.noarticletext, .warningbox').hide();
       }
       $('#ca-addsection').addClass('selected');
       $('#ca-view').removeClass('selected');
@@ -833,7 +833,7 @@ export class Page {
     if (firstSection && commentForm.isNewTopicOnTop()) {
       firstSection.$heading.before(commentForm.$element);
     } else {
-      controller.$root.after(commentForm.$element);
+      talkPageController.$root.after(commentForm.$element);
     }
   }
 
@@ -842,7 +842,7 @@ export class Page {
    */
   cleanUpCommentFormTraces() {
     if (!this.exists()) {
-      controller.$content
+      talkPageController.$content
         // In case DT's new topic tool is enabled. This is responsible for correct styles being set.
         .removeClass('ext-discussiontools-init-replylink-open')
 

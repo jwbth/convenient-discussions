@@ -9,8 +9,8 @@ import LiveTimestamp from './LiveTimestamp';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
-import controller from './controller';
 import settings from './settings';
+import talkPageController from './talkPageController';
 import updateChecker from './updateChecker';
 import { reorderArray } from './utils-general';
 import { formatDate } from './utils-timestamp';
@@ -85,34 +85,34 @@ export default {
       // Can be mounted not only on first parse, if using RevisionSlider, for example.
       if (!this.isMounted()) {
         this.mount();
-        controller
+        talkPageController
           .on('scroll', this.updateCommentFormButton.bind(this))
-          .on('keyDown', (e) => {
+          .on('keyDown', (event) => {
             if (isInputFocused()) return;
 
             // R
-            if (keyCombination(e, 82)) {
+            if (keyCombination(event, 82)) {
               this.refreshClick();
             }
 
             // W
-            if (keyCombination(e, 87)) {
+            if (keyCombination(event, 87)) {
               this.goToPreviousNewComment();
             }
 
             // S
-            if (keyCombination(e, 83)) {
+            if (keyCombination(event, 83)) {
               this.goToNextNewComment();
             }
 
             // F
-            if (keyCombination(e, 70)) {
+            if (keyCombination(event, 70)) {
               this.goToFirstUnseenComment();
             }
 
             // C
-            if (keyCombination(e, 67)) {
-              e.preventDefault();
+            if (keyCombination(event, 67)) {
+              event.preventDefault();
               this.goToNextCommentForm(true);
             }
           })
@@ -154,8 +154,8 @@ export default {
       tagName: 'div',
       classes: ['cd-navPanel-button'],
       id: 'cd-navPanel-refreshButton',
-      action: (e) => {
-        this.refreshClick(isCmdModifierPressed(e));
+      action: (event) => {
+        this.refreshClick(isCmdModifierPressed(event));
       },
     });
     this.updateRefreshButton(0);
@@ -296,8 +296,8 @@ export default {
    * @private
    */
   refreshClick(markAsRead = false) {
-    controller.reload({
-      commentIds: controller.getRelevantAddedCommentIds() || undefined,
+    talkPageController.reload({
+      commentIds: talkPageController.getRelevantAddedCommentIds() || undefined,
       markAsRead,
     });
   },
@@ -310,7 +310,7 @@ export default {
    * @private
    */
   goToNewCommentInDirection(direction) {
-    if (controller.isAutoScrolling()) return;
+    if (talkPageController.isAutoScrolling()) return;
 
     const commentInViewport = commentRegistry.findInViewport(direction);
     if (!commentInViewport) return;
@@ -354,7 +354,7 @@ export default {
    * Scroll to the first unseen comment.
    */
   goToFirstUnseenComment() {
-    if (controller.isAutoScrolling()) return;
+    if (talkPageController.isAutoScrolling()) return;
 
     const candidates = commentRegistry.query((comment) => comment.isSeen === false);
     const comment = candidates.find((comment) => comment.isInViewport() === false) || candidates[0];
@@ -521,7 +521,7 @@ export default {
    * @private
    */
   updateCommentFormButton() {
-    if (!this.isMounted() || controller.isAutoScrolling()) return;
+    if (!this.isMounted() || talkPageController.isAutoScrolling()) return;
 
     this.commentFormButton
       .toggle(commentFormRegistry.getAll().some((cf) => !cf.$element.cdIsInViewport(true)));

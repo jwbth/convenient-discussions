@@ -44,7 +44,7 @@ import WebpackWorker from './worker/worker-gate';
  *
  * @augments EventEmitter<EventMap>
  */
-class Controller extends EventEmitter {
+class TalkPageController extends EventEmitter {
   /**
    * @type {JQuery}
    */
@@ -65,16 +65,6 @@ class Controller extends EventEmitter {
    * @private
    */
   $popupOverlay;
-
-  /**
-   * @type {{
-   *   startMargin: number;
-   *   start: number;
-   *   end: number;
-   * }}
-   * @private
-   */
-  contentColumnOffsets;
 
   /**
    * @type {MutationObserver|undefined}
@@ -231,7 +221,7 @@ class Controller extends EventEmitter {
   getWindowManager(name = 'default') {
     if (!this.windowManagers[name]) {
       const windowManager = new OO.ui.WindowManager();
-      windowManager.on('closing', async (win, closed) => {
+      windowManager.on('closing', async (_, closed) => {
         // We don't have windows that can be reused.
         await closed;
         windowManager.clearWindows();
@@ -253,6 +243,7 @@ class Controller extends EventEmitter {
     this.$popupOverlay ??= $('<div>')
       .addClass('cd-popupOverlay')
       .appendTo(document.body);
+
     return this.$popupOverlay;
   }
 
@@ -310,7 +301,7 @@ class Controller extends EventEmitter {
    *
    * @param {?boolean} [switchToAbsolute=null] If this value is `true` or `false` and the viewport
    *   is above the bottom of the table of contents, then use
-   *   {@link Controller#saveScrollPosition} (this allows for better precision).
+   *   {@link TalkPageController#saveScrollPosition} (this allows for better precision).
    * @param {number} scrollY Cached horizontal scroll value used to avoid reflow.
    */
   saveRelativeScrollPosition(switchToAbsolute = null, scrollY = window.scrollY) {
@@ -383,11 +374,11 @@ class Controller extends EventEmitter {
   }
 
   /**
-   * Restore the scroll position saved in {@link Controller#saveRelativeScrollPosition}.
+   * Restore the scroll position saved in {@link TalkPageController#saveRelativeScrollPosition}.
    *
    * @param {boolean} [switchToAbsolute=false] Restore the absolute position using
-   *   {@link Controller#restoreScrollPosition} if
-   *   {@link Controller#saveScrollPosition} was previously used for saving the position.
+   *   {@link TalkPageController#restoreScrollPosition} if
+   *   {@link TalkPageController#saveScrollPosition} was previously used for saving the position.
    */
   restoreRelativeScrollPosition(switchToAbsolute = false) {
     if (switchToAbsolute && this.scrollData.offset !== null) {
@@ -444,7 +435,7 @@ class Controller extends EventEmitter {
 
   /**
    * Save the scroll position to restore it later with
-   * {@link Controller#restoreScrollPosition}.
+   * {@link TalkPageController#restoreScrollPosition}.
    *
    * @param {boolean} [saveTocHeight=true] `false` is used for more fine control of scroll behavior
    *   when visits are loaded after a page reload.
@@ -466,7 +457,7 @@ class Controller extends EventEmitter {
   }
 
   /**
-   * Restore the scroll position saved in {@link Controller#saveScrollPosition}.
+   * Restore the scroll position saved in {@link TalkPageController#saveScrollPosition}.
    *
    * @param {boolean} [resetTocHeight=true] `false` is used for more fine control of scroll behavior
    *   after page reloads.
@@ -796,7 +787,7 @@ class Controller extends EventEmitter {
   }
 
   /**
-   * Handle a `horizontalscroll` event, triggered from {@link Controller#handleScroll}.
+   * Handle a `horizontalscroll` event, triggered from {@link TalkPageController#handleScroll}.
    *
    * @private
    */
@@ -949,7 +940,7 @@ class Controller extends EventEmitter {
   /**
    * Bind a click handler to comment links to make them work as in-script comment links.
    *
-   * This method exists in addition to {@link Controller#handlePopState}. It's preferable to
+   * This method exists in addition to {@link TalkPageController#handlePopState}. It's preferable to
    * have click events handled by this method instead of `.handlePopState()` because that method, if
    * encounters `cdJumpedToComment` in the history state, doesn't scroll to the comment which is a
    * wrong behavior when the user clicks a link.
@@ -1337,7 +1328,7 @@ class Controller extends EventEmitter {
 
   /**
    * Set whether the viewport is currently automatically scrolled to some position. To get that
-   * state, use {@link Controller#isAutoScrolling}.
+   * state, use {@link TalkPageController#isAutoScrolling}.
    *
    * @param {boolean} value
    */
@@ -1347,7 +1338,7 @@ class Controller extends EventEmitter {
 
   /**
    * Check whether the viewport is currently automatically scrolled to some position. To set that
-   * state, use {@link Controller#toggleAutoScrolling}.
+   * state, use {@link TalkPageController#toggleAutoScrolling}.
    *
    * @returns {boolean}
    */
@@ -1808,4 +1799,4 @@ class Controller extends EventEmitter {
   }
 }
 
-export default new Controller();
+export default new TalkPageController();

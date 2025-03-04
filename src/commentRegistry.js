@@ -4,8 +4,8 @@ import TreeWalker from './TreeWalker';
 import bootController from './bootController';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
-import controller from './controller';
 import settings from './settings';
+import talkPageController from './talkPageController';
 import updateChecker from './updateChecker';
 import { getPagesExistence } from './utils-api';
 import { definedAndNotNull, getCommonGender, reorderArray, sleep, unique } from './utils-general';
@@ -56,7 +56,7 @@ class CommentRegistry extends EventEmitter {
   init() {
     this.reformatCommentsSetting = settings.get('reformatComments');
 
-    controller
+    talkPageController
       .on('scroll', this.registerSeen.bind(this))
       .on('mutate', this.maybeRedrawLayers.bind(this))
       .on('resize', this.maybeRedrawLayers.bind(this))
@@ -233,7 +233,7 @@ class CommentRegistry extends EventEmitter {
     const comments = this.items.filter(condition);
 
     const floatingRects = comments.length ?
-      controller.getFloatingElements().map(getExtendedRect) :
+      talkPageController.getFloatingElements().map(getExtendedRect) :
       undefined;
     comments.forEach((comment) => {
       comment.configureLayers({
@@ -264,7 +264,7 @@ class CommentRegistry extends EventEmitter {
 
     let floatingRects;
     const comments = [];
-    const rootBottom = controller.$root[0].getBoundingClientRect().bottom + window.scrollY;
+    const rootBottom = talkPageController.$root[0].getBoundingClientRect().bottom + window.scrollY;
     let notMovedCount = 0;
 
     // We go from the end and stop at the first _three_ comments that have not been misplaced. A
@@ -293,7 +293,7 @@ class CommentRegistry extends EventEmitter {
       if (comment.underlay && !shouldBeHighlighted && isUnderRootBottom) {
         comment.removeLayers();
       } else if (shouldBeHighlighted) {
-        floatingRects ||= controller.getFloatingElements().map(getExtendedRect);
+        floatingRects ||= talkPageController.getFloatingElements().map(getExtendedRect);
         const isMoved = comment.configureLayers({
           // If a comment was hidden, then became visible, we need to add the layers.
           add: true,
@@ -547,7 +547,7 @@ class CommentRegistry extends EventEmitter {
   maybeHighlightHovered(event) {
     if (this.reformatCommentsSetting) return;
 
-    const isObstructingElementHovered = controller.isObstructingElementHovered();
+    const isObstructingElementHovered = talkPageController.isObstructingElementHovered();
     this.items
       .filter((comment) => comment.underlay)
       .forEach((comment) => {
@@ -660,7 +660,7 @@ class CommentRegistry extends EventEmitter {
    * @param {import('./updateChecker').CommentWorkerMatched[]} newComments
    */
   addNewCommentsNotes(newComments) {
-    controller.saveRelativeScrollPosition();
+    talkPageController.saveRelativeScrollPosition();
 
     this.items.forEach((comment) => {
       comment.subitemList.remove('newCommentsNote');
@@ -716,7 +716,7 @@ class CommentRegistry extends EventEmitter {
 
     Thread.emit('toggle');
 
-    controller.restoreRelativeScrollPosition();
+    talkPageController.restoreRelativeScrollPosition();
   }
 
   /**
@@ -753,7 +753,7 @@ class CommentRegistry extends EventEmitter {
       classes: ['cd-button-ooui'],
     });
     button.on('click', () => {
-      controller.reload({
+      talkPageController.reload({
         commentIds: descendantComments.map((comment) => comment.id).filter(definedAndNotNull),
         pushState: true,
       });
@@ -870,7 +870,7 @@ class CommentRegistry extends EventEmitter {
     let comment;
     if (selectionText) {
       const { higherNode } = getHigherNodeAndOffsetInSelection(selection);
-      const treeWalker = new TreeWalker(controller.rootElement, undefined, false, higherNode);
+      const treeWalker = new TreeWalker(talkPageController.rootElement, undefined, false, higherNode);
       let commentIndex;
       do {
         commentIndex = treeWalker.currentNode.dataset?.cdCommentIndex;
@@ -935,7 +935,7 @@ class CommentRegistry extends EventEmitter {
    */
   findAndUpdateTableComments() {
     // Faster than doing it for every individual comment.
-    controller.rootElement
+    talkPageController.rootElement
       .querySelectorAll('table.cd-comment-part .cd-signature, .cd-comment-part > table .cd-signature')
       .forEach((signature) => {
         const index = /** @type {HTMLElement} */ (signature.closest('.cd-comment-part')).dataset
@@ -974,7 +974,7 @@ class CommentRegistry extends EventEmitter {
     this.mergeAdjacentCommentLevels();
     this.mergeAdjacentCommentLevels();
     if (
-      controller.rootElement.querySelector('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')
+      talkPageController.rootElement.querySelector('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')
     ) {
       console.warn('.cd-commentLevel adjacencies have left.');
     }
@@ -1005,7 +1005,7 @@ class CommentRegistry extends EventEmitter {
    */
   mergeAdjacentCommentLevels() {
     /** @type {NodeListOf<HTMLElement>} */
-    const levels = controller.rootElement.querySelectorAll(
+    const levels = talkPageController.rootElement.querySelectorAll(
       '.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)'
     );
     if (!levels.length) return;
@@ -1116,7 +1116,7 @@ class CommentRegistry extends EventEmitter {
       /** @type {HTMLElement} */ (element.parentElement).replaceChild(newElement, element);
     }
 
-    controller.replaceScrollAnchorElement(element, newElement);
+    talkPageController.replaceScrollAnchorElement(element, newElement);
 
     return newElement;
   }
@@ -1128,7 +1128,7 @@ class CommentRegistry extends EventEmitter {
   connectBrokenThreads() {
     const items = [];
 
-    controller.rootElement
+    talkPageController.rootElement
       .querySelectorAll('dd.cd-comment-part-last + dd, li.cd-comment-part-last + li')
       .forEach((el) => {
         if (el.firstElementChild?.classList.contains('cd-commentLevel')) {
@@ -1137,14 +1137,14 @@ class CommentRegistry extends EventEmitter {
       });
 
     // When editing https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)/Archive_212#c-PrimeHunter-20240509091500-2605:A601:AAF7:3700:A1D7:26C1:E273:28CF-20240509055600
-    controller.rootElement
+    talkPageController.rootElement
       .querySelectorAll('dd.cd-comment-part:not(.cd-comment-part-last) + dd > .cd-comment-part:first-child, li.cd-comment-part:not(.cd-comment-part-last) + li > .cd-comment-part:first-child')
       .forEach((el) => {
         items.push(el.parentElement);
       });
 
     // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202009202110_Example
-    controller.rootElement
+    talkPageController.rootElement
       .querySelectorAll('.cd-comment-replacedPart.cd-comment-part-last')
       .forEach((el) => {
         const possibleItem = /** @type {HTMLElement} */ (el.parentElement).nextElementSibling;
@@ -1154,22 +1154,22 @@ class CommentRegistry extends EventEmitter {
       });
 
     // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Image_breaking_a_thread
-    controller.rootElement
+    talkPageController.rootElement
       .querySelectorAll('.cd-commentLevel + .thumb + .cd-commentLevel > li')
       .forEach((el) => {
         items.push(el);
       });
 
-    if (controller.areThereOutdents()) {
+    if (talkPageController.areThereOutdents()) {
       // Outdent templates. We could instead merge adjacent <li>s, but if there is a {{outdent|0}}
       // template and the whole <li> of the parent is considered a comment part, then we can't do
       // that.
-      controller.rootElement
+      talkPageController.rootElement
         .querySelectorAll(`.cd-commentLevel > li + li > .${cd.config.outdentClass}, .cd-commentLevel > dd + dd > .${cd.config.outdentClass}`)
         .forEach((el) => {
           items.push(el.parentElement);
         });
-      controller.rootElement
+      talkPageController.rootElement
         .querySelectorAll(`.cd-commentLevel > li + .cd-comment-outdented, .cd-commentLevel > dd + .cd-comment-outdented`)
         .forEach((el) => {
           items.push(el);
@@ -1279,7 +1279,7 @@ class CommentRegistry extends EventEmitter {
     this.toggleChildThreadsPopup.on('closing', () => {
       settings.saveSettingOnTheFly('toggleChildThreads-onboarded', true);
     });
-    controller.once('startReload', () => {
+    talkPageController.once('startReload', () => {
       /** @type {OO.ui.PopupWidget} */ (this.toggleChildThreadsPopup).$element.remove();
       this.toggleChildThreadsPopup = undefined;
     });

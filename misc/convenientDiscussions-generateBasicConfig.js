@@ -318,8 +318,8 @@ convenientDiscussions.config = ${output};
 if (!convenientDiscussions.isRunning) {
   convenientDiscussions.getStringsPromise = getStrings();
   mw.loader.getScript('https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions.js&action=raw&ctype=text/javascript')
-    .catch(function (e) {
-      console.warn('Couldn\\'t load Convenient Discussions.', e);
+    .catch(function (error) {
+      console.warn('Couldn\\'t load Convenient Discussions.', error);
     });
 }
 

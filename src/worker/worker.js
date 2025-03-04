@@ -105,9 +105,9 @@ function processComments(parser, targets) {
     .forEach((signature) => {
       try {
         cd.comments.push(parser.createComment(signature, targets));
-      } catch (e) {
-        if (!(e instanceof CdError)) {
-          console.error(e);
+      } catch (error) {
+        if (!(error instanceof CdError)) {
+          console.error(error);
         }
       }
     });
@@ -126,9 +126,9 @@ function processSections(parser, targets) {
     .forEach((heading) => {
       try {
         cd.sections.push(parser.createSection(heading, targets));
-      } catch (e) {
-        if (!(e instanceof CdError)) {
-          console.error(e);
+      } catch (error) {
+        if (!(error instanceof CdError)) {
+          console.error(error);
         }
       }
     });
