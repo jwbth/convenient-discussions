@@ -166,12 +166,6 @@ class Controller extends EventEmitter {
   content = {};
 
   /**
-   * @type {boolean}
-   * @private
-   */
-  talkPage;
-
-  /**
    * @type {() => void}
    * @private
    */
@@ -269,7 +263,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isTalkPage() {
-    return bootController.getPageType().TALK;
+    return bootController.getPageType().talk;
   }
 
   /**
@@ -310,7 +304,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isDiffPage() {
-    return bootController.getPageType().DIFF;
+    return bootController.getPageType().diff;
   }
 
   /**
@@ -320,7 +314,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isDefinitelyTalkPage() {
-    return bootController.getPageType().DEFINITELY_TALK;
+    return bootController.getPageType().definitelyTalk;
   }
 
   /**
@@ -332,7 +326,7 @@ class Controller extends EventEmitter {
    * @returns {boolean}
    */
   isArticlePageTalkPage() {
-    return bootController.getPageType().ARTICLE_TALK;
+    return bootController.getPageType().articleTalk;
   }
 
   /**
@@ -368,15 +362,6 @@ class Controller extends EventEmitter {
     // this.handleWikipageContentHookFirings() is called with #mw-content-text element for some
     // reason, the page can go into an infinite reloading loop.
     this.$root.addClass('cd-parse-started');
-  }
-
-  /**
-   * Set whether the current page is a talk page.
-   *
-   * @param {boolean} value
-   */
-  setTalkPageness(value) {
-    this.talkPage = Boolean(value);
   }
 
   /**

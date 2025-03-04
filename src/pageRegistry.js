@@ -7,6 +7,7 @@
 import CdError from './CdError';
 import CommentForm from './CommentForm';
 import TextMasker from './TextMasker';
+import bootController from './bootController';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
@@ -208,7 +209,7 @@ export class Page {
       return null;
     }
 
-    return controller.isTalkPage() && (this.isActive() || !this.exists());
+    return bootController.isTalkPage() && (this.isActive() || !this.exists());
   }
 
   /**
@@ -242,7 +243,7 @@ export class Page {
     }
 
     return (
-      controller.isTalkPage() &&
+      bootController.isTalkPage() &&
       this.exists() &&
       controller.isCurrentRevision() &&
       !this.isArchive()

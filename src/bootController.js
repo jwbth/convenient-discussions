@@ -835,19 +835,28 @@ class BootController {
    * Get the type of the page.
    *
    * @returns {{
-   *   DEFINITELY_TALK: boolean;
-   *   ARTICLE_TALK: boolean;
-   *   DIFF: boolean;
-   *   TALK: boolean;
+   *   definitelyTalk: boolean;
+   *   articleTalk: boolean;
+   *   diff: boolean;
+   *   talk: boolean;
    * }}
    */
   getPageType() {
     return {
-      DEFINITELY_TALK: this.definitelyTalkPage,
-      ARTICLE_TALK: this.articlePageTalkPage,
-      DIFF: this.diffPage,
-      TALK: this.talkPage,
+      definitelyTalk: this.definitelyTalkPage,
+      articleTalk: this.articlePageTalkPage,
+      diff: this.diffPage,
+      talk: this.talkPage,
     };
+  }
+
+  /**
+   * Set whether the current page is a talk page.
+   *
+   * @param {boolean} value
+   */
+  setTalkPageness(value) {
+    this.talkPage = Boolean(value);
   }
 
   /**

@@ -668,7 +668,7 @@ function processDiff($diff) {
           linkElement.href = page.getUrl() + '#' + id;
 
           // Non-diff pages that have a diff, like with Serhio Magpie's Instant Diffs.
-          if (controller.isTalkPage()) {
+          if (bootController.isTalkPage()) {
             linkElement.target = '_blank';
           }
         } else {

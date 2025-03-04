@@ -554,14 +554,14 @@ class BootProcess {
   retractTalkPageness() {
     debug.stopTimer('main code');
 
-    controller.setTalkPageness(false);
+    bootController.setTalkPageness(false);
 
     const $disableLink = $('#footer-togglecd a');
     $disableLink
       .attr('href', /** @type {string} */ ($disableLink.attr('href')).replace(/0$/, '1'))
       .text(cd.s('footer-runcd'));
 
-      bootController.hideLoadingOverlay();
+    bootController.hideLoadingOverlay();
     this.debugLog();
   }
 
