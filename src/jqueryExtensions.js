@@ -6,6 +6,7 @@
 
 import bootController from './bootController';
 import cd from './cd';
+import talkPageController from './talkPageController';
 import { isMetadataNode, sleep } from './utils-general';
 import { createSvg } from './utils-window';
 
@@ -66,9 +67,6 @@ export default {
         }
       }
     }
-
-    // Use `require()`, not `import`, to avoid importing it before `oojs-ui` module is loaded
-    const talkPageController = require('./talkPageController').default;
 
     let offsetFirst = findFirstVisibleElementOffset($elements);
     let offsetLast = findFirstVisibleElementOffset($elements, 'backward');

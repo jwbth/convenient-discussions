@@ -205,7 +205,7 @@ export default {
    */
   handleSectionClick(event) {
     event.preventDefault();
-    talkPageController.reboot({
+    bootController.reboot({
       sectionId:
         getLinkedAnchor(/** @type {HTMLAnchorElement} */ (event.currentTarget)) || undefined,
       pushState: true,
@@ -370,7 +370,7 @@ export default {
       ? $addedSections
           .filter('.vector-toc-level-1')
           .get()
-          .map((sectionElement) => sectionElement.id)
+          .map((/** @type {HTMLElement} */ sectionElement) => sectionElement.id)
       : undefined;
     $addedSections.remove();
 
@@ -477,7 +477,7 @@ export default {
         pushState: true,
       });
     } else {
-      talkPageController.reboot({
+      bootController.reboot({
         commentIds: [id],
         pushState: true,
       });

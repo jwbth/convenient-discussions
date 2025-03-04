@@ -5,16 +5,13 @@ import languageFallbacks from '../data/languageFallbacks.json';
 import addCommentLinks from './addCommentLinks';
 import cd from './cd';
 import debug from './debug';
-import jqueryExtensions from './jqueryExtensions';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
-import { processPage } from './updateChecker';
 import userRegistry from './userRegistry';
 import { getUserInfo, splitIntoBatches } from './utils-api';
-import { defined, generatePageNamePattern, getContentLanguageMessages, getQueryParamBooleanValue, isProbablyTalkPage, sleep, unique } from './utils-general';
-import { dateTokenToMessageNames, initDayjs } from './utils-timestamp';
+import { defined, getContentLanguageMessages, getQueryParamBooleanValue, isProbablyTalkPage, sleep, unique } from './utils-general';
+import { dateTokenToMessageNames } from './utils-timestamp';
 import { createSvg, skin$, transparentize } from './utils-window';
-import visits from './visits';
 
 /**
  * Singleton for managing the booting, rebooting, and unbooting (unloading) of the page.
@@ -751,10 +748,10 @@ class BootController {
     cd.commentForms = commentFormRegistry.getAll();
 
     cd.tests.controller = controller,
-    cd.tests.processPageInBackground = processPage;
+    cd.tests.processPageInBackground = require('./updateChecker').processPage;
     cd.tests.showSettingsDialog = settings.showDialog.bind(settings);
     cd.tests.editSubscriptions = controller.showEditSubscriptionsDialog.bind(controller);
-    cd.tests.visits = visits;
+    cd.tests.visits = require('./visits').default;
 
 
     /* Some static methods for external use */
@@ -803,18 +800,18 @@ class BootController {
       .bind(commentFormRegistry);
 
     /**
-     * @see module:controller.reload
+     * @see module:bootController.reload
      * @function reloadPage
      * @memberof convenientDiscussions.api
      */
-    cd.api.reloadPage = controller.reboot.bind(controller);
+    cd.api.reloadPage = this.reboot.bind(this);
 
     /**
      * @see module:bootController.getRootElement
      * @function getRootElement
      * @memberof convenientDiscussions.api
      */
-    cd.api.getRootElement = bootController.getRootElement.bind(controller);
+    cd.api.getRootElement = this.getRootElement.bind(this);
   }
 
   /**
@@ -868,30 +865,6 @@ class BootController {
         settings.get('hideTimezone')
       );
     }
-  }
-
-  /**
-   * _For internal use._ Assign various global objects' ({@link convenientDiscussions},
-   * {@link JQuery.fn jQuery.fn}) properties and methods that are needed for processing a
-   * talk page. Executed on the first run.
-   */
-  async initTalkPage() {
-    // In most cases the site data is already loaded after being requested in
-    // BootController#initOnTalkPage().
-    await Promise.all(this.getSiteData());
-
-    // This could have been executed from addCommentLinks.prepare() already.
-    this.initGlobals();
-    await settings.init();
-
-    this.initTimestampParsingTools('content');
-    this.initPatterns();
-    this.initPrototypes();
-    if (settings.get('useBackgroundHighlighting')) {
-      require('./Comment.layers.optionalBackgroundHighlighting.less');
-    }
-    $.fn.extend(jqueryExtensions);
-    initDayjs();
   }
 
   /**
@@ -1045,7 +1018,7 @@ class BootController {
     );
 
     sleep(15000).then(() => {
-      if (this.isBooting()) {
+      if (this.booting) {
         this.hideLoadingOverlay();
         console.warn('The loading overlay stays for more than 15 seconds; removing it.');
       }
@@ -1120,7 +1093,7 @@ class BootController {
     } catch (error) {
       mw.notify(cd.s('error-processpage'), { type: 'error' });
       console.error(error);
-      bootController.hideLoadingOverlay();
+      this.hideLoadingOverlay();
     }
 
     this.booting = false;
@@ -1178,7 +1151,114 @@ class BootController {
    * @returns {Element}
    */
   getRootElement() {
-    return bootController.rootElement;
+    return this.rootElement;
+  }
+
+  /**
+   * Reload the page via Ajax.
+   *
+   * @param {import('./BootProcess').PassedData} [passedData={}] Data passed from the previous page
+   *   state. See {@link PassedData} for the list of possible properties. `html`, `unseenComments`
+   *   properties are set in this function.
+   * @throws {import('./CdError').default|Error}
+   */
+  async reboot(passedData = {}) {
+    if (this.booting) return;
+
+    passedData.isRevisionSliderRunning = Boolean(history.state?.sliderPos);
+
+    // We need talkPageController here since bootController can't emit events. Use `require()`, not
+    // `import`, to avoid importing it before `oojs-ui` module is loaded.
+    const talkPageController = require('./talkPageController').default;
+
+    talkPageController.emit('beforeReboot', passedData);
+
+    // We reset the live timestamps only during the boot process, because we shouldn't dismount the
+    // components of the current version of the page at least until a correct response to the parse
+    // request is received. Otherwise, if the request fails, the user would be left with a
+    // dysfunctional page.
+
+    if (!passedData.commentIds && !passedData.sectionId) {
+      talkPageController.saveScrollPosition();
+    }
+
+    debug.init();
+    debug.startTimer('total time');
+    debug.startTimer('get HTML');
+
+    // Save time by requesting the options in advance. This also resets the cache since the `reuse`
+    // parameter is `false`.
+    getUserInfo().catch((error) => {
+      console.warn(error);
+    });
+
+    this.showLoadingOverlay();
+    const bootProcess = this.createBootProcess(passedData);
+
+    try {
+      bootProcess.passedData.parseData = await cd.page.parse(undefined, false, true);
+    } catch (error) {
+      this.hideLoadingOverlay();
+      if (bootProcess.passedData.submittedCommentForm) {
+        throw error;
+      } else {
+        mw.notify(cd.s('error-reloadpage'), { type: 'error' });
+        console.warn(error);
+        return;
+      }
+    }
+
+    mw.loader.load(bootProcess.passedData.parseData.modules);
+    mw.loader.load(bootProcess.passedData.parseData.modulestyles);
+
+    // It would be perhaps more correct to set the config variables in
+    // controller.updatePageContents(), but we need wgDiscussionToolsPageThreads from there before
+    // that.
+    mw.config.set(bootProcess.passedData.parseData.jsconfigvars);
+
+    // Get IDs of unseen comments. This is used to arrange that they will still be there after
+    // replying on or refreshing the page.
+    bootProcess.passedData.unseenComments = require('./commentRegistry').default
+      .query((comment) => comment.isSeen === false);
+
+    // At this point, the boot process can't be interrupted, so we can remove all traces of the
+    // current page state.
+    this.setBootProcess(bootProcess);
+
+    // Just submitted "Add section" form (it is outside of the .$root element, so we must remove it
+    // here). Forms that should stay are detached above.
+    if (bootProcess.passedData.submittedCommentForm?.getMode() === 'addSection') {
+      bootProcess.passedData.submittedCommentForm.teardown();
+    }
+
+    debug.stopTimer('get HTML');
+
+    talkPageController.emit('startReboot');
+
+    await this.tryBoot(true);
+
+    talkPageController.emit('reboot');
+
+    if (!bootProcess.passedData.commentIds && !bootProcess.passedData.sectionId) {
+      talkPageController.restoreScrollPosition(false);
+    }
+  }
+
+  /**
+   * Handle firings of the hook
+   * {@link https://doc.wikimedia.org/mediawiki-core/master/js/Hooks.html#~event:'wikipage.content' wikipage.content}
+   * (by using `mw.hook('wikipage.content').fire()`). This is performed by some user scripts, such
+   * as QuickEdit.
+   *
+   * @param {JQuery} $content
+   */
+  handleWikipageContentHookFirings($content) {
+    if (!$content.is('#mw-content-text')) return;
+
+    const $root = $content.children('.mw-parser-output');
+    if ($root.length && !$root.hasClass('cd-parse-started')) {
+      bootController.reboot({ isPageReloadedExternally: true });
+    }
   }
 
   /**
@@ -1411,198 +1491,6 @@ class BootController {
    */
   isHistoryPage() {
     return cd.g.pageAction === 'history' && isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber);
-  }
-
-  /**
-   * Generate regexps, patterns (strings to be parts of regexps), selectors from config values.
-   *
-   * @private
-   */
-  initPatterns() {
-    const signatureEndingRegexp = cd.config.signatureEndingRegexp;
-    cd.g.signatureEndingRegexp = signatureEndingRegexp ?
-      new RegExp(
-        signatureEndingRegexp.source + (signatureEndingRegexp.source.slice(-1) === '$' ? '' : '$'),
-        signatureEndingRegexp.flags
-      ) :
-      null;
-
-    const nss = mw.config.get('wgFormattedNamespaces');
-    const nsIds = mw.config.get('wgNamespaceIds');
-
-    const anySpace = (s) => s.replace(/[ _]/g, '[ _]+').replace(/:/g, '[ _]*:[ _]*');
-    const joinNsNames = (...ids) => (
-      Object.keys(nsIds)
-        .filter((key) => ids.includes(nsIds[key]))
-
-        // Sometimes wgNamespaceIds has a string that doesn't transform into one of the keys of
-        // wgFormattedNamespaces when converting the first letter to uppercase, like in Azerbaijani
-        // Wikipedia (compare Object.keys(mw.config.get('wgNamespaceIds'))[4] = 'i̇stifadəçi' with
-        // mw.config.get('wgFormattedNamespaces')[2] = 'İstifadəçi'). We simply add the
-        // wgFormattedNamespaces name separately.
-        .concat(ids.map((id) => nss[id]))
-
-        .map(anySpace)
-        .join('|')
-    );
-
-    const userNssAliasesPattern = joinNsNames(2, 3);
-    cd.g.userNamespacesRegexp = new RegExp(`(?:^|:)(?:${userNssAliasesPattern}):(.+)`, 'i');
-
-    const userNsAliasesPattern = joinNsNames(2);
-    cd.g.userLinkRegexp = new RegExp(`^:?(?:${userNsAliasesPattern}):([^/]+)$`, 'i');
-    cd.g.userSubpageLinkRegexp = new RegExp(`^:?(?:${userNsAliasesPattern}):.+?/`, 'i');
-
-    const userTalkNsAliasesPattern = joinNsNames(3);
-    cd.g.userTalkLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):([^/]+)$`, 'i');
-    cd.g.userTalkSubpageLinkRegexp = new RegExp(`^:?(?:${userTalkNsAliasesPattern}):.+?/`, 'i');
-
-    cd.g.contribsPages = cd.g.specialPageAliases.Contributions.map((alias) => `${nss[-1]}:${alias}`);
-
-    const contribsPagesLinkPattern = cd.g.contribsPages.join('|');
-    cd.g.contribsPageLinkRegexp = new RegExp(`^(?:${contribsPagesLinkPattern})/`);
-
-    const contribsPagesPattern = anySpace(contribsPagesLinkPattern);
-    cd.g.captureUserNamePattern = (
-      `\\[\\[[ _]*:?(?:\\w*:){0,2}(?:(?:${userNssAliasesPattern})[ _]*:[ _]*|` +
-      `(?:Special[ _]*:[ _]*Contributions|${contribsPagesPattern})\\/[ _]*)([^|\\]/]+)(/)?`
-    );
-
-    cd.g.isThumbRegexp = new RegExp(
-      ['thumb', 'thumbnail']
-        .concat(cd.config.thumbAliases)
-        .map((alias) => `\\| *${alias} *[|\\]]`)
-        .join('|')
-    );
-
-    const unsignedTemplatesPattern = cd.config.unsignedTemplates
-      .map(generatePageNamePattern)
-      .join('|');
-    cd.g.unsignedTemplatesPattern = unsignedTemplatesPattern ?
-      `(\\{\\{ *(?:${unsignedTemplatesPattern}) *\\| *([^}|]+?) *(?:\\| *([^}]+?) *)?\\}\\})`
-      : null;
-
-    const clearTemplatesPattern = cd.config.clearTemplates.map(generatePageNamePattern).join('|');
-    const reflistTalkTemplatesPattern = cd.config.reflistTalkTemplates
-      .map(generatePageNamePattern)
-      .join('|');
-
-    cd.g.keepInSectionEnding = [
-      ...cd.config.keepInSectionEnding,
-      clearTemplatesPattern
-        ? new RegExp(`\\n+\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\}\\s*$`)
-        : undefined,
-      reflistTalkTemplatesPattern
-        ? new RegExp(`\\n+\\{\\{ *(?:${reflistTalkTemplatesPattern}) *\\}\\}.*\\s*$`)
-        : undefined,
-    ].filter(defined);
-
-    cd.g.userSignature = settings.get('signaturePrefix') + cd.g.signCode;
-
-    const signatureContent = mw.user.options.get('nickname');
-    const authorInSignatureMatch = signatureContent.match(
-      new RegExp(cd.g.captureUserNamePattern, 'i')
-    );
-    /*
-      Extract signature contents before the user name - in order to cut it out from comment
-      endings when editing.
-
-      Use the signature prefix only if it is other than `' '` (the default value).
-      * If it is `' '`, the prefix in real life may as well be `\n` or `--` if the user created some
-        specific comment using the native editor instead of CD. So we would want to remove the
-        signature from such comments correctly. The space would be included in the signature anyway
-        using `cd.config.signaturePrefixRegexp`.
-      * If it is other than `' '`, it is unpredictable, so it is safer to include it in the pattern.
-    */
-    cd.g.userSignaturePrefixRegexp = authorInSignatureMatch ?
-      new RegExp(
-        (
-          settings.get('signaturePrefix') === ' ' ?
-            '' :
-            mw.util.escapeRegExp(settings.get('signaturePrefix'))
-        ) +
-        mw.util.escapeRegExp(signatureContent.slice(0, authorInSignatureMatch.index)) +
-        '$'
-      ) :
-      null;
-
-    const pieJoined = cd.g.popularInlineElements.join('|');
-    cd.g.piePattern = `(?:${pieJoined})`;
-
-    const pnieJoined = cd.g.popularNotInlineElements.join('|');
-    cd.g.pniePattern = `(?:${pnieJoined})`;
-
-    cd.g.articlePathRegexp = new RegExp(
-      '^' +
-      mw.util.escapeRegExp(mw.config.get('wgArticlePath')).replace('\\$1', '(.*)')
-    );
-    cd.g.startsWithScriptTitleRegexp = new RegExp(
-      '^' +
-      mw.util.escapeRegExp(mw.config.get('wgScript') + '?title=')
-    );
-    const editActionpath = mw.config.get('wgActionPaths').edit;
-    if (editActionpath) {
-      cd.g.startsWithEditActionPathRegexp = new RegExp(
-        '^' +
-        mw.util.escapeRegExp(editActionpath).replace('\\$1', '(.*)')
-      );
-    }
-
-    // Template names are not case-sensitive here for code simplicity.
-    const quoteTemplateToPattern = (/** @type {string} */ tpl) =>
-      '\\{\\{ *' + anySpace(mw.util.escapeRegExp(tpl));
-    const quoteBeginningsPattern = ['<blockquote', '<q']
-      .concat(cd.config.pairQuoteTemplates?.[0].map(quoteTemplateToPattern) || [])
-      .join('|');
-    const quoteEndingsPattern = ['</blockquote>', '</q>']
-      .concat(cd.config.pairQuoteTemplates?.[1].map(quoteTemplateToPattern) || [])
-      .join('|');
-    cd.g.quoteRegexp = new RegExp(
-      `(${quoteBeginningsPattern})([^]*?)(${quoteEndingsPattern})`,
-      'ig'
-    );
-
-    cd.g.noSignatureClasses.push(...cd.config.noSignatureClasses);
-    cd.g.noHighlightClasses.push(...cd.config.noHighlightClasses);
-
-    const fileNssPattern = joinNsNames(6);
-    cd.g.filePrefixPattern = `(?:${fileNssPattern}):`;
-
-    const colonNssPattern = joinNsNames(6, 14);
-    cd.g.colonNamespacesPrefixRegexp = new RegExp(`^:(?:${colonNssPattern}):`, 'i');
-
-    cd.g.badCommentBeginnings = [
-      ...cd.g.badCommentBeginnings,
-      new RegExp(`^\\[\\[${cd.g.filePrefixPattern}.+\\n+(?=[*:#])`, 'i'),
-      ...cd.config.badCommentBeginnings,
-      clearTemplatesPattern ?
-        new RegExp(`^\\{\\{ *(?:${clearTemplatesPattern}) *\\}\\} *\\n+`, 'i') :
-        undefined,
-    ].filter(defined);
-
-    cd.g.pipeTrickRegexp = /(\[\[:?(?:[^|[\]<>\n:]+:)?([^|[\]<>\n]+)\|)(\]\])/g;
-
-    cd.g.isProbablyWmfSulWiki = (
-      // Isn't true on diff, editing, history, and special pages, see
-      // https://github.com/wikimedia/mediawiki-extensions-CentralNotice/blob/6100a9e9ef290fffe1edd0ccdb6f044440d41511/includes/CentralNoticeHooks.php#L398
-      $('link[rel="dns-prefetch"]').attr('href') === '//meta.wikimedia.org' ||
-
-      // Sites like wikitech.wikimedia.org, which is not a SUL wiki, will be included as well
-      ['mediawiki.org', 'wikibooks.org', 'wikidata.org', 'wikifunctions.org', 'wikimedia.org', 'wikinews.org', 'wikipedia.org', 'wikiquote.org', 'wikisource.org', 'wikiversity.org', 'wikivoyage.org', 'wiktionary.org'].includes(
-        mw.config.get('wgServerName').split('.').slice(-2).join('.')
-      )
-    );
-  }
-
-  /**
-   * Initialize prototypes of elements and OOUI widgets.
-   *
-   * @private
-   */
-  initPrototypes() {
-    require('./Comment').default.initPrototypes();
-    require('./Section').default.initPrototypes();
-    require('./Thread').default.initPrototypes();
   }
 
   /**

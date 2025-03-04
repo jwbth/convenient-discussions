@@ -3056,7 +3056,7 @@ class CommentForm extends EventEmitter {
     }
 
     try {
-      await talkPageController.reboot(bootData);
+      await bootController.reboot(bootData);
     } catch (error) {
       if (error instanceof CdError) {
         this.handleError(

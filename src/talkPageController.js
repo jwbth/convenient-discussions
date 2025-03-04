@@ -7,7 +7,6 @@ import bootController from './bootController';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
-import debug from './debug';
 import navPanel from './navPanel';
 import notifications from './notifications';
 import pageRegistry from './pageRegistry';
@@ -15,7 +14,6 @@ import sectionRegistry from './sectionRegistry';
 import settings from './settings';
 import toc from './toc';
 import updateChecker from './updateChecker';
-import { getUserInfo } from './utils-api';
 import { defined, definedAndNotNull, getLastArrayElementOrSelf, isHeadingNode, isInline, sleep } from './utils-general';
 import { EventEmitter } from './utils-oojs';
 import { copyText, getVisibilityByRects, wrapHtml } from './utils-window';
@@ -774,7 +772,7 @@ class TalkPageController extends EventEmitter {
       $(document).on('keydown', this.handleGlobalKeyDown.bind(this));
     }
 
-    mw.hook('wikipage.content').add(this.handleWikipageContentHookFirings.bind(this));
+    mw.hook('wikipage.content').add(bootController.handleWikipageContentHookFirings.bind(this));
 
     updateChecker
       .on('check', (revisionId) => {
@@ -860,118 +858,6 @@ class TalkPageController extends EventEmitter {
   }
 
   /**
-   * Handle firings of the hook
-   * {@link https://doc.wikimedia.org/mediawiki-core/master/js/Hooks.html#~event:'wikipage.content' wikipage.content}
-   * (by using `mw.hook('wikipage.content').fire()`). This is performed by some user scripts, such
-   * as QuickEdit.
-   *
-   * @param {JQuery} $content
-   * @private
-   */
-  handleWikipageContentHookFirings($content) {
-    if (!$content.is('#mw-content-text')) return;
-
-    const $root = $content.children('.mw-parser-output');
-    if ($root.length && !$root.hasClass('cd-parse-started')) {
-      this.reboot({ isPageReloadedExternally: true });
-    }
-  }
-
-  /**
-   * Reload the page via Ajax.
-   *
-   * (This method could have mostly been part of {@link bootController} (apart from
-   * `saveScrollPosition()`, `restoreScrollPosition()`, and `reset()`), but is in
-   * `talkPageController` because we need it to emit events which `bootController` can't do due to
-   * the fact that `OO.EventEmitter` is not available before its module is loaded by
-   * `bootController` itself.)
-   *
-   * @param {import('./BootProcess').PassedData} [passedData={}] Data passed from the previous page
-   *   state. See {@link PassedData} for the list of possible properties. `html`, `unseenComments`
-   *   properties are set in this function.
-   * @throws {import('./CdError').default|Error}
-   */
-  async reboot(passedData = {}) {
-    if (bootController.isBooting()) return;
-
-    passedData.isRevisionSliderRunning = Boolean(history.state?.sliderPos);
-
-    this.emit('beforeReboot', passedData);
-
-    // We reset the live timestamps only during the boot process, because we shouldn't dismount the
-    // components of the current version of the page at least until a correct response to the parse
-    // request is received. Otherwise, if the request fails, the user would be left with a
-    // dysfunctional page.
-
-    if (!passedData.commentIds && !passedData.sectionId) {
-      this.saveScrollPosition();
-    }
-
-    debug.init();
-    debug.startTimer('total time');
-    debug.startTimer('get HTML');
-
-    // Save time by requesting the options in advance. This also resets the cache since the `reuse`
-    // parameter is `false`.
-    getUserInfo().catch((error) => {
-      console.warn(error);
-    });
-
-    bootController.showLoadingOverlay();
-    const bootProcess = bootController.createBootProcess(passedData);
-
-    try {
-      bootProcess.passedData.parseData = await cd.page.parse(undefined, false, true);
-    } catch (error) {
-      bootController.hideLoadingOverlay();
-      if (bootProcess.passedData.submittedCommentForm) {
-        throw error;
-      } else {
-        mw.notify(cd.s('error-reloadpage'), { type: 'error' });
-        console.warn(error);
-        return;
-      }
-    }
-
-    mw.loader.load(bootProcess.passedData.parseData.modules);
-    mw.loader.load(bootProcess.passedData.parseData.modulestyles);
-
-    // It would be perhaps more correct to set the config variables in
-    // controller.updatePageContents(), but we need wgDiscussionToolsPageThreads from there before
-    // that.
-    mw.config.set(bootProcess.passedData.parseData.jsconfigvars);
-
-    // Get IDs of unseen comments. This is used to arrange that they will still be there after
-    // replying on or refreshing the page.
-    bootProcess.passedData.unseenComments = commentRegistry
-      .query((comment) => comment.isSeen === false);
-
-    // At this point, the boot process can't be interrupted, so we can remove all traces of the
-    // current page state.
-    bootController.setBootProcess(bootProcess);
-
-    this.emit('startReboot');
-
-    // Just submitted "Add section" form (it is outside of the .$root element, so we must remove it
-    // here). Forms that should stay are detached above.
-    if (bootProcess.passedData.submittedCommentForm?.getMode() === 'addSection') {
-      bootProcess.passedData.submittedCommentForm.teardown();
-    }
-
-    this.reset();
-
-    debug.stopTimer('get HTML');
-
-    await bootController.tryBoot(true);
-
-    this.emit('reboot');
-
-    if (!bootProcess.passedData.commentIds && !bootProcess.passedData.sectionId) {
-      this.restoreScrollPosition(false);
-    }
-  }
-
-  /**
    * _For internal use._ Update the page's HTML and certain configuration values.
    *
    * @param {import('./utils-api').ApiResponseParseContent} parseData
@@ -996,8 +882,6 @@ class TalkPageController extends EventEmitter {
 
   /**
    * Reset the controller data and state. (Executed between page loads.)
-   *
-   * @private
    */
   reset() {
     bootController.cleanUpUrlAndDom();
@@ -1213,7 +1097,7 @@ class TalkPageController extends EventEmitter {
 
       this.handlePageMutate();
     });
-    this.mutationObserver.observe(this.$content[0], {
+    this.mutationObserver.observe(bootController.$content[0], {
       attributes: true,
       childList: true,
       subtree: true,
@@ -1318,7 +1202,7 @@ class TalkPageController extends EventEmitter {
         { comments: filteredComments }
       );
       notification.$notification.on('click', () => {
-        this.reboot({ commentIds: filteredComments.map((comment) => comment.id) });
+        bootController.reboot({ commentIds: filteredComments.map((comment) => comment.id) });
       });
     }
   }
@@ -1416,7 +1300,7 @@ class TalkPageController extends EventEmitter {
 
       this.emit('desktopNotificationClick');
 
-      this.reboot({
+      bootController.reboot({
         commentIds: [comment.id],
         closeNotificationsSmoothly: false,
       });

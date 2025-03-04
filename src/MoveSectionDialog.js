@@ -3,9 +3,9 @@ import CdError from './CdError';
 import ProcessDialog from './ProcessDialog';
 import PseudoLink from './Pseudolink';
 import TextInputWidget from './TextInputWidget';
+import bootController from './bootController';
 import cd from './cd';
 import pageRegistry from './pageRegistry';
-import talkPageController from './talkPageController';
 import { buildEditSummary, defined, definedAndNotNull, ensureArray, mergeMaps, sleep } from './utils-general';
 import { createCheckboxField, es6ClassToOoJsClass } from './utils-oojs';
 import { encodeWikilink, endWithTwoNewlines, findFirstTimestamp } from './utils-wikitext';
@@ -325,7 +325,7 @@ class MoveSectionDialog extends ProcessDialog {
           wrapHtml(cd.sParse('msd-moved', target.sectionWikilink), { tagName: 'div' })
         );
 
-        talkPageController.reboot({
+        bootController.reboot({
           sectionId: this.controls.keepLink.input.isSelected() ? this.section.id : undefined,
         });
 
@@ -609,7 +609,7 @@ class MoveSectionDialog extends ProcessDialog {
       callbacks: {
         'cd-message-reloadPage': () => {
           this.close();
-          talkPageController.reboot();
+          bootController.reboot();
         },
       },
     });

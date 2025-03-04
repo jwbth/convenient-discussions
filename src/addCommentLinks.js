@@ -4,14 +4,11 @@
  * @module addCommentLinks
  */
 
-import Comment from './Comment';
 import PrototypeRegistry from './PrototypeRegistry';
 import bootController from './bootController';
 import cd from './cd';
-import commentRegistry from './commentRegistry';
 import pageRegistry from './pageRegistry';
 import settings from './settings';
-import talkPageController from './talkPageController';
 import { definedAndNotNull, generatePageNamePattern, isCommentEdit, isProbablyTalkPage, isUndo, removeDirMarks, spacesToUnderlines } from './utils-general';
 import { initDayjs, parseTimestamp } from './utils-timestamp';
 
@@ -31,7 +28,7 @@ const prototypes = new PrototypeRegistry();
  *
  * @private
  */
-async function initialize() {
+async function init() {
   // This could have been executed from init.talkPage() already.
   bootController.initGlobals();
   await settings.init();
@@ -41,7 +38,7 @@ async function initialize() {
     // Loading the subscriptions is not critical, as opposed to messages, so we catch the possible
     // error, not letting it be caught by the try/catch block.
     subscriptions = /** @type {import('./LegacySubscriptions').default} */ (
-      talkPageController.getSubscriptionsInstance()
+      require('./talkPageController').default.getSubscriptionsInstance()
     );
     requests.push(subscriptions.load(undefined, true).catch(() => {}));
   }
@@ -189,7 +186,7 @@ function addWatchlistMenu() {
   };
   const editSubscriptionsButton = new OO.ui.ButtonWidget(editSubscriptionsButtonConfig);
   editSubscriptionsButton.on('click', () => {
-    talkPageController.showEditSubscriptionsDialog();
+    require('./talkPageController').default.showEditSubscriptionsDialog();
   });
   editSubscriptionsButton.$element.appendTo($menu);
 
@@ -479,7 +476,10 @@ function processContributions($content) {
     const { date } = parseTimestamp(dateElement.textContent, cd.g.uiTimezone || undefined) || {};
     if (!date) return;
 
-    const id = Comment.generateId(date, mw.config.get('wgRelevantUserName') || undefined);
+    const id = require('./Comment').default.generateId(
+      date,
+      mw.config.get('wgRelevantUserName') || undefined
+    );
 
     let wrapper;
     if (summary && currentUserRegexp.test(` ${summary} `)) {
@@ -544,7 +544,7 @@ function processHistory($content) {
     const author = extractAuthor(line);
     if (!author) return;
 
-    const id = Comment.generateId(date, author);
+    const id = require('./Comment').default.generateId(date, author);
 
     let wrapper;
     if (summary && currentUserRegexp.test(` ${summary} `)) {
@@ -629,7 +629,7 @@ function processDiff($diff) {
       const author = extractAuthor(area);
       if (!author) return;
 
-      const id = Comment.generateId(date, author);
+      const id = require('./Comment').default.generateId(date, author);
 
       let comment;
       let page;
@@ -640,7 +640,7 @@ function processDiff($diff) {
         page = pageRegistry.get(title);
         if (!page) return;
       } else {
-        comment = commentRegistry.getById(id, true);
+        comment = require('./commentRegistry').default.getById(id, true);
       }
       if (comment || page?.isProbablyTalkPage()) {
         let wrapper;
@@ -731,7 +731,7 @@ function processRevisionListPage($content) {
  */
 export default async function addCommentLinks() {
   try {
-    await initialize();
+    await init();
   } catch (error) {
     console.warn(error);
     return;

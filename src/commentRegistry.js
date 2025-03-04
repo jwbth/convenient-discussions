@@ -753,7 +753,7 @@ class CommentRegistry extends EventEmitter {
       classes: ['cd-button-ooui'],
     });
     button.on('click', () => {
-      talkPageController.reboot({
+      bootController.reboot({
         commentIds: descendantComments.map((comment) => comment.id).filter(definedAndNotNull),
         pushState: true,
       });

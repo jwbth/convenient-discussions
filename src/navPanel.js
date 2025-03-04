@@ -6,6 +6,7 @@
 
 import Button from './Button';
 import LiveTimestamp from './LiveTimestamp';
+import bootController from './bootController';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
@@ -296,7 +297,7 @@ export default {
    * @private
    */
   refreshClick(markAsRead = false) {
-    talkPageController.reboot({
+    bootController.reboot({
       commentIds: talkPageController.getRelevantAddedCommentIds() || undefined,
       markAsRead,
     });
