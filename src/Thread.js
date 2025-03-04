@@ -930,7 +930,7 @@ class Thread extends mixInObject(
     this.collapsedRange = getRangeContents(
       this.getAdjustedStartElement(),
       this.getAdjustedEndElement(),
-      talkPageController.rootElement
+      bootController.rootElement
     );
     if (!this.collapsedRange) return;
 
@@ -1394,7 +1394,7 @@ class Thread extends mixInObject(
     }
 
     this.collapseThreadsLevel = settings.get('collapseThreadsLevel');
-    this.treeWalker = new ElementsTreeWalker(talkPageController.rootElement);
+    this.treeWalker = new ElementsTreeWalker(bootController.rootElement);
     commentRegistry.getAll().forEach((rootComment) => {
       try {
         rootComment.thread?.expand(true);

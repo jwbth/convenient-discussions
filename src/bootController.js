@@ -36,8 +36,20 @@ import visits from './visits';
  * available.
  */
 class BootController {
-  /** @type {JQuery} */
+  /**
+   * @type {JQuery}
+   */
   $content;
+
+  /**
+   * @type {JQuery}
+   */
+  $root;
+
+  /**
+   * @type {HTMLElement}
+   */
+  rootElement;
 
   /** @type {JQuery} */
   $contentColumn;
@@ -798,11 +810,11 @@ class BootController {
     cd.api.reloadPage = controller.reboot.bind(controller);
 
     /**
-     * @see module:controller.getRootElement
+     * @see module:bootController.getRootElement
      * @function getRootElement
      * @memberof convenientDiscussions.api
      */
-    cd.api.getRootElement = controller.getRootElement.bind(controller);
+    cd.api.getRootElement = bootController.getRootElement.bind(controller);
   }
 
   /**
@@ -1121,6 +1133,52 @@ class BootController {
    */
   isBooting() {
     return this.booting;
+  }
+
+  /**
+   * Set up the boot controller for use in the current boot process. (Executed at every page load.)
+   *
+   * @param {string} [pageHtml] HTML to update the page with.
+   */
+  setupOnTalkPage(pageHtml) {
+    // RevisionSlider replaces the #mw-content-text element.
+    if (!this.$content[0]?.parentNode) {
+      this.$content = $('#mw-content-text');
+    }
+
+    if (pageHtml) {
+      const div = document.createElement('div');
+      div.innerHTML = pageHtml;
+      this.rootElement = /** @type {HTMLElement} */ (div.firstChild);
+      this.$root = $(this.rootElement);
+    } else {
+      // There can be more than one .mw-parser-output child, e.g. on talk pages of IP editors.
+      this.$root = this.$content.children('.mw-parser-output').first();
+
+      // 404 pages
+      if (!this.$root.length) {
+        this.$root = this.$content;
+      }
+
+      this.rootElement = this.$root[0];
+    }
+
+    // Add the class immediately, not at the end of the boot process, to prevent the issue when any
+    // unexpected error prevents this from being executed. Then, when
+    // this.handleWikipageContentHookFirings() is called with #mw-content-text element for some
+    // reason, the page can go into an infinite rebooting loop.
+    this.$root.addClass('cd-parse-started');
+  }
+
+  /**
+   * Get the content root element (`.mw-parser-output` or `#mw-content-text`). Supposed to be used
+   * via {@link convenientDiscussions.api.getRootElement}; inside the script, direct reference to
+   * `bootController.rootElement` is practiced.
+   *
+   * @returns {Element}
+   */
+  getRootElement() {
+    return bootController.rootElement;
   }
 
   /**

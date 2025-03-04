@@ -264,7 +264,7 @@ class CommentRegistry extends EventEmitter {
 
     let floatingRects;
     const comments = [];
-    const rootBottom = talkPageController.$root[0].getBoundingClientRect().bottom + window.scrollY;
+    const rootBottom = bootController.$root[0].getBoundingClientRect().bottom + window.scrollY;
     let notMovedCount = 0;
 
     // We go from the end and stop at the first _three_ comments that have not been misplaced. A
@@ -870,7 +870,7 @@ class CommentRegistry extends EventEmitter {
     let comment;
     if (selectionText) {
       const { higherNode } = getHigherNodeAndOffsetInSelection(selection);
-      const treeWalker = new TreeWalker(talkPageController.rootElement, undefined, false, higherNode);
+      const treeWalker = new TreeWalker(bootController.rootElement, undefined, false, higherNode);
       let commentIndex;
       do {
         commentIndex = treeWalker.currentNode.dataset?.cdCommentIndex;
@@ -934,7 +934,7 @@ class CommentRegistry extends EventEmitter {
    */
   findAndUpdateTableComments() {
     // Faster than doing it for every individual comment.
-    talkPageController.rootElement
+    bootController.rootElement
       .querySelectorAll('table.cd-comment-part .cd-signature, .cd-comment-part > table .cd-signature')
       .forEach((signature) => {
         const index = /** @type {HTMLElement} */ (signature.closest('.cd-comment-part')).dataset
@@ -973,7 +973,7 @@ class CommentRegistry extends EventEmitter {
     this.mergeAdjacentCommentLevels();
     this.mergeAdjacentCommentLevels();
     if (
-      talkPageController.rootElement.querySelector('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')
+      bootController.rootElement.querySelector('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')
     ) {
       console.warn('.cd-commentLevel adjacencies have left.');
     }
@@ -1004,7 +1004,7 @@ class CommentRegistry extends EventEmitter {
    */
   mergeAdjacentCommentLevels() {
     /** @type {NodeListOf<HTMLElement>} */
-    const levels = talkPageController.rootElement.querySelectorAll(
+    const levels = bootController.rootElement.querySelectorAll(
       '.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)'
     );
     if (!levels.length) return;
@@ -1127,7 +1127,7 @@ class CommentRegistry extends EventEmitter {
   connectBrokenThreads() {
     const items = [];
 
-    talkPageController.rootElement
+    bootController.rootElement
       .querySelectorAll('dd.cd-comment-part-last + dd, li.cd-comment-part-last + li')
       .forEach((el) => {
         if (el.firstElementChild?.classList.contains('cd-commentLevel')) {
@@ -1136,14 +1136,14 @@ class CommentRegistry extends EventEmitter {
       });
 
     // When editing https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)/Archive_212#c-PrimeHunter-20240509091500-2605:A601:AAF7:3700:A1D7:26C1:E273:28CF-20240509055600
-    talkPageController.rootElement
+    bootController.rootElement
       .querySelectorAll('dd.cd-comment-part:not(.cd-comment-part-last) + dd > .cd-comment-part:first-child, li.cd-comment-part:not(.cd-comment-part-last) + li > .cd-comment-part:first-child')
       .forEach((el) => {
         items.push(el.parentElement);
       });
 
     // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202009202110_Example
-    talkPageController.rootElement
+    bootController.rootElement
       .querySelectorAll('.cd-comment-replacedPart.cd-comment-part-last')
       .forEach((el) => {
         const possibleItem = /** @type {HTMLElement} */ (el.parentElement).nextElementSibling;
@@ -1153,7 +1153,7 @@ class CommentRegistry extends EventEmitter {
       });
 
     // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Image_breaking_a_thread
-    talkPageController.rootElement
+    bootController.rootElement
       .querySelectorAll('.cd-commentLevel + .thumb + .cd-commentLevel > li')
       .forEach((el) => {
         items.push(el);
@@ -1163,12 +1163,12 @@ class CommentRegistry extends EventEmitter {
       // Outdent templates. We could instead merge adjacent <li>s, but if there is a {{outdent|0}}
       // template and the whole <li> of the parent is considered a comment part, then we can't do
       // that.
-      talkPageController.rootElement
+      bootController.rootElement
         .querySelectorAll(`.cd-commentLevel > li + li > .${cd.config.outdentClass}, .cd-commentLevel > dd + dd > .${cd.config.outdentClass}`)
         .forEach((el) => {
           items.push(el.parentElement);
         });
-      talkPageController.rootElement
+      bootController.rootElement
         .querySelectorAll(`.cd-commentLevel > li + .cd-comment-outdented, .cd-commentLevel > dd + .cd-comment-outdented`)
         .forEach((el) => {
           items.push(el);

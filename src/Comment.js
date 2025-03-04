@@ -451,7 +451,7 @@ class Comment extends CommentSkeleton {
      * @private
      */
     const getContainerListType = (el) => {
-      const treeWalker = new ElementsTreeWalker(talkPageController.rootElement, el);
+      const treeWalker = new ElementsTreeWalker(bootController.rootElement, el);
       while (treeWalker.parentNode()) {
         if (treeWalker.currentNode.classList.contains('cd-commentLevel')) {
           return /** @type {ListType} */ (treeWalker.currentNode.tagName.toLowerCase());
@@ -498,7 +498,7 @@ class Comment extends CommentSkeleton {
         this.highlightables[this.highlightables.length - 1],
       ];
       firstAndLastHighlightable.forEach((highlightable, i) => {
-        const treeWalker = new ElementsTreeWalker(talkPageController.rootElement, highlightable);
+        const treeWalker = new ElementsTreeWalker(bootController.rootElement, highlightable);
         nestingLevels[i] = 0;
         while (treeWalker.parentNode()) {
           nestingLevels[i]++;
@@ -1764,7 +1764,7 @@ class Comment extends CommentSkeleton {
         const classList = Array.from(node.classList);
         if (
           ['absolute', 'relative'].includes(style.position) ||
-          (node !== talkPageController.$content[0] &&
+          (node !== bootController.$content[0] &&
             (classList.includes('mw-content-ltr') || classList.includes('mw-content-rtl')))
         ) {
           offsetParent = node;

@@ -2072,7 +2072,7 @@ class Section extends SectionSkeleton {
     this.elements ||= /** @type {HTMLElement[]} */ (getRangeContents(
       this.headingElement,
       this.findRealLastElement(),
-      talkPageController.rootElement
+      bootController.rootElement
     ));
     this.isHidden = !show;
     this.elements.forEach((el) => {

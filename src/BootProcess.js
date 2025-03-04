@@ -31,7 +31,7 @@ import visits from './visits';
  * @private
  */
 function getAllTextNodesUnderRoot() {
-  return getAllTextNodes(talkPageController.rootElement);
+  return getAllTextNodes(bootController.rootElement);
 }
 
 /**
@@ -40,7 +40,10 @@ function getAllTextNodesUnderRoot() {
  * @private
  */
 function removeDtButtonHtmlComments() {
-  const treeWalker = document.createNodeIterator(talkPageController.rootElement, NodeFilter.SHOW_COMMENT);
+  const treeWalker = document.createNodeIterator(
+    bootController.rootElement,
+    NodeFilter.SHOW_COMMENT
+  );
   let node;
   while ((node = /** @type {globalThis.Comment} */ (treeWalker.nextNode()))) {
     if (node.textContent.startsWith('__DTREPLYBUTTONS__')) {
@@ -68,20 +71,20 @@ function processAndRemoveDtElements(elements, bootProcess) {
   let dtMarkupHavenElement;
   if (moveNotRemove) {
     if (!bootProcess.isFirstRun()) {
-      dtMarkupHavenElement = talkPageController.$content.children('.cd-dtMarkupHaven')[0];
+      dtMarkupHavenElement = bootController.$content.children('.cd-dtMarkupHaven')[0];
     }
     if (dtMarkupHavenElement) {
       dtMarkupHavenElement.innerHTML = '';
     } else {
       dtMarkupHavenElement = document.createElement('span');
       dtMarkupHavenElement.className = 'cd-dtMarkupHaven cd-hidden';
-      talkPageController.$content.append(dtMarkupHavenElement);
+      bootController.$content.append(dtMarkupHavenElement);
     }
   }
 
   elements
     .concat(
-      [...talkPageController.rootElement.getElementsByClassName('ext-discussiontools-init-highlight')]
+      [...bootController.rootElement.getElementsByClassName('ext-discussiontools-init-highlight')]
     )
     .forEach((el, i) => {
       if (el.hasAttribute('data-mw-comment-start') && Comment.isDtId(el.id)) {
@@ -99,7 +102,7 @@ function processAndRemoveDtElements(elements, bootProcess) {
       }
     });
   if (!moveNotRemove) {
-    [...talkPageController.rootElement.getElementsByTagName('span[data-mw-comment]')].forEach((el) => {
+    [...bootController.rootElement.getElementsByTagName('span[data-mw-comment]')].forEach((el) => {
       el.removeAttribute('data-mw-comment');
     });
   }
@@ -273,7 +276,7 @@ class BootProcess {
     commentRegistry.reformatComments();
 
     // This updates some styles, shifting the offsets.
-    talkPageController.$root.addClass('cd-parsed');
+    bootController.$root.addClass('cd-parsed');
 
     // Should be below navPanel.setup() as commentFormRegistry.restoreSession() indirectly calls
     // navPanel.updateCommentFormButton() which depends on the navigation panel being mounted.
@@ -374,7 +377,7 @@ class BootProcess {
 
     // This is needed to calculate the rendering time: it won't complete until everything gets
     // rendered.
-    talkPageController.rootElement.getBoundingClientRect();
+    bootController.rootElement.getBoundingClientRect();
 
     debug.stopTimer('final code and rendering');
 
@@ -419,7 +422,7 @@ class BootProcess {
       notifications.init();
       Parser.init();
     }
-    talkPageController.setup(this.passedData.parseData?.text);
+    bootController.setupOnTalkPage(this.passedData.parseData?.text);
     toc.setup(this.passedData.parseData?.sections, this.passedData.parseData?.hidetoc);
 
     /**
@@ -460,7 +463,7 @@ class BootProcess {
       getAllTextNodes: getAllTextNodesUnderRoot,
       getElementByClassName: (/** @type {Element} */ el, className) =>
         el.querySelector(`.${className}`),
-      rootElement: talkPageController.rootElement,
+      rootElement: bootController.rootElement,
       areThereOutdents: talkPageController.areThereOutdents.bind(talkPageController),
       processAndRemoveDtElements,
       removeDtButtonHtmlComments,
@@ -640,7 +643,7 @@ class BootProcess {
           observer.disconnect();
         }
       });
-      observer.observe(talkPageController.$content[0], {
+      observer.observe(bootController.$content[0], {
         childList: true,
         subtree: true,
       });

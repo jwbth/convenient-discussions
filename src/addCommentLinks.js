@@ -99,9 +99,9 @@ function switchRelevant() {
   const isEnhanced = !$('.mw-changeslist').find('ul.special').length;
 
   // This is for many watchlist types at once.
-  const $collapsibles = talkPageController.$content
+  const $collapsibles = bootController.$content
     .find('.mw-changeslist .mw-collapsible:not(.mw-changeslist-legend)');
-  const $lines = talkPageController.$content.find('.mw-changeslist-line:not(table)');
+  const $lines = bootController.$content.find('.mw-changeslist-line:not(table)');
 
   if (switchRelevantButton.hasFlag('progressive')) {
     // Show all
@@ -208,10 +208,10 @@ function addWatchlistMenu() {
   settingsButton.$element.appendTo($menu);
 
   // New watchlist
-  talkPageController.$content.find('.mw-rcfilters-ui-changesLimitAndDateButtonWidget').prepend($menu);
+  bootController.$content.find('.mw-rcfilters-ui-changesLimitAndDateButtonWidget').prepend($menu);
 
   // Old watchlist
-  talkPageController.$content.find('#mw-watchlist-options .mw-changeslist-legend').after($menu);
+  bootController.$content.find('#mw-watchlist-options .mw-changeslist-legend').after($menu);
 }
 
 /**
@@ -317,7 +317,7 @@ function isInSection(summary, name) {
 function processWatchlist($content) {
   if (
     mw.config.get('wgCanonicalSpecialPageName') === 'Watchlist' &&
-    !talkPageController.$content.find('.cd-watchlistMenu').length
+    !bootController.$content.find('.cd-watchlistMenu').length
   ) {
     if (mw.user.options.get('wlenhancedfilters-disable')) {
       addWatchlistMenu();
@@ -591,14 +591,14 @@ function processDiff($diff) {
   // the page that is a diff page (unless only a diff, and no content, is displayed - if
   // mw.user.options.get('diffonly') or the `diffonly` URL parameter is true). We parse that diff on
   // convenientDiscussions.pageReady hook instead.
-  if ($diff?.parent().is(talkPageController.$content) && talkPageController.$root) return;
+  if ($diff?.parent().is(bootController.$content) && bootController.$root) return;
 
   if (!cd.g.uiTimestampRegexp) {
     bootController.initTimestampParsingTools('user');
   }
   if (cd.g.uiTimezone === null) return;
 
-  const $root = $diff || talkPageController.$content;
+  const $root = $diff || bootController.$content;
   const root = $root[0];
   [root.querySelector('.diff-otitle'), root.querySelector('.diff-ntitle')]
     .filter(definedAndNotNull)

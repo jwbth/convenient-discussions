@@ -4187,7 +4187,7 @@ class CommentForm extends EventEmitter {
 
       // Not $root - add section form is outside it. Not $content either - it's the same as $root on
       // 404 pages.
-      $container: talkPageController.$root.parent(),
+      $container: bootController.$root.parent(),
 
       position: (
         $('#vector-main-menu-pinned-container, #vector-toc-pinned-container').is(':visible')
@@ -4242,7 +4242,7 @@ class CommentForm extends EventEmitter {
 
       // Not $root - add section form is outside it. Not $content either - it's the same as $root on
       // 404 pages.
-      $container: talkPageController.$root.parent(),
+      $container: bootController.$root.parent(),
 
       position: (
         $('#vector-main-menu-pinned-container, #vector-toc-pinned-container').is(':visible')

@@ -12,7 +12,6 @@ import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
 import sectionRegistry from './sectionRegistry';
-import talkPageController from './talkPageController';
 import { handleApiReject, requestInBackground } from './utils-api';
 import { areObjectsEqual, defined, isProbablyTalkPage, mergeRegexps } from './utils-general';
 import { parseTimestamp } from './utils-timestamp';
@@ -299,7 +298,7 @@ export class Page {
     // This is not reevaluated after page reloads. Since archive settings we need rarely change, the
     // reevaluation is unlikely to make any difference. `$root?` because the $root can not be set
     // when it runs from the addCommentLinks module.
-    this.$archivingInfo ||= talkPageController.$root?.find('.cd-archivingInfo');
+    this.$archivingInfo ||= bootController.$root?.find('.cd-archivingInfo');
 
     return this.$archivingInfo;
   }
@@ -742,9 +741,9 @@ export class Page {
         }).$element
       )
 
-      // If appending to this.rootElement, it can land on a wrong place, like on 404 pages with
-      // New Topic Tool enabled.
-      .insertAfter(talkPageController.$root);
+      // If appending to bootController.rootElement, it can land on a wrong place, like on 404 pages
+      // with New Topic Tool enabled.
+      .insertAfter(bootController.$root);
   }
 
   /**
@@ -809,7 +808,7 @@ export class Page {
 
       this.$addSectionButtonContainer?.hide();
       if (!this.exists()) {
-        talkPageController.$content.children('.noarticletext, .warningbox').hide();
+        bootController.$content.children('.noarticletext, .warningbox').hide();
       }
       $('#ca-addsection').addClass('selected');
       $('#ca-view').removeClass('selected');
@@ -834,7 +833,7 @@ export class Page {
     if (firstSection && commentForm.isNewTopicOnTop()) {
       firstSection.$heading.before(commentForm.$element);
     } else {
-      talkPageController.$root.after(commentForm.$element);
+      bootController.$root.after(commentForm.$element);
     }
   }
 
@@ -843,7 +842,7 @@ export class Page {
    */
   cleanUpCommentFormTraces() {
     if (!this.exists()) {
-      talkPageController.$content
+      bootController.$content
         // In case DT's new topic tool is enabled. This is responsible for correct styles being set.
         .removeClass('ext-discussiontools-init-replylink-open')
 

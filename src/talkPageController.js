@@ -46,21 +46,6 @@ import { copyText, getVisibilityByRects, wrapHtml } from './utils-window';
 class TalkPageController extends EventEmitter {
   /**
    * @type {JQuery}
-   */
-  $content;
-
-  /**
-   * @type {JQuery}
-   */
-  $root;
-
-  /**
-   * @type {HTMLElement}
-   */
-  rootElement;
-
-  /**
-   * @type {JQuery}
    * @private
    */
   $popupOverlay;
@@ -189,41 +174,6 @@ class TalkPageController extends EventEmitter {
   }
 
   /**
-   * Set up the controller for use in the current boot process. (Executed at every page load.)
-   *
-   * @param {string} [pageHtml] HTML to update the page with.
-   */
-  setup(pageHtml) {
-    // RevisionSlider replaces the #mw-content-text element.
-    if (!this.$content[0]?.parentNode) {
-      this.$content = $('#mw-content-text');
-    }
-
-    if (pageHtml) {
-      const div = document.createElement('div');
-      div.innerHTML = pageHtml;
-      this.rootElement = /** @type {HTMLElement} */ (div.firstChild);
-      this.$root = $(this.rootElement);
-    } else {
-      // There can be more than one .mw-parser-output child, e.g. on talk pages of IP editors.
-      this.$root = this.$content.children('.mw-parser-output').first();
-
-      // 404 pages
-      if (!this.$root.length) {
-        this.$root = this.$content;
-      }
-
-      this.rootElement = this.$root[0];
-    }
-
-    // Add the class immediately, not at the end of the boot process, to prevent the issue when any
-    // unexpected error prevents this from being executed. Then, when
-    // this.handleWikipageContentHookFirings() is called with #mw-content-text element for some
-    // reason, the page can go into an infinite rebooting loop.
-    this.$root.addClass('cd-parse-started');
-  }
-
-  /**
    * Save the scroll position relative to the first element in the viewport looking from the top of
    * the page.
    *
@@ -255,11 +205,11 @@ class TalkPageController extends EventEmitter {
         this.scrollData.touchesBottom = true;
       } else if (
         scrollY !== 0 &&
-        this.rootElement.getBoundingClientRect().top <= cd.g.bodyScrollPaddingTop
+        bootController.rootElement.getBoundingClientRect().top <= cd.g.bodyScrollPaddingTop
       ) {
         const treeWalker = new ElementsTreeWalker(
-          this.rootElement,
-          this.rootElement.firstElementChild || undefined,
+          bootController.rootElement,
+          bootController.rootElement.firstElementChild || undefined,
         );
         while (true) {
           const el = treeWalker.currentNode;
@@ -410,7 +360,7 @@ class TalkPageController extends EventEmitter {
    * @returns {HTMLElement[]}
    */
   getClosedDiscussions() {
-    this.content.closedDiscussions ||= this.$root
+    this.content.closedDiscussions ||= bootController.$root
       .find(
         cd.config.closedDiscussionClasses
           .concat('mw-archivedtalk')
@@ -429,7 +379,9 @@ class TalkPageController extends EventEmitter {
    * @returns {boolean}
    */
   areThereOutdents() {
-    this.content.areThereOutdents ??= Boolean(this.$root.find('.' + cd.config.outdentClass).length);
+    this.content.areThereOutdents ??= Boolean(
+      bootController.$root.find('.' + cd.config.outdentClass).length
+    );
 
     return this.content.areThereOutdents;
   }
@@ -463,7 +415,7 @@ class TalkPageController extends EventEmitter {
       // as .mw-parser-output, in selectors. Remove all known elements that never intersect comments
       // from the collection.
       this.content.floatingElements = /** @type {HTMLElement[]} */ (
-        [...this.rootElement.querySelectorAll(floatingElementSelector)].filter(
+        [...bootController.rootElement.querySelectorAll(floatingElementSelector)].filter(
           (el) => !el.classList.contains('cd-ignoreFloating')
         )
       );
@@ -481,7 +433,7 @@ class TalkPageController extends EventEmitter {
     if (!this.hiddenElements) {
       const hiddenElementSelector = this.getTsHiddenElementSelectors().join(', ');
       this.hiddenElements = hiddenElementSelector ?
-        [...this.rootElement.querySelectorAll(hiddenElementSelector)] :
+        [...bootController.rootElement.querySelectorAll(hiddenElementSelector)] :
         [];
     }
 
@@ -546,7 +498,7 @@ class TalkPageController extends EventEmitter {
           // CSS rules on other domains can be inaccessible
         }
       });
-    [...this.rootElement.querySelectorAll('style')].forEach((el) => {
+    [...bootController.rootElement.querySelectorAll('style')].forEach((el) => {
       [...(el.sheet?.cssRules || [])].forEach(extractSelectors);
     });
 
@@ -1025,7 +977,7 @@ class TalkPageController extends EventEmitter {
    * @param {import('./utils-api').ApiResponseParseContent} parseData
    */
   updatePageContents(parseData) {
-    this.$content.children('.mw-parser-output').first().replaceWith(this.$root);
+    bootController.$content.children('.mw-parser-output').first().replaceWith(bootController.$root);
 
     mw.util.clearSubtitle?.();
     mw.util.addSubtitle?.(parseData.subtitle);
@@ -1107,17 +1059,6 @@ class TalkPageController extends EventEmitter {
     this.content.longPage ??= /** @type {number} */ ($(document).height()) > 15000;
 
     return this.content.longPage;
-  }
-
-  /**
-   * Get the content root element (`.mw-parser-output` or `#mw-content-text`). Supposed to be used
-   * via {@link convenientDiscussions.api.getRootElement}; inside the script, direct reference to
-   * `controller.rootElement` is practiced.
-   *
-   * @returns {Element}
-   */
-  getRootElement() {
-    return this.rootElement;
   }
 
   /**
@@ -1595,7 +1536,7 @@ class TalkPageController extends EventEmitter {
         if (
           mw.util.getParamValue('section') === 'new' &&
           $button.parent().attr('id') !== 'ca-addsection' &&
-          !$button.closest(this.$root).length
+          !$button.closest(bootController.$root).length
         ) {
           return false;
         }
