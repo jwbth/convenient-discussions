@@ -3,6 +3,7 @@ import CdError from './CdError';
 import ElementsTreeWalker from './ElementsTreeWalker';
 import PrototypeRegistry from './PrototypeRegistry';
 import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime';
+import bootController from './bootController';
 import cd from './cd';
 import commentRegistry from './commentRegistry';
 import settings from './settings';
@@ -1498,7 +1499,7 @@ class Thread extends mixInObject(
       });
     this.emit('toggle');
 
-    if (talkPageController.isCurrentRevision()) {
+    if (bootController.isCurrentRevision()) {
       collapsedThreadsStorageItem
         .setWithTime(mw.config.get('wgArticleId'), data.collapsedThreads)
         .save();
@@ -1625,7 +1626,7 @@ class Thread extends mixInObject(
    * @private
    */
   static saveCollapsedThreads() {
-    if (!talkPageController.isCurrentRevision()) return;
+    if (!bootController.isCurrentRevision()) return;
 
     (new StorageItemWithKeysAndSaveTime('collapsedThreads'))
       .setWithTime(

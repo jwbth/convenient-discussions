@@ -5,7 +5,6 @@
  */
 
 import cd from './cd';
-import talkPageController from './talkPageController';
 import { isMetadataNode, sleep } from './utils-general';
 import { createSvg } from './utils-window';
 
@@ -51,7 +50,10 @@ export default {
     let $elements = this.cdRemoveNonElementNodes();
 
     // Filter out elements like .mw-empty-elt
-    const findFirstVisibleElementOffset = (/** @type {'backward' | 'forward'} */ direction) => {
+    const findFirstVisibleElementOffset = (
+      /** @type {JQuery} */ $elements,
+      /** @type {'backward' | 'forward'} */ direction
+    ) => {
       const elements = $elements.get();
       if (direction === 'backward') {
         elements.reverse();
@@ -64,18 +66,23 @@ export default {
       }
     }
 
-    let offsetFirst = findFirstVisibleElementOffset();
-    let offsetLast = findFirstVisibleElementOffset('backward');
+    // Use `require()`, not `import`, to avoid importing it before `oojs-ui` module is loaded
+    const talkPageController = require('./talkPageController').default;
+
+    let offsetFirst = findFirstVisibleElementOffset($elements);
+    let offsetLast = findFirstVisibleElementOffset($elements, 'backward');
     if (!offsetFirst || !offsetLast) {
+      // Find closest visible ancestor
       const $firstVisibleAncestor = $elements.first().closest(':visible');
       if ($firstVisibleAncestor.length && !$firstVisibleAncestor.is(talkPageController.$root)) {
-        $elements = $firstVisibleAncestor;
-        offsetFirst = findFirstVisibleElementOffset();
-        offsetLast = findFirstVisibleElementOffset('backward');
+        offsetFirst = findFirstVisibleElementOffset($firstVisibleAncestor);
+        offsetLast = offsetFirst;
         mw.notify(cd.s('error-elementhidden-container'), {
           tag: 'cd-elementhidden-container',
         });
-      } else {
+      }
+
+      if (!offsetFirst || !offsetLast) {
         mw.notify(cd.s('error-elementhidden'), {
           type: 'error',
           tag: 'cd-elementhidden',
@@ -84,13 +91,16 @@ export default {
         return /** @type {JQuery} */ (/** @type {unknown} */ (this));
       }
     }
-    const offsetBottom = offsetLast.top + $elements.last().outerHeight();
+
+    const offsetBottom = offsetLast.top + /** @type {number} */ ($elements.last().outerHeight());
 
     let top;
     if (alignment === 'center') {
       top = Math.min(
         offsetFirst.top,
-        offsetFirst.top + ((offsetBottom - offsetFirst.top) * 0.5) - /** @type {number} */ ($(window).height()) * 0.5
+        offsetFirst.top +
+          (offsetBottom - offsetFirst.top) * 0.5 -
+          /** @type {number} */ ($(window).height()) * 0.5
       );
     } else if (alignment === 'bottom') {
       top = offsetBottom - /** @type {number} */ ($(window).height()) + defaultScrollPaddingTop;
@@ -98,7 +108,7 @@ export default {
       top = offsetFirst.top - (cd.g.bodyScrollPaddingTop || defaultScrollPaddingTop);
     }
 
-    talkPageController__.toggleAutoScrolling(true);
+    talkPageController.toggleAutoScrolling(true);
     talkPageController.scrollToY(top, smooth, callback);
 
     return /** @type {JQuery} */ (/** @type {unknown} */ (this));

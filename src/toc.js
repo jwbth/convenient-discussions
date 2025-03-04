@@ -53,7 +53,7 @@ export default {
     subscriptions
       .on('process', this.markSubscriptions.bind(this));
     talkPageController
-      .on('reload', this.maybeHide.bind(this));
+      .on('reboot', this.maybeHide.bind(this));
     updateChecker
       .on('commentsUpdate', ({ bySection }) => {
         this.addNewComments(bySection);
@@ -205,7 +205,7 @@ export default {
    */
   handleSectionClick(event) {
     event.preventDefault();
-    talkPageController.reload({
+    talkPageController.reboot({
       sectionId:
         getLinkedAnchor(/** @type {HTMLAnchorElement} */ (event.currentTarget)) || undefined,
       pushState: true,
@@ -477,7 +477,7 @@ export default {
         pushState: true,
       });
     } else {
-      talkPageController.reload({
+      talkPageController.reboot({
         commentIds: [id],
         pushState: true,
       });

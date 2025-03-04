@@ -2459,7 +2459,7 @@ class Comment extends CommentSkeleton {
       : new Button({
           label: cd.s('comment-changed-refresh'),
           action: () => {
-            talkPageController.reload(type === 'deleted' || !this.id ? {} : { commentIds: [this.id] });
+            talkPageController.reboot(type === 'deleted' || !this.id ? {} : { commentIds: [this.id] });
           },
         });
 

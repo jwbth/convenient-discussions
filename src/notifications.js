@@ -18,6 +18,17 @@ import talkPageController from './talkPageController';
  */
 
 export default {
+  /**
+   * @typedef {{
+   *   [key: string]: any;
+   *   notification: Notification;
+   * }} NotificationData
+   */
+
+  /**
+   * @type {NotificationData[]}
+   * @private
+   */
   data: [],
 
   /**
@@ -25,7 +36,7 @@ export default {
    */
   init() {
     talkPageController
-      .on('beforeReload', (passedData) => {
+      .on('beforeReboot', (passedData) => {
         this.close(passedData.closeNotificationsSmoothly ?? true);
       });
   },
@@ -44,6 +55,7 @@ export default {
   add(message, options, data = {}) {
     const notification = mw.notification.notify(message, options);
     this.data.push({ ...data, notification });
+
     return notification;
   },
 
@@ -51,7 +63,7 @@ export default {
    * Get all notifications added to the registry (including already hidden). The
    * {@link Notification} object will be in the `notification` property.
    *
-   * @returns {object[]}
+   * @returns {NotificationData[]}
    */
   get() {
     return this.data;

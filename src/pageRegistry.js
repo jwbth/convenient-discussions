@@ -245,7 +245,7 @@ export class Page {
     return (
       bootController.isPageOfType('talk') &&
       this.exists() &&
-      talkPageController.isCurrentRevision() &&
+      bootController.isCurrentRevision() &&
       !this.isArchive()
     );
   }
@@ -256,7 +256,7 @@ export class Page {
    * @returns {boolean}
    */
   isCurrentArchive() {
-    return talkPageController.isCurrentRevision() && this.isArchive();
+    return bootController.isCurrentRevision() && this.isArchive();
   }
 
   /**

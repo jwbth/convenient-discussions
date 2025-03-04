@@ -44,11 +44,11 @@ class CommentFormRegistry extends EventEmitter {
     this.configureClosePageConfirmation();
 
     talkPageController
-      .on('beforeReload', () => {
+      .on('beforeReboot', () => {
         // In case checkboxes were changed programmatically
         this.saveSession();
       })
-      .on('startReload', this.detach.bind(this))
+      .on('startReboot', this.detach.bind(this))
       .on('keyDown', (event) => {
         if (
           // Ctrl+Alt+Q
@@ -271,7 +271,7 @@ class CommentFormRegistry extends EventEmitter {
    */
   saveSession(force) {
     // A check in light of the existence of RevisionSlider, see the method
-    if (!talkPageController.isCurrentRevision()) return;
+    if (!bootController.isCurrentRevision()) return;
 
     if (force) {
       this.actuallySaveSession();

@@ -101,7 +101,6 @@ class BootController {
   /**
    * @type {{
    *   definitelyTalk: boolean;
-   *   articleTalk: boolean;
    *   diff: boolean;
    *   talk: boolean;
    *   watchlist: boolean;
@@ -120,14 +119,6 @@ class BootController {
      * approximate criteria.
      */
     definitelyTalk: false,
-
-    /**
-     * Is the _article_ page (the one with `wgIsArticle` being true) of the current page a talk page
-     * eligible for CD. It can be `true` on edit, history pages etc. However, the assessments may be
-     * different on a history page and on an article page of the same title, since the page can
-     * contain elements with special classes that we can access only on the article page.
-     */
-    articleTalk: false,
 
     /**
      * Is the current page a diff page.
@@ -156,6 +147,13 @@ class BootController {
   };
 
   /**
+   * See {@link BootController#isArticlePageOfTalkType}.
+   *
+   * @private
+   */
+  articlePageOfTalkType = false;
+
+  /**
    * Check if the current page is of a specific type.
    *
    * @param {keyof BootController['pageTypes']} type
@@ -163,6 +161,18 @@ class BootController {
    */
   isPageOfType(type) {
     return this.pageTypes[type];
+  }
+
+  /**
+   * Check if the _article_ page (the one with `wgIsArticle` being true) of the current page a talk
+   * page eligible for CD. It can be `true` on edit, history pages etc. However, the assessments may
+   * be different on a history page and on an article page of the same title, since the page can
+   * contain elements with special classes that we can access only on the article page.
+   *
+   * @returns {boolean}
+   */
+  isArticlePageOfTalkType() {
+    return this.articlePageOfTalkType;
   }
 
   /**
@@ -785,7 +795,7 @@ class BootController {
      * @function reloadPage
      * @memberof convenientDiscussions.api
      */
-    cd.api.reloadPage = controller.reload.bind(controller);
+    cd.api.reloadPage = controller.reboot.bind(controller);
 
     /**
      * @see module:controller.getRootElement
@@ -903,7 +913,7 @@ class BootController {
       )
     );
 
-    this.pageTypes.articleTalk = (
+    this.articlePageOfTalkType = (
       (!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
       !this.$content.find('.cd-notTalkPage').length &&
       (isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber) || this.pageTypes.definitelyTalk) &&
@@ -917,7 +927,7 @@ class BootController {
     this.pageTypes.talk = Boolean(
       mw.config.get('wgIsArticle') &&
       !isDisabledInQuery &&
-      (isEnabledInQuery || this.pageTypes.articleTalk)
+      (isEnabledInQuery || this.articlePageOfTalkType)
     );
 
     this.pageTypes.watchlist = this.isWatchlistPage();
@@ -1250,7 +1260,7 @@ class BootController {
       !this.isPageOfType('watchlist') &&
       !this.isPageOfType('contributions') &&
       !this.isPageOfType('history') &&
-      !(this.isPageOfType('diff') && this.isPageOfType('articleTalk')) &&
+      !(this.isPageOfType('diff') && this.isArticlePageOfTalkType()) &&
 
       // Instant Diffs script can be called on talk pages as well
       !this.isPageOfType('talk')
@@ -1309,6 +1319,10 @@ class BootController {
    * @returns {boolean}
    */
   isCurrentRevision() {
+    // RevisionSlider may show a revision newer than the revision in wgCurRevisionId due to a bug
+    // (when navigating forward, at least twice, from a revision older than the revision in
+    // wgCurRevisionId after some revisions were added). Unfortunately, it doesn't update the
+    // wgCurRevisionId value.
     return mw.config.get('wgRevisionId') >= mw.config.get('wgCurRevisionId');
   }
 

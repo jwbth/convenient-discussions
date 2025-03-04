@@ -18,9 +18,11 @@ class ProcessDialog extends OO.ui.ProcessDialog {
 
   /**
    * Create a process dialog.
+   *
+   * @param {OO.ui.ProcessDialog.ConfigOptions} [config]
    */
-  constructor() {
-    super();
+  constructor(config) {
+    super(config);
 
     // Workaround to make this.constructor in methods to be type checked correctly
     this.constructor = ProcessDialog;

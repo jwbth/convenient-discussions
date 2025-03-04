@@ -296,7 +296,7 @@ export default {
    * @private
    */
   refreshClick(markAsRead = false) {
-    talkPageController.reload({
+    talkPageController.reboot({
       commentIds: talkPageController.getRelevantAddedCommentIds() || undefined,
       markAsRead,
     });

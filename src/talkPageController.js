@@ -31,9 +31,9 @@ import { copyText, getVisibilityByRects, wrapHtml } from './utils-window';
  * @property {[fragment: string]} popState
  * @property {[]} selectionChange
  * @property {[]} mutate
- * @property {[passedData: import('./BootProcess').PassedData]} beforeReload
- * @property {[]} startReload
- * @property {[]} reload
+ * @property {[passedData: import('./BootProcess').PassedData]} beforeReboot
+ * @property {[]} startReboot
+ * @property {[]} reboot
  * @property {[]} desktopNotificationClick
  */
 
@@ -219,21 +219,8 @@ class TalkPageController extends EventEmitter {
     // Add the class immediately, not at the end of the boot process, to prevent the issue when any
     // unexpected error prevents this from being executed. Then, when
     // this.handleWikipageContentHookFirings() is called with #mw-content-text element for some
-    // reason, the page can go into an infinite reloading loop.
+    // reason, the page can go into an infinite rebooting loop.
     this.$root.addClass('cd-parse-started');
-  }
-
-  /**
-   * Is the displayed revision the current (last known) revision of the page.
-   *
-   * @returns {boolean}
-   */
-  isCurrentRevision() {
-    // RevisionSlider may show a revision newer than the revision in wgCurRevisionId due to a bug
-    // (when navigating forward, at least twice, from a revision older than the revision in
-    // wgCurRevisionId after some revisions were added). Unfortunately, it doesn't update the
-    // wgCurRevisionId value.
-    return mw.config.get('wgRevisionId') >= mw.config.get('wgCurRevisionId');
   }
 
   /**
@@ -379,7 +366,7 @@ class TalkPageController extends EventEmitter {
    * {@link TalkPageController#restoreScrollPosition}.
    *
    * @param {boolean} [saveTocHeight=true] `false` is used for more fine control of scroll behavior
-   *   when visits are loaded after a page reload.
+   *   when visits are loaded after a page reboot.
    */
   saveScrollPosition(saveTocHeight = true) {
     this.scrollData.offset = window.scrollY;
@@ -401,7 +388,7 @@ class TalkPageController extends EventEmitter {
    * Restore the scroll position saved in {@link TalkPageController#saveScrollPosition}.
    *
    * @param {boolean} [resetTocHeight=true] `false` is used for more fine control of scroll behavior
-   *   after page reloads.
+   *   after page reboots.
    */
   restoreScrollPosition(resetTocHeight = true) {
     if (this.scrollData.offset === null) return;
@@ -720,7 +707,7 @@ class TalkPageController extends EventEmitter {
     }
 
     // Make sure the title has no incorrect new comment count when the user presses the "Back"
-    // button after an (internal) page reload.
+    // button after an (internal) page reboot.
     this.updatePageTitle();
   }
 
@@ -934,7 +921,7 @@ class TalkPageController extends EventEmitter {
 
     const $root = $content.children('.mw-parser-output');
     if ($root.length && !$root.hasClass('cd-parse-started')) {
-      this.reload({ isPageReloadedExternally: true });
+      this.reboot({ isPageReloadedExternally: true });
     }
   }
 
@@ -952,12 +939,12 @@ class TalkPageController extends EventEmitter {
    *   properties are set in this function.
    * @throws {import('./CdError').default|Error}
    */
-  async reload(passedData = {}) {
+  async reboot(passedData = {}) {
     if (bootController.isBooting()) return;
 
     passedData.isRevisionSliderRunning = Boolean(history.state?.sliderPos);
 
-    this.emit('beforeReload', passedData);
+    this.emit('beforeReboot', passedData);
 
     // We reset the live timestamps only during the boot process, because we shouldn't dismount the
     // components of the current version of the page at least until a correct response to the parse
@@ -1011,7 +998,7 @@ class TalkPageController extends EventEmitter {
     // current page state.
     bootController.setBootProcess(bootProcess);
 
-    this.emit('startReload');
+    this.emit('startReboot');
 
     // Just submitted "Add section" form (it is outside of the .$root element, so we must remove it
     // here). Forms that should stay are detached above.
@@ -1025,7 +1012,7 @@ class TalkPageController extends EventEmitter {
 
     await bootController.tryBoot(true);
 
-    this.emit('reload');
+    this.emit('reboot');
 
     if (!bootProcess.passedData.commentIds && !bootProcess.passedData.sectionId) {
       this.restoreScrollPosition(false);
@@ -1321,7 +1308,7 @@ class TalkPageController extends EventEmitter {
 
     if (filteredComments.length) {
       let html;
-      const reloadHtml = cd.sParse(
+      const rebootHtml = cd.sParse(
         'notification-reload',
 
         // Note about the form data
@@ -1341,7 +1328,7 @@ class TalkPageController extends EventEmitter {
           html = (
             cd.sParse('notification-toyou', comment.author.getName(), comment.author, where) +
             wordSeparator +
-            reloadHtml
+            rebootHtml
           );
         } else {
           html = (
@@ -1352,7 +1339,7 @@ class TalkPageController extends EventEmitter {
               comment.sectionSubscribedTo.headline
             ) +
             wordSeparator +
-            reloadHtml
+            rebootHtml
           );
         }
       } else {
@@ -1380,7 +1367,7 @@ class TalkPageController extends EventEmitter {
         html = (
           cd.sParse('notification-newcomments', filteredComments.length, where, mayBeRelevant) +
           wordSeparator +
-          reloadHtml
+          rebootHtml
         );
       }
 
@@ -1390,7 +1377,7 @@ class TalkPageController extends EventEmitter {
         { comments: filteredComments }
       );
       notification.$notification.on('click', () => {
-        this.reload({ commentIds: filteredComments.map((comment) => comment.id) });
+        this.reboot({ commentIds: filteredComments.map((comment) => comment.id) });
       });
     }
   }
@@ -1488,7 +1475,7 @@ class TalkPageController extends EventEmitter {
 
       this.emit('desktopNotificationClick');
 
-      this.reload({
+      this.reboot({
         commentIds: [comment.id],
         closeNotificationsSmoothly: false,
       });
@@ -1521,7 +1508,7 @@ class TalkPageController extends EventEmitter {
   }
 
   /**
-   * Get the IDs of the comments that should be jumped to after reloading the page.
+   * Get the IDs of the comments that should be jumped to after rebooting the page.
    *
    * @returns {string[]|null}
    */
@@ -1566,7 +1553,7 @@ class TalkPageController extends EventEmitter {
    * @returns {obj is import('./DtSubscriptions').default}
    */
   isDtSubscriptions(obj) {
-    // Use `require()`, not `import` to avoid a circular reference
+    // Use `require()`, not `import`, to avoid a circular reference
     return obj instanceof require('./DtSubscriptions').default;
   }
 
@@ -1577,7 +1564,7 @@ class TalkPageController extends EventEmitter {
    * @returns {obj is import('./LegacySubscriptions').default}
    */
   isLegacySubscriptions(obj) {
-    // Use `require()`, not `import` to avoid a circular reference
+    // Use `require()`, not `import`, to avoid a circular reference
     return obj instanceof require('./LegacySubscriptions').default;
   }
 
@@ -1682,7 +1669,7 @@ class TalkPageController extends EventEmitter {
 
   /**
    * Get the list of DiscussionTools threads that are related to subscribable (2-level) threads.
-   * This is updated on page reload.
+   * This is updated on page reboot.
    *
    * @returns {mw.DiscussionToolsHeading[]}
    */

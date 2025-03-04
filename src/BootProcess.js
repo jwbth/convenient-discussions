@@ -727,7 +727,7 @@ class BootProcess {
     const didEnableCommentReformatting = await settings.maybeSuggestEnableCommentReformatting();
     await settings.maybeConfirmDesktopNotifications();
     if (didEnableCommentReformatting) {
-      talkPageController.reload();
+      talkPageController.reboot();
     }
   }
 

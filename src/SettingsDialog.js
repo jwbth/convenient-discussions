@@ -19,7 +19,7 @@ class SettingsDialog extends ProcessDialog {
   static actions = [
     {
       action: 'close',
-      modes: ['settings', 'reload', 'dataRemoved'],
+      modes: ['settings', 'reboot', 'dataRemoved'],
       flags: ['safe', 'close'],
       disabled: true,
     },
@@ -38,8 +38,8 @@ class SettingsDialog extends ProcessDialog {
       disabled: true,
     },
     {
-      action: 'reload',
-      modes: ['reload'],
+      action: 'reboot',
+      modes: ['reboot'],
       label: cd.s('sd-reload'),
       flags: ['primary', 'progressive'],
     },
@@ -209,11 +209,11 @@ class SettingsDialog extends ProcessDialog {
         bootController.removePreventUnloadCondition('dialog');
 
         this.stack.setItem(this.reloadPanel);
-        this.actions.setMode('reload');
+        this.actions.setMode('reboot');
 
         this.popPending();
       });
-    } else if (action === 'reload') {
+    } else if (action === 'reboot') {
       return new OO.ui.Process(() => {
         this.close();
         location.reload();

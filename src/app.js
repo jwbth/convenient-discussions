@@ -129,7 +129,7 @@ function maybeTweakAddTopicButton() {
     cd.g.isDtNewTopicToolEnabled &&
     mw.user.options.get('discussiontools-newtopictool-createpage')
   );
-  if (!bootController.isPageOfType('articleTalk') || (cd.g.pageAction === 'view' && !dtCreatePage))
+  if (!bootController.isArticlePageOfTalkType() || (cd.g.pageAction === 'view' && !dtCreatePage))
     return;
 
   const $button = $('#ca-addsection a');

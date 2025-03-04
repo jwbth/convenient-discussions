@@ -71,7 +71,7 @@ class CommentRegistry extends EventEmitter {
         this.getByAnyId(fragment, true)?.scrollTo();
       })
       .on('selectionChange', this.getSelectedComment.bind(this))
-      .on('beforeReload', (passedData) => {
+      .on('beforeReboot', (passedData) => {
         // Stop all animations, clear all timeouts.
         this.items.forEach((comment) => {
           comment.stopAnimations();
@@ -84,7 +84,7 @@ class CommentRegistry extends EventEmitter {
           this.resetLayers();
         }
       })
-      .on('startReload', this.resetLayers.bind(this))
+      .on('startReboot', this.resetLayers.bind(this))
       .on('desktopNotificationClick', this.maybeRedrawLayers.bind(this, true));
     visits
       .on('process', this.registerSeen.bind(this))
@@ -753,7 +753,7 @@ class CommentRegistry extends EventEmitter {
       classes: ['cd-button-ooui'],
     });
     button.on('click', () => {
-      talkPageController.reload({
+      talkPageController.reboot({
         commentIds: descendantComments.map((comment) => comment.id).filter(definedAndNotNull),
         pushState: true,
       });
@@ -1278,7 +1278,7 @@ class CommentRegistry extends EventEmitter {
     this.toggleChildThreadsPopup.on('closing', () => {
       settings.saveSettingOnTheFly('toggleChildThreads-onboarded', true);
     });
-    talkPageController.once('startReload', () => {
+    talkPageController.once('startReboot', () => {
       /** @type {OO.ui.PopupWidget} */ (this.toggleChildThreadsPopup).$element.remove();
       this.toggleChildThreadsPopup = undefined;
     });
