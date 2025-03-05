@@ -54,6 +54,7 @@ context.convenientDiscussions ||= /** @type {ConvenientDiscussions | ConvenientD
  * @property {string} pniePattern
  * @property {RegExp} articlePathRegexp
  * @property {RegExp} startsWithScriptTitleRegexp
+ * @property {RegExp} startsWithEditActionPathRegexp
  * @property {RegExp} quoteRegexp
  * @property {string} filePrefixPattern
  * @property {RegExp} colonNamespacesPrefixRegexp

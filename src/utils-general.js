@@ -842,7 +842,7 @@ export function getDbnameForHostname(hostname) {
 
 /**
  * Get the page name, host name and fragment from a URL in one of the standard formats (based on the
- * wgArticlePath and wgScript config values).
+ * wgArticlePath, wgScript, and wgActionPaths config values).
  *
  * @param {string} url
  * @returns {?ParsedWikiUrl}
@@ -856,10 +856,13 @@ export function parseWikiUrl(url) {
 
       return '';
     })
-    .replace(cd.g.startsWithEditActionPathRegexp || '', '$1')
+
+    // Could we just get by with `[&?]action=edit` (see below)?
+    // .replace(cd.g.startsWithEditActionPathRegexp || '', '$1')
+
     .replace(cd.g.articlePathRegexp, '$1')
     .replace(cd.g.startsWithScriptTitleRegexp, '')
-    .replace(/&action=edit.*/, '')
+    .replace(/[&?]action=edit.*/, '')
     .replace(/#(.*)/, (s, m1) => {
       fragment = m1;
 

@@ -606,7 +606,8 @@ class BootProcess {
     if (editActionpath) {
       cd.g.startsWithEditActionPathRegexp = new RegExp(
         '^' +
-        mw.util.escapeRegExp(editActionpath).replace('\\$1', '(.*)')
+        mw.util.escapeRegExp(editActionpath).replace('\\$1', '(.*)') +
+        '.*'
       );
     }
 
