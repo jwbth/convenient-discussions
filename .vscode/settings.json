@@ -5,7 +5,7 @@
   "editor.wordWrapColumn": 100,
   "editor.tabSize": 2,
   "editor.codeActionsOnSave": {
-    "source.organizeImports": "explicit"
+    // "source.organizeImports": "explicit"
   },
   "files.trimTrailingWhitespace": true,
   "files.trimFinalNewlines": true,

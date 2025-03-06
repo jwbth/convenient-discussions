@@ -18,20 +18,6 @@ import { parseTimestamp } from './utils-timestamp';
 import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
 
 /**
- * Main MediaWiki object.
- *
- * @external mw
- * @global
- * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw
- */
-
-/**
- * @class Title
- * @memberof mw
- * @see https://doc.wikimedia.org/mediawiki-core/master/js/#!/api/mw.Title
- */
-
-/**
  * @typedef {object} ApiResponseEdit
  * @property {object} edit
  * @property {string} edit.result
