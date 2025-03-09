@@ -830,6 +830,66 @@ export default class Page {
 
     return this.pagesMaps.source;
   }
+
+  /**
+   * Get the name of the method that returns this page. Used for debug output.
+   *
+   * @returns {string}
+   */
+  getCommentFormMethodName() {
+    return 'getPage';
+  }
+
+  /**
+   * Get the section that a comment on the page belongs to. Used for debug output. Can return
+   * `undefined` when no section is found.
+   *
+   * @returns {import('./Section').default}
+   */
+  getRelevantSection() {
+    return undefined;
+  }
+
+  /**
+   * Get the comment that this comment is a reply to. Used for debug output.
+   *
+   * @returns {import('./Comment').default}
+   */
+  getRelevantComment() {
+    return undefined;
+  }
+
+  /**
+   * Get the data that identifies this page. Used for debug output in
+   * {@link CommentForm#getDebugData}.
+   *
+   * @returns {object}
+   */
+  getIdentifyingData() {
+    return { name: this.realName || this.name };
+  }
+
+  /**
+   * Get the comment above the reply written with a reply form. This is only needed for the current
+   * page to display the reply correctly as soon as it is submitted.
+   *
+   * @param {import('./Comment').default} targetComment
+   * @returns {import('./Comment').default}
+   */
+  getCommentAboveReply(targetComment) {
+    return undefined;
+  }
+
+  /**
+   * Find the instance of this page in the comment tree when it is updated. Used for both the
+   * current page and regular pages, but differently.
+   *
+   * @param {import('./Section').default[]} sections
+   * @returns {Page}
+   */
+  findNewSelf(sections) {
+    return this;
+  }
 }
 
 /**
@@ -1133,6 +1193,66 @@ export class CurrentPage extends Page {
     }
 
     this.$addSectionButtonContainer?.show();
+  }
+
+  /**
+   * Get the name of the method that returns this page. Used for debug output.
+   *
+   * @returns {string}
+   */
+  getCommentFormMethodName() {
+    return 'getCurrentPage';
+  }
+
+  /**
+   * Get the section that a comment on the page belongs to. Used for debug output. Can return
+   * `undefined` when no section is found.
+   *
+   * @returns {import('./Section').default}
+   */
+  getRelevantSection() {
+    return sectionRegistry.getCurrentSection();
+  }
+
+  /**
+   * Get the comment that this comment is a reply to. Used for debug output.
+   *
+   * @returns {import('./Comment').default}
+   */
+  getRelevantComment() {
+    return commentRegistry.getCurrentComment();
+  }
+
+  /**
+   * Get the data that identifies this page. Used for debug output in
+   * {@link CommentForm#getDebugData}.
+   *
+   * @returns {object}
+   */
+  getIdentifyingData() {
+    return { name: cd.g.pageName };
+  }
+
+  /**
+   * Get the comment above the reply written with a reply form. This is only needed for the current
+   * page to display the reply correctly as soon as it is submitted.
+   *
+   * @param {import('./Comment').default} targetComment
+   * @returns {import('./Comment').default}
+   */
+  getCommentAboveReply(targetComment) {
+    return targetComment?.getLastVisibleReply() || targetComment;
+  }
+
+  /**
+   * Find the instance of this page in the comment tree when it is updated. Used for both the
+   * current page and regular pages, but differently.
+   *
+   * @param {import('./Section').default[]} sections
+   * @returns {Page}
+   */
+  findNewSelf(sections) {
+    return pageRegistry.getCurrentPage();
   }
 }
 
