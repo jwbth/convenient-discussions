@@ -3321,14 +3321,14 @@ class CommentForm extends EventEmitter {
     // Timestamps on the page (and therefore anchors) have no seconds.
     date.setSeconds(0);
 
-    const commentaboveReplyIndex = this.target.getCommentAboveReply(this)?.index;
+    const commentAboveCommentToBeAddedIndex = this.target.getCommentAboveCommentToBeAdded(this)?.index;
 
     return /** @type {string} */ (Comment.generateId(
       date,
       cd.user.getName(),
-      commentaboveReplyIndex ?
+      commentAboveCommentToBeAddedIndex ?
         commentRegistry.getAll()
-          .slice(0, commentaboveReplyIndex + 1)
+          .slice(0, commentAboveCommentToBeAddedIndex + 1)
           .filter((comment) => (
             comment.author === cd.user &&
             comment.date?.getTime() === date.getTime()

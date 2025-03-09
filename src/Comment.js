@@ -4057,7 +4057,7 @@ class Comment extends CommentSkeleton {
    *
    * @returns {Comment}
    */
-  getCommentAboveReply() {
+  getCommentAboveCommentToBeAdded() {
     return this.getChildren(true).slice(-1)[0] || this;
   }
 

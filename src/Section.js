@@ -2086,7 +2086,7 @@ class Section extends SectionSkeleton {
    * @param {import('./CommentForm').default} commentForm
    * @returns {?Comment}
    */
-  getCommentAboveReply(commentForm) {
+  getCommentAboveCommentToBeAdded(commentForm) {
     return sectionRegistry.getAll()
       .slice(
         0,

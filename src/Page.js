@@ -10,6 +10,7 @@ import TextMasker from './TextMasker';
 import bootController from './bootController';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
+import commentRegistry from './commentRegistry';
 import pageRegistry from './pageRegistry';
 import sectionRegistry from './sectionRegistry';
 import { handleApiReject, requestInBackground } from './utils-api';
@@ -832,62 +833,63 @@ export default class Page {
   }
 
   /**
-   * Get the name of the method that returns this page. Used for debug output.
+   * Get the name of the page's method creating a comment form with the specified mode. Used for
+   * polymorphism with {@link Section}.
    *
+   * @param {import('./CommentForm').CommentFormMode} mode
    * @returns {string}
    */
-  getCommentFormMethodName() {
-    return 'getPage';
+  getCommentFormMethodName(mode) {
+    return mode;
   }
 
   /**
    * Get the section that a comment on the page belongs to. Used for debug output. Can return
    * `undefined` when no section is found.
    *
-   * @returns {import('./Section').default}
+   * @returns {null}
    */
   getRelevantSection() {
-    return undefined;
+    return null;
   }
 
   /**
    * Get the comment that this comment is a reply to. Used for debug output.
    *
-   * @returns {import('./Comment').default}
+   * @returns {null}
    */
   getRelevantComment() {
-    return undefined;
+    return null;
   }
 
   /**
-   * Get the data that identifies this page. Used for debug output in
-   * {@link CommentForm#getDebugData}.
+   * Get the data that identifies this page. This can only be used for `addSection` comment forms
+   * which relate to the current page, so we don't actually need any meaningful data. Used for
+   * polymorphism with {@link Comment#getIdentifyingData} and {@link Section#getIdentifyingData}.
    *
    * @returns {object}
    */
   getIdentifyingData() {
-    return { name: this.realName || this.name };
+    return null;
   }
 
   /**
-   * Get the comment above the reply written with a reply form. This is only needed for the current
-   * page to display the reply correctly as soon as it is submitted.
+   * If a new section is added to the page, get the comment that will end up directly above the
+   * section. This is only needed for the current page.
    *
-   * @param {import('./Comment').default} targetComment
-   * @returns {import('./Comment').default}
+   * @param {import('./CommentForm').default} _commentForm
+   * @returns {?import('./Comment').default}
    */
-  getCommentAboveReply(targetComment) {
-    return undefined;
+  getCommentAboveCommentToBeAdded(_commentForm) {
+    return null;
   }
 
   /**
-   * Find the instance of this page in the comment tree when it is updated. Used for both the
-   * current page and regular pages, but differently.
+   * Used for polymorphism with {@link Comment} and {@link Section}.
    *
-   * @param {import('./Section').default[]} sections
    * @returns {Page}
    */
-  findNewSelf(sections) {
+  findNewSelf() {
     return this;
   }
 }
@@ -934,8 +936,7 @@ export class CurrentPage extends Page {
    */
   isArchive() {
     return (
-      super.isArchive() ||
-      Boolean(this.findArchivingInfoElement()?.attr('data-is-archive-page'))
+      super.isArchive() || Boolean(this.findArchivingInfoElement()?.attr('data-is-archive-page'))
     );
   }
 
@@ -1205,22 +1206,14 @@ export class CurrentPage extends Page {
   }
 
   /**
-   * Get the section that a comment on the page belongs to. Used for debug output. Can return
-   * `undefined` when no section is found.
+   * Get the comment that will end up directly above the section the user is adding with a comment
+   * form.
    *
-   * @returns {import('./Section').default}
+   * @param {import('./CommentForm').default} commentForm
+   * @returns {?import('./Comment').default}
    */
-  getRelevantSection() {
-    return sectionRegistry.getCurrentSection();
-  }
-
-  /**
-   * Get the comment that this comment is a reply to. Used for debug output.
-   *
-   * @returns {import('./Comment').default}
-   */
-  getRelevantComment() {
-    return commentRegistry.getCurrentComment();
+  getCommentAboveCommentToBeAdded(commentForm) {
+    return commentForm.isNewTopicOnTop() ? null : commentRegistry.getByIndex(-1);
   }
 
   /**
@@ -1234,25 +1227,14 @@ export class CurrentPage extends Page {
   }
 
   /**
-   * Get the comment above the reply written with a reply form. This is only needed for the current
-   * page to display the reply correctly as soon as it is submitted.
+   * If a new section is added to the page, get the comment that will end up directly above the
+   * section.
    *
-   * @param {import('./Comment').default} targetComment
-   * @returns {import('./Comment').default}
+   * @param {import('./CommentForm').default} commentForm
+   * @returns {?import('./Comment').default}
    */
-  getCommentAboveReply(targetComment) {
-    return targetComment?.getLastVisibleReply() || targetComment;
-  }
-
-  /**
-   * Find the instance of this page in the comment tree when it is updated. Used for both the
-   * current page and regular pages, but differently.
-   *
-   * @param {import('./Section').default[]} sections
-   * @returns {Page}
-   */
-  findNewSelf(sections) {
-    return pageRegistry.getCurrentPage();
+  getCommentAboveReply(commentForm) {
+    return commentForm.isNewTopicOnTop() ? null : commentRegistry.getByIndex(-1);
   }
 }
 
