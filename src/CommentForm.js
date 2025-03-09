@@ -31,7 +31,7 @@ import { isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, is
  */
 
 /**
- * @typedef {import('./CommentSource').default|import('./SectionSource').default|import('./Page').defaultSource} AnySource
+ * @typedef {import('./CommentSource').default|import('./SectionSource').default|import('./PageSource').default} AnySource
  */
 
 /**
@@ -40,7 +40,7 @@ import { isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, is
  * @property {Comment} edit
  * @property {import('./Section').default} replyInSection
  * @property {import('./Section').default} addSubsection
- * @property {import('./Page').default} addSection
+ * @property {import('./CurrentPage').default} addSection
  */
 
 /**
