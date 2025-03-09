@@ -10,7 +10,6 @@ import TextMasker from './TextMasker';
 import bootController from './bootController';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
-import commentRegistry from './commentRegistry';
 import pageRegistry from './pageRegistry';
 import sectionRegistry from './sectionRegistry';
 import { handleApiReject, requestInBackground } from './utils-api';
@@ -36,6 +35,8 @@ import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
  * @typedef {{ [key: string]: string }} StringsByKey
  */
 
+// FIXME: make the class of the current page extend the page's class? The current page has more
+// methods effectively.
 /**
  * Class representing a wiki page (a page for which the
  * {@link https://www.mediawiki.org/wiki/Manual:Interface/JavaScript#All_pages_(user/page-specific) wgIsArticle}
@@ -106,12 +107,6 @@ export default class Page {
   queryTimestamp;
 
   /**
-   * @type {JQuery}
-   * @private
-   */
-  $archivingInfo;
-
-  /**
    * Create a page instance.
    *
    * @param {mw.Title} mwTitle
@@ -166,7 +161,7 @@ export default class Page {
      *
      * @type {boolean}
      */
-    this.isActionable = Boolean(this.isCommentable());
+    this.isActionable = false;
   }
 
   /**
@@ -188,111 +183,6 @@ export default class Page {
   }
 
   /**
-   * Check whether the current page is eligible for submitting comments to.
-   *
-   * @returns {?boolean}
-   */
-  isCommentable() {
-    if (!this.isCurrent()) {
-      return null;
-    }
-
-    return bootController.isPageOfType('talk') && (this.isActive() || !this.exists());
-  }
-
-  /**
-   * Check whether the current page exists (is not 404).
-   *
-   * @returns {?boolean}
-   */
-  exists() {
-    if (!this.isCurrent()) {
-      return null;
-    }
-
-    return Boolean(mw.config.get('wgArticleId'));
-  }
-
-  /**
-   * Check whether the current page is an active talk page: existing, the current revision, not an
-   * archive page.
-   *
-   * This value is constant in most cases, but there are exceptions:
-   *   1. The user may switch to another revision using
-   *      {@link https://www.mediawiki.org/wiki/Extension:RevisionSlider RevisionSlider}.
-   *   2. On a really rare occasion, an active page may become inactive if it becomes identified as
-   *      an archive page. This was switched off when I wrote this.
-   *
-   * @returns {?boolean}
-   */
-  isActive() {
-    if (!this.isCurrent()) {
-      return null;
-    }
-
-    return (
-      bootController.isPageOfType('talk') &&
-      this.exists() &&
-      bootController.isCurrentRevision() &&
-      !this.isArchive()
-    );
-  }
-
-  /**
-   * Check whether the current page is an archive and the displayed revision the current one.
-   *
-   * @returns {boolean}
-   */
-  isCurrentArchive() {
-    return bootController.isCurrentRevision() && this.isArchive();
-  }
-
-  /**
-   * Get the URL of the page with the specified parameters.
-   *
-   * @param {object} [parameters]
-   * @returns {string}
-   */
-  getUrl(parameters) {
-    return mw.util.getUrl(this.name, parameters);
-  }
-
-  /**
-   * Get a decoded URL with a fragment identifier.
-   *
-   * @param {?string} [fragment]
-   * @param {boolean} [permanent=false] Get a permanent URL.
-   * @returns {string}
-   */
-  getDecodedUrlWithFragment(fragment, permanent = false) {
-    const decodedPageUrl = decodeURI(
-      this.getUrl({
-        ...(permanent ? { oldid: mw.config.get('wgRevisionId') } : {}),
-      })
-    );
-    return cd.g.server + decodedPageUrl + (fragment ? `#${fragment}` : '');
-  }
-
-  /**
-   * Find an archiving info element on the page.
-   *
-   * @returns {?JQuery}
-   * @private
-   */
-  findArchivingInfoElement() {
-    if (!this.isCurrent()) {
-      return null;
-    }
-
-    // This is not reevaluated after page reloads. Since archive settings we need rarely change, the
-    // reevaluation is unlikely to make any difference. `$root?` because the $root can not be set
-    // when it runs from the addCommentLinks module.
-    this.$archivingInfo ||= bootController.$root?.find('.cd-archivingInfo');
-
-    return this.$archivingInfo;
-  }
-
-  /**
    * Check if the page is probably a talk page.
    *
    * @returns {boolean}
@@ -309,15 +199,12 @@ export default class Page {
    * @returns {boolean}
    */
   isArchive() {
-    let result = this.findArchivingInfoElement()?.data('isArchivePage');
-    if (result === undefined || result === null) {
-      result = false;
-      const name = this.realName || this.name;
-      for (const sourceRegexp of Page.getSourcePagesMap().keys()) {
-        if (sourceRegexp.test(name)) {
-          result = true;
-          break;
-        }
+    let result = false;
+    const name = this.realName || this.name;
+    for (const sourceRegexp of Page.getSourcePagesMap().keys()) {
+      if (sourceRegexp.test(name)) {
+        result = true;
+        break;
       }
     }
 
@@ -327,8 +214,7 @@ export default class Page {
   /**
    * Check if this page can have archives. If the page is an archive page, returns `false`. Relies
    * on {@link module:defaultConfig.pagesWithoutArchives} and
-   * {@link module:defaultConfig.archivePaths} and/or, for the current page, elements with the class
-   * `cd-archivingInfo` and attribute `data-can-have-archives`.
+   * {@link module:defaultConfig.archivePaths}.
    *
    * @returns {?boolean}
    */
@@ -336,18 +222,14 @@ export default class Page {
     if (this.isArchive()) {
       return false;
     }
-    let result = this.findArchivingInfoElement()?.data('canHaveArchives');
-    if (result === undefined || result === null) {
-      result = !mergeRegexps(cd.config.pagesWithoutArchives)?.test(this.realName || this.name);
-    }
+    let result = !mergeRegexps(cd.config.pagesWithoutArchives)?.test(this.realName || this.name);
     return Boolean(result);
   }
 
   /**
    * Get the archive prefix for the page. If no prefix is found based on
-   * {@link module:defaultConfig.archivePaths} and/or, for the current page, elements with the class
-   * `cd-archivingInfo` and attribute `data-archive-prefix`, returns the current page's name. If the
-   * page is an archive page or can't have archives, returns `null`.
+   * {@link module:defaultConfig.archivePaths}, returns the current page's name. If the page is an
+   * archive page or can't have archives, returns `null`.
    *
    * @param {boolean} [onlyExplicit=false]
    * @returns {?string}
@@ -357,14 +239,12 @@ export default class Page {
       return null;
     }
 
-    let result = this.findArchivingInfoElement()?.data('archivePrefix');
+    let result;
     const name = this.realName || this.name;
-    if (!result) {
-      for (const [sourceRegexp, replacement] of Page.getArchivePagesMap().entries()) {
-        if (sourceRegexp.test(name)) {
-          result = name.replace(sourceRegexp, replacement);
-          break;
-        }
+    for (const [sourceRegexp, replacement] of Page.getArchivePagesMap().entries()) {
+      if (sourceRegexp.test(name)) {
+        result = name.replace(sourceRegexp, replacement);
+        break;
       }
     }
 
@@ -374,20 +254,17 @@ export default class Page {
   /**
    * Get the source page for the page (i.e., the page from which archiving is happening). Returns
    * the page itself if it is not an archive page. Relies on
-   * {@link module:defaultConfig.archivePaths} and/or, for the current page, elements with the class
-   * `cd-archivingInfo` and attribute `data-archived-page`.
+   * {@link module:defaultConfig.archivePaths}.
    *
    * @returns {Page}
    */
   getArchivedPage() {
-    let result = this.findArchivingInfoElement()?.data('archivedPage');
-    if (!result) {
-      const name = this.realName || this.name;
-      for (const [archiveRegexp, replacement] of Page.getSourcePagesMap().entries()) {
-        if (archiveRegexp.test(name)) {
-          result = name.replace(archiveRegexp, replacement);
-          break;
-        }
+    let result;
+    const name = this.realName || this.name;
+    for (const [archiveRegexp, replacement] of Page.getSourcePagesMap().entries()) {
+      if (archiveRegexp.test(name)) {
+        result = name.replace(archiveRegexp, replacement);
+        break;
       }
     }
 
@@ -714,228 +591,29 @@ export default class Page {
   }
 
   /**
-   * _For internal use._ Add an "Add topic" button to the bottom of the page if there is an "Add
-   * topic" tab. (Otherwise, it may be added to a wrong place.)
-   */
-  addAddTopicButton() {
-    if (
-      !$('#ca-addsection').length ||
-      // There is a special welcome text in New Topic Tool for 404 pages.
-      (cd.g.isDtNewTopicToolEnabled && !this.exists())
-    ) {
-      return;
-    }
-
-    this.$addSectionButtonContainer = $('<div>')
-      .addClass('cd-section-button-container cd-addTopicButton-container')
-      .append(
-        new OO.ui.ButtonWidget({
-          label: cd.s('addtopic'),
-          framed: false,
-          classes: ['cd-button-ooui', 'cd-section-button'],
-        }).on('click', () => {
-          this.addSection();
-        }).$element
-      )
-
-      // If appending to bootController.rootElement, it can land on a wrong place, like on 404 pages
-      // with New Topic Tool enabled.
-      .insertAfter(bootController.$root);
-  }
-
-  /**
-   * Add an "Add section" form or not on page load depending on the URL and presence of a
-   * DiscussionTools' "New topic" form.
+   * Get the URL of the page with the specified parameters.
    *
-   * @param {object} dtFormData
-   */
-  autoAddSection(dtFormData) {
-    const { searchParams } = new URL(location.href);
-
-    // &action=edit&section=new when DT's New Topic Tool is enabled.
-    if (
-      searchParams.get('section') === 'new' ||
-      Number(searchParams.get('cdaddtopic')) ||
-      dtFormData
-    ) {
-      this.addSection(dtFormData);
-    }
-  }
-
-  /**
-   * Create an add section form if not existent.
-   *
-   * @param {object} [initialState]
-   * @param {import('./CommentForm').default} [commentForm]
-   * @param {object} [preloadConfig=CommentForm.getDefaultPreloadConfig()] See
-   *   {@link CommentForm.getDefaultPreloadConfig}.
-   * @param {boolean} [newTopicOnTop=false]
-   * @returns {?import('./CommentForm').default}
-   */
-  addSection(
-    initialState,
-    commentForm,
-    preloadConfig = CommentForm.getDefaultPreloadConfig(),
-    newTopicOnTop = false
-  ) {
-    if (this.addSectionForm) {
-      // Sometimes there is more than one "Add section" button on the page, and they lead to opening
-      // forms with different content.
-      if (!areObjectsEqual(preloadConfig, this.addSectionForm.getPreloadConfig())) {
-        mw.notify(cd.s('cf-error-formconflict'), { type: 'error' });
-
-        return null;
-      }
-
-      this.addSectionForm.$element.cdScrollIntoView('center');
-
-      // Headline input may be missing if the `nosummary` preload parameter is truthy.
-      (this.addSectionForm.headlineInput || this.addSectionForm.commentInput).focus();
-    } else {
-      /**
-       * "Add section" form.
-       *
-       * @type {CommentForm|undefined}
-       */
-      this.addSectionForm = commentFormRegistry.setupCommentForm(
-        this,
-        {
-          mode: 'addSection',
-          preloadConfig,
-          newTopicOnTop,
-        },
-        initialState,
-        commentForm
-      );
-
-      this.$addSectionButtonContainer?.hide();
-      if (!this.exists()) {
-        bootController.$content.children('.noarticletext, .warningbox').hide();
-      }
-      $('#ca-addsection').addClass('selected');
-      $('#ca-view').removeClass('selected');
-      this.addSectionForm.on('teardown', () => {
-        $('#ca-addsection').removeClass('selected');
-        $('#ca-view').addClass('selected');
-      });
-    }
-
-    return this.addSectionForm;
-  }
-
-  /**
-   * Clean up traces of a comment form {@link CommentForm#getTarget targeted} at this page.
-   *
-   * @param {import('./CommentForm').CommentFormMode} mode
-   * @param {import('./CommentForm').default} commentForm
-   */
-  addCommentFormToPage(mode, commentForm) {
-    const firstSection = sectionRegistry.getByIndex(0);
-    if (firstSection && commentForm.isNewTopicOnTop()) {
-      firstSection.$heading.before(commentForm.$element);
-    } else {
-      bootController.$root.after(commentForm.$element);
-    }
-  }
-
-  /**
-   * Remove a comment form {@link CommentForm#getTarget targeted} at this page from the page.
-   */
-  cleanUpCommentFormTraces() {
-    if (!this.exists()) {
-      bootController.$content
-        // In case DT's new topic tool is enabled. This is responsible for correct styles being set.
-        .removeClass('ext-discussiontools-init-replylink-open')
-
-        .children('.noarticletext, .warningbox')
-        .show();
-    }
-
-    this.$addSectionButtonContainer?.show();
-  }
-
-  /**
-   * Get the name of the page's method creating a comment form with the specified mode. Used for
-   * polymorphism with {@link Section}.
-   *
-   * @param {import('./CommentForm').CommentFormMode} mode
+   * @param {object} [parameters]
    * @returns {string}
    */
-  getCommentFormMethodName(mode) {
-    return mode;
+  getUrl(parameters) {
+    return mw.util.getUrl(this.name, parameters);
   }
 
   /**
-   * Used for polymorphism with {@link Comment#getRelevantSection} and
-   * {@link Section#getRelevantSection}.
+   * Get a decoded URL with a fragment identifier.
    *
-   * @returns {null}
+   * @param {?string} [fragment]
+   * @param {boolean} [permanent=false] Get a permanent URL.
+   * @returns {string}
    */
-  getRelevantSection() {
-    return null;
-  }
-
-  /**
-   * Used for polymorphism with {@link Comment#getRelevantComment} and
-   * {@link Section#getRelevantComment}.
-   *
-   * @returns {null}
-   */
-  getRelevantComment() {
-    return null;
-  }
-
-  /**
-   * Used for polymorphism with {@link Comment#getIdentifyingData} and
-   * {@link Section#getIdentifyingData}.
-   *
-   * @returns {null}
-   */
-  getIdentifyingData() {
-    return null;
-  }
-
-  /**
-   * If a new section is added to the page, get the comment that will end up directly above the
-   * section.
-   *
-   * @param {import('./CommentForm').default} commentForm
-   * @returns {?import('./Comment').default}
-   */
-  getCommentAboveReply(commentForm) {
-    return commentForm.isNewTopicOnTop() ? null : commentRegistry.getByIndex(-1);
-  }
-
-  /**
-   * Used for polymorphism with {@link Comment} and {@link Section}.
-   *
-   * @returns {Page}
-   */
-  findNewSelf() {
-    return this;
-  }
-
-  /**
-   * Get a diff between two revisions of the page.
-   *
-   * @param {number} revisionIdFrom
-   * @param {number} revisionIdTo
-   * @returns {Promise.<string>}
-   */
-  async compareRevisions(revisionIdFrom, revisionIdTo) {
-    const request = cd
-      .getApi()
-      .post({
-        action: 'compare',
-        fromtitle: this.name,
-        fromrev: revisionIdFrom,
-        torev: revisionIdTo,
-        prop: ['diff'],
+  getDecodedUrlWithFragment(fragment, permanent = false) {
+    const decodedPageUrl = decodeURI(
+      this.getUrl({
+        ...(permanent ? { oldid: mw.config.get('wgRevisionId') } : {}),
       })
-      .catch(handleApiReject);
-    const response = /** @type {import('./utils-api').APIResponseCompare} */ (await request);
-
-    return response?.compare?.body;
+    );
+    return cd.g.server + decodedPageUrl + (fragment ? `#${fragment}` : '');
   }
 
   /**
@@ -1000,6 +678,29 @@ export default class Page {
         })
         .filter(defined)
     );
+  }
+
+  /**
+   * Get a diff between two revisions of the page.
+   *
+   * @param {number} revisionIdFrom
+   * @param {number} revisionIdTo
+   * @returns {Promise.<string>}
+   */
+  async compareRevisions(revisionIdFrom, revisionIdTo) {
+    const request = cd
+      .getApi()
+      .post({
+        action: 'compare',
+        fromtitle: this.name,
+        fromrev: revisionIdFrom,
+        torev: revisionIdTo,
+        prop: ['diff'],
+      })
+      .catch(handleApiReject);
+    const response = /** @type {import('./utils-api').APIResponseCompare} */ (await request);
+
+    return response?.compare?.body;
   }
 
   /**
@@ -1128,6 +829,310 @@ export default class Page {
     this.pagesMaps ||= this.getArchivePagesMaps();
 
     return this.pagesMaps.source;
+  }
+}
+
+/**
+ * Class representing the current page the user is visiting. Extends the base Page class with
+ * methods and properties specific to the current page context.
+ */
+export class CurrentPage extends Page {
+  /**
+   * @type {JQuery}
+   * @private
+   */
+  $archivingInfo;
+
+  /**
+   * @type {JQuery}
+   * @private
+   */
+  $addSectionButtonContainer;
+
+  /**
+   * @type {CommentForm}
+   * @private
+   */
+  addSectionForm;
+
+  /**
+   * Create a CurrentPage instance.
+   *
+   * @param {mw.Title} mwTitle
+   * @param {string} [genderedName]
+   */
+  constructor(mwTitle, genderedName) {
+    super(mwTitle, genderedName);
+    this.isActionable = Boolean(this.isCommentable());
+  }
+
+  /**
+   * Check if the page is an archive page, checking both regex rules from the parent class and page
+   * DOM elements.
+   *
+   * @returns {boolean}
+   */
+  isArchive() {
+    return (
+      super.isArchive() ||
+      Boolean(this.findArchivingInfoElement()?.attr('data-is-archive-page'))
+    );
+  }
+
+  /**
+   * Check if this page can have archives. Checks both regex rules from the parent class and page
+   * DOM elements.
+   *
+   * @returns {?boolean}
+   */
+  canHaveArchives() {
+    const $archivingInfo = this.findArchivingInfoElement();
+    if ($archivingInfo?.length) {
+      return !$archivingInfo.attr('data-is-archive-page');
+    }
+
+    return super.canHaveArchives();
+  }
+
+  /**
+   * Get the archive prefix for the page. Checks both regex rules from the parent class and page
+   * DOM elements.
+   *
+   * @param {boolean} [onlyExplicit=false]
+   * @returns {?string}
+   */
+  getArchivePrefix(onlyExplicit = false) {
+    const $archivingInfo = this.findArchivingInfoElement();
+    if ($archivingInfo?.length) {
+      if ($archivingInfo.attr('data-is-archive-page')) {
+        return null;
+      }
+      const archivePrefix = $archivingInfo.attr('data-archive-prefix');
+      if (archivePrefix) {
+        return archivePrefix;
+      }
+    }
+
+    return super.getArchivePrefix(onlyExplicit);
+  }
+
+  /**
+   * Get the source page for the page (i.e., the page from which archiving is happening). Checks
+   * both regex rules from the parent class and page DOM elements.
+   *
+   * @returns {Page}
+   */
+  getArchivedPage() {
+    const $archivingInfo = this.findArchivingInfoElement();
+    if ($archivingInfo?.length) {
+      const sourcePage = $archivingInfo.attr('data-source-page');
+      if (sourcePage) {
+        const page = pageRegistry.get(sourcePage);
+        if (page) {
+          return page;
+        }
+      }
+    }
+
+    return super.getArchivedPage();
+  }
+
+  /**
+   * Check whether the current page is eligible for submitting comments to.
+   *
+   * @returns {boolean}
+   */
+  isCommentable() {
+    return bootController.isPageOfType('talk') && (this.isActive() || !this.exists());
+  }
+
+  /**
+   * Check whether the current page exists (is not 404).
+   *
+   * @returns {boolean}
+   */
+  exists() {
+    return Boolean(mw.config.get('wgArticleId'));
+  }
+
+  /**
+   * Check whether the current page is an active talk page: existing, the current revision, not an
+   * archive page.
+   *
+   * This value is constant in most cases, but there are exceptions:
+   *   1. The user may switch to another revision using
+   *      {@link https://www.mediawiki.org/wiki/Extension:RevisionSlider RevisionSlider}.
+   *   2. On a really rare occasion, an active page may become inactive if it becomes identified as
+   *      an archive page. This was switched off when I wrote this.
+   *
+   * @returns {boolean}
+   */
+  isActive() {
+    return (
+      bootController.isPageOfType('talk') &&
+      this.exists() &&
+      bootController.isCurrentRevision() &&
+      !this.isArchive()
+    );
+  }
+
+  /**
+   * Check whether the current page is an archive and the displayed revision the current one.
+   *
+   * @returns {boolean}
+   */
+  isCurrentArchive() {
+    return bootController.isCurrentRevision() && this.isArchive();
+  }
+
+  /**
+   * Find an archiving info element on the page.
+   *
+   * @returns {?JQuery}
+   * @private
+   */
+  findArchivingInfoElement() {
+    // This is not reevaluated after page reloads. Since archive settings we need rarely change, the
+    // reevaluation is unlikely to make any difference. `$root?` because the $root can not be set
+    // when it runs from the addCommentLinks module.
+    this.$archivingInfo ||= bootController.$root?.find('.cd-archivingInfo');
+
+    return this.$archivingInfo;
+  }
+
+  /**
+   * _For internal use._ Add an "Add topic" button to the bottom of the page if there is an "Add
+   * topic" tab. (Otherwise, it may be added to a wrong place.)
+   */
+  addAddTopicButton() {
+    if (
+      !$('#ca-addsection').length ||
+      // There is a special welcome text in New Topic Tool for 404 pages.
+      (cd.g.isDtNewTopicToolEnabled && !this.exists())
+    ) {
+      return;
+    }
+
+    this.$addSectionButtonContainer = $('<div>')
+      .addClass('cd-section-button-container cd-addTopicButton-container')
+      .append(
+        new OO.ui.ButtonWidget({
+          label: cd.s('addtopic'),
+          framed: false,
+          classes: ['cd-button-ooui', 'cd-section-button'],
+        }).on('click', () => {
+          this.addSection();
+        }).$element
+      )
+      // If appending to bootController.rootElement, it can land on a wrong place, like on 404 pages
+      // with New Topic Tool enabled.
+      .insertAfter(bootController.$root);
+  }
+
+  /**
+   * Add an "Add section" form or not on page load depending on the URL and presence of a
+   * DiscussionTools' "New topic" form.
+   *
+   * @param {object} dtFormData
+   */
+  autoAddSection(dtFormData) {
+    const { searchParams } = new URL(location.href);
+
+    // &action=edit&section=new when DT's New Topic Tool is enabled.
+    if (
+      searchParams.get('section') === 'new' ||
+      Number(searchParams.get('cdaddtopic')) ||
+      dtFormData
+    ) {
+      this.addSection(dtFormData);
+    }
+  }
+
+  /**
+   * Create an add section form if not existent.
+   *
+   * @param {object} [initialState]
+   * @param {import('./CommentForm').default} [commentForm]
+   * @param {object} [preloadConfig=CommentForm.getDefaultPreloadConfig()] See
+   *   {@link CommentForm.getDefaultPreloadConfig}.
+   * @param {boolean} [newTopicOnTop=false]
+   * @returns {?import('./CommentForm').default}
+   */
+  addSection(
+    initialState,
+    commentForm,
+    preloadConfig = CommentForm.getDefaultPreloadConfig(),
+    newTopicOnTop = false
+  ) {
+    if (this.addSectionForm) {
+      // Sometimes there is more than one "Add section" button on the page, and they lead to opening
+      // forms with different content.
+      if (!areObjectsEqual(preloadConfig, this.addSectionForm.getPreloadConfig())) {
+        mw.notify(cd.s('cf-error-formconflict'), { type: 'error' });
+
+        return null;
+      }
+
+      this.addSectionForm.$element.cdScrollIntoView('center');
+
+      // Headline input may be missing if the `nosummary` preload parameter is truthy.
+      (this.addSectionForm.headlineInput || this.addSectionForm.commentInput).focus();
+    } else {
+      this.addSectionForm = commentFormRegistry.setupCommentForm(
+        this,
+        {
+          mode: 'addSection',
+          preloadConfig,
+          newTopicOnTop,
+        },
+        initialState,
+        commentForm
+      );
+
+      this.$addSectionButtonContainer?.hide();
+      if (!this.exists()) {
+        bootController.$content.children('.noarticletext, .warningbox').hide();
+      }
+      $('#ca-addsection').addClass('selected');
+      $('#ca-view').removeClass('selected');
+      this.addSectionForm.on('teardown', () => {
+        $('#ca-addsection').removeClass('selected');
+        $('#ca-view').addClass('selected');
+      });
+    }
+
+    return this.addSectionForm;
+  }
+
+  /**
+   * Clean up traces of a comment form {@link CommentForm#getTarget targeted} at this page.
+   *
+   * @param {import('./CommentForm').CommentFormMode} mode
+   * @param {import('./CommentForm').default} commentForm
+   */
+  addCommentFormToPage(mode, commentForm) {
+    const firstSection = sectionRegistry.getByIndex(0);
+    if (firstSection && commentForm.isNewTopicOnTop()) {
+      firstSection.$heading.before(commentForm.$element);
+    } else {
+      bootController.$root.after(commentForm.$element);
+    }
+  }
+
+  /**
+   * Remove a comment form {@link CommentForm#getTarget targeted} at this page from the page.
+   */
+  cleanUpCommentFormTraces() {
+    if (!this.exists()) {
+      bootController.$content
+        // In case DT's new topic tool is enabled. This is responsible for correct styles being set.
+        .removeClass('ext-discussiontools-init-replylink-open')
+
+        .children('.noarticletext, .warningbox')
+        .show();
+    }
+
+    this.$addSectionButtonContainer?.show();
   }
 }
 
