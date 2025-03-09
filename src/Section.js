@@ -196,10 +196,10 @@ class Section extends SectionSkeleton {
      * the section is transcluded from another page). This property may be wrong on old version
      * pages where there are no edit section links.
      *
-     * @type {import('./pageRegistry').Page}
+     * @type {import('./Page').default}
      */
     this.sourcePage = this.sourcePageName ?
-      /** @type {import('./pageRegistry').Page} */ (pageRegistry.get(this.sourcePageName)) :
+      /** @type {import('./Page').default} */ (pageRegistry.get(this.sourcePageName)) :
       cd.page;
 
     this.sourcePageName = null;
@@ -1837,7 +1837,7 @@ class Section extends SectionSkeleton {
    * Get the wiki page that has the source code of the section (may be different from the current
    * page if the section is transcluded from another page).
    *
-   * @returns {import('./pageRegistry').Page}
+   * @returns {import('./Page').default}
    */
   getSourcePage() {
     return this.sourcePage;

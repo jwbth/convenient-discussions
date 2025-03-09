@@ -992,7 +992,7 @@ class TalkPageController extends EventEmitter {
       link: /** @type {string} */ (object.getUrl()),
 
       permanentLink: object.isComment() ?
-        /** @type {import('./pageRegistry').Page} */ (pageRegistry.get(
+        /** @type {import('./Page').default} */ (pageRegistry.get(
           mw.config.get('wgFormattedNamespaces')[-1] + ':' + 'GoToComment/' + fragment
         )).getDecodedUrlWithFragment() :
         object.getUrl(true),

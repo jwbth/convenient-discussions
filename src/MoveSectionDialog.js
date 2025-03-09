@@ -293,7 +293,7 @@ class MoveSectionDialog extends ProcessDialog {
         this.pushPending();
         this.controls.title.input.$input.blur();
 
-        let targetPage = /** @type {import('./pageRegistry').Page} */ (
+        let targetPage = /** @type {import('./Page').default} */ (
           pageRegistry.get(this.controls.title.input.getMWTitle())
         );
 
@@ -358,7 +358,7 @@ class MoveSectionDialog extends ProcessDialog {
    * Load the source page code.
    *
    * @returns {Promise<{
-   *   page: import('./pageRegistry').Page;
+   *   page: import('./Page').default;
    *   sectionSource: import('./SectionSource').default;
    *   sectionWikilink: string;
    * }>}
@@ -416,9 +416,9 @@ class MoveSectionDialog extends ProcessDialog {
   /**
    * Load the target page code.
    *
-   * @param {import('./pageRegistry').Page} targetPage
+   * @param {import('./Page').default} targetPage
    * @returns {Promise<{
-   *   page: import('./pageRegistry').Page;
+   *   page: import('./Page').default;
    *   targetIndex: number | null;
    *   sectionWikilink: string;
    * }>}
@@ -637,7 +637,7 @@ class MoveSectionDialog extends ProcessDialog {
    * Provided parameters of archiving templates present on the page, guess the archive path and
    * other configuration for the section.
    *
-   * @param {Map<import('./pageRegistry').Page, StringsByKey>} templateToParameters
+   * @param {Map<import('./Page').default, StringsByKey>} templateToParameters
    * @returns {?{
    *   path: ?string;
    *   isSorted: boolean;

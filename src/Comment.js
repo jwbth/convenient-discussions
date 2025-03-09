@@ -3717,7 +3717,7 @@ class Comment extends CommentSkeleton {
    * Get the wiki page that has the source code of the comment (may be different from the current
    * page if the comment is transcluded from another page).
    *
-   * @returns {import('./pageRegistry').Page}
+   * @returns {import('./Page').default}
    */
   getSourcePage() {
     return this.section ? this.section.getSourcePage() : cd.page;

@@ -4,7 +4,7 @@
  * @module pageRegistry
  */
 
-import { Page } from './Page';
+import Page from './Page';
 import cd from './cd';
 
 /**
@@ -19,7 +19,7 @@ const pageRegistry = {
    */
   items: {},
 
-/**
+  /**
    * @overload
    * @param {string} nameOrMwTitle
    * @param {true} [isGendered=true]

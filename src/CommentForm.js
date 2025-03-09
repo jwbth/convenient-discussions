@@ -31,7 +31,7 @@ import { isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, is
  */
 
 /**
- * @typedef {import('./CommentSource').default|import('./SectionSource').default|import('./pageRegistry').PageSource} AnySource
+ * @typedef {import('./CommentSource').default|import('./SectionSource').default|import('./Page').defaultSource} AnySource
  */
 
 /**
@@ -40,7 +40,7 @@ import { isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, is
  * @property {Comment} edit
  * @property {import('./Section').default} replyInSection
  * @property {import('./Section').default} addSubsection
- * @property {import('./pageRegistry').Page} addSection
+ * @property {import('./Page').default} addSection
  */
 
 /**
@@ -109,7 +109,7 @@ class CommentForm extends EventEmitter {
    * Wiki page that has the source code of the target object (may be different from the current
    * page if the section is transcluded from another page).
    *
-   * @type {import('./pageRegistry').Page}
+   * @type {import('./Page').default}
    * @private
    */
   targetPage;
@@ -4425,7 +4425,7 @@ class CommentForm extends EventEmitter {
   /**
    * Get the name of the target's property that can contain a comment form with the specified mode.
    *
-   * @param {Comment|import('./Section').default|import('./pageRegistry').Page} target
+   * @param {Comment|import('./Section').default|import('./Page').default} target
    * @param {import('./CommentForm').CommentFormMode} mode
    * @returns {string}
    */
@@ -4436,7 +4436,7 @@ class CommentForm extends EventEmitter {
   /**
    * Remove references to a comment form on its target object (after it was unregistered).
    *
-   * @param {Comment|import('./Section').default|import('./pageRegistry').Page} target
+   * @param {Comment|import('./Section').default|import('./Page').default} target
    * @param {import('./CommentForm').CommentFormMode} mode
    */
   static forgetOnTarget(target, mode) {

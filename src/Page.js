@@ -11,6 +11,7 @@ import bootController from './bootController';
 import cd from './cd';
 import commentFormRegistry from './commentFormRegistry';
 import commentRegistry from './commentRegistry';
+import pageRegistry from './pageRegistry';
 import sectionRegistry from './sectionRegistry';
 import { handleApiReject, requestInBackground } from './utils-api';
 import { areObjectsEqual, defined, isProbablyTalkPage, mergeRegexps } from './utils-general';
@@ -44,7 +45,7 @@ import { findFirstTimestamp, maskDistractingCode } from './utils-wikitext';
  * To create an instance, use {@link module:pageRegistry.get} (the constructor is only exported for
  * means of code completion).
  */
-export class Page {
+export default class Page {
   /** @readonly */
   TYPE = 'page';
 
@@ -266,7 +267,7 @@ export class Page {
   getDecodedUrlWithFragment(fragment, permanent = false) {
     const decodedPageUrl = decodeURI(
       this.getUrl({
-        ...(permanent ? { oldid: mw.config.get('wgRevisionId') } : {})
+        ...(permanent ? { oldid: mw.config.get('wgRevisionId') } : {}),
       })
     );
     return cd.g.server + decodedPageUrl + (fragment ? `#${fragment}` : '');
@@ -367,7 +368,7 @@ export class Page {
       }
     }
 
-    return result ? String(result) : (onlyExplicit ? null : name + '/');
+    return result ? String(result) : onlyExplicit ? null : name + '/';
   }
 
   /**
@@ -394,6 +395,27 @@ export class Page {
   }
 
   /**
+   * @overload
+   * @param {CommentForm} [_] Not used.
+   * @param {true} [tolerateMissing=true] Return `null` if the page is missing instead of throwing
+   *   an error.
+   * @returns {Promise<?string>} A promise resolving to the wikitext of the page, or `null` if the
+   * page is missing.
+   *
+   * @overload
+   * @param {CommentForm} [_] Not used.
+   * @param {false} tolerateMissing Return `null` if the page is missing instead of throwing an
+   *   error.
+   * @returns {Promise<string>} A promise resolving to the wikitext of the page.
+   *
+   * @overload
+   * @param {CommentForm} [_] Not used.
+   * @param {boolean} [tolerateMissing=true] Return `null` if the page is missing instead of
+   *   throwing an error.
+   * @returns {Promise<string>} A promise resolving to the wikitext of the page.
+   */
+
+  /**
    * Make a revision request (see {@link https://www.mediawiki.org/wiki/API:Revisions}) to load the
    * wikitext of the page, together with a few revision properties: the timestamp, redirect target,
    * and query timestamp (`curtimestamp`). Enrich the page instance with those properties. Also set
@@ -407,15 +429,18 @@ export class Page {
    * @throws {CdError}
    */
   async loadCode(_, tolerateMissing = true) {
-    const request = cd.getApi().post({
-      action: 'query',
-      titles: this.name,
-      prop: 'revisions',
-      rvslots: 'main',
-      rvprop: ['ids', 'content'],
-      redirects: !(this.isCurrent() && mw.config.get('wgIsRedirect')),
-      curtimestamp: true,
-    }).catch(handleApiReject);
+    const request = cd
+      .getApi()
+      .post({
+        action: 'query',
+        titles: this.name,
+        prop: 'revisions',
+        rvslots: 'main',
+        rvprop: ['ids', 'content'],
+        redirects: !(this.isCurrent() && mw.config.get('wgIsRedirect')),
+        curtimestamp: true,
+      })
+      .catch(handleApiReject);
     const { query, curtimestamp: queryTimestamp } =
       /** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (await request);
 
@@ -505,9 +530,9 @@ export class Page {
       delete options.page;
     }
 
-    const request = inBackground ?
-      requestInBackground(options).catch(handleApiReject) :
-      cd.getApi().post(options).catch(handleApiReject);
+    const request = inBackground
+      ? requestInBackground(options).catch(handleApiReject)
+      : cd.getApi().post(options).catch(handleApiReject);
     const { parse } = /** @type {import('./utils-api').ApiResponseParse} */ (await request);
     if (parse?.text === undefined) {
       throw new CdError({
@@ -580,7 +605,7 @@ export class Page {
       notminor: !customOptions.minor,
 
       // Should be `undefined` instead of `null`, otherwise will be interepreted as a string.
-      tags: cd.user.isRegistered() && cd.config.tagName || undefined,
+      tags: (cd.user.isRegistered() && cd.config.tagName) || undefined,
 
       ...cd.g.apiErrorFormatHtml,
       ...customOptions,
@@ -588,10 +613,13 @@ export class Page {
 
     let response;
     try {
-      const request = cd.getApi().postWithEditToken(options, {
-        // Beneficial when sending long unicode texts, which is what we do here.
-        contentType: 'multipart/form-data',
-      }).catch(handleApiReject);
+      const request = cd
+        .getApi()
+        .postWithEditToken(options, {
+          // Beneficial when sending long unicode texts, which is what we do here.
+          contentType: 'multipart/form-data',
+        })
+        .catch(handleApiReject);
       response = /** @type {ApiResponseEdit} */ (await request);
     } catch (error) {
       if (error instanceof CdError) {
@@ -651,7 +679,7 @@ export class Page {
           isRawMessage: true,
           logMessage: [code, response],
         },
-      })
+      });
     }
 
     return response.edit.newtimestamp || 'nochange';
@@ -661,12 +689,15 @@ export class Page {
    * {@link https://www.mediawiki.org/wiki/Manual:Purge Purge cache} of the page.
    */
   async purge() {
-    await cd.getApi().post({
-      action: 'purge',
-      titles: this.name,
-    }).catch(() => {
-      mw.notify(cd.s('error-purgecache'), { type: 'warn' });
-    });
+    await cd
+      .getApi()
+      .post({
+        action: 'purge',
+        titles: this.name,
+      })
+      .catch(() => {
+        mw.notify(cd.s('error-purgecache'), { type: 'warn' });
+      });
   }
 
   /**
@@ -689,7 +720,6 @@ export class Page {
   addAddTopicButton() {
     if (
       !$('#ca-addsection').length ||
-
       // There is a special welcome text in New Topic Tool for 404 pages.
       (cd.g.isDtNewTopicToolEnabled && !this.exists())
     ) {
@@ -699,11 +729,11 @@ export class Page {
     this.$addSectionButtonContainer = $('<div>')
       .addClass('cd-section-button-container cd-addTopicButton-container')
       .append(
-        (new OO.ui.ButtonWidget({
+        new OO.ui.ButtonWidget({
           label: cd.s('addtopic'),
           framed: false,
           classes: ['cd-button-ooui', 'cd-section-button'],
-        })).on('click', () => {
+        }).on('click', () => {
           this.addSection();
         }).$element
       )
@@ -767,11 +797,16 @@ export class Page {
        *
        * @type {CommentForm|undefined}
        */
-      this.addSectionForm = commentFormRegistry.setupCommentForm(this, {
-        mode: 'addSection',
-        preloadConfig,
-        newTopicOnTop,
-      }, initialState, commentForm);
+      this.addSectionForm = commentFormRegistry.setupCommentForm(
+        this,
+        {
+          mode: 'addSection',
+          preloadConfig,
+          newTopicOnTop,
+        },
+        initialState,
+        commentForm
+      );
 
       this.$addSectionButtonContainer?.hide();
       if (!this.exists()) {
@@ -789,8 +824,7 @@ export class Page {
   }
 
   /**
-   * Clean up traces of a comment form {@link CommentForm#getTarget targeted} at this page from the
-   * page.
+   * Clean up traces of a comment form {@link CommentForm#getTarget targeted} at this page.
    *
    * @param {import('./CommentForm').CommentFormMode} mode
    * @param {import('./CommentForm').default} commentForm
@@ -889,13 +923,16 @@ export class Page {
    * @returns {Promise.<string>}
    */
   async compareRevisions(revisionIdFrom, revisionIdTo) {
-    const request = cd.getApi().post({
-      action: 'compare',
-      fromtitle: this.name,
-      fromrev: revisionIdFrom,
-      torev: revisionIdTo,
-      prop: ['diff'],
-    }).catch(handleApiReject);
+    const request = cd
+      .getApi()
+      .post({
+        action: 'compare',
+        fromtitle: this.name,
+        fromrev: revisionIdFrom,
+        torev: revisionIdTo,
+        prop: ['diff'],
+      })
+      .catch(handleApiReject);
     const response = /** @type {import('./utils-api').APIResponseCompare} */ (await request);
 
     return response?.compare?.body;
@@ -910,11 +947,14 @@ export class Page {
   async getFirstTemplateTransclusion(pages) {
     let data;
     try {
-      const request = cd.getApi().post({
-        action: 'parse',
-        prop: 'parsetree',
-        page: this.name,
-      }).catch(handleApiReject);
+      const request = cd
+        .getApi()
+        .post({
+          action: 'parse',
+          prop: 'parsetree',
+          page: this.name,
+        })
+        .catch(handleApiReject);
       data = /** @type {import('./utils-api').ApiResponseParseTree} */ (await request);
     } catch (error) {
       if (
@@ -934,18 +974,19 @@ export class Page {
         .map((page) => {
           const parameters = $templates
             // Find the first <template> with a <title> child equal to the name
-            .filter((_, template) =>
-              pageRegistry.get($(template).children('title').text().trim()) === page
+            .filter(
+              (_, template) =>
+                pageRegistry.get($(template).children('title').text().trim()) === page
             )
             .first()
             .find('comment')
-              .remove()
+            .remove()
             .end()
 
             // Process all <part> children to extract <name> and <value>
             .children('part')
             .get()
-            ?.map(part => {
+            ?.map((part) => {
               const $name = $(part).children('name');
               const value = $(part).children('value').text().trim();
               const key = /** @type {string} */ ($name.text().trim() || $name.attr('index'));
@@ -1263,56 +1304,3 @@ export class PageSource {
     return /^==[^=].*?==[ \t\x01\x02]*\n/gm;
   }
 }
-
-/**
- * @exports pageRegistry
- */
-const pageRegistry = {
-  /**
-   * Collection of pages.
-   *
-   * @type {object}
-   * @private
-   */
-  items: {},
-
-  /**
-   * Get a page object for a page with the specified name (either a new one or already existing).
-   *
-   * @param {string | mw.Title} nameOrMwTitle
-   * @param {boolean} [isGendered=true] Used to keep the gendered namespace name (`nameOrMwTitle`
-   *   should be a string).
-   * @returns {?Page}
-   */
-  get(nameOrMwTitle, isGendered = true) {
-    const title = nameOrMwTitle instanceof mw.Title ?
-      nameOrMwTitle :
-      mw.Title.newFromText(nameOrMwTitle);
-    if (!title) {
-      return null;
-    }
-
-    const name = title.getPrefixedText();
-    if (!this.items[name]) {
-      this.items[name] = new Page(
-        title,
-        isGendered ? /** @type {string} */ (nameOrMwTitle) : undefined
-      );
-    } else if (isGendered) {
-      this.items[name].name = nameOrMwTitle;
-    }
-
-    return this.items[name];
-  },
-
-  /**
-   * Get the page the user is visiting.
-   *
-   * @returns {Page}
-   */
-  getCurrent() {
-    return /** @type {Page} */ (this.get(cd.g.pageName, true));
-  },
-};
-
-export default pageRegistry;
