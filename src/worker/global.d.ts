@@ -8,7 +8,7 @@ declare global {
   }
 
   const Node: WorkerGlobalScope['Node'];
-  const document: WorkerGlobalScope['document'];
+  const document: NonNullable<WorkerGlobalScope['document']>;
 }
 
 export {};

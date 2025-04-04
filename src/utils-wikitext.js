@@ -408,7 +408,7 @@ function extractUnsigneds(adjustedCode, code, signatures) {
 
     // Append "(UTC)" to the `timestamp` of templates that allow to omit the timezone. The timezone
     // could be not UTC, but currently the timezone offset is taken from the wiki configuration, so
-    // doesn't have effect.
+    // it doesn't have effect.
     if (timestamp && !cd.g.contentTimestampRegexp.test(timestamp)) {
       timestamp += ' (UTC)';
 
@@ -418,8 +418,8 @@ function extractUnsigneds(adjustedCode, code, signatures) {
       authorString ||= '<undated>';
     }
 
-    // A situation is also possible when we couldn't parse neither the author nor the timestamp. (If
-    // we could parse the timestamp, the author becomes `<undated>`). Let's assume that the template
+    // A situation is also possible when we could parse neither the author nor the timestamp. (If we
+    // could parse the timestamp, the author becomes `<undated>`). Let's assume that the template
     // still contains a signature and is not a "stray" template and still include it (we'll filter
     // out authorless signatures later anyway, but we need them now to figure out where comments
     // start).

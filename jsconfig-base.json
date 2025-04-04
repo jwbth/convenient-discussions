@@ -4,6 +4,7 @@
     "checkJs": true,
     "noEmit": true,
     "resolveJsonModule": true,
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "strictNullChecks": true
   }
 }

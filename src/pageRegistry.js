@@ -63,10 +63,10 @@ const pageRegistry = {
   /**
    * Get the page the user is visiting.
    *
-   * @returns {Page}
+   * @returns {import('./CurrentPage').default}
    */
   getCurrent() {
-    return /** @type {Page} */ (this.get(cd.g.pageName, true));
+    return /** @type {import('./CurrentPage').default} */ (this.get(cd.g.pageName, true));
   },
 };
 

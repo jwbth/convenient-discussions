@@ -80,7 +80,7 @@ class CommentFormRegistry extends EventEmitter {
    * Create a comment form and add it both to the registry and to the page. If it already exists,
    * reattach it to the page.
    *
-   * @param {import('./Comment').default|import('./Section').default|import('./Page').default} target
+   * @param {import('./Comment').default|import('./Section').default|import('./CurrentPage').default} target
    * @param {object} config See {@link CommentForm}'s constructor.
    * @param {import('./CommentForm').CommentFormInitialState} [initialState] See
    *   {@link CommentForm}'s constructor.
