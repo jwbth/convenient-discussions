@@ -197,6 +197,8 @@
 	"sd-reset": "Resetuj ustawienia (we wszystkich sekcjach)",
 	"sd-reset-confirm": "Czy na pewno chcesz zresetować ustawienia? (Po zresetowaniu kliknij w „{{int:convenient-discussions-sd-save}}”.)",
 	"sd-removedata": "Usuń wszystkie dane skryptu",
+	"sd-removedata-description": "Usuń dane zebrane przez Convenient Discussions: Twoje ustawienia, ostatnie odwiedziny na stronie dyskusji, starsze subskrypcje i wersje robocze niewysłanych komentarzy",
+	"sd-removedata-help": "Zwróć uwagę, że wszystko oprócz ustawień globalnych jest usuwane tylko dla bieżącej wiki. Jeśli korzystałeś z Convenient Discussions na innych wiki i chcesz usunąć dla nich dane, będziesz musiał je usunąć na tych wiki. Zobacz [[mw:c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions#Data|stronę główną skryptu]], aby uzyskać szczegółowe informacje na temat tego, co, dlaczego i jak skrypt przechowuje oraz instrukcje dotyczące usuwania każdego elementu danych z osobna. <strong>Uwaga:</strong> Jeśli korzystasz ze standardowego interfejsu powiadomień dla subskrypcji tematów, Twoje subskrypcje nie zostaną usunięte, ponieważ są częścią Twojego konta wiki.",
 	"sd-alloweditotherscomments": "Pokaż link umożliwiający edycję komentarzy innych użytkowników",
 	"sd-collapsethreadslevel": "Automatyczne zwijanie wątków na poziomie",
 	"sd-collapsethreadslevel-help": "0 – nigdy nie zwijaj automatyczne.",
