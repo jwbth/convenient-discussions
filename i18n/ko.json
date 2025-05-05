@@ -9,7 +9,8 @@
 			"Songhee",
 			"Suleiman the Magnificent Television",
 			"Theshinster123",
-			"Ykhwong"
+			"Ykhwong",
+			"아라"
 		]
 	},
 	"script-name": "편리한 토론",
@@ -141,7 +142,7 @@
 	"cf-confirm-empty": "비어있는 의견을 게시하시겠습니까?",
 	"cf-confirm-long": "이 의견은 $1자를 넘습니다. 게시하시겠습니까?",
 	"cf-confirm-delete": "댓글을 삭제하겠습니까?",
-	"cf-confirm-close": "양식을 닫으시겠습니까? 변경 내용은 사라집니다.",
+	"cf-confirm-close": "양식을 닫으시겠습니까? 변경사항이 사라집니다.",
 	"cf-autocomplete-mentions-label": "사용자 언급하기",
 	"cf-autocomplete-wikilinks-label": "위키페이지 링크 연결",
 	"cf-autocomplete-templates-label": "틀 삽입",
