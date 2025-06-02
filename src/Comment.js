@@ -2171,8 +2171,8 @@ class Comment extends CommentSkeleton {
               }))
               .attr('target', '_blank')
 
-              // Make it work in https://commons.wikimedia.org/wiki/User:Serhio_Magpie/instantDiffs.js
-              .attr('data-instantdiffs-link', 'link')
+              // Make it work in https://www.mediawiki.org/wiki/Instant_Diffs
+              .attr('data-instantdiffs-link', 'event')
 
               .text(cd.s('comment-diff-full')),
             cd.sParse('dot-separator'),
@@ -2621,8 +2621,8 @@ class Comment extends CommentSkeleton {
               .attr('href', diffLink.replace(/&diff=(\d+)/, '&oldid=$1&diff=next'))
               .attr('target', '_blank')
 
-              // Make it work in https://ru.wikipedia.org/wiki/User:Serhio_Magpie/instantDiffs.js
-              .attr('data-instantdiffs-link', 'link')
+              // Make it work in https://www.mediawiki.org/wiki/Instant_Diffs
+              .attr('data-instantdiffs-link', 'event')
 
               .text(cd.mws('nextdiff'))
           )
@@ -2876,7 +2876,7 @@ class Comment extends CommentSkeleton {
         targetBlank: true,
       }
     );
-    $question.find('a').attr('data-instantdiffs-link', 'link');
+    $question.find('a').attr('data-instantdiffs-link', 'event');
     const $content = $.cdMerge($question, await this.generateDiffView());
 
     if (await showConfirmDialog($content, { size: 'larger' }) === 'accept') {
