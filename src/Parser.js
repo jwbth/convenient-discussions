@@ -716,7 +716,7 @@ class Parser {
         // the namespace. Enough to capture the user name from, not enough to make any inferences.
       } else if (cd.g.contribsPageLinkRegexp.test(pageName)) {
         userName = pageName.replace(cd.g.contribsPageLinkRegexp, '');
-        if (cd.g.isIPv6Address(userName)) {
+        if (cd.g.isIPv6Address?.(userName)) {
           userName = userName.toUpperCase();
         }
         linkType = 'contribs';
