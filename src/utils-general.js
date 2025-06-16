@@ -72,14 +72,14 @@ export function unique(el, i, arr) {
 
 /**
  * Check if a node is an element with `display: inline` or `display: inline-block` in the default
- * browser styles. As an option, it can also treat text nodes as inline elements.
+ * browser styles. Optionally, it can treat text nodes as such.
  *
  * @param {NodeLike} node
- * @param {boolean} [countTextNodesAsInline=false]
+ * @param {boolean} [considerTextNodesAsInline=false]
  * @returns {?boolean}
  */
-export function isInline(node, countTextNodesAsInline = false) {
-  if (countTextNodesAsInline && isText(node)) {
+export function isInline(node, considerTextNodesAsInline = false) {
+  if (considerTextNodesAsInline && isText(node)) {
     return true;
   }
 
@@ -97,15 +97,21 @@ export function isInline(node, countTextNodesAsInline = false) {
   } else if (cd.g.popularNotInlineElements.includes(node.tagName)) {
     return false;
   } else {
-    // This can be called from a worker.
-    if (!isDomHandlerNode(node)) {
-      console.warn('Convenient Discussions: Expensive operation: isInline() called for:', node);
+    if (
+      // Don't have `window` in web worker.
+      !isDomHandlerNode(node) &&
 
+      typeof node.convenientDiscussionsIsInline !== 'boolean' &&
+      node.isConnected
+    ) {
       // This is very expensive. Avoid by any means.
-      return window.getComputedStyle(node).display.startsWith('inline');
-    } else {
-      return null;
+      console.warn('Convenient Discussions: Expensive operation: isInline() called for:', node);
+      node.convenientDiscussionsIsInline = window
+        .getComputedStyle(node)
+        .display.startsWith('inline');
     }
+
+    return node.convenientDiscussionsIsInline ?? null;
   }
 }
 

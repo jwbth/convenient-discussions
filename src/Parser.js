@@ -250,10 +250,12 @@ class Parser {
    */
   getSignatureFromTimestamp(timestamp) {
     let unsignedElement;
-    let /** @type {?ElementLike} */ el = timestamp.element;
-    while (!unsignedElement && (el = el.parentElement) && isInline(el)) {
-      if (el.classList.contains(cd.config.unsignedClass)) {
-        unsignedElement = el;
+    {
+      let /** @type {?ElementLike} */ el = timestamp.element;
+      while (!unsignedElement && (el = el.parentElement) && isInline(el) !== false) {
+        if (el.classList.contains(cd.config.unsignedClass)) {
+          unsignedElement = el;
+        }
       }
     }
 
@@ -265,7 +267,10 @@ class Parser {
     const elementsTreeWalker = new ElementsTreeWalker(this.context.rootElement, timestamp.element);
     while (
       elementsTreeWalker.previousNode() &&
-      (isInline(elementsTreeWalker.currentNode) || isMetadataNode(elementsTreeWalker.currentNode))
+      (
+        isInline(elementsTreeWalker.currentNode) !== false ||
+        isMetadataNode(elementsTreeWalker.currentNode)
+      )
     ) {
       if (elementsTreeWalker.currentNode.classList.contains('cd-signature')) {
         isExtraSignature = true;
@@ -317,7 +322,7 @@ class Parser {
       node = treeWalker.previousSibling();
       if (!node && !firstSignatureElement) {
         node = treeWalker.parentNode();
-        if (!node || !isInline(node)) break;
+        if (!node || isInline(node) === false) break;
 
         length = 0;
         signatureNodes = [];
@@ -325,7 +330,7 @@ class Parser {
     } while (
       length < cd.config.signatureScanLimit &&
       node &&
-      isInline(node, true) &&
+      isInline(node, true) !== false &&
       !(
         (
           authorData.name &&

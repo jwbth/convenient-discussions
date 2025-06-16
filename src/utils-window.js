@@ -392,9 +392,10 @@ export function cleanUpPasteDom(element, containerElement) {
   // Should run after removing elements with `user-select: none`, to remove their wrappers that
   // now have no content.
   [...element.querySelectorAll('*')]
-    // Need to keep non-breaking spaces.
     .filter((el) => (
       (!isInline(el) || el.classList.contains('Apple-interchange-newline')) &&
+
+      // Need to keep non-breaking spaces.
       !el.textContent.replace(/[ \n]+/g, ''))
     )
 
