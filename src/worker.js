@@ -477,10 +477,10 @@ function parse() {
 function restoreFunc(code) {
   if (code) {
     if (!/^ *function\b/.test(code) && !/^.+=>/.test(code)) {
-      code = 'function ' + code;
+      code = `function ${code}`;
     }
-    if (/^ *function *\(/.test(code)) {
-      code = '(' + code + ')';
+    if (/^ *function\b/.test(code)) {
+      code = `(${code})`;
     }
   }
 
