@@ -72,40 +72,39 @@ export function unique(el, i, arr) {
 
 /**
  * Check if a node is an element with `display: inline` or `display: inline-block` in the default
- * browser styles. As an option, it can also treat text nodes as inline elements.
+ * browser styles. Optionally, it can treat text nodes as such.
  *
  * @param {Node|external:Node} node
- * @param {boolean} [countTextNodesAsInline=false]
+ * @param {boolean} [considerTextNodesAsInline=false]
  * @returns {?boolean}
  */
-export function isInline(node, countTextNodesAsInline = false) {
-  if (countTextNodesAsInline && node.nodeType === Node.TEXT_NODE) {
-    return true;
-  }
-
-  if (node.nodeType !== Node.ELEMENT_NODE) {
-    return null;
-  }
-
+export function isInline(node, considerTextNodesAsInline = false) {
   if (
-    cd.g.popularInlineElements.includes(node.tagName) ||
-
-    // `<meta property="mw:PageProp/toc">` is currently present in place of the TOC in Vector 2022.
-    (node.tagName === 'META' && node.getAttribute('property') === 'mw:PageProp/toc')
+    (considerTextNodesAsInline && node.nodeType === Node.TEXT_NODE) ||
+    cd.g.popularInlineElements.includes(node.tagName)
   ) {
     return true;
-  } else if (cd.g.popularNotInlineElements.includes(node.tagName)) {
+  } else if (
+    node.nodeType !== Node.ELEMENT_NODE ||
+    cd.g.popularNotInlineElements.includes(node.tagName)
+  ) {
     return false;
   } else {
-    // This can be called from a worker.
-    if (typeof window !== 'undefined') {
-      console.warn('Convenient Discussions: Expensive operation: isInline() called for:', node);
+    if (
+      // Don't have `window` in web worker.
+      typeof window !== 'undefined' &&
 
+      typeof node.convenientDiscussionsIsInline !== 'boolean' &&
+      node.isConnected
+    ) {
       // This is very expensive. Avoid by any means.
-      return window.getComputedStyle(node).display.startsWith('inline');
-    } else {
-      return null;
+      console.warn('Convenient Discussions: Expensive operation: isInline() called for:', node);
+      node.convenientDiscussionsIsInline = window
+        .getComputedStyle(node)
+        .display.startsWith('inline');
     }
+
+    return node.convenientDiscussionsIsInline ?? null;
   }
 }
 
