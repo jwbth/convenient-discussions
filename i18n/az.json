@@ -436,7 +436,7 @@
 	"warning-performance-title": "Performans problemləri?",
 	"warning-performance": "Convenient Discussions onları \"{{int:convenient-discussions-sd-improveperformance}}\" parametri ilə həll etməyə cəhd edə bilər. <span class=\"cd-notification-talkPageSettings\">[[$1|Parametrləri aç]]</span> .",
 	"discussiontools-incompatible": "Convenient Discussions adətən DiscussionTools ilə uyğun gəlmir. Convenient Discussions-un düzgün işləməsi üçün zəhmət olmasa DiscussionTools-u <b><span class=\"cd-notification-disabledt\">[[$1|deaktiv edin]]</span></b> <span class=\"cd-notification-disableDtGlobally-wrapper\">(və ya <b><span class=\"cd-notification-disableDtGlobally\">[[$2|qlobal deaktiv edin]]</span></b>)</span>",
-	"discussiontools-disabled": "DiscussionTools uğurla deaktiv edildi. <span class=\"cd-notification-refresh\">[[$1|Səhifəni yeniləyin]]</span> .",
+	"discussiontools-disabled": "DiscussionTools uğurla deaktiv edildi. <span class=\"cd-notification-refresh\">[[$1|Səhifəni yenilə]]</span>.",
 	"wl-button-switchrelevant-tooltip": "Yalnız {{gender:$1|abunə olduğum}} mövzularda şərhləri və mənə ünvanlanmış şərhləri göstərin. (Qeyd: bildiriş redaktə xülasələrinə əsaslanır, ona görə də bəzi redaktələr olmaya bilər)",
 	"wl-button-editwatchedsections-tooltip": "{{gender:$1|Abunə olduğum}} mövzuların siyahısını redaktə edin",
 	"wl-button-settings-tooltip": "Convenient Discussions parametrləri",

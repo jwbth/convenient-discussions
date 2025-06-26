@@ -8,6 +8,7 @@
 			"Karim185.3",
 			"Lolekek",
 			"Meno25",
+			"Mohammed Qays",
 			"Wahrani",
 			"أيوب",
 			"محمد أحمد عبد الفتاح"
@@ -272,7 +273,7 @@
 	"navpanel-firstunseen-hidden-title": "التعليق موجود في سلسلة منسدلة",
 	"navpanel-firstunseen-hidden": "تم التمرير إلى الموضوع.\n<ul>\n<li class=\"cd-notification-expandThread\">[[$1|وسع الخيط و انتقل إلى التعليق]]</li>\n<li class=\"cd-notification-markThreadAsRead\">[[$2|علم على الخيط كمقروء و انتقل إلى الخيط التالي غير المقروء]]</li>\n</ul>",
 	"navpanel-commentform": "انتقل إلى نموذج التعليق التالي خارج نطاق الرؤية",
-	"navpanel-newcomments-count": "$1 {{plural:$1|تعليق|تعليقات}}",
+	"navpanel-newcomments-count": "{{PLURAL:$1|تعليق جديد|تعليقان جديدان|$1 تعليقات جديدة|$1 تعليقًا جديدًا|$1 تعليق جديد}}",
 	"navpanel-newcomments-names": "$1 ← $2",
 	"navpanel-newcomments-unknowndate": "تاريخ غير معروف",
 	"navpanel-newcomments-refresh": "انقر لتحديث الصفحة",
