@@ -162,47 +162,50 @@ export default class CommentWorker extends CommentSkeleton {
     this.htmlToCompare = '';
     this.textHtmlToCompare = '';
     this.headingHtmlToCompare = '';
-    this.elements.forEach((el) => {
+    this.elements.forEach((element) => {
       let htmlToCompare;
-      el.getElementsByTagName?.('svg').forEach((svg) => {
+      element.getElementsByTagName?.('svg').forEach((svg) => {
         // Extension:Charts uses dynamically generated class names
         svg.remove();
       });
-      el.getElementsByClassName?.('ext-discussiontools-init-timestamplink').forEach((link) => {
+      element.getElementsByClassName?.('ext-discussiontools-init-timestamplink').forEach((link) => {
         // The link may change
         link.removeAttribute('href');
+
+        // Here there is the the relative date
+        link.removeAttribute('title');
       });
-      if (el.tagName === 'DIV' && !el.classList.contains('mw-heading')) {
+      if (element.tagName === 'DIV' && !element.classList.contains('mw-heading')) {
         // Workaround the bug where the {{smalldiv}} output (or any <div> wrapper around the
         // comment) is treated differently depending on whether there are replies to that comment.
         // When there are no, a <li>/<dd> element containing the <div> wrapper is the only comment
         // part; when there are, the <div> wrapper is.
-        el.classList.remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last');
-        if (!el.getAttribute('class')) {
-          el.removeAttribute('class');
+        element.classList.remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last');
+        if (!element.getAttribute('class')) {
+          element.removeAttribute('class');
         }
         if (
-          Object.keys(el.attribs).length
+          Object.keys(element.attribs).length
 
           // Fix comments with {{smalldiv}} ({{block-small}}) when they get replies, like after
           // https://ru.wikipedia.org/?diff=141768916
-          && el.className !== 'cd-comment-replacedPart'
+          && element.className !== 'cd-comment-replacedPart'
         ) {
           // https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Правила&oldid=125661313#c-Vladimir_Solovjev-20220921144700-D6194c-1cc-20220919200300
           // without children has no trailing newline, while, with children, it has.
-          if (isText(el.lastChild) && el.lastChild.data === '\n') {
-            el.lastChild.remove();
+          if (isText(element.lastChild) && element.lastChild.data === '\n') {
+            element.lastChild.remove();
           }
-          htmlToCompare = el.outerHTML;
+          htmlToCompare = element.outerHTML;
         } else {
-          htmlToCompare = el.innerHTML;
+          htmlToCompare = element.innerHTML;
         }
       } else {
-        htmlToCompare = el.innerHTML || el.textContent;
+        htmlToCompare = element.innerHTML || element.textContent;
       }
 
       this.htmlToCompare += htmlToCompare + '\n';
-      if (isHeadingNode(el)) {
+      if (isHeadingNode(element)) {
         this.headingHtmlToCompare += htmlToCompare;
       } else {
         this.textHtmlToCompare += htmlToCompare + '\n';
@@ -222,17 +225,17 @@ export default class CommentWorker extends CommentSkeleton {
   /**
    * Replace a comment element with a marker.
    *
-   * @param {import('domhandler').Element} el
+   * @param {import('domhandler').Element} element
    * @returns {?import('domhandler').DataNode}
    * @private
    */
-  hideElement(el) {
+  hideElement(element) {
     let type;
-    if (el.classList.contains('reference')) {
+    if (element.classList.contains('reference')) {
       type = 'reference';
-    } else if (el.classList.contains('references')) {
+    } else if (element.classList.contains('references')) {
       type = 'references';
-    } else if (el.classList.contains('autonumber')) {
+    } else if (element.classList.contains('autonumber')) {
       type = 'autonumber';
     } else {
       type = 'templateStyles';
@@ -240,15 +243,15 @@ export default class CommentWorker extends CommentSkeleton {
 
     const num = /** @type {HiddenElementData[]} */ (this.hiddenElementsData).push({
       type,
-      tagName: el.tagName,
-      html: el.outerHTML,
+      tagName: element.tagName,
+      html: element.outerHTML,
     });
     const textNode = document.createTextNode(`\x01${num}_${type}\x02`);
-    textNode.before(el);
-    el.remove();
+    textNode.before(element);
+    element.remove();
 
-    if (this.elements.includes(el)) {
-      this.elements[this.elements.indexOf(el)] = textNode;
+    if (this.elements.includes(element)) {
+      this.elements[this.elements.indexOf(element)] = textNode;
       return textNode;
     }
 

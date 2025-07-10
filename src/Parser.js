@@ -725,7 +725,8 @@ class Parser {
         linkType += 'Foreign';
 
         // Some bug in type checking - can't do `linkType = /** @type {LinkType} */ (linkType +
-        // 'Foreign');`
+        // 'Foreign');` so that linkType doesn't end up just a string.
+        // eslint-disable-next-line no-self-assign
         linkType = /** @type {LinkType} */ (linkType);
       }
       if (!userName) {

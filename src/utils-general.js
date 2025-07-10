@@ -96,23 +96,23 @@ export function isInline(node, considerTextNodesAsInline = false) {
     return true;
   } else if (cd.g.popularNotInlineElements.includes(node.tagName)) {
     return false;
-  } else {
-    if (
-      // Don't have `window` in web worker.
-      !isDomHandlerNode(node) &&
-
-      typeof node.convenientDiscussionsIsInline !== 'boolean' &&
-      node.isConnected
-    ) {
-      // This is very expensive. Avoid by any means.
-      console.warn('Convenient Discussions: Expensive operation: isInline() called for:', node);
-      node.convenientDiscussionsIsInline = window
-        .getComputedStyle(node)
-        .display.startsWith('inline');
-    }
-
-    return node.convenientDiscussionsIsInline ?? null;
   }
+
+  if (
+    // Don't have `window` in web worker.
+    !isDomHandlerNode(node) &&
+
+    typeof node.cdIsInline !== 'boolean' &&
+    node.isConnected
+  ) {
+    // This is very expensive. Avoid by any means.
+    console.warn('Convenient Discussions: Expensive operation: isInline() called for:', node);
+    node.cdIsInline = window
+      .getComputedStyle(node)
+      .display.startsWith('inline');
+  }
+
+  return node.cdIsInline ?? null;
 }
 
 /**
@@ -715,7 +715,7 @@ export function decodeHtmlEntities(string) {
       result = result.replace(/&#(\d+);/g, (s, code) => String.fromCharCode(code));
     }
     if (result.indexOf('&') !== -1) {
-      result = html_entity_decode(result);
+      result = /** @type {string} */ (html_entity_decode(result));
     }
     return result;
   }

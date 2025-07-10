@@ -154,6 +154,8 @@ declare module 'domhandler' {
     className: string;
 
     private _classList: TokenList;
+
+    cdIsInline?: boolean;
   }
 
   interface TokenList extends Array<string> {

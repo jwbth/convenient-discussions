@@ -89,6 +89,7 @@ declare global {
     cdMarginRight: number;
     cdCallback?: Function;
     cdInput?: OO.ui.TextInputWidget;
+    cdIsInline?: boolean;
 
     // Exclude `null` which is not done in the native lib
     textContent: string;
