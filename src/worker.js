@@ -301,6 +301,9 @@ function addCompareHelperProperties(comment) {
     el.getElementsByClassName?.('ext-discussiontools-init-timestamplink').forEach((link) => {
       // The link may change
       link.removeAttribute('href');
+
+      // Here there is the the relative date
+      link.removeAttribute('title');
     });
     if (el.tagName === 'DIV' && !el.classList.contains('mw-heading')) {
       // Workaround the bug where the {{smalldiv}} output (or any <div> wrapper around the
