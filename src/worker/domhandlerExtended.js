@@ -32,52 +32,7 @@ Node.prototype.remove = function () {
  * @returns {boolean}
  */
 Node.prototype.follows = function (node) {
-  // This optimization is based on the assumption that elements existing in the document from the
-  // beginning will never swap positions.
-  if (this.startIndex && node.startIndex) {
-    return this.startIndex > node.startIndex;
-  }
-
-  if (this === node) {
-    return false;
-  }
-
-  const thisTree = [];
-  const nodeTree = [];
-  let sharedParent;
-
-  let thisSharedParentChild;
-  let nodeSharedParentChild;
-
-  for (let current = this; current; current = current.parentNode) {
-    if (current === node) {
-      return true;
-    }
-
-    thisTree.unshift(current);
-  }
-  for (let current = node; current; current = current.parentNode) {
-    nodeTree.unshift(current);
-    if (thisTree.includes(current)) {
-      sharedParent = current;
-      thisSharedParentChild = thisTree[thisTree.indexOf(current) + 1];
-
-      // nodeTree must have at least 2 elements; this is guaranteed by the check "current === node"
-      // above.
-      nodeSharedParentChild = nodeTree[1];
-
-      break;
-    }
-  }
-
-  return (
-    !sharedParent ||
-    !(sharedParent instanceof NodeWithChildren) ||
-    (
-      sharedParent.childNodes.indexOf(thisSharedParentChild) >
-      sharedParent.childNodes.indexOf(nodeSharedParentChild)
-    )
-  );
+  return Boolean(DomUtils.compareDocumentPosition(this, node) & DomUtils.DocumentPosition.FOLLOWING);
 };
 
 Object.defineProperty(Node.prototype, 'textContent', {
