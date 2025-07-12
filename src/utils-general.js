@@ -642,6 +642,24 @@ export function isText(node) {
 }
 
 /**
+ * @overload
+ * @param {Node} node
+ * @returns {node is Element}
+ */
+
+/**
+ * @overload
+ * @param {import('./worker/domhandlerExtended').Node} node
+ * @returns {node is import('./worker/domhandlerExtended').Element}
+ */
+
+/**
+ * @overload
+ * @param {?NodeLike} [node]
+ * @returns {node is ElementLike}
+ */
+
+/**
  * Checks if the argument is an element.
  *
  * @param {?NodeLike} [node]

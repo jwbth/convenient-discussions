@@ -9,6 +9,10 @@
  * @module worker
  */
 
+/// <reference types="types-mediawiki" />
+// This line allows references to MediaWiki types (the `mw` object; e.g. cd.g.isIPv6Address) to work
+// in the worker context.
+
 import './domhandlerExtended';
 
 import { isComment, isText } from 'domhandler';
@@ -218,7 +222,7 @@ function parse() {
  * Restore function from its code.
  *
  * @param {?string} code
- * @returns {?Function}
+ * @returns {(() => any)|null}
  * @private
  */
 function restoreFunc(code) {
@@ -241,11 +245,40 @@ function restoreFunc(code) {
 
 /**
  * @typedef {object} MessageFromWorkerParse
- * @property {string} type
+ * @property {'parse'} type
  * @property {number} revisionId
  * @property {number} resolverId
  * @property {CommentWorker[]} comments
  * @property {SectionWorker[]} sections
+ */
+
+/**
+ * @typedef {MessageFromWorkerParse|undefined} ReplyFromWorker
+ */
+
+/**
+ * @typedef {object} MessageFromWindowParse
+ * @property {'parse'} type
+ * @property {number} revisionId
+ * @property {number} resolverId
+ * @property {string} text
+ * @property {import('../cd').ConvenientDiscussions['g']} g
+ * @property {import('../cd').ConvenientDiscussions['config']} config
+ */
+
+/**
+ * @typedef {object} MessageFromWindowSetAlarm
+ * @property {'setAlarm'} type
+ * @property {number} interval
+ */
+
+/**
+ * @typedef {object} MessageFromWindowRemoveAlarm
+ * @property {'removeAlarm'} type
+ */
+
+/**
+ * @typedef {MessageFromWindowParse | MessageFromWindowSetAlarm | MessageFromWindowRemoveAlarm} MessageFromWindow
  */
 
 /**
@@ -255,17 +288,6 @@ function restoreFunc(code) {
  * @private
  */
 function onMessageFromWindow(event) {
-  /**
-   * @typedef {object} MessageFromWindow
-   * @property {string} type
-   * @property {number} [revisionId]
-   * @property {number} [resolverId]
-   * @property {string} [text]
-   * @property {import('../cd').ConvenientDiscussions['g']} [g]
-   * @property {import('../cd').ConvenientDiscussions['config']} [config]
-   * @property {number} [interval]
-   */
-
   /**
    * @type {MessageFromWindow}
    */
@@ -294,9 +316,9 @@ function onMessageFromWindow(event) {
     cd.config.rejectNode = restoreFunc(
       /** @type {string} */ (/** @type {unknown} */ (cd.config.rejectNode))
     );
-    cd.g.isIPv6Address = restoreFunc(
+    cd.g.isIPv6Address = /** @type {typeof mw['util']['isIPv6Address']} */ (restoreFunc(
       /** @type {string} */ (/** @type {unknown} */ (cd.g.isIPv6Address))
-    );
+    ));
 
     self.document = parseDocument(message.text, {
       withStartIndices: true,

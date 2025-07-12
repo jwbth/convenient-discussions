@@ -2,7 +2,7 @@
 import { isText } from 'domhandler';
 
 import CommentSkeleton from '../CommentSkeleton';
-import { isDomHandlerElement, isHeadingNode, isMetadataNode } from '../utils-general';
+import { isHeadingNode, isMetadataNode } from '../utils-general';
 
 import { keepSafeValues } from './worker';
 
@@ -80,60 +80,19 @@ export default class CommentWorker extends CommentSkeleton {
       .map((/** @type {import('domhandler').Element} */ element) => {
         if (isHeadingNode(element)) {
           // Keep only the headline, as other elements contain dynamic identifiers.
-          let headlineElement = element.getElementsByClassName('mw-headline', 1)[0];
-          if (!headlineElement) {
-            headlineElement = element.querySelectorAll('h1, h2, h3, h4, h5, h6')[0];
-          }
-          if (headlineElement) {
-            // Was removed in 2021, see T284921. Keep this for some time.
-            headlineElement.getElementsByClassName('mw-headline-number', 1)[0]?.remove();
-
-            // Use `[...iterable]`, as childNodes is a live collection, and when an element is removed
-            // or moved, indexes will change.
-            [...element.childNodes].forEach((el) => {
-              el.remove();
-            });
-            [...headlineElement.childNodes].forEach(element.appendChild.bind(element));
-          }
+          this.processHeadingElement(element);
         }
 
         // Data attributes may include dynamic components, for example
         // https://ru.wikipedia.org/wiki/Проект:Знаете_ли_вы/Подготовка_следующего_выпуска.
-        CommentWorker.removeDataAndParsoidAttributes(element);
-        element
-          .getElementsByAttribute(/^data-|^id$/)
-          .forEach(CommentWorker.removeDataAndParsoidAttributes);
-
-        // Empty comment anchors, in most cases added by the script.
-        element.getElementsByTagName('span')
-          .filter((el) => el.attribs.id && Object.keys(el.attribs).length === 1 && !el.textContent)
-          .forEach((el) => {
-            el.remove();
-          });
-
-        element
-          .filterRecursively((node) => node.nodeType === Node.COMMENT_NODE)
-          .forEach((node) => {
-            node.remove();
-          });
+        this.processElementAttributes(element);
 
         if (element.classList.contains('references') || isMetadataNode(element)) {
-          return this.hideElement(element).textContent;
+          return /** @type {import('domhandler').DataNode} */ (this.hideElement(element))
+            .textContent;
         } else {
-          element
-            .filterRecursively((node) => (
-              isDomHandlerElement(node) &&
-              (
-                ['autonumber', 'reference', 'references']
-                  .some((name) => node.classList.contains(name)) ||
+          this.processReferenceElements(element);
 
-                // Note that filterRecursively()'s range includes the root element.
-                isMetadataNode(node)
-              )
-            ))
-            .forEach((/** @type {import('domhandler').Element} */ el) => {
-              this.hideElement(el);
-            });
           return element.outerHTML;
         }
       });
@@ -159,58 +118,181 @@ export default class CommentWorker extends CommentSkeleton {
       So the HTML is `<dd><div>...</div><dl>...</dl></dd>`. A newline also appears before `</div>`, so
       we need to trim.
     */
+    this.initializeCompareProperties();
+
+    this.elements.forEach((element) => {
+      this.processSvgElements(element);
+      this.processTimestampElements(element);
+      this.updateCompareProperties(element, this.getElementHtmlToCompare(element));
+    });
+
+    this.finalizeCompareProperties();
+  }
+
+  /**
+   * Process a heading element by keeping only the headline, as other elements contain dynamic identifiers.
+   *
+   * @param {import('domhandler').Element} element
+   * @private
+   */
+  processHeadingElement(element) {
+    let headlineElement = element.getElementsByClassName('mw-headline', 1)[0];
+    if (!headlineElement) {
+      headlineElement = element.querySelectorAll('h1, h2, h3, h4, h5, h6')[0];
+    }
+    if (headlineElement) {
+      // Was removed in 2021, see T284921. Keep this for some time.
+      headlineElement.getElementsByClassName('mw-headline-number', 1)[0]?.remove();
+
+      // Use `[...iterable]`, as childNodes is a live collection, and when an element is removed
+      // or moved, indexes will change.
+      [...element.childNodes].forEach((el) => {
+        el.remove();
+      });
+      [...headlineElement.childNodes].forEach(element.appendChild.bind(element));
+    }
+  }
+
+  /**
+   * Remove the element's attributes whose names start with `data-` and IDs added by Parsoid. Also
+   * remove empty comment anchors and comment nodes.
+   *
+   * @param {import('domhandler').Element} element
+   * @private
+   */
+  processElementAttributes(element) {
+    CommentWorker.removeDataAndParsoidAttributes(element);
+    element
+      .getElementsByAttribute(/^data-|^id$/)
+      .forEach(CommentWorker.removeDataAndParsoidAttributes);
+
+    // Empty comment anchors, in most cases added by the script.
+    element.getElementsByTagName('span')
+      .filter((el) => el.attribs.id && Object.keys(el.attribs).length === 1 && !el.textContent)
+      .forEach((el) => {
+        el.remove();
+      });
+
+    // Remove comment nodes
+    element
+      .filterRecursively((node) => node.nodeType === Node.COMMENT_NODE)
+      .forEach((node) => {
+        node.remove();
+      });
+  }
+
+  /**
+   * Hide reference, autonumber, and metadata nodes recursively.
+   *
+   * @param {import('domhandler').Element} element
+   * @private
+   */
+  processReferenceElements(element) {
+    element
+      .filterRecursively((/** @type {import('domhandler').Element} */ node) =>
+        ['autonumber', 'reference', 'references'].some((name) => node.classList.contains(name)) ||
+        isMetadataNode(node)
+      )
+      .forEach((/** @type {import('domhandler').Element} */ el) => {
+        this.hideElement(el);
+      });
+  }
+
+  /**
+   * Initialize properties used for comparison.
+   *
+   * @private
+   */
+  initializeCompareProperties() {
     this.htmlToCompare = '';
     this.textHtmlToCompare = '';
     this.headingHtmlToCompare = '';
-    this.elements.forEach((element) => {
-      let htmlToCompare;
-      element.getElementsByTagName?.('svg').forEach((svg) => {
-        // Extension:Charts uses dynamically generated class names
-        svg.remove();
-      });
-      element.getElementsByClassName?.('ext-discussiontools-init-timestamplink').forEach((link) => {
-        // The link may change
-        link.removeAttribute('href');
+  }
 
-        // Here there is the the relative date
-        link.removeAttribute('title');
-      });
-      if (element.tagName === 'DIV' && !element.classList.contains('mw-heading')) {
-        // Workaround the bug where the {{smalldiv}} output (or any <div> wrapper around the
-        // comment) is treated differently depending on whether there are replies to that comment.
-        // When there are no, a <li>/<dd> element containing the <div> wrapper is the only comment
-        // part; when there are, the <div> wrapper is.
-        element.classList.remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last');
-        if (!element.getAttribute('class')) {
-          element.removeAttribute('class');
-        }
-        if (
-          Object.keys(element.attribs).length
-
-          // Fix comments with {{smalldiv}} ({{block-small}}) when they get replies, like after
-          // https://ru.wikipedia.org/?diff=141768916
-          && element.className !== 'cd-comment-replacedPart'
-        ) {
-          // https://ru.wikipedia.org/w/index.php?title=Википедия:Форум/Правила&oldid=125661313#c-Vladimir_Solovjev-20220921144700-D6194c-1cc-20220919200300
-          // without children has no trailing newline, while, with children, it has.
-          if (isText(element.lastChild) && element.lastChild.data === '\n') {
-            element.lastChild.remove();
-          }
-          htmlToCompare = element.outerHTML;
-        } else {
-          htmlToCompare = element.innerHTML;
-        }
-      } else {
-        htmlToCompare = element.innerHTML || element.textContent;
-      }
-
-      this.htmlToCompare += htmlToCompare + '\n';
-      if (isHeadingNode(element)) {
-        this.headingHtmlToCompare += htmlToCompare;
-      } else {
-        this.textHtmlToCompare += htmlToCompare + '\n';
-      }
+  /**
+   * Remove SVG elements (Extension:Charts uses dynamically generated class names).
+   *
+   * @param {import('domhandler').Element} element
+   * @private
+   */
+  processSvgElements(element) {
+    element.getElementsByTagName?.('svg').forEach((svg) => {
+      svg.remove();
     });
+  }
+
+  /**
+   * Remove attributes from timestamp links that may change (`href`, `title`).
+   *
+   * @param {import('domhandler').Element} element
+   * @private
+   */
+  processTimestampElements(element) {
+    element.getElementsByClassName?.('ext-discussiontools-init-timestamplink').forEach((link) => {
+      // The link may change
+      link.removeAttribute('href');
+
+      // Here there is the relative date
+      link.removeAttribute('title');
+    });
+  }
+
+  /**
+   * Get HTML to compare for an element.
+   *
+   * @param {import('domhandler').Element} element
+   * @returns {string}
+   * @private
+   */
+  getElementHtmlToCompare(element) {
+    if (element.tagName === 'DIV' && !element.classList.contains('mw-heading')) {
+      // Workaround the bug where the {{smalldiv}} output (or any <div> wrapper around the
+      // comment) is treated differently depending on whether there are replies to that comment.
+      // When there are no, a <li>/<dd> element containing the <div> wrapper is the only comment
+      // part; when there are, the <div> wrapper is.
+      element.classList.remove('cd-comment-part', 'cd-comment-part-first', 'cd-comment-part-last');
+      if (!element.getAttribute('class')) {
+        element.removeAttribute('class');
+      }
+      if (
+        Object.keys(element.attribs).length &&
+        element.className !== 'cd-comment-replacedPart'
+      ) {
+        if (element.lastChild && isText(element.lastChild) && element.lastChild.data === '\n') {
+          element.lastChild.remove();
+        }
+
+        return element.outerHTML;
+      } else {
+        return element.innerHTML;
+      }
+    } else {
+      return element.innerHTML || element.textContent;
+    }
+  }
+
+  /**
+   * Update comparison properties with element HTML.
+   *
+   * @param {import('domhandler').Element} element
+   * @param {string} htmlToCompare
+   * @private
+   */
+  updateCompareProperties(element, htmlToCompare) {
+    this.htmlToCompare += htmlToCompare + '\n';
+    if (isHeadingNode(element)) {
+      this.headingHtmlToCompare += htmlToCompare;
+    } else {
+      this.textHtmlToCompare += htmlToCompare + '\n';
+    }
+  }
+
+  /**
+   * Finalize comparison properties.
+   *
+   * @private
+   */
+  finalizeCompareProperties() {
     this.htmlToCompare = this.htmlToCompare.trim();
     this.textHtmlToCompare = this.textHtmlToCompare.trim();
     this.headingHtmlToCompare = this.headingHtmlToCompare.trim();
@@ -230,6 +312,10 @@ export default class CommentWorker extends CommentSkeleton {
    * @private
    */
   hideElement(element) {
+    if (!this.elements.includes(element)) {
+      return null;
+    }
+
     let type;
     if (element.classList.contains('reference')) {
       type = 'reference';
@@ -250,12 +336,9 @@ export default class CommentWorker extends CommentSkeleton {
     textNode.before(element);
     element.remove();
 
-    if (this.elements.includes(element)) {
-      this.elements[this.elements.indexOf(element)] = textNode;
-      return textNode;
-    }
+    this.elements[this.elements.indexOf(element)] = textNode;
 
-    return null;
+    return textNode;
   }
 
   /**

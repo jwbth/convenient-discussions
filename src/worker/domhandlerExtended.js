@@ -84,7 +84,7 @@ NodeWithChildren.prototype.contains = function (node) {
     return false;
   }
 
-  for (let n = node; n; n = n.parentNode) {
+  for (let /** @type {?Node} */ n = node; n; n = n.parentNode) {
     if (n === this) {
       return true;
     }
@@ -123,10 +123,10 @@ NodeWithChildren.prototype.filterRecursively = function (callback, limit) {
   this.traverseSubtree((node) => {
     if (callback(node)) {
       nodes.push(node);
-      if (limit && nodes.length === limit) {
-        return true;
-      }
+      return Boolean(limit && nodes.length === limit);
     }
+
+    return false;
   });
 
   return nodes;
@@ -150,7 +150,7 @@ Element.prototype.removeChild = function (node) {
 
 /**
  * @param {Node} node
- * @param {?Node} referenceNode
+ * @param {Node|undefined} referenceNode
  * @returns {Node}
  */
 Element.prototype.insertBefore = function (node, referenceNode) {
@@ -420,9 +420,7 @@ Object.defineProperty(Element.prototype, 'classList', {
   get() {
     if (!this._classList) {
       /** @private */
-      this._classList = /** @type {import('domhandler').TokenList} */ ([]);
-
-      this._classList
+      this._classList = /** @type {import('domhandler').TokenList} */ (/** @type {string[]} */ ([]));
 
       this._classList.movedFromClassAttr = false;
 

@@ -132,7 +132,7 @@ class UpdateChecker extends EventEmitter {
    * Perform a task in a web worker.
    *
    * @param {object} payload
-   * @returns {Promise.<object>}
+   * @returns {Promise.<import('./worker/worker').ReplyFromWorker>}
    * @private
    */
   runWorkerTask(payload) {

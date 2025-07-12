@@ -855,7 +855,7 @@ export default {
    * https://github.com/jwbth/convenient-discussions/blob/6281b9ede22149beb47ba0da37549d13600cb1c9/src/js/BootProcess.js#L745
    * this}.
    *
-   * @type {?Function}
+   * @type {?((node: NodeLike, context: import('./../src/Parser').Context) => boolean)}
    * @kind function
    * @param {NodeLike} node
    * @param {import('./../src/Parser').Context} context
@@ -868,17 +868,21 @@ export default {
    * Function that runs when the "Reformat comments" setting is enabled before parsing the author
    * link. May return some data that will eventually supplied to the
    * {@link module:defaultConfig.afterAuthorLinkParse} function (for example, an element). It
-   * accepts the author link (a link to the author's user page) as it was encountered on the page.
+   * accepts:
+   * * the author link (the link to the author's user page) as it was encountered on the page
+   * * and the author link dummy as part of the header dummy that we use as a prototype in which the
+   *   link dummy is replaced with a real element.
    *
    * This function, together with {@link module:defaultConfig.afterAuthorLinkParse}, can be used to
    * optimize the script's performance with different kinds of "Mark administrators" gadget. See the
    * example at
    * {@link https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-commonsConfig.js}.
    *
-   * @type {?Function}
+   * @type {?((authorLink: Element, authorLinkPrototype: Element) => void)}
    * @kind function
    * @param {Element} authorLink
-   * @returns {*}
+   * @param {Element} authorLinkPrototype
+   * @returns {void}
    * @default null
    */
   beforeAuthorLinkParse: null,
@@ -897,7 +901,7 @@ export default {
    * @type {?Function}
    * @kind function
    * @param {Element} authorLink
-   * @param {*} data
+   * @param {any} data
    * @returns {Element}
    * @default null
    */
