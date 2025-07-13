@@ -889,11 +889,11 @@ class CommentForm extends EventEmitter {
    * @private
    */
   createButtons() {
-    const /** @type {{[key: string]: string}} */ modeToSubmitButtonMessageName = {
+    const modeToSubmitButtonMessageName = /** @type {{[key: string]: string}} */ ({
       edit: 'save',
       addSection: 'addtopic',
       addSubsection: 'addsubsection',
-    };
+    });
     const submitButtonMessageName = modeToSubmitButtonMessageName[this.mode] || 'reply';
     this.submitButtonLabelStandard = cd.s(`cf-${submitButtonMessageName}`);
     this.submitButtonLabelShort = cd.s(`cf-${submitButtonMessageName}-short`);

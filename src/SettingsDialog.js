@@ -243,7 +243,7 @@ class SettingsDialog extends ProcessDialog {
    * @protected
    */
   createPages(settingValues) {
-    const controls = {};
+    const controls = /** @type {ControlsByName} */ ({});
     const pages = settings.scheme.ui.map((pageData) => {
       const $fields = pageData.controls.map((data) => {
         const name = data.name;
@@ -282,7 +282,7 @@ class SettingsDialog extends ProcessDialog {
             break;
 
           case 'multicheckbox':
-            controls[name] = {};
+            controls[name] = /** @type {Control} */ ({});
             controls[name].multiselect = new OO.ui.CheckboxMultiselectWidget({
               items: data.options.map((option) => (
                 new OO.ui.CheckboxMultioptionWidget({
@@ -301,7 +301,7 @@ class SettingsDialog extends ProcessDialog {
             break;
 
           case 'tags':
-            controls[name] = {};
+            controls[name] = /** @type {Control} */ ({});
             controls[name].multiselect = new OO.ui.TagMultiselectWidget({
               placeholder: data.placeholder,
               allowArbitrary: true,
@@ -319,7 +319,7 @@ class SettingsDialog extends ProcessDialog {
             break;
 
           case 'button':
-            controls[name] = {};
+            controls[name] = /** @type {Control} */ ({});
             controls[name].button = new OO.ui.ButtonWidget({
               label: data.label,
               flags: data.flags,
