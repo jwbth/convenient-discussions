@@ -31,7 +31,7 @@ import { isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, is
  */
 
 /**
- * @typedef {import('./CommentSource').default|import('./SectionSource').default|import('./PageSource').default} AnySource
+ * @typedef {import('./CommentSource').default|import('./SectionSource').default|import('./PageSource').default} NonNullableSource
  */
 
 /**
@@ -2711,21 +2711,20 @@ class CommentForm extends EventEmitter {
     let contextCode;
     let commentCode;
     try {
-      ({ contextCode, commentCode } =
-        /** @type {AnySource} */ (
-          this.target.source
-        ).modifyContext({
-          // Ugly solution to avoid overcomplication of code: for replies, we need to get
-          // CommentSource#isReplyOutdented set for `action === 'reply'` which we don't have so far.
-          // So let CommentSource#modifyContext() compute it. In the rest of cases just get the
-          // comment code.
-          commentCode: this.isMode('reply') ? undefined : this.inputToCode(action),
+      ({ contextCode, commentCode } = /** @type {NonNullableSource} */ (
+        this.target.source
+      ).modifyContext({
+        // Ugly solution to avoid overcomplication of code: for replies, we need to get
+        // CommentSource#isReplyOutdented set for `action === 'reply'` which we don't have so far.
+        // So let CommentSource#modifyContext() compute it. In the rest of cases just get the
+        // comment code.
+        commentCode: this.isMode('reply') ? undefined : this.inputToCode(action),
 
-          action: this.mode,
-          doDelete: this.deleteCheckbox?.isSelected(),
-          commentForm: this,
-          commentFormAction: action,
-        }));
+        action: this.mode,
+        doDelete: this.deleteCheckbox?.isSelected(),
+        commentForm: this,
+        commentFormAction: action,
+      }));
       contextCode = this.addAnchorsToComments(contextCode, commentIds);
     } catch (error) {
       if (error instanceof CdError) {
@@ -3116,7 +3115,7 @@ class CommentForm extends EventEmitter {
           !doDelete &&
           this.commentInput.getValue().trim().length > cd.config.longCommentThreshold
         ),
-        confirmation: () => confirm(cd.s('cf-confirm-long', cd.config.longCommentThreshold)),
+        confirmation: () => confirm(cd.s('cf-confirm-long', String(cd.config.longCommentThreshold))),
       },
       {
         condition: (

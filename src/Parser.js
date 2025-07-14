@@ -14,7 +14,7 @@ import { parseTimestamp } from './utils-timestamp';
  * @property {string} childElementsProp
  * @property {(el1: NodeLike, el2: NodeLike) => boolean} follows
  * @property {() => TextLikeArray} getAllTextNodes
- * @property {(el: ElementLike, className: string) => ?ElementLike} getElementByClassName
+ * @property {(el: ElementLike, className: string) => ElementLike | null} getElementByClassName
  * @property {ElementLike} rootElement
  * @property {() => boolean} areThereOutdents
  * @property {(elements: ElementLikeArray, bootProcess?: import('./BootProcess').default) => void} processAndRemoveDtElements
@@ -251,7 +251,7 @@ class Parser {
   getSignatureFromTimestamp(timestamp) {
     let unsignedElement;
     {
-      let /** @type {?ElementLike} */ el = timestamp.element;
+      let /** @type {ElementLike | null} */ el = timestamp.element;
       while (!unsignedElement && (el = el.parentElement) && isInline(el) !== false) {
         if (el.classList.contains(cd.config.unsignedClass)) {
           unsignedElement = el;
@@ -295,7 +295,7 @@ class Parser {
 
     // Unsigned template may be of the "undated" kind - containing a timestamp but no author name,
     // so we need to walk the tree anyway.
-    let /** @type {?(ElementLike|TextLike)} */ node = treeWalker.currentNode;
+    let /** @type {ElementLike | TextLike | null} */ node = treeWalker.currentNode;
     do {
       length += node.textContent.length;
       if (isElement(node)) {
@@ -588,7 +588,7 @@ class Parser {
     return [...this.context.rootElement.querySelectorAll('h1, h2, h3, h4, h5, h6')]
       .map((element) => {
         for (
-          let /** @type {?ElementLike} */ el = element;
+          let /** @type {ElementLike | null} */ el = element;
           el && el !== this.context.rootElement;
           el = el.parentElement
         ) {

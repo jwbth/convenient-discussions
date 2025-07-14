@@ -503,7 +503,7 @@ class Thread extends mixInObject(
    * navigate to. Also update the cursor look.
    *
    * @param {number} delta
-   * @returns {?import('./Comment').default}
+   * @returns {import('./Comment').default | null}
    * @private
    */
   getNavTarget(delta) {
@@ -795,8 +795,8 @@ class Thread extends mixInObject(
       button.setLabel(
         cd.s(
           genderless ? 'thread-expand-label-genderless' : 'thread-expand-label',
-          this.commentCount,
-          usersInThread.length,
+          String(this.commentCount),
+          String(usersInThread.length),
           userList,
           getCommonGender(usersInThread)
         )
@@ -961,7 +961,7 @@ class Thread extends mixInObject(
 
     if (this.endElement !== this.visualEndElement) {
       for (
-        let /** @type {?import('./Comment').default} */ c = this.rootComment;
+        let /** @type {import('./Comment').default | null} */ c = this.rootComment;
         c;
         c = c.getParent(true)
       ) {
@@ -1021,7 +1021,7 @@ class Thread extends mixInObject(
 
     if (this.endElement !== this.visualEndElement && areOutdentedCommentsShown) {
       for (
-        let /** @type {?import('./Comment').default} */ c = this.rootComment;
+        let /** @type {import('./Comment').default | null} */ c = this.rootComment;
         c;
         c = c.getParent()
       ) {
@@ -1555,7 +1555,7 @@ class Thread extends mixInObject(
    * @private
    */
   static findEndElementOfZeroLevelThread(startElement, highlightables, nextForeignElement) {
-    let /** @type {?HTMLElement} */ commonAncestor = startElement;
+    let /** @type {HTMLElement | null} */ commonAncestor = startElement;
     const lastHighlightable = highlightables.slice(-1)[0];
     do {
       commonAncestor = /** @type {HTMLElement} */ (commonAncestor).parentElement;

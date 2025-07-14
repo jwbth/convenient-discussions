@@ -41,7 +41,9 @@ export default class PageSource {
    *   signature. It is required (set to optional for polymorphism with CommentSource and
    *   SectionSource).
    * @param {import('./CommentForm').default} options.commentForm Comment form that has the code.
-   * @returns {{ contextCode: string; commentCode?: string;
+   * @returns {{
+   *   contextCode: string;
+   *   commentCode?: string;
    * }}
    */
   modifyContext({ commentCode, commentForm }) {

@@ -380,7 +380,7 @@ class CommentSkeleton {
     }
     let table;
     for (
-      let /** @type {?ElementLike} */ n = element;
+      let /** @type {ElementLike | null} */ n = element;
       !table && n && n !== this.parser.context.rootElement;
       n = n.parentElement
     ) {
@@ -1147,7 +1147,8 @@ class CommentSkeleton {
           !(
             i !== 0 &&
             ['UL', 'OL'].includes(part.node.tagName) &&
-            ['DL', 'UL'].includes(part.node.previousElementSibling?.tagName)
+            part.node.previousElementSibling &&
+            ['DL', 'UL'].includes(part.node.previousElementSibling.tagName)
           )
         ) ||
 

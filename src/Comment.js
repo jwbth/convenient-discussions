@@ -4158,7 +4158,7 @@ class Comment extends CommentSkeleton {
    * @returns {Comment[]}
    */
   getSiblingsAndSelf() {
-    let comments = /** @type {Comment[]|undefined} */ (this.getParent()?.getChildren());
+    let comments = /** @type {Comment[] | undefined} */ (this.getParent()?.getChildren());
     if (!comments) {
       if (this.section) {
         comments = this.section.commentsInFirstChunk.filter((comment) => !comment.getParent());

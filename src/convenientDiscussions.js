@@ -78,24 +78,34 @@ const convenientDiscussions = {
   windowManagers: {},
 
   /**
+   * @typedef {object} SOptions
+   * @property {boolean} [parse=false] Whether the message should be returned in a parsed form.
+   */
+
+  /**
+   * @typedef {SOptions | import('types-mediawiki/mw/user').User | import('./userRegistry').User | undefined} SLastParam
+   */
+
+  /**
    * Get a language string.
    *
    * @param {string} name String name.
-   * @param {...(string | object)} params String parameters (substituted strings, also
-   *   {@link module:userRegistry.User User} objects for use in `{{gender:}}`). The last parameter
-   *   can be an object that can have a boolean property `parse` (should the message be returned in
-   *   a parsed form). In the `parse` form, wikilinks are replaced with HTML tags, the code is
-   *   sanitized. Use this for strings that have their raw HTML inserted into the page.
+   * @param {...(string | undefined | SLastParam)} params
+   *   String parameters (substituted strings, also {@link module:userRegistry.User User} objects
+   *   for use in `{{gender:}}`). The last parameter can be an object that can have a boolean
+   *   property `parse` (should the message be returned in a parsed form). In the `parse` form,
+   *   wikilinks are replaced with HTML tags, the code is sanitized. Use this for strings that have
+   *   their raw HTML inserted into the page.
    * @returns {string}
    * @memberof convenientDiscussions
    */
   s(name, ...params) {
     const fullName = `convenient-discussions-${name}`;
-    let options = /** @type {{ parse: boolean }} */ ({});
+    let options = /** @type {SOptions} */ ({});
     let lastParam = params[params.length - 1];
 
     // lastParam.options is a `mw.user`-like object to provide to {{gender:}}
-    if (typeof lastParam === 'object' && !lastParam.options) {
+    if (typeof lastParam === 'object' && !('options' in lastParam)) {
       options = lastParam;
       params.splice(params.length - 1);
     }

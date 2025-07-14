@@ -179,11 +179,11 @@ export default {
       if (unseenCount) {
         bdi.textContent = cd.s(
           usedFullForm ? 'toc-commentcount-new' : 'toc-commentcount-new-full',
-          count,
-          unseenCount
+          String(count),
+          String(unseenCount)
         );
       } else {
-        bdi.textContent = usedFullForm ? String(count) : cd.s('toc-commentcount-full', count);
+        bdi.textContent = usedFullForm ? String(count) : cd.s('toc-commentcount-full', String(count));
       }
 
       span.appendChild(bdi);
@@ -251,17 +251,17 @@ export default {
    * contents.
    *
    * @param {import('./updateChecker').SectionWorkerMatched} section
-   * @param {TocItemCut[]} currentTree
+   * @param {TocItemShort[]} currentTree
    * @param {JQuery} $topUl
    * @param {string[]} newSectionTocIds
    * @private
    */
   addNewSection(section, currentTree, $topUl, newSectionTocIds) {
     /**
-     * @typedef {Pick<TocItem, 'level' | 'number' | '$element'>} TocItemCut
+     * @typedef {Pick<TocItem, 'level' | 'number' | '$element'>} TocItemShort
      */
 
-    let item = /** @type {TocItemCut|undefined} */ (section.match?.getTocItem());
+    let item = /** @type {TocItemShort|undefined} */ (section.match?.getTocItem());
     const level = /** @type {number} */ (section.tocLevel);
     if (!item) {
       const currentLevelMatch = currentTree[level - 1];
@@ -595,7 +595,7 @@ export default {
       const span = document.createElement('span');
       span.className = 'cd-toc-more';
       span.title = moreTooltipText.trim();
-      span.textContent = cd.s('toc-more', comments.length - (itemLimit - 1));
+      span.textContent = cd.s('toc-more', String(comments.length - (itemLimit - 1)));
 
       const li = document.createElement('li');
       li.appendChild(span);

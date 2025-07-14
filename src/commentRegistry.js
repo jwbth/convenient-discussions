@@ -677,7 +677,7 @@ class CommentRegistry extends EventEmitter {
       } else {
         // If there is no section match, use the ancestor sections' section match.
         for (
-          let s = /** @type {import('./updateChecker').SectionWorkerMatched|undefined} */ (
+          let s = /** @type {import('./updateChecker').SectionWorkerMatched | undefined} */ (
             comment.section
           );
           s && !key;
@@ -744,8 +744,8 @@ class CommentRegistry extends EventEmitter {
     const button = new OO.ui.ButtonWidget({
       label: cd.s(
         type === 'thread' ? 'thread-newcomments' : 'section-newcomments',
-        descendantComments.length,
-        authors.length,
+        String(descendantComments.length),
+        String(authors.length),
         authors.map((author) => author.getName()).join(cd.mws('comma-separator')),
         getCommonGender(authors)
       ),

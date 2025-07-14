@@ -68,6 +68,9 @@ class SettingsDialog extends ProcessDialog {
   /** @type {ControlsByName} */
   controls;
 
+  /** @type {Partial<import('./settings').SettingsValues>} */
+  loadedSettings;
+
   /**
    * Create a settings dialog.
    *
@@ -167,11 +170,7 @@ class SettingsDialog extends ProcessDialog {
     return super.getReadyProcess().next(async () => {
       // this.settings can be empty after removing the data using the relevant functionality in the
       // UI.
-      if (
-        !Object.keys(
-          /** @type {Partial<import('./settings').SettingsValues>} */ (this.loadedSettings)
-        ).length
-      ) {
+      if (!Object.keys(this.loadedSettings).length) {
         this.loadedSettings = settings.get();
       }
 

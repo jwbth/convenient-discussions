@@ -84,7 +84,7 @@ NodeWithChildren.prototype.contains = function (node) {
     return false;
   }
 
-  for (let /** @type {?Node} */ n = node; n; n = n.parentNode) {
+  for (let /** @type {Node | null} */ n = node; n; n = n.parentNode) {
     if (n === this) {
       return true;
     }
@@ -415,7 +415,7 @@ Object.defineProperty(Element.prototype, 'classList', {
    *
    * @this {Element}
    * @returns {import('domhandler').TokenList} The `_classList` array with methods for class
-   * manipulation.
+   *   manipulation.
    */
   get() {
     if (!this._classList) {
