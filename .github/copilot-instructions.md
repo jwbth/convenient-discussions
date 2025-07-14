@@ -24,6 +24,7 @@
 * Don't put "-" between the property name and its description.
 * Use `Type[]`, not `Array<Type>`.
 * Use `object` as the type name, not `Object`.
+* Prefer the index signature syntax (e.g. `{ [key: string]: any }`) to `Record` type (e.g. `Record<string, any>`).
 * Add an empty line before the first JSDoc tag when it follows a description, e.g.:
   ```js
   /**

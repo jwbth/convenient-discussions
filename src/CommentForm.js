@@ -889,7 +889,7 @@ class CommentForm extends EventEmitter {
    * @private
    */
   createButtons() {
-    const modeToSubmitButtonMessageName = /** @type {{[key: string]: string}} */ ({
+    const modeToSubmitButtonMessageName = /** @type {{ [key: string]: string }} */ ({
       edit: 'save',
       addSection: 'addtopic',
       addSubsection: 'addsubsection',
@@ -1603,8 +1603,9 @@ class CommentForm extends EventEmitter {
         // Transfer the element's properties to the div.
         ...cd.g.inputPropsAffectingCoords.reduce((props, propName) => {
           props[propName] = computedStyle[propName];
+
           return props;
-        }, {}),
+        }, /** @type {{ [key: string]: CSSStyleDeclaration }} */ ({})),
       })
       .append($span)
       .appendTo(document.body);

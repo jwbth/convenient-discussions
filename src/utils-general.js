@@ -239,7 +239,7 @@ export function reorderArray(arr, startIndex, reverse = false) {
 }
 
 /**
- * Transforms underlines to spaces in a string.
+ * Transform underlines to spaces in a string.
  *
  * @param {string} string
  * @returns {string}
@@ -249,7 +249,7 @@ export function underlinesToSpaces(string) {
 }
 
 /**
- * Transforms spaces to underlines in a string.
+ * Transform spaces to underlines in a string.
  *
  * @param {string} string
  * @returns {string}
@@ -259,7 +259,7 @@ export function spacesToUnderlines(string) {
 }
 
 /**
- * Replaces sequences of spaces with single spaces.
+ * Replace sequences of spaces with single spaces.
  *
  * @param {string} string
  * @returns {string}

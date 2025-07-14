@@ -94,5 +94,6 @@ module.exports = {
         startLines: 1,
       },
     ],
+    'jsdoc/check-line-alignment': ['warn', 'any', { 'wrapIndent': '  ' }],
   },
 };

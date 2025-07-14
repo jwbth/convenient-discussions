@@ -140,7 +140,7 @@ class SettingsDialog extends ProcessDialog {
    * particular context, based on the `data` argument.
    *
    * @param {object} data Dialog opening data
-   * @param {object} data.loadedSettings Loaded settings
+   * @param {Partial<import('./settings').SettingsValues>} data.loadedSettings Loaded settings
    * @returns {OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getSetupProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle
@@ -167,7 +167,11 @@ class SettingsDialog extends ProcessDialog {
     return super.getReadyProcess().next(async () => {
       // this.settings can be empty after removing the data using the relevant functionality in the
       // UI.
-      if (!Object.keys(this.loadedSettings).length) {
+      if (
+        !Object.keys(
+          /** @type {Partial<import('./settings').SettingsValues>} */ (this.loadedSettings)
+        ).length
+      ) {
         this.loadedSettings = settings.get();
       }
 

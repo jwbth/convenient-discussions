@@ -609,12 +609,13 @@ class Settings {
    * strings.
    *
    * @param {object} [options={}]
-   * @param {object} [options.options] Object containing strings with the local and global settings.
+   * @param {{ [key: string]: string }} [options.options] Object containing strings with the local
+   *   and global settings.
    * @param {boolean} [options.omitLocal=false] Whether to omit variables set via `cdLocal...`
-   *   variables (they shouldn't need to be saved to the server).
+   *   variables (they shouldn't be saved to the server).
    * @param {boolean} [options.reuse=false] If `options` is not set, reuse the cached user info
    *   request.
-   * @returns {Promise.<object>}
+   * @returns {Promise.<Partial<SettingsValues>>}
    */
   async load({
     options,
@@ -639,26 +640,26 @@ class Settings {
       localSettings = {};
     }
 
-    return Object.assign(
-      {},
-      this.getSettingPropertiesOfObject(globalSettings),
-      this.getSettingPropertiesOfObject(localSettings),
-      omitLocal ? this.getLocalOverrides() : {},
-    );
+    return {
+      ...this.getSettingPropertiesOfObject(globalSettings),
+      ...this.getSettingPropertiesOfObject(localSettings),
+      ...(omitLocal ? this.getLocalOverrides() : {}),
+    };
   }
 
   /**
    * Get the properties of an object corresponding to settings with an optional prefix.
    *
-   * @param {object} source
+   * @param {{ [key: string]: any }} source
    * @param {string} [prefix]
-   * @param {object} [defaults=this.scheme.default]
-   * @returns {object}
+   * @param {Partial<SettingsValues>} [defaults=this.scheme.default]
+   * @returns {Partial<SettingsValues>}
    * @private
    */
   getSettingPropertiesOfObject(source, prefix, defaults = this.scheme.default) {
-    return Object.keys(defaults).reduce((target, name) => {
-      (this.scheme.aliases[name] || []).concat(name)
+    return typedKeysOf(defaults).reduce((target, name) => {
+      (this.scheme.aliases[name] || [])
+        .concat(name)
         .map((alias) => prefix ? prefix + ucFirst(alias) : alias)
         .filter((prop) => (
           source[prop] !== undefined &&
@@ -667,14 +668,15 @@ class Settings {
         .forEach((prop) => {
           target[name] = source[prop];
         });
+
       return target;
-    }, {});
+    }, /** @type {Partial<SettingsValues>} */ ({}));
   }
 
   /**
    * Get settings set in common.js that are meant to override native settings.
    *
-   * @returns {object}
+   * @returns {Partial<SettingsValues>}
    * @private
    */
   getLocalOverrides() {
@@ -730,7 +732,7 @@ class Settings {
    * Save the settings to the server. This function will split the settings into the global and
    * local ones and make two respective requests.
    *
-   * @param {DocumentedSettingsValues} [settings=this.values] Settings to save.
+   * @param {Partial<DocumentedSettingsValues>} [settings=this.values] Settings to save.
    */
   async save(settings = this.values) {
     if (!cd.user.isRegistered()) return;
@@ -787,7 +789,7 @@ class Settings {
 
     let loadedSettings;
     try {
-      loadedSettings = await this.dialogPromise;
+      [loadedSettings] = await this.dialogPromise;
     } catch {
       mw.notify(cd.s('error-settings-load'), { type: 'error' });
       return;
