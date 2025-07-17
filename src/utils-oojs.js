@@ -228,7 +228,7 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {CommonWidgetConfigProps & {
- *   type?: 'multiline';
+ *   type?: 'multilineText';
  *   value: string;
  *   maxLength: number;
  *   rows?: number;
@@ -257,6 +257,7 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {CommonWidgetConfigProps & {
+ *   type?: 'copyText';
  *   value: string;
  *   copyCallback: (successful: boolean, field: OO.ui.CopyTextLayout) => void;
  * }} CopyTextFieldType
@@ -264,6 +265,7 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {object} CreateTextFieldReturn
+ * @property {'text'} type
  * @property {OO.ui.FieldLayout} field
  * @property {OO.ui.TextInputWidget} input
  */
@@ -275,6 +277,7 @@ export async function showConfirmDialog(message, options = {}) {
  * @returns {CreateTextFieldReturn}
  */
 export function createTextField({
+  type = 'text',
   value,
   maxLength,
   required,
@@ -290,11 +293,12 @@ export function createTextField({
     helpInline: true,
   });
 
-  return { field, input };
+  return { type, field, input };
 }
 
 /**
  * @typedef {object} CreateNumberFieldReturn
+ * @property {'number'} type
  * @property {OO.ui.FieldLayout} field
  * @property {OO.ui.NumberInputWidget} input
  */
@@ -306,6 +310,7 @@ export function createTextField({
  * @returns {CreateNumberFieldReturn}
  */
 export function createNumberField({
+  type = 'number',
   value,
   label,
   min,
@@ -334,11 +339,12 @@ export function createNumberField({
     field.$element.addClass('cd-field-no-label');
   }
 
-  return { field, input };
+  return { type, field, input };
 }
 
 /**
  * @typedef {object} CreateCheckboxFieldReturn
+ * @property {'checkbox'} type
  * @property {OO.ui.FieldLayout} field
  * @property {import('./CheckboxInputWidget').default} input
  */
@@ -350,6 +356,7 @@ export function createNumberField({
  * @returns {CreateCheckboxFieldReturn}
  */
 export function createCheckboxField({
+  type = 'checkbox',
   value,
   selected,
   disabled,
@@ -374,11 +381,12 @@ export function createCheckboxField({
     classes,
   });
 
-  return { field, input };
+  return { type, field, input };
 }
 
 /**
  * @typedef {object} CreateRadioFieldReturn
+ * @property {'radio'} type
  * @property {OO.ui.FieldLayout} field
  * @property {OO.ui.RadioSelectWidget} select
  * @property {import('./RadioOptionWidget').default[]} items
@@ -390,7 +398,13 @@ export function createCheckboxField({
  * @param {RadioFieldType} options
  * @returns {CreateRadioFieldReturn}
  */
-export function createRadioField({ label, selected, help, options }) {
+export function createRadioField({
+  type = 'radio',
+  label,
+  selected,
+  help,
+  options,
+}) {
   const items = options.map((config) => new (require('./RadioOptionWidget').default)(config));
   const select = new OO.ui.RadioSelectWidget({ items });
 
@@ -409,17 +423,34 @@ export function createRadioField({ label, selected, help, options }) {
     select.selectItemByData(selected);
   }
 
-  return { field, select, items };
+  return { type, field, select, items };
 }
+
+/**
+ * @typedef {object} CreateCopyTextFieldReturn
+ * @property {'copyText'} type
+ * @property {OO.ui.CopyTextLayout | OO.ui.ActionFieldLayout} field
+ * @property {OO.ui.TextInputWidget} [input]
+ * @property {OO.ui.ButtonWidget} [button]
+ */
 
 /**
  * Create an action field for copying text from an input.
  *
  * @param {CopyTextFieldType} options
- * @returns {OO.ui.CopyTextLayout|OO.ui.ActionFieldLayout}
+ * @returns {CreateCopyTextFieldReturn}
  */
-export function createCopyTextField({ label, value, disabled = false, help, copyCallback }) {
+export function createCopyTextField({
+  type = 'copyText',
+  label,
+  value,
+  disabled = false,
+  help,
+  copyCallback,
+}) {
   let field;
+  let input;
+  let button;
   if ('CopyTextLayout' in OO.ui) {
     field = new OO.ui.CopyTextLayout({
       align: 'top',
@@ -434,9 +465,10 @@ export function createCopyTextField({ label, value, disabled = false, help, copy
       copyCallback(successful, /** @type {OO.ui.CopyTextLayout} */ field);
     });
   } else {
-    // Older MediaWiki versions
-    const input = new OO.ui.TextInputWidget({ value, disabled });
-    const button = new OO.ui.ButtonWidget({
+    // MediaWiki versions before 1.34 do not have CopyTextLayout, so we use ActionFieldLayout
+    // instead
+    input = new OO.ui.TextInputWidget({ value, disabled });
+    button = new OO.ui.ButtonWidget({
       label: cd.s('copy'),
       icon: 'copy',
       disabled,
@@ -452,7 +484,7 @@ export function createCopyTextField({ label, value, disabled = false, help, copy
     });
   }
 
-  return field;
+  return { type, field, input, button };
 }
 
 /**

@@ -230,7 +230,7 @@ export class UploadDialog extends mixInClass(
  */
 class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.BookletLayout {
   /**
-   * @type {ControlsByName}
+   * @type {Controls}
    */
   controls;
 

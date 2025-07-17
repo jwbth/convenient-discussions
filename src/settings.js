@@ -62,14 +62,14 @@ import { createSvg, getFooter, wrapHtml } from './utils-window';
  *   | Omit<import('./utils-oojs').MultilineTextFieldType, 'value'>
  *   | Omit<import('./utils-oojs').TagMultiselectFieldType, 'selected'>
  *   | import('./utils-oojs').ButtonFieldType
- * )} UiControl
+ * )} UiControlData
  */
 
 /**
- * @typedef {object} UiPage
+ * @typedef {object} UiPageData
  * @property {string} name
  * @property {string} label
- * @property {UiControl[]} controls
+ * @property {UiControlData[]} controls
  */
 
 /**
@@ -112,7 +112,7 @@ class Settings {
    * @property {Partial<SettingsValues>} resetsTo For settings that are resetted not to their
    *   default values, those non-default values are specified here (used to determine whether the
    *   "Reset" button should be enabled).
-   * @property {UiPage[]} ui List of pages of the settings dialog, each with its control objects.
+   * @property {UiPageData[]} ui List of pages of the settings dialog, each with its control objects.
    */
 
   /**

@@ -29,13 +29,71 @@
  */
 
 /**
- * @typedef {{
- *   field: OO.ui.FieldLayout;
- *   multiselect?: OO.ui.CheckboxMultiselectWidget;
+ * @typedef {object} ControlBase
+ * @property {OO.ui.FieldLayout} field
+ */
+
+/**
+ * @typedef {ControlBase & {
+ *   type: 'radio';
+ *   select: OO.ui.RadioSelectWidget;
+ * }} RadioSelectControl
+ */
+
+/**
+ * @typedef {ControlBase & {
+ *   type: 'text';
+ *   input: OO.ui.TextInputWidget;
+ * }} TextInputControl
+ */
+
+/**
+ * @typedef {ControlBase & {
+ *   type: 'multilineText';
+ *   input: OO.ui.MultilineTextInputWidget;
+ * }} MultilineTextInputControl
+ */
+
+/**
+ * @typedef {ControlBase & {
+ *   type: 'number';
+ *   input: OO.ui.NumberInputWidget;
+ * }} NumberInputControl
+ */
+
+/**
+ * @typedef {ControlBase & {
+ *   type: 'checkbox';
+ *   input: OO.ui.CheckboxInputWidget;
+ * }} CheckboxInputControl
+ */
+
+/**
+ * @typedef {ControlBase & {
+ *   type: 'tags';
+ *   validate?: Function;
+ *   multiselect: OO.ui.TagMultiselectWidget;
+ * }} TagMultiselectControl
+ */
+
+/**
+ * @typedef {ControlBase & {
+ *   type: 'button';
+ *   button: OO.ui.ButtonWidget;
+ * }} ButtonControl
+ */
+
+/**
+ * @typedef {ControlBase & {
+ *   type: 'copyText';
+ *   input?: OO.ui.TextInputWidget;
  *   button?: OO.ui.ButtonWidget;
- *   input?: OO.ui.InputWidget;
- *   select?: OO.ui.RadioSelectWidget;
- * }} Control
+ *   field: OO.ui.CopyTextLayout | OO.ui.ActionFieldLayout;
+ * }} CopyTextControl
+ */
+
+/**
+ * @typedef {RadioSelectControl | TextInputControl | MultilineTextInputControl | NumberInputControl | CheckboxInputControl | TagMultiselectControl | ButtonControl | CopyTextControl} Control
  */
 
 /**

@@ -13,12 +13,13 @@
   this.updateCompareProperties(element, this.getElementHtmlToCompare(element));
   ```
 
-# JavaScript code style
+# JavaScript & TypeScript code style
 * Refrain from introducing new `null` values. Don't assign any values to declared variables that don't have a value yet so that they stay `undefined`.
 * Introduce class properties using class field syntax rather than inside the constructor.
 * Use trailing commas in objects and arraays.
 * Add an empty line before `return` at the end of a block unless it's the only statement in that block.
 * Use 2 spaces for indentation.
+* Use single quotes for strings.
 
 # JSDoc code style
 * Don't put "-" between the property name and its description.
@@ -34,3 +35,4 @@
   * @returns {string|undefined}
   */
   ```
+* Use spaces around logical operators, e.g. write `@type {RadioSelectControl | TextInputControl}`, not `@type {RadioSelectControl|TextInputControl}`.

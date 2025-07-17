@@ -66,10 +66,13 @@ class SettingsDialog extends ProcessDialog {
   bookletLayout;
 
   /** @type {ControlsByName} */
-  controls;
+  controls = {};
 
   /** @type {Partial<import('./settings').SettingsValues>} */
   loadedSettings;
+
+  /** @type {Partial<import('./settings').SettingsValues>} */
+  collectedSettings;
 
   /**
    * Create a settings dialog.
@@ -246,47 +249,46 @@ class SettingsDialog extends ProcessDialog {
    * @protected
    */
   createPages(settingValues) {
-    const controls = /** @type {ControlsByName} */ ({});
     const pages = settings.scheme.ui.map((pageData) => {
       const $fields = pageData.controls.map((data) => {
         const name = data.name;
         switch (data.type) {
           case 'checkbox':
-            controls[name] = createCheckboxField({
+            this.controls[name] = createCheckboxField({
               value: name,
               selected: settingValues[name],
               ...data,
             });
-            controls[name].input.on('change', this.updateAbilities.bind(this));
+            this.controls[name].input.on('change', this.updateAbilities.bind(this));
             break;
 
           case 'radio':
-            controls[name] = createRadioField({
+            this.controls[name] = createRadioField({
               selected: settingValues[name],
               ...data,
             });
-            controls[name].select.on('select', this.updateAbilities.bind(this));
+            this.controls[name].select.on('select', this.updateAbilities.bind(this));
             break;
 
           case 'text':
-            controls[name] = createTextField({
+            this.controls[name] = createTextField({
               value: settingValues[name],
               ...data,
             });
-            controls[name].input.on('change', this.updateAbilities.bind(this));
+            this.controls[name].input.on('change', this.updateAbilities.bind(this));
             break;
 
           case 'number':
-            controls[name] = createNumberField({
+            this.controls[name] = createNumberField({
               value: settingValues[name],
               ...data,
             });
-            controls[name].input.on('change', this.updateAbilities.bind(this));
+            this.controls[name].input.on('change', this.updateAbilities.bind(this));
             break;
 
           case 'multicheckbox':
-            controls[name] = /** @type {Control} */ ({});
-            controls[name].multiselect = new OO.ui.CheckboxMultiselectWidget({
+            this.controls[name] = /** @type {Control} */ ({});
+            this.controls[name].multiselect = new OO.ui.CheckboxMultiselectWidget({
               items: data.options.map((option) => (
                 new OO.ui.CheckboxMultioptionWidget({
                   data: option.data,
@@ -296,24 +298,24 @@ class SettingsDialog extends ProcessDialog {
               )),
               classes: data.classes,
             });
-            controls[name].multiselect.on('select', this.updateAbilities.bind(this));
-            controls[name].field = new OO.ui.FieldLayout(controls[name].multiselect, {
+            this.controls[name].multiselect.on('select', this.updateAbilities.bind(this));
+            this.controls[name].field = new OO.ui.FieldLayout(this.controls[name].multiselect, {
               label: data.label,
               align: 'top',
             });
             break;
 
           case 'tags':
-            controls[name] = /** @type {Control} */ ({});
-            controls[name].multiselect = new OO.ui.TagMultiselectWidget({
+            this.controls[name] = /** @type {Control} */ ({});
+            this.controls[name].multiselect = new OO.ui.TagMultiselectWidget({
               placeholder: data.placeholder,
               allowArbitrary: true,
               inputPosition: 'outline',
               tagLimit: data.tagLimit,
               selected: (data.dataToUi || ((val) => val)).call(null, settingValues[name]),
             });
-            controls[name].multiselect.on('change', this.updateAbilities.bind(this));
-            controls[name].field = new OO.ui.FieldLayout(controls[name].multiselect, {
+            this.controls[name].multiselect.on('change', this.updateAbilities.bind(this));
+            this.controls[name].field = new OO.ui.FieldLayout(this.controls[name].multiselect, {
               label: data.label,
               align: 'top',
               help: data.help,
@@ -322,12 +324,12 @@ class SettingsDialog extends ProcessDialog {
             break;
 
           case 'button':
-            controls[name] = /** @type {Control} */ ({});
-            controls[name].button = new OO.ui.ButtonWidget({
+            this.controls[name] = /** @type {Control} */ ({});
+            this.controls[name].button = new OO.ui.ButtonWidget({
               label: data.label,
               flags: data.flags,
             });
-            controls[name].field = new OO.ui.FieldLayout(controls[name].button, {
+            this.controls[name].field = new OO.ui.FieldLayout(this.controls[name].button, {
               label: data.fieldLabel,
               align: 'top',
               help: data.help,
@@ -336,7 +338,7 @@ class SettingsDialog extends ProcessDialog {
             break;
         }
 
-        return controls[name].field.$element;
+        return this.controls[name].field.$element;
       });
 
       // eslint-disable-next-line jsdoc/require-jsdoc
@@ -354,12 +356,10 @@ class SettingsDialog extends ProcessDialog {
       }))();
     });
 
-    controls.removeData.button.connect(this, { click: 'removeData' });
-    controls.desktopNotifications.select.connect(this, {
+    this.controls.removeData.button.connect(this, { click: 'removeData' });
+    this.controls.desktopNotifications.select.connect(this, {
       choose: 'onDesktopNotificationsSelectChange',
     });
-
-    this.controls = controls;
 
     return pages;
   }
@@ -403,52 +403,44 @@ class SettingsDialog extends ProcessDialog {
    * @protected
    */
   collectSettings() {
-    const collectedSettings = {};
-    const controls = this.controls;
-    settings.scheme.ui.forEach((pageData) => {
-      pageData.controls.forEach((data) => {
-        const name = data.name;
-        switch (data.type) {
+    this.collectedSettings = Object.entries(this.controls)
+      .reduce((settingsValues, [name, control]) => {
+        switch (control.type) {
           case 'checkbox':
-            collectedSettings[name] = controls[name].input.isSelected();
+            settingsValues[name] = control.input.isSelected();
             break;
           case 'radio':
-            collectedSettings[name] = (
-              controls[name].select.findSelectedItem()?.getData() ||
-              settings.scheme.default[name]
-            );
+            settingsValues[name] = control.select.findSelectedItem()?.getData() || settings.scheme.default[name];
             break;
           case 'text':
-            collectedSettings[name] = controls[name].input.getValue();
+            settingsValues[name] = control.input.getValue();
             break;
           case 'number':
-            collectedSettings[name] = Number(controls[name].input.getValue());
+            settingsValues[name] = Number(control.input.getValue());
             break;
           case 'multicheckbox':
-            collectedSettings[name] = controls[name].multiselect.findSelectedItemsData();
+            settingsValues[name] = control.multiselect.findSelectedItemsData();
             break;
           case 'tags':
-            collectedSettings[name] = (data.uiToData || ((val) => val)).call(
+            settingsValues[name] = (control.uiToData || ((val) => val)).call(
               null,
-              controls[name].multiselect.getValue()
+              control.multiselect.getValue()
             );
             break;
         }
-      });
-    });
 
-    return Object.assign(
-      {},
-      settings.scheme.default,
-      collectedSettings,
-      this.getStateSettings(),
-      {
-        'insertButtons-altered': (
-          JSON.stringify(collectedSettings.insertButtons) !==
-          JSON.stringify(settings.scheme.default.insertButtons)
-        ),
-      },
-    );
+        return settingsValues;
+      }, {});
+
+    return {
+      ...settings.scheme.default,
+      ...this.collectedSettings,
+      ...this.getStateSettings(),
+      'insertButtons-altered': (
+        JSON.stringify(this.collectedSettings.insertButtons) !==
+        JSON.stringify(settings.scheme.default.insertButtons)
+      ),
+    };
   }
 
   /**

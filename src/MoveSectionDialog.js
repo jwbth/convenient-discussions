@@ -51,7 +51,7 @@ class MoveSectionDialog extends ProcessDialog {
   /** @type {Array<Promise|JQuery.Promise>} */
   initRequests;
 
-  /** @type {ControlsByName} */
+  /** @type {Controls} */
   controls;
 
   /**
