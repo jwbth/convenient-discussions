@@ -51,7 +51,7 @@ class MoveSectionDialog extends ProcessDialog {
   /** @type {Array<Promise|JQuery.Promise>} */
   initRequests;
 
-  /** @type {Controls} */
+  /** @type {ControlsByName} */
   controls;
 
   /**
@@ -185,7 +185,7 @@ class MoveSectionDialog extends ProcessDialog {
       }
 
       this.controls = {};
-      this.controls.title = /** @type {Control} */ ({});
+      this.controls.title = /** @type {TextInputControl} */ ({});
       this.controls.title.input = new mw.widgets.TitleInputWidget({
         $overlay: this.$overlay,
         excludeCurrentPage: true,

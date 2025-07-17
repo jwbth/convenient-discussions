@@ -249,18 +249,82 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {CommonWidgetConfigProps & {
- *   type?: 'button';
- *   flags: string[];
- *   fieldLabel: string;
- * }} ButtonFieldType
- */
-
-/**
- * @typedef {CommonWidgetConfigProps & {
  *   type?: 'copyText';
  *   value: string;
  *   copyCallback: (successful: boolean, field: OO.ui.CopyTextLayout) => void;
  * }} CopyTextFieldType
+ */
+
+/**
+ * @typedef {object} ControlBase
+ * @property {OO.ui.FieldLayout} field
+ */
+
+/**
+ * @typedef {ControlBase & {
+ *   type: 'radio';
+ *   select: OO.ui.RadioSelectWidget;
+ * }} RadioSelectControl
+ */
+
+/**
+ * @typedef {ControlBase & {
+ *   type: 'text';
+ *   input: OO.ui.TextInputWidget;
+ * }} TextInputControl
+ */
+
+/**
+ * @typedef {ControlBase & {
+ *   type: 'multilineText';
+ *   input: OO.ui.MultilineTextInputWidget;
+ * }} MultilineTextInputControl
+ */
+
+/**
+ * @typedef {ControlBase & {
+ *   type: 'number';
+ *   input: OO.ui.NumberInputWidget;
+ * }} NumberInputControl
+ */
+
+/**
+ * @typedef {ControlBase & {
+ *   type: 'checkbox';
+ *   input: OO.ui.CheckboxInputWidget;
+ * }} CheckboxInputControl
+ */
+
+/**
+ * @typedef {ControlBase & {
+ *   type: 'tags';
+ *   validate?: Function;
+ *   multiselect: OO.ui.TagMultiselectWidget;
+ * }} TagMultiselectControl
+ */
+
+/**
+ * @typedef {ControlBase & {
+ *   type: 'button';
+ *   button: OO.ui.ButtonWidget;
+ * }} ButtonControl
+ */
+
+/**
+ * @typedef {ControlBase & {
+ *   type: 'copyText';
+ *   input?: OO.ui.TextInputWidget;
+ *   button?: OO.ui.ButtonWidget;
+ *   field: OO.ui.CopyTextLayout | OO.ui.ActionFieldLayout;
+ * }} CopyTextControl
+ */
+
+/**
+ * @typedef {RadioSelectControl | TextInputControl | MultilineTextInputControl | NumberInputControl | CheckboxInputControl | TagMultiselectControl | ButtonControl | CopyTextControl} Control
+ */
+
+/**
+ * @typedef {{ [key: string]: Control }} ControlsByName
  */
 
 /**
@@ -793,3 +857,146 @@ export class EventEmitter extends OO.EventEmitter {
 }
 
 es6ClassToOoJsClass(EventEmitter);
+
+/**
+ * @typedef {CommonWidgetConfigProps & {
+ *   type?: 'multicheckbox';
+ *   selected?: string[];
+ *   options: Array<{
+ *     data: any,
+ *     label: string,
+ *     help?: string|JQuery,
+ *     selected?: boolean,
+ *   }>;
+ *   classes?: string[];
+ * }} MulticheckboxFieldType
+ */
+
+/**
+ * @typedef {object} CreateMulticheckboxFieldReturn
+ * @property {'multicheckbox'} type
+ * @property {OO.ui.FieldLayout} field
+ * @property {OO.ui.CheckboxMultiselectWidget} multiselect
+ */
+
+/**
+ * Create a checkbox multiselect field.
+ *
+ * @param {MulticheckboxFieldType} options
+ * @returns {CreateMulticheckboxFieldReturn}
+ */
+export function createMulticheckboxField({
+  type = 'multicheckbox',
+  label,
+  options,
+  selected,
+  classes,
+}) {
+  const multiselect = new OO.ui.CheckboxMultiselectWidget({
+    items: options.map((option) => new OO.ui.CheckboxMultioptionWidget({
+      data: option.data,
+      selected: selected ? selected.includes(option.data) : option.selected,
+      label: option.label,
+    })),
+    classes,
+  });
+  const field = new OO.ui.FieldLayout(multiselect, {
+    label,
+    align: 'top',
+  });
+
+  return { type, field, multiselect };
+}
+
+/**
+ * @typedef {CommonWidgetConfigProps & {
+ *   type?: 'tags';
+ *   selected?: string[];
+ *   tagLimit?: number;
+ *   placeholder?: string;
+ *   validate?: (...args: any[]) => any;
+ *   dataToUi?: (value: Array<string|string[]>) => string[];
+ *   uiToData?: (value: string[]) => (string|string[])[];
+ * }} TagsFieldType
+ */
+
+/**
+ * @typedef {object} CreateTagsFieldReturn
+ * @property {'tags'} type
+ * @property {OO.ui.FieldLayout} field
+ * @property {OO.ui.TagMultiselectWidget} multiselect
+ */
+
+/**
+ * Create a tag multiselect field.
+ *
+ * @param {TagsFieldType} options
+ * @returns {CreateTagsFieldReturn}
+ */
+export function createTagsField({
+  type = 'tags',
+  label,
+  placeholder,
+  tagLimit,
+  selected,
+  help,
+  dataToUi,
+}) {
+  const multiselect = new OO.ui.TagMultiselectWidget({
+    placeholder,
+    allowArbitrary: true,
+    inputPosition: 'outline',
+    tagLimit,
+    selected: (dataToUi || ((val) => val)).call(null, selected || []),
+  });
+  const field = new OO.ui.FieldLayout(multiselect, {
+    label,
+    align: 'top',
+    help,
+    helpInline: true,
+  });
+
+  return { type, field, multiselect };
+}
+
+/**
+ * @typedef {CommonWidgetConfigProps & {
+ *   type?: 'button';
+ *   flags?: string[];
+ *   fieldLabel?: string;
+ * }} ButtonFieldType
+ */
+
+/**
+ * @typedef {object} CreateButtonFieldReturn
+ * @property {'button'} type
+ * @property {OO.ui.FieldLayout} field
+ * @property {OO.ui.ButtonWidget} button
+ */
+
+/**
+ * Create a button field.
+ *
+ * @param {ButtonFieldType} options
+ * @returns {CreateButtonFieldReturn}
+ */
+export function createButtonField({
+  type = 'button',
+  label,
+  flags,
+  fieldLabel,
+  help,
+}) {
+  const button = new OO.ui.ButtonWidget({
+    label,
+    flags,
+  });
+  const field = new OO.ui.FieldLayout(button, {
+    label: fieldLabel,
+    align: 'top',
+    help,
+    helpInline: true,
+  });
+
+  return { type, field, button };
+}

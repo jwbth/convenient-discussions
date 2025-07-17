@@ -60,6 +60,7 @@ import { createSvg, getFooter, wrapHtml } from './utils-window';
  *   | Omit<import('./utils-oojs').CheckboxFieldType, 'value' | 'selected'>
  *   | Omit<import('./utils-oojs').RadioFieldType, 'selected'>
  *   | Omit<import('./utils-oojs').MultilineTextFieldType, 'value'>
+ *   | Omit<import('./utils-oojs').MulticheckboxFieldType, 'selected'>
  *   | Omit<import('./utils-oojs').TagMultiselectFieldType, 'selected'>
  *   | import('./utils-oojs').ButtonFieldType
  * )} UiControlData

@@ -5,7 +5,7 @@ import cd from './cd';
 import settings from './settings';
 import { saveGlobalOption, saveLocalOption } from './utils-api';
 import { areObjectsEqual } from './utils-general';
-import { createCheckboxField, createNumberField, createRadioField, createTextField, es6ClassToOoJsClass } from './utils-oojs';
+import { createCheckboxField, createNumberField, createRadioField, createTextField, es6ClassToOoJsClass, createMulticheckboxField, createTagsField, createButtonField } from './utils-oojs';
 
 /**
  * Class used to create a settings dialog.
@@ -287,54 +287,23 @@ class SettingsDialog extends ProcessDialog {
             break;
 
           case 'multicheckbox':
-            this.controls[name] = /** @type {Control} */ ({});
-            this.controls[name].multiselect = new OO.ui.CheckboxMultiselectWidget({
-              items: data.options.map((option) => (
-                new OO.ui.CheckboxMultioptionWidget({
-                  data: option.data,
-                  selected: settingValues[name].includes(option.data),
-                  label: option.label,
-                })
-              )),
-              classes: data.classes,
+            this.controls[name] = createMulticheckboxField({
+              ...data,
+              selected: settingValues[name],
             });
             this.controls[name].multiselect.on('select', this.updateAbilities.bind(this));
-            this.controls[name].field = new OO.ui.FieldLayout(this.controls[name].multiselect, {
-              label: data.label,
-              align: 'top',
-            });
             break;
 
           case 'tags':
-            this.controls[name] = /** @type {Control} */ ({});
-            this.controls[name].multiselect = new OO.ui.TagMultiselectWidget({
-              placeholder: data.placeholder,
-              allowArbitrary: true,
-              inputPosition: 'outline',
-              tagLimit: data.tagLimit,
-              selected: (data.dataToUi || ((val) => val)).call(null, settingValues[name]),
+            this.controls[name] = createTagsField({
+              ...data,
+              selected: settingValues[name],
             });
             this.controls[name].multiselect.on('change', this.updateAbilities.bind(this));
-            this.controls[name].field = new OO.ui.FieldLayout(this.controls[name].multiselect, {
-              label: data.label,
-              align: 'top',
-              help: data.help,
-              helpInline: true,
-            });
             break;
 
           case 'button':
-            this.controls[name] = /** @type {Control} */ ({});
-            this.controls[name].button = new OO.ui.ButtonWidget({
-              label: data.label,
-              flags: data.flags,
-            });
-            this.controls[name].field = new OO.ui.FieldLayout(this.controls[name].button, {
-              label: data.fieldLabel,
-              align: 'top',
-              help: data.help,
-              helpInline: true,
-            });
+            this.controls[name] = createButtonField(data);
             break;
         }
 
