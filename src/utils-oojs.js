@@ -305,6 +305,13 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {ControlBase & {
+ *   type: 'multicheckbox';
+ *   multiselect: OO.ui.CheckboxMultiselectWidget;
+ * }} MulticheckboxControl
+ */
+
+/**
+ * @typedef {ControlBase & {
  *   type: 'button';
  *   button: OO.ui.ButtonWidget;
  * }} ButtonControl
@@ -320,7 +327,7 @@ export async function showConfirmDialog(message, options = {}) {
  */
 
 /**
- * @typedef {RadioSelectControl | TextInputControl | MultilineTextInputControl | NumberInputControl | CheckboxInputControl | TagMultiselectControl | ButtonControl | CopyTextControl} Control
+ * @typedef {RadioSelectControl | TextInputControl | MultilineTextInputControl | NumberInputControl | CheckboxInputControl | TagMultiselectControl | MulticheckboxControl | ButtonControl | CopyTextControl} Control
  */
 
 /**

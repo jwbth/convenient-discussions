@@ -65,7 +65,7 @@ class SettingsDialog extends ProcessDialog {
   /** @type {OO.ui.BookletLayout} */
   bookletLayout;
 
-  /** @type {ControlsByName} */
+  /** @type {import('./utils-oojs').ControlsByName} */
   controls = {};
 
   /** @type {Partial<import('./settings').SettingsValues>} */
