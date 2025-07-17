@@ -31,7 +31,10 @@
 /**
  * @typedef {{
  *   field: OO.ui.FieldLayout;
- *   [controlType: string]: any;
+ *   multiselect?: OO.ui.CheckboxMultiselectWidget;
+ *   button?: OO.ui.ButtonWidget;
+ *   input?: OO.ui.InputWidget;
+ *   select?: OO.ui.RadioSelectWidget;
  * }} Control
  */
 
