@@ -249,22 +249,18 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {CommonWidgetConfigProps & {
- *   type?: 'multicheckbox';
- *   selected?: string[];
- *   options: Array<{
- *     data: string;
- *     label: string;
- *   }>;
- * }} MulticheckboxFieldType
+ *   type?: 'button';
+ *   flags: string[];
+ *   fieldLabel: string;
+ * }} ButtonFieldType
  */
 
 /**
  * @typedef {CommonWidgetConfigProps & {
- *   type?: 'button';
- *   label?: string;
- *   flags?: string[];
- *   fieldLabel?: string;
- * }} ButtonFieldType
+ *   type?: 'copyText';
+ *   value: string;
+ *   copyCallback: (successful: boolean, field: OO.ui.CopyTextLayout) => void;
+ * }} CopyTextFieldType
  */
 
 /**

@@ -5,7 +5,7 @@ import cd from './cd';
 import settings from './settings';
 import { saveGlobalOption, saveLocalOption } from './utils-api';
 import { areObjectsEqual } from './utils-general';
-import { createCheckboxField, createNumberField, createRadioField, createTextField, createMulticheckboxField, createTagsField, createButtonField, es6ClassToOoJsClass } from './utils-oojs';
+import { createCheckboxField, createNumberField, createRadioField, createTextField, es6ClassToOoJsClass } from './utils-oojs';
 
 /**
  * Class used to create a settings dialog.
@@ -287,23 +287,54 @@ class SettingsDialog extends ProcessDialog {
             break;
 
           case 'multicheckbox':
-            this.controls[name] = createMulticheckboxField({
-              selected: settingValues[name],
-              ...data,
+            this.controls[name] = /** @type {Control} */ ({});
+            this.controls[name].multiselect = new OO.ui.CheckboxMultiselectWidget({
+              items: data.options.map((option) => (
+                new OO.ui.CheckboxMultioptionWidget({
+                  data: option.data,
+                  selected: settingValues[name].includes(option.data),
+                  label: option.label,
+                })
+              )),
+              classes: data.classes,
             });
             this.controls[name].multiselect.on('select', this.updateAbilities.bind(this));
+            this.controls[name].field = new OO.ui.FieldLayout(this.controls[name].multiselect, {
+              label: data.label,
+              align: 'top',
+            });
             break;
 
           case 'tags':
-            this.controls[name] = createTagsField({
-              selected: settingValues[name],
-              ...data,
+            this.controls[name] = /** @type {Control} */ ({});
+            this.controls[name].multiselect = new OO.ui.TagMultiselectWidget({
+              placeholder: data.placeholder,
+              allowArbitrary: true,
+              inputPosition: 'outline',
+              tagLimit: data.tagLimit,
+              selected: (data.dataToUi || ((val) => val)).call(null, settingValues[name]),
             });
             this.controls[name].multiselect.on('change', this.updateAbilities.bind(this));
+            this.controls[name].field = new OO.ui.FieldLayout(this.controls[name].multiselect, {
+              label: data.label,
+              align: 'top',
+              help: data.help,
+              helpInline: true,
+            });
             break;
 
           case 'button':
-            this.controls[name] = createButtonField(data);
+            this.controls[name] = /** @type {Control} */ ({});
+            this.controls[name].button = new OO.ui.ButtonWidget({
+              label: data.label,
+              flags: data.flags,
+            });
+            this.controls[name].field = new OO.ui.FieldLayout(this.controls[name].button, {
+              label: data.fieldLabel,
+              align: 'top',
+              help: data.help,
+              helpInline: true,
+            });
             break;
         }
 
@@ -488,37 +519,6 @@ class SettingsDialog extends ProcessDialog {
    */
   async removeData() {
     if (confirm(cd.s('sd-removedata-confirm'))) {
-      this.pushPending();
-
-      try {
-        await Promise.all([
-          saveLocalOption(cd.g.localSettingsOptionName, null),
-          saveLocalOption(cd.g.visitsOptionName, null),
-          saveLocalOption(cd.g.subscriptionsOptionName, null),
-          saveGlobalOption(cd.g.settingsOptionName, null),
-        ]);
-      } catch (error) {
-        this.handleError(error, 'sd-error-removedata', false);
-        return;
-      }
-
-      (new StorageItem('commentForms')).removeItem();
-      (new StorageItem('thanks')).removeItem();
-      (new StorageItem('seenRenderedChanges')).removeItem();
-      (new StorageItem('collapsedThreads')).removeItem();
-      (new StorageItem('mutedUsers')).removeItem();
-
-      this.stack.setItem(this.dataDeletedPanel);
-      this.actions.setMode('dataRemoved');
-
-      this.popPending();
-    }
-  }
-}
-
-es6ClassToOoJsClass(SettingsDialog);
-
-export default SettingsDialog;
       this.pushPending();
 
       try {
