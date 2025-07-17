@@ -62,13 +62,6 @@ import { createSvg, getFooter, wrapHtml } from './utils-window';
  *   | Omit<import('./utils-oojs').MultilineTextFieldType, 'value'>
  *   | Omit<import('./utils-oojs').TagMultiselectFieldType, 'selected'>
  *   | import('./utils-oojs').ButtonFieldType
- *   | {
- *       type: 'multicheckbox';
- *       name: string;
- *       label: string;
- *       options: { data: string; label: string; }[];
- *       classes?: string[];
- *     }
  * )} UiControl
  */
 

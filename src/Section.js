@@ -1473,10 +1473,10 @@ class Section extends SectionSkeleton {
    * Add the section to the subscription list.
    *
    * @param {'quiet'|'silent'} [mode]
-   * - No value: a notification will be shown.
-   * - `'quiet'`: don't show a notification.
-   * - `'silent'`: don't even change any UI, including the subscribe button appearance. If there is
-   *   an error, it will be displayed though.
+   *   - No value: a notification will be shown.
+   *   - `'quiet'`: don't show a notification.
+   *   - `'silent'`: don't even change any UI, including the subscribe button appearance. If there
+   *   is an error, it will be displayed though.
    * @param {string} [renamedFrom] If DiscussionTools' topic subscriptions API is not used and the
    *   section was renamed, the previous section headline. It is unwatched together with watching
    *   the current headline if there are no other coinciding headlines on the page.
