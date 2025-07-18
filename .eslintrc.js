@@ -42,7 +42,7 @@ module.exports = {
     sourceType: 'module',
     requireConfigFile: false,
   },
-  plugins: ['jsdoc', 'import'],
+  plugins: ['jsdoc', 'import', 'no-one-time-vars'],
   rules: {
     // We use them for text masking
     'no-control-regex': 'off',
@@ -95,5 +95,11 @@ module.exports = {
       },
     ],
     'jsdoc/check-line-alignment': ['warn', 'any', { 'wrapIndent': '  ' }],
+
+    'no-one-time-vars/no-one-time-vars': ['warn', {
+      allowedVariableLength: 9999999,  // Allow any length
+      ignoreObjectDestructuring: true,
+      ignoreTemplateLiterals: true,
+    }],
   },
 };
