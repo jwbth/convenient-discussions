@@ -133,6 +133,7 @@
  * @typedef {ControlBase & {
  *   type: 'radio';
  *   select: OO.ui.RadioSelectWidget;
+ *   items: import('./RadioOptionWidget').default[];
  * }} RadioSelectControl
  */
 
@@ -169,6 +170,7 @@
  *   type: 'tags';
  *   validate?: Function;
  *   multiselect: OO.ui.TagMultiselectWidget;
+ *   uiToData?: (value: string[]) => (string|string[])[];
  * }} TagMultiselectControl
  */
 

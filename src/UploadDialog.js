@@ -356,7 +356,9 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
         classes: ['cd-uploadDialog-fieldLayout-internal'],
       }),
     }
-    const projectScreenshotItem = this.controls.preset.select.findItemFromData('projectScreenshot');
+    const projectScreenshotItem = /** @type {import('./RadioOptionWidget').default} */ (
+      this.controls.preset.select.findItemFromData('projectScreenshot')
+    );
     projectScreenshotItem.$label.append(this.controls.title.field.$element);
 
     this.controls.configure = createCheckboxControl({

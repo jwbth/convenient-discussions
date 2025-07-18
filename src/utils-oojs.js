@@ -314,7 +314,7 @@ export function createNumberControl({
     classes,
   });
   if (!label) {
-    field.$element.addClass('cd-field-no-label');
+    field.$element.addClass('cd-field-labelless');
   }
 
   return { type, field, input };
@@ -818,6 +818,7 @@ export function createTagsControl({
   selected,
   help,
   dataToUi,
+  uiToData,
 }) {
   const multiselect = new OO.ui.TagMultiselectWidget({
     placeholder,
@@ -833,7 +834,7 @@ export function createTagsControl({
     helpInline: true,
   });
 
-  return { type, field, multiselect };
+  return { type, field, multiselect, uiToData };
 }
 
 /**
