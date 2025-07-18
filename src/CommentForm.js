@@ -18,7 +18,7 @@ import talkPageController from './talkPageController';
 import userRegistry from './userRegistry';
 import { handleApiReject, parseCode } from './utils-api';
 import { buildEditSummary, defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './utils-general';
-import { createCheckboxField, EventEmitter } from './utils-oojs';
+import { createCheckboxControl as createCheckboxControl, EventEmitter } from './utils-oojs';
 import { escapePipesOutsideLinks, generateTagsRegexp, removeWikiMarkup } from './utils-wikitext';
 import { isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, isInputFocused, keyCombination, mergeJquery, wrapDiffBody, wrapHtml } from './utils-window';
 
@@ -784,7 +784,7 @@ class CommentForm extends EventEmitter {
          ({
           field: this.minorField,
           input: this.minorCheckbox,
-        } = createCheckboxField({
+        } = createCheckboxControl({
           value: 'minor',
           selected: initialState.minor ?? true,
           label: cd.s('cf-minor'),
@@ -795,7 +795,7 @@ class CommentForm extends EventEmitter {
       ({
         field: this.watchField,
         input: this.watchCheckbox,
-      } = createCheckboxField({
+      } = createCheckboxControl({
         value: 'watch',
         selected: (
           initialState.watch ??
@@ -819,7 +819,7 @@ class CommentForm extends EventEmitter {
         ({
           field: this.subscribeField,
           input: this.subscribeCheckbox,
-        } = createCheckboxField({
+        } = createCheckboxControl({
           value: 'subscribe',
           selected: (
             initialState.subscribe ??
@@ -849,7 +849,7 @@ class CommentForm extends EventEmitter {
     ({
       field: this.omitSignatureField,
       input: this.omitSignatureCheckbox,
-    } = createCheckboxField({
+    } = createCheckboxControl({
       value: 'omitSignature',
       selected: initialState.omitSignature ?? false,
       label: cd.s('cf-omitsignature'),
@@ -863,7 +863,7 @@ class CommentForm extends EventEmitter {
     }
 
     if (this.isMode('edit') && this.target.isDeletable()) {
-      ({ field: this.deleteField, input: this.deleteCheckbox } = createCheckboxField({
+      ({ field: this.deleteField, input: this.deleteCheckbox } = createCheckboxControl({
         value: 'delete',
         selected: initialState.delete ?? false,
         label: cd.s('cf-delete'),

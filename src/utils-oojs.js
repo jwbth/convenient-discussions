@@ -177,7 +177,7 @@ export async function showConfirmDialog(message, options = {}) {
 }
 
 /**
- * @typedef {object} CommonWidgetConfigProps
+ * @typedef {object} ControlOptionsBase
  * @property {string|JQuery} [label]
  * @property {string|JQuery} [help]
  * @property {string[]} [classes]
@@ -186,35 +186,35 @@ export async function showConfirmDialog(message, options = {}) {
  */
 
 /**
- * @typedef {CommonWidgetConfigProps & {
+ * @typedef {ControlOptionsBase & {
  *   type?: 'text';
  *   value?: string;
  *   maxLength?: number;
- * }} TextFieldType
+ * }} TextControlOptions
  */
 
 /**
- * @typedef {CommonWidgetConfigProps & {
+ * @typedef {ControlOptionsBase & {
  *   type?: 'number';
  *   value: string;
  *   min: number;
  *   max: number;
  *   buttonStep?: number;
- * }} NumberFieldType
+ * }} NumberControlOptions
  */
 
 /**
- * @typedef {CommonWidgetConfigProps & {
+ * @typedef {ControlOptionsBase & {
  *   type?: 'checkbox';
  *   value: string;
  *   selected?: boolean;
  *   title?: string;
  *   tabIndex?: number;
- * }} CheckboxFieldType
+ * }} CheckboxControlOptions
  */
 
 /**
- * @typedef {CommonWidgetConfigProps & {
+ * @typedef {ControlOptionsBase & {
  *   type?: 'radio';
  *   selected?: string;
  *   options: Array<{
@@ -223,20 +223,20 @@ export async function showConfirmDialog(message, options = {}) {
  *     help?: string|JQuery;
  *     selected?: boolean;
  *   }>;
- * }} RadioFieldType
+ * }} RadioControlOptions
  */
 
 /**
- * @typedef {CommonWidgetConfigProps & {
+ * @typedef {ControlOptionsBase & {
  *   type?: 'multilineText';
  *   value: string;
  *   maxLength: number;
  *   rows?: number;
- * }} MultilineTextFieldType
+ * }} MultilineTextControlOptions
  */
 
 /**
- * @typedef {CommonWidgetConfigProps & {
+ * @typedef {ControlOptionsBase & {
  *   type?: 'tags';
  *   selected: string[];
  *   tagLimit: number;
@@ -244,110 +244,24 @@ export async function showConfirmDialog(message, options = {}) {
  *   validate?: (...args: any[]) => any;
  *   dataToUi?: (value: Array<string|string[]>) => string[];
  *   uiToData?: (value: string[]) => string[][];
- * }} TagMultiselectFieldType
+ * }} TagMultiselectControlOptions
  */
 
 /**
- * @typedef {CommonWidgetConfigProps & {
+ * @typedef {ControlOptionsBase & {
  *   type?: 'copyText';
  *   value: string;
  *   copyCallback: (successful: boolean, field: OO.ui.CopyTextLayout) => void;
- * }} CopyTextFieldType
- */
-
-/**
- * @typedef {object} ControlBase
- * @property {OO.ui.FieldLayout} field
- */
-
-/**
- * @typedef {ControlBase & {
- *   type: 'radio';
- *   select: OO.ui.RadioSelectWidget;
- * }} RadioSelectControl
- */
-
-/**
- * @typedef {ControlBase & {
- *   type: 'text';
- *   input: OO.ui.TextInputWidget;
- * }} TextInputControl
- */
-
-/**
- * @typedef {ControlBase & {
- *   type: 'multilineText';
- *   input: OO.ui.MultilineTextInputWidget;
- * }} MultilineTextInputControl
- */
-
-/**
- * @typedef {ControlBase & {
- *   type: 'number';
- *   input: OO.ui.NumberInputWidget;
- * }} NumberInputControl
- */
-
-/**
- * @typedef {ControlBase & {
- *   type: 'checkbox';
- *   input: OO.ui.CheckboxInputWidget;
- * }} CheckboxInputControl
- */
-
-/**
- * @typedef {ControlBase & {
- *   type: 'tags';
- *   validate?: Function;
- *   multiselect: OO.ui.TagMultiselectWidget;
- * }} TagMultiselectControl
- */
-
-/**
- * @typedef {ControlBase & {
- *   type: 'multicheckbox';
- *   multiselect: OO.ui.CheckboxMultiselectWidget;
- * }} MulticheckboxControl
- */
-
-/**
- * @typedef {ControlBase & {
- *   type: 'button';
- *   button: OO.ui.ButtonWidget;
- * }} ButtonControl
- */
-
-/**
- * @typedef {ControlBase & {
- *   type: 'copyText';
- *   input?: OO.ui.TextInputWidget;
- *   button?: OO.ui.ButtonWidget;
- *   field: OO.ui.CopyTextLayout | OO.ui.ActionFieldLayout;
- * }} CopyTextControl
- */
-
-/**
- * @typedef {RadioSelectControl | TextInputControl | MultilineTextInputControl | NumberInputControl | CheckboxInputControl | TagMultiselectControl | MulticheckboxControl | ButtonControl | CopyTextControl} Control
- */
-
-/**
- * @typedef {{ [key: string]: Control }} ControlsByName
- */
-
-/**
- * @typedef {object} CreateTextFieldReturn
- * @property {'text'} type
- * @property {OO.ui.FieldLayout} field
- * @property {OO.ui.TextInputWidget} input
+ * }} CopyTextControlOptions
  */
 
 /**
  * Create a text input field.
  *
- * @param {TextFieldType} options
- * @returns {CreateTextFieldReturn}
+ * @param {TextControlOptions} options
+ * @returns {TextInputControl}
  */
-export function createTextField({
+export function createTextControl({
   type = 'text',
   value,
   maxLength,
@@ -368,19 +282,12 @@ export function createTextField({
 }
 
 /**
- * @typedef {object} CreateNumberFieldReturn
- * @property {'number'} type
- * @property {OO.ui.FieldLayout} field
- * @property {OO.ui.NumberInputWidget} input
- */
-
-/**
  * Create a number input field.
  *
- * @param {NumberFieldType} options
- * @returns {CreateNumberFieldReturn}
+ * @param {NumberControlOptions} options
+ * @returns {NumberInputControl}
  */
-export function createNumberField({
+export function createNumberControl({
   type = 'number',
   value,
   label,
@@ -414,19 +321,12 @@ export function createNumberField({
 }
 
 /**
- * @typedef {object} CreateCheckboxFieldReturn
- * @property {'checkbox'} type
- * @property {OO.ui.FieldLayout} field
- * @property {import('./CheckboxInputWidget').default} input
- */
-
-/**
  * Create a checkbox field.
  *
- * @param {CheckboxFieldType} options
- * @returns {CreateCheckboxFieldReturn}
+ * @param {CheckboxControlOptions} options
+ * @returns {CheckboxInputControl}
  */
-export function createCheckboxField({
+export function createCheckboxControl({
   type = 'checkbox',
   value,
   selected,
@@ -456,20 +356,12 @@ export function createCheckboxField({
 }
 
 /**
- * @typedef {object} CreateRadioFieldReturn
- * @property {'radio'} type
- * @property {OO.ui.FieldLayout} field
- * @property {OO.ui.RadioSelectWidget} select
- * @property {import('./RadioOptionWidget').default[]} items
- */
-
-/**
  * Create a radio select field.
  *
- * @param {RadioFieldType} options
- * @returns {CreateRadioFieldReturn}
+ * @param {RadioControlOptions} options
+ * @returns {RadioSelectControl}
  */
-export function createRadioField({
+export function createRadioControl({
   type = 'radio',
   label,
   selected,
@@ -498,20 +390,12 @@ export function createRadioField({
 }
 
 /**
- * @typedef {object} CreateCopyTextFieldReturn
- * @property {'copyText'} type
- * @property {OO.ui.CopyTextLayout | OO.ui.ActionFieldLayout} field
- * @property {OO.ui.TextInputWidget} [input]
- * @property {OO.ui.ButtonWidget} [button]
- */
-
-/**
  * Create an action field for copying text from an input.
  *
- * @param {CopyTextFieldType} options
- * @returns {CreateCopyTextFieldReturn}
+ * @param {CopyTextControlOptions} options
+ * @returns {CopyTextControl}
  */
-export function createCopyTextField({
+export function createCopyTextControl({
   type = 'copyText',
   label,
   value,
@@ -866,7 +750,7 @@ export class EventEmitter extends OO.EventEmitter {
 es6ClassToOoJsClass(EventEmitter);
 
 /**
- * @typedef {CommonWidgetConfigProps & {
+ * @typedef {ControlOptionsBase & {
  *   type?: 'multicheckbox';
  *   selected?: string[];
  *   options: Array<{
@@ -876,23 +760,16 @@ es6ClassToOoJsClass(EventEmitter);
  *     selected?: boolean,
  *   }>;
  *   classes?: string[];
- * }} MulticheckboxFieldType
- */
-
-/**
- * @typedef {object} CreateMulticheckboxFieldReturn
- * @property {'multicheckbox'} type
- * @property {OO.ui.FieldLayout} field
- * @property {OO.ui.CheckboxMultiselectWidget} multiselect
+ * }} MulticheckboxControlOptions
  */
 
 /**
  * Create a checkbox multiselect field.
  *
- * @param {MulticheckboxFieldType} options
- * @returns {CreateMulticheckboxFieldReturn}
+ * @param {MulticheckboxControlOptions} options
+ * @returns {MulticheckboxControl}
  */
-export function createMulticheckboxField({
+export function createMulticheckboxControl({
   type = 'multicheckbox',
   label,
   options,
@@ -916,7 +793,7 @@ export function createMulticheckboxField({
 }
 
 /**
- * @typedef {CommonWidgetConfigProps & {
+ * @typedef {ControlOptionsBase & {
  *   type?: 'tags';
  *   selected?: string[];
  *   tagLimit?: number;
@@ -924,23 +801,16 @@ export function createMulticheckboxField({
  *   validate?: (...args: any[]) => any;
  *   dataToUi?: (value: Array<string|string[]>) => string[];
  *   uiToData?: (value: string[]) => (string|string[])[];
- * }} TagsFieldType
- */
-
-/**
- * @typedef {object} CreateTagsFieldReturn
- * @property {'tags'} type
- * @property {OO.ui.FieldLayout} field
- * @property {OO.ui.TagMultiselectWidget} multiselect
+ * }} TagsControlOptions
  */
 
 /**
  * Create a tag multiselect field.
  *
- * @param {TagsFieldType} options
- * @returns {CreateTagsFieldReturn}
+ * @param {TagsControlOptions} options
+ * @returns {TagMultiselectControl}
  */
-export function createTagsField({
+export function createTagsControl({
   type = 'tags',
   label,
   placeholder,
@@ -967,27 +837,20 @@ export function createTagsField({
 }
 
 /**
- * @typedef {CommonWidgetConfigProps & {
+ * @typedef {ControlOptionsBase & {
  *   type?: 'button';
  *   flags?: string[];
  *   fieldLabel?: string;
- * }} ButtonFieldType
- */
-
-/**
- * @typedef {object} CreateButtonFieldReturn
- * @property {'button'} type
- * @property {OO.ui.FieldLayout} field
- * @property {OO.ui.ButtonWidget} button
+ * }} ButtonControlOptions
  */
 
 /**
  * Create a button field.
  *
- * @param {ButtonFieldType} options
- * @returns {CreateButtonFieldReturn}
+ * @param {ButtonControlOptions} options
+ * @returns {ButtonControl}
  */
-export function createButtonField({
+export function createButtonControl({
   type = 'button',
   label,
   flags,

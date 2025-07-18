@@ -5,7 +5,7 @@ import cd from './cd';
 import settings from './settings';
 import { saveGlobalOption, saveLocalOption } from './utils-api';
 import { areObjectsEqual } from './utils-general';
-import { createCheckboxField, createNumberField, createRadioField, createTextField, es6ClassToOoJsClass, createMulticheckboxField, createTagsField, createButtonField } from './utils-oojs';
+import { createCheckboxControl, createNumberControl, createRadioControl, createTextControl, es6ClassToOoJsClass, createMulticheckboxControl, createTagsControl, createButtonControl } from './utils-oojs';
 
 /**
  * Class used to create a settings dialog.
@@ -65,7 +65,7 @@ class SettingsDialog extends ProcessDialog {
   /** @type {OO.ui.BookletLayout} */
   bookletLayout;
 
-  /** @type {import('./utils-oojs').ControlsByName} */
+  /** @type {ControlsByName} */
   controls = {};
 
   /** @type {Partial<import('./settings').SettingsValues>} */
@@ -254,7 +254,7 @@ class SettingsDialog extends ProcessDialog {
         const name = data.name;
         switch (data.type) {
           case 'checkbox':
-            this.controls[name] = createCheckboxField({
+            this.controls[name] = createCheckboxControl({
               value: name,
               selected: settingValues[name],
               ...data,
@@ -263,7 +263,7 @@ class SettingsDialog extends ProcessDialog {
             break;
 
           case 'radio':
-            this.controls[name] = createRadioField({
+            this.controls[name] = createRadioControl({
               selected: settingValues[name],
               ...data,
             });
@@ -271,7 +271,7 @@ class SettingsDialog extends ProcessDialog {
             break;
 
           case 'text':
-            this.controls[name] = createTextField({
+            this.controls[name] = createTextControl({
               value: settingValues[name],
               ...data,
             });
@@ -279,7 +279,7 @@ class SettingsDialog extends ProcessDialog {
             break;
 
           case 'number':
-            this.controls[name] = createNumberField({
+            this.controls[name] = createNumberControl({
               value: settingValues[name],
               ...data,
             });
@@ -287,7 +287,7 @@ class SettingsDialog extends ProcessDialog {
             break;
 
           case 'multicheckbox':
-            this.controls[name] = createMulticheckboxField({
+            this.controls[name] = createMulticheckboxControl({
               ...data,
               selected: settingValues[name],
             });
@@ -295,7 +295,7 @@ class SettingsDialog extends ProcessDialog {
             break;
 
           case 'tags':
-            this.controls[name] = createTagsField({
+            this.controls[name] = createTagsControl({
               ...data,
               selected: settingValues[name],
             });
@@ -303,7 +303,7 @@ class SettingsDialog extends ProcessDialog {
             break;
 
           case 'button':
-            this.controls[name] = createButtonField(data);
+            this.controls[name] = createButtonControl(data);
             break;
         }
 

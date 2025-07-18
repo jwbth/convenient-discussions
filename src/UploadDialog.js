@@ -3,7 +3,7 @@ import ProcessDialog from './ProcessDialog';
 import PseudoLink from './Pseudolink';
 import cd from './cd';
 import { canonicalUrlToPageName, defined, generateFixedPosTimestamp, getDbnameForHostname, zeroPad } from './utils-general';
-import { createCheckboxField, createRadioField, createTextField, es6ClassToOoJsClass, mixInClass } from './utils-oojs';
+import { createTextControl, createCheckboxControl, createRadioControl, es6ClassToOoJsClass, mixInClass } from './utils-oojs';
 import { mergeJquery, wrapHtml } from './utils-window';
 
 /**
@@ -230,7 +230,7 @@ export class UploadDialog extends mixInClass(
  */
 class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.BookletLayout {
   /**
-   * @type {Controls}
+   * @type {ControlsByName}
    */
   controls;
 
@@ -291,7 +291,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
       layout.toggle(false);
     });
 
-    this.controls.preset = createRadioField({
+    this.controls.preset = createRadioControl({
       label: cd.s('ud-preset'),
       options: [
         {
@@ -359,7 +359,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
     const projectScreenshotItem = this.controls.preset.select.findItemFromData('projectScreenshot');
     projectScreenshotItem.$label.append(this.controls.title.field.$element);
 
-    this.controls.configure = createCheckboxField({
+    this.controls.configure = createCheckboxControl({
       value: 'configure',
       label: cd.s('ud-configure'),
     });
@@ -458,15 +458,15 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * @protected
    */
   modifyInfoForm() {
-    this.controls.source = createTextField({
+    this.controls.source = createTextControl({
       label: cd.s('ud-source'),
       required: true,
     });
-    this.controls.author = createTextField({
+    this.controls.author = createTextControl({
       label: cd.s('ud-author'),
       required: true,
     });
-    this.controls.license = createTextField({
+    this.controls.license = createTextControl({
       label: cd.s('ud-license'),
       required: true,
       classes: ['cd-input-monospace'],
@@ -897,7 +897,7 @@ class ForeignStructuredUpload extends mw.ForeignStructuredUpload {
    * Create a foreign structured upload.
    *
    * @param {string} [target] Used to choose the target repository. If nothing is passed,
-   * `mw.ForeignUpload#target` will be used (`'local'`).
+   *   `mw.ForeignUpload#target` will be used (`'local'`).
    */
   constructor(target) {
     super(target, { ...cd.getApiConfig(), ...cd.g.apiErrorFormatHtml });

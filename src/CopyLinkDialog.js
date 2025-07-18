@@ -1,7 +1,7 @@
 import CdError from './CdError';
 import DivLabelWidget from './DivLabelWidget';
 import cd from './cd';
-import { createCopyTextField, es6ClassToOoJsClass } from './utils-oojs';
+import { createCopyTextControl, es6ClassToOoJsClass } from './utils-oojs';
 import { mergeJquery, wrapHtml } from './utils-window';
 
 /**
@@ -251,7 +251,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
 
     const copyCallback = this.copyCallback.bind(this);
 
-    this.controls.wikilink = createCopyTextField({
+    this.controls.wikilink = createCopyTextControl({
       value: this.content.wikilink,
       disabled: !this.content.wikilink,
       label: cd.s('cld-wikilink'),
@@ -259,28 +259,28 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       help: helpOnlyCd,
     });
 
-    this.controls.currentPageWikilink = createCopyTextField({
+    this.controls.currentPageWikilink = createCopyTextControl({
       value: this.content.currentPageWikilink,
       label: cd.s('cld-currentpagewikilink'),
       copyCallback,
       help: helpNotOnlyCd,
     });
 
-    this.controls.permanentWikilink = createCopyTextField({
+    this.controls.permanentWikilink = createCopyTextControl({
       value: this.content.permanentWikilink,
       label: cd.s('cld-permanentwikilink'),
       copyCallback,
       help: helpOnlyCd,
     });
 
-    this.controls.link = createCopyTextField({
+    this.controls.link = createCopyTextControl({
       value: this.content.link,
       label: cd.s('cld-link'),
       copyCallback,
       help: helpOnlyCd,
     });
 
-    this.controls.permanentLink = createCopyTextField({
+    this.controls.permanentLink = createCopyTextControl({
       value: this.content.permanentLink,
       label: cd.s('cld-permanentlink'),
       copyCallback,
@@ -288,20 +288,20 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
     });
 
     if (cd.g.debug) {
-      this.controls.jsCall = createCopyTextField({
+      this.controls.jsCall = createCopyTextControl({
         value: this.content.jsCall,
         label: 'JS call',
         copyCallback,
       });
 
-      this.controls.jsBreakpoint = createCopyTextField({
+      this.controls.jsBreakpoint = createCopyTextControl({
         value: this.content.jsBreakpoint,
         label: 'JS conditional breakpoint',
         copyCallback,
       });
 
       if (this.isComment()) {
-        this.controls.jsBreakpointTimestamp = createCopyTextField({
+        this.controls.jsBreakpointTimestamp = createCopyTextControl({
           value: this.content.jsBreakpointTimestamp,
           label: 'JS conditional breakpoint (timestamp)',
           copyCallback,
@@ -330,21 +330,21 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   createDiffPanelContent() {
     const copyCallback = this.copyCallback.bind(this);
 
-    this.standard = createCopyTextField({
+    this.standard = createCopyTextControl({
       value: this.content.diffStandard,
       disabled: !this.content.diffStandard,
       label: cd.s('cld-diff'),
       copyCallback,
     });
 
-    this.short = createCopyTextField({
+    this.short = createCopyTextControl({
       value: this.content.diffShort,
       disabled: !this.content.diffShort,
       label: cd.s('cld-shortdiff'),
       copyCallback,
     });
 
-    this.wikilink = createCopyTextField({
+    this.wikilink = createCopyTextControl({
       value: this.content.diffWikilink,
       disabled: !this.content.diffWikilink,
       label: cd.s('cld-diffwikilink'),

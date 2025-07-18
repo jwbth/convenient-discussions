@@ -55,14 +55,14 @@ import { createSvg, getFooter, wrapHtml } from './utils-window';
 
 /**
  * @typedef {{ name: SettingName | 'removeData' } & (
- *   | Omit<import('./utils-oojs').TextFieldType, 'value'>
- *   | Omit<import('./utils-oojs').NumberFieldType, 'value'>
- *   | Omit<import('./utils-oojs').CheckboxFieldType, 'value' | 'selected'>
- *   | Omit<import('./utils-oojs').RadioFieldType, 'selected'>
- *   | Omit<import('./utils-oojs').MultilineTextFieldType, 'value'>
- *   | Omit<import('./utils-oojs').MulticheckboxFieldType, 'selected'>
- *   | Omit<import('./utils-oojs').TagMultiselectFieldType, 'selected'>
- *   | import('./utils-oojs').ButtonFieldType
+ *   | Omit<import('./utils-oojs').TextControlOptions, 'value'>
+ *   | Omit<import('./utils-oojs').NumberControlOptions, 'value'>
+ *   | Omit<import('./utils-oojs').CheckboxControlOptions, 'value' | 'selected'>
+ *   | Omit<import('./utils-oojs').RadioControlOptions, 'selected'>
+ *   | Omit<import('./utils-oojs').MultilineTextControlOptions, 'value'>
+ *   | Omit<import('./utils-oojs').MulticheckboxControlOptions, 'selected'>
+ *   | Omit<import('./utils-oojs').TagMultiselectControlOptions, 'selected'>
+ *   | import('./utils-oojs').ButtonControlOptions
  * )} UiControlData
  */
 

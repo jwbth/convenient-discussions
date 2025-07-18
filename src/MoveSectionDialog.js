@@ -7,7 +7,7 @@ import bootController from './bootController';
 import cd from './cd';
 import pageRegistry from './pageRegistry';
 import { buildEditSummary, defined, definedAndNotNull, ensureArray, mergeMaps, sleep } from './utils-general';
-import { createCheckboxField, es6ClassToOoJsClass } from './utils-oojs';
+import { createCheckboxControl, es6ClassToOoJsClass } from './utils-oojs';
 import { encodeWikilink, endWithTwoNewlines, findFirstTimestamp } from './utils-wikitext';
 import { wrapHtml } from './utils-window';
 
@@ -227,19 +227,19 @@ class MoveSectionDialog extends ProcessDialog {
       }
 
       if (cd.config.getMoveSourcePageCode || cd.config.getMoveTargetPageCode) {
-        this.controls.keepLink = createCheckboxField({
+        this.controls.keepLink = createCheckboxControl({
           value: 'keepLink',
           selected: !cd.page.isArchive(),
           label: cd.s('msd-keeplink'),
         });
       }
-      this.controls.chronologicalOrder = createCheckboxField({
+      this.controls.chronologicalOrder = createCheckboxControl({
         value: 'chronoologicalOrder',
         selected: false,
         label: cd.s('msd-chronologicalorder'),
       });
 
-      this.controls.summaryEnding = /** @type {Control} */ ({});
+      this.controls.summaryEnding = /** @type {TextInputControl} */ ({});
       this.controls.summaryEnding.input = new TextInputWidget({
         // TODO: Take into account the whole summary length, updating the maximum value dynamically.
         maxLength: 250,
