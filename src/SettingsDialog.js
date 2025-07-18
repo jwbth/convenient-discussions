@@ -249,6 +249,7 @@ class SettingsDialog extends ProcessDialog {
    * @protected
    */
   createPages(settingValues) {
+    // eslint-disable-next-line no-one-time-vars/no-one-time-vars
     const pages = settings.scheme.ui.map((pageData) => {
       const $fields = pageData.controls.map((data) => {
         const name = data.name;
@@ -267,7 +268,7 @@ class SettingsDialog extends ProcessDialog {
               selected: settingValues[name],
               ...data,
             });
-            this.controls[name].select.on('select', this.updateAbilities.bind(this));
+            this.controls[name].input.on('select', this.updateAbilities.bind(this));
             break;
 
           case 'text':
@@ -291,7 +292,7 @@ class SettingsDialog extends ProcessDialog {
               ...data,
               selected: settingValues[name],
             });
-            this.controls[name].multiselect.on('select', this.updateAbilities.bind(this));
+            this.controls[name].input.on('select', this.updateAbilities.bind(this));
             break;
 
           case 'tags':
@@ -299,7 +300,7 @@ class SettingsDialog extends ProcessDialog {
               ...data,
               selected: settingValues[name],
             });
-            this.controls[name].multiselect.on('change', this.updateAbilities.bind(this));
+            this.controls[name].input.on('change', this.updateAbilities.bind(this));
             break;
 
           case 'button':
@@ -326,7 +327,7 @@ class SettingsDialog extends ProcessDialog {
     });
 
     this.controls.removeData.button.connect(this, { click: 'removeData' });
-    this.controls.desktopNotifications.select.connect(this, {
+    this.controls.desktopNotifications.input.connect(this, {
       choose: 'onDesktopNotificationsSelectChange',
     });
 
@@ -368,7 +369,7 @@ class SettingsDialog extends ProcessDialog {
   /**
    * Get setting values from controls.
    *
-   * @returns {object}
+   * @returns {Partial<import('./settings').SettingsValues>}
    * @protected
    */
   collectSettings() {
@@ -379,7 +380,7 @@ class SettingsDialog extends ProcessDialog {
             settingsValues[name] = control.input.isSelected();
             break;
           case 'radio':
-            settingsValues[name] = control.select.findSelectedItem()?.getData() || settings.scheme.default[name];
+            settingsValues[name] = control.input.findSelectedItem()?.getData() || settings.scheme.default[name];
             break;
           case 'text':
             settingsValues[name] = control.input.getValue();
@@ -388,12 +389,12 @@ class SettingsDialog extends ProcessDialog {
             settingsValues[name] = Number(control.input.getValue());
             break;
           case 'multicheckbox':
-            settingsValues[name] = control.multiselect.findSelectedItemsData();
+            settingsValues[name] = control.input.findSelectedItemsData();
             break;
           case 'tags':
             settingsValues[name] = (control.uiToData || ((val) => val)).call(
               null,
-              control.multiselect.getValue()
+              control.input.getValue()
             );
             break;
         }
@@ -426,11 +427,11 @@ class SettingsDialog extends ProcessDialog {
       !threadsEnabled || !controls.collapseThreads.input.isSelected()
     );
     controls.hideTimezone.input.setDisabled(
-      controls.timestampFormat.select.findSelectedItem()?.getData() === 'relative'
+      controls.timestampFormat.input.findSelectedItem()?.getData() === 'relative'
     );
     controls.notifyCollapsedThreads.input.setDisabled(
-      controls.desktopNotifications.select.findSelectedItem()?.getData() === 'none' &&
-      controls.notifications.select.findSelectedItem()?.getData() === 'none'
+      controls.desktopNotifications.input.findSelectedItem()?.getData() === 'none' &&
+      controls.notifications.input.findSelectedItem()?.getData() === 'none'
     );
     controls.outdentLevel.input.setDisabled(!controls.outdent.input.isSelected());
     controls.showContribsLink.input.setDisabled(!controls.reformatComments.input.isSelected());
@@ -475,7 +476,7 @@ class SettingsDialog extends ProcessDialog {
       OO.ui.alert(cd.s('dn-grantpermission'));
       Notification.requestPermission((permission) => {
         if (permission !== 'granted') {
-          this.controls.desktopNotifications.select.selectItemByData('none');
+          this.controls.desktopNotifications.input.selectItemByData('none');
         }
       });
     }

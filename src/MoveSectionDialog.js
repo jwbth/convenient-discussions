@@ -173,10 +173,7 @@ class MoveSectionDialog extends ProcessDialog {
         this.section.locateInCode();
       } catch (error) {
         if (error instanceof CdError) {
-          const { code } = error.data;
-          const messageName = code === 'locateSection' ? 'error-locatesection' : 'error-unknown';
-          const message = cd.sParse(messageName);
-          this.abort(message, false);
+          this.abort(cd.sParse(error.data.code === 'locateSection' ? 'error-locatesection' : 'error-unknown'), false);
         } else {
           console.warn(error);
           this.abort(cd.sParse('error-javascript'), false);
@@ -391,10 +388,14 @@ class MoveSectionDialog extends ProcessDialog {
       sectionSource = this.section.locateInCode();
     } catch (error) {
       if (error instanceof CdError) {
-        const { code } = error.data;
-        const messageName = code === 'locateSection' ? 'error-locatesection' : 'error-unknown';
-        const message = cd.sParse(messageName);
-        throw new CdError({ data: [message, true] });
+        throw new CdError({
+          data: [
+            cd.sParse(
+              error.data.code === 'locateSection' ? 'error-locatesection' : 'error-unknown'
+            ),
+            true,
+          ],
+        });
       } else {
         console.warn(error);
         throw new CdError({ data: [cd.sParse('error-javascript'), false] });
@@ -605,15 +606,14 @@ class MoveSectionDialog extends ProcessDialog {
    * @protected
    */
   abort(html, recoverable, closeDialog = false) {
-    const $body = wrapHtml(html, {
+    this.showErrors(new OO.ui.Error(wrapHtml(html, {
       callbacks: {
         'cd-message-reloadPage': () => {
           this.close();
           bootController.reboot();
         },
       },
-    });
-    this.showErrors(new OO.ui.Error($body, { recoverable }));
+    }), { recoverable }));
     this.$errors
       .find('.oo-ui-buttonElement-button')
       .on('click', () => {
@@ -682,8 +682,9 @@ class MoveSectionDialog extends ProcessDialog {
             value
           );
 
-        const pathParams = ensureArray(templateConfig[prop]);
-        const presentPathParam = pathParams.find((param) => parameters[param]);
+        const presentPathParam = ensureArray(templateConfig[prop]).find(
+          (pathParam) => parameters[pathParam]
+        );
 
         return presentPathParam ? replaceAll(parameters[presentPathParam]) : null;
       };

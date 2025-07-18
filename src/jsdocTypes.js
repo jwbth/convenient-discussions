@@ -126,13 +126,15 @@
 
 /**
  * @typedef {object} ControlBase
+ * @property {string} type The type of the control.
  * @property {OO.ui.FieldLayout} field
+ * @property {OO.ui.Widget} input The input widget for the control.
  */
 
 /**
  * @typedef {ControlBase & {
  *   type: 'radio';
- *   select: OO.ui.RadioSelectWidget;
+ *   input: OO.ui.RadioSelectWidget;
  *   items: import('./RadioOptionWidget').default[];
  * }} RadioSelectControl
  */
@@ -169,7 +171,7 @@
  * @typedef {ControlBase & {
  *   type: 'tags';
  *   validate?: Function;
- *   multiselect: OO.ui.TagMultiselectWidget;
+ *   input: OO.ui.TagMultiselectWidget;
  *   uiToData?: (value: string[]) => (string|string[])[];
  * }} TagMultiselectControl
  */
@@ -177,7 +179,7 @@
 /**
  * @typedef {ControlBase & {
  *   type: 'multicheckbox';
- *   multiselect: OO.ui.CheckboxMultiselectWidget;
+ *   input: OO.ui.CheckboxMultiselectWidget;
  * }} MulticheckboxControl
  */
 
@@ -191,8 +193,7 @@
 /**
  * @typedef {ControlBase & {
  *   type: 'copyText';
- *   input?: OO.ui.TextInputWidget;
- *   button?: OO.ui.ButtonWidget;
+ *   input: OO.ui.TextInputWidget;
  *   field: OO.ui.CopyTextLayout | OO.ui.ActionFieldLayout;
  * }} CopyTextControl
  */

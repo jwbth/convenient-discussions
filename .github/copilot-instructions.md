@@ -16,8 +16,8 @@
 # JavaScript & TypeScript code style
 * Refrain from introducing new `null` values. Don't assign any values to declared variables that don't have a value yet so that they stay `undefined`.
 * Introduce class properties using class field syntax rather than inside the constructor.
-* Use trailing commas in objects and arraays.
-* Add an empty line before `return` at the end of a block unless it's the only statement in that block.
+* Use trailing commas in objects and arrays.
+* Add an empty line before `return` statements at the end of blocks (function, `if` statement, etc.) unless it's the only statement in that block.
 * Use 2 spaces for indentation.
 * Use single quotes for strings.
 

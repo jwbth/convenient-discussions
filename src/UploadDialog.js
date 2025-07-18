@@ -357,7 +357,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
       }),
     }
     const projectScreenshotItem = /** @type {import('./RadioOptionWidget').default} */ (
-      this.controls.preset.select.findItemFromData('projectScreenshot')
+      this.controls.preset.input.findItemFromData('projectScreenshot')
     );
     projectScreenshotItem.$label.append(this.controls.title.field.$element);
 
@@ -367,7 +367,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
     });
     fieldset.addItems([this.controls.preset.field, this.controls.configure.field]);
 
-    this.controls.preset.select
+    this.controls.preset.input
       .on('select', this.onPresetChange.bind(this));
     projectScreenshotItem.radio.$input
       .on('focus', () => {

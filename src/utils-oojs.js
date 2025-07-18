@@ -270,15 +270,11 @@ export function createTextControl({
   label,
   help,
 }) {
-  const input = new (require('./TextInputWidget').default)({ value, maxLength, required, classes });
-  const field = new OO.ui.FieldLayout(input, {
-    label,
-    align: 'top',
-    help,
-    helpInline: true,
-  });
-
-  return { type, field, input };
+  return createGenericControl(
+    new (require('./TextInputWidget').default)({ value, maxLength, required, classes }),
+    type,
+    { label, help }
+  );
 }
 
 /**
@@ -297,27 +293,20 @@ export function createNumberControl({
   help,
   classes,
 }) {
-  const input = new OO.ui.NumberInputWidget({
-    input: { value },
-    step: 1,
-    buttonStep,
-    min,
-    max,
-    classes: ['cd-numberInput'],
-  });
-  // @ts-ignore: https://github.com/DefinitelyTyped/DefinitelyTyped/discussions/71513
-  const field = new OO.ui.FieldLayout(input, {
-    label,
-    align: 'top',
-    help,
-    helpInline: true,
-    classes,
-  });
-  if (!label) {
-    field.$element.addClass('cd-field-labelless');
-  }
-
-  return { type, field, input };
+  return createGenericControl(
+    // See https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/oojs-ui#caveats for
+    // why we need type casting here.
+    /** @type {OO.ui.TextInputWidget} */ (/** @type {unknown} */ (new OO.ui.NumberInputWidget({
+      input: { value },
+      step: 1,
+      buttonStep,
+      min,
+      max,
+      classes: ['cd-numberInput'],
+    }))),
+    type,
+    { label, help, classes }
+  );
 }
 
 /**
@@ -337,22 +326,22 @@ export function createCheckboxControl({
   tabIndex,
   classes,
 }) {
-  const input = new (require('./CheckboxInputWidget').default)({
-    value,
-    selected,
-    disabled,
-    tabIndex,
-  });
-  const field = new OO.ui.FieldLayout(input, {
-    label,
-    title,
-    align: 'inline',
-    help,
-    helpInline: true,
-    classes,
-  });
-
-  return { type, field, input };
+  return createGenericControl(
+    new (require('./CheckboxInputWidget').default)({
+      value,
+      selected,
+      disabled,
+      tabIndex,
+    }),
+    type,
+    {
+      label,
+      title,
+      help,
+      classes,
+      align: 'inline',
+    }
+  );
 }
 
 /**
@@ -368,25 +357,17 @@ export function createRadioControl({
   help,
   options,
 }) {
-  const items = options.map((config) => new (require('./RadioOptionWidget').default)(config));
-  const select = new OO.ui.RadioSelectWidget({ items });
+  const input = new OO.ui.RadioSelectWidget({ items: options.map((config) => new (require('./RadioOptionWidget').default)(config)) });
 
   // Workarounds for T359920
-  select.$element.off('mousedown');
-  select.$focusOwner = $();
-
-  const field = new OO.ui.FieldLayout(select, {
-    label,
-    align: 'top',
-    help,
-    helpInline: true,
-  });
+  input.$element.off('mousedown');
+  input.$focusOwner = $();
 
   if (selected !== undefined) {
-    select.selectItemByData(selected);
+    input.selectItemByData(selected);
   }
 
-  return { type, field, select, items };
+  return createGenericControl(input, type, { label, help });
 }
 
 /**
@@ -405,7 +386,6 @@ export function createCopyTextControl({
 }) {
   let field;
   let input;
-  let button;
   if ('CopyTextLayout' in OO.ui) {
     field = new OO.ui.CopyTextLayout({
       align: 'top',
@@ -419,11 +399,12 @@ export function createCopyTextControl({
     field.on('copy', (successful) => {
       copyCallback(successful, /** @type {OO.ui.CopyTextLayout} */ field);
     });
+    input = field.textInput;
   } else {
     // MediaWiki versions before 1.34 do not have CopyTextLayout, so we use ActionFieldLayout
     // instead
     input = new OO.ui.TextInputWidget({ value, disabled });
-    button = new OO.ui.ButtonWidget({
+    const button = new OO.ui.ButtonWidget({
       label: cd.s('copy'),
       icon: 'copy',
       disabled,
@@ -439,7 +420,158 @@ export function createCopyTextControl({
     });
   }
 
-  return { type, field, input, button };
+  return { type, field, input };
+}
+
+/**
+ * @typedef {ControlOptionsBase & {
+ *   type?: 'multicheckbox';
+ *   selected?: string[];
+ *   options: Array<{
+ *     data: any,
+ *     label: string,
+ *     help?: string|JQuery,
+ *     selected?: boolean,
+ *   }>;
+ *   classes?: string[];
+ * }} MulticheckboxControlOptions
+ */
+
+/**
+ * Create a checkbox multiselect field.
+ *
+ * @param {MulticheckboxControlOptions} options
+ * @returns {MulticheckboxControl}
+ */
+export function createMulticheckboxControl({
+  type = 'multicheckbox',
+  label,
+  options,
+  selected,
+  classes,
+}) {
+  return createGenericControl(
+    new OO.ui.CheckboxMultiselectWidget({
+      items: options.map(
+        (option) =>
+          new OO.ui.CheckboxMultioptionWidget({
+            data: option.data,
+            selected: selected ? selected.includes(option.data) : option.selected,
+            label: option.label,
+          })
+      ),
+      classes,
+    }),
+    type,
+    { label }
+  );
+}
+
+/**
+ * @typedef {ControlOptionsBase & {
+ *   type?: 'tags';
+ *   selected?: string[];
+ *   tagLimit?: number;
+ *   placeholder?: string;
+ *   validate?: (...args: any[]) => any;
+ *   dataToUi?: (value: Array<string|string[]>) => string[];
+ *   uiToData?: (value: string[]) => (string|string[])[];
+ * }} TagsControlOptions
+ */
+
+/**
+ * Create a tag multiselect field.
+ *
+ * @param {TagsControlOptions} options
+ * @returns {TagMultiselectControl}
+ */
+export function createTagsControl({
+  type = 'tags',
+  label,
+  placeholder,
+  tagLimit,
+  selected,
+  help,
+  dataToUi,
+  uiToData,
+}) {
+  return createGenericControl(
+    new OO.ui.TagMultiselectWidget({
+      placeholder,
+      allowArbitrary: true,
+      inputPosition: 'outline',
+      tagLimit,
+      selected: (dataToUi || ((val) => val)).call(null, selected || []),
+    }),
+    type,
+    { label, help }
+  ),
+    { uiToData }
+}
+
+/**
+ * @typedef {ControlOptionsBase & {
+ *   type?: 'button';
+ *   flags?: string[];
+ *   fieldLabel?: string;
+ * }} ButtonControlOptions
+ */
+
+/**
+ * Create a button field.
+ *
+ * @param {ButtonControlOptions} options
+ * @returns {ButtonControl}
+ */
+export function createButtonControl({
+  type = 'button',
+  label,
+  flags,
+  fieldLabel,
+  help,
+}) {
+  return createGenericControl(
+    new OO.ui.ButtonWidget({ label, flags }),
+    type,
+    {
+      label: fieldLabel,
+      help,
+    }
+  );
+}
+
+/**
+ * @typedef {object} GenericFieldConfig
+ * @property {string|JQuery} [label]
+ * @property {'top'|'inline'} [align='top']
+ * @property {string|JQuery} [help]
+ * @property {boolean} [helpInline]
+ * @property {string[]} [classes]
+ * @property {string} [title]
+ */
+
+/**
+ * Create a generic control with a field layout.
+ *
+ * @template {OO.ui.Widget} T
+ * @param {T} input The input widget
+ * @param {string} [type] Control type identifier
+ * @param {GenericFieldConfig} [fieldConfig={}] Configuration for the field layout
+ * @param {{ [key: string]: any }} [data={}] Additional data to attach to the control
+ * @returns {{ type: string, field: OO.ui.FieldLayout, input: T }}
+ */
+export function createGenericControl(input, type, fieldConfig = {}, data = {}) {
+  const field = new OO.ui.FieldLayout(input, {
+    align: 'top',
+    helpInline: true,
+    ...fieldConfig,
+  });
+
+  if (!fieldConfig.label) {
+    field.$element.addClass('cd-field-labelless');
+  }
+
+  return { type, field, input, ...data };
 }
 
 /**
@@ -748,126 +880,3 @@ export class EventEmitter extends OO.EventEmitter {
 }
 
 es6ClassToOoJsClass(EventEmitter);
-
-/**
- * @typedef {ControlOptionsBase & {
- *   type?: 'multicheckbox';
- *   selected?: string[];
- *   options: Array<{
- *     data: any,
- *     label: string,
- *     help?: string|JQuery,
- *     selected?: boolean,
- *   }>;
- *   classes?: string[];
- * }} MulticheckboxControlOptions
- */
-
-/**
- * Create a checkbox multiselect field.
- *
- * @param {MulticheckboxControlOptions} options
- * @returns {MulticheckboxControl}
- */
-export function createMulticheckboxControl({
-  type = 'multicheckbox',
-  label,
-  options,
-  selected,
-  classes,
-}) {
-  const multiselect = new OO.ui.CheckboxMultiselectWidget({
-    items: options.map((option) => new OO.ui.CheckboxMultioptionWidget({
-      data: option.data,
-      selected: selected ? selected.includes(option.data) : option.selected,
-      label: option.label,
-    })),
-    classes,
-  });
-  const field = new OO.ui.FieldLayout(multiselect, {
-    label,
-    align: 'top',
-  });
-
-  return { type, field, multiselect };
-}
-
-/**
- * @typedef {ControlOptionsBase & {
- *   type?: 'tags';
- *   selected?: string[];
- *   tagLimit?: number;
- *   placeholder?: string;
- *   validate?: (...args: any[]) => any;
- *   dataToUi?: (value: Array<string|string[]>) => string[];
- *   uiToData?: (value: string[]) => (string|string[])[];
- * }} TagsControlOptions
- */
-
-/**
- * Create a tag multiselect field.
- *
- * @param {TagsControlOptions} options
- * @returns {TagMultiselectControl}
- */
-export function createTagsControl({
-  type = 'tags',
-  label,
-  placeholder,
-  tagLimit,
-  selected,
-  help,
-  dataToUi,
-  uiToData,
-}) {
-  const multiselect = new OO.ui.TagMultiselectWidget({
-    placeholder,
-    allowArbitrary: true,
-    inputPosition: 'outline',
-    tagLimit,
-    selected: (dataToUi || ((val) => val)).call(null, selected || []),
-  });
-  const field = new OO.ui.FieldLayout(multiselect, {
-    label,
-    align: 'top',
-    help,
-    helpInline: true,
-  });
-
-  return { type, field, multiselect, uiToData };
-}
-
-/**
- * @typedef {ControlOptionsBase & {
- *   type?: 'button';
- *   flags?: string[];
- *   fieldLabel?: string;
- * }} ButtonControlOptions
- */
-
-/**
- * Create a button field.
- *
- * @param {ButtonControlOptions} options
- * @returns {ButtonControl}
- */
-export function createButtonControl({
-  type = 'button',
-  label,
-  flags,
-  fieldLabel,
-  help,
-}) {
-  const button = new OO.ui.ButtonWidget({
-    label,
-    flags,
-  });
-  const field = new OO.ui.FieldLayout(button, {
-    label: fieldLabel,
-    align: 'top',
-    help,
-    helpInline: true,
-  });
-
-  return { type, field, button };
-}
