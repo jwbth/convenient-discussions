@@ -125,63 +125,6 @@
  */
 
 /**
- * @typedef {object} ControlBase
- * @property {OO.ui.FieldLayout} field
- */
-
-/**
- * @typedef {ControlBase & { input: OO.ui.RadioSelectWidget }} RadioControl
- */
-
-/**
- * @typedef {ControlBase & { input: OO.ui.TextInputWidget }} TextControl
- */
-
-/**
- * @typedef {ControlBase & { input: OO.ui.MultilineTextInputWidget }} MultilineTextInputControl
- */
-
-/**
- * @typedef {ControlBase & { input: OO.ui.TextInputWidget }} NumberControl
- */
-
-/**
- * @typedef {ControlBase & { input: OO.ui.CheckboxInputWidget }} CheckboxControl
- */
-
-/**
- * @typedef {ControlBase & {
- *   input: OO.ui.TextInputWidget;
- *   field: OO.ui.CopyTextLayout | OO.ui.ActionFieldLayout;
- * }} CopyTextControl
- */
-
-/**
- * @typedef {ControlBase & { input: OO.ui.CheckboxMultiselectWidget }} MulticheckboxControl
- */
-
-/**
- * @typedef {ControlBase & {
- *   validate?: Function;
- *   input: OO.ui.TagMultiselectWidget;
- *   uiToData?: (value: string[]) => (string|string[])[];
- * }} MultitagControl
- */
-
-/**
- * @typedef {GenericControl<'button'> & { input: OO.ui.ButtonWidget }} ButtonControl
- */
-
-/**
- * @template {ControlType} T
- * @typedef {{
- *   type: T;
- *   field: OO.ui.FieldLayout;
- *   input: ControlTypeToWidget[T];
- * }} GenericControl
- */
-
-/**
  * @typedef {'button' | 'checkbox' | 'multicheckbox' | 'multitag' | 'number' | 'radio' | 'text' | 'multilineText' | 'copyText'} ControlType
  */
 
@@ -200,6 +143,55 @@
  */
 
 /**
+ * @template {ControlType} T
+ * @typedef {{
+ *   type: T;
+ *   field: OO.ui.FieldLayout;
+ *   input: ControlTypeToWidget[T];
+ * }} GenericControl
+ */
+
+/**
+ * @typedef {GenericControl<'radio'>} RadioControl
+ */
+
+/**
+ * @typedef {GenericControl<'text'>} TextControl
+ */
+
+/**
+ * @typedef {GenericControl<'multilineText'>} MultilineTextInputControl
+ */
+
+/**
+ * @typedef {GenericControl<'number'>} NumberControl
+ */
+
+/**
+ * @typedef {GenericControl<'checkbox'>} CheckboxControl
+ */
+
+/**
+ * @typedef {GenericControl<'multitag'> & {
+ *   uiToData?: (value: string[]) => (string|string[])[];
+ * }} MultitagControl
+ */
+
+/**
+ * @typedef {GenericControl<'multicheckbox'>} MulticheckboxControl
+ */
+
+/**
+ * @typedef {GenericControl<'button'>} ButtonControl
+ */
+
+/**
+ * @typedef {GenericControl<'copyText'> & {
+ *   field: OO.ui.CopyTextLayout | OO.ui.ActionFieldLayout;
+ * }} CopyTextControl
+ */
+
+/**
  * @typedef {{
  *   'radio': RadioControl;
  *   'text': TextControl;
@@ -215,10 +207,5 @@
 
 /**
  * @template {{ [K: string]: ControlType }} T
- * @typedef {{ [K in keyof T]: ControlTypeToControl[T[K]] }} ControlsByName
- */
-
-/**
- * @template T
- * @typedef {{ -readonly [P in keyof T]: T[P] }} Writable
+ * @typedef {{ -readonly [K in keyof T]: ControlTypeToControl[T[K]] }} ControlsByName
  */

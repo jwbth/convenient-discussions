@@ -65,8 +65,7 @@ class SettingsDialog extends ProcessDialog {
   /** @type {OO.ui.BookletLayout} */
   bookletLayout;
 
-  // /** @type {ControlsByName<import('./cd').ConvenientDiscussions['settings']['scheme']['controlTypes']>} */
-  controls = /** @type {ControlsByName<Writable<import('./cd').ConvenientDiscussions['settings']['scheme']['controlTypes']>>}> */ ({});
+  controls = /** @type {ControlsByName<import('./settings')['default']['scheme']['controlTypes'] >} */ ({});
 
   /** @type {Partial<import('./settings').SettingsValues>} */
   loadedSettings;
@@ -249,6 +248,24 @@ class SettingsDialog extends ProcessDialog {
    * @protected
    */
   createPages(settingValues) {
+
+
+
+
+    this.controls.insertButtons.
+
+
+
+
+
+
+
+
+
+
+
+
+
     // eslint-disable-next-line no-one-time-vars/no-one-time-vars
     const pages = settings.scheme.ui.map((pageData) => {
       const $fields = pageData.controls.map((data) => {
