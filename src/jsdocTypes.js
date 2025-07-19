@@ -200,8 +200,8 @@
  * @typedef {{
  *   type: T;
  *   field: OO.ui.FieldLayout;
- *   input: ControlTypeToControl[T]['input'];
- * }} GenericControl
+ *   input: ControlTypeToWidget[T]['input'];
+ * }} Control
  */
 
 /**
@@ -219,14 +219,12 @@
  *   'multicheckbox': MulticheckboxControl;
  *   'button': ButtonControl;
  *   'copyText': CopyTextControl;
- * }} ControlTypeToControl
+ * }} ControlTypeToWidget
  */
 
 /**
  * @template {{ [K: string]: ControlType }} T
- * @typedef {{
- *   [K in keyof T]: T[K] extends keyof ControlTypeToControl ? ControlTypeToControl[T[K]] : never
- * }} ControlsByName
+ * @typedef {{ [K in keyof T]: Control<T[K]> }} ControlsByName
  */
 
 /**
