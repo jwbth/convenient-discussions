@@ -182,7 +182,7 @@ class MoveSectionDialog extends ProcessDialog {
       }
 
       this.controls = {};
-      this.controls.title = /** @type {GenericControl<mw.widgets.TitleInputWidget>} */ ({});
+      this.controls.title = /** @type {Control<mw.widgets.TitleInputWidget>} */ ({});
       this.controls.title.input = new mw.widgets.TitleInputWidget({
         $overlay: this.$overlay,
         excludeCurrentPage: true,

@@ -177,10 +177,6 @@ export async function showConfirmDialog(message, options = {}) {
 }
 
 /**
- * @typedef {'button' | 'checkbox' | 'multicheckbox' | 'multitag' | 'number' | 'radio' | 'text' | 'multilineText'} ControlType
- */
-
-/**
  * @typedef {object} ControlOptionsBase
  * @property {string} name
  * @property {ControlType} type
@@ -289,7 +285,6 @@ export async function showConfirmDialog(message, options = {}) {
  * @returns {TextControl}
  */
 export function createTextControl({
-  type = 'text',
   value,
   maxLength,
   required,
@@ -298,8 +293,8 @@ export function createTextControl({
   help,
 }) {
   return createGenericControl(
+    /** @type {const} */ 'text',
     new (require('./TextInputWidget').default)({ value, maxLength, required, classes }),
-    type,
     { label, help }
   );
 }
@@ -311,7 +306,6 @@ export function createTextControl({
  * @returns {NumberControl}
  */
 export function createNumberControl({
-  type = 'number',
   value,
   label,
   min,
@@ -321,6 +315,8 @@ export function createNumberControl({
   classes,
 }) {
   return createGenericControl(
+    /** @type {const} */ 'number',
+
     // See https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/oojs-ui#caveats for
     // why we need type casting here.
     /** @type {OO.ui.TextInputWidget} */ (/** @type {unknown} */ (new OO.ui.NumberInputWidget({
@@ -331,7 +327,6 @@ export function createNumberControl({
       max,
       classes: ['cd-numberInput'],
     }))),
-    type,
     { label, help, classes }
   );
 }
@@ -343,7 +338,6 @@ export function createNumberControl({
  * @returns {CheckboxControl}
  */
 export function createCheckboxControl({
-  type = 'checkbox',
   value,
   selected,
   disabled,
@@ -354,13 +348,13 @@ export function createCheckboxControl({
   classes,
 }) {
   return createGenericControl(
+    /** @type {const} */ 'checkbox',
     new (require('./CheckboxInputWidget').default)({
       value,
       selected,
       disabled,
       tabIndex,
     }),
-    type,
     {
       label,
       title,
@@ -378,7 +372,6 @@ export function createCheckboxControl({
  * @returns {RadioControl}
  */
 export function createRadioControl({
-  type = 'radio',
   label,
   selected,
   help,
@@ -394,7 +387,7 @@ export function createRadioControl({
     input.selectItemByData(selected);
   }
 
-  return createGenericControl(input, type, { label, help });
+  return createGenericControl('radio', input, { label, help });
 }
 
 /**
@@ -404,7 +397,6 @@ export function createRadioControl({
  * @returns {CopyTextControl}
  */
 export function createCopyTextControl({
-  type = 'copyText',
   label,
   value,
   disabled = false,
@@ -447,7 +439,7 @@ export function createCopyTextControl({
     });
   }
 
-  return { type, field, input };
+  return { type: 'copyText', field, input };
 }
 
 /**
@@ -464,6 +456,7 @@ export function createMulticheckboxControl({
   classes,
 }) {
   return createGenericControl(
+    type,
     new OO.ui.CheckboxMultiselectWidget({
       items: options.map(
         (option) =>
@@ -475,7 +468,6 @@ export function createMulticheckboxControl({
       ),
       classes,
     }),
-    type,
     { label }
   );
 }
@@ -497,6 +489,7 @@ export function createTagsControl({
   uiToData,
 }) {
   return createGenericControl(
+    type,
     new OO.ui.TagMultiselectWidget({
       placeholder,
       allowArbitrary: true,
@@ -504,7 +497,6 @@ export function createTagsControl({
       tagLimit,
       selected: (dataToUi || ((val) => val)).call(null, selected || []),
     }),
-    type,
     { label, help },
     { uiToData },
   );
@@ -524,8 +516,8 @@ export function createButtonControl({
   help,
 }) {
   return createGenericControl(
-    new OO.ui.ButtonWidget({ label, flags }),
     type,
+    new OO.ui.ButtonWidget({ label, flags }),
     {
       label: fieldLabel,
       help,
@@ -546,14 +538,14 @@ export function createButtonControl({
 /**
  * Create a generic control with a field layout.
  *
- * @template {OO.ui.Widget} T
- * @param {T} input The input widget
- * @param {string} type Control type identifier
+ * @template {ControlType} T
+ * @param {T} type Control type identifier
+ * @param {ControlTypeToControl[T]['input']} input The input widget
  * @param {GenericFieldConfig} [fieldConfig={}] Configuration for the field layout
  * @param {{ [key: string]: any }} [data={}] Additional data to attach to the control
  * @returns {GenericControl<T>}
  */
-export function createGenericControl(input, type, fieldConfig = {}, data = {}) {
+export function createGenericControl(type, input, fieldConfig = {}, data = {}) {
   const field = new OO.ui.FieldLayout(input, {
     align: 'top',
     helpInline: true,

@@ -126,16 +126,13 @@
 
 /**
  * @typedef {object} ControlBase
- * @property {string} type The type of the control.
  * @property {OO.ui.FieldLayout} field
- * @property {OO.ui.Widget} input The input widget for the control.
  */
 
 /**
  * @typedef {ControlBase & {
  *   type: 'radio';
  *   input: OO.ui.RadioSelectWidget;
- *   items: import('./RadioOptionWidget').default[];
  * }} RadioControl
  */
 
@@ -156,7 +153,7 @@
 /**
  * @typedef {ControlBase & {
  *   type: 'number';
- *   input: OO.ui.NumberInputWidget;
+ *   input: OO.ui.TextInputWidget;
  * }} NumberControl
  */
 
@@ -188,7 +185,7 @@
  *   validate?: Function;
  *   input: OO.ui.TagMultiselectWidget;
  *   uiToData?: (value: string[]) => (string|string[])[];
- * }} TagMultiselectControl
+ * }} MultitagControl
  */
 
 /**
@@ -199,15 +196,40 @@
  */
 
 /**
- * @template [T=OO.ui.Widget]
+ * @template {ControlType} T
  * @typedef {{
- *   type: string;
+ *   type: T;
  *   field: OO.ui.FieldLayout;
- *   input: T;
+ *   input: ControlTypeToControl[T]['input'];
  * }} GenericControl
  */
 
 /**
- * @template {{ [K: string]: GenericControl }} T
- * @typedef {{ [K in keyof T]: T[K] }} ControlsByName
+ * @typedef {'button' | 'checkbox' | 'multicheckbox' | 'multitag' | 'number' | 'radio' | 'text' | 'multilineText' | 'copyText'} ControlType
+ */
+
+/**
+ * @typedef {{
+ *   'radio': RadioControl;
+ *   'text': TextControl;
+ *   'multilineText': MultilineTextInputControl;
+ *   'number': NumberControl;
+ *   'checkbox': CheckboxControl;
+ *   'multitag': MultitagControl;
+ *   'multicheckbox': MulticheckboxControl;
+ *   'button': ButtonControl;
+ *   'copyText': CopyTextControl;
+ * }} ControlTypeToControl
+ */
+
+/**
+ * @template {{ [K: string]: ControlType }} T
+ * @typedef {{
+ *   [K in keyof T]: T[K] extends keyof ControlTypeToControl ? ControlTypeToControl[T[K]] : never
+ * }} ControlsByName
+ */
+
+/**
+ * @template T
+ * @typedef {{ -readonly [P in keyof T]: T[P] }} Writable
  */

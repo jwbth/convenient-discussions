@@ -104,32 +104,52 @@ class Settings {
    * @property {Partial<SettingsValues>} resetsTo For settings that are resetted not to their
    *   default values, those non-default values are specified here (used to determine whether the
    *   "Reset" button should be enabled).
-   * @property {{ [name: string]: import('./utils-oojs').ControlType }} controlTypes Types of
-   *   controls for settings that are present in the settings dialog.
+   * @property {{ [name: string]: ControlType }} controlTypes Types of controls for settings that
+   *   are present in the settings dialog.
    * @property {UiPageData[]} ui List of pages of the settings dialog, each with its control
    *   objects.
    */
 
   /**
    * Settings scheme.
-   *
-   * @type {Scheme}
    */
-  scheme = ({
+  scheme = {
+    /**
+     * List of local setting names. Local settings are settings set for the current wiki only.
+     *
+     * @type {SettingName[]}
+     */
     local: ['insertButtons-altered', 'insertButtons', 'signaturePrefix'],
 
+    /**
+     * Undocumented settings with their defaults. Undocumented settings are settings not shown in
+     * the settings dialog and not saved to the server.
+     *
+     * @type {Pick<SettingsValues, UndocumentedSettingName>}
+     */
     undocumented: {
       defaultCommentLinkType: null,
       defaultSectionLinkType: null,
       showLoadingOverlay: true,
     },
 
+    /**
+     * List of aliases for each property for seamless transition when changing a setting name.
+     *
+     * @type {{ [name in keyof Partial<SettingsValues>]: string[] }}
+     */
     aliases: {
       'insertButtons-altered': ['haveInsertButtonsBeenAltered'],
       'improvePerformance-lastSuggested': ['improvePerformanceLastSuggested'],
       'subscribeOnReply': ['watchSectionOnReply'],
     },
 
+    /**
+     * List of state setting names. States are values to be remembered, or settings to be removed
+     * if the time comes. It is, in fact, user data, despite that we don't have much of it.
+     *
+     * @type {SettingName[]}
+     */
     states: [
       'authorsSort',
       'insertButtons-altered',
@@ -139,11 +159,20 @@ class Settings {
       'upload-onboarded',
     ],
 
+    /**
+     * For settings that are resetted not to their default values, those non-default values are
+     * specified here (used to determine whether the "Reset" button should be enabled).
+     *
+     * @type {Partial<SettingsValues>}
+     */
     resetsTo: {
       reformatComments: false,
     },
 
-    controlTypes: {
+    /**
+     * Types of controls for settings that are present in the settings dialog.
+     */
+    controlTypes: /** @type {const} */ ({
       allowEditOthersComments: 'checkbox',
       alwaysExpandAdvanced: 'checkbox',
       autopreview: 'checkbox',
@@ -174,11 +203,22 @@ class Settings {
       useTopicSubscription: 'checkbox',
       useUiTime: 'checkbox',
       watchOnReply: 'checkbox',
-    },
+    }),
 
+    /**
+     * Default value for each property.
+     *
+     * @type {DocumentedSettingsValues}
+     */
     default: /** @type {DocumentedSettingsValues} */ ({}),
+
+    /**
+     * List of pages of the settings dialog, each with its control objects.
+     *
+     * @type {UiPageData[]}
+     */
     ui: [],
-  });
+  };
 
   /**
    * Set the default settings to the settings scheme object.

@@ -65,8 +65,8 @@ class SettingsDialog extends ProcessDialog {
   /** @type {OO.ui.BookletLayout} */
   bookletLayout;
 
-  /** @type {ControlsByName} */
-  controls = {};
+  // /** @type {ControlsByName<import('./cd').ConvenientDiscussions['settings']['scheme']['controlTypes']>} */
+  controls = /** @type {ControlsByName<Writable<import('./cd').ConvenientDiscussions['settings']['scheme']['controlTypes']>>}> */ ({});
 
   /** @type {Partial<import('./settings').SettingsValues>} */
   loadedSettings;
@@ -253,6 +253,8 @@ class SettingsDialog extends ProcessDialog {
     const pages = settings.scheme.ui.map((pageData) => {
       const $fields = pageData.controls.map((data) => {
         const name = data.name;
+        this.controls.allowEditOthersComments
+
         switch (data.type) {
           case 'checkbox':
             this.controls[name] = createCheckboxControl({
@@ -326,9 +328,9 @@ class SettingsDialog extends ProcessDialog {
       }))();
     });
 
-    this.controls.removeData.input.connect(this, { click: 'removeData' });
+    this.controls.removeData.input.connect(this, { click: this.removeData });
     this.controls.desktopNotifications.input.connect(this, {
-      choose: 'onDesktopNotificationsSelectChange',
+      choose: this.onDesktopNotificationsSelectChange,
     });
 
     return pages;
@@ -436,7 +438,7 @@ class SettingsDialog extends ProcessDialog {
       !this.controls.reformatComments.input.isSelected()
     );
     this.controls.useTemplateData.input.setDisabled(
-      !this.controls.autocompleteTypes.multiselect.findItemFromData('templates').isSelected()
+      !this.controls.autocompleteTypes.input.findItemFromData('templates').isSelected()
     );
 
     let valid = true;
@@ -469,7 +471,7 @@ class SettingsDialog extends ProcessDialog {
    * @param {OO.ui.RadioOptionWidget} option
    * @protected
    */
-  onDesktopNotificationsSelectChange(option) {
+  onDesktopNotificationsSelectChange = (option) => {
     if (typeof Notification === 'undefined') return;
 
     if (option.getData() !== 'none' && Notification.permission !== 'granted') {
@@ -480,14 +482,14 @@ class SettingsDialog extends ProcessDialog {
         }
       });
     }
-  }
+  };
 
   /**
    * Remove script data as requested by the user after confirmation.
    *
    * @protected
    */
-  async removeData() {
+  removeData = async () => {
     if (confirm(cd.s('sd-removedata-confirm'))) {
       this.pushPending();
 
