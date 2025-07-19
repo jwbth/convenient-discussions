@@ -182,7 +182,7 @@ class MoveSectionDialog extends ProcessDialog {
       }
 
       this.controls = {};
-      this.controls.title = /** @type {TextInputControl} */ ({});
+      this.controls.title = /** @type {GenericControl<mw.widgets.TitleInputWidget>} */ ({});
       this.controls.title.input = new mw.widgets.TitleInputWidget({
         $overlay: this.$overlay,
         excludeCurrentPage: true,
@@ -236,7 +236,7 @@ class MoveSectionDialog extends ProcessDialog {
         label: cd.s('msd-chronologicalorder'),
       });
 
-      this.controls.summaryEnding = /** @type {TextInputControl} */ ({});
+      this.controls.summaryEnding = /** @type {TextControl} */ ({});
       this.controls.summaryEnding.input = new TextInputWidget({
         // TODO: Take into account the whole summary length, updating the maximum value dynamically.
         maxLength: 250,

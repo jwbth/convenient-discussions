@@ -295,7 +295,7 @@ class SettingsDialog extends ProcessDialog {
             this.controls[name].input.on('select', this.updateAbilities.bind(this));
             break;
 
-          case 'tags':
+          case 'multitag':
             this.controls[name] = createTagsControl({
               ...data,
               selected: settingValues[name],
@@ -326,7 +326,7 @@ class SettingsDialog extends ProcessDialog {
       }))();
     });
 
-    this.controls.removeData.button.connect(this, { click: 'removeData' });
+    this.controls.removeData.input.connect(this, { click: 'removeData' });
     this.controls.desktopNotifications.input.connect(this, {
       choose: 'onDesktopNotificationsSelectChange',
     });
@@ -391,7 +391,7 @@ class SettingsDialog extends ProcessDialog {
           case 'multicheckbox':
             settingsValues[name] = control.input.findSelectedItemsData();
             break;
-          case 'tags':
+          case 'multitag':
             settingsValues[name] = (control.uiToData || ((val) => val)).call(
               null,
               control.input.getValue()
@@ -419,29 +419,29 @@ class SettingsDialog extends ProcessDialog {
    * @protected
    */
   async updateAbilities() {
-    const controls = this.controls;
-
-    const threadsEnabled = controls.enableThreads.input.isSelected();
-    controls.collapseThreads.input.setDisabled(!threadsEnabled);
-    controls.collapseThreadsLevel.input.setDisabled(
-      !threadsEnabled || !controls.collapseThreads.input.isSelected()
+    const threadsEnabled = this.controls.enableThreads.input.isSelected();
+    this.controls.collapseThreads.input.setDisabled(!threadsEnabled);
+    this.controls.collapseThreadsLevel.input.setDisabled(
+      !threadsEnabled || !this.controls.collapseThreads.input.isSelected()
     );
-    controls.hideTimezone.input.setDisabled(
-      controls.timestampFormat.input.findSelectedItem()?.getData() === 'relative'
+    this.controls.hideTimezone.input.setDisabled(
+      this.controls.timestampFormat.input.findSelectedItem()?.getData() === 'relative'
     );
-    controls.notifyCollapsedThreads.input.setDisabled(
-      controls.desktopNotifications.input.findSelectedItem()?.getData() === 'none' &&
-      controls.notifications.input.findSelectedItem()?.getData() === 'none'
+    this.controls.notifyCollapsedThreads.input.setDisabled(
+      this.controls.desktopNotifications.input.findSelectedItem()?.getData() === 'none' &&
+      this.controls.notifications.input.findSelectedItem()?.getData() === 'none'
     );
-    controls.outdentLevel.input.setDisabled(!controls.outdent.input.isSelected());
-    controls.showContribsLink.input.setDisabled(!controls.reformatComments.input.isSelected());
-    controls.useTemplateData.input.setDisabled(
-      !controls.autocompleteTypes.multiselect.findItemFromData('templates').isSelected()
+    this.controls.outdentLevel.input.setDisabled(!this.controls.outdent.input.isSelected());
+    this.controls.showContribsLink.input.setDisabled(
+      !this.controls.reformatComments.input.isSelected()
+    );
+    this.controls.useTemplateData.input.setDisabled(
+      !this.controls.autocompleteTypes.multiselect.findItemFromData('templates').isSelected()
     );
 
     let valid = true;
     await Promise.all(
-      Object.values(controls)
+      Object.values(this.controls)
         .filter((control) => control.type === 'number')
         .map((control) => control.input.getValidity())
     ).catch(() => {

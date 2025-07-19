@@ -227,12 +227,11 @@ class EditSubscriptionsDialog extends ProcessDialog {
         const match = section.match(/^(.+?)#(.+)$/);
         if (match) {
           const pageTitle = match[1].trim();
-          const sectionTitle = match[2].trim();
           if (!sections[pageTitle]) {
             sections[pageTitle] = [];
             pageTitles.push(pageTitle);
           }
-          sections[pageTitle].push(sectionTitle);
+          sections[pageTitle].push(match[2].trim());
         }
       });
 

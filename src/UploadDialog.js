@@ -408,7 +408,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * @protected
    */
   onPresetChange(itemOrSelected) {
-    const preset = this.controls.preset.select.findSelectedItem().getData();
+    const preset = this.controls.preset.input.findSelectedItem().getData();
     const titleInputDisabled = preset !== 'projectScreenshot';
     this.controls.title.input.setDisabled(titleInputDisabled);
     this.insertSubjectPageButton?.setDisabled(titleInputDisabled);
@@ -434,7 +434,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * @protected
    */
   isInfoFormOmitted() {
-    const preset = this.controls.preset.select.findSelectedItem().getData();
+    const preset = this.controls.preset.input.findSelectedItem().getData();
     return (
       (preset === 'projectScreenshot' || preset === 'mediawikiScreenshot') &&
       !this.controls.configure.input.isSelected()
@@ -449,7 +449,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    */
   areAddedInputsDisabled() {
     return (
-      this.controls.preset.select.findSelectedItem().getData() === 'ownWork' &&
+      this.controls.preset.input.findSelectedItem().getData() === 'ownWork' &&
       !this.controls.configure.input.isSelected()
     );
   }
@@ -539,7 +539,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * @override
    */
   uploadFile() {
-    const preset = this.controls.preset.select.findSelectedItem().getData();
+    const preset = this.controls.preset.input.findSelectedItem().getData();
 
     // Keep the inputs if the user pressed "Back" and didn't choose another preset.
     if (this.preset && preset !== this.preset) {

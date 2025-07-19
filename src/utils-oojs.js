@@ -177,7 +177,13 @@ export async function showConfirmDialog(message, options = {}) {
 }
 
 /**
+ * @typedef {'button' | 'checkbox' | 'multicheckbox' | 'multitag' | 'number' | 'radio' | 'text' | 'multilineText'} ControlType
+ */
+
+/**
  * @typedef {object} ControlOptionsBase
+ * @property {string} name
+ * @property {ControlType} type
  * @property {string|JQuery} [label]
  * @property {string|JQuery} [help]
  * @property {string[]} [classes]
@@ -187,7 +193,7 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {ControlOptionsBase & {
- *   type?: 'text';
+ *   type: 'text';
  *   value?: string;
  *   maxLength?: number;
  * }} TextControlOptions
@@ -195,7 +201,7 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {ControlOptionsBase & {
- *   type?: 'number';
+ *   type: 'number';
  *   value: string;
  *   min: number;
  *   max: number;
@@ -205,7 +211,7 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {ControlOptionsBase & {
- *   type?: 'checkbox';
+ *   type: 'checkbox';
  *   value: string;
  *   selected?: boolean;
  *   title?: string;
@@ -215,7 +221,7 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {ControlOptionsBase & {
- *   type?: 'radio';
+ *   type: 'radio';
  *   selected?: string;
  *   options: Array<{
  *     data: any;
@@ -228,7 +234,7 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {ControlOptionsBase & {
- *   type?: 'multilineText';
+ *   type: 'multilineText';
  *   value: string;
  *   maxLength: number;
  *   rows?: number;
@@ -237,29 +243,50 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {ControlOptionsBase & {
- *   type?: 'tags';
- *   selected: string[];
- *   tagLimit: number;
- *   placeholder?: string;
- *   validate?: (...args: any[]) => any;
- *   dataToUi?: (value: Array<string|string[]>) => string[];
- *   uiToData?: (value: string[]) => string[][];
- * }} TagMultiselectControlOptions
- */
-
-/**
- * @typedef {ControlOptionsBase & {
- *   type?: 'copyText';
+ *   type: 'copyText';
  *   value: string;
  *   copyCallback: (successful: boolean, field: OO.ui.CopyTextLayout) => void;
  * }} CopyTextControlOptions
  */
 
 /**
+ * @typedef {ControlOptionsBase & {
+ *   type: 'multicheckbox';
+ *   selected?: string[];
+ *   options: Array<{
+ *     data: any,
+ *     label: string,
+ *     help?: string|JQuery,
+ *     selected?: boolean,
+ *   }>;
+ *   classes?: string[];
+ * }} MulticheckboxControlOptions
+ */
+
+/**
+ * @typedef {ControlOptionsBase & {
+ *   type: 'multitag';
+ *   selected?: string[];
+ *   tagLimit?: number;
+ *   placeholder?: string;
+ *   dataToUi?: (value: Array<string|string[]>) => string[];
+ *   uiToData?: (value: string[]) => (string|string[])[];
+ * }} MultitagControlOptions
+ */
+
+/**
+ * @typedef {ControlOptionsBase & {
+ *   type: 'button';
+ *   flags?: string[];
+ *   fieldLabel?: string;
+ * }} ButtonControlOptions
+ */
+
+/**
  * Create a text input field.
  *
  * @param {TextControlOptions} options
- * @returns {TextInputControl}
+ * @returns {TextControl}
  */
 export function createTextControl({
   type = 'text',
@@ -281,7 +308,7 @@ export function createTextControl({
  * Create a number input field.
  *
  * @param {NumberControlOptions} options
- * @returns {NumberInputControl}
+ * @returns {NumberControl}
  */
 export function createNumberControl({
   type = 'number',
@@ -313,7 +340,7 @@ export function createNumberControl({
  * Create a checkbox field.
  *
  * @param {CheckboxControlOptions} options
- * @returns {CheckboxInputControl}
+ * @returns {CheckboxControl}
  */
 export function createCheckboxControl({
   type = 'checkbox',
@@ -348,7 +375,7 @@ export function createCheckboxControl({
  * Create a radio select field.
  *
  * @param {RadioControlOptions} options
- * @returns {RadioSelectControl}
+ * @returns {RadioControl}
  */
 export function createRadioControl({
   type = 'radio',
@@ -424,20 +451,6 @@ export function createCopyTextControl({
 }
 
 /**
- * @typedef {ControlOptionsBase & {
- *   type?: 'multicheckbox';
- *   selected?: string[];
- *   options: Array<{
- *     data: any,
- *     label: string,
- *     help?: string|JQuery,
- *     selected?: boolean,
- *   }>;
- *   classes?: string[];
- * }} MulticheckboxControlOptions
- */
-
-/**
  * Create a checkbox multiselect field.
  *
  * @param {MulticheckboxControlOptions} options
@@ -468,25 +481,13 @@ export function createMulticheckboxControl({
 }
 
 /**
- * @typedef {ControlOptionsBase & {
- *   type?: 'tags';
- *   selected?: string[];
- *   tagLimit?: number;
- *   placeholder?: string;
- *   validate?: (...args: any[]) => any;
- *   dataToUi?: (value: Array<string|string[]>) => string[];
- *   uiToData?: (value: string[]) => (string|string[])[];
- * }} TagsControlOptions
- */
-
-/**
  * Create a tag multiselect field.
  *
- * @param {TagsControlOptions} options
+ * @param {MultitagControlOptions} options
  * @returns {TagMultiselectControl}
  */
 export function createTagsControl({
-  type = 'tags',
+  type = 'multitag',
   label,
   placeholder,
   tagLimit,
@@ -504,18 +505,10 @@ export function createTagsControl({
       selected: (dataToUi || ((val) => val)).call(null, selected || []),
     }),
     type,
-    { label, help }
-  ),
-    { uiToData }
+    { label, help },
+    { uiToData },
+  );
 }
-
-/**
- * @typedef {ControlOptionsBase & {
- *   type?: 'button';
- *   flags?: string[];
- *   fieldLabel?: string;
- * }} ButtonControlOptions
- */
 
 /**
  * Create a button field.
@@ -555,10 +548,10 @@ export function createButtonControl({
  *
  * @template {OO.ui.Widget} T
  * @param {T} input The input widget
- * @param {string} [type] Control type identifier
+ * @param {string} type Control type identifier
  * @param {GenericFieldConfig} [fieldConfig={}] Configuration for the field layout
  * @param {{ [key: string]: any }} [data={}] Additional data to attach to the control
- * @returns {{ type: string, field: OO.ui.FieldLayout, input: T }}
+ * @returns {GenericControl<T>}
  */
 export function createGenericControl(input, type, fieldConfig = {}, data = {}) {
   const field = new OO.ui.FieldLayout(input, {

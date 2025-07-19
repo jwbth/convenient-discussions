@@ -54,16 +54,7 @@ import { createSvg, getFooter, wrapHtml } from './utils-window';
  */
 
 /**
- * @typedef {{ name: SettingName | 'removeData' } & (
- *   | Omit<import('./utils-oojs').TextControlOptions, 'value'>
- *   | Omit<import('./utils-oojs').NumberControlOptions, 'value'>
- *   | Omit<import('./utils-oojs').CheckboxControlOptions, 'value' | 'selected'>
- *   | Omit<import('./utils-oojs').RadioControlOptions, 'selected'>
- *   | Omit<import('./utils-oojs').MultilineTextControlOptions, 'value'>
- *   | Omit<import('./utils-oojs').MulticheckboxControlOptions, 'selected'>
- *   | Omit<import('./utils-oojs').TagMultiselectControlOptions, 'selected'>
- *   | import('./utils-oojs').ButtonControlOptions
- * )} UiControlData
+ * @typedef {import('./utils-oojs').ControlOptionsBase & { name: SettingName | 'removeData' } & { [x: string]: any }} UiControlData
  */
 
 /**
@@ -113,7 +104,10 @@ class Settings {
    * @property {Partial<SettingsValues>} resetsTo For settings that are resetted not to their
    *   default values, those non-default values are specified here (used to determine whether the
    *   "Reset" button should be enabled).
-   * @property {UiPageData[]} ui List of pages of the settings dialog, each with its control objects.
+   * @property {{ [name: string]: import('./utils-oojs').ControlType }} controlTypes Types of
+   *   controls for settings that are present in the settings dialog.
+   * @property {UiPageData[]} ui List of pages of the settings dialog, each with its control
+   *   objects.
    */
 
   /**
@@ -147,6 +141,39 @@ class Settings {
 
     resetsTo: {
       reformatComments: false,
+    },
+
+    controlTypes: {
+      allowEditOthersComments: 'checkbox',
+      alwaysExpandAdvanced: 'checkbox',
+      autopreview: 'checkbox',
+      autocompleteTypes: 'multicheckbox',
+      collapseThreads: 'checkbox',
+      collapseThreadsLevel: 'number',
+      countEditsAsNewComments: 'checkbox',
+      desktopNotifications: 'radio',
+      enableThreads: 'checkbox',
+      hideTimezone: 'checkbox',
+      highlightNewInterval: 'number',
+      improvePerformance: 'checkbox',
+      insertButtons: 'multitag',
+      modifyToc: 'checkbox',
+      notifications: 'radio',
+      notifyCollapsedThreads: 'checkbox',
+      outdent: 'checkbox',
+      outdentLevel: 'number',
+      reformatComments: 'checkbox',
+      removeData: 'button',
+      showContribsLink: 'checkbox',
+      showToolbar: 'checkbox',
+      signaturePrefix: 'text',
+      subscribeOnReply: 'checkbox',
+      timestampFormat: 'radio',
+      useBackgroundHighlighting: 'checkbox',
+      useTemplateData: 'checkbox',
+      useTopicSubscription: 'checkbox',
+      useUiTime: 'checkbox',
+      watchOnReply: 'checkbox',
     },
 
     default: /** @type {DocumentedSettingsValues} */ ({}),
@@ -211,6 +238,7 @@ class Settings {
    * because some content is date-dependent.
    */
   initUi() {
+    // eslint-disable-next-line no-one-time-vars/no-one-time-vars
     const outdentTemplateUrl =
       (
         cd.config.outdentTemplates.length &&
@@ -221,10 +249,15 @@ class Settings {
     const fortyThreeMinutesAgo = new Date(Date.now() - cd.g.msInMin * 43);
     const threeDaysAgo = new Date(subtractDaysFromNow(3.3));
 
+    // eslint-disable-next-line no-one-time-vars/no-one-time-vars
     const exampleDefault = formatDateNative(fortyThreeMinutesAgo);
+    // eslint-disable-next-line no-one-time-vars/no-one-time-vars
     const exampleImproved1 = formatDateImproved(fortyThreeMinutesAgo);
+    // eslint-disable-next-line no-one-time-vars/no-one-time-vars
     const exampleImproved2 = formatDateImproved(threeDaysAgo);
+    // eslint-disable-next-line no-one-time-vars/no-one-time-vars
     const exampleRelative1 = formatDateRelative(fortyThreeMinutesAgo);
+    // eslint-disable-next-line no-one-time-vars/no-one-time-vars
     const exampleRelative2 = formatDateRelative(threeDaysAgo);
 
     this.scheme.ui = [
@@ -234,51 +267,51 @@ class Settings {
         controls: [
           {
             name: 'reformatComments',
-            type: 'checkbox',
+            type: this.scheme.controlTypes.reformatComments,
             label: cd.s('sd-reformatcomments'),
           },
           {
             name: 'showContribsLink',
-            type: 'checkbox',
+            type: this.scheme.controlTypes.showContribsLink,
             label: cd.s('sd-showcontribslink'),
             classes: ['cd-setting--indented'],
           },
           {
             name: 'allowEditOthersComments',
-            type: 'checkbox',
+            type: this.scheme.controlTypes.allowEditOthersComments,
             label: cd.s('sd-alloweditotherscomments'),
           },
           {
             name: 'enableThreads',
-            type: 'checkbox',
+            type: this.scheme.controlTypes.enableThreads,
             label: cd.s('sd-enablethreads'),
           },
           {
             name: 'collapseThreads',
-            type: 'checkbox',
+            type: this.scheme.controlTypes.collapseThreads,
             label: cd.s('sd-collapsethreadslevel'),
             classes: ['cd-setting--indented'],
           },
           {
             name: 'collapseThreadsLevel',
-            type: 'number',
+            type: this.scheme.controlTypes.collapseThreadsLevel,
             min: 0,
             max: 999,
             classes: ['cd-setting--indented-twice', 'cd-setting-collapseThreadsLevel'],
           },
           {
             name: 'modifyToc',
-            type: 'checkbox',
+            type: this.scheme.controlTypes.modifyToc,
             label: cd.s('sd-modifytoc'),
           },
           {
             name: 'useBackgroundHighlighting',
-            type: 'checkbox',
+            type: this.scheme.controlTypes.useBackgroundHighlighting,
             label: cd.s('sd-usebackgroundhighlighting'),
           },
           {
             name: 'highlightNewInterval',
-            type: 'number',
+            type: this.scheme.controlTypes.highlightNewInterval,
             min: 0,
             max: 9999999,
             buttonStep: 5,
@@ -287,12 +320,12 @@ class Settings {
           },
           {
             name: 'countEditsAsNewComments',
-            type: 'checkbox',
+            type: this.scheme.controlTypes.countEditsAsNewComments,
             label: cd.s('sd-counteditsasnewcomments'),
           },
           {
             name: 'improvePerformance',
-            type: 'checkbox',
+            type: this.scheme.controlTypes.improvePerformance,
             label: cd.s('sd-improveperformance'),
             help: cd.s('sd-improveperformance-help'),
           },
@@ -304,40 +337,40 @@ class Settings {
         controls: [
           {
             name: 'autopreview',
-            type: 'checkbox',
+            type: this.scheme.controlTypes.autopreview,
             label: cd.s('sd-autopreview'),
           },
           {
             name: 'watchOnReply',
-            type: 'checkbox',
+            type: this.scheme.controlTypes.watchOnReply,
             label: cd.s('sd-watchonreply', mw.user),
           },
           {
             name: 'subscribeOnReply',
-            type: 'checkbox',
+            type: this.scheme.controlTypes.subscribeOnReply,
             label: cd.s('sd-watchsectiononreply', mw.user),
             help: cd.s('sd-watchsectiononreply-help'),
           },
           {
             name: 'showToolbar',
-            type: 'checkbox',
+            type: this.scheme.controlTypes.showToolbar,
             label: cd.s('sd-showtoolbar'),
           },
           {
             name: 'alwaysExpandAdvanced',
-            type: 'checkbox',
+            type: this.scheme.controlTypes.alwaysExpandAdvanced,
             label: cd.s('sd-alwaysexpandadvanced'),
           },
           {
             name: 'outdent',
-            type: 'checkbox',
+            type: this.scheme.controlTypes.outdent,
             label: wrapHtml(cd.sParse('sd-outdentlevel', outdentTemplateUrl), {
               targetBlank: true,
             }),
           },
           {
             name: 'outdentLevel',
-            type: 'number',
+            type: this.scheme.controlTypes.outdentLevel,
             min: 0,
             max: 999,
             help: wrapHtml(cd.sParse('sd-outdentlevel-help-notemplate')),
@@ -345,7 +378,7 @@ class Settings {
           },
           {
             name: 'autocompleteTypes',
-            type: 'multicheckbox',
+            type: this.scheme.controlTypes.autocompleteTypes,
             label: cd.s('sd-autocompletetypes'),
             options: [
               {
@@ -373,20 +406,20 @@ class Settings {
           },
           {
             name: 'useTemplateData',
-            type: 'checkbox',
+            type: this.scheme.controlTypes.useTemplateData,
             label: cd.s('sd-usetemplatedata'),
             help: cd.s('sd-usetemplatedata-help'),
           },
           {
             name: 'insertButtons',
-            type: 'tags',
+            type: this.scheme.controlTypes.insertButtons,
             placeholder: cd.s('sd-insertbuttons-multiselect-placeholder'),
             tagLimit: 100,
             label: cd.s('sd-insertbuttons'),
             help: wrapHtml(cd.sParse('sd-insertbuttons-help') + ' ' + cd.sParse('sd-localsetting')),
-            dataToUi: (value) =>
+            dataToUi: (/** @type {Array<string|string[]>} */ value) =>
               value.map((button) => (Array.isArray(button) ? button.join(';') : button)),
-            uiToData: (value) =>
+            uiToData: (/** @type {string[]} */ value) =>
               value
                 .map((value) => {
                   const textMasker = new TextMasker(value).mask(/\\[+;\\]/g);
@@ -402,7 +435,7 @@ class Settings {
           },
           {
             name: 'signaturePrefix',
-            type: 'text',
+            type: this.scheme.controlTypes.signaturePrefix,
             maxLength: 100,
             label: cd.s('sd-signatureprefix'),
             help: wrapHtml(
@@ -417,7 +450,7 @@ class Settings {
         controls: [
           {
             name: 'useUiTime',
-            type: 'checkbox',
+            type: this.scheme.controlTypes.useUiTime,
             label: wrapHtml(
               cd.sParse('sd-useuitime', 'Special:Preferences#mw-prefsection-rendering-timeoffset'),
               { targetBlank: true }
@@ -425,12 +458,12 @@ class Settings {
           },
           {
             name: 'hideTimezone',
-            type: 'checkbox',
+            type: this.scheme.controlTypes.hideTimezone,
             label: cd.s('sd-hidetimezone'),
           },
           {
             name: 'timestampFormat',
-            type: 'radio',
+            type: this.scheme.controlTypes.timestampFormat,
             label: cd.s('sd-timestampformat'),
             options: [
               {
@@ -464,13 +497,13 @@ class Settings {
         controls: [
           {
             name: 'useTopicSubscription',
-            type: 'checkbox',
+            type: this.scheme.controlTypes.useTopicSubscription,
             label: wrapHtml(cd.sParse('sd-usetopicsubscription', mw.user), { targetBlank: true }),
             help: wrapHtml(cd.sParse('sd-usetopicsubscription-help'), { targetBlank: true }),
           },
           {
             name: 'notifications',
-            type: 'radio',
+            type: this.scheme.controlTypes.notifications,
             label: cd.s('sd-notifications'),
             options: [
               {
@@ -490,7 +523,7 @@ class Settings {
           },
           {
             name: 'desktopNotifications',
-            type: 'radio',
+            type: this.scheme.controlTypes.desktopNotifications,
             label: cd.s('sd-desktopnotifications'),
             options: [
               {
@@ -510,7 +543,7 @@ class Settings {
           },
           {
             name: 'notifyCollapsedThreads',
-            type: 'checkbox',
+            type: this.scheme.controlTypes.notifyCollapsedThreads,
             label: cd.s('sd-notifycollapsedthreads'),
           },
         ],
@@ -521,7 +554,7 @@ class Settings {
         controls: [
           {
             name: 'removeData',
-            type: 'button',
+            type: this.scheme.controlTypes.removeData,
             label: cd.s('sd-removedata'),
             flags: ['destructive'],
             fieldLabel: cd.s('sd-removedata-description'),

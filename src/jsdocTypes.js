@@ -136,14 +136,14 @@
  *   type: 'radio';
  *   input: OO.ui.RadioSelectWidget;
  *   items: import('./RadioOptionWidget').default[];
- * }} RadioSelectControl
+ * }} RadioControl
  */
 
 /**
  * @typedef {ControlBase & {
  *   type: 'text';
  *   input: OO.ui.TextInputWidget;
- * }} TextInputControl
+ * }} TextControl
  */
 
 /**
@@ -157,37 +157,14 @@
  * @typedef {ControlBase & {
  *   type: 'number';
  *   input: OO.ui.NumberInputWidget;
- * }} NumberInputControl
+ * }} NumberControl
  */
 
 /**
  * @typedef {ControlBase & {
  *   type: 'checkbox';
  *   input: OO.ui.CheckboxInputWidget;
- * }} CheckboxInputControl
- */
-
-/**
- * @typedef {ControlBase & {
- *   type: 'tags';
- *   validate?: Function;
- *   input: OO.ui.TagMultiselectWidget;
- *   uiToData?: (value: string[]) => (string|string[])[];
- * }} TagMultiselectControl
- */
-
-/**
- * @typedef {ControlBase & {
- *   type: 'multicheckbox';
- *   input: OO.ui.CheckboxMultiselectWidget;
- * }} MulticheckboxControl
- */
-
-/**
- * @typedef {ControlBase & {
- *   type: 'button';
- *   button: OO.ui.ButtonWidget;
- * }} ButtonControl
+ * }} CheckboxControl
  */
 
 /**
@@ -199,10 +176,38 @@
  */
 
 /**
- * @typedef {RadioSelectControl | TextInputControl | MultilineTextInputControl | NumberInputControl | CheckboxInputControl | TagMultiselectControl | MulticheckboxControl | ButtonControl | CopyTextControl} Control
+ * @typedef {ControlBase & {
+ *   type: 'multicheckbox';
+ *   input: OO.ui.CheckboxMultiselectWidget;
+ * }} MulticheckboxControl
  */
 
 /**
- * @template {string} [T=string]
- * @typedef {{ [key in T]: Control }} ControlsByName
+ * @typedef {ControlBase & {
+ *   type: 'multitag';
+ *   validate?: Function;
+ *   input: OO.ui.TagMultiselectWidget;
+ *   uiToData?: (value: string[]) => (string|string[])[];
+ * }} TagMultiselectControl
+ */
+
+/**
+ * @typedef {ControlBase & {
+ *   type: 'button';
+ *   input: OO.ui.ButtonWidget;
+ * }} ButtonControl
+ */
+
+/**
+ * @template [T=OO.ui.Widget]
+ * @typedef {{
+ *   type: string;
+ *   field: OO.ui.FieldLayout;
+ *   input: T;
+ * }} GenericControl
+ */
+
+/**
+ * @template {{ [K: string]: GenericControl }} T
+ * @typedef {{ [K in keyof T]: T[K] }} ControlsByName
  */

@@ -1087,6 +1087,7 @@ class CommentForm extends EventEmitter {
   async addToolbar(requestedModulesNames) {
     if (!this.showToolbar || !mw.loader.getState('ext.wikiEditor')) return;
 
+    // eslint-disable-next-line no-one-time-vars/no-one-time-vars
     const $toolbarPlaceholder = $('<div>')
       .addClass('cd-toolbarPlaceholder')
       .insertBefore(this.commentInput.$element);

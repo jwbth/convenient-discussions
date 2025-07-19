@@ -71,6 +71,7 @@ export function removeWikiMarkup(code) {
   // https://ru.wikipedia.org/w/api.php?action=query&meta=siteinfo&siprop=magicwords&formatversion=2.
   // Unfortunately, that would add like 100ms to the server's response time. So, we use it if it is
   // present in the config file.
+  // eslint-disable-next-line no-one-time-vars/no-one-time-vars
   const fileEmbedRegexp = new RegExp(
     `\\[\\[${cd.g.filePrefixPattern}[^\\]]+?(?:\\|[^\\]]+?\\| *((?:\\[\\[[^\\]]+?\\]\\]|[^|\\]])+))? *\\]\\]`,
     'ig'
@@ -203,7 +204,6 @@ export function extractSignatures(code) {
     ...cd.config.commentAntipatterns.map((regexp) => regexp.source)
   );
   const commentAntipatternsPattern = commentAntipatternsPatternParts.join('|');
-  const commentAntipatternsRegexp = new RegExp(`^.*(?:${commentAntipatternsPattern}).*$`, 'mg');
 
   // Hide HTML comments, quotes and lines containing antipatterns.
   const adjustedCode = maskDistractingCode(code)
@@ -211,7 +211,10 @@ export function extractSignatures(code) {
       cd.g.quoteRegexp,
       (_, beginning, content, ending) => beginning + ' '.repeat(content.length) + ending
     )
-    .replace(commentAntipatternsRegexp, (s) => ' '.repeat(s.length));
+    .replace(
+      new RegExp(`^.*(?:${commentAntipatternsPattern}).*$`, 'mg'),
+      (s) => ' '.repeat(s.length)
+    );
 
   let signaturesTemp = extractRegularSignatures(adjustedCode, code);
   const unsigneds = extractUnsigneds(adjustedCode, code, signaturesTemp);

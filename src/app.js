@@ -199,14 +199,13 @@ async function go() {
 /**
  * Set language properties of the global object, taking fallback languages into account.
  *
- * @returns {boolean} Are fallbacks employed.
  * @private
  */
 function setLanguages() {
-  const languageOrFallback = (lang) => (
+  const languageOrFallback = (/** @type {string} */ lang) => (
     i18nList.includes(lang) ?
       lang :
-      (languageFallbacks[lang] || []).find((fallback) => i18nList.includes(fallback)) || 'en'
+      (languageFallbacks[lang] || []).find((/** @type {string} */ fallback) => i18nList.includes(fallback)) || 'en'
   );
 
   cd.g.userLanguage = languageOrFallback(mw.config.get('wgUserLanguage'));
@@ -216,11 +215,6 @@ function setLanguages() {
   // As a result, we use cd.g.contentLanguage only for the script's own messages, not the native
   // MediaWiki messages.
   cd.g.contentLanguage = languageOrFallback(mw.config.get('wgContentLanguage'));
-
-  return !(
-    cd.g.userLanguage === mw.config.get('wgUserLanguage') &&
-    cd.g.contentLanguage === mw.config.get('wgContentLanguage')
-  );
 }
 
 /**
@@ -270,17 +264,13 @@ function getConfig() {
  * @private
  */
 function getStrings() {
-  const requests = [cd.g.userLanguage, cd.g.contentLanguage]
+  // We assume it's OK to fall back to English if the translation is unavailable for any reason.
+  return Promise.all([cd.g.userLanguage, cd.g.contentLanguage]
     .filter(unique)
     .filter((lang) => lang !== 'en' && !cd.i18n?.[lang])
-    .map((lang) => {
-      const url = `https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js&action=raw&ctype=text/javascript`;
-
-      return mw.loader.getScript(url);
-    });
-
-  // We assume it's OK to fall back to English if the translation is unavailable for any reason.
-  return Promise.all(requests).catch(() => {});
+    .map((lang) =>
+      mw.loader.getScript(`https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js&action=raw&ctype=text/javascript`)
+    )).catch(() => {});
 }
 
 /**
@@ -336,15 +326,10 @@ async function app() {
    */
   mw.hook('convenientDiscussions.launched').fire(cd);
 
-  const areLanguageFallbacksEmployed = setLanguages();
-  const getStringsPromise = areLanguageFallbacksEmployed ?
-    getStrings() :
-
-    // cd.getStringsPromise may be set in the configuration file.
-    !cd.i18n && (cd.getStringsPromise || getStrings());
+  setLanguages();
 
   try {
-    await Promise.all([!cd.config && getConfig(), getStringsPromise]);
+    await Promise.all([!cd.config && getConfig(), getStringsPromise()]);
   } catch (error) {
     console.error(error);
     return;
@@ -353,6 +338,25 @@ async function app() {
   debug.stopTimer('load config and strings');
 
   $(go);
+}
+
+/**
+ * Get the promise that resolves when the language strings are ready. If the strings are already
+ * available, the promise resolves immediately.
+ *
+ * @returns {Promise<any[]|void>}
+ * @private
+ */
+function getStringsPromise() {
+  return (
+    cd.g.userLanguage === mw.config.get('wgUserLanguage') &&
+    cd.g.contentLanguage === mw.config.get('wgContentLanguage')
+  )
+    // If no language fallbacks are employed, we can do without requesting additional i18ns.
+    // cd.getStringsPromise may be set in the configuration file.
+    ? !cd.i18n && (cd.getStringsPromise || getStrings())
+
+    : getStrings();
 }
 
 app();

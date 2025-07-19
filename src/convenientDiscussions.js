@@ -60,14 +60,6 @@ const devicePixelRatioToDivisor = [
   [0, 1],
 ];
 
-const pixelDeviationRatio = /** @type {number} */ (
-  devicePixelRatioToDivisor
-    .reduce((value, [dpr, divisor]) => (
-    value ||
-    (window.devicePixelRatio >= dpr ? window.devicePixelRatio / divisor : value)
-  ), undefined)
-);
-
 const convenientDiscussions = {
   /**
    * @type {{
@@ -390,11 +382,14 @@ const globalProperties = {
    */
   commentMarkerWidth: /** @type {const} */ (3),
 
-  pixelDeviationRatio,
+  pixelDeviationRatio: devicePixelRatioToDivisor
+    .reduce((value, [dpr, divisor]) => (
+      value ||
+      (window.devicePixelRatio >= dpr ? window.devicePixelRatio / divisor : value)
+    ), undefined),
 
-  pixelDeviationRatioFor1px: (
-    window.devicePixelRatio / Math.max(Math.floor(window.devicePixelRatio), 1)
-  ),
+  pixelDeviationRatioFor1px:
+    window.devicePixelRatio / Math.max(Math.floor(window.devicePixelRatio), 1),
 
   /**
    * Number of seconds between checks for new comments when the tab is not hidden.
