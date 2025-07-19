@@ -282,7 +282,7 @@ export async function showConfirmDialog(message, options = {}) {
  * Create a text input field.
  *
  * @param {TextControlOptions} options
- * @returns {Control<'text'>}
+ * @returns {TextControl}
  */
 export function createTextControl({
   value,
@@ -292,7 +292,7 @@ export function createTextControl({
   label,
   help,
 }) {
-  return createControl(
+  return createGenericControl(
     /** @type {const} */ 'text',
     new (require('./TextInputWidget').default)({ value, maxLength, required, classes }),
     { label, help }
@@ -303,7 +303,7 @@ export function createTextControl({
  * Create a number input field.
  *
  * @param {NumberControlOptions} options
- * @returns {Control<'number'>}
+ * @returns {NumberControl}
  */
 export function createNumberControl({
   value,
@@ -314,7 +314,7 @@ export function createNumberControl({
   help,
   classes,
 }) {
-  return createControl(
+  return createGenericControl(
     /** @type {const} */ 'number',
 
     // See https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/oojs-ui#caveats for
@@ -335,7 +335,7 @@ export function createNumberControl({
  * Create a checkbox field.
  *
  * @param {CheckboxControlOptions} options
- * @returns {Control<'checkbox'>}
+ * @returns {CheckboxControl}
  */
 export function createCheckboxControl({
   value,
@@ -347,7 +347,7 @@ export function createCheckboxControl({
   tabIndex,
   classes,
 }) {
-  return createControl(
+  return createGenericControl(
     /** @type {const} */ 'checkbox',
     new (require('./CheckboxInputWidget').default)({
       value,
@@ -369,7 +369,7 @@ export function createCheckboxControl({
  * Create a radio select field.
  *
  * @param {RadioControlOptions} options
- * @returns {Control<'radio'>}
+ * @returns {RadioControl}
  */
 export function createRadioControl({
   label,
@@ -387,14 +387,14 @@ export function createRadioControl({
     input.selectItemByData(selected);
   }
 
-  return createControl('radio', input, { label, help });
+  return createGenericControl('radio', input, { label, help });
 }
 
 /**
  * Create an action field for copying text from an input.
  *
  * @param {CopyTextControlOptions} options
- * @returns {Control<'copyText'>}
+ * @returns {CopyTextControl}
  */
 export function createCopyTextControl({
   label,
@@ -446,7 +446,7 @@ export function createCopyTextControl({
  * Create a checkbox multiselect field.
  *
  * @param {MulticheckboxControlOptions} options
- * @returns {Control<'multicheckbox'>}
+ * @returns {MulticheckboxControl}
  */
 export function createMulticheckboxControl({
   type = 'multicheckbox',
@@ -455,7 +455,7 @@ export function createMulticheckboxControl({
   selected,
   classes,
 }) {
-  return createControl(
+  return createGenericControl(
     type,
     new OO.ui.CheckboxMultiselectWidget({
       items: options.map(
@@ -476,7 +476,7 @@ export function createMulticheckboxControl({
  * Create a tag multiselect field.
  *
  * @param {MultitagControlOptions} options
- * @returns {Control<'multitag'>}
+ * @returns {TagMultiselectControl}
  */
 export function createTagsControl({
   type = 'multitag',
@@ -488,7 +488,7 @@ export function createTagsControl({
   dataToUi,
   uiToData,
 }) {
-  return createControl(
+  return createGenericControl(
     type,
     new OO.ui.TagMultiselectWidget({
       placeholder,
@@ -506,7 +506,7 @@ export function createTagsControl({
  * Create a button field.
  *
  * @param {ButtonControlOptions} options
- * @returns {Control<'button'>}
+ * @returns {ButtonControl}
  */
 export function createButtonControl({
   type = 'button',
@@ -515,7 +515,7 @@ export function createButtonControl({
   fieldLabel,
   help,
 }) {
-  return createControl(
+  return createGenericControl(
     type,
     new OO.ui.ButtonWidget({ label, flags }),
     {
@@ -543,9 +543,9 @@ export function createButtonControl({
  * @param {ControlTypeToControl[T]['input']} input The input widget
  * @param {GenericFieldConfig} [fieldConfig={}] Configuration for the field layout
  * @param {{ [key: string]: any }} [data={}] Additional data to attach to the control
- * @returns {Control<T>}
+ * @returns {GenericControl<T>}
  */
-export function createControl(type, input, fieldConfig = {}, data = {}) {
+export function createGenericControl(type, input, fieldConfig = {}, data = {}) {
   const field = new OO.ui.FieldLayout(input, {
     align: 'top',
     helpInline: true,
