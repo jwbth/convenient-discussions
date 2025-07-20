@@ -38,7 +38,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   /** @type {OO.ui.StackLayout} */
   contentStack;
 
-  /** @type {ControlsByName} */
+  /** @type {ControlTypesByName} */
   controls;
 
   /**
@@ -109,7 +109,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       });
     }
 
-    this.controls = /** @type {ControlsByName} */ ({});
+    this.controls = /** @type {ControlTypesByName} */ ({});
     this.anchorPanel = new OO.ui.PanelLayout({
       $content: this.createAnchorPanelContent(),
       padded: false,

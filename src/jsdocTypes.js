@@ -126,7 +126,7 @@
 
 /**
  * @template {{ [K: string]: ControlType }} T
- * @typedef {{ -readonly [K in keyof T]: ControlTypeToControl[T[K]] }} ControlsByName
+ * @typedef {{ -readonly [K in keyof T]: ControlTypeToControl[T[K]] }} ControlTypesByName
  */
 
 /**
@@ -194,16 +194,20 @@
  */
 
 /**
+ * @typedef {GenericControl<'title'>} TitleControl
+ */
+
+/**
  * @typedef {GenericControl<'text'>} TextControl
  */
 
 /**
  * @typedef {{
  *   'radio': OO.ui.RadioSelectWidget;
- *   'text': OO.ui.TextInputWidget;
+ *   'text': import('./TextInputWidget').default;
  *   'multilineText': OO.ui.MultilineTextInputWidget;
  *   'number': OO.ui.TextInputWidget;
- *   'checkbox': OO.ui.CheckboxInputWidget;
+ *   'checkbox': import('./CheckboxInputWidget').default;
  *   'multitag': OO.ui.TagMultiselectWidget;
  *   'multicheckbox': OO.ui.CheckboxMultiselectWidget;
  *   'button': OO.ui.ButtonWidget;

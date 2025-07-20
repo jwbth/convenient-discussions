@@ -3,7 +3,7 @@ import ProcessDialog from './ProcessDialog';
 import PseudoLink from './Pseudolink';
 import cd from './cd';
 import { canonicalUrlToPageName, defined, generateFixedPosTimestamp, getDbnameForHostname, zeroPad } from './utils-general';
-import { createTextControl, createCheckboxControl, createRadioControl, es6ClassToOoJsClass, mixInClass } from './utils-oojs';
+import { createTextControl, createCheckboxControl, createRadioControl, es6ClassToOoJsClass, mixInClass, createTitleControl } from './utils-oojs';
 import { mergeJquery, wrapHtml } from './utils-window';
 
 /**
@@ -230,9 +230,17 @@ export class UploadDialog extends mixInClass(
  */
 class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.BookletLayout {
   /**
-   * @type {ControlsByName}
+   * @typedef {{
+   *   preset: 'radio';
+   *   title: 'title';
+   *   configure: 'checkbox';
+   *   source: 'text';
+   *   author: 'text';
+   *   license: 'text';
+   * }} UploadDialogControlTypes
    */
-  controls;
+
+  controls = /** @type {ControlTypesByName<UploadDialogControlTypes>} */ ({});
 
   /**
    * @type {ForeignStructuredUpload}
@@ -282,8 +290,6 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
     // We hide that checkbox, replacing it with a radio select
     this.ownWorkCheckbox.setSelected(true);
 
-    this.controls = {};
-
     const fieldset = /** @type {OO.ui.FieldsetLayout} */ (this.uploadForm.getItems()[0]);
 
     // Hide everything related to the "own work" checkbox
@@ -319,42 +325,36 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
       ],
     });
 
-    const input = new mw.widgets.TitleInputWidget({
+    this.controls.title = createTitleControl({
       $overlay: this.$overlay,
       showMissing: false,
       showSuggestionsOnFocus: false,
       value: '',
+      label: cd.s('ud-preset-projectscreenshot-title'),
+      help: mergeJquery(
+        this.insertSubjectPageButton
+          ? $('<div>').append(this.insertSubjectPageButton.element)
+          : undefined,
+        this.insertTalkPageButton
+          ? $('<div>').append(this.insertTalkPageButton.element)
+          : undefined,
+        $('<div>').html(cd.sParse('ud-preset-projectscreenshot-title-help'))
+      ),
+      classes: ['cd-uploadDialog-fieldLayout-internal'],
     });
+
     const subjectPage = cd.page.mwTitle.getSubjectPage();
     if (subjectPage) {
       this.insertSubjectPageButton = new PseudoLink({
         label: subjectPage.getPrefixedText(),
-        input: input,
+        input: this.controls.title.input,
       });
     }
     if (cd.page.mwTitle.isTalkPage()) {
       this.insertTalkPageButton = new PseudoLink({
         label: cd.page.name,
-        input: input,
+        input: this.controls.title.input,
       });
-    }
-    this.controls.title = {
-      input,
-      field: new OO.ui.FieldLayout(input, {
-        label: cd.s('ud-preset-projectscreenshot-title'),
-        help: mergeJquery(
-          this.insertSubjectPageButton
-            ? $('<div>').append(this.insertSubjectPageButton.element)
-            : undefined,
-          this.insertTalkPageButton
-            ? $('<div>').append(this.insertTalkPageButton.element)
-            : undefined,
-          $('<div>').html(cd.sParse('ud-preset-projectscreenshot-title-help'))
-        ),
-        align: 'top',
-        helpInline: true,
-        classes: ['cd-uploadDialog-fieldLayout-internal'],
-      }),
     }
     const projectScreenshotItem = /** @type {import('./RadioOptionWidget').default} */ (
       this.controls.preset.input.findItemFromData('projectScreenshot')

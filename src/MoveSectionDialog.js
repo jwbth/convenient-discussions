@@ -7,7 +7,7 @@ import bootController from './bootController';
 import cd from './cd';
 import pageRegistry from './pageRegistry';
 import { buildEditSummary, defined, definedAndNotNull, ensureArray, mergeMaps, sleep } from './utils-general';
-import { createCheckboxControl, es6ClassToOoJsClass } from './utils-oojs';
+import { createCheckboxControl, createTitleControl, es6ClassToOoJsClass } from './utils-oojs';
 import { encodeWikilink, endWithTwoNewlines, findFirstTimestamp } from './utils-wikitext';
 import { wrapHtml } from './utils-window';
 
@@ -51,10 +51,15 @@ class MoveSectionDialog extends ProcessDialog {
   /** @type {Array<Promise|JQuery.Promise>} */
   initRequests;
 
-  /** @type {ControlsByName<
-   *
-   * >} */
-  controls;
+  /** @typedef {{
+   *   title: 'title';
+   *   keepLink: 'checkbox';
+   *   chronologicalOrder: 'checkbox';
+   *   summaryEnding: 'text';
+   * }} MoveSectionDialogControlTypes
+   */
+
+  controls = /** @type {ControlTypesByName<MoveSectionDialogControlTypes>} */ ({});
 
   /**
    * Create a move section dialog.
@@ -183,24 +188,18 @@ class MoveSectionDialog extends ProcessDialog {
         return;
       }
 
-      this.controls = {};
-      this.controls.title = /** @type {GenericControl<'title'>} */ ({});
-      this.controls.title.input = new mw.widgets.TitleInputWidget({
+      this.controls.title = createTitleControl({
+        label: cd.s('msd-targetpage'),
         $overlay: this.$overlay,
         excludeCurrentPage: true,
         showMissing: false,
         showSuggestionsOnFocus: false,
-        value: cd.page.isArchive() ? cd.page.getArchivedPage().name : '',
         validate: () => {
           const title = this.controls.title.input.getMWTitle();
           const page = title && pageRegistry.get(title);
 
-          return page && page !== this.section.getSourcePage();
+          return Boolean(page && page !== this.section.getSourcePage());
         },
-      });
-      this.controls.title.field = new OO.ui.FieldLayout(this.controls.title.input, {
-        label: cd.s('msd-targetpage'),
-        align: 'top',
       });
 
       this.controls.title.input
@@ -233,7 +232,7 @@ class MoveSectionDialog extends ProcessDialog {
         });
       }
       this.controls.chronologicalOrder = createCheckboxControl({
-        value: 'chronoologicalOrder',
+        value: 'chronologicalOrder',
         selected: false,
         label: cd.s('msd-chronologicalorder'),
       });
@@ -293,7 +292,7 @@ class MoveSectionDialog extends ProcessDialog {
         this.controls.title.input.$input.blur();
 
         let targetPage = /** @type {import('./Page').default} */ (
-          pageRegistry.get(this.controls.title.input.getMWTitle())
+          pageRegistry.get(/** @type {mw.Title} */ (this.controls.title.input.getMWTitle()))
         );
 
         // Should be ruled out by making the button disabled.

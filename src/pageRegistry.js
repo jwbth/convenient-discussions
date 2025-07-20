@@ -27,7 +27,7 @@ const pageRegistry = {
    *
    * @overload
    * @param {string|mw.Title} nameOrMwTitle
-   * @param {false} isGendered
+   * @param {false} [isGendered=true]
    * @returns {?Page}
    */
 

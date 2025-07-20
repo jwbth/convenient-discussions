@@ -178,8 +178,8 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {object} ControlOptionsBase
- * @property {string} name
- * @property {ControlType} type
+ * @property {string} [name]
+ * @property {ControlType} [type]
  * @property {string|JQuery} [label]
  * @property {string|JQuery} [help]
  * @property {string[]} [classes]
@@ -190,7 +190,7 @@ export async function showConfirmDialog(message, options = {}) {
 /**
  * @typedef {ControlOptionsBase & {
  *   flags?: string[];
- *   fieldLabel?: string;
+ *   buttonLabel?: string;
  * }} ButtonControlOptions
  */
 
@@ -267,6 +267,14 @@ export async function showConfirmDialog(message, options = {}) {
  *   value?: string;
  *   maxLength?: number;
  * }} TextControlOptions
+ */
+
+/**
+ * @typedef {ControlOptionsBase & mw.widgets.TitleInputWidget.ConfigOptions & {
+ *   label?: string;
+ *   help?: string|JQuery;
+ *   classes?: string[];
+ * }} TitleControlOptions
  */
 
 /**
@@ -368,7 +376,9 @@ export function createRadioControl({
   help,
   options,
 }) {
-  const input = new OO.ui.RadioSelectWidget({ items: options.map((config) => new (require('./RadioOptionWidget').default)(config)) });
+  const input = new OO.ui.RadioSelectWidget({
+    items: options.map((config) => new (require('./RadioOptionWidget').default)(config)),
+  });
 
   // Workarounds for T359920
   input.$element.off('mousedown');
@@ -500,21 +510,35 @@ export function createTagsControl({
 export function createButtonControl({
   label,
   flags,
-  fieldLabel,
+  buttonLabel,
   help,
 }) {
   return createGenericControl(
     'button',
-    new OO.ui.ButtonWidget({ label, flags }),
-    {
-      label: fieldLabel,
-      help,
-    }
+    new OO.ui.ButtonWidget({ label: buttonLabel, flags }),
+    { label, help }
   );
 }
 
 /**
- * @typedef {object} GenericFieldConfig
+ * Create a title input field (using
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.widgets.TitleInputWidget.html mw.widgets.TitleInputWidget}).
+ *
+ * @param {TitleControlOptions} options
+ * @returns {TitleControl}
+ */
+export function createTitleControl(options) {
+  const { label, help, classes, ...titleInputOptions } = options;
+
+  return createGenericControl(
+    'title',
+    new mw.widgets.TitleInputWidget(titleInputOptions),
+    { label, help, classes }
+  );
+}
+
+/**
+ * @typedef {object} GenericFieldOptions
  * @property {string|JQuery} [label]
  * @property {'top'|'inline'} [align='top']
  * @property {string|JQuery} [help]
@@ -528,19 +552,19 @@ export function createButtonControl({
  *
  * @template {ControlType} T
  * @param {T} type Control type identifier
- * @param {ControlTypeToControl[T]['input']} input The input widget
- * @param {GenericFieldConfig} [fieldConfig={}] Configuration for the field layout
+ * @param {ControlTypeToWidget[T]} input The input widget
+ * @param {GenericFieldOptions} [fieldOptions={}] Configuration for the field layout
  * @param {{ [key: string]: any }} [data={}] Additional data to attach to the control
  * @returns {GenericControl<T>}
  */
-export function createGenericControl(type, input, fieldConfig = {}, data = {}) {
-  const field = new OO.ui.FieldLayout(input, {
+export function createGenericControl(type, input, fieldOptions = {}, data = {}) {
+  const field = /** @type {OO.ui.FieldLayout<ControlTypeToWidget[T]>} */ (new OO.ui.FieldLayout(input, {
     align: 'top',
     helpInline: true,
-    ...fieldConfig,
-  });
+    ...fieldOptions,
+  }));
 
-  if (!fieldConfig.label) {
+  if (!fieldOptions.label) {
     field.$element.addClass('cd-field-labelless');
   }
 
