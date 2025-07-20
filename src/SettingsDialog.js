@@ -248,24 +248,6 @@ class SettingsDialog extends ProcessDialog {
    * @protected
    */
   createPages(settingValues) {
-
-
-
-
-    this.controls.insertButtons.
-
-
-
-
-
-
-
-
-
-
-
-
-
     // eslint-disable-next-line no-one-time-vars/no-one-time-vars
     const pages = settings.scheme.ui.map((pageData) => {
       const $fields = pageData.controls.map((data) => {
