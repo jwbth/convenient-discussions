@@ -54,7 +54,17 @@ import { createSvg, getFooter, wrapHtml } from './utils-window';
  */
 
 /**
- * @typedef {import('./utils-oojs').ControlOptionsBase & { name: SettingName | 'removeData' } & { [x: string]: any }} UiControlData
+ * @typedef {{ name: SettingName | 'removeData' } & (
+ *  | Omit<import('./utils-oojs').ButtonControlOptions, 'value'>
+ *  | Omit<import('./utils-oojs').CheckboxControlOptions, 'value' | 'selected'>
+ *  | Omit<import('./utils-oojs').CopyTextControlOptions, 'value'>
+ *  | Omit<import('./utils-oojs').MulticheckboxControlOptions, 'selected'>
+ *  | Omit<import('./utils-oojs').MultilineTextControlOptions, 'value'>
+ *  | Omit<import('./utils-oojs').MultitagControlOptions, 'selected'>
+ *  | Omit<import('./utils-oojs').NumberControlOptions, 'value'>
+ *  | Omit<import('./utils-oojs').RadioControlOptions, 'selected'>
+ *  | Omit<import('./utils-oojs').TextControlOptions, 'value'>
+ * )} UiControlData
  */
 
 /**

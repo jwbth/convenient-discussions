@@ -5,7 +5,7 @@ import cd from './cd';
 import settings from './settings';
 import { saveGlobalOption, saveLocalOption } from './utils-api';
 import { areObjectsEqual } from './utils-general';
-import { createCheckboxControl, createNumberControl, createRadioControl, createTextControl, es6ClassToOoJsClass, createMulticheckboxControl, createTagsControl, createButtonControl } from './utils-oojs';
+import { createCheckboxControl, createNumberControl, createRadioControl, createTextControl, es6ClassToOoJsClass, createMulticheckboxControl, createTagsControl as createMultitagControl, createButtonControl } from './utils-oojs';
 
 /**
  * Class used to create a settings dialog.
@@ -252,60 +252,59 @@ class SettingsDialog extends ProcessDialog {
     const pages = settings.scheme.ui.map((pageData) => {
       const $fields = pageData.controls.map((data) => {
         const name = data.name;
-        this.controls.allowEditOthersComments
-
         switch (data.type) {
           case 'checkbox':
             this.controls[name] = createCheckboxControl({
-              value: name,
+              .../** @type {import('./utils-oojs').CheckboxControlOptions} */ (data),
               selected: settingValues[name],
-              ...data,
             });
             this.controls[name].input.on('change', this.updateAbilities.bind(this));
             break;
 
           case 'radio':
             this.controls[name] = createRadioControl({
+              .../** @type {import('./utils-oojs').RadioControlOptions} */ (data),
               selected: settingValues[name],
-              ...data,
             });
             this.controls[name].input.on('select', this.updateAbilities.bind(this));
             break;
 
           case 'text':
             this.controls[name] = createTextControl({
+              .../** @type {import('./utils-oojs').TextControlOptions} */ (data),
               value: settingValues[name],
-              ...data,
             });
             this.controls[name].input.on('change', this.updateAbilities.bind(this));
             break;
 
           case 'number':
             this.controls[name] = createNumberControl({
+              .../** @type {import('./utils-oojs').NumberControlOptions} */ (data),
               value: settingValues[name],
-              ...data,
             });
             this.controls[name].input.on('change', this.updateAbilities.bind(this));
             break;
 
           case 'multicheckbox':
             this.controls[name] = createMulticheckboxControl({
-              ...data,
+              .../** @type {import('./utils-oojs').MulticheckboxControlOptions} */ (data),
               selected: settingValues[name],
             });
             this.controls[name].input.on('select', this.updateAbilities.bind(this));
             break;
 
           case 'multitag':
-            this.controls[name] = createTagsControl({
-              ...data,
+            this.controls[name] = createMultitagControl({
+              .../** @type {import('./utils-oojs').MultitagControlOptions} */ (data),
               selected: settingValues[name],
             });
             this.controls[name].input.on('change', this.updateAbilities.bind(this));
             break;
 
           case 'button':
-            this.controls[name] = createButtonControl(data);
+            this.controls[name] = createButtonControl({
+              .../** @type {import('./utils-oojs').ButtonControlOptions} */ (data),
+            });
             break;
         }
 

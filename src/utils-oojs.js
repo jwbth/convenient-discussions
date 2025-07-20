@@ -189,25 +189,13 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {ControlOptionsBase & {
- *   type: 'text';
- *   value?: string;
- *   maxLength?: number;
- * }} TextControlOptions
+ *   flags?: string[];
+ *   fieldLabel?: string;
+ * }} ButtonControlOptions
  */
 
 /**
  * @typedef {ControlOptionsBase & {
- *   type: 'number';
- *   value: string;
- *   min: number;
- *   max: number;
- *   buttonStep?: number;
- * }} NumberControlOptions
- */
-
-/**
- * @typedef {ControlOptionsBase & {
- *   type: 'checkbox';
  *   value: string;
  *   selected?: boolean;
  *   title?: string;
@@ -217,29 +205,6 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {ControlOptionsBase & {
- *   type: 'radio';
- *   selected?: string;
- *   options: Array<{
- *     data: any;
- *     label: string;
- *     help?: string|JQuery;
- *     selected?: boolean;
- *   }>;
- * }} RadioControlOptions
- */
-
-/**
- * @typedef {ControlOptionsBase & {
- *   type: 'multilineText';
- *   value: string;
- *   maxLength: number;
- *   rows?: number;
- * }} MultilineTextControlOptions
- */
-
-/**
- * @typedef {ControlOptionsBase & {
- *   type: 'copyText';
  *   value: string;
  *   copyCallback: (successful: boolean, field: OO.ui.CopyTextLayout) => void;
  * }} CopyTextControlOptions
@@ -247,7 +212,6 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {ControlOptionsBase & {
- *   type: 'multicheckbox';
  *   selected?: string[];
  *   options: Array<{
  *     data: any,
@@ -261,7 +225,14 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {ControlOptionsBase & {
- *   type: 'multitag';
+ *   value: string;
+ *   maxLength: number;
+ *   rows?: number;
+ * }} MultilineTextControlOptions
+ */
+
+/**
+ * @typedef {ControlOptionsBase & {
  *   selected?: string[];
  *   tagLimit?: number;
  *   placeholder?: string;
@@ -272,10 +243,30 @@ export async function showConfirmDialog(message, options = {}) {
 
 /**
  * @typedef {ControlOptionsBase & {
- *   type: 'button';
- *   flags?: string[];
- *   fieldLabel?: string;
- * }} ButtonControlOptions
+ *   value: string;
+ *   min: number;
+ *   max: number;
+ *   buttonStep?: number;
+ * }} NumberControlOptions
+ */
+
+/**
+ * @typedef {ControlOptionsBase & {
+ *   selected?: string;
+ *   options: Array<{
+ *     data: any;
+ *     label: string;
+ *     help?: string|JQuery;
+ *     selected?: boolean;
+ *   }>;
+ * }} RadioControlOptions
+ */
+
+/**
+ * @typedef {ControlOptionsBase & {
+ *   value?: string;
+ *   maxLength?: number;
+ * }} TextControlOptions
  */
 
 /**
@@ -293,7 +284,7 @@ export function createTextControl({
   help,
 }) {
   return createGenericControl(
-    /** @type {const} */ 'text',
+    'text',
     new (require('./TextInputWidget').default)({ value, maxLength, required, classes }),
     { label, help }
   );
@@ -315,7 +306,7 @@ export function createNumberControl({
   classes,
 }) {
   return createGenericControl(
-    /** @type {const} */ 'number',
+    'number',
 
     // See https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/oojs-ui#caveats for
     // why we need type casting here.
@@ -348,7 +339,7 @@ export function createCheckboxControl({
   classes,
 }) {
   return createGenericControl(
-    /** @type {const} */ 'checkbox',
+    'checkbox',
     new (require('./CheckboxInputWidget').default)({
       value,
       selected,
@@ -449,14 +440,13 @@ export function createCopyTextControl({
  * @returns {MulticheckboxControl}
  */
 export function createMulticheckboxControl({
-  type = 'multicheckbox',
   label,
   options,
   selected,
   classes,
 }) {
   return createGenericControl(
-    type,
+    'multicheckbox',
     new OO.ui.CheckboxMultiselectWidget({
       items: options.map(
         (option) =>
@@ -476,10 +466,9 @@ export function createMulticheckboxControl({
  * Create a tag multiselect field.
  *
  * @param {MultitagControlOptions} options
- * @returns {TagMultiselectControl}
+ * @returns {MultitagControl}
  */
 export function createTagsControl({
-  type = 'multitag',
   label,
   placeholder,
   tagLimit,
@@ -489,7 +478,7 @@ export function createTagsControl({
   uiToData,
 }) {
   return createGenericControl(
-    type,
+    'multitag',
     new OO.ui.TagMultiselectWidget({
       placeholder,
       allowArbitrary: true,
@@ -509,14 +498,13 @@ export function createTagsControl({
  * @returns {ButtonControl}
  */
 export function createButtonControl({
-  type = 'button',
   label,
   flags,
   fieldLabel,
   help,
 }) {
   return createGenericControl(
-    type,
+    'button',
     new OO.ui.ButtonWidget({ label, flags }),
     {
       label: fieldLabel,
