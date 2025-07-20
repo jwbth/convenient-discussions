@@ -238,6 +238,12 @@ declare global {
         radio: OO.ui.RadioInputWidget;
       }
     }
+
+    namespace RadioSelectWidget {
+      interface Prototype {
+        findSelectedItem(): OptionWidget | null;
+      }
+    }
   }
 
   interface JQueryStatic {

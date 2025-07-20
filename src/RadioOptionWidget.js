@@ -33,6 +33,7 @@ class RadioOptionWidget extends OO.ui.RadioOptionWidget {
       classes: ['oo-ui-inline-help'],
     });
     this.radio.$input.attr('aria-describedby', helpWidget.getElementId());
+
     return helpWidget.$element;
   }
 }

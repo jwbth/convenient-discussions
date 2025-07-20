@@ -143,12 +143,14 @@ export class UploadDialog extends mixInClass(
       let process = new OO.ui.Process(this.uploadBooklet.uploadFile());
       if (this.autosave) {
         process = process.next(() => {
+          // eslint-disable-next-line no-one-time-vars/no-one-time-vars
           const promise = this.executeAction('save').fail(() => {
             // Reset the ability
             // @ts-ignore: We need this protected method here
             this.uploadBooklet.onInfoFormChange();
           });
           this.actions.setAbilities({ save: false });
+
           return promise;
         });
       }
@@ -408,7 +410,9 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * @protected
    */
   onPresetChange(itemOrSelected) {
-    const preset = this.controls.preset.input.findSelectedItem().getData();
+    const preset = /** @type {import('./RadioOptionWidget').default} */ (
+      this.controls.preset.input.findSelectedItem()
+    )?.getData();
     const titleInputDisabled = preset !== 'projectScreenshot';
     this.controls.title.input.setDisabled(titleInputDisabled);
     this.insertSubjectPageButton?.setDisabled(titleInputDisabled);
@@ -434,7 +438,9 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * @protected
    */
   isInfoFormOmitted() {
-    const preset = this.controls.preset.input.findSelectedItem().getData();
+    const preset = /** @type {import('./RadioOptionWidget').default} */ (
+      this.controls.preset.input.findSelectedItem()
+    )?.getData();
     return (
       (preset === 'projectScreenshot' || preset === 'mediawikiScreenshot') &&
       !this.controls.configure.input.isSelected()
@@ -449,8 +455,9 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    */
   areAddedInputsDisabled() {
     return (
-      this.controls.preset.input.findSelectedItem().getData() === 'ownWork' &&
-      !this.controls.configure.input.isSelected()
+      /** @type {import('./RadioOptionWidget').default} */ (
+        this.controls.preset.input.findSelectedItem()
+      )?.getData() === 'ownWork' && !this.controls.configure.input.isSelected()
     );
   }
 
@@ -539,7 +546,9 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * @override
    */
   uploadFile() {
-    const preset = this.controls.preset.input.findSelectedItem().getData();
+    const preset = /** @type {import('./RadioOptionWidget').default} */ (
+      this.controls.preset.input.findSelectedItem()
+    )?.getData();
 
     // Keep the inputs if the user pressed "Back" and didn't choose another preset.
     if (this.preset && preset !== this.preset) {

@@ -230,9 +230,8 @@ class SettingsDialog extends ProcessDialog {
     } else if (action === 'reset') {
       return new OO.ui.Process(() => {
         if (confirm(cd.s('sd-reset-confirm'))) {
-          const currentPageName = /** @type {string} */ (this.bookletLayout.getCurrentPageName());
           this.renderControls(settings.scheme.default);
-          this.bookletLayout.setPage(currentPageName);
+          this.bookletLayout.setPage(/** @type {string} */(this.bookletLayout.getCurrentPageName()));
         }
       });
     }
@@ -436,7 +435,11 @@ class SettingsDialog extends ProcessDialog {
       !this.controls.reformatComments.input.isSelected()
     );
     this.controls.useTemplateData.input.setDisabled(
-      !this.controls.autocompleteTypes.input.findItemFromData('templates').isSelected()
+      !(
+        /** @type {import('./RadioOptionWidget').default} */ (
+          this.controls.autocompleteTypes.input.findItemFromData('templates')
+        ).isSelected()
+      )
     );
 
     let valid = true;

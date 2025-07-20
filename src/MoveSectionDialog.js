@@ -490,12 +490,6 @@ class MoveSectionDialog extends ProcessDialog {
 
     const sectionCode = source.sectionSource.code;
     const relativeContentStartIndex = source.sectionSource.relativeContentStartIndex;
-    const newSectionCode = endWithTwoNewlines(
-      sectionCode.slice(0, relativeContentStartIndex) +
-      codeBeginning +
-      sectionCode.slice(relativeContentStartIndex) +
-      codeEnding
-    );
 
     let summaryEnding = this.controls.summaryEnding.input.getValue();
     summaryEnding &&= cd.mws('colon-separator', { language: 'content' }) + summaryEnding;
@@ -504,7 +498,15 @@ class MoveSectionDialog extends ProcessDialog {
       await target.page.edit({
         text: (
           endWithTwoNewlines(target.page.code.slice(0, target.targetIndex)) +
-          newSectionCode +
+
+          // New section code
+          endWithTwoNewlines(
+            sectionCode.slice(0, relativeContentStartIndex) +
+            codeBeginning +
+            sectionCode.slice(relativeContentStartIndex) +
+            codeEnding
+          ) +
+
           target.page.code.slice(target.targetIndex)
         ),
         summary: buildEditSummary({
