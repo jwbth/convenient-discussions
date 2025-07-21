@@ -140,6 +140,8 @@
 	"cf-error-uploadimage": "Nie udało się przesłać obrazu.",
 	"cf-confirm-delete": "Czy na pewno chcesz usunąć ten komentarz?",
 	"cf-confirm-close": "Czy chcesz zamknąć okno edycji? Zmiany zostaną utracone.",
+	"cf-popup-richformatting": "{{GENDER:|Wkleiłeś treść zawierającą|Wkleiłaś treść zawierającą|Wklejona treść zawiera}} formatowanie. Czy chcesz, aby zostało ono przekonwertowane na wikitekst?",
+	"cf-popup-richformatting-convert": "Konwertuj na wikitekst",
 	"dn-confirm-yes": "Tak",
 	"dn-confirm-no": "Nie",
 	"deadanchor-section-lead": "Nie odnaleziono sekcji \"$1\" na stronie.",
