@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"GilPe",
 			"Jack who built the house",
 			"Les Meloures",
 			"Robby",
@@ -44,7 +45,7 @@
 	"section-newcomments": "Et gëtt {{plural:$1|eng nei Bemierkung|$1 nei Bemierkungen}} an dësem Abschnitt (ausserhalb vun de Threads) vum {{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}} $3. Klickt hei fir d'Säit z'aktualiséieren.",
 	"section-metadata-lastcomment": "Lescht Bemierkung:",
 	"section-authors-sort-abc": "Alphabetesch",
-	"cld-summary": "Resumé vun der Ännerung",
+	"cld-summary": "Resümmee vun der Ännerung",
 	"cld-diff": "Link op den Ënnerscheed",
 	"cld-diff-error": "Gouf net fonnt",
 	"cld-diff-error-network": "Gouf net fonnt (Feeler am Reseau)",
@@ -74,7 +75,7 @@
 	"cf-comment-placeholder": "Text",
 	"cf-comment-placeholder-replytosection": "Dem \"$1\" äntweren",
 	"cf-comment-placeholder-replytocomment": "Op {{gender:$2|}} $1 äntweren",
-	"cf-summary-placeholder": "Resumé vun der Ännerung",
+	"cf-summary-placeholder": "Resümmee vun der Ännerung",
 	"cf-save": "Späicheren",
 	"cf-save-short": "Späicheren",
 	"cf-delete-button": "Läschen",
@@ -157,7 +158,7 @@
 	"toc-more": "$1 méi",
 	"toc-watched": "Dir sidd op dëst Theema abonnéiert",
 	"pagenav-toc": "Inhaltsverzeechnes",
-	"pagenav-back": "Zréck",
+	"pagenav-back": "Zeréck",
 	"notification-reload": "Klickt fir d'Säit $1 nei ze lueden,",
 	"notification-part-insection": "am Abschnitt \"$1\"",
 	"notification-part-onthispage": "op dëser Säit",
@@ -186,7 +187,7 @@
 	"ewsd-saved": "D'Lëscht vun den Abonnementer gouf gespäichert.",
 	"msd-title": "Theme réckelen",
 	"msd-move": "Réckelen",
-	"msd-summaryending": "Resumé änneren (gëtt un de Standard-Resumé drugehaangen)",
+	"msd-summaryending": "Resümmee änneren (gëtt un de Standard-Resümmee drugehaangen)",
 	"msd-error-wrongpage": "Falsch Säit.",
 	"msd-error-sourcepagedeleted": "Déi aktuell Säit gouf geläscht.",
 	"msd-error-invalidpagename": "Ongültege Säitennumm.",
