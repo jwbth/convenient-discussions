@@ -302,7 +302,7 @@ async function app() {
   cd.isRunning = true;
 
   if (
-    /(^|\.)m\./.test(location.hostname) ||
+    mw.config.get('wgMFMode') ||
     /[?&]cdenable=(0|false|no|n)(?=&|$)/.test(location.search) ||
     mw.config.get('wgPageContentModel') !== 'wikitext' ||
 
