@@ -259,7 +259,7 @@
 	"newtopicssubscription-popup-title": "Tính năng mới",
 	"newtopicssubscription-popup-text": "Bây giờ bạn có thể theo dõi các trang thảo luận. Nếu bạn theo dõi một trang, bạn sẽ nhận được thông báo khi chủ đề mới được bắt đầu trên trang. Để theo dõi một trang, hãy nhấp vào “{{int:discussiontools-newtopicssubscription-button-subscribe-label}}” trong menu tác vụ của trang.",
 	"popup-manyForms-title": "Bạn có biết?",
-	"popup-manyForms-text": "Trong Convenient Discussions, bạn có thể nhập nhiều bình luận cùng một lúc trong các mẫu riêng biệt và sau đó gửi chúng từng cái một. Các văn bản trong các hình thức khác sẽ không bị mất khi bạn gửi một trong các mẫu. Hãy thử!",
+	"popup-manyForms-text": "Với Convenient Discussions, bạn có thể nhập nhiều bình luận cùng một lúc. Khi bạn lưu một bình luận, các bình luận chưa lưu sẽ không bị mất. Hãy thử ngay!",
 	"popup-upload-title": "Tính năng mới",
 	"popup-upload-text": "Giờ đây, bạn có thể tải ảnh chụp màn hình lên Commons chỉ với ba cú nhấp chuột! Chỉ cần dán hoặc kéo ảnh vào ô bình luận, chọn cài đặt trước và nhấp vào \"{{int:convenient-discussions-ud-uploadandsave}}\".",
 	"navpanel-refresh": "Làm mới trang",
