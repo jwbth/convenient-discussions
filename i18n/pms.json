@@ -2,7 +2,8 @@
 	"@metadata": {
 		"authors": [
 			"Borichèt",
-			"Jack who built the house"
+			"Jack who built the house",
+			"SaldırganSincap"
 		]
 	},
 	"script-name": "Discussion Pràtiche",
@@ -140,7 +141,7 @@
 	"cf-cancel-short": "Anulé",
 	"cf-advanced": "Avansà",
 	"cf-settings-tooltip": "Paràmeter ëd Discussion Pràtiche",
-	"cf-help-content": "<ul>\n<li>Scrive <code>$1</code> e serne n’utent për [[mw:Special:MyLanguage/Help:Notifications/Mention|massionelo]].</li>\n<li>Ten-e sgnacà <b>$2</b> për serne n’utent e gionteje dla pontegiadura apress ël nòm.</li>\n<li>Scrive <code><nowiki>[[#</nowiki></code> për coleghé un coment ant la session corenta.</p>\n<li>Ten-e <b>Maj</b> sgnacà për serne n’element autocompletà për modifiché ël test ësmonù (për esempi, <code><nowiki>[[Artìcol|</nowiki><var>test</var><nowiki>]]</nowiki></code>).</li>\n<li> Ten-e <b>Alt</b> sgnacà për serne n’element autocompletà për dovré ël test apress la marca ëd gionta tanme test ësmonù.</li>\n<li class=\"cd-helpPopup-hideForReformattedComments>Si lë mnu dël coment a ostàcola na liura darera a chiel, sgnaché për un bon moment/bate su 'd chiel - a sparirà.</li>\n</ul>\n<p>Paròle ciav:</li>\n<ul>\n<li><b>$2+Enter</b> — publiché</li>\n<li><b>Esc</b> — anulé</li>\n<li>Për vëdde le ciav ëspeciaj dij boton ëd la sbara dj'utiss, passeje ël rat ansima.</li>\n</ul>\n<p>[[mw:c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions|Documentassion dël copion]] <b>$3</b> [[mw:c:User talk:Jack who built the house/Convenient Discussions|Coment]]</p>",
+	"cf-help-content": "<ul>\n<li>Scrive <code>$1</code> e serne n’utent për [[mw:Special:MyLanguage/Help:Notifications/Mention|massionelo]].</li>\n<li>Ten-e sgnacà <b>$2</b> për serne n’utent e gionteje dla pontegiadura apress ël nòm.</li>\n<li>Scrive <code><nowiki>[[#</nowiki></code> për coleghé un coment ant la session corenta.</p>\n<li>Ten-e <b>Maj</b> sgnacà për serne n’element autocompletà për modifiché ël test ësmonù (për esempi, <code><nowiki>[[Artìcol|</nowiki><var>test</var><nowiki>]]</nowiki></code>).</li>\n<li> Ten-e <b>Alt</b> sgnacà për serne n’element autocompletà për dovré ël test apress la marca ëd gionta tanme test ësmonù.</li>\n<li class=\"cd-helpPopup-hideForReformattedComments>Si lë mnu dël coment a ostàcola na liura darera a chiel, sgnaché për un bon moment/bate su 'd chiel - a sparirà.</li>\n</ul>\n<p>Paròle ciav:</p>\n<ul>\n<li><b>$2+Enter</b> — publiché</li>\n<li><b>Esc</b> — anulé</li>\n<li>Për vëdde le ciav ëspeciaj dij boton ëd la sbara dj'utiss, passeje ël rat ansima.</li>\n</ul>\n<p>[[mw:c:Special:MyLanguage/User:Jack who built the house/Convenient Discussions|Documentassion dël copion]] <b>$3</b> [[mw:c:User talk:Jack who built the house/Convenient Discussions|Coment]]</p>",
 	"cf-strikethrough-tooltip": "Sganfé",
 	"cf-strikethrough-placeholder": "Test ësganfà",
 	"cf-code-tooltip": "Còdes",

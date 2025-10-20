@@ -8,6 +8,7 @@
 			"Ebraminio",
 			"Jack who built the house",
 			"Jeeputer",
+			"LordProfo",
 			"Mohammad ebz",
 			"Reza koulivand"
 		]
@@ -84,7 +85,7 @@
 	"copylink-copied": "پیوند به بریده‌دان شما منتقل شد.",
 	"copylink-error": "ناتوان در کپی‌کردن پیوند.",
 	"thank-confirm": "تشکر از {{gender:$2|}} $1 برای [$3 این ویرایش]؟",
-	"thank-error": "ناتوان در ارسال تشکر.",
+	"thank-error": "ناتوان در فرستادن تشکر.",
 	"thank-success": "آگاه‌سازی «تشکر» ارسال شد.",
 	"es-reply": "پاسخ",
 	"es-reply-to": "پاسخ به {{gender:$2|}} $1",
@@ -159,7 +160,7 @@
 	"cf-reaction-mention-edit": "از آنجا که شما در حال <em>ویرایش</em> یک نظر هستید، [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|اعلان برای اشاره]] ارسال نخواهد شد. برای این که اعلان ارسال شود، باید پیوند به صفحهٔ کاربر را در خلاصهٔ ویرایش قرار دهید.",
 	"cf-reaction-mention-nosignature": "از آنجا که شما تصمیم گرفته‌اید امضا را در نظر خود وارد نکنید، [[mw:Special:MyLanguage/Help:Notifications/Mention#How to mention another editor and trigger a notification|اعلان برای اشاره]] ارسال نخواهد شد. برای این که اعلان ارسال شود، باید پیوند به صفحهٔ کاربر را در خلاصهٔ ویرایش قرار دهید.",
 	"cf-notice-nochanges": "بدون تغییر.",
-	"cf-notice-editconflict-retrying": "تلاش مجدد...",
+	"cf-notice-editconflict-retrying": "تلاش دوباره...",
 	"cf-error-getpagecode": "ناتوان در دریافت کد صفحه.",
 	"cf-error-closed": "گفتگو پایان یافته است.",
 	"cf-error-findplace": "مکان مناسب در کد برای درج نظر در آن پیدا نشد.",
