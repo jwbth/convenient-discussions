@@ -4,8 +4,8 @@
  * @module app
  */
 
-// Import polyfills for ES2022+ features
-import './polyfills';
+// Import polyfills for a bunch of ES2022+ features
+import './shared/polyfills';
 
 import defaultConfig from '../config/default';
 import configUrls from '../config/urls.json';
@@ -23,10 +23,12 @@ import { getFooter } from './utils-window';
 let config;
 
 if (LANG_CODE) {
-  try {
-    config = require(`../config/${CONFIG_FILE_NAME}`).default;
-  } catch {
-    // Empty
+  if (CONFIG_FILE_NAME) {
+    try {
+      config = require(`../config/${CONFIG_FILE_NAME}`).default;
+    } catch {
+      // Empty
+    }
   }
 
   // A copy of the function in misc/utils.js. If altering it, make sure they are synchronized.

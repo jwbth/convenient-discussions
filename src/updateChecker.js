@@ -13,11 +13,20 @@ import userRegistry from './userRegistry';
 import { loadUserGenders } from './utils-api';
 import visits from './visits';
 
-// TODO: Make this into a singleton (object) without module-scope variables so that it emits with
-// this.emit(). Move worker-related stuff to controller.
+// TODO: Move worker-related stuff to controller.
+
+// Remove the props to override their type subsequently
+/**
+ * @typedef {Omit<RemoveMethods<import('./worker/SectionWorker').default>, 'parent'>} SectionWorkerCropped
+ */
 
 /**
- * @typedef {RemoveMethods<import('./worker/SectionWorker').default>} SectionWorkerBase
+ * @typedef {object} SectionWorkerUpdatedTypes
+ * @property {SectionWorkerBase} [parent]
+ */
+
+/**
+ * @typedef {SectionWorkerCropped & SectionWorkerUpdatedTypes} SectionWorkerBase
  */
 
 /**
@@ -91,7 +100,7 @@ import visits from './visits';
  * @typedef {object} AddedComments
  * @property {import('./updateChecker').CommentWorkerNew[]} all
  * @property {import('./updateChecker').CommentWorkerNew[]} relevant
- * @property {Map<import('./updateChecker').SectionWorkerMatched | null, import('./updateChecker').CommentWorkerNew[]>} bySection
+ * @property {Map<import('./updateChecker').SectionWorkerMatched | undefined, import('./updateChecker').CommentWorkerNew[]>} bySection
  */
 
 /**

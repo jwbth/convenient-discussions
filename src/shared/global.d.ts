@@ -122,13 +122,13 @@ declare global {
   // type NodeLike = Node | DomHandlerNode;
   // type TextLike = Text | DomHandlerText;
 
-  type AnyNode = import('domhandler').Node | globalThis.Node;
-  type AnyElement = import('domhandler').Element | globalThis.Element;
-  type AnyText = import('domhandler').Text | globalThis.Text;
+  type AnyNode = import('domhandler').Node | Node;
+  type AnyElement = import('domhandler').Element | Element;
+  type AnyText = import('domhandler').Text | Text;
 
   type NodeLike = AnyNode;
   type ElementLike = AnyElement;
-  type HTMLElementLike = import('domhandler').Element | globalThis.HTMLElement;
+  type HTMLElementLike = import('domhandler').Element | HTMLElement;
   type TextLike = AnyText;
 
   type NodeFor<T extends AnyNode> = T extends import('domhandler').Node

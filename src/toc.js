@@ -437,7 +437,7 @@ class Toc {
           /** @type {import('./shared/SectionSkeleton').default[]} */ (
             /** @type {unknown} */ (sections)
           )
-        ) || undefined
+        )
       );
     });
     sections.forEach((section) => {
@@ -529,8 +529,7 @@ class Toc {
   /**
    * Add a comment list (an `ul` element) to a section.
    *
-   * @template {boolean} Rendered
-   * @param {Rendered extends true ? import('./Comment').default[] : import('./updateChecker').CommentWorkerNew[]} comments
+   * @param {import('./Comment').default[] | import('./updateChecker').CommentWorkerNew[]} comments
    *   Comment list.
    * @param {Element} [target] Target element.
    * @private
@@ -539,7 +538,7 @@ class Toc {
     // Should never be the case
     if (!target) return;
 
-    const ITEM_LIMIT = 4;
+    const ITEM_LIMIT = 3;
 
     // jQuery is too expensive here given that very many comments may be added.
     const ul = document.createElement('ul');
@@ -547,25 +546,30 @@ class Toc {
     // Check for the Section type without importing Section
     ul.className = 'getParent' in comments[0] ? 'cd-toc-newCommentList' : 'cd-toc-addedCommentList';
 
-    let moreTooltipText = '';
-    comments.forEach((comment, i) => {
+    // Tooltip text will have items that didn't fit in the limit
+    const tooltipText = comments.reduce((tooltipTextAcc, comment, i) => {
       const parent = 'getParent' in comment ? comment.getParent() : comment.parent;
 
-      const addAsItem = i < ITEM_LIMIT - 1 || comments.length === ITEM_LIMIT;
+      // Add as item, not as tooltip text. If there are `itemLimit + 1` comments or less, show all
+      // of them. If there are more, show itemLimit and "N more". (Because showing itemLimit and
+      // then "1 more" is stupid.)
+      const addAsItem = i < ITEM_LIMIT || comments.length === ITEM_LIMIT + 1;
 
+      /** @type {string} */
       let date;
+      /** @type {string} */
       let nativeDate;
       if (comment.date) {
         nativeDate = formatDateNative(comment.date);
         date =
-          addAsItem && settings.get('timestampFormat') !== 'default'
-            ? formatDate(comment.date)
-            : nativeDate;
+          settings.get('timestampFormat') === 'default' || !addAsItem
+            ? nativeDate
+            : formatDate(comment.date);
       } else {
-        date = cd.s('navpanel-newcomments-unknowndate');
+        nativeDate = date = cd.s('navpanel-newcomments-unknowndate');
       }
 
-      const dateIfNeeded = settings.get('timestampFormat') === 'default' ? date : '';
+      const dateIfNative = settings.get('timestampFormat') === 'default' ? date : '';
       const text =
         // Names
         (
@@ -578,11 +582,8 @@ class Toc {
         (cd.g.contentDirection === 'rtl' ? '\u200F' : '') +
 
         cd.mws('comma-separator') +
-        dateIfNeeded;
+        dateIfNative;
 
-      // If there are itemLimit comments or less, show all of them. If there are more, show
-      // `itemLimit - 1` and "N more". (Because showing `itemLimit - 1` and then "1 more" is
-      // stupid.)
       if (addAsItem) {
         const li = document.createElement('li');
         ul.append(li);
@@ -599,9 +600,7 @@ class Toc {
         if (settings.get('timestampFormat') !== 'default' && comment.date) {
           timestampSpan = document.createElement('span');
           timestampSpan.textContent = date;
-          if (nativeDate) {
-            timestampSpan.title = nativeDate;
-          }
+          timestampSpan.title = /** @type {string} */ (nativeDate);
           new LiveTimestamp(timestampSpan, comment.date, false).init();
         }
 
@@ -631,17 +630,19 @@ class Toc {
           li.append(textSpan);
         }
       } else {
-        // In a tooltip, always show the date in the default format — we won't be auto-updating
+        // In the tooltip, always show the date in the default format - we won't be auto-updating
         // relative dates there due to low benefit.
-        moreTooltipText += text + (dateIfNeeded ? '' : nativeDate) + '\n';
+        tooltipTextAcc += text + (dateIfNative ? '' : nativeDate) + '\n';
       }
-    });
 
-    if (comments.length > ITEM_LIMIT) {
+      return tooltipTextAcc;
+    }, '');
+
+    if (comments.length > ITEM_LIMIT + 1) {
       const span = document.createElement('span');
       span.className = 'cd-toc-more';
-      span.title = moreTooltipText.trim();
-      span.textContent = cd.s('toc-more', String(comments.length - (ITEM_LIMIT - 1)));
+      span.title = tooltipText.trim();
+      span.textContent = cd.s('toc-more', String(comments.length - ITEM_LIMIT));
 
       const li = document.createElement('li');
       li.append(span);
@@ -655,7 +656,7 @@ class Toc {
    * Add links to new comments (either already displayed or loaded in the background) to the table
    * of contents.
    *
-   * @param {import('./updateChecker').AddedComments['bySection']} commentsBySection
+   * @param {import('./Comment').CommentsBySection} commentsBySection
    * @param {import('./BootProcess').default} [bootProcess]
    * @private
    */

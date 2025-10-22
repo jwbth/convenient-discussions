@@ -119,9 +119,9 @@ class Parser {
 
     const classSelector = cd.g.noSignatureClasses.map((name) => `.${name}`).join(', ');
 
-    this.noSignatureElements = ([
+    this.noSignatureElements = [
       ...this.context.rootElement.querySelectorAll(`${tagSelector}, ${classSelector}`),
-    ]);
+    ];
   }
 
   /**

@@ -80,7 +80,7 @@ const config = defineConfig(
   {
     languageOptions: {
       sourceType: 'module',
-      ecmaVersion: 2020,
+      ecmaVersion: 2022,
       // parser: '@typescript-eslint/parser',
       // parserOptions: {
       //   requireConfigFile: false,
@@ -459,8 +459,8 @@ const config = defineConfig(
     },
   },
 
-  // ES2022 compatibility for src/ folder (matching src/jsconfig.json scope)
-  // Allows .at() and .findLastIndex() (with polyfills) but restricts other ES2023+ features
+  // Partial ES2022 compatibility: Allows .at() and .findLastIndex() (with polyfills) but restricts
+  // other ES2022+ features
   {
     files: ['src/**/*', 'config/**/*', 'data/**/*'],
     ignores: ['src/tribute/**'],

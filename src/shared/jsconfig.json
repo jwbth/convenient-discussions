@@ -2,9 +2,14 @@
   "extends": "../../jsconfig-base.json",
   "compilerOptions": {
     "target": "es2020",
-    "moduleResolution": "bundler",
+
+    // We mix `import`s and `require()` calls
     "module": "preserve",
-    "lib": ["ES2021", "WebWorker"],
+
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+
+    // Something drags Node's types in (e.g. .at() starts to show a Node function), no idea what.
+    // Reset the types to empty to avoid this.
     "types": []
   },
   "include": ["**/*"]

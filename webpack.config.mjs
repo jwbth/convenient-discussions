@@ -86,8 +86,8 @@ const webpack_ = (/** @type {Environment} */ env) => {
       IS_TEST: test,
       IS_DEV: dev,
       IS_SINGLE: single,
-      CONFIG_FILE_NAME: single ? JSON.stringify(wiki) : null,
-      LANG_CODE: single ? JSON.stringify(lang) : null,
+      CONFIG_FILE_NAME: single ? JSON.stringify(wiki) : undefined,
+      LANG_CODE: single ? JSON.stringify(lang) : undefined,
     }),
     new WebpackBuildNotifierPlugin({
       suppressSuccess: true,

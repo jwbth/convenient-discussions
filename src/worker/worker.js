@@ -13,6 +13,9 @@
 // in the worker context.
 /// <reference types="types-mediawiki" />
 
+// Import polyfills for a bunch of ES2022+ features
+import '../shared/polyfills';
+
 import './extendDomhandler';
 
 import { isComment, isText } from 'domhandler';

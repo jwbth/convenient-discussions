@@ -56,8 +56,8 @@ import { extractSignatures, formatDate, formatDateNative, getExtendedRect, isVis
 
 /**
  * @typedef {Map<
- *   import('./updateChecker').SectionWorkerMatched | import('./Section').default | null,
- *   import('./updateChecker').CommentWorkerMatched[] | Comment[]
+ *   import('./updateChecker').SectionWorkerMatched | import('./Section').default | undefined,
+ *   import('./updateChecker').CommentWorkerNew[] | Comment[]
  * >} CommentsBySection
  */
 
@@ -3702,6 +3702,7 @@ class Comment extends CommentSkeleton {
    * @param {Comment[]} comments
    * @returns {Map<import('./Section').default | undefined, Comment[]>}
    */
+
   /**
    * Turn a CommentWorkerMatched[] into a map with SectionWorkerMatched as keys.
    *
@@ -3713,16 +3714,16 @@ class Comment extends CommentSkeleton {
   /**
    * Turn a comment array into an object with sections or their IDs as keys.
    *
-   * @param {Comment[] | import('./updateChecker').CommentWorkerMatched[]} comments
-   * @returns {MapFromSectionToComments | import('./updateChecker').AddedComments['bySection']}
+   * @param {import('./shared/CommentSkeleton').CommentBase[]} comments
+   * @returns {MapFromSectionToComments}
    */
   static groupBySection(comments) {
-    const map = /** @type {any} */ (new Map());
+    const map = /** @type {MapFromSectionToComments} */ (new Map());
     for (const comment of comments) {
       if (!map.has(comment.section)) {
         map.set(comment.section, []);
       }
-      /** @type {any[]} */ (
+      /** @type {import('./shared/CommentSkeleton').CommentBase[]} */ (
         map.get(comment.section)
       ).push(comment);
     }
