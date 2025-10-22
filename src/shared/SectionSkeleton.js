@@ -1,4 +1,3 @@
-import CdError from './CdError';
 import CommentSkeleton from './CommentSkeleton';
 import TreeWalker from './TreeWalker';
 import cd from './cd';
@@ -169,10 +168,11 @@ class SectionSkeleton {
 
     if (editLink) {
       // `href` property with the full URL is not available in the worker context.
-      const editUrl = new URL(cd.g.server + editLink.getAttribute('href'));
-      if (editUrl) {
+      const href = editLink.getAttribute('href');
+      if (href) {
+        const editUrl = new URL(cd.g.server + href);
         const sectionParam = editUrl.searchParams.get('section');
-        if (sectionParam && sectionParam.startsWith('T-')) {
+        if (sectionParam?.startsWith('T-')) {
           this.sourcePageName = editUrl.searchParams.get('title') || undefined;
           this.sectionNumber = Number((sectionParam.match(/\d+/) || [])[0]);
         } else {
@@ -394,8 +394,9 @@ class SectionSkeleton {
   }
 }
 
+// Parallel to import('../updateChecker').SectionWorkerCropped
 /**
- * @typedef {RemoveMethods<SectionSkeleton>} SectionBase
+ * @typedef {Omit<RemoveMethods<SectionSkeleton>, 'parent'>} SectionBase
  */
 
 export default SectionSkeleton;

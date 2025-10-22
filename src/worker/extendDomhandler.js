@@ -363,7 +363,7 @@ Object.defineProperty(Element.prototype, 'outerHTML', {
  * @readonly
  */
 Element.prototype.hasAttribute = function hasAttribute(name) {
-  return this.attribs[name] !== undefined;
+  return typeof this.attribs[name] !== 'undefined';
 };
 
 /**
@@ -431,15 +431,16 @@ Object.defineProperty(Element.prototype, 'classList', {
     if (!this._classList) {
       /** @private */
       this._classList = /** @type {import('domhandler').TokenList} */ (/** @type {string[]} */ ([]));
+      const classList = this._classList;
 
-      this._classList.movedFromClassAttr = false;
+      classList.movedFromClassAttr = false;
 
-      this._classList.moveFromClassAttr = (/** @type {string|undefined} */ classAttr) => {
-        this._classList.push(...(classAttr || '').split(' '));
-        this._classList.movedFromClassAttr = true;
+      classList.moveFromClassAttr = (/** @type {string|undefined} */ classAttr) => {
+        classList.push(...(classAttr || '').split(' '));
+        classList.movedFromClassAttr = true;
       };
 
-      this._classList.add = (/** @type {string[]} */ ...names) => {
+      classList.add = (/** @type {string[]} */ ...names) => {
         names.forEach((name) => {
           let classAttr = this.getAttribute('class') || '';
           if (classAttr) {
@@ -447,15 +448,15 @@ Object.defineProperty(Element.prototype, 'classList', {
           }
           classAttr += name;
           this.setAttribute('class', classAttr);
-          if (this._classList.movedFromClassAttr) {
-            this._classList.push(name);
+          if (classList.movedFromClassAttr) {
+            classList.push(name);
           } else {
-            this._classList.moveFromClassAttr(classAttr);
+            classList.moveFromClassAttr(classAttr);
           }
         });
       };
 
-      this._classList.remove = (/** @type {string[]} */...names) => {
+      classList.remove = (/** @type {string[]} */...names) => {
         names.forEach((name) => {
           let classAttr = this.getAttribute('class') || '';
           const index = ` ${classAttr} `.indexOf(` ${name} `);
@@ -464,28 +465,28 @@ Object.defineProperty(Element.prototype, 'classList', {
               classAttr.slice(0, index) + classAttr.slice(index + name.length + 1)
             ).trim();
             this.setAttribute('class', classAttr);
-            if (this._classList.movedFromClassAttr) {
-              this._classList.push(name);
+            if (classList.movedFromClassAttr) {
+              classList.push(name);
             } else {
-              this._classList.moveFromClassAttr(classAttr);
+              classList.moveFromClassAttr(classAttr);
             }
           }
         });
       };
 
-      this._classList.contains = (/** @type {string} */ name) => {
+      classList.contains = (/** @type {string} */ name) => {
         const classAttr = this.getAttribute('class');
         if (!classAttr) {
           return false;
         }
 
-        if (!this._classList.movedFromClassAttr) {
-          this._classList.moveFromClassAttr(classAttr);
+        if (!classList.movedFromClassAttr) {
+          classList.moveFromClassAttr(classAttr);
         }
 
         // This can run tens of thousand times, so we microoptimize it (don't use template strings
         // and String#includes()).
-        return Boolean(this._classList.length) && this._classList.includes(name);
+        return Boolean(classList.length) && classList.includes(name);
       };
     }
 
@@ -522,5 +523,5 @@ Document.prototype.createTextNode = function createTextNode(content = '') {
   return new Text(content);
 };
 
-Document.prototype.getElementsByClassName = Element.prototype.getElementsByClassName;
-Document.prototype.querySelectorAll = Element.prototype.querySelectorAll;
+Document.prototype.getElementsByClassName = Element.prototype.getElementsByClassName.bind(Element);
+Document.prototype.querySelectorAll = Element.prototype.querySelectorAll.bind(Element);

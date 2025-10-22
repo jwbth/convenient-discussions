@@ -11,21 +11,40 @@
 
 import { getTimezoneOffset } from 'date-fns-tz';
 
+import CdError from './CdError';
 import cd from './cd';
 import { getContentLanguageMessages, removeDirMarks } from './utils-general';
 
-let utcString;
-
 export const dateTokenToMessageNames = {
   xg: [
-    'january-gen', 'february-gen', 'march-gen', 'april-gen', 'may-gen', 'june-gen', 'july-gen',
-    'august-gen', 'september-gen', 'october-gen', 'november-gen', 'december-gen'
+    'january-gen',
+    'february-gen',
+    'march-gen',
+    'april-gen',
+    'may-gen',
+    'june-gen',
+    'july-gen',
+    'august-gen',
+    'september-gen',
+    'october-gen',
+    'november-gen',
+    'december-gen',
   ],
   D: ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'],
   l: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
   F: [
-    'january', 'february', 'march', 'april', 'may_long', 'june', 'july', 'august', 'september',
-    'october', 'november', 'december'
+    'january',
+    'february',
+    'march',
+    'april',
+    'may_long',
+    'june',
+    'july',
+    'august',
+    'september',
+    'october',
+    'november',
+    'december',
   ],
   M: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
 };
@@ -79,11 +98,11 @@ export function getDateFromTimestampMatch(match, timezone) {
         // The worker context doesn't have mw.msg(), but isContentLanguage should be always `true`
         // there.
         monthIdx = // Messages
-        (
-          isContentLanguage
-            ? getContentLanguageMessages(dateTokenToMessageNames[code])
-            : dateTokenToMessageNames[code].map((token) => mw.msg(token))
-        ).indexOf(text);
+          (
+            isContentLanguage
+              ? getContentLanguageMessages(dateTokenToMessageNames[code])
+              : dateTokenToMessageNames[code].map((token) => mw.msg(token))
+          ).indexOf(text);
         break;
       }
       case 'd':
@@ -112,11 +131,12 @@ export function getDateFromTimestampMatch(match, timezone) {
         minutes = Number(untransformDigits(text));
         break;
       default:
-        throw 'Not implemented';
+        throw new CdError('Not implemented');
     }
   }
 
   const unixTime = Date.UTC(year, monthIdx, day, hours, minutes);
+
   return new Date(
     unixTime -
 
@@ -125,10 +145,10 @@ export function getDateFromTimestampMatch(match, timezone) {
       typeof timezone === 'number'
         ? timezone * cd.g.msInMin
         : timezone === 'UTC'
-        ? 0
+          ? 0
 
         // Using date-fns-tz's getTimezoneOffset() is way faster than day.js's methods.
-        : getTimezoneOffset(timezone, unixTime)
+          : getTimezoneOffset(timezone, unixTime)
     )
   );
 }
@@ -162,23 +182,4 @@ export function parseTimestamp(timestamp, timezone) {
     date: getDateFromTimestampMatch(match, timezone),
     match,
   };
-}
-
-/**
- * Generate a timezone postfix of a timestamp for an offset.
- *
- * @param {number} offset Offset in minutes.
- * @returns {string}
- */
-export function generateTimezonePostfix(offset) {
-  utcString ||= cd.mws('timezone-utc');
-  let postfix = ` (${utcString}`;
-
-  if (offset !== 0) {
-    // `offset` is not necessarily an integer
-    postfix += (offset > 0 ? '+' : '-') + Math.abs(offset / 60);
-  }
-  postfix += ')';
-
-  return postfix;
 }

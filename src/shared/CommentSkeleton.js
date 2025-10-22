@@ -1941,10 +1941,11 @@ class CommentSkeleton {
   }
 }
 
+// Parallel to import('../updateChecker').CommentWorkerCropped
 /**
  * @typedef {Omit<
  *   RemoveMethods<CommentSkeleton>,
- *   'children' | 'previousComments'
+ *   'children' | 'previousComments' | 'parent'
  * >} CommentBase
  */
 

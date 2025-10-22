@@ -78,20 +78,18 @@ class CompactCommentLayers extends CommentLayers {
     super.create();
 
     // Set up compact-specific overlay menu elements
-    if (this.overlay) {
-      this.overlayInnerWrapper = /** @type {HTMLElement} */ (this.overlay.lastChild);
-      this.overlayGradient = /** @type {HTMLElement} */ (this.overlayInnerWrapper.firstChild);
-      this.overlayMenu = /** @type {HTMLElement} */ (this.overlayInnerWrapper.lastChild);
+    this.overlayInnerWrapper = /** @type {HTMLElement} */ (this.overlay.lastChild);
+    this.overlayGradient = /** @type {HTMLElement} */ (this.overlayInnerWrapper.firstChild);
+    this.overlayMenu = /** @type {HTMLElement} */ (this.overlayInnerWrapper.lastChild);
 
-      // Create jQuery wrappers for overlay menu elements
-      this.$overlayMenu = /** @type {JQuery} */ ($(this.overlayMenu));
-      this.$overlayGradient = /** @type {JQuery} */ ($(this.overlayGradient));
+    // Create jQuery wrappers for overlay menu elements
+    this.$overlayMenu = /** @type {JQuery} */ ($(this.overlayMenu));
+    this.$overlayGradient = /** @type {JQuery} */ ($(this.overlayGradient));
 
-      // Set up event listeners for menu management
-      this.overlayInnerWrapper.addEventListener('contextmenu', this.hideMenu);
-      this.overlayInnerWrapper.addEventListener('mousedown', this.deferHideMenu);
-      this.overlayInnerWrapper.addEventListener('mouseup', this.dontHideMenu);
-    }
+    // Set up event listeners for menu management
+    this.overlayInnerWrapper.addEventListener('contextmenu', this.hideMenu);
+    this.overlayInnerWrapper.addEventListener('mousedown', this.deferHideMenu);
+    this.overlayInnerWrapper.addEventListener('mouseup', this.dontHideMenu);
   }
 
   /**

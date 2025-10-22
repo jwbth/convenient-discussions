@@ -169,9 +169,7 @@ class CompactCommentActions extends CommentActions {
    * @param {CommentButton} button The button to append.
    */
   appendButton(button) {
-    const overlayMenu = this.getOverlayMenu();
-    if (!overlayMenu) return;
-    overlayMenu.append(button.element);
+    this.getOverlayMenu()?.append(button.element);
   }
 
   /**
@@ -181,9 +179,7 @@ class CompactCommentActions extends CommentActions {
    * @param {CommentButton} button The button to prepend.
    */
   prependButton(button) {
-    const overlayMenu = this.getOverlayMenu();
-    if (!overlayMenu) return;
-    overlayMenu.prepend(button.element);
+    this.getOverlayMenu()?.prepend(button.element);
   }
 
   /**
@@ -203,6 +199,9 @@ class CompactCommentActions extends CommentActions {
       this.comment.toggleChildThreads();
     };
     this.toggleChildThreadsButton = this.createToggleChildThreadsButton(action);
+    this.toggleChildThreadsButton.element.addEventListener('mouseenter', () => {
+      this.comment.maybeOnboardOntoToggleChildThreads();
+    });
 
     // Insert after go to parent/child buttons if they exist
     const targetButton = this.goToParentButton || this.goToChildButton;
@@ -215,10 +214,6 @@ class CompactCommentActions extends CommentActions {
     } else {
       this.prependButton(this.toggleChildThreadsButton);
     }
-
-    this.toggleChildThreadsButton.element.addEventListener('mouseenter', () => {
-      this.comment.maybeOnboardOntoToggleChildThreads();
-    });
   }
 
   /**

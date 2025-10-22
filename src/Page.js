@@ -754,7 +754,7 @@ export default class Page {
             pattern = mw.util.escapeRegExp(pattern);
             if (replacements) {
               pattern = pattern.replace(/\\\$/, '$').replace(/\$(\d+)/, (s, n) => {
-                const replacement = replacements[n - 1];
+                const replacement = replacements.at(n - 1);
 
                 return replacement ? `(${replacement.source})` : s;
               });

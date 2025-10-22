@@ -320,7 +320,7 @@ class Button {
    * @returns {boolean}
    */
   isConnected() {
-    return Boolean(this.element?.isConnected);
+    return this.element.isConnected;
   }
 
   /**

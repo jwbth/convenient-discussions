@@ -16,8 +16,30 @@ import cd from './cd';
 import settings from './settings';
 import ElementsTreeWalker from './shared/ElementsTreeWalker';
 import { decodeHtmlEntities, defined, generatePageNamePattern, isInline, parseWikiUrl, removeDirMarks, spacesToUnderlines } from './shared/utils-general';
-import { dateTokenToMessageNames, generateTimezonePostfix, parseTimestamp } from './shared/utils-timestamp';
+import { dateTokenToMessageNames, parseTimestamp } from './shared/utils-timestamp';
 import { maskDistractingCode } from './shared/utils-wikitext';
+
+/** @type {string | undefined} */
+let utcString;
+
+/**
+ * Generate a timezone postfix of a timestamp for an offset.
+ *
+ * @param {number} offset Offset in minutes.
+ * @returns {string}
+ */
+export function generateTimezonePostfix(offset) {
+  utcString ??= cd.mws('timezone-utc');
+  let postfix = ` (${utcString}`;
+
+  if (offset !== 0) {
+    // `offset` is not necessarily an integer
+    postfix += (offset > 0 ? '+' : '-') + String(Math.abs(offset / 60));
+  }
+  postfix += ')';
+
+  return postfix;
+}
 
 /**
  * @typedef {{ [key: string]: import('./Button').Action }} WrapCallbacks
@@ -54,10 +76,7 @@ export function wrapHtml(html, options = {}) {
       } else if (!$link.length) {
         $link = $linkWrapper.wrapInner('<a>').children().first();
       }
-      new Button({
-        buttonElement: $link[0],
-        action: callbacks[className],
-      });
+      new Button({ buttonElement: $link[0] }).setAction(callbacks[className]);
     });
   }
   if (options.targetBlank) {
@@ -194,7 +213,8 @@ export function getVisibilityByRects(...rects) {
 export function isVisible(...elements) {
   return elements.every((element) => {
     // Use modern checkVisibility API if available
-    if ('checkVisibility' in element) {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (element?.checkVisibility) {
       return element.checkVisibility();
     }
 

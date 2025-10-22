@@ -152,8 +152,11 @@ class SpaciousCommentActions extends CommentActions {
    * @param {CommentButton} button The button to append.
    */
   appendButton(button) {
-    if (button === this.goToParentButton || button === this.goToChildButton ||
-      button === this.toggleChildThreadsButton) {
+    if (
+      button === this.goToParentButton ||
+      button === this.goToChildButton ||
+      button === this.toggleChildThreadsButton
+    ) {
       // These buttons go in the header
       this.comment.headerElement?.append(button.element);
     } else {
@@ -197,16 +200,15 @@ class SpaciousCommentActions extends CommentActions {
       this.comment.toggleChildThreads();
     };
     this.toggleChildThreadsButton = this.createToggleChildThreadsButton(action);
+    this.toggleChildThreadsButton.element.addEventListener('mouseenter', () => {
+      this.comment.maybeOnboardOntoToggleChildThreads();
+    });
 
     // Insert in header before change note
     this.comment.headerElement?.insertBefore(
       this.toggleChildThreadsButton.element,
       this.comment.$changeNote?.[0] || null
     );
-
-    this.toggleChildThreadsButton.element.addEventListener('mouseenter', () => {
-      this.comment.maybeOnboardOntoToggleChildThreads();
-    });
   }
 
   /**

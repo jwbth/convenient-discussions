@@ -5,9 +5,9 @@ import 'domhandler';
 
 declare module 'domhandler' {
   namespace Node {
-    export var ELEMENT_NODE: 1;
-    export var TEXT_NODE: 3;
-    export var COMMENT_NODE: 8;
+    export let ELEMENT_NODE: 1;
+    export let TEXT_NODE: 3;
+    export let COMMENT_NODE: 8;
   }
 
   interface Node {
@@ -159,7 +159,7 @@ declare module 'domhandler' {
     classList: TokenList;
     className: string;
 
-    _classList: TokenList;
+    _classList: TokenList | undefined;
 
     cdIsInline?: boolean;
   }

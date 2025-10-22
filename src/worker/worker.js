@@ -286,11 +286,11 @@ function onMessageFromWindow(event) {
     cd.g = message.g;
     cd.config = message.config;
 
-    cd.config.rejectNode = restoreFunc(
-      /** @type {string} */ (/** @type {unknown} */ (cd.config.rejectNode))
+    cd.config.rejectNode = /** @type {typeof cd['config']['rejectNode']} */ (
+      restoreFunc(cd.config.rejectNode?.toString())
     );
     cd.g.isIPv6Address = /** @type {typeof mw['util']['isIPv6Address']} */ (restoreFunc(
-      /** @type {string} */ (/** @type {unknown} */ (cd.g.isIPv6Address))
+      cd.g.isIPv6Address?.toString()
     ));
 
     self.document = parseDocument(message.text, {

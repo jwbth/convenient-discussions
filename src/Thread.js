@@ -8,7 +8,7 @@ import commentManager from './commentManager';
 import settings from './settings';
 import CdError from './shared/CdError';
 import ElementsTreeWalker from './shared/ElementsTreeWalker';
-import { defined, isHeadingNode, removeFromArrayIfPresent, subtractDaysFromNow, unique } from './shared/utils-general';
+import { isHeadingNode, removeFromArrayIfPresent, subtractDaysFromNow, unique } from './shared/utils-general';
 import talkPageController from './talkPageController';
 import updateChecker from './updateChecker';
 import { loadUserGenders } from './utils-api';
