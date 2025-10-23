@@ -49,7 +49,7 @@ class StorageItemWithKeysAndSaveTime extends StorageItemWithKeys {
    * Get an entry of the storage item by key.
    *
    * @param {ValidKey} key
-   * @returns {EntryTypeWithSaveTime<EntryType, Key> | undefined}
+   * @returns {EntryTypeWithSaveTime<EntryType, Key>}
    * @override
    */
   get(key) {

@@ -47,12 +47,12 @@ declare module 'domhandler' {
      * Iterate over child nodes, testing the node using the provided callback.
      *
      * Returns `true` to stop walking through subtree (after founding the required amounts for
-     * elements, for instance).
+     * elements, for instance), `false` otherwise.
      */
     traverseSubtree: (
-      callback: (node: Node) => boolean | void,
+      callback: (node: Node) => boolean,
       checkSelf?: boolean
-    ) => boolean | undefined;
+    ) => boolean;
   }
 
   interface NodeWithChildren extends Node {

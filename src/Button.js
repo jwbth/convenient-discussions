@@ -188,7 +188,7 @@ class Button {
    * @returns {this} This button.
    */
   setLabel(label) {
-    this.labelElement ||= this.buttonElement;
+    this.labelElement = this.buttonElement;
     this.labelElement.textContent = label;
 
     return this;
@@ -245,6 +245,7 @@ class Button {
       this.callback = (event) => {
         if (
           !(event instanceof KeyboardEvent) ||
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           [OO.ui.Keys.ENTER, OO.ui.Keys.SPACE].includes(event.keyCode)
         ) {
           this.maybeExecuteAction(action, event);
@@ -341,7 +342,7 @@ class Button {
   }
 
   /**
-   * @type {{ [name: string]: HTMLElement }}
+   * @type {{ [name: string]: HTMLElement | undefined }}
    */
   static prototypes = {};
 

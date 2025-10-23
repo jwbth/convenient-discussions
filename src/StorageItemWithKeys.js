@@ -2,7 +2,7 @@ import StorageItem from './StorageItem';
 
 /**
  * @template {any} EntryType
- * @typedef {{ [key: ValidKey]: EntryType | undefined }} EntryTypeByKey
+ * @typedef {{ [key: ValidKey]: EntryType }} EntryTypeByKey
  */
 
 // See StorageItemWithKeysAndSaveTime.js for the structure of storage items.
@@ -28,7 +28,7 @@ class StorageItemWithKeys extends StorageItem {
    * Get an entry of the storage item by key.
    *
    * @param {ValidKey} key
-   * @returns {EntryType | undefined}
+   * @returns {EntryType}
    */
   get(key) {
     return this.data[key];

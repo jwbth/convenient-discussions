@@ -43,7 +43,7 @@ Node.prototype.follows = function follows(node) {
 };
 
 /**
- * @param {(node: Node) => boolean | void} callback
+ * @param {(node: Node) => boolean} callback
  * @param {boolean} [checkSelf]
  * @returns {boolean}
  */

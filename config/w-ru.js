@@ -306,10 +306,10 @@ export default /** @type {Partial<typeof import('./default').default>} */ ({
     '-',
   ],
 
-  quoteFormatting(useBlockFormatting, author, timestamp, dtId) {
+  quoteFormatting({ mentionSource, author, timestamp, dtId }) {
     var pre = '{{цс|1=';
     var post = '';
-    if (useBlockFormatting) {
+    if (mentionSource) {
       if (author) {
         post += '|2=' + author;
       }
@@ -546,9 +546,9 @@ mw.hook('convenientDiscussions.beforeParse').add(() => {
 });
 
 mw.hook('convenientDiscussions.pageReadyFirstTime').add(() => {
-  const generateEditCommonJsLink = function () {
+  function generateEditCommonJsLink() {
     return mw.util.getUrl('User:' + cd.user.getName() + '/common.js', { action: 'edit' });
-  };
+  }
 
   const isHlmEnabled = window.highlightMessagesAfterLastVisit !== undefined;
   if (isHlmEnabled) {

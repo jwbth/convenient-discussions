@@ -69,6 +69,8 @@ function getAllTextNodes() {
       if (isComment(node) && node.data.startsWith('__DTREPLYBUTTONS__')) {
         node.remove();
       }
+
+      return false;
     }
   );
 

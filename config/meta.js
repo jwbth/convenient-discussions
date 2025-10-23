@@ -1,4 +1,4 @@
-export default {
+export default /** @type {Partial<typeof import('./default').default>} */ ({
   messages: {
     'sun': 'Sun',
     'mon': 'Mon',
@@ -78,9 +78,9 @@ export default {
     'visualeditor-educationpopup-dismiss': 'Okay, got it',
   },
   specialPageAliases: {
-    'Contributions': 'Contributions',
-    'Diff': 'Diff',
-    'PermanentLink': 'PermanentLink',
+    Contributions: 'Contributions',
+    Diff: 'Diff',
+    PermanentLink: 'PermanentLink',
   },
   timezone: 'UTC',
   useGlobalPreferences: true,
@@ -110,10 +110,10 @@ export default {
     'Clear',
     'Br',
   ],
-  quoteFormatting: function (useBlockFormatting, author, timestamp, dtId) {
+  quoteFormatting({ mentionSource, author, timestamp, dtId }) {
     var pre = '';
     var post = '';
-    if (useBlockFormatting) {
+    if (mentionSource) {
       pre = '{{tqb|text=';
       if (author) {
         post += '|by=' + author;
@@ -126,9 +126,10 @@ export default {
       }
       post += '}}';
     } else {
-      pre = '{{tq|1='
+      pre = '{{tq|1=';
       post += '}}<br>';
     }
+
     return [pre, post];
   },
   noSignatureClasses: [
@@ -162,13 +163,13 @@ export default {
     'NavContent',
     'mw-collapsed',
   ],
-  beforeAuthorLinkParse: function (authorLink) {
+  beforeAuthorLinkParse(authorLink) {
     // https://meta.wikimedia.org/wiki/MediaWiki:Gadget-markAdmins.js
     return authorLink.lastElementChild;
   },
-  afterAuthorLinkParse: function (authorLink, adminMarkCandidate) {
-    if (adminMarkCandidate && adminMarkCandidate.classList.contains('adminMark')) {
-      authorLink.appendChild(adminMarkCandidate);
+  afterAuthorLinkParse(authorLink, adminMarkCandidate) {
+    if (adminMarkCandidate?.classList.contains('adminMark')) {
+      authorLink.append(adminMarkCandidate);
     }
   },
-};
+});

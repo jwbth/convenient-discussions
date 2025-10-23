@@ -1,0 +1,9 @@
+{
+  "extends": "../jsconfig-base.json",
+  "compilerOptions": {
+    "target": "es2015",
+    "lib": ["ES2015", "DOM", "DOM.Iterable"],
+    "types": ["oojs", "oojs-ui", "jquery", "jqueryui"]
+  },
+  "include": ["**/*", "../node_modules/types-mediawiki"]
+}

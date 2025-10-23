@@ -1,4 +1,4 @@
-export default {
+export default /** @type {Partial<typeof import('./default').default>} */ ({
   messages: {
     'sun': 'Sun',
     'mon': 'Mon',
@@ -78,16 +78,16 @@ export default {
     'visualeditor-educationpopup-dismiss': 'Okay, got it',
   },
   specialPageAliases: {
-    'Contributions': 'Contributions',
-    'Diff': 'Diff',
-    'PermanentLink': 'PermanentLink',
+    Contributions: 'Contributions',
+    Diff: 'Diff',
+    PermanentLink: 'PermanentLink',
   },
   timezone: 'UTC',
   useGlobalPreferences: true,
   archivePaths: [
     {
-      source: "Commons:Undeletion requests/Current requests",
-      archive: "Commons:Undeletion requests/Archive",
+      source: 'Commons:Undeletion requests/Current requests',
+      archive: 'Commons:Undeletion requests/Archive',
     },
     /\/Archive/,
   ],
@@ -130,7 +130,7 @@ export default {
     'Clr',
     '-',
   ],
-  quoteFormatting: function (useBlockFormatting, author, timestamp, dtId) {
+  quoteFormatting(useBlockFormatting, author, timestamp, dtId) {
     var pre = '';
     var post = '';
     if (useBlockFormatting) {
@@ -146,9 +146,10 @@ export default {
       }
       post += '}}';
     } else {
-      pre = '{{tq|1='
+      pre = '{{tq|1=';
       post += '}}<br>';
     }
+
     return [pre, post];
   },
   noSignatureClasses: [
@@ -185,16 +186,16 @@ export default {
     'boilerplate',
     'delh',
   ],
-  beforeAuthorLinkParse: function (authorLink) {
+  beforeAuthorLinkParse(authorLink) {
     // https://commons.wikimedia.org/wiki/MediaWiki:Gadget-markAdmins.js
     return authorLink.lastElementChild;
   },
-  afterAuthorLinkParse: function (authorLink, adminMarkCandidate) {
-    if (adminMarkCandidate && adminMarkCandidate.classList.contains('adminMark')) {
-      authorLink.appendChild(adminMarkCandidate);
+  afterAuthorLinkParse(authorLink, adminMarkCandidate) {
+    if (adminMarkCandidate?.classList.contains('adminMark')) {
+      authorLink.append(adminMarkCandidate);
     }
   },
-};
+});
 
 if (Number(mw.user.options.get('gadget-ThreadedDiscussions')) === 1) {
   mw.notify(

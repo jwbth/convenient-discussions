@@ -11,7 +11,7 @@ import tseslint from 'typescript-eslint';
 
 const config = defineConfig(
   {
-    ignores: ['dist/**', 'misc/**', '*.json5', 'w-he.js', '**/test.ts', '**/test.js', 'src/tribute/**'],
+    ignores: ['dist/**', 'misc/**', '*.json5', 'config/w-he.js', '**/test.ts', '**/test.js', 'src/tribute/**'],
   },
   {
     settings: {
@@ -92,6 +92,7 @@ const config = defineConfig(
           './src/worker/jsconfig.json',
           './src/shared/jsconfig.json',
           './tests/jsconfig.json',
+          './config/jsconfig.json',
         ],
         tsconfigRootDir: import.meta.dirname,
         // jsDocParsingMode: 'all',
@@ -462,7 +463,7 @@ const config = defineConfig(
   // Partial ES2022 compatibility: Allows .at() and .findLastIndex() (with polyfills) but restricts
   // other ES2022+ features
   {
-    files: ['src/**/*', 'config/**/*', 'data/**/*'],
+    files: ['src/**/*'],
     ignores: ['src/tribute/**'],
     plugins: {
       // @ts-expect-error - Type definition mismatch with flat config
@@ -474,6 +475,16 @@ const config = defineConfig(
       'es-x/no-array-prototype-tosorted': 'error',
       'es-x/no-array-prototype-tospliced': 'error',
       'es-x/no-array-prototype-with': 'error',
+    },
+  },
+
+  {
+    files: ['config/**/*'],
+    plugins: {
+      'es-x': esX,
+    },
+    languageOptions: {
+      ecmaVersion: 2015,
     },
   },
 

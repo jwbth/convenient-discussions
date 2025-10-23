@@ -1,4 +1,4 @@
-export default {
+export default /** @type {Partial<typeof import('./default').default>} */ ({
   messages: {
     'sun': 'Sun',
     'mon': 'Mon',
@@ -78,9 +78,9 @@ export default {
     'visualeditor-educationpopup-dismiss': 'Okay, got it',
   },
   specialPageAliases: {
-    'Contributions': 'Contributions',
-    'Diff': 'Diff',
-    'PermanentLink': 'PermanentLink',
+    Contributions: 'Contributions',
+    Diff: 'Diff',
+    PermanentLink: 'PermanentLink',
   },
   timezone: 'UTC',
   useGlobalPreferences: true,
@@ -92,20 +92,20 @@ export default {
     'Unsigned IP',
     'Unsigned2',
     'Unsignedr',
-    'Nosigr'
+    'Nosigr',
   ],
   outdentTemplates: [
-    'outdent'
+    'outdent',
   ],
   clearTemplates: [
     'Clear',
     'Clr',
-    '-'
+    '-',
   ],
-  quoteFormatting: function (useBlockFormatting, author, timestamp, dtId) {
+  quoteFormatting({ mentionSource, author, timestamp, dtId }) {
     var pre = '';
     var post = '';
-    if (useBlockFormatting) {
+    if (mentionSource) {
       pre = '{{tqb|text=';
       if (author) {
         post += '|by=' + author;
@@ -118,17 +118,18 @@ export default {
       }
       post += '}}';
     } else {
-      pre = '{{tq|1='
+      pre = '{{tq|1=';
       post += '}}<br>';
     }
+
     return [pre, post];
   },
   closedDiscussionTemplates: [
     [
-      'Hidden archive top'
+      'Hidden archive top',
     ],
     [
-      'Hidden archive bottom'
-    ]
-  ]
-};
+      'Hidden archive bottom',
+    ],
+  ],
+});

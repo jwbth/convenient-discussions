@@ -547,8 +547,8 @@ const defaultConfig = {
    *
    * @callback QuoteFormattingFunction
    * @param {object} options
-   * @param {boolean} options.mentionSource Whether it's appropriate to mention the source of the quote (e.g.
-   *   when quoting a different comment than the user is replying to).
+   * @param {boolean} options.mentionSource Whether it's appropriate to mention the source of the
+   *   quote (e.g. when quoting a different comment than the user is replying to).
    * @param {string} [options.author] Quote author.
    * @param {string} [options.timestamp] Quote timestamp.
    * @param {string} [options.dtId] Comment's DiscussionTools ID.
@@ -881,7 +881,7 @@ const defaultConfig = {
    * example at
    * {@link https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-commonsConfig.js}.
    *
-   * @type {((authorLink: Element, data: any) => Element) | null}
+   * @type {((authorLink: Element, data: any) => void) | null}
    * @default null
    */
   afterAuthorLinkParse: null,
