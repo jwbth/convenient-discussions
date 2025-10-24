@@ -1,7 +1,7 @@
-// These are types for our extensions of domhandler. It's not called domhandlerExtended.d.ts because
-// that would cause type imports to be from this module.
+// These are types for our extensions of domhandler. It's not called extendDomhandler.d.ts because
+// that would cause type imports from './extendDomhandler' to be from this module.
 
-import 'domhandler';
+// import { DataNode, Element } from 'domhandler';
 
 declare module 'domhandler' {
   namespace Node {
@@ -175,3 +175,5 @@ declare module 'domhandler' {
     movedFromClassAttr: boolean;
   }
 }
+
+export {};

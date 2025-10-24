@@ -54,7 +54,7 @@ const defaultConfig = {
    * {@link https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/convenientDiscussions-generateBasicConfig.js}
    * in your browser's console while the page of your wiki is open.
    *
-   * @type {StringsByKey}
+   * @type {{ [name: string]: string }}
    * @default {}
    */
   messages: {},
@@ -727,7 +727,7 @@ const defaultConfig = {
    * @type {number}
    * @default 10000
    */
-  longCommentThreshold: 10_000,
+  longCommentThreshold: 10000,
 
   /**
    * Lower limit of the number of bytes to be added to the page to deem an edit a new comment. Used

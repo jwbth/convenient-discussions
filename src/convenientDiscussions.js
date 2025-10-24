@@ -1,6 +1,6 @@
 /**
- * Module that populates the {@link convenientDiscussionsWindow} object. It is run in the window
- * context and is passed partially to the worker context.
+ * Module that populates the {@link convenientDiscussions} object. It is run in the window context
+ * and is passed partially to the worker context.
  *
  * @module convenientDiscussions
  */

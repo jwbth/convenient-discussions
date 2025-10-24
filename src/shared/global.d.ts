@@ -118,10 +118,6 @@ declare global {
     textContent: string;
   }
 
-  // type ElementLike = Element | DomHandlerElement;
-  // type NodeLike = Node | DomHandlerNode;
-  // type TextLike = Text | DomHandlerText;
-
   type AnyNode = import('domhandler').Node | Node;
   type AnyElement = import('domhandler').Element | Element;
   type AnyText = import('domhandler').Text | Text;

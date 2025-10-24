@@ -11,7 +11,7 @@ import tseslint from 'typescript-eslint';
 
 const config = defineConfig(
   {
-    ignores: ['dist/**', 'misc/**', '*.json5', 'config/w-he.js', '**/test.ts', '**/test.js', 'src/tribute/**'],
+    ignores: ['dist/**', 'misc/**', '*.json5', 'config/**/*', '**/test.ts', '**/test.js', 'src/tribute/**'],
   },
   {
     settings: {
@@ -483,8 +483,17 @@ const config = defineConfig(
     plugins: {
       'es-x': esX,
     },
-    languageOptions: {
-      ecmaVersion: 2015,
+    rules: {
+      ...js.configs.recommended.rules,
+      ...esX.configs['no-new-in-es2016'].rules,
+      ...esX.configs['no-new-in-es2017'].rules,
+      ...esX.configs['no-new-in-es2018'].rules,
+      ...esX.configs['no-new-in-es2019'].rules,
+      ...esX.configs['no-new-in-es2020'].rules,
+      ...esX.configs['no-new-in-es2021'].rules,
+      ...esX.configs['no-new-in-es2022'].rules,
+      ...esX.configs['no-new-in-es2023'].rules,
+      ...esX.configs['no-new-in-es2024'].rules,
     },
   },
 

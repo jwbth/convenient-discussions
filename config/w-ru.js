@@ -561,12 +561,12 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(() => {
       if (window.messagesHighlightColor !== undefined) {
         const dummyElement = document.createElement('span');
         dummyElement.style.color = window.messagesHighlightColor;
-        const hlmStyledElements = cd.api.getRootElement().querySelectorAll(
+        const hlmStyledElements = /** @type {NodeListOf<HTMLElement>} */ (cd.api.getRootElement().querySelectorAll(
           '.cd-comment-part[style="background-color: ' + dummyElement.style.color + ';"],' +
           '.cd-comment-part[style="background-color: ' + window.messagesHighlightColor + '"]'
-        );
+        ));
         hlmStyledElements.forEach((el) => {
-          el.style.backgroundColor = null;
+          el.style.backgroundColor = '';
         });
       }
 
@@ -612,10 +612,10 @@ mw.hook('convenientDiscussions.commentFormCreated').add((commentForm) => {
 });
 
 mw.hook('convenientDiscussions.commentFormCustomModulesReady').add((commentForm) => {
-  commentForm.$element.on('keydown', (e) => {
+  commentForm.$element.on('keydown', (event) => {
     // Ctrl+Alt+W
-    const isCmdModifierPressed = $.client.profile().platform === 'mac' ? e.metaKey : e.ctrlKey;
-    if (isCmdModifierPressed && !e.shiftKey && e.altKey && e.keyCode === 87) {
+    const isCmdModifierPressed = $.client.profile().platform === 'mac' ? event.metaKey : event.ctrlKey;
+    if (isCmdModifierPressed && !event.shiftKey && event.altKey && event.keyCode === 87) {
       window.Wikify(commentForm.commentInput.$input[0]);
     }
   });

@@ -1,9 +1,17 @@
 {
   "extends": "../jsconfig-base.json",
   "compilerOptions": {
+    "module": "preserve",
     "target": "es2015",
     "lib": ["ES2015", "DOM", "DOM.Iterable"],
     "types": ["oojs", "oojs-ui", "jquery", "jqueryui"]
   },
-  "include": ["**/*", "../node_modules/types-mediawiki"]
+  "include": [
+    "**/*",
+    "../node_modules/types-mediawiki",
+    "../src/global.d.ts",
+    "../src/shared/global.d.ts",
+    "../src/shared/utilityTypes.d.ts",
+    "../src/shared/domhandler.d.ts"
+  ]
 }

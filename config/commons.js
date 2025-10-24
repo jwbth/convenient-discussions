@@ -130,10 +130,10 @@ export default /** @type {Partial<typeof import('./default').default>} */ ({
     'Clr',
     '-',
   ],
-  quoteFormatting(useBlockFormatting, author, timestamp, dtId) {
+  quoteFormatting({ mentionSource, author, timestamp, dtId }) {
     var pre = '';
     var post = '';
-    if (useBlockFormatting) {
+    if (mentionSource) {
       pre = '{{tqb|text=';
       if (author) {
         post += '|by=' + author;
