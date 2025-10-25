@@ -489,7 +489,10 @@ export default /** @type {Partial<typeof import('./default').default>} */ ({
     // https://ru.wikipedia.org/wiki/MediaWiki:Gadget-markadmins.js
     const nextElement = authorLink.nextElementSibling;
     if (nextElement?.classList.contains('userflags-wrapper')) {
-      authorLinkPrototype.parentNode.insertBefore(nextElement, authorLinkPrototype.nextSibling);
+      /** @type {HTMLElement} */ (authorLinkPrototype.parentNode).insertBefore(
+        nextElement,
+        authorLinkPrototype.nextSibling
+      );
     }
   },
 
@@ -582,7 +585,7 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(() => {
     }
   }
 
-  if (typeof proceedToArchiveRunned !== 'undefined' && !mw.cookie.get('cd-ptaConflict')) {
+  if (typeof window.proceedToArchiveRunned !== 'undefined' && !mw.cookie.get('cd-ptaConflict')) {
     const $text = cd.api.wrapHtml('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Jack_who_built_the_house/proceedToArchive.js">proceedToArchive.js</a>, функциональность которого включена в скрипт «Удобные обсуждения». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
     mw.notify($text, {
       type: 'warn',
@@ -603,23 +606,36 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(() => {
   }
 });
 
-mw.hook('convenientDiscussions.commentFormCreated').add((commentForm) => {
-  commentForm.couldBeCloserClosing = (
-    cd.page.name.startsWith('Википедия:К удалению') &&
-    commentForm.getMode() === 'addSubsection' &&
-    mw.config.get('wgUserGroups').includes('closer')
-  );
-});
-
-mw.hook('convenientDiscussions.commentFormCustomModulesReady').add((commentForm) => {
-  commentForm.$element.on('keydown', (event) => {
-    // Ctrl+Alt+W
-    const isCmdModifierPressed = $.client.profile().platform === 'mac' ? event.metaKey : event.ctrlKey;
-    if (isCmdModifierPressed && !event.shiftKey && event.altKey && event.keyCode === 87) {
-      window.Wikify(commentForm.commentInput.$input[0]);
+mw.hook('convenientDiscussions.commentFormCreated').add(
+  /** @type {( ...args: import('../src/commentFormManager').CommentFormCreatedEvent ) => void} */ (
+    (commentForm) => {
+      const userGroups = mw.config.get('wgUserGroups');
+      // @ts-ignore
+      commentForm.couldBeCloserClosing =
+        cd.page.name.startsWith('Википедия:К удалению') &&
+        commentForm.getMode() === 'addSubsection' &&
+        userGroups &&
+        userGroups.includes('closer');
     }
-  });
-});
+  )
+);
+
+mw.hook('convenientDiscussions.commentFormCustomModulesReady').add(
+  /** @type {( ...args: import('../src/commentFormManager').CommentFormCreatedEvent ) => void} */ (
+    (commentForm) => {
+      commentForm.$element.on('keydown', (event) => {
+        // Ctrl+Alt+W
+        const isCmdModifierPressed =
+          $.client.profile().platform === 'mac' ? event.metaKey : event.ctrlKey;
+        if (isCmdModifierPressed && !event.shiftKey && event.altKey && event.keyCode === 87) {
+          if (window.Wikify) {
+            window.Wikify(commentForm.commentInput.$input[0]);
+          }
+        }
+      });
+    }
+  )
+);
 
 mw.hook('convenientDiscussions.commentFormToolbarReady').add((commentForm) => {
   commentForm.commentInput.$input.wikiEditor('addToToolbar', {
@@ -634,7 +650,9 @@ mw.hook('convenientDiscussions.commentFormToolbarReady').add((commentForm) => {
             action: {
               type: 'callback',
               execute() {
-                window.Wikify(commentForm.commentInput.$input[0]);
+                if (window.Wikify) {
+                  window.Wikify(commentForm.commentInput.$input[0]);
+                }
               },
             },
           },
@@ -658,7 +676,9 @@ mw.hook('convenientDiscussions.commentFormToolbarReady').add((commentForm) => {
           action: {
             type: 'callback',
             execute() {
-              window.urlDecoderRun(commentForm.commentInput.$input[0]);
+              if (window.urlDecoderRun) {
+                window.urlDecoderRun(commentForm.commentInput.$input[0]);
+              }
             },
           },
         },

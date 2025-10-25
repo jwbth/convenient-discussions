@@ -164,8 +164,6 @@ declare module 'domhandler' {
     cdIsInline?: boolean;
   }
 
-  interface Text extends DataNode {}
-
   interface TokenList extends Array<string> {
     contains(name: string): boolean;
     add(...names: string[]): void;

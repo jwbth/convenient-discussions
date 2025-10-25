@@ -20,6 +20,10 @@ import { isCmdModifierPressed, isInputFocused, keyCombination } from './utils-wi
  */
 
 /**
+ * @typedef {[CommentForm, import('./cd').ConvenientDiscussions]} CommentFormCreatedEvent
+ */
+
+/**
  * Singleton storing data about comment forms on the page and managing them.
  *
  * @augments EventEmitter<EventMap>
@@ -72,10 +76,10 @@ class CommentFormManager extends EventEmitter {
       .on('resize', this.adjustLabels);
     commentManager
       .on('select', () => {
-        this.toggleQuoteButtonsHighlighting(true); 
+        this.toggleQuoteButtonsHighlighting(true);
       })
       .on('unselect', () => {
-        this.toggleQuoteButtonsHighlighting(false); 
+        this.toggleQuoteButtonsHighlighting(false);
       });
 
     mw.hook('ext.CodeMirror.toggle').add((enabled, codeMirror) => {
@@ -316,9 +320,13 @@ class CommentFormManager extends EventEmitter {
     let haveRestored = /** @type {boolean} */ (false);
 
     this.maybeShowRescueDialog(
-      /** @type {StorageItemWithKeysAndSaveTime<import('./CommentForm').CommentFormData[], 'commentForms'>} */ (
-        new StorageItemWithKeysAndSaveTime('commentForms')
-      )
+      /**
+       * @type {StorageItemWithKeysAndSaveTime<
+       *   import('./CommentForm').CommentFormData[],
+       *   'commentForms'
+       * >}
+       */ (new StorageItemWithKeysAndSaveTime('commentForms'))
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         .cleanUp((entry) => !entry.commentForms?.length || entry.saveTime < subtractDaysFromNow(60))
         .save()
         .get(mw.config.get('wgPageName'))
@@ -329,7 +337,7 @@ class CommentFormManager extends EventEmitter {
             /** @type {import('./CommentForm').CommentFormInitialState} */ (
               data
             ).targetWithOutdentedReplies = /** @type {import('./Comment').default|undefined} */ (
-              this.getTargetByData(data.targetWithOutdentedRepliesData || undefined)
+              this.getTargetByData(data.targetWithOutdentedRepliesData)
             );
           }
           if (

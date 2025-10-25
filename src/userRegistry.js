@@ -35,10 +35,12 @@ export default {
         ? name.toUpperCase()
         : underlinesToSpaces(ucFirst(name))
     ).trim();
-    this.items[name] ||= new User(
-      name,
-      name === cd.g.userName ? { gender: mw.user.options.get('gender') } : {}
-    );
+    if (!(name in this.items)) {
+      this.items[name] = new User(
+        name,
+        name === cd.g.userName ? { gender: mw.user.options.get('gender') } : {}
+      );
+    }
 
     return this.items[name];
   },
@@ -71,6 +73,7 @@ export default {
     const mutedUsersStorage = /** @type {StorageItem<MutedUsers>} */ (new StorageItem('mutedUsers'));
     const mutedUsers = mutedUsersStorage.getData();
     if (
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       !mutedUsers.users ||
       userIds.some((id) => !(id in mutedUsers.users)) ||
 
@@ -106,7 +109,9 @@ export default {
       );
     } else {
       const users = Object.entries(mutedUsers.users).map(([, name]) => this.get(name));
-      users.forEach((user) => user.setMuted(true));
+      users.forEach((user) => {
+        user.setMuted(true);
+      });
       mw.hook('convenientDiscussions.mutedUsers').fire(users);
     }
   },

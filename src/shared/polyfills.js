@@ -3,7 +3,8 @@
  * Only includes the methods we actually use to minimize bundle size.
  */
 
-// Array.prototype.at polyfill (ES2022)
+// Array.prototype.at polyfill (ES2022). We require ES2022 or newer, but apparently .at() would be
+// the only deal breaker for older browsers, so why not add a polyfill for it
 import 'core-js/actual/array/at';
 
 // Array.prototype.findLastIndex polyfill (ES2023)

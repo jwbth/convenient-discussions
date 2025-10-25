@@ -1,10 +1,10 @@
 /// <reference types="types-mediawiki" />
 
-import { ApiResponse } from 'types-mediawiki/mw/Api';
+import type { ApiResponse } from 'types-mediawiki/mw/Api';
 
-import CheckboxInputWidget from './CheckboxInputWidget';
-import TextInputWidget from './TextInputWidget';
-import { ConvenientDiscussions } from './cd';
+import type CheckboxInputWidget from './CheckboxInputWidget';
+import type TextInputWidget from './TextInputWidget';
+import type { ConvenientDiscussions } from './cd';
 
 declare global {
   const IS_TEST: boolean;
@@ -245,6 +245,13 @@ declare global {
 
     cdOnlyRunByFooterLink?: boolean;
     cdShowLoadingOverlay?: boolean;
+
+    highlightMessagesAfterLastVisit?: boolean;
+    highlightMessages?: number;
+    messagesHighlightColor?: string;
+    proceedToArchiveRunned?: boolean;
+    Wikify: ((input: HTMLElement) => void) | undefined;
+    urlDecoderRun: ((input: HTMLElement) => void) | undefined;
   }
 
   var convenientDiscussions: Window['convenientDiscussions'];

@@ -11,7 +11,7 @@ import tseslint from 'typescript-eslint';
 
 const config = defineConfig(
   {
-    ignores: ['dist/**', 'misc/**', '*.json5', 'config/**/*', '**/test.ts', '**/test.js', 'src/tribute/**'],
+    ignores: ['dist/**', 'misc/**', '*.json5', 'config/**/*', 'src/tribute/**'],
   },
   {
     settings: {
@@ -454,14 +454,14 @@ const config = defineConfig(
 
   // Overrides for specific files
   {
-    files: ['*', 'src/tribute/**', 'jsdoc/**', '**/*.test.js'],
+    files: ['*', 'src/tribute/**', 'jsdoc/**'],
     rules: {
       'jsdoc/require-jsdoc': 'off',
     },
   },
 
-  // Partial ES2022 compatibility: Allows .at() and .findLastIndex() (with polyfills) but restricts
-  // other ES2022+ features
+  // Partial ES2023 compatibility: Allows .findLastIndex() (with polyfills) but restricts other
+  // ES2023+ features
   {
     files: ['src/**/*'],
     ignores: ['src/tribute/**'],
@@ -470,7 +470,6 @@ const config = defineConfig(
       'es-x': esX,
     },
     rules: {
-      // Restrict to ES2022, but allow .at() and .findLastIndex() since we have polyfills
       'es-x/no-array-prototype-toreversed': 'error',
       'es-x/no-array-prototype-tosorted': 'error',
       'es-x/no-array-prototype-tospliced': 'error',
@@ -485,15 +484,29 @@ const config = defineConfig(
     },
     rules: {
       ...js.configs.recommended.rules,
-      ...esX.configs['no-new-in-es2016'].rules,
-      ...esX.configs['no-new-in-es2017'].rules,
-      ...esX.configs['no-new-in-es2018'].rules,
-      ...esX.configs['no-new-in-es2019'].rules,
-      ...esX.configs['no-new-in-es2020'].rules,
-      ...esX.configs['no-new-in-es2021'].rules,
-      ...esX.configs['no-new-in-es2022'].rules,
-      ...esX.configs['no-new-in-es2023'].rules,
-      ...esX.configs['no-new-in-es2024'].rules,
+
+      'es-x/no-exponential-operators': 'error',
+      'es-x/no-async-functions': 'error',
+      'es-x/no-object-rest-spread': 'error',
+      'es-x/no-async-iteration': 'error',
+
+      'es-x/no-regexp-lookbehind-assertions': 'error',
+      'es-x/no-regexp-named-capture-groups': 'error',
+      'es-x/no-regexp-unicode-property-escapes': 'error',
+      'es-x/no-regexp-s-flag': 'error',
+
+      'es-x/no-optional-chaining': 'error',
+      'es-x/no-nullish-coalescing-operators': 'error',
+      'es-x/no-bigint': 'error',
+      'es-x/no-dynamic-import': 'error',
+      'es-x/no-import-meta': 'error',
+
+      'es-x/no-logical-assignment-operators': 'error',
+      'es-x/no-numeric-separator-literals': 'error',
+      'es-x/no-class-fields': 'error',
+      'es-x/no-class-static-block': 'error',
+      'es-x/no-private-in-object': 'error',
+      'es-x/no-top-level-await': 'error',
     },
   },
 
@@ -513,6 +526,10 @@ const config = defineConfig(
       'jsdoc/require-jsdoc': 'off',
       'unicorn/require-module-specifiers': 'off',
       '@stylistic/operator-linebreak': 'off',
+
+      '@typescript-eslint/adjacent-overload-signatures': 'error',
+      '@typescript-eslint/consistent-type-imports': 'error',
+      '@typescript-eslint/no-empty-interface': 'error',
     },
   },
 );

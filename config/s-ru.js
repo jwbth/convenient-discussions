@@ -262,7 +262,10 @@ export default /** @type {Partial<typeof import('./default').default>} */ ({
     // https://ru.wikipedia.org/wiki/MediaWiki:Gadget-markadmins.js
     const nextElement = authorLink.nextElementSibling;
     if (nextElement && nextElement.classList.contains('userflags-wrapper')) {
-      authorLinkPrototype.parentNode.insertBefore(nextElement, authorLinkPrototype.nextSibling);
+      /** @type {HTMLElement} */ (authorLinkPrototype.parentNode).insertBefore(
+        nextElement,
+        authorLinkPrototype.nextSibling
+      );
     }
   },
 
@@ -305,12 +308,12 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(() => {
       if (window.messagesHighlightColor !== undefined) {
         const dummyElement = document.createElement('span');
         dummyElement.style.color = window.messagesHighlightColor;
-        const hlmStyledElements = cd.api.getRootElement().querySelectorAll(
+        const hlmStyledElements = /** @type {NodeListOf<HTMLElement>} */ (cd.api.getRootElement().querySelectorAll(
           '.cd-comment-part[style="background-color: ' + dummyElement.style.color + ';"],' +
           '.cd-comment-part[style="background-color: ' + window.messagesHighlightColor + '"]'
-        );
+        ));
         hlmStyledElements.forEach((el) => {
-          el.style.backgroundColor = null;
+          el.style.backgroundColor = '';
         });
       }
 
@@ -326,7 +329,7 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(() => {
     }
   }
 
-  if (typeof proceedToArchiveRunned !== 'undefined' && !mw.cookie.get('cd-ptaConflict')) {
+  if (typeof window.proceedToArchiveRunned !== 'undefined' && !mw.cookie.get('cd-ptaConflict')) {
     const $text = cd.api.wrapHtml('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Jack_who_built_the_house/proceedToArchive.js">proceedToArchive.js</a>, функциональность которого включена в скрипт «Удобные обсуждения». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
     mw.notify($text, {
       type: 'warn',
@@ -347,58 +350,72 @@ mw.hook('convenientDiscussions.pageReadyFirstTime').add(() => {
   }
 });
 
-mw.hook('convenientDiscussions.commentFormCustomModulesReady').add((commentForm) => {
-  commentForm.$element.on('keydown', (e) => {
-    // Ctrl+Alt+W
-    const isCmdModifierPressed = $.client.profile().platform === 'mac' ? e.metaKey : e.ctrlKey;
-    if (isCmdModifierPressed && !e.shiftKey && e.altKey && e.keyCode === 87) {
-      window.Wikify(commentForm.commentInput.$input[0]);
+mw.hook('convenientDiscussions.commentFormCustomModulesReady').add(
+  /** @type {( ...args: import('../src/commentFormManager').CommentFormCreatedEvent ) => void} */ (
+    (commentForm) => {
+      commentForm.$element.on('keydown', (e) => {
+        // Ctrl+Alt+W
+        const isCmdModifierPressed = $.client.profile().platform === 'mac' ? e.metaKey : e.ctrlKey;
+        if (isCmdModifierPressed && !e.shiftKey && e.altKey && e.keyCode === 87) {
+          if (window.Wikify) {
+            window.Wikify(commentForm.commentInput.$input[0]);
+          }
+        }
+      });
     }
-  });
-});
+  )
+);
 
-mw.hook('convenientDiscussions.commentFormToolbarReady').add((commentForm) => {
-  commentForm.commentInput.$input.wikiEditor('addToToolbar', {
-    section: 'main',
-    groups: {
-      gadgets: {
-        tools: {
-          wikificator: {
-            label: 'Викификатор — автоматический обработчик текста (Ctrl+Alt+W)',
-            type: 'button',
-            icon: 'https://upload.wikimedia.org/wikipedia/commons/0/06/Wikify-toolbutton.png',
-            action: {
-              type: 'callback',
-              execute() {
-                window.Wikify(commentForm.commentInput.$input[0]);
+mw.hook('convenientDiscussions.commentFormToolbarReady').add(
+  /** @type {( ...args: import('../src/commentFormManager').CommentFormCreatedEvent ) => void} */ (
+    (commentForm) => {
+      commentForm.commentInput.$input.wikiEditor('addToToolbar', {
+        section: 'main',
+        groups: {
+          gadgets: {
+            tools: {
+              wikificator: {
+                label: 'Викификатор — автоматический обработчик текста (Ctrl+Alt+W)',
+                type: 'button',
+                icon: 'https://upload.wikimedia.org/wikipedia/commons/0/06/Wikify-toolbutton.png',
+                action: {
+                  type: 'callback',
+                  execute() {
+                    if (window.Wikify) {
+                      window.Wikify(commentForm.commentInput.$input[0]);
+                    }
+                  },
+                },
               },
             },
           },
         },
-      },
-    },
-  });
-  commentForm.$element
-    .find('.group-gadgets')
-    .insertBefore(commentForm.$element.find('.section-main .group-format'));
+      });
+      commentForm.$element
+        .find('.group-gadgets')
+        .insertBefore(commentForm.$element.find('.section-main .group-format'));
 
-  if (mw.user.options.get('gadget-urldecoder')) {
-    commentForm.commentInput.$input.wikiEditor('addToToolbar', {
-      section: 'main',
-      group: 'gadgets',
-      tools: {
-        urlDecoder: {
-          label: 'Раскодировать URL перед курсором или все URL в выделенном тексте',
-          type: 'button',
-          icon: 'https://upload.wikimedia.org/wikipedia/commons/0/01/Link_go_remake.png',
-          action: {
-            type: 'callback',
-            execute() {
-              window.urlDecoderRun(commentForm.commentInput.$input[0]);
+      if (mw.user.options.get('gadget-urldecoder')) {
+        commentForm.commentInput.$input.wikiEditor('addToToolbar', {
+          section: 'main',
+          group: 'gadgets',
+          tools: {
+            urlDecoder: {
+              label: 'Раскодировать URL перед курсором или все URL в выделенном тексте',
+              type: 'button',
+              icon: 'https://upload.wikimedia.org/wikipedia/commons/0/01/Link_go_remake.png',
+              action: {
+                type: 'callback',
+                execute() {
+                  if (window.urlDecoderRun) {
+                    window.urlDecoderRun(commentForm.commentInput.$input[0]);
+                  }
+                },
+              },
             },
           },
-        },
-      },
-    });
-  }
-});
+        });
+      }
+    }
+  )
+);

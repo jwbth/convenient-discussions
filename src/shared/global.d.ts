@@ -2,11 +2,13 @@
  * This file has types for the code shared between the main and worker parts of the script.
  */
 
-import BrowserComment from '../Comment';
-import Section from '../Section';
+import type { Node as DomHandlerNode, Element as DomHandlerElement, Text as DomHandlerText, Document as DomHandlerDocument } from 'domhandler';
 
-import { HeadingTarget, SignatureTarget, Target } from './Parser';
-import { ConvenientDiscussionsBase } from './cd';
+import type BrowserComment from '../Comment';
+import type Section from '../Section';
+
+import type { HeadingTarget, SignatureTarget, Target } from './Parser';
+import type { ConvenientDiscussionsBase } from './cd';
 
 declare global {
   type TypeByKey<T> = Record<string, T>;
@@ -118,30 +120,20 @@ declare global {
     textContent: string;
   }
 
-  type AnyNode = import('domhandler').Node | Node;
-  type AnyElement = import('domhandler').Element | Element;
-  type AnyText = import('domhandler').Text | Text;
+  type AnyNode = DomHandlerNode | Node;
+  type AnyElement = DomHandlerElement | Element;
+  type AnyText = DomHandlerText | Text;
 
   type NodeLike = AnyNode;
   type ElementLike = AnyElement;
-  type HTMLElementLike = import('domhandler').Element | HTMLElement;
+  type HTMLElementLike = DomHandlerElement | HTMLElement;
   type TextLike = AnyText;
 
-  type NodeFor<T extends AnyNode> = T extends import('domhandler').Node
-    ? import('domhandler').Node
-    : Node;
-  type TextFor<T extends AnyNode> = T extends import('domhandler').Node
-    ? import('domhandler').Text
-    : Text;
-  type ElementFor<T extends AnyNode> = T extends import('domhandler').Node
-    ? import('domhandler').Element
-    : Element;
-  type HTMLElementFor<T extends AnyNode> = T extends import('domhandler').Node
-    ? import('domhandler').Element
-    : HTMLElement;
-  type DocumentFor<T extends AnyNode> = T extends import('domhandler').Node
-    ? import('domhandler').Document
-    : Document;
+  type NodeFor<T extends AnyNode> = T extends DomHandlerNode ? DomHandlerNode : Node;
+  type TextFor<T extends AnyNode> = T extends DomHandlerNode ? DomHandlerText : Text;
+  type ElementFor<T extends AnyNode> = T extends DomHandlerNode ? DomHandlerElement : Element;
+  type HTMLElementFor<T extends AnyNode> = T extends DomHandlerNode ? DomHandlerElement : HTMLElement;
+  type DocumentFor<T extends AnyNode> = T extends DomHandlerNode ? DomHandlerDocument : Document;
 
   interface ParsingContext<N extends AnyNode = AnyNode> {
     // Classes
@@ -149,7 +141,7 @@ declare global {
       parser: Parser<N>,
       signature: SignatureTarget<N>,
       targets: Target<N>[]
-    ) => N extends import('domhandler').Node
+    ) => N extends DomHandlerNode
       ? CommentWorker
       : BrowserComment;
     SectionClass: new (
@@ -157,7 +149,7 @@ declare global {
       heading: HeadingTarget<N>,
       targets: Target<N>[],
       subscriptions: Subscriptions
-    ) => N extends import('domhandler').Node
+    ) => N extends DomHandlerNode
       ? SectionWorker
       : Section;
 

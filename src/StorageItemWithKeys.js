@@ -28,7 +28,7 @@ class StorageItemWithKeys extends StorageItem {
    * Get an entry of the storage item by key.
    *
    * @param {ValidKey} key
-   * @returns {EntryType}
+   * @returns {EntryType | undefined}
    */
   get(key) {
     return this.data[key];

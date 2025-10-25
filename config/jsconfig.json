@@ -2,8 +2,9 @@
   "extends": "../jsconfig-base.json",
   "compilerOptions": {
     "module": "preserve",
+    // Support ES2022 functions and runtime APIs, but not language features
     "target": "es2015",
-    "lib": ["ES2015", "DOM", "DOM.Iterable"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["oojs", "oojs-ui", "jquery", "jqueryui"]
   },
   "include": [

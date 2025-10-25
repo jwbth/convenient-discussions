@@ -1,7 +1,5 @@
 import Comment from './Comment';
-import _CompactComment from './CompactComment';
 import EventEmitter from './EventEmitter';
-import _SpaciousComment from './SpaciousComment';
 import StorageItemWithKeys from './StorageItemWithKeys';
 import Thread from './Thread';
 import bootManager from './bootManager';
@@ -29,7 +27,7 @@ import visits from './visits';
  * Singleton storing data about comments on the page and managing them.
  *
  * @augments EventEmitter<EventMap>
- * @template {Comment} C
+ * @template {Comment} [C=Comment]
  */
 class CommentManager extends EventEmitter {
   /**
@@ -69,7 +67,7 @@ class CommentManager extends EventEmitter {
   /**
    * Type guard to check if this is a CommentManager managing SpaciousComment instances.
    *
-   * @returns {this is CommentManager<_SpaciousComment>}
+   * @returns {this is CommentManager<import('./SpaciousComment').default>}
    */
   isSpaciousCommentManager() {
     return this.spaciousComments === true;
@@ -78,7 +76,7 @@ class CommentManager extends EventEmitter {
   /**
    * Type guard to check if this is a CommentManager managing CompactComment instances.
    *
-   * @returns {this is CommentManager<_CompactComment>}
+   * @returns {this is CommentManager<import('./CompactComment').default>}
    */
   isCompactCommentManager() {
     return this.spaciousComments === false;
@@ -846,7 +844,9 @@ class CommentManager extends EventEmitter {
 
     const pagesToCheckExistence = this.items.reduce((acc, comment) => {
       // Only call reformatting methods on SpaciousComment instances
-      const spaciousComment = /** @type {_SpaciousComment} */ (/** @type {unknown} */ (comment));
+      const spaciousComment = /** @type {import('./SpaciousComment').default} */ (
+        /** @type {unknown} */ (comment)
+      );
       acc.push(...spaciousComment.replaceSignatureWithHeader());
       spaciousComment.addMenu();
 

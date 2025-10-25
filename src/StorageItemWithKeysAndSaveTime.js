@@ -29,7 +29,7 @@ import StorageItemWithKeys from './StorageItemWithKeys';
 /**
  * @template {any} EntryType
  * @template {string} Key
- * @typedef {{ [key in Key]: EntryType | undefined } & { saveTime: number }} EntryTypeWithSaveTime
+ * @typedef {{ [key in Key]: EntryType } & { saveTime: number }} EntryTypeWithSaveTime
  */
 
 /**
@@ -49,7 +49,7 @@ class StorageItemWithKeysAndSaveTime extends StorageItemWithKeys {
    * Get an entry of the storage item by key.
    *
    * @param {ValidKey} key
-   * @returns {EntryTypeWithSaveTime<EntryType, Key>}
+   * @returns {EntryTypeWithSaveTime<EntryType, Key> | undefined}
    * @override
    */
   get(key) {
