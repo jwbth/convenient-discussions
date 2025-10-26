@@ -468,7 +468,7 @@ class CommentFormInputTransformer extends TextMasker {
   /**
    * Helper to allow TypeScript correctly infer the type.
    *
-   * @returns {this is { target: import('./Comment').default<boolean, true> }}
+   * @returns {this is { target: import('./Comment').default<true> }}
    */
   isTargetOpeningSection() {
     return (this.isMode('reply') || this.isMode('edit')) && this.target.isOpeningSection();

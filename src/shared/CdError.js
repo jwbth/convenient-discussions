@@ -200,7 +200,7 @@ class CdError extends Error {
   }
 
   /**
-   * Generate an instance of this class given a JavaScript error.
+   * Generate an instance of this class given a JavaScript error or message string.
    *
    * @param {any} error JS error or message.
    * @returns {CdError}

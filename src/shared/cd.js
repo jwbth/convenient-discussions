@@ -90,7 +90,7 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared);
  * @property {number} summaryLengthLimit
  * @property {ReturnType<JQueryStatic['client']['profile']>} clientProfile
  * @property {'Ctrl' | 'Cmd'} cmdModifier
- * @property {typeof mw['util']['isIPv6Address']} [isIPv6Address]
+ * @property {(typeof mw)['util']['isIPv6Address']} [isIPv6Address]
  * @property {ApiErrorFormatHtml} apiErrorFormatHtml
  * @property {RegExp} contentTimestampRegexp Regular expression for matching timestamps in content.
  *   ` +` to account for RTL and LTR marks replaced with a space.

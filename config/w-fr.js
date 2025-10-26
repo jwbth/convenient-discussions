@@ -1,4 +1,4 @@
-export default {
+export default /** @type {Partial<typeof import('./default').default>} */ ({
 	'messages': {
 		'sun': 'dim.',
 		'mon': 'lun.',
@@ -135,8 +135,9 @@ export default {
 		'NavFrame',
   ],
 	'signatureEndingRegexp': / \(discuter\)/,
-};
+});
 
+/** @type {CSSStyleSheet} */
 let styles;
 mw.hook('convenientDiscussions.beforeParse').add(function () {
   if (!styles) {

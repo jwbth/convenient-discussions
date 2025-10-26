@@ -63,19 +63,17 @@ class Visits extends EventEmitter {
    * @fires newCommentsHighlighted
    * @private
    */
-  async process(markAsReadRequested) {
+  process(markAsReadRequested) {
     const currentTime = Math.floor(Date.now() / 1000);
 
     this.update(currentTime, markAsReadRequested);
 
     // eslint-disable-next-line no-one-time-vars/no-one-time-vars
     const shiftDueToTimeConflict =
-      (
-        this.currentPageData.length &&
-        commentManager.initNewAndSeen(this.currentPageData, currentTime, markAsReadRequested) &&
-        60
-      ) ||
-      0;
+      this.currentPageData.length &&
+      commentManager.initNewAndSeen(this.currentPageData, currentTime, markAsReadRequested)
+        ? 60
+        : 0;
 
     // (Nearly) eliminate the possibility that we will wrongfully mark a seen comment as unseen/new
     // at the next page load by adding a minute to the visit time if there is at least one comment

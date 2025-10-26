@@ -31,36 +31,42 @@ class Section extends SectionSkeleton {
    * @type {import('./Comment').default[]}
    * @override
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   comments = this.comments;
 
   /**
    * @type {import('./Comment').default[]}
    * @override
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   commentsInFirstChunk = this.commentsInFirstChunk;
 
   /**
    * @type {HTMLElement}
    * @override
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   lastElement = this.lastElement;
 
   /**
    * @type {HTMLElement}
    * @override
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   lastElementInFirstChunk = this.lastElementInFirstChunk;
 
   /**
    * @type {import('./Comment').default | undefined}
    * @override
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   oldestComment = this.oldestComment;
 
   /**
    * @type {HTMLElement}
    * @override
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   headingElement = this.headingElement;
 
   /**
@@ -68,12 +74,14 @@ class Section extends SectionSkeleton {
    * @protected
    * @override
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   hElement = this.hElement;
 
   /**
    * @type {HTMLElement}
    * @override
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   headlineElement = this.headlineElement;
 
   /**

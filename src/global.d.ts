@@ -14,10 +14,6 @@ declare global {
   const LANG_CODE: string | null;
   const moment: (...args: any) => any;
 
-  const getInterwikiPrefixForHostname: (...args: any) => any;
-  const getInterwikiPrefixForHostnameSync: (...args: any) => any;
-  const getUrlFromInterwikiLink: (...args: any) => any;
-
   type Direction = 'ltr' | 'rtl';
   type ListType = 'dl' | 'ul' | 'ol';
 
@@ -246,6 +242,18 @@ declare global {
     cdOnlyRunByFooterLink?: boolean;
     cdShowLoadingOverlay?: boolean;
 
+    // https://en.wikipedia.org/wiki/User:Jack_who_built_the_house/getUrlFromInterwikiLink
+    getInterwikiPrefixForHostname:
+      | ((targetHostname: string, originHostname?: string) => Promise<string>)
+      | undefined;
+    getInterwikiPrefixForHostnameSync:
+      | ((targetHostname: string, originHostname?: string) => string)
+      | undefined;
+    getUrlFromInterwikiLink:
+      | ((interwikiLink: string, originHostname?: string) => Promise<string>)
+      | undefined;
+
+    // w-ru.js
     highlightMessagesAfterLastVisit?: boolean;
     highlightMessages?: number;
     messagesHighlightColor?: string;
@@ -367,10 +375,19 @@ declare global {
     // Add native Promise since it seems to work and we use it
     namespace Process {
       type StepOverride<C> =
-        | number |
-        JQuery.Promise<void> |
-        Promise<void> |
-        ((this: C) => boolean | number | JQuery.Promise<void> | Promise<void> | Error | [Error] | undefined);
+        | number
+        | JQuery.Promise<void>
+        | Promise<void>
+        | ((
+          this: C
+        ) =>
+          | boolean
+          | number
+          | JQuery.Promise<void>
+          | Promise<void>
+          | Error
+          | [Error]
+          | undefined);
 
       /**
          * @param step Number of milliseconds to wait before proceeding,
@@ -379,7 +396,10 @@ declare global {
          * @param context Execution context of the function. The context is ignored if the step
          *   is a number or promise.
          */
-      type Constructor = new<C = null>(step?: StepOverride<C>, context?: C) => Process;
+      interface Constructor {
+        // eslint-disable-next-line @typescript-eslint/prefer-function-type
+        new<C = null>(step?: StepOverride<C>, context?: C): Process;
+      }
     }
 
     namespace PageLayout {

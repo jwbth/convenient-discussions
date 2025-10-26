@@ -4,8 +4,6 @@ import { es6ClassToOoJsClass, mixInClass } from './utils-oojs';
 /**
  * Our class that extends {@link OO.ui.ProcessDialog OO.ui.ProcessDialog}, adding a couple
  * of methods to it.
- *
- * @augments OO.ui.ProcessDialog
  */
 class ProcessDialog extends mixInClass(OO.ui.ProcessDialog, ProcessDialogMixin) {
   /**

@@ -5,6 +5,8 @@ import { canonicalUrlToPageName, defined, generateFixedPosTimestamp, getDbnameFo
 import { createCheckboxControl, createRadioControl, createTextControl, createTitleControl, es6ClassToOoJsClass } from './utils-oojs';
 import { mergeJquery, wrapHtml } from './utils-window';
 
+// TODO: Make it work on third-party wikis (where the target host is not Wikimedia Commons)
+
 /**
  * @class BookletLayout
  * @memberof mw.ForeignStructuredUpload
@@ -31,12 +33,14 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * }} UploadDialogControlTypes
    */
 
-  controls = /** @type {ControlTypesByName<UploadDialogControlTypes>} */ ({});
+  /** @type {ControlTypesByName<UploadDialogControlTypes>} */
+  controls;
 
   /**
    * @override
    * @type {ForeignStructuredUpload}
    */
+  // @ts-expect-error: Initialized in init(), narrowing parent type
   upload;
 
   /** @type {string | undefined} */
@@ -59,7 +63,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
   /**
    * Setup the booklet with some data. (This method is not in the parent class - it's our own.)
    *
-   * @param {File} file
+   * @param {File} [file]
    * @param {string} [enProjectName]
    */
   setup(file, enProjectName) {
@@ -94,6 +98,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
       layout.toggle(false);
     });
 
+    this.controls = /** @type {ControlTypesByName<UploadDialogControlTypes>} */ ({});
     this.controls.preset = createRadioControl({
       label: cd.s('ud-preset'),
       options: [
@@ -192,7 +197,8 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    */
   onUploadFormChange = async () => {
     let valid = true;
-    await this.controls.title?.input.getValidity().catch(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    await this.controls?.title.input.getValidity().catch(() => {
       valid = false;
     });
     this.emit('uploadValid', this.selectFileWidget.getValue() && valid);
@@ -307,9 +313,12 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
         this.uploadPromise,
         this.filenameWidget.getValidity(),
         this.descriptionWidget.getValidity(),
-        this.controls.source?.input.getValidity(),
-        this.controls.author?.input.getValidity(),
-        this.controls.license?.input.getValidity(),
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        this.controls?.source.input.getValidity(),
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        this.controls?.author.input.getValidity(),
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        this.controls?.license.input.getValidity(),
       ].filter(defined)
     ).catch(() => {
       valid = false;
@@ -335,9 +344,9 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    *
    * We add logic that changes the information form according to the user input in the upload form.
    *
-   * @see
-   * https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html#uploadFile
    * @returns {JQuery.Promise<void>}
+   * @see
+   *   https://doc.wikimedia.org/mediawiki-core/master/js/mw.ForeignStructuredUpload.BookletLayout.html#uploadFile
    * @protected
    * @override
    */
@@ -365,122 +374,129 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 
     let pageName = '';
     let historyText = '';
-    let hasIwPrefix;
-    /** @type {string | undefined} */
-    let filenameDate;
-    if (this.preset === 'projectScreenshot' || this.preset === 'mediawikiScreenshot') {
-      filenameDate =
-        this.getExactDateFromLastModified(/** @type {File} */ (this.getFile())) ||
-        date.format('YYYY-MM-DD HH-mm-ss');
-
-      const title = this.controls.title.input.getMWTitle();
-      if (title) {
-        pageName = title.getPrefixedText();
-
-        // Rough check, because we don't need to know for sure (that's just to make the description
-        // more human-readable, with a project name instead of a domain).
-        hasIwPrefix = /:[^ ]/.test(title.getMainText());
-
-        if (hasIwPrefix) {
-          // Avoid uppercasing the first character; that would make interwiki prefixes look weird.
-          pageName = this.controls.title.input.getValue();
-        }
-
-        historyText = this.constructor.generateHistoryText(cd.g.serverName, pageName);
-      }
-    }
-
+    let hasIwPrefix = false;
     switch (this.preset) {
-      case 'projectScreenshot': {
-        // * If the page name has an interwiki prefix, we don't know the project name.
-        // * If the page name does not have an interwiki prefix, we don't know the interwiki prefix.
-        // So, we use what is availble to us while trying to get/load missing parts if we can.
-
-        const projectName = hasIwPrefix ? '' : this.enProjectName;
-        const filenameMainPart = `${projectName} ${pageName}`
-          .trim()
-          .replace(new RegExp('[' + mw.config.get('wgIllegalFileChars', '') + ']', 'g'), '-');
-        const projectNameOrPageLink = (
-          projectName ||
-          (hasIwPrefix && !pageName.startsWith(':') ? `[[:${pageName}]]` : `[[${pageName}]]`)
-        );
-        let pageNameOrProjectName;
-        if (!hasIwPrefix && pageName && getInterwikiPrefixForHostnameSync) {
-          const prefix = getInterwikiPrefixForHostnameSync(
-            cd.g.serverName,
-            'commons.wikimedia.org'
-          );
-          pageNameOrProjectName = `[[:${prefix}${pageName}]]`;
-        } else {
-          pageNameOrProjectName = projectNameOrPageLink;
-        }
-        this.filenameWidget.setValue(`${filenameMainPart} ${filenameDate}`);
-        this.descriptionWidget.setValue(`Screenshot of ${pageNameOrProjectName}`);
-        this.controls.source.input.setValue('Screenshot');
-        this.controls.author.input.setValue(`${projectNameOrPageLink} authors${historyText}`);
-        this.controls.license.input.setValue(
-          hasIwPrefix
-            ? '{{Wikimedia-screenshot}}'
-            : this.constructor.getTemplateForHostname(cd.g.serverName)
-        );
-
-        // Load the English project name for the file name if we can
-        if (hasIwPrefix) {
-          deferred = deferred
-            .then(
-              () => getUrlFromInterwikiLink?.(pageName),
-              (/** @type {unknown} */ error) => {
-                throw ['badUpload', error];
-              }
-            )
-            .then(
-              (url) => {
-                if (!url) {
-                  throw [];
-                }
-
-                const hostname = new URL(url, cd.g.server).hostname;
-                this.controls.license.input.setValue(
-                  this.constructor.getTemplateForHostname(hostname)
-                );
-                const dbname = getDbnameForHostname(hostname);
-
-                return Promise.all([
-                  cd.getApi().getMessages(`project-localized-name-${dbname}`, { amlang: 'en' }),
-                  canonicalUrlToPageName(url),
-                  hostname,
-                ]);
-              })
-            .then(
-              ([messages, unprefixedPageName, hostname]) => {
-                if (!messages) return;
-                const newProjectName = Object.values(messages)[0];
-                const newHistoryText = this.constructor.generateHistoryText(
-                  hostname,
-                  unprefixedPageName
-                );
-                this.filenameWidget.setValue(`${newProjectName} ${unprefixedPageName} ${filenameDate}`);
-                this.controls.author.input.setValue(`${newProjectName} authors${newHistoryText}`);
-              },
-              (/** @type {unknown} */ error) => {
-                // Unless there is something wrong with uploading, always resolve - this
-                // functionality is non-essential.
-                if (error[0] === 'badUpload') {
-                  throw error[1];
-                }
-              }
-            );
-        }
-        break;
-      }
-
+      case 'projectScreenshot':
       case 'mediawikiScreenshot': {
-        this.filenameWidget.setValue(`MediaWiki ${filenameDate}`);
-        this.descriptionWidget.setValue(`Screenshot of MediaWiki`);
-        this.controls.source.input.setValue('Screenshot');
-        this.controls.author.input.setValue(`[[Special:Version|MediaWiki contributors]]`);
-        this.controls.license.input.setValue('{{MediaWiki-screenshot}}');
-        this.categoriesWidget.addTag('MediaWiki screenshots');
+        /** @type {string} */
+        const filenameDate =
+          this.getExactDateFromLastModified(/** @type {File} */(this.getFile())) ||
+          date.format('YYYY-MM-DD HH-mm-ss');
+
+        const title = this.controls.title.input.getMWTitle();
+        if (title) {
+          pageName = title.getPrefixedText();
+
+          // Rough check, because we don't need to know for sure (that's just to make the description
+          // more human-readable, with a project name instead of a domain).
+          hasIwPrefix = /:[^ ]/.test(title.getMainText());
+
+          if (hasIwPrefix) {
+            // Avoid uppercasing the first character; that would make interwiki prefixes look weird.
+            pageName = this.controls.title.input.getValue();
+          }
+
+          historyText = this.constructor.generateHistoryText(cd.g.serverName, pageName);
+        }
+
+        if (this.preset === 'projectScreenshot') {
+          // - If the page name has an interwiki prefix, we don't know the project name.
+          // - If the page name does not have an interwiki prefix, we don't know the interwiki prefix
+          //   (but should since the image will be posted to Commons).
+          //
+          // So, we use what is availble to us while trying to get/load missing parts if we can.
+
+          // For page names with an interwiki prefix, the project name will be obtained with a
+          // network request (see below)
+          const projectName = hasIwPrefix || !this.enProjectName ? '' : this.enProjectName;
+
+          const filenameMainPart = `${projectName} ${pageName}`
+            .trim()
+            .replace(new RegExp('[' + mw.config.get('wgIllegalFileChars', '') + ']', 'g'), '-');
+          const projectNameOrPageLink =
+            projectName ||
+            (hasIwPrefix && !pageName.startsWith(':') ? `[[:${pageName}]]` : `[[${pageName}]]`);
+          let pageNameOrProjectName;
+          if (!hasIwPrefix && pageName && window.getInterwikiPrefixForHostnameSync) {
+            const prefix = window.getInterwikiPrefixForHostnameSync(
+              cd.g.serverName,
+              'commons.wikimedia.org'
+            );
+            pageNameOrProjectName = `[[:${prefix}${pageName}]]`;
+          } else {
+            pageNameOrProjectName = projectNameOrPageLink;
+          }
+
+          this.filenameWidget.setValue(`${filenameMainPart} ${filenameDate}`);
+          this.descriptionWidget.setValue(`Screenshot of ${pageNameOrProjectName}`);
+          this.controls.source.input.setValue('Screenshot');
+          this.controls.author.input.setValue(`${projectNameOrPageLink} authors${historyText}`);
+          this.controls.license.input.setValue(
+            hasIwPrefix
+              ? '{{Wikimedia-screenshot}}'
+              : this.constructor.getTemplateForHostname(cd.g.serverName)
+          );
+
+          // Load the English project name for the file name if we can
+          if (hasIwPrefix) {
+            /** @type {string} */
+            let unprefixedPageName;
+            /** @type {string} */
+            let hostname;
+            /** @type {string} */
+            let messageName;
+            deferred = deferred
+              .then(
+                () => window.getUrlFromInterwikiLink?.(pageName),
+                (/** @type {unknown} */ error) => {
+                  throw new Error('badUpload', { cause: error });
+                }
+              )
+              .then(
+                (url) => {
+                  if (!url) {
+                    throw new Error('noUrl');
+                  }
+
+                  hostname = new URL(url, cd.g.server).hostname;
+                  this.controls.license.input.setValue(
+                    this.constructor.getTemplateForHostname(hostname)
+                  );
+                  const dbname = getDbnameForHostname(hostname);
+                  unprefixedPageName = canonicalUrlToPageName(url);
+                  messageName = `project-localized-name-${dbname}`;
+
+                  return cd.getApi().getMessages(messageName, { amlang: 'en' });
+                })
+              .then(
+                (messages) => {
+                  const newProjectName = messages[messageName];
+                  if (!newProjectName) return;
+
+                  const newHistoryText = this.constructor.generateHistoryText(
+                    hostname,
+                    unprefixedPageName
+                  );
+                  this.filenameWidget.setValue(`${newProjectName} ${unprefixedPageName} ${filenameDate}`);
+                  this.controls.author.input.setValue(`${newProjectName} authors${newHistoryText}`);
+                },
+                (/** @type {unknown} */ error) => {
+                  // Unless there is something wrong with uploading, always resolve - this
+                  // functionality is non-essential.
+                  if (error instanceof Error && error.message === 'badUpload') {
+                    throw error.cause;
+                  }
+                }
+              );
+          }
+        } else {  // this.preset === 'mediawikiScreenshot'
+          this.filenameWidget.setValue(`MediaWiki ${filenameDate}`);
+          this.descriptionWidget.setValue(`Screenshot of MediaWiki`);
+          this.controls.source.input.setValue('Screenshot');
+          this.controls.author.input.setValue(`[[Special:Version|MediaWiki contributors]]`);
+          this.controls.license.input.setValue('{{MediaWiki-screenshot}}');
+          this.categoriesWidget.addTag('MediaWiki screenshots');
+        }
         break;
       }
 
@@ -627,9 +643,9 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
 
     // Clear the fields we added as well. We add them on the "setup" step, so they aren't there
     // when .clear() initially runs.
-    this.controls.source?.input.setValue('').setValidityFlag(true);
-    this.controls.author?.input.setValue('').setValidityFlag(true);
-    this.controls.license?.input.setValue('').setValidityFlag(true);
+    this.controls.source.input.setValue('').setValidityFlag(true);
+    this.controls.author.input.setValue('').setValidityFlag(true);
+    this.controls.license.input.setValue('').setValidityFlag(true);
   }
 
   /**
@@ -668,8 +684,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * @returns {string}
    */
   static getTemplateForHostname(hostname) {
-    let template;
-    /** @type {Array<[RegExp, string]>} */ ([
+    return (/** @type {[RegExp, string][]} */ ([
       [/^(.+)\.wikipedia.org$/, `{{Wikipedia-screenshot%s}}`],
 
       // Language codes aren't supported on most templates, but they may become supported at some
@@ -682,18 +697,13 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
       [/^(?:(.+)\.)?wikisource.org$/, `{{Wikisource-screenshot%s}}`],
 
       [/^(.+)\.wikivoyage.org$/, `{{Wikivoyage-screenshot%s}}`],
-    ]).some(([regexp, format]) => {
+    ])).reduce((result, [regexp, format]) => {
+      if (result) return result;
+
       const match = hostname.match(regexp);
-      if (match) {
-        template = format.replace('%s', match[1] ? '|' + match[1] : '');
 
-        return true;
-      }
-
-      return false;
-    });
-
-    return template || '{{Wikimedia-screenshot}}';
+      return match ? format.replace('%s', match[1] ? '|' + match[1] : '') : undefined;
+    }, /** @type {string  | undefined} */ (undefined)) || '{{Wikimedia-screenshot}}';
   }
 }
 

@@ -326,6 +326,7 @@ class CommentFormManager extends EventEmitter {
        *   'commentForms'
        * >}
        */ (new StorageItemWithKeysAndSaveTime('commentForms'))
+        // This comes from the local storage, the value may be corrupt
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         .cleanUp((entry) => !entry.commentForms?.length || entry.saveTime < subtractDaysFromNow(60))
         .save()

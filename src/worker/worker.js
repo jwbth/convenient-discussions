@@ -288,10 +288,10 @@ function onMessageFromWindow(event) {
     cd.g = message.g;
     cd.config = message.config;
 
-    cd.config.rejectNode = /** @type {typeof cd['config']['rejectNode']} */ (
+    cd.config.rejectNode = /** @type {(typeof cd)['config']['rejectNode']} */ (
       restoreFunc(cd.config.rejectNode?.toString())
     );
-    cd.g.isIPv6Address = /** @type {typeof mw['util']['isIPv6Address']} */ (restoreFunc(
+    cd.g.isIPv6Address = /** @type {(typeof mw)['util']['isIPv6Address']} */ (restoreFunc(
       cd.g.isIPv6Address?.toString()
     ));
 

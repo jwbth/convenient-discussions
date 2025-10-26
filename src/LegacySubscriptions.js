@@ -21,7 +21,7 @@ import { wrapHtml } from './utils-window';
 class LegacySubscriptions extends Subscriptions {
   subscribePromise = Promise.resolve();
 
-  /** @type {AllPagesData} */
+  /** @type {AllPagesData | undefined} */
   allPagesData;
 
   /** @type {string[]|undefined} */
@@ -31,7 +31,7 @@ class LegacySubscriptions extends Subscriptions {
    * Request the subscription list from the server and assign it to the instance.
    *
    * @param {import('./BootProcess').default} [bootProcess]
-   * @param {boolean} [reuse=false] Reuse the existing request.
+   * @param {boolean} [reuse] Reuse the existing request.
    * @returns {Promise.<void>}
    * @override
    */
@@ -44,6 +44,7 @@ class LegacySubscriptions extends Subscriptions {
       this.unpack(await getUserInfo(reuse).then(({ subscriptions }) => subscriptions));
     } catch (error) {
       console.warn('Convenient Discussions: Couldn\'t load the settings from the server.', error);
+
       return;
     }
 
@@ -306,7 +307,7 @@ class LegacySubscriptions extends Subscriptions {
    * nothing is saved to the server.
    *
    * @param {string} [subscribeId] Section's subscribe ID (modern or legacy format).
-   * @param {boolean} [subscribe=false] Subscribe or unsubscribe.
+   * @param {boolean} [subscribe] Subscribe or unsubscribe.
    * @protected
    * @override
    */

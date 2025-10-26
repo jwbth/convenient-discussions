@@ -58,18 +58,21 @@ export default class CommentWorker extends CommentSkeleton {
    * @override
    * @type {import('./SectionWorker').default | undefined}
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   section = this.section;
 
   /**
    * @override
    * @type {import('domhandler').Element}
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   signatureElement = this.signatureElement;
 
   /**
    * @override
    * @type {import('domhandler').Element[]}
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   elements = this.elements;
 
   /**

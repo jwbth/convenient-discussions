@@ -26,7 +26,7 @@ class MoveSectionDialog extends ProcessDialog {
   // @ts-expect-error: https://phabricator.wikimedia.org/T358416
   static name = 'moveSectionDialog';
   static title = cd.s('msd-title');
-  static actions = [
+  static actions = /** @type {const} */ ([
     {
       action: 'close',
       modes: ['move', 'success'],
@@ -40,7 +40,7 @@ class MoveSectionDialog extends ProcessDialog {
       flags: ['primary', 'progressive'],
       disabled: true,
     },
-  ];
+  ]);
 
   /** @type {OO.ui.StackLayout} */
   stack;
@@ -303,15 +303,14 @@ class MoveSectionDialog extends ProcessDialog {
    * OOUI native method that returns a process for taking action.
    *
    * @override
-   * @param {string} action Symbolic name of the action.
+   * @param {(typeof MoveSectionDialog.actions)[number]['action']} action Symbolic name of the
+   *   action.
    * @returns {OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getActionProcess
    * @ignore
    */
   getActionProcess(action) {
     if (action === 'move') {
-      // @ts-expect-error: Declares it needs a jQuery promise, but works equally well with a native
-      // one
       return new OO.ui.Process(async () => {
         this.pushPending();
         this.controls.title.input.$input.trigger('blur');
@@ -365,13 +364,11 @@ class MoveSectionDialog extends ProcessDialog {
         this.actions.setMode('success');
         this.popPending();
       });
-    } else if (action === 'close') {
-      return new OO.ui.Process(() => {
-        this.close();
-      });
-    }
+    }   // if (action === 'close')
 
-    return super.getActionProcess(action);
+    return new OO.ui.Process(() => {
+      this.close();
+    });
   }
 
   /**
@@ -496,6 +493,7 @@ class MoveSectionDialog extends ProcessDialog {
         throw new CdError({ details: [cd.sParse('error-javascript'), false] });
       }
     }
+    const realName = /** @type {NonNullable<typeof targetPage.realName>} */ (targetPage.realName);
 
     return {
       page: targetPage,
@@ -504,7 +502,7 @@ class MoveSectionDialog extends ProcessDialog {
           ? (this.section.oldestComment?.date || undefined)
           : undefined
       ),
-      sectionWikilink: `${targetPage.realName}#${encodeWikilink(this.section.headline)}`,
+      sectionWikilink: `${realName}#${encodeWikilink(this.section.headline)}`,
     };
   }
 

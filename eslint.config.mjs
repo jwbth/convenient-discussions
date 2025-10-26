@@ -110,9 +110,11 @@ const config = defineConfig(
         moment: 'readonly',
 
         convenientDiscussions: 'readonly',
-        getInterwikiPrefixForHostname: 'readonly', // en:User:Jack who built the house/getUrlFromInterwikiLink.js
-        getInterwikiPrefixForHostnameSync: 'readonly', // en:User:Jack who built the house/getUrlFromInterwikiLink.js
-        getUrlFromInterwikiLink: 'readonly', // en:User:Jack who built the house/getUrlFromInterwikiLink.js
+
+        // https://en.wikipedia.org/wiki/User:Jack_who_built_the_house/getUrlFromInterwikiLink
+        getInterwikiPrefixForHostname: 'readonly',
+        getInterwikiPrefixForHostnameSync: 'readonly',
+        getUrlFromInterwikiLink: 'readonly',
 
         cdOnlyRunByFooterLink: 'readonly',
         cdShowLoadingOverlay: 'readonly',

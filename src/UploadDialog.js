@@ -55,7 +55,7 @@ export class UploadDialog extends mixInClass(
    * @override
    * @param {object} data Dialog opening data
    * @param {import('./CommentForm').default} data.commentForm
-   * @param {File} data.file
+   * @param {File} [data.file]
    * @returns {OO.ui.Process}
    * @see https://doc.wikimedia.org/oojs-ui/master/js/OO.ui.ProcessDialog.html#getSetupProcess
    * @see https://www.mediawiki.org/wiki/OOUI/Windows#Window_lifecycle

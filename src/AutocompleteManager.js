@@ -63,7 +63,10 @@ class AutocompleteManager {
    * @param {boolean} [options.enablePerformanceMonitoring] Whether to enable performance monitoring
    */
   constructor({ types, inputs, typeConfigs = {}, enablePerformanceMonitoring = false }) {
+    /** @type {AutocompleteType[]} @private */
     this.types = settings.get('autocompleteTypes');
+
+    /** @type {boolean} @private */
     this.useTemplateData = settings.get('useTemplateData');
 
     types = types.filter((type) => this.types.includes(type));

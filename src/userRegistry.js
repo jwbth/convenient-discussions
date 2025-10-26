@@ -73,6 +73,7 @@ export default {
     const mutedUsersStorage = /** @type {StorageItem<MutedUsers>} */ (new StorageItem('mutedUsers'));
     const mutedUsers = mutedUsersStorage.getData();
     if (
+      // This comes from the local storage, the value may be corrupt
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       !mutedUsers.users ||
       userIds.some((id) => !(id in mutedUsers.users)) ||

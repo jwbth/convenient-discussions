@@ -830,9 +830,9 @@ class Settings {
       const localSettings = /** @type {Partial<DocumentedSettingsValues>} */ ({});
       typedKeysOf(settings).forEach((key) => {
         if (this.scheme.local.includes(key)) {
-          /** @type {typeof settings[key]} */ (localSettings[key]) = settings[key];
+          /** @type {(typeof settings)[key]} */ (localSettings[key]) = settings[key];
         } else {
-          /** @type {typeof settings[key]} */ (globalSettings[key]) = settings[key];
+          /** @type {(typeof settings)[key]} */ (globalSettings[key]) = settings[key];
         }
       });
 

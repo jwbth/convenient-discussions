@@ -91,14 +91,14 @@ declare global {
          * sets the initial page to "initializing" and then transitions to "upload"
          * once the API is available.
          *
-         * @return {JQuery.Promise<any>} Promise resolved when initialization is complete.
+         * @returns {JQuery.Promise<any>} Promise resolved when initialization is complete.
          */
         initialize(): JQuery.Promise<any>;
 
         /**
          * Creates a new upload model.
          *
-         * @return {mw.Upload} A new upload model instance.
+         * @returns {mw.Upload} A new upload model instance.
          */
         protected createUpload(): mw.Upload;
 
@@ -112,7 +112,7 @@ declare global {
          * - `fileUploadProgress` (with progress and estimated remaining time)
          * - `fileUploaded` when the file has finished uploading.
          *
-         * @return {JQuery.Promise<void>} A promise that resolves when the file is uploaded.
+         * @returns {JQuery.Promise<void>} A promise that resolves when the file is uploaded.
          */
         protected uploadFile(): JQuery.Promise<void>;
 
@@ -124,14 +124,14 @@ declare global {
          *
          * Fires the `fileSaved` event with the image information.
          *
-         * @return {JQuery.Promise<void>} A promise that resolves if the file was saved successfully.
+         * @returns {JQuery.Promise<void>} A promise that resolves if the file was saved successfully.
          */
         protected saveFile(): JQuery.Promise<void>;
 
         /**
          * Returns an error message (as an OO.ui.Error) for the current upload state.
          *
-         * @return {JQuery.Promise<OO.ui.Error>} A promise resolved with an OO.ui.Error.
+         * @returns {JQuery.Promise<OO.ui.Error>} A promise resolved with an OO.ui.Error.
          */
         protected getErrorMessageForStateDetails(): JQuery.Promise<OO.ui.Error>;
 
@@ -140,7 +140,7 @@ declare global {
          *
          * Sets the {@link #uploadForm} property.
          *
-         * @return {OO.ui.FormLayout} The upload form layout.
+         * @returns {OO.ui.FormLayout} The upload form layout.
          */
         protected renderUploadForm(): OO.ui.FormLayout;
 
@@ -150,7 +150,7 @@ declare global {
          * If a filekey is provided, returns an mw.widgets.StashedFileWidget; otherwise,
          * returns an OO.ui.SelectFileInputWidget.
          *
-         * @return {OO.ui.SelectFileInputWidget|mw.widgets.StashedFileWidget}
+         * @returns {OO.ui.SelectFileInputWidget|mw.widgets.StashedFileWidget}
          */
         getFileWidget(): OO.ui.SelectFileInputWidget | mw.widgets.StashedFileWidget;
 
@@ -171,7 +171,7 @@ declare global {
          *
          * Sets the {@link #infoForm} property.
          *
-         * @return {OO.ui.FormLayout} The information form layout.
+         * @returns {OO.ui.FormLayout} The information form layout.
          */
         protected renderInfoForm(): OO.ui.FormLayout;
 
@@ -187,14 +187,14 @@ declare global {
          *
          * Sets the {@link #insertForm} property.
          *
-         * @return {OO.ui.FormLayout} The insert form layout.
+         * @returns {OO.ui.FormLayout} The insert form layout.
          */
         protected renderInsertForm(): OO.ui.FormLayout;
 
         /**
          * Retrieves the file object from the upload form.
          *
-         * @return {File|null} The selected file, or null if none.
+         * @returns {File|null} The selected file, or null if none.
          */
         protected getFile(): File | null;
 
@@ -203,7 +203,7 @@ declare global {
          *
          * If a filename extension was set, it is appended to the name.
          *
-         * @return {string} The filename.
+         * @returns {string} The filename.
          */
         protected getFilename(): string;
 
@@ -219,7 +219,7 @@ declare global {
         /**
          * Retrieves the text (description) from the information form.
          *
-         * @return {string} The description text.
+         * @returns {string} The description text.
          */
         protected getText(): string;
 

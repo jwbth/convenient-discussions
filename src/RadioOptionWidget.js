@@ -10,14 +10,14 @@ class RadioOptionWidget extends OO.ui.RadioOptionWidget {
   /**
    * Create a radio input widget.
    *
-   * @param {object} config
+   * @param {OO.ui.RadioOptionWidget.ConfigOptions & { help: string }} config
    */
   constructor(config) {
     super(config);
 
-    this.$help = config.help ?
-      this.createHelpElement(config.help) :
-      $();
+    this.$help = config.help
+      ? this.createHelpElement(config.help)
+      : $();
     this.$label.append(this.$help);
   }
 

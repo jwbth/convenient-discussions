@@ -178,7 +178,7 @@ class SettingsDialog extends ProcessDialog {
    * @ignore
    */
   getReadyProcess() {
-    return super.getReadyProcess().next(async () => {
+    return super.getReadyProcess().next(() => {
       // this.settings can be empty after removing the data using the relevant functionality in the
       // UI.
       if (!Object.keys(this.loadedSettings).length) {
@@ -190,7 +190,7 @@ class SettingsDialog extends ProcessDialog {
       this.stack.setItem(this.settingsPanel);
       this.bookletLayout.setPage(this.initialPageName || settings.scheme.ui[0].name);
       if (this.focusSelector) {
-        this.$body.find(this.focusSelector).focus();
+        this.$body.find(this.focusSelector).trigger('focus');
       }
       this.actions.setAbilities({ close: true });
 
@@ -399,7 +399,7 @@ class SettingsDialog extends ProcessDialog {
    */
   getStateSettings() {
     return settings.scheme.states.reduce((obj, state) => {
-      /** @type {typeof this.loadedSettings[state]} */ (obj[state]) = this.loadedSettings[state];
+      /** @type {(typeof this.loadedSettings)[state]} */ (obj[state]) = this.loadedSettings[state];
 
       return obj;
     }, /** @type {Partial<import('./settings').SettingsValues>} */ ({}));

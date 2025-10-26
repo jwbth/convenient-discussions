@@ -14,6 +14,7 @@ class CompactCommentActions extends CommentActions {
    * @type {import('./CompactComment').default}
    * @override
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   comment = this.comment;
 
   /**
@@ -300,6 +301,8 @@ class CompactCommentActions extends CommentActions {
       // after migration is complete on January 1, 2026
       ([id, thank]) =>
         this.comment.dtId === id || this.comment.id === id ||
+        // This comes from the local storage, the value may be corrupt
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         this.comment.dtId === thank?.id || this.comment.id === thank?.id
     );
 

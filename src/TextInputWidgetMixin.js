@@ -3,12 +3,6 @@ import { es6ClassToOoJsClass } from './utils-oojs';
 import { cleanUpPasteDom, getElementFromPasteHtml, isElementConvertibleToWikitext } from './utils-window';
 
 /**
- * An input was changed manually.
- *
- * @param {*} value Value of the input.
- */
-
-/**
  * Mixin that is intended to be used on classes that extend
  * {@link OO.ui.TextInputWidget OO.ui.TextInputWidget} and adds some features we need.
  */

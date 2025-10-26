@@ -15,6 +15,7 @@ class SpaciousCommentActions extends CommentActions {
    * @type {import('./CompactComment').default}
    * @override
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   comment = this.comment;
 
   /**

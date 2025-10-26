@@ -54,7 +54,8 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   /** @type {OO.ui.StackLayout} */
   contentStack;
 
-  /** @typedef {{
+  /**
+   * @typedef {{
    *   standard: 'copyText';
    *   short: 'copyText';
    *   wikilink: 'copyText';

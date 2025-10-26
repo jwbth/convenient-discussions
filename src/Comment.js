@@ -76,42 +76,49 @@ class Comment extends CommentSkeleton {
    * @override
    * @type {HTMLElement}
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   signatureElement = this.signatureElement;
 
   /**
    * @override
    * @type {HTMLElement}
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   timestampElement = this.timestampElement;
 
   /**
    * @override
    * @type {HTMLAnchorElement | undefined}
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   authorLink = this.authorLink;
 
   /**
    * @override
    * @type {HTMLAnchorElement | undefined}
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   authorTalkLink = this.authorTalkLink;
 
   /**
    * @override
    * @type {HTMLElement[]}
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   elements = this.elements;
 
   /**
    * @override
    * @type {HTMLElement[]}
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   highlightables = this.highlightables;
 
   /**
    * @override
    * @type {import('./shared/Parser').SignatureTarget<Node>[]}
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   extraSignatures = this.extraSignatures;
 
   /**
@@ -297,6 +304,7 @@ class Comment extends CommentSkeleton {
    * @override
    * @type {OpeningSection extends true ? import('./Section').default : import('./Section').default | undefined}
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   section = this.section;
 
   /**
@@ -307,6 +315,7 @@ class Comment extends CommentSkeleton {
    * @type {OpeningSection}
    * @protected
    */
+  // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
   openingSection = this.openingSection;
 
   /**
@@ -1318,7 +1327,6 @@ class Comment extends CommentSkeleton {
    * @param {string} markerColor
    * @param {string} backgroundColor
    * @param {() => void} [callback] Function to run when the animation is concluded.
-   * @this {Comment}
    * @private
    */
   animateToColors(markerColor, backgroundColor, callback) {
