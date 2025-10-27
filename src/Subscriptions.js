@@ -18,7 +18,6 @@ import { wrapHtml } from './utils-window';
  * {@link DtSubscriptions DisussionTools' topic subscription} and
  * {@link LegacySubscriptions CD's legacy section watching}.
  *
- * @template {boolean} Loaded
  * @augments EventEmitter<EventMap>
  */
 class Subscriptions extends EventEmitter {

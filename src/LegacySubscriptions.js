@@ -16,20 +16,15 @@ import { wrapHtml } from './utils-window';
 /**
  * Implementation of legacy section watching.
  *
- * @template {boolean} Loaded
- * @augments Subscriptions<Loaded>
+ * @augments Subscriptions
  */
 class LegacySubscriptions extends Subscriptions {
   subscribePromise = Promise.resolve();
 
-  /**
-   * @typedef {Loaded extends true ? AllPagesData : undefined} AllPagesDataIfLoaded
-   */
-
-  /** @type {Loaded extends true ? AllPagesData : undefined} */
+  /** @type {AllPagesData} @private */
   allPagesData;
 
-  /** @type {string[]|undefined} */
+  /** @type {string[]|undefined} @private */
   originalList;
 
   /**
@@ -46,9 +41,9 @@ class LegacySubscriptions extends Subscriptions {
     try {
       // mw.user.options is not used even on first run because it appears to be cached sometimes
       // which can be critical for determining subscriptions.
-      this.allPagesData = /** @type {AllPagesDataIfLoaded} */ (this.unpack(
+      this.allPagesData = this.unpack(
         await getUserInfo(reuse).then(({ subscriptions }) => subscriptions)
-      ));
+      );
     } catch (error) {
       console.warn('Convenient Discussions: Couldn\'t load the settings from the server.', error);
 
@@ -92,7 +87,7 @@ class LegacySubscriptions extends Subscriptions {
   /**
    * Test if the subscription list is loaded.
    *
-   * @returns {this is LegacySubscriptions<true>}
+   * @returns {this is this & { allPages }}
    * @override
    */
   areLoaded() {
