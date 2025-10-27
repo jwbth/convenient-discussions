@@ -21,6 +21,7 @@ class CompactComment extends Comment {
    * @type {CompactCommentLayers | undefined}
    * @override
    */
+  // @ts-expect-error: Narrowing parent type
   layers;
 
   /**
@@ -29,6 +30,7 @@ class CompactComment extends Comment {
    * @type {CompactCommentActions | undefined}
    * @override
    */
+  // @ts-expect-error: Narrowing parent type
   actions;
 
   /**

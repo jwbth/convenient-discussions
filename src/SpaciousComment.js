@@ -28,6 +28,7 @@ class SpaciousComment extends Comment {
    * @type {SpaciousCommentLayers | undefined}
    * @override
    */
+  // @ts-expect-error: Narrowing parent type
   layers;
 
   /**
@@ -36,12 +37,12 @@ class SpaciousComment extends Comment {
    * @type {SpaciousCommentActions | undefined}
    * @override
    */
+  // @ts-expect-error: Narrowing parent type
   actions;
 
   /**
    * Header element for spacious comments.
    *
-   * @override
    * @type {HTMLElement}
    */
   headerElement;
@@ -63,7 +64,6 @@ class SpaciousComment extends Comment {
   /**
    * Comment header jQuery wrapper.
    *
-   * @override
    * @type {JQuery}
    */
   $header;
@@ -71,7 +71,6 @@ class SpaciousComment extends Comment {
   /**
    * Comment menu jQuery wrapper.
    *
-   * @override
    * @type {JQuery}
    */
   $menu;

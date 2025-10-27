@@ -19,10 +19,10 @@ import { getUserInfo, saveLocalOption } from './utils-api';
  * @augments EventEmitter<EventMap>
  */
 class Visits extends EventEmitter {
-  /** @type {{ [articleId: number]: string[] }} */
-  data = {};
+  /** @type {{ [articleId: number]: string[] } | undefined} */
+  data;
 
-  /** @type {string[]} */
+  /** @type {string[] | undefined} */
   currentPageData;
 
   /**
@@ -50,7 +50,10 @@ class Visits extends EventEmitter {
     }
 
     const articleId = mw.config.get('wgArticleId');
-    this.data[articleId] ||= [];
+    this.data = {};
+    if (!(articleId in this.data)) {
+      this.data[articleId] = [];
+    }
     this.currentPageData = this.data[articleId];
 
     this.process(bootProcess.passedData.markAsRead || false);

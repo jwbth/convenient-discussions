@@ -140,31 +140,6 @@ class Comment extends CommentSkeleton {
   marginHighlightable;
 
   /**
-   * @type {HTMLElement | undefined}
-   */
-  headerElement;
-
-  /**
-   * @type {HTMLElement | undefined}
-   */
-  menuElement;
-
-  /**
-   * Comment header. Used when comment spacious formatting is enabled.
-   *
-   * @type {JQuery | undefined}
-   */
-  $header;
-
-  /**
-   * Comment menu. Used when comment spacious formatting is enabled; otherwise
-   * the overlay menu from layers is used.
-   *
-   * @type {JQuery | undefined}
-   */
-  $menu;
-
-  /**
    * Layers composition for managing comment visual layers.
    *
    * @type {import('./CommentLayers').default | undefined}

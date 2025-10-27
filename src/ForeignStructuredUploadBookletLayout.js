@@ -40,7 +40,7 @@ class ForeignStructuredUploadBookletLayout extends mw.ForeignStructuredUpload.Bo
    * @override
    * @type {ForeignStructuredUpload}
    */
-  // @ts-expect-error: Initialized in init(), narrowing parent type
+  // @ts-expect-error: Initialized in createUpload(); narrowing parent type
   upload;
 
   /** @type {string | undefined} */
