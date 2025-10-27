@@ -1,6 +1,7 @@
 {
 	"@metadata": {
 		"authors": [
+			"SaldırganSincap",
 			"شاه زمان پټان"
 		]
 	},
@@ -68,7 +69,7 @@
 	"section-watch-openpages": "(تاسو به يوازې هغه وخت خبرتياوې ترلاسه کړئ چې دا ريښکه پرانېستې وي.)",
 	"section-watch-pagenotwatched": "<strong>يادونه:</strong> تاسو دې برخه کې گډون کړی دی؛ خو مخ نشئ څارلی، د دې لپاره چې نوې څرگندونې ستاسو کتنلړ کې روښانه شي، دا مخ په خپل کتنلړ کې ورگډ کړئ.",
 	"section-watch-error-maxsize": "اوڼنې نشی هم‌مهالېدای: د گډونلړ کچه د وروستۍ کچې څخه زياته ده. <span class=\"cd-notification-editWatchedSections\">\n[[$1|ونډکښنې لړليک سم کړئ]]</span>؛ ترڅو ستونزه اواره شي.",
-	"section-metadata-commentcount-authorcount": "له <span class=\"cd-section-metadata-authorcount-link\">$2 {{plural:$2|کس|وگړو}}</span></span> څخه $1 {{plural:$1|څرگندونه|څرگندونې}}<span class=\"cd-section-metadata-authorcount\">",
+	"section-metadata-commentcount-authorcount": "له <span class=\"cd-section-metadata-authorcount-link\">$2 {{plural:$2|کس|وگړو}}</span> څخه $1 {{plural:$1|څرگندونه|څرگندونې}}<span class=\"cd-section-metadata-authorcount\"></span>",
 	"section-metadata-newcommentcount": "+$1 {{plural:$1|نوي}}",
 	"section-metadata-lastcomment": "وروستۍ څرگندونې:",
 	"section-authors-sort-abc": "د ابېڅې له مخې",
