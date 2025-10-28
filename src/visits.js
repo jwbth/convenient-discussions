@@ -19,10 +19,10 @@ import { getUserInfo, saveLocalOption } from './utils-api';
  * @augments EventEmitter<EventMap>
  */
 class Visits extends EventEmitter {
-  /** @type {{ [articleId: number]: string[] } | undefined} */
+  /** @type {{ [articleId: number]: string[] }} */
   data;
 
-  /** @type {string[] | undefined} */
+  /** @type {string[]} */
   currentPageData;
 
   /**

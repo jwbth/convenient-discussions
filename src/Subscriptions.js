@@ -21,7 +21,7 @@ import { wrapHtml } from './utils-window';
  * @augments EventEmitter<EventMap>
  */
 class Subscriptions extends EventEmitter {
-  /** @type {SubscriptionsData | undefined} */
+  /** @type {SubscriptionsData} */
   data;
 
   /** @type {string|undefined} */
@@ -98,6 +98,7 @@ class Subscriptions extends EventEmitter {
    */
   updateLocally(subscribeId, subscribe) {
     // this.data can be not set on newly created pages with DT subscriptions enabled.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     this.data ||= {};
 
     this.data[subscribeId] = subscribe;
@@ -184,6 +185,7 @@ class Subscriptions extends EventEmitter {
       throw new CdError();
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!this.data || !(subscribeId in this.data)) {
       return;
     }

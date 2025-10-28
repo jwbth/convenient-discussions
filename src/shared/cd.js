@@ -125,9 +125,9 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared);
  * @property {import('../CurrentPage').default} page Current page's object.
  * @property {import('../User').default} user Current user's object.
  * @property {typeof import('../../config/default').default} config
- * @property {GlobalProps} g
  * @property {import('./CommentSkeleton').default[]} comments
  * @property {import('./SectionSkeleton').default[]} sections
+ * @property {GlobalProps} g
  */
 
 /**

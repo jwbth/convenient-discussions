@@ -30,7 +30,7 @@ import cd from './shared/cd';
 
 /**
  * @typedef {(
- *     import('./shared/cd').ConvenientDiscussionsBase
+ *     Omit<import('./shared/cd').ConvenientDiscussionsBase, 'comments' | 'sections'>
  *   & typeof import('./convenientDiscussions').convenientDiscussionsWindow
  *   & ConvenientDiscussionsWindowExtension
  * )} ConvenientDiscussions

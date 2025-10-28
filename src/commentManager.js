@@ -29,7 +29,7 @@ import visits from './visits';
  * @augments EventEmitter<EventMap>
  * @template {Comment} [C=Comment]
  */
-class CommentManager extends EventEmitter {
+export class CommentManager extends EventEmitter {
   /**
    * List of comments.
    *

@@ -33,6 +33,8 @@ class CompactComment extends Comment {
   // @ts-expect-error: Narrowing parent type
   actions;
 
+  isHovered = false;
+
   /**
    * Create the comment's underlay and overlay with contents for compact comments.
    *
@@ -234,10 +236,10 @@ class CompactComment extends Comment {
       }
 
       // FIXME: decouple
-      commentManager
-        .query((comment) => comment instanceof CompactComment && comment.isHovered)
+      /** @type {import('./commentManager').default<CompactComment>} */ (commentManager)
+        .query((comment) => comment.isHovered)
         .forEach((comment) => {
-          /** @type {CompactComment} */ (comment).handleUnhover();
+          comment.handleUnhover();
         });
     }
 
