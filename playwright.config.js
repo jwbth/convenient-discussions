@@ -1,6 +1,8 @@
 // @ts-check
 const { defineConfig, devices } = require('@playwright/test');
 
+const { getAuthStatePath } = require('./tests/browser/auth-helper');
+
 /**
  * @see https://playwright.dev/docs/test-configuration
  */
@@ -17,32 +19,50 @@ module.exports = defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['html', { open: 'never' }],
-    ['list']
+    ['list'],
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://localhost:9000',
+    /* Base URL for test.wikipedia.org */
+    baseURL: 'https://test.wikipedia.org',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+
+    /* Use authentication state if available */
+    storageState: getAuthStatePath(),
   },
 
   /* Configure projects for major browsers */
   projects: [
+    // Setup project for authentication
+    {
+      name: 'setup',
+      testMatch: /.*\.setup\.js/,
+      teardown: 'cleanup',
+    },
+    {
+      name: 'cleanup',
+      testMatch: /.*\.teardown\.js/,
+    },
+
+    // Main test projects
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      dependencies: ['setup'],
     },
 
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
+      dependencies: ['setup'],
     },
 
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
+      dependencies: ['setup'],
     },
   ],
 

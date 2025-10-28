@@ -11,3 +11,4 @@ playwright-report/
 sandbox/
 src/test*
 test-results/
+tests/browser/auth-state.json

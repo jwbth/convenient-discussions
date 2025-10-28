@@ -30,6 +30,8 @@
     "start": "node buildConfigs.mjs && cross-env NODE_OPTIONS=--openssl-legacy-provider node buildI18n.mjs && cross-env NODE_OPTIONS=--max-old-space-size=2048 NODE_OPTIONS=--openssl-legacy-provider webpack serve --env dev",
     "test": "jest",
     "test:browser": "playwright test",
+    "test:browser:auth": "playwright test test-wikipedia-auth.spec.js",
+    "test:browser:headed": "playwright test --headed",
     "webpack": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack"
   },
   "browserslist": [
