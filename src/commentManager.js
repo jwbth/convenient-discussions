@@ -351,7 +351,7 @@ export class CommentManager extends EventEmitter {
 
           // Nested containers shouldn't count, the offset of layers inside them may be OK, unlike the
           // layers preceding them.
-        } else if (comment.getLayersContainer().cdIsTopLayersContainer) {
+        } else if (comment.layers?.getLayersContainer().cdIsTopLayersContainer) {
           // isMoved === false
           notMovedCount++;
           if (notMovedCount === 2) {
@@ -365,7 +365,7 @@ export class CommentManager extends EventEmitter {
 
     // It's faster to update the offsets separately in one sequence.
     comments.forEach((comment) => {
-      comment.updateLayersOffset();
+      comment.layers?.updateLayersOffset();
     });
   };
 
@@ -596,11 +596,11 @@ export class CommentManager extends EventEmitter {
 
     const isObstructingElementHovered = talkPageController.isObstructingElementHovered();
 
-    this.items
+    // Since we've confirmed this is a CompactCommentManager, we know items are CompactComment[]
+    /** @type {import('./CompactComment').default[]} */ (this.items)
       .filter((comment) => Boolean(comment.layers))
       .forEach((comment) => {
-        comment
-          .updateHoverState(event, isObstructingElementHovered);
+        comment.updateHoverState(event, isObstructingElementHovered);
       });
   };
 
@@ -737,9 +737,9 @@ export class CommentManager extends EventEmitter {
         // example, level 1 comments without a parent and their children) separately.
         const sectionComments = comments
           .filter((comment) => comment.logicalLevel === 0)
-          .reduce((arr, child) =>
-            this.searchForNewCommentsInSubtree(child, arr, newCommentIndexes),
-          /** @type {import('./updateChecker').CommentWorkerNew[]} */ ([])
+          .reduce(
+            (arr, child) => this.searchForNewCommentsInSubtree(child, arr, newCommentIndexes),
+            /** @type {import('./updateChecker').CommentWorkerNew[]} */ ([])
           );
         // eslint-disable-next-line no-one-time-vars/no-one-time-vars
         const threadComments = comments.filter((comment) => !sectionComments.includes(comment));
