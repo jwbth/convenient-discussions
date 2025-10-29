@@ -1,5 +1,5 @@
 // @ts-check
-const { test as teardown } = require('@playwright/test');
+const { test: teardown } = require('@playwright/test');
 const { clearAuthState } = require('./auth-helper');
 
 /**

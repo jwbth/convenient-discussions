@@ -1,13 +1,13 @@
 // @ts-check
 const { defineConfig, devices } = require('@playwright/test');
 
-const { getAuthStatePath } = require('./tests/browser/auth-helper');
+const { getAuthStatePath } = require('./playwright/auth-helper');
 
 /**
  * @see https://playwright.dev/docs/test-configuration
  */
 module.exports = defineConfig({
-  testDir: './tests/browser',
+  testDir: './playwright',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -67,5 +67,5 @@ module.exports = defineConfig({
   ],
 
   /* Build the script before running tests */
-  globalSetup: require.resolve('./tests/browser/global-setup.js'),
+  globalSetup: require.resolve('./playwright/global-setup.js'),
 });

@@ -45,7 +45,7 @@ async function setupAuth(username, password) {
     console.log('✅ Successfully logged in to test.wikipedia.org');
 
     // Save authentication state
-    await context.storageState({ path: 'tests/browser/auth-state.json' });
+    await context.storageState({ path: 'playwright/auth-state.json' });
     console.log('💾 Authentication state saved to auth-state.json');
 
   } catch (error) {

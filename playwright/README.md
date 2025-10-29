@@ -1,6 +1,6 @@
-# Browser Testing for Comment Class Refactoring
+# Playwright Browser Testing
 
-This directory contains browser tests for the Comment class refactoring, specifically testing visual layers, hover behaviors, and UI interactions that require a real browser environment.
+This directory contains Playwright browser tests for Convenient Discussions, specifically testing visual layers, hover behaviors, and UI interactions that require a real browser environment.
 
 ## Setup
 
@@ -113,10 +113,11 @@ The tests are configured to use live Wikipedia talk pages:
 - **Default**: `https://en.wikipedia.org/wiki/Talk:Main_Page`
 - **Alternative**: Any Wikipedia talk page with comments
 
-### Authentication (Optional)
+### Authentication
 
 For testing features that require login:
-- See `auth-example.spec.js` for cookie-based authentication
+- See `AUTH_SETUP_GUIDE.md` for complete authentication setup
+- See `auth-example.spec.js` for cookie-based authentication examples
 - Most Comment functionality works without login
 - Login is only needed for actions like editing, thanking, etc.
 

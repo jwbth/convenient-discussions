@@ -45,8 +45,8 @@ npx playwright test test-wikipedia-auth.spec.js
 ### File Structure
 
 ```
-tests/browser/
-├── auth.setup.js              # Core authentication logic
+playwright/
+├── auth-core.js               # Core authentication logic
 ├── auth-helper.js             # Helper functions for auth management
 ├── global-auth.setup.js       # Playwright setup hook
 ├── auth.teardown.js           # Optional cleanup
@@ -173,7 +173,7 @@ test('check if logged in', async ({ page }) => {
 npx playwright test test-wikipedia-auth.spec.js --headed
 
 # Clear auth state and retry
-rm tests/browser/auth-state.json
+rm playwright/auth-state.json
 npx playwright test
 ```
 

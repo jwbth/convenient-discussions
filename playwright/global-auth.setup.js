@@ -1,6 +1,6 @@
 // @ts-check
-const { test as setup } = require('@playwright/test');
-const { setupAuth } = require('./auth.setup');
+const { test: setup } = require('@playwright/test');
+const { setupAuth } = require('./auth-core');
 const { hasAuthState } = require('./auth-helper');
 
 /**
