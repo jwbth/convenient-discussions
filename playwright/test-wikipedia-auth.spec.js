@@ -1,15 +1,12 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
-const { setupAuthenticatedContext } = require('./auth-helper');
 
 /**
  * Example test demonstrating authentication on test.wikipedia.org
+ * Authentication is handled automatically by the setup project
  */
 
 test.describe('Test Wikipedia Authentication', () => {
-  test.beforeEach(async ({ context }) => {
-    await setupAuthenticatedContext(context);
-  });
 
   test('should be logged in to test.wikipedia.org', async ({ page }) => {
     // Navigate to test.wikipedia.org

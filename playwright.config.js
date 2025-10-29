@@ -1,7 +1,11 @@
 // @ts-check
+
+const fs = require('node:fs');
+const path = require('node:path');
+
 const { defineConfig, devices } = require('@playwright/test');
 
-const { getAuthStatePath } = require('./playwright/auth-helper');
+const authFile = path.join(__dirname, 'playwright', '.auth', 'user.json');
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -30,7 +34,7 @@ module.exports = defineConfig({
     trace: 'on-first-retry',
 
     /* Use authentication state if available */
-    storageState: getAuthStatePath(),
+    storageState: fs.existsSync(authFile) ? authFile : undefined,
   },
 
   /* Configure projects for major browsers */
@@ -39,11 +43,6 @@ module.exports = defineConfig({
     {
       name: 'setup',
       testMatch: /.*\.setup\.js/,
-      teardown: 'cleanup',
-    },
-    {
-      name: 'cleanup',
-      testMatch: /.*\.teardown\.js/,
     },
 
     // Main test projects

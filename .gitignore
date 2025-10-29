@@ -11,4 +11,5 @@ playwright-report/
 sandbox/
 src/test*
 test-results/
-playwright/auth-state.json
+playwright/.auth/
+.env

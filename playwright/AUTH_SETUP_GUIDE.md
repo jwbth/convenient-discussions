@@ -1,12 +1,12 @@
 # Authentication Setup Guide for test.wikipedia.org
 
-This guide explains how to set up and use authentication for Playwright tests on test.wikipedia.org.
+This guide explains how to set up and use authentication for Playwright tests on test.wikipedia.org following Playwright's recommended authentication patterns.
 
 ## Quick Start
 
 ### 1. Set Environment Variables
 
-Create a `.env` file in your project root or set environment variables:
+**IMPORTANT**: Never put credentials in files that might be committed to git. Use environment variables only:
 
 ```bash
 # Windows (Command Prompt)
@@ -22,6 +22,8 @@ export WIKIPEDIA_USERNAME=YourTestUsername
 export WIKIPEDIA_PASSWORD=YourTestPassword
 ```
 
+**Security Note**: The `.env` file and `playwright/.auth/` directory are both in `.gitignore` to prevent accidental credential exposure.
+
 ### 2. Run Tests
 
 ```bash
@@ -36,21 +38,21 @@ npx playwright test test-wikipedia-auth.spec.js
 
 ### Authentication Flow
 
-1. **Setup Phase**: Before any tests run, `global-auth.setup.js` checks for existing authentication
-2. **Login Process**: If no auth state exists and credentials are provided, it logs into test.wikipedia.org
-3. **State Saving**: Authentication cookies and session data are saved to `auth-state.json`
+1. **Setup Phase**: Before any tests run, `auth.setup.js` checks for credentials
+2. **Login Process**: If credentials are provided, it logs into test.wikipedia.org
+3. **State Saving**: Authentication cookies and session data are saved to `.auth/user.json`
 4. **Test Execution**: All tests automatically use the saved authentication state
-5. **Cleanup**: Optionally clears auth state after tests complete
+5. **Reuse**: Authentication state persists between test runs until manually cleared
 
 ### File Structure
 
 ```
 playwright/
-├── auth-core.js               # Core authentication logic
-├── auth-helper.js             # Helper functions for auth management
-├── global-auth.setup.js       # Playwright setup hook
-├── auth.teardown.js           # Optional cleanup
-├── auth-state.json           # Generated auth state (gitignored)
+├── .auth/
+│   └── user.json             # Generated auth state (gitignored)
+├── auth.setup.js             # Playwright auth setup (follows official pattern)
+├── auth-helper.js            # Helper functions for auth management
+├── auth-core.js              # Legacy auth logic (can be removed)
 └── test-wikipedia-auth.spec.js # Example authenticated test
 ```
 
@@ -173,8 +175,11 @@ test('check if logged in', async ({ page }) => {
 npx playwright test test-wikipedia-auth.spec.js --headed
 
 # Clear auth state and retry
-rm playwright/auth-state.json
+rm -rf playwright/.auth
 npx playwright test
+
+# Run only the auth setup
+npx playwright test --project=setup
 ```
 
 ### Manual Auth State Management
