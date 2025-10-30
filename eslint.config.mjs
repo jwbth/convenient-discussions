@@ -92,6 +92,7 @@ const config = defineConfig(
           './src/worker/jsconfig.json',
           './src/shared/jsconfig.json',
           './tests/jsconfig.json',
+          './playwright/jsconfig.json',
           './config/jsconfig.json',
         ],
         tsconfigRootDir: import.meta.dirname,

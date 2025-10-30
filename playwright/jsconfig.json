@@ -1,0 +1,6 @@
+{
+  "extends": "../jsconfig-base.json",
+  "compilerOptions": {
+    "lib": ["ESNext"],
+  },
+}

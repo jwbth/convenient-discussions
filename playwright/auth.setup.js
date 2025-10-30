@@ -11,6 +11,7 @@ setup('authenticate', async ({ page }) => {
   if (!username || !password) {
     console.log('⚠️  No Wikipedia credentials provided. Skipping authentication setup.');
     console.log('   Set WIKIPEDIA_USERNAME and WIKIPEDIA_PASSWORD environment variables to enable authentication.');
+
     return;
   }
 
@@ -20,7 +21,7 @@ setup('authenticate', async ({ page }) => {
   await page.goto('https://test.wikipedia.org/wiki/Special:UserLogin');
 
   // Wait for login form to be visible
-  await page.waitForSelector('#wpName1', { timeout: 10000 });
+  await page.waitForSelector('#wpName1', { timeout: 10_000 });
 
   // Fill in credentials
   await page.fill('#wpName1', username);
@@ -30,7 +31,7 @@ setup('authenticate', async ({ page }) => {
   await page.click('#wpLoginAttempt');
 
   // Wait for successful login (redirect or user menu appears)
-  await page.waitForSelector('#pt-userpage, #pt-anonuserpage', { timeout: 15000 });
+  await page.waitForSelector('#pt-userpage, #pt-anonuserpage', { timeout: 15_000 });
 
   // Verify we're logged in by checking for user menu
   const userMenu = page.locator('#pt-userpage');

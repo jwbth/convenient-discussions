@@ -7,7 +7,6 @@ const { test, expect } = require('@playwright/test');
  */
 
 test.describe('Test Wikipedia Authentication', () => {
-
   test('should be logged in to test.wikipedia.org', async ({ page }) => {
     // Navigate to test.wikipedia.org
     await page.goto('/wiki/Main_Page');
