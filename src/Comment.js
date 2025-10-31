@@ -1246,6 +1246,7 @@ class Comment extends CommentSkeleton {
       if (options.add) {
         this.addLayers();
       }
+
       return true;
     }
 

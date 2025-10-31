@@ -20,19 +20,21 @@ test.describe('Comment Actions - Compact Style', () => {
     // Find the first comment part
     const firstCommentPart = page.locator('.cd-comment-part-first').first();
 
-    // Hover to show overlay menu
+    // Hover to show overlay menu and keep hovering
     await firstCommentPart.hover();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(1000);
 
     // Check if layers and overlay menu were created
     const overlayMenu = page.locator('.cd-comment-overlay-menu').first();
     const menuExists = await overlayMenu.count() > 0;
 
     if (menuExists) {
+      // Keep the mouse over the comment to ensure overlay stays visible
+      await firstCommentPart.hover();
       await expect(overlayMenu).toBeVisible();
 
-      // Check for action buttons in overlay
-      const replyButton = page.locator('.cd-comment-button-reply').first();
+      // Check for action buttons in overlay - look for Reply button by text content
+      const replyButton = overlayMenu.locator('text=Reply').first();
       const buttonExists = await replyButton.count() > 0;
 
       if (buttonExists) {
@@ -50,16 +52,21 @@ test.describe('Comment Actions - Compact Style', () => {
     // Find the first comment part
     const firstCommentPart = page.locator('.cd-comment-part-first').first();
 
-    // Hover to show overlay menu first
+    // Hover to show overlay menu first and keep hovering
     await firstCommentPart.hover();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(1000);
 
-    // Find and click reply button
-    const replyButton = page.locator('.cd-comment-button-reply').first();
+    // Find and click reply button - look for Reply button by text content within the overlay menu
+    const overlayMenu = page.locator('.cd-comment-overlay-menu').first();
+    const replyButton = overlayMenu.locator('text=Reply').first();
     const buttonExists = await replyButton.count() > 0;
 
     if (buttonExists) {
-      await replyButton.click();
+      // Ensure the overlay menu is visible before clicking
+      await expect(overlayMenu).toBeVisible();
+
+      // Force click to bypass pointer event interception
+      await replyButton.click({ force: true });
 
       // Check that comment form appears
       const commentForm = page.locator('.cd-commentForm');

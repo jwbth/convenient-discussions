@@ -74,8 +74,22 @@ class CompactCommentLayers extends CommentLayers {
    * @override
    */
   create() {
-    // Call parent create method to set up basic layers
-    super.create();
+    const CompactComment = require('./CompactComment').default;
+    const commentManager = require('./commentManager').default;
+
+    // Create underlay using base prototype
+    this.underlay = CommentLayers.prototypes.get('underlay');
+    this.$underlay = /** @type {JQuery} */ ($(this.underlay));
+
+    // Add underlay to the manager's list
+    commentManager.underlays.push(this.underlay);
+
+    // Create overlay using compact-specific prototype
+    this.overlay = CompactComment.prototypes.get('overlay');
+    this.line = /** @type {HTMLElement} */ (this.overlay.firstChild);
+    this.marker = /** @type {HTMLElement} */ (this.overlay.children[1]);
+    this.$overlay = /** @type {JQuery} */ ($(this.overlay));
+    this.$marker = /** @type {JQuery} */ ($(this.marker));
 
     // Set up compact-specific overlay menu elements
     this.overlayInnerWrapper = /** @type {HTMLElement} */ (this.overlay.lastChild);

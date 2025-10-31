@@ -342,9 +342,9 @@ class CompactComment extends Comment {
     overlayGradient.className = 'cd-comment-overlay-gradient';
     overlayInnerWrapper.append(overlayGradient);
 
-    const overlayContent = document.createElement('div');
-    overlayContent.className = 'cd-comment-overlay-content';
-    overlayInnerWrapper.append(overlayContent);
+    const overlayMenu = document.createElement('div');
+    overlayMenu.className = 'cd-comment-overlay-menu';
+    overlayInnerWrapper.append(overlayMenu);
 
     // Replace the base overlay with the enhanced version
     this.prototypes.add('overlay', baseOverlay);

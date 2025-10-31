@@ -94,6 +94,22 @@ test.describe('Debug Comment Initialization', () => {
       const cd = window.convenientDiscussions;
       const firstComment = cd.comments[0];
 
+      // Check the actual DOM structure of the overlay
+      const overlay = document.querySelector('.cd-comment-overlay');
+      let overlayStructure = null;
+      if (overlay) {
+        overlayStructure = {
+          children: Array.from(overlay.children).map((child) => ({
+            tagName: child.tagName,
+            className: child.className,
+            children: Array.from(child.children).map((grandchild) => ({
+              tagName: grandchild.tagName,
+              className: grandchild.className,
+            })),
+          })),
+        };
+      }
+
       return {
         hasLayers: !!firstComment.layers,
         hasActions: !!firstComment.actions,
@@ -101,6 +117,20 @@ test.describe('Debug Comment Initialization', () => {
         layersContainerExists: !!document.querySelector('.cd-commentLayersContainer'),
         underlayExists: !!document.querySelector('.cd-comment-underlay'),
         overlayExists: !!document.querySelector('.cd-comment-overlay'),
+        overlayMenuExists: !!document.querySelector('.cd-comment-overlay-menu'),
+        overlayGradientExists: !!document.querySelector('.cd-comment-overlay-gradient'),
+        overlayInnerWrapperExists: !!document.querySelector('.cd-comment-overlay-innerWrapper'),
+        overlayStructure,
+        layersType: firstComment.layers ? firstComment.layers.constructor.name : null,
+        actionsType: firstComment.actions ? firstComment.actions.constructor.name : null,
+        overlayMenuFromLayers: firstComment.layers?.overlayMenu ? firstComment.layers.overlayMenu.className : null,
+        overlayMenuFromActions: firstComment.actions && typeof firstComment.actions.getOverlayMenu === 'function' ? (firstComment.actions.getOverlayMenu() ? 'found' : 'not found') : 'method not found',
+        replyButtonExists: !!firstComment.actions?.replyButton,
+        overlayMenuButtons: Array.from(document.querySelectorAll('.cd-comment-overlay-menu *')).map((el) => ({
+          tagName: el.tagName,
+          className: el.className,
+          textContent: el.textContent.trim(),
+        })),
       };
     });
 

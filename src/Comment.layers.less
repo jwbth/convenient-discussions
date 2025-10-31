@@ -139,14 +139,26 @@
   display: inline-block;
   -moz-user-select: none;
   user-select: none;
-  background-image: linear-gradient(var(--cd-gradient-user-start), var(--cd-comment-hovered-background-color), rgba(255, 255, 255, 0));
+  background-image: linear-gradient(
+    var(--cd-gradient-user-start),
+    var(--cd-comment-hovered-background-color),
+    rgba(255, 255, 255, 0)
+  );
 
   .cd-comment-overlay-deleted.cd-comment-overlay-deleted & {
-    background-image: linear-gradient(var(--cd-gradient-user-start), var(--cd-comment-deleted-hovered-background-color), rgba(255, 255, 255, 0));
+    background-image: linear-gradient(
+      var(--cd-gradient-user-start),
+      var(--cd-comment-deleted-hovered-background-color),
+      rgba(255, 255, 255, 0)
+    );
   }
 
   .cd-comment-overlay-changed.cd-comment-overlay-changed & {
-    background-image: linear-gradient(var(--cd-gradient-user-start), var(--cd-comment-new-hovered-background-color), rgba(255, 255, 255, 0));
+    background-image: linear-gradient(
+      var(--cd-gradient-user-start),
+      var(--cd-comment-new-hovered-background-color),
+      rgba(255, 255, 255, 0)
+    );
   }
 
   // Gradient can't be animated. Not with jquery.ui and jquery.color.
