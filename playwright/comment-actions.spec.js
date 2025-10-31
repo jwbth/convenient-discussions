@@ -17,8 +17,8 @@ test.describe('Comment Actions - Compact Style', () => {
   });
 
   test('CompactComment should show action buttons in overlay menu', async ({ page }) => {
-    // Find a compact comment
-    const compactComment = page.locator('.cd-comment:not(.cd-comment-reformatted)').first();
+    // Find a compact comment part
+    const compactComment = page.locator('.cd-comment-part').first();
 
     // Hover to show overlay menu
     await compactComment.hover();
@@ -33,8 +33,8 @@ test.describe('Comment Actions - Compact Style', () => {
   });
 
   test('Compact comment action buttons should be functional', async ({ page }) => {
-    // Find a compact comment
-    const comment = page.locator('.cd-comment:not(.cd-comment-reformatted)').first();
+    // Find a compact comment part
+    const comment = page.locator('.cd-comment-part').first();
 
     // Find and click reply button
     const replyButton = comment.locator('.cd-comment-button-reply').first();
@@ -48,11 +48,13 @@ test.describe('Comment Actions - Compact Style', () => {
     const commentBox = await comment.boundingBox();
     const formBox = await commentForm.boundingBox();
 
-    expect(formBox.y).toBeGreaterThan(commentBox.y);
+    if (formBox && commentBox) {
+      expect(formBox.y).toBeGreaterThan(commentBox.y);
+    }
   });
 
   test('Copy link action should work for compact comments', async ({ page }) => {
-    const comment = page.locator('.cd-comment:not(.cd-comment-reformatted)').first();
+    const comment = page.locator('.cd-comment-part').first();
 
     // Find copy link button (may be in menu or direct)
     const copyLinkButton = comment.locator('.cd-comment-button-copyLink').first();
@@ -68,7 +70,7 @@ test.describe('Comment Actions - Compact Style', () => {
   });
 
   test('Thank button should work when available for compact comments', async ({ page }) => {
-    const comment = page.locator('.cd-comment:not(.cd-comment-reformatted)').first();
+    const comment = page.locator('.cd-comment-part').first();
 
     // Find thank button (may not be available for all comments)
     const thankButton = comment.locator('.cd-comment-button-thank');

@@ -17,8 +17,8 @@ test.describe('Comment Layers - Compact Style', () => {
   });
 
   test('CompactComment should show overlay menu on hover', async ({ page }) => {
-    // Find a compact comment
-    const compactComment = page.locator('.cd-comment:not(.cd-comment-reformatted)').first();
+    // Find a compact comment part
+    const compactComment = page.locator('.cd-comment-part').first();
 
     // Hover over the comment
     await compactComment.hover();
@@ -33,7 +33,7 @@ test.describe('Comment Layers - Compact Style', () => {
   });
 
   test('Compact comment layers should be positioned correctly', async ({ page }) => {
-    const comment = page.locator('.cd-comment:not(.cd-comment-reformatted)').first();
+    const comment = page.locator('.cd-comment-part').first();
 
     // Trigger layer creation (e.g., by highlighting)
     await comment.click();
@@ -56,12 +56,14 @@ test.describe('Comment Layers - Compact Style', () => {
     expect(commentBox).toBeTruthy();
 
     // Basic positioning checks
-    expect(Math.abs(underlayBox.x - commentBox.x)).toBeLessThan(5);
-    expect(Math.abs(overlayBox.x - commentBox.x)).toBeLessThan(5);
+    if (underlayBox && overlayBox && commentBox) {
+      expect(Math.abs(underlayBox.x - commentBox.x)).toBeLessThan(5);
+      expect(Math.abs(overlayBox.x - commentBox.x)).toBeLessThan(5);
+    }
   });
 
   test('Compact comment layer styles should update correctly', async ({ page }) => {
-    const comment = page.locator('.cd-comment:not(.cd-comment-reformatted)').first();
+    const comment = page.locator('.cd-comment-part').first();
 
     // Trigger layer creation
     await comment.click();

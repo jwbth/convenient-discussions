@@ -18,7 +18,7 @@
   ],
   "browser": "src/app.js",
   "scripts": {
-    "build": "node buildConfigs.mjs && cross-env NODE_OPTIONS=--openssl-legacy-provider node buildI18n.mjs && cross-env NODE_OPTIONS=--openssl-legacy-provider webpack",
+    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack",
     "build16": "node buildConfigs.mjs && node buildI18n.mjs && webpack",
     "configs": "node buildConfigs.mjs",
     "deploy": "node --unhandled-rejections=strict deploy.mjs",
