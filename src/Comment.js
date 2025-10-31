@@ -1240,25 +1240,25 @@ class Comment extends CommentSkeleton {
     options.add ??= true;
     options.update ??= true;
 
-    const isMoved = this.layers?.computeLayersOffset(options);
+    // If layers don't exist, create them
+    if (!this.layers) {
+      this.createLayers();
+      if (options.add) {
+        this.addLayers();
+      }
+      return true;
+    }
+
+    // If layers exist, compute their offset and update if needed
+    const isMoved = this.layers.computeLayersOffset(options);
     if (isMoved === undefined) return;
 
-    // Configure the layers only if they were unexistent or the comment position has changed, to
-    // save time.
-    if (this.layers) {
-      this.layers.updateStyles();
-      if (isMoved && options.update) {
-        this.layers.updateLayersOffset();
-      }
-
-      return isMoved;
-    }
-    this.createLayers();
-    if (options.add) {
-      this.addLayers();
+    this.layers.updateStyles();
+    if (isMoved && options.update) {
+      this.layers.updateLayersOffset();
     }
 
-    return true;
+    return isMoved;
   };
 
   /**
