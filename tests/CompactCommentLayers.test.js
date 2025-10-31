@@ -17,7 +17,7 @@ jest.mock('../src/CommentLayers', () => class MockCommentLayers {
       lastChild: {
         className: 'cd-comment-overlay-innerWrapper',
         firstChild: { className: 'cd-comment-overlay-gradient' },
-        lastChild: { className: 'cd-comment-overlay-content' },
+        lastChild: { className: 'cd-comment-overlay-menu' },
         addEventListener: jest.fn(),
         style: { display: '' },
       },

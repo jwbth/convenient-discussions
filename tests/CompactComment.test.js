@@ -207,7 +207,7 @@ describe('CompactComment', () => {
       expect(gradient.textContent).toBe('\u00A0'); // Non-breaking space
 
       // Check for content container
-      const content = innerWrapper.querySelector('.cd-comment-overlay-content');
+      const content = innerWrapper.querySelector('.cd-comment-overlay-menu');
       expect(content).toBeInstanceOf(HTMLElement);
     });
 
@@ -245,7 +245,7 @@ describe('CompactComment', () => {
 
       const innerWrapper = overlay.querySelector('.cd-comment-overlay-innerWrapper');
       const gradient = innerWrapper.querySelector('.cd-comment-overlay-gradient');
-      const content = innerWrapper.querySelector('.cd-comment-overlay-content');
+      const content = innerWrapper.querySelector('.cd-comment-overlay-menu');
 
       expect(gradient.parentElement).toBe(innerWrapper);
       expect(content.parentElement).toBe(innerWrapper);
