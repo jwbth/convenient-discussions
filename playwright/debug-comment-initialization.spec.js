@@ -46,10 +46,48 @@ test.describe('Debug Comment Initialization', () => {
 
     console.log('Comment initialization info:', JSON.stringify(commentInfo, null, 2));
 
+    // Check if events are bound
+    const eventsInfo = await page.evaluate(() => {
+      const cd = window.convenientDiscussions;
+      const firstComment = cd.comments[0];
+      const firstHighlightable = firstComment.highlightables[0];
+
+      return {
+        hasHighlightables: firstComment.highlightables.length > 0,
+        firstHighlightableTagName: firstHighlightable.tagName,
+        firstHighlightableClasses: firstHighlightable.className,
+        firstHighlightableId: firstHighlightable.id,
+      };
+    });
+
+    console.log('Events info:', JSON.stringify(eventsInfo, null, 2));
+
+    // Try to manually call handleHover to see if it works
+    const manualHoverInfo = await page.evaluate(() => {
+      const cd = window.convenientDiscussions;
+      const firstComment = cd.comments[0];
+
+      try {
+        // Try to manually call handleHover
+        firstComment.handleHover();
+
+        return {
+          isHoveredAfterManualCall: firstComment.isHovered,
+          hasLayersAfterManualCall: !!firstComment.layers,
+          hasActionsAfterManualCall: !!firstComment.actions,
+          error: null,
+        };
+      } catch (error) {
+        return { error: error.message };
+      }
+    });
+
+    console.log('Manual hover info:', JSON.stringify(manualHoverInfo, null, 2));
+
     // Try to manually trigger hover on the first comment
     const firstCommentPart = page.locator('.cd-comment-part-first').first();
     await firstCommentPart.hover();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(2000);
 
     // Check what happened after hover
     const afterHoverInfo = await page.evaluate(() => {
