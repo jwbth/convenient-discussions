@@ -5,28 +5,15 @@ const { setupConvenientDiscussions } = require('./helpers/test-utils');
 
 /**
  * Browser tests for Comment actions functionality
- * Tests action buttons, menus, and interactions for CompactComment and SpaciousComment
+ * Tests action buttons, menus, and interactions for CompactComment only
+ *
+ * NOTE: Currently testing compact-style comments only (spaciousComments: false)
+ * All comments on the test page should be in compact style.
  */
 
-test.describe('Comment Actions', () => {
+test.describe('Comment Actions - Compact Style', () => {
   test.beforeEach(async ({ page }) => {
     await setupConvenientDiscussions(page);
-  });
-
-  test('SpaciousComment should show action buttons in structured layout', async ({ page }) => {
-    // Find a spacious comment
-    const spaciousComment = page.locator('.cd-comment.cd-comment-reformatted').first();
-
-    // Check for action buttons container
-    const actionsContainer = spaciousComment.locator('.cd-comment-actions');
-    await expect(actionsContainer).toBeVisible();
-
-    // Check for specific action buttons
-    const replyButton = actionsContainer.locator('.cd-comment-button-reply');
-    const editButton = actionsContainer.locator('.cd-comment-button-edit');
-
-    await expect(replyButton).toBeVisible();
-    // Edit button may not be visible depending on permissions
   });
 
   test('CompactComment should show action buttons in overlay menu', async ({ page }) => {
@@ -45,8 +32,9 @@ test.describe('Comment Actions', () => {
     await expect(replyButton).toBeVisible();
   });
 
-  test('Action buttons should be functional', async ({ page }) => {
-    const comment = page.locator('.cd-comment').first();
+  test('Compact comment action buttons should be functional', async ({ page }) => {
+    // Find a compact comment
+    const comment = page.locator('.cd-comment:not(.cd-comment-reformatted)').first();
 
     // Find and click reply button
     const replyButton = comment.locator('.cd-comment-button-reply').first();
@@ -63,8 +51,8 @@ test.describe('Comment Actions', () => {
     expect(formBox.y).toBeGreaterThan(commentBox.y);
   });
 
-  test('Copy link action should work', async ({ page }) => {
-    const comment = page.locator('.cd-comment').first();
+  test('Copy link action should work for compact comments', async ({ page }) => {
+    const comment = page.locator('.cd-comment:not(.cd-comment-reformatted)').first();
 
     // Find copy link button (may be in menu or direct)
     const copyLinkButton = comment.locator('.cd-comment-button-copyLink').first();
@@ -79,8 +67,8 @@ test.describe('Comment Actions', () => {
     }
   });
 
-  test('Thank button should work when available', async ({ page }) => {
-    const comment = page.locator('.cd-comment').first();
+  test('Thank button should work when available for compact comments', async ({ page }) => {
+    const comment = page.locator('.cd-comment:not(.cd-comment-reformatted)').first();
 
     // Find thank button (may not be available for all comments)
     const thankButton = comment.locator('.cd-comment-button-thank');

@@ -5,10 +5,13 @@ const { setupConvenientDiscussions } = require('./helpers/test-utils');
 
 /**
  * Browser tests for Comment layers functionality
- * Tests visual layers, positioning, and hover behaviors for CompactComment and SpaciousComment
+ * Tests visual layers, positioning, and hover behaviors for CompactComment only
+ *
+ * NOTE: Currently testing compact-style comments only (spaciousComments: false)
+ * All comments on the test page should be in compact style.
  */
 
-test.describe('Comment Layers', () => {
+test.describe('Comment Layers - Compact Style', () => {
   test.beforeEach(async ({ page }) => {
     await setupConvenientDiscussions(page);
   });
@@ -29,20 +32,8 @@ test.describe('Comment Layers', () => {
     await expect(overlayGradient).toBeVisible();
   });
 
-  test('SpaciousComment should not have overlay menu', async ({ page }) => {
-    // Find a spacious comment
-    const spaciousComment = page.locator('.cd-comment.cd-comment-reformatted').first();
-
-    // Hover over the comment
-    await spaciousComment.hover();
-
-    // Check that no overlay menu appears
-    const overlayMenu = spaciousComment.locator('.cd-comment-overlay-menu');
-    await expect(overlayMenu).not.toBeVisible();
-  });
-
-  test('Comment layers should be positioned correctly', async ({ page }) => {
-    const comment = page.locator('.cd-comment').first();
+  test('Compact comment layers should be positioned correctly', async ({ page }) => {
+    const comment = page.locator('.cd-comment:not(.cd-comment-reformatted)').first();
 
     // Trigger layer creation (e.g., by highlighting)
     await comment.click();
@@ -69,8 +60,8 @@ test.describe('Comment Layers', () => {
     expect(Math.abs(overlayBox.x - commentBox.x)).toBeLessThan(5);
   });
 
-  test('Layer styles should update correctly', async ({ page }) => {
-    const comment = page.locator('.cd-comment').first();
+  test('Compact comment layer styles should update correctly', async ({ page }) => {
+    const comment = page.locator('.cd-comment:not(.cd-comment-reformatted)').first();
 
     // Trigger layer creation
     await comment.click();

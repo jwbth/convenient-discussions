@@ -32,8 +32,11 @@ const TEST_PAGES = {
  * Complete setup for Convenient Discussions browser testing
  * Handles all preparation steps: navigation, MediaWiki loading, script injection, and CD initialization
  *
+ * NOTE: Currently focused on compact-style comments only (spaciousComments: false)
+ * The test account should have spaciousComments setting disabled for consistent testing.
+ *
  * @param {import('@playwright/test').Page} page
- * @param {string} url - Wikipedia talk page URL
+ * @param {string} url - Wikipedia talk page URL (defaults to JWBTH test page)
  */
 async function setupConvenientDiscussions(page, url = TEST_PAGES.JWBTH_TEST) {
   console.log(`🚀 Setting up Convenient Discussions on: ${url}`);

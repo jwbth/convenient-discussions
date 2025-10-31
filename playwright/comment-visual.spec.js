@@ -5,34 +5,15 @@ const { setupConvenientDiscussions } = require('./helpers/test-utils');
 
 /**
  * Browser tests for Comment visual appearance and behavior
- * Tests visual regression and appearance consistency for CompactComment and SpaciousComment
+ * Tests visual regression and appearance consistency for CompactComment only
+ *
+ * NOTE: Currently testing compact-style comments only (spaciousComments: false)
+ * All comments on the test page should be in compact style.
  */
 
-test.describe('Comment Visual Appearance', () => {
+test.describe('Comment Visual Appearance - Compact Style', () => {
   test.beforeEach(async ({ page }) => {
     await setupConvenientDiscussions(page);
-  });
-
-  test('SpaciousComment should have correct visual structure', async ({ page }) => {
-    const spaciousComment = page.locator('.cd-comment.cd-comment-reformatted').first();
-
-    // Check for header elements
-    const header = spaciousComment.locator('.cd-comment-header');
-    await expect(header).toBeVisible();
-
-    const author = spaciousComment.locator('.cd-comment-author');
-    const timestamp = spaciousComment.locator('.cd-comment-timestamp');
-
-    await expect(author).toBeVisible();
-    await expect(timestamp).toBeVisible();
-
-    // Check for content area
-    const content = spaciousComment.locator('.cd-comment-content');
-    await expect(content).toBeVisible();
-
-    // Check for actions area
-    const actions = spaciousComment.locator('.cd-comment-actions');
-    await expect(actions).toBeVisible();
   });
 
   test('CompactComment should maintain MediaWiki appearance', async ({ page }) => {
@@ -48,8 +29,8 @@ test.describe('Comment Visual Appearance', () => {
     await expect(signature).toBeVisible();
   });
 
-  test('Comment highlighting should work correctly', async ({ page }) => {
-    const comment = page.locator('.cd-comment').first();
+  test('Compact comment highlighting should work correctly', async ({ page }) => {
+    const comment = page.locator('.cd-comment:not(.cd-comment-reformatted)').first();
 
     // Click to highlight comment
     await comment.click();
@@ -68,9 +49,9 @@ test.describe('Comment Visual Appearance', () => {
     await expect(underlay).toHaveCSS('background-color', /.+/);
   });
 
-  test('Comment threads should be visually structured', async ({ page }) => {
-    // Find a comment with replies
-    const parentComment = page.locator('.cd-comment').first();
+  test('Compact comment threads should be visually structured', async ({ page }) => {
+    // Find a compact comment with replies
+    const parentComment = page.locator('.cd-comment:not(.cd-comment-reformatted)').first();
     const thread = parentComment.locator('xpath=following-sibling::*[contains(@class, "cd-comment-thread")]');
 
     if (await thread.isVisible()) {
@@ -83,24 +64,24 @@ test.describe('Comment Visual Appearance', () => {
     }
   });
 
-  test('Visual consistency between comment types', async ({ page }) => {
-    // Get both comment types if available
-    const spaciousComment = page.locator('.cd-comment.cd-comment-reformatted').first();
-    const compactComment = page.locator('.cd-comment:not(.cd-comment-reformatted)').first();
+  test('Compact comment visual consistency', async ({ page }) => {
+    // Get multiple compact comments to check consistency
+    const compactComments = page.locator('.cd-comment:not(.cd-comment-reformatted)');
+    const count = await compactComments.count();
 
-    if (await spaciousComment.isVisible() && await compactComment.isVisible()) {
-      // Both should have consistent font sizing for content
-      const spaciousContent = spaciousComment.locator('.cd-comment-content');
-      const compactContent = compactComment.locator('.cd-comment-content');
+    if (count > 1) {
+      // Check that all compact comments have consistent styling
+      const firstComment = compactComments.nth(0);
+      const secondComment = compactComments.nth(1);
 
-      const spaciousFontSize = await spaciousContent.evaluate((el) =>
+      const firstFontSize = await firstComment.evaluate((el) =>
         window.getComputedStyle(el).fontSize
       );
-      const compactFontSize = await compactContent.evaluate((el) =>
+      const secondFontSize = await secondComment.evaluate((el) =>
         window.getComputedStyle(el).fontSize
       );
 
-      expect(spaciousFontSize).toBe(compactFontSize);
+      expect(firstFontSize).toBe(secondFontSize);
     }
   });
 });

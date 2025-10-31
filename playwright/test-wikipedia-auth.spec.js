@@ -37,8 +37,8 @@ test.describe('Test Wikipedia Authentication', () => {
   });
 
   test('should access a talk page on test.wikipedia.org', async ({ page }) => {
-    // Navigate to a talk page that should exist
-    await page.goto('/wiki/Talk:Main_Page');
+    // Navigate to the JWBTH test page
+    await page.goto('/wiki/User_talk:JWBTH');
 
     // Wait for page to load
     await page.waitForLoadState('networkidle');
