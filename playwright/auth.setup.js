@@ -53,6 +53,7 @@ setup('authenticate', async ({ page }) => {
   const errorBox = page.locator('.errorbox');
   if (await errorBox.count() > 0) {
     const errorText = await errorBox.textContent();
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     throw new Error(`Login failed: ${errorText}`);
   }
 

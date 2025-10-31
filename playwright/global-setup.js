@@ -1,7 +1,7 @@
 // @ts-check
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+const { execSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
 
 /**
  * Global setup for browser tests
@@ -14,7 +14,7 @@ async function globalSetup() {
     // Build the script
     execSync('npm run build', {
       stdio: 'inherit',
-      cwd: process.cwd()
+      cwd: process.cwd(),
     });
 
     // Verify the built file exists
@@ -24,7 +24,6 @@ async function globalSetup() {
     }
 
     console.log('✅ Convenient Discussions built successfully');
-
   } catch (error) {
     console.error('❌ Failed to build Convenient Discussions:', error.message);
     throw error;
