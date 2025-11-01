@@ -1,6 +1,7 @@
 .idea/
 .kiro/debug/
 *.sublime-workspace
+backup/
 credentials.*
 dist/
 docs/

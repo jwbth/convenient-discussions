@@ -10,7 +10,7 @@ This is a JavaScript project with type checking supplied by TypeScript through t
 
 ## General rules
 
-- When running `npm test`, use space, not `=`, between the option name and the value, e.g. `npm test -- --testNamePattern "TagsAutocomplete"`, not `npm test -- --testNamePattern="TagsAutocomplete"`.
+- When testing with `npm test`, use space, not `=`, between the option name and the value, e.g. `npm test -- --testNamePattern "TagsAutocomplete"`, not `npm test -- --testNamePattern="TagsAutocomplete"`.
 - Don't modify code I didn't ask you to modify unless strictly necessary to perform the task at hand. When in doubt, request me to provide answers, code, or documentation necessary for an adequate response.
 - Don't mess with code style of existing code.
 - Make sure to keep the original comments (including JSDoc comments and type hints like `/** @type {<type>} */`) to the code unless the relevant code is removed or I explicitly asked for the comments to be changed or removed. Don't remove JSDoc comments with `@overload` tag.
