@@ -292,8 +292,8 @@ class CompactComment extends Comment {
    * @param {boolean} isObstructingElementHovered
    */
   updateHoverState(event, isObstructingElementHovered) {
-    const layersOffset = this.layers?.layersOffset;
-    const layersContainerOffset = this.layers?.getLayersContainerOffset();
+    const layersOffset = this.layers?.offset;
+    const layersContainerOffset = this.layers?.getContainerOffset();
     if (!layersOffset || !layersContainerOffset) {
       // Something has happened with the comment (or the layers container); it disappeared.
       this.removeLayers();

@@ -76,14 +76,14 @@ class CommentLayers {
    *
    * @type {{ top: number; left: number; width: number; height: number } | undefined}
    */
-  layersOffset;
+  offset;
 
   /**
    * Container for the comment's layers.
    *
    * @type {Element | undefined}
    */
-  layersContainer;
+  container;
 
   /**
    * Comment underlay and menu, whose colors are animated in some events.
@@ -223,26 +223,25 @@ class CommentLayers {
   /**
    * Add the (already existent) comment's layers to the DOM.
    */
-  addLayers() {
-    this.updateLayersOffset();
-    this.getLayersContainer().append(this.underlay);
-    this.getLayersContainer().append(this.overlay);
+  add() {
+    this.updateOffset();
+    this.getContainer().append(this.underlay, this.overlay);
   }
 
   /**
    * _For internal use._ Transfer the `layers(Top|Left|Width|Height)` values to the style of the
    * layers.
    */
-  updateLayersOffset() {
+  updateOffset() {
     // The underlay can be absent if called from commentManager.maybeRedrawLayers() with redrawAll
     // set to `true`. layersOffset can be absent in some rare cases when the comment became
     // invisible.
-    if (!this.layersOffset) return;
+    if (!this.offset) return;
 
-    this.underlay.style.top = this.overlay.style.top = String(this.layersOffset.top) + 'px';
-    this.underlay.style.left = this.overlay.style.left = String(this.layersOffset.left) + 'px';
-    this.underlay.style.width = this.overlay.style.width = String(this.layersOffset.width) + 'px';
-    this.underlay.style.height = this.overlay.style.height = String(this.layersOffset.height) + 'px';
+    this.underlay.style.top = this.overlay.style.top = String(this.offset.top) + 'px';
+    this.underlay.style.left = this.overlay.style.left = String(this.offset.left) + 'px';
+    this.underlay.style.width = this.overlay.style.width = String(this.offset.width) + 'px';
+    this.underlay.style.height = this.overlay.style.height = String(this.offset.height) + 'px';
 
     this.comment.toggleChildThreadsPopup?.position();
   }
@@ -251,14 +250,14 @@ class CommentLayers {
    * Calculate the underlay and overlay offset and set it to the `layersOffset` property.
    *
    * @param {object} [options]
-   * @returns {boolean | undefined} Is the comment moved. `null` if it is invisible.
+   * @returns {boolean | undefined} Was the comment moved. `undefined` if it is invisible.
    */
-  computeLayersOffset(options = {}) {
-    const layersContainerOffset = this.getLayersContainerOffset();
-    if (!layersContainerOffset) return;
+  computeOffset(options = {}) {
+    const containerOffset = this.getContainerOffset();
+    if (!containerOffset) return;
 
     // eslint-disable-next-line no-one-time-vars/no-one-time-vars
-    const hasMoved = this.comment.getOffset({
+    const wasMoved = this.comment.getOffset({
       ...options,
       considerFloating: true,
       set: true,
@@ -266,17 +265,17 @@ class CommentLayers {
 
     if (this.comment.offset) {
       const margins = this.comment.getMargins();
-      this.layersOffset = {
-        top: this.comment.offset.top - layersContainerOffset.top,
-        left: this.comment.offset.left - margins.left - layersContainerOffset.left,
+      this.offset = {
+        top: this.comment.offset.top - containerOffset.top,
+        left: this.comment.offset.left - margins.left - containerOffset.left,
         width: this.comment.offset.right + margins.right - (this.comment.offset.left - margins.left),
         height: this.comment.offset.bottom - this.comment.offset.top,
       };
     } else {
-      this.layersOffset = undefined;
+      this.offset = undefined;
     }
 
-    return hasMoved;
+    return wasMoved;
   }
 
   /**
@@ -413,7 +412,7 @@ class CommentLayers {
   }
 
   /**
-   * @typedef {object} LayersContainerOffset
+   * @typedef {object} ContainerOffset
    * @property {number} top Top offset.
    * @property {number} left Left offset.
    * @memberof CommentLayers
@@ -423,10 +422,10 @@ class CommentLayers {
   /**
    * _For internal use._ Get the top and left offset of the layers container.
    *
-   * @returns {LayersContainerOffset | undefined}
+   * @returns {ContainerOffset | undefined}
    */
-  getLayersContainerOffset() {
-    const container = this.getLayersContainer();
+  getContainerOffset() {
+    const container = this.getContainer();
     if (!container.cdCachedLayersContainerOffset || container.cdCouldHaveMoved) {
       const rect = container.getBoundingClientRect();
       // Import here to avoid circular dependency
@@ -451,8 +450,8 @@ class CommentLayers {
    *
    * @returns {Element}
    */
-  getLayersContainer() {
-    if (this.layersContainer === undefined) {
+  getContainer() {
+    if (this.container === undefined) {
       // Import here to avoid circular dependency
       const bootManager = require('./bootManager').default;
       const commentManager = require('./commentManager').default;
@@ -527,12 +526,12 @@ class CommentLayers {
           '.cd-commentLayersContainer-parent'
         );
       }
-      this.layersContainer = container;
+      this.container = container;
 
       addToArrayIfAbsent(commentManager.layersContainers, container);
     }
 
-    return this.layersContainer;
+    return this.container;
   }
 
   /**

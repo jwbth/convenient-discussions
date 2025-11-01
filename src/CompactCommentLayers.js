@@ -91,6 +91,8 @@ class CompactCommentLayers extends CommentLayers {
     this.$overlay = /** @type {JQuery} */ ($(this.overlay));
     this.$marker = /** @type {JQuery} */ ($(this.marker));
 
+    this.updateStyles(true);
+
     // Set up compact-specific overlay menu elements
     this.overlayInnerWrapper = /** @type {HTMLElement} */ (this.overlay.lastChild);
     this.overlayGradient = /** @type {HTMLElement} */ (this.overlayInnerWrapper.firstChild);

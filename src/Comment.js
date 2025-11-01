@@ -1126,7 +1126,7 @@ class Comment extends CommentSkeleton {
      */
     this.isEndStretched = false;
 
-    if (!this.layers?.getLayersContainer().cdIsTopLayersContainer) return;
+    if (!this.layers?.getContainer().cdIsTopLayersContainer) return;
 
     if (this.level === 0) {
       const offsets = bootManager.getContentColumnOffsets();
@@ -1251,12 +1251,12 @@ class Comment extends CommentSkeleton {
     }
 
     // If layers exist, compute their offset and update if needed
-    const isMoved = this.layers.computeLayersOffset(options);
+    const isMoved = this.layers.computeOffset(options);
     if (isMoved === undefined) return;
 
     this.layers.updateStyles();
     if (isMoved && options.update) {
-      this.layers.updateLayersOffset();
+      this.layers.updateOffset();
     }
 
     return isMoved;
@@ -1282,7 +1282,7 @@ class Comment extends CommentSkeleton {
    * _For internal use._ Add the (already existent) comment's layers to the DOM.
    */
   addLayers() {
-    this.layers?.addLayers();
+    this.layers?.add();
   }
 
   /**

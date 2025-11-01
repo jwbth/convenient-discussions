@@ -351,7 +351,7 @@ export class CommentManager extends EventEmitter {
 
           // Nested containers shouldn't count, the offset of layers inside them may be OK, unlike the
           // layers preceding them.
-        } else if (comment.layers?.getLayersContainer().cdIsTopLayersContainer) {
+        } else if (comment.layers?.getContainer().cdIsTopLayersContainer) {
           // isMoved === false
           notMovedCount++;
           if (notMovedCount === 2) {
@@ -365,7 +365,7 @@ export class CommentManager extends EventEmitter {
 
     // It's faster to update the offsets separately in one sequence.
     comments.forEach((comment) => {
-      comment.layers?.updateLayersOffset();
+      comment.layers?.updateOffset();
     });
   };
 
