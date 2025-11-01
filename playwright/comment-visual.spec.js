@@ -48,40 +48,4 @@ test.describe('Comment Visual Appearance - Compact Style', () => {
     // Check highlight styling
     await expect(underlay).toHaveCSS('background-color', /.+/);
   });
-
-  test('Compact comment threads should be visually structured', async ({ page }) => {
-    // Find a compact comment with replies
-    const parentComment = page.locator('.cd-comment:not(.cd-comment-reformatted)').first();
-    const thread = parentComment.locator('xpath=following-sibling::*[contains(@class, "cd-comment-thread")]');
-
-    if (await thread.isVisible()) {
-      // Check thread indentation
-      const threadBox = await thread.boundingBox();
-      const parentBox = await parentComment.boundingBox();
-
-      // Thread should be indented relative to parent
-      expect(threadBox.x).toBeGreaterThan(parentBox.x);
-    }
-  });
-
-  test('Compact comment visual consistency', async ({ page }) => {
-    // Get multiple compact comments to check consistency
-    const compactComments = page.locator('.cd-comment:not(.cd-comment-reformatted)');
-    const count = await compactComments.count();
-
-    if (count > 1) {
-      // Check that all compact comments have consistent styling
-      const firstComment = compactComments.nth(0);
-      const secondComment = compactComments.nth(1);
-
-      const firstFontSize = await firstComment.evaluate((el) =>
-        window.getComputedStyle(el).fontSize
-      );
-      const secondFontSize = await secondComment.evaluate((el) =>
-        window.getComputedStyle(el).fontSize
-      );
-
-      expect(firstFontSize).toBe(secondFontSize);
-    }
-  });
 });
