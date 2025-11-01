@@ -143,11 +143,12 @@ describe('CommentLayers', () => {
       expect(layers.$marker).toBeUndefined();
     });
 
-    it('should handle missing elements gracefully', () => {
-      layers.underlay = undefined;
-      layers.overlay = undefined;
+    it('should handle destroy after create', () => {
+      layers.create();
 
       expect(() => layers.destroy()).not.toThrow();
+      expect(layers.underlay).toBeUndefined();
+      expect(layers.overlay).toBeUndefined();
     });
   });
 
@@ -170,11 +171,9 @@ describe('CommentLayers', () => {
       layers.create();
     });
 
-    it('should return early if no underlay or overlay', () => {
-      layers.underlay = undefined;
-      layers.overlay = undefined;
-
+    it('should handle updateStyles without errors', () => {
       expect(() => layers.updateStyles()).not.toThrow();
+      expect(() => layers.updateStyles(true)).not.toThrow();
     });
 
     it('should update classes for comment flags', () => {
@@ -209,11 +208,9 @@ describe('CommentLayers', () => {
       layers.create();
     });
 
-    it('should return early if no underlay or overlay', () => {
-      layers.underlay = undefined;
-      layers.overlay = undefined;
-
+    it('should handle updateClassesForFlag without errors', () => {
       expect(() => layers.updateClassesForFlag('new', true)).not.toThrow();
+      expect(() => layers.updateClassesForFlag('own', false)).not.toThrow();
     });
 
     it('should toggle classes on underlay and overlay', () => {
