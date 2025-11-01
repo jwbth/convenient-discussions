@@ -51,9 +51,6 @@ class CompactComment extends Comment {
     this.actions = new CompactCommentActions(this);
     this.actions.create();
 
-    // Add toggle child threads button since compact comments always have layers when actions exist
-    this.actions.addToggleChildThreadsButton();
-
     /**
      * An underlay and overlay have been created for a comment.
      *
