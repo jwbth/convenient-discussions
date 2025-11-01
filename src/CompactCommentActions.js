@@ -146,6 +146,7 @@ class CompactCommentActions extends CommentActions {
       iconElement: /** @type {HTMLElement} */ (element.querySelector('.oo-ui-iconElement-icon')),
       action,
       widgetConstructor: this.comment.createToggleChildThreadsButton,
+      classes: ['cd-comment-button-toggleChildThreads'],
     });
   }
 
