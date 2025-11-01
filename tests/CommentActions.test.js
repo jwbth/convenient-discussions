@@ -31,7 +31,7 @@ jest.mock('../src/cd', () => ({
 
 jest.mock('../src/commentManager', () => ({
   default: {
-    getByIndex: jest.fn(),
+    getByIndex: jest.fn(() => undefined),
     getThanksStorage: jest.fn(() => ({
       getData: jest.fn(() => ({})),
     })),
@@ -39,6 +39,7 @@ jest.mock('../src/commentManager', () => ({
 }));
 
 import CommentActions from '../src/CommentActions';
+import commentManager from '../src/commentManager';
 
 // Create a concrete test implementation
 class TestCommentActions extends CommentActions {

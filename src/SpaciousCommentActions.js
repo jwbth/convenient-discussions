@@ -12,7 +12,7 @@ class SpaciousCommentActions extends CommentActions {
   /**
    * The comment this actions instance belongs to.
    *
-   * @type {import('./CompactComment').default}
+   * @type {import('./SpaciousComment').default}
    * @override
    */
   // @ts-expect-error: TS incorrectly flags this as circular, but parent fields initialize first
@@ -197,16 +197,13 @@ class SpaciousCommentActions extends CommentActions {
       return;
     }
 
-    const action = () => {
-      this.comment.toggleChildThreads();
-    };
-    this.toggleChildThreadsButton = this.createToggleChildThreadsButton(action);
+    this.toggleChildThreadsButton = this.createToggleChildThreadsButton(this.onToggleChildThreadsAction);
     this.toggleChildThreadsButton.element.addEventListener('mouseenter', () => {
       this.comment.maybeOnboardOntoToggleChildThreads();
     });
 
     // Insert in header before change note
-    this.comment.headerElement?.insertBefore(
+    this.comment.headerElement.insertBefore(
       this.toggleChildThreadsButton.element,
       this.comment.$changeNote?.[0] || null
     );

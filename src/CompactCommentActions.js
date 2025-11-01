@@ -197,10 +197,7 @@ class CompactCommentActions extends CommentActions {
       return;
     }
 
-    const action = () => {
-      this.comment.toggleChildThreads();
-    };
-    this.toggleChildThreadsButton = this.createToggleChildThreadsButton(action);
+    this.toggleChildThreadsButton = this.createToggleChildThreadsButton(this.onToggleChildThreadsAction);
     this.toggleChildThreadsButton.element.addEventListener('mouseenter', () => {
       this.comment.maybeOnboardOntoToggleChildThreads();
     });
@@ -229,10 +226,7 @@ class CompactCommentActions extends CommentActions {
     this.comment.configureLayers();
     if (this.goToChildButton?.isConnected()) return;
 
-    const action = () => {
-      /** @type {import('./Comment').default} */ (this.comment.targetChild).scrollTo({ pushState: true });
-    };
-    this.goToChildButton = this.createGoToChildButton(action);
+    this.goToChildButton = this.createGoToChildButton(this.onGoToChildAction);
     this.prependButton(this.goToChildButton);
   }
 
@@ -244,14 +238,7 @@ class CompactCommentActions extends CommentActions {
   addReplyButton() {
     if (!this.comment.isActionable) return;
 
-    const action = () => {
-      if (this.comment.replyForm) {
-        this.comment.replyForm.cancel();
-      } else {
-        this.comment.reply();
-      }
-    };
-    this.replyButton = this.createReplyButton(action);
+    this.replyButton = this.createReplyButton(this.onReplyAction);
     this.appendButton(this.replyButton);
 
     // Check if reply should be disabled due to outdented comments
@@ -276,10 +263,7 @@ class CompactCommentActions extends CommentActions {
   addEditButton() {
     if (!this.comment.isEditable) return;
 
-    const action = () => {
-      this.comment.edit();
-    };
-    this.editButton = this.createEditButton(action);
+    this.editButton = this.createEditButton(this.onEditAction);
     this.appendButton(this.editButton);
   }
 
@@ -307,10 +291,7 @@ class CompactCommentActions extends CommentActions {
         this.comment.dtId === thank?.id || this.comment.id === thank?.id
     );
 
-    const action = () => {
-      this.comment.thank();
-    };
-    this.thankButton = this.createThankButton(action, isThanked);
+    this.thankButton = this.createThankButton(this.onThankAction, isThanked);
     this.appendButton(this.thankButton);
 
     if (isThanked) {
@@ -326,10 +307,7 @@ class CompactCommentActions extends CommentActions {
   addGoToParentButton() {
     if (!this.comment.getParent()) return;
 
-    const action = () => {
-      this.comment.goToParent();
-    };
-    this.goToParentButton = this.createGoToParentButton(action);
+    this.goToParentButton = this.createGoToParentButton(this.onGoToParentAction);
     this.appendButton(this.goToParentButton);
   }
 
@@ -341,10 +319,7 @@ class CompactCommentActions extends CommentActions {
   addCopyLinkButton() {
     if (!this.comment.id) return;
 
-    const action = (/** @type {MouseEvent | KeyboardEvent} */ event) => {
-      this.comment.copyLink(event);
-    };
-    this.copyLinkButton = this.createCopyLinkButton(action);
+    this.copyLinkButton = this.createCopyLinkButton(this.onCopyLinkAction);
     this.appendButton(this.copyLinkButton);
   }
 }

@@ -84,6 +84,61 @@ class CommentActions {
   }
 
   /**
+   * Reusable action for reply button.
+   */
+  onReplyAction = () => {
+    if (this.comment.replyForm) {
+      this.comment.replyForm.cancel();
+    } else {
+      this.comment.reply();
+    }
+  };
+
+  /**
+   * Reusable action for edit button.
+   */
+  onEditAction = () => {
+    this.comment.edit();
+  };
+
+  /**
+   * Reusable action for thank button.
+   */
+  onThankAction = () => {
+    this.comment.thank();
+  };
+
+  /**
+   * Reusable action for copy link button.
+   *
+   * @param {MouseEvent | KeyboardEvent} event The event object.
+   */
+  onCopyLinkAction = (event) => {
+    this.comment.copyLink(event);
+  };
+
+  /**
+   * Reusable action for go to parent button.
+   */
+  onGoToParentAction = () => {
+    this.comment.goToParent();
+  };
+
+  /**
+   * Reusable action for go to child button.
+   */
+  onGoToChildAction = () => {
+    /** @type {import('./Comment').default} */ (this.comment.targetChild).scrollTo({ pushState: true });
+  };
+
+  /**
+   * Reusable action for toggle child threads button.
+   */
+  onToggleChildThreadsAction = () => {
+    this.comment.toggleChildThreads();
+  };
+
+  /**
    * Create a reply button and add it to the appropriate container.
    *
    * This method should be overridden by subclasses for specific styling.
@@ -91,14 +146,7 @@ class CommentActions {
   addReplyButton() {
     if (!this.comment.isActionable) return;
 
-    const action = () => {
-      if (this.comment.replyForm) {
-        this.comment.replyForm.cancel();
-      } else {
-        this.comment.reply();
-      }
-    };
-    this.replyButton = this.createReplyButton(action);
+    this.replyButton = this.createReplyButton(this.onReplyAction);
     this.appendButton(this.replyButton);
 
     // Check if reply should be disabled due to outdented comments
@@ -123,10 +171,7 @@ class CommentActions {
   addEditButton() {
     if (!this.comment.isEditable) return;
 
-    const action = () => {
-      this.comment.edit();
-    };
-    this.editButton = this.createEditButton(action);
+    this.editButton = this.createEditButton(this.onEditAction);
     this.appendButton(this.editButton);
   }
 
@@ -149,13 +194,10 @@ class CommentActions {
       // after migration is complete on January 1, 2026
       ([id, thank]) =>
         this.comment.dtId === id || this.comment.id === id ||
-        this.comment.dtId === thank?.id || this.comment.id === thank?.id
+        this.comment.dtId === thank?.id || this.comment.id === thank.id
     );
 
-    const action = () => {
-      this.comment.thank();
-    };
-    this.thankButton = this.createThankButton(action, isThanked);
+    this.thankButton = this.createThankButton(this.onThankAction, isThanked);
     this.appendButton(this.thankButton);
 
     if (isThanked) {
@@ -171,10 +213,7 @@ class CommentActions {
   addCopyLinkButton() {
     if (!this.comment.id) return;
 
-    const action = (/** @type {MouseEvent | KeyboardEvent} */ event) => {
-      this.comment.copyLink(event);
-    };
-    this.copyLinkButton = this.createCopyLinkButton(action);
+    this.copyLinkButton = this.createCopyLinkButton(this.onCopyLinkAction);
     this.appendButton(this.copyLinkButton);
   }
 
@@ -186,10 +225,7 @@ class CommentActions {
   addGoToParentButton() {
     if (!this.comment.getParent()) return;
 
-    const action = () => {
-      this.comment.goToParent();
-    };
-    this.goToParentButton = this.createGoToParentButton(action);
+    this.goToParentButton = this.createGoToParentButton(this.onGoToParentAction);
     this.appendButton(this.goToParentButton);
   }
 
@@ -204,10 +240,7 @@ class CommentActions {
     this.comment.configureLayers();
     if (this.goToChildButton?.isConnected()) return;
 
-    const action = () => {
-      /** @type {import('./Comment').default} */ (this.comment.targetChild).scrollTo({ pushState: true });
-    };
-    this.goToChildButton = this.createGoToChildButton(action);
+    this.goToChildButton = this.createGoToChildButton(this.onGoToChildAction);
     this.prependButton(this.goToChildButton);
   }
 
@@ -224,10 +257,7 @@ class CommentActions {
       return;
     }
 
-    const action = () => {
-      this.comment.toggleChildThreads();
-    };
-    this.toggleChildThreadsButton = this.createToggleChildThreadsButton(action);
+    this.toggleChildThreadsButton = this.createToggleChildThreadsButton(this.onToggleChildThreadsAction);
     this.appendButton(this.toggleChildThreadsButton);
 
     this.toggleChildThreadsButton.element.addEventListener('mouseenter', () => {
