@@ -40,7 +40,6 @@
       "type": "node",
       "request": "launch",
       "name": "Debug Playwright Auth",
-      // "name": "Debug Playwright Tests - Wikipedia Auth",
       "program": "${workspaceFolder}/node_modules/@playwright/test/cli.js",
       "args": ["test", "test-wikipedia-auth.spec.js", "--debug"],
       "console": "integratedTerminal",

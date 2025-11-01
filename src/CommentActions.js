@@ -194,6 +194,7 @@ class CommentActions {
       // after migration is complete on January 1, 2026
       ([id, thank]) =>
         this.comment.dtId === id || this.comment.id === id ||
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         this.comment.dtId === thank?.id || this.comment.id === thank.id
     );
 
