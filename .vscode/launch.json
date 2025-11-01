@@ -30,7 +30,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug Playwright Tests",
+      "name": "Debug Playwright",
       "program": "${workspaceFolder}/node_modules/@playwright/test/cli.js",
       "args": ["test", "--debug"],
       "console": "integratedTerminal",
@@ -39,29 +39,12 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Playwright Auth",
+      "name": "Debug Playwright Auth",
       // "name": "Debug Playwright Tests - Wikipedia Auth",
       "program": "${workspaceFolder}/node_modules/@playwright/test/cli.js",
       "args": ["test", "test-wikipedia-auth.spec.js", "--debug"],
       "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen"
-      // "cwd": "${workspaceFolder}",
-      // "env": {
-      //   "NODE_OPTIONS": "--inspect-brk=0"
-      // }
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Playwright Auth Alt",
-      //"name": "Debug Playwright Tests - Wikipedia Auth (Alternative)",
-      "program": "${workspaceFolder}/node_modules/@playwright/test/cli.js",
-      "args": ["test", "playwright/test-wikipedia-auth.spec.js", "--debug", "--headed"],
-      "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "cwd": "${workspaceFolder}",
-      "skipFiles": ["<node_internals>/**"],
-      "resolveSourceMapLocations": ["${workspaceFolder}/**", "!**/node_modules/**"]
     },
   ],
 }
