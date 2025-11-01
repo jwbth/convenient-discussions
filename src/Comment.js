@@ -3566,7 +3566,7 @@ class Comment extends CommentSkeleton {
    * @returns {OO.ui.ButtonWidget}
    */
   createGoToParentButton = () => new OO.ui.ButtonWidget({
-    label: cd.s('cm-gotoparent'),
+    label: cd.s('cm-gotoparent-tooltip'),
     icon: 'upTriangle',
     invisibleLabel: true,
     title: cd.s('cm-gotoparent-tooltip'),
