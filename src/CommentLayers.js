@@ -110,7 +110,7 @@ class CommentLayers {
 
   /**
    * Create the layer elements (underlay, overlay, line, marker).
-   * This method should be overridden by subclasses for specific layer configurations.
+   * This method can be overridden by subclasses for specific layer configurations.
    */
   create() {
     // Import here to avoid circular dependency

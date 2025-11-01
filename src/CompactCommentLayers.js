@@ -69,30 +69,44 @@ class CompactCommentLayers extends CommentLayers {
 
   /**
    * Create the layer elements for compact comments.
-   * Compact comments have standard layers plus overlay menu components.
+   * Compact comments use base underlay but compact-specific overlay.
    *
    * @override
    */
   create() {
-    const CompactComment = require('./CompactComment').default;
+    // Import here to avoid circular dependency
     const commentManager = require('./commentManager').default;
+    const CompactComment = require('./CompactComment').default;
 
-    // Create underlay using base prototype
+    // Use base prototype for underlay (same for all comment types)
     this.underlay = CommentLayers.prototypes.get('underlay');
-    this.$underlay = /** @type {JQuery} */ ($(this.underlay));
-
-    // Add underlay to the manager's list
     commentManager.underlays.push(this.underlay);
 
-    // Create overlay using compact-specific prototype
+    // Use compact-specific prototype for overlay
     this.overlay = CompactComment.prototypes.get('overlay');
     this.line = /** @type {HTMLElement} */ (this.overlay.firstChild);
-    this.marker = /** @type {HTMLElement} */ (this.overlay.children[1]);
-    this.$overlay = /** @type {JQuery} */ ($(this.overlay));
-    this.$marker = /** @type {JQuery} */ ($(this.marker));
+    this.marker = /** @type {HTMLElement} */ (
+      /** @type {HTMLElement} */ (this.overlay.firstChild).nextSibling
+    );
 
     this.updateStyles(true);
 
+    // Create jQuery wrappers
+    this.$underlay = $(this.underlay);
+    this.$overlay = $(this.overlay);
+    this.$marker = $(this.marker);
+
+    // Set up compact-specific elements
+    this.setupSpecificElements();
+  }
+
+  /**
+   * Set up compact-specific overlay menu elements after basic layers are created.
+   *
+   * @protected
+   * @override
+   */
+  setupSpecificElements() {
     // Set up compact-specific overlay menu elements
     this.overlayInnerWrapper = /** @type {HTMLElement} */ (this.overlay.lastChild);
     this.overlayGradient = /** @type {HTMLElement} */ (this.overlayInnerWrapper.firstChild);
