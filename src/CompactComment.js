@@ -321,33 +321,15 @@ class CompactComment extends Comment {
   static prototypes = new PrototypeRegistry();
 
   /**
-   * Initialize prototypes for compact comments. Creates overlay menu prototypes and shared layer
-   * elements.
+   * Initialize prototypes for compact comments.
    */
   static initPrototypes() {
     // Initialize shared layer prototypes (underlay, overlay)
     const CommentLayers = require('./CommentLayers').default;
     CommentLayers.initPrototypes();
 
-    // Get the base overlay prototype and enhance it with compact-specific elements
-    const baseOverlay = CommentLayers.prototypes.get('overlay');
-
-    // Create compact-specific overlay menu elements
-    const overlayInnerWrapper = document.createElement('div');
-    overlayInnerWrapper.className = 'cd-comment-overlay-innerWrapper';
-    baseOverlay.append(overlayInnerWrapper);
-
-    const overlayGradient = document.createElement('div');
-    overlayGradient.textContent = '\u00A0';
-    overlayGradient.className = 'cd-comment-overlay-gradient';
-    overlayInnerWrapper.append(overlayGradient);
-
-    const overlayMenu = document.createElement('div');
-    overlayMenu.className = 'cd-comment-overlay-menu';
-    overlayInnerWrapper.append(overlayMenu);
-
-    // Replace the base overlay with the enhanced version
-    this.prototypes.add('overlay', baseOverlay);
+    // Initialize compact-specific layer prototypes
+    CompactCommentLayers.initPrototypes();
   }
 }
 

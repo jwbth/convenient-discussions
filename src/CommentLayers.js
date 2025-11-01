@@ -110,16 +110,18 @@ class CommentLayers {
 
   /**
    * Create the layer elements (underlay, overlay, line, marker).
-   * This method can be overridden by subclasses for specific layer configurations.
+   * Uses template method pattern - subclasses can override getOverlayPrototype() for customization.
    */
   create() {
     // Import here to avoid circular dependency
     const commentManager = require('./commentManager').default;
 
+    // Create underlay (same for all comment types)
     this.underlay = CommentLayers.prototypes.get('underlay');
     commentManager.underlays.push(this.underlay);
 
-    this.overlay = CommentLayers.prototypes.get('overlay');
+    // Create overlay (may be customized by subclasses)
+    this.overlay = this.getOverlayPrototype();
     this.line = /** @type {HTMLElement} */ (this.overlay.firstChild);
     this.marker = /** @type {HTMLElement} */ (
       /** @type {HTMLElement} */ (this.overlay.firstChild).nextSibling
@@ -131,6 +133,30 @@ class CommentLayers {
     this.$underlay = $(this.underlay);
     this.$overlay = $(this.overlay);
     this.$marker = $(this.marker);
+
+    // Allow subclasses to set up additional elements
+    this.setupAdditionalElements();
+  }
+
+  /**
+   * Get the overlay prototype for this comment type.
+   * Subclasses can override this to provide custom overlay elements.
+   *
+   * @returns {HTMLElement} The overlay prototype element.
+   * @protected
+   */
+  getOverlayPrototype() {
+    return CommentLayers.prototypes.get('overlay');
+  }
+
+  /**
+   * Set up additional elements after basic layers are created.
+   * Subclasses can override this to add custom elements and event listeners.
+   *
+   * @protected
+   */
+  setupAdditionalElements() {
+    // Base implementation - no additional elements
   }
 
   /**

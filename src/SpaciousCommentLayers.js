@@ -5,20 +5,8 @@ import CommentLayers from './CommentLayers.js';
  * Handles spacious-specific layer positioning and styling without overlay menu.
  */
 class SpaciousCommentLayers extends CommentLayers {
-  /**
-   * Create the layer elements for spacious comments.
-   * Spacious comments have standard underlay, overlay, line, and marker elements
-   * but no overlay menu components.
-   *
-   * @override
-   */
-  create() {
-    // Call parent create method to set up basic layers
-    super.create();
-
-    // Spacious comments don't have overlay menu elements, so no additional setup needed
-    // The base implementation already creates underlay, overlay, line, and marker
-  }
+  // Spacious comments use the base overlay prototype and don't need additional elements
+  // No overrides needed - the base implementation handles everything
 
   /**
    * Update layer styles for spacious comments.

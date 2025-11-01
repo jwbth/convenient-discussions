@@ -3,41 +3,60 @@
  */
 
 // Mock dependencies
-jest.mock('../src/CommentLayers', () => class MockCommentLayers {
-  constructor(comment) {
-    this.comment = comment;
+jest.mock('../src/CommentLayers', () => {
+  const mockPrototypes = {
+    get: jest.fn(),
+  };
+
+  class MockCommentLayers {
+    static prototypes = mockPrototypes;
+
+    constructor(comment) {
+      this.comment = comment;
+    }
+
+    getOverlayPrototype() {
+      return MockCommentLayers.prototypes.get('overlay');
+    }
+
+    setupAdditionalElements() {
+      // Base implementation - no additional elements
+    }
+
+    create() {
+      this.createCalled = true;
+      // Mock basic layer creation
+      this.underlay = { tagName: 'DIV' };
+      this.overlay = this.getOverlayPrototype();
+      this.line = { tagName: 'DIV' };
+      this.marker = { tagName: 'DIV' };
+
+      this.updateStyles(true);
+
+      // Create jQuery wrappers
+      this.$underlay = global.$(this.underlay);
+      this.$overlay = global.$(this.overlay);
+      this.$marker = global.$(this.marker);
+
+      // Allow subclasses to set up additional elements
+      this.setupAdditionalElements();
+    }
+
+    updateStyles(wereJustCreated) {
+      this.updateStylesCalled = true;
+      this.updateStylesWereJustCreated = wereJustCreated;
+    }
+
+    destroy() {
+      this.destroyCalled = true;
+      this.underlay = undefined;
+      this.overlay = undefined;
+      this.line = undefined;
+      this.marker = undefined;
+    }
   }
 
-  create() {
-    this.createCalled = true;
-    // Mock basic layer creation with overlay structure
-    this.underlay = { tagName: 'DIV' };
-    this.overlay = {
-      tagName: 'DIV',
-      lastChild: {
-        className: 'cd-comment-overlay-innerWrapper',
-        firstChild: { className: 'cd-comment-overlay-gradient' },
-        lastChild: { className: 'cd-comment-overlay-menu' },
-        addEventListener: jest.fn(),
-        style: { display: '' },
-      },
-    };
-    this.line = { tagName: 'DIV' };
-    this.marker = { tagName: 'DIV' };
-  }
-
-  updateStyles(wereJustCreated) {
-    this.updateStylesCalled = true;
-    this.updateStylesWereJustCreated = wereJustCreated;
-  }
-
-  destroy() {
-    this.destroyCalled = true;
-    this.underlay = undefined;
-    this.overlay = undefined;
-    this.line = undefined;
-    this.marker = undefined;
-  }
+  return MockCommentLayers;
 });
 
 // Mock jQuery
@@ -66,6 +85,28 @@ describe('CompactCommentLayers', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     global.setTimeout.callbacks = {};
+
+    // Mock the prototype registries
+    const CommentLayers = require('../src/CommentLayers');
+    CommentLayers.prototypes.get.mockReturnValue({
+      tagName: 'DIV',
+      firstChild: { tagName: 'DIV' },
+    });
+
+    // Mock CompactCommentLayers prototypes
+    CompactCommentLayers.prototypes = {
+      get: jest.fn().mockReturnValue({
+        tagName: 'DIV',
+        firstChild: { tagName: 'DIV' },
+        lastChild: {
+          className: 'cd-comment-overlay-innerWrapper',
+          firstChild: { className: 'cd-comment-overlay-gradient' },
+          lastChild: { className: 'cd-comment-overlay-menu' },
+          addEventListener: jest.fn(),
+          style: { display: '' },
+        },
+      }),
+    };
 
     mockComment = {
       isNew: false,

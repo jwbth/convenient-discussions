@@ -1,10 +1,19 @@
 import CommentLayers from './CommentLayers.js';
+import PrototypeRegistry from './PrototypeRegistry.js';
 
 /**
  * Specialized layer management for compact comments.
  * Handles compact-specific layer positioning and overlay menu management.
  */
 class CompactCommentLayers extends CommentLayers {
+  /**
+   * Registry for compact-specific element prototypes.
+   *
+   * @type {PrototypeRegistry<{
+   *   overlay: HTMLElement
+   * }>}
+   */
+  static prototypes = new PrototypeRegistry();
   /**
    * Is the comment currently being hovered over.
    *
@@ -68,36 +77,14 @@ class CompactCommentLayers extends CommentLayers {
   hideMenuTimeout;
 
   /**
-   * Create the layer elements for compact comments.
-   * Compact comments use base underlay but compact-specific overlay.
+   * Get the compact-specific overlay prototype.
    *
+   * @returns {HTMLElement} The compact overlay prototype element.
+   * @protected
    * @override
    */
-  create() {
-    // Import here to avoid circular dependency
-    const commentManager = require('./commentManager').default;
-    const CompactComment = require('./CompactComment').default;
-
-    // Use base prototype for underlay (same for all comment types)
-    this.underlay = CommentLayers.prototypes.get('underlay');
-    commentManager.underlays.push(this.underlay);
-
-    // Use compact-specific prototype for overlay
-    this.overlay = CompactComment.prototypes.get('overlay');
-    this.line = /** @type {HTMLElement} */ (this.overlay.firstChild);
-    this.marker = /** @type {HTMLElement} */ (
-      /** @type {HTMLElement} */ (this.overlay.firstChild).nextSibling
-    );
-
-    this.updateStyles(true);
-
-    // Create jQuery wrappers
-    this.$underlay = $(this.underlay);
-    this.$overlay = $(this.overlay);
-    this.$marker = $(this.marker);
-
-    // Set up compact-specific elements
-    this.setupSpecificElements();
+  getOverlayPrototype() {
+    return CompactCommentLayers.prototypes.get('overlay');
   }
 
   /**
@@ -106,7 +93,7 @@ class CompactCommentLayers extends CommentLayers {
    * @protected
    * @override
    */
-  setupSpecificElements() {
+  setupAdditionalElements() {
     // Set up compact-specific overlay menu elements
     this.overlayInnerWrapper = /** @type {HTMLElement} */ (this.overlay.lastChild);
     this.overlayGradient = /** @type {HTMLElement} */ (this.overlayInnerWrapper.firstChild);
@@ -200,6 +187,32 @@ class CompactCommentLayers extends CommentLayers {
 
     // Call parent destroy method
     super.destroy();
+  }
+
+  /**
+   * Initialize prototypes for compact comment layers.
+   * Creates compact-specific overlay with menu elements.
+   */
+  static initPrototypes() {
+    // Get the base overlay prototype and enhance it with compact-specific elements
+    const baseOverlay = CommentLayers.prototypes.get('overlay');
+
+    // Create compact-specific overlay menu elements
+    const overlayInnerWrapper = document.createElement('div');
+    overlayInnerWrapper.className = 'cd-comment-overlay-innerWrapper';
+    baseOverlay.append(overlayInnerWrapper);
+
+    const overlayGradient = document.createElement('div');
+    overlayGradient.textContent = '\u00A0';
+    overlayGradient.className = 'cd-comment-overlay-gradient';
+    overlayInnerWrapper.append(overlayGradient);
+
+    const overlayMenu = document.createElement('div');
+    overlayMenu.className = 'cd-comment-overlay-menu';
+    overlayInnerWrapper.append(overlayMenu);
+
+    // Store the enhanced overlay prototype
+    this.prototypes.add('overlay', baseOverlay);
   }
 }
 
