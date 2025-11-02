@@ -7,6 +7,7 @@ import commentManager from './commentManager';
 import pageRegistry from './pageRegistry';
 import sectionManager from './sectionManager';
 import { areObjectsEqual } from './shared/utils-general';
+import talkPageController from './talkPageController';
 
 /**
  * The page the user is visiting. Extends the base {@link Page} class with methods and properties
@@ -14,19 +15,19 @@ import { areObjectsEqual } from './shared/utils-general';
  */
 export default class CurrentPage extends Page {
   /**
-   * @type {JQuery}
+   * @type {JQuery | undefined}
    * @private
    */
   $archivingInfo;
 
   /**
-   * @type {JQuery}
+   * @type {JQuery | undefined}
    * @private
    */
   $addSectionButtonContainer;
 
   /**
-   * @type {CommentForm}
+   * @type {CommentForm | undefined}
    * @private
    */
   addSectionForm;
@@ -39,7 +40,7 @@ export default class CurrentPage extends Page {
    */
   constructor(mwTitle, genderedName) {
     super(mwTitle, genderedName);
-    this.isActionable = Boolean(this.isCommentable());
+    this.isActionable = this.isCommentable();
   }
 
   /**
@@ -76,7 +77,7 @@ export default class CurrentPage extends Page {
    * DOM elements.
    *
    * @override
-   * @param {boolean} [onlyExplicit=false]
+   * @param {boolean} [onlyExplicit]
    * @returns {string | undefined}
    */
   getArchivePrefix(onlyExplicit = false) {
@@ -174,7 +175,7 @@ export default class CurrentPage extends Page {
     // This is not reevaluated after page reloads. Since archive settings we need rarely change, the
     // reevaluation is unlikely to make any difference. `$root?` because the $root can not be set
     // when it runs from the addCommentLinks module.
-    this.$archivingInfo ||= bootManager.$root?.find('.cd-archivingInfo');
+    this.$archivingInfo ??= talkPageController.$root.find('.cd-archivingInfo');
 
     return this.$archivingInfo;
   }
@@ -186,6 +187,7 @@ export default class CurrentPage extends Page {
   addAddTopicButton() {
     if (
       !$('#ca-addsection').length ||
+
       // There is a special welcome text in New Topic Tool for 404 pages.
       (cd.g.isDtNewTopicToolEnabled && !this.exists())
     ) {
@@ -206,7 +208,7 @@ export default class CurrentPage extends Page {
       )
       // If appending to bootManager.rootElement, it can land on a wrong place, like on 404 pages
       // with New Topic Tool enabled.
-      .insertAfter(bootManager.$root);
+      .insertAfter(talkPageController.$root);
   }
 
   /**
@@ -233,9 +235,9 @@ export default class CurrentPage extends Page {
    *
    * @param {import('./CommentForm').CommentFormInitialState} [initialState]
    * @param {import('./CommentForm').default} [commentForm]
-   * @param {object} [preloadConfig=CommentForm.getDefaultPreloadConfig()] See
+   * @param {object} [preloadConfig] See
    *   {@link CommentForm.getDefaultPreloadConfig}.
-   * @param {boolean} [newTopicOnTop=false]
+   * @param {boolean} [newTopicOnTop]
    * @returns {import('./CommentForm').default | undefined}
    */
   addSection(
@@ -295,7 +297,7 @@ export default class CurrentPage extends Page {
     if (firstSection && commentForm.isNewTopicOnTop()) {
       firstSection.$heading.before(commentForm.$element);
     } else {
-      bootManager.$root.after(commentForm.$element);
+      talkPageController.$root.after(commentForm.$element);
     }
   }
 

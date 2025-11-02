@@ -16,7 +16,7 @@ import Parser from './shared/Parser';
 import { defined, definedAndNotNull, getLastArrayElementOrSelf, isHeadingNode, isInline, sleep } from './shared/utils-general';
 import toc from './toc';
 import updateChecker from './updateChecker';
-import { copyText, getVisibilityByRects, wrapHtml } from './utils-window';
+import { copyText, getVisibilityByRects, skin$, wrapHtml } from './utils-window';
 
 /**
  * @typedef {object} EventMap
@@ -42,6 +42,36 @@ import { copyText, getVisibilityByRects, wrapHtml } from './utils-window';
  * @augments EventEmitter<EventMap>
  */
 class TalkPageController extends EventEmitter {
+  /**
+   * @type {JQuery}
+   */
+  $root;
+
+  /**
+   * @type {HTMLElement}
+   */
+  rootElement;
+
+  /** @type {JQuery} */
+  $contentColumn = skin$({
+    timeless: '#mw-content',
+    minerva: '#bodyContent',
+    default: '#content',
+  });
+
+  /**
+   * @typedef {object} ContentColumnOffsets
+   * @property {number} startMargin The left margin of the content column.
+   * @property {number} start The left offset of the content column.
+   * @property {number} end The right offset of the content column.
+   */
+
+  /**
+   * @type {ContentColumnOffsets | undefined}
+   * @private
+   */
+  contentColumnOffsets;
+
   /**
    * @type {JQuery | undefined}
    * @private
@@ -165,6 +195,93 @@ class TalkPageController extends EventEmitter {
   bodyScrollPaddingTop;
 
   /**
+   * Set up the boot manager for use in the current boot process. (Executed at every page load.)
+   *
+   * @param {string} [pageHtml] HTML to update the page with.
+   */
+  setup(pageHtml) {
+    // RevisionSlider replaces the #mw-content-text element.
+    if (!bootManager.$content.get(0)?.parentNode) {
+      bootManager.$content = $('#mw-content-text');
+    }
+
+    if (pageHtml) {
+      const div = document.createElement('div');
+      div.innerHTML = pageHtml;
+      this.rootElement = /** @type {HTMLElement} */ (div.firstChild);
+      this.$root = $(this.rootElement);
+    } else {
+      // There can be more than one .mw-parser-output child, e.g. on talk pages of IP editors.
+      this.$root = bootManager.$content.children('.mw-parser-output').first();
+
+      // 404 pages
+      if (!this.$root.length) {
+        this.$root = bootManager.$content;
+      }
+
+      this.rootElement = this.$root[0];
+    }
+
+    // Add the class immediately, not at the end of the boot process, to prevent the issue when any
+    // unexpected error prevents this from being executed. Then, when
+    // this.handleWikipageContentHookFirings() is called with #mw-content-text element for some
+    // reason, the page can go into an infinite rebooting loop.
+    this.$root.addClass('cd-parse-started');
+
+    // this.backgroundHighlightingCss = require('./Comment.layers.optionalBackgroundHighlighting.less');
+    if (settings.get('useBackgroundHighlighting')) {
+      const a = await import('./Comment.layers.optionalBackgroundHighlighting.less');
+      console.log(a);
+    }
+  }
+
+  /**
+   * Get the content root element (`.mw-parser-output` or `#mw-content-text`). Supposed to be used
+   * via {@link convenientDiscussions.api.getRootElement}; inside the script, direct reference to
+   * `talkPageController.rootElement` is practiced.
+   *
+   * @returns {Element}
+   */
+  getRootElement() {
+    return this.rootElement;
+  }
+
+  /**
+   * Get the offset data related to `.$contentColumn`.
+   *
+   * @param {boolean} [bypassCache] Whether to bypass cache.
+   * @returns {ContentColumnOffsets}
+   */
+  getContentColumnOffsets(bypassCache = false) {
+    if (!this.contentColumnOffsets || bypassCache) {
+      let startMargin = Math.max(
+        Number.parseFloat(
+          this.$contentColumn.css(
+            cd.g.contentDirection === 'ltr' ? 'padding-left' : 'padding-right'
+          )
+        ),
+        cd.g.contentFontSize
+      );
+
+      // The content column in Timeless has no _borders_ as such, so it's wrong to penetrate the
+      // surrounding area from the design point of view.
+      if (cd.g.skin === 'timeless') {
+        startMargin--;
+      }
+
+      const left = /** @type {JQuery.Coordinates} */ (this.$contentColumn.offset()).left;
+      const width = /** @type {number} */ (this.$contentColumn.outerWidth());
+      this.contentColumnOffsets = {
+        startMargin,
+        start: cd.g.contentDirection === 'ltr' ? left : left + width,
+        end: cd.g.contentDirection === 'ltr' ? left + width : left,
+      };
+    }
+
+    return this.contentColumnOffsets;
+  }
+
+  /**
    * Get the popup overlay used for OOUI components.
    *
    * @returns {JQuery}
@@ -209,11 +326,11 @@ class TalkPageController extends EventEmitter {
         this.scrollData.touchesBottom = true;
       } else if (
         scrollY !== 0 &&
-        bootManager.rootElement.getBoundingClientRect().top <= this.getBodyScrollPaddingTop()
+        this.rootElement.getBoundingClientRect().top <= this.getBodyScrollPaddingTop()
       ) {
         const treeWalker = new ElementsTreeWalker(
-          bootManager.rootElement,
-          bootManager.rootElement.firstElementChild || undefined,
+          this.rootElement,
+          this.rootElement.firstElementChild || undefined,
         );
         while (true) {
           const el = treeWalker.currentNode;
@@ -361,7 +478,7 @@ class TalkPageController extends EventEmitter {
    * @returns {HTMLElement[]}
    */
   getClosedDiscussions() {
-    this.content.closedDiscussions ||= bootManager.$root
+    this.content.closedDiscussions ??= this.$root
       .find(
         cd.config.closedDiscussionClasses
           .concat('mw-archivedtalk')
@@ -381,7 +498,7 @@ class TalkPageController extends EventEmitter {
    */
   areThereOutdents = () => {
     this.content.areThereOutdents ??= Boolean(
-      bootManager.$root.find('.' + cd.config.outdentClass).length
+      this.$root.find('.' + cd.config.outdentClass).length
     );
 
     return this.content.areThereOutdents;
@@ -417,7 +534,7 @@ class TalkPageController extends EventEmitter {
       // as .mw-parser-output, in selectors. Remove all known elements that never intersect comments
       // from the collection.
       this.content.floatingElements = /** @type {HTMLElement[]} */ (
-        [...bootManager.rootElement.querySelectorAll(floatingElementSelector)].filter(
+        [...this.rootElement.querySelectorAll(floatingElementSelector)].filter(
           (el) => !el.classList.contains('cd-ignoreFloating')
         )
       );
@@ -435,7 +552,7 @@ class TalkPageController extends EventEmitter {
     if (!this.hiddenElements) {
       const hiddenElementSelector = this.getTsHiddenElementSelectors().join(', ');
       this.hiddenElements = hiddenElementSelector
-        ? [...bootManager.rootElement.querySelectorAll(hiddenElementSelector)]
+        ? [...this.rootElement.querySelectorAll(hiddenElementSelector)]
         : [];
     }
 
@@ -500,7 +617,7 @@ class TalkPageController extends EventEmitter {
           // CSS rules on other domains can be inaccessible
         }
       });
-    [...bootManager.rootElement.querySelectorAll('style')].forEach((el) => {
+    [...this.rootElement.querySelectorAll('style')].forEach((el) => {
       [...(el.sheet?.cssRules || [])].forEach(extractSelectors);
     });
 
@@ -621,7 +738,7 @@ class TalkPageController extends EventEmitter {
     // comments may be registered as seen after a press of Page Down/Page Up. One scroll in Chrome,
     // Firefox with Page Up/Page Down takes a little less than 200ms, but 200ms proved to be not
     // enough, so we try 300ms.
-    this.throttledHandleScroll ||= OO.ui.throttle(() => {
+    this.throttledHandleScroll ??= OO.ui.throttle(() => {
       this.mouseMoveBlocked = false;
 
       if (this.isAutoScrolling()) return;
@@ -670,7 +787,7 @@ class TalkPageController extends EventEmitter {
    * @private
    */
   handleSelectionChange = () => {
-    this.throttledHandleSelectionChange ||= OO.ui.throttle(() => {
+    this.throttledHandleSelectionChange ??= OO.ui.throttle(() => {
       this.emit('selectionChange');
     }, 200);
     this.throttledHandleSelectionChange();
@@ -869,7 +986,7 @@ class TalkPageController extends EventEmitter {
    * @param {import('./utils-api').ApiResponseParseContent} parseData
    */
   updatePageContents(parseData) {
-    bootManager.$content.children('.mw-parser-output').first().replaceWith(bootManager.$root);
+    bootManager.$content.children('.mw-parser-output').first().replaceWith(this.$root);
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     mw.util.clearSubtitle?.();
@@ -905,14 +1022,6 @@ class TalkPageController extends EventEmitter {
     this.relevantAddedCommentIds = undefined;
     delete this.dtSubscribableThreads;
     this.updatePageTitle();
-  }
-
-  async setup() {
-    // this.backgroundHighlightingCss = require('./Comment.layers.optionalBackgroundHighlighting.less');
-    if (settings.get('useBackgroundHighlighting')) {
-      const a = await import('./Comment.layers.optionalBackgroundHighlighting.less');
-      console.log(a);
-    }
   }
 
   /**
@@ -1414,7 +1523,7 @@ class TalkPageController extends EventEmitter {
    * @returns {import('./Subscriptions').default}
    */
   getSubscriptionsInstance() {
-    this.subscriptionsInstance ||= new (
+    this.subscriptionsInstance ??= new (
       settings.get('useTopicSubscription')
         // Use `require()`, not `import`, to avoid a circular reference
         ? require('./DtSubscriptions').default
@@ -1473,7 +1582,7 @@ class TalkPageController extends EventEmitter {
         if (
           mw.util.getParamValue('section') === 'new' &&
           $button.parent().attr('id') !== 'ca-addsection' &&
-          !$button.closest(bootManager.$root).length
+          !$button.closest(this.$root).length
         ) {
           return false;
         }
@@ -1557,7 +1666,7 @@ class TalkPageController extends EventEmitter {
     const threads = /** @type {mw.DiscussionToolsHeading[] | undefined} */ (
       mw.config.get('wgDiscussionToolsPageThreads')
     );
-    this.dtSubscribableThreads ||= threads
+    this.dtSubscribableThreads ??= threads
       ?.concat(
         threads
           .filter((thread) => thread.headingLevel === 1)

@@ -272,7 +272,7 @@ class Parser {
 
   /**
    * @typedef {object} AuthorData
-   * @property {string} name
+   * @property {string | undefined} name
    * @property {boolean} isLastLinkAuthorLink
    * @property {ElementLike} [notForeignLink]
    * @property {ElementLike} [talkNotForeignLink]
@@ -722,7 +722,7 @@ class Parser {
     const result = Parser.processLink(link);
     if (result) {
       const { userName, linkType } = result;
-      authorData.name ||= userName;
+      authorData.name ??= userName;
       if (authorData.name === userName) {
         if (['user', 'userForeign'].includes(linkType)) {
           // Break only when the second user link is a link to another wiki (but not the other way

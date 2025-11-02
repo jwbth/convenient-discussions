@@ -35,7 +35,7 @@ import visits from './visits';
 function removeDtButtonHtmlComments() {
   // eslint-disable-next-line no-one-time-vars/no-one-time-vars
   const treeWalker = document.createNodeIterator(
-    bootManager.rootElement,
+    talkPageController.rootElement,
     NodeFilter.SHOW_COMMENT
   );
   let node;
@@ -78,7 +78,7 @@ function processAndRemoveDtElements(elements) {
 
   /** @type {HTMLElement[]} */ (
     elements.concat([
-      ...bootManager.rootElement.querySelectorAll('.ext-discussiontools-init-highlight'),
+      ...talkPageController.rootElement.querySelectorAll('.ext-discussiontools-init-highlight'),
     ])
   ).forEach((el, i) => {
     if (Object.hasOwn(el.dataset, 'mwCommentStart') && Comment.isDtId(el.id)) {
@@ -102,7 +102,7 @@ function processAndRemoveDtElements(elements) {
   if (!moveNotRemove) {
     [
       .../** @type {NodeListOf<HTMLSpanElement>} */ (
-        bootManager.rootElement.querySelectorAll('span[data-mw-comment]')
+        talkPageController.rootElement.querySelectorAll('span[data-mw-comment]')
       ),
     ].forEach((el) => {
       delete el.dataset.mwComment;
@@ -276,7 +276,7 @@ class BootProcess {
     commentManager.reformatComments();
 
     // This updates some styles, shifting the offsets.
-    bootManager.$root.addClass('cd-parsed');
+    talkPageController.$root.addClass('cd-parsed');
 
     // Should be below navPanel.setup() as commentFormManager.restoreSession() indirectly calls
     // navPanel.updateCommentFormButton() which depends on the navigation panel being mounted.
@@ -378,7 +378,7 @@ class BootProcess {
 
     // This is needed to calculate the rendering time: it won't complete until everything gets
     // rendered.
-    bootManager.rootElement.getBoundingClientRect();
+    talkPageController.rootElement.getBoundingClientRect();
 
     debug.stopTimer('final code and rendering');
 
@@ -426,8 +426,7 @@ class BootProcess {
       notifications.init();
       Parser.init();
     }
-    bootManager.setupOnTalkPage(this.passedData.parseData?.text);
-    talkPageController.setup();
+    talkPageController.setup(this.passedData.parseData?.text);
     toc.setup(this.passedData.parseData?.sections, this.passedData.parseData?.hidetoc);
 
     /**
@@ -706,9 +705,9 @@ class BootProcess {
       childElementsProp: 'children',
       follows: (n1, n2) =>
         Boolean(n2.compareDocumentPosition(n1) & Node.DOCUMENT_POSITION_FOLLOWING),
-      getAllTextNodes: () => getAllTextNodes(bootManager.rootElement),
+      getAllTextNodes: () => getAllTextNodes(talkPageController.rootElement),
       getElementByClassName: (el, className) => el.querySelector(`.${className}`),
-      rootElement: bootManager.rootElement,
+      rootElement: talkPageController.rootElement,
       document,
       areThereOutdents: talkPageController.areThereOutdents,
       processAndRemoveDtElements,

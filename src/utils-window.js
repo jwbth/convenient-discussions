@@ -1058,7 +1058,7 @@ function extractUnsigneds(adjustedCode, code, signatures) {
       // Workaround for "undated" templates. I think (need to recheck) in most cases that signature
       // would qualify as a regular signature, not an unsigned one, just with the timestamp in a
       // template. But when there is no author, we need to fill the author field.
-      authorString ||= '<undated>';
+      authorString ??= '<undated>';
     }
 
     // Double spaces

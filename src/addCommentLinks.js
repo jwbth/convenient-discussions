@@ -433,7 +433,7 @@ function processWatchlist($content) {
           setWrapperLinkAttr(wrapper, 'title', goToCommentWatchedSection);
         }
       }
-      wrapper ||= prototypes.get('wrapperRegular');
+      wrapper ??= prototypes.get('wrapperRegular');
     }
 
     setWrapperLinkAttr(wrapper, 'href', `${link}#${id}`);
@@ -594,7 +594,7 @@ function processHistory($content) {
         wrapper = prototypes.get('wrapperRelevant');
         setWrapperLinkAttr(wrapper, 'title', goToCommentWatchedSection);
       }
-      wrapper ||= prototypes.get('wrapperRegular');
+      wrapper ??= prototypes.get('wrapperRegular');
     }
     setWrapperLinkAttr(wrapper, 'href', `${link}#${id}`);
 
@@ -618,12 +618,14 @@ function processHistory($content) {
  * @private
  */
 function processDiff($diff) {
+  const talkPageController = require('./talkPageController').default;
+
   // Filter out cases when wikipage.diff was fired for the native MediaWiki's diff at the top of
   // the page that is a diff page (unless only a diff, and no content, is displayed - if
   // mw.user.options.get('diffonly') or the `diffonly` URL parameter is true). We parse that diff on
   // convenientDiscussions.pageReady hook instead.
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if ($diff?.parent().is(bootManager.$content) && bootManager.$root) return;
+  if ($diff?.parent().is(bootManager.$content) && talkPageController.$root) return;
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!cd.g.uiTimestampRegexp) {
@@ -692,7 +694,7 @@ function processDiff($diff) {
             wrapper = prototypes.get('wrapperRelevant');
             setWrapperLinkAttr(wrapper, 'title', goToCommentWatchedSection);
           }
-          wrapper ||= prototypes.get('wrapperRegular');
+          wrapper ??= prototypes.get('wrapperRegular');
         }
 
         const linkElement = /** @type {HTMLAnchorElement} */ (

@@ -1,5 +1,4 @@
 import Button from './Button';
-import bootManager from './bootManager';
 import cd from './cd';
 import sectionManager from './sectionManager';
 import talkPageController from './talkPageController';
@@ -135,10 +134,10 @@ class PageNav {
    * @private
    */
   updateWidth = () => {
-    if (!this.isMounted() || !bootManager.$contentColumn.length) return;
+    if (!this.isMounted() || !talkPageController.$contentColumn.length) return;
 
     const left =
-      /** @type {JQuery.Coordinates} */ (bootManager.$contentColumn.offset()).left -
+      /** @type {JQuery.Coordinates} */ (talkPageController.$contentColumn.offset()).left -
       /** @type {number} */ ($(window).scrollLeft());
 
     // 18px padding + 1px comment markers / thread lines
@@ -148,10 +147,10 @@ class PageNav {
       ? left - deductable
       : /** @type {number} */ ($(window).width()) -
         // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-        (left + /** @type {number} */ (bootManager.$contentColumn.outerWidth())) -
+        (left + /** @type {number} */ (talkPageController.$contentColumn.outerWidth())) -
         deductable;
     if (cd.g.skin === 'minerva') {
-      width -= bootManager.getContentColumnOffsets().startMargin;
+      width -= talkPageController.getContentColumnOffsets().startMargin;
     }
 
     const $topElement = /** @type {JQuery} */ (this.$topElement);
@@ -254,7 +253,7 @@ class PageNav {
           )
           .appendTo(this.$linksOnTop);
       }
-      this.$currentSection ||= $('<ul>')
+      this.$currentSection ??= $('<ul>')
         .attr('id', 'cd-pageNav-currentSection')
         .addClass('cd-pageNav-list')
         .appendTo(/** @type {JQuery} */ (this.$topElement));

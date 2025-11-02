@@ -628,7 +628,7 @@ class Settings extends EventEmitter {
    * @returns {Promise.<void>}
    */
   init() {
-    this.initPromise ||= (async () => {
+    this.initPromise ??= (async () => {
       // We fill the settings after the modules are loaded so that the settings set via common.js
       // have less chance not to load.
 

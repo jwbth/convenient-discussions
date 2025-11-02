@@ -11,7 +11,7 @@ import { handleApiReject, splitIntoBatches } from './utils-api';
  * @augments Subscriptions
  */
 class DtSubscriptions extends Subscriptions {
-  /** @type {string} */
+  /** @type {string} @private */
   pageSubscribeId;
 
   /**
@@ -24,7 +24,8 @@ class DtSubscriptions extends Subscriptions {
     if (!cd.user.isRegistered()) return;
 
     const title = spacesToUnderlines(mw.config.get('wgTitle'));
-    this.pageSubscribeId ||= `p-topics-${cd.g.namespaceNumber}:${title}`;
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    this.pageSubscribeId ??= `p-topics-${cd.g.namespaceNumber}:${title}`;
     this.data = await this.getSubscriptions(
       sectionManager
         .getAll()

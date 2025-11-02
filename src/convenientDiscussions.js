@@ -206,7 +206,7 @@ const convenientDiscussionsWindow = {
       return new mw.Api({ ...cd.getApiConfig(), ...config });
     }
 
-    this.mwApi ||= new mw.Api(cd.getApiConfig());
+    this.mwApi ??= new mw.Api(cd.getApiConfig());
 
     return this.mwApi;
   },

@@ -110,7 +110,7 @@ class Toc {
    * @param {boolean} [hideToc] Whether the TOC should be hidden.
    */
   setup(sections, hideToc) {
-    this.$element = this.isInSidebar() ? $('.vector-toc') : bootManager.$root.find('.toc');
+    this.$element = this.isInSidebar() ? $('.vector-toc') : talkPageController.$root.find('.toc');
     this.items = undefined;
     this.floating = undefined;
     this.visitsPromise = new Promise((resolve) => {

@@ -41,32 +41,6 @@ class BootManager {
   $content;
 
   /**
-   * @type {JQuery}
-   */
-  $root;
-
-  /**
-   * @type {HTMLElement}
-   */
-  rootElement;
-
-  /** @type {JQuery} */
-  $contentColumn;
-
-  /**
-   * @typedef {object} ContentColumnOffsets
-   * @property {number} startMargin The left margin of the content column.
-   * @property {number} start The left offset of the content column.
-   * @property {number} end The right offset of the content column.
-   */
-
-  /**
-   * @type {ContentColumnOffsets | undefined}
-   * @private
-   */
-  contentColumnOffsets;
-
-  /**
    * @type {JQuery | undefined}
    * @private
    */
@@ -196,7 +170,7 @@ class BootManager {
    * @returns {JQuery.Promise<any>[]} There should be at least one promise in the array.
    */
   getSiteData() {
-    this.siteDataRequests ||= this.loadSiteData();
+    this.siteDataRequests ??= this.loadSiteData();
 
     return this.siteDataRequests;
   }
@@ -691,41 +665,6 @@ class BootManager {
   }
 
   /**
-   * Get the offset data related to `.$contentColumn`.
-   *
-   * @param {boolean} [bypassCache] Whether to bypass cache.
-   * @returns {ContentColumnOffsets}
-   */
-  getContentColumnOffsets(bypassCache = false) {
-    if (!this.contentColumnOffsets || bypassCache) {
-      let startMargin = Math.max(
-        Number.parseFloat(
-          this.$contentColumn.css(
-            cd.g.contentDirection === 'ltr' ? 'padding-left' : 'padding-right'
-          )
-        ),
-        cd.g.contentFontSize
-      );
-
-      // The content column in Timeless has no _borders_ as such, so it's wrong to penetrate the
-      // surrounding area from the design point of view.
-      if (cd.g.skin === 'timeless') {
-        startMargin--;
-      }
-
-      const left = /** @type {JQuery.Coordinates} */ (this.$contentColumn.offset()).left;
-      const width = /** @type {number} */ (this.$contentColumn.outerWidth());
-      this.contentColumnOffsets = {
-        startMargin,
-        start: cd.g.contentDirection === 'ltr' ? left : left + width,
-        end: cd.g.contentDirection === 'ltr' ? left + width : left,
-      };
-    }
-
-    return this.contentColumnOffsets;
-  }
-
-  /**
    * _For internal use._ Set a number of {@link convenientDiscussions global object} properties.
    */
   initGlobals() {
@@ -867,7 +806,7 @@ class BootManager {
      * @function getRootElement
      * @memberof convenientDiscussions.api
      */
-    cd.api.getRootElement = this.getRootElement.bind(this);
+    cd.api.getRootElement = talkPageController.getRootElement.bind(this);
   }
 
   /**
@@ -1084,12 +1023,6 @@ class BootManager {
       }
     });
 
-    this.$contentColumn = skin$({
-      timeless: '#mw-content',
-      minerva: '#bodyContent',
-      default: '#content',
-    });
-
     /*
         Additions of CSS set a stage for a future reflow which delays operations dependent on
         rendering, so we run them now, not after the requests are fulfilled, to save time. The overall
@@ -1166,52 +1099,6 @@ class BootManager {
    */
   isBooting() {
     return this.booting;
-  }
-
-  /**
-   * Set up the boot manager for use in the current boot process. (Executed at every page load.)
-   *
-   * @param {string} [pageHtml] HTML to update the page with.
-   */
-  setupOnTalkPage(pageHtml) {
-    // RevisionSlider replaces the #mw-content-text element.
-    if (!this.$content.get(0)?.parentNode) {
-      this.$content = $('#mw-content-text');
-    }
-
-    if (pageHtml) {
-      const div = document.createElement('div');
-      div.innerHTML = pageHtml;
-      this.rootElement = /** @type {HTMLElement} */ (div.firstChild);
-      this.$root = $(this.rootElement);
-    } else {
-      // There can be more than one .mw-parser-output child, e.g. on talk pages of IP editors.
-      this.$root = this.$content.children('.mw-parser-output').first();
-
-      // 404 pages
-      if (!this.$root.length) {
-        this.$root = this.$content;
-      }
-
-      this.rootElement = this.$root[0];
-    }
-
-    // Add the class immediately, not at the end of the boot process, to prevent the issue when any
-    // unexpected error prevents this from being executed. Then, when
-    // this.handleWikipageContentHookFirings() is called with #mw-content-text element for some
-    // reason, the page can go into an infinite rebooting loop.
-    this.$root.addClass('cd-parse-started');
-  }
-
-  /**
-   * Get the content root element (`.mw-parser-output` or `#mw-content-text`). Supposed to be used
-   * via {@link convenientDiscussions.api.getRootElement}; inside the script, direct reference to
-   * `bootManager.rootElement` is practiced.
-   *
-   * @returns {Element}
-   */
-  getRootElement() {
-    return this.rootElement;
   }
 
   /**
@@ -1413,7 +1300,7 @@ class BootManager {
    * Show the loading overlay (a logo in the corner of the page).
    */
   showLoadingOverlay() {
-    this.$loadingPopup ||= $('<div>')
+    this.$loadingPopup ??= $('<div>')
       .addClass('cd-loadingPopup')
       .append(
         $('<div>')

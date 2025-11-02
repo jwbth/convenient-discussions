@@ -441,7 +441,7 @@ class BaseAutocomplete {
    * @returns {any[]} Default entries
    */
   getDefaultEntries() {
-    this.defaultEntries ||= this.defaultLazy?.() || [];
+    this.defaultEntries ??= this.defaultLazy?.() || [];
 
     return this.defaultEntries;
   }

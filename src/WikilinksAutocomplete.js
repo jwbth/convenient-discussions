@@ -55,7 +55,7 @@ class WikilinksAutocomplete extends BaseAutocomplete {
       end: ']]',
       content: selectedText,
       shiftModify() {
-        this.content ||= this.start.slice(2);
+        this.content ??= this.start.slice(2);
         this.start += '|';
       },
     };

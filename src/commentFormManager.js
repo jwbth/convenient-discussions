@@ -301,7 +301,7 @@ class CommentFormManager extends EventEmitter {
       this.actuallySaveSession();
     } else {
       // Don't save more often than once per 5 seconds.
-      this.throttledSaveSession ||= OO.ui.throttle(
+      this.throttledSaveSession ??= OO.ui.throttle(
         /** @type {() => void} */ (this.actuallySaveSession),
         500
       );

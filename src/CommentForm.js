@@ -1502,7 +1502,7 @@ class CommentForm extends EventEmitter {
     const insertButtons = settings.get('insertButtons');
     if (!insertButtons.length) return;
 
-    this.$insertButtons ||= $('<div>')
+    this.$insertButtons ??= $('<div>')
       .addClass('cd-insertButtons')
       .insertAfter(this.commentInput.$element);
 
@@ -1530,11 +1530,13 @@ class CommentForm extends EventEmitter {
     // Mask escaped characters
     const textMasker = new TextMasker(snippet).mask(/\\[+;\\]/g);
 
-    let [, pre, post] = textMasker.getText().match(/^(.*?)(?:\+(.*))?$/) || [];
+    let [, pre, post] = /** @type {[string, string, string | undefined]} */ (
+      textMasker.getText().match(/^(.*?)(?:\+(.*))?$/) || []
+    );
     if (!pre) return;
 
     pre = pre.replace(/\\n/g, '\n');
-    post ||= '';
+    post ??= '';
     post = post.replace(/\\n/g, '\n');
 
     // Unmask escaped characters
@@ -2777,14 +2779,14 @@ class CommentForm extends EventEmitter {
             break;
 
           case 'missingtitle':
-            message ||= cdError.getHtml();
+            message ??= cdError.getHtml();
             break;
 
           default:
             message = cdError.getHtml();
         }
 
-        errorToLog ||= cdError;
+        errorToLog ??= cdError;
         break;
       }
 
@@ -2795,7 +2797,7 @@ class CommentForm extends EventEmitter {
             break;
         }
 
-        errorToLog ||= cdError;
+        errorToLog ??= cdError;
         break;
       }
 
@@ -2804,7 +2806,7 @@ class CommentForm extends EventEmitter {
         message = typeof message === 'string'
           ? message + ' ' + cd.sParse(`error-${type}`)
           : message;
-        errorToLog ||= cdError;
+        errorToLog ??= cdError;
         break;
       }
     }
@@ -2813,7 +2815,7 @@ class CommentForm extends EventEmitter {
     // If the message in the jQuery format was pre-provided, then by convention it's one that is not
     // supposed to be framed.
     const framed = !$message;
-    $message ||=
+    $message ??=
       typeof message === 'string'
         ? wrapHtml(message, {
             callbacks: {
@@ -3047,7 +3049,7 @@ class CommentForm extends EventEmitter {
       return;
     }
 
-    operation ||= this.operations.add('preview', { isAuto });
+    operation ??= this.operations.add('preview', { isAuto });
 
     if (isAuto) {
       const lastPreviewTimestamp = this.lastPreviewTimestamp;
@@ -4124,7 +4126,7 @@ class CommentForm extends EventEmitter {
       periStartIndex = selectionStartIndex + leadingNewline.length + pre.length;
       selection = value.substring(range.from, range.to);
     } else {
-      selection ||= '';
+      selection ??= '';
     }
 
     // Wrap the text, moving the leading and trailing spaces to the sides of the resulting text.
@@ -4411,7 +4413,7 @@ class CommentForm extends EventEmitter {
 
       // Not $root - add section form is outside it. Not $content either - it's the same as $root on
       // 404 pages.
-      $container: bootManager.$root.parent(),
+      $container: talkPageController.$root.parent(),
 
       position: $('#vector-main-menu-pinned-container, #vector-toc-pinned-container').is(':visible')
         ? 'before'
@@ -4462,7 +4464,7 @@ class CommentForm extends EventEmitter {
 
       // Not $root - add section form is outside it. Not $content either - it's the same as $root on
       // 404 pages.
-      $container: bootManager.$root.parent(),
+      $container: talkPageController.$root.parent(),
 
       position: $('#vector-main-menu-pinned-container, #vector-toc-pinned-container').is(':visible')
         ? 'before'

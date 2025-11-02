@@ -2158,10 +2158,10 @@ class Section extends SectionSkeleton {
   updateVisibility(show) {
     if (show !== this.isHidden) return;
 
-    this.elements ||= /** @type {HTMLElement[]} */ (getRangeContents(
+    this.elements ??= /** @type {HTMLElement[]} */ (getRangeContents(
       this.headingElement,
       this.findRealLastElement(),
-      bootManager.rootElement
+      talkPageController.rootElement
     ));
     this.isHidden = !show;
     this.elements.forEach((el) => {

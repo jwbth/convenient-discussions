@@ -785,7 +785,7 @@ export default class Page {
    * @private
    */
   static getArchivePagesMap() {
-    this.pagesMaps ||= this.getArchivePagesMaps();
+    this.pagesMaps ??= this.getArchivePagesMaps();
 
     return this.pagesMaps.archive;
   }
@@ -797,7 +797,7 @@ export default class Page {
    * @private
    */
   static getSourcePagesMap() {
-    this.pagesMaps ||= this.getArchivePagesMaps();
+    this.pagesMaps ??= this.getArchivePagesMaps();
 
     return this.pagesMaps.source;
   }

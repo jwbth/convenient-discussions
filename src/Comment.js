@@ -377,7 +377,7 @@ class Comment extends CommentSkeleton {
      * @private
      */
     const getContainerListType = (el) => {
-      const treeWalker = new ElementsTreeWalker(bootManager.rootElement, el);
+      const treeWalker = new ElementsTreeWalker(talkPageController.rootElement, el);
       while (treeWalker.parentNode()) {
         if (treeWalker.currentNode.classList.contains('cd-commentLevel')) {
           return /** @type {ListType} */ (treeWalker.currentNode.tagName.toLowerCase());
@@ -414,7 +414,7 @@ class Comment extends CommentSkeleton {
         this.highlightables[this.highlightables.length - 1],
       ];
       firstAndLastHighlightable.forEach((highlightable, i) => {
-        const treeWalker = new ElementsTreeWalker(bootManager.rootElement, highlightable);
+        const treeWalker = new ElementsTreeWalker(talkPageController.rootElement, highlightable);
         nestingLevels[i] = 0;
         while (treeWalker.parentNode()) {
           nestingLevels[i]++;
@@ -1129,7 +1129,7 @@ class Comment extends CommentSkeleton {
     if (!this.layers?.getContainer().cdIsTopLayersContainer) return;
 
     if (this.level === 0) {
-      const offsets = bootManager.getContentColumnOffsets();
+      const offsets = talkPageController.getContentColumnOffsets();
 
       // 2 instead of 1 for Timeless
       const leftStretched = left - offsets.startMargin - 2;
@@ -1154,7 +1154,7 @@ class Comment extends CommentSkeleton {
    * @returns {Direction}
    */
   getDirection() {
-    this.direction ||= talkPageController.areThereLtrRtlMixes()
+    this.direction ??= talkPageController.areThereLtrRtlMixes()
       // Take the last element because the first one may be the section heading which can have
       // another direction.
       ? this.elements[this.elements.length - 1]
@@ -1184,7 +1184,7 @@ class Comment extends CommentSkeleton {
           ? cd.g.contentFontSize * 3.2
           : cd.g.contentFontSize * 2.2 - 1;
     } else if (this.isStartStretched) {
-      startMargin = bootManager.getContentColumnOffsets().startMargin;
+      startMargin = talkPageController.getContentColumnOffsets().startMargin;
     } else {
       const marginElement = this.thread?.$expandNote?.[0] || this.marginHighlightable;
       if (marginElement.parentElement?.classList.contains('cd-commentLevel')) {
@@ -1202,7 +1202,7 @@ class Comment extends CommentSkeleton {
       }
     }
     const endMargin = this.isEndStretched
-      ? bootManager.getContentColumnOffsets().startMargin
+      ? talkPageController.getContentColumnOffsets().startMargin
       : cd.g.commentFallbackSideMargin;
 
     return {

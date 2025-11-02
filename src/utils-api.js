@@ -162,7 +162,7 @@ export function splitIntoBatches(arr) {
 
   return arr.reduce((result, item, index) => {
     const chunkIndex = Math.floor(index / limit);
-    result[chunkIndex] ||= [];
+    result[chunkIndex] ??= [];
     result[chunkIndex].push(item);
 
     return result;

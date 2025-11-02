@@ -255,10 +255,10 @@ class AutocompleteManager {
 
     // Get the selected text from the input widget if available
     const element = this.tribute.current.element;
-    let selectedText;
-    if (element?.cdInput && typeof element.cdInput.getSelectedTextForAutocomplete === 'function') {
-      selectedText = element.cdInput.getSelectedTextForAutocomplete();
-    }
+    const selectedText =
+      element?.cdInput && typeof element.cdInput.getSelectedTextForAutocomplete === 'function'
+        ? element.cdInput.getSelectedTextForAutocomplete()
+        : undefined;
 
     return option.original.autocomplete.getInsertionFromEntry(option.original.entry, selectedText);
   };
@@ -277,13 +277,16 @@ class AutocompleteManager {
 
     /** @type {APIResponseTemplateData} */
     let response;
+    /** @type {TemplateData | undefined} */
+    let template;
     try {
       response = await cd.getApi(AutocompleteManager.apiConfig).get({
         action: 'templatedata',
         titles: `Template:${option.original.label}`,
         redirects: true,
       }).catch(handleApiReject);
-      if (!Object.keys(response.pages).length) {
+      template = Object.values(response.pages).at(0);
+      if (!template) {
         throw new CdError('Template missing.');
       }
     } catch {
@@ -295,38 +298,32 @@ class AutocompleteManager {
       return;
     }
 
-    const pages = response.pages;
-    let paramsString = '';
+    const params = template.params || {};
+
+    // Parameter names
+    const result = (template.paramOrder || Object.keys(params))
+      .filter((param) => params[param].required || params[param].suggested)
+      .reduce((paramAcc, param) => {
+        const addition =
+          template.format === 'block'
+            ? `\n| ${param} = `
+            : Number.isNaN(Number(param))
+              ? `|${param}=`
+              : `|`;
+        firstValueIndex ||= paramAcc.length + addition.length;
+
+        return paramAcc + addition;
+      }, '');
+
     let firstValueIndex = 0;
-    Object.keys(pages).forEach((key) => {
-      const template = pages[key];
-      const params = template.params || {};
-
-      // Parameter names
-      (template.paramOrder || Object.keys(params))
-        .filter((param) => params[param].required || params[param].suggested)
-        .forEach((param) => {
-          if (template.format === 'block') {
-            paramsString += `\n| ${param} = `;
-          } else {
-            paramsString += Number.isNaN(Number(param)) ? `|${param}=` : `|`;
-          }
-          firstValueIndex ||= paramsString.length;
-        });
-      if (template.format === 'block' && paramsString) {
-        paramsString += '\n';
-      }
-    });
-
-    // Remove leading "|".
-    paramsString = paramsString.slice(1);
-
     input
       .setDisabled(false)
-      .insertContent(paramsString)
+
+      // Remove leading `|` with `slice(1)`
+      .insertContent((result + (template.format === 'block' && result ? '\n' : '')).slice(1))
 
       // `input.getRange().to` is the current caret index
-      .selectRange(/** @type {number} */(input.getRange().to || 0) + firstValueIndex - 1)
+      .selectRange(/** @type {number} */ (input.getRange().to || 0) + firstValueIndex - 1)
 
       .popPending();
   }

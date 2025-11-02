@@ -539,7 +539,7 @@ class CommentLayers {
         }
         if (offsetParent) break;
       }
-      offsetParent ||= document.body;
+      offsetParent ??= document.body;
       offsetParent.classList.add('cd-commentLayersContainer-parent');
       let container = /** @type {HTMLElement} */ (offsetParent.firstElementChild);
       if (!container.classList.contains('cd-commentLayersContainer')) {

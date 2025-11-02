@@ -13,7 +13,7 @@ import cd from './shared/cd';
  * @property {import('./commentFormManager').default['getLastActive']} getLastActiveCommentForm
  * @property {import('./commentFormManager').default['getLastActiveAltered']} getLastActiveAlteredCommentForm
  * @property {import('./bootManager').default['reboot']} reloadPage
- * @property {import('./bootManager').default['getRootElement']} getRootElement
+ * @property {import('./talkPageController').default['getRootElement']} getRootElement
  */
 
 /**

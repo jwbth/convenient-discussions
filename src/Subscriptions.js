@@ -99,7 +99,7 @@ class Subscriptions extends EventEmitter {
   updateLocally(subscribeId, subscribe) {
     // this.data can be not set on newly created pages with DT subscriptions enabled.
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    this.data ||= {};
+    this.data ??= {};
 
     this.data[subscribeId] = subscribe;
   }
