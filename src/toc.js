@@ -59,8 +59,6 @@ class Toc {
       this.resolveUpdateTocSectionsPromise?.();
     });
 
-    this.canBeModified = settings.get('modifyToc');
-
     visits
       .on('process', () => {
         // If all the comments on the page are unseen, don't add them to the TOC - the user would
@@ -152,9 +150,6 @@ class Toc {
       } catch (error) {
         console.error("Couldn't find an element for an item of the table of contents.", error);
         this.items = [];
-
-        // Override the setting value - we better not touch the TOC if something is broken there.
-        this.canBeModified = false;
       }
     }
 
@@ -388,7 +383,7 @@ class Toc {
    * @private
    */
   addNewSections = (sections) => {
-    if (!this.canBeModified || !this.isPresent()) return;
+    if (!settings.get('modifyToc') || !this.isPresent()) return;
 
     if (!this.isInSidebar()) {
       talkPageController.saveRelativeScrollPosition(true);
@@ -661,7 +656,7 @@ class Toc {
    * @private
    */
   async addNewComments(commentsBySection, bootProcess) {
-    if (!this.canBeModified || !this.isPresent()) return;
+    if (!settings.get('modifyToc') || !this.isPresent()) return;
 
     await this.updateTocSectionsPromise;
     this.$element.find('.cd-toc-addedCommentList').remove();

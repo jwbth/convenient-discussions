@@ -396,6 +396,7 @@ class BootProcess {
    * @private
    */
   async setup() {
+    this.updateSignatureData();
     if (this.firstRun) {
       await this.initTalkPage();
     } else {
@@ -426,6 +427,7 @@ class BootProcess {
       Parser.init();
     }
     bootManager.setupOnTalkPage(this.passedData.parseData?.text);
+    talkPageController.setup();
     toc.setup(this.passedData.parseData?.sections, this.passedData.parseData?.hidetoc);
 
     /**
@@ -450,6 +452,37 @@ class BootProcess {
   }
 
   /**
+   * Set some global variables related to the user signature.
+   */
+  updateSignatureData() {
+    const signaturePrefix = settings.get('signaturePrefix');
+    cd.g.userSignature = signaturePrefix + cd.g.signCode;
+
+    const signatureContent = mw.user.options.get('nickname');
+    const authorInSignatureMatch = signatureContent.match(
+      new RegExp(cd.g.captureUserNamePattern, 'i')
+    );
+    /*
+      Extract signature contents before the user name - in order to cut it out from comment
+      endings when editing.
+
+      Use the signature prefix only if it is other than `' '` (the default value).
+      * If it is `' '`, the prefix in real life may as well be `\n` or `--` if the user created some
+        specific comment using the native editor instead of CD. So we would want to remove the
+        signature from such comments correctly. The space would be included in the signature anyway
+        using `cd.config.signaturePrefixRegexp`.
+      * If it is other than `' '`, it is unpredictable, so it is safer to include it in the pattern.
+    */
+    cd.g.userSignaturePrefixRegexp = authorInSignatureMatch
+      ? new RegExp(
+        (signaturePrefix === ' ' ? '' : mw.util.escapeRegExp(signaturePrefix)) +
+        mw.util.escapeRegExp(signatureContent.slice(0, authorInSignatureMatch.index)) +
+        '$'
+      )
+      : undefined;
+  }
+
+  /**
    * Assign various global objects' ({@link convenientDiscussions}, {@link JQuery.fn jQuery.fn})
    * properties and methods that are needed for processing a talk page. Executed on the first run.
    *
@@ -467,9 +500,6 @@ class BootProcess {
     bootManager.initTimestampParsingTools('content');
     this.initPatterns();
     this.initPrototypes();
-    if (settings.get('useBackgroundHighlighting')) {
-      require('./Comment.layers.optionalBackgroundHighlighting.less');
-    }
     $.fn.extend(jqueryExtensions);
     initDayjs();
   }
@@ -486,7 +516,7 @@ class BootProcess {
         signatureEndingRegexp.source + (signatureEndingRegexp.source.endsWith('$') ? '' : '$'),
         signatureEndingRegexp.flags
       )
-      : null;
+      : undefined;
 
     const nss = mw.config.get('wgFormattedNamespaces');
     const nsIds = mw.config.get('wgNamespaceIds');
@@ -544,7 +574,7 @@ class BootProcess {
       .join('|');
     cd.g.unsignedTemplatesPattern = unsignedTemplatesPattern
       ? `(\\{\\{ *(?:${unsignedTemplatesPattern}) *\\| *([^}|]+?) *(?:\\| *([^}]+?) *)?\\}\\})`
-      : null;
+      : undefined;
 
     const clearTemplatesPattern = cd.config.clearTemplates.map(generatePageNamePattern).join('|');
     const reflistTalkTemplatesPattern = cd.config.reflistTalkTemplates
@@ -560,35 +590,6 @@ class BootProcess {
         ? new RegExp(`\\n+\\{\\{ *(?:${reflistTalkTemplatesPattern}) *\\}\\}.*\\s*$`)
         : undefined,
     ].filter(defined);
-
-    cd.g.userSignature = settings.get('signaturePrefix') + cd.g.signCode;
-
-    const signatureContent = mw.user.options.get('nickname');
-    const authorInSignatureMatch = signatureContent.match(
-      new RegExp(cd.g.captureUserNamePattern, 'i')
-    );
-    /*
-      Extract signature contents before the user name - in order to cut it out from comment
-      endings when editing.
-
-      Use the signature prefix only if it is other than `' '` (the default value).
-      * If it is `' '`, the prefix in real life may as well be `\n` or `--` if the user created some
-        specific comment using the native editor instead of CD. So we would want to remove the
-        signature from such comments correctly. The space would be included in the signature anyway
-        using `cd.config.signaturePrefixRegexp`.
-      * If it is other than `' '`, it is unpredictable, so it is safer to include it in the pattern.
-    */
-    cd.g.userSignaturePrefixRegexp = authorInSignatureMatch
-      ? new RegExp(
-        (
-          settings.get('signaturePrefix') === ' '
-            ? ''
-            : mw.util.escapeRegExp(settings.get('signaturePrefix'))
-        ) +
-        mw.util.escapeRegExp(signatureContent.slice(0, authorInSignatureMatch.index)) +
-        '$'
-      )
-      : null;
 
     const pieJoined = cd.g.popularInlineElements.join('|');
     cd.g.piePattern = `(?:${pieJoined})`;

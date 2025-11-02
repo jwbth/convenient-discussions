@@ -162,8 +162,7 @@ export class CommentManager extends EventEmitter {
    * addition to those performed when each comment is added to the registry.
    */
   setup() {
-    // This can be updated after an in-script page reload if the user agrees to this setting in the
-    // onboarding popup (settings.maybeSuggestEnableCommentReformatting()).
+    // This can be updated after an in-script page reload.
     this.spaciousComments = settings.get('spaciousComments');
 
     this.reformatTimestamps();

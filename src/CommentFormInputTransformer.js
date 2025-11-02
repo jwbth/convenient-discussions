@@ -537,11 +537,10 @@ class CommentFormInputTransformer extends TextMasker {
     }
 
     const outdentDifference = this.target.level - this.target.source.replyIndentation.length;
-    this.text = (
+    this.text =
       `{{${cd.config.outdentTemplates[0]}|${outdentDifference}}}` +
       (/^[:*#]+/.test(this.text) ? '\n' : ' ') +
-      this.text
-    );
+      this.text;
 
     return this;
   }

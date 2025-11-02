@@ -44,18 +44,6 @@ class NavPanel {
   state;
 
   /**
-   * @type {string}
-   * @private
-   */
-  timestampFormat;
-
-  /**
-   * @type {number}
-   * @private
-   */
-  highlightNewInterval;
-
-  /**
    * @type {number | undefined}
    * @private
    */
@@ -65,9 +53,6 @@ class NavPanel {
    * _For internal use._ Mount, unmount or reset the navigation panel based on the context.
    */
   setup() {
-    this.timestampFormat = settings.get('timestampFormat');
-    this.highlightNewInterval = settings.get('highlightNewInterval');
-
     if (cd.page.isActive()) {
       // Can be mounted not only on first parse, if using RevisionSlider, for example.
       if (this.isMounted()) {
@@ -340,7 +325,7 @@ class NavPanel {
         cd.s('navpanel-newcomments-refresh') +
         ' ' +
         cd.mws('parentheses', 'R');
-      if (areThereNew && this.highlightNewInterval) {
+      if (areThereNew && settings.get('highlightNewInterval')) {
         tooltipText += '\n' + cd.s('navpanel-markasread', cd.g.cmdModifier);
       }
       const bullet = removeWikiMarkup(cd.s('bullet'));
@@ -377,12 +362,12 @@ class NavPanel {
 
       // When timestamps are relative, we need to update the tooltip manually every minute. When
       // `improved` timestamps are used, timestamps are updated in LiveTimestamp.updateImproved().
-      if (this.timestampFormat === 'relative') {
+      if (settings.get('timestampFormat') === 'relative') {
         this.utirbtTimeout = setTimeout(this.updateTimestampsInRefreshButtonTooltip, cd.g.msInMin);
       }
     } else {
       tooltipText = cd.s('navpanel-refresh') + ' ' + cd.mws('parentheses', 'R');
-      if (areThereNew && this.highlightNewInterval) {
+      if (areThereNew && settings.get('highlightNewInterval')) {
         tooltipText += '\n' + cd.s('navpanel-markasread', cd.g.cmdModifier);
       }
     }

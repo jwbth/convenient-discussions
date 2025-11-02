@@ -2,7 +2,7 @@ import TextMasker from './TextMasker';
 import cd from './cd';
 import settings from './settings';
 import CdError from './shared/CdError';
-import { calculateWordOverlap, countOccurrences, definedAndNotNull, generatePageNamePattern } from './shared/utils-general';
+import { calculateWordOverlap, countOccurrences, defined, generatePageNamePattern } from './shared/utils-general';
 import { brsToNewlines, maskDistractingCode, normalizeCode, removeWikiMarkup } from './shared/utils-wikitext';
 import { extractSignatures } from './utils-window';
 
@@ -120,10 +120,10 @@ class CommentSource {
           return timestamp && !timestamp.closest('.cd-signature');
         })
 
-          ? null
+          ? undefined
           : cd.g.timezoneRegexp,
       ]
-        .filter(definedAndNotNull)
+        .filter(defined)
         .forEach((originalRegexp) => {
           // eslint-disable-next-line no-one-time-vars/no-one-time-vars
           const regexp = new RegExp(originalRegexp.source + '$', 'm');
@@ -282,20 +282,20 @@ class CommentSource {
     };
     const tagRegexp = new RegExp(`(<${cd.g.piePattern}(?: [\\w ]+?=[^<>]+?)?> *)+$`, 'i');
 
-    // Why signaturePrefixRegexp three times? Well, the test case here is the MusikAnimal's
-    // signature here: https://en.wikipedia.org/w/index.php?diff=next&oldid=946899148.
+    // Why signaturePrefixRegexp three times? Well, the test case here is MusikAnimal's signature
+    // here: https://en.wikipedia.org/w/index.php?diff=next&oldid=946899148.
     movePartsToSignature([
       this.comment.isOwn ? cd.g.userSignaturePrefixRegexp : undefined,
       /'+$/,
-      cd.config.signaturePrefixRegexp,
+      cd.config.signaturePrefixRegexp || undefined,
       tagRegexp,
-      cd.config.signaturePrefixRegexp,
+      cd.config.signaturePrefixRegexp || undefined,
       tagRegexp,
       /\s+'+$/,  // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)#c-Acroterion-20240423134900-History_indexing
       new RegExp(`<small class="${cd.config.unsignedClass}">.*$`),
       /<!-- *Template:Unsigned.*$/,
-      cd.config.signaturePrefixRegexp,
-    ].filter(definedAndNotNull));
+      cd.config.signaturePrefixRegexp || undefined,
+    ].filter(defined));
 
     // Exclude <small></small> and template wrappers from the strings
     const smallWrappers = [{
@@ -694,6 +694,7 @@ class CommentSource {
 
     if (
       cd.config.outdentTemplates.length &&
+      settings.get('outdent') &&
       settings.get('outdentLevel') &&
       this.replyIndentation.length >= settings.get('outdentLevel') &&
       this.indentation.length > indentationAfter.length &&

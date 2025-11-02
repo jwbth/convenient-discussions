@@ -188,7 +188,7 @@ class LiveTimestamp extends mixInObject(
   /** @type {LiveTimestamp[]} */
   static improvedTimestamps = [];
 
-   /** @type {number} */
+  /** @type {number} */
   static yesterdayStart;
 
   /**
@@ -198,9 +198,9 @@ class LiveTimestamp extends mixInObject(
   static initImproved() {
     let date = dayjs();
     if (settings.get('useUiTime') && !['UTC', 0, undefined].includes(cd.g.uiTimezone)) {
-      date = typeof cd.g.uiTimezone === 'number' ?
-        date.utcOffset(cd.g.uiTimezone) :
-        date.tz(/** @type {string} */ (cd.g.uiTimezone));
+      date = typeof cd.g.uiTimezone === 'number'
+        ? date.utcOffset(cd.g.uiTimezone)
+        : date.tz(cd.g.uiTimezone);
     } else {
       date = date.utc();
     }
@@ -208,18 +208,11 @@ class LiveTimestamp extends mixInObject(
     this.yesterdayStart = date.subtract(1, 'day').valueOf();
 
     this.updateTimeouts.push(
-      setTimeout(
-        this.updateImproved,
+      // Tomorrow start
+      setTimeout(this.updateImproved, date.add(1, 'day').valueOf() - Date.now()),
 
-        // Tomorrow start delay
-        date.add(1, 'day').valueOf() - Date.now()
-      ),
-      setTimeout(
-        this.updateImproved,
-
-        // Day after tomorrow start delay
-        date.add(2, 'day').valueOf() - Date.now()
-      )
+      // Day after tomorrow start
+      setTimeout(this.updateImproved, date.add(2, 'day').valueOf() - Date.now())
     );
 
     this.improvedTimestampsInited = true;

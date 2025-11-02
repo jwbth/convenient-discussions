@@ -1,3 +1,4 @@
+import EventEmitter from './EventEmitter';
 import TextMasker from './TextMasker';
 import cd from './cd';
 import pageRegistry from './pageRegistry';
@@ -77,9 +78,16 @@ import { createSvg, formatDateImproved, formatDateNative, formatDateRelative, ge
  */
 
 /**
- * Singleton for settings-related methods and data.
+ * @typedef {object} EventMap
+ * @property {[Settings]} set
  */
-class Settings {
+
+/**
+ * Singleton for settings-related methods and data.
+ *
+ * @augments EventEmitter<EventMap>
+ */
+class Settings extends EventEmitter {
   /**
    * @type {SettingsValues}
    * @private
@@ -785,6 +793,7 @@ class Settings {
    */
   set(name, value) {
     Object.assign(this.values, typeof name === 'string' ? { [name]: value } : name);
+    this.emit('set', this);
   }
 
   /**

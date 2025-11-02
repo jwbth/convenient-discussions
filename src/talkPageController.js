@@ -913,6 +913,14 @@ class TalkPageController extends EventEmitter {
     this.updatePageTitle();
   }
 
+  async setup() {
+    // this.backgroundHighlightingCss = require('./Comment.layers.optionalBackgroundHighlighting.less');
+    if (settings.get('useBackgroundHighlighting')) {
+      const a = await import('./Comment.layers.optionalBackgroundHighlighting.less');
+      console.log(a);
+    }
+  }
+
   /**
    * Set the page title to use as a base for possible transformations (like adding "Replying on"
    * when there is a reply form and "(1)" when there is 1 new comment).
@@ -1604,4 +1612,5 @@ class TalkPageController extends EventEmitter {
   }
 }
 
+export { TalkPageController };
 export default new TalkPageController();

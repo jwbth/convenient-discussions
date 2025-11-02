@@ -54,8 +54,8 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared);
  * @property {StringsByKey} contentLanguageMessages
  * @property {StringArraysByKey} specialPageAliases Some special page aliases in the wiki's
  *   language.
- * @property {?string} contentTimezone Timezone of the wiki.
- * @property {?RegExp} signatureEndingRegexp
+ * @property {string | undefined} contentTimezone Timezone of the wiki.
+ * @property {RegExp | undefined} signatureEndingRegexp
  * @property {RegExp} userNamespacesRegexp
  * @property {RegExp} userLinkRegexp
  * @property {RegExp} userSubpageLinkRegexp
@@ -65,10 +65,10 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared);
  * @property {RegExp} contribsPageLinkRegexp
  * @property {string} captureUserNamePattern
  * @property {RegExp} isThumbRegexp
- * @property {?string} unsignedTemplatesPattern
+ * @property {string | undefined} unsignedTemplatesPattern
  * @property {RegExp[]} keepInSectionEnding
  * @property {string} userSignature
- * @property {?RegExp} userSignaturePrefixRegexp
+ * @property {RegExp | undefined} userSignaturePrefixRegexp
  * @property {string} piePattern
  * @property {string} pniePattern
  * @property {RegExp} articlePathRegexp

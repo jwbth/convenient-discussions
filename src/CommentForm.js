@@ -505,17 +505,17 @@ class CommentForm extends EventEmitter {
   constructor({ mode, target, initialState = {}, preloadConfig = {}, newTopicOnTop = false }) {
     super();
 
-    this.watchOnReply = settings.get('watchOnReply');
-    this.subscribeOnReply = settings.get('subscribeOnReply');
+    // Unlike when changing other settings on the fly, changing this one won't alter the behavior
+    // *for the current form*, because truth be told, we don't value it very much.
     this.useTopicSubscription = settings.get('useTopicSubscription');
-    this.autopreview = settings.get('autopreview');
-    this.alwaysExpandAdvanced = settings.get('alwaysExpandAdvanced');
-    this.showToolbar = settings.get('showToolbar');
-    this.useCodeMirror = settings.get('useCodeMirror');
-    this.insertButtons = settings.get('insertButtons');
-    this.improvePerformance = settings.get('improvePerformance');
-    this.manyFormsOnboarded = settings.get('manyForms-onboarded');
-    this.uploadOnboarded = settings.get('upload-onboarded');
+
+    /**
+     * Whether the toolbar is loaded (it could be loaded at the beginning or later, if the user
+     * enables the respective setting).
+     *
+     * @type {boolean}
+     */
+    this.toolbarLoaded = settings.get('showToolbar');
 
     this.uploadToCommons = cd.g.isProbablyWmfSulWiki;
 
@@ -632,26 +632,35 @@ class CommentForm extends EventEmitter {
       this.addEditNotices();
     }
 
-    const customModulesNames = cd.config.customCommentFormModules
-      .filter((module) => !module.checkFunc || module.checkFunc())
-      .map((module) => module.name);
-    mw.loader.using(customModulesNames).then(() => {
-      /**
-       * All the requested
-       * {@link module:defaultConfig.customCommentFormModules custom comment form modules} have been
-       * loaded and executed. (The toolbar may not be ready yet if it's enabled; use
-       * {@link event:commentFormToolbarReady} for that.)
-       *
-       * @event commentFormCustomModulesReady
-       * @param {CommentForm} commentForm
-       * @param {object} cd {@link convenientDiscussions} object.
-       */
-      mw.hook('convenientDiscussions.commentFormCustomModulesReady').fire(this, cd);
-    });
-
-    this.createContents(initialState, customModulesNames);
+    this.createContents(initialState, this.loadCustomModules());
     this.addEventListeners();
-    this.initAutocomplete();
+
+    settings.on('set', this.onSettingsUpdate);
+  }
+
+  /**
+   * Load the names of the custom modules to load (e.g. for the toolbar).
+   *
+   * @returns {Promise<void>}
+   */
+  async loadCustomModules() {
+    await mw.loader.using(
+      cd.config.customCommentFormModules
+        .filter((module) => !module.checkFunc || module.checkFunc())
+        .map((module_1) => module_1.name)
+    );
+
+    /**
+     * All the requested
+     * {@link module:defaultConfig.customCommentFormModules custom comment form modules} have been
+     * loaded and executed. (The toolbar may not be ready yet if it's enabled; use
+     * {@link event:commentFormToolbarReady} for that.)
+     *
+     * @event commentFormCustomModulesReady
+     * @param {CommentForm} commentForm
+     * @param {object} cd {@link convenientDiscussions} object.
+     */
+    mw.hook('convenientDiscussions.commentFormCustomModulesReady').fire(this, cd);
   }
 
   /**
@@ -733,6 +742,8 @@ class CommentForm extends EventEmitter {
 
     this.onboardOntoMultipleForms();
     this.onboardOntoUpload();
+
+    this.initAutocomplete();
   }
 
   /**
@@ -852,9 +863,11 @@ class CommentForm extends EventEmitter {
         value: 'watch',
         selected:
           initialState.watch ??
-          ((this.watchOnReply && !this.isMode('edit')) ||
+          (
+            (settings.get('watchOnReply') && !this.isMode('edit')) ||
             $('.mw-watchlink a[href*="action=unwatch"]').length ||
-            mw.user.options.get(cd.page.exists() ? 'watchdefault' : 'watchcreations')),
+            mw.user.options.get(cd.page.exists() ? 'watchdefault' : 'watchcreations')
+          ),
         label: cd.s('cf-watch'),
         tabIndex: this.getTabIndex(21),
       }));
@@ -871,7 +884,7 @@ class CommentForm extends EventEmitter {
           selected: Boolean(
             initialState.subscribe ??
             (
-              (this.subscribeOnReply && !this.isMode('edit')) ||
+              (settings.get('subscribeOnReply') && !this.isMode('edit')) ||
               subscribableSection?.subscriptionState
             )
           ),
@@ -1006,8 +1019,8 @@ class CommentForm extends EventEmitter {
       classes: ['cd-commentForm-previewButton'],
       tabIndex: this.getTabIndex(35),
     });
-    if (this.autopreview) {
-      this.previewButton.toggle(false);
+    if (settings.get('autopreview')) {
+      this.previewButton.toggle(!settings.get('autopreview'));
     }
     this.previewButton.on('toggle', this.adjustLabels);
 
@@ -1088,18 +1101,15 @@ class CommentForm extends EventEmitter {
       ].filter(defined)
     );
 
-    if (!this.isMode('edit') && !this.alwaysExpandAdvanced) {
+    if (!this.isMode('edit') && !settings.get('alwaysExpandAdvanced')) {
       this.$advanced.hide();
     }
 
     // .mw-body-content is for 404 pages
-    this.$previewArea = $('<div>').addClass('cd-commentForm-previewArea mw-body-content');
-
-    if (this.autopreview) {
-      this.$previewArea.addClass('cd-commentForm-previewArea-below').appendTo(this.$element);
-    } else {
-      this.$previewArea.addClass('cd-commentForm-previewArea-above').prependTo(this.$element);
-    }
+    this.$previewArea = $('<div>')
+      .addClass('cd-commentForm-previewArea mw-body-content')
+      .addClass('cd-commentForm-previewArea-below')
+      .appendTo(this.$element);
 
     if (this.containerListType === 'ol' && $.client.profile().layout !== 'webkit') {
       // Dummy element for forms inside a numbered list so that the number is placed in front of
@@ -1115,27 +1125,35 @@ class CommentForm extends EventEmitter {
   /**
    * Add a WikiEditor toolbar to the comment input if the relevant setting is enabled.
    *
-   * @param {string[]} requestedModulesNames List of custom comment form modules to await loading of
-   *   before adding the toolbar.
+   * @param {Promise<void>} customModulesPromise List of custom comment form modules
+   *   to await loading of before adding the toolbar.
    * @fires commentFormToolbarReady
    * @private
    */
-  async addToolbar(requestedModulesNames) {
-    if (!this.showToolbar || !mw.loader.getState('ext.wikiEditor')) return;
+  async addToolbar(customModulesPromise) {
+    if (!settings.get('showToolbar') || !mw.loader.getState('ext.wikiEditor')) {
+      if (settings.get('useCodeMirror')) {
+        this.initCodeMirror();
+      }
+
+      return;
+    }
 
     // eslint-disable-next-line no-one-time-vars/no-one-time-vars
     const $toolbarPlaceholder = $('<div>')
       .addClass('cd-toolbarPlaceholder')
       .insertBefore(this.commentInput.$element);
 
-    await mw.loader.using([
-      'ext.wikiEditor',
-      ...(
-        cd.g.isCodeMirror6Installed
-          ? ['ext.CodeMirror.v6.WikiEditor', 'ext.CodeMirror.v6.mode.mediawiki']
-          : []
-      ),
-      ...requestedModulesNames,
+    await Promise.all([
+      mw.loader.using([
+        'ext.wikiEditor',
+        ...(
+          cd.g.isCodeMirror6Installed
+            ? ['ext.CodeMirror.v6.WikiEditor', 'ext.CodeMirror.v6.mode.mediawiki']
+            : []
+        ),
+      ]),
+      customModulesPromise,
     ]);
 
     $toolbarPlaceholder.remove();
@@ -1155,6 +1173,15 @@ class CommentForm extends EventEmitter {
      * @param {object} cd {@link convenientDiscussions} object.
      */
     mw.hook('convenientDiscussions.commentFormToolbarReady').fire(this, cd);
+  }
+
+  /**
+   * Removing the toolbar altogether is likely tedious and buggy. Just hide.
+   *
+   * @private
+   */
+  hideToolbar() {
+    this.commentInput.$element.find('.wikiEditor-ui-top').hide();
   }
 
   /**
@@ -1391,6 +1418,8 @@ class CommentForm extends EventEmitter {
   }
 
   /**
+   * From the toolbar, remove buttons that are irrelevant in comments.
+   *
    * @private
    */
   removeToolbarElements() {
@@ -1405,6 +1434,8 @@ class CommentForm extends EventEmitter {
   }
 
   /**
+   * Add CodeMirror's button to the toolbar and initialize CodeMirror.
+   *
    * @private
    */
   addCodeMirror() {
@@ -1415,7 +1446,7 @@ class CommentForm extends EventEmitter {
       .first()
       .addClass('ext-codemirror-mediawiki');
 
-    if (this.useCodeMirror) {
+    if (settings.get('useCodeMirror')) {
       this.initCodeMirror();
     } else {
       this.commentInput.$input.wikiEditor('addToToolbar', {
@@ -1468,13 +1499,14 @@ class CommentForm extends EventEmitter {
    * @private
    */
   addInsertButtons() {
-    if (!this.insertButtons.length) return;
+    const insertButtons = settings.get('insertButtons');
+    if (!insertButtons.length) return;
 
-    this.$insertButtons = $('<div>')
+    this.$insertButtons ||= $('<div>')
       .addClass('cd-insertButtons')
       .insertAfter(this.commentInput.$element);
 
-    this.insertButtons.forEach((button) => {
+    insertButtons.forEach((button) => {
       let snippet;
       let label;
       if (Array.isArray(button)) {
@@ -1527,15 +1559,15 @@ class CommentForm extends EventEmitter {
    * Create the contents of the form.
    *
    * @param {CommentFormInitialState} initialState
-   * @param {string[]} requestedModulesNames
+   * @param {Promise<void>} customModulesPromise
    * @private
    */
-  createContents(initialState, requestedModulesNames) {
+  createContents(initialState, customModulesPromise) {
     this.createTextInputs(initialState);
     this.createCheckboxes(initialState);
     this.createButtons();
     this.createElements();
-    this.addToolbar(requestedModulesNames);
+    this.addToolbar(customModulesPromise);
     this.addInsertButtons();
 
     if (this.deleteCheckbox?.isSelected()) {
@@ -1808,7 +1840,7 @@ class CommentForm extends EventEmitter {
     });
     this.teardownInputPopups();
 
-    const $textareaWrapper = this.showToolbar
+    const $textareaWrapper = this.toolbarLoaded
       ? this.$element.find('.wikiEditor-ui-text')
       : this.commentInput.$element;
     this.$commentInputPopupFloatableContainer = this.getCommentInputDummyFloatableContainer();
@@ -1979,7 +2011,7 @@ class CommentForm extends EventEmitter {
 
         // WikiEditor started supporting these in October 2024
         // https://phabricator.wikimedia.org/T62928
-        if (!this.showToolbar) {
+        if (!this.toolbarLoaded) {
           // Ctrl+B
           if (keyCombination(event, 66, ['cmd'])) {
             this.encapsulateSelection({
@@ -2038,6 +2070,26 @@ class CommentForm extends EventEmitter {
     this.addEventListenersToCheckboxes(emitChange, preview);
     this.addEventListenersToButtons();
   }
+
+  /**
+   * Handle the settings update event.
+   */
+  onSettingsUpdate = () => {
+    this.terminateAutocomplete();
+    this.initAutocomplete();
+
+    this.previewButton.toggle(!settings.get('autopreview'));
+    this.viewChangesButton.toggle(settings.get('autopreview'));
+
+    if (settings.get('showToolbar') && !this.toolbarLoaded) {
+      this.addToolbar(this.loadCustomModules());
+    } else if (!settings.get('showToolbar') && this.toolbarLoaded) {
+      this.hideToolbar();
+    }
+
+    this.$insertButtons?.empty();
+    this.addInsertButtons();
+  };
 
   /**
    * Add event listeners to the text inputs.
@@ -2169,7 +2221,7 @@ class CommentForm extends EventEmitter {
     if (
       talkPageController.isLongPage() &&
       $.client.profile().layout === 'webkit' &&
-      !this.improvePerformance &&
+      !settings.get('improvePerformance') &&
       !this.haveSuggestedToImprovePerformanceRecently()
     ) {
       const keypressCount = 10;
@@ -2390,6 +2442,17 @@ class CommentForm extends EventEmitter {
       },
     });
     this.summaryAutocomplete.init();
+  }
+
+  /**
+   * Terminate autocomplete on the form.
+   *
+   * @private
+   */
+  terminateAutocomplete() {
+    this.autocomplete.terminate();
+    this.headlineAutocomplete?.terminate();
+    this.summaryAutocomplete.terminate();
   }
 
   /**
@@ -2975,7 +3038,10 @@ class CommentForm extends EventEmitter {
    * @fires previewReady
    */
   async preview(isAuto = true, operation = undefined) {
-    if (this.isContentBeingLoaded() || (!this.autopreview && (isAuto || this.isBeingSubmitted()))) {
+    if (
+      this.isContentBeingLoaded() ||
+      (!settings.get('autopreview') && (isAuto || this.isBeingSubmitted()))
+    ) {
       operation?.close();
 
       return;
@@ -3090,7 +3156,7 @@ class CommentForm extends EventEmitter {
       }
     }
 
-    if (this.autopreview && this.previewButton.$element.is(':visible')) {
+    if (settings.get('autopreview') && this.previewButton.$element.is(':visible')) {
       this.previewButton.toggle(false);
       this.viewChangesButton.toggle(true);
     }
@@ -3098,9 +3164,7 @@ class CommentForm extends EventEmitter {
     operation.close();
 
     if (!isAuto) {
-      this.$previewArea.cdScrollIntoView(
-        this.$previewArea.hasClass('cd-commentForm-previewArea-above') ? 'top' : 'bottom'
-      );
+      this.$previewArea.cdScrollIntoView('bottom');
       this.commentInput.focus();
     }
   }
@@ -3171,16 +3235,14 @@ class CommentForm extends EventEmitter {
       this.showMessage(cd.sParse('cf-notice-nochanges'));
     }
 
-    if (this.autopreview) {
+    if (settings.get('autopreview')) {
       this.viewChangesButton.toggle(false);
       this.previewButton.toggle(true);
     }
 
     operation.close();
 
-    this.$previewArea.cdScrollIntoView(
-      this.$previewArea.hasClass('cd-commentForm-previewArea-above') ? 'top' : 'bottom'
-    );
+    this.$previewArea.cdScrollIntoView('bottom');
     this.commentInput.focus();
   }
 
@@ -3620,9 +3682,7 @@ class CommentForm extends EventEmitter {
     // is unregistered (even if the form itself is not torn down).
     this.teardownInputPopups();
 
-    this.autocomplete.terminate();
-    this.headlineAutocomplete?.terminate();
-    this.summaryAutocomplete.terminate();
+    this.terminateAutocomplete();
 
     this.registered = false;
     this.emit('unregister');
@@ -3633,6 +3693,7 @@ class CommentForm extends EventEmitter {
    */
   detach() {
     this.$element.detach();
+    this.terminateAutocomplete();
     delete this.checkCodeRequest;
   }
 
@@ -4320,7 +4381,7 @@ class CommentForm extends EventEmitter {
    */
   onboardOntoMultipleForms() {
     if (
-      this.manyFormsOnboarded ||
+      settings.get('manyForms-onboarded') ||
       !cd.user.isRegistered() ||
       // This form will be the second
       commentFormManager.getCount() !== 1 ||
@@ -4373,7 +4434,7 @@ class CommentForm extends EventEmitter {
   onboardOntoUpload() {
     if (
       !this.uploadToCommons ||
-      this.uploadOnboarded ||
+      settings.get('upload-onboarded') ||
       !cd.user.isRegistered() ||
       // Left column hidden in Timeless
       (cd.g.skin === 'timeless' && window.innerWidth < 1100) ||
@@ -4435,7 +4496,7 @@ class CommentForm extends EventEmitter {
    * @param {boolean} highlight
    */
   highlightQuoteButton(highlight) {
-    if (!this.showToolbar) return;
+    if (!this.toolbarLoaded) return;
 
     this.$element
       .find('.tool[rel="quote"]')

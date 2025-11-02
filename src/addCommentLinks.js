@@ -8,7 +8,6 @@ import PrototypeRegistry from './PrototypeRegistry';
 import bootManager from './bootManager';
 import cd from './cd';
 import pageRegistry from './pageRegistry';
-import settings from './settings';
 import { definedAndNotNull, generatePageNamePattern, isProbablyTalkPage, isUndo, removeDirMarks, spacesToUnderlines } from './shared/utils-general';
 import { parseTimestamp } from './shared/utils-timestamp';
 import { initDayjs } from './utils-window';
@@ -41,6 +40,8 @@ const prototypes = new PrototypeRegistry();
  * @private
  */
 async function init() {
+  const settings = require('./settings').default;
+
   // This could have been executed from init.talkPage() already.
   bootManager.initGlobals();
   await settings.init();
@@ -215,7 +216,7 @@ function addWatchlistMenu() {
   });
   settingsButton.on('click', () => {
     initDayjs();
-    settings.showDialog();
+    require('./settings').default.showDialog();
   });
   settingsButton.$element.appendTo($menu);
 

@@ -6,7 +6,6 @@ import addCommentLinks from './addCommentLinks';
 import cd from './cd';
 import debug from './debug';
 import pageRegistry from './pageRegistry';
-import settings from './settings';
 import { defined, getContentLanguageMessages, getQueryParamBooleanValue, isKeyOf, isProbablyTalkPage, sleep, unique } from './shared/utils-general';
 import { dateTokenToMessageNames } from './shared/utils-timestamp';
 import userRegistry from './userRegistry';
@@ -14,8 +13,13 @@ import { getUserInfo, splitIntoBatches } from './utils-api';
 import { createSvg, skin$, transparentize } from './utils-window';
 
 /**
+ * @import {TalkPageController} from './talkPageController'
+ */
+
+/**
  * Singleton for managing booting, rebooting, and unbooting (unloading) of the page. It is imported
- * when modules such as OOUI may not be yet available.
+ * when modules such as OOUI may not be yet available. For this reason, it takes on some functions
+ * that would otherwise be a responsibility of {@link TalkPageController}.
  *
  * It
  * - initializes the script, both on talk pages and on log pages such as the watchlist (TODO:
@@ -345,7 +349,7 @@ class BootManager {
       return acc;
     }, /** @type {import('../config/default').default['specialPageAliases']} */({}));
 
-    cd.g.contentTimezone = cd.config.timezone;
+    cd.g.contentTimezone = cd.config.timezone ?? undefined;
 
     const specialPages = ['Contributions', 'Diff', 'PermanentLink'];
     if (
@@ -782,6 +786,7 @@ class BootManager {
       errorsuselocal: true,
     };
 
+    const settings = require('./settings').default;
     cd.settings = settings;
 
     const talkPageController = require('./talkPageController').default;
@@ -903,14 +908,14 @@ class BootManager {
     }
 
     try {
-      cd.g.areUiAndLocalTimezoneSame = (
-        cd.g.uiTimezone === Intl.DateTimeFormat().resolvedOptions().timeZone
-      );
+      cd.g.areUiAndLocalTimezoneSame =
+        cd.g.uiTimezone === Intl.DateTimeFormat().resolvedOptions().timeZone;
     } catch {
       // Empty
     }
 
     if (language === 'content') {
+      const settings = require('./settings').default;
       cd.g.areTimestampsDefault = !(
         (settings.get('useUiTime') && cd.g.contentTimezone !== cd.g.uiTimezone) ||
         settings.get('timestampFormat') !== 'default' ||
@@ -1164,7 +1169,7 @@ class BootManager {
   }
 
   /**
-   * Set up the boot controller for use in the current boot process. (Executed at every page load.)
+   * Set up the boot manager for use in the current boot process. (Executed at every page load.)
    *
    * @param {string} [pageHtml] HTML to update the page with.
    */
