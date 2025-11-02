@@ -634,8 +634,9 @@ class BootManager {
       'vector-2022': '.mw-page-container',
       'default': 'body',
     }).css('background-color');
-    const metadataFontSize = Number.parseFloat((cd.g.contentFontSize / cd.g.defaultFontSize).toFixed(7));
-    const contentStartMargin = this.getContentColumnOffsets().startMargin;
+    const metadataFontSize = Number.parseFloat(
+      (cd.g.contentFontSize / cd.g.defaultFontSize).toFixed(7)
+    );
     const sidebarTransparentColor = transparentize(sidebarColor);
 
     // `float: inline-start` is too new: it appeared in Chrome in October 2023.
@@ -650,7 +651,6 @@ class BootManager {
   --cd-comment-marker-width: ${cd.g.commentMarkerWidth}px;
   --cd-thread-line-side-padding: ${cd.g.threadLineSidePadding}px;
   --cd-content-background-color: ${contentBackgroundColor};
-  --cd-content-start-margin: ${contentStartMargin}px;
   --cd-content-font-size: ${cd.g.contentFontSize}px;
   --cd-content-metadata-font-size: ${metadataFontSize}rem;
   --cd-sidebar-color: ${sidebarColor};
