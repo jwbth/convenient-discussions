@@ -11,6 +11,7 @@ import cd from './cd';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
 import notifications from './notifications';
+import pageController from './pageController';
 import pageRegistry from './pageRegistry';
 import sectionManager from './sectionManager';
 import settings from './settings';
@@ -18,7 +19,6 @@ import CdError from './shared/CdError';
 import Parser from './shared/Parser';
 import { buildEditSummary, defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './shared/utils-general';
 import { escapePipesOutsideLinks, generateTagsRegexp, removeWikiMarkup } from './shared/utils-wikitext';
-import talkPageController from './talkPageController';
 import userRegistry from './userRegistry';
 import { handleApiReject, parseCode } from './utils-api';
 import { createCheckboxControl } from './utils-oojs';
@@ -877,7 +877,7 @@ class CommentForm extends EventEmitter {
         : this.targetSection;
       if (
         (subscribableSection?.subscribeId || this.isMode('addSection')) &&
-        (!talkPageController.isSubscribingDisabled() || subscribableSection?.subscriptionState)
+        (!pageController.isSubscribingDisabled() || subscribableSection?.subscriptionState)
       ) {
         ({ field: this.subscribeField, input: this.subscribeCheckbox } = createCheckboxControl({
           value: 'subscribe',
@@ -983,7 +983,7 @@ class CommentForm extends EventEmitter {
         width: 400,
         classes: ['cd-helpPopup'],
       },
-      $overlay: talkPageController.getPopupOverlay(),
+      $overlay: pageController.getPopupOverlay(),
       tabIndex: this.getTabIndex(31),
     });
 
@@ -2065,7 +2065,7 @@ class CommentForm extends EventEmitter {
     // "focusin" is "focus" that bubbles, i.e. propagates up the node tree.
     this.$element.on('focusin', () => {
       this.lastFocused = new Date();
-      talkPageController.updatePageTitle();
+      pageController.updatePageTitle();
     });
 
     this.addEventListenersToTextInputs(emitChange, preview);
@@ -2221,7 +2221,7 @@ class CommentForm extends EventEmitter {
 
     // "Performance issues?" hint
     if (
-      talkPageController.isLongPage() &&
+      pageController.isLongPage() &&
       $.client.profile().layout === 'webkit' &&
       !settings.get('improvePerformance') &&
       !this.haveSuggestedToImprovePerformanceRecently()
@@ -3251,7 +3251,7 @@ class CommentForm extends EventEmitter {
   /**
    * Remove references to the form and reload the page.
    *
-   * @param {import('./BootProcess').PassedData} [bootData] Data to pass to the boot process.
+   * @param {import('./TalkPageBootProcess').PassedData} [bootData] Data to pass to the boot process.
    * @param {import('./CommentFormOperation').default} [operation] Submit operation.
    */
   async reloadPage(bootData, operation) {
@@ -3274,7 +3274,7 @@ class CommentForm extends EventEmitter {
     }
 
     try {
-      await bootManager.reboot(bootData);
+      await bootManager.rebootTalkPage(bootData);
     } catch (error) {
       this.handleError({
         error,
@@ -3448,7 +3448,7 @@ class CommentForm extends EventEmitter {
    * Subscribe and unsubscribe from topics.
    *
    * @param {string} editTimestamp
-   * @param {import('./BootProcess').PassedData} bootData
+   * @param {import('./TalkPageBootProcess').PassedData} bootData
    * @param {string|undefined} commentCode
    * @private
    */
@@ -3492,7 +3492,7 @@ class CommentForm extends EventEmitter {
           if (isHeadlineAltered) {
             bootData.justUnsubscribedFromSection = originalHeadline;
           }
-          talkPageController
+          pageController
             .getSubscriptionsInstance()
             .subscribe(subscribeId, headline, true, originalHeadline);
         }
@@ -3586,7 +3586,7 @@ class CommentForm extends EventEmitter {
     // be watched/unwatched using a checkbox in a form just sent. The server doesn't manage to
     // update the value quickly enough, so it returns the old value, but we must display the new
     // one.
-    const bootData = /** @type {import('./BootProcess').PassedData} */ ({
+    const bootData = /** @type {import('./TalkPageBootProcess').PassedData} */ ({
       submittedCommentForm: this,
     });
 
@@ -4413,7 +4413,7 @@ class CommentForm extends EventEmitter {
 
       // Not $root - add section form is outside it. Not $content either - it's the same as $root on
       // 404 pages.
-      $container: talkPageController.$root.parent(),
+      $container: pageController.$root.parent(),
 
       position: $('#vector-main-menu-pinned-container, #vector-toc-pinned-container').is(':visible')
         ? 'before'
@@ -4464,7 +4464,7 @@ class CommentForm extends EventEmitter {
 
       // Not $root - add section form is outside it. Not $content either - it's the same as $root on
       // 404 pages.
-      $container: talkPageController.$root.parent(),
+      $container: pageController.$root.parent(),
 
       position: $('#vector-main-menu-pinned-container, #vector-toc-pinned-container').is(':visible')
         ? 'before'

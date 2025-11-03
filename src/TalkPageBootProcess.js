@@ -2,6 +2,8 @@ import Comment from './Comment';
 import CommentForm from './CommentForm';
 import CommentFormInputTransformer from './CommentFormInputTransformer';
 import CompactComment from './CompactComment';
+import DtSubscriptions from './DtSubscriptions';
+import LegacySubscriptions from './LegacySubscriptions';
 import Section from './Section';
 import SpaciousComment from './SpaciousComment';
 import Thread from './Thread';
@@ -10,21 +12,20 @@ import cd from './cd';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
 import debug from './debug';
-import jqueryExtensions from './jqueryExtensions';
 import navPanel from './navPanel';
 import notifications from './notifications';
+import pageController from './pageController';
 import pageNav from './pageNav';
 import processFragment from './processFragment';
 import sectionManager from './sectionManager';
 import settings from './settings';
 import Parser from './shared/Parser';
 import { defined, definedAndNotNull, generatePageNamePattern, isElement, sleep, unique } from './shared/utils-general';
-import talkPageController from './talkPageController';
 import toc from './toc';
 import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
 import { handleApiReject, saveOptions } from './utils-api';
-import { getAllTextNodes, initDayjs, wrapHtml } from './utils-window';
+import { getAllTextNodes, wrapHtml } from './utils-window';
 import visits from './visits';
 
 /**
@@ -35,7 +36,7 @@ import visits from './visits';
 function removeDtButtonHtmlComments() {
   // eslint-disable-next-line no-one-time-vars/no-one-time-vars
   const treeWalker = document.createNodeIterator(
-    talkPageController.rootElement,
+    pageController.rootElement,
     NodeFilter.SHOW_COMMENT
   );
   let node;
@@ -64,7 +65,7 @@ function processAndRemoveDtElements(elements) {
   /** @type {HTMLSpanElement | undefined} */
   let dtMarkupHavenElement;
   if (moveNotRemove) {
-    if (!bootManager.getBootProcess().isFirstRun()) {
+    if (!bootManager.getTalkPageBootProcess().isFirstRun()) {
       dtMarkupHavenElement = bootManager.$content.children('.cd-dtMarkupHaven')[0];
     }
     if (dtMarkupHavenElement) {
@@ -78,11 +79,11 @@ function processAndRemoveDtElements(elements) {
 
   /** @type {HTMLElement[]} */ (
     elements.concat([
-      ...talkPageController.rootElement.querySelectorAll('.ext-discussiontools-init-highlight'),
+      ...pageController.rootElement.querySelectorAll('.ext-discussiontools-init-highlight'),
     ])
   ).forEach((el, i) => {
     if (Object.hasOwn(el.dataset, 'mwCommentStart') && Comment.isDtId(el.id)) {
-      bootManager.getBootProcess().addDtCommentId(el.id);
+      bootManager.getTalkPageBootProcess().addDtCommentId(el.id);
     }
     if (moveNotRemove) {
       // DT gets the DOM offset of each of these elements upon initialization which can take a lot
@@ -102,7 +103,7 @@ function processAndRemoveDtElements(elements) {
   if (!moveNotRemove) {
     [
       .../** @type {NodeListOf<HTMLSpanElement>} */ (
-        talkPageController.rootElement.querySelectorAll('span[data-mw-comment]')
+        pageController.rootElement.querySelectorAll('span[data-mw-comment]')
       ),
     ].forEach((el) => {
       delete el.dataset.mwComment;
@@ -137,9 +138,9 @@ function processAndRemoveDtElements(elements) {
 
 /**
  * A single process of booting or rebooting CD onto a talk page. In some sense, it is a (re-)builder
- * for {@link talkPageController}. On first run, it's a builder for {@link convenientDiscussions.g}.
+ * for {@link pageController}. On first run, it's a builder for {@link convenientDiscussions.g}.
  */
-class BootProcess {
+class TalkPageBootProcess {
   /** @type {boolean} */
   firstRun;
 
@@ -179,13 +180,13 @@ class BootProcess {
     }
 
     debug.startTimer('preparations');
-    await this.setup();
+    await this.init();
     debug.stopTimer('preparations');
 
     debug.startTimer('main code');
 
     if (this.firstRun) {
-      talkPageController.saveRelativeScrollPosition(undefined, this.passedData.scrollY);
+      pageController.saveRelativeScrollPosition(undefined, this.passedData.scrollY);
 
       userRegistry.loadMuted();
     }
@@ -196,9 +197,9 @@ class BootProcess {
       intersection of 2.1 and 2.2.
         1. The page is a wikitext (article) page.
         2. The page is likely a talk page. controller.isTalkPage() reflects that. We may reevaluate
-           page as being not a talk page (see BootProcess#retractTalkPageType()) if we don't find
-           any comments on it and several other criteria are not met. Likely talk pages are divided
-           into two categories:
+           page as being not a talk page (see TalkPageBootProcess#retractTalkPageType()) if we don't
+           find any comments on it and several other criteria are not met. Likely talk pages are
+           divided into two categories:
         2.1. The page is eligible to create comment forms on. (This includes 404 pages where the
              user could create a section, but excludes archive pages and old revisions.)
              cd.page.isCommentable() reflects this level.
@@ -218,7 +219,7 @@ class BootProcess {
         visits.load(this, true);
       }
 
-      if (talkPageController.isLegacySubscriptions(this.subscriptions)) {
+      if (this.subscriptions instanceof LegacySubscriptions) {
         this.subscriptions.loadToTalkPage(this, true);
       }
 
@@ -250,13 +251,13 @@ class BootProcess {
       debug.startTimer('process sections');
       this.processSections();
       debug.stopTimer('process sections');
-    } else if (talkPageController.isDtSubscriptions(this.subscriptions)) {
+    } else if (this.subscriptions instanceof DtSubscriptions) {
       this.subscriptions.loadToTalkPage(this);
     }
 
     if (this.passedData.parseData?.text) {
       debug.startTimer('update page contents');
-      talkPageController.updatePageContents(this.passedData.parseData);
+      pageController.updatePageContents(this.passedData.parseData);
       debug.stopTimer('update page contents');
     }
 
@@ -276,7 +277,7 @@ class BootProcess {
     commentManager.reformatComments();
 
     // This updates some styles, shifting the offsets.
-    talkPageController.$root.addClass('cd-parsed');
+    pageController.$root.addClass('cd-parsed');
 
     // Should be below navPanel.setup() as commentFormManager.restoreSession() indirectly calls
     // navPanel.updateCommentFormButton() which depends on the navigation panel being mounted.
@@ -284,7 +285,7 @@ class BootProcess {
       if (this.firstRun) {
         cd.page.addAddTopicButton();
       }
-      talkPageController.connectToAddTopicButtons();
+      pageController.connectToAddTopicButtons();
 
       // If the viewport position restoration relies on elements that are made hidden during this
       // (when editing a comment), it can't be restored properly, but this is relatively minor
@@ -332,12 +333,12 @@ class BootProcess {
       pageNav.setup();
 
       if (this.firstRun) {
-        talkPageController.addEventListeners();
+        pageController.addEventListeners();
       }
 
       // We set up the mutation observer at every reload because controller.$content may change
       // (e.g. RevisionSlider replaces it).
-      talkPageController.setupMutationObserver();
+      pageController.setupMutationObserver();
 
       if (settings.get('spaciousComments') && commentManager.getCount() && this.isFirstRun()) {
         // Using the wikipage.content hook could theoretically disrupt code that needs to process
@@ -350,7 +351,7 @@ class BootProcess {
     if (this.firstRun) {
       // Restore the initial viewport position in terms of visible elements, which is how the user
       // sees it.
-      talkPageController.restoreRelativeScrollPosition();
+      pageController.restoreRelativeScrollPosition();
 
       settings.addLinkToFooter();
     }
@@ -378,7 +379,7 @@ class BootProcess {
 
     // This is needed to calculate the rendering time: it won't complete until everything gets
     // rendered.
-    talkPageController.rootElement.getBoundingClientRect();
+    pageController.rootElement.getBoundingClientRect();
 
     debug.stopTimer('final code and rendering');
 
@@ -390,26 +391,25 @@ class BootProcess {
   }
 
   /**
-   * Setup various components required for the boot process. Some DOM preparations are also made
-   * here.
+   * Initialize, set up, or reset various components required for the boot process. Some DOM
+   * preparations are also made here.
    *
    * @private
    */
-  async setup() {
-    this.updateSignatureData();
+  async init() {
     if (this.firstRun) {
-      await this.initTalkPage();
+      await bootManager.setupTalkPage();
     } else {
-      talkPageController.reset();
+      pageController.reset();
     }
-    this.subscriptions = talkPageController.getSubscriptionsInstance();
+    this.subscriptions = pageController.getSubscriptionsInstance();
     if (this.firstRun) {
       // The order of the subsequent calls matters because the modules depend on others in a certain
       // way.
 
-      // A little dirty code here - sectionManager.init() is placed above toc.init() and
-      // commentManager.init(), to add event handlers for its methods quicker than
-      // `sectionManager` and `toc` do for theirs:
+      // Caution: Fragile code here - sectionManager.init() is placed above toc.init() and
+      // commentManager.init(), to add event handlers for its methods quicker than `sectionManager`
+      // and `toc` do for theirs:
       // 1. sectionManager.updateNewCommentsData() sets Section#newComments that is later used in
       //    toc.addCommentCount().
       // 2. sectionManager.updateNewCommentsData() must set Section#newComments before
@@ -426,8 +426,9 @@ class BootProcess {
       notifications.init();
       Parser.init();
     }
-    talkPageController.setup(this.passedData.parseData?.text);
+    pageController.setup(this.passedData.parseData?.text);
     toc.setup(this.passedData.parseData?.sections, this.passedData.parseData?.hidetoc);
+    this.updateSignatureData();
 
     /**
      * Collection of all comments on the page ordered the same way as in the DOM.
@@ -482,31 +483,7 @@ class BootProcess {
   }
 
   /**
-   * Assign various global objects' ({@link convenientDiscussions}, {@link JQuery.fn jQuery.fn})
-   * properties and methods that are needed for processing a talk page. Executed on the first run.
-   *
-   * @private
-   */
-  async initTalkPage() {
-    // In most cases the site data is already loaded after being requested in
-    // BootController#initOnTalkPage().
-    await Promise.all(bootManager.getSiteData());
-
-    // This could have been executed from addCommentLinks.prepare() already.
-    bootManager.initGlobals();
-    await settings.init();
-
-    bootManager.initTimestampParsingTools('content');
-    this.initPatterns();
-    this.initPrototypes();
-    $.fn.extend(jqueryExtensions);
-    initDayjs();
-  }
-
-  /**
    * Generate regexps, patterns (strings to be parts of regexps), selectors from config values.
-   *
-   * @private
    */
   initPatterns() {
     const signatureEndingRegexp = cd.config.signatureEndingRegexp;
@@ -675,8 +652,6 @@ class BootProcess {
 
   /**
    * Initialize prototypes of elements and OOUI widgets.
-   *
-   * @private
    */
   initPrototypes() {
     // Initialize prototypes for the appropriate Comment class based on spaciousComments setting
@@ -705,11 +680,11 @@ class BootProcess {
       childElementsProp: 'children',
       follows: (n1, n2) =>
         Boolean(n2.compareDocumentPosition(n1) & Node.DOCUMENT_POSITION_FOLLOWING),
-      getAllTextNodes: () => getAllTextNodes(talkPageController.rootElement),
+      getAllTextNodes: () => getAllTextNodes(pageController.rootElement),
       getElementByClassName: (el, className) => el.querySelector(`.${className}`),
-      rootElement: talkPageController.rootElement,
+      rootElement: pageController.rootElement,
       document,
-      areThereOutdents: talkPageController.areThereOutdents,
+      areThereOutdents: pageController.areThereOutdents,
       processAndRemoveDtElements,
       removeDtButtonHtmlComments,
     });
@@ -771,7 +746,7 @@ class BootProcess {
         }
       });
 
-    if (talkPageController.isDtSubscriptions(this.subscriptions)) {
+    if (this.subscriptions instanceof DtSubscriptions) {
       // Can't do it earlier: we don't have section DT IDs until now.
       this.subscriptions.loadToTalkPage(this);
     }
@@ -976,7 +951,7 @@ class BootProcess {
     const didEnableCommentReformatting = await settings.maybeSuggestEnableCommentReformatting();
     await settings.maybeConfirmDesktopNotifications();
     if (didEnableCommentReformatting) {
-      bootManager.reboot();
+      bootManager.rebootTalkPage();
     }
   }
 
@@ -1080,4 +1055,4 @@ class BootProcess {
   }
 }
 
-export default BootProcess;
+export default TalkPageBootProcess;

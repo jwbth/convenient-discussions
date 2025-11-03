@@ -2,9 +2,9 @@ import MultilineTextInputWidget from './MultilineTextInputWidget';
 import ProcessDialog from './ProcessDialog';
 import bootManager from './bootManager';
 import cd from './cd';
+import pageController from './pageController';
 import CdError from './shared/CdError';
 import { sleep, unique } from './shared/utils-general';
-import talkPageController from './talkPageController';
 import { getPageIds, getPageTitles } from './utils-api';
 import { es6ClassToOoJsClass } from './utils-oojs';
 
@@ -58,7 +58,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
     super();
 
     this.subscriptions = /** @type {import('./LegacySubscriptions').default} */ (
-      talkPageController.getSubscriptionsInstance()
+      pageController.getSubscriptionsInstance()
     );
   }
 
@@ -160,14 +160,13 @@ class EditSubscriptionsDialog extends ProcessDialog {
       pages.sort((page1, page2) => page1.title > page2.title ? 1 : -1);
 
       const value = pages
-        // Filter out deleted pages
-        .filter((page) => page.title)
-
-        .map((page) => (
-          this.subscriptions.getForPageId(page.pageid)
-            .map((section) => `${page.title}#${section}`)
-            .join('\n')
-        ))
+        .flatMap((page) =>
+          page.pageid
+            ? this.subscriptions
+                .getForPageId(page.pageid)
+                .map((section) => `${page.title}#${section}`)
+            : []
+        )
         .join('\n');
 
       this.input = new MultilineTextInputWidget({
@@ -273,13 +272,11 @@ class EditSubscriptionsDialog extends ProcessDialog {
         sections.delete(page.from);
       });
 
-    /** @type {Map<string, number>} */
-    const titleToId = new Map();
-    pages
-      .filter((page) => page.pageid !== undefined)
-      .forEach((page) => {
-        titleToId.set(page.title, page.pageid);
-      });
+    const titleToId = new Map(
+      pages
+        .filter((page) => page.pageid !== undefined)
+        .map((page) => [page.title, page.pageid])
+    );
 
     /** @type {Record<number, import('./Subscriptions').SubscriptionsData>} */
     const allPagesData = {};
@@ -310,7 +307,7 @@ class EditSubscriptionsDialog extends ProcessDialog {
     this.popPending();
     this.close();
     mw.notify(cd.s('ewsd-saved'));
-  }
+  };
 }
 
 es6ClassToOoJsClass(EditSubscriptionsDialog);

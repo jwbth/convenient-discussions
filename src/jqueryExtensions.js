@@ -4,10 +4,9 @@
  * @module jqueryExtensions
  */
 
-import bootManager from './bootManager';
 import cd from './cd';
+import pageController from './pageController';
 import { isMetadataNode, sleep } from './shared/utils-general';
-import talkPageController from './talkPageController';
 import { createSvg } from './utils-window';
 
 /**
@@ -75,7 +74,7 @@ export default {
     if (!offsetFirst || !offsetLast) {
       // Find closest visible ancestor
       const $firstVisibleAncestor = $elements.first().closest(':visible');
-      if ($firstVisibleAncestor.length && !$firstVisibleAncestor.is(bootManager.$root)) {
+      if ($firstVisibleAncestor.length && !$firstVisibleAncestor.is(pageController.$root)) {
         offsetFirst = findFirstVisibleElementOffset($firstVisibleAncestor, 'forward');
         offsetLast = offsetFirst;
         mw.notify(cd.s('error-elementhidden-container'), {
@@ -107,11 +106,11 @@ export default {
     } else if (alignment === 'bottom') {
       top = offsetBottom - /** @type {number} */ ($(window).height()) + defaultScrollPaddingTop;
     } else {
-      top = offsetFirst.top - (talkPageController.getBodyScrollPaddingTop() || defaultScrollPaddingTop);
+      top = offsetFirst.top - (pageController.getBodyScrollPaddingTop() || defaultScrollPaddingTop);
     }
 
-    talkPageController.toggleAutoScrolling(true);
-    talkPageController.scrollToY(top, smooth, callback);
+    pageController.toggleAutoScrolling(true);
+    pageController.scrollToY(top, smooth, callback);
 
     return /** @type {JQuery} */ (/** @type {unknown} */ (this));
   },
@@ -157,7 +156,7 @@ export default {
     }
 
     const scrollTop = /** @type {number} */ ($(window).scrollTop());
-    const viewportTop = scrollTop + talkPageController.getBodyScrollPaddingTop();
+    const viewportTop = scrollTop + pageController.getBodyScrollPaddingTop();
     // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
     const viewportBottom = scrollTop + /** @type {number} */ ($(window).height());
 

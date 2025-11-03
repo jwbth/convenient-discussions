@@ -52,7 +52,7 @@ async function init() {
     // Loading the subscriptions is not critical, as opposed to messages, so we catch the possible
     // error, not letting it be caught by the try/catch block.
     subscriptions = /** @type {import('./LegacySubscriptions').default} */ (
-      require('./talkPageController').default.getSubscriptionsInstance()
+      require('./pageController').default.getSubscriptionsInstance()
     );
     requests.push(subscriptions.load(undefined, true).catch(() => {}));
   }
@@ -202,7 +202,7 @@ function addWatchlistMenu() {
   };
   const editSubscriptionsButton = new OO.ui.ButtonWidget(editSubscriptionsButtonConfig);
   editSubscriptionsButton.on('click', () => {
-    require('./talkPageController').default.showEditSubscriptionsDialog();
+    bootManager.showEditSubscriptionsDialog();
   });
   editSubscriptionsButton.$element.appendTo($menu);
 
@@ -618,14 +618,14 @@ function processHistory($content) {
  * @private
  */
 function processDiff($diff) {
-  const talkPageController = require('./talkPageController').default;
+  const pageController = require('./pageController').default;
 
   // Filter out cases when wikipage.diff was fired for the native MediaWiki's diff at the top of
   // the page that is a diff page (unless only a diff, and no content, is displayed - if
   // mw.user.options.get('diffonly') or the `diffonly` URL parameter is true). We parse that diff on
   // convenientDiscussions.pageReady hook instead.
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if ($diff?.parent().is(bootManager.$content) && talkPageController.$root) return;
+  if ($diff?.parent().is(bootManager.$content) && pageController.$root) return;
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!cd.g.uiTimestampRegexp) {

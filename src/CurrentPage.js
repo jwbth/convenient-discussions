@@ -4,10 +4,10 @@ import bootManager from './bootManager';
 import cd from './cd';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
+import pageController from './pageController';
 import pageRegistry from './pageRegistry';
 import sectionManager from './sectionManager';
 import { areObjectsEqual } from './shared/utils-general';
-import talkPageController from './talkPageController';
 
 /**
  * The page the user is visiting. Extends the base {@link Page} class with methods and properties
@@ -175,7 +175,7 @@ export default class CurrentPage extends Page {
     // This is not reevaluated after page reloads. Since archive settings we need rarely change, the
     // reevaluation is unlikely to make any difference. `$root?` because the $root can not be set
     // when it runs from the addCommentLinks module.
-    this.$archivingInfo ??= talkPageController.$root.find('.cd-archivingInfo');
+    this.$archivingInfo ??= pageController.$root.find('.cd-archivingInfo');
 
     return this.$archivingInfo;
   }
@@ -208,7 +208,7 @@ export default class CurrentPage extends Page {
       )
       // If appending to bootManager.rootElement, it can land on a wrong place, like on 404 pages
       // with New Topic Tool enabled.
-      .insertAfter(talkPageController.$root);
+      .insertAfter(pageController.$root);
   }
 
   /**
@@ -297,7 +297,7 @@ export default class CurrentPage extends Page {
     if (firstSection && commentForm.isNewTopicOnTop()) {
       firstSection.$heading.before(commentForm.$element);
     } else {
-      talkPageController.$root.after(commentForm.$element);
+      pageController.$root.after(commentForm.$element);
     }
   }
 

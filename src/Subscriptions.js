@@ -30,7 +30,7 @@ class Subscriptions extends EventEmitter {
   /**
    * Do everything {@link .load} does and also perform manipulations with the talk page.
    *
-   * @param {import('./BootProcess').default} [bootProcess]
+   * @param {import('./TalkPageBootProcess').default} [bootProcess]
    * @param {...*} args
    */
   async loadToTalkPage(bootProcess, ...args) {
@@ -82,7 +82,7 @@ class Subscriptions extends EventEmitter {
   /**
    * Process subscriptions when they are {@link Subscriptions#loadToTalkPage loaded to a talk page}.
    *
-   * @param {import('./BootProcess').default} [_bootProcess]
+   * @param {import('./TalkPageBootProcess').default} [_bootProcess]
    */
   processOnTalkPage(_bootProcess) {
     this.emit('process');

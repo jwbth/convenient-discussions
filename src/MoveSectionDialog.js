@@ -356,7 +356,7 @@ class MoveSectionDialog extends ProcessDialog {
           wrapHtml(cd.sParse('msd-moved', target.sectionWikilink), { tagName: 'div' })
         );
 
-        bootManager.reboot({
+        bootManager.rebootTalkPage({
           sectionId: this.controls.keepLink.input.isSelected() ? this.section.id : undefined,
         });
 
@@ -672,7 +672,7 @@ class MoveSectionDialog extends ProcessDialog {
       callbacks: {
         'cd-message-reloadPage': () => {
           this.close();
-          bootManager.reboot();
+          bootManager.rebootTalkPage();
         },
       },
     }), { recoverable }));

@@ -5,11 +5,11 @@ import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime';
 import bootManager from './bootManager';
 import cd from './cd';
 import commentManager from './commentManager';
+import pageController from './pageController';
 import settings from './settings';
 import CdError from './shared/CdError';
 import ElementsTreeWalker from './shared/ElementsTreeWalker';
 import { isHeadingNode, removeFromArrayIfPresent, subtractDaysFromNow, unique } from './shared/utils-general';
-import talkPageController from './talkPageController';
 import updateChecker from './updateChecker';
 import { loadUserGenders } from './utils-api';
 import { mixInObject } from './utils-oojs';
@@ -173,7 +173,7 @@ class Thread extends mixInObject(
      * @private
      */
     this.hasOutdents = (
-      talkPageController.areThereOutdents() &&
+      pageController.areThereOutdents() &&
       this.comments.slice(1).some((comment) => comment.isOutdented)
     );
 
@@ -964,14 +964,14 @@ class Thread extends mixInObject(
     this.collapsedRange = getRangeContents(
       this.getAdjustedStartElement(),
       this.getAdjustedEndElement() || null,
-      talkPageController.rootElement
+      pageController.rootElement
     );
     if (!this.collapsedRange) return;
 
     this.collapsedRange.forEach((element) => {
       this.hideElement(element);
     });
-    this.updateEndOfCollapsedRange(talkPageController.getClosedDiscussions());
+    this.updateEndOfCollapsedRange(pageController.getClosedDiscussions());
 
     this.isCollapsed = true;
 
@@ -1447,7 +1447,7 @@ class Thread extends mixInObject(
     if (!this.isInited) {
       this
         .on('toggle', this.updateLines);
-      talkPageController
+      pageController
         .on('resize', this.updateLines)
         .on('mutate', () => {
           // Update only on mouse move to prevent short freezings of a page when there is a comment
@@ -1467,7 +1467,7 @@ class Thread extends mixInObject(
     }
 
     this.collapseThreadsLevel = settings.get('collapseThreadsLevel');
-    this.treeWalker = new ElementsTreeWalker(talkPageController.rootElement);
+    this.treeWalker = new ElementsTreeWalker(pageController.rootElement);
     commentManager.getAll().forEach((rootComment) => {
       try {
         rootComment.thread?.expand(true);
@@ -1675,7 +1675,7 @@ class Thread extends mixInObject(
     const scrollX = window.scrollX;
     const scrollY = window.scrollY;
 
-    const floatingRects = talkPageController.getFloatingElements().map(getExtendedRect);
+    const floatingRects = pageController.getFloatingElements().map(getExtendedRect);
     commentManager.getAll()
       .slice()
       .reverse()

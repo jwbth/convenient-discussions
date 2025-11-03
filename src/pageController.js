@@ -1,6 +1,9 @@
 import AutocompleteManager from './AutocompleteManager';
+import Comment from './Comment';
 import CommentForm from './CommentForm';
+import DtSubscriptions from './DtSubscriptions';
 import EventEmitter from './EventEmitter';
+import LegacySubscriptions from './LegacySubscriptions';
 import Thread from './Thread';
 import bootManager from './bootManager';
 import cd from './cd';
@@ -29,7 +32,7 @@ import { copyText, getVisibilityByRects, skin$, wrapHtml } from './utils-window'
  * @property {[fragment: string]} popState
  * @property {[]} selectionChange
  * @property {[]} mutate
- * @property {[passedData: import('./BootProcess').PassedData]} beforeReboot
+ * @property {[passedData: import('./TalkPageBootProcess').PassedData]} beforeReboot
  * @property {[]} startReboot
  * @property {[]} reboot
  * @property {[]} desktopNotificationClick
@@ -41,7 +44,7 @@ import { copyText, getVisibilityByRects, skin$, wrapHtml } from './utils-window'
  *
  * @augments EventEmitter<EventMap>
  */
-class TalkPageController extends EventEmitter {
+class PageController extends EventEmitter {
   /**
    * @type {JQuery}
    */
@@ -229,16 +232,16 @@ class TalkPageController extends EventEmitter {
     this.$root.addClass('cd-parse-started');
 
     // this.backgroundHighlightingCss = require('./Comment.layers.optionalBackgroundHighlighting.less');
-    if (settings.get('useBackgroundHighlighting')) {
-      const a = await import('./Comment.layers.optionalBackgroundHighlighting.less');
-      console.log(a);
-    }
+    // if (settings.get('useBackgroundHighlighting')) {
+    //   const a = await import('./Comment.layers.optionalBackgroundHighlighting.less');
+    //   console.log(a);
+    // }
   }
 
   /**
    * Get the content root element (`.mw-parser-output` or `#mw-content-text`). Supposed to be used
    * via {@link convenientDiscussions.api.getRootElement}; inside the script, direct reference to
-   * `talkPageController.rootElement` is practiced.
+   * `pageController.rootElement` is practiced.
    *
    * @returns {Element}
    */
@@ -300,7 +303,7 @@ class TalkPageController extends EventEmitter {
    *
    * @param {boolean | undefined} [switchToAbsolute] If this value is `true` or `false` and the viewport
    *   is above the bottom of the table of contents, then use
-   *   {@link TalkPageController#saveScrollPosition} (this allows for better precision).
+   *   {@link PageController#saveScrollPosition} (this allows for better precision).
    * @param {number} scrollY Cached horizontal scroll value used to avoid reflow.
    */
   saveRelativeScrollPosition(switchToAbsolute, scrollY = window.scrollY) {
@@ -373,11 +376,11 @@ class TalkPageController extends EventEmitter {
   }
 
   /**
-   * Restore the scroll position saved in {@link TalkPageController#saveRelativeScrollPosition}.
+   * Restore the scroll position saved in {@link PageController#saveRelativeScrollPosition}.
    *
    * @param {boolean} [switchToAbsolute] Restore the absolute position using
-   *   {@link TalkPageController#restoreScrollPosition} if
-   *   {@link TalkPageController#saveScrollPosition} was previously used for saving the position.
+   *   {@link PageController#restoreScrollPosition} if
+   *   {@link PageController#saveScrollPosition} was previously used for saving the position.
    */
   restoreRelativeScrollPosition(switchToAbsolute = false) {
     if (switchToAbsolute && this.scrollData.offset !== undefined) {
@@ -431,7 +434,7 @@ class TalkPageController extends EventEmitter {
 
   /**
    * Save the scroll position to restore it later with
-   * {@link TalkPageController#restoreScrollPosition}.
+   * {@link PageController#restoreScrollPosition}.
    *
    * @param {boolean} [saveTocHeight] `false` is used for more fine control of scroll behavior
    *   when visits are loaded after a page reboot.
@@ -452,7 +455,7 @@ class TalkPageController extends EventEmitter {
   }
 
   /**
-   * Restore the scroll position saved in {@link TalkPageController#saveScrollPosition}.
+   * Restore the scroll position saved in {@link PageController#saveScrollPosition}.
    *
    * @param {boolean} [resetTocHeight] `false` is used for more fine control of scroll behavior
    *   after page reboots.
@@ -754,7 +757,7 @@ class TalkPageController extends EventEmitter {
   };
 
   /**
-   * Handle a `horizontalscroll` event, triggered from {@link TalkPageController#handleScroll}.
+   * Handle a `horizontalscroll` event, triggered from {@link PageController#handleScroll}.
    *
    * @private
    */
@@ -909,7 +912,7 @@ class TalkPageController extends EventEmitter {
   /**
    * Bind a click handler to comment links to make them work as in-script comment links.
    *
-   * This method exists in addition to {@link TalkPageController#handlePopState}. It's preferable to
+   * This method exists in addition to {@link PageController#handlePopState}. It's preferable to
    * have click events handled by this method instead of `.handlePopState()` because that method, if
    * encounters `cdJumpedToComment` in the history state, doesn't scroll to the comment which is a
    * wrong behavior when the user clicks a link.
@@ -1080,17 +1083,6 @@ class TalkPageController extends EventEmitter {
   }
 
   /**
-   * Show an edit subscriptions dialog.
-   */
-  showEditSubscriptionsDialog() {
-    if (bootManager.isPageOverlayOn()) return;
-
-    const dialog = new (require('./EditSubscriptionsDialog').default)();
-    cd.getWindowManager().addWindows([dialog]);
-    cd.getWindowManager().openWindow(dialog);
-  }
-
-  /**
    * Show a copy link dialog.
    *
    * @param {import('./Comment').default|import('./Section').default} object Comment or section to copy a link to.
@@ -1105,12 +1097,14 @@ class TalkPageController extends EventEmitter {
     const permalinkSpecialPagePrefix =
       mw.config.get('wgFormattedNamespaces')[-1] +
       ':' +
-      (object.isComment()
-        ? 'GoToComment/'
-        : cd.g.specialPageAliases.PermanentLink[0] +
-          '/' +
-          String(mw.config.get('wgRevisionId')) +
-          '#');
+      (
+        object instanceof Comment
+          ? 'GoToComment/'
+          : cd.g.specialPageAliases.PermanentLink[0] +
+            '/' +
+            String(mw.config.get('wgRevisionId')) +
+            '#'
+      );
 
     /** @type {import('./CopyLinkDialog').CopyLinkDialogContent} */
     const content = {
@@ -1127,22 +1121,22 @@ class TalkPageController extends EventEmitter {
       // therefore an ID. In that case Comment#getUrl() returns a string.
       link: /** @type {string} */ (object.getUrl()),
 
-      permanentLink: object.isComment()
+      permanentLink: object instanceof Comment
         ? /** @type {import('./Page').default} */ (pageRegistry.get(
             mw.config.get('wgFormattedNamespaces')[-1] + ':' + 'GoToComment/' + fragment
           )).getDecodedUrlWithFragment()
         : object.getUrl(true),
-      jsCall: object.isComment()
+      jsCall: object instanceof Comment
         ? `let c = convenientDiscussions.api.getCommentById('${object.id || ''}');`
         : `let s = convenientDiscussions.api.getSectionById('${object.id || ''}');`,
       jsBreakpoint: `this.id === '${object.id || ''}'`,
-      jsBreakpointTimestamp: object.isComment()
+      jsBreakpointTimestamp: object instanceof Comment
         ? `timestamp.element.textContent === '${object.timestampText || ''}'`
         : undefined,
     };
 
     // Undocumented feature allowing to copy a link of a default type without opening a dialog.
-    const relevantSetting = object.isComment()
+    const relevantSetting = object instanceof Comment
       ? settings.get('defaultCommentLinkType')
       : settings.get('defaultSectionLinkType');
     if (!event.shiftKey && relevantSetting) {
@@ -1192,7 +1186,7 @@ class TalkPageController extends EventEmitter {
 
   /**
    * Set whether the viewport is currently automatically scrolled to some position. To get that
-   * state, use {@link TalkPageController#isAutoScrolling}.
+   * state, use {@link PageController#isAutoScrolling}.
    *
    * @param {boolean} value
    */
@@ -1202,7 +1196,7 @@ class TalkPageController extends EventEmitter {
 
   /**
    * Check whether the viewport is currently automatically scrolled to some position. To set that
-   * state, use {@link TalkPageController#toggleAutoScrolling}.
+   * state, use {@link PageController#toggleAutoScrolling}.
    *
    * @returns {boolean}
    */
@@ -1360,7 +1354,7 @@ class TalkPageController extends EventEmitter {
         { comments: filteredComments }
       );
       notification.$notification.on('click', () => {
-        bootManager.reboot({ commentIds: filteredComments.map((comment) => comment.id) });
+        bootManager.rebootTalkPage({ commentIds: filteredComments.map((comment) => comment.id) });
       });
     }
   }
@@ -1463,7 +1457,7 @@ class TalkPageController extends EventEmitter {
 
       this.emit('desktopNotificationClick');
 
-      bootManager.reboot({
+      bootManager.rebootTalkPage({
         commentIds: [comment.id],
         closeNotificationsSmoothly: false,
       });
@@ -1524,35 +1518,10 @@ class TalkPageController extends EventEmitter {
    */
   getSubscriptionsInstance() {
     this.subscriptionsInstance ??= new (
-      settings.get('useTopicSubscription')
-        // Use `require()`, not `import`, to avoid a circular reference
-        ? require('./DtSubscriptions').default
-        : require('./LegacySubscriptions').default
+      settings.get('useTopicSubscription') ? DtSubscriptions : LegacySubscriptions
     )();
 
     return this.subscriptionsInstance;
-  }
-
-  /**
-   * Type guard for the {@link DtSubscriptions} class.
-   *
-   * @param {object} obj
-   * @returns {obj is import('./DtSubscriptions').default}
-   */
-  isDtSubscriptions(obj) {
-    // Use `require()`, not `import`, to avoid a circular reference
-    return obj instanceof require('./DtSubscriptions').default;
-  }
-
-  /**
-   * Type guard for the {@link LegacySubscriptions} class.
-   *
-   * @param {object} obj
-   * @returns {obj is import('./LegacySubscriptions').default}
-   */
-  isLegacySubscriptions(obj) {
-    // Use `require()`, not `import`, to avoid a circular reference
-    return obj instanceof require('./LegacySubscriptions').default;
   }
 
   /**
@@ -1715,5 +1684,5 @@ class TalkPageController extends EventEmitter {
   }
 }
 
-export { TalkPageController };
-export default new TalkPageController();
+export { PageController };
+export default new PageController();

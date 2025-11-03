@@ -36,7 +36,7 @@ declare global {
 
   interface ApiResponseQueryPage {
     title: string;
-    pageid: number;
+    pageid: number | undefined;
     known?: boolean;
     missing?: boolean;
     invalid?: boolean;

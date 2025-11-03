@@ -1,7 +1,7 @@
 import Button from './Button';
 import cd from './cd';
+import pageController from './pageController';
 import sectionManager from './sectionManager';
-import talkPageController from './talkPageController';
 import toc from './toc';
 import { getVisibilityByRects } from './utils-window';
 
@@ -77,7 +77,7 @@ class PageNav {
    */
   backLinkLocation;
 
-  bodyScrollPaddingTop = talkPageController.getBodyScrollPaddingTop();
+  bodyScrollPaddingTop = pageController.getBodyScrollPaddingTop();
 
   /**
    * _For internal use._ Setup the page navigation block (mount or update).
@@ -113,7 +113,7 @@ class PageNav {
     this.updateWidth();
     this.update();
 
-    talkPageController
+    pageController
       .on('scroll', this.update)
       .on('horizontalScroll', this.updateWidth)
       .on('resize', this.updateWidth);
@@ -134,10 +134,10 @@ class PageNav {
    * @private
    */
   updateWidth = () => {
-    if (!this.isMounted() || !talkPageController.$contentColumn.length) return;
+    if (!this.isMounted() || !pageController.$contentColumn.length) return;
 
     const left =
-      /** @type {JQuery.Coordinates} */ (talkPageController.$contentColumn.offset()).left -
+      /** @type {JQuery.Coordinates} */ (pageController.$contentColumn.offset()).left -
       /** @type {number} */ ($(window).scrollLeft());
 
     // 18px padding + 1px comment markers / thread lines
@@ -147,10 +147,10 @@ class PageNav {
       ? left - deductable
       : /** @type {number} */ ($(window).width()) -
         // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-        (left + /** @type {number} */ (talkPageController.$contentColumn.outerWidth())) -
+        (left + /** @type {number} */ (pageController.$contentColumn.outerWidth())) -
         deductable;
     if (cd.g.skin === 'minerva') {
-      width -= talkPageController.getContentColumnOffsets().startMargin;
+      width -= pageController.getContentColumnOffsets().startMargin;
     }
 
     const $topElement = /** @type {JQuery} */ (this.$topElement);
@@ -447,8 +447,8 @@ class PageNav {
       }
     }
 
-    talkPageController.toggleAutoScrolling(true);
-    talkPageController.scrollToY(offset);
+    pageController.toggleAutoScrolling(true);
+    pageController.scrollToY(offset);
   }
 }
 

@@ -5,10 +5,10 @@ import Thread from './Thread';
 import bootManager from './bootManager';
 import cd from './cd';
 import commentFormManager from './commentFormManager';
+import pageController from './pageController';
 import settings from './settings';
 import TreeWalker from './shared/TreeWalker';
 import { definedAndNotNull, reorderArray, sleep, subtractDaysFromNow, unique } from './shared/utils-general';
-import talkPageController from './talkPageController';
 import updateChecker from './updateChecker';
 import { getPagesExistence } from './utils-api';
 import { getCommonGender, getExtendedRect, getHigherNodeAndOffsetInSelection } from './utils-window';
@@ -90,7 +90,7 @@ export class CommentManager extends EventEmitter {
       .cleanUp((entry) => (entry.thankTime || 0) < subtractDaysFromNow(60))
       .save();
 
-    talkPageController
+    pageController
       .on('scroll', this.registerSeen)
       .on('mutate', this.maybeRedrawLayers)
       .on('resize', this.maybeRedrawLayers)
@@ -244,7 +244,7 @@ export class CommentManager extends EventEmitter {
    */
   initNewAndSeen(currentPageData, currentTime, markAsReadRequested) {
     let timeConflict = false;
-    const unseenComments = bootManager.getBootProcess().passedData.unseenComments;
+    const unseenComments = bootManager.getTalkPageBootProcess().passedData.unseenComments;
     this.items.forEach((comment) => {
       // eslint-disable-next-line no-one-time-vars/no-one-time-vars
       const commentTimeConflict = comment.initNewAndSeen(
@@ -270,7 +270,7 @@ export class CommentManager extends EventEmitter {
     const comments = this.items.filter(condition);
 
     const floatingRects = comments.length
-      ? talkPageController.getFloatingElements().map(getExtendedRect)
+      ? pageController.getFloatingElements().map(getExtendedRect)
       : undefined;
     comments.forEach((comment) => {
       comment.configureLayers({
@@ -302,7 +302,7 @@ export class CommentManager extends EventEmitter {
     let floatingRects;
     /** @type {C[]} */
     const comments = [];
-    const rootBottom = talkPageController.$root[0].getBoundingClientRect().bottom + window.scrollY;
+    const rootBottom = pageController.$root[0].getBoundingClientRect().bottom + window.scrollY;
     let notMovedCount = 0;
 
     // We go from the end and stop at the first _three_ comments that have not been misplaced. A
@@ -334,7 +334,7 @@ export class CommentManager extends EventEmitter {
       ) {
         comment.removeLayers();
       } else if (shouldBeHighlighted) {
-        floatingRects ??= talkPageController.getFloatingElements().map(getExtendedRect);
+        floatingRects ??= pageController.getFloatingElements().map(getExtendedRect);
         const isMoved = comment.configureLayers({
           // If a comment was hidden, then became visible, we need to add the layers.
           add: true,
@@ -428,7 +428,7 @@ export class CommentManager extends EventEmitter {
       comment.roughOffset = undefined;
     });
 
-    const viewportTop = window.scrollY + talkPageController.getBodyScrollPaddingTop();
+    const viewportTop = window.scrollY + pageController.getBodyScrollPaddingTop();
     const viewportBottom = window.scrollY + window.innerHeight;
 
     // Visibility is checked in the sense that an element is visible on the page, not necessarily in
@@ -593,7 +593,7 @@ export class CommentManager extends EventEmitter {
   maybeHighlightHovered = (event) => {
     if (!this.isCompactCommentManager()) return;
 
-    const isObstructingElementHovered = talkPageController.isObstructingElementHovered();
+    const isObstructingElementHovered = pageController.isObstructingElementHovered();
 
     // Since we've confirmed this is a CompactCommentManager, we know items are CompactComment[]
     /** @type {import('./CompactComment').default[]} */ (this.items)
@@ -718,7 +718,7 @@ export class CommentManager extends EventEmitter {
    * @param {import('./updateChecker').CommentWorkerNew[]} newComments
    */
   addNewCommentsNotes(newComments) {
-    talkPageController.saveRelativeScrollPosition();
+    pageController.saveRelativeScrollPosition();
 
     this.items.forEach((comment) => {
       comment.subitemList.remove('newCommentsNote');
@@ -749,7 +749,7 @@ export class CommentManager extends EventEmitter {
 
     Thread.emit('toggle');
 
-    talkPageController.restoreRelativeScrollPosition();
+    pageController.restoreRelativeScrollPosition();
   }
 
   /**
@@ -787,7 +787,7 @@ export class CommentManager extends EventEmitter {
       classes: ['cd-button-ooui'],
     });
     button.on('click', () => {
-      bootManager.reboot({
+      bootManager.rebootTalkPage({
         commentIds: descendantComments.map((comment) => comment.id).filter(definedAndNotNull),
         pushState: true,
       });
@@ -916,7 +916,7 @@ export class CommentManager extends EventEmitter {
         /** @type {import('./utils-window').HigherNodeAndOffsetInSelection} */ (
           getHigherNodeAndOffsetInSelection(selection)
         );
-      const treeWalker = new TreeWalker(talkPageController.rootElement, undefined, false, higherNode);
+      const treeWalker = new TreeWalker(pageController.rootElement, undefined, false, higherNode);
       let commentIndex;
       do {
         commentIndex =
@@ -984,7 +984,7 @@ export class CommentManager extends EventEmitter {
    */
   findAndUpdateTableComments() {
     // Faster than doing it for every individual comment.
-    talkPageController.rootElement
+    pageController.rootElement
       .querySelectorAll('table.cd-comment-part .cd-signature, .cd-comment-part > table .cd-signature')
       .forEach((signature) => {
         const index = /** @type {HTMLElement} */ (signature.closest('.cd-comment-part')).dataset
@@ -1023,7 +1023,7 @@ export class CommentManager extends EventEmitter {
     this.mergeAdjacentCommentLevels();
     this.mergeAdjacentCommentLevels();
     if (
-      talkPageController.rootElement.querySelector('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')
+      pageController.rootElement.querySelector('.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)')
     ) {
       console.warn('.cd-commentLevel adjacencies have left.');
     }
@@ -1054,7 +1054,7 @@ export class CommentManager extends EventEmitter {
    */
   mergeAdjacentCommentLevels() {
     /** @type {NodeListOf<HTMLElement>} */
-    const levels = talkPageController.rootElement.querySelectorAll(
+    const levels = pageController.rootElement.querySelectorAll(
       '.cd-commentLevel:not(ol) + .cd-commentLevel:not(ol)'
     );
     if (!levels.length) return;
@@ -1168,7 +1168,7 @@ export class CommentManager extends EventEmitter {
       this.items[Number(commentIndex)].replaceElement(element, newElement);
     }
 
-    talkPageController.replaceScrollAnchorElement(element, newElement);
+    pageController.replaceScrollAnchorElement(element, newElement);
 
     return newElement;
   }
@@ -1181,7 +1181,7 @@ export class CommentManager extends EventEmitter {
     /** @type {Element[]} */
     const items = [];
 
-    talkPageController.rootElement
+    pageController.rootElement
       .querySelectorAll('dd.cd-comment-part-last + dd, li.cd-comment-part-last + li')
       .forEach((el) => {
         if (el.firstElementChild?.classList.contains('cd-commentLevel')) {
@@ -1190,14 +1190,14 @@ export class CommentManager extends EventEmitter {
       });
 
     // When editing https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)/Archive_212#c-PrimeHunter-20240509091500-2605:A601:AAF7:3700:A1D7:26C1:E273:28CF-20240509055600
-    talkPageController.rootElement
+    pageController.rootElement
       .querySelectorAll('dd.cd-comment-part:not(.cd-comment-part-last) + dd > .cd-comment-part:first-child, li.cd-comment-part:not(.cd-comment-part-last) + li > .cd-comment-part:first-child')
       .forEach((el) => {
         items.push(/** @type {HTMLElement} */ (el.parentElement));
       });
 
     // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#202009202110_Example
-    talkPageController.rootElement
+    pageController.rootElement
       .querySelectorAll('.cd-comment-replacedPart.cd-comment-part-last')
       .forEach((el) => {
         const possibleItem = /** @type {HTMLElement} */ (el.parentElement).nextElementSibling;
@@ -1207,22 +1207,22 @@ export class CommentManager extends EventEmitter {
       });
 
     // https://commons.wikimedia.org/wiki/User_talk:Jack_who_built_the_house/CD_test_cases#Image_breaking_a_thread
-    talkPageController.rootElement
+    pageController.rootElement
       .querySelectorAll('.cd-commentLevel + .thumb + .cd-commentLevel > li')
       .forEach((el) => {
         items.push(el);
       });
 
-    if (talkPageController.areThereOutdents()) {
+    if (pageController.areThereOutdents()) {
       // Outdent templates. We could instead merge adjacent <li>s, but if there is a {{outdent|0}}
       // template and the whole <li> of the parent is considered a comment part, then we can't do
       // that.
-      talkPageController.rootElement
+      pageController.rootElement
         .querySelectorAll(`.cd-commentLevel > li + li > .${cd.config.outdentClass}, .cd-commentLevel > dd + dd > .${cd.config.outdentClass}`)
         .forEach((el) => {
           items.push(/** @type {HTMLElement} */ (el.parentElement));
         });
-      talkPageController.rootElement
+      pageController.rootElement
         .querySelectorAll(`.cd-commentLevel > li + .cd-comment-outdented, .cd-commentLevel > dd + .cd-comment-outdented`)
         .forEach((el) => {
           items.push(el);
@@ -1288,7 +1288,7 @@ export class CommentManager extends EventEmitter {
    * @private
    */
   goToNewCommentInDirection(direction) {
-    if (talkPageController.isAutoScrolling()) return;
+    if (pageController.isAutoScrolling()) return;
 
     const commentInViewport = this.findInViewport(direction);
     if (!commentInViewport) return;
@@ -1330,7 +1330,7 @@ export class CommentManager extends EventEmitter {
    * Scroll to the first unseen comment.
    */
   goToFirstUnseenComment() {
-    if (talkPageController.isAutoScrolling()) return;
+    if (pageController.isAutoScrolling()) return;
 
     const candidates = this.query((c) => c.isSeen === false);
     const comment = candidates.find((c) => c.isInViewport() === false) || candidates[0];

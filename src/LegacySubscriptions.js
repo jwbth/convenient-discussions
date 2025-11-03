@@ -1,11 +1,11 @@
 import LZString from 'lz-string';
 
 import Subscriptions from './Subscriptions';
+import bootManager from './bootManager';
 import cd from './cd';
 import sectionManager from './sectionManager';
 import CdError from './shared/CdError';
 import { typedKeysOf } from './shared/utils-general';
-import talkPageController from './talkPageController';
 import { getUserInfo, saveLocalOption } from './utils-api';
 import { wrapHtml } from './utils-window';
 
@@ -30,7 +30,7 @@ class LegacySubscriptions extends Subscriptions {
   /**
    * Request the subscription list from the server and assign it to the instance.
    *
-   * @param {import('./BootProcess').default} [bootProcess]
+   * @param {import('./TalkPageBootProcess').default} [bootProcess]
    * @param {boolean} [reuse] Reuse the existing request.
    * @returns {Promise.<void>}
    * @override
@@ -133,7 +133,7 @@ class LegacySubscriptions extends Subscriptions {
                 callbacks: {
                   // An old class name is kept for compatibility with strings.
                   'cd-notification-editWatchedSections': () => {
-                    talkPageController.showEditSubscriptionsDialog();
+                    bootManager.showEditSubscriptionsDialog();
                   },
                 },
               }),

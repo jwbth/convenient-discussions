@@ -4,9 +4,9 @@ import bootManager from './bootManager';
 import cd from './cd';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
+import pageController from './pageController';
 import settings from './settings';
 import { removeWikiMarkup } from './shared/utils-wikitext';
-import talkPageController from './talkPageController';
 import updateChecker from './updateChecker';
 import { createSvg, formatDate, isCmdModifierPressed, isInputFocused, keyCombination } from './utils-window';
 import visits from './visits';
@@ -59,7 +59,7 @@ class NavPanel {
         this.reset();
       } else {
         this.mount();
-        talkPageController
+        pageController
           .on('scroll', this.updateCommentFormButton)
           .on('keyDown', (event) => {
             if (isInputFocused()) return;
@@ -262,8 +262,8 @@ class NavPanel {
    * @private
    */
   refreshClick(markAsRead = false) {
-    bootManager.reboot({
-      commentIds: talkPageController.getRelevantAddedCommentIds() || undefined,
+    bootManager.rebootTalkPage({
+      commentIds: pageController.getRelevantAddedCommentIds() || undefined,
       markAsRead,
     });
   }
@@ -412,7 +412,7 @@ class NavPanel {
    * @private
    */
   updateCommentFormButton = () => {
-    if (!this.state || talkPageController.isAutoScrolling()) return;
+    if (!this.state || pageController.isAutoScrolling()) return;
 
     this.state.commentFormButton
       .toggle(commentFormManager.getAll().some((cf) => !cf.$element.cdIsInViewport(true)));

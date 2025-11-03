@@ -6,6 +6,7 @@ import SectionSource from './SectionSource';
 import bootManager from './bootManager';
 import cd from './cd';
 import commentFormManager from './commentFormManager';
+import pageController from './pageController';
 import pageRegistry from './pageRegistry';
 import sectionManager from './sectionManager';
 import settings from './settings';
@@ -13,7 +14,6 @@ import CdError from './shared/CdError';
 import SectionSkeleton from './shared/SectionSkeleton';
 import { defined, getHeadingLevel, underlinesToSpaces, unique } from './shared/utils-general';
 import { encodeWikilink, maskDistractingCode, normalizeCode } from './shared/utils-wikitext';
-import talkPageController from './talkPageController';
 import toc from './toc';
 import { handleApiReject } from './utils-api';
 import { formatDate, getRangeContents } from './utils-window';
@@ -245,7 +245,7 @@ class Section extends SectionSkeleton {
      */
     this.isActionable =
       cd.page.isActive() &&
-      !talkPageController.getClosedDiscussions().some((el) => el.contains(this.headingElement)) &&
+      !pageController.getClosedDiscussions().some((el) => el.contains(this.headingElement)) &&
       !this.isTranscludedFromTemplate;
 
     if (this.isTranscludedFromTemplate) {
@@ -559,7 +559,7 @@ class Section extends SectionSkeleton {
     if (!this.subscribeId) return;
 
     this.subscriptionState = this.subscriptions.getState(this.subscribeId);
-    if (talkPageController.isSubscribingDisabled() && !this.subscriptionState) return;
+    if (pageController.isSubscribingDisabled() && !this.subscriptionState) return;
 
     /**
      * Subscribe button widget in the {@link Section#actionsElement actions element}.
@@ -715,7 +715,7 @@ class Section extends SectionSkeleton {
         $floatableContainer: $button,
         classes: ['cd-popup-authors'],
       });
-      $(talkPageController.getPopupOverlay()).append(this.authorsPopup.$element);
+      $(pageController.getPopupOverlay()).append(this.authorsPopup.$element);
     }
 
     this.authorsPopup.toggle();
@@ -1347,7 +1347,7 @@ class Section extends SectionSkeleton {
 
     if (!this.isTopic()) return;
 
-    let subscribeId = talkPageController.getDtSubscribableThreads()
+    let subscribeId = pageController.getDtSubscribableThreads()
       ?.find((thread) => (
         thread.id === this.hElement.dataset.mwThreadId ||
         thread.id === this.headlineElement.dataset.mwThreadId
@@ -1727,7 +1727,7 @@ class Section extends SectionSkeleton {
    * @param {JQuery.TriggeredEvent | MouseEvent | KeyboardEvent} event
    */
   copyLink(event) {
-    talkPageController.showCopyLinkDialog(this, event);
+    pageController.showCopyLinkDialog(this, event);
   }
 
   /**
@@ -2161,7 +2161,7 @@ class Section extends SectionSkeleton {
     this.elements ??= /** @type {HTMLElement[]} */ (getRangeContents(
       this.headingElement,
       this.findRealLastElement(),
-      talkPageController.rootElement
+      pageController.rootElement
     ));
     this.isHidden = !show;
     this.elements.forEach((el) => {
@@ -2271,15 +2271,6 @@ class Section extends SectionSkeleton {
         .reverse()
         .find((c) => c.level === 0)
     );
-  }
-
-  /**
-   * Type checking helper.
-   *
-   * @returns {this is Comment}
-   */
-  isComment() {
-    return false;
   }
 
   /**

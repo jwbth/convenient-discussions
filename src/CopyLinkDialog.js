@@ -1,3 +1,4 @@
+import Comment from './Comment';
 import DivLabelWidget from './DivLabelWidget';
 import cd from './cd';
 import CdError from './shared/CdError';
@@ -39,13 +40,13 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
   /** @type {DivLabelWidget} */
   message;
 
-  /** @type {OO.ui.ButtonOptionWidget} */
+  /** @type {OO.ui.ButtonOptionWidget | undefined} */
   anchorOption;
 
-  /** @type {OO.ui.ButtonOptionWidget} */
+  /** @type {OO.ui.ButtonOptionWidget | undefined} */
   diffOption;
 
-  /** @type {OO.ui.ButtonSelectWidget} */
+  /** @type {OO.ui.ButtonSelectWidget | undefined} */
   linkTypeSelect;
 
   /** @type {OO.ui.PanelLayout} */
@@ -63,9 +64,9 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    *   permanentWikilink: 'copyText';
    *   link: 'copyText';
    *   permanentLink: 'copyText';
-   *   jsCall: 'copyText';
-   *   jsBreakpoint: 'copyText';
-   *   jsBreakpointTimestamp: 'copyText';
+   *   jsCall: 'copyText' | undefined;
+   *   jsBreakpoint: 'copyText' | undefined;
+   *   jsBreakpointTimestamp: 'copyText' | undefined;
    * }} CopyLinkDialogControlTypes
    */
 
@@ -235,7 +236,7 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
    * @throws {CdError}
    */
   async createDiffPanel() {
-    if (this.isClosing() || !this.object.isComment()) {
+    if (this.isClosing() || !(this.object instanceof Comment)) {
       throw new CdError();
     }
 
@@ -272,8 +273,8 @@ class CopyLinkDialog extends OO.ui.MessageDialog {
       }
     }
 
-    this.diffOption.setDisabled(Boolean(errorText));
-    this.diffOption.setTitle(errorText || '');
+    /** @type {NonNullable<typeof this.diffOption>} */ (this.diffOption).setDisabled(Boolean(errorText));
+    /** @type {NonNullable<typeof this.diffOption>} */ (this.diffOption).setTitle(errorText || '');
   }
 
   /**

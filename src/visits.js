@@ -33,7 +33,7 @@ class Visits extends EventEmitter {
    * loaded. In fact, when the page is loaded in a background tab, it can be throttled until it is
    * focused, so an indefinite amount of time can pass.
    *
-   * @param {import('./BootProcess').default} bootProcess
+   * @param {import('./TalkPageBootProcess').default} bootProcess
    * @param {boolean} [reuse] Whether to reuse a cached userinfo request.
    */
   async load(bootProcess, reuse = false) {

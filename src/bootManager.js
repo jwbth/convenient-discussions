@@ -10,16 +10,16 @@ import { defined, getContentLanguageMessages, getQueryParamBooleanValue, isKeyOf
 import { dateTokenToMessageNames } from './shared/utils-timestamp';
 import userRegistry from './userRegistry';
 import { getUserInfo, splitIntoBatches } from './utils-api';
-import { createSvg, skin$, transparentize } from './utils-window';
+import { createSvg, initDayjs, skin$, transparentize } from './utils-window';
 
 /**
- * @import {TalkPageController} from './talkPageController'
+ * @import {PageController} from './pageController'
  */
 
 /**
  * Singleton for managing booting, rebooting, and unbooting (unloading) of the page. It is imported
  * when modules such as OOUI may not be yet available. For this reason, it takes on some functions
- * that would otherwise be a responsibility of {@link TalkPageController}.
+ * that would otherwise be a responsibility of {@link PageController}.
  *
  * It
  * - initializes the script, both on talk pages and on log pages such as the watchlist (TODO:
@@ -51,10 +51,10 @@ class BootManager {
    *
    * For simpler type checking, assume it's always set (we don't use it when it's not).
    *
-   * @type {import('./BootProcess').default}
+   * @type {import('./TalkPageBootProcess').default}
    * @private
    */
-  bootProcess;
+  talkPageBootProcess;
 
   /** @type {boolean} */
   definitelyTalkPage;
@@ -728,7 +728,7 @@ class BootManager {
     const settings = require('./settings').default;
     cd.settings = settings;
 
-    const talkPageController = require('./talkPageController').default;
+    const pageController = require('./pageController').default;
     const commentManager = require('./commentManager').default;
     const sectionManager = require('./sectionManager').default;
     const commentFormManager = require('./commentFormManager').default;
@@ -743,10 +743,10 @@ class BootManager {
      */
     cd.commentForms = commentFormManager.getAll();
 
-    cd.tests.controller = talkPageController;
+    cd.tests.controller = pageController;
     cd.tests.processPageInBackground = require('./updateChecker').processPage;
     cd.tests.showSettingsDialog = settings.showDialog.bind(settings);
-    cd.tests.editSubscriptions = talkPageController.showEditSubscriptionsDialog.bind(talkPageController);
+    cd.tests.editSubscriptions = bootManager.showEditSubscriptionsDialog.bind(pageController);
     cd.tests.visits = require('./visits').default;
 
     /* Some static methods for external use */
@@ -799,14 +799,15 @@ class BootManager {
      * @function reloadPage
      * @memberof convenientDiscussions.api
      */
-    cd.api.reloadPage = this.reboot.bind(this);
+    cd.api.reloadPage = this.rebootTalkPage.bind(this);
+    cd.api.rebootTalkPage = this.rebootTalkPage.bind(this);
 
     /**
      * @see module:bootManager.getRootElement
      * @function getRootElement
      * @memberof convenientDiscussions.api
      */
-    cd.api.getRootElement = talkPageController.getRootElement.bind(this);
+    cd.api.getRootElement = pageController.getRootElement.bind(this);
   }
 
   /**
@@ -931,7 +932,7 @@ class BootManager {
 
   /**
    * Load the data required for the script to run on a talk page and execute the
-   * {@link BootProcess boot process}.
+   * {@link TalkPageBootProcess boot process}.
    *
    * @private
    */
@@ -1000,7 +1001,7 @@ class BootManager {
     // If there is no data to load and, therefore, no period of time within which a reflow (layout
     // thrashing) could happen without impeding performance, we cache the value so that it could
     // be used in .saveRelativeScrollPosition() without causing a reflow.
-    this.bootProcess = this.createBootProcess(
+    this.talkPageBootProcess = this.createTalkPageBootProcess(
       siteDataRequests.every((request) => request.state() === 'resolved') && !modulesRequest
         ? { scrollY: window.scrollY }
         : {}
@@ -1008,7 +1009,7 @@ class BootManager {
 
     this.showLoadingOverlay();
     Promise.all([modulesRequest || Promise.resolve(), ...siteDataRequests]).then(
-      () => this.tryBoot(false),
+      () => this.tryBootTalkPage(false),
       (/** @type {unknown} */ error) => {
         mw.notify(cd.s('error-loaddata'), { type: 'error' });
         console.error(error);
@@ -1041,20 +1042,11 @@ class BootManager {
   /**
    * Create a boot process.
    *
-   * @param {import('./BootProcess').PassedData} [passedData]
-   * @returns {import('./BootProcess').default}
+   * @param {import('./TalkPageBootProcess').PassedData} [passedData]
+   * @returns {import('./TalkPageBootProcess').default}
    */
-  createBootProcess(passedData = {}) {
-    return new (require('./BootProcess').default)(passedData);
-  }
-
-  /**
-   * Set a boot process as the current boot process.
-   *
-   * @param {import('./BootProcess').default} bootProcess
-   */
-  setBootProcess(bootProcess) {
-    this.bootProcess = bootProcess;
+  createTalkPageBootProcess(passedData = {}) {
+    return new (require('./TalkPageBootProcess').default)(passedData);
   }
 
   /**
@@ -1062,24 +1054,24 @@ class BootManager {
    *
    * For simpler type checking, assume it's always set (we don't use it when it's not).
    *
-   * @returns {import('./BootProcess').default}
+   * @returns {import('./TalkPageBootProcess').default}
    */
-  getBootProcess() {
-    return this.bootProcess;
+  getTalkPageBootProcess() {
+    return this.talkPageBootProcess;
   }
 
   /**
-   * Run the {@link BootProcess current boot process} and catch errors.
+   * Run the {@link TalkPageBootProcess current boot process} and catch errors.
    *
    * @param {boolean} isReload Is the page reloaded, not booted the first time.
    */
-  async tryBoot(isReload) {
+  async tryBootTalkPage(isReload) {
     this.booting = true;
 
-    // We could say "let it crash", but unforeseen errors in BootProcess#execute() are just too
-    // likely to go without a safeguard.
+    // We could say "let it crash", but unforeseen errors in TalkPageBootProcess#execute() are just
+    // too likely to go without a safeguard.
     try {
-      await this.bootProcess.execute(isReload);
+      await this.talkPageBootProcess.execute(isReload);
       if (isReload) {
         mw.hook('wikipage.content').fire(this.$content);
       }
@@ -1090,6 +1082,26 @@ class BootManager {
     }
 
     this.booting = false;
+  }
+
+  /**
+   * Assign various global objects' ({@link convenientDiscussions}, {@link JQuery.fn jQuery.fn})
+   * properties and methods that are needed for processing a talk page. Executed on the first run.
+   */
+  async setupTalkPage() {
+    // In most cases the site data is already loaded after being requested in
+    // BootManager#initOnTalkPage().
+    await Promise.all(this.getSiteData());
+
+    // This could have been executed from addCommentLinks.prepare() already.
+    this.initGlobals();
+    await require('./settings').default.init();
+
+    bootManager.initTimestampParsingTools('content');
+    this.talkPageBootProcess.initPatterns();
+    this.talkPageBootProcess.initPrototypes();
+    $.fn.extend(require('./jqueryExtensions').default);
+    initDayjs();
   }
 
   /**
@@ -1104,21 +1116,21 @@ class BootManager {
   /**
    * Reload the page via Ajax.
    *
-   * @param {import('./BootProcess').PassedData} [passedData] Data passed from the previous page
+   * @param {import('./TalkPageBootProcess').PassedData} [passedData] Data passed from the previous page
    *   state. See {@link PassedData} for the list of possible properties. `html`, `unseenComments`
    *   properties are set in this function.
    * @throws {import('./shared/CdError').default|Error}
    */
-  async reboot(passedData = {}) {
+  async rebootTalkPage(passedData = {}) {
     if (this.booting) return;
 
     passedData.isRevisionSliderRunning = Boolean(history.state?.sliderPos);
 
-    // We need talkPageController here since bootManager can't emit events. Use `require()`, not
+    // We need PageController here since BootManager can't emit events. Use `require()`, not
     // `import`, to avoid importing it before `oojs-ui` module is loaded.
-    const talkPageController = require('./talkPageController').default;
+    const pageController = require('./pageController').default;
 
-    talkPageController.emit('beforeReboot', passedData);
+    pageController.emit('beforeReboot', passedData);
 
     // We reset the live timestamps only during the boot process, because we shouldn't dismount the
     // components of the current version of the page at least until a correct response to the parse
@@ -1126,7 +1138,7 @@ class BootManager {
     // dysfunctional page.
 
     if (!passedData.commentIds && !passedData.sectionId) {
-      talkPageController.saveScrollPosition();
+      pageController.saveScrollPosition();
     }
 
     debug.init();
@@ -1140,7 +1152,7 @@ class BootManager {
     });
 
     this.showLoadingOverlay();
-    const bootProcess = this.createBootProcess(passedData);
+    const bootProcess = this.createTalkPageBootProcess(passedData);
 
     try {
       bootProcess.passedData.parseData = await cd.page.parse(undefined, false, true);
@@ -1171,7 +1183,7 @@ class BootManager {
 
     // At this point, the boot process can't be interrupted, so we can remove all traces of the
     // current page state.
-    this.setBootProcess(bootProcess);
+    this.talkPageBootProcess = bootProcess;
 
     // Just submitted "Add section" form (it is outside of the .$root element, so we must remove it
     // here). Forms that should stay are detached above.
@@ -1181,14 +1193,14 @@ class BootManager {
 
     debug.stopTimer('get HTML');
 
-    talkPageController.emit('startReboot');
+    pageController.emit('startReboot');
 
-    await this.tryBoot(true);
+    await this.tryBootTalkPage(true);
 
-    talkPageController.emit('reboot');
+    pageController.emit('reboot');
 
     if (!bootProcess.passedData.commentIds && !bootProcess.passedData.sectionId) {
-      talkPageController.restoreScrollPosition(false);
+      pageController.restoreScrollPosition(false);
     }
   }
 
@@ -1205,7 +1217,7 @@ class BootManager {
 
     const $root = $content.children('.mw-parser-output');
     if ($root.length && !$root.hasClass('cd-parse-started')) {
-      bootManager.reboot({ isPageReloadedExternally: true });
+      bootManager.rebootTalkPage({ isPageReloadedExternally: true });
     }
   };
 
@@ -1213,7 +1225,7 @@ class BootManager {
    * Remove fragment and revision parameters from the URL; remove DOM elements related to the diff.
    */
   cleanUpUrlAndDom() {
-    if (this.bootProcess.passedData.isRevisionSliderRunning) return;
+    if (this.talkPageBootProcess.passedData.isRevisionSliderRunning) return;
 
     const { searchParams } = new URL(location.href);
     this.cleanUpDom(searchParams);
@@ -1240,9 +1252,9 @@ class BootManager {
     $('#firstHeading').text(cd.page.name);
     document.title = cd.mws('pagetitle', cd.page.name);
 
-    // We need talkPageController here since bootManager can't emit events. Use `require()`, not
+    // We need PageController here since bootManager can't emit events. Use `require()`, not
     // `import`, to avoid importing it before `oojs-ui` module is loaded.
-    require('./talkPageController').default.updateOriginalPageTitle(document.title);
+    require('./pageController').default.updateOriginalPageTitle(document.title);
   }
 
   /**
@@ -1285,7 +1297,7 @@ class BootManager {
       });
 
       this.pageTypes.diff = false;
-    } else if (!this.bootProcess.passedData.pushState) {
+    } else if (!this.talkPageBootProcess.passedData.pushState) {
       // Don't reset the fragment if it will be set in the boot process from a comment ID or a
       // section ID, to avoid creating an extra history entry.
       methodName = 'replaceState';
@@ -1474,6 +1486,17 @@ class BootManager {
 
     $(window).off('beforeunload', this.beforeUnloadHandlers[name]);
     delete this.beforeUnloadHandlers[name];
+  }
+
+  /**
+   * Show an edit subscriptions dialog.
+   */
+  showEditSubscriptionsDialog() {
+    if (this.isPageOverlayOn()) return;
+
+    const dialog = new (require('./EditSubscriptionsDialog').default)();
+    cd.getWindowManager().addWindows([dialog]);
+    cd.getWindowManager().openWindow(dialog);
   }
 }
 

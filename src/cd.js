@@ -12,8 +12,9 @@ import cd from './shared/cd';
  * @property {import('./sectionManager').default['getByHeadline']} getSectionsByHeadline
  * @property {import('./commentFormManager').default['getLastActive']} getLastActiveCommentForm
  * @property {import('./commentFormManager').default['getLastActiveAltered']} getLastActiveAlteredCommentForm
- * @property {import('./bootManager').default['reboot']} reloadPage
- * @property {import('./talkPageController').default['getRootElement']} getRootElement
+ * @property {import('./bootManager').default['rebootTalkPage']} reloadPage
+ * @property {import('./bootManager').default['rebootTalkPage']} rebootTalkPage
+ * @property {import('./pageController').default['getRootElement']} getRootElement
  */
 
 /**

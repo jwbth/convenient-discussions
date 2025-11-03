@@ -937,7 +937,7 @@ class UpdateChecker extends EventEmitter {
   init() {
     visits
       .on('process', (/** @type {string[]} */ currentPageData) => {
-        const bootProcess = bootManager.getBootProcess();
+        const bootProcess = bootManager.getTalkPageBootProcess();
         const previousVisitTime = currentPageData.at(-2);
         this.setup(
           previousVisitTime ? Number(previousVisitTime) : undefined,

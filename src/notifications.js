@@ -7,7 +7,7 @@
  * @module notifications
  */
 
-import talkPageController from './talkPageController';
+import pageController from './pageController';
 
 /**
  * Notification object created by running
@@ -35,7 +35,7 @@ export default {
    * Initialize the singleton.
    */
   init() {
-    talkPageController
+    pageController
       .on('beforeReboot', (passedData) => {
         this.close(passedData.closeNotificationsSmoothly ?? true);
       });
@@ -49,7 +49,7 @@ export default {
    *
    * @param {string|JQuery} message Message text.
    * @param {object} [options]
-   * @param {object} [data={}] Additional data related to the notification.
+   * @param {object} [data] Additional data related to the notification.
    * @returns {Notification}
    */
   add(message, options, data = {}) {

@@ -32,7 +32,7 @@ class RefactoringDiagnostics {
       'src/Section.js',
       'src/CommentForm.js',
       'src/Thread.js',
-      'src/talkPageController.js',
+      'src/pageController.js',
       'src/commentManager.js',
       'src/sectionManager.js',
     ];

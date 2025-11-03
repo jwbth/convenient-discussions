@@ -7,13 +7,13 @@ import bootManager from './bootManager';
 import cd from './cd';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
+import pageController from './pageController';
 import settings from './settings';
 import CdError from './shared/CdError';
 import CommentSkeleton from './shared/CommentSkeleton';
 import ElementsTreeWalker from './shared/ElementsTreeWalker';
 import { areObjectsEqual, calculateWordOverlap, countOccurrences, decodeHtmlEntities, defined, getHeadingLevel, removeFromArrayIfPresent, sleep, underlinesToSpaces, unique } from './shared/utils-general';
 import { extractNumeralAndConvertToNumber, removeWikiMarkup } from './shared/utils-wikitext';
-import talkPageController from './talkPageController';
 import userRegistry from './userRegistry';
 import { handleApiReject, loadUserGenders, parseCode } from './utils-api';
 import { showConfirmDialog } from './utils-oojs';
@@ -355,7 +355,7 @@ class Comment extends CommentSkeleton {
      */
     this.isActionable =
       cd.page.isActive() &&
-      !talkPageController.getClosedDiscussions().some((el) => el.contains(this.elements[0]));
+      !pageController.getClosedDiscussions().some((el) => el.contains(this.elements[0]));
 
     this.isEditable = this.isActionable && (this.isOwn || settings.get('allowEditOthersComments'));
 
@@ -377,7 +377,7 @@ class Comment extends CommentSkeleton {
      * @private
      */
     const getContainerListType = (el) => {
-      const treeWalker = new ElementsTreeWalker(talkPageController.rootElement, el);
+      const treeWalker = new ElementsTreeWalker(pageController.rootElement, el);
       while (treeWalker.parentNode()) {
         if (treeWalker.currentNode.classList.contains('cd-commentLevel')) {
           return /** @type {ListType} */ (treeWalker.currentNode.tagName.toLowerCase());
@@ -414,7 +414,7 @@ class Comment extends CommentSkeleton {
         this.highlightables[this.highlightables.length - 1],
       ];
       firstAndLastHighlightable.forEach((highlightable, i) => {
-        const treeWalker = new ElementsTreeWalker(talkPageController.rootElement, highlightable);
+        const treeWalker = new ElementsTreeWalker(pageController.rootElement, highlightable);
         nestingLevels[i] = 0;
         while (treeWalker.parentNode()) {
           nestingLevels[i]++;
@@ -686,7 +686,7 @@ class Comment extends CommentSkeleton {
       settings.saveSettingOnTheFly('toggleChildThreads-onboarded', true);
       this.teardownOnboardOntoToggleChildThreadsPopup();
     });
-    talkPageController.once('startReboot', this.teardownOnboardOntoToggleChildThreadsPopup);
+    pageController.once('startReboot', this.teardownOnboardOntoToggleChildThreadsPopup);
   }
 
   teardownOnboardOntoToggleChildThreadsPopup = () => {
@@ -799,8 +799,8 @@ class Comment extends CommentSkeleton {
           // Currently we can't have comments with no highlightable elements.
           this.highlightables.length > 1 &&
           (
-            talkPageController.getFloatingElements().includes(testElement) ||
-            talkPageController.getHiddenElements().includes(testElement)
+            pageController.getFloatingElements().includes(testElement) ||
+            pageController.getHiddenElements().includes(testElement)
           )
         ) {
           if (el.classList.contains('cd-comment-part-first')) {
@@ -1042,7 +1042,7 @@ class Comment extends CommentSkeleton {
     rectBottom,
     top,
     bottom,
-    floatingRects = talkPageController.getFloatingElements().map(getExtendedRect)
+    floatingRects = pageController.getFloatingElements().map(getExtendedRect)
   ) {
     // Check if the comment offset intersects the offsets of floating elements on the page. (Only
     // then would we need altering comment styles to get the correct offset which is an expensive
@@ -1090,7 +1090,7 @@ class Comment extends CommentSkeleton {
         // https://en.wikipedia.org/wiki/Wikipedia:Village_pump_(technical)#202107140040_SGrabarczuk_(WMF).
         this.highlightables.forEach((el, i) => {
           if (
-            talkPageController.getFloatingElements().some((floatingEl) => el.contains(floatingEl))
+            pageController.getFloatingElements().some((floatingEl) => el.contains(floatingEl))
           ) {
             el.style.overflow = initialOverflows[i];
           }
@@ -1129,7 +1129,7 @@ class Comment extends CommentSkeleton {
     if (!this.layers?.getContainer().cdIsTopLayersContainer) return;
 
     if (this.level === 0) {
-      const offsets = talkPageController.getContentColumnOffsets();
+      const offsets = pageController.getContentColumnOffsets();
 
       // 2 instead of 1 for Timeless
       const leftStretched = left - offsets.startMargin - 2;
@@ -1154,7 +1154,7 @@ class Comment extends CommentSkeleton {
    * @returns {Direction}
    */
   getDirection() {
-    this.direction ??= talkPageController.areThereLtrRtlMixes()
+    this.direction ??= pageController.areThereLtrRtlMixes()
       // Take the last element because the first one may be the section heading which can have
       // another direction.
       ? this.elements[this.elements.length - 1]
@@ -1184,7 +1184,7 @@ class Comment extends CommentSkeleton {
           ? cd.g.contentFontSize * 3.2
           : cd.g.contentFontSize * 2.2 - 1;
     } else if (this.isStartStretched) {
-      startMargin = talkPageController.getContentColumnOffsets().startMargin;
+      startMargin = pageController.getContentColumnOffsets().startMargin;
     } else {
       const marginElement = this.thread?.$expandNote?.[0] || this.marginHighlightable;
       if (marginElement.parentElement?.classList.contains('cd-commentLevel')) {
@@ -1202,7 +1202,7 @@ class Comment extends CommentSkeleton {
       }
     }
     const endMargin = this.isEndStretched
-      ? talkPageController.getContentColumnOffsets().startMargin
+      ? pageController.getContentColumnOffsets().startMargin
       : cd.g.commentFallbackSideMargin;
 
     return {
@@ -1394,7 +1394,7 @@ class Comment extends CommentSkeleton {
       seenStorageItem.set(mw.config.get('wgArticleId'), seen).save();
     }
 
-    talkPageController.maybeMarkPageAsRead();
+    pageController.maybeMarkPageAsRead();
   }
 
   /**
@@ -1606,7 +1606,7 @@ class Comment extends CommentSkeleton {
       : new Button({
         label: cd.s('comment-changed-refresh'),
         action: () => {
-          bootManager.reboot(type === 'deleted' || !this.id ? {} : { commentIds: [this.id] });
+          bootManager.rebootTalkPage(type === 'deleted' || !this.id ? {} : { commentIds: [this.id] });
         },
       });
 
@@ -1742,7 +1742,7 @@ class Comment extends CommentSkeleton {
       // The change was reverted and the user hasn't seen the change - no need to flash the comment.
       if (this.willFlashChangedOnSight) {
         this.willFlashChangedOnSight = false;
-        talkPageController.maybeMarkPageAsRead();
+        pageController.maybeMarkPageAsRead();
       } else if (this.id) {
         const seenStorageItem = new StorageItemWithKeys('seenRenderedChanges');
         const seen = seenStorageItem.get(mw.config.get('wgArticleId')) || {};
@@ -1988,7 +1988,7 @@ class Comment extends CommentSkeleton {
    * @param {JQuery.TriggeredEvent | MouseEvent | KeyboardEvent} event
    */
   copyLink = (event) => {
-    talkPageController.showCopyLinkDialog(this, event);
+    pageController.showCopyLinkDialog(this, event);
   };
 
   /**
@@ -2645,7 +2645,7 @@ class Comment extends CommentSkeleton {
     }
 
     const scrollY = window.scrollY;
-    const viewportTop = scrollY + talkPageController.getBodyScrollPaddingTop();
+    const viewportTop = scrollY + pageController.getBodyScrollPaddingTop();
     const viewportBottom = scrollY + window.innerHeight;
 
     return partially
@@ -3244,8 +3244,8 @@ class Comment extends CommentSkeleton {
     const commentTime = Math.floor(this.date.getTime() / 1000);
 
     // Add 60 seconds to the comment time because it doesn't have seconds whereas the visit time
-    // has. See also timeConflict in BootProcess#processVisits(). Unseen comment might be not new if
-    // it's a changed old comment.
+    // has. See also timeConflict in TalkPageBootProcess#processVisits(). Unseen comment might be
+    // not new if it's a changed old comment.
     this.isNew = Boolean(commentTime + 60 > Number(currentPageVisits[0]) || unseenComment?.isNew);
     this.isSeen =
       (commentTime + 60 <= Number(currentPageVisits[currentPageVisits.length - 1]) || this.isOwn) &&
@@ -3484,15 +3484,6 @@ class Comment extends CommentSkeleton {
    */
   getCommentFormTargetComment() {
     return this;
-  }
-
-  /**
-   * Type checking helper.
-   *
-   * @returns {this is Comment}
-   */
-  isComment() {
-    return true;
   }
 
   /**

@@ -4,10 +4,10 @@ import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime';
 import bootManager from './bootManager';
 import cd from './cd';
 import commentManager from './commentManager';
+import pageController from './pageController';
 import sectionManager from './sectionManager';
 import settings from './settings';
 import { defined, removeFromArrayIfPresent, subtractDaysFromNow } from './shared/utils-general';
-import talkPageController from './talkPageController';
 import { isCmdModifierPressed, isInputFocused, keyCombination } from './utils-window';
 
 // TODO: make into a class extending a generic registry.
@@ -48,7 +48,7 @@ class CommentFormManager extends EventEmitter {
   init() {
     this.configureClosePageConfirmation();
 
-    talkPageController
+    pageController
       .on('beforeReboot', () => {
         // In case checkboxes were changed programmatically
         this.saveSession();
@@ -124,7 +124,7 @@ class CommentFormManager extends EventEmitter {
           this.remove(cf);
         })
         .on('teardown', () => {
-          talkPageController.updatePageTitle();
+          pageController.updatePageTitle();
           this.emit('teardown', cf);
         });
       this.emit('add', cf);
@@ -132,7 +132,7 @@ class CommentFormManager extends EventEmitter {
       commentForm = cf;
     }
 
-    talkPageController.updatePageTitle();
+    pageController.updatePageTitle();
     this.saveSession();
 
     /**
