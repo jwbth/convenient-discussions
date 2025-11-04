@@ -330,7 +330,7 @@
 	"sd-page-notifications": "Notifications",
 	"sd-page-dataremoval": "Data deletion",
 	"sd-close-confirm": "The settings were not saved. Are you sure you want to close the window?",
-	"sd-saved": "The settings have been saved successfully. Reload the page to apply them.",
+	"sd-saved": "The settings have been saved successfully. Reload the page to apply them$1.",
 	"sd-reset": "Reset settings (in all sections)",
 	"sd-reset-confirm": "Are you sure you want to reset the settings? (Click \"{{int:convenient-discussions-sd-save}}\" after resetting.)",
 	"sd-removedata": "Delete all script data",

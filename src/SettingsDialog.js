@@ -2,6 +2,7 @@ import ProcessDialog from './ProcessDialog';
 import StorageItem from './StorageItem';
 import bootManager from './bootManager';
 import cd from './cd';
+import commentFormManager from './commentFormManager';
 import settings from './settings';
 import { areObjectsEqual } from './shared/utils-general';
 import { saveGlobalOption, saveLocalOption } from './utils-api';
@@ -130,7 +131,9 @@ class SettingsDialog extends ProcessDialog {
       padded: true,
       expanded: false,
     });
-    this.reloadPanel.$element.append($('<p>').text(cd.s('sd-saved')));
+    this.reloadPanel.$element.append(
+      $('<p>').text(cd.s('sd-saved', commentFormManager.maybeGetFormDataWontBeLostString()))
+    );
 
     this.dataDeletedPanel = new OO.ui.PanelLayout({
       padded: true,
@@ -232,9 +235,11 @@ class SettingsDialog extends ProcessDialog {
         });
       }
       case 'reboot': {
-        return new OO.ui.Process(() => {
+        return new OO.ui.Process(async () => {
           this.close();
-          location.reload();
+          if (!(await bootManager.rebootTalkPage())) {
+            location.reload();
+          }
         });
       }
       case 'close': {

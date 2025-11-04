@@ -856,7 +856,8 @@ class Settings extends EventEmitter {
 
   /**
    * Update a setting value, saving it to the server and changing it for the current session as
-   * well. This should be done cautiously, because many settings only have effect on page reload.
+   * well. This should be done cautiously, because many settings only have effect on in-script page
+   * reload.
    *
    * @param {SettingName} key The key of the settings to save.
    * @param {any} value The value to set.

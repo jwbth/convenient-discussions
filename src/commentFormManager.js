@@ -543,6 +543,17 @@ class CommentFormManager extends EventEmitter {
       .map((data) => data.commentForm)[0]
       ?.goTo();
   }
+
+  /**
+   * Get the " (form data will not be lost)" string if there are altered forms.
+   *
+   * @returns {string}
+   */
+  maybeGetFormDataWontBeLostString() {
+    return this.getAll().some((cf) => cf.isAltered())
+      ? cd.s('word-separator') + cd.mws('parentheses', cd.s('notification-formdata'))
+      : '';
+  }
 }
 
 export default new CommentFormManager();

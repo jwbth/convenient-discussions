@@ -173,9 +173,9 @@ export default class CurrentPage extends Page {
    */
   findArchivingInfoElement() {
     // This is not reevaluated after page reloads. Since archive settings we need rarely change, the
-    // reevaluation is unlikely to make any difference. `$root?` because the $root can not be set
-    // when it runs from the addCommentLinks module.
-    this.$archivingInfo ??= pageController.$root.find('.cd-archivingInfo');
+    // reevaluation is unlikely to make any difference
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    this.$archivingInfo ??= pageController.$root?.find('.cd-archivingInfo');
 
     return this.$archivingInfo;
   }

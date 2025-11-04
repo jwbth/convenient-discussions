@@ -196,7 +196,7 @@ class TalkPageBootProcess {
       sorted by the scope of enabled features. Each level includes the next ones; 3 is the
       intersection of 2.1 and 2.2.
         1. The page is a wikitext (article) page.
-        2. The page is likely a talk page. controller.isTalkPage() reflects that. We may reevaluate
+        2. The page is likely a talk page. BootManager#isTalkPage() reflects that. We may reevaluate
            page as being not a talk page (see TalkPageBootProcess#retractTalkPageType()) if we don't
            find any comments on it and several other criteria are not met. Likely talk pages are
            divided into two categories:

@@ -19,7 +19,7 @@ import Parser from './shared/Parser';
 import { defined, definedAndNotNull, getLastArrayElementOrSelf, isHeadingNode, isInline, sleep } from './shared/utils-general';
 import toc from './toc';
 import updateChecker from './updateChecker';
-import { copyText, getVisibilityByRects, skin$, wrapHtml } from './utils-window';
+import { copyText, getFormDataWontBeLostString, getVisibilityByRects, skin$, wrapHtml } from './utils-window';
 
 /**
  * @typedef {object} EventMap
@@ -1276,11 +1276,7 @@ class PageController extends EventEmitter {
       let html;
       const rebootHtml = cd.sParse(
         'notification-reload',
-
-        // Note about the form data
-        commentFormManager.getAll().some((cf) => cf.isAltered())
-          ? wordSeparator + cd.mws('parentheses', cd.s('notification-formdata'))
-          : ''
+        commentFormManager.maybeGetFormDataWontBeLostString()
       );
       if (filteredComments.length === 1) {
         const comment = filteredComments[0];

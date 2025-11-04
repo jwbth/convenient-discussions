@@ -99,6 +99,8 @@ class BootManager {
   pageTypes = {
     /**
      * Is the current page likely a talk page. See `definitelyTalk` for the most strict criteria.
+     * After a TalkPageBootProcess ran, this value becomes reliable (if the page turned out not to
+     * be a talk page, this is updated).
      */
     talk: false,
 
@@ -1116,13 +1118,16 @@ class BootManager {
   /**
    * Reload the page via Ajax.
    *
-   * @param {import('./TalkPageBootProcess').PassedData} [passedData] Data passed from the previous page
-   *   state. See {@link PassedData} for the list of possible properties. `html`, `unseenComments`
-   *   properties are set in this function.
+   * @param {import('./TalkPageBootProcess').PassedData} [passedData] Data passed from the previous
+   *   page state. See {@link PassedData} for the list of possible properties. `html`,
+   *   `unseenComments` properties are set in this function.
+   * @returns {Promise<boolean>} Successful?
    * @throws {import('./shared/CdError').default|Error}
    */
   async rebootTalkPage(passedData = {}) {
-    if (this.booting) return;
+    if (this.booting || !this.isPageOfType('talk')) {
+      return false;
+    }
 
     passedData.isRevisionSliderRunning = Boolean(history.state?.sliderPos);
 
@@ -1164,7 +1169,7 @@ class BootManager {
         mw.notify(cd.s('error-reloadpage'), { type: 'error' });
         console.warn(error);
 
-        return;
+        return false;
       }
     }
 
@@ -1202,6 +1207,8 @@ class BootManager {
     if (!bootProcess.passedData.commentIds && !bootProcess.passedData.sectionId) {
       pageController.restoreScrollPosition(false);
     }
+
+    return true;
   }
 
   /**
