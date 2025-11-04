@@ -488,7 +488,7 @@ class SettingsDialog extends ProcessDialog {
     );
     this.controls.outdentLevel.input.setDisabled(!this.controls.outdent.input.isSelected());
     this.controls.showContribsLink.input.setDisabled(
-      !this.controls.spaciousComments.input.isSelected()
+      this.controls.spaciousComments.input.findSelectedItem()?.getData() !== 'spacious'
     );
     this.controls.useTemplateData.input.setDisabled(
       !(

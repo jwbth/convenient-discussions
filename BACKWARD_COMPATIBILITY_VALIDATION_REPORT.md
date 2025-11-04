@@ -47,7 +47,7 @@ This validation focuses on **functional backward compatibility** - ensuring that
 
 ### 6. BootProcess Integration ✅
 - **Class imports**: ✅ CompactComment and SpaciousComment properly imported
-- **Class selection**: ✅ Uses `settings.get('spaciousComments')` for conditional instantiation
+- **Class selection**: ✅ Uses `settings.get('spaciousComments') === 'spacious'` for conditional instantiation
 
 ### 7. Composition Pattern Implementation ✅
 - **Import statements**: ✅ CommentLayers and CommentActions imported
@@ -84,7 +84,7 @@ Comment (base class)
 ### Parser Integration
 The BootProcess correctly selects the appropriate comment class:
 ```javascript
-const CommentClass = settings.get('spaciousComments') ? SpaciousComment : CompactComment;
+const CommentClass = settings.get('spaciousComments') === 'spacious' ? SpaciousComment : CompactComment;
 ```
 
 ### Type Guards

@@ -340,7 +340,7 @@ class TalkPageBootProcess {
       // (e.g. RevisionSlider replaces it).
       pageController.setupMutationObserver();
 
-      if (settings.get('spaciousComments') && commentManager.getCount() && this.isFirstRun()) {
+      if (settings.get('spaciousComments') === 'spacious' && commentManager.getCount() && this.isFirstRun()) {
         // Using the wikipage.content hook could theoretically disrupt code that needs to process
         // the whole page content (#mw-content-text), if it runs later than CD which would override
         // the hook's argument below. But typically CD runs relatively late.
@@ -655,7 +655,7 @@ class TalkPageBootProcess {
    */
   initPrototypes() {
     // Initialize prototypes for the appropriate Comment class based on spaciousComments setting
-    if (settings.get('spaciousComments')) {
+    if (settings.get('spaciousComments') === 'spacious') {
       SpaciousComment.initPrototypes();
     } else {
       CompactComment.initPrototypes();
@@ -672,7 +672,7 @@ class TalkPageBootProcess {
    */
   findTargets() {
     // Choose appropriate Comment class based on spaciousComments setting
-    const CommentClass = settings.get('spaciousComments') ? SpaciousComment : CompactComment;
+    const CommentClass = settings.get('spaciousComments') === 'spacious' ? SpaciousComment : CompactComment;
 
     this.parser = new Parser({
       CommentClass,

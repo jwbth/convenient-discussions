@@ -46,13 +46,13 @@ test('Settings system has spaciousComments -> reformatComments alias', () => {
 test('Settings system has spaciousComments in control types', () => {
   const settingsSource = readFile('src/settings.js');
 
-  return settingsSource.includes('spaciousComments: \'checkbox\'');
+  return settingsSource.includes('spaciousComments: \'radio\'');
 });
 
 test('Settings system has spaciousComments in default values', () => {
   const settingsSource = readFile('src/settings.js');
 
-  return settingsSource.includes('\'spaciousComments\': null');
+  return settingsSource.includes('\'spaciousComments\': \'spacious\'');
 });
 
 // Test 2: Class Structure (Essential for functionality)
@@ -115,10 +115,10 @@ test('BootProcess imports correct comment classes', () => {
 });
 
 test('BootProcess uses spaciousComments setting for class selection', () => {
-  const bootProcessSource = readFile('src/BootProcess.js');
+  const bootProcessSource = readFile('src/TalkPageBootProcess.js');
 
-  return bootProcessSource.includes("settings.get('spaciousComments')") &&
-    bootProcessSource.includes('SpaciousComment : CompactComment');
+  return bootProcessSource.includes("settings.get('spaciousComments') === 'spacious'") &&
+    bootProcessSource.includes('? SpaciousComment : CompactComment');
 });
 
 // Test 7: Composition Pattern (Essential for new architecture)
@@ -192,7 +192,7 @@ if (passedTests === totalTests) {
 }
 
 console.log('\n🔍 Key Functional Compatibility Features Validated:');
-console.log('• Settings migration (reformatComments → spaciousComments)');
+console.log('• Settings migration (reformatComments → spaciousComments radio)');
 console.log('• Class inheritance structure (CompactComment, SpaciousComment extend Comment)');
 console.log('• Composition pattern implementation (layers, actions)');
 console.log('• BootProcess integration for class selection');

@@ -69,7 +69,7 @@ describe('Comment Class Refactoring - Backward Compatibility', () => {
 
       expect(bootProcessSource).toContain('import CompactComment');
       expect(bootProcessSource).toContain('import SpaciousComment');
-      expect(bootProcessSource).toContain("settings.get('spaciousComments')");
+      expect(bootProcessSource).toContain("settings.get('spaciousComments') === 'spacious'");
     });
   });
 
@@ -209,10 +209,10 @@ describe('Comment Class Refactoring - Backward Compatibility', () => {
       expect(settingsSource).toContain("'spaciousComments': ['reformatComments']");
 
       // Check for spaciousComments in control types
-      expect(settingsSource).toContain('spaciousComments: \'checkbox\'');
+      expect(settingsSource).toContain('spaciousComments: \'radio\'');
 
       // Check for spaciousComments in default values
-      expect(settingsSource).toContain('\'spaciousComments\': null');
+      expect(settingsSource).toContain('\'spaciousComments\': \'spacious\'');
     });
   });
 });

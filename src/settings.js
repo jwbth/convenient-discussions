@@ -32,7 +32,7 @@ import { createSvg, formatDateImproved, formatDateNative, formatDateRelative, ge
  * @property {boolean} notifyCollapsedThreads
  * @property {boolean} outdent
  * @property {number} outdentLevel
- * @property {boolean|null} spaciousComments
+ * @property {'compact'|'spacious'|null} spaciousComments
  * @property {boolean} showContribsLink
  * @property {boolean} showToolbar
  * @property {string} signaturePrefix
@@ -180,7 +180,7 @@ class Settings extends EventEmitter {
      * @type {Partial<SettingsValues>}
      */
     resetsTo: {
-      spaciousComments: false,
+      spaciousComments: 'compact',
     },
 
     /**
@@ -205,7 +205,7 @@ class Settings extends EventEmitter {
       notifyCollapsedThreads: 'checkbox',
       outdent: 'checkbox',
       outdentLevel: 'number',
-      spaciousComments: 'checkbox',
+      spaciousComments: 'radio',
       removeData: 'button',
       showContribsLink: 'checkbox',
       showToolbar: 'checkbox',
@@ -270,7 +270,7 @@ class Settings extends EventEmitter {
       'notifyCollapsedThreads': false,
       'outdent': true,
       'outdentLevel': 15,
-      'spaciousComments': null,
+      'spaciousComments': 'spacious',
       'showContribsLink': false,
       'showToolbar': true,
       'signaturePrefix': cd.config.defaultSignaturePrefix,
@@ -325,7 +325,17 @@ class Settings extends EventEmitter {
           {
             name: 'spaciousComments',
             type: this.scheme.controlTypes.spaciousComments,
-            label: cd.s('sd-reformatcomments'),
+            label: cd.s('sd-commentdisplay'),
+            options: [
+              {
+                data: 'spacious',
+                label: cd.s('sd-commentdisplay-radio-spacious'),
+              },
+              {
+                data: 'compact',
+                label: cd.s('sd-commentdisplay-radio-compact'),
+              },
+            ],
             classes: ['cd-setting-spaciousComments'],
           },
           {
@@ -967,7 +977,7 @@ class Settings extends EventEmitter {
     // re-show the popup next time
     if (closeData?.action) {
       try {
-        await this.saveSettingOnTheFly('spaciousComments', true);
+        await this.saveSettingOnTheFly('spaciousComments', 'spacious');
       } catch {
         // Empty
       }
