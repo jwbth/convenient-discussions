@@ -253,12 +253,7 @@ export async function showConfirmDialog(message, options = {}) {
 /**
  * @typedef {ControlOptionsBase & {
  *   selected?: string;
- *   options: Array<{
- *     data: any;
- *     label: string;
- *     help?: string|JQuery;
- *     selected?: boolean;
- *   }>;
+ *   options: (OO.ui.RadioOptionWidget.ConfigOptions & { help: string })[];
  * }} RadioControlOptions
  */
 
