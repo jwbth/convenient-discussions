@@ -75,7 +75,6 @@ export default /** @type {Partial<typeof import('./default').default>} */ ({
     'discussiontools-newtopicssubscription-notify-subscribed-body': '{{GENDER:|Вы}} будете получать уведомления о создании новых тем на этой странице.',
     'discussiontools-newtopicssubscription-notify-unsubscribed-title': '{{GENDER:|Вы}} отписались.',
     'discussiontools-newtopicssubscription-notify-unsubscribed-body': '{{GENDER:|Вы}} больше не будете получать уведомления о создании новых тем на этой странице.',
-    'visualeditor-educationpopup-dismiss': 'Окей, понятно',
   },
 
   specialPageAliases: {

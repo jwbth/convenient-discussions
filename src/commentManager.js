@@ -163,7 +163,7 @@ export class CommentManager extends EventEmitter {
    */
   setup() {
     // This can be updated after an in-script page reload.
-    this.spaciousComments = settings.get('spaciousComments');
+    this.spaciousComments = settings.get('spaciousComments') !== false;
 
     this.reformatTimestamps();
     this.findAndUpdateTableComments();

@@ -75,7 +75,6 @@ export default {
 		'discussiontools-newtopicssubscription-notify-subscribed-body': 'このページに新しい話題が追加されると通知が届きます。',
 		'discussiontools-newtopicssubscription-notify-unsubscribed-title': '通知を停止しました',
 		'discussiontools-newtopicssubscription-notify-unsubscribed-body': '新しい話題が追加されても通知を受け取らないようにしました。',
-		'visualeditor-educationpopup-dismiss': 'わかりました'
 	},
 	'specialPageAliases': {
 		'Contributions': '投稿記録',

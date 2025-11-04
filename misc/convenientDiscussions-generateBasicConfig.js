@@ -42,7 +42,6 @@ mw.loader.using([
     'discussiontools-newtopicssubscription-notify-unsubscribed-title',
     'discussiontools-newtopicssubscription-notify-unsubscribed-body',
     'thanks-confirmation2',
-    'visualeditor-educationpopup-dismiss',
     'checkuser-userinfocard-toggle-button-aria-label',
   ];
 

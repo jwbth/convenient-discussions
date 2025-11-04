@@ -326,6 +326,7 @@ class Settings extends EventEmitter {
             name: 'spaciousComments',
             type: this.scheme.controlTypes.spaciousComments,
             label: cd.s('sd-reformatcomments'),
+            classes: ['cd-setting-spaciousComments'],
           },
           {
             name: 'showContribsLink',
@@ -905,23 +906,19 @@ class Settings extends EventEmitter {
   }
 
   /**
-   * Show a popup asking the user if they want to enable the new comment formatting. Save the
-   * settings after they make the choice.
-   *
-   * @returns {Promise.<boolean>} Did the user enable comment reformatting.
+   * Show a popup informing the user about the structured comment design in CD.
    */
-  async maybeSuggestEnableCommentReformatting() {
-    if (this.get('spaciousComments') !== null) {
-      return false;
-    }
+  async maybeOnboardOntoSpaciousComments() {
+    if (this.get('spaciousComments') !== null) return;
 
     const { spaciousComments } = await this.load({ reuse: true });
-    if (definedAndNotNull(spaciousComments)) {
-      return false;
-    }
+    if (definedAndNotNull(spaciousComments)) return;
 
-    const action = await showConfirmDialog(
-      $('<div>')
+    const dialog = new OO.ui.MessageDialog();
+    cd.getWindowManager().addWindows([dialog]);
+    // eslint-disable-next-line no-one-time-vars/no-one-time-vars
+    const win = cd.getWindowManager().openWindow(dialog, {
+      message: $('<div>')
         .append(
           $('<img>')
             .attr('width', 626)
@@ -943,46 +940,38 @@ class Settings extends EventEmitter {
           $('<div>')
             .addClass('cd-rcnotice-text')
             .append(
-              wrapHtml(cd.sParse('rc-suggestion'), {
+              wrapHtml(cd.sParse('popup-spaciousComments-text'), {
                 callbacks: {
                   'cd-notification-settings': () => {
-                    this.showDialog();
+                    this.showDialog('talkPage');
+                  },
+                  'cd-notification-settings-compactComments': () => {
+                    this.showDialog('talkPage', '.cd-setting-spaciousComments input');
                   },
                 },
               }).children()
             ),
         )
         .children(),
-      {
-        size: 'large',
-        actions: [
-          {
-            label: cd.s('rc-suggestion-yes'),
-            action: 'accept',
-            flags: 'primary',
-          },
-          {
-            label: cd.s('rc-suggestion-no'),
-            action: 'reject',
-          },
-        ],
+      actions: [
+        {
+          label: cd.s('educationpopup-dismiss'),
+          action: 'accept',
+        },
+      ],
+      size: 'large',
+    });
+    const closeData = await win.closed;
+
+    // If the user pressed Escape (meaning they are likely just don't want to read anything),
+    // re-show the popup next time
+    if (closeData?.action) {
+      try {
+        await this.saveSettingOnTheFly('spaciousComments', true);
+      } catch {
+        // Empty
       }
-    );
-
-    // Escape key press
-    if (!action) {
-      return false;
     }
-
-    const accepted = action === 'accept';
-    try {
-      await this.saveSettingOnTheFly('spaciousComments', accepted);
-    } catch (error) {
-      mw.notify(cd.s('error-settings-save'), { type: 'error' });
-      console.warn(error);
-    }
-
-    return accepted;
   }
 
   /**

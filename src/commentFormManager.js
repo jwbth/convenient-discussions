@@ -438,10 +438,10 @@ class CommentFormManager extends EventEmitter {
       message: new OO.ui.FieldLayout(
         new OO.ui.MultilineTextInputWidget({
           value: content
-            .map((data) => (
+            .map((data) =>
               (data.headline === undefined ? '' : `${cd.s('rd-headline')}: ${data.headline}\n\n`) +
               `${cd.s('rd-comment')}: ${data.comment}\n\n${cd.s('rd-summary')}: ${data.summary}`
-            ))
+            )
             .join('\n\n----\n'),
           rows: 20,
         }),

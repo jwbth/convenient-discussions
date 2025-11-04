@@ -654,7 +654,7 @@ class Comment extends CommentSkeleton {
     // hovering.
 
     const button = new OO.ui.ButtonWidget({
-      label: cd.mws('visualeditor-educationpopup-dismiss'),
+      label: cd.s('educationpopup-dismiss'),
       flags: ['progressive', 'primary'],
     });
     button.on('click', () => {

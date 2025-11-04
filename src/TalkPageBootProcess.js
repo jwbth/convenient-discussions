@@ -948,11 +948,8 @@ class TalkPageBootProcess {
   async showPopups() {
     this.maybeSuggestDisableDt();
 
-    const didEnableCommentReformatting = await settings.maybeSuggestEnableCommentReformatting();
+    await settings.maybeOnboardOntoSpaciousComments();
     await settings.maybeConfirmDesktopNotifications();
-    if (didEnableCommentReformatting) {
-      bootManager.rebootTalkPage();
-    }
   }
 
   /**

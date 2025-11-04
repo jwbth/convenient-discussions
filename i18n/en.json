@@ -280,6 +280,7 @@
 	"popup-manyForms-text": "In Convenient Discussions, you can type many comments simultaneously in separate forms and then send them one by one. The text in other forms won't be lost when you submit one of the forms. Give it a try!",
 	"popup-upload-title": "New feature",
 	"popup-upload-text": "You can now upload screenshots to Commons in three clicks! Just paste or drag the image into the comment input, choose the preset, and click \"{{int:convenient-discussions-ud-uploadandsave}}\".",
+	"popup-spaciousComments-text": "In Convenient Discussions, by default, comments have a refreshed, structured look: the author and timestamp are displayed at the top and the action buttons at the bottom. This improves readability of talk pages and allows you to understand at a glance what's going on.\n\nWe invite you to try out this design! But if you want, you can get back to the classic design by picking the \"Compact\" under \"<span class=\"cd-notification-settings-compactComments\">[[$1|Comment display]]</span>\" in the settings. In this case, the action buttons will pop up in an overlay menu. Also, check out the <span class=\"cd-notification-settings\">[[$1|settings]]</span> for various features such as autocollapsed threads, text insert buttons and customizable formatting of timestamps (which, by the way, are now displayed in the timezone set in your wiki preferences).",
 
 	"navpanel-refresh": "Refresh page",
 	"navpanel-previous": "Go to the previous new comment",

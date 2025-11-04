@@ -75,7 +75,6 @@ export default /** @type {Partial<typeof import('./default').default>} */ ({
 		'discussiontools-newtopicssubscription-notify-subscribed-body': '{{GENDER:|}}Vous recevrez des notifications lorsque de nouveaux sujets seront lancés sur cette page.',
 		'discussiontools-newtopicssubscription-notify-unsubscribed-title': 'Vous êtes désabonné{{GENDER:||e}}.',
 		'discussiontools-newtopicssubscription-notify-unsubscribed-body': '{{GENDER:|}}Vous ne recevrez plus de notifications lorsque de nouveaux sujets sont lancés sur cette page.',
-		'visualeditor-educationpopup-dismiss': 'C’est bon, allons-y',
 	},
 	'specialPageAliases': {
 		'Contributions': 'Contributions',

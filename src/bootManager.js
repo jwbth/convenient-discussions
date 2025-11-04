@@ -235,9 +235,6 @@ class BootManager {
           : []
       )
       .concat(
-        mw.loader.getState('ext.visualEditor.core') ? ['visualeditor-educationpopup-dismiss'] : []
-      )
-      .concat(
         // Message names for date tokens in UI language
         ...this.getUsedDateTokens(cd.g.uiDateFormat).map(
           (pattern) => dateTokenToMessageNames[pattern]
