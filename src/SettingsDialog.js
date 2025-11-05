@@ -220,6 +220,7 @@ class SettingsDialog extends ProcessDialog {
 
           try {
             await settings.save(this.collectSettings());
+            settings.set(settings);
           } catch (error) {
             this.handleError(error, 'error-settings-save', true);
 

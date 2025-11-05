@@ -351,7 +351,7 @@ class Settings extends EventEmitter {
             name: 'showContribsLink',
             type: this.scheme.controlTypes.showContribsLink,
             label: cd.s('sd-showcontribslink'),
-            classes: ['cd-setting--indented'],
+            help: cd.s('sd-showcontribslink-help'),
           },
           {
             name: 'allowEditOthersComments',
@@ -632,9 +632,9 @@ class Settings extends EventEmitter {
           {
             name: 'removeData',
             type: this.scheme.controlTypes.removeData,
-            label: cd.s('sd-removedata'),
+            label: cd.s('sd-removedata-description'),
             flags: ['destructive'],
-            fieldLabel: cd.s('sd-removedata-description'),
+            buttonLabel: cd.s('sd-removedata'),
             help: wrapHtml(cd.sParse('sd-removedata-help'), { targetBlank: true }),
           },
         ],
@@ -821,11 +821,14 @@ class Settings extends EventEmitter {
   /**
    * Change the value of a setting or a set of settings at once without saving to the server.
    *
-   * @param {string|object} name
+   * @param {string | Partial<SettingsValues>} nameOrValues
    * @param {string} [value]
    */
-  set(name, value) {
-    Object.assign(this.values, typeof name === 'string' ? { [name]: value } : name);
+  set(nameOrValues, value) {
+    Object.assign(
+      this.values,
+      typeof nameOrValues === 'string' ? { [nameOrValues]: value } : nameOrValues
+    );
     this.emit('set', this);
   }
 
