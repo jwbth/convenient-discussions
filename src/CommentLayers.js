@@ -15,6 +15,7 @@ class CommentLayers {
    * }>}
    */
   static prototypes = new PrototypeRegistry();
+
   /**
    * Comment's underlay as a native (non-jQuery) element.
    *

@@ -2291,7 +2291,8 @@ class Section extends SectionSkeleton {
    *   replyButton: HTMLElement
    *   addSubsectionButton: HTMLElement
    *   copyLinkButton: HTMLElement
-    }>} */
+   * }>}
+   */
   static prototypes = new PrototypeRegistry();
 
   /**

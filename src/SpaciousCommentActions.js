@@ -22,7 +22,8 @@ class SpaciousCommentActions extends CommentActions {
    * @type {PrototypeRegistry<{
    *   goToParentButtonSvg: SVGElement
    *   goToChildButtonSvg: SVGElement
-    }>} */
+   * }>}
+   */
   static prototypes = new PrototypeRegistry();
   /**
    * Create a reply button for spacious comments.
@@ -159,7 +160,7 @@ class SpaciousCommentActions extends CommentActions {
       button === this.toggleChildThreadsButton
     ) {
       // These buttons go in the header
-      this.comment.headerElement?.append(button.element);
+      this.comment.headerElement.append(button.element);
     } else {
       // Other buttons go in the menu
       this.comment.menuElement?.append(button.element);
@@ -175,12 +176,12 @@ class SpaciousCommentActions extends CommentActions {
   prependButton(button) {
     if (button === this.goToChildButton) {
       // Insert go to child button in the correct position in header
-      this.comment.headerElement?.insertBefore(
+      this.comment.headerElement.insertBefore(
         button.element,
         (this.goToParentButton?.element || this.comment.timestampElement).nextSibling
       );
     } else {
-      this.comment.headerElement?.prepend(button.element);
+      this.comment.headerElement.prepend(button.element);
     }
   }
 

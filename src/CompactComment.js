@@ -314,7 +314,8 @@ class CompactComment extends Comment {
    * @type {PrototypeRegistry<{
    *   underlay: HTMLElement
    *   overlay: HTMLElement
-    }>} */
+   * }>}
+   */
   static prototypes = new PrototypeRegistry();
 
   /**

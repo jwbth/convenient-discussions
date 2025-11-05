@@ -1,19 +1,10 @@
 import CommentLayers from './CommentLayers.js';
-import PrototypeRegistry from './PrototypeRegistry.js';
 
 /**
  * Specialized layer management for compact comments.
  * Handles compact-specific layer positioning and overlay menu management.
  */
 class CompactCommentLayers extends CommentLayers {
-  /**
-   * Registry for compact-specific element prototypes.
-   *
-   * @type {PrototypeRegistry<{
-   *   overlay: HTMLElement
-   * }>}
-   */
-  static prototypes = new PrototypeRegistry();
   /**
    * Is the comment currently being hovered over.
    *
@@ -192,6 +183,8 @@ class CompactCommentLayers extends CommentLayers {
   /**
    * Initialize prototypes for compact comment layers.
    * Creates compact-specific overlay with menu elements.
+   *
+   * @override
    */
   static initPrototypes() {
     // Get the base overlay prototype and enhance it with compact-specific elements

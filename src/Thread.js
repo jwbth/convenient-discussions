@@ -1364,13 +1364,12 @@ class Thread extends mixInObject(
   }
 
   /**
-   * @private
-   */
-  /**
    * @type {PrototypeRegistry<{
    *   expandButton: HTMLElement
    *   clickArea: HTMLElement
-    }>} */
+   * }>}
+   * @private
+   */
   static prototypes = new PrototypeRegistry();
 
   /**

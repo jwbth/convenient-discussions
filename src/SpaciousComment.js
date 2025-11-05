@@ -493,7 +493,8 @@ class SpaciousComment extends Comment {
    *   expandChildThreadsButtonSvg: SVGElement
    *   underlay: HTMLElement
    *   overlay: HTMLElement
-    }>} */
+   * }>}
+   */
   static prototypes = new PrototypeRegistry();
 
   /**
@@ -559,6 +560,9 @@ class SpaciousComment extends Comment {
       'expandChildThreadsButtonSvg',
       createSvg(16, 16, 20, 20).html(`<path d="M11 9V4H9v5H4v2h5v5h2v-5h5V9z" />`)[0]
     );
+
+    // Initialize spacious-specific action prototypes
+    SpaciousCommentActions.initPrototypes();
   }
 }
 
