@@ -188,7 +188,8 @@ class Button {
    * @returns {this} This button.
    */
   setLabel(label) {
-    this.labelElement = this.buttonElement;
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    this.labelElement ||= this.buttonElement;
     this.labelElement.textContent = label;
 
     return this;
