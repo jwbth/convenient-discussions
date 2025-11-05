@@ -236,8 +236,8 @@ function setLanguages() {
 function getConfig() {
   return new Promise((resolve, reject) => {
     let key = mw.config.get('wgServerName');
-    if (IS_TEST) {
-      key += '.test';
+    if (IS_STAGING) {
+      key += '.staging';
     }
     const configUrl =
       /** @type {StringsByKey} */ (configUrls)[key] ||

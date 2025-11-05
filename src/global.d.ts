@@ -7,7 +7,7 @@ import type TextInputWidget from './TextInputWidget';
 import type { ConvenientDiscussions } from './cd';
 
 declare global {
-  const IS_TEST: boolean;
+  const IS_STAGING: boolean;
   const IS_DEV: boolean;
   const IS_SINGLE: boolean;
   const CONFIG_FILE_NAME: string | null;

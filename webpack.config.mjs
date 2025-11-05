@@ -17,52 +17,55 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 /**
  * @typedef {object} Environment
  * @property {boolean} dev
- * @property {boolean} test
+ * @property {boolean} staging
  * @property {boolean} single
  * @property {string} project
  * @property {string} lang
  */
 
 const config = (/** @type {Environment} */ env) => {
-  /*
-    Production builds are created by running
-      npm run build
-
-    Development builds are for debugging locally. Create them like this:
-      npm run start (which runs "webpack serve --env dev")
-      npm run build --dev (which runs "webpack" and sets the "dev" npm config variable)
-    (the first command will not create the files themselves but serve at the specified paths).
+  /**
+   * Production builds are created by running
+   * - npm run build
+   *
+   * Development builds are for debugging locally. Create them like this:
+   * - npm run start
+   *   - which runs `webpack serve --env dev`
+   * - npm run build --dev
+   *   - which runs `webpack` and sets the `dev` npm config variable.
+   *
+   * The first command will not create the files themselves but serve at the specified paths.
    */
-  const dev = Boolean(env.dev || process.env.npm_config_dev);
+  const isDev = Boolean(env.dev || process.env.npm_config_dev);
 
-  /*
-    Test builds are for creating the production build with files (main file and configuration file)
-    having the ".test" postfix. They are created by running
-      npm run build --test
+  /**
+   * Staging builds are for creating a production build with files (main file and configuration
+   * file) having the .staging postfix. They are created by running
+   * - npm run build --staging
    */
-  const test = Boolean(env.test || process.env.npm_config_test);
+  const isStaging = Boolean(env.staging || process.env.npm_config_staging);
 
-  /*
-    Single builds include the main file, configuration and localization, as well as source maps, in
-    a single file. Create them like this:
-      npm run single -- project=w lang=en
+  /**
+   * Single builds include the main file, configuration and localization, as well as source maps, in
+   * a single file. Create them like this:
+   * - npm run single -- project=w lang=en
    */
-  const single = Boolean(env.single || process.env.npm_config_single);
+  const isSingle = Boolean(env.single || process.env.npm_config_single);
 
   let filenamePostfix = '';
   let lang;
   let wiki;
-  if (single) {
+  if (isSingle) {
     const project = env.project || 'w';
     lang = env.lang || 'en';
     wiki = ['w', 'b', 'n', 'q', 's', 'v', 'voy', 'wikt'].includes(project)
       ? `${project}-${lang}`
       : project;
     filenamePostfix = `.single.${wiki}`;
-  } else if (dev) {
+  } else if (isDev) {
     filenamePostfix = '.dev';
-  } else if (test) {
-    filenamePostfix = '.test';
+  } else if (isStaging) {
+    filenamePostfix = '.staging';
   }
   const bundleFilename = `convenientDiscussions${filenamePostfix}.js`;
 
@@ -71,9 +74,9 @@ const config = (/** @type {Environment} */ env) => {
   }
 
   let devtool;
-  if (single) {
+  if (isSingle) {
     devtool = 'eval';
-  } else if (dev) {
+  } else if (isDev) {
     devtool = 'eval-source-map';
   } else {
     // SourceMapDevToolPlugin is used.
@@ -83,11 +86,11 @@ const config = (/** @type {Environment} */ env) => {
   /** @type {import('webpack').WebpackPluginInstance[]} */
   const plugins = [
     new webpack.DefinePlugin({
-      IS_TEST: test,
-      IS_DEV: dev,
-      IS_SINGLE: single,
-      CONFIG_FILE_NAME: single ? JSON.stringify(wiki) : undefined,
-      LANG_CODE: single ? JSON.stringify(lang) : undefined,
+      IS_STAGING: isStaging,
+      IS_DEV: isDev,
+      IS_SINGLE: isSingle,
+      CONFIG_FILE_NAME: isSingle ? JSON.stringify(wiki) : undefined,
+      LANG_CODE: isSingle ? JSON.stringify(lang) : undefined,
     }),
     new WebpackBuildNotifierPlugin({
       suppressSuccess: true,
@@ -95,7 +98,7 @@ const config = (/** @type {Environment} */ env) => {
     }),
   ];
 
-  if (single) {
+  if (isSingle) {
     plugins.push(new webpack.BannerPlugin({
       banner: '<nowiki>',
 
@@ -140,7 +143,7 @@ const config = (/** @type {Environment} */ env) => {
   }
 
   return /** @type {import('webpack').Configuration} */ ({
-    mode: dev || single ? 'development' : 'production',
+    mode: isDev || isSingle ? 'development' : 'production',
     entry: './src/app.js',
     output: {
       path: path.resolve(__dirname, 'dist'),
@@ -225,19 +228,26 @@ const config = (/** @type {Environment} */ env) => {
             filename: (/** @type {{ filename: string }} */ pathData) =>
               `${pathData.filename}.LICENSE.js`,
 
-            banner: (licenseFile) => licenseFile.includes('worker')
-            // A really messed up hack to include source maps for a web worker (works with
-            // .map.json extension for webpack.SourceMapDevToolPlugin's `filename` property,
-            // doesn't work with .map for some reason).
-              ? `//# sourceMappingURL=${nonNullableConfig.sourceMapsBaseUrl}convenientDiscussions.worker.js.map.json`
+            banner: (licenseFile) => {
+              const licenseUrl = getUrl(
+                nonNullableConfig.main.server,
+                nonNullableConfig.main.rootPath + '/' + licenseFile
+              );
 
-              : `
-* For documentation and feedback, see the script's homepage:
-* https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions
-*
-* For license information, see
-* ${getUrl(nonNullableConfig.main.server, nonNullableConfig.main.rootPath + '/' + licenseFile)}
-`,
+              return licenseFile.includes('worker')
+                // A really messed up hack to include source maps for a web worker (works with
+                // .map.json extension for webpack.SourceMapDevToolPlugin's `filename` property,
+                // doesn't work with .map for some reason).
+                ? `//# sourceMappingURL=${nonNullableConfig.sourceMapsBaseUrl}convenientDiscussions.worker.js.map.json`
+
+                : `
+  * For documentation and feedback, see the script's homepage:
+  * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions
+  *
+  * For license information, see
+  * ${licenseUrl}
+  `;
+            },
           },
         }),
       ],
