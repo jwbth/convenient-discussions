@@ -10,7 +10,7 @@ import nonNullableConfig from './config.mjs';
 import { getUrl } from './misc/utils.mjs';
 
 /** @type {DeepPartial<typeof nonNullableConfig>} */
-const config = nonNullableConfig;
+const cdConfig = nonNullableConfig;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -23,7 +23,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  * @property {string} lang
  */
 
-const webpack_ = (/** @type {Environment} */ env) => {
+const config = (/** @type {Environment} */ env) => {
   /*
     Production builds are created by running
       npm run build
@@ -66,7 +66,7 @@ const webpack_ = (/** @type {Environment} */ env) => {
   }
   const bundleFilename = `convenientDiscussions${filenamePostfix}.js`;
 
-  if (!config.protocol || !config.main?.rootPath || !config.articlePath) {
+  if (!cdConfig.protocol || !cdConfig.main?.rootPath || !cdConfig.articlePath) {
     throw new Error('No protocol/server/root path/article path found in config.json5.');
   }
 
@@ -128,10 +128,10 @@ const webpack_ = (/** @type {Environment} */ env) => {
     });
   }
 
-  if (dev && config.sourceMapsBaseUrl) {
+  if (dev && cdConfig.sourceMapsBaseUrl) {
     plugins.push(new webpack.SourceMapDevToolPlugin({
       filename: '[file].map.json',
-      append: `\n//# sourceMappingURL=${config.sourceMapsBaseUrl}[url]`,
+      append: `\n//# sourceMappingURL=${cdConfig.sourceMapsBaseUrl}[url]`,
     }));
   }
 
@@ -269,4 +269,4 @@ const webpack_ = (/** @type {Environment} */ env) => {
     },
   });
 };
-export default webpack_;
+export default config;
