@@ -70,7 +70,7 @@ export class CommentManager extends EventEmitter {
    * @returns {this is CommentManager<import('./SpaciousComment').default>}
    */
   isSpaciousCommentManager() {
-    return this.spaciousComments === true;
+    return this.commentDisplay === 'spacious';
   }
 
   /**
@@ -79,7 +79,7 @@ export class CommentManager extends EventEmitter {
    * @returns {this is CommentManager<import('./CompactComment').default>}
    */
   isCompactCommentManager() {
-    return this.spaciousComments === false;
+    return this.commentDisplay === 'compact';
   }
 
   /**
@@ -163,7 +163,7 @@ export class CommentManager extends EventEmitter {
    */
   setup() {
     // This can be updated after an in-script page reload.
-    this.spaciousComments = settings.get('spaciousComments') === 'spacious';
+    this.commentDisplay = settings.get('commentDisplay');
 
     this.reformatTimestamps();
     this.findAndUpdateTableComments();

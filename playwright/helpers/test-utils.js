@@ -154,7 +154,7 @@ async function getCompactComment(page, index = 0) {
  */
 async function toggleSpaciousComments(page, enabled) {
   await page.evaluate((enabled) => {
-    window.convenientDiscussions.settings.set('spaciousComments', enabled);
+    window.convenientDiscussions.settings.set('commentDisplay', enabled ? 'spacious' : 'compact');
   }, enabled);
 
   // Wait for setting to take effect

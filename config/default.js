@@ -853,8 +853,8 @@ const defaultConfig = {
   rejectNode: null,
 
   /**
-   * Function that runs when the "Reformat comments" setting is enabled before parsing the author
-   * link. May return some data that will eventually supplied to the
+   * Function that runs when the "Comment display" setting is set to "Spacious" before parsing the
+   * author link. May return some data that will eventually supplied to the
    * {@link defaultConfig.afterAuthorLinkParse} function (for example, an element). It accepts: the
    * author link (the link to the author's user page) as it was encountered on the page and the
    * author link dummy as part of the header dummy that we use as a prototype in which the link
@@ -871,9 +871,9 @@ const defaultConfig = {
   beforeAuthorLinkParse: null,
 
   /**
-   * Function that runs when the "Reformat comments" setting is enabled after parsing the author
-   * link. May return (for example, an element). It accepts the author link (a link to the author's
-   * user page) as it was encountered on the page and the return value of
+   * Function that runs when the "Comment display" setting is set to "Spacious" after parsing the
+   * author link. May return (for example, an element). It accepts the author link (a link to the
+   * author's user page) as it was encountered on the page and the return value of
    * {@link defaultConfig.beforeAuthorLinkParse} that could be called previously.
    *
    * This function, together with {@link defaultConfig.beforeAuthorLinkParse}, can be used to

@@ -37,22 +37,22 @@ function fileExists(filePath) {
 }
 
 // Test 1: Settings Migration (Critical for backward compatibility)
-test('Settings system has spaciousComments -> reformatComments alias', () => {
+test('Settings system has commentDisplay -> reformatComments alias', () => {
   const settingsSource = readFile('src/settings.js');
 
-  return settingsSource.includes("'spaciousComments': ['reformatComments']");
+  return settingsSource.includes("'commentDisplay': ['reformatComments']");
 });
 
-test('Settings system has spaciousComments in control types', () => {
+test('Settings system has commentDisplay in control types', () => {
   const settingsSource = readFile('src/settings.js');
 
-  return settingsSource.includes('spaciousComments: \'radio\'');
+  return settingsSource.includes('commentDisplay: \'radio\'');
 });
 
-test('Settings system has spaciousComments in default values', () => {
+test('Settings system has commentDisplay in default values', () => {
   const settingsSource = readFile('src/settings.js');
 
-  return settingsSource.includes('\'spaciousComments\': \'spacious\'');
+  return settingsSource.includes('\'commentDisplay\': \'spacious\'');
 });
 
 // Test 2: Class Structure (Essential for functionality)
@@ -114,10 +114,10 @@ test('BootProcess imports correct comment classes', () => {
     bootProcessSource.includes('import SpaciousComment');
 });
 
-test('BootProcess uses spaciousComments setting for class selection', () => {
+test('BootProcess uses commentDisplay setting for class selection', () => {
   const bootProcessSource = readFile('src/TalkPageBootProcess.js');
 
-  return bootProcessSource.includes("settings.get('spaciousComments') === 'spacious'") &&
+  return bootProcessSource.includes("settings.get('commentDisplay') === 'spacious'") &&
     bootProcessSource.includes('? SpaciousComment : CompactComment');
 });
 
@@ -192,7 +192,7 @@ if (passedTests === totalTests) {
 }
 
 console.log('\n🔍 Key Functional Compatibility Features Validated:');
-console.log('• Settings migration (reformatComments → spaciousComments radio)');
+console.log('• Settings migration (reformatComments → commentDisplay radio)');
 console.log('• Class inheritance structure (CompactComment, SpaciousComment extend Comment)');
 console.log('• Composition pattern implementation (layers, actions)');
 console.log('• BootProcess integration for class selection');

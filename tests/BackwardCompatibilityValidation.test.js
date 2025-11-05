@@ -5,14 +5,14 @@
 
 describe('Comment Class Refactoring - Backward Compatibility', () => {
   describe('Settings Migration', () => {
-    test('settings system should handle spaciousComments setting', () => {
+    test('settings system should handle commentDisplay setting', () => {
       // Test that the settings system can handle the new setting name
       const settingsModule = require('../src/settings');
       expect(settingsModule).toBeDefined();
       expect(typeof settingsModule.get).toBe('function');
     });
 
-    test('settings aliases should include reformatComments -> spaciousComments', () => {
+    test('settings aliases should include reformatComments -> commentDisplay', () => {
       // This validates that the settings system has the proper alias mapping
       const settingsModule = require('../src/settings');
 
@@ -21,9 +21,9 @@ describe('Comment Class Refactoring - Backward Compatibility', () => {
         const aliases = settingsModule.default.scheme.aliases;
         expect(aliases).toBeDefined();
 
-        // Check if spaciousComments has reformatComments as an alias
-        if (aliases.spaciousComments) {
-          expect(aliases.spaciousComments).toContain('reformatComments');
+        // Check if commentDisplay has reformatComments as an alias
+        if (aliases.commentDisplay) {
+          expect(aliases.commentDisplay).toContain('reformatComments');
         }
       }
     });
@@ -69,7 +69,7 @@ describe('Comment Class Refactoring - Backward Compatibility', () => {
 
       expect(bootProcessSource).toContain('import CompactComment');
       expect(bootProcessSource).toContain('import SpaciousComment');
-      expect(bootProcessSource).toContain("settings.get('spaciousComments') === 'spacious'");
+      expect(bootProcessSource).toContain("settings.get('commentDisplay') === 'spacious'");
     });
   });
 
@@ -199,20 +199,20 @@ describe('Comment Class Refactoring - Backward Compatibility', () => {
   });
 
   describe('Settings System Integration', () => {
-    test('settings should have spaciousComments in scheme', () => {
+    test('settings should have commentDisplay in scheme', () => {
       const settingsSource = require('node:fs').readFileSync(
         require('node:path').join(__dirname, '../src/settings.js'),
         'utf8'
       );
 
-      // Check for spaciousComments in aliases
-      expect(settingsSource).toContain("'spaciousComments': ['reformatComments']");
+      // Check for commentDisplay in aliases
+      expect(settingsSource).toContain("'commentDisplay': ['reformatComments']");
 
-      // Check for spaciousComments in control types
-      expect(settingsSource).toContain('spaciousComments: \'radio\'');
+      // Check for commentDisplay in control types
+      expect(settingsSource).toContain('commentDisplay: \'radio\'');
 
-      // Check for spaciousComments in default values
-      expect(settingsSource).toContain('\'spaciousComments\': \'spacious\'');
+      // Check for commentDisplay in default values
+      expect(settingsSource).toContain('\'commentDisplay\': \'spacious\'');
     });
   });
 });

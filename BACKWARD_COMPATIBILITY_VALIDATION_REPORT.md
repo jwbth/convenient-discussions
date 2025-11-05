@@ -21,9 +21,9 @@ This validation focuses on **functional backward compatibility** - ensuring that
 ## Validation Results
 
 ### 1. Settings Migration ✅
-- **spaciousComments → reformatComments alias**: ✅ Properly configured in settings scheme
-- **Control types**: ✅ spaciousComments defined as checkbox control
-- **Default values**: ✅ spaciousComments set to null (auto-detect)
+- **commentDisplay → reformatComments alias**: ✅ Properly configured in settings scheme
+- **Control types**: ✅ commentDisplay defined as radio control
+- **Default values**: ✅ commentDisplay set to 'spacious' (default)
 
 ### 2. Class Structure ✅
 - **Comment base class**: ✅ Exists and properly structured
@@ -47,7 +47,7 @@ This validation focuses on **functional backward compatibility** - ensuring that
 
 ### 6. BootProcess Integration ✅
 - **Class imports**: ✅ CompactComment and SpaciousComment properly imported
-- **Class selection**: ✅ Uses `settings.get('spaciousComments') === 'spacious'` for conditional instantiation
+- **Class selection**: ✅ Uses `settings.get('commentDisplay') === 'spacious'` for conditional instantiation
 
 ### 7. Composition Pattern Implementation ✅
 - **Import statements**: ✅ CommentLayers and CommentActions imported
@@ -67,10 +67,10 @@ This validation focuses on **functional backward compatibility** - ensuring that
 ## Key Functional Compatibility Features
 
 ### Settings Migration
-The settings system properly handles the transition from `reformatComments` to `spaciousComments`:
+The settings system properly handles the transition from `reformatComments` to `commentDisplay`:
 ```javascript
 // In settings.js aliases:
-'spaciousComments': ['reformatComments']
+'commentDisplay': ['reformatComments']
 ```
 
 ### Class Hierarchy
@@ -84,7 +84,7 @@ Comment (base class)
 ### Parser Integration
 The BootProcess correctly selects the appropriate comment class:
 ```javascript
-const CommentClass = settings.get('spaciousComments') === 'spacious' ? SpaciousComment : CompactComment;
+const CommentClass = settings.get('commentDisplay') === 'spacious' ? SpaciousComment : CompactComment;
 ```
 
 ### Type Guards

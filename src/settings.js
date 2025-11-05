@@ -32,7 +32,7 @@ import { createSvg, formatDateImproved, formatDateNative, formatDateRelative, ge
  * @property {boolean} notifyCollapsedThreads
  * @property {boolean} outdent
  * @property {number} outdentLevel
- * @property {'compact'|'spacious'|null} spaciousComments
+ * @property {'compact'|'spacious'|null} commentDisplay
  * @property {boolean} showContribsLink
  * @property {boolean} showToolbar
  * @property {string} signaturePrefix
@@ -153,7 +153,7 @@ class Settings extends EventEmitter {
     aliases: {
       'insertButtons-altered': ['haveInsertButtonsBeenAltered'],
       'improvePerformance-lastSuggested': ['improvePerformanceLastSuggested'],
-      'spaciousComments': ['reformatComments'],
+      'commentDisplay': ['reformatComments'],
       'subscribeOnReply': ['watchSectionOnReply'],
     },
 
@@ -174,14 +174,21 @@ class Settings extends EventEmitter {
     ],
 
     /**
-     * For settings that are resetted not to their default values, those non-default values are
-     * specified here (used to determine whether the "Reset" button should be enabled).
+     * For settings that should be resetted to values other than their default ones, those
+     * non-default values are specified here (used to determine whether the "Reset" button should be
+     * enabled).
      *
      * @type {Partial<SettingsValues>}
      */
     resetsTo: {
-      spaciousComments: 'compact',
+      commentDisplay: 'spacious',
     },
+
+    /**
+     * Settings that are allowed to have a type different than that of the default. `null` is always
+     * allowed. (This is used to migrate settings.)
+     */
+    allowNoTypeMatch: ['commentDisplay'],
 
     /**
      * Types of controls for settings that are present in the settings dialog.
@@ -205,7 +212,7 @@ class Settings extends EventEmitter {
       notifyCollapsedThreads: 'checkbox',
       outdent: 'checkbox',
       outdentLevel: 'number',
-      spaciousComments: 'radio',
+      commentDisplay: 'radio',
       removeData: 'button',
       showContribsLink: 'checkbox',
       showToolbar: 'checkbox',
@@ -253,6 +260,7 @@ class Settings extends EventEmitter {
       'autopreview': true,
       'collapseThreads': true,
       'collapseThreadsLevel': 10,
+      'commentDisplay': null,
       'countEditsAsNewComments': false,
       'desktopNotifications': 'unknown',
       'enableThreads': true,
@@ -270,7 +278,6 @@ class Settings extends EventEmitter {
       'notifyCollapsedThreads': false,
       'outdent': true,
       'outdentLevel': 15,
-      'spaciousComments': 'spacious',
       'showContribsLink': false,
       'showToolbar': true,
       'signaturePrefix': cd.config.defaultSignaturePrefix,
@@ -323,20 +330,22 @@ class Settings extends EventEmitter {
         label: cd.s('sd-page-talkpage'),
         controls: [
           {
-            name: 'spaciousComments',
-            type: this.scheme.controlTypes.spaciousComments,
+            name: 'commentDisplay',
+            type: this.scheme.controlTypes.commentDisplay,
             label: cd.s('sd-commentdisplay'),
             options: [
               {
                 data: 'spacious',
                 label: cd.s('sd-commentdisplay-radio-spacious'),
+                help: cd.s('sd-commentdisplay-radio-spacious-help'),
               },
               {
                 data: 'compact',
                 label: cd.s('sd-commentdisplay-radio-compact'),
+                help: cd.s('sd-commentdisplay-radio-compact-help'),
               },
             ],
-            classes: ['cd-setting-spaciousComments'],
+            classes: ['cd-setting-commentDisplay'],
           },
           {
             name: 'showContribsLink',
@@ -687,6 +696,14 @@ class Settings extends EventEmitter {
         }
       }
 
+      // Migrate users from the old commentDisplay boolean setting to the new commentDisplay string
+      // union setting
+      if (/** @type {any} */ (remoteSettings).reformatComments === true) {
+        this.values.commentDisplay = 'spacious';
+      } else if (/** @type {any} */ (remoteSettings).reformatComments === false) {
+        this.values.commentDisplay = 'compact';
+      }
+
       if (!areObjectsEqual(this.values, remoteSettings)) {
         this.save().catch((/** @type {unknown} */ error) => {
           console.warn('Couldn\'t save the settings to the server.', error);
@@ -750,7 +767,8 @@ class Settings extends EventEmitter {
   }
 
   /**
-   * Get the properties of an object corresponding to settings with an optional prefix.
+   * Get the properties of an object corresponding to the predefined list of settings with an
+   * optional prefix.
    *
    * @param {AnyByKey} source
    * @param {string} [prefix]
@@ -763,10 +781,14 @@ class Settings extends EventEmitter {
       (this.scheme.aliases[name] || [])
         .concat(name)
         .map((alias) => prefix ? prefix + ucFirst(alias) : alias)
-        .filter((prop) => (
+        .filter((prop) =>
           source[prop] !== undefined &&
-          (typeof source[prop] === typeof defaults[name] || defaults[name] === null)
-        ))
+          (
+            typeof source[prop] === typeof defaults[name] ||
+            defaults[name] === null ||
+            this.scheme.allowNoTypeMatch.includes(name)
+          )
+        )
         .forEach((prop) => {
           target[name] = source[prop];
         });
@@ -919,10 +941,10 @@ class Settings extends EventEmitter {
    * Show a popup informing the user about the structured comment design in CD.
    */
   async maybeOnboardOntoSpaciousComments() {
-    if (this.get('spaciousComments') !== null) return;
+    if (this.get('commentDisplay') !== null) return;
 
-    const { spaciousComments } = await this.load({ reuse: true });
-    if (definedAndNotNull(spaciousComments)) return;
+    const { commentDisplay } = await this.load({ reuse: true });
+    if (definedAndNotNull(commentDisplay)) return;
 
     const dialog = new OO.ui.MessageDialog();
     cd.getWindowManager().addWindows([dialog]);
@@ -950,13 +972,13 @@ class Settings extends EventEmitter {
           $('<div>')
             .addClass('cd-rcnotice-text')
             .append(
-              wrapHtml(cd.sParse('popup-spaciousComments-text'), {
+              wrapHtml(cd.sParse('popup-commentDisplay-text'), {
                 callbacks: {
                   'cd-notification-settings': () => {
                     this.showDialog('talkPage');
                   },
                   'cd-notification-settings-compactComments': () => {
-                    this.showDialog('talkPage', '.cd-setting-spaciousComments input');
+                    this.showDialog('talkPage', '.cd-setting-commentDisplay');
                   },
                 },
               }).children()
@@ -977,7 +999,7 @@ class Settings extends EventEmitter {
     // re-show the popup next time
     if (closeData?.action) {
       try {
-        await this.saveSettingOnTheFly('spaciousComments', 'spacious');
+        await this.saveSettingOnTheFly('commentDisplay', 'spacious');
       } catch {
         // Empty
       }
