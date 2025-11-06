@@ -18,21 +18,20 @@
   ],
   "browser": "src/app.js",
   "scripts": {
-    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack",
-    "build16": "node buildConfigs.mjs && node buildI18n.mjs && webpack",
+    "build": "node buildConfigs.mjs && node buildI18n.mjs && webpack",
     "configs": "node buildConfigs.mjs",
     "deploy": "node --unhandled-rejections=strict deploy.mjs",
     "docs": "rimraf dist/docs && jsdoc --configure jsdoc/config.js --readme jsdoc/home.md",
-    "i18n": "cross-env NODE_OPTIONS=--openssl-legacy-provider node buildI18n.mjs",
+    "i18n": "node buildI18n.mjs",
     "postinstall": "patch-package",
-    "serve": "cross-env NODE_OPTIONS=--max-old-space-size=2048 NODE_OPTIONS=--openssl-legacy-provider webpack serve --env dev",
-    "single": "node buildConfigs.mjs && cross-env NODE_OPTIONS=--openssl-legacy-provider node buildI18n.mjs && cross-env NODE_OPTIONS=--max-old-space-size=2048 NODE_OPTIONS=--openssl-legacy-provider webpack --env single",
-    "start": "node buildConfigs.mjs && cross-env NODE_OPTIONS=--openssl-legacy-provider node buildI18n.mjs && cross-env NODE_OPTIONS=--max-old-space-size=2048 NODE_OPTIONS=--openssl-legacy-provider webpack serve --env dev",
+    "serve": "webpack serve --env dev",
+    "single": "node buildConfigs.mjs && node buildI18n.mjs && webpack --env single",
+    "start": "node buildConfigs.mjs && node buildI18n.mjs && webpack serve --env dev",
     "test": "jest",
     "test:browser": "playwright test",
     "test:browser:auth": "playwright test test-wikipedia-auth.spec.js",
     "test:browser:headed": "playwright test --headed",
-    "webpack": "cross-env NODE_OPTIONS=--openssl-legacy-provider webpack"
+    "webpack": "webpack"
   },
   "browserslist": [
     "> 1%"
