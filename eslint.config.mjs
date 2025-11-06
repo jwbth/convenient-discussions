@@ -98,28 +98,6 @@ const config = defineConfig(
         tsconfigRootDir: import.meta.dirname,
         // jsDocParsingMode: 'all',
       }),
-      globals: {
-        CONFIG_FILE_NAME: 'readonly',
-        IS_DEV: 'readonly',
-        IS_TEST: 'readonly',
-        IS_SINGLE: 'readonly',
-        LANG_CODE: 'readonly',
-
-        mw: 'readonly',
-        $: 'readonly',
-        OO: 'readonly',
-        moment: 'readonly',
-
-        convenientDiscussions: 'readonly',
-
-        // https://en.wikipedia.org/wiki/User:Jack_who_built_the_house/getUrlFromInterwikiLink
-        getInterwikiPrefixForHostname: 'readonly',
-        getInterwikiPrefixForHostnameSync: 'readonly',
-        getUrlFromInterwikiLink: 'readonly',
-
-        cdOnlyRunByFooterLink: 'readonly',
-        cdShowLoadingOverlay: 'readonly',
-      },
     },
     plugins: {
       'no-one-time-vars': noOneTimeVars,

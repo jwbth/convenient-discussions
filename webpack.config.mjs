@@ -131,7 +131,7 @@ const config = (/** @type {Environment} */ env) => {
     });
   }
 
-  if (dev && cdConfig.sourceMapsBaseUrl) {
+  if (!isDev && cdConfig.sourceMapsBaseUrl) {
     plugins.push(new webpack.SourceMapDevToolPlugin({
       filename: '[file].map.json',
       append: `\n//# sourceMappingURL=${cdConfig.sourceMapsBaseUrl}[url]`,

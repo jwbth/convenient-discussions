@@ -1,5 +1,8 @@
 import config from '../config.mjs';
 
+/**
+ * @param {string | number | boolean} string
+ */
 function wikiUrlencode(string) {
   return encodeURIComponent(string)
     .replace(/'/g, '%27')
@@ -12,10 +15,15 @@ function wikiUrlencode(string) {
     .replace(/%3A/g, ':');
 }
 
+/**
+ * @param {string} server
+ * @param {string} page
+ * @param {{ [x: string]: any }} [params]
+ */
 function getUrl(server, page, params = {}) {
   const base = `${config.protocol}://${server}`;
   if (Object.keys(params).length) {
-    params = Object.assign({}, { title: page }, params);
+    params = { title: page, ...params };
     const url = new URL(base + config.scriptPath + '/index.php');
     Object.keys(params).forEach((param) => {
       url.searchParams.set(param, params[param]);
@@ -26,10 +34,18 @@ function getUrl(server, page, params = {}) {
   }
 }
 
+/**
+ * @param {any} item
+ * @param {any} i
+ * @param {string | any[]} arr
+ */
 function unique(item, i, arr) {
   return arr.indexOf(item) === i;
 }
 
+/**
+ * @param {string} string
+ */
 function replaceEntitiesInI18n(string) {
   return string
     .replace(/&nbsp;/g, '\xa0')
