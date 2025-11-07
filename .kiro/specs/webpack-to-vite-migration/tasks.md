@@ -60,7 +60,7 @@
     - Set build.sourcemap: true for production/staging builds
     - Create custom plugin to inject custom source map URL using sourceMapsBaseUrl from config
     - Rename source map files to .map.json extension (if straightforward)
-    - Handle source map URL for inline worker (shared or separate file)
+    - Handle source map URL for inline worker (shared or separate source map file; shared is preferred)
     - _Requirements: 2.2, 5.4_
 
 - [ ] 5. Create custom Vite plugins
@@ -79,7 +79,7 @@
 
   - [ ] 5.3 Create build notification plugin
     - Implement plugin using buildEnd and buildError hooks
-    - Suppress success and warning notifications (only show errors)
+    - Suppress success and warning notifications (only show errors) unless it's the first successful build after an error
     - Match webpack-build-notifier behavior
     - _Requirements: 3.5_
 

@@ -40,7 +40,6 @@ This document outlines the requirements for migrating the Convenient Discussions
 3. THE Build_System SHALL handle inline Web_Worker bundling with appropriate Source_Maps
 4. THE Build_System SHALL apply custom minification settings using Vite's native tools for production builds
 5. THE Build_System SHOULD extract license comments to separate files with custom banners
-   - Alternatively, THE Build_System MAY put license comments to the top of each individual file
 
 ### Requirement 3
 
