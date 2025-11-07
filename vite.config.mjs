@@ -246,6 +246,18 @@ export default defineConfig(({ mode }) => {
     throw new Error('No protocol/server/root path/article path found in config.json5.');
   }
 
+  // Environment variable defines for build-time replacement
+  const defines = {
+    IS_DEV: JSON.stringify(buildMode.isDev),
+    IS_STAGING: JSON.stringify(buildMode.isStaging),
+    SINGLE_CONFIG_FILE_NAME: buildMode.isSingle && buildMode.wiki
+      ? JSON.stringify(buildMode.wiki)
+      : 'undefined',
+    SINGLE_LANG_CODE: buildMode.isSingle && buildMode.lang
+      ? JSON.stringify(buildMode.lang)
+      : 'undefined',
+  };
+
   const plugins = [];
 
   // Add build notification plugin
@@ -276,12 +288,34 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins,
+    define: defines,
     build: {
       // Output directory
       outDir: 'dist',
 
       // Target browsers using browserslist (ES2020 supports all required transforms)
       target: 'es2020',
+
+      // Minification configuration
+      minify: buildMode.isDev ? false : 'esbuild',
+
+      // esbuild minification options
+      esbuildOptions: {
+        // Preserve class names for better debugging
+        keepNames: true,
+
+        // ASCII-only output
+        charset: 'ascii',
+
+        // Minify options
+        minifyIdentifiers: true,
+        minifySyntax: true,
+        minifyWhitespace: true,
+
+        // Reserve 'cd' identifier from mangling
+        // Note: esbuild doesn't support property mangling with reserved lists like Terser
+        // The 'cd' global is preserved by using IIFE format which doesn't mangle globals
+      },
 
       // Source map configuration based on build mode
       sourcemap: buildMode.isSingle ? 'inline' : (buildMode.isDev ? 'inline' : true),
@@ -298,11 +332,20 @@ export default defineConfig(({ mode }) => {
 
           // Disable code splitting (single output file)
           inlineDynamicImports: true,
+
+          // Enable module concatenation (hoisting transitive imports)
+          hoistTransitiveImports: true,
         },
+
+        // Tree-shaking is enabled by default in Rollup/Vite
+        treeshake: true,
       },
 
       // Disable code splitting
       cssCodeSplit: false,
+
+      // Disable performance hints (no warnings about chunk size)
+      chunkSizeWarningLimit: Infinity,
     },
 
     // esbuild configuration for JavaScript transformation

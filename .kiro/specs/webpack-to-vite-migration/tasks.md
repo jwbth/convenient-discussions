@@ -135,14 +135,22 @@
     - Match webpack-build-notifier behavior
     - _Requirements: 3.5_
 
-- [ ] 6. Configure environment variables and optimization
-  - [ ] 6.1 Set up environment defines
+- [x] 6. Configure environment variables and optimization
+
+
+
+
+  - [x] 6.1 Set up environment defines
+
+
     - Configure define for IS_DEV, IS_STAGING
     - Configure define for SINGLE_CONFIG_FILE_NAME and SINGLE_LANG_CODE (set to wiki and lang for single builds, undefined otherwise)
     - Ensure variables are replaced at build time to enable conditional require() calls in app.js
     - _Requirements: 5.2, 5.3_
 
-  - [ ] 6.2 Configure minification
+  - [x] 6.2 Configure minification
+
+
     - Use esbuild minifier with custom options
     - Preserve class names (minify.keepNames: true)
     - Reserve 'cd' identifier from mangling (mangleProps with reserved list)
@@ -150,7 +158,9 @@
     - Disable sequences and conditionals compression for better debugging
     - _Requirements: 2.4, 6.2, 6.3_
 
-  - [ ] 6.3 Configure Rollup optimization
+  - [x] 6.3 Configure Rollup optimization
+
+
     - Enable tree-shaking (default in Vite)
     - Enable module concatenation (build.rollupOptions.output.hoistTransitiveImports)
     - Disable performance hints (build.chunkSizeWarningLimit: Infinity)
