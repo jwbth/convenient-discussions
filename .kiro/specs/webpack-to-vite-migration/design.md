@@ -141,9 +141,8 @@ interface BuildOutput {
 interface EnvironmentDefines {
   IS_STAGING: boolean;
   IS_DEV: boolean;
-  IS_SINGLE: boolean;
-  CONFIG_FILE_NAME?: string;
-  LANG_CODE?: string;
+  SINGLE_CONFIG_FILE_NAME?: string;
+  SINGLE_LANG_CODE?: string;
 }
 ```
 

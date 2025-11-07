@@ -22,10 +22,10 @@ import { getFooter } from './utils-window';
 /** @type {typeof import('../config/default').default} */
 let config;
 
-if (LANG_CODE) {
-  if (CONFIG_FILE_NAME) {
+if (SINGLE_LANG_CODE) {
+  if (SINGLE_CONFIG_FILE_NAME) {
     try {
-      config = require(`../config/${CONFIG_FILE_NAME}`).default;
+      config = require(`../config/${SINGLE_CONFIG_FILE_NAME}`).default;
     } catch {
       // Empty
     }
@@ -46,16 +46,16 @@ if (LANG_CODE) {
   typedKeysOf(cd.i18n.en).forEach((name) => {
     cd.i18n.en[name] = replaceEntities(cd.i18n.en[name]);
   });
-  if (LANG_CODE !== 'en') {
-    cd.i18n[LANG_CODE] = require(`../i18n/${LANG_CODE}.json`);
-    const langObj = cd.i18n[LANG_CODE];
-    Object.keys(cd.i18n[LANG_CODE])
+  if (SINGLE_LANG_CODE !== 'en') {
+    cd.i18n[SINGLE_LANG_CODE] = require(`../i18n/${SINGLE_LANG_CODE}.json`);
+    const langObj = cd.i18n[SINGLE_LANG_CODE];
+    Object.keys(cd.i18n[SINGLE_LANG_CODE])
       .filter((name) => typeof langObj[name] === 'string')
       .forEach((name) => {
         langObj[name] = replaceEntities(langObj[name]);
       });
-    langObj.dayjsLocale = require(`dayjs/locale/${LANG_CODE}`);
-    langObj.dateFnsLocale = require(`date-fns/locale/${LANG_CODE}`);
+    langObj.dayjsLocale = require(`dayjs/locale/${SINGLE_LANG_CODE}`);
+    langObj.dateFnsLocale = require(`date-fns/locale/${SINGLE_LANG_CODE}`);
   }
 }
 
@@ -72,7 +72,7 @@ function setStrings() {
     'move-',
   ];
 
-  if (!IS_SINGLE) {
+  if (!SINGLE_LANG_CODE) {
     require('../dist/convenientDiscussions-i18n/en.js');
   }
   const strings = Object.keys(cd.i18n.en).reduce((acc, name) => {
@@ -328,7 +328,7 @@ async function app() {
     return;
   }
 
-  if (IS_SINGLE) {
+  if (SINGLE_CONFIG_FILE_NAME) {
     cd.config = config;
   }
 

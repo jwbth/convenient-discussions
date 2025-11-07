@@ -88,9 +88,8 @@ const config = (/** @type {Environment} */ env) => {
     new webpack.DefinePlugin({
       IS_STAGING: isStaging,
       IS_DEV: isDev,
-      IS_SINGLE: isSingle,
-      CONFIG_FILE_NAME: isSingle ? JSON.stringify(wiki) : undefined,
-      LANG_CODE: isSingle ? JSON.stringify(lang) : undefined,
+      SINGLE_CONFIG_FILE_NAME: isSingle ? JSON.stringify(wiki) : undefined,
+      SINGLE_LANG_CODE: isSingle ? JSON.stringify(lang) : undefined,
     }),
     new WebpackBuildNotifierPlugin({
       suppressSuccess: true,

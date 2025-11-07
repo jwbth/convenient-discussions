@@ -9,9 +9,8 @@ import type { ConvenientDiscussions } from './cd';
 declare global {
   const IS_STAGING: boolean;
   const IS_DEV: boolean;
-  const IS_SINGLE: boolean;
-  const CONFIG_FILE_NAME: string | null;
-  const LANG_CODE: string | null;
+  const SINGLE_CONFIG_FILE_NAME: string | null;
+  const SINGLE_LANG_CODE: string | null;
   const moment: (...args: any) => any;
 
   type Direction = 'ltr' | 'rtl';

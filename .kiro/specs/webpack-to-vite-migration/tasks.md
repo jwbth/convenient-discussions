@@ -86,7 +86,7 @@
 
 - [ ] 6. Configure environment variables and optimization
   - [ ] 6.1 Set up environment defines
-    - Configure define for IS_DEV, IS_STAGING, IS_SINGLE
+    - Configure define for IS_DEV, IS_STAGING, SINGLE_CONFIG_FILE_NAME, SINGLE_LANG_CODE
     - Add CONFIG_FILE_NAME and LANG_CODE for single builds
     - Ensure variables are replaced at build time
     - _Requirements: 5.2, 5.3_
