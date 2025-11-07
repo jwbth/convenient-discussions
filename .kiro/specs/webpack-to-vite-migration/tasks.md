@@ -1,147 +1,161 @@
 # Implementation Plan
 
-- [ ] 1. Install Vite and remove Webpack dependencies
-  - Install vite as a dev dependency
-  - Remove webpack, webpack-cli, webpack-dev-server, and related loaders
-  - Remove webpack-specific plugins (terser-webpack-plugin, webpack-build-notifier)
-  - Update package.json scripts to use Vite commands
-  - _Requirements: 1.1, 1.3, 6.1, 6.2, 6.3_
+- [ ] 1. Install Vite and configure basic setup
+  - [ ] 1.1 Install Vite dependencies
+    - Install vite as a dev dependency
+    - Install vite-plugin-banner for banner injection
+    - Install any other required Vite plugins
+    - _Requirements: 1.1, 6.1, 6.5_
 
-- [ ] 2. Create basic Vite configuration structure
-  - [ ] 2.1 Create vite.config.mjs with build mode detection logic
-    - Implement determineBuildMode function to detect dev, staging, single modes
-    - Set up environment variable handling for mode detection
-    - Create filename postfix logic based on build mode
+  - [ ] 1.2 Create vite.config.mjs with build mode detection
+    - Implement determineBuildMode function to detect dev, staging, single modes from env variables
+    - Parse project and lang parameters for single builds
+    - Generate filename postfix based on build mode (.dev, .staging, .single.{wiki})
+    - Set up basic Vite config structure with mode-based configuration
     - _Requirements: 1.2, 5.1, 5.2_
 
-  - [ ] 2.2 Configure basic build options
-    - Set entry point to src/app.js
+  - [ ] 1.3 Configure build options
+    - Set entry point to src/app.js using build.rollupOptions.input
     - Configure output directory to dist/
     - Set up filename generation with mode-specific postfixes
-    - Configure module format and target browsers
-    - _Requirements: 1.4, 5.1_
+    - Configure module format (iife) and target browsers using browserslist
+    - Disable code splitting (single output file)
+    - _Requirements: 1.4, 5.1, 6.2_
 
-  - [ ] 2.3 Configure development server
-    - Set up dev server on port 9000
-    - Configure CORS headers for cross-origin access
-    - Set up HMR (hot module replacement)
-    - Configure WebSocket settings
-    - _Requirements: 3.1, 3.2, 3.3, 3.4_
+- [ ] 2. Configure asset processing
+  - [ ] 2.1 Set up Less preprocessing
+    - Configure Vite's native CSS preprocessing for Less files
+    - Ensure styles are injected into DOM (default Vite behavior)
+    - Add PostCSS plugin or custom handling to filter CSS URLs excluding MediaWiki paths (/w/)
+    - _Requirements: 4.1, 4.2, 4.3, 6.4_
 
-- [ ] 3. Implement asset processing
-  - [ ] 3.1 Configure Less processing
-    - Set up Vite's native CSS preprocessing for Less files
-    - Configure style injection into DOM
-    - Implement CSS URL filtering to exclude MediaWiki paths (/w/)
-    - _Requirements: 4.1, 4.2, 4.3_
+  - [ ] 2.2 Configure worker bundling
+    - Update worker import in src/convenientDiscussions.js to use `?worker&inline` suffix
+    - Configure Vite's worker options for inline bundling (worker.format: 'iife')
+    - Ensure worker is embedded as blob URL in main bundle
+    - Verify worker filename generation includes mode postfix
+    - _Requirements: 2.3, 4.5, 6.5_
 
-  - [ ] 3.2 Configure worker bundling
-    - Set up Vite's worker configuration for inline bundling using `?worker&inline` import suffix
-    - Worker should be embedded as blob URL in the main bundle (matching current webpack behavior)
-    - Ensure worker source maps are generated correctly for inline workers
-    - _Requirements: 2.3, 4.5_
-
-  - [ ] 3.3 Configure JavaScript transformation
-    - Set up esbuild target for browser compatibility
-    - Configure module resolution and extensions
-    - Ensure ES2020 features are properly handled
+  - [ ] 2.3 Configure JavaScript transformation
+    - Set up esbuild target for browser compatibility (ES2020)
+    - Configure module resolution and extensions (.js, .json)
+    - Verify ES2020 features work without Babel (optional chaining, nullish coalescing, etc.)
     - _Requirements: 4.4, 6.1_
+
+- [ ] 3. Configure development server
+  - Set up dev server on port 9000
+  - Configure CORS headers (Access-Control-Allow-Origin: *)
+  - Configure HMR with WebSocket on ws://localhost:9000/ws
+  - Set static file serving from dist/
+  - Configure hot reload behavior (hot: 'only')
+  - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
 - [ ] 4. Implement source map configuration
   - [ ] 4.1 Configure development source maps
-    - Set up inline source maps for dev mode using build.sourcemap: 'inline'
-    - Configure appropriate source map format for single mode
+    - Set build.sourcemap: 'inline' for dev mode
+    - Set build.sourcemap: 'eval' for single mode
     - _Requirements: 5.4_
 
   - [ ] 4.2 Configure production source maps
-    - Set up external source map generation using build.sourcemap: true or 'hidden'
-    - Implement custom source map URL injection using sourceMapsBaseUrl (may require custom plugin)
-    - Configure .map.json extension if feasible (only if it doesn't require many lines of code)
-    - Ensure single shared source map file for main bundle and inline worker (not separate files) if feasible
+    - Set build.sourcemap: true for production/staging builds
+    - Create custom plugin to inject custom source map URL using sourceMapsBaseUrl from config
+    - Rename source map files to .map.json extension (if straightforward)
+    - Handle source map URL for inline worker (shared or separate file)
     - _Requirements: 2.2, 5.4_
 
 - [ ] 5. Create custom Vite plugins
   - [ ] 5.1 Create nowiki banner plugin
-    - Implement plugin to prepend `/* <nowiki> */` (or `/*! <nowiki> */`, whatever needs less code) to production and staging build output
-    - Implement plugin to append `/* </nowiki> */` (or `/*! </nowiki> */`, whatever needs less code) to production and staging build output
-    - Ensure banner is only added to main bundle, not worker
+    - Use vite-plugin-banner or custom plugin to prepend `/* <nowiki> */` to output
+    - Create custom plugin to append `/* </nowiki> */` to output
+    - Apply only to main bundle (not worker) and only for non-single builds
     - _Requirements: 2.1_
 
   - [ ] 5.2 Create license extraction plugin
-    - Extract license comments from code (including from inline worker if feasible)
-    - Generate a single shared .LICENSE.js file for both main bundle and inline worker if feasible
+    - Extract license comments (/@preserve|@license|@cc_on/i) from code
+    - Generate .LICENSE.js file with extracted licenses
     - Add custom banner with documentation URL and license file reference
+    - Handle worker licenses if feasible
     - _Requirements: 2.5_
 
   - [ ] 5.3 Create build notification plugin
-    - Implement build success/failure notifications
+    - Implement plugin using buildEnd and buildError hooks
     - Suppress success and warning notifications (only show errors)
+    - Match webpack-build-notifier behavior
     - _Requirements: 3.5_
 
-- [ ] 6. Configure environment variables and defines
-  - Implement define configuration for IS_DEV, IS_STAGING, IS_SINGLE
-  - Add CONFIG_FILE_NAME and LANG_CODE for single builds
-  - Ensure variables are properly replaced at build time
-  - _Requirements: 5.2, 5.3_
+- [ ] 6. Configure environment variables and optimization
+  - [ ] 6.1 Set up environment defines
+    - Configure define for IS_DEV, IS_STAGING, IS_SINGLE
+    - Add CONFIG_FILE_NAME and LANG_CODE for single builds
+    - Ensure variables are replaced at build time
+    - _Requirements: 5.2, 5.3_
 
-- [ ] 7. Configure minification and optimization
-  - [ ] 7.1 Set up esbuild minification
-    - Configure esbuild minifier with appropriate settings
-    - Preserve class names (keep_classnames equivalent)
-    - Reserve 'cd' identifier from mangling
-    - Ensure ASCII-only output for special characters
+  - [ ] 6.2 Configure minification
+    - Use esbuild minifier with custom options
+    - Preserve class names (minify.keepNames: true)
+    - Reserve 'cd' identifier from mangling (mangleProps with reserved list)
+    - Configure charset: 'ascii' for ASCII-only output
+    - Disable sequences and conditionals compression for better debugging
     - _Requirements: 2.4, 6.2, 6.3_
 
-  - [ ] 7.2 Configure Rollup optimization
-    - Enable tree-shaking and module concatenation
-    - Set up performance hints configuration
+  - [ ] 6.3 Configure Rollup optimization
+    - Enable tree-shaking (default in Vite)
+    - Enable module concatenation (build.rollupOptions.output.hoistTransitiveImports)
+    - Disable performance hints (build.chunkSizeWarningLimit: Infinity)
     - _Requirements: 5.5, 6.2_
 
-- [ ] 8. Implement single build mode
-  - Configure single build to include config and i18n inline
-  - Set up wiki-specific filename generation (.single.{wiki}, e.g. .single.w-en)
-  - Ensure proper source map handling for single builds
-  - Test with different project/lang combinations
-  - _Requirements: 1.2, 5.1, 5.3_
+- [ ] 7. Update npm scripts and remove Webpack
+  - [ ] 7.1 Update package.json scripts
+    - Update build script: `node buildConfigs.mjs && node buildI18n.mjs && vite build`
+    - Update start script: `node buildConfigs.mjs && node buildI18n.mjs && vite`
+    - Update serve script: `vite --mode development`
+    - Update single script: `node buildConfigs.mjs && node buildI18n.mjs && vite build --mode single`
+    - Remove webpack script
+    - _Requirements: 1.3_
 
-- [ ] 9. Update npm scripts
-  - Update build script to use vite build
-  - Update start script to use vite with dev mode
-  - Update serve script for development server
-  - Update single script with proper environment variables
-  - Remove NODE_OPTIONS=--openssl-legacy-provider flags (not needed with Vite)
-  - _Requirements: 1.3_
+  - [ ] 7.2 Remove Webpack dependencies
+    - Remove webpack, webpack-cli, webpack-dev-server from package.json
+    - Remove babel-loader, css-loader, less-loader, style-loader, worker-loader
+    - Remove terser-webpack-plugin, webpack-build-notifier
+    - Run npm install to update package-lock.json
+    - _Requirements: 1.1, 6.1, 6.3_
 
-- [ ] 10. Verify and test all build modes
-  - [ ] 10.1 Test production build
-    - Run production build and verify output files
-    - Check source maps are external with correct URLs
+- [ ] 8. Test and validate all build modes
+  - [ ] 8.1 Test production build
+    - Run `npm run build` and verify output files in dist/
+    - Check source maps are external with .map.json extension
+    - Verify nowiki tags are present at top and bottom
     - Verify minification and optimization
+    - Check LICENSE.js file is generated
     - Compare bundle size with Webpack output
-    - _Requirements: 1.1, 1.4, 1.5_
+    - _Requirements: 1.1, 1.4, 1.5, 2.1, 2.5_
 
-  - [ ] 10.2 Test development build
-    - Run dev server and verify HMR works
-    - Check CORS headers are present
-    - Verify source maps are inline
+  - [ ] 8.2 Test development server
+    - Run `npm start` and verify server starts on localhost:9000
+    - Check HMR works by modifying a source file
+    - Verify CORS headers are present in response
+    - Check source maps are inline
     - Test hot reload functionality
     - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-  - [ ] 10.3 Test staging build
-    - Run staging build and verify .staging postfix
-    - Check all production features work with staging mode
-    - _Requirements: 1.2, 5.1_
-
-  - [ ] 10.4 Test single build
-    - Run single build with different wiki configurations
-    - Verify .single.{wiki} filename format
+  - [ ] 8.3 Test staging build
+    - Run `npm run build --staging` and verify .staging postfix in filename
     - Check nowiki tags are present
-    - Verify inline config and i18n
-    - _Requirements: 1.2, 2.1, 5.1, 5.3_
+    - Verify all production features work with staging mode
+    - _Requirements: 1.2, 2.1, 5.1_
 
-- [ ] 11. Update documentation and cleanup
+  - [ ] 8.4 Test single build
+    - Run `npm run single -- project=w lang=en` and verify .single.w-en postfix
+    - Verify no nowiki tags are present
+    - Check source maps use eval format
+    - Test with different project/lang combinations
+    - Verify inline config and i18n work correctly
+    - _Requirements: 1.2, 5.1, 5.3_
+
+- [ ] 9. Update documentation and cleanup
   - Update README.md with new build commands if needed
+  - Update "Building" section in homepage.wiki
   - Remove webpack.config.mjs
-  - Remove babel.config.js if no longer needed
-  - Update any build-related documentation, including the "Building" section in `homepage.wiki`
+  - Evaluate if babel.config.js can be removed (Vite uses esbuild by default)
+  - Update .kiro/steering/tech.md to reflect Vite instead of Webpack
   - _Requirements: 1.1_
