@@ -85,29 +85,34 @@ convenientDiscussions.i18n['${lang}'].dayjsLocale = dayjsLocale;
 
   // Build the locales.
   if (langsHavingLocale.length) {
-    fs.writeFileSync(
-      `${DAYJS_LOCALES_TEMP_DIR_NAME}/webpack.config.js`,
-      `const fs = require('fs');
-const path = require('path');
+    fs.mkdirSync(`${DAYJS_LOCALES_TEMP_DIR_NAME}/dist`, { recursive: true });
 
-const entry = {};
-fs.readdirSync('./${DAYJS_LOCALES_TEMP_DIR_NAME}')
-  .filter((name) => name.endsWith('.js') && !name.endsWith('webpack.config.js'))
-  .forEach((name) => {
-    entry[name.slice(0, -3)] = './' + name;
-  });
+    // Build each locale file separately since Vite doesn't support multiple entries with IIFE
+    langsHavingLocale.forEach((lang) => {
+      fs.writeFileSync(
+        `${DAYJS_LOCALES_TEMP_DIR_NAME}/vite.config.${lang}.js`,
+        `import { defineConfig } from 'vite';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-module.exports = {
-  mode: 'production',
-  context: path.resolve(__dirname, '.'),
-  entry,
-  output: {
-    path: path.resolve(__dirname, 'dist'),
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export default defineConfig({
+  build: {
+    outDir: path.resolve(__dirname, 'dist'),
+    emptyOutDir: false,
+    lib: {
+      entry: path.resolve(__dirname, '${lang}.js'),
+      formats: ['iife'],
+      name: 'convenientDiscussions',
+      fileName: () => '${lang}.js',
+    },
   },
-};
+});
 `
-    );
-    execSync(`node ./node_modules/webpack/bin/webpack --config "${DAYJS_LOCALES_TEMP_DIR_NAME}/webpack.config.js"`);
+      );
+      execSync(`node ./node_modules/vite/bin/vite.js build --config "${DAYJS_LOCALES_TEMP_DIR_NAME}/vite.config.${lang}.js"`, { stdio: 'inherit' });
+    });
   }
 
   return langsHavingLocale;
@@ -160,29 +165,34 @@ convenientDiscussions.i18n['${lang}'].dateFnsLocale = ${names.localeName};
 
   // Build the locales.
   if (langsHavingLocale.length) {
-    fs.writeFileSync(
-      `${DATE_FNS_LOCALES_TEMP_DIR_NAME}/webpack.config.js`,
-      `const fs = require('fs');
-const path = require('path');
+    fs.mkdirSync(`${DATE_FNS_LOCALES_TEMP_DIR_NAME}/dist`, { recursive: true });
 
-const entry = {};
-fs.readdirSync('./${DATE_FNS_LOCALES_TEMP_DIR_NAME}')
-  .filter((name) => name.endsWith('.js') && !name.endsWith('webpack.config.js'))
-  .forEach((name) => {
-    entry[name.slice(0, -3)] = './' + name;
-  });
+    // Build each locale file separately since Vite doesn't support multiple entries with IIFE
+    langsHavingLocale.forEach((lang) => {
+      fs.writeFileSync(
+        `${DATE_FNS_LOCALES_TEMP_DIR_NAME}/vite.config.${lang}.js`,
+        `import { defineConfig } from 'vite';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-module.exports = {
-  mode: 'production',
-  context: path.resolve(__dirname, '.'),
-  entry,
-  output: {
-    path: path.resolve(__dirname, 'dist'),
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+export default defineConfig({
+  build: {
+    outDir: path.resolve(__dirname, 'dist'),
+    emptyOutDir: false,
+    lib: {
+      entry: path.resolve(__dirname, '${lang}.js'),
+      formats: ['iife'],
+      name: 'convenientDiscussions',
+      fileName: () => '${lang}.js',
+    },
   },
-};
+});
 `
-    );
-    execSync(`node ./node_modules/webpack/bin/webpack --config "${DATE_FNS_LOCALES_TEMP_DIR_NAME}/webpack.config.js"`);
+      );
+      execSync(`node ./node_modules/vite/bin/vite.js build --config "${DATE_FNS_LOCALES_TEMP_DIR_NAME}/vite.config.${lang}.js"`, { stdio: 'inherit' });
+    });
   }
 
   return langsHavingLocale;

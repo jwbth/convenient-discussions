@@ -191,8 +191,13 @@
     - Run npm install to update package-lock.json
     - _Requirements: 1.1, 6.1, 6.3_
 
-- [ ] 8. Test and validate all build modes
-  - [ ] 8.1 Test production build
+- [-] 8. Test and validate all build modes
+
+
+
+
+  - [x] 8.1 Test production build
+
     - Run `npm run build` and verify output files in dist/
     - Check source maps are external with .map extension
     - Verify nowiki tags are present at top and bottom
@@ -201,16 +206,22 @@
     - Compare bundle size with Webpack output
     - _Requirements: 1.1, 1.4, 1.5, 2.1, 2.5_
 
+
+
   - [ ] 8.2 Test development server
     - Run `npm start` and verify server starts on localhost:9000
     - Check HMR works by modifying a source file
     - Verify CORS headers are present in response
     - Check source maps are inline
     - Test hot reload functionality
+
+
     - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
   - [ ] 8.3 Test staging build
     - Run `npm run build --staging` and verify .staging postfix in filename
+
+
     - Check nowiki tags are present
     - Verify all production features work with staging mode
     - _Requirements: 1.2, 2.1, 5.1_
