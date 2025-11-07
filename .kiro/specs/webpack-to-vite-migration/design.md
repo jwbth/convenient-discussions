@@ -177,7 +177,7 @@ interface EnvironmentDefines {
 
 ### Integration Tests
 
-1. **npm Script Compatibility**: Ensure all existing building-related scripts work
+1. **npm Script Compatibility**: Ensure all existing build-related scripts work
 2. **CI/CD Compatibility**: Verify build process works in CI environment
 3. **Multi-mode Testing**: Test all four build modes
 

@@ -56,7 +56,7 @@
   - [ ] 4.2 Configure production source maps
     - Set up external source map generation
     - Implement custom source map URL injection using sourceMapsBaseUrl
-    - Ensure .map.json extension is used
+    - Ensure .map.json extension is used (only if it doesn't require many lines of code)
     - _Requirements: 2.2, 5.4_
 
   - [ ] 4.3 Configure worker source maps
@@ -66,16 +66,15 @@
 
 - [ ] 5. Create custom Vite plugins
   - [ ] 5.1 Create nowiki banner plugin
-    - Implement plugin to prepend `/*! <nowiki> */` to single build output
-    - Implement plugin to append `/*! </nowiki> */` to single build output
+    - Implement plugin to prepend `/* <nowiki> */` (or `/*! <nowiki> */`, whatever needs less code) to production and staging build output
+    - Implement plugin to append `/* </nowiki> */` (or `/*! </nowiki> */`, whatever needs less code) to production and staging build output
     - Ensure banner is only added to main bundle, not worker
     - _Requirements: 2.1_
 
   - [ ] 5.2 Create license extraction plugin
     - Extract license comments from code
-    - Generate separate .LICENSE.js files
+    - Generate a .LICENSE.js (preferably, a single one, but separate files for the main and worker bundles is OK too)
     - Add custom banner with documentation URL and license file reference
-    - Handle worker license file separately
     - _Requirements: 2.5_
 
   - [ ] 5.3 Create build notification plugin
@@ -99,13 +98,12 @@
 
   - [ ] 7.2 Configure Rollup optimization
     - Enable tree-shaking and module concatenation
-    - Configure chunk splitting strategy
     - Set up performance hints configuration
     - _Requirements: 5.5, 6.2_
 
 - [ ] 8. Implement single build mode
   - Configure single build to include config and i18n inline
-  - Set up wiki-specific filename generation (.single.{wiki})
+  - Set up wiki-specific filename generation (.single.{wiki}, e.g. .single.w-en)
   - Ensure proper source map handling for single builds
   - Test with different project/lang combinations
   - _Requirements: 1.2, 5.1, 5.3_
@@ -149,5 +147,5 @@
   - Update README.md with new build commands if needed
   - Remove webpack.config.mjs
   - Remove babel.config.js if no longer needed
-  - Update any build-related documentation
+  - Update any build-related documentation, including the "Building" section in `homepage.wiki`
   - _Requirements: 1.1_
