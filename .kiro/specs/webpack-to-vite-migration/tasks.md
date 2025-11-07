@@ -78,13 +78,20 @@
   - Configure hot reload behavior (hot: 'only')
   - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-- [ ] 4. Implement source map configuration
-  - [ ] 4.1 Configure development source maps
+- [-] 4. Implement source map configuration
+
+
+
+
+  - [x] 4.1 Configure development source maps
+
     - Set build.sourcemap: 'inline' for dev mode
     - Set build.sourcemap: 'eval' for single mode
     - _Requirements: 5.4_
 
+
   - [ ] 4.2 Configure production source maps
+
     - Set build.sourcemap: true for production/staging builds to generate .map files
     - Create custom plugin to inject custom source map URL using sourceMapsBaseUrl from config
     - Attempt to generate single shared source map for main bundle and inline worker (preferred but may not be feasible)

@@ -11,6 +11,43 @@ const cdConfig = nonNullableConfig;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 /**
+ * Custom plugin to inject custom source map URL.
+ *
+ * @param {string} baseUrl
+ * @param {BuildMode} buildMode
+ * @returns {import('vite').Plugin}
+ */
+function customSourceMapUrlPlugin(baseUrl, buildMode) {
+  return {
+    name: 'custom-sourcemap-url',
+    apply: 'build',
+    enforce: 'post',
+    generateBundle(_options, bundle) {
+      // Only apply to production/staging builds (not dev or single)
+      if (buildMode.isDev || buildMode.isSingle) {
+        return;
+      }
+
+      for (const [fileName, chunk] of Object.entries(bundle)) {
+        if (chunk.type === 'chunk' && fileName.endsWith('.js')) {
+          const mapFileName = `${fileName}.map`;
+
+          // Check if source map exists
+          if (mapFileName in bundle) {
+            // Replace the default sourceMappingURL comment with custom URL
+            const customUrl = `${baseUrl}${mapFileName}`;
+            chunk.code = chunk.code.replace(
+              /\/\/# sourceMappingURL=.*$/m,
+              `//# sourceMappingURL=${customUrl}`
+            );
+          }
+        }
+      }
+    },
+  };
+}
+
+/**
  * @typedef {object} BuildMode
  * @property {boolean} isDev
  * @property {boolean} isStaging
@@ -70,13 +107,24 @@ export default defineConfig(({ mode }) => {
     throw new Error('No protocol/server/root path/article path found in config.json5.');
   }
 
+  const plugins = [];
+
+  // Add custom source map URL plugin for production/staging builds
+  if (cdConfig.sourceMapsBaseUrl && !buildMode.isDev && !buildMode.isSingle) {
+    plugins.push(customSourceMapUrlPlugin(cdConfig.sourceMapsBaseUrl, buildMode));
+  }
+
   return {
+    plugins,
     build: {
       // Output directory
       outDir: 'dist',
 
       // Target browsers using browserslist (ES2020 supports all required transforms)
       target: 'es2020',
+
+      // Source map configuration based on build mode
+      sourcemap: buildMode.isSingle ? 'inline' : (buildMode.isDev ? 'inline' : true),
 
       // Entry point and output configuration
       rollupOptions: {
@@ -146,10 +194,17 @@ export default defineConfig(({ mode }) => {
     // Worker configuration
     worker: {
       format: 'iife',
+
+      // Worker source maps follow the same strategy as the main bundle
+      // When inlined (?worker&inline), the worker code becomes part of the main bundle
+      // and shares the same source map
       rollupOptions: {
         output: {
           // Worker filename with mode-specific postfix
           entryFileNames: `convenientDiscussions.worker${buildMode.filenamePostfix}.js`,
+
+          // Source maps for workers (when not inlined)
+          sourcemap: buildMode.isSingle ? 'inline' : (buildMode.isDev ? 'inline' : true),
         },
       },
     },
