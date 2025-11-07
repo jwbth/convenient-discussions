@@ -33,22 +33,32 @@
     - Disable code splitting (single output file)
     - _Requirements: 1.4, 5.1, 6.2_
 
-- [ ] 2. Configure asset processing
-  - [ ] 2.1 Set up Less preprocessing
+- [x] 2. Configure asset processing
+
+
+
+
+  - [x] 2.1 Set up Less preprocessing
+
+
     - Configure Vite's native CSS preprocessing for Less files
     - Ensure styles are injected into DOM by default
     - Support importing stylesheets as strings using `?inline` suffix (e.g., `import styles from './styles.less?inline'`)
     - Add PostCSS plugin or custom handling to filter CSS URLs excluding MediaWiki paths (/w/)
     - _Requirements: 4.1, 4.2, 4.3, 6.4_
 
-  - [ ] 2.2 Configure worker bundling
+  - [x] 2.2 Configure worker bundling
+
+
     - Update worker import in src/convenientDiscussions.js to use `?worker&inline` suffix
     - Configure Vite's worker options for inline bundling (worker.format: 'iife')
     - Ensure worker is embedded as blob URL in main bundle
     - Verify worker filename generation includes mode postfix
     - _Requirements: 2.3, 4.5, 6.5_
 
-  - [ ] 2.3 Configure JavaScript transformation
+  - [x] 2.3 Configure JavaScript transformation
+
+
     - Set up esbuild target for browser compatibility (ES2020)
     - Configure module resolution and extensions (.js, .json)
     - Verify esbuild can handle all Babel transforms: class properties, class static blocks, logical assignment, nullish coalescing, optional catch binding, optional chaining, numeric separators

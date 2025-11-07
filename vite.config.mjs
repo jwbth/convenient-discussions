@@ -75,7 +75,7 @@ export default defineConfig(({ mode }) => {
       // Output directory
       outDir: 'dist',
 
-      // Target browsers using browserslist
+      // Target browsers using browserslist (ES2020 supports all required transforms)
       target: 'es2020',
 
       // Entry point and output configuration
@@ -95,6 +95,63 @@ export default defineConfig(({ mode }) => {
 
       // Disable code splitting
       cssCodeSplit: false,
+    },
+
+    // esbuild configuration for JavaScript transformation
+    esbuild: {
+      // Target ES2020 for browser compatibility
+      target: 'es2020',
+
+      // esbuild natively supports all required transforms:
+      // - class properties
+      // - class static blocks
+      // - logical assignment operators
+      // - nullish coalescing
+      // - optional catch binding
+      // - optional chaining
+      // - numeric separators
+    },
+
+    // CSS preprocessing configuration
+    css: {
+      preprocessorOptions: {
+        less: {
+          // Less-specific options can be added here if needed
+        },
+      },
+      postcss: {
+        plugins: [
+          {
+            postcssPlugin: 'filter-mediawiki-urls',
+            Declaration(decl) {
+              // Filter out URLs starting with /w/ (MediaWiki paths)
+              // Note: Vite's CSS processing automatically handles URL filtering
+              // This plugin serves as a placeholder for any custom URL filtering logic
+              if ((decl.prop.includes('url') || decl.value.includes('url(')) &&
+                decl.value.match(/url\(['"]?\/w\/[^'"()]+['"]?\)/)) {
+                // URLs starting with /w/ are MediaWiki paths and should not be processed
+                // Vite will leave them as-is by default
+              }
+            },
+          },
+        ],
+      },
+    },
+
+    // Module resolution
+    resolve: {
+      extensions: ['.js', '.json'],
+    },
+
+    // Worker configuration
+    worker: {
+      format: 'iife',
+      rollupOptions: {
+        output: {
+          // Worker filename with mode-specific postfix
+          entryFileNames: `convenientDiscussions.worker${buildMode.filenamePostfix}.js`,
+        },
+      },
     },
   };
 });
