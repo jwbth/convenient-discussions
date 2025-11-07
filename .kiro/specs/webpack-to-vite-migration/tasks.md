@@ -36,9 +36,9 @@
     - _Requirements: 4.1, 4.2, 4.3_
 
   - [ ] 3.2 Configure worker bundling
-    - Set up Vite's worker configuration for inline bundling
-    - Configure worker filename generation with mode-specific postfixes
-    - Ensure worker source maps are generated correctly
+    - Set up Vite's worker configuration for inline bundling using `?worker&inline` import suffix
+    - Worker should be embedded as blob URL in the main bundle (matching current webpack behavior)
+    - Ensure worker source maps are generated correctly for inline workers
     - _Requirements: 2.3, 4.5_
 
   - [ ] 3.3 Configure JavaScript transformation
@@ -49,14 +49,14 @@
 
 - [ ] 4. Implement source map configuration
   - [ ] 4.1 Configure development source maps
-    - Set up inline source maps for dev mode
-    - Configure eval source maps for single mode
+    - Set up inline source maps for dev mode using build.sourcemap: 'inline'
+    - Configure appropriate source map format for single mode
     - _Requirements: 5.4_
 
   - [ ] 4.2 Configure production source maps
-    - Set up external source map generation
-    - Implement custom source map URL injection using sourceMapsBaseUrl
-    - Ensure .map.json extension is used (only if it doesn't require many lines of code)
+    - Set up external source map generation using build.sourcemap: true or 'hidden'
+    - Implement custom source map URL injection using sourceMapsBaseUrl (may require custom plugin)
+    - Configure .map.json extension if feasible (only if it doesn't require many lines of code)
     - _Requirements: 2.2, 5.4_
 
   - [ ] 4.3 Configure worker source maps
