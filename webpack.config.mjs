@@ -99,6 +99,7 @@ const config = (/** @type {Environment} */ env) => {
   ];
 
   if (!isSingle) {
+    // Top banner
     plugins.push(new webpack.BannerPlugin({
       banner: '<nowiki>',
 
@@ -107,7 +108,7 @@ const config = (/** @type {Environment} */ env) => {
       test: bundleFilename,
     }),
 
-    // Use a custom plugin to append the closing nowiki tag
+    // Bottom banner. Use a custom plugin to append the closing nowiki tag
     {
       apply(compiler) {
         compiler.hooks.compilation.tap('AppendBannerPlugin', (compilation) => {

@@ -10,7 +10,7 @@ This design document outlines the migration strategy from Webpack 5 to Vite for 
 
 ```mermaid
 graph TD
-    A[vite.config.js] --> B[Development Server]
+    A[vite.config.mjs] --> B[Development Server]
     A --> C[Production Build]
 
     B --> D[esbuild Transform]
@@ -27,7 +27,7 @@ graph TD
     I --> M[External Source Maps]
     J --> N[Inline Source Maps]
     K --> O[External Source Maps + .staging postfix]
-    L --> P[Inline Source Maps + .single.{wiki} postfix]
+    L --> P["Inline Source Maps + .single.{wiki} postfix"]
 ```
 
 ### Plugin Architecture
@@ -44,7 +44,7 @@ The Vite configuration will use a modular plugin approach:
 ### 1. Vite Configuration Structure
 
 ```javascript
-// vite.config.js
+// vite.config.mjs
 export default defineConfig(({ mode, command }) => {
   const buildMode = determineBuildMode(process.env, mode);
 
@@ -158,9 +158,7 @@ interface EnvironmentDefines {
 
 ### Development Server Error Handling
 
-1. **Port Conflicts**: Automatic port detection and fallback
-2. **CORS Issues**: Proper error messages for cross-origin problems
-3. **HMR Failures**: Fallback to full page reload
+1. **HMR Failures**: Fallback to full page reload
 
 ## Testing Strategy
 
@@ -179,7 +177,7 @@ interface EnvironmentDefines {
 
 ### Integration Tests
 
-1. **npm Script Compatibility**: Ensure all existing scripts work
+1. **npm Script Compatibility**: Ensure all existing building-related scripts work
 2. **CI/CD Compatibility**: Verify build process works in CI environment
 3. **Multi-mode Testing**: Test all four build modes
 
@@ -187,7 +185,7 @@ interface EnvironmentDefines {
 
 ### Phase 1: Basic Vite Setup
 - Install Vite and core dependencies
-- Create basic vite.config.js
+- Create basic vite.config.mjs
 - Migrate simple build modes (dev, production)
 
 ### Phase 2: Advanced Features
@@ -271,7 +269,7 @@ interface EnvironmentDefines {
 - Ensure MediaWiki environment compatibility
 
 ### Node.js Compatibility
-- Vite requires Node.js 14.18+ (project already uses 16+)
+- Vite requires Node.js 14.18+ (project already uses 20+)
 - ESM-first approach aligns with project's .mjs files
 
 ### MediaWiki Compatibility
