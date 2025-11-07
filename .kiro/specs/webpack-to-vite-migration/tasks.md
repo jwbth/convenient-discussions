@@ -166,8 +166,15 @@
     - Disable performance hints (build.chunkSizeWarningLimit: Infinity)
     - _Requirements: 5.5, 6.2_
 
-- [ ] 7. Update npm scripts and remove Webpack
-  - [ ] 7.1 Update package.json scripts
+- [x] 7. Update npm scripts and remove Webpack
+
+
+
+
+
+
+  - [x] 7.1 Update package.json scripts
+
     - Update build script: `node buildConfigs.mjs && node buildI18n.mjs && vite build`
     - Update start script: `node buildConfigs.mjs && node buildI18n.mjs && vite`
     - Update serve script: `vite --mode development`
@@ -175,7 +182,9 @@
     - Remove webpack script
     - _Requirements: 1.3_
 
-  - [ ] 7.2 Remove Webpack dependencies
+
+  - [x] 7.2 Remove Webpack dependencies
+
     - Remove webpack, webpack-cli, webpack-dev-server from package.json
     - Remove babel-loader, css-loader, less-loader, style-loader, worker-loader
     - Remove terser-webpack-plugin, webpack-build-notifier
