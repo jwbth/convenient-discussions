@@ -94,6 +94,7 @@
     - _Requirements: 5.4_
 
 
+
   - [x] 4.2 Configure production source maps
 
 
@@ -104,21 +105,31 @@
     - If single source map not feasible, generate separate source maps for main and worker
     - _Requirements: 2.2, 5.4_
 
-- [ ] 5. Create custom Vite plugins
-  - [ ] 5.1 Create nowiki banner plugin
+- [x] 5. Create custom Vite plugins
+
+
+
+
+  - [x] 5.1 Create nowiki banner plugin
+
+
     - Use vite-plugin-banner or custom plugin to prepend `/* <nowiki> */` to output
     - Create custom plugin to append `/* </nowiki> */` to output
     - Apply only to main bundle (not worker) and only for non-single builds
     - _Requirements: 2.1_
 
-  - [ ] 5.2 Create license extraction plugin
+  - [x] 5.2 Create license extraction plugin
+
+
     - Extract license comments (/@preserve|@license|@cc_on/i) from main bundle code
     - Extract license comments from inline worker code
     - Generate .LICENSE.js file(s) with extracted licenses (single file preferred, separate files acceptable if complex)
     - Add custom banner with documentation URL and license file reference
     - _Requirements: 2.5_
 
-  - [ ] 5.3 Create build notification plugin
+  - [x] 5.3 Create build notification plugin
+
+
     - Implement plugin using buildEnd and buildError hooks
     - Suppress success and warning notifications (only show errors) unless it's the first successful build after an error
     - Match webpack-build-notifier behavior

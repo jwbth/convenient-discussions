@@ -2,6 +2,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { defineConfig } from 'vite';
+import banner from 'vite-plugin-banner';
 
 import nonNullableConfig from './config.mjs';
 
@@ -9,6 +10,144 @@ import nonNullableConfig from './config.mjs';
 const cdConfig = nonNullableConfig;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+/**
+ * Custom plugin to append closing nowiki tag to the bundle.
+ *
+ * @param {string} bundleFilename
+ * @returns {import('vite').Plugin}
+ */
+function appendNowikiPlugin(bundleFilename) {
+  return {
+    name: 'append-nowiki',
+    apply: 'build',
+    enforce: 'post',
+    generateBundle(_options, bundle) {
+      // Only apply to the main bundle (not worker)
+      for (const [fileName, chunk] of Object.entries(bundle)) {
+        if (chunk.type === 'chunk' && fileName === bundleFilename) {
+          chunk.code = chunk.code + '\n/*! </nowiki> */';
+        }
+      }
+    },
+  };
+}
+
+/**
+ * Custom plugin to extract license comments to separate files.
+ *
+ * @param {BuildMode} buildMode
+ * @returns {import('vite').Plugin}
+ */
+function licenseExtractionPlugin(buildMode) {
+  return {
+    name: 'license-extraction',
+    apply: 'build',
+    enforce: 'post',
+    generateBundle(_options, bundle) {
+      // Only apply to production/staging builds (not dev or single)
+      if (buildMode.isDev || buildMode.isSingle) {
+        return;
+      }
+
+      const licensePattern = /@preserve|@license|@cc_on/i;
+      const commentPattern = /\/\*!?\s*([\s\S]*?)\s*\*\//g;
+      const extractedLicenses = new Map();
+
+      // Extract licenses from all chunks
+      for (const [fileName, chunk] of Object.entries(bundle)) {
+        if (chunk.type === 'chunk' && fileName.endsWith('.js')) {
+          const licenses = [];
+          let match;
+
+          // Find all comments that match the license pattern
+          while ((match = commentPattern.exec(chunk.code)) !== null) {
+            const commentContent = match[1];
+            if (licensePattern.test(commentContent)) {
+              licenses.push(match[0]);
+            }
+          }
+
+          if (licenses.length > 0) {
+            extractedLicenses.set(fileName, licenses);
+
+            // Remove license comments from the source code
+            let modifiedCode = chunk.code;
+            for (const license of licenses) {
+              modifiedCode = modifiedCode.replace(license, '');
+            }
+            chunk.code = modifiedCode;
+          }
+        }
+      }
+
+      // Generate LICENSE files
+      for (const [fileName, licenses] of extractedLicenses.entries()) {
+        /** @type {string} */
+        const fileNameStr = fileName;
+        const licenseFileName = fileNameStr + '.LICENSE.js';
+        /** @type {string} */
+        let licenseContent = licenses.join('\n\n');
+
+        // Add custom banner based on file type
+        if (fileNameStr.includes('worker')) {
+          // For worker files, add source map URL
+          if (cdConfig.sourceMapsBaseUrl) {
+            const sourceMapUrl = cdConfig.sourceMapsBaseUrl + 'convenientDiscussions.worker.js.map';
+            licenseContent = '//# sourceMappingURL=' + sourceMapUrl + '\n\n' + licenseContent;
+          }
+        } else {
+          // For main bundle, add documentation banner
+          let licenseUrl = '';
+          if (cdConfig.main?.server && cdConfig.main.rootPath && cdConfig.protocol) {
+            licenseUrl = cdConfig.protocol + '://' + cdConfig.main.server + cdConfig.main.rootPath + '/' + licenseFileName;
+          }
+
+          const customBanner = '\n  * For documentation and feedback, see the script\'s homepage:\n  * https://commons.wikimedia.org/wiki/User:Jack_who_built_the_house/Convenient_Discussions\n  *\n  * For license information, see\n  * ' + licenseUrl + '\n  ';
+          licenseContent = '/*' + customBanner + '*/\n\n' + licenseContent;
+        }
+
+        // Emit the license file
+        this.emitFile({
+          type: 'asset',
+          fileName: licenseFileName,
+          source: licenseContent,
+        });
+      }
+    },
+  };
+}
+
+/**
+ * Custom plugin for build notifications.
+ * Matches webpack-build-notifier behavior: suppress success and warning notifications,
+ * only show errors (unless it's the first successful build after an error).
+ *
+ * @returns {import('vite').Plugin}
+ */
+function buildNotificationPlugin() {
+  let lastBuildFailed = false;
+
+  return {
+    name: 'build-notification',
+    buildEnd(error) {
+      if (error) {
+        // Build failed - show error notification
+        console.error('\n❌ Build failed with errors:\n', error);
+        lastBuildFailed = true;
+      } else if (lastBuildFailed) {
+        // First successful build after an error - show success notification
+        console.log('\n✅ Build succeeded after previous error\n');
+        lastBuildFailed = false;
+      }
+      // Otherwise, suppress success notifications (matching webpack-build-notifier behavior)
+    },
+    buildStart() {
+      // Reset error state at the start of each build
+      // (lastBuildFailed is preserved across builds to track state)
+    },
+  };
+}
 
 /**
  * Custom plugin to inject custom source map URL.
@@ -108,6 +247,27 @@ export default defineConfig(({ mode }) => {
   }
 
   const plugins = [];
+
+  // Add build notification plugin
+  plugins.push(buildNotificationPlugin());
+
+  // Add nowiki banner plugins for non-single builds
+  if (!buildMode.isSingle) {
+    // Top banner - prepend /* <nowiki> */
+    // Bottom banner - append /* </nowiki> */
+    plugins.push(
+      banner({
+        content: '<nowiki>',
+        verify: false,
+      }),
+      appendNowikiPlugin(`${bundleFilename}.js`)
+    );
+  }
+
+  // Add license extraction plugin for production/staging builds
+  if (!buildMode.isDev && !buildMode.isSingle) {
+    plugins.push(licenseExtractionPlugin(buildMode));
+  }
 
   // Add custom source map URL plugin for production/staging builds
   if (cdConfig.sourceMapsBaseUrl && !buildMode.isDev && !buildMode.isSingle) {
