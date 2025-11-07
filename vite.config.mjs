@@ -153,5 +153,48 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+
+    // Development server configuration
+    server: {
+      // Port configuration
+      port: 9000,
+
+      // CORS headers for cross-origin development access
+      cors: {
+        origin: '*',
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['*'],
+      },
+
+      // HMR configuration
+      hmr: {
+        // WebSocket configuration
+        protocol: 'ws',
+        host: 'localhost',
+        port: 9000,
+        path: '/ws',
+      },
+
+      // Static file serving
+      fs: {
+        // Allow serving files from dist directory
+        strict: false,
+      },
+
+      // Hot reload behavior - only reload on successful updates
+      // This prevents full page reload on errors
+      watch: {
+        // Watch options
+        ignored: ['**/node_modules/**', '**/dist/**'],
+      },
+    },
+
+    // Preview server configuration (for production builds)
+    preview: {
+      port: 9000,
+      cors: {
+        origin: '*',
+      },
+    },
   };
 });

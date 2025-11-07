@@ -65,7 +65,12 @@
     - If esbuild cannot handle all transforms for target browsers, add @vitejs/plugin-legacy or keep minimal Babel setup
     - _Requirements: 4.4, 6.1_
 
-- [ ] 3. Configure development server
+- [x] 3. Configure development server
+
+
+
+
+
   - Set up dev server on port 9000
   - Configure CORS headers (Access-Control-Allow-Origin: *)
   - Configure HMR with WebSocket on ws://localhost:9000/ws
