@@ -57,12 +57,8 @@
     - Set up external source map generation using build.sourcemap: true or 'hidden'
     - Implement custom source map URL injection using sourceMapsBaseUrl (may require custom plugin)
     - Configure .map.json extension if feasible (only if it doesn't require many lines of code)
+    - Ensure single shared source map file for main bundle and inline worker (not separate files) if feasible
     - _Requirements: 2.2, 5.4_
-
-  - [ ] 4.3 Configure worker source maps
-    - Ensure worker bundles have proper source map references
-    - Handle inline worker source map generation
-    - _Requirements: 2.3_
 
 - [ ] 5. Create custom Vite plugins
   - [ ] 5.1 Create nowiki banner plugin
@@ -72,8 +68,8 @@
     - _Requirements: 2.1_
 
   - [ ] 5.2 Create license extraction plugin
-    - Extract license comments from code
-    - Generate a .LICENSE.js (preferably, a single one, but separate files for the main and worker bundles is OK too)
+    - Extract license comments from code (including from inline worker if feasible)
+    - Generate a single shared .LICENSE.js file for both main bundle and inline worker if feasible
     - Add custom banner with documentation URL and license file reference
     - _Requirements: 2.5_
 
