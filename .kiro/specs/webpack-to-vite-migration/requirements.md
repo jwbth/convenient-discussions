@@ -33,11 +33,12 @@ This document outlines the requirements for migrating the Convenient Discussions
 
 #### Acceptance Criteria
 
-1. THE Build_System SHALL include custom banner comments with `/*! <nowiki> */` and `/*! </nowiki> */` wrappers for single builds
+1. THE Build_System SHALL include custom banner comments with `<nowiki>` (top) and `</nowiki>` (bottom) wrappers (in code comments)
 2. THE Build_System SHALL generate Source_Maps with external URLs for production builds
 3. THE Build_System SHALL handle inline Web_Worker bundling with appropriate Source_Maps
-4. THE Build_System SHALL apply custom Terser minification settings for production builds
-5. THE Build_System SHALL extract license comments to separate files with custom banners
+4. THE Build_System SHOULD apply custom Terser minification settings for production builds
+5. THE Build_System SHOULD extract license comments to separate files with custom banners
+   - Alternatively, THE Build_System MAY put license comments to the top of each individual file
 
 ### Requirement 3
 
@@ -45,9 +46,9 @@ This document outlines the requirements for migrating the Convenient Discussions
 
 #### Acceptance Criteria
 
-1. THE Build_System SHALL serve the development build at localhost:9000 with hot module replacement
+1. THE Build_System SHOULD serve the development build at localhost:9000 with hot module replacement
 2. THE Build_System SHALL include CORS headers for cross-origin development access
-3. THE Build_System SHALL support WebSocket connections for hot reload functionality
+3. THE Build_System SHOULD support WebSocket connections for hot reload functionality
 4. THE Build_System SHALL maintain the existing file serving structure during development
 5. THE Build_System SHALL preserve build notifications for successful/failed builds
 
@@ -58,10 +59,11 @@ This document outlines the requirements for migrating the Convenient Discussions
 #### Acceptance Criteria
 
 1. THE Build_System SHALL process Less files and inject styles into the DOM
-2. THE Build_System SHALL handle CSS URL filtering to exclude MediaWiki paths
-3. THE Build_System SHALL process JavaScript files through Babel with the existing configuration
-4. THE Build_System SHALL bundle the Web_Worker inline with proper filename generation
-5. THE Build_System SHALL maintain all existing file extensions and resolution patterns
+2. THE Build_System SHALL allow to import styles as strings or CSSStyleSheet objects
+3. THE Build_System SHALL handle CSS URL filtering to exclude MediaWiki paths
+4. THE Build_System SHALL process JavaScript files through Babel with the existing configuration
+5. THE Build_System SHALL bundle the Web_Worker inline with proper filename generation
+6. THE Build_System SHALL maintain all existing file extensions and resolution patterns
 
 ### Requirement 5
 
@@ -73,4 +75,4 @@ This document outlines the requirements for migrating the Convenient Discussions
 2. THE Build_System SHALL inject appropriate environment variables (IS_DEV, IS_STAGING, IS_SINGLE, etc.)
 3. THE Build_System SHALL handle single-build mode with embedded configuration and localization
 4. THE Build_System SHALL maintain different Source_Maps strategies per build mode
-5. THE Build_System SHALL preserve all existing optimization settings per build mode
+5. THE Build_System SHOULD preserve all existing optimization settings per build mode

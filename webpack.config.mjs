@@ -98,12 +98,12 @@ const config = (/** @type {Environment} */ env) => {
     }),
   ];
 
-  if (isSingle) {
+  if (!isSingle) {
     plugins.push(new webpack.BannerPlugin({
       banner: '<nowiki>',
 
-      // Don't add the banner to the inline worker, otherwise the source maps for it won't
-      // work (I think).
+      // Don't add the banner to the inline worker, otherwise the source maps for it won't work (I
+      // think).
       test: bundleFilename,
     }),
 
