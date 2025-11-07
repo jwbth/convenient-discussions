@@ -12,6 +12,8 @@ This document outlines the requirements for migrating the Convenient Discussions
 - **Source_Maps**: Files that map minified code back to original source for debugging
 - **Web_Worker**: JavaScript code that runs in a separate thread from the main application
 - **MediaWiki_Environment**: The target runtime environment where the bundled code will execute
+- **Rollup**: The bundler used by Vite for production builds, providing advanced bundling capabilities
+- **esbuild**: The fast JavaScript/TypeScript transformer used by Vite for development and optionally for production minification
 
 ## Requirements
 
@@ -36,7 +38,7 @@ This document outlines the requirements for migrating the Convenient Discussions
 1. THE Build_System SHALL include custom banner comments with `<nowiki>` (top) and `</nowiki>` (bottom) wrappers (in code comments)
 2. THE Build_System SHALL generate Source_Maps with external URLs for production builds
 3. THE Build_System SHALL handle inline Web_Worker bundling with appropriate Source_Maps
-4. THE Build_System SHOULD apply custom Terser minification settings for production builds
+4. THE Build_System SHALL apply custom minification settings using Vite's native tools for production builds
 5. THE Build_System SHOULD extract license comments to separate files with custom banners
    - Alternatively, THE Build_System MAY put license comments to the top of each individual file
 
@@ -61,7 +63,7 @@ This document outlines the requirements for migrating the Convenient Discussions
 1. THE Build_System SHALL process Less files and inject styles into the DOM
 2. THE Build_System SHALL allow to import styles as strings or CSSStyleSheet objects
 3. THE Build_System SHALL handle CSS URL filtering to exclude MediaWiki paths
-4. THE Build_System SHALL process JavaScript files through Babel with the existing configuration
+4. THE Build_System SHALL process JavaScript files using Vite's native transformation capabilities or compatible plugins
 5. THE Build_System SHALL bundle the Web_Worker inline with proper filename generation
 6. THE Build_System SHALL maintain all existing file extensions and resolution patterns
 
@@ -76,3 +78,15 @@ This document outlines the requirements for migrating the Convenient Discussions
 3. THE Build_System SHALL handle single-build mode with embedded configuration and localization
 4. THE Build_System SHALL maintain different Source_Maps strategies per build mode
 5. THE Build_System SHOULD preserve all existing optimization settings per build mode
+### Requirement 6
+
+**User Story:** As a developer, I want to use Vite's native ecosystem tools, so that I can benefit from better performance and modern tooling.
+
+#### Acceptance Criteria
+
+1. THE Build_System SHALL use esbuild for JavaScript transformation during development and optionally for production
+2. THE Build_System SHALL use Rollup for production bundling with Vite's optimized configuration
+3. THE Build_System SHALL use esbuild or Rollup's native minification instead of Terser where possible
+4. THE Build_System SHALL use Vite's native CSS processing instead of separate loaders where possible
+5. THE Build_System SHALL use Vite plugins for specialized functionality (workers, banners, etc.)
+6. THE Build_System MAY fall back to compatibility plugins only when Vite's native tools cannot meet specific requirements
