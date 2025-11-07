@@ -40,7 +40,8 @@
   - [ ] 2.3 Configure JavaScript transformation
     - Set up esbuild target for browser compatibility (ES2020)
     - Configure module resolution and extensions (.js, .json)
-    - Verify ES2020 features work without Babel (optional chaining, nullish coalescing, etc.)
+    - Verify esbuild can handle all Babel transforms: class properties, class static blocks, logical assignment, nullish coalescing, optional catch binding, optional chaining, numeric separators
+    - If esbuild cannot handle all transforms for target browsers, add @vitejs/plugin-legacy or keep minimal Babel setup
     - _Requirements: 4.4, 6.1_
 
 - [ ] 3. Configure development server
@@ -58,10 +59,10 @@
     - _Requirements: 5.4_
 
   - [ ] 4.2 Configure production source maps
-    - Set build.sourcemap: true for production/staging builds
+    - Set build.sourcemap: true for production/staging builds to generate .map files
     - Create custom plugin to inject custom source map URL using sourceMapsBaseUrl from config
-    - Rename source map files to .map.json extension (if straightforward)
-    - Handle source map URL for inline worker (shared or separate source map file; shared is preferred)
+    - Attempt to generate single shared source map for main bundle and inline worker (preferred but may not be feasible)
+    - If single source map not feasible, generate separate source maps for main and worker
     - _Requirements: 2.2, 5.4_
 
 - [ ] 5. Create custom Vite plugins
@@ -72,10 +73,10 @@
     - _Requirements: 2.1_
 
   - [ ] 5.2 Create license extraction plugin
-    - Extract license comments (/@preserve|@license|@cc_on/i) from code
-    - Generate .LICENSE.js file with extracted licenses
+    - Extract license comments (/@preserve|@license|@cc_on/i) from main bundle code
+    - Extract license comments from inline worker code
+    - Generate .LICENSE.js file(s) with extracted licenses (single file preferred, separate files acceptable if complex)
     - Add custom banner with documentation URL and license file reference
-    - Handle worker licenses if feasible
     - _Requirements: 2.5_
 
   - [ ] 5.3 Create build notification plugin
@@ -86,9 +87,9 @@
 
 - [ ] 6. Configure environment variables and optimization
   - [ ] 6.1 Set up environment defines
-    - Configure define for IS_DEV, IS_STAGING, SINGLE_CONFIG_FILE_NAME, SINGLE_LANG_CODE
-    - Add CONFIG_FILE_NAME and LANG_CODE for single builds
-    - Ensure variables are replaced at build time
+    - Configure define for IS_DEV, IS_STAGING
+    - Configure define for SINGLE_CONFIG_FILE_NAME and SINGLE_LANG_CODE (set to wiki and lang for single builds, undefined otherwise)
+    - Ensure variables are replaced at build time to enable conditional require() calls in app.js
     - _Requirements: 5.2, 5.3_
 
   - [ ] 6.2 Configure minification
@@ -124,10 +125,10 @@
 - [ ] 8. Test and validate all build modes
   - [ ] 8.1 Test production build
     - Run `npm run build` and verify output files in dist/
-    - Check source maps are external with .map.json extension
+    - Check source maps are external with .map extension
     - Verify nowiki tags are present at top and bottom
     - Verify minification and optimization
-    - Check LICENSE.js file is generated
+    - Check LICENSE.js file(s) are generated with worker licenses included
     - Compare bundle size with Webpack output
     - _Requirements: 1.1, 1.4, 1.5, 2.1, 2.5_
 
