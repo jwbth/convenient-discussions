@@ -25,7 +25,8 @@
 - [ ] 2. Configure asset processing
   - [ ] 2.1 Set up Less preprocessing
     - Configure Vite's native CSS preprocessing for Less files
-    - Ensure styles are injected into DOM (default Vite behavior)
+    - Ensure styles are injected into DOM by default
+    - Support importing stylesheets as strings using `?inline` suffix (e.g., `import styles from './styles.less?inline'`)
     - Add PostCSS plugin or custom handling to filter CSS URLs excluding MediaWiki paths (/w/)
     - _Requirements: 4.1, 4.2, 4.3, 6.4_
 
