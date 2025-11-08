@@ -423,7 +423,7 @@ export default defineConfig(({ mode }) => {
       },
     },
 
-    // Development server configuration
+    // Development server configuration (for HMR with npm run start)
     server: {
       // Port configuration
       port: 9000,
@@ -435,23 +435,27 @@ export default defineConfig(({ mode }) => {
         allowedHeaders: ['*'],
       },
 
-      // Serve files from dist directory (like webpack-dev-server)
-      middlewareMode: false,
+      // HMR configuration
+      hmr: {
+        // WebSocket configuration for hot module replacement
+        protocol: 'ws',
+        host: 'localhost',
+        port: 9000,
+      },
 
-      // Configure public directory to serve built files
+      // Don't open browser automatically
       open: false,
 
       // Static file serving
       fs: {
-        // Allow serving files from dist directory
+        // Allow serving files from outside root if needed
         strict: false,
       },
 
-      // Hot reload behavior - only reload on successful updates
-      // This prevents full page reload on errors
+      // File watching configuration
       watch: {
-        // Watch options
-        ignored: ['**/node_modules/**'],
+        // Watch source files for changes
+        ignored: ['**/node_modules/**', '**/dist/**'],
       },
     },
 
