@@ -240,7 +240,7 @@ function determineBuildMode(env, mode) {
   };
 }
 
-export default defineConfig(({ mode }) => {
+export default defineConfig(({ mode, command }) => {
   const buildMode = determineBuildMode(process.env, mode);
   const bundleFilename = `convenientDiscussions${buildMode.filenamePostfix}`;
 
@@ -248,9 +248,13 @@ export default defineConfig(({ mode }) => {
     throw new Error('No protocol/server/root path/article path found in config.json5.');
   }
 
+  // For dev server (serve command), always use dev mode settings
+  const isDevServer = command === 'serve';
+  const effectiveIsDev = isDevServer || buildMode.isDev;
+
   // Environment variable defines for build-time replacement
   const defines = {
-    IS_DEV: JSON.stringify(buildMode.isDev),
+    IS_DEV: JSON.stringify(effectiveIsDev),
     IS_STAGING: JSON.stringify(buildMode.isStaging),
     SINGLE_CONFIG_FILE_NAME: buildMode.isSingle && buildMode.wiki
       ? JSON.stringify(buildMode.wiki)
