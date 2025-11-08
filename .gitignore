@@ -5,7 +5,6 @@ backup/
 credentials.*
 dist/
 docs/
-dayjs-locales-temp/
 i18nList.json
 node_modules/
 playwright-report/

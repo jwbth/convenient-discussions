@@ -40,8 +40,8 @@ const ALLOWED_TAGS = [
   'var',
 ];
 
-const DAYJS_LOCALES_TEMP_DIR_NAME = 'dayjs-locales-temp';
-const DATE_FNS_LOCALES_TEMP_DIR_NAME = 'date-fns-locales-temp';
+const DAYJS_LOCALES_TEMP_DIR_NAME = 'dist/dayjs-locales-temp';
+const DATE_FNS_LOCALES_TEMP_DIR_NAME = 'dist/date-fns-locales-temp';
 
 function hideText(text, regexp, hidden) {
   return text.replace(regexp, (s) => '\u0001' + hidden.push(s) + '\u0002');
