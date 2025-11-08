@@ -1,7 +1,8 @@
-import { createServer } from 'vite';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { createServer } from 'vite';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -32,12 +33,22 @@ async function startDevServer() {
   // Create an HTTP server
   const { createServer: createHttpServer } = await import('node:http');
   const server = createHttpServer((req, res) => {
+    // Handle CORS preflight
+    if (req.method === 'OPTIONS') {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', '*');
+      res.end();
+
+      return;
+    }
+
     // Serve built bundle files
     if (req.url?.startsWith('/convenientDiscussions')) {
       const filePath = path.join(__dirname, 'dist', req.url);
 
       if (fs.existsSync(filePath)) {
-        const content = fs.readFileSync(filePath, 'utf-8');
+        const content = fs.readFileSync(filePath, 'utf8');
 
         // Inject HMR client code for live reload
         const hmrClient = `
@@ -54,6 +65,7 @@ if (typeof WebSocket !== 'undefined') {
   ws.addEventListener('error', () => {
     console.log('[CD Dev] HMR connection failed');
   });
+  console.log('[CD Dev] HMR client connected');
 }
 `;
 
@@ -61,6 +73,7 @@ if (typeof WebSocket !== 'undefined') {
         res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.end(hmrClient + '\n' + content);
+
         return;
       }
     }
@@ -72,6 +85,7 @@ if (typeof WebSocket !== 'undefined') {
         const content = fs.readFileSync(filePath);
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.end(content);
+
         return;
       }
     }
@@ -93,8 +107,14 @@ if (typeof WebSocket !== 'undefined') {
     `);
   });
 
-  // Use Vite's middleware for WebSocket HMR
-  server.on('upgrade', vite.httpServer.emit.bind(vite.httpServer, 'upgrade'));
+  // Handle WebSocket upgrade for HMR
+  server.on('upgrade', (req, socket, head) => {
+    if (req.url === '/') {
+      vite.ws.handleUpgrade(req, socket, head, (ws) => {
+        vite.ws.on('connection', ws);
+      });
+    }
+  });
 
   // Watch dist directory for changes
   const distPath = path.join(__dirname, 'dist');
