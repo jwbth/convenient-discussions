@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { WebSocketServer } from 'ws';
+import { createServer } from 'vite';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -11,7 +11,24 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  * Similar to webpack-dev-server behavior.
  */
 async function startDevServer() {
-  const clients = new Set();
+  // Create a Vite server in middleware mode
+  const vite = await createServer({
+    server: {
+      middlewareMode: true,
+      port: 9000,
+      cors: {
+        origin: '*',
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['*'],
+      },
+      hmr: {
+        protocol: 'ws',
+        host: 'localhost',
+        port: 9000,
+      },
+    },
+    appType: 'custom',
+  });
 
   // Create an HTTP server
   const { createServer: createHttpServer } = await import('node:http');
@@ -90,30 +107,25 @@ if (typeof WebSocket !== 'undefined') {
     `);
   });
 
-  // Create WebSocket server for live reload
-  const wss = new WebSocketServer({ server });
-
-  wss.on('connection', (ws) => {
-    clients.add(ws);
-    console.log('[CD Dev] Client connected');
-
-    ws.on('close', () => {
-      clients.delete(ws);
-      console.log('[CD Dev] Client disconnected');
-    });
+  // Handle WebSocket upgrade for HMR
+  server.on('upgrade', (req, socket, head) => {
+    if (req.url === '/') {
+      vite.ws.handleUpgrade(req, socket, head, (ws) => {
+        vite.ws.on('connection', ws);
+      });
+    }
   });
 
   // Watch dist directory for changes
   const distPath = path.join(__dirname, 'dist');
-  fs.watch(distPath, { recursive: true }, (_eventType, filename) => {
+  fs.watch(distPath, { recursive: true }, (eventType, filename) => {
     if (filename?.includes('convenientDiscussions')) {
       console.log(`[CD Dev] File changed: ${filename}`);
-      // Notify all connected clients to reload
-      for (const client of clients) {
-        if (client.readyState === 1) { // WebSocket.OPEN
-          client.send(JSON.stringify({ type: 'full-reload' }));
-        }
-      }
+      // Trigger full reload via HMR
+      vite.ws.send({
+        type: 'full-reload',
+        path: '*',
+      });
     }
   });
 
@@ -126,7 +138,7 @@ if (typeof WebSocket !== 'undefined') {
   });
 }
 
-startDevServer().catch((/** @type {unknown} */ err) => {
+startDevServer().catch((err) => {
   console.error('Failed to start dev server:', err);
-  throw err;
+  process.exit(1);
 });
