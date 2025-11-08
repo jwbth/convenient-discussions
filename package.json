@@ -24,7 +24,7 @@
     "docs": "rimraf dist/docs && jsdoc --configure jsdoc/config.js --readme jsdoc/home.md",
     "i18n": "node buildI18n.mjs",
     "postinstall": "patch-package",
-    "serve": "vite --mode development",
+    "serve": "node buildConfigs.mjs && node buildI18n.mjs && vite build --mode development && vite preview",
     "single": "node buildConfigs.mjs && node buildI18n.mjs && vite build --mode single",
     "start": "node buildConfigs.mjs && node buildI18n.mjs && vite",
     "test": "jest",

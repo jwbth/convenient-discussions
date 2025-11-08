@@ -295,6 +295,8 @@ export default defineConfig(({ mode }) => {
   return {
     plugins,
     define: defines,
+    // Disable public directory to avoid conflicts with outDir
+    publicDir: false,
     build: {
       // Output directory
       outDir: 'dist',
@@ -433,14 +435,11 @@ export default defineConfig(({ mode }) => {
         allowedHeaders: ['*'],
       },
 
-      // HMR configuration
-      hmr: {
-        // WebSocket configuration
-        protocol: 'ws',
-        host: 'localhost',
-        port: 9000,
-        path: '/ws',
-      },
+      // Serve files from dist directory (like webpack-dev-server)
+      middlewareMode: false,
+
+      // Configure public directory to serve built files
+      open: false,
 
       // Static file serving
       fs: {
@@ -452,7 +451,7 @@ export default defineConfig(({ mode }) => {
       // This prevents full page reload on errors
       watch: {
         // Watch options
-        ignored: ['**/node_modules/**', '**/dist/**'],
+        ignored: ['**/node_modules/**'],
       },
     },
 
