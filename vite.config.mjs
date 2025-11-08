@@ -299,6 +299,9 @@ export default defineConfig(({ mode }) => {
       // Output directory
       outDir: 'dist',
 
+      // Don't clean dist folder - configs and i18n are built separately before Vite
+      emptyOutDir: false,
+
       // Target browsers using browserslist (ES2020 supports all required transforms)
       target: 'es2020',
 
