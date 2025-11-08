@@ -1,6 +1,7 @@
 import AutocompleteManager from './AutocompleteManager';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
+import CopyLinkDialog from './CopyLinkDialog';
 import DtSubscriptions from './DtSubscriptions';
 import EventEmitter from './EventEmitter';
 import LegacySubscriptions from './LegacySubscriptions';
@@ -1152,9 +1153,10 @@ class PageController extends EventEmitter {
       return;
     }
 
-    const dialog = new (require('./CopyLinkDialog').default)(object, content);
-    cd.getWindowManager().addWindows([dialog]);
-    cd.getWindowManager().openWindow(dialog);
+    const dialog = new CopyLinkDialog(object, content);
+    const windowManager = cd.getWindowManager();
+    windowManager.addWindows([dialog]);
+    windowManager.openWindow(dialog);
   }
 
   /**

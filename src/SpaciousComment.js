@@ -1,5 +1,6 @@
 import Comment from './Comment';
 import CommentButton from './CommentButton';
+import CommentLayers from './CommentLayers';
 import LiveTimestamp from './LiveTimestamp';
 import PrototypeRegistry from './PrototypeRegistry';
 import SpaciousCommentActions from './SpaciousCommentActions';
@@ -503,7 +504,6 @@ class SpaciousComment extends Comment {
    */
   static initPrototypes() {
     // Initialize shared layer prototypes (underlay, overlay)
-    const CommentLayers = require('./CommentLayers').default;
     CommentLayers.initPrototypes();
 
     // Create header wrapper element

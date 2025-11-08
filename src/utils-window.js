@@ -18,6 +18,7 @@ import ElementsTreeWalker from './shared/ElementsTreeWalker';
 import { decodeHtmlEntities, defined, generatePageNamePattern, isInline, parseWikiUrl, removeDirMarks, spacesToUnderlines } from './shared/utils-general';
 import { dateTokenToMessageNames, parseTimestamp } from './shared/utils-timestamp';
 import { maskDistractingCode } from './shared/utils-wikitext';
+import userRegistry from './userRegistry';
 
 /** @type {string | undefined} */
 let utcString;
@@ -978,9 +979,6 @@ function extractRegularSignatures(adjustedCode, code) {
       // probably having something to do with difference between regular length and byte length.
       if (!lastAuthorLink) continue;
 
-      // require() to avoid circular dependency
-      const userRegistry = require('./userRegistry').default;
-
       author = userRegistry.get(decodeHtmlEntities(lastAuthorLink));
 
       // Rectify the author name if needed.
@@ -1030,8 +1028,6 @@ function extractUnsigneds(adjustedCode, code, signatures) {
 
   // require() to avoid circular dependency
   // eslint-disable-next-line no-one-time-vars/no-one-time-vars
-  const userRegistry = require('./userRegistry').default;
-
   const unsigneds = /** @type {SignatureInWikitextDraft[]} */ ([]);
   // eslint-disable-next-line no-one-time-vars/no-one-time-vars
   const unsignedTemplatesRegexp = new RegExp(cd.g.unsignedTemplatesPattern + String.raw`.*\n`, 'g');

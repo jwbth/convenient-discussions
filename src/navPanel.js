@@ -263,7 +263,7 @@ class NavPanel {
    */
   refreshClick(markAsRead = false) {
     bootManager.rebootTalkPage({
-      commentIds: pageController.getRelevantAddedCommentIds() || undefined,
+      commentIds: pageController.getRelevantAddedCommentIds(),
       markAsRead,
     });
   }

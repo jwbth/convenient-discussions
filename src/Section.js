@@ -1518,10 +1518,10 @@ class Section extends SectionSkeleton {
   /**
    * Show a move section dialog.
    */
-  move() {
+  async move() {
     if (bootManager.isPageOverlayOn()) return;
 
-    const dialog = new (require('./MoveSectionDialog').default)(this);
+    const dialog = new ((await import('./MoveSectionDialog')).default)(this);
     cd.getWindowManager().addWindows([dialog]);
     cd.getWindowManager().openWindow(dialog);
 
@@ -1748,7 +1748,7 @@ class Section extends SectionSkeleton {
                 action: 'query',
                 titles: this.getSourcePage().name,
                 prop: 'revisions',
-                rvsection: this.liveSectionNumber || undefined,
+                rvsection: this.liveSectionNumber,
                 rvslots: 'main',
                 rvprop: ['ids', 'content'],
                 redirects: !mw.config.get('wgIsRedirect'),

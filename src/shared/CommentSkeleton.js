@@ -197,13 +197,9 @@ class CommentSkeleton {
     this.followsHeading = targets[signatureIndex - 1]?.type === 'heading';
     this.signatureElement = signature.element;
     this.signatureText = signature.element.textContent;
-    this.date = signature.date ?? undefined;
+    this.date = signature.date;
     this.authorName = signature.authorName;
-    this.id = CommentSkeleton.generateId(
-      this.date || undefined,
-      this.authorName,
-      parser.existingCommentIds
-    );
+    this.id = CommentSkeleton.generateId(this.date, this.authorName, parser.existingCommentIds);
 
     // Identify all comment nodes and save a path to them. The parameter is the heading element
     // preceding the comment.

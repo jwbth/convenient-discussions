@@ -4,6 +4,9 @@
  * @module utilsOoui
  */
 
+import CheckboxInputWidget from './CheckboxInputWidget';
+import RadioOptionWidget from './RadioOptionWidget';
+import TextInputWidget from './TextInputWidget';
 import cd from './cd';
 import { copyText } from './utils-window';
 
@@ -288,7 +291,7 @@ export function createTextControl({
 }) {
   return createGenericControl(
     'text',
-    new (require('./TextInputWidget').default)({ value, maxLength, required, classes }),
+    new TextInputWidget({ value, maxLength, required, classes }),
     { label, help }
   );
 }
@@ -343,7 +346,7 @@ export function createCheckboxControl({
 }) {
   return createGenericControl(
     'checkbox',
-    new (require('./CheckboxInputWidget').default)({
+    new CheckboxInputWidget({
       value,
       selected,
       disabled,
@@ -372,7 +375,7 @@ export function createRadioControl({
   options,
 }) {
   const input = new OO.ui.RadioSelectWidget({
-    items: options.map((config) => new (require('./RadioOptionWidget').default)(config)),
+    items: options.map((config) => new RadioOptionWidget(config)),
   });
 
   // Workarounds for T359920

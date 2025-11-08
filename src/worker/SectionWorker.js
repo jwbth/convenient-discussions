@@ -24,9 +24,9 @@ export default class SectionWorker extends SectionSkeleton {
    */
   static tweakSections(sections) {
     sections.forEach((section) => {
-      section.parent = section.getParent() || undefined;
+      section.parent = section.getParent();
       section.ancestors = section.getAncestors().map((sect) => sect.headline);
-      section.oldestCommentId = section.oldestComment?.id ?? undefined;
+      section.oldestCommentId = section.oldestComment?.id;
 
       keepSafeValues(section, [
         'cachedAncestors',

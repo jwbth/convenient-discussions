@@ -77,7 +77,7 @@ export default async function processFragment() {
 
       // Replace CD's comment ID in the fragment with DiscussionTools' if available.
       history.replaceState(
-        Object.assign({}, history.state, { cdJumpedToComment: true }),
+        { ...history.state, cdJumpedToComment: true },
         '',
         comment.dtId ? `#${comment.dtId}` : undefined
       );
@@ -98,7 +98,7 @@ export default async function processFragment() {
       isExistentAnchor(decodedValue)
     )
   ) {
-    await maybeNotifyNotFound();
+    maybeNotifyNotFound();
   }
 }
 
@@ -109,7 +109,7 @@ export default async function processFragment() {
  *
  * @private
  */
-async function maybeNotifyNotFound() {
+function maybeNotifyNotFound() {
   let label;
   guessedCommentText = '';
   guessedSectionText = '';
@@ -158,9 +158,9 @@ async function maybeNotifyNotFound() {
  * @private
  */
 async function searchForNotFoundItem() {
-  token = date ?
-    formatDateNative(date, false, cd.g.contentTimezone || undefined) :
-    sectionName.replace(/"/g, '');
+  token = date
+    ? formatDateNative(date, false, cd.g.contentTimezone)
+    : sectionName.replace(/"/g, '');
   searchQuery = `"${token}"`;
 
   if (!date) {
@@ -184,7 +184,7 @@ async function searchForNotFoundItem() {
       const adjustedToken = formatDateNative(
         new Date(date.getTime() - cd.g.msInMin * gap),
         false,
-        cd.g.contentTimezone || undefined
+        cd.g.contentTimezone
       );
       searchQuery += ` OR "${adjustedToken}"`;
     }
@@ -224,20 +224,19 @@ function notifyAboutSearchResults() {
   );
 
   if (searchResults.length === 0) {
-
     mw.notify(
       wrapHtml(
         date
           ? cd.sParse('deadanchor-comment-lead') +
-            ' ' +
-            cd.sParse('deadanchor-comment-notfound', searchUrl) +
-            guessedCommentText
+          ' ' +
+          cd.sParse('deadanchor-comment-notfound', searchUrl) +
+          guessedCommentText
           : cd.sParse('deadanchor-section-lead', sectionName) +
             (
               guessedSectionText && sectionName.includes('{{')
                 ? // Use of a template in the section title. In such a case, it's almost always the real
-                  // match, so we don't show any fail messages.
-                  ''
+              // match, so we don't show any fail messages.
+                ''
                 : ' ' +
                   cd.sParse('deadanchor-section-notfound', searchUrl) +
                   ' ' +
@@ -286,16 +285,16 @@ function notifyAboutSearchResults() {
     if (exactMatchPageTitle) {
       const fragment = date ? decodedValue : sectionNameFound;
       const wikilink = `${exactMatchPageTitle}#${fragment}`;
-      label = date ?
-        (
-          cd.sParse('deadanchor-comment-exactmatch', wikilink, searchUrl) +
-          guessedCommentText
-        ) :
-        cd.sParse('deadanchor-section-exactmatch', sectionNameFound, wikilink, searchUrl);
+      label = date
+        ? (
+            cd.sParse('deadanchor-comment-exactmatch', wikilink, searchUrl) +
+            guessedCommentText
+          )
+        : cd.sParse('deadanchor-section-exactmatch', sectionNameFound, wikilink, searchUrl);
     } else {
-      label = date ?
-        cd.sParse('deadanchor-comment-inexactmatch', searchUrl) + guessedCommentText :
-        cd.sParse('deadanchor-section-inexactmatch', sectionNameFound, searchUrl);
+      label = date
+        ? cd.sParse('deadanchor-comment-inexactmatch', searchUrl) + guessedCommentText
+        : cd.sParse('deadanchor-section-inexactmatch', sectionNameFound, searchUrl);
     }
 
     mw.notify(wrapHtml(label), {

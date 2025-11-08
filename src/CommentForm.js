@@ -664,6 +664,26 @@ class CommentForm extends EventEmitter {
   }
 
   /**
+   * Create the contents of the form.
+   *
+   * @param {CommentFormInitialState} initialState
+   * @param {Promise<void>} customModulesPromise
+   * @private
+   */
+  async createContents(initialState, customModulesPromise) {
+    await this.createTextInputs(initialState);
+    this.createCheckboxes(initialState);
+    this.createButtons();
+    this.createElements();
+    this.addToolbar(customModulesPromise);
+    this.addInsertButtons();
+
+    if (this.deleteCheckbox?.isSelected()) {
+      this.updateFormOnDeleteCheckboxChange(true);
+    }
+  }
+
+  /**
    * Setup the form after it is added to the page for the first time (not after a page reload).
    *
    * @param {CommentFormInitialState} [initialState]
@@ -778,7 +798,10 @@ class CommentForm extends EventEmitter {
    * @param {CommentFormInitialState} initialState
    * @private
    */
-  createTextInputs(initialState) {
+  async createTextInputs(initialState) {
+    const TextInputWidget = (await import('./TextInputWidget')).default;
+    const MultilineTextInputWidget = (await import('./MultilineTextInputWidget')).default;
+
     if (
       (
         (this.isMode('addSection') || this.isMode('addSubsection')) &&
@@ -787,7 +810,7 @@ class CommentForm extends EventEmitter {
       this.isSectionOpeningCommentEdited()
     ) {
       this.headlineInputPlaceholder = this.target.getCommentFormHeadlineInputPlaceholder(this.mode);
-      this.headlineInput = new (require('./TextInputWidget').default)({
+      this.headlineInput = new TextInputWidget({
         value: initialState.headline ?? '',
         placeholder: this.headlineInputPlaceholder,
         classes: ['cd-commentForm-headlineInput'],
@@ -801,7 +824,7 @@ class CommentForm extends EventEmitter {
     // eslint-disable-next-line no-one-time-vars/no-one-time-vars
     const NUM_ROWS_SECTION = 5;
 
-    this.commentInput = new (require('./MultilineTextInputWidget').default)({
+    this.commentInput = new MultilineTextInputWidget({
       value: initialState.comment ?? '',
       placeholder:
         this.target.getCommentFormCommentInputPlaceholder(this.mode, () => {
@@ -811,7 +834,7 @@ class CommentForm extends EventEmitter {
               cd.s('cf-comment-placeholder-replytocomment', target.author.getName(), target.author)
             )
           );
-        }) || undefined,
+        }),
       rows: this.headlineInput ? NUM_ROWS_SECTION : NUM_ROWS_COMMENT,
       autosize: true,
       maxRows: 9999,
@@ -820,7 +843,7 @@ class CommentForm extends EventEmitter {
     });
     this.commentInput.$input.addClass('ime-position-inside');
 
-    this.summaryInput = new (require('./TextInputWidget').default)({
+    this.summaryInput = new TextInputWidget({
       value: initialState.summary ?? '',
       maxLength: cd.g.summaryLengthLimit,
       placeholder: cd.s('cf-summary-placeholder'),
@@ -1241,7 +1264,7 @@ class CommentForm extends EventEmitter {
           action: {
             type: 'callback',
             execute: () => {
-              this.quote(true, commentManager.getSelectedComment() || undefined);
+              this.quote(true, commentManager.getSelectedComment());
             },
           },
         },
@@ -1485,8 +1508,8 @@ class CommentForm extends EventEmitter {
    *
    * @private
    */
-  initCodeMirror = () => {
-    this.codeMirror = new (require('./CodeMirrorCommentInput').default)(this.commentInput);
+  initCodeMirror = async () => {
+    this.codeMirror = new ((await import('./CodeMirrorCommentInput')).default)(this.commentInput);
     this.codeMirror.initialize(
       undefined,
       /** @type {string} */ (this.commentInput.$input.attr('placeholder'))
@@ -1555,26 +1578,6 @@ class CommentForm extends EventEmitter {
       }).element,
       ' '
     );
-  }
-
-  /**
-   * Create the contents of the form.
-   *
-   * @param {CommentFormInitialState} initialState
-   * @param {Promise<void>} customModulesPromise
-   * @private
-   */
-  createContents(initialState, customModulesPromise) {
-    this.createTextInputs(initialState);
-    this.createCheckboxes(initialState);
-    this.createButtons();
-    this.createElements();
-    this.addToolbar(customModulesPromise);
-    this.addInsertButtons();
-
-    if (this.deleteCheckbox?.isSelected()) {
-      this.updateFormOnDeleteCheckboxChange(true);
-    }
   }
 
   /**
@@ -1895,7 +1898,7 @@ class CommentForm extends EventEmitter {
       return;
     }
 
-    this.uploadDialog = new (require('./UploadDialog').default)();
+    this.uploadDialog = new ((await import('./UploadDialog')).default)();
     const windowManager = cd.getWindowManager();
     windowManager.addWindows([this.uploadDialog]);
     const win = windowManager.openWindow(this.uploadDialog, {
@@ -3777,7 +3780,7 @@ class CommentForm extends EventEmitter {
     }
 
     this.autoSummary = buildEditSummary({
-      text: this.generateStaticSummaryText(this.targetWithOutdentedReplies || undefined),
+      text: this.generateStaticSummaryText(this.targetWithOutdentedReplies),
       section:
         this.headlineInput && !this.isMode('addSubsection')
           ? removeWikiMarkup(this.headlineInput.getValue())

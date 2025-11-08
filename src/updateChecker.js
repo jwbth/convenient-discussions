@@ -860,7 +860,7 @@ class UpdateChecker extends EventEmitter {
         if (comment.parent) {
           const parentMatch = currentComments.find((mcc) => mcc.match === comment.parent);
           if (parentMatch?.id) {
-            newComment.parentMatch = commentManager.getById(parentMatch.id) || undefined;
+            newComment.parentMatch = commentManager.getById(parentMatch.id);
           }
         }
 

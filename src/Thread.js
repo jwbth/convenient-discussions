@@ -1620,7 +1620,7 @@ class Thread extends mixInObject(
       previousNode = currentNode;
     } while (this.treeWalker.parentNode());
 
-    return item || undefined;
+    return item;
   }
 
   /**

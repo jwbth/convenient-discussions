@@ -1,4 +1,5 @@
 import Comment from './Comment';
+import CommentLayers from './CommentLayers';
 import CompactCommentActions from './CompactCommentActions';
 import CompactCommentLayers from './CompactCommentLayers';
 import LiveTimestamp from './LiveTimestamp';
@@ -323,7 +324,6 @@ class CompactComment extends Comment {
    */
   static initPrototypes() {
     // Initialize shared layer prototypes (underlay, overlay)
-    const CommentLayers = require('./CommentLayers').default;
     CommentLayers.initPrototypes();
 
     // Initialize compact-specific layer prototypes

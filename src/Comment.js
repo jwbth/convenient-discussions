@@ -394,9 +394,9 @@ class Comment extends CommentSkeleton {
        *
        * @type {ListType | undefined}
        */
-      this.containerListType = getContainerListType(this.highlightables[0]) || undefined;
+      this.containerListType = getContainerListType(this.highlightables[0]);
 
-      this.mhContainerListType = getContainerListType(this.marginHighlightable) || undefined;
+      this.mhContainerListType = getContainerListType(this.marginHighlightable);
     }
   }
 
@@ -3329,7 +3329,7 @@ class Comment extends CommentSkeleton {
       return;
     }
 
-    return commentManager.getById(this.id) || undefined;
+    return commentManager.getById(this.id);
   }
 
   /**

@@ -1,4 +1,5 @@
 import EventEmitter from './EventEmitter';
+import SettingsDialog from './SettingsDialog';
 import TextMasker from './TextMasker';
 import cd from './cd';
 import pageRegistry from './pageRegistry';
@@ -932,7 +933,7 @@ class Settings extends EventEmitter {
       delete this.dialogPromise;
     }
 
-    const dialog = new (require('./SettingsDialog').default)(initalPageName, focusSelector);
+    const dialog = new SettingsDialog(initalPageName, focusSelector);
     const windowManager = cd.getWindowManager('settings');
     windowManager.addWindows([dialog]);
     windowManager.openWindow(dialog, { loadedSettings });

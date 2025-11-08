@@ -499,7 +499,7 @@ class MoveSectionDialog extends ProcessDialog {
       page: targetPage,
       targetIndex: targetPage.source.findProperPlaceForSection(
         this.controls.chronologicalOrder.input.isSelected()
-          ? (this.section.oldestComment?.date || undefined)
+          ? this.section.oldestComment?.date
           : undefined
       ),
       sectionWikilink: `${realName}#${encodeWikilink(this.section.headline)}`,

@@ -4,6 +4,8 @@
  * @module pageRegistry
  */
 
+import CurrentPage from './CurrentPage';
+import Page from './Page';
 import cd from './cd';
 
 /**
@@ -49,9 +51,7 @@ const pageRegistry = {
     const name = title.getPrefixedText();
     if (!(name in this.items)) {
       this.items[name] = new (
-        nameOrMwTitle === cd.g.pageName
-          ? require('./CurrentPage').default
-          : require('./Page').default
+        nameOrMwTitle === cd.g.pageName ? CurrentPage : Page
       )(title, isGendered ? /** @type {string} */ (nameOrMwTitle) : undefined);
     } else if (isGendered) {
       // Set the gendered name which could be missing for the page.

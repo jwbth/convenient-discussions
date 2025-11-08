@@ -66,7 +66,7 @@ class CommentFormManager extends EventEmitter {
           const comment = commentManager.getSelectedComment();
           if (lastActiveCommentForm) {
             event.preventDefault();
-            lastActiveCommentForm.quote(isCmdModifierPressed(event), comment || undefined);
+            lastActiveCommentForm.quote(isCmdModifierPressed(event), comment);
           } else if (comment?.isActionable) {
             event.preventDefault();
             comment.reply();
@@ -333,7 +333,7 @@ class CommentFormManager extends EventEmitter {
         .get(mw.config.get('wgPageName'))
         ?.commentForms
         .filter((data) => {
-          const target = this.getTargetByData(data.targetData || undefined);
+          const target = this.getTargetByData(data.targetData);
           if (data.targetWithOutdentedRepliesData) {
             /** @type {import('./CommentForm').CommentFormInitialState} */ (
               data
@@ -398,7 +398,7 @@ class CommentFormManager extends EventEmitter {
       })?.section;
     } else if (targetData?.id) {
       // Comment
-      return commentManager.getById(targetData.id) || undefined;
+      return commentManager.getById(targetData.id);
     }   // `data.mode === 'addSection'` or `targetData === undefined`
 
     // Page

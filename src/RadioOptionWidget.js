@@ -1,3 +1,4 @@
+import DivLabelWidget from './DivLabelWidget';
 import { es6ClassToOoJsClass } from './utils-oojs';
 
 /**
@@ -28,7 +29,7 @@ class RadioOptionWidget extends OO.ui.RadioOptionWidget {
    * @returns {JQuery}
    */
   createHelpElement(text) {
-    const helpWidget = new (require('./DivLabelWidget').default)({
+    const helpWidget = new DivLabelWidget({
       label: text,
       classes: ['oo-ui-inline-help'],
     });

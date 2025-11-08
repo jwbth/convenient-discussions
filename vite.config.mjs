@@ -287,7 +287,9 @@ export default defineConfig(({ mode, command }) => {
   }
 
   // Add require() to import() transformation plugin (must be early in pipeline)
-  plugins.push(requireTransformPlugin(), buildNotificationPlugin());
+  // Disabled - manually converting require() to dynamic import() instead
+  // plugins.push(requireTransformPlugin());
+  plugins.push(buildNotificationPlugin());
 
   // Add nowiki banner plugins for non-single builds
   if (!buildMode.isSingle) {

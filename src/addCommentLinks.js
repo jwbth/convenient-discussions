@@ -7,7 +7,6 @@
 import PrototypeRegistry from './PrototypeRegistry';
 import bootManager from './bootManager';
 import cd from './cd';
-import pageRegistry from './pageRegistry';
 import { definedAndNotNull, generatePageNamePattern, isProbablyTalkPage, isUndo, removeDirMarks, spacesToUnderlines } from './shared/utils-general';
 import { parseTimestamp } from './shared/utils-timestamp';
 import { initDayjs } from './utils-window';
@@ -40,7 +39,7 @@ const prototypes = new PrototypeRegistry();
  * @private
  */
 async function init() {
-  const settings = require('./settings').default;
+  const settings = (await import('./settings')).default;
 
   // This could have been executed from init.talkPage() already.
   bootManager.initGlobals();
@@ -52,7 +51,7 @@ async function init() {
     // Loading the subscriptions is not critical, as opposed to messages, so we catch the possible
     // error, not letting it be caught by the try/catch block.
     subscriptions = /** @type {import('./LegacySubscriptions').default} */ (
-      require('./pageController').default.getSubscriptionsInstance()
+      (await import('./pageController')).default.getSubscriptionsInstance()
     );
     requests.push(subscriptions.load(undefined, true).catch(() => {}));
   }
@@ -214,9 +213,9 @@ function addWatchlistMenu() {
     title: cd.s('wl-button-settings-tooltip'),
     classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-scriptSettings'],
   });
-  settingsButton.on('click', () => {
+  settingsButton.on('click', async () => {
     initDayjs();
-    require('./settings').default.showDialog();
+    (await import('./settings')).default.showDialog();
   });
   settingsButton.$element.appendTo($menu);
 
@@ -470,9 +469,12 @@ function isCommentEdit(summary) {
  * @param {JQuery} $content
  * @private
  */
-function processContributions($content) {
-  bootManager.initTimestampParsingTools('user');
+async function processContributions($content) {
+  await bootManager.initTimestampParsingTools('user');
   if (cd.g.uiTimezone === undefined) return;
+
+  const Comment = (await import('./Comment')).default;
+  const pageRegistry = (await import('./pageRegistry')).default;
 
   [
     ...$content[0].querySelectorAll('.mw-contributions-list > li:not(.mw-tag-mw-new-redirect)'),
@@ -506,13 +508,10 @@ function processContributions($content) {
     const dateElement = line.querySelector('.mw-changeslist-date');
     if (!dateElement) return;
 
-    const { date } = parseTimestamp(dateElement.textContent, cd.g.uiTimezone || undefined) || {};
+    const { date } = parseTimestamp(dateElement.textContent, cd.g.uiTimezone) || {};
     if (!date) return;
 
-    const id = require('./Comment').default.generateId(
-      date,
-      mw.config.get('wgRelevantUserName') || undefined
-    );
+    const id = Comment.generateId(date, mw.config.get('wgRelevantUserName') || undefined);
     if (!id) return;
 
     let wrapper;
@@ -545,9 +544,11 @@ function processContributions($content) {
  * @param {JQuery} $content
  * @private
  */
-function processHistory($content) {
-  bootManager.initTimestampParsingTools('user');
+async function processHistory($content) {
+  await bootManager.initTimestampParsingTools('user');
   if (cd.g.uiTimezone === undefined) return;
+
+  const Comment = (await import('./Comment')).default;
 
   const link = cd.page.getUrl();
   [
@@ -572,13 +573,13 @@ function processHistory($content) {
     const dateElement = line.querySelector('.mw-changeslist-date');
     if (!dateElement) return;
 
-    const { date } = parseTimestamp(dateElement.textContent, cd.g.uiTimezone || undefined) || {};
+    const { date } = parseTimestamp(dateElement.textContent, cd.g.uiTimezone) || {};
     if (!date) return;
 
     const author = extractAuthor(line);
     if (!author) return;
 
-    const id = require('./Comment').default.generateId(date, author);
+    const id = Comment.generateId(date, author);
 
     let wrapper;
     if (summary && currentUserRegexp.test(` ${summary} `)) {
@@ -617,8 +618,8 @@ function processHistory($content) {
  * @fires commentLinksAdded
  * @private
  */
-function processDiff($diff) {
-  const pageController = require('./pageController').default;
+async function processDiff($diff) {
+  const pageController = (await import('./pageController')).default;
 
   // Filter out cases when wikipage.diff was fired for the native MediaWiki's diff at the top of
   // the page that is a diff page (unless only a diff, and no content, is displayed - if
@@ -629,9 +630,13 @@ function processDiff($diff) {
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (!cd.g.uiTimestampRegexp) {
-    bootManager.initTimestampParsingTools('user');
+    await bootManager.initTimestampParsingTools('user');
   }
   if (cd.g.uiTimezone === undefined) return;
+
+  const Comment = (await import('./Comment')).default;
+  const pageRegistry = (await import('./pageRegistry')).default;
+  const commentManager = (await import('./commentManager')).default;
 
   const $root = $diff || bootManager.$content;
   const root = $root[0];
@@ -658,13 +663,13 @@ function processDiff($diff) {
       );
       if (!(dateElement)) return;
 
-      const { date } = parseTimestamp(dateElement.textContent, cd.g.uiTimezone || undefined) || {};
+      const { date } = parseTimestamp(dateElement.textContent, cd.g.uiTimezone) || {};
       if (!date) return;
 
       const author = extractAuthor(area);
       if (!author) return;
 
-      const id = require('./Comment').default.generateId(date, author);
+      const id = Comment.generateId(date, author);
 
       /** @type {import('./Comment').default | undefined} */
       let comment;
@@ -676,7 +681,7 @@ function processDiff($diff) {
         page = pageRegistry.get(title, true);
         if (!page) return;
       } else {
-        comment = require('./commentManager').default.getById(id, true) || undefined;
+        comment = commentManager.getById(id, true);
       }
       if (comment || page?.isProbablyTalkPage()) {
         let wrapper;

@@ -950,18 +950,18 @@ export class CommentManager extends EventEmitter {
    *
    * @param {Date} date
    * @param {string} author
-   * @returns {Comment}
+   * @returns {Comment | undefined}
    */
   findPriorComment(date, author) {
-    return /** @type {Comment} */ (this.items
+    return this.items
       .filter((comment) => comment.hasDate())
-      .filter((comment) => (
+      .filter((comment) =>
         comment.author.getName() === author &&
         comment.date < date &&
         comment.date.getTime() > date.getTime() - cd.g.msInDay
-      ))
+      )
       .sort((c1, c2) => c1.date.getTime() - c2.date.getTime())
-      .at(-1));
+      .at(-1);
   }
 
   /**

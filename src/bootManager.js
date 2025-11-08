@@ -5,7 +5,6 @@ import languageFallbacks from '../data/languageFallbacks.json';
 import addCommentLinks from './addCommentLinks';
 import cd from './cd';
 import debug from './debug';
-import pageRegistry from './pageRegistry';
 import { defined, getContentLanguageMessages, getQueryParamBooleanValue, isKeyOf, isProbablyTalkPage, sleep, unique } from './shared/utils-general';
 import { dateTokenToMessageNames } from './shared/utils-timestamp';
 import userRegistry from './userRegistry';
@@ -650,23 +649,23 @@ class BootManager {
 }`);
     }
 
-    require('./global.less');
+    import('./global.less');
 
-    require('./Comment.less');
-    require('./CommentForm.less');
-    require('./Section.less');
-    require('./Comment.layers.less');
-    require('./navPanel.less');
-    require('./pageNav.less');
-    require('./skins.less');
-    require('./talkPage.less');
-    require('./toc.less');
+    import('./Comment.less');
+    import('./CommentForm.less');
+    import('./Section.less');
+    import('./Comment.layers.less');
+    import('./navPanel.less');
+    import('./pageNav.less');
+    import('./skins.less');
+    import('./talkPage.less');
+    import('./toc.less');
   }
 
   /**
    * _For internal use._ Set a number of {@link convenientDiscussions global object} properties.
    */
-  initGlobals() {
+  async initGlobals() {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (cd.page) return;
 
@@ -680,6 +679,7 @@ class BootManager {
       ) ||
       {};
 
+    const pageRegistry = (await import('./pageRegistry')).default;
     cd.page = pageRegistry.getCurrent();
 
     /**
@@ -724,13 +724,13 @@ class BootManager {
       errorsuselocal: true,
     };
 
-    const settings = require('./settings').default;
+    const settings = (await import('./settings')).default;
     cd.settings = settings;
 
-    const pageController = require('./pageController').default;
-    const commentManager = require('./commentManager').default;
-    const sectionManager = require('./sectionManager').default;
-    const commentFormManager = require('./commentFormManager').default;
+    const pageController = (await import('./pageController')).default;
+    const commentManager = (await import('./commentManager')).default;
+    const sectionManager = (await import('./sectionManager')).default;
+    const commentFormManager = (await import('./commentFormManager')).default;
 
     /**
      * Collection of all comment forms on the page in the order of their creation.
@@ -743,10 +743,10 @@ class BootManager {
     cd.commentForms = commentFormManager.getAll();
 
     cd.tests.controller = pageController;
-    cd.tests.processPageInBackground = require('./updateChecker').processPage;
+    cd.tests.processPageInBackground = (await import('./updateChecker')).processPage;
     cd.tests.showSettingsDialog = settings.showDialog.bind(settings);
     cd.tests.editSubscriptions = bootManager.showEditSubscriptionsDialog.bind(pageController);
-    cd.tests.visits = require('./visits').default;
+    cd.tests.visits = (await import('./visits')).default;
 
     /* Some static methods for external use */
 
@@ -815,7 +815,7 @@ class BootManager {
    *
    * @param {string} language
    */
-  initTimestampParsingTools(language) {
+  async initTimestampParsingTools(language) {
     if (language === 'content') {
       const mainPartPattern = this.getTimestampMainPartPattern('content');
       const utcPattern = mw.util.escapeRegExp(mw.message('(content)timezone-utc').parse());
@@ -838,10 +838,15 @@ class BootManager {
     }
 
     // See https://www.mediawiki.org/wiki/Manual:Timezone#Timecorrection for the format of
-    // `timecorrection`
-    const timezoneParts = mw.user.options.get('timecorrection')?.split('|');
+    // `timecorrection`. Examples:
+    // - System
+    // - System|60
+    // - Offset|-480
+    // - ZoneInfo|60|Europe/Amsterdam
+    const timezoneParts = /** @type {string | undefined} */ (mw.user.options.get('timecorrection'))?.split('|');
 
-    cd.g.uiTimezone = (timezoneParts?.[2] || Number(timezoneParts[1])) ?? undefined;
+    cd.g.uiTimezone =
+      timezoneParts === undefined ? undefined : timezoneParts[2] || Number(timezoneParts[1]);
     if (cd.g.uiTimezone === 0) {
       cd.g.uiTimezone = 'UTC';
     }
@@ -854,7 +859,7 @@ class BootManager {
     }
 
     if (language === 'content') {
-      const settings = require('./settings').default;
+      const settings = (await import('./settings')).default;
       cd.g.areTimestampsDefault = !(
         (settings.get('useUiTime') && cd.g.contentTimezone !== cd.g.uiTimezone) ||
         settings.get('timestampFormat') !== 'default' ||
@@ -935,7 +940,7 @@ class BootManager {
    *
    * @private
    */
-  initOnTalkPage() {
+  async initOnTalkPage() {
     if (!this.pageTypes.talk) return;
 
     debug.stopTimer('start');
@@ -1000,7 +1005,7 @@ class BootManager {
     // If there is no data to load and, therefore, no period of time within which a reflow (layout
     // thrashing) could happen without impeding performance, we cache the value so that it could
     // be used in .saveRelativeScrollPosition() without causing a reflow.
-    this.talkPageBootProcess = this.createTalkPageBootProcess(
+    this.talkPageBootProcess = await this.createTalkPageBootProcess(
       siteDataRequests.every((request) => request.state() === 'resolved') && !modulesRequest
         ? { scrollY: window.scrollY }
         : {}
@@ -1042,10 +1047,10 @@ class BootManager {
    * Create a boot process.
    *
    * @param {import('./TalkPageBootProcess').PassedData} [passedData]
-   * @returns {import('./TalkPageBootProcess').default}
+   * @returns {Promise<import('./TalkPageBootProcess').default>}
    */
-  createTalkPageBootProcess(passedData = {}) {
-    return new (require('./TalkPageBootProcess').default)(passedData);
+  async createTalkPageBootProcess(passedData = {}) {
+    return new ((await import('./TalkPageBootProcess')).default)(passedData);
   }
 
   /**
@@ -1093,13 +1098,13 @@ class BootManager {
     await Promise.all(this.getSiteData());
 
     // This could have been executed from addCommentLinks.prepare() already.
-    this.initGlobals();
-    await require('./settings').default.init();
+    await this.initGlobals();
+    await (await import('./settings')).default.init();
 
-    bootManager.initTimestampParsingTools('content');
+    await bootManager.initTimestampParsingTools('content');
     this.talkPageBootProcess.initPatterns();
     this.talkPageBootProcess.initPrototypes();
-    $.fn.extend(require('./jqueryExtensions').default);
+    $.fn.extend((await import('./jqueryExtensions')).default);
     initDayjs();
   }
 
@@ -1130,7 +1135,7 @@ class BootManager {
 
     // We need PageController here since BootManager can't emit events. Use `require()`, not
     // `import`, to avoid importing it before `oojs-ui` module is loaded.
-    const pageController = require('./pageController').default;
+    const pageController = (await import('./pageController')).default;
 
     pageController.emit('beforeReboot', passedData);
 
@@ -1154,7 +1159,7 @@ class BootManager {
     });
 
     this.showLoadingOverlay();
-    const bootProcess = this.createTalkPageBootProcess(passedData);
+    const bootProcess = await this.createTalkPageBootProcess(passedData);
 
     try {
       bootProcess.passedData.parseData = await cd.page.parse(undefined, false, true);
@@ -1180,7 +1185,7 @@ class BootManager {
 
     // Get IDs of unseen comments. This is used to arrange that they will still be there after
     // replying on or refreshing the page.
-    bootProcess.passedData.unseenComments = require('./commentManager').default
+    bootProcess.passedData.unseenComments = (await import('./commentManager')).default
       .query((comment) => comment.isSeen === false);
 
     // At this point, the boot process can't be interrupted, so we can remove all traces of the
@@ -1242,7 +1247,7 @@ class BootManager {
    * @param {URLSearchParams} searchParams
    * @private
    */
-  cleanUpDom(searchParams) {
+  async cleanUpDom(searchParams) {
     if (!searchParams.has('diff') && !searchParams.has('oldid')) return;
 
     // Diff pages
@@ -1258,7 +1263,7 @@ class BootManager {
 
     // We need PageController here since bootManager can't emit events. Use `require()`, not
     // `import`, to avoid importing it before `oojs-ui` module is loaded.
-    require('./pageController').default.updateOriginalPageTitle(document.title);
+    (await import('./pageController')).default.updateOriginalPageTitle(document.title);
   }
 
   /**
@@ -1408,9 +1413,9 @@ class BootManager {
         addCommentLinks();
 
         // See the comment above: "Additions of CSS...".
-        require('./global.less');
+        import('./global.less');
 
-        require('./logPages.less');
+        import('./logPages.less');
       },
       (/** @type {unknown} */ error) => {
         mw.notify(cd.s('error-loaddata'), { type: 'error' });
@@ -1495,12 +1500,13 @@ class BootManager {
   /**
    * Show an edit subscriptions dialog.
    */
-  showEditSubscriptionsDialog() {
+  async showEditSubscriptionsDialog() {
     if (this.isPageOverlayOn()) return;
 
-    const dialog = new (require('./EditSubscriptionsDialog').default)();
-    cd.getWindowManager().addWindows([dialog]);
-    cd.getWindowManager().openWindow(dialog);
+    const dialog = new ((await import('./EditSubscriptionsDialog')).default)();
+    const windowManager = cd.getWindowManager();
+    windowManager.addWindows([dialog]);
+    windowManager.openWindow(dialog);
   }
 }
 

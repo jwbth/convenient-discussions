@@ -1,5 +1,9 @@
 import PrototypeRegistry from './PrototypeRegistry';
-import { sleep } from './shared/utils-general.js';
+import bootManager from './bootManager';
+import commentManager from './commentManager';
+import TreeWalker from './shared/TreeWalker';
+import { addToArrayIfAbsent, sleep } from './shared/utils-general.js';
+import { isVisible } from './utils-window';
 
 /**
  * Base class for managing comment visual layers (underlay and overlay).
@@ -114,9 +118,6 @@ class CommentLayers {
    * Uses template method pattern - subclasses can override getOverlayPrototype() for customization.
    */
   create() {
-    // Import here to avoid circular dependency
-    const commentManager = require('./commentManager').default;
-
     // Create underlay (same for all comment types)
     this.underlay = CommentLayers.prototypes.get('underlay');
     commentManager.underlays.push(this.underlay);
@@ -454,11 +455,7 @@ class CommentLayers {
     const container = this.getContainer();
     if (!container.cdCachedLayersContainerOffset || container.cdCouldHaveMoved) {
       const rect = container.getBoundingClientRect();
-      // Import here to avoid circular dependency
-      const { isVisible } = require('./utils-window');
-      if (!isVisible(container)) {
-        return;
-      }
+      if (!isVisible(container)) return;
 
       container.cdCouldHaveMoved = false;
       container.cdCachedLayersContainerOffset = {
@@ -478,12 +475,6 @@ class CommentLayers {
    */
   getContainer() {
     if (this.container === undefined) {
-      // Import here to avoid circular dependency
-      const bootManager = require('./bootManager').default;
-      const commentManager = require('./commentManager').default;
-      const TreeWalker = require('./shared/TreeWalker').default;
-      const { addToArrayIfAbsent } = require('./shared/utils-general');
-
       let offsetParent;
 
       const treeWalker = new TreeWalker(
