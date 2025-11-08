@@ -266,6 +266,25 @@ export default defineConfig(({ mode, command }) => {
 
   const plugins = [];
 
+  // Add define plugin for dev server (Vite's define only works in build mode)
+  if (isDevServer) {
+    plugins.push({
+      name: 'define-env-vars',
+      transform(code, id) {
+        if (id.includes('node_modules')) return;
+
+        // Replace environment defines in source code
+        let transformedCode = code;
+        for (const [key, value] of Object.entries(defines)) {
+          const regex = new RegExp(`\\b${key}\\b`, 'g');
+          transformedCode = transformedCode.replace(regex, value);
+        }
+
+        return transformedCode === code ? undefined : transformedCode;
+      },
+    });
+  }
+
   // Add require() to import() transformation plugin (must be first)
   // Temporarily disabled - manually converting require() calls instead
   // plugins.push(requireTransformPlugin());
