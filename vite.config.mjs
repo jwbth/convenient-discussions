@@ -2,6 +2,7 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import commonjs from '@rollup/plugin-commonjs';
 import { defineConfig } from 'vite';
 import banner from 'vite-plugin-banner';
 
@@ -285,12 +286,8 @@ export default defineConfig(({ mode, command }) => {
     });
   }
 
-  // Add require() to import() transformation plugin (must be first)
-  // Temporarily disabled - manually converting require() calls instead
-  // plugins.push(requireTransformPlugin());
-
-  // Add build notification plugin
-  plugins.push(buildNotificationPlugin());
+  // Add require() to import() transformation plugin (must be early in pipeline)
+  plugins.push(requireTransformPlugin(), buildNotificationPlugin());
 
   // Add nowiki banner plugins for non-single builds
   if (!buildMode.isSingle) {
