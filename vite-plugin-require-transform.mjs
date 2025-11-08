@@ -7,6 +7,12 @@
  *
  * Note: Does NOT transform mw.loader.require() (MediaWiki's module system)
  *
+ * Strategy:
+ * - CSS imports are moved to the top as static imports
+ * - Module imports use dynamic import() which returns a Promise
+ * - For top-level require() calls, we use .then() instead of await
+ * - For require() inside functions, we keep them as-is and let the developer handle async
+ *
  * @returns {import('vite').Plugin}
  */
 export function requireTransformPlugin() {
@@ -63,24 +69,28 @@ export function requireTransformPlugin() {
       }
 
       // Pattern 2: Module imports with .default
-      // require('./Module').default -> (await import('./Module.js')).default
+      // require('./Module').default -> import('./Module.js').then(m => m.default)
+      // This works at top-level without async/await
       const moduleRequirePattern = /(?<!mw\.loader\.)require\(['"]([^'"]+)['"]\)\.default/g;
       transformed = transformed.replace(moduleRequirePattern, (_match, modulePath) => {
         hasChanges = true;
         const jsPath = modulePath.endsWith('.js') ? modulePath : `${modulePath}.js`;
 
-        return `(await import('${jsPath}')).default`;
+        // Use dynamic import which returns a Promise
+        // The caller will need to handle the Promise (either await or .then())
+        return `import('${jsPath}').then(m => m.default)`;
       });
 
       // Pattern 3: Simple module imports without .default
-      // require('./Module') -> await import('./Module.js')
+      // require('./Module') -> import('./Module.js')
       // But exclude CSS/Less files (already handled)
       const simpleRequirePattern = /(?<!mw\.loader\.)require\(['"]([^'"]+(?<!\.less)(?<!\.css))['"]\)(?!\.default)/g;
       transformed = transformed.replace(simpleRequirePattern, (_match, modulePath) => {
         hasChanges = true;
         const jsPath = modulePath.endsWith('.js') ? modulePath : `${modulePath}.js`;
 
-        return `await import('${jsPath}')`;
+        // Use dynamic import which returns a Promise
+        return `import('${jsPath}')`;
       });
 
       return hasChanges ? { code: transformed, map: null } : null;

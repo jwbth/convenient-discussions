@@ -64,7 +64,7 @@ if (SINGLE_LANG_CODE) {
  *
  * @private
  */
-function setStrings() {
+async function setStrings() {
   // Strings that should be displayed in the site language, not the user language.
   const contentStrings = [
     'es-',
@@ -73,7 +73,7 @@ function setStrings() {
   ];
 
   if (!SINGLE_LANG_CODE) {
-    require('../dist/convenientDiscussions-i18n/en.js');
+    await import('../dist/convenientDiscussions-i18n/en.js');
   }
   const strings = Object.keys(cd.i18n.en).reduce((acc, name) => {
     const lang = contentStrings.some((contentStringName) => (
@@ -117,7 +117,9 @@ function maybeAddFooterSwitcher() {
       event.preventDefault();
       history.pushState(history.state, '', url.toString());
       $li.remove();
-      go();
+      go().catch((error) => {
+        console.error('Error in go():', error);
+      });
     });
   }
   getFooter().append($li);
@@ -163,10 +165,10 @@ function maybeTweakAddTopicButton() {
  * @fires preprocessed
  * @private
  */
-function go() {
+async function go() {
   debug.startTimer('start');
 
-  require('./convenientDiscussions');
+  await import('./convenientDiscussions.js');
 
   // Don't run again if go() runs the second time (see maybeAddFooterSwitcher()).
   if (cd.g.pageWhitelistRegexp === undefined) {
@@ -182,7 +184,7 @@ function go() {
     cd.g.pageWhitelistRegexp = mergeRegexps(cd.config.pageWhitelist);
     cd.g.pageBlacklistRegexp = mergeRegexps(cd.config.pageBlacklist);
 
-    setStrings();
+    await setStrings();
   }
 
   bootManager.bootScript();
@@ -362,7 +364,11 @@ async function app() {
 
   debug.stopTimer('load config and strings');
 
-  $(go);
+  $(() => {
+    go().catch((error) => {
+      console.error('Error in go():', error);
+    });
+  });
 }
 
 /**

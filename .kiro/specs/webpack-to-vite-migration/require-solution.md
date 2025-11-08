@@ -6,7 +6,13 @@ Vite doesn't transform `require()` calls like Webpack with Babel did. The `requi
 1. **Lazy module loading** - to avoid circular dependencies and defer loading
 2. **CSS imports** - to load Less/CSS files
 
-## Solution
+## Root Cause
+
+- `require()` is **synchronous** in CommonJS
+- `import()` is **asynchronous** in ES modules (returns a Promise)
+- Vite uses ES modules, so `require()` doesn't work in the browser bundle
+
+## Solution Implemented
 
 ### Option 1: Manual Conversion (Recommended)
 
@@ -109,14 +115,92 @@ Then in your code:
 import { require } from './requireShim.js';
 ```
 
-## Recommended Approach
+## What Actually Works
 
-**Manual conversion** is the best approach because:
-1. It's explicit and clear
-2. No runtime overhead
-3. Works with tree-shaking
-4. Easier to debug
-5. Follows ES module standards
+**Vite/Rollup automatically handles most `require()` calls during bundling!**
+
+The build system can resolve `require()` calls at build time when:
+- They use string literals (not dynamic paths)
+- They're for local modules (not external packages)
+- The modules are part of the dependency graph
+
+However, some cases need manual conversion:
+1. **Top-level conditional require()** - needs async/await
+2. **CSS/Less imports** - should be static imports at the top
+3. **Dynamic paths** - won't work, need refactoring
+
+## Manual Conversions Made
+
+### 1. src/app.js
+
+**Changed `go()` and `setStrings()` to async:**
+```js
+// Before
+function go() {
+  require('./convenientDiscussions');
+  // ...
+}
+
+function setStrings() {
+  if (!SINGLE_LANG_CODE) {
+    require('../dist/convenientDiscussions-i18n/en.js');
+  }
+  // ...
+}
+
+// After
+async function go() {
+  await import('./convenientDiscussions.js');
+  // ...
+}
+
+async function setStrings() {
+  if (!SINGLE_LANG_CODE) {
+    await import('../dist/convenientDiscussions-i18n/en.js');
+  }
+  // ...
+}
+```
+
+**Updated callers to handle async:**
+```js
+// Before
+$(go);
+
+// After
+$(() => {
+  go().catch((error) => {
+    console.error('Error in go():', error);
+  });
+});
+```
+
+## Remaining require() Calls
+
+The following `require()` calls are still in the codebase but work fine because Vite/Rollup resolves them at build time:
+
+- `src/bootManager.js` - CSS imports and module imports (inside functions)
+- `src/CommentForm.js` - Widget class imports
+- `src/CommentLayers.js` - Circular dependency avoidance
+- `src/utils-oojs.js` - Widget class imports
+- `src/settings.js` - Dialog class import
+- `src/Section.js` - Dialog class import
+- `src/pageRegistry.js` - Page class imports
+- And others...
+
+These work because:
+1. They're resolved at build time by Rollup
+2. The bundler inlines them into the final bundle
+3. No runtime `require()` function is needed
+
+## Recommended Approach for Future
+
+**Leave most `require()` calls as-is** - Vite/Rollup handles them automatically during bundling.
+
+**Only convert when:**
+1. Build fails with "require is not defined" error
+2. You need conditional/dynamic loading at runtime
+3. You want to use code splitting (then use `import()` with proper async handling)
 
 ## Files to Convert
 

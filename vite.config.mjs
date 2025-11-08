@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -5,6 +6,7 @@ import { defineConfig } from 'vite';
 import banner from 'vite-plugin-banner';
 
 import nonNullableConfig from './config.mjs';
+import { requireTransformPlugin } from './vite-plugin-require-transform.mjs';
 
 /** @type {DeepPartial<typeof nonNullableConfig>} */
 const cdConfig = nonNullableConfig;
@@ -259,6 +261,10 @@ export default defineConfig(({ mode }) => {
   };
 
   const plugins = [];
+
+  // Add require() to import() transformation plugin (must be first)
+  // Temporarily disabled - manually converting require() calls instead
+  // plugins.push(requireTransformPlugin());
 
   // Add build notification plugin
   plugins.push(buildNotificationPlugin());
