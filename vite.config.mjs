@@ -26,7 +26,7 @@ function appendNowikiPlugin(bundleFilename) {
       // Only apply to the main bundle (not worker)
       for (const [fileName, chunk] of Object.entries(bundle)) {
         if (chunk.type === 'chunk' && fileName === bundleFilename) {
-          chunk.code = chunk.code + '\n/*! </nowiki> */';
+          chunk.code = chunk.code + '\n/* </nowiki> */';
         }
       }
     },
@@ -269,7 +269,7 @@ export default defineConfig(({ mode }) => {
     // Bottom banner - append /* </nowiki> */
     plugins.push(
       banner({
-        content: '<nowiki>',
+        content: '/* <nowiki> */',
         verify: false,
       }),
       appendNowikiPlugin(`${bundleFilename}.js`)
