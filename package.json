@@ -30,7 +30,8 @@
     "test": "jest",
     "test:browser": "playwright test",
     "test:browser:auth": "playwright test test-wikipedia-auth.spec.js",
-    "test:browser:headed": "playwright test --headed"
+    "test:browser:headed": "playwright test --headed",
+    "vite": "vite build"
   },
   "browserslist": [
     "> 1%"
