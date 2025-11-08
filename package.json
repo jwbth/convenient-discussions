@@ -61,6 +61,7 @@
     "@babel/runtime": "^7.28.2",
     "@eslint/js": "^9.32.0",
     "@playwright/test": "^1.40.0",
+    "@rollup/plugin-commonjs": "^29.0.0",
     "@stylistic/eslint-plugin": "^5.4.0",
     "@types/jest": "^30.0.0",
     "@types/jquery": "^3.5.32",

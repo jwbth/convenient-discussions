@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -10,6 +11,94 @@ import nonNullableConfig from './config.mjs';
 const cdConfig = nonNullableConfig;
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+/**
+ * Custom plugin to transform require() calls to dynamic import().
+ * This handles lazy module loading used to avoid circular dependencies.
+ *
+ * @returns {import('vite').Plugin}
+ */
+function requireToImportPlugin() {
+  return {
+    name: 'require-to-import',
+    enforce: 'pre',
+    transform(code, id) {
+      // Skip node_modules and non-JS files
+      if (id.includes('node_modules') || !id.endsWith('.js')) {
+        return null;
+      }
+
+      // Skip files that don't have require() calls (except mw.loader.require)
+      if (!code.includes('require(') || (code.includes('require(') && code.match(/require\(/g).every((m) => code.substring(code.indexOf(m) - 10, code.indexOf(m)).includes('mw.loader.')))) {
+        return null;
+      }
+
+      let transformed = code;
+      let hasChanges = false;
+
+      // Pattern 1: CSS/Less imports - move to top as static imports
+      // require('./styles.less') or require('./styles.css')
+      const cssRequirePattern = /require\(['"]([^'"]+\.(?:less|css))['"]\);?/g;
+      const cssImports = [];
+      transformed = transformed.replace(cssRequirePattern, (match, cssPath) => {
+        cssImports.push(cssPath);
+        hasChanges = true;
+
+        return `/* CSS import moved to top */`;
+      });
+
+      // Add CSS imports at the beginning (after any existing imports)
+      if (cssImports.length > 0) {
+        const importInsertPos = transformed.search(/\n\n(?!import\s)/);
+        const cssImportStatements = cssImports.map((p) => `import '${p}';`).join('\n');
+        if (importInsertPos > 0) {
+          transformed = transformed.substring(0, importInsertPos) + '\n' + cssImportStatements + transformed.substring(importInsertPos);
+        } else {
+          transformed = cssImportStatements + '\n\n' + transformed;
+        }
+      }
+
+      // Pattern 2: Module imports with .default
+      // require('./Module').default -> (await import('./Module.js')).default
+      const moduleRequirePattern = /(?<!mw\.loader\.)require\(['"]([^'"]+)['"]\)\.default/g;
+      transformed = transformed.replace(moduleRequirePattern, (match, modulePath) => {
+        hasChanges = true;
+        const jsPath = modulePath.endsWith('.js') ? modulePath : `${modulePath}.js`;
+
+        return `(await import('${jsPath}')).default`;
+      });
+
+      // Pattern 3: Simple module imports without .default
+      // require('./Module') -> await import('./Module.js')
+      const simpleRequirePattern = /(?<!mw\.loader\.)require\(['"]([^'"]+(?<!\.less)(?<!\.css))['"]\)(?!\.default)/g;
+      transformed = transformed.replace(simpleRequirePattern, (match, modulePath) => {
+        hasChanges = true;
+        const jsPath = modulePath.endsWith('.js') ? modulePath : `${modulePath}.js`;
+
+        return `await import('${jsPath}')`;
+      });
+
+      // If we used await, we need to ensure the containing function is async
+      // This is a heuristic - look for function declarations and add async if needed
+      if (hasChanges && transformed.includes('await import(')) {
+        // Find functions that contain await import but aren't async
+        // This is a simplified approach - may need manual review
+        transformed = transformed.replace(
+          /(\b(?:function\s+\w+|const\s+\w+\s*=\s*(?:function)?)\s*\([^)]*\)\s*{[^}]*await\s+import\([^}]+})/g,
+          (match) => {
+            if (!match.includes('async')) {
+              return match.replace(/(\bfunction\s+\w+|\bconst\s+\w+\s*=\s*function)/, '$1 async');
+            }
+
+            return match;
+          }
+        );
+      }
+
+      return hasChanges ? { code: transformed, map: null } : null;
+    },
+  };
+}
 
 /**
  * Custom plugin to append closing nowiki tag to the bundle.
@@ -259,6 +348,9 @@ export default defineConfig(({ mode }) => {
   };
 
   const plugins = [];
+
+  // Add require() to import() transformation plugin
+  plugins.push(requireToImportPlugin());
 
   // Add build notification plugin
   plugins.push(buildNotificationPlugin());
