@@ -6,7 +6,6 @@ import { defineConfig } from 'vite';
 import banner from 'vite-plugin-banner';
 
 import nonNullableConfig from './config.mjs';
-import { devBundlePlugin } from './vite-plugin-dev-bundle.mjs';
 import { requireTransformPlugin } from './vite-plugin-require-transform.mjs';
 
 /** @type {DeepPartial<typeof nonNullableConfig>} */
@@ -262,14 +261,6 @@ export default defineConfig(({ mode }) => {
   };
 
   const plugins = [];
-
-  // Add dev bundle plugin for serving built bundle in dev mode
-  if (mode === 'development') {
-    plugins.push(devBundlePlugin({
-      bundlePath: `/${bundleFilename}.js`,
-      distDir: 'dist',
-    }));
-  }
 
   // Add require() to import() transformation plugin (must be first)
   // Temporarily disabled - manually converting require() calls instead
