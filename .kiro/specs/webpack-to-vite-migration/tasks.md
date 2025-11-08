@@ -196,6 +196,8 @@
 
 
 
+
+
   - [x] 8.1 Test production build
 
     - Run `npm run build` and verify output files in dist/
@@ -208,7 +210,9 @@
 
 
 
-  - [ ] 8.2 Test development server
+  - [x] 8.2 Test development server
+
+
     - Run `npm start` and verify server starts on localhost:9000
     - Check HMR works by modifying a source file
     - Verify CORS headers are present in response
@@ -218,7 +222,9 @@
 
     - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-  - [ ] 8.3 Test staging build
+  - [x] 8.3 Test staging build
+
+
     - Run `npm run build --staging` and verify .staging postfix in filename
 
 
@@ -227,6 +233,8 @@
     - _Requirements: 1.2, 2.1, 5.1_
 
   - [ ] 8.4 Test single build
+
+
     - Run `npm run single -- project=w lang=en` and verify .single.w-en postfix
     - Verify no nowiki tags are present
     - Check source maps use eval format
