@@ -266,7 +266,7 @@ export default defineConfig(({ mode, command }) => {
   const plugins = [];
 
   // Add inline worker string plugin (must be early in pipeline)
-  plugins.push(inlineWorkerStringPlugin());
+  // plugins.push(inlineWorkerStringPlugin());
 
   // Add define plugin for dev server (Vite's define only works in build mode)
   if (isDevServer) {
@@ -294,28 +294,28 @@ export default defineConfig(({ mode, command }) => {
 
   plugins.push(buildNotificationPlugin());
 
-  // Add nowiki banner plugins for non-single builds
-  if (!buildMode.isSingle) {
-    // Top banner - prepend /* <nowiki> */
-    // Bottom banner - append /* </nowiki> */
-    plugins.push(
-      banner({
-        content: '/* <nowiki> */',
-        verify: false,
-      }),
-      appendNowikiPlugin(`${bundleFilename}.js`)
-    );
-  }
+  // // Add nowiki banner plugins for non-single builds
+  // if (!buildMode.isSingle) {
+  //   // Top banner - prepend /* <nowiki> */
+  //   // Bottom banner - append /* </nowiki> */
+  //   plugins.push(
+  //     banner({
+  //       content: '/* <nowiki> */',
+  //       verify: false,
+  //     }),
+  //     appendNowikiPlugin(`${bundleFilename}.js`)
+  //   );
+  // }
 
   // Add license extraction plugin for production/staging builds
   if (!buildMode.isDev && !buildMode.isSingle) {
-    plugins.push(licenseExtractionPlugin(buildMode));
+    // plugins.push(licenseExtractionPlugin(buildMode));
   }
 
   // Add custom source map URL plugin for production/staging builds
-  if (cdConfig.sourceMapsBaseUrl && !buildMode.isDev && !buildMode.isSingle) {
-    plugins.push(customSourceMapUrlPlugin(cdConfig.sourceMapsBaseUrl, buildMode));
-  }
+  // if (cdConfig.sourceMapsBaseUrl && !buildMode.isDev && !buildMode.isSingle) {
+  //   plugins.push(customSourceMapUrlPlugin(cdConfig.sourceMapsBaseUrl, buildMode));
+  // }
 
   return {
     plugins,
@@ -332,8 +332,26 @@ export default defineConfig(({ mode, command }) => {
       // Target browsers using browserslist (ES2020 supports all required transforms)
       target: 'es2020',
 
-      // Minification configuration - use Terser for better handling of complex code
-      minify: buildMode.isDev ? false : 'terser',
+      // Minification configuration
+      minify: buildMode.isDev ? false : 'esbuild',
+
+      // esbuild minification options
+      esbuildOptions: {
+        // Preserve class names for better debugging
+        keepNames: true,
+
+        // ASCII-only output
+        charset: 'ascii',
+
+        // Minify options
+        minifyIdentifiers: true,
+        minifySyntax: true,
+        minifyWhitespace: true,
+
+        // Reserve 'cd' identifier from mangling
+        // Note: esbuild doesn't support property mangling with reserved lists like Terser
+        // The 'cd' global is preserved by using IIFE format which doesn't mangle globals
+      },
 
       // Terser minification options
       terserOptions: {
@@ -363,13 +381,13 @@ export default defineConfig(({ mode, command }) => {
           entryFileNames: `${bundleFilename}.js`,
 
           // Module format (IIFE for browser global)
-          format: 'iife',
+          // format: 'iife',
 
           // Disable code splitting (single output file)
-          inlineDynamicImports: true,
+          // inlineDynamicImports: false,
 
           // Enable module concatenation (hoisting transitive imports)
-          hoistTransitiveImports: true,
+          // hoistTransitiveImports: true,
         },
 
         // Tree-shaking is enabled by default in Rollup/Vite

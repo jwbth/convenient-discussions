@@ -73,7 +73,7 @@ async function setStrings() {
   ];
 
   if (!SINGLE_LANG_CODE) {
-    await import('../dist/convenientDiscussions-i18n/en.js');
+    await import('../dist/convenientDiscussions-i18n/en');
   }
   const strings = Object.keys(cd.i18n.en).reduce((acc, name) => {
     const lang = contentStrings.some((contentStringName) => (
@@ -168,7 +168,7 @@ function maybeTweakAddTopicButton() {
 async function go() {
   debug.startTimer('start');
 
-  await import('./convenientDiscussions.js');
+  require('./convenientDiscussions');
 
   // Don't run again if go() runs the second time (see maybeAddFooterSwitcher()).
   if (cd.g.pageWhitelistRegexp === undefined) {
