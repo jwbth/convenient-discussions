@@ -12,7 +12,8 @@ import debug from './debug';
 import pageRegistry from './pageRegistry';
 import { buildEditSummary, getQueryParamBooleanValue, underlinesToSpaces } from './shared/utils-general';
 import { wrapDiffBody, wrapHtml } from './utils-window';
-import WebpackWorker from './worker/worker-gate?worker&inline';
+import workerCode from './worker/worker-gate?worker&url';
+import { createInlineWorker } from './worker/worker-inline-helper';
 
 const mwStringsCache = /** @type {StringsByKey} */ ({});
 /** @type {boolean | undefined} */
