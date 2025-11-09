@@ -329,25 +329,24 @@ export default defineConfig(({ mode, command }) => {
       // Target browsers using browserslist (ES2020 supports all required transforms)
       target: 'es2020',
 
-      // Minification configuration
-      minify: buildMode.isDev ? false : 'esbuild',
+      // Minification configuration - use Terser for better handling of complex code
+      minify: buildMode.isDev ? false : 'terser',
 
-      // esbuild minification options
-      esbuildOptions: {
-        // Preserve class names for better debugging
-        keepNames: true,
-
-        // ASCII-only output
-        charset: 'ascii',
-
-        // Minify options
-        minifyIdentifiers: true,
-        minifySyntax: true,
-        minifyWhitespace: true,
-
-        // Reserve 'cd' identifier from mangling
-        // Note: esbuild doesn't support property mangling with reserved lists like Terser
-        // The 'cd' global is preserved by using IIFE format which doesn't mangle globals
+      // Terser minification options
+      terserOptions: {
+        compress: {
+          passes: 2,
+        },
+        mangle: {
+          // Reserve 'cd' identifier from mangling
+          reserved: ['cd'],
+        },
+        format: {
+          // ASCII-only output
+          ascii_only: true,
+          // Preserve comments with @license or @preserve
+          comments: /@license|@preserve|@cc_on/i,
+        },
       },
 
       // Source map configuration based on build mode

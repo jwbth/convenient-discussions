@@ -99,6 +99,7 @@
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "rimraf": "^6.0.1",
+    "terser": "^5.44.1",
     "types-mediawiki": "^1.10.1",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.44.0",
