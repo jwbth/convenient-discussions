@@ -1,13 +1,11 @@
-import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import commonjs from '@rollup/plugin-commonjs';
 import { defineConfig } from 'vite';
 import banner from 'vite-plugin-banner';
 
 import nonNullableConfig from './config.mjs';
-import { requireTransformPlugin } from './vite-plugin-require-transform.mjs';
+import { inlineWorkerStringPlugin } from './vite-plugin-inline-worker-string.mjs';
 
 /** @type {DeepPartial<typeof nonNullableConfig>} */
 const cdConfig = nonNullableConfig;
@@ -267,10 +265,18 @@ export default defineConfig(({ mode, command }) => {
 
   const plugins = [];
 
+  // Add inline worker string plugin (must be early in pipeline)
+  plugins.push(inlineWorkerStringPlugin());
+
   // Add define plugin for dev server (Vite's define only works in build mode)
   if (isDevServer) {
     plugins.push({
       name: 'define-env-vars',
+      /**
+       * @param {string} code
+       * @param {string} id
+       * @returns {string | undefined}
+       */
       transform(code, id) {
         if (id.includes('node_modules')) return;
 
@@ -286,9 +292,6 @@ export default defineConfig(({ mode, command }) => {
     });
   }
 
-  // Add require() to import() transformation plugin (must be early in pipeline)
-  // Disabled - manually converting require() to dynamic import() instead
-  // plugins.push(requireTransformPlugin());
   plugins.push(buildNotificationPlugin());
 
   // Add nowiki banner plugins for non-single builds

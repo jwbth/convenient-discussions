@@ -242,3 +242,64 @@ Total: ~38 usages (excluding mw.loader.require)
 ## Note on mw.loader.require()
 
 Do NOT convert `mw.loader.require()` calls - these are MediaWiki's own module system and must stay as-is.
+
+
+---
+
+# Worker Inlining Solution
+
+The worker must be inlined to comply with Wikimedia's Content Security Policy (CSP), which doesn't allow loading separate worker files.
+
+## Problem
+
+When Vite inlines a worker using `?worker&inline`, it creates a separate worker file rather than truly inlining it into the bundle. This violates Wikimedia's CSP policy.
+
+## Solution
+
+We created a custom Vite plugin (`vite-plugin-inline-worker-string.mjs`) that:
+
+1. Intercepts imports with the `?worker&inline-string` query parameter
+2. Builds the worker as a separate minified bundle
+3. Returns the worker code as a string literal that gets embedded in the main bundle
+4. At runtime, creates a Blob URL from the embedded worker code string
+
+This approach truly inlines the worker code while avoiding minification issues.
+
+## Implementation
+
+### Custom Vite Plugin (`vite-plugin-inline-worker-string.mjs`)
+
+The plugin:
+- Resolves imports like `'./worker/worker-gate?worker&inline-string'`
+- Builds the worker separately using Vite's build API
+- Returns the minified worker code as a JSON-stringified export
+- Caches the result to avoid rebuilding on subsequent imports
+
+### Usage (`src/convenientDiscussions.js`)
+
+```javascript
+import workerCode from './worker/worker-gate?worker&inline-string';
+
+// Later in getWorker():
+const blob = new Blob([workerCode], { type: 'application/javascript' });
+const blobUrl = URL.createObjectURL(blob);
+this.worker = new Worker(blobUrl);
+```
+
+### Type Declaration (`src/worker-gate.d.ts`)
+
+```typescript
+declare module '*?worker&inline-string' {
+  const workerCode: string;
+  export default workerCode;
+}
+```
+
+This solution maintains compatibility with Wikimedia's CSP while properly inlining the worker code into the main bundle.
+
+## Result
+
+✅ **Worker is truly inlined** - The worker code is embedded as a string in the main bundle
+✅ **CSP compliant** - No separate worker files are loaded
+✅ **No minification issues** - Worker code is pre-minified before embedding
+✅ **File size** - ~759KB for staging build (includes inlined worker)

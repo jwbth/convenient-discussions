@@ -12,8 +12,7 @@ import debug from './debug';
 import pageRegistry from './pageRegistry';
 import { buildEditSummary, getQueryParamBooleanValue, underlinesToSpaces } from './shared/utils-general';
 import { wrapDiffBody, wrapHtml } from './utils-window';
-import workerCode from './worker/worker-gate?worker&url';
-import { createInlineWorker } from './worker/worker-inline-helper';
+import workerCode from './worker/worker-gate?worker&inline-string';
 
 const mwStringsCache = /** @type {StringsByKey} */ ({});
 /** @type {boolean | undefined} */
@@ -233,7 +232,11 @@ const convenientDiscussionsWindow = {
    */
   getWorker() {
     if (!this.worker) {
-      this.worker = /** @type {Worker} */ (new WebpackWorker());
+      // Create worker from inlined code using Blob URL
+      // This avoids CSP issues with separate worker files on Wikimedia sites
+      const blob = new Blob([workerCode], { type: 'application/javascript' });
+      const blobUrl = URL.createObjectURL(blob);
+      this.worker = new Worker(blobUrl);
     }
 
     return this.worker;
