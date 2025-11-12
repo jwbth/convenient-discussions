@@ -1,5 +1,5 @@
-import bootManager from './bootManager';
-import cd from './cd';
+import bootManager from './loader/bootManager';
+import cd from './loader/cd';
 import CdError from './shared/CdError';
 
 /**

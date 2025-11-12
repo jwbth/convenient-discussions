@@ -1,5 +1,5 @@
 import TextMasker from './TextMasker';
-import cd from './cd';
+import cd from './loader/cd';
 import settings from './settings';
 import CdError from './shared/CdError';
 import { calculateWordOverlap, countOccurrences, defined, generatePageNamePattern } from './shared/utils-general';

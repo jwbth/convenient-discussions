@@ -11,8 +11,8 @@ import dayJsTimezone from 'dayjs/plugin/timezone';
 import dayJsUtc from 'dayjs/plugin/utc';
 
 import Button from './Button';
-import bootManager from './bootManager';
-import cd from './cd';
+import bootManager from './loader/bootManager';
+import cd from './loader/cd';
 import settings from './settings';
 import ElementsTreeWalker from './shared/ElementsTreeWalker';
 import { decodeHtmlEntities, defined, generatePageNamePattern, isInline, parseWikiUrl, removeDirMarks, spacesToUnderlines } from './shared/utils-general';

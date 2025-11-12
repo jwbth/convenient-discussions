@@ -1,5 +1,5 @@
 import AutocompleteCache from './AutocompleteCache';
-import cd from './cd';
+import cd from './loader/cd';
 import CdError from './shared/CdError';
 import { definedAndNotNull, removeDoubleSpaces, sleep, unique } from './shared/utils-general';
 import { handleApiReject } from './utils-api';

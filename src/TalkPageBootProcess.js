@@ -8,7 +8,7 @@ import Section from './Section';
 import SpaciousComment from './SpaciousComment';
 import Thread from './Thread';
 import bootManager from './bootManager';
-import cd from './cd';
+import cd from './loader/cd';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
 import debug from './debug';

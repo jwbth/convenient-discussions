@@ -2,7 +2,7 @@
  * Advanced caching system for autocomplete with LRU eviction and memory management.
  */
 
-import cd from './cd';
+import cd from './loader/cd';
 
 /**
  * @typedef {object} CacheEntry

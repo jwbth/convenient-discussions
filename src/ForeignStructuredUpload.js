@@ -1,4 +1,4 @@
-import cd from './cd';
+import cd from './loader/cd';
 import { es6ClassToOoJsClass } from './utils-oojs';
 
 /**

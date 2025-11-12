@@ -1,5 +1,5 @@
 import BaseAutocomplete from './BaseAutocomplete';
-import cd from './cd';
+import cd from './loader/cd';
 import CdError from './shared/CdError';
 import { charAt, phpCharToUpper } from './shared/utils-general';
 import { handleApiReject } from './utils-api';

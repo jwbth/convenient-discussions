@@ -4,7 +4,7 @@ import type { ApiResponse } from 'types-mediawiki/mw/Api';
 
 import type CheckboxInputWidget from './CheckboxInputWidget';
 import type TextInputWidget from './TextInputWidget';
-import type { ConvenientDiscussions } from './cd';
+import type { ConvenientDiscussions } from './loader/cd';
 
 declare global {
   const IS_STAGING: boolean;

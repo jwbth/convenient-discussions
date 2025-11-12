@@ -4,8 +4,8 @@ import CompactCommentActions from './CompactCommentActions';
 import CompactCommentLayers from './CompactCommentLayers';
 import LiveTimestamp from './LiveTimestamp';
 import PrototypeRegistry from './PrototypeRegistry';
-import bootManager from './bootManager';
-import cd from './cd';
+import bootManager from './loader/bootManager';
+import cd from './loader/cd';
 import commentManager from './commentManager';
 import { isInline } from './shared/utils-general';
 

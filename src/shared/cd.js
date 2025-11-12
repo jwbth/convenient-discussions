@@ -117,7 +117,7 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared);
  */
 
 /**
- * @typedef {typeof import('../convenientDiscussions').globalProperties & GlobalPropertiesExtension} GlobalProps
+ * @typedef {typeof import('../loader/convenientDiscussions').globalProperties & GlobalPropertiesExtension} GlobalProps
  */
 
 /**

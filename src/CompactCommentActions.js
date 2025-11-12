@@ -1,6 +1,6 @@
 import CommentActions from './CommentActions';
 import CommentButton from './CommentButton';
-import cd from './cd';
+import cd from './loader/cd';
 import commentManager from './commentManager';
 
 /**

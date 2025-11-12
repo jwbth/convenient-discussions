@@ -8,7 +8,7 @@
 
 import PageSource from './PageSource';
 import TextMasker from './TextMasker';
-import cd from './cd';
+import cd from './loader/cd';
 import pageRegistry from './pageRegistry';
 import CdError from './shared/CdError';
 import { defined, isProbablyTalkPage, mergeRegexps } from './shared/utils-general';

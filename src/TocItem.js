@@ -1,4 +1,4 @@
-import cd from './cd';
+import cd from './loader/cd';
 import CdError from './shared/CdError';
 import { isElement, isText } from './shared/utils-general';
 import { createSvg } from './utils-window';

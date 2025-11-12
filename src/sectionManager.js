@@ -1,4 +1,4 @@
-import cd from './cd';
+import cd from './loader/cd';
 import pageController from './pageController';
 import settings from './settings';
 import { areObjectsEqual, calculateWordOverlap, generateFixedPosTimestamp, spacesToUnderlines } from './shared/utils-general';

@@ -7,7 +7,7 @@
 import CheckboxInputWidget from './CheckboxInputWidget';
 import RadioOptionWidget from './RadioOptionWidget';
 import TextInputWidget from './TextInputWidget';
-import cd from './cd';
+import cd from './loader/cd';
 import { copyText } from './utils-window';
 
 /**

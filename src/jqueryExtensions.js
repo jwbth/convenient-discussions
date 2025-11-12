@@ -4,7 +4,7 @@
  * @module jqueryExtensions
  */
 
-import cd from './cd';
+import cd from './loader/cd';
 import pageController from './pageController';
 import { isMetadataNode, sleep } from './shared/utils-general';
 import { createSvg } from './utils-window';

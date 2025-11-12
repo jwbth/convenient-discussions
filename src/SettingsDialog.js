@@ -1,7 +1,7 @@
 import ProcessDialog from './ProcessDialog';
 import StorageItem from './StorageItem';
-import bootManager from './bootManager';
-import cd from './cd';
+import bootManager from './loader/bootManager';
+import cd from './loader/cd';
 import commentFormManager from './commentFormManager';
 import settings from './settings';
 import { areObjectsEqual } from './shared/utils-general';

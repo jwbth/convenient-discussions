@@ -1,18 +1,18 @@
-import dateFormats from '../data/dateFormats.json';
-import digitsData from '../data/digits.json';
-import languageFallbacks from '../data/languageFallbacks.json';
+import dateFormats from '../../data/dateFormats.json';
+import digitsData from '../../data/digits.json';
+import languageFallbacks from '../../data/languageFallbacks.json';
 
 import addCommentLinks from './addCommentLinks';
 import cd from './cd';
 import debug from './debug';
-import { defined, getContentLanguageMessages, getQueryParamBooleanValue, isKeyOf, isProbablyTalkPage, sleep, unique } from './shared/utils-general';
-import { dateTokenToMessageNames } from './shared/utils-timestamp';
-import userRegistry from './userRegistry';
-import { getUserInfo, splitIntoBatches } from './utils-api';
-import { createSvg, initDayjs, skin$, transparentize } from './utils-window';
+import { defined, getContentLanguageMessages, getQueryParamBooleanValue, isKeyOf, isProbablyTalkPage, sleep, unique } from '../shared/utils-general';
+import { dateTokenToMessageNames } from '../shared/utils-timestamp';
+import userRegistry from '../userRegistry';
+import { getUserInfo, splitIntoBatches } from '../utils-api';
+import { createSvg, initDayjs, skin$, transparentize } from '../utils-window';
 
 /**
- * @import {PageController} from './pageController'
+ * @import {PageController} from '../pageController'
  */
 
 /**
@@ -50,7 +50,7 @@ class BootManager {
    *
    * For simpler type checking, assume it's always set (we don't use it when it's not).
    *
-   * @type {import('./TalkPageBootProcess').default}
+   * @type {import('../TalkPageBootProcess').default}
    * @private
    */
   talkPageBootProcess;
@@ -319,7 +319,7 @@ class BootManager {
       acc[key] = typeof value === 'string' ? [value] : value;
 
       return acc;
-    }, /** @type {import('../config/default').default['specialPageAliases']} */({}));
+    }, /** @type {import('../../config/default').default['specialPageAliases']} */({}));
 
     cd.g.contentTimezone = cd.config.timezone ?? undefined;
 
@@ -339,7 +339,7 @@ class BootManager {
             siprop: ['specialpagealiases', 'general'],
           })
           .then((response) => {
-            /** @type {import('./utils-api').ApiResponseSiteInfoSpecialPageAliases[]} */ (
+            /** @type {import('../utils-api').ApiResponseSiteInfoSpecialPageAliases[]} */ (
               response.query.specialpagealiases
             )
               .filter((page) => specialPages.includes(page.realname))
@@ -679,7 +679,7 @@ class BootManager {
       ) ||
       {};
 
-    const pageRegistry = (await import('./pageRegistry')).default;
+    const pageRegistry = (await import('../pageRegistry')).default;
     cd.page = pageRegistry.getCurrent();
 
     /**
@@ -687,7 +687,7 @@ class BootManager {
      *
      * @see module:userRegistry.getCurrent
      * @name user
-     * @type {import('./User').default}
+     * @type {import('../User').default}
      * @memberof convenientDiscussions
      */
     cd.user = userRegistry.getCurrent();
@@ -724,29 +724,29 @@ class BootManager {
       errorsuselocal: true,
     };
 
-    const settings = (await import('./settings')).default;
+    const settings = (await import('../settings')).default;
     cd.settings = settings;
 
-    const pageController = (await import('./pageController')).default;
-    const commentManager = (await import('./commentManager')).default;
-    const sectionManager = (await import('./sectionManager')).default;
-    const commentFormManager = (await import('./commentFormManager')).default;
+    const pageController = (await import('../pageController')).default;
+    const commentManager = (await import('../commentManager')).default;
+    const sectionManager = (await import('../sectionManager')).default;
+    const commentFormManager = (await import('../commentFormManager')).default;
 
     /**
      * Collection of all comment forms on the page in the order of their creation.
      *
      * @name commentForms
-     * @type {import('./CommentForm').default[]}
+     * @type {import('../CommentForm').default[]}
      * @see module:commentFormManager.getAll
      * @memberof convenientDiscussions
      */
     cd.commentForms = commentFormManager.getAll();
 
     cd.tests.controller = pageController;
-    cd.tests.processPageInBackground = (await import('./updateChecker')).processPage;
+    cd.tests.processPageInBackground = (await import('../updateChecker')).processPage;
     cd.tests.showSettingsDialog = settings.showDialog.bind(settings);
     cd.tests.editSubscriptions = bootManager.showEditSubscriptionsDialog.bind(pageController);
-    cd.tests.visits = (await import('./visits')).default;
+    cd.tests.visits = (await import('../visits')).default;
 
     /* Some static methods for external use */
 
@@ -859,7 +859,7 @@ class BootManager {
     }
 
     if (language === 'content') {
-      const settings = (await import('./settings')).default;
+      const settings = (await import('../settings')).default;
       cd.g.areTimestampsDefault = !(
         (settings.get('useUiTime') && cd.g.contentTimezone !== cd.g.uiTimezone) ||
         settings.get('timestampFormat') !== 'default' ||
@@ -1046,11 +1046,11 @@ class BootManager {
   /**
    * Create a boot process.
    *
-   * @param {import('./TalkPageBootProcess').PassedData} [passedData]
-   * @returns {Promise<import('./TalkPageBootProcess').default>}
+   * @param {import('../TalkPageBootProcess').PassedData} [passedData]
+   * @returns {Promise<import('../TalkPageBootProcess').default>}
    */
   async createTalkPageBootProcess(passedData = {}) {
-    return new ((await import('./TalkPageBootProcess')).default)(passedData);
+    return new ((await import('../TalkPageBootProcess')).default)(passedData);
   }
 
   /**
@@ -1058,7 +1058,7 @@ class BootManager {
    *
    * For simpler type checking, assume it's always set (we don't use it when it's not).
    *
-   * @returns {import('./TalkPageBootProcess').default}
+   * @returns {import('../TalkPageBootProcess').default}
    */
   getTalkPageBootProcess() {
     return this.talkPageBootProcess;
@@ -1099,12 +1099,12 @@ class BootManager {
 
     // This could have been executed from addCommentLinks.prepare() already.
     await this.initGlobals();
-    await (await import('./settings')).default.init();
+    await (await import('../settings')).default.init();
 
     await bootManager.initTimestampParsingTools('content');
     this.talkPageBootProcess.initPatterns();
     this.talkPageBootProcess.initPrototypes();
-    $.fn.extend((await import('./jqueryExtensions')).default);
+    $.fn.extend((await import('../jqueryExtensions')).default);
     initDayjs();
   }
 
@@ -1120,11 +1120,11 @@ class BootManager {
   /**
    * Reload the page via Ajax.
    *
-   * @param {import('./TalkPageBootProcess').PassedData} [passedData] Data passed from the previous
+   * @param {import('../TalkPageBootProcess').PassedData} [passedData] Data passed from the previous
    *   page state. See {@link PassedData} for the list of possible properties. `html`,
    *   `unseenComments` properties are set in this function.
    * @returns {Promise<boolean>} Successful?
-   * @throws {import('./shared/CdError').default|Error}
+   * @throws {import('../shared/CdError').default|Error}
    */
   async rebootTalkPage(passedData = {}) {
     if (this.booting || !this.isPageOfType('talk')) {
@@ -1135,7 +1135,7 @@ class BootManager {
 
     // We need PageController here since BootManager can't emit events. Use `require()`, not
     // `import`, to avoid importing it before `oojs-ui` module is loaded.
-    const pageController = (await import('./pageController')).default;
+    const pageController = (await import('../pageController')).default;
 
     pageController.emit('beforeReboot', passedData);
 
@@ -1185,7 +1185,7 @@ class BootManager {
 
     // Get IDs of unseen comments. This is used to arrange that they will still be there after
     // replying on or refreshing the page.
-    bootProcess.passedData.unseenComments = (await import('./commentManager')).default
+    bootProcess.passedData.unseenComments = (await import('../commentManager')).default
       .query((comment) => comment.isSeen === false);
 
     // At this point, the boot process can't be interrupted, so we can remove all traces of the
@@ -1263,7 +1263,7 @@ class BootManager {
 
     // We need PageController here since bootManager can't emit events. Use `require()`, not
     // `import`, to avoid importing it before `oojs-ui` module is loaded.
-    (await import('./pageController')).default.updateOriginalPageTitle(document.title);
+    (await import('../pageController')).default.updateOriginalPageTitle(document.title);
   }
 
   /**
@@ -1503,7 +1503,7 @@ class BootManager {
   async showEditSubscriptionsDialog() {
     if (this.isPageOverlayOn()) return;
 
-    const dialog = new ((await import('./EditSubscriptionsDialog')).default)();
+    const dialog = new ((await import('../EditSubscriptionsDialog')).default)();
     const windowManager = cd.getWindowManager();
     windowManager.addWindows([dialog]);
     windowManager.openWindow(dialog);

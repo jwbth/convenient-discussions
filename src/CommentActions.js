@@ -1,4 +1,4 @@
-import cd from './cd';
+import cd from './loader/cd';
 import commentManager from './commentManager';
 
 /**

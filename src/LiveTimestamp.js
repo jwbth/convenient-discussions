@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 
 import EventEmitter from './EventEmitter';
-import cd from './cd';
+import cd from './loader/cd';
 import settings from './settings';
 import { removeFromArrayIfPresent } from './shared/utils-general';
 import { mixInObject } from './utils-oojs';

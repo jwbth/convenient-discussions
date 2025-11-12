@@ -1,6 +1,6 @@
 import ForeignStructuredUploadBookletLayout from './ForeignStructuredUploadBookletLayout';
 import ProcessDialogMixin from './ProcessDialogMixin';
-import cd from './cd';
+import cd from './loader/cd';
 import CdError from './shared/CdError';
 import { es6ClassToOoJsClass, mixInClass } from './utils-oojs';
 

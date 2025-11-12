@@ -1,7 +1,7 @@
 import LZString from 'lz-string';
 
 import EventEmitter from './EventEmitter';
-import cd from './cd';
+import cd from './loader/cd';
 import commentManager from './commentManager';
 import settings from './settings';
 import CdError from './shared/CdError';

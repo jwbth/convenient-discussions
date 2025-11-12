@@ -5,7 +5,7 @@ import LiveTimestamp from './LiveTimestamp';
 import PrototypeRegistry from './PrototypeRegistry';
 import SpaciousCommentActions from './SpaciousCommentActions';
 import SpaciousCommentLayers from './SpaciousCommentLayers';
-import cd from './cd';
+import cd from './loader/cd';
 import settings from './settings';
 import { isInline } from './shared/utils-general';
 import { createSvg } from './utils-window';

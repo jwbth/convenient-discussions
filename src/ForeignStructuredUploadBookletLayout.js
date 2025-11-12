@@ -1,6 +1,6 @@
 import ForeignStructuredUpload from './ForeignStructuredUpload';
 import Pseudolink from './Pseudolink';
-import cd from './cd';
+import cd from './loader/cd';
 import { canonicalUrlToPageName, defined, generateFixedPosTimestamp, getDbnameForHostname } from './shared/utils-general';
 import { createCheckboxControl, createRadioControl, createTextControl, createTitleControl, es6ClassToOoJsClass } from './utils-oojs';
 import { mergeJquery, wrapHtml } from './utils-window';

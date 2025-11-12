@@ -6,7 +6,7 @@
 
 import CurrentPage from './CurrentPage';
 import Page from './Page';
-import cd from './cd';
+import cd from './loader/cd';
 
 /**
  * @exports pageRegistry

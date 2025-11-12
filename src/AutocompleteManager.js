@@ -1,6 +1,6 @@
 import AutocompleteFactory from './AutocompleteFactory';
 import AutocompletePerformanceMonitor from './AutocompletePerformanceMonitor';
-import cd from './cd';
+import cd from './loader/cd';
 import settings from './settings';
 import CdError from './shared/CdError';
 import { typedEntries } from './shared/utils-general';

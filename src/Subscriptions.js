@@ -1,5 +1,5 @@
 import EventEmitter from './EventEmitter';
-import cd from './cd';
+import cd from './loader/cd';
 import settings from './settings';
 import CdError from './shared/CdError';
 import { wrapHtml } from './utils-window';

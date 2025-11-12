@@ -1,5 +1,5 @@
 import Button from './Button';
-import cd from './cd';
+import cd from './loader/cd';
 import pageController from './pageController';
 import sectionManager from './sectionManager';
 import toc from './toc';

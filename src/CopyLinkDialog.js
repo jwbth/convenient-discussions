@@ -1,6 +1,6 @@
 import Comment from './Comment';
 import DivLabelWidget from './DivLabelWidget';
-import cd from './cd';
+import cd from './loader/cd';
 import CdError from './shared/CdError';
 import { createCopyTextControl, es6ClassToOoJsClass } from './utils-oojs';
 import { mergeJquery, wrapHtml } from './utils-window';

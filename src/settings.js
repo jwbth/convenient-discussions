@@ -1,7 +1,7 @@
 import EventEmitter from './EventEmitter';
 import SettingsDialog from './SettingsDialog';
 import TextMasker from './TextMasker';
-import cd from './cd';
+import cd from './loader/cd';
 import pageRegistry from './pageRegistry';
 import { areObjectsEqual, defined, definedAndNotNull, subtractDaysFromNow, typedKeysOf, ucFirst } from './shared/utils-general';
 import { getUserInfo, saveGlobalOption, saveLocalOption } from './utils-api';

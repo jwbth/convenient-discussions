@@ -1,4 +1,4 @@
-import { isKeyOf, typedKeysOf } from './shared/utils-general';
+import { isKeyOf, typedKeysOf } from '../shared/utils-general';
 
 /**
  * A number of methods to simplify measuring time that it takes to run certain routines as well as
@@ -81,9 +81,9 @@ class Debug {
       typeof Proxy === 'undefined'
         ? {}
         : new Proxy(
-            /** @type {AnyByKey} */ ({}),
-            { get: (obj, prop) => isKeyOf(prop, obj) ? obj[prop] : 0 }
-          );
+          /** @type {AnyByKey} */ ({}),
+          { get: (obj, prop) => isKeyOf(prop, obj) ? obj[prop] : 0 }
+        );
   }
 
   /**
@@ -156,7 +156,7 @@ class Debug {
   /**
    * Log and reset all timers, as well as counters and other collected values.
    *
-   * @param {boolean} [sort=false] Whether to sort timers and counters alphabetically.
+   * @param {boolean} [sort] Whether to sort timers and counters alphabetically.
    */
   logAndResetEverything(sort = false) {
     const timerLabels = Object.keys(this.timerTotal);
@@ -206,6 +206,7 @@ class Debug {
   getAverageTimerTime(label) {
     if (this.timerAllRunsTotal[label] === undefined) {
       console.error(`No data for timer ${label}`);
+
       return;
     }
     const average = (this.timerAllRunsTotal[label] / this.timerRunCount[label]).toFixed(3);

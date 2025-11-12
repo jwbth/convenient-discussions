@@ -1,5 +1,5 @@
 import TextMasker from './TextMasker';
-import cd from './cd';
+import cd from './loader/cd';
 import CdError from './shared/CdError';
 import { isKeyOf } from './shared/utils-general';
 import { escapePipesOutsideLinks, generateTagsRegexp } from './shared/utils-wikitext';

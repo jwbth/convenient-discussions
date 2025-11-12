@@ -1,7 +1,7 @@
 import MultilineTextInputWidget from './MultilineTextInputWidget';
 import ProcessDialog from './ProcessDialog';
-import bootManager from './bootManager';
-import cd from './cd';
+import bootManager from './loader/bootManager';
+import cd from './loader/cd';
 import pageController from './pageController';
 import CdError from './shared/CdError';
 import { sleep, unique } from './shared/utils-general';

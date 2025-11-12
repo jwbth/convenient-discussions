@@ -1,8 +1,8 @@
 import CommentForm from './CommentForm';
 import EventEmitter from './EventEmitter';
 import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime';
-import bootManager from './bootManager';
-import cd from './cd';
+import bootManager from './loader/bootManager';
+import cd from './loader/cd';
 import commentManager from './commentManager';
 import pageController from './pageController';
 import sectionManager from './sectionManager';
@@ -20,7 +20,7 @@ import { isCmdModifierPressed, isInputFocused, keyCombination } from './utils-wi
  */
 
 /**
- * @typedef {[CommentForm, import('./cd').ConvenientDiscussions]} CommentFormCreatedEvent
+ * @typedef {[CommentForm, import('./loader/cd').ConvenientDiscussions]} CommentFormCreatedEvent
  */
 
 /**

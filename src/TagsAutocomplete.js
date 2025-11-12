@@ -1,5 +1,5 @@
 import BaseAutocomplete from './BaseAutocomplete';
-import cd from './cd';
+import cd from './loader/cd';
 import { ensureArray } from './shared/utils-general';
 
 /**

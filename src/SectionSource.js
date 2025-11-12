@@ -1,4 +1,4 @@
-import cd from './cd';
+import cd from './loader/cd';
 import sectionManager from './sectionManager';
 import CdError from './shared/CdError';
 import { calculateWordOverlap, genericGetOldestOrNewestByDateProp } from './shared/utils-general';

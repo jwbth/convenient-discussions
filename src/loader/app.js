@@ -5,21 +5,21 @@
  */
 
 // Import polyfills for a bunch of ES2022+ features
-import './shared/polyfills';
+import '../shared/polyfills';
 
-import defaultConfig from '../config/default';
-import configUrls from '../config/urls.json';
-import i18nList from '../data/i18nList.json';
-import languageFallbacks from '../data/languageFallbacks.json';
+import defaultConfig from '../../config/default';
+import configUrls from '../../config/urls.json';
+import i18nList from '../../data/i18nList.json';
+import languageFallbacks from '../../data/languageFallbacks.json';
+import { mergeRegexps, typedKeysOf, unique } from '../shared/utils-general';
+import { getFooter } from '../utils-window';
 
 import { addCommentLinksToSpecialSearch } from './addCommentLinks';
 import bootManager from './bootManager';
 import cd from './cd';
 import debug from './debug';
-import { mergeRegexps, typedKeysOf, unique } from './shared/utils-general';
-import { getFooter } from './utils-window';
 
-/** @type {typeof import('../config/default').default} */
+/** @type {typeof import('../../config/default').default} */
 let config;
 
 if (SINGLE_LANG_CODE) {
@@ -41,7 +41,7 @@ if (SINGLE_LANG_CODE) {
   );
 
   cd.i18n = (/** @type {I18n} */ {
-    en: require('../i18n/en.json'),
+    en: require('../../i18n/en.json'),
   });
   typedKeysOf(cd.i18n.en).forEach((name) => {
     cd.i18n.en[name] = replaceEntities(cd.i18n.en[name]);
@@ -73,7 +73,7 @@ async function setStrings() {
   ];
 
   if (!SINGLE_LANG_CODE) {
-    await import('../dist/convenientDiscussions-i18n/en');
+    await import('../../dist/convenientDiscussions-i18n/en');
   }
   const strings = Object.keys(cd.i18n.en).reduce((acc, name) => {
     const lang = contentStrings.some((contentStringName) => (
@@ -334,7 +334,7 @@ async function app() {
     cd.config = config;
   }
 
-  cd.g = /** @type {import('./shared/cd').GlobalProps} */ ({});
+  cd.g = /** @type {import('../shared/cd').GlobalProps} */ ({});
 
   debug.init();
   debug.startTimer('total time');

@@ -1,7 +1,7 @@
 import CommentActions from './CommentActions';
 import CommentButton from './CommentButton';
 import PrototypeRegistry from './PrototypeRegistry';
-import cd from './cd';
+import cd from './loader/cd';
 import { createSvg } from './utils-window';
 
 /**

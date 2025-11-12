@@ -1,5 +1,5 @@
 import BaseAutocomplete from './BaseAutocomplete';
-import cd from './cd';
+import cd from './loader/cd';
 import { defined, ucFirst } from './shared/utils-general';
 import userRegistry from './userRegistry';
 import { handleApiReject } from './utils-api';

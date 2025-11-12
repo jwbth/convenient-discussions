@@ -1,4 +1,4 @@
-import cd from './cd';
+import cd from './loader/cd';
 
 /**
  * A MediaWiki user. Is structurally similar to

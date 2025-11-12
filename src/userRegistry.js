@@ -6,7 +6,7 @@
 
 import StorageItem from './StorageItem';
 import User from './User';
-import cd from './cd';
+import cd from './loader/cd';
 import CdError from './shared/CdError';
 import { subtractDaysFromNow, ucFirst, underlinesToSpaces } from './shared/utils-general';
 import { handleApiReject } from './utils-api';

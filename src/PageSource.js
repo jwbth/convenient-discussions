@@ -1,4 +1,4 @@
-import cd from './cd';
+import cd from './loader/cd';
 import CdError from './shared/CdError';
 import { parseTimestamp } from './shared/utils-timestamp';
 import { maskDistractingCode } from './shared/utils-wikitext';

@@ -7,7 +7,7 @@
  */
 
 import Comment from './Comment';
-import cd from './cd';
+import cd from './loader/cd';
 import commentManager from './commentManager';
 import sectionManager from './sectionManager';
 import { defined, sleep, underlinesToSpaces } from './shared/utils-general';

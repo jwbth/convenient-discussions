@@ -1,6 +1,6 @@
 import Button from './Button';
 import Subscriptions from './Subscriptions';
-import cd from './cd';
+import cd from './loader/cd';
 import sectionManager from './sectionManager';
 import { definedAndNotNull, spacesToUnderlines, unique } from './shared/utils-general';
 import { handleApiReject, splitIntoBatches } from './utils-api';

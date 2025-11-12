@@ -5,13 +5,14 @@
  * @module convenientDiscussions
  */
 
-import Comment from './Comment';
+import Comment from '../Comment';
 import bootManager from './bootManager';
 import cd from './cd';
 import debug from './debug';
-import pageRegistry from './pageRegistry';
-import { buildEditSummary, getQueryParamBooleanValue, underlinesToSpaces } from './shared/utils-general';
-import { wrapDiffBody, wrapHtml } from './utils-window';
+import pageRegistry from '../pageRegistry';
+import { buildEditSummary, getQueryParamBooleanValue, underlinesToSpaces } from '../shared/utils-general';
+import { wrapDiffBody, wrapHtml } from '../utils-window';
+
 import workerCode from './worker/worker-gate?worker&inline-string';
 
 const mwStringsCache = /** @type {StringsByKey} */ ({});
@@ -83,11 +84,11 @@ const convenientDiscussionsWindow = {
    */
 
   /**
-   * @typedef {SOptions | import('types-mediawiki/mw/user').User | import('./User').default | undefined} SLastArg
+   * @typedef {SOptions | import('types-mediawiki/mw/user').User | import('../User').default | undefined} SLastArg
    */
 
   /**
-   * @typedef {import('./User').default} User
+   * @typedef {import('../User').default} User
    */
 
   /**
@@ -456,7 +457,7 @@ const globalProperties = {
   popularInlineElements: ['A', 'ABBR', 'B', 'BDI', 'BIG', 'BR', 'BUTTON', 'CITE', 'CODE', 'DEL', 'EM', 'FONT', 'I', 'IMG', 'INS', 'KBD', 'MARK', 'MW:DT-TIMESTAMPLINK', 'Q', 'RT', 'RP', 'RUBY', 'S', 'SAMP', 'SMALL', 'SPAN', 'STRIKE', 'STRONG', 'SUB', 'SUP', 'TIME', 'TT', 'U', 'VAR'],
 
   /**
-   * @typedef {typeof import('../config/default').default} DefaultConfig
+   * @typedef {typeof import('../../config/default').default} DefaultConfig
    */
 
   /**

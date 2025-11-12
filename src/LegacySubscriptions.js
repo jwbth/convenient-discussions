@@ -1,8 +1,8 @@
 import LZString from 'lz-string';
 
 import Subscriptions from './Subscriptions';
-import bootManager from './bootManager';
-import cd from './cd';
+import bootManager from './loader/bootManager';
+import cd from './loader/cd';
 import sectionManager from './sectionManager';
 import CdError from './shared/CdError';
 import { typedKeysOf } from './shared/utils-general';

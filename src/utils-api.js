@@ -7,7 +7,7 @@
  */
 
 import TextMasker from './TextMasker';
-import cd from './cd';
+import cd from './loader/cd';
 import CdError from './shared/CdError';
 import { unique } from './shared/utils-general';
 import { brsToNewlines } from './shared/utils-wikitext';

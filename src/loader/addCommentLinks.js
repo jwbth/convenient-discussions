@@ -4,12 +4,13 @@
  * @module addCommentLinks
  */
 
-import PrototypeRegistry from './PrototypeRegistry';
+import PrototypeRegistry from '../PrototypeRegistry';
+import { definedAndNotNull, generatePageNamePattern, isProbablyTalkPage, isUndo, removeDirMarks, spacesToUnderlines } from '../shared/utils-general';
+import { parseTimestamp } from '../shared/utils-timestamp';
+import { initDayjs } from '../utils-window';
+
 import bootManager from './bootManager';
 import cd from './cd';
-import { definedAndNotNull, generatePageNamePattern, isProbablyTalkPage, isUndo, removeDirMarks, spacesToUnderlines } from './shared/utils-general';
-import { parseTimestamp } from './shared/utils-timestamp';
-import { initDayjs } from './utils-window';
 
 /** @type {string} */
 let colon;
@@ -23,14 +24,15 @@ let goToCommentToYou;
 let goToCommentWatchedSection;
 /** @type {RegExp} */
 let currentUserRegexp;
-/** @type {import('./LegacySubscriptions').default | undefined} */
+/** @type {import('../LegacySubscriptions').default | undefined} */
 let subscriptions;
 
 /**
  * @type {PrototypeRegistry<{
  *   wrapperRegular: HTMLElement
  *   wrapperRelevant: HTMLElement
-  }>} */
+ * }>}
+ */
 const prototypes = new PrototypeRegistry();
 
 /**
@@ -39,7 +41,7 @@ const prototypes = new PrototypeRegistry();
  * @private
  */
 async function init() {
-  const settings = (await import('./settings')).default;
+  const settings = (await import('../settings')).default;
 
   // This could have been executed from init.talkPage() already.
   bootManager.initGlobals();
@@ -50,8 +52,8 @@ async function init() {
   if (cd.user.isRegistered() && !settings.get('useTopicSubscription')) {
     // Loading the subscriptions is not critical, as opposed to messages, so we catch the possible
     // error, not letting it be caught by the try/catch block.
-    subscriptions = /** @type {import('./LegacySubscriptions').default} */ (
-      (await import('./pageController')).default.getSubscriptionsInstance()
+    subscriptions = /** @type {import('../LegacySubscriptions').default} */ (
+      (await import('../pageController')).default.getSubscriptionsInstance()
     );
     requests.push(subscriptions.load(undefined, true).catch(() => {}));
   }
@@ -215,7 +217,7 @@ function addWatchlistMenu() {
   });
   settingsButton.on('click', async () => {
     initDayjs();
-    (await import('./settings')).default.showDialog();
+    (await import('../settings')).default.showDialog();
   });
   settingsButton.$element.appendTo($menu);
 
@@ -473,8 +475,8 @@ async function processContributions($content) {
   await bootManager.initTimestampParsingTools('user');
   if (cd.g.uiTimezone === undefined) return;
 
-  const Comment = (await import('./Comment')).default;
-  const pageRegistry = (await import('./pageRegistry')).default;
+  const Comment = (await import('../Comment')).default;
+  const pageRegistry = (await import('../pageRegistry')).default;
 
   [
     ...$content[0].querySelectorAll('.mw-contributions-list > li:not(.mw-tag-mw-new-redirect)'),
@@ -548,7 +550,7 @@ async function processHistory($content) {
   await bootManager.initTimestampParsingTools('user');
   if (cd.g.uiTimezone === undefined) return;
 
-  const Comment = (await import('./Comment')).default;
+  const Comment = (await import('../Comment')).default;
 
   const link = cd.page.getUrl();
   [
@@ -619,7 +621,7 @@ async function processHistory($content) {
  * @private
  */
 async function processDiff($diff) {
-  const pageController = (await import('./pageController')).default;
+  const pageController = (await import('../pageController')).default;
 
   // Filter out cases when wikipage.diff was fired for the native MediaWiki's diff at the top of
   // the page that is a diff page (unless only a diff, and no content, is displayed - if
@@ -634,9 +636,9 @@ async function processDiff($diff) {
   }
   if (cd.g.uiTimezone === undefined) return;
 
-  const Comment = (await import('./Comment')).default;
-  const pageRegistry = (await import('./pageRegistry')).default;
-  const commentManager = (await import('./commentManager')).default;
+  const Comment = (await import('../Comment')).default;
+  const pageRegistry = (await import('../pageRegistry')).default;
+  const commentManager = (await import('../commentManager')).default;
 
   const $root = $diff || bootManager.$content;
   const root = $root[0];
@@ -671,7 +673,7 @@ async function processDiff($diff) {
 
       const id = Comment.generateId(date, author);
 
-      /** @type {import('./Comment').default | undefined} */
+      /** @type {import('../Comment').default | undefined} */
       let comment;
       let page;
       if ($diff) {
