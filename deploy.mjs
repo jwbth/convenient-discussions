@@ -169,6 +169,72 @@ const clients = {
  * @property {string} password
  */
 
+try {
+  await main();
+} catch (err) {
+  if (err instanceof Error) {
+    console.error(err.message);
+  } else {
+    console.error(err);
+  }
+  throw err;
+}
+
+/**
+ * Main deployment function.
+ */
+async function main() {
+  let branch = '';
+  let commits = /** @type {Commit[]} */ ([]);
+  let newCommitsCount = 0;
+  let newCommitsSubjects = /** @type {string[]} */ ([]);
+
+  if (!configsOnly) {
+    const { stdout, stderr } = await execAsync(
+      'git rev-parse --abbrev-ref HEAD && git log -n 1000 --pretty=format:"%h%n%s%nrefs: %D%n" --abbrev=8'
+    );
+
+    if (stdout === '') {
+      throw error('This does not look like a git repo');
+    }
+
+    if (stderr) {
+      throw error(stderr);
+    }
+
+    ({ branch, commits } = parseGitOutput(stdout));
+    ({ newCommitsCount, newCommitsSubjects } = await getLastDeployedCommit(commits));
+  }
+
+  const edits = getMainEdits(branch, commits, newCommitsCount, newCommitsSubjects)
+    .concat(await getConfigsEdits());
+
+  const overview = edits.map(createEditOverview).join('\n');
+  console.log(`Gonna make these edits:\n\n${overview}`);
+
+  if (dryRun) return;
+
+  if (!process.env.CI) {
+    const { confirm } = await prompts({
+      type: 'confirm',
+      name: 'confirm',
+      message: 'Proceed?',
+    });
+
+    if (!confirm) return;
+  }
+
+  const credentials = await getCredentials();
+  const servers = edits.map((edit) => edit.server).filter(unique);
+
+  for (const server of servers) {
+    await logIn(server, credentials);
+    await deployToServer(edits.filter((edit) => edit.server === server));
+  }
+
+  success('The files have been successfully deployed');
+}
+
 /**
  * Parse git output to get branch and commits.
  *
@@ -504,67 +570,3 @@ async function deployToServer(serverEdits) {
     }
   }
 }
-
-/**
- * Main deployment function.
- */
-async function main() {
-  let branch = '';
-  let commits = /** @type {Commit[]} */ ([]);
-  let newCommitsCount = 0;
-  let newCommitsSubjects = /** @type {string[]} */ ([]);
-
-  if (!configsOnly) {
-    const { stdout, stderr } = await execAsync(
-      'git rev-parse --abbrev-ref HEAD && git log -n 1000 --pretty=format:"%h%n%s%nrefs: %D%n" --abbrev=8'
-    );
-
-    if (stdout === '') {
-      throw error('This does not look like a git repo');
-    }
-
-    if (stderr) {
-      throw error(stderr);
-    }
-
-    ({ branch, commits } = parseGitOutput(stdout));
-    ({ newCommitsCount, newCommitsSubjects } = await getLastDeployedCommit(commits));
-  }
-
-  const edits = getMainEdits(branch, commits, newCommitsCount, newCommitsSubjects)
-    .concat(await getConfigsEdits());
-
-  const overview = edits.map(createEditOverview).join('\n');
-  console.log(`Gonna make these edits:\n\n${overview}`);
-
-  if (dryRun) return;
-
-  if (!process.env.CI) {
-    const { confirm } = await prompts({
-      type: 'confirm',
-      name: 'confirm',
-      message: 'Proceed?',
-    });
-
-    if (!confirm) return;
-  }
-
-  const credentials = await getCredentials();
-  const servers = edits.map((edit) => edit.server).filter(unique);
-
-  for (const server of servers) {
-    await logIn(server, credentials);
-    await deployToServer(edits.filter((edit) => edit.server === server));
-  }
-
-  success('The files have been successfully deployed');
-}
-
-main().catch((/** @type {unknown} */ err) => {
-  if (err instanceof Error) {
-    console.error(err.message);
-  } else {
-    console.error(err);
-  }
-  throw err;
-});
