@@ -6,7 +6,9 @@ import type CheckboxInputWidget from './CheckboxInputWidget';
 import type Comment from './Comment';
 import type CommentForm from './CommentForm';
 import type { CommentFormMode } from './CommentForm';
+import type CommentSource from './CommentSource';
 import type Section from './Section';
+import type SectionSource from './SectionSource';
 import type TextInputWidget from './TextInputWidget';
 import type { ConvenientDiscussions } from './loader/cd';
 
@@ -535,6 +537,61 @@ declare global {
      * @returns Identifying data object, or undefined if not applicable
      */
     getIdentifyingData(): AnyByKey | undefined;
+  }
+
+  /**
+   * Common interface for CommentSource, SectionSource, and PageSource classes.
+   * These classes manage the source code (wikitext) for comments, sections, and pages.
+   *
+   * This interface represents objects that handle the wikitext source code and provide
+   * methods to modify it when adding, editing, or deleting content. The three implementations are:
+   * - CommentSource: for managing comment source code and locating comments in wikitext
+   * - SectionSource: for managing section source code and locating sections in wikitext
+   * - PageSource: for managing page source code
+   */
+  interface Source {
+    /**
+     * Modify the context code (section or page wikitext) in accordance with an action.
+     * This is the core method for transforming wikitext when adding or editing content.
+     *
+     * The method signature varies slightly by implementation:
+     * - CommentSource: supports 'reply' and 'edit' actions, with delete capability
+     * - SectionSource: supports 'replyInSection' and 'addSubsection' actions
+     * - PageSource: supports 'addSection' action (implicit)
+     *
+     * @returns Object containing the modified context code and optionally the comment code
+     */
+    modifyContext(options: {
+      action?: CommentFormMode;
+      commentCode?: string;
+      commentForm?: CommentForm;
+      doDelete?: boolean;
+      contextCode?: string;
+    }): {
+      contextCode: string;
+      commentCode?: string;
+    };
+  }
+
+  /**
+   * Extended interface for source classes that support matching/locating in wikitext.
+   * CommentSource and SectionSource implement this, but PageSource does not.
+   */
+  interface MatchableSource extends Source {
+    /**
+     * Calculate and return a match score for this source candidate.
+     * Used when locating comments/sections in wikitext to find the best match among candidates.
+     *
+     * The method signature varies by implementation:
+     * - CommentSource: takes comment data, sources array, and signatures array
+     * - SectionSource: takes section index, headline, and headlines array
+     *
+     * @returns Object containing this source and its calculated match score
+     */
+    calculateMatchScore(...args: unknown[]): {
+      source: CommentSource | SectionSource;
+      score: number;
+    };
   }
 }
 
