@@ -68,19 +68,27 @@
   }
 
   // Need to override default MediaWiki styles
-  &-icon.cd-comment-button-icon {
+  &-icon.cd-comment-button-icon.cd-comment-button-icon {
     display: inline-block;
     align-self: center;
     margin-bottom: -1px;
-    color: var(--border-color-base, #a2a9b1);
+    color: var(--color-subtle, #54595d);
+    text-decoration: none;
+    border-color: var(--border-color-transparent, transparent);
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 2px;
+    -webkit-touch-callout: none;
 
     &:hover {
-      color: var(--color-progressive, #36c);
+      background-color: var(--background-color-button-quiet--hover, rgba(0, 24, 73, 0.027));
     }
 
-    &:active {
-      // TODO: replace with a CSS variable once it becomes available
-      color: #faa700;
+    // Override .cd-button-progressive.cd-button-progressive.cd-button-progressive.cd-button-progressive
+    &:active:active {
+      background-color: var(--background-color-button-quiet--active, rgba(0, 24, 73, 0.082));
+      border-color: var(--border-color-interactive, #72777d);
+      color: var(--color-emphasized, #000);
     }
   }
 }
