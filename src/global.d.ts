@@ -3,6 +3,10 @@
 import type { ApiResponse } from 'types-mediawiki/mw/Api';
 
 import type CheckboxInputWidget from './CheckboxInputWidget';
+import type Comment from './Comment';
+import type CommentForm from './CommentForm';
+import type { CommentFormMode } from './CommentForm';
+import type Section from './Section';
 import type TextInputWidget from './TextInputWidget';
 import type { ConvenientDiscussions } from './loader/cd';
 
@@ -427,6 +431,110 @@ declare global {
   interface JQueryStatic {
     _data(element: Element, key: string): any;
     wikiEditor: any;
+  }
+
+  /**
+   * Common interface for Comment, Section, and CurrentPage classes.
+   * These classes share methods related to comment form management and navigation.
+   *
+   * This interface represents objects that can be targets of comment forms - places where
+   * users can add or edit comments. The three implementations are:
+   * - Comment: for replying to or editing a specific comment
+   * - Section: for replying in a section or adding subsections
+   * - CurrentPage: for adding new top-level sections to a page
+   */
+  interface CommentFormTarget {
+    /**
+     * Whether the target is actionable (can be interacted with, replied to, etc.).
+     * False for closed discussions, old revisions, or transcluded content.
+     */
+    isActionable: boolean;
+
+    /**
+     * Get the relevant section for this target.
+     * - For Comment: returns the section containing the comment
+     * - For Section: returns itself
+     * - For CurrentPage: returns undefined
+     *
+     * @returns The relevant section, or undefined if not applicable
+     */
+    getRelevantSection(): Section | undefined;
+
+    /**
+     * Get the relevant comment for this target.
+     * - For Comment: returns itself
+     * - For Section: returns the first comment if it opens the section
+     * - For CurrentPage: returns undefined
+     *
+     * @returns The relevant comment, or undefined if not applicable
+     */
+    getRelevantComment(): Comment | undefined;
+
+    /**
+     * Add a comment form to the page DOM at the appropriate location for this target.
+     *
+     * @param mode The mode of the comment form (e.g., 'reply', 'edit', 'addSection')
+     * @param commentForm The comment form to add
+     */
+    addCommentFormToPage(mode: CommentFormMode, commentForm: CommentForm): void;
+
+    /**
+     * Clean up any DOM modifications made when adding a comment form.
+     *
+     * @param mode The mode of the comment form being cleaned up
+     */
+    cleanUpCommentFormTraces(mode: CommentFormMode): void;
+
+    /**
+     * Get the comment that will appear directly above a new comment being added.
+     * Used for proper indentation and threading.
+     *
+     * @param commentForm The comment form being used to add a comment
+     * @returns The comment above, or undefined if adding at the top
+     */
+    getCommentAboveCommentToBeAdded(commentForm: CommentForm): Comment | undefined;
+
+    /**
+     * Get the method name to call on the target to add a comment form.
+     * Used to determine which method to invoke (e.g., 'reply', 'edit', 'addSection').
+     *
+     * @param mode The mode of the comment form
+     * @returns The method name to call
+     */
+    getCommentFormMethodName(mode: CommentFormMode): string;
+
+    /**
+     * Get the placeholder text for the comment form's headline input.
+     *
+     * @param mode The mode of the comment form
+     * @returns The placeholder text
+     */
+    getCommentFormHeadlineInputPlaceholder(mode?: CommentFormMode): string;
+
+    /**
+     * Get the placeholder text for the comment form's comment input.
+     *
+     * @param mode The mode of the comment form
+     * @param callback Optional callback for dynamic placeholder generation
+     * @returns The placeholder text, or undefined if no placeholder should be shown
+     */
+    getCommentFormCommentInputPlaceholder(mode?: CommentFormMode, callback?: () => void): string | undefined;
+
+    /**
+     * Get the comment that is visually the target of the comment form.
+     * Used for scrolling and visual feedback.
+     *
+     * @returns The target comment, or undefined if not applicable
+     */
+    getCommentFormTargetComment(): Comment | undefined;
+
+    /**
+     * Get data that uniquely identifies this target for restoring comment forms.
+     * Used when saving and restoring draft comment forms.
+     *
+     * @returns Identifying data object, or undefined if not applicable
+     */
+    getIdentifyingData(): AnyByKey | undefined;
   }
 }
 
