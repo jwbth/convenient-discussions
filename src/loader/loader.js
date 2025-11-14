@@ -61,7 +61,7 @@ if (SINGLE_LANG_CODE) {
 }
 
 /**
- * Add the script's strings to `mw.messages`.
+ * Add the script's strings to {@link external:mw.messages}.
  *
  * @private
  */
@@ -269,8 +269,8 @@ function getConfig() {
 }
 
 /**
- * Load and add localization strings to the `cd.i18n` object. Use fallback languages if default
- * languages are unavailable.
+ * Load and add localization strings to the {@link module:cd.i18n} object. Use fallback languages
+ * if default languages are unavailable.
  *
  * @returns {Promise<any[]|void>}
  * @private

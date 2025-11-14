@@ -274,7 +274,7 @@ class UpdateChecker extends EventEmitter {
 
   /**
    * Map sections obtained from a revision to the sections present on the rendered page. (Contrast
-   * with `UpdateChecker#mapWorkerCommentsToWorkerComments` which maps CommentWorker objects
+   * with {@link UpdateChecker#mapWorkerCommentsToWorkerComments} which maps CommentWorker objects
    * together.)
    *
    * @param {import('./worker/SectionWorker').default[] | SectionWorkerMatched[]} workerSections
@@ -380,8 +380,8 @@ class UpdateChecker extends EventEmitter {
   /**
    * Map comments obtained from the current revision to comments obtained from another revision
    * (newer or older) by adding the `match` property to the first ones. (Contrast with
-   * `updateChecker#mapWorkerSectionsToSections` which maps SectionWorker objects to actual sections
-   * on the page.)
+   * {@link UpdateChecker#mapWorkerSectionsToSections} which maps SectionWorker objects to actual
+   * sections on the page.)
    *
    * The function also adds the `hasPoorMatch` property to comments that have possible matches that
    * are not good enough to confidently state a match.

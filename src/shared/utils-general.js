@@ -151,9 +151,10 @@ export function generatePageNamePattern(string) {
 /**
  * Check if a page is probably a talk page. The namespace number is required.
  *
- * This function exists mostly because we can't be sure the `mediawiki.Title` module has loaded when
- * the script has started executing (and can't use the {@link Page} constructor), and we need to
- * make this check fast. So, in most cases, {@link Page#isProbablyTalkPage} should be used.
+ * This function exists mostly because we can't be sure the {@link external:mediawiki.Title} module
+ * has loaded when the script has started executing (and can't use the {@link Page} constructor),
+ * and we need to make this check fast. So, in most cases, {@link Page#isProbablyTalkPage} should
+ * be used.
  *
  * @param {string} pageName
  * @param {number} namespaceNumber
@@ -550,7 +551,7 @@ export function removeFromArrayIfPresent(arr, el) {
  * If the argument is an array, return its last element. Otherwise, return the value. (To process
  * {@link https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/getAll URLSearchParams#getAll}
  * return value. In MediaWiki, if there is more than one parameter with some name, the second value
- * of the parameter is used, while with `URLSearchParams#get` it is the first one.)
+ * of the parameter is used, while with {@link external:URLSearchParams#get} it is the first one.)
  *
  * @param {string|string[]} value
  * @returns {string | undefined}

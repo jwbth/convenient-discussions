@@ -246,7 +246,7 @@ class PageController extends EventEmitter {
   /**
    * Get the content root element (`.mw-parser-output` or `#mw-content-text`). Supposed to be used
    * via {@link convenientDiscussions.api.getRootElement}; inside the script, direct reference to
-   * `pageController.rootElement` is practiced.
+   * {@link module:pageController.rootElement} is practiced.
    *
    * @returns {Element}
    */
@@ -1251,7 +1251,7 @@ class PageController extends EventEmitter {
   }
 
   /**
-   * Show a regular notification (`mw.notification`) to the user.
+   * Show a regular notification ({@link external:mw.notification}) to the user.
    *
    * @param {import('./updateChecker').CommentWorkerNew[]} comments
    * @private
