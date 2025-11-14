@@ -1,8 +1,9 @@
 import { exec } from 'node:child_process';
 import fs from 'node:fs';
+import { promisify } from 'node:util';
 
 import chalk from 'chalk';
-import Mw from 'nodemw';
+import { Mwn } from 'mwn';
 // https://github.com/import-js/eslint-plugin-import/issues/1594
 // eslint-disable-next-line import/no-named-as-default
 import prompts from 'prompts';
@@ -11,6 +12,8 @@ import { hideBin } from 'yargs/helpers';
 
 import config from './config.mjs';
 import { getUrl, unique } from './misc/utils.mjs';
+
+const execAsync = promisify(exec);
 
 const argv = /** @type {YargsNonAwaited} */ (yargs(hideBin(process.argv)).argv);
 
@@ -113,24 +116,24 @@ if (process.env.CI) {
 }
 
 const clients = {
-  [config.main.server]: new Mw({
-    protocol: config.protocol,
-    server: config.main.server,
-    path: config.scriptPath,
-    proxy: config.proxy,
-    debug,
+  [config.main.server]: new Mwn({
+    apiUrl: `${config.protocol}://${config.main.server}${config.scriptPath}/api.php`,
+    silent: !debug,
   }),
   ...config.configs.reduce((obj, wikiConfig) => {
-    obj[wikiConfig.server] = new Mw({
-      protocol: 'protocol' in wikiConfig ? wikiConfig.protocol : config.protocol,
-      server: wikiConfig.server,
-      path: 'scriptPath' in wikiConfig ? wikiConfig.scriptPath : config.scriptPath,
-      proxy: config.proxy,
-      debug,
+    const protocol = 'protocol' in wikiConfig && wikiConfig.protocol
+      ? wikiConfig.protocol
+      : config.protocol;
+    const scriptPath = 'scriptPath' in wikiConfig && wikiConfig.scriptPath
+      ? wikiConfig.scriptPath
+      : config.scriptPath;
+    obj[wikiConfig.server] = new Mwn({
+      apiUrl: `${protocol}://${wikiConfig.server}${scriptPath}/api.php`,
+      silent: !debug,
     });
 
     return obj;
-  }, /** @type {{ [x: string]: Mw }} */ ({})),
+  }, /** @type {{ [x: string]: Mwn }} */ ({})),
 };
 
 /**
@@ -158,47 +161,16 @@ const clients = {
  * @property {string} password
  */
 
-/** @type {string} */
-let branch;
-/** @type {Commit[]} */
-let commits;
-/** @type {number} */
-let newCommitsCount;
-/** @type {string[]} */
-let newCommitsSubjects;
-/** @type {Edit[]} */
-let edits;
-/** @type {Credentials | undefined} */
-let credentials;
-/** @type {Credentials | undefined} */
-let credentialsResponse;
-/** @type {string[]} */
-let servers;
-
-if (configsOnly) {
-  prepareEdits();
-} else {
-  exec(
-    'git rev-parse --abbrev-ref HEAD && git log -n 1000 --pretty=format:"%h%n%s%nrefs: %D%n" --abbrev=8',
-    parseCmdOutput,
-  );
-}
-
 /**
- * @type {(error: import('node:child_process').ExecException | null, stdout: string, stderr: string) => void}
+ * Parse git output to get branch and commits.
+ *
+ * @param {string} stdout
+ * @returns {{ branch: string; commits: Commit[] }}
  */
-function parseCmdOutput(_err, stdout, stderr) {
-  if (stdout === '') {
-    throw error('parseCmdOutput(): This does not look like a git repo');
-  }
-
-  if (stderr) {
-    throw error(stderr);
-  }
-
-  branch = stdout.slice(0, stdout.indexOf('\n'));
-  stdout = stdout.slice(stdout.indexOf('\n') + 1);
-  commits = stdout
+function parseGitOutput(stdout) {
+  const branch = stdout.slice(0, stdout.indexOf('\n'));
+  const commitsText = stdout.slice(stdout.indexOf('\n') + 1);
+  const commits = commitsText
     .split('\n\n')
     .map((line) => {
       const match = line.match(/^(.+)\n(.+)\n(.+)/);
@@ -214,62 +186,69 @@ function parseCmdOutput(_err, stdout, stderr) {
       };
     });
 
-  requestComments();
-}
-
-function requestComments() {
-  clients[config.main.server].api.call(
-    {
-      action: 'query',
-      titles: pathPrefix + assets[0],
-      prop: 'revisions',
-      rvprop: ['comment'],
-      rvlimit: 50,
-      formatversion: 2,
-    },
-    (error, info) => {
-      if (error) {
-        throw error(error);
-      }
-      const revisions = info?.pages?.[0]?.revisions || [];
-      if (revisions.length || info?.pages?.[0]?.missing) {
-        getLastDeployedCommit(revisions);
-      } else {
-        console.log('Couldn\'t load the revisions data');
-      }
-    },
-  );
+  return { branch, commits };
 }
 
 /**
+ * Get the last deployed commit from revision history.
  *
- * @param {Revision<['comment']>[]} revisions
+ * @param {Commit[]} commits
+ * @returns {Promise<{ newCommitsCount: number; newCommitsSubjects: string[] }>}
  */
-function getLastDeployedCommit(revisions) {
+async function getLastDeployedCommit(commits) {
+  if (!assets) {
+    return { newCommitsCount: 0, newCommitsSubjects: [] };
+  }
+
+  const response = await clients[config.main.server].request({
+    action: 'query',
+    titles: pathPrefix + assets[0],
+    prop: 'revisions',
+    rvprop: ['comment'],
+    rvlimit: 50,
+    formatversion: 2,
+  });
+
+  if (!response.query) {
+    console.log('Couldn\'t load the revisions data');
+
+    return { newCommitsCount: 0, newCommitsSubjects: [] };
+  }
+
+  const revisions = response.query.pages[0].revisions || [];
+  if (!revisions.length && !response.query.pages[0].missing) {
+    console.log('Couldn\'t load the revisions data');
+
+    return { newCommitsCount: 0, newCommitsSubjects: [] };
+  }
+
   const lastDeployedCommitOrVersion = revisions
     .map(
-      (revision) =>
+      (/** @type {{ comment: string }} */ revision) =>
         ((/[uU]pdate to (?:([0-9a-f]{8})(?= @ )|v\d+\.\d+\.\d+\b)/.exec(revision.comment)) || [])[1]
     )
     .find(Boolean);
-  if (lastDeployedCommitOrVersion) {
-    newCommitsCount = commits.findIndex((commit) =>
-      commit.hash === lastDeployedCommitOrVersion ||
-      commit.tag === lastDeployedCommitOrVersion
-    );
-    if (newCommitsCount === -1) {
-      newCommitsCount = 0;
-    }
-    newCommitsSubjects = commits
-      .slice(0, newCommitsCount)
-      .map((commit) => commit.subject)
-      .filter((commit) => (
-        !/^(Merge branch|Merge pull request|Localisation updates|Bump |deploy:|build:|configs?:|tests?:|jsdoc:|chore:|docs:|i18n:)/.test(commit)
-      ));
-    newCommitsCount = newCommitsSubjects.length;
+
+  if (!lastDeployedCommitOrVersion) {
+    return { newCommitsCount: 0, newCommitsSubjects: [] };
   }
 
-  prepareEdits();
+  let newCommitsCount = commits.findIndex((commit) =>
+    commit.hash === lastDeployedCommitOrVersion ||
+    commit.tag === lastDeployedCommitOrVersion
+  );
+  if (newCommitsCount === -1) {
+    newCommitsCount = 0;
+  }
+
+  const newCommitsSubjects = commits
+    .slice(0, newCommitsCount)
+    .map((commit) => commit.subject)
+    .filter((commit) => (
+      !/^(Merge branch|Merge pull request|Localisation updates|Bump |deploy:|build:|configs?:|tests?:|jsdoc:|chore:|docs:|i18n:)/.test(commit)
+    ));
+
+  return { newCommitsCount: newCommitsSubjects.length, newCommitsSubjects };
 }
 
 /**
@@ -283,79 +262,95 @@ function cutContent(content, n = 300) {
   return content.slice(0, n) + (content.length > n ? '...' : '');
 }
 
-function getMainEdits() {
-  return configsOnly
-    ? []
-    : assets
-        .flatMap((file) => {
-          if ((noI18n && file.endsWith('i18n/')) || (i18nOnly && !file.endsWith('i18n/'))) {
-            return [];
+/**
+ * Get edits for main files.
+ *
+ * @param {string} branch
+ * @param {Commit[]} commits
+ * @param {number} newCommitsCount
+ * @param {string[]} newCommitsSubjects
+ * @returns {Edit[]}
+ */
+function getMainEdits(branch, commits, newCommitsCount, newCommitsSubjects) {
+  if (configsOnly || !assets) {
+    return [];
+  }
+
+  return assets
+    .flatMap((file) => {
+      if ((noI18n && file.endsWith('i18n/')) || (i18nOnly && !file.endsWith('i18n/'))) {
+        return [];
+      }
+
+      if (file.endsWith('/')) {
+        return fs.readdirSync(`./dist/${file}`).map((fileInDir) => file + fileInDir);
+      }
+
+      return file;
+    })
+    .map((file, i) => {
+      /** @type {string} */
+      let content;
+      try {
+        content = fs.readFileSync(`./dist/${file}`, 'utf8');
+      } catch {
+        throw error(`Asset is not found: ${keyword(file)}`);
+      }
+
+      if (!file.includes('i18n/')) {
+        const [tildesMatch] = content.match(/~~~~.{0,100}/) || [];
+        const [substMatch] = content.match(/\{\{(safe)?subst:.{0,100}/) || [];
+        const [nowikiMatch] =
+
+          content
+          // Ignore the "// </nowiki>" piece, added from the both sides of the build.
+            .replace(/\/(?:\*!?|\/) <\/nowiki>/g, '')
+            .match(/<\/nowiki>.{0,100}/) ||
+            [];
+        if (tildesMatch || substMatch) {
+          const snippet = code(tildesMatch || substMatch);
+          if (nowikiMatch) {
+            throw error(`${keyword(file)} contains illegal strings (tilde sequences or template substitutions) that may break the code when saving to the wiki:\n${snippet}\nWe also can't use "${code('// <nowiki>')}" in the beginning of the file, because there are "${code('</nowiki')}" strings in the code that would limit the scope of the nowiki tag.\n`);
+          } else {
+            warning(`Note that ${keyword(file)} contains illegal strings (tilde sequences or template substitutions) that may break the code when saving to the wiki:\n${snippet}\n\nThese strings will be neutralized by using "${code('// <nowiki>')}" in the beginning of the file this time though.\n`);
           }
+        }
+        if (nowikiMatch) {
+          warning(`Note that ${keyword(file)} contains the "${code('</nowiki')}" string that will limit the scope of the nowiki tag that we put in the beginning of the file:\n${code(nowikiMatch)}\n`);
+        }
+      }
 
-          if (file.endsWith('/')) {
-            return fs.readdirSync(`./dist/${file}`).map((fileInDir) => file + fileInDir);
-          }
+      /**
+       * @param {number} count
+       * @param {string} word
+       * @returns {string}
+       */
+      const pluralize = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
 
-          return file;
-        })
-        .map((file, i) => {
-          /** @type {string} */
-          let content;
-          try {
-            content = fs.readFileSync(`./dist/${file}`, 'utf8');
-          } catch {
-            throw error(`Asset is not found: ${keyword(file)}`);
-          }
+      const commitString = `${commits[0].hash} @ ${branch}`;
+      let summary = process.env.CI
+        ? `Automatically update to ${version || commitString}`
+        : `Update to ${commitString}`;
+      if (i === 0 && newCommitsCount) {
+        summary += `. ${pluralize(newCommitsCount, 'commit')}: ${newCommitsSubjects.join('. ')}`;
+      }
 
-          if (!file.includes('i18n/')) {
-            const [tildesMatch] = content.match(/~~~~.{0,100}/) || [];
-            const [substMatch] = content.match(/\{\{(safe)?subst:.{0,100}/) || [];
-            const [nowikiMatch] =
-
-              content
-              // Ignore the "// </nowiki>" piece, added from the both sides of the build.
-                .replace(/\/(?:\*!?|\/) <\/nowiki>/g, '')
-                .match(/<\/nowiki>.{0,100}/) ||
-                [];
-            if (tildesMatch || substMatch) {
-              const snippet = code(tildesMatch || substMatch);
-              if (nowikiMatch) {
-                throw error(`${keyword(file)} contains illegal strings (tilde sequences or template substitutions) that may break the code when saving to the wiki:\n${snippet}\nWe also can't use "${code('// <nowiki>')}" in the beginning of the file, because there are "${code('</nowiki')}" strings in the code that would limit the scope of the nowiki tag.\n`);
-              } else {
-                warning(`Note that ${keyword(file)} contains illegal strings (tilde sequences or template substitutions) that may break the code when saving to the wiki:\n${snippet}\n\nThese strings will be neutralized by using "${code('// <nowiki>')}" in the beginning of the file this time though.\n`);
-              }
-            }
-            if (nowikiMatch) {
-              warning(`Note that ${keyword(file)} contains the "${code('</nowiki')}" string that will limit the scope of the nowiki tag that we put in the beginning of the file:\n${code(nowikiMatch)}\n`);
-            }
-          }
-
-          /**
-           * @param {number} count
-           * @param {string} word
-           * @returns {string}
-           */
-          const pluralize = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`;
-
-          const commitString = `${commits[0].hash} @ ${branch}`;
-          let summary = process.env.CI
-            ? `Automatically update to ${version || commitString}`
-            : `Update to ${commitString}`;
-          if (i === 0 && newCommitsCount) {
-            summary += `. ${pluralize(newCommitsCount, 'commit')}: ${newCommitsSubjects.join('. ')}`;
-          }
-
-          return {
-            server: config.main.server,
-            title: pathPrefix + file,
-            url: getUrl(config.main.server, pathPrefix + file),
-            content,
-            contentSnippet: cutContent(content),
-            summary,
-          };
-        });
+      return {
+        server: config.main.server,
+        title: pathPrefix + file,
+        url: getUrl(config.main.server, pathPrefix + file),
+        content,
+        contentSnippet: cutContent(content),
+        summary,
+      };
+    });
 }
 
+/**
+ * Get edits for config files.
+ *
+ * @returns {Promise<Edit[]>}
+ */
 async function getConfigsEdits() {
   if (noConfigs || i18nOnly) {
     return [];
@@ -364,21 +359,15 @@ async function getConfigsEdits() {
   const assetsWithGadgetsDefinition = configAssets.filter(
     (asset) => asset.target === 'MediaWiki:Gadgets-definition',
   );
-  /** @type {string[]} */
-  const contentStrings = await Promise.all(
-    assetsWithGadgetsDefinition.map((asset) => (
-      new Promise((resolve, reject) => {
-        clients[asset.server].getArticle(asset.target, (error, data) => {
-          if (error) {
-            reject(error);
 
-            return;
-          }
-          resolve(data);
-        });
-      })
-    )),
+  const contentStrings = await Promise.all(
+    assetsWithGadgetsDefinition.map(async (asset) => {
+      const response = await clients[asset.server].read(asset.target);
+
+      return response.revisions?.[0]?.content || '';
+    }),
   );
+
   contentStrings.forEach((content, i) => {
     const asset = assetsWithGadgetsDefinition[i];
     const modulesString = /** @type {string[]} */ (asset.modules).join(', ');
@@ -398,7 +387,8 @@ async function getConfigsEdits() {
   });
 
   return configAssets.map((asset) => {
-    const content = asset.content || fs.readFileSync(`./dist/${asset.source}`, 'utf8');
+    const source = asset.source || '';
+    const content = asset.content || fs.readFileSync(`./dist/${source}`, 'utf8');
 
     return {
       server: asset.server,
@@ -411,28 +401,6 @@ async function getConfigsEdits() {
         : 'Automatically update',
     };
   });
-}
-
-async function prepareEdits() {
-  edits = getMainEdits().concat(await getConfigsEdits());
-  const overview = edits.map(createEditOverview).join('\n');
-  console.log(`Gonna make these edits:\n\n${overview}`);
-
-  if (dryRun) return;
-
-  if (process.env.CI) {
-    logInToServers();
-  } else {
-    const { confirm } = await prompts({
-      type: 'confirm',
-      name: 'confirm',
-      message: 'Proceed?',
-    });
-
-    if (confirm) {
-      logInToServers();
-    }
-  }
 }
 
 /**
@@ -449,103 +417,144 @@ function createEditOverview(edit) {
   );
 }
 
-function logInToServers() {
-  servers = edits.map((edit) => edit.server).filter(unique);
-  loginToNextServer();
-}
-
-function loginToNextServer() {
-  const server = servers.shift();
-  if (server) {
-    logIn(server);
-  } else {
-    success('The files have been successfully deployed');
-  }
-}
-
 /**
- * @param {string} server
+ * Get credentials for login.
+ *
+ * @returns {Promise<Credentials>}
  */
-async function logIn(server) {
-  const callback = (error) => {
-    if (error) {
-      throw error(error);
-    }
-    deploy(server);
-  };
-
+async function getCredentials() {
   if (process.env.CI) {
-    clients[server].logIn(
-      /** @type {string} */ (process.env.USERNAME),
-      /** @type {string} */ (process.env.PASSWORD),
-      callback
-    );
-  } else {
-    credentials ||= fs.existsSync('./credentials.json')
-      // @ts-ignore
-      // eslint-disable-next-line import/no-unresolved
-      ? await import('./credentials.json')
-      : undefined;
-    if (credentials?.username && credentials.password) {
-      clients[server].logIn(credentials.username, credentials.password, callback);
-    } else {
-      if (!credentialsResponse) {
-        console.log(`User name and/or password were not found in ${keyword('credentials.json')}`);
-        credentialsResponse = await prompts([
-          {
-            type: 'text',
-            name: 'username',
-            message: 'Wikimedia user name',
-            validate: Boolean,
-          },
-          {
-            type: 'invisible',
-            name: 'password',
-            message: 'Password',
-            validate: Boolean,
-          },
-        ]);
-      }
-
-      // Ctrl+C leaves the password unspecified.
-      if (credentialsResponse.password) {
-        clients[server].logIn(credentialsResponse.username, credentialsResponse.password, callback);
-      }
-    }
+    return {
+      username: /** @type {string} */ (process.env.USERNAME),
+      password: /** @type {string} */ (process.env.PASSWORD),
+    };
   }
+
+  let credentials = fs.existsSync('./credentials.json')
+    // @ts-ignore
+    // eslint-disable-next-line import/no-unresolved
+    ? await import('./credentials.json', { with: { type: 'json' } }).then((m) => m.default)
+    : undefined;
+
+  if (credentials?.username && credentials.password) {
+    return credentials;
+  }
+
+  console.log(`User name and/or password were not found in ${keyword('credentials.json')}`);
+  credentials = await prompts([
+    {
+      type: 'text',
+      name: 'username',
+      message: 'Wikimedia user name',
+      validate: Boolean,
+    },
+    {
+      type: 'invisible',
+      name: 'password',
+      message: 'Password',
+      validate: Boolean,
+    },
+  ]);
+
+  // Ctrl+C leaves the password unspecified.
+  if (!credentials.password) {
+    throw error('Password is required');
+  }
+
+  return credentials;
 }
 
 /**
+ * Login to a server.
+ *
  * @param {string} server
+ * @param {Credentials} credentials
  */
-function deploy(server) {
-  editNext(edits.filter((edit) => edit.server === server));
+async function logIn(server, credentials) {
+  await clients[server].login(credentials);
 }
 
 /**
+ * Make edits for a specific server.
+ *
  * @param {Edit[]} serverEdits
  */
-function editNext(serverEdits) {
-  const edit = serverEdits.shift();
-  if (edit) {
-    clients[edit.server].edit(edit.title, edit.content, edit.summary, (err, info) => {
-      if (err) {
-        throw error(err.message);
-      }
+async function deployToServer(serverEdits) {
+  for (const edit of serverEdits) {
+    const response = await clients[edit.server].save(
+      edit.title,
+      edit.content,
+      edit.summary,
+    );
 
-      if (info && info.result === 'Success') {
-        if ('nochange' in info) {
-          success(`No changes in ${edit.url}`);
-        } else {
-          success(`Successfully edited ${edit.url} (edit timestamp: ${new Date(info.newtimestamp).toUTCString()})`);
-        }
-        editNext(serverEdits);
-      } else {
-        console.error(info);
-        throw error('Unknown error');
-      }
-    });
-  } else {
-    loginToNextServer();
+    if (response.nochange) {
+      success(`No changes in ${edit.url}`);
+    } else {
+      success(`Successfully edited ${edit.url} (edit timestamp: ${new Date(response.newtimestamp).toUTCString()})`);
+    }
   }
 }
+
+/**
+ * Main deployment function.
+ */
+async function main() {
+  let branch = '';
+  let commits = /** @type {Commit[]} */ ([]);
+  let newCommitsCount = 0;
+  let newCommitsSubjects = /** @type {string[]} */ ([]);
+
+  if (!configsOnly) {
+    const { stdout, stderr } = await execAsync(
+      'git rev-parse --abbrev-ref HEAD && git log -n 1000 --pretty=format:"%h%n%s%nrefs: %D%n" --abbrev=8'
+    );
+
+    if (stdout === '') {
+      throw error('This does not look like a git repo');
+    }
+
+    if (stderr) {
+      throw error(stderr);
+    }
+
+    ({ branch, commits } = parseGitOutput(stdout));
+    ({ newCommitsCount, newCommitsSubjects } = await getLastDeployedCommit(commits));
+  }
+
+  const edits = getMainEdits(branch, commits, newCommitsCount, newCommitsSubjects)
+    .concat(await getConfigsEdits());
+
+  const overview = edits.map(createEditOverview).join('\n');
+  console.log(`Gonna make these edits:\n\n${overview}`);
+
+  if (dryRun) return;
+
+  if (!process.env.CI) {
+    const { confirm } = await prompts({
+      type: 'confirm',
+      name: 'confirm',
+      message: 'Proceed?',
+    });
+
+    if (!confirm) return;
+  }
+
+  const credentials = await getCredentials();
+  const servers = edits.map((edit) => edit.server).filter(unique);
+
+  for (const server of servers) {
+    await logIn(server, credentials);
+    await deployToServer(edits.filter((edit) => edit.server === server));
+  }
+
+  success('The files have been successfully deployed');
+}
+
+main().catch((/** @type {unknown} */ err) => {
+  if (err instanceof Error) {
+    console.error(err.message);
+  } else {
+    console.error(err);
+  }
+  throw err;
+});

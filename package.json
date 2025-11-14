@@ -45,6 +45,7 @@
     "jest-environment-jsdom": "^30.1.2",
     "locutus": "^2.0.15",
     "lz-string": "^1.4.4",
+    "mwn": "^3.0.1",
     "oojs": "^7.0.1"
   },
   "devDependencies": {
@@ -92,7 +93,6 @@
     "json5": "^2.2.3",
     "less": "^4.4.2",
     "node-fetch": "^3.2.10",
-    "nodemw": "^0.24.1",
     "patch-package": "^8.0.0",
     "playwright": "^1.40.0",
     "prompts": "^2.4.2",
