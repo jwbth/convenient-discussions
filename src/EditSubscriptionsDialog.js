@@ -71,12 +71,8 @@ class EditSubscriptionsDialog extends ProcessDialog {
    * @ignore
    */
   getBodyHeight() {
-    return (
-      (this.$errorItems ? this.$errors[0].scrollHeight : this.$body[0].scrollHeight) +
-
-      // Fixes double scrollbar with some system font settings.
-      1
-    );
+    // `1` fixes double scrollbar with some system font settings.
+    return (this.$errorItems ? this.$errors[0].scrollHeight : this.$body[0].scrollHeight) + 1;
   }
 
   /**

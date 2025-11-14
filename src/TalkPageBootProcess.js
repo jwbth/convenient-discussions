@@ -7,11 +7,11 @@ import LegacySubscriptions from './LegacySubscriptions';
 import Section from './Section';
 import SpaciousComment from './SpaciousComment';
 import Thread from './Thread';
-import bootManager from './bootManager';
-import cd from './loader/cd';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
-import debug from './debug';
+import bootManager from './loader/bootManager';
+import cd from './loader/cd';
+import debug from './loader/debug';
 import navPanel from './navPanel';
 import notifications from './notifications';
 import pageController from './pageController';
@@ -417,7 +417,7 @@ class TalkPageBootProcess {
       //    terminology).
       sectionManager.init(this.subscriptions);
 
-      updateChecker.init();
+      updateChecker.init(pageController.getWorker());
       toc.init(this.subscriptions);
       commentFormManager.init();
       commentManager.init();

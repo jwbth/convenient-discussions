@@ -12,11 +12,13 @@ export default class CodeMirrorCommentInput
   constructor(commentInput) {
     super(commentInput.$input, mw.loader.require('ext.CodeMirror.v6.mode.mediawiki')());
 
-    /** @type {{
+    /**
+     * @type {{
      *   Compartment: typeof import('@codemirror/state').Compartment
      *   EditorView: typeof import('@codemirror/view').EditorView
      *   placeholder: import('@codemirror/view').placeholder
-     * }} */
+     * }}
+     */
     this.lib = mw.loader.require('ext.CodeMirror.v6.lib');
     this.cdPlaceholderCompartment = new this.lib.Compartment();
     this.cdChangeExtension = this.lib.EditorView.updateListener.of((update) => {
@@ -43,8 +45,8 @@ export default class CodeMirrorCommentInput
   }
 
   /**
-   * @param {import('@codemirror/state').Extension[]} [extensions=[]]
-   * @param {string} [placeholderText='']
+   * @param {import('@codemirror/state').Extension[]} [extensions]
+   * @param {string} [placeholderText]
    * @override
    */
   initialize(extensions = [], placeholderText = '') {

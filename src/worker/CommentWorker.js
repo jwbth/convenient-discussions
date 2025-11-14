@@ -3,7 +3,7 @@ import { isText } from 'domhandler';
 import CommentSkeleton from '../shared/CommentSkeleton';
 import { isElement, isHeadingNode, isMetadataNode } from '../shared/utils-general';
 
-import { keepSafeValues } from './worker';
+import { keepSafeKeys } from './worker';
 
 /**
  * Comment class used in the worker scope.
@@ -386,7 +386,7 @@ export default class CommentWorker extends CommentSkeleton {
         .slice(Math.max(0, i - 2), i)
         .reverse();
 
-      keepSafeValues(comment, [
+      keepSafeKeys(comment, [
         'authorLink',
         'authorTalkLink',
         'cachedParent',

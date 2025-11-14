@@ -1522,8 +1522,9 @@ class Section extends SectionSkeleton {
     if (bootManager.isPageOverlayOn()) return;
 
     const dialog = new ((await import('./MoveSectionDialog')).default)(this);
-    cd.getWindowManager().addWindows([dialog]);
-    cd.getWindowManager().openWindow(dialog);
+    const windowManager = cd.getWindowManager();
+    windowManager.addWindows([dialog]);
+    windowManager.openWindow(dialog);
 
     cd.tests.moveSectionDialog = dialog;
   }

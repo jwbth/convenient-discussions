@@ -3,9 +3,9 @@
     // The default in jsconfig.json
     // "allowJs": true,
     "checkJs": true,
+
     // The default in jsconfig.json
     // "noEmit": true,
-
     "strict": true,
     "isolatedModules": true,
     // The default in jsconfig.json
@@ -15,6 +15,10 @@
     "noUncheckedSideEffectImports": true,
     // The default in jsconfig.json
     // "skipLibCheck": true,
-    "moduleDetection": "force"
+    "moduleDetection": "force",
+
+    // Handled by typescript-eslint
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   }
 }

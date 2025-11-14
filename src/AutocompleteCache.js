@@ -368,7 +368,7 @@ class AutocompleteCache {
 
   /**
    * @typedef {object} CacheData
-   * @property {TypeByKey<CacheEntry>} entries
+   * @property {TypeByStringKey<CacheEntry>} entries
    * @property {CacheStats} stats
    * @property {object} config
    * @property {number} config.maxSize
@@ -382,7 +382,7 @@ class AutocompleteCache {
    * @returns {CacheData} Serializable cache data
    */
   export() {
-    /** @type {TypeByKey<CacheEntry>} */
+    /** @type {TypeByStringKey<CacheEntry>} */
     const entries = {};
     for (const [key, entry] of this.cache) {
       if (!this.isExpired(entry)) {

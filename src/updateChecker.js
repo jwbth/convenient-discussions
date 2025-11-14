@@ -1,14 +1,14 @@
 import Comment from './Comment';
 import EventEmitter from './EventEmitter';
 import StorageItemWithKeys from './StorageItemWithKeys';
-import bootManager from './loader/bootManager';
-import cd from './loader/cd';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
+import bootManager from './loader/bootManager';
+import cd from './loader/cd';
 import sectionManager from './sectionManager';
 import settings from './settings';
 import CdError from './shared/CdError';
-import { calculateWordOverlap, keepWorkerSafeValues, subtractDaysFromNow } from './shared/utils-general';
+import { calculateWordOverlap, keepClonableValues, subtractDaysFromNow } from './shared/utils-general';
 import userRegistry from './userRegistry';
 import { loadUserGenders } from './utils-api';
 import visits from './visits';
@@ -147,6 +147,9 @@ class UpdateChecker extends EventEmitter {
   resolverCount = 0;
   initted = false;
 
+  /** @type {Worker} */
+  worker;
+
   /**
    * Tell the worker to wake the script up after a given interval.
    *
@@ -157,7 +160,7 @@ class UpdateChecker extends EventEmitter {
    * @private
    */
   setAlarmViaWorker(interval) {
-    cd.getWorker().postMessage(/** @type {MessageFromWindowSetAlarm} */ ({
+    this.worker.postMessage(/** @type {MessageFromWindowSetAlarm} */ ({
       task: 'setAlarm',
       interval,
     }));
@@ -169,7 +172,7 @@ class UpdateChecker extends EventEmitter {
    * @private
    */
   removeAlarmViaWorker() {
-    cd.getWorker().postMessage(/** @type {MessageFromWindowRemoveAlarm} */ ({
+    this.worker.postMessage(/** @type {MessageFromWindowRemoveAlarm} */ ({
       task: 'removeAlarm',
     }));
   }
@@ -184,7 +187,7 @@ class UpdateChecker extends EventEmitter {
   runWorkerTask(payload) {
     return new Promise((resolve) => {
       const resolverId = this.resolverCount++;
-      cd.getWorker().postMessage({ ...payload, resolverId });
+      this.worker.postMessage({ ...payload, resolverId });
       this.resolvers[resolverId] = resolve;
     });
   }
@@ -208,8 +211,8 @@ class UpdateChecker extends EventEmitter {
         task: 'parse',
         revisionId,
         text,
-        g: keepWorkerSafeValues(cd.g, ['isIPv6Address']),
-        config: keepWorkerSafeValues(cd.config, ['rejectNode']),
+        g: keepClonableValues(cd.g, ['isIPv6Address']),
+        config: keepClonableValues(cd.config, ['rejectNode']),
       }))
     );
 
@@ -933,8 +936,12 @@ class UpdateChecker extends EventEmitter {
 
   /**
    * _For internal use._ Initialize the update checker.
-   */
-  init() {
+   *
+   * @param {Worker} worker
+  */
+  init(worker) {
+    this.worker = worker;
+
     visits
       .on('process', (/** @type {string[]} */ currentPageData) => {
         const bootProcess = bootManager.getTalkPageBootProcess();
@@ -963,7 +970,7 @@ class UpdateChecker extends EventEmitter {
     this.unscheduleCheck();
     this.previousVisitRevisionId = undefined;
     if (!this.initted) {
-      cd.getWorker().addEventListener('message', this.onMessageFromWorker);
+      this.worker.addEventListener('message', this.onMessageFromWorker);
     }
     this.setAlarmViaWorker(cd.g.updateCheckInterval * 1000);
     if (previousVisitTime) {

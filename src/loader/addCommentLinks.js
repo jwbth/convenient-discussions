@@ -472,8 +472,8 @@ function isCommentEdit(summary) {
  * @private
  */
 async function processContributions($content) {
-  await bootManager.initTimestampParsingTools('user');
-  if (cd.g.uiTimezone === undefined) return;
+  await bootManager.initTimestampTools('user');
+  if (cd.g.timestampTools.user.timezone === undefined) return;
 
   const Comment = (await import('../Comment')).default;
   const pageRegistry = (await import('../pageRegistry')).default;
@@ -510,7 +510,7 @@ async function processContributions($content) {
     const dateElement = line.querySelector('.mw-changeslist-date');
     if (!dateElement) return;
 
-    const { date } = parseTimestamp(dateElement.textContent, cd.g.uiTimezone) || {};
+    const { date } = parseTimestamp(dateElement.textContent, true) || {};
     if (!date) return;
 
     const id = Comment.generateId(date, mw.config.get('wgRelevantUserName') || undefined);
@@ -547,8 +547,8 @@ async function processContributions($content) {
  * @private
  */
 async function processHistory($content) {
-  await bootManager.initTimestampParsingTools('user');
-  if (cd.g.uiTimezone === undefined) return;
+  await bootManager.initTimestampTools('user');
+  if (cd.g.timestampTools.user.timezone === undefined) return;
 
   const Comment = (await import('../Comment')).default;
 
@@ -575,7 +575,7 @@ async function processHistory($content) {
     const dateElement = line.querySelector('.mw-changeslist-date');
     if (!dateElement) return;
 
-    const { date } = parseTimestamp(dateElement.textContent, cd.g.uiTimezone) || {};
+    const { date } = parseTimestamp(dateElement.textContent, true) || {};
     if (!date) return;
 
     const author = extractAuthor(line);
@@ -621,20 +621,19 @@ async function processHistory($content) {
  * @private
  */
 async function processDiff($diff) {
-  const pageController = (await import('../pageController')).default;
-
-  // Filter out cases when wikipage.diff was fired for the native MediaWiki's diff at the top of
-  // the page that is a diff page (unless only a diff, and no content, is displayed - if
-  // mw.user.options.get('diffonly') or the `diffonly` URL parameter is true). We parse that diff on
-  // convenientDiscussions.pageReady hook instead.
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if ($diff?.parent().is(bootManager.$content) && pageController.$root) return;
+  // Filter out cases when wikipage.diff was fired for the native MediaWiki's diff at the top of the
+  // page that is a diff page (unless only a diff, and no content, is displayed - if
+  // mw.user.options.get('diffonly') or the `diffonly` URL parameter is true). If CD is booted on
+  // the talk page (`.cd-parsed` is found), we parse that diff on convenientDiscussions.pageReady
+  // hook instead.
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (!cd.g.uiTimestampRegexp) {
-    await bootManager.initTimestampParsingTools('user');
+  if ($diff?.parent().is(bootManager.$content) && $('.cd-parsed').length) return;
+
+  if (!('parseTimestampUiRegexp' in cd.g)) {
+    await bootManager.initTimestampTools('user');
   }
-  if (cd.g.uiTimezone === undefined) return;
+  if (cd.g.timestampTools.user.timezone === undefined) return;
 
   const Comment = (await import('../Comment')).default;
   const pageRegistry = (await import('../pageRegistry')).default;
@@ -665,7 +664,7 @@ async function processDiff($diff) {
       );
       if (!(dateElement)) return;
 
-      const { date } = parseTimestamp(dateElement.textContent, cd.g.uiTimezone) || {};
+      const { date } = parseTimestamp(dateElement.textContent, true) || {};
       if (!date) return;
 
       const author = extractAuthor(area);

@@ -11,12 +11,12 @@ import type { HeadingTarget, SignatureTarget, Target } from './Parser';
 import type { ConvenientDiscussionsBase } from './cd';
 
 declare global {
-  type TypeByKey<T> = Record<string, T>;
-  type StringsByKey = TypeByKey<string>;
-  type NumbersByKey = TypeByKey<number>;
-  type AnyByKey = TypeByKey<any>;
-  type UnknownsByKey = TypeByKey<unknown>;
-  type StringArraysByKey = TypeByKey<string[]>;
+  type TypeByStringKey<T> = Record<string, T>;
+  type StringsByKey = TypeByStringKey<string>;
+  type NumbersByKey = TypeByStringKey<number>;
+  type AnyByKey = TypeByStringKey<any>;
+  type UnknownsByKey = TypeByStringKey<unknown>;
+  type StringArraysByKey = TypeByStringKey<string[]>;
   type AnyFunction = (...args: any) => any;
   type ValidKey = string | number | symbol;
   type ApiRejectResponse = Exclude<mw.Api.RejectArgTuple[1], mw.Rest.HttpErrorData>;

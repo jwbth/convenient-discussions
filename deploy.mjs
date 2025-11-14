@@ -3,6 +3,8 @@ import fs from 'node:fs';
 
 import chalk from 'chalk';
 import Mw from 'nodemw';
+// https://github.com/import-js/eslint-plugin-import/issues/1594
+// eslint-disable-next-line import/no-named-as-default
 import prompts from 'prompts';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
@@ -387,8 +389,6 @@ async function getConfigsEdits() {
       const matchesString = illegalMatch.map((char) => code(char)).join(' ');
       throw error(`Modules string for ${keyword(asset.target)} contains illegal characters: ${matchesString}`);
     }
-
-
 
     asset.content = content.replace(
       /^(\* *convenientDiscussions *\[.*dependencies *= *)[^|\]]*?( *[|\]])/m,

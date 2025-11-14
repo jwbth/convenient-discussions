@@ -900,13 +900,14 @@ export function extractSignatures(code) {
  * @private
  */
 function extractRegularSignatures(adjustedCode, code) {
+  const timestampTools = cd.g.timestampTools.content;
   const ending = `(?:\\n*|$)`;
   const afterTimestamp = `(?!["»])(?:\\}\\}|</small>)?`;
 
   // Use (?:^|[^=]) to filter out timestamps in a parameter (in quote templates)
   // eslint-disable-next-line no-one-time-vars/no-one-time-vars
   const timestampRegexp = new RegExp(
-    `^((.*?(?:^|[^=]))(${cd.g.contentTimestampRegexp.source})${afterTimestamp}).*${ending}`,
+    `^((.*?(?:^|[^=]))(${timestampTools.regexp.source})${afterTimestamp}).*${ending}`,
     'igm'
   );
 
@@ -929,7 +930,7 @@ function extractRegularSignatures(adjustedCode, code) {
      */
     (
       `^(((.*?)${cd.g.captureUserNamePattern}.{1,${signatureScanLimit - 1}}?[^=])` +
-      `(${cd.g.contentTimestampRegexp.source})${afterTimestamp}.*)${ending}`
+      `(${timestampTools.regexp.source})${afterTimestamp}.*)${ending}`
     ),
     'im'
   );
@@ -1026,7 +1027,8 @@ function extractUnsigneds(adjustedCode, code, signatures) {
     return [];
   }
 
-  // require() to avoid circular dependency
+  const timestampTools = cd.g.timestampTools.content;
+
   // eslint-disable-next-line no-one-time-vars/no-one-time-vars
   const unsigneds = /** @type {SignatureInWikitextDraft[]} */ ([]);
   // eslint-disable-next-line no-one-time-vars/no-one-time-vars
@@ -1035,10 +1037,10 @@ function extractUnsigneds(adjustedCode, code, signatures) {
   while ((match = unsignedTemplatesRegexp.exec(adjustedCode))) {
     let authorString;
     let timestamp;
-    if (cd.g.contentTimestampNoTzRegexp.test(match[2])) {
+    if (timestampTools.noTzRegexp.test(match[2])) {
       timestamp = match[2];
       authorString = match[3];
-    } else if (cd.g.contentTimestampNoTzRegexp.test(match[3])) {
+    } else if (timestampTools.noTzRegexp.test(match[3])) {
       timestamp = match[3];
       authorString = match[2];
     } else {
@@ -1048,7 +1050,7 @@ function extractUnsigneds(adjustedCode, code, signatures) {
     // Append "(UTC)" to the `timestamp` of templates that allow to omit the timezone. The timezone
     // could be not UTC, but currently the timezone offset is taken from the wiki configuration, so
     // it doesn't have effect.
-    if (timestamp && !cd.g.contentTimestampRegexp.test(timestamp)) {
+    if (timestamp && !cd.g.timestampTools.content.regexp.test(timestamp)) {
       timestamp += ' (UTC)';
 
       // Workaround for "undated" templates. I think (need to recheck) in most cases that signature
@@ -1170,6 +1172,7 @@ export function formatDate(date, addTimezone = false) {
  * @returns {string}
  */
 export function formatDateNative(date, addTimezone = false, timezone = undefined) {
+  const timestampTools = cd.g.timestampTools.user;
   let timezoneOffset;
   let year;
   let monthIdx;
@@ -1177,15 +1180,21 @@ export function formatDateNative(date, addTimezone = false, timezone = undefined
   let hours;
   let minutes;
   let dayOfWeek;
-  if (settings.get('useUiTime') && !['UTC', 0, undefined].includes(cd.g.uiTimezone) && !timezone) {
-    if (cd.g.areUiAndLocalTimezoneSame) {
+  if (
+    settings.get('useUiTime') &&
+    !['UTC', 0, undefined].includes(timestampTools.timezone) &&
+    !timezone
+  ) {
+    if (timestampTools.isSameAsLocalTimezone) {
       timezoneOffset = -date.getTimezoneOffset();
     } else {
-      timezoneOffset = typeof cd.g.uiTimezone === 'number'
-        ? cd.g.uiTimezone
+      timezoneOffset =
+        typeof timestampTools.timezone === 'number'
+          ? timestampTools.timezone
 
-        // Using date-fns-tz's getTimezoneOffset is way faster than using day.js's methods.
-        : getTimezoneOffset(/** @type {string} */(cd.g.uiTimezone), date.getTime()) / cd.g.msInMin;
+          // Using date-fns-tz's getTimezoneOffset is way faster than using day.js's methods.
+          : getTimezoneOffset(/** @type {string} */ (timestampTools.timezone), date.getTime()) /
+            cd.g.msInMin;
     }
     date = new Date(date.getTime() + timezoneOffset * cd.g.msInMin);
   } else if (!timezone || timezone === 'UTC') {
@@ -1208,7 +1217,7 @@ export function formatDateNative(date, addTimezone = false, timezone = undefined
   dayOfWeek ??= date.getUTCDay();
 
   let string = '';
-  const format = cd.g.uiDateFormat;
+  const format = timestampTools.dateFormat;
   for (let p = 0; p < format.length; p++) {
     let code = format[p];
     if ((code === 'x' && p < format.length - 1) || (code === 'xk' && p < format.length - 1)) {
@@ -1293,18 +1302,20 @@ export function formatDateNative(date, addTimezone = false, timezone = undefined
  * @returns {string}
  */
 export function formatDateImproved(date, addTimezone = false) {
+  const timestampTools = cd.g.timestampTools.user;
   let now = new Date();
   let dayjsDate = dayjs(date);
   let timezoneOffset;
-  if (settings.get('useUiTime') && !['UTC', 0, undefined].includes(cd.g.uiTimezone)) {
-    if (cd.g.areUiAndLocalTimezoneSame) {
+  if (settings.get('useUiTime') && !['UTC', 0, undefined].includes(timestampTools.timezone)) {
+    if (timestampTools.isSameAsLocalTimezone) {
       timezoneOffset = -date.getTimezoneOffset();
     } else {
-      timezoneOffset = typeof cd.g.uiTimezone === 'number'
-        ? cd.g.uiTimezone
+      timezoneOffset = typeof timestampTools.timezone === 'number'
+        ? timestampTools.timezone
 
         // Using date-fns-tz's getTimezoneOffset is way faster than using day.js's methods.
-        : getTimezoneOffset(/** @type {string} */(cd.g.uiTimezone), now.getTime()) / cd.g.msInMin;
+        : getTimezoneOffset(/** @type {string} */(timestampTools.timezone), now.getTime()) /
+          cd.g.msInMin;
 
       dayjsDate = dayjsDate.utcOffset(timezoneOffset);
     }

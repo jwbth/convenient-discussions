@@ -15,7 +15,7 @@ export default {
   /**
    * Collection of users.
    *
-   * @type {TypeByKey<User>}
+   * @type {TypeByStringKey<User>}
    * @private
    */
   items: {},

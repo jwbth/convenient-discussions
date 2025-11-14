@@ -145,8 +145,7 @@ export function splitIntoBatches(arr) {
   try {
     currentUserRights = cd.user.getRights();
   } catch {
-    // Can throw a error when cd.user or cd.g.phpCharToUpper is undefined, because they're set when
-    // the modules are ready.
+    // Can throw a error when cd.user is undefined, because it is set when the modules are ready.
   }
   const limit = (
     currentUserRights

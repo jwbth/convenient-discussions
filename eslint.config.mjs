@@ -11,7 +11,7 @@ import tseslint from 'typescript-eslint';
 
 const config = defineConfig(
   {
-    ignores: ['dist/**', 'misc/**', '*.json5', 'config/**/*', 'src/tribute/**'],
+    ignores: ['dist/**', 'misc/**', '*.json5', 'config/**/*', 'src/tribute/**', 'sandbox/**'],
   },
   {
     settings: {
@@ -94,6 +94,7 @@ const config = defineConfig(
           './tests/jsconfig.json',
           './playwright/jsconfig.json',
           './config/jsconfig.json',
+          // './sandbox/jsconfig.json',
         ],
         tsconfigRootDir: import.meta.dirname,
         // jsDocParsingMode: 'all',

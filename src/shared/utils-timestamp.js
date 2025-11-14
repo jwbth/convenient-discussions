@@ -53,23 +53,22 @@ export const dateTokenToMessageNames = {
  * Parse a timestamp, accepting a regexp match and returning a date.
  *
  * @param {string[]} match Regexp match data.
- * @param {string|number} [timezone] Timezone standard name or offset in minutes. If set, it is
- *   implied that the timestamp is in the user (interface) language, not in the content language.
+ * @param {boolean} [inUserLanguage] Whether the timestamp is in the user (interface) language
+ *   rather than the content language.
  * @returns {Date}
  * @author Bartosz Dziewoński <matma.rex@gmail.com>
  * @author Jack who built the house
  * @license MIT
  */
-export function getDateFromTimestampMatch(match, timezone) {
-  let isContentLanguage = false;
-  if (timezone === undefined) {
-    isContentLanguage = true;
-    timezone = cd.g.contentTimezone || 'UTC';
-  }
-
-  const digits = isContentLanguage ? cd.g.contentDigits : cd.g.uiDigits;
+function getDateFromTimestampMatch(match, inUserLanguage = false) {
+  const timestampTools = cd.g.timestampTools;
+  const languageTarget = inUserLanguage ? 'user' : 'content';
+  const timezone = inUserLanguage
+    ? /** @type {string | number} */ (timestampTools.user.timezone)
+    : timestampTools.content.timezone || 'UTC';
 
   const untransformDigits = (/** @type {string} */ text) => {
+    const digits = cd.g.digits[languageTarget];
     if (!digits) {
       return text;
     }
@@ -86,20 +85,18 @@ export function getDateFromTimestampMatch(match, timezone) {
   let hours = 0;
   let minutes = 0;
 
-  for (const [i, code] of (
-    isContentLanguage ? cd.g.contentTimestampMatchingGroups : cd.g.uiTimestampMatchingGroups
-  ).entries()) {
+  for (const [i, code] of timestampTools[languageTarget].matchingGroups.entries()) {
     const text = match[i + 3];
 
     switch (code) {
       case 'xg':
       case 'F':
       case 'M': {
-        // The worker context doesn't have mw.msg(), but isContentLanguage should be always `true`
+        // The worker context doesn't have mw.msg(), but languageTarget should be always 'content'
         // there.
         monthIdx = // Messages
           (
-            isContentLanguage
+            languageTarget === 'content'
               ? getContentLanguageMessages(dateTokenToMessageNames[code])
               : dateTokenToMessageNames[code].map((token) => mw.msg(token))
           ).indexOf(text);
@@ -147,7 +144,7 @@ export function getDateFromTimestampMatch(match, timezone) {
         : timezone === 'UTC'
           ? 0
 
-        // Using date-fns-tz's getTimezoneOffset() is way faster than day.js's methods.
+          // Using date-fns-tz's getTimezoneOffset() is way faster than day.js's methods.
           : getTimezoneOffset(timezone, unixTime)
     )
   );
@@ -163,23 +160,23 @@ export function getDateFromTimestampMatch(match, timezone) {
  * Parse a timestamp and return a date and a match object.
  *
  * @param {string} timestamp
- * @param {string|number} [timezone] Standard timezone name or offset in minutes. If set, it is
- *   implied that the timestamp is in the user (interface) language, not in the content language.
+ * @param {boolean} [inUserLanguage] Whether the timestamp is in the user (interface) language
+ *   rather than the content language.
  * @returns {ParseTimestampReturn | undefined}
  */
-export function parseTimestamp(timestamp, timezone) {
+export function parseTimestamp(timestamp, inUserLanguage) {
   // Remove left-to-right and right-to-left marks that are sometimes copied from edit history to the
   // timestamp (for example, https://meta.wikimedia.org/w/index.php?diff=20418518). Replace with a
   // space to keep offsets.
   const match = removeDirMarks(timestamp, true).match(
-    timezone === undefined ? cd.g.parseTimestampContentRegexp : cd.g.parseTimestampUiRegexp
+    cd.g.timestampTools[inUserLanguage ? 'user' : 'content'].parseRegexp
   );
   if (!match) {
     return;
   }
 
   return {
-    date: getDateFromTimestampMatch(match, timezone),
+    date: getDateFromTimestampMatch(match, inUserLanguage),
     match,
   };
 }

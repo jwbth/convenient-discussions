@@ -10,14 +10,14 @@ class Debug {
   /**
    * Total time for every timer.
    *
-   * @type {NumbersByKey}
+   * @type {TypeByStringKey<number | undefined>}
    */
   timerTotal = {};
 
   /**
    * Timer start timestamps for every timer.
    *
-   * @type {NumbersByKey}
+   * @type {TypeByStringKey<number | undefined>}
    * @private
    */
   timerStartTimestamps = {};
@@ -25,7 +25,7 @@ class Debug {
   /**
    * The number of times a timer has run.
    *
-   * @type {NumbersByKey}
+   * @type {TypeByStringKey<number | undefined>}
    */
   timerRunCount = {};
 
@@ -33,7 +33,7 @@ class Debug {
    * Total time for all timer runs, ignoring {@link module:debug.resetTimer timer resets} (but not
    * {@link module:debug.fullResetTimer full resets}).
    *
-   * @type {NumbersByKey}
+   * @type {TypeByStringKey<number | undefined>}
    */
   timerAllRunsTotal = {};
 
@@ -191,7 +191,7 @@ class Debug {
    * Get the {@link module:debug.timerTotal total time} for a timer.
    *
    * @param {string} label
-   * @returns {number}
+   * @returns {number | undefined}
    */
   getTimerTotal(label) {
     return this.timerTotal[label];
@@ -204,7 +204,7 @@ class Debug {
    * @param {string} label
    */
   getAverageTimerTime(label) {
-    if (this.timerAllRunsTotal[label] === undefined) {
+    if (this.timerAllRunsTotal[label] === undefined || this.timerRunCount[label] === undefined) {
       console.error(`No data for timer ${label}`);
 
       return;

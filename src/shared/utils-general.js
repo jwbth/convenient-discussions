@@ -145,6 +145,10 @@ export function generatePageNamePattern(string) {
 }
 
 /**
+ * @import {default as Page} from '../Page';
+ */
+
+/**
  * Check if a page is probably a talk page. The namespace number is required.
  *
  * This function exists mostly because we can't be sure the `mediawiki.Title` module has loaded when
@@ -431,7 +435,7 @@ export function removeDirMarks(text, replaceWithSpace = false) {
   return text.replace(/[\u200E\u200F]/g, replaceWithSpace ? ' ' : '');
 }
 
-// keepWorkerSafeValues() actually returns Partial<T>, but for our purposes we can consider it T (we
+// keepClonableValues() actually returns Partial<T>, but for our purposes we can consider it T (we
 // won't use non-worker-safe in worker anyway).
 
 /**
@@ -440,11 +444,11 @@ export function removeDirMarks(text, replaceWithSpace = false) {
  *
  * @template {{ [key: ValidKey]: any }} T
  * @param {T} obj
- * @param {string[]} [allowedFuncNames] Names of the properties that should be passed to the
- *   worker despite their values are functions (they are passed in a stringified form).
+ * @param {string[]} [allowedFuncNames] Names of the properties that should be passed to the worker
+ *   despite their values are functions (they are passed in a stringified form).
  * @returns {T}
  */
-export function keepWorkerSafeValues(obj, allowedFuncNames = []) {
+export function keepClonableValues(obj, allowedFuncNames = []) {
   const newObj = { ...obj };
   Object.keys(newObj).forEach((key) => {
     const val = newObj[key];

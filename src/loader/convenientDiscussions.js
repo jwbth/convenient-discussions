@@ -6,14 +6,13 @@
  */
 
 import Comment from '../Comment';
-import bootManager from './bootManager';
-import cd from './cd';
-import debug from './debug';
 import pageRegistry from '../pageRegistry';
 import { buildEditSummary, getQueryParamBooleanValue, underlinesToSpaces } from '../shared/utils-general';
 import { wrapDiffBody, wrapHtml } from '../utils-window';
 
-import workerCode from './worker/worker-gate?worker&inline-string';
+import bootManager from './bootManager';
+import cd from './cd';
+import debug from './debug';
 
 const mwStringsCache = /** @type {StringsByKey} */ ({});
 /** @type {boolean | undefined} */
@@ -74,9 +73,6 @@ const convenientDiscussionsWindow = {
 
   /** @type {mw.Api | undefined} */
   mwApi: undefined,
-
-  /** @type {Worker | undefined} */
-  worker: undefined,
 
   /**
    * @typedef {object} SOptions
@@ -224,23 +220,6 @@ const convenientDiscussionsWindow = {
         },
       },
     };
-  },
-
-  /**
-   * _For internal use._ Get the worker object.
-   *
-   * @returns {Worker}
-   */
-  getWorker() {
-    if (!this.worker) {
-      // Create worker from inlined code using Blob URL
-      // This avoids CSP issues with separate worker files on Wikimedia sites
-      const blob = new Blob([workerCode], { type: 'application/javascript' });
-      const blobUrl = URL.createObjectURL(blob);
-      this.worker = new Worker(blobUrl);
-    }
-
-    return this.worker;
   },
 
   /**
@@ -702,6 +681,11 @@ const globalProperties = {
     // NB: not _our_ Comment, the global one
     .filter((node) => node instanceof window.Comment)
     .some((c) => c.textContent.startsWith('Parsoid')),
+
+  timestampTools: /** @type {import('../shared/cd').TimestampTools} */ ({
+    content: {},
+    user: {},
+  }),
 };
 
 Object.assign(cd.g, globalProperties);

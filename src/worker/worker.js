@@ -145,13 +145,13 @@ function processSections(parser, targets) {
 }
 
 /**
- * Keep only those values of an object whose names are not in the unsafe keys list.
+ * Keep only those keys on an object whose names are not in the unsafe keys list.
  *
  * @param {AnyByKey} obj
  * @param {string[]} unsafeKeys
  * @private
  */
-export function keepSafeValues(obj, unsafeKeys) {
+export function keepSafeKeys(obj, unsafeKeys) {
   // Use the same object, as creating a copy would kill the prototype.
   Object.keys(obj).forEach((key) => {
     if (unsafeKeys.includes(key)) {

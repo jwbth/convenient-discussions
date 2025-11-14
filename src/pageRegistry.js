@@ -15,7 +15,7 @@ const pageRegistry = {
   /**
    * Collection of pages.
    *
-   * @type {TypeByKey<import('./Page').default>}
+   * @type {TypeByStringKey<import('./Page').default>}
    * @private
    */
   items: {},

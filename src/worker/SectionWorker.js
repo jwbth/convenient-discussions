@@ -1,6 +1,6 @@
 import SectionSkeleton from '../shared/SectionSkeleton';
 
-import { keepSafeValues } from './worker';
+import { keepSafeKeys } from './worker';
 
 /**
  * Section class used in the worker scope.
@@ -28,7 +28,7 @@ export default class SectionWorker extends SectionSkeleton {
       section.ancestors = section.getAncestors().map((sect) => sect.headline);
       section.oldestCommentId = section.oldestComment?.id;
 
-      keepSafeValues(section, [
+      keepSafeKeys(section, [
         'cachedAncestors',
         'headingElement',
         'hElement',

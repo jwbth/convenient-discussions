@@ -7,10 +7,13 @@
 // Import polyfills for a bunch of ES2022+ features
 import '../shared/polyfills';
 
+import './convenientDiscussions';
+
 import defaultConfig from '../../config/default';
 import configUrls from '../../config/urls.json';
 import i18nList from '../../data/i18nList.json';
 import languageFallbacks from '../../data/languageFallbacks.json';
+import en from '../../i18n/en.json';
 import { mergeRegexps, typedKeysOf, unique } from '../shared/utils-general';
 import { getFooter } from '../utils-window';
 
@@ -25,7 +28,7 @@ let config;
 if (SINGLE_LANG_CODE) {
   if (SINGLE_CONFIG_FILE_NAME) {
     try {
-      config = require(`../config/${SINGLE_CONFIG_FILE_NAME}`).default;
+      config = (await import(`../config/${SINGLE_CONFIG_FILE_NAME}`)).default;
     } catch {
       // Empty
     }
@@ -40,22 +43,20 @@ if (SINGLE_LANG_CODE) {
       .replace(/&lrm;/g, '\u200E')
   );
 
-  cd.i18n = (/** @type {I18n} */ {
-    en: require('../../i18n/en.json'),
-  });
+  cd.i18n = (/** @type {I18n} */ { en });
   typedKeysOf(cd.i18n.en).forEach((name) => {
     cd.i18n.en[name] = replaceEntities(cd.i18n.en[name]);
   });
   if (SINGLE_LANG_CODE !== 'en') {
-    cd.i18n[SINGLE_LANG_CODE] = require(`../i18n/${SINGLE_LANG_CODE}.json`);
+    cd.i18n[SINGLE_LANG_CODE] = await import(`../i18n/${SINGLE_LANG_CODE}.json`);
     const langObj = cd.i18n[SINGLE_LANG_CODE];
     Object.keys(cd.i18n[SINGLE_LANG_CODE])
       .filter((name) => typeof langObj[name] === 'string')
       .forEach((name) => {
         langObj[name] = replaceEntities(langObj[name]);
       });
-    langObj.dayjsLocale = require(`dayjs/locale/${SINGLE_LANG_CODE}`);
-    langObj.dateFnsLocale = require(`date-fns/locale/${SINGLE_LANG_CODE}`);
+    langObj.dayjsLocale = await import(`dayjs/locale/${SINGLE_LANG_CODE}`);
+    langObj.dateFnsLocale = await import(`date-fns/locale/${SINGLE_LANG_CODE}`);
   }
 }
 
@@ -117,9 +118,7 @@ function maybeAddFooterSwitcher() {
       event.preventDefault();
       history.pushState(history.state, '', url.toString());
       $li.remove();
-      go().catch((error) => {
-        console.error('Error in go():', error);
-      });
+      go();
     });
   }
   getFooter().append($li);
@@ -135,10 +134,9 @@ function maybeAddFooterSwitcher() {
  * @private
  */
 function maybeTweakAddTopicButton() {
-  const dtCreatePage = (
+  const dtCreatePage =
     cd.g.isDtNewTopicToolEnabled &&
-    mw.user.options.get('discussiontools-newtopictool-createpage')
-  );
+    mw.user.options.get('discussiontools-newtopictool-createpage');
   if (!bootManager.isArticlePageOfTalkType() || (cd.g.pageAction === 'view' && !dtCreatePage))
     return;
 
@@ -168,9 +166,7 @@ function maybeTweakAddTopicButton() {
 async function go() {
   debug.startTimer('start');
 
-  require('./convenientDiscussions');
-
-  // Don't run again if go() runs the second time (see maybeAddFooterSwitcher()).
+  // Don't run again if go() runs the second time (e.g. from maybeAddFooterSwitcher()).
   if (cd.g.pageWhitelistRegexp === undefined) {
     /**
      * Script configuration. The default configuration is in {@link defaultConfig}.
@@ -295,12 +291,12 @@ function getStrings() {
 }
 
 /**
- * The main script function.
+ * The main loader function.
  *
  * @fires launched
  * @private
  */
-async function app() {
+async function loader() {
   if (cd.isRunning) {
     console.warn('One instance of Convenient Discussions is already running.');
 
@@ -364,11 +360,7 @@ async function app() {
 
   debug.stopTimer('load config and strings');
 
-  $(() => {
-    go().catch((error) => {
-      console.error('Error in go():', error);
-    });
-  });
+  $(go);
 }
 
 /**
@@ -391,4 +383,4 @@ export function getStringsPromise() {
     : getStrings();
 }
 
-app();
+loader();

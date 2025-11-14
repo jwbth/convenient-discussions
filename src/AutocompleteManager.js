@@ -375,7 +375,7 @@ class AutocompleteManager {
    * @property {number} manager.instanceCount
    * @property {AutocompleteType[]} manager.types
    * @property {boolean} manager.monitoringEnabled
-   * @property {TypeByKey<import('./BaseAutocomplete').PerformanceMetrics>} instances
+   * @property {TypeByStringKey<import('./BaseAutocomplete').PerformanceMetrics>} instances
    * @property {import('./AutocompletePerformanceMonitor').PerformanceSummary} [monitor]
    */
 
@@ -391,7 +391,7 @@ class AutocompleteManager {
         types: Array.from(this.autocompleteInstances.keys()),
         monitoringEnabled: this.performanceMonitor !== undefined,
       },
-      instances: (/** @type {TypeByKey<import('./BaseAutocomplete').PerformanceMetrics>} */ ({})),
+      instances: (/** @type {TypeByStringKey<import('./BaseAutocomplete').PerformanceMetrics>} */ ({})),
       monitor: undefined,
     });
 

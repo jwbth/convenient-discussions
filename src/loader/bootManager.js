@@ -1,15 +1,26 @@
 import dateFormats from '../../data/dateFormats.json';
 import digitsData from '../../data/digits.json';
 import languageFallbacks from '../../data/languageFallbacks.json';
+import CommentLayersCss from '../Comment.layers.less';
+import CommentCss from '../Comment.less';
+import CommentFormCss from '../CommentForm.less';
+import SectionCss from '../Section.less';
+import globalCss from '../global.less';
+import logPagesCss from '../logPages.less';
+import navPanelCss from '../navPanel.less';
+import pageNavCss from '../pageNav.less';
+import { defined, getContentLanguageMessages, getQueryParamBooleanValue, isKeyOf, isProbablyTalkPage, sleep, unique } from '../shared/utils-general';
+import { dateTokenToMessageNames } from '../shared/utils-timestamp';
+import skinsCss from '../skins.less';
+import talkPageCss from '../talkPage.less';
+import tocCss from '../toc.less';
+import userRegistry from '../userRegistry';
+import { getUserInfo, splitIntoBatches } from '../utils-api';
+import { createSvg, initDayjs, skin$, transparentize } from '../utils-window';
 
 import addCommentLinks from './addCommentLinks';
 import cd from './cd';
 import debug from './debug';
-import { defined, getContentLanguageMessages, getQueryParamBooleanValue, isKeyOf, isProbablyTalkPage, sleep, unique } from '../shared/utils-general';
-import { dateTokenToMessageNames } from '../shared/utils-timestamp';
-import userRegistry from '../userRegistry';
-import { getUserInfo, splitIntoBatches } from '../utils-api';
-import { createSvg, initDayjs, skin$, transparentize } from '../utils-window';
 
 /**
  * @import {PageController} from '../pageController'
@@ -55,19 +66,7 @@ class BootManager {
    */
   talkPageBootProcess;
 
-  /** @type {boolean} */
-  definitelyTalkPage;
-
-  /** @type {boolean} */
-  articlePageTalkPage;
-
-  /** @type {boolean} */
-  diffPage;
-
-  /** @type {boolean} */
-  talkPage;
-
-  /** @type {JQuery.Promise<any>[] | undefined} */
+  /** @type {JQuery.Promise<any>[] | undefined} @private */
   siteDataRequests;
 
   /**
@@ -193,7 +192,7 @@ class BootManager {
       'timezone-utc',
     ].concat(
       // Message names for date tokens in content language
-      ...this.getUsedDateTokens(cd.g.contentDateFormat).map(
+      ...this.getUsedDateTokens(cd.g.timestampTools.content.dateFormat).map(
         (pattern) => dateTokenToMessageNames[pattern]
       )
     );
@@ -235,7 +234,7 @@ class BootManager {
       )
       .concat(
         // Message names for date tokens in UI language
-        ...this.getUsedDateTokens(cd.g.uiDateFormat).map(
+        ...this.getUsedDateTokens(cd.g.timestampTools.user.dateFormat).map(
           (pattern) => dateTokenToMessageNames[pattern]
         )
       );
@@ -321,14 +320,15 @@ class BootManager {
       return acc;
     }, /** @type {import('../../config/default').default['specialPageAliases']} */({}));
 
-    cd.g.contentTimezone = cd.config.timezone ?? undefined;
+    const content = cd.g.timestampTools.content;
+    content.timezone = cd.config.timezone ?? undefined;
 
     const specialPages = ['Contributions', 'Diff', 'PermanentLink'];
     if (
       !specialPages.every(
         (page) => page in cd.g.specialPageAliases && cd.g.specialPageAliases[page].length
       ) ||
-      !cd.g.contentTimezone
+      !content.timezone
     ) {
       requests.push(
         cd
@@ -349,171 +349,12 @@ class BootManager {
                   page.aliases.indexOf(page.realname) + 1
                 );
               });
-            cd.g.contentTimezone = response.query.general.timezone;
+            content.timezone = response.query.general.timezone;
           })
       );
     }
 
     return requests;
-  }
-
-  /**
-   * Get codes of date components for the function that parses timestamps in the local date format
-   * based on the result of matching the regexp set by `setTimestampRegexps()`.
-   *
-   * @param {string} format
-   * @returns {string[]}
-   * @private
-   * @author Bartosz Dziewoński <matma.rex@gmail.com>
-   * @author Jack who built the house
-   * @license MIT
-   */
-  getMatchingGroups(format) {
-    const matchingGroups = [];
-    for (let p = 0; p < format.length; p++) {
-      let code = format[p];
-      if ((code === 'x' && p < format.length - 1) || (code === 'xk' && p < format.length - 1)) {
-        code += format[++p];
-      }
-
-      switch (code) {
-        case 'xx':
-          break;
-        case 'xg':
-        case 'd':
-        case 'j':
-        case 'D':
-        case 'l':
-        case 'F':
-        case 'M':
-        case 'n':
-        case 'Y':
-        case 'xkY':
-        case 'G':
-        case 'H':
-        case 'i':
-          matchingGroups.push(code);
-          break;
-        case '\\':
-          // Backslash escaping
-          if (p < format.length - 1) {
-            ++p;
-          }
-          break;
-        case '"':
-          // Quoted literal
-          if (p < format.length - 1) {
-            const endQuote = format.indexOf('"', p + 1);
-            if (endQuote !== -1) {
-              p = endQuote;
-            }
-          }
-          break;
-        default:
-          break;
-      }
-    }
-
-    return matchingGroups;
-  }
-
-  /**
-   * Get a regexp that matches timestamps (without timezone at the end) generated using the given
-   * date format.
-   *
-   * This only supports format characters that are used by the default date format in any of
-   * MediaWiki's languages, namely: D, d, F, G, H, i, j, l, M, n, Y, xg, xkY (and escape
-   * characters), and only dates when MediaWiki existed, let's say 2000 onwards (Thai dates before
-   * 1941 are complicated).
-   *
-   * @param {'content'|'user'} language
-   * @returns {string} Pattern to be a part of a regular expression.
-   * @private
-   * @author Bartosz Dziewoński <matma.rex@gmail.com>
-   * @author Jack who built the house
-   * @license MIT
-   */
-  getTimestampMainPartPattern(language) {
-    const isContentLanguage = language === 'content';
-    const format = isContentLanguage ? cd.g.contentDateFormat : cd.g.uiDateFormat;
-    const digits = isContentLanguage ? cd.g.contentDigits : cd.g.uiDigits;
-    // eslint-disable-next-line no-one-time-vars/no-one-time-vars
-    const digitsPattern = digits ? `[${digits}]` : String.raw`\d`;
-
-    const regexpGroup = (/** @type {string} */ regexp) => '(' + regexp + ')';
-    const regexpAlternateGroup = (/** @type {string[]} */ arr) =>
-      '(' + arr.map(mw.util.escapeRegExp).join('|') + ')';
-
-    let string = '';
-
-    for (let p = 0; p < format.length; p++) {
-      /** @type {string|false} */
-      let num = false;
-      let code = format[p];
-      if ((code === 'x' && p < format.length - 1) || (code === 'xk' && p < format.length - 1)) {
-        code += format[++p];
-      }
-
-      switch (code) {
-        case 'xx':
-          string += 'x';
-          break;
-        case 'xg':
-        case 'D':
-        case 'l':
-        case 'F':
-        case 'M': {
-          string += regexpAlternateGroup(
-            // Messages
-            isContentLanguage
-              ? getContentLanguageMessages(dateTokenToMessageNames[code])
-              : dateTokenToMessageNames[code].map((token) => mw.msg(token))
-          );
-          break;
-        }
-        case 'd':
-        case 'H':
-        case 'i':
-          num = '2';
-          break;
-        case 'j':
-        case 'n':
-        case 'G':
-          num = '1,2';
-          break;
-        case 'Y':
-        case 'xkY':
-          num = '4';
-          break;
-        case '\\':
-          // Backslash escaping
-          string += p < format.length - 1 ? format[++p] : '\\';
-          break;
-        case '"':
-          // Quoted literal
-          if (p < format.length - 1) {
-            const endQuote = format.indexOf('"', p + 1);
-            if (endQuote === -1) {
-              // No terminating quote, assume literal "
-              string += '"';
-            } else {
-              string += format.substr(p + 1, endQuote - p - 1);
-              p = endQuote;
-            }
-          } else {
-            // Quote at end of string, assume literal "
-            string += '"';
-          }
-          break;
-        default:
-          string += mw.util.escapeRegExp(format[p]);
-      }
-      if (num !== false) {
-        string += regexpGroup(digitsPattern + '{' + num + '}');
-      }
-    }
-
-    return string;
   }
 
   /**
@@ -538,18 +379,20 @@ class BootManager {
       lang in dateFormats ? lang : getFallbackLanguage(lang);
 
     const contentLanguage = languageOrFallback(mw.config.get('wgContentLanguage'));
-    const uiLanguage = languageOrFallback(mw.config.get('wgUserLanguage'));
+    const userLanguage = languageOrFallback(mw.config.get('wgUserLanguage'));
 
     if (contentLanguage) {
-      cd.g.contentDateFormat = /** @type {DateFormats} */ (dateFormats)[contentLanguage];
-      cd.g.contentDigits = mw.config.get('wgTranslateNumerals')
+      cd.g.timestampTools.content.dateFormat = /** @type {DateFormats} */ (dateFormats)[
+        contentLanguage
+      ];
+      cd.g.digits.content = mw.config.get('wgTranslateNumerals')
         ? /** @type {DigitsData} */ (digitsData)[contentLanguage]
         : undefined;
     }
-    if (uiLanguage) {
-      cd.g.uiDateFormat = /** @type {DateFormats} */ (dateFormats)[uiLanguage];
-      cd.g.uiDigits = mw.config.get('wgTranslateNumerals')
-        ? /** @type {DigitsData} */ (digitsData)[uiLanguage]
+    if (userLanguage) {
+      cd.g.timestampTools.user.dateFormat = /** @type {DateFormats} */ (dateFormats)[userLanguage];
+      cd.g.digits.user = mw.config.get('wgTranslateNumerals')
+        ? /** @type {DigitsData} */ (digitsData)[userLanguage]
         : undefined;
     }
   }
@@ -584,82 +427,6 @@ class BootManager {
     }
 
     return tokens;
-  }
-
-  /**
-   * _For internal use._ Assign some important skin-specific values to the properties of the global
-   * object.
-   */
-  memorizeCssValues() {
-    cd.g.contentLineHeight = Number.parseFloat(this.$content.css('line-height'));
-    cd.g.contentFontSize = Number.parseFloat(this.$content.css('font-size'));
-    cd.g.defaultFontSize = Number.parseFloat($(document.documentElement).css('font-size'));
-  }
-
-  /**
-   * _For internal use._ Set CSS for talk pages: set CSS variables, add static CSS.
-   */
-  addTalkPageCss() {
-    const contentBackgroundColor = $('#content').css('background-color') || 'rgba(0, 0, 0, 0)';
-    const sidebarColor = skin$({
-      'timeless': '#mw-content-container',
-      'vector-2022': '.mw-page-container',
-      'default': 'body',
-    }).css('background-color');
-    const metadataFontSize = Number.parseFloat(
-      (cd.g.contentFontSize / cd.g.defaultFontSize).toFixed(7)
-    );
-    const sidebarTransparentColor = transparentize(sidebarColor);
-
-    // `float: inline-start` is too new: it appeared in Chrome in October 2023.
-    const floatContentStart = cd.g.contentDirection === 'ltr' ? 'left' : 'right';
-    const floatContentEnd = cd.g.contentDirection === 'ltr' ? 'right' : 'left';
-    const floatUserStart = cd.g.userDirection === 'ltr' ? 'left' : 'right';
-    const floatUserEnd = cd.g.userDirection === 'ltr' ? 'right' : 'left';
-    const gradientUserStart = cd.g.userDirection === 'ltr' ? 'to left' : 'to right';
-
-    mw.loader.addStyleTag(`:root {
-  --cd-comment-fallback-side-margin: ${cd.g.commentFallbackSideMargin}px;
-  --cd-comment-marker-width: ${cd.g.commentMarkerWidth}px;
-  --cd-thread-line-side-padding: ${cd.g.threadLineSidePadding}px;
-  --cd-content-background-color: ${contentBackgroundColor};
-  --cd-content-font-size: ${cd.g.contentFontSize}px;
-  --cd-content-metadata-font-size: ${metadataFontSize}rem;
-  --cd-sidebar-color: ${sidebarColor};
-  --cd-sidebar-transparent-color: ${sidebarTransparentColor};
-  --cd-direction-user: ${cd.g.userDirection};
-  --cd-direction-content: ${cd.g.contentDirection};
-  --cd-float-user-start: ${floatUserStart};
-  --cd-float-user-end: ${floatUserEnd};
-  --cd-float-content-start: ${floatContentStart};
-  --cd-float-content-end: ${floatContentEnd};
-  --cd-gradient-user-start: ${gradientUserStart};
-  --cd-pixel-deviation-ratio: ${cd.g.pixelDeviationRatio};
-  --cd-pixel-deviation-ratio-for-1px: ${cd.g.pixelDeviationRatioFor1px};
-}`);
-    if (cd.config.outdentClass) {
-      mw.loader.addStyleTag(`.cd-parsed .${cd.config.outdentClass} {
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
-}
-
-.cd-reformattedComments .${cd.config.outdentClass} {
-  margin-top: 0.75em;
-  margin-bottom: 0.75em;
-}`);
-    }
-
-    import('./global.less');
-
-    import('./Comment.less');
-    import('./CommentForm.less');
-    import('./Section.less');
-    import('./Comment.layers.less');
-    import('./navPanel.less');
-    import('./pageNav.less');
-    import('./skins.less');
-    import('./talkPage.less');
-    import('./toc.less');
   }
 
   /**
@@ -705,13 +472,12 @@ class BootManager {
       cd.g.summaryLengthLimit = mw.config.get('wgCommentCodePointLimit');
     } else {
       cd.g.summaryPostfix = ` ([[${cd.config.scriptPageWikilink}|${cd.s('script-name-short')}]])`;
-      cd.g.summaryLengthLimit = (
+      cd.g.summaryLengthLimit =
         mw.config.get('wgCommentCodePointLimit') -
-        cd.g.summaryPostfix.length
-      );
+        cd.g.summaryPostfix.length;
     }
 
-    // We don't need it now. Keep it for now for compatibility with s-ru config
+    // We don't need it in the script - keep it for now for compatibility with `s-ru` config
     cd.g.clientProfile = $.client.profile();
 
     cd.g.cmdModifier = $.client.profile().platform === 'mac' ? 'Cmd' : 'Ctrl';
@@ -813,29 +579,15 @@ class BootManager {
    * _For internal use._ Set the {@link convenientDiscussions} properties related to timestamp
    * parsing.
    *
-   * @param {string} language
+   * This should run after {@link BootManager#loadSiteData} so that
+   * {@link cd.g.timestampTools.content.timezone} is available.
+   *
+   * @param {'content' | 'user'} language
    */
-  async initTimestampParsingTools(language) {
-    if (language === 'content') {
-      const mainPartPattern = this.getTimestampMainPartPattern('content');
-      const utcPattern = mw.util.escapeRegExp(mw.message('(content)timezone-utc').parse());
-
-      // Do we need non-Arabic digits here?
-      const timezonePattern = `\\((?:${utcPattern}|[A-Z]{1,5}|[+-]\\d{0,4})\\)`;
-
-      cd.g.contentTimestampRegexp = new RegExp(mainPartPattern + ' +' + timezonePattern);
-      cd.g.parseTimestampContentRegexp = new RegExp(
-        // \b only captures Latin, so we also need `' '`.
-        `^([^]*(?:^|[^=])(?:\\b| ))(${cd.g.contentTimestampRegexp.source})(?!["»])`
-      );
-      cd.g.contentTimestampNoTzRegexp = new RegExp(mainPartPattern);
-      cd.g.contentTimestampMatchingGroups = this.getMatchingGroups(cd.g.contentDateFormat);
-      cd.g.timezoneRegexp = new RegExp(timezonePattern, 'g');
-    } else {
-      cd.g.uiTimestampRegexp = new RegExp(this.getTimestampMainPartPattern('user'));
-      cd.g.parseTimestampUiRegexp = new RegExp(`^([^]*)(${cd.g.uiTimestampRegexp.source})`);
-      cd.g.uiTimestampMatchingGroups = this.getMatchingGroups(cd.g.uiDateFormat);
-    }
+  async initTimestampTools(language) {
+    const timestampTools = cd.g.timestampTools;
+    const content = timestampTools.content;
+    const user = timestampTools.user;
 
     // See https://www.mediawiki.org/wiki/Manual:Timezone#Timecorrection for the format of
     // `timecorrection`. Examples:
@@ -843,30 +595,214 @@ class BootManager {
     // - System|60
     // - Offset|-480
     // - ZoneInfo|60|Europe/Amsterdam
-    const timezoneParts = /** @type {string | undefined} */ (mw.user.options.get('timecorrection'))?.split('|');
-
-    cd.g.uiTimezone =
-      timezoneParts === undefined ? undefined : timezoneParts[2] || Number(timezoneParts[1]);
-    if (cd.g.uiTimezone === 0) {
-      cd.g.uiTimezone = 'UTC';
-    }
+    const [type, offset, timezoneName] = /** @type {string | undefined} */ (
+      mw.user.options.get('timecorrection')
+    )?.split('|') || [];
+    user.timezone =
+      type === 'System'
+        ? content.timezone
+        : type === 'Offset' || (type === 'ZoneInfo' && !timezoneName)
+          ? offset === '0'
+            ? 'UTC'
+            : Number(offset)
+          : type === 'ZoneInfo'
+            ? timezoneName
+            : undefined;
 
     try {
-      cd.g.areUiAndLocalTimezoneSame =
-        cd.g.uiTimezone === Intl.DateTimeFormat().resolvedOptions().timeZone;
+      user.isSameAsLocalTimezone =
+        user.timezone === Intl.DateTimeFormat().resolvedOptions().timeZone;
     } catch {
       // Empty
     }
 
     if (language === 'content') {
-      const settings = (await import('../settings')).default;
-      cd.g.areTimestampsDefault = !(
-        (settings.get('useUiTime') && cd.g.contentTimezone !== cd.g.uiTimezone) ||
-        settings.get('timestampFormat') !== 'default' ||
-        mw.config.get('wgContentLanguage') !== cd.g.userLanguage ||
-        settings.get('hideTimezone')
+      const mainPartPattern = this.getTimestampMainPartPattern('content');
+      const utcPattern = mw.util.escapeRegExp(mw.message('(content)timezone-utc').parse());
+
+      // Do we need non-Arabic digits here?
+      const timezonePattern = `\\((?:${utcPattern}|[A-Z]{1,5}|[+-]\\d{0,4})\\)`;
+
+      content.regexp = new RegExp(mainPartPattern + ' +' + timezonePattern);
+      content.parseRegexp = new RegExp(
+        // \b only captures Latin, so we also need `' '`.
+        `^([^]*(?:^|[^=])(?:\\b| ))(${content.regexp.source})(?!["»])`
       );
+      content.noTzRegexp = new RegExp(mainPartPattern);
+      content.matchingGroups = this.getMatchingGroups(content.dateFormat);
+      content.timezoneRegexp = new RegExp(timezonePattern, 'g');
+    } else {
+      user.regexp = new RegExp(this.getTimestampMainPartPattern('user'));
+      user.parseRegexp = new RegExp(`^([^]*)(${user.regexp.source})`);
+      user.matchingGroups = this.getMatchingGroups(user.dateFormat);
     }
+
+    if (language === 'content') {
+      const settings = (await import('../settings')).default;
+      timestampTools.areTimestampsDefault =
+        (!settings.get('useUiTime') || content.timezone === user.timezone) &&
+        settings.get('timestampFormat') === 'default' &&
+        mw.config.get('wgContentLanguage') === cd.g.userLanguage &&
+        !settings.get('hideTimezone');
+    }
+  }
+
+  /**
+   * Get a regexp that matches timestamps (without timezone at the end) generated using the given
+   * date format.
+   *
+   * This only supports format characters that are used by the default date format in any of
+   * MediaWiki's languages, namely: D, d, F, G, H, i, j, l, M, n, Y, xg, xkY (and escape
+   * characters), and only dates when MediaWiki existed, let's say 2000 onwards (Thai dates before
+   * 1941 are complicated).
+   *
+   * @param {'content' | 'user'} language
+   * @returns {string} Pattern to be a part of a regular expression.
+   * @private
+   * @author Bartosz Dziewoński <matma.rex@gmail.com>
+   * @author Jack who built the house
+   * @license MIT
+   */
+  getTimestampMainPartPattern(language) {
+    const format = cd.g.timestampTools[language].dateFormat;
+    const digits = cd.g.digits[language];
+    // eslint-disable-next-line no-one-time-vars/no-one-time-vars
+    const digitsPattern = digits ? `[${digits}]` : String.raw`\d`;
+
+    const regexpGroup = (/** @type {string} */ regexp) => '(' + regexp + ')';
+    const regexpAlternateGroup = (/** @type {string[]} */ arr) =>
+      '(' + arr.map(mw.util.escapeRegExp).join('|') + ')';
+
+    let string = '';
+
+    for (let p = 0; p < format.length; p++) {
+      /** @type {string|false} */
+      let num = false;
+      let code = format[p];
+      if ((code === 'x' && p < format.length - 1) || (code === 'xk' && p < format.length - 1)) {
+        code += format[++p];
+      }
+
+      switch (code) {
+        case 'xx':
+          string += 'x';
+          break;
+        case 'xg':
+        case 'D':
+        case 'l':
+        case 'F':
+        case 'M': {
+          string += regexpAlternateGroup(
+            // Messages
+            language === 'content'
+              ? getContentLanguageMessages(dateTokenToMessageNames[code])
+              : dateTokenToMessageNames[code].map((token) => mw.msg(token))
+          );
+          break;
+        }
+        case 'd':
+        case 'H':
+        case 'i':
+          num = '2';
+          break;
+        case 'j':
+        case 'n':
+        case 'G':
+          num = '1,2';
+          break;
+        case 'Y':
+        case 'xkY':
+          num = '4';
+          break;
+        case '\\':
+          // Backslash escaping
+          string += p < format.length - 1 ? format[++p] : '\\';
+          break;
+        case '"':
+          // Quoted literal
+          if (p < format.length - 1) {
+            const endQuote = format.indexOf('"', p + 1);
+            if (endQuote === -1) {
+              // No terminating quote, assume literal "
+              string += '"';
+            } else {
+              string += format.substr(p + 1, endQuote - p - 1);
+              p = endQuote;
+            }
+          } else {
+            // Quote at end of string, assume literal "
+            string += '"';
+          }
+          break;
+        default:
+          string += mw.util.escapeRegExp(format[p]);
+      }
+      if (num !== false) {
+        string += regexpGroup(digitsPattern + '{' + num + '}');
+      }
+    }
+
+    return string;
+  }
+
+  /**
+   * Get codes of date components for the function that parses timestamps in the local date format
+   * based on the result of matching the regexp set by `setTimestampRegexps()`.
+   *
+   * @param {string} format
+   * @returns {string[]}
+   * @private
+   * @author Bartosz Dziewoński <matma.rex@gmail.com>
+   * @author Jack who built the house
+   * @license MIT
+   */
+  getMatchingGroups(format) {
+    const matchingGroups = [];
+    for (let p = 0; p < format.length; p++) {
+      let code = format[p];
+      if ((code === 'x' && p < format.length - 1) || (code === 'xk' && p < format.length - 1)) {
+        code += format[++p];
+      }
+
+      switch (code) {
+        case 'xx':
+          break;
+        case 'xg':
+        case 'd':
+        case 'j':
+        case 'D':
+        case 'l':
+        case 'F':
+        case 'M':
+        case 'n':
+        case 'Y':
+        case 'xkY':
+        case 'G':
+        case 'H':
+        case 'i':
+          matchingGroups.push(code);
+          break;
+        case '\\':
+          // Backslash escaping
+          if (p < format.length - 1) {
+            ++p;
+          }
+          break;
+        case '"':
+          // Quoted literal
+          if (p < format.length - 1) {
+            const endQuote = format.indexOf('"', p + 1);
+            if (endQuote !== -1) {
+              p = endQuote;
+            }
+          }
+          break;
+        default:
+          break;
+      }
+    }
+
+    return matchingGroups;
   }
 
   /**
@@ -1044,6 +980,81 @@ class BootManager {
   }
 
   /**
+   * _For internal use._ Set some important skin-specific values to the properties of the global
+   * object.
+   */
+  memorizeCssValues() {
+    cd.g.contentLineHeight = Number.parseFloat(this.$content.css('line-height'));
+    cd.g.contentFontSize = Number.parseFloat(this.$content.css('font-size'));
+    cd.g.defaultFontSize = Number.parseFloat($(document.documentElement).css('font-size'));
+  }
+
+  /**
+   * _For internal use._ Set CSS for talk pages: set CSS variables, add static CSS.
+   */
+  addTalkPageCss() {
+    const contentBackgroundColor = $('#content').css('background-color') || 'rgba(0, 0, 0, 0)';
+    const sidebarColor = skin$({
+      'timeless': '#mw-content-container',
+      'vector-2022': '.mw-page-container',
+      'default': 'body',
+    }).css('background-color');
+    const metadataFontSize = Number.parseFloat(
+      (cd.g.contentFontSize / cd.g.defaultFontSize).toFixed(7)
+    );
+    const sidebarTransparentColor = transparentize(sidebarColor);
+
+    // `float: inline-start` is too new: it appeared in Chrome in October 2023.
+    const floatContentStart = cd.g.contentDirection === 'ltr' ? 'left' : 'right';
+    const floatContentEnd = cd.g.contentDirection === 'ltr' ? 'right' : 'left';
+    const floatUserStart = cd.g.userDirection === 'ltr' ? 'left' : 'right';
+    const floatUserEnd = cd.g.userDirection === 'ltr' ? 'right' : 'left';
+    const gradientUserStart = cd.g.userDirection === 'ltr' ? 'to left' : 'to right';
+
+    mw.loader.addStyleTag(`:root {
+  --cd-comment-fallback-side-margin: ${cd.g.commentFallbackSideMargin}px;
+  --cd-comment-marker-width: ${cd.g.commentMarkerWidth}px;
+  --cd-thread-line-side-padding: ${cd.g.threadLineSidePadding}px;
+  --cd-content-background-color: ${contentBackgroundColor};
+  --cd-content-font-size: ${cd.g.contentFontSize}px;
+  --cd-content-metadata-font-size: ${metadataFontSize}rem;
+  --cd-sidebar-color: ${sidebarColor};
+  --cd-sidebar-transparent-color: ${sidebarTransparentColor};
+  --cd-direction-user: ${cd.g.userDirection};
+  --cd-direction-content: ${cd.g.contentDirection};
+  --cd-float-user-start: ${floatUserStart};
+  --cd-float-user-end: ${floatUserEnd};
+  --cd-float-content-start: ${floatContentStart};
+  --cd-float-content-end: ${floatContentEnd};
+  --cd-gradient-user-start: ${gradientUserStart};
+  --cd-pixel-deviation-ratio: ${cd.g.pixelDeviationRatio};
+  --cd-pixel-deviation-ratio-for-1px: ${cd.g.pixelDeviationRatioFor1px};
+}`);
+    if (cd.config.outdentClass) {
+      mw.loader.addStyleTag(`.cd-parsed .${cd.config.outdentClass} {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.cd-reformattedComments .${cd.config.outdentClass} {
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+}`);
+    }
+
+    mw.util.addCSS(globalCss);
+    mw.util.addCSS(CommentCss);
+    mw.util.addCSS(CommentFormCss);
+    mw.util.addCSS(SectionCss);
+    mw.util.addCSS(CommentLayersCss);
+    mw.util.addCSS(navPanelCss);
+    mw.util.addCSS(pageNavCss);
+    mw.util.addCSS(skinsCss);
+    mw.util.addCSS(talkPageCss);
+    mw.util.addCSS(tocCss);
+  }
+
+  /**
    * Create a boot process.
    *
    * @param {import('../TalkPageBootProcess').PassedData} [passedData]
@@ -1101,7 +1112,7 @@ class BootManager {
     await this.initGlobals();
     await (await import('../settings')).default.init();
 
-    await bootManager.initTimestampParsingTools('content');
+    await bootManager.initTimestampTools('content');
     this.talkPageBootProcess.initPatterns();
     this.talkPageBootProcess.initPrototypes();
     $.fn.extend((await import('../jqueryExtensions')).default);
@@ -1413,9 +1424,9 @@ class BootManager {
         addCommentLinks();
 
         // See the comment above: "Additions of CSS...".
-        import('./global.less');
+        mw.util.addCSS(globalCss);
 
-        import('./logPages.less');
+        mw.util.addCSS(logPagesCss);
       },
       (/** @type {unknown} */ error) => {
         mw.notify(cd.s('error-loaddata'), { type: 'error' });

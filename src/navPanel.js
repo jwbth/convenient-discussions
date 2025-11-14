@@ -1,9 +1,9 @@
 import Button from './Button';
 import LiveTimestamp from './LiveTimestamp';
-import bootManager from './loader/bootManager';
-import cd from './loader/cd';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
+import bootManager from './loader/bootManager';
+import cd from './loader/cd';
 import pageController from './pageController';
 import settings from './settings';
 import { removeWikiMarkup } from './shared/utils-wikitext';

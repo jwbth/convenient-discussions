@@ -41,20 +41,47 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared);
  */
 
 /**
+ * @template {'content' | 'user'} Language
+ * @typedef {object} Timestamp
+ * @property {string} dateFormat Format of date in `Target`` language, as used by MediaWiki.
+ * @property {RegExp} regexp Regular expression for matching timestamps in `Target`. In the first
+ *   case, ` +` to account for RTL and LTR marks replaced with a space. In the second case, the
+ *   timestamp has no timezone at the end.
+ * @property {RegExp} parseRegexp Regular expression for parsing timestamps in `Target`.
+ * @property {Language extends 'content' ? RegExp : never} noTzRegexp Regular expression for
+ *   matching timestamps in content with no timezone at the end.
+ * @property {string[]} matchingGroups Codes of date (in `Language` language) components for the
+ *   timestamp parser function.
+ * @property {Language extends 'content' ? (string | undefined) : (string | number | undefined)} timezone
+ *   - For `Language` = 'user': Timezone per user preferences: standard timezone name or offset in
+ *   minutes. `'UTC'` is always used instead of `0`.
+ *   - For `Language` = 'content`: Timezone of the wiki.
+ * @property {Language extends 'content' ? RegExp : undefined} timezoneRegexp Regular expression for
+ *   matching the content timezone, with the global flag.
+ * @property {Language extends 'user' ? boolean : never} isSameAsLocalTimezone For `Language` =
+ *   'user': Whether the timezone is the same as the local user's timezone.
+ */
+
+/**
+ * @typedef {object} TimestampTools
+ * @property {Timestamp<'content'>} content
+ * @property {Timestamp<'user'>} user
+ * @property {boolean | undefined} areTimestampsDefault Whether timestamps in the default format are
+ *   shown to the user.
+ */
+
+/**
  * @typedef {object} GlobalPropertiesExtension
  * @property {string} contentLanguage Language code of the wiki's content language.
  * @property {string} userLanguage Language code of the wiki's user (interface) language.
- * @property {string} contentDateFormat Format of date in content language, as used by MediaWiki.
- * @property {string} uiDateFormat Format of date in user (interface) language, as used by
- *   MediaWiki.
- * @property {string | undefined} contentDigits Regular expression matching a single digit in
- *   content language, e.g. `[0-9]`.
- * @property {string | undefined} uiDigits Regular expression matching a single digit in user
+ * @property {object} digits
+ * @property {string | undefined} digits.content Regular expression matching a single digit in
+*   content language, e.g. `[0-9]`.
+ * @property {string | undefined} digits.user Regular expression matching a single digit in user
  *   (interface) language, e.g. `[0-9]`.
  * @property {StringsByKey} contentLanguageMessages
  * @property {StringArraysByKey} specialPageAliases Some special page aliases in the wiki's
  *   language.
- * @property {string | undefined} contentTimezone Timezone of the wiki.
  * @property {RegExp | undefined} signatureEndingRegexp
  * @property {RegExp} userNamespacesRegexp
  * @property {RegExp} userLinkRegexp
@@ -92,26 +119,7 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared);
  * @property {'Ctrl' | 'Cmd'} cmdModifier
  * @property {(typeof mw)['util']['isIPv6Address']} [isIPv6Address]
  * @property {ApiErrorFormatHtml} apiErrorFormatHtml
- * @property {RegExp} contentTimestampRegexp Regular expression for matching timestamps in content.
- *   ` +` to account for RTL and LTR marks replaced with a space.
- * @property {RegExp} parseTimestampContentRegexp Regular expression for parsing timestamps in
- *   content.
- * @property {RegExp} contentTimestampNoTzRegexp Regular expression for matching timestamps in
- *   content with no timezone at the end.
- * @property {string[]} contentTimestampMatchingGroups Codes of date (in content language)
- *   components for the timestamp parser function.
- * @property {RegExp} timezoneRegexp Regular expression for matching timezone, with the global flag.
- * @property {RegExp} uiTimestampRegexp Regular expression for matching timestamps in the interface
- *   with no timezone at the end.
- * @property {RegExp} parseTimestampUiRegexp Regular expression for parsing timestamps in the
- *   interface.
- * @property {string[]} uiTimestampMatchingGroups Codes of date (in interface language) components
- *   for the timestamp parser function.
- * @property {string | number | undefined} uiTimezone Timezone per user preferences: standard
- *   timezone name or offset in minutes. `'UTC'` is always used instead of `0`.
- * @property {boolean} areUiAndLocalTimezoneSame
- * @property {boolean | undefined} areTimestampsDefault Whether timestamps in the default format are
- *   shown to the user.
+ * @property {TimestampTools} timestampTools
  * @property {RegExp | undefined} pageWhitelistRegexp
  * @property {RegExp | undefined} pageBlacklistRegexp
  */

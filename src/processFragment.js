@@ -7,8 +7,8 @@
  */
 
 import Comment from './Comment';
-import cd from './loader/cd';
 import commentManager from './commentManager';
+import cd from './loader/cd';
 import sectionManager from './sectionManager';
 import { defined, sleep, underlinesToSpaces } from './shared/utils-general';
 import { removeWikiMarkup } from './shared/utils-wikitext';
@@ -159,7 +159,7 @@ function maybeNotifyNotFound() {
  */
 async function searchForNotFoundItem() {
   token = date
-    ? formatDateNative(date, false, cd.g.contentTimezone)
+    ? formatDateNative(date, false, cd.g.timestampTools.content.timezone)
     : sectionName.replace(/"/g, '');
   searchQuery = `"${token}"`;
 
@@ -184,7 +184,7 @@ async function searchForNotFoundItem() {
       const adjustedToken = formatDateNative(
         new Date(date.getTime() - cd.g.msInMin * gap),
         false,
-        cd.g.contentTimezone
+        cd.g.timestampTools.content.timezone
       );
       searchQuery += ` OR "${adjustedToken}"`;
     }

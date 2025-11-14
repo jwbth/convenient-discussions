@@ -6,10 +6,10 @@ import DtSubscriptions from './DtSubscriptions';
 import EventEmitter from './EventEmitter';
 import LegacySubscriptions from './LegacySubscriptions';
 import Thread from './Thread';
-import bootManager from './loader/bootManager';
-import cd from './loader/cd';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
+import bootManager from './loader/bootManager';
+import cd from './loader/cd';
 import navPanel from './navPanel';
 import notifications from './notifications';
 import pageRegistry from './pageRegistry';
@@ -21,6 +21,7 @@ import { defined, definedAndNotNull, getLastArrayElementOrSelf, isHeadingNode, i
 import toc from './toc';
 import updateChecker from './updateChecker';
 import { copyText, getVisibilityByRects, skin$, wrapHtml } from './utils-window';
+import workerCode from './worker/worker-gate?worker&inline-string';
 
 /**
  * @typedef {object} EventMap
@@ -197,6 +198,9 @@ class PageController extends EventEmitter {
    * @private
    */
   bodyScrollPaddingTop;
+
+  /** @type {Worker | undefined} */
+  worker;
 
   /**
    * Set up the boot manager for use in the current boot process. (Executed at every page load.)
@@ -1679,6 +1683,23 @@ class PageController extends EventEmitter {
     }
 
     return this.bodyScrollPaddingTop || 0;
+  }
+
+  /**
+   * _For internal use._ Get the worker object.
+   *
+   * @returns {Worker}
+   */
+  getWorker() {
+    if (!this.worker) {
+      // Create worker from inlined code using Blob URL
+      // This avoids CSP issues with separate worker files on Wikimedia sites
+      const blob = new Blob([workerCode], { type: 'application/javascript' });
+      const blobUrl = URL.createObjectURL(blob);
+      this.worker = new Worker(blobUrl);
+    }
+
+    return this.worker;
   }
 }
 

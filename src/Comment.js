@@ -3,10 +3,10 @@ import CommentSource from './CommentSource';
 import CommentSubitemList from './CommentSubitemList';
 import LiveTimestamp from './LiveTimestamp';
 import StorageItemWithKeys from './StorageItemWithKeys';
-import bootManager from './loader/bootManager';
-import cd from './loader/cd';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
+import bootManager from './loader/bootManager';
+import cd from './loader/cd';
 import pageController from './pageController';
 import settings from './settings';
 import CdError from './shared/CdError';
@@ -706,14 +706,14 @@ class Comment extends CommentSkeleton {
   formatTimestamp(date, originalTimestamp) {
     let timestamp;
     let title = '';
-    if (!cd.g.areTimestampsDefault) {
+    if (!cd.g.timestampTools.areTimestampsDefault) {
       timestamp = formatDate(date, !this.hideTimezone);
     }
 
     if (
       this.timestampFormat === 'relative' &&
       this.useUiTime &&
-      cd.g.contentTimezone !== cd.g.uiTimezone
+      cd.g.timestampTools.content.timezone !== cd.g.timestampTools.user.timezone
     ) {
       title = formatDateNative(date, true) + '\n';
     }
@@ -1459,7 +1459,7 @@ class Comment extends CommentSkeleton {
         for (let j = 0; j < $lineNumbers.length; j++) {
           currentLineNumbers[j] = extractNumeralAndConvertToNumber(
             $lineNumbers.eq(j).text(),
-            cd.g.uiDigits
+            cd.g.digits.user
           );
           if (!currentLineNumbers[j]) {
             throw new CdError({

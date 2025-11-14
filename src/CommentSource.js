@@ -121,7 +121,7 @@ class CommentSource {
         })
 
           ? undefined
-          : cd.g.timezoneRegexp,
+          : cd.g.timestampTools.content.timezoneRegexp,
       ]
         .filter(defined)
         .forEach((originalRegexp) => {
@@ -594,7 +594,7 @@ class CommentSource {
       '[^]*?(?:' +
       mw.util.escapeRegExp(this.signatureCode) +
       '|' +
-      cd.g.contentTimestampRegexp.source +
+      cd.g.timestampTools.content.regexp.source +
       '.*' +
       (cd.g.unsignedTemplatesPattern ? `|${cd.g.unsignedTemplatesPattern}.*` : '') +
 
