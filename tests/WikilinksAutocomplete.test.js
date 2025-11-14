@@ -1,5 +1,5 @@
 // Mock the cd module first
-jest.mock('../src/cd', () => ({
+jest.mock('../src/loader/cd', () => ({
   s: jest.fn((key) => `mocked-${key}`),
   mws: jest.fn((key) => ' '),
   g: {
@@ -18,7 +18,7 @@ jest.mock('../src/shared/utils-general', () => ({
   definedAndNotNull: (item) => item !== undefined && item !== null,
   unique: (item, index, array) => array.indexOf(item) === index,
   sleep: (ms) => new Promise((resolve) => {
-    setTimeout(resolve, ms); 
+    setTimeout(resolve, ms);
   }),
 }));
 
@@ -62,7 +62,7 @@ describe('WikilinksAutocomplete', () => {
   describe('getLabel', () => {
     it('should return the correct label', () => {
       expect(autocomplete.getLabel()).toBe('mocked-cf-autocomplete-wikilinks-label');
-      expect(require('../src/cd').s).toHaveBeenCalledWith('cf-autocomplete-wikilinks-label');
+      expect(require('../src/loader/cd').s).toHaveBeenCalledWith('cf-autocomplete-wikilinks-label');
     });
   });
 
@@ -92,7 +92,7 @@ describe('WikilinksAutocomplete', () => {
     });
 
     it('should reject input with forbidden characters', () => {
-      expect(autocomplete.validateInput('Test#page')).toBe(false);
+      // Note: # is now allowed for section links (Test#page is valid)
       expect(autocomplete.validateInput('Test<page')).toBe(false);
       expect(autocomplete.validateInput('Test>page')).toBe(false);
       expect(autocomplete.validateInput('Test[page')).toBe(false);
@@ -161,7 +161,7 @@ describe('WikilinksAutocomplete', () => {
 
   describe('makeApiRequest', () => {
     beforeEach(() => {
-      require('../src/cd').getApi.mockReturnValue({
+      require('../src/loader/cd').getApi.mockReturnValue({
         get: jest.fn().mockResolvedValue([
           'query',
           ['Test page', 'Test article', 'Testing'],
@@ -172,7 +172,7 @@ describe('WikilinksAutocomplete', () => {
     });
 
     it('should make API request and process results', async () => {
-      const cd = require('../src/cd');
+      const cd = require('../src/loader/cd');
       const results = await autocomplete.makeApiRequest('test');
 
       expect(cd.getApi).toHaveBeenCalledWith(autocomplete.constructor.apiConfig);
@@ -189,7 +189,7 @@ describe('WikilinksAutocomplete', () => {
     it('should handle colon prefix', async () => {
       const results = await autocomplete.makeApiRequest(':test');
 
-      expect(require('../src/cd').getApi().get).toHaveBeenCalledWith({
+      expect(require('../src/loader/cd').getApi().get).toHaveBeenCalledWith({
         action: 'opensearch',
         search: 'test',
         redirects: 'return',
@@ -222,7 +222,7 @@ describe('WikilinksAutocomplete', () => {
     });
 
     it('should handle API errors', () => {
-      require('../src/cd').getApi().get.mockRejectedValue(new Error('API Error'));
+      require('../src/loader/cd').getApi().get.mockRejectedValue(new Error('API Error'));
 
       // Note: API error handling is complex due to static method dependencies
       // This is tested through integration tests
@@ -230,7 +230,7 @@ describe('WikilinksAutocomplete', () => {
     });
 
     it('should handle empty API response', async () => {
-      require('../src/cd').getApi().get.mockResolvedValue([
+      require('../src/loader/cd').getApi().get.mockResolvedValue([
         'query',
         [],
         [],
