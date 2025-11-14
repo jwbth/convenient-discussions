@@ -2367,8 +2367,9 @@ class Comment extends CommentSkeleton {
    *
    * @param {object} [initialState]
    * @param {import('./CommentForm').default} [commentForm]
+   * @returns {Promise<void>}
    */
-  reply(initialState, commentForm) {
+  async reply(initialState, commentForm) {
     if (this.replyForm) return;
 
     if (commentManager.getByIndex(this.index + 1)?.isOutdented && this.section) {
@@ -2378,7 +2379,7 @@ class Comment extends CommentSkeleton {
         replyForm.commentInput.focus();
       } else {
         if (!replyForm) {
-          replyForm = this.section.reply({ targetWithOutdentedReplies: this });
+          replyForm = await this.section.reply({ targetWithOutdentedReplies: this });
         }
         const selection = window.getSelection();
         if (selection.type !== 'Range') {
@@ -2397,7 +2398,7 @@ class Comment extends CommentSkeleton {
      *
      * @type {import('./CommentForm').default|undefined}
      */
-    this.replyForm = commentFormManager.setupCommentForm(
+    this.replyForm = await commentFormManager.setupCommentForm(
       this,
       {
         mode: 'reply',
@@ -2490,9 +2491,9 @@ class Comment extends CommentSkeleton {
    *
    * @param {object} [initialState] See {@link CommentForm}'s constructor.
    * @param {import('./CommentForm').default} [commentForm]
-   * @returns {import('./CommentForm').default}
+   * @returns {Promise<import('./CommentForm').default>}
    */
-  edit(initialState, commentForm) {
+  async edit(initialState, commentForm) {
     // Check for existence in case the editing is initiated from a script of some kind (there is no
     // button to call it from CD when the form is displayed).
     if (!this.editForm) {
@@ -2501,7 +2502,7 @@ class Comment extends CommentSkeleton {
        *
        * @type {import('./CommentForm').default|undefined}
        */
-      this.editForm = commentFormManager.setupCommentForm(
+      this.editForm = await commentFormManager.setupCommentForm(
         this,
         {
           mode: 'edit',

@@ -1,9 +1,9 @@
 import CommentForm from './CommentForm';
 import EventEmitter from './EventEmitter';
 import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime';
+import commentManager from './commentManager';
 import bootManager from './loader/bootManager';
 import cd from './loader/cd';
-import commentManager from './commentManager';
 import pageController from './pageController';
 import sectionManager from './sectionManager';
 import settings from './settings';
@@ -106,15 +106,16 @@ class CommentFormManager extends EventEmitter {
    * @param {import('./CommentForm').CommentFormInitialState} [initialState] See
    *   {@link CommentForm}'s constructor.
    * @param {import('./CommentForm').default} [commentForm]
-   * @returns {CommentForm}
+   * @returns {Promise<CommentForm>}
    * @fires commentFormCreated
    */
-  setupCommentForm(target, config, initialState, commentForm) {
+  async setupCommentForm(target, config, initialState, commentForm) {
     if (commentForm) {
       commentForm.setTargets(target);
       target.addCommentFormToPage(config.mode, commentForm);
     } else {
       const cf = new CommentForm({ target, initialState, ...config });
+      await cf.buildPromise;
       target.addCommentFormToPage(config.mode, cf);
       cf.setup(initialState);
       this.items.push(cf);

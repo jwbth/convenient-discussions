@@ -1,11 +1,10 @@
 import AutocompleteManager from './AutocompleteManager';
-import Button from './Button';
 import Comment from './Comment';
+import CommentFormBuilder from './CommentFormBuilder';
 import CommentFormInputTransformer from './CommentFormInputTransformer';
 import CommentFormOperationRegistry from './CommentFormOperationRegistry';
 import EventEmitter from './EventEmitter';
 import MentionsAutocomplete from './MentionsAutocomplete';
-import TextMasker from './TextMasker';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
 import bootManager from './loader/bootManager';
@@ -21,7 +20,6 @@ import { buildEditSummary, defined, getDayTimestamp, removeDoubleSpaces, sleep, 
 import { escapePipesOutsideLinks, generateTagsRegexp, removeWikiMarkup } from './shared/utils-wikitext';
 import userRegistry from './userRegistry';
 import { handleApiReject, parseCode } from './utils-api';
-import { createCheckboxControl } from './utils-oojs';
 import { isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, isInputFocused, keyCombination, mergeJquery, wrapDiffBody, wrapHtml } from './utils-window';
 
 /**
@@ -136,7 +134,6 @@ class CommentForm extends EventEmitter {
    * Comment, section, or page with which the form is associated in the UI.
    *
    * @type {TypedTarget<Mode>}
-   * @private
    */
   target;
 
@@ -179,6 +176,13 @@ class CommentForm extends EventEmitter {
    * @type {JQuery|undefined}
    */
   $insertButtons;
+
+  /**
+   * Headline input placeholder text.
+   *
+   * @type {string|undefined}
+   */
+  headlineInputPlaceholder;
 
   /**
    * Headline input.
@@ -300,13 +304,11 @@ class CommentForm extends EventEmitter {
 
   /**
    * @type {string}
-   * @private
    */
   submitButtonLabelStandard;
 
   /**
    * @type {string}
-   * @private
    */
   submitButtonLabelShort;
 
@@ -420,7 +422,6 @@ class CommentForm extends EventEmitter {
    * Name of the tag of the list that this comment form is an item of.
    *
    * @type {ListType | undefined}
-   * @private
    */
   containerListType;
 
@@ -523,7 +524,6 @@ class CommentForm extends EventEmitter {
      * Form mode.
      *
      * @type {Mode}
-     * @private
      */
     this.mode = mode;
 
@@ -533,7 +533,6 @@ class CommentForm extends EventEmitter {
      * Configuration to preload data into the form.
      *
      * @type {PreloadConfig}
-     * @private
      */
     this.preloadConfig = preloadConfig;
 
@@ -627,13 +626,15 @@ class CommentForm extends EventEmitter {
     this.lastKeyPresses = [];
 
     if (this.isMode('addSection')) {
-      // This is above this.createContents() as that function is time-costly and would delay the
+      // This is above the builder as building is time-costly and would delay the
       // requests made in this.addEditNotices().
       this.addEditNotices();
     }
 
-    this.createContents(initialState, this.loadCustomModules());
-    this.addEventListeners();
+    const builder = new CommentFormBuilder(this);
+    this.buildPromise = builder.build(initialState, this.loadCustomModules()).then(() => {
+      this.addEventListeners();
+    });
 
     settings.on('set', this.onSettingsUpdate);
   }
@@ -661,26 +662,6 @@ class CommentForm extends EventEmitter {
      * @param {object} cd {@link convenientDiscussions} object.
      */
     mw.hook('convenientDiscussions.commentFormCustomModulesReady').fire(this, cd);
-  }
-
-  /**
-   * Create the contents of the form.
-   *
-   * @param {CommentFormInitialState} initialState
-   * @param {Promise<void>} customModulesPromise
-   * @private
-   */
-  async createContents(initialState, customModulesPromise) {
-    await this.createTextInputs(initialState);
-    this.createCheckboxes(initialState);
-    this.createButtons();
-    this.createElements();
-    this.addToolbar(customModulesPromise);
-    this.addInsertButtons();
-
-    if (this.deleteCheckbox?.isSelected()) {
-      this.updateFormOnDeleteCheckboxChange(true);
-    }
   }
 
   /**
@@ -786,73 +767,9 @@ class CommentForm extends EventEmitter {
    *
    * @param {number} elementIndex
    * @returns {number}
-   * @private
    */
   getTabIndex(elementIndex) {
     return Number(String(this.index) + String(elementIndex));
-  }
-
-  /**
-   * Create the text inputs based on OOUI widgets.
-   *
-   * @param {CommentFormInitialState} initialState
-   * @private
-   */
-  async createTextInputs(initialState) {
-    const TextInputWidget = (await import('./TextInputWidget')).default;
-    const MultilineTextInputWidget = (await import('./MultilineTextInputWidget')).default;
-
-    if (
-      (
-        (this.isMode('addSection') || this.isMode('addSubsection')) &&
-        !this.preloadConfig.noHeadline
-      ) ||
-      this.isSectionOpeningCommentEdited()
-    ) {
-      this.headlineInputPlaceholder = this.target.getCommentFormHeadlineInputPlaceholder(this.mode);
-      this.headlineInput = new TextInputWidget({
-        value: initialState.headline ?? '',
-        placeholder: this.headlineInputPlaceholder,
-        classes: ['cd-commentForm-headlineInput'],
-        tabIndex: this.getTabIndex(11),
-      });
-    }
-
-    // Keep this synced with CommentForm.less: @num-rows-comment and @num-rows-section
-    // eslint-disable-next-line no-one-time-vars/no-one-time-vars
-    const NUM_ROWS_COMMENT = 3;
-    // eslint-disable-next-line no-one-time-vars/no-one-time-vars
-    const NUM_ROWS_SECTION = 5;
-
-    this.commentInput = new MultilineTextInputWidget({
-      value: initialState.comment ?? '',
-      placeholder:
-        this.target.getCommentFormCommentInputPlaceholder(this.mode, () => {
-          const target = /** @type {Comment} */ (this.target);
-          this.updateCommentInputPlaceholder(
-            removeDoubleSpaces(
-              cd.s('cf-comment-placeholder-replytocomment', target.author.getName(), target.author)
-            )
-          );
-        }),
-      rows: this.headlineInput ? NUM_ROWS_SECTION : NUM_ROWS_COMMENT,
-      autosize: true,
-      maxRows: 9999,
-      classes: ['cd-commentForm-commentInput'],
-      tabIndex: this.getTabIndex(12),
-    });
-    this.commentInput.$input.addClass('ime-position-inside');
-
-    this.summaryInput = new TextInputWidget({
-      value: initialState.summary ?? '',
-      maxLength: cd.g.summaryLengthLimit,
-      placeholder: cd.s('cf-summary-placeholder'),
-      classes: ['cd-commentForm-summaryInput'],
-      tabIndex: this.getTabIndex(13),
-    });
-    this.summaryInput.$input.codePointLimit(cd.g.summaryLengthLimit);
-    mw.widgets.visibleCodePointLimit(this.summaryInput, cd.g.summaryLengthLimit);
-    this.updateAutoSummary(!initialState.summary);
   }
 
   /**
@@ -866,339 +783,6 @@ class CommentForm extends EventEmitter {
   }
 
   /**
-   * Create the checkboxes and the horizontal layout containing them based on OOUI widgets.
-   *
-   * @param {CommentFormInitialState} initialState
-   * @private
-   */
-  createCheckboxes(initialState) {
-    if (cd.user.isRegistered()) {
-      if (this.isMode('edit')) {
-        ({ field: this.minorField, input: this.minorCheckbox } = createCheckboxControl({
-          value: 'minor',
-          selected: initialState.minor ?? true,
-          label: cd.s('cf-minor'),
-          tabIndex: this.getTabIndex(20),
-        }));
-      }
-
-      ({ field: this.watchField, input: this.watchCheckbox } = createCheckboxControl({
-        value: 'watch',
-        selected:
-          initialState.watch ??
-          (
-            (settings.get('watchOnReply') && !this.isMode('edit')) ||
-            $('.mw-watchlink a[href*="action=unwatch"]').length ||
-            mw.user.options.get(cd.page.exists() ? 'watchdefault' : 'watchcreations')
-          ),
-        label: cd.s('cf-watch'),
-        tabIndex: this.getTabIndex(21),
-      }));
-
-      const subscribableSection = this.useTopicSubscription
-        ? this.targetSection?.getBase(true)
-        : this.targetSection;
-      if (
-        (subscribableSection?.subscribeId || this.isMode('addSection')) &&
-        (!pageController.isSubscribingDisabled() || subscribableSection?.subscriptionState)
-      ) {
-        ({ field: this.subscribeField, input: this.subscribeCheckbox } = createCheckboxControl({
-          value: 'subscribe',
-          selected: Boolean(
-            initialState.subscribe ??
-            (
-              (settings.get('subscribeOnReply') && !this.isMode('edit')) ||
-              subscribableSection?.subscriptionState
-            )
-          ),
-          label: cd.s(
-            this.useTopicSubscription ||
-            this.isMode('addSection') ||
-            (!this.isMode('addSubsection') && this.targetSection && this.targetSection.level <= 2)
-              ? 'cf-watchsection-topic'
-              : 'cf-watchsection-subsection'
-          ),
-          tabIndex: this.getTabIndex(22),
-          title: cd.s('cf-watchsection-tooltip'),
-        }));
-      }
-    }
-
-    ({ field: this.omitSignatureField, input: this.omitSignatureCheckbox } = createCheckboxControl({
-      value: 'omitSignature',
-      selected: initialState.omitSignature ?? false,
-      label: cd.s('cf-omitsignature'),
-      title: cd.s('cf-omitsignature-tooltip'),
-      tabIndex: this.getTabIndex(25),
-    }));
-    if (!this.isMode('addSection') && !this.isMode('addSubsection')) {
-      // The checkbox works (for cases like https://en.wikipedia.org/wiki/Template:3ORshort) but is
-      // hidden.
-      this.omitSignatureField.toggle(false);
-    }
-
-    if (this.isMode('edit') && this.target.isDeletable()) {
-      ({ field: this.deleteField, input: this.deleteCheckbox } = createCheckboxControl({
-        value: 'delete',
-        selected: initialState.delete ?? false,
-        label: cd.s('cf-delete'),
-        tabIndex: this.getTabIndex(26),
-      }));
-    }
-
-    this.checkboxesLayout = new OO.ui.HorizontalLayout({
-      classes: ['cd-commentForm-checkboxes'],
-      items: [
-        this.minorField,
-        this.watchField,
-        this.subscribeField,
-        this.omitSignatureField,
-        this.deleteField,
-      ].filter(defined),
-    });
-  }
-
-  /**
-   * Create the buttons based on OOUI widgets.
-   *
-   * @private
-   */
-  createButtons() {
-    // eslint-disable-next-line no-one-time-vars/no-one-time-vars
-    const modeToSubmitButtonMessageName = /** @type {StringsByKey} */ ({
-      edit: 'save',
-      addSection: 'addtopic',
-      addSubsection: 'addsubsection',
-    });
-    const submitButtonMessageName = modeToSubmitButtonMessageName[this.mode] || 'reply';
-    this.submitButtonLabelStandard = cd.s(`cf-${submitButtonMessageName}`);
-    this.submitButtonLabelShort = cd.s(`cf-${submitButtonMessageName}-short`);
-
-    this.advancedButton = new OO.ui.ButtonWidget({
-      label: cd.s('cf-advanced'),
-      framed: false,
-      classes: ['cd-button-ooui', 'cd-commentForm-advancedButton'],
-      tabIndex: this.getTabIndex(30),
-    });
-
-    this.helpPopupButton = new OO.ui.PopupButtonWidget({
-      label: cd.s('cf-help'),
-      framed: false,
-      classes: ['cd-button-ooui'],
-      popup: {
-        head: false,
-        $content: /** @type {JQuery} */ (
-          wrapHtml(
-            cd.sParse(
-              'cf-help-content',
-              cd.config.mentionCharacter,
-              cd.g.cmdModifier,
-              cd.s('dot-separator')
-            ),
-            {
-              tagName: 'div',
-              targetBlank: true,
-            }
-          ).contents()
-        ),
-        padded: true,
-        align: 'center',
-        width: 400,
-        classes: ['cd-helpPopup'],
-      },
-      $overlay: pageController.getPopupOverlay(),
-      tabIndex: this.getTabIndex(31),
-    });
-
-    if (cd.user.isRegistered()) {
-      this.settingsButton = new OO.ui.ButtonWidget({
-        framed: false,
-        icon: 'settings',
-        label: cd.s('cf-settings-tooltip'),
-        invisibleLabel: true,
-        title: cd.s('cf-settings-tooltip'),
-        classes: ['cd-button-ooui', 'cd-commentForm-settingsButton'],
-        tabIndex: this.getTabIndex(32),
-      });
-    }
-
-    this.cancelButton = new OO.ui.ButtonWidget({
-      label: cd.s('cf-cancel'),
-      flags: 'destructive',
-      framed: false,
-      classes: ['cd-button-ooui', 'cd-commentForm-cancelButton'],
-      tabIndex: this.getTabIndex(33),
-    });
-
-    this.viewChangesButton = new OO.ui.ButtonWidget({
-      label: cd.s('cf-viewchanges'),
-      classes: ['cd-commentForm-viewChangesButton'],
-      tabIndex: this.getTabIndex(34),
-    });
-    this.viewChangesButton.on('toggle', this.adjustLabels);
-
-    this.previewButton = new OO.ui.ButtonWidget({
-      label: cd.s('cf-preview'),
-      classes: ['cd-commentForm-previewButton'],
-      tabIndex: this.getTabIndex(35),
-    });
-    if (settings.get('autopreview')) {
-      this.previewButton.toggle(!settings.get('autopreview'));
-    }
-    this.previewButton.on('toggle', this.adjustLabels);
-
-    this.submitButton = new OO.ui.ButtonWidget({
-      label: this.submitButtonLabelStandard,
-      flags: ['progressive', 'primary'],
-      classes: ['cd-commentForm-submitButton'],
-      tabIndex: this.getTabIndex(36),
-    });
-  }
-
-  /**
-   * Create the main element, the wrappers for the controls (inputs, checkboxes, buttons), and other
-   * elements.
-   *
-   * @private
-   */
-  createElements() {
-    if (this.isMode('reply')) {
-      this.containerListType = 'dl';
-    } else if (this.isMode('edit')) {
-      this.containerListType = this.target.containerListType;
-    } else if (this.isMode('replyInSection')) {
-      this.containerListType = /** @type {ListType} */ (
-        /** @type {JQuery} */ (this.target.$replyButtonContainer)[0].tagName.toLowerCase()
-      );
-    }
-
-    this.$element = $('<div>').addClass(
-      [
-        `cd-commentForm cd-commentForm-${this.mode}`,
-        this.containerListType === 'ol' ? 'cd-commentForm-inNumberedList' : undefined,
-        this.isSectionOpeningCommentEdited() ? 'cd-commentForm-sectionOpeningComment' : undefined,
-        this.isSectionTarget() && this.isMode('addSubsection')
-          ? `cd-commentForm-addSubsection-${this.target.level}`
-          : undefined,
-      ].filter(defined)
-    );
-
-    this.$messageArea = $('<div>').addClass('cd-commentForm-messageArea');
-
-    this.$summaryPreview = $('<div>').addClass('cd-summaryPreview');
-
-    this.$advanced = $('<div>')
-      .addClass('cd-commentForm-advanced')
-      .append(this.summaryInput.$element, this.$summaryPreview, this.checkboxesLayout.$element);
-
-    this.$buttonsStart = $('<div>')
-      .addClass('cd-commentForm-buttons-start')
-      .append(
-        [
-          this.advancedButton.$element,
-          this.helpPopupButton.$element,
-          this.settingsButton?.$element,
-        ].filter(defined)
-      );
-
-    this.$buttonsEnd = $('<div>')
-      .addClass('cd-commentForm-buttons-end')
-      .append(
-        this.cancelButton.$element,
-        this.viewChangesButton.$element,
-        this.previewButton.$element,
-        this.submitButton.$element
-      );
-
-    this.$buttons = $('<div>')
-      .addClass('cd-commentForm-buttons')
-      .append(this.$buttonsStart, this.$buttonsEnd);
-
-    this.$element.append(
-      [
-        this.$messageArea,
-        this.headlineInput?.$element,
-        this.commentInput.$element,
-        this.$advanced,
-        this.$buttons,
-      ].filter(defined)
-    );
-
-    if (!this.isMode('edit') && !settings.get('alwaysExpandAdvanced')) {
-      this.$advanced.hide();
-    }
-
-    // .mw-body-content is for 404 pages
-    this.$previewArea = $('<div>')
-      .addClass('cd-commentForm-previewArea mw-body-content')
-      .addClass('cd-commentForm-previewArea-below')
-      .appendTo(this.$element);
-
-    if (this.containerListType === 'ol' && $.client.profile().layout !== 'webkit') {
-      // Dummy element for forms inside a numbered list so that the number is placed in front of
-      // that area, not in some silly place. Note that in Chrome, the number is placed in front of
-      // the textarea, so we don't need this in that browser.
-      $('<div>')
-        .html('&nbsp;')
-        .addClass('cd-commentForm-dummyElement')
-        .prependTo(this.$element);
-    }
-  }
-
-  /**
-   * Add a WikiEditor toolbar to the comment input if the relevant setting is enabled.
-   *
-   * @param {Promise<void>} customModulesPromise List of custom comment form modules
-   *   to await loading of before adding the toolbar.
-   * @fires commentFormToolbarReady
-   * @private
-   */
-  async addToolbar(customModulesPromise) {
-    if (!settings.get('showToolbar') || !mw.loader.getState('ext.wikiEditor')) {
-      if (settings.get('useCodeMirror')) {
-        this.initCodeMirror();
-      }
-
-      return;
-    }
-
-    // eslint-disable-next-line no-one-time-vars/no-one-time-vars
-    const $toolbarPlaceholder = $('<div>')
-      .addClass('cd-toolbarPlaceholder')
-      .insertBefore(this.commentInput.$element);
-
-    await Promise.all([
-      mw.loader.using([
-        'ext.wikiEditor',
-        ...(
-          cd.g.isCodeMirror6Installed
-            ? ['ext.CodeMirror.v6.WikiEditor', 'ext.CodeMirror.v6.mode.mediawiki']
-            : []
-        ),
-      ]),
-      customModulesPromise,
-    ]);
-
-    $toolbarPlaceholder.remove();
-
-    this.tweakToolbar();
-
-    // A hack to make the WikiEditor cookies related to active sections and pages saved correctly.
-    this.commentInput.$input.data('wikiEditor-context').instance = 5;
-    $.wikiEditor.instances = Array.from({ length: 5 });
-
-    /**
-     * The comment form toolbar is ready; all the requested custom comment form modules have been
-     * loaded and executed.
-     *
-     * @event commentFormToolbarReady
-     * @param {CommentForm} commentForm
-     * @param {object} cd {@link convenientDiscussions} object.
-     */
-    mw.hook('convenientDiscussions.commentFormToolbarReady').fire(this, cd);
-  }
-
-  /**
    * Removing the toolbar altogether is likely tedious and buggy. Just hide.
    *
    * @private
@@ -1208,7 +792,7 @@ class CommentForm extends EventEmitter {
   }
 
   /**
-   * @private
+   * Tweak the WikiEditor toolbar.
    */
   tweakToolbar() {
     this.setupToolbar();
@@ -1505,8 +1089,6 @@ class CommentForm extends EventEmitter {
 
   /**
    * Initialize a {@link https://www.mediawiki.org/wiki/Extension:CodeMirror CodeMirror} instance.
-   *
-   * @private
    */
   initCodeMirror = async () => {
     this.codeMirror = new ((await import('./CodeMirrorCommentInput')).default)(this.commentInput);
@@ -1515,70 +1097,6 @@ class CommentForm extends EventEmitter {
       /** @type {string} */ (this.commentInput.$input.attr('placeholder'))
     );
   };
-
-  /**
-   * Add the insert buttons block under the comment input.
-   *
-   * @private
-   */
-  addInsertButtons() {
-    const insertButtons = settings.get('insertButtons');
-    if (!insertButtons.length) return;
-
-    this.$insertButtons ??= $('<div>')
-      .addClass('cd-insertButtons')
-      .insertAfter(this.commentInput.$element);
-
-    insertButtons.forEach((button) => {
-      let snippet;
-      let label;
-      if (Array.isArray(button)) {
-        snippet = button[0];
-        label = button[1];
-      } else {
-        snippet = button;
-      }
-      this.addInsertButton(snippet, label);
-    });
-  }
-
-  /**
-   * Add an insert button to the block under the comment input.
-   *
-   * @param {string} snippet
-   * @param {string} [label]
-   * @private
-   */
-  addInsertButton(snippet, label) {
-    // Mask escaped characters
-    const textMasker = new TextMasker(snippet).mask(/\\[+;\\]/g);
-
-    let [, pre, post] = /** @type {[string, string, string | undefined]} */ (
-      textMasker.getText().match(/^(.*?)(?:\+(.*))?$/) || []
-    );
-    if (!pre) return;
-
-    pre = pre.replace(/\\n/g, '\n');
-    post ??= '';
-    post = post.replace(/\\n/g, '\n');
-
-    // Unmask escaped characters
-    const unescape = (/** @type {string} */ s) => s.replace(/\\([+;\\])/g, '$1');
-    pre = unescape(textMasker.unmaskText(pre));
-    post = unescape(textMasker.unmaskText(post));
-    label = label ? unescape(label) : pre + post;
-
-    /** @type {JQuery} */ (this.$insertButtons).append(
-      new Button({
-        label,
-        classes: ['cd-insertButtons-button'],
-        action: () => {
-          this.encapsulateSelection({ pre, post });
-        },
-      }).element,
-      ' '
-    );
-  }
 
   /**
    * Load the edited comment to the comment form.
@@ -2087,13 +1605,15 @@ class CommentForm extends EventEmitter {
     this.viewChangesButton.toggle(settings.get('autopreview'));
 
     if (settings.get('showToolbar') && !this.toolbarLoaded) {
-      this.addToolbar(this.loadCustomModules());
+      const builder = new CommentFormBuilder(this);
+      builder.buildToolbar(this.loadCustomModules());
     } else if (!settings.get('showToolbar') && this.toolbarLoaded) {
       this.hideToolbar();
     }
 
     this.$insertButtons?.empty();
-    this.addInsertButtons();
+    const builder = new CommentFormBuilder(this);
+    builder.buildInsertButtons();
   };
 
   /**
@@ -3748,7 +3268,6 @@ class CommentForm extends EventEmitter {
    * @param {boolean} [blockAutopreview] Whether to prevent making autopreview request in
    *   order not to make two identical requests (for example, if the update is initiated by a change
    *   in the comment – that change would initiate its own request).
-   * @private
    */
   updateAutoSummary = (set = true, blockAutopreview = false) => {
     if (this.summaryAltered) return;
@@ -3871,7 +3390,6 @@ class CommentForm extends EventEmitter {
    * Handle the delete checkbox change, setting form elements as disabled or enabled.
    *
    * @param {boolean} selected
-   * @private
    */
   updateFormOnDeleteCheckboxChange(selected) {
     if (selected) {

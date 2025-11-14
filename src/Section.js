@@ -1386,9 +1386,9 @@ class Section extends SectionSkeleton {
    *
    * @param {object} [initialState]
    * @param {import('./CommentForm').default} [commentForm]
-   * @returns {import('./CommentForm').default}
+   * @returns {Promise<import('./CommentForm').default>}
    */
-  reply(initialState, commentForm) {
+  async reply(initialState, commentForm) {
     // Check for existence in case replying is called from a script of some kind (there is no button
     // to call it from CD).
     if (!this.replyForm) {
@@ -1401,7 +1401,7 @@ class Section extends SectionSkeleton {
        *
        * @type {import('./CommentForm').default | undefined}
        */
-      this.replyForm = commentFormManager.setupCommentForm(
+      this.replyForm = await commentFormManager.setupCommentForm(
         this,
         {
           mode: 'replyInSection',
@@ -1424,10 +1424,10 @@ class Section extends SectionSkeleton {
    *
    * @param {object} [initialState]
    * @param {import('./CommentForm').default} [commentForm]
-   * @returns {import('./CommentForm').default}
+   * @returns {Promise<import('./CommentForm').default>}
    * @throws {CdError}
    */
-  addSubsection(initialState, commentForm) {
+  async addSubsection(initialState, commentForm) {
     if (!this.canBeSubsectioned()) {
       throw new CdError();
     }
