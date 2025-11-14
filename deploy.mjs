@@ -33,17 +33,25 @@ const debug = Boolean(argv.debug || process.env.npm_config_debug);
 const dryRun = Boolean(argv['dry-run'] || process.env.npm_config_dry_run);
 
 /**
+ * Print a warning message.
+ *
  * @param {string} text
  */
 const warning = (text) => {
   console.log(chalk.yellowBright(text));
 };
+
 /**
+ * Create an error with formatted message.
+ *
  * @param {string} text
  * @returns {Error}
  */
 const error = (text) => new Error(chalk.red(text));
+
 /**
+ * Print a success message.
+ *
  * @param {string} text
  */
 const success = (text) => {
@@ -164,7 +172,7 @@ const clients = {
 /**
  * Parse git output to get branch and commits.
  *
- * @param {string} stdout
+ * @param {string} stdout Git command output
  * @returns {{ branch: string; commits: Commit[] }}
  */
 function parseGitOutput(stdout) {
@@ -192,7 +200,7 @@ function parseGitOutput(stdout) {
 /**
  * Get the last deployed commit from revision history.
  *
- * @param {Commit[]} commits
+ * @param {Commit[]} commits List of commits from git log
  * @returns {Promise<{ newCommitsCount: number; newCommitsSubjects: string[] }>}
  */
 async function getLastDeployedCommit(commits) {
@@ -254,8 +262,8 @@ async function getLastDeployedCommit(commits) {
 /**
  * Keep only the first 300 characters of content.
  *
- * @param {string} content
- * @param {number} [n]
+ * @param {string} content Content to truncate
+ * @param {number} [n] Maximum length (default: 300)
  * @returns {string}
  */
 function cutContent(content, n = 300) {
@@ -265,10 +273,10 @@ function cutContent(content, n = 300) {
 /**
  * Get edits for main files.
  *
- * @param {string} branch
- * @param {Commit[]} commits
- * @param {number} newCommitsCount
- * @param {string[]} newCommitsSubjects
+ * @param {string} branch Current git branch name
+ * @param {Commit[]} commits List of commits
+ * @param {number} newCommitsCount Number of new commits since last deploy
+ * @param {string[]} newCommitsSubjects Subjects of new commits
  * @returns {Edit[]}
  */
 function getMainEdits(branch, commits, newCommitsCount, newCommitsSubjects) {
@@ -404,6 +412,8 @@ async function getConfigsEdits() {
 }
 
 /**
+ * Create an overview string for an edit.
+ *
  * @param {Edit} edit
  * @returns {string}
  */
@@ -467,8 +477,8 @@ async function getCredentials() {
 /**
  * Login to a server.
  *
- * @param {string} server
- * @param {Credentials} credentials
+ * @param {string} server Server hostname
+ * @param {Credentials} credentials Login credentials
  */
 async function logIn(server, credentials) {
   await clients[server].login(credentials);
@@ -477,7 +487,7 @@ async function logIn(server, credentials) {
 /**
  * Make edits for a specific server.
  *
- * @param {Edit[]} serverEdits
+ * @param {Edit[]} serverEdits Edits to make on the server
  */
 async function deployToServer(serverEdits) {
   for (const edit of serverEdits) {
