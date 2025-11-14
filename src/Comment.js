@@ -1456,7 +1456,7 @@ class Comment extends CommentSkeleton {
       .each((_, tr) => {
         const $tr = $(tr);
         const $lineNumbers = $tr.children('.diff-lineno');
-        for (let j = 0; j < $lineNumbers.length; j++) {
+        for (let j = 0; j < Math.min($lineNumbers.length, 2); j++) {
           currentLineNumbers[j] = extractNumeralAndConvertToNumber(
             $lineNumbers.eq(j).text(),
             cd.g.digits.user
@@ -1466,9 +1466,9 @@ class Comment extends CommentSkeleton {
               type: 'parse',
             });
           }
-          if (j === 1) return;
         }
         if (!$tr.children('.diff-marker').length) return;
+
         let addToDiff = false;
         for (let j = 0; j < 2; j++) {
           if (

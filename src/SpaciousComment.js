@@ -281,7 +281,7 @@ class SpaciousComment extends Comment {
         this.actions.copyLinkButton = new CommentButton({
           label: this.reformattedTimestamp || this.timestamp,
           tooltip: this.timestampTitle,
-          classes: ['cd-comment-button-labelled', 'cd-comment-timestamp', 'mw-selflink-fragment'],
+          classes: ['cd-comment-button-labeled', 'cd-comment-timestamp', 'mw-selflink-fragment'],
           action: this.copyLink,
           href: this.dtId && '#' + this.dtId,
         });

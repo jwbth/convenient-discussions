@@ -35,7 +35,7 @@ class SpaciousCommentActions extends CommentActions {
   createReplyButton(action) {
     return new CommentButton({
       label: cd.s('cm-reply'),
-      classes: ['cd-comment-button-labelled'],
+      classes: ['cd-comment-button-labeled'],
       // flags: ['progressive'],
       action,
     });
@@ -51,7 +51,7 @@ class SpaciousCommentActions extends CommentActions {
   createEditButton(action) {
     return new CommentButton({
       label: cd.s('cm-edit'),
-      classes: ['cd-comment-button-labelled'],
+      classes: ['cd-comment-button-labeled'],
       action,
     });
   }
@@ -68,7 +68,7 @@ class SpaciousCommentActions extends CommentActions {
     return new CommentButton({
       label: cd.s(isThanked ? 'cm-thanked' : 'cm-thank'),
       tooltip: cd.s(isThanked ? 'cm-thanked-tooltip' : 'cm-thank-tooltip'),
-      classes: ['cd-comment-button-labelled'],
+      classes: ['cd-comment-button-labeled'],
       action,
     });
   }
@@ -84,7 +84,7 @@ class SpaciousCommentActions extends CommentActions {
     return new CommentButton({
       label: cd.s('cm-copylink'),
       tooltip: cd.s('cm-copylink-tooltip'),
-      classes: ['cd-comment-button-labelled'],
+      classes: ['cd-comment-button-labeled'],
       action,
       href: this.comment.dtId && '#' + this.comment.dtId,
     });
