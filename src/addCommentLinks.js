@@ -4,12 +4,15 @@
  * @module addCommentLinks
  */
 
-import PrototypeRegistry from '../PrototypeRegistry';
-import { definedAndNotNull, generatePageNamePattern, isProbablyTalkPage, isUndo, removeDirMarks, spacesToUnderlines } from '../shared/utils-general';
-import { parseTimestamp } from '../shared/utils-timestamp';
-
-import bootManager from './bootManager';
-import cd from './cd';
+import Comment from './Comment';
+import PrototypeRegistry from './PrototypeRegistry';
+import commentManager from './commentManager';
+import bootManager from './loader/bootManager';
+import cd from './loader/cd';
+import pageRegistry from './pageRegistry';
+import settings from './settings';
+import { definedAndNotNull, generatePageNamePattern, isProbablyTalkPage, isUndo, removeDirMarks, spacesToUnderlines } from './shared/utils-general';
+import { parseTimestamp } from './shared/utils-timestamp';
 
 /** @type {string | undefined} */
 let moveFromStringStart;
@@ -34,8 +37,6 @@ const prototypes = new PrototypeRegistry();
  * @private
  */
 async function init() {
-  const settings = (await import('../settings')).default;
-
   // This could have been executed from init.talkPage() already.
   bootManager.initGlobals();
   await settings.init();
@@ -269,9 +270,6 @@ async function processContributions($content) {
   await bootManager.initTimestampTools('user');
   if (cd.g.timestampTools.user.timezone === undefined) return;
 
-  const Comment = (await import('../Comment')).default;
-  const pageRegistry = (await import('../pageRegistry')).default;
-
   [
     ...$content[0].querySelectorAll('.mw-contributions-list > li:not(.mw-tag-mw-new-redirect)'),
   ].forEach((line) => {
@@ -342,8 +340,6 @@ async function processContributions($content) {
 async function processHistory($content) {
   await bootManager.initTimestampTools('user');
   if (cd.g.timestampTools.user.timezone === undefined) return;
-
-  const Comment = (await import('../Comment')).default;
 
   const link = cd.page.getUrl();
   [
@@ -419,10 +415,6 @@ async function processDiff($diff) {
   }
   if (cd.g.timestampTools.user.timezone === undefined) return;
 
-  const Comment = (await import('../Comment')).default;
-  const pageRegistry = (await import('../pageRegistry')).default;
-  const commentManager = (await import('../commentManager')).default;
-
   const $root = $diff || bootManager.$content;
   const root = $root[0];
   [root.querySelector('.diff-otitle'), root.querySelector('.diff-ntitle')]
@@ -456,7 +448,7 @@ async function processDiff($diff) {
 
       const id = Comment.generateId(date, author);
 
-      /** @type {import('../Comment').default | undefined} */
+      /** @type {import('./Comment').default | undefined} */
       let comment;
       let page;
       if ($diff) {
