@@ -261,6 +261,7 @@ export default defineConfig(({ mode, command }) => {
     SINGLE_LANG_CODE: buildMode.isSingle && buildMode.lang
       ? JSON.stringify(buildMode.lang)
       : 'undefined',
+    CACHE_BUSTER: generateRandomId(),
   };
 
   const plugins = [];
@@ -510,3 +511,12 @@ export default defineConfig(({ mode, command }) => {
     },
   };
 });
+
+/**
+ * Generate an 8-character random ID.
+ *
+ * @returns {string}
+ */
+function generateRandomId() {
+  return Math.random().toString(36).substring(2, 10);
+}

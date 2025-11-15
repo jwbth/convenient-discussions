@@ -1,6 +1,8 @@
 import config from '../config.mjs';
 
 /**
+ * Encode a URL using MediaWiki's escaping style.
+ *
  * @param {string | number | boolean} string
  */
 function wikiUrlencode(string) {

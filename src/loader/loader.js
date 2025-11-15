@@ -234,11 +234,57 @@ async function getStrings() {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       .filter((lang) => lang !== 'en' && !cd.i18n?.[lang])
       .map((lang) =>
-        mw.loader.getScript(
-          `https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js&action=raw&ctype=text/javascript`
-        )
+        loadPreferablyFromDiskCache({
+          domain: 'commons.wikimedia.org',
+          pageName: `User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js`,
+          ttlInDays: 1,
+        })
       )
   ).catch(() => {});
+}
+
+/**
+ * Load a script or style using the following strategy:
+ * - If more than `ttlInDays` days have passed since caching, load from the server. E.g.
+ *   translations can be requested daily.
+ * - If `addCacheBuster` is `true`, load from server each time there is a new release (we "bust"
+ *   cache by adding a random string to the URL). This is for the main app and anything updated
+ *   together with it.
+ *
+ * @param {object} options
+ * @param {string} options.domain
+ * @param {string} options.pageName
+ * @param {number} options.ttlInDays
+ * @param {string} [options.ctype]
+ * @param {boolean} [options.addCacheBuster]
+ * @returns {Promise<void>}
+ */
+async function loadPreferablyFromDiskCache({
+  domain,
+  pageName,
+  ttlInDays,
+  ctype,
+  addCacheBuster = false,
+}) {
+  const ttlInMs = ttlInDays * cd.g.msInDay;
+  const pageEncoded = encodeURIComponent(pageName);
+  const cacheBusterOrNot = addCacheBuster ? '&' + CACHE_BUSTER : '';
+
+  const apiResponse = await $.get(
+    `https://${domain}/w/api.php?titles=${pageEncoded}&origin=*&format=json&formatversion=2&uselang=content&maxage=${ttlInMs}&smaxage=${ttlInMs}&action=query&prop=revisions|info&rvprop=content&rvlimit=1${cacheBusterOrNot}`
+  );
+
+  const apiPage = apiResponse.query.pages[0];
+  if (!apiPage.missing) return;
+
+  const content = apiPage.revisions[0].content;
+  if (ctype === 'text/javascript' && apiPage.contentmodel === 'javascript') {
+    const scriptTag = document.createElement('script');
+    scriptTag.innerHTML = content;
+    document.head.append(scriptTag);
+  } else if (ctype === 'text/css' && apiPage.contentmodel === 'css') {
+    mw.loader.addStyleTag(content);
+  }
 }
 
 /**
@@ -251,7 +297,8 @@ async function go() {
   debug.startTimer('start');
 
   // Don't run again if go() runs the second time (e.g. from maybeAddFooterSwitcher()).
-  if (cd.g.pageWhitelistRegexp === undefined) {
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (cd.config === undefined) {
     /**
      * Script configuration. The default configuration is in {@link defaultConfig}.
      *

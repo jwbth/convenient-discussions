@@ -15,8 +15,9 @@ import type { ConvenientDiscussions } from './loader/cd';
 declare global {
   const IS_STAGING: boolean;
   const IS_DEV: boolean;
-  const SINGLE_CONFIG_FILE_NAME: string | null;
-  const SINGLE_LANG_CODE: string | null;
+  const SINGLE_CONFIG_FILE_NAME: string | undefined;
+  const SINGLE_LANG_CODE: string | undefined;
+  const CACHE_BUSTER: string;
   const moment: (...args: any) => any;
 
   type Direction = 'ltr' | 'rtl';
