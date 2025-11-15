@@ -67,10 +67,6 @@
 	"section-reply": "Reply to section",
 	"section-addsubsection-to": "Add subsection to \"$1\"",
 	"section-newcomments": "{{plural:$1|There is a new comment|There are $1 new comments}} in this section (outside of threads) from {{plural:$2|1={{gender:$4|}}|{{gender:$4|}}}} $3. Click to refresh the page.",
-	"section-unwatch-stillwatched": "<strong>Note:</strong> you are still subscribed to this section as it is included in the section \"$1\" that you are subscribed to.",
-	"section-watch-openpages": "(You will only get notifications while this tab is open.)",
-	"section-watch-pagenotwatched": "<strong>Note:</strong> you subscribed to the section but you aren't watching the page. In order for new comments to be highlighted on your watchlist page, add the page to the watchlist.",
-	"section-watch-error-maxsize": "Couldn't update the settings: the size of the subscription list exceeds the maximum size. <span class=\"cd-notification-editWatchedSections\">[[$1|Edit the subscription list]]</span> to fix this.",
 	"section-metadata-commentcount-authorcount": "$1 {{plural:$1|comment|comments}}<span class=\"cd-section-metadata-authorcount\"> from <span class=\"cd-section-metadata-authorcount-link\">$2 {{plural:$2|person|people}}</span></span>",
 	"section-metadata-newcommentcount": "+$1 {{plural:$1|new}}",
 	"section-metadata-lastcomment": "Latest comment:",
@@ -401,13 +397,6 @@
 	"sd-watchsectiononreply": "Subscribe to topics that {{gender:$1|I comment in}}",
 	"sd-watchsectiononreply-help": "This affects notifications.",
 
-	"ewsd-title": "Edit subscription list",
-	"ewsd-save": "Save",
-	"ewsd-saved": "The subscription list has been successfully saved.",
-	"ewsd-error-maxsize": "Couldn't update the settings: the size of the subscription list exceeds the maximum size. Reduce the size of the list to fix this.",
-	"ewsd-error-processing": "An error occurred while processing the subscription list.",
-	"ewsd-close-confirm": "The subscription list wasn't saved. Are you sure you want to close the window?",
-
 	"msd-title": "Move topic",
 	"msd-move": "Move",
 	"msd-targetpage": "Enter the name of the discussion page to move the topic to:",
@@ -472,14 +461,11 @@
 	"discussiontools-incompatible": "Convenient Discussions is mostly incompatible with DiscussionTools. Please <b><span class=\"cd-notification-disabledt\">[[$1|disable]]</span></b> <span class=\"cd-notification-disableDtGlobally-wrapper\">(or <b><span class=\"cd-notification-disableDtGlobally\">[[$2|globally disable]]</span></b>)</span> DiscussionTools to make Convenient Discussions work correctly.",
 	"discussiontools-disabled": "DiscussionTools has been successfully disabled. <span class=\"cd-notification-refresh\">[[$1|Refresh the page]]</span>.",
 
-	"wl-button-switchrelevant-tooltip": "Show only comments in topics that I'm {{gender:$1|subscribed to}} and comments addressed to me. (Note: detection is based on edit summaries, so some edits may be missing)",
-	"wl-button-editwatchedsections-tooltip": "Edit the list of topics that I'm {{gender:$1|subscribed to}}",
 	"wl-button-settings-tooltip": "Convenient Discussions settings",
 
 	"lp-comment": "comment",
 	"lp-comment-tooltip": "Go to comment",
 	"lp-comment-toyou": "the comment is addressed to you",
-	"lp-comment-watchedsection": "you are subscribed to this section",
 
 	"educationpopup-dismiss": "Okay, got it",
 

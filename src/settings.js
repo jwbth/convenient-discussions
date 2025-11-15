@@ -574,12 +574,6 @@ class Settings extends EventEmitter {
         label: cd.s('sd-page-notifications'),
         controls: [
           {
-            name: 'useTopicSubscription',
-            type: this.scheme.controlTypes.useTopicSubscription,
-            label: wrapHtml(cd.sParse('sd-usetopicsubscription', mw.user), { targetBlank: true }),
-            help: wrapHtml(cd.sParse('sd-usetopicsubscription-help'), { targetBlank: true }),
-          },
-          {
             name: 'notifications',
             type: this.scheme.controlTypes.notifications,
             label: cd.s('sd-notifications'),

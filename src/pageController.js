@@ -4,7 +4,6 @@ import CommentForm from './CommentForm';
 import CopyLinkDialog from './CopyLinkDialog';
 import DtSubscriptions from './DtSubscriptions';
 import EventEmitter from './EventEmitter';
-import LegacySubscriptions from './LegacySubscriptions';
 import Thread from './Thread';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
@@ -1519,9 +1518,7 @@ class PageController extends EventEmitter {
    * @returns {import('./Subscriptions').default}
    */
   getSubscriptionsInstance() {
-    this.subscriptionsInstance ??= new (
-      settings.get('useTopicSubscription') ? DtSubscriptions : LegacySubscriptions
-    )();
+    this.subscriptionsInstance ??= new DtSubscriptions();
 
     return this.subscriptionsInstance;
   }

@@ -2971,11 +2971,10 @@ class CommentForm extends EventEmitter {
    * Subscribe and unsubscribe from topics.
    *
    * @param {string} editTimestamp
-   * @param {import('./TalkPageBootProcess').PassedData} bootData
    * @param {string|undefined} commentCode
    * @private
    */
-  updateSubscriptionStatus(editTimestamp, bootData, commentCode) {
+  updateSubscriptionStatus(editTimestamp, commentCode) {
     if (!this.subscribeCheckbox) return;
 
     if (this.subscribeCheckbox.isSelected()) {
@@ -2999,22 +2998,16 @@ class CommentForm extends EventEmitter {
 
         let subscribeId;
         let originalHeadline;
-        let isHeadlineAltered;
         if (this.useTopicSubscription) {
           subscribeId = sectionManager.generateDtSubscriptionId(cd.user.getName(), editTimestamp);
         } else {
           subscribeId = headline;
           if (this.isSectionOpeningCommentEdited()) {
             originalHeadline = removeWikiMarkup(this.originalHeadline || '');
-            isHeadlineAltered = subscribeId !== originalHeadline;
           }
         }
 
         if (subscribeId !== undefined) {
-          bootData.justSubscribedToSection = subscribeId;
-          if (isHeadlineAltered) {
-            bootData.justUnsubscribedFromSection = originalHeadline;
-          }
           pageController
             .getSubscriptionsInstance()
             .subscribe(subscribeId, headline, true, originalHeadline);
@@ -3024,7 +3017,6 @@ class CommentForm extends EventEmitter {
         if (section && !section.subscriptionState) {
           section.ensureSubscribeIdPresent(editTimestamp);
           section.subscribe('silent');
-          bootData.justSubscribedToSection = section.subscribeId;
         }
       }
     } else {
@@ -3032,7 +3024,6 @@ class CommentForm extends EventEmitter {
       if (section?.subscriptionState) {
         section.ensureSubscribeIdPresent(editTimestamp);
         section.unsubscribe('silent');
-        bootData.justUnsubscribedFromSection = section.subscribeId;
       }
     }
   }
@@ -3113,7 +3104,7 @@ class CommentForm extends EventEmitter {
       submittedCommentForm: this,
     });
 
-    this.updateSubscriptionStatus(editTimestamp, bootData, commentCode);
+    this.updateSubscriptionStatus(editTimestamp, commentCode);
 
     if (this.watchCheckbox?.isSelected() && $('#ca-watch').length) {
       $('#ca-watch')

@@ -3,7 +3,6 @@ import CommentForm from './CommentForm';
 import CommentFormInputTransformer from './CommentFormInputTransformer';
 import CompactComment from './CompactComment';
 import DtSubscriptions from './DtSubscriptions';
-import LegacySubscriptions from './LegacySubscriptions';
 import Section from './Section';
 import SpaciousComment from './SpaciousComment';
 import Thread from './Thread';
@@ -123,10 +122,6 @@ function processAndRemoveDtElements(elements) {
  *   ID to it if it's specified.
  * @property {number} [scrollY] Page's Y offset.
  * @property {Comment[]} [unseenComments] Unseen comments on this page.
- * @property {string} [justSubscribedToSection] Section just watched so that there could be not
- *   enough time for it to be saved to the server.
- * @property {string} [justUnsubscribedFromSection] Section just unwatched so that there could be
- *   not enough time for it to be saved to the server.
  * @property {CommentForm} [submittedCommentForm] Comment form the user just submitted.
  * @property {boolean} [isPageReloadedExternally] Whether the page was reloaded externally (e.g. by
  *   some script).
@@ -217,10 +212,6 @@ class TalkPageBootProcess {
     if (cd.page.exists()) {
       if (cd.page.isActive()) {
         visits.load(this, true);
-      }
-
-      if (this.subscriptions instanceof LegacySubscriptions) {
-        this.subscriptions.loadToTalkPage(this, true);
       }
 
       /**

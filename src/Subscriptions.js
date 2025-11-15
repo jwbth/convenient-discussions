@@ -1,6 +1,5 @@
 import EventEmitter from './EventEmitter';
 import cd from './loader/cd';
-import settings from './settings';
 import CdError from './shared/CdError';
 import { wrapHtml } from './utils-window';
 
@@ -15,8 +14,7 @@ import { wrapHtml } from './utils-window';
 
 /**
  * Implementation of the subscriptions feature in general terms. It is extended by
- * {@link DtSubscriptions DisussionTools' topic subscription} and
- * {@link LegacySubscriptions CD's legacy section watching}.
+ * {@link DtSubscriptions DisussionTools' topic subscription}.
  *
  * @augments EventEmitter<EventMap>
  */
@@ -117,23 +115,13 @@ class Subscriptions extends EventEmitter {
     await this.actuallySubscribe(subscribeId, id, unsubscribeHeadline);
 
     if (!quiet) {
-      let body = subscribeId.startsWith('p-')
+      const body = subscribeId.startsWith('p-')
         ? cd.mws('discussiontools-newtopicssubscription-notify-subscribed-body')
         : cd.mws('discussiontools-topicsubscription-notify-subscribed-body');
-      /** @type {'long'|'short'|undefined} */
-      let autoHideSeconds;
-      if (!settings.get('useTopicSubscription')) {
-        body += ' ' + cd.sParse('section-watch-openpages');
-        if ($('#ca-watch').length) {
-          body += ' ' + cd.sParse('section-watch-pagenotwatched');
-          autoHideSeconds = 'long';
-        }
-      }
       mw.notify(wrapHtml(body), {
         title: subscribeId.startsWith('p-')
           ? cd.mws('discussiontools-newtopicssubscription-notify-subscribed-title')
           : cd.mws('discussiontools-topicsubscription-notify-subscribed-title'),
-        autoHideSeconds,
       });
     }
   }
@@ -144,27 +132,18 @@ class Subscriptions extends EventEmitter {
    * @param {string} subscribeId Section's DiscussionTools ID.
    * @param {string} [id] Section's ID. Not required for DiscussionTools subscriptions.
    * @param {boolean} [quiet] Don't show a success notification.
-   * @param {import('./Section').default} [section] Section being unsubscribed from, if any, for
-   *   legacy subscriptions.
    */
-  async unsubscribe(subscribeId, id, quiet = false, section = undefined) {
+  async unsubscribe(subscribeId, id, quiet = false) {
     await this.actuallyUnsubscribe(subscribeId, id);
 
-    const ancestorSubscribedTo = section?.getClosestSectionSubscribedTo();
-    if (!quiet || ancestorSubscribedTo) {
-      let body = subscribeId.startsWith('p-')
+    if (!quiet) {
+      const body = subscribeId.startsWith('p-')
         ? cd.mws('discussiontools-newtopicssubscription-notify-unsubscribed-body')
         : cd.mws('discussiontools-topicsubscription-notify-unsubscribed-body');
-      let /** @type {'long'|'short'|undefined} */ autoHideSeconds;
-      if (ancestorSubscribedTo) {
-        body += ' ' + cd.sParse('section-unwatch-stillwatched', ancestorSubscribedTo.headline);
-        autoHideSeconds = 'long';
-      }
       mw.notify(wrapHtml(body), {
         title: subscribeId.startsWith('p-')
           ? cd.mws('discussiontools-newtopicssubscription-notify-unsubscribed-title')
           : cd.mws('discussiontools-topicsubscription-notify-unsubscribed-title'),
-        autoHideSeconds,
       });
     }
   }

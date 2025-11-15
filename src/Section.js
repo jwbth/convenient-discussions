@@ -1427,7 +1427,7 @@ class Section extends SectionSkeleton {
    * @returns {Promise<import('./CommentForm').default>}
    * @throws {CdError}
    */
-  async addSubsection(initialState, commentForm) {
+  addSubsection(initialState, commentForm) {
     if (!this.canBeSubsectioned()) {
       throw new CdError();
     }
@@ -1564,9 +1564,7 @@ class Section extends SectionSkeleton {
    *   - `'quiet'`: don't show a notification.
    *   - `'silent'`: don't even change any UI, including the subscribe button appearance. If there
    *   is an error, it will be displayed though.
-   * @param {string} [renamedFrom] If DiscussionTools' topic subscriptions API is not used and the
-   *   section was renamed, the previous section headline. It is unwatched together with watching
-   *   the current headline if there are no other coinciding headlines on the page.
+   * @param {string} [renamedFrom] If the section was renamed, the previous section headline.
    */
   subscribe(mode, renamedFrom) {
     if (!this.subscribeId) return;
@@ -1694,15 +1692,6 @@ class Section extends SectionSkeleton {
       )[0],
     };
     this.parseHeadline.call(oldSectionDummy);
-    if (
-      this.headline &&
-      oldSectionDummy.headline !== this.headline &&
-      /** @type {import('./LegacySubscriptions').default} */ (this.subscriptions).getOriginalState(
-        /** @type {string} */ (oldSectionDummy.headline)
-      )
-    ) {
-      this.subscribe('quiet', oldSectionDummy.headline);
-    }
   }
 
   /**

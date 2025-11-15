@@ -7,25 +7,18 @@
 import PrototypeRegistry from '../PrototypeRegistry';
 import { definedAndNotNull, generatePageNamePattern, isProbablyTalkPage, isUndo, removeDirMarks, spacesToUnderlines } from '../shared/utils-general';
 import { parseTimestamp } from '../shared/utils-timestamp';
-import { initDayjs } from '../utils-window';
 
 import bootManager from './bootManager';
 import cd from './cd';
 
-/** @type {string} */
-let colon;
 /** @type {string | undefined} */
 let moveFromStringStart;
 /** @type {string | undefined} */
 let moveToStringStart;
 /** @type {string} */
 let goToCommentToYou;
-/** @type {string} */
-let goToCommentWatchedSection;
 /** @type {RegExp} */
 let currentUserRegexp;
-/** @type {import('../LegacySubscriptions').default | undefined} */
-let subscriptions;
 
 /**
  * @type {PrototypeRegistry<{
@@ -47,19 +40,8 @@ async function init() {
   bootManager.initGlobals();
   await settings.init();
 
-  /** @type {PromiseLike<any>[]} */
-  const requests = [...bootManager.getSiteData()];
-  if (cd.user.isRegistered() && !settings.get('useTopicSubscription')) {
-    // Loading the subscriptions is not critical, as opposed to messages, so we catch the possible
-    // error, not letting it be caught by the try/catch block.
-    subscriptions = /** @type {import('../LegacySubscriptions').default} */ (
-      (await import('../pageController')).default.getSubscriptionsInstance()
-    );
-    requests.push(subscriptions.load(undefined, true).catch(() => {}));
-  }
-
   try {
-    await Promise.all(requests);
+    await Promise.all(bootManager.getSiteData());
   } catch (error) {
     throw new Error(`Couldn't load the data required for the script.`, { cause: error });
   }
@@ -69,13 +51,11 @@ async function init() {
     --cd-parentheses-end: '${cd.mws('parentheses-end')}';
   }`);
 
-  colon = cd.mws('colon-separator', { language: 'content' }).trim();
   [moveFromStringStart] = cd.s('es-move-from').match(/^[^[$]+/) || [];
   [moveToStringStart] = cd.s('es-move-to').match(/^[^[$]+/) || [];
 
-  goToCommentToYou = goToCommentWatchedSection = cd.s('lp-comment-tooltip') + ' ';
+  goToCommentToYou = cd.s('lp-comment-tooltip') + ' ';
   goToCommentToYou += cd.mws('parentheses', cd.s('lp-comment-toyou'));
-  goToCommentWatchedSection += cd.mws('parentheses', cd.s('lp-comment-watchedsection'));
 
   // eslint-disable-next-line no-one-time-vars/no-one-time-vars
   const $aRegularPrototype = $('<a>')
@@ -101,131 +81,6 @@ async function init() {
   currentUserRegexp = new RegExp(
     `(?:^|[^${cd.g.letterPattern}])${currentUserNamePattern}(?![${cd.g.letterPattern}])`
   );
-}
-
-/**
- * Show/hide relevant edits.
- *
- * @param {OO.ui.ButtonWidget} switchRelevantButton
- * @private
- */
-function switchRelevant(switchRelevantButton) {
-  // This is for many watchlist types at once.
-  const $collapsibles = bootManager.$content
-    .find('.mw-changeslist .mw-collapsible:not(.mw-changeslist-legend)');
-  const $lines = bootManager.$content.find('.mw-changeslist-line:not(table)');
-
-  if (switchRelevantButton.hasFlag('progressive')) {
-    // Show all
-    // FIXME: Old watchlist (no JS) + ?enhanced=1&urlversion=2
-
-    // Check if item grouping switched on. This may be done in the settings or via the URL parameter.
-    if ($('.mw-changeslist').find('ul.special').length) {
-      $lines
-        .not(':has(.cd-commentLink-relevant)')
-        .show();
-    } else {
-      $lines
-        .filter('table')
-        .show();
-    }
-    $collapsibles
-      .not(':has(.cd-commentLink-relevant)')
-      .find('.mw-rcfilters-ui-highlights-enhanced-toplevel')
-      .show();
-    $collapsibles
-      .not('.mw-collapsed')
-      .find('.mw-enhancedchanges-arrow')
-      .trigger('click');
-  } else {
-    // Show relevant only
-    $collapsibles
-      .not('.mw-collapsed')
-      .find('.mw-enhancedchanges-arrow')
-      .trigger('click');
-    $collapsibles
-      .has('.cd-commentLink-relevant')
-      .find('.mw-enhancedchanges-arrow')
-      .trigger('click');
-    $collapsibles
-      .not(':has(.cd-commentLink-relevant)')
-      .find('.mw-rcfilters-ui-highlights-enhanced-toplevel')
-      .hide();
-    $lines
-      .not(':has(.cd-commentLink-relevant)')
-      .hide();
-  }
-  switchRelevantButton.setFlags({ progressive: !switchRelevantButton.hasFlag('progressive') });
-}
-
-/**
- * Add watchlist menu (a block with buttons).
- *
- * @private
- */
-function addWatchlistMenu() {
-  if (!subscriptions) return;
-
-  // For auto-updating watchlists
-  mw.hook('wikipage.content').add(() => {
-    switchRelevantButton.setFlags({ progressive: false });
-  });
-
-  const $menu = $('<div>').addClass('cd-watchlistMenu');
-  $('<a>')
-    .attr('href', mw.util.getUrl(cd.config.scriptPageWikilink))
-    .attr('target', '_blank')
-    .addClass('cd-watchlistMenu-scriptPageLink')
-    .text(cd.s('script-name-short'))
-    .appendTo($menu);
-
-  const switchRelevantButton = new OO.ui.ButtonWidget({
-    framed: false,
-    icon: 'speechBubble',
-    label: cd.s('wl-button-switchrelevant-tooltip', mw.user),
-    invisibleLabel: true,
-    title: cd.s('wl-button-switchrelevant-tooltip', mw.user),
-    classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-switchRelevant'],
-    disabled: !subscriptions.areLoaded(),
-  });
-  switchRelevantButton.on('click', () => {
-    switchRelevant(switchRelevantButton);
-  });
-  switchRelevantButton.$element.appendTo($menu);
-
-  const editSubscriptionsButtonConfig = {
-    framed: false,
-    icon: 'listBullet',
-    label: cd.s('wl-button-editwatchedsections-tooltip', mw.user),
-    invisibleLabel: true,
-    title: cd.s('wl-button-editwatchedsections-tooltip', mw.user),
-    classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-editSubscriptions'],
-  };
-  const editSubscriptionsButton = new OO.ui.ButtonWidget(editSubscriptionsButtonConfig);
-  editSubscriptionsButton.on('click', () => {
-    bootManager.showEditSubscriptionsDialog();
-  });
-  editSubscriptionsButton.$element.appendTo($menu);
-
-  const settingsButton = new OO.ui.ButtonWidget({
-    framed: false,
-    icon: 'settings',
-    label: cd.s('wl-button-settings-tooltip'),
-    invisibleLabel: true,
-    title: cd.s('wl-button-settings-tooltip'),
-    classes: ['cd-watchlistMenu-button', 'cd-watchlistMenu-button-scriptSettings'],
-  });
-  settingsButton.on('click', async () => {
-    initDayjs();
-    (await import('../settings')).default.showDialog();
-  });
-  settingsButton.$element.appendTo($menu);
-
-  // New watchlist
-  bootManager.$content.find('.mw-rcfilters-ui-changesLimitAndDateButtonWidget').prepend($menu);
-
-  // Old watchlist
-  bootManager.$content.find('#mw-watchlist-options .mw-changeslist-legend').after($menu);
 }
 
 /**
@@ -306,52 +161,12 @@ function isArchiving(summary) {
 }
 
 /**
- * Check by an edit summary if it is an edit in a section with given name.
- *
- * @param {string} summary
- * @param {string} name
- * @returns {boolean}
- * @private
- */
-function isInSection(summary, name) {
-  if (!name) {
-    return false;
-  }
-
-  // This can run many thousand times, so we use the cheapest way.
-  return cd.g.contentDirection === 'ltr'
-    ? summary.includes(`→${name}${colon}`) || summary.endsWith(`→${name}`)
-    : summary.includes(`←${name}${colon}`) || summary.endsWith(`←${name}`);
-}
-
-/**
- * Add comment links to a watchlist or a recent changes page. Add a watchlist menu to the watchlist.
+ * Add comment links to a watchlist or a recent changes page.
  *
  * @param {JQuery} $content
  * @private
  */
 function processWatchlist($content) {
-  if (
-    mw.config.get('wgCanonicalSpecialPageName') === 'Watchlist' &&
-    !bootManager.$content.find('.cd-watchlistMenu').length
-  ) {
-    if (mw.user.options.get('wlenhancedfilters-disable')) {
-      addWatchlistMenu();
-    } else {
-      mw.hook('structuredChangeFilters.ui.initialized').add(() => {
-        addWatchlistMenu();
-      });
-    }
-
-    if (subscriptions) {
-      $('.mw-rcfilters-ui-filterWrapperWidget-showNewChanges a').on('click', async () => {
-        // Reload in case the subscription list has changed (which should be a pretty common
-        // occasion)
-        await /** @type {NonNullable<typeof subscriptions>} */ (subscriptions).load();
-      });
-    }
-  }
-
   // There are 2 ^ 3 = 8 (!) different watchlist modes:
   // * expanded and not (Special:Preferences#mw-prefsection-watchlist "Expand watchlist to show all
   //   changes, not just the most recent")
@@ -413,28 +228,7 @@ function processWatchlist($content) {
       wrapper = prototypes.get('wrapperRelevant');
       setWrapperLinkAttr(wrapper, 'title', goToCommentToYou);
     } else {
-      if (summary) {
-        const curLink = (
-          // Expanded watchlist
-          line.querySelector('.mw-changeslist-diff-cur') ||
-
-          // Non-expanded watchlist
-          line.querySelector('.mw-changeslist-history')
-        );
-        const curIdMatch =
-          curLink instanceof HTMLAnchorElement ? curLink.href.match(/[&?]curid=(\d+)/) : undefined;
-        const curId = curIdMatch && Number(curIdMatch[1]);
-        if (
-          curId &&
-          (subscriptions?.getForPageId(curId) || []).some((headline) =>
-            isInSection(summary, headline)
-          )
-        ) {
-          wrapper = prototypes.get('wrapperRelevant');
-          setWrapperLinkAttr(wrapper, 'title', goToCommentWatchedSection);
-        }
-      }
-      wrapper ??= prototypes.get('wrapperRegular');
+      wrapper = prototypes.get('wrapperRegular');
     }
 
     setWrapperLinkAttr(wrapper, 'href', `${link}#${id}`);
@@ -521,7 +315,6 @@ async function processContributions($content) {
       wrapper = prototypes.get('wrapperRelevant');
       setWrapperLinkAttr(wrapper, 'title', goToCommentToYou);
     } else {
-      // We have no place to extract the article ID from :-(
       wrapper = prototypes.get('wrapperRegular');
     }
     setWrapperLinkAttr(wrapper, 'href', `${link}#${id}`);
@@ -588,16 +381,7 @@ async function processHistory($content) {
       wrapper = prototypes.get('wrapperRelevant');
       setWrapperLinkAttr(wrapper, 'title', goToCommentToYou);
     } else {
-      if (
-        summary &&
-        (subscriptions?.getForCurrentPage() || []).some((headline) =>
-          isInSection(summary, headline)
-        )
-      ) {
-        wrapper = prototypes.get('wrapperRelevant');
-        setWrapperLinkAttr(wrapper, 'title', goToCommentWatchedSection);
-      }
-      wrapper ??= prototypes.get('wrapperRegular');
+      wrapper = prototypes.get('wrapperRegular');
     }
     setWrapperLinkAttr(wrapper, 'href', `${link}#${id}`);
 
@@ -690,17 +474,7 @@ async function processDiff($diff) {
           wrapper = prototypes.get('wrapperRelevant');
           setWrapperLinkAttr(wrapper, 'title', goToCommentToYou);
         } else {
-          if (
-            !$diff &&
-            summary &&
-            (subscriptions?.getForCurrentPage() || []).some((headline) =>
-              isInSection(summary, headline)
-            )
-          ) {
-            wrapper = prototypes.get('wrapperRelevant');
-            setWrapperLinkAttr(wrapper, 'title', goToCommentWatchedSection);
-          }
-          wrapper ??= prototypes.get('wrapperRegular');
+          wrapper = prototypes.get('wrapperRegular');
         }
 
         const linkElement = /** @type {HTMLAnchorElement} */ (

@@ -18,7 +18,7 @@ import userRegistry from '../userRegistry';
 import { getUserInfo, splitIntoBatches } from '../utils-api';
 import { createSvg, initDayjs, skin$, transparentize } from '../utils-window';
 
-import addCommentLinks from './addCommentLinks';
+import addCommentLinks from '../addCommentLinks';
 import cd from './cd';
 import debug from './debug';
 
@@ -511,7 +511,6 @@ class BootManager {
     cd.tests.controller = pageController;
     cd.tests.processPageInBackground = (await import('../updateChecker')).processPage;
     cd.tests.showSettingsDialog = settings.showDialog.bind(settings);
-    cd.tests.editSubscriptions = bootManager.showEditSubscriptionsDialog.bind(pageController);
     cd.tests.visits = (await import('../visits')).default;
 
     /* Some static methods for external use */
@@ -1506,18 +1505,6 @@ class BootManager {
 
     $(window).off('beforeunload', this.beforeUnloadHandlers[name]);
     delete this.beforeUnloadHandlers[name];
-  }
-
-  /**
-   * Show an edit subscriptions dialog.
-   */
-  async showEditSubscriptionsDialog() {
-    if (this.isPageOverlayOn()) return;
-
-    const dialog = new ((await import('../EditSubscriptionsDialog')).default)();
-    const windowManager = cd.getWindowManager();
-    windowManager.addWindows([dialog]);
-    windowManager.openWindow(dialog);
   }
 }
 
