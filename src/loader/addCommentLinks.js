@@ -15,9 +15,9 @@ import cd from './cd';
 /** @type {string} */
 let colon;
 /** @type {string | undefined} */
-let moveFromBeginning;
+let moveFromStringStart;
 /** @type {string | undefined} */
-let moveToBeginning;
+let moveToStringStart;
 /** @type {string} */
 let goToCommentToYou;
 /** @type {string} */
@@ -70,8 +70,8 @@ async function init() {
   }`);
 
   colon = cd.mws('colon-separator', { language: 'content' }).trim();
-  [moveFromBeginning] = cd.s('es-move-from').match(/^[^[$]+/) || [];
-  [moveToBeginning] = cd.s('es-move-to').match(/^[^[$]+/) || [];
+  [moveFromStringStart] = cd.s('es-move-from').match(/^[^[$]+/) || [];
+  [moveToStringStart] = cd.s('es-move-to').match(/^[^[$]+/) || [];
 
   goToCommentToYou = goToCommentWatchedSection = cd.s('lp-comment-tooltip') + ' ';
   goToCommentToYou += cd.mws('parentheses', cd.s('lp-comment-toyou'));
@@ -289,8 +289,8 @@ function setWrapperLinkAttr(wrapper, attr, value) {
  */
 function isMoved(summary) {
   return Boolean(
-    (moveFromBeginning && summary.includes(': ' + moveFromBeginning)) ||
-    (moveToBeginning && summary.includes(': ' + moveToBeginning))
+    (moveFromStringStart && summary.includes(': ' + moveFromStringStart)) ||
+    (moveToStringStart && summary.includes(': ' + moveToStringStart))
   );
 }
 
