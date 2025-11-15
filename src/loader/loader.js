@@ -17,7 +17,6 @@ import en from '../../i18n/en.json';
 import { mergeRegexps, typedKeysOf, unique } from '../shared/utils-general';
 import { getFooter } from '../utils-window';
 
-import { addCommentLinksToSpecialSearch } from '../addCommentLinks';
 import bootManager from './bootManager';
 import cd from './cd';
 import debug from './debug';
@@ -58,6 +57,234 @@ if (SINGLE_LANG_CODE) {
     langObj.dayjsLocale = await import(`dayjs/locale/${SINGLE_LANG_CODE}`);
     langObj.dateFnsLocale = await import(`date-fns/locale/${SINGLE_LANG_CODE}`);
   }
+}
+
+loader();
+
+/**
+ * The main loader function.
+ *
+ * @fires launched
+ * @private
+ */
+async function loader() {
+  if (cd.isRunning) {
+    console.warn('One instance of Convenient Discussions is already running.');
+
+    return;
+  }
+
+  /**
+   * Is the script running.
+   *
+   * @name isRunning
+   * @type {boolean}
+   * @memberof convenientDiscussions
+   */
+  cd.isRunning = true;
+
+  if (
+    mw.config.get('wgMFMode') ||
+    /[?&]cdenable=(0|false|no|n)(?=&|$)/.test(location.search) ||
+    mw.config.get('wgPageContentModel') !== 'wikitext' ||
+
+    // Liquid Threads; for example,
+    // https://en.wiktionary.org/wiki/MediaWiki_talk:Gadget-NewEntryWizard.js/LQT_Archive
+    $('.lqt-talkpage').length ||
+
+    mw.config.get('wgIsMainPage')
+  ) {
+    return;
+  }
+
+  if (SINGLE_CONFIG_FILE_NAME) {
+    cd.config = config;
+  }
+
+  cd.g = /** @type {import('../shared/cd').GlobalProps} */ ({});
+
+  debug.init();
+  debug.startTimer('total time');
+  debug.startTimer('load config and strings');
+
+  /**
+   * The script has launched.
+   *
+   * @event launched
+   * @param {object} cd {@link convenientDiscussions} object.
+   * @global
+   */
+  mw.hook('convenientDiscussions.launched').fire(cd);
+
+  setLanguages();
+
+  try {
+    await Promise.all([
+      (/** @type {any} */ (cd).config) ? Promise.resolve() : getConfig(),
+      getStringsPromise(),
+    ]);
+  } catch (error) {
+    console.error(error);
+
+    return;
+  }
+
+  debug.stopTimer('load config and strings');
+
+  $(go);
+}
+
+/**
+ * Set language properties of the global object, taking fallback languages into account.
+ *
+ * @private
+ */
+function setLanguages() {
+  const languageOrFallback = (/** @type {string} */ lang) =>
+    i18nList.includes(lang)
+      ? lang
+      : (/** @type {{[key: string]: string[] | undefined}} */ (languageFallbacks)[lang])?.find(
+          (/** @type {string} */ fallback) => i18nList.includes(fallback)
+        ) || 'en';
+
+  cd.g.userLanguage = languageOrFallback(mw.config.get('wgUserLanguage'));
+
+  // Should we use a fallback for the content language? Maybe, but in case of MediaWiki messages
+  // used for signature parsing we have to use the real content language (see init.loadSiteData()).
+  // As a result, we use cd.g.contentLanguage only for the script's own messages, not the native
+  // MediaWiki messages.
+  cd.g.contentLanguage = languageOrFallback(mw.config.get('wgContentLanguage'));
+}
+
+/**
+ * Load and execute the configuration script if available.
+ *
+ * @returns {Promise.<void>}
+ * @private
+ */
+function getConfig() {
+  return new Promise((resolve, reject) => {
+    let key = mw.config.get('wgServerName');
+    if (IS_STAGING) {
+      key += '.staging';
+    }
+    const configUrl =
+      /** @type {StringsByKey} */ (configUrls)[key] ||
+      /** @type {StringsByKey} */ (configUrls)[mw.config.get('wgServerName')];
+    if (configUrl) {
+      const rejectWithMsg = (/** @type {unknown} */ error) => {
+        reject(
+          new Error(`Convenient Discussions can't run: couldn't load the configuration.`, {
+            cause: error,
+          })
+        );
+      };
+
+      const [, gadgetName] = configUrl.match(/modules=ext.gadget.([^?&]+)/) || [];
+      if (gadgetName && mw.user.options.get(`gadget-${gadgetName}`)) {
+        // A gadget is enabled on the wiki, and it should be loaded and executed without any
+        // additional requests; we just wait until it happens.
+        mw.loader.using(`ext.gadget.${gadgetName}`).then(() => {
+          resolve();
+        });
+
+        return;
+      }
+      mw.loader.getScript(configUrl).then(() => {
+        resolve();
+      }, rejectWithMsg);
+    } else {
+      resolve();
+    }
+  });
+}
+
+/**
+ * Get the promise that resolves when the language strings are ready. If the strings are already
+ * available, the promise resolves immediately.
+ *
+ * @returns {Promise<any[]|void>}
+ * @private
+ */
+export function getStringsPromise() {
+  return (
+    cd.g.userLanguage === mw.config.get('wgUserLanguage') &&
+    cd.g.contentLanguage === mw.config.get('wgContentLanguage')
+  )
+    // If no language fallbacks are employed, we can do without requesting additional i18ns.
+    // cd.getStringsPromise may be set in the configuration file.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    ? (cd.i18n ? Promise.resolve() : cd.getStringsPromise || getStrings())
+
+    : getStrings();
+}
+
+/**
+ * Load and add localization strings to the {@link module:cd.i18n} object. Use fallback languages
+ * if default languages are unavailable.
+ *
+ * @returns {Promise<any[]|void>}
+ * @private
+ */
+async function getStrings() {
+  // We assume it's OK to fall back to English if the translation is unavailable for any reason.
+  return Promise.all(
+    [cd.g.userLanguage, cd.g.contentLanguage]
+      .filter(unique)
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      .filter((lang) => lang !== 'en' && !cd.i18n?.[lang])
+      .map((lang) =>
+        mw.loader.getScript(
+          `https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js&action=raw&ctype=text/javascript`
+        )
+      )
+  ).catch(() => {});
+}
+
+/**
+ * Function executed after the config and localization strings are ready.
+ *
+ * @fires preprocessed
+ * @private
+ */
+async function go() {
+  debug.startTimer('start');
+
+  // Don't run again if go() runs the second time (e.g. from maybeAddFooterSwitcher()).
+  if (cd.g.pageWhitelistRegexp === undefined) {
+    /**
+     * Script configuration. The default configuration is in {@link defaultConfig}.
+     *
+     * @name config
+     * @type {object}
+     * @memberof convenientDiscussions
+     */
+    cd.config = Object.assign(defaultConfig, cd.config);
+
+    cd.g.pageWhitelistRegexp = mergeRegexps(cd.config.pageWhitelist);
+    cd.g.pageBlacklistRegexp = mergeRegexps(cd.config.pageBlacklist);
+
+    await setStrings();
+  }
+
+  bootManager.bootScript();
+  maybeAddFooterSwitcher();
+  maybeTweakAddTopicButton();
+  addCommentLinksToSpecialSearch();
+
+  if (!bootManager.isBooting()) {
+    debug.stopTimer('start');
+  }
+
+  /**
+   * The page has been preprocessed (not parsed yet, but its type has been checked and some
+   * important mechanisms have been initialized).
+   *
+   * @event preprocessed
+   * @param {object} cd {@link convenientDiscussions} object.
+   * @global
+   */
+  mw.hook('convenientDiscussions.preprocessed').fire(cd);
 }
 
 /**
@@ -158,229 +385,39 @@ function maybeTweakAddTopicButton() {
 }
 
 /**
- * Function executed after the config and localization strings are ready.
- *
- * @fires preprocessed
- * @private
+ * _For internal use._ When on the Special:Search page, searching for a comment after choosing that
+ * option from the "Couldn't find the comment" message, add comment links to titles.
  */
-async function go() {
-  debug.startTimer('start');
+function addCommentLinksToSpecialSearch() {
+  if (mw.config.get('wgCanonicalSpecialPageName') !== 'Search') return;
 
-  // Don't run again if go() runs the second time (e.g. from maybeAddFooterSwitcher()).
-  if (cd.g.pageWhitelistRegexp === undefined) {
-    /**
-     * Script configuration. The default configuration is in {@link defaultConfig}.
-     *
-     * @name config
-     * @type {object}
-     * @memberof convenientDiscussions
-     */
-    cd.config = Object.assign(defaultConfig, cd.config);
+  const [, commentId] = location.search.match(/[?&]cdcomment=([^&]+)(?:&|$)/) || [];
+  if (commentId) {
+    mw.loader.using('mediawiki.api').then(
+      async () => {
+        await Promise.all(bootManager.getSiteData());
+        $('.mw-search-result-heading').each((_, el) => {
+          const originalHref = $(el)
+            .find('a')
+            .first()
+            .attr('href');
+          if (!originalHref) return;
 
-    cd.g.pageWhitelistRegexp = mergeRegexps(cd.config.pageWhitelist);
-    cd.g.pageBlacklistRegexp = mergeRegexps(cd.config.pageBlacklist);
-
-    await setStrings();
-  }
-
-  bootManager.bootScript();
-  maybeAddFooterSwitcher();
-  maybeTweakAddTopicButton();
-  addCommentLinksToSpecialSearch();
-
-  if (!bootManager.isBooting()) {
-    debug.stopTimer('start');
-  }
-
-  /**
-   * The page has been preprocessed (not parsed yet, but its type has been checked and some
-   * important mechanisms have been initialized).
-   *
-   * @event preprocessed
-   * @param {object} cd {@link convenientDiscussions} object.
-   * @global
-   */
-  mw.hook('convenientDiscussions.preprocessed').fire(cd);
-}
-
-/**
- * Set language properties of the global object, taking fallback languages into account.
- *
- * @private
- */
-function setLanguages() {
-  const languageOrFallback = (/** @type {string} */ lang) =>
-    i18nList.includes(lang)
-      ? lang
-      : (/** @type {{[key: string]: string[] | undefined}} */ (languageFallbacks)[lang])?.find(
-          (/** @type {string} */ fallback) => i18nList.includes(fallback)
-        ) || 'en';
-
-  cd.g.userLanguage = languageOrFallback(mw.config.get('wgUserLanguage'));
-
-  // Should we use a fallback for the content language? Maybe, but in case of MediaWiki messages
-  // used for signature parsing we have to use the real content language (see init.loadSiteData()).
-  // As a result, we use cd.g.contentLanguage only for the script's own messages, not the native
-  // MediaWiki messages.
-  cd.g.contentLanguage = languageOrFallback(mw.config.get('wgContentLanguage'));
-}
-
-/**
- * Load and execute the configuration script if available.
- *
- * @returns {Promise.<void>}
- * @private
- */
-function getConfig() {
-  return new Promise((resolve, reject) => {
-    let key = mw.config.get('wgServerName');
-    if (IS_STAGING) {
-      key += '.staging';
-    }
-    const configUrl =
-      /** @type {StringsByKey} */ (configUrls)[key] ||
-      /** @type {StringsByKey} */ (configUrls)[mw.config.get('wgServerName')];
-    if (configUrl) {
-      const rejectWithMsg = (/** @type {unknown} */ error) => {
-        reject(
-          new Error(`Convenient Discussions can't run: couldn't load the configuration.`, {
-            cause: error,
-          })
-        );
-      };
-
-      const [, gadgetName] = configUrl.match(/modules=ext.gadget.([^?&]+)/) || [];
-      if (gadgetName && mw.user.options.get(`gadget-${gadgetName}`)) {
-        // A gadget is enabled on the wiki, and it should be loaded and executed without any
-        // additional requests; we just wait until it happens.
-        mw.loader.using(`ext.gadget.${gadgetName}`).then(() => {
-          resolve();
+          $(el).append(
+            ' ',
+            $('<span>')
+              .addClass('cd-searchCommentLink')
+              .append(
+                document.createTextNode(cd.mws('parentheses-start')),
+                $('<a>')
+                  .attr('href', `${originalHref}#${commentId}`)
+                  .text(cd.s('deadanchor-search-gotocomment')),
+                document.createTextNode(cd.mws('parentheses-end')),
+              )
+          );
         });
-
-        return;
-      }
-      mw.loader.getScript(configUrl).then(() => {
-        resolve();
-      }, rejectWithMsg);
-    } else {
-      resolve();
-    }
-  });
-}
-
-/**
- * Load and add localization strings to the {@link module:cd.i18n} object. Use fallback languages
- * if default languages are unavailable.
- *
- * @returns {Promise<any[]|void>}
- * @private
- */
-function getStrings() {
-  // We assume it's OK to fall back to English if the translation is unavailable for any reason.
-  return Promise.all(
-    [cd.g.userLanguage, cd.g.contentLanguage]
-      .filter(unique)
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      .filter((lang) => lang !== 'en' && !cd.i18n?.[lang])
-      .map((lang) =>
-        mw.loader.getScript(
-          `https://commons.wikimedia.org/w/index.php?title=User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js&action=raw&ctype=text/javascript`
-        )
-      )
-  ).catch(() => {});
-}
-
-/**
- * The main loader function.
- *
- * @fires launched
- * @private
- */
-async function loader() {
-  if (cd.isRunning) {
-    console.warn('One instance of Convenient Discussions is already running.');
-
-    return;
+      },
+      console.error
+    );
   }
-
-  /**
-   * Is the script running.
-   *
-   * @name isRunning
-   * @type {boolean}
-   * @memberof convenientDiscussions
-   */
-  cd.isRunning = true;
-
-  if (
-    mw.config.get('wgMFMode') ||
-    /[?&]cdenable=(0|false|no|n)(?=&|$)/.test(location.search) ||
-    mw.config.get('wgPageContentModel') !== 'wikitext' ||
-
-    // Liquid Threads; for example,
-    // https://en.wiktionary.org/wiki/MediaWiki_talk:Gadget-NewEntryWizard.js/LQT_Archive
-    $('.lqt-talkpage').length ||
-
-    mw.config.get('wgIsMainPage')
-  ) {
-    return;
-  }
-
-  if (SINGLE_CONFIG_FILE_NAME) {
-    cd.config = config;
-  }
-
-  cd.g = /** @type {import('../shared/cd').GlobalProps} */ ({});
-
-  debug.init();
-  debug.startTimer('total time');
-  debug.startTimer('load config and strings');
-
-  /**
-   * The script has launched.
-   *
-   * @event launched
-   * @param {object} cd {@link convenientDiscussions} object.
-   * @global
-   */
-  mw.hook('convenientDiscussions.launched').fire(cd);
-
-  setLanguages();
-
-  try {
-    await Promise.all([
-      (/** @type {any} */ (cd).config) ? Promise.resolve() : getConfig(),
-      getStringsPromise(),
-    ]);
-  } catch (error) {
-    console.error(error);
-
-    return;
-  }
-
-  debug.stopTimer('load config and strings');
-
-  $(go);
 }
-
-/**
- * Get the promise that resolves when the language strings are ready. If the strings are already
- * available, the promise resolves immediately.
- *
- * @returns {Promise<any[]|void>}
- * @private
- */
-export function getStringsPromise() {
-  return (
-    cd.g.userLanguage === mw.config.get('wgUserLanguage') &&
-    cd.g.contentLanguage === mw.config.get('wgContentLanguage')
-  )
-    // If no language fallbacks are employed, we can do without requesting additional i18ns.
-    // cd.getStringsPromise may be set in the configuration file.
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    ? (cd.i18n ? Promise.resolve() : cd.getStringsPromise || getStrings())
-
-    : getStrings();
-}
-
-loader();
