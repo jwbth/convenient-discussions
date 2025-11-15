@@ -531,21 +531,6 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * Update timestamp elements with formatted timestamp and title.
-   * Handles main timestamp update, then processes extra signatures.
-   *
-   * @param {string} timestamp
-   * @param {string} title
-   */
-  updateTimestampElements(timestamp, title) {
-    // Let subclass handle main timestamp element
-    this.updateMainTimestampElement(timestamp, title);
-
-    // Handle extra signatures (common logic)
-    this.updateExtraSignatureTimestamps();
-  }
-
-  /**
    * Update the main timestamp element.
    * This method should be overridden by subclasses.
    *
@@ -697,16 +682,39 @@ class Comment extends CommentSkeleton {
   };
 
   /**
+   * _For internal use._ Change the format of the comment timestamp according to the settings. Do
+   * the same with extra timestamps in the comment.
+   *
+   * @param {boolean} areTimestampsDefault Whether timestamps in the default format are shown to the
+   *   user.
+   */
+  reformatTimestamp(areTimestampsDefault) {
+    if (!this.date) return;
+
+    const { timestamp, title } = this.formatTimestamp(
+      this.date,
+      this.timestampElement.textContent,
+      areTimestampsDefault
+    );
+    if (timestamp) {
+      this.reformattedTimestamp = timestamp;
+      this.timestampTitle = title;
+      this.updateTimestampElements(timestamp, title);
+    }
+  }
+
+  /**
    * Given a date, format it as per user settings, and build a title (tooltip) too.
    *
    * @param {Date} date
    * @param {string} originalTimestamp
+   * @param {boolean} areTimestampsDefault
    * @returns {{ timestamp: string; title: string }}
    */
-  formatTimestamp(date, originalTimestamp) {
+  formatTimestamp(date, originalTimestamp, areTimestampsDefault) {
     let timestamp;
     let title = '';
-    if (!cd.g.timestampTools.areTimestampsDefault) {
+    if (!areTimestampsDefault) {
       timestamp = formatDate(date, !this.hideTimezone);
     }
 
@@ -727,18 +735,18 @@ class Comment extends CommentSkeleton {
   }
 
   /**
-   * _For internal use._ Change the format of the comment timestamp according to the settings. Do
-   * the same with extra timestamps in the comment.
+   * Update timestamp elements with formatted timestamp and title.
+   * Handles main timestamp update, then processes extra signatures.
+   *
+   * @param {string} timestamp
+   * @param {string} title
    */
-  reformatTimestamp() {
-    if (!this.date) return;
+  updateTimestampElements(timestamp, title) {
+    // Let subclass handle main timestamp element
+    this.updateMainTimestampElement(timestamp, title);
 
-    const { timestamp, title } = this.formatTimestamp(this.date, this.timestampElement.textContent);
-    if (timestamp) {
-      this.reformattedTimestamp = timestamp;
-      this.timestampTitle = title;
-      this.updateTimestampElements(timestamp, title);
-    }
+    // Handle extra signatures (common logic)
+    this.updateExtraSignatureTimestamps();
   }
 
   /**

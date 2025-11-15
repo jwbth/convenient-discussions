@@ -10,7 +10,6 @@ import commentManager from './commentManager';
 import bootManager from './loader/bootManager';
 import cd from './loader/cd';
 import pageRegistry from './pageRegistry';
-import settings from './settings';
 import { definedAndNotNull, generatePageNamePattern, isProbablyTalkPage, isUndo, removeDirMarks, spacesToUnderlines } from './shared/utils-general';
 import { parseTimestamp } from './shared/utils-timestamp';
 
@@ -39,9 +38,9 @@ const prototypes = new PrototypeRegistry();
 async function init() {
   // This could have been executed from init.talkPage() already.
   bootManager.initGlobals();
-  await settings.init();
 
   try {
+    // We need strings for parentheses (is that all?..)
     await Promise.all(bootManager.getSiteData());
   } catch (error) {
     throw new Error(`Couldn't load the data required for the script.`, { cause: error });
@@ -266,8 +265,8 @@ function isCommentEdit(summary) {
  * @param {JQuery} $content
  * @private
  */
-async function processContributions($content) {
-  await bootManager.initTimestampTools('user');
+function processContributions($content) {
+  bootManager.initTimestampTools();
   if (cd.g.timestampTools.user.timezone === undefined) return;
 
   [
@@ -337,8 +336,8 @@ async function processContributions($content) {
  * @param {JQuery} $content
  * @private
  */
-async function processHistory($content) {
-  await bootManager.initTimestampTools('user');
+function processHistory($content) {
+  bootManager.initTimestampTools();
   if (cd.g.timestampTools.user.timezone === undefined) return;
 
   const link = cd.page.getUrl();
@@ -400,7 +399,7 @@ async function processHistory($content) {
  * @fires commentLinksAdded
  * @private
  */
-async function processDiff($diff) {
+function processDiff($diff) {
   // Filter out cases when wikipage.diff was fired for the native MediaWiki's diff at the top of the
   // page that is a diff page (unless only a diff, and no content, is displayed - if
   // mw.user.options.get('diffonly') or the `diffonly` URL parameter is true). If CD is booted on
@@ -411,7 +410,8 @@ async function processDiff($diff) {
   if ($diff?.parent().is(bootManager.$content) && $('.cd-parsed').length) return;
 
   if (!('parseTimestampUiRegexp' in cd.g)) {
-    await bootManager.initTimestampTools('user');
+    // We need timestamp tools to be able to parse timestamps
+    bootManager.initTimestampTools();
   }
   if (cd.g.timestampTools.user.timezone === undefined) return;
 

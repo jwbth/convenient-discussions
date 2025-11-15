@@ -41,33 +41,31 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared);
  */
 
 /**
- * @template {'content' | 'user'} Language
+ * @template {LanguageTarget} LT
  * @typedef {object} Timestamp
- * @property {string} dateFormat Format of date in `Target`` language, as used by MediaWiki.
- * @property {RegExp} regexp Regular expression for matching timestamps in `Target`. In the first
- *   case, ` +` to account for RTL and LTR marks replaced with a space. In the second case, the
- *   timestamp has no timezone at the end.
- * @property {RegExp} parseRegexp Regular expression for parsing timestamps in `Target`.
- * @property {Language extends 'content' ? RegExp : never} noTzRegexp Regular expression for
- *   matching timestamps in content with no timezone at the end.
- * @property {string[]} matchingGroups Codes of date (in `Language` language) components for the
- *   timestamp parser function.
- * @property {Language extends 'content' ? (string | undefined) : (string | number | undefined)} timezone
- *   - For `Language` = 'user': Timezone per user preferences: standard timezone name or offset in
+ * @property {string} dateFormat Format of date in `LT` language, as used by MediaWiki.
+ * @property {RegExp} regexp Regular expression for matching timestamps in `LT`. In the first case,
+ *   ` +` to account for RTL and LTR marks replaced with a space. In the second case, the timestamp
+ *   has no timezone at the end.
+ * @property {RegExp} parseRegexp Regular expression for parsing timestamps in `LT`.
+ * @property {LT extends 'content' ? RegExp : never} noTzRegexp Regular expression for matching
+ *   timestamps in content with no timezone at the end.
+ * @property {string[]} matchingGroups Codes of date (in `LT` language) components for the timestamp
+ *   parser function.
+ * @property {LT extends 'content' ? (string | undefined) : (string | number | undefined)} timezone
+ *   - For `LT` = 'user': Timezone per user preferences: standard timezone name or offset in
  *   minutes. `'UTC'` is always used instead of `0`.
- *   - For `Language` = 'content`: Timezone of the wiki.
- * @property {Language extends 'content' ? RegExp : undefined} timezoneRegexp Regular expression for
+ *   - For `LT` = 'content`: Timezone of the wiki.
+ * @property {LT extends 'content' ? RegExp : undefined} timezoneRegexp Regular expression for
  *   matching the content timezone, with the global flag.
- * @property {Language extends 'user' ? boolean : never} isSameAsLocalTimezone For `Language` =
- *   'user': Whether the timezone is the same as the local user's timezone.
+ * @property {LT extends 'user' ? boolean : never} isSameAsLocalTimezone For `LT` = 'user': Whether
+ *   the timezone is the same as the local user's timezone.
  */
 
 /**
  * @typedef {object} TimestampTools
  * @property {Timestamp<'content'>} content
  * @property {Timestamp<'user'>} user
- * @property {boolean | undefined} areTimestampsDefault Whether timestamps in the default format are
- *   shown to the user.
  */
 
 /**

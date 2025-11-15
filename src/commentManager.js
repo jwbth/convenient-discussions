@@ -65,6 +65,13 @@ export class CommentManager extends EventEmitter {
   thanksStorage;
 
   /**
+   * Whether timestamps in the default format are shown to the user.
+   *
+   * @type {boolean}
+   */
+  areTimestampsDefault;
+
+  /**
    * Type guard to check if this is a CommentManager managing SpaciousComment instances.
    *
    * @returns {this is CommentManager<import('./SpaciousComment').default>}
@@ -86,6 +93,15 @@ export class CommentManager extends EventEmitter {
    * _For internal use._ Initialize the registry.
    */
   init() {
+    this.areTimestampsDefault =
+      (
+        !settings.get('useUiTime') ||
+        cd.g.timestampTools.content.timezone === cd.g.timestampTools.user.timezone
+      ) &&
+      settings.get('timestampFormat') === 'default' &&
+      mw.config.get('wgContentLanguage') === cd.g.userLanguage &&
+      !settings.get('hideTimezone');
+
     this.thanksStorage = new StorageItemWithKeys('thanks')
       .cleanUp((entry) => (entry.thankTime || 0) < subtractDaysFromNow(60))
       .save();
@@ -883,10 +899,10 @@ export class CommentManager extends EventEmitter {
    * _For internal use._ Change the format of the comment timestamps according to the settings.
    */
   reformatTimestamps() {
-    if (cd.g.areTimestampsDefault) return;
+    if (this.areTimestampsDefault) return;
 
     this.items.forEach((comment) => {
-      comment.reformatTimestamp();
+      comment.reformatTimestamp(this.areTimestampsDefault);
     });
   }
 

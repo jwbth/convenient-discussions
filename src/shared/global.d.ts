@@ -2,7 +2,7 @@
  * This file has types for the code shared between the main and worker parts of the script.
  */
 
-import type { Node as DomHandlerNode, Element as DomHandlerElement, Text as DomHandlerText, Document as DomHandlerDocument } from 'domhandler';
+import type { Document as DomHandlerDocument, Element as DomHandlerElement, Node as DomHandlerNode, Text as DomHandlerText } from 'domhandler';
 
 import type BrowserComment from '../Comment';
 import type Section from '../Section';
@@ -20,6 +20,7 @@ declare global {
   type AnyFunction = (...args: any) => any;
   type ValidKey = string | number | symbol;
   type ApiRejectResponse = Exclude<mw.Api.RejectArgTuple[1], mw.Rest.HttpErrorData>;
+  type LanguageTarget = 'content' | 'user';
 
   interface Message {
     task: string;

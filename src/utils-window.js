@@ -900,14 +900,14 @@ export function extractSignatures(code) {
  * @private
  */
 function extractRegularSignatures(adjustedCode, code) {
-  const timestampTools = cd.g.timestampTools.content;
+  const timestampToolsContent = cd.g.timestampTools.content;
   const ending = `(?:\\n*|$)`;
   const afterTimestamp = `(?!["»])(?:\\}\\}|</small>)?`;
 
   // Use (?:^|[^=]) to filter out timestamps in a parameter (in quote templates)
   // eslint-disable-next-line no-one-time-vars/no-one-time-vars
   const timestampRegexp = new RegExp(
-    `^((.*?(?:^|[^=]))(${timestampTools.regexp.source})${afterTimestamp}).*${ending}`,
+    `^((.*?(?:^|[^=]))(${timestampToolsContent.regexp.source})${afterTimestamp}).*${ending}`,
     'igm'
   );
 
@@ -930,7 +930,7 @@ function extractRegularSignatures(adjustedCode, code) {
      */
     (
       `^(((.*?)${cd.g.captureUserNamePattern}.{1,${signatureScanLimit - 1}}?[^=])` +
-      `(${timestampTools.regexp.source})${afterTimestamp}.*)${ending}`
+      `(${timestampToolsContent.regexp.source})${afterTimestamp}.*)${ending}`
     ),
     'im'
   );
@@ -1172,7 +1172,7 @@ export function formatDate(date, addTimezone = false) {
  * @returns {string}
  */
 export function formatDateNative(date, addTimezone = false, timezone = undefined) {
-  const timestampTools = cd.g.timestampTools.user;
+  const timestampToolsUser = cd.g.timestampTools.user;
   let timezoneOffset;
   let year;
   let monthIdx;
@@ -1182,18 +1182,18 @@ export function formatDateNative(date, addTimezone = false, timezone = undefined
   let dayOfWeek;
   if (
     settings.get('useUiTime') &&
-    !['UTC', 0, undefined].includes(timestampTools.timezone) &&
+    !['UTC', 0, undefined].includes(timestampToolsUser.timezone) &&
     !timezone
   ) {
-    if (timestampTools.isSameAsLocalTimezone) {
+    if (timestampToolsUser.isSameAsLocalTimezone) {
       timezoneOffset = -date.getTimezoneOffset();
     } else {
       timezoneOffset =
-        typeof timestampTools.timezone === 'number'
-          ? timestampTools.timezone
+        typeof timestampToolsUser.timezone === 'number'
+          ? timestampToolsUser.timezone
 
           // Using date-fns-tz's getTimezoneOffset is way faster than using day.js's methods.
-          : getTimezoneOffset(/** @type {string} */ (timestampTools.timezone), date.getTime()) /
+          : getTimezoneOffset(/** @type {string} */ (timestampToolsUser.timezone), date.getTime()) /
             cd.g.msInMin;
     }
     date = new Date(date.getTime() + timezoneOffset * cd.g.msInMin);
@@ -1217,7 +1217,7 @@ export function formatDateNative(date, addTimezone = false, timezone = undefined
   dayOfWeek ??= date.getUTCDay();
 
   let string = '';
-  const format = timestampTools.dateFormat;
+  const format = timestampToolsUser.dateFormat;
   for (let p = 0; p < format.length; p++) {
     let code = format[p];
     if ((code === 'x' && p < format.length - 1) || (code === 'xk' && p < format.length - 1)) {
@@ -1302,19 +1302,19 @@ export function formatDateNative(date, addTimezone = false, timezone = undefined
  * @returns {string}
  */
 export function formatDateImproved(date, addTimezone = false) {
-  const timestampTools = cd.g.timestampTools.user;
+  const timestampToolsUser = cd.g.timestampTools.user;
   let now = new Date();
   let dayjsDate = dayjs(date);
   let timezoneOffset;
-  if (settings.get('useUiTime') && !['UTC', 0, undefined].includes(timestampTools.timezone)) {
-    if (timestampTools.isSameAsLocalTimezone) {
+  if (settings.get('useUiTime') && !['UTC', 0, undefined].includes(timestampToolsUser.timezone)) {
+    if (timestampToolsUser.isSameAsLocalTimezone) {
       timezoneOffset = -date.getTimezoneOffset();
     } else {
-      timezoneOffset = typeof timestampTools.timezone === 'number'
-        ? timestampTools.timezone
+      timezoneOffset = typeof timestampToolsUser.timezone === 'number'
+        ? timestampToolsUser.timezone
 
         // Using date-fns-tz's getTimezoneOffset is way faster than using day.js's methods.
-        : getTimezoneOffset(/** @type {string} */(timestampTools.timezone), now.getTime()) /
+        : getTimezoneOffset(/** @type {string} */(timestampToolsUser.timezone), now.getTime()) /
           cd.g.msInMin;
 
       dayjsDate = dayjsDate.utcOffset(timezoneOffset);

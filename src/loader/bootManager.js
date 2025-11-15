@@ -572,10 +572,8 @@ class BootManager {
    *
    * This should run after {@link BootManager#loadSiteData} so that
    * {@link cd.g.timestampTools.content.timezone} is available.
-   *
-   * @param {'content' | 'user'} language
    */
-  async initTimestampTools(language) {
+  initTimestampTools() {
     const timestampTools = cd.g.timestampTools;
     const content = timestampTools.content;
     const user = timestampTools.user;
@@ -607,35 +605,24 @@ class BootManager {
       // Empty
     }
 
-    if (language === 'content') {
-      const mainPartPattern = this.getTimestampMainPartPattern('content');
-      const utcPattern = mw.util.escapeRegExp(mw.message('(content)timezone-utc').parse());
+    const mainPartPattern = this.getTimestampMainPartPattern('content');
+    const utcPattern = mw.util.escapeRegExp(mw.message('(content)timezone-utc').parse());
 
-      // Do we need non-Arabic digits here?
-      const timezonePattern = `\\((?:${utcPattern}|[A-Z]{1,5}|[+-]\\d{0,4})\\)`;
+    // Do we need non-Arabic digits here?
+    const timezonePattern = `\\((?:${utcPattern}|[A-Z]{1,5}|[+-]\\d{0,4})\\)`;
 
-      content.regexp = new RegExp(mainPartPattern + ' +' + timezonePattern);
-      content.parseRegexp = new RegExp(
-        // \b only captures Latin, so we also need `' '`.
-        `^([^]*(?:^|[^=])(?:\\b| ))(${content.regexp.source})(?!["»])`
-      );
-      content.noTzRegexp = new RegExp(mainPartPattern);
-      content.matchingGroups = this.getMatchingGroups(content.dateFormat);
-      content.timezoneRegexp = new RegExp(timezonePattern, 'g');
-    } else {
-      user.regexp = new RegExp(this.getTimestampMainPartPattern('user'));
-      user.parseRegexp = new RegExp(`^([^]*)(${user.regexp.source})`);
-      user.matchingGroups = this.getMatchingGroups(user.dateFormat);
-    }
+    content.regexp = new RegExp(mainPartPattern + ' +' + timezonePattern);
+    content.parseRegexp = new RegExp(
+      // \b only captures Latin, so we also need `' '`.
+      `^([^]*(?:^|[^=])(?:\\b| ))(${content.regexp.source})(?!["»])`
+    );
+    content.noTzRegexp = new RegExp(mainPartPattern);
+    content.matchingGroups = this.getMatchingGroups(content.dateFormat);
+    content.timezoneRegexp = new RegExp(timezonePattern, 'g');
 
-    if (language === 'content') {
-      const settings = (await import('../settings')).default;
-      timestampTools.areTimestampsDefault =
-        (!settings.get('useUiTime') || content.timezone === user.timezone) &&
-        settings.get('timestampFormat') === 'default' &&
-        mw.config.get('wgContentLanguage') === cd.g.userLanguage &&
-        !settings.get('hideTimezone');
-    }
+    user.regexp = new RegExp(this.getTimestampMainPartPattern('user'));
+    user.parseRegexp = new RegExp(`^([^]*)(${user.regexp.source})`);
+    user.matchingGroups = this.getMatchingGroups(user.dateFormat);
   }
 
   /**
@@ -647,16 +634,16 @@ class BootManager {
    * characters), and only dates when MediaWiki existed, let's say 2000 onwards (Thai dates before
    * 1941 are complicated).
    *
-   * @param {'content' | 'user'} language
+   * @param {LanguageTarget} languageTarget
    * @returns {string} Pattern to be a part of a regular expression.
    * @private
    * @author Bartosz Dziewoński <matma.rex@gmail.com>
    * @author Jack who built the house
    * @license MIT
    */
-  getTimestampMainPartPattern(language) {
-    const format = cd.g.timestampTools[language].dateFormat;
-    const digits = cd.g.digits[language];
+  getTimestampMainPartPattern(languageTarget) {
+    const format = cd.g.timestampTools[languageTarget].dateFormat;
+    const digits = cd.g.digits[languageTarget];
     // eslint-disable-next-line no-one-time-vars/no-one-time-vars
     const digitsPattern = digits ? `[${digits}]` : String.raw`\d`;
 
@@ -685,7 +672,7 @@ class BootManager {
         case 'M': {
           string += regexpAlternateGroup(
             // Messages
-            language === 'content'
+            languageTarget === 'content'
               ? getContentLanguageMessages(dateTokenToMessageNames[code])
               : dateTokenToMessageNames[code].map((token) => mw.msg(token))
           );
@@ -1103,7 +1090,7 @@ class BootManager {
     await this.initGlobals();
     await (await import('../settings')).default.init();
 
-    await bootManager.initTimestampTools('content');
+    bootManager.initTimestampTools();
     this.talkPageBootProcess.initPatterns();
     this.talkPageBootProcess.initPrototypes();
     $.fn.extend((await import('../jqueryExtensions')).default);
