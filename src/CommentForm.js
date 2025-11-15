@@ -1,10 +1,12 @@
 import AutocompleteManager from './AutocompleteManager';
+import CodeMirrorCommentInput from './CodeMirrorCommentInput';
 import Comment from './Comment';
 import CommentFormBuilder from './CommentFormBuilder';
 import CommentFormInputTransformer from './CommentFormInputTransformer';
 import CommentFormOperationRegistry from './CommentFormOperationRegistry';
 import EventEmitter from './EventEmitter';
 import MentionsAutocomplete from './MentionsAutocomplete';
+import UploadDialog from './UploadDialog';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
 import bootManager from './loader/bootManager';
@@ -1090,8 +1092,8 @@ class CommentForm extends EventEmitter {
   /**
    * Initialize a {@link https://www.mediawiki.org/wiki/Extension:CodeMirror CodeMirror} instance.
    */
-  initCodeMirror = async () => {
-    this.codeMirror = new ((await import('./CodeMirrorCommentInput')).default)(this.commentInput);
+  initCodeMirror = () => {
+    this.codeMirror = new CodeMirrorCommentInput(this.commentInput);
     this.codeMirror.initialize(
       undefined,
       /** @type {string} */ (this.commentInput.$input.attr('placeholder'))
@@ -1416,7 +1418,7 @@ class CommentForm extends EventEmitter {
       return;
     }
 
-    this.uploadDialog = new ((await import('./UploadDialog')).default)();
+    this.uploadDialog = new UploadDialog();
     const windowManager = cd.getWindowManager();
     windowManager.addWindows([this.uploadDialog]);
     const win = windowManager.openWindow(this.uploadDialog, {

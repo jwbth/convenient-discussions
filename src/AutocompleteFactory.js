@@ -1,3 +1,8 @@
+import CommentLinksAutocomplete from './CommentLinksAutocomplete';
+import MentionsAutocomplete from './MentionsAutocomplete';
+import TagsAutocomplete from './TagsAutocomplete';
+import TemplatesAutocomplete from './TemplatesAutocomplete';
+import WikilinksAutocomplete from './WikilinksAutocomplete';
 import CdError from './shared/CdError';
 
 /**
@@ -17,22 +22,22 @@ const AutocompleteFactory = {
    *
    * @param {AutocompleteType} type The autocomplete type to create
    * @param {AutocompleteConfigShared} [options] Configuration options
-   * @returns {Promise<import('./BaseAutocomplete').default>} Autocomplete instance
+   * @returns {import('./BaseAutocomplete').default} Autocomplete instance
    * @throws {CdError} If the type is unknown
    */
-  async create(type, options = {}) {
+  create(type, options = {}) {
     switch (type) {
       case 'mentions':
         // Lazy import to avoid circular dependencies
-        return new ((await import('./MentionsAutocomplete')).default)(options);
+        return new MentionsAutocomplete(options);
       case 'wikilinks':
-        return new ((await import('./WikilinksAutocomplete')).default)(options);
+        return new WikilinksAutocomplete(options);
       case 'templates':
-        return new ((await import('./TemplatesAutocomplete')).default)(options);
+        return new TemplatesAutocomplete(options);
       case 'tags':
-        return new ((await import('./TagsAutocomplete')).default)(options);
+        return new TagsAutocomplete(options);
       case 'commentLinks':
-        return new ((await import('./CommentLinksAutocomplete')).default)(options);
+        return new CommentLinksAutocomplete(options);
       default:
         throw new CdError({
           type: 'internal',

@@ -1,6 +1,7 @@
 import Button from './Button';
 import Comment from './Comment';
 import LiveTimestamp from './LiveTimestamp';
+import MoveSectionDialog from './MoveSectionDialog';
 import PrototypeRegistry from './PrototypeRegistry';
 import SectionSource from './SectionSource';
 import commentFormManager from './commentFormManager';
@@ -1521,7 +1522,7 @@ class Section extends SectionSkeleton {
   async move() {
     if (bootManager.isPageOverlayOn()) return;
 
-    const dialog = new ((await import('./MoveSectionDialog')).default)(this);
+    const dialog = new MoveSectionDialog(this);
     const windowManager = cd.getWindowManager();
     windowManager.addWindows([dialog]);
     windowManager.openWindow(dialog);

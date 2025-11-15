@@ -5,6 +5,7 @@ import CommentLayersCss from '../Comment.layers.less';
 import CommentCss from '../Comment.less';
 import CommentFormCss from '../CommentForm.less';
 import SectionCss from '../Section.less';
+import addCommentLinks from '../addCommentLinks';
 import globalCss from '../global.less';
 import logPagesCss from '../logPages.less';
 import navPanelCss from '../navPanel.less';
@@ -18,7 +19,6 @@ import userRegistry from '../userRegistry';
 import { getUserInfo, splitIntoBatches } from '../utils-api';
 import { createSvg, initDayjs, skin$, transparentize } from '../utils-window';
 
-import addCommentLinks from '../addCommentLinks';
 import cd from './cd';
 import debug from './debug';
 
@@ -75,14 +75,6 @@ class BootManager {
    * @private
    */
   booting = false;
-
-  /**
-   * @type {{
-   *   [key: string]: (event: JQuery.Event) => '' | undefined;
-   * }}
-   * @private
-   */
-  beforeUnloadHandlers = {};
 
   /**
    * @type {{
@@ -1474,37 +1466,6 @@ class BootManager {
    */
   isHistoryPage() {
     return cd.g.pageAction === 'history' && isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber);
-  }
-
-  /**
-   * Add a condition preventing page unload.
-   *
-   * @param {string} name
-   * @param {() => boolean} condition
-   */
-  addPreventUnloadCondition(name, condition) {
-    this.beforeUnloadHandlers[name] = (/** @type {JQuery.Event} */ event) => {
-      if (!condition()) return;
-
-      event.preventDefault();
-      // @ts-expect-error: Compatibility
-      event.returnValue = '1';
-
-      return '';
-    };
-    $(window).on('beforeunload', this.beforeUnloadHandlers[name]);
-  }
-
-  /**
-   * Remove a condition preventing page unload.
-   *
-   * @param {string} name
-   */
-  removePreventUnloadCondition(name) {
-    if (!(name in this.beforeUnloadHandlers)) return;
-
-    $(window).off('beforeunload', this.beforeUnloadHandlers[name]);
-    delete this.beforeUnloadHandlers[name];
   }
 }
 

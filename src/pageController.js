@@ -202,6 +202,14 @@ class PageController extends EventEmitter {
   worker;
 
   /**
+   * @type {{
+   *   [key: string]: (event: JQuery.Event) => void;
+   * }}
+   * @private
+   */
+  beforeUnloadHandlers = {};
+
+  /**
    * Set up the boot manager for use in the current boot process. (Executed at every page load.)
    *
    * @param {string} [pageHtml] HTML to update the page with.
@@ -1697,6 +1705,35 @@ class PageController extends EventEmitter {
     }
 
     return this.worker;
+  }
+
+  /**
+   * Add a condition preventing page unload.
+   *
+   * @param {string} name
+   * @param {() => boolean} condition
+   */
+  addPreventUnloadCondition(name, condition) {
+    this.beforeUnloadHandlers[name] = (/** @type {JQuery.Event} */ event) => {
+      if (!condition()) return;
+
+      event.preventDefault();
+      // @ts-expect-error: Compatibility
+      event.returnValue = '1';
+    };
+    $(window).on('beforeunload', this.beforeUnloadHandlers[name]);
+  }
+
+  /**
+   * Remove a condition preventing page unload.
+   *
+   * @param {string} name
+   */
+  removePreventUnloadCondition(name) {
+    if (!(name in this.beforeUnloadHandlers)) return;
+
+    $(window).off('beforeunload', this.beforeUnloadHandlers[name]);
+    delete this.beforeUnloadHandlers[name];
   }
 }
 

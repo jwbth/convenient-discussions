@@ -1,5 +1,5 @@
-import bootManager from './loader/bootManager';
 import cd from './loader/cd';
+import pageController from './pageController';
 import CdError from './shared/CdError';
 
 /**
@@ -39,7 +39,7 @@ class ProcessDialogMixin {
     const cdKey = /** @type {string} */ (this.constructor.cdKey) || 'dialog';
     if (!this.isUnsaved() || confirm(cd.s(`${cdKey}-close-confirm`))) {
       this.close({ action: 'close' });
-      bootManager.removePreventUnloadCondition('dialog');
+      pageController.removePreventUnloadCondition('dialog');
     }
   }
 

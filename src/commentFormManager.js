@@ -433,9 +433,10 @@ class CommentFormManager extends EventEmitter {
     if (!content?.length) return;
 
     const dialog = new OO.ui.MessageDialog();
-    cd.getWindowManager().addWindows([dialog]);
+    const windowManager = cd.getWindowManager();
+    windowManager.addWindows([dialog]);
     // eslint-disable-next-line no-one-time-vars/no-one-time-vars
-    const win = cd.getWindowManager().openWindow(dialog, {
+    const win = windowManager.openWindow(dialog, {
       message: new OO.ui.FieldLayout(
         new OO.ui.MultilineTextInputWidget({
           value: content
@@ -488,7 +489,7 @@ class CommentFormManager extends EventEmitter {
    * @private
    */
   configureClosePageConfirmation() {
-    bootManager.addPreventUnloadCondition('commentForms', () => {
+    pageController.addPreventUnloadCondition('commentForms', () => {
       // Check for altered comment forms - if there are none, don't save the session to decrease the
       // chance of the situation where a user had two same pages in different tabs and lost a form
       // in other tab after saving nothing in this tab.

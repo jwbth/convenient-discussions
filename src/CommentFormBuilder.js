@@ -1,4 +1,6 @@
 import Button from './Button';
+import MultilineTextInputWidget from './MultilineTextInputWidget';
+import TextInputWidget from './TextInputWidget';
 import TextMasker from './TextMasker';
 import cd from './loader/cd';
 import pageController from './pageController';
@@ -25,12 +27,8 @@ class CommentFormBuilder {
    * Create the text inputs based on OOUI widgets.
    *
    * @param {import('./CommentForm').CommentFormInitialState} initialState
-   * @returns {Promise<void>}
    */
-  async buildTextInputs(initialState) {
-    const TextInputWidget = (await import('./TextInputWidget')).default;
-    const MultilineTextInputWidget = (await import('./MultilineTextInputWidget')).default;
-
+  buildTextInputs(initialState) {
     if (
       (
         (this.form.isMode('addSection') || this.form.isMode('addSubsection')) &&
@@ -485,7 +483,7 @@ class CommentFormBuilder {
    * @returns {Promise<void>}
    */
   async build(initialState, customModulesPromise) {
-    await this.buildTextInputs(initialState);
+    this.buildTextInputs(initialState);
     this.buildCheckboxes(initialState);
     this.buildButtons();
     this.buildElements();
