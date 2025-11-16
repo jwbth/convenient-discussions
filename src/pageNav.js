@@ -1,6 +1,6 @@
 import Button from './Button';
+import controller from './controller';
 import cd from './loader/cd';
-import pageController from './pageController';
 import sectionManager from './sectionManager';
 import toc from './toc';
 import { getVisibilityByRects } from './utils-window';
@@ -77,7 +77,7 @@ class PageNav {
    */
   backLinkLocation;
 
-  bodyScrollPaddingTop = pageController.getBodyScrollPaddingTop();
+  bodyScrollPaddingTop = controller.getBodyScrollPaddingTop();
 
   /**
    * _For internal use._ Setup the page navigation block (mount or update).
@@ -113,7 +113,7 @@ class PageNav {
     this.updateWidth();
     this.update();
 
-    pageController
+    controller
       .on('scroll', this.update)
       .on('horizontalScroll', this.updateWidth)
       .on('resize', this.updateWidth);
@@ -134,10 +134,10 @@ class PageNav {
    * @private
    */
   updateWidth = () => {
-    if (!this.isMounted() || !pageController.$contentColumn.length) return;
+    if (!this.isMounted() || !controller.$contentColumn.length) return;
 
     const left =
-      /** @type {JQuery.Coordinates} */ (pageController.$contentColumn.offset()).left -
+      /** @type {JQuery.Coordinates} */ (controller.$contentColumn.offset()).left -
       /** @type {number} */ ($(window).scrollLeft());
 
     // 18px padding + 1px comment markers / thread lines
@@ -147,10 +147,10 @@ class PageNav {
       ? left - deductable
       : /** @type {number} */ ($(window).width()) -
         // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-        (left + /** @type {number} */ (pageController.$contentColumn.outerWidth())) -
+        (left + /** @type {number} */ (controller.$contentColumn.outerWidth())) -
         deductable;
     if (cd.g.skin === 'minerva') {
-      width -= pageController.getContentColumnOffsets().startMargin;
+      width -= controller.getContentColumnOffsets().startMargin;
     }
 
     const $topElement = /** @type {JQuery} */ (this.$topElement);
@@ -447,8 +447,8 @@ class PageNav {
       }
     }
 
-    pageController.toggleAutoScrolling(true);
-    pageController.scrollToY(offset);
+    controller.toggleAutoScrolling(true);
+    controller.scrollToY(offset);
   }
 }
 

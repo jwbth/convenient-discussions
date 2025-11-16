@@ -1,5 +1,5 @@
+import controller from './controller';
 import cd from './loader/cd';
-import pageController from './pageController';
 import settings from './settings';
 import { areObjectsEqual, calculateWordOverlap, generateFixedPosTimestamp, spacesToUnderlines } from './shared/utils-general';
 import { getExtendedRect, getVisibilityByRects } from './utils-window';
@@ -34,7 +34,7 @@ class SectionManager {
   init(subscriptions) {
     this.improvePerformance = settings.get('improvePerformance');
 
-    pageController
+    controller
       .on('scroll', this.maybeUpdateVisibility);
     subscriptions
       .on('process', this.addSubscribeButtons);
@@ -243,11 +243,11 @@ class SectionManager {
   addSubscribeButtons = () => {
     if (!cd.user.isRegistered()) return;
 
-    pageController.saveRelativeScrollPosition();
+    controller.saveRelativeScrollPosition();
     this.items.forEach((section) => {
       section.addSubscribeButton();
     });
-    pageController.restoreRelativeScrollPosition();
+    controller.restoreRelativeScrollPosition();
   };
 
   /**
@@ -291,7 +291,7 @@ class SectionManager {
    * @returns {number | undefined}
    */
   getFirstSectionRelativeTopOffset(scrollY = window.scrollY, tocOffset = undefined) {
-    if (scrollY <= pageController.getBodyScrollPaddingTop()) return;
+    if (scrollY <= controller.getBodyScrollPaddingTop()) return;
 
     return this.items.reduce((result, section) => {
       if (result !== undefined) {
@@ -319,7 +319,7 @@ class SectionManager {
     return (
       (
         firstSectionTop !== undefined &&
-        firstSectionTop < pageController.getBodyScrollPaddingTop() + 1 &&
+        firstSectionTop < controller.getBodyScrollPaddingTop() + 1 &&
         this.items
           .slice()
           .reverse()
@@ -328,7 +328,7 @@ class SectionManager {
 
             return (
               getVisibilityByRects(extendedRect) &&
-              extendedRect.outerTop < pageController.getBodyScrollPaddingTop() + 1
+              extendedRect.outerTop < controller.getBodyScrollPaddingTop() + 1
             );
           })
       ) ||
@@ -346,7 +346,7 @@ class SectionManager {
     if (
       !this.improvePerformance ||
       !this.items.length ||
-      !pageController.isLongPage() ||
+      !controller.isLongPage() ||
 
       // When the document has no focus, all sections are visible (see .maybeUnhideAll()).
       !document.hasFocus()
@@ -420,7 +420,7 @@ class SectionManager {
    * blurred.
    */
   maybeUnhideAll = () => {
-    if (!pageController.isLongPage()) return;
+    if (!controller.isLongPage()) return;
 
     this.items.forEach((section) => {
       section.updateVisibility(true);

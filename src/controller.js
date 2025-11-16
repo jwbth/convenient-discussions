@@ -33,7 +33,7 @@ import workerCode from './worker/worker-gate?worker&inline-string';
  * @property {[fragment: string]} popState
  * @property {[]} selectionChange
  * @property {[]} mutate
- * @property {[passedData: import('./TalkPageBootProcess').PassedData]} beforeReboot
+ * @property {[passedData: import('./BootProcess').PassedData]} beforeReboot
  * @property {[]} startReboot
  * @property {[]} reboot
  * @property {[]} desktopNotificationClick
@@ -45,7 +45,7 @@ import workerCode from './worker/worker-gate?worker&inline-string';
  *
  * @augments EventEmitter<EventMap>
  */
-class PageController extends EventEmitter {
+class Controller extends EventEmitter {
   /**
    * @type {JQuery}
    */
@@ -253,7 +253,7 @@ class PageController extends EventEmitter {
   /**
    * Get the content root element (`.mw-parser-output` or `#mw-content-text`). Supposed to be used
    * via {@link convenientDiscussions.api.getRootElement}; inside the script, direct reference to
-   * {@link module:pageController.rootElement} is practiced.
+   * {@link Controller#rootElement} is practiced.
    *
    * @returns {Element}
    */
@@ -315,7 +315,7 @@ class PageController extends EventEmitter {
    *
    * @param {boolean | undefined} [switchToAbsolute] If this value is `true` or `false` and the viewport
    *   is above the bottom of the table of contents, then use
-   *   {@link PageController#saveScrollPosition} (this allows for better precision).
+   *   {@link Controller#saveScrollPosition} (this allows for better precision).
    * @param {number} scrollY Cached horizontal scroll value used to avoid reflow.
    */
   saveRelativeScrollPosition(switchToAbsolute, scrollY = window.scrollY) {
@@ -388,11 +388,11 @@ class PageController extends EventEmitter {
   }
 
   /**
-   * Restore the scroll position saved in {@link PageController#saveRelativeScrollPosition}.
+   * Restore the scroll position saved in {@link Controller#saveRelativeScrollPosition}.
    *
    * @param {boolean} [switchToAbsolute] Restore the absolute position using
-   *   {@link PageController#restoreScrollPosition} if
-   *   {@link PageController#saveScrollPosition} was previously used for saving the position.
+   *   {@link Controller#restoreScrollPosition} if
+   *   {@link Controller#saveScrollPosition} was previously used for saving the position.
    */
   restoreRelativeScrollPosition(switchToAbsolute = false) {
     if (switchToAbsolute && this.scrollData.offset !== undefined) {
@@ -446,7 +446,7 @@ class PageController extends EventEmitter {
 
   /**
    * Save the scroll position to restore it later with
-   * {@link PageController#restoreScrollPosition}.
+   * {@link Controller#restoreScrollPosition}.
    *
    * @param {boolean} [saveTocHeight] `false` is used for more fine control of scroll behavior
    *   when visits are loaded after a page reboot.
@@ -467,7 +467,7 @@ class PageController extends EventEmitter {
   }
 
   /**
-   * Restore the scroll position saved in {@link PageController#saveScrollPosition}.
+   * Restore the scroll position saved in {@link Controller#saveScrollPosition}.
    *
    * @param {boolean} [resetTocHeight] `false` is used for more fine control of scroll behavior
    *   after page reboots.
@@ -769,7 +769,7 @@ class PageController extends EventEmitter {
   };
 
   /**
-   * Handle a `horizontalscroll` event, triggered from {@link PageController#handleScroll}.
+   * Handle a `horizontalscroll` event, triggered from {@link Controller#handleScroll}.
    *
    * @private
    */
@@ -924,7 +924,7 @@ class PageController extends EventEmitter {
   /**
    * Bind a click handler to comment links to make them work as in-script comment links.
    *
-   * This method exists in addition to {@link PageController#handlePopState}. It's preferable to
+   * This method exists in addition to {@link Controller#handlePopState}. It's preferable to
    * have click events handled by this method instead of `.handlePopState()` because that method, if
    * encounters `cdJumpedToComment` in the history state, doesn't scroll to the comment which is a
    * wrong behavior when the user clicks a link.
@@ -1199,7 +1199,7 @@ class PageController extends EventEmitter {
 
   /**
    * Set whether the viewport is currently automatically scrolled to some position. To get that
-   * state, use {@link PageController#isAutoScrolling}.
+   * state, use {@link Controller#isAutoScrolling}.
    *
    * @param {boolean} value
    */
@@ -1209,7 +1209,7 @@ class PageController extends EventEmitter {
 
   /**
    * Check whether the viewport is currently automatically scrolled to some position. To set that
-   * state, use {@link PageController#toggleAutoScrolling}.
+   * state, use {@link Controller#toggleAutoScrolling}.
    *
    * @returns {boolean}
    */
@@ -1737,5 +1737,5 @@ class PageController extends EventEmitter {
   }
 }
 
-export { PageController };
-export default new PageController();
+export { Controller as Controller };
+export default new Controller();

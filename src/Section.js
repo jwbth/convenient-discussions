@@ -5,9 +5,9 @@ import MoveSectionDialog from './MoveSectionDialog';
 import PrototypeRegistry from './PrototypeRegistry';
 import SectionSource from './SectionSource';
 import commentFormManager from './commentFormManager';
+import controller from './controller';
 import bootManager from './loader/bootManager';
 import cd from './loader/cd';
-import pageController from './pageController';
 import pageRegistry from './pageRegistry';
 import sectionManager from './sectionManager';
 import settings from './settings';
@@ -246,7 +246,7 @@ class Section extends SectionSkeleton {
      */
     this.isActionable =
       cd.page.isActive() &&
-      !pageController.getClosedDiscussions().some((el) => el.contains(this.headingElement)) &&
+      !controller.getClosedDiscussions().some((el) => el.contains(this.headingElement)) &&
       !this.isTranscludedFromTemplate;
 
     if (this.isTranscludedFromTemplate) {
@@ -560,7 +560,7 @@ class Section extends SectionSkeleton {
     if (!this.subscribeId) return;
 
     this.subscriptionState = this.subscriptions.getState(this.subscribeId);
-    if (pageController.isSubscribingDisabled() && !this.subscriptionState) return;
+    if (controller.isSubscribingDisabled() && !this.subscriptionState) return;
 
     /**
      * Subscribe button widget in the {@link Section#actionsElement actions element}.
@@ -716,7 +716,7 @@ class Section extends SectionSkeleton {
         $floatableContainer: $button,
         classes: ['cd-popup-authors'],
       });
-      $(pageController.getPopupOverlay()).append(this.authorsPopup.$element);
+      $(controller.getPopupOverlay()).append(this.authorsPopup.$element);
     }
 
     this.authorsPopup.toggle();
@@ -1348,7 +1348,7 @@ class Section extends SectionSkeleton {
 
     if (!this.isTopic()) return;
 
-    let subscribeId = pageController.getDtSubscribableThreads()
+    let subscribeId = controller.getDtSubscribableThreads()
       ?.find((thread) => (
         thread.id === this.hElement.dataset.mwThreadId ||
         thread.id === this.headlineElement.dataset.mwThreadId
@@ -1718,7 +1718,7 @@ class Section extends SectionSkeleton {
    * @param {JQuery.TriggeredEvent | MouseEvent | KeyboardEvent} event
    */
   copyLink(event) {
-    pageController.showCopyLinkDialog(this, event);
+    controller.showCopyLinkDialog(this, event);
   }
 
   /**
@@ -2152,7 +2152,7 @@ class Section extends SectionSkeleton {
     this.elements ??= /** @type {HTMLElement[]} */ (getRangeContents(
       this.headingElement,
       this.findRealLastElement(),
-      pageController.rootElement
+      controller.rootElement
     ));
     this.isHidden = !show;
     this.elements.forEach((el) => {

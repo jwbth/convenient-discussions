@@ -1,8 +1,8 @@
 import LZString from 'lz-string';
 
 import EventEmitter from './EventEmitter';
-import cd from './loader/cd';
 import commentManager from './commentManager';
+import cd from './loader/cd';
 import settings from './settings';
 import CdError from './shared/CdError';
 import { subtractDaysFromNow, typedKeysOf } from './shared/utils-general';
@@ -33,7 +33,7 @@ class Visits extends EventEmitter {
    * loaded. In fact, when the page is loaded in a background tab, it can be throttled until it is
    * focused, so an indefinite amount of time can pass.
    *
-   * @param {import('./TalkPageBootProcess').default} bootProcess
+   * @param {import('./BootProcess').default} bootProcess
    * @param {boolean} [reuse] Whether to reuse a cached userinfo request.
    */
   async load(bootProcess, reuse = false) {

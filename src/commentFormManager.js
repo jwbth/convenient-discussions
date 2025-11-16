@@ -2,9 +2,9 @@ import CommentForm from './CommentForm';
 import EventEmitter from './EventEmitter';
 import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime';
 import commentManager from './commentManager';
+import controller from './controller';
 import bootManager from './loader/bootManager';
 import cd from './loader/cd';
-import pageController from './pageController';
 import sectionManager from './sectionManager';
 import settings from './settings';
 import { defined, removeFromArrayIfPresent, subtractDaysFromNow } from './shared/utils-general';
@@ -48,7 +48,7 @@ class CommentFormManager extends EventEmitter {
   init() {
     this.configureClosePageConfirmation();
 
-    pageController
+    controller
       .on('beforeReboot', () => {
         // In case checkboxes were changed programmatically
         this.saveSession();
@@ -125,7 +125,7 @@ class CommentFormManager extends EventEmitter {
           this.remove(cf);
         })
         .on('teardown', () => {
-          pageController.updatePageTitle();
+          controller.updatePageTitle();
           this.emit('teardown', cf);
         });
       this.emit('add', cf);
@@ -133,7 +133,7 @@ class CommentFormManager extends EventEmitter {
       commentForm = cf;
     }
 
-    pageController.updatePageTitle();
+    controller.updatePageTitle();
     this.saveSession();
 
     /**
@@ -489,7 +489,7 @@ class CommentFormManager extends EventEmitter {
    * @private
    */
   configureClosePageConfirmation() {
-    pageController.addPreventUnloadCondition('commentForms', () => {
+    controller.addPreventUnloadCondition('commentForms', () => {
       // Check for altered comment forms - if there are none, don't save the session to decrease the
       // chance of the situation where a user had two same pages in different tabs and lost a form
       // in other tab after saving nothing in this tab.

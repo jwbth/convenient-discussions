@@ -2,9 +2,9 @@ import CommentForm from './CommentForm';
 import Page from './Page';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
+import controller from './controller';
 import bootManager from './loader/bootManager';
 import cd from './loader/cd';
-import pageController from './pageController';
 import pageRegistry from './pageRegistry';
 import sectionManager from './sectionManager';
 import { areObjectsEqual } from './shared/utils-general';
@@ -175,7 +175,7 @@ export default class CurrentPage extends Page {
     // This is not reevaluated after page reloads. Since archive settings we need rarely change, the
     // reevaluation is unlikely to make any difference
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    this.$archivingInfo ??= pageController.$root?.find('.cd-archivingInfo');
+    this.$archivingInfo ??= controller.$root?.find('.cd-archivingInfo');
 
     return this.$archivingInfo;
   }
@@ -208,7 +208,7 @@ export default class CurrentPage extends Page {
       )
       // If appending to bootManager.rootElement, it can land on a wrong place, like on 404 pages
       // with New Topic Tool enabled.
-      .insertAfter(pageController.$root);
+      .insertAfter(controller.$root);
   }
 
   /**
@@ -297,7 +297,7 @@ export default class CurrentPage extends Page {
     if (firstSection && commentForm.isNewTopicOnTop()) {
       firstSection.$heading.before(commentForm.$element);
     } else {
-      pageController.$root.after(commentForm.$element);
+      controller.$root.after(commentForm.$element);
     }
   }
 

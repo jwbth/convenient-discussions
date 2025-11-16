@@ -9,10 +9,10 @@ import MentionsAutocomplete from './MentionsAutocomplete';
 import UploadDialog from './UploadDialog';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
+import controller from './controller';
 import bootManager from './loader/bootManager';
 import cd from './loader/cd';
 import notifications from './notifications';
-import pageController from './pageController';
 import pageRegistry from './pageRegistry';
 import sectionManager from './sectionManager';
 import settings from './settings';
@@ -1588,7 +1588,7 @@ class CommentForm extends EventEmitter {
     // "focusin" is "focus" that bubbles, i.e. propagates up the node tree.
     this.$element.on('focusin', () => {
       this.lastFocused = new Date();
-      pageController.updatePageTitle();
+      controller.updatePageTitle();
     });
 
     this.addEventListenersToTextInputs(emitChange, preview);
@@ -1746,7 +1746,7 @@ class CommentForm extends EventEmitter {
 
     // "Performance issues?" hint
     if (
-      pageController.isLongPage() &&
+      controller.isLongPage() &&
       $.client.profile().layout === 'webkit' &&
       !settings.get('improvePerformance') &&
       !this.haveSuggestedToImprovePerformanceRecently()
@@ -2776,7 +2776,7 @@ class CommentForm extends EventEmitter {
   /**
    * Remove references to the form and reload the page.
    *
-   * @param {import('./TalkPageBootProcess').PassedData} [bootData] Data to pass to the boot process.
+   * @param {import('./BootProcess').PassedData} [bootData] Data to pass to the boot process.
    * @param {import('./CommentFormOperation').default} [operation] Submit operation.
    */
   async reloadPage(bootData, operation) {
@@ -3010,7 +3010,7 @@ class CommentForm extends EventEmitter {
         }
 
         if (subscribeId !== undefined) {
-          pageController
+          controller
             .getSubscriptionsInstance()
             .subscribe(subscribeId, headline, true, originalHeadline);
         }
@@ -3102,7 +3102,7 @@ class CommentForm extends EventEmitter {
     // be watched/unwatched using a checkbox in a form just sent. The server doesn't manage to
     // update the value quickly enough, so it returns the old value, but we must display the new
     // one.
-    const bootData = /** @type {import('./TalkPageBootProcess').PassedData} */ ({
+    const bootData = /** @type {import('./BootProcess').PassedData} */ ({
       submittedCommentForm: this,
     });
 
@@ -3927,7 +3927,7 @@ class CommentForm extends EventEmitter {
 
       // Not $root - add section form is outside it. Not $content either - it's the same as $root on
       // 404 pages.
-      $container: pageController.$root.parent(),
+      $container: controller.$root.parent(),
 
       position: $('#vector-main-menu-pinned-container, #vector-toc-pinned-container').is(':visible')
         ? 'before'
@@ -3978,7 +3978,7 @@ class CommentForm extends EventEmitter {
 
       // Not $root - add section form is outside it. Not $content either - it's the same as $root on
       // 404 pages.
-      $container: pageController.$root.parent(),
+      $container: controller.$root.parent(),
 
       position: $('#vector-main-menu-pinned-container, #vector-toc-pinned-container').is(':visible')
         ? 'before'

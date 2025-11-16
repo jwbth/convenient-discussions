@@ -7,7 +7,7 @@
  * @module notifications
  */
 
-import pageController from './pageController';
+import controller from './controller';
 
 /**
  * Notification object created by running
@@ -35,7 +35,7 @@ export default {
    * Initialize the singleton.
    */
   init() {
-    pageController
+    controller
       .on('beforeReboot', (passedData) => {
         this.close(passedData.closeNotificationsSmoothly ?? true);
       });

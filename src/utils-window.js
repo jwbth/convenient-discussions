@@ -505,7 +505,7 @@ export function cleanUpPasteDom(element, containerElement) {
     .forEach(removeElement);
 
   const topElements = /** @type {Element[]} */ (
-    bootManager.getTalkPageBootProcess().parser.getTopElementsWithText(element, true).nodes
+    bootManager.getBootProcess().parser.getTopElementsWithText(element, true).nodes
   );
   if (topElements[0] !== element) {
     element.innerHTML = '';

@@ -1,9 +1,9 @@
 import ProcessDialog from './ProcessDialog';
 import StorageItem from './StorageItem';
 import commentFormManager from './commentFormManager';
+import controller from './controller';
 import bootManager from './loader/bootManager';
 import cd from './loader/cd';
-import pageController from './pageController';
 import settings from './settings';
 import { areObjectsEqual } from './shared/utils-general';
 import { saveGlobalOption, saveLocalOption } from './utils-api';
@@ -200,7 +200,7 @@ class SettingsDialog extends ProcessDialog {
 
       this.popPending();
 
-      pageController.addPreventUnloadCondition('dialog', () => this.isUnsaved());
+      controller.addPreventUnloadCondition('dialog', () => this.isUnsaved());
     });
   }
 
@@ -228,7 +228,7 @@ class SettingsDialog extends ProcessDialog {
             return;
           }
 
-          pageController.removePreventUnloadCondition('dialog');
+          controller.removePreventUnloadCondition('dialog');
 
           this.stack.setItem(this.reloadPanel);
           this.actions.setMode('reboot');

@@ -3,9 +3,9 @@ import EventEmitter from './EventEmitter';
 import PrototypeRegistry from './PrototypeRegistry';
 import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime';
 import commentManager from './commentManager';
+import controller from './controller';
 import bootManager from './loader/bootManager';
 import cd from './loader/cd';
-import pageController from './pageController';
 import settings from './settings';
 import CdError from './shared/CdError';
 import ElementsTreeWalker from './shared/ElementsTreeWalker';
@@ -13,7 +13,7 @@ import { isHeadingNode, removeFromArrayIfPresent, subtractDaysFromNow, unique } 
 import updateChecker from './updateChecker';
 import { loadUserGenders } from './utils-api';
 import { mixInObject } from './utils-oojs';
-import { getCommonGender, getExtendedRect, getRangeContents, getVisibilityByRects, isVisible, isCmdModifierPressed } from './utils-window';
+import { getCommonGender, getExtendedRect, getRangeContents, getVisibilityByRects, isCmdModifierPressed, isVisible } from './utils-window';
 
 /**
  * @typedef {object} EventMap
@@ -173,7 +173,7 @@ class Thread extends mixInObject(
      * @private
      */
     this.hasOutdents = (
-      pageController.areThereOutdents() &&
+      controller.areThereOutdents() &&
       this.comments.slice(1).some((comment) => comment.isOutdented)
     );
 
@@ -964,14 +964,14 @@ class Thread extends mixInObject(
     this.collapsedRange = getRangeContents(
       this.getAdjustedStartElement(),
       this.getAdjustedEndElement() || null,
-      pageController.rootElement
+      controller.rootElement
     );
     if (!this.collapsedRange) return;
 
     this.collapsedRange.forEach((element) => {
       this.hideElement(element);
     });
-    this.updateEndOfCollapsedRange(pageController.getClosedDiscussions());
+    this.updateEndOfCollapsedRange(controller.getClosedDiscussions());
 
     this.isCollapsed = true;
 
@@ -1446,7 +1446,7 @@ class Thread extends mixInObject(
     if (!this.isInited) {
       this
         .on('toggle', this.updateLines);
-      pageController
+      controller
         .on('resize', this.updateLines)
         .on('mutate', () => {
           // Update only on mouse move to prevent short freezings of a page when there is a comment
@@ -1466,7 +1466,7 @@ class Thread extends mixInObject(
     }
 
     this.collapseThreadsLevel = settings.get('collapseThreadsLevel');
-    this.treeWalker = new ElementsTreeWalker(pageController.rootElement);
+    this.treeWalker = new ElementsTreeWalker(controller.rootElement);
     commentManager.getAll().forEach((rootComment) => {
       try {
         rootComment.thread?.expand(true);
@@ -1674,7 +1674,7 @@ class Thread extends mixInObject(
     const scrollX = window.scrollX;
     const scrollY = window.scrollY;
 
-    const floatingRects = pageController.getFloatingElements().map(getExtendedRect);
+    const floatingRects = controller.getFloatingElements().map(getExtendedRect);
     commentManager.getAll()
       .slice()
       .reverse()

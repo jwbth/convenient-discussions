@@ -8,9 +8,9 @@ import Comment from './Comment';
 import LiveTimestamp from './LiveTimestamp';
 import TocItem from './TocItem';
 import commentManager from './commentManager';
+import controller from './controller';
 import bootManager from './loader/bootManager';
 import cd from './loader/cd';
-import pageController from './pageController';
 import sectionManager from './sectionManager';
 import settings from './settings';
 import CdError from './shared/CdError';
@@ -71,14 +71,14 @@ class Toc {
         ) {
           this.addNewComments(
             Comment.groupBySection(commentManager.query((c) => c.isSeen === false)),
-            bootManager.getTalkPageBootProcess()
+            bootManager.getBootProcess()
           );
         }
         this.addCommentCount();
       });
     subscriptions
       .on('process', this.markSubscriptions);
-    pageController
+    controller
       .on('reboot', this.maybeHide);
     updateChecker
       .on('commentsUpdate', ({ bySection }) => {
@@ -110,7 +110,7 @@ class Toc {
    * @param {boolean} [hideToc] Whether the TOC should be hidden.
    */
   setup(sections, hideToc) {
-    this.$element = this.isInSidebar() ? $('.vector-toc') : pageController.$root.find('.toc');
+    this.$element = this.isInSidebar() ? $('.vector-toc') : controller.$root.find('.toc');
     this.items = undefined;
     this.floating = undefined;
     this.visitsPromise = new Promise((resolve) => {
@@ -386,7 +386,7 @@ class Toc {
     if (!settings.get('modifyToc') || !this.isPresent()) return;
 
     if (!this.isInSidebar()) {
-      pageController.saveRelativeScrollPosition(true);
+      controller.saveRelativeScrollPosition(true);
     }
 
     const $addedSections = this.$element.find('.cd-toc-addedSection');
@@ -452,7 +452,7 @@ class Toc {
     });
 
     if (!this.isInSidebar()) {
-      pageController.restoreRelativeScrollPosition(true);
+      controller.restoreRelativeScrollPosition(true);
     }
   };
 
@@ -652,7 +652,7 @@ class Toc {
    * of contents.
    *
    * @param {import('./Comment').CommentsBySection} commentsBySection
-   * @param {import('./TalkPageBootProcess').default} [bootProcess]
+   * @param {import('./BootProcess').default} [bootProcess]
    * @private
    */
   async addNewComments(commentsBySection, bootProcess) {
@@ -661,7 +661,7 @@ class Toc {
     await this.updateTocSectionsPromise;
     this.$element.find('.cd-toc-addedCommentList').remove();
     if (!this.isInSidebar()) {
-      pageController.saveRelativeScrollPosition(
+      controller.saveRelativeScrollPosition(
         Boolean(
           // When unrendered (in gray) comments are added. (Boot process is also not specified at
           // those times.)
@@ -683,7 +683,7 @@ class Toc {
     });
 
     if (!this.isInSidebar()) {
-      pageController.restoreRelativeScrollPosition(true);
+      controller.restoreRelativeScrollPosition(true);
     }
   }
 
@@ -708,7 +708,7 @@ class Toc {
       this.floating = Boolean(
         !this.isInSidebar() &&
         this.isPresent() &&
-        this.$element.closest($(pageController.getFloatingElements())).length
+        this.$element.closest($(controller.getFloatingElements())).length
       );
     }
 

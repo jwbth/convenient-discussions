@@ -41,7 +41,7 @@ class DtSubscriptions extends Subscriptions {
    * {@link DtSubscriptions#loadToTalkPage loaded to a talk page}.
    *
    * @override
-   * @param {import('./TalkPageBootProcess').default} [bootProcess]
+   * @param {import('./BootProcess').default} [bootProcess]
    */
   processOnTalkPage(bootProcess) {
     if (bootProcess?.isFirstRun()) {

@@ -15,11 +15,11 @@
 ### Core Application Files
 
 - **app.js**: Main application entry point
+- **loader/loader.js**: Entry point for the module loading the main app
 - **cd.js**: Core Convenient Discussions object
 - **convenientDiscussions.js**: Main initialization script
-- **bootManager.js**: Application bootstrap logic
-- **BootProcess.js**: Boot process management
-- **talkPageController.js**: Main controller
+- **TalkPageBootProcess.js**: Application bootstrap logic for talk pages
+- **pageController.js**: Main controller
 
 ### UI Components
 
@@ -66,6 +66,7 @@
 
 ### Subdirectories
 
+- **loader/**: Modules that create a scaffolding for the script to run (the object structure, some utilities) and load the main app with smart caching strategy
 - **worker/**: Page parsing module that runs in a web worker and is accessed from updateChecker.js
 - **shared/**: Classes and modules shared between the web worker context and window context
 - **tribute/**: Tribute mentions library heavily modified for the apps's need

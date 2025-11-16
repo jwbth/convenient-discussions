@@ -2,8 +2,8 @@ import Button from './Button';
 import MultilineTextInputWidget from './MultilineTextInputWidget';
 import TextInputWidget from './TextInputWidget';
 import TextMasker from './TextMasker';
+import controller from './controller';
 import cd from './loader/cd';
-import pageController from './pageController';
 import settings from './settings';
 import { defined, removeDoubleSpaces } from './shared/utils-general';
 import { createCheckboxControl } from './utils-oojs';
@@ -115,7 +115,7 @@ class CommentFormBuilder {
         : this.form.targetSection;
       if (
         (subscribableSection?.subscribeId || this.form.isMode('addSection')) &&
-        (!pageController.isSubscribingDisabled() || subscribableSection?.subscriptionState)
+        (!controller.isSubscribingDisabled() || subscribableSection?.subscriptionState)
       ) {
         ({ field: this.form.subscribeField, input: this.form.subscribeCheckbox } = createCheckboxControl({
           value: 'subscribe',
@@ -218,7 +218,7 @@ class CommentFormBuilder {
         width: 400,
         classes: ['cd-helpPopup'],
       },
-      $overlay: pageController.getPopupOverlay(),
+      $overlay: controller.getPopupOverlay(),
       tabIndex: this.form.getTabIndex(31),
     });
 

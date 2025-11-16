@@ -24,13 +24,13 @@ import debug from './debug';
 import { getValidLanguageOrFallback } from './utils-global';
 
 /**
- * @import {PageController} from '../pageController'
+ * @import {Controller} from '../controller'
  */
 
 /**
  * Singleton for managing booting, rebooting, and unbooting (unloading) of the page. It is imported
  * when modules such as OOUI may not be yet available. For this reason, it takes on some functions
- * that would otherwise be a responsibility of {@link PageController}.
+ * that would otherwise be a responsibility of {@link Controller}.
  *
  * It
  * - initializes the script, both on talk pages and on log pages such as the watchlist (TODO:
@@ -62,10 +62,10 @@ class BootManager {
    *
    * For simpler type checking, assume it's always set (we don't use it when it's not).
    *
-   * @type {import('../TalkPageBootProcess').default}
+   * @type {import('../BootProcess').default}
    * @private
    */
-  talkPageBootProcess;
+  bootProcess;
 
   /** @type {JQuery.Promise<any>[] | undefined} @private */
   siteDataPromises;
@@ -90,8 +90,8 @@ class BootManager {
   pageTypes = {
     /**
      * Is the current page likely a talk page. See `definitelyTalk` for the most strict criteria.
-     * After a TalkPageBootProcess ran, this value becomes reliable (if the page turned out not to
-     * be a talk page, this is updated).
+     * After a BootProcess ran, this value becomes reliable (if the page turned out not to be a talk
+     * page, this is updated).
      */
     talk: false,
 
@@ -489,7 +489,7 @@ class BootManager {
     const settings = (await import('../settings')).default;
     cd.settings = settings;
 
-    const pageController = (await import('../pageController')).default;
+    const controller = (await import('../controller')).default;
     const commentManager = (await import('../commentManager')).default;
     const sectionManager = (await import('../sectionManager')).default;
     const commentFormManager = (await import('../commentFormManager')).default;
@@ -504,7 +504,7 @@ class BootManager {
      */
     cd.commentForms = commentFormManager.getAll();
 
-    cd.tests.controller = pageController;
+    cd.tests.controller = controller;
     cd.tests.processPageInBackground = (await import('../updateChecker')).processPage;
     cd.tests.showSettingsDialog = settings.showDialog.bind(settings);
     cd.tests.visits = (await import('../visits')).default;
@@ -567,7 +567,7 @@ class BootManager {
      * @function getRootElement
      * @memberof convenientDiscussions.api
      */
-    cd.api.getRootElement = pageController.getRootElement.bind(this);
+    cd.api.getRootElement = controller.getRootElement.bind(this);
   }
 
   /**
@@ -844,7 +844,7 @@ class BootManager {
 
   /**
    * Load the data required for the script to run on a talk page and execute the
-   * {@link TalkPageBootProcess boot process}.
+   * {@link BootProcess boot process}.
    *
    * @private
    */
@@ -913,7 +913,7 @@ class BootManager {
     // If there is no data to load and, therefore, no period of time within which a reflow (layout
     // thrashing) could happen without impeding performance, we cache the value so that it could
     // be used in .saveRelativeScrollPosition() without causing a reflow.
-    this.talkPageBootProcess = await this.createTalkPageBootProcess(
+    this.bootProcess = await this.createBootProcess(
       siteDataRequests.every((request) => request.state() === 'resolved') && !modulesRequest
         ? { scrollY: window.scrollY }
         : {}
@@ -921,7 +921,9 @@ class BootManager {
 
     this.showLoadingOverlay();
     Promise.all([modulesRequest || Promise.resolve(), ...siteDataRequests]).then(
-      () => this.tryBootTalkPage(false),
+      () => {
+        this.tryBootTalkPage(false);
+      },
       (/** @type {unknown} */ error) => {
         mw.notify(cd.s('error-loaddata'), { type: 'error' });
         console.error(error);
@@ -1028,11 +1030,11 @@ class BootManager {
   /**
    * Create a boot process.
    *
-   * @param {import('../TalkPageBootProcess').PassedData} [passedData]
-   * @returns {Promise<import('../TalkPageBootProcess').default>}
+   * @param {import('../BootProcess').PassedData} [passedData]
+   * @returns {Promise<import('../BootProcess').default>}
    */
-  async createTalkPageBootProcess(passedData = {}) {
-    return new ((await import('../TalkPageBootProcess')).default)(passedData);
+  async createBootProcess(passedData = {}) {
+    return new ((await import('../BootProcess')).default)(passedData);
   }
 
   /**
@@ -1040,24 +1042,24 @@ class BootManager {
    *
    * For simpler type checking, assume it's always set (we don't use it when it's not).
    *
-   * @returns {import('../TalkPageBootProcess').default}
+   * @returns {import('../BootProcess').default}
    */
-  getTalkPageBootProcess() {
-    return this.talkPageBootProcess;
+  getBootProcess() {
+    return this.bootProcess;
   }
 
   /**
-   * Run the {@link TalkPageBootProcess current boot process} and catch errors.
+   * Run the {@link BootProcess current boot process} and catch errors.
    *
    * @param {boolean} isReload Is the page reloaded, not booted the first time.
    */
   async tryBootTalkPage(isReload) {
     this.booting = true;
 
-    // We could say "let it crash", but unforeseen errors in TalkPageBootProcess#execute() are just
-    // too likely to go without a safeguard.
+    // We could say "let it crash", but unforeseen errors in BootProcess#execute() are just too
+    // likely to go without a safeguard.
     try {
-      await this.talkPageBootProcess.execute(isReload);
+      await this.bootProcess.execute(isReload);
       if (isReload) {
         mw.hook('wikipage.content').fire(this.$content);
       }
@@ -1084,8 +1086,8 @@ class BootManager {
     await (await import('../settings')).default.getInitPromise();
 
     bootManager.initTimestampTools();
-    this.talkPageBootProcess.initPatterns();
-    this.talkPageBootProcess.initPrototypes();
+    this.bootProcess.initPatterns();
+    this.bootProcess.initPrototypes();
     $.fn.extend((await import('../jqueryExtensions')).default);
     initDayjs();
   }
@@ -1102,7 +1104,7 @@ class BootManager {
   /**
    * Reload the page via Ajax.
    *
-   * @param {import('../TalkPageBootProcess').PassedData} [passedData] Data passed from the previous
+   * @param {import('../BootProcess').PassedData} [passedData] Data passed from the previous
    *   page state. See {@link PassedData} for the list of possible properties. `html`,
    *   `unseenComments` properties are set in this function.
    * @returns {Promise<boolean>} Successful?
@@ -1115,11 +1117,11 @@ class BootManager {
 
     passedData.isRevisionSliderRunning = Boolean(history.state?.sliderPos);
 
-    // We need PageController here since BootManager can't emit events. Use `require()`, not
+    // We need Controller here since BootManager can't emit events. Use `require()`, not
     // `import`, to avoid importing it before `oojs-ui` module is loaded.
-    const pageController = (await import('../pageController')).default;
+    const controller = (await import('../controller')).default;
 
-    pageController.emit('beforeReboot', passedData);
+    controller.emit('beforeReboot', passedData);
 
     // We reset the live timestamps only during the boot process, because we shouldn't dismount the
     // components of the current version of the page at least until a correct response to the parse
@@ -1127,7 +1129,7 @@ class BootManager {
     // dysfunctional page.
 
     if (!passedData.commentIds && !passedData.sectionId) {
-      pageController.saveScrollPosition();
+      controller.saveScrollPosition();
     }
 
     debug.init();
@@ -1141,7 +1143,7 @@ class BootManager {
     });
 
     this.showLoadingOverlay();
-    const bootProcess = await this.createTalkPageBootProcess(passedData);
+    const bootProcess = await this.createBootProcess(passedData);
 
     try {
       bootProcess.passedData.parseData = await cd.page.parse(undefined, false, true);
@@ -1172,7 +1174,7 @@ class BootManager {
 
     // At this point, the boot process can't be interrupted, so we can remove all traces of the
     // current page state.
-    this.talkPageBootProcess = bootProcess;
+    this.bootProcess = bootProcess;
 
     // Just submitted "Add section" form (it is outside of the .$root element, so we must remove it
     // here). Forms that should stay are detached above.
@@ -1182,14 +1184,14 @@ class BootManager {
 
     debug.stopTimer('get HTML');
 
-    pageController.emit('startReboot');
+    controller.emit('startReboot');
 
     await this.tryBootTalkPage(true);
 
-    pageController.emit('reboot');
+    controller.emit('reboot');
 
     if (!bootProcess.passedData.commentIds && !bootProcess.passedData.sectionId) {
-      pageController.restoreScrollPosition(false);
+      controller.restoreScrollPosition(false);
     }
 
     return true;
@@ -1216,7 +1218,7 @@ class BootManager {
    * Remove fragment and revision parameters from the URL; remove DOM elements related to the diff.
    */
   cleanUpUrlAndDom() {
-    if (this.talkPageBootProcess.passedData.isRevisionSliderRunning) return;
+    if (this.bootProcess.passedData.isRevisionSliderRunning) return;
 
     const { searchParams } = new URL(location.href);
     this.cleanUpDom(searchParams);
@@ -1243,9 +1245,9 @@ class BootManager {
     $('#firstHeading').text(cd.page.name);
     document.title = cd.mws('pagetitle', cd.page.name);
 
-    // We need PageController here since bootManager can't emit events. Use `require()`, not
+    // We need Controller here since bootManager can't emit events. Use `require()`, not
     // `import`, to avoid importing it before `oojs-ui` module is loaded.
-    (await import('../pageController')).default.updateOriginalPageTitle(document.title);
+    (await import('../controller')).default.updateOriginalPageTitle(document.title);
   }
 
   /**
@@ -1288,7 +1290,7 @@ class BootManager {
       });
 
       this.pageTypes.diff = false;
-    } else if (!this.talkPageBootProcess.passedData.pushState) {
+    } else if (!this.bootProcess.passedData.pushState) {
       // Don't reset the fragment if it will be set in the boot process from a comment ID or a
       // section ID, to avoid creating an extra history entry.
       methodName = 'replaceState';
