@@ -638,84 +638,87 @@ class Settings extends EventEmitter {
   }
 
   /**
-   * _For internal use._ Initialize user settings, returning a promise, or return an existing one.
+   * _For internal use._ Initialize user settings if not already requested, returning a promise.
    *
-   * @returns {Promise.<void>}
+   * @returns {Promise<void>}
    */
-  init() {
-    this.initPromise ??= (async () => {
-      // We fill the settings after the modules are loaded so that the settings set via common.js
-      // have less chance not to load.
-
-      this.initDefaults();
-
-      const options = {
-        [cd.g.settingsOptionName]: mw.user.options.get(cd.g.settingsOptionName),
-        [cd.g.localSettingsOptionName]: mw.user.options.get(cd.g.localSettingsOptionName),
-      };
-
-      const remoteSettings = await this.load({
-        options,
-        omitLocal: true,
-      });
-
-      this.set({
-        ...this.scheme.default,
-
-        // Settings in global variables like cdAllowEditOthersComments used before server-stored
-        // settings were implemented and used for undocumented settings now.
-        ...this.getSettingPropertiesOfObject(window, 'cd'),
-
-        ...remoteSettings,
-      });
-
-      // If the user has never changed the insert buttons configuration, it should change with the
-      // default configuration change.
-      if (
-        !this.values['insertButtons-altered'] &&
-        JSON.stringify(this.values.insertButtons) !== JSON.stringify(cd.config.defaultInsertButtons)
-      ) {
-        this.values.insertButtons = cd.config.defaultInsertButtons;
-      }
-
-      // Migrate users to the new schema where 0 doesn't mean autocollapse for collapseThreadsLevel
-      // and outdentLevel. Instead, you need to check a box.
-      if (remoteSettings.outdent === undefined) {
-        if (this.values.outdentLevel === 0) {
-          this.values.outdentLevel = this.scheme.default.outdentLevel;
-          this.values.outdent = false;
-        }
-        if (this.values.collapseThreadsLevel === 0) {
-          this.values.collapseThreadsLevel = this.scheme.default.collapseThreadsLevel;
-          this.values.collapseThreads = false;
-        }
-      }
-
-      // Migrate users from the old commentDisplay boolean setting to the new commentDisplay string
-      // union setting
-      if (/** @type {any} */ (remoteSettings).reformatComments === true) {
-        this.values.commentDisplay = 'spacious';
-      } else if (/** @type {any} */ (remoteSettings).reformatComments === false) {
-        this.values.commentDisplay = 'compact';
-      }
-
-      if (!areObjectsEqual(this.values, remoteSettings)) {
-        this.save().catch((/** @type {unknown} */ error) => {
-          console.warn('Couldn\'t save the settings to the server.', error);
-        });
-      }
-
-      // Undocumented settings and settings in variables `cd...` and `cdLocal...` override all other
-      // and are not saved to the server.
-      this.set({
-
-        ...this.scheme.undocumented,
-        ...this.getSettingPropertiesOfObject(window, 'cd', this.scheme.undocumented),
-        ...this.getLocalOverrides(),
-      });
-    })();
+  getInitPromise() {
+    this.initPromise ??= this.init();
 
     return this.initPromise;
+  }
+
+  /**
+   * Initialize user settings.
+   *
+   * @private
+   */
+  async init() {
+    // We fill the settings after the modules are loaded so that the settings set via common.js
+    // have less chance not to load.
+    this.initDefaults();
+
+    const options = {
+      [cd.g.settingsOptionName]: mw.user.options.get(cd.g.settingsOptionName),
+      [cd.g.localSettingsOptionName]: mw.user.options.get(cd.g.localSettingsOptionName),
+    };
+
+    const remoteSettings = await this.load({
+      options,
+      omitLocal: true,
+    });
+
+    this.set({
+      ...this.scheme.default,
+
+      // Settings in global variables like cdAllowEditOthersComments used before server-stored
+      // settings were implemented and used for undocumented settings now.
+      ...this.getSettingPropertiesOfObject(window, 'cd'),
+
+      ...remoteSettings,
+    });
+
+    // If the user has never changed the insert buttons configuration, it should change with the
+    // default configuration change.
+    if (!this.values['insertButtons-altered'] &&
+      JSON.stringify(this.values.insertButtons) !== JSON.stringify(cd.config.defaultInsertButtons)) {
+      this.values.insertButtons = cd.config.defaultInsertButtons;
+    }
+
+    // Migrate users to the new schema where 0 doesn't mean autocollapse for collapseThreadsLevel
+    // and outdentLevel. Instead, you need to check a box.
+    if (remoteSettings.outdent === undefined) {
+      if (this.values.outdentLevel === 0) {
+        this.values.outdentLevel = this.scheme.default.outdentLevel;
+        this.values.outdent = false;
+      }
+      if (this.values.collapseThreadsLevel === 0) {
+        this.values.collapseThreadsLevel = this.scheme.default.collapseThreadsLevel;
+        this.values.collapseThreads = false;
+      }
+    }
+
+    // Migrate users from the old commentDisplay boolean setting to the new commentDisplay string
+    // union setting
+    if (/** @type {any} */(remoteSettings).reformatComments === true) {
+      this.values.commentDisplay = 'spacious';
+    } else if (/** @type {any} */(remoteSettings).reformatComments === false) {
+      this.values.commentDisplay = 'compact';
+    }
+
+    if (!areObjectsEqual(this.values, remoteSettings)) {
+      this.save().catch((/** @type {unknown} */ error) => {
+        console.warn('Couldn\'t save the settings to the server.', error);
+      });
+    }
+
+    // Undocumented settings and settings in variables `cd...` and `cdLocal...` override all other
+    // and are not saved to the server.
+    this.set({
+      ...this.scheme.undocumented,
+      ...this.getSettingPropertiesOfObject(window, 'cd', this.scheme.undocumented),
+      ...this.getLocalOverrides(),
+    });
   }
 
   /**

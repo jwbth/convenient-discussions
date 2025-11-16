@@ -8,6 +8,7 @@ import SpaciousComment from './SpaciousComment';
 import Thread from './Thread';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
+import jqueryExtensions from './jqueryExtensions';
 import bootManager from './loader/bootManager';
 import cd from './loader/cd';
 import debug from './loader/debug';
@@ -24,7 +25,7 @@ import toc from './toc';
 import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
 import { handleApiReject, saveOptions } from './utils-api';
-import { getAllTextNodes, wrapHtml } from './utils-window';
+import { getAllTextNodes, initDayjs, wrapHtml } from './utils-window';
 import visits from './visits';
 
 /**
@@ -389,7 +390,19 @@ class TalkPageBootProcess {
    */
   async init() {
     if (this.firstRun) {
-      await bootManager.setupTalkPage();
+      // In most cases the site data is already loaded after being requested in
+      // BootManager#initOnTalkPage().
+      await Promise.all(bootManager.getSiteDataPromises());
+
+      // This could have been executed from addCommentLinks.prepare() already.
+      await bootManager.initGlobals();
+      await settings.getInitPromise();
+
+      bootManager.initTimestampTools();
+      this.initPatterns();
+      this.initPrototypes();
+      $.fn.extend(jqueryExtensions);
+      initDayjs();
     } else {
       pageController.reset();
     }
@@ -722,6 +735,25 @@ class TalkPageBootProcess {
   }
 
   /**
+   * Do the required transformations if the page turned out to be not a talk page after all.
+   *
+   * @private
+   */
+  retractTalkPageType() {
+    debug.stopTimer('main code');
+
+    bootManager.setPageType('talk', false);
+
+    const $disableLink = $('#footer-togglecd a');
+    $disableLink
+      .attr('href', /** @type {string} */($disableLink.attr('href')).replace(/0$/, '1'))
+      .text(cd.s('footer-runcd'));
+
+    bootManager.hideLoadingOverlay();
+    this.debugLog();
+  }
+
+  /**
    * Parse the sections and modify some parts of them.
    *
    * @private
@@ -765,25 +797,6 @@ class TalkPageBootProcess {
      * @param {object} cd {@link convenientDiscussions} object.
      */
     mw.hook('convenientDiscussions.sectionsReady').fire(sectionManager.getAll(), cd);
-  }
-
-  /**
-   * Do the required transformations if the page turned out to be not a talk page after all.
-   *
-   * @private
-   */
-  retractTalkPageType() {
-    debug.stopTimer('main code');
-
-    bootManager.setPageTypeTalk(false);
-
-    const $disableLink = $('#footer-togglecd a');
-    $disableLink
-      .attr('href', /** @type {string} */ ($disableLink.attr('href')).replace(/0$/, '1'))
-      .text(cd.s('footer-runcd'));
-
-    bootManager.hideLoadingOverlay();
-    this.debugLog();
   }
 
   /**

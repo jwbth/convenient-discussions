@@ -21,6 +21,7 @@ import { createSvg, initDayjs, skin$, transparentize } from '../utils-window';
 
 import cd from './cd';
 import debug from './debug';
+import { getValidLanguageOrFallback } from './utils-global';
 
 /**
  * @import {PageController} from '../pageController'
@@ -67,7 +68,7 @@ class BootManager {
   talkPageBootProcess;
 
   /** @type {JQuery.Promise<any>[] | undefined} @private */
-  siteDataRequests;
+  siteDataPromises;
 
   /**
    * Is the page loading (the loading overlay is on).
@@ -144,6 +145,16 @@ class BootManager {
   }
 
   /**
+  * Change the evaluation of whether the current page is a talk page.
+  *
+  * @param {keyof BootManager['pageTypes']} type
+  * @param {boolean} value
+  */
+  setPageType(type, value) {
+    this.pageTypes[type] = value;
+  }
+
+  /**
    * Check if the _article_ page (the one with `wgIsArticle` being true) of the current page a talk
    * page eligible for CD. It can be `true` on edit, history pages etc. However, the assessments may
    * be different on a history page and on an article page of the same title, since the page can
@@ -161,10 +172,10 @@ class BootManager {
    *
    * @returns {JQuery.Promise<any>[]} There should be at least one promise in the array.
    */
-  getSiteData() {
-    this.siteDataRequests ??= this.loadSiteData();
+  getSiteDataPromises() {
+    this.siteDataPromises ??= this.getSiteData();
 
-    return this.siteDataRequests;
+    return this.siteDataPromises;
   }
 
   /**
@@ -174,7 +185,7 @@ class BootManager {
    * @private
    */
   // eslint-disable-next-line max-lines-per-function
-  loadSiteData() {
+  getSiteData() {
     this.initFormats();
 
     const contentLanguageMessageNames = [
@@ -363,30 +374,22 @@ class BootManager {
    * @private
    */
   initFormats() {
-    const getFallbackLanguage = (/** @type {string} */ lang) =>
-      isKeyOf(lang, languageFallbacks)
-        ? languageFallbacks[lang].find((fallback) => isKeyOf(fallback, dateFormats))
-        : 'en';
-    const languageOrFallback = (/** @type {string} */ lang) =>
-      lang in dateFormats ? lang : getFallbackLanguage(lang);
+    const getLanguageOrFallback = (/** @type {string} */ lang) =>
+      getValidLanguageOrFallback(lang, (l) => isKeyOf(l, dateFormats), languageFallbacks);
 
-    const contentLanguage = languageOrFallback(mw.config.get('wgContentLanguage'));
-    const userLanguage = languageOrFallback(mw.config.get('wgUserLanguage'));
+    const contentLanguage = getLanguageOrFallback(mw.config.get('wgContentLanguage'));
+    const userLanguage = getLanguageOrFallback(mw.config.get('wgUserLanguage'));
 
-    if (contentLanguage) {
-      cd.g.timestampTools.content.dateFormat = /** @type {DateFormats} */ (dateFormats)[
-        contentLanguage
-      ];
-      cd.g.digits.content = mw.config.get('wgTranslateNumerals')
-        ? /** @type {DigitsData} */ (digitsData)[contentLanguage]
-        : undefined;
-    }
-    if (userLanguage) {
-      cd.g.timestampTools.user.dateFormat = /** @type {DateFormats} */ (dateFormats)[userLanguage];
-      cd.g.digits.user = mw.config.get('wgTranslateNumerals')
-        ? /** @type {DigitsData} */ (digitsData)[userLanguage]
-        : undefined;
-    }
+    cd.g.timestampTools.content.dateFormat = /** @type {DateFormats} */ (dateFormats)[
+      contentLanguage
+    ];
+    cd.g.digits.content = mw.config.get('wgTranslateNumerals')
+      ? /** @type {DigitsData} */ (digitsData)[contentLanguage]
+      : undefined;
+    cd.g.timestampTools.user.dateFormat = /** @type {DateFormats} */ (dateFormats)[userLanguage];
+    cd.g.digits.user = mw.config.get('wgTranslateNumerals')
+      ? /** @type {DigitsData} */ (digitsData)[userLanguage]
+      : undefined;
   }
 
   /**
@@ -394,7 +397,7 @@ class BootManager {
    */
 
   /**
-   * Get date tokens used in a format (to load only needed tokens).
+   * Get date tokens used in a format (to load only the needed tokens).
    *
    * @param {string} format
    * @returns {DateToken[]}
@@ -425,6 +428,7 @@ class BootManager {
    * _For internal use._ Set a number of {@link convenientDiscussions global object} properties.
    */
   async initGlobals() {
+    // Already initialized
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (cd.page) return;
 
@@ -570,7 +574,7 @@ class BootManager {
    * _For internal use._ Set the {@link convenientDiscussions} properties related to timestamp
    * parsing.
    *
-   * This should run after {@link BootManager#loadSiteData} so that
+   * This should run after {@link BootManager#getSiteData} so that
    * {@link cd.g.timestampTools.content.timezone} is available.
    */
   initTimestampTools() {
@@ -791,8 +795,8 @@ class BootManager {
   bootScript() {
     this.$content = $('#mw-content-text');
 
-    if (cd.g.isMobile) {
-      $(document.body).addClass('cd-mobile');
+    if (cd.g.isMobileClient) {
+      $(document.body).addClass('cd-mobile-client');
     }
 
     // Not constants: go() may run a second time, see app~maybeAddFooterSwitcher().
@@ -815,14 +819,13 @@ class BootManager {
       )
     );
 
-    this.articlePageOfTalkType = (
+    this.articlePageOfTalkType =
       (!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
       !this.$content.find('.cd-notTalkPage').length &&
       (isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber) || this.pageTypes.definitelyTalk) &&
 
       // Undocumented setting
-      !window.cdOnlyRunByFooterLink
-    );
+      !window.cdOnlyRunByFooterLink;
 
     this.pageTypes.diff = /[?&]diff=[^&]/.test(location.search);
 
@@ -837,15 +840,6 @@ class BootManager {
 
     this.initOnTalkPage();
     this.initOnCommentLinksPage();
-  }
-
-  /**
-   * Change the evaluation of whether the current page is a talk page.
-   *
-   * @param {boolean} value
-   */
-  setPageTypeTalk(value) {
-    this.pageTypes.talk = value;
   }
 
   /**
@@ -869,7 +863,7 @@ class BootManager {
     // results in overriding the renewed visits setting of one tab by another tab (the visits are
     // loaded by one tab, then another tab, then written by one tab, then by another tab).
     if (mw.loader.getState('mediawiki.api') === 'ready') {
-      siteDataRequests = this.getSiteData();
+      siteDataRequests = this.getSiteDataPromises();
 
       // We are _not_ calling getUserInfo() here to avoid losing visit data updates from some pages
       // if several pages are opened simultaneously. In this situation, visits could be requested
@@ -953,15 +947,14 @@ class BootManager {
         3. Run operations that create prerequisites for a reflow, such as adding CSS (below). Thanks
           to the fact that the network requests, if any, are already pending, we don't waste time.
       */
-    this.memorizeCssValues();
+    this.initCssValues();
     this.addTalkPageCss();
   }
 
   /**
-   * _For internal use._ Set some important skin-specific values to the properties of the global
-   * object.
+   * _For internal use._ Set some important skin-specific values to the global object.
    */
-  memorizeCssValues() {
+  initCssValues() {
     cd.g.contentLineHeight = Number.parseFloat(this.$content.css('line-height'));
     cd.g.contentFontSize = Number.parseFloat(this.$content.css('font-size'));
     cd.g.defaultFontSize = Number.parseFloat($(document.documentElement).css('font-size'));
@@ -1084,11 +1077,11 @@ class BootManager {
   async setupTalkPage() {
     // In most cases the site data is already loaded after being requested in
     // BootManager#initOnTalkPage().
-    await Promise.all(this.getSiteData());
+    await Promise.all(this.getSiteDataPromises());
 
     // This could have been executed from addCommentLinks.prepare() already.
     await this.initGlobals();
-    await (await import('../settings')).default.init();
+    await (await import('../settings')).default.getInitPromise();
 
     bootManager.initTimestampTools();
     this.talkPageBootProcess.initPatterns();
@@ -1371,7 +1364,7 @@ class BootManager {
     // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
     if (mw.loader.getState('mediawiki.api') === 'ready') {
-      this.getSiteData();
+      this.getSiteDataPromises();
 
       // Loading user info on diff pages could lead to problems with saving visits when many pages
       // are opened, but not yet focused, simultaneously.
@@ -1430,6 +1423,7 @@ class BootManager {
    * Check whether the current page is a watchlist or recent changes page.
    *
    * @returns {boolean}
+   * @private
    */
   isWatchlistPage() {
     return ['Recentchanges', 'Watchlist'].includes(
@@ -1441,6 +1435,7 @@ class BootManager {
    * Check whether the current page is a contributions page.
    *
    * @returns {boolean}
+   * @private
    */
   isContributionsPage() {
     return mw.config.get('wgCanonicalSpecialPageName') === 'Contributions';
@@ -1450,6 +1445,7 @@ class BootManager {
    * Check whether the current page is a history page.
    *
    * @returns {boolean}
+   * @private
    */
   isHistoryPage() {
     return cd.g.pageAction === 'history' && isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber);

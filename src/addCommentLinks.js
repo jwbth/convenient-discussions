@@ -41,7 +41,7 @@ async function init() {
 
   try {
     // We need strings for parentheses (is that all?..)
-    await Promise.all(bootManager.getSiteData());
+    await Promise.all(bootManager.getSiteDataPromises());
   } catch (error) {
     throw new Error(`Couldn't load the data required for the script.`, { cause: error });
   }

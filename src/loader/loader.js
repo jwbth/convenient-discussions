@@ -20,6 +20,7 @@ import { getFooter } from '../utils-window';
 import bootManager from './bootManager';
 import cd from './cd';
 import debug from './debug';
+import { getValidLanguageOrFallback } from './utils-global';
 
 /** @type {typeof import('../../config/default').default} */
 let config;
@@ -140,20 +141,16 @@ async function loader() {
  * @private
  */
 function setLanguages() {
-  const languageOrFallback = (/** @type {string} */ lang) =>
-    i18nList.includes(lang)
-      ? lang
-      : (/** @type {{[key: string]: string[] | undefined}} */ (languageFallbacks)[lang])?.find(
-          (/** @type {string} */ fallback) => i18nList.includes(fallback)
-        ) || 'en';
+  const getLanguageOrFallback = (/** @type {string} */ lang) =>
+    getValidLanguageOrFallback(lang, (l) => i18nList.includes(l), languageFallbacks);
 
-  cd.g.userLanguage = languageOrFallback(mw.config.get('wgUserLanguage'));
+  cd.g.userLanguage = getLanguageOrFallback(mw.config.get('wgUserLanguage'));
 
   // Should we use a fallback for the content language? Maybe, but in case of MediaWiki messages
   // used for signature parsing we have to use the real content language (see init.loadSiteData()).
   // As a result, we use cd.g.contentLanguage only for the script's own messages, not the native
   // MediaWiki messages.
-  cd.g.contentLanguage = languageOrFallback(mw.config.get('wgContentLanguage'));
+  cd.g.contentLanguage = getLanguageOrFallback(mw.config.get('wgContentLanguage'));
 }
 
 /**
@@ -442,7 +439,7 @@ function addCommentLinksToSpecialSearch() {
   if (commentId) {
     mw.loader.using('mediawiki.api').then(
       async () => {
-        await Promise.all(bootManager.getSiteData());
+        await Promise.all(bootManager.getSiteDataPromises());
         $('.mw-search-result-heading').each((_, el) => {
           const originalHref = $(el)
             .find('a')

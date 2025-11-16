@@ -663,8 +663,9 @@ const globalProperties = {
   // https://stackoverflow.com/a/24600597 (sends to
   // https://developer.mozilla.org/en-US/docs/Browser_detection_using_the_user_agent) and
   // https://stackoverflow.com/a/14301832.
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  isMobile: /Mobi|Android/i.test(navigator.userAgent) || typeof window.orientation !== 'undefined',
+  isMobileClient:
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    /Mobi|Android/i.test(navigator.userAgent) || typeof window.orientation !== 'undefined',
 
   isDtInstalled: Boolean(mw.loader.getState('ext.discussionTools.init')),
   isDtReplyToolEnabled: bodyClassList.contains('ext-discussiontools-replytool-enabled'),

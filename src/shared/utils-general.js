@@ -996,9 +996,9 @@ export function typedKeysOf(obj) {
 }
 
 /**
- * Returns an array of key-value pairs from an object, preserving the specific
- * types of the keys (e.g. string literal unions) instead of widening to string.
- * Only includes properties that actually exist on the object (filters out optional/undefined properties).
+ * Returns an array of key-value pairs from an object, preserving the specific types of the keys
+ * (e.g. string literal unions) instead of widening to string. Only includes properties that
+ * actually exist on the object (filters out optional/`undefined` properties).
  *
  * @template {object} T
  * @param {T} obj The object to get entries from
@@ -1011,6 +1011,9 @@ export function typedEntries(obj) {
 }
 
 /**
+ * Type guard for checking if a key is a key of an object. This is a workaround for the fact that
+ * TypeScript doesn't treat `key in obj` as a type guard.
+ *
  * @template {AnyByKey} T
  * @param {string | number | symbol} key
  * @param {T} obj
