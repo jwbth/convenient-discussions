@@ -56,6 +56,14 @@ class Controller extends EventEmitter {
    */
   rootElement;
 
+  /**
+   * The current (or last available) boot process.
+   * Moved from bootManager.bootProcess
+   *
+   * @type {import('./BootProcess').default | undefined}
+   */
+  bootProcess;
+
   /** @type {JQuery} */
   $contentColumn = skin$({
     timeless: '#mw-content',
@@ -1734,6 +1742,130 @@ class Controller extends EventEmitter {
 
     $(window).off('beforeunload', this.beforeUnloadHandlers[name]);
     delete this.beforeUnloadHandlers[name];
+  }
+
+  /**
+   * Create a boot process.
+   * Moved from bootManager.createBootProcess()
+   *
+   * @param {import('./BootProcess').PassedData} [passedData]
+   * @returns {Promise<import('./BootProcess').default>}
+   */
+  async createBootProcess(passedData = {}) {
+    const BootProcess = (await import('./BootProcess')).default;
+    this.bootProcess = new BootProcess(passedData);
+
+    return this.bootProcess;
+  }
+
+  /**
+   * Get the current (or last available) boot process.
+   * Moved from bootManager.getBootProcess()
+   *
+   * @returns {import('./BootProcess').default}
+   */
+  getBootProcess() {
+    return this.bootProcess;
+  }
+
+  /**
+   * Run the current boot process and catch errors.
+   * Moved from bootManager.tryBootTalkPage() and renamed to bootTalkPage()
+   *
+   * @param {boolean} isReload Is the page reloaded, not booted the first time.
+   */
+  async bootTalkPage(isReload) {
+    cd.loader.booting = true;
+
+    try {
+      await this.bootProcess.execute(isReload);
+      if (isReload) {
+        mw.hook('wikipage.content').fire(cd.loader.$content);
+      }
+    } catch (error) {
+      mw.notify(cd.s('error-processpage'), { type: 'error' });
+      console.error(error);
+      cd.loader.hideLoadingOverlay();
+    }
+
+    cd.loader.booting = false;
+  }
+
+  /**
+   * Reload the page via Ajax.
+   * Moved from bootManager.rebootTalkPage() and renamed to reloadPage()
+   *
+   * @param {import('./BootProcess').PassedData} [passedData]
+   * @returns {Promise<boolean>} Successful?
+   * @throws {import('./shared/CdError').default|Error}
+   */
+  async reloadPage(passedData = {}) {
+    if (cd.loader.isBooting() || !cd.loader.isPageOfType('talk')) {
+      return false;
+    }
+
+    passedData.isRevisionSliderRunning = Boolean(history.state?.sliderPos);
+
+    this.emit('beforeReboot', passedData);
+
+    if (!passedData.commentIds && !passedData.sectionId) {
+      this.saveScrollPosition();
+    }
+
+    const debug = (await import('./loader/debug')).default;
+    debug.init();
+    debug.startTimer('total time');
+    debug.startTimer('get HTML');
+
+    const { getUserInfo } = await import('./utils-api');
+    getUserInfo().catch((/** @type {unknown} */ error) => {
+      console.warn(error);
+    });
+
+    cd.loader.showLoadingOverlay();
+    const bootProcess = await this.createBootProcess(passedData);
+
+    try {
+      bootProcess.passedData.parseData = await cd.page.parse(undefined, false, true);
+    } catch (error) {
+      cd.loader.hideLoadingOverlay();
+      if (bootProcess.passedData.submittedCommentForm) {
+        throw error;
+      } else {
+        mw.notify(cd.s('error-reloadpage'), { type: 'error' });
+        console.warn(error);
+
+        return false;
+      }
+    }
+
+    mw.loader.load(bootProcess.passedData.parseData.modules);
+    mw.loader.load(bootProcess.passedData.parseData.modulestyles);
+    mw.config.set(bootProcess.passedData.parseData.jsconfigvars);
+
+    const commentManager = (await import('./commentManager')).default;
+    bootProcess.passedData.unseenComments = commentManager
+      .query((comment) => comment.isSeen === false);
+
+    this.bootProcess = bootProcess;
+
+    if (bootProcess.passedData.submittedCommentForm?.getMode() === 'addSection') {
+      bootProcess.passedData.submittedCommentForm.teardown();
+    }
+
+    debug.stopTimer('get HTML');
+
+    this.emit('startReboot');
+
+    await this.bootTalkPage(true);
+
+    this.emit('reboot');
+
+    if (!bootProcess.passedData.commentIds && !bootProcess.passedData.sectionId) {
+      this.restoreScrollPosition(false);
+    }
+
+    return true;
   }
 }
 
