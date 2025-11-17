@@ -13,6 +13,7 @@ import { wrapDiffBody, wrapHtml } from '../utils-window';
 import bootManager from './bootManager';
 import cd from './cd';
 import debug from './debug';
+import { isCurrentRevision } from './utils-global';
 
 const mwStringsCache = /** @type {StringsByKey} */ ({});
 /** @type {boolean | undefined} */
@@ -256,6 +257,32 @@ const convenientDiscussionsWindow = {
 
   /** @type {{ [key: string]: any }} */
   tests: {},
+
+  /**
+   * Loader-specific properties and methods that need to be accessible from both the loader and
+   * main app contexts.
+   *
+   * @namespace loader
+   * @memberof convenientDiscussions
+   */
+  loader: {},
+
+  /**
+   * Utility functions accessible from anywhere in the script.
+   *
+   * @namespace util
+   * @memberof convenientDiscussions
+   */
+  util: {
+    /**
+     * Check if the displayed revision is the current (last known) revision of the page.
+     *
+     * @function isCurrentRevision
+     * @memberof convenientDiscussions.util
+     * @returns {boolean}
+     */
+    isCurrentRevision,
+  },
 
   /**
    * Script's publicly available API. Here there are some utilities that we believe should be

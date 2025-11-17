@@ -1,0 +1,126 @@
+{
+  "files": [
+    {
+      "path": "src/loader/loader.js",
+      "currentImports": ["import bootManager from './bootManager';"],
+      "newImports": [],
+      "action": "remove",
+      "notes": "bootManager code moved into this file"
+    },
+    {
+      "path": "src/loader/convenientDiscussions.js",
+      "currentImports": ["import bootManager from './bootManager';"],
+      "newImports": [],
+      "action": "remove",
+      "notes": "No longer needs bootManager, uses cd.loader instead"
+    },
+    {
+      "path": "src/BootProcess.js",
+      "currentImports": ["import bootManager from './loader/bootManager';"],
+      "newImports": [
+        "import controller from './controller';",
+        "import { initGlobals, initTimestampTools } from './app';",
+        "import cd from './loader/cd';"
+      ],
+      "action": "replace",
+      "notes": "Split functionality across controller, app, and cd.loader"
+    },
+    {
+      "path": "src/addCommentLinks.js",
+      "currentImports": ["import bootManager from './loader/bootManager';"],
+      "newImports": [
+        "import { initGlobals, initTimestampTools } from './app';",
+        "import cd from './loader/cd';"
+      ],
+      "action": "replace",
+      "notes": "Uses app.js exports and cd.loader"
+    },
+    {
+      "path": "src/CurrentPage.js",
+      "currentImports": ["import bootManager from './loader/bootManager';"],
+      "newImports": ["import cd from './loader/cd';"],
+      "action": "replace",
+      "notes": "Only needs cd.loader and cd.util"
+    },
+    {
+      "path": "src/commentFormManager.js",
+      "currentImports": ["import bootManager from './loader/bootManager';"],
+      "newImports": ["import cd from './loader/cd';"],
+      "action": "replace",
+      "notes": "Only uses cd.util.isCurrentRevision()"
+    },
+    {
+      "path": "src/Comment.js",
+      "currentImports": ["import bootManager from './loader/bootManager';"],
+      "newImports": ["import controller from './controller';"],
+      "action": "replace",
+      "notes": "Uses controller.reloadPage()"
+    },
+    {
+      "path": "src/SettingsDialog.js",
+      "currentImports": ["import bootManager from './loader/bootManager';"],
+      "newImports": ["import controller from './controller';"],
+      "action": "replace",
+      "notes": "Uses controller.reloadPage()"
+    },
+    {
+      "path": "src/Thread.js",
+      "currentImports": ["import bootManager from './loader/bootManager';"],
+      "newImports": ["import cd from './loader/cd';"],
+      "action": "replace",
+      "notes": "Uses cd.util.isCurrentRevision()"
+    },
+    {
+      "path": "src/utils-window.js",
+      "currentImports": ["import bootManager from './loader/bootManager';"],
+      "newImports": ["import controller from './controller';"],
+      "action": "replace",
+      "notes": "Uses controller.getBootProcess()"
+    },
+    {
+      "path": "src/updateChecker.js",
+      "currentImports": ["import bootManager from './loader/bootManager';"],
+      "newImports": ["import controller from './controller';", "import cd from './loader/cd';"],
+      "action": "replace",
+      "notes": "Uses both controller and cd.loader"
+    },
+    {
+      "path": "src/toc.js",
+      "currentImports": ["import bootManager from './loader/bootManager';"],
+      "newImports": ["import controller from './controller';"],
+      "action": "replace",
+      "notes": "Uses controller.getBootProcess() and controller.reloadPage()"
+    },
+    {
+      "path": "src/Section.js",
+      "currentImports": ["import bootManager from './loader/bootManager';"],
+      "newImports": ["import cd from './loader/cd';"],
+      "action": "replace",
+      "notes": "Uses cd.loader.isPageOverlayOn()"
+    }
+  ],
+  "summary": {
+    "totalFiles": 13,
+    "removeOnly": 2,
+    "replaceImports": 11,
+    "newModules": {
+      "controller": [
+        "src/Comment.js",
+        "src/SettingsDialog.js",
+        "src/utils-window.js",
+        "src/updateChecker.js",
+        "src/toc.js"
+      ],
+      "app": ["src/BootProcess.js", "src/addCommentLinks.js"],
+      "cd": [
+        "src/BootProcess.js",
+        "src/addCommentLinks.js",
+        "src/CurrentPage.js",
+        "src/commentFormManager.js",
+        "src/Thread.js",
+        "src/updateChecker.js",
+        "src/Section.js"
+      ]
+    }
+  }
+}
