@@ -1867,6 +1867,101 @@ class Controller extends EventEmitter {
 
     return true;
   }
+
+  /**
+   * Handle firings of the wikipage.content hook.
+   * Moved from bootManager.handleWikipageContentHookFirings()
+   *
+   * @param {JQuery} $content
+   */
+  handleWikipageContentHookFirings($content) {
+    if (!$content.is('#mw-content-text')) return;
+
+    const $root = $content.children('.mw-parser-output');
+    if ($root.length && !$root.hasClass('cd-parse-started')) {
+      this.reloadPage({ isPageReloadedExternally: true });
+    }
+  }
+
+  /**
+   * Remove fragment and revision parameters from the URL; remove DOM elements related to the diff.
+   * Moved from bootManager.cleanUpUrlAndDom()
+   */
+  cleanUpUrlAndDom() {
+    if (this.bootProcess.passedData.isRevisionSliderRunning) return;
+
+    const { searchParams } = new URL(location.href);
+    this.cleanUpDom(searchParams);
+    this.cleanUpUrl(searchParams);
+  }
+
+  /**
+   * Remove diff-related DOM elements.
+   * Moved from bootManager.cleanUpDom()
+   *
+   * @param {URLSearchParams} searchParams
+   * @private
+   */
+  async cleanUpDom(searchParams) {
+    if (!searchParams.has('diff') && !searchParams.has('oldid')) return;
+
+    cd.loader.$content
+      .children('.mw-revslider-container, .mw-diff-table-prefix, .diff, .oo-ui-element-hidden, .diff-hr, .diff-currentversion-title')
+      .remove();
+
+    $('.mw-revision').remove();
+
+    $('#firstHeading').text(cd.page.name);
+    document.title = cd.mws('pagetitle', cd.page.name);
+
+    this.updateOriginalPageTitle(document.title);
+  }
+
+  /**
+   * Remove fragment and revision parameters from the URL.
+   * Moved from bootManager.cleanUpUrl()
+   *
+   * @param {URLSearchParams} searchParams
+   * @private
+   */
+  cleanUpUrl(searchParams) {
+    const newQuery = Object.fromEntries(searchParams.entries());
+
+    delete newQuery.title;
+    delete newQuery.curid;
+    delete newQuery.action;
+    delete newQuery.redlink;
+    delete newQuery.section;
+    delete newQuery.cdaddtopic;
+    delete newQuery.dtnewcommentssince;
+    delete newQuery.dtinthread;
+
+    /** @type {'pushState' | 'replaceState' | undefined} */
+    let methodName;
+    if (newQuery.diff || newQuery.oldid) {
+      methodName = 'pushState';
+
+      delete newQuery.diff;
+      delete newQuery.oldid;
+      delete newQuery.diffmode;
+      delete newQuery.type;
+
+      $(window).on('popstate', () => {
+        const { searchParams: newSearchParams } = new URL(location.href);
+        if (newSearchParams.has('diff') || newSearchParams.has('oldid')) {
+          location.reload();
+        }
+      });
+
+      cd.loader.setPageType('diff', false);
+    } else if (!this.bootProcess.passedData.pushState) {
+      methodName = 'replaceState';
+    }
+
+    if (methodName) {
+      history[methodName](history.state, '', cd.page.getUrl(newQuery));
+    }
+  }
 }
 
 export { Controller as Controller };

@@ -7,7 +7,6 @@
 import Comment from './Comment';
 import PrototypeRegistry from './PrototypeRegistry';
 import commentManager from './commentManager';
-import bootManager from './loader/bootManager';
 import cd from './loader/cd';
 import pageRegistry from './pageRegistry';
 import { definedAndNotNull, generatePageNamePattern, isProbablyTalkPage, isUndo, removeDirMarks, spacesToUnderlines } from './shared/utils-general';
@@ -37,11 +36,11 @@ const prototypes = new PrototypeRegistry();
  */
 async function init() {
   // This could have been executed from init.talkPage() already.
-  bootManager.initGlobals();
+  await initGlobals();
 
   try {
     // We need strings for parentheses (is that all?..)
-    await Promise.all(bootManager.getSiteDataPromises());
+    await Promise.all(cd.loader.getSiteDataPromises());
   } catch (error) {
     throw new Error(`Couldn't load the data required for the script.`, { cause: error });
   }
@@ -266,7 +265,7 @@ function isCommentEdit(summary) {
  * @private
  */
 function processContributions($content) {
-  bootManager.initTimestampTools();
+  initTimestampTools();
   if (cd.g.timestampTools.user.timezone === undefined) return;
 
   [
@@ -337,7 +336,7 @@ function processContributions($content) {
  * @private
  */
 function processHistory($content) {
-  bootManager.initTimestampTools();
+  initTimestampTools();
   if (cd.g.timestampTools.user.timezone === undefined) return;
 
   const link = cd.page.getUrl();
@@ -407,15 +406,15 @@ function processDiff($diff) {
   // hook instead.
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if ($diff?.parent().is(bootManager.$content) && $('.cd-parsed').length) return;
+  if ($diff?.parent().is(cd.loader.$content) && $('.cd-parsed').length) return;
 
   if (!('parseTimestampUiRegexp' in cd.g)) {
     // We need timestamp tools to be able to parse timestamps
-    bootManager.initTimestampTools();
+    initTimestampTools();
   }
   if (cd.g.timestampTools.user.timezone === undefined) return;
 
-  const $root = $diff || bootManager.$content;
+  const $root = $diff || cd.loader.$content;
   const root = $root[0];
   [root.querySelector('.diff-otitle'), root.querySelector('.diff-ntitle')]
     .filter(definedAndNotNull)
@@ -476,7 +475,7 @@ function processDiff($diff) {
           linkElement.href = page.getUrl() + '#' + id;
 
           // Non-diff pages that have a diff, like with Serhio Magpie's Instant Diffs.
-          if (bootManager.isPageOfType('talk')) {
+          if (cd.loader.isPageOfType('talk')) {
             linkElement.target = '_blank';
           }
         } else {
@@ -523,11 +522,11 @@ function processRevisionListPage($content) {
   // function).
   if (!$content.parent().length) return;
 
-  if (bootManager.isPageOfType('watchlist')) {
+  if (cd.loader.isPageOfType('watchlist')) {
     processWatchlist($content);
-  } else if (bootManager.isPageOfType('contributions')) {
+  } else if (cd.loader.isPageOfType('contributions')) {
     processContributions($content);
-  } else if (bootManager.isPageOfType('history')) {
+  } else if (cd.loader.isPageOfType('history')) {
     processHistory($content);
   }
 
@@ -546,7 +545,7 @@ export default async function addCommentLinks() {
     return;
   }
 
-  if (bootManager.isPageOfType('diff')) {
+  if (cd.loader.isPageOfType('diff')) {
     mw.hook('convenientDiscussions.pageReady').add(() => {
       processDiff();
     });

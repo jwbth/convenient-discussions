@@ -10,7 +10,6 @@ import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
 import controller from './controller';
 import jqueryExtensions from './jqueryExtensions';
-import bootManager from './loader/bootManager';
 import cd from './loader/cd';
 import debug from './loader/debug';
 import navPanel from './navPanel';
@@ -65,15 +64,15 @@ function processAndRemoveDtElements(elements) {
   /** @type {HTMLSpanElement | undefined} */
   let dtMarkupHavenElement;
   if (moveNotRemove) {
-    if (!bootManager.getBootProcess().isFirstRun()) {
-      dtMarkupHavenElement = bootManager.$content.children('.cd-dtMarkupHaven')[0];
+    if (!controller.getBootProcess().isFirstRun()) {
+      dtMarkupHavenElement = cd.loader.$content.children('.cd-dtMarkupHaven')[0];
     }
     if (dtMarkupHavenElement) {
       dtMarkupHavenElement.innerHTML = '';
     } else {
       dtMarkupHavenElement = document.createElement('span');
       dtMarkupHavenElement.className = 'cd-dtMarkupHaven cd-hidden';
-      bootManager.$content.append(dtMarkupHavenElement);
+      cd.loader.$content.append(dtMarkupHavenElement);
     }
   }
 
@@ -83,7 +82,7 @@ function processAndRemoveDtElements(elements) {
     ])
   ).forEach((el, i) => {
     if (Object.hasOwn(el.dataset, 'mwCommentStart') && Comment.isDtId(el.id)) {
-      bootManager.getBootProcess().addDtCommentId(el.id);
+      controller.getBootProcess().addDtCommentId(el.id);
     }
     if (moveNotRemove) {
       // DT gets the DOM offset of each of these elements upon initialization which can take a lot
@@ -231,7 +230,7 @@ class BootProcess {
 
     if (
       this.firstRun &&
-      !bootManager.isPageOfType('definitelyTalk') &&
+      !cd.loader.isPageOfType('definitelyTalk') &&
       !commentManager.getCount()
     ) {
       this.retractTalkPageType();
@@ -367,7 +366,7 @@ class BootProcess {
       mw.hook('convenientDiscussions.pageReadyFirstTime').fire(cd);
     }
 
-    bootManager.hideLoadingOverlay();
+    cd.loader.hideLoadingOverlay();
 
     // This is needed to calculate the rendering time: it won't complete until everything gets
     // rendered.
@@ -391,14 +390,14 @@ class BootProcess {
   async init() {
     if (this.firstRun) {
       // In most cases the site data is already loaded after being requested in
-      // BootManager#initOnTalkPage().
-      await Promise.all(bootManager.getSiteDataPromises());
+      // loader's initOnTalkPage().
+      await Promise.all(cd.loader.getSiteDataPromises());
 
       // This could have been executed from addCommentLinks.prepare() already.
-      await bootManager.initGlobals();
+      await initGlobals();
       await settings.getInitPromise();
 
-      bootManager.initTimestampTools();
+      initTimestampTools();
       this.initPatterns();
       this.initPrototypes();
       $.fn.extend(jqueryExtensions);
@@ -742,14 +741,14 @@ class BootProcess {
   retractTalkPageType() {
     debug.stopTimer('main code');
 
-    bootManager.setPageType('talk', false);
+    cd.loader.setPageType('talk', false);
 
     const $disableLink = $('#footer-togglecd a');
     $disableLink
       .attr('href', /** @type {string} */($disableLink.attr('href')).replace(/0$/, '1'))
       .text(cd.s('footer-runcd'));
 
-    bootManager.hideLoadingOverlay();
+    cd.loader.hideLoadingOverlay();
     this.debugLog();
   }
 
@@ -869,7 +868,7 @@ class BootProcess {
           observer.disconnect();
         }
       });
-      observer.observe(bootManager.$content[0], {
+      observer.observe(cd.loader.$content[0], {
         childList: true,
         subtree: true,
       });

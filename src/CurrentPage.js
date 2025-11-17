@@ -3,7 +3,6 @@ import Page from './Page';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
 import controller from './controller';
-import bootManager from './loader/bootManager';
 import cd from './loader/cd';
 import pageRegistry from './pageRegistry';
 import sectionManager from './sectionManager';
@@ -123,7 +122,7 @@ export default class CurrentPage extends Page {
    * @returns {boolean}
    */
   isCommentable() {
-    return bootManager.isPageOfType('talk') && (this.isActive() || !this.exists());
+    return cd.loader.isPageOfType('talk') && (this.isActive() || !this.exists());
   }
 
   /**
@@ -149,9 +148,9 @@ export default class CurrentPage extends Page {
    */
   isActive() {
     return (
-      bootManager.isPageOfType('talk') &&
+      cd.loader.isPageOfType('talk') &&
       this.exists() &&
-      bootManager.isCurrentRevision() &&
+      cd.util.isCurrentRevision() &&
       !this.isArchive()
     );
   }
@@ -162,7 +161,7 @@ export default class CurrentPage extends Page {
    * @returns {boolean}
    */
   isCurrentArchive() {
-    return bootManager.isCurrentRevision() && this.isArchive();
+    return cd.util.isCurrentRevision() && this.isArchive();
   }
 
   /**
@@ -206,7 +205,7 @@ export default class CurrentPage extends Page {
           this.addSection();
         }).$element
       )
-      // If appending to bootManager.rootElement, it can land on a wrong place, like on 404 pages
+      // If appending to controller.rootElement, it can land on a wrong place, like on 404 pages
       // with New Topic Tool enabled.
       .insertAfter(controller.$root);
   }
@@ -273,7 +272,7 @@ export default class CurrentPage extends Page {
 
       this.$addSectionButtonContainer?.hide();
       if (!this.exists()) {
-        bootManager.$content.children('.noarticletext, .warningbox').hide();
+        cd.loader.$content.children('.noarticletext, .warningbox').hide();
       }
       $('#ca-addsection').addClass('selected');
       $('#ca-view').removeClass('selected');
@@ -306,7 +305,7 @@ export default class CurrentPage extends Page {
    */
   cleanUpCommentFormTraces() {
     if (!this.exists()) {
-      bootManager.$content
+      cd.loader.$content
         // In case DT's new topic tool is enabled. This is responsible for correct styles being set.
         .removeClass('ext-discussiontools-init-replylink-open')
 
