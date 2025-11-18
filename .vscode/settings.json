@@ -6,7 +6,7 @@
     "source.fixAll.eslint": "explicit",
 
     // Moves `eslint/config` under `eslint-` plugins instead of directly below eslint
-    "source.organizeImports": "explicit",
+    // "source.organizeImports": "explicit",
   },
   "eslint.codeActionsOnSave.rules": [
     "!unicorn/prefer-ternary",

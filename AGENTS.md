@@ -270,6 +270,7 @@ npm run i18n
 - Put a space between inline JSDoc comments and the following expression: `/** @type {string} */ (variable)`, not `/** @type {string} */(variable)`.
 - When a function parameter is not used in the function, put an underscore in front of it.
 - When a class method is overriding a method of the parent class, add `@override` tag to its  JSDoc comment.
+- If ESLint reports wrong import order, unused imports, or wrong indentation, don't fix it. ESLint will apply automatic fixes.
 
 ### JSDoc
 

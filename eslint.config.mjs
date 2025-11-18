@@ -7,6 +7,7 @@ import importPlugin from 'eslint-plugin-import';
 import { jsdoc } from 'eslint-plugin-jsdoc';
 import noOneTimeVars from 'eslint-plugin-no-one-time-vars';
 import unicorn from 'eslint-plugin-unicorn';
+import unusedImports from 'eslint-plugin-unused-imports';
 import tseslint from 'typescript-eslint';
 
 const config = defineConfig(
@@ -102,6 +103,7 @@ const config = defineConfig(
     },
     plugins: {
       'no-one-time-vars': noOneTimeVars,
+      'unused-imports': unusedImports,
     },
     linterOptions: {
       reportUnusedDisableDirectives: false,
@@ -419,6 +421,16 @@ const config = defineConfig(
 
       // Slow rules (run `cross-env TIMING=1 eslint --config eslint.config.mjs --fix-dry-run src/`)
       'unicorn/no-unnecessary-polyfills': 'off',
+      'unused-imports/no-unused-imports': 'warn',
+      'unused-imports/no-unused-vars': [
+        'warn',
+        {
+          vars: 'all',
+          varsIgnorePattern: '^_',
+          args: 'after-used',
+          argsIgnorePattern: '^_',
+        },
+      ],
     },
   },
 
