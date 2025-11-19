@@ -59,7 +59,7 @@ if (SINGLE_LANG_CODE) {
   }
 }
 
-loader();
+load();
 
 /**
  * The main loader function.
@@ -67,7 +67,7 @@ loader();
  * @fires launched
  * @private
  */
-async function loader() {
+async function load() {
   if (cd.isRunning) {
     console.warn('One instance of Convenient Discussions is already running.');
 

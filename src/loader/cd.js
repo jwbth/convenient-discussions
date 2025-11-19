@@ -7,7 +7,7 @@ import cd from '../shared/cd';
  * @property {(type: keyof ConvenientDiscussionsLoader['pageTypes']) => boolean} isPageOfType
  * @property {(type: keyof ConvenientDiscussionsLoader['pageTypes'], value: boolean) => void} setPageType
  * @property {() => boolean} isArticlePageOfTalkType
- * @property {() => import('../shared/utils-promise').Promise[]} getSiteDataPromises
+ * @property {() => JQuery.Promise<any>[]} getSiteDataPromises
  * @property {() => void} showLoadingOverlay
  * @property {() => void} hideLoadingOverlay
  * @property {() => boolean} isPageOverlayOn
