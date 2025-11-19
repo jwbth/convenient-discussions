@@ -6,7 +6,7 @@
  */
 
 import Comment from '../Comment';
-import { initLoader } from '../convenientDiscussions.loader';
+import loader from '../convenientDiscussions.loader.js';
 import pageRegistry from '../pageRegistry';
 import { buildEditSummary, getQueryParamBooleanValue, underlinesToSpaces } from '../shared/utils-general';
 import { wrapDiffBody, wrapHtml } from '../utils-window';
@@ -720,17 +720,16 @@ Object.assign(cd.g, globalProperties);
 
 // Initialize cd.loader and cd.util objects (used throughout the app)
 // These are populated by convenientDiscussions.loader and made available for general use
-/** @type {object} */
-cd.loader = {};
+cd.loader = loader;
 
-/** @type {object} */
-cd.util = {};
-
-// Populate cd.loader with bootManager methods
-initLoader();
-
-// Expose utility functions on cd.util
-cd.util.isCurrentRevision = isCurrentRevision;
+/**
+ * Populate cd.util with utility functions.
+ *
+ * @type {{ isCurrentRevision: (currentRevisionOnly?: boolean) => boolean }}
+ */
+cd.util = {
+  isCurrentRevision,
+};
 
 if (cd.g.debug) {
   window.cd = cd;

@@ -1,10 +1,11 @@
 /**
  * Main application entry point. This file is loaded by the loader via
  * loadPreferablyFromDiskCache() and initializes the main app.
- *
- * @module app
+ *\n@module app
  */
 
+import addCommentLinksModule from './addCommentLinks';
+import controller from './controller';
 import cd from './loader/cd';
 import { getContentLanguageMessages } from './shared/utils-general';
 import { dateTokenToMessageNames } from './shared/utils-timestamp';
@@ -68,7 +69,6 @@ export async function initGlobals() {
   const settings = (await import('./settings')).default;
   cd.settings = settings;
 
-  const controller = (await import('./controller')).default;
   const commentManager = (await import('./commentManager')).default;
   const sectionManager = (await import('./sectionManager')).default;
   const commentFormManager = (await import('./commentFormManager')).default;
@@ -289,13 +289,10 @@ export async function app() {
   await initGlobals();
   initTimestampTools();
 
-  const BootProcess = (await import('./BootProcess')).default;
-  const controller = (await import('./controller')).default;
-
   // TODO: Get passedData from appropriate source
   const passedData = {};
 
-  const bootProcess = await controller.createBootProcess(passedData);
+  const _bootProcess = await controller.createBootProcess(passedData);
   await controller.bootTalkPage(false);
 }
 
@@ -303,14 +300,13 @@ export async function app() {
  * Function for adding comment links on special pages.
  * Called by loader for watchlist/contributions/history/diff pages.
  */
-export async function addCommentLinks() {
+export async function addCommentLinksFunc() {
   await initGlobals();
   initTimestampTools();
 
-  const addCommentLinksModule = (await import('./addCommentLinks')).default;
   addCommentLinksModule();
 }
 
 // Assign to cd.loader so loader can call these functions
 cd.loader.app = app;
-cd.loader.addCommentLinks = addCommentLinks;
+cd.loader.addCommentLinks = addCommentLinksFunc;

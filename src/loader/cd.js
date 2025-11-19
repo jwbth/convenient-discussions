@@ -13,6 +13,8 @@ import cd from '../shared/cd';
  * @property {() => boolean} isPageOverlayOn
  * @property {() => boolean} isBooting
  * @property {boolean} booting
+ * @property {(...args: any) => void} [app]
+ * @property {(...args: any) => void} [addCommentLinks]
  */
 
 /**
