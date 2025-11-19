@@ -21,7 +21,7 @@ import './extendDomhandler';
 import { isComment, isText } from 'domhandler';
 import { parseDocument } from 'htmlparser2';
 
-import debug from '../loader/debug';
+import debug from '../loader/convenientDiscussions.debug';
 import CdError from '../shared/CdError';
 import CommentSkeleton from '../shared/CommentSkeleton';
 import Parser from '../shared/Parser';

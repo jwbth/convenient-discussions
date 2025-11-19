@@ -1811,7 +1811,7 @@ class Controller extends EventEmitter {
       this.saveScrollPosition();
     }
 
-    const debug = (await import('./loader/debug')).default;
+    const debug = (await import('./loader/convenientDiscussions.debug')).default;
     debug.init();
     debug.startTimer('total time');
     debug.startTimer('get HTML');
@@ -2030,7 +2030,7 @@ class Controller extends EventEmitter {
       this.saveScrollPosition();
     }
 
-    const debug = (await import('./loader/debug')).default;
+    const debug = (await import('./loader/convenientDiscussions.debug')).default;
     debug.init();
     debug.startTimer('total time');
     debug.startTimer('get HTML');

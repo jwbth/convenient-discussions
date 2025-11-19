@@ -17,9 +17,10 @@ import en from '../../i18n/en.json';
 import { mergeRegexps, typedKeysOf, unique } from '../shared/utils-general';
 import { getFooter } from '../utils-window';
 
+import bootManager from './bootManager';
 import cd from './cd';
-import debug from './debug';
-import { getValidLanguageOrFallback } from './utils-global';
+import debug from './convenientDiscussions.debug';
+import { getValidLanguageOrFallback } from './convenientDiscussions.util';
 
 /** @type {typeof import('../../config/default').default} */
 let config;

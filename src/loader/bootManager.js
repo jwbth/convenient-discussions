@@ -20,8 +20,8 @@ import { getUserInfo, splitIntoBatches } from '../utils-api';
 import { createSvg, initDayjs, skin$, transparentize } from '../utils-window';
 
 import cd from './cd';
-import debug from './debug';
-import { getValidLanguageOrFallback } from './utils-global';
+import debug from './convenientDiscussions.debug';
+import { getValidLanguageOrFallback } from './convenientDiscussions.util';
 
 /**
  * @import {Controller} from '../controller'
@@ -1456,26 +1456,5 @@ class BootManager {
 
 // Export a singleton instance
 const bootManager = new BootManager();
-
-// Expose bootManager methods and properties on cd.loader
-// This allows them to be accessed via cd.loader.* throughout the app
-cd.loader.$content = undefined;  // Will be set by bootScript()
-cd.loader.pageTypes = bootManager.pageTypes;
-cd.loader.isPageOfType = bootManager.isPageOfType.bind(bootManager);
-cd.loader.setPageType = bootManager.setPageType.bind(bootManager);
-cd.loader.isArticlePageOfTalkType = bootManager.isArticlePageOfTalkType.bind(bootManager);
-cd.loader.getSiteDataPromises = bootManager.getSiteDataPromises.bind(bootManager);
-cd.loader.showLoadingOverlay = bootManager.showLoadingOverlay.bind(bootManager);
-cd.loader.hideLoadingOverlay = bootManager.hideLoadingOverlay.bind(bootManager);
-cd.loader.isPageOverlayOn = bootManager.isPageOverlayOn.bind(bootManager);
-cd.loader.isBooting = bootManager.isBooting.bind(bootManager);
-Object.defineProperty(cd.loader, 'booting', {
-  get() {
-    return bootManager.booting;
-  },
-  set(value) {
-    bootManager.booting = value;
-  },
-});
 
 export default bootManager;

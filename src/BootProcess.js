@@ -12,7 +12,7 @@ import commentManager from './commentManager';
 import controller from './controller';
 import jqueryExtensions from './jqueryExtensions';
 import cd from './loader/cd';
-import debug from './loader/debug';
+import debug from './loader/convenientDiscussions.debug';
 import navPanel from './navPanel';
 import notifications from './notifications';
 import pageNav from './pageNav';

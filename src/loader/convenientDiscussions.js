@@ -6,13 +6,14 @@
  */
 
 import Comment from '../Comment';
+import { initLoader } from '../convenientDiscussions.loader';
 import pageRegistry from '../pageRegistry';
 import { buildEditSummary, getQueryParamBooleanValue, underlinesToSpaces } from '../shared/utils-general';
 import { wrapDiffBody, wrapHtml } from '../utils-window';
 
 import cd from './cd';
-import debug from './debug';
-import { isCurrentRevision } from './utils-global';
+import debug from './convenientDiscussions.debug';
+import { isCurrentRevision } from './convenientDiscussions.util';
 
 const mwStringsCache = /** @type {StringsByKey} */ ({});
 /** @type {boolean | undefined} */
@@ -718,12 +719,15 @@ const globalProperties = {
 Object.assign(cd.g, globalProperties);
 
 // Initialize cd.loader and cd.util objects (used throughout the app)
-// These are populated by loader.js and made available for general use
+// These are populated by convenientDiscussions.loader and made available for general use
 /** @type {object} */
 cd.loader = {};
 
 /** @type {object} */
 cd.util = {};
+
+// Populate cd.loader with bootManager methods
+initLoader();
 
 // Expose utility functions on cd.util
 cd.util.isCurrentRevision = isCurrentRevision;
