@@ -9,7 +9,6 @@ import LiveTimestamp from './LiveTimestamp';
 import TocItem from './TocItem';
 import commentManager from './commentManager';
 import controller from './controller';
-import bootManager from './loader/bootManager';
 import cd from './loader/cd';
 import sectionManager from './sectionManager';
 import settings from './settings';
@@ -71,7 +70,7 @@ class Toc {
         ) {
           this.addNewComments(
             Comment.groupBySection(commentManager.query((c) => c.isSeen === false)),
-            bootManager.getBootProcess()
+            controller.getBootProcess()
           );
         }
         this.addCommentCount();
@@ -231,7 +230,7 @@ class Toc {
    */
   handleSectionClick = (event) => {
     event.preventDefault();
-    bootManager.rebootTalkPage({
+    controller.reloadPage({
       sectionId:
         getLinkedAnchor(/** @type {HTMLAnchorElement} */ (event.currentTarget)) || undefined,
       pushState: true,
@@ -514,7 +513,7 @@ class Toc {
         pushState: true,
       });
     } else {
-      bootManager.rebootTalkPage({
+      controller.reloadPage({
         commentIds: [id],
         pushState: true,
       });

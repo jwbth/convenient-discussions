@@ -4,7 +4,6 @@ import PrototypeRegistry from './PrototypeRegistry';
 import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime';
 import commentManager from './commentManager';
 import controller from './controller';
-import bootManager from './loader/bootManager';
 import cd from './loader/cd';
 import settings from './settings';
 import CdError from './shared/CdError';
@@ -1576,7 +1575,7 @@ class Thread extends mixInObject(
       });
     this.emit('toggle');
 
-    if (bootManager.isCurrentRevision() && collapsedThreads) {
+    if (cd.util.isCurrentRevision() && collapsedThreads) {
       collapsedThreadsStorageItem
         .setWithTime(mw.config.get('wgArticleId'), collapsedThreads)
         .save();
@@ -1704,7 +1703,7 @@ class Thread extends mixInObject(
    * @private
    */
   static saveCollapsedThreads() {
-    if (!bootManager.isCurrentRevision()) return;
+    if (!cd.util.isCurrentRevision()) return;
 
     (new StorageItemWithKeysAndSaveTime('collapsedThreads'))
       .setWithTime(

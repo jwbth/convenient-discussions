@@ -7,7 +7,6 @@ import EventEmitter from './EventEmitter';
 import Thread from './Thread';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
-import bootManager from './loader/bootManager';
 import cd from './loader/cd';
 import navPanel from './navPanel';
 import notifications from './notifications';
@@ -224,8 +223,8 @@ class Controller extends EventEmitter {
    */
   setup(pageHtml) {
     // RevisionSlider replaces the #mw-content-text element.
-    if (!bootManager.$content.get(0)?.parentNode) {
-      bootManager.$content = $('#mw-content-text');
+    if (!cd.loader.$content?.get(0)?.parentNode) {
+      cd.loader.$content = $('#mw-content-text');
     }
 
     if (pageHtml) {
@@ -235,11 +234,11 @@ class Controller extends EventEmitter {
       this.$root = $(this.rootElement);
     } else {
       // There can be more than one .mw-parser-output child, e.g. on talk pages of IP editors.
-      this.$root = bootManager.$content.children('.mw-parser-output').first();
+      this.$root = cd.loader.$content.children('.mw-parser-output').first();
 
       // 404 pages
       if (!this.$root.length) {
-        this.$root = bootManager.$content;
+        this.$root = cd.loader.$content;
       }
 
       this.rootElement = this.$root[0];
@@ -667,7 +666,7 @@ class Controller extends EventEmitter {
    * @param {MouseEvent | JQuery.MouseMoveEvent | JQuery.MouseOverEvent} event
    */
   handleMouseMove(event) {
-    if (this.mouseMoveBlocked || this.isAutoScrolling() || bootManager.isPageOverlayOn()) return;
+    if (this.mouseMoveBlocked || this.isAutoScrolling() || cd.loader.isPageOverlayOn()) return;
 
     // Don't throttle. Without throttling, performance is generally OK, while the "frame rate" is
     // about 50 (so, the reaction time is about 20ms). Lower values would be less comfortable.
@@ -741,7 +740,7 @@ class Controller extends EventEmitter {
    * @private
    */
   handleGlobalKeyDown = (event) => {
-    if (bootManager.isPageOverlayOn()) return;
+    if (cd.loader.isPageOverlayOn()) return;
 
     this.emit('keyDown', event);
   };
@@ -822,7 +821,7 @@ class Controller extends EventEmitter {
    * @private
    */
   handlePageMutate = () => {
-    if (bootManager.isBooting()) return;
+    if (cd.loader.isBooting()) return;
 
     this.emit('mutate');
 
@@ -917,7 +916,7 @@ class Controller extends EventEmitter {
       $(document).on('keydown', this.handleGlobalKeyDown);
     }
 
-    mw.hook('wikipage.content').add(bootManager.handleWikipageContentHookFirings);
+    mw.hook('wikipage.content').add(this.handleWikipageContentHookFirings.bind(this));
 
     updateChecker
       .on('check', (revisionId) => {
@@ -1009,7 +1008,7 @@ class Controller extends EventEmitter {
    * @param {import('./utils-api').ApiResponseParseContent} parseData
    */
   updatePageContents(parseData) {
-    bootManager.$content.children('.mw-parser-output').first().replaceWith(this.$root);
+    cd.loader.$content.children('.mw-parser-output').first().replaceWith(this.$root);
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     mw.util.clearSubtitle?.();
@@ -1032,7 +1031,7 @@ class Controller extends EventEmitter {
    * Reset the controller data and state. (Executed between page loads.)
    */
   reset() {
-    bootManager.cleanUpUrlAndDom();
+    this.cleanUpUrlAndDom();
     this.mutationObserver?.disconnect();
     commentManager.reset();
     sectionManager.reset();
@@ -1109,7 +1108,7 @@ class Controller extends EventEmitter {
    * @param {JQuery.TriggeredEvent | MouseEvent | KeyboardEvent} event
    */
   showCopyLinkDialog(object, event) {
-    if (bootManager.isPageOverlayOn()) return;
+    if (cd.loader.isPageOverlayOn()) return;
 
     event.preventDefault();
 
@@ -1258,7 +1257,7 @@ class Controller extends EventEmitter {
 
       this.handlePageMutate();
     });
-    this.mutationObserver.observe(bootManager.$content[0], {
+    this.mutationObserver.observe(cd.loader.$content[0], {
       attributes: true,
       childList: true,
       subtree: true,
@@ -1371,7 +1370,7 @@ class Controller extends EventEmitter {
         { comments: filteredComments }
       );
       notification.$notification.on('click', () => {
-        bootManager.rebootTalkPage({ commentIds: filteredComments.map((comment) => comment.id) });
+        this.reloadPage({ commentIds: filteredComments.map((comment) => comment.id) });
       });
     }
   }
@@ -1474,7 +1473,7 @@ class Controller extends EventEmitter {
 
       this.emit('desktopNotificationClick');
 
-      bootManager.rebootTalkPage({
+      this.reloadPage({
         commentIds: [comment.id],
         closeNotificationsSmoothly: false,
       });
@@ -1961,6 +1960,157 @@ class Controller extends EventEmitter {
     if (methodName) {
       history[methodName](history.state, '', cd.page.getUrl(newQuery));
     }
+  }
+
+  /**
+   * Create a boot process.
+   * Moved from bootManager.createBootProcess()
+   *
+   * @param {import('./BootProcess').PassedData} [passedData]
+   * @returns {Promise<import('./BootProcess').default>}
+   */
+  async createBootProcess(passedData = {}) {
+    const BootProcess = (await import('./BootProcess')).default;
+    this.bootProcess = new BootProcess(passedData);
+
+    return this.bootProcess;
+  }
+
+  /**
+   * Get the current (or last available) boot process.
+   * Moved from bootManager.getBootProcess()
+   *
+   * @returns {import('./BootProcess').default}
+   */
+  getBootProcess() {
+    return this.bootProcess;
+  }
+
+  /**
+   * Run the current boot process and catch errors.
+   * Moved from bootManager.tryBootTalkPage() and renamed to bootTalkPage()
+   *
+   * @param {boolean} isReload Is the page reloaded, not booted the first time.
+   */
+  async bootTalkPage(isReload) {
+    cd.loader.booting = true;
+
+    try {
+      await this.bootProcess.execute(isReload);
+      if (isReload) {
+        mw.hook('wikipage.content').fire(cd.loader.$content);
+      }
+    } catch (error) {
+      mw.notify(cd.s('error-processpage'), { type: 'error' });
+      console.error(error);
+      cd.loader.hideLoadingOverlay();
+    }
+
+    cd.loader.booting = false;
+  }
+
+  /**
+   * Reload the page via Ajax.
+   * Moved from bootManager.rebootTalkPage() and renamed to reloadPage()
+   *
+   * @param {import('./BootProcess').PassedData} [passedData]
+   * @returns {Promise<boolean>} Successful?
+   * @throws {import('./shared/CdError').default|Error}
+   */
+  async reloadPage(passedData = {}) {
+    if (cd.loader.isBooting() || !cd.loader.isPageOfType('talk')) {
+      return false;
+    }
+
+    passedData.isRevisionSliderRunning = Boolean(history.state?.sliderPos);
+
+    this.emit('beforeReboot', passedData);
+
+    if (!passedData.commentIds && !passedData.sectionId) {
+      this.saveScrollPosition();
+    }
+
+    const debug = (await import('./loader/debug')).default;
+    debug.init();
+    debug.startTimer('total time');
+    debug.startTimer('get HTML');
+
+    const { getUserInfo } = await import('./utils-api');
+    getUserInfo().catch((/** @type {unknown} */ error) => {
+      console.warn(error);
+    });
+
+    cd.loader.showLoadingOverlay();
+    const newBootProcess = await this.createBootProcess(passedData);
+
+    try {
+      newBootProcess.passedData.parseData = await cd.page.parse(undefined, false, true);
+    } catch (error) {
+      cd.loader.hideLoadingOverlay();
+      if (newBootProcess.passedData.submittedCommentForm) {
+        throw error;
+      } else {
+        mw.notify(cd.s('error-reloadpage'), { type: 'error' });
+        console.warn(error);
+
+        return false;
+      }
+    }
+
+    mw.loader.load(newBootProcess.passedData.parseData.modules);
+    mw.loader.load(newBootProcess.passedData.parseData.modulestyles);
+    mw.config.set(newBootProcess.passedData.parseData.jsconfigvars);
+
+    const commentManager = (await import('./commentManager')).default;
+    newBootProcess.passedData.unseenComments = commentManager
+      .query((comment) => comment.isSeen === false);
+
+    this.bootProcess = newBootProcess;
+
+    if (newBootProcess.passedData.submittedCommentForm?.getMode() === 'addSection') {
+      newBootProcess.passedData.submittedCommentForm.teardown();
+    }
+
+    debug.stopTimer('get HTML');
+
+    this.emit('startReboot');
+
+    await this.bootTalkPage(true);
+
+    this.emit('reboot');
+
+    if (!newBootProcess.passedData.commentIds && !newBootProcess.passedData.sectionId) {
+      this.restoreScrollPosition(false);
+    }
+
+    return true;
+  }
+
+  /**
+   * Handle firings of the wikipage.content hook.
+   * Moved from bootManager.handleWikipageContentHookFirings()
+   *
+   * @param {JQuery} $content
+   */
+  handleWikipageContentHookFirings($content) {
+    if (!$content.is('#mw-content-text')) return;
+
+    const $root = $content.children('.mw-parser-output');
+    if ($root.length && !$root.hasClass('cd-parse-started')) {
+      this.reloadPage({ isPageReloadedExternally: true });
+    }
+  }
+
+  /**
+   * Remove fragment and revision parameters from the URL; remove DOM elements related to the diff.
+   * Moved from bootManager.cleanUpUrlAndDom()
+   */
+  cleanUpUrlAndDom() {
+    if (this.bootProcess.passedData.isRevisionSliderRunning) return;
+
+    const { searchParams } = new URL(location.href);
+    this.cleanUpDom(searchParams);
+    this.cleanUpUrl(searchParams);
   }
 }
 

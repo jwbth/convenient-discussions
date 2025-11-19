@@ -2,7 +2,7 @@ import AutocompleteManager from './AutocompleteManager';
 import ProcessDialog from './ProcessDialog';
 import Pseudolink from './Pseudolink';
 import TextInputWidget from './TextInputWidget';
-import bootManager from './loader/bootManager';
+import controller from './controller';
 import cd from './loader/cd';
 import pageRegistry from './pageRegistry';
 import CdError from './shared/CdError';
@@ -356,7 +356,7 @@ class MoveSectionDialog extends ProcessDialog {
           wrapHtml(cd.sParse('msd-moved', target.sectionWikilink), { tagName: 'div' })
         );
 
-        bootManager.rebootTalkPage({
+        controller.reloadPage({
           sectionId: this.controls.keepLink.input.isSelected() ? this.section.id : undefined,
         });
 
@@ -672,7 +672,7 @@ class MoveSectionDialog extends ProcessDialog {
       callbacks: {
         'cd-message-reloadPage': () => {
           this.close();
-          bootManager.rebootTalkPage();
+          controller.reloadPage();
         },
       },
     }), { recoverable }));

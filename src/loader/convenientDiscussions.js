@@ -10,7 +10,6 @@ import pageRegistry from '../pageRegistry';
 import { buildEditSummary, getQueryParamBooleanValue, underlinesToSpaces } from '../shared/utils-general';
 import { wrapDiffBody, wrapHtml } from '../utils-window';
 
-import bootManager from './bootManager';
 import cd from './cd';
 import debug from './debug';
 import { isCurrentRevision } from './utils-global';
@@ -329,11 +328,11 @@ const convenientDiscussionsWindow = {
     buildEditSummary,
 
     /**
-     * @see module:bootManager.isPageOverlayOn
+     * @see module:loader.isPageOverlayOn
      * @function isPageOverlayOn
      * @memberof convenientDiscussions.api
      */
-    isPageOverlayOn: bootManager.isPageOverlayOn.bind(bootManager),
+    isPageOverlayOn: () => cd.loader.isPageOverlayOn(),
 
     /**
      * @see module:util.wrapHtml
@@ -717,6 +716,17 @@ const globalProperties = {
 };
 
 Object.assign(cd.g, globalProperties);
+
+// Initialize cd.loader and cd.util objects (used throughout the app)
+// These are populated by loader.js and made available for general use
+/** @type {object} */
+cd.loader = {};
+
+/** @type {object} */
+cd.util = {};
+
+// Expose utility functions on cd.util
+cd.util.isCurrentRevision = isCurrentRevision;
 
 if (cd.g.debug) {
   window.cd = cd;

@@ -4,7 +4,6 @@ import StorageItemWithKeys from './StorageItemWithKeys';
 import Thread from './Thread';
 import commentFormManager from './commentFormManager';
 import controller from './controller';
-import bootManager from './loader/bootManager';
 import cd from './loader/cd';
 import settings from './settings';
 import TreeWalker from './shared/TreeWalker';

@@ -11,7 +11,7 @@ import dayJsTimezone from 'dayjs/plugin/timezone';
 import dayJsUtc from 'dayjs/plugin/utc';
 
 import Button from './Button';
-import bootManager from './loader/bootManager';
+import controller from './controller';
 import cd from './loader/cd';
 import settings from './settings';
 import ElementsTreeWalker from './shared/ElementsTreeWalker';
@@ -505,7 +505,7 @@ export function cleanUpPasteDom(element, containerElement) {
     .forEach(removeElement);
 
   const topElements = /** @type {Element[]} */ (
-    bootManager.getBootProcess().parser.getTopElementsWithText(element, true).nodes
+    controller.getBootProcess().parser.getTopElementsWithText(element, true).nodes
   );
   if (topElements[0] !== element) {
     element.innerHTML = '';

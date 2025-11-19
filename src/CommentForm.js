@@ -10,7 +10,6 @@ import UploadDialog from './UploadDialog';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
 import controller from './controller';
-import bootManager from './loader/bootManager';
 import cd from './loader/cd';
 import notifications from './notifications';
 import pageRegistry from './pageRegistry';
@@ -2799,7 +2798,7 @@ class CommentForm extends EventEmitter {
     }
 
     try {
-      await bootManager.rebootTalkPage(bootData);
+      await controller.reloadPage(bootData);
     } catch (error) {
       this.handleError({
         error,
@@ -2808,7 +2807,7 @@ class CommentForm extends EventEmitter {
         operation,
       });
 
-      bootManager.hideLoadingOverlay();
+      cd.loader.hideLoadingOverlay();
 
       return;
     }
@@ -3154,7 +3153,7 @@ class CommentForm extends EventEmitter {
    */
   cancel(confirmClose = true) {
     // Why check for this.torndown: CodeMirror may emit an event of an Esc button press late
-    if (bootManager.isPageOverlayOn() || this.isBeingSubmitted() || this.torndown) return;
+    if (cd.loader.isPageOverlayOn() || this.isBeingSubmitted() || this.torndown) return;
 
     if (confirmClose && !this.confirmClose()) {
       this.commentInput.focus();

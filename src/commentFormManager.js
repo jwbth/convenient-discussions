@@ -3,7 +3,6 @@ import EventEmitter from './EventEmitter';
 import StorageItemWithKeysAndSaveTime from './StorageItemWithKeysAndSaveTime';
 import commentManager from './commentManager';
 import controller from './controller';
-import bootManager from './loader/bootManager';
 import cd from './loader/cd';
 import sectionManager from './sectionManager';
 import settings from './settings';
@@ -296,7 +295,7 @@ class CommentFormManager extends EventEmitter {
    */
   saveSession = (force) => {
     // A check in light of the existence of RevisionSlider, see the method
-    if (!bootManager.isCurrentRevision()) return;
+    if (!cd.util.isCurrentRevision()) return;
 
     if (force) {
       this.actuallySaveSession();

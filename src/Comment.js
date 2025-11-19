@@ -6,7 +6,6 @@ import StorageItemWithKeys from './StorageItemWithKeys';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
 import controller from './controller';
-import bootManager from './loader/bootManager';
 import cd from './loader/cd';
 import settings from './settings';
 import CdError from './shared/CdError';
@@ -1608,13 +1607,12 @@ class Comment extends CommentSkeleton {
         stringName = 'comment-deleted';
         break;
     }
-
     const refreshLink = isNewVersionRendered
       ? undefined
       : new Button({
         label: cd.s('comment-changed-refresh'),
         action: () => {
-          bootManager.rebootTalkPage(type === 'deleted' || !this.id ? {} : { commentIds: [this.id] });
+          controller.reloadPage(type === 'deleted' || !this.id ? {} : { commentIds: [this.id] });
         },
       });
 

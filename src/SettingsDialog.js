@@ -2,7 +2,6 @@ import ProcessDialog from './ProcessDialog';
 import StorageItem from './StorageItem';
 import commentFormManager from './commentFormManager';
 import controller from './controller';
-import bootManager from './loader/bootManager';
 import cd from './loader/cd';
 import settings from './settings';
 import { areObjectsEqual } from './shared/utils-general';
@@ -239,7 +238,7 @@ class SettingsDialog extends ProcessDialog {
       case 'reboot': {
         return new OO.ui.Process(async () => {
           this.close();
-          if (!(await bootManager.rebootTalkPage())) {
+          if (!(await controller.reloadPage())) {
             location.reload();
           }
         });

@@ -1,5 +1,5 @@
 import PrototypeRegistry from './PrototypeRegistry';
-import bootManager from './loader/bootManager';
+import cd from './loader/cd';
 import commentManager from './commentManager';
 import TreeWalker from './shared/TreeWalker';
 import { addToArrayIfAbsent, sleep } from './shared/utils-general.js';

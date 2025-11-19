@@ -6,7 +6,6 @@ import PrototypeRegistry from './PrototypeRegistry';
 import SectionSource from './SectionSource';
 import commentFormManager from './commentFormManager';
 import controller from './controller';
-import bootManager from './loader/bootManager';
 import cd from './loader/cd';
 import pageRegistry from './pageRegistry';
 import sectionManager from './sectionManager';
@@ -1520,7 +1519,7 @@ class Section extends SectionSkeleton {
    * Show a move section dialog.
    */
   async move() {
-    if (bootManager.isPageOverlayOn()) return;
+    if (cd.loader.isPageOverlayOn()) return;
 
     const dialog = new MoveSectionDialog(this);
     const windowManager = cd.getWindowManager();

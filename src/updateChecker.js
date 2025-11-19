@@ -3,7 +3,7 @@ import EventEmitter from './EventEmitter';
 import StorageItemWithKeys from './StorageItemWithKeys';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
-import bootManager from './loader/bootManager';
+import controller from './controller';
 import cd from './loader/cd';
 import sectionManager from './sectionManager';
 import settings from './settings';
@@ -461,7 +461,7 @@ class UpdateChecker extends EventEmitter {
    * @private
    */
   async check() {
-    if (!cd.page.isActive() || bootManager.isBooting()) return;
+    if (!cd.page.isActive() || cd.loader.isBooting()) return;
 
     // We need a value that wouldn't change during `await`s.
     const documentHidden = document.hidden;
@@ -833,7 +833,7 @@ class UpdateChecker extends EventEmitter {
   isPageStillAtRevisionAndNotBlocked(revisionId) {
     return (
       revisionId === mw.config.get('wgRevisionId') &&
-      !bootManager.isPageOverlayOn() &&
+      !cd.loader.isPageOverlayOn() &&
       !commentFormManager.getAll().some((commentForm) => commentForm.isBeingSubmitted())
     );
   }
@@ -944,7 +944,7 @@ class UpdateChecker extends EventEmitter {
 
     visits
       .on('process', (/** @type {string[]} */ currentPageData) => {
-        const bootProcess = bootManager.getBootProcess();
+        const bootProcess = controller.getBootProcess();
         const previousVisitTime = currentPageData.at(-2);
         this.setup(
           previousVisitTime ? Number(previousVisitTime) : undefined,

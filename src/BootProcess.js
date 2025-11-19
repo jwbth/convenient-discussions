@@ -6,6 +6,7 @@ import DtSubscriptions from './DtSubscriptions';
 import Section from './Section';
 import SpaciousComment from './SpaciousComment';
 import Thread from './Thread';
+import { initGlobals, initTimestampTools } from './app';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
 import controller from './controller';

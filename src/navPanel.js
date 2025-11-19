@@ -3,7 +3,6 @@ import LiveTimestamp from './LiveTimestamp';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
 import controller from './controller';
-import bootManager from './loader/bootManager';
 import cd from './loader/cd';
 import settings from './settings';
 import { removeWikiMarkup } from './shared/utils-wikitext';
@@ -262,7 +261,7 @@ class NavPanel {
    * @private
    */
   refreshClick(markAsRead = false) {
-    bootManager.rebootTalkPage({
+    controller.reloadPage({
       commentIds: controller.getRelevantAddedCommentIds(),
       markAsRead,
     });

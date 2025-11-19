@@ -1,6 +1,26 @@
 import cd from '../shared/cd';
 
 /**
+ * @typedef {object} ConvenientDiscussionsLoader
+ * @property {JQuery | undefined} $content
+ * @property {{ talk: boolean; definitelyTalk: boolean; diff: boolean; watchlist: boolean; contributions: boolean; history: boolean }} pageTypes
+ * @property {(type: keyof ConvenientDiscussionsLoader['pageTypes']) => boolean} isPageOfType
+ * @property {(type: keyof ConvenientDiscussionsLoader['pageTypes'], value: boolean) => void} setPageType
+ * @property {() => boolean} isArticlePageOfTalkType
+ * @property {() => import('../shared/utils-promise').Promise[]} getSiteDataPromises
+ * @property {() => void} showLoadingOverlay
+ * @property {() => void} hideLoadingOverlay
+ * @property {() => boolean} isPageOverlayOn
+ * @property {() => boolean} isBooting
+ * @property {boolean} booting
+ */
+
+/**
+ * @typedef {object} ConvenientDiscussionsUtil
+ * @property {(currentRevisionOnly?: boolean) => boolean} isCurrentRevision
+ */
+
+/**
  * @typedef {{ [lang: string]: AnyByKey }} I18n
  */
 
@@ -25,6 +45,8 @@ import cd from '../shared/cd';
  * @property {import('../settings').default} settings
  * @property {import('../CommentForm').default[]} commentForms
  * @property {ConvenientDiscussionsApi} api
+ * @property {ConvenientDiscussionsLoader} loader
+ * @property {ConvenientDiscussionsUtil} util
  * @property {boolean} isRunning
  * @property {ReturnType<import('./loader').getStringsPromise> | undefined} getStringsPromise
  */
