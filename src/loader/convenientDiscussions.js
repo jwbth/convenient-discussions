@@ -248,29 +248,26 @@ const convenientDiscussionsWindow = {
    * Reference to the {@link module:debug debug} module.
    *
    * @memberof convenientDiscussions
-   * @see module:debug
    */
   debug,
-
-  /** @type {{ [key: string]: any }} */
-  tests: {},
 
   /**
    * Loader-specific properties and methods that need to be accessible from both the loader and main
    * app contexts.
    *
    * @memberof convenientDiscussions
-   * @see module:debug
    */
   loader,
 
   /**
    * Utility functions accessible from anywhere in the script.
    *
-   * @namespace util
    * @memberof convenientDiscussions
    */
   util,
+
+  /** @type {{ [key: string]: any }} */
+  tests: {},
 };
 
 Object.assign(cd, convenientDiscussionsWindow);

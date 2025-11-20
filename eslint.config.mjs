@@ -12,7 +12,7 @@ import tseslint from 'typescript-eslint';
 
 const config = defineConfig(
   {
-    ignores: ['dist/**', 'misc/**', '*.json5', 'config/**/*', 'src/tribute/**', 'sandbox/**'],
+    ignores: ['dist/**', 'misc/**', '*.json5', '*.jsonc', 'config/**/*', 'src/tribute/**', 'sandbox/**'],
   },
   {
     settings: {
