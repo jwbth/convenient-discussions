@@ -327,7 +327,7 @@
 	"error-purgecache": "Bu sayfanın önbelleği temizlenemedi.",
 	"error-anoneditwatning": "<strong>Giriş yapmadınız.</strong> Herhangi bir değişiklik yapmanız durumunda IP adresiniz herkese görünecektir.",
 	"warning-performance-title": "Performans sorunları?",
-	"discussiontools-incompatible": "Uygun Tartışmalar çoğunlukla Tartışma Araçları ile uyumsuzdur. Uygun Tartışmaların doğru şekilde çalışmasını sağlamak için lütfen Tartışma Araçları <b><span class=\"cd-notification-disabledt\">[[$1|devre dışı bırakın]] <span class=\"cd-notification-disableDtGlobally-wrapper\">(veya <b><span class=\"cd-notification-disableDtGlobally\">[[$2|küresel olarak devre dışı bırakın]]</span></b>)</span>.",
+	"discussiontools-incompatible": "Uygun Tartışmalar çoğunlukla Tartışma Araçları ile uyumsuzdur. Uygun Tartışmaların doğru şekilde çalışmasını sağlamak için lütfen Tartışma Araçları <b><span class=\"cd-notification-disabledt\">[[$1|devre dışı bırakın]]</span></b> <span class=\"cd-notification-disableDtGlobally-wrapper\">(veya <b><span class=\"cd-notification-disableDtGlobally\">[[$2|küresel olarak devre dışı bırakın]]</span></b>)</span>.",
 	"wl-button-switchrelevant-tooltip": "Yalnızca {{gender:$1|abone olduğum}} konulardaki yorumları ve bana gönderilen yorumları göster. (Not: algılama, düzenleme özetlerine dayanmaktadır, bu nedenle bazı düzenlemeler eksik olabilir)",
 	"wl-button-editwatchedsections-tooltip": "{{gender:$1|Abone olduğum}} konuların listesini düzenle",
 	"wl-button-settings-tooltip": "Kullanışlı Tartışmalar ayarları",
