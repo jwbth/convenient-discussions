@@ -34,9 +34,16 @@ import cd from '../shared/cd';
  * @property {import('../sectionManager').default['getByHeadline']} getSectionsByHeadline
  * @property {import('../commentFormManager').default['getLastActive']} getLastActiveCommentForm
  * @property {import('../commentFormManager').default['getLastActiveAltered']} getLastActiveAlteredCommentForm
- * @property {import('./bootManager').default['rebootTalkPage']} reloadPage
- * @property {import('./bootManager').default['rebootTalkPage']} rebootTalkPage
+ * @property {import('../controller').default['rebootPage']} reloadPage Legacy property name
+ * @property {import('../controller').default['rebootPage']} rebootPage
  * @property {import('../controller').default['getRootElement']} getRootElement
+ * @property {import('../pageRegistry').default} pageRegistry
+ * @property {(typeof import('../Comment').default)['generateId']} generateCommentId
+ * @property {(typeof import('../Comment').default)['parseId']} parseCommentId
+ * @property {import('../shared/utils-general')['buildEditSummary']} buildEditSummary
+ * @property {import('../utils-window').wrapHtml} wrapHtml
+ * @property {import('../utils-window').wrapHtml} wrap
+ * @property {import('../utils-window').wrapDiffBody} wrapDiffBody
  */
 
 /**

@@ -8,7 +8,7 @@ import { createSvg } from './utils-window';
  */
 class Loader {
   /**
-   * @type {JQuery | undefined}
+   * @type {JQuery}
    */
   $content;
 

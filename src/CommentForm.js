@@ -2798,7 +2798,7 @@ class CommentForm extends EventEmitter {
     }
 
     try {
-      await controller.reloadPage(bootData);
+      await controller.rebootPage(bootData);
     } catch (error) {
       this.handleError({
         error,

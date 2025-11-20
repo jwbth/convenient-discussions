@@ -1,4 +1,5 @@
 import AutocompleteManager from './AutocompleteManager';
+import BootProcess from './BootProcess';
 import Comment from './Comment';
 import CommentForm from './CommentForm';
 import CopyLinkDialog from './CopyLinkDialog';
@@ -18,6 +19,7 @@ import Parser from './shared/Parser';
 import { defined, definedAndNotNull, getLastArrayElementOrSelf, isHeadingNode, isInline, sleep } from './shared/utils-general';
 import toc from './toc';
 import updateChecker from './updateChecker';
+import { getUserInfo } from './utils-api';
 import { copyText, getVisibilityByRects, skin$, wrapHtml } from './utils-window';
 import workerCode from './worker/worker-gate?worker&inline-string';
 
@@ -1370,7 +1372,7 @@ class Controller extends EventEmitter {
         { comments: filteredComments }
       );
       notification.$notification.on('click', () => {
-        this.reloadPage({ commentIds: filteredComments.map((comment) => comment.id) });
+        this.rebootPage({ commentIds: filteredComments.map((comment) => comment.id) });
       });
     }
   }
@@ -1473,7 +1475,7 @@ class Controller extends EventEmitter {
 
       this.emit('desktopNotificationClick');
 
-      this.reloadPage({
+      this.rebootPage({
         commentIds: [comment.id],
         closeNotificationsSmoothly: false,
       });
@@ -1750,8 +1752,7 @@ class Controller extends EventEmitter {
    * @param {import('./BootProcess').PassedData} [passedData]
    * @returns {Promise<import('./BootProcess').default>}
    */
-  async createBootProcess(passedData = {}) {
-    const BootProcess = (await import('./BootProcess')).default;
+  createBootProcess(passedData = {}) {
     this.bootProcess = new BootProcess(passedData);
 
     return this.bootProcess;
@@ -1759,7 +1760,6 @@ class Controller extends EventEmitter {
 
   /**
    * Get the current (or last available) boot process.
-   * Moved from bootManager.getBootProcess()
    *
    * @returns {import('./BootProcess').default}
    */
@@ -1769,7 +1769,6 @@ class Controller extends EventEmitter {
 
   /**
    * Run the current boot process and catch errors.
-   * Moved from bootManager.tryBootTalkPage() and renamed to bootTalkPage()
    *
    * @param {boolean} isReload Is the page reloaded, not booted the first time.
    */
@@ -1792,13 +1791,12 @@ class Controller extends EventEmitter {
 
   /**
    * Reload the page via Ajax.
-   * Moved from bootManager.rebootTalkPage() and renamed to reloadPage()
    *
    * @param {import('./BootProcess').PassedData} [passedData]
    * @returns {Promise<boolean>} Successful?
    * @throws {import('./shared/CdError').default|Error}
    */
-  async reloadPage(passedData = {}) {
+  async rebootPage(passedData = {}) {
     if (cd.loader.isBooting() || !cd.loader.isPageOfType('talk')) {
       return false;
     }
@@ -1811,12 +1809,10 @@ class Controller extends EventEmitter {
       this.saveScrollPosition();
     }
 
-    const debug = (await import('./loader/convenientDiscussions.debug')).default;
-    debug.init();
-    debug.startTimer('total time');
-    debug.startTimer('get HTML');
+    cd.debug.init();
+    cd.debug.startTimer('total time');
+    cd.debug.startTimer('get HTML');
 
-    const { getUserInfo } = await import('./utils-api');
     getUserInfo().catch((/** @type {unknown} */ error) => {
       console.warn(error);
     });
@@ -1842,7 +1838,6 @@ class Controller extends EventEmitter {
     mw.loader.load(bootProcess.passedData.parseData.modulestyles);
     mw.config.set(bootProcess.passedData.parseData.jsconfigvars);
 
-    const commentManager = (await import('./commentManager')).default;
     bootProcess.passedData.unseenComments = commentManager
       .query((comment) => comment.isSeen === false);
 
@@ -1869,7 +1864,6 @@ class Controller extends EventEmitter {
 
   /**
    * Handle firings of the wikipage.content hook.
-   * Moved from bootManager.handleWikipageContentHookFirings()
    *
    * @param {JQuery} $content
    */
@@ -1878,13 +1872,12 @@ class Controller extends EventEmitter {
 
     const $root = $content.children('.mw-parser-output');
     if ($root.length && !$root.hasClass('cd-parse-started')) {
-      this.reloadPage({ isPageReloadedExternally: true });
+      this.rebootPage({ isPageReloadedExternally: true });
     }
   }
 
   /**
    * Remove fragment and revision parameters from the URL; remove DOM elements related to the diff.
-   * Moved from bootManager.cleanUpUrlAndDom()
    */
   cleanUpUrlAndDom() {
     if (this.bootProcess.passedData.isRevisionSliderRunning) return;
@@ -1896,12 +1889,11 @@ class Controller extends EventEmitter {
 
   /**
    * Remove diff-related DOM elements.
-   * Moved from bootManager.cleanUpDom()
    *
    * @param {URLSearchParams} searchParams
    * @private
    */
-  async cleanUpDom(searchParams) {
+  cleanUpDom(searchParams) {
     if (!searchParams.has('diff') && !searchParams.has('oldid')) return;
 
     cd.loader.$content
@@ -1918,7 +1910,6 @@ class Controller extends EventEmitter {
 
   /**
    * Remove fragment and revision parameters from the URL.
-   * Moved from bootManager.cleanUpUrl()
    *
    * @param {URLSearchParams} searchParams
    * @private
@@ -1960,157 +1951,6 @@ class Controller extends EventEmitter {
     if (methodName) {
       history[methodName](history.state, '', cd.page.getUrl(newQuery));
     }
-  }
-
-  /**
-   * Create a boot process.
-   * Moved from bootManager.createBootProcess()
-   *
-   * @param {import('./BootProcess').PassedData} [passedData]
-   * @returns {Promise<import('./BootProcess').default>}
-   */
-  async createBootProcess(passedData = {}) {
-    const BootProcess = (await import('./BootProcess')).default;
-    this.bootProcess = new BootProcess(passedData);
-
-    return this.bootProcess;
-  }
-
-  /**
-   * Get the current (or last available) boot process.
-   * Moved from bootManager.getBootProcess()
-   *
-   * @returns {import('./BootProcess').default}
-   */
-  getBootProcess() {
-    return this.bootProcess;
-  }
-
-  /**
-   * Run the current boot process and catch errors.
-   * Moved from bootManager.tryBootTalkPage() and renamed to bootTalkPage()
-   *
-   * @param {boolean} isReload Is the page reloaded, not booted the first time.
-   */
-  async bootTalkPage(isReload) {
-    cd.loader.booting = true;
-
-    try {
-      await this.bootProcess.execute(isReload);
-      if (isReload) {
-        mw.hook('wikipage.content').fire(cd.loader.$content);
-      }
-    } catch (error) {
-      mw.notify(cd.s('error-processpage'), { type: 'error' });
-      console.error(error);
-      cd.loader.hideLoadingOverlay();
-    }
-
-    cd.loader.booting = false;
-  }
-
-  /**
-   * Reload the page via Ajax.
-   * Moved from bootManager.rebootTalkPage() and renamed to reloadPage()
-   *
-   * @param {import('./BootProcess').PassedData} [passedData]
-   * @returns {Promise<boolean>} Successful?
-   * @throws {import('./shared/CdError').default|Error}
-   */
-  async reloadPage(passedData = {}) {
-    if (cd.loader.isBooting() || !cd.loader.isPageOfType('talk')) {
-      return false;
-    }
-
-    passedData.isRevisionSliderRunning = Boolean(history.state?.sliderPos);
-
-    this.emit('beforeReboot', passedData);
-
-    if (!passedData.commentIds && !passedData.sectionId) {
-      this.saveScrollPosition();
-    }
-
-    const debug = (await import('./loader/convenientDiscussions.debug')).default;
-    debug.init();
-    debug.startTimer('total time');
-    debug.startTimer('get HTML');
-
-    const { getUserInfo } = await import('./utils-api');
-    getUserInfo().catch((/** @type {unknown} */ error) => {
-      console.warn(error);
-    });
-
-    cd.loader.showLoadingOverlay();
-    const newBootProcess = await this.createBootProcess(passedData);
-
-    try {
-      newBootProcess.passedData.parseData = await cd.page.parse(undefined, false, true);
-    } catch (error) {
-      cd.loader.hideLoadingOverlay();
-      if (newBootProcess.passedData.submittedCommentForm) {
-        throw error;
-      } else {
-        mw.notify(cd.s('error-reloadpage'), { type: 'error' });
-        console.warn(error);
-
-        return false;
-      }
-    }
-
-    mw.loader.load(newBootProcess.passedData.parseData.modules);
-    mw.loader.load(newBootProcess.passedData.parseData.modulestyles);
-    mw.config.set(newBootProcess.passedData.parseData.jsconfigvars);
-
-    const commentManager = (await import('./commentManager')).default;
-    newBootProcess.passedData.unseenComments = commentManager
-      .query((comment) => comment.isSeen === false);
-
-    this.bootProcess = newBootProcess;
-
-    if (newBootProcess.passedData.submittedCommentForm?.getMode() === 'addSection') {
-      newBootProcess.passedData.submittedCommentForm.teardown();
-    }
-
-    debug.stopTimer('get HTML');
-
-    this.emit('startReboot');
-
-    await this.bootTalkPage(true);
-
-    this.emit('reboot');
-
-    if (!newBootProcess.passedData.commentIds && !newBootProcess.passedData.sectionId) {
-      this.restoreScrollPosition(false);
-    }
-
-    return true;
-  }
-
-  /**
-   * Handle firings of the wikipage.content hook.
-   * Moved from bootManager.handleWikipageContentHookFirings()
-   *
-   * @param {JQuery} $content
-   */
-  handleWikipageContentHookFirings($content) {
-    if (!$content.is('#mw-content-text')) return;
-
-    const $root = $content.children('.mw-parser-output');
-    if ($root.length && !$root.hasClass('cd-parse-started')) {
-      this.reloadPage({ isPageReloadedExternally: true });
-    }
-  }
-
-  /**
-   * Remove fragment and revision parameters from the URL; remove DOM elements related to the diff.
-   * Moved from bootManager.cleanUpUrlAndDom()
-   */
-  cleanUpUrlAndDom() {
-    if (this.bootProcess.passedData.isRevisionSliderRunning) return;
-
-    const { searchParams } = new URL(location.href);
-    this.cleanUpDom(searchParams);
-    this.cleanUpUrl(searchParams);
   }
 }
 

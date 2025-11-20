@@ -238,7 +238,7 @@ class SettingsDialog extends ProcessDialog {
       case 'reboot': {
         return new OO.ui.Process(async () => {
           this.close();
-          if (!(await controller.reloadPage())) {
+          if (!(await controller.rebootPage())) {
             location.reload();
           }
         });

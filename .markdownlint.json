@@ -1,12 +1,12 @@
 {
-  "MD013": false,
-  "MD024": {
+  "line-length": false,
+  "no-duplicate-heading": {
     "siblings_only": true
   },
-  "MD022": false,
-  "MD031": false,
-  "MD032": false,
-  "MD034": false,
-  "MD040": false,
-  "MD047": false
+  "blanks-around-headings": false,
+  "blanks-around-fences": false,
+  "blanks-around-lists": false,
+  "no-bare-urls": false,
+  "fenced-code-language": false,
+  "single-trailing-newline": false
 }

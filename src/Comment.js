@@ -1612,7 +1612,7 @@ class Comment extends CommentSkeleton {
       : new Button({
         label: cd.s('comment-changed-refresh'),
         action: () => {
-          controller.reloadPage(type === 'deleted' || !this.id ? {} : { commentIds: [this.id] });
+          controller.rebootPage(type === 'deleted' || !this.id ? {} : { commentIds: [this.id] });
         },
       });
 

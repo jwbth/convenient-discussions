@@ -261,7 +261,7 @@ class NavPanel {
    * @private
    */
   refreshClick(markAsRead = false) {
-    controller.reloadPage({
+    controller.rebootPage({
       commentIds: controller.getRelevantAddedCommentIds(),
       markAsRead,
     });

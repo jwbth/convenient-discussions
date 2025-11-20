@@ -20,7 +20,6 @@ import { getFooter } from '../utils-window';
 import bootManager from './bootManager';
 import cd from './cd';
 import debug from './convenientDiscussions.debug';
-import { getValidLanguageOrFallback } from './convenientDiscussions.util';
 
 /** @type {typeof import('../../config/default').default} */
 let config;
@@ -60,15 +59,15 @@ if (SINGLE_LANG_CODE) {
   }
 }
 
-load();
+start();
 
 /**
- * The main loader function.
+ * The main function.
  *
  * @fires launched
  * @private
  */
-async function load() {
+async function start() {
   if (cd.isRunning) {
     console.warn('One instance of Convenient Discussions is already running.');
 
@@ -142,7 +141,7 @@ async function load() {
  */
 function setLanguages() {
   const getLanguageOrFallback = (/** @type {string} */ lang) =>
-    getValidLanguageOrFallback(lang, (l) => i18nList.includes(l), languageFallbacks);
+    cd.util.getValidLanguageOrFallback(lang, (l) => i18nList.includes(l), languageFallbacks);
 
   cd.g.userLanguage = getLanguageOrFallback(mw.config.get('wgUserLanguage'));
 

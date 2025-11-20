@@ -5,15 +5,12 @@
  * @module convenientDiscussions
  */
 
-import Comment from '../Comment';
 import loader from '../convenientDiscussions.loader.js';
-import pageRegistry from '../pageRegistry';
-import { buildEditSummary, getQueryParamBooleanValue, underlinesToSpaces } from '../shared/utils-general';
-import { wrapDiffBody, wrapHtml } from '../utils-window';
+import { getQueryParamBooleanValue, underlinesToSpaces } from '../shared/utils-general';
 
 import cd from './cd';
 import debug from './convenientDiscussions.debug';
-import { isCurrentRevision } from './convenientDiscussions.util';
+import util from './convenientDiscussions.util';
 
 const mwStringsCache = /** @type {StringsByKey} */ ({});
 /** @type {boolean | undefined} */
@@ -259,13 +256,13 @@ const convenientDiscussionsWindow = {
   tests: {},
 
   /**
-   * Loader-specific properties and methods that need to be accessible from both the loader and
-   * main app contexts.
+   * Loader-specific properties and methods that need to be accessible from both the loader and main
+   * app contexts.
    *
-   * @namespace loader
    * @memberof convenientDiscussions
+   * @see module:debug
    */
-  loader: {},
+  loader,
 
   /**
    * Utility functions accessible from anywhere in the script.
@@ -273,85 +270,7 @@ const convenientDiscussionsWindow = {
    * @namespace util
    * @memberof convenientDiscussions
    */
-  util: {
-    /**
-     * Check if the displayed revision is the current (last known) revision of the page.
-     *
-     * @function isCurrentRevision
-     * @memberof convenientDiscussions.util
-     * @returns {boolean}
-     */
-    isCurrentRevision,
-  },
-
-  /**
-   * Script's publicly available API. Here there are some utilities that we believe should be
-   * accessible for external use.
-   *
-   * If you need some internal method to be available publicly, contact the script's maintainer (or
-   * just make a relevant pull request).
-   *
-   * @namespace api
-   * @memberof convenientDiscussions
-   */
-  api: {
-    /**
-     * If CD isn't loaded (on pages where CD clearly doesn't need to run), only
-     * {@link module:pageRegistry.get} and {@link module:pageRegistry.Page#isProbablyTalkPage} are
-     * guaranteed to run.
-     *
-     * @see module:pageRegistry
-     * @name pageRegistry
-     * @type {object}
-     * @memberof convenientDiscussions.api
-     */
-    pageRegistry,
-
-    /**
-     * @see CommentSkeleton.generateId
-     * @function generateCommentId
-     * @memberof convenientDiscussions.api
-     */
-    generateCommentId: Comment.generateId.bind(Comment),
-
-    /**
-     * @see module:Comment.parseId
-     * @function parseCommentId
-     * @memberof convenientDiscussions.api
-     */
-    parseCommentId: Comment.parseId.bind(Comment),
-
-    /**
-     * @see module:util.buildEditSummary
-     * @function buildEditSummary
-     * @memberof convenientDiscussions.api
-     */
-    buildEditSummary,
-
-    /**
-     * @see module:loader.isPageOverlayOn
-     * @function isPageOverlayOn
-     * @memberof convenientDiscussions.api
-     */
-    isPageOverlayOn: () => cd.loader.isPageOverlayOn(),
-
-    /**
-     * @see module:util.wrapHtml
-     * @function wrapHtml
-     * @memberof convenientDiscussions.api
-     */
-    wrapHtml,
-
-    // TODO: Remove after wiki configurations are updated.
-    wrap: wrapHtml,
-
-    /**
-     * @see module:util.wrapDiffBody
-     * @function wrapDiffBody
-     * @memberof convenientDiscussions.api
-     */
-    wrapDiffBody,
-  },
+  util,
 };
 
 Object.assign(cd, convenientDiscussionsWindow);
@@ -717,19 +636,6 @@ const globalProperties = {
 };
 
 Object.assign(cd.g, globalProperties);
-
-// Initialize cd.loader and cd.util objects (used throughout the app)
-// These are populated by convenientDiscussions.loader and made available for general use
-cd.loader = loader;
-
-/**
- * Populate cd.util with utility functions.
- *
- * @type {{ isCurrentRevision: (currentRevisionOnly?: boolean) => boolean }}
- */
-cd.util = {
-  isCurrentRevision,
-};
 
 if (cd.g.debug) {
   window.cd = cd;

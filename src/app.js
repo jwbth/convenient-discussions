@@ -1,21 +1,31 @@
 /**
  * Main application entry point. This file is loaded by the loader via
  * loadPreferablyFromDiskCache() and initializes the main app.
- *\n@module app
+ *
+ * @module app
  */
 
+import Comment from './Comment';
 import addCommentLinksModule from './addCommentLinks';
+import commentFormManager from './commentFormManager';
+import commentManager from './commentManager';
 import controller from './controller';
 import cd from './loader/cd';
-import { getContentLanguageMessages } from './shared/utils-general';
+import pageRegistry from './pageRegistry';
+import sectionManager from './sectionManager';
+import settings from './settings';
+import { buildEditSummary, getContentLanguageMessages } from './shared/utils-general';
 import { dateTokenToMessageNames } from './shared/utils-timestamp';
+import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
+import { wrapDiffBody, wrapHtml } from './utils-window';
+import visits from './visits';
 
 /**
  * Set a number of {@link convenientDiscussions global object} properties.
  * Moved from bootManager.initGlobals()
  */
-export async function initGlobals() {
+export function initGlobals() {
   // Already initialized
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (cd.page) return;
@@ -30,9 +40,7 @@ export async function initGlobals() {
     ) ||
     {};
 
-  const pageRegistry = (await import('./pageRegistry')).default;
   cd.page = pageRegistry.getCurrent();
-
   cd.user = userRegistry.getCurrent();
 
   // Is there {{gender:}} with at least two pipes in the selection of affected strings?
@@ -66,31 +74,42 @@ export async function initGlobals() {
     errorsuselocal: true,
   };
 
-  const settings = (await import('./settings')).default;
   cd.settings = settings;
-
-  const commentManager = (await import('./commentManager')).default;
-  const sectionManager = (await import('./sectionManager')).default;
-  const commentFormManager = (await import('./commentFormManager')).default;
 
   cd.commentForms = commentFormManager.getAll();
 
   cd.tests.controller = controller;
-  cd.tests.processPageInBackground = (await import('./updateChecker')).processPage;
+  cd.tests.processPageInBackground = updateChecker.processPage.bind(updateChecker);
   cd.tests.showSettingsDialog = settings.showDialog.bind(settings);
-  cd.tests.visits = (await import('./visits')).default;
+  cd.tests.visits = visits;
 
-  /* Some static methods for external use */
-  cd.api.getCommentById = commentManager.getById.bind(commentManager);
-  cd.api.getCommentByDtId = commentManager.getByDtId.bind(commentManager);
-  cd.api.getSectionById = sectionManager.getById.bind(sectionManager);
-  cd.api.getSectionsByHeadline = sectionManager.getByHeadline.bind(sectionManager);
-  cd.api.getLastActiveCommentForm = commentFormManager.getLastActive.bind(commentFormManager);
-  cd.api.getLastActiveAlteredCommentForm = commentFormManager.getLastActiveAltered
-    .bind(commentFormManager);
-  cd.api.reloadPage = controller.reloadPage.bind(controller);
-  cd.api.rebootTalkPage = controller.reloadPage.bind(controller);
-  cd.api.getRootElement = controller.getRootElement.bind(controller);
+  /**
+   * Script's publicly available API. Here there are some utilities that we believe should be
+   * accessible for external use.
+   *
+   * If you need some internal method to be available publicly, contact the script's maintainer (or
+   * just make a relevant pull request).
+   */
+  cd.api = {
+    pageRegistry,
+    buildEditSummary,
+    wrapHtml,
+    // TODO: Remove after wiki configurations are updated.
+    wrap: wrapHtml,
+    wrapDiffBody,
+
+    generateCommentId: Comment.generateId.bind(Comment),
+    parseCommentId: Comment.parseId.bind(Comment),
+    getCommentById: commentManager.getById.bind(commentManager),
+    getCommentByDtId: commentManager.getByDtId.bind(commentManager),
+    getSectionById: sectionManager.getById.bind(sectionManager),
+    getSectionsByHeadline: sectionManager.getByHeadline.bind(sectionManager),
+    getLastActiveCommentForm: commentFormManager.getLastActive.bind(commentFormManager),
+    getLastActiveAlteredCommentForm: commentFormManager.getLastActiveAltered.bind(commentFormManager),
+    reloadPage: controller.rebootPage.bind(controller),  // Legacy alias for rebootPage
+    rebootPage: controller.rebootPage.bind(controller),
+    getRootElement: controller.getRootElement.bind(controller),
+  };
 }
 
 /**
@@ -285,14 +304,10 @@ function getMatchingGroups(format) {
  * Main app function for talk pages.
  * Called by loader after modules are loaded.
  */
-export async function app() {
-  await initGlobals();
+async function app() {
+  initGlobals();
   initTimestampTools();
 
-  // TODO: Get passedData from appropriate source
-  const passedData = {};
-
-  const _bootProcess = await controller.createBootProcess(passedData);
   await controller.bootTalkPage(false);
 }
 
@@ -300,8 +315,8 @@ export async function app() {
  * Function for adding comment links on special pages.
  * Called by loader for watchlist/contributions/history/diff pages.
  */
-export async function addCommentLinksFunc() {
-  await initGlobals();
+function addCommentLinks() {
+  initGlobals();
   initTimestampTools();
 
   addCommentLinksModule();
@@ -309,4 +324,4 @@ export async function addCommentLinksFunc() {
 
 // Assign to cd.loader so loader can call these functions
 cd.loader.app = app;
-cd.loader.addCommentLinks = addCommentLinksFunc;
+cd.loader.addCommentLinks = addCommentLinks;

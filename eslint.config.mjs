@@ -32,7 +32,7 @@ const config = defineConfig(
   jsdoc({
     config: 'flat/recommended-typescript-flavor',
     rules: {
-      'jsdoc/check-alignment': 'off',
+      // 'jsdoc/check-alignment': 'off',
       'jsdoc/check-line-alignment': ['warn', 'any', {
         wrapIndent: '  ',
       }],

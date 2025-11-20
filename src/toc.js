@@ -230,7 +230,7 @@ class Toc {
    */
   handleSectionClick = (event) => {
     event.preventDefault();
-    controller.reloadPage({
+    controller.rebootPage({
       sectionId:
         getLinkedAnchor(/** @type {HTMLAnchorElement} */ (event.currentTarget)) || undefined,
       pushState: true,
@@ -513,7 +513,7 @@ class Toc {
         pushState: true,
       });
     } else {
-      controller.reloadPage({
+      controller.rebootPage({
         commentIds: [id],
         pushState: true,
       });
