@@ -17,7 +17,6 @@ import en from '../../i18n/en.json';
 import { mergeRegexps, typedKeysOf, unique } from '../shared/utils-general';
 import { getFooter } from '../utils-window';
 
-import bootManager from './bootManager';
 import cd from './cd';
 import debug from './convenientDiscussions.debug';
 
@@ -310,12 +309,12 @@ async function go() {
     await setStrings();
   }
 
-  bootManager.bootScript();
+  cd.loader.bootScript();
   maybeAddFooterSwitcher();
   maybeTweakAddTopicButton();
   addCommentLinksToSpecialSearch();
 
-  if (!bootManager.isBooting()) {
+  if (!cd.loader.isBooting()) {
     debug.stopTimer('start');
   }
 
@@ -371,7 +370,7 @@ async function setStrings() {
 function maybeAddFooterSwitcher() {
   if (!mw.config.get('wgIsArticle')) return;
 
-  const enable = !bootManager.isPageOfType('talk');
+  const enable = !cd.loader.isPageOfType('talk');
   const url = new URL(location.href);
   url.searchParams.set('cdtalkpage', enable ? '1' : '0');
   const $li = $('<li>').attr('id', 'footer-togglecd');
@@ -407,7 +406,7 @@ function maybeTweakAddTopicButton() {
   const dtCreatePage =
     cd.g.isDtNewTopicToolEnabled &&
     mw.user.options.get('discussiontools-newtopictool-createpage');
-  if (!bootManager.isArticlePageOfTalkType() || (cd.g.pageAction === 'view' && !dtCreatePage))
+  if (!cd.loader.isArticlePageOfTalkType() || (cd.g.pageAction === 'view' && !dtCreatePage))
     return;
 
   const $button = $('#ca-addsection a');
@@ -438,7 +437,7 @@ function addCommentLinksToSpecialSearch() {
   if (commentId) {
     mw.loader.using('mediawiki.api').then(
       async () => {
-        await Promise.all(bootManager.getSiteDataPromises());
+        await Promise.all(cd.loader.getSiteDataPromises());
         $('.mw-search-result-heading').each((_, el) => {
           const originalHref = $(el)
             .find('a')

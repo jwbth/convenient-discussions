@@ -1,4 +1,25 @@
-import { createSvg } from './utils-window';
+import dateFormats from '../data/dateFormats.json';
+import digitsData from '../data/digits.json';
+import languageFallbacks from '../data/languageFallbacks.json';
+
+import CommentLayersCss from './Comment.layers.less';
+import CommentCss from './Comment.less';
+import CommentFormCss from './CommentForm.less';
+import SectionCss from './Section.less';
+import globalCss from './global.less';
+import logPagesCss from './logPages.less';
+import navPanelCss from './navPanel.less';
+import pageNavCss from './pageNav.less';
+import { defined, getQueryParamBooleanValue, isKeyOf, isProbablyTalkPage, sleep, unique } from './shared/utils-general';
+import { dateTokenToMessageNames } from './shared/utils-timestamp';
+import skinsCss from './skins.less';
+import talkPageCss from './talkPage.less';
+import tocCss from './toc.less';
+import { getUserInfo, splitIntoBatches } from './utils-api';
+import { createSvg, transparentize } from './utils-window';
+import cd from './loader/cd';
+import debug from './loader/convenientDiscussions.debug';
+import convenientDiscussionsUtil from './loader/convenientDiscussions.util';
 
 /**
  * Singleton for loading and managing page state related to booting and overlays.
@@ -105,8 +126,586 @@ class Loader {
    * @returns {JQuery.Promise<any>[]} There should be at least one promise in the array.
    */
   getSiteDataPromises() {
-    // This is populated by bootManager's getSiteDataPromises() which updates cd.loader's version
-    return this.siteDataPromises ??= [];
+    this.siteDataPromises ??= this.getSiteData();
+
+    return this.siteDataPromises;
+  }
+
+  /**
+   * Load messages needed to parse and generate timestamps as well as some site data.
+   *
+   * @returns {JQuery.Promise<any>[]} There should be at least one promise in the array.
+   * @private
+   */
+  // eslint-disable-next-line max-lines-per-function
+  getSiteData() {
+    this.initFormats();
+
+    const contentLanguageMessageNames = [
+      'word-separator',
+      'comma-separator',
+      'colon-separator',
+      'timezone-utc',
+    ].concat(
+      // Message names for date tokens in content language
+      ...this.getUsedDateTokens(cd.g.timestampTools.content.dateFormat).map(
+        (pattern) => dateTokenToMessageNames[pattern]
+      )
+    );
+
+    const userLanguageMessageNames = [
+      'parentheses',
+      'parentheses-start',
+      'parentheses-end',
+      'word-separator',
+      'comma-separator',
+      'colon-separator',
+      'nextdiff',
+      'timezone-utc',
+      'pagetitle',
+    ]
+      .concat(
+        cd.g.isDtInstalled
+          ? [
+              'discussiontools-topicsubscription-button-subscribe',
+              'discussiontools-topicsubscription-button-subscribe-tooltip',
+              'discussiontools-topicsubscription-button-unsubscribe',
+              'discussiontools-topicsubscription-button-unsubscribe-tooltip',
+              'discussiontools-topicsubscription-notify-subscribed-title',
+              'discussiontools-topicsubscription-notify-subscribed-body',
+              'discussiontools-topicsubscription-notify-unsubscribed-title',
+              'discussiontools-topicsubscription-notify-unsubscribed-body',
+              'discussiontools-newtopicssubscription-button-subscribe-label',
+              'discussiontools-newtopicssubscription-button-subscribe-tooltip',
+              'discussiontools-newtopicssubscription-button-unsubscribe-label',
+              'discussiontools-newtopicssubscription-button-unsubscribe-tooltip',
+              'discussiontools-newtopicssubscription-notify-subscribed-title',
+              'discussiontools-newtopicssubscription-notify-subscribed-body',
+              'discussiontools-newtopicssubscription-notify-unsubscribed-title',
+              'discussiontools-newtopicssubscription-notify-unsubscribed-body',
+              'thanks-confirmation2',
+              'checkuser-userinfocard-toggle-button-aria-label',
+            ]
+          : []
+      )
+      .concat(
+        // Message names for date tokens in UI language
+        ...this.getUsedDateTokens(cd.g.timestampTools.user.dateFormat).map(
+          (pattern) => dateTokenToMessageNames[pattern]
+        )
+      );
+
+    const areLanguagesEqual = mw.config.get('wgContentLanguage') === mw.config.get('wgUserLanguage');
+    if (areLanguagesEqual) {
+      const userLanguageConfigMessages = /** @type {StringsByKey} */ ({});
+      Object.keys(cd.config.messages)
+        .filter((name) => userLanguageMessageNames.includes(name))
+        .forEach((name) => {
+          userLanguageConfigMessages[name] = cd.config.messages[name];
+        });
+      mw.messages.set(userLanguageConfigMessages);
+    }
+
+    // We need this object to pass it to the web worker.
+    cd.g.contentLanguageMessages = {};
+
+    const setContentLanguageMessages = (/** @type {{ [key: string]: string | undefined }} */ messages) => {
+      Object.keys(messages).forEach((name) => {
+        if (messages[name] !== undefined) {
+          mw.messages.set('(content)' + name, messages[name]);
+          cd.g.contentLanguageMessages[name] = messages[name];
+        }
+      });
+    };
+
+    const filterAndSetContentLanguageMessages = (/** @type {StringsByKey} */ messages) => {
+      const contentLanguageMessages = /** @type {StringsByKey} */ ({});
+      Object.keys(messages)
+        .filter((name) => contentLanguageMessageNames.includes(name))
+        .forEach((name) => {
+          contentLanguageMessages[name] = messages[name];
+        });
+      setContentLanguageMessages(contentLanguageMessages);
+    };
+    filterAndSetContentLanguageMessages(cd.config.messages);
+
+    // I hope we won't be scolded too much for making two message requests in parallel (if the user
+    // and content language are different).
+    /** @type {JQuery.Promise<any>[]} */
+    const requests = [];
+    if (areLanguagesEqual) {
+      // eslint-disable-next-line no-one-time-vars/no-one-time-vars
+      const messagesToRequest = contentLanguageMessageNames
+        .concat(userLanguageMessageNames)
+        .filter(unique);
+      for (const nextNames of splitIntoBatches(messagesToRequest)) {
+        requests.push(
+          cd
+            .getApi()
+            .loadMessagesIfMissing(nextNames)
+            .then(() => {
+              filterAndSetContentLanguageMessages(mw.messages.get());
+            })
+        );
+      }
+    } else {
+      // eslint-disable-next-line no-one-time-vars/no-one-time-vars
+      const contentLanguageMessagesToRequest = contentLanguageMessageNames
+        .filter((name) => !cd.g.contentLanguageMessages[name]);
+      for (const nextNames of splitIntoBatches(contentLanguageMessagesToRequest)) {
+        requests.push(
+          cd
+            .getApi()
+            .getMessages(nextNames, {
+              // cd.g.contentLanguage is not used here for the reasons described in app.js where it
+              // is declared.
+              amlang: mw.config.get('wgContentLanguage'),
+            })
+            .then(setContentLanguageMessages)
+        );
+      }
+
+      requests.push(cd.getApi().loadMessagesIfMissing(userLanguageMessageNames));
+    }
+
+    cd.g.specialPageAliases = Object.entries({
+      ...cd.config.specialPageAliases,
+    }).reduce((acc, [key, value]) => {
+      acc[key] = typeof value === 'string' ? [value] : value;
+
+      return acc;
+    }, /** @type {import('../config/default').default['specialPageAliases']} */({}));
+
+    const content = cd.g.timestampTools.content;
+    content.timezone = cd.config.timezone ?? undefined;
+
+    const specialPages = ['Contributions', 'Diff', 'PermanentLink'];
+    if (
+      !specialPages.every(
+        (page) => page in cd.g.specialPageAliases && cd.g.specialPageAliases[page].length
+      ) ||
+      !content.timezone
+    ) {
+      requests.push(
+        cd
+          .getApi()
+          .get({
+            action: 'query',
+            meta: 'siteinfo',
+            siprop: ['specialpagealiases', 'general'],
+          })
+          .then((response) => {
+            /** @type {import('./utils-api').ApiResponseSiteInfoSpecialPageAliases[]} */ (
+              response.query.specialpagealiases
+            )
+              .filter((page) => specialPages.includes(page.realname))
+              .forEach((page) => {
+                cd.g.specialPageAliases[page.realname] = page.aliases.slice(
+                  0,
+                  page.aliases.indexOf(page.realname) + 1
+                );
+              });
+            content.timezone = response.query.general.timezone;
+          })
+      );
+    }
+
+    return requests;
+  }
+
+  /**
+   * Set the global variables related to date format.
+   *
+   * @private
+   */
+  initFormats() {
+    const getLanguageOrFallback = (/** @type {string} */ lang) =>
+      convenientDiscussionsUtil.getValidLanguageOrFallback(
+        lang,
+        (/** @type {string} */ l) => isKeyOf(l, dateFormats),
+        languageFallbacks
+      );
+
+    const contentLanguage = getLanguageOrFallback(mw.config.get('wgContentLanguage'));
+    const userLanguage = getLanguageOrFallback(mw.config.get('wgUserLanguage'));
+
+    cd.g.timestampTools.content.dateFormat = /** @type {StringsByKey} */ (dateFormats)[
+      contentLanguage
+    ];
+    cd.g.digits.content = mw.config.get('wgTranslateNumerals')
+      ? /** @type {StringsByKey} */ (digitsData)[contentLanguage]
+      : undefined;
+    cd.g.timestampTools.user.dateFormat = /** @type {StringsByKey} */ (dateFormats)[userLanguage];
+    cd.g.digits.user = mw.config.get('wgTranslateNumerals')
+      ? /** @type {StringsByKey} */ (digitsData)[userLanguage]
+      : undefined;
+  }
+
+  /**
+   * Get date tokens used in a format (to load only the needed tokens).
+   *
+   * @param {string} format
+   * @returns {('xg' | 'D' | 'l' | 'F' | 'M')[]}
+   * @private
+   * @author Bartosz Dziewoński <matma.rex@gmail.com>
+   * @license MIT
+   */
+  getUsedDateTokens(format) {
+    const tokens = /** @type {('xg' | 'D' | 'l' | 'F' | 'M')[]} */ ([]);
+
+    for (let p = 0; p < format.length; p++) {
+      let code = format[p];
+      if ((code === 'x' && p < format.length - 1) || (code === 'xk' && p < format.length - 1)) {
+        code += format[++p];
+      }
+
+      if (['xg', 'D', 'l', 'F', 'M'].includes(code)) {
+        tokens.push(/** @type {'xg' | 'D' | 'l' | 'F' | 'M'} */(code));
+      } else if (code === '\\' && p < format.length - 1) {
+        ++p;
+      }
+    }
+
+    return tokens;
+  }
+
+  /**
+   * _For internal use._ Set some important skin-specific values to the global object.
+   *
+   * @private
+   */
+  initCssValues() {
+    cd.g.contentLineHeight = Number.parseFloat(this.$content.css('line-height'));
+    cd.g.contentFontSize = Number.parseFloat(this.$content.css('font-size'));
+    cd.g.defaultFontSize = Number.parseFloat($(document.documentElement).css('font-size'));
+  }
+
+  /**
+   * _For internal use._ Set CSS for talk pages: set CSS variables, add static CSS.
+   *
+   * @private
+   */
+  addTalkPageCss() {
+    const contentBackgroundColor = $('#content').css('background-color') || 'rgba(0, 0, 0, 0)';
+    const skin$ = (/** @type {{ [key: string]: string }} */ obj) => {
+      const skin = mw.config.get('skin');
+
+      return $(obj[skin] || obj.default);
+    };
+    const sidebarColor = skin$({
+      'timeless': '#mw-content-container',
+      'vector-2022': '.mw-page-container',
+      'default': 'body',
+    }).css('background-color');
+    const metadataFontSize = Number.parseFloat(
+      (cd.g.contentFontSize / cd.g.defaultFontSize).toFixed(7)
+    );
+    const sidebarTransparentColor = transparentize(sidebarColor);
+
+    // `float: inline-start` is too new: it appeared in Chrome in October 2023.
+    const floatContentStart = cd.g.contentDirection === 'ltr' ? 'left' : 'right';
+    const floatContentEnd = cd.g.contentDirection === 'ltr' ? 'right' : 'left';
+    const floatUserStart = cd.g.userDirection === 'ltr' ? 'left' : 'right';
+    const floatUserEnd = cd.g.userDirection === 'ltr' ? 'right' : 'left';
+    const gradientUserStart = cd.g.userDirection === 'ltr' ? 'to left' : 'to right';
+
+    mw.loader.addStyleTag(`:root {
+  --cd-comment-fallback-side-margin: ${cd.g.commentFallbackSideMargin}px;
+  --cd-comment-marker-width: ${cd.g.commentMarkerWidth}px;
+  --cd-thread-line-side-padding: ${cd.g.threadLineSidePadding}px;
+  --cd-content-background-color: ${contentBackgroundColor};
+  --cd-content-font-size: ${cd.g.contentFontSize}px;
+  --cd-content-metadata-font-size: ${metadataFontSize}rem;
+  --cd-sidebar-color: ${sidebarColor};
+  --cd-sidebar-transparent-color: ${sidebarTransparentColor};
+  --cd-direction-user: ${cd.g.userDirection};
+  --cd-direction-content: ${cd.g.contentDirection};
+  --cd-float-user-start: ${floatUserStart};
+  --cd-float-user-end: ${floatUserEnd};
+  --cd-float-content-start: ${floatContentStart};
+  --cd-float-content-end: ${floatContentEnd};
+  --cd-gradient-user-start: ${gradientUserStart};
+  --cd-pixel-deviation-ratio: ${cd.g.pixelDeviationRatio};
+  --cd-pixel-deviation-ratio-for-1px: ${cd.g.pixelDeviationRatioFor1px};
+}`);
+    if (cd.config.outdentClass) {
+      mw.loader.addStyleTag(`.cd-parsed .${cd.config.outdentClass} {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.cd-reformattedComments .${cd.config.outdentClass} {
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+}`);
+    }
+
+    mw.util.addCSS(globalCss);
+    mw.util.addCSS(CommentCss);
+    mw.util.addCSS(CommentFormCss);
+    mw.util.addCSS(SectionCss);
+    mw.util.addCSS(CommentLayersCss);
+    mw.util.addCSS(navPanelCss);
+    mw.util.addCSS(pageNavCss);
+    mw.util.addCSS(skinsCss);
+    mw.util.addCSS(talkPageCss);
+    mw.util.addCSS(tocCss);
+  }
+
+  /**
+   * Set page types and initialize talk page or comment links page.
+   */
+  bootScript() {
+    this.$content = $('#mw-content-text');
+
+    if (cd.g.isMobileClient) {
+      $(document.body).addClass('cd-mobile-client');
+    }
+
+    // Not constants: go() may run a second time, see app~maybeAddFooterSwitcher().
+    const isEnabledInQuery = getQueryParamBooleanValue('cdtalkpage') === true;
+    // eslint-disable-next-line no-one-time-vars/no-one-time-vars
+    const isDisabledInQuery = getQueryParamBooleanValue('cdtalkpage') === false;
+
+    this.pageTypes.definitelyTalk = Boolean(
+      isEnabledInQuery ||
+
+      // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
+      // the list of supported namespaces and page white/black list in the configuration. With this
+      // method, there won't be "comment" links for edits on pages that list revisions such as the
+      // watchlist.
+      this.$content.find('.cd-talkPage').length ||
+
+      (
+        ($('#ca-addsection').length || cd.g.pageWhitelistRegexp?.test(cd.g.pageName)) &&
+        !cd.g.pageBlacklistRegexp?.test(cd.g.pageName)
+      )
+    );
+
+    this.articlePageOfTalkType =
+      (!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
+      !this.$content.find('.cd-notTalkPage').length &&
+      (isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber) || this.pageTypes.definitelyTalk) &&
+
+      // Undocumented setting
+      !window.cdOnlyRunByFooterLink;
+
+    this.pageTypes.diff = /[?&]diff=[^&]/.test(location.search);
+
+    this.pageTypes.talk =
+      mw.config.get('wgIsArticle') &&
+      !isDisabledInQuery &&
+      (isEnabledInQuery || this.articlePageOfTalkType);
+
+    this.pageTypes.watchlist = this.isWatchlistPage();
+    this.pageTypes.contributions = this.isContributionsPage();
+    this.pageTypes.history = this.isHistoryPage();
+
+    this.initOnTalkPage();
+    this.initOnCommentLinksPage();
+  }
+
+  /**
+   * Load the data required for the script to run on a talk page and execute the
+   * app function.
+   *
+   * @private
+   */
+  initOnTalkPage() {
+    if (!this.pageTypes.talk) return;
+
+    debug.stopTimer('start');
+    debug.startTimer('load data');
+
+    /** @type {JQuery.Promise<any>[]} */
+    let siteDataRequests = [];
+
+    // Make some requests in advance if the API module is ready in order not to make 2 requests
+    // sequentially. We don't make a `userinfo` request, because if there is more than one tab in
+    // the background, this request is made and the execution stops at mw.loader.using, which
+    // results in overriding the renewed visits setting of one tab by another tab (the visits are
+    // loaded by one tab, then another tab, then written by one tab, then by another tab).
+    if (mw.loader.getState('mediawiki.api') === 'ready') {
+      siteDataRequests = this.getSiteDataPromises();
+
+      // We are _not_ calling getUserInfo() here to avoid losing visit data updates from some pages
+      // if several pages are opened simultaneously. In this situation, visits could be requested
+      // for multiple pages; updated and then saved for each of them with losing the updates from
+      // the rest.
+    }
+
+    const modules = [
+      'ext.checkUser.styles',
+      'ext.checkUser.userInfoCard',
+      'jquery.client',
+      'jquery.ui',
+      'mediawiki.Title',
+      'mediawiki.Uri',
+      'mediawiki.api',
+      'mediawiki.cookie',
+      'mediawiki.interface.helpers.styles',
+      'mediawiki.jqueryMsg',
+      'mediawiki.notification',
+      'mediawiki.storage',
+      'mediawiki.user',
+      'mediawiki.util',
+      'mediawiki.widgets.visibleLengthLimit',
+      'oojs',
+      'oojs-ui-core',
+      'oojs-ui-widgets',
+      'oojs-ui-windows',
+      'oojs-ui.styles.icons-alerts',
+      'oojs-ui.styles.icons-content',
+      'oojs-ui.styles.icons-editing-advanced',
+      'oojs-ui.styles.icons-editing-citation',
+      'oojs-ui.styles.icons-editing-core',
+      'oojs-ui.styles.icons-interactions',
+      'oojs-ui.styles.icons-movement',
+      'user.options',
+      mw.loader.getState('ext.confirmEdit.CaptchaInputWidget')
+        ? 'ext.confirmEdit.CaptchaInputWidget'
+        : undefined,
+    ].filter(defined);
+
+    // mw.loader.using() delays the execution even if all modules are ready (if CD is used as a
+    // gadget with preloaded dependencies, for example), so we use this trick.
+    const modulesRequest = modules.some((module) => mw.loader.getState(module) !== 'ready')
+      ? mw.loader.using(modules)
+      : undefined;
+
+    // If there is no data to load and, therefore, no period of time within which a reflow (layout
+    // thrashing) could happen without impeding performance, we cache the value so that it could
+    // be used in .saveRelativeScrollPosition() without causing a reflow.
+    Promise.all([modulesRequest || Promise.resolve(), ...siteDataRequests]).then(
+      () => {
+        this.initCssValues();
+        this.addTalkPageCss();
+        this.app?.();
+      },
+      (/** @type {unknown} */ error) => {
+        mw.notify(cd.s('error-loaddata'), { type: 'error' });
+        console.error(error);
+        this.hideLoadingOverlay();
+      }
+    );
+
+    this.showLoadingOverlay();
+
+    sleep(15_000).then(() => {
+      if (this.booting) {
+        this.hideLoadingOverlay();
+        console.warn('The loading overlay stays for more than 15 seconds; removing it.');
+      }
+    });
+  }
+
+  /**
+   * Initialize comment links on special pages and execute the addCommentLinks function.
+   *
+   * @private
+   */
+  initOnCommentLinksPage() {
+    if (
+      !this.isPageOfType('watchlist') &&
+      !this.isPageOfType('contributions') &&
+      !this.isPageOfType('history') &&
+      !(this.isPageOfType('diff') && this.isArticlePageOfTalkType()) &&
+
+      // Instant Diffs script can be called on talk pages as well
+      !this.isPageOfType('talk')
+    ) {
+      return;
+    }
+
+    // Make some requests in advance if the API module is ready in order not to make 2 requests
+    // sequentially.
+    if (mw.loader.getState('mediawiki.api') === 'ready') {
+      this.getSiteDataPromises();
+
+      // Loading user info on diff pages could lead to problems with saving visits when many pages
+      // are opened, but not yet focused, simultaneously.
+      if (!this.isPageOfType('talk')) {
+        getUserInfo(true).catch((/** @type {unknown} */ error) => {
+          console.warn(error);
+        });
+      }
+    }
+
+    mw.loader.using([
+      'jquery.client',
+      'mediawiki.Title',
+      'mediawiki.api',
+      'mediawiki.jqueryMsg',
+      'mediawiki.user',
+      'mediawiki.util',
+      'oojs',
+      'oojs-ui-core',
+      'oojs-ui-widgets',
+      'oojs-ui-windows',
+      'oojs-ui.styles.icons-alerts',
+      'oojs-ui.styles.icons-editing-list',
+      'oojs-ui.styles.icons-interactions',
+      'user.options',
+    ]).then(
+      () => {
+        this.addCommentLinks?.();
+
+        // See the comment above: "Additions of CSS...".
+        mw.util.addCSS(globalCss);
+
+        mw.util.addCSS(logPagesCss);
+      },
+      (/** @type {unknown} */ error) => {
+        mw.notify(cd.s('error-loaddata'), { type: 'error' });
+        console.error(error);
+      }
+    );
+  }
+
+  /**
+   * Is the displayed revision the current (last known) revision of the page.
+   *
+   * @returns {boolean}
+   * @private
+   */
+  isCurrentRevision() {
+    // RevisionSlider may show a revision newer than the revision in wgCurRevisionId due to a bug
+    // (when navigating forward, at least twice, from a revision older than the revision in
+    // wgCurRevisionId after some revisions were added). Unfortunately, it doesn't update the
+    // wgCurRevisionId value.
+    return mw.config.get('wgRevisionId') >= mw.config.get('wgCurRevisionId');
+  }
+
+  /**
+   * Check whether the current page is a watchlist or recent changes page.
+   *
+   * @returns {boolean}
+   * @private
+   */
+  isWatchlistPage() {
+    return ['Recentchanges', 'Watchlist'].includes(
+      mw.config.get('wgCanonicalSpecialPageName') || ''
+    );
+  }
+
+  /**
+   * Check whether the current page is a contributions page.
+   *
+   * @returns {boolean}
+   * @private
+   */
+  isContributionsPage() {
+    return mw.config.get('wgCanonicalSpecialPageName') === 'Contributions';
+  }
+
+  /**
+   * Check whether the current page is a history page.
+   *
+   * @returns {boolean}
+   * @private
+   */
+  isHistoryPage() {
+    return cd.g.pageAction === 'history' && isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber);
   }
 
   /**
