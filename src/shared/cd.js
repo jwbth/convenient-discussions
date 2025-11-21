@@ -118,8 +118,6 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared);
  * @property {(typeof mw)['util']['isIPv6Address']} [isIPv6Address]
  * @property {ApiErrorFormatHtml} apiErrorFormatHtml
  * @property {TimestampTools} timestampTools
- * @property {RegExp | undefined} pageWhitelistRegexp
- * @property {RegExp | undefined} pageBlacklistRegexp
  */
 
 /**

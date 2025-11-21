@@ -10,7 +10,7 @@ import { initGlobals, initTimestampTools } from './app';
 import commentManager from './commentManager';
 import cd from './loader/cd';
 import pageRegistry from './pageRegistry';
-import { definedAndNotNull, generatePageNamePattern, isProbablyTalkPage, isUndo, removeDirMarks, spacesToUnderlines } from './shared/utils-general';
+import { definedAndNotNull, generatePageNamePattern, isUndo, removeDirMarks, spacesToUnderlines } from './shared/utils-general';
 import { parseTimestamp } from './shared/utils-timestamp';
 
 /** @type {string | undefined} */
@@ -195,7 +195,7 @@ function processWatchlist($content) {
     );
     if (!linkElement || isWikidataItem(linkElement)) return;
 
-    if (!isProbablyTalkPage(linkElement.textContent, nsNumber)) return;
+    if (!cd.loader.isProbablyTalkPage(linkElement.textContent, nsNumber)) return;
 
     if (line.querySelector('.minoredit')) return;
 

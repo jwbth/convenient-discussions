@@ -251,8 +251,8 @@ async function start() {
   if (cd.config === undefined) {
     cd.config = Object.assign(defaultConfig, cd.config);
 
-    cd.g.pageWhitelistRegexp = mergeRegexps(cd.config.pageWhitelist);
-    cd.g.pageBlacklistRegexp = mergeRegexps(cd.config.pageBlacklist);
+    cd.loader.pageWhitelistRegexp = mergeRegexps(cd.config.pageWhitelist);
+    cd.loader.pageBlacklistRegexp = mergeRegexps(cd.config.pageBlacklist);
 
     await setStrings();
   }

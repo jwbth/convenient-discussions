@@ -13,7 +13,7 @@ import convenientDiscussionsUtil from './loader/convenientDiscussions.util';
 import logPagesCss from './logPages.less';
 import navPanelCss from './navPanel.less';
 import pageNavCss from './pageNav.less';
-import { defined, getQueryParamBooleanValue, isKeyOf, isProbablyTalkPage, sleep, unique } from './shared/utils-general';
+import { defined, getQueryParamBooleanValue, isKeyOf, sleep, unique } from './shared/utils-general';
 import { dateTokenToMessageNames } from './shared/utils-timestamp';
 import skinsCss from './skins.less';
 import talkPageCss from './talkPage.less';
@@ -94,6 +94,20 @@ class Loader {
    * @private
    */
   articlePageOfTypeTalk = false;
+
+  /**
+   * Regular expression for pages where the script should run.
+   *
+   * @type {RegExp | undefined}
+   */
+  pageWhitelistRegexp;
+
+  /**
+   * Regular expression for pages where the script shouldn't run.
+   *
+   * @type {RegExp | undefined}
+   */
+  pageBlacklistRegexp;
 
   maybePreloadModules() {
     this.queryTalkPage = getQueryParamBooleanValue('cdtalkpage');
@@ -197,6 +211,24 @@ class Loader {
    */
   isArticlePageOfTypeTalk() {
     return this.articlePageOfTypeTalk;
+  }
+
+  /**
+   * Check if a page is probably a talk page. The namespace number is required.
+   *
+   * @param {string} pageName
+   * @param {number} namespaceNumber
+   * @returns {boolean}
+   */
+  isProbablyTalkPage(pageName, namespaceNumber) {
+    return (
+      (
+        namespaceNumber % 2 === 1 ||
+        this.pageWhitelistRegexp?.test(pageName) ||
+        (!this.pageWhitelistRegexp && cd.config.customTalkNamespaces.includes(namespaceNumber))
+      ) &&
+      !this.pageBlacklistRegexp?.test(pageName)
+    );
   }
 
   /**
@@ -472,15 +504,15 @@ class Loader {
       this.$content.find('.cd-talkPage').length ||
 
       (
-        ($('#ca-addsection').length || cd.g.pageWhitelistRegexp?.test(cd.g.pageName)) &&
-        !cd.g.pageBlacklistRegexp?.test(cd.g.pageName)
+        ($('#ca-addsection').length || this.pageWhitelistRegexp?.test(cd.g.pageName)) &&
+        !this.pageBlacklistRegexp?.test(cd.g.pageName)
       )
     );
 
     this.articlePageOfTypeTalk =
       (!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
       !this.$content.find('.cd-notTalkPage').length &&
-      (this.pageTypes.talkStrict || isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber)) &&
+      (this.pageTypes.talkStrict || this.isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber)) &&
 
       // Undocumented setting
       !window.cdOnlyRunByFooterLink;
@@ -803,7 +835,7 @@ class Loader {
    * @private
    */
   isHistoryPage() {
-    return cd.g.pageAction === 'history' && isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber);
+    return cd.g.pageAction === 'history' && this.isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber);
   }
 
   /**

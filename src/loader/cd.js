@@ -15,6 +15,8 @@ import cd from '../shared/cd';
  * @property {boolean} booting
  * @property {(...args: any) => void} [app]
  * @property {(...args: any) => void} [addCommentLinks]
+ * @property {RegExp | undefined} pageWhitelistRegexp
+ * @property {RegExp | undefined} pageBlacklistRegexp
  */
 
 /**

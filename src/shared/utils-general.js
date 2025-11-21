@@ -164,10 +164,10 @@ export function isProbablyTalkPage(pageName, namespaceNumber) {
   return (
     (
       namespaceNumber % 2 === 1 ||
-      cd.g.pageWhitelistRegexp?.test(pageName) ||
-      (!cd.g.pageWhitelistRegexp && cd.config.customTalkNamespaces.includes(namespaceNumber))
+      cd.loader.pageWhitelistRegexp?.test(pageName) ||
+      (!cd.loader.pageWhitelistRegexp && cd.config.customTalkNamespaces.includes(namespaceNumber))
     ) &&
-    !cd.g.pageBlacklistRegexp?.test(pageName)
+    !cd.loader.pageBlacklistRegexp?.test(pageName)
   );
 }
 

@@ -11,7 +11,7 @@ import TextMasker from './TextMasker';
 import cd from './loader/cd';
 import pageRegistry from './pageRegistry';
 import CdError from './shared/CdError';
-import { defined, isProbablyTalkPage, mergeRegexps } from './shared/utils-general';
+import { defined, mergeRegexps } from './shared/utils-general';
 import { handleApiReject, requestInBackground } from './utils-api';
 
 /**
@@ -165,7 +165,7 @@ export default class Page {
    * @returns {boolean}
    */
   isProbablyTalkPage() {
-    return isProbablyTalkPage(this.realName || this.name, this.namespaceId);
+    return cd.loader.isProbablyTalkPage(this.realName || this.name, this.namespaceId);
   }
 
   /**

@@ -10,7 +10,7 @@ import globalCss from '../global.less';
 import logPagesCss from '../logPages.less';
 import navPanelCss from '../navPanel.less';
 import pageNavCss from '../pageNav.less';
-import { defined, getContentLanguageMessages, getQueryParamBooleanValue, isKeyOf, isProbablyTalkPage, sleep, unique } from '../shared/utils-general';
+import { defined, getContentLanguageMessages, getQueryParamBooleanValue, isKeyOf, sleep, unique } from '../shared/utils-general';
 import { dateTokenToMessageNames } from '../shared/utils-timestamp';
 import skinsCss from '../skins.less';
 import talkPageCss from '../talkPage.less';
@@ -814,15 +814,15 @@ class BootManager {
       this.$content.find('.cd-talkPage').length ||
 
       (
-        ($('#ca-addsection').length || cd.g.pageWhitelistRegexp?.test(cd.g.pageName)) &&
-        !cd.g.pageBlacklistRegexp?.test(cd.g.pageName)
+        ($('#ca-addsection').length || cd.loader.pageWhitelistRegexp?.test(cd.g.pageName)) &&
+        !cd.loader.pageBlacklistRegexp?.test(cd.g.pageName)
       )
     );
 
     this.articlePageOfTalkType =
       (!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
       !this.$content.find('.cd-notTalkPage').length &&
-      (isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber) || this.pageTypes.definitelyTalk) &&
+      (cd.loader.isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber) || this.pageTypes.definitelyTalk) &&
 
       // Undocumented setting
       !window.cdOnlyRunByFooterLink;
@@ -1450,7 +1450,7 @@ class BootManager {
    * @private
    */
   isHistoryPage() {
-    return cd.g.pageAction === 'history' && isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber);
+    return cd.g.pageAction === 'history' && cd.loader.isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber);
   }
 }
 

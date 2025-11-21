@@ -33,7 +33,7 @@ const config = defineConfig(
     config: 'flat/recommended-typescript-flavor',
     rules: {
       // 'jsdoc/check-alignment': 'off',
-      'jsdoc/check-line-alignment': ['warn', 'any', {
+      'jsdoc/check-line-alignment': ['warn', 'never', {
         wrapIndent: '  ',
       }],
       'jsdoc/check-tag-names': [
