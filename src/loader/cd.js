@@ -57,7 +57,7 @@ import cd from '../shared/cd';
  * @property {ConvenientDiscussionsLoader} loader
  * @property {ConvenientDiscussionsUtil} util
  * @property {boolean} isRunning
- * @property {ReturnType<import('./loader').getStringsPromise> | undefined} getStringsPromise
+ * @property {ReturnType<import('./startup').getStringsPromise> | undefined} getStringsPromise
  */
 
 /**

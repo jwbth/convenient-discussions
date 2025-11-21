@@ -18,7 +18,6 @@ import { mergeRegexps, typedKeysOf, unique } from '../shared/utils-general';
 import { getFooter } from '../utils-window';
 
 import cd from './cd';
-import debug from './convenientDiscussions.debug';
 
 /** @type {typeof import('../../config/default').default} */
 let config;
@@ -58,15 +57,15 @@ if (SINGLE_LANG_CODE) {
   }
 }
 
-start();
+run();
 
 /**
- * The main function.
+ * The function that is run first.
  *
  * @fires launched
  * @private
  */
-async function start() {
+async function run() {
   if (cd.isRunning) {
     console.warn('One instance of Convenient Discussions is already running.');
 
@@ -96,15 +95,13 @@ async function start() {
     return;
   }
 
+  cd.debug.init();
+  cd.debug.startTimer('total time');
+  cd.debug.startTimer('load config and strings');
+
   if (SINGLE_CONFIG_FILE_NAME) {
     cd.config = config;
   }
-
-  cd.g = /** @type {import('../shared/cd').GlobalProps} */ ({});
-
-  debug.init();
-  debug.startTimer('total time');
-  debug.startTimer('load config and strings');
 
   /**
    * The script has launched.
@@ -117,6 +114,8 @@ async function start() {
 
   setLanguages();
 
+  cd.loader.maybePreloadModules();
+
   try {
     await Promise.all([
       (/** @type {any} */ (cd).config) ? Promise.resolve() : getConfig(),
@@ -128,9 +127,9 @@ async function start() {
     return;
   }
 
-  debug.stopTimer('load config and strings');
+  cd.debug.stopTimer('load config and strings');
 
-  $(go);
+  $(start);
 }
 
 /**
@@ -154,7 +153,7 @@ function setLanguages() {
 /**
  * Load and execute the configuration script if available.
  *
- * @returns {Promise.<void>}
+ * @returns {Promise<void>}
  * @private
  */
 function getConfig() {
@@ -229,7 +228,7 @@ async function getStrings() {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       .filter((lang) => lang !== 'en' && !cd.i18n?.[lang])
       .map((lang) =>
-        loadPreferablyFromDiskCache({
+        cd.loader.loadPreferablyFromDiskCache({
           domain: 'commons.wikimedia.org',
           pageName: `User:Jack_who_built_the_house/convenientDiscussions-i18n/${lang}.js`,
           ttlInDays: 1,
@@ -239,68 +238,17 @@ async function getStrings() {
 }
 
 /**
- * Load a script or style using the following strategy:
- * - If more than `ttlInDays` days have passed since caching, load from the server. E.g.
- *   translations can be requested daily.
- * - If `addCacheBuster` is `true`, load from server each time there is a new release (we "bust"
- *   cache by adding a random string to the URL). This is for the main app and anything updated
- *   together with it.
- *
- * @param {object} options
- * @param {string} options.domain
- * @param {string} options.pageName
- * @param {number} options.ttlInDays
- * @param {string} [options.ctype]
- * @param {boolean} [options.addCacheBuster]
- * @returns {Promise<void>}
- */
-async function loadPreferablyFromDiskCache({
-  domain,
-  pageName,
-  ttlInDays,
-  ctype,
-  addCacheBuster = false,
-}) {
-  const ttlInMs = ttlInDays * cd.g.msInDay;
-  const pageEncoded = encodeURIComponent(pageName);
-  const cacheBusterOrNot = addCacheBuster ? '&' + CACHE_BUSTER : '';
-
-  const apiResponse = await $.get(
-    `https://${domain}/w/api.php?titles=${pageEncoded}&origin=*&format=json&formatversion=2&uselang=content&maxage=${ttlInMs}&smaxage=${ttlInMs}&action=query&prop=revisions|info&rvprop=content&rvlimit=1${cacheBusterOrNot}`
-  );
-
-  const apiPage = apiResponse.query.pages[0];
-  if (!apiPage.missing) return;
-
-  const content = apiPage.revisions[0].content;
-  if (ctype === 'text/javascript' && apiPage.contentmodel === 'javascript') {
-    const scriptTag = document.createElement('script');
-    scriptTag.innerHTML = content;
-    document.head.append(scriptTag);
-  } else if (ctype === 'text/css' && apiPage.contentmodel === 'css') {
-    mw.loader.addStyleTag(content);
-  }
-}
-
-/**
  * Function executed after the config and localization strings are ready.
  *
  * @fires preprocessed
  * @private
  */
-async function go() {
-  debug.startTimer('start');
+async function start() {
+  cd.debug.startTimer('start');
 
   // Don't run again if go() runs the second time (e.g. from maybeAddFooterSwitcher()).
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (cd.config === undefined) {
-    /**
-     * Script configuration. The default configuration is in {@link defaultConfig}.
-     *
-     * @name config
-     * @type {object}
-     * @memberof convenientDiscussions
-     */
     cd.config = Object.assign(defaultConfig, cd.config);
 
     cd.g.pageWhitelistRegexp = mergeRegexps(cd.config.pageWhitelist);
@@ -309,13 +257,13 @@ async function go() {
     await setStrings();
   }
 
-  cd.loader.bootScript();
+  cd.loader.init();
   maybeAddFooterSwitcher();
   maybeTweakAddTopicButton();
   addCommentLinksToSpecialSearch();
 
   if (!cd.loader.isBooting()) {
-    debug.stopTimer('start');
+    cd.debug.stopTimer('start');
   }
 
   /**
@@ -346,10 +294,10 @@ async function setStrings() {
     await import('../../dist/convenientDiscussions-i18n/en');
   }
   const strings = Object.keys(cd.i18n.en).reduce((acc, name) => {
-    const lang = contentStrings.some((contentStringName) => (
+    const lang = contentStrings.some((contentStringName) =>
       name === contentStringName ||
       (contentStringName.endsWith('-') && name.startsWith(contentStringName))
-    ))
+    )
       ? cd.g.contentLanguage
       : cd.g.userLanguage;
     acc[name] = (lang in cd.i18n && cd.i18n[lang][name]) ?? cd.i18n.en[name];
@@ -387,7 +335,7 @@ function maybeAddFooterSwitcher() {
       event.preventDefault();
       history.pushState(history.state, '', url.toString());
       $li.remove();
-      go();
+      start();
     });
   }
   getFooter().append($li);
@@ -406,7 +354,7 @@ function maybeTweakAddTopicButton() {
   const dtCreatePage =
     cd.g.isDtNewTopicToolEnabled &&
     mw.user.options.get('discussiontools-newtopictool-createpage');
-  if (!cd.loader.isArticlePageOfTalkType() || (cd.g.pageAction === 'view' && !dtCreatePage))
+  if (!cd.loader.isArticlePageOfTypeTalk() || (cd.g.pageAction === 'view' && !dtCreatePage))
     return;
 
   const $button = $('#ca-addsection a');

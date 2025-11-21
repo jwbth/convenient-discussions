@@ -309,7 +309,7 @@ DOMPurify.addHook('uponSanitizeAttribute', (_currentNode, hookEvent, config) => 
         jsonText = jsonText.replace(/<\/nowiki>/g, '</" + String("") + "nowiki>');
       }
 
-      let text = `window.convenientDiscussions = /** @type {import('../../src/cd').ConvenientDiscussions} */ (window.convenientDiscussions || {});
+      let text = `window.convenientDiscussions = /** @type {import('../../src/loader/cd').ConvenientDiscussions} */ (window.convenientDiscussions || {});
 convenientDiscussions.i18n = convenientDiscussions.i18n || {};
 convenientDiscussions.i18n['${lang}'] = ${jsonText};
 `;

@@ -74,7 +74,7 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared);
  * @property {string} userLanguage Language code of the wiki's user (interface) language.
  * @property {object} digits
  * @property {string | undefined} digits.content Regular expression matching a single digit in
-*   content language, e.g. `[0-9]`.
+ *   content language, e.g. `[0-9]`.
  * @property {string | undefined} digits.user Regular expression matching a single digit in user
  *   (interface) language, e.g. `[0-9]`.
  * @property {StringsByKey} contentLanguageMessages
@@ -130,7 +130,8 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared);
  * @typedef {object} ConvenientDiscussionsExtension
  * @property {import('../CurrentPage').default} page Current page's object.
  * @property {import('../User').default} user Current user's object.
- * @property {typeof import('../../config/default').default} config
+ * @property {typeof import('../../config/default').default} config Script configuration. The
+ *   default configuration is in {@link defaultConfig}.
  * @property {import('./CommentSkeleton').default[]} comments
  * @property {import('./SectionSkeleton').default[]} sections
  * @property {GlobalProps} g

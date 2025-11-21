@@ -929,8 +929,6 @@ export function getQueryParamBooleanValue(param) {
       return false;
     }
   }
-
-  return;
 }
 
 /**

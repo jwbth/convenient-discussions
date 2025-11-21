@@ -938,7 +938,7 @@ class UpdateChecker extends EventEmitter {
    * _For internal use._ Initialize the update checker.
    *
    * @param {Worker} worker
-  */
+   */
   init(worker) {
     this.worker = worker;
 

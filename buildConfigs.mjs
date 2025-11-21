@@ -50,7 +50,7 @@ function getStrings() {
   return Promise.all(requests).catch(function () {});
 }
 
-window.convenientDiscussions = /** @type {import('../../src/cd').ConvenientDiscussions} */ (window.convenientDiscussions || {});
+window.convenientDiscussions = /** @type {import('../../src/loader/cd').ConvenientDiscussions} */ (window.convenientDiscussions || {});
 if (convenientDiscussions.config) return;
 
 
