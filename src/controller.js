@@ -61,7 +61,7 @@ class Controller extends EventEmitter {
    * The current (or last available) boot process.
    * Moved from bootManager.bootProcess
    *
-   * @type {import('./BootProcess').default | undefined}
+   * @type {import('./BootProcess').default}
    */
   bootProcess;
 
@@ -225,7 +225,7 @@ class Controller extends EventEmitter {
    */
   setup(pageHtml) {
     // RevisionSlider replaces the #mw-content-text element.
-    if (!cd.loader.$content?.get(0)?.parentNode) {
+    if (!cd.loader.$content.get(0)?.parentNode) {
       cd.loader.$content = $('#mw-content-text');
     }
 
@@ -1750,7 +1750,7 @@ class Controller extends EventEmitter {
    * Moved from bootManager.createBootProcess()
    *
    * @param {import('./BootProcess').PassedData} [passedData]
-   * @returns {Promise<import('./BootProcess').default>}
+   * @returns {import('./BootProcess').default}
    */
   createBootProcess(passedData = {}) {
     this.bootProcess = new BootProcess(passedData);
@@ -1783,7 +1783,7 @@ class Controller extends EventEmitter {
     } catch (error) {
       mw.notify(cd.s('error-processpage'), { type: 'error' });
       console.error(error);
-      cd.loader.hideLoadingOverlay();
+      cd.loader.hideBootingOverlay();
     }
 
     cd.loader.booting = false;
@@ -1817,13 +1817,13 @@ class Controller extends EventEmitter {
       console.warn(error);
     });
 
-    cd.loader.showLoadingOverlay();
-    const bootProcess = await this.createBootProcess(passedData);
+    cd.loader.showBootingOverlay();
+    const bootProcess = this.createBootProcess(passedData);
 
     try {
       bootProcess.passedData.parseData = await cd.page.parse(undefined, false, true);
     } catch (error) {
-      cd.loader.hideLoadingOverlay();
+      cd.loader.hideBootingOverlay();
       if (bootProcess.passedData.submittedCommentForm) {
         throw error;
       } else {
@@ -1847,7 +1847,7 @@ class Controller extends EventEmitter {
       bootProcess.passedData.submittedCommentForm.teardown();
     }
 
-    debug.stopTimer('get HTML');
+    cd.debug.stopTimer('get HTML');
 
     this.emit('startReboot');
 

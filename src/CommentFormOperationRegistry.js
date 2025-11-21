@@ -24,8 +24,8 @@ class CommentFormOperationRegistry {
    * Add an operation to the registry.
    *
    * @param {'load'|'preview'|'viewChanges'|'submit'} type
-   * @param {import('./CommentFormOperation').CommentFormOperationOptions} [options={}]
-   * @param {boolean} [clearMessages=true] Whether to clear messages above the comment form.
+   * @param {import('./CommentFormOperation').CommentFormOperationOptions} [options]
+   * @param {boolean} [clearMessages] Whether to clear messages above the comment form.
    * @returns {CommentFormOperation}
    */
   add(type, options = {}, clearMessages = true) {
@@ -51,7 +51,9 @@ class CommentFormOperationRegistry {
   closeAll() {
     // Use .slice() because CommentFormOperationRegistry#close() also removes the operation from the
     // operation registry, this disrupting .forEach().
-    this.items.slice().forEach((op) => op.close());
+    this.items.slice().forEach((op) => {
+      op.close(); 
+    });
   }
 
   /**

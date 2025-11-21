@@ -10,15 +10,15 @@
 //   ViewUpdate
 // } from 'ext.CodeMirror.v6.lib';
 
-import { LanguageSupport } from '@codemirror/language';
-import { LintSource } from '@codemirror/lint';
-import { Compartment, Extension } from '@codemirror/state';
-import { EditorView } from '@codemirror/view';
+import type { LanguageSupport } from '@codemirror/language';
+import type { LintSource } from '@codemirror/lint';
+import type { Compartment, Extension } from '@codemirror/state';
+import type { EditorView } from '@codemirror/view';
 
 // Use the file from the actual CodeMirror extension for types as long as we don't need upstream
 // CodeMirror imports from there (TypeScript engine can't handle imports like `require(
 // 'ext.CodeMirror.v6.lib' )`).
-import CodeMirrorPreferences from '../../mediawiki-extensions-CodeMirror/resources/codemirror.preferences.js';
+import type CodeMirrorPreferences from '../../mediawiki-extensions-CodeMirror/resources/codemirror.preferences.js';
 // import CodeMirrorPreferences from './CodeMirrorPreferences';
 
 // import CodeMirrorLint from './codemirror.lint.js';
@@ -140,7 +140,7 @@ declare class CodeMirror {
    * Mapping of mw.hook handlers added by CodeMirror.
    * Handlers added here will be removed during deactivation.
    */
-  private hooks: { [key: string]: Set<AnyFunction>; };
+  private hooks: Record<string, Set<AnyFunction>>;
 
   /**
    * The edit recovery handler.
@@ -264,7 +264,7 @@ declare class CodeMirror {
    * to enable or disable the same CodeMirror instance programmatically, and restore or hide
    * the original textarea.
    *
-   * @param {Extension | Extension[]} [extensions=this.defaultExtensions] Extensions to use.
+   * @param {Extension | Extension[]} [extensions] Extensions to use.
    */
   initialize(extensions?: Extension | Extension[]): void;
 
@@ -281,9 +281,9 @@ declare class CodeMirror {
    * All handlers will be removed during deactivation.
    *
    * @param {string} hook
-   * @param {Function} fn
+   * @param {AnyFunction} fn
    */
-  protected addMwHook(hook: string, fn: Function): void;
+  protected addMwHook(hook: string, fn: AnyFunction): void;
 
   /**
    * Set a new edit recovery handler.

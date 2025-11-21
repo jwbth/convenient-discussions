@@ -1,25 +1,25 @@
-import dateFormats from '../data/dateFormats.json';
-import digitsData from '../data/digits.json';
-import languageFallbacks from '../data/languageFallbacks.json';
+import dateFormats from '../../data/dateFormats.json';
+import digitsData from '../../data/digits.json';
+import languageFallbacks from '../../data/languageFallbacks.json';
+import { defined, getQueryParamBooleanValue, isKeyOf, sleep, unique } from '../shared/utils-general';
+import { dateTokenToMessageNames } from '../shared/utils-timestamp';
+import { getUserInfo, splitIntoBatches } from '../utils-api';
+import { createSvg, transparentize } from '../utils-window';
 
 import CommentLayersCss from './Comment.layers.less';
 import CommentCss from './Comment.less';
 import CommentFormCss from './CommentForm.less';
 import SectionCss from './Section.less';
+import cd from './cd';
+import debug from './convenientDiscussions.debug';
+import convenientDiscussionsUtil from './convenientDiscussions.util';
 import globalCss from './global.less';
-import cd from './loader/cd';
-import debug from './loader/convenientDiscussions.debug';
-import convenientDiscussionsUtil from './loader/convenientDiscussions.util';
 import logPagesCss from './logPages.less';
 import navPanelCss from './navPanel.less';
 import pageNavCss from './pageNav.less';
-import { defined, getQueryParamBooleanValue, isKeyOf, sleep, unique } from './shared/utils-general';
-import { dateTokenToMessageNames } from './shared/utils-timestamp';
 import skinsCss from './skins.less';
 import talkPageCss from './talkPage.less';
 import tocCss from './toc.less';
-import { getUserInfo, splitIntoBatches } from './utils-api';
-import { createSvg, transparentize } from './utils-window';
 
 /**
  * Singleton for loading and managing page state related to booting and overlays.
@@ -39,7 +39,12 @@ class Loader {
    */
   $bootingOverlay;
 
-  /** @type {JQuery.Promise<any>[] | undefined} @private */
+  /**
+   * See {@link Loader#getSiteDataPromises}.
+   *
+   * @type {JQuery.Promise<any>[] | undefined}
+   * @private
+   */
   siteDataPromises;
 
   /**
@@ -116,38 +121,7 @@ class Loader {
     this.isTalkPageInQuery = this.queryTalkPage === true;
     this.isNotTalkPageInQuery = this.queryTalkPage === false;
 
-    this.pageTypes.talkStrict = Boolean(
-      this.isTalkPageInQuery ||
-
-      // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
-      // the list of supported namespaces and page white/black list in the configuration. With this
-      // method, there won't be "comment" links for edits on pages that list revisions such as the
-      // watchlist.
-      this.$content.find('.cd-talkPage').length ||
-
-      (
-        ($('#ca-addsection').length || cd.g.pageWhitelistRegexp?.test(cd.g.pageName)) &&
-        !cd.g.pageBlacklistRegexp?.test(cd.g.pageName)
-      )
-    );
-
-    this.articlePageOfTypeTalk =
-      (!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
-      !this.$content.find('.cd-notTalkPage').length &&
-      (this.pageTypes.talkStrict || isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber)) &&
-
-      // Undocumented setting
-      !window.cdOnlyRunByFooterLink;
-
-    this.pageTypes.talk =
-      mw.config.get('wgIsArticle') &&
-      !this.isTalkPageInQuery &&
-      (this.isNotTalkPageInQuery || this.articlePageOfTypeTalk);
-
-    this.pageTypes.talkGuess = Boolean(
-      this.pageTypes.talkStrict ||
-      isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber)
-    );
+    this.setPageTypesTalk();
 
     const modules = [
       'ext.checkUser.styles',
@@ -181,6 +155,44 @@ class Loader {
         ? 'ext.confirmEdit.CaptchaInputWidget'
         : undefined,
     ].filter(defined);
+  }
+
+  /**
+   * Set page types related to talk pages.
+   */
+  setPageTypesTalk() {
+    this.pageTypes.talkStrict = Boolean(
+      this.isTalkPageInQuery ||
+
+      // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
+      // the list of supported namespaces and page white/black list in the configuration. With this
+      // method, there won't be "comment" links for edits on pages that list revisions such as the
+      // watchlist.
+      this.$content.find('.cd-talkPage').length ||
+
+      (
+        ($('#ca-addsection').length || this.pageWhitelistRegexp?.test(cd.g.pageName)) &&
+        !this.pageBlacklistRegexp?.test(cd.g.pageName)
+      )
+    );
+
+    this.articlePageOfTypeTalk =
+      (!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
+      !this.$content.find('.cd-notTalkPage').length &&
+      (this.pageTypes.talkStrict || this.isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber)) &&
+
+      // Undocumented setting
+      !window.cdOnlyRunByFooterLink;
+
+    this.pageTypes.talk =
+      mw.config.get('wgIsArticle') &&
+      !this.isTalkPageInQuery &&
+      (this.isNotTalkPageInQuery || this.articlePageOfTypeTalk);
+
+    this.pageTypes.talkGuess = Boolean(
+      this.pageTypes.talkStrict ||
+      this.isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber)
+    );
   }
 
   /**
@@ -386,7 +398,7 @@ class Loader {
       acc[key] = typeof value === 'string' ? [value] : value;
 
       return acc;
-    }, /** @type {import('../config/default').default['specialPageAliases']} */({}));
+    }, /** @type {import('../../config/default').default['specialPageAliases']} */({}));
 
     const content = cd.g.timestampTools.content;
     content.timezone = cd.config.timezone ?? undefined;
@@ -407,7 +419,7 @@ class Loader {
             siprop: ['specialpagealiases', 'general'],
           })
           .then((response) => {
-            /** @type {import('./utils-api').ApiResponseSiteInfoSpecialPageAliases[]} */ (
+            /** @type {import('../utils-api').ApiResponseSiteInfoSpecialPageAliases[]} */ (
               response.query.specialpagealiases
             )
               .filter((page) => specialPages.includes(page.realname))
@@ -879,7 +891,7 @@ class Loader {
   }
 
   /**
-   * @import {default as BootProcess} from './BootProcess.js'
+   * @import {default as BootProcess} from '../BootProcess.js'
    */
 
   /**

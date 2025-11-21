@@ -5,11 +5,11 @@
  * @module convenientDiscussions
  */
 
-import loader from '../convenientDiscussions.loader.js';
 import { getQueryParamBooleanValue, underlinesToSpaces } from '../shared/utils-general';
 
 import cd from './cd';
 import debug from './convenientDiscussions.debug';
+import loader from './convenientDiscussions.loader.js';
 import util from './convenientDiscussions.util';
 
 const mwStringsCache = /** @type {StringsByKey} */ ({});
