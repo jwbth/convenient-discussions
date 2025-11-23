@@ -508,41 +508,6 @@ class Loader {
 
     // I hope we won't be scolded too much for making two message requests in parallel (if the user
     // and content language are different).
-    /** @type {JQuery.Promise<any>[]} */
-    const requests = [];
-    if (areLanguagesEqual) {
-      const messagesToRequest = contentLanguageMessageNames
-        .concat(userLanguageMessageNames)
-        .filter(unique);
-      for (const nextNames of splitIntoBatches(messagesToRequest)) {
-        requests.push(
-          cd
-            .getApi()
-            .loadMessagesIfMissing(nextNames)
-            .then(() => {
-              filterAndSetContentLanguageMessages(mw.messages.get());
-            })
-        );
-      }
-    } else {
-      const contentLanguageMessagesToRequest = contentLanguageMessageNames
-        .filter((name) => !cd.g.contentLanguageMessages[name]);
-      for (const nextNames of splitIntoBatches(contentLanguageMessagesToRequest)) {
-        requests.push(
-          cd
-            .getApi()
-            .getMessages(nextNames, {
-              // cd.g.contentLanguage is not used here for the reasons described in app.js where it
-              // is declared.
-              amlang: mw.config.get('wgContentLanguage'),
-            })
-            .then(setContentLanguageMessages)
-        );
-      }
-
-      requests.push(cd.getApi().loadMessagesIfMissing(userLanguageMessageNames));
-    }
-
     cd.g.specialPageAliases = Object.entries({
       ...cd.config.specialPageAliases,
     }).reduce((acc, [key, value]) => {
@@ -550,42 +515,72 @@ class Loader {
 
       return acc;
     }, /** @type {import('../../config/default').default['specialPageAliases']} */({}));
-
     const content = cd.g.timestampTools.content;
     content.timezone = cd.config.timezone ?? undefined;
-
     const specialPages = ['Contributions', 'Diff', 'PermanentLink'];
-    if (
-      !specialPages.every(
-        (page) => page in cd.g.specialPageAliases && cd.g.specialPageAliases[page].length
-      ) ||
-      !content.timezone
-    ) {
-      requests.push(
-        cd
-          .getApi()
-          .get({
-            action: 'query',
-            meta: 'siteinfo',
-            siprop: ['specialpagealiases', 'general'],
-          })
-          .then((response) => {
-            /** @type {import('../utils-api').ApiResponseSiteInfoSpecialPageAliases[]} */ (
-              response.query.specialpagealiases
-            )
-              .filter((page) => specialPages.includes(page.realname))
-              .forEach((page) => {
-                cd.g.specialPageAliases[page.realname] = page.aliases.slice(
-                  0,
-                  page.aliases.indexOf(page.realname) + 1
-                );
-              });
-            content.timezone = response.query.general.timezone;
-          })
-      );
-    }
 
-    return Promise.all(requests);
+    return Promise.all(
+      // eslint-disable-next-line unicorn/prefer-array-flat
+      /** @type {JQuery.Promise<any>[]} */ ([])
+        .concat(
+          areLanguagesEqual
+            ? splitIntoBatches(
+                contentLanguageMessageNames.concat(userLanguageMessageNames).filter(unique)
+              ).map((nextNames) =>
+                cd
+                  .getApi()
+                  .loadMessagesIfMissing(nextNames)
+                  .then(() => {
+                    filterAndSetContentLanguageMessages(mw.messages.get());
+                  })
+              )
+            // eslint-disable-next-line unicorn/prefer-array-flat
+            : /** @type {JQuery.Promise<any>[]} */ ([])
+                .concat(
+                  splitIntoBatches(
+                    contentLanguageMessageNames.filter((name) => !cd.g.contentLanguageMessages[name])
+                  )
+                    .map((nextNames) =>
+                      cd
+                        .getApi()
+                        .getMessages(nextNames, {
+                          // cd.g.contentLanguage is not used here for the reasons described in app.js where it
+                          // is declared.
+                          amlang: mw.config.get('wgContentLanguage'),
+                        })
+                        .then(setContentLanguageMessages)
+                    ))
+                .concat(cd.getApi().loadMessagesIfMissing(userLanguageMessageNames))
+        )
+        .concat(
+          !specialPages.every(
+            (page) => page in cd.g.specialPageAliases && cd.g.specialPageAliases[page].length
+          ) || !content.timezone
+            ? [
+                cd
+                  .getApi()
+                  .get({
+                    action: 'query',
+                    meta: 'siteinfo',
+                    siprop: ['specialpagealiases', 'general'],
+                  })
+                  .then((response) => {
+                    /** @type {import('../utils-api').ApiResponseSiteInfoSpecialPageAliases[]} */ (
+                      response.query.specialpagealiases
+                    )
+                      .filter((page) => specialPages.includes(page.realname))
+                      .forEach((page) => {
+                        cd.g.specialPageAliases[page.realname] = page.aliases.slice(
+                          0,
+                          page.aliases.indexOf(page.realname) + 1
+                        );
+                      });
+                    content.timezone = response.query.general.timezone;
+                  }),
+              ]
+            : []
+        )
+    );
   }
 
   /**
