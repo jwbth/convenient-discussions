@@ -72,9 +72,11 @@ const config = defineConfig(
   importPlugin.flatConfigs.recommended,
   importPlugin.flatConfigs.typescript,
   stylistic.configs.customize({
-    semi: true,
+    semi: false,
     arrowParens: true,
     severity: 'warn',
+    indent: 'tab',
+    quotes: 'single',
   }),
 
   // Main configuration
@@ -337,79 +339,27 @@ const config = defineConfig(
       ],
       'import/no-named-as-default-member': 'off',
 
-      '@stylistic/no-multi-spaces': ['warn', {
-        ignoreEOLComments: true,
-      }],
-      '@stylistic/comma-dangle': ['warn', {
-        arrays: 'always-multiline',
-        objects: 'always-multiline',
-        functions: 'only-multiline',
-      }],
-      '@stylistic/brace-style': ['warn', '1tbs'],
-      '@stylistic/arrow-parens': 'warn',
-      '@stylistic/lines-between-class-members': ['warn', {
-        enforce: [
-          {
-            blankLine: 'always',
-            prev: 'method',
-            next: 'method',
-          },
-        ],
-      }],
-      '@stylistic/array-bracket-newline': ['warn', 'consistent'],
-      '@stylistic/array-element-newline': ['warn', 'consistent'],
-      '@stylistic/object-property-newline': ['warn', {
-        allowAllPropertiesOnSameLine: true,
-      }],
-      '@stylistic/object-curly-newline': ['warn', {
-        consistent: true,
-        multiline: true,
-      }],
-      '@stylistic/max-len': ['warn', {
-        code: 110,  // Non-rigid 100; it doesn't autofix anyway
-        tabWidth: 2,
-        ignoreComments: true,
-        ignoreUrls: true,
-        ignoreStrings: true,
-        ignoreTemplateLiterals: true,
-        ignoreRegExpLiterals: true,
-      }],
-      '@stylistic/operator-linebreak': ['warn', 'after', {
-        overrides: {
-          '?': 'before',
-          ':': 'before',
-        },
-      }],
-      '@stylistic/newline-per-chained-call': ['warn', {
-        ignoreChainWithDepth: 3,
-      }],
-      '@stylistic/padding-line-between-statements': [
-        'warn',
-        // Always require a blank line before any return
-        {
-          blankLine: 'always',
-          prev: '*',
-          next: 'return',
-        },
-      ],
-
-      // Trimmed on save by IDE
+      // Prettier-managed formatting (disabled to avoid conflicts)
+      '@stylistic/semi': 'off',
+      '@stylistic/quotes': 'off',
+      '@stylistic/indent': 'off',
+      '@stylistic/comma-dangle': 'off',
+      '@stylistic/arrow-parens': 'off',
+      '@stylistic/brace-style': 'off',
+      '@stylistic/no-multi-spaces': 'off',
+      '@stylistic/array-bracket-newline': 'off',
+      '@stylistic/array-element-newline': 'off',
+      '@stylistic/object-property-newline': 'off',
+      '@stylistic/object-curly-newline': 'off',
+      '@stylistic/max-len': 'off',
+      '@stylistic/operator-linebreak': 'off',
+      '@stylistic/newline-per-chained-call': 'off',
+      '@stylistic/padding-line-between-statements': 'off',
       '@stylistic/no-trailing-spaces': 'off',
-
-      '@stylistic/indent': ['warn', 2, {
-        SwitchCase: 1,
-        offsetTernaryExpressions: true,
-      }],
-
-      // Attacks JSDoc comments like `.../** @type {string} */ (smth)`
       '@stylistic/rest-spread-spacing': 'off',
       '@stylistic/space-unary-ops': 'off',
       '@stylistic/array-bracket-spacing': 'off',
-
-      '@stylistic/quotes': ['warn', 'single', {
-        avoidEscape: true,
-        allowTemplateLiterals: 'always',
-      }],
+      '@stylistic/lines-between-class-members': 'off',
 
       'no-one-time-vars/no-one-time-vars': 'off',
       // No one-time vars plugin rules
