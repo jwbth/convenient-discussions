@@ -14,58 +14,20 @@ import configUrls from '../../config/urls.json';
 import i18nList from '../../data/i18nList.json';
 import languageFallbacks from '../../data/languageFallbacks.json';
 import en from '../../i18n/en.json';
-import { mergeRegexps, typedKeysOf, unique } from '../shared/utils-general';
+import { typedKeysOf, unique } from '../shared/utils-general';
 import { getFooter } from '../utils-window';
 
 import cd from './cd';
 
-/** @type {typeof import('../../config/default').default} */
-let config;
-
-if (SINGLE_LANG_CODE) {
-  if (SINGLE_CONFIG_FILE_NAME) {
-    try {
-      config = (await import(`../config/${SINGLE_CONFIG_FILE_NAME}`)).default;
-    } catch {
-      // Empty
-    }
-  }
-
-  // A copy of the function in misc/utils.js. If altering it, make sure they are synchronized.
-  const replaceEntities = (/** @type {string} */ string) => (
-    string
-      .replace(/&nbsp;/g, '\u00A0')
-      .replace(/&#32;/g, ' ')
-      .replace(/&rlm;/g, '\u200F')
-      .replace(/&lrm;/g, '\u200E')
-  );
-
-  cd.i18n = (/** @type {I18n} */ { en });
-  typedKeysOf(cd.i18n.en).forEach((name) => {
-    cd.i18n.en[name] = replaceEntities(cd.i18n.en[name]);
-  });
-  if (SINGLE_LANG_CODE !== 'en') {
-    cd.i18n[SINGLE_LANG_CODE] = await import(`../i18n/${SINGLE_LANG_CODE}.json`);
-    const langObj = cd.i18n[SINGLE_LANG_CODE];
-    Object.keys(cd.i18n[SINGLE_LANG_CODE])
-      .filter((name) => typeof langObj[name] === 'string')
-      .forEach((name) => {
-        langObj[name] = replaceEntities(langObj[name]);
-      });
-    langObj.dayjsLocale = await import(`dayjs/locale/${SINGLE_LANG_CODE}`);
-    langObj.dateFnsLocale = await import(`date-fns/locale/${SINGLE_LANG_CODE}`);
-  }
-}
-
-run();
+await bootstrap();
+$(start);
 
 /**
- * The function that is run first.
+ * The function that is called first.
  *
- * @fires launched
- * @private
+ * @fires started
  */
-async function run() {
+async function bootstrap() {
   if (cd.isRunning) {
     console.warn('One instance of Convenient Discussions is already running.');
 
@@ -97,24 +59,53 @@ async function run() {
 
   cd.debug.init();
   cd.debug.startTimer('total time');
-  cd.debug.startTimer('load config and strings');
-
-  if (SINGLE_CONFIG_FILE_NAME) {
-    cd.config = config;
-  }
+  cd.debug.startTimer('bootstrap');
 
   /**
-   * The script has launched.
+   * The script has started.
    *
-   * @event launched
+   * @event started
    * @param {object} cd {@link convenientDiscussions} object.
    * @global
    */
-  mw.hook('convenientDiscussions.launched').fire(cd);
+  mw.hook('convenientDiscussions.started').fire(cd);
+
+  if (SINGLE_CONFIG_FILE_NAME) {
+    try {
+      cd.config = (await import(`../config/${SINGLE_CONFIG_FILE_NAME}`)).default;
+    } catch {
+      // Empty
+    }
+  }
+
+  if (SINGLE_LANG_CODE) {
+    // A copy of the function in misc/utils.js. If altering it, make sure they are synchronized.
+    const replaceEntities = (/** @type {string} */ string) =>
+      string
+        .replace(/&nbsp;/g, '\u00A0')
+        .replace(/&#32;/g, ' ')
+        .replace(/&rlm;/g, '\u200F')
+        .replace(/&lrm;/g, '\u200E');
+
+    cd.i18n = (/** @type {I18n} */ { en });
+    typedKeysOf(cd.i18n.en).forEach((name) => {
+      cd.i18n.en[name] = replaceEntities(cd.i18n.en[name]);
+    });
+    if (SINGLE_LANG_CODE !== 'en') {
+      cd.i18n[SINGLE_LANG_CODE] = await import(`../i18n/${SINGLE_LANG_CODE}.json`);
+      const langObj = cd.i18n[SINGLE_LANG_CODE];
+      Object.keys(cd.i18n[SINGLE_LANG_CODE])
+        .filter((name) => typeof langObj[name] === 'string')
+        .forEach((name) => {
+          langObj[name] = replaceEntities(langObj[name]);
+        });
+      langObj.dayjsLocale = await import(`dayjs/locale/${SINGLE_LANG_CODE}`);
+      langObj.dateFnsLocale = await import(`date-fns/locale/${SINGLE_LANG_CODE}`);
+    }
+  }
 
   setLanguages();
-
-  cd.loader.maybePreloadModules();
+  cd.loader.maybeLoadTalkPageModules();
 
   try {
     await Promise.all([
@@ -127,15 +118,11 @@ async function run() {
     return;
   }
 
-  cd.debug.stopTimer('load config and strings');
-
-  $(start);
+  cd.debug.stopTimer('bootstrap');
 }
 
 /**
  * Set language properties of the global object, taking fallback languages into account.
- *
- * @private
  */
 function setLanguages() {
   const getLanguageOrFallback = (/** @type {string} */ lang) =>
@@ -154,7 +141,6 @@ function setLanguages() {
  * Load and execute the configuration script if available.
  *
  * @returns {Promise<void>}
- * @private
  */
 function getConfig() {
   return new Promise((resolve, reject) => {
@@ -197,10 +183,9 @@ function getConfig() {
  * Get the promise that resolves when the language strings are ready. If the strings are already
  * available, the promise resolves immediately.
  *
- * @returns {Promise<any[]|void>}
- * @private
+ * @returns {Promise<any[] | void>}
  */
-export function getStringsPromise() {
+function getStringsPromise() {
   return (
     cd.g.userLanguage === mw.config.get('wgUserLanguage') &&
     cd.g.contentLanguage === mw.config.get('wgContentLanguage')
@@ -217,8 +202,7 @@ export function getStringsPromise() {
  * Load and add localization strings to the {@link module:cd.i18n} object. Use fallback languages
  * if default languages are unavailable.
  *
- * @returns {Promise<any[]|void>}
- * @private
+ * @returns {Promise<any[] | void>}
  */
 async function getStrings() {
   // We assume it's OK to fall back to English if the translation is unavailable for any reason.
@@ -226,7 +210,7 @@ async function getStrings() {
     [cd.g.userLanguage, cd.g.contentLanguage]
       .filter(unique)
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      .filter((lang) => lang !== 'en' && !cd.i18n?.[lang])
+      .filter((lang) => lang !== 'en' && (!cd.i18n || !(lang in cd.i18n)))
       .map((lang) =>
         cd.loader.loadPreferablyFromDiskCache({
           domain: 'commons.wikimedia.org',
@@ -238,29 +222,29 @@ async function getStrings() {
 }
 
 /**
- * Function executed after the config and localization strings are ready.
+ * Function executed after the script has been bootstrapped; config and localization strings are
+ * ready. It can run a second time when called from maybeAddFooterSwitcher().
  *
  * @fires preprocessed
- * @private
  */
 async function start() {
   cd.debug.startTimer('start');
 
-  // Don't run again if go() runs the second time (e.g. from maybeAddFooterSwitcher()).
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-  if (cd.config === undefined) {
-    cd.config = Object.assign(defaultConfig, cd.config);
+  // MAIN TASKS
 
-    cd.loader.pageWhitelistRegexp = mergeRegexps(cd.config.pageWhitelist);
-    cd.loader.pageBlacklistRegexp = mergeRegexps(cd.config.pageBlacklist);
-
-    await setStrings();
-  }
-
+  makeSureConfigIsSet();
+  await makeSureStringsAreSet();
   cd.loader.init();
-  maybeAddFooterSwitcher();
-  maybeTweakAddTopicButton();
-  addCommentLinksToSpecialSearch();
+
+  // ADDITIONAL TWEAKS
+
+  if (mw.config.get('wgIsArticle')) {
+    addFooterSwitcher();
+  }
+  tweakAddTopicButton();
+  addCommentLinksIfOnSpecialSearch();
+
+  // TRIVIA
 
   if (!cd.loader.isBooting()) {
     cd.debug.stopTimer('start');
@@ -268,7 +252,7 @@ async function start() {
 
   /**
    * The page has been preprocessed (not parsed yet, but its type has been checked and some
-   * important mechanisms have been initialized).
+   * basic structures have been initialized).
    *
    * @event preprocessed
    * @param {object} cd {@link convenientDiscussions} object.
@@ -278,11 +262,23 @@ async function start() {
 }
 
 /**
- * Add the script's strings to {@link external:mw.messages}.
- *
- * @private
+ * Merge the loaded configuration with the default configuration if not already.
  */
-async function setStrings() {
+function makeSureConfigIsSet() {
+  if (cd.config._mergedWithDefault) return;
+
+  cd.config = { ...defaultConfig, ...cd.config, _mergedWithDefault: true };
+}
+
+/**
+ * Add the script's strings to
+ * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.html#.messages mw.messages} if not
+ * already.
+ */
+async function makeSureStringsAreSet() {
+  if (Object.keys(mw.messages.get()).some((key) => key.startsWith('convenient-discussions-')))
+    return;
+
   // Strings that should be displayed in the site language, not the user language.
   const contentStrings = [
     'es-',
@@ -312,12 +308,8 @@ async function setStrings() {
 
 /**
  * Add a footer link to enable/disable CD on this page once.
- *
- * @private
  */
-function maybeAddFooterSwitcher() {
-  if (!mw.config.get('wgIsArticle')) return;
-
+function addFooterSwitcher() {
   const enable = !cd.loader.isPageOfType('talk');
   const url = new URL(location.href);
   url.searchParams.set('cdtalkpage', enable ? '1' : '0');
@@ -347,14 +339,12 @@ function maybeAddFooterSwitcher() {
  * tab. The exception is when the new topic tool is enabled with the "Offer to add a new topic"
  * setting: in that case, the classic form doesn't open anyway. So we add `dtenable=0` to the
  * button.
- *
- * @private
  */
-function maybeTweakAddTopicButton() {
+function tweakAddTopicButton() {
   const dtCreatePage =
     cd.g.isDtNewTopicToolEnabled &&
     mw.user.options.get('discussiontools-newtopictool-createpage');
-  if (!cd.loader.isArticlePageOfTypeTalk() || (cd.g.pageAction === 'view' && !dtCreatePage))
+  if (!cd.loader.isArticlePageOfTypeTalk() || (mw.config.get('wgAction') === 'view' && !dtCreatePage))
     return;
 
   const $button = $('#ca-addsection a');
@@ -365,7 +355,7 @@ function maybeTweakAddTopicButton() {
     if (dtCreatePage) {
       url.searchParams.set('dtenable', '0');
     }
-    if (!dtCreatePage || cd.g.pageAction !== 'view') {
+    if (!dtCreatePage || mw.config.get('wgAction') !== 'view') {
       url.searchParams.delete('action');
       url.searchParams.delete('section');
       url.searchParams.set('cdaddtopic', '1');
@@ -378,14 +368,14 @@ function maybeTweakAddTopicButton() {
  * _For internal use._ When on the Special:Search page, searching for a comment after choosing that
  * option from the "Couldn't find the comment" message, add comment links to titles.
  */
-function addCommentLinksToSpecialSearch() {
+function addCommentLinksIfOnSpecialSearch() {
   if (mw.config.get('wgCanonicalSpecialPageName') !== 'Search') return;
 
   const [, commentId] = location.search.match(/[?&]cdcomment=([^&]+)(?:&|$)/) || [];
   if (commentId) {
     mw.loader.using('mediawiki.api').then(
       async () => {
-        await Promise.all(cd.loader.getSiteDataPromises());
+        await cd.loader.getSiteDataPromise();
         $('.mw-search-result-heading').each((_, el) => {
           const originalHref = $(el)
             .find('a')

@@ -1450,7 +1450,7 @@ class BootManager {
    * @private
    */
   isHistoryPage() {
-    return cd.g.pageAction === 'history' && cd.loader.isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber);
+    return cd.g.action === 'history' && cd.loader.isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber);
   }
 }
 

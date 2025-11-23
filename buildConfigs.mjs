@@ -15,7 +15,7 @@ fs.readdirSync('./config/').forEach((filename) => {
   if (!name || name === 'default') return;
   let content = fs.readFileSync(`config/${filename}`, 'utf8')
     .trim()
-    .replace(/[^]*?export default .*(?=\{\n {2})/, '');
+    .replace(/[^]*?export default .*(?=\{\n(?: {2}|\t))/, '');
 
   // When updating this code, update the code in misc/convenientDiscussions-generateBasicConfig.js
   // as well.

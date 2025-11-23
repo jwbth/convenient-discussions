@@ -138,9 +138,9 @@ export function handleApiReject(codeOrArr, response) {
  */
 export function splitIntoBatches(arr) {
   // Current user's rights are only set on an `userinfo` request which is performed late (see "We
-  // are _not_ calling..." in BootManager#initOnTalkPage()). For example, getDtSubscriptions()
-  // runs earlier than that. In addition to that, cd.g.phpCharToUpper is empty until we make sure
-  // the mediawiki.Title module is loaded.
+  // are _not_ calling..." in Loader#initTalkPage()). For example, getDtSubscriptions() runs earlier
+  // than that. In addition to that, cd.g.phpCharToUpper is empty until we make sure the
+  // mediawiki.Title module is loaded.
   let currentUserRights;
   try {
     currentUserRights = cd.user.getRights();

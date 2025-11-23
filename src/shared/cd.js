@@ -128,8 +128,8 @@ Object.assign(context.convenientDiscussions, convenientDiscussionsShared);
  * @typedef {object} ConvenientDiscussionsExtension
  * @property {import('../CurrentPage').default} page Current page's object.
  * @property {import('../User').default} user Current user's object.
- * @property {typeof import('../../config/default').default} config Script configuration. The
- *   default configuration is in {@link defaultConfig}.
+ * @property {(typeof import('../../config/default').default) & { _mergedWithDefault?: true }} config
+ *   Script configuration. The default configuration is in {@link defaultConfig}.
  * @property {import('./CommentSkeleton').default[]} comments
  * @property {import('./SectionSkeleton').default[]} sections
  * @property {GlobalProps} g

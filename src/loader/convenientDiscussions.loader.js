@@ -1,37 +1,98 @@
 import dateFormats from '../../data/dateFormats.json';
 import digitsData from '../../data/digits.json';
 import languageFallbacks from '../../data/languageFallbacks.json';
-import { defined, getQueryParamBooleanValue, isKeyOf, sleep, unique } from '../shared/utils-general';
+import CommentLayersCss from '../Comment.layers.less';
+import CommentCss from '../Comment.less';
+import CommentFormCss from '../CommentForm.less';
+import SectionCss from '../Section.less';
+import addCommentLinksCss from '../addCommentLinks.less';
+import globalCss from '../global.less';
+import navPanelCss from '../navPanel.less';
+import pageNavCss from '../pageNav.less';
+import { defined, getQueryParamBooleanValue, isKeyOf, mergeRegexps, sleep, unique } from '../shared/utils-general';
 import { dateTokenToMessageNames } from '../shared/utils-timestamp';
+import skinsCss from '../skins.less';
+import talkPageCss from '../talkPage.less';
+import tocCss from '../toc.less';
 import { getUserInfo, splitIntoBatches } from '../utils-api';
 import { createSvg, transparentize } from '../utils-window';
 
-import CommentLayersCss from './Comment.layers.less';
-import CommentCss from './Comment.less';
-import CommentFormCss from './CommentForm.less';
-import SectionCss from './Section.less';
 import cd from './cd';
 import debug from './convenientDiscussions.debug';
 import convenientDiscussionsUtil from './convenientDiscussions.util';
-import globalCss from './global.less';
-import logPagesCss from './logPages.less';
-import navPanelCss from './navPanel.less';
-import pageNavCss from './pageNav.less';
-import skinsCss from './skins.less';
-import talkPageCss from './talkPage.less';
-import tocCss from './toc.less';
 
 /**
- * Singleton for loading and managing page state related to booting and overlays.
- * This handles populating the cd.loader interface with methods and properties.
+ * Singleton for loading and managing page state related to booting and overlays. This goes to
+ * `cd.loader`.
  *
  * @module convenientDiscussions.loader
  */
 class Loader {
   /**
+   * @type {JQuery.Promise<void> | undefined}
+   * @private
+   */
+  modulesRequest;
+
+  /**
+   * @type {boolean | undefined}
+   * @private
+   */
+  queryTalkPage;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  queryIsTalkPage;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  queryIsNotTalkPage;
+
+  /**
+   * Regular expression for pages where the script should run.
+   *
+   * @type {RegExp | undefined}
+   */
+  pageWhitelistRegexp;
+
+  /**
+   * Regular expression for pages where the script shouldn't run.
+   *
+   * @type {RegExp | undefined}
+   */
+  pageBlacklistRegexp;
+
+  /**
+   * @typedef {object} PageTypes
+   * @property {boolean} talk The page is considered a talk page.
+   * @property {boolean} talkStrict The page meets strict criteria for being a talk page.
+   * @property {boolean} diff The page is a diff page.
+   * @property {boolean} watchlist The page is a watchlist page.
+   * @property {boolean} contributions The page is a contributions page.
+   * @property {boolean} history The page is a history page.
+   */
+
+  /**
+   * @type {PageTypes}
+   * @private
+   */
+  pageTypes;
+
+  /**
+   * See {@link Loader#isArticlePageOfTypeTalk}.
+   *
+   * @private
+   */
+  articlePageOfTypeTalk = false;
+
+  /**
    * @type {JQuery}
    */
-  $content;
+  $content = $('#mw-content-text');
 
   /**
    * @type {JQuery | undefined}
@@ -40,17 +101,18 @@ class Loader {
   $bootingOverlay;
 
   /**
-   * See {@link Loader#getSiteDataPromises}.
+   * See {@link Loader#getSiteDataPromise}.
    *
-   * @type {JQuery.Promise<any>[] | undefined}
+   * @type {Promise<any[]> | undefined}
    * @private
    */
-  siteDataPromises;
+  siteDataPromise;
 
   /**
    * Is the page booting (the booting overlay is on).
    *
    * @type {boolean}
+   * @private
    */
   booting = false;
 
@@ -69,100 +131,87 @@ class Loader {
   addCommentLinks;
 
   /**
-   * @typedef {object} PageTypes
-   * @property {boolean} talkGuess The page is probably a talk page based on data available *before*
-   *   the configuration file is loaded.
-   * @property {boolean} talk The page is considered a talk page.
-   * @property {boolean} talkStrict The page meets strict criteria for being a talk page.
-   * @property {boolean} diff The page is a diff page.
-   * @property {boolean} watchlist The page is a watchlist page.
-   * @property {boolean} contributions The page is a contributions page.
-   * @property {boolean} history The page is a history page.
-   */
-
-  /**
-   * @type {PageTypes}
-   */
-  pageTypes = {
-    talkGuess: false,
-    talk: false,
-    talkStrict: false,
-    diff: false,
-    watchlist: false,
-    contributions: false,
-    history: false,
-  };
-
-  /**
-   * See {@link Loader#isArticlePageOfTypeTalk}.
+   * Load modules required for talk pages, or not load. When this is called before the configuration
+   * file is certain to be loaded, we make a guess whether the modules are gonna be needed. This
+   * guess may be wrong in both ways (e.g. if a page turned out to be blacklisted/whitelisted).
    *
-   * @private
+   * @returns {JQuery.Promise<any>}
    */
-  articlePageOfTypeTalk = false;
+  maybeLoadTalkPageModules() {
+    if (!this.modulesRequest) {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (!this.pageTypes) {
+        this.setPageTypesTalk();
+      }
 
-  /**
-   * Regular expression for pages where the script should run.
-   *
-   * @type {RegExp | undefined}
-   */
-  pageWhitelistRegexp;
+      const modules = [
+        'ext.checkUser.styles',
+        'ext.checkUser.userInfoCard',
+        'jquery.client',
+        'jquery.ui',
+        'mediawiki.Title',
+        'mediawiki.Uri',
+        'mediawiki.api',
+        'mediawiki.cookie',
+        'mediawiki.interface.helpers.styles',
+        'mediawiki.jqueryMsg',
+        'mediawiki.notification',
+        'mediawiki.storage',
+        'mediawiki.user',
+        'mediawiki.util',
+        'mediawiki.widgets.visibleLengthLimit',
+        'oojs',
+        'oojs-ui-core',
+        'oojs-ui-widgets',
+        'oojs-ui-windows',
+        'oojs-ui.styles.icons-alerts',
+        'oojs-ui.styles.icons-content',
+        'oojs-ui.styles.icons-editing-advanced',
+        'oojs-ui.styles.icons-editing-citation',
+        'oojs-ui.styles.icons-editing-core',
+        'oojs-ui.styles.icons-interactions',
+        'oojs-ui.styles.icons-movement',
+        'user.options',
+        mw.loader.getState('ext.confirmEdit.CaptchaInputWidget')
+          ? 'ext.confirmEdit.CaptchaInputWidget'
+          : undefined,
+      ].filter(defined);
 
-  /**
-   * Regular expression for pages where the script shouldn't run.
-   *
-   * @type {RegExp | undefined}
-   */
-  pageBlacklistRegexp;
+      // mw.loader.using() delays the execution even if all modules are ready (if CD is used as a
+      // gadget with preloaded dependencies, for example), so we use this trick.
+      this.modulesRequest =
+        this.pageTypes.talk && modules.some((module) => mw.loader.getState(module) !== 'ready')
+          ? mw.loader.using(modules)
+          : $.Deferred().resolve().promise();
+    }
 
-  maybePreloadModules() {
-    this.queryTalkPage = getQueryParamBooleanValue('cdtalkpage');
-
-    // These values can change: start() may run a second time, see maybeAddFooterSwitcher().
-    this.isTalkPageInQuery = this.queryTalkPage === true;
-    this.isNotTalkPageInQuery = this.queryTalkPage === false;
-
-    this.setPageTypesTalk();
-
-    const modules = [
-      'ext.checkUser.styles',
-      'ext.checkUser.userInfoCard',
-      'jquery.client',
-      'jquery.ui',
-      'mediawiki.Title',
-      'mediawiki.Uri',
-      'mediawiki.api',
-      'mediawiki.cookie',
-      'mediawiki.interface.helpers.styles',
-      'mediawiki.jqueryMsg',
-      'mediawiki.notification',
-      'mediawiki.storage',
-      'mediawiki.user',
-      'mediawiki.util',
-      'mediawiki.widgets.visibleLengthLimit',
-      'oojs',
-      'oojs-ui-core',
-      'oojs-ui-widgets',
-      'oojs-ui-windows',
-      'oojs-ui.styles.icons-alerts',
-      'oojs-ui.styles.icons-content',
-      'oojs-ui.styles.icons-editing-advanced',
-      'oojs-ui.styles.icons-editing-citation',
-      'oojs-ui.styles.icons-editing-core',
-      'oojs-ui.styles.icons-interactions',
-      'oojs-ui.styles.icons-movement',
-      'user.options',
-      mw.loader.getState('ext.confirmEdit.CaptchaInputWidget')
-        ? 'ext.confirmEdit.CaptchaInputWidget'
-        : undefined,
-    ].filter(defined);
+    return this.modulesRequest;
   }
 
   /**
    * Set page types related to talk pages.
+   *
+   * This is called two times: once in bootstrap() in startup.js before the configuration is certain
+   * to be loaded and once in Loader#maybeLoadTalkPageModules() after the configuration is certain
+   * to be loaded. The first call is provisional and used to determine whether to preload modules;
+   * the second call is to set the final values based on configuration data.
    */
   setPageTypesTalk() {
+    // These values can change: start() in startup.js may run a second time from
+    // maybeAddFooterSwitcher().
+    this.queryTalkPage = getQueryParamBooleanValue('cdtalkpage');
+    this.queryIsTalkPage = this.queryTalkPage === true;
+    this.queryIsNotTalkPage = this.queryTalkPage === false;
+
+    if ('config' in cd) {
+      this.pageWhitelistRegexp = mergeRegexps(cd.config.pageWhitelist);
+      this.pageBlacklistRegexp = mergeRegexps(cd.config.pageBlacklist);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    this.pageTypes ??= /** @type {PageTypes} */ ({});
     this.pageTypes.talkStrict = Boolean(
-      this.isTalkPageInQuery ||
+      this.queryIsTalkPage ||
 
       // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
       // the list of supported namespaces and page white/black list in the configuration. With this
@@ -186,13 +235,8 @@ class Loader {
 
     this.pageTypes.talk =
       mw.config.get('wgIsArticle') &&
-      !this.isTalkPageInQuery &&
-      (this.isNotTalkPageInQuery || this.articlePageOfTypeTalk);
-
-    this.pageTypes.talkGuess = Boolean(
-      this.pageTypes.talkStrict ||
-      this.isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber)
-    );
+      !this.queryIsNotTalkPage &&
+      (this.queryIsTalkPage || this.articlePageOfTypeTalk);
   }
 
   /**
@@ -226,7 +270,26 @@ class Loader {
   }
 
   /**
+   * Is the displayed revision the current (last known) revision of the page.
+   *
+   * @returns {boolean}
+   * @private
+   */
+  isCurrentRevision() {
+    // RevisionSlider may show a revision newer than the revision in wgCurRevisionId due to a bug
+    // (when navigating forward, at least twice, from a revision older than the revision in
+    // wgCurRevisionId after some revisions were added). Unfortunately, it doesn't update the
+    // wgCurRevisionId value.
+    return mw.config.get('wgRevisionId') >= mw.config.get('wgCurRevisionId');
+  }
+
+  /**
    * Check if a page is probably a talk page. The namespace number is required.
+   *
+   * This function exists mostly because we can't be sure the {@link external:mediawiki.Title}
+   * module has loaded when the script has started executing (and can't use the {@link Page}
+   * constructor), and we need to make this check fast. So, in most cases,
+   * {@link Page#isProbablyTalkPage} should be used.
    *
    * @param {string} pageName
    * @param {number} namespaceNumber
@@ -244,21 +307,111 @@ class Loader {
   }
 
   /**
+   * Set page types and initialize talk page or comment links page.
+   */
+  init() {
+    this.setPageTypesTalk();
+
+    if (this.pageTypes.talk) {
+      this.initTalkPage();
+    }
+
+    this.pageTypes.watchlist = this.isWatchlistPage();
+    this.pageTypes.contributions = this.isContributionsPage();
+    this.pageTypes.history = this.isHistoryPage();
+    this.pageTypes.diff = /[?&]diff=[^&]/.test(location.search);
+
+    if (
+      this.pageTypes.watchlist ||
+      this.pageTypes.contributions ||
+      this.pageTypes.history ||
+      (this.pageTypes.diff || this.articlePageOfTypeTalk) ||
+
+      // Instant Diffs script can be called on talk pages as well
+      this.pageTypes.talk
+    ) {
+      this.initCommentLinks();
+    }
+  }
+
+  /**
+   * Load the data required for the script to run on a talk page and execute the app function.
+   *
+   * @private
+   */
+  initTalkPage() {
+    debug.stopTimer('start');
+    debug.startTimer('load data');
+
+    // If there is no data to load and, therefore, no period of time within which a reflow (layout
+    // thrashing) could happen without impeding performance, we cache the value so that it could
+    // be used in .saveRelativeScrollPosition() without causing a reflow.
+    Promise.all([
+      this.loadApp(),
+      this.maybeLoadTalkPageModules(),
+
+      // Make some requests in advance if the API module is ready in order not to make 2 requests
+      // sequentially. We don't make a `userinfo` request, because if there is more than one tab in
+      // the background, this request is made and the execution stops at mw.loader.using, which
+      // results in overriding the renewed visits setting of one tab by another tab (the visits are
+      // loaded by one tab, then another tab, then written by one tab, then by another tab).
+      mw.loader.getState('mediawiki.api') === 'ready' ? this.getSiteDataPromise() : Promise.resolve(),
+
+      // We are _not_ calling getUserInfo() here to avoid losing visit data updates from some pages
+      // if several pages are opened simultaneously. In this situation, visits could be requested
+      // for multiple pages; updated and then saved for each of them with losing the updates from
+      // the rest.
+    ]).then(
+      () => {
+        this.app?.();
+      },
+      (/** @type {unknown} */ error) => {
+        mw.notify(cd.s('error-loaddata'), { type: 'error' });
+        console.error(error);
+        this.hideBootingOverlay();
+      }
+    );
+
+    this.showBootingOverlay();
+
+    sleep(15_000).then(() => {
+      if (this.booting) {
+        this.hideBootingOverlay();
+        console.warn('The booting overlay stays for more than 15 seconds; removing it.');
+      }
+    });
+
+    /*
+      Additions of CSS set a stage for a future reflow which delays operations dependent on
+      rendering, so we run them now, not after the requests are fulfilled, to save time. The overall
+      order is like this:
+      1. Make network requests (above).
+      2. Run operations dependent on rendering, such as window.getComputedStyle() and jQuery's
+         .css() (below). Normally they would initiate a reflow, but, as we haven't changed the
+         layout or added CSS yet, there is nothing to update.
+      3. Run operations that create prerequisites for a reflow, such as adding CSS (below). Thanks
+         to the fact that the network requests, if any, are already pending, we don't waste time.
+    */
+    this.initCssValues();
+    this.addTalkPageCss();
+  }
+
+  /**
    * _For internal use._ Load messages needed to parse and generate timestamps as well as some site
    * data.
    *
-   * @returns {JQuery.Promise<any>[]} There should be at least one promise in the array.
+   * @returns {Promise<any[]>} There should be at least one promise in the array.
    */
-  getSiteDataPromises() {
-    this.siteDataPromises ??= this.getSiteData();
+  getSiteDataPromise() {
+    this.siteDataPromise ??= this.getSiteData();
 
-    return this.siteDataPromises;
+    return this.siteDataPromise;
   }
 
   /**
    * Load messages needed to parse and generate timestamps as well as some site data.
    *
-   * @returns {JQuery.Promise<any>[]} There should be at least one promise in the array.
+   * @returns {Promise<any[]>} There should be at least one promise in the array.
    * @private
    */
   // eslint-disable-next-line max-lines-per-function
@@ -358,7 +511,6 @@ class Loader {
     /** @type {JQuery.Promise<any>[]} */
     const requests = [];
     if (areLanguagesEqual) {
-      // eslint-disable-next-line no-one-time-vars/no-one-time-vars
       const messagesToRequest = contentLanguageMessageNames
         .concat(userLanguageMessageNames)
         .filter(unique);
@@ -373,7 +525,6 @@ class Loader {
         );
       }
     } else {
-      // eslint-disable-next-line no-one-time-vars/no-one-time-vars
       const contentLanguageMessagesToRequest = contentLanguageMessageNames
         .filter((name) => !cd.g.contentLanguageMessages[name]);
       for (const nextNames of splitIntoBatches(contentLanguageMessagesToRequest)) {
@@ -434,7 +585,7 @@ class Loader {
       );
     }
 
-    return requests;
+    return Promise.all(requests);
   }
 
   /**
@@ -494,116 +645,6 @@ class Loader {
   }
 
   /**
-   * Set page types and initialize talk page or comment links page.
-   */
-  init() {
-    this.$content = $('#mw-content-text');
-
-    if (cd.g.isMobileClient) {
-      $(document.body).addClass('cd-mobile-client');
-    }
-
-    this.isTalkPageInQuery = getQueryParamBooleanValue('cdtalkpage') === true;
-    this.isNotTalkPageInQuery = getQueryParamBooleanValue('cdtalkpage') === false;
-
-    this.pageTypes.talkStrict = Boolean(
-      this.isTalkPageInQuery ||
-
-      // .cd-talkPage is used as a last resort way to make CD parse the page, as opposed to using
-      // the list of supported namespaces and page white/black list in the configuration. With this
-      // method, there won't be "comment" links for edits on pages that list revisions such as the
-      // watchlist.
-      this.$content.find('.cd-talkPage').length ||
-
-      (
-        ($('#ca-addsection').length || this.pageWhitelistRegexp?.test(cd.g.pageName)) &&
-        !this.pageBlacklistRegexp?.test(cd.g.pageName)
-      )
-    );
-
-    this.articlePageOfTypeTalk =
-      (!mw.config.get('wgIsRedirect') || !this.isCurrentRevision()) &&
-      !this.$content.find('.cd-notTalkPage').length &&
-      (this.pageTypes.talkStrict || this.isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber)) &&
-
-      // Undocumented setting
-      !window.cdOnlyRunByFooterLink;
-
-    this.pageTypes.diff = /[?&]diff=[^&]/.test(location.search);
-
-    this.pageTypes.talk =
-      mw.config.get('wgIsArticle') &&
-      !this.isNotTalkPageInQuery &&
-      (this.isTalkPageInQuery || this.articlePageOfTypeTalk);
-    this.pageTypes.watchlist = this.isWatchlistPage();
-    this.pageTypes.contributions = this.isContributionsPage();
-    this.pageTypes.history = this.isHistoryPage();
-
-    this.loadOnTalkPage();
-    this.loadOnCommentLinksPage();
-  }
-
-  /**
-   * Load the data required for the script to run on a talk page and execute the app function.
-   *
-   * @private
-   */
-  loadOnTalkPage() {
-    if (!this.pageTypes.talk) return;
-
-    debug.stopTimer('start');
-    debug.startTimer('load data');
-
-    /** @type {JQuery.Promise<any>[]} */
-    let siteDataRequests = [];
-
-    // Make some requests in advance if the API module is ready in order not to make 2 requests
-    // sequentially. We don't make a `userinfo` request, because if there is more than one tab in
-    // the background, this request is made and the execution stops at mw.loader.using, which
-    // results in overriding the renewed visits setting of one tab by another tab (the visits are
-    // loaded by one tab, then another tab, then written by one tab, then by another tab).
-    if (mw.loader.getState('mediawiki.api') === 'ready') {
-      siteDataRequests = this.getSiteDataPromises();
-
-      // We are _not_ calling getUserInfo() here to avoid losing visit data updates from some pages
-      // if several pages are opened simultaneously. In this situation, visits could be requested
-      // for multiple pages; updated and then saved for each of them with losing the updates from
-      // the rest.
-    }
-
-    // mw.loader.using() delays the execution even if all modules are ready (if CD is used as a
-    // gadget with preloaded dependencies, for example), so we use this trick.
-    const modulesRequest = modules.some((module) => mw.loader.getState(module) !== 'ready')
-      ? mw.loader.using(modules)
-      : undefined;
-
-    // If there is no data to load and, therefore, no period of time within which a reflow (layout
-    // thrashing) could happen without impeding performance, we cache the value so that it could
-    // be used in .saveRelativeScrollPosition() without causing a reflow.
-    Promise.all([modulesRequest || Promise.resolve(), ...siteDataRequests]).then(
-      () => {
-        this.initCssValues();
-        this.addTalkPageCss();
-        this.app?.();
-      },
-      (/** @type {unknown} */ error) => {
-        mw.notify(cd.s('error-loaddata'), { type: 'error' });
-        console.error(error);
-        this.hideBootingOverlay();
-      }
-    );
-
-    this.showBootingOverlay();
-
-    sleep(15_000).then(() => {
-      if (this.booting) {
-        this.hideBootingOverlay();
-        console.warn('The booting overlay stays for more than 15 seconds; removing it.');
-      }
-    });
-  }
-
-  /**
    * Load the main app script, preferably from disk cache.
    *
    * @returns {Promise<void>}
@@ -659,7 +700,7 @@ class Loader {
   }
 
   /**
-   * _For internal use._ Set some important skin-specific values to the global object.
+   * Set some important skin-specific values to the global object.
    *
    * @private
    */
@@ -670,7 +711,7 @@ class Loader {
   }
 
   /**
-   * _For internal use._ Set CSS for talk pages: set CSS variables, add static CSS.
+   * Set CSS for talk pages: set CSS variables, add static CSS.
    *
    * @private
    */
@@ -746,48 +787,39 @@ class Loader {
    *
    * @private
    */
-  loadOnCommentLinksPage() {
-    if (
-      !this.isPageOfType('watchlist') &&
-      !this.isPageOfType('contributions') &&
-      !this.isPageOfType('history') &&
-      !(this.isPageOfType('diff') && this.isArticlePageOfTypeTalk()) &&
-
-      // Instant Diffs script can be called on talk pages as well
-      !this.isPageOfType('talk')
-    ) {
-      return;
-    }
-
+  initCommentLinks() {
     // Make some requests in advance if the API module is ready in order not to make 2 requests
     // sequentially.
     if (mw.loader.getState('mediawiki.api') === 'ready') {
-      this.getSiteDataPromises();
+      this.getSiteDataPromise();
 
       // Loading user info on diff pages could lead to problems with saving visits when many pages
       // are opened, but not yet focused, simultaneously.
-      if (!this.isPageOfType('talk')) {
+      if (!this.pageTypes.talk) {
         getUserInfo(true).catch((/** @type {unknown} */ error) => {
           console.warn(error);
         });
       }
     }
 
-    mw.loader.using([
-      'jquery.client',
-      'mediawiki.Title',
-      'mediawiki.api',
-      'mediawiki.jqueryMsg',
-      'mediawiki.user',
-      'mediawiki.util',
-      'oojs',
-      'oojs-ui-core',
-      'oojs-ui-widgets',
-      'oojs-ui-windows',
-      'oojs-ui.styles.icons-alerts',
-      'oojs-ui.styles.icons-editing-list',
-      'oojs-ui.styles.icons-interactions',
-      'user.options',
+    Promise.all([
+      this.loadApp(),
+      mw.loader.using([
+        'jquery.client',
+        'mediawiki.Title',
+        'mediawiki.api',
+        'mediawiki.jqueryMsg',
+        'mediawiki.user',
+        'mediawiki.util',
+        'oojs',
+        'oojs-ui-core',
+        'oojs-ui-widgets',
+        'oojs-ui-windows',
+        'oojs-ui.styles.icons-alerts',
+        'oojs-ui.styles.icons-editing-list',
+        'oojs-ui.styles.icons-interactions',
+        'user.options',
+      ]),
     ]).then(
       () => {
         this.addCommentLinks?.();
@@ -795,27 +827,13 @@ class Loader {
         // See the comment above: "Additions of CSS...".
         mw.util.addCSS(globalCss);
 
-        mw.util.addCSS(logPagesCss);
+        mw.util.addCSS(addCommentLinksCss);
       },
       (/** @type {unknown} */ error) => {
         mw.notify(cd.s('error-loaddata'), { type: 'error' });
         console.error(error);
       }
     );
-  }
-
-  /**
-   * Is the displayed revision the current (last known) revision of the page.
-   *
-   * @returns {boolean}
-   * @private
-   */
-  isCurrentRevision() {
-    // RevisionSlider may show a revision newer than the revision in wgCurRevisionId due to a bug
-    // (when navigating forward, at least twice, from a revision older than the revision in
-    // wgCurRevisionId after some revisions were added). Unfortunately, it doesn't update the
-    // wgCurRevisionId value.
-    return mw.config.get('wgRevisionId') >= mw.config.get('wgCurRevisionId');
   }
 
   /**
@@ -847,7 +865,10 @@ class Loader {
    * @private
    */
   isHistoryPage() {
-    return cd.g.pageAction === 'history' && this.isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber);
+    return (
+      mw.config.get('wgAction') === 'history' &&
+      this.isProbablyTalkPage(cd.g.pageName, cd.g.namespaceNumber)
+    );
   }
 
   /**

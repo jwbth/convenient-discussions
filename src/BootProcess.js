@@ -12,7 +12,6 @@ import commentManager from './commentManager';
 import controller from './controller';
 import jqueryExtensions from './jqueryExtensions';
 import cd from './loader/cd';
-import debug from './loader/convenientDiscussions.debug';
 import navPanel from './navPanel';
 import notifications from './notifications';
 import pageNav from './pageNav';
@@ -172,14 +171,14 @@ class BootProcess {
   async execute(isReload) {
     this.firstRun = !isReload;
     if (this.firstRun) {
-      debug.stopTimer('load data');
+      cd.debug.stopTimer('load data');
     }
 
-    debug.startTimer('preparations');
+    cd.debug.startTimer('preparations');
     await this.init();
-    debug.stopTimer('preparations');
+    cd.debug.stopTimer('preparations');
 
-    debug.startTimer('main code');
+    cd.debug.startTimer('main code');
 
     if (this.firstRun) {
       controller.saveRelativeScrollPosition(undefined, this.passedData.scrollY);
@@ -223,15 +222,15 @@ class BootProcess {
        */
       mw.hook('convenientDiscussions.beforeParse').fire(cd);
 
-      debug.startTimer('process comments');
+      cd.debug.startTimer('process comments');
       this.findTargets();
       this.processComments();
-      debug.stopTimer('process comments');
+      cd.debug.stopTimer('process comments');
     }
 
     if (
       this.firstRun &&
-      !cd.loader.isPageOfType('definitelyTalk') &&
+      !cd.loader.isPageOfType('talkStrict') &&
       !commentManager.getCount()
     ) {
       this.retractTalkPageType();
@@ -240,26 +239,26 @@ class BootProcess {
     }
 
     if (cd.page.exists()) {
-      debug.startTimer('process sections');
+      cd.debug.startTimer('process sections');
       this.processSections();
-      debug.stopTimer('process sections');
+      cd.debug.stopTimer('process sections');
     } else if (this.subscriptions instanceof DtSubscriptions) {
       this.subscriptions.loadToTalkPage(this);
     }
 
     if (this.passedData.parseData?.text) {
-      debug.startTimer('update page contents');
+      cd.debug.startTimer('update page contents');
       controller.updatePageContents(this.passedData.parseData);
-      debug.stopTimer('update page contents');
+      cd.debug.stopTimer('update page contents');
     }
 
     navPanel.setup();
 
-    debug.stopTimer('main code');
+    cd.debug.stopTimer('main code');
 
     // Operations that need reflow, such as getBoundingClientRect(), and those dependent on them go
     // in this section.
-    debug.startTimer('final code and rendering');
+    cd.debug.startTimer('final code and rendering');
 
     // This should be done on rendering stage (would have resulted in unnecessary reflows were it
     // done earlier). Should be above all code that deals with highlightable elements of comments
@@ -367,13 +366,13 @@ class BootProcess {
       mw.hook('convenientDiscussions.pageReadyFirstTime').fire(cd);
     }
 
-    cd.loader.hideLoadingOverlay();
+    cd.loader.hideBootingOverlay();
 
     // This is needed to calculate the rendering time: it won't complete until everything gets
     // rendered.
     controller.rootElement.getBoundingClientRect();
 
-    debug.stopTimer('final code and rendering');
+    cd.debug.stopTimer('final code and rendering');
 
     this.debugLog();
 
@@ -390,12 +389,16 @@ class BootProcess {
    */
   async init() {
     if (this.firstRun) {
-      // In most cases the site data is already loaded after being requested in
-      // loader's initOnTalkPage().
-      await Promise.all(cd.loader.getSiteDataPromises());
+      if (cd.g.isMobileClient) {
+        $(document.body).addClass('cd-mobile-client');
+      }
 
-      // This could have been executed from addCommentLinks.prepare() already.
-      await initGlobals();
+      // In most cases the site data is already loaded after being requested in
+      // loader's initTalkPage().
+      await cd.loader.getSiteDataPromise();
+
+      // This could have been executed from bootstrap() in addCommentLinks.js already.
+      initGlobals();
       await settings.getInitPromise();
 
       initTimestampTools();
@@ -740,7 +743,7 @@ class BootProcess {
    * @private
    */
   retractTalkPageType() {
-    debug.stopTimer('main code');
+    cd.debug.stopTimer('main code');
 
     cd.loader.setPageType('talk', false);
 
@@ -749,7 +752,7 @@ class BootProcess {
       .attr('href', /** @type {string} */($disableLink.attr('href')).replace(/0$/, '1'))
       .text(cd.s('footer-runcd'));
 
-    cd.loader.hideLoadingOverlay();
+    cd.loader.hideBootingOverlay();
     this.debugLog();
   }
 
@@ -931,17 +934,17 @@ class BootProcess {
    * @private
    */
   debugLog() {
-    debug.stopTimer('total time');
+    cd.debug.stopTimer('total time');
 
     const timePerComment = (
-      (debug.getTimerTotal('main code') + debug.getTimerTotal('final code and rendering')) /
+      (cd.debug.getTimerTotal('main code') + cd.debug.getTimerTotal('final code and rendering')) /
       commentManager.getCount()
     ).toFixed(2);
 
-    debug.logAndResetTimer('total time');
+    cd.debug.logAndResetTimer('total time');
     console.debug(`number of comments: ${commentManager.getCount()}`);
     console.debug(`per comment: ${timePerComment}`);
-    debug.logAndResetEverything();
+    cd.debug.logAndResetEverything();
   }
 
   /**

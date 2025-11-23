@@ -213,6 +213,7 @@ npm run i18n
 ### JavaScript & TypeScript
 
 - One class per file.
+- Functions should be ordered in a top-down fashion (high-level first) Types, however, should be ordered in a bottom-up (low-level first) fashion.
 - Don't introduce one-time variables. E.g., instead of writing
 
   ```js

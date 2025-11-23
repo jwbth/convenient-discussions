@@ -587,7 +587,6 @@ const globalProperties = {
   pageName: underlinesToSpaces(mw.config.get('wgPageName')),
   pageTitle: mw.config.get('wgTitle'),
   namespaceNumber: mw.config.get('wgNamespaceNumber'),
-  pageAction: mw.config.get('wgAction'),
 
   // Check for mw.user.isNamed() to treat temporary accounts as unregistered (we can't save
   // options for them anyway). `<unregistered>` is a workaround for anonymous users (there are

@@ -145,33 +145,6 @@ export function generatePageNamePattern(string) {
 }
 
 /**
- * @import {default as Page} from '../Page';
- */
-
-/**
- * Check if a page is probably a talk page. The namespace number is required.
- *
- * This function exists mostly because we can't be sure the {@link external:mediawiki.Title} module
- * has loaded when the script has started executing (and can't use the {@link Page} constructor),
- * and we need to make this check fast. So, in most cases, {@link Page#isProbablyTalkPage} should
- * be used.
- *
- * @param {string} pageName
- * @param {number} namespaceNumber
- * @returns {boolean}
- */
-export function isProbablyTalkPage(pageName, namespaceNumber) {
-  return (
-    (
-      namespaceNumber % 2 === 1 ||
-      cd.loader.pageWhitelistRegexp?.test(pageName) ||
-      (!cd.loader.pageWhitelistRegexp && cd.config.customTalkNamespaces.includes(namespaceNumber))
-    ) &&
-    !cd.loader.pageBlacklistRegexp?.test(pageName)
-  );
-}
-
-/**
  * Check by an edit summary if an edit is probably an undo.
  *
  * @param {string} summary

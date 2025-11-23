@@ -6,7 +6,7 @@
  */
 
 import Comment from './Comment';
-import addCommentLinksModule from './addCommentLinks';
+import addCommentLinks from './addCommentLinks';
 import commentFormManager from './commentFormManager';
 import commentManager from './commentManager';
 import controller from './controller';
@@ -21,12 +21,27 @@ import userRegistry from './userRegistry';
 import { wrapDiffBody, wrapHtml } from './utils-window';
 import visits from './visits';
 
+// Assign to cd.loader so loader can call these functions
+cd.loader.app = app;
+cd.loader.addCommentLinks = addCommentLinks;
+
+/**
+ * Main app function for talk pages.
+ * Called by loader after modules are loaded.
+ */
+async function app() {
+  initGlobals();
+  initTimestampTools();
+
+  await controller.bootTalkPage(false);
+}
+
 /**
  * Set a number of {@link convenientDiscussions global object} properties.
  * Moved from bootManager.initGlobals()
  */
 export function initGlobals() {
-  // Already initialized
+  // Halt if already initialized
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (cd.page) return;
 
@@ -119,6 +134,10 @@ export function initGlobals() {
  * This should run after getSiteData() so that cd.g.timestampTools.content.timezone is available.
  */
 export function initTimestampTools() {
+  // Halt if already initialized
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (!cd.g.timestampTools.user.regexp) return;
+
   const timestampTools = cd.g.timestampTools;
   const content = timestampTools.content;
   const user = timestampTools.user;
@@ -299,29 +318,3 @@ function getMatchingGroups(format) {
 
   return matchingGroups;
 }
-
-/**
- * Main app function for talk pages.
- * Called by loader after modules are loaded.
- */
-async function app() {
-  initGlobals();
-  initTimestampTools();
-
-  await controller.bootTalkPage(false);
-}
-
-/**
- * Function for adding comment links on special pages.
- * Called by loader for watchlist/contributions/history/diff pages.
- */
-function addCommentLinks() {
-  initGlobals();
-  initTimestampTools();
-
-  addCommentLinksModule();
-}
-
-// Assign to cd.loader so loader can call these functions
-cd.loader.app = app;
-cd.loader.addCommentLinks = addCommentLinks;
