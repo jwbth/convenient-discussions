@@ -400,9 +400,17 @@ class Loader {
    * _For internal use._ Load messages needed to parse and generate timestamps as well as some site
    * data.
    *
+   * @param {boolean} [onlyUserLanguageMessages] Whether to load only user language messages.
    * @returns {Promise<any[]>} There should be at least one promise in the array.
    */
-  getSiteDataPromise() {
+  getSiteDataPromise(onlyUserLanguageMessages) {
+    if (onlyUserLanguageMessages) {
+      // Too much hassle to try and deduplicate requested site data here. onlyUserLanguageMessages
+      // is only needed for addCommentLinks(), and the only case when addCommentLinks() is used
+      // together with the main code is diffs.
+      return this.getSiteData();
+    }
+
     this.siteDataPromise ??= this.getSiteData();
 
     return this.siteDataPromise;
@@ -411,11 +419,12 @@ class Loader {
   /**
    * Load messages needed to parse and generate timestamps as well as some site data.
    *
+   * @param {boolean} [onlyUserLanguageMessages] Whether to load only user language messages.
    * @returns {Promise<any[]>} There should be at least one promise in the array.
    * @private
    */
   // eslint-disable-next-line max-lines-per-function
-  getSiteData() {
+  getSiteData(onlyUserLanguageMessages = false) {
     this.initFormats();
 
     const contentLanguageMessageNames = [
@@ -483,6 +492,11 @@ class Loader {
       mw.messages.set(userLanguageConfigMessages);
     }
 
+    const requestUserLanguageMessages = () =>
+      splitIntoBatches(userLanguageMessageNames).map((nextNames) =>
+        cd.getApi().loadMessagesIfMissing(nextNames)
+      );
+
     // We need this object to pass it to the web worker.
     cd.g.contentLanguageMessages = {};
 
@@ -506,8 +520,6 @@ class Loader {
     };
     filterAndSetContentLanguageMessages(cd.config.messages);
 
-    // I hope we won't be scolded too much for making two message requests in parallel (if the user
-    // and content language are different).
     cd.g.specialPageAliases = Object.entries({ ...cd.config.specialPageAliases }).reduce(
       (acc, [key, value]) => {
         acc[key] = typeof value === 'string' ? [value] : value;
@@ -522,45 +534,56 @@ class Loader {
 
     const specialPages = ['Contributions', 'Diff', 'PermanentLink'];
 
+    // I hope we won't be scolded too much for making two message requests in parallel (if the user
+    // and content language are different).
     return Promise.all(
       // eslint-disable-next-line unicorn/prefer-array-flat
       /** @type {JQuery.Promise<any>[]} */ ([])
         .concat(
-          areLanguagesEqual
-            ? splitIntoBatches(
-                contentLanguageMessageNames.concat(userLanguageMessageNames).filter(unique)
-              ).map((nextNames) =>
-                cd
-                  .getApi()
-                  .loadMessagesIfMissing(nextNames)
-                  .then(() => {
-                    filterAndSetContentLanguageMessages(mw.messages.get());
-                  })
-              )
-            : [
-                ...splitIntoBatches(
-                  contentLanguageMessageNames.filter(
-                    (name) => !cd.g.contentLanguageMessages[name]
-                  )
+          onlyUserLanguageMessages
+            ? requestUserLanguageMessages()
+            : areLanguagesEqual
+              // We use splitIntoBatches() to request in parallel (see the note above), even though
+              // .loadMessages() splits into batches automatically (but requests in sequence).
+              ? splitIntoBatches(
+                  contentLanguageMessageNames.concat(userLanguageMessageNames).filter(unique)
                 ).map((nextNames) =>
                   cd
                     .getApi()
-                    .getMessages(nextNames, {
-                      // cd.g.contentLanguage is not used here for the reasons described in app.js
-                      // where it is declared.
-                      amlang: mw.config.get('wgContentLanguage'),
+                    .loadMessagesIfMissing(nextNames)
+                    .then(() => {
+                      filterAndSetContentLanguageMessages(mw.messages.get());
                     })
-                    .then(setContentLanguageMessages)
-                ),
-                cd.getApi().loadMessagesIfMissing(userLanguageMessageNames),
-              ]
+                )
+              : [
+                  ...splitIntoBatches(
+                    contentLanguageMessageNames.filter(
+                      (name) => !cd.g.contentLanguageMessages[name]
+                    )
+                  ).map((nextNames) =>
+                    cd
+                      .getApi()
+                      .getMessages(nextNames, {
+                        // cd.g.contentLanguage is not used here for the reasons described in
+                        // startup.js where it is declared.
+                        amlang: mw.config.get('wgContentLanguage'),
+                      })
+                      .then(setContentLanguageMessages)
+                  ),
+                  ...requestUserLanguageMessages(),
+                ]
         )
         .concat(
-          !specialPages.every(
-            (page) =>
-              page in cd.g.specialPageAliases && cd.g.specialPageAliases[page].length
-          ) || !content.timezone
-            ? cd
+          onlyUserLanguageMessages ||
+          (
+            specialPages.every(
+              (page) =>
+                page in cd.g.specialPageAliases && cd.g.specialPageAliases[page].length
+            ) &&
+            content.timezone
+          )
+            ? []
+            : cd
                 .getApi()
                 .get({
                   action: 'query',
@@ -568,7 +591,7 @@ class Loader {
                   siprop: ['specialpagealiases', 'general'],
                 })
                 .then((response) => {
-                  /** @type {import('../utils-api').ApiResponseSiteInfoSpecialPageAliases[]} */ (
+                /** @type {import('../utils-api').ApiResponseSiteInfoSpecialPageAliases[]} */ (
                     response.query.specialpagealiases
                   )
                     .filter((page) => specialPages.includes(page.realname))
@@ -578,9 +601,9 @@ class Loader {
                         page.aliases.indexOf(page.realname) + 1
                       );
                     });
+
                   content.timezone = response.query.general.timezone;
                 })
-            : []
         )
     );
   }
