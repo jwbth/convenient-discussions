@@ -1,6 +1,7 @@
 import AutocompleteManager from './AutocompleteManager';
 import BootProcess from './BootProcess';
 import Comment from './Comment';
+import commentLayersOptionalBackgroundHighlightingCss from './Comment.layers.optionalBackgroundHighlighting.less';
 import CommentForm from './CommentForm';
 import CopyLinkDialog from './CopyLinkDialog';
 import DtSubscriptions from './DtSubscriptions';
@@ -191,6 +192,7 @@ class Controller extends EventEmitter {
   lastCheckedRevisionId;
 
   addedCommentCount = 0;
+
   areRelevantCommentsAdded = false;
 
   /** @type {string[] | undefined} */
@@ -199,6 +201,9 @@ class Controller extends EventEmitter {
   /** @type {import('./updateChecker').CommentWorkerMatched[]} */
   commentsNotifiedAbout = [];
 
+  /**
+   * @type {boolean}
+   */
   isObstructingElementHoveredCached = false;
 
   /**
@@ -217,6 +222,9 @@ class Controller extends EventEmitter {
    * @private
    */
   beforeUnloadHandlers = {};
+
+  /** @type {CSSStyleSheet | undefined} */
+  commentLayersOptionalBackgroundHighlightingCss;
 
   /**
    * Set up the boot manager for use in the current boot process. (Executed at every page load.)
@@ -252,11 +260,10 @@ class Controller extends EventEmitter {
     // reason, the page can go into an infinite rebooting loop.
     this.$root.addClass('cd-parse-started');
 
-    // this.backgroundHighlightingCss = require('./Comment.layers.optionalBackgroundHighlighting.less');
-    // if (settings.get('useBackgroundHighlighting')) {
-    //   const a = await import('./Comment.layers.optionalBackgroundHighlighting.less');
-    //   console.log(a);
-    // }
+    this.commentLayersOptionalBackgroundHighlightingCss ??= mw.util.addCSS(
+      commentLayersOptionalBackgroundHighlightingCss
+    );
+    this.commentLayersOptionalBackgroundHighlightingCss.disabled = settings.get('useBackgroundHighlighting');
   }
 
   /**
