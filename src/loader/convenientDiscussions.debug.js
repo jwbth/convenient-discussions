@@ -1,6 +1,14 @@
 import { isKeyOf, typedKeysOf } from '../shared/utils-general';
 
 /**
+ * @typedef {object} TimerData
+ * @property {number} [total] Total time for the current measurement.
+ * @property {number} [startTimestamp] Timestamp when the timer started.
+ * @property {number} [runCount] Number of times the timer has run.
+ * @property {number} [allRunsTotal] Total time for all timer runs.
+ */
+
+/**
  * A number of methods to simplify measuring time that it takes to run certain routines as well as
  * counting the number of times certain instructions run.
  *
@@ -8,34 +16,11 @@ import { isKeyOf, typedKeysOf } from '../shared/utils-general';
  */
 class Debug {
   /**
-   * Total time for every timer.
+   * Object containing all data for active and past timers.
    *
-   * @type {TypeByStringKey<number | undefined>}
+   * @type {Partial<{ [label: string]: TimerData }>}
    */
-  timerTotal = {};
-
-  /**
-   * Timer start timestamps for every timer.
-   *
-   * @type {TypeByStringKey<number | undefined>}
-   * @private
-   */
-  timerStartTimestamps = {};
-
-  /**
-   * The number of times a timer has run.
-   *
-   * @type {TypeByStringKey<number | undefined>}
-   */
-  timerRunCount = {};
-
-  /**
-   * Total time for all timer runs, ignoring {@link module:debug.resetTimer timer resets} (but not
-   * {@link module:debug.fullResetTimer full resets}).
-   *
-   * @type {TypeByStringKey<number | undefined>}
-   */
-  timerAllRunsTotal = {};
+  timers = {};
 
   /**
    * An array to keep any values sequentially.
@@ -62,10 +47,7 @@ class Debug {
    * Init/reset all properties of the debug object.
    */
   init() {
-    this.timerTotal = {};
-    this.timerStartTimestamps = {};
-    this.timerRunCount = {};
-    this.timerAllRunsTotal = {};
+    this.timers = {};
     this.initCounters();
 
     this.array = [];
@@ -81,7 +63,7 @@ class Debug {
       typeof Proxy === 'undefined'
         ? {}
         : new Proxy(
-          /** @type {AnyByKey} */ ({}),
+          /** @type {AnyByKey} */({}),
           { get: (obj, prop) => isKeyOf(prop, obj) ? obj[prop] : 0 }
         );
   }
@@ -92,8 +74,9 @@ class Debug {
    * @param {string} label
    */
   startTimer(label) {
-    this.timerTotal[label] ??= 0;
-    this.timerStartTimestamps[label] = performance.now();
+    this.timers[label] ??= {};
+    this.timers[label].total ??= 0;
+    this.timers[label].startTimestamp = performance.now();
   }
 
   /**
@@ -102,17 +85,18 @@ class Debug {
    * @param {string} label
    */
   stopTimer(label) {
-    if (this.timerStartTimestamps[label] === undefined) return;
+    const timer = this.timers[label];
+    if (timer?.startTimestamp === undefined) return;
 
-    const interval = performance.now() - this.timerStartTimestamps[label];
-    this.timerTotal[label] += interval;
-    delete this.timerStartTimestamps[label];
+    const interval = performance.now() - timer.startTimestamp;
+    timer.total = (timer.total || 0) + interval;
+    delete timer.startTimestamp;
 
-    this.timerAllRunsTotal[label] ??= 0;
-    this.timerAllRunsTotal[label] += interval;
+    timer.allRunsTotal ??= 0;
+    timer.allRunsTotal += interval;
 
-    this.timerRunCount[label] ??= 0;
-    this.timerRunCount[label]++;
+    timer.runCount ??= 0;
+    timer.runCount++;
   }
 
   /**
@@ -121,10 +105,13 @@ class Debug {
    * @param {string} label
    */
   resetTimer(label) {
-    if (this.timerStartTimestamps[label] !== undefined) {
+    const timer = this.timers[label];
+    if (!timer) return;
+
+    if (timer.startTimestamp !== undefined) {
       this.stopTimer(label);
     }
-    delete this.timerTotal[label];
+    delete timer.total;
   }
 
   /**
@@ -133,9 +120,8 @@ class Debug {
    * @param {string} label
    */
   fullResetTimer(label) {
-    this.resetTimer(label);
-    delete this.timerAllRunsTotal[label];
-    delete this.timerRunCount[label];
+    // We can simply delete the entry from the map entirely
+    delete this.timers[label];
   }
 
   /**
@@ -144,11 +130,14 @@ class Debug {
    * @param {string} label
    */
   logAndResetTimer(label) {
-    if (this.timerStartTimestamps[label] !== undefined) {
+    const timer = this.timers[label];
+    if (!timer) return;
+
+    if (timer.startTimestamp !== undefined) {
       this.stopTimer(label);
     }
-    if (this.timerTotal[label] !== undefined) {
-      console.debug(`Convenient Discussions: ${label}: ${this.timerTotal[label].toFixed(1)}`);
+    if (timer.total !== undefined) {
+      console.debug(`Convenient Discussions: ${label}: ${timer.total.toFixed(1)}`);
       this.resetTimer(label);
     }
   }
@@ -159,7 +148,7 @@ class Debug {
    * @param {boolean} [sort] Whether to sort timers and counters alphabetically.
    */
   logAndResetEverything(sort = false) {
-    const timerLabels = Object.keys(this.timerTotal);
+    const timerLabels = Object.keys(this.timers);
     if (sort) {
       timerLabels.sort();
     }
@@ -188,13 +177,13 @@ class Debug {
   }
 
   /**
-   * Get the {@link module:debug.timerTotal total time} for a timer.
+   * Get the total time for a timer.
    *
    * @param {string} label
    * @returns {number | undefined}
    */
   getTimerTotal(label) {
-    return this.timerTotal[label];
+    return this.timers[label]?.total;
   }
 
   /**
@@ -204,13 +193,15 @@ class Debug {
    * @param {string} label
    */
   getAverageTimerTime(label) {
-    if (this.timerAllRunsTotal[label] === undefined || this.timerRunCount[label] === undefined) {
+    const timer = this.timers[label];
+
+    if (timer?.allRunsTotal === undefined || timer.runCount === undefined) {
       console.error(`No data for timer ${label}`);
 
       return;
     }
-    const average = (this.timerAllRunsTotal[label] / this.timerRunCount[label]).toFixed(3);
-    console.debug(`${label}: ${average} average for ${this.timerRunCount[label]} runs`);
+    const average = (timer.allRunsTotal / timer.runCount).toFixed(3);
+    console.debug(`${label}: ${average} average for ${timer.runCount} runs`);
   }
 
   /**
