@@ -1773,20 +1773,39 @@ class Controller extends EventEmitter {
    * @param {boolean} isReload Is the page reloaded, not booted the first time.
    */
   async bootTalkPage(isReload) {
-    cd.loader.booting = true;
+    cd.loader.setBooting(true);
 
     try {
       await this.bootProcess.execute(isReload);
-      if (isReload) {
-        mw.hook('wikipage.content').fire(cd.loader.$content);
-      }
     } catch (error) {
       mw.notify(cd.s('error-processpage'), { type: 'error' });
       console.error(error);
-      cd.loader.hideBootingOverlay();
     }
 
-    cd.loader.booting = false;
+    cd.loader.hideBootingOverlay();
+    this.debugLog();
+    cd.loader.setBooting(false);
+  }
+
+  /**
+   * Log debug data to the console.
+   *
+   * @private
+   */
+  debugLog() {
+    cd.debug.stopTimer('total time');
+
+    const timePerComment = (
+      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+      (cd.debug.getTimerTotal('main code') + cd.debug.getTimerTotal('final code and rendering')) /
+      commentManager.getCount()
+    ).toFixed(2);
+
+    cd.debug.logAndResetTimer('total time');
+    console.debug(`number of comments: ${commentManager.getCount()}`);
+    console.debug(`per comment: ${timePerComment}`);
+    cd.debug.logAndResetEverything();
   }
 
   /**

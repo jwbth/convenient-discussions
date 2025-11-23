@@ -185,7 +185,7 @@ function getConfig() {
  *
  * @returns {Promise<any[] | void>}
  */
-function getStringsPromise() {
+export function getStringsPromise() {
   return (
     cd.g.userLanguage === mw.config.get('wgUserLanguage') &&
     cd.g.contentLanguage === mw.config.get('wgContentLanguage')

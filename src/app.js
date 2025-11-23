@@ -14,11 +14,11 @@ import cd from './loader/cd';
 import pageRegistry from './pageRegistry';
 import sectionManager from './sectionManager';
 import settings from './settings';
-import { buildEditSummary, getContentLanguageMessages } from './shared/utils-general';
+import { getContentLanguageMessages } from './shared/utils-general';
 import { dateTokenToMessageNames } from './shared/utils-timestamp';
 import updateChecker from './updateChecker';
 import userRegistry from './userRegistry';
-import { wrapDiffBody, wrapHtml } from './utils-window';
+import { buildEditSummary, wrapDiffBody, wrapHtml } from './utils-window';
 import visits from './visits';
 
 // Assign to cd.loader so loader can call these functions

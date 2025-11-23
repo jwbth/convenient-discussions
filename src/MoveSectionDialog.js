@@ -6,10 +6,10 @@ import controller from './controller';
 import cd from './loader/cd';
 import pageRegistry from './pageRegistry';
 import CdError from './shared/CdError';
-import { buildEditSummary, defined, definedAndNotNull, ensureArray, mergeMaps, sleep } from './shared/utils-general';
+import { defined, definedAndNotNull, ensureArray, mergeMaps, sleep } from './shared/utils-general';
 import { encodeWikilink, endWithTwoNewlines } from './shared/utils-wikitext';
 import { createCheckboxControl, createTitleControl, es6ClassToOoJsClass } from './utils-oojs';
-import { findFirstTimestamp, wrapHtml } from './utils-window';
+import { buildEditSummary, findFirstTimestamp, wrapHtml } from './utils-window';
 
 /**
  * @typedef {object} ArchiveConfig

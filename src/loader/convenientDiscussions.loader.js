@@ -932,12 +932,20 @@ class Loader {
   }
 
   /**
+   * Set whether the page is booting.
+   *
+   * @param {boolean} value
+   */
+  setBooting(value) {
+    this.booting = value;
+  }
+
+  /**
    * @import {default as BootProcess} from '../BootProcess.js'
    */
 
   /**
-   * Is the page booting (the booting overlay is on). The {@link BootProcess} may not be running
-   * yet.
+   * Is the page booting. The {@link BootProcess} may not be running yet.
    *
    * @returns {boolean}
    */

@@ -12,52 +12,6 @@ import CdError from './CdError';
 import cd from './cd';
 
 /**
- * Combine the section headline, summary text, and, optionally, summary postfix to create an edit
- * summary.
- *
- * @param {object} options
- * @param {string} options.text Summary text. Can be clipped if there is not enough space.
- * @param {string} [options.optionalText] Optional text added to the end of the summary if there is
- *   enough space. Ignored if there is not.
- * @param {string} [options.section] Section name.
- * @param {boolean} [options.addPostfix] Whether to add `cd.g.summaryPostfix` to the summary.
- * @returns {string}
- */
-export function buildEditSummary({ text, optionalText, section, addPostfix = true }) {
-  let fullText = (section ? `/* ${section} */ ` : '') + text.trim();
-
-  let wasOptionalTextAdded;
-  if (optionalText) {
-    let projectedText = fullText + optionalText;
-
-    if (cd.config.transformSummary) {
-      projectedText = cd.config.transformSummary(projectedText);
-    }
-
-    if (projectedText.length <= cd.g.summaryLengthLimit) {
-      fullText = projectedText;
-      wasOptionalTextAdded = true;
-    }
-  }
-
-  if (!wasOptionalTextAdded) {
-    if (cd.config.transformSummary) {
-      fullText = cd.config.transformSummary(fullText);
-    }
-
-    if (fullText.length > cd.g.summaryLengthLimit) {
-      fullText = fullText.slice(0, cd.g.summaryLengthLimit - 1) + '…';
-    }
-  }
-
-  if (addPostfix) {
-    fullText += cd.g.summaryPostfix;
-  }
-
-  return fullText;
-}
-
-/**
  * Callback for
  * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter Array#filter}
  * to remove duplicated elements from an array.

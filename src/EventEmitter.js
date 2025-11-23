@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/valid-types */
 import { es6ClassToOoJsClass } from './utils-oojs';
 
 /**
@@ -106,6 +107,7 @@ export default class EventEmitter extends OO.EventEmitter {
   }
 
   // @ts-expect-error: TypeScript-in-JSDoc bug
+  // eslint-disable-next-line jsdoc/multiline-blocks
   /** @template {keyof EventMap} K @overload
    * @param {K} event Thse event name.
    * @param {...EventMap[K]} args Arguments to passssd to the listeners.
@@ -138,6 +140,7 @@ export default class EventEmitter extends OO.EventEmitter {
   }
 
   // @ts-expect-error: TypeScript-in-JSDoc bug
+  // eslint-disable-next-line jsdoc/multiline-blocks
   /** @template {keyof EventMap} K @overload
    * @param {K} event
    * @param {...EventMap[K]} args

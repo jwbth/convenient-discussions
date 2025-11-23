@@ -130,6 +130,16 @@ import visits from './visits';
  * @augments EventEmitter<EventMap>
  */
 class UpdateChecker extends EventEmitter {
+  /**
+   * Number of seconds between checks for new comments when the tab is not hidden.
+   */
+  updateCheckInterval = /** @type {const} */ (15);
+
+  /**
+   * Number of seconds between new comments checks when the tab is hidden.
+   */
+  backgroundUpdateCheckInterval = /** @type {const} */ (60);
+
   /** @type {Map<number, MessageFromWorkerParse | RevisionData>} */
   revisionData = new Map();
 
@@ -473,7 +483,7 @@ class UpdateChecker extends EventEmitter {
       });
 
       this.scheduleCheck(
-        Math.abs(cd.g.backgroundUpdateCheckInterval - cd.g.updateCheckInterval),
+        Math.abs(this.backgroundUpdateCheckInterval - this.updateCheckInterval),
         true
       );
 
@@ -489,9 +499,9 @@ class UpdateChecker extends EventEmitter {
     }
 
     if (documentHidden) {
-      this.scheduleCheck(cd.g.backgroundUpdateCheckInterval, true);
+      this.scheduleCheck(this.backgroundUpdateCheckInterval, true);
     } else {
-      this.scheduleCheck(cd.g.updateCheckInterval, false);
+      this.scheduleCheck(this.updateCheckInterval, false);
     }
   }
 
@@ -972,7 +982,7 @@ class UpdateChecker extends EventEmitter {
     if (!this.initted) {
       this.worker.addEventListener('message', this.onMessageFromWorker);
     }
-    this.setAlarmViaWorker(cd.g.updateCheckInterval * 1000);
+    this.setAlarmViaWorker(this.updateCheckInterval * 1000);
     if (previousVisitTime) {
       this.maybeProcessRevisionsAtLoad(previousVisitTime, submittedCommentId);
     }

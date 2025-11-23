@@ -333,20 +333,6 @@ const globalProperties = {
     window.devicePixelRatio / Math.max(Math.floor(window.devicePixelRatio), 1),
 
   /**
-   * Number of seconds between checks for new comments when the tab is not hidden.
-   *
-   * @memberof convenientDiscussions.g
-   */
-  updateCheckInterval: /** @type {const} */ (15),
-
-  /**
-   * Number of seconds between new comments checks when the tab is hidden.
-   *
-   * @memberof convenientDiscussions.g
-   */
-  backgroundUpdateCheckInterval: /** @type {const} */ (60),
-
-  /**
    * Number of milliseconds in a minute.
    *
    * @memberof convenientDiscussions.g

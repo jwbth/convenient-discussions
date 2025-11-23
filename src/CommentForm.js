@@ -17,11 +17,11 @@ import sectionManager from './sectionManager';
 import settings from './settings';
 import CdError from './shared/CdError';
 import Parser from './shared/Parser';
-import { buildEditSummary, defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './shared/utils-general';
+import { defined, getDayTimestamp, removeDoubleSpaces, sleep, unique } from './shared/utils-general';
 import { escapePipesOutsideLinks, generateTagsRegexp, removeWikiMarkup } from './shared/utils-wikitext';
 import userRegistry from './userRegistry';
 import { handleApiReject, parseCode } from './utils-api';
-import { isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, isInputFocused, keyCombination, mergeJquery, wrapDiffBody, wrapHtml } from './utils-window';
+import { buildEditSummary, isCmdModifierPressed, isExistentAnchor, isHtmlConvertibleToWikitext, isInputFocused, keyCombination, mergeJquery, wrapDiffBody, wrapHtml } from './utils-window';
 
 /**
  * @typedef {'reply'|'replyInSection'|'edit'|'addSubsection'|'addSection'} CommentFormMode
@@ -2807,7 +2807,7 @@ class CommentForm extends EventEmitter {
         operation,
       });
 
-      cd.loader.hideLoadingOverlay();
+      cd.loader.hideBootingOverlay();
 
       return;
     }

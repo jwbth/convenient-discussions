@@ -366,7 +366,9 @@ class BootProcess {
       mw.hook('convenientDiscussions.pageReadyFirstTime').fire(cd);
     }
 
-    cd.loader.hideBootingOverlay();
+    if (this.firstRun && cd.page.isActive() && cd.user.isRegistered()) {
+      this.showPopups();
+    }
 
     // This is needed to calculate the rendering time: it won't complete until everything gets
     // rendered.
@@ -374,11 +376,11 @@ class BootProcess {
 
     cd.debug.stopTimer('final code and rendering');
 
-    this.debugLog();
-
-    if (this.firstRun && cd.page.isActive() && cd.user.isRegistered()) {
-      this.showPopups();
+    cd.debug.startTimer('wikipage.content hook handlers');
+    if (isReload) {
+      mw.hook('wikipage.content').fire(cd.loader.$content);
     }
+    cd.debug.stopTimer('wikipage.content hook handlers');
   }
 
   /**
@@ -751,9 +753,6 @@ class BootProcess {
     $disableLink
       .attr('href', /** @type {string} */($disableLink.attr('href')).replace(/0$/, '1'))
       .text(cd.s('footer-runcd'));
-
-    cd.loader.hideBootingOverlay();
-    this.debugLog();
   }
 
   /**
@@ -926,25 +925,6 @@ class BootProcess {
         });
       }
     }
-  }
-
-  /**
-   * Log debug data to the console.
-   *
-   * @private
-   */
-  debugLog() {
-    cd.debug.stopTimer('total time');
-
-    const timePerComment = (
-      (cd.debug.getTimerTotal('main code') + cd.debug.getTimerTotal('final code and rendering')) /
-      commentManager.getCount()
-    ).toFixed(2);
-
-    cd.debug.logAndResetTimer('total time');
-    console.debug(`number of comments: ${commentManager.getCount()}`);
-    console.debug(`per comment: ${timePerComment}`);
-    cd.debug.logAndResetEverything();
   }
 
   /**

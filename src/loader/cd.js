@@ -18,7 +18,7 @@ import cd from '../shared/cd';
  * @property {import('../pageRegistry').default} pageRegistry
  * @property {(typeof import('../Comment').default)['generateId']} generateCommentId
  * @property {(typeof import('../Comment').default)['parseId']} parseCommentId
- * @property {import('../shared/utils-general')['buildEditSummary']} buildEditSummary
+ * @property {import('../utils-window')['buildEditSummary']} buildEditSummary
  * @property {import('../utils-window').wrapHtml} wrapHtml
  * @property {import('../utils-window').wrapHtml} wrap
  * @property {import('../utils-window').wrapDiffBody} wrapDiffBody
