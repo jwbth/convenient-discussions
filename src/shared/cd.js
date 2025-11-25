@@ -18,17 +18,17 @@ const context = self;
 context.convenientDiscussions ??= /** @type {ConvenientDiscussionsBase} */ ({});
 
 const convenientDiscussionsShared = {
-  /**
-   * Checks whether the current execution context is a web worker.
-   *
-   * @returns {boolean}
-   */
-  isWorker() {
-    return (
-      'WorkerGlobalScope' in self &&
-      self instanceof /** @type {any} */ (self.WorkerGlobalScope)
-    );
-  },
+	/**
+	 * Checks whether the current execution context is a web worker.
+	 *
+	 * @returns {boolean}
+	 */
+	isWorker() {
+		return (
+			'WorkerGlobalScope' in self &&
+			self instanceof /** @type {any} */ (self.WorkerGlobalScope)
+		);
+	},
 };
 
 Object.assign(context.convenientDiscussions, convenientDiscussionsShared);

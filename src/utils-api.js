@@ -94,38 +94,38 @@ let cachedUserInfoRequest;
  * @throws {CdError}
  */
 export function handleApiReject(codeOrArr, response) {
-  let code;
+	let code;
 
-  // Native promises support only one parameter when `reject()`ing, so when we throw it while
-  // rethrowing MediaWiki API's error, we pass it as a 2-tuple.
-  if (Array.isArray(codeOrArr)) {
-    [code, response] = codeOrArr;
-  } else {
-    code = codeOrArr;
-  }
+	// Native promises support only one parameter when `reject()`ing, so when we throw it while
+	// rethrowing MediaWiki API's error, we pass it as a 2-tuple.
+	if (Array.isArray(codeOrArr)) {
+		[code, response] = codeOrArr;
+	} else {
+		code = codeOrArr;
+	}
 
-  switch (code) {
-    case 'http':
-      throw new CdError({ type: 'network' });
-    case 'ok-but-empty':
-      throw new CdError({ type: 'response', code: 'noData' });
-    case 'query-missing':
-      throw new CdError({ type: 'internal', code });
-    case 'token-missing':
-      throw new CdError({ type: 'internal', code });
-    default: {
-      const apiResponse = /** @type {import('types-mediawiki/mw/Api').ApiResponse} */ (response);
-      const error = apiResponse.error || apiResponse.errors?.[0];
-      throw new CdError({
-        type: 'api',
-        // `error` or `errors` is chosen by the API depending on `errorformat` being 'html' in
-        // requests.
-        code: error.code,
-        html: error.html,
-        apiResponse,
-      });
-    }
-  }
+	switch (code) {
+		case 'http':
+			throw new CdError({ type: 'network' });
+		case 'ok-but-empty':
+			throw new CdError({ type: 'response', code: 'noData' });
+		case 'query-missing':
+			throw new CdError({ type: 'internal', code });
+		case 'token-missing':
+			throw new CdError({ type: 'internal', code });
+		default: {
+			const apiResponse = /** @type {import('types-mediawiki/mw/Api').ApiResponse} */ (response);
+			const error = apiResponse.error || apiResponse.errors?.[0];
+			throw new CdError({
+				type: 'api',
+				// `error` or `errors` is chosen by the API depending on `errorformat` being 'html' in
+				// requests.
+				code: error.code,
+				html: error.html,
+				apiResponse,
+			});
+		}
+	}
 }
 
 /**
@@ -137,35 +137,35 @@ export function handleApiReject(codeOrArr, response) {
  * @returns {T[][]}
  */
 export function splitIntoBatches(arr) {
-  // Current user's rights are only set on an `userinfo` request which is performed late (see "We
-  // are _not_ calling..." in Loader#initTalkPage()). For example, getDtSubscriptions() runs earlier
-  // than that. In addition to that, cd.g.phpCharToUpper is empty until we make sure the
-  // mediawiki.Title module is loaded.
-  let currentUserRights;
-  try {
-    currentUserRights = cd.user.getRights();
-  } catch {
-    // Can throw a error when cd.user is undefined, because it is set when the modules are ready.
-  }
-  const limit = (
-    currentUserRights
-      ? currentUserRights.includes('apihighlimits')
+	// Current user's rights are only set on an `userinfo` request which is performed late (see "We
+	// are _not_ calling..." in Loader#initTalkPage()). For example, getDtSubscriptions() runs earlier
+	// than that. In addition to that, cd.g.phpCharToUpper is empty until we make sure the
+	// mediawiki.Title module is loaded.
+	let currentUserRights;
+	try {
+		currentUserRights = cd.user.getRights();
+	} catch {
+		// Can throw a error when cd.user is undefined, because it is set when the modules are ready.
+	}
+	const limit = (
+		currentUserRights
+			? currentUserRights.includes('apihighlimits')
 
-      // No idea why wgUserGroups is said to be `null` for non-logged-in users on
-      // https://www.mediawiki.org/wiki/Manual:Interface/JavaScript#mw.config. I see it always
-      // containing ['*'].
-      : (mw.config.get('wgUserGroups') || []).includes('sysop')
-  )
-    ? 500
-    : 50;
+		// No idea why wgUserGroups is said to be `null` for non-logged-in users on
+		// https://www.mediawiki.org/wiki/Manual:Interface/JavaScript#mw.config. I see it always
+		// containing ['*'].
+			: (mw.config.get('wgUserGroups') || []).includes('sysop')
+	)
+		? 500
+		: 50;
 
-  return arr.reduce((result, item, index) => {
-    const chunkIndex = Math.floor(index / limit);
-    result[chunkIndex] ??= [];
-    result[chunkIndex].push(item);
+	return arr.reduce((result, item, index) => {
+		const chunkIndex = Math.floor(index / limit);
+		result[chunkIndex] ??= [];
+		result[chunkIndex].push(item);
 
-    return result;
-  }, /** @type {T[][]} */ ([]));
+		return result;
+	}, /** @type {T[][]} */ ([]));
 }
 
 /**
@@ -176,26 +176,26 @@ export function splitIntoBatches(arr) {
  * @returns {Promise.<import('types-mediawiki/mw/Api').ApiResponse>}
  */
 export function requestInBackground(params, method = 'post') {
-  return new Promise((resolve, reject) => {
-    cd.getApi()[method](params, {
-      success: (response) => {
-        if (response.error) {
-          // Workaround for cases when an options request is made on an idle page whose tokens
-          // expire. A re-request of such tokens is generally successful, but _this_ callback is
-          // executed after each response, so we aren't rejecting to avoid misleading error messages
-          // being shown to the user.
-          if (response.error.code !== 'badtoken') {
-            reject(['api', response]);
-          }
-        } else {
-          resolve(response);
-        }
-      },
-      error: (_, textStatus) => {
-        reject(['http', textStatus]);
-      },
-    });
-  });
+	return new Promise((resolve, reject) => {
+		cd.getApi()[method](params, {
+			success: (response) => {
+				if (response.error) {
+					// Workaround for cases when an options request is made on an idle page whose tokens
+					// expire. A re-request of such tokens is generally successful, but _this_ callback is
+					// executed after each response, so we aren't rejecting to avoid misleading error messages
+					// being shown to the user.
+					if (response.error.code !== 'badtoken') {
+						reject(['api', response]);
+					}
+				} else {
+					resolve(response);
+				}
+			},
+			error: (_, textStatus) => {
+				reject(['http', textStatus]);
+			},
+		});
+	});
 }
 
 /**
@@ -212,32 +212,32 @@ export function requestInBackground(params, method = 'post') {
  * @throws {CdError}
  */
 export async function parseCode(code, customOptions) {
-  const defaultOptions = {
-    action: 'parse',
-    text: code,
-    contentmodel: 'wikitext',
-    prop: ['text', 'modules', 'jsconfigvars'],
-    pst: true,
-    disabletoc: true,
-    disablelimitreport: true,
-    disableeditsection: true,
-    preview: true,
-  };
+	const defaultOptions = {
+		action: 'parse',
+		text: code,
+		contentmodel: 'wikitext',
+		prop: ['text', 'modules', 'jsconfigvars'],
+		pst: true,
+		disabletoc: true,
+		disablelimitreport: true,
+		disableeditsection: true,
+		preview: true,
+	};
 
-  const response = /** @type {ApiResponseParse} */ (
-    await cd
-      .getApi()
-      .post({ ...defaultOptions, ...customOptions })
-      .catch(handleApiReject)
-  );
+	const response = /** @type {ApiResponseParse} */ (
+		await cd
+			.getApi()
+			.post({ ...defaultOptions, ...customOptions })
+			.catch(handleApiReject)
+	);
 
-  mw.loader.load(response.parse.modules);
-  mw.loader.load(response.parse.modulestyles);
+	mw.loader.load(response.parse.modules);
+	mw.loader.load(response.parse.modulestyles);
 
-  return {
-    html: response.parse.text,
-    parsedSummary: /** @type {string} */ (response.parse.parsedsummary),
-  };
+	return {
+		html: response.parse.text,
+		parsedSummary: /** @type {string} */ (response.parse.parsedsummary),
+	};
 }
 
 /**
@@ -256,34 +256,34 @@ export async function parseCode(code, customOptions) {
  * @throws {CdError}
  */
 export function getUserInfo(reuse = false) {
-  if (reuse && cachedUserInfoRequest) {
-    return cachedUserInfoRequest;
-  }
+	if (reuse && cachedUserInfoRequest) {
+		return cachedUserInfoRequest;
+	}
 
-  cachedUserInfoRequest = cd.getApi().post({
-    action: 'query',
-    meta: 'userinfo',
-    uiprop: ['options', 'rights'],
-  }).then(
-    (resp) => {
-      const { options, rights } = resp.query.userinfo;
-      try {
-        cd.user.setRights(rights);
-      } catch {
-        // Can throw a error when cd.g.phpCharToUpper is undefined, because it's set when the
-        // modules are ready
-      }
+	cachedUserInfoRequest = cd.getApi().post({
+		action: 'query',
+		meta: 'userinfo',
+		uiprop: ['options', 'rights'],
+	}).then(
+		(resp) => {
+			const { options, rights } = resp.query.userinfo;
+			try {
+				cd.user.setRights(rights);
+			} catch {
+				// Can throw a error when cd.g.phpCharToUpper is undefined, because it's set when the
+				// modules are ready
+			}
 
-      return {
-        options,
-        visits: options[cd.g.visitsOptionName],
-        subscriptions: options[cd.g.subscriptionsOptionName],
-      };
-    },
-    handleApiReject
-  );
+			return {
+				options,
+				visits: options[cd.g.visitsOptionName],
+				subscriptions: options[cd.g.subscriptionsOptionName],
+			};
+		},
+		handleApiReject
+	);
 
-  return cachedUserInfoRequest;
+	return cachedUserInfoRequest;
 }
 
 /**
@@ -294,25 +294,25 @@ export function getUserInfo(reuse = false) {
  * @throws {CdError}
  */
 export async function getPageTitles(pageIds) {
-  if (!pageIds.length) {
-    return [];
-  }
+	if (!pageIds.length) {
+		return [];
+	}
 
-  const pages = [];
-  for (const nextPageIds of splitIntoBatches(pageIds)) {
-    const response = /** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (
-      await cd
-        .getApi()
-        .post({
-          action: 'query',
-          pageids: nextPageIds,
-        })
-        .catch(handleApiReject)
-    );
-    pages.push(...response.query?.pages || []);
-  }
+	const pages = [];
+	for (const nextPageIds of splitIntoBatches(pageIds)) {
+		const response = /** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (
+			await cd
+				.getApi()
+				.post({
+					action: 'query',
+					pageids: nextPageIds,
+				})
+				.catch(handleApiReject)
+		);
+		pages.push(...response.query?.pages || []);
+	}
 
-  return pages;
+	return pages;
 }
 
 /**
@@ -330,28 +330,28 @@ export async function getPageTitles(pageIds) {
  * @throws {CdError}
  */
 export async function getPageIds(titles) {
-  const normalized = [];
-  const redirects = [];
-  const pages = [];
-  for (const nextTitles of splitIntoBatches(titles)) {
-    const { query } = /** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (
-      await cd
-        .getApi()
-        .post({
-          action: 'query',
-          titles: nextTitles,
-          redirects: true,
-        })
-        .catch(handleApiReject)
-    );
-    if (!query) break;
+	const normalized = [];
+	const redirects = [];
+	const pages = [];
+	for (const nextTitles of splitIntoBatches(titles)) {
+		const { query } = /** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (
+			await cd
+				.getApi()
+				.post({
+					action: 'query',
+					titles: nextTitles,
+					redirects: true,
+				})
+				.catch(handleApiReject)
+		);
+		if (!query) break;
 
-    normalized.push(...query.normalized || []);
-    redirects.push(...query.redirects || []);
-    pages.push(...query.pages || []);
-  }
+		normalized.push(...query.normalized || []);
+		redirects.push(...query.redirects || []);
+		pages.push(...query.pages || []);
+	}
 
-  return { normalized, redirects, pages };
+	return { normalized, redirects, pages };
 }
 
 /**
@@ -363,35 +363,35 @@ export async function getPageIds(titles) {
  * @throws {CdError}
  */
 export async function saveOptions(options, isGlobal = false) {
-  const action = isGlobal ? 'globalpreferences' : 'options';
-  if (Object.entries(options).some(([, value]) => value && value.length > 65_535)) {
-    throw new CdError({
-      type: 'internal',
-      code: 'sizeLimit',
-      details: { action },
-    });
-  }
+	const action = isGlobal ? 'globalpreferences' : 'options';
+	if (Object.entries(options).some(([, value]) => value && value.length > 65_535)) {
+		throw new CdError({
+			type: 'internal',
+			code: 'sizeLimit',
+			details: { action },
+		});
+	}
 
-  const response = await requestInBackground(
-    cd.getApi().assertCurrentUser({
-      action,
-      change: (
-        '\u001F' +
-        Object.entries(options)
-          .map(([name, value]) => name + (value === null ? '' : '=' + value))
-          .join('\u001F')
-      ),
-    }),
-    'postWithEditToken'
-  ).catch(handleApiReject);
+	const response = await requestInBackground(
+		cd.getApi().assertCurrentUser({
+			action,
+			change: (
+				'\u001F' +
+				Object.entries(options)
+					.map(([name, value]) => name + (value === null ? '' : '=' + value))
+					.join('\u001F')
+			),
+		}),
+		'postWithEditToken'
+	).catch(handleApiReject);
 
-  if (response[action] !== 'success') {
-    throw new CdError({
-      type: 'response',
-      code: 'fail',
-      details: { action },
-    });
-  }
+	if (response[action] !== 'success') {
+		throw new CdError({
+			type: 'response',
+			code: 'fail',
+			details: { action },
+		});
+	}
 }
 
 /**
@@ -401,7 +401,7 @@ export async function saveOptions(options, isGlobal = false) {
  * @param {?string} value
  */
 export async function saveLocalOption(name, value) {
-  await saveOptions({ [name]: value });
+	await saveOptions({ [name]: value });
 }
 
 /**
@@ -413,27 +413,27 @@ export async function saveLocalOption(name, value) {
  * @throws {CdError}
  */
 export async function saveGlobalOption(name, value) {
-  if (!cd.config.useGlobalPreferences) {
-    // Normally, this won't run if cd.config.useGlobalPreferences is false. But it will run as part
-    // of SettingsDialog#removeData() in settings.showDialog(), removing the option if it existed,
-    // which may have a benificial effect if cd.config.useGlobalPreferences was true at some stage
-    // and a local setting with cd.g.settingsOptionName name was created instead of a global one,
-    // thus inviting the need to remove it upon removing all data.
-    await saveLocalOption(name, value);
+	if (!cd.config.useGlobalPreferences) {
+		// Normally, this won't run if cd.config.useGlobalPreferences is false. But it will run as part
+		// of SettingsDialog#removeData() in settings.showDialog(), removing the option if it existed,
+		// which may have a benificial effect if cd.config.useGlobalPreferences was true at some stage
+		// and a local setting with cd.g.settingsOptionName name was created instead of a global one,
+		// thus inviting the need to remove it upon removing all data.
+		await saveLocalOption(name, value);
 
-    return;
-  }
+		return;
+	}
 
-  try {
-    await saveOptions({ [name]: value }, true);
-  } catch (error) {
-    // The site doesn't support global preferences.
-    if (error instanceof CdError && error.getCode() === 'badvalue') {
-      await saveLocalOption(name, value);
-    } else {
-      throw error;
-    }
-  }
+	try {
+		await saveOptions({ [name]: value }, true);
+	} catch (error) {
+		// The site doesn't support global preferences.
+		if (error instanceof CdError && error.getCode() === 'badvalue') {
+			await saveLocalOption(name, value);
+		} else {
+			throw error;
+		}
+	}
 }
 
 /**
@@ -446,29 +446,29 @@ export async function saveGlobalOption(name, value) {
  * @returns {Promise<void>}
  */
 export async function loadUserGenders(users, doRequestInBackground = false) {
-  // eslint-disable-next-line no-one-time-vars/no-one-time-vars
-  const usersToRequest = users
-    .filter((user) => !user.getGender() && user.isRegistered())
-    .filter(unique)
-    .map((user) => user.getName());
-  for (const nextUsers of splitIntoBatches(usersToRequest)) {
-    const options = {
-      action: 'query',
-      list: 'users',
-      ususers: nextUsers,
-      usprop: 'gender',
-    };
-    // eslint-disable-next-line no-one-time-vars/no-one-time-vars
-    const request = doRequestInBackground
-      ? requestInBackground(options).catch(handleApiReject)
-      : cd.getApi().post(options).catch(handleApiReject);
-    const response = /** @type {ApiResponseUsers} */ (await request);
-    response.query.users.forEach((user) => {
-      if (user.gender) {
-        userRegistry.get(user.name).setGender(user.gender);
-      }
-    });
-  }
+	// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+	const usersToRequest = users
+		.filter((user) => !user.getGender() && user.isRegistered())
+		.filter(unique)
+		.map((user) => user.getName());
+	for (const nextUsers of splitIntoBatches(usersToRequest)) {
+		const options = {
+			action: 'query',
+			list: 'users',
+			ususers: nextUsers,
+			usprop: 'gender',
+		};
+		// eslint-disable-next-line no-one-time-vars/no-one-time-vars
+		const request = doRequestInBackground
+			? requestInBackground(options).catch(handleApiReject)
+			: cd.getApi().post(options).catch(handleApiReject);
+		const response = /** @type {ApiResponseUsers} */ (await request);
+		response.query.users.forEach((user) => {
+			if (user.gender) {
+				userRegistry.get(user.name).setGender(user.gender);
+			}
+		});
+	}
 }
 
 /**
@@ -478,48 +478,48 @@ export async function loadUserGenders(users, doRequestInBackground = false) {
  * @returns {Promise.<Results>}
  */
 export async function getPagesExistence(titles) {
-  /**
-   * @typedef {{
-   *   [title: string]: {
-   *     exists: boolean;
-   *     normalized: string;
-   *   };
-   * }} Results
-   */
+	/**
+	 * @typedef {{
+	 *   [title: string]: {
+	 *     exists: boolean;
+	 *     normalized: string;
+	 *   };
+	 * }} Results
+	 */
 
-  const results = /** @type {Results} */ ({});
-  const normalized = [];
-  const pages = [];
-  for (const nextTitles of splitIntoBatches(titles)) {
-    const response = /** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (
-      await cd
-        .getApi()
-        .post({
-          action: 'query',
-          titles: nextTitles,
-        })
-        .catch(handleApiReject)
-    );
+	const results = /** @type {Results} */ ({});
+	const normalized = [];
+	const pages = [];
+	for (const nextTitles of splitIntoBatches(titles)) {
+		const response = /** @type {ApiResponseQuery<ApiResponseQueryContentPages>} */ (
+			await cd
+				.getApi()
+				.post({
+					action: 'query',
+					titles: nextTitles,
+				})
+				.catch(handleApiReject)
+		);
 
-    const query = response.query;
-    if (!query) break;
+		const query = response.query;
+		if (!query) break;
 
-    normalized.push(...query.normalized || []);
-    pages.push(...query.pages || []);
-  }
+		normalized.push(...query.normalized || []);
+		pages.push(...query.pages || []);
+	}
 
-  const normalizedToOriginal = /** @type {StringsByKey} */ ({});
-  normalized.forEach((page) => {
-    normalizedToOriginal[page.to] = page.from;
-  });
-  pages.forEach((page) => {
-    results[normalizedToOriginal[page.title] || page.title] = {
-      exists: !page.missing,
-      normalized: page.title,
-    };
-  });
+	const normalizedToOriginal = /** @type {StringsByKey} */ ({});
+	normalized.forEach((page) => {
+		normalizedToOriginal[page.to] = page.from;
+	});
+	pages.forEach((page) => {
+		results[normalizedToOriginal[page.title] || page.title] = {
+			exists: !page.missing,
+			normalized: page.title,
+		};
+	});
 
-  return results;
+	return results;
 }
 
 /**
@@ -531,10 +531,10 @@ export async function getPagesExistence(titles) {
  * @private
  */
 function callTransformApi(url, html) {
-  return $.post(url, {
-    html,
-    scrub_wikitext: true,
-  });
+	return $.post(url, {
+		html,
+		scrub_wikitext: true,
+	});
 }
 
 /**
@@ -545,44 +545,44 @@ function callTransformApi(url, html) {
  * @returns {Promise.<?string>}
  */
 export async function convertHtmlToWikitext(html, syntaxHighlightLanguages) {
-  let wikitext;
-  try {
-    try {
-      if (!cd.g.isProbablyWmfSulWiki) {
-        throw new CdError();
-      }
-      wikitext = await callTransformApi('/api/rest_v1/transform/html/to/wikitext', html);
-    } catch {
-      wikitext = await callTransformApi('https://en.wikipedia.org/api/rest_v1/transform/html/to/wikitext', html);
-    }
-    wikitext = wikitext
-      .replace(
-        /(?:^ .*(?:\n|$))+|<code dir="(?:ltr|rtl)">([^]*?)<\/code>/gm,
-        (s, inlineCode) => {
-          const lang = syntaxHighlightLanguages.shift() || 'wikitext';
-          const code = (
-            typeof inlineCode === 'string'
-              ? inlineCode
-              : '\n' +
-                s
-                  .replace(/^ /gm, '')
-                  .replace(/[^\n]$/, '$0\n')
-          ).replace(/<nowiki>([^]*?)<\/nowiki>/g, '$1');
-          const inlineOrNot = inlineCode === undefined ? '' : ' inline';
+	let wikitext;
+	try {
+		try {
+			if (!cd.g.isProbablyWmfSulWiki) {
+				throw new CdError();
+			}
+			wikitext = await callTransformApi('/api/rest_v1/transform/html/to/wikitext', html);
+		} catch {
+			wikitext = await callTransformApi('https://en.wikipedia.org/api/rest_v1/transform/html/to/wikitext', html);
+		}
+		wikitext = wikitext
+			.replace(
+				/(?:^ .*(?:\n|$))+|<code dir="(?:ltr|rtl)">([^]*?)<\/code>/gm,
+				(s, inlineCode) => {
+					const lang = syntaxHighlightLanguages.shift() || 'wikitext';
+					const code = (
+						typeof inlineCode === 'string'
+							? inlineCode
+							: '\n' +
+								s
+									.replace(/^ /gm, '')
+									.replace(/[^\n]$/, '$0\n')
+					).replace(/<nowiki>([^]*?)<\/nowiki>/g, '$1');
+					const inlineOrNot = inlineCode === undefined ? '' : ' inline';
 
-          return `<syntaxhighlight lang="${lang}"${inlineOrNot}>${code}</syntaxhighlight>`;
-        }
-      )
-      .replace(/<br \/>/g, '<br>')
-      .trim();
-    wikitext = (new TextMasker(wikitext))
-      .maskSensitiveCode()
-      .withText((text) => brsToNewlines(text))
-      .unmask()
-      .getText();
-  } catch {
-    // Empty
-  }
+					return `<syntaxhighlight lang="${lang}"${inlineOrNot}>${code}</syntaxhighlight>`;
+				}
+			)
+			.replace(/<br \/>/g, '<br>')
+			.trim();
+		wikitext = (new TextMasker(wikitext))
+			.maskSensitiveCode()
+			.withText((text) => brsToNewlines(text))
+			.unmask()
+			.getText();
+	} catch {
+		// Empty
+	}
 
-  return wikitext || null;
+	return wikitext || null;
 }

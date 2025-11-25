@@ -79,8 +79,8 @@ Note that this will not load the script if Convenient Discussions doesn't load. 
 </translate>
 <syntaxhighlight lang="js" style="background: transparent;" copy>
 if (
-  mw.config.get( 'wgNamespaceNumber' ) % 2 !== 1 &&
-  !mw.config.get( 'wgExtraSignatureNamespaces' ).includes( mw.config.get( 'wgNamespaceNumber' ) )
+	mw.config.get( 'wgNamespaceNumber' ) % 2 !== 1 &&
+	!mw.config.get( 'wgExtraSignatureNamespaces' ).includes( mw.config.get( 'wgNamespaceNumber' ) )
 ) {
 	// Import the script here
 }
@@ -162,8 +162,8 @@ Here's what the script stores, why, how, and how to delete the data. Note that y
 <translate><!--T:40--> Global settings:</translate>
 <syntaxhighlight lang="js">
 new mw.Api().postWithEditToken({
-  action: 'globalpreferences',
-  optionname: 'userjs-convenientDiscussions-settings',
+	action: 'globalpreferences',
+	optionname: 'userjs-convenientDiscussions-settings',
 });
 </syntaxhighlight>
 <translate><!--T:41--> Local settings:</translate>
@@ -272,7 +272,7 @@ To prevent the "Reply" buttons from showing up in closed discussions, add the <t
 If you want to debug your configuration more closely in the browser's development tools and you're familiar with [[w:en:Node.js|Node.js]] and [[w:en:Git|Git]] and have them installed, clone [<tvar name="github-repo">https://github.com/jwbth/convenient-discussions</tvar> the script's repository], run <tvar name="npm-install"><code>npm install</code></tvar> while in the script's directory to install the dependencies, create a <tvar name="js-ext"><code>.js</code></tvar> file in the <tvar name="config-folder"><code>config</code></tvar> folder named using pattern <tvar name="config-pattern"><code>''project_code''[-''language_code''].js</code></tvar> (for example, <tvar name="w-en"><code>w-en.js</code></tvar>, <tvar name="wikt-de"><code>wikt-de.js</code></tvar>, <tvar name=mw><code>mw.js</code></tvar>), and put the following code into it:</translate>
 <syntaxhighlight lang="js">
 export default {
-  // List of properties
+	// List of properties
 };
 
 // Any additional code, e.g. hooks

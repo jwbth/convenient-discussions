@@ -19,189 +19,189 @@ import CdError from './shared/CdError';
  * @augments Button
  */
 class CommentButton extends Button {
-  /**
-   * Create a comment button.
-   *
-   * @param {CommentButtonConfig} config Button config, see the details at {@link Button}.
-   */
-  constructor(config) {
-    // OOUI button
-    if (config.element) {
-      config.buttonElement = /** @type {HTMLElement} */ (config.element.firstChild);
-    }
+	/**
+	 * Create a comment button.
+	 *
+	 * @param {CommentButtonConfig} config Button config, see the details at {@link Button}.
+	 */
+	constructor(config) {
+		// OOUI button
+		if (config.element) {
+			config.buttonElement = /** @type {HTMLElement} */ (config.element.firstChild);
+		}
 
-    super(config);
+		super(config);
 
-    // Don't hide the menu on right button click.
-    if (config.href) {
-      this.buttonElement.addEventListener('contextmenu', CommentButton.stopPropagation);
-    }
+		// Don't hide the menu on right button click.
+		if (config.href) {
+			this.buttonElement.addEventListener('contextmenu', CommentButton.stopPropagation);
+		}
 
-    this.element.classList.add('cd-comment-button');
+		this.element.classList.add('cd-comment-button');
 
-    /**
-     * Constructor for the button's OOUI widget (if that's an OOUI button).
-     *
-     * @type {(() => OO.ui.ButtonWidget) | undefined}
-     */
-    this.widgetConstructor = config.widgetConstructor;
-  }
+		/**
+		 * Constructor for the button's OOUI widget (if that's an OOUI button).
+		 *
+		 * @type {(() => OO.ui.ButtonWidget) | undefined}
+		 */
+		this.widgetConstructor = config.widgetConstructor;
+	}
 
-  /**
-   * Create an OOUI widget (for an OOUI button) using {@link CommentButton#widgetConstructor}.
-   *
-   * @returns {OO.ui.ButtonWidget}
-   * @private
-   */
-  createWidget() {
-    if (!this.widgetConstructor) {
-      throw new CdError();
-    }
+	/**
+	 * Create an OOUI widget (for an OOUI button) using {@link CommentButton#widgetConstructor}.
+	 *
+	 * @returns {OO.ui.ButtonWidget}
+	 * @private
+	 */
+	createWidget() {
+		if (!this.widgetConstructor) {
+			throw new CdError();
+		}
 
-    const originalHref = this.buttonElement.getAttribute('href');
+		const originalHref = this.buttonElement.getAttribute('href');
 
-    /**
-     * Button's OOUI widget object. Initially OOUI buttons don't have widgets created for them for
-     * performance reasons (every other button is just cloned as an element). When their state is
-     * changed anyhow, the widget is created.
-     *
-     * @type {OO.ui.ButtonWidget}
-     */
-    this.buttonWidget = this.widgetConstructor();
+		/**
+		 * Button's OOUI widget object. Initially OOUI buttons don't have widgets created for them for
+		 * performance reasons (every other button is just cloned as an element). When their state is
+		 * changed anyhow, the widget is created.
+		 *
+		 * @type {OO.ui.ButtonWidget}
+		 */
+		this.buttonWidget = this.widgetConstructor();
 
-    const element = this.buttonWidget.$element[0];
-    this.element.replaceWith(element);
-    this.element = element;
-    this.buttonElement = /** @type {HTMLElement} */ (element.firstChild);
-    this.iconElement = this.buttonWidget.$icon[0];
-    if (this.action) {
-      this.setAction(this.action);
-    }
-    if (originalHref) {
-      this.buttonWidget.setHref(originalHref);
+		const element = this.buttonWidget.$element[0];
+		this.element.replaceWith(element);
+		this.element = element;
+		this.buttonElement = /** @type {HTMLElement} */ (element.firstChild);
+		this.iconElement = this.buttonWidget.$icon[0];
+		if (this.action) {
+			this.setAction(this.action);
+		}
+		if (originalHref) {
+			this.buttonWidget.setHref(originalHref);
 
-      // Don't hide the menu on right button click.
-      this.buttonElement.addEventListener('contextmenu', CommentButton.stopPropagation);
-    }
+			// Don't hide the menu on right button click.
+			this.buttonElement.addEventListener('contextmenu', CommentButton.stopPropagation);
+		}
 
-    return this.buttonWidget;
-  }
+		return this.buttonWidget;
+	}
 
-  /**
-   * Set the button disabled or not.
-   *
-   * @param {boolean} disabled
-   * @returns {this} This button.
-   * @override
-   */
-  setDisabled(disabled) {
-    if (this.widgetConstructor) {
-      this.getButtonWidget().setDisabled(disabled);
-    } else {
-      super.setDisabled(disabled);
-    }
+	/**
+	 * Set the button disabled or not.
+	 *
+	 * @param {boolean} disabled
+	 * @returns {this} This button.
+	 * @override
+	 */
+	setDisabled(disabled) {
+		if (this.widgetConstructor) {
+			this.getButtonWidget().setDisabled(disabled);
+		} else {
+			super.setDisabled(disabled);
+		}
 
-    return this;
-  }
+		return this;
+	}
 
-  /**
-   * Get the widget for the OOUI button, creating it if it doesn't exist.
-   *
-   * @returns {OO.ui.ButtonWidget}
-   */
-  getButtonWidget() {
-    return this.buttonWidget || this.createWidget();
-  }
+	/**
+	 * Get the widget for the OOUI button, creating it if it doesn't exist.
+	 *
+	 * @returns {OO.ui.ButtonWidget}
+	 */
+	getButtonWidget() {
+		return this.buttonWidget || this.createWidget();
+	}
 
-  /**
-   * Set the button pending or not.
-   *
-   * @param {boolean} pending
-   * @returns {this} This button.
-   * @override
-   */
-  setPending(pending) {
-    super.setPending(pending);
+	/**
+	 * Set the button pending or not.
+	 *
+	 * @param {boolean} pending
+	 * @returns {this} This button.
+	 * @override
+	 */
+	setPending(pending) {
+		super.setPending(pending);
 
-    return this;
-  }
+		return this;
+	}
 
-  /**
-   * Set the label of the button.
-   *
-   * @param {string} label
-   * @returns {this} This button.
-   * @override
-   */
-  setLabel(label) {
-    if (this.widgetConstructor) {
-      this.getButtonWidget().setLabel(label);
-    } else {
-      super.setLabel(label);
-    }
+	/**
+	 * Set the label of the button.
+	 *
+	 * @param {string} label
+	 * @returns {this} This button.
+	 * @override
+	 */
+	setLabel(label) {
+		if (this.widgetConstructor) {
+			this.getButtonWidget().setLabel(label);
+		} else {
+			super.setLabel(label);
+		}
 
-    return this;
-  }
+		return this;
+	}
 
-  /**
-   * Set the tooltip of the button.
-   *
-   * @param {string} tooltip
-   * @returns {this} This button.
-   * @override
-   */
-  setTooltip(tooltip) {
-    if (this.widgetConstructor) {
-      this.getButtonWidget().setTitle(tooltip);
-    } else {
-      super.setTooltip(tooltip);
-    }
+	/**
+	 * Set the tooltip of the button.
+	 *
+	 * @param {string} tooltip
+	 * @returns {this} This button.
+	 * @override
+	 */
+	setTooltip(tooltip) {
+		if (this.widgetConstructor) {
+			this.getButtonWidget().setTitle(tooltip);
+		} else {
+			super.setTooltip(tooltip);
+		}
 
-    return this;
-  }
+		return this;
+	}
 
-  /**
-   * Set the action of the button. It will be executed on click or Enter press.
-   *
-   * @param {?import('./Button').Action} action
-   * @returns {this} This button.
-   * @override
-   */
-  setAction(action) {
-    // OOUI widgets don't pass the event object to the handler, so we use the traditional method of
-    // handling events.
-    super.setAction(action);
+	/**
+	 * Set the action of the button. It will be executed on click or Enter press.
+	 *
+	 * @param {?import('./Button').Action} action
+	 * @returns {this} This button.
+	 * @override
+	 */
+	setAction(action) {
+		// OOUI widgets don't pass the event object to the handler, so we use the traditional method of
+		// handling events.
+		super.setAction(action);
 
-    /**
-     * Function executed by clicking or pressing Enter on the button.
-     *
-     * @type {?import('./Button').Action}
-     * @private
-     */
-    this.action = action;
+		/**
+		 * Function executed by clicking or pressing Enter on the button.
+		 *
+		 * @type {?import('./Button').Action}
+		 * @private
+		 */
+		this.action = action;
 
-    return this;
-  }
+		return this;
+	}
 
-  /**
-   * Check whether the button is disabled.
-   *
-   * @returns {boolean}
-   * @override
-   */
-  isDisabled() {
-    return this.widgetConstructor ? Boolean(this.buttonWidget?.isDisabled()) : super.isDisabled();
-  }
+	/**
+	 * Check whether the button is disabled.
+	 *
+	 * @returns {boolean}
+	 * @override
+	 */
+	isDisabled() {
+		return this.widgetConstructor ? Boolean(this.buttonWidget?.isDisabled()) : super.isDisabled();
+	}
 
-  /**
-   * Stop propagation of an event.
-   *
-   * @param {Event} event
-   * @private
-   */
-  static stopPropagation = (event) => {
-    event.stopPropagation();
-  };
+	/**
+	 * Stop propagation of an event.
+	 *
+	 * @param {Event} event
+	 * @private
+	 */
+	static stopPropagation = (event) => {
+		event.stopPropagation();
+	};
 }
 
 export default CommentButton;

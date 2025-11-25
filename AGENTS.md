@@ -288,11 +288,11 @@ npm run i18n
 
   ```js
   /**
-   * Get the archive prefix for the page.
-   *
-   * @param {boolean} [onlyExplicit=false]
-   * @returns {string | undefined}
-   */
+	 * Get the archive prefix for the page.
+	 *
+	 * @param {boolean} [onlyExplicit=false]
+	 * @returns {string | undefined}
+	 */
   ```
 
 - Use spaces around logical operators, e.g. write `@type {RadioSelectControl | TextInputControl}`, not `@type {RadioSelectControl|TextInputControl}`.

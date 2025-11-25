@@ -1,103 +1,103 @@
 #cd-navPanel {
-  position: fixed;
-  top: 41.5%;
-  z-index: 3;
-  width: 2.1875rem;
-  background-color: var(--background-color-base, #fff);
-  border: 1px solid var(--border-color-base, #a2a9b1);
-  inset-inline-start: 0;
-  border-inline-start-width: 0;
+	position: fixed;
+	top: 41.5%;
+	z-index: 3;
+	width: 2.1875rem;
+	background-color: var(--background-color-base, #fff);
+	border: 1px solid var(--border-color-base, #a2a9b1);
+	inset-inline-start: 0;
+	border-inline-start-width: 0;
 
-  // Enough to make it pass AA level for contrast ratio on Vector in case of
-  // .cd-navPanel-refreshButton-relevant (#7d00cc).
-  opacity: 0.695;
+	// Enough to make it pass AA level for contrast ratio on Vector in case of
+	// .cd-navPanel-refreshButton-relevant (#7d00cc).
+	opacity: 0.695;
 
-  font-size: 0.875rem;
-  line-height: 1.2;
-  color: var(--color-emphasized, #000);
-  -moz-user-select: none;
-  user-select: none;
+	font-size: 0.875rem;
+	line-height: 1.2;
+	color: var(--color-emphasized, #000);
+	-moz-user-select: none;
+	user-select: none;
 
-  &:hover {
-    opacity: 1;
-  }
+	&:hover {
+		opacity: 1;
+	}
 
-  &-refreshButton {
-    padding: 0.25rem 0.25rem;
+	&-refreshButton {
+		padding: 0.25rem 0.25rem;
 
-    // Better don't set the width (that should be equal to height) explicitly and let it fit the
-    // area (otherwise there can be a gap when the default font size is changed).
-    height: 1.625rem;
+		// Better don't set the width (that should be equal to height) explicitly and let it fit the
+		// area (otherwise there can be a gap when the default font size is changed).
+		height: 1.625rem;
 
-    &.cd-navPanel-addedCommentCount {
-      font-weight: bold;
-    }
-  }
+		&.cd-navPanel-addedCommentCount {
+			font-weight: bold;
+		}
+	}
 
-  &-firstUnseenButton {
-    height: 1.0625rem;
-    padding: 0.4375rem 0;
-  }
+	&-firstUnseenButton {
+		height: 1.0625rem;
+		padding: 0.4375rem 0;
+	}
 
-  @media screen and (max-width: 999px) {
-    .skin-vector-2022 & {
-      inset-inline-start: auto;
-      inset-inline-end: 0;
-      border-inline-start-width: 1px;
-      border-inline-end-width: 0;
-    }
-  }
+	@media screen and (max-width: 999px) {
+		.skin-vector-2022 & {
+			inset-inline-start: auto;
+			inset-inline-end: 0;
+			border-inline-start-width: 1px;
+			border-inline-end-width: 0;
+		}
+	}
 }
 
 .cd-navPanel-button {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  height: 1.9375rem;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	cursor: pointer;
+	height: 1.9375rem;
 
-  // Some non-official skins, like Chameleon, may redefine this
-  box-sizing: content-box;
+	// Some non-official skins, like Chameleon, may redefine this
+	box-sizing: content-box;
 
-  &:hover {
-    background-color: var(--background-color-interactive, #eaecf0);
-  }
+	&:hover {
+		background-color: var(--background-color-interactive, #eaecf0);
+	}
 
-  &:not(:first-child) {
-    position: relative;
-    margin-top: 1px;
+	&:not(:first-child) {
+		position: relative;
+		margin-top: 1px;
 
-    &::before {
-      position: absolute;
-      top: -1px;
-      left: 0.25rem;
-      margin: 0 auto 1px;
-      width: 1.625rem;
-      height: 0;
-      border-top: 1px solid var(--border-color-base, #a2a9b1);
-      content: "";
-    }
-  }
+		&::before {
+			position: absolute;
+			top: -1px;
+			left: 0.25rem;
+			margin: 0 auto 1px;
+			width: 1.625rem;
+			height: 0;
+			border-top: 1px solid var(--border-color-base, #a2a9b1);
+			content: "";
+		}
+	}
 }
 
 .cd-navPanel-refreshButton-relevant {
-  color: #7d00cc;
+	color: #7d00cc;
 }
 
 .darkTheme-refreshButton() {
-  .cd-navPanel-refreshButton-relevant {
-    color: #d799ff;
-  }
+	.cd-navPanel-refreshButton-relevant {
+		color: #d799ff;
+	}
 }
 
 @media screen {
-  html.skin-theme-clientpref-night {
-    .darkTheme-refreshButton();
-  }
+	html.skin-theme-clientpref-night {
+		.darkTheme-refreshButton();
+	}
 }
 
 @media screen and (prefers-color-scheme: dark) {
-  html.skin-theme-clientpref-os {
-    .darkTheme-refreshButton();
-  }
+	html.skin-theme-clientpref-os {
+		.darkTheme-refreshButton();
+	}
 }

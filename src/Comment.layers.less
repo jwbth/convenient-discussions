@@ -1,258 +1,258 @@
 @import 'variables.less';
 
 .cd-comment-underlay {
-  position: absolute;
-  z-index: -1;
+	position: absolute;
+	z-index: -1;
 
-  .cd-reformattedComments & {
-    mix-blend-mode: color;
-  }
+	.cd-reformattedComments & {
+		mix-blend-mode: color;
+	}
 }
 
 :root {
-  --cd-comment-hovered-background-color: var(--background-color-interactive-subtle, #f8f9fa);
-  --cd-comment-target-marker-color: #edab00;
-  --cd-comment-target-background-color: var(--background-color-warning-subtle, #fdf2d5);
-  --cd-comment-target-hovered-background-color: #fcecc2;
-  --cd-comment-new-marker-color: #00af89;
-  --cd-comment-new-background-color: #e8fff1;
-  --cd-comment-new-hovered-background-color: #d6ffe7;
-  --cd-comment-own-marker-color: #9f33cc;
-  --cd-comment-own-background-color: #faf3fc;
-  --cd-comment-own-hovered-background-color: #f6eafa;
-  --cd-comment-deleted-marker-color: var(--color-destructive, #d73333);
-  --cd-comment-deleted-background-color: var(--background-color-destructive-subtle, #fee7e6);
-  --cd-comment-deleted-hovered-background-color: #fddbd9;
+	--cd-comment-hovered-background-color: var(--background-color-interactive-subtle, #f8f9fa);
+	--cd-comment-target-marker-color: #edab00;
+	--cd-comment-target-background-color: var(--background-color-warning-subtle, #fdf2d5);
+	--cd-comment-target-hovered-background-color: #fcecc2;
+	--cd-comment-new-marker-color: #00af89;
+	--cd-comment-new-background-color: #e8fff1;
+	--cd-comment-new-hovered-background-color: #d6ffe7;
+	--cd-comment-own-marker-color: #9f33cc;
+	--cd-comment-own-background-color: #faf3fc;
+	--cd-comment-own-hovered-background-color: #f6eafa;
+	--cd-comment-deleted-marker-color: var(--color-destructive, #d73333);
+	--cd-comment-deleted-background-color: var(--background-color-destructive-subtle, #fee7e6);
+	--cd-comment-deleted-hovered-background-color: #fddbd9;
 }
 
 .darkTheme-commentVars() {
-  --cd-comment-target-hovered-background-color: #3d2500;
-  --cd-comment-new-marker-color: #008000;
-  --cd-comment-new-background-color: #002600;
-  --cd-comment-new-hovered-background-color: #003000;
-  // --cd-comment-own-marker-color: #9f33cc;
-  --cd-comment-own-background-color: #2e0d38;
-  --cd-comment-own-hovered-background-color: #3c1149;
-  --cd-comment-deleted-hovered-background-color: #521615;
+	--cd-comment-target-hovered-background-color: #3d2500;
+	--cd-comment-new-marker-color: #008000;
+	--cd-comment-new-background-color: #002600;
+	--cd-comment-new-hovered-background-color: #003000;
+	// --cd-comment-own-marker-color: #9f33cc;
+	--cd-comment-own-background-color: #2e0d38;
+	--cd-comment-own-hovered-background-color: #3c1149;
+	--cd-comment-deleted-hovered-background-color: #521615;
 }
 
 @media screen {
-  html.skin-theme-clientpref-night {
-    .darkTheme-commentVars();
-  }
+	html.skin-theme-clientpref-night {
+		.darkTheme-commentVars();
+	}
 }
 
 @media screen and (prefers-color-scheme: dark) {
-  html.skin-theme-clientpref-os {
-    .darkTheme-commentVars();
-  }
+	html.skin-theme-clientpref-os {
+		.darkTheme-commentVars();
+	}
 }
 
 /*
-  The hierarchy of layer types (starting with the highest priority):
-  1. Target
-  2. Changed (quick flash with green)
-  3. Deleted
-  4. Own
-  5. New
-  6. Hovered (but each hovered subtype has more priority than non-hovered)
-*/
+ * The hierarchy of layer types (starting with the highest priority):
+ * 1. Target
+ * 2. Changed (quick flash with green)
+ * 3. Deleted
+ * 4. Own
+ * 5. New
+ * 6. Hovered (but each hovered subtype has more priority than non-hovered)
+ */
 
 .cd-comment-underlay-hovered,
 .cd-comment-overlay-menu {
-  background-color: var(--cd-comment-hovered-background-color);
+	background-color: var(--cd-comment-hovered-background-color);
 }
 
 .cd-comment-underlay-deleted.cd-comment-underlay-deleted {
-  background-color: var(--cd-comment-deleted-background-color);
+	background-color: var(--cd-comment-deleted-background-color);
 }
 
 .cd-comment-underlay-deleted.cd-comment-underlay-deleted.cd-comment-underlay-hovered,
 .cd-comment-overlay-deleted.cd-comment-overlay-deleted .cd-comment-overlay-menu {
-  background-color: var(--cd-comment-deleted-hovered-background-color);
+	background-color: var(--cd-comment-deleted-hovered-background-color);
 }
 
 .cd-comment-underlay-changed.cd-comment-underlay-changed {
-  background-color: var(--cd-comment-new-background-color);
+	background-color: var(--cd-comment-new-background-color);
 }
 
 .cd-comment-underlay-changed.cd-comment-underlay-changed.cd-comment-underlay-hovered,
 .cd-comment-overlay-changed.cd-comment-overlay-changed .cd-comment-overlay-menu {
-  background-color: var(--cd-comment-new-hovered-background-color);
+	background-color: var(--cd-comment-new-hovered-background-color);
 }
 
 .cd-comment-underlay-target.cd-comment-underlay-target {
-  background-color: var(--cd-comment-target-background-color);
+	background-color: var(--cd-comment-target-background-color);
 }
 
 .cd-comment-underlay-target.cd-comment-underlay-target.cd-comment-underlay-hovered,
 .cd-comment-overlay-target.cd-comment-overlay-target .cd-comment-overlay-menu {
-  background-color: var(--cd-comment-target-hovered-background-color);
+	background-color: var(--cd-comment-target-hovered-background-color);
 }
 
 .cd-comment-overlay {
-  position: absolute;
-  z-index: 1;
+	position: absolute;
+	z-index: 1;
 }
 
 .cd-comment-overlay-marker {
-  position: absolute;
-  top: 0;
-  width: calc(var(--cd-comment-marker-width) / var(--cd-pixel-deviation-ratio));
-  height: 100%;
+	position: absolute;
+	top: 0;
+	width: calc(var(--cd-comment-marker-width) / var(--cd-pixel-deviation-ratio));
+	height: 100%;
 
-  .cd-comment-overlay-new &,
-  .cd-comment-overlay-changed.cd-comment-overlay-changed & {
-    background-color: var(--cd-comment-new-marker-color);
-  }
+	.cd-comment-overlay-new &,
+	.cd-comment-overlay-changed.cd-comment-overlay-changed & {
+		background-color: var(--cd-comment-new-marker-color);
+	}
 
-  .cd-comment-overlay-own & {
-    background-color: var(--cd-comment-own-marker-color);
-  }
+	.cd-comment-overlay-own & {
+		background-color: var(--cd-comment-own-marker-color);
+	}
 
-  .cd-comment-overlay-deleted & {
-    background-color: var(--cd-comment-deleted-marker-color);
-  }
+	.cd-comment-overlay-deleted & {
+		background-color: var(--cd-comment-deleted-marker-color);
+	}
 
-  .cd-comment-overlay-target.cd-comment-overlay-target & {
-    background-color: var(--cd-comment-target-marker-color);
-  }
+	.cd-comment-overlay-target.cd-comment-overlay-target & {
+		background-color: var(--cd-comment-target-marker-color);
+	}
 }
 
 .cd-comment-overlay-innerWrapper {
-  position: absolute;
-  z-index: 1;
-  bottom: 0;
-  font-size: 0.875rem;
-  display: none;
-  flex-direction: row;
-  direction: var(--cd-direction-user);
-  inset-inline-end: 0;
+	position: absolute;
+	z-index: 1;
+	bottom: 0;
+	font-size: 0.875rem;
+	display: none;
+	flex-direction: row;
+	direction: var(--cd-direction-user);
+	inset-inline-end: 0;
 
-  .cd-comment-overlay-hovered & {
-    display: flex;
-  }
+	.cd-comment-overlay-hovered & {
+		display: flex;
+	}
 }
 
 .cd-comment-overlay-gradient {
-  width: 1.5em;
-  display: inline-block;
-  -moz-user-select: none;
-  user-select: none;
-  background-image: linear-gradient(
-    var(--cd-gradient-user-start),
-    var(--cd-comment-hovered-background-color),
-    rgba(255, 255, 255, 0)
-  );
+	width: 1.5em;
+	display: inline-block;
+	-moz-user-select: none;
+	user-select: none;
+	background-image: linear-gradient(
+		var(--cd-gradient-user-start),
+		var(--cd-comment-hovered-background-color),
+		rgba(255, 255, 255, 0)
+	);
 
-  .cd-comment-overlay-deleted.cd-comment-overlay-deleted & {
-    background-image: linear-gradient(
-      var(--cd-gradient-user-start),
-      var(--cd-comment-deleted-hovered-background-color),
-      rgba(255, 255, 255, 0)
-    );
-  }
+	.cd-comment-overlay-deleted.cd-comment-overlay-deleted & {
+		background-image: linear-gradient(
+			var(--cd-gradient-user-start),
+			var(--cd-comment-deleted-hovered-background-color),
+			rgba(255, 255, 255, 0)
+		);
+	}
 
-  .cd-comment-overlay-changed.cd-comment-overlay-changed & {
-    background-image: linear-gradient(
-      var(--cd-gradient-user-start),
-      var(--cd-comment-new-hovered-background-color),
-      rgba(255, 255, 255, 0)
-    );
-  }
+	.cd-comment-overlay-changed.cd-comment-overlay-changed & {
+		background-image: linear-gradient(
+			var(--cd-gradient-user-start),
+			var(--cd-comment-new-hovered-background-color),
+			rgba(255, 255, 255, 0)
+		);
+	}
 
-  // Gradient can't be animated. Not with jquery.ui and jquery.color.
-  .cd-comment-overlay-target.cd-comment-overlay-target & {
-    background-image: none;
-  }
+	// Gradient can't be animated. Not with jquery.ui and jquery.color.
+	.cd-comment-overlay-target.cd-comment-overlay-target & {
+		background-image: none;
+	}
 }
 
 .cd-comment-overlay-menu {
-  display: inline-flex;
-  padding-inline-start: 0.5em;
-  flex-direction: row;
-  pointer-events: all;
+	display: inline-flex;
+	padding-inline-start: 0.5em;
+	flex-direction: row;
+	pointer-events: all;
 
-  > .oo-ui-buttonElement {
-    line-height: 1.4285714em;
-  }
+	> .oo-ui-buttonElement {
+		line-height: 1.4285714em;
+	}
 
-  // When the user language and content language point in opposite directions, align the menu with
-  // the _start_ of the line. Don't care about RTL content in LTR content and vice versa here -
-  // those are too narrow and unimportant.
-  .ltr.sitedir-rtl &,
-  .rtl.sitedir-ltr & {
-    margin-inline: 0 0.5em;
-  }
+	// When the user language and content language point in opposite directions, align the menu with
+	// the _start_ of the line. Don't care about RTL content in LTR content and vice versa here -
+	// those are too narrow and unimportant.
+	.ltr.sitedir-rtl &,
+	.rtl.sitedir-ltr & {
+		margin-inline: 0 0.5em;
+	}
 }
 
 .cd-comment-overlay-marker,
 .cd-comment-overlay-line {
-  // This calculation is the same as in Thread#updateLine() but with -1px.
-  inset-inline-start: calc(
-    -1px -
-    (
-      (
-        (var(--cd-comment-marker-width) / var(--cd-pixel-deviation-ratio)) -
-        (1px / var(--cd-pixel-deviation-ratio-for-1px))
-      )
-      / 2
-    )
-  );
+	// This calculation is the same as in Thread#updateLine() but with -1px.
+	inset-inline-start: calc(
+		-1px -
+		(
+			(
+				(var(--cd-comment-marker-width) / var(--cd-pixel-deviation-ratio)) -
+				(1px / var(--cd-pixel-deviation-ratio-for-1px))
+			)
+			/ 2
+		)
+	);
 }
 
 .cd-comment-overlay-line-gapCloser {
-  position: absolute;
-  top: 0;
-  inset-inline-start: -1px;
-  width: calc(1px / var(--cd-pixel-deviation-ratio-for-1px));
-  height: 100%;
-  background-color: var(--border-color-subtle, #c8ccd1);
+	position: absolute;
+	top: 0;
+	inset-inline-start: -1px;
+	width: calc(1px / var(--cd-pixel-deviation-ratio-for-1px));
+	height: 100%;
+	background-color: var(--border-color-subtle, #c8ccd1);
 }
 
 .cd-comment-button-ooui.cd-comment-button-ooui {
-  margin: 0;
+	margin: 0;
 
-  > .oo-ui-buttonElement-button {
-    padding-block: 0;
-    padding-inline: @comment-button-ooui-padding;
-  }
+	> .oo-ui-buttonElement-button {
+		padding-block: 0;
+		padding-inline: @comment-button-ooui-padding;
+	}
 }
 
 body:not(.skin-monobook) .cd-comment-button-ooui-icon.cd-comment-button-ooui-icon > .oo-ui-buttonElement-button {
-  padding-top: 1.4285714em;
-  min-width: unset;
-  padding-inline-start: 1.4285714em;
-  padding-inline-end: calc(2 * @comment-button-ooui-padding);
+	padding-top: 1.4285714em;
+	min-width: unset;
+	padding-inline-start: 1.4285714em;
+	padding-inline-end: calc(2 * @comment-button-ooui-padding);
 
-  > .oo-ui-iconElement-icon {
-    inset-inline-start: @comment-button-ooui-padding;
-  }
+	> .oo-ui-iconElement-icon {
+		inset-inline-start: @comment-button-ooui-padding;
+	}
 }
 
 body:not(.skin-monobook) .cd-comment-button-ooui-icon-thank.cd-comment-button-ooui-icon-thank > .oo-ui-buttonElement-button > .oo-ui-iconElement-icon {
-  width: 16px;
-  min-width: 16px;
-  inset-inline-start: calc(@comment-button-ooui-padding + 2px);
+	width: 16px;
+	min-width: 16px;
+	inset-inline-start: calc(@comment-button-ooui-padding + 2px);
 }
 
 .cd-commentLayersContainer {
-  position: relative;
-  pointer-events: none;
-  direction: var(--cd-direction-content);
+	position: relative;
+	pointer-events: none;
+	direction: var(--cd-direction-content);
 
-  &-parent-relative {
-    position: relative;
-    z-index: 0;
+	&-parent-relative {
+		position: relative;
+		z-index: 0;
 
-    .mw-parser-output & {
-      display: flow-root;
+		.mw-parser-output & {
+			display: flow-root;
 
-      // `display: flow-root` should do the job of `overflow: hidden` or `overflow: auto` if it's
-      // set for an element. `overflow: auto` (present in
-      // https://en.wikipedia.org/wiki/Template:Discussion_top, for example) can create a scrollbar
-      // in some cases.
-      overflow: unset !important;
-    }
-  }
+			// `display: flow-root` should do the job of `overflow: hidden` or `overflow: auto` if it's
+			// set for an element. `overflow: auto` (present in
+			// https://en.wikipedia.org/wiki/Template:Discussion_top, for example) can create a scrollbar
+			// in some cases.
+			overflow: unset !important;
+		}
+	}
 }

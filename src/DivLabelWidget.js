@@ -16,7 +16,7 @@ import { es6ClassToOoJsClass } from './utils-oojs';
  * @augments OO.ui.LabelWidget
  */
 class DivLabelWidget extends OO.ui.LabelWidget {
-  static tagName = 'div';
+	static tagName = 'div';
 }
 
 es6ClassToOoJsClass(DivLabelWidget);

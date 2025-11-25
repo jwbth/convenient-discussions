@@ -7,15 +7,15 @@ import { isElement, isText } from './utils-general';
  * @augments TreeWalker<ElementLike | TextLike>
  */
 class ElementsAndTextTreeWalker extends TreeWalker {
-  /**
-   * Create an elements and text {@link TreeWalker tree walker}.
-   *
-   * @param {ElementLike | TextLike} root
-   * @param {ElementLike | TextLike} [startNode]
-   */
-  constructor(root, startNode) {
-    super(root, (node) => isText(node) || isElement(node), false, startNode);
-  }
+	/**
+	 * Create an elements and text {@link TreeWalker tree walker}.
+	 *
+	 * @param {ElementLike | TextLike} root
+	 * @param {ElementLike | TextLike} [startNode]
+	 */
+	constructor(root, startNode) {
+		super(root, (node) => isText(node) || isElement(node), false, startNode);
+	}
 }
 
 export default ElementsAndTextTreeWalker;

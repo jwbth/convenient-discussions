@@ -6,11 +6,11 @@ import { es6ClassToOoJsClass, mixInClass } from './utils-oojs';
  * of methods to it.
  */
 class ProcessDialog extends mixInClass(OO.ui.ProcessDialog, ProcessDialogMixin) {
-  /**
-   * @type {string}
-   * @abstract
-   */
-  static cdKey;
+	/**
+	 * @type {string}
+	 * @abstract
+	 */
+	static cdKey;
 }
 
 es6ClassToOoJsClass(ProcessDialog);

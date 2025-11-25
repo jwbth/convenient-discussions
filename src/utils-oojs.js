@@ -166,17 +166,17 @@ import { copyText } from './utils-window';
  *   think.
  */
 export async function showConfirmDialog(message, options = {}) {
-  const dialog = new OO.ui.MessageDialog({ classes: ['cd-dialog-confirm'] });
-  cd.getWindowManager().addWindows([dialog]);
-  const win = cd.getWindowManager().openWindow(dialog, { message, ...options });
-  win.opened.then(() => {
-    if (message instanceof $) {
-      mw.hook('wikipage.content').fire(message);
-    }
-  });
-  const closeData = await win.closed;
+	const dialog = new OO.ui.MessageDialog({ classes: ['cd-dialog-confirm'] });
+	cd.getWindowManager().addWindows([dialog]);
+	const win = cd.getWindowManager().openWindow(dialog, { message, ...options });
+	win.opened.then(() => {
+		if (message instanceof $) {
+			mw.hook('wikipage.content').fire(message);
+		}
+	});
+	const closeData = await win.closed;
 
-  return closeData?.action;
+	return closeData?.action;
 }
 
 /**
@@ -282,18 +282,18 @@ export async function showConfirmDialog(message, options = {}) {
  * @returns {TextControl}
  */
 export function createTextControl({
-  value,
-  maxLength,
-  required,
-  classes,
-  label,
-  help,
+	value,
+	maxLength,
+	required,
+	classes,
+	label,
+	help,
 }) {
-  return createGenericControl(
-    'text',
-    new TextInputWidget({ value, maxLength, required, classes }),
-    { label, help }
-  );
+	return createGenericControl(
+		'text',
+		new TextInputWidget({ value, maxLength, required, classes }),
+		{ label, help }
+	);
 }
 
 /**
@@ -303,29 +303,29 @@ export function createTextControl({
  * @returns {NumberControl}
  */
 export function createNumberControl({
-  value,
-  label,
-  min,
-  max,
-  buttonStep = 1,
-  help,
-  classes,
+	value,
+	label,
+	min,
+	max,
+	buttonStep = 1,
+	help,
+	classes,
 }) {
-  return createGenericControl(
-    'number',
+	return createGenericControl(
+		'number',
 
-    // See https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/oojs-ui#caveats for
-    // why we need type casting here.
-    /** @type {OO.ui.TextInputWidget} */ (/** @type {unknown} */ (new OO.ui.NumberInputWidget({
-      input: { value },
-      step: 1,
-      buttonStep,
-      min,
-      max,
-      classes: ['cd-numberInput'],
-    }))),
-    { label, help, classes }
-  );
+		// See https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/oojs-ui#caveats for
+		// why we need type casting here.
+		/** @type {OO.ui.TextInputWidget} */ (/** @type {unknown} */ (new OO.ui.NumberInputWidget({
+			input: { value },
+			step: 1,
+			buttonStep,
+			min,
+			max,
+			classes: ['cd-numberInput'],
+		}))),
+		{ label, help, classes }
+	);
 }
 
 /**
@@ -335,31 +335,31 @@ export function createNumberControl({
  * @returns {CheckboxControl}
  */
 export function createCheckboxControl({
-  value,
-  selected,
-  disabled,
-  label,
-  title,
-  help,
-  tabIndex,
-  classes,
+	value,
+	selected,
+	disabled,
+	label,
+	title,
+	help,
+	tabIndex,
+	classes,
 }) {
-  return createGenericControl(
-    'checkbox',
-    new CheckboxInputWidget({
-      value,
-      selected,
-      disabled,
-      tabIndex,
-    }),
-    {
-      label,
-      title,
-      help,
-      classes,
-      align: 'inline',
-    }
-  );
+	return createGenericControl(
+		'checkbox',
+		new CheckboxInputWidget({
+			value,
+			selected,
+			disabled,
+			tabIndex,
+		}),
+		{
+			label,
+			title,
+			help,
+			classes,
+			align: 'inline',
+		}
+	);
 }
 
 /**
@@ -369,24 +369,24 @@ export function createCheckboxControl({
  * @returns {RadioControl}
  */
 export function createRadioControl({
-  label,
-  selected,
-  help,
-  options,
+	label,
+	selected,
+	help,
+	options,
 }) {
-  const input = new OO.ui.RadioSelectWidget({
-    items: options.map((config) => new RadioOptionWidget(config)),
-  });
+	const input = new OO.ui.RadioSelectWidget({
+		items: options.map((config) => new RadioOptionWidget(config)),
+	});
 
-  // Workarounds for T359920
-  input.$element.off('mousedown');
-  input.$focusOwner = $();
+	// Workarounds for T359920
+	input.$element.off('mousedown');
+	input.$focusOwner = $();
 
-  if (selected !== undefined) {
-    input.selectItemByData(selected);
-  }
+	if (selected !== undefined) {
+		input.selectItemByData(selected);
+	}
 
-  return createGenericControl('radio', input, { label, help });
+	return createGenericControl('radio', input, { label, help });
 }
 
 /**
@@ -396,50 +396,50 @@ export function createRadioControl({
  * @returns {CopyTextControl}
  */
 export function createCopyTextControl({
-  label,
-  value,
-  disabled = false,
-  help,
-  copyCallback,
+	label,
+	value,
+	disabled = false,
+	help,
+	copyCallback,
 }) {
-  if ('CopyTextLayout' in OO.ui) {
-    const field = new OO.ui.CopyTextLayout({
-      align: 'top',
-      label,
-      copyText: value,
-      button: { disabled },
-      textInput: { disabled },
-      help,
-      helpInline: Boolean(help),
-    });
-    field.on('copy', (successful) => {
-      copyCallback(successful, field.textInput);
-    });
+	if ('CopyTextLayout' in OO.ui) {
+		const field = new OO.ui.CopyTextLayout({
+			align: 'top',
+			label,
+			copyText: value,
+			button: { disabled },
+			textInput: { disabled },
+			help,
+			helpInline: Boolean(help),
+		});
+		field.on('copy', (successful) => {
+			copyCallback(successful, field.textInput);
+		});
 
-    return { type: 'copyText', field, input: field.textInput };
-  }
+		return { type: 'copyText', field, input: field.textInput };
+	}
 
-  // MediaWiki versions before 1.34 do not have CopyTextLayout, so we use ActionFieldLayout instead
-  const input = new OO.ui.TextInputWidget({ value, disabled });
-  const button = new OO.ui.ButtonWidget({
-    label: cd.s('copy'),
-    icon: 'copy',
-    disabled,
-  });
-  button.on('click', () => {
-    copyCallback(copyText(input.getValue()), input);
-  });
+	// MediaWiki versions before 1.34 do not have CopyTextLayout, so we use ActionFieldLayout instead
+	const input = new OO.ui.TextInputWidget({ value, disabled });
+	const button = new OO.ui.ButtonWidget({
+		label: cd.s('copy'),
+		icon: 'copy',
+		disabled,
+	});
+	button.on('click', () => {
+		copyCallback(copyText(input.getValue()), input);
+	});
 
-  return {
-    type: 'copyText',
-    field: new OO.ui.ActionFieldLayout(input, button, {
-      align: 'top',
-      label,
-      help,
-      helpInline: Boolean(help),
-    }),
-    input,
-  };
+	return {
+		type: 'copyText',
+		field: new OO.ui.ActionFieldLayout(input, button, {
+			align: 'top',
+			label,
+			help,
+			helpInline: Boolean(help),
+		}),
+		input,
+	};
 }
 
 /**
@@ -449,26 +449,26 @@ export function createCopyTextControl({
  * @returns {MulticheckboxControl}
  */
 export function createMulticheckboxControl({
-  label,
-  options,
-  selected,
-  classes,
+	label,
+	options,
+	selected,
+	classes,
 }) {
-  return createGenericControl(
-    'multicheckbox',
-    new OO.ui.CheckboxMultiselectWidget({
-      items: options.map(
-        (option) =>
-          new OO.ui.CheckboxMultioptionWidget({
-            data: option.data,
-            selected: selected ? selected.includes(option.data) : option.selected,
-            label: option.label,
-          })
-      ),
-      classes,
-    }),
-    { label }
-  );
+	return createGenericControl(
+		'multicheckbox',
+		new OO.ui.CheckboxMultiselectWidget({
+			items: options.map(
+				(option) =>
+					new OO.ui.CheckboxMultioptionWidget({
+						data: option.data,
+						selected: selected ? selected.includes(option.data) : option.selected,
+						label: option.label,
+					})
+			),
+			classes,
+		}),
+		{ label }
+	);
 }
 
 /**
@@ -478,26 +478,26 @@ export function createMulticheckboxControl({
  * @returns {MultitagControl}
  */
 export function createMultitagControl({
-  label,
-  placeholder,
-  tagLimit,
-  selected,
-  help,
-  dataToUi,
-  uiToData,
+	label,
+	placeholder,
+	tagLimit,
+	selected,
+	help,
+	dataToUi,
+	uiToData,
 }) {
-  return createGenericControl(
-    'multitag',
-    new OO.ui.TagMultiselectWidget({
-      placeholder,
-      allowArbitrary: true,
-      inputPosition: 'outline',
-      tagLimit,
-      selected: (dataToUi || ((val) => val)).call(null, selected || []),
-    }),
-    { label, help },
-    { uiToData },
-  );
+	return createGenericControl(
+		'multitag',
+		new OO.ui.TagMultiselectWidget({
+			placeholder,
+			allowArbitrary: true,
+			inputPosition: 'outline',
+			tagLimit,
+			selected: (dataToUi || ((val) => val)).call(null, selected || []),
+		}),
+		{ label, help },
+		{ uiToData },
+	);
 }
 
 /**
@@ -507,16 +507,16 @@ export function createMultitagControl({
  * @returns {ButtonControl}
  */
 export function createButtonControl({
-  label,
-  flags,
-  buttonLabel,
-  help,
+	label,
+	flags,
+	buttonLabel,
+	help,
 }) {
-  return createGenericControl(
-    'button',
-    new OO.ui.ButtonWidget({ label: buttonLabel, flags }),
-    { label, help }
-  );
+	return createGenericControl(
+		'button',
+		new OO.ui.ButtonWidget({ label: buttonLabel, flags }),
+		{ label, help }
+	);
 }
 
 /**
@@ -527,13 +527,13 @@ export function createButtonControl({
  * @returns {TitleControl}
  */
 export function createTitleControl(options) {
-  const { label, help, classes, ...titleInputOptions } = options;
+	const { label, help, classes, ...titleInputOptions } = options;
 
-  return createGenericControl(
-    'title',
-    new mw.widgets.TitleInputWidget(titleInputOptions),
-    { label, help, classes }
-  );
+	return createGenericControl(
+		'title',
+		new mw.widgets.TitleInputWidget(titleInputOptions),
+		{ label, help, classes }
+	);
 }
 
 /**
@@ -557,19 +557,19 @@ export function createTitleControl(options) {
  * @returns {GenericControl<T>}
  */
 export function createGenericControl(type, input, fieldOptions = {}, data = {}) {
-  const field = /** @type {OO.ui.FieldLayout<ControlTypeToWidget[T]>} */ (
-    new OO.ui.FieldLayout(input, {
-      align: 'top',
-      helpInline: true,
-      ...fieldOptions,
-    })
-  );
+	const field = /** @type {OO.ui.FieldLayout<ControlTypeToWidget[T]>} */ (
+		new OO.ui.FieldLayout(input, {
+			align: 'top',
+			helpInline: true,
+			...fieldOptions,
+		})
+	);
 
-  if (!fieldOptions.label) {
-    field.$element.addClass('cd-field-labelless');
-  }
+	if (!fieldOptions.label) {
+		field.$element.addClass('cd-field-labelless');
+	}
 
-  return { type, field, input, ...data };
+	return { type, field, input, ...data };
 }
 
 /**
@@ -594,34 +594,34 @@ export function createGenericControl(type, input, fieldOptions = {}, data = {}) 
  * @returns {T}
  */
 export function es6ClassToOoJsClass(TargetClass) {
-  const OriginClass = Object.getPrototypeOf(TargetClass);
-  if (OriginClass?.prototype) {
-    TargetClass.parent = TargetClass.super = OriginClass;
-    OO.initClass(OriginClass);
+	const OriginClass = Object.getPrototypeOf(TargetClass);
+	if (OriginClass?.prototype) {
+		TargetClass.parent = TargetClass.super = OriginClass;
+		OO.initClass(OriginClass);
 
-    // Move prototype properties
-    Object.getOwnPropertyNames(OriginClass.prototype)
-      .filter((name) => name !== 'constructor' && !(name in TargetClass.prototype))
-      .forEach((name) => {
-        Object.defineProperty(
-          TargetClass.prototype,
-          name,
-          /** @type {PropertyDescriptor} */ (
-            Object.getOwnPropertyDescriptor(OriginClass.prototype, name)
-          )
-        );
-      });
-  }
+		// Move prototype properties
+		Object.getOwnPropertyNames(OriginClass.prototype)
+			.filter((name) => name !== 'constructor' && !(name in TargetClass.prototype))
+			.forEach((name) => {
+				Object.defineProperty(
+					TargetClass.prototype,
+					name,
+					/** @type {PropertyDescriptor} */ (
+						Object.getOwnPropertyDescriptor(OriginClass.prototype, name)
+					)
+				);
+			});
+	}
 
-  // Move static properties
-  TargetClass.static = Object.create(OriginClass?.static || null);
-  Object.keys(TargetClass)
-    .filter((key) => !['parent', 'super', 'static'].includes(key))
-    .forEach((key) => {
-      /** @type {AnyByKey} */ (TargetClass.static)[key] = TargetClass[key];
-    });
+	// Move static properties
+	TargetClass.static = Object.create(OriginClass?.static || null);
+	Object.keys(TargetClass)
+		.filter((key) => !['parent', 'super', 'static'].includes(key))
+		.forEach((key) => {
+			/** @type {AnyByKey} */ (TargetClass.static)[key] = TargetClass[key];
+		});
 
-  return TargetClass;
+	return TargetClass;
 }
 
 /**
@@ -634,35 +634,35 @@ export function es6ClassToOoJsClass(TargetClass) {
  * @returns {TBase & MixinType<TMixin>}
  */
 export function mixInClass(Base, Mixin) {
-  // eslint-disable-next-line jsdoc/require-jsdoc
-  class Class extends Base {
-    /**
-     * @param {any} args
-     */
-    constructor(...args) {
-      super(...args);
+	// eslint-disable-next-line jsdoc/require-jsdoc
+	class Class extends Base {
+		/**
+		 * @param {any} args
+		 */
+		constructor(...args) {
+			super(...args);
 
-      if ('construct' in Mixin.prototype) {
-        Mixin.prototype.construct.call(this);
-      }
-    }
-  }
-  OO.mixinClass(Class, Mixin);
+			if ('construct' in Mixin.prototype) {
+				Mixin.prototype.construct.call(this);
+			}
+		}
+	}
+	OO.mixinClass(Class, Mixin);
 
-  // for...in in OO.mixinClass doesn't catch prototype properties declared with the `class` syntax
-  // (because they are not enumerable), so we set them manually. Alternatively, we could make them
-  // enumerable in es6ClassToOoJsClass().
-  Object.getOwnPropertyNames(Mixin.prototype)
-    .filter((name) => name !== 'constructor')
-    .forEach((name) => {
-      Object.defineProperty(
-        Class.prototype,
-        name,
-        /** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(Mixin.prototype, name))
-      );
-    });
+	// for...in in OO.mixinClass doesn't catch prototype properties declared with the `class` syntax
+	// (because they are not enumerable), so we set them manually. Alternatively, we could make them
+	// enumerable in es6ClassToOoJsClass().
+	Object.getOwnPropertyNames(Mixin.prototype)
+		.filter((name) => name !== 'constructor')
+		.forEach((name) => {
+			Object.defineProperty(
+				Class.prototype,
+				name,
+				/** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(Mixin.prototype, name))
+			);
+		});
 
-  return /** @type {TBase & MixinType<TMixin>} */ (Class);
+	return /** @type {TBase & MixinType<TMixin>} */ (Class);
 }
 
 /**
@@ -676,19 +676,19 @@ export function mixInClass(Base, Mixin) {
  * @returns {TBase & InstanceType<TMixin>}
  */
 export function mixInObject(obj, Mixin) {
-  // for...in in OO.mixinClass doesn't catch prototype properties declared with the `class` syntax
-  // (because they are not enumerable), so we set them manually. Alternatively, we could make them
-  // enumerable in es6ClassToOoJsClass().
-  Object.getOwnPropertyNames(Mixin.prototype)
-    .filter((name) => name !== 'constructor')
-    .forEach((name) => {
-      Object.defineProperty(
-        obj,
-        name,
-        /** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(Mixin.prototype, name))
-      );
-    });
+	// for...in in OO.mixinClass doesn't catch prototype properties declared with the `class` syntax
+	// (because they are not enumerable), so we set them manually. Alternatively, we could make them
+	// enumerable in es6ClassToOoJsClass().
+	Object.getOwnPropertyNames(Mixin.prototype)
+		.filter((name) => name !== 'constructor')
+		.forEach((name) => {
+			Object.defineProperty(
+				obj,
+				name,
+				/** @type {PropertyDescriptor} */ (Object.getOwnPropertyDescriptor(Mixin.prototype, name))
+			);
+		});
 
-  // Run the mixin's constructor
-  return /** @type {TBase & InstanceType<TMixin>} */ (Object.assign(obj, new Mixin()));
+	// Run the mixin's constructor
+	return /** @type {TBase & InstanceType<TMixin>} */ (Object.assign(obj, new Mixin()));
 }

@@ -132,51 +132,51 @@ export default /** @type {Partial<typeof import('./default').default>} */ ({
 	'reflistTalkClasses': ['references-discussion'],
 	'noSignatureClasses': [
 		'NavFrame',
-  ],
+	],
 	'signatureEndingRegexp': / \(discuter\)/,
 });
 
 /** @type {CSSStyleSheet} */
 let styles;
 mw.hook('convenientDiscussions.beforeParse').add(function () {
-  if (!styles) {
-    styles = mw.util.addCSS('\
+	if (!styles) {
+		styles = mw.util.addCSS('\
 .sitedir-ltr #mw-content-text .cd-commentLevel:not(ol) > dd,\
 .sitedir-ltr #mw-content-text .cd-commentLevel:not(ol) > li,\
 .sitedir-rtl #mw-content-text .mw-content-ltr .cd-commentLevel:not(ol) > dd,\
 .sitedir-rtl #mw-content-text .mw-content-ltr .cd-commentLevel:not(ol) > li {\
-  padding-left: 1em;\
-  padding-right: 0;\
-  margin-left: 1em;\
-  margin-right: 0;\
+	padding-left: 1em;\
+	padding-right: 0;\
+	margin-left: 1em;\
+	margin-right: 0;\
 }\
 \
 .skin-vector #mw-content-text .cd-parsed dd,\
 .skin-vector #mw-content-text .cd-parsed li,\
 .skin-vector #mw-content-text .cd-parsed ol > li.cd-comment-part-last.cd-comment-part-last {\
-  margin-bottom: 0.14285714em;\
+	margin-bottom: 0.14285714em;\
 }\
 \
 .cd-reformattedComments #mw-content-text .cd-comment-part-first {\
-  margin-top: 0.75em;\
+	margin-top: 0.75em;\
 }\
 \
 #mw-content-text .cd-comment-part-first {\
-  margin-top: 0.5em;\
+	margin-top: 0.5em;\
 }\
 \
 .ns-talk #mw-content-text#mw-content-text dl {\
-  border-top: 0;\
-  border-left: 0;\
-  padding-top: 0;\
-  padding-left: 0;\
-  margin-left: 0;\
-  background: none;\
+	border-top: 0;\
+	border-left: 0;\
+	padding-top: 0;\
+	padding-left: 0;\
+	margin-left: 0;\
+	background: none;\
 }\
 \
 #mw-content-text#mw-content-text .cd-replyButtonWrapper {\
-  margin-top: 0.5em;\
+	margin-top: 0.5em;\
 }\
 ');
-  }
+	}
 });

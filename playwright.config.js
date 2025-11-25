@@ -11,48 +11,48 @@ const authFile = path.join(__dirname, 'playwright', '.auth', 'user.json');
  * @see https://playwright.dev/docs/test-configuration
  */
 module.exports = defineConfig({
-  testDir: './playwright',
-  /* Run tests in files in parallel */
-  fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: [
-    ['html', { open: 'never' }],
-    ['list'],
-  ],
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
-  use: {
-    /* Base URL for test.wikipedia.org */
-    baseURL: 'https://test.wikipedia.org',
+	testDir: './playwright',
+	/* Run tests in files in parallel */
+	fullyParallel: true,
+	/* Fail the build on CI if you accidentally left test.only in the source code. */
+	forbidOnly: !!process.env.CI,
+	/* Retry on CI only */
+	retries: process.env.CI ? 2 : 0,
+	/* Opt out of parallel tests on CI. */
+	workers: process.env.CI ? 1 : undefined,
+	/* Reporter to use. See https://playwright.dev/docs/test-reporters */
+	reporter: [
+		['html', { open: 'never' }],
+		['list'],
+	],
+	/* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+	use: {
+		/* Base URL for test.wikipedia.org */
+		baseURL: 'https://test.wikipedia.org',
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+		/* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+		trace: 'on-first-retry',
 
-    /* Use authentication state if available */
-    storageState: fs.existsSync(authFile) ? authFile : undefined,
-  },
+		/* Use authentication state if available */
+		storageState: fs.existsSync(authFile) ? authFile : undefined,
+	},
 
-  /* Configure projects for major browsers */
-  projects: [
-    // Setup project for authentication
-    {
-      name: 'setup',
-      testMatch: /.*\.setup\.js/,
-    },
+	/* Configure projects for major browsers */
+	projects: [
+		// Setup project for authentication
+		{
+			name: 'setup',
+			testMatch: /.*\.setup\.js/,
+		},
 
-    // Main test project - Chromium only for now
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-      dependencies: ['setup'],
-    },
-  ],
+		// Main test project - Chromium only for now
+		{
+			name: 'chromium',
+			use: { ...devices['Desktop Chrome'] },
+			dependencies: ['setup'],
+		},
+	],
 
-  /* Build the script before running tests */
-  globalSetup: require.resolve('./playwright/global-setup.js'),
+	/* Build the script before running tests */
+	globalSetup: require.resolve('./playwright/global-setup.js'),
 });

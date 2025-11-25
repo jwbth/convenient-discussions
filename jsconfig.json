@@ -1,14 +1,14 @@
 {
-  "extends": "./jsconfig-base.json",
-  "compilerOptions": {
-    "target": "esnext",
-    "module": "nodenext",
-    "types": [
-      // For typescript-eslint
-      "prompts"
-    ]
-  },
+	"extends": "./jsconfig-base.json",
+	"compilerOptions": {
+		"target": "esnext",
+		"module": "nodenext",
+		"types": [
+			// For typescript-eslint
+			"prompts"
+		]
+	},
 
-  // No subdirectories
-  "include": ["*"]
+	// No subdirectories
+	"include": ["*"]
 }

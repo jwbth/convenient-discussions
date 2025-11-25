@@ -6,249 +6,249 @@
 @num-rows-section: 5;
 
 .cd-commentForm {
-  display: flow-root;
-  font-weight: normal;
-  text-align: start;
+	display: flow-root;
+	font-weight: normal;
+	text-align: start;
 
-  // The form may sometimes get inside a `<div dir="...">` element, so we need to reset the text
-  // direction.
-  direction: var(--cd-direction-user);
+	// The form may sometimes get inside a `<div dir="...">` element, so we need to reset the text
+	// direction.
+	direction: var(--cd-direction-user);
 
-  margin: 0.5em 0;
+	margin: 0.5em 0;
 
-  .cd-reformattedComments & {
-    margin-block: 0.75em;
-  }
+	.cd-reformattedComments & {
+		margin-block: 0.75em;
+	}
 
-  .oo-ui-textInputWidget {
-    max-width: none;
-  }
+	.oo-ui-textInputWidget {
+		max-width: none;
+	}
 
-  .oo-ui-buttonElement-framed > .oo-ui-buttonElement-button {
-    vertical-align: middle;
-  }
+	.oo-ui-buttonElement-framed > .oo-ui-buttonElement-button {
+		vertical-align: middle;
+	}
 
-  table.diff {
-    margin-bottom: 0.5em;
-  }
+	table.diff {
+		margin-bottom: 0.5em;
+	}
 
-  .wikiEditor-ui-left {
-    // Make a number in <ol> lists appear in front of the textarea, not below it.
-    float: none;
-  }
+	.wikiEditor-ui-left {
+		// Make a number in <ol> lists appear in front of the textarea, not below it.
+		float: none;
+	}
 
-  .wikiEditor-ui-toolbar {
-    // To make the shadow appear.
-    z-index: 1;
-  }
+	.wikiEditor-ui-toolbar {
+		// To make the shadow appear.
+		z-index: 1;
+	}
 
-  .oo-ui-textInputWidget .oo-ui-inputWidget-input {
-    border-radius: 0;
-  }
+	.oo-ui-textInputWidget .oo-ui-inputWidget-input {
+		border-radius: 0;
+	}
 
-  .tool-button {
-    // Until T312933 is fixed
-    width: 2.14285714em;
-    height: 2.14285714em;
-    border: 1px solid transparent;
+	.tool-button {
+		// Until T312933 is fixed
+		width: 2.14285714em;
+		height: 2.14285714em;
+		border: 1px solid transparent;
 
-    // Otherwise, text may be visible in some combinations of content and user language (for
-    // example, Russian Wikipedia and uselang=he).
-    direction: var(--cd-direction-content);
-  }
+		// Otherwise, text may be visible in some combinations of content and user language (for
+		// example, Russian Wikipedia and uselang=he).
+		direction: var(--cd-direction-content);
+	}
 
-  .tool-button[rel="quote"] {
-    background-color: var(--color-base-fixed, #202122);
+	.tool-button[rel="quote"] {
+		background-color: var(--color-base-fixed, #202122);
 
-    // `mask-image` was added to Chrome only in 2023-12-05
-    -webkit-mask-image: url('/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=quotes&lang=en&skin=vector');
-    mask-image: url('/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=quotes&lang=en&skin=vector');
-    -webkit-mask-size: 20px;
-    mask-size: 20px;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-  }
+		// `mask-image` was added to Chrome only in 2023-12-05
+		-webkit-mask-image: url('/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=quotes&lang=en&skin=vector');
+		mask-image: url('/w/load.php?modules=oojs-ui.styles.icons-editing-advanced&image=quotes&lang=en&skin=vector');
+		-webkit-mask-size: 20px;
+		mask-size: 20px;
+		-webkit-mask-repeat: no-repeat;
+		mask-repeat: no-repeat;
+		-webkit-mask-position: center;
+		mask-position: center;
+	}
 
-  .cd-highlight .tool-button[rel="quote"] {
-    background-color: var(--color-progressive, #36c);
-  }
+	.cd-highlight .tool-button[rel="quote"] {
+		background-color: var(--color-progressive, #36c);
+	}
 
-  // Until T312970 is fixed
-  .wikiEditor-ui-toolbar .tabs span.tab a {
-    height: 2.14285714em;
-    border: 1px solid transparent;
-  }
+	// Until T312970 is fixed
+	.wikiEditor-ui-toolbar .tabs span.tab a {
+		height: 2.14285714em;
+		border: 1px solid transparent;
+	}
 
-  .wikiEditor-ui-toolbar .group .label {
-    height: 2em;
-    line-height: 2em;
-  }
+	.wikiEditor-ui-toolbar .group .label {
+		height: 2em;
+		line-height: 2em;
+	}
 
-  // Hide the group that has the "Preview" button on action=edit pages, but nothing in our case.
-  .wikiEditor-ui-toolbar .group.empty {
-    display: none;
-  }
+	// Hide the group that has the "Preview" button on action=edit pages, but nothing in our case.
+	.wikiEditor-ui-toolbar .group.empty {
+		display: none;
+	}
 
-  // For absolutely positioned popups
-  .wikiEditor-ui-text {
-    position: relative;
-  }
+	// For absolutely positioned popups
+	.wikiEditor-ui-text {
+		position: relative;
+	}
 
 
-  /* CodeMirror */
+	/* CodeMirror */
 
-  .cm-editor {
-    background-color: var(--background-color-base, #fff);
+	.cm-editor {
+		background-color: var(--background-color-base, #fff);
 
-    &.cm-editor.cm-editor {
-      // For autoresize
-      height: 100% !important;
-    }
-  }
+		&.cm-editor.cm-editor {
+			// For autoresize
+			height: 100% !important;
+		}
+	}
 
-  .cm-gutters,
+	.cm-gutters,
 
-  // Need to override `.ͼ1 .cm-content`
-  .cm-content.cm-content {
-    min-height: calc(@line-height * (@num-rows-comment + 1) + @codemirror-editor-additional-padding) !important;
-  }
+	// Need to override `.ͼ1 .cm-content`
+	.cm-content.cm-content {
+		min-height: calc(@line-height * (@num-rows-comment + 1) + @codemirror-editor-additional-padding) !important;
+	}
 
-  &-addSection,
-  &-addSubsection,
-  &-sectionOpeningComment {
-    .cm-gutters,
-    .cm-content {
-      min-height: calc(@line-height * (@num-rows-section + 1) + @codemirror-editor-additional-padding) !important;
-    }
-  }
+	&-addSection,
+	&-addSubsection,
+	&-sectionOpeningComment {
+		.cm-gutters,
+		.cm-content {
+			min-height: calc(@line-height * (@num-rows-section + 1) + @codemirror-editor-additional-padding) !important;
+		}
+	}
 
-  .ext-codemirror-wrapper--hidden textarea {
-    // By default, it's `inline-block` which creates a gap between the textarea and the buttons.
-    display: block !important;
-  }
+	.ext-codemirror-wrapper--hidden textarea {
+		// By default, it's `inline-block` which creates a gap between the textarea and the buttons.
+		display: block !important;
+	}
 
-  .cm-editor {
-    outline: 0;
-  }
+	.cm-editor {
+		outline: 0;
+	}
 
-  .cm-panels,
-  .cm-scroller {
-    border: 1px solid var(--border-color-base, #a2a9b1);
-  }
+	.cm-panels,
+	.cm-scroller {
+		border: 1px solid var(--border-color-base, #a2a9b1);
+	}
 
-  .cm-panels {
-    border-bottom: 0;
-  }
+	.cm-panels {
+		border-bottom: 0;
+	}
 
-  .cm-focused .cm-scroller {
-    border: 1px solid var(--border-color-progressive--focus, #36c);
-    outline: 1px solid var(--color-progressive, #36c);
-    outline-offset: -2px;
-  }
+	.cm-focused .cm-scroller {
+		border: 1px solid var(--border-color-progressive--focus, #36c);
+		outline: 1px solid var(--color-progressive, #36c);
+		outline-offset: -2px;
+	}
 
-  .cm-gutters {
-    padding: 1px 0 1px 1px;
-    box-sizing: content-box;
-  }
+	.cm-gutters {
+		padding: 1px 0 1px 1px;
+		box-sizing: content-box;
+	}
 
-  .cm-focused .cm-gutters {
-    // Replace padding with margin to prevent the gutters from obstructing the blue outline.
-    padding: 0;
-    margin: 1px 0 1px 1px;
-  }
+	.cm-focused .cm-gutters {
+		// Replace padding with margin to prevent the gutters from obstructing the blue outline.
+		padding: 0;
+		margin: 1px 0 1px 1px;
+	}
 
-  .cm-content {
-    // Match the padding (when unfocused) or margin (when focused) of `.cm-gutters`.
-    margin: 1px 1px 1px 0;
-  }
+	.cm-content {
+		// Match the padding (when unfocused) or margin (when focused) of `.cm-gutters`.
+		margin: 1px 1px 1px 0;
+	}
 }
 
 .cd-commentForm-checkboxes {
-  text-align: start;
-  direction: var(--cd-direction-user);
+	text-align: start;
+	direction: var(--cd-direction-user);
 
-  .oo-ui-fieldLayout {
-    margin-inline: 0 1em;
+	.oo-ui-fieldLayout {
+		margin-inline: 0 1em;
 
-    &:last-child {
-      margin-inline-end: 0;
-    }
-  }
+		&:last-child {
+			margin-inline-end: 0;
+		}
+	}
 }
 
 .cd-commentForm-buttons {
-  direction: var(--cd-direction-user);
+	direction: var(--cd-direction-user);
 
-  &-start {
-    float: var(--cd-float-user-start);
-  }
+	&-start {
+		float: var(--cd-float-user-start);
+	}
 
-  &-end {
-    float: var(--cd-float-user-end);
-  }
+	&-end {
+		float: var(--cd-float-user-end);
+	}
 }
 
 .cd-commentForm-signature {
-  opacity: 0.67;
+	opacity: 0.67;
 }
 
 .cd-commentForm-dummyElement {
-  height: 0;
-  overflow: hidden;
+	height: 0;
+	overflow: hidden;
 }
 
 .cd-commentForm-summaryInput {
-  margin-top: 0.214286em;
+	margin-top: 0.214286em;
 }
 
 .cd-commentForm-checkboxes {
-  margin-top: 0.5em;
-  line-height: 1;
+	margin-top: 0.5em;
+	line-height: 1;
 }
 
 .cd-commentForm-buttons {
-  display: flow-root;
-  margin-top: 0.5em;
+	display: flow-root;
+	margin-top: 0.5em;
 }
 
 .cd-commentForm-addSection.cd-commentForm-addSection,
 .cd-commentForm-addSubsection.cd-commentForm-addSubsection {
-  margin-top: 1.5em;
+	margin-top: 1.5em;
 }
 
 .cd-commentForm-commentInput {
-  .wikiEditor-ui .wikiEditor-ui-view {
-    border: 0;
-  }
+	.wikiEditor-ui .wikiEditor-ui-view {
+		border: 0;
+	}
 
-  .oo-ui-inputWidget-input.oo-ui-inputWidget-input.oo-ui-inputWidget-input {
-    position: relative;
+	.oo-ui-inputWidget-input.oo-ui-inputWidget-input.oo-ui-inputWidget-input {
+		position: relative;
 
-    // Fix for jumping text until T169335 is resolved. Add 2px to make the height match the
-    // default CodeMirror editor's height.
-    padding-bottom: calc(@line-height + 2px);
-    overflow-y: hidden;
+		// Fix for jumping text until T169335 is resolved. Add 2px to make the height match the
+		// default CodeMirror editor's height.
+		padding-bottom: calc(@line-height + 2px);
+		overflow-y: hidden;
 
-    // Safer for the case with page scaling according to the system font.
-    &:focus {
-      outline: 0;
-    }
-  }
+		// Safer for the case with page scaling according to the system font.
+		&:focus {
+			outline: 0;
+		}
+	}
 
-  .wikiEditor-ui-top {
-    border: 1px solid var(--border-color-base, #a2a9b1);
-    border-bottom-width: 0;
-  }
+	.wikiEditor-ui-top {
+		border: 1px solid var(--border-color-base, #a2a9b1);
+		border-bottom-width: 0;
+	}
 
-  &.oo-ui-textInputWidget.oo-ui-widget-disabled {
-    .wikiEditor-ui-top,
-    + .cd-insertButtons {
-      border-color: var(--border-color-disabled, #c8ccd1);
-      pointer-events: none;
-    }
-  }
+	&.oo-ui-textInputWidget.oo-ui-widget-disabled {
+		.wikiEditor-ui-top,
+		+ .cd-insertButtons {
+			border-color: var(--border-color-disabled, #c8ccd1);
+			pointer-events: none;
+		}
+	}
 }
 
 .cd-reformattedComments .cd-commentForm-signature,
@@ -257,281 +257,281 @@
 // In case the user didn't turn it off. preview=true in the API request doesn't remove the tag -
 // empty space can be visible because of `display: inline-flex;`.
 .ext-discussiontools-init-replylink-buttons.ext-discussiontools-init-replylink-buttons {
-  display: none;
+	display: none;
 }
 
 .cd-commentForm-headlineInput,
 .cd-editnotice {
-  margin-bottom: 0.214286em;
+	margin-bottom: 0.214286em;
 }
 
 .cd-commentForm-previewArea {
-  display: flow-root;
-  margin-top: 0.5em;
-  padding: 0.5em 0.75em;
-  background-color: var(--background-color-interactive-subtle, #f8f9fa);
+	display: flow-root;
+	margin-top: 0.5em;
+	padding: 0.5em 0.75em;
+	background-color: var(--background-color-interactive-subtle, #f8f9fa);
 
-  > .mw-parser-output {
-    > *:first-child {
-      margin-top: 0;
-      padding-top: 0;
+	> .mw-parser-output {
+		> *:first-child {
+			margin-top: 0;
+			padding-top: 0;
 
-      > *:first-child {
-        margin-top: 0;
-        padding-top: 0;
-      }
-    }
+			> *:first-child {
+				margin-top: 0;
+				padding-top: 0;
+			}
+		}
 
-    > *:last-child {
-      margin-bottom: 0;
-      padding-bottom: 0;
+		> *:last-child {
+			margin-bottom: 0;
+			padding-bottom: 0;
 
-      > *:last-child {
-        margin-bottom: 0;
-        padding-bottom: 0;
-      }
-    }
-  }
+			> *:last-child {
+				margin-bottom: 0;
+				padding-bottom: 0;
+			}
+		}
+	}
 
-  // Numbers appeared before T284921 (October 2021) when there was more than one header in the
-  // preview.
-  .mw-headline-number,
+	// Numbers appeared before T284921 (October 2021) when there was more than one header in the
+	// preview.
+	.mw-headline-number,
 
-  .diff-lineno {
-    display: none;
-  }
+	.diff-lineno {
+		display: none;
+	}
 
-  .cd-closeButton {
-    background-color: var(--background-color-interactive-subtle, #f8f9fa);
-  }
+	.cd-closeButton {
+		background-color: var(--background-color-interactive-subtle, #f8f9fa);
+	}
 
-  &:empty {
-    margin: 0;
-    padding: 0;
-  }
+	&:empty {
+		margin: 0;
+		padding: 0;
+	}
 
-  &-above {
-    margin-top: 0;
-    margin-bottom: 0.5em;
-    width: calc(100% - 1.5em);
-  }
+	&-above {
+		margin-top: 0;
+		margin-bottom: 0.5em;
+		width: calc(100% - 1.5em);
+	}
 
-  &-label {
-    color: var(--cd-color-subtler);
-    margin-bottom: 0.5em;
-  }
+	&-label {
+		color: var(--cd-color-subtler);
+		margin-bottom: 0.5em;
+	}
 
-  &-indentedComment > .mw-parser-output > dl {
-    margin-inline-start: 0;
+	&-indentedComment > .mw-parser-output > dl {
+		margin-inline-start: 0;
 
-    > dd {
-      margin-inline-start: 0;
-    }
-  }
+		> dd {
+			margin-inline-start: 0;
+		}
+	}
 
-  .ext-discussiontools-init-section-bar.ext-discussiontools-init-section-bar {
-    display: none;
-  }
+	.ext-discussiontools-init-section-bar.ext-discussiontools-init-section-bar {
+		display: none;
+	}
 }
 
 .cd-commentForm-messageArea {
-  width: 100%;
-  margin-bottom: 0.214286em;
+	width: 100%;
+	margin-bottom: 0.214286em;
 
-  &:empty {
-    margin-bottom: 0;
-  }
+	&:empty {
+		margin-bottom: 0;
+	}
 }
 
 .cd-commentForm-previewArea,
 .cd-commentForm-messageArea {
-  // To position .cd-closeButton absolutely
-  position: relative;
+	// To position .cd-closeButton absolutely
+	position: relative;
 
-  clear: both;
+	clear: both;
 }
 
 .cd-commentForm-inNumberedList .cd-commentForm-messageArea {
-  // In Chrome, if the form is in a numbered list, this and "+ *" rule make the number to appear
-  // before the textarea (which is better), not before the message.
-  float: left;
+	// In Chrome, if the form is in a numbered list, this and "+ *" rule make the number to appear
+	// before the textarea (which is better), not before the message.
+	float: left;
 
-  + * {
-    clear: both;
-  }
+	+ * {
+		clear: both;
+	}
 }
 
 .cd-closeButton {
-  position: absolute;
-  z-index: 1;
+	position: absolute;
+	z-index: 1;
 
-  // It is common for messages displayed in the message area, such as editintros and editnotices, to
-  // have a 1px border, so we make it as well to avoid the border being overlapped by the close
-  // button.
-  top: 1px;
-  inset-inline-end: 1px;
+	// It is common for messages displayed in the message area, such as editintros and editnotices, to
+	// have a 1px border, so we make it as well to avoid the border being overlapped by the close
+	// button.
+	top: 1px;
+	inset-inline-end: 1px;
 
-  opacity: 0;
-  transition: opacity 0.2s ease-in;
+	opacity: 0;
+	transition: opacity 0.2s ease-in;
 
-  .cd-commentForm-messageArea & {
-    background-color: var(--cd-content-background-color);
-  }
+	.cd-commentForm-messageArea & {
+		background-color: var(--cd-content-background-color);
+	}
 
-  .cd-commentForm-previewArea:hover &,
-  .cd-commentForm-messageArea:hover & {
-    opacity: 1;
-  }
+	.cd-commentForm-previewArea:hover &,
+	.cd-commentForm-messageArea:hover & {
+		opacity: 1;
+	}
 
-  // Move the close button on mobile to prevent accidental taps
-  .cd-mobile-client & {
-    top: 0.5em;
-  }
+	// Move the close button on mobile to prevent accidental taps
+	.cd-mobile-client & {
+		top: 0.5em;
+	}
 
-  // Note that preview area and message area may have oppositely aligned closed buttons: the message
-  // area follows the user language; the preview area follows the content language. This is based on
-  // the value of `direction` (which we set in this file).
-  .cd-commentForm-previewArea & {
-    inset-inline-end: 1px;
-    inset-inline-start: unset;
+	// Note that preview area and message area may have oppositely aligned closed buttons: the message
+	// area follows the user language; the preview area follows the content language. This is based on
+	// the value of `direction` (which we set in this file).
+	.cd-commentForm-previewArea & {
+		inset-inline-end: 1px;
+		inset-inline-start: unset;
 
-    // Move the close button on mobile to prevent accidental taps
-    .cd-mobile-client& {
-      inset-inline-end: 0.5em;
-    }
-  }
+		// Move the close button on mobile to prevent accidental taps
+		.cd-mobile-client& {
+			inset-inline-end: 0.5em;
+		}
+	}
 }
 
 .cd-message {
-  margin-bottom: 0.5em;
+	margin-bottom: 0.5em;
 }
 
 .cd-popupOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 5;
-  font-size: 0.875rem;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 5;
+	font-size: 0.875rem;
 }
 
 .cd-insertButtons {
-  background-color: var(--background-color-interactive-subtle, #f8f9fa);
-  border: 1px solid var(--border-color-base, #a2a9b1);
-  border-top: 0;
-  font-size: 0.928571em;
-  line-height: 1.384616em;
-  direction: var(--cd-direction-content);
+	background-color: var(--background-color-interactive-subtle, #f8f9fa);
+	border: 1px solid var(--border-color-base, #a2a9b1);
+	border-top: 0;
+	font-size: 0.928571em;
+	line-height: 1.384616em;
+	direction: var(--cd-direction-content);
 
-  &::after {
-    display: block;
-    content: "";
-    clear: both;
-  }
+	&::after {
+		display: block;
+		content: "";
+		clear: both;
+	}
 
-  &:empty {
-    border: 0;
-  }
+	&:empty {
+		border: 0;
+	}
 
-  &-button {
-    color: var(--color-base, #202122);
-    padding: 2px 0.5em 3px;
-    white-space: nowrap;
-    display: block;
-    float: var(--cd-float-user-start);
+	&-button {
+		color: var(--color-base, #202122);
+		padding: 2px 0.5em 3px;
+		white-space: nowrap;
+		display: block;
+		float: var(--cd-float-user-start);
 
-    &:hover,
-    &:focus {
-      text-decoration: none;
-      color: var(--color-base, #202122);
+		&:hover,
+		&:focus {
+			text-decoration: none;
+			color: var(--color-base, #202122);
 
-      // --background-color-interactive indistinguishable in dark mode
-      background-color: var(--background-color-disabled-subtle, #eaecf0);
-    }
-  }
+			// --background-color-interactive indistinguishable in dark mode
+			background-color: var(--background-color-disabled-subtle, #eaecf0);
+		}
+	}
 }
 
 .cd-toolbarPlaceholder {
-  background-color: var(--background-color-interactive-subtle, #f8f9fa);
-  border: 1px solid var(--border-color-base, #a2a9b1);
-  border-bottom: 0;
-  height: 2.2857143em;
-  margin: 1px 0 -1px;
+	background-color: var(--background-color-interactive-subtle, #f8f9fa);
+	border: 1px solid var(--border-color-base, #a2a9b1);
+	border-bottom: 0;
+	height: 2.2857143em;
+	margin: 1px 0 -1px;
 
-  .cd-commentForm-pending & {
-    // To match the color of the rest of the borders while the form is the pending state.
-    border-color: var(--border-color-disabled, #c8ccd1);
-  }
+	.cd-commentForm-pending & {
+		// To match the color of the rest of the borders while the form is the pending state.
+		border-color: var(--border-color-disabled, #c8ccd1);
+	}
 }
 
 // Reset a global style
 .cd-autocompleteContainer .highlight {
-  font-weight: normal;
+	font-weight: normal;
 }
 
 .cd-popup-richFormatting {
-  width: 25rem;
+	width: 25rem;
 
-  // Otherwise, can appear behind the toolbar of the following comment form
-  z-index: 2;
+	// Otherwise, can appear behind the toolbar of the following comment form
+	z-index: 2;
 
-  .oo-ui-popupWidget-popup {
-    padding-bottom: 0.5em;
-  }
+	.oo-ui-popupWidget-popup {
+		padding-bottom: 0.5em;
+	}
 
-  .oo-ui-popupWidget-body {
-    width: auto !important;
-  }
+	.oo-ui-popupWidget-body {
+		width: auto !important;
+	}
 }
 
 .cd-dummyFloatableContainer {
-  position: absolute;
-  z-index: -1;
+	position: absolute;
+	z-index: -1;
 }
 
 .cd-input-acceptFile.cd-input-acceptFile textarea {
-  background-color: var(--background-color-progressive-subtle, #eaf3ff);
+	background-color: var(--background-color-progressive-subtle, #eaf3ff);
 }
 
 .cd-uploadDialog-typeFieldset {
-  // Fields have `margin-top: 16px`
-  margin: 16px 0 24px;
+	// Fields have `margin-top: 16px`
+	margin: 16px 0 24px;
 }
 
 .cd-uploadDialog-fieldLayout-internal {
-  cursor: default;
+	cursor: default;
 
-  &.oo-ui-fieldLayout.oo-ui-labelElement > .oo-ui-fieldLayout-body > .oo-ui-fieldLayout-header {
-    padding-bottom: 0;
-  }
+	&.oo-ui-fieldLayout.oo-ui-labelElement > .oo-ui-fieldLayout-body > .oo-ui-fieldLayout-header {
+		padding-bottom: 0;
+	}
 }
 
 .cd-tool-button-wrapper {
-  display: flex;
+	display: flex;
 }
 
 .darkTheme-commentForm() {
-  a.tool:not(.mw-no-invert) {
-    color-scheme: light;
-    filter: invert(1) hue-rotate(180deg);
-  }
+	a.tool:not(.mw-no-invert) {
+		color-scheme: light;
+		filter: invert(1) hue-rotate(180deg);
+	}
 }
 
 @media screen {
-  html.skin-theme-clientpref-night {
-    .darkTheme-commentForm();
-  }
+	html.skin-theme-clientpref-night {
+		.darkTheme-commentForm();
+	}
 }
 
 @media screen and (prefers-color-scheme: dark) {
-  html.skin-theme-clientpref-os {
-    .darkTheme-commentForm();
-  }
+	html.skin-theme-clientpref-os {
+		.darkTheme-commentForm();
+	}
 }
 
 .cd-helpPopup var {
-  // Closest to what we need
-  background-color: var(--border-color-notice, #54595d);
+	// Closest to what we need
+	background-color: var(--border-color-notice, #54595d);
 
-  color: var(--color-inverted, #fff);
-  font-style: normal;
+	color: var(--color-inverted, #fff);
+	font-style: normal;
 }

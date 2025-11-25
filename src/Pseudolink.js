@@ -14,36 +14,36 @@ import cd from './loader/cd';
  * @private
  */
 class Pseudolink extends Button {
-  /**
-   * Create a pseudolink.
-   *
-   * @param {PseudoLinkConfig} config
-   */
-  constructor(config) {
-    super({
-      element: document.createElement('div'),
-      classes: ['cd-pseudolink-wrapper'],
-      buttonClasses: ['cd-pseudolink'],
-      tooltip: cd.s('pseudolink-tooltip'),
-      label: config.label,
-    });
+	/**
+	 * Create a pseudolink.
+	 *
+	 * @param {PseudoLinkConfig} config
+	 */
+	constructor(config) {
+		super({
+			element: document.createElement('div'),
+			classes: ['cd-pseudolink-wrapper'],
+			buttonClasses: ['cd-pseudolink'],
+			tooltip: cd.s('pseudolink-tooltip'),
+			label: config.label,
+		});
 
-    this.text = config.text;
-    if (config.input) {
-      this.setInput(config.input);
-    }
-  }
+		this.text = config.text;
+		if (config.input) {
+			this.setInput(config.input);
+		}
+	}
 
-  /**
-   * Set the input to insert text in.
-   *
-   * @param {OO.ui.TextInputWidget} input
-   */
-  setInput(input) {
-    this.setAction(() => {
-      input.setValue(this.text || this.labelElement.textContent).focus();
-    });
-  }
+	/**
+	 * Set the input to insert text in.
+	 *
+	 * @param {OO.ui.TextInputWidget} input
+	 */
+	setInput(input) {
+		this.setAction(() => {
+			input.setValue(this.text || this.labelElement.textContent).focus();
+		});
+	}
 }
 
 export default Pseudolink;

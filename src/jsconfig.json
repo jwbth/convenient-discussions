@@ -1,13 +1,13 @@
 {
-  "extends": "../jsconfig-base.json",
-  "compilerOptions": {
-    "target": "es2022",
+	"extends": "../jsconfig-base.json",
+	"compilerOptions": {
+		"target": "es2022",
 
-    // We mix `import`s and `require()` calls
-    "module": "preserve",
+		// We mix `import`s and `require()` calls
+		"module": "preserve",
 
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "types": ["oojs", "oojs-ui", "jquery", "jqueryui"]
-  },
-  "include": ["**/*", "../config/**/*", "../data/**/*", "../node_modules/types-mediawiki"]
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"types": ["oojs", "oojs-ui", "jquery", "jqueryui"]
+	},
+	"include": ["**/*", "../config/**/*", "../data/**/*", "../node_modules/types-mediawiki"]
 }

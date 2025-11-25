@@ -8,35 +8,35 @@ import { es6ClassToOoJsClass } from './utils-oojs';
  * @augments OO.ui.RadioOptionWidget
  */
 class RadioOptionWidget extends OO.ui.RadioOptionWidget {
-  /**
-   * Create a radio input widget.
-   *
-   * @param {OO.ui.RadioOptionWidget.ConfigOptions & { help: string }} config
-   */
-  constructor(config) {
-    super(config);
+	/**
+	 * Create a radio input widget.
+	 *
+	 * @param {OO.ui.RadioOptionWidget.ConfigOptions & { help: string }} config
+	 */
+	constructor(config) {
+		super(config);
 
-    this.$help = config.help
-      ? this.createHelpElement(config.help)
-      : $();
-    this.$label.append(this.$help);
-  }
+		this.$help = config.help
+			? this.createHelpElement(config.help)
+			: $();
+		this.$label.append(this.$help);
+	}
 
-  /**
-   * Create a help element.
-   *
-   * @param {string} text
-   * @returns {JQuery}
-   */
-  createHelpElement(text) {
-    const helpWidget = new DivLabelWidget({
-      label: text,
-      classes: ['oo-ui-inline-help'],
-    });
-    this.radio.$input.attr('aria-describedby', helpWidget.getElementId());
+	/**
+	 * Create a help element.
+	 *
+	 * @param {string} text
+	 * @returns {JQuery}
+	 */
+	createHelpElement(text) {
+		const helpWidget = new DivLabelWidget({
+			label: text,
+			classes: ['oo-ui-inline-help'],
+		});
+		this.radio.$input.attr('aria-describedby', helpWidget.getElementId());
 
-    return helpWidget.$element;
-  }
+		return helpWidget.$element;
+	}
 }
 
 es6ClassToOoJsClass(RadioOptionWidget);

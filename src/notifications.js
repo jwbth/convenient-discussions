@@ -18,69 +18,69 @@ import controller from './controller';
  */
 
 export default {
-  /**
-   * @typedef {{
-   *   [key: string]: any;
-   *   notification: Notification;
-   * }} NotificationData
-   */
+	/**
+	 * @typedef {{
+	 *   [key: string]: any;
+	 *   notification: Notification;
+	 * }} NotificationData
+	 */
 
-  /**
-   * @type {NotificationData[]}
-   * @private
-   */
-  data: [],
+	/**
+	 * @type {NotificationData[]}
+	 * @private
+	 */
+	data: [],
 
-  /**
-   * Initialize the singleton.
-   */
-  init() {
-    controller
-      .on('beforeReboot', (passedData) => {
-        this.close(passedData.closeNotificationsSmoothly ?? true);
-      });
-  },
+	/**
+	 * Initialize the singleton.
+	 */
+	init() {
+		controller
+			.on('beforeReboot', (passedData) => {
+				this.close(passedData.closeNotificationsSmoothly ?? true);
+			});
+	},
 
-  /**
-   * Show a notificaition and add it to the registry. This is used to be able to keep track of shown
-   * notifications and close them all at once if needed. Most notifications are shown using simple
-   * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.html#.notify mw.notify()} or
-   * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.notification.html#.notify mw.notification.notify()}).
-   *
-   * @param {string|JQuery} message Message text.
-   * @param {object} [options]
-   * @param {object} [data] Additional data related to the notification.
-   * @returns {Notification}
-   */
-  add(message, options, data = {}) {
-    const notification = mw.notification.notify(message, options);
-    this.data.push({ ...data, notification });
+	/**
+	 * Show a notificaition and add it to the registry. This is used to be able to keep track of shown
+	 * notifications and close them all at once if needed. Most notifications are shown using simple
+	 * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.html#.notify mw.notify()} or
+	 * {@link https://doc.wikimedia.org/mediawiki-core/master/js/mw.notification.html#.notify mw.notification.notify()}).
+	 *
+	 * @param {string|JQuery} message Message text.
+	 * @param {object} [options]
+	 * @param {object} [data] Additional data related to the notification.
+	 * @returns {Notification}
+	 */
+	add(message, options, data = {}) {
+		const notification = mw.notification.notify(message, options);
+		this.data.push({ ...data, notification });
 
-    return notification;
-  },
+		return notification;
+	},
 
-  /**
-   * Get all notifications added to the registry (including already hidden). The
-   * {@link Notification} object will be in the `notification` property.
-   *
-   * @returns {NotificationData[]}
-   */
-  get() {
-    return this.data;
-  },
+	/**
+	 * Get all notifications added to the registry (including already hidden). The
+	 * {@link Notification} object will be in the `notification` property.
+	 *
+	 * @returns {NotificationData[]}
+	 */
+	get() {
+		return this.data;
+	},
 
-  /**
-   * Close all notifications added to the registry immediately.
-   *
-   * @param {boolean} [smooth] Don't use a smooth animation.
-   */
-  close(smooth = true) {
-    this.data.forEach((datum) => {
-      if (!smooth) {
-        datum.notification.$notification.hide();
-      }
-      datum.notification.close();
-    });
-    this.data = [];
-  },
+	/**
+	 * Close all notifications added to the registry immediately.
+	 *
+	 * @param {boolean} [smooth] Don't use a smooth animation.
+	 */
+	close(smooth = true) {
+		this.data.forEach((datum) => {
+			if (!smooth) {
+				datum.notification.$notification.hide();
+			}
+			datum.notification.close();
+		});
+		this.data = [];
+	},
 };

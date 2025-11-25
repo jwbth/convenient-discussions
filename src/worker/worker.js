@@ -45,10 +45,10 @@ debug.init();
  * @private
  */
 function setAlarm(interval) {
-  clearTimeout(alarmTimeout);
-  alarmTimeout = setTimeout(() => {
-    postMessage(/** @type {Message} */ ({ task: 'wakeUp' }));
-  }, interval);
+	clearTimeout(alarmTimeout);
+	alarmTimeout = setTimeout(() => {
+		postMessage(/** @type {Message} */ ({ task: 'wakeUp' }));
+	}, interval);
 }
 
 /**
@@ -58,23 +58,23 @@ function setAlarm(interval) {
  * @private
  */
 function getAllTextNodes() {
-  const nodes = /** @type {import('domhandler').Text[]} */ ([]);
-  /** @type {import('domhandler').Element} */ (rootElement).traverseSubtree(
-    (/** @type {import('domhandler').Node} */ node) => {
-      if (isText(node)) {
-        nodes.push(node);
-      }
+	const nodes = /** @type {import('domhandler').Text[]} */ ([]);
+	/** @type {import('domhandler').Element} */ (rootElement).traverseSubtree(
+		(/** @type {import('domhandler').Node} */ node) => {
+			if (isText(node)) {
+				nodes.push(node);
+			}
 
-      // Remove DT reply button html comments as well to optimize.
-      if (isComment(node) && node.data.startsWith('__DTREPLYBUTTONS__')) {
-        node.remove();
-      }
+			// Remove DT reply button html comments as well to optimize.
+			if (isComment(node) && node.data.startsWith('__DTREPLYBUTTONS__')) {
+				node.remove();
+			}
 
-      return false;
-    }
-  );
+			return false;
+		}
+	);
 
-  return nodes;
+	return nodes;
 }
 
 /**
@@ -83,7 +83,7 @@ function getAllTextNodes() {
  * @private
  */
 function removeDtButtonHtmlComments() {
-  // See getAllTextNodes()
+	// See getAllTextNodes()
 }
 
 /**
@@ -94,12 +94,12 @@ function removeDtButtonHtmlComments() {
  * @private
  */
 function findTargets(parser) {
-  parser.init();
-  parser.processAndRemoveDtMarkup();
+	parser.init();
+	parser.processAndRemoveDtMarkup();
 
-  return /** @type {import('../shared/Parser').Target<import('domhandler').Node>[]} */ (parser.findHeadings())
-    .concat(parser.findSignatures())
-    .sort((t1, t2) => parser.context.follows(t1.element, t2.element) ? 1 : -1);
+	return /** @type {import('../shared/Parser').Target<import('domhandler').Node>[]} */ (parser.findHeadings())
+		.concat(parser.findSignatures())
+		.sort((t1, t2) => parser.context.follows(t1.element, t2.element) ? 1 : -1);
 }
 
 /**
@@ -110,17 +110,17 @@ function findTargets(parser) {
  * @private
  */
 function processComments(parser, targets) {
-  targets
-    .filter((target) => target.type === 'signature')
-    .forEach((signature) => {
-      try {
-        cd.comments.push(parser.createComment(signature, targets));
-      } catch (error) {
-        if (!(error instanceof CdError)) {
-          console.error(error);
-        }
-      }
-    });
+	targets
+		.filter((target) => target.type === 'signature')
+		.forEach((signature) => {
+			try {
+				cd.comments.push(parser.createComment(signature, targets));
+			} catch (error) {
+				if (!(error instanceof CdError)) {
+					console.error(error);
+				}
+			}
+		});
 }
 
 /**
@@ -131,17 +131,17 @@ function processComments(parser, targets) {
  * @private
  */
 function processSections(parser, targets) {
-  targets
-    .filter((target) => target.type === 'heading')
-    .forEach((heading) => {
-      try {
-        cd.sections.push(parser.createSection(heading, targets));
-      } catch (error) {
-        if (!(error instanceof CdError)) {
-          console.error(error);
-        }
-      }
-    });
+	targets
+		.filter((target) => target.type === 'heading')
+		.forEach((heading) => {
+			try {
+				cd.sections.push(parser.createSection(heading, targets));
+			} catch (error) {
+				if (!(error instanceof CdError)) {
+					console.error(error);
+				}
+			}
+		});
 }
 
 /**
@@ -152,12 +152,12 @@ function processSections(parser, targets) {
  * @private
  */
 export function keepSafeKeys(obj, unsafeKeys) {
-  // Use the same object, as creating a copy would kill the prototype.
-  Object.keys(obj).forEach((key) => {
-    if (unsafeKeys.includes(key)) {
-      delete obj[key];
-    }
-  });
+	// Use the same object, as creating a copy would kill the prototype.
+	Object.keys(obj).forEach((key) => {
+		if (unsafeKeys.includes(key)) {
+			delete obj[key];
+		}
+	});
 }
 
 /**
@@ -168,9 +168,9 @@ export function keepSafeKeys(obj, unsafeKeys) {
  * @private
  */
 function prepareCommentsAndSections(parser) {
-  CommentSkeleton.processOutdents(parser);
-  CommentWorker.tweakComments(cd.comments);
-  SectionWorker.tweakSections(cd.sections);
+	CommentSkeleton.processOutdents(parser);
+	CommentWorker.tweakComments(cd.comments);
+	SectionWorker.tweakSections(cd.sections);
 }
 
 /**
@@ -179,59 +179,59 @@ function prepareCommentsAndSections(parser) {
  * @private
  */
 function parse() {
-  cd.comments = [];
-  cd.sections = [];
+	cd.comments = [];
+	cd.sections = [];
 
-  Parser.init();
-  /** @type {boolean | undefined} */
-  let areThereOutdents;
-  const parser = new Parser({
-    CommentClass: CommentWorker,
-    SectionClass: SectionWorker,
-    childElementsProp: 'childElements',
-    /** @type {(el1: import('domhandler').Node, el2: import('domhandler').Node) => boolean} */
-    follows: (el1, el2) => el1.follows(el2),
-    getAllTextNodes,
-    getElementByClassName: (el, className) =>
-      /** @type {import('domhandler').Element} */ (el).getElementsByClassName(className, 1)[0] ||
-      null,
-    // eslint-disable-next-line object-shorthand
-    rootElement: /** @type {NonNullable<typeof rootElement>} */ (rootElement),
-    document,
-    areThereOutdents: () => {
-      if (areThereOutdents === undefined) {
-        areThereOutdents = Boolean(
-          /** @type {NonNullable<typeof rootElement>} */ (rootElement).getElementsByClassName(
-            cd.config.outdentClass,
-            1
-          ).length
-        );
-      }
+	Parser.init();
+	/** @type {boolean | undefined} */
+	let areThereOutdents;
+	const parser = new Parser({
+		CommentClass: CommentWorker,
+		SectionClass: SectionWorker,
+		childElementsProp: 'childElements',
+		/** @type {(el1: import('domhandler').Node, el2: import('domhandler').Node) => boolean} */
+		follows: (el1, el2) => el1.follows(el2),
+		getAllTextNodes,
+		getElementByClassName: (el, className) =>
+		/** @type {import('domhandler').Element} */ (el).getElementsByClassName(className, 1)[0] ||
+			null,
+		// eslint-disable-next-line object-shorthand
+		rootElement: /** @type {NonNullable<typeof rootElement>} */ (rootElement),
+		document,
+		areThereOutdents: () => {
+			if (areThereOutdents === undefined) {
+				areThereOutdents = Boolean(
+					/** @type {NonNullable<typeof rootElement>} */ (rootElement).getElementsByClassName(
+						cd.config.outdentClass,
+						1
+					).length
+				);
+			}
 
-      return areThereOutdents;
-    },
-    /** @type {(elements: import('domhandler').Element[]) => void} */
-    processAndRemoveDtElements: (elements) => {
-      elements.forEach((el) => {
-        el.remove();
-      });
-    },
-    removeDtButtonHtmlComments,
-  });
+			return areThereOutdents;
+		},
+		/** @type {(elements: import('domhandler').Element[]) => void} */
+		processAndRemoveDtElements: (elements) => {
+			elements.forEach((el) => {
+				el.remove();
+			});
+		},
+		removeDtButtonHtmlComments,
+	});
 
-  const targets = findTargets(parser);
+	const targets = findTargets(parser);
 
-  debug.startTimer('worker: process comments');
-  processComments(parser, targets);
-  debug.stopTimer('worker: process comments');
+	debug.startTimer('worker: process comments');
+	processComments(parser, targets);
+	debug.stopTimer('worker: process comments');
 
-  debug.startTimer('worker: process sections');
-  processSections(parser, targets);
-  debug.stopTimer('worker: process sections');
+	debug.startTimer('worker: process sections');
+	processSections(parser, targets);
+	debug.stopTimer('worker: process sections');
 
-  debug.startTimer('worker: prepare comments and sections');
-  prepareCommentsAndSections(parser);
-  debug.stopTimer('worker: prepare comments and sections');
+	debug.startTimer('worker: prepare comments and sections');
+	prepareCommentsAndSections(parser);
+	debug.stopTimer('worker: prepare comments and sections');
 }
 
 /**
@@ -242,21 +242,21 @@ function parse() {
  * @private
  */
 function restoreFunc(code) {
-  if (!code) {
-    return;
-  }
+	if (!code) {
+		return;
+	}
 
-  if (code) {
-    if (!/^ *function\b/.test(code) && !/^.+=>/.test(code)) {
-      code = `function ${code}`;
-    }
-    if (/^ *function\b/.test(code)) {
-      code = `(${code})`;
-    }
-  }
+	if (code) {
+		if (!/^ *function\b/.test(code) && !/^.+=>/.test(code)) {
+			code = `function ${code}`;
+		}
+		if (/^ *function\b/.test(code)) {
+			code = `(${code})`;
+		}
+	}
 
-  // FIXME: Any idea how to avoid using eval() here?
-  return eval(code);
+	// FIXME: Any idea how to avoid using eval() here?
+	return eval(code);
 }
 
 /**
@@ -266,55 +266,55 @@ function restoreFunc(code) {
  * @private
  */
 function onMessageFromWindow(event) {
-  const message = event.data;
+	const message = event.data;
 
-  if (isFirstRun) {
-    console.debug('Convenient Discussions\' web worker has been successfully loaded. Click the link with the file name and line number to open the source code in your debug tool.');
-    isFirstRun = false;
-  }
+	if (isFirstRun) {
+		console.debug('Convenient Discussions\' web worker has been successfully loaded. Click the link with the file name and line number to open the source code in your debug tool.');
+		isFirstRun = false;
+	}
 
-  if (message.task === 'setAlarm') {
-    setAlarm(message.interval);
-  }
+	if (message.task === 'setAlarm') {
+		setAlarm(message.interval);
+	}
 
-  if (message.task === 'removeAlarm') {
-    clearTimeout(alarmTimeout);
-  }
+	if (message.task === 'removeAlarm') {
+		clearTimeout(alarmTimeout);
+	}
 
-  if (message.task === 'parse') {
-    const timerLabel = `worker: processing revision ${message.revisionId}`;
-    debug.startTimer(timerLabel);
+	if (message.task === 'parse') {
+		const timerLabel = `worker: processing revision ${message.revisionId}`;
+		debug.startTimer(timerLabel);
 
-    cd.g = message.g;
-    cd.config = message.config;
+		cd.g = message.g;
+		cd.config = message.config;
 
-    cd.config.rejectNode = /** @type {(typeof cd)['config']['rejectNode']} */ (
-      restoreFunc(cd.config.rejectNode?.toString())
-    );
-    cd.g.isIPv6Address = /** @type {(typeof mw)['util']['isIPv6Address']} */ (restoreFunc(
-      cd.g.isIPv6Address?.toString()
-    ));
+		cd.config.rejectNode = /** @type {(typeof cd)['config']['rejectNode']} */ (
+			restoreFunc(cd.config.rejectNode?.toString())
+		);
+		cd.g.isIPv6Address = /** @type {(typeof mw)['util']['isIPv6Address']} */ (restoreFunc(
+			cd.g.isIPv6Address?.toString()
+		));
 
-    self.document = parseDocument(message.text, {
-      withStartIndices: true,
-      withEndIndices: true,
-      decodeEntities: false,
-    });
-    rootElement = /** @type {import('domhandler').Element} */ (document.childNodes[0]);
+		self.document = parseDocument(message.text, {
+			withStartIndices: true,
+			withEndIndices: true,
+			decodeEntities: false,
+		});
+		rootElement = /** @type {import('domhandler').Element} */ (document.childNodes[0]);
 
-    parse();
+		parse();
 
-    postMessage(/** @type {MessageFromWorkerParse} */ ({
-      task: message.task,
-      revisionId: message.revisionId,
-      resolverId: message.resolverId,
-      comments: cd.comments,
-      sections: cd.sections,
-    }));
+		postMessage(/** @type {MessageFromWorkerParse} */ ({
+			task: message.task,
+			revisionId: message.revisionId,
+			resolverId: message.resolverId,
+			comments: cd.comments,
+			sections: cd.sections,
+		}));
 
-    debug.stopTimer(timerLabel);
-    debug.logAndResetEverything();
-  }
+		debug.stopTimer(timerLabel);
+		debug.logAndResetEverything();
+	}
 }
 
 self.addEventListener('message', onMessageFromWindow);
@@ -323,12 +323,12 @@ self.addEventListener('message', onMessageFromWindow);
  * Dummy class for an export.
  */
 class WebpackWorker extends Worker {
-  /**
-   * Dummy constructor.
-   */
-  constructor() {
-    super('');
-  }
+	/**
+	 * Dummy constructor.
+	 */
+	constructor() {
+		super('');
+	}
 }
 
 export default WebpackWorker;

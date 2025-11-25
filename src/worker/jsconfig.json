@@ -1,16 +1,16 @@
 {
-  "extends": "../../jsconfig-base.json",
-  "compilerOptions": {
-    "target": "es2022",
+	"extends": "../../jsconfig-base.json",
+	"compilerOptions": {
+		"target": "es2022",
 
-    // We mix `import`s and `require()` calls
-    "module": "preserve",
+		// We mix `import`s and `require()` calls
+		"module": "preserve",
 
-    "lib": ["ES2023", "WebWorker"],
+		"lib": ["ES2023", "WebWorker"],
 
-    // Something drags Node's types in (e.g. setTimeout starts to return NodeJS.Timeout), no idea
-    // what. Reset the types to empty to avoid this.
-    "types": []
-  },
-  "include": ["**/*", "../shared/**/*"]
+		// Something drags Node's types in (e.g. setTimeout starts to return NodeJS.Timeout), no idea
+		// what. Reset the types to empty to avoid this.
+		"types": []
+	},
+	"include": ["**/*", "../shared/**/*"]
 }

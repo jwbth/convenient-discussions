@@ -8,35 +8,35 @@ import { keepSafeKeys } from './worker';
  * @augments {SectionSkeleton<import('domhandler').Node>}
  */
 export default class SectionWorker extends SectionSkeleton {
-  /** @type {SectionWorker|undefined} */
-  parent;
+	/** @type {SectionWorker|undefined} */
+	parent;
 
-  /** @type {string[]} */
-  ancestors;
+	/** @type {string[]} */
+	ancestors;
 
-  /** @type {string|undefined} */
-  oldestCommentId;
+	/** @type {string|undefined} */
+	oldestCommentId;
 
-  /**
-   * Prepare sections for transferring to the main process.
-   *
-   * @param {SectionWorker[]} sections
-   */
-  static tweakSections(sections) {
-    sections.forEach((section) => {
-      section.parent = section.getParent();
-      section.ancestors = section.getAncestors().map((sect) => sect.headline);
-      section.oldestCommentId = section.oldestComment?.id;
+	/**
+	 * Prepare sections for transferring to the main process.
+	 *
+	 * @param {SectionWorker[]} sections
+	 */
+	static tweakSections(sections) {
+		sections.forEach((section) => {
+			section.parent = section.getParent();
+			section.ancestors = section.getAncestors().map((sect) => sect.headline);
+			section.oldestCommentId = section.oldestComment?.id;
 
-      keepSafeKeys(section, [
-        'cachedAncestors',
-        'headingElement',
-        'hElement',
-        'headlineElement',
-        'lastElement',
-        'lastElementInFirstChunk',
-        'parser',
-      ]);
-    });
-  }
+			keepSafeKeys(section, [
+				'cachedAncestors',
+				'headingElement',
+				'hElement',
+				'headlineElement',
+				'lastElement',
+				'lastElementInFirstChunk',
+				'parser',
+			]);
+		});
+	}
 }

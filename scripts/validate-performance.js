@@ -14,13 +14,13 @@ const startTime = Date.now();
 // Simulate cache operations
 const cache = new Map();
 for (let i = 0; i < 1000; i++) {
-  const key = `test-${i % 50}`;
-  const data = [`result-${i}`, `result-${i + 1}`];
-  cache.set(key, data);
-  const retrieved = cache.get(key);
-  if (!retrieved) {
-    throw new Error(`Cache operation failed for key ${key}`);
-  }
+	const key = `test-${i % 50}`;
+	const data = [`result-${i}`, `result-${i + 1}`];
+	cache.set(key, data);
+	const retrieved = cache.get(key);
+	if (!retrieved) {
+		throw new Error(`Cache operation failed for key ${key}`);
+	}
 }
 
 const endTime = Date.now();
@@ -30,8 +30,8 @@ console.log(`  ✅ Cache operations completed in ${duration}ms`);
 console.log(`  📊 Cache size: ${cache.size} entries`);
 
 if (duration > 1000) {
-  console.error(`  ❌ Cache operations too slow: ${duration}ms > 1000ms`);
-  process.exit(1);
+	console.error(`  ❌ Cache operations too slow: ${duration}ms > 1000ms`);
+	process.exit(1);
 }
 
 // Test 2: Memory usage simulation
@@ -42,13 +42,13 @@ let evictions = 0;
 const maxSize = 10;
 
 for (let i = 0; i < 20; i++) {
-  if (memoryTest.size >= maxSize) {
-    // Simulate LRU eviction
-    const firstKey = memoryTest.keys().next().value;
-    memoryTest.delete(firstKey);
-    evictions++;
-  }
-  memoryTest.set(`key-${i}`, `data-${i}`);
+	if (memoryTest.size >= maxSize) {
+		// Simulate LRU eviction
+		const firstKey = memoryTest.keys().next().value;
+		memoryTest.delete(firstKey);
+		evictions++;
+	}
+	memoryTest.set(`key-${i}`, `data-${i}`);
 }
 
 console.log(`  ✅ Memory management simulation completed`);
@@ -56,8 +56,8 @@ console.log(`  📊 Final size: ${memoryTest.size} (max: ${maxSize})`);
 console.log(`  📊 Evictions: ${evictions}`);
 
 if (memoryTest.size > maxSize) {
-  console.error(`  ❌ Memory limit exceeded: ${memoryTest.size} > ${maxSize}`);
-  process.exit(1);
+	console.error(`  ❌ Memory limit exceeded: ${memoryTest.size} > ${maxSize}`);
+	process.exit(1);
 }
 
 // Test 3: Performance monitoring simulation
@@ -65,14 +65,14 @@ console.log('\n🧪 Testing performance monitoring concepts...');
 
 const metrics = [];
 for (let i = 0; i < 50; i++) {
-  const start = Date.now();
-  // Simulate work
-  const work = Math.random() * 10;
-  const end = start + work;
-  metrics.push({
-    duration: work,
-    cacheHit: Math.random() > 0.5,
-  });
+	const start = Date.now();
+	// Simulate work
+	const work = Math.random() * 10;
+	const end = start + work;
+	metrics.push({
+		duration: work,
+		cacheHit: Math.random() > 0.5,
+	});
 }
 
 const avgDuration = metrics.reduce((sum, m) => sum + m.duration, 0) / metrics.length;
@@ -92,10 +92,10 @@ const requestCache = new Map();
 // Simulate debounced requests
 const requests = ['user1', 'user1', 'user2', 'user1', 'user3'];
 for (const query of requests) {
-  if (!requestCache.has(query)) {
-    apiCalls++;
-    requestCache.set(query, [`result-for-${query}`]);
-  }
+	if (!requestCache.has(query)) {
+		apiCalls++;
+		requestCache.set(query, [`result-for-${query}`]);
+	}
 }
 
 console.log(`  ✅ API request optimization simulation completed`);

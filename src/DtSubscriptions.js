@@ -11,194 +11,194 @@ import { handleApiReject, splitIntoBatches } from './utils-api';
  * @augments Subscriptions
  */
 class DtSubscriptions extends Subscriptions {
-  /** @type {string} @private */
-  pageSubscribeId;
+	/** @type {string} @private */
+	pageSubscribeId;
 
-  /**
-   * Request the subscription list from the server and assign it to the instance.
-   *
-   * @override
-   * @returns {Promise.<void>}
-   */
-  async load() {
-    if (!cd.user.isRegistered()) return;
+	/**
+	 * Request the subscription list from the server and assign it to the instance.
+	 *
+	 * @override
+	 * @returns {Promise.<void>}
+	 */
+	async load() {
+		if (!cd.user.isRegistered()) return;
 
-    const title = spacesToUnderlines(mw.config.get('wgTitle'));
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    this.pageSubscribeId ??= `p-topics-${cd.g.namespaceNumber}:${title}`;
-    this.data = await this.getSubscriptions(
-      sectionManager
-        .getAll()
-        .map((section) => section.subscribeId)
-        .filter(definedAndNotNull)
-        .filter(unique)
-        .concat(this.pageSubscribeId || [])
-    );
-  }
+		const title = spacesToUnderlines(mw.config.get('wgTitle'));
+		// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+		this.pageSubscribeId ??= `p-topics-${cd.g.namespaceNumber}:${title}`;
+		this.data = await this.getSubscriptions(
+			sectionManager
+				.getAll()
+				.map((section) => section.subscribeId)
+				.filter(definedAndNotNull)
+				.filter(unique)
+				.concat(this.pageSubscribeId || [])
+		);
+	}
 
-  /**
-   * Process subscriptions when they are
-   * {@link DtSubscriptions#loadToTalkPage loaded to a talk page}.
-   *
-   * @override
-   * @param {import('./BootProcess').default} [bootProcess]
-   */
-  processOnTalkPage(bootProcess) {
-    if (bootProcess?.isFirstRun()) {
-      this.addPageSubscribeButton();
-    }
+	/**
+	 * Process subscriptions when they are
+	 * {@link DtSubscriptions#loadToTalkPage loaded to a talk page}.
+	 *
+	 * @override
+	 * @param {import('./BootProcess').default} [bootProcess]
+	 */
+	processOnTalkPage(bootProcess) {
+		if (bootProcess?.isFirstRun()) {
+			this.addPageSubscribeButton();
+		}
 
-    super.processOnTalkPage();
-  }
+		super.processOnTalkPage();
+	}
 
-  /**
-   * Test if the subscription list is loaded.
-   *
-   * @override
-   * @returns {boolean}
-   */
-  areLoaded() {
-    return Boolean(this.data);
-  }
+	/**
+	 * Test if the subscription list is loaded.
+	 *
+	 * @override
+	 * @returns {boolean}
+	 */
+	areLoaded() {
+		return Boolean(this.data);
+	}
 
-  /**
-   * Get a list of subscriptions for a list of section IDs from the server.
-   *
-   * @param {string[]} ids List of section IDs.
-   * @returns {Promise.<import('./Subscriptions').SubscriptionsData>}
-   */
-  async getSubscriptions(ids) {
-    if (!ids.length) {
-      return {};
-    }
+	/**
+	 * Get a list of subscriptions for a list of section IDs from the server.
+	 *
+	 * @param {string[]} ids List of section IDs.
+	 * @returns {Promise.<import('./Subscriptions').SubscriptionsData>}
+	 */
+	async getSubscriptions(ids) {
+		if (!ids.length) {
+			return {};
+		}
 
-    /**
-     * @typedef {object} ApiDtSubscriptions
-     * @property {{ [id: string]: 0 | 1 }} subscriptions
-     */
+		/**
+		 * @typedef {object} ApiDtSubscriptions
+		 * @property {{ [id: string]: 0 | 1 }} subscriptions
+		 */
 
-    const intValuesToBoolean = (/** @type {ApiDtSubscriptions['subscriptions']} */ obj) =>
-      Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, Boolean(value)]));
+		const intValuesToBoolean = (/** @type {ApiDtSubscriptions['subscriptions']} */ obj) =>
+			Object.fromEntries(Object.entries(obj).map(([key, value]) => [key, Boolean(value)]));
 
-    const subscriptions = /** @type {import('./Subscriptions').SubscriptionsData} */ ({});
-    for (const nextIds of splitIntoBatches(ids)) {
-      const response = /** @type {ApiDtSubscriptions} */ (await cd.getApi().post({
-        action: 'discussiontoolsgetsubscriptions',
-        commentname: nextIds,
-      }).catch(handleApiReject));
-      Object.assign(subscriptions, intValuesToBoolean(response.subscriptions));
-    }
+		const subscriptions = /** @type {import('./Subscriptions').SubscriptionsData} */ ({});
+		for (const nextIds of splitIntoBatches(ids)) {
+			const response = /** @type {ApiDtSubscriptions} */ (await cd.getApi().post({
+				action: 'discussiontoolsgetsubscriptions',
+				commentname: nextIds,
+			}).catch(handleApiReject));
+			Object.assign(subscriptions, intValuesToBoolean(response.subscriptions));
+		}
 
-    return subscriptions;
-  }
+		return subscriptions;
+	}
 
-  /**
-   * Add a page subscribe button (link) to the page actions menu.
-   *
-   * @private
-   */
-  addPageSubscribeButton() {
-    if (!cd.user.isRegistered() || cd.page.isArchive() || $('#ca-dt-page-subscribe').length) return;
+	/**
+	 * Add a page subscribe button (link) to the page actions menu.
+	 *
+	 * @private
+	 */
+	addPageSubscribeButton() {
+		if (!cd.user.isRegistered() || cd.page.isArchive() || $('#ca-dt-page-subscribe').length) return;
 
-    const portletLink = mw.util.addPortletLink(
-      'p-cactions',
-      mw.util.getUrl(cd.g.pageName, {
-        action: this.getState(this.pageSubscribeId) ? 'dtunsubscribe' : 'dtsubscribe',
-        commentname: this.pageSubscribeId,
-      }),
-      '',
-      'ca-cd-page-subscribe'
-    );
-    if (!portletLink) return;
+		const portletLink = mw.util.addPortletLink(
+			'p-cactions',
+			mw.util.getUrl(cd.g.pageName, {
+				action: this.getState(this.pageSubscribeId) ? 'dtunsubscribe' : 'dtsubscribe',
+				commentname: this.pageSubscribeId,
+			}),
+			'',
+			'ca-cd-page-subscribe'
+		);
+		if (!portletLink) return;
 
-    this.pageSubscribeButton = new Button({
-      buttonElement: /** @type {HTMLElement} */ (portletLink.firstElementChild),
-      action: async () => {
-        this.pageSubscribeButton.setPending(true);
-        try {
-          await (
-            this.getState(this.pageSubscribeId)
-              ? this.unsubscribe(this.pageSubscribeId)
-              : this.subscribe(this.pageSubscribeId)
-          );
-          this.updatePageSubscribeButton();
-        } finally {
-          this.pageSubscribeButton.setPending(false);
-        }
-      },
-    });
-    this.updatePageSubscribeButton();
-  }
+		this.pageSubscribeButton = new Button({
+			buttonElement: /** @type {HTMLElement} */ (portletLink.firstElementChild),
+			action: async () => {
+				this.pageSubscribeButton.setPending(true);
+				try {
+					await (
+						this.getState(this.pageSubscribeId)
+							? this.unsubscribe(this.pageSubscribeId)
+							: this.subscribe(this.pageSubscribeId)
+					);
+					this.updatePageSubscribeButton();
+				} finally {
+					this.pageSubscribeButton.setPending(false);
+				}
+			},
+		});
+		this.updatePageSubscribeButton();
+	}
 
-  /**
-   * Subscribe to or unsubscribe from a topic.
-   *
-   * @param {string} subscribeId Section's DiscussionTools ID.
-   * @param {string|undefined} id Section's ID.
-   * @param {boolean} subscribe Subscribe or unsubscribe.
-   * @throws {CdError}
-   * @private
-   */
-  async changeSubscription(subscribeId, id, subscribe) {
-    try {
-      await cd.getApi().postWithEditToken({
-        action: 'discussiontoolssubscribe',
-        page: cd.page.name + (id ? `#${id}` : ''),
-        commentname: subscribeId,
-        subscribe,
-      }).catch(handleApiReject);
-    } catch (error) {
-      mw.notify(cd.s('error-settings-save'), { type: 'error' });
-      throw error;
-    }
+	/**
+	 * Subscribe to or unsubscribe from a topic.
+	 *
+	 * @param {string} subscribeId Section's DiscussionTools ID.
+	 * @param {string|undefined} id Section's ID.
+	 * @param {boolean} subscribe Subscribe or unsubscribe.
+	 * @throws {CdError}
+	 * @private
+	 */
+	async changeSubscription(subscribeId, id, subscribe) {
+		try {
+			await cd.getApi().postWithEditToken({
+				action: 'discussiontoolssubscribe',
+				page: cd.page.name + (id ? `#${id}` : ''),
+				commentname: subscribeId,
+				subscribe,
+			}).catch(handleApiReject);
+		} catch (error) {
+			mw.notify(cd.s('error-settings-save'), { type: 'error' });
+			throw error;
+		}
 
-    this.updateLocally(subscribeId, subscribe);
-  }
+		this.updateLocally(subscribeId, subscribe);
+	}
 
-  /**
-   * Add a section present on the current page to the subscription list.
-   *
-   * @override
-   * @param {string} subscribeId
-   * @param {string} [id]
-   * @returns {Promise.<void>}
-   * @protected
-   */
-  actuallySubscribe(subscribeId, id) {
-    return this.changeSubscription(subscribeId, id, true);
-  }
+	/**
+	 * Add a section present on the current page to the subscription list.
+	 *
+	 * @override
+	 * @param {string} subscribeId
+	 * @param {string} [id]
+	 * @returns {Promise.<void>}
+	 * @protected
+	 */
+	actuallySubscribe(subscribeId, id) {
+		return this.changeSubscription(subscribeId, id, true);
+	}
 
-  /**
-   * Remove a section present on the current page from the subscription list.
-   *
-   * @override
-   * @param {string} subscribeId
-   * @param {string} [id]
-   * @returns {Promise.<void>}
-   * @protected
-   */
-  actuallyUnsubscribe(subscribeId, id) {
-    return this.changeSubscription(subscribeId, id, false);
-  }
+	/**
+	 * Remove a section present on the current page from the subscription list.
+	 *
+	 * @override
+	 * @param {string} subscribeId
+	 * @param {string} [id]
+	 * @returns {Promise.<void>}
+	 * @protected
+	 */
+	actuallyUnsubscribe(subscribeId, id) {
+		return this.changeSubscription(subscribeId, id, false);
+	}
 
-  /**
-   * Update the page subscription button label and tooltip.
-   *
-   * @protected
-   */
-  updatePageSubscribeButton() {
-    this.pageSubscribeButton
-      .setLabel(
-        this.getState(this.pageSubscribeId)
-          ? cd.mws('discussiontools-newtopicssubscription-button-unsubscribe-label')
-          : cd.mws('discussiontools-newtopicssubscription-button-subscribe-label')
-      )
-      .setTooltip(
-        this.getState(this.pageSubscribeId)
-          ? cd.mws('discussiontools-newtopicssubscription-button-unsubscribe-tooltip')
-          : cd.mws('discussiontools-newtopicssubscription-button-subscribe-tooltip')
-      );
-  }
+	/**
+	 * Update the page subscription button label and tooltip.
+	 *
+	 * @protected
+	 */
+	updatePageSubscribeButton() {
+		this.pageSubscribeButton
+			.setLabel(
+				this.getState(this.pageSubscribeId)
+					? cd.mws('discussiontools-newtopicssubscription-button-unsubscribe-label')
+					: cd.mws('discussiontools-newtopicssubscription-button-subscribe-label')
+			)
+			.setTooltip(
+				this.getState(this.pageSubscribeId)
+					? cd.mws('discussiontools-newtopicssubscription-button-unsubscribe-tooltip')
+					: cd.mws('discussiontools-newtopicssubscription-button-subscribe-tooltip')
+			);
+	}
 }
 
 export default DtSubscriptions;

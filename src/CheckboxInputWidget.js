@@ -5,16 +5,16 @@
  * @augments OO.ui.CheckboxInputWidget
  */
 class CheckboxInputWidget extends OO.ui.CheckboxInputWidget {
-  /**
-   * @param {OO.ui.CheckboxInputWidget.ConfigOptions} config
-   */
-  constructor(config) {
-    super(config);
+	/**
+	 * @param {OO.ui.CheckboxInputWidget.ConfigOptions} config
+	 */
+	constructor(config) {
+		super(config);
 
-    this.$input.on('change', () => {
-      this.emit('manualChange', /** @type {HTMLInputElement} */ (this.$input[0]).checked);
-    });
-  }
+		this.$input.on('change', () => {
+			this.emit('manualChange', /** @type {HTMLInputElement} */ (this.$input[0]).checked);
+		});
+	}
 }
 
 export default CheckboxInputWidget;

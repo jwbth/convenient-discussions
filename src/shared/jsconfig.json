@@ -1,16 +1,16 @@
 {
-  "extends": "../../jsconfig-base.json",
-  "compilerOptions": {
-    "target": "es2020",
+	"extends": "../../jsconfig-base.json",
+	"compilerOptions": {
+		"target": "es2020",
 
-    // We mix `import`s and `require()` calls
-    "module": "preserve",
+		// We mix `import`s and `require()` calls
+		"module": "preserve",
 
-    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+		"lib": ["ES2023", "DOM", "DOM.Iterable"],
 
-    // Something drags Node's types in (e.g. .at() starts to show a Node function), no idea what.
-    // Reset the types to empty to avoid this.
-    "types": []
-  },
-  "include": ["**/*"]
+		// Something drags Node's types in (e.g. .at() starts to show a Node function), no idea what.
+		// Reset the types to empty to avoid this.
+		"types": []
+	},
+	"include": ["**/*"]
 }

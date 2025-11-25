@@ -10,28 +10,28 @@ import CodeMirrorCodex from './CodeMirrorCodex';
  * @abstract
  */
 export default abstract class CodeMirrorPanel extends CodeMirrorCodex {
-  /**
-   * The current EditorView instance.
-   */
-  view: EditorView;
+	/**
+	 * The current EditorView instance.
+	 */
+	view: EditorView;
 
-  /**
-   * @class
-   */
-  constructor();
+	/**
+	 * @class
+	 */
+	constructor();
 
-  /**
-   * Get the panel and any associated keymaps as an Extension.
-   * For use only during CodeMirror initialization.
-   *
-   * @abstract
-   */
-  abstract get extension(): Extension;
+	/**
+	 * Get the panel and any associated keymaps as an Extension.
+	 * For use only during CodeMirror initialization.
+	 *
+	 * @abstract
+	 */
+	abstract get extension(): Extension;
 
-  /**
-   * Get the Panel object.
-   *
-   * @abstract
-   */
-  abstract get panel(): Panel;
+	/**
+	 * Get the Panel object.
+	 *
+	 * @abstract
+	 */
+	abstract get panel(): Panel;
 }

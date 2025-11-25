@@ -13,7 +13,7 @@ const AUTH_STATE_PATH = path.join(__dirname, '.auth', 'user.json');
  * @returns {boolean}
  */
 function hasAuthState() {
-  return fs.existsSync(AUTH_STATE_PATH);
+	return fs.existsSync(AUTH_STATE_PATH);
 }
 
 /**
@@ -21,7 +21,7 @@ function hasAuthState() {
  * @returns {string | undefined} Path to auth state file if it exists
  */
 function getAuthStatePath() {
-  return hasAuthState() ? AUTH_STATE_PATH : undefined;
+	return hasAuthState() ? AUTH_STATE_PATH : undefined;
 }
 
 /**
@@ -30,22 +30,22 @@ function getAuthStatePath() {
  * @returns {Promise<void>}
  */
 async function setupAuthenticatedContext(context) {
-  if (!hasAuthState()) {
-    console.warn('⚠️  No authentication state found. Run auth setup first or tests will run as anonymous user.');
-    return;
-  }
+	if (!hasAuthState()) {
+		console.warn('⚠️  No authentication state found. Run auth setup first or tests will run as anonymous user.');
+		return;
+	}
 
-  // The context should already be created with storageState, but we can verify
-  const cookies = await context.cookies('https://test.wikipedia.org');
-  const hasSessionCookie = cookies.some(cookie =>
-    cookie.name.includes('session') || cookie.name.includes('UserID')
-  );
+	// The context should already be created with storageState, but we can verify
+	const cookies = await context.cookies('https://test.wikipedia.org');
+	const hasSessionCookie = cookies.some(cookie =>
+		cookie.name.includes('session') || cookie.name.includes('UserID')
+	);
 
-  if (hasSessionCookie) {
-    console.log('✅ Using authenticated session for test.wikipedia.org');
-  } else {
-    console.warn('⚠️  Authentication state loaded but no session cookies found');
-  }
+	if (hasSessionCookie) {
+		console.log('✅ Using authenticated session for test.wikipedia.org');
+	} else {
+		console.warn('⚠️  Authentication state loaded but no session cookies found');
+	}
 }
 
 /**
@@ -53,16 +53,16 @@ async function setupAuthenticatedContext(context) {
  * @returns {void}
  */
 function clearAuthState() {
-  if (fs.existsSync(AUTH_STATE_PATH)) {
-    fs.unlinkSync(AUTH_STATE_PATH);
-    console.log('🗑️  Authentication state cleared');
-  }
+	if (fs.existsSync(AUTH_STATE_PATH)) {
+		fs.unlinkSync(AUTH_STATE_PATH);
+		console.log('🗑️  Authentication state cleared');
+	}
 }
 
 module.exports = {
-  hasAuthState,
-  getAuthStatePath,
-  setupAuthenticatedContext,
-  clearAuthState,
-  AUTH_STATE_PATH,
+	hasAuthState,
+	getAuthStatePath,
+	setupAuthenticatedContext,
+	clearAuthState,
+	AUTH_STATE_PATH,
 };

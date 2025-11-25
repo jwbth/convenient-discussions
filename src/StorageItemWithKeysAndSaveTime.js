@@ -1,29 +1,29 @@
 import StorageItemWithKeys from './StorageItemWithKeys';
 
 /*
-  Structure of storage items:
+	Structure of storage items:
 
-  * StorageItemWithKeysAndSaveTime
-      {
-        [arbitrary key 1]: {
-          [key named as the storage key]: [entry 2],
-          saveTime: number,
-        },
-        [arbitrary key 1]: {
-          [key named as the storage key]: [entry 2],
-          saveTime: number,
-        },
-        // ...
-      }
-  * StorageItemWithKeys
-      {
-        [arbitrary key 1]: [entry 1],
-        [arbitrary key 2]: [entry 2],
-        // ...
-      }
-  * StorageItem
-      [entry]
-    (i.e. it's just an arbitrary value).
+	* StorageItemWithKeysAndSaveTime
+			{
+				[arbitrary key 1]: {
+					[key named as the storage key]: [entry 2],
+					saveTime: number,
+				},
+				[arbitrary key 1]: {
+					[key named as the storage key]: [entry 2],
+					saveTime: number,
+				},
+				// ...
+			}
+	* StorageItemWithKeys
+			{
+				[arbitrary key 1]: [entry 1],
+				[arbitrary key 2]: [entry 2],
+				// ...
+			}
+	* StorageItem
+			[entry]
+		(i.e. it's just an arbitrary value).
  */
 
 /**
@@ -40,53 +40,53 @@ import StorageItemWithKeys from './StorageItemWithKeys';
  * @augments {StorageItemWithKeys<EntryTypeWithSaveTime<EntryType, Key>>}
  */
 class StorageItemWithKeysAndSaveTime extends StorageItemWithKeys {
-  /**
-   * @param {Key} key Local storage item key (will be prepended by {@link StorageItem.prefix}).
-   * @abstract
-   */
+	/**
+	 * @param {Key} key Local storage item key (will be prepended by {@link StorageItem.prefix}).
+	 * @abstract
+	 */
 
-  /**
-   * Get an entry of the storage item by key.
-   *
-   * @param {ValidKey} key
-   * @returns {EntryTypeWithSaveTime<EntryType, Key> | undefined}
-   * @override
-   */
-  get(key) {
-    return this.data[key];
-  }
+	/**
+	 * Get an entry of the storage item by key.
+	 *
+	 * @param {ValidKey} key
+	 * @returns {EntryTypeWithSaveTime<EntryType, Key> | undefined}
+	 * @override
+	 */
+	get(key) {
+		return this.data[key];
+	}
 
-  /**
-   * Update a storage entry by page key (be it an article ID or page name): set and add a UNIX time.
-   *
-   * @param {ValidKey} pageKey
-   * @param {EntryType} pageData
-   * @returns {this}
-   */
-  setWithTime(pageKey, pageData) {
-    pageKey = String(pageKey);
+	/**
+	 * Update a storage entry by page key (be it an article ID or page name): set and add a UNIX time.
+	 *
+	 * @param {ValidKey} pageKey
+	 * @param {EntryType} pageData
+	 * @returns {this}
+	 */
+	setWithTime(pageKey, pageData) {
+		pageKey = String(pageKey);
 
-    if (
-      // Is pageData not empty
-      Array.isArray(pageData)
-        ? pageData.length
-        : $.isPlainObject(pageData)
-          ? Object.keys(/** @type {object} */ (pageData)).length
-          : pageData
-    ) {
-      this.set(
-        pageKey,
-        /** @type {EntryTypeWithSaveTime<EntryType, Key>} */ ({
-          [this.key]: pageData,
-          saveTime: Date.now(),
-        })
-      );
-    } else {
-      this.remove(pageKey);
-    }
+		if (
+		// Is pageData not empty
+			Array.isArray(pageData)
+				? pageData.length
+				: $.isPlainObject(pageData)
+					? Object.keys(/** @type {object} */ (pageData)).length
+					: pageData
+		) {
+			this.set(
+				pageKey,
+				/** @type {EntryTypeWithSaveTime<EntryType, Key>} */ ({
+					[this.key]: pageData,
+					saveTime: Date.now(),
+				})
+			);
+		} else {
+			this.remove(pageKey);
+		}
 
-    return this;
-  }
+		return this;
+	}
 }
 
 export default StorageItemWithKeysAndSaveTime;

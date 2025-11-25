@@ -2,53 +2,53 @@
 
 // For skins that lack such a rule, such as Timeless.
 a:not([href]) {
-  cursor: pointer;
+	cursor: pointer;
 }
 
 .cd-autocompleteTypesMultiselect {
-  .oo-ui-multioptionWidget.oo-ui-widget-enabled {
-    cursor: default;
-  }
+	.oo-ui-multioptionWidget.oo-ui-widget-enabled {
+		cursor: default;
+	}
 
-  .oo-ui-checkboxMultioptionWidget,
-  .oo-ui-checkboxMultioptionWidget .oo-ui-checkboxInputWidget,
-  .oo-ui-checkboxMultioptionWidget.oo-ui-labelElement > .oo-ui-labelElement-label {
-    display: inline-block;
-  }
+	.oo-ui-checkboxMultioptionWidget,
+	.oo-ui-checkboxMultioptionWidget .oo-ui-checkboxInputWidget,
+	.oo-ui-checkboxMultioptionWidget.oo-ui-labelElement > .oo-ui-labelElement-label {
+		display: inline-block;
+	}
 
-  .oo-ui-checkboxMultioptionWidget .oo-ui-checkboxInputWidget {
-    width: auto;
-  }
+	.oo-ui-checkboxMultioptionWidget .oo-ui-checkboxInputWidget {
+		width: auto;
+	}
 
-  .oo-ui-checkboxMultioptionWidget:not(:last-child) {
-    margin-inline-end: 1em;
-  }
+	.oo-ui-checkboxMultioptionWidget:not(:last-child) {
+		margin-inline-end: 1em;
+	}
 }
 
 .cd-setting--indented {
-  margin-inline-start: calc(1.4285714em + 6px);
+	margin-inline-start: calc(1.4285714em + 6px);
 }
 
 .cd-setting--indented-twice {
-  margin-inline-start: calc((1.4285714em + 6px) * 2);
+	margin-inline-start: calc((1.4285714em + 6px) * 2);
 }
 
 .oo-ui-windowManager-modal > .oo-ui-dialog {
-  // Make the value in other skins the same as in Vector. The default 5 is too low and causes modal
-  // windows to be obstructed by interface elements created by CD.
-  z-index: 101;
+	// Make the value in other skins the same as in Vector. The default 5 is too low and causes modal
+	// windows to be obstructed by interface elements created by CD.
+	z-index: 101;
 }
 
 .cd-dialog-confirm.cd-dialog-confirm.cd-dialog-confirm,
 .cd-dialog-copyLink.cd-dialog-copyLink.cd-dialog-copyLink {
-  // Avoid obstructing Instant Diffs dialogs.
-  z-index: 100;
+	// Avoid obstructing Instant Diffs dialogs.
+	z-index: 100;
 }
 
 .cd-dialog-settings.cd-dialog-settings {
-  // The standard is 101. It should be bigger than the z-index for alerts, as an alert can link to
-  // the settings dialog.
-  z-index: 102;
+	// The standard is 101. It should be bigger than the z-index for alerts, as an alert can link to
+	// the settings dialog.
+	z-index: 102;
 }
 
 .cd-numberInput.cd-numberInput {
@@ -57,79 +57,79 @@ a:not([href]) {
 
 // Make the empty space between lines of checkbox labels clickable, T312740
 .cd-dialog-settings .oo-ui-fieldLayout-header > .oo-ui-labelElement-label:first-child {
-  display: inline-block;
+	display: inline-block;
 }
 
 .cd-input-monospace {
-  font-family: monospace, monospace;
+	font-family: monospace, monospace;
 }
 
 .cd-pseudolink-wrapper {
-  margin-block: 0.25em;
+	margin-block: 0.25em;
 }
 
 .cd-pseudolink {
-  border-bottom-width: 1px;
-  border-bottom-style: dashed;
+	border-bottom-width: 1px;
+	border-bottom-style: dashed;
 
-  &:hover,
-  &:focus {
-    text-decoration: none;
-  }
+	&:hover,
+	&:focus {
+		text-decoration: none;
+	}
 }
 
 // Need to override
 // `.cd-dialog-settings .oo-ui-fieldLayout-header > .oo-ui-labelElement-label:first-child`
 .cd-field-labelless.cd-field-labelless.cd-field-labelless.cd-field-labelless {
-  margin-top: 0;
+	margin-top: 0;
 
-  label {
-    display: none;
-  }
+	label {
+		display: none;
+	}
 
-  // Make the same space as occurs when labels (or help messages) are present
-  > .oo-ui-fieldLayout-body > .oo-ui-fieldLayout-header {
-    padding-bottom: 4px;
-  }
+	// Make the same space as occurs when labels (or help messages) are present
+	> .oo-ui-fieldLayout-body > .oo-ui-fieldLayout-header {
+		padding-bottom: 4px;
+	}
 }
 
 .cd-icon {
-  svg {
-    display: block;
-    fill: currentcolor;
-  }
+	svg {
+		display: block;
+		fill: currentcolor;
+	}
 }
 
 .cd-hlist {
-  margin: 0;
-  padding: 0;
+	margin: 0;
+	padding: 0;
 
-  li {
-    margin: 0;
-    display: inline;
-  }
+	li {
+		margin: 0;
+		display: inline;
+	}
 
-  li::after {
-    content: ", ";
-  }
+	li::after {
+		content: ", ";
+	}
 
-  li:last-child::after {
-    content: none;
-  }
+	li:last-child::after {
+		content: none;
+	}
 }
 
 :root {
-  --cd-color-subtler: @color-subtler;
+	--cd-color-subtler: @color-subtler;
 }
 
 @media screen {
-  html.skin-theme-clientpref-night {
-    --cd-color-subtler: @color-subtler-darktheme;
-  }
+	html.skin-theme-clientpref-night {
+		--cd-color-subtler: @color-subtler-darktheme;
+	}
 }
 
 @media screen and (prefers-color-scheme: dark) {
-  html.skin-theme-clientpref-os {
-    --cd-color-subtler: @color-subtler-darktheme;
-  }
+	html.skin-theme-clientpref-os {
+		--cd-color-subtler: @color-subtler-darktheme;
+	}
 }

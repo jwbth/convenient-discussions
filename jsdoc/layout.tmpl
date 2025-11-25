@@ -1,174 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?js if (!env.conf.docdash) { env.conf.docdash = {};} ?>
-    <meta charset="utf-8">
-    <title><?js= title ?> - <?js= ((env.conf.docdash.meta && env.conf.docdash.meta.title) || "Documentation") ?></title>
-    <?js if (env.conf.docdash.meta) { ?>
-    <?js if (env.conf.docdash.meta.description) { ?><meta name="description" content="<?js= env.conf.docdash.meta.description ?>" /><?js } ?>
-    <?js if (env.conf.docdash.meta.keyword) { ?>
-        <meta name="keywords" content="<?js= env.conf.docdash.meta.keyword ?>" />
-        <meta name="keyword" content="<?js= env.conf.docdash.meta.keyword ?>" />
-    <?js } ?>
-    <?js } ?>
-    <?js if (env.conf.docdash.openGraph) { ?>
-    <meta property="og:title" content="<?js= env.conf.docdash.openGraph.title ?>"/>
-    <meta property="og:type" content="<?js= env.conf.docdash.openGraph.type ?>"/>
-    <meta property="og:image" content="<?js= env.conf.docdash.openGraph.image ?>"/>
-    <?js if (env.conf.docdash.openGraph.site_name) { ?><meta property="og:site_name" content="<?js= env.conf.docdash.openGraph.site_name ?>"/><?js } ?>
-    <meta property="og:url" content="<?js= env.conf.docdash.openGraph.url ?>"/>
-    <?js } ?>
-    <script src="scripts/prettify/prettify.js"></script>
-    <script src="scripts/prettify/lang-css.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
-    <style type="text/css">
-        html nav {
-            width: 275px;
-            padding: 20px 0;
-        }
+		<?js if (!env.conf.docdash) { env.conf.docdash = {};} ?>
+		<meta charset="utf-8">
+		<title><?js= title ?> - <?js= ((env.conf.docdash.meta && env.conf.docdash.meta.title) || "Documentation") ?></title>
+		<?js if (env.conf.docdash.meta) { ?>
+		<?js if (env.conf.docdash.meta.description) { ?><meta name="description" content="<?js= env.conf.docdash.meta.description ?>" /><?js } ?>
+		<?js if (env.conf.docdash.meta.keyword) { ?>
+				<meta name="keywords" content="<?js= env.conf.docdash.meta.keyword ?>" />
+				<meta name="keyword" content="<?js= env.conf.docdash.meta.keyword ?>" />
+		<?js } ?>
+		<?js } ?>
+		<?js if (env.conf.docdash.openGraph) { ?>
+		<meta property="og:title" content="<?js= env.conf.docdash.openGraph.title ?>"/>
+		<meta property="og:type" content="<?js= env.conf.docdash.openGraph.type ?>"/>
+		<meta property="og:image" content="<?js= env.conf.docdash.openGraph.image ?>"/>
+		<?js if (env.conf.docdash.openGraph.site_name) { ?><meta property="og:site_name" content="<?js= env.conf.docdash.openGraph.site_name ?>"/><?js } ?>
+		<meta property="og:url" content="<?js= env.conf.docdash.openGraph.url ?>"/>
+		<?js } ?>
+		<script src="scripts/prettify/prettify.js"></script>
+		<script src="scripts/prettify/lang-css.js"></script>
+		<!--[if lt IE 9]>
+			<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<![endif]-->
+		<link type="text/css" rel="stylesheet" href="styles/prettify.css">
+		<link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+		<style type="text/css">
+				html nav {
+						width: 275px;
+						padding: 20px 0;
+				}
 
-        nav #nav-search {
-            width: 235px;
-            margin-top: 0;
-        }
+				nav #nav-search {
+						width: 235px;
+						margin-top: 0;
+				}
 
-        #main {
-            width: calc(100% - 275px);
-        }
+				#main {
+						width: calc(100% - 275px);
+				}
 
-        @media only screen and (max-width: 680px) {
-            nav {
-                left: -275px;
-            }
+				@media only screen and (max-width: 680px) {
+						nav {
+								left: -275px;
+						}
 
-            .navicon-button {
-                top: 0;
-                left: 275px;
-                right: unset;
-            }
+						.navicon-button {
+								top: 0;
+								left: 275px;
+								right: unset;
+						}
 
-            #main {
-                width: 100%;
-            }
+						#main {
+								width: 100%;
+						}
 
-            footer {
-                margin-left: 0;
-            }
-        }
+						footer {
+								margin-left: 0;
+						}
+				}
 
-        footer {
-            margin-left: 275px;
-        }
+				footer {
+						margin-left: 275px;
+				}
 
-        nav > ul:first-of-type a[href^="external-"] {
-            display: none;
-        }
+				nav > ul:first-of-type a[href^="external-"] {
+						display: none;
+				}
 
-        td.description > p {
-            line-height: normal;
-        }
+				td.description > p {
+						line-height: normal;
+				}
 
-        .prettyprint {
-            overflow: visible;
-        }
+				.prettyprint {
+						overflow: visible;
+				}
 
-        .prettyprint .linenums li:last-of-type code {
-            padding-bottom: 15px;
-        }
+				.prettyprint .linenums li:last-of-type code {
+						padding-bottom: 15px;
+				}
 
-        /* Same style as for <code> elements */
-        .tag-default > .dummy > li {
-            font-family: Consolas, Monaco, 'Andale Mono', monospace;
-            background: #f4f4f4;
-            padding: 1px 5px;
-            white-space: pre-wrap;
-        }
+				/* Same style as for <code> elements */
+				.tag-default > .dummy > li {
+						font-family: Consolas, Monaco, 'Andale Mono', monospace;
+						background: #f4f4f4;
+						padding: 1px 5px;
+						white-space: pre-wrap;
+				}
 
-        .params .type {
-            white-space: normal;
-        }
+				.params .type {
+						white-space: normal;
+				}
 
-        .type {
-            font-family: Consolas, Monaco, 'Andale Mono', monospace;
-        }
+				.type {
+						font-family: Consolas, Monaco, 'Andale Mono', monospace;
+				}
 
-        .description.description, .attributes.attributes {
-            font-family: unset;
-        }
+				.description.description, .attributes.attributes {
+						font-family: unset;
+				}
 
-        article .description a {
-            break-word: normal;
-        }
+				article .description a {
+						break-word: normal;
+				}
 
-        /* Modules with @exports shown two times */
-        section + section:not([class]) {
-            display: none;
-        }
+				/* Modules with @exports shown two times */
+				section + section:not([class]) {
+						display: none;
+				}
 
-        .usertext h1:first-child {
-            margin-top: 0;
-        }
-    </style>
-    <script src="scripts/nav.js" defer></script>
-    <script>
-        document.addEventListener('keydown', (e) => {
-            const activeElement = document.activeElement;
-            const inputs = ['INPUT', 'SELECT', 'BUTTON', 'TEXTAREA'];
-            if (inputs.includes(activeElement.tagName) || activeElement.isContentEditable) return;
+				.usertext h1:first-child {
+						margin-top: 0;
+				}
+		</style>
+		<script src="scripts/nav.js" defer></script>
+		<script>
+				document.addEventListener('keydown', (e) => {
+						const activeElement = document.activeElement;
+						const inputs = ['INPUT', 'SELECT', 'BUTTON', 'TEXTAREA'];
+						if (inputs.includes(activeElement.tagName) || activeElement.isContentEditable) return;
 
-            if (e.code === 'Slash') {
-                e.preventDefault();
-                document.getElementById('nav-search').focus();
-            }
-        });
-    </script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+						if (e.code === 'Slash') {
+								e.preventDefault();
+								document.getElementById('nav-search').focus();
+						}
+				});
+		</script>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 
 <input type="checkbox" id="nav-trigger" class="nav-trigger" />
 <label for="nav-trigger" class="navicon-button x">
-  <div class="navicon"></div>
+	<div class="navicon"></div>
 </label>
 
 <label for="nav-trigger" class="overlay"></label>
 
 <nav <?js if (env.conf.docdash.wrap) { ?>class="wrap"<?js } ?>>
-    <?js if (env.conf.docdash.search) { ?>
-    <input type="text" id="nav-search" placeholder="Search (press &quot;/&quot;)" />
-    <?js } ?>
-    <?js= this.nav ?>
+		<?js if (env.conf.docdash.search) { ?>
+		<input type="text" id="nav-search" placeholder="Search (press &quot;/&quot;)" />
+		<?js } ?>
+		<?js= this.nav ?>
 </nav>
 
 <div id="main">
-    <?js if (title != 'Home') { ?>
-    <h1 class="page-title"><?js= title ?></h1>
-    <?js } ?>
+		<?js if (title != 'Home') { ?>
+		<h1 class="page-title"><?js= title ?></h1>
+		<?js } ?>
 
-    <?js= content ?>
+		<?js= content ?>
 
-    <?js if (env.conf.docdash.disqus) { ?>
-    <div id="disqus_thread"></div>
-    <script>
-    (function() { // DON'T EDIT BELOW THIS LINE
-    var d = document, s = d.createElement('script');
-    s.src = '//<?js= env.conf.docdash.disqus ?>.disqus.com/embed.js';
-    s.setAttribute('data-timestamp', +new Date());
-    (d.head || d.body).appendChild(s);
-    })();
-    </script>
-    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-    <?js } ?>
+		<?js if (env.conf.docdash.disqus) { ?>
+		<div id="disqus_thread"></div>
+		<script>
+		(function() { // DON'T EDIT BELOW THIS LINE
+		var d = document, s = d.createElement('script');
+		s.src = '//<?js= env.conf.docdash.disqus ?>.disqus.com/embed.js';
+		s.setAttribute('data-timestamp', +new Date());
+		(d.head || d.body).appendChild(s);
+		})();
+		</script>
+		<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+		<?js } ?>
 </div>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc <?js= env.version.number ?></a><?js if(env.conf.templates && env.conf.templates.default && env.conf.templates.default.includeDate !== false) { ?> on <?js= (new Date()).toGMTString() ?><?js } ?> using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+		Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc <?js= env.version.number ?></a><?js if(env.conf.templates && env.conf.templates.default && env.conf.templates.default.includeDate !== false) { ?> on <?js= (new Date()).toGMTString() ?><?js } ?> using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>
@@ -181,17 +181,17 @@
 <script src="scripts/collapse.js" defer></script>
 <?js } ?>
 <?js if (env.conf.docdash.scripts && env.conf.docdash.scripts.length) {
-    for(var i = 0; i < env.conf.docdash.scripts.length; i++){
-        if (env.conf.docdash.scripts[i].indexOf(".css") != -1) {
-    ?>
-    <link type="text/css" rel="stylesheet" href="<?js= env.conf.docdash.scripts[i] ?>">
-    <?js
-        } else {
-    ?>
-    <script src="<?js= env.conf.docdash.scripts[i] ?>"></script>
-    <?js
-        }
-    }
+		for(var i = 0; i < env.conf.docdash.scripts.length; i++){
+				if (env.conf.docdash.scripts[i].indexOf(".css") != -1) {
+		?>
+		<link type="text/css" rel="stylesheet" href="<?js= env.conf.docdash.scripts[i] ?>">
+		<?js
+				} else {
+		?>
+		<script src="<?js= env.conf.docdash.scripts[i] ?>"></script>
+		<?js
+				}
+		}
 } ?>
 </body>
 </html>

@@ -1,4 +1,4 @@
 declare module '*.less' {
-  const resource: string;
-  export = resource;
+	const resource: string;
+	export = resource;
 }

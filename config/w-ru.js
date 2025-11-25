@@ -1,693 +1,693 @@
 export default /** @type {Partial<typeof import('./default').default>} */ ({
-  messages: {
-    'sun': 'Вс',
-    'mon': 'Пн',
-    'tue': 'Вт',
-    'wed': 'Ср',
-    'thu': 'Чт',
-    'fri': 'Пт',
-    'sat': 'Сб',
-    'sunday': 'воскресенье',
-    'monday': 'понедельник',
-    'tuesday': 'вторник',
-    'wednesday': 'среда',
-    'thursday': 'четверг',
-    'friday': 'пятница',
-    'saturday': 'суббота',
-    'jan': 'янв',
-    'feb': 'фев',
-    'mar': 'мар',
-    'apr': 'апр',
-    'may': 'май',
-    'jun': 'июн',
-    'jul': 'июл',
-    'aug': 'авг',
-    'sep': 'сен',
-    'oct': 'окт',
-    'nov': 'ноя',
-    'dec': 'дек',
-    'january': 'январь',
-    'february': 'февраль',
-    'march': 'март',
-    'april': 'апрель',
-    'may_long': 'май',
-    'june': 'июнь',
-    'july': 'июль',
-    'august': 'август',
-    'september': 'сентябрь',
-    'october': 'октябрь',
-    'november': 'ноябрь',
-    'december': 'декабрь',
-    'january-gen': 'января',
-    'february-gen': 'февраля',
-    'march-gen': 'марта',
-    'april-gen': 'апреля',
-    'may-gen': 'мая',
-    'june-gen': 'июня',
-    'july-gen': 'июля',
-    'august-gen': 'августа',
-    'september-gen': 'сентября',
-    'october-gen': 'октября',
-    'november-gen': 'ноября',
-    'december-gen': 'декабря',
-    'timezone-utc': 'UTC',
-    'parentheses': '($1)',
-    'parentheses-start': '(',
-    'parentheses-end': ')',
-    'word-separator': ' ',
-    'comma-separator': ', ',
-    'colon-separator': ': ',
-    'nextdiff': 'Следующая правка →',
-    'pagetitle': '$1 — Википедия',
-    'discussiontools-topicsubscription-button-subscribe': 'подписаться',
-    'discussiontools-topicsubscription-button-subscribe-tooltip': '{{GENDER:|Подпишитесь}}, чтобы получать уведомления о новых сообщениях.',
-    'discussiontools-topicsubscription-button-unsubscribe': 'отписаться',
-    'discussiontools-topicsubscription-button-unsubscribe-tooltip': '{{GENDER:|Отпишитесь}}, чтобы перестать получать уведомления.',
-    'discussiontools-topicsubscription-notify-subscribed-title': '{{GENDER:|Вы}} подписались!',
-    'discussiontools-topicsubscription-notify-subscribed-body': '{{GENDER:|Вы}} будете получать уведомления о новых сообщениях в этой теме.',
-    'discussiontools-topicsubscription-notify-unsubscribed-title': '{{GENDER:|Вы}} отписались.',
-    'discussiontools-topicsubscription-notify-unsubscribed-body': '{{GENDER:|Вы}} больше не будете получать уведомления о новых сообщениях в этой теме.',
-    'discussiontools-newtopicssubscription-button-subscribe-label': 'Подписаться',
-    'discussiontools-newtopicssubscription-button-subscribe-tooltip': 'Подпишитесь, чтобы получать уведомления о появлении новых тем на этой странице.',
-    'discussiontools-newtopicssubscription-button-unsubscribe-label': 'Отписаться',
-    'discussiontools-newtopicssubscription-button-unsubscribe-tooltip': 'Отмените подписку, чтобы больше не получать уведомления о создании новых тем на этой странице.',
-    'discussiontools-newtopicssubscription-notify-subscribed-title': '{{GENDER:|Вы}} подписались!',
-    'discussiontools-newtopicssubscription-notify-subscribed-body': '{{GENDER:|Вы}} будете получать уведомления о создании новых тем на этой странице.',
-    'discussiontools-newtopicssubscription-notify-unsubscribed-title': '{{GENDER:|Вы}} отписались.',
-    'discussiontools-newtopicssubscription-notify-unsubscribed-body': '{{GENDER:|Вы}} больше не будете получать уведомления о создании новых тем на этой странице.',
-  },
+	messages: {
+		'sun': 'Вс',
+		'mon': 'Пн',
+		'tue': 'Вт',
+		'wed': 'Ср',
+		'thu': 'Чт',
+		'fri': 'Пт',
+		'sat': 'Сб',
+		'sunday': 'воскресенье',
+		'monday': 'понедельник',
+		'tuesday': 'вторник',
+		'wednesday': 'среда',
+		'thursday': 'четверг',
+		'friday': 'пятница',
+		'saturday': 'суббота',
+		'jan': 'янв',
+		'feb': 'фев',
+		'mar': 'мар',
+		'apr': 'апр',
+		'may': 'май',
+		'jun': 'июн',
+		'jul': 'июл',
+		'aug': 'авг',
+		'sep': 'сен',
+		'oct': 'окт',
+		'nov': 'ноя',
+		'dec': 'дек',
+		'january': 'январь',
+		'february': 'февраль',
+		'march': 'март',
+		'april': 'апрель',
+		'may_long': 'май',
+		'june': 'июнь',
+		'july': 'июль',
+		'august': 'август',
+		'september': 'сентябрь',
+		'october': 'октябрь',
+		'november': 'ноябрь',
+		'december': 'декабрь',
+		'january-gen': 'января',
+		'february-gen': 'февраля',
+		'march-gen': 'марта',
+		'april-gen': 'апреля',
+		'may-gen': 'мая',
+		'june-gen': 'июня',
+		'july-gen': 'июля',
+		'august-gen': 'августа',
+		'september-gen': 'сентября',
+		'october-gen': 'октября',
+		'november-gen': 'ноября',
+		'december-gen': 'декабря',
+		'timezone-utc': 'UTC',
+		'parentheses': '($1)',
+		'parentheses-start': '(',
+		'parentheses-end': ')',
+		'word-separator': ' ',
+		'comma-separator': ', ',
+		'colon-separator': ': ',
+		'nextdiff': 'Следующая правка →',
+		'pagetitle': '$1 — Википедия',
+		'discussiontools-topicsubscription-button-subscribe': 'подписаться',
+		'discussiontools-topicsubscription-button-subscribe-tooltip': '{{GENDER:|Подпишитесь}}, чтобы получать уведомления о новых сообщениях.',
+		'discussiontools-topicsubscription-button-unsubscribe': 'отписаться',
+		'discussiontools-topicsubscription-button-unsubscribe-tooltip': '{{GENDER:|Отпишитесь}}, чтобы перестать получать уведомления.',
+		'discussiontools-topicsubscription-notify-subscribed-title': '{{GENDER:|Вы}} подписались!',
+		'discussiontools-topicsubscription-notify-subscribed-body': '{{GENDER:|Вы}} будете получать уведомления о новых сообщениях в этой теме.',
+		'discussiontools-topicsubscription-notify-unsubscribed-title': '{{GENDER:|Вы}} отписались.',
+		'discussiontools-topicsubscription-notify-unsubscribed-body': '{{GENDER:|Вы}} больше не будете получать уведомления о новых сообщениях в этой теме.',
+		'discussiontools-newtopicssubscription-button-subscribe-label': 'Подписаться',
+		'discussiontools-newtopicssubscription-button-subscribe-tooltip': 'Подпишитесь, чтобы получать уведомления о появлении новых тем на этой странице.',
+		'discussiontools-newtopicssubscription-button-unsubscribe-label': 'Отписаться',
+		'discussiontools-newtopicssubscription-button-unsubscribe-tooltip': 'Отмените подписку, чтобы больше не получать уведомления о создании новых тем на этой странице.',
+		'discussiontools-newtopicssubscription-notify-subscribed-title': '{{GENDER:|Вы}} подписались!',
+		'discussiontools-newtopicssubscription-notify-subscribed-body': '{{GENDER:|Вы}} будете получать уведомления о создании новых тем на этой странице.',
+		'discussiontools-newtopicssubscription-notify-unsubscribed-title': '{{GENDER:|Вы}} отписались.',
+		'discussiontools-newtopicssubscription-notify-unsubscribed-body': '{{GENDER:|Вы}} больше не будете получать уведомления о создании новых тем на этой странице.',
+	},
 
-  specialPageAliases: {
-    Contributions: 'Вклад',
-    Diff: 'Изменения',
-    PermanentLink: 'Постоянная ссылка',
-  },
+	specialPageAliases: {
+		Contributions: 'Вклад',
+		Diff: 'Изменения',
+		PermanentLink: 'Постоянная ссылка',
+	},
 
-  substAliases: [
-    'подстановка:',
-    'подст:',
-  ],
+	substAliases: [
+		'подстановка:',
+		'подст:',
+	],
 
-  thumbAliases: [
-    'мини',
-    'миниатюра',
-  ],
+	thumbAliases: [
+		'мини',
+		'миниатюра',
+	],
 
-  timezone: 'UTC',
+	timezone: 'UTC',
 
-  pageWhitelist: [
-    /^Арбитраж:.+\//,
-    /^Википедия:.+ запросы/,
-    /^Википедия:Вики-встречи$/,
-    /^Википедия:Выборы арбитров\//,
-    /^Википедия:Голосования\//,
-    /^Википедия:Запросы/,
-    /^Википедия:Заявки на /,
-    /^Википедия:Изменение спам-листа/,
-    /^Википедия:К восстановлению\//,
-    /^Википедия:К объединению\//,
-    /^Википедия:К оценке источников/,
-    /^Википедия:К переименованию\//,
-    /^Википедия:К посредничеству/,
-    /^Википедия:К разделению\//,
-    /^Википедия:К удалению\//,
-    /^Википедия:К улучшению\//,
-    /^Википедия:Кандидаты в .+\//,
-    /^Википедия:Кандидаты в кандидаты в администраторы/,
-    /^Википедия:Конфирмации\//,
-    /^Википедия:Обсуждение категорий\//,
-    /^Википедия:Обсуждение правил\//,
-    /^Википедия:Опросы\//,
-    /^Википедия:Оспаривание/,
-    /^Википедия:Проверка участников\//,
-    /^Википедия:Просьба прокомментировать\//,
-    /^Википедия:Рецензирование\//,
-    /^Википедия:Снятие защиты/,
-    /^Википедия:Совет вики-проектов\/Обсуждение проектов/,
-    /^Википедия:Сообщения об ошибках/,
-    /^Википедия:Статьи года\/.+\/Обсуждение/,
-    /^Википедия:Текущие события на заглавной странице\/Кандидаты/,
-    /^Википедия:Установка защиты/,
-    /^Википедия:Фильтр правок\/Срабатывания/,
-    /^Википедия:Форум[/ ]/,
-    /^Проект:Библиотека\/(Требуются книги|Вопросы|Горячие темы|Технические вопросы)/,
-    /^Проект:Водные объекты/,
-    /^Проект:Грамотность\/Запросы/,
-    /^Проект:Графическая мастерская\/Заявки/,
-    /^Проект:Гражданская война в России\/К посредничеству\/Посредничество по содержанию статей/,
-    /^Проект:Добротные статьи\/К лишению статуса/,
-    /^Проект:Знаете ли вы\/Подготовка следующего выпуска/,
-    /^Проект:Инкубатор\/(Мини-рецензирование|Форум)/,
-    // https://ru.wikipedia.org/wiki/Special:GoToComment/c-Vladimir_Solovjev-20241228195600-Перестал_работать_гаджет_«Удобные_обсужден
-    /^Проект:.*\/(Кандидаты|К лишению статуса)/,
-    /^Проект:Рецензирование(\/|$)/,
-    /^Проект:Социальная ответственность\/Форум/,
-  ],
+	pageWhitelist: [
+		/^Арбитраж:.+\//,
+		/^Википедия:.+ запросы/,
+		/^Википедия:Вики-встречи$/,
+		/^Википедия:Выборы арбитров\//,
+		/^Википедия:Голосования\//,
+		/^Википедия:Запросы/,
+		/^Википедия:Заявки на /,
+		/^Википедия:Изменение спам-листа/,
+		/^Википедия:К восстановлению\//,
+		/^Википедия:К объединению\//,
+		/^Википедия:К оценке источников/,
+		/^Википедия:К переименованию\//,
+		/^Википедия:К посредничеству/,
+		/^Википедия:К разделению\//,
+		/^Википедия:К удалению\//,
+		/^Википедия:К улучшению\//,
+		/^Википедия:Кандидаты в .+\//,
+		/^Википедия:Кандидаты в кандидаты в администраторы/,
+		/^Википедия:Конфирмации\//,
+		/^Википедия:Обсуждение категорий\//,
+		/^Википедия:Обсуждение правил\//,
+		/^Википедия:Опросы\//,
+		/^Википедия:Оспаривание/,
+		/^Википедия:Проверка участников\//,
+		/^Википедия:Просьба прокомментировать\//,
+		/^Википедия:Рецензирование\//,
+		/^Википедия:Снятие защиты/,
+		/^Википедия:Совет вики-проектов\/Обсуждение проектов/,
+		/^Википедия:Сообщения об ошибках/,
+		/^Википедия:Статьи года\/.+\/Обсуждение/,
+		/^Википедия:Текущие события на заглавной странице\/Кандидаты/,
+		/^Википедия:Установка защиты/,
+		/^Википедия:Фильтр правок\/Срабатывания/,
+		/^Википедия:Форум[/ ]/,
+		/^Проект:Библиотека\/(Требуются книги|Вопросы|Горячие темы|Технические вопросы)/,
+		/^Проект:Водные объекты/,
+		/^Проект:Грамотность\/Запросы/,
+		/^Проект:Графическая мастерская\/Заявки/,
+		/^Проект:Гражданская война в России\/К посредничеству\/Посредничество по содержанию статей/,
+		/^Проект:Добротные статьи\/К лишению статуса/,
+		/^Проект:Знаете ли вы\/Подготовка следующего выпуска/,
+		/^Проект:Инкубатор\/(Мини-рецензирование|Форум)/,
+		// https://ru.wikipedia.org/wiki/Special:GoToComment/c-Vladimir_Solovjev-20241228195600-Перестал_работать_гаджет_«Удобные_обсужден
+		/^Проект:.*\/(Кандидаты|К лишению статуса)/,
+		/^Проект:Рецензирование(\/|$)/,
+		/^Проект:Социальная ответственность\/Форум/,
+	],
 
-  pageBlacklist: [
-    /^Википедия:Выборы арбитров\/.+\/Выдвижение/,
-    /^Википедия:Выборы арбитров\/.+\/Голосование/,
-    /^Википедия:Заявки на статус (администратора|бюрократа)$/,
-    /^Википедия:Заявки на статусы$/,
-  ],
+	pageBlacklist: [
+		/^Википедия:Выборы арбитров\/.+\/Выдвижение/,
+		/^Википедия:Выборы арбитров\/.+\/Голосование/,
+		/^Википедия:Заявки на статус (администратора|бюрократа)$/,
+		/^Википедия:Заявки на статусы$/,
+	],
 
-  userNamespacesByGender: {
-    female: 'Участница',
-  },
+	userNamespacesByGender: {
+		female: 'Участница',
+	},
 
-  genderNeutralUserNamespaceAlias: 'У',
+	genderNeutralUserNamespaceAlias: 'У',
 
-  archivePaths: [
-    {
-      source: 'Википедия:Форум/Географический',
-      archive: 'Википедия:Форум/Географический/Архивы/',
-    },
-    {
-      source: 'Википедия:Форум арбитров',
-      archive: 'Википедия:Форум/Архив/Форум арбитров',
-    },
-    {
-      source: 'Википедия:Форум/$1',
-      archive: 'Википедия:Форум/Архив/$1/',
-      replacements: [/[^/]+/],
-    },
-    /\/Архив/,
-  ],
+	archivePaths: [
+		{
+			source: 'Википедия:Форум/Географический',
+			archive: 'Википедия:Форум/Географический/Архивы/',
+		},
+		{
+			source: 'Википедия:Форум арбитров',
+			archive: 'Википедия:Форум/Архив/Форум арбитров',
+		},
+		{
+			source: 'Википедия:Форум/$1',
+			archive: 'Википедия:Форум/Архив/$1/',
+			replacements: [/[^/]+/],
+		},
+		/\/Архив/,
+	],
 
-  pagesWithoutArchives: [
-    /^Википедия:К удалению\//,
-    /^Википедия:К восстановлению\//,
-    /^Википедия:К переименованию\//,
-    /^Википедия:К объединению\//,
-    /^Википедия:К разделению\//,
-    /^Википедия:К улучшению\//,
-    /^Проект:Кандидаты в хорошие статьи\//,
-    /^Проект:Кандидаты в добротные статьи\//,
-    /^Проект:Рецензирование(\/|$)/,
-  ],
+	pagesWithoutArchives: [
+		/^Википедия:К удалению\//,
+		/^Википедия:К восстановлению\//,
+		/^Википедия:К переименованию\//,
+		/^Википедия:К объединению\//,
+		/^Википедия:К разделению\//,
+		/^Википедия:К улучшению\//,
+		/^Проект:Кандидаты в хорошие статьи\//,
+		/^Проект:Кандидаты в добротные статьи\//,
+		/^Проект:Рецензирование(\/|$)/,
+	],
 
-  archivingConfig: {
-    subpages: ['Архивация'],
-    areArchivesSorted: true,
-    templates: [
-      {
-        name: 'User:ClaymoreBot/Архивация',
-        relativePathParam: ['формат', 'страница'],
-        absolutePathPair: ['абсолютный путь', /^да$/],
-        replacements: new Map([
-          [
-            /%\(год\)/,
-            ({ date }, match) =>
-              date === null ? match[0] : String(date.getFullYear()).padStart(2, '0'),
-          ],
-          [
-            /%\(месяц\)/,
-            ({ date }, match) =>
-              date === null ? match[0] : String(date.getMonth() + 1).padStart(2, '0'),
-          ],
-          [
-            /%\(полугодие\)/,
-            ({ date }, match) =>
-              date === null ? match[0] : String(date.getMonth() < 6 ? 1 : 2),
-          ],
-        ]),
-      },
-    ],
-  },
+	archivingConfig: {
+		subpages: ['Архивация'],
+		areArchivesSorted: true,
+		templates: [
+			{
+				name: 'User:ClaymoreBot/Архивация',
+				relativePathParam: ['формат', 'страница'],
+				absolutePathPair: ['абсолютный путь', /^да$/],
+				replacements: new Map([
+					[
+						/%\(год\)/,
+						({ date }, match) =>
+							date === null ? match[0] : String(date.getFullYear()).padStart(2, '0'),
+					],
+					[
+						/%\(месяц\)/,
+						({ date }, match) =>
+							date === null ? match[0] : String(date.getMonth() + 1).padStart(2, '0'),
+					],
+					[
+						/%\(полугодие\)/,
+						({ date }, match) =>
+							date === null ? match[0] : String(date.getMonth() < 6 ? 1 : 2),
+					],
+				]),
+			},
+		],
+	},
 
-  idleFragments: [/^Преамбула$/],
+	idleFragments: [/^Преамбула$/],
 
-  defaultIndentationChar: '*',
+	defaultIndentationChar: '*',
 
-  indentationCharMode: 'unify',
+	indentationCharMode: 'unify',
 
-  signaturePrefixRegexp: /(?:\s*С уважением,?)?(?:\s[-–−—―]+\u00A0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─~⁓/→⇒\s\u200D\u200E\u200F\u2060]|&\w+;|&#\d+;)*(?:\s+\()?$/,
+	signaturePrefixRegexp: /(?:\s*С уважением,?)?(?:\s[-–−—―]+\u00A0?[A-Z][A-Za-z-_]*)?(?:\s+>+)?(?:[·•\-‑–−—―─~⁓/→⇒\s\u200D\u200E\u200F\u2060]|&\w+;|&#\d+;)*(?:\s+\()?$/,
 
-  signatureEndingRegexp: / \(обс\.\)$/,
+	signatureEndingRegexp: / \(обс\.\)$/,
 
-  tagName: 'convenient-discussions',
+	tagName: 'convenient-discussions',
 
-  hookToFireWithAuthorWrappers: 'global.userlinks',
+	hookToFireWithAuthorWrappers: 'global.userlinks',
 
-  unsignedTemplates: [
-    'Без подписи',
-    'Не подписался',
-    'Unsigned2',
-    'UnsignedIP2',
-    'Нет подписи',
-    'UnsignedIP',
-    'Не подписано',
-    'Неподписано',
-    'Написано',
-    'Unsigned IP',
-    'Unsignedip',
-    'Unsigned-ip',
-    'НеподписаноIP',
-    'Реплика',
-    'Не подписаноIP',
-    'Неподписано IP',
-    'Неподписано-IP',
-    'Неподписано-ip',
-    'Неподписано ip',
-    'Не подписано ip',
-    'Не подписано-ip',
-    'Unsigned-IP',
-    'Unsigned ip',
-    'Неподписаноip',
-    'Не подписаноip',
-    'Не подписано IP',
-    'Не подписано-IP',
-    'Написано-ip',
-    'Написано-IP',
-    'Написано ip',
-    'Написано IP',
-    'НаписаноIP',
-    'Написаноip',
-    'Нпп',
-    'НеподписаноIP2',
-    'Unsigned',
-    'UnsignedIP',
-  ],
+	unsignedTemplates: [
+		'Без подписи',
+		'Не подписался',
+		'Unsigned2',
+		'UnsignedIP2',
+		'Нет подписи',
+		'UnsignedIP',
+		'Не подписано',
+		'Неподписано',
+		'Написано',
+		'Unsigned IP',
+		'Unsignedip',
+		'Unsigned-ip',
+		'НеподписаноIP',
+		'Реплика',
+		'Не подписаноIP',
+		'Неподписано IP',
+		'Неподписано-IP',
+		'Неподписано-ip',
+		'Неподписано ip',
+		'Не подписано ip',
+		'Не подписано-ip',
+		'Unsigned-IP',
+		'Unsigned ip',
+		'Неподписаноip',
+		'Не подписаноip',
+		'Не подписано IP',
+		'Не подписано-IP',
+		'Написано-ip',
+		'Написано-IP',
+		'Написано ip',
+		'Написано IP',
+		'НаписаноIP',
+		'Написаноip',
+		'Нпп',
+		'НеподписаноIP2',
+		'Unsigned',
+		'UnsignedIP',
+	],
 
-  pairQuoteTemplates: [
-    [
-      'Начало цитаты',
-      'НачалоЦитаты',
-      'Нц',
-    ],
-    [
-      'Конец цитаты',
-      'КонецЦитаты',
-      'Кц',
-    ],
-  ],
+	pairQuoteTemplates: [
+		[
+			'Начало цитаты',
+			'НачалоЦитаты',
+			'Нц',
+		],
+		[
+			'Конец цитаты',
+			'КонецЦитаты',
+			'Кц',
+		],
+	],
 
-  smallDivTemplates: [
-    'block-small',
-    'Smalldiv',
-    'Div-small',
-  ],
+	smallDivTemplates: [
+		'block-small',
+		'Smalldiv',
+		'Div-small',
+	],
 
-  paragraphTemplates: [
-    'pb',
-    'Абзац',
-  ],
+	paragraphTemplates: [
+		'pb',
+		'Абзац',
+	],
 
-  outdentTemplates: [
-    'outdent',
-    'Od',
-    'Обратный отступ',
-  ],
+	outdentTemplates: [
+		'outdent',
+		'Od',
+		'Обратный отступ',
+	],
 
-  clearTemplates: [
-    'Clear',
-    'Clr',
-    '-',
-  ],
+	clearTemplates: [
+		'Clear',
+		'Clr',
+		'-',
+	],
 
-  quoteFormatting({ mentionSource, author, timestamp, dtId }) {
-    var pre = '{{цс|1=';
-    var post = '';
-    if (mentionSource) {
-      if (author) {
-        post += '|2=' + author;
-      }
-      if (timestamp) {
-        post += '|3=' + timestamp;
-      }
-      if (dtId) {
-        post += '|4=' + dtId;
-      }
-      post += '}}';
-    } else {
-      post = '|inline=1}}<br>';
-    }
+	quoteFormatting({ mentionSource, author, timestamp, dtId }) {
+		var pre = '{{цс|1=';
+		var post = '';
+		if (mentionSource) {
+			if (author) {
+				post += '|2=' + author;
+			}
+			if (timestamp) {
+				post += '|3=' + timestamp;
+			}
+			if (dtId) {
+				post += '|4=' + dtId;
+			}
+			post += '}}';
+		} else {
+			post = '|inline=1}}<br>';
+		}
 
-    return [pre, post];
-  },
+		return [pre, post];
+	},
 
-  noSignatureClasses: [
-    'ambox',
-    'NavHead',
-    'raaf',  // [[Википедия:Запросы к администраторам/Быстрые]]
-    'ts-Скрытый_блок-title',  // https://ru.wikipedia.org/?diff=141825627
-  ],
+	noSignatureClasses: [
+		'ambox',
+		'NavHead',
+		'raaf',  // [[Википедия:Запросы к администраторам/Быстрые]]
+		'ts-Скрытый_блок-title',  // https://ru.wikipedia.org/?diff=141825627
+	],
 
-  noSignatureTemplates: [
-    'Перенесено с',
-    'Moved from',
-    'Перенесено из',
-    'Moved discussion from',
-    'Перенесено на',
-    'Обсуждение перенесено',
-    'Moved to',
-    'Перенесено в',
-    'Перенесено из раздела',
-    'Перенесено в раздел',
-    'Копия с',
-    'Скопировано на',
-  ],
+	noSignatureTemplates: [
+		'Перенесено с',
+		'Moved from',
+		'Перенесено из',
+		'Moved discussion from',
+		'Перенесено на',
+		'Обсуждение перенесено',
+		'Moved to',
+		'Перенесено в',
+		'Перенесено из раздела',
+		'Перенесено в раздел',
+		'Копия с',
+		'Скопировано на',
+	],
 
-  reflistTalkTemplates: [
-    'Reflist-talk',
-  ],
+	reflistTalkTemplates: [
+		'Reflist-talk',
+	],
 
-  reflistTalkClasses: ['reflist-talk'],
+	reflistTalkClasses: ['reflist-talk'],
 
-  commentAntipatterns: [
-    /--\u00A0?\[\[Участник:DimaBot\|DimaBot\]\]/,
-  ],
+	commentAntipatterns: [
+		/--\u00A0?\[\[Участник:DimaBot\|DimaBot\]\]/,
+	],
 
-  excludeFromHeadlineClasses: [
-    'ch-helperText',
-    'userflags-wrapper',
-    'dclink-wrapper',
-  ],
+	excludeFromHeadlineClasses: [
+		'ch-helperText',
+		'userflags-wrapper',
+		'dclink-wrapper',
+	],
 
-  closedDiscussionTemplates: [
-    [
-      'Закрыто',
-      'Closed',
-      'Начало закрытой секции',
-      'Close',
-      'Закрыто/сворачивать',
-      'Closed/c',
-      'Начало скрытого блока',
-      'Hidden begin',
-      'Hidden block start',
-    ],
-    [
-      'Конец закрытой секции',
-      'Закрыто-конец',
-      'Ecs',
-      'Конец',
-      'Esc',
-      'Кзс',
-      'Закрыто конец',
-      'ECS',
-      'Конец закрытой секции/сворачивать',
-      'Ecs/c',
-      'Рано',
-      'Конец скрытого блока',
-      'Hidden end',
-      'Oq-',
-      'Сворачиваемый блок-конец',
-      'Hidden block end',
-    ],
-  ],
+	closedDiscussionTemplates: [
+		[
+			'Закрыто',
+			'Closed',
+			'Начало закрытой секции',
+			'Close',
+			'Закрыто/сворачивать',
+			'Closed/c',
+			'Начало скрытого блока',
+			'Hidden begin',
+			'Hidden block start',
+		],
+		[
+			'Конец закрытой секции',
+			'Закрыто-конец',
+			'Ecs',
+			'Конец',
+			'Esc',
+			'Кзс',
+			'Закрыто конец',
+			'ECS',
+			'Конец закрытой секции/сворачивать',
+			'Ecs/c',
+			'Рано',
+			'Конец скрытого блока',
+			'Hidden end',
+			'Oq-',
+			'Сворачиваемый блок-конец',
+			'Hidden block end',
+		],
+	],
 
-  closedDiscussionClasses: [
-    'NavContent',
-  ],
+	closedDiscussionClasses: [
+		'NavContent',
+	],
 
-  noHighlightClasses: [
-    'infobox',
-  ],
+	noHighlightClasses: [
+		'infobox',
+	],
 
-  dontConfirmEmptyCommentPages: [
-    /^Википедия:Заявки на статус /,
-    /^Википедия:Голосования\//,
-  ],
+	dontConfirmEmptyCommentPages: [
+		/^Википедия:Заявки на статус /,
+		/^Википедия:Голосования\//,
+	],
 
-  indentationCharsPattern: String.raw`(?:\{\{(?:-vote|[зЗ]ачёркнутый голос|-голос)\|)?([:*#]+)( *)`,
+	indentationCharsPattern: String.raw`(?:\{\{(?:-vote|[зЗ]ачёркнутый голос|-голос)\|)?([:*#]+)( *)`,
 
-  undoTexts: [
-    'отмена правки',
-    'откат правок',
-  ],
+	undoTexts: [
+		'отмена правки',
+		'откат правок',
+	],
 
-  textReactions: [
-    {
-      regexp: /\{\{(?:(?:subst|подст):)?ПИ2?\}\}/,
-      message: 'Шаблон указания на статус подводящего итоги добавлять не нужно — он будет добавлен автоматически.',
-      name: 'closerTemplateNotNeeded',
-      type: 'notice',
-      checkFunc(commentForm) {
-        return (
-          'couldBeCloserClosing' in commentForm &&
-          commentForm.headlineInput &&
-          commentForm.headlineInput.getValue().trim() === 'Итог'
-        );
-      },
-    },
-  ],
+	textReactions: [
+		{
+			regexp: /\{\{(?:(?:subst|подст):)?ПИ2?\}\}/,
+			message: 'Шаблон указания на статус подводящего итоги добавлять не нужно — он будет добавлен автоматически.',
+			name: 'closerTemplateNotNeeded',
+			type: 'notice',
+			checkFunc(commentForm) {
+				return (
+					'couldBeCloserClosing' in commentForm &&
+					commentForm.headlineInput &&
+					commentForm.headlineInput.getValue().trim() === 'Итог'
+				);
+			},
+		},
+	],
 
-  customCommentFormModules: [
-    {
-      name: 'ext.gadget.wikificator',
-    },
-    {
-      name: 'ext.gadget.urldecoder',
-      checkFunc() {
-        return mw.user.options.get('gadget-urldecoder');
-      },
-    },
-  ],
+	customCommentFormModules: [
+		{
+			name: 'ext.gadget.wikificator',
+		},
+		{
+			name: 'ext.gadget.urldecoder',
+			checkFunc() {
+				return mw.user.options.get('gadget-urldecoder');
+			},
+		},
+	],
 
-  transformSummary(summary) {
-    return summary
-      .replace(cd.s('es-new-subsection') + ': /* Итог */', 'итог')
-      .replace(cd.s('es-new-subsection') + ': /* Предварительный итог */', 'предварительный итог')
-      .replace(cd.s('es-new-subsection') + ': /* Предытог */', 'предытог');
-  },
+	transformSummary(summary) {
+		return summary
+			.replace(cd.s('es-new-subsection') + ': /* Итог */', 'итог')
+			.replace(cd.s('es-new-subsection') + ': /* Предварительный итог */', 'предварительный итог')
+			.replace(cd.s('es-new-subsection') + ': /* Предытог */', 'предытог');
+	},
 
-  postTransformCode(code, commentForm) {
-    // Add a closer template
-    if (
-      'couldBeCloserClosing' in commentForm &&
-      commentForm.headlineInput &&
-      commentForm.headlineInput.getValue().trim() === 'Итог' &&
-      !/\{\{(?:(?:subst|подст):)?ПИ2?\}\}|правах подводящего итоги/.test(code)
-    ) {
-      code = code.replace(
-        /(\n?\n)$/,
-        (newlines) =>
-          '\n' +
-          (/** @type {string} */ (cd.settings.get('closerTemplate')) || '{{'.concat('subst:ПИ}}')) +
-          newlines
-      );
-    }
+	postTransformCode(code, commentForm) {
+		// Add a closer template
+		if (
+			'couldBeCloserClosing' in commentForm &&
+			commentForm.headlineInput &&
+			commentForm.headlineInput.getValue().trim() === 'Итог' &&
+			!/\{\{(?:(?:subst|подст):)?ПИ2?\}\}|правах подводящего итоги/.test(code)
+		) {
+			code = code.replace(
+				/(\n?\n)$/,
+				(newlines) =>
+					'\n' +
+					(/** @type {string} */ (cd.settings.get('closerTemplate')) || '{{'.concat('subst:ПИ}}')) +
+					newlines
+			);
+		}
 
-    return code;
-  },
+		return code;
+	},
 
-  rejectNode(node) {
-    return (
-      node.classList.contains('ts-Закрыто-header') ||
+	rejectNode(node) {
+		return (
+			node.classList.contains('ts-Закрыто-header') ||
 
-      // {{clear}}
-      (
-        node.tagName === 'DIV' &&
-        node.getAttribute('style') === 'clear:both;' &&
-        !node.childNodes.length
-      )
-    );
-  },
+			// {{clear}}
+			(
+				node.tagName === 'DIV' &&
+				node.getAttribute('style') === 'clear:both;' &&
+				!node.childNodes.length
+			)
+		);
+	},
 
-  beforeAuthorLinkParse(authorLink, authorLinkPrototype) {
-    // https://ru.wikipedia.org/wiki/MediaWiki:Gadget-markadmins.js
-    const nextElement = authorLink.nextElementSibling;
-    if (nextElement?.classList.contains('userflags-wrapper')) {
-      /** @type {HTMLElement} */ (authorLinkPrototype.parentNode).insertBefore(
-        nextElement,
-        authorLinkPrototype.nextSibling
-      );
-    }
-  },
+	beforeAuthorLinkParse(authorLink, authorLinkPrototype) {
+		// https://ru.wikipedia.org/wiki/MediaWiki:Gadget-markadmins.js
+		const nextElement = authorLink.nextElementSibling;
+		if (nextElement?.classList.contains('userflags-wrapper')) {
+			/** @type {HTMLElement} */ (authorLinkPrototype.parentNode).insertBefore(
+				nextElement,
+				authorLinkPrototype.nextSibling
+			);
+		}
+	},
 
-  areNewTopicsOnTop(title, code) {
-    if (/\{\{[нН]овые сверху/.test(code)) {
-      return true;
-    } else if (/^Википедия:(?:.+ запросы|Запросы|Оспаривание |Форум[/ ])/.test(title)) {
-      return true;
-    } else if (/^Википедия:(?:К восстановлению|К объединению|К переименованию|К разделению|К удалению|К улучшению)/.test(title)) {
-      return false;
-    }
+	areNewTopicsOnTop(title, code) {
+		if (/\{\{[нН]овые сверху/.test(code)) {
+			return true;
+		} else if (/^Википедия:(?:.+ запросы|Запросы|Оспаривание |Форум[/ ])/.test(title)) {
+			return true;
+		} else if (/^Википедия:(?:К восстановлению|К объединению|К переименованию|К разделению|К удалению|К улучшению)/.test(title)) {
+			return false;
+		}
 
-    return null;
-  },
+		return null;
+	},
 
-  getMoveSourcePageCode(targetPageWikilink, signature, timestamp) {
-    return '{{перенесено на|' + targetPageWikilink + '|' + signature + '}}\n<small>Для бота: ' + timestamp + '</small>\n';
-  },
+	getMoveSourcePageCode(targetPageWikilink, signature, timestamp) {
+		return '{{перенесено на|' + targetPageWikilink + '|' + signature + '}}\n<small>Для бота: ' + timestamp + '</small>\n';
+	},
 
-  getMoveTargetPageCode(targetPageWikilink, signature) {
-    return '{{перенесено с|' + targetPageWikilink + '|' + signature + '}}\n';
-  },
+	getMoveTargetPageCode(targetPageWikilink, signature) {
+		return '{{перенесено с|' + targetPageWikilink + '|' + signature + '}}\n';
+	},
 });
 
 const cd = convenientDiscussions;
 
 mw.hook('convenientDiscussions.beforeParse').add(() => {
-  // Handle {{-vote}} by actually putting pseudo-minus-1-level comments on the upper level. We split
-  // the parent list tag into two parts putting the comment in between.
+	// Handle {{-vote}} by actually putting pseudo-minus-1-level comments on the upper level. We split
+	// the parent list tag into two parts putting the comment in between.
 
-  // Commented for now, as it can confuse votes for the criteria check script on voting pages.
-  /* $('.ruwiki-commentIndentation-minus1level').each(function (i, el) {
-    const $current = $(el).css('margin', 0);
-    const $list = $current.parent('dd, li').parent('dl, ul, ol');
-    while ($list[0].contains($current[0])) {
-      const $parent = $current.parent();
-      const $elementsAfter = $current.nextAll();
-      if ($elementsAfter.length) {
-        $parent
-          .clone()
-          .empty()
-          .append($elementsAfter);
-      }
-      $parent.after($current);
-      if (!$parent.children().length) {
-        $parent.remove();
-      }
-    }
-  }); */
+	// Commented for now, as it can confuse votes for the criteria check script on voting pages.
+	/* $('.ruwiki-commentIndentation-minus1level').each(function (i, el) {
+		const $current = $(el).css('margin', 0);
+		const $list = $current.parent('dd, li').parent('dl, ul, ol');
+		while ($list[0].contains($current[0])) {
+			const $parent = $current.parent();
+			const $elementsAfter = $current.nextAll();
+			if ($elementsAfter.length) {
+				$parent
+					.clone()
+					.empty()
+					.append($elementsAfter);
+			}
+			$parent.after($current);
+			if (!$parent.children().length) {
+				$parent.remove();
+			}
+		}
+	}); */
 
-  mw.loader.using('mediawiki.util').then(() => {
-    mw.util.addCSS('.ruwiki-msgIndentation-minus1level { margin-left: 0 !important; }');
-  });
+	mw.loader.using('mediawiki.util').then(() => {
+		mw.util.addCSS('.ruwiki-msgIndentation-minus1level { margin-left: 0 !important; }');
+	});
 });
 
 mw.hook('convenientDiscussions.pageReadyFirstTime').add(() => {
-  function generateEditCommonJsLink() {
-    return mw.util.getUrl('User:' + cd.user.getName() + '/common.js', { action: 'edit' });
-  }
+	function generateEditCommonJsLink() {
+		return mw.util.getUrl('User:' + cd.user.getName() + '/common.js', { action: 'edit' });
+	}
 
-  const isHlmEnabled = window.highlightMessagesAfterLastVisit !== undefined;
-  if (isHlmEnabled) {
-    // Suppress the work of [[Участник:Кикан/highlightLastMessages.js]] in possible ways.
-    window.highlightMessagesAfterLastVisit = false;
-    window.highlightMessages = 0;
+	const isHlmEnabled = window.highlightMessagesAfterLastVisit !== undefined;
+	if (isHlmEnabled) {
+		// Suppress the work of [[Участник:Кикан/highlightLastMessages.js]] in possible ways.
+		window.highlightMessagesAfterLastVisit = false;
+		window.highlightMessages = 0;
 
-    if (!mw.cookie.get('cd-hlmConflict')) {
-      // Remove the results of work of [[Участник:Кикан/highlightLastMessages.js]]
-      if (window.messagesHighlightColor !== undefined) {
-        const dummyElement = document.createElement('span');
-        dummyElement.style.color = window.messagesHighlightColor;
-        const hlmStyledElements = /** @type {NodeListOf<HTMLElement>} */ (cd.api.getRootElement().querySelectorAll(
-          '.cd-comment-part[style="background-color: ' + dummyElement.style.color + ';"],' +
-          '.cd-comment-part[style="background-color: ' + window.messagesHighlightColor + '"]'
-        ));
-        hlmStyledElements.forEach((el) => {
-          el.style.backgroundColor = '';
-        });
-      }
+		if (!mw.cookie.get('cd-hlmConflict')) {
+			// Remove the results of work of [[Участник:Кикан/highlightLastMessages.js]]
+			if (window.messagesHighlightColor !== undefined) {
+				const dummyElement = document.createElement('span');
+				dummyElement.style.color = window.messagesHighlightColor;
+				const hlmStyledElements = /** @type {NodeListOf<HTMLElement>} */ (cd.api.getRootElement().querySelectorAll(
+					'.cd-comment-part[style="background-color: ' + dummyElement.style.color + ';"],' +
+					'.cd-comment-part[style="background-color: ' + window.messagesHighlightColor + '"]'
+				));
+				hlmStyledElements.forEach((el) => {
+					el.style.backgroundColor = '';
+				});
+			}
 
-      const $text = cd.api.wrapHtml('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Кикан/highlightLastMessages.js">highlightLastMessages.js</a>, конфликтующий с функциональностью подсветки скрипта «Удобные обсуждения». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
-      mw.notify($text, {
-        type: 'warn',
-        autoHide: false,
-      });
-      mw.cookie.set('cd-hlmConflict', '1', {
-        path: '/',
-        expires: 60 * 60 * 24 * 30,
-      });
-    }
-  }
+			const $text = cd.api.wrapHtml('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Кикан/highlightLastMessages.js">highlightLastMessages.js</a>, конфликтующий с функциональностью подсветки скрипта «Удобные обсуждения». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
+			mw.notify($text, {
+				type: 'warn',
+				autoHide: false,
+			});
+			mw.cookie.set('cd-hlmConflict', '1', {
+				path: '/',
+				expires: 60 * 60 * 24 * 30,
+			});
+		}
+	}
 
-  if (typeof window.proceedToArchiveRunned !== 'undefined' && !mw.cookie.get('cd-ptaConflict')) {
-    const $text = cd.api.wrapHtml('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Jack_who_built_the_house/proceedToArchive.js">proceedToArchive.js</a>, функциональность которого включена в скрипт «Удобные обсуждения». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
-    mw.notify($text, {
-      type: 'warn',
-      autoHide: false,
-    });
-    mw.cookie.set('cd-ptaConflict', '1', {
-      path: '/',
-      expires: 60 * 60 * 24 * 30,
-    });
-  }
+	if (typeof window.proceedToArchiveRunned !== 'undefined' && !mw.cookie.get('cd-ptaConflict')) {
+		const $text = cd.api.wrapHtml('У вас подключён скрипт <a href="//ru.wikipedia.org/wiki/Участник:Jack_who_built_the_house/proceedToArchive.js">proceedToArchive.js</a>, функциональность которого включена в скрипт «Удобные обсуждения». Рекомендуется отключить его в <a href="' + generateEditCommonJsLink() + '">вашем common.js</a> (или другом файле настроек).');
+		mw.notify($text, {
+			type: 'warn',
+			autoHide: false,
+		});
+		mw.cookie.set('cd-ptaConflict', '1', {
+			path: '/',
+			expires: 60 * 60 * 24 * 30,
+		});
+	}
 
-  if ($('.localcomments[style="font-size: 95%; white-space: nowrap;"]').length) {
-    const $text = cd.api.wrapHtml('Скрипт <a href="//ru.wikipedia.org/wiki/Участник:Александр_Дмитриев/comments_in_local_time_ru.js">comments in local time ru.js</a> выполняется раньше скрипта «Удобные обсуждения», что мешает работе последнего. Проследуйте инструкциям <a href="' + mw.util.getUrl(cd.config.scriptPageWikilink) + '#Совместимость">здесь</a>, чтобы обеспечить их совместимость.');
-    mw.notify($text, {
-      type: 'warn',
-      autoHide: false,
-    });
-  }
+	if ($('.localcomments[style="font-size: 95%; white-space: nowrap;"]').length) {
+		const $text = cd.api.wrapHtml('Скрипт <a href="//ru.wikipedia.org/wiki/Участник:Александр_Дмитриев/comments_in_local_time_ru.js">comments in local time ru.js</a> выполняется раньше скрипта «Удобные обсуждения», что мешает работе последнего. Проследуйте инструкциям <a href="' + mw.util.getUrl(cd.config.scriptPageWikilink) + '#Совместимость">здесь</a>, чтобы обеспечить их совместимость.');
+		mw.notify($text, {
+			type: 'warn',
+			autoHide: false,
+		});
+	}
 });
 
 mw.hook('convenientDiscussions.commentFormCreated').add(
-  /** @type {( ...args: import('../src/commentFormManager').CommentFormCreatedEvent ) => void} */ (
-    (commentForm) => {
-      const userGroups = mw.config.get('wgUserGroups');
-      // @ts-ignore
-      commentForm.couldBeCloserClosing =
-        cd.page.name.startsWith('Википедия:К удалению') &&
-        commentForm.getMode() === 'addSubsection' &&
-        userGroups &&
-        userGroups.includes('closer');
-    }
-  )
+	/** @type {( ...args: import('../src/commentFormManager').CommentFormCreatedEvent ) => void} */ (
+		(commentForm) => {
+			const userGroups = mw.config.get('wgUserGroups');
+			// @ts-ignore
+			commentForm.couldBeCloserClosing =
+				cd.page.name.startsWith('Википедия:К удалению') &&
+				commentForm.getMode() === 'addSubsection' &&
+				userGroups &&
+				userGroups.includes('closer');
+		}
+	)
 );
 
 mw.hook('convenientDiscussions.commentFormCustomModulesReady').add(
-  /** @type {( ...args: import('../src/commentFormManager').CommentFormCreatedEvent ) => void} */ (
-    (commentForm) => {
-      commentForm.$element.on('keydown', (event) => {
-        // Ctrl+Alt+W
-        const isCmdModifierPressed =
-          $.client.profile().platform === 'mac' ? event.metaKey : event.ctrlKey;
-        if (isCmdModifierPressed && !event.shiftKey && event.altKey && event.keyCode === 87) {
-          if (window.Wikify) {
-            window.Wikify(commentForm.commentInput.$input[0]);
-          }
-        }
-      });
-    }
-  )
+	/** @type {( ...args: import('../src/commentFormManager').CommentFormCreatedEvent ) => void} */ (
+		(commentForm) => {
+			commentForm.$element.on('keydown', (event) => {
+				// Ctrl+Alt+W
+				const isCmdModifierPressed =
+					$.client.profile().platform === 'mac' ? event.metaKey : event.ctrlKey;
+				if (isCmdModifierPressed && !event.shiftKey && event.altKey && event.keyCode === 87) {
+					if (window.Wikify) {
+						window.Wikify(commentForm.commentInput.$input[0]);
+					}
+				}
+			});
+		}
+	)
 );
 
 mw.hook('convenientDiscussions.commentFormToolbarReady').add((commentForm) => {
-  commentForm.commentInput.$input.wikiEditor('addToToolbar', {
-    section: 'main',
-    groups: {
-      gadgets: {
-        tools: {
-          wikificator: {
-            label: 'Викификатор — автоматический обработчик текста (Ctrl+Alt+W)',
-            type: 'button',
-            icon: 'https://upload.wikimedia.org/wikipedia/commons/4/41/Wikificator_VE_icon.svg',
-            action: {
-              type: 'callback',
-              execute() {
-                if (window.Wikify) {
-                  window.Wikify(commentForm.commentInput.$input[0]);
-                }
-              },
-            },
-          },
-        },
-      },
-    },
-  });
-  commentForm.$element
-    .find('.group-gadgets')
-    .insertBefore(commentForm.$element.find('.section-main .group-format'));
+	commentForm.commentInput.$input.wikiEditor('addToToolbar', {
+		section: 'main',
+		groups: {
+			gadgets: {
+				tools: {
+					wikificator: {
+						label: 'Викификатор — автоматический обработчик текста (Ctrl+Alt+W)',
+						type: 'button',
+						icon: 'https://upload.wikimedia.org/wikipedia/commons/4/41/Wikificator_VE_icon.svg',
+						action: {
+							type: 'callback',
+							execute() {
+								if (window.Wikify) {
+									window.Wikify(commentForm.commentInput.$input[0]);
+								}
+							},
+						},
+					},
+				},
+			},
+		},
+	});
+	commentForm.$element
+		.find('.group-gadgets')
+		.insertBefore(commentForm.$element.find('.section-main .group-format'));
 
-  if (mw.user.options.get('gadget-urldecoder')) {
-    commentForm.commentInput.$input.wikiEditor('addToToolbar', {
-      section: 'main',
-      group: 'gadgets',
-      tools: {
-        urlDecoder: {
-          label: 'Раскодировать URL перед курсором или все URL в выделенном тексте',
-          type: 'button',
-          icon: 'https://upload.wikimedia.org/wikipedia/commons/3/3d/URL_decoder_VE_icon.svg',
-          action: {
-            type: 'callback',
-            execute() {
-              if (window.urlDecoderRun) {
-                window.urlDecoderRun(commentForm.commentInput.$input[0]);
-              }
-            },
-          },
-        },
-      },
-    });
-  }
+	if (mw.user.options.get('gadget-urldecoder')) {
+		commentForm.commentInput.$input.wikiEditor('addToToolbar', {
+			section: 'main',
+			group: 'gadgets',
+			tools: {
+				urlDecoder: {
+					label: 'Раскодировать URL перед курсором или все URL в выделенном тексте',
+					type: 'button',
+					icon: 'https://upload.wikimedia.org/wikipedia/commons/3/3d/URL_decoder_VE_icon.svg',
+					action: {
+						type: 'callback',
+						execute() {
+							if (window.urlDecoderRun) {
+								window.urlDecoderRun(commentForm.commentInput.$input[0]);
+							}
+						},
+					},
+				},
+			},
+		});
+	}
 });
 
 mw.util.addCSS('\
-  .ts-Закрыто > .cd-commentLevel:not(ol) {\
-    margin-left: -1em;\
-  }\
+	.ts-Закрыто > .cd-commentLevel:not(ol) {\
+		margin-left: -1em;\
+	}\
 ');
