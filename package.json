@@ -25,6 +25,8 @@
     "docs": "rimraf dist/docs && jsdoc --configure jsdoc/config.js --readme jsdoc/home.md",
     "format": "prettier --write .",
     "i18n": "node buildI18n.mjs",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "postinstall": "patch-package",
     "preview": "vite preview",
     "single": "vite build --mode single",

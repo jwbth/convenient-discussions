@@ -8,10 +8,15 @@
     // Moves `eslint/config` under `eslint-` plugins instead of directly below eslint
     // "source.organizeImports": "explicit",
   },
-  "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": false,
+  "editor.formatOnPaste": false,
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": false
   },
   "eslint.codeActionsOnSave.rules": [
     "!unicorn/prefer-ternary",
