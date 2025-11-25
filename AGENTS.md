@@ -263,10 +263,11 @@ npm run i18n
 - Use optional chaining (`?.`) and nullish coalescing (`??`) operators, as well as logical OR assignment (`||=`) and other assignment operators.
 - Use trailing commas in objects and arrays.
 - Add an empty line before `return` statements at the end of blocks (function, `if` statement, etc.) unless it's the only statement in that block.
-- Use 2 spaces for indentation.
+- Only add semicolons at the beginning of lines that may introduce ASI failures.
+- Use a tab for indentation.
 - Use single quotes for strings.
-- Code comments should have one empty line before them.
 - Maximum line length is 100.
+- Code comments should have one empty line before them.
 - When adding inline comments, place 2 spaces before them: `expression;  // Comment`.
 - Put a space between inline JSDoc comments and the following expression: `/** @type {string} */ (variable)`, not `/** @type {string} */(variable)`.
 - When a function parameter is not used in the function, put an underscore in front of it.

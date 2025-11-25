@@ -23,6 +23,7 @@
     "configs": "node buildConfigs.mjs",
     "deploy": "node --unhandled-rejections=strict deploy.mjs",
     "docs": "rimraf dist/docs && jsdoc --configure jsdoc/config.js --readme jsdoc/home.md",
+    "format": "prettier --write .",
     "i18n": "node buildI18n.mjs",
     "postinstall": "patch-package",
     "preview": "vite preview",

@@ -341,8 +341,8 @@ const config = defineConfig(
 
       // Prettier-managed formatting (disabled to avoid conflicts)
       '@stylistic/semi': 'off',
-      '@stylistic/quotes': 'off',
       '@stylistic/indent': 'off',
+      '@stylistic/indent-binary-ops': 'off',
       '@stylistic/comma-dangle': 'off',
       '@stylistic/arrow-parens': 'off',
       '@stylistic/brace-style': 'off',
@@ -354,12 +354,25 @@ const config = defineConfig(
       '@stylistic/max-len': 'off',
       '@stylistic/operator-linebreak': 'off',
       '@stylistic/newline-per-chained-call': 'off',
-      '@stylistic/padding-line-between-statements': 'off',
       '@stylistic/no-trailing-spaces': 'off',
       '@stylistic/rest-spread-spacing': 'off',
       '@stylistic/space-unary-ops': 'off',
       '@stylistic/array-bracket-spacing': 'off',
       '@stylistic/lines-between-class-members': 'off',
+      
+      '@stylistic/padding-line-between-statements': [
+        'warn',
+        // Always require a blank line before any return
+        {
+          blankLine: 'always',
+          prev: '*',
+          next: 'return',
+        },
+      ],
+      '@stylistic/quotes': ['warn', 'single', {
+        avoidEscape: true,
+        allowTemplateLiterals: 'always',
+      }],
 
       'no-one-time-vars/no-one-time-vars': 'off',
       // No one-time vars plugin rules

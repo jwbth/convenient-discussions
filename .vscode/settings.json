@@ -8,6 +8,11 @@
     // Moves `eslint/config` under `eslint-` plugins instead of directly below eslint
     // "source.organizeImports": "explicit",
   },
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
   "eslint.codeActionsOnSave.rules": [
     "!unicorn/prefer-ternary",
     "!unicorn/prefer-switch",
@@ -23,6 +28,7 @@
   ],
   "files.trimTrailingWhitespace": true,
   "files.trimFinalNewlines": true,
+  "files.eol": "\n",
   "typescript.preferences.importModuleSpecifierEnding": "minimal",
   "typescript.preferences.quoteStyle": "single",
   "javascript.preferences.quoteStyle": "single",
